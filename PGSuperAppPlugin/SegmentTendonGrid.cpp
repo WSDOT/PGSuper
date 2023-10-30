@@ -35,7 +35,7 @@
 #include <GenericBridge\Helpers.h>
 
 #include <IFace\Bridge.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 #include <EAF\EAFDisplayUnits.h>
 
 #include <PgsExt\SplicedGirderData.h>
@@ -743,9 +743,9 @@ void CSegmentTendonGrid::UpdateMaxPjack(ROWCOL nRow)
    StrandIndexType nStrands = (StrandIndexType)_tstoi(GetCellValue(nRow, nStrandsCol));
    CGirderSegmentTendonsPage* pParent = (CGirderSegmentTendonsPage*)GetParent();
    ASSERT(pParent->IsKindOf(RUNTIME_CLASS(CGirderSegmentTendonsPage)));
-   const matPsStrand* pStrand = pParent->GetStrand();
+   const auto* pStrand = pParent->GetStrand();
 
-   Float64 Pjack = lrfdPsStrand::GetPjackPT(*pStrand, nStrands);
+   Float64 Pjack = WBFL::LRFD::PsStrand::GetPjackPT(*pStrand, nStrands);
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -859,12 +859,12 @@ void CSegmentTendonGrid::GetPjack(ROWCOL nRow, CSegmentDuctData* pDuct)
    pDuct->bPjCalc = ComputePjackMax(nRow);
 
    pDuct->Pj = _tstof(GetCellValue(nRow, nPjackCol));
-   pDuct->Pj = ::ConvertToSysUnits(pDuct->Pj, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure);
+   pDuct->Pj = WBFL::Units::ConvertToSysUnits(pDuct->Pj, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure);
 
    if (pDuct->bPjCalc)
    {
       pDuct->LastUserPj = _tstof(GetCellValue(nRow, nPjackUserCol));
-      pDuct->LastUserPj = ::ConvertToSysUnits(pDuct->LastUserPj, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure);
+      pDuct->LastUserPj = WBFL::Units::ConvertToSysUnits(pDuct->LastUserPj, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure);
    }
    else
    {
@@ -883,15 +883,15 @@ void CSegmentTendonGrid::GetDuctPoints(ROWCOL nRow, CSegmentDuctData* pDuct)
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
    Float64 value = _tstof(GetCellValue(nRow,nLeftEndYCol));
-   pDuct->DuctPoint[CSegmentDuctData::Left].first = ::ConvertToSysUnits(value,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+   pDuct->DuctPoint[CSegmentDuctData::Left].first = WBFL::Units::ConvertToSysUnits(value,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
    pDuct->DuctPoint[CSegmentDuctData::Left].second = (pgsTypes::FaceType)(_tstoi(GetCellValue(nRow,nLeftEndDatumCol)));
 
    value = _tstof(GetCellValue(nRow, nMiddleYCol));
-   pDuct->DuctPoint[CSegmentDuctData::Middle].first = ::ConvertToSysUnits(value, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+   pDuct->DuctPoint[CSegmentDuctData::Middle].first = WBFL::Units::ConvertToSysUnits(value, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
    pDuct->DuctPoint[CSegmentDuctData::Middle].second = (pgsTypes::FaceType)(_tstoi(GetCellValue(nRow, nMiddleDatumCol)));
 
    value = _tstof(GetCellValue(nRow, nRightEndYCol));
-   pDuct->DuctPoint[CSegmentDuctData::Right].first = ::ConvertToSysUnits(value, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+   pDuct->DuctPoint[CSegmentDuctData::Right].first = WBFL::Units::ConvertToSysUnits(value, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
    pDuct->DuctPoint[CSegmentDuctData::Right].second = (pgsTypes::FaceType)(_tstoi(GetCellValue(nRow, nRightEndDatumCol)));
 }
 
@@ -910,7 +910,7 @@ void CSegmentTendonGrid::UpdateNumStrandsList(ROWCOL nRow)
 
    CGirderSegmentTendonsPage* pParent = (CGirderSegmentTendonsPage*)GetParent();
    ASSERT(pParent->IsKindOf(RUNTIME_CLASS(CGirderSegmentTendonsPage)));
-   const matPsStrand* pStrand = pParent->GetStrand();
+   const auto* pStrand = pParent->GetStrand();
    Float64 aps = pStrand->GetNominalArea();
 
    // LRFD 5.4.6.2 Area of duct must be at least K times net area of prestressing steel

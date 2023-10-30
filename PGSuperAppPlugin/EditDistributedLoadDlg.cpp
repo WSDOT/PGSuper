@@ -148,7 +148,7 @@ void CEditDistributedLoadDlg::DoDataExchange(CDataExchange* pDX)
          Float64 lft_locval, rgt_locval;
          CString str;
          m_LeftLocationCtrl.GetWindowText(str);
-         if (!sysTokenizer::ParseDouble(str, &lft_locval))
+         if (!WBFL::System::Tokenizer::ParseDouble(str, &lft_locval))
          {
       	   HWND hWndCtrl = pDX->PrepareEditCtrl(IDC_LEFT_LOCATION);
             ::AfxMessageBox(_T("Please enter a number"));
@@ -156,7 +156,7 @@ void CEditDistributedLoadDlg::DoDataExchange(CDataExchange* pDX)
          }
 
          m_RightLocationCtrl.GetWindowText(str);
-         if (!sysTokenizer::ParseDouble(str, &rgt_locval))
+         if (!WBFL::System::Tokenizer::ParseDouble(str, &rgt_locval))
          {
       	   HWND hWndCtrl = pDX->PrepareEditCtrl(IDC_RIGHT_LOCATION);
             ::AfxMessageBox(_T("Please enter a number"));
@@ -200,7 +200,7 @@ void CEditDistributedLoadDlg::DoDataExchange(CDataExchange* pDX)
          {
             if (0.0 <= lft_locval)
             {
-               m_Load.m_StartLocation = ::ConvertToSysUnits(lft_locval, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure );
+               m_Load.m_StartLocation = WBFL::Units::ConvertToSysUnits(lft_locval, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure );
             }
             else
             {
@@ -211,7 +211,7 @@ void CEditDistributedLoadDlg::DoDataExchange(CDataExchange* pDX)
 
             if (0.0 <= rgt_locval)
             {
-               m_Load.m_EndLocation = ::ConvertToSysUnits(rgt_locval, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+               m_Load.m_EndLocation = WBFL::Units::ConvertToSysUnits(rgt_locval, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
             }
             else
             {
@@ -339,7 +339,7 @@ BOOL CEditDistributedLoadDlg::OnInitDialog()
 
    if (m_Load.m_Fractional)
    {
-      sysNumericFormatTool tool;
+      WBFL::System::NumericFormatTool tool;
       m_LeftLocationCtrl.SetWindowText(tool.AsString(m_Load.m_StartLocation).c_str());
       m_RightLocationCtrl.SetWindowText(tool.AsString(m_Load.m_EndLocation).c_str());
    }

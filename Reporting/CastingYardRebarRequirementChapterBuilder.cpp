@@ -31,8 +31,9 @@
 #include <IFace\Artifact.h>
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 #include <IFace\DocumentType.h>
+#include <IFace\ReportOptions.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -62,9 +63,9 @@ LPCTSTR CCastingYardRebarRequirementChapterBuilder::GetName() const
    return TEXT("Reinforcement Requirements for Tension Limits");
 }
 
-rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
@@ -76,11 +77,11 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
-   *pPara << _T("Minimum amount of bonded reinforcement sufficent to resist the tensile force in the concrete ") << LrfdCw8th(_T("[5.9.4][C5.9.4.1.2]"),_T("[5.9.2.3][C5.9.2.3.1b]")) << rptNewLine;
+   *pPara << _T("Minimum amount of bonded reinforcement sufficient to resist the tensile force in the concrete ") << WBFL::LRFD::LrfdCw8th(_T("[5.9.4][C5.9.4.1.2]"),_T("[5.9.2.3][C5.9.2.3.1b]")) << rptNewLine;
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
-   GET_IFACE2(pBroker,IAllowableConcreteStress,pAllowStress);
+   GET_IFACE2(pBroker,IConcreteStressLimits,pAllowStress);
 
    bool bSimpleTable = true;
    if (pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing())
@@ -154,7 +155,7 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
             // Service III limit state after live load is applied
             pgsTypes::LimitState limitState = (liveLoadIntervalIdx <= intervalIdx ? pgsTypes::ServiceIII : pgsTypes::ServiceI);
 
-            bool bIsApplicable = pAllowStress->IsStressCheckApplicable(girderKey,StressCheckTask(intervalIdx,limitState,pgsTypes::Tension));
+            bool bIsApplicable = pAllowStress->IsConcreteStressLimitApplicable(girderKey,StressCheckTask(intervalIdx,limitState,pgsTypes::Tension));
             if ( bIsApplicable )
             {
                pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
@@ -213,9 +214,9 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(CReportSpecificati
 }
 
 
-CChapterBuilder* CCastingYardRebarRequirementChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder>CCastingYardRebarRequirementChapterBuilder::Clone() const
 {
-   return new CCastingYardRebarRequirementChapterBuilder;
+   return std::make_unique<CCastingYardRebarRequirementChapterBuilder>();
 }
 
 void CCastingYardRebarRequirementChapterBuilder::BuildTable(IBroker* pBroker,rptParagraph* pPara,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx, bool bSimpleTable) const
@@ -300,7 +301,7 @@ rptRcTable* CCastingYardRebarRequirementChapterBuilder::CreateTable(IBroker* pBr
 {
    GET_IFACE2(pBroker, IIntervals, pIntervals);
    CString strTitle;
-   strTitle.Format(_T("Reinforcement required for tension stress limit, Interval %d - %s, [%s]"), LABEL_INTERVAL(intervalIdx), pIntervals->GetDescription(intervalIdx), LrfdCw8th(_T("C5.9.4.1.2"), _T("C5.9.2.3.1b")));
+   strTitle.Format(_T("Reinforcement required for tension stress limit, Interval %d - %s, [%s]"), LABEL_INTERVAL(intervalIdx), pIntervals->GetDescription(intervalIdx).c_str(), WBFL::LRFD::LrfdCw8th(_T("C5.9.4.1.2"), _T("C5.9.2.3.1b")));
 
    ColumnIndexType nColumns = (bSimpleTable ? 8 : 19);
    nColumns++; // for tension force details
@@ -395,7 +396,8 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptR
    pgsTypes::LimitState limitState = (liveLoadIntervalIdx <= intervalIdx ? pgsTypes::ServiceIII : pgsTypes::ServiceI);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,       pDisplayUnits->GetSpanLengthUnit(), false );
-   location.IncludeSpanAndGirder(segmentKey.segmentIndex == ALL_SEGMENTS || poi.GetID() != INVALID_ID);
+   GET_IFACE2_NOCHECK(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(segmentKey.segmentIndex == ALL_SEGMENTS && (pReportOptions->IncludeSpanAndGirder4Pois(segmentKey) || poi.GetID() != INVALID_ID));
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
    INIT_UV_PROTOTYPE( rptForceUnitValue,  force,  pDisplayUnits->GetShearUnit(),        false );
@@ -418,7 +420,7 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptR
       CSegmentKey thisSegmentKey(segmentKey.groupIndex,segmentKey.girderIndex,segIdx);
       const pgsSegmentArtifact* pSegmentArtifact = pIArtifact->GetSegmentArtifact(thisSegmentKey);
 
-      CollectionIndexType nArtifacts;
+      IndexType nArtifacts;
       if ( poi.GetID() == INVALID_ID )
       {
          // reporting for all vPoi
@@ -430,7 +432,7 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(IBroker* pBroker,rptR
          nArtifacts = 1;
       }
 
-      for ( CollectionIndexType artifactIdx = 0; artifactIdx < nArtifacts; artifactIdx++ )
+      for ( IndexType artifactIdx = 0; artifactIdx < nArtifacts; artifactIdx++ )
       {
          const pgsFlexuralStressArtifact* pArtifact;
          if ( poi.GetID() == INVALID_ID )

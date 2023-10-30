@@ -36,7 +36,7 @@
 
 #include <StrData.h>
 
-#include <Material\Rebar.h>
+#include <Materials/Rebar.h>
 
 // LOCAL INCLUDES
 //
@@ -67,13 +67,13 @@ public:
    Float64 TopCover;
    Float64 BottomCover;
 
-   matRebar::Type TopRebarType;
-   matRebar::Grade TopRebarGrade;
-   matRebar::Size TopRebarSize;
+   WBFL::Materials::Rebar::Type TopRebarType;
+   WBFL::Materials::Rebar::Grade TopRebarGrade;
+   WBFL::Materials::Rebar::Size TopRebarSize;
 
-   matRebar::Type BottomRebarType;
-   matRebar::Grade BottomRebarGrade;
-   matRebar::Size BottomRebarSize;
+   WBFL::Materials::Rebar::Type BottomRebarType;
+   WBFL::Materials::Rebar::Grade BottomRebarGrade;
+   WBFL::Materials::Rebar::Size BottomRebarSize;
 
    Float64 TopSpacing;
    Float64 BottomSpacing;
@@ -84,9 +84,9 @@ public:
    enum RebarMat { TopMat, BottomMat };
    struct NegMomentRebarData
    {
-      matRebar::Type RebarType;
-      matRebar::Grade RebarGrade;
-      matRebar::Size RebarSize;
+      WBFL::Materials::Rebar::Type RebarType;
+      WBFL::Materials::Rebar::Grade RebarGrade;
+      WBFL::Materials::Rebar::Size RebarSize;
 
       PierIndexType PierIdx;
       RebarMat Mat;

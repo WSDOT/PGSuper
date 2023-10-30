@@ -42,6 +42,7 @@
 
 #include <Units\Measure.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <CoordGeom\Station.h>
 
 #include <PgsExt\ClosureJointData.h>
 
@@ -57,7 +58,7 @@ class CRowType : public CGXAbstractUserAttribute
 {
 public:
    enum RowType { Span, Pier, TempSupport };
-   CRowType(RowType type,CollectionIndexType idx)
+   CRowType(RowType type,IndexType idx)
    {
       m_Type = type;
       m_Index = idx;
@@ -69,7 +70,7 @@ public:
    }
 
    RowType m_Type;
-   CollectionIndexType m_Index;
+   IndexType m_Index;
 };
 
 GRID_IMPLEMENT_REGISTER(CBridgeDescFramingGrid, CS_DBLCLKS, 0, 0, 0);
@@ -81,16 +82,10 @@ CBridgeDescFramingGrid::CBridgeDescFramingGrid():
    m_bDoValidate(true)
 {
 //   RegisterClass();
-   HRESULT hr = m_objStation.CoCreateInstance(CLSID_Station);
-   hr = m_objAngle.CoCreateInstance(CLSID_Angle);
-   hr = m_objDirection.CoCreateInstance(CLSID_Direction);
 }
 
 CBridgeDescFramingGrid::~CBridgeDescFramingGrid()
 {
-   DeleteTransactions(m_PierTransactions);
-   DeleteTransactions(m_SpanTransactions);
-   DeleteTransactions(m_TempSupportTransactions);
 }
 
 BEGIN_MESSAGE_MAP(CBridgeDescFramingGrid, CGXGridWnd)
@@ -456,37 +451,34 @@ bool CBridgeDescFramingGrid::EnableRemoveTemporarySupportBtn()
    return true;
 }
 
-std::vector<txnTransaction*> CBridgeDescFramingGrid::GetPierTransactions(PierIndexType pierIdx)
+void CBridgeDescFramingGrid::GetTransactions(CEAFMacroTxn& macro)
 {
-   std::map<PierIndexType,std::vector<txnTransaction*>>::iterator found(m_PierTransactions.find(pierIdx));
-   if ( found == m_PierTransactions.end())
-   {
-      return std::vector<txnTransaction*>();
-   }
+   std::for_each(std::begin(m_PierTransactions), std::end(m_PierTransactions),
+      [&macro](auto& txns)
+      {
+         std::for_each(std::begin(txns.second), std::end(txns.second), [&macro](auto& txn) {macro.AddTransaction(std::move(txn)); });
+      }
+   );
 
-   return found->second;
-}
+   m_PierTransactions.clear();
 
-std::vector<txnTransaction*> CBridgeDescFramingGrid::GetSpanTransactions(SpanIndexType spanIdx)
-{
-   std::map<SpanIndexType,std::vector<txnTransaction*>>::iterator found(m_SpanTransactions.find(spanIdx));
-   if ( found == m_SpanTransactions.end())
-   {
-      return std::vector<txnTransaction*>();
-   }
+   std::for_each(std::begin(m_SpanTransactions), std::end(m_SpanTransactions), 
+      [&macro](auto& txns)
+      {
+         std::for_each(std::begin(txns.second), std::end(txns.second), [&macro](auto& txn) {macro.AddTransaction(std::move(txn)); });
+      }
+   );
+ 
+   m_SpanTransactions.clear();
 
-   return found->second;
-}
+   std::for_each(std::begin(m_TempSupportTransactions), std::end(m_TempSupportTransactions), 
+      [&macro](auto& txns)
+      {
+         std::for_each(std::begin(txns.second), std::end(txns.second), [&macro](auto& txn) {macro.AddTransaction(std::move(txn)); });
+      }
+   );
 
-std::vector<txnTransaction*> CBridgeDescFramingGrid::GetTemporarySupportTransactions(SupportIndexType tsIdx)
-{
-   std::map<SupportIndexType,std::vector<txnTransaction*>>::iterator found(m_TempSupportTransactions.find(tsIdx));
-   if ( found == m_TempSupportTransactions.end())
-   {
-      return std::vector<txnTransaction*>();
-   }
-
-   return found->second;
+   m_TempSupportTransactions.clear();
 }
 
 void CBridgeDescFramingGrid::CustomInit()
@@ -629,13 +621,10 @@ CPierData2* CBridgeDescFramingGrid::GetPierRowData(ROWCOL nRow)
    // update pier using the data in the grid
 
    // Station
-   CString strStation = GetCellValue(nRow,1);
+   std::_tstring strStation(GetCellValue(nRow, 1));
    UnitModeType unitMode = (UnitModeType)(pDisplayUnits->GetUnitMode());
-   m_objStation->FromString(CComBSTR(strStation),unitMode);
-   Float64 station;
-   m_objStation->get_Value(&station);
-   station = ::ConvertToSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
-   pPier->SetStation(station);
+   WBFL::COGO::Station station(strStation, unitMode == umUS ? WBFL::Units::StationFormats::US : WBFL::Units::StationFormats::SI);
+   pPier->SetStation(station.GetValue());
 
    // Orientation
    CString strOrientation = GetCellValue(nRow,2);
@@ -672,13 +661,10 @@ CTemporarySupportData CBridgeDescFramingGrid::GetTemporarySupportRowData(ROWCOL 
    // update temporary support using the data in the grid
 
    // Station
-   CString strStation = GetCellValue(nRow,1);
+   std::_tstring strStation(GetCellValue(nRow, 1));
    UnitModeType unitMode = (UnitModeType)(pDisplayUnits->GetUnitMode());
-   m_objStation->FromString(CComBSTR(strStation),unitMode);
-   Float64 station;
-   m_objStation->get_Value(&station);
-   station = ::ConvertToSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
-   tsData.SetStation(station);
+   WBFL::COGO::Station station(strStation, unitMode == umUS ? WBFL::Units::StationFormats::US : WBFL::Units::StationFormats::SI);
+   tsData.SetStation(station.GetValue());
 
    // Orientation
    CString strOrientation = GetCellValue(nRow,2);
@@ -772,7 +758,6 @@ void CBridgeDescFramingGrid::FillPierRow(ROWCOL row,const CPierData2* pPierData)
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   CString strStation = FormatStation(pDisplayUnits->GetStationFormat(),pPierData->GetStation());
 
    CBridgeDescFramingPage* pParent = (CBridgeDescFramingPage*)GetParent();
 
@@ -788,11 +773,12 @@ void CBridgeDescFramingGrid::FillPierRow(ROWCOL row,const CPierData2* pPierData)
    );
 
    // station
+   WBFL::COGO::Station station(pPierData->GetStation());
    SetStyleRange(CGXRange(row,col++), CGXStyle()
       .SetHorizontalAlignment(DT_RIGHT)
       .SetReadOnly(FALSE)
       .SetEnabled(TRUE)
-      .SetValue(strStation)
+      .SetValue(station.AsString(pDisplayUnits->GetStationFormat()).c_str())
    );
 
    // orientation
@@ -1272,8 +1258,12 @@ BOOL CBridgeDescFramingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
       EAFGetBroker(&pBroker);
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-      HRESULT hr = m_objStation->FromString( CComBSTR(s), (UnitModeType)(pDisplayUnits->GetUnitMode()));
-      if ( FAILED(hr) )
+      try
+      {
+         std::_tstring strStation(s);
+         WBFL::COGO::Station station(strStation, pDisplayUnits->GetStationFormat());
+      }
+      catch(...)
       {
 			SetWarningText (_T("Invalid Station Value"));
          DisplayWarningText();
@@ -1282,10 +1272,7 @@ BOOL CBridgeDescFramingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 
          return FALSE;
       }
-      else
-      {
-         return TRUE;
-      }
+      return TRUE;
    }
 	else if (nCol==2)
 	{
@@ -1478,8 +1465,8 @@ void CBridgeDescFramingGrid::EditPier(PierIndexType pierIdx)
    if ( dlg.DoModal() == IDOK )
    {
       pDlg->m_BridgeDesc = *dlg.GetBridgeDescription();
-      txnTransaction* pPierTransaction = dlg.GetExtensionPageTransaction();
-      SavePierTransaction(pierIdx,pPierTransaction);
+      auto pPierTransaction = dlg.GetExtensionPageTransaction();
+      SavePierTransaction(pierIdx,std::move(pPierTransaction));
       FillGrid(pDlg->m_BridgeDesc);
    }
 }
@@ -1617,69 +1604,52 @@ SupportIndexType CBridgeDescFramingGrid::GetTemporarySupportIndex(ROWCOL nRow)
    return INVALID_INDEX;
 }
 
-void CBridgeDescFramingGrid::SavePierTransaction(PierIndexType pierIdx,txnTransaction* pTxn)
+void CBridgeDescFramingGrid::SavePierTransaction(PierIndexType pierIdx,std::unique_ptr<CEAFTransaction>&& pTxn)
 {
    if ( pTxn == nullptr )
    {
       return;
    }
 
-   std::map<PierIndexType,std::vector<txnTransaction*>>::iterator found(m_PierTransactions.find(pierIdx));
+   auto found(m_PierTransactions.find(pierIdx));
    if ( found == m_PierTransactions.end())
    {
-      m_PierTransactions.insert(std::make_pair(pierIdx,std::vector<txnTransaction*>()));
+      m_PierTransactions.insert(std::make_pair(pierIdx,std::vector<std::unique_ptr<CEAFTransaction>>()));
       found = m_PierTransactions.find(pierIdx);
    }
-   found->second.push_back(pTxn);
+   found->second.emplace_back(std::move(pTxn));
 }
 
-void CBridgeDescFramingGrid::SaveSpanTransaction(SpanIndexType spanIdx,txnTransaction* pTxn)
+void CBridgeDescFramingGrid::SaveSpanTransaction(SpanIndexType spanIdx, std::unique_ptr<CEAFTransaction>&& pTxn)
 {
    if ( pTxn == nullptr )
    {
       return;
    }
 
-   std::map<SpanIndexType,std::vector<txnTransaction*>>::iterator found(m_SpanTransactions.find(spanIdx));
+   auto found(m_SpanTransactions.find(spanIdx));
    if ( found == m_SpanTransactions.end())
    {
-      m_SpanTransactions.insert(std::make_pair(spanIdx,std::vector<txnTransaction*>()));
+      m_SpanTransactions.insert(std::make_pair(spanIdx, std::vector<std::unique_ptr<CEAFTransaction>>()));
       found = m_SpanTransactions.find(spanIdx);
    }
-   found->second.push_back(pTxn);
+   found->second.emplace_back(std::move(pTxn));
 }
 
-void CBridgeDescFramingGrid::SaveTemporarySupportTransaction(SupportIndexType tsIdx,txnTransaction* pTxn)
+void CBridgeDescFramingGrid::SaveTemporarySupportTransaction(SupportIndexType tsIdx, std::unique_ptr<CEAFTransaction>&& pTxn)
 {
    if ( pTxn == nullptr )
    {
       return;
    }
 
-   std::map<SupportIndexType,std::vector<txnTransaction*>>::iterator found(m_TempSupportTransactions.find(tsIdx));
+   auto found(m_TempSupportTransactions.find(tsIdx));
    if ( found == m_TempSupportTransactions.end())
    {
-      m_TempSupportTransactions.insert(std::make_pair(tsIdx,std::vector<txnTransaction*>()));
+      m_TempSupportTransactions.insert(std::make_pair(tsIdx,std::vector<std::unique_ptr<CEAFTransaction>>()));
       found = m_TempSupportTransactions.find(tsIdx);
    }
-   found->second.push_back(pTxn);
-}
-
-void CBridgeDescFramingGrid::DeleteTransactions(std::map<IndexType,std::vector<txnTransaction*>>& transactions)
-{
-   std::map<IndexType,std::vector<txnTransaction*>>::iterator iter(transactions.begin());
-   std::map<IndexType,std::vector<txnTransaction*>>::iterator iterEnd(transactions.end());
-   for ( ; iter != iterEnd; iter++ )
-   {
-      std::vector<txnTransaction*>& vTransactions(iter->second);
-      std::vector<txnTransaction*>::iterator txnIter(vTransactions.begin());
-      std::vector<txnTransaction*>::iterator txnIterEnd(vTransactions.end());
-      for ( ; txnIter != txnIterEnd; txnIter++ )
-      {
-         txnTransaction* pTxn = *txnIter;
-         delete pTxn;
-      }
-   }
+   found->second.emplace_back(std::move(pTxn));
 }
 
 void CBridgeDescFramingGrid::OnKillFocus(CWnd* pNewWnd)

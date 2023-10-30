@@ -31,6 +31,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
+#include <IFace\ReportOptions.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -84,7 +85,8 @@ rptRcTable* CCastingYardStressTable::Build(IBroker* pBroker,const CSegmentKey& s
    IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
    ATLASSERT( intervalIdx == releaseIntervalIdx || intervalIdx == storageIntervalIdx );
 
-   location.IncludeSpanAndGirder(segmentKey.groupIndex == ALL_GROUPS ? true : false);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(segmentKey));
 
    rptRcTable* p_table = rptStyleManager::CreateDefaultTable(3,strTableTitle);
 

@@ -62,9 +62,9 @@ void txnEditLiveLoad::Undo()
    DoExecute(0);
 }
 
-txnTransaction* txnEditLiveLoad::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnEditLiveLoad::CreateClone() const
 {
-   return new txnEditLiveLoad(m_Design[0],m_Design[1],m_Fatigue[0],m_Fatigue[1],m_Permit[0],m_Permit[1],m_EventIndex[0],m_EventIndex[1]);
+   return std::make_unique<txnEditLiveLoad>(m_Design[0],m_Design[1],m_Fatigue[0],m_Fatigue[1],m_Permit[0],m_Permit[1],m_EventIndex[0],m_EventIndex[1]);
 }
 
 std::_tstring txnEditLiveLoad::Name() const
@@ -72,12 +72,12 @@ std::_tstring txnEditLiveLoad::Name() const
    return _T("Edit Live Load");
 }
 
-bool txnEditLiveLoad::IsUndoable()
+bool txnEditLiveLoad::IsUndoable() const
 {
    return true;
 }
 
-bool txnEditLiveLoad::IsRepeatable()
+bool txnEditLiveLoad::IsRepeatable() const
 {
    return false;
 }

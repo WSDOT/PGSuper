@@ -54,15 +54,15 @@ SpanIndexType CSpanReportHint::GetSpan()
    return m_SpanIdx;
 }
 
-int CSpanReportHint::IsMySpan(CReportHint* pHint,CReportSpecification* pRptSpec)
+int CSpanReportHint::IsMySpan(const std::shared_ptr<const WBFL::Reporting::ReportHint>& pHint,const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec)
 {
-   CSpanReportSpecification* pSpanRptSpec = dynamic_cast<CSpanReportSpecification*>(pRptSpec);
+   auto pSpanRptSpec = std::dynamic_pointer_cast<const CSpanReportSpecification>(pRptSpec);
    if ( pSpanRptSpec == nullptr )
    {
       return -1;
    }
 
-   CSpanReportHint* pSpanRptHint = dynamic_cast<CSpanReportHint*>(pHint);
+   auto pSpanRptHint = std::dynamic_pointer_cast<const CSpanReportHint>(pHint);
    if ( pSpanRptHint == nullptr )
    {
       return -1;
@@ -104,9 +104,9 @@ GirderIndexType CGirderLineReportHint::GetGirderIndex() const
    return m_GirderIdx;
 }
 
-int CGirderLineReportHint::IsMyGirder(CReportHint* pHint,CReportSpecification* pRptSpec)
+int CGirderLineReportHint::IsMyGirder(const std::shared_ptr<const WBFL::Reporting::ReportHint>& pHint, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec)
 {
-   CGirderLineReportHint* pGirderRptHint = dynamic_cast<CGirderLineReportHint*>(pHint);
+   auto pGirderRptHint = std::dynamic_pointer_cast<const CGirderLineReportHint>(pHint);
    if ( pGirderRptHint == nullptr )
    {
       return -1;
@@ -117,20 +117,20 @@ int CGirderLineReportHint::IsMyGirder(CReportHint* pHint,CReportSpecification* p
       return 1;
    }
 
-   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    if ( pGdrRptSpec != nullptr )
    {
       return (pGirderRptHint->m_GroupIdx == pGdrRptSpec->GetGroupIndex() && pGirderRptHint->m_GirderIdx == pGdrRptSpec->GetGirderIndex() ? 1 : 0);
    }
    else
    {
-      CMultiGirderReportSpecification* pMGdrRptSpec = dynamic_cast<CMultiGirderReportSpecification*>(pRptSpec);
+      auto pMGdrRptSpec = std::dynamic_pointer_cast<const CMultiGirderReportSpecification>(pRptSpec);
       if ( pMGdrRptSpec != nullptr )
       {
          return pMGdrRptSpec->IsMyGirder(CGirderKey(pGirderRptHint->m_GroupIdx,pGirderRptHint->m_GirderIdx));
       }
 
-      CMultiViewSpanGirderReportSpecification* pMVGdrRptSpec = dynamic_cast<CMultiViewSpanGirderReportSpecification*>(pRptSpec);
+      auto pMVGdrRptSpec = std::dynamic_pointer_cast<const CMultiViewSpanGirderReportSpecification>(pRptSpec);
       if ( pMVGdrRptSpec != nullptr )
       {
          return pMVGdrRptSpec->IsMyGirder(CGirderKey(pGirderRptHint->m_GroupIdx ,pGirderRptHint->m_GirderIdx));
@@ -172,22 +172,22 @@ const CGirderKey& CGirderReportHint::GetGirderKey() const
    return m_GirderKey;
 }
 
-int CGirderReportHint::IsMyGirder(CReportHint* pHint,CReportSpecification* pRptSpec)
+int CGirderReportHint::IsMyGirder(const std::shared_ptr<const WBFL::Reporting::ReportHint>& pHint, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec)
 {
-   CGirderReportHint* pGirderRptHint = dynamic_cast<CGirderReportHint*>(pHint);
+   auto pGirderRptHint = std::dynamic_pointer_cast<const CGirderReportHint>(pHint);
    if ( pGirderRptHint == nullptr )
    {
       return -1;
    }
 
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    if ( pGirderRptSpec != nullptr )
    {
       return (pGirderRptHint->m_GirderKey == pGirderRptSpec->GetGirderKey() ? 1 : 0);
    }
    else
    {
-      CMultiGirderReportSpecification* pMultiGirderRptSpec = dynamic_cast<CMultiGirderReportSpecification*>(pRptSpec);
+      auto pMultiGirderRptSpec = std::dynamic_pointer_cast<const CMultiGirderReportSpecification>(pRptSpec);
       if ( pMultiGirderRptSpec != nullptr )
       {
          return pMultiGirderRptSpec->IsMyGirder(pGirderRptHint->m_GirderKey);
@@ -199,7 +199,7 @@ int CGirderReportHint::IsMyGirder(CReportHint* pHint,CReportSpecification* pRptS
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
-CSpanReportSpecification::CSpanReportSpecification(LPCTSTR strReportName,IBroker* pBroker,SpanIndexType spanIdx) :
+CSpanReportSpecification::CSpanReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,SpanIndexType spanIdx) :
 CBrokerReportSpecification(strReportName,pBroker)
 {
    SetSpan(spanIdx);
@@ -243,23 +243,23 @@ SpanIndexType CSpanReportSpecification::GetSpan() const
    return m_Span;
 }
 
-HRESULT CSpanReportSpecification::Validate() const
+bool CSpanReportSpecification::IsValid() const
 {
    GET_IFACE(IBridge,pBridge);
    SpanIndexType nSpans = pBridge->GetSpanCount();
    if ( nSpans <= m_Span )
    {
-      return RPT_E_INVALID_SPAN;
+      return false;
    }
 
-   return CBrokerReportSpecification::Validate();
+   return CBrokerReportSpecification::IsValid();
 }
 
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
 
-CGirderReportSpecification::CGirderReportSpecification(LPCTSTR strReportName,IBroker* pBroker,const CGirderKey& girderKey) :
+CGirderReportSpecification::CGirderReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,const CGirderKey& girderKey) :
 CBrokerReportSpecification(strReportName,pBroker)
 {
    m_GirderKey = girderKey;
@@ -353,7 +353,7 @@ const CGirderKey& CGirderReportSpecification::GetGirderKey() const
    return m_GirderKey;
 }
 
-HRESULT CGirderReportSpecification::Validate() const
+bool CGirderReportSpecification::IsValid() const
 {
    GET_IFACE(IBridge,pBridge);
 
@@ -361,7 +361,7 @@ HRESULT CGirderReportSpecification::Validate() const
    if (nGroups <= m_GirderKey.groupIndex && m_GirderKey.groupIndex != ALL_GROUPS)
    {
       // the group index is out of range (group probably got deleted)
-      return RPT_E_INVALID_GIRDER;
+      return false;
    }
 
    GirderIndexType nGirders = 0;
@@ -379,17 +379,17 @@ HRESULT CGirderReportSpecification::Validate() const
 
    if ( nGirders <= m_GirderKey.girderIndex )
    {
-      return RPT_E_INVALID_GIRDER;
+      return false;
    }
 
-   return CBrokerReportSpecification::Validate();
+   return CBrokerReportSpecification::IsValid();
 }
 
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
 
-CSegmentReportSpecification::CSegmentReportSpecification(LPCTSTR strReportName, IBroker* pBroker, const CSegmentKey& segmentKey) :
+CSegmentReportSpecification::CSegmentReportSpecification(const std::_tstring& strReportName, IBroker* pBroker, const CSegmentKey& segmentKey) :
    CBrokerReportSpecification(strReportName, pBroker)
 {
    m_SegmentKey = segmentKey;
@@ -470,7 +470,7 @@ const CSegmentKey& CSegmentReportSpecification::GetSegmentKey() const
    return m_SegmentKey;
 }
 
-HRESULT CSegmentReportSpecification::Validate() const
+bool CSegmentReportSpecification::IsValid() const
 {
    GET_IFACE(IBridge, pBridge);
 
@@ -478,25 +478,25 @@ HRESULT CSegmentReportSpecification::Validate() const
    if (nGroups <= m_SegmentKey.groupIndex)
    {
       // the group index is out of range (group probably got deleted)
-      return RPT_E_INVALID_GIRDER;
+      return false;
    }
 
    GirderIndexType nGirders = pBridge->GetGirderCount(m_SegmentKey.groupIndex);
    if (nGirders <= m_SegmentKey.girderIndex)
    {
-      return RPT_E_INVALID_GIRDER;
+      return false;
    }
 
    SegmentIndexType nSegments = pBridge->GetSegmentCount(m_SegmentKey.groupIndex, m_SegmentKey.girderIndex);
 
-   return CBrokerReportSpecification::Validate();
+   return CBrokerReportSpecification::IsValid();
 }
 
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
 
-CGirderLineReportSpecification::CGirderLineReportSpecification(LPCTSTR strReportName,IBroker* pBroker,GirderIndexType gdrIdx) :
+CGirderLineReportSpecification::CGirderLineReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,GirderIndexType gdrIdx) :
 CBrokerReportSpecification(strReportName,pBroker)
 {
    m_GirderIdx = gdrIdx;
@@ -539,7 +539,7 @@ CGirderKey CGirderLineReportSpecification::GetGirderKey() const
    return CGirderKey(ALL_GROUPS,m_GirderIdx);
 }
 
-HRESULT CGirderLineReportSpecification::Validate() const
+bool CGirderLineReportSpecification::IsValid() const
 {
    GET_IFACE(IBridge,pBridge);
    GirderIndexType nGirders = 0;
@@ -552,16 +552,16 @@ HRESULT CGirderLineReportSpecification::Validate() const
 
    if ( nGirders <= m_GirderIdx )
    {
-      return RPT_E_INVALID_GIRDER;
+      return false;
    }
 
-   return CBrokerReportSpecification::Validate();
+   return CBrokerReportSpecification::IsValid();
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
 
-CMultiGirderReportSpecification::CMultiGirderReportSpecification(LPCTSTR strReportName,IBroker* pBroker,const std::vector<CGirderKey>& girderKeys) :
+CMultiGirderReportSpecification::CMultiGirderReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,const std::vector<CGirderKey>& girderKeys) :
 CBrokerReportSpecification(strReportName,pBroker),
 m_GirderKeys(girderKeys)
 {
@@ -661,7 +661,7 @@ bool CMultiGirderReportSpecification::IsMyGirder(const CGirderKey& girderKey) co
    return (it != m_GirderKeys.end()) ? true : false;
 }
 
-HRESULT CMultiGirderReportSpecification::Validate() const
+bool CMultiGirderReportSpecification::IsValid() const
 {
    GET_IFACE(IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
@@ -673,23 +673,23 @@ HRESULT CMultiGirderReportSpecification::Validate() const
 
       if ( nGroups <= girderKey.groupIndex )
       {
-         return RPT_E_INVALID_GROUP;
+         return false;
       }
 
       GirderIndexType nGirders = pBridge->GetGirderCount(girderKey.groupIndex);
       if ( nGirders <= girderKey.girderIndex )
       {
-         return RPT_E_INVALID_GIRDER;
+         return false;
       }
    }
 
-   return CBrokerReportSpecification::Validate();
+   return CBrokerReportSpecification::IsValid();
 }
 
 //////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////
 
-CMultiViewSpanGirderReportSpecification::CMultiViewSpanGirderReportSpecification(LPCTSTR strReportName,IBroker* pBroker, const std::vector<CGirderKey>& girderKeys) :
+CMultiViewSpanGirderReportSpecification::CMultiViewSpanGirderReportSpecification(const std::_tstring& strReportName,IBroker* pBroker, const std::vector<CGirderKey>& girderKeys) :
 CBrokerReportSpecification(strReportName,pBroker)
 {
    SetGirderKeys(girderKeys);
@@ -732,7 +732,7 @@ int CMultiViewSpanGirderReportSpecification::IsMyGirder(const CGirderKey& girder
    return (it != m_GirderKeys.end()) ? 1 : 0;
 }
 
-HRESULT CMultiViewSpanGirderReportSpecification::Validate() const
+bool CMultiViewSpanGirderReportSpecification::IsValid() const
 {
    GET_IFACE(IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
@@ -745,25 +745,25 @@ HRESULT CMultiViewSpanGirderReportSpecification::Validate() const
 
       if ( nGroups <= girderKey.groupIndex )
       {
-         return RPT_E_INVALID_SPAN;
+         return false;
       }
 
       GirderIndexType nGdrs = pBridge->GetGirderCount(girderKey.groupIndex);
 
       if ( nGdrs <= girderKey.groupIndex )
       {
-         return RPT_E_INVALID_GIRDER;
+         return false;
       }
    }
 
-   return CBrokerReportSpecification::Validate();
+   return CBrokerReportSpecification::IsValid();
 }
 
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////
 
-CPointOfInterestReportSpecification::CPointOfInterestReportSpecification(LPCTSTR strReportName,IBroker* pBroker,const pgsPointOfInterest& poi) :
+CPointOfInterestReportSpecification::CPointOfInterestReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,const pgsPointOfInterest& poi) :
 CBrokerReportSpecification(strReportName,pBroker)
 {
    m_POI = poi;
@@ -804,7 +804,7 @@ const pgsPointOfInterest& CPointOfInterestReportSpecification::GetPointOfInteres
    return m_POI;
 }
 
-HRESULT CPointOfInterestReportSpecification::Validate() const
+bool CPointOfInterestReportSpecification::IsValid() const
 {
-   return CBrokerReportSpecification::Validate();
+   return CBrokerReportSpecification::IsValid();
 }

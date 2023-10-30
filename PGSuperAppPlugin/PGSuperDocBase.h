@@ -71,8 +71,10 @@ public:
    CFileCompatibilityState() : m_bCreatingFromTemplate(false) { ResetFlags(); }
 
    // Set/Get version of application that was used to when saving a file (after version 2.1)
-   void SetApplicationVersion(LPCTSTR lpszAppVersion) { m_strAppVersion = lpszAppVersion; }
-   const CString& GetApplicationVersion() const { return m_strAppVersion; }
+   void SetApplicationVersionFromFile(LPCTSTR lpszAppVersion) { m_strAppVersionFromFile = lpszAppVersion; }
+   const CString& GetApplicationVersionFromFile() const { return m_strAppVersionFromFile; }
+
+   CString GetApplicationVersion() const;
 
    // Set this flag if the application used to save this file was version 2.1 or earlier
    void SetPreVersion21Flag() { m_bPreVersion21File = true;  }
@@ -82,55 +84,27 @@ public:
    // Call when a new file is created
    void NewFileCreated() { ResetFlags(); m_strFilePath.Empty(); m_bCreatingFromTemplate = false; m_bNewFromTemplate = true; }
 
-   // Call when a file was opened. Keeps track of orginal filename and if the file was creaetd from a template
+   // Call when a file was opened. Keeps track of original filename and if the file was created from a template
    void FileOpened(LPCTSTR lpszFilePath) { ResetFlags(); m_strFilePath = lpszFilePath; m_bNewFromTemplate = false;  }
 
    // Call when a file is saved. Updates the file name and the version of the application when saved
-   void FileSaved(LPCTSTR lpszFilePath, LPCTSTR lpszAppVersion) { ResetFlags();  m_strFilePath = lpszFilePath; m_strAppVersion = lpszAppVersion; }
+   void FileSaved(LPCTSTR lpszFilePath, LPCTSTR lpszAppVersion) { ResetFlags();  m_strFilePath = lpszFilePath; m_strAppVersionFromFile = lpszAppVersion; }
 
-   // Call at the begining of the file saving process. Call with true of the file is unnamed (e.g. a new file that hasn't been saved or a Save As)
+   // Call at the beginning of the file saving process. Call with true of the file is unnamed (e.g. a new file that hasn't been saved or a Save As)
    void Saving(bool bUnnamed) { m_bUnnamed = bUnnamed; }
 
    // Returns the file name that will be used when making a copy of the original file
-   CString GetCopyFileName() const 
-   { 
-      CString strFile(m_strFilePath); 
-      auto pos = strFile.ReverseFind(_T('.')); 
-      if (m_bPreVersion21File)
-      {
-         strFile.Insert(pos, CString(_T("(2.1)")));
-      }
-      else
-      {
-         strFile.Insert(pos, CString(_T("(")) + m_strAppVersion + CString(_T(")")));
-      }
-      return strFile;
-   }
+   CString GetCopyFileName() const;
+
 
    CString GetFileName() const { return m_strFilePath; }
 
+   CString GetAppVersionForComparison(const CString& strAppVersion) const;
+   
    // Returns true if the user should be warned that the file format is going to change
    // lpszPathName is name of file that is going to be saved
    // lpszCurrentAppVersion is the application version of the application right now
-   bool PromptToMakeCopy(LPCTSTR lpszPathName,LPCTSTR lpszCurrentAppVersion)
-   {
-      if (m_bCreatingFromTemplate)
-         return false;
-
-      bool bDifferentVersion = m_bPreVersion21File || m_strAppVersion != CString(lpszCurrentAppVersion) ? true : false;
-
-      if (m_bUnnamed && bDifferentVersion)
-      {
-         return m_strFilePath == CString(lpszPathName); // this is a Save As and the file name isn't changing
-      }
-
-      if ((m_bUnnamed == false || m_bNewFromTemplate == false) && bDifferentVersion)
-      {
-         return true; // this is a save, but not for a new file
-      }
-
-      return false;
-   }
+   bool PromptToMakeCopy(LPCTSTR lpszPathName, LPCTSTR lpszCurrentAppVersion) const;
 
 private:
    void ResetFlags()
@@ -141,7 +115,7 @@ private:
    }
 
    CString m_strFilePath;
-   CString m_strAppVersion;
+   CString m_strAppVersionFromFile;
    bool m_bPreVersion21File; // while was created with Version 2.1 or earlier
    bool m_bUnnamed;
    bool m_bNewFromTemplate;
@@ -204,7 +178,7 @@ public:
    void UpdateProjectCriteriaIndicator();
    void UpdateAnalysisTypeStatusIndicator();
    void OnLoadsLldf();
-   void OnLoadsLldf(pgsTypes::DistributionFactorMethod method,LldfRangeOfApplicabilityAction roaAction);
+   void OnLoadsLldf(pgsTypes::DistributionFactorMethod method,WBFL::LRFD::RangeOfApplicabilityAction roaAction);
    void OnLiveLoads();
 
    virtual BOOL GetStatusBarMessageString(UINT nID,CString& rMessage) const override;
@@ -283,9 +257,9 @@ public:
    const std::map<IDType, IEditLoadRatingOptionsCallback*>& GetEditLoadRatingOptionsCallbacks();
 
    // ISupportLibraryManager
-   virtual CollectionIndexType GetNumberOfLibraryManagers() const override;
-   virtual libLibraryManager* GetLibraryManager(CollectionIndexType num) override;
-   virtual libLibraryManager* GetTargetLibraryManager() override;
+   virtual IndexType GetNumberOfLibraryManagers() const override;
+   virtual WBFL::Library::LibraryManager* GetLibraryManager(IndexType num) override;
+   virtual WBFL::Library::LibraryManager* GetTargetLibraryManager() override;
 
    bool EditBridgeDescription(int nPage);
    bool EditAlignmentDescription(int nPage);
@@ -299,27 +273,27 @@ public:
    bool EditGirderDescription();
    bool EditGirderSegmentDescription();
 
-   // Return true if the edit was completed, otherwise return false (return false if the edit was cancelled)
+   // Return true if the edit was completed, otherwise return false (return false if the edit was canceled)
    virtual bool EditGirderDescription(const CGirderKey& girderKey,int nPage) = 0;
    virtual bool EditGirderSegmentDescription(const CSegmentKey& segmentKey,int nPage) = 0;
    virtual bool EditClosureJointDescription(const CClosureKey& closureKey,int nPage) = 0;
 
    void AddPointLoad(const CPointLoadData& loadData);
-   bool EditPointLoad(CollectionIndexType loadIdx);
+   bool EditPointLoad(IndexType loadIdx);
    bool EditPointLoadByID(LoadIDType loadID);
-   void DeletePointLoad(CollectionIndexType loadIdx);
+   void DeletePointLoad(IndexType loadIdx);
    void DeletePointLoadByID(LoadIDType loadID);
 
    void AddDistributedLoad(const CDistributedLoadData& loadData);
-   bool EditDistributedLoad(CollectionIndexType loadIdx);
+   bool EditDistributedLoad(IndexType loadIdx);
    bool EditDistributedLoadByID(LoadIDType loadID);
-   void DeleteDistributedLoad(CollectionIndexType loadIdx);
+   void DeleteDistributedLoad(IndexType loadIdx);
    void DeleteDistributedLoadByID(LoadIDType loadID);
 
    void AddMomentLoad(const CMomentLoadData& loadData);
-   bool EditMomentLoad(CollectionIndexType loadIdx);
+   bool EditMomentLoad(IndexType loadIdx);
    bool EditMomentLoadByID(LoadIDType loadID);
-   void DeleteMomentLoad(CollectionIndexType loadIdx);
+   void DeleteMomentLoad(IndexType loadIdx);
    void DeleteMomentLoadByID(LoadIDType loadID);
 
    bool EditTimeline();
@@ -434,15 +408,13 @@ protected:
    CComPtr<IDocUnitSystem> m_DocUnitSystem;
    
    virtual CPGSuperPluginMgrBase* CreatePluginManager() = 0;
-   CPGSuperPluginMgrBase* m_pPluginMgr; // manages data importer and exporter plugins
+   CPGSuperPluginMgrBase* m_pPluginMgr; // manages data importer and exporter plug-ins
 
    CSelection m_Selection;
 
    // callback IDs for any status callbacks we register
    StatusCallbackIDType m_scidInformationalError;
    StatusGroupIDType m_StatusGroupID;
-
-   pgsTxnManagerFactory m_TxnMgrFactory;
 
    virtual void LoadToolbarState() override;
    virtual void SaveToolbarState() override;
@@ -491,8 +463,8 @@ protected:
 
    virtual CString GetToolbarSectionName() override;
 
-   virtual void CreateReportView(CollectionIndexType rptIdx,BOOL bPrompt) override;
-   virtual void CreateGraphView(CollectionIndexType graphIdx) override;
+   virtual void CreateReportView(IndexType rptIdx,BOOL bPrompt) override;
+   virtual void CreateGraphView(IndexType graphIdx) override;
 
    virtual void DeleteContents() override;
 
@@ -547,7 +519,7 @@ protected:
    afx_msg void OnAutoCalc();
    afx_msg void OnUpdateAutoCalc(CCmdUI* pCmdUI);
    afx_msg void OnEditTimeline();
-   afx_msg void OnUpdateCopyGirderPropsTb(CCmdUI* pCmdUI); // Tb means toolbar
+   afx_msg void OnUpdateCopyGirderPropsTb(CCmdUI* pCmdUI); // Tb means tool bar
    afx_msg BOOL OnCopyGirderPropsTb(NMHDR* pnmtb,LRESULT* plr);
    afx_msg void OnUpdateCopyPierPropsTb(CCmdUI* pCmdUI);
    afx_msg BOOL OnCopyPierPropsTb(NMHDR* pnmtb,LRESULT* plr);
@@ -571,6 +543,7 @@ public:
    bool DoLoadMasterLibrary(const CString& rPath);
 
    bool DoEditBearing();
+   bool DoEditHaunch();
 
    void InitProjectProperties();
 

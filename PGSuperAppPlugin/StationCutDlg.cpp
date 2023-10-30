@@ -26,7 +26,7 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "StationCutDlg.h"
-#include <UnitMgt\UnitMgt.h>
+#include <Units\Units.h>
 #include <ostream>
 
 #ifdef _DEBUG
@@ -77,7 +77,7 @@ void CStationCutDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CStationCutDlg) 
-	DDX_Station(pDX,IDC_VALUE,m_Value, m_bSIUnits,unitMeasure::Feet,unitMeasure::Meter);
+	DDX_Station(pDX,IDC_VALUE,m_Value, m_bSIUnits,WBFL::Units::Measure::Feet,WBFL::Units::Measure::Meter);
 
 	DDV_MinMaxDouble(pDX, m_Value, m_LowerBound, m_UpperBound);
 	//}}AFX_DATA_MAP
@@ -102,12 +102,12 @@ BOOL CStationCutDlg::OnInitDialog()
 
    CComPtr<IStation> station;
    station.CoCreateInstance(CLSID_Station);
-   station->put_Value(::ConvertFromSysUnits(m_LowerBound, m_bSIUnits ? unitMeasure::Meter : unitMeasure::Feet) );
+   station->put_Value(WBFL::Units::ConvertFromSysUnits(m_LowerBound, m_bSIUnits ? WBFL::Units::Measure::Meter : WBFL::Units::Measure::Feet) );
 
    CComBSTR bstrLowerBound;
    station->AsString(m_bSIUnits ? umSI : umUS, VARIANT_FALSE,&bstrLowerBound);
 
-   station->put_Value(::ConvertFromSysUnits(m_UpperBound, m_bSIUnits ? unitMeasure::Meter : unitMeasure::Feet) );
+   station->put_Value(WBFL::Units::ConvertFromSysUnits(m_UpperBound, m_bSIUnits ? WBFL::Units::Measure::Meter : WBFL::Units::Measure::Feet) );
    CComBSTR bstrUpperBound;
    station->AsString(m_bSIUnits ? umSI : umUS, VARIANT_FALSE,&bstrUpperBound);
 

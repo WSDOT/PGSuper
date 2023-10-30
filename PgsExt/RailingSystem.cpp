@@ -24,7 +24,7 @@
 #include <PgsExt\RailingSystem.h>
 #include <WbflAtlExt.h>
 #include <PGSuperException.h>
-#include <Material\Concrete.h>
+#include <Materials/SimpleConcrete.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -52,21 +52,21 @@ CRailingSystem::CRailingSystem()
    bBarriersOnTopOfSidewalk = false;
    bSidewalkStructurallyContinuous = false;
 
-   Width      = ::ConvertToSysUnits(6.0,unitMeasure::Feet);
-   LeftDepth  = ::ConvertToSysUnits(6.0,unitMeasure::Inch);
-   RightDepth = ::ConvertToSysUnits(6.0,unitMeasure::Inch);
+   Width      = WBFL::Units::ConvertToSysUnits(6.0,WBFL::Units::Measure::Feet);
+   LeftDepth  = WBFL::Units::ConvertToSysUnits(6.0,WBFL::Units::Measure::Inch);
+   RightDepth = WBFL::Units::ConvertToSysUnits(6.0,WBFL::Units::Measure::Inch);
 
    Concrete.Type    = pgsTypes::Normal;
    Concrete.bHasInitial     = false;
    Concrete.Fci             = -99999; // not used
    Concrete.Eci             = -99999; // not used
    Concrete.bUserEci        = false;  // not used
-   Concrete.Fc              = ::ConvertToSysUnits(4.0,unitMeasure::KSI);
+   Concrete.Fc              = WBFL::Units::ConvertToSysUnits(4.0,WBFL::Units::Measure::KSI);
    Concrete.Ec              = 0;
    Concrete.bUserEc         = false;
-   Concrete.StrengthDensity = ::ConvertToSysUnits(155.0,unitMeasure::LbmPerFeet3);
-   Concrete.WeightDensity   = ::ConvertToSysUnits(155.0,unitMeasure::LbmPerFeet3);
-   Concrete.MaxAggregateSize= ::ConvertToSysUnits(0.75,unitMeasure::Inch);
+   Concrete.StrengthDensity = WBFL::Units::ConvertToSysUnits(155.0,WBFL::Units::Measure::LbmPerFeet3);
+   Concrete.WeightDensity   = WBFL::Units::ConvertToSysUnits(155.0,WBFL::Units::Measure::LbmPerFeet3);
+   Concrete.MaxAggregateSize= WBFL::Units::ConvertToSysUnits(0.75,WBFL::Units::Measure::Inch);
    Concrete.EcK1            = 1.0;
    Concrete.EcK2            = 1.0;
    Concrete.CreepK1         = 1.0;
@@ -77,7 +77,7 @@ CRailingSystem::CRailingSystem()
    Concrete.Fct             = 0.0;
 
    Concrete.bACIUserParameters = false;
-   Concrete.A                  = ::ConvertToSysUnits(4.0,unitMeasure::Day);
+   Concrete.A                  = WBFL::Units::ConvertToSysUnits(4.0,WBFL::Units::Measure::Day);
    Concrete.B                  = 0.85;
    Concrete.CureMethod         = pgsTypes::Moist;
    Concrete.ACI209CementType   = pgsTypes::TypeI;
@@ -274,7 +274,7 @@ HRESULT CRailingSystem::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
             var.vt = VT_BSTR;
             hr = pStrLoad->get_Property(_T("Type"),&var);
-            Concrete.Type = (pgsTypes::ConcreteType)lrfdConcreteUtil::GetTypeFromTypeName(OLE2T(var.bstrVal));
+            Concrete.Type = (pgsTypes::ConcreteType)WBFL::LRFD::ConcreteUtil::GetTypeFromTypeName(OLE2T(var.bstrVal));
 
             var.vt = VT_R8;
             hr = pStrLoad->get_Property(_T("fc"),&var);
@@ -380,7 +380,7 @@ HRESULT CRailingSystem::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
    // added in version 3, updated version 4, removed version 5, replaced with concrete object
    //pStrSave->BeginUnit(_T("Concrete"),1.0);
-   //   pStrSave->put_Property(_T("Type"),CComVariant( lrfdConcreteUtil::GetTypeName((matConcrete::Type)ConcreteType,false).c_str() ));
+   //   pStrSave->put_Property(_T("Type"),CComVariant( WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)ConcreteType,false).c_str() ));
    //   pStrSave->put_Property(_T("fc"),CComVariant(fc));
    //   pStrSave->put_Property(_T("UserEc"),CComVariant(bUserEc));
    //   if ( bUserEc )

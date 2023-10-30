@@ -234,13 +234,13 @@ public:
 // IPretensionForce
 public:
    virtual Float64 GetPjackMax(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType,StrandIndexType nStrands) const override;
-   virtual Float64 GetPjackMax(const CSegmentKey& segmentKey,const matPsStrand& strand,StrandIndexType nStrands) const override;
+   virtual Float64 GetPjackMax(const CSegmentKey& segmentKey,const WBFL::Materials::PsStrand& strand,StrandIndexType nStrands) const override;
 
-   virtual Float64 GetTransferLength(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const override;
-   virtual const std::shared_ptr<pgsTransferLength> GetTransferLengthDetails(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const override;
-   virtual Float64 GetTransferLengthAdjustment(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG* pConfig=nullptr) const override;
-   virtual Float64 GetTransferLengthAdjustment(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, StrandIndexType strandIdx, const GDRCONFIG* pConfig = nullptr) const override;
-   virtual void ReportTransferLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const override;
+   virtual Float64 GetTransferLength(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, pgsTypes::TransferLengthType xferType, const GDRCONFIG* pConfig = nullptr) const override;
+   virtual const std::shared_ptr<pgsTransferLength> GetTransferLengthDetails(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, pgsTypes::TransferLengthType xferType, const GDRCONFIG* pConfig = nullptr) const override;
+   virtual Float64 GetTransferLengthAdjustment(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType, pgsTypes::TransferLengthType xferType,const GDRCONFIG* pConfig=nullptr) const override;
+   virtual Float64 GetTransferLengthAdjustment(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, pgsTypes::TransferLengthType xferType, StrandIndexType strandIdx, const GDRCONFIG* pConfig = nullptr) const override;
+   virtual void ReportTransferLengthDetails(const CSegmentKey& segmentKey, pgsTypes::TransferLengthType xferType, rptChapter* pChapter) const override;
 
    virtual Float64 GetDevelopmentLength(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, bool bDebonded, const GDRCONFIG* pConfig=nullptr) const override;
    virtual const std::shared_ptr<pgsDevelopmentLength> GetDevelopmentLengthDetails(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, bool bDebonded,const GDRCONFIG* pConfig=nullptr) const override;
@@ -248,7 +248,7 @@ public:
    virtual Float64 GetDevelopmentLengthAdjustment(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType, bool bDebonded, const GDRCONFIG* pConfig=nullptr) const override;
    virtual Float64 GetDevelopmentLengthAdjustment(const pgsPointOfInterest& poi,StrandIndexType strandIdx,pgsTypes::StrandType strandType,Float64 fps, Float64 fpe,const GDRCONFIG* pConfig=nullptr) const override;
 
-   virtual Float64 GetHoldDownForce(const CSegmentKey& segmentKey,bool bTotalForce=true,Float64* pSlope=nullptr,pgsPointOfInterest* pPoi=nullptr,const GDRCONFIG* pConfig=nullptr) const override;
+   virtual Float64 GetHoldDownForce(const CSegmentKey& segmentKey,HoldDownCriteria::Type holdDownForceType = HoldDownCriteria::Type::Total,Float64* pSlope=nullptr,pgsPointOfInterest* pPoi=nullptr,const GDRCONFIG* pConfig=nullptr) const override;
 
    virtual Float64 GetHorizHarpedStrandForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig = nullptr) const override;
 
@@ -257,8 +257,8 @@ public:
    virtual Float64 GetPrestressForcePerStrand(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, const GDRCONFIG* pConfig = nullptr) const override;
    virtual Float64 GetPrestressForcePerStrand(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, bool bIncludeElasticEffects) const override;
 
-   virtual Float64 GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig = nullptr) const override;
-   virtual Float64 GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,bool bIncludeElasticEffects) const override;
+   virtual Float64 GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime, pgsTypes::TransferLengthType xferLengthType,const GDRCONFIG* pConfig = nullptr) const override;
+   virtual Float64 GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,bool bIncludeElasticEffects, pgsTypes::TransferLengthType xferLengthType) const override;
    virtual Float64 GetEffectivePrestress(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, const GDRCONFIG* pConfig = nullptr) const override;
    virtual Float64 GetEffectivePrestress(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, bool bIncludeElasticEffects) const override;
 
@@ -275,9 +275,9 @@ public:
 // IPosttensionForce
 public:
    virtual Float64 GetGirderTendonPjackMax(const CGirderKey& girderKey,StrandIndexType nStrands) const override;
-   virtual Float64 GetGirderTendonPjackMax(const CGirderKey& girderKey,const matPsStrand& strand,StrandIndexType nStrands) const override;
+   virtual Float64 GetGirderTendonPjackMax(const CGirderKey& girderKey,const WBFL::Materials::PsStrand& strand,StrandIndexType nStrands) const override;
    virtual Float64 GetSegmentTendonPjackMax(const CSegmentKey& segmentKey, StrandIndexType nStrands) const override;
-   virtual Float64 GetSegmentTendonPjackMax(const CSegmentKey& segmentKey, const matPsStrand& strand, StrandIndexType nStrands) const override;
+   virtual Float64 GetSegmentTendonPjackMax(const CSegmentKey& segmentKey, const WBFL::Materials::PsStrand& strand, StrandIndexType nStrands) const override;
 
    virtual Float64 GetGirderTendonInitialForce(const pgsPointOfInterest& poi,DuctIndexType ductIdx,bool bIncludeAnchorSet) const override;
    virtual Float64 GetGirderTendonInitialStress(const pgsPointOfInterest& poi,DuctIndexType ductIdx,bool bIncludeAnchorSet) const override;
@@ -300,7 +300,7 @@ public:
 
 // ILiveLoadDistributionFactors
 public:
-   virtual void VerifyDistributionFactorRequirements(const pgsPointOfInterest& poi) const override;
+   virtual Int32 VerifyDistributionFactorRequirements(const pgsPointOfInterest& poi) const override;
    virtual void TestRangeOfApplicability(const CSpanKey& spanKey) const override;
    virtual Float64 GetMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState limitState) const override;
    virtual Float64 GetNegMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState limitState) const override;
@@ -529,11 +529,11 @@ private:
 
    DECLARE_LOGFILE;
 
-   void CheckCurvatureRequirements(const pgsPointOfInterest& poi) const;
-   void CheckGirderStiffnessRequirements(const pgsPointOfInterest& poi) const;
-   void CheckParallelGirderRequirements(const pgsPointOfInterest& poi) const;
+   Int32 CheckCurvatureRequirements(const pgsPointOfInterest& poi) const;
+   Int32 CheckGirderStiffnessRequirements(const pgsPointOfInterest& poi) const;
+   Int32 CheckParallelGirderRequirements(const pgsPointOfInterest& poi) const;
 
-   Float64 GetPrestressForcePerStrand(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, const GDRCONFIG* pConfig, bool bIncludeElasticEffects) const;
+   Float64 GetPrestressForcePerStrand(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, bool bIncludeElasticEffects, const GDRCONFIG* pConfig) const;
 };
 
 #endif //__ENGAGENT_H_

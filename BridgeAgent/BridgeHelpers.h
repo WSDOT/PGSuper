@@ -46,11 +46,11 @@ GirderIDType GetSuperstructureMemberID(const CGirderKey& girderKey);
 CSegmentKey GetSegmentKey(GirderIDType gdrID);
 
 // Returns the ID of a segment layout line in the Bridge Geometry model given a girder/segment index pair
-LineIDType GetGirderSegmentLineID(GroupIndexType grpIdx,GirderIndexType gdrIdx,SegmentIndexType segIdx);
-LineIDType GetGirderSegmentLineID(const CSegmentKey& segmentKey);
+IDType GetGirderSegmentLineID(GroupIndexType grpIdx,GirderIndexType gdrIdx,SegmentIndexType segIdx);
+IDType GetGirderSegmentLineID(const CSegmentKey& segmentKey);
 
 // Returns the ID of a girder layout line in the Bridge Geometry model given a span/girder index pair
-LineIDType GetGirderLineID(const CSpanKey& spanKey);
+IDType GetGirderLineID(const CSpanKey& spanKey);
 
 // Gets the superstructure member ID for a girder and for the girder to the left and right of it
 // Can be called prior to bridge model validation

@@ -58,7 +58,7 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
    DEFINE_UV_PROTOTYPE( time,        pDisplayUnits->GetWholeDaysUnit(),        false );
 
-   scalar.SetFormat( sysNumericFormatTool::Fixed );
+   scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Fixed );
    scalar.SetWidth(6); // -99.9
    scalar.SetPrecision(3);
    scalar.SetTolerance(1.0e-6);
@@ -68,12 +68,12 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
 {
    GET_IFACE2(pBroker, ILossParameters, pLossParameters);
 
-   pgsTypes::LossMethod loss_method = pLossParameters->GetLossMethod();
+   PrestressLossCriteria::LossMethodType loss_method = pLossParameters->GetLossMethod();
 
    GET_IFACE2(pBroker, ISegmentData, pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
    bool bPTTempStrand = pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned ? true : false;
-   bool bUHPC = pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC ? true : false;
+   bool bPCI_UHPC = pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC ? true : false;
 
    bool bIgnoreInitialRelaxation = pDetails->pLosses->IgnoreInitialRelaxation();
 
@@ -84,7 +84,7 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
    // Create and configure the table
    ColumnIndexType numColumns = 12;
 
-   if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion())
+   if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition())
    {
       numColumns++;
    }
@@ -94,7 +94,7 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
       numColumns++;
    }
 
-   if (bUHPC)
+   if (bPCI_UHPC)
    {
       numColumns++;
    }
@@ -112,7 +112,7 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
    CEffectivePrestressTable* table = new CEffectivePrestressTable( numColumns, pDisplayUnits );
    rptStyleManager::ConfigureTable(table);
 
-   table->m_bUHPC = bUHPC;
+   table->m_bPCI_UHPC = bPCI_UHPC;
    table->m_bPTTempStrand = bPTTempStrand;
    table->m_bTempStrands = bTempStrands;
    table->m_bIgnoreInitialRelaxation = bIgnoreInitialRelaxation;
@@ -127,7 +127,7 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
 
 
    GET_IFACE2(pBroker,ILoadFactors,pLoadFactors);
-   table->m_gLL_Fatigue = pLoadFactors->GetLoadFactors()->GetLLIMMax(lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI);
+   table->m_gLL_Fatigue = pLoadFactors->GetLoadFactors()->GetLLIMMax(WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI);
    table->m_gLL_ServiceI   = pLoadFactors->GetLoadFactors()->GetLLIMMax(pgsTypes::ServiceI);
    table->m_gLL_ServiceIII = pLoadFactors->GetLoadFactors()->GetLLIMMax(pgsTypes::ServiceIII);
 
@@ -143,7 +143,7 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
    *pParagraph << _T("Effective prestress listed is not adjusted to account for the gradual buildup of the strand force over the transfer length (5.9.4.3.1)") << rptNewLine;
-   if (  loss_method == pgsTypes::AASHTO_REFINED || loss_method == pgsTypes::WSDOT_REFINED  )
+   if (  loss_method == PrestressLossCriteria::LossMethodType::AASHTO_REFINED || loss_method == PrestressLossCriteria::LossMethodType::WSDOT_REFINED  )
    {
       // delta fpT
       *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pT")) << _T(" = ");
@@ -154,7 +154,7 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
 
       *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pES")) << _T(" + ");
 
-      if (bUHPC)
+      if (bPCI_UHPC)
       {
          *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pAS")) << _T(" + ");
       }
@@ -182,7 +182,7 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
       // fpe with live load service I
       *pParagraph << RPT_FPE << _T(" = ") << RPT_FPJ << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pT"));
       *pParagraph << _T(" + ") << _T("(") << os1.str().c_str() << _T(")") << symbol(DELTA) << RPT_STRESS(_T("pLL"));
-      if (lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion())
+      if (WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition())
       {
          *pParagraph << Sub(_T("-Design"));
       }
@@ -191,7 +191,7 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
       // fpe with live load service III
       *pParagraph << RPT_FPE << _T(" = ") << RPT_FPJ << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pT"));
       *pParagraph << _T(" + ") << _T("(") << os3.str().c_str() << _T(")") << symbol(DELTA) << RPT_STRESS(_T("pLL"));
-      if (lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion())
+      if (WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition())
       {
          *pParagraph << Sub(_T("-Design"));
       }
@@ -199,7 +199,7 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
 
       *pParagraph << RPT_FPE << _T(" = ") << RPT_FPJ << _T(" - ") << symbol(DELTA) << RPT_STRESS(_T("pT"));
       *pParagraph << _T(" + ") << _T("(") << os2.str().c_str() << _T(")") << symbol(DELTA) << RPT_STRESS(_T("pLL"));
-      *pParagraph << _T(" (") << GetLimitStateString(lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI)  << _T(")") << rptNewLine;
+      *pParagraph << _T(" (") << GetLimitStateString(WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI)  << _T(")") << rptNewLine;
    }
    else
    {
@@ -217,7 +217,7 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
 
    (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-   if (bUHPC)
+   if (bPCI_UHPC)
    {
       (*table)(0, col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pAS")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
    }
@@ -240,7 +240,7 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
    (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pT")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << COLHDR(RPT_FPE, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-   if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims)
+   if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims)
    {
       (*table)(0, col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pLL")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
    }
@@ -252,7 +252,7 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
 
    (*table)(0,col++) << COLHDR(RPT_FPE << rptNewLine << _T("with Live Load") << rptNewLine << GetLimitStateString(pgsTypes::ServiceI), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(0,col++) << COLHDR(RPT_FPE << rptNewLine << _T("with Live Load") << rptNewLine << GetLimitStateString(pgsTypes::ServiceIII), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   (*table)(0, col++) << COLHDR(RPT_FPE << rptNewLine << _T("with Live Load") << rptNewLine << GetLimitStateString(lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*table)(0, col++) << COLHDR(RPT_FPE << rptNewLine << _T("with Live Load") << rptNewLine << GetLimitStateString(WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI), rptStressUnitTag, pDisplayUnits->GetStressUnit());
 
    return table;
 }
@@ -285,7 +285,7 @@ void CEffectivePrestressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
    pProductForces->GetLiveLoadMoment(liveLoadIntervalIdx, pgsTypes::lltDesign, poi, bat, true/*include impact*/, true/*include LLDF*/, &Mmin, &MmaxDesign);
 
    Float64 MmaxFatigue;
-   if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims)
+   if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims)
    {
       MmaxFatigue = MmaxDesign;
    }
@@ -297,7 +297,8 @@ void CEffectivePrestressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
    GET_IFACE2(pBroker, ISpecification, pSpec);
    GET_IFACE2(pBroker, ILibrary, pLibrary);
    const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
-   Float64 K_liveload = pSpecEntry->GetLiveLoadElasticGain();
+   const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
+   Float64 K_liveload = prestress_loss_criteria.LiveLoadElasticGain;
 
    Float64 M_Design = K_liveload*MmaxDesign;
    Float64 M_Fatigue = K_liveload*MmaxFatigue;
@@ -318,9 +319,9 @@ void CEffectivePrestressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
    }
 
    Float64 fpAS = 0;
-   if (m_bUHPC)
+   if (m_bPCI_UHPC)
    {
-      const std::shared_ptr<const lrfdPCIUHPCLosses> pLosses = std::dynamic_pointer_cast<const lrfdPCIUHPCLosses>(pDetails->pLosses);
+      const std::shared_ptr<const WBFL::LRFD::PCIUHPCLosses> pLosses = std::dynamic_pointer_cast<const WBFL::LRFD::PCIUHPCLosses>(pDetails->pLosses);
       ATLASSERT(pLosses.use_count() == pDetails->pLosses.use_count());
       fpAS = pLosses->PermanentStrand_AutogenousShrinkage();
    }
@@ -348,7 +349,7 @@ void CEffectivePrestressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
    
    (*this)(row+rowOffset,col++) << stress.SetValue(fpES);
 
-   if (m_bUHPC)
+   if (m_bPCI_UHPC)
    {
       (*this)(row + rowOffset, col++) << stress.SetValue(fpAS);
    }
@@ -371,7 +372,7 @@ void CEffectivePrestressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
    (*this)(row+rowOffset,col++) << stress.SetValue(fpe);
 
 
-   if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims)
+   if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims)
    {
       (*this)(row+rowOffset, col++) << stress.SetValue(fpLL_Design);
    }

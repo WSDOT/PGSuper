@@ -27,13 +27,13 @@
 #include <IFace\Intervals.h>
 #include <IFace\Project.h>
 #include <IFace\PrestressForce.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 #include <EAF\EAFDisplayUnits.h>
 
 #include <PgsExt\PoiKey.h>
 #include <PgsExt\PTData.h>
 
-#include <Math\LinFunc2d.h>
+#include <Math\LinearFunction.h>
 
 #include <Plugins\CLSID.h>
 

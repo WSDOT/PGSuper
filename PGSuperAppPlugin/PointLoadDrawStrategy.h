@@ -35,7 +35,7 @@ DEFINE_GUID(IID_iPointLoadDrawStrategy,
 
 interface iPointLoadDrawStrategy : public IUnknown
 {
-  STDMETHOD_(void,Init)(iPointDisplayObject* pDO, IBroker* pBroker, const CPointLoadData& load, CollectionIndexType loadIndex, 
+  STDMETHOD_(void,Init)(iPointDisplayObject* pDO, IBroker* pBroker, const CPointLoadData& load, IndexType loadIndex, 
                         Float64 spanLength, Float64 maxMagnitude, COLORREF color) PURE;
 };
 

@@ -48,14 +48,14 @@ public:
    CPrincipalWebStressDetailsChapterBuilder(bool bSelect = true);
 
    //------------------------------------------------------------------------
-   virtual LPCTSTR GetName() const;
+   virtual LPCTSTR GetName() const override;
    
 
    //------------------------------------------------------------------------
-   virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const;
+   virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
 
    //------------------------------------------------------------------------
-   virtual CChapterBuilder* Clone() const;
+   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 
 protected:
    void BuildIncrementalStressTables(rptChapter* pChapter, IBroker* pBroker, IntervalIndexType intervalIdx, PoiList vPoi, const std::vector<pgsTypes::ProductForceType>& vLoads, IEAFDisplayUnits* pDisplayUnits) const;

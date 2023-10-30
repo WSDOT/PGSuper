@@ -48,7 +48,6 @@
 #include <WBFLSTL.h>
 
 #include <WBFLGeometry.h>
-#include <WBFLSections.h>
 #include <WBFLGenericBridge.h>
 #include <WBFLGenericBridgeTools.h>
 
@@ -156,10 +155,10 @@ m_bUseDifferentHarpedGridAtEnds(true),
 m_HarpingPointLocation(0.25),
 m_HarpPointMeasure(mtFractionOfGirderLength),
 m_bMinHarpingPointLocation(false),
-m_MinHarpingPointLocation(::ConvertToSysUnits(5.0,unitMeasure::Feet)),
+m_MinHarpingPointLocation(WBFL::Units::ConvertToSysUnits(5.0,WBFL::Units::Measure::Feet)),
 m_HarpPointReference(mlBearing),
-m_LongitudinalBarType(matRebar::A615),
-m_LongitudinalBarGrade(matRebar::Grade60),
+m_LongitudinalBarType(WBFL::Materials::Rebar::Type::A615),
+m_LongitudinalBarGrade(WBFL::Materials::Rebar::Grade::Grade60),
 m_bOddNumberOfHarpedStrands(true),
 m_AdjustableStrandType(pgsTypes::asHarped), // Adjustable strand type - harp was only option before 21
 // debonding criteria
@@ -172,16 +171,16 @@ m_bCheckMaxNumDebondedStrandsPerSection(false),
 m_MaxDebondedStrandsPerSection(0.40),
 m_MinDebondLengthDB(60),
 m_bCheckMinDebondLength(false),
-m_MinDebondLength(::ConvertToSysUnits(3.0,unitMeasure::Feet)), // not aashto, but reasonable
+m_MinDebondLength(WBFL::Units::ConvertToSysUnits(3.0,WBFL::Units::Measure::Feet)), // not aashto, but reasonable
 m_bCheckDebondingSymmetry(true),
 m_bCheckAdjacentDebonding(true),
 m_bCheckDebondingInWebWidthProjections(true),
 m_MaxDebondLengthBySpanFraction(0.20), //  LRFD 9th Edition, default to 20%
 m_MaxDebondLengthByHardDistance(-1.0),
-m_MinFilletValue(::ConvertToSysUnits(0.75,unitMeasure::Inch)),
+m_MinFilletValue(WBFL::Units::ConvertToSysUnits(0.75,WBFL::Units::Measure::Inch)),
 m_DoCheckMinHaunchAtBearingLines(false),
 m_MinHaunchAtBearingLines(0.0),
-m_ExcessiveSlabOffsetWarningTolerance(::ConvertToSysUnits(0.25,unitMeasure::Inch)),
+m_ExcessiveSlabOffsetWarningTolerance(WBFL::Units::ConvertToSysUnits(0.25,WBFL::Units::Measure::Inch)),
 m_DragCoefficient(2.2),
 m_PrecamberLimit(80),
 m_DoReportBearingElevationsAtGirderEdges(false),
@@ -251,29 +250,30 @@ m_pCompatibilityData(nullptr)
    // Set some defaults for shear design container values
    // Bar combo 2-#4's, 2-#5's and 2-#6's
    StirrupSizeBarCombo cbo;
-   cbo.Size = matRebar::bs4;
+   cbo.Size = WBFL::Materials::Rebar::Size::bs4;
    cbo.NLegs = 2.0;
    m_StirrupSizeBarComboColl.push_back(cbo);
-   cbo.Size = matRebar::bs5;
+   cbo.Size = WBFL::Materials::Rebar::Size::bs5;
    m_StirrupSizeBarComboColl.push_back(cbo);
-   cbo.Size = matRebar::bs6;
+   cbo.Size = WBFL::Materials::Rebar::Size::bs6;
    m_StirrupSizeBarComboColl.push_back(cbo);
 
    // Spacings
-   m_AvailableBarSpacings.push_back(::ConvertToSysUnits(3.0, unitMeasure::Inch));
-   m_AvailableBarSpacings.push_back(::ConvertToSysUnits(4.0, unitMeasure::Inch));
-   m_AvailableBarSpacings.push_back(::ConvertToSysUnits(6.0, unitMeasure::Inch));
-   m_AvailableBarSpacings.push_back(::ConvertToSysUnits(9.0, unitMeasure::Inch));
-   m_AvailableBarSpacings.push_back(::ConvertToSysUnits(12.0, unitMeasure::Inch));
-   m_AvailableBarSpacings.push_back(::ConvertToSysUnits(18.0, unitMeasure::Inch));
+   m_AvailableBarSpacings.push_back(WBFL::Units::ConvertToSysUnits(3.0, WBFL::Units::Measure::Inch));
+   m_AvailableBarSpacings.push_back(WBFL::Units::ConvertToSysUnits(4.0, WBFL::Units::Measure::Inch));
+   m_AvailableBarSpacings.push_back(WBFL::Units::ConvertToSysUnits(6.0, WBFL::Units::Measure::Inch));
+   m_AvailableBarSpacings.push_back(WBFL::Units::ConvertToSysUnits(9.0, WBFL::Units::Measure::Inch));
+   m_AvailableBarSpacings.push_back(WBFL::Units::ConvertToSysUnits(12.0, WBFL::Units::Measure::Inch));
+   m_AvailableBarSpacings.push_back(WBFL::Units::ConvertToSysUnits(18.0, WBFL::Units::Measure::Inch));
 
-   m_MaxSpacingChangeInZone          = ::ConvertToSysUnits(6.0,unitMeasure::Inch);
+   m_MaxSpacingChangeInZone          = WBFL::Units::ConvertToSysUnits(6.0,WBFL::Units::Measure::Inch);
    m_MaxShearCapacityChangeInZone    = 0.50;
    m_MinZoneLengthSpacings           = 3;
-   m_MinZoneLengthLength             = ::ConvertToSysUnits(12.0,unitMeasure::Inch);
+   m_MinZoneLengthLength             = WBFL::Units::ConvertToSysUnits(12.0,WBFL::Units::Measure::Inch);
    m_DoExtendBarsIntoDeck            = true;
    m_DoBarsActAsConfinement          = true;
    m_LongShearCapacityIncreaseMethod   = isAddingRebar;
+   m_InterfaceShearWidthReduction = 0.0;
    
    InitCLSIDMap();
 
@@ -281,7 +281,7 @@ m_pCompatibilityData(nullptr)
 }
 
 GirderLibraryEntry::GirderLibraryEntry(const GirderLibraryEntry& rOther) :
-libLibraryEntry(rOther)
+WBFL::Library::LibraryEntry(rOther)
 {
    m_pCompatibilityData = nullptr;
    if (rOther.m_pCompatibilityData != nullptr)
@@ -289,7 +289,7 @@ libLibraryEntry(rOther)
       m_pCompatibilityData = new pgsCompatibilityData(rOther.m_pCompatibilityData);
    }
    InitCLSIDMap();
-   MakeCopy(rOther);
+   CopyValuesAndAttributes(rOther);
 }
 
 GirderLibraryEntry::~GirderLibraryEntry()
@@ -369,7 +369,7 @@ GirderLibraryEntry& GirderLibraryEntry::operator= (const GirderLibraryEntry& rOt
 {
    if( this != &rOther )
    {
-      MakeAssignment(rOther);
+      CopyValuesAndAttributes(rOther);
    }
 
    return *this;
@@ -377,7 +377,7 @@ GirderLibraryEntry& GirderLibraryEntry::operator= (const GirderLibraryEntry& rOt
 
 //======================== OPERATIONS =======================================
 
-bool GirderLibraryEntry::SaveMe(sysIStructuredSave* pSave)
+bool GirderLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
 {
    USES_CONVERSION;
    pSave->BeginUnit(_T("GirderLibraryEntry"), CURRENT_VERSION);
@@ -616,9 +616,8 @@ bool GirderLibraryEntry::SaveMe(sysIStructuredSave* pSave)
       pSave->EndUnit();
    }
 
-   for ( DiaphragmLayoutRules::const_iterator itd = m_DiaphragmLayoutRules.begin(); itd != m_DiaphragmLayoutRules.end(); itd++ )
+   for ( const auto& dlr : m_DiaphragmLayoutRules)
    {
-      const DiaphragmLayoutRule& dlr = *itd;
       pSave->BeginUnit(_T("DiaphragmLayoutRule"),2.0);
 
       pSave->Property(_T("Description"),dlr.Description.c_str());
@@ -646,23 +645,23 @@ bool GirderLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 
 
    // Added in version 20 - shear design data
-   pSave->BeginUnit(_T("ShearDesign"),1.0);
+   pSave->BeginUnit(_T("ShearDesign"),2.0);
    {
       pSave->Property(_T("StirrupSizeBarComboCollSize"),(long)m_StirrupSizeBarComboColl.size());
       pSave->BeginUnit(_T("StirrupSizeBarComboColl"),1.0);
-         for(StirrupSizeBarComboIter ssiter=m_StirrupSizeBarComboColl.begin(); ssiter!=m_StirrupSizeBarComboColl.end(); ssiter++)
+         for(const auto& stirrup_size : m_StirrupSizeBarComboColl)
          {
-            pSave->Property(_T("BarSize"),(long)ssiter->Size);
-            pSave->Property(_T("NLegs"),(long)ssiter->NLegs);
+            pSave->Property(_T("BarSize"),(long)stirrup_size.Size);
+            pSave->Property(_T("NLegs"),(long)stirrup_size.NLegs);
 
          }
       pSave->EndUnit(); // StirrupSizeBarComboColl
 
       pSave->Property(_T("NumAvailableBarSpacings"),(long)m_AvailableBarSpacings.size());
       pSave->BeginUnit(_T("AvailableBarSpacings"),1.0);
-         for(std::vector<Float64>::iterator bsiter=m_AvailableBarSpacings.begin(); bsiter!=m_AvailableBarSpacings.end(); bsiter++)
+         for(const auto& spacing : m_AvailableBarSpacings)
          {
-               pSave->Property(_T("Spacing"), *bsiter);
+               pSave->Property(_T("Spacing"), spacing);
          }
       pSave->EndUnit(); // AvailableBarSpacings
 
@@ -675,6 +674,7 @@ bool GirderLibraryEntry::SaveMe(sysIStructuredSave* pSave)
       pSave->Property(_T("DoBarsProvideSplittingCapacity"), true); // Same note as IsTopFlangeRoughened above
       pSave->Property(_T("DoBarsActAsConfinement"), m_DoBarsActAsConfinement);
       pSave->Property(_T("LongShearCapacityIncreaseMethod"), (long)m_LongShearCapacityIncreaseMethod);
+      pSave->Property(_T("InterfaceShearWidthReduction"), m_InterfaceShearWidthReduction); // added in version 2 of ShearDesign data block
    }
    pSave->EndUnit(); // ShearDesign
 
@@ -745,7 +745,7 @@ std::_tstring GirderLibraryEntry::TranslateCLSID(const std::_tstring& strCLSID)
    return strCLSID;
 }
 
-bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
+bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 {
    USES_CONVERSION;
 
@@ -827,7 +827,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             CString strMsg;
             strMsg.Format(_T("Unable to create the \"%s\" section, published by %s.\n\nError code %#x\n%s\nContact the publisher for assistance.\n%s"), strSectionName.c_str(), strPublisher.c_str(), hr, errorMsgBuffer, strPublisherContactInfo.c_str());
 
-            sysXStructuredLoad ex(sysXStructuredLoad::UserDefined,_T(__FILE__),__LINE__);
+            WBFL::System::XStructuredLoad ex(WBFL::System::XStructuredLoad::UserDefined,_T(__FILE__),__LINE__);
             ex.SetExtendedMessage(strMsg);
 
             LocalFree(errorMsgBuffer);
@@ -1172,7 +1172,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
-         lrfdRebarPool::MapOldRebarKey(size,legacy.m_StirrupBarGrade,legacy.m_StirrupBarType,legacy.m_ConfinementBarSize);
+         WBFL::LRFD::RebarPool::MapOldRebarKey(size,legacy.m_StirrupBarGrade,legacy.m_StirrupBarType,legacy.m_ConfinementBarSize);
       }
       else if (version == 18)
       {
@@ -1183,7 +1183,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
-         legacy.m_ConfinementBarSize = matRebar::Size(value);
+         legacy.m_ConfinementBarSize = WBFL::Materials::Rebar::Size(value);
       }
 
       if ( version < 19 )
@@ -1273,8 +1273,8 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
          DiaphragmLayoutRule rule1;
          rule1.Description = _T("40-80ft");
-         rule1.MinSpan = ::ConvertToSysUnits(40,unitMeasure::Feet);
-         rule1.MaxSpan = ::ConvertToSysUnits(80,unitMeasure::Feet);
+         rule1.MinSpan = WBFL::Units::ConvertToSysUnits(40,WBFL::Units::Measure::Feet);
+         rule1.MaxSpan = WBFL::Units::ConvertToSysUnits(80,WBFL::Units::Measure::Feet);
          rule1.Height = H;
          rule1.Thickness = W;
          rule1.MeasureLocation = mlBearing;
@@ -1287,8 +1287,8 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
          DiaphragmLayoutRule rule2a;
          rule2a.Description = _T("80-120ft (Mid-Span)");
-         rule2a.MinSpan = ::ConvertToSysUnits(80,unitMeasure::Feet);
-         rule2a.MaxSpan = ::ConvertToSysUnits(120,unitMeasure::Feet);
+         rule2a.MinSpan = WBFL::Units::ConvertToSysUnits(80,WBFL::Units::Measure::Feet);
+         rule2a.MaxSpan = WBFL::Units::ConvertToSysUnits(120,WBFL::Units::Measure::Feet);
          rule2a.Height = H;
          rule2a.Thickness = W;
          rule2a.MeasureLocation = mlBearing;
@@ -1301,8 +1301,8 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
          DiaphragmLayoutRule rule2b;
          rule2b.Description = _T("80-120ft (1/3 points)");
-         rule2b.MinSpan = ::ConvertToSysUnits(80,unitMeasure::Feet);
-         rule2b.MaxSpan = ::ConvertToSysUnits(120,unitMeasure::Feet);
+         rule2b.MinSpan = WBFL::Units::ConvertToSysUnits(80,WBFL::Units::Measure::Feet);
+         rule2b.MaxSpan = WBFL::Units::ConvertToSysUnits(120,WBFL::Units::Measure::Feet);
          rule2b.Height = H;
          rule2b.Thickness = W;
          rule2b.MeasureLocation = mlBearing;
@@ -1315,8 +1315,8 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
          DiaphragmLayoutRule rule3a;
          rule3a.Description = _T("Greater than 120ft (Mid-Span)");
-         rule3a.MinSpan = ::ConvertToSysUnits(120,unitMeasure::Feet);
-         rule3a.MaxSpan = ::ConvertToSysUnits(999,unitMeasure::Feet);
+         rule3a.MinSpan = WBFL::Units::ConvertToSysUnits(120,WBFL::Units::Measure::Feet);
+         rule3a.MaxSpan = WBFL::Units::ConvertToSysUnits(999,WBFL::Units::Measure::Feet);
          rule3a.Height = H;
          rule3a.Thickness = W;
          rule3a.MeasureLocation = mlBearing;
@@ -1329,8 +1329,8 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
          DiaphragmLayoutRule rule3b;
          rule3b.Description = _T("Greater than 120ft (1/4 points)");
-         rule3b.MinSpan = ::ConvertToSysUnits(120,unitMeasure::Feet);
-         rule3b.MaxSpan = ::ConvertToSysUnits(999,unitMeasure::Feet);
+         rule3b.MinSpan = WBFL::Units::ConvertToSysUnits(120,WBFL::Units::Measure::Feet);
+         rule3b.MaxSpan = WBFL::Units::ConvertToSysUnits(999,WBFL::Units::Measure::Feet);
          rule3b.Height = H;
          rule3b.Thickness = W;
          rule3b.MeasureLocation = mlBearing;
@@ -1397,13 +1397,13 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
             if ( version < 18 )
             {
-               matRebar::Grade grade;
-               matRebar::Type type;
-               lrfdRebarPool::MapOldRebarKey(size,grade,type,legacy.m_TopFlangeShearBarSize);
+               WBFL::Materials::Rebar::Grade grade;
+               WBFL::Materials::Rebar::Type type;
+               WBFL::LRFD::RebarPool::MapOldRebarKey(size,grade,type,legacy.m_TopFlangeShearBarSize);
             }
             else
             {
-               legacy.m_TopFlangeShearBarSize = matRebar::Size(size);
+               legacy.m_TopFlangeShearBarSize = WBFL::Materials::Rebar::Size(size);
             }
 
             if(!pLoad->Property(_T("TopFlangeShearBarSpacing"),  &legacy.m_TopFlangeShearBarSpacing))
@@ -1413,7 +1413,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
          else
          {
-            legacy.m_TopFlangeShearBarSize = matRebar::bsNone;
+            legacy.m_TopFlangeShearBarSize = WBFL::Materials::Rebar::Size::bsNone;
             legacy.m_TopFlangeShearBarSpacing = 0.0;
          }
       }
@@ -1835,12 +1835,12 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             }
 
             // now that we have our strands in pre-version 5.0 temp data structures, let's convert
-            CollectionIndexType end_cnt, hp_cnt;
+            IndexType end_cnt, hp_cnt;
             pEndStrandLocations->get_Count(&end_cnt);
             pHPStrandLocations->get_Count(&hp_cnt);
 
-            CollectionIndexType end_idx=0;
-            for (CollectionIndexType hp_idx=0; hp_idx<hp_cnt; hp_idx++)
+            IndexType end_idx=0;
+            for (IndexType hp_idx=0; hp_idx<hp_cnt; hp_idx++)
             {
                CComPtr<IPoint2d> hp_pnt;
                pHPStrandLocations->get_Item(hp_idx, &hp_pnt);
@@ -2187,14 +2187,14 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                THROW_LOAD(InvalidFileFormat,pLoad);
             }
 
-            legacy.m_StirrupBarType = matRebar::Type(value);
+            legacy.m_StirrupBarType = WBFL::Materials::Rebar::Type(value);
 
             if ( !pLoad->Property(_T("ShearSteelBarGrade"), &value) )
             {
                THROW_LOAD(InvalidFileFormat,pLoad);
             }
 
-            legacy.m_StirrupBarGrade = matRebar::Grade(value);
+            legacy.m_StirrupBarGrade = WBFL::Materials::Rebar::Grade(value);
          }
 
          LegacyShearData::ShearZoneInfo zi;
@@ -2221,9 +2221,9 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                   THROW_LOAD(InvalidFileFormat,pLoad);
                }
 
-               matRebar::Grade grade;
-               matRebar::Type type;
-               lrfdRebarPool::MapOldRebarKey(size,grade,type,zi.VertBarSize);
+               WBFL::Materials::Rebar::Grade grade;
+               WBFL::Materials::Rebar::Type type;
+               WBFL::LRFD::RebarPool::MapOldRebarKey(size,grade,type,zi.VertBarSize);
 
 
                if ( version < 11.0 )
@@ -2255,7 +2255,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                   zi.nVertBars = 2;
                }
 
-               zi.HorzBarSize = matRebar::bsNone;
+               zi.HorzBarSize = WBFL::Materials::Rebar::Size::bsNone;
                zi.nHorzBars   = 2;
             }
             else
@@ -2278,9 +2278,9 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                      THROW_LOAD(InvalidFileFormat,pLoad);
                   }
 
-                  matRebar::Grade grade;
-                  matRebar::Type type;
-                  lrfdRebarPool::MapOldRebarKey(size,grade,type,zi.VertBarSize);
+                  WBFL::Materials::Rebar::Grade grade;
+                  WBFL::Materials::Rebar::Type type;
+                  WBFL::LRFD::RebarPool::MapOldRebarKey(size,grade,type,zi.VertBarSize);
                }
                else
                {
@@ -2290,7 +2290,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                      THROW_LOAD(InvalidFileFormat,pLoad);
                   }
 
-                  zi.VertBarSize = matRebar::Size(value);
+                  zi.VertBarSize = WBFL::Materials::Rebar::Size(value);
                }
 
                if(!pLoad->Property(_T("VertBars"), &zi.nVertBars))
@@ -2306,9 +2306,9 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                      THROW_LOAD(InvalidFileFormat,pLoad);
                   }
 
-                  matRebar::Grade grade;
-                  matRebar::Type type;
-                  lrfdRebarPool::MapOldRebarKey(size,grade,type,zi.HorzBarSize);
+                  WBFL::Materials::Rebar::Grade grade;
+                  WBFL::Materials::Rebar::Type type;
+                  WBFL::LRFD::RebarPool::MapOldRebarKey(size,grade,type,zi.HorzBarSize);
                }
                else
                {
@@ -2318,7 +2318,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                      THROW_LOAD(InvalidFileFormat,pLoad);
                   }
 
-                  zi.HorzBarSize = matRebar::Size(value);
+                  zi.HorzBarSize = WBFL::Materials::Rebar::Size(value);
                }
 
                if(!pLoad->Property(_T("HorzBars"), &zi.nHorzBars))
@@ -2350,14 +2350,14 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
-         m_LongitudinalBarType = matRebar::Type(value);
+         m_LongitudinalBarType = WBFL::Materials::Rebar::Type(value);
 
          if(!pLoad->Property(_T("LongitudinalBarGrade"), &value))
          {
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
-         m_LongitudinalBarGrade = matRebar::Grade(value);
+         m_LongitudinalBarGrade = WBFL::Materials::Rebar::Grade(value);
       }
 
       LongSteelInfo li;
@@ -2424,9 +2424,9 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                THROW_LOAD(InvalidFileFormat,pLoad);
             }
 
-            matRebar::Grade grade;
-            matRebar::Type type;
-            lrfdRebarPool::MapOldRebarKey(barSize,grade,type,li.BarSize);
+            WBFL::Materials::Rebar::Grade grade;
+            WBFL::Materials::Rebar::Type type;
+            WBFL::LRFD::RebarPool::MapOldRebarKey(barSize,grade,type,li.BarSize);
          }
          else
          {
@@ -2436,7 +2436,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                THROW_LOAD(InvalidFileFormat,pLoad);
             }
 
-            li.BarSize = matRebar::Size(value);
+            li.BarSize = WBFL::Materials::Rebar::Size(value);
          }
 
          if(!pLoad->Property(_T("BarCover"), &li.Cover))
@@ -2581,6 +2581,8 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             THROW_LOAD(InvalidFileFormat,pLoad);
          }
 
+         Float64 shear_design_version = pLoad->GetVersion();
+
          IndexType size;
          if ( !pLoad->Property(_T("StirrupSizeBarComboCollSize"),&size) )
          {
@@ -2603,7 +2605,7 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
                THROW_LOAD(InvalidFileFormat,pLoad);
             }
 
-            cbo.Size = matRebar::Size(value);
+            cbo.Size = WBFL::Materials::Rebar::Size(value);
 
              if ( !pLoad->Property(_T("NLegs"),&(cbo.NLegs)) )
              {
@@ -2695,6 +2697,15 @@ bool GirderLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          }
 
          m_LongShearCapacityIncreaseMethod = (LongShearCapacityIncreaseMethod)lval;
+
+         if (1 < shear_design_version)
+         {
+            // added in version 2 of ShearDesign data block
+            if (!pLoad->Property(_T("InterfaceShearWidthReduction"), &m_InterfaceShearWidthReduction))
+            {
+               THROW_LOAD(InvalidFileFormat, pLoad);
+            }
+         }
 
          if ( !pLoad->EndUnit() ) // ShearDesign
          {
@@ -2954,7 +2965,7 @@ HRESULT GirderLibraryEntry::CreateBeamFactory(const std::_tstring& strCLSID)
    return hr;
 }
 
-void GirderLibraryEntry::LoadIBeamDimensions(sysIStructuredLoad* pLoad)
+void GirderLibraryEntry::LoadIBeamDimensions(WBFL::System::IStructuredLoad* pLoad)
 {
    CLSID clsid;
    ::CLSIDFromString(_T("{EF144A97-4C75-4234-AF3C-71DC89B1C8F8}"),&clsid);
@@ -3089,15 +3100,15 @@ void GirderLibraryEntry::LoadIBeamDimensions(sysIStructuredLoad* pLoad)
 
 bool GirderLibraryEntry::IsEqual(const GirderLibraryEntry& rOther,bool bConsiderName) const
 {
-   std::vector<pgsLibraryEntryDifferenceItem*> vDifferences;
+   std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>> vDifferences;
    bool bMustRename;
    return Compare(rOther,vDifferences,bMustRename,true,bConsiderName);
 }
 
-bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName,bool bCompareSeedValues) const
+bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName,bool bCompareSeedValues) const
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedBeamFactory(m_pBeamFactory);
    bool bSplicedGirder = (splicedBeamFactory == nullptr ? false : true);
@@ -3107,7 +3118,7 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<p
    if (!const_cast<CComPtr<IBeamFactory>*>(&m_pBeamFactory)->IsEqualObject(rOther.m_pBeamFactory))
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Girder are different type."), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Girder are different type."), _T(""), _T("")));
       bMustRename = true;
    }
 
@@ -3121,7 +3132,7 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<p
        )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Girder dimensions are different"),_T(""),_T("")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Girder dimensions are different"),_T(""),_T("")));
    }
 
    //
@@ -3132,53 +3143,53 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<p
       if ( m_AdjustableStrandType != rOther.m_AdjustableStrandType )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Adjustable Strand Type"),GetAdjustableStrandType(m_AdjustableStrandType),GetAdjustableStrandType(rOther.m_AdjustableStrandType)));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Adjustable Strand Type"),GetAdjustableStrandType(m_AdjustableStrandType),GetAdjustableStrandType(rOther.m_AdjustableStrandType)));
       }
 
       if ( m_bOddNumberOfHarpedStrands != rOther.m_bOddNumberOfHarpedStrands )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceBooleanItem(_T("Coerce Odd Number of Harped Strands"),m_bOddNumberOfHarpedStrands,rOther.m_bOddNumberOfHarpedStrands,_T("Checked"),_T("Unchecked")));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceBooleanItem>(_T("Coerce Odd Number of Harped Strands"),m_bOddNumberOfHarpedStrands,rOther.m_bOddNumberOfHarpedStrands,_T("Checked"),_T("Unchecked")));
       }
 
       if ( m_bUseDifferentHarpedGridAtEnds != rOther.m_bUseDifferentHarpedGridAtEnds )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceBooleanItem(_T("Use Different Harped Strand Locations at Girder Ends"),m_bUseDifferentHarpedGridAtEnds,rOther.m_bUseDifferentHarpedGridAtEnds,_T("Checked"),_T("Unchecked")));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceBooleanItem>(_T("Use Different Harped Strand Locations at Girder Ends"),m_bUseDifferentHarpedGridAtEnds,rOther.m_bUseDifferentHarpedGridAtEnds,_T("Checked"),_T("Unchecked")));
       }
 
       if ( m_StraightStrands != rOther.m_StraightStrands )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Straight Strands Positions are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Straight Strands Positions are different"),_T(""),_T("")));
       }
       if ( m_HarpedStrands != rOther.m_HarpedStrands  )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Harped Strands Positions are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Harped Strands Positions are different"),_T(""),_T("")));
       }
       if ( m_PermanentStrands != rOther.m_PermanentStrands )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Permanent Strands Positions are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Permanent Strands Positions are different"),_T(""),_T("")));
       }
 
       if ( m_HPAdjustment != rOther.m_HPAdjustment )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Harped strand adjustment at harping points are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Harped strand adjustment at harping points are different"),_T(""),_T("")));
       }
 
       if ( m_EndAdjustment != rOther.m_EndAdjustment )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Harped strand adjustment at girder ends are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Harped strand adjustment at girder ends are different"),_T(""),_T("")));
       }
 
       if ( m_StraightAdjustment != rOther.m_StraightAdjustment )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Adjustable straight strand adjustment are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Adjustable straight strand adjustment are different"),_T(""),_T("")));
       }
    }
 
@@ -3190,7 +3201,7 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<p
       if ( m_TemporaryStrands != rOther.m_TemporaryStrands )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Temporary Strands Positions are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Temporary Strands Positions are different"),_T(""),_T("")));
       }
    }
 
@@ -3215,7 +3226,7 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<p
       )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Debonding Strand Limits are different"),_T(""),_T("")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Debonding Strand Limits are different"),_T(""),_T("")));
    }
 
    if ( !bSplicedGirder )
@@ -3223,7 +3234,7 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<p
       if ( m_PrestressDesignStrategies != rOther.m_PrestressDesignStrategies )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Prestress Design Stratigies are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Prestress Design Stratigies are different"),_T(""),_T("")));
       }
    }
 
@@ -3241,10 +3252,12 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<p
            !::IsEqual(m_MinZoneLengthLength, rOther.m_MinZoneLengthLength) ||
            m_DoExtendBarsIntoDeck != rOther.m_DoExtendBarsIntoDeck ||
            m_DoBarsActAsConfinement != rOther.m_DoBarsActAsConfinement ||
-           m_LongShearCapacityIncreaseMethod != rOther.m_LongShearCapacityIncreaseMethod )
+           m_LongShearCapacityIncreaseMethod != rOther.m_LongShearCapacityIncreaseMethod ||
+         !::IsEqual(m_InterfaceShearWidthReduction,rOther.m_InterfaceShearWidthReduction)
+         )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Shear Design Parameters are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Shear Design Parameters are different"),_T(""),_T("")));
       }
    }
 
@@ -3259,7 +3272,7 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<p
            m_HarpPointMeasure != rOther.m_HarpPointMeasure )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Harping Point locations are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Harping Point locations are different"),_T(""),_T("")));
       }
    }
 
@@ -3273,7 +3286,7 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<p
            m_LongSteelInfo != rOther.m_LongSteelInfo )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Long. Reinforcement seed values are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Long. Reinforcement seed values are different"),_T(""),_T("")));
       }
    }
 
@@ -3285,7 +3298,7 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<p
       if (m_ShearData != rOther.m_ShearData)
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Transv. Reinforcement seed values are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Transv. Reinforcement seed values are different"),_T(""),_T("")));
       }
    }
 
@@ -3298,7 +3311,7 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<p
         )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Haunch Design Parameters are different"),_T(""),_T("")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Haunch Design Parameters are different"),_T(""),_T("")));
    }
 
    if ( !bSplicedGirder )
@@ -3306,26 +3319,26 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<p
       if ( m_CamberMultipliers != rOther.m_CamberMultipliers )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Camber Multipliers are different"),_T(""),_T("")));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Camber Multipliers are different"),_T(""),_T("")));
       }
    }
 
    if ( !::IsEqual(m_DragCoefficient,rOther.m_DragCoefficient) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Drag Coefficients are different"),_T(""),_T("")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Drag Coefficients are different"),_T(""),_T("")));
    }
 
    if (!::IsEqual(m_PrecamberLimit, rOther.m_PrecamberLimit))
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Precamber limits are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Precamber limits are different"), _T(""), _T("")));
    }
 
    if (m_DoReportBearingElevationsAtGirderEdges != rOther.m_DoReportBearingElevationsAtGirderEdges)
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Options to Report Bearing Elevations at Girder Edges are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Options to Report Bearing Elevations at Girder Edges are different"), _T(""), _T("")));
    }
 
    //
@@ -3334,13 +3347,13 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<p
    if ( m_DiaphragmLayoutRules != rOther.m_DiaphragmLayoutRules )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Diaphragm Layout Rules are different"),_T(""),_T("")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Diaphragm Layout Rules are different"),_T(""),_T("")));
    }
 
    if (considerName &&  GetName() != rOther.GetName() )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
    }
 
    return vDifferences.size() == 0 ? true : false;
@@ -3767,7 +3780,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
          }
       }
 
-      if(IsZero((*its).BarSpacing) && ((*its).VertBarSize != matRebar::bsNone || (*its).ConfinementBarSize != matRebar::bsNone))
+      if(IsZero((*its).BarSpacing) && ((*its).VertBarSize != WBFL::Materials::Rebar::Size::bsNone || (*its).ConfinementBarSize != WBFL::Materials::Rebar::Size::bsNone))
       {
          std::_tostringstream os;
          os << _T("The stirrup spacing in shear zone #")<<num<<_T(" must be greater than zero because stirrups exist.");
@@ -3805,7 +3818,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
       }
 
       // make sure bars are inside of girder - use shape symmetry
-      gpPoint2d testpnt;
+      WBFL::Geometry::Point2d testpnt;
       testpnt.X() = (*itl).BarSpacing * ((*itl).NumberOfBars-1)/2.;
       if ((*itl).Face==pgsTypes::BottomFace)
       {
@@ -4651,13 +4664,13 @@ GirderLibraryEntry::LongSteelInfoVec GirderLibraryEntry::GetLongSteelInfo() cons
    return m_LongSteelInfo;
 }
 
-void GirderLibraryEntry::SetLongSteelMaterial(matRebar::Type type,matRebar::Grade grade)
+void GirderLibraryEntry::SetLongSteelMaterial(WBFL::Materials::Rebar::Type type,WBFL::Materials::Rebar::Grade grade)
 {
    m_LongitudinalBarType = type;
    m_LongitudinalBarGrade = grade;
 }
 
-void GirderLibraryEntry::GetLongSteelMaterial(matRebar::Type& type,matRebar::Grade& grade) const
+void GirderLibraryEntry::GetLongSteelMaterial(WBFL::Materials::Rebar::Type& type,WBFL::Materials::Rebar::Grade& grade) const
 {
    type = m_LongitudinalBarType;
    grade = m_LongitudinalBarGrade;
@@ -4771,8 +4784,10 @@ bool GirderLibraryEntry::Edit(bool allowEditing,int nPage)
    return false;
 }
 
-void GirderLibraryEntry::MakeCopy(const GirderLibraryEntry& rOther)
+void GirderLibraryEntry::CopyValuesAndAttributes(const GirderLibraryEntry& rOther)
 {
+   __super::CopyValuesAndAttributes(rOther);
+
    m_LongitudinalBarType      = rOther.m_LongitudinalBarType;
    m_LongitudinalBarGrade     = rOther.m_LongitudinalBarGrade;
    m_HarpingPointLocation     = rOther.m_HarpingPointLocation;
@@ -4800,13 +4815,6 @@ void GirderLibraryEntry::MakeCopy(const GirderLibraryEntry& rOther)
    m_bCheckDebondingInWebWidthProjections = rOther.m_bCheckDebondingInWebWidthProjections;
    m_MaxDebondLengthBySpanFraction          = rOther.m_MaxDebondLengthBySpanFraction;
    m_MaxDebondLengthByHardDistance          = rOther.m_MaxDebondLengthByHardDistance;
-
-   // deep copy of strand locations
-   // use a factory since we have lots of points to create
-   CComPtr<IGeomUtil> geom_util;
-   geom_util.CoCreateInstance(CLSID_GeomUtil);
-   CComPtr<IPoint2dFactory> factory;
-   geom_util->get_Point2dFactory(&factory);
 
    m_StraightStrands = rOther.m_StraightStrands;
    m_TemporaryStrands = rOther.m_TemporaryStrands;
@@ -4840,6 +4848,7 @@ void GirderLibraryEntry::MakeCopy(const GirderLibraryEntry& rOther)
    m_DoExtendBarsIntoDeck            = rOther.m_DoExtendBarsIntoDeck;
    m_DoBarsActAsConfinement          = rOther.m_DoBarsActAsConfinement;
    m_LongShearCapacityIncreaseMethod = rOther.m_LongShearCapacityIncreaseMethod;
+   m_InterfaceShearWidthReduction = rOther.m_InterfaceShearWidthReduction;
 
    m_PrestressDesignStrategies     = rOther.m_PrestressDesignStrategies;
 
@@ -4853,12 +4862,6 @@ void GirderLibraryEntry::MakeCopy(const GirderLibraryEntry& rOther)
    m_DragCoefficient = rOther.m_DragCoefficient;
    m_PrecamberLimit = rOther.m_PrecamberLimit;
    m_DoReportBearingElevationsAtGirderEdges = rOther.m_DoReportBearingElevationsAtGirderEdges;
-}
-
-void GirderLibraryEntry::MakeAssignment(const GirderLibraryEntry& rOther)
-{
-   libLibraryEntry::MakeAssignment( rOther );
-   MakeCopy( rOther );
 }
 
 HICON  GirderLibraryEntry::GetIcon() const
@@ -5165,7 +5168,7 @@ bool GirderLibraryEntry::CheckDebondingInWebWidthProjections() const
 
 bool GirderLibraryEntry::IsEqual(IPoint2dCollection* points1,IPoint2dCollection* points2) const
 {
-   CollectionIndexType c1,c2;
+   IndexType c1,c2;
    points1->get_Count(&c1);
    points2->get_Count(&c2);
 
@@ -5174,7 +5177,7 @@ bool GirderLibraryEntry::IsEqual(IPoint2dCollection* points1,IPoint2dCollection*
       return false;
    }
 
-   CollectionIndexType idx;
+   IndexType idx;
    for ( idx = 0; idx < c1; idx++ )
    {
       CComPtr<IPoint2d> p1, p2;
@@ -5245,7 +5248,7 @@ CShearData2 GirderLibraryEntry::LegacyShearData::ConvertToShearData() const
    }
 
    // Additional top flange horiz interface shear
-   if (m_TopFlangeShearBarSize!=matRebar::bsNone && m_TopFlangeShearBarSpacing>0.0)
+   if (m_TopFlangeShearBarSize!=WBFL::Materials::Rebar::Size::bsNone && m_TopFlangeShearBarSpacing>0.0)
    {
       sdata.HorizontalInterfaceZones.clear();
       CHorizontalInterfaceZoneData zdata;
@@ -5272,7 +5275,7 @@ void GirderLibraryEntry::ClearStirrupSizeBarCombos()
    m_StirrupSizeBarComboColl.clear();
 }
 
-void GirderLibraryEntry::GetStirrupSizeBarCombo(IndexType index, matRebar::Size* pSize, Float64* pNLegs) const
+void GirderLibraryEntry::GetStirrupSizeBarCombo(IndexType index, WBFL::Materials::Rebar::Size* pSize, Float64* pNLegs) const
 {
    ATLASSERT(index>=0 && index<m_StirrupSizeBarComboColl.size());
    const StirrupSizeBarCombo& cbo = m_StirrupSizeBarComboColl[index];
@@ -5280,7 +5283,7 @@ void GirderLibraryEntry::GetStirrupSizeBarCombo(IndexType index, matRebar::Size*
    *pNLegs = cbo.NLegs;
 }
 
-void GirderLibraryEntry::AddStirrupSizeBarCombo(matRebar::Size Size, Float64 NLegs)
+void GirderLibraryEntry::AddStirrupSizeBarCombo(WBFL::Materials::Rebar::Size Size, Float64 NLegs)
 {
    StirrupSizeBarCombo cbo;
    cbo.Size = Size;
@@ -5377,6 +5380,16 @@ GirderLibraryEntry::LongShearCapacityIncreaseMethod GirderLibraryEntry::GetLongS
 void GirderLibraryEntry::SetLongShearCapacityIncreaseMethod(LongShearCapacityIncreaseMethod method) 
 {
    m_LongShearCapacityIncreaseMethod = method;
+}
+
+Float64 GirderLibraryEntry::GetInterfaceShearWidthReduction() const
+{
+   return m_InterfaceShearWidthReduction;
+}
+
+void GirderLibraryEntry::SetInterfaceShearWidthReduction(Float64 bvir)
+{
+   m_InterfaceShearWidthReduction = bvir;
 }
 
 IndexType GirderLibraryEntry::GetNumPrestressDesignStrategies() const
@@ -5509,7 +5522,7 @@ pgsCompatibilityData* GirderLibraryEntry::GetCompatibilityData() const
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
 
-static const Float64 TwoInches = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
+static const Float64 TwoInches = WBFL::Units::ConvertToSysUnits(2.0,WBFL::Units::Measure::Inch);
 
 GirderLibraryEntry::HarpedStrandAdjustment::HarpedStrandAdjustment() : 
 m_AllowVertAdjustment(false), 

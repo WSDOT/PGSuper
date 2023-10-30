@@ -50,11 +50,11 @@ LPCTSTR CTimelineChapterBuilder::GetName() const
    return TEXT("Construction Timeline");
 }
 
-rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CTimelineChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CBrokerReportSpecification* pBrokerRptSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
-   CTimelineManagerReportSpecification* pTimelineMgrRptSpec = dynamic_cast<CTimelineManagerReportSpecification*>(pRptSpec);
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pBrokerRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
+   auto pTimelineMgrRptSpec = std::dynamic_pointer_cast<const CTimelineManagerReportSpecification>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
 
    CComPtr<IBroker> pBroker;
    pBrokerRptSpec->GetBroker(&pBroker);
@@ -387,6 +387,38 @@ rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
          nActivities++;
       }
 
+      const auto& geometryControlActivity = pTimelineEvent->GetGeometryControlActivity();
+      if (geometryControlActivity.IsEnabled())
+      {
+         if (0 < nActivities) row++;
+
+         CString name;
+         pgsTypes::GeometryControlActivityType type = geometryControlActivity.GetGeometryControlEventType();
+         if (type == pgsTypes::gcaGeometryControlEvent)
+         {
+            name = _T("Roadway Geometry Control Event");
+         }
+         else if (type == pgsTypes::gcaSpecCheckEvent)
+         {
+            name = _T("Roadway Geometry Control Spec Check Only");
+         }
+         else if (type == pgsTypes::gcaGeometryReportingEvent)
+         {
+            name = _T("Roadway Geometry Control Report Only");
+         }
+         else
+         {
+            ATLASSERT(0);
+         }
+
+         (*pEventTable)(row,col) << name << rptNewLine;
+         (*pEventTable)(row,col + 1) << _T("") << rptNewLine;
+         (*pEventTable)(row,col + 2) << _T("") << rptNewLine;
+
+         nActivities++;
+      }
+
+
       if (nActivities == 0)
       {
          (*pEventTable)(row, col++) << _T("") << rptNewLine;
@@ -407,7 +439,7 @@ rptChapter* CTimelineChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
    return pChapter;
 }
 
-CChapterBuilder* CTimelineChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTimelineChapterBuilder::Clone() const
 {
-   return new CTimelineChapterBuilder;
+   return std::make_unique<CTimelineChapterBuilder>();
 }

@@ -48,7 +48,7 @@ CGirderSpacingData::CGirderSpacingData()
    m_RefGirderOffsetType = pgsTypes::omtBridge;
    m_RefGirderOffset = 0;
 
-   m_DefaultSpacing = ::ConvertToSysUnits(5.0,unitMeasure::Feet);
+   m_DefaultSpacing = WBFL::Units::ConvertToSysUnits(5.0,WBFL::Units::Measure::Feet);
 
    PGS_ASSERT_VALID;
 }

@@ -34,13 +34,13 @@ class REPORTINGCLASS CBasicCamberChapterBuilder : public CPGSuperChapterBuilder
 public:
    CBasicCamberChapterBuilder(bool bSelect = true);
 
-   virtual LPCTSTR GetName() const;
-   virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const;
-   virtual CChapterBuilder* Clone() const;
+   virtual LPCTSTR GetName() const override;
+   virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
+   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 
 private:
-   void Build_Deck(rptChapter* pChapter,CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,bool bTempStrands,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const;
-   void Build_NoDeck(            rptChapter* pChapter,CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,bool bTempStrands,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const;
+   void Build_Deck(rptChapter* pChapter, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,bool bTempStrands,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const;
+   void Build_NoDeck(            rptChapter* pChapter, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,bool bTempStrands,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const;
 
    // Prevent accidental copying and assignment
    CBasicCamberChapterBuilder(const CBasicCamberChapterBuilder&) = delete;

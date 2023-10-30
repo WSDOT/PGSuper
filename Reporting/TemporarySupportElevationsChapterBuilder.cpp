@@ -42,18 +42,36 @@ LPCTSTR CTemporarySupportElevationsChapterBuilder::GetName() const
    return _T("Temporary Support Elevations");
 }
 
-CChapterBuilder* CTemporarySupportElevationsChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTemporarySupportElevationsChapterBuilder::Clone() const
 {
-   return new CTemporarySupportElevationsChapterBuilder();
+   return std::make_unique<CTemporarySupportElevationsChapterBuilder>();
 }
 
-rptChapter* CTemporarySupportElevationsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CTemporarySupportElevationsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CBrokerReportSpecification* pGirderRptSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
+
+   auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
+   auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
+
+   GirderIndexType girderIndex;
+   if (pGdrRptSpec)
+   {
+      girderIndex = pGdrRptSpec->GetGirderKey().girderIndex;
+   }
+   else if (pGdrLineRptSpec)
+   {
+      girderIndex = pGdrLineRptSpec->GetGirderKey().girderIndex;
+   }
+   else
+   {
+      ATLASSERT(false); // not expecting a different kind of report spec
+      return pChapter;
+   }
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -74,7 +92,7 @@ rptChapter* CTemporarySupportElevationsChapterBuilder::Build(CReportSpecificatio
 
    for (SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++)
    {
-      std::vector<TEMPORARYSUPPORTELEVATIONDETAILS> vElevDetails = pTempSupport->GetElevationDetails(tsIdx);
+      std::vector<TEMPORARYSUPPORTELEVATIONDETAILS> vElevDetails = pTempSupport->GetElevationDetails(tsIdx, girderIndex);
 
       CString strTitle;
       strTitle.Format(_T("Temporary Support %d - %s"), LABEL_TEMPORARY_SUPPORT(tsIdx), CTemporarySupportData::AsString(pBridge->GetTemporarySupportType(tsIdx)));

@@ -21,11 +21,11 @@
 ///////////////////////////////////////////////////////////////////////
 #pragma once
 
-#include <System\Transaction.h>
+#include <EAF\EAFTransaction.h>
 #include <PgsExt\BridgeDescription2.h>
 #include <IFace\Project.h>
 
-class txnEditTimeline : public txnTransaction
+class txnEditTimeline : public CEAFTransaction
 {
 public:
    txnEditTimeline(const CTimelineManager& oldTimelineManager,const CTimelineManager& newStagManager);
@@ -34,10 +34,10 @@ public:
 
    virtual bool Execute();
    virtual void Undo();
-   virtual txnTransaction* CreateClone() const;
+   virtual std::unique_ptr<CEAFTransaction>CreateClone() const;
    virtual std::_tstring Name() const;
-   virtual bool IsUndoable();
-   virtual bool IsRepeatable();
+   virtual bool IsUndoable() const;
+   virtual bool IsRepeatable() const;
 
 private:
    // index 0 = old data (before edit), index 1 = new data (after edit)

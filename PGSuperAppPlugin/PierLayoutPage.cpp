@@ -332,7 +332,7 @@ BOOL CPierLayoutPage::OnInitDialog()
 void CPierLayoutPage::UpdateConcreteTypeLabel()
 {
    CString strLabel;
-   if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2016Interims )
+   if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims )
    {  
       switch( m_pPier->GetConcrete().Type )
       {
@@ -349,6 +349,7 @@ void CPierLayoutPage::UpdateConcreteTypeLabel()
          break;
 
       case pgsTypes::PCI_UHPC: // UI should prevent UHPC for piers
+      case pgsTypes::UHPC:
       default:
          ATLASSERT(false); // should never get here
          strLabel = _T("Concrete Type Label Error");
@@ -358,7 +359,7 @@ void CPierLayoutPage::UpdateConcreteTypeLabel()
    {
       // LRFD 2016 and later there is only normal and lightweight concrete. We
       //use the SandLightweight enum to mean "lightweight"
-      ATLASSERT( m_pPier->GetConcrete().Type == pgsTypes::Normal || m_pPier->GetConcrete().Type == pgsTypes::PCI_UHPC || m_pPier->GetConcrete().Type == pgsTypes::SandLightweight );
+      ATLASSERT( m_pPier->GetConcrete().Type == pgsTypes::Normal || m_pPier->GetConcrete().Type == pgsTypes::SandLightweight );
       switch( m_pPier->GetConcrete().Type )
       {
       case pgsTypes::Normal:
@@ -370,6 +371,7 @@ void CPierLayoutPage::UpdateConcreteTypeLabel()
          break;
 
       case pgsTypes::PCI_UHPC: // UI should prevent UHPC for piers
+      case pgsTypes::UHPC:
       default:
          ATLASSERT(false); // should never get here
          strLabel = _T("Concrete Type Label Error");

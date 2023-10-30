@@ -30,7 +30,7 @@
 #include <EAF\EAFApp.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFUtilities.h>
-#include <Lrfd\RebarPool.h>
+#include <LRFD\RebarPool.h>
 #include <IFace\Tools.h>
 
 #ifdef _DEBUG
@@ -147,7 +147,7 @@ void CShearSteelGrid::InsertRow(bool bAppend)
 	ROWCOL nRow = 0;
 
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
 	// if there are no cells selected,
 	// copy the current cell's coordinates
@@ -270,7 +270,7 @@ void CShearSteelGrid::SetSymmetry(bool isSymmetrical)
 void CShearSteelGrid::CustomInit()
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
 // Initialize the grid. For CWnd based grids this call is // 
 // essential. For view based grids this initialization is done 
@@ -376,14 +376,14 @@ void CShearSteelGrid::SetRowStyle(ROWCOL nRow)
 	GetParam()->EnableUndo(FALSE);
 
    CShearSteelPage* pParent = (CShearSteelPage*)GetParent();
-   matRebar::Type type;
-   matRebar::Grade grade;
+   WBFL::Materials::Rebar::Type type;
+   WBFL::Materials::Rebar::Grade grade;
    pParent->GetRebarMaterial(&type,&grade);
    CString strBarSizeChoiceList(_T("None\n"));
-   lrfdRebarIter rebarIter(type,grade,true);
+   WBFL::LRFD::RebarIter rebarIter(type,grade,true);
    for ( rebarIter.Begin(); rebarIter; rebarIter.Next() )
    {
-      const matRebar* pRebar = rebarIter.GetCurrentRebar();
+      const auto* pRebar = rebarIter.GetCurrentRebar();
       strBarSizeChoiceList += pRebar->GetName().c_str();
       strBarSizeChoiceList += _T("\n");
    }
@@ -453,7 +453,7 @@ CString CShearSteelGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
    }
 }
 
-matRebar::Size CShearSteelGrid::GetBarSize(ROWCOL row,ROWCOL col)
+WBFL::Materials::Rebar::Size CShearSteelGrid::GetBarSize(ROWCOL row,ROWCOL col)
 {
    assert(col==2 || col==6);
    CString s = GetCellValue(row, col);
@@ -463,26 +463,26 @@ matRebar::Size CShearSteelGrid::GetBarSize(ROWCOL row,ROWCOL col)
    int i = _tstoi(s2);
    if (s.IsEmpty() || (i==0))
    {
-      return matRebar::bsNone;
+      return WBFL::Materials::Rebar::Size::bsNone;
    }
 
    switch(i)
    {
-   case 3:  return matRebar::bs3;
-   case 4:  return matRebar::bs4;
-   case 5:  return matRebar::bs5;
-   case 6:  return matRebar::bs6;
-   case 7:  return matRebar::bs7;
-   case 8:  return matRebar::bs8;
-   case 9:  return matRebar::bs9;
-   case 10: return matRebar::bs10;
-   case 11: return matRebar::bs11;
-   case 14: return matRebar::bs14;
-   case 18: return matRebar::bs18;
+   case 3:  return WBFL::Materials::Rebar::Size::bs3;
+   case 4:  return WBFL::Materials::Rebar::Size::bs4;
+   case 5:  return WBFL::Materials::Rebar::Size::bs5;
+   case 6:  return WBFL::Materials::Rebar::Size::bs6;
+   case 7:  return WBFL::Materials::Rebar::Size::bs7;
+   case 8:  return WBFL::Materials::Rebar::Size::bs8;
+   case 9:  return WBFL::Materials::Rebar::Size::bs9;
+   case 10: return WBFL::Materials::Rebar::Size::bs10;
+   case 11: return WBFL::Materials::Rebar::Size::bs11;
+   case 14: return WBFL::Materials::Rebar::Size::bs14;
+   case 18: return WBFL::Materials::Rebar::Size::bs18;
    default: ATLASSERT(false);
    }
 
-   return matRebar::bsNone;
+   return WBFL::Materials::Rebar::Size::bsNone;
 }
 
 bool CShearSteelGrid::GetRowData(ROWCOL nRow, ROWCOL numRows, CShearZoneData2* pszi)
@@ -562,7 +562,7 @@ void CShearSteelGrid::FillGrid(const CShearData2::ShearZoneVec& vShearZones, boo
          }
 
          CString tmp;
-         tmp.Format(_T("%s"),lrfdRebarPool::GetBarSize(shearZone.VertBarSize).c_str());
+         tmp.Format(_T("%s"),WBFL::LRFD::RebarPool::GetBarSize(shearZone.VertBarSize).c_str());
          VERIFY(SetValueRange(CGXRange(nRow, 2), tmp));
 
          SetValueRange(CGXRange(nRow, 3), shearZone.BarSpacing);
@@ -570,7 +570,7 @@ void CShearSteelGrid::FillGrid(const CShearData2::ShearZoneVec& vShearZones, boo
          VERIFY(SetValueRange(CGXRange(nRow, 4), shearZone.nVertBars));
          VERIFY(SetValueRange(CGXRange(nRow, 5), shearZone.nHorzInterfaceBars));
 
-         tmp.Format(_T("%s"),lrfdRebarPool::GetBarSize(shearZone.ConfinementBarSize).c_str());
+         tmp.Format(_T("%s"),WBFL::LRFD::RebarPool::GetBarSize(shearZone.ConfinementBarSize).c_str());
          VERIFY(SetValueRange(CGXRange(nRow, 6), tmp));
 
          nRow++;

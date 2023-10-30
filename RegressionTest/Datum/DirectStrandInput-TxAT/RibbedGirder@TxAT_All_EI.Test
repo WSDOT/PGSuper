@@ -4,7 +4,7 @@
 
 
 The Specification Check was Not Successful
-Tension stress check failed for Service III Limit State in Interval 13 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 13 Open to Traffic, Roadway Geometry Control
 Finished elevation check failed
 
 
@@ -24,7 +24,7 @@ Finished elevation check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 9 Install Intermediate Diaphragms
-Tension stress check failed for Service III Limit State in Interval 13 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 13 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State

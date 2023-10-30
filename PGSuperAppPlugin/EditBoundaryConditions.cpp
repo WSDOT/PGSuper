@@ -78,30 +78,30 @@ std::_tstring txnEditBoundaryConditions::Name() const
    return _T("Change Boundary Conditions");
 }
 
-txnTransaction* txnEditBoundaryConditions::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnEditBoundaryConditions::CreateClone() const
 {
    if (m_bIsPier)
    {
       if (m_bIsBoundaryPier)
-         return new txnEditBoundaryConditions(m_Index, m_BoundaryConditionType[0], m_BoundaryConditionType[1]);
+         return std::make_unique<txnEditBoundaryConditions>(m_Index, m_BoundaryConditionType[0], m_BoundaryConditionType[1]);
       else
-         return new txnEditBoundaryConditions(m_Index, m_PierSegmentConnectionType[0], m_CastClosureJointEventIdx[0], m_PierSegmentConnectionType[1], m_CastClosureJointEventIdx[1]);
+         return std::make_unique<txnEditBoundaryConditions>(m_Index, m_PierSegmentConnectionType[0], m_CastClosureJointEventIdx[0], m_PierSegmentConnectionType[1], m_CastClosureJointEventIdx[1]);
    }
    else
    {
       if (m_bIsBoundaryPier)
-         return new txnEditBoundaryConditions(m_Index, m_SupportType[0], m_SupportType[1]);
+         return std::make_unique<txnEditBoundaryConditions>(m_Index, m_SupportType[0], m_SupportType[1]);
       else
-         return new txnEditBoundaryConditions(m_Index, m_SupportType[0], m_TemporarySupportSegmentConnectionType[0], m_CastClosureJointEventIdx[0], m_SupportType[1], m_TemporarySupportSegmentConnectionType[1], m_CastClosureJointEventIdx[1]);
+         return std::make_unique<txnEditBoundaryConditions>(m_Index, m_SupportType[0], m_TemporarySupportSegmentConnectionType[0], m_CastClosureJointEventIdx[0], m_SupportType[1], m_TemporarySupportSegmentConnectionType[1], m_CastClosureJointEventIdx[1]);
    }
 }
 
-bool txnEditBoundaryConditions::IsUndoable()
+bool txnEditBoundaryConditions::IsUndoable() const
 {
    return true;
 }
 
-bool txnEditBoundaryConditions::IsRepeatable()
+bool txnEditBoundaryConditions::IsRepeatable() const
 {
    return false;
 }

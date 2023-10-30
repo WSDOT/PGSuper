@@ -30,7 +30,7 @@ class REPORTINGCLASS CPrincipalWebStressDetailsReportSpecification :
    public CBrokerReportSpecification
 {
 public:
-	CPrincipalWebStressDetailsReportSpecification(LPCTSTR strReportName,IBroker* pBroker,bool bReportAtAllLocations,const pgsPointOfInterest& poi,
+	CPrincipalWebStressDetailsReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,bool bReportAtAllLocations,const pgsPointOfInterest& poi,
                                                  IntervalIndexType intervalIdx, bool bReportAxial, bool bReportShear);
    ~CPrincipalWebStressDetailsReportSpecification(void);
 

@@ -78,7 +78,7 @@ private:
    void SetRowStyle(ROWCOL nRow);
    PierIndexType GetBackBearingIdx();
 
-   const unitmgtLengthData* m_pCompUnit;
+   const WBFL::Units::LengthData* m_pCompUnit;
    BearingGridDataGetter<CBearingGdrGrid> m_DGetter;
 
    BearingInputData* m_pBearingInputData;

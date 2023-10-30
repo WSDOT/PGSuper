@@ -53,13 +53,13 @@ LPCTSTR CHaulingCheckChapterBuilder::GetName() const
    return TEXT("Hauling Check");
 }
 
-rptChapter* CHaulingCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CHaulingCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    CComPtr<IBroker> pBroker;
    rptChapter* pChapter;
 
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-   CSegmentReportSpecification* pSegmentRptSpec = dynamic_cast<CSegmentReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
+   auto pSegmentRptSpec = std::dynamic_pointer_cast<const CSegmentReportSpecification>(pRptSpec);
    if (pGirderRptSpec)
    {
       pGirderRptSpec->GetBroker(&pBroker);
@@ -80,9 +80,9 @@ rptChapter* CHaulingCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Ui
    return pChapter;
 }
 
-CChapterBuilder* CHaulingCheckChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CHaulingCheckChapterBuilder::Clone() const
 {
-   return new CHaulingCheckChapterBuilder;
+   return std::make_unique<CHaulingCheckChapterBuilder>();
 }
 
 //======================== ACCESS     =======================================

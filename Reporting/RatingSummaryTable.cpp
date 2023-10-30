@@ -33,23 +33,7 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\RatingSpecification.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-CRatingSummaryTable::CRatingSummaryTable()
-{
-}
-
-CRatingSummaryTable::~CRatingSummaryTable()
-{
-}
-
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,CRatingSummaryTable::RatingTableType ratingTableType) const
+rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,CRatingSummaryTable::RatingTableType ratingTableType)
 {
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
@@ -65,7 +49,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const std::v
    location.IncludeSpanAndGirder(true);
 
    rptRcScalar scalar;
-   scalar.SetFormat( sysNumericFormatTool::Fixed );
+   scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Fixed );
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
    scalar.SetTolerance(1.0e-6);
@@ -645,7 +629,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const std::v
    return table;
 }
 
-rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker, const std::vector<CGirderKey>& girderKeys, pgsTypes::LoadRatingType ratingType) const
+rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker, const std::vector<CGirderKey>& girderKeys, pgsTypes::LoadRatingType ratingType)
 {
    GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
@@ -664,7 +648,7 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker, const std::vec
    rptCapacityToDemand rating_factor;
 
    rptRcScalar scalar;
-   scalar.SetFormat(sysNumericFormatTool::Fixed);
+   scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Fixed );
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
    scalar.SetTolerance(1.0e-6);
@@ -672,38 +656,21 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker, const std::vec
    INIT_UV_PROTOTYPE(rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), true);
    location.IncludeSpanAndGirder(true);
 
-   bool bIsPermitRating = ::IsPermitRatingType(ratingType);
-
-   ColumnIndexType nColumns = bIsPermitRating ? 6 : 5;
+   ColumnIndexType nColumns = 5;
    CString strTitle = ::GetLiveLoadTypeName(ratingType);
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nColumns, strTitle);
-
-   pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
-
-   pTable->SetColumnStyle(bIsPermitRating ? 4 : 3, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pTable->SetStripeRowColumnStyle(bIsPermitRating ? 4 : 3, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
-
-   pTable->SetColumnStyle(bIsPermitRating ? 5 : 4, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
-   pTable->SetStripeRowColumnStyle(bIsPermitRating ? 5 : 4, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    ColumnIndexType col = 0;
 
    (*pTable)(0, col++) << _T("Truck");
    (*pTable)(0, col++) << _T("RF");
-
-   if (bIsPermitRating)
-   {
-      (*pTable)(0, col++) << _T("Yield") << rptNewLine << _T("Stress") << rptNewLine << _T("Ratio");
-   }
-
    (*pTable)(0, col++) << Sub2(symbol(gamma), _T("LL"));
    (*pTable)(0, col++) << _T("Controlling Point") << rptNewLine << RPT_LFT_SUPPORT_LOCATION;
    (*pTable)(0, col++) << _T("Cause");
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
    VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
-   for ( VehicleIndexType vehicleIdx = 0; vehicleIdx < nVehicles; vehicleIdx++ )
+   for ( VehicleIndexType vehicleIdx = 0; vehicleIdx < nVehicles; vehicleIdx++, row++ )
    {
       col = 0;
       std::_tstring strName = pProductLoads->GetLiveLoadName(llType,vehicleIdx);
@@ -767,67 +734,15 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker, const std::vec
         (*pTable)(row, col++) << RF_PASS(rating_factor,RF);
      }
 
-     if (bIsPermitRating)
-     {
-        (*pTable)(row, col++) << _T("");
-     }
-
      (*pTable)(row, col++) << scalar.SetValue(gLL);
      (*pTable)(row, col++) << location.SetValue( POI_SPAN, poi );
      (*pTable)(row, col++) << strControlling;
-
-
-     const pgsYieldStressRatioArtifact* pYieldStressPositiveMoment;
-     const pgsYieldStressRatioArtifact* pYieldStressNegativeMoment;
-     Float64 SR = pRatingArtifact->GetYieldStressRatio(&pYieldStressPositiveMoment, &pYieldStressNegativeMoment);
-     if (pYieldStressPositiveMoment || pYieldStressNegativeMoment)
-     {
-        ASSERT(bIsPermitRating);
-        if (pYieldStressPositiveMoment)
-        {
-           ASSERT(vehicleIdx == pYieldStressPositiveMoment->GetVehicleIndex());
-           ASSERT(pYieldStressNegativeMoment == nullptr);
-           gLL = pYieldStressPositiveMoment->GetLiveLoadFactor();
-           poi = pYieldStressPositiveMoment->GetPointOfInterest();
-           strControlling = _T("Positive Moment");
-        }
-        else
-        {
-           ASSERT(vehicleIdx == pYieldStressNegativeMoment->GetVehicleIndex());
-           ASSERT(pYieldStressPositiveMoment == nullptr);
-           gLL = pYieldStressNegativeMoment->GetLiveLoadDistributionFactor();
-           gLL = pYieldStressNegativeMoment->GetLiveLoadFactor();
-           poi = pYieldStressNegativeMoment->GetPointOfInterest();
-           strControlling = _T("Negative Moment");
-        }
-
-        col = 0;
-        pTable->SetRowSpan(row, col, 2);
-        row++;
-        pTable->SetRowSpan(row, col++, SKIP_CELL);
-
-        (*pTable)(row, col++) << _T(""); // RF column
-        if (SR < 1)
-        {
-           (*pTable)(row, col++) << RF_FAIL(rating_factor, SR);
-        }
-        else
-        {
-           (*pTable)(row, col++) << RF_PASS(rating_factor, SR);
-        }
-
-        (*pTable)(row, col++) << scalar.SetValue(gLL);
-        (*pTable)(row, col++) << location.SetValue(POI_SPAN, poi);
-        (*pTable)(row, col++) << strControlling;
-     }
-
-     row++;
    }
 
    return pTable;
 }
 
-rptRcTable* CRatingSummaryTable::BuildLoadPosting(IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType,bool* pbMustCloseBridge) const
+rptRcTable* CRatingSummaryTable::BuildLoadPosting(IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType,bool* pbMustCloseBridge)
 {
    GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
@@ -852,7 +767,7 @@ rptRcTable* CRatingSummaryTable::BuildLoadPosting(IBroker* pBroker,const std::ve
 
    bool bLoadPostingRequired = false;
    bool bMustCloseBridge = false; // MBE 6A.8.1 and .3 - bridges not capable of carrying a minimum gross live load of weight of three tons must be closed.
-   Float64 RTmin = ::ConvertToSysUnits(3.0, unitMeasure::Ton);
+   Float64 RTmin = WBFL::Units::ConvertToSysUnits(3.0, WBFL::Units::Measure::Ton);
 
    RowIndexType row = table->GetNumberOfHeaderRows();
    VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
@@ -926,7 +841,7 @@ rptRcTable* CRatingSummaryTable::BuildLoadPosting(IBroker* pBroker,const std::ve
    return table;
 }
 
-rptRcTable* CRatingSummaryTable::BuildEmergencyVehicleLoadPosting(IBroker* pBroker, const std::vector<CGirderKey>& girderKeys) const
+rptRcTable* CRatingSummaryTable::BuildEmergencyVehicleLoadPosting(IBroker* pBroker, const std::vector<CGirderKey>& girderKeys)
 {
    GET_IFACE2(pBroker, IArtifact, pArtifact);
 
@@ -943,11 +858,11 @@ rptRcTable* CRatingSummaryTable::BuildEmergencyVehicleLoadPosting(IBroker* pBrok
    }
 
 
-   Float64 wgtEV2 = ::ConvertToSysUnits(57.5, unitMeasure::Kip);
-   Float64 wgtEV3 = ::ConvertToSysUnits(86.0, unitMeasure::Kip);
+   Float64 wgtEV2 = WBFL::Units::ConvertToSysUnits(57.5, WBFL::Units::Measure::Kip);
+   Float64 wgtEV3 = WBFL::Units::ConvertToSysUnits(86.0, WBFL::Units::Measure::Kip);
 
-   Float64 axleEV2 = ::ConvertToSysUnits(33.5, unitMeasure::Kip);
-   Float64 tandemEV3 = ::ConvertToSysUnits(62.0, unitMeasure::Kip);
+   Float64 axleEV2 = WBFL::Units::ConvertToSysUnits(33.5, WBFL::Units::Measure::Kip);
+   Float64 tandemEV3 = WBFL::Units::ConvertToSysUnits(62.0, WBFL::Units::Measure::Kip);
 
    ATLASSERT(RF3 < 1.0);
 
@@ -1029,4 +944,101 @@ rptRcTable* CRatingSummaryTable::BuildEmergencyVehicleLoadPosting(IBroker* pBrok
    (*table)(row, col++) << tonnage.SetValue(GVW);
 
    return table;
+}
+
+rptRcTable* CRatingSummaryTable::BuildYieldStressRatio(IBroker* pBroker, const std::vector<CGirderKey>& girderKeys, pgsTypes::LoadRatingType ratingType)
+{
+   PRECONDITION(::IsPermitRatingType(ratingType));
+
+   GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+
+   pgsTypes::LiveLoadType llType = ::GetLiveLoadType(ratingType);
+
+   std::_tstring strName = pProductLoads->GetLiveLoadName(llType, 0);
+   if (strName == NO_LIVE_LOAD_DEFINED)
+   {
+      return nullptr;
+   }
+
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2(pBroker, IArtifact, pArtifact);
+
+   rptCapacityToDemand rating_factor;
+
+   rptRcScalar scalar;
+   scalar.SetFormat(WBFL::System::NumericFormatTool::Format::Fixed);
+   scalar.SetWidth(6);
+   scalar.SetPrecision(3);
+   scalar.SetTolerance(1.0e-6);
+
+   INIT_UV_PROTOTYPE(rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), true);
+   location.IncludeSpanAndGirder(true);
+
+   ColumnIndexType nColumns = 5;
+   CString strTitle = ::GetLiveLoadTypeName(ratingType);
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nColumns, strTitle);
+
+   ColumnIndexType col = 0;
+
+   (*pTable)(0, col++) << _T("Truck");
+   (*pTable)(0, col++) << _T("Yield") << rptNewLine << _T("Stress") << rptNewLine << _T("Ratio");
+   (*pTable)(0, col++) << Sub2(symbol(gamma), _T("LL"));
+   (*pTable)(0, col++) << _T("Controlling Point") << rptNewLine << RPT_LFT_SUPPORT_LOCATION;
+   (*pTable)(0, col++) << _T("Cause");
+
+   RowIndexType row = pTable->GetNumberOfHeaderRows();
+   VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
+   for (VehicleIndexType vehicleIdx = 0; vehicleIdx < nVehicles; vehicleIdx++, row++)
+   {
+      col = 0;
+      std::_tstring strName = pProductLoads->GetLiveLoadName(llType, vehicleIdx);
+
+      std::shared_ptr<const pgsISummaryRatingArtifact> pRatingArtifact = pArtifact->GetSummaryRatingArtifact(girderKeys, ratingType, vehicleIdx);
+
+      const pgsYieldStressRatioArtifact* pYieldStressPositiveMoment;
+      const pgsYieldStressRatioArtifact* pYieldStressNegativeMoment;
+      Float64 SR = pRatingArtifact->GetYieldStressRatio(&pYieldStressPositiveMoment, &pYieldStressNegativeMoment);
+      Float64 gLL;
+      std::_tstring strControlling;
+      pgsPointOfInterest poi;
+      if (pYieldStressPositiveMoment || pYieldStressNegativeMoment)
+      {
+         if (pYieldStressPositiveMoment)
+         {
+            CHECK(vehicleIdx == pYieldStressPositiveMoment->GetVehicleIndex());
+            CHECK(pYieldStressNegativeMoment == nullptr);
+            gLL = pYieldStressPositiveMoment->GetLiveLoadFactor();
+            poi = pYieldStressPositiveMoment->GetPointOfInterest();
+            strControlling = _T("Positive Moment");
+         }
+         else
+         {
+            CHECK(vehicleIdx == pYieldStressNegativeMoment->GetVehicleIndex());
+            CHECK(pYieldStressPositiveMoment == nullptr);
+            gLL = pYieldStressNegativeMoment->GetLiveLoadDistributionFactor();
+            gLL = pYieldStressNegativeMoment->GetLiveLoadFactor();
+            poi = pYieldStressNegativeMoment->GetPointOfInterest();
+            strControlling = _T("Negative Moment");
+         }
+
+         col = 0;
+
+         (*pTable)(row, col++) << strName;
+
+         if (SR < 1)
+         {
+            (*pTable)(row, col++) << RF_FAIL(rating_factor, SR);
+         }
+         else
+         {
+            (*pTable)(row, col++) << RF_PASS(rating_factor, SR);
+         }
+
+         (*pTable)(row, col++) << scalar.SetValue(gLL);
+         (*pTable)(row, col++) << location.SetValue(POI_SPAN, poi);
+         (*pTable)(row, col++) << strControlling;
+      }
+   }
+
+   return pTable;
 }

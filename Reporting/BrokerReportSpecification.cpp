@@ -29,8 +29,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CBrokerReportSpecification::CBrokerReportSpecification(LPCTSTR strReportName,IBroker* pBroker) :
-CReportSpecification(strReportName)
+CBrokerReportSpecification::CBrokerReportSpecification(const std::_tstring& strReportName,IBroker* pBroker) :
+WBFL::Reporting::ReportSpecification(strReportName)
 {
    SetBroker(pBroker);
 }
@@ -44,7 +44,7 @@ void CBrokerReportSpecification::SetBroker(IBroker* pBroker)
    m_pBroker = pBroker;
 }
 
-HRESULT CBrokerReportSpecification::GetBroker(IBroker** ppBroker)
+HRESULT CBrokerReportSpecification::GetBroker(IBroker** ppBroker) const
 {
    ATLASSERT( m_pBroker ); // did you forget to set the broker???
    //return m_Broker.CopyTo(ppBroker);
@@ -53,10 +53,10 @@ HRESULT CBrokerReportSpecification::GetBroker(IBroker** ppBroker)
    return S_OK;
 }
 
-HRESULT CBrokerReportSpecification::Validate() const
+bool CBrokerReportSpecification::IsValid() const
 {
    if ( !m_pBroker )
-      return E_FAIL;
+      return false;
 
-   return CReportSpecification::Validate();
+   return WBFL::Reporting::ReportSpecification::IsValid();
 }

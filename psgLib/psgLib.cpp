@@ -157,7 +157,7 @@ BOOL CPsgLibApp::InitInstance()
    // This call will initialize the grid library
 	GXInit();
 
-   sysComCatMgr::CreateCategory(L"PGSLibrary Editor Components",CATID_PGSuperLibraryManagerPlugin);
+   WBFL::System::ComCatMgr::CreateCategory(CComBSTR("PGSLibrary Editor Components"),CATID_PGSuperLibraryManagerPlugin);
 
    return CWinApp::InitInstance();
 }
@@ -176,9 +176,9 @@ void CPsgLibApp::OnHelp()
    // must have a handler for ID_HELP otherwise CDialog::InitDialog() will hide the help button
 }
 
-std::_tstring PSGLIBFUNC WINAPI psglibGetFirstEntryName(const libILibrary& rlib)
+std::_tstring psglibGetFirstEntryName(const WBFL::Library::ILibrary& rlib)
 {
-   libKeyListType key_list;
+   WBFL::Library::KeyListType key_list;
    rlib.KeyList(key_list);
    ATLASSERT(key_list.size()>0);
    return key_list[0];
@@ -188,15 +188,15 @@ template <class EntryType, class LibType>
 bool do_deal_with_library_conflicts(ConflictList* pList, LibType* pMasterLib, const LibType& projectLib, const std::_tstring& publisher, const std::_tstring& configuration, const std::_tstring& libName, const EntryType& dummy, bool isImported,bool bForceUpdate)
 {
    // loop over entries in project library and check to see if names are the same
-   libKeyListType project_keys;
+   WBFL::Library::KeyListType project_keys;
    projectLib.KeyList(project_keys);
    // create a key list with all names in it for the sole purpose of dealing with 
    // name conflicts with newly added entries
-   libKeyListType master_keys;
+   WBFL::Library::KeyListType master_keys;
    pMasterLib->KeyList(master_keys);
    master_keys.insert(master_keys.end(),project_keys.begin(),project_keys.end());
 
-   for (libKeyListIterator ik=project_keys.begin(); ik!=project_keys.end(); ik++)
+   for (WBFL::Library::KeyListIterator ik=project_keys.begin(); ik!=project_keys.end(); ik++)
    {
       const std::_tstring& name= *ik;
       const EntryType* pproject = 0;
@@ -207,7 +207,7 @@ bool do_deal_with_library_conflicts(ConflictList* pList, LibType* pMasterLib, co
          pproject = projectLib.LookupEntry(name.c_str());
          ATLASSERT(pproject!=0);
 
-         std::vector<pgsLibraryEntryDifferenceItem*> vDifferences;
+         std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>> vDifferences;
          bool bMustRename = false;
          bool bSame = (bForceUpdate ? pmaster->IsEqual(*pproject) : pmaster->Compare(*pproject,vDifferences,bMustRename));
          if (!bSame)
@@ -217,7 +217,7 @@ bool do_deal_with_library_conflicts(ConflictList* pList, LibType* pMasterLib, co
             {
                // the library entry was lazy and didn't specify the exact nature of the conflict.
                // provide something to show in the conflict resolution dialog
-               vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Unspecified conflicts"),_T(""),_T("")));
+               vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Unspecified conflicts"),_T(""),_T("")));
             }
 
             LibConflictOutcome res;
@@ -232,7 +232,6 @@ bool do_deal_with_library_conflicts(ConflictList* pList, LibType* pMasterLib, co
                res = psglibResolveLibraryEntryConflict(publisher,configuration,name,libName,master_keys,isImported,vDifferences,bMustRename,&new_name);
             }
 
-            std::for_each(vDifferences.begin(),vDifferences.end(),pgsDeleteLibraryEntryConflictItem);
             vDifferences.clear();
 
             if (res==Rename)
@@ -278,7 +277,7 @@ bool do_deal_with_library_conflicts(ConflictList* pList, LibType* pMasterLib, co
    return true;
 }
 
-bool PSGLIBFUNC WINAPI psglibDealWithLibraryConflicts(ConflictList* pList, psgLibraryManager* pMasterMgr, const psgLibraryManager& projectMgr, bool isImported, bool bForceUpdate)
+bool psglibDealWithLibraryConflicts(ConflictList* pList, psgLibraryManager* pMasterMgr, const psgLibraryManager& projectMgr, bool isImported, bool bForceUpdate)
 {
    // cycle through project library and see if entry names match master library. If the names
    // match and the entries are the same, no problem. If the entry names match and the entries are
@@ -341,18 +340,18 @@ bool PSGLIBFUNC WINAPI psglibDealWithLibraryConflicts(ConflictList* pList, psgLi
    return true;
 }
 
-bool do_make_saveable_copy(const libILibrary& lib, libILibrary* ptempLib)
+bool do_make_saveable_copy(const WBFL::Library::ILibrary& lib, WBFL::Library::ILibrary* ptempLib)
 {
-   libKeyListType key_list;
+   WBFL::Library::KeyListType key_list;
    lib.KeyList(key_list);
-   for (libKeyListIterator i = key_list.begin(); i!=key_list.end(); i++)
+   for (WBFL::Library::KeyListIterator i = key_list.begin(); i!=key_list.end(); i++)
    {
       LPCTSTR key = i->c_str();
       // only copy entries to temp library if they are not read only, or if 
       // they are referenced
       if (lib.IsEditingEnabled(key) || lib.GetEntryRefCount(key)>0)
       {
-         std::unique_ptr<libLibraryEntry> pent(lib.CreateEntryClone(key));
+         std::unique_ptr<WBFL::Library::LibraryEntry> pent(lib.CreateEntryClone(key));
          if (!ptempLib->AddEntry(*pent, key))
          {
             return false;
@@ -363,7 +362,7 @@ bool do_make_saveable_copy(const libILibrary& lib, libILibrary* ptempLib)
 }
 
 
-bool PSGLIBFUNC WINAPI psglibMakeSaveableCopy(const psgLibraryManager& libMgr, psgLibraryManager* ptempManager)
+bool psglibMakeSaveableCopy(const psgLibraryManager& libMgr, psgLibraryManager* ptempManager)
 {
    // concrete entries
    if (!do_make_saveable_copy(libMgr.GetConcreteLibrary(), &(ptempManager->GetConcreteLibrary())))
@@ -428,7 +427,7 @@ bool PSGLIBFUNC WINAPI psglibMakeSaveableCopy(const psgLibraryManager& libMgr, p
    return true;
 }
 
-void PSGLIBFUNC WINAPI psglibCreateLibNameEnum( std::vector<std::_tstring>* pNames, const libILibrary& prjLib)
+void psglibCreateLibNameEnum( std::vector<std::_tstring>* pNames, const WBFL::Library::ILibrary& prjLib)
 {
    pNames->clear();
 
@@ -436,12 +435,7 @@ void PSGLIBFUNC WINAPI psglibCreateLibNameEnum( std::vector<std::_tstring>* pNam
    prjLib.KeyList( *pNames );
 }
 
-void pgsDeleteLibraryEntryConflictItem(pgsLibraryEntryDifferenceItem* pItem)
-{
-   delete pItem;
-}
-
-LibConflictOutcome PSGLIBFUNC WINAPI psglibResolveLibraryEntryConflict(const std::_tstring& strPublisher, const std::_tstring& strConfiguration, const std::_tstring& entryName, const std::_tstring& libName, const std::vector<std::_tstring>& keylists, bool isImported,const std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences,bool bMustRename,std::_tstring* pNewName)
+LibConflictOutcome psglibResolveLibraryEntryConflict(const std::_tstring& strPublisher, const std::_tstring& strConfiguration, const std::_tstring& entryName, const std::_tstring& libName, const std::vector<std::_tstring>& keylists, bool isImported,const std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences,bool bMustRename,std::_tstring* pNewName)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -471,7 +465,7 @@ LibConflictOutcome PSGLIBFUNC WINAPI psglibResolveLibraryEntryConflict(const std
    return result;
 }
 
-bool PSGLIBFUNC WINAPI psglibImportEntries(IStructuredLoad* pStrLoad,psgLibraryManager* pLibMgr)
+bool psglibImportEntries(IStructuredLoad* pStrLoad,psgLibraryManager* pLibMgr)
 {
    // Load the library data into a temporary library. Then deal with entry
    // conflict resolution.
@@ -635,23 +629,23 @@ HRESULT pgslibLoadLibrary(IStructuredLoad* pStrLoad,psgLibraryManager* pLibMgr,e
          pStrLoad->EndUnit(); // _T("LIBRARY_EDITOR")
       }
    }
-   catch (const sysXStructuredLoad& rLoad)
+   catch (const WBFL::System::XStructuredLoad& rLoad)
    {
-      sysXStructuredLoad::Reason reason = rLoad.GetExplicitReason();
+      WBFL::System::XStructuredLoad::Reason reason = rLoad.GetReasonCode();
       CString cmsg;
       if (bIsMasterLibrary)
       {
          cmsg = _T("Error loading Master Library\n\n");
       }
-      if (reason == sysXStructuredLoad::InvalidFileFormat)
+      if (reason == WBFL::System::XStructuredLoad::InvalidFileFormat)
       {
          cmsg += _T("Invalid file format. The file may have been corrupted. Extended error information is as follows: ");
       }
-      else if (reason == sysXStructuredLoad::BadVersion)
+      else if (reason == WBFL::System::XStructuredLoad::BadVersion)
       {
          cmsg += _T("Data file was written by a newer program version. Please upgrade this software. Extended error information is as follows: ");
       }
-      else if (reason == sysXStructuredLoad::UserDefined)
+      else if (reason == WBFL::System::XStructuredLoad::UserDefined)
       {
          //cmsg = _T("Error reading file. Extended error information is as follows:");
       }
@@ -660,8 +654,7 @@ HRESULT pgslibLoadLibrary(IStructuredLoad* pStrLoad,psgLibraryManager* pLibMgr,e
          cmsg += _T("Undetermined error reading data file.  Extended error information is as follows: ");
       }
 
-      std::_tstring msg;
-      rLoad.GetErrorMessage(&msg);
+      std::_tstring msg = rLoad.GetErrorMessage();
       cmsg += msg.c_str();
 
       AfxMessageBox(cmsg, MB_OK | MB_ICONEXCLAMATION);
@@ -693,7 +686,7 @@ HRESULT RegisterComponents(bool bRegister)
    HRESULT hr = S_OK;
 
    // Need to register the library application plugin with the PGSuperAppPlugin category
-   hr = sysComCatMgr::RegWithCategory(CLSID_LibraryAppPlugin,CATID_BridgeLinkAppPlugin,bRegister);
+   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_LibraryAppPlugin,CATID_BridgeLinkAppPlugin,bRegister);
    if ( FAILED(hr) )
    {
       return hr;

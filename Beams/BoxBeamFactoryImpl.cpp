@@ -47,6 +47,10 @@
 
 #include <Beams\Helper.h>
 
+#include <psgLib/SectionPropertiesCriteria.h>
+#include <psgLib/SpecificationCriteria.h>
+
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -236,7 +240,7 @@ void CBoxBeamFactoryImpl::CreateDistFactorEngineer(IBroker* pBroker,StatusItemID
 void CBoxBeamFactoryImpl::CreatePsLossEngineer(IBroker* pBroker,StatusItemIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const
 {
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
-   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       CComObject<CTimeStepLossEngineer>* pEngineer;
       CComObject<CTimeStepLossEngineer>::CreateInstance(&pEngineer);
@@ -265,7 +269,7 @@ const std::vector<Float64>& CBoxBeamFactoryImpl::GetDefaultDimensions() const
    return m_DefaultDims;
 }
 
-const std::vector<const unitLength*>& CBoxBeamFactoryImpl::GetDimensionUnits(bool bSIUnits) const
+const std::vector<const WBFL::Units::Length*>& CBoxBeamFactoryImpl::GetDimensionUnits(bool bSIUnits) const
 {
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
@@ -594,13 +598,16 @@ std::_tstring CBoxBeamFactoryImpl::GetInteriorGirderEffectiveFlangeWidthImage(IB
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
+   const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();
 
    std::_tstring strImage;
    switch(deckType)
    {
    case pgsTypes::sdtCompositeCIP:
    case pgsTypes::sdtCompositeSIP:
-      if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
+      if (section_properties_criteria.EffectiveFlangeWidthMethod == pgsTypes::efwmTribWidth ||
+         WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims <= specification_criteria.GetEdition())
       {
          strImage =  _T("SpreadBoxBeam_Effective_Flange_Width_Interior_Girder_2008.gif");
       }
@@ -611,7 +618,8 @@ std::_tstring CBoxBeamFactoryImpl::GetInteriorGirderEffectiveFlangeWidthImage(IB
       break;
 
    case pgsTypes::sdtCompositeOverlay:
-      if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
+      if (section_properties_criteria.EffectiveFlangeWidthMethod == pgsTypes::efwmTribWidth ||
+         WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims <= specification_criteria.GetEdition())
       {
          strImage =  _T("BoxBeam_Effective_Flange_Width_Interior_Girder_2008.gif");
       }
@@ -635,13 +643,16 @@ std::_tstring CBoxBeamFactoryImpl::GetExteriorGirderEffectiveFlangeWidthImage(IB
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
+   const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();
 
    std::_tstring strImage;
    switch(deckType)
    {
    case pgsTypes::sdtCompositeCIP:
    case pgsTypes::sdtCompositeSIP:
-      if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
+      if (section_properties_criteria.EffectiveFlangeWidthMethod == pgsTypes::efwmTribWidth ||
+         WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims <= specification_criteria.GetEdition())
       {
          strImage =  _T("SpreadBoxBeam_Effective_Flange_Width_Exterior_Girder_2008.gif");
       }
@@ -652,7 +663,8 @@ std::_tstring CBoxBeamFactoryImpl::GetExteriorGirderEffectiveFlangeWidthImage(IB
       break;
 
    case pgsTypes::sdtCompositeOverlay:
-      if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
+      if (section_properties_criteria.EffectiveFlangeWidthMethod == pgsTypes::efwmTribWidth ||
+         WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims <= specification_criteria.GetEdition())
       {
          strImage =  _T("BoxBeam_Effective_Flange_Width_Exterior_Girder_2008.gif");
       }

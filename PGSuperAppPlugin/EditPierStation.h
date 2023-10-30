@@ -23,9 +23,9 @@
 #ifndef INCLUDED_EDITPIERSTATION_H_
 #define INCLUDED_EDITPIERSTATION_H_
 
-#include <System\Transaction.h>
+#include <EAF\EAFTransaction.h>
 
-class txnEditPierStation : public txnTransaction
+class txnEditPierStation : public CEAFTransaction
 {
 public:
    txnEditPierStation(PierIndexType pierIdx,Float64 oldStation,Float64 newStation,pgsTypes::MovePierOption moveOption);
@@ -34,10 +34,10 @@ public:
 
    virtual bool Execute();
    virtual void Undo();
-   virtual txnTransaction* CreateClone() const;
+   virtual std::unique_ptr<CEAFTransaction>CreateClone() const;
    virtual std::_tstring Name() const;
-   virtual bool IsUndoable();
-   virtual bool IsRepeatable();
+   virtual bool IsUndoable() const;
+   virtual bool IsRepeatable() const;
 
 private:
    void DoExecute(int i);

@@ -45,17 +45,17 @@ static const int NUM_TYPES = 4;
 struct TxDOTStrandType
 {
    CString            Name;
-   matPsStrand::Type  Type;
-   matPsStrand::Grade Grade;
-   matPsStrand::Coating Coating;
+   WBFL::Materials::PsStrand::Type  Type;
+   WBFL::Materials::PsStrand::Grade Grade;
+  WBFL::Materials::PsStrand::Coating Coating;
 };
 
-static TxDOTStrandType StrandTypeList[NUM_TYPES] = { {_T("Grade 250, Low Relaxation"),matPsStrand::LowRelaxation,matPsStrand::Gr1725,matPsStrand::None},
-                                                {_T("Grade 250, Stress Relieved"),matPsStrand::StressRelieved,matPsStrand::Gr1725,matPsStrand::None},
-                                                {_T("Grade 270, Low Relaxation"),matPsStrand::LowRelaxation,matPsStrand::Gr1860,matPsStrand::None},
-                                                {_T("Grade 270, Stress Relieved"),matPsStrand::StressRelieved,matPsStrand::Gr1860,matPsStrand::None} };
+static TxDOTStrandType StrandTypeList[NUM_TYPES] = { {_T("Grade 250, Low Relaxation"),WBFL::Materials::PsStrand::Type::LowRelaxation, WBFL::Materials::PsStrand::Grade::Gr1725,WBFL::Materials::PsStrand::Coating::None},
+                                                   {_T("Grade 250, Stress Relieved"), WBFL::Materials::PsStrand::Type::StressRelieved,WBFL::Materials::PsStrand::Grade::Gr1725,WBFL::Materials::PsStrand::Coating::None},
+                                                   {_T("Grade 270, Low Relaxation"),  WBFL::Materials::PsStrand::Type::LowRelaxation, WBFL::Materials::PsStrand::Grade::Gr1860,WBFL::Materials::PsStrand::Coating::None},
+                                                   {_T("Grade 270, Stress Relieved"), WBFL::Materials::PsStrand::Type::StressRelieved,WBFL::Materials::PsStrand::Grade::Gr1860,WBFL::Materials::PsStrand::Coating::None} };
 
-static int GetStrandTypeIndex(matPsStrand::Type type, matPsStrand::Grade grade,matPsStrand::Coating coating)
+static int GetStrandTypeIndex(WBFL::Materials::PsStrand::Type type, WBFL::Materials::PsStrand::Grade grade, WBFL::Materials::PsStrand::Coating coating)
 {
    for(int i=0; i<NUM_TYPES; i++)
    {
@@ -173,9 +173,9 @@ void CTxDOTOptionalDesignGirderInputPage::DoDataExchange(CDataExchange* pDX)
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   Float64 min_fc  = ::ConvertToSysUnits( 4.0,  unitMeasure::KSI); 
-   Float64 max_fci = ::ConvertToSysUnits(10.0,  unitMeasure::KSI); 
-   Float64 max_fc  = ::ConvertToSysUnits(15.0,  unitMeasure::KSI); 
+   Float64 min_fc  = WBFL::Units::ConvertToSysUnits( 4.0,  WBFL::Units::Measure::KSI); 
+   Float64 max_fci = WBFL::Units::ConvertToSysUnits(10.0,  WBFL::Units::Measure::KSI); 
+   Float64 max_fc  = WBFL::Units::ConvertToSysUnits(15.0,  WBFL::Units::Measure::KSI); 
 
    // precaster opt
    DDX_CBItemData(pDX, IDC_OPT_FILLTYPE_COMBO, (int&)m_OptStrandFillType);
@@ -318,7 +318,7 @@ void CTxDOTOptionalDesignGirderInputPage::LoadDialogData()
 
 void CTxDOTOptionalDesignGirderInputPage::SaveDialogData()
 {
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+   const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
 
    // Optional Design
    CTxDOTOptionalDesignGirderData* pOptGirderData = m_pData->GetPrecasterDesignGirderData();
@@ -329,7 +329,7 @@ void CTxDOTOptionalDesignGirderInputPage::SaveDialogData()
    int sel = pList->GetCurSel();
    ASSERT(sel!=CB_ERR);
    DWORD_PTR key = pList->GetItemData( sel );
-   const matPsStrand* pmat = pPool->GetStrand( (Int32)key );
+   const auto* pmat = pPool->GetStrand( (Int32)key );
 
    pOptGirderData->SetStrandData(pmat->GetGrade(), pmat->GetType(), pmat->GetCoating(), pmat->GetSize());
 
@@ -385,10 +385,10 @@ void CTxDOTOptionalDesignGirderInputPage::InitOptStrandSizeTypeCtrls()
    CTxDOTOptionalDesignGirderData* pOptionalGirderData = m_pData->GetPrecasterDesignGirderData();
 
    // strand type, grade, size
-   matPsStrand::Type type;
-   matPsStrand::Grade grade;
-   matPsStrand::Coating coating;
-   matPsStrand::Size size;
+   WBFL::Materials::PsStrand::Type type;
+   WBFL::Materials::PsStrand::Grade grade;
+  WBFL::Materials::PsStrand::Coating coating;
+   WBFL::Materials::PsStrand::Size size;
    pOptionalGirderData->GetStrandData(&grade,&type,&coating,&size);
 
    // set type control
@@ -408,10 +408,10 @@ void CTxDOTOptionalDesignGirderInputPage::InitOrigStrandSizeTypeCtrls()
    CTxDOTOptionalDesignGirderData* pOriginalGirderData = m_pData->GetOriginalDesignGirderData();
 
    // strand type, grade, size
-   matPsStrand::Type type;
-   matPsStrand::Grade grade;
-   matPsStrand::Coating coating;
-   matPsStrand::Size size;
+   WBFL::Materials::PsStrand::Type type;
+   WBFL::Materials::PsStrand::Grade grade;
+  WBFL::Materials::PsStrand::Coating coating;
+   WBFL::Materials::PsStrand::Size size;
    pOriginalGirderData->GetStrandData(&grade,&type,&coating,&size);
 
    // set type control
@@ -488,30 +488,30 @@ void CTxDOTOptionalDesignGirderInputPage::InitFillTypeCtrls()
    }
 }
 
-void CTxDOTOptionalDesignGirderInputPage::UpdateStrandSizeList(long StrandSizeListCtrlID, matPsStrand::Grade grade,matPsStrand::Type type,matPsStrand::Coating coating, matPsStrand::Size size)
+void CTxDOTOptionalDesignGirderInputPage::UpdateStrandSizeList(long StrandSizeListCtrlID, WBFL::Materials::PsStrand::Grade grade,WBFL::Materials::PsStrand::Type type, WBFL::Materials::PsStrand::Coating coating, WBFL::Materials::PsStrand::Size size)
 {
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+   const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
 
    CComboBox* pList = (CComboBox*)GetDlgItem( StrandSizeListCtrlID );
 
    // Retain information about the current selection so we can attempt to re-select the
    // same size after the combo box is updated.
    int cur_sel = pList->GetCurSel();
-   matPsStrand::Size cur_size = size;
+   WBFL::Materials::PsStrand::Size cur_size = size;
    if ( cur_sel != CB_ERR )
    {
       DWORD_PTR cur_key = pList->GetItemData( cur_sel );
-      const matPsStrand* pCurStrand = pPool->GetStrand( (Int32)cur_key );
+      const auto* pCurStrand = pPool->GetStrand( (Int32)cur_key );
       cur_size = pCurStrand->GetSize();
    }
 
    pList->ResetContent();
-   lrfdStrandIter iter( grade, type, coating );
+   WBFL::LRFD::StrandIter iter( grade, type, coating );
    int sel_count = 0;  // Keep count of the number of strings added to the combo box
    int new_cur_sel = -1; // This will be in index of the string we want to select.
    for ( iter.Begin(); iter; iter.Next() )
    {
-      const matPsStrand* pStrand = iter.GetCurrentStrand();
+      const auto* pStrand = iter.GetCurrentStrand();
       CString size = get_strand_size( pStrand->GetSize() );
       int idx = pList->AddString( size );
 
@@ -554,11 +554,11 @@ void CTxDOTOptionalDesignGirderInputPage::OnStrandTypeChanged(long SizeCtrlID, l
    int idx = ptype_ctrl->GetCurSel();
    ASSERT(idx!=CB_ERR);
 
-   matPsStrand::Grade grade = StrandTypeList[idx].Grade;
-   matPsStrand::Type  type  = StrandTypeList[idx].Type;
-   matPsStrand::Coating coating = StrandTypeList[idx].Coating;
+   WBFL::Materials::PsStrand::Grade grade = StrandTypeList[idx].Grade;
+   WBFL::Materials::PsStrand::Type  type  = StrandTypeList[idx].Type;
+   WBFL::Materials::PsStrand::Coating coating = StrandTypeList[idx].Coating;
 
-   UpdateStrandSizeList( SizeCtrlID, grade, type, coating, matPsStrand::D635);	
+   UpdateStrandSizeList( SizeCtrlID, grade, type, coating, WBFL::Materials::PsStrand::Size::D635);
 }
 
 BOOL CTxDOTOptionalDesignGirderInputPage::OnSetActive()

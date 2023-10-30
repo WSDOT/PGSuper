@@ -295,7 +295,7 @@ void CParabolicDuctDlg::OnHelp()
 void CParabolicDuctDlg::OnSchematicButton()
 {
    auto mm = m_DrawTendons.GetMapMode();
-   mm = (mm == grlibPointMapper::Isotropic ? grlibPointMapper::Anisotropic : grlibPointMapper::Isotropic);
+   mm = (mm == WBFL::Graphing::PointMapper::MapMode::Isotropic ? WBFL::Graphing::PointMapper::MapMode::Anisotropic : WBFL::Graphing::PointMapper::MapMode::Isotropic);
    m_DrawTendons.SetMapMode(mm);
 }
 
@@ -304,7 +304,7 @@ const CParabolicDuctGeometry& CParabolicDuctDlg::GetDuctGeometry() const
    return m_PTData.GetDuct(m_DuctIdx)->ParabolicDuctGeometry;
 }
 
-grlibPointMapper::MapMode CParabolicDuctDlg::GetTendonControlMapMode() const
+WBFL::Graphing::PointMapper::MapMode CParabolicDuctDlg::GetTendonControlMapMode() const
 {
    return m_DrawTendons.GetMapMode();
 }

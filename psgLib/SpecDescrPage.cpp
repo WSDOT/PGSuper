@@ -28,6 +28,7 @@
 #include "SpecDescrPage.h"
 #include "SpecMainSheet.h"
 #include <EAF\EAFDocument.h>
+#include <psgLib/ShearCapacityCriteria.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -84,20 +85,19 @@ void CSpecDescrPage::OnHelp()
 BOOL CSpecDescrPage::OnInitDialog() 
 {
    CComboBox* pSpec = (CComboBox*)GetDlgItem(IDC_SPECIFICATION);
-   int idx;
-   for ( int i = 1; i < (int)lrfdVersionMgr::LastVersion; i++ )
+   for(auto e : pgsTypes::enum_range<WBFL::LRFD::BDSManager::Edition>(WBFL::LRFD::BDSManager::Edition::FirstEdition1994,WBFL::LRFD::BDSManager::GetLatestEdition()))
    {
-      idx = pSpec->AddString(lrfdVersionMgr::GetVersionString((lrfdVersionMgr::Version)(i)));
-      pSpec->SetItemData(idx,(DWORD)(i));
+      int idx = pSpec->AddString(WBFL::LRFD::BDSManager::GetEditionAsString(e));
+      pSpec->SetItemData(idx,(DWORD)(e));
    }
 
    CSpecMainSheet* pParent = (CSpecMainSheet*)GetParent();
-   lrfdVersionMgr::Version version = pParent->GetSpecVersion();
+   WBFL::LRFD::BDSManager::Edition version = pParent->GetSpecVersion();
 
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_EFF_FLANGE_WIDTH);
    pCB->AddString(_T("in accordance with LRFD 4.6.2.6"));
 
-   if ( version < lrfdVersionMgr::FourthEditionWith2008Interims )
+   if ( version < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims )
    {
       pCB->AddString(_T("using the tributary width"));
    }
@@ -119,11 +119,11 @@ void CSpecDescrPage::OnCancelMode()
 	CPropertyPage::OnCancelMode();
 }
 
-lrfdVersionMgr::Version CSpecDescrPage::GetSpecVersion()
+WBFL::LRFD::BDSManager::Edition CSpecDescrPage::GetSpecVersion()
 {
    CComboBox* pSpec = (CComboBox*)GetDlgItem(IDC_SPECIFICATION);
    int idx = pSpec->GetCurSel();
-   return (lrfdVersionMgr::Version)(pSpec->GetItemData(idx));
+   return (WBFL::LRFD::BDSManager::Edition)(pSpec->GetItemData(idx));
 }
 
 void CSpecDescrPage::OnSpecificationChanged()
@@ -133,7 +133,7 @@ void CSpecDescrPage::OnSpecificationChanged()
    DWORD_PTR id = pSpec->GetItemData(idx);
 
    BOOL enable_si = TRUE;
-   if ((DWORD)lrfdVersionMgr::ThirdEditionWith2006Interims < id)
+   if ((DWORD)WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2006Interims < id)
    {
       CheckRadioButton(IDC_SPEC_UNITS_SI,IDC_SPEC_UNITS_US,IDC_SPEC_UNITS_US);
       enable_si = FALSE;
@@ -144,15 +144,16 @@ void CSpecDescrPage::OnSpecificationChanged()
 
    // Vci/Vcw method was removed from spec in 2017
    CSpecMainSheet* pParent = (CSpecMainSheet*)GetParent();
-   lrfdVersionMgr::Version version = pParent->GetSpecVersion();
+   WBFL::LRFD::BDSManager::Edition version = pParent->GetSpecVersion();
 
-   if (lrfdVersionMgr::EighthEdition2017 <= version)
+   if (WBFL::LRFD::BDSManager::Edition::EighthEdition2017 <= version)
    {
-      pgsTypes::ShearCapacityMethod method = pParent->m_Entry.GetShearCapacityMethod();
-      if (method==pgsTypes::scmVciVcw)
+      auto shear_capacity_criteria = pParent->m_Entry.GetShearCapacityCriteria();
+      if (shear_capacity_criteria.CapacityMethod == pgsTypes::scmVciVcw)
       {
          ::AfxMessageBox(_T("The Vci/Vcw method is currently selected for computing shear capacity, and this method was removed from the LRFD Bridge Design Specifications in the 8th Edition, 2017. The shear capacity method will be changed to compute in accordance with the General Method per LRFD 5.7.3.5.\nVisit the Shear Capacity tab for more options."), MB_OK|MB_ICONWARNING);
-         pParent->m_Entry.SetShearCapacityMethod(pgsTypes::scmBTEquations);
+         shear_capacity_criteria.CapacityMethod = pgsTypes::scmBTEquations;
+         pParent->m_Entry.SetShearCapacityCriteria(shear_capacity_criteria);
       }
    }
 }

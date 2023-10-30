@@ -94,7 +94,7 @@ void CCatalogServerAppMixin::LoadRegistrySettings()
 
    CAutoRegistry autoReg(GetAppName(),pApp);
 
-   // The default values are read from HKEY_LOCAL_MACHINE\Software\Washington State Deparment of Transportation\PGSuper
+   // The default values are read from HKEY_LOCAL_MACHINE\Software\Washington State Department of Transportation\PGSuper
    // If the default values are missing, the hard coded defaults found herein are used.
    // Install writers can create MSI transforms to alter the "defaults" by changing the registry values
 
@@ -282,7 +282,7 @@ CString CCatalogServerAppMixin::GetMasterLibraryPublisher() const
       break;
 
    case srtLocalIni:
-      strPublisher = _T("Ini File Published on Local Network");
+      strPublisher = _T("INI File Published on Local Network");
       break;
 
    default:
@@ -374,7 +374,7 @@ void CCatalogServerAppMixin::OnOK(CPropertyPage* pPage)
       m_Publisher            = original_publisher;
       m_CatalogServers       = original_servers;
    }
-   SaveRegistryValues(); // Saves all the current settings to the registery
+   SaveRegistryValues(); // Saves all the current settings to the registry
                          // There is no sense waiting until PGSuper closes to do this
 }
 
@@ -406,8 +406,8 @@ void CCatalogServerAppMixin::UpdateCache()
          else
          {
             // There aren't any update pending... set the last update date to now, otherwise
-            // pgsuper will check for updates every day until there are some
-            sysDate now;
+            // PGSuper will check for updates every day until there are some
+            WBFL::System::Date now;
             SetLastCacheUpdateDate(now);
          }
       }
@@ -508,8 +508,8 @@ bool CCatalogServerAppMixin::IsTimeToUpdateCache() const
    }
    else 
    {
-      sysDate now;
-      sysDate last_update = GetLastCacheUpdateDate();
+      WBFL::System::Date now;
+      WBFL::System::Date last_update = GetLastCacheUpdateDate();
 
       Int16 update_frequency = 0; // in days
       if ( m_CacheUpdateFrequency == Daily )
@@ -528,7 +528,7 @@ bool CCatalogServerAppMixin::IsTimeToUpdateCache() const
          update_frequency = 30;
       }
 
-      sysDate next_update = last_update;
+      WBFL::System::Date next_update = last_update;
       next_update += update_frequency;
 
       if ( next_update <= now )
@@ -688,7 +688,7 @@ bool CCatalogServerAppMixin::DoCacheUpdate()
    if ( bSuccessful )
    {
       DeleteCache(strSaveCache);
-      sysDate now;
+      WBFL::System::Date now;
       SetLastCacheUpdateDate(now);
    }
    else
@@ -716,17 +716,17 @@ bool CCatalogServerAppMixin::DoCacheUpdate()
    return bSuccessful;
 }
 
-sysDate CCatalogServerAppMixin::GetLastCacheUpdateDate() const
+WBFL::System::Date CCatalogServerAppMixin::GetLastCacheUpdateDate() const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CEAFApp* pApp = EAFGetApp();
    CAutoRegistry autoReg(GetAppName(),pApp);
 
-   JulTy last_update = pApp->GetProfileInt(_T("Settings"),_T("LastCacheUpdate"),0);
-   return sysDate(last_update);
+   WBFL::System::JulTy last_update = pApp->GetProfileInt(_T("Settings"),_T("LastCacheUpdate"),0);
+   return WBFL::System::Date(last_update);
 }
 
-void CCatalogServerAppMixin::SetLastCacheUpdateDate(const sysDate& date)
+void CCatalogServerAppMixin::SetLastCacheUpdateDate(const WBFL::System::Date& date)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CEAFApp* pApp = EAFGetApp();
@@ -750,7 +750,7 @@ CString CCatalogServerAppMixin::GetDefaultMasterLibraryFile() const
 #endif
 #else
    // in a real release, the path doesn't contain RegFreeCOM\\Release, but that's
-   // ok... the replace will fail and the string wont be altered.
+   // OK... the replace will fail and the string wont be altered.
 #if defined _WIN64
    strAppPath.Replace(_T("REGFREECOM\\X64\\RELEASE\\"),_T(""));
 #else
@@ -776,7 +776,7 @@ CString CCatalogServerAppMixin::GetDefaultWorkgroupTemplateFolder() const
 #endif
 #else
    // in a real release, the path doesn't contain RegFreeCOM\\Release, but that's
-   // ok... the replace will fail and the string wont be altered.
+   // OK... the replace will fail and the string wont be altered.
 #if defined _WIN64
    strAppPath.Replace(_T("REGFREECOM\\X64\\RELEASE\\"),_T(""));
 #else

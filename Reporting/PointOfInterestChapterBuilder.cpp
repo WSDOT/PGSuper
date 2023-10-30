@@ -45,9 +45,9 @@ LPCTSTR CPointOfInterestChapterBuilder::GetName() const
    return TEXT("Points of Interest");
 }
 
-rptChapter* CPointOfInterestChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CPointOfInterestChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderLineReportSpecification* pGdrRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
+   auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGdrRptSpec->GetBroker(&pBroker);
 
@@ -67,9 +67,9 @@ rptChapter* CPointOfInterestChapterBuilder::Build(CReportSpecification* pRptSpec
    return pChapter;
 }
 
-CChapterBuilder* CPointOfInterestChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CPointOfInterestChapterBuilder::Clone() const
 {
-   return new CPointOfInterestChapterBuilder;
+   return std::make_unique<CPointOfInterestChapterBuilder>();
 }
 
 void CPointOfInterestChapterBuilder::ReportPoi(LPCTSTR strName,PoiAttributeType attribute,rptChapter* pChapter,const CGirderKey& girderKey,IBroker* pBroker,IPointOfInterest* pPoi,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const
@@ -91,7 +91,7 @@ void CPointOfInterestChapterBuilder::ReportPoi(LPCTSTR strName,PoiAttributeType 
       pPoi->GetPointsOfInterest(CSegmentKey(ALL_GROUPS,gdrIdx,ALL_SEGMENTS),attribute,&vPoi);
    }
 
-   (*pPara) << _T("Number of POI = ") << (CollectionIndexType)vPoi.size() << rptNewLine;
+   (*pPara) << _T("Number of POI = ") << (IndexType)vPoi.size() << rptNewLine;
 
    ColumnIndexType col = 0;
 

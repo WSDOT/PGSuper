@@ -39,6 +39,7 @@
 #include <PgsExt\SplicedGirderData.h>
 #include <PgsExt\BridgeDescription2.h>
 #include <IFace\ExtendUI.h>
+#include <EAF\EAFMacroTxn.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescDlg
@@ -73,7 +74,7 @@ public:
    CShearSteelPage2             m_Shear;
    CGirderDescLongitudinalRebar m_LongRebar;
    CGirderDescLiftingPage       m_Lifting;
-   CGirderDescDebondPage        m_Debond;
+   CGirderDescDebondPage        m_StrandExtensionandDebond;
    CSpanGdrDetailsBearingsPage m_SpanGdrDetailsBearingsPage;
 
    std::_tstring m_strGirderName;
@@ -104,12 +105,12 @@ public:
 	virtual INT_PTR DoModal();
 
    // Returns a macro transaction object that contains editing transactions
-   // for all the extension pages. The caller is responsble for deleting this object
-   txnTransaction* GetExtensionPageTransaction();
+   // for all the extension pages. The caller is responsible for deleting this object
+   std::unique_ptr<CEAFTransaction> GetExtensionPageTransaction();
 
    void InitialzePages();
 
-   void OnGirderTypeChanged(bool bAllowExtendedStrands,bool bIsDebonding);
+   void OnGirderTypeChanged(bool bGridBasedStrandInput);
 
 
 protected:
@@ -122,10 +123,10 @@ protected:
    void SetDebondTabName();
    ConfigStrandFillVector ComputeStrandFillVector(pgsTypes::StrandType type);
 
-   void AddAdditionalPropertyPages(bool bAllowExtendedStrands,bool bIsDebonding);
+   void AddAdditionalPropertyPages(bool bGridBasedStrandInput);
 
 
-   txnMacroTxn m_Macro;
+   CEAFMacroTxn m_Macro;
    std::vector<std::pair<IEditGirderCallback*,CPropertyPage*>> m_ExtensionPages;
    void NotifyExtensionPages();
 

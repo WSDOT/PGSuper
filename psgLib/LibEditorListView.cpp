@@ -144,21 +144,21 @@ void CLibEditorListView::RedrawAllEntries()
       // get names of all entries and update list control
       CDocument* pDoc = GetDocument();
       libISupportLibraryManager* pLibMgr = dynamic_cast<libISupportLibraryManager*>(pDoc);
-      CollectionIndexType num_managers = pLibMgr->GetNumberOfLibraryManagers();
+      IndexType num_managers = pLibMgr->GetNumberOfLibraryManagers();
       ASSERT(num_managers);
 
       // first we need to determine the total number of images in our imagelist
-      CollectionIndexType num_entries=0;
-      CollectionIndexType ilm = 0;
+      IndexType num_entries=0;
+      IndexType ilm = 0;
       for (ilm = 0; ilm < num_managers; ilm++)
       {
-         libLibraryManager* plm = pLibMgr->GetLibraryManager(ilm);
+         WBFL::Library::LibraryManager* plm = pLibMgr->GetLibraryManager(ilm);
          ASSERT(plm!=0);
 
-         const libILibrary* plib = plm->GetLibrary(m_LibName);
+         const WBFL::Library::ILibrary* plib = plm->GetLibrary(m_LibName);
          ASSERT(plib!=0);
 
-         CollectionIndexType cnt = plib->GetCount();
+         IndexType cnt = plib->GetCount();
          num_entries += cnt;
       }
 
@@ -169,23 +169,23 @@ void CLibEditorListView::RedrawAllEntries()
       
       for (ilm = 0; ilm < num_managers; ilm++)
       {
-         libLibraryManager* plm = pLibMgr->GetLibraryManager(ilm);
+         WBFL::Library::LibraryManager* plm = pLibMgr->GetLibraryManager(ilm);
          ASSERT(plm!=0);
 
-         const libILibrary* plib = plm->GetLibrary(m_LibName);
+         const WBFL::Library::ILibrary* plib = plm->GetLibrary(m_LibName);
          ASSERT(plib!=0);
 
          if ( !plib->IsDepreciated() )
          {
             int i = 0;
-            libKeyListType key_list;
+            WBFL::Library::KeyListType key_list;
             plib->KeyList(key_list);
-            libKeyListIterator iter(key_list.begin());
-            libKeyListIterator iterEnd(key_list.end());
+            auto iter(key_list.begin());
+            auto iterEnd(key_list.end());
             for ( ; iter != iterEnd; iter++ )
             {
                const std::_tstring& name = *iter;
-               const libLibraryEntry* pEntry = plib->GetEntry(name.c_str());
+               const WBFL::Library::LibraryEntry* pEntry = plib->GetEntry(name.c_str());
                ATLASSERT(pEntry);
                int st = InsertEntryToList(pEntry, plib, i);
                ATLASSERT(st!=-1);
@@ -200,10 +200,10 @@ bool CLibEditorListView::AddNewEntry()
 {
    CDocument* pDoc = GetDocument();
    libISupportLibraryManager* pLibMgr = dynamic_cast<libISupportLibraryManager*>(pDoc);
-   libLibraryManager* plib_man = pLibMgr->GetTargetLibraryManager();
+   WBFL::Library::LibraryManager* plib_man = pLibMgr->GetTargetLibraryManager();
    ASSERT(plib_man != nullptr);
 
-   libILibrary* plib = plib_man->GetLibrary(m_LibName);
+   WBFL::Library::ILibrary* plib = plib_man->GetLibrary(m_LibName);
    ASSERT(plib != nullptr);
 
    std::_tstring name = plib->GetUniqueEntryName();
@@ -219,9 +219,9 @@ bool CLibEditorListView::AddNewEntry()
       images = rlist.GetImageList(LVSIL_SMALL);
       images->SetImageCount(ni);
 
-      CollectionIndexType n = plib->GetCount();
-      const libLibraryEntry* pentry = plib->GetEntry(name.c_str());
-      CollectionIndexType it = InsertEntryToList(pentry, plib, ni-1);
+      IndexType n = plib->GetCount();
+      const WBFL::Library::LibraryEntry* pentry = plib->GetEntry(name.c_str());
+      IndexType it = InsertEntryToList(pentry, plib, ni-1);
       if (it != -1)
       {
          m_ItemSelected = (int)it;
@@ -239,7 +239,7 @@ void CLibEditorListView::OnLButtonDblClk(UINT nFlags, CPoint point)
    CListCtrl& rlist = this->GetListCtrl();
 
    CString entry_name;
-   libILibrary* plib;
+   WBFL::Library::ILibrary* plib;
    if(GetSelectedEntry(&entry_name, &plib))
    {
       this->EditEntry(plib,entry_name);
@@ -271,7 +271,7 @@ void CLibEditorListView::OnRButtonDown(UINT nFlags, CPoint point)
       if ( idx != -1)
       {
          CString entry_name = rlist.GetItemText(m_ItemSelected,0);
-         libILibrary* plib = (libILibrary*)rlist.GetItemData(m_ItemSelected);
+         WBFL::Library::ILibrary* plib = (WBFL::Library::ILibrary*)rlist.GetItemData(m_ItemSelected);
          ASSERT(plib);
          UINT dodel = plib->IsEditingEnabled(entry_name) ? MF_ENABLED|MF_STRING : MF_GRAYED|MF_STRING;
          UINT dodup = plib->IsCopyingEnabled(entry_name) ? MF_ENABLED|MF_STRING : MF_GRAYED|MF_STRING;
@@ -293,16 +293,16 @@ void CLibEditorListView::OnRButtonDown(UINT nFlags, CPoint point)
    }
 }
 
-bool CLibEditorListView::EditEntry(libILibrary* plib, LPCTSTR entryName)
+bool CLibEditorListView::EditEntry(WBFL::Library::ILibrary* plib, LPCTSTR entryName)
 {
    ASSERT(plib);
    CDocument* pDoc = GetDocument();
    libISupportLibraryManager* pLibMgrDoc = dynamic_cast<libISupportLibraryManager*>(pDoc);
 
-   libILibrary::EntryEditOutcome eo = plib->EditEntry(entryName);
+   WBFL::Library::ILibrary::EntryEditOutcome eo = plib->EditEntry(entryName);
    switch(eo)
    {
-   case libILibrary::Ok:
+   case WBFL::Library::ILibrary::EntryEditOutcome::Ok:
       // document was changed-update.
       pDoc->SetModifiedFlag(true);
       this->RedrawAllEntries();
@@ -315,11 +315,11 @@ bool CLibEditorListView::EditEntry(libILibrary* plib, LPCTSTR entryName)
       }
       return true;
 
-   case libILibrary::RenameFailed:
+   case WBFL::Library::ILibrary::EntryEditOutcome::RenameFailed:
       AfxMessageBox(_T("The new name for the entry was invalid - Keeping the original name"));
       break;
 
-   case libILibrary::NotFound:
+   case WBFL::Library::ILibrary::EntryEditOutcome::NotFound:
       ASSERT(0); // this should never happen
       break;
    }
@@ -327,7 +327,7 @@ bool CLibEditorListView::EditEntry(libILibrary* plib, LPCTSTR entryName)
    return false;
 }
 
-void CLibEditorListView::DeleteEntry(libILibrary* plib, LPCTSTR entryName, bool force)
+void CLibEditorListView::DeleteEntry(WBFL::Library::ILibrary* plib, LPCTSTR entryName, bool force)
 {
    ASSERT(plib);
    int st = IDYES;
@@ -342,13 +342,13 @@ void CLibEditorListView::DeleteEntry(libILibrary* plib, LPCTSTR entryName, bool 
 
    if (st==IDYES)
    {
-      libILibrary::EntryRemoveOutcome ro = plib->RemoveEntry(entryName);
+      WBFL::Library::ILibrary::EntryRemoveOutcome ro = plib->RemoveEntry(entryName);
       switch(ro)
       {
-      case libILibrary::RemReferenced:
+      case WBFL::Library::ILibrary::EntryRemoveOutcome::Referenced:
          AfxMessageBox(_T("Entry is being used by other objects, cannot be deleted"));
          break;
-      case libILibrary::NotFound:
+      case WBFL::Library::ILibrary::EntryRemoveOutcome::NotFound:
          ASSERT(0); // this should never happen
          break;
       default:
@@ -360,18 +360,18 @@ void CLibEditorListView::DeleteEntry(libILibrary* plib, LPCTSTR entryName, bool 
    }
 }
 
-void CLibEditorListView::DuplicateEntry(libILibrary* plib, LPCTSTR entryName)
+void CLibEditorListView::DuplicateEntry(WBFL::Library::ILibrary* plib, LPCTSTR entryName)
 {
    ASSERT(plib);
 
    // entries can only be duplicated into target library manager
    CDocument* pDoc = GetDocument();
    libISupportLibraryManager* pLibMgr = dynamic_cast<libISupportLibraryManager*>(pDoc);
-   libLibraryManager* plib_man = pLibMgr->GetTargetLibraryManager();
+   WBFL::Library::LibraryManager* plib_man = pLibMgr->GetTargetLibraryManager();
    ASSERT(plib_man!=0);
 
    std::_tstring lib_name = plib->GetDisplayName();
-   libILibrary* ptarget_lib = plib_man->GetLibrary(lib_name.c_str());
+   WBFL::Library::ILibrary* ptarget_lib = plib_man->GetLibrary(lib_name.c_str());
    ASSERT(ptarget_lib);
 
    CString new_name = CString(entryName) + _T(" (Copy 1)");
@@ -395,7 +395,7 @@ void CLibEditorListView::DuplicateEntry(libILibrary* plib, LPCTSTR entryName)
    else
    {
        //entry exists in other than target library - must  copy across library bounds
-      std::unique_ptr<libLibraryEntry> pent(plib->CreateEntryClone(entryName));
+      std::unique_ptr<WBFL::Library::LibraryEntry> pent(plib->CreateEntryClone(entryName));
       ASSERT(pent.get() != nullptr);
       VERIFY(ptarget_lib->AddEntry(*pent, the_name));
    }
@@ -437,7 +437,7 @@ bool CLibEditorListView::IsEditableItemSelected()const
 {
    // the library must not be read only
    CString entry_name;
-   libILibrary* plib;
+   WBFL::Library::ILibrary* plib;
    if(GetSelectedEntry(&entry_name, &plib))
    {
       return plib->IsEditingEnabled(entry_name);
@@ -455,7 +455,7 @@ bool CLibEditorListView::IsLibrarySelected() const
 void CLibEditorListView::DeleteSelectedEntry()
 {
    CString entry_name;
-   libILibrary* plib;
+   WBFL::Library::ILibrary* plib;
    if(GetSelectedEntry(&entry_name, &plib))
    {
       if (plib->IsEditingEnabled(entry_name))
@@ -472,7 +472,7 @@ void CLibEditorListView::DeleteSelectedEntry()
 void CLibEditorListView::DuplicateSelectedEntry()
 {
    CString entry_name;
-   libILibrary* plib;
+   WBFL::Library::ILibrary* plib;
    if(GetSelectedEntry(&entry_name, &plib))
    {
       this->DuplicateEntry(plib,entry_name);
@@ -486,13 +486,13 @@ void CLibEditorListView::DuplicateSelectedEntry()
 bool CLibEditorListView::CanDuplicateEntry()
 {
    CString entry_name;
-   libILibrary* plib;
+   WBFL::Library::ILibrary* plib;
    if( !GetSelectedEntry(&entry_name, &plib) )
    {
       return false;
    }
 
-   const libLibraryEntry* pEntry = plib->GetEntry(entry_name);
+   const WBFL::Library::LibraryEntry* pEntry = plib->GetEntry(entry_name);
    if ( pEntry )
    {
       return pEntry->IsCopyingEnabled();
@@ -505,7 +505,7 @@ bool CLibEditorListView::CanDuplicateEntry()
 void CLibEditorListView::EditSelectedEntry()
 {
    CString entry_name;
-   libILibrary* plib;
+   WBFL::Library::ILibrary* plib;
    if(GetSelectedEntry(&entry_name, &plib))
    {
       this->EditEntry(plib,entry_name);
@@ -520,7 +520,7 @@ void CLibEditorListView::RenameSelectedEntry()
 {
    CListCtrl& rlist = this->GetListCtrl();
    CString entry_name;
-   libILibrary* plib;
+   WBFL::Library::ILibrary* plib;
    if(GetSelectedEntry(&entry_name, &plib))
    {
       rlist.SetFocus();
@@ -612,16 +612,16 @@ bool CLibEditorListView::DoesEntryExist(const CString& entryName)
    // in the named library
    CDocument* pDoc = GetDocument();
    libISupportLibraryManager* pLibMgr = dynamic_cast<libISupportLibraryManager*>(pDoc);
-   libLibraryManager* plib_man = pLibMgr->GetTargetLibraryManager();
+   WBFL::Library::LibraryManager* plib_man = pLibMgr->GetTargetLibraryManager();
 
-   CollectionIndexType num_managers = pLibMgr->GetNumberOfLibraryManagers();
+   IndexType num_managers = pLibMgr->GetNumberOfLibraryManagers();
    ASSERT(num_managers);
-   for (CollectionIndexType ilm=0; ilm<num_managers; ilm++)
+   for (IndexType ilm=0; ilm<num_managers; ilm++)
    {
-      libLibraryManager* plm = pLibMgr->GetLibraryManager(ilm);
+      WBFL::Library::LibraryManager* plm = pLibMgr->GetLibraryManager(ilm);
       ASSERT(plm!=0);
 
-      const libILibrary* plib = plm->GetLibrary(m_LibName);
+      const WBFL::Library::ILibrary* plib = plm->GetLibrary(m_LibName);
       ASSERT(plib!=0);
 
       if (plib->IsEntry(entryName))
@@ -632,7 +632,7 @@ bool CLibEditorListView::DoesEntryExist(const CString& entryName)
    return false;
 }
 
-bool CLibEditorListView::GetSelectedEntry(CString* pentryName, libILibrary** pplib) const
+bool CLibEditorListView::GetSelectedEntry(CString* pentryName, WBFL::Library::ILibrary** pplib) const
 {
    // return the name of the entry and the library it belongs to
    CListCtrl& rlist = this->GetListCtrl();
@@ -641,7 +641,7 @@ bool CLibEditorListView::GetSelectedEntry(CString* pentryName, libILibrary** ppl
    if ( idx != -1)
    {
       *pentryName = rlist.GetItemText(idx,0);
-      *pplib = (libILibrary*)rlist.GetItemData(idx);
+      *pplib = (WBFL::Library::ILibrary*)rlist.GetItemData(idx);
       ASSERT(*pplib!=0);
       return true;
    }
@@ -668,10 +668,10 @@ void CLibEditorListView::OnEndEditLabel(NMHDR* pNMHDR, LRESULT* pResult)
       }
 
       ASSERT(pDispInfo->item.lParam!=0);
-      libILibrary* new_plib = (libILibrary*)pDispInfo->item.lParam;
+      WBFL::Library::ILibrary* new_plib = (WBFL::Library::ILibrary*)pDispInfo->item.lParam;
 
       CString old_name;
-      libILibrary* old_plib;
+      WBFL::Library::ILibrary* old_plib;
       if(GetSelectedEntry(&old_name, &old_plib))
       {
          ASSERT(old_plib==new_plib);
@@ -708,7 +708,7 @@ void CLibEditorListView::OnEndEditLabel(NMHDR* pNMHDR, LRESULT* pResult)
    }
 }
 
-int CLibEditorListView::InsertEntryToList(const libLibraryEntry* pentry, const libILibrary* plib, int i)
+int CLibEditorListView::InsertEntryToList(const WBFL::Library::LibraryEntry* pentry, const WBFL::Library::ILibrary* plib, int i)
 {
    CListCtrl& rlist = this->GetListCtrl( );
 

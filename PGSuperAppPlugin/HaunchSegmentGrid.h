@@ -26,8 +26,6 @@
 //
 #include "HaunchBearingGrid.h"
 
-class CEditHaunchDlg;
-
 /////////////////////////////////////////////////////////////////////////////
 // CHaunchSegmentGrid window
 
@@ -78,8 +76,7 @@ private:
    void FillGrid();
    void GetGridData(CDataExchange* pDX);
 
-   CEditHaunchDlg* GetParentDlg();
-
+   CBridgeDescription2* GetBridgeDesc();
 
    // get a cell value whether is is selected or not
    CString GetCellValue(ROWCOL nRow, ROWCOL nCol);
@@ -87,7 +84,7 @@ private:
    // Sets all the cells to read only initially
    void SetInitialRowStyle(ROWCOL row);
 
-   const unitmgtLengthData* m_pUnit;
+   const WBFL::Units::LengthData* m_pUnit;
 public:
    afx_msg void OnDestroy();
 };

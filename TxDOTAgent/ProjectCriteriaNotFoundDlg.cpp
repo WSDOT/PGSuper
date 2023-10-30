@@ -87,7 +87,7 @@ BOOL CProjectCriteriaNotFoundDlg::OnInitDialog()
 
    // put library entry names into control
    CComboBox* ppcl_ctrl = (CComboBox*)GetDlgItem(IDC_PROJECT_CRITERIA);
-   for (libKeyListIterator it=m_Keys.begin(); it!=m_Keys.end(); it++)
+   for (WBFL::Library::KeyListIterator it=m_Keys.begin(); it!=m_Keys.end(); it++)
    {
       ppcl_ctrl->AddString(it->c_str());
    }

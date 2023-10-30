@@ -29,6 +29,8 @@
 
 #include <PgsExt\GirderMaterial.h>
 
+#include <psgLib/SpecificationCriteria.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -50,11 +52,11 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
    DEFINE_UV_PROTOTYPE( time,        pDisplayUnits->GetWholeDaysUnit(),        false );
 
-   scalar.SetFormat( sysNumericFormatTool::Automatic );
+   scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Automatic );
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
 
-   strain.SetFormat( sysNumericFormatTool::Automatic );
+   strain.SetFormat( WBFL::System::NumericFormatTool::Format::Automatic );
    strain.SetWidth(6);
    strain.SetPrecision(3);
 }
@@ -71,8 +73,6 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
 
    GET_IFACE2(pBroker, ISegmentData, pSegmentData);
-   bool bUHPC = pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC ? true : false;
-   bool bPCTT = (bUHPC ? pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.bPCTT : false);
 
    // Create and configure the table
    ColumnIndexType numColumns = 7;
@@ -83,7 +83,7 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
 
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << _T("[") << LrfdCw8th(_T("5.9.5.4.3a"),_T("5.9.3.4.3a")) << _T("] Shrinkage of Girder Concrete : ") << symbol(DELTA) << RPT_STRESS(_T("pSD")) << rptNewLine;
+   *pParagraph << _T("[") << WBFL::LRFD::LrfdCw8th(_T("5.9.5.4.3a"),_T("5.9.3.4.3a")) << _T("] Shrinkage of Girder Concrete : ") << symbol(DELTA) << RPT_STRESS(_T("pSD")) << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
@@ -99,20 +99,25 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
       *pParagraph << rptRcImage(strImagePath + _T("Kdf_Transformed.png")) << rptNewLine;
    }
 
-   if (bUHPC)
+   if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC)
    {
-      if (bPCTT)
-         *pParagraph << rptRcImage(strImagePath + _T("CreepShrinkageAtFinal_UHPC_PCTT.png")) << rptNewLine;
+      if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.bPCTT)
+         *pParagraph << rptRcImage(strImagePath + _T("CreepShrinkageAtFinal_PCI_UHPC_PCTT.png")) << rptNewLine;
       else
-         *pParagraph << rptRcImage(strImagePath + _T("CreepShrinkageAtFinal_UHPC.png")) << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("CreepShrinkageAtFinal_PCI_UHPC.png")) << rptNewLine;
 
+      *pParagraph << rptRcImage(strImagePath + _T("PCI_UHPC_Factors.png")) << rptNewLine;
+   }
+   else if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC)
+   {
+      *pParagraph << rptRcImage(strImagePath + _T("CreepShrinkageAtFinal_UHPC.png")) << rptNewLine;
       *pParagraph << rptRcImage(strImagePath + _T("UHPC_Factors.png")) << rptNewLine;
    }
    else
    {
       *pParagraph << rptRcImage(strImagePath + _T("CreepShrinkageAtFinal.png")) << rptNewLine;
 
-      if (pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims)
+      if (pSpecEntry->GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims)
       {
          if (IS_SI_UNITS(pDisplayUnits))
          {
@@ -123,7 +128,7 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
             *pParagraph << rptRcImage(strImagePath + _T("KvsEqn-US.png")) << rptNewLine;
          }
       }
-      else if (pSpecEntry->GetSpecificationType() == lrfdVersionMgr::ThirdEditionWith2006Interims)
+      else if (pSpecEntry->GetSpecificationCriteria().GetEdition() == WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2006Interims)
       {
          if (IS_SI_UNITS(pDisplayUnits))
          {
@@ -149,12 +154,12 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
       *pParagraph << rptRcImage(strImagePath + _T("HumidityFactor.png")) << rptNewLine;
       if (IS_SI_UNITS(pDisplayUnits))
       {
-         ATLASSERT(pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2015Interims);
+         ATLASSERT(pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2015Interims);
          *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_SI.png")) << rptNewLine;
       }
       else
       {
-         if (pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2015Interims)
+         if (pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2015Interims)
          {
             *pParagraph << rptRcImage(strImagePath + _T("ConcreteFactors_US.png")) << rptNewLine;
          }
@@ -166,7 +171,7 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
    }
    
   // Typecast to our known type (eating own doggy food)
-   std::shared_ptr<const lrfdRefinedLosses2005> ptl = std::dynamic_pointer_cast<const lrfdRefinedLosses2005>(pDetails->pLosses);
+   std::shared_ptr<const WBFL::LRFD::RefinedLosses2005> ptl = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLosses2005>(pDetails->pLosses);
    if (!ptl)
    {
       ATLASSERT(false); // made a bad cast? Bail...
@@ -228,10 +233,10 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
    (*pParamTable)(2,9) << table->creep.SetValue(ptl->GetGirderCreep()->GetCreepCoefficient(ptl->GetMaturityAtFinal(),ptl->GetInitialAge()));
 
    // intermediate results
-   pParamTable = rptStyleManager::CreateDefaultTable(5,_T(""));
+   pParamTable = rptStyleManager::CreateDefaultTable(pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC ? 6 : 5,_T(""));
    *pParagraph << pParamTable << rptNewLine;
 
-   if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
+   if ( WBFL::LRFD::BDSManager::Edition::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
    {
      (*pParamTable)(0,0) << Sub2(_T("k"),_T("s"));
    }
@@ -248,12 +253,20 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
    (*pParamTable)(0,4) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetMaturityAtFinal());
    table->time.ShowUnitTag(false);
 
+   if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC)
+   {
+      (*pParamTable)(0, 5) << Sub2(_T("k"), _T("l"));
+   }
+
    (*pParamTable)(1,0) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKvs());
-   (*pParamTable)(1,1) << table->scalar.SetValue(ptl->Getkhs());
+   (*pParamTable)(1,1) << table->scalar.SetValue(ptl->Getkhs_Girder());
    (*pParamTable)(1,2) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKhc());
    (*pParamTable)(1,3) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKf());
    (*pParamTable)(1,4) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKtd(ptl->GetMaturityAtFinal()));
-
+   if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC)
+   {
+      (*pParamTable)(1, 5) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKl(ptl->GetInitialAge()));
+   }
    // shrinkage loss   
    *pParagraph << table << rptNewLine;
    (*table)(0,0) << COLHDR(_T("Location from")<<rptNewLine<<_T("Left Support"),rptLengthUnitTag,  pDisplayUnits->GetSpanLengthUnit() );
@@ -279,7 +292,7 @@ CShrinkageAtFinalTable* CShrinkageAtFinalTable::PrepareTable(rptChapter* pChapte
 void CShrinkageAtFinalTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    // Typecast to our known type (eating own doggy food)
-   std::shared_ptr<const lrfdRefinedLosses2005> ptl = std::dynamic_pointer_cast<const lrfdRefinedLosses2005>(pDetails->pLosses);
+   std::shared_ptr<const WBFL::LRFD::RefinedLosses2005> ptl = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLosses2005>(pDetails->pLosses);
    if (!ptl)
    {
       ATLASSERT(false); // made a bad cast? Bail...

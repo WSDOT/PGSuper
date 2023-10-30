@@ -96,7 +96,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
    ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,false,&bSegments,&bConstruction,&bDeck,&bDeckPanels,&bSidewalk,&bShearKey,&bLongitudinalJoint,&bPedLoading,&bPermit,&bContinuousBeforeDeckCasting,&startGroup,&endGroup);
 
    rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols,_T("Rotations"));
-   RowIndexType row = ConfigureProductLoadTableHeading<rptAngleUnitTag,unitmgtAngleData>(pBroker,p_table,true,false,bSegments,bConstruction,bDeck,bDeckPanels,bSidewalk,bShearKey,bLongitudinalJoint,bHasOverlay,bFutureOverlay,bDesign,bPedLoading,bPermit,bRating,analysisType,bContinuousBeforeDeckCasting,pRatingSpec,pDisplayUnits,pDisplayUnits->GetRadAngleUnit());
+   RowIndexType row = ConfigureProductLoadTableHeading<rptAngleUnitTag,WBFL::Units::AngleData>(pBroker,p_table,true,false,bSegments,bConstruction,bDeck,bDeckPanels,bSidewalk,bShearKey,bLongitudinalJoint,bHasOverlay,bFutureOverlay,bDesign,bPedLoading,bPermit,bRating,analysisType,bContinuousBeforeDeckCasting,pRatingSpec,pDisplayUnits,pDisplayUnits->GetRadAngleUnit());
 
    p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
    p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -419,7 +419,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
                (*p_table)(row,col++) << RPT_NA;
             }
 
-            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
             {
                if ( reactionDecider.DoReport(lastIntervalIdx) )
                {
@@ -721,7 +721,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
                (*p_table)(row,col++) << RPT_NA;
             }
 
-            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
             {
                if ( reactionDecider.DoReport(lastIntervalIdx) )
                {
@@ -973,27 +973,3 @@ void CProductRotationTable::MakeAssignment(const CProductRotationTable& rOther)
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CProductRotationTable::AssertValid() const
-{
-   return true;
-}
-
-void CProductRotationTable::Dump(dbgDumpContext& os) const
-{
-   os << _T("Dump for CProductRotationTable") << endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CProductRotationTable::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("CProductRotationTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CProductRotationTable");
-
-   TESTME_EPILOG("CProductRotationTable");
-}
-#endif // _UNITTEST

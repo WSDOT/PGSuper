@@ -66,7 +66,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 33.17    8   5.00 SH 78 overpass a    3     5     Tx40          46  1/2  270  13.17   8.30  11.50  11.50                                               8  36.5  8.5  5.700  6.000   3.576    -3.827     4671   0.555  0.756   4.380 -1.780 -0.129  0.000 -1.909 134.68  373.17    1.00    1.00    1.00    1.59    1.62    2.06    2.18    1.17 
+ 33.17    8   5.00 SH 78 overpass a    3     5     Tx40          46  1/2  270  13.17   8.30  11.50  11.50                                               8  36.5  8.5  5.700  5.900   3.576    -3.827     4671   0.555  0.756   4.380 -1.780 -0.129  0.000 -1.909 134.68  373.17    1.00    1.00    1.00    1.59    1.62    2.06    2.17    1.17 
 
 
 The Specification Check was Successful

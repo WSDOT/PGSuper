@@ -33,6 +33,7 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\Intervals.h>
+#include <IFace\ReportOptions.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -130,15 +131,15 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress,   pDisplayUnits->GetStressUnit(),     false );
 
-   GET_IFACE2(pBroker, IDocumentType, pDocType);
-   location.IncludeSpanAndGirder(pDocType->IsPGSpliceDocument() || girderKey.groupIndex == ALL_GROUPS);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bTimeStepMethod = pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP;
+   bool bTimeStepMethod = pSpecEntry->GetPrestressLossCriteria().LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP;
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
@@ -356,7 +357,8 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress,   pDisplayUnits->GetStressUnit(),     false );
 
-   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS ? true : false);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
@@ -382,14 +384,14 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
    }
 
    CString strTitle;
-   strTitle.Format(_T("%s - Interval %d %s"),strBasicTitle.c_str(),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+   strTitle.Format(_T("%s - Interval %d %s"),strBasicTitle.c_str(),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx).c_str());
 
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
    rptRcTable* p_table;
-   RowIndexType Nhrows = CreateCombinedLiveLoadingTableHeading<rptStressUnitTag,unitmgtStressData>(&p_table,strTitle,false,bDesign,bPermit,bPedLoading,bRating,true,true,
+   RowIndexType Nhrows = CreateCombinedLiveLoadingTableHeading<rptStressUnitTag,WBFL::Units::StressData>(&p_table,strTitle,false,bDesign,bPermit,bPedLoading,bRating,true,true,
                            analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetStressUnit());
    *p << p_table;
 
@@ -440,7 +442,7 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
       {
          pForces2->GetCombinedLiveLoadStress(intervalIdx, pgsTypes::lltDesign, vPoi, bat, topLocation, botLocation, &fTopMinDesignLL, &fTopMaxDesignLL, &fBotMinDesignLL, &fBotMaxDesignLL );
 
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
          {
             pForces2->GetCombinedLiveLoadStress(intervalIdx, pgsTypes::lltFatigue, vPoi, bat, topLocation, botLocation, &fTopMinFatigueLL, &fTopMaxFatigueLL, &fBotMinFatigueLL, &fBotMaxFatigueLL );
          }
@@ -500,7 +502,7 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
             (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinDesignLL[index]) << rptNewLine;
             (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinDesignLL[index]);
 
-            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
             {
                (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxFatigueLL[index]) << rptNewLine;
                (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxFatigueLL[index]);
@@ -567,7 +569,7 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
          SumPedAndLiveLoad(DesignPedLoad, fTopMinDesignLL, fTopMaxDesignLL, fTopMinPedestrianLL, fTopMaxPedestrianLL);
          SumPedAndLiveLoad(DesignPedLoad, fBotMinDesignLL, fBotMaxDesignLL, fBotMinPedestrianLL, fBotMaxPedestrianLL);
 
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
          {
             SumPedAndLiveLoad(FatiguePedLoad, fTopMinFatigueLL, fTopMaxFatigueLL, fTopMinPedestrianLL, fTopMaxPedestrianLL);
             SumPedAndLiveLoad(FatiguePedLoad, fBotMinFatigueLL, fBotMaxFatigueLL, fBotMinPedestrianLL, fBotMaxPedestrianLL);
@@ -587,7 +589,7 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
             (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinDesignLL[index]) << rptNewLine;
             (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinDesignLL[index]);
 
-            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
             {
                (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxFatigueLL[index]) << rptNewLine;
                (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxFatigueLL[index]);
@@ -603,7 +605,7 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
          int lnum=1;
          *pNote<< lnum++ << PedestrianFootnote(DesignPedLoad) << rptNewLine;
 
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
          {
             *pNote << lnum++ << PedestrianFootnote(FatiguePedLoad) << rptNewLine;
          }
@@ -634,7 +636,8 @@ void CCombinedStressTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pC
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress,   pDisplayUnits->GetStressUnit(),     false );
 
-   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS ? true : false);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,ILimitStateForces2,pLsForces2);
@@ -710,7 +713,7 @@ void CCombinedStressTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pC
       (*p_table)(2,col++) << COLHDR(_T("Max"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*p_table)(2,col++) << COLHDR(_T("Min"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       
-      if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+      if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims )
       {
          p_table->SetColumnSpan(1,col,2);
          (*p_table)(1,col) << _T("Service IA");
@@ -723,7 +726,7 @@ void CCombinedStressTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pC
       (*p_table)(2,col++) << COLHDR(_T("Max"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*p_table)(2,col++) << COLHDR(_T("Min"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    
-      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          p_table->SetColumnSpan(1,col,2);
          (*p_table)(1,col) << _T("Fatigue I");
@@ -826,7 +829,7 @@ void CCombinedStressTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pC
          pLsForces2->GetStress( intervalIdx, pgsTypes::ServiceI, vPoi, bat, false, topLocation, &fTopMinServiceI, &fTopMaxServiceI);
          pLsForces2->GetStress( intervalIdx, pgsTypes::ServiceI, vPoi, bat, false, botLocation, &fBotMinServiceI, &fBotMaxServiceI);
 
-         if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+         if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims )
          {
             pLsForces2->GetStress( intervalIdx, pgsTypes::ServiceIA, vPoi, bat, false, topLocation, &fTopMinServiceIA, &fTopMaxServiceIA);
             pLsForces2->GetStress( intervalIdx, pgsTypes::ServiceIA, vPoi, bat, false, botLocation, &fBotMinServiceIA, &fBotMaxServiceIA);
@@ -888,7 +891,7 @@ void CCombinedStressTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pC
             (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinServiceI[index]) << rptNewLine;
             (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinServiceI[index]);
 
-            if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+            if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims )
             {
                (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxServiceIA[index]) << rptNewLine;
                (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxServiceIA[index]);
@@ -903,7 +906,7 @@ void CCombinedStressTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pC
             (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMinServiceIII[index]) << rptNewLine;
             (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinServiceIII[index]);
 
-            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
             {
                (*p_table)(row,col  ) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxFatigueI[index]) << rptNewLine;
                (*p_table)(row,col++) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxFatigueI[index]);

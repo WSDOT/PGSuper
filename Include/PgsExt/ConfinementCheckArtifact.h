@@ -48,8 +48,8 @@ public:
    bool IsApplicable() const;
    void SetApplicability(bool isAp);
 
-   const matRebar* GetMinBar() const;
-   void SetMinBar(const matRebar* pBar);
+   const WBFL::Materials::Rebar* GetMinBar() const;
+   void SetMinBar(const WBFL::Materials::Rebar* pBar);
    Float64 GetSMax() const;
    void SetSMax(Float64 smax);
 
@@ -61,8 +61,8 @@ public:
    void SetStartProvidedZoneLength(Float64 zl);
    Float64 GetStartRequiredZoneLength() const;
    void SetStartRequiredZoneLength(Float64 zl);
-   const matRebar* GetStartBar() const;
-   void SetStartBar(const matRebar* pRebar);
+   const WBFL::Materials::Rebar* GetStartBar() const;
+   void SetStartBar(const WBFL::Materials::Rebar* pRebar);
    Float64 GetStartS() const;
    void SetStartS(Float64 s);
    Float64 GetStartd() const; // beam depth
@@ -74,8 +74,8 @@ public:
    void SetEndProvidedZoneLength(Float64 zl);
    Float64 GetEndRequiredZoneLength() const;
    void SetEndRequiredZoneLength(Float64 zl);
-   const matRebar* GetEndBar() const;
-   void SetEndBar(const matRebar* pRebar);
+   const WBFL::Materials::Rebar* GetEndBar() const;
+   void SetEndBar(const WBFL::Materials::Rebar* pRebar);
    Float64 GetEndS() const;
    void SetEndS(Float64 s);
    Float64 GetEndd() const;
@@ -89,20 +89,20 @@ protected:
 private:
    bool m_IsApplicable;
 
-   const matRebar* m_pMinRebar;
+   const WBFL::Materials::Rebar* m_pMinRebar;
    Float64 m_SMax;
 
    Float64 m_ZoneLengthFactor;
 
    Float64 m_StartProvidedZoneLength;
    Float64 m_StartRequiredZoneLength;
-   const matRebar* m_pStartRebar;
+   const WBFL::Materials::Rebar* m_pStartRebar;
    Float64 m_StartS;
    Float64 m_Startd;
 
    Float64 m_EndProvidedZoneLength;
    Float64 m_EndRequiredZoneLength;
-   const matRebar* m_pEndRebar;
+   const WBFL::Materials::Rebar* m_pEndRebar;
    Float64 m_EndS;
    Float64 m_Endd;
 };

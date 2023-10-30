@@ -65,7 +65,8 @@ public:
 
    virtual UINT GetStandardToolbarResourceID() override;
 
-   void DesignGirder(bool bPrompt, arSlabOffsetDesignType designSlabOffset, const CGirderKey& girderKey);
+   void DesignGirder(bool bPrompt, arSlabOffsetDesignType haunchDesignRequest, const CGirderKey& girderKey);
+   bool DesignHaunch(const CGirderKey& girderKey);
 
    CPGSuperComponentInfoManager* GetComponentInfoManager() { return &m_ComponentInfoManager; }
 
@@ -80,12 +81,15 @@ protected:
 	afx_msg void OnProjectDesignGirderDirect();
 	afx_msg void OnProjectDesignGirderDirectPreserveHaunch();
    afx_msg void OnUpdateProjectDesignGirderDirectPreserveHaunch(CCmdUI* pCmdUI);
+   afx_msg void OnProjectDesignHaunch();
+   afx_msg void OnUpdateProjectDesignHaunch(CCmdUI* pCmdUI);
    afx_msg void OnProjectAnalysis();
    //}}AFX_MSG
 
    CPGSuperComponentInfoManager m_ComponentInfoManager;
 
-   void DoDesignGirder(const std::vector<CGirderKey>& girderKeys, bool bDesignFlexure, arSlabOffsetDesignType haunchDesignType, arConcreteDesignType concreteDesignType, arShearDesignType shearDesignType);
+   void DoDesignGirder(const std::vector<CGirderKey>& girderKeys,bool bDesignFlexure,arSlabOffsetDesignType haunchDesignType,arConcreteDesignType concreteDesignType,arShearDesignType shearDesignType);
+   bool DoDesignHaunch(const CGirderKey& girderKey);
 
    virtual CPGSuperPluginMgrBase* CreatePluginManager() override { return new CPGSuperPluginMgr(); }
 

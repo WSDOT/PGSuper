@@ -213,7 +213,7 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
 
       if (pgsTypes::hspZeroHaunch != haunchAType)
       {
-         (*xs_table)(0,col++) << COLHDR(_T("Assumed") << rptNewLine << _T("Haunch") << rptNewLine << _T("Depth"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         (*xs_table)(0,col++) << COLHDR(_T("Haunch") << rptNewLine << _T("Depth"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
       }
    }
    else if ( intervalIdx <= firstCompositeDeckIntervalIdx )

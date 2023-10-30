@@ -345,7 +345,7 @@ CCastingRegion CDeckRegionGrid::GetPierData(ROWCOL row, IEAFDisplayUnits* pDispl
    }
    else
    {
-      start = ::ConvertToSysUnits(start, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+      start = WBFL::Units::ConvertToSysUnits(start, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
    }
 
    Float64 end = _tstof(GetCellValue(row, colXahead));
@@ -355,7 +355,7 @@ CCastingRegion CDeckRegionGrid::GetPierData(ROWCOL row, IEAFDisplayUnits* pDispl
    }
    else
    {
-      end = ::ConvertToSysUnits(end, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+      end = WBFL::Units::ConvertToSysUnits(end, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
    }
 
    IndexType sequenceIdx = _tstoi(GetCellValue(row, colSequence)) - 1; // minus one because we add one to when displaying the value
@@ -436,7 +436,7 @@ void CDeckRegionGrid::SetPierData(PierIndexType pierIdx, BOOL bUseBack, Float64 
       }
       else
       {
-         Xback = ::ConvertFromSysUnits(Xback, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+         Xback = WBFL::Units::ConvertFromSysUnits(Xback, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
       }
       SetStyleRange(CGXRange(row, colXback), CGXStyle().SetEnabled(TRUE).SetHorizontalAlignment(DT_RIGHT).SetValue(Xback));
       SetStyleRange(CGXRange(row, colXbackUnit), CGXStyle()
@@ -468,7 +468,7 @@ void CDeckRegionGrid::SetPierData(PierIndexType pierIdx, BOOL bUseBack, Float64 
       }
       else
       {
-         Xahead = ::ConvertFromSysUnits(Xahead, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+         Xahead = WBFL::Units::ConvertFromSysUnits(Xahead, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
       }
       SetStyleRange(CGXRange(row, colXahead), CGXStyle().SetEnabled(TRUE).SetHorizontalAlignment(DT_RIGHT).SetValue(Xahead));
       SetStyleRange(CGXRange(row, colXaheadUnit), CGXStyle()

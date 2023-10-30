@@ -60,13 +60,13 @@ LPCTSTR CLoadRatingDetailsChapterBuilder::GetName() const
    return TEXT("Load Rating Details");
 }
 
-rptChapter* CLoadRatingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CLoadRatingDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CBrokerReportSpecification* pGirderRptSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
 
-   CLoadRatingReportSpecificationBase* pLrGirderRptSpec = dynamic_cast<CLoadRatingReportSpecificationBase*>(pRptSpec);
+   auto pLrGirderRptSpec = std::dynamic_pointer_cast<const CLoadRatingReportSpecificationBase>(pRptSpec);
    if (!pLrGirderRptSpec)
    {
       ATLASSERT(0);
@@ -94,9 +94,9 @@ rptChapter* CLoadRatingDetailsChapterBuilder::Build(CReportSpecification* pRptSp
    return pChapter;
 }
 
-CChapterBuilder* CLoadRatingDetailsChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLoadRatingDetailsChapterBuilder::Clone() const
 {
-   return new CLoadRatingDetailsChapterBuilder;
+   return std::make_unique<CLoadRatingDetailsChapterBuilder>();
 }
 
 void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType,bool bSplicedGirder) const
@@ -226,7 +226,7 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
       *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("MomentRatingEquation.png")) << rptNewLine;
    }
 
-   if (lrfdVersionMgr::SixthEdition2012 <= lrfdVersionMgr::GetVersion())
+   if (WBFL::LRFD::BDSManager::Edition::SixthEdition2012 <= WBFL::LRFD::BDSManager::GetEdition())
    {
       *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("MomentRating_K_Equation_2012.png")) << rptNewLine;
    }
@@ -834,34 +834,34 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
          Float64 fy;
          Float64 fs;
          Float64 fcr;
-         Float64 fallow;
+         Float64 fLimit;
          if (srIdx == 0)
          {
             artifact.GetRebar(&d, &f, &fy, &E);
             fcr = artifact.GetRebarCrackingStressIncrement();
             fs = artifact.GetRebarStress();
-            fallow = artifact.GetRebarAllowableStress();
+            fLimit = artifact.GetRebarAllowableStress();
          }
          else if (srIdx == 1)
          {
             artifact.GetStrand(&d, &f, &fy, &E);
             fcr = artifact.GetStrandCrackingStressIncrement();
             fs = artifact.GetStrandStress();
-            fallow = artifact.GetStrandAllowableStress();
+            fLimit = artifact.GetStrandAllowableStress();
          }
          else if (srIdx == 2)
          {
             artifact.GetSegmentTendon(&d, &f, &fy, &E);
             fcr = artifact.GetSegmentTendonCrackingStressIncrement();
             fs = artifact.GetSegmentTendonStress();
-            fallow = artifact.GetSegmentTendonAllowableStress();
+            fLimit = artifact.GetSegmentTendonStressLimitStress();
          }
          else
          {
             artifact.GetGirderTendon(&d, &f, &fy, &E);
             fcr = artifact.GetGirderTendonCrackingStressIncrement();
             fs = artifact.GetGirderTendonStress();
-            fallow = artifact.GetGirderTendonAllowableStress();
+            fLimit = artifact.GetGirderTendonStressLimitStress();
          }
 
 
@@ -887,7 +887,7 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
          (*table)(row, col++) << mod_e.SetValue(E);
          (*table)(row, col++) << mod_e.SetValue(artifact.GetEg());
          (*table)(row, col++) << stress.SetValue(fs);
-         (*table)(row, col++) << stress.SetValue(fallow);
+         (*table)(row, col++) << stress.SetValue(fLimit);
 
 
          if (SR < 1)

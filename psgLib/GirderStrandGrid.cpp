@@ -185,7 +185,7 @@ void CGirderStrandGrid::Removerows()
 void CGirderStrandGrid::CustomInit()
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    // Initialize the grid. For CWnd based grids this call is // 
 // essential. For view based grids this initialization is done 
@@ -315,12 +315,12 @@ bool CGirderStrandGrid::GetRowData(ROWCOL nRow, Float64* pX, Float64* pY)
 void CGirderStrandGrid::FillGrid(IPoint2dCollection* points)
 {
    GetParam()->SetLockReadOnly(FALSE);
-   CollectionIndexType count;
+   IndexType count;
    points->get_Count(&count);
    if (0 < count)
    {
       // size grid
-      for (CollectionIndexType i = 0; i < count; i++)
+      for (IndexType i = 0; i < count; i++)
       {
 	      Insertrow();
       }
@@ -357,7 +357,7 @@ BOOL CGirderStrandGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 	if ((nCol==1 || nCol==2) && !s.IsEmpty( ))
 	{
       Float64 d;
-      if (!sysTokenizer::ParseDouble(s, &d))
+      if (!WBFL::System::Tokenizer::ParseDouble(s, &d))
 		{
 			SetWarningText (_T("Value must be a number"));
 			return FALSE;

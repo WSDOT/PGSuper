@@ -31,6 +31,9 @@
 #include <PgsExt\StrandData.h>
 #include <PgsExt\GirderMaterial.h>
 
+#include <psgLib/CreepCriteria.h>
+#include <psgLib/SpecificationCriteria.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -58,9 +61,9 @@ LPCTSTR CLRFDCreepCoefficientChapterBuilder::GetName() const
    return TEXT("Creep Coefficient Details");
 }
 
-rptChapter* CLRFDCreepCoefficientChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CLRFDCreepCoefficientChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
@@ -107,9 +110,9 @@ rptChapter* CLRFDCreepCoefficientChapterBuilder::Build(CReportSpecification* pRp
    return pChapter;
 }
 
-CChapterBuilder* CLRFDCreepCoefficientChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLRFDCreepCoefficientChapterBuilder::Clone() const
 {
-   return new CLRFDCreepCoefficientChapterBuilder;
+   return std::make_unique<CLRFDCreepCoefficientChapterBuilder>();
 }
 
 //======================== ACCESS     =======================================
@@ -131,7 +134,7 @@ CChapterBuilder* CLRFDCreepCoefficientChapterBuilder::Clone() const
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
 
-rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,
+rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,
                                                    IEAFDisplayUnits* pDisplayUnits,
                                                    Uint16 level) const
 {
@@ -143,9 +146,9 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReport
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
+   const auto& creep_criteria = pSpecEntry->GetCreepCriteria();
+
    GET_IFACE2(pBroker, ISegmentData, pSegmentData);
-   bool bUHPC = pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC ? true : false;
-   bool bPCTT = (bUHPC ? pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.bPCTT : false);
 
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time, pDisplayUnits->GetWholeDaysUnit(), true );
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetWholeDaysUnit(), false );
@@ -168,29 +171,35 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReport
 
    bool bSI = IS_SI_UNITS(pDisplayUnits);
 
-   for ( Int16 i = CREEP_MINTIME; i <= CREEP_MAXTIME; i++ )
+   for(const auto creep_time : pgsTypes::enum_range<pgsTypes::CreepTime>(pgsTypes::CreepTime::Min,pgsTypes::CreepTime::Max))
    {
       int j = 0;
       for(const auto& item : strHeading)
       {
          ICamber::CreepPeriod creepPeriod = item.first;
 
-         details = pCamber->GetCreepCoefficientDetails(segmentKey,creepPeriod,i);
+         details = pCamber->GetCreepCoefficientDetails(segmentKey,creepPeriod,creep_time);
 
-         if ( i == CREEP_MINTIME && j == 0 )
+         if ( creep_time == pgsTypes::CreepTime::Min && j == 0 )
          {
             // first time through loop, report the common information
-            if (bUHPC)
+            if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC)
             {
-               if (bPCTT)
-                  *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_UHPC_PCTT.png")) << rptNewLine;
+               if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.bPCTT)
+                  *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_PCI_UHPC_PCTT.png")) << rptNewLine;
                else
-                  *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_UHPC.png")) << rptNewLine;
+                  *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_PCI_UHPC.png")) << rptNewLine;
 
+               *pPara << Bold(_T("where:")) << rptNewLine;
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("PCI_UHPC_Factors.png")) << rptNewLine;
+            }
+            else if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC)
+            {
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_UHPC.png")) << rptNewLine;
                *pPara << Bold(_T("where:")) << rptNewLine;
                *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("UHPC_Factors.png")) << rptNewLine;
             }
-            else if ( details.Spec == CREEP_SPEC_PRE_2005 )
+            else if ( details.Spec == pgsTypes::CreepSpecification::LRFDPre2005 )
             {
                *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LRFDCreepEqn.png")) << rptNewLine;
                *pPara << Bold(_T("for which:")) << rptNewLine;
@@ -201,13 +210,13 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReport
                *pPara << _T("H = ") << details.H << _T("%") << _T(", ");
                *pPara << _T("V/S = ") << length.SetValue(details.VSratio) << rptNewLine;
                *pPara << _T("In determining the maturity of concrete at initial load, t") << Sub(_T("i"))
-                      << _T(", 1 day of accelerated curing may be taken as equal to ") << pSpecEntry->GetCuringMethodTimeAdjustmentFactor() << _T(" days of normal curing.") << rptNewLine;
-               *pPara << _T("Curing Method = ") << (details.CuringMethod == CURING_ACCELERATED ? _T("Accelerated") : _T("Normal")) << rptNewLine;
+                      << _T(", 1 day of accelerated curing may be taken as equal to ") << creep_criteria.CuringMethodTimeAdjustmentFactor << _T(" days of normal curing.") << rptNewLine;
+               *pPara << _T("Curing Method = ") << (details.CuringMethod == pgsTypes::CuringMethod::Accelerated ? _T("Accelerated") : _T("Normal")) << rptNewLine;
                *pPara << rptNewLine;
             }
             else
             {
-               if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
+               if ( WBFL::LRFD::BDSManager::Edition::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
                {
                   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LRFDCreepEqn2007.png")) << rptNewLine;
                }
@@ -218,11 +227,11 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReport
 
                *pPara << Bold(_T("for which:")) << rptNewLine;
                
-               if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
+               if ( pSpecEntry->GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims )
                {
                   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KvsEqn-SI.png") : _T("KvsEqn-US.png")) ) << rptNewLine;
                }
-               else if ( lrfdVersionMgr::ThirdEditionWith2006Interims == pSpecEntry->GetSpecificationType())
+               else if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2006Interims == pSpecEntry->GetSpecificationCriteria().GetEdition())
                {
                   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KvsEqn2006-SI.png") : _T("KvsEqn2006-US.png")) ) << rptNewLine;
                }
@@ -233,7 +242,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReport
 
                *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("KhcEqn.png") ) << rptNewLine;
                *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KfEqn2005-SI.png") : _T("KfEqn2005-US.png")) ) << rptNewLine;
-               if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2015Interims )
+               if ( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2015Interims )
                {
                   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KtdEqn-SI.png") : _T("KtdEqn-US.png")) ) << rptNewLine;
                }
@@ -248,12 +257,12 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReport
                *pPara << _T("V/S = ") << length.SetValue(details.VSratio) << _T(", ");
                *pPara << Sub2(_T("K"),_T("1")) << _T(" = ") << details.K1 << _T(", ");
                *pPara << Sub2(_T("K"),_T("2")) << _T(" = ") << details.K2 << rptNewLine;
-               if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
+               if ( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEdition2007 )
                {
                   *pPara << _T("In determining the maturity of concrete at initial load, t") << Sub(_T("i"))
-                         << _T(", 1 day of accelerated curing may be taken as equal to ") << pSpecEntry->GetCuringMethodTimeAdjustmentFactor() << _T(" days of normal curing.") << rptNewLine;
+                         << _T(", 1 day of accelerated curing may be taken as equal to ") << creep_criteria.CuringMethodTimeAdjustmentFactor << _T(" days of normal curing.") << rptNewLine;
                }
-               *pPara << _T("Curing Method = ") << (details.CuringMethod == CURING_ACCELERATED ? _T("Accelerated") : _T("Normal")) << rptNewLine;
+               *pPara << _T("Curing Method = ") << (details.CuringMethod == pgsTypes::CuringMethod::Accelerated ? _T("Accelerated") : _T("Normal")) << rptNewLine;
                *pPara << rptNewLine;
             } // spec
          } // i
@@ -261,10 +270,10 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReport
 
          if ( j == 0 )
          {
-            *pPara << Bold((i == CREEP_MINTIME ? _T("Minimum Timing") : _T("Maximum Timing"))) << rptNewLine;
+            *pPara << Bold((creep_time == pgsTypes::CreepTime::Min ? _T("Minimum Timing") : _T("Maximum Timing"))) << rptNewLine;
          }
 
-         if ( details.Spec == CREEP_SPEC_PRE_2005 )
+         if ( details.Spec == pgsTypes::CreepSpecification::LRFDPre2005)
          {
             *pPara << rptNewLine;
             *pPara << Bold(item.second) << rptNewLine;
@@ -282,7 +291,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReport
             *pPara << rptNewLine;
             *pPara << Bold(item.second) << rptNewLine;
             *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
-            if (pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007)
+            if (pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEdition2007)
             {
                *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << _T(", ");
             }
@@ -292,7 +301,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReport
             }
             *pPara << _T("t = ")<< time.SetValue(details.t) << _T(", ");
 
-            if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
+            if ( WBFL::LRFD::BDSManager::Edition::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
             {
                *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << _T(", ");
             }
@@ -303,7 +312,15 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReport
 
             *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << _T(", ");
             *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
-            *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
+            *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd;
+
+            if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC)
+            {
+               *pPara << _T(", ") << Sub2(_T("k"), _T("l")) << _T(" = ") << details.kl << _T(", ");
+            }
+
+            *pPara << rptNewLine;
+
             *pPara << symbol(psi) << _T("(")<<time2.SetValue(details.t);
             *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< creep.SetValue(details.Ct) << rptNewLine;
          } // spec type
@@ -317,7 +334,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(CReport
    return pPara;
 }
 
-rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,
+rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,
                                                        IEAFDisplayUnits* pDisplayUnits,
                                                        Uint16 level) const
 {
@@ -329,9 +346,9 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(CReportSpecificatio
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
+   const auto& creep_criteria = pSpecEntry->GetCreepCriteria();
+
    GET_IFACE2(pBroker, ISegmentData, pSegmentData);
-   bool bUHPC = pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC ? true : false;
-   bool bPCTT = (bUHPC ? pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.bPCTT : false);
 
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time, pDisplayUnits->GetWholeDaysUnit(), true );
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetWholeDaysUnit(), false );
@@ -353,29 +370,35 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(CReportSpecificatio
    strHeading.emplace_back(ICamber::cpDeckToFinal, _T("Deck casting to final"));
    strHeading.emplace_back(ICamber::cpReleaseToFinal, _T("Prestress release to final"));
 
-   for ( Int16 i = CREEP_MINTIME; i <= CREEP_MAXTIME; i++ )
+   for(const auto creep_time : pgsTypes::enum_range<pgsTypes::CreepTime>(pgsTypes::CreepTime::Min,pgsTypes::CreepTime::Max))
    {
       int j = 0;
       for(const auto& item : strHeading)
       {
          ICamber::CreepPeriod creepPeriod = item.first;
 
-         details = pCamber->GetCreepCoefficientDetails(segmentKey,creepPeriod,i);
+         details = pCamber->GetCreepCoefficientDetails(segmentKey,creepPeriod,creep_time);
 
-         if ( i == CREEP_MINTIME && j == 0 )
+         if ( creep_time == pgsTypes::CreepTime::Min && j == 0 )
          {
             // first time through loop, report the common information
-            if (bUHPC)
+            if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC)
             {
-               if (bPCTT)
-                  *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_UHPC_PCTT.png")) << rptNewLine;
+               if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.bPCTT)
+                  *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_PCI_UHPC_PCTT.png")) << rptNewLine;
                else
-                  *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_UHPC.png")) << rptNewLine;
+                  *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_PCI_UHPC.png")) << rptNewLine;
 
+               *pPara << Bold(_T("where:")) << rptNewLine;
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("PCI_UHPC_Factors.png")) << rptNewLine;
+            }
+            else if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC)
+            {
+               *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_UHPC.png")) << rptNewLine;
                *pPara << Bold(_T("where:")) << rptNewLine;
                *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("UHPC_Factors.png")) << rptNewLine;
             }
-            else if (details.Spec == CREEP_SPEC_PRE_2005)
+            else if (details.Spec == pgsTypes::CreepSpecification::LRFDPre2005)
             {
                *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LRFDCreepEqn.png")) << rptNewLine;
                *pPara << Bold(_T("for which:")) << rptNewLine;
@@ -386,13 +409,13 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(CReportSpecificatio
                *pPara << _T("H = ") << details.H << _T("%") << _T(", ");
                *pPara << _T("V/S = ") << length.SetValue(details.VSratio) << rptNewLine;
                *pPara << _T("In determining the maturity of concrete at initial load, t") << Sub(_T("i"))
-                      << _T(", 1 day of accelerated curing may be taken as equal to ") << pSpecEntry->GetCuringMethodTimeAdjustmentFactor() << _T(" days of normal curing.") << rptNewLine;
-               *pPara << _T("Curing Method = ") << (details.CuringMethod == CURING_ACCELERATED ? _T("Accelerated") : _T("Normal")) << rptNewLine;
+                      << _T(", 1 day of accelerated curing may be taken as equal to ") << creep_criteria.CuringMethodTimeAdjustmentFactor << _T(" days of normal curing.") << rptNewLine;
+               *pPara << _T("Curing Method = ") << (details.CuringMethod == pgsTypes::CuringMethod::Accelerated ? _T("Accelerated") : _T("Normal")) << rptNewLine;
                *pPara << rptNewLine;
             }
             else
             {
-               if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
+               if ( WBFL::LRFD::BDSManager::Edition::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
                {
                   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LRFDCreepEqn2007.png")) << rptNewLine;
                }
@@ -402,11 +425,11 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(CReportSpecificatio
                }
                *pPara << Bold(_T("for which:")) << rptNewLine;
 
-               if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
+               if ( pSpecEntry->GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims )
                {
                   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KvsEqn-SI.png") : _T("KvsEqn-US.png")) ) << rptNewLine;
                }
-               else if ( lrfdVersionMgr::ThirdEditionWith2006Interims == pSpecEntry->GetSpecificationType())
+               else if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2006Interims == pSpecEntry->GetSpecificationCriteria().GetEdition())
                {
                   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KvsEqn2006-SI.png") : _T("KvsEqn2006-US.png")) ) << rptNewLine;
                }
@@ -417,7 +440,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(CReportSpecificatio
 
                *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("KhcEqn.png") ) << rptNewLine;
                *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KfEqn2005-SI.png") : _T("KfEqn2005-US.png")) ) << rptNewLine;
-               if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2015Interims )
+               if ( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2015Interims )
                {
                   *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KtdEqn-SI.png") : _T("KtdEqn-US.png")) ) << rptNewLine;
                }
@@ -433,22 +456,22 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(CReportSpecificatio
                *pPara << Sub2(_T("K"),_T("1")) << _T(" = ") << details.K1 << _T(", ");
                *pPara << Sub2(_T("K"),_T("2")) << _T(" = ") << details.K2 << rptNewLine;
 
-               if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
+               if ( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEdition2007 )
                {
                  *pPara << _T("In determining the maturity of concrete at initial load, t") << Sub(_T("i"))
-                        << _T(", 1 day of accelerated curing may be taken as equal to ") << pSpecEntry->GetCuringMethodTimeAdjustmentFactor() << _T(" days of normal curing.") << rptNewLine;
+                        << _T(", 1 day of accelerated curing may be taken as equal to ") << creep_criteria.CuringMethodTimeAdjustmentFactor << _T(" days of normal curing.") << rptNewLine;
                }
-               *pPara << _T("Curing Method = ") << (details.CuringMethod == CURING_ACCELERATED ? _T("Accelerated") : _T("Normal")) << rptNewLine;
+               *pPara << _T("Curing Method = ") << (details.CuringMethod == pgsTypes::CuringMethod::Accelerated ? _T("Accelerated") : _T("Normal")) << rptNewLine;
                *pPara << rptNewLine;
             } // spec
          } // if
 
          if ( j == 0 )
          {
-            *pPara << Bold((i == CREEP_MINTIME ? _T("Minimum Timing") : _T("Maximum Timing"))) << rptNewLine;
+            *pPara << Bold((creep_time == pgsTypes::CreepTime::Min ? _T("Minimum Timing") : _T("Maximum Timing"))) << rptNewLine;
          }
 
-         if ( details.Spec == CREEP_SPEC_PRE_2005 )
+         if ( details.Spec == pgsTypes::CreepSpecification::LRFDPre2005)
          {
             *pPara << rptNewLine;
             *pPara << Bold(item.second) << rptNewLine;
@@ -466,7 +489,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(CReportSpecificatio
             *pPara << rptNewLine;
             *pPara << Bold(item.second) << rptNewLine;
             *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
-            if (pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007)
+            if (pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEdition2007)
             {
                *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << _T(", ");
             }
@@ -476,7 +499,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(CReportSpecificatio
             }
             *pPara << _T("t = ")<< time.SetValue(details.t) << _T(", ");
 
-            if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
+            if ( WBFL::LRFD::BDSManager::Edition::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
             {
                *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << _T(", ");
             }
@@ -487,7 +510,15 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(CReportSpecificatio
 
             *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << _T(", ");
             *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
-            *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
+            *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd;
+
+            if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC)
+            {
+               *pPara << _T(", ") << Sub2(_T("k"), _T("l")) << _T(" = ") << details.kl << _T(", ");
+            }
+
+            *pPara << rptNewLine;
+
             *pPara << symbol(psi) << _T("(")<<time2.SetValue(details.t);
             *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< creep.SetValue(details.Ct) << rptNewLine;
          } // spec type
@@ -501,21 +532,21 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(CReportSpecificatio
    return pPara;
 }
 
-rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_SIP_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,
+rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_SIP_TempStrands(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,
                                                                    IEAFDisplayUnits* pDisplayUnits,
                                                                    Uint16 level) const
 {
    return Build_CIP_TempStrands(pRptSpec, pBroker, segmentKey, pDisplayUnits, level);
 }
 
-rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_SIP(CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,
+rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_SIP(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,
                                                        IEAFDisplayUnits* pDisplayUnits,
                                                        Uint16 level) const
 {
    return Build_SIP_TempStrands(pRptSpec, pBroker, segmentKey, pDisplayUnits, level);
 }
 
-rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,
+rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,
                                                                       IEAFDisplayUnits* pDisplayUnits,
                                                                       Uint16 level) const
 {
@@ -527,9 +558,9 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
+   const auto& creep_criteria = pSpecEntry->GetCreepCriteria();
+
    GET_IFACE2(pBroker, ISegmentData, pSegmentData);
-   bool bUHPC = pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC ? true : false;
-   bool bPCTT = (bUHPC ? pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.bPCTT : false);
 
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time, pDisplayUnits->GetWholeDaysUnit(), true );
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetWholeDaysUnit(), false );
@@ -545,23 +576,29 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
    //////////////////////////////
    bool bSI = IS_SI_UNITS(pDisplayUnits);
 
-   for ( Int16 i = CREEP_MINTIME; i <= CREEP_MAXTIME; i++ )
+   for( const auto creep_time : pgsTypes::enum_range<pgsTypes::CreepTime>(pgsTypes::CreepTime::Min,pgsTypes::CreepTime::Max))
    {
-     details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToDiaphragm,i);
-     if ( i == CREEP_MINTIME )
+     details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToDiaphragm,creep_time);
+     if ( creep_time == pgsTypes::CreepTime::Min )
      {
         // first time through loop, report the common information
-        if (bUHPC)
+        if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC)
         {
-           if (bPCTT)
-              *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_UHPC_PCTT.png")) << rptNewLine;
+           if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.bPCTT)
+              *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_PCI_UHPC_PCTT.png")) << rptNewLine;
            else
-              *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_UHPC.png")) << rptNewLine;
+              *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_PCI_UHPC.png")) << rptNewLine;
 
+           *pPara << Bold(_T("where:")) << rptNewLine;
+           *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("PCI_UHPC_Factors.png")) << rptNewLine;
+        }
+        else if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC)
+        {
+           *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Creep_UHPC.png")) << rptNewLine;
            *pPara << Bold(_T("where:")) << rptNewLine;
            *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("UHPC_Factors.png")) << rptNewLine;
         }
-        else if (details.Spec == CREEP_SPEC_PRE_2005)
+        else if (details.Spec == pgsTypes::CreepSpecification::LRFDPre2005)
         {
            *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LRFDCreepEqn.png")) << rptNewLine;
            *pPara << Bold(_T("for which:")) << rptNewLine;
@@ -572,13 +609,13 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
            *pPara << _T("H = ") << details.H << _T("%") << _T(", ");
            *pPara << _T("V/S = ") << length.SetValue(details.VSratio) << rptNewLine;
            *pPara << _T("In determining the maturity of concrete at initial load, t") << Sub(_T("i"))
-                  << _T(", 1 day of accelerated curing may be taken as equal to ") << pSpecEntry->GetCuringMethodTimeAdjustmentFactor() << _T(" days of normal curing.") << rptNewLine;
-           *pPara << _T("Curing Method = ") << (details.CuringMethod == CURING_ACCELERATED ? _T("Accelerated") : _T("Normal")) << rptNewLine;
+                  << _T(", 1 day of accelerated curing may be taken as equal to ") << creep_criteria.CuringMethodTimeAdjustmentFactor << _T(" days of normal curing.") << rptNewLine;
+           *pPara << _T("Curing Method = ") << (details.CuringMethod == pgsTypes::CuringMethod::Accelerated ? _T("Accelerated") : _T("Normal")) << rptNewLine;
            *pPara << rptNewLine;
         }
         else
         {
-            if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
+            if ( WBFL::LRFD::BDSManager::Edition::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
             {
                *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LRFDCreepEqn2007.png")) << rptNewLine;
             }
@@ -588,11 +625,11 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
             }
             *pPara << Bold(_T("for which:")) << rptNewLine;
             
-            if ( pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
+            if ( pSpecEntry->GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims )
             {
                *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KvsEqn-SI.png") : _T("KvsEqn-US.png")) ) << rptNewLine;
             }
-            else if ( lrfdVersionMgr::ThirdEditionWith2006Interims == pSpecEntry->GetSpecificationType())
+            else if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2006Interims == pSpecEntry->GetSpecificationCriteria().GetEdition())
             {
                *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KvsEqn2006-SI.png") : _T("KvsEqn2006-US.png")) ) << rptNewLine;
             }
@@ -603,7 +640,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
 
            *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("KhcEqn.png") ) << rptNewLine;
            *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KfEqn2005-SI.png") : _T("KfEqn2005-US.png")) ) << rptNewLine;
-            if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::SeventhEditionWith2015Interims )
+            if ( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2015Interims )
             {
                *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (bSI ? _T("KtdEqn-SI.png") : _T("KtdEqn-US.png")) ) << rptNewLine;
             }
@@ -616,23 +653,23 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
            *pPara << Bold(_T("where:")) << rptNewLine;
            *pPara << _T("H = ") << details.H << _T("%") << _T(", ");
            *pPara << _T("V/S = ") << length.SetValue(details.VSratio) << _T(", ");
-            *pPara << Sub2(_T("K"),_T("1")) << _T(" = ") << details.K1 << _T(", ");
-            *pPara << Sub2(_T("K"),_T("2")) << _T(" = ") << details.K2 << rptNewLine;
+           *pPara << Sub2(_T("K"),_T("1")) << _T(" = ") << details.K1 << _T(", ");
+           *pPara << Sub2(_T("K"),_T("2")) << _T(" = ") << details.K2 << rptNewLine;
 
-           if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007 )
+           if ( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEdition2007 )
            {
               *pPara << _T("In determining the maturity of concrete at initial load, t") << Sub(_T("i"))
-                     << _T(", 1 day of accelerated curing may be taken as equal to ") << pSpecEntry->GetCuringMethodTimeAdjustmentFactor() << _T(" days of normal curing.") << rptNewLine;
+                     << _T(", 1 day of accelerated curing may be taken as equal to ") << creep_criteria.CuringMethodTimeAdjustmentFactor << _T(" days of normal curing.") << rptNewLine;
            }
-           *pPara << _T("Curing Method = ") << (details.CuringMethod == CURING_ACCELERATED ? _T("Accelerated") : _T("Normal")) << rptNewLine;
+           *pPara << _T("Curing Method = ") << (details.CuringMethod == pgsTypes::CuringMethod::Accelerated ? _T("Accelerated") : _T("Normal")) << rptNewLine;
            *pPara << rptNewLine;
         } // spec
      } // i
      
-     *pPara << Bold((i == CREEP_MINTIME ? _T("Minimum Timing") : _T("Maximum Timing"))) << rptNewLine;
+     *pPara << Bold((creep_time == pgsTypes::CreepTime::Min ? _T("Minimum Timing") : _T("Maximum Timing"))) << rptNewLine;
 
 
-      if ( details.Spec == CREEP_SPEC_PRE_2005 )
+      if ( details.Spec == pgsTypes::CreepSpecification::LRFDPre2005)
       {
          *pPara << rptNewLine;
          *pPara << Bold(_T("Prestress release until temporary strand removal and diaphragm casting")) <<rptNewLine;
@@ -646,7 +683,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
 
          *pPara << rptNewLine;
 
-         details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToDeck,i);
+         details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToDeck,creep_time);
          *pPara << Bold(_T("Prestress release until application of superimposed dead loads")) << rptNewLine;
          *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << _T(", ");
@@ -658,7 +695,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
 
          *pPara << rptNewLine;
 
-         details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToFinal,i);
+         details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToFinal,creep_time);
          *pPara << Bold(_T("Prestress release to final")) << rptNewLine;
          *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << _T(", ");
@@ -670,7 +707,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
 
          *pPara << rptNewLine;
 
-         details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDiaphragmToDeck,i);
+         details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDiaphragmToDeck, creep_time);
          *pPara << Bold(_T("Temporary strand removal and diaphragm casting to application of superimposed dead loads")) << rptNewLine;
          *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << _T(", ");
@@ -682,7 +719,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
 
          *pPara << rptNewLine;
 
-         details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDeckToFinal,i);
+         details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDeckToFinal, creep_time);
          *pPara << Bold(_T("Application of superimposed dead loads to final")) << rptNewLine;
          *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << _T(", ");
@@ -698,7 +735,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
          *pPara << rptNewLine;
          *pPara << Bold(_T("Prestress release until temporary strand removal and diaphragm casting")) <<rptNewLine;
          *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
-         if (pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007)
+         if (pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEdition2007)
          {
             *pPara << _T("t") << Sub(_T("i")) << _T(" (Adjusted) = ") << time.SetValue(details.ti) << _T(", ");
          }
@@ -708,7 +745,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
          }
          *pPara << _T("t = ")<< time.SetValue(details.t) << _T(", ");
 
-         if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
          {
             *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << _T(", ");
          }
@@ -719,19 +756,26 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
 
          *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << _T(", ");
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
-         *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
+         *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd;
+
+         if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC)
+         {
+            *pPara << _T(", ") << Sub2(_T("k"), _T("l")) << _T(" = ") << details.kl << _T(", ");
+         }
+
+         *pPara << rptNewLine;
          *pPara << symbol(psi) << _T("(")<<time2.SetValue(details.t);
          *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< creep.SetValue(details.Ct) << rptNewLine;
 
          *pPara << rptNewLine;
 
-         details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToDeck,i);
+         details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToDeck, creep_time);
          *pPara << Bold(_T("Prestress release until application of superimposed dead loads")) << rptNewLine;
          *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << _T(", ");
          *pPara << _T("t = ")<< time.SetValue(details.t) << _T(", ");
 
-         if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
          {
             *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << _T(", ");
          }
@@ -742,19 +786,27 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
 
          *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << _T(", ");
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
-         *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
+         *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd;
+
+         if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC)
+         {
+            *pPara << _T(", ") << Sub2(_T("k"), _T("l")) << _T(" = ") << details.kl << _T(", ");
+         }
+
+         *pPara << rptNewLine;
+
          *pPara << symbol(psi) << _T("(")<<time2.SetValue(details.t);
          *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< creep.SetValue(details.Ct) << rptNewLine;
 
          *pPara << rptNewLine;
 
-         details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToFinal,i);
+         details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToFinal, creep_time);
          *pPara << Bold(_T("Prestress release to final")) << rptNewLine;
          *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << _T(", ");
          *pPara << _T("t = ")<< time.SetValue(details.t) << _T(", ");
 
-         if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
          {
             *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << _T(", ");
          }
@@ -765,19 +817,27 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
 
          *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << _T(", ");
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
-         *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
+         *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd;
+
+         if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC)
+         {
+            *pPara << _T(", ") << Sub2(_T("k"), _T("l")) << _T(" = ") << details.kl << _T(", ");
+         }
+
+         *pPara << rptNewLine;
+
          *pPara << symbol(psi) << _T("(")<<time2.SetValue(details.t);
          *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< creep.SetValue(details.Ct) << rptNewLine;
 
          *pPara << rptNewLine;
 
-         details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDiaphragmToDeck,i);
+         details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDiaphragmToDeck, creep_time);
          *pPara << Bold(_T("Temporary strand removal and diaphragm casting to application of superimposed dead loads")) << rptNewLine;
          *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << _T(", ");
          *pPara << _T("t = ")<< time.SetValue(details.t) << _T(", ");
 
-         if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
          {
             *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << _T(", ");
          }
@@ -788,19 +848,27 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
 
          *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << _T(", ");
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
-         *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
+         *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd;
+         
+         if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC)
+         {
+            *pPara << _T(", ") << Sub2(_T("k"), _T("l")) << _T(" = ") << details.kl << _T(", ");
+         }
+
+         *pPara << rptNewLine;
+
          *pPara << symbol(psi) << _T("(")<<time2.SetValue(details.t);
          *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< creep.SetValue(details.Ct) << rptNewLine;
 
          *pPara << rptNewLine;
 
-         details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDiaphragmToFinal,i);
+         details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDiaphragmToFinal, creep_time);
          *pPara << Bold(_T("Temporary strand removal and diaphragm casting to final")) << rptNewLine;
          *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << _T(", ");
          *pPara << _T("t = ")<< time.SetValue(details.t) << _T(", ");
 
-         if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
          {
             *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << _T(", ");
          }
@@ -811,19 +879,27 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
 
          *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << _T(", ");
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
-         *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
+         *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd;
+
+         if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC)
+         {
+            *pPara << _T(", ") << Sub2(_T("k"), _T("l")) << _T(" = ") << details.kl << _T(", ");
+         }
+
+         *pPara << rptNewLine;
+
          *pPara << symbol(psi) << _T("(")<<time2.SetValue(details.t);
          *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< creep.SetValue(details.Ct) << rptNewLine;
 
          *pPara << rptNewLine;
 
-         details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDeckToFinal,i);
+         details = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDeckToFinal, creep_time);
          *pPara << Bold(_T("Application of superimposed dead loads to final")) << rptNewLine;
          *pPara << RPT_FCI << _T(" = ") << fc.SetValue( details.Fc ) << _T(", ");
          *pPara << _T("t") << Sub(_T("i")) << _T(" = ") << time.SetValue( details.ti) << _T(", ");
          *pPara << _T("t = ")<< time.SetValue(details.t) << _T(", ");
 
-         if ( lrfdVersionMgr::FourthEdition2007 <= pSpecEntry->GetSpecificationType() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
          {
             *pPara << _T("k") << Sub(_T("s")) << _T(" = ") << details.kvs << _T(", ");
          }
@@ -834,7 +910,15 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
 
          *pPara << _T("k") << Sub(_T("hc")) << _T(" = ") << details.khc << _T(", ");
          *pPara << _T("k") << Sub(_T("f")) << _T(" = ") << details.kf << _T(", ");
-         *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd << rptNewLine;
+         *pPara << _T("k") << Sub(_T("td")) << _T(" = ") << details.ktd;
+
+         if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC)
+         {
+            *pPara << _T(", ") << Sub2(_T("k"), _T("l")) << _T(" = ") << details.kl << _T(", ");
+         }
+
+         *pPara << rptNewLine;
+
          *pPara << symbol(psi) << _T("(")<<time2.SetValue(details.t);
          *pPara <<_T(",")<<time2.SetValue(details.ti)<<_T(") = ")<< creep.SetValue(details.Ct) << rptNewLine;
       } // spec type
@@ -846,7 +930,7 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(CRep
    return pPara;
 }
 
-rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck(CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,
+rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,
                                                           IEAFDisplayUnits* pDisplayUnits,
                                                           Uint16 level) const
 {

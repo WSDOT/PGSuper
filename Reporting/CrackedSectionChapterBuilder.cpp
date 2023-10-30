@@ -70,11 +70,11 @@ LPCTSTR CCrackedSectionChapterBuilder::GetName() const
    return TEXT("Cracked Section Computation Details");
 }
 
-rptChapter* CCrackedSectionChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CCrackedSectionChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    USES_CONVERSION;
 
-   CCrackedSectionReportSpecification* pSpec = dynamic_cast<CCrackedSectionReportSpecification*>(pRptSpec);
+   auto pSpec = std::dynamic_pointer_cast<const CCrackedSectionReportSpecification>(pRptSpec);
    pgsPointOfInterest poi = pSpec->GetPOI();
    bool bPositiveMoment = pSpec->IsPositiveMoment();
 
@@ -142,9 +142,9 @@ rptChapter* CCrackedSectionChapterBuilder::Build(CReportSpecification* pRptSpec,
    RowIndexType row = pTable->GetNumberOfHeaderRows();
    Float64 EA  = 0;
    Float64 EAY = 0;
-   CollectionIndexType nSlices;
+   IndexType nSlices;
    pCSD->CrackedSectionSolution->get_SliceCount(&nSlices);
-   for ( CollectionIndexType sliceIdx = 0; sliceIdx < nSlices; sliceIdx++ )
+   for ( IndexType sliceIdx = 0; sliceIdx < nSlices; sliceIdx++ )
    {
       CComPtr<ICrackedSectionSlice> slice;
       pCSD->CrackedSectionSolution->get_Slice(sliceIdx,&slice);
@@ -194,9 +194,9 @@ rptChapter* CCrackedSectionChapterBuilder::Build(CReportSpecification* pRptSpec,
    return pChapter;
 }
 
-CChapterBuilder* CCrackedSectionChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CCrackedSectionChapterBuilder::Clone() const
 {
-   return new CCrackedSectionChapterBuilder;
+   return std::make_unique<CCrackedSectionChapterBuilder>();
 }
 
 rptRcImage* CCrackedSectionChapterBuilder::CreateImage(ICrackedSectionSolution* pSolution,bool bPositiveMoment) const
@@ -267,12 +267,12 @@ rptRcImage* CCrackedSectionChapterBuilder::CreateImage(ICrackedSectionSolution* 
 
 void CCrackedSectionChapterBuilder::DrawSection(CImage& image,ICrackedSectionSolution* pSolution,bool bPositiveMoment) const
 {
-   CollectionIndexType nSlices;
+   IndexType nSlices;
    pSolution->get_SliceCount(&nSlices);
 
    // determine the bounding box
    CComPtr<IRect2d> bbox;
-   for ( CollectionIndexType sliceIdx = 0; sliceIdx < nSlices; sliceIdx++ )
+   for ( IndexType sliceIdx = 0; sliceIdx < nSlices; sliceIdx++ )
    {
       CComPtr<ICrackedSectionSlice> slice;
       pSolution->get_Slice(sliceIdx,&slice);
@@ -314,8 +314,8 @@ void CCrackedSectionChapterBuilder::DrawSection(CImage& image,ICrackedSectionSol
 
    // set up coordinate mapping
    Float64 mirror_factor = (bPositiveMoment ? 1 : -1); // if neg moment, mirror x and y (so the result is right side up)
-   grlibPointMapper mapper;
-   mapper.SetMappingMode(grlibPointMapper::Isotropic);
+   WBFL::Graphing::PointMapper mapper;
+   mapper.SetMappingMode(WBFL::Graphing::PointMapper::MapMode::Isotropic);
    mapper.SetWorldExt(mirror_factor*width_scale*wx,mirror_factor*wy);
 
    Float64 orgY;
@@ -349,12 +349,12 @@ void CCrackedSectionChapterBuilder::DrawSection(CImage& image,ICrackedSectionSol
 
    pOldPen = pDC->SelectObject(&girderPen);
 
-   std::vector<CollectionIndexType> voidIndices;        // contains slice index for void slices
-   std::vector<CollectionIndexType> neutralIndices;     // contains slice index for neutral slices
-   std::vector<CollectionIndexType> tensionIndices;     // contains slice index for tension slices
-   std::vector<CollectionIndexType> compressionIndices; // contains slice index for compression slices
+   std::vector<IndexType> voidIndices;        // contains slice index for void slices
+   std::vector<IndexType> neutralIndices;     // contains slice index for neutral slices
+   std::vector<IndexType> tensionIndices;     // contains slice index for tension slices
+   std::vector<IndexType> compressionIndices; // contains slice index for compression slices
 
-   for ( CollectionIndexType sliceIdx = 0; sliceIdx < nSlices; sliceIdx++ )
+   for ( IndexType sliceIdx = 0; sliceIdx < nSlices; sliceIdx++ )
    {
       CComPtr<ICrackedSectionSlice> slice;
       pSolution->get_Slice(sliceIdx,&slice);
@@ -381,12 +381,12 @@ void CCrackedSectionChapterBuilder::DrawSection(CImage& image,ICrackedSectionSol
       }
    }
 
-   std::vector<CollectionIndexType>::iterator iter;
+   std::vector<IndexType>::iterator iter;
    // draw neutral slices first
    pOldBrush = pDC->SelectObject(&girderBrush);
    for ( iter = neutralIndices.begin(); iter != neutralIndices.end(); iter++ )
    {
-      CollectionIndexType sliceIdx = *iter;
+      IndexType sliceIdx = *iter;
       CComPtr<ICrackedSectionSlice> slice;
       pSolution->get_Slice(sliceIdx,&slice);
 
@@ -400,7 +400,7 @@ void CCrackedSectionChapterBuilder::DrawSection(CImage& image,ICrackedSectionSol
    pDC->SelectObject(&compressionBrush);
    for ( iter = compressionIndices.begin(); iter != compressionIndices.end(); iter++ )
    {
-      CollectionIndexType sliceIdx = *iter;
+      IndexType sliceIdx = *iter;
       CComPtr<ICrackedSectionSlice> slice;
       pSolution->get_Slice(sliceIdx,&slice);
 
@@ -414,7 +414,7 @@ void CCrackedSectionChapterBuilder::DrawSection(CImage& image,ICrackedSectionSol
    //pDC->SelectObject(&tensionBrush);
    //for ( iter = tensionIndices.begin(); iter != tensionIndices.end(); iter++ )
    //{
-   //   CollectionIndexType sliceIdx = *iter;
+   //   IndexType sliceIdx = *iter;
    //   CComPtr<IGeneralSectionSlice> slice;
    //   general_solution->get_Slice(sliceIdx,&slice);
 
@@ -428,7 +428,7 @@ void CCrackedSectionChapterBuilder::DrawSection(CImage& image,ICrackedSectionSol
    pDC->SelectObject(&voidBrush);
    for ( iter = voidIndices.begin(); iter != voidIndices.end(); iter++ )
    {
-      CollectionIndexType sliceIdx = *iter;
+      IndexType sliceIdx = *iter;
       CComPtr<ICrackedSectionSlice> slice;
       pSolution->get_Slice(sliceIdx,&slice);
 
@@ -444,12 +444,12 @@ void CCrackedSectionChapterBuilder::DrawSection(CImage& image,ICrackedSectionSol
    image.ReleaseDC();
 }
 
-void CCrackedSectionChapterBuilder::DrawSlice(IShape* pShape,CDC* pDC,grlibPointMapper& mapper) const
+void CCrackedSectionChapterBuilder::DrawSlice(IShape* pShape,CDC* pDC, WBFL::Graphing::PointMapper& mapper) const
 {
    CComPtr<IPoint2dCollection> objPoints;
    pShape->get_PolyPoints(&objPoints);
 
-   CollectionIndexType nPoints;
+   IndexType nPoints;
    objPoints->get_Count(&nPoints);
    if (nPoints < 3)
    {
@@ -473,7 +473,7 @@ void CCrackedSectionChapterBuilder::DrawSlice(IShape* pShape,CDC* pDC,grlibPoint
    else
    {
        CPoint* points = new CPoint[nPoints];
-       for (CollectionIndexType pntIdx = 0; pntIdx < nPoints; pntIdx++)
+       for (IndexType pntIdx = 0; pntIdx < nPoints; pntIdx++)
        {
            CComPtr<IPoint2d> point;
            objPoints->get_Item(pntIdx, &point);

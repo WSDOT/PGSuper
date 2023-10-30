@@ -96,11 +96,8 @@ public:
    void SetBearingOffset(Float64 offset,ConnectionLibraryEntry::BearingOffsetMeasurementType measure);
    void GetBearingOffset(Float64* pOffset,ConnectionLibraryEntry::BearingOffsetMeasurementType* pMeasure) const;
 
-   bool HasSlabOffset() const;
-   void SetSlabOffset(pgsTypes::PierFaceType face,Float64 slabOffset);
-   void SetSlabOffset(Float64 backSlabOffset, Float64 aheadSlabOffset);
-   Float64 GetSlabOffset(pgsTypes::PierFaceType face, bool bRawData=false) const;
-   void GetSlabOffset(Float64* pBackSlabOffset, Float64* pAheadSlabOffset, bool bRawData=false) const;
+   // Slab offset input was removed from PGSplice in 2022. This function is only needed for compatibility with older file format
+   void GetSlabOffsetPrivate(Float64* pBackSlabOffset, Float64* pAheadSlabOffset) const;
 
    bool HasElevationAdjustment() const;
    void SetElevationAdjustment(Float64 elevAdj);
@@ -146,7 +143,8 @@ private:
    Float64 m_GirderBearingOffset;
    ConnectionLibraryEntry::BearingOffsetMeasurementType m_BearingOffsetMeasurementType;
 
-   std::array<Float64, 2> m_SlabOffset;
+   std::array<Float64, 2> m_PrivateSlabOffset; // This data only exists for historical compatibility. "A" dimension input was removed from PGSplice in 2022
+
    Float64 m_ElevationAdjustment;
 
    // Spacing at the centerline of this temporary support

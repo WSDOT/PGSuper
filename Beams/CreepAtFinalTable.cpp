@@ -27,6 +27,9 @@
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
 #include <PsgLib\SpecLibraryEntry.h>
+#include <psgLib/SpecificationCriteria.h>
+
+#include <PgsExt\GirderMaterial.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -49,7 +52,7 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
    DEFINE_UV_PROTOTYPE( time,        pDisplayUnits->GetWholeDaysUnit(),        false );
 
-   scalar.SetFormat( sysNumericFormatTool::Automatic );
+   scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Automatic );
    scalar.SetWidth(7);
    scalar.SetPrecision(3);
 }
@@ -132,7 +135,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   *pParagraph << _T("[") << LrfdCw8th(_T("5.9.5.4.3b"),_T("5.9.3.4.3b")) << _T("] Creep of Girder Concrete : ") << symbol(DELTA) << RPT_STRESS(_T("pCD")) << rptNewLine;
+   *pParagraph << _T("[") << WBFL::LRFD::LrfdCw8th(_T("5.9.5.4.3b"),_T("5.9.3.4.3b")) << _T("] Creep of Girder Concrete : ") << symbol(DELTA) << RPT_STRESS(_T("pCD")) << rptNewLine;
 
    
    pParagraph = new rptParagraph;
@@ -166,7 +169,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    {
       if (pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned)
       {
-         if (pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007)
+         if (pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEdition2007)
          {
             *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_PT.png")) << rptNewLine;
          }
@@ -177,7 +180,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
       }
       else
       {
-         if (pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007)
+         if (pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEdition2007)
          {
             *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD_PS.png")) << rptNewLine;
          }
@@ -189,7 +192,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    }
    else
    {
-      if (pSpecEntry->GetSpecificationType() < lrfdVersionMgr::FourthEdition2007)
+      if (pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEdition2007)
       {
          *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCD.png")) << rptNewLine;
       }
@@ -216,7 +219,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    (*pParamTable)(0,4) << Sub2(_T("k"),_T("f"));
 
   // Typecast to our known type (eating own doggy food)
-   std::shared_ptr<const lrfdRefinedLosses2005> ptl = std::dynamic_pointer_cast<const lrfdRefinedLosses2005>(pDetails->pLosses);
+   std::shared_ptr<const WBFL::LRFD::RefinedLosses2005> ptl = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLosses2005>(pDetails->pLosses);
    if (!ptl)
    {
       ATLASSERT(false); // made a bad cast? Bail...
@@ -229,7 +232,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    (*pParamTable)(1,3) << table->stress.SetValue(ptl->GetFc());
    (*pParamTable)(1,4) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKf());
 
-   pParamTable = rptStyleManager::CreateDefaultTable(5,_T(""));
+   pParamTable = rptStyleManager::CreateDefaultTable(pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC ?  6 : 5,_T(""));
    *pParagraph << pParamTable << rptNewLine;
    (*pParamTable)(0,0) << COLHDR(Sub2(_T("t"),_T("i")), rptTimeUnitTag, pDisplayUnits->GetWholeDaysUnit());
    (*pParamTable)(0,1) << COLHDR(Sub2(_T("t"),_T("d")), rptTimeUnitTag, pDisplayUnits->GetWholeDaysUnit());
@@ -240,11 +243,21 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
    (*pParamTable)(0,4) << Sub2(_T("k"),_T("td")) << rptNewLine << _T("Deck Placement to Final") << rptNewLine << _T("t = ") << table->time.SetValue(ptl->GetMaturityDeckPlacementToFinal());
    table->time.ShowUnitTag(false);
 
+   if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC)
+   {
+      (*pParamTable)(0, 5) << Sub2(_T("k"), _T("l"));
+   }
+
    (*pParamTable)(1,0) << table->time.SetValue( ptl->GetInitialAge() );
    (*pParamTable)(1,1) << table->time.SetValue( ptl->GetAgeAtDeckPlacement() );
    (*pParamTable)(1,2) << table->time.SetValue( ptl->GetFinalAge() );
    (*pParamTable)(1,3) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKtd(ptl->GetMaturityAtFinal()));
    (*pParamTable)(1,4) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKtd(ptl->GetMaturityDeckPlacementToFinal()));
+
+   if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC)
+   {
+      (*pParamTable)(1, 5) << table->scalar.SetValue(ptl->GetGirderCreep()->GetKl(ptl->GetAgeAtDeckPlacement()));
+   }
 
    pParamTable = rptStyleManager::CreateDefaultTable(3,_T(""));
    *pParagraph << pParamTable << rptNewLine;
@@ -409,7 +422,7 @@ CCreepAtFinalTable* CCreepAtFinalTable::PrepareTable(rptChapter* pChapter,IBroke
 void CCreepAtFinalTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
   // Typecast to our known type (eating own doggy food)
-   std::shared_ptr<const lrfdRefinedLosses2005> ptl = std::dynamic_pointer_cast<const lrfdRefinedLosses2005>(pDetails->pLosses);
+   std::shared_ptr<const WBFL::LRFD::RefinedLosses2005> ptl = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLosses2005>(pDetails->pLosses);
    if (!ptl)
    {
       ATLASSERT(false); // made a bad cast? Bail...
@@ -469,7 +482,7 @@ void CCreepAtFinalTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsP
    }
 
    (*this)(row+rowOffset, col++) << scalar.SetValue(ptl->GetKdf());
-   (*this)(row+rowOffset, col++) << stress.SetValue(pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp());
+   (*this)(row+rowOffset, col++) << stress.SetValue(pDetails->pLosses->GetElasticShortening().PermanentStrand_Fcgp());
 
    (*this)(row+rowOffset,col++) << stress.SetValue( ptl->CreepLossAfterDeckPlacement() );
 }

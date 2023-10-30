@@ -160,6 +160,24 @@ bool CSpanData2::operator==(const CSpanData2& rOther) const
       }
    }
 
+   if (m_pBridgeDesc->GetHaunchLayoutType() == pgsTypes::hltAlongSpans && m_pBridgeDesc->GetHaunchInputLocationType() != pgsTypes::hilSame4Bridge)
+   {
+      if (m_pBridgeDesc->GetHaunchInputLocationType() == pgsTypes::hilSame4AllGirders)
+      {
+         if (m_vHaunchDepths.front() != rOther.m_vHaunchDepths.front())
+         {
+            return false;
+         }
+      }
+      else
+      {
+         if (m_vHaunchDepths != rOther.m_vHaunchDepths)
+         {
+            return false;
+         }
+      }
+   }
+
    return true;
 }
 
@@ -385,6 +403,41 @@ HRESULT CSpanData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          }
       }
 
+      if (4 < version)
+      {
+         if (m_pBridgeDesc->GetHaunchInputLocationType() != pgsTypes::hilSame4Bridge)
+         {
+            m_vHaunchDepths.clear();
+            pStrLoad->BeginUnit(_T("HaunchDepthsPerGirder"));
+
+            var.vt = VT_INDEX;
+            hr = pStrLoad->get_Property(_T("nGirders"),&var);
+            IndexType ng = VARIANT2INDEX(var);
+
+            for (IndexType ig = 0; ig < ng; ig++)
+            {
+               pStrLoad->BeginUnit(_T("HaunchDepths"));
+
+               var.vt = VT_INDEX;
+               hr = pStrLoad->get_Property(_T("nValues"),&var);
+               IndexType nvals = VARIANT2INDEX(var);
+
+               std::vector<Float64> vdepths;
+               var.vt = VT_R8;
+               for (IndexType iv = 0; iv < nvals; iv++)
+               {
+                  hr = pStrLoad->get_Property(_T("HaunchVal"),&var);
+                  vdepths.push_back(var.dblVal);
+               }
+
+               m_vHaunchDepths.push_back(vdepths);
+               pStrLoad->EndUnit(); // HaunchDepths
+            }
+
+            pStrLoad->EndUnit(); // HaunchDepthsPerGirder
+         }
+      }
+
       hr = pStrLoad->EndUnit(); // span data details
    }
    catch (HRESULT)
@@ -400,7 +453,7 @@ HRESULT CSpanData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
    HRESULT hr = S_OK;
 
-   pStrSave->BeginUnit(_T("SpanDataDetails"),4.0);
+   pStrSave->BeginUnit(_T("SpanDataDetails"),5.0);
 
    if ( m_pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
    {
@@ -448,6 +501,24 @@ HRESULT CSpanData2::Save(IStructuredSave* pStrSave,IProgress* pProgress)
       pStrSave->EndUnit(); // AssExcessCambers
    }
 
+   if (m_pBridgeDesc->GetHaunchInputLocationType() != pgsTypes::hilSame4Bridge)
+   {
+      pStrSave->BeginUnit(_T("HaunchDepthsPerGirder"),1.0);
+      pStrSave->put_Property(_T("nGirders"),CComVariant(m_vHaunchDepths.size()));
+      for (const auto& vhaunch : m_vHaunchDepths)
+      {
+         pStrSave->BeginUnit(_T("HaunchDepths"),1.0);
+         pStrSave->put_Property(_T("nValues"),CComVariant(vhaunch.size()));
+         for (const auto& val : vhaunch)
+         {
+            pStrSave->put_Property(_T("HaunchVal"),CComVariant(val));
+         }
+
+         pStrSave->EndUnit(); // HaunchDepths
+      }
+
+      pStrSave->EndUnit(); // HaunchDepthsPerGirder
+   }
 
    pStrSave->EndUnit(); // span data details
 
@@ -464,6 +535,8 @@ void CSpanData2::MakeCopy(const CSpanData2& rOther,bool bCopyDataOnly)
    m_LLDFs   = rOther.m_LLDFs;
 
    m_vAssumedExcessCambers = rOther.m_vAssumedExcessCambers;
+
+   m_vHaunchDepths = rOther.m_vHaunchDepths;
 
    PGS_ASSERT_VALID;
 }
@@ -556,6 +629,81 @@ void CSpanData2::ProtectAssumedExcessCamber() const
    {
       // more AssumedExcessCambers than girders - truncate
       m_vAssumedExcessCambers.resize(nGirders);
+   }
+}
+
+void CSpanData2::SetDirectHaunchDepths(const std::vector<Float64>& HaunchDepths)
+{
+   GirderIndexType nGirders = GetGirderCount();
+   m_vHaunchDepths.assign(nGirders,HaunchDepths);
+}
+
+void CSpanData2::SetDirectHaunchDepths(GirderIndexType gdrIdx, const std::vector<Float64>& HaunchDepth)
+{
+   ProtectHaunchDepth();
+   ATLASSERT(gdrIdx < m_vHaunchDepths.size());
+
+   m_vHaunchDepths[gdrIdx] = HaunchDepth;
+}
+
+std::vector<Float64> CSpanData2::GetDirectHaunchDepths(GirderIndexType gdrIdx,bool bGetRawValue) const
+{
+   if (bGetRawValue)
+   {
+      ProtectHaunchDepth();
+      ATLASSERT(gdrIdx < m_vHaunchDepths.size());
+      return m_vHaunchDepths[gdrIdx];
+   }
+   else
+   {
+      pgsTypes::HaunchInputLocationType type = m_pBridgeDesc->GetHaunchInputLocationType();
+      if (type == pgsTypes::hilSame4Bridge)
+      {
+         return m_pBridgeDesc->GetDirectHaunchDepths();
+      }
+      else
+      {
+         ProtectHaunchDepth();
+         return m_vHaunchDepths[gdrIdx];
+      }
+   }
+}
+
+void CSpanData2::CopyHaunchDepth(GirderIndexType sourceGdrIdx,GirderIndexType targetGdrIdx)
+{
+   ProtectHaunchDepth();
+   ATLASSERT(sourceGdrIdx < m_vHaunchDepths.size() && targetGdrIdx < m_vHaunchDepths.size());
+
+   m_vHaunchDepths[targetGdrIdx] = m_vHaunchDepths[sourceGdrIdx];
+}
+
+void CSpanData2::ProtectHaunchDepth() const
+{
+   // First: Compare size of our collection with current number of girders and resize if they don't match
+   GirderIndexType nGirders = GetGirderCount();
+   IndexType nFlts = m_vHaunchDepths.size();
+
+   if (nFlts == 0)
+   {
+      // probably switched from hilSame4Bridge. Get HaunchDepth value from bridge and assign as a default
+      std::vector<Float64> defVal = m_pBridgeDesc->GetDirectHaunchDepths();
+      m_vHaunchDepths.assign(nGirders,defVal);
+   }
+   else if (nFlts < nGirders)
+   {
+      // More girders than data - use back value for remaining girders
+      std::vector<Float64> back = m_vHaunchDepths.back();
+
+      m_vHaunchDepths.resize(nGirders); // performance
+      for (IndexType i = nFlts; i < nGirders; i++)
+      {
+         m_vHaunchDepths.push_back(back);
+      }
+   }
+   else if (nGirders < nFlts)
+   {
+      // more HaunchDepths than girders - truncate
+      m_vHaunchDepths.resize(nGirders);
    }
 }
 

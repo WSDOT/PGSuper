@@ -35,7 +35,7 @@ public:
 	virtual ~CAssumedExcessCamberByGirderDlg();
 
 // Dialog Data
-	enum { IDD = IDD_ASSUMED_EXCESS_CAMBER_BY_GIRDER };
+	enum { IDD = IDD_ASSUMED_EXCESS_CAMBER_SEGMENT };
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support

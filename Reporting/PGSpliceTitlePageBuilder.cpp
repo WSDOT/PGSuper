@@ -40,14 +40,14 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 CPGSpliceTitlePageBuilder::CPGSpliceTitlePageBuilder(IBroker* pBroker,LPCTSTR strTitle,bool bFullVersion) :
-CTitlePageBuilder(strTitle),
+WBFL::Reporting::TitlePageBuilder(strTitle),
 m_pBroker(pBroker),
 m_bFullVersion(bFullVersion)
 {
 }
 
 CPGSpliceTitlePageBuilder::CPGSpliceTitlePageBuilder(const CPGSpliceTitlePageBuilder& other) :
-CTitlePageBuilder(other),
+WBFL::Reporting::TitlePageBuilder(other),
 m_pBroker(other.m_pBroker),
 m_bFullVersion(other.m_bFullVersion)
 {
@@ -58,13 +58,13 @@ CPGSpliceTitlePageBuilder::~CPGSpliceTitlePageBuilder(void)
 {
 }
 
-bool CPGSpliceTitlePageBuilder::NeedsUpdate(CReportHint* pHint,std::shared_ptr<CReportSpecification>& pRptSpec)
+bool CPGSpliceTitlePageBuilder::NeedsUpdate(const std::shared_ptr<const WBFL::Reporting::ReportHint>& pHint,const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec) const
 {
    // don't let the title page control whether or not a report needs updating
    return false;
 }
 
-rptChapter* CPGSpliceTitlePageBuilder::Build(std::shared_ptr<CReportSpecification>& pRptSpec)
+rptChapter* CPGSpliceTitlePageBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec) const
 {
    // Create a title page for the report
    rptChapter* pTitlePage = new rptChapter;
@@ -111,7 +111,7 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(std::shared_ptr<CReportSpecificatio
 
    pPara = new rptParagraph(rptStyleManager::GetCopyrightStyle());
    *pTitlePage << pPara;
-   *pPara << _T("Copyright ") << symbol(COPYRIGHT) << _T(" ") << sysDate().Year() << _T(", WSDOT, All Rights Reserved") << rptNewLine;
+   *pPara << _T("Copyright ") << symbol(COPYRIGHT) << _T(" ") << WBFL::System::Date().Year() << _T(", WSDOT, All Rights Reserved") << rptNewLine;
 
    pPara = new rptParagraph;
    pPara->SetStyleName(rptStyleManager::GetReportSubtitleStyle());
@@ -316,7 +316,7 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(std::shared_ptr<CReportSpecificatio
       (*pTable)(row,0) << _T("Deck Bar Cutoff");
       (*pTable)(row++,1) << _T("End of a reinforcing bar in the deck");
 
-      if ( lrfdVersionMgr::ThirdEdition2004 <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          (*pTable)(row,0) << _T("CS");
          (*pTable)(row++,1) << _T("Critical Section for Shear");
@@ -351,7 +351,7 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(std::shared_ptr<CReportSpecificatio
 
    // Status Center Items
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
-   CollectionIndexType nItems = pStatusCenter->Count();
+   IndexType nItems = pStatusCenter->Count();
 
    if ( nItems != 0 )
    {
@@ -374,7 +374,7 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(std::shared_ptr<CReportSpecificatio
 
       row = 1;
       CString strSeverityType[] = { _T("Information"), _T("Warning"), _T("Error") };
-      for ( CollectionIndexType i = 0; i < nItems; i++ )
+      for ( IndexType i = 0; i < nItems; i++ )
       {
          CEAFStatusItem* pItem = pStatusCenter->GetByIndex(i);
 
@@ -399,7 +399,7 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(std::shared_ptr<CReportSpecificatio
    return pTitlePage;
 }
 
-CTitlePageBuilder* CPGSpliceTitlePageBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::TitlePageBuilder> CPGSpliceTitlePageBuilder::Clone() const
 {
-   return new CPGSpliceTitlePageBuilder(*this);
+   return std::make_unique<CPGSpliceTitlePageBuilder>(*this);
 }

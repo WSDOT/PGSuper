@@ -1,6 +1,6 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 22.58    2   8.71                     1     1     FLW     *      0  0.6  270   0.00   0.00  12.00  12.00                                              6.000  7.044   7.044     7.044    30634   1.368  1.419  -0.017 -0.575 -0.093 -0.083 -0.750   0.00    0.00    5.00   15.00   15.00    1.22    2.19    1.59    2.91    1.04 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 22.58    2   8.71                     1     1     FLW     *      0  0.6  270   0.00   0.00                                              6.000  7.044   7.044     7.044    30634   1.368  1.419  -0.017 -0.575 -0.093 -0.083 -0.750   0.00    0.00    5.00   15.00   15.00    1.22    2.19    1.59    2.91    1.04 
 
 
 The Specification Check was Not Successful
@@ -31,9 +31,9 @@ Hauling checks failed for Segment 4.
 Bottom flange clearance check failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 22.58    2   8.71                     1     2     FLW     *      0  0.6  270   0.00   0.00  12.00  12.00                                              6.000  7.044   7.044     7.044    31135   1.368  1.419  -0.017 -0.614 -0.089 -0.079 -0.782   0.00    0.00    5.00   15.00   15.00    1.76    0.60    2.28    0.85    3.19 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 22.58    2   8.71                     1     2     FLW     *      0  0.6  270   0.00   0.00                                              6.000  7.044   7.044     7.044    31135   1.368  1.419  -0.017 -0.614 -0.089 -0.079 -0.782   0.00    0.00    5.00   15.00   15.00    1.76    0.60    2.28    0.85    3.19 
 
 
 The Specification Check was Not Successful
@@ -77,7 +77,6 @@ Stirrup detailing checks failed for the Strength I Limit State.
 Hauling checks failed for Segment 2.
 Hauling checks failed for Segment 3.
 Hauling checks failed for Segment 4.
-Slab Offset ("A" Dimension) check failed
 Bottom flange clearance check failed
 
 

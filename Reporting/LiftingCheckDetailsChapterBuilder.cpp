@@ -39,6 +39,8 @@
 
 #include <limits>
 
+#include <EAF/EAFApp.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -67,10 +69,10 @@ LPCTSTR CLiftingCheckDetailsChapterBuilder::GetName() const
    return TEXT("Lifting Check Details");
 }
 
-rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CLiftingCheckDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    CComPtr<IBroker> pBroker;
-   CBrokerReportSpecification* pBrokerRptSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
+   auto pBrokerRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
    pBrokerRptSpec->GetBroker(&pBroker);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
@@ -84,8 +86,8 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
 
       std::vector<CGirderKey> vGirderKeys;
 
-      CGirderReportSpecification* pGirderReportSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-      CSegmentReportSpecification* pSegmentReportSpec = dynamic_cast<CSegmentReportSpecification*>(pRptSpec);
+      auto pGirderReportSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
+      auto pSegmentReportSpec = std::dynamic_pointer_cast<const CSegmentReportSpecification>(pRptSpec);
 
       if (pGirderReportSpec)
       {
@@ -136,7 +138,8 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
             Float64 Ll, Lr;
             pStabilityProblem->GetSupportLocations(&Ll, &Lr);
             WBFL::Stability::LiftingStabilityReporter reporter;
-            reporter.BuildDetailsChapter(pStabilityModel, pStabilityProblem, &results, pChapter, _T("Location from<BR/>Left Pick Point"), Ll);
+            auto* pApp = EAFGetApp();
+            reporter.BuildDetailsChapter(pStabilityModel, pStabilityProblem, &results, pChapter, pApp->GetDisplayUnits(), _T("Location from<BR/>Left Pick Point"), Ll);
          } // next segment
       } // next group
    }
@@ -145,7 +148,7 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
       rptParagraph* pTitle = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pTitle;
       *pTitle << _T("Details for Check for Lifting In Casting Yard");
-      if (lrfdVersionMgr::NinthEdition2020 <= lrfdVersionMgr::GetVersion())
+      if (WBFL::LRFD::BDSManager::Edition::NinthEdition2020 <= WBFL::LRFD::BDSManager::GetEdition())
       {
          *pTitle << _T(" [5.5.4.3]");
       }
@@ -160,9 +163,9 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
    return pChapter;
 }
 
-CChapterBuilder* CLiftingCheckDetailsChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLiftingCheckDetailsChapterBuilder::Clone() const
 {
-   return new CLiftingCheckDetailsChapterBuilder;
+   return std::make_unique<CLiftingCheckDetailsChapterBuilder>();
 }
 
 //======================== ACCESS     =======================================

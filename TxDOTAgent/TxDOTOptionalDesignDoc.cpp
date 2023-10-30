@@ -49,7 +49,7 @@
 #include <EAF\EAFAutoProgress.h>
 #include <EAF\EAFProjectLog.h>
 
-#include <System\StructuredLoadXmlPrs.h>
+#include <System\StructuredLoadXml.h>
 
 #include <IFace\Project.h>
 #include <IFace\PrestressForce.h>
@@ -59,7 +59,7 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\GirderGroupData.h>
 #include <PgsExt\DistributedLoadData.h>
-#include <Lrfd\StrandPool.h>
+#include <LRFD\StrandPool.h>
 
 #include <PsgLib\BeamFamilyManager.h>
 
@@ -260,7 +260,7 @@ void CTxDOTOptionalDesignDoc::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszP
    default:
       {
          CString log_msg;
-         log_msg.Format(_T("An unknown error occured while opening the file (hr = %d)"),hr);
+         log_msg.Format(_T("An unknown error occurred while opening the file (hr = %d)"),hr);
          pLog->LogMessage( log_msg );
          AfxFormatString1( msg1, IDS_E_READ, lpszPathName );
       }
@@ -270,7 +270,7 @@ void CTxDOTOptionalDesignDoc::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszP
    // things here are very dire - show message box AND throw
    CString msg;
    CString msg2;
-   std::_tstring strLogFileName = pLog->GetName();
+   std::_tstring strLogFileName = (LPCTSTR)pLog->GetName();
    AfxFormatString1( msg2, IDS_E_PROBPERSISTS, CString(strLogFileName.c_str()) );
    AfxFormatString2(msg, IDS_E_FORMAT, msg1, msg2 );
    AfxMessageBox( msg );
@@ -961,7 +961,7 @@ void CTxDOTOptionalDesignDoc::InitializeLibraryManager()
 
    CComBSTR bpath(strMasterLibaryFile);
 
-   FileStream ifile;
+   WBFL::System::FileStream ifile;
    if ( ifile.open(bpath) )
    {
       // try to load file
@@ -970,7 +970,7 @@ void CTxDOTOptionalDesignDoc::InitializeLibraryManager()
          // clear out library
          m_LibMgr.ClearAllEntries();
 
-         sysStructuredLoadXmlPrs load;
+         WBFL::System::StructuredLoadXml load;
          load.BeginLoad( &ifile );
 
          // Problem : Library Editor application specific code is in the
@@ -995,10 +995,10 @@ void CTxDOTOptionalDesignDoc::InitializeLibraryManager()
          // success!
          WATCH(_T("Master Library loaded successfully"));
       }
-      catch( sysXStructuredLoad& e )
+      catch(WBFL::System::XStructuredLoad& e )
       {
          TxDOTBrokerRetrieverException exc;
-         if ( e.GetExplicitReason() == sysXStructuredLoad::CantInitializeTheParser )
+         if ( e.GetReasonCode() == WBFL::System::XStructuredLoad::CantInitializeTheParser )
          {
             exc.Message = _T("Failed to initialize the xml parser. This is an installation issue.");
          }
@@ -1189,7 +1189,7 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    Float64 gdr_width = pGdrEntry->GetBeamWidth(pgsTypes::metStart);
    if (spacing < gdr_width+Tol)
    {
-      gdr_width = ::ConvertFromSysUnits(gdr_width, unitMeasure::Feet);
+      gdr_width = WBFL::Units::ConvertFromSysUnits(gdr_width, WBFL::Units::Measure::Feet);
       TxDOTBrokerRetrieverException exc;
       exc.Message.Format(_T("The girder spacing must be greater than or equal to the girder width of %f feet"),gdr_width);
       throw exc;
@@ -1215,7 +1215,7 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
          }
          else
          {
-            maxSpc = ::ConvertFromSysUnits(maxSpc, unitMeasure::Feet);
+            maxSpc = WBFL::Units::ConvertFromSysUnits(maxSpc, WBFL::Units::Measure::Feet);
             maxSpc += gdr_width;
             TxDOTBrokerRetrieverException exc;
             exc.Message.Format(_T("For an adjacent-only beam, allowable Beam Spacing may not be greater than %f feet"),maxSpc+gdr_width);
@@ -1224,7 +1224,7 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
       }
       else if (joint_spacing < minSpc-Tol)
       {
-         minSpc = ::ConvertFromSysUnits(minSpc, unitMeasure::Feet);
+         minSpc = WBFL::Units::ConvertFromSysUnits(minSpc, WBFL::Units::Measure::Feet);
          minSpc += gdr_width;
          TxDOTBrokerRetrieverException exc;
          exc.Message.Format(_T("Beam Spacing may not be less than %f feet"),minSpc+gdr_width);
@@ -1244,7 +1244,7 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    {
       // spread uniform
       Float64 sd = m_ProjectData.GetSlabThickness();
-      sd = ::ConvertFromSysUnits(sd, unitMeasure::Inch);
+      sd = WBFL::Units::ConvertFromSysUnits(sd, WBFL::Units::Measure::Inch);
       if (sd < 4.0)
       {
          TxDOTBrokerRetrieverException exc;
@@ -1360,7 +1360,7 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    }
 
    // Set spec entry 
-   std::_tstring curr_entry = m_ProjectData.GetSelectedProjectCriteriaLibrary();
+   std::_tstring curr_entry = (LPCTSTR)m_ProjectData.GetSelectedProjectCriteriaLibrary();
    pSpec->SetSpecification(curr_entry);
 
    // Now set girders' data
@@ -1391,8 +1391,8 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
 
    // Applied dead loads
    // First delete any distributed loads
-   CollectionIndexType ndl = pUserDefinedLoadData->GetDistributedLoadCount();
-   for (CollectionIndexType idl=0; idl<ndl; idl++)
+   IndexType ndl = pUserDefinedLoadData->GetDistributedLoadCount();
+   for (IndexType idl=0; idl<ndl; idl++)
    {
       pUserDefinedLoadData->DeleteDistributedLoad(0);
    }
@@ -1404,7 +1404,7 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    //       3) Another solution would be to create a TOGA-specific load details report,
    //          but this would require lots of new code, and create the risk of someone
    //          adding a new load type that could slip under the radar.
-   const Float64 SMALL_LOAD = ::ConvertToSysUnits(0.1,unitMeasure::NewtonPerMeter);
+   const Float64 SMALL_LOAD = WBFL::Units::ConvertToSysUnits(0.1,WBFL::Units::Measure::NewtonPerMeter);
 
    // w non-comp, dc
    w = m_ProjectData.GetWNonCompDc();
@@ -1511,13 +1511,13 @@ void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdG
    material.Concrete.WeightDensity = weightDensity;
 
    // Prestress material
-   matPsStrand::Grade grade;
-   matPsStrand::Type  type;
-   matPsStrand::Coating coating;
-   matPsStrand::Size  size;
+   WBFL::Materials::PsStrand::Grade grade;
+   WBFL::Materials::PsStrand::Type  type;
+  WBFL::Materials::PsStrand::Coating coating;
+   WBFL::Materials::PsStrand::Size  size;
    pOdGirderData->GetStrandData(&grade,&type,&coating,&size);
 
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+   const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
    for ( int i = 0; i < 3; i++ )
    {
       pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;

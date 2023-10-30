@@ -46,6 +46,10 @@
 #include <IFace\StatusCenter.h>
 #include <PgsExt\StatusItem.h>
 
+#include <psgLib/SectionPropertiesCriteria.h>
+#include <psgLib/SpecificationCriteria.h>
+
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -71,46 +75,46 @@ HRESULT CTxDotDoubleTFactory::FinalConstruct()
    m_DimNames.emplace_back(_T("W2"));
    m_DimNames.emplace_back(_T("J"));
 
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 0.0,unitMeasure::Inch)); // C1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 0.0,unitMeasure::Inch)); // C2
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(27.0,unitMeasure::Inch)); // H1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 3.0,unitMeasure::Inch)); // H2
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 6.0,unitMeasure::Inch)); // H3
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 0.0,unitMeasure::Inch)); // T1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 6.5,unitMeasure::Inch)); // T2
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 1.5,unitMeasure::Inch)); // T3
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 3.0,unitMeasure::Inch)); // F1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(24.0,unitMeasure::Inch)); // W1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(48.0,unitMeasure::Inch)); // W2
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 1.0,unitMeasure::Inch)); // J
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 0.0,WBFL::Units::Measure::Inch)); // C1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 0.0,WBFL::Units::Measure::Inch)); // C2
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(27.0,WBFL::Units::Measure::Inch)); // H1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 3.0,WBFL::Units::Measure::Inch)); // H2
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 6.0,WBFL::Units::Measure::Inch)); // H3
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 0.0,WBFL::Units::Measure::Inch)); // T1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 6.5,WBFL::Units::Measure::Inch)); // T2
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 1.5,WBFL::Units::Measure::Inch)); // T3
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 3.0,WBFL::Units::Measure::Inch)); // F1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(24.0,WBFL::Units::Measure::Inch)); // W1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(48.0,WBFL::Units::Measure::Inch)); // W2
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 1.0,WBFL::Units::Measure::Inch)); // J
 
    // SI Units
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // C1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // C2
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H2
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H3
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // T1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // T2
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // T3
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // F1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W2
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // J
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // C1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // C2
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // H1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // H2
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // H3
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // T1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // T2
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // T3
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // F1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W2
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // J
 
    // US Units
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // C1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // C2
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H2
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H3
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // T1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // T2
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // T3
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // F1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W2
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // J
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // C1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // C2
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // H1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // H2
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // H3
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // T1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // T2
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // T3
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // F1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W2
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // J
    
 
    return S_OK;
@@ -155,7 +159,7 @@ void CTxDotDoubleTFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType stat
    // Beam materials
    GET_IFACE2(pBroker,ILossParameters,pLossParams);
    CComPtr<IMaterial> material;
-   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       CComPtr<IAgeAdjustedMaterial> aaMaterial;
       BuildAgeAdjustedGirderMaterialModel(pBroker,pSegment,segment,&aaMaterial);
@@ -244,7 +248,7 @@ void CTxDotDoubleTFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroup
 void CTxDotDoubleTFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const
 {
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
-   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       CComObject<CTimeStepLossEngineer>* pEngineer;
       CComObject<CTimeStepLossEngineer>::CreateInstance(&pEngineer);
@@ -341,7 +345,7 @@ const std::vector<Float64>& CTxDotDoubleTFactory::GetDefaultDimensions() const
    return m_DefaultDims;
 }
 
-const std::vector<const unitLength*>& CTxDotDoubleTFactory::GetDimensionUnits(bool bSIUnits) const
+const std::vector<const WBFL::Units::Length*>& CTxDotDoubleTFactory::GetDimensionUnits(bool bSIUnits) const
 {
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
@@ -494,7 +498,7 @@ bool CTxDotDoubleTFactory::ValidateDimensions(const IBeamFactory::Dimensions& di
    return true;
 }
 
-void CTxDotDoubleTFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
+void CTxDotDoubleTFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
 {
    pSave->BeginUnit(_T("TxDOTDoubleTeeDimensions"),1.0);
    for(const auto& name : m_DimNames)
@@ -505,7 +509,7 @@ void CTxDotDoubleTFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const
    pSave->EndUnit();
 }
 
-IBeamFactory::Dimensions CTxDotDoubleTFactory::LoadSectionDimensions(sysIStructuredLoad* pLoad) const
+IBeamFactory::Dimensions CTxDotDoubleTFactory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
 {
    Float64 parent_version;
    if (pLoad->GetParentUnit() == _T("GirderLibraryEntry"))
@@ -673,7 +677,10 @@ std::_tstring CTxDotDoubleTFactory::GetInteriorGirderEffectiveFlangeWidthImage(I
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
+   const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
+   const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();
+   if (section_properties_criteria.EffectiveFlangeWidthMethod == pgsTypes::efwmTribWidth ||
+      WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims <= specification_criteria.GetEdition())
    {
       return _T("DoubleTee_Effective_Flange_Width_Interior_Girder_2008.gif");
    }
@@ -688,7 +695,10 @@ std::_tstring CTxDotDoubleTFactory::GetExteriorGirderEffectiveFlangeWidthImage(I
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
+   const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
+   const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();
+   if (section_properties_criteria.EffectiveFlangeWidthMethod == pgsTypes::efwmTribWidth ||
+      WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims <= specification_criteria.GetEdition())
    {
       return _T("DoubleTee_Effective_Flange_Width_Exterior_Girder_2008.gif");
    }

@@ -85,7 +85,7 @@ public:
 
    // Returns a macro transaction object that contains editing transactions
    // for all the extension pages. The caller is responsble for deleting this object
-   txnTransaction* GetExtensionPageTransaction();
+   std::unique_ptr<CEAFTransaction> GetExtensionPageTransaction();
 
    const std::vector<EditBridgeExtension>& GetExtensionPages() const;
    std::vector<EditBridgeExtension>& GetExtensionPages();
@@ -108,7 +108,7 @@ protected:
    friend CBridgeDescFramingGrid;
    friend CBridgeDescrBearings;
 
-   txnMacroTxn m_Macro;
+   CEAFMacroTxn m_Macro;
    std::vector<EditBridgeExtension> m_ExtensionPages;
    void NotifyExtensionPages();
 

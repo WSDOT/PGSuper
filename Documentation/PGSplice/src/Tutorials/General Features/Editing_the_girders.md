@@ -2,9 +2,11 @@ Editing the Girders {#tutorial_general_editing_the_girders}
 ==============================
 Next we will define the girders.
 
-1. Select *Edit > Girder*
-2. Select Group 1, Girder 1 for editing ![](Tutorial_General_Edit_Girder.png)
-3. This will open the Girder Details window.
+1) Select *Edit > Girder*
+2) Select Group 1, Girder 1 for editing 
+
+![](Tutorial_General_Edit_Girder.png)
+3) This will open the Girder Details window.
 
 All of the information that defines a girder can be accessed from the Girder Details window.
 

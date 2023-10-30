@@ -33,7 +33,7 @@
 #include <IFace\Intervals.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 
-#include <Lrfd\RebarPool.h>
+#include <LRFD\RebarPool.h>
 
 #include <PgsExt\GirderDesignArtifact.h>
 #include <PgsExt\BridgeDescription2.h>
@@ -183,9 +183,9 @@ LPCTSTR CDesignOutcomeChapterBuilder::GetName() const
    return TEXT("Design Outcome");
 }
 
-rptChapter* CDesignOutcomeChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CDesignOutcomeChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CMultiGirderReportSpecification* pReportSpec = dynamic_cast<CMultiGirderReportSpecification*>(pRptSpec);
+   auto pReportSpec = std::dynamic_pointer_cast<const CMultiGirderReportSpecification>(pRptSpec);
    ATLASSERT( pReportSpec != nullptr );
 
    std::vector<CGirderKey> girderKeys = pReportSpec->GetGirderKeys();
@@ -269,9 +269,9 @@ rptChapter* CDesignOutcomeChapterBuilder::Build(CReportSpecification* pRptSpec,U
    return pChapter;
 }
 
-CChapterBuilder* CDesignOutcomeChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CDesignOutcomeChapterBuilder::Clone() const
 {
-   return new CDesignOutcomeChapterBuilder;
+   return std::make_unique<CDesignOutcomeChapterBuilder>();
 }
 
 void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact)
@@ -380,7 +380,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
       (*pTable)(row,2) << pStrands->GetStrandCount(pgsTypes::Straight);
 
       // print straight debond information if exists
-      CollectionIndexType ddb = config.PrestressConfig.Debond[pgsTypes::Straight].size();
+      IndexType ddb = config.PrestressConfig.Debond[pgsTypes::Straight].size();
       StrandIndexType pdb = pStrandGeometry->GetNumDebondedStrands(segmentKey,pgsTypes::Straight,pgsTypes::dbetEither);
       if (0 < ddb || 0 < pdb)
       {
@@ -672,7 +672,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
          row++;
 
          GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
-         if ( pSegmentHaulingSpecCriteria->GetHaulingAnalysisMethod() == pgsTypes::hmWSDOT )
+         if ( pSegmentHaulingSpecCriteria->GetHaulingAnalysisMethod() == pgsTypes::HaulingAnalysisMethod::WSDOT )
          {
             (*pTable)(row,0) << _T("Haul Truck");
             (*pTable)(row,1) << pArtifact->GetHaulTruck();
@@ -777,7 +777,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
 
          *pParagraph <<rptNewLine<< Bold(_T("Additional Logitudinal Rebar Added to Girder Bottom For Longitudinal Reinforcement for Shear:"))<<rptNewLine;
          *pParagraph <<_T("- ")<< rrow.NumberOfBars <<_T(" bars of ")
-                  <<lrfdRebarPool::GetBarSize(rrow.BarSize).c_str()<<_T(" at ")
+                  <<WBFL::LRFD::RebarPool::GetBarSize(rrow.BarSize).c_str()<<_T(" at ")
                   <<length.SetValue(rrow.BarSpacing)<<rptNewLine;
       }
    }
@@ -818,7 +818,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
          GDRCONFIG config = pArtifact->GetSegmentConfiguration();
 
          GET_IFACE2(pBroker,ICamber,pCamber);
-         Float64 excess_camber = pCamber->GetExcessCamber(poiMS,CREEP_MAXTIME,&config);
+         Float64 excess_camber = pCamber->GetExcessCamber(poiMS,pgsTypes::CreepTime::Max,&config);
          if ( excess_camber < 0 )
          {
             *pNotesParagraph<<color(Red)<< _T("Warning:  Excess camber is negative, indicating a potential sag in the beam.")<<color(Black)<< rptNewLine;
@@ -1037,6 +1037,11 @@ void failed_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisp
          bContinue = false;
          break;
 
+      case pgsSegmentDesignArtifact::DesignNotSupported_Material:
+         *pParagraph << _T("Design is not supported for UHPC girders") << rptNewLine;
+         bContinue = false;
+         break;
+
       default:
          ATLASSERT(false); // Should never get here
    }
@@ -1055,7 +1060,7 @@ std::_tstring GetDesignNoteString(pgsSegmentDesignArtifact::DesignNote note)
    switch (note)
    {
    case pgsSegmentDesignArtifact::dnShearRequiresStrutAndTie:
-      return std::_tstring(_T("WARNING: A strut and tie analysis is required in the girder end zones per LRFD ") + std::_tstring(LrfdCw8th(_T("5.7.3.2"),_T("5.8.3.2"))) + _T(". This design will fail a spec check."));
+      return std::_tstring(_T("WARNING: A strut and tie analysis is required in the girder end zones per LRFD ") + std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.7.3.2"),_T("5.8.3.2"))) + _T(". This design will fail a spec check."));
       break;
 
    case pgsSegmentDesignArtifact::dnExistingShearDesignPassedSpecCheck:
@@ -1454,13 +1459,13 @@ void write_primary_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDispl
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
 
    rptRcScalar scalar;
-   scalar.SetFormat( sysNumericFormatTool::Fixed );
+   scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Fixed );
    scalar.SetWidth(6);
    scalar.SetPrecision(2);
    scalar.SetTolerance(1.0e-6);
 
-   lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
-   ATLASSERT(pool!=0);
+   const auto* pool = WBFL::LRFD::RebarPool::GetInstance();
+   ATLASSERT(pool!=nullptr);
 
    bool is_symm = pShearData->bAreZonesSymmetrical;
 
@@ -1472,7 +1477,7 @@ void write_primary_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDispl
    }
    else if (1 == nz)
    {
-      if (pShearData->ShearZones[0].VertBarSize != matRebar::bsNone)
+      if (pShearData->ShearZones[0].VertBarSize != WBFL::Materials::Rebar::Size::bsNone)
       {
          is_stirrups = true;
       }
@@ -1530,13 +1535,13 @@ void write_primary_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDispl
             (*pTables)(row,col++) << _T("");
          }
 
-         if (rszdata.VertBarSize!=matRebar::bsNone)
+         if (rszdata.VertBarSize!=WBFL::Materials::Rebar::Size::bsNone)
          {
-            (*pTables)(row,col++) << lrfdRebarPool::GetBarSize(rszdata.VertBarSize).c_str();
+            (*pTables)(row,col++) << WBFL::LRFD::RebarPool::GetBarSize(rszdata.VertBarSize).c_str();
             (*pTables)(row,col++) << length.SetValue(rszdata.BarSpacing);
             (*pTables)(row,col++) << scalar.SetValue(rszdata.nVertBars);
             (*pTables)(row,col++) << scalar.SetValue(rszdata.nHorzInterfaceBars);
-            (*pTables)(row,col++) << lrfdRebarPool::GetBarSize(rszdata.ConfinementBarSize).c_str();
+            (*pTables)(row,col++) << WBFL::LRFD::RebarPool::GetBarSize(rszdata.ConfinementBarSize).c_str();
          }
          else
          {
@@ -1562,7 +1567,7 @@ void write_horiz_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplay
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), true );
 
    rptRcScalar scalar;
-   scalar.SetFormat( sysNumericFormatTool::Fixed );
+   scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Fixed );
    scalar.SetWidth(6);
    scalar.SetPrecision(2);
    scalar.SetTolerance(1.0e-6);
@@ -1578,7 +1583,7 @@ void write_horiz_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplay
    }
    else if (1 == nhz)
    {
-      if (pShearData->HorizontalInterfaceZones[0].BarSize != matRebar::bsNone)
+      if (pShearData->HorizontalInterfaceZones[0].BarSize != WBFL::Materials::Rebar::Size::bsNone)
       {
          is_hstirrups = true;
       }
@@ -1634,9 +1639,9 @@ void write_horiz_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplay
             (*pTables)(row,col++) << _T("");
          }
 
-         if (rhzdata.BarSize!=matRebar::bsNone)
+         if (rhzdata.BarSize!=WBFL::Materials::Rebar::Size::bsNone)
          {
-            (*pTables)(row,col++) << lrfdRebarPool::GetBarSize(rhzdata.BarSize).c_str();
+            (*pTables)(row,col++) << WBFL::LRFD::RebarPool::GetBarSize(rhzdata.BarSize).c_str();
             (*pTables)(row,col++) << length.SetValue(rhzdata.BarSpacing);
             (*pTables)(row,col++) << scalar.SetValue(rhzdata.nBars);
          }
@@ -1662,16 +1667,16 @@ void write_additional_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDi
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), true );
 
    rptRcScalar scalar;
-   scalar.SetFormat( sysNumericFormatTool::Fixed );
+   scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Fixed );
    scalar.SetWidth(6);
    scalar.SetPrecision(2);
    scalar.SetTolerance(1.0e-6);
 
-   if (pShearData->SplittingBarSize != matRebar::bsNone)
+   if (pShearData->SplittingBarSize != WBFL::Materials::Rebar::Size::bsNone)
    {
       *pParagraph <<_T("- Splitting Reinforcement: Zone Length =")<< location.SetValue(pShearData->SplittingZoneLength)
                   <<_T(";  ")<<scalar.SetValue(pShearData->nSplittingBars)<<_T(" legs of ")
-                  <<lrfdRebarPool::GetBarSize(pShearData->SplittingBarSize).c_str()<<_T(" bars at ")
+                  <<WBFL::LRFD::RebarPool::GetBarSize(pShearData->SplittingBarSize).c_str()<<_T(" bars at ")
                   <<length.SetValue(pShearData->SplittingBarSpacing)<<rptNewLine;
    }
    else
@@ -1679,10 +1684,10 @@ void write_additional_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDi
       *pParagraph <<_T("- Splitting Reinforcement: None")<<rptNewLine;
    }
 
-   if (pShearData->ConfinementBarSize != matRebar::bsNone)
+   if (pShearData->ConfinementBarSize != WBFL::Materials::Rebar::Size::bsNone)
    {
       *pParagraph <<_T("- Confinement Reinforcement: Zone Length =")<< location.SetValue(pShearData->ConfinementZoneLength)<<_T("; ")
-                  <<lrfdRebarPool::GetBarSize(pShearData->ConfinementBarSize).c_str()<<_T(" bars at ")
+                  <<WBFL::LRFD::RebarPool::GetBarSize(pShearData->ConfinementBarSize).c_str()<<_T(" bars at ")
                   <<length.SetValue(pShearData->ConfinementBarSpacing)<<rptNewLine;
    }
    else

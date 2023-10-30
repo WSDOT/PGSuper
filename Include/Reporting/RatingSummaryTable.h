@@ -33,34 +33,29 @@ CLASS
    Encapsulates the construction of the rating summary table
 *****************************************************************************/
 
+/// @brief Encapsulates the construction of the rating summary table
 class REPORTINGCLASS CRatingSummaryTable
 {
 public:
    enum RatingTableType
    { Design, Legal, Permit };
 
-   //------------------------------------------------------------------------
-   // Default constructor
-   CRatingSummaryTable();
+   CRatingSummaryTable() = delete;
+   ~CRatingSummaryTable() = delete;
 
-   //------------------------------------------------------------------------
-   // Destructor
-   virtual ~CRatingSummaryTable();
+   /// @brief Builds the rating summary table with results listed by limit state and structural action
+   static rptRcTable* BuildByLimitState(IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,RatingTableType ratingTableType);
 
-   //------------------------------------------------------------------------
-   // Builds the rating summary table with results listed by limit state and structural action
-   virtual rptRcTable* BuildByLimitState(IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,RatingTableType ratingTableType) const;
+   /// @brief Builds the rating summary table with results listed by rating vehicle
+   static rptRcTable* BuildByVehicle(IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType);
 
-   //------------------------------------------------------------------------
-   // Builds the rating summary table with results listed by rating vehicle
-   virtual rptRcTable* BuildByVehicle(IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType) const;
+   /// @brief Builds the load posting table for a a legal load rating (but not emergency vehicles)
+   static rptRcTable* BuildLoadPosting(IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType,bool* pbMustCloseBridge);
 
-   //------------------------------------------------------------------------
-   // Builds the load posting table for a a legal load rating (but not emergency vehicles)
-   virtual rptRcTable* BuildLoadPosting(IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType,bool* pbMustCloseBridge) const;
+   /// @brief Builds the load posting table for emergency vehicles
+   static rptRcTable* BuildEmergencyVehicleLoadPosting(IBroker* pBroker, const std::vector<CGirderKey>& girderKeys);
 
-   //------------------------------------------------------------------------
-   // Builds the load posting table for emergency vehicles
-   virtual rptRcTable* BuildEmergencyVehicleLoadPosting(IBroker* pBroker, const std::vector<CGirderKey>& girderKeys) const;
+   /// @brief Builds the yield stress ratio table for permit load rating types
+   static rptRcTable* BuildYieldStressRatio(IBroker* pBroker, const std::vector<CGirderKey>& girderKeys, pgsTypes::LoadRatingType ratingType);
 };
 

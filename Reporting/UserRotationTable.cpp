@@ -80,8 +80,8 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderK
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetFirstCompositeDeckInterval();
 
    CString strTitle;
-   strTitle.Format(_T("Rotations due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
-   rptRcTable* p_table = CreateUserLoadHeading<rptAngleUnitTag,unitmgtAngleData>(strTitle.GetBuffer(),true,analysisType,intervalIdx,pDisplayUnits,pDisplayUnits->GetRadAngleUnit());
+   strTitle.Format(_T("Rotations due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx).c_str());
+   rptRcTable* p_table = CreateUserLoadHeading<rptAngleUnitTag,WBFL::Units::AngleData>(strTitle.GetBuffer(),true,analysisType,intervalIdx,pDisplayUnits,pDisplayUnits->GetRadAngleUnit());
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IProductForces,pProdForces);
@@ -210,27 +210,3 @@ void CUserRotationTable::MakeAssignment(const CUserRotationTable& rOther)
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CUserRotationTable::AssertValid() const
-{
-   return true;
-}
-
-void CUserRotationTable::Dump(dbgDumpContext& os) const
-{
-   os << _T("Dump for CUserRotationTable") << endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CUserRotationTable::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("CUserRotationTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CUserRotationTable");
-
-   TESTME_EPILOG("CUserRotationTable");
-}
-#endif // _UNITTEST

@@ -32,6 +32,7 @@
 #include <IFace\ExtendUI.h>
 #include <PgsExt\SplicedGirderData.h>
 #include <PgsExt\BridgeDescription2.h>
+#include <EAF\EAFMacroTxn.h>
 
 // CGirderSegmentDlg
 
@@ -64,7 +65,7 @@ public:
 
    // Returns a macro transaction object that contains editing transactions
    // for all the extension pages. The caller is responsble for deleting this object
-   txnTransaction* GetExtensionPageTransaction();
+   std::unique_ptr<CEAFTransaction> GetExtensionPageTransaction();
 
    CGirderSegmentGeneralPage m_GeneralPage;
 
@@ -80,7 +81,7 @@ protected:
 
    bool m_bEditingInGirder;
 
-   txnMacroTxn m_Macro;
+   CEAFMacroTxn m_Macro;
    std::vector<std::pair<IEditSegmentCallback*,CPropertyPage*>> m_ExtensionPages;
    std::vector<EditSplicedGirderExtension> m_SplicedGirderExtensionPages;
    void NotifyExtensionPages();

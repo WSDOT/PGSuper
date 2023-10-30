@@ -37,9 +37,7 @@
 #include <WBFLTools.h>
 #include <WBFLGeometry.h>
 
-#if !defined INCLUDED_SYSTEM_SUBJECTT_H_
 #include <System\SubjectT.h>
-#endif
 
 // FORWARD DECLARATIONS
 //
@@ -47,7 +45,7 @@ class pgsLibraryEntryDifferenceItem;
 class TrafficBarrierEntry;
 class TrafficBarrierEntryObserver;
 #pragma warning(disable:4231)
-PSGLIBTPL sysSubjectT<TrafficBarrierEntryObserver, TrafficBarrierEntry>;
+PSGLIBTPL WBFL::System::SubjectT<TrafficBarrierEntryObserver, TrafficBarrierEntry>;
 
 interface ISidewalkBarrier;
 
@@ -74,7 +72,7 @@ public:
    //------------------------------------------------------------------------
    // called by our subject to let us now he's changed, along with an optional
    // hint
-   virtual void Update(TrafficBarrierEntry* pSubject, Int32 hint)=0;
+   virtual void Update(TrafficBarrierEntry& subject, Int32 hint)=0;
 };
 
 /*****************************************************************************
@@ -91,8 +89,8 @@ LOG
    rdp : 07.20.1998 : Created file
 *****************************************************************************/
 
-class PSGLIBCLASS TrafficBarrierEntry : public libLibraryEntry, public ISupportIcon,
-       public sysSubjectT<TrafficBarrierEntryObserver, TrafficBarrierEntry>
+class PSGLIBCLASS TrafficBarrierEntry : public WBFL::Library::LibraryEntry, public ISupportIcon,
+       public WBFL::System::SubjectT<TrafficBarrierEntryObserver, TrafficBarrierEntry>
 {
 public:
    // GROUP: LIFECYCLE
@@ -113,7 +111,7 @@ public:
 
    //------------------------------------------------------------------------
    // Destructor
-   virtual ~TrafficBarrierEntry();
+   virtual ~TrafficBarrierEntry() = default;
 
    // GROUP: OPERATORS
    //------------------------------------------------------------------------
@@ -128,11 +126,11 @@ public:
 
    //------------------------------------------------------------------------
    // Save to structured storage
-   virtual bool SaveMe(sysIStructuredSave* pSave);
+   virtual bool SaveMe(WBFL::System::IStructuredSave* pSave);
 
    //------------------------------------------------------------------------
    // Load from structured storage
-   virtual bool LoadMe(sysIStructuredLoad* pLoad);
+   virtual bool LoadMe(WBFL::System::IStructuredLoad* pLoad);
 
    //------------------------------------------------------------------------
    // Get the icon for this entry
@@ -158,7 +156,7 @@ public:
 
    // Compares this library entry with rOther. Returns true if the entries are the same.
    // vDifferences contains a listing of the differences. The caller is responsible for deleting the difference items
-   bool Compare(const TrafficBarrierEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference=false,bool considerName=false) const;
+   bool Compare(const TrafficBarrierEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference=false,bool considerName=false) const;
 
    bool IsEqual(const TrafficBarrierEntry& rOther,bool bConsiderName=false) const;
 
@@ -169,10 +167,7 @@ protected:
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
-   void MakeCopy(const TrafficBarrierEntry& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const TrafficBarrierEntry& rOther);
+   void CopyValuesAndAttributes(const TrafficBarrierEntry& rOther);
   // GROUP: ACCESS
   // GROUP: INQUIRY
 
@@ -196,25 +191,6 @@ private:
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
-
-public:
-   // GROUP: DEBUG
-   #if defined _DEBUG
-   //------------------------------------------------------------------------
-   // Returns true if the object is in a valid state, otherwise returns false.
-   virtual bool AssertValid() const;
-
-   //------------------------------------------------------------------------
-   // Dumps the contents of the object to the given dump context.
-   virtual void Dump(dbgDumpContext& os) const;
-   #endif // _DEBUG
-
-   #if defined _UNITTEST
-   //------------------------------------------------------------------------
-   // Runs a self-diagnostic test.  Returns true if the test passed,
-   // otherwise false.
-   static bool TestMe(dbgLog& rlog);
-   #endif // _UNITTEST
 };
 
 // INLINE METHODS

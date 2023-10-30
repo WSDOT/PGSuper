@@ -61,10 +61,10 @@ LPCTSTR CHaulingCheckDetailsChapterBuilder::GetName() const
    return TEXT("Hauling Check Details");
 }
 
-rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CHaulingCheckDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    CComPtr<IBroker> pBroker;
-   CBrokerReportSpecification* pBrokerRptSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
+   auto pBrokerRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
    pBrokerRptSpec->GetBroker(&pBroker);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
@@ -79,8 +79,8 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
 
       std::vector<CGirderKey> vGirderKeys;
 
-      CGirderReportSpecification* pGirderReportSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-      CSegmentReportSpecification* pSegmentReportSpec = dynamic_cast<CSegmentReportSpecification*>(pRptSpec);
+      auto pGirderReportSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
+      auto pSegmentReportSpec = std::dynamic_pointer_cast<const CSegmentReportSpecification>(pRptSpec);
 
       if (pGirderReportSpec)
       {
@@ -134,7 +134,7 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
       rptParagraph* pTitle = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pTitle;
       *pTitle << _T("Details for Check for Hauling to Bridge Site");
-      if (lrfdVersionMgr::NinthEdition2020 <= lrfdVersionMgr::GetVersion())
+      if (WBFL::LRFD::BDSManager::Edition::NinthEdition2020 <= WBFL::LRFD::BDSManager::GetEdition())
       {
          *pTitle << _T(" [5.5.4.3]");
       }
@@ -152,9 +152,9 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(CReportSpecification* pRpt
 
 
 
-CChapterBuilder* CHaulingCheckDetailsChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CHaulingCheckDetailsChapterBuilder::Clone() const
 {
-   return new CHaulingCheckDetailsChapterBuilder;
+   return std::make_unique<CHaulingCheckDetailsChapterBuilder>();
 }
 
 //======================== ACCESS     =======================================

@@ -142,15 +142,15 @@ void CDrawDeckRegionControl::OnPaint()
    rect->get_Top(&top);
    rect->get_Bottom(&bottom);
    rect->get_Right(&right);
-   GraphRect box(left, bottom, right, top);
-   GraphSize size = box.Size();
-   GraphPoint org = box.Center();
+   WBFL::Graphing::Rect box(left, bottom, right, top);
+   WBFL::Graphing::Size size = box.Size();
+   WBFL::Graphing::Point org = box.Center();
 
    rClient.DeflateRect(1, 1, 1, 1);
    CSize sClient = rClient.Size();
 
-   grlibPointMapper mapper;
-   mapper.SetMappingMode(grlibPointMapper::Isotropic);
+   WBFL::Graphing::PointMapper mapper;
+   mapper.SetMappingMode(WBFL::Graphing::PointMapper::MapMode::Isotropic);
    mapper.SetWorldExt(size);
    mapper.SetWorldOrg(org);
    mapper.SetDeviceExt(sClient.cx, sClient.cy);
@@ -190,7 +190,7 @@ void CDrawDeckRegionControl::OnPaint()
       shape->get_ShapeProperties(&shapeProps);
       CComPtr<IPoint2d> pntCG;
       shapeProps->get_Centroid(&pntCG);
-      GraphPoint cg;
+      WBFL::Graphing::Point cg;
       pntCG->Location(&cg.X(), &cg.Y());
       LONG dx, dy;
       mapper.WPtoDP(cg, &dx, &dy);
@@ -213,12 +213,12 @@ void CDrawDeckRegionControl::OnPaint()
    dc.SelectObject(pOldFont);
 }
 
-void CDrawDeckRegionControl::Draw(CDC* pDC,grlibPointMapper& mapper,IShape* pShape,BOOL bPolygon)
+void CDrawDeckRegionControl::Draw(CDC* pDC, WBFL::Graphing::PointMapper& mapper,IShape* pShape,BOOL bPolygon)
 {
    CComPtr<IPoint2dCollection> polyPoints;
    pShape->get_PolyPoints(&polyPoints);
 
-   CollectionIndexType nPoints;
+   IndexType nPoints;
    polyPoints->get_Count(&nPoints);
 
    IPoint2d** points = new IPoint2d*[nPoints];
@@ -231,10 +231,10 @@ void CDrawDeckRegionControl::Draw(CDC* pDC,grlibPointMapper& mapper,IShape* pSha
    ATLASSERT(nFetched == nPoints);
 
    CPoint* dev_points = new CPoint[nPoints];
-   for ( CollectionIndexType i = 0; i < nPoints; i++ )
+   for ( IndexType i = 0; i < nPoints; i++ )
    {
       LONG dx,dy;
-      GraphPoint pnt;
+      WBFL::Graphing::Point pnt;
       points[i]->Location(&pnt.X(), &pnt.Y());
       mapper.WPtoDP(pnt,&dx,&dy);
       dev_points[i] = CPoint(dx,dy);

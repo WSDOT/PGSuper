@@ -55,9 +55,9 @@ LPCTSTR CTexasPrestressSummaryChapterBuilder::GetName() const
    return TEXT("Prestress Force and Strand Stresses");
 }
 
-rptChapter* CTexasPrestressSummaryChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CTexasPrestressSummaryChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
@@ -79,9 +79,9 @@ rptChapter* CTexasPrestressSummaryChapterBuilder::Build(CReportSpecification* pR
    return pChapter;
 }
 
-CChapterBuilder* CTexasPrestressSummaryChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTexasPrestressSummaryChapterBuilder::Clone() const
 {
-   return new CTexasPrestressSummaryChapterBuilder;
+   return std::make_unique<CTexasPrestressSummaryChapterBuilder>();
 }
 
 //======================== ACCESS     =======================================

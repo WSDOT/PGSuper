@@ -60,12 +60,12 @@ void pgsConfinementCheckArtifact::SetApplicability(bool isAp)
    m_IsApplicable = isAp;
 }
 
-const matRebar* pgsConfinementCheckArtifact::GetMinBar() const 
+const WBFL::Materials::Rebar* pgsConfinementCheckArtifact::GetMinBar() const
 {
    return m_pMinRebar;
 }
 
-void pgsConfinementCheckArtifact::SetMinBar(const matRebar* pBar)
+void pgsConfinementCheckArtifact::SetMinBar(const WBFL::Materials::Rebar* pBar)
 { 
    m_pMinRebar = pBar;
 }
@@ -110,12 +110,12 @@ void pgsConfinementCheckArtifact::SetStartRequiredZoneLength(Float64 zl)
    m_StartRequiredZoneLength=zl;
 }
 
-const matRebar* pgsConfinementCheckArtifact::GetStartBar() const 
+const WBFL::Materials::Rebar* pgsConfinementCheckArtifact::GetStartBar() const
 {
    return m_pStartRebar;
 }
 
-void pgsConfinementCheckArtifact::SetStartBar(const matRebar* pRebar)
+void pgsConfinementCheckArtifact::SetStartBar(const WBFL::Materials::Rebar* pRebar)
 { 
    m_pStartRebar = pRebar;
 }
@@ -160,12 +160,12 @@ void pgsConfinementCheckArtifact::SetEndRequiredZoneLength(Float64 zl)
    m_EndRequiredZoneLength=zl;
 }
 
-const matRebar* pgsConfinementCheckArtifact::GetEndBar() const 
+const WBFL::Materials::Rebar* pgsConfinementCheckArtifact::GetEndBar() const
 {
    return m_pEndRebar;
 }
 
-void pgsConfinementCheckArtifact::SetEndBar(const matRebar* pRebar)
+void pgsConfinementCheckArtifact::SetEndBar(const WBFL::Materials::Rebar* pRebar)
 { 
    m_pEndRebar = pRebar;
 }

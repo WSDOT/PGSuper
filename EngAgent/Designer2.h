@@ -32,10 +32,6 @@
 #include <Details.h>
 #endif
 
-#if !defined INCLUDED_ROARK_ROARK_H_
-#include <Roark\Roark.h>
-#endif
-
 #include <IFace\Artifact.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\PrestressForce.h>
@@ -53,7 +49,7 @@
 // FORWARD DECLARATIONS
 //
 interface IBroker;
-interface IAllowableConcreteStress;
+interface IConcreteStressLimits;
 
 // MISCELLANEOUS
 //
@@ -367,7 +363,7 @@ public:
    const WBFL::Stability::LiftingCheckArtifact* CheckLifting(const CSegmentKey& segmentKey) const;
 
    // Creates a hauling analysis artifact
-   const pgsHaulingAnalysisArtifact* pgsDesigner2::CheckHauling(const CSegmentKey& segmentKey) const;
+   const pgsHaulingAnalysisArtifact* CheckHauling(const CSegmentKey& segmentKey) const;
 
    pgsGirderDesignArtifact Design(const CGirderKey& girderKey,const std::vector<arDesignOptions>& DesOptionsColl) const;
 
@@ -461,6 +457,7 @@ private:
    void CheckSegmentStability(const CSegmentKey& segmentKey,pgsSegmentStabilityArtifact* pArtifact) const;
    void CheckDebonding(const CSegmentKey& segmentKey,pgsDebondArtifact* pArtifact) const;
    void CheckPrincipalTensionStressInWebs(const CSegmentKey& segmentKey, pgsPrincipalTensionStressArtifact* pArtifact) const;
+   void CheckReinforcementFatigue(const CSegmentKey& segmentKey, pgsReinforcementFatigueArtifact* pArtifact) const;
 
 
    void CheckConstructability(const CGirderKey& girderKey,pgsConstructabilityArtifact* pArtifact) const;
@@ -500,7 +497,7 @@ private:
    // Shear design
    void DesignShear(pgsSegmentDesignArtifact* pArtifact, bool bDoStartFromScratch, bool bDoDesignFlexure) const;
 
-   Float64 GetAvsOverMin(const pgsPointOfInterest& poi,const SHEARCAPACITYDETAILS& scd) const;
+   Float64 GetAvsMin(const pgsPointOfInterest& poi,const SHEARCAPACITYDETAILS& scd) const;
 
    Float64 GetNormalFrictionForce(const pgsPointOfInterest& poi) const;
 
@@ -548,7 +545,7 @@ private:
    bool CollapseZoneData(CShearZoneData zoneData[MAX_ZONES], ZoneIndexType numZones) const;
 
    void GetBridgeAnalysisType(GirderIndexType gdr,const StressCheckTask& task,pgsTypes::BridgeAnalysisType& batTop,pgsTypes::BridgeAnalysisType& batBottom) const;
-   void ComputeConcreteStrength(pgsFlexuralStressArtifact& artifact,pgsTypes::StressLocation stressLocation,const pgsPointOfInterest& poi,const StressCheckTask& task) const;
+   void ComputeConcreteStrength(pgsFlexuralStressArtifact& artifact,pgsTypes::StressLocation stressLocation,const StressCheckTask& task) const;
 
    void GetEndZoneMinMaxRawStresses(const CSegmentKey& segmentKey,const WBFL::Stability::LiftingResults& liftingResults,const HANDLINGCONFIG& liftConfig,Float64* pftop, Float64* pfbot, Float64* ptop_loc,Float64* pbot_loc) const;
 
@@ -556,26 +553,7 @@ private:
 
    friend pgsLoadRater;
 
-public:
-   // GROUP: DEBUG
-   #if defined _DEBUG
-   //------------------------------------------------------------------------
-   // Returns true if the object is in a valid state, otherwise returns false.
-   virtual bool AssertValid() const;
-
-   //------------------------------------------------------------------------
-   // Dumps the contents of the object to the given dump context.
-   virtual void Dump(dbgDumpContext& os) const;
-   #endif // _DEBUG
-
-   #if defined _UNITTEST
-   //------------------------------------------------------------------------
-   // Runs a self-diagnostic test.  Returns true if the test passed,
-   // otherwise false.
-   static bool TestMe(dbgLog& rlog);
-   #endif // _UNITTEST
-
-   void DumpLiftingArtifact(const WBFL::Stability::LiftingStabilityProblem* pStabilityProblem,const WBFL::Stability::LiftingCheckArtifact& artifact,dbgDumpContext& os) const;
+   void DumpLiftingArtifact(const WBFL::Stability::LiftingStabilityProblem* pStabilityProblem,const WBFL::Stability::LiftingCheckArtifact& artifact,WBFL::Debug::LogContext& os) const;
 };
 
 // INLINE METHODS

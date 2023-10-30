@@ -27,6 +27,7 @@
 #include <IFace\PointOfInterest.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\Intervals.h>
+#include <IFace\ReportOptions.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -55,9 +56,9 @@ LPCTSTR CGirderTendonGeometryChapterBuilder::GetName() const
    return TEXT("Girder Tendon Geometry");
 }
 
-rptChapter* CGirderTendonGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CGirderTendonGeometryChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
 
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
@@ -87,8 +88,9 @@ rptChapter* CGirderTendonGeometryChapterBuilder::Build(CReportSpecification* pRp
    INIT_UV_PROTOTYPE( rptLengthUnitValue,        ecc,      pDisplayUnits->GetComponentDimUnit(), false);
    INIT_UV_PROTOTYPE( rptStressUnitValue,        stress,   pDisplayUnits->GetStressUnit(), false);
 
-   location.IncludeSpanAndGirder(true);
-
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
+   
    PoiList vPoi;
    pPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), &vPoi);
 
@@ -204,7 +206,7 @@ rptChapter* CGirderTendonGeometryChapterBuilder::Build(CReportSpecification* pRp
    return pChapter;
 }
 
-CChapterBuilder* CGirderTendonGeometryChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CGirderTendonGeometryChapterBuilder::Clone() const
 {
-   return new CGirderTendonGeometryChapterBuilder;
+   return std::make_unique<CGirderTendonGeometryChapterBuilder>();
 }

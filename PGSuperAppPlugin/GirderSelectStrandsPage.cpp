@@ -90,7 +90,7 @@ CGirderSelectStrandsPage::CGirderSelectStrandsPage()
 {
    m_DrawNumbers = TRUE;
 
-   m_Radius = ::ConvertToSysUnits(0.3,unitMeasure::Inch) * 1.5;
+   m_Radius = WBFL::Units::ConvertToSysUnits(0.3,WBFL::Units::Measure::Inch) * 1.5;
 
    m_pToolTip = nullptr;
 }
@@ -212,12 +212,6 @@ BOOL CGirderSelectStrandsPage::OnInitDialog()
       pBut->ShowWindow(SW_HIDE);
    }
 
-   if ( !m_bCanExtendStrands )
-   {
-      GetDlgItem(IDC_EXTENDED_LEFT)->ShowWindow(SW_HIDE);
-      GetDlgItem(IDC_EXTENDED_RIGHT)->ShowWindow(SW_HIDE);
-   }
-
    OnNumStrandsChanged();
 
    // Collect data for dialog resizing
@@ -297,7 +291,6 @@ void CGirderSelectStrandsPage::InitializeData(const CSegmentKey& segmentKey, CSt
    m_HgHp[pgsTypes::metStart]  = HgHp1;
    m_HgHp[pgsTypes::metEnd]    = HgHp2;
 
-   m_bCanExtendStrands = pSpecEntry->AllowStraightStrandExtensions();
    m_ExtendedStrands[pgsTypes::metStart] = m_pStrands->GetExtendedStrands(pgsTypes::Straight,pgsTypes::metStart);
    m_ExtendedStrands[pgsTypes::metEnd]   = m_pStrands->GetExtendedStrands(pgsTypes::Straight,pgsTypes::metEnd);
 
@@ -447,7 +440,7 @@ void CGirderSelectStrandsPage::OnPaint()
    CComPtr<IPoint2d> objOrg;
    shape_box->get_BottomCenter(&objOrg);
 
-   GraphPoint orgin;
+   WBFL::Graphing::Point orgin;
    objOrg->Location(&orgin.X(), &orgin.Y());
 
    // Get height and width of the area occupied by all possible strand locations
@@ -484,7 +477,7 @@ void CGirderSelectStrandsPage::OnPaint()
 
    auto strand_bounds = ComputeStrandBounds(strand_mover, absol_end_offset, absol_hp_offset);
 
-   GraphSize world_size;
+   WBFL::Graphing::Size world_size;
    world_size.Dx() = Max(top_width,bottom_width,strand_bounds.Width());
    world_size.Dy() = Max(height,strand_bounds.Height());
 
@@ -498,8 +491,8 @@ void CGirderSelectStrandsPage::OnPaint()
    // is some space between the drawing and the edge of the picture control
 
    // This mapping pushes image to bottom
-   grlibPointMapper mapper;
-   mapper.SetMappingMode(grlibPointMapper::Isotropic);
+   WBFL::Graphing::PointMapper mapper;
+   mapper.SetMappingMode(WBFL::Graphing::PointMapper::MapMode::Isotropic);
    mapper.SetWorldExt(world_size);
    mapper.SetWorldOrg(orgin);
    mapper.SetDeviceExt(client_size.cx,client_size.cy);
@@ -525,9 +518,9 @@ void CGirderSelectStrandsPage::OnPaint()
    CComQIPtr<ICompositeShape> compshape(shape);
    if ( compshape )
    {
-      CollectionIndexType nShapes;
+      IndexType nShapes;
       compshape->get_Count(&nShapes);
-      for ( CollectionIndexType idx = 0; idx < nShapes; idx++ )
+      for ( IndexType idx = 0; idx < nShapes; idx++ )
       {
          CComPtr<ICompositeShapeItem> item;
          compshape->get_Item(idx,&item);
@@ -565,12 +558,12 @@ void CGirderSelectStrandsPage::OnPaint()
    pWnd->ReleaseDC(pDC);
 }
 
-void CGirderSelectStrandsPage::DrawShape(CDC* pDC,IShape* shape,grlibPointMapper& mapper)
+void CGirderSelectStrandsPage::DrawShape(CDC* pDC,IShape* shape, WBFL::Graphing::PointMapper& mapper)
 {
    CComPtr<IPoint2dCollection> objPoints;
    shape->get_PolyPoints(&objPoints);
 
-   CollectionIndexType nPoints;
+   IndexType nPoints;
    objPoints->get_Count(&nPoints);
 
    CPoint* points = new CPoint[nPoints];
@@ -583,7 +576,7 @@ void CGirderSelectStrandsPage::DrawShape(CDC* pDC,IShape* shape,grlibPointMapper
    objPoints->get__Enum(&enumPoints);
    while ( enumPoints->Next(1,&point,nullptr) != S_FALSE )
    {
-      GraphPoint pnt;
+      WBFL::Graphing::Point pnt;
       point->Location(&pnt.X(), &pnt.Y());
       mapper.WPtoDP(pnt,&dx,&dy);
 
@@ -598,7 +591,7 @@ void CGirderSelectStrandsPage::DrawShape(CDC* pDC,IShape* shape,grlibPointMapper
    delete[] points;
 }
 
-void CGirderSelectStrandsPage::DrawStrands(CDC* pDC, grlibPointMapper& Mapper, IStrandMover* strand_mover, Float64 absol_end_offset, Float64 absol_hp_offset)
+void CGirderSelectStrandsPage::DrawStrands(CDC* pDC, WBFL::Graphing::PointMapper& Mapper, IStrandMover* strand_mover, Float64 absol_end_offset, Float64 absol_hp_offset)
 {
    pDC->SetTextAlign(TA_CENTER);
    CFont font;
@@ -739,7 +732,7 @@ void CGirderSelectStrandsPage::DrawStrands(CDC* pDC, grlibPointMapper& Mapper, I
    pDC->SelectObject(pOldPen);
 }
 
-void PrintNumber(CDC* pDC, grlibPointMapper& Mapper, const GraphPoint& loc, StrandIndexType strandIdx)
+void PrintNumber(CDC* pDC, WBFL::Graphing::PointMapper& Mapper, const WBFL::Graphing::Point& loc, StrandIndexType strandIdx)
 {
    long x, y;
    Mapper.WPtoDP(loc.X(), loc.Y(), &x, &y);
@@ -753,7 +746,7 @@ void PrintNumber(CDC* pDC, grlibPointMapper& Mapper, const GraphPoint& loc, Stra
    pDC->TextOut(x, y, str);
 }
 
-StrandIndexType CGirderSelectStrandsPage::DrawStrand(CDC* pDC, grlibPointMapper& Mapper, Float64 x, Float64 y, StrandIndexType index, bool isFilled, ROWCOL gridRow)
+StrandIndexType CGirderSelectStrandsPage::DrawStrand(CDC* pDC, WBFL::Graphing::PointMapper& Mapper, Float64 x, Float64 y, StrandIndexType index, bool isFilled, ROWCOL gridRow)
 {
    CRect rect;
    Mapper.WPtoDP(x-m_Radius,y-m_Radius,&rect.left,&rect.top); 
@@ -779,7 +772,7 @@ StrandIndexType CGirderSelectStrandsPage::DrawStrand(CDC* pDC, grlibPointMapper&
    index++;
 
    if ( m_DrawNumbers )
-      PrintNumber(pDC, Mapper, GraphPoint(x,y), index);
+      PrintNumber(pDC, Mapper, WBFL::Graphing::Point(x,y), index);
 
    if (0.0 < x)
    {
@@ -804,7 +797,7 @@ StrandIndexType CGirderSelectStrandsPage::DrawStrand(CDC* pDC, grlibPointMapper&
 
       index++;
 
-      GraphPoint np(-x,y);
+      WBFL::Graphing::Point np(-x,y);
       if ( m_DrawNumbers )
          PrintNumber(pDC, Mapper, np, index);
    }
@@ -812,7 +805,7 @@ StrandIndexType CGirderSelectStrandsPage::DrawStrand(CDC* pDC, grlibPointMapper&
    return index;
 }
 
-gpRect2d CGirderSelectStrandsPage::ComputeStrandBounds(IStrandMover* strand_mover, Float64 absol_end_offset, Float64 absol_hp_offset)
+WBFL::Geometry::Rect2d CGirderSelectStrandsPage::ComputeStrandBounds(IStrandMover* strand_mover, Float64 absol_end_offset, Float64 absol_hp_offset)
 {
    Float64 xmax(0.0), ymax(0.0);
 
@@ -874,7 +867,7 @@ gpRect2d CGirderSelectStrandsPage::ComputeStrandBounds(IStrandMover* strand_move
       ymax = Max(ymax, ys);
    }
 
-   return gpRect2d(-xmax-m_Radius, 0.0, xmax+m_Radius, ymax+m_Radius);
+   return WBFL::Geometry::Rect2d(-xmax-m_Radius, 0.0, xmax+m_Radius, ymax+m_Radius);
 }
 
 void CGirderSelectStrandsPage::OnNumStrandsChanged()
@@ -953,14 +946,11 @@ void CGirderSelectStrandsPage::UpdateStrandInfo()
    msg.Format(_T("Temporary (T)=%d"), nTemporary);
    GetDlgItem(IDC_TEMPORARY)->SetWindowText(msg);
 
-   if ( this->m_bCanExtendStrands )
-   {
-      msg.Format(_T("Extended Left=%d"),nExtendedLeft);
-      GetDlgItem(IDC_EXTENDED_LEFT)->SetWindowText(msg);
+   msg.Format(_T("Extended Left=%d"),nExtendedLeft);
+   GetDlgItem(IDC_EXTENDED_LEFT)->SetWindowText(msg);
 
-      msg.Format(_T("Extended Right=%d"),nExtendedRight);
-      GetDlgItem(IDC_EXTENDED_RIGHT)->SetWindowText(msg);
-   }
+   msg.Format(_T("Extended Right=%d"),nExtendedRight);
+   GetDlgItem(IDC_EXTENDED_RIGHT)->SetWindowText(msg);
 }
 
 void CGirderSelectStrandsPage::UpdatePicture()
@@ -1056,7 +1046,7 @@ void CGirderSelectStrandsPage::UpdateStrandAdjustments()
       CComPtr<IBroker> pBroker;
       EAFGetBroker(&pBroker);
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-      const unitmgtLengthData& measUnit = pDisplayUnits->GetComponentDimUnit();
+      const WBFL::Units::LengthData& measUnit = pDisplayUnits->GetComponentDimUnit();
 
       // Unit tag
       GetDlgItem(IDC_HARP_END_UNIT)->SetWindowText(measUnit.UnitOfMeasure.UnitTag().c_str());
@@ -1238,7 +1228,7 @@ void CGirderSelectStrandsPage::OnCbnSelchangeHarpEndCb()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   const unitmgtLengthData& measUnit = pDisplayUnits->GetComponentDimUnit();
+   const WBFL::Units::LengthData& measUnit = pDisplayUnits->GetComponentDimUnit();
 
    CComboBox* pcb = (CComboBox*)GetDlgItem(IDC_HARP_END_CB);
    int idx = pcb->GetCurSel();
@@ -1262,7 +1252,7 @@ void CGirderSelectStrandsPage::OnCbnSelchangeHarpHpCb()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   const unitmgtLengthData& measUnit = pDisplayUnits->GetComponentDimUnit();
+   const WBFL::Units::LengthData& measUnit = pDisplayUnits->GetComponentDimUnit();
 
    CComboBox* pcb = (CComboBox*)GetDlgItem(IDC_HARP_HP_CB);
    int idx = pcb->GetCurSel();
@@ -1415,7 +1405,7 @@ void CGirderSelectStrandsPage::UpdatePjackEditEx(StrandIndexType nStrands, UINT 
       CString val_as_text;
       pWnd->GetWindowText( val_as_text );
       Pjack = _tstof( val_as_text );
-      Pjack = ::ConvertToSysUnits( Pjack, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure );
+      Pjack = WBFL::Units::ConvertToSysUnits( Pjack, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure );
       
       switch( nCheckBox )
       {
@@ -1468,8 +1458,8 @@ Float64 CGirderSelectStrandsPage::GetMaxPjack(StrandIndexType nStrands,pgsTypes:
    pEvents->HoldEvents();
 
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
-   LldfRangeOfApplicabilityAction action = pLiveLoads->GetLldfRangeOfApplicabilityAction();
-   pLiveLoads->SetLldfRangeOfApplicabilityAction(roaIgnore);
+   WBFL::LRFD::RangeOfApplicabilityAction action = pLiveLoads->GetRangeOfApplicabilityAction();
+   pLiveLoads->SetRangeOfApplicabilityAction(WBFL::LRFD::RangeOfApplicabilityAction::Ignore);
 
    Float64 PjackMax;
    try
@@ -1478,12 +1468,12 @@ Float64 CGirderSelectStrandsPage::GetMaxPjack(StrandIndexType nStrands,pgsTypes:
    }
    catch (... )
    {
-      pLiveLoads->SetLldfRangeOfApplicabilityAction(action);
+      pLiveLoads->SetRangeOfApplicabilityAction(action);
       pEvents->CancelPendingEvents();
       throw;
    }
 
-   pLiveLoads->SetLldfRangeOfApplicabilityAction(action);
+   pLiveLoads->SetRangeOfApplicabilityAction(action);
    pEvents->CancelPendingEvents();
 
    return PjackMax;
@@ -1491,7 +1481,7 @@ Float64 CGirderSelectStrandsPage::GetMaxPjack(StrandIndexType nStrands,pgsTypes:
 
 Float64 CGirderSelectStrandsPage::GetUltPjack(StrandIndexType nStrands,pgsTypes::StrandType strandType)
 {
-   const matPsStrand* pStrand = m_pStrands->GetStrandMaterial(strandType);
+   const auto* pStrand = m_pStrands->GetStrandMaterial(strandType);
 
    // Ultimate strength of strand group
    Float64 ult  = pStrand->GetUltimateStrength();

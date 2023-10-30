@@ -701,8 +701,8 @@ BOOL CGirderTopWidthGrid::ValidateGirderTopWidth()
          Float64 left = _tstof(strLeft);
          Float64 right = _tstof(strRight);
 
-         left = ::ConvertToSysUnits(left, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
-         right = ::ConvertToSysUnits(right, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
+         left = WBFL::Units::ConvertToSysUnits(left, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
+         right = WBFL::Units::ConvertToSysUnits(right, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
 
          pgsTypes::TopWidthType topWidthType = GetTopWidthTypeFromCell(col);
 
@@ -791,7 +791,7 @@ BOOL CGirderTopWidthGrid::OnEndEditing(ROWCOL nRow, ROWCOL nCol)
       CString strValue = GetCellValue(nRow, nCol);
 
       Float64 left = _tstof(strValue);
-      left = ::ConvertToSysUnits(left, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
+      left = WBFL::Units::ConvertToSysUnits(left, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
 
       GroupIndexType topWidthGroupIdx = (GroupIndexType)(nCol - 2);
 
@@ -819,7 +819,7 @@ BOOL CGirderTopWidthGrid::OnEndEditing(ROWCOL nRow, ROWCOL nCol)
       CString strValue = GetCellValue(nRow, nCol);
 
       Float64 right = _tstof(strValue);
-      right = ::ConvertToSysUnits(right, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
+      right = WBFL::Units::ConvertToSysUnits(right, pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
 
       GroupIndexType topWidthGroupIdx = (GroupIndexType)(nCol - 2);
 

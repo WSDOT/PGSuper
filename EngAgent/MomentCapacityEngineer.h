@@ -114,7 +114,7 @@ private:
 
    bool IsDiaphragmConfined(const pgsPointOfInterest& poi) const;
 
-   void ModelShape(IGeneralSection* pSection, IShape* pShape, IStressStrain* pMaterial, VARIANT_BOOL bIsVoid) const;
+   void ModelShape(IGeneralSection* pSection, IShape* pShape, IStressStrain* pMaterial, IPlane3d* pInitialStrain,VARIANT_BOOL bIsVoid) const;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -144,11 +144,11 @@ private:
    {
       pgsTypes::StrandType strandType;
       Float64 bondFactor;
-      bool bDevelopmentReducedStrainCapacity;
+      bool bDevelopmentLengthReducedStress;
       CComPtr<IStressStrain> ssMaterial;
 
-      StrandMaterial(pgsTypes::StrandType strandType, Float64 bondFactor, bool bDevelopmentReducedStrainCapacity, IStressStrain* pMaterial) :
-         strandType(strandType), bondFactor(bondFactor), ssMaterial(pMaterial), bDevelopmentReducedStrainCapacity(bDevelopmentReducedStrainCapacity)
+      StrandMaterial(pgsTypes::StrandType strandType, Float64 bondFactor, bool bDevelopmentLengthReducedStress, IStressStrain* pMaterial) :
+         strandType(strandType), bondFactor(bondFactor), ssMaterial(pMaterial), bDevelopmentLengthReducedStress(bDevelopmentLengthReducedStress)
       {
       }
       bool operator<(const StrandMaterial& other) const
@@ -194,12 +194,17 @@ private:
    };
 
    // GROUP: OPERATIONS
-   void CreateStrandMaterial(const CSegmentKey& segmentKey, pgsBondTool& bondTool, pgsTypes::StrandType strandType,StrandIndexType strandIdx,Float64 initialStrain,bool* pbDevelopmentReducedStrainCapacity,IStressStrain** ppSS) const;
+   // This can all be virtual methods so they can be overridden by specialized engineers
+   void CreateStrandMaterial(const CSegmentKey& segmentKey, pgsBondTool& bondTool, pgsTypes::StrandType strandType,StrandIndexType strandIdx,Float64 initialStrain,bool* pbDevelopmentLengthReducedStress,IStressStrain** ppSS) const;
    void CreateSegmentTendonMaterial(const CSegmentKey& segmentKey, IStressStrain** ppSS) const;
    void CreateGirderTendonMaterial(const CGirderKey& girderKey, IStressStrain** ppSS) const;
-   void CreateTendonMaterial(const matPsStrand* pTendon, IStressStrain** ppSS) const;
+   void CreateTendonMaterial(const WBFL::Materials::PsStrand* pTendon, IStressStrain** ppSS) const;
+   void CreateGirderMaterial(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, IStressStrain** ppSS) const;
+   void CreateGirderRebarMaterial(const pgsPointOfInterest& poi, IStressStrain** ppSS) const;
+   void CreateSlabMaterial(IntervalIndexType intervalIdx,IStressStrain** ppSS) const;
+   void CreateSlabRebarMaterial(IStressStrain** ppSS) const;
+   void CreateLongitudinalJointMaterial(IntervalIndexType intervalIdx, IStressStrain** ppSS) const;
 
-   MOMENTCAPACITYDETAILS ComputeMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig, Float64 fpe_ps_all_strands, Float64 eps_initial_all_strands, const std::array<std::vector<Float64>, 2>& fpe_ps, const std::array<std::vector<Float64>, 2>& eps_initial_strand, const std::vector<Float64>& fpe_pt_segment, const std::vector<Float64>& ept_initial_segment, const std::vector<Float64>& fpe_pt_girder,const std::vector<Float64>& ept_initial_girder,bool bPositiveMoment) const;
    void ComputeMinMomentCapacity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bPositiveMoment,const MOMENTCAPACITYDETAILS* pmcd,const CRACKINGMOMENTDETAILS* pcmd,MINMOMENTCAPDETAILS* pmmcd) const;
    void ComputeCrackingMoment(IntervalIndexType intervalIdx,const GDRCONFIG& config,const pgsPointOfInterest& poi,Float64 fcpe,bool bPositiveMoment,CRACKINGMOMENTDETAILS* pcmd) const;
    void ComputeCrackingMoment(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fcpe,bool bPositiveMoment,CRACKINGMOMENTDETAILS* pcmd) const;
@@ -211,7 +216,12 @@ private:
    void ComputeCrackingMoment(Float64 g1,Float64 g2,Float64 g3,Float64 fr,Float64 fcpe,Float64 Mdnc,Float64 Sb,Float64 Sbc,CRACKINGMOMENTDETAILS* pcmd) const;
    void GetCrackingMomentFactors(bool bPositiveMoment,Float64* pG1,Float64* pG2,Float64* pG3) const;
 
-   void BuildCapacityProblem(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, const std::array<std::vector<Float64>, 2>& eps_initial, const std::vector<Float64>& ept_initial_segment, const std::vector<Float64>& ept_initial_girder, pgsBondTool& bondTool, bool bPositiveMoment, IGeneralSection** ppProblem, IPoint2d** pntCompression, Float64* pec, Float64* pdt, Float64* pH, Float64* pHaunch,bool* pbDevelopmentReducedStrainCapacity) const;
+   std::vector<Float64> GetStrandInitialStrain(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig) const;
+   std::vector<Float64> GetSegmentTendonInitialStrain(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const;
+   std::vector<Float64> GetGirderTendonInitialStrain(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const;
+   void GetGirderInitialStrain(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment, const GDRCONFIG* pConfig, IPlane3d** ppInitialStrian) const;
+   void GetDeckInitialStrain(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, Float64 Dslab,Float64 Dhaunch, bool bPositiveMoment, IPlane3d** ppInitialStrian) const;
+   void BuildCapacityProblem(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, pgsBondTool& bondTool, bool bPositiveMoment, IGeneralSection** ppProblem, IPoint2d** pntCompression, Float64* pec, Float64* pdt, IndexType* pGdrIdx,IndexType* pDeckIdx,IndexType* pExtremeTensionLayerIndex, Float64* pH, Float64* pHaunch,bool* pbDevelopmentLengthReducedStress) const;
 
    // GROUP: INQUIRY
 
@@ -221,9 +231,9 @@ private:
    // it being computed at the interval when the deck becomes composite
    // index 0 = Moment Type (Positive = 0, Negative = 1)
    using MomentCapacityDetailsContainer = std::map<PoiIDType, MOMENTCAPACITYDETAILS>;
-   MOMENTCAPACITYDETAILS ComputeMomentCapacity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment, const GDRCONFIG* pConfig = nullptr) const;
-   const MOMENTCAPACITYDETAILS* ValidateMomentCapacity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment,const GDRCONFIG* pConfig=nullptr) const;
-   const MOMENTCAPACITYDETAILS* GetCachedMomentCapacity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment,const GDRCONFIG* pConfig=nullptr) const;
+   MOMENTCAPACITYDETAILS ComputeMomentCapacity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment, const GDRCONFIG* pConfig) const;
+   const MOMENTCAPACITYDETAILS* ValidateMomentCapacity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment,const GDRCONFIG* pConfig) const;
+   const MOMENTCAPACITYDETAILS* GetCachedMomentCapacity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment,const GDRCONFIG* pConfig) const;
    const MOMENTCAPACITYDETAILS* GetStoredMomentCapacityDetails(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment, const MomentCapacityDetailsContainer& container) const;
    const MOMENTCAPACITYDETAILS* StoreMomentCapacityDetails(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bPositiveMoment, const MOMENTCAPACITYDETAILS& mcd, MomentCapacityDetailsContainer& container) const;
 
@@ -256,26 +266,7 @@ private:
    mutable std::array<MomentCapacityDetailsContainer, 2> m_TempNonCompositeMomentCapacity;
    mutable std::array<MomentCapacityDetailsContainer, 2> m_TempCompositeMomentCapacity;
 
-
-public:
-   // GROUP: DEBUG
-   #if defined _DEBUG
-   //------------------------------------------------------------------------
-   // Returns true if the object is in a valid state, otherwise returns false.
-   virtual bool AssertValid() const;
-
-   //------------------------------------------------------------------------
-   // Dumps the contents of the object to the given dump context.
-   virtual void Dump(dbgDumpContext& os) const;
-   #endif // _DEBUG
-
-   #if defined _UNITTEST
-   //------------------------------------------------------------------------
-   // Runs a self-diagnostic test.  Returns true if the test passed,
-   // otherwise false.
-   static bool TestMe(dbgLog& rlog);
-   #endif // _UNITTEST
-
+   private:
    DECLARE_LOGFILE;
 };
 

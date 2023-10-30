@@ -58,7 +58,7 @@ DELEGATE_CUSTOM_INTERFACE(CMomentLoadDrawStrategyImpl,EditLoad);
 
 
 void CMomentLoadDrawStrategyImpl::XStrategy::Init(iPointDisplayObject* pDO, IBroker* pBroker, CMomentLoadData load,
-                                                 CollectionIndexType loadIndex, Float64 spanLength, 
+                                                 IndexType loadIndex, Float64 spanLength, 
                                                  Float64 maxMagnitude, COLORREF color)
 {
    METHOD_PROLOGUE(CMomentLoadDrawStrategyImpl,Strategy);

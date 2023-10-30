@@ -137,7 +137,7 @@ Range CTxExcelDataExporter::GetRangeAtLocation(IndexType hTable, LPCTSTR strRang
    CString strrow = trunc_address.Right(cnt - pn - 1);
 
    long rownum;
-   if (sysTokenizer::ParseLong(strrow, &rownum)) 
+   if (WBFL::System::Tokenizer::ParseLong(strrow, &rownum)) 
    {
       rownum += (long)rowIdx;
 

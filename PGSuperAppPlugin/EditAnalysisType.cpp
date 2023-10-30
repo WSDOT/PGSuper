@@ -66,9 +66,9 @@ void txnEditAnalysisType::Execute(int i)
    pSpec->SetAnalysisType(m_AnalysisType[i]);
 }
 
-txnTransaction* txnEditAnalysisType::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnEditAnalysisType::CreateClone() const
 {
-   return new txnEditAnalysisType(m_AnalysisType[0],m_AnalysisType[1]);
+   return std::make_unique<txnEditAnalysisType>(m_AnalysisType[0],m_AnalysisType[1]);
 }
 
 std::_tstring txnEditAnalysisType::Name() const
@@ -76,12 +76,12 @@ std::_tstring txnEditAnalysisType::Name() const
    return _T("Edit Structural Analysis Method");
 }
 
-bool txnEditAnalysisType::IsUndoable()
+bool txnEditAnalysisType::IsUndoable() const
 {
    return true;
 }
 
-bool txnEditAnalysisType::IsRepeatable()
+bool txnEditAnalysisType::IsRepeatable() const
 {
    return false;
 }

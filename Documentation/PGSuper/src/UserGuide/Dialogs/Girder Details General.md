@@ -40,20 +40,26 @@ f'c | Enter the design concrete strength
 Ec  | When checked, enter the design modulus of elasticity. Otherwise, the modulus of elasticity will be computed by the AASHTO equation.
 [More Properties...] | Press to define detailed concrete properties or select a pre-defined concrete from the library
 
-Slab Offset ("A" Dimension)
-----------------------------
-Use the combo box to control how slab offsets are defined for the bridge.
+Haunch Geometry
+---------------
+Define the geometry of the slab haunch
+
+> A complete description of vertical bridge geometry, haunch design, and haunch input methods can be found at @ref tg_vertical_geometry
+
+Different options are shown depending on the selected haunch input method
+
+###"A" and Assumed Excess Camber Method###
 
 Item | Description
------|-----------
-Start of Girder | Enter the slab offset at the start of the girder
-End of Girder | Enter the slab offset at the end of the girder
+-----|-------------
+Slab Offset ("A" Dimension) | Enter the slab offset dimension for the girder.
+Assumed Excess Camber <sup>+</sup>  | Enter the excess camber that is used to define the parabolic haunch depth used for computing composite section properties and/or haunch dead load. Note that this option is only available if the parabolic option is selected for computing composite section properties or haunch loading in the current Project Criteria library entry.
 
-Assumed Excess Camber
----------------------
-Enter the excess camber that is used to define the parabolic haunch depth used for computing composite section properties and/or haunch dead load. Note that this option is only available if the parabolic option is selected for computing composite section properties or haunch loading in the current Project Criteria library entry.
+###Explicit Haunch Depth input method###
 
-Refer to  the Slab Haunch loading section of @ref tg_structural_analysis_models for more information. Refer to @ref tg_section_properties in the Technical Guide for detailed information about haunch depth is used when computing composite section properties.
+Item | Description
+-----|-------------
+Haunch Depth | Haunch depth is shown when applicable
 
 Condition and Rating
 ---------------------

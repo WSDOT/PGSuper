@@ -250,7 +250,7 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
    LOG(_T("Allowable FS rollover FSrMin = ")<<FSrMin);
 
    Float64 location_accuracy = pCriteria->GetHaulingSupportLocationAccuracy();
-   const Float64 bigInc = Max(10*location_accuracy,ConvertToSysUnits(5.0,unitMeasure::Feet));
+   const Float64 bigInc = Max(10*location_accuracy,ConvertToSysUnits(5.0,WBFL::Units::Measure::Feet));
    const Float64 mediumInc = bigInc / 2;
    const Float64 smallInc = location_accuracy;
    const int bigStep = 1;
@@ -327,11 +327,11 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
          }
 #endif
 
-         LOG(_T("Trying Trailing Overhang = ") << ::ConvertFromSysUnits(shipping_config.LeftOverhang,unitMeasure::Feet) << _T(" ft") << _T("      Leading Overhang = ") << ::ConvertFromSysUnits(shipping_config.RightOverhang,unitMeasure::Feet) << _T(" ft"));
+         LOG(_T("Trying Trailing Overhang = ") << WBFL::Units::ConvertFromSysUnits(shipping_config.LeftOverhang,WBFL::Units::Measure::Feet) << _T(" ft") << _T("      Leading Overhang = ") << WBFL::Units::ConvertFromSysUnits(shipping_config.RightOverhang,WBFL::Units::Measure::Feet) << _T(" ft"));
 
          LOG_EXECUTION_TIME(AnalyzeHauling(segmentKey,true,shipping_config,pPOId,artifact.get()));
 
-         Float64 FSr = Min(artifact->GetFsRollover(pgsTypes::CrownSlope),artifact->GetFsRollover(pgsTypes::Superelevation));
+         Float64 FSr = Min(artifact->GetFsRollover(WBFL::Stability::HaulingSlope::CrownSlope),artifact->GetFsRollover(WBFL::Stability::HaulingSlope::Superelevation));
          LOG(_T("FSr = ") << FSr);
 
          Float64 fra = (stepSize == bigStep ? 0.990 : 0.995);
@@ -385,7 +385,7 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
    LOG(_T("Check FS cracking"));
    Float64 FScrMin = pCriteria->GetHaulingCrackingFs();
    LOG(_T("Allowable FS cracking FScrMin = ") << FScrMin);
-   Float64 FScr = Min(artifact->GetMinFsForCracking(pgsTypes::CrownSlope), artifact->GetMinFsForCracking(pgsTypes::Superelevation));
+   Float64 FScr = Min(artifact->GetMinFsForCracking(WBFL::Stability::HaulingSlope::CrownSlope), artifact->GetMinFsForCracking(WBFL::Stability::HaulingSlope::Superelevation));
    LOG(_T("FScr = ") << FScr);
    if (FScrMin <= FScr)
    {
@@ -419,30 +419,6 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
 
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool pgsWsdotGirderHaulingChecker::AssertValid() const
-{
-   return true;
-}
-
-void pgsWsdotGirderHaulingChecker::Dump(dbgDumpContext& os) const
-{
-   os << "Dump for pgsWsdotGirderHaulingChecker" << endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool pgsWsdotGirderHaulingChecker::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("pgsWsdotGirderHaulingChecker");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for pgsWsdotGirderHaulingChecker");
-
-   TESTME_EPILOG("GirderHandlingChecker");
-}
-#endif // _UNITTEST
-
 
 ////////////////////////////////////////////////////////
 // hauling
@@ -462,7 +438,7 @@ void pgsWsdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,
 #endif
 
    GET_IFACE(ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
-   WBFL::Stability::HaulingCriteria criteria = (bUseConfig ? pSegmentHaulingSpecCriteria->GetHaulingStabilityCriteria(segmentKey,config) : pSegmentHaulingSpecCriteria->GetHaulingStabilityCriteria(segmentKey));
+   WBFL::Stability::HaulingCriteria criteria = pSegmentHaulingSpecCriteria->GetHaulingStabilityCriteria(segmentKey, bUseConfig ? &config : nullptr);
 
    WBFL::Stability::StabilityEngineer engineer;
    *pArtifact = engineer.CheckHauling(pStabilityModel,pStabilityProblem,criteria);

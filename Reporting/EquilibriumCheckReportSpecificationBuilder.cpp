@@ -44,7 +44,7 @@ CEquilibriumCheckReportSpecificationBuilder::~CEquilibriumCheckReportSpecificati
 {
 }
 
-std::shared_ptr<CReportSpecification> CEquilibriumCheckReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,std::shared_ptr<CReportSpecification>& pOldRptSpec)
+std::shared_ptr<WBFL::Reporting::ReportSpecification> CEquilibriumCheckReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -78,14 +78,14 @@ std::shared_ptr<CReportSpecification> CEquilibriumCheckReportSpecificationBuilde
    if ( dlg.DoModal() == IDOK )
    {     
 
-      std::shared_ptr<CReportSpecification> pNewRptSpec;
+      std::shared_ptr<WBFL::Reporting::ReportSpecification> pNewRptSpec;
       if(pOldGRptSpec)
       {
          std::shared_ptr<CEquilibriumCheckReportSpecification> pNewGRptSpec(std::make_shared<CEquilibriumCheckReportSpecification>(*pOldGRptSpec));
 
          pNewGRptSpec->SetOptions(dlg.GetPOI(),dlg.GetInterval());
 
-         pNewRptSpec = std::static_pointer_cast<CReportSpecification>(pNewGRptSpec);
+         pNewRptSpec = std::static_pointer_cast<WBFL::Reporting::ReportSpecification>(pNewGRptSpec);
       }
       else
       {
@@ -100,8 +100,8 @@ std::shared_ptr<CReportSpecification> CEquilibriumCheckReportSpecificationBuilde
    return nullptr;
 }
 
-std::shared_ptr<CReportSpecification> CEquilibriumCheckReportSpecificationBuilder::CreateDefaultReportSpec(const CReportDescription& rptDesc)
+std::shared_ptr<WBFL::Reporting::ReportSpecification> CEquilibriumCheckReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const
 {
    // always prompt
-   return CreateReportSpec(rptDesc,std::shared_ptr<CReportSpecification>());
+   return CreateReportSpec(rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification>());
 }

@@ -56,7 +56,7 @@ CTxDOT2013RelaxationAfterTransferTable* CTxDOT2013RelaxationAfterTransferTable::
                << symbol(DELTA) << Sub2(_T("f"),_T("fpr2"))<<_T(" = loss from deck placement to final. ")  << rptNewLine;
    *pParagraph << rptRcImage(strImagePath + _T("Delta_Fpr_TxDOT_2013.png")) << rptNewLine;
 
-   const lrfdRefinedLossesTxDOT2013* pLosses = dynamic_cast<const lrfdRefinedLossesTxDOT2013*>(pDetails->pLosses.get());
+   const WBFL::LRFD::RefinedLossesTxDOT2013* pLosses = dynamic_cast<const WBFL::LRFD::RefinedLossesTxDOT2013*>(pDetails->pLosses.get());
    if (pLosses==nullptr)
    {
       ATLASSERT(false);
@@ -66,12 +66,12 @@ CTxDOT2013RelaxationAfterTransferTable* CTxDOT2013RelaxationAfterTransferTable::
    *pParagraph << Sub2(_T("K"),_T("L"))<<_T(" = ")<<pLosses->GetKL() << rptNewLine;
    *pParagraph << Sub2(_T("f"),_T("py"))<<_T(" = ")<< stress.SetValue(pLosses->GetFpyPermanent()) << rptNewLine;
 
-   if (pLosses->ElasticShortening().GetFcgpComputationMethod() == lrfdElasticShortening::fcgp07Fpu)
+   if (pLosses->GetElasticShortening().GetFcgpComputationMethod() == WBFL::LRFD::ElasticShortening::FcgpComputationMethod::AssumedFpe)
    {
       // fpt is the same along girder - we don't need a table
       *pParagraph << Sub2(_T("f"),_T("pt"))<<_T(" = 0.7 ")<<Sub2(_T("f"),_T("pu"))<<_T(" = ")<< stress.SetValue(pLosses->Getfpt()) << rptNewLine << rptNewLine;
 
-      if ( pLosses->GetPermanentStrandCoating() != matPsStrand::None )
+      if ( pLosses->GetPermanentStrandCoating() != WBFL::Materials::PsStrand::Coating::None )
       {
          *pParagraph << EPOXY_RELAXATION_NOTE << rptNewLine;
       }
@@ -89,7 +89,7 @@ CTxDOT2013RelaxationAfterTransferTable* CTxDOT2013RelaxationAfterTransferTable::
       rptStyleManager::ConfigureTable(table);
 
 
-      if ( pLosses->GetPermanentStrandCoating() != matPsStrand::None )
+      if ( pLosses->GetPermanentStrandCoating() != WBFL::Materials::PsStrand::Coating::None )
       {
          *pParagraph << EPOXY_RELAXATION_NOTE << rptNewLine;
       }
@@ -107,7 +107,7 @@ CTxDOT2013RelaxationAfterTransferTable* CTxDOT2013RelaxationAfterTransferTable::
 
 void CTxDOT2013RelaxationAfterTransferTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   const lrfdRefinedLossesTxDOT2013* pLosses = dynamic_cast<const lrfdRefinedLossesTxDOT2013*>(pDetails->pLosses.get());
+   const WBFL::LRFD::RefinedLossesTxDOT2013* pLosses = dynamic_cast<const WBFL::LRFD::RefinedLossesTxDOT2013*>(pDetails->pLosses.get());
 
    RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;
 

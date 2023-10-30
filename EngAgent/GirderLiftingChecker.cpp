@@ -127,7 +127,7 @@ void pgsGirderLiftingChecker::AnalyzeLifting(const CSegmentKey& segmentKey,bool 
    }
 
    GET_IFACE(ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
-   WBFL::Stability::LiftingCriteria criteria = (bUseConfig ? pSegmentLiftingSpecCriteria->GetLiftingStabilityCriteria(segmentKey,liftConfig) : pSegmentLiftingSpecCriteria->GetLiftingStabilityCriteria(segmentKey));
+   WBFL::Stability::LiftingCriteria criteria = pSegmentLiftingSpecCriteria->GetLiftingStabilityCriteria(segmentKey, bUseConfig ? &liftConfig : nullptr);
 
    WBFL::Stability::StabilityEngineer engineer;
    *pArtifact = engineer.CheckLifting(pStabilityModel,pStabilityProblem,criteria);
@@ -154,15 +154,15 @@ pgsDesignCodes::OutcomeType pgsGirderLiftingChecker::DesignLifting(const CSegmen
 
    Float64 maxLoc = 0.4*girder_length;
 
-   if (0 < config.GdrConfig.PrestressConfig.GetStrandCount(pgsTypes::Harped)) // only look at harping point if we have harped strands
+   GET_IFACE(IStrandGeometry, pStrandGeom);
+   StrandIndexType Nh = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Harped, config.bIgnoreGirderConfig ? nullptr : &config.GdrConfig);
+
+   if (0 < Nh) // only look at harping point if we have harped strands
    {
       Float64 lhp,rhp;
-      GET_IFACE(IStrandGeometry,pStrandGeom);
       pStrandGeom->GetHarpingPointLocations(segmentKey,&lhp,&rhp);
-
       maxLoc = Min(lhp, maxLoc);
    }
-
 
    // Find a lifting location that makes the factor of safety against failure
    // equal to 1.5 or better
@@ -178,7 +178,7 @@ pgsDesignCodes::OutcomeType pgsGirderLiftingChecker::DesignLifting(const CSegmen
    while ( loc <= maxLoc )
    {
       LOG(_T(""));
-      LOG(_T("Trying location ") << ::ConvertFromSysUnits(loc,unitMeasure::Feet) << _T(" ft"));
+      LOG(_T("Trying location ") << WBFL::Units::ConvertFromSysUnits(loc,WBFL::Units::Measure::Feet) << _T(" ft"));
 
       WBFL::Stability::LiftingCheckArtifact curr_artifact;
       config.LeftOverhang = loc;
@@ -249,27 +249,3 @@ pgsDesignCodes::OutcomeType pgsGirderLiftingChecker::DesignLifting(const CSegmen
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool pgsGirderLiftingChecker::AssertValid() const
-{
-   return true;
-}
-
-void pgsGirderLiftingChecker::Dump(dbgDumpContext& os) const
-{
-   os << "Dump for pgsGirderLiftingChecker" << endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool pgsGirderLiftingChecker::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("pgsGirderLiftingChecker");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for pgsGirderLiftingChecker");
-
-   TESTME_EPILOG("GirderHandlingChecker");
-}
-#endif // _UNITTEST

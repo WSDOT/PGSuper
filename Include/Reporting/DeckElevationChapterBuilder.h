@@ -51,14 +51,16 @@ public:
    // GROUP: OPERATIONS
 
    //------------------------------------------------------------------------
-   virtual LPCTSTR GetName() const;
+   virtual LPCTSTR GetName() const override;
    
 
    //------------------------------------------------------------------------
-   virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const;
+   virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
+
+   void BuildNoDeckElevationContent(rptChapter* pChapter,const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const;
 
    //------------------------------------------------------------------------
-   virtual CChapterBuilder* Clone() const;
+   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -70,8 +72,8 @@ protected:
    // GROUP: OPERATIONS
    // GROUP: ACCESS
    // GROUP: INQUIRY
-   rptChapter* BuildDeckOnGirder(CReportSpecification* pRptSpec, Uint16 level) const;
-   rptChapter* BuildNoDeck(CReportSpecification* pRptSpec, Uint16 level) const;
+   rptChapter* BuildDeckOnGirder(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec, Uint16 level) const;
+   rptChapter* BuildNoDeck(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec, Uint16 level) const;
 
 private:
    // GROUP: DATA MEMBERS

@@ -30,6 +30,7 @@
 #include <IFace\DocumentType.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
+#include <IFace\ReportOptions.h>
 
 #include <IFace\AnalysisResults.h>
 #include <IFace\RatingSpecification.h>
@@ -84,8 +85,8 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
 
-   GET_IFACE2(pBroker, IDocumentType, pDocType);
-   location.IncludeSpanAndGirder(pDocType->IsPGSpliceDocument() || girderKey.groupIndex == ALL_GROUPS);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    bool bHasOverlay    = pBridge->HasOverlay();
@@ -142,7 +143,7 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
       p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
-   RowIndexType row = ConfigureProductLoadTableHeading<rptStressUnitTag,unitmgtStressData>(pBroker,p_table,false,bSlabShrinkage,bSegments,bConstruction,bDeck,bDeckPanels,bSidewalk,bShearKey,bLongitudinalJoint,bHasOverlay,bFutureOverlay,bDesign,bPedLoading,bPermit,bRating,analysisType,bContinuousBeforeDeckCasting,pRatingSpec,pDisplayUnits,pDisplayUnits->GetStressUnit());
+   RowIndexType row = ConfigureProductLoadTableHeading<rptStressUnitTag,WBFL::Units::StressData>(pBroker,p_table,false,bSlabShrinkage,bSegments,bConstruction,bDeck,bDeckPanels,bSidewalk,bShearKey,bLongitudinalJoint,bHasOverlay,bFutureOverlay,bDesign,bPedLoading,bPermit,bRating,analysisType,bContinuousBeforeDeckCasting,pRatingSpec,pDisplayUnits,pDisplayUnits->GetStressUnit());
 
 
    // Get the interface pointers we need
@@ -265,7 +266,7 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
          pForces2->GetLiveLoadStress(lastIntervalIdx, pgsTypes::lltDesign, vPoi, maxBAT, true, false, topLocation, botLocation, &dummy1, &fTopMaxDesignLL, &dummy2, &fBotMaxDesignLL);
          pForces2->GetLiveLoadStress(lastIntervalIdx, pgsTypes::lltDesign, vPoi, minBAT, true, false, topLocation, botLocation, &fTopMinDesignLL, &dummy1, &fBotMinDesignLL, &dummy2);
 
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
          {
             pForces2->GetLiveLoadStress(lastIntervalIdx, pgsTypes::lltFatigue, vPoi, maxBAT, true, false, topLocation, botLocation, &dummy1, &fTopMaxFatigueLL, &dummy2, &fBotMaxFatigueLL);
             pForces2->GetLiveLoadStress(lastIntervalIdx, pgsTypes::lltFatigue, vPoi, minBAT, true, false, topLocation, botLocation, &fTopMinFatigueLL, &dummy1, &fBotMinFatigueLL, &dummy2);
@@ -436,7 +437,7 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
          {
             ATLASSERT(bGirderStresses); // slab shrinkage stresses only applicable to girder stresses
             Float64 ft_ss, fb_ss;
-            pForces->GetDeckShrinkageStresses(poi,&ft_ss,&fb_ss);
+            pForces->GetDeckShrinkageStresses(poi,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ft_ss,&fb_ss);
 
             (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(ft_ss) << rptNewLine;
             (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fb_ss);
@@ -537,7 +538,7 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
             (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMinDesignLL[index]);
             col++;
 
-            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
             {
                (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTopMaxFatigueLL[index]) << rptNewLine;
                (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBotMaxFatigueLL[index]);

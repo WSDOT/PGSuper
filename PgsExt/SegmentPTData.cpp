@@ -22,7 +22,7 @@
 
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\SegmentPTData.h>
-#include <Lrfd\StrandPool.h>
+#include <LRFD\StrandPool.h>
 #include <IFace\Project.h>
 
 #ifdef _DEBUG
@@ -53,13 +53,13 @@ CSegmentDuctData::CSegmentDuctData()
    DuctGeometryType = Parabolic;
    JackingEnd = pgsTypes::jeStart;
 
-   DuctPoint[Left].first = ::ConvertToSysUnits(2.0, unitMeasure::Inch);
+   DuctPoint[Left].first = WBFL::Units::ConvertToSysUnits(2.0, WBFL::Units::Measure::Inch);
    DuctPoint[Left].second = pgsTypes::TopFace;
 
-   DuctPoint[Middle].first = ::ConvertToSysUnits(2.0, unitMeasure::Inch);
+   DuctPoint[Middle].first = WBFL::Units::ConvertToSysUnits(2.0, WBFL::Units::Measure::Inch);
    DuctPoint[Middle].second = pgsTypes::BottomFace;
 
-   DuctPoint[Right].first = ::ConvertToSysUnits(2.0, unitMeasure::Inch);
+   DuctPoint[Right].first = WBFL::Units::ConvertToSysUnits(2.0, WBFL::Units::Measure::Inch);
    DuctPoint[Right].second = pgsTypes::TopFace;
 }
 
@@ -84,13 +84,13 @@ CSegmentDuctData::CSegmentDuctData(const CPrecastSegmentData* pSegment)
    DuctGeometryType = Parabolic;
    JackingEnd = pgsTypes::jeStart;
 
-   DuctPoint[Left].first = ::ConvertToSysUnits(2.0, unitMeasure::Inch);
+   DuctPoint[Left].first = WBFL::Units::ConvertToSysUnits(2.0, WBFL::Units::Measure::Inch);
    DuctPoint[Left].second = pgsTypes::TopFace;
 
-   DuctPoint[Middle].first = ::ConvertToSysUnits(2.0, unitMeasure::Inch);
+   DuctPoint[Middle].first = WBFL::Units::ConvertToSysUnits(2.0, WBFL::Units::Measure::Inch);
    DuctPoint[Middle].second = pgsTypes::BottomFace;
 
-   DuctPoint[Right].first = ::ConvertToSysUnits(2.0, unitMeasure::Inch);
+   DuctPoint[Right].first = WBFL::Units::ConvertToSysUnits(2.0, WBFL::Units::Measure::Inch);
    DuctPoint[Right].second = pgsTypes::TopFace;
 
    Init(pSegment);
@@ -352,7 +352,10 @@ void CSegmentDuctData::MakeAssignment(const CSegmentDuctData& rOther)
 CSegmentPTData::CSegmentPTData()
 {
    m_pSegment = nullptr;
-   m_pStrand = lrfdStrandPool::GetInstance()->GetStrand(matPsStrand::Gr1860, matPsStrand::LowRelaxation, matPsStrand::None, matPsStrand::D1524);
+   m_pStrand = WBFL::LRFD::StrandPool::GetInstance()->GetStrand(WBFL::Materials::PsStrand::Grade::Gr1860, 
+                                                        WBFL::Materials::PsStrand::Type::LowRelaxation, 
+                                                        WBFL::Materials::PsStrand::Coating::None, 
+                                                        WBFL::Materials::PsStrand::Size::D1524);
 
    DuctType = pgsTypes::dtMetal;
    InstallationType = pgsTypes::sitPush;
@@ -510,7 +513,7 @@ HRESULT CSegmentPTData::Load(IStructuredLoad* pStrLoad, IProgress* pProgress)
    InstallationEvent = (pgsTypes::SegmentPTEventType)(var.lVal);
 
    hr = pStrLoad->get_Property(_T("TendonMaterialKey"), &var);
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+   const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
    Int32 key = var.lVal;
    m_pStrand = pPool->GetStrand(key);
 
@@ -536,8 +539,8 @@ HRESULT CSegmentPTData::Save(IStructuredSave* pStrSave, IProgress* pProgress)
    pStrSave->put_Property(_T("DuctType"), CComVariant(DuctType));
    pStrSave->put_Property(_T("InstallationType"), CComVariant(InstallationType));
    pStrSave->put_Property(_T("InstallationEvent"), CComVariant(InstallationEvent));
+   const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
 
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
    auto key = pPool->GetStrandKey(m_pStrand);
    pStrSave->put_Property(_T("TendonMaterialKey"), CComVariant(key));
 

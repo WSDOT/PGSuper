@@ -202,7 +202,7 @@ void CDrawStrandControl::OnPaint()
    //
    // Set up coordinate mapping
    //
-   std::array<GraphRect,2> box;
+   std::array<WBFL::Graphing::Rect,2> box;
    for ( int i = 0; i < 2; i++ )
    {
       pgsTypes::MemberEndType end = pgsTypes::MemberEndType(i);
@@ -225,7 +225,7 @@ void CDrawStrandControl::OnPaint()
    bounding_box->get_Top(&top);
    bounding_box->get_Bottom(&bottom);
 
-   GraphRect profileBox;
+   WBFL::Graphing::Rect profileBox;
    profileBox.Set(left, bottom, right, top);
 
    Float64 aspect_ratio = box[pgsTypes::metStart].Width()/m_Hg;
@@ -266,8 +266,8 @@ void CDrawStrandControl::OnPaint()
       woy = Min(box[etStart].Top(), box[etEnd].Top(), profileBox.Top());
    }
 
-   grlibPointMapper leftMapper;
-   leftMapper.SetMappingMode(grlibPointMapper::Isotropic);
+   WBFL::Graphing::PointMapper leftMapper;
+   leftMapper.SetMappingMode(WBFL::Graphing::PointMapper::MapMode::Isotropic);
    leftMapper.SetWorldExt(box[pgsTypes::metStart].Width(),wy);
    leftMapper.SetDeviceExt(rLeft.Size().cx, rLeft.Size().cy);
    leftMapper.SetWorldOrg(box[pgsTypes::metStart].Left(), woy);
@@ -284,8 +284,8 @@ void CDrawStrandControl::OnPaint()
    // since all the section cuts are looking ahead on the girder
    // we need to mirror the shape... we can do this through
    // the point mapper
-   grlibPointMapper rightMapper;
-   rightMapper.SetMappingMode(grlibPointMapper::Isotropic);
+   WBFL::Graphing::PointMapper rightMapper;
+   rightMapper.SetMappingMode(WBFL::Graphing::PointMapper::MapMode::Isotropic);
    rightMapper.SetWorldExt(box[pgsTypes::metEnd].Width(),wy);
    rightMapper.SetWorldOrg(box[pgsTypes::metEnd].TopRight());
    rightMapper.SetDeviceExt(-rRight.Size().cx, rRight.Size().cy); // use -cx to mirror the shape (mirrors about the right edge)
@@ -302,8 +302,8 @@ void CDrawStrandControl::OnPaint()
    m_SegmentXLeft = left;
 
    UINT buffer = 10;
-   grlibPointMapper centerMapper;
-   centerMapper.SetMappingMode(grlibPointMapper::Anisotropic);
+   WBFL::Graphing::PointMapper centerMapper;
+   centerMapper.SetMappingMode(WBFL::Graphing::PointMapper::MapMode::Anisotropic);
    centerMapper.SetWorldExt(profileBox.Width(),wy);
    centerMapper.SetDeviceExt(rCenter.Size().cx - buffer, rCenter.Size().cy);
    centerMapper.SetWorldOrg(profileBox.Left(), woy);
@@ -347,7 +347,7 @@ void CDrawStrandControl::CreateSegmentProfiles(IShape** ppShape,IPoint2dCollecti
    pGirder->GetSegmentBottomFlangeProfile(segmentKey,pSplicedGirder,false/*don't include closure joint*/,ppPoints);
 }
 
-void CDrawStrandControl::DrawShape(CDC* pDC,grlibPointMapper& mapper,IShape* pShape)
+void CDrawStrandControl::DrawShape(CDC* pDC, WBFL::Graphing::PointMapper& mapper,IShape* pShape)
 {
    CComPtr<IPoint2dCollection> polypoints;
    pShape->get_PolyPoints(&polypoints);
@@ -355,9 +355,9 @@ void CDrawStrandControl::DrawShape(CDC* pDC,grlibPointMapper& mapper,IShape* pSh
    Draw(pDC,mapper,polypoints,TRUE);
 }
 
-void CDrawStrandControl::Draw(CDC* pDC,grlibPointMapper& mapper,IPoint2dCollection* pPolyPoints,BOOL bPolygon)
+void CDrawStrandControl::Draw(CDC* pDC, WBFL::Graphing::PointMapper& mapper,IPoint2dCollection* pPolyPoints,BOOL bPolygon)
 {
-   CollectionIndexType nPoints;
+   IndexType nPoints;
    pPolyPoints->get_Count(&nPoints);
 
    IPoint2d** points = new IPoint2d*[nPoints];
@@ -370,10 +370,10 @@ void CDrawStrandControl::Draw(CDC* pDC,grlibPointMapper& mapper,IPoint2dCollecti
    ATLASSERT(nFetched == nPoints);
 
    CPoint* dev_points = new CPoint[nPoints];
-   for ( CollectionIndexType i = 0; i < nPoints; i++ )
+   for ( IndexType i = 0; i < nPoints; i++ )
    {
       LONG dx,dy;
-      GraphPoint point;
+      WBFL::Graphing::Point point;
       points[i]->Location(&point.X(), &point.Y());
       mapper.WPtoDP(point,&dx,&dy);
       dev_points[i] = CPoint(dx,dy);
@@ -394,7 +394,7 @@ void CDrawStrandControl::Draw(CDC* pDC,grlibPointMapper& mapper,IPoint2dCollecti
    delete[] dev_points;
 }
 
-void CDrawStrandControl::DrawStrands(CDC* pDC, grlibPointMapper& leftMapper,grlibPointMapper& centerMapper,grlibPointMapper& rightMapper)
+void CDrawStrandControl::DrawStrands(CDC* pDC, WBFL::Graphing::PointMapper& leftMapper, WBFL::Graphing::PointMapper& centerMapper, WBFL::Graphing::PointMapper& rightMapper)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -502,7 +502,7 @@ void CDrawStrandControl::DrawStrands(CDC* pDC, grlibPointMapper& leftMapper,grli
          {
             pgsTypes::MemberEndType end = (pgsTypes::MemberEndType)i;
             ZoneBreakType zoneBreak = (end == pgsTypes::metStart ? ZoneBreakType::Start : ZoneBreakType::End);
-            grlibPointMapper* pPointMapper = (end == pgsTypes::metStart ? &leftMapper : &rightMapper);
+            WBFL::Graphing::PointMapper* pPointMapper = (end == pgsTypes::metStart ? &leftMapper : &rightMapper);
 
             CPoint point;
             pPointMapper->WPtoDP(X - m_Xoffset[end], Y[zoneBreak], &point.x, &point.y);
@@ -608,7 +608,7 @@ void CDrawStrandControl::DrawStrands(CDC* pDC, grlibPointMapper& leftMapper,grli
    }
 }
 
-void CDrawStrandControl::DrawTendons(CDC* pDC, grlibPointMapper& leftMapper, grlibPointMapper& centerMapper, grlibPointMapper& rightMapper)
+void CDrawStrandControl::DrawTendons(CDC* pDC, WBFL::Graphing::PointMapper& leftMapper, WBFL::Graphing::PointMapper& centerMapper, WBFL::Graphing::PointMapper& rightMapper)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -649,7 +649,7 @@ void CDrawStrandControl::DrawTendons(CDC* pDC, grlibPointMapper& leftMapper, grl
       for (int i = 0; i < 2; i++)
       {
          pgsTypes::MemberEndType end = (pgsTypes::MemberEndType)i;
-         grlibPointMapper* pPointMapper = (end == pgsTypes::metStart ? &leftMapper : &rightMapper);
+         WBFL::Graphing::PointMapper* pPointMapper = (end == pgsTypes::metStart ? &leftMapper : &rightMapper);
 
          pPointMapper->GetAdjustedDeviceExt(&dx, &dy);
          auto world_ext = pPointMapper->GetWorldExt();

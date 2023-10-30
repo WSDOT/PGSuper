@@ -44,7 +44,7 @@ CPrincipalWebStressDetailsReportSpecificationBuilder::~CPrincipalWebStressDetail
 {
 }
 
-std::shared_ptr<CReportSpecification> CPrincipalWebStressDetailsReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,std::shared_ptr<CReportSpecification>& pOldRptSpec)
+std::shared_ptr<WBFL::Reporting::ReportSpecification> CPrincipalWebStressDetailsReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -84,14 +84,14 @@ std::shared_ptr<CReportSpecification> CPrincipalWebStressDetailsReportSpecificat
 
    if ( dlg.DoModal() == IDOK )
    {
-      std::shared_ptr<CReportSpecification> pNewRptSpec;
+      std::shared_ptr<WBFL::Reporting::ReportSpecification> pNewRptSpec;
       if(pInitRptSpec)
       {
          std::shared_ptr<CPrincipalWebStressDetailsReportSpecification> pNewGRptSpec(std::make_shared<CPrincipalWebStressDetailsReportSpecification>(*pInitRptSpec) );
 
          pNewGRptSpec->SetOptions(dlg.UseAllLocations(),dlg.GetPOI(),dlg.GetInterval(),dlg.GetReportAxial(),dlg.GetReportShear());
 
-         pNewRptSpec = std::static_pointer_cast<CReportSpecification>(pNewGRptSpec);
+         pNewRptSpec = std::static_pointer_cast<WBFL::Reporting::ReportSpecification>(pNewGRptSpec);
       }
       else
       {
@@ -106,8 +106,8 @@ std::shared_ptr<CReportSpecification> CPrincipalWebStressDetailsReportSpecificat
    return nullptr;
 }
 
-std::shared_ptr<CReportSpecification> CPrincipalWebStressDetailsReportSpecificationBuilder::CreateDefaultReportSpec(const CReportDescription& rptDesc)
+std::shared_ptr<WBFL::Reporting::ReportSpecification> CPrincipalWebStressDetailsReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const
 {
    // always prompt
-   return CreateReportSpec(rptDesc,std::shared_ptr<CReportSpecification>());
+   return CreateReportSpec(rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification>());
 }

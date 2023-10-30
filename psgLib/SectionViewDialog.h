@@ -31,7 +31,14 @@
 
 #include <GeomModel\CompositeShape.h>
 
-class grlibPointMapper;
+namespace WBFL
+{
+   namespace Graphing
+   {
+      class PointMapper;
+   };
+};
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CSectionViewDialog dialog
@@ -80,13 +87,13 @@ protected:
    std::vector< CComPtr<IShape> > m_RegionShapes; // for debugging the strandmover
 #endif
 
-   void DrawShape(CDC* pDC,grlibPointMapper& Mapper);
-   void DrawShape(CDC* pDC,grlibPointMapper& Mapper,IShape* pShape);
-   void DrawShape(CDC* pDC,grlibPointMapper& mapper,ICompositeShape* pCompositeShape,CBrush& solidBrush,CBrush& voidBrush);
-   void DrawStrands(CDC* pDC, grlibPointMapper& Mapper, bool isEnd);
-   StrandIndexType DrawStrand(CDC* pDC, grlibPointMapper& Mapper, Float64 x, Float64 y, StrandIndexType index,StrandIndexType strandInc=1);
-   void DrawWebSections(CDC* pDC, grlibPointMapper& Mapper);
-   void DrawWebWidthProjections(CDC* pDC, grlibPointMapper& Mapper);
+   void DrawShape(CDC* pDC,WBFL::Graphing::PointMapper& Mapper);
+   void DrawShape(CDC* pDC,WBFL::Graphing::PointMapper& Mapper,IShape* pShape);
+   void DrawShape(CDC* pDC,WBFL::Graphing::PointMapper& mapper,ICompositeShape* pCompositeShape,CBrush& solidBrush,CBrush& voidBrush);
+   void DrawStrands(CDC* pDC, WBFL::Graphing::PointMapper& Mapper, bool isEnd);
+   StrandIndexType DrawStrand(CDC* pDC, WBFL::Graphing::PointMapper& Mapper, Float64 x, Float64 y, StrandIndexType index,StrandIndexType strandInc=1);
+   void DrawWebSections(CDC* pDC, WBFL::Graphing::PointMapper& Mapper);
+   void DrawWebWidthProjections(CDC* pDC, WBFL::Graphing::PointMapper& Mapper);
 
 
 	// Generated message map functions

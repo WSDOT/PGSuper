@@ -22,7 +22,8 @@
 
 #pragma once
 
-#include <PgsExt\PrecastSegmentData.h>
+#include "resource.h"
+#include <psgLib/PrestressLossCriteria.h>
 #include "DrawPrecastSegmentControl.h"
 #include <MfcTools\WideDropDownComboBox.h>
 
@@ -65,12 +66,6 @@ public:
 
    bool m_bWasEventCreated;
 
-   Float64 m_MinSlabOffset;
-   pgsTypes::SlabOffsetType m_SlabOffsetType;
-   pgsTypes::SlabOffsetType m_PrevSlabOffsetType;
-   std::array<Float64, 2> m_SlabOffset;
-   std::array<CString, 2> m_strSlabOffsetCache;
-
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	virtual BOOL OnInitDialog();
@@ -87,8 +82,6 @@ protected:
    afx_msg void OnConstructionEventChanging();
    afx_msg void OnErectionEventChanged();
    afx_msg void OnErectionEventChanging();
-   afx_msg void OnChangingSlabOffsetType();
-   afx_msg void OnChangeSlabOffsetType();
 
    void UpdateConcreteControls(bool bSkipEcCheckBoxes = false);
    void UpdateConcreteParametersToolTip();
@@ -101,20 +94,15 @@ protected:
    void GetSectionVariationControlState(pgsTypes::SegmentVariationType variationType,BOOL* pbEnable);
    void UpdateSegmentVariationParameters(pgsTypes::SegmentVariationType variationType);
 
-   void FillSlabOffsetComboBox();
-
    void UpdateFc();
    void UpdateFci();
    void UpdateEci();
    void UpdateEc();
 
-   pgsTypes::SlabOffsetType GetCurrentSlabOffsetType();
-   void UpdateSlabOffsetControls();
-
    CString m_strUserEc;
    CString m_strUserEci;
 
-   Float64 GetValue(UINT nIDC,const unitmgtLengthData& lengthUnit);
+   Float64 GetValue(UINT nIDC,const WBFL::Units::LengthData& lengthUnit);
 
    void FillEventList();
    EventIDType CreateEvent();
@@ -123,9 +111,12 @@ protected:
    int m_PrevErectionEventIdx; // capture the erection stage when the combo box drops down so we can restore the value if CreateEvent fails
    DECLARE_MESSAGE_MAP()
 
-   int m_LossMethod;
-   int m_TimeDependentModel;
+   PrestressLossCriteria::LossMethodType m_LossMethod;
+   PrestressLossCriteria::TimeDependentConcreteModelType m_TimeDependentModel;
    Float64 m_AgeAtRelease;
+
+   CEdit m_ctrlStartHaunch;
+   CEdit m_ctrlEndHaunch;
 
    void InitBottomFlangeDepthControls();
    void InitEndBlockControls();
@@ -136,4 +127,9 @@ public:
    afx_msg void OnBnClickedBottomFlangeDepth();
    afx_msg void OnHelp();
    virtual BOOL OnSetActive();
+
+   void UpdateHaunchAndCamberControls();
+   void UpdateHaunchAndCamberData(CDataExchange* pDX);
+   void EnableHaunchAndCamberControls(BOOL bStartControls,BOOL bEndControls, bool bShowBoth);
+
 };

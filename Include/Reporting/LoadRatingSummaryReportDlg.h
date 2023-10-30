@@ -34,7 +34,7 @@ class CLoadRatingSummaryReportDlg : public CDialog
 	DECLARE_DYNAMIC(CLoadRatingSummaryReportDlg)
 
 public:
-	CLoadRatingSummaryReportDlg(IBroker* pBroker,const CReportDescription& rptDesc,std::shared_ptr<CReportSpecification>& pRptSpec,UINT nIDTemplate = IDD_LOADRATINGSUMMARYREPORT,CWnd* pParent = nullptr);   // standard constructor
+	CLoadRatingSummaryReportDlg(IBroker* pBroker,const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate = IDD_LOADRATINGSUMMARYREPORT,CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CLoadRatingSummaryReportDlg();
 
 // Dialog Data
@@ -57,10 +57,10 @@ protected:
 
    CCheckListBox	m_ChList;
 
-   const CReportDescription& m_RptDesc;
+   const WBFL::Reporting::ReportDescription& m_RptDesc;
    IBroker* m_pBroker;
 
-   std::shared_ptr<CReportSpecification> m_pInitRptSpec; // report spec for initializing the dialog
+   std::shared_ptr<WBFL::Reporting::ReportSpecification> m_pInitRptSpec; // report spec for initializing the dialog
 
 private:
    CMultiGirderSelectGrid* m_pGrid;

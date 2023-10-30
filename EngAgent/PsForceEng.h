@@ -31,6 +31,7 @@
 #include <Details.h>
 #include <IFace\PsLossEngineer.h>
 #include <IFace\Project.h>
+#include <psgLib/HoldDownCriteria.h>
 
 // LOCAL INCLUDES
 //
@@ -74,7 +75,7 @@ public:
    void Invalidate();
 
    //------------------------------------------------------------------------
-   // Clears all prevously computed and stored design losses
+   // Clears all previously computed and stored design losses
    void ClearDesignLosses();
 
    //------------------------------------------------------------------------
@@ -109,17 +110,17 @@ public:
    //------------------------------------------------------------------------
    // Returns the maximum jacking force
    Float64 GetPjackMax(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType,StrandIndexType nStrands) const;
-   Float64 GetPjackMax(const CSegmentKey& segmentKey,const matPsStrand& strand,StrandIndexType nStrands) const;
+   Float64 GetPjackMax(const CSegmentKey& segmentKey,const WBFL::Materials::PsStrand& strand,StrandIndexType nStrands) const;
 
    //------------------------------------------------------------------------
    // Returns the prestress hold down force
-   Float64 GetHoldDownForce(const CSegmentKey& segmentKey,bool bTotalForce,Float64* pSlope, pgsPointOfInterest* pPoi, const GDRCONFIG* pConfig = nullptr) const;
+   Float64 GetHoldDownForce(const CSegmentKey& segmentKey,HoldDownCriteria::Type type,Float64* pSlope, pgsPointOfInterest* pPoi, const GDRCONFIG* pConfig = nullptr) const;
 
    //------------------------------------------------------------------------
    // Returns the effective force in prestressing strand at the specified interval.. includes losses and gains
    // P = (aps)(Nstrands)(fpe)
-   Float64 GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig=nullptr) const;
-   Float64 GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,bool bIncludeElasticEffects, const GDRCONFIG* pConfig = nullptr) const;
+   Float64 GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,pgsTypes::TransferLengthType xferLengthType,const GDRCONFIG* pConfig=nullptr) const;
+   Float64 GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,bool bIncludeElasticEffects, pgsTypes::TransferLengthType xferLengthType, const GDRCONFIG* pConfig = nullptr) const;
 
    //------------------------------------------------------------------------
    // Returns the effective prestress at the specified interval... includes loss and gains
@@ -128,7 +129,7 @@ public:
    Float64 GetEffectivePrestress(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, bool bIncludeElasticEffects, bool bApplyElasticGainReduction, const GDRCONFIG* pConfig) const;
 
    //------------------------------------------------------------------------
-   // Returns the effective prestress loss... The effective losses are time depenent losses + elastic effects
+   // Returns the effective prestress loss... The effective losses are time dependent losses + elastic effects
    // effective losses = fpj - fpe
    Float64 GetEffectivePrestressLoss(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime, bool bApplyElasticGainReduction,const GDRCONFIG* pConfig) const;
    Float64 GetEffectivePrestressLossWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx, bool bIncludeElasticEffects, bool bApplyElasticGainReduction, const GDRCONFIG* pConfig) const;
@@ -139,7 +140,7 @@ public:
    Float64 GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig) const;
 
    //------------------------------------------------------------------------
-   // Returns the elastic gains due to exterinally applied loads, including elastic shortening effects, at the specified interval
+   // Returns the elastic gains due to externally applied loads, including elastic shortening effects, at the specified interval
    Float64 GetInstantaneousEffects(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime, bool bApplyElasticGainReduction,const GDRCONFIG* pConfig) const;
    Float64 GetInstantaneousEffectsWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState, bool bApplyElasticGainReduction, VehicleIndexType vehicleIdx, const GDRCONFIG* pConfig) const;
 

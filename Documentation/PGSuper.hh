@@ -35,6 +35,8 @@
 #define IDH_CONCRETE_PROPERTIES                 109
 #define IDH_DEFLECTION_HISTORY                  110
 #define IDH_LIBRARY_VIEW            111
+#define IDH_FINISHED_ELEVATION_VIEW             112
+#define IDH_FILL_HAUNCH                         113
 
 #define IDH_ALIGNMENT_HORIZONTAL		 200
 #define IDH_ALIGNMENT_PROFILE			 201
@@ -155,6 +157,7 @@
 #define IDH_SPLICED_GIRDER_GENERAL              3755
 #define IDH_HAUL_TRUCK_DIALOG                   3756
 #define IDH_PROJECT_CRITERIA_BEARINGS           3757
+#define IDH_GEOMETRY_CONTOL_EVENT               3758
 
 #define IDH_SELECT_LIVELOAD			  	         3790
 
@@ -193,6 +196,7 @@
 #define IDH_CONCRETE_ACI               4002
 #define IDH_CONCRETE_CEBFIP            4003
 #define IDH_CONCRETE_PCIUHPC           4004
+#define IDH_CONCRETE_UHPC          4005
 
 #define IDH_ERECT_PIERS                5000
 #define IDH_CONSTRUCT_SEGMENTS         5001

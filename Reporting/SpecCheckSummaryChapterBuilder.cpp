@@ -34,6 +34,9 @@ CLASS
 #include <PgsExt\GirderArtifactTool.h>
 #include <PgsExt\BridgeDescription2.h>
 
+#include <psgLib/LimitsCriteria.h>
+
+
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Artifact.h>
@@ -42,7 +45,7 @@ CLASS
 #include <EAF\EAFAutoProgress.h>
 #include <IFace\DocumentType.h>
 
-#include <LRFD\VersionMgr.h>
+#include <Lrfd/BDSManager.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -64,10 +67,10 @@ LPCTSTR CSpecCheckSummaryChapterBuilder::GetName() const
    return TEXT("Specification Check Summary");
 }
 
-rptChapter* CSpecCheckSummaryChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CSpecCheckSummaryChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    // Report for a single girder
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    if (pGirderRptSpec != nullptr)
    {
       rptChapter* pChapter = CPGSuperChapterBuilder::Build(pGirderRptSpec,level);
@@ -85,7 +88,7 @@ rptChapter* CSpecCheckSummaryChapterBuilder::Build(CReportSpecification* pRptSpe
    }
 
    // Report multiple girders
-   CMultiGirderReportSpecification* pMultiGirderRptSpec = dynamic_cast<CMultiGirderReportSpecification*>(pRptSpec);
+   auto pMultiGirderRptSpec = std::dynamic_pointer_cast<const CMultiGirderReportSpecification>(pRptSpec);
    if (pMultiGirderRptSpec != nullptr)
    {
       const std::vector<CGirderKey>& girderKeys( pMultiGirderRptSpec->GetGirderKeys() );
@@ -137,9 +140,9 @@ rptChapter* CSpecCheckSummaryChapterBuilder::Build(CReportSpecification* pRptSpe
    return nullptr;
 }
 
-rptChapter* CSpecCheckSummaryChapterBuilder::BuildEx(CReportSpecification* pRptSpec,Uint16 level, const pgsGirderArtifact* pGirderArtifact) const
+rptChapter* CSpecCheckSummaryChapterBuilder::BuildEx(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level, const pgsGirderArtifact* pGirderArtifact) const
 {
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
@@ -230,16 +233,17 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroke
    GET_IFACE2(pBroker,ILibrary,pLib);
    std::_tstring strSpecName = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
+   const auto& limits_criteria = pSpecEntry->GetLimitsCriteria();
 
    GET_IFACE2_NOCHECK(pBroker,IStirrupGeometry,pStirrupGeom);
-   if ( pSpecEntry->GetDoCheckStirrupSpacingCompatibility() && !pStirrupGeom->AreStirrupZoneLengthsCombatible(girderKey) )
+   if ( limits_criteria.bCheckStirrupSpacingCompatibility && !pStirrupGeom->AreStirrupZoneLengthsCombatible(girderKey) )
    {
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
       *pPara << color(Red) << Bold(_T("WARNING: Stirrup zone lengths are not compatible with stirrup spacings. Refer to the Stirrup Layout Geometry Check for more information.")) << color(Black) << rptNewLine;
    }
 
-   if ( pSpecEntry->CheckGirderSag() )
+   if ( limits_criteria.bCheckSag )
    {
       // Negative camber is not technically a spec check, but a warning
       GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
@@ -257,26 +261,26 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroke
          ATLASSERT(vPoi.size()==1);
          const pgsPointOfInterest& poiMidSpan(vPoi.front());
    
-         Float64 C = pCamber->GetScreedCamber( poiMidSpan, CREEP_MINTIME );
+         Float64 C = pCamber->GetScreedCamber( poiMidSpan, pgsTypes::CreepTime::Min );
    
          std::_tstring camberType;
          Float64 Dupper, Davg, Dlower;
-         pCamber->GetDCamberForGirderScheduleEx(poiMidSpan, CREEP_MINTIME, &Dupper, &Davg, &Dlower);
+         pCamber->GetDCamberForGirderScheduleEx(poiMidSpan, pgsTypes::CreepTime::Min, &Dupper, &Davg, &Dlower);
 
          Float64 D = 999999; // initialize to obvious bogus value
-         switch(pSpecEntry->GetSagCamberType())
+         switch(limits_criteria.SagCamber)
          {
-         case pgsTypes::LowerBoundCamber:
+         case pgsTypes::SagCamber::LowerBoundCamber:
             D = Dlower;
             camberType = _T("lower bound");
             break;
 
-         case pgsTypes::AverageCamber:
+         case pgsTypes::SagCamber::AverageCamber:
             D = Davg;
             camberType = _T("average");
             break;
 
-         case pgsTypes::UpperBoundCamber:
+         case pgsTypes::SagCamber::UpperBoundCamber:
             D = Dupper;
             camberType = _T("upper bound");
             break;
@@ -292,7 +296,7 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroke
 
             *pPara << color(Red) << _T("WARNING: Screed Camber is greater than the ") << camberType.c_str() << _T(" camber at time of deck casting. The girder may end up with a sag.") << color(Black) << rptNewLine;
          }
-         else if ( IsEqual(C,D,::ConvertToSysUnits(0.25,unitMeasure::Inch)) )
+         else if ( IsEqual(C,D,WBFL::Units::ConvertToSysUnits(0.25,WBFL::Units::Measure::Inch)) )
          {
             pPara = new rptParagraph;
             *pChapter << pPara;
@@ -300,7 +304,7 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroke
             *pPara << color(Red) << _T("WARNING: Screed Camber is nearly equal to the ") << camberType.c_str() << _T(" camber at time of deck casting. The girder may end up with a sag.") << color(Black) << rptNewLine;
          }
 
-         Float64 excess_camber = pCamber->GetExcessCamber(poiMidSpan,CREEP_MAXTIME);
+         Float64 excess_camber = pCamber->GetExcessCamber(poiMidSpan,pgsTypes::CreepTime::Max);
          if ( excess_camber < 0.0 )
          {
             rptParagraph* pPara = new rptParagraph;
@@ -311,7 +315,7 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroke
    }
 }
 
-CChapterBuilder* CSpecCheckSummaryChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CSpecCheckSummaryChapterBuilder::Clone() const
 {
-   return new CSpecCheckSummaryChapterBuilder(m_ReferToDetailsReport);
+   return std::make_unique<CSpecCheckSummaryChapterBuilder>(m_ReferToDetailsReport);
 }

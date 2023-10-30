@@ -156,11 +156,11 @@ HRESULT CSegmentActivityBase::Load(IStructuredLoad* pStrLoad,IProgress* pProgres
          hr = pStrLoad->BeginUnit(_T("Segments"));
 
          var.vt = VT_INDEX;
-         CollectionIndexType nSegments;
+         IndexType nSegments;
          hr = pStrLoad->get_Property(_T("Count"),&var);
          nSegments = VARIANT2INDEX(var);
 
-         for ( CollectionIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+         for ( IndexType segIdx = 0; segIdx < nSegments; segIdx++ )
          {
             pStrLoad->BeginUnit(_T("Segment"));
 

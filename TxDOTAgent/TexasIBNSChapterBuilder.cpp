@@ -71,9 +71,9 @@ LPCTSTR CTexasIBNSChapterBuilder::GetName() const
 }
 
 /*--------------------------------------------------------------------*/
-rptChapter* CTexasIBNSChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CTexasIBNSChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CMultiGirderReportSpecification* pMultiGirderRptSpec = dynamic_cast<CMultiGirderReportSpecification*>(pRptSpec);
+   auto pMultiGirderRptSpec = std::dynamic_pointer_cast<const CMultiGirderReportSpecification>(pRptSpec);
    if (pMultiGirderRptSpec != nullptr)
    {
       CComPtr<IBroker> pBroker;
@@ -154,8 +154,8 @@ rptChapter* CTexasIBNSChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 }
 
 /*--------------------------------------------------------------------*/
-CChapterBuilder* CTexasIBNSChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder>CTexasIBNSChapterBuilder::Clone() const
 {
-   return new CTexasIBNSChapterBuilder;
+   return std::make_unique<CTexasIBNSChapterBuilder>();
 }
 

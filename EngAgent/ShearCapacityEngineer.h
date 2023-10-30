@@ -57,24 +57,10 @@ LOG
 class pgsShearCapacityEngineer
 {
 public:
-   // GROUP: LIFECYCLE
-
-   //------------------------------------------------------------------------
-   // Default constructor
    pgsShearCapacityEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID);
-
-   //------------------------------------------------------------------------
-   // Copy constructor
-   pgsShearCapacityEngineer(const pgsShearCapacityEngineer& rOther);
-
-   //------------------------------------------------------------------------
-   // Destructor
-   virtual ~pgsShearCapacityEngineer();
-
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
-   pgsShearCapacityEngineer& operator = (const pgsShearCapacityEngineer& rOther);
+   pgsShearCapacityEngineer(const pgsShearCapacityEngineer& rOther) = default;
+   ~pgsShearCapacityEngineer() = default;
+   pgsShearCapacityEngineer& operator=(const pgsShearCapacityEngineer& rOther) = default;
 
    // GROUP: OPERATIONS
 
@@ -99,23 +85,6 @@ public:
    // that will be effected by this change
    void TweakShearCapacityOutboardOfCriticalSection(const pgsPointOfInterest& poiCS,SHEARCAPACITYDETAILS* pscd,const SHEARCAPACITYDETAILS* pscd_at_cs) const;
 
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   //------------------------------------------------------------------------
-   void MakeCopy(const pgsShearCapacityEngineer& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const pgsShearCapacityEngineer& rOther);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 private:
    // GROUP: DATA MEMBERS
    IBroker* m_pBroker;
@@ -133,31 +102,14 @@ private:
    void ComputeShearCapacityDetails(IntervalIndexType intervalIdx, pgsTypes::LimitState limitState, const pgsPointOfInterest& poi,SHEARCAPACITYDETAILS* pmcd) const;
 
    bool ComputeVc(const pgsPointOfInterest& poi, SHEARCAPACITYDETAILS* pscd) const;
+   bool ComputeVcc(const pgsPointOfInterest& poi, SHEARCAPACITYDETAILS* pscd) const;
+   bool ComputeVuhpc(const pgsPointOfInterest& poi, SHEARCAPACITYDETAILS* pscd) const;
    bool ComputeVs(const pgsPointOfInterest& poi, SHEARCAPACITYDETAILS* pscd) const;
 
    void EvaluateStirrupRequirements(SHEARCAPACITYDETAILS* pscd) const;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
-
-public:
-   // GROUP: DEBUG
-   #if defined _DEBUG
-   //------------------------------------------------------------------------
-   // Returns true if the object is in a valid state, otherwise returns false.
-   virtual bool AssertValid() const;
-
-   //------------------------------------------------------------------------
-   // Dumps the contents of the object to the given dump context.
-   virtual void Dump(dbgDumpContext& os) const;
-   #endif // _DEBUG
-
-   #if defined _UNITTEST
-   //------------------------------------------------------------------------
-   // Runs a self-diagnostic test.  Returns true if the test passed,
-   // otherwise false.
-   static bool TestMe(dbgLog& rlog);
-   #endif // _UNITTEST
 };
 
 // INLINE METHODS

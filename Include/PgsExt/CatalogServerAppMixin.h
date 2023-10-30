@@ -115,8 +115,8 @@ protected:
 
    void UpdateCache(); // only updates if needed
    bool DoCacheUpdate(); // always does the update
-   sysDate GetLastCacheUpdateDate() const;
-   void SetLastCacheUpdateDate(const sysDate& date);
+   WBFL::System::Date GetLastCacheUpdateDate() const;
+   void SetLastCacheUpdateDate(const WBFL::System::Date& date);
    void RestoreLibraryAndTemplatesToDefault();
    void DeleteCache(LPCTSTR pstrCache);
    void RecursiveDelete(LPCTSTR pstr);

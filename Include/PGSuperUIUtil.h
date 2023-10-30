@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2022  Washington State Department of Transportation
+// Copyright © 1999-2023  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -32,7 +32,7 @@ inline void StoreFloatInCb(CComboBox* pcb, int idx, Float64 fval)
    pcb->SetItemData(idx, dval);
 }
 
-inline int PutFloatInCB(Float64 fval, CComboBox* pcb, sysNumericFormatTool& tool)
+inline int PutFloatInCB(Float64 fval, CComboBox* pcb, WBFL::System::NumericFormatTool& tool)
 {
    std::_tstring str = tool.AsString(fval);
    int idx = pcb->AddString(str.c_str());
@@ -60,20 +60,20 @@ void FillComboWithUnitFloatRange(Float64 selectedVal, Float64 minVal, Float64 ma
 {
    pfcCtrl->ResetContent();
 
-   sysNumericFormatTool tool;
-   tool.SetFormat( sysNumericFormatTool::Fixed );
+   WBFL::System::NumericFormatTool tool;
+   tool.SetFormat( WBFL::System::NumericFormatTool::Format::Fixed );
    tool.SetPrecision(precision);
 
    Float64 toler = pow(10.0, -precision-1); // tolerance on equals
 
    // First convert to output units
-   selectedVal = ::ConvertFromSysUnits(selectedVal, tunit);
+   selectedVal = WBFL::Units::ConvertFromSysUnits(selectedVal, tunit);
 
    // Minval and max val set upper and lower bounds
-   minVal = ::ConvertFromSysUnits(minVal, tunit);
-   maxVal = ::ConvertFromSysUnits(maxVal, tunit);
+   minVal = WBFL::Units::ConvertFromSysUnits(minVal, tunit);
+   maxVal = WBFL::Units::ConvertFromSysUnits(maxVal, tunit);
 
-   incrVal = ::ConvertFromSysUnits(incrVal, tunit);
+   incrVal = WBFL::Units::ConvertFromSysUnits(incrVal, tunit);
 
    // string for value to be selected
    std::_tstring selectedStr = tool.AsString(selectedVal);

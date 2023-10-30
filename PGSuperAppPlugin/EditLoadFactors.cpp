@@ -50,9 +50,9 @@ void txnEditLoadFactors::Undo()
    DoExecute(0);
 }
 
-txnTransaction* txnEditLoadFactors::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnEditLoadFactors::CreateClone() const
 {
-   return new txnEditLoadFactors(m_LoadFactors[0],m_LoadFactors[1]);
+   return std::make_unique<txnEditLoadFactors>(m_LoadFactors[0],m_LoadFactors[1]);
 }
 
 std::_tstring txnEditLoadFactors::Name() const
@@ -62,12 +62,12 @@ std::_tstring txnEditLoadFactors::Name() const
    return os.str();
 }
 
-bool txnEditLoadFactors::IsUndoable()
+bool txnEditLoadFactors::IsUndoable() const
 {
    return true;
 }
 
-bool txnEditLoadFactors::IsRepeatable()
+bool txnEditLoadFactors::IsRepeatable() const
 {
    return false;
 }

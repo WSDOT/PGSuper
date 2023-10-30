@@ -28,12 +28,12 @@
 #include "GirderMainSheet.h"
 #include <MfcTools\CustomDDX.h>
 
-#include <Units\sysUnits.h>
+#include <Units\Convert.h>
 
 #include <EAF\EAFApp.h>
 #include <EAF\EAFDisplayUnits.h>
 
-#include <Lrfd\RebarPool.h>
+#include <LRFD\RebarPool.h>
 #include <IFace\BeamFactory.h>
 
 #include <Plugins\BeamFamilyCLSID.h>
@@ -107,7 +107,7 @@ void CGirderMainSheet::UpdatePropertyPages()
    {
       AddPage(&m_GirderDimensionsPage);
       AddPage(&m_FlexureDesignPage); // contains debond limits
-      //AddPage(&m_ShearDesignPage); // no shear design for spliced girders
+      AddPage(&m_ShearDesignPage); // no shear design for spliced girders, but we need the interface shear width reduction UI
       //AddPage(&m_LongSteelPage); // no default long. reinforcement for spliced girders
       //AddPage(&m_ShearSteelPage); // no default trans. reinforcement for spliced girders
       AddPage(&m_GirderHaunchAndCamberPage);
@@ -158,7 +158,7 @@ void CGirderMainSheet::Init()
 void CGirderMainSheet::ExchangeDimensionData(CDataExchange* pDX)
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    if (pDX->m_bSaveAndValidate)
    {
@@ -209,16 +209,16 @@ void CGirderMainSheet::ExchangeDimensionData(CDataExchange* pDX)
          CString strValue = m_GirderDimensionsPage.m_Grid.GetCellValue(nRow,1);
          Float64 value = _tstof(strValue);
 
-         const unitLength* pUnit = *unit_iter;
+         const WBFL::Units::Length* pUnit = *unit_iter;
 
-         if (pUnit == (const unitLength*)BFDIMUNITBOOLEAN)
+         if (pUnit == (const WBFL::Units::Length*)BFDIMUNITBOOLEAN)
          {
             value = value != 0 ? 1 : 0;
          }
 
-         if (pUnit != (const unitLength*)BFDIMUNITSCALAR && pUnit != (const unitLength*)BFDIMUNITBOOLEAN)
+         if (pUnit != (const WBFL::Units::Length*)BFDIMUNITSCALAR && pUnit != (const WBFL::Units::Length*)BFDIMUNITBOOLEAN)
          {
-            value = ::ConvertToSysUnits(value, *pUnit);
+            value = WBFL::Units::ConvertToSysUnits(value, *pUnit);
          }
 
          m_Entry.SetDimension(*name_iter,value,true);
@@ -252,8 +252,8 @@ void CGirderMainSheet::ExchangeDimensionData(CDataExchange* pDX)
 
          Float64 value = m_Entry.GetDimension(name);
 
-         const unitLength* pUnit = *unit_iter;
-         if (pUnit == (const unitLength*)BFDIMUNITBOOLEAN)
+         const WBFL::Units::Length* pUnit = *unit_iter;
+         if (pUnit == (const WBFL::Units::Length*)BFDIMUNITBOOLEAN)
          {
             ATLASSERT((LONG)value == 0 || (LONG)value == 1);
             VERIFY(m_GirderDimensionsPage.m_Grid.SetStyleRange(CGXRange(nRow, 1), CGXStyle().SetControl(GX_IDS_CTRL_CHECKBOX3D).SetHorizontalAlignment(DT_CENTER)));
@@ -261,9 +261,9 @@ void CGirderMainSheet::ExchangeDimensionData(CDataExchange* pDX)
          }
          else
          {
-            if (pUnit != (const unitLength*)BFDIMUNITSCALAR)
+            if (pUnit != (const WBFL::Units::Length*)BFDIMUNITSCALAR)
             {
-               value = ::ConvertFromSysUnits(value, *pUnit);
+               value = WBFL::Units::ConvertFromSysUnits(value, *pUnit);
 
                name += _T(" (");
                name += pUnit->UnitTag();
@@ -307,7 +307,7 @@ void CGirderMainSheet::ExchangeDimensionData(CDataExchange* pDX)
 bool CGirderMainSheet::ExchangeTemporaryStrandData(CDataExchange* pDX)
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    // controls data
    // get strand locations from grids
@@ -326,8 +326,8 @@ bool CGirderMainSheet::ExchangeTemporaryStrandData(CDataExchange* pDX)
          if (m_GirderTemporaryStrandPage.m_TemporaryGrid.GetRowData(i,&x,&y))
          {
             // values are in display units - must convert to system
-            x = ::ConvertToSysUnits(x, pDisplayUnits->ComponentDim.UnitOfMeasure);
-            y = ::ConvertToSysUnits(y, pDisplayUnits->ComponentDim.UnitOfMeasure);
+            x = WBFL::Units::ConvertToSysUnits(x, pDisplayUnits->ComponentDim.UnitOfMeasure);
+            y = WBFL::Units::ConvertToSysUnits(y, pDisplayUnits->ComponentDim.UnitOfMeasure);
 
             GirderLibraryEntry::StraightStrandLocation strandLocation;
             strandLocation.m_Xstart = x;
@@ -353,7 +353,7 @@ bool CGirderMainSheet::ExchangeTemporaryStrandData(CDataExchange* pDX)
 void CGirderMainSheet::UploadTemporaryStrandData()
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    // upload Temporary strand data into grid - convert units first
    Float64 heightStart = m_Entry.GetBeamHeight(pgsTypes::metStart);
@@ -365,8 +365,8 @@ void CGirderMainSheet::UploadTemporaryStrandData()
    for ( iter = m_Entry.m_TemporaryStrands.begin(); iter != m_Entry.m_TemporaryStrands.end(); iter++ )
    {
       GirderLibraryEntry::StraightStrandLocation& strandLocation = *iter;
-      Float64 x = ::ConvertFromSysUnits(strandLocation.m_Xstart, pDisplayUnits->ComponentDim.UnitOfMeasure);
-      Float64 y = ::ConvertFromSysUnits(heightStart - strandLocation.m_Ystart, pDisplayUnits->ComponentDim.UnitOfMeasure);
+      Float64 x = WBFL::Units::ConvertFromSysUnits(strandLocation.m_Xstart, pDisplayUnits->ComponentDim.UnitOfMeasure);
+      Float64 y = WBFL::Units::ConvertFromSysUnits(heightStart - strandLocation.m_Ystart, pDisplayUnits->ComponentDim.UnitOfMeasure);
 
       CComPtr<IPoint2d> p;
       p.CoCreateInstance(CLSID_Point2d);
@@ -382,7 +382,7 @@ bool CGirderMainSheet::ExchangeStrandData(CDataExchange* pDX)
    // move data from grid back to library entry
    // controls data
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    DDX_Check_Bool(pDX,IDC_ALLOW_HP_ADJUST, m_Entry.m_HPAdjustment.m_AllowVertAdjustment );
    DDX_UnitValueAndTag(pDX, IDC_HP_INCREMENT, IDC_HP_INCREMENT_T, m_Entry.m_HPAdjustment.m_StrandIncrement, pDisplayUnits->ComponentDim );
@@ -439,12 +439,6 @@ bool CGirderMainSheet::ExchangeStrandData(CDataExchange* pDX)
    // get strand locations from grid and put them in library entry
    if (pDX->m_bSaveAndValidate)
    {
-      // lots of points to create - might as well be efficient
-      CComPtr<IGeomUtil> geom_util;
-      geom_util.CoCreateInstance(CLSID_GeomUtil);
-      CComPtr<IPoint2dFactory> pnt_factory;
-      geom_util->get_Point2dFactory(&pnt_factory);
-
       Float64 heightStart = m_Entry.GetBeamHeight(pgsTypes::metStart);
       Float64 heightEnd   = m_Entry.GetBeamHeight(pgsTypes::metEnd);
     
@@ -455,18 +449,18 @@ bool CGirderMainSheet::ExchangeStrandData(CDataExchange* pDX)
       // grab a reference to grid's internal data to save typing
       CGirderGlobalStrandGrid::EntryCollectionType& grid_collection =  m_GirderPermanentStrandPage.m_MainGrid.m_Entries;
 
-      CollectionIndexType g_cnt = grid_collection.size();
+      IndexType g_cnt = grid_collection.size();
       StrandIndexType num_straight=0;
       StrandIndexType num_harped=0;
-      for (CollectionIndexType g_idx=0; g_idx<g_cnt; g_idx++)
+      for (IndexType g_idx=0; g_idx<g_cnt; g_idx++)
       {
          const CGirderGlobalStrandGrid::GlobalStrandGridEntry& entry = grid_collection[g_idx];
 
          if (entry.m_Type == GirderLibraryEntry::stStraight)
          {
             // straight strands are easy, just convert units and add point
-            Float64 x = ::ConvertToSysUnits(entry.m_X, pDisplayUnits->ComponentDim.UnitOfMeasure);
-            Float64 y = ::ConvertToSysUnits(entry.m_Y, pDisplayUnits->ComponentDim.UnitOfMeasure);
+            Float64 x = WBFL::Units::ConvertToSysUnits(entry.m_X, pDisplayUnits->ComponentDim.UnitOfMeasure);
+            Float64 y = WBFL::Units::ConvertToSysUnits(entry.m_Y, pDisplayUnits->ComponentDim.UnitOfMeasure);
 
             m_Entry.m_StraightStrands.push_back(GirderLibraryEntry::StraightStrandLocation(x,y,entry.m_CanDebond));
 
@@ -475,8 +469,8 @@ bool CGirderMainSheet::ExchangeStrandData(CDataExchange* pDX)
          else if (entry.m_Type == GirderLibraryEntry::stAdjustable)
          {
             // harped at HP
-            Float64 x = ::ConvertToSysUnits(entry.m_X, pDisplayUnits->ComponentDim.UnitOfMeasure );
-            Float64 y = ::ConvertToSysUnits(entry.m_Y, pDisplayUnits->ComponentDim.UnitOfMeasure );
+            Float64 x = WBFL::Units::ConvertToSysUnits(entry.m_X, pDisplayUnits->ComponentDim.UnitOfMeasure );
+            Float64 y = WBFL::Units::ConvertToSysUnits(entry.m_Y, pDisplayUnits->ComponentDim.UnitOfMeasure );
             Float64 start_x = x;
             Float64 start_y = y;
             Float64 end_x   = x;  // assume same location at end
@@ -486,11 +480,11 @@ bool CGirderMainSheet::ExchangeStrandData(CDataExchange* pDX)
             if (m_Entry.m_bUseDifferentHarpedGridAtEnds)
             {
                // Input is from top down, but it needs to be stored from bottom up
-               start_x = ::ConvertToSysUnits(entry.m_Hend_X, pDisplayUnits->ComponentDim.UnitOfMeasure );
-               start_y = heightStart - ::ConvertToSysUnits(entry.m_Hend_Y, pDisplayUnits->ComponentDim.UnitOfMeasure );
+               start_x = WBFL::Units::ConvertToSysUnits(entry.m_Hend_X, pDisplayUnits->ComponentDim.UnitOfMeasure );
+               start_y = heightStart - WBFL::Units::ConvertToSysUnits(entry.m_Hend_Y, pDisplayUnits->ComponentDim.UnitOfMeasure );
 
-               end_x = ::ConvertToSysUnits(entry.m_Hend_X, pDisplayUnits->ComponentDim.UnitOfMeasure );
-               end_y = heightEnd - ::ConvertToSysUnits(entry.m_Hend_Y, pDisplayUnits->ComponentDim.UnitOfMeasure );
+               end_x = WBFL::Units::ConvertToSysUnits(entry.m_Hend_X, pDisplayUnits->ComponentDim.UnitOfMeasure );
+               end_y = heightEnd - WBFL::Units::ConvertToSysUnits(entry.m_Hend_Y, pDisplayUnits->ComponentDim.UnitOfMeasure );
             }
             
             m_Entry.m_HarpedStrands.push_back(GirderLibraryEntry::HarpedStrandLocation(start_x,start_y,x,y,end_x,end_y));
@@ -508,7 +502,7 @@ bool CGirderMainSheet::ExchangeStrandData(CDataExchange* pDX)
 void CGirderMainSheet::UploadStrandData()
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    // upload harped strand data into grid - convert units first
    Float64 heightStart = m_Entry.GetBeamHeight(pgsTypes::metStart);
@@ -539,14 +533,14 @@ void CGirderMainSheet::UploadStrandData()
       }
 
       CGirderGlobalStrandGrid::GlobalStrandGridEntry entry;
-      entry.m_X =  ::ConvertFromSysUnits(x, pDisplayUnits->ComponentDim.UnitOfMeasure );
-      entry.m_Y =  ::ConvertFromSysUnits(y, pDisplayUnits->ComponentDim.UnitOfMeasure );
+      entry.m_X =  WBFL::Units::ConvertFromSysUnits(x, pDisplayUnits->ComponentDim.UnitOfMeasure );
+      entry.m_Y =  WBFL::Units::ConvertFromSysUnits(y, pDisplayUnits->ComponentDim.UnitOfMeasure );
       entry.m_CanDebond = can_debond;
       entry.m_Type = strand_type;
 
       // adjust end strands to be measured from top
-      entry.m_Hend_X = ::ConvertFromSysUnits(start_x, pDisplayUnits->ComponentDim.UnitOfMeasure );
-      entry.m_Hend_Y = ::ConvertFromSysUnits(heightStart-start_y, pDisplayUnits->ComponentDim.UnitOfMeasure );
+      entry.m_Hend_X = WBFL::Units::ConvertFromSysUnits(start_x, pDisplayUnits->ComponentDim.UnitOfMeasure );
+      entry.m_Hend_Y = WBFL::Units::ConvertFromSysUnits(heightStart-start_y, pDisplayUnits->ComponentDim.UnitOfMeasure );
 
       grid_collection.push_back(entry);
    }
@@ -558,17 +552,17 @@ void CGirderMainSheet::UploadStrandData()
 void CGirderMainSheet::UploadLongitudinalData()
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    GirderLibraryEntry::LongSteelInfoVec vec = m_Entry.GetLongSteelInfo();
 
    // Convert to display units before filling grid
    for (GirderLibraryEntry::LongSteelInfoVec::iterator it = vec.begin(); it!=vec.end(); it++)
    {
-      (*it).BarLength = ::ConvertFromSysUnits((*it).BarLength, pDisplayUnits->SpanLength.UnitOfMeasure );
-      (*it).DistFromEnd = ::ConvertFromSysUnits((*it).DistFromEnd, pDisplayUnits->SpanLength.UnitOfMeasure );
-      (*it).Cover = ::ConvertFromSysUnits((*it).Cover, pDisplayUnits->ComponentDim.UnitOfMeasure );
-      (*it).BarSpacing = ::ConvertFromSysUnits((*it).BarSpacing, pDisplayUnits->ComponentDim.UnitOfMeasure );
+      (*it).BarLength = WBFL::Units::ConvertFromSysUnits((*it).BarLength, pDisplayUnits->SpanLength.UnitOfMeasure );
+      (*it).DistFromEnd = WBFL::Units::ConvertFromSysUnits((*it).DistFromEnd, pDisplayUnits->SpanLength.UnitOfMeasure );
+      (*it).Cover = WBFL::Units::ConvertFromSysUnits((*it).Cover, pDisplayUnits->ComponentDim.UnitOfMeasure );
+      (*it).BarSpacing = WBFL::Units::ConvertFromSysUnits((*it).BarSpacing, pDisplayUnits->ComponentDim.UnitOfMeasure );
    }
 
    m_LongSteelPage.m_Grid.FillGrid(vec);
@@ -577,7 +571,7 @@ void CGirderMainSheet::UploadLongitudinalData()
 void CGirderMainSheet::ExchangeLongitudinalData(CDataExchange* pDX)
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    // longitudinal steel information from grid and store it
    if (pDX->m_bSaveAndValidate)
@@ -590,10 +584,10 @@ void CGirderMainSheet::ExchangeLongitudinalData(CDataExchange* pDX)
          if (m_LongSteelPage.m_Grid.GetRowData(i,&lsi))
          {
             // values are in display units - must convert to system
-            lsi.BarLength    = ::ConvertToSysUnits(lsi.BarLength, pDisplayUnits->SpanLength.UnitOfMeasure );
-            lsi.DistFromEnd  = ::ConvertToSysUnits(lsi.DistFromEnd, pDisplayUnits->SpanLength.UnitOfMeasure );
-            lsi.Cover        = ::ConvertToSysUnits(lsi.Cover, pDisplayUnits->ComponentDim.UnitOfMeasure );
-            lsi.BarSpacing   = ::ConvertToSysUnits(lsi.BarSpacing, pDisplayUnits->ComponentDim.UnitOfMeasure );
+            lsi.BarLength    = WBFL::Units::ConvertToSysUnits(lsi.BarLength, pDisplayUnits->SpanLength.UnitOfMeasure );
+            lsi.DistFromEnd  = WBFL::Units::ConvertToSysUnits(lsi.DistFromEnd, pDisplayUnits->SpanLength.UnitOfMeasure );
+            lsi.Cover        = WBFL::Units::ConvertToSysUnits(lsi.Cover, pDisplayUnits->ComponentDim.UnitOfMeasure );
+            lsi.BarSpacing   = WBFL::Units::ConvertToSysUnits(lsi.BarSpacing, pDisplayUnits->ComponentDim.UnitOfMeasure );
             vec.push_back(lsi);
          }
          else
@@ -616,7 +610,7 @@ void CGirderMainSheet::ExchangeDiaphragmData(CDataExchange* pDX)
 void CGirderMainSheet::ExchangeHarpPointData(CDataExchange* pDX)
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    int hpRef = (int)m_Entry.m_HarpPointReference;
    DDX_CBIndex(pDX,IDC_HPREFERENCE,hpRef);
@@ -659,7 +653,7 @@ void CGirderMainSheet::ExchangeHarpPointData(CDataExchange* pDX)
 void CGirderMainSheet::ExchangeHaunchData(CDataExchange* pDX)
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    DDX_UnitValueAndTag(pDX, IDC_MIN_FILLET, IDC_MIN_FILLET_UNIT, m_Entry.m_MinFilletValue, pDisplayUnits->ComponentDim);
    DDV_UnitValueZeroOrMore(pDX, IDC_HARP_LOCATION,m_Entry.m_MinFilletValue, pDisplayUnits->ComponentDim);
@@ -714,7 +708,7 @@ void CGirderMainSheet::ExchangeFlexuralCriteriaData(CDataExchange* pDX)
 void CGirderMainSheet::ExchangeDebondCriteriaData(CDataExchange* pDX)
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    DDX_Check_Bool(pDX, IDC_CHECK_MAX_TOTAL_STRANDS, m_Entry.m_bCheckMaxDebondStrands);
    DDX_Percentage(pDX,IDC_MAX_TOTAL_STRANDS, m_Entry.m_MaxDebondStrands);
@@ -783,7 +777,7 @@ void CGirderMainSheet::ExchangeDebondCriteriaData(CDataExchange* pDX)
 void CGirderMainSheet::ExchangeFlexuralDesignStrategyCriteriaData(CDataExchange* pDX)
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    DDX_Tag(pDX, IDC_STRAIGHT_UNITS, pDisplayUnits->Stress);
    DDX_Tag(pDX, IDC_DEBOND_UNITS, pDisplayUnits->Stress);
@@ -841,11 +835,11 @@ void CGirderMainSheet::ExchangeFlexuralDesignStrategyCriteriaData(CDataExchange*
       // Hard coded min design values. 
       bool is_si = eafTypes::umSI == pApp->GetUnitsMode();
 
-      Float64 minfci = is_si ? ::ConvertToSysUnits(28.0,unitMeasure::MPa) :
-                               ::ConvertToSysUnits( 4.0,unitMeasure::KSI); // minimum per LRFD 5.4.2.1
+      Float64 minfci = is_si ? WBFL::Units::ConvertToSysUnits(28.0,WBFL::Units::Measure::MPa) :
+                               WBFL::Units::ConvertToSysUnits( 4.0,WBFL::Units::Measure::KSI); // minimum per LRFD 5.4.2.1
 
-      Float64 minfc =  is_si ? ::ConvertToSysUnits(34.5,unitMeasure::MPa) :
-                               ::ConvertToSysUnits( 5.0,unitMeasure::KSI); // agreed by wsdot and txdot
+      Float64 minfc =  is_si ? WBFL::Units::ConvertToSysUnits(34.5,WBFL::Units::Measure::MPa) :
+                               WBFL::Units::ConvertToSysUnits( 5.0,WBFL::Units::Measure::KSI); // agreed by wsdot and txdot
 
       m_Entry.m_PrestressDesignStrategies.clear();
 
@@ -965,7 +959,9 @@ void CGirderMainSheet::UploadShearDesignData(CDataExchange* pDX)
    m_ShearDesignPage.m_bExtendDeckBars = m_Entry.GetExtendBarsIntoDeck();
    m_ShearDesignPage.m_bBarsProvideConfinement = m_Entry.GetBarsActAsConfinement();
 
-   m_ShearDesignPage.m_LongReinfShearMethod = m_Entry.GetLongShearCapacityIncreaseMethod();
+   m_ShearDesignPage.m_LongitudinalReinforcementForShearMethod = m_Entry.GetLongShearCapacityIncreaseMethod();
+
+   m_ShearDesignPage.m_InterfaceShearWidthReduction = m_Entry.GetInterfaceShearWidthReduction();
 }
 
 void CGirderMainSheet::DownloadShearDesignData(CDataExchange* pDX)
@@ -994,7 +990,9 @@ void CGirderMainSheet::DownloadShearDesignData(CDataExchange* pDX)
    m_Entry.SetExtendBarsIntoDeck( B2b(m_ShearDesignPage.m_bExtendDeckBars) );
    m_Entry.SetBarsActAsConfinement( B2b(m_ShearDesignPage.m_bBarsProvideConfinement) );
 
-   m_Entry.SetLongShearCapacityIncreaseMethod( (GirderLibraryEntry::LongShearCapacityIncreaseMethod)(m_ShearDesignPage.m_LongReinfShearMethod) );
+   m_Entry.SetLongShearCapacityIncreaseMethod( (GirderLibraryEntry::LongShearCapacityIncreaseMethod)(m_ShearDesignPage.m_LongitudinalReinforcementForShearMethod) );
+
+   m_Entry.SetInterfaceShearWidthReduction(m_ShearDesignPage.m_InterfaceShearWidthReduction);
 }
 
 
@@ -1055,7 +1053,7 @@ void CGirderMainSheet::SetDebondTabName()
       CTabCtrl* pTab = GetTabControl();
       TC_ITEM ti;
       ti.mask = TCIF_TEXT;
-      ti.pszText = _T("Debonding");
+      ti.pszText = (TCHAR*)_T("Debonding");
       pTab->SetItem(index,&ti);
    }
 }
@@ -1106,7 +1104,7 @@ void CGirderMainSheet::MiscOnFractional()
 void CGirderMainSheet::MiscOnAbsolute()
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
 
    CDataExchange dx(&m_HarpPointPage,FALSE);

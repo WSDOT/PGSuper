@@ -45,19 +45,19 @@
 bool PSGLIBFUNC WINAPI psglibSetHelpFileLocation(const std::_tstring& rpath);
 
 // simple function to get the first entry out of 
-std::_tstring PSGLIBFUNC WINAPI psglibGetFirstEntryName(const libILibrary& rlib);
+std::_tstring PSGLIBFUNC WINAPI psglibGetFirstEntryName(const WBFL::Library::ILibrary& rlib);
 
 
 // Fills pNames with the library entry names from the supplied libraries.
 // Duplicate names are removed.
-void PSGLIBFUNC WINAPI psglibCreateLibNameEnum( std::vector<std::_tstring>* pNames, const libILibrary& prjLib);
+void PSGLIBFUNC WINAPI psglibCreateLibNameEnum( std::vector<std::_tstring>* pNames, const WBFL::Library::ILibrary& prjLib);
 
 // simple class for storing conflict resolutions
 class PSGLIBCLASS ConflictList
 {
 public:
    // add a conflict for the given library 
-   void AddConflict(const libILibrary& rLib,
+   void AddConflict(const WBFL::Library::ILibrary& rLib,
                     const std::_tstring& originalName, const std::_tstring& newName)
    {
       ConflictData dat;
@@ -69,7 +69,7 @@ public:
 
    // return true if a conflict exists for the given library and entry. 
    // Also return the new name and the library name if true
-   bool IsConflict(const libILibrary& rLib, const std::_tstring& entryName, std::_tstring* pNewName) const
+   bool IsConflict(const WBFL::Library::ILibrary& rLib, const std::_tstring& entryName, std::_tstring* pNewName) const
    {
       std::_tstring type_name(rLib.GetDisplayName());
       std::pair <ConflictIterator,ConflictIterator> ip = m_Conflicts.equal_range(type_name);
@@ -107,7 +107,7 @@ enum LibConflictOutcome {Rename, OverWrite};
 bool PSGLIBFUNC WINAPI psglibDealWithLibraryConflicts(ConflictList* pList, psgLibraryManager* pMasterMgr, const psgLibraryManager& projectMgr,bool isImported,bool bForceUpdate);
 bool PSGLIBFUNC WINAPI psglibMakeSaveableCopy(const psgLibraryManager& libMgr, psgLibraryManager* ptempManager);
 
-LibConflictOutcome PSGLIBFUNC WINAPI psglibResolveLibraryEntryConflict(const std::_tstring& strPublisher,const std::_tstring& strConfiguration,const std::_tstring& entryName, const std::_tstring& libName, const std::vector<std::_tstring>& keylists, bool isImported,const std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences,std::_tstring* pNewName);
+LibConflictOutcome PSGLIBFUNC WINAPI psglibResolveLibraryEntryConflict(const std::_tstring& strPublisher, const std::_tstring& strConfiguration, const std::_tstring& entryName, const std::_tstring& libName, const std::vector<std::_tstring>& keylists, bool isImported, const std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bMustRename, std::_tstring* pNewName);
 
 bool PSGLIBFUNC WINAPI psglibImportEntries(IStructuredLoad* pStrLoad,psgLibraryManager* pLibMgr);
 

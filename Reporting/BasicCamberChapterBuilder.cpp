@@ -68,9 +68,9 @@ LPCTSTR CBasicCamberChapterBuilder::GetName() const
    return TEXT("Camber Details");
 }
 
-rptChapter* CBasicCamberChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CBasicCamberChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
@@ -113,12 +113,12 @@ rptChapter* CBasicCamberChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
    return pChapter;
 }
 
-CChapterBuilder* CBasicCamberChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CBasicCamberChapterBuilder::Clone() const
 {
-   return new CBasicCamberChapterBuilder;
+   return std::make_unique<CBasicCamberChapterBuilder>();
 }
 
-void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter,CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey, bool bTempStrands, IEAFDisplayUnits* pDisplayUnits,Uint16 level) const
+void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey, bool bTempStrands, IEAFDisplayUnits* pDisplayUnits,Uint16 level) const
 {
    GET_IFACE2(pBroker,ICamber,pCamber);
 
@@ -196,18 +196,17 @@ void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter,CReportSpecific
    CamberMultipliers cm = pCamber->GetCamberMultipliers(segmentKey);
 
    Float64 precamber = pCamber->GetPrecamber(segmentKey);
-
-   for ( Int16 i = CREEP_MINTIME; i <= CREEP_MAXTIME; i++ )
+   for (const auto i : pgsTypes::enum_range<pgsTypes::CreepTime>(pgsTypes::CreepTime::Min,pgsTypes::CreepTime::Max))
    {
       pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pPara;
 
-      *pPara << (i == CREEP_MINTIME ? _T("Minimum Timing") : _T("Maximum Timing")) << rptNewLine;
+      *pPara << (i == pgsTypes::CreepTime::Min ? _T("Minimum Timing") : _T("Maximum Timing")) << rptNewLine;
 
       pPara = new rptParagraph;
       *pChapter << pPara;
 
-      CREEPCOEFFICIENTDETAILS details[3];
+      std::array<CREEPCOEFFICIENTDETAILS, 3> details;
       details[0] = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToDiaphragm,i);
       details[1] = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpDiaphragmToDeck,i);
       details[2] = pCamber->GetCreepCoefficientDetails(segmentKey,ICamber::cpReleaseToDeck,i);
@@ -239,7 +238,7 @@ void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter,CReportSpecific
       GET_IFACE2(pBroker, IIntervals, pIntervals);
       IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
       Float64 start = pIntervals->GetTime(storageIntervalIdx, pgsTypes::Start);
-      Float64 duration = ::ConvertFromSysUnits(details[0].t, unitMeasure::Day);
+      Float64 duration = WBFL::Units::ConvertFromSysUnits(details[0].t, WBFL::Units::Measure::Day);
       Float64 end = start + duration;
       (*pTable1)(0, 1) << _T("Storage Duration: Start ") << start << _T(" day, End ") << end << _T(" day, Duration ") << duration << _T(" days") << rptNewLine;;
 
@@ -349,7 +348,7 @@ void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter,CReportSpecific
    }
 }
 
-void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter,CReportSpecification* pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,bool bTempStrands,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const
+void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,bool bTempStrands,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const
 {
    GET_IFACE2(pBroker,ICamber,pCamber);
 
@@ -397,27 +396,27 @@ void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter,CReportSpecif
    
    Float64 precamber = pCamber->GetPrecamber(segmentKey);
 
-   for (Int16 i = CREEP_MINTIME; i <= CREEP_MAXTIME; i++)
+   for (auto creep_time : pgsTypes::enum_range<pgsTypes::CreepTime>(pgsTypes::CreepTime::Min,pgsTypes::CreepTime::Max))
    {
       pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pPara;
 
-      *pPara << (i == CREEP_MINTIME ? _T("Minimum Timing") : _T("Maximum Timing")) << rptNewLine;
+      *pPara << (creep_time == pgsTypes::CreepTime::Min ? _T("Minimum Timing") : _T("Maximum Timing")) << rptNewLine;
 
       pPara = new rptParagraph;
       *pChapter << pPara;
 
       std::array<CREEPCOEFFICIENTDETAILS, 6> details;
-      details[0] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpReleaseToDiaphragm, i);
-      details[1] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpReleaseToDeck, i);
-      details[2] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpReleaseToFinal, i);
-      details[3] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpDiaphragmToDeck, i);
-      details[4] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpDiaphragmToFinal, i);
-      details[5] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpDeckToFinal, i);
+      details[0] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpReleaseToDiaphragm, creep_time);
+      details[1] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpReleaseToDeck, creep_time);
+      details[2] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpReleaseToFinal, creep_time);
+      details[3] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpDiaphragmToDeck, creep_time);
+      details[4] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpDiaphragmToFinal, creep_time);
+      details[5] = pCamber->GetCreepCoefficientDetails(segmentKey, ICamber::cpDeckToFinal, creep_time);
 
       CCamberTable tbl;
       rptRcTable* pTable1, * pTable2, * pTable3;
-      tbl.Build_NoDeck(pBroker, segmentKey, bTempStrands, bSidewalk, bShearKey, bLongitudinalJoint, bConstruction, bOverlay, pDisplayUnits, i, cm, &pTable1, &pTable2, &pTable3);
+      tbl.Build_NoDeck(pBroker, segmentKey, bTempStrands, bSidewalk, bShearKey, bLongitudinalJoint, bConstruction, bOverlay, pDisplayUnits, creep_time, cm, &pTable1, &pTable2, &pTable3);
       *pPara << pTable1 << rptNewLine;
 
       // footnotes to release and storage tables
@@ -442,7 +441,7 @@ void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter,CReportSpecif
       GET_IFACE2(pBroker, IIntervals, pIntervals);
       IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
       Float64 start = pIntervals->GetTime(storageIntervalIdx, pgsTypes::Start);
-      Float64 duration = ::ConvertFromSysUnits(details[0].t, unitMeasure::Day);
+      Float64 duration = WBFL::Units::ConvertFromSysUnits(details[0].t, WBFL::Units::Measure::Day);
       Float64 end = start + duration;
       (*pTable1)(0, 1) << _T("Storage Duration: Start ") << start << _T(" day, End ") << end << _T(" day, Duration ") << duration << _T(" days") << rptNewLine;;
 

@@ -145,8 +145,8 @@ COffsetDuctGeometry COffsetDuctGrid::GetData()
       Float64 distFromPrev = _tstof(GetCellValue(row,1));
       Float64 offset       = _tstof(GetCellValue(row,2));
 
-      distFromPrev = ::ConvertToSysUnits(distFromPrev,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
-      offset       = ::ConvertToSysUnits(offset,      pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+      distFromPrev = WBFL::Units::ConvertToSysUnits(distFromPrev,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+      offset       = WBFL::Units::ConvertToSysUnits(offset,      pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
 
       COffsetDuctGeometry::Point point;
       point.distance = distFromPrev;
@@ -160,8 +160,8 @@ COffsetDuctGeometry COffsetDuctGrid::GetData()
 
 void COffsetDuctGrid::SetData(const COffsetDuctGeometry& ductGeometry)
 {
-   CollectionIndexType nPoints = ductGeometry.Points.size();
-   for (CollectionIndexType idx = 0; idx < nPoints; idx++ )
+   IndexType nPoints = ductGeometry.Points.size();
+   for (IndexType idx = 0; idx < nPoints; idx++ )
    {
       COffsetDuctGeometry::Point point = ductGeometry.Points[idx];
 
@@ -179,8 +179,8 @@ void COffsetDuctGrid::AddPoint()
    InsertRows(nRow,1);
 
    COffsetDuctGeometry::Point point;
-   point.distance = ::ConvertToSysUnits(nRow == 1 ? 0.0 : 1.0,unitMeasure::Feet);
-   point.offset = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
+   point.distance = WBFL::Units::ConvertToSysUnits(nRow == 1 ? 0.0 : 1.0,WBFL::Units::Measure::Feet);
+   point.offset = WBFL::Units::ConvertToSysUnits(2.0,WBFL::Units::Measure::Inch);
 
    COffsetDuctDlg* pParent = (COffsetDuctDlg*)GetParent();
    pParent->m_DuctGeometry.Points.push_back(point);

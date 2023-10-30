@@ -66,15 +66,15 @@ void CLongSteelPage::DoDataExchange(CDataExchange* pDX)
    CGirderMainSheet* pDad = (CGirderMainSheet*)GetParent();
    if ( pDX->m_bSaveAndValidate )
    {
-      matRebar::Type type;
-      matRebar::Grade grade;
+      WBFL::Materials::Rebar::Type type;
+      WBFL::Materials::Rebar::Grade grade;
       DDX_RebarMaterial(pDX,IDC_MILD_STEEL_SELECTOR,type,grade);
       pDad->m_Entry.SetLongSteelMaterial(type,grade);
    }
    else
    {
-      matRebar::Type type;
-      matRebar::Grade grade;
+      WBFL::Materials::Rebar::Type type;
+      WBFL::Materials::Rebar::Grade grade;
       pDad->m_Entry.GetLongSteelMaterial(type,grade);
       DDX_RebarMaterial(pDX,IDC_MILD_STEEL_SELECTOR,type,grade);
    }
@@ -169,7 +169,7 @@ void CLongSteelPage::OnAppendRow()
 	m_Grid.Appendrow();
 }
 
-void CLongSteelPage::GetRebarMaterial(matRebar::Type* pType,matRebar::Grade* pGrade)
+void CLongSteelPage::GetRebarMaterial(WBFL::Materials::Rebar::Type* pType,WBFL::Materials::Rebar::Grade* pGrade)
 {
    m_cbRebar.GetMaterial(pType,pGrade);
 }

@@ -40,16 +40,16 @@ DEFINE_GUID(IID_ITransverseReinforcementSpec,
 interface ITransverseReinforcementSpec : IUnknown
 {
    //------------------------------------------------------------------------
-   // Returns the minimum bar size in the confinment zone per 5.9.4.4.2 (pre2017: 5.10.10.2)
-   virtual matRebar::Size GetMinConfinmentBarSize() const = 0;
+   // Returns the minimum bar size in the Confinement zone per 5.9.4.4.2 (pre2017: 5.10.10.2)
+   virtual WBFL::Materials::Rebar::Size GetMinConfinementBarSize() const = 0;
 
    //------------------------------------------------------------------------
-   // Returns the minimum bar area in the confinment zone per 5.9.4.4.2 (pre2017: 5.10.10.2)
-   virtual Float64 GetMaxConfinmentBarSpacing() const = 0;
+   // Returns the minimum bar area in the Confinement zone per 5.9.4.4.2 (pre2017: 5.10.10.2)
+   virtual Float64 GetMaxConfinementBarSpacing() const = 0;
 
    //------------------------------------------------------------------------
-   // Returns the minimum Av/S in the confinment zone per 5.9.4.4.2 (pre2017: 5.10.10.2)
-   virtual Float64 GetMinConfinmentAvS() const = 0;
+   // Returns the minimum Av/S in the Confinement zone per 5.9.4.4.2 (pre2017: 5.10.10.2)
+   virtual Float64 GetMinConfinementAvS() const = 0;
 
    //------------------------------------------------------------------------
    // Returns max bar spacing for vu over and under limits per 5.7.2.6 (pre2017: 5.8.2.7)

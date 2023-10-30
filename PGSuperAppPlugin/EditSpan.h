@@ -31,7 +31,7 @@ public:
 
    virtual ~txnEditSpan();
 
-   virtual txnTransaction* CreateClone() const;
+   virtual std::unique_ptr<CEAFTransaction>CreateClone() const;
    virtual std::_tstring Name() const;
 
 private:

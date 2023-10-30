@@ -32,8 +32,9 @@
 #endif // _MSC_VER > 1000
 
 #include <DManip\DManip.h>
+#include "GirderModelChildFrame.h"
+
 class CPGSDocBase;
-class CGirderModelChildFrame;
 
 class CGirderDropSite : public CCmdTarget  
 {

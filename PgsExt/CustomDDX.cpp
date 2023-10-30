@@ -30,9 +30,9 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-void DDX_Strand(CDataExchange* pDX, UINT nIDC, const matPsStrand** ppStrand)
+void DDX_Strand(CDataExchange* pDX, UINT nIDC, const WBFL::Materials::PsStrand** ppStrand)
 {
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+   const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
    CComboBox* pList = (CComboBox*)pDX->m_pDlgWnd->GetDlgItem(nIDC);
 
    if (pDX->m_bSaveAndValidate)

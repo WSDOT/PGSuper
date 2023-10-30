@@ -56,7 +56,7 @@ void CTxDataExporter::WriteFloatToCell(IndexType hTable, LPCTSTR strRangeName, I
 CString CTxDataExporter::CreateXYZString(Float64 sysVal,Float64 toler)
 {
    Float64 val = ::CeilOffTol(sysVal,toler);
-   val = ConvertFromSysUnits(val,unitMeasure::Inch);
+   val = ConvertFromSysUnits(val,WBFL::Units::Measure::Inch);
 
    CString str;
    str.Format(_T("%.3f"), val);

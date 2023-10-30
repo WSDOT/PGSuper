@@ -30,6 +30,7 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
 #include <IFace\Project.h>
+#include <IFace\ReportOptions.h>
 
 #include <WBFLGenericBridgeTools.h>
 
@@ -69,13 +70,13 @@ LPCTSTR CTimeStepParametersChapterBuilder::GetName() const
    return TEXT("Time Step Parameters");
 }
 
-rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CTimeStepParametersChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
 
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
@@ -83,7 +84,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
-   if ( pLossParams->GetLossMethod() != pgsTypes::TIME_STEP )
+   if ( pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       *pPara << color(Red) << _T("Time Step analysis results not available.") << color(Black) << rptNewLine;
       return pChapter;
@@ -118,7 +119,8 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
    INIT_UV_PROTOTYPE(rptLengthUnitValue,    length,     pDisplayUnits->GetSpanLengthUnit(),      false);
    INIT_UV_PROTOTYPE(rptLengthUnitValue,    deflection, pDisplayUnits->GetDeflectionUnit(),      false);
 
-   location.IncludeSpanAndGirder(true);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    ///////////////////////////////////////////////////////////////////////////////////
    // Time Step Parameters that are independent of POI
@@ -1196,7 +1198,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
       (*pTable2)(row2,col2++) << _T(""); //(*pTable2)(row2,col2++) << moment.SetValue(tsDetails.Mre[TIMESTEP_RE]);
 
       (*pTable2)(row2,col2++) << _T(""); //tsDetails.er;
-      (*pTable2)(row2,col2++) << _T(""); //::ConvertFromSysUnits(tsDetails.rr,pDisplayUnits->GetCurvatureUnit().UnitOfMeasure);
+      (*pTable2)(row2,col2++) << _T(""); //WBFL::Units::ConvertFromSysUnits(tsDetails.rr,pDisplayUnits->GetCurvatureUnit().UnitOfMeasure);
 
       (*pTable2)(row2,col2++) << _T(""); //force.SetValue(tsDetails.Girder.dP);
       (*pTable2)(row2,col2++) << _T(""); //moment.SetValue(tsDetails.Girder.dM);
@@ -1358,7 +1360,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(CReportSpecification* pRptS
    return pChapter;
 }
 
-CChapterBuilder* CTimeStepParametersChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTimeStepParametersChapterBuilder::Clone() const
 {
-   return new CTimeStepParametersChapterBuilder;
+   return std::make_unique<CTimeStepParametersChapterBuilder>();
 }

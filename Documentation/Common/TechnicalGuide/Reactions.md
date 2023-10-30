@@ -14,7 +14,7 @@ Girder line pier reactions are the vertical reactions at the support point for a
 Dead load reactions are the simple span reactions from girder self-weight, slab, slab haunch, and all other dead loads applied before the deck becomes composite with the girders and spans become continuous at continuity diaphragms, and the continuous span reactions for superimposed dead loads such as the railing system and overlay. Dead load reactions are per girder values.
 
 ### Live Load Reactions
-Live load reactions are the reactions from the structural frame model for an entire girder line that maximize the vertical force in a pier. This reaction is typically maximized by the HL-93 load case consisting of 90% of two design trucks spaced at least 50 ft apart and the design lane load. Girder line pier reactions for live load are per lane (they are not reduced with a live load distribution factor) including impact.
+Live load reactions are the reactions from the structural frame model for an entire girder line that maximize the vertical force in a pier. This reaction is typically maximized by the HL-93 load case consisting of 90% of two design trucks spaced at least 50 ft apart and the design lane load. Live load reaction values are per and are distributed as described in @ref tg_lldf. Impact is included as specified in the Project Criteria.
 
 Girder Bearing Reactions
 ======================================
@@ -26,7 +26,7 @@ When there are multiple bearings at the end of the girder, the total bearing rea
 Dead load reactions are the simple span reactions from girder self-weight, slab, slab haunch, railing system, overlay and all the other dead loads occuring during simple-span conditions. Dead load reactions are per girder values.
 
 ### Live Load Reactions
-Live load reactions are the reactions from the structural frame model that maximize the vertical force in a bearing. This reaction is typically maximized by the HL-93 load case consisting of a design truck with the 32 kip axle located directly above the bearing and the design lane load. Live load values are per lane (they are not reduced with a live load distribution factor). Impact is included if it is specified in the Project Criteria.
+Live load reactions are the reactions from the structural frame model that maximize the vertical force in a bearing. This reaction is typically maximized by the HL-93 load case consisting of a design truck with the 32 kip axle located directly above the bearing and the design lane load. Live load reaction values are per and are distributed as described in @ref tg_lldf. Impact is included as specified in the Project Criteria.
 
 Pier Reactions Report
 ======================================

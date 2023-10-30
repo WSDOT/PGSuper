@@ -106,7 +106,7 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
    
    rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols,
                          tableType==PierReactionsTable ?_T("Girder Line Pier Reactions"): _T("Girder Bearing Reactions") );
-   RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,unitmgtForceData>(pBroker,p_table,true,false,bSegments,bConstruction,bDeck,bDeckPanels,bSidewalk,bShearKey,bLongitudinalJoint,bHasOverlay,bFutureOverlay,bDesign,bPedLoading,bPermit,bRating,analysisType,bContinuousBeforeDeckCasting,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
+   RowIndexType row = ConfigureProductLoadTableHeading<rptForceUnitTag,WBFL::Units::ForceData>(pBroker,p_table,true,false,bSegments,bConstruction,bDeck,bDeckPanels,bSidewalk,bShearKey,bLongitudinalJoint,bHasOverlay,bFutureOverlay,bDesign,bPedLoading,bPermit,bRating,analysisType,bContinuousBeforeDeckCasting,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
 
    p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_RIGHT));
    p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
@@ -167,9 +167,12 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
         (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction(erectSegmentIntervalIdx, reactionLocation, pgsTypes::pftGirder,    analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
      }
 
-     if ( reactionDecider.DoReport(diaphragmIntervalIdx) )
+     if ( reactionDecider.DoReport(diaphragmIntervalIdx) && reactionDecider.DoReport(lastCastDeckIntervalIdx))
      {
-        (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction(diaphragmIntervalIdx,     reactionLocation, pgsTypes::pftDiaphragm, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan ) );
+        // for simple spans and expansion piers, pier diaphragm loads are applied in the diaphragm loading interval
+        // for spans made continuous or integral, pier diaphragms are cast with the deck
+        // report the total diaphragm reaction by using the deck casting interval (reactions are cumulative in this function call)
+        (*p_table)(row,col++) << reaction.SetValue(pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftDiaphragm, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan));
      }
      else
      {
@@ -427,7 +430,7 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
                (*p_table)(row,col++) << RPT_NA;
             }
 
-            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
             {
                if ( reactionDecider.DoReport(lastIntervalIdx) )
                {
@@ -843,7 +846,7 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
                (*p_table)(row,col++) << RPT_NA;
             }
 
-            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
             {
                if ( reactionDecider.DoReport(lastIntervalIdx) )
                {
@@ -1099,27 +1102,3 @@ void CProductReactionTable::MakeAssignment(const CProductReactionTable& rOther)
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CProductReactionTable::AssertValid() const
-{
-   return true;
-}
-
-void CProductReactionTable::Dump(dbgDumpContext& os) const
-{
-   os << _T("Dump for CProductReactionTable") << endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CProductReactionTable::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("CProductReactionTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CProductReactionTable");
-
-   TESTME_EPILOG("CProductReactionTable");
-}
-#endif // _UNITTEST

@@ -31,7 +31,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CCrackedSectionReportSpecification::CCrackedSectionReportSpecification(LPCTSTR strReportName,IBroker* pBroker,const pgsPointOfInterest& poi,bool bPositiveMoment) :
+CCrackedSectionReportSpecification::CCrackedSectionReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,const pgsPointOfInterest& poi,bool bPositiveMoment) :
    CPoiReportSpecification(strReportName,pBroker,poi)
 {
    m_bPositiveMoment = bPositiveMoment;

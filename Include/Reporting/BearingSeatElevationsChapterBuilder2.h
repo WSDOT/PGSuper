@@ -36,14 +36,14 @@ public:
    CBearingSeatElevationsChapterBuilderBase(TableType type, bool bSelect = true);
    ~CBearingSeatElevationsChapterBuilderBase(void);
 
-   virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const override;
+   virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
 
 private:
-   rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildTable(const CString& strLabel, PierIndexType pierIdx, pgsTypes::PierFaceType face, 
-                           IEAFDisplayUnits* pDisplayUnits, IBridge* pBridge, IBridgeDescription* pIBridgeDesc) const;
+   rptRcTable* BuildTable(const CString& strLabel, PierIndexType pierIdx, pgsTypes::PierFaceType face, 
+                           IEAFDisplayUnits* pDisplayUnits, IBridge* pBridge, IBridgeDescription* pIBridgeDesc, GirderIndexType girderIndex) const;
 
-   rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildGirderEdgeTable(const CString& strLabel, PierIndexType pierIdx, pgsTypes::PierFaceType face, 
-                           IEAFDisplayUnits* pDisplayUnits, IBridge* pBridge, IBridgeDescription* pIBridgeDesc) const;
+   rptRcTable* BuildGirderEdgeTable(const CString& strLabel, PierIndexType pierIdx, pgsTypes::PierFaceType face, 
+                           IEAFDisplayUnits* pDisplayUnits, IBridge* pBridge, IBridgeDescription* pIBridgeDesc,GirderIndexType girderIndex) const;
 
    CBearingSeatElevationsChapterBuilderBase();
    TableType m_TableType;
@@ -58,8 +58,8 @@ public:
    CBearingSeatElevationsChapterBuilder2(bool bSelect = true);
    ~CBearingSeatElevationsChapterBuilder2(void);
 
-   virtual LPCTSTR GetName() const;
-   virtual CChapterBuilder* Clone() const;
+   virtual LPCTSTR GetName() const override;
+   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 };
 
 // Specialized class for bearing deduct chapter
@@ -71,6 +71,6 @@ public:
    CBearingDeductChapterBuilder(bool bSelect = true);
    ~CBearingDeductChapterBuilder(void);
 
-   virtual LPCTSTR GetName() const;
-   virtual CChapterBuilder* Clone() const;
+   virtual LPCTSTR GetName() const override;
+   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 };

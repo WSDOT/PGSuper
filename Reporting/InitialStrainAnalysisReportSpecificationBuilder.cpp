@@ -44,7 +44,7 @@ CInitialStrainAnalysisReportSpecificationBuilder::~CInitialStrainAnalysisReportS
 {
 }
 
-std::shared_ptr<CReportSpecification> CInitialStrainAnalysisReportSpecificationBuilder::CreateReportSpec(const CReportDescription& rptDesc,std::shared_ptr<CReportSpecification>& pOldRptSpec)
+std::shared_ptr<WBFL::Reporting::ReportSpecification> CInitialStrainAnalysisReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -76,14 +76,14 @@ std::shared_ptr<CReportSpecification> CInitialStrainAnalysisReportSpecificationB
 
    if ( dlg.DoModal() == IDOK )
    {
-      std::shared_ptr<CReportSpecification> pNewRptSpec;
+      std::shared_ptr<WBFL::Reporting::ReportSpecification> pNewRptSpec;
       if(pOldGRptSpec)
       {
          std::shared_ptr<CInitialStrainAnalysisReportSpecification> pNewGRptSpec(std::make_shared<CInitialStrainAnalysisReportSpecification>(*pOldGRptSpec));
 
          pNewGRptSpec->SetOptions(dlg.GetGirderKey(),dlg.GetInterval());
 
-         pNewRptSpec = std::static_pointer_cast<CReportSpecification>(pNewGRptSpec);
+         pNewRptSpec = std::static_pointer_cast<WBFL::Reporting::ReportSpecification>(pNewGRptSpec);
       }
       else
       {
@@ -98,8 +98,8 @@ std::shared_ptr<CReportSpecification> CInitialStrainAnalysisReportSpecificationB
    return nullptr;
 }
 
-std::shared_ptr<CReportSpecification> CInitialStrainAnalysisReportSpecificationBuilder::CreateDefaultReportSpec(const CReportDescription& rptDesc)
+std::shared_ptr<WBFL::Reporting::ReportSpecification> CInitialStrainAnalysisReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const
 {
    // always prompt
-   return CreateReportSpec(rptDesc,std::shared_ptr<CReportSpecification>());
+   return CreateReportSpec(rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification>());
 }

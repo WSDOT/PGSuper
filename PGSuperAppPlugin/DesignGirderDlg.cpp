@@ -46,22 +46,19 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CDesignGirderDlg dialog
 
-
-CDesignGirderDlg::CDesignGirderDlg(const CGirderKey& girderKey, IBroker* pBroker, arSlabOffsetDesignType haunchDesignType, CWnd* pParent /*=nullptr*/)
+CDesignGirderDlg::CDesignGirderDlg(const CGirderKey& girderKey, IBroker* pBroker, arSlabOffsetDesignType haunchDesignRequest, CWnd* pParent /*=nullptr*/)
 	: CDialog(CDesignGirderDlg::IDD, pParent),
    m_GirderKey(girderKey),
-   m_DesignRadioNum(0)
+   m_DesignRadioNum(0),
+   m_HaunchDesignRequest(haunchDesignRequest)
 {
    m_pBroker = pBroker;
 
 	//{{AFX_DATA_INIT(CDesignGirderDlg)
    //}}AFX_DATA_INIT
 
-   m_HaunchDesignType = haunchDesignType;
-
    m_strToolTip = "Eugène Freyssinet\r\nFather of Prestressed Concrete";
 }
-
 
 void CDesignGirderDlg::DoDataExchange(CDataExchange* pDX)
 {
@@ -120,16 +117,23 @@ END_MESSAGE_MAP()
 
 BOOL CDesignGirderDlg::OnInitDialog() 
 {
-   // set up default design options
-   GET_IFACE(IBridge, pBridge);
-   GET_IFACE(ISpecification, pSpec);
-   m_bEnableHaunchDesign = pSpec->IsSlabOffsetDesignEnabled() && IsStructuralDeck(pBridge->GetDeckType()) ? TRUE : FALSE;
+   // set up design options
+   // Haunch design not possible for some cases. Put preserve haunch option in disabled control for this case
+   GET_IFACE(ISpecification,pSpec);
+   m_bCanEnableHaunchDesign = pSpec->DesignSlabHaunch();
+
+   // Load design options from registery from previous runs. We may disable design if it's not possible.
+   bool bDesignFlexure;
+   arSlabOffsetDesignType haunchDesignType;
+   arConcreteDesignType concreteDesignType;
+   arShearDesignType shearDesignType;
+   LoadSettings(m_HaunchDesignRequest, bDesignFlexure,haunchDesignType,concreteDesignType,shearDesignType);
 
    // Load up the combo boxes with span and girder information
-
    CComboBox* pSpanBox = (CComboBox*)GetDlgItem( IDC_SPAN );
    CComboBox* pGdrBox  = (CComboBox*)GetDlgItem( IDC_GIRDER );
 
+   GET_IFACE(IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
@@ -144,7 +148,7 @@ BOOL CDesignGirderDlg::OnInitDialog()
    CComboBox* pcbDesignHaunch = (CComboBox*)GetDlgItem( IDC_DESIGN_HAUNCH );
    pcbDesignHaunch->AddString(_T("Preserve haunch geometry"));
    pcbDesignHaunch->AddString(_T("Design haunch geometry"));
-   pcbDesignHaunch->EnableWindow(m_bEnableHaunchDesign);
+   pcbDesignHaunch->EnableWindow(m_bCanEnableHaunchDesign);
 
    CComboBox* pcbDesignConcrete = (CComboBox*)GetDlgItem(IDC_DESIGN_CONCRETE_STRENGTH);
    pcbDesignConcrete->AddString(_T("Design for minimum concrete strength"));
@@ -155,16 +159,10 @@ BOOL CDesignGirderDlg::OnInitDialog()
    EnableToolTips(TRUE);
 
    // Initialize controls
-   bool bDesignFlexure;
-   arSlabOffsetDesignType haunchDesignType;
-   arConcreteDesignType concreteDesignType;
-   arShearDesignType shearDesignType;
-   LoadSettings(bDesignFlexure, haunchDesignType, concreteDesignType, shearDesignType);
-   
    CheckDlgButton(IDC_DESIGN_FLEXURE, bDesignFlexure ? BST_CHECKED : BST_UNCHECKED);
    
    CComboBox* pcbHaunch = (CComboBox*)GetDlgItem(IDC_DESIGN_HAUNCH);
-   pcbHaunch->SetCurSel(m_HaunchDesignType == sodDefault ? (haunchDesignType == sodPreserveHaunch ? 0 : 1) : m_HaunchDesignType);
+   pcbHaunch->SetCurSel(haunchDesignType == sodPreserveHaunch ? 0 : 1);
 
    CComboBox* pcbConcrete = (CComboBox*)GetDlgItem(IDC_DESIGN_CONCRETE_STRENGTH);
    pcbConcrete->SetCurSel(concreteDesignType == cdDesignForMinStrength ? 0 : 1);
@@ -193,7 +191,7 @@ void CDesignGirderDlg::OnDestroy()
    SaveSettings();
 }
 
-void CDesignGirderDlg::LoadSettings(bool& bDesignFlexure, arSlabOffsetDesignType& haunchDesignType, arConcreteDesignType& concreteDesignType, arShearDesignType& shearDesignType)
+void CDesignGirderDlg::LoadSettings(arSlabOffsetDesignType haunchDesignRequest, bool& bDesignFlexure, arSlabOffsetDesignType& haunchDesignType, arConcreteDesignType& concreteDesignType, arShearDesignType& shearDesignType)
 {
    // loads last settings from the registry
    CEAFDocument* pDoc = EAFGetDocument();
@@ -215,6 +213,20 @@ void CDesignGirderDlg::LoadSettings(bool& bDesignFlexure, arSlabOffsetDesignType
    CString strDefaultHaunchDesign = pApp->GetLocalMachineString(_T("Settings"), _T("HaunchDesign"), _T("On"));
    CString strHaunchDesign = pApp->GetProfileStringW(_T("Settings"), _T("HaunchDesign"), strDefaultHaunchDesign);
    haunchDesignType = (strHaunchDesign.CompareNoCase(_T("On")) == 0) ? sodDesignHaunch : sodPreserveHaunch;
+
+   // We can't do haunch design if library disallows, or we have no deck. Nip this in the bud
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
+   if (!pSpec->DesignSlabHaunch())
+   {
+      haunchDesignType = sodPreserveHaunch;
+   }
+   else if (haunchDesignRequest == sodDesignHaunch)
+   {
+      haunchDesignType = sodDesignHaunch;
+   }
 
    CString strDefaultDesignWithFixedConcreteStrength = pApp->GetLocalMachineString(_T("Settings"), _T("PreserveConcreteStrength"), _T("Off"));
    CString strDesignWithFixedConcreteStrength = pApp->GetProfileString(_T("Settings"), _T("PreserveConcreteStrength"), strDefaultDesignWithFixedConcreteStrength);
@@ -264,7 +276,7 @@ BOOL CDesignGirderDlg::DesignForFlexure()
 BOOL CDesignGirderDlg::DesignHaunch()
 {
    CComboBox* pcbDesignHaunch = (CComboBox*)GetDlgItem(IDC_DESIGN_HAUNCH);
-   if (m_bEnableHaunchDesign)
+   if (m_bCanEnableHaunchDesign)
    {
       return pcbDesignHaunch->GetCurSel() == 0 ? FALSE : TRUE;
    }
@@ -392,7 +404,7 @@ void CDesignGirderDlg::OnBnClickedRadio()
 
 void CDesignGirderDlg::UpdateDesignHaunchCtrl()
 {
-   if (m_bEnableHaunchDesign)
+   if (m_bCanEnableHaunchDesign)
    {
       CWnd* pWnd = GetDlgItem( IDC_DESIGN_HAUNCH );
       pWnd->EnableWindow(IsDlgButtonChecked(IDC_DESIGN_FLEXURE) == BST_CHECKED);

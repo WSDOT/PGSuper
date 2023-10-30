@@ -52,7 +52,7 @@ STDMETHODIMP CWSDOTAgentImp::SetBroker(IBroker* pBroker)
    EAF_AGENT_SET_BROKER(pBroker);
 
    CComQIPtr<ICLSIDMap> clsidMap(pBroker);
-   clsidMap->AddCLSID(_T("{338AD645-BAF2-41DC-964E-A9DFC8123253}"),_T("{B1A19633-8880-40BC-A3C9-DDF47F7F1844}"));
+   clsidMap->AddCLSID(CComBSTR("{338AD645-BAF2-41DC-964E-A9DFC8123253}"),CComBSTR("{B1A19633-8880-40BC-A3C9-DDF47F7F1844}"));
 
    return S_OK;
 }
@@ -85,33 +85,33 @@ STDMETHODIMP CWSDOTAgentImp::Init2()
    //
    // Create report spec builders
    //
-   std::shared_ptr<CReportSpecificationBuilder> pGirderRptSpecBuilder( std::make_shared<CGirderReportSpecificationBuilder>(m_pBroker,CGirderKey(0,0)) );
-   std::shared_ptr<CReportSpecificationBuilder> pGirderLineRptSpecBuilder( std::make_shared<CGirderLineReportSpecificationBuilder>(m_pBroker) );
+   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pGirderRptSpecBuilder( std::make_shared<CGirderReportSpecificationBuilder>(m_pBroker,CGirderKey(0,0)) );
+   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pGirderLineRptSpecBuilder( std::make_shared<CGirderLineReportSpecificationBuilder>(m_pBroker) );
 
    GET_IFACE(IDocumentType,pDocType);
    if ( pDocType->IsPGSuperDocument() )
    {
-      std::shared_ptr<CReportSpecificationBuilder> pMultiViewRptSpecBuilder( std::make_shared<CMultiViewSpanGirderReportSpecificationBuilder>(m_pBroker) );
+      std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pMultiViewRptSpecBuilder( std::make_shared<CMultiViewSpanGirderReportSpecificationBuilder>(m_pBroker) );
 
       // WSDOT Girder Schedule
-      std::unique_ptr<CReportBuilder> pRptBuilder(std::make_unique<CReportBuilder>(_T("WSDOT Girder Schedule")));
+      std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("WSDOT Girder Schedule")));
 #if defined _DEBUG || defined _BETA_VERSION
       pRptBuilder->IncludeTimingChapter();
 #endif
-      pRptBuilder->AddTitlePageBuilder( std::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName())) );
+      pRptBuilder->AddTitlePageBuilder( std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(std::make_shared<CPGSuperTitlePageBuilder>(m_pBroker,pRptBuilder->GetName())) );
       pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
-      pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CGirderScheduleChapterBuilder) );
-      pRptMgr->AddReportBuilder( pRptBuilder.release() );
+      pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CGirderScheduleChapterBuilder>()) );
+      pRptMgr->AddReportBuilder( pRptBuilder );
    }
 
    // WSDOT Load Rating Summary
-   std::unique_ptr<CReportBuilder> pRptBuilder(std::make_unique<CReportBuilder>(_T("WSDOT Load Rating Summary")));
+   std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("WSDOT Load Rating Summary")));
 #if defined _DEBUG || defined _BETA_VERSION
    pRptBuilder->IncludeTimingChapter();
 #endif
    pRptBuilder->SetReportSpecificationBuilder( pGirderLineRptSpecBuilder );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLoadRatingSummaryChapterBuilder) );
-   pRptMgr->AddReportBuilder( pRptBuilder.release() );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CLoadRatingSummaryChapterBuilder>()) );
+   pRptMgr->AddReportBuilder( pRptBuilder );
 
    return S_OK;
 }

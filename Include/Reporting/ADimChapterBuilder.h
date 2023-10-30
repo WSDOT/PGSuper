@@ -43,6 +43,8 @@ LOG
    rab : 11.03.1998 : Created file
 *****************************************************************************/
 
+class SpecLibraryEntry;
+
 class REPORTINGCLASS CADimChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
@@ -53,14 +55,14 @@ public:
    // GROUP: OPERATIONS
 
    //------------------------------------------------------------------------
-   virtual LPCTSTR GetName() const;
+   virtual LPCTSTR GetName() const override;
    
 
    //------------------------------------------------------------------------
-   virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const;
+   virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
 
    //------------------------------------------------------------------------
-   virtual CChapterBuilder* Clone() const;
+   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY
@@ -70,6 +72,9 @@ protected:
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
+   void BuildAdimContent(rptChapter* pChapter,const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level, IBroker* pBroker,const CGirderKey& girderKey,const SpecLibraryEntry* pSpecEntry) const;
+   void BuildDirectHaunchElevationContent(rptChapter* pChapter,const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec, Uint16 level) const;
+
    // GROUP: ACCESS
    // GROUP: INQUIRY
 

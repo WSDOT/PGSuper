@@ -187,7 +187,7 @@ void CRatingOptionsDlg::DestroyExtensionPages()
    m_ExtensionPages.clear();
 }
 
-txnTransaction* CRatingOptionsDlg::GetExtensionPageTransaction()
+std::unique_ptr<CEAFTransaction> CRatingOptionsDlg::GetExtensionPageTransaction()
 {
    if ( 0 < m_Macro.GetTxnCount() )
    {
@@ -207,10 +207,10 @@ void CRatingOptionsDlg::NotifyExtensionPages()
    {
       IEditLoadRatingOptionsCallback* pCallback = pageIter->pCallback;
       CPropertyPage* pPage = pageIter->pPage;
-      txnTransaction* pTxn = pCallback->OnOK(pPage,this);
+      auto pTxn = pCallback->OnOK(pPage,this);
       if ( pTxn )
       {
-         m_Macro.AddTransaction(pTxn);
+         m_Macro.AddTransaction(std::move(pTxn));
       }
    }
 }

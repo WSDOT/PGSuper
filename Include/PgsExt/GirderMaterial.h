@@ -27,9 +27,6 @@
 #include <WBFLCore.h>
 #include <StrData.h>
 
-class matPsStrand;
-
-
 /*****************************************************************************
 CLASS 
    CGirderMaterial

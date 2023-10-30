@@ -107,7 +107,7 @@ STDMETHODIMP CTxDOTAgentImp::SetBroker(IBroker* pBroker)
    EAF_AGENT_SET_BROKER(pBroker);
 
    CComQIPtr<ICLSIDMap> clsidMap(pBroker);
-   clsidMap->AddCLSID(_T("{360F7694-BE5B-4E97-864F-EF3575689C6E}"),_T("{3700B253-8489-457C-8A6D-D174F95C457C}"));
+   clsidMap->AddCLSID(CComBSTR("{360F7694-BE5B-4E97-864F-EF3575689C6E}"),CComBSTR("{3700B253-8489-457C-8A6D-D174F95C457C}"));
 
    return S_OK;
 }
@@ -139,95 +139,95 @@ STDMETHODIMP CTxDOTAgentImp::Init2()
    // Create report spec builders
    //
 
-   std::shared_ptr<CReportSpecificationBuilder> pGirderRptSpecBuilder( std::make_shared<CGirderReportSpecificationBuilder>(m_pBroker,CGirderKey(0,0)) );
-   std::shared_ptr<CReportSpecificationBuilder> pMultiGirderRptSpecBuilder( std::make_shared<CMultiGirderReportSpecificationBuilder>(m_pBroker) );
-   std::shared_ptr<CReportSpecificationBuilder> pMultiViewRptSpecBuilder( std::make_shared<CMultiViewSpanGirderReportSpecificationBuilder>(m_pBroker) );
+   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pGirderRptSpecBuilder( std::make_shared<CGirderReportSpecificationBuilder>(m_pBroker,CGirderKey(0,0)) );
+   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pMultiGirderRptSpecBuilder( std::make_shared<CMultiGirderReportSpecificationBuilder>(m_pBroker) );
+   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pMultiViewRptSpecBuilder( std::make_shared<CMultiViewSpanGirderReportSpecificationBuilder>(m_pBroker) );
 
 
    // Texas Girder Schedule - use compacted title page
-   std::unique_ptr<CReportBuilder> pRptBuilder(std::make_unique<CReportBuilder>(_T("TxDOT Girder Schedule Report")));
+   std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("TxDOT Girder Schedule Report")));
 #if defined _DEBUG || defined _BETA_VERSION
    pRptBuilder->IncludeTimingChapter();
 #endif
-   pRptBuilder->AddTitlePageBuilder( std::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName(),false,false)) );
+   pRptBuilder->AddTitlePageBuilder( std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(std::make_shared<CPGSuperTitlePageBuilder>(m_pBroker,pRptBuilder->GetName(),false,false)) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiGirderRptSpecBuilder );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasIBNSChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasCamberAndDeflectionChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasHaunchChapterBuilder) );
-   pRptMgr->AddReportBuilder( pRptBuilder.release() );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTexasIBNSChapterBuilder>()) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTexasCamberAndDeflectionChapterBuilder>()) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTexasHaunchChapterBuilder>()) );
+   pRptMgr->AddReportBuilder( pRptBuilder );
 
    // Texas Summary report - short
-   pRptBuilder = std::make_unique<CReportBuilder>(_T("TxDOT Summary Report (Short Form)"));
+   pRptBuilder = std::make_shared<WBFL::Reporting::ReportBuilder>(_T("TxDOT Summary Report (Short Form)"));
 #if defined _DEBUG || defined _BETA_VERSION
    pRptBuilder->IncludeTimingChapter();
 #endif
-   pRptBuilder->AddTitlePageBuilder( std::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName(), false,false)) );
+   pRptBuilder->AddTitlePageBuilder( std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(std::make_shared<CPGSuperTitlePageBuilder>(m_pBroker,pRptBuilder->GetName(), false,false)) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CSpecCheckSummaryChapterBuilder(true)) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasGirderSummaryChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLoadingDetailsChapterBuilder(true,true,false,true)) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLiveLoadDetailsChapterBuilder(true,false)) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CUserDefinedLoadsChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasCamberAndDeflectionChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasHaunchChapterBuilder) );
-//   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CBearingDeductChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasLoadRatingSummaryChapterBuilder(false)) );
-   pRptMgr->AddReportBuilder( pRptBuilder.release() );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CSpecCheckSummaryChapterBuilder>(true)) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTexasGirderSummaryChapterBuilder>()) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CLoadingDetailsChapterBuilder>(true,true,false,true)) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CLiveLoadDetailsChapterBuilder>(true,false)) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CUserDefinedLoadsChapterBuilder>()) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTexasCamberAndDeflectionChapterBuilder>()) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTexasHaunchChapterBuilder>()) );
+//   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingDeductChapterBuilder>()) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTexasLoadRatingSummaryChapterBuilder>(false)) );
+   pRptMgr->AddReportBuilder( pRptBuilder );
 
    // Texas Summary report - long form
-   pRptBuilder = std::make_unique<CReportBuilder>(_T("TxDOT Summary Report (Long Form)"));
+   pRptBuilder = std::make_shared<WBFL::Reporting::ReportBuilder>(_T("TxDOT Summary Report (Long Form)"));
 #if defined _DEBUG || defined _BETA_VERSION
    pRptBuilder->IncludeTimingChapter();
 #endif
-   pRptBuilder->AddTitlePageBuilder( std::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName(),true,false)) );
+   pRptBuilder->AddTitlePageBuilder( std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(std::make_shared<CPGSuperTitlePageBuilder>(m_pBroker,pRptBuilder->GetName(),true,false)) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CSpecCheckSummaryChapterBuilder(true)) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasGirderSummaryChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLoadingDetailsChapterBuilder(true,true,false,true)) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLiveLoadDetailsChapterBuilder(true,false)) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CUserDefinedLoadsChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasCamberAndDeflectionChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasHaunchChapterBuilder) );
-//   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CBearingDeductChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasPrestressSummaryChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasStressChecksChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasMomentCapacityChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasShearChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasLoadRatingSummaryChapterBuilder(false)) );
-   pRptMgr->AddReportBuilder( pRptBuilder.release() );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CSpecCheckSummaryChapterBuilder>(true)) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTexasGirderSummaryChapterBuilder>()) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CLoadingDetailsChapterBuilder>(true,true,false,true)) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CLiveLoadDetailsChapterBuilder>(true,false)) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CUserDefinedLoadsChapterBuilder>()) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTexasCamberAndDeflectionChapterBuilder>()) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTexasHaunchChapterBuilder>()) );
+//   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingDeductChapterBuilder>()) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTexasPrestressSummaryChapterBuilder>()) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTexasStressChecksChapterBuilder>()) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTexasMomentCapacityChapterBuilder>()) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTexasShearChapterBuilder>()) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTexasLoadRatingSummaryChapterBuilder>(false)) );
+   pRptMgr->AddReportBuilder( pRptBuilder );
 
    // TOGA Long Form
-   pRptBuilder = std::make_unique<CReportBuilder>(_T("TxDOT Optional Girder Analysis (TOGA) - Long Report"),true);
+   pRptBuilder = std::make_shared<WBFL::Reporting::ReportBuilder>(_T("TxDOT Optional Girder Analysis (TOGA) - Long Report"),true);
 #if defined _DEBUG || defined _BETA_VERSION
    pRptBuilder->IncludeTimingChapter();
 #endif
-   pRptBuilder->AddTitlePageBuilder( std::shared_ptr<CTitlePageBuilder>(new CTOGATitlePageBuilder(m_pBroker,pRptBuilder->GetName(),false)) );
+   pRptBuilder->AddTitlePageBuilder( std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(std::make_shared<CTOGATitlePageBuilder>(m_pBroker,pRptBuilder->GetName(),false)) );
    pRptBuilder->SetReportSpecificationBuilder( pGirderRptSpecBuilder );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTogaSpecCheckSummaryChapterBuilder(true)) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTxDOTOptionalDesignSummaryChapterBuilder()) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTogaLongSectionChapterBuilder()) );
-//   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CSectPropChapterBuilder()) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CSectPropChapterBuilder(true,true)) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CLoadingDetailsChapterBuilder(true,true,false,true)) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CUserDefinedLoadsChapterBuilder(true,true)) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasPrestressSummaryChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTogaCamberAndDeflectionChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasHaunchChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTogaStressChecksChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasMomentCapacityChapterBuilder) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTexasShearChapterBuilder) );
-   pRptMgr->AddReportBuilder( pRptBuilder.release() );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTogaSpecCheckSummaryChapterBuilder>(true)) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTxDOTOptionalDesignSummaryChapterBuilder>()) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTogaLongSectionChapterBuilder>()) );
+//   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CSectPropChapterBuilder>()) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CSectPropChapterBuilder>(true,true)) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CLoadingDetailsChapterBuilder>(true,true,false,true)) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CUserDefinedLoadsChapterBuilder>(true,true)) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTexasPrestressSummaryChapterBuilder>()) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTogaCamberAndDeflectionChapterBuilder>()) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTexasHaunchChapterBuilder>()) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTogaStressChecksChapterBuilder>()) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTexasMomentCapacityChapterBuilder>()) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTexasShearChapterBuilder>()) );
+   pRptMgr->AddReportBuilder( pRptBuilder );
 
    // TOGA Short Form
-   pRptBuilder = std::make_unique<CReportBuilder>(_T("TxDOT Optional Girder Analysis (TOGA) - Short Report"),true);
+   pRptBuilder = std::make_shared<WBFL::Reporting::ReportBuilder>(_T("TxDOT Optional Girder Analysis (TOGA) - Short Report"),true);
 #if defined _DEBUG || defined _BETA_VERSION
    pRptBuilder->IncludeTimingChapter();
 #endif
-   pRptBuilder->AddTitlePageBuilder( std::shared_ptr<CTitlePageBuilder>(new CTOGATitlePageBuilder(m_pBroker,pRptBuilder->GetName(),false)) );
+   pRptBuilder->AddTitlePageBuilder( std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(std::make_shared<CTOGATitlePageBuilder>(m_pBroker,pRptBuilder->GetName(),false)) );
    pRptBuilder->SetReportSpecificationBuilder( pGirderRptSpecBuilder );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTogaSpecCheckSummaryChapterBuilder(true)) );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CTxDOTOptionalDesignSummaryChapterBuilder()) );
-   pRptMgr->AddReportBuilder( pRptBuilder.release() );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTogaSpecCheckSummaryChapterBuilder>(true)) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTxDOTOptionalDesignSummaryChapterBuilder>()) );
+   pRptMgr->AddReportBuilder( pRptBuilder );
 
    return S_OK;
 }
@@ -290,10 +290,9 @@ void CTxDOTAgentImp::ProcessTOGAReport(const CTxDOTCommandLineInfo& rCmdInfo)
          ::AfxMessageBox(msg);
       }
    }
-   catch(const sysXBase& e)
+   catch(const WBFL::System::XBase& e)
    {
-      std::_tstring msg;
-      e.GetErrorMessage(&msg);
+      std::_tstring msg = e.GetErrorMessage();
       std::_tofstream os;
       os.open(errfile);
       os <<_T("Error running TOGA report for input file: ")<<rCmdInfo.m_strFileName<<std::endl<< msg;

@@ -127,7 +127,7 @@ void CSpecCreepPage::OnChangeHaunch()
 {
    CComboBox* pBox =(CComboBox*)GetDlgItem(IDC_HAUNCH_COMP_CB);
    int idxl = pBox->GetCurSel();
-   BOOL enablel = idxl==(int)pgsTypes::hlcAccountForCamber;
+   BOOL enablel = idxl==(int)pgsTypes::hlcDetailedAnalysis;
 
    GetDlgItem(IDC_HAUNCH_FACTOR)->EnableWindow(enablel);
    GetDlgItem(IDC_HAUNCH_FACTOR1)->EnableWindow(enablel);
@@ -135,7 +135,7 @@ void CSpecCreepPage::OnChangeHaunch()
 
    pBox =(CComboBox*)GetDlgItem(IDC_HAUNCH_COMP_PROPS_CB);
    int idxp = pBox->GetCurSel();
-   BOOL enablep = enablel || idxp==(int)pgsTypes::hspVariableParabolic;
+   BOOL enablep = enablel || idxp==(int)pgsTypes::hspDetailedDescription;
 
    GetDlgItem(IDC_HAUNCH_TOLER_STATIC)->EnableWindow(enablep);
    GetDlgItem(IDC_HAUNCH_TOLER_UNIT)->EnableWindow(enablep);

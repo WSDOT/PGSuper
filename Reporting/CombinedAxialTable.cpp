@@ -35,6 +35,7 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\Intervals.h>
+#include <IFace\ReportOptions.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -116,8 +117,8 @@ void CCombinedAxialTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptForceUnitValue, axial, pDisplayUnits->GetGeneralForceUnit(), false );
 
-   GET_IFACE2(pBroker, IDocumentType, pDocType);
-   location.IncludeSpanAndGirder(pDocType->IsPGSpliceDocument() || girderKey.groupIndex == ALL_GROUPS);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -137,9 +138,9 @@ void CCombinedAxialTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
 
-   bool bTimeStepMethod = pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP;
+   bool bTimeStepMethod = pSpecEntry->GetPrestressLossCriteria().LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP;
 
-   RowIndexType row = CreateCombinedDeadLoadingTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table,pBroker,_T("Axial"),false,bRating,doLimitState,
+   RowIndexType row = CreateCombinedDeadLoadingTableHeading<rptForceUnitTag,WBFL::Units::ForceData>(&p_table,pBroker,_T("Axial"),false,bRating,doLimitState,
                                                                                     analysisType,pDisplayUnits,pDisplayUnits->GetGeneralForceUnit());
    *p << p_table;
 
@@ -355,7 +356,8 @@ void CCombinedAxialTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptForceUnitValue, axial, pDisplayUnits->GetGeneralForceUnit(), false );
 
-   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
@@ -379,7 +381,7 @@ void CCombinedAxialTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
    *pChapter << p;
 
    rptRcTable* p_table;
-   RowIndexType Nhrows = CreateCombinedLiveLoadingTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table,strLabel,false,bDesign,bPermit,bPedLoading,bRating,false,true,
+   RowIndexType Nhrows = CreateCombinedLiveLoadingTableHeading<rptForceUnitTag,WBFL::Units::ForceData>(&p_table,strLabel,false,bDesign,bPermit,bPedLoading,bRating,false,true,
                            analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetGeneralForceUnit());
 
    RowIndexType row = Nhrows;
@@ -432,7 +434,7 @@ void CCombinedAxialTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
          pForces2->GetCombinedLiveLoadAxial( liveLoadIntervalIdx, pgsTypes::lltDesign, vPoi, maxBAT, &dummy, &maxDesignLL );
          pForces2->GetCombinedLiveLoadAxial( liveLoadIntervalIdx, pgsTypes::lltDesign, vPoi, minBAT, &minDesignLL, &dummy );
 
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
          {
             pForces2->GetCombinedLiveLoadAxial( liveLoadIntervalIdx, pgsTypes::lltFatigue, vPoi, maxBAT, &dummy, &maxFatigueLL );
             pForces2->GetCombinedLiveLoadAxial( liveLoadIntervalIdx, pgsTypes::lltFatigue, vPoi, minBAT, &minFatigueLL, &dummy );
@@ -512,7 +514,7 @@ void CCombinedAxialTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
             (*p_table)(row,col++) << axial.SetValue( maxDesignLL[index] );
             (*p_table)(row,col++) << axial.SetValue( minDesignLL[index] );
 
-            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
             {
                (*p_table)(row,col++) << axial.SetValue( maxFatigueLL[index] );
                (*p_table)(row,col++) << axial.SetValue( minFatigueLL[index] );
@@ -587,7 +589,7 @@ void CCombinedAxialTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
 
          SumPedAndLiveLoad(DesignPedLoad, minDesignLL, maxDesignLL, minPedestrianLL, maxPedestrianLL);
 
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
          {
             SumPedAndLiveLoad(FatiguePedLoad, minFatigueLL, maxFatigueLL, minPedestrianLL, maxPedestrianLL);
          }
@@ -608,7 +610,7 @@ void CCombinedAxialTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
             (*p_table)(row2,col++) << axial.SetValue( maxDesignLL[index] );
             (*p_table)(row2,col++) << axial.SetValue( minDesignLL[index] );
 
-            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
             {
                (*p_table)(row2,col++) << axial.SetValue( maxFatigueLL[index] );
                (*p_table)(row2,col++) << axial.SetValue( minFatigueLL[index] );
@@ -629,7 +631,7 @@ void CCombinedAxialTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
             int lnum=1;
             *pNote<< lnum++ << PedestrianFootnote(DesignPedLoad) << rptNewLine;
 
-            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
             {
                *pNote << lnum++ << PedestrianFootnote(FatiguePedLoad) << rptNewLine;
             }
@@ -662,7 +664,8 @@ void CCombinedAxialTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptForceUnitValue, axial, pDisplayUnits->GetGeneralForceUnit(), false );
 
-   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -684,7 +687,7 @@ void CCombinedAxialTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
    bool bPedLoading = pProductLoads->HasPedestrianLoad(girderKey);
 
    rptRcTable * p_table2;
-   RowIndexType row2 = CreateLimitStateTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table2,_T("Axial, Pu"),false,bDesign,bPermit,bRating,false,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetGeneralForceUnit());
+   RowIndexType row2 = CreateLimitStateTableHeading<rptForceUnitTag,WBFL::Units::ForceData>(&p_table2,_T("Axial, Pu"),false,bDesign,bPermit,bRating,false,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetGeneralForceUnit());
    *p << p_table2;
 
    if ( girderKey.groupIndex == ALL_GROUPS )
@@ -730,7 +733,7 @@ void CCombinedAxialTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
          {
             pLsForces2->GetAxial( intervalIdx, pgsTypes::ServiceI, vPoi, maxBAT, &minServiceI, &maxServiceI );
 
-            if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+            if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims )
             {
                pLsForces2->GetAxial( intervalIdx, pgsTypes::ServiceIA, vPoi, maxBAT, &minServiceIA, &maxServiceIA );
             }
@@ -803,7 +806,7 @@ void CCombinedAxialTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
             pLsForces2->GetAxial( intervalIdx, pgsTypes::ServiceI, vPoi, maxBAT, &dummy, &maxServiceI );
             pLsForces2->GetAxial( intervalIdx, pgsTypes::ServiceI, vPoi, minBAT, &minServiceI, &dummy );
 
-            if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+            if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims )
             {
                pLsForces2->GetAxial( intervalIdx, pgsTypes::ServiceIA, vPoi, maxBAT, &dummy, &maxServiceIA );
                pLsForces2->GetAxial( intervalIdx, pgsTypes::ServiceIA, vPoi, minBAT, &minServiceIA, &dummy );
@@ -900,7 +903,7 @@ void CCombinedAxialTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
                (*p_table2)(row2,col++) << axial.SetValue( maxServiceI[index] );
                (*p_table2)(row2,col++) << axial.SetValue( minServiceI[index] );
 
-               if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+               if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims )
                {
                   (*p_table2)(row2,col++) << axial.SetValue( maxServiceIA[index] );
                   (*p_table2)(row2,col++) << axial.SetValue( minServiceIA[index] );
@@ -909,7 +912,7 @@ void CCombinedAxialTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
                (*p_table2)(row2,col++) << axial.SetValue( maxServiceIII[index] );
                (*p_table2)(row2,col++) << axial.SetValue( minServiceIII[index] );
 
-               if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+               if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
                {
                   (*p_table2)(row2,col++) << axial.SetValue( maxFatigueI[index] );
                   (*p_table2)(row2,col++) << axial.SetValue( minFatigueI[index] );
@@ -980,12 +983,12 @@ void CCombinedAxialTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
             {
                (*p_table2)(row2,col++) << axial.SetValue( maxServiceI[index] );
 
-               if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+               if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims )
                   (*p_table2)(row2,col++) << axial.SetValue( maxServiceIA[index] );
                
                (*p_table2)(row2,col++) << axial.SetValue( maxServiceIII[index] );
 
-               if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+               if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
                   (*p_table2)(row2,col++) << axial.SetValue( maxFatigueI[index] );
 
                (*p_table2)(row2,col++) << axial.SetValue( maxStrengthI[index] );

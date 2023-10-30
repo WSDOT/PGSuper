@@ -33,7 +33,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\PointOfInterest.h>
 #include <PgsExt\PoiMgr.h>
-
+#include <psgLib/StrandSlopeCriteria.h>
 #include "RaisedStraightStrandDesignTool.h"
 
 #include <algorithm>
@@ -51,7 +51,7 @@ struct InitialDesignParameters
    pgsTypes::StressLocation stress_location;
    Float64 fmin;
    Float64 fmax;
-   Float64 fAllow;
+   Float64 fLimit;
    Float64 fpre;
    Float64 Preqd;
    StrandIndexType Np;
@@ -323,6 +323,7 @@ public:
    ConcStrengthResultType ComputeRequiredConcreteStrength(Float64 fControl, const StressCheckTask& task,Float64* pfc) const;
 
    // "A"
+   bool IsDesignSlabOffset() const; 
    void SetSlabOffset(pgsTypes::MemberEndType end,Float64 offset);
    Float64 GetSlabOffset(pgsTypes::MemberEndType end) const; 
 
@@ -411,6 +412,8 @@ private:
 
    mutable StrandIndexType        m_MinPermanentStrands;
    StrandIndexType        m_MinTempStrands;
+
+   bool m_bIsDesignSlabOffset;
    Float64                m_MinSlabOffset;
    Float64                m_AbsoluteMinimumSlabOffset;
 
@@ -530,7 +533,7 @@ private:
             {
                // Controlling state matches current state. We can potentially store a decrease.
                // Update only if new value is more than 150 psi less than current
-               if ( strength < (m_CurrentState.m_Strength-::ConvertToSysUnits(0.15,unitMeasure::KSI)) )
+               if ( strength < (m_CurrentState.m_Strength-WBFL::Units::ConvertToSysUnits(0.15,WBFL::Units::Measure::KSI)) )
                {
                   // We have a decrease, see if it's been stored before
                   Int16 incr; // note assignment below - a bit tricky
@@ -541,7 +544,7 @@ private:
                      // NOTE: I first tried a raw 100psi increment and reg014.pgs, reg021.pgs girder B would not converge. 
                      //       Hence, 100,200,400,1600... ~rdp
                      Float64 factor = pow(2.,incr-1);
-                     Float64 test_strength = strength + factor * ::ConvertToSysUnits(0.1,unitMeasure::KSI);
+                     Float64 test_strength = strength + factor * WBFL::Units::ConvertToSysUnits(0.1,WBFL::Units::Measure::KSI);
 
                      // this ISA decrease, so don't allow an increase
                      test_strength = Min(test_strength, m_CurrentState.m_Strength);
@@ -678,12 +681,10 @@ private:
    Float64 m_MinimumFinalMzEccentricity; 
 
    // strand slope and hold down
-   bool m_DoDesignForStrandSlope;
-   Float64 m_AllowableStrandSlope;
-   bool m_DoDesignForHoldDownForce;
-   Float64 m_AllowableHoldDownForce;
-   Float64 m_HoldDownFriction;
-   bool m_bTotalHoldDownForce;
+   StrandSlopeCriteria m_StrandSlopeCriteria;
+   Float64 m_StrandSlopeLimit;
+
+   HoldDownCriteria m_HoldDownCriteria;
 
    bool AdjustForStrandSlope();
    bool AdjustForHoldDownForce();
@@ -695,7 +696,7 @@ private:
    // Private functions called from Initialize
    ///////////////////////////////////////////
    // compute hold-down and strand slope limits
-   void InitHarpedPhysicalBounds(const matPsStrand* pstrand);
+   void InitHarpedPhysicalBounds(const WBFL::Materials::PsStrand* pstrand);
    // locate mid-zone
    void ComputeMidZoneBoundaries();
    // compute and cache pois
@@ -750,11 +751,11 @@ private:
    bool m_bCheckMaxFraAtSection;
    Float64 m_MaxPercentDebondSection;
 
-   // maximum debond levels due to physical contrants at any section
+   // maximum debond levels due to physical constraints at any section
    std::vector<DebondLevelType> m_MaxPhysicalDebondLevels;
 
 
-   Float64 pgsStrandDesignTool::ComputePrestressForcePerStrand(const GDRCONFIG& fullyBondedConfig, const StressDemand& demand, const DebondLevel& lvl, IntervalIndexType interval, IPretensionForce* pPrestressForce) const;
+   Float64 ComputePrestressForcePerStrand(const GDRCONFIG& fullyBondedConfig, const StressDemand& demand, const DebondLevel& lvl, IntervalIndexType interval, IPretensionForce* pPrestressForce) const;
    void GetHandlingDesignPointsOfInterest(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang,PoiAttributeType poiReference,PoiAttributeType supportAttribute, std::vector<pgsPointOfInterest>* pvPoi, Uint32 mode) const;
 
 

@@ -40,6 +40,8 @@
 #include <PgsExt\PierData2.h>
 
 #include <psgLib\ConnectionLibraryEntry.h>
+#include <psgLib/LiveLoadDeflectionCriteria.h>
+#include <psgLib/CreepCriteria.h>
 
 #include <WBFLCogo.h>
 
@@ -72,9 +74,9 @@ LPCTSTR CTogaCamberAndDeflectionChapterBuilder::GetName() const
    return TEXT("Camber and Deflections");
 }
 
-rptChapter* CTogaCamberAndDeflectionChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CTogaCamberAndDeflectionChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CBrokerReportSpecification* pSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
+   auto pSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pSpec->GetBroker(&pBroker);
 
@@ -87,9 +89,9 @@ rptChapter* CTogaCamberAndDeflectionChapterBuilder::Build(CReportSpecification* 
    return pChapter;
 }
 
-CChapterBuilder* CTogaCamberAndDeflectionChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTogaCamberAndDeflectionChapterBuilder::Clone() const
 {
-   return new CTogaCamberAndDeflectionChapterBuilder;
+   return std::make_unique<CTogaCamberAndDeflectionChapterBuilder>();
 }
 
 //======================== ACCESS     =======================================
@@ -150,7 +152,9 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
-   bool do_defl = pSpecEntry->GetDoEvaluateLLDeflection();
+   const auto& creep_criteria = pSpecEntry->GetCreepCriteria();
+
+   bool do_defl = pSpecEntry->GetLiveLoadDeflectionCriteria().bCheck;
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
    // Get Midspan poi's
@@ -213,13 +217,13 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
    pProductForces->GetDeflLiveLoadDeflection(IProductForces::DeflectionLiveLoadEnvelope, poi_fabr, bat, &delta_oll_fabr, &temp );
 
    // get # of days for creep
-   Float64 max_days = ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
+   Float64 max_days = WBFL::Units::ConvertFromSysUnits(creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day);
 
    // Populate the table
    bool is_negative_camber = false;
    Uint16 row = 1;
    (*pTable)(row, 0) << _T("Unfactored Design Camber at ") << max_days << _T(" days, D");;
-   Float64 D_uorig = pCamber->GetDCamberForGirderScheduleUnfactored( poi_orig,CREEP_MAXTIME);
+   Float64 D_uorig = pCamber->GetDCamberForGirderScheduleUnfactored( poi_orig,pgsTypes::CreepTime::Max);
    if ( D_uorig < 0 )
    {
       (*pTable)(row,1) << color(Red) << disp.SetValue( D_uorig ) << color(Black);
@@ -231,7 +235,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
       (*pTable)(row,2) << dispft.SetValue( D_uorig );
    }
 
-   Float64 D_ufabr = pCamber->GetDCamberForGirderScheduleUnfactored( poi_fabr,CREEP_MAXTIME);
+   Float64 D_ufabr = pCamber->GetDCamberForGirderScheduleUnfactored( poi_fabr,pgsTypes::CreepTime::Max);
    if ( D_ufabr < 0 )
    {
       (*pTable)(row,3) << color(Red) << disp.SetValue( D_ufabr ) << color(Black);
@@ -315,17 +319,9 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
       *p<<color(Red) << _T("Warning:  Excess camber is negative indicating a potential sag in the beam.") << color(Black) << rptNewLine;
    }
 
-   Float64 min_days = ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Min(), unitMeasure::Day);
+   Float64 min_days = WBFL::Units::ConvertFromSysUnits(creep_criteria.CreepDuration2Min, WBFL::Units::Measure::Day);
    if (max_days != min_days)
    {
       *p<<color(Red) << _T("Warning: Camber min and max timings in project criteria are different. Values for max timing are shown only.") << color(Black) << rptNewLine;
    }
 }
-
-
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

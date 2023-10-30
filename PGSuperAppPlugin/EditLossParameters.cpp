@@ -52,9 +52,9 @@ void txnEditLossParameters::Undo()
    DoExecute(0);
 }
 
-txnTransaction* txnEditLossParameters::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnEditLossParameters::CreateClone() const
 {
-   return new txnEditLossParameters(m_LossParameters[0],m_LossParameters[1]);
+   return std::make_unique<txnEditLossParameters>(m_LossParameters[0],m_LossParameters[1]);
 }
 
 std::_tstring txnEditLossParameters::Name() const
@@ -64,12 +64,12 @@ std::_tstring txnEditLossParameters::Name() const
    return os.str();
 }
 
-bool txnEditLossParameters::IsUndoable()
+bool txnEditLossParameters::IsUndoable() const
 {
    return true;
 }
 
-bool txnEditLossParameters::IsRepeatable()
+bool txnEditLossParameters::IsRepeatable() const
 {
    return false;
 }

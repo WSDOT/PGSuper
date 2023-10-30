@@ -55,9 +55,9 @@ CMomentCapacityParagraphBuilder::CMomentCapacityParagraphBuilder()
 #pragma Reminder("UPDATE: this is weak code")
 // pass in the chapter that you want this builder to write into rather than
 // returning a paragraph... it may be useful to use multiple paragraphs
-rptParagraph* CMomentCapacityParagraphBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptParagraph* CMomentCapacityParagraphBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
    const CGirderKey& girderKey = pGirderRptSpec->GetGirderKey();
@@ -75,7 +75,7 @@ rptParagraph* CMomentCapacityParagraphBuilder::Build(CReportSpecification* pRptS
    INIT_UV_PROTOTYPE( rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(), true );
 
    rptRcScalar scalar;
-   scalar.SetFormat( sysNumericFormatTool::Automatic );
+   scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Automatic );
    scalar.SetWidth(6);
    scalar.SetPrecision(2);
 
@@ -151,7 +151,7 @@ rptParagraph* CMomentCapacityParagraphBuilder::Build(CReportSpecification* pRptS
       MOMENTCAPACITYDETAILS mcd;
       pMomentCap->GetMomentCapacityDetails(liveLoadIntervalIdx,poi,true,&mcd);
 
-      if ( mcd.Method == LRFD_METHOD && pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEditionWith2005Interims )
+      if ( mcd.Method == LRFD_METHOD && pSpecEntry->GetSpecificationCriteria().GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims )
       {
          // over/under reinforced sections where part of AASHTO through the 2005 edition
          if ( pCompositeCap->IsOverReinforced() )
@@ -195,7 +195,7 @@ rptParagraph* CMomentCapacityParagraphBuilder::Build(CReportSpecification* pRptS
       }
 
 
-      if ( pSpecEntry->GetSpecificationType() < lrfdVersionMgr::ThirdEditionWith2005Interims )
+      if ( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims )
       {
          if ( pCompositeCap->IsOverReinforced() )
          {

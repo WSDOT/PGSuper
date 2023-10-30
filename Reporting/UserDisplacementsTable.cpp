@@ -31,6 +31,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
+#include <IFace\ReportOptions.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -79,13 +80,13 @@ rptRcTable* CUserDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& gird
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, deflection, pDisplayUnits->GetDeflectionUnit(), false );
 
-   GET_IFACE2(pBroker, IDocumentType, pDocType);
-   location.IncludeSpanAndGirder(pDocType->IsPGSpliceDocument() || girderKey.groupIndex == ALL_GROUPS);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    CString strTitle;
-   strTitle.Format(_T("Deflections due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
-   rptRcTable* p_table = CreateUserLoadHeading<rptLengthUnitTag,unitmgtLengthData>(strTitle.GetBuffer(),false,analysisType,intervalIdx,pDisplayUnits,pDisplayUnits->GetDeflectionUnit());
+   strTitle.Format(_T("Deflections due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx).c_str());
+   rptRcTable* p_table = CreateUserLoadHeading<rptLengthUnitTag,WBFL::Units::LengthData>(strTitle.GetBuffer(),false,analysisType,intervalIdx,pDisplayUnits,pDisplayUnits->GetDeflectionUnit());
 
    if ( girderKey.groupIndex == ALL_GROUPS )
    {
@@ -187,27 +188,3 @@ void CUserDeflectionsTable::MakeAssignment(const CUserDeflectionsTable& rOther)
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CUserDeflectionsTable::AssertValid() const
-{
-   return true;
-}
-
-void CUserDeflectionsTable::Dump(dbgDumpContext& os) const
-{
-   os << _T("Dump for CUserDeflectionsTable") << endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CUserDeflectionsTable::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("CUserDeflectionsTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CUserDeflectionsTable");
-
-   TESTME_EPILOG("CUserDeflectionsTable");
-}
-#endif // _UNITTEST

@@ -3,26 +3,20 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "PGSuperAppPlugin.h"
 #include "ClosureJointGeneralPage.h"
 #include "ClosureJointDlg.h"
 #include "TimelineEventDlg.h"
-
-
-#include "PGSuperUnits.h"
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 
 #include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\SplicedGirderData.h>
 
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
 
 #include <System\Tokenizer.h>
-#include <Material\Material.h>
 
 #include <PgsExt\ConcreteDetailsDlg.h>
 
@@ -122,8 +116,9 @@ BOOL CClosureJointGeneralPage::OnInitDialog()
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
-   m_LossMethod = pSpecEntry->GetLossMethod();
-   m_TimeDependentModel = pSpecEntry->GetTimeDependentModel();
+   const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
+   m_LossMethod = prestress_loss_criteria.LossMethod;
+   m_TimeDependentModel = prestress_loss_criteria.TimeDependentConcreteModel;
 
    CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
 
@@ -241,7 +236,7 @@ void CClosureJointGeneralPage::OnMoreConcreteProperties()
    int i = GetCheckedRadioButton(IDC_FC1,IDC_FC2);
    bool bFinalProperties = (i == IDC_FC2 ? true : false);
 
-   CConcreteDetailsDlg dlg(bFinalProperties);
+   CConcreteDetailsDlg dlg(bFinalProperties,false/*no uhpc*/);
 
    CDataExchange dx(this,TRUE);
    ExchangeConcreteData(&dx);
@@ -254,7 +249,7 @@ void CClosureJointGeneralPage::OnMoreConcreteProperties()
    dlg.m_Ec28 = pParent->m_ClosureJoint.GetConcrete().Ec;
    dlg.m_bUserEci     = pParent->m_ClosureJoint.GetConcrete().bUserEci;
    dlg.m_bUserEc28    = pParent->m_ClosureJoint.GetConcrete().bUserEc;
-   dlg.m_TimeAtInitialStrength = ::ConvertToSysUnits(m_AgeAtContinuity,unitMeasure::Day);
+   dlg.m_TimeAtInitialStrength = WBFL::Units::ConvertToSysUnits(m_AgeAtContinuity,WBFL::Units::Measure::Day);
 
    dlg.m_General.m_Type        = pParent->m_ClosureJoint.GetConcrete().Type;
    dlg.m_General.m_AggSize     = pParent->m_ClosureJoint.GetConcrete().MaxAggregateSize;
@@ -281,11 +276,22 @@ void CClosureJointGeneralPage::OnMoreConcreteProperties()
    dlg.m_CEBFIP.m_BetaSc          = pParent->m_ClosureJoint.GetConcrete().BetaSc;
    dlg.m_CEBFIP.m_CementType      = pParent->m_ClosureJoint.GetConcrete().CEBFIPCementType;
 
-   dlg.m_PCIUHPC.m_ffc = pParent->m_ClosureJoint.GetConcrete().Ffc;
-   dlg.m_PCIUHPC.m_frr = pParent->m_ClosureJoint.GetConcrete().Frr;
-   dlg.m_PCIUHPC.m_FiberLength = pParent->m_ClosureJoint.GetConcrete().FiberLength;
-   dlg.m_PCIUHPC.m_AutogenousShrinkage = pParent->m_ClosureJoint.GetConcrete().AutogenousShrinkage;
-   dlg.m_PCIUHPC.m_bPCTT = pParent->m_ClosureJoint.GetConcrete().bPCTT;
+   // Place holder for PCI_UHPC and UHPC
+   //dlg.m_PCIUHPC.m_ffc = pParent->m_ClosureJoint.GetConcrete().Ffc;
+   //dlg.m_PCIUHPC.m_frr = pParent->m_ClosureJoint.GetConcrete().Frr;
+   //dlg.m_PCIUHPC.m_FiberLength = pParent->m_ClosureJoint.GetConcrete().FiberLength;
+   //dlg.m_PCIUHPC.m_AutogenousShrinkage = pParent->m_ClosureJoint.GetConcrete().AutogenousShrinkage;
+   //dlg.m_PCIUHPC.m_bPCTT = pParent->m_ClosureJoint.GetConcrete().bPCTT;
+
+   //dlg.m_UHPC.m_ftcri = pParent->m_ClosureJoint.GetConcrete().ftcri;
+   //dlg.m_UHPC.m_ftcr =  pParent->m_ClosureJoint.GetConcrete().ftcr;
+   //dlg.m_UHPC.m_ftloc = pParent->m_ClosureJoint.GetConcrete().ftloc;
+   //dlg.m_UHPC.m_etloc = pParent->m_ClosureJoint.GetConcrete().etloc;
+   //dlg.m_UHPC.m_alpha_u = pParent->m_ClosureJoint.GetConcrete().alpha_u;
+   //dlg.m_UHPC.m_ecu = pParent->m_ClosureJoint.GetConcrete().ecu;
+   //dlg.m_UHPC.m_bExperimental_ecu = pParent->m_ClosureJoint.GetConcrete().bExperimental_ecu;
+   //dlg.m_UHPC.m_gamma_u = pParent->m_ClosureJoint.GetConcrete().gamma_u;
+   //dlg.m_UHPC.m_FiberLength = pParent->m_ClosureJoint.GetConcrete().FiberLength;
 
    dlg.m_General.m_strUserEc  = m_strUserEc;
 
@@ -325,11 +331,22 @@ void CClosureJointGeneralPage::OnMoreConcreteProperties()
       pParent->m_ClosureJoint.GetConcrete().CEBFIPCementType      = dlg.m_CEBFIP.m_CementType;
 
 
-      pParent->m_ClosureJoint.GetConcrete().Ffc = dlg.m_PCIUHPC.m_ffc;
-      pParent->m_ClosureJoint.GetConcrete().Frr = dlg.m_PCIUHPC.m_frr;
-      pParent->m_ClosureJoint.GetConcrete().FiberLength = dlg.m_PCIUHPC.m_FiberLength;
-      pParent->m_ClosureJoint.GetConcrete().AutogenousShrinkage = dlg.m_PCIUHPC.m_AutogenousShrinkage;
-      pParent->m_ClosureJoint.GetConcrete().bPCTT = dlg.m_PCIUHPC.m_bPCTT;
+      // Place holder for PCI_UHPC and UHPC
+      //pParent->m_ClosureJoint.GetConcrete().Ffc = dlg.m_PCIUHPC.m_ffc;
+      //pParent->m_ClosureJoint.GetConcrete().Frr = dlg.m_PCIUHPC.m_frr;
+      //pParent->m_ClosureJoint.GetConcrete().FiberLength = dlg.m_PCIUHPC.m_FiberLength;
+      //pParent->m_ClosureJoint.GetConcrete().AutogenousShrinkage = dlg.m_PCIUHPC.m_AutogenousShrinkage;
+      //pParent->m_ClosureJoint.GetConcrete().bPCTT = dlg.m_PCIUHPC.m_bPCTT;
+
+      //pParent->m_ClosureJoint.GetConcrete().ftcri = dlg.m_UHPC.m_ftcri;
+      //pParent->m_ClosureJoint.GetConcrete().ftcr = dlg.m_UHPC.m_ftcr;
+      //pParent->m_ClosureJoint.GetConcrete().ftloc = dlg.m_UHPC.m_ftloc;
+      //pParent->m_ClosureJoint.GetConcrete().etloc = dlg.m_UHPC.m_etloc;
+      //pParent->m_ClosureJoint.GetConcrete().alpha_u = dlg.m_UHPC.m_alpha_u;
+      //pParent->m_ClosureJoint.GetConcrete().ecu = dlg.m_UHPC.m_ecu;
+      //pParent->m_ClosureJoint.GetConcrete().bExperimental_ecu = dlg.m_UHPC.m_bExperimental_ecu;
+      //pParent->m_ClosureJoint.GetConcrete().gamma_u = dlg.m_UHPC.m_gamma_u;
+      //pParent->m_ClosureJoint.GetConcrete().FiberLength = dlg.m_UHPC.m_FiberLength;
 
       m_strUserEc  = dlg.m_General.m_strUserEc;
       m_ctrlEc.SetWindowText(m_strUserEc);
@@ -458,15 +475,15 @@ void CClosureJointGeneralPage::UpdateEci()
       CString strEc;
       m_ctrlEc.GetWindowText(strEc);
       Float64 Ec;
-      sysTokenizer::ParseDouble(strEc,&Ec);
-      Ec = ::ConvertToSysUnits(Ec,pDisplayUnits->GetModEUnit().UnitOfMeasure);
+      WBFL::System::Tokenizer::ParseDouble(strEc,&Ec);
+      Ec = WBFL::Units::ConvertToSysUnits(Ec,pDisplayUnits->GetModEUnit().UnitOfMeasure);
 
       CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
 
       Float64 Eci;
-      if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
+      if ( m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO || m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
       {
-         matACI209Concrete concrete;
+         WBFL::Materials::ACI209Concrete concrete;
          concrete.UserEc28(true);
          concrete.SetEc28(Ec);
          concrete.SetA(pParent->m_ClosureJoint.GetConcrete().A);
@@ -478,8 +495,8 @@ void CClosureJointGeneralPage::UpdateEci()
       }
       else
       {
-         ATLASSERT(m_TimeDependentModel == TDM_CEBFIP);
-         matCEBFIPConcrete concrete;
+         ATLASSERT(m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP);
+         WBFL::Materials::CEBFIPConcrete concrete;
          concrete.UserEc28(true);
          concrete.SetEc28(Ec);
          concrete.SetTimeAtCasting(0);
@@ -557,20 +574,20 @@ void CClosureJointGeneralPage::UpdateEc()
       CString strEci;
       m_ctrlEci.GetWindowText(strEci);
       Float64 Eci;
-      sysTokenizer::ParseDouble(strEci,&Eci);
-      Eci = ::ConvertToSysUnits(Eci,pDisplayUnits->GetModEUnit().UnitOfMeasure);
+      WBFL::System::Tokenizer::ParseDouble(strEci,&Eci);
+      Eci = WBFL::Units::ConvertToSysUnits(Eci,pDisplayUnits->GetModEUnit().UnitOfMeasure);
 
       CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
 
       Float64 Ec;
-      if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
+      if ( m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO || m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
       {
-         Ec = matACI209Concrete::ComputeEc28(Eci,m_AgeAtContinuity,pParent->m_ClosureJoint.GetConcrete().A,pParent->m_ClosureJoint.GetConcrete().B);
+         Ec = WBFL::Materials::ACI209Concrete::ComputeEc28(Eci,m_AgeAtContinuity,pParent->m_ClosureJoint.GetConcrete().A,pParent->m_ClosureJoint.GetConcrete().B);
       }
       else
       {
-         ATLASSERT( m_TimeDependentModel == TDM_CEBFIP );
-         Ec = matCEBFIPConcrete::ComputeEc28(Eci,m_AgeAtContinuity,pParent->m_ClosureJoint.GetConcrete().S);
+         ATLASSERT( m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP );
+         Ec = WBFL::Materials::CEBFIPConcrete::ComputeEc28(Eci,m_AgeAtContinuity,pParent->m_ClosureJoint.GetConcrete().S);
       }
 
       CString strEc;
@@ -613,20 +630,20 @@ void CClosureJointGeneralPage::UpdateFc()
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       Float64 fci;
-      sysTokenizer::ParseDouble(strFci, &fci);
-      fci = ::ConvertToSysUnits(fci,pDisplayUnits->GetStressUnit().UnitOfMeasure);
+      WBFL::System::Tokenizer::ParseDouble(strFci, &fci);
+      fci = WBFL::Units::ConvertToSysUnits(fci,pDisplayUnits->GetStressUnit().UnitOfMeasure);
 
       CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
       Float64 fc;
 
-      if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
+      if ( m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO || m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
       {
-         fc = matACI209Concrete::ComputeFc28(fci,m_AgeAtContinuity,pParent->m_ClosureJoint.GetConcrete().A,pParent->m_ClosureJoint.GetConcrete().B);
+         fc = WBFL::Materials::ACI209Concrete::ComputeFc28(fci,m_AgeAtContinuity,pParent->m_ClosureJoint.GetConcrete().A,pParent->m_ClosureJoint.GetConcrete().B);
       }
       else
       {
-         ATLASSERT(m_TimeDependentModel == TDM_CEBFIP);
-         fc = matCEBFIPConcrete::ComputeFc28(fci,m_AgeAtContinuity,pParent->m_ClosureJoint.GetConcrete().S);
+         ATLASSERT(m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP);
+         fc = WBFL::Materials::CEBFIPConcrete::ComputeFc28(fci,m_AgeAtContinuity,pParent->m_ClosureJoint.GetConcrete().S);
       }
 
       CString strFc;
@@ -650,15 +667,15 @@ void CClosureJointGeneralPage::UpdateFci()
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       Float64 fc;
-      sysTokenizer::ParseDouble(strFc, &fc);
-      fc = ::ConvertToSysUnits(fc,pDisplayUnits->GetStressUnit().UnitOfMeasure);
+      WBFL::System::Tokenizer::ParseDouble(strFc, &fc);
+      fc = WBFL::Units::ConvertToSysUnits(fc,pDisplayUnits->GetStressUnit().UnitOfMeasure);
 
       CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
 
       Float64 fci;
-      if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
+      if ( m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO || m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
       {
-         matACI209Concrete concrete;
+         WBFL::Materials::ACI209Concrete concrete;
          concrete.SetTimeAtCasting(0);
          concrete.SetFc28(fc);
          concrete.SetA(pParent->m_ClosureJoint.GetConcrete().A);
@@ -667,8 +684,8 @@ void CClosureJointGeneralPage::UpdateFci()
       }
       else
       {
-         ATLASSERT(m_TimeDependentModel == TDM_CEBFIP);
-         matCEBFIPConcrete concrete;
+         ATLASSERT(m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP);
+         WBFL::Materials::CEBFIPConcrete concrete;
          concrete.SetTimeAtCasting(0);
          concrete.SetFc28(fc);
          concrete.SetS(pParent->m_ClosureJoint.GetConcrete().S);
@@ -761,14 +778,14 @@ void CClosureJointGeneralPage::UpdateConcreteParametersToolTip()
 
    CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
 
-   const unitmgtDensityData& density = pDisplayUnits->GetDensityUnit();
-   const unitmgtLengthData&  aggsize = pDisplayUnits->GetComponentDimUnit();
-   const unitmgtStressData&  stress  = pDisplayUnits->GetStressUnit();
-   const unitmgtScalar&      scalar  = pDisplayUnits->GetScalarFormat();
+   const WBFL::Units::DensityData& density = pDisplayUnits->GetDensityUnit();
+   const WBFL::Units::LengthData&  aggsize = pDisplayUnits->GetComponentDimUnit();
+   const WBFL::Units::StressData&  stress  = pDisplayUnits->GetStressUnit();
+   const WBFL::Units::ScalarData&  scalar  = pDisplayUnits->GetScalarFormat();
 
    CString strTip;
    strTip.Format(_T("%-20s %s\r\n%-20s %s\r\n%-20s %s\r\n%-20s %s"),
-      _T("Type"), lrfdConcreteUtil::GetTypeName((matConcrete::Type)pParent->m_ClosureJoint.GetConcrete().Type,true).c_str(),
+      _T("Type"), WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pParent->m_ClosureJoint.GetConcrete().Type,true).c_str(),
       _T("Unit Weight"),FormatDimension(pParent->m_ClosureJoint.GetConcrete().StrengthDensity,density),
       _T("Unit Weight (w/ reinforcement)"),  FormatDimension(pParent->m_ClosureJoint.GetConcrete().WeightDensity,density),
       _T("Max Aggregate Size"),  FormatDimension(pParent->m_ClosureJoint.GetConcrete().MaxAggregateSize,aggsize)

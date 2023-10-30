@@ -48,10 +48,10 @@ LPCTSTR CCopyPierPropertiesChapterBuilder::GetName() const
    return TEXT("Pier Properties Comparison");
 }
 
-rptChapter* CCopyPierPropertiesChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CCopyPierPropertiesChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CBrokerReportSpecification* pBrokerRptSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
-   CCopyPierPropertiesReportSpecification* pCopyPierPropertiesMgrRptSpec = dynamic_cast<CCopyPierPropertiesReportSpecification*>(pRptSpec);
+   auto pBrokerRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
+   auto pCopyPierPropertiesMgrRptSpec = std::dynamic_pointer_cast<const CCopyPierPropertiesReportSpecification>(pRptSpec);
 
    CComPtr<IBroker> pBroker;
    pBrokerRptSpec->GetBroker(&pBroker);
@@ -77,9 +77,9 @@ rptChapter* CCopyPierPropertiesChapterBuilder::Build(CReportSpecification* pRptS
    return pChapter;
 }
 
-CChapterBuilder* CCopyPierPropertiesChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CCopyPierPropertiesChapterBuilder::Clone() const
 {
-   return new CCopyPierPropertiesChapterBuilder;
+   return std::make_unique<CCopyPierPropertiesChapterBuilder>();
 }
 
 void CCopyPierPropertiesChapterBuilder::SetCopyPierProperties(std::vector<ICopyPierPropertiesCallback*>& rCallbacks, PierIndexType fromPierIdx, const std::vector<PierIndexType>& toPiers)

@@ -67,11 +67,11 @@ LPCTSTR CGirderGeometryChapterBuilder::GetName() const
    return TEXT("Girder Geometry");
 }
 
-rptChapter* CGirderGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CGirderGeometryChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    USES_CONVERSION;
 
-   CBrokerReportSpecification* pSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
+   auto pSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
 
    CComPtr<IBroker> pBroker;
    pSpec->GetBroker(&pBroker);
@@ -90,9 +90,9 @@ rptChapter* CGirderGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,
 }
 
 
-CChapterBuilder* CGirderGeometryChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CGirderGeometryChapterBuilder::Clone() const
 {
-   return new CGirderGeometryChapterBuilder;
+   return std::make_unique<CGirderGeometryChapterBuilder>();
 }
 
 //======================== ACCESS     =======================================
@@ -601,7 +601,7 @@ void girder_lengths(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length,  pDisplayUnits->GetSpanLengthUnit(), false );
 
    rptRcScalar scalar;
-   scalar.SetFormat( sysNumericFormatTool::Fixed );
+   scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Fixed );
    scalar.SetWidth(7);
    scalar.SetPrecision(4);
    scalar.SetTolerance(1.0e-6);

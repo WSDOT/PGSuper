@@ -41,7 +41,7 @@ class CDesignGirderDlg : public CDialog
 {
 // Construction
 public:
-	CDesignGirderDlg(const CGirderKey& girderKey, IBroker* pBroker, arSlabOffsetDesignType haunchDesignType, CWnd* pParent = nullptr);   // standard constructor
+	CDesignGirderDlg(const CGirderKey& girderKey, IBroker* pBroker, arSlabOffsetDesignType haunchDesignRequest, CWnd* pParent = nullptr);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CDesignGirderDlg)
@@ -49,8 +49,7 @@ public:
    CGirderKey m_GirderKey;
    //}}AFX_DATA
 
-   static void LoadSettings(bool& bDesignFlexure, arSlabOffsetDesignType& haunchDesignType, arConcreteDesignType& concreteDesignType, arShearDesignType& shearDesignType);
-
+   static void LoadSettings(arSlabOffsetDesignType haunchDesignRequest, bool& bDesignFlexure, arSlabOffsetDesignType& haunchDesignType, arConcreteDesignType& concreteDesignType, arShearDesignType& shearDesignType);
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -67,8 +66,9 @@ public:
 private:
    IBroker* m_pBroker;
 
-   arSlabOffsetDesignType m_HaunchDesignType;
-   BOOL m_bEnableHaunchDesign; // if true the haunch design option should be enabled
+   // Request made by calling function for haunch design. This may be altered if design cannot be done (e.g., no deck bridge)
+   arSlabOffsetDesignType m_HaunchDesignRequest;
+   BOOL m_bCanEnableHaunchDesign; // if true the haunch design option can be enabled
 
    void UpdateGirderComboBox(SpanIndexType spanIdx);
    void UpdateDesignHaunchCtrl();

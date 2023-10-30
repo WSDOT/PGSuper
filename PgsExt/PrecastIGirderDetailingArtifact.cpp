@@ -177,27 +177,3 @@ void pgsPrecastIGirderDetailingArtifact::MakeAssignment(const pgsPrecastIGirderD
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool pgsPrecastIGirderDetailingArtifact::AssertValid() const
-{
-   return true;
-}
-
-void pgsPrecastIGirderDetailingArtifact::Dump(dbgDumpContext& os) const
-{
-   os << "Dump for pgsPrecastIGirderDetailingArtifact" << endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool pgsPrecastIGirderDetailingArtifact::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("pgsPrecastIGirderDetailingArtifact");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for pgsPrecastIGirderDetailingArtifact");
-
-   TESTME_EPILOG("pgsPrecastIGirderDetailingArtifact");
-}
-#endif // _UNITTEST

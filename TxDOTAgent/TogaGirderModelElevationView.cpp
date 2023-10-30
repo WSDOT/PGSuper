@@ -556,8 +556,8 @@ void CTogaGirderModelElevationView::BuildGirderDisplayObjects(CTxDOTOptionalDesi
                   );
 
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   const matPsStrand* pStrand     = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Straight);
-   const matPsStrand* pTempStrand = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Temporary);
+   const auto* pStrand     = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Straight);
+   const auto* pTempStrand = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Temporary);
 
    StrandIndexType Ns, Nh, Nt, Nsd;
    Ns = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Straight);
@@ -1107,8 +1107,8 @@ void CTogaGirderModelElevationView::BuildStirrupDisplayObjects(CTxDOTOptionalDes
    Float64 start_offset = start_brg_offset - start_end_distance;
 
    // assume a typical cover
-   Float64 top_cover = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
-   Float64 bot_cover = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
+   Float64 top_cover = WBFL::Units::ConvertToSysUnits(2.0,WBFL::Units::Measure::Inch);
+   Float64 bot_cover = WBFL::Units::ConvertToSysUnits(2.0,WBFL::Units::Measure::Inch);
 
    PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(segmentKey.groupIndex);
    Float64 slab_offset = pBridge->GetSlabOffset(segmentKey,pgsTypes::metStart); // use for dummy top of stirrup if they are extended into deck
@@ -1122,12 +1122,12 @@ void CTogaGirderModelElevationView::BuildStirrupDisplayObjects(CTxDOTOptionalDes
       Float64 start, end;
       pStirrupGeom->GetPrimaryZoneBounds(segmentKey, zoneIdx, &start, &end);
 
-      matRebar::Size barSize;
+      WBFL::Materials::Rebar::Size barSize;
       Float64 spacing;
       Float64 nStirrups;
       pStirrupGeom->GetPrimaryVertStirrupBarInfo(segmentKey,zoneIdx,&barSize,&nStirrups,&spacing);
 
-      if ( barSize != matRebar::bsNone && nStirrups != 0 )
+      if ( barSize != WBFL::Materials::Rebar::Size::bsNone && nStirrups != 0 )
       {
          GET_IFACE2(pBroker,IGirder,pGirder);
 
@@ -1361,14 +1361,14 @@ void CTogaGirderModelElevationView::OnDestroy()
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
 
-   CollectionIndexType dlcnt = dispMgr->GetDisplayListCount();
-   for (CollectionIndexType idl=0; idl<dlcnt; idl++)
+   IndexType dlcnt = dispMgr->GetDisplayListCount();
+   for (IndexType idl=0; idl<dlcnt; idl++)
    {
       CComPtr<iDisplayList> dlist;
       dispMgr->GetDisplayList(idl, &dlist);
 
-      CollectionIndexType docnt = dlist->GetDisplayObjectCount();
-      for (CollectionIndexType ido=0; ido<docnt; ido++)
+      IndexType docnt = dlist->GetDisplayObjectCount();
+      for (IndexType ido=0; ido<docnt; ido++)
       {
          CComPtr<iDisplayObject> pdo;
          dlist->GetDisplayObject(ido,&pdo);
@@ -1419,7 +1419,7 @@ BOOL CTogaGirderModelElevationView::OnMouseWheel(UINT nFlags,short zDelta,CPoint
    DisplayObjectContainer selObjs;
    dispMgr->GetSelectedObjects(&selObjs);
 
-   if ( selObjs.size() == 0 || selObjs.front().m_T->GetID() != SECTION_CUT_ID )
+   if ( selObjs.size() == 0 || selObjs.front()->GetID() != SECTION_CUT_ID )
       return FALSE;
 
    if ( 0 < zDelta )

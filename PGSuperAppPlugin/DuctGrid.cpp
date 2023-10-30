@@ -37,7 +37,7 @@
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\BeamFactory.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 #include <EAF\EAFDisplayUnits.h>
 
 #include <PgsExt\BridgeDescription2.h>
@@ -661,7 +661,7 @@ void CDuctGrid::UpdateNumStrandsList(ROWCOL nRow)
    Float64 A = pDuctEntry->GetInsideArea();
 
    CSplicedGirderGeneralPage* pParent = (CSplicedGirderGeneralPage*)GetParent();
-   const matPsStrand* pStrand = pParent->GetStrand();
+   const auto* pStrand = pParent->GetStrand();
    Float64 aps = pStrand->GetNominalArea();
 
    // LRFD 5.4.6.2 Area of duct must be at least K times net area of prestressing steel
@@ -690,9 +690,9 @@ void CDuctGrid::UpdateMaxPjack(ROWCOL nRow)
 {
    StrandIndexType nStrands = (StrandIndexType)_tstoi(GetCellValue(nRow,nNumStrandCol));
    CSplicedGirderGeneralPage* pParent = (CSplicedGirderGeneralPage*)GetParent();
-   const matPsStrand* pStrand = pParent->GetStrand();
+   const auto* pStrand = pParent->GetStrand();
 
-   Float64 Pjack = lrfdPsStrand::GetPjackPT(*pStrand,nStrands);
+   Float64 Pjack = WBFL::LRFD::PsStrand::GetPjackPT(*pStrand,nStrands);
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -744,9 +744,9 @@ void CDuctGrid::GetDuctData(ROWCOL row,CDuctData& duct,EventIndexType& stressing
    duct.JackingEnd       = (pgsTypes::JackingEndType)_tstoi(GetCellValue(row,nJackEndCol));
    duct.bPjCalc          = ComputePjackMax(row);
    duct.Pj               = _tstof(GetCellValue(row,nPjackCol));
-   duct.Pj               = ::ConvertToSysUnits(duct.Pj,pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure);
+   duct.Pj               = WBFL::Units::ConvertToSysUnits(duct.Pj,pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure);
    duct.LastUserPj       = _tstof(GetCellValue(row,nPjackUserCol));
-   duct.LastUserPj       = ::ConvertToSysUnits(duct.LastUserPj,pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure);
+   duct.LastUserPj       = WBFL::Units::ConvertToSysUnits(duct.LastUserPj,pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure);
    duct.DuctGeometryType = (CDuctGeometry::GeometryType)_tstoi(GetCellValue(row,nDuctGeomTypeCol));
 
    stressingEvent = (EventIndexType)_tstoi(GetCellValue(row,nEventCol)) + m_LastSegmentErectionEventIdx;
@@ -778,8 +778,8 @@ void CDuctGrid::SetDuctData(ROWCOL row,const CDuctData& duct,EventIndexType stre
    SetValueRange(CGXRange(row,nNumStrandCol),   (LONG)duct.nStrands);
    SetValueRange(CGXRange(row,nJackEndCol),     (LONG)duct.JackingEnd);
    SetValueRange(CGXRange(row,nPjackCheckCol),  (LONG)!duct.bPjCalc);
-   SetValueRange(CGXRange(row,nPjackCol),       ::ConvertFromSysUnits(duct.Pj,        pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure));
-   SetValueRange(CGXRange(row,nPjackUserCol),   ::ConvertFromSysUnits(duct.LastUserPj,pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure));
+   SetValueRange(CGXRange(row,nPjackCol),       WBFL::Units::ConvertFromSysUnits(duct.Pj,        pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure));
+   SetValueRange(CGXRange(row,nPjackUserCol),   WBFL::Units::ConvertFromSysUnits(duct.LastUserPj,pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure));
    SetValueRange(CGXRange(row,nDuctGeomTypeCol),(LONG)duct.DuctGeometryType);
    SetValueRange(CGXRange(row,nEventCol),       (LONG)(stressingEvent- m_LastSegmentErectionEventIdx));
    

@@ -69,6 +69,7 @@ protected:
    afx_msg void OnCastDeck();
    afx_msg void OnCastLongitudinalJoints();
    afx_msg void OnApplyLoads();
+   afx_msg void OnGeometryControl();
    afx_msg void OnStressTendons();
 
    void UpdateAddButton();

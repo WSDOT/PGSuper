@@ -565,7 +565,7 @@ Float64 pgsYieldStressRatioArtifact::GetSegmentTendonStressRatio() const
    return m_SegmentTendonRF;
 }
 
-Float64 pgsYieldStressRatioArtifact::GetSegmentTendonAllowableStress() const
+Float64 pgsYieldStressRatioArtifact::GetSegmentTendonStressLimitStress() const
 {
    return m_AllowableStressRatio*m_fyptSegment;
 }
@@ -588,7 +588,7 @@ Float64 pgsYieldStressRatioArtifact::GetGirderTendonStressRatio() const
    return m_GirderTendonRF;
 }
 
-Float64 pgsYieldStressRatioArtifact::GetGirderTendonAllowableStress() const
+Float64 pgsYieldStressRatioArtifact::GetGirderTendonStressLimitStress() const
 {
    return m_AllowableStressRatio*m_fyptGirder;
 }

@@ -520,11 +520,12 @@ void CAlignmentProfileView::BuildLabelDisplayObjects()
    IndexType nVC = pRoadway->GetVertCurveCount();
    for ( IndexType vcIdx = 0; vcIdx < nVC; vcIdx++ )
    {
-      CComPtr<IVertCurve> vc;
+      CComPtr<IVerticalCurve> vc;
       pRoadway->GetVertCurve(vcIdx,&vc);
 
       Float64 L;
-      vc->get_Length(&L);
+      CComQIPtr<IProfileElement> element(vc);
+      element->GetLength(&L);
       if ( IsZero(L) )
       {
          CComPtr<IProfilePoint> pntPVI;

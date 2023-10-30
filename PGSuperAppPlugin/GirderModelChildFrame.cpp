@@ -296,13 +296,13 @@ void CGirderModelChildFrame::ShowStrands(bool bShow)
    UINT settings = pDoc->GetGirderEditorSettings();
    if (bShow)
    {
-      sysFlags<UINT>::Set(&settings, IDG_EV_SHOW_STRANDS);
-      sysFlags<UINT>::Set(&settings, IDG_SV_SHOW_STRANDS);
+      WBFL::System::Flags<UINT>::Set(&settings, IDG_EV_SHOW_STRANDS);
+      WBFL::System::Flags<UINT>::Set(&settings, IDG_SV_SHOW_STRANDS);
    }
    else
    {
-      sysFlags<UINT>::Clear(&settings, IDG_EV_SHOW_STRANDS);
-      sysFlags<UINT>::Clear(&settings, IDG_SV_SHOW_STRANDS);
+      WBFL::System::Flags<UINT>::Clear(&settings, IDG_EV_SHOW_STRANDS);
+      WBFL::System::Flags<UINT>::Clear(&settings, IDG_SV_SHOW_STRANDS);
    }
    pDoc->SetGirderEditorSettings(settings);
 }
@@ -318,13 +318,13 @@ void CGirderModelChildFrame::ShowStrandCG(bool bShow)
    UINT settings = pDoc->GetGirderEditorSettings();
    if (bShow)
    {
-      sysFlags<UINT>::Set(&settings, IDG_EV_SHOW_PS_CG);
-      sysFlags<UINT>::Set(&settings, IDG_SV_SHOW_PS_CG);
+      WBFL::System::Flags<UINT>::Set(&settings, IDG_EV_SHOW_PS_CG);
+      WBFL::System::Flags<UINT>::Set(&settings, IDG_SV_SHOW_PS_CG);
    }
    else
    {
-      sysFlags<UINT>::Clear(&settings, IDG_EV_SHOW_PS_CG);
-      sysFlags<UINT>::Clear(&settings, IDG_SV_SHOW_PS_CG);
+      WBFL::System::Flags<UINT>::Clear(&settings, IDG_EV_SHOW_PS_CG);
+      WBFL::System::Flags<UINT>::Clear(&settings, IDG_SV_SHOW_PS_CG);
    }
    pDoc->SetGirderEditorSettings(settings);
 }
@@ -340,13 +340,13 @@ void CGirderModelChildFrame::ShowCG(bool bShow)
    UINT settings = pDoc->GetGirderEditorSettings();
    if (bShow)
    {
-      sysFlags<UINT>::Set(&settings, IDG_SV_GIRDER_CG);
-      sysFlags<UINT>::Set(&settings, IDG_EV_GIRDER_CG);
+      WBFL::System::Flags<UINT>::Set(&settings, IDG_SV_GIRDER_CG);
+      WBFL::System::Flags<UINT>::Set(&settings, IDG_EV_GIRDER_CG);
    }
    else
    {
-      sysFlags<UINT>::Clear(&settings, IDG_SV_GIRDER_CG);
-      sysFlags<UINT>::Clear(&settings, IDG_EV_GIRDER_CG);
+      WBFL::System::Flags<UINT>::Clear(&settings, IDG_SV_GIRDER_CG);
+      WBFL::System::Flags<UINT>::Clear(&settings, IDG_EV_GIRDER_CG);
    }
    pDoc->SetGirderEditorSettings(settings);
 }
@@ -362,11 +362,11 @@ void CGirderModelChildFrame::ShowSectionProperties(bool bShow)
    UINT settings = pDoc->GetGirderEditorSettings();
    if (bShow)
    {
-      sysFlags<UINT>::Set(&settings, IDG_SV_PROPERTIES);
+      WBFL::System::Flags<UINT>::Set(&settings, IDG_SV_PROPERTIES);
    }
    else
    {
-      sysFlags<UINT>::Clear(&settings, IDG_SV_PROPERTIES);
+      WBFL::System::Flags<UINT>::Clear(&settings, IDG_SV_PROPERTIES);
    }
    pDoc->SetGirderEditorSettings(settings);
 }
@@ -382,13 +382,13 @@ void CGirderModelChildFrame::ShowDimensions(bool bShow)
    UINT settings = pDoc->GetGirderEditorSettings();
    if (bShow)
    {
-      sysFlags<UINT>::Set(&settings, IDG_EV_SHOW_DIMENSIONS);
-      sysFlags<UINT>::Set(&settings, IDG_SV_SHOW_DIMENSIONS);
+      WBFL::System::Flags<UINT>::Set(&settings, IDG_EV_SHOW_DIMENSIONS);
+      WBFL::System::Flags<UINT>::Set(&settings, IDG_SV_SHOW_DIMENSIONS);
    }
    else
    {
-      sysFlags<UINT>::Clear(&settings, IDG_EV_SHOW_DIMENSIONS);
-      sysFlags<UINT>::Clear(&settings, IDG_SV_SHOW_DIMENSIONS);
+      WBFL::System::Flags<UINT>::Clear(&settings, IDG_EV_SHOW_DIMENSIONS);
+      WBFL::System::Flags<UINT>::Clear(&settings, IDG_SV_SHOW_DIMENSIONS);
    }
    pDoc->SetGirderEditorSettings(settings);
 }
@@ -404,13 +404,13 @@ void CGirderModelChildFrame::ShowLongitudinalReinforcement(bool bShow)
    UINT settings = pDoc->GetGirderEditorSettings();
    if (bShow)
    {
-      sysFlags<UINT>::Set(&settings, IDG_EV_SHOW_LONG_REINF);
-      sysFlags<UINT>::Set(&settings, IDG_SV_SHOW_LONG_REINF);
+      WBFL::System::Flags<UINT>::Set(&settings, IDG_EV_SHOW_LONG_REINF);
+      WBFL::System::Flags<UINT>::Set(&settings, IDG_SV_SHOW_LONG_REINF);
    }
    else
    {
-      sysFlags<UINT>::Clear(&settings, IDG_EV_SHOW_LONG_REINF);
-      sysFlags<UINT>::Clear(&settings, IDG_SV_SHOW_LONG_REINF);
+      WBFL::System::Flags<UINT>::Clear(&settings, IDG_EV_SHOW_LONG_REINF);
+      WBFL::System::Flags<UINT>::Clear(&settings, IDG_SV_SHOW_LONG_REINF);
    }
    pDoc->SetGirderEditorSettings(settings);
 }
@@ -426,11 +426,11 @@ void CGirderModelChildFrame::ShowTransverseReinforcement(bool bShow)
    UINT settings = pDoc->GetGirderEditorSettings();
    if (bShow)
    {
-      sysFlags<UINT>::Set(&settings, IDG_EV_SHOW_STIRRUPS);
+      WBFL::System::Flags<UINT>::Set(&settings, IDG_EV_SHOW_STIRRUPS);
    }
    else
    {
-      sysFlags<UINT>::Clear(&settings, IDG_EV_SHOW_STIRRUPS);
+      WBFL::System::Flags<UINT>::Clear(&settings, IDG_EV_SHOW_STIRRUPS);
    }
    pDoc->SetGirderEditorSettings(settings);
 }
@@ -446,13 +446,13 @@ void CGirderModelChildFrame::ShowLoads(bool bShow)
    UINT settings = pDoc->GetGirderEditorSettings();
    if (bShow)
    {
-      sysFlags<UINT>::Set(&settings, IDG_EV_SHOW_LOADS);
-      sysFlags<UINT>::Set(&settings, IDG_EV_SHOW_LEGEND);
+      WBFL::System::Flags<UINT>::Set(&settings, IDG_EV_SHOW_LOADS);
+      WBFL::System::Flags<UINT>::Set(&settings, IDG_EV_SHOW_LEGEND);
    }
    else
    {
-      sysFlags<UINT>::Clear(&settings, IDG_EV_SHOW_LOADS);
-      sysFlags<UINT>::Clear(&settings, IDG_EV_SHOW_LEGEND);
+      WBFL::System::Flags<UINT>::Clear(&settings, IDG_EV_SHOW_LOADS);
+      WBFL::System::Flags<UINT>::Clear(&settings, IDG_EV_SHOW_LEGEND);
    }
    pDoc->SetGirderEditorSettings(settings);
 }
@@ -468,11 +468,11 @@ void CGirderModelChildFrame::Schematic(bool bSchematic)
    UINT settings = pDoc->GetGirderEditorSettings();
    if (bSchematic)
    {
-      sysFlags<UINT>::Set(&settings, IDG_EV_DRAW_ISOTROPIC);
+      WBFL::System::Flags<UINT>::Set(&settings, IDG_EV_DRAW_ISOTROPIC);
    }
    else
    {
-      sysFlags<UINT>::Clear(&settings, IDG_EV_DRAW_ISOTROPIC);
+      WBFL::System::Flags<UINT>::Clear(&settings, IDG_EV_DRAW_ISOTROPIC);
    }
    pDoc->SetGirderEditorSettings(settings);
 }
@@ -1249,8 +1249,7 @@ void CGirderModelChildFrame::OnUpdateDesignGirderDirectHoldSlabOffset(CCmdUI* pC
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,ISpecification,pSpecification);
-   GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
-   bool bDesignSlabOffset = pSpecification->IsSlabOffsetDesignEnabled() && pBridge->GetDeckType() != pgsTypes::sdtNone;
+   bool bDesignSlabOffset = pSpecification->DesignSlabHaunch();
    pCmdUI->Enable( m_GirderKey.groupIndex != ALL_GROUPS && m_GirderKey.girderIndex != ALL_GIRDERS && bDesignSlabOffset );
 }
 
@@ -1320,15 +1319,15 @@ void CGirderModelChildFrame::OnUpdateStrandsButton(CCmdUI* pCmdUI)
 {
    CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
    UINT settings = pDoc->GetGirderEditorSettings();
-   pCmdUI->SetCheck(sysFlags<UINT>::IsSet(settings, IDG_EV_SHOW_STRANDS) || sysFlags<UINT>::IsSet(settings, IDG_SV_SHOW_STRANDS) ? BST_CHECKED : BST_UNCHECKED);
+   pCmdUI->SetCheck(WBFL::System::Flags<UINT>::IsSet(settings, IDG_EV_SHOW_STRANDS) || WBFL::System::Flags<UINT>::IsSet(settings, IDG_SV_SHOW_STRANDS) ? BST_CHECKED : BST_UNCHECKED);
 }
 
 void CGirderModelChildFrame::OnStrandsButton()
 {
    CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
    UINT settings = pDoc->GetGirderEditorSettings();
-   sysFlags<UINT>::Toggle(&settings, IDG_EV_SHOW_STRANDS);
-   sysFlags<UINT>::Toggle(&settings, IDG_SV_SHOW_STRANDS);
+   WBFL::System::Flags<UINT>::Toggle(&settings, IDG_EV_SHOW_STRANDS);
+   WBFL::System::Flags<UINT>::Toggle(&settings, IDG_SV_SHOW_STRANDS);
    pDoc->SetGirderEditorSettings(settings);
 }
 
@@ -1336,15 +1335,15 @@ void CGirderModelChildFrame::OnUpdateStrandsCGButton(CCmdUI* pCmdUI)
 {
    CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
    UINT settings = pDoc->GetGirderEditorSettings();
-   pCmdUI->SetCheck(sysFlags<UINT>::IsSet(settings, IDG_EV_SHOW_PS_CG) || sysFlags<UINT>::IsSet(settings, IDG_SV_SHOW_PS_CG) ? BST_CHECKED : BST_UNCHECKED);
+   pCmdUI->SetCheck(WBFL::System::Flags<UINT>::IsSet(settings, IDG_EV_SHOW_PS_CG) || WBFL::System::Flags<UINT>::IsSet(settings, IDG_SV_SHOW_PS_CG) ? BST_CHECKED : BST_UNCHECKED);
 }
 
 void CGirderModelChildFrame::OnStrandsCGButton()
 {
    CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
    UINT settings = pDoc->GetGirderEditorSettings();
-   sysFlags<UINT>::Toggle(&settings, IDG_EV_SHOW_PS_CG);
-   sysFlags<UINT>::Toggle(&settings, IDG_SV_SHOW_PS_CG);
+   WBFL::System::Flags<UINT>::Toggle(&settings, IDG_EV_SHOW_PS_CG);
+   WBFL::System::Flags<UINT>::Toggle(&settings, IDG_SV_SHOW_PS_CG);
    pDoc->SetGirderEditorSettings(settings);
 }
 
@@ -1352,15 +1351,15 @@ void CGirderModelChildFrame::OnUpdateDimensionsButton(CCmdUI* pCmdUI)
 {
    CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
    UINT settings = pDoc->GetGirderEditorSettings();
-   pCmdUI->SetCheck(sysFlags<UINT>::IsSet(settings, IDG_EV_SHOW_DIMENSIONS) || sysFlags<UINT>::IsSet(settings, IDG_SV_SHOW_DIMENSIONS)  ? BST_CHECKED : BST_UNCHECKED);
+   pCmdUI->SetCheck(WBFL::System::Flags<UINT>::IsSet(settings, IDG_EV_SHOW_DIMENSIONS) || WBFL::System::Flags<UINT>::IsSet(settings, IDG_SV_SHOW_DIMENSIONS)  ? BST_CHECKED : BST_UNCHECKED);
 }
 
 void CGirderModelChildFrame::OnDimensionsButton()
 {
    CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
    UINT settings = pDoc->GetGirderEditorSettings();
-   sysFlags<UINT>::Toggle(&settings, IDG_EV_SHOW_DIMENSIONS);
-   sysFlags<UINT>::Toggle(&settings, IDG_SV_SHOW_DIMENSIONS);
+   WBFL::System::Flags<UINT>::Toggle(&settings, IDG_EV_SHOW_DIMENSIONS);
+   WBFL::System::Flags<UINT>::Toggle(&settings, IDG_SV_SHOW_DIMENSIONS);
    pDoc->SetGirderEditorSettings(settings);
 }
 
@@ -1368,14 +1367,14 @@ void CGirderModelChildFrame::OnUpdatePropertiesButton(CCmdUI* pCmdUI)
 {
    CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
    UINT settings = pDoc->GetGirderEditorSettings();
-   pCmdUI->SetCheck(sysFlags<UINT>::IsSet(settings, IDG_SV_PROPERTIES) ? BST_CHECKED : BST_UNCHECKED);
+   pCmdUI->SetCheck(WBFL::System::Flags<UINT>::IsSet(settings, IDG_SV_PROPERTIES) ? BST_CHECKED : BST_UNCHECKED);
 }
 
 void CGirderModelChildFrame::OnPropertiesButton()
 {
    CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
    UINT settings = pDoc->GetGirderEditorSettings();
-   sysFlags<UINT>::Toggle(&settings, IDG_SV_PROPERTIES);
+   WBFL::System::Flags<UINT>::Toggle(&settings, IDG_SV_PROPERTIES);
    pDoc->SetGirderEditorSettings(settings);
 }
 
@@ -1383,15 +1382,15 @@ void CGirderModelChildFrame::OnUpdateLongitudinalReinforcementButton(CCmdUI* pCm
 {
    CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
    UINT settings = pDoc->GetGirderEditorSettings();
-   pCmdUI->SetCheck(sysFlags<UINT>::IsSet(settings, IDG_EV_SHOW_LONG_REINF) || sysFlags<UINT>::IsSet(settings, IDG_SV_SHOW_LONG_REINF) ? BST_CHECKED : BST_UNCHECKED);
+   pCmdUI->SetCheck(WBFL::System::Flags<UINT>::IsSet(settings, IDG_EV_SHOW_LONG_REINF) || WBFL::System::Flags<UINT>::IsSet(settings, IDG_SV_SHOW_LONG_REINF) ? BST_CHECKED : BST_UNCHECKED);
 }
 
 void CGirderModelChildFrame::OnLongitudinalReinforcementButton()
 {
    CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
    UINT settings = pDoc->GetGirderEditorSettings();
-   sysFlags<UINT>::Toggle(&settings, IDG_EV_SHOW_LONG_REINF);
-   sysFlags<UINT>::Toggle(&settings, IDG_SV_SHOW_LONG_REINF);
+   WBFL::System::Flags<UINT>::Toggle(&settings, IDG_EV_SHOW_LONG_REINF);
+   WBFL::System::Flags<UINT>::Toggle(&settings, IDG_SV_SHOW_LONG_REINF);
    pDoc->SetGirderEditorSettings(settings);
 }
 
@@ -1399,14 +1398,14 @@ void CGirderModelChildFrame::OnUpdateStirrupsButton(CCmdUI* pCmdUI)
 {
    CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
    UINT settings = pDoc->GetGirderEditorSettings();
-   pCmdUI->SetCheck(sysFlags<UINT>::IsSet(settings, IDG_EV_SHOW_STIRRUPS) ? BST_CHECKED : BST_UNCHECKED);
+   pCmdUI->SetCheck(WBFL::System::Flags<UINT>::IsSet(settings, IDG_EV_SHOW_STIRRUPS) ? BST_CHECKED : BST_UNCHECKED);
 }
 
 void CGirderModelChildFrame::OnStirrupsButton()
 {
    CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
    UINT settings = pDoc->GetGirderEditorSettings();
-   sysFlags<UINT>::Toggle(&settings, IDG_EV_SHOW_STIRRUPS);
+   WBFL::System::Flags<UINT>::Toggle(&settings, IDG_EV_SHOW_STIRRUPS);
    pDoc->SetGirderEditorSettings(settings);
 }
 
@@ -1414,15 +1413,15 @@ void CGirderModelChildFrame::OnUpdateUserLoadsButton(CCmdUI* pCmdUI)
 {
    CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
    UINT settings = pDoc->GetGirderEditorSettings();
-   pCmdUI->SetCheck(sysFlags<UINT>::IsSet(settings, IDG_EV_SHOW_LOADS) || sysFlags<UINT>::IsSet(settings, IDG_EV_SHOW_LEGEND) ? BST_CHECKED : BST_UNCHECKED);
+   pCmdUI->SetCheck(WBFL::System::Flags<UINT>::IsSet(settings, IDG_EV_SHOW_LOADS) || WBFL::System::Flags<UINT>::IsSet(settings, IDG_EV_SHOW_LEGEND) ? BST_CHECKED : BST_UNCHECKED);
 }
 
 void CGirderModelChildFrame::OnUserLoadsButton()
 {
    CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
    UINT settings = pDoc->GetGirderEditorSettings();
-   sysFlags<UINT>::Toggle(&settings, IDG_EV_SHOW_LOADS);
-   sysFlags<UINT>::Toggle(&settings, IDG_EV_SHOW_LEGEND);
+   WBFL::System::Flags<UINT>::Toggle(&settings, IDG_EV_SHOW_LOADS);
+   WBFL::System::Flags<UINT>::Toggle(&settings, IDG_EV_SHOW_LEGEND);
    pDoc->SetGirderEditorSettings(settings);
 }
 
@@ -1430,14 +1429,14 @@ void CGirderModelChildFrame::OnUpdateSchematicButton(CCmdUI* pCmdUI)
 {
    CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
    UINT settings = pDoc->GetGirderEditorSettings();
-   pCmdUI->SetCheck(sysFlags<UINT>::IsSet(settings, IDG_EV_DRAW_ISOTROPIC) ? BST_UNCHECKED : BST_CHECKED);
+   pCmdUI->SetCheck(WBFL::System::Flags<UINT>::IsSet(settings, IDG_EV_DRAW_ISOTROPIC) ? BST_UNCHECKED : BST_CHECKED);
 }
 
 void CGirderModelChildFrame::OnSchematicButton()
 {
    CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
    UINT settings = pDoc->GetGirderEditorSettings();
-   sysFlags<UINT>::Toggle(&settings, IDG_EV_DRAW_ISOTROPIC);
+   WBFL::System::Flags<UINT>::Toggle(&settings, IDG_EV_DRAW_ISOTROPIC);
    pDoc->SetGirderEditorSettings(settings);
 }
 
@@ -1445,14 +1444,14 @@ void CGirderModelChildFrame::OnUpdateSectionCGButton(CCmdUI* pCmdUI)
 {
    CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
    UINT settings = pDoc->GetGirderEditorSettings();
-   pCmdUI->SetCheck(sysFlags<UINT>::IsSet(settings, IDG_SV_GIRDER_CG) || sysFlags<UINT>::IsSet(settings, IDG_EV_GIRDER_CG) ? BST_CHECKED : BST_UNCHECKED);
+   pCmdUI->SetCheck(WBFL::System::Flags<UINT>::IsSet(settings, IDG_SV_GIRDER_CG) || WBFL::System::Flags<UINT>::IsSet(settings, IDG_EV_GIRDER_CG) ? BST_CHECKED : BST_UNCHECKED);
 }
 
 void CGirderModelChildFrame::OnSectionCGButton()
 {
    CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
    UINT settings = pDoc->GetGirderEditorSettings();
-   sysFlags<UINT>::Toggle(&settings, IDG_SV_GIRDER_CG);
-   sysFlags<UINT>::Toggle(&settings, IDG_EV_GIRDER_CG);
+   WBFL::System::Flags<UINT>::Toggle(&settings, IDG_SV_GIRDER_CG);
+   WBFL::System::Flags<UINT>::Toggle(&settings, IDG_EV_GIRDER_CG);
    pDoc->SetGirderEditorSettings(settings);
 }

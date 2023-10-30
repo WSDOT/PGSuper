@@ -31,8 +31,11 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
 #include <IFace\PrincipalWebStress.h>
+#include <IFace\ReportOptions.h>
 
 #include <WBFLGenericBridgeTools.h>
+
+#include <psgLib/PrincipalTensionStressCriteria.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -63,13 +66,13 @@ LPCTSTR CPrincipalWebStressDetailsChapterBuilder::GetName() const
    return TEXT("Principal Web Stress Details");
 }
 
-rptChapter* CPrincipalWebStressDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CPrincipalWebStressDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   CPrincipalWebStressDetailsReportSpecification* pTSDRptSpec = dynamic_cast<CPrincipalWebStressDetailsReportSpecification*>(pRptSpec);
+   auto pTSDRptSpec = std::dynamic_pointer_cast<const CPrincipalWebStressDetailsReportSpecification>(pRptSpec);
 
    m_bReportShear = pTSDRptSpec->ReportShear();
    m_bReportAxial = pTSDRptSpec->ReportAxial();
@@ -79,7 +82,7 @@ rptChapter* CPrincipalWebStressDetailsChapterBuilder::Build(CReportSpecification
 
    // check if method is correct. Either bail out here should have been checked before this, but...
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
-   if ( pLossParams->GetLossMethod() != pgsTypes::TIME_STEP )
+   if ( pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       *pPara << color(Red) << _T("Time Step Principal Web Stress analysis results not available when time step losses not used.") << color(Black) << rptNewLine;
       return pChapter;
@@ -89,11 +92,8 @@ rptChapter* CPrincipalWebStressDetailsChapterBuilder::Build(CReportSpecification
       GET_IFACE2(pBroker,ILibrary, pLib);
       GET_IFACE2(pBroker,ISpecification, pSpec);
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-
-      pgsTypes::PrincipalTensileStressMethod method;
-      Float64 coefficient, ductDiameterFactor, ungroutedMultiplier, groutedMultiplier, principalTensileStressFcThreshold;
-      pSpecEntry->GetPrincipalTensileStressInWebsParameters(&method, &coefficient, &ductDiameterFactor, &ungroutedMultiplier, &groutedMultiplier, &principalTensileStressFcThreshold);
-      if (method != pgsTypes::ptsmNCHRP)
+      const auto& principal_tension_stress_criteria = pSpecEntry->GetPrincipalTensionStressCriteria();
+      if (principal_tension_stress_criteria.Method != pgsTypes::ptsmNCHRP)
       {
          *pPara << color(Red) << _T("Time Step Principal Web Stress analysis results not available when NCHRP method not used.") << color(Black) << rptNewLine;
          return pChapter;
@@ -121,7 +121,8 @@ rptChapter* CPrincipalWebStressDetailsChapterBuilder::Build(CReportSpecification
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    INIT_UV_PROTOTYPE(rptPointOfInterest,    location,   pDisplayUnits->GetSpanLengthUnit(),      true);
-   location.IncludeSpanAndGirder(true);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(segmentKey));
 
    // reporting for a specific poi... list poi at top of report
    if ( !pTSDRptSpec->ReportAtAllLocations() )
@@ -151,7 +152,7 @@ rptChapter* CPrincipalWebStressDetailsChapterBuilder::Build(CReportSpecification
       *pChapter << pPara;
 
       CString str;
-      str.Format(_T("Interval %d : %s"),LABEL_INTERVAL(rptIntervalIdx),pIntervals->GetDescription(rptIntervalIdx));
+      str.Format(_T("Interval %d : %s"),LABEL_INTERVAL(rptIntervalIdx),pIntervals->GetDescription(rptIntervalIdx).c_str());
       *pPara << str << rptNewLine;
       //pPara->SetName(str);
    }
@@ -172,7 +173,7 @@ rptChapter* CPrincipalWebStressDetailsChapterBuilder::Build(CReportSpecification
          *pChapter << pPara;
 
          CString str;
-         str.Format(_T("Incremental Web Stresses - Interval %d : %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+         str.Format(_T("Incremental Web Stresses - Interval %d : %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx).c_str());
          *pPara << str << rptNewLine;
          pPara->SetName(str);
       }
@@ -197,7 +198,7 @@ rptChapter* CPrincipalWebStressDetailsChapterBuilder::Build(CReportSpecification
          *pChapter << pPara;
 
          CString str;
-         str.Format(_T("Combined Web Stresses - Interval %d : %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+         str.Format(_T("Combined Web Stresses - Interval %d : %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx).c_str());
          *pPara << str << rptNewLine;
          pPara->SetName(str);
       }
@@ -211,9 +212,9 @@ rptChapter* CPrincipalWebStressDetailsChapterBuilder::Build(CReportSpecification
    return pChapter;
 }
 
-CChapterBuilder* CPrincipalWebStressDetailsChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CPrincipalWebStressDetailsChapterBuilder::Clone() const
 {
-   return new CPrincipalWebStressDetailsChapterBuilder;
+   return std::make_unique<CPrincipalWebStressDetailsChapterBuilder>();
 }
 
 void CPrincipalWebStressDetailsChapterBuilder::BuildIncrementalStressTables(rptChapter* pChapter, IBroker* pBroker, IntervalIndexType intervalIdx, PoiList vPoi, const std::vector<pgsTypes::ProductForceType>& vLoads, IEAFDisplayUnits* pDisplayUnits) const
@@ -233,7 +234,8 @@ void CPrincipalWebStressDetailsChapterBuilder::BuildIncrementalStressTables(rptC
    INIT_UV_PROTOTYPE(rptLength3UnitValue,   l3,         pDisplayUnits->GetSectModulusUnit(),      false);
    INIT_UV_PROTOTYPE(rptLengthUnitValue,    ecc,        pDisplayUnits->GetComponentDimUnit(),    false );
 
-   location.IncludeSpanAndGirder(true);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(CGirderKey()));
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
@@ -579,7 +581,8 @@ void CPrincipalWebStressDetailsChapterBuilder::BuildCombinedStressTables(rptChap
    
    INIT_UV_PROTOTYPE(rptStressUnitValue,    stress,     pDisplayUnits->GetStressUnit(),          false);
    INIT_UV_PROTOTYPE(rptPointOfInterest,    location,   pDisplayUnits->GetSpanLengthUnit(),      false);
-   location.IncludeSpanAndGirder(true);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(CGirderKey()));
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 

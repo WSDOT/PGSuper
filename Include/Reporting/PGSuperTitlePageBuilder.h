@@ -27,17 +27,17 @@
 #include <WBFLCore.h>
 
 class REPORTINGCLASS CPGSuperTitlePageBuilder :
-   public CTitlePageBuilder
+   public WBFL::Reporting::TitlePageBuilder
 {
 public:
    CPGSuperTitlePageBuilder(IBroker* pBroker,LPCTSTR strTitle,bool bFullVersion=true, bool bPageBreakAfter=true);
    CPGSuperTitlePageBuilder(const CPGSuperTitlePageBuilder& other);
    ~CPGSuperTitlePageBuilder(void);
 
-   virtual rptChapter* Build(std::shared_ptr<CReportSpecification>& pRptSpec);
-   virtual bool NeedsUpdate(CReportHint* pHint,std::shared_ptr<CReportSpecification>& pRptSpec);
+   virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec) const override;
+   virtual bool NeedsUpdate(const std::shared_ptr<const WBFL::Reporting::ReportHint>& pHint,const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec) const override;
 
-   virtual CTitlePageBuilder* Clone() const;
+   virtual std::unique_ptr<WBFL::Reporting::TitlePageBuilder> Clone() const;
 
 protected:
    CComPtr<IBroker> m_pBroker;

@@ -53,9 +53,9 @@ LPCTSTR CSpanDataChapterBuilder::GetName() const
    return TEXT("Span Lengths");
 }
 
-rptChapter* CSpanDataChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CSpanDataChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
 
    CComPtr<IBroker> pBroker;
    pGdrRptSpec->GetBroker(&pBroker);
@@ -93,7 +93,7 @@ rptChapter* CSpanDataChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length,  pDisplayUnits->GetSpanLengthUnit(), false );
 
    rptRcScalar scalar;
-   scalar.SetFormat( sysNumericFormatTool::Fixed );
+   scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Fixed );
    scalar.SetWidth(7);
    scalar.SetPrecision(4);
    scalar.SetTolerance(1.0e-6);
@@ -204,7 +204,7 @@ rptChapter* CSpanDataChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
    return pChapter;
 }
 
-CChapterBuilder* CSpanDataChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CSpanDataChapterBuilder::Clone() const
 {
-   return new CSpanDataChapterBuilder;
+   return std::make_unique<CSpanDataChapterBuilder>();
 }

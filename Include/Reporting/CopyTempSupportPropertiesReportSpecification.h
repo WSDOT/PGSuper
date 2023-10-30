@@ -28,10 +28,8 @@ class REPORTINGCLASS CCopyTempSupportPropertiesReportSpecification :
    public CBrokerReportSpecification
 {
 public:
-   CCopyTempSupportPropertiesReportSpecification(LPCTSTR strReportName, IBroker* pBroker);
+   CCopyTempSupportPropertiesReportSpecification(const std::_tstring& strReportName, IBroker* pBroker);
    ~CCopyTempSupportPropertiesReportSpecification(void);
 
-   virtual HRESULT Validate() const;
-
-protected:
+   virtual bool IsValid() const override;
 };

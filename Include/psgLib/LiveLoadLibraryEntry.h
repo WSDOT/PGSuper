@@ -34,9 +34,7 @@
 #include <psgLib\ISupportIcon.h>
 #include <libraryFw\LibraryEntry.h>
 
-#if !defined INCLUDED_SYSTEM_SUBJECTT_H_
 #include <System\SubjectT.h>
-#endif
 
 // FORWARD DECLARATIONS
 //
@@ -44,7 +42,7 @@ class pgsLibraryEntryDifferenceItem;
 class LiveLoadLibraryEntry;
 class LiveLoadLibraryEntryObserver;
 #pragma warning(disable:4231)
-PSGLIBTPL sysSubjectT<LiveLoadLibraryEntryObserver, LiveLoadLibraryEntry>;
+PSGLIBTPL WBFL::System::SubjectT<LiveLoadLibraryEntryObserver, LiveLoadLibraryEntry>;
 
 // MISCELLANEOUS
 //
@@ -69,7 +67,7 @@ public:
    //------------------------------------------------------------------------
    // called by our subject to let us now he's changed, along with an optional
    // hint
-   virtual void Update(LiveLoadLibraryEntry* pSubject, Int32 hint)=0;
+   virtual void Update(LiveLoadLibraryEntry& subject, Int32 hint)=0;
 };
 
 /*****************************************************************************
@@ -86,8 +84,8 @@ LOG
    rdp : 01.24.2005 : Created file
 *****************************************************************************/
 
-class PSGLIBCLASS LiveLoadLibraryEntry : public libLibraryEntry, public ISupportIcon,
-       public sysSubjectT<LiveLoadLibraryEntryObserver, LiveLoadLibraryEntry>
+class PSGLIBCLASS LiveLoadLibraryEntry : public WBFL::Library::LibraryEntry, public ISupportIcon,
+       public WBFL::System::SubjectT<LiveLoadLibraryEntryObserver, LiveLoadLibraryEntry>
 {
 public:
    struct Axle
@@ -111,16 +109,16 @@ public:
 
    //------------------------------------------------------------------------
    // Copy constructor
-   LiveLoadLibraryEntry(const LiveLoadLibraryEntry& rOther);
+   LiveLoadLibraryEntry(const LiveLoadLibraryEntry& rOther) = default;
 
    //------------------------------------------------------------------------
    // Destructor
-   virtual ~LiveLoadLibraryEntry();
+   virtual ~LiveLoadLibraryEntry() = default;
 
    // GROUP: OPERATORS
    //------------------------------------------------------------------------
    // Assignment operator
-   LiveLoadLibraryEntry& operator = (const LiveLoadLibraryEntry& rOther);
+   LiveLoadLibraryEntry& operator=(const LiveLoadLibraryEntry& rOther) = default;
 
    // GROUP: OPERATIONS
 
@@ -130,11 +128,11 @@ public:
 
    //------------------------------------------------------------------------
    // Save to structured storage
-   virtual bool SaveMe(sysIStructuredSave* pSave);
+   virtual bool SaveMe(WBFL::System::IStructuredSave* pSave);
 
    //------------------------------------------------------------------------
    // Load from structured storage
-   virtual bool LoadMe(sysIStructuredLoad* pLoad);
+   virtual bool LoadMe(WBFL::System::IStructuredLoad* pLoad);
 
    //------------------------------------------------------------------------
    // Get the icon for this entry
@@ -201,7 +199,7 @@ public:
 
    // Compares this library entry with rOther. Returns true if the entries are the same.
    // vDifferences contains a listing of the differences. The caller is responsible for deleting the difference items
-   bool Compare(const LiveLoadLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference=false,bool considerName=false) const;
+   bool Compare(const LiveLoadLibraryEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference=false,bool considerName=false) const;
 
    bool IsEqual(const LiveLoadLibraryEntry& rOther,bool bConsiderName=false) const;
 
@@ -244,25 +242,6 @@ private:
    // GROUP: OPERATIONS
    // GROUP: ACCESS
    // GROUP: INQUIRY
-
-public:
-   // GROUP: DEBUG
-   #if defined _DEBUG
-   //------------------------------------------------------------------------
-   // Returns true if the object is in a valid state, otherwise returns false.
-   virtual bool AssertValid() const;
-
-   //------------------------------------------------------------------------
-   // Dumps the contents of the object to the given dump context.
-   virtual void Dump(dbgDumpContext& os) const;
-   #endif // _DEBUG
-
-   #if defined _UNITTEST
-   //------------------------------------------------------------------------
-   // Runs a self-diagnostic test.  Returns true if the test passed,
-   // otherwise false.
-   static bool TestMe(dbgLog& rlog);
-   #endif // _UNITTEST
 };
 
 // INLINE METHODS

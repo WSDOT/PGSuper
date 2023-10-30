@@ -28,6 +28,7 @@
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
 #include <IFace\PrestressForce.h>
+#include <IFace\ReportOptions.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -47,10 +48,10 @@ LPCTSTR CInternalForceChapterBuilder::GetName() const
    return TEXT("Internal Time-Dependent Forces");
 }
 
-rptChapter* CInternalForceChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CInternalForceChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-   CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
+   auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
+   auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
    CComPtr<IBroker> pBroker;
    CGirderKey girderKey;
@@ -68,7 +69,7 @@ rptChapter* CInternalForceChapterBuilder::Build(CReportSpecification* pRptSpec,U
 
 #if defined _DEBUG
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
-   ATLASSERT( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP );
+   ATLASSERT( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP );
 #endif 
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
@@ -82,7 +83,8 @@ rptChapter* CInternalForceChapterBuilder::Build(CReportSpecification* pRptSpec,U
    INIT_UV_PROTOTYPE( rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), false);
    INIT_UV_PROTOTYPE( rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(), false);
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
-   location.IncludeSpanAndGirder(true);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    rptParagraph* pPara = new rptParagraph;
@@ -99,7 +101,7 @@ rptChapter* CInternalForceChapterBuilder::Build(CReportSpecification* pRptSpec,U
       pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pPara;
       CString strName;
-      strName.Format(_T("Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+      strName.Format(_T("Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx).c_str());
       pPara->SetName(strName);
       *pPara << pPara->GetName() << rptNewLine;
 
@@ -183,7 +185,7 @@ rptChapter* CInternalForceChapterBuilder::Build(CReportSpecification* pRptSpec,U
    return pChapter;
 }
 
-CChapterBuilder* CInternalForceChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CInternalForceChapterBuilder::Clone() const
 {
-   return new CInternalForceChapterBuilder;
+   return std::make_unique<CInternalForceChapterBuilder>();
 }

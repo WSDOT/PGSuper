@@ -52,7 +52,10 @@ CHaunchByBearingDlg::~CHaunchByBearingDlg()
 void CHaunchByBearingDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
-   m_Grid.UpdateData(pDX->m_bSaveAndValidate);
+   if (FALSE == m_Grid.UpdateData(pDX->m_bSaveAndValidate))
+   {
+      pDX->Fail();
+   }
 }
 
 BEGIN_MESSAGE_MAP(CHaunchByBearingDlg, CDialog)

@@ -26,10 +26,9 @@
 #include <System\IStructuredSave.h>
 #include <System\IStructuredLoad.h>
 #include <System\XStructuredLoad.h>
+#include <psgLib/LibraryEntryDifferenceItem.h>
 
 #include "resource.h"
-//#include <psgLib\DiaphragmLayoutDlg.h>
-
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -47,33 +46,9 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-DiaphragmLayoutEntry::DiaphragmLayoutEntry()
-{
-}
-
-DiaphragmLayoutEntry::DiaphragmLayoutEntry(const DiaphragmLayoutEntry& rOther) :
-libLibraryEntry(rOther)
-{
-   MakeCopy(rOther);
-}
-
-DiaphragmLayoutEntry::~DiaphragmLayoutEntry()
-{
-}
-
-//======================== OPERATORS  =======================================
-DiaphragmLayoutEntry& DiaphragmLayoutEntry::operator= (const DiaphragmLayoutEntry& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
 
 //======================== OPERATIONS =======================================
-bool DiaphragmLayoutEntry::SaveMe(sysIStructuredSave* pSave)
+bool DiaphragmLayoutEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
 {
    pSave->BeginUnit(_T("DiaphragmLayoutEntry"), 1.0);
 
@@ -93,7 +68,7 @@ bool DiaphragmLayoutEntry::SaveMe(sysIStructuredSave* pSave)
    return false;
 }
 
-bool DiaphragmLayoutEntry::LoadMe(sysIStructuredLoad* pLoad)
+bool DiaphragmLayoutEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 {
    if(pLoad->BeginUnit(_T("DiaphragmLayoutEntry")))
    {
@@ -138,12 +113,12 @@ bool DiaphragmLayoutEntry::LoadMe(sysIStructuredLoad* pLoad)
 
 bool DiaphragmLayoutEntry::IsEqual(const DiaphragmLayoutEntry& rOther,bool bConsiderName) const
 {
-   std::vector<pgsLibraryEntryDifferenceItem*> vDifferences;
+   std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>> vDifferences;
    bool bMustRename;
    return Compare(rOther,vDifferences,bMustRename,true,bConsiderName);
 }
 
-bool DiaphragmLayoutEntry::Compare(const DiaphragmLayoutEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
+bool DiaphragmLayoutEntry::Compare(const DiaphragmLayoutEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
 {
 
    bMustRename = false;
@@ -202,18 +177,6 @@ bool DiaphragmLayoutEntry::Edit(bool allowEditing,int nPage)
    return false;
 }
 
-
-void DiaphragmLayoutEntry::MakeCopy(const DiaphragmLayoutEntry& rOther)
-{
-   m_DiaphragmLayoutVec = rOther.m_DiaphragmLayoutVec;
-}
-
-void DiaphragmLayoutEntry::MakeAssignment(const DiaphragmLayoutEntry& rOther)
-{
-   libLibraryEntry::MakeAssignment( rOther );
-   MakeCopy( rOther );
-}
-
 //======================== ACCESS     =======================================
 //======================== INQUIRY    =======================================
 
@@ -226,31 +189,3 @@ void DiaphragmLayoutEntry::MakeAssignment(const DiaphragmLayoutEntry& rOther)
 //======================== INQUERY    =======================================
 
 //======================== DEBUG      =======================================
-#if defined _DEBUG
-bool DiaphragmLayoutEntry::AssertValid() const
-{
-   return libLibraryEntry::AssertValid();
-}
-
-void DiaphragmLayoutEntry::Dump(dbgDumpContext& os) const
-{
-   os << _T("Dump for DiaphragmLayoutEntry")<<endl;
-   libLibraryEntry::Dump( os );
-   for (DiaphragmLayoutVec::const_iterator it = m_DiaphragmLayoutVec.begin(); it!=m_DiaphragmLayoutVec.end(); it++)
-   {
-      os<<_T(" EndOfRange = ")<< (*it).EndOfRange<<endl;
-      os<<_T(" NumberOfDiaphragms = ")<< (*it).NumberOfDiaphragms<<endl;
-   }
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool DiaphragmLayoutEntry::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("DiaphragmLayoutEntry");
-
-   // tests are performed on entire library.
-
-   TESTME_EPILOG("DiaphragmLayoutEntry");
-}
-#endif // _UNITTEST

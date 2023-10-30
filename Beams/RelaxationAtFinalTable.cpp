@@ -48,7 +48,7 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
    DEFINE_UV_PROTOTYPE( time,        pDisplayUnits->GetWholeDaysUnit(),        false );
 
-   scalar.SetFormat( sysNumericFormatTool::Automatic );
+   scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Automatic );
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
 }
@@ -71,7 +71,7 @@ CRelaxationAtFinalTable* CRelaxationAtFinalTable::PrepareTable(rptChapter* pChap
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   *pParagraph << _T("[") << LrfdCw8th(_T("5.9.5.4.3c"),_T("5.9.3.4.3c")) << _T("] Relaxation of Prestressing Strands : ") << symbol(DELTA) << RPT_STRESS(_T("pR2")) << rptNewLine;
+   *pParagraph << _T("[") << WBFL::LRFD::LrfdCw8th(_T("5.9.5.4.3c"),_T("5.9.3.4.3c")) << _T("] Relaxation of Prestressing Strands : ") << symbol(DELTA) << RPT_STRESS(_T("pR2")) << rptNewLine;
 
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
@@ -87,7 +87,7 @@ CRelaxationAtFinalTable* CRelaxationAtFinalTable::PrepareTable(rptChapter* pChap
 void CRelaxationAtFinalTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
   // Typecast to our known type (eating own doggy food)
-   std::shared_ptr<const lrfdRefinedLosses2005> ptl = std::dynamic_pointer_cast<const lrfdRefinedLosses2005>(pDetails->pLosses);
+   std::shared_ptr<const WBFL::LRFD::RefinedLosses2005> ptl = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLosses2005>(pDetails->pLosses);
    if (!ptl)
    {
       ATLASSERT(false); // made a bad cast? Bail...

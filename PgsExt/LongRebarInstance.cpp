@@ -45,8 +45,8 @@ m_MinCutoffLength(0.0)
 }
 
 
-pgsLongRebarInstance::pgsLongRebarInstance(const gpPoint2d& rloc, 
-                                           const matRebar* pRebar, 
+pgsLongRebarInstance::pgsLongRebarInstance(const WBFL::Geometry::Point2d& rloc,
+                                           const WBFL::Materials::Rebar* pRebar,
                                            Float64 minCutoffLength):
 m_Location(rloc),
 m_pRebar(pRebar),
@@ -77,29 +77,29 @@ pgsLongRebarInstance& pgsLongRebarInstance::operator= (const pgsLongRebarInstanc
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 
-gpPoint2d pgsLongRebarInstance::GetLocation() const
+const WBFL::Geometry::Point2d& pgsLongRebarInstance::GetLocation() const
 {
    return m_Location;
 }
 
-void pgsLongRebarInstance::SetLocation(const gpPoint2d& loc)
+void pgsLongRebarInstance::SetLocation(const WBFL::Geometry::Point2d& loc)
 {
    m_Location = loc;
 }
 
-const matRebar* pgsLongRebarInstance::GetRebar() const
+const WBFL::Materials::Rebar* pgsLongRebarInstance::GetRebar() const
 {
    return m_pRebar;
 }
-void pgsLongRebarInstance::SetRebar(const matRebar* prebar)
+void pgsLongRebarInstance::SetRebar(const WBFL::Materials::Rebar* pRebar)
 {
-   ATLASSERT(prebar!=0);
-   m_pRebar = prebar;
+   ATLASSERT(pRebar!=nullptr);
+   m_pRebar = pRebar;
 }
 
 Float64 pgsLongRebarInstance::GetMinCutoffLength() const
 {
-   ATLASSERT(m_MinCutoffLength >0.0);
+   ATLASSERT(0.0 < m_MinCutoffLength);
    return m_MinCutoffLength;
 }
 
@@ -139,27 +139,3 @@ void pgsLongRebarInstance::MakeAssignment(const pgsLongRebarInstance& rOther)
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool pgsLongRebarInstance::AssertValid() const
-{
-   return true;
-}
-
-void pgsLongRebarInstance::Dump(dbgDumpContext& os) const
-{
-   os << "Dump for pgsLongRebarInstance" << endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool pgsLongRebarInstance::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("pgsLongRebarInstance");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for pgsLongRebarInstance");
-
-   TESTME_EPILOG("LongRebarInstance");
-}
-#endif // _UNITTEST

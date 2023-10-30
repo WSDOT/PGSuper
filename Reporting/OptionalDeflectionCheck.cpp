@@ -148,27 +148,3 @@ void COptionalDeflectionCheck::MakeAssignment(const COptionalDeflectionCheck& rO
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool COptionalDeflectionCheck::AssertValid() const
-{
-   return true;
-}
-
-void COptionalDeflectionCheck::Dump(dbgDumpContext& os) const
-{
-   os << _T("Dump for COptionalDeflectionCheck") << endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool COptionalDeflectionCheck::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("COptionalDeflectionCheck");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for COptionalDeflectionCheck");
-
-   TESTME_EPILOG("LiveLoadDistributionFactorTable");
-}
-#endif // _UNITTEST

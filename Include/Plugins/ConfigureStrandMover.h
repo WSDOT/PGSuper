@@ -51,6 +51,6 @@ interface IConfigureStrandMover : IUnknown
    virtual HRESULT AddRegion(IShape* shape, Float64 arcSlope) = 0;
 
    // methods to help debugging
-   virtual HRESULT GetRegionCount(CollectionIndexType* pNum) const = 0;
-   virtual HRESULT GetRegion(CollectionIndexType index, IShape** shape, Float64* arcSlope) const = 0;
+   virtual HRESULT GetRegionCount(IndexType* pNum) const = 0;
+   virtual HRESULT GetRegion(IndexType index, IShape** shape, Float64* arcSlope) const = 0;
 };

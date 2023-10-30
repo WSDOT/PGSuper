@@ -40,9 +40,6 @@
 #include <WBFLGenericBridge_i.c>
 #include <WBFLGenericBridgeTools_i.c>
 #include <WBFLUnitServer_i.c>
-#include <WBFLSections_i.c>
-
-#include <WBFLBridgeGeometry_i.c>
 
 #include "BridgeAgentImp.h"
 #include <EAF\EAFDisplayUnits.h>
@@ -54,7 +51,7 @@
 #include <IFace\DocumentType.h>
 #include <IFace\MomentCapacity.h>
 #include <IFace\AgeAdjustedMaterial.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 
 #include "PGSuperCatCom.h"
 #include "PGSpliceCatCom.h"
@@ -118,13 +115,13 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
 HRESULT RegisterAgent(bool bRegister)
 {
    HRESULT hr = S_OK;
-   hr = sysComCatMgr::RegWithCategory(CLSID_BridgeAgent,CATID_PGSuperAgent,bRegister);
+   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_BridgeAgent,CATID_PGSuperAgent,bRegister);
    if ( FAILED(hr) )
    {
       return hr;
    }
 
-   hr = sysComCatMgr::RegWithCategory(CLSID_BridgeAgent,CATID_PGSpliceAgent,bRegister);
+   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_BridgeAgent,CATID_PGSpliceAgent,bRegister);
    if ( FAILED(hr) )
    {
       return hr;

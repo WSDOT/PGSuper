@@ -30,7 +30,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CBridgeAnalysisReportSpecification::CBridgeAnalysisReportSpecification(LPCTSTR strReportName,IBroker* pBroker,GirderIndexType gdrIdx,bool bDesign,bool bRating) :
+CBridgeAnalysisReportSpecification::CBridgeAnalysisReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,GirderIndexType gdrIdx,bool bDesign,bool bRating) :
 CGirderLineReportSpecification(strReportName,pBroker,gdrIdx)
 {
    SetOptions(bDesign,bRating);

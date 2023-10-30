@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <GraphicsLib\PointMapper.h>
+#include <Graphing/PointMapper.h>
 #include <PgsExt\SplicedGirderData.h>
 #include <PgsExt\Keys.h>
 
@@ -37,8 +37,8 @@ public:
 
    void CustomInit(const CGirderKey& girderKey,const CSplicedGirderData* pGirder,const CPTData* pPTData);
 
-   void SetMapMode(grlibPointMapper::MapMode mm);
-   grlibPointMapper::MapMode GetMapMode() const;
+   void SetMapMode(WBFL::Graphing::PointMapper::MapMode mm);
+   WBFL::Graphing::PointMapper::MapMode GetMapMode() const;
 
    void SetDuct(DuctIndexType ductIdx);
    DuctIndexType GetDuct() const;
@@ -58,10 +58,10 @@ protected:
    DuctIndexType m_DuctIdx; // index of the duct to be drawn... Use ALL_DUCTS to draw all ducts
 
    bool m_bDrawAllDucts;
-   grlibPointMapper::MapMode m_MapMode;
+   WBFL::Graphing::PointMapper::MapMode m_MapMode;
 
-   void DrawShape(CDC* pDC,grlibPointMapper& mapper,IShape* pShape);
-   void Draw(CDC* pDC,grlibPointMapper& mapper,IPoint2dCollection* pPolyPoints,BOOL bPolygon);
+   void DrawShape(CDC* pDC, WBFL::Graphing::PointMapper& mapper,IShape* pShape);
+   void Draw(CDC* pDC, WBFL::Graphing::PointMapper& mapper,IPoint2dCollection* pPolyPoints,BOOL bPolygon);
 };
 
 

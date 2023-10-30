@@ -32,6 +32,6 @@ public:
    CMomentCapacityReportSpecificationBuilder(IBroker* pBroker);
    ~CMomentCapacityReportSpecificationBuilder(void);
 
-   virtual std::shared_ptr<CReportSpecification> CreateReportSpec(const CReportDescription& rptDesc,std::shared_ptr<CReportSpecification>& pRptSpec) override;
-   virtual std::shared_ptr<CReportSpecification> CreateDefaultReportSpec(const CReportDescription& rptDesc) override;
+   virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec) const override;
+   virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const override;
 };

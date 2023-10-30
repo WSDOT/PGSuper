@@ -49,7 +49,7 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( moment,      pDisplayUnits->GetMomentUnit(),          false );
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
 
-   scalar.SetFormat( sysNumericFormatTool::Automatic );
+   scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Automatic );
    scalar.SetWidth(6);
    scalar.SetPrecision(2);
 }
@@ -57,21 +57,21 @@ rptRcTable(NumColumns,0)
 CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,bool bTemporaryStrands,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    GET_IFACE2(pBroker,ILossParameters,pLossParameters);
-   pgsTypes::LossMethod loss_method = pLossParameters->GetLossMethod();
+   PrestressLossCriteria::LossMethodType loss_method = pLossParameters->GetLossMethod();
 
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
-   bool bUHPC = pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC ? true : false;
+   bool bPCIUHPC = pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC ? true : false;
 
    GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   bool bIgnoreInitialRelaxation = ( loss_method == pgsTypes::WSDOT_REFINED || loss_method == pgsTypes::WSDOT_LUMPSUM ) ? false : true;
+   bool bIgnoreInitialRelaxation = ( loss_method == PrestressLossCriteria::LossMethodType::WSDOT_REFINED || loss_method == PrestressLossCriteria::LossMethodType::WSDOT_LUMPSUM ) ? false : true;
 
-   if ((lrfdVersionMgr::GetVersion() <= lrfdVersionMgr::ThirdEdition2004 && loss_method == pgsTypes::AASHTO_REFINED) ||
-        loss_method == pgsTypes::TXDOT_REFINED_2004)
+   if ((WBFL::LRFD::BDSManager::GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 && loss_method == PrestressLossCriteria::LossMethodType::AASHTO_REFINED) ||
+        loss_method == PrestressLossCriteria::LossMethodType::TXDOT_REFINED_2004)
    {
       bIgnoreInitialRelaxation = false;
    }
@@ -81,7 +81,7 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
    if ( bIgnoreInitialRelaxation ) // for perm strands
       numColumns--;
 
-   if (bUHPC)
+   if (bPCIUHPC)
       numColumns++;
 
    if ( pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned ) 
@@ -98,7 +98,7 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
    CTimeDependentLossesAtShippingTable* table = new CTimeDependentLossesAtShippingTable( numColumns, pDisplayUnits );
    rptStyleManager::ConfigureTable(table);
 
-   table->m_bUHPC = bUHPC;
+   table->m_bPCIUHPC = bPCIUHPC;
    table->m_bTemporaryStrands = bTemporaryStrands;
    table->m_pStrands = pStrands;
 
@@ -117,14 +117,14 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
    // first equation
    if ( bTemporaryStrands )
    {
-      if ( loss_method == pgsTypes::WSDOT_REFINED || loss_method == pgsTypes::AASHTO_REFINED || loss_method == pgsTypes::TXDOT_REFINED_2004 )
+      if ( loss_method == PrestressLossCriteria::LossMethodType::WSDOT_REFINED || loss_method == PrestressLossCriteria::LossMethodType::AASHTO_REFINED || loss_method == PrestressLossCriteria::LossMethodType::TXDOT_REFINED_2004 )
       {
          *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pLTH")) << _T(" = ") << symbol(DELTA) << RPT_STRESS(_T("pSRH")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pCRH")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pR1H")) << rptNewLine;
       }
    }
    else
    {
-      if ( loss_method == pgsTypes::WSDOT_REFINED || loss_method == pgsTypes::AASHTO_REFINED || loss_method == pgsTypes::TXDOT_REFINED_2004 )
+      if ( loss_method == PrestressLossCriteria::LossMethodType::WSDOT_REFINED || loss_method == PrestressLossCriteria::LossMethodType::AASHTO_REFINED || loss_method == PrestressLossCriteria::LossMethodType::TXDOT_REFINED_2004 )
       {
          *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pLTH")) << _T(" = ") << symbol(DELTA) << RPT_STRESS(_T("pSRH")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pCRH")) << _T(" + ") << symbol(DELTA) << RPT_STRESS(_T("pR1H")) << rptNewLine;
       }
@@ -140,7 +140,7 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
 
    *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pES")) << _T(" + ");
 
-   if (bUHPC)
+   if (bPCIUHPC)
    {
       *pParagraph << symbol(DELTA) << RPT_STRESS(_T("pAS")) << _T(" + ");
    }
@@ -180,7 +180,7 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
 
       (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-      if (bUHPC)
+      if (bPCIUHPC)
       {
          (*table)(1, col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pAS")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
       }
@@ -204,7 +204,7 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
 
       (*table)(1,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-      if (bUHPC)
+      if (bPCIUHPC)
       {
          (*table)(1, col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pAS")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
       }
@@ -221,7 +221,7 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
 
       (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
-      if (bUHPC)
+      if (bPCIUHPC)
       {
          (*table)(0, col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pAS")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
       }
@@ -253,9 +253,9 @@ void CTimeDependentLossesAtShippingTable::AddRow(rptChapter* pChapter,IBroker* p
    Float64 fpES = pDetails->pLosses->PermanentStrand_ElasticShorteningLosses();
 
    Float64 fpAS = 0;
-   if (m_bUHPC)
+   if (m_bPCIUHPC)
    {
-      const std::shared_ptr<const lrfdPCIUHPCLosses> pLosses = std::dynamic_pointer_cast<const lrfdPCIUHPCLosses>(pDetails->pLosses);
+      const std::shared_ptr<const WBFL::LRFD::PCIUHPCLosses> pLosses = std::dynamic_pointer_cast<const WBFL::LRFD::PCIUHPCLosses>(pDetails->pLosses);
       ATLASSERT(pLosses.use_count() == pDetails->pLosses.use_count());
       fpAS = pLosses->PermanentStrand_AutogenousShrinkage();
    }
@@ -270,7 +270,7 @@ void CTimeDependentLossesAtShippingTable::AddRow(rptChapter* pChapter,IBroker* p
    fpH += fpES + fpp; // need to add elastic effects to get total change in effective prestress at hauling
 
    (*this)(row+rowOffset,col++) << stress.SetValue(fpES);
-   if (m_bUHPC)
+   if (m_bPCIUHPC)
    {
       (*this)(row + rowOffset, col++) << stress.SetValue(fpAS);
    }
@@ -291,9 +291,9 @@ void CTimeDependentLossesAtShippingTable::AddRow(rptChapter* pChapter,IBroker* p
 
       fpES = pDetails->pLosses->TemporaryStrand_ElasticShorteningLosses();
       fpAS = 0;
-      if (m_bUHPC)
+      if (m_bPCIUHPC)
       {
-         const std::shared_ptr<const lrfdPCIUHPCLosses> pLosses = std::dynamic_pointer_cast<const lrfdPCIUHPCLosses>(pDetails->pLosses);
+         const std::shared_ptr<const WBFL::LRFD::PCIUHPCLosses> pLosses = std::dynamic_pointer_cast<const WBFL::LRFD::PCIUHPCLosses>(pDetails->pLosses);
          ATLASSERT(pLosses.use_count() == pDetails->pLosses.use_count());
          fpAS = pLosses->TemporaryStrand_AutogenousShrinkage();
       }
@@ -302,7 +302,7 @@ void CTimeDependentLossesAtShippingTable::AddRow(rptChapter* pChapter,IBroker* p
       fpH = pDetails->pLosses->TemporaryStrand_AtShipping();
       fpH += fpES + fpAS; // need to add elastic effects to get total change in effective prestress at hauling
       (*this)(row+rowOffset,col++) << stress.SetValue(fpES);
-      if (m_bUHPC)
+      if (m_bPCIUHPC)
       {
          (*this)(row + rowOffset, col++) << stress.SetValue(fpAS);
       }

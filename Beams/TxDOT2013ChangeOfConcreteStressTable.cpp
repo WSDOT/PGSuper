@@ -47,7 +47,7 @@ rptRcTable(NumColumns,0)
 CTxDOT2013ChangeOfConcreteStressTable* CTxDOT2013ChangeOfConcreteStressTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    // If the 0.7fpu method is used for elastic shortening, we only need to compute mid-span values so no table is needed.
-   lrfdElasticShortening::FcgpComputationMethod fcgpMethod = pDetails->pLosses->ElasticShortening().GetFcgpComputationMethod();
+   WBFL::LRFD::ElasticShortening::FcgpComputationMethod fcgpMethod = pDetails->pLosses->GetElasticShortening().GetFcgpComputationMethod();
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
@@ -58,12 +58,12 @@ CTxDOT2013ChangeOfConcreteStressTable* CTxDOT2013ChangeOfConcreteStressTable::Pr
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
-   if (lrfdElasticShortening::fcgp07Fpu==fcgpMethod)
+   if (WBFL::LRFD::ElasticShortening::FcgpComputationMethod::AssumedFpe == fcgpMethod)
    {
       *pParagraph << rptRcImage(strImagePath + _T("TxDOT_Delta_Fcd_07.png")) << rptNewLine;
       *pParagraph << _T("Note: Elastic values are considered constant along girder length. All parameters taken at mid-span of girder.") << rptNewLine << rptNewLine;
 
-       std::shared_ptr<const lrfdRefinedLossesTxDOT2013> ptl = std::dynamic_pointer_cast<const lrfdRefinedLossesTxDOT2013>(pDetails->pLosses);
+       std::shared_ptr<const WBFL::LRFD::RefinedLossesTxDOT2013> ptl = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLossesTxDOT2013>(pDetails->pLosses);
       if (!ptl)
       {
          ATLASSERT(false); // made a bad cast? Bail...
@@ -85,7 +85,7 @@ CTxDOT2013ChangeOfConcreteStressTable* CTxDOT2013ChangeOfConcreteStressTable::Pr
 
       return nullptr; // no table needed for 0.7fpu case
    }
-   else if (lrfdElasticShortening::fcgpIterative==fcgpMethod)
+   else if (WBFL::LRFD::ElasticShortening::FcgpComputationMethod::Iterative==fcgpMethod)
    {
       *pParagraph << rptRcImage(strImagePath + _T("TxDOT_Delta_Fcd.png")) << rptNewLine;
 
@@ -118,7 +118,7 @@ CTxDOT2013ChangeOfConcreteStressTable* CTxDOT2013ChangeOfConcreteStressTable::Pr
 
 void CTxDOT2013ChangeOfConcreteStressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-    std::shared_ptr<const lrfdRefinedLossesTxDOT2013> ptl = std::dynamic_pointer_cast<const lrfdRefinedLossesTxDOT2013>(pDetails->pLosses);
+    std::shared_ptr<const WBFL::LRFD::RefinedLossesTxDOT2013> ptl = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLossesTxDOT2013>(pDetails->pLosses);
    if (!ptl)
    {
       ATLASSERT(false); // made a bad cast? Bail...

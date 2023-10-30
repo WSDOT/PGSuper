@@ -39,7 +39,7 @@
 
 #include <IFace\Intervals.h>
 
-#include <Material\PsStrand.h>
+#include <Materials/PsStrand.h>
 #include <LRFD\StrandPool.h>
 
 #include "PGSuperColors.h"
@@ -57,7 +57,7 @@ static char THIS_FILE[] = __FILE__;
 
 IMPLEMENT_DYNAMIC(CGirderSegmentStrandsPage, CPropertyPage)
 
-void DDX_UnitValueChoice(CDataExchange* pDX, UINT nIDC, UINT nIDCUnit, Float64& value, const unitmgtLengthData& lengthUnit)
+void DDX_UnitValueChoice(CDataExchange* pDX, UINT nIDC, UINT nIDCUnit, Float64& value, const WBFL::Units::LengthData& lengthUnit)
 {
    CComboBox* pCB = (CComboBox*)pDX->m_pDlgWnd->GetDlgItem(nIDCUnit);
    if (pDX->m_bSaveAndValidate)
@@ -91,14 +91,14 @@ void DDX_UnitValueChoice(CDataExchange* pDX, UINT nIDC, UINT nIDCUnit, Float64& 
       else
       {
          // this is a unit value
-         Float64 v = ::ConvertFromSysUnits(value, lengthUnit.UnitOfMeasure);
+         Float64 v = WBFL::Units::ConvertFromSysUnits(value, lengthUnit.UnitOfMeasure);
          DDX_Text(pDX, nIDC, v);
          pCB->SetCurSel(1);
       }
    }
 }
 
-void DDV_UnitValueChoice(CDataExchange* pDX, UINT nIDC, Float64& value, Float64 Ls, const unitmgtLengthData& lengthUnit)
+void DDV_UnitValueChoice(CDataExchange* pDX, UINT nIDC, Float64& value, Float64 Ls, const WBFL::Units::LengthData& lengthUnit)
 {
    if (pDX->m_bSaveAndValidate)
    {
@@ -248,10 +248,10 @@ void CGirderSegmentStrandsPage::DoDataExchange(CDataExchange* pDX)
    if (pDX->m_bSaveAndValidate)
    {
       // strand material
-      lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
-      const matPsStrand* pStraightStrand = pPool->GetStrand(m_StrandKey[pgsTypes::Straight]);
-      const matPsStrand* pHarpedStrand = pPool->GetStrand(m_StrandKey[pgsTypes::Harped]);
-      const matPsStrand* pTemporaryStrand = pPool->GetStrand(m_StrandKey[pgsTypes::Temporary]);
+      const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
+      const auto* pStraightStrand = pPool->GetStrand(m_StrandKey[pgsTypes::Straight]);
+      const auto* pHarpedStrand = pPool->GetStrand(m_StrandKey[pgsTypes::Harped]);
+      const auto* pTemporaryStrand = pPool->GetStrand(m_StrandKey[pgsTypes::Temporary]);
       if (!pPool->CompareStrands(pStraightStrand, pHarpedStrand)/* || !pPool->CompareStrands(pStraightStrand, pTemporaryStrand)*/)
       {
          pDX->PrepareCtrl(IDC_STRAIGHT_STRAND_SIZE);
@@ -311,14 +311,14 @@ BOOL CGirderSegmentStrandsPage::OnInitDialog()
    //m_DrawStrands.CustomInit(m_pSegment,&m_Strands,&m_Tendons); // we will do this in OnSetActive
 
    // Select the strand size
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+   const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
    for (int i = 0; i < 3; i++)
    {
       pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
       m_StrandKey[strandType] = pPool->GetStrandKey(m_pSegment->Strands.GetStrandMaterial(strandType));
    }
 
-   if ( sysFlags<Int64>::IsSet(m_StrandKey[pgsTypes::Straight],matPsStrand::GritEpoxy) )
+   if ( WBFL::System::Flags<Int64>::IsSet(m_StrandKey[pgsTypes::Straight],+WBFL::Materials::PsStrand::Coating::GritEpoxy) )
    {
       CheckDlgButton(IDC_EPOXY,BST_CHECKED);
    }
@@ -429,8 +429,8 @@ Float64 CGirderSegmentStrandsPage::GetMaxPjack(StrandIndexType nStrands,pgsTypes
    pEvents->HoldEvents();
 
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
-   LldfRangeOfApplicabilityAction action = pLiveLoads->GetLldfRangeOfApplicabilityAction();
-   pLiveLoads->SetLldfRangeOfApplicabilityAction(roaIgnore);
+   WBFL::LRFD::RangeOfApplicabilityAction action = pLiveLoads->GetRangeOfApplicabilityAction();
+   pLiveLoads->SetRangeOfApplicabilityAction(WBFL::LRFD::RangeOfApplicabilityAction::Ignore);
 
    Float64 PjackMax;
    try
@@ -439,11 +439,11 @@ Float64 CGirderSegmentStrandsPage::GetMaxPjack(StrandIndexType nStrands,pgsTypes
    }
    catch (... )
    {
-      pLiveLoads->SetLldfRangeOfApplicabilityAction(action);
+      pLiveLoads->SetRangeOfApplicabilityAction(action);
       throw;
    }
 
-   pLiveLoads->SetLldfRangeOfApplicabilityAction(action);
+   pLiveLoads->SetRangeOfApplicabilityAction(action);
    pEvents->CancelPendingEvents();
 
    return PjackMax;
@@ -451,7 +451,7 @@ Float64 CGirderSegmentStrandsPage::GetMaxPjack(StrandIndexType nStrands,pgsTypes
 
 Float64 CGirderSegmentStrandsPage::GetUltPjack(StrandIndexType nStrands,pgsTypes::StrandType strandType)
 {
-   const matPsStrand& strand = *(m_Strands.GetStrandMaterial(strandType));
+   const auto& strand = *(m_Strands.GetStrandMaterial(strandType));
 
    // Ultimate strength of strand group
    Float64 ult = strand.GetUltimateStrength();
@@ -509,7 +509,7 @@ void CGirderSegmentStrandsPage::OnUpdateStrandPjEdit(UINT nCheck,UINT nForceEdit
       CString val_as_text;
       pWnd->GetWindowText( val_as_text );
       Pjack = _tstof( val_as_text );
-      Pjack = ::ConvertToSysUnits( Pjack, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure );
+      Pjack = WBFL::Units::ConvertToSysUnits( Pjack, pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure );
       
       m_Strands.SetLastUserPjack(strandType, Pjack);
       Pjack = GetMaxPjack(nStrands, strandType);
@@ -534,13 +534,13 @@ void CGirderSegmentStrandsPage::OnHelp()
 
 void CGirderSegmentStrandsPage::OnEpoxyChanged()
 {
-   sysFlags<Int64>::Clear(&m_StrandKey[pgsTypes::Straight],matPsStrand::None);
-   sysFlags<Int64>::Clear(&m_StrandKey[pgsTypes::Straight],matPsStrand::GritEpoxy);
-   sysFlags<Int64>::Set(&m_StrandKey[pgsTypes::Straight],IsDlgButtonChecked(IDC_EPOXY) == BST_CHECKED ? matPsStrand::GritEpoxy : matPsStrand::None);
+   WBFL::System::Flags<Int64>::Clear(&m_StrandKey[pgsTypes::Straight], +WBFL::Materials::PsStrand::Coating::None);
+   WBFL::System::Flags<Int64>::Clear(&m_StrandKey[pgsTypes::Straight], +WBFL::Materials::PsStrand::Coating::GritEpoxy);
+   WBFL::System::Flags<Int64>::Set(&m_StrandKey[pgsTypes::Straight],IsDlgButtonChecked(IDC_EPOXY) == BST_CHECKED ? +WBFL::Materials::PsStrand::Coating::GritEpoxy : +WBFL::Materials::PsStrand::Coating::None);
 
-   sysFlags<Int64>::Clear(&m_StrandKey[pgsTypes::Harped], matPsStrand::None);
-   sysFlags<Int64>::Clear(&m_StrandKey[pgsTypes::Harped], matPsStrand::GritEpoxy);
-   sysFlags<Int64>::Set(&m_StrandKey[pgsTypes::Harped], IsDlgButtonChecked(IDC_EPOXY) == BST_CHECKED ? matPsStrand::GritEpoxy : matPsStrand::None);
+   WBFL::System::Flags<Int64>::Clear(&m_StrandKey[pgsTypes::Harped], +WBFL::Materials::PsStrand::Coating::None);
+   WBFL::System::Flags<Int64>::Clear(&m_StrandKey[pgsTypes::Harped], +WBFL::Materials::PsStrand::Coating::GritEpoxy);
+   WBFL::System::Flags<Int64>::Set(&m_StrandKey[pgsTypes::Harped], IsDlgButtonChecked(IDC_EPOXY) == BST_CHECKED ? +WBFL::Materials::PsStrand::Coating::GritEpoxy : +WBFL::Materials::PsStrand::Coating::None);
 
    UpdateStrandList(IDC_STRAIGHT_STRAND_SIZE);
    UpdateStrandList(IDC_HARPED_STRAND_SIZE);
@@ -549,22 +549,22 @@ void CGirderSegmentStrandsPage::OnEpoxyChanged()
 void CGirderSegmentStrandsPage::UpdateStrandList(UINT nIDC)
 {
    CComboBox* pList = (CComboBox*)GetDlgItem(nIDC);
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+   const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
 
    // capture the current selection, if any
    int cur_sel = pList->GetCurSel();
    Int64 cur_key = (Int64)pList->GetItemData( cur_sel );
    // remove the coating flag from the current key
-   sysFlags<Int64>::Clear(&cur_key,matPsStrand::None);
-   sysFlags<Int64>::Clear(&cur_key,matPsStrand::GritEpoxy);
+   WBFL::System::Flags<Int64>::Clear(&cur_key, +WBFL::Materials::PsStrand::Coating::None);
+   WBFL::System::Flags<Int64>::Clear(&cur_key, +WBFL::Materials::PsStrand::Coating::GritEpoxy);
 
    BOOL bIsEpoxy = FALSE;
    if ( nIDC == IDC_STRAIGHT_STRAND_SIZE || nIDC == IDC_HARPED_STRAND_SIZE)
    {
       bIsEpoxy = IsDlgButtonChecked(IDC_EPOXY) == BST_CHECKED ? TRUE : FALSE;
    }
-   matPsStrand::Coating coating = (bIsEpoxy ? matPsStrand::GritEpoxy : matPsStrand::None);
-   sysFlags<Int64>::Set(&cur_key,coating); // add the coating flag for the strand type we are changing to
+  WBFL::Materials::PsStrand::Coating coating = (bIsEpoxy ? WBFL::Materials::PsStrand::Coating::GritEpoxy : WBFL::Materials::PsStrand::Coating::None);
+   WBFL::System::Flags<Int64>::Set(&cur_key, +coating); // add the coating flag for the strand type we are changing to
 
    pList->ResetContent();
 
@@ -572,17 +572,17 @@ void CGirderSegmentStrandsPage::UpdateStrandList(UINT nIDC)
    int new_cur_sel = -1; // This will be in index of the string we want to select.
    for (int i = 0; i < 3; i++)
    {
-      matPsStrand::Grade grade = (i == 0 ? matPsStrand::Gr1725 :
-                                  i == 1 ? matPsStrand::Gr1860 : matPsStrand::Gr2070);
+      WBFL::Materials::PsStrand::Grade grade = (i == 0 ? WBFL::Materials::PsStrand::Grade::Gr1725 :
+                                                i == 1 ? WBFL::Materials::PsStrand::Grade::Gr1860 : WBFL::Materials::PsStrand::Grade::Gr2070);
       for ( int j = 0; j < 2; j++ )
       {
-         matPsStrand::Type type = (j == 0 ? matPsStrand::LowRelaxation : matPsStrand::StressRelieved);
+         WBFL::Materials::PsStrand::Type type = (j == 0 ? WBFL::Materials::PsStrand::Type::LowRelaxation : WBFL::Materials::PsStrand::Type::StressRelieved);
 
-         lrfdStrandIter iter(grade,type,coating);
+         WBFL::LRFD::StrandIter iter(grade,type,coating);
 
          for ( iter.Begin(); iter; iter.Next() )
          {
-            const matPsStrand* pStrand = iter.GetCurrentStrand();
+            const auto* pStrand = iter.GetCurrentStrand();
             int idx = pList->AddString( pStrand->GetName().c_str() );
                
             auto key = pPool->GetStrandKey( pStrand );
@@ -617,7 +617,7 @@ void CGirderSegmentStrandsPage::OnStrandTypeChanged(int nIDC,pgsTypes::StrandTyp
    int curSel = pList->GetCurSel();
    m_StrandKey[strandType] = (Int64)pList->GetItemData(curSel);
 
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+   const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
 
    m_pSegment->Strands.SetStrandMaterial(strandType, pPool->GetStrand(m_StrandKey[strandType]));
 
@@ -779,7 +779,7 @@ HBRUSH CGirderSegmentStrandsPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColo
    return hbr;
 }
 
-void CGirderSegmentStrandsPage::FillHarpPointUnitComboBox(UINT nIDC, const unitmgtLengthData& lengthUnit)
+void CGirderSegmentStrandsPage::FillHarpPointUnitComboBox(UINT nIDC, const WBFL::Units::LengthData& lengthUnit)
 {
    CComboBox* pCB = (CComboBox*)GetDlgItem(nIDC);
    pCB->AddString(_T("%"));

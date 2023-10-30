@@ -59,7 +59,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(ARPDIR)\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
-    <LinkIncremental>false</LinkIncremental>
+    <LinkIncremental>true</LinkIncremental>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules />
     <CodeAnalysisRuleAssemblies />
@@ -92,6 +92,10 @@
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat />
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -100,11 +104,11 @@
     </ResourceCompile>
     <Link>
       <AdditionalLibraryDirectories>$(ARPDIR)\WBFL\RegFreeCOM\$(Platform)\$(Configuration);$(ARPDIR)\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
-      <OptimizeReferences>true</OptimizeReferences>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <OptimizeReferences>false</OptimizeReferences>
+      <EnableCOMDATFolding>false</EnableCOMDATFolding>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention />
       <TargetMachine>MachineX64</TargetMachine>
@@ -139,6 +143,9 @@
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -147,12 +154,15 @@
     </ResourceCompile>
     <Link>
       <AdditionalLibraryDirectories>$(ARPDIR)\WBFL\RegFreeCOM\$(Platform)\$(Configuration);$(ARPDIR)\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention />
       <TargetMachine>MachineX64</TargetMachine>
       <AdditionalDependencies>mfcs140ud.lib;msvcrtd.lib</AdditionalDependencies>
+      <OptimizeReferences>false</OptimizeReferences>
+      <EnableCOMDATFolding>false</EnableCOMDATFolding>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -231,8 +241,10 @@
     <ClCompile Include="DuctSizeArtifact.cpp" />
     <ClCompile Include="EditBridge.cpp" />
     <ClCompile Include="ErectPiersActivity.cpp" />
+    <ClCompile Include="UHPCConcretePage.cpp" />
     <ClCompile Include="FlexuralCapacityArtifact.cpp" />
     <ClCompile Include="FlexuralStressArtifact.cpp" />
+    <ClCompile Include="GeometryControlActivity.cpp" />
     <ClCompile Include="GirderArtifact.cpp" />
     <ClCompile Include="GirderArtifactTool.cpp" />
     <ClCompile Include="GirderData.cpp" />
@@ -246,6 +258,7 @@
     <ClCompile Include="GirderTypes.cpp" />
     <ClCompile Include="HandlingData.cpp" />
     <ClCompile Include="HaulingAnalysisArtifact.cpp" />
+    <ClCompile Include="HaunchDepthInputConversionTool.cpp" />
     <ClCompile Include="HaunchShapeComboBox.cpp" />
     <ClCompile Include="Helpers.cpp" />
     <ClCompile Include="HoldDownForceArtifact.cpp" />
@@ -284,6 +297,7 @@
     <ClCompile Include="RailingSystem.cpp" />
     <ClCompile Include="RatingArtifact.cpp" />
     <ClCompile Include="RefinedAnalysisOptionsDlg.cpp" />
+    <ClCompile Include="ReinforcementFatigueArtifact.cpp" />
     <ClCompile Include="RemoveTemporarySupportsActivity.cpp" />
     <ClCompile Include="ReportPointOfInterest.cpp" />
     <ClCompile Include="SegmentActivity.cpp" />
@@ -341,7 +355,10 @@
     <ClInclude Include="..\Include\PgsExt\CapacityToDemand.h" />
     <ClInclude Include="..\Include\PgsExt\CastDeckActivity.h" />
     <ClInclude Include="..\Include\PgsExt\CastLongitudinalJointActivity.h" />
+    <ClInclude Include="..\Include\PgsExt\Catalog.h" />
+    <ClInclude Include="..\Include\PgsExt\CatalogServer.h" />
     <ClInclude Include="..\Include\PgsExt\CatalogServerAppMixin.h" />
+    <ClInclude Include="..\Include\PgsExt\CatalogServers.h" />
     <ClInclude Include="..\Include\PgsExt\CEBFIPConcretePage.h" />
     <ClInclude Include="..\Include\PgsExt\ClosureJointData.h" />
     <ClInclude Include="..\Include\PgsExt\ColumnData.h" />
@@ -366,8 +383,10 @@
     <ClInclude Include="..\Include\PgsExt\DuctSizeArtifact.h" />
     <ClInclude Include="..\Include\PgsExt\EditBridge.h" />
     <ClInclude Include="..\Include\PgsExt\ErectPiersActivity.h" />
+    <ClInclude Include="..\Include\PgsExt\UHPCConcretePage.h" />
     <ClInclude Include="..\Include\PgsExt\FlexuralCapacityArtifact.h" />
     <ClInclude Include="..\Include\PgsExt\FlexuralStressArtifact.h" />
+    <ClInclude Include="..\Include\PgsExt\GeometryControlActivity.h" />
     <ClInclude Include="..\Include\PgsExt\GirderArtifact.h" />
     <ClInclude Include="..\Include\PgsExt\GirderArtifactTool.h" />
     <ClInclude Include="..\Include\PgsExt\GirderData.h" />
@@ -379,6 +398,7 @@
     <ClInclude Include="..\Include\PgsExt\GirderSpacing2.h" />
     <ClInclude Include="..\Include\PgsExt\HandlingData.h" />
     <ClInclude Include="..\Include\PgsExt\HaulingAnalysisArtifact.h" />
+    <ClInclude Include="..\Include\PgsExt\HaunchDepthInputConversionTool.h" />
     <ClInclude Include="..\Include\PgsExt\HaunchShapeComboBox.h" />
     <ClInclude Include="..\Include\PgsExt\Helpers.h" />
     <ClInclude Include="..\Include\PgsExt\HoldDownForceArtifact.h" />
@@ -416,6 +436,7 @@
     <ClInclude Include="..\Include\PgsExt\PTData.h" />
     <ClInclude Include="..\Include\PgsExt\RailingSystem.h" />
     <ClInclude Include="..\Include\PgsExt\RatingArtifact.h" />
+    <ClInclude Include="..\Include\PgsExt\ReinforcementFatigueArtifact.h" />
     <ClInclude Include="..\Include\PgsExt\RemoveTemporarySupportsActivity.h" />
     <ClInclude Include="..\Include\PgsExt\ReportPointOfInterest.h" />
     <ClInclude Include="..\Include\PgsExt\SegmentActivity.h" />

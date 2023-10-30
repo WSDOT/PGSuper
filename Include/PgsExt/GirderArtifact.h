@@ -53,12 +53,12 @@ public:
    void AddNegativeMomentFlexuralCapacityArtifact(IntervalIndexType intervalIdx, pgsTypes::LimitState ls, const pgsFlexuralCapacityArtifact& artifact);
 
    // get the number of artifacts
-   CollectionIndexType GetPositiveMomentFlexuralCapacityArtifactCount(IntervalIndexType intervalIdx, pgsTypes::LimitState ls) const;
-   CollectionIndexType GetNegativeMomentFlexuralCapacityArtifactCount(IntervalIndexType intervalIdx, pgsTypes::LimitState ls) const;
+   IndexType GetPositiveMomentFlexuralCapacityArtifactCount(IntervalIndexType intervalIdx, pgsTypes::LimitState ls) const;
+   IndexType GetNegativeMomentFlexuralCapacityArtifactCount(IntervalIndexType intervalIdx, pgsTypes::LimitState ls) const;
 
    // get an artifact
-   const pgsFlexuralCapacityArtifact* GetPositiveMomentFlexuralCapacityArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,CollectionIndexType artifactIdx) const;
-   const pgsFlexuralCapacityArtifact* GetNegativeMomentFlexuralCapacityArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,CollectionIndexType artifactIdx) const;
+   const pgsFlexuralCapacityArtifact* GetPositiveMomentFlexuralCapacityArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,IndexType artifactIdx) const;
+   const pgsFlexuralCapacityArtifact* GetNegativeMomentFlexuralCapacityArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,IndexType artifactIdx) const;
 
    // find an artifact for the specified POI
    const pgsFlexuralCapacityArtifact* FindPositiveMomentFlexuralCapacityArtifact(IntervalIndexType intervalIdx,pgsTypes::LimitState ls,const pgsPointOfInterest& poi) const;
@@ -129,8 +129,8 @@ private:
    typedef std::map<IntervalIndexType, std::vector<pgsFlexuralCapacityArtifact>> FlexuralCapacityContainer;
    FlexuralCapacityContainer m_FlexuralCapacityArtifacts[2][pgsTypes::LimitStateCount]; // pos=0,neg=1
    void AddFlexuralCapacityArtifact(FlexuralCapacityContainer* pArtifacts, IntervalIndexType intervalIdx, const pgsFlexuralCapacityArtifact& artifact);
-   CollectionIndexType GetFlexuralCapacityArtifactCount(const FlexuralCapacityContainer* pArtifacts, IntervalIndexType intervalIdx) const;
-   const pgsFlexuralCapacityArtifact* GetFlexuralCapacityArtifact(const FlexuralCapacityContainer* pArtifacts, IntervalIndexType intervalIdx, CollectionIndexType artifactIdx) const;
+   IndexType GetFlexuralCapacityArtifactCount(const FlexuralCapacityContainer* pArtifacts, IntervalIndexType intervalIdx) const;
+   const pgsFlexuralCapacityArtifact* GetFlexuralCapacityArtifact(const FlexuralCapacityContainer* pArtifacts, IntervalIndexType intervalIdx, IndexType artifactIdx) const;
    const pgsFlexuralCapacityArtifact* FindFlexuralCapacityArtifact(const FlexuralCapacityContainer* pArtifacts, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const;
 
    std::map<CSegmentKey,pgsSegmentArtifact> m_SegmentArtifacts;

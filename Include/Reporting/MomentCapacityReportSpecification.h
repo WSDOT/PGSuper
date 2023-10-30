@@ -30,7 +30,7 @@ class REPORTINGCLASS CMomentCapacityReportSpecification :
    public CPoiReportSpecification
 {
 public:
-	CMomentCapacityReportSpecification(LPCTSTR strReportName,IBroker* pBroker,const pgsPointOfInterest& poi,bool bPositiveMoment);
+	CMomentCapacityReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,const pgsPointOfInterest& poi,bool bPositiveMoment);
    ~CMomentCapacityReportSpecification(void);
 
    void SetOptions(const pgsPointOfInterest& poi,bool bPositiveMoment);

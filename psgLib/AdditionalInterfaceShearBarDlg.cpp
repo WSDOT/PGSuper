@@ -51,7 +51,7 @@ void CAdditionalInterfaceShearBarDlg::DoDataExchange(CDataExchange* pDX)
 	CDialog::DoDataExchange(pDX);
 
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
 
    // Horiz shear Grid
@@ -73,9 +73,9 @@ void CAdditionalInterfaceShearBarDlg::DoDataExchange(CDataExchange* pDX)
             lsi.ZoneNum = zn;
             if (!IsEqual(lsi.ZoneLength, Float64_Max))
             {
-               lsi.ZoneLength = ::ConvertToSysUnits(lsi.ZoneLength, pDisplayUnits->XSectionDim.UnitOfMeasure);
+               lsi.ZoneLength = WBFL::Units::ConvertToSysUnits(lsi.ZoneLength, pDisplayUnits->XSectionDim.UnitOfMeasure);
             }
-            lsi.BarSpacing = ::ConvertToSysUnits(lsi.BarSpacing, pDisplayUnits->ComponentDim.UnitOfMeasure);
+            lsi.BarSpacing = WBFL::Units::ConvertToSysUnits(lsi.BarSpacing, pDisplayUnits->ComponentDim.UnitOfMeasure);
 
             // make sure stirrup spacing is greater than zone length
             if (zn + 1 < nrows)
@@ -89,7 +89,7 @@ void CAdditionalInterfaceShearBarDlg::DoDataExchange(CDataExchange* pDX)
                }
             }
 
-            if (matRebar::bsNone != lsi.BarSize && zn < nrows)
+            if (WBFL::Materials::Rebar::Size::bsNone != lsi.BarSize && zn < nrows)
             {
                if (lsi.ZoneLength<lsi.BarSpacing)
                {
@@ -101,7 +101,7 @@ void CAdditionalInterfaceShearBarDlg::DoDataExchange(CDataExchange* pDX)
             }
 
             // make sure stirrup spacing is >0 if stirrups or confinement bars exist
-            if ((matRebar::bsNone != lsi.BarSize) && lsi.BarSpacing <= 0.0)
+            if ((WBFL::Materials::Rebar::Size::bsNone != lsi.BarSize) && lsi.BarSpacing <= 0.0)
             {
                CString msg;
                msg.Format(_T("Bar spacing must be greater than zero if stirrups exist in Horiz Interface Shear Zone %d"), zn + 1);
@@ -123,10 +123,10 @@ void CAdditionalInterfaceShearBarDlg::DoDataExchange(CDataExchange* pDX)
          CHorizontalInterfaceZoneData inf(*it);
          if (!IsEqual(inf.ZoneLength, Float64_Max))
          {
-            inf.ZoneLength = ::ConvertFromSysUnits((*it).ZoneLength, pDisplayUnits->XSectionDim.UnitOfMeasure);
+            inf.ZoneLength = WBFL::Units::ConvertFromSysUnits((*it).ZoneLength, pDisplayUnits->XSectionDim.UnitOfMeasure);
          }
 
-         inf.BarSpacing = ::ConvertFromSysUnits((*it).BarSpacing, pDisplayUnits->ComponentDim.UnitOfMeasure);
+         inf.BarSpacing = WBFL::Units::ConvertFromSysUnits((*it).BarSpacing, pDisplayUnits->ComponentDim.UnitOfMeasure);
          vec.push_back(inf);
       }
       m_pHorizGrid->FillGrid(vec, m_bAreZonesSymmetrical);

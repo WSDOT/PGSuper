@@ -53,7 +53,7 @@ CShearDesignPage::CShearDesignPage()
 	: CPropertyPage(CShearDesignPage::IDD)
    , m_bExtendDeckBars(FALSE)
    , m_bBarsProvideConfinement(FALSE)
-   , m_LongReinfShearMethod(0)
+   , m_LongitudinalReinforcementForShearMethod(0)
 {
    m_pGrid = std::make_unique<CShearBarsLegsGrid>();
 }
@@ -67,7 +67,7 @@ void CShearDesignPage::DoDataExchange(CDataExchange* pDX)
    CPropertyPage::DoDataExchange(pDX);
 
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    // dad is a friend of the entry. use him to transfer data.
    CGirderMainSheet* pDad = (CGirderMainSheet*)GetParent();
@@ -81,12 +81,12 @@ void CShearDesignPage::DoDataExchange(CDataExchange* pDX)
       m_pGrid->FillGrid(m_StirrupSizeBarComboColl);
 
       // Fill bar spacings
-      sysNumericFormatTool ftool(sysNumericFormatTool::Automatic,pDisplayUnits->ComponentDim.Width,pDisplayUnits->ComponentDim.Precision);
+      WBFL::System::NumericFormatTool ftool(WBFL::System::NumericFormatTool::Format::Fixed,pDisplayUnits->ComponentDim.Width,pDisplayUnits->ComponentDim.Precision);
       std::_tostringstream  os_spacings;
       std::vector<Float64>::size_type size = m_BarSpacings.size();
       for (std::vector<Float64>::size_type sf=0; sf<size; sf++)
       {
-         Float32 conval = (Float32)::ConvertFromSysUnits(m_BarSpacings[sf], pDisplayUnits->ComponentDim.UnitOfMeasure);
+         Float32 conval = (Float32)WBFL::Units::ConvertFromSysUnits(m_BarSpacings[sf], pDisplayUnits->ComponentDim.UnitOfMeasure);
 
          std::_tstring str(ftool.AsString(conval));
          boost::trim(str);
@@ -125,7 +125,9 @@ void CShearDesignPage::DoDataExchange(CDataExchange* pDX)
    DDX_Check(pDX, IDC_EXTEND_DECK_BARS, m_bExtendDeckBars);
    DDX_Check(pDX, IDC_BARS_PROVIDE_CONFINEMENT, m_bBarsProvideConfinement);
 
-   DDX_CBIndex(pDX, IDC_LONG_REINF_SHEAR_METHOD, m_LongReinfShearMethod);
+   DDX_CBIndex(pDX, IDC_LONG_REINF_SHEAR_METHOD, m_LongitudinalReinforcementForShearMethod);
+
+   DDX_UnitValueAndTag(pDX, IDC_INTERFACE_SHEAR_WIDTH_REDUCTION, IDC_INTERFACE_SHEAR_WIDTH_REDUCTION_UNIT, m_InterfaceShearWidthReduction, pDisplayUnits->ComponentDim);
 
    if (pDX->m_bSaveAndValidate)
    {
@@ -179,10 +181,10 @@ void CShearDesignPage::DoDataExchange(CDataExchange* pDX)
       GetDlgItem(IDC_EDIT_BAR_SPACINGS)->GetWindowText(str_spacings);
 
       LPCTSTR delims[] = {_T(","),_T(" "), 0};
-      sysTokenizer tokizerd(delims);
+      WBFL::System::Tokenizer tokizerd(delims);
       tokizerd.push_back(str_spacings);
 
-      sysTokenizer::size_type nps = tokizerd.size();
+      WBFL::System::Tokenizer::size_type nps = tokizerd.size();
 
       if (nps==0)
       {
@@ -194,10 +196,10 @@ void CShearDesignPage::DoDataExchange(CDataExchange* pDX)
       {
          m_BarSpacings.clear();
 
-         for (sysTokenizer::size_type ips=0; ips<nps; ips++)
+         for (WBFL::System::Tokenizer::size_type ips=0; ips<nps; ips++)
          {
             Float64 db;
-            if (!sysTokenizer::ParseDouble(tokizerd[ips].c_str(), &db))
+            if (!WBFL::System::Tokenizer::ParseDouble(tokizerd[ips].c_str(), &db))
             {
                CString msg;
                msg.Format(_T("Error - Item %d in the list of Bar Spacing values is not a number. Please enter a comma-delimited list of spacings."), ips+1);
@@ -207,7 +209,7 @@ void CShearDesignPage::DoDataExchange(CDataExchange* pDX)
             }
             else
             {
-               db = ::ConvertToSysUnits(db, pDisplayUnits->ComponentDim.UnitOfMeasure);
+               db = WBFL::Units::ConvertToSysUnits(db, pDisplayUnits->ComponentDim.UnitOfMeasure);
 
                if(db<=0.0)
                {
@@ -267,6 +269,27 @@ BOOL CShearDesignPage::OnInitDialog()
    m_pGrid->CustomInit();
 
    CPropertyPage::OnInitDialog();
+
+   // If this is a spliced girder, hide everything except the horizontal interface shear controls
+   CGirderMainSheet* pDad = (CGirderMainSheet*)GetParent();
+   if (pDad->IsSplicedGirder())
+   {
+      CWnd* pwndChild = GetWindow(GW_CHILD);
+      while (pwndChild)
+      {
+         auto id = pwndChild->GetDlgCtrlID();
+         if (id == IDC_INTERFACE_SHEAR_WIDTH_REDUCTION_GROUP || id == IDC_INTERFACE_SHEAR_WIDTH_REDUCTION_LABEL || id == IDC_INTERFACE_SHEAR_WIDTH_REDUCTION || id == IDC_INTERFACE_SHEAR_WIDTH_REDUCTION_UNIT)
+         {
+            // do nothing
+         }
+         else
+         {
+            // hide control
+            pwndChild->ShowWindow(SW_HIDE);
+         }
+         pwndChild = pwndChild->GetNextWindow();
+      }
+   }
 
    // disable delete button on start
    OnEnableDelete(false);

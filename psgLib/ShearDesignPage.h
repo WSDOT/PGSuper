@@ -22,7 +22,7 @@
 #pragma once
 
 #include "resource.h"
-#include <Material\Rebar.h>
+#include <Materials/Rebar.h>
 
 class CShearBarsLegsGrid;
 // CShearDesignPage dialog
@@ -58,7 +58,7 @@ public:
 
    struct StirrupSizeBarCombo
    {
-      matRebar::Size Size;
+      WBFL::Materials::Rebar::Size Size;
       Float64 NLegs;
 
       bool operator==(const StirrupSizeBarCombo& rOther) const
@@ -87,7 +87,9 @@ public:
    BOOL m_bExtendDeckBars;
    BOOL m_bBarsProvideConfinement;
 
-   int m_LongReinfShearMethod;
+   int m_LongitudinalReinforcementForShearMethod;
+
+   Float64 m_InterfaceShearWidthReduction;
 
 private:
    std::unique_ptr<CShearBarsLegsGrid> m_pGrid;

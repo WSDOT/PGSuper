@@ -65,9 +65,9 @@ void txnEditEffectiveFlangeWidth::Execute(int i)
    pEFW->IgnoreEffectiveFlangeWidthLimits(m_bIgnore[i]);
 }
 
-txnTransaction* txnEditEffectiveFlangeWidth::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnEditEffectiveFlangeWidth::CreateClone() const
 {
-   return new txnEditEffectiveFlangeWidth(m_bIgnore[0],m_bIgnore[1]);
+   return std::make_unique<txnEditEffectiveFlangeWidth>(m_bIgnore[0],m_bIgnore[1]);
 }
 
 std::_tstring txnEditEffectiveFlangeWidth::Name() const
@@ -75,12 +75,12 @@ std::_tstring txnEditEffectiveFlangeWidth::Name() const
    return _T("Edit Effective Flange Width");
 }
 
-bool txnEditEffectiveFlangeWidth::IsUndoable()
+bool txnEditEffectiveFlangeWidth::IsUndoable() const
 {
    return true;
 }
 
-bool txnEditEffectiveFlangeWidth::IsRepeatable()
+bool txnEditEffectiveFlangeWidth::IsRepeatable() const
 {
    return false;
 }

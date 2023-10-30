@@ -112,9 +112,9 @@ txnDesignRatingData::txnDesignRatingData()
    ServiceIII_SH = 1.0;
    ServiceIII_PS = 1.0;
 
-   AllowableTensionCoefficient = ::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI);
+   AllowableTensionCoefficient = WBFL::Units::ConvertToSysUnits(0.19,WBFL::Units::Measure::SqrtKSI);
    bLimitTensileStress = true;
-   MaxTensileStress = ::ConvertToSysUnits(0.6, unitMeasure::KSI);
+   MaxTensileStress = WBFL::Units::ConvertToSysUnits(0.6, WBFL::Units::Measure::KSI);
    bRateForShear = true;
 }
 
@@ -202,9 +202,9 @@ txnLegalRatingData::txnLegalRatingData()
    ServiceIII_SH = 1.0;
    ServiceIII_PS = 1.0;
 
-   AllowableTensionCoefficient = ::ConvertToSysUnits(0.19,unitMeasure::SqrtKSI);
+   AllowableTensionCoefficient = WBFL::Units::ConvertToSysUnits(0.19,WBFL::Units::Measure::SqrtKSI);
    bLimitTensileStress = true;
-   MaxTensileStress = ::ConvertToSysUnits(0.6, unitMeasure::KSI);
+   MaxTensileStress = WBFL::Units::ConvertToSysUnits(0.6, WBFL::Units::Measure::KSI);
 
    bRateForStress   = true;
    bRateForShear    = true;
@@ -341,9 +341,9 @@ txnPermitRatingData::txnPermitRatingData()
    ServiceIII_PS = 1.0;
 
    bRateForStress = false;
-   AllowableTensionCoefficient = ::ConvertToSysUnits(0.19, unitMeasure::SqrtKSI);
+   AllowableTensionCoefficient = WBFL::Units::ConvertToSysUnits(0.19, WBFL::Units::Measure::SqrtKSI);
    bLimitTensileStress = true;
-   MaxTensileStress = ::ConvertToSysUnits(0.6, unitMeasure::KSI);
+   MaxTensileStress = WBFL::Units::ConvertToSysUnits(0.6, WBFL::Units::Measure::KSI);
 
    bRateForShear = true;
    bCheckReinforcementYielding = true;
@@ -756,9 +756,9 @@ void txnEditRatingCriteria::Execute(int i)
    pRatingSpec->SetSpecialPermitType(m_Data[i].m_Permit.SpecialPermitType);
 }
 
-txnTransaction* txnEditRatingCriteria::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnEditRatingCriteria::CreateClone() const
 {
-   return new txnEditRatingCriteria(m_Data[0],m_Data[1]);
+   return std::make_unique<txnEditRatingCriteria>(m_Data[0],m_Data[1]);
 }
 
 std::_tstring txnEditRatingCriteria::Name() const
@@ -766,12 +766,12 @@ std::_tstring txnEditRatingCriteria::Name() const
    return _T("Edit Rating Criteria");
 }
 
-bool txnEditRatingCriteria::IsUndoable()
+bool txnEditRatingCriteria::IsUndoable() const
 {
    return true;
 }
 
-bool txnEditRatingCriteria::IsRepeatable()
+bool txnEditRatingCriteria::IsRepeatable() const
 {
    return false;
 }

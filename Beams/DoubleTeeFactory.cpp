@@ -46,6 +46,9 @@
 #include <IFace\StatusCenter.h>
 #include <PgsExt\StatusItem.h>
 
+#include <psgLib/SectionPropertiesCriteria.h>
+#include <psgLib/SpecificationCriteria.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -68,31 +71,31 @@ HRESULT CDoubleTeeFactory::FinalConstruct()
    std::sort(m_DimNames.begin(),m_DimNames.end());
 
    // Default beam is a 4' wide tri-beam
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 6.0,unitMeasure::Inch)); // D1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(21.0,unitMeasure::Inch)); // D2
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(7.25,unitMeasure::Inch)); // T1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(5.25,unitMeasure::Inch)); // T2
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(12.0,unitMeasure::Inch)); // W1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(6.000,unitMeasure::Feet)); // Wmax
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(4.000,unitMeasure::Feet)); // Wmin
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 6.0,WBFL::Units::Measure::Inch)); // D1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(21.0,WBFL::Units::Measure::Inch)); // D2
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(7.25,WBFL::Units::Measure::Inch)); // T1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(5.25,WBFL::Units::Measure::Inch)); // T2
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(12.0,WBFL::Units::Measure::Inch)); // W1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(6.000,WBFL::Units::Measure::Feet)); // Wmax
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(4.000,WBFL::Units::Measure::Feet)); // Wmin
 
    // SI Units
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D2
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // T1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // T2
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W1
-   m_DimUnits[0].emplace_back(&unitMeasure::Meter);      // Wmax
-   m_DimUnits[0].emplace_back(&unitMeasure::Meter);      // Wmin
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // D1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // D2
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // T1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // T2
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Meter);      // Wmax
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Meter);      // Wmin
 
    // US Units
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D2
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // T1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // T2
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W1
-   m_DimUnits[1].emplace_back(&unitMeasure::Feet); // Wmax
-   m_DimUnits[1].emplace_back(&unitMeasure::Feet); // Wmin
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // D1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // D2
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // T1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // T2
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Feet); // Wmax
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Feet); // Wmin
 
    return S_OK;
 }
@@ -169,7 +172,7 @@ void CDoubleTeeFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusG
    // Beam materials
    GET_IFACE2(pBroker,ILossParameters,pLossParams);
    CComPtr<IMaterial> material;
-   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       CComPtr<IAgeAdjustedMaterial> aaMaterial;
       BuildAgeAdjustedGirderMaterialModel(pBroker,pSegment,segment,&aaMaterial);
@@ -288,7 +291,7 @@ void CDoubleTeeFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDT
 void CDoubleTeeFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const
 {
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
-   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       CComObject<CTimeStepLossEngineer>* pEngineer;
       CComObject<CTimeStepLossEngineer>::CreateInstance(&pEngineer);
@@ -385,7 +388,7 @@ const std::vector<Float64>& CDoubleTeeFactory::GetDefaultDimensions() const
    return m_DefaultDims;
 }
 
-const std::vector<const unitLength*>& CDoubleTeeFactory::GetDimensionUnits(bool bSIUnits) const
+const std::vector<const WBFL::Units::Length*>& CDoubleTeeFactory::GetDimensionUnits(bool bSIUnits) const
 {
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
@@ -400,7 +403,7 @@ bool CDoubleTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimen
 
    if ( d1 <= 0.0 )
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][0];
+      const WBFL::Units::Length* pUnit = m_DimUnits[bSIUnits ? 0 : 1][0];
       std::_tostringstream os;
       os << _T("D1 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
@@ -417,7 +420,7 @@ bool CDoubleTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimen
 
    if ( w <= 0.0 )
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][4];
+      const WBFL::Units::Length* pUnit = m_DimUnits[bSIUnits ? 0 : 1][4];
       std::_tostringstream os;
       os << _T("W must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
@@ -427,7 +430,7 @@ bool CDoubleTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimen
    
    if ( t1 <= 0.0 )
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][2];
+      const WBFL::Units::Length* pUnit = m_DimUnits[bSIUnits ? 0 : 1][2];
       std::_tostringstream os;
       os << _T("T1 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
@@ -436,7 +439,7 @@ bool CDoubleTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimen
    
    if ( t2 <= 0.0 )
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][3];
+      const WBFL::Units::Length* pUnit = m_DimUnits[bSIUnits ? 0 : 1][3];
       std::_tostringstream os;
       os << _T("T2 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
@@ -448,7 +451,7 @@ bool CDoubleTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimen
    return true;
 }
 
-void CDoubleTeeFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
+void CDoubleTeeFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
 {
    pSave->BeginUnit(_T("DoubleTeeDimensions"),1.0);
    for ( const auto& name : m_DimNames)
@@ -459,7 +462,7 @@ void CDoubleTeeFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IB
    pSave->EndUnit();
 }
 
-IBeamFactory::Dimensions CDoubleTeeFactory::LoadSectionDimensions(sysIStructuredLoad* pLoad) const
+IBeamFactory::Dimensions CDoubleTeeFactory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
 {
    IBeamFactory::Dimensions dimensions;
 
@@ -606,7 +609,10 @@ std::_tstring CDoubleTeeFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBro
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
+   const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
+   const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();
+   if (section_properties_criteria.EffectiveFlangeWidthMethod == pgsTypes::efwmTribWidth ||
+      WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims <= specification_criteria.GetEdition())
    {
       return _T("DoubleTee_Effective_Flange_Width_Interior_Girder_2008.gif");
    }
@@ -621,7 +627,10 @@ std::_tstring CDoubleTeeFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBro
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
+   const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
+   const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();
+   if (section_properties_criteria.EffectiveFlangeWidthMethod == pgsTypes::efwmTribWidth ||
+      WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims <= specification_criteria.GetEdition())
    {
       return _T("DoubleTee_Effective_Flange_Width_Exterior_Girder_2008.gif");
    }

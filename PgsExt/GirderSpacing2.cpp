@@ -49,7 +49,7 @@ CGirderSpacingData2::CGirderSpacingData2()
    m_RefGirderOffsetType = pgsTypes::omtBridge;
    m_RefGirderOffset = 0;
 
-   m_DefaultSpacing = ::ConvertToSysUnits(5.0,unitMeasure::Feet);
+   m_DefaultSpacing = WBFL::Units::ConvertToSysUnits(5.0,WBFL::Units::Measure::Feet);
 
    PGS_ASSERT_VALID;
 }
@@ -972,7 +972,14 @@ const CBridgeDescription2* CGirderSpacing2::GetBridgeDescription() const
    return nullptr;
 }
 
-Float64 CGirderSpacing2::GetSpacingWidth() const
+Float64 CGirderSpacing2::GetSpacingWidth(Float64 skew) const
+{
+   const CGirderGroupData* pGroup = GetGirderGroup();
+   GirderIndexType nGirders = GetGirderCount();
+   return GetSpacingWidthToGirder(nGirders - 1, skew);
+}
+
+Float64 CGirderSpacing2::GetSpacingWidthToGirder(GirderIndexType targetGirderIdx,Float64 skew) const
 {
    const CBridgeDescription2* pBridgeDesc = GetBridgeDescription();
    if ( ::IsJointSpacing(pBridgeDesc->GetGirderSpacingType()) )
@@ -980,8 +987,7 @@ Float64 CGirderSpacing2::GetSpacingWidth() const
       Float64 total_width = 0;
       const CGirderGroupData* pGroup = GetGirderGroup();
 
-      GirderIndexType nGirders = GetGirderCount();
-      for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
+      for ( GirderIndexType gdrIdx = 0; gdrIdx <= targetGirderIdx; gdrIdx++ )
       {
          const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
 
@@ -999,50 +1005,6 @@ Float64 CGirderSpacing2::GetSpacingWidth() const
          {
             width = wRight;
          }
-         else if ( gdrIdx == nGirders - 1 )
-         {
-            width = wLeft;
-         }
-         else
-         {
-            width = wLeft + wRight;
-         }
-
-         Float64 joint_width = 0;
-         if ( gdrIdx != nGirders-1 )
-         {
-            joint_width = m_GirderSpacing[gdrIdx];
-         }
-
-         total_width += width + joint_width;
-      }
-
-      return total_width;
-   }
-   else
-   {
-      return std::accumulate(m_GirderSpacing.begin(),m_GirderSpacing.end(),0.0);
-   }
-}
-
-Float64 CGirderSpacing2::GetSpacingWidthToGirder(GirderIndexType targetGirderIdx) const
-{
-   const CBridgeDescription2* pBridgeDesc = GetBridgeDescription();
-   if ( ::IsJointSpacing(pBridgeDesc->GetGirderSpacingType()) )
-   {
-      Float64 total_width = 0;
-      const CGirderGroupData* pGroup = GetGirderGroup();
-
-      for ( GirderIndexType gdrIdx = 0; gdrIdx <= targetGirderIdx; gdrIdx++ )
-      {
-         const CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
-         Float64 wLeft, wRight;
-         GetGirderWidth(pGirder,&wLeft,&wRight);
-         Float64 width;
-         if (gdrIdx == 0)
-         {
-            width = wRight;
-         }
          else if (gdrIdx == targetGirderIdx)
          {
             width = wLeft;
@@ -1051,6 +1013,14 @@ Float64 CGirderSpacing2::GetSpacingWidthToGirder(GirderIndexType targetGirderIdx
          {
             width = wLeft + wRight;
          }
+
+         if (GetMeasurementType() == pgsTypes::AlongItem)
+         {
+            // joint spacing is measured along the skew line, but girder spacing is always normal to the girder
+            // adjust width by skew
+            width /= cos(skew);
+         }
+
          Float64 joint_width = 0;
          if ( gdrIdx != targetGirderIdx)
          {

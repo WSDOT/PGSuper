@@ -48,12 +48,11 @@ CBearingSeatElevationsChapterBuilderBase::~CBearingSeatElevationsChapterBuilderB
 {
 }
 
-rptChapter* CBearingSeatElevationsChapterBuilderBase::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CBearingSeatElevationsChapterBuilderBase::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
@@ -61,6 +60,25 @@ rptChapter* CBearingSeatElevationsChapterBuilderBase::Build(CReportSpecification
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
+
+   auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
+   auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
+
+   GirderIndexType girderIndex;
+   if (pGdrRptSpec)
+   {
+      girderIndex = pGdrRptSpec->GetGirderKey().girderIndex;
+   }
+   else if (pGdrLineRptSpec)
+   {
+      girderIndex = pGdrLineRptSpec->GetGirderKey().girderIndex;
+   }
+   else
+   {
+      ATLASSERT(false); // not expecting a different kind of report spec
+      return pChapter;
+   }
+
 
    PierIndexType nPiers = pBridge->GetPierCount();
    for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
@@ -93,17 +111,17 @@ rptChapter* CBearingSeatElevationsChapterBuilderBase::Build(CReportSpecification
       if (interPier==prtype)
       {
          strLabel += _T("C.L.");
-         (*pPara) << BuildTable(strLabel, pierIdx,  pgsTypes::Back, pDisplayUnits, pBridge, pIBridgeDesc) << rptNewLine;
+         (*pPara) << BuildTable(strLabel, pierIdx,  pgsTypes::Back, pDisplayUnits, pBridge, pIBridgeDesc, girderIndex) << rptNewLine;
       }
       else if (leftAbut==prtype)
       {
          strLabel += _T("Ahead");
-         (*pPara) << BuildTable(strLabel, pierIdx,  pgsTypes::Ahead, pDisplayUnits, pBridge, pIBridgeDesc) << rptNewLine;
+         (*pPara) << BuildTable(strLabel, pierIdx,  pgsTypes::Ahead, pDisplayUnits, pBridge, pIBridgeDesc,girderIndex) << rptNewLine;
       }
       else if (rightAbut==prtype)
       {
          strLabel += _T("Back");
-         (*pPara) << BuildTable(strLabel, pierIdx,  pgsTypes::Back, pDisplayUnits, pBridge, pIBridgeDesc) << rptNewLine;
+         (*pPara) << BuildTable(strLabel, pierIdx,  pgsTypes::Back, pDisplayUnits, pBridge, pIBridgeDesc,girderIndex) << rptNewLine;
       }
       else
       {
@@ -111,12 +129,12 @@ rptChapter* CBearingSeatElevationsChapterBuilderBase::Build(CReportSpecification
          rptRcTable* pLayoutTable = rptStyleManager::CreateLayoutTable(3);
 
          CString strNewLabel = strLabel + _T("Back");
-         (*pLayoutTable)(0,0) << BuildTable(strNewLabel, pierIdx,  pgsTypes::Back, pDisplayUnits, pBridge, pIBridgeDesc);
+         (*pLayoutTable)(0,0) << BuildTable(strNewLabel, pierIdx,  pgsTypes::Back, pDisplayUnits, pBridge, pIBridgeDesc,girderIndex);
 
          (*pLayoutTable)(0, 1) << _T("&nbsp;") << _T("&nbsp;");
 
          strLabel += _T("Ahead");
-         (*pLayoutTable)(0, 2) << BuildTable(strLabel, pierIdx, pgsTypes::Ahead, pDisplayUnits, pBridge, pIBridgeDesc);
+         (*pLayoutTable)(0, 2) << BuildTable(strLabel, pierIdx, pgsTypes::Ahead, pDisplayUnits, pBridge, pIBridgeDesc,girderIndex);
 
          (*pPara) << pLayoutTable << rptNewLine;
       }
@@ -169,17 +187,17 @@ rptChapter* CBearingSeatElevationsChapterBuilderBase::Build(CReportSpecification
          if (interPier==prtype)
          {
             strLabel += _T("C.L.");
-            (*pPara) << BuildGirderEdgeTable(strLabel, pierIdx,  pgsTypes::Back, pDisplayUnits, pBridge, pIBridgeDesc) << rptNewLine;
+            (*pPara) << BuildGirderEdgeTable(strLabel, pierIdx,  pgsTypes::Back, pDisplayUnits, pBridge, pIBridgeDesc,girderIndex) << rptNewLine;
          }
          else if (leftAbut==prtype)
          {
             strLabel += _T("Ahead");
-            (*pPara) << BuildGirderEdgeTable(strLabel, pierIdx,  pgsTypes::Ahead, pDisplayUnits, pBridge, pIBridgeDesc) << rptNewLine;
+            (*pPara) << BuildGirderEdgeTable(strLabel, pierIdx,  pgsTypes::Ahead, pDisplayUnits, pBridge, pIBridgeDesc,girderIndex) << rptNewLine;
          }
          else if (rightAbut==prtype)
          {
             strLabel += _T("Back");
-            (*pPara) << BuildGirderEdgeTable(strLabel, pierIdx,  pgsTypes::Back, pDisplayUnits, pBridge, pIBridgeDesc) << rptNewLine;
+            (*pPara) << BuildGirderEdgeTable(strLabel, pierIdx,  pgsTypes::Back, pDisplayUnits, pBridge, pIBridgeDesc,girderIndex) << rptNewLine;
          }
          else
          {
@@ -187,12 +205,12 @@ rptChapter* CBearingSeatElevationsChapterBuilderBase::Build(CReportSpecification
             rptRcTable* pLayoutTable = rptStyleManager::CreateLayoutTable(3);
 
             CString strNewLabel = strLabel + _T("Back");
-            (*pLayoutTable)(0,0) << BuildGirderEdgeTable(strNewLabel, pierIdx,  pgsTypes::Back, pDisplayUnits, pBridge, pIBridgeDesc);
+            (*pLayoutTable)(0,0) << BuildGirderEdgeTable(strNewLabel, pierIdx,  pgsTypes::Back, pDisplayUnits, pBridge, pIBridgeDesc,girderIndex);
 
             (*pLayoutTable)(0, 1) << _T("&nbsp;") << _T("&nbsp;");
 
             strLabel += _T("Ahead");
-            (*pLayoutTable)(0, 2) << BuildGirderEdgeTable(strLabel, pierIdx, pgsTypes::Ahead, pDisplayUnits, pBridge, pIBridgeDesc);
+            (*pLayoutTable)(0, 2) << BuildGirderEdgeTable(strLabel, pierIdx, pgsTypes::Ahead, pDisplayUnits, pBridge, pIBridgeDesc,girderIndex);
 
             (*pPara) << pLayoutTable << rptNewLine;
          }
@@ -207,7 +225,7 @@ rptChapter* CBearingSeatElevationsChapterBuilderBase::Build(CReportSpecification
 
 
 rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildTable(const CString& strLabel,PierIndexType pierIdx,  pgsTypes::PierFaceType face, 
-                                                                 IEAFDisplayUnits* pDisplayUnits, IBridge* pBridge, IBridgeDescription* pIBridgeDesc) const
+                                                                 IEAFDisplayUnits* pDisplayUnits, IBridge* pBridge, IBridgeDescription* pIBridgeDesc,GirderIndexType girderIndex) const
 {
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
@@ -235,7 +253,7 @@ rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildTable(const CString& 
    // first columns
    RowIndexType row = pTable->GetNumberOfHeaderRows();
 
-   std::vector<BearingElevationDetails> vElevDetails = pBridge->GetBearingElevationDetails(pierIdx, face);
+   std::vector<BearingElevationDetails> vElevDetails = pBridge->GetBearingElevationDetails(pierIdx, face, girderIndex, false);
    std::vector<BearingElevationDetails>::iterator iter(vElevDetails.begin());
    std::vector<BearingElevationDetails>::iterator iend(vElevDetails.end());
    GirderIndexType lastGdrIdx = INVALID_INDEX;
@@ -290,7 +308,7 @@ rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildTable(const CString& 
 }
 
 rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildGirderEdgeTable(const CString& strLabel,PierIndexType pierIdx,  pgsTypes::PierFaceType face, 
-                                                                 IEAFDisplayUnits* pDisplayUnits, IBridge* pBridge, IBridgeDescription* pIBridgeDesc) const
+                                                                 IEAFDisplayUnits* pDisplayUnits, IBridge* pBridge, IBridgeDescription* pIBridgeDesc,GirderIndexType girderIndex) const
 {
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
@@ -318,7 +336,7 @@ rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildGirderEdgeTable(const
    // first columns
    RowIndexType row = pTable->GetNumberOfHeaderRows();
 
-   std::vector<BearingElevationDetails> vElevDetails = pBridge->GetBearingElevationDetailsAtGirderEdges(pierIdx, face);
+   std::vector<BearingElevationDetails> vElevDetails = pBridge->GetBearingElevationDetailsAtGirderEdges(pierIdx, face, girderIndex);
    std::vector<BearingElevationDetails>::iterator iter(vElevDetails.begin());
    std::vector<BearingElevationDetails>::iterator iend(vElevDetails.end());
    GirderIndexType lastGdrIdx = INVALID_INDEX;
@@ -380,9 +398,9 @@ LPCTSTR CBearingSeatElevationsChapterBuilder2::GetName() const
    return TEXT("Bearing Seat Elevations");
 }
 
-CChapterBuilder* CBearingSeatElevationsChapterBuilder2::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CBearingSeatElevationsChapterBuilder2::Clone() const
 {
-   return new CBearingSeatElevationsChapterBuilder2(*this);
+   return std::make_unique<CBearingSeatElevationsChapterBuilder2>(*this);
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -400,7 +418,7 @@ LPCTSTR CBearingDeductChapterBuilder::GetName() const
    return TEXT("Bearing Seat Elevations");
 }
 
-CChapterBuilder* CBearingDeductChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CBearingDeductChapterBuilder::Clone() const
 {
-   return new CBearingDeductChapterBuilder(*this);
+   return std::make_unique<CBearingDeductChapterBuilder>(*this);
 }

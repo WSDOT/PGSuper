@@ -49,13 +49,13 @@ LPCTSTR CLiftingCheckChapterBuilder::GetName() const
    return TEXT("Lifting Check");
 }
 
-rptChapter* CLiftingCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CLiftingCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    CComPtr<IBroker> pBroker;
    rptChapter* pChapter;
 
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-   CSegmentReportSpecification* pSegmentRptSpec = dynamic_cast<CSegmentReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
+   auto pSegmentRptSpec = std::dynamic_pointer_cast<const CSegmentReportSpecification>(pRptSpec);
    if (pGirderRptSpec)
    {
       pGirderRptSpec->GetBroker(&pBroker);
@@ -77,7 +77,7 @@ rptChapter* CLiftingCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Ui
 }
 
 
-CChapterBuilder* CLiftingCheckChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLiftingCheckChapterBuilder::Clone() const
 {
-   return new CLiftingCheckChapterBuilder;
+   return std::make_unique<CLiftingCheckChapterBuilder>();
 }

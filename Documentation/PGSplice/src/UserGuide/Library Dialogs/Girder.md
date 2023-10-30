@@ -8,3 +8,4 @@ A spliced girder segment is defined on the following tabs:
 * @subpage ug_library_dialogs_girder_segment_flexural_design
 * @subpage ug_library_dialogs_girder_haunch_and_camber
 * @subpage ug_library_dialogs_girder_diaphragms
+* @subpage ug_library_dialogs_girder_shear_design

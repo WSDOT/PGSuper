@@ -27,6 +27,7 @@ PGSuper Dialogs {#ug_dialogs}
 * @subpage ug_dialogs_erect_piers
 * @subpage ug_dialogs_erect_segments
 * @subpage ug_dialogs_file_compatibility_warning
+* @subpage ug_dialogs_fill_haunch
 * @subpage ug_dialogs_girder_designer
 * @subpage ug_dialogs_girder_details
 * @subpage ug_dialogs_girder_view_section_cut
@@ -50,10 +51,10 @@ PGSuper Dialogs {#ug_dialogs}
 * @subpage ug_dialogs_project_criteria
 * @subpage ug_dialogs_project_properties
 * @subpage ug_dialogs_report_options
+* @subpage ug_dialogs_geometry_control
 * @subpage ug_dialogs_configure
 * @subpage ug_dialogs_span_description
 * @subpage ug_dialogs_structural_analysis_method
 * @subpage ug_dialogs_timeline_event
 * @subpage ug_dialogs_timeline_create_event
 * @subpage ug_dialogs_timeline_manager
-

@@ -56,14 +56,14 @@ public:
 
       if ( 0 < pT->m_EventHoldCount )
       {
-         sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_PROJECTPROPERTIES);
+         WBFL::System::Flags<Uint32>::Set(&pT->m_PendingEvents,EVT_PROJECTPROPERTIES);
          return S_OK;
       }
 
 		pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = m_vec.begin();
-		while (pp < m_vec.end())
+		IUnknown** pp = this->m_vec.begin();
+		while (pp < this->m_vec.end())
 		{
 			if (*pp != nullptr)
 			{
@@ -92,14 +92,14 @@ public:
 
       if ( 0 < pT->m_EventHoldCount )
       {
-         sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_EXPOSURECONDITION);
+         WBFL::System::Flags<Uint32>::Set(&pT->m_PendingEvents,EVT_EXPOSURECONDITION);
          return S_OK;
       }
 
       pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = m_vec.begin();
-		while (pp < m_vec.end())
+		IUnknown** pp = this->m_vec.begin();
+		while (pp < this->m_vec.end())
 		{
 			if (*pp != nullptr)
 			{
@@ -117,14 +117,14 @@ public:
 
       if ( 0 < pT->m_EventHoldCount )
       {
-         sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_RELHUMIDITY);
+         WBFL::System::Flags<Uint32>::Set(&pT->m_PendingEvents,EVT_RELHUMIDITY);
          return S_OK;
       }
 
       pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = m_vec.begin();
-		while (pp < m_vec.end())
+		IUnknown** pp = this->m_vec.begin();
+		while (pp < this->m_vec.end())
 		{
 			if (*pp != nullptr)
 			{
@@ -153,12 +153,12 @@ public:
 
       if ( 0 < pT->m_EventHoldCount )
       {
-         sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_BRIDGE);
+         WBFL::System::Flags<Uint32>::Set(&pT->m_PendingEvents,EVT_BRIDGE);
          pT->m_PendingBridgeChangedHints.push_back(pHint);
          return S_OK;
       }
 
-      if (pT->m_pSpecEntry->GetLossMethod() != LOSSES_TIME_STEP)
+      if (pT->m_pSpecEntry->GetPrestressLossCriteria().LossMethod != PrestressLossCriteria::LossMethodType::TIME_STEP)
       {
          pT->CreatePrecastGirderBridgeTimelineEvents();
       }
@@ -167,8 +167,8 @@ public:
 
       pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = m_vec.begin();
-		while (pp < m_vec.end())
+		IUnknown** pp = this->m_vec.begin();
+		while (pp < this->m_vec.end())
 		{
 			if (*pp != nullptr)
 			{
@@ -193,14 +193,14 @@ public:
 
       if ( 0 < pT->m_EventHoldCount )
       {
-         sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_GIRDERFAMILY);
+         WBFL::System::Flags<Uint32>::Set(&pT->m_PendingEvents,EVT_GIRDERFAMILY);
          return S_OK;
       }
 
       pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = m_vec.begin();
-		while (pp < m_vec.end())
+		IUnknown** pp = this->m_vec.begin();
+		while (pp < this->m_vec.end())
 		{
 			if (*pp != nullptr)
 			{
@@ -237,8 +237,8 @@ public:
 
       pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = m_vec.begin();
-		while (pp < m_vec.end())
+		IUnknown** pp = this->m_vec.begin();
+		while (pp < this->m_vec.end())
 		{
 			if (*pp != nullptr)
 			{
@@ -257,14 +257,14 @@ public:
       
       if ( 0 < pT->m_EventHoldCount )
       {
-         sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_CONSTRUCTIONLOAD);
+         WBFL::System::Flags<Uint32>::Set(&pT->m_PendingEvents,EVT_CONSTRUCTIONLOAD);
          return S_OK;
       }
 
       pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = m_vec.begin();
-		while (pp < m_vec.end())
+		IUnknown** pp = this->m_vec.begin();
+		while (pp < this->m_vec.end())
 		{
 			if (*pp != nullptr)
 			{
@@ -283,14 +283,14 @@ public:
       
       if ( 0 < pT->m_EventHoldCount )
       {
-         sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_LIVELOAD);
+         WBFL::System::Flags<Uint32>::Set(&pT->m_PendingEvents,EVT_LIVELOAD);
          return S_OK;
       }
 
       pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = m_vec.begin();
-		while (pp < m_vec.end())
+		IUnknown** pp = this->m_vec.begin();
+		while (pp < this->m_vec.end())
 		{
 			if (*pp != nullptr)
 			{
@@ -310,14 +310,14 @@ public:
       
       if ( 0 < pT->m_EventHoldCount )
       {
-         sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_LIVELOADNAME);
+         WBFL::System::Flags<Uint32>::Set(&pT->m_PendingEvents,EVT_LIVELOADNAME);
          return S_OK;
       }
 
       pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = m_vec.begin();
-		while (pp < m_vec.end())
+		IUnknown** pp = this->m_vec.begin();
+		while (pp < this->m_vec.end())
 		{
 			if (*pp != nullptr)
 			{
@@ -347,14 +347,14 @@ public:
 
       if ( 0 < pT->m_EventHoldCount )
       {
-         sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_SPECIFICATION);
+         WBFL::System::Flags<Uint32>::Set(&pT->m_PendingEvents,EVT_SPECIFICATION);
          return S_OK;
       }
 
 		pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = m_vec.begin();
-		while (pp < m_vec.end())
+		IUnknown** pp = this->m_vec.begin();
+		while (pp < this->m_vec.end())
 		{
 			if (*pp != nullptr)
 			{
@@ -373,14 +373,14 @@ public:
 
       if ( 0 < pT->m_EventHoldCount )
       {
-         sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_ANALYSISTYPE);
+         WBFL::System::Flags<Uint32>::Set(&pT->m_PendingEvents,EVT_ANALYSISTYPE);
          return S_OK;
       }
 
       pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = m_vec.begin();
-		while (pp < m_vec.end())
+		IUnknown** pp = this->m_vec.begin();
+		while (pp < this->m_vec.end())
 		{
 			if (*pp != nullptr)
 			{
@@ -411,14 +411,14 @@ public:
 
       if ( 0 < pT->m_EventHoldCount )
       {
-         sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_RATING_SPECIFICATION);
+         WBFL::System::Flags<Uint32>::Set(&pT->m_PendingEvents,EVT_RATING_SPECIFICATION);
          return S_OK;
       }
 
 		pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = m_vec.begin();
-		while (pp < m_vec.end())
+		IUnknown** pp = this->m_vec.begin();
+		while (pp < this->m_vec.end())
 		{
 			if (*pp != nullptr)
 			{
@@ -447,14 +447,14 @@ public:
 
       if ( 0 < pT->m_EventHoldCount )
       {
-         sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_LIBRARYCONFLICT);
+         WBFL::System::Flags<Uint32>::Set(&pT->m_PendingEvents,EVT_LIBRARYCONFLICT);
          return S_OK;
       }
 
       pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = m_vec.begin();
-		while (pp < m_vec.end())
+		IUnknown** pp = this->m_vec.begin();
+		while (pp < this->m_vec.end())
 		{
 			if (*pp != nullptr)
 			{
@@ -483,14 +483,14 @@ public:
 
       if ( 0 < pT->m_EventHoldCount )
       {
-         sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_LOADMODIFIER);
+         WBFL::System::Flags<Uint32>::Set(&pT->m_PendingEvents,EVT_LOADMODIFIER);
          return S_OK;
       }
 
       pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = m_vec.begin();
-		while (pp < m_vec.end())
+		IUnknown** pp = this->m_vec.begin();
+		while (pp < this->m_vec.end())
 		{
 			if (*pp != nullptr)
 			{
@@ -519,8 +519,8 @@ public:
 
       pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = m_vec.begin();
-		while (pp < m_vec.end())
+		IUnknown** pp = this->m_vec.begin();
+		while (pp < this->m_vec.end())
 		{
 			if (*pp != nullptr)
 			{
@@ -539,8 +539,8 @@ public:
 
       pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = m_vec.begin();
-		while (pp < m_vec.end())
+		IUnknown** pp = this->m_vec.begin();
+		while (pp < this->m_vec.end())
 		{
 			if (*pp != nullptr)
 			{
@@ -559,8 +559,8 @@ public:
 
       pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = m_vec.begin();
-		while (pp < m_vec.end())
+		IUnknown** pp = this->m_vec.begin();
+		while (pp < this->m_vec.end())
 		{
 			if (*pp != nullptr)
 			{
@@ -590,14 +590,14 @@ public:
 
       if ( 0 < pT->m_EventHoldCount )
       {
-         sysFlags<Uint32>::Set(&pT->m_PendingEvents,EVT_LOSSPARAMETERS);
+         WBFL::System::Flags<Uint32>::Set(&pT->m_PendingEvents,EVT_LOSSPARAMETERS);
          return S_OK;
       }
 
       pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = m_vec.begin();
-		while (pp < m_vec.end())
+		IUnknown** pp = this->m_vec.begin();
+		while (pp < this->m_vec.end())
 		{
 			if (*pp != nullptr)
 			{

@@ -25,9 +25,12 @@
 
 #include "stdafx.h"
 #include <psgLib\psglib.h>
+#include <psgLib/LiftingCriteria.h>
+#include <psgLib/SpecificationCriteria.h>
 #include "SpecLiftingPage.h"
 #include "SpecMainSheet.h"
 #include <EAF\EAFDocument.h>
+#include <Stability/StabilityTypes.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -97,8 +100,8 @@ void CSpecLiftingPage::DoCheckMax()
 BOOL CSpecLiftingPage::OnInitDialog() 
 {
    CComboBox* pcbWind = (CComboBox*)GetDlgItem(IDC_WIND_TYPE);
-   pcbWind->SetItemData(pcbWind->AddString(_T("Pressure")),(DWORD_PTR)pgsTypes::Pressure);
-   pcbWind->SetItemData(pcbWind->AddString(_T("Speed")),   (DWORD_PTR)pgsTypes::Speed);
+   pcbWind->SetItemData(pcbWind->AddString(_T("Pressure")),(DWORD_PTR)WBFL::Stability::WindLoadType::Pressure);
+   pcbWind->SetItemData(pcbWind->AddString(_T("Speed")),   (DWORD_PTR)WBFL::Stability::WindLoadType::Speed);
 
    CPropertyPage::OnInitDialog();
 	
@@ -118,10 +121,10 @@ BOOL CSpecLiftingPage::OnSetActive()
 {
    // Disable controls if hauling not enabled
    CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
-   BOOL enableChild = pDad->m_Entry.IsLiftingAnalysisEnabled() ? TRUE : FALSE;
+   BOOL enableChild = pDad->m_Entry.GetLiftingCriteria().bCheck ? TRUE : FALSE;
    EnableControls(enableChild);
 
-   if ( lrfdVersionMgr::SeventhEditionWith2016Interims <= pDad->m_Entry.GetSpecificationType() )
+   if ( WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= pDad->m_Entry.GetSpecificationCriteria().GetEdition())
    {
       GetDlgItem(IDC_SLWC_FR_TXT)->SetWindowText(_T("Lightweight concrete"));
       GetDlgItem(IDC_ALWC_FR_TXT)->ShowWindow(SW_HIDE);
@@ -155,11 +158,11 @@ void CSpecLiftingPage::OnCbnSelchangeWindType()
    // TODO: Add your control notification handler code here
    CComboBox* pcbWindType = (CComboBox*)GetDlgItem(IDC_WIND_TYPE);
    int curSel = pcbWindType->GetCurSel();
-   pgsTypes::WindType windType = (pgsTypes::WindType)pcbWindType->GetItemData(curSel);
+   WBFL::Stability::WindLoadType windType = (WBFL::Stability::WindLoadType)pcbWindType->GetItemData(curSel);
    CDataExchange dx(this,false);
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDispUnits = pApp->GetDisplayUnits();
-   if ( windType == pgsTypes::Speed )
+   const WBFL::Units::IndirectMeasure* pDispUnits = pApp->GetDisplayUnits();
+   if ( windType == WBFL::Stability::WindLoadType::Speed )
    {
       DDX_Tag(&dx,IDC_WIND_LOAD_UNIT,pDispUnits->Velocity);
    }

@@ -54,7 +54,7 @@ static char THIS_FILE[] = __FILE__;
 #include <IFace\VersionInfo.h>
 #include <IFace\PointOfInterest.h>
 #include <IFace\GirderHandling.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\StatusCenter.h>
 #include <IFace\Selection.h>

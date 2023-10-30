@@ -28,7 +28,7 @@
 #include <System\XStructuredLoad.h>
 
 #include "resource.h"
-#include <Units\sysUnits.h>
+#include <Units\Convert.h>
 #include "LiveLoadDlg.h"
 
 #include <MathEx.h>
@@ -62,41 +62,20 @@ m_VariableAxleIndex(INVALID_INDEX)
    m_LaneLoadSpanLength = 0; // always use lane load if it is defined
 
    // default to hs20-44
-   m_LaneLoad   = ::ConvertToSysUnits( 0.64, unitMeasure::KipPerFoot );
+   m_LaneLoad   = WBFL::Units::ConvertToSysUnits( 0.64, WBFL::Units::Measure::KipPerFoot );
    Axle axle;
-   axle.Weight =  ::ConvertToSysUnits(  8.0, unitMeasure::Kip );
+   axle.Weight =  WBFL::Units::ConvertToSysUnits(  8.0, WBFL::Units::Measure::Kip );
    AddAxle(axle);
 
-   axle.Weight =  ::ConvertToSysUnits( 32.0, unitMeasure::Kip );
-   axle.Spacing = ::ConvertToSysUnits( 14.0, unitMeasure::Feet );
+   axle.Weight =  WBFL::Units::ConvertToSysUnits( 32.0, WBFL::Units::Measure::Kip );
+   axle.Spacing = WBFL::Units::ConvertToSysUnits( 14.0, WBFL::Units::Measure::Feet );
    AddAxle(axle);
 
    AddAxle(axle);
-}
-
-LiveLoadLibraryEntry::LiveLoadLibraryEntry(const LiveLoadLibraryEntry& rOther) :
-libLibraryEntry(rOther)
-{
-   MakeCopy(rOther);
-}
-
-LiveLoadLibraryEntry::~LiveLoadLibraryEntry()
-{
-}
-
-//======================== OPERATORS  =======================================
-LiveLoadLibraryEntry& LiveLoadLibraryEntry::operator= (const LiveLoadLibraryEntry& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
 }
 
 //======================== OPERATIONS =======================================
-bool LiveLoadLibraryEntry::SaveMe(sysIStructuredSave* pSave)
+bool LiveLoadLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
 {
    pSave->BeginUnit(_T("LiveLoadLibraryEntry"), 2.0);
 
@@ -130,7 +109,7 @@ bool LiveLoadLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    return false;
 }
 
-bool LiveLoadLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
+bool LiveLoadLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 {
    if(pLoad->BeginUnit(_T("LiveLoadLibraryEntry")))
    {
@@ -266,46 +245,46 @@ CString LiveLoadLibraryEntry::GetApplicabilityType(pgsTypes::LiveLoadApplicabili
 
 bool LiveLoadLibraryEntry::IsEqual(const LiveLoadLibraryEntry& rOther,bool bConsiderName) const
 {
-   std::vector<pgsLibraryEntryDifferenceItem*> vDifferences;
+   std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>> vDifferences;
    bool bMustRename;
    return Compare(rOther,vDifferences,bMustRename,true,bConsiderName);
 }
 
-bool LiveLoadLibraryEntry::Compare(const LiveLoadLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
+bool LiveLoadLibraryEntry::Compare(const LiveLoadLibraryEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    bMustRename = false;
 
    if ( m_IsNotional != rOther.m_IsNotional )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceBooleanItem(_T("Neglect axles that do not contribute to the maximum load effect under consideration"),m_IsNotional,rOther.m_IsNotional,_T("Checked"),_T("Unchecked")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceBooleanItem>(_T("Neglect axles that do not contribute to the maximum load effect under consideration"),m_IsNotional,rOther.m_IsNotional,_T("Checked"),_T("Unchecked")));
    }
 
    if ( m_LiveLoadConfigurationType != rOther.m_LiveLoadConfigurationType )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Load Type"),GetConfigurationType(m_LiveLoadConfigurationType),GetConfigurationType(rOther.m_LiveLoadConfigurationType)));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Load Type"),GetConfigurationType(m_LiveLoadConfigurationType),GetConfigurationType(rOther.m_LiveLoadConfigurationType)));
    }
 
    if ( m_LiveLoadApplicabilityType != rOther.m_LiveLoadApplicabilityType )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Usage"),GetApplicabilityType(m_LiveLoadApplicabilityType),GetApplicabilityType(rOther.m_LiveLoadApplicabilityType)));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Usage"),GetApplicabilityType(m_LiveLoadApplicabilityType),GetApplicabilityType(rOther.m_LiveLoadApplicabilityType)));
    }
 
    if ( !::IsEqual(m_LaneLoad,rOther.m_LaneLoad) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceForcePerLengthItem(_T("Lane Load"),m_LaneLoad,rOther.m_LaneLoad,pDisplayUnits->ForcePerLength));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceForcePerLengthItem>(_T("Lane Load"),m_LaneLoad,rOther.m_LaneLoad,pDisplayUnits->ForcePerLength));
    }
 
    if ( !::IsEqual(m_LaneLoadSpanLength,rOther.m_LaneLoadSpanLength) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceLengthItem(_T("Lane Load Minimum Span Length"),m_LaneLoadSpanLength,rOther.m_LaneLoadSpanLength,pDisplayUnits->SpanLength));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceLengthItem>(_T("Lane Load Minimum Span Length"),m_LaneLoadSpanLength,rOther.m_LaneLoadSpanLength,pDisplayUnits->SpanLength));
    }
 
    if ( m_LiveLoadConfigurationType != LiveLoadLibraryEntry::lcLaneOnly )
@@ -314,19 +293,19 @@ bool LiveLoadLibraryEntry::Compare(const LiveLoadLibraryEntry& rOther, std::vect
       if ( nAxles != rOther.m_Axles.size() )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceIndexItem(_T("Number of Axles"),nAxles,rOther.m_Axles.size()));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceIndexItem>(_T("Number of Axles"),nAxles,rOther.m_Axles.size()));
       }
 
       if ( m_VariableAxleIndex != rOther.m_VariableAxleIndex )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceIndexItem(_T("Variable Axle Index"),m_VariableAxleIndex,rOther.m_VariableAxleIndex));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceIndexItem>(_T("Variable Axle Index"),m_VariableAxleIndex,rOther.m_VariableAxleIndex));
       }
 
       if ( !::IsEqual(m_MaxVariableAxleSpacing,rOther.m_MaxVariableAxleSpacing) )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceLengthItem(_T("Maximum Variable Axle Spacing"),m_MaxVariableAxleSpacing,rOther.m_MaxVariableAxleSpacing,pDisplayUnits->SpanLength));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceLengthItem>(_T("Maximum Variable Axle Spacing"),m_MaxVariableAxleSpacing,rOther.m_MaxVariableAxleSpacing,pDisplayUnits->SpanLength));
       }
 
       for ( AxleIndexType axleIdx = 0; axleIdx < nAxles; axleIdx++ )
@@ -339,7 +318,7 @@ bool LiveLoadLibraryEntry::Compare(const LiveLoadLibraryEntry& rOther, std::vect
             RETURN_ON_DIFFERENCE;
             CString strAxle;
             strAxle.Format(_T("Axle %d - Weight"),LABEL_INDEX(axleIdx));
-            vDifferences.push_back(new pgsLibraryEntryDifferenceForceItem(strAxle,axle.Weight,otherAxle.Weight,pDisplayUnits->GeneralForce));
+            vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceForceItem>(strAxle,axle.Weight,otherAxle.Weight,pDisplayUnits->GeneralForce));
          }
 
          if ( !::IsEqual(axle.Spacing,otherAxle.Spacing) )
@@ -347,7 +326,7 @@ bool LiveLoadLibraryEntry::Compare(const LiveLoadLibraryEntry& rOther, std::vect
             RETURN_ON_DIFFERENCE;
             CString strAxle;
             strAxle.Format(_T("Axle %d - Spacing"),LABEL_INDEX(axleIdx));
-            vDifferences.push_back(new pgsLibraryEntryDifferenceLengthItem(strAxle,axle.Spacing,otherAxle.Spacing,pDisplayUnits->SpanLength));
+            vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceLengthItem>(strAxle,axle.Spacing,otherAxle.Spacing,pDisplayUnits->SpanLength));
          }
       }
 
@@ -356,7 +335,7 @@ bool LiveLoadLibraryEntry::Compare(const LiveLoadLibraryEntry& rOther, std::vect
    if (considerName &&  GetName() != rOther.GetName() )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
    }
 
    return vDifferences.size() == 0 ? true : false;
@@ -524,25 +503,6 @@ bool LiveLoadLibraryEntry::Edit(bool allowEditing,int nPage)
    return false;
 }
 
-
-void LiveLoadLibraryEntry::MakeCopy(const LiveLoadLibraryEntry& rOther)
-{
-   m_IsNotional = rOther.m_IsNotional;
-   m_LiveLoadConfigurationType = rOther.m_LiveLoadConfigurationType;
-   m_LiveLoadApplicabilityType = rOther.m_LiveLoadApplicabilityType;
-   m_LaneLoad = rOther.m_LaneLoad;
-   m_LaneLoadSpanLength = rOther.m_LaneLoadSpanLength;
-   m_MaxVariableAxleSpacing = rOther.m_MaxVariableAxleSpacing;
-   m_VariableAxleIndex = rOther.m_VariableAxleIndex;
-   m_Axles = rOther.m_Axles;
-}
-
-void LiveLoadLibraryEntry::MakeAssignment(const LiveLoadLibraryEntry& rOther)
-{
-   libLibraryEntry::MakeAssignment( rOther );
-   MakeCopy( rOther );
-}
-
 HICON  LiveLoadLibraryEntry::GetIcon() const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -560,43 +520,3 @@ HICON  LiveLoadLibraryEntry::GetIcon() const
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool LiveLoadLibraryEntry::AssertValid() const
-{
-   return libLibraryEntry::AssertValid();
-}
-
-void LiveLoadLibraryEntry::Dump(dbgDumpContext& os) const
-{
-   os << _T("Dump for LiveLoadLibraryEntry ")<< GetName() <<endl;
-
-   os << _T("   m_IsNotional                = ")<< m_IsNotional <<endl;
-   os << _T("   m_LiveLoadConfigurationType = ")<< m_LiveLoadConfigurationType<<endl;
-   os << _T("   m_LaneLoad                  = ")<< m_LaneLoad<<endl;
-   os << _T("   m_MaxVariableAxleSpacing    = ")<< m_MaxVariableAxleSpacing<<endl;
-   os << _T("   m_VariableAxleIndex         = ")<< m_VariableAxleIndex<<endl;
-
-   AxleIndexType size = m_Axles.size();
-   os << _T("   Number of Axles = ")<<size<<endl;
-   for (AxleIndexType iaxl=0; iaxl<size; iaxl++)
-   {
-      os<<_T("    Axle ")<<iaxl<<_T(" Weight  = ")<<m_Axles[iaxl].Weight<<endl;
-      os<<_T("    Axle ")<<iaxl<<_T(" Spacing = ")<<m_Axles[iaxl].Spacing<<endl;
-   }
-
-   libLibraryEntry::Dump( os );
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool LiveLoadLibraryEntry::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("LiveLoadLibraryEntry");
-
-   // tests are performed on entire library.
-
-   TESTME_EPILOG("LiveLoadLibraryEntry");
-}
-#endif // _UNITTEST

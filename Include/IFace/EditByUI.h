@@ -23,7 +23,7 @@
 #pragma once
 
 #include <WbflTypes.h>
-#include <Lrfd\LiveLoadDistributionFactorBase.h>
+#include <LRFD\LiveLoadDistributionFactorBase.h>
 #include <PgsExt\PointLoadData.h>
 #include <PgsExt\DistributedLoadData.h>
 #include <PgsExt\MomentLoadData.h>
@@ -95,7 +95,7 @@ DESCRIPTION
 // {E1CF3EAA-3E85-450a-9A67-D68FF321DC16}
 DEFINE_GUID(IID_IEditByUI, 
 0xe1cf3eaa, 0x3e85, 0x450a, 0x9a, 0x67, 0xd6, 0x8f, 0xf3, 0x21, 0xdc, 0x16);
-interface IEditByUI : IUnknown
+interface __declspec(uuid("{E1CF3EAA-3E85-450a-9A67-D68FF321DC16}")) IEditByUI : IUnknown
 {
    virtual void EditBridgeDescription(int nPage) = 0;
    virtual void EditAlignmentDescription(int nPage) = 0;
@@ -108,12 +108,12 @@ interface IEditByUI : IUnknown
    virtual bool EditPierDescription(PierIndexType pierIdx, int nPage) = 0;
    virtual bool EditTemporarySupportDescription(PierIndexType pierIdx, int nPage) = 0;
    virtual void EditLiveLoads() = 0;
-   virtual void EditLiveLoadDistributionFactors(pgsTypes::DistributionFactorMethod method,LldfRangeOfApplicabilityAction roaAction) = 0;
-   virtual bool EditPointLoad(CollectionIndexType loadIdx) = 0;
+   virtual void EditLiveLoadDistributionFactors(pgsTypes::DistributionFactorMethod method,WBFL::LRFD::RangeOfApplicabilityAction roaAction) = 0;
+   virtual bool EditPointLoad(IndexType loadIdx) = 0;
    virtual bool EditPointLoadByID(LoadIDType loadID) = 0;
-   virtual bool EditDistributedLoad(CollectionIndexType loadIdx) = 0;
+   virtual bool EditDistributedLoad(IndexType loadIdx) = 0;
    virtual bool EditDistributedLoadByID(LoadIDType loadID) = 0;
-   virtual bool EditMomentLoad(CollectionIndexType loadIdx) = 0;
+   virtual bool EditMomentLoad(IndexType loadIdx) = 0;
    virtual bool EditMomentLoadByID(LoadIDType loadID) = 0;
    virtual bool EditTimeline() = 0;
    virtual bool EditCastDeckActivity() = 0;
@@ -132,11 +132,11 @@ interface IEditByUI : IUnknown
    virtual bool EditDirectStrandInputPrestressing(const CSegmentKey& segmentKey) = 0;
 
    virtual void AddPointLoad(const CPointLoadData& loadData) = 0;
-   virtual void DeletePointLoad(CollectionIndexType loadIdx) = 0;
+   virtual void DeletePointLoad(IndexType loadIdx) = 0;
    virtual void AddDistributedLoad(const CDistributedLoadData& loadData) = 0;
-   virtual void DeleteDistributedLoad(CollectionIndexType loadIdx) = 0;
+   virtual void DeleteDistributedLoad(IndexType loadIdx) = 0;
    virtual void AddMomentLoad(const CMomentLoadData& loadData) = 0;
-   virtual void DeleteMomentLoad(CollectionIndexType loadIdx) = 0;
+   virtual void DeleteMomentLoad(IndexType loadIdx) = 0;
 
    virtual bool EditEffectiveFlangeWidth() = 0;
 
@@ -145,4 +145,5 @@ interface IEditByUI : IUnknown
 
    // Bearing dialog
    virtual bool EditBearings() = 0;
+   virtual bool EditHaunch() = 0;
 };

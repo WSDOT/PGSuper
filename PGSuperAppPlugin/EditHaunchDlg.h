@@ -22,18 +22,15 @@
 
 #pragma once
 #include "resource.h"
-#include "HaunchBearingGrid.h"
-#include "HaunchByBridgeDlg.h"
-#include "HaunchByBearingDlg.h"
-#include "HaunchBySegmentDlg.h"
-#include "AssumedExcessCamberByBridgeDlg.h"
-#include "AssumedExcessCamberBySpanDlg.h"
-#include "AssumedExcessCamberByGirderDlg.h"
+#include "EditHaunchACamberDlg.h"
+#include "EditHaunchByHaunchDlg.h"
+#include "TempSupportElevAdjustGrid.h"
 #include <PgsExt\HaunchShapeComboBox.h>
 
 class CBridgeDescription2;
 
 // CEditHaunchDlg dialog
+
 
 class CEditHaunchDlg : public CDialog
 {
@@ -47,23 +44,14 @@ public:
 // Dialog Data
 	enum { IDD = IDD_EDIT_HAUNCH };
 
-// embedded dialogs for different haunch layouts
-   CHaunchByBridgeDlg m_HaunchByBridgeDlg;
-   CHaunchByBearingDlg m_HaunchByBearingDlg;
-   CHaunchBySegmentDlg m_HaunchBySegmentDlg;
+   pgsTypes::HaunchInputDepthType GetHaunchInputDepthType();
+   pgsTypes::HaunchLayoutType GetHaunchLayoutType();
 
-// embedded dialogs for different AssumedExcessCamber layouts
-   CAssumedExcessCamberByBridgeDlg m_AssumedExcessCamberByBridgeDlg;
-   CAssumedExcessCamberBySpanDlg  m_AssumedExcessCamberBySpanDlg;
-   CAssumedExcessCamberByGirderDlg m_AssumedExcessCamberByGirderDlg;
+   // embedded dialogs for different haunch layouts
+   std::unique_ptr<CEditHaunchACamberDlg> m_pEditHaunchACamberDlg;
+   CEditHaunchByHaunchDlg m_EditHaunchByHaunchDlg;
 
-   // returns the current selection for slab offset type
-   pgsTypes::SlabOffsetType GetSlabOffsetType();
-
-   // returns the current selection for assumed excess camber type
-   pgsTypes::AssumedExcessCamberType GetAssumedExcessCamberType();
-
-   BOOL IsAssumedExcessCamberEnabled() { return m_bCanAssumedExcessCamberInputBeEnabled; }
+   CTempSupportElevAdjustGrid* m_pTempSupportElevAdjustGrid;
 
    CBridgeDescription2 m_BridgeDesc;
 
@@ -73,19 +61,16 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
    virtual BOOL OnInitDialog();
-   afx_msg void OnSlabOffsetTypeChanged();
-   afx_msg void OnAssumedExcessCamberTypeChanged();
    afx_msg void OnBnClickedHelp();
+   afx_msg void OnHaunchDepthTypeChanged();
+   afx_msg void OnHaunchLayoutTypeChanged();
 
 private:
+   bool m_bIsInPGSuper; 
    Float64 m_Fillet;
-   pgsTypes::SlabOffsetType m_SlabOffsetType;
-   pgsTypes::AssumedExcessCamberType m_AssumedExcessCamberType;
-
    pgsTypes::HaunchShapeType m_HaunchShape;
    CHaunchShapeComboBox m_cbHaunchShape;
-
-   bool m_bCanAssumedExcessCamberInputBeEnabled;
+   pgsTypes::HaunchInputDepthType m_HaunchInputDepthType;
 
    void InitializeData();
 };

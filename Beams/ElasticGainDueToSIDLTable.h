@@ -30,7 +30,7 @@
 
 #include <IFace\AnalysisResults.h>
 
-class lrfdLosses;
+class WBFL::LRFD::Losses;
 
 /////////////////////////////////////////////////////////////////////////////
 // CElasticGainDueToSIDLTable

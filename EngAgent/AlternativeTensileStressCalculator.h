@@ -68,7 +68,7 @@ public:
 
    Float64 ComputeAlternativeStressRequirements(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig,
                                                 Float64 fTop, Float64 fBot, 
-                                                Float64 fAllowableWithoutRebar, Float64 fAllowableWithRebar,
+                                                Float64 fLimitWithoutRebar, Float64 fLimitWithRebar,
                                                 Float64 *pYna, Float64 *pAreaTens, Float64 *pT, 
                                                 Float64 *pAsProvd, Float64 *pAsReqd, bool* pIsAdequateRebar);
 

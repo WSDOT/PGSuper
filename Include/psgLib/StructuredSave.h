@@ -46,12 +46,12 @@
 CLASS 
    CStructuredSave
 
-   Implements the sysIStructuredSave interface with the IStructuredSave
+   Implements the WBFL::System::IStructuredSave interface with the IStructuredSave
    interface.
 
 
 DESCRIPTION
-   Implements the sysIStructuredSave interface with the IStructuredSave
+   Implements the WBFL::System::IStructuredSave interface with the IStructuredSave
    interface.  
 
    
@@ -64,14 +64,14 @@ LOG
    rab : 08.20.1998 : Created file
 *****************************************************************************/
 
-class PSGLIBCLASS CStructuredSave : public sysIStructuredSave
+class PSGLIBCLASS CStructuredSave : public WBFL::System::IStructuredSave
 {
 public:
    // GROUP: LIFECYCLE
 
    //------------------------------------------------------------------------
    // Default constructor
-   CStructuredSave(IStructuredSave* pStrSave);
+   CStructuredSave(::IStructuredSave* pStrSave);
 
    //------------------------------------------------------------------------
    // Destructor
@@ -164,32 +164,13 @@ protected:
 
 private:
    // GROUP: DATA MEMBERS
-   IStructuredSave* m_pStrSave;
+   ::IStructuredSave* m_pStrSave;
 
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
    // GROUP: ACCESS
    // GROUP: INQUIRY
-
-public:
-   // GROUP: DEBUG
-   #if defined _DEBUG
-   //------------------------------------------------------------------------
-   // Returns true if the object is in a valid state, otherwise returns false.
-   virtual bool AssertValid() const;
-
-   //------------------------------------------------------------------------
-   // Dumps the contents of the object to the given dump context.
-   virtual void Dump(dbgDumpContext& os) const;
-   #endif // _DEBUG
-
-   #if defined _UNITTEST
-   //------------------------------------------------------------------------
-   // Runs a self-diagnostic test.  Returns true if the test passed,
-   // otherwise false.
-   static bool TestMe(dbgLog& rlog);
-   #endif // _UNITTEST
 };
 
 // INLINE METHODS

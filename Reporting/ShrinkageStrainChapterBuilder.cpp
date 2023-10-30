@@ -22,15 +22,7 @@
 
 #include "StdAfx.h"
 #include <Reporting\ShrinkageStrainChapterBuilder.h>
-//#include <Reporting\LRFDTimeDependentShrinkageStrainChapterBuilder.h>
-//#include <Reporting\ACI209ShrinkageStrainChapterBuilder.h>
-//#include <Reporting\CEBFIPShrinkageStrainChapterBuilder.h>
-//
-//#include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
-//#include <IFace\Bridge.h>
-//
-//#include <PgsExt\StrandData.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -59,9 +51,9 @@ LPCTSTR CShrinkageStrainChapterBuilder::GetName() const
    return TEXT("Shrinkage Strain Details");
 }
 
-rptChapter* CShrinkageStrainChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CShrinkageStrainChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
 
@@ -69,33 +61,16 @@ rptChapter* CShrinkageStrainChapterBuilder::Build(CReportSpecification* pRptSpec
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
 
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
-   ATLASSERT( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP );
+   ATLASSERT( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP );
 
    rptParagraph* pPara = new rptParagraph;
    (*pChapter) << pPara;
    *pPara << _T("Shrinkage strain details are listed in the Time Step Details Report.") << rptNewLine;
 
-   //if ( pLossParams->GetTimeDependentModel() == pgsTypes::tdmAASHTO )
-   //{
-   //   pChapter = CLRFDTimeDependentShrinkageStrainChapterBuilder().Build(pRptSpec,level);
-   //}
-   //else if ( pLossParams->GetTimeDependentModel() == pgsTypes::tdmACI209 )
-   //{
-   //   pChapter = CACI209ShrinkageStrainChapterBuilder().Build(pRptSpec,level);
-   //}
-   //else if ( pLossParams->GetTimeDependentModel() == pgsTypes::tdmCEBFIP )
-   //{
-   //   pChapter = CCEBFIPShrinkageStrainChapterBuilder().Build(pRptSpec,level);
-   //}
-   //else
-   //{
-   //   ATLASSERT(false);
-   //}
-
    return pChapter;
 }
 
-CChapterBuilder* CShrinkageStrainChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CShrinkageStrainChapterBuilder::Clone() const
 {
-   return new CShrinkageStrainChapterBuilder;
+   return std::make_unique<CShrinkageStrainChapterBuilder>();
 }

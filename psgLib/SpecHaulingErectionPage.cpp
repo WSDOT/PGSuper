@@ -28,6 +28,7 @@
 #include "SpecHaulingErectionPage.h"
 #include "SpecMainSheet.h"
 #include <EAF\EAFDocument.h>
+#include <psgLib/HaulingCriteria.h>
 
 #include <MFCTools\MFCTools.h>
 
@@ -82,8 +83,8 @@ void CSpecHaulingErectionPage::DoDataExchange(CDataExchange* pDX)
 
    if (pDX->m_bSaveAndValidate)
    {
-      // On way out - save data from approprate dialog
-      if (m_HaulingAnalysisMethod == pgsTypes::hmWSDOT)
+      // On way out - save data from appropriate dialog
+      if (m_HaulingAnalysisMethod == pgsTypes::HaulingAnalysisMethod::WSDOT)
       {
          CDataExchange DxDlg(&m_WsdotHaulingDlg, pDX->m_bSaveAndValidate);
          pDad->ExchangeWsdotHaulingData(&DxDlg);
@@ -115,9 +116,9 @@ BOOL CSpecHaulingErectionPage::OnInitDialog()
 {
    // Some initial data
    CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
-   m_HaulingAnalysisMethod = pDad->m_Entry.GetHaulingAnalysisMethod();
+   m_HaulingAnalysisMethod = pDad->m_Entry.GetHaulingCriteria().AnalysisMethod;
 
-   // Embed dialogs for wsdot/kdot editing into current. A discription may be found at
+   // Embed dialogs for wsdot/kdot editing into current. A description may be found at
    // http://www.codeproject.com/KB/dialog/embedded_dialog.aspx
    CWnd* pBox = GetDlgItem(IDC_STATIC_BOUNDS);
    pBox->ShowWindow(SW_HIDE);
@@ -144,7 +145,7 @@ BOOL CSpecHaulingErectionPage::OnInitDialog()
 
 void CSpecHaulingErectionPage::SwapDialogs()
 {
-   if (m_HaulingAnalysisMethod == pgsTypes::hmWSDOT)
+   if (m_HaulingAnalysisMethod == pgsTypes::HaulingAnalysisMethod::WSDOT)
    {
       m_WsdotHaulingDlg.ShowWindow(SW_SHOW);
       m_KdotHaulingDlg.ShowWindow(SW_HIDE);
@@ -169,7 +170,7 @@ BOOL CSpecHaulingErectionPage::OnSetActive()
 {
    // Disable controls if hauling not enabled
    CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
-   BOOL enableChild = pDad->m_Entry.IsHaulingAnalysisEnabled() ? TRUE : FALSE;
+   BOOL enableChild = pDad->m_Entry.GetHaulingCriteria().bCheck ? TRUE : FALSE;
    EnableControls(enableChild);
 
    m_WsdotHaulingDlg.OnSetActive();

@@ -180,38 +180,38 @@ int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, IBroker*
    rDataExporter.WriteIntToCell(1, _T("NStot"), m_RowNum, strandNum);
 
 	// STRAND SIZE
-   const matPsStrand* strandMatP = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Straight);
+   const auto* strandMatP = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Straight);
    Float64 value = strandMatP->GetNominalDiameter();
-   value = ::ConvertFromSysUnits( value, unitMeasure::Inch );
+   value = WBFL::Units::ConvertFromSysUnits( value, WBFL::Units::Measure::Inch );
    std::_tstring strandSize = FractionalStrandSize (value); // Convert value to fraction representation
 
    rDataExporter.WriteStringToCell(1, _T("Size"), m_RowNum, strandSize.c_str());
 
    // STRAND STRENGTH
-	int strandStrength = (strandMatP->GetGrade() == matPsStrand::Gr1725 ?  250 :  270);
+	int strandStrength = (strandMatP->GetGrade() == WBFL::Materials::PsStrand::Grade::Gr1725 ?  250 :  270);
    rDataExporter.WriteIntToCell(1, _T("Strength"), m_RowNum, strandStrength);
 
 	// STRAND ECCENTRICITY AT CENTER LINE
    value = pStrandGeometry->GetEccentricity( releaseIntervalIdx, pmid, pgsTypes::Permanent).Y();
-	Float64 strandEccCL = ::ConvertFromSysUnits( value, unitMeasure::Inch );
+	Float64 strandEccCL = WBFL::Units::ConvertFromSysUnits( value, WBFL::Units::Measure::Inch );
 
    rDataExporter.WriteFloatToCell(1, _T("eCL"), m_RowNum, strandEccCL);
 
 	// STRAND ECCENTRICITY AT ENDS
    value = pStrandGeometry->GetEccentricity( releaseIntervalIdx, pois, pgsTypes::Permanent).Y();
-	Float64 strandEccEnd = ::ConvertFromSysUnits( value, unitMeasure::Inch );
+	Float64 strandEccEnd = WBFL::Units::ConvertFromSysUnits( value, WBFL::Units::Measure::Inch );
 
    rDataExporter.WriteFloatToCell(1, _T("eEnd"), m_RowNum, strandEccEnd);
 
 	// CONCRETE RELEASE STRENGTH
    value = pMaterial->GetSegmentDesignFc(segmentKey,releaseIntervalIdx);
-	Float64 concreteRelStrength = ::ConvertFromSysUnits( value, unitMeasure::KSI );
+	Float64 concreteRelStrength = WBFL::Units::ConvertFromSysUnits( value, WBFL::Units::Measure::KSI );
 
    rDataExporter.WriteFloatToCell(1, _T("FCI"), m_RowNum, concreteRelStrength);
 
 	// MINIMUM 28 DAY COMP. STRENGTH
 	value = pMaterial->GetSegmentDesignFc(segmentKey,lastIntervalIdx);
-	Float64 min28dayCompStrength = ::ConvertFromSysUnits( value, unitMeasure::KSI );
+	Float64 min28dayCompStrength = WBFL::Units::ConvertFromSysUnits( value, WBFL::Units::Measure::KSI );
 
    rDataExporter.WriteFloatToCell(1, _T("FC"), m_RowNum, min28dayCompStrength);
 
@@ -229,7 +229,7 @@ int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, IBroker*
    fcTop = pArtifact->GetExternalEffects(pgsTypes::TopGirder);
 	value = -fcTop;
 
-	Float64 designLoadCompStress = ::ConvertFromSysUnits( value, unitMeasure::KSI );
+	Float64 designLoadCompStress = WBFL::Units::ConvertFromSysUnits( value, WBFL::Units::Measure::KSI );
 
    rDataExporter.WriteFloatToCell(1, _T("fComp"), m_RowNum, designLoadCompStress);
 
@@ -242,7 +242,7 @@ int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, IBroker*
    ftBot = pArtifact->GetExternalEffects(pgsTypes::BottomGirder);
 	value = -ftBot;
 
-	Float64 designLoadTensileStress = ::ConvertFromSysUnits( value, unitMeasure::KSI );
+	Float64 designLoadTensileStress = WBFL::Units::ConvertFromSysUnits( value, WBFL::Units::Measure::KSI );
 
    rDataExporter.WriteFloatToCell(1, _T("fTens"), m_RowNum, designLoadTensileStress);
 
@@ -250,7 +250,7 @@ int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, IBroker*
    const MINMOMENTCAPDETAILS* pmmcd = pMomentCapacity->GetMinMomentCapacityDetails(lastIntervalIdx,pmid,true);
    value = Max(pmmcd->Mu,pmmcd->MrMin);
 
-	int reqMinUltimateMomentCapacity = (int)Round(::ConvertFromSysUnits( value, unitMeasure::KipFeet ));
+	int reqMinUltimateMomentCapacity = (int)Round(WBFL::Units::ConvertFromSysUnits( value, WBFL::Units::Measure::KipFeet ));
 
    rDataExporter.WriteFloatToCell(1, _T("UltMom"), m_RowNum, reqMinUltimateMomentCapacity);
 
@@ -329,12 +329,12 @@ int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, IBroker*
          // value is measured down from top of girder... we want it measured up from the bottom
          value += Hg;
 
-         dstrandToEnd = ::ConvertFromSysUnits( value, unitMeasure::Inch );
+         dstrandToEnd = WBFL::Units::ConvertFromSysUnits( value, WBFL::Units::Measure::Inch );
 
          pStrandGeometry->GetHighestHarpedStrandLocationHPs(segmentKey, &value);
          value += Hg;
 
-         dstrandToCL = ::ConvertFromSysUnits( value, unitMeasure::Inch );
+         dstrandToCL = WBFL::Units::ConvertFromSysUnits( value, WBFL::Units::Measure::Inch );
       }
 
       if (dstrandNum > 0) // for harped sheet leave blanks when no strands
@@ -465,7 +465,7 @@ Uint32 TxDOTDebondWriter::WriteDebondDataData(CTxDataExporter& rDataExporter, Ui
    }
    else if (m_OutCome==NonStandardSection)
    {
-      Float64 spac = ::ConvertFromSysUnits(m_SectionSpacing , unitMeasure::Feet );
+      Float64 spac = WBFL::Units::ConvertFromSysUnits(m_SectionSpacing , WBFL::Units::Measure::Feet );
       CString msg;
       msg.Format( _T("Warning: Non-standard debonding increment of %6.3f ft used  for girder %s in span %s. \n"),spac,LABEL_GIRDER(gdrIdx),LABEL_SPAN(spanIdx));
       rDataExporter.WriteWarningToCell(1, _T("StructureName"), ++currRow, msg);
@@ -480,7 +480,7 @@ void TxDOTDebondWriter::WriteRowData(CTxDataExporter& rDataExporter, const RowDa
    WriteZeroDebondInfo(rDataExporter, currRowNum);
 
    // elevation of row
-   Float64 row_elev = ::ConvertFromSysUnits( Hg + row.m_Elevation, unitMeasure::Inch );
+   Float64 row_elev = WBFL::Units::ConvertFromSysUnits( Hg + row.m_Elevation, WBFL::Units::Measure::Inch );
    rDataExporter.WriteFloatToCell(1, _T("DBBotDist"), currRowNum, row_elev);
 
    // total strands in row
@@ -493,7 +493,7 @@ void TxDOTDebondWriter::WriteRowData(CTxDataExporter& rDataExporter, const RowDa
    // cycle true each section. *** Note that sections are in 3' intervals - this is written in stone ***
    for (const auto& section : row.m_Sections)
    {
-      Float64 xloc = ::ConvertFromSysUnits(section.m_XLoc, unitMeasure::Feet);
+      Float64 xloc = WBFL::Units::ConvertFromSysUnits(section.m_XLoc, WBFL::Units::Measure::Feet);
 
       // only write rows with data
       if (IsEqual(xloc, 3.0))
@@ -548,7 +548,7 @@ std::_tstring MakeNonStandardStrandString(IBroker* pBroker, const pgsPointOfInte
          else
             first = false;
 
-         Float64 elev_in = RoundOff(::ConvertFromSysUnits(srow.Elevation, unitMeasure::Inch), 0.001);
+         Float64 elev_in = RoundOff(WBFL::Units::ConvertFromSysUnits(srow.Elevation, WBFL::Units::Measure::Inch), 0.001);
          os << elev_in << _T("(") << srow.fillListString  << _T(")");
       }
 
@@ -565,7 +565,7 @@ std::_tstring MakeNonStandardStrandString(IBroker* pBroker, const pgsPointOfInte
          else
             first = false;
 
-         Float64 elev_in = RoundOff(::ConvertFromSysUnits(srow.Elevation, unitMeasure::Inch), 0.001);
+         Float64 elev_in = RoundOff(WBFL::Units::ConvertFromSysUnits(srow.Elevation, WBFL::Units::Measure::Inch), 0.001);
          os << elev_in << _T("(") << srow.Count  << _T(")");
       }
 

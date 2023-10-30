@@ -72,7 +72,7 @@ public:
       None // state is not applicable to this strand
    };
 
-   // enum that indicates the type of section and which requirement (I, J, or K) is applicable
+   // enum that indicates the type of section and which restriction (I, J, or K) is applicable
    enum Section
    {
       I,
@@ -118,7 +118,7 @@ public:
 
    void AddDebondSection(Float64 location,StrandIndexType nStrandsDebonded,Float64 fraStrandsDebonded);
    void GetDebondSection(SectionIndexType idx,Float64* location,StrandIndexType* nStrandsDebonded,Float64* fraStrandsDebonded) const;
-   CollectionIndexType GetNumDebondSections() const;
+   IndexType GetNumDebondSections() const;
 
    StrandIndexType GetNumDebondedStrands() const;
    void SetNumDebondedStrands(StrandIndexType nStrands);
@@ -135,13 +135,13 @@ public:
    Float64 GetDebondSectionSpacingLimit() const;
    void SetDebondSectionSpacingLimit(Float64 spacing);
 
-   // LRFD 9th Edition, 5.9.4.3.3 Item D
+   // LRFD 9th Edition, 5.9.4.3.3 Restriction D
    void CheckDebondingSymmetry(bool bCheck);
    bool CheckDebondingSymmetry() const;
    void IsDebondingSymmetrical(Uint16 symm);
    Uint16 IsDebondingSymmetrical() const;
 
-   // LRFD 9th Edition, 5.9.4.3.3, Item E
+   // LRFD 9th Edition, 5.9.4.3.3, Restriction E
    void CheckAdjacentDebonding(bool bCheck);
    bool CheckAdjacentDebonding() const;
    void AddAdjacentDebondedStrands(pgsTypes::MemberEndType endType,StrandIndexType strandIdx1, StrandIndexType strandIdx2);
@@ -150,7 +150,7 @@ public:
    bool PassedAdjacentDebondedStrands(pgsTypes::MemberEndType endType) const;
    bool PassedAdjacentDebondedStrands() const;
 
-   // LRFD 9th Edition, 5.9.4.3.3, Item I and J - strands must be bonded within web width projections
+   // LRFD 9th Edition, 5.9.4.3.3, Restriction I and J - strands must be bonded within web width projections
    void SetBottomFlangeToWebWidthRatio(pgsTypes::MemberEndType endType,Float64 ratio);
    Float64 GetBottomFlangeToWebWidthRatio(pgsTypes::MemberEndType endType) const; // only valid for Item I
    void CheckDebondingInWebWidthProjection(bool bCheck);
@@ -164,8 +164,8 @@ public:
    bool PassedDebondingSymmetry() const;
    bool PassedDebondLength() const;
    bool PassedDebondTerminationSectionLocation() const;
-   bool RowPassed(CollectionIndexType rowIndex) const;
-   bool SectionPassed(CollectionIndexType sectionIndex) const;
+   bool RowPassed(IndexType rowIndex) const;
+   bool SectionPassed(IndexType sectionIndex) const;
 
 protected:
 

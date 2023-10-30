@@ -30,7 +30,7 @@
 
 // PROJECT INCLUDES
 //
-#include <Material\PsStrand.h>
+#include <Materials/PsStrand.h>
 #include <System\Tokenizer.h>
 #include <System\FileStream.h>
 
@@ -82,52 +82,9 @@ inline CString GetTOGAFolder()
 }
 
 
-inline CString get_strand_size( matPsStrand::Size size )
+inline CString get_strand_size(WBFL::Materials::PsStrand::Size size )
 {
-   CString sz;
-   switch( size )
-   {
-   case matPsStrand::D635:
-      sz = _T("1/4\"");
-      break;
-
-   case matPsStrand::D794:
-      sz = _T("5/16\"");
-      break;
-
-   case matPsStrand::D953:
-      sz = _T("3/8\"");
-      break;
-
-   case matPsStrand::D1111:
-      sz = _T("7/16\"");
-      break;
-
-   case matPsStrand::D1270:
-      sz = _T("1/2\"");
-      break;
-
-   case matPsStrand::D1320:
-      sz = _T("1/2\" Special (0.52\")");
-      break;
-
-   case matPsStrand::D1524:
-      sz = _T("0.6\"");
-      break;
-
-   case matPsStrand::D1575:
-      sz = _T("0.62\"");
-      break;
-
-   case matPsStrand::D1778:
-      sz = _T("0.7\"");
-      break;
-
-   default:
-      ATLASSERT(false); // should never get here (unless there is a new strand type)
-   }
-
-   return sz;
+   return CString(WBFL::Materials::PsStrand::GetSize(size, true/*US units*/).c_str());
 }
 
 BOOL DoParseTemplateFile(const LPCTSTR lpszPathName, CString& girderEntry, 
@@ -173,7 +130,7 @@ public:
       ATLASSERT(X>0.0); // should be weeding out negative values
 
       // This is VERY TxDOT I beam specific. Expect X locations at 2" spacing: 1.0, 3.0, 5.0,...
-      Float64 xin = ::ConvertFromSysUnits( X, unitMeasure::Inch );
+      Float64 xin = WBFL::Units::ConvertFromSysUnits( X, WBFL::Units::Measure::Inch );
       int index = (int)Round((xin-1.0)/2.0);
       TCHAR label = (index % 26) + _T('A');
 

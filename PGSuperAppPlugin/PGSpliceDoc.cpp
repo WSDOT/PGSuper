@@ -485,20 +485,20 @@ void CPGSpliceDoc::OnInsertTemporarySupport()
    CTemporarySupportDlg dlg(pBridgeDesc,INVALID_INDEX,EAFGetMainFrame());
    if ( dlg.DoModal() == IDOK )
    {
-      txnTransaction* pTxn = new txnInsertTemporarySupport(dlg.GetTemporarySupport(),*pBridgeDesc,*dlg.GetBridgeDescription());
+      std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnInsertTemporarySupport>(dlg.GetTemporarySupport(),*pBridgeDesc,*dlg.GetBridgeDescription()));
 
-      txnTransaction* pExtensionTxn = dlg.GetExtensionPageTransaction();
-      if ( pExtensionTxn != nullptr )
+      auto pExtensionTxn = dlg.GetExtensionPageTransaction();
+      if ( pExtensionTxn )
       {
-         txnMacroTxn* pMacro = new txnMacroTxn;
+         std::unique_ptr<CEAFMacroTxn> pMacro(std::make_unique<CEAFMacroTxn>());
          pMacro->Name(pTxn->Name());
-         pMacro->AddTransaction(pTxn);
-         pMacro->AddTransaction(pExtensionTxn);
-         pTxn = pMacro;
+         pMacro->AddTransaction(std::move(pTxn));
+         pMacro->AddTransaction(std::move(pExtensionTxn));
+         pTxn = std::move(pMacro);
       }
 
       GET_IFACE(IEAFTransactions,pTransactions);
-      pTransactions->Execute(pTxn);
+      pTransactions->Execute(std::move(pTxn));
    }
 }
 
@@ -625,8 +625,6 @@ bool CPGSpliceDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,in
       newData.m_SegmentKey     = segmentKey;
       newData.m_SegmentData    = *pNewSegment;
       newData.m_TimelineMgr    = dlg.m_TimelineMgr;
-      newData.m_SlabOffsetType = dlg.m_GeneralPage.m_SlabOffsetType;
-      newData.m_SlabOffset     = dlg.m_GeneralPage.m_SlabOffset;
 
       CSegmentKey thisSegmentKey(segmentKey);
       if ( dlg.m_bCopyToAll )
@@ -634,19 +632,19 @@ bool CPGSpliceDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,in
          thisSegmentKey.girderIndex = ALL_GIRDERS;
       }
 
-      txnTransaction* pTxn = new txnEditPrecastSegment(thisSegmentKey,newData);
-      txnTransaction* pExtensionTxn = dlg.GetExtensionPageTransaction();
+      std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditPrecastSegment>(thisSegmentKey,newData));
+      auto pExtensionTxn = dlg.GetExtensionPageTransaction();
       if ( pExtensionTxn )
       {
-         txnMacroTxn* pMacro = new pgsMacroTxn;
+         std::unique_ptr<CEAFMacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
          pMacro->Name(pTxn->Name());
-         pMacro->AddTransaction(pTxn);
-         pMacro->AddTransaction(pExtensionTxn);
-         pTxn = pMacro;
+         pMacro->AddTransaction(std::move(pTxn));
+         pMacro->AddTransaction(std::move(pExtensionTxn));
+         pTxn = std::move(pMacro);
       }
 
       GET_IFACE(IEAFTransactions,pTransactions);
-      pTransactions->Execute(pTxn);
+      pTransactions->Execute(std::move(pTxn));
       bRetVal = true;
    }
    
@@ -675,19 +673,19 @@ bool CPGSpliceDoc::EditClosureJointDescription(const CClosureKey& closureKey,int
          thisClosureKey.girderIndex = ALL_GIRDERS;
       }
 
-      txnTransaction* pTxn = new txnEditClosureJoint(thisClosureKey,newData);
-      txnTransaction* pExtensionTxn = dlg.GetExtensionPageTransaction();
+      std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditClosureJoint>(thisClosureKey,newData));
+      auto pExtensionTxn = dlg.GetExtensionPageTransaction();
       if ( pExtensionTxn )
       {
-         txnMacroTxn* pMacro = new pgsMacroTxn;
+         std::unique_ptr<CEAFMacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
          pMacro->Name(pTxn->Name());
-         pMacro->AddTransaction(pTxn);
-         pMacro->AddTransaction(pExtensionTxn);
-         pTxn = pMacro;
+         pMacro->AddTransaction(std::move(pTxn));
+         pMacro->AddTransaction(std::move(pExtensionTxn));
+         pTxn = std::move(pMacro);
       }
 
       GET_IFACE(IEAFTransactions,pTransactions);
-      pTransactions->Execute(pTxn);
+      pTransactions->Execute(std::move(pTxn));
    }
 
    return true;
@@ -706,20 +704,20 @@ bool CPGSpliceDoc::EditGirderDescription(const CGirderKey& girderKey,int nPage)
       GET_IFACE(IBridgeDescription,pIBridgeDesc);
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-      txnTransaction* pTxn = new txnEditGirderline(girderKey,dlg.m_bApplyToAll,*pBridgeDesc,dlg.m_BridgeDescription);
+      std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditGirderline>(girderKey,dlg.m_bApplyToAll,*pBridgeDesc,dlg.m_BridgeDescription));
 
-      txnTransaction* pExtensionTxn = dlg.GetExtensionPageTransaction();
+      auto pExtensionTxn = dlg.GetExtensionPageTransaction();
       if ( pExtensionTxn )
       {
-         txnMacroTxn* pMacro = new txnMacroTxn;
+         std::unique_ptr<CEAFMacroTxn> pMacro(std::make_unique<CEAFMacroTxn>());
          pMacro->Name(pTxn->Name());
-         pMacro->AddTransaction(pTxn);
-         pMacro->AddTransaction(pExtensionTxn);
-         pTxn = pMacro;
+         pMacro->AddTransaction(std::move(pTxn));
+         pMacro->AddTransaction(std::move(pExtensionTxn));
+         pTxn = std::move(pMacro);
       }
 
       GET_IFACE(IEAFTransactions,pTransactions);
-      pTransactions->Execute(pTxn);
+      pTransactions->Execute(std::move(pTxn));
 
       bRetVal = true;
    }
@@ -738,9 +736,9 @@ void CPGSpliceDoc::DeleteTemporarySupport(SupportIDType tsID)
    SupportIndexType tsIdx = pTS->GetIndex();
    newBridgeDesc.RemoveTemporarySupportByIndex(tsIdx);
 
-   txnDeleteTemporarySupport* pTxn = new txnDeleteTemporarySupport(tsIdx,oldBridgeDesc,newBridgeDesc);
+   std::unique_ptr<txnDeleteTemporarySupport> pTxn(std::make_unique<txnDeleteTemporarySupport>(tsIdx,oldBridgeDesc,newBridgeDesc));
    GET_IFACE(IEAFTransactions,pTransactions);
-   pTransactions->Execute(pTxn);
+   pTransactions->Execute(std::move(pTxn));
 }
 
 bool CPGSpliceDoc::EditTemporarySupportDescription(SupportIDType tsID,int nPage)
@@ -761,20 +759,20 @@ bool CPGSpliceDoc::EditTemporarySupportDescription(SupportIDType tsID,int nPage)
    dlg.SetActivePage(nPage);
    if ( dlg.DoModal() == IDOK )
    {
-      txnTransaction* pTxn = new txnEditTemporarySupport(tsIdx,*pBridgeDesc,*dlg.GetBridgeDescription());
+      std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditTemporarySupport>(tsIdx,*pBridgeDesc,*dlg.GetBridgeDescription()));
 
-      txnTransaction* pExtensionTxn = dlg.GetExtensionPageTransaction();
-      if ( pExtensionTxn != nullptr )
+      auto pExtensionTxn = dlg.GetExtensionPageTransaction();
+      if ( pExtensionTxn )
       {
-         txnMacroTxn* pMacro = new txnMacroTxn;
+         std::unique_ptr<CEAFMacroTxn> pMacro(std::make_unique<CEAFMacroTxn>());
          pMacro->Name(pTxn->Name());
-         pMacro->AddTransaction(pTxn);
-         pMacro->AddTransaction(pExtensionTxn);
-         pTxn = pMacro;
+         pMacro->AddTransaction(std::move(pTxn));
+         pMacro->AddTransaction(std::move(pExtensionTxn));
+         pTxn = std::move(pMacro);
       }
 
       GET_IFACE(IEAFTransactions,pTransactions);
-      pTransactions->Execute(pTxn);
+      pTransactions->Execute(std::move(pTxn));
    }
    return true;
 }

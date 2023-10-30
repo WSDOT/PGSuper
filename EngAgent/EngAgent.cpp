@@ -58,7 +58,6 @@
 #include <WBFLGeometry_i.c>
 #include <WBFLFem2d_i.c>
 #include <WBFLRCCapacity_i.c> 
-#include <WBFLSections_i.c> 
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -116,13 +115,13 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
 HRESULT RegisterAgent(bool bRegister)
 {
    HRESULT hr = S_OK;
-   hr = sysComCatMgr::RegWithCategory(CLSID_EngAgent,CATID_PGSuperAgent,bRegister);
+   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_EngAgent,CATID_PGSuperAgent,bRegister);
    if ( FAILED(hr) )
    {
       return hr;
    }
 
-   hr = sysComCatMgr::RegWithCategory(CLSID_EngAgent,CATID_PGSpliceAgent,bRegister);
+   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_EngAgent,CATID_PGSpliceAgent,bRegister);
    if ( FAILED(hr) )
    {
       return hr;

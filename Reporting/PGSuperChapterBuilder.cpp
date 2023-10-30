@@ -45,7 +45,7 @@ Uint16 CPGSuperChapterBuilder::GetMaxLevel() const
    return 1;
 }
 
-rptChapter* CPGSuperChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CPGSuperChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    ASSERT( level <= GetMaxLevel() );
 
@@ -62,7 +62,7 @@ bool CPGSuperChapterBuilder::Select() const
    return m_bSelect;
 }
 
-bool CPGSuperChapterBuilder::NeedsUpdate(CReportHint* pHint,CReportSpecification* pRptSpec,Uint16 level) const
+bool CPGSuperChapterBuilder::NeedsUpdate(const std::shared_ptr<const WBFL::Reporting::ReportHint>& pHint,const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    int result = CGirderReportHint::IsMyGirder(pHint,pRptSpec);
    if ( 0 < result ) // this is a SegmentReportHint and it is for our segment
@@ -86,5 +86,5 @@ bool CPGSuperChapterBuilder::NeedsUpdate(CReportHint* pHint,CReportSpecification
       return false;
 
    // base class always returns true
-   return CChapterBuilder::NeedsUpdate(pHint,pRptSpec,level);
+   return WBFL::Reporting::ChapterBuilder::NeedsUpdate(pHint,pRptSpec,level);
 }

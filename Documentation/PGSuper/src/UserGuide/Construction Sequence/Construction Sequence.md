@@ -13,6 +13,8 @@ The assumed construction events are:
 4. Final condition without live load (formerly Bridge Site Stage 2)
 5. Final condition with live load (formerly Bridge Site Stage 3)
 
+> Note: The Geometry Control Event occurs in the Final condition event above. This is when finished roadway elevations are established for analysis. Refer to @ref tg_vertical_geometry for details.
+
 Certain construction activities are assumed to take place during each construction event. For example, in the Construct Girders Event the following activities take place:
 1. Tension the strand
 2. Cast the girder
@@ -58,6 +60,7 @@ The activities modeled in PGSplice are:
 * Erect Girders
 * Cast Deck
 * Apply Loads
+* Geometry Control
 
 > NOTE: The order of events and activities are important. Girders must be constructed before they can be erected, the deck and railing systems must be constructed before opening the bridge to traffic, and so on.
 
@@ -85,6 +88,9 @@ A loading is applied to the bridge. The loading can consist of
 * Installation of an overlay
 * Opening the bridge to live load
 * Any user defined loading
+
+#### Geometry Control ####
+Geometry control activities define when the finished roadway elevations are established as well as when finished roadway specification checks and reports occur. Refer to @ ref tg_vertical_geometry for more information.
 
 ### Timeline Modeling ###
 The timeline is modeled with the Timeline Manager. Select *Edit > Timeline* to open the Timeline Manager window.

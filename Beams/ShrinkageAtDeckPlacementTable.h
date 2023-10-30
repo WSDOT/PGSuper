@@ -31,7 +31,7 @@
 #include <Reporting\CreepCoefficientChapterBuilder.h>
 
 
-class lrfdLosses;
+class WBFL::LRFD::Losses;
 
 /////////////////////////////////////////////////////////////////////////////
 // CShrinkageAtDeckPlacementTable

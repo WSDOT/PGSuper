@@ -28,7 +28,7 @@
 #endif // _MSC_VER >= 1000
 // GirderGlobalStrandGrid.h : header file
 //
-#include <GeometricPrimitives\GeometricPrimitives.h>
+#include <GeomModel/GeomModel.h>
 #include <PsgLib\GirderLibraryEntry.h>
 #include <Units\Measure.h>
 
@@ -161,7 +161,7 @@ private:
    EntryCollectionType m_Entries;
 
    // get entry index associated with grid row
-   CollectionIndexType GetRowEntry(ROWCOL nRow);
+   IndexType GetRowEntry(ROWCOL nRow);
    //  return number of rows required for entire collection
    ROWCOL GetRowsForEntries();
 

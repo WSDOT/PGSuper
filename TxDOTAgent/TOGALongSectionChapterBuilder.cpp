@@ -52,7 +52,7 @@ LPCTSTR CTogaLongSectionChapterBuilder::GetName() const
    return TEXT("Beginning of Long Section of Report");
 }
 
-rptChapter* CTogaLongSectionChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CTogaLongSectionChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
@@ -66,9 +66,9 @@ rptChapter* CTogaLongSectionChapterBuilder::Build(CReportSpecification* pRptSpec
    return pChapter;
 }
 
-CChapterBuilder* CTogaLongSectionChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTogaLongSectionChapterBuilder::Clone() const
 {
-   return new CTogaLongSectionChapterBuilder;
+   return std::make_unique<CTogaLongSectionChapterBuilder>();
 }
 
 //======================== ACCESS     =======================================

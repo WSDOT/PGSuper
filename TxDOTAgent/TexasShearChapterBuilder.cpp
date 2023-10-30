@@ -74,9 +74,9 @@ LPCTSTR CTexasShearChapterBuilder::GetName() const
    return TEXT("Shear");
 }
 
-rptChapter* CTexasShearChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CTexasShearChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pSpec->GetBroker(&pBroker);
    const CGirderKey& girderKey(pSpec->GetGirderKey());
@@ -141,9 +141,9 @@ rptChapter* CTexasShearChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
    return pChapter;
 }
 
-CChapterBuilder* CTexasShearChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTexasShearChapterBuilder::Clone() const
 {
-   return new CTexasShearChapterBuilder;
+   return std::make_unique<CTexasShearChapterBuilder>();
 }
 
 //======================== ACCESS     =======================================

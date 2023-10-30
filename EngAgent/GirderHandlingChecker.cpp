@@ -79,7 +79,7 @@ pgsGirderHaulingChecker* pgsGirderHandlingChecker::CreateGirderHaulingChecker()
 
    pgsTypes::HaulingAnalysisMethod method = pSpec->GetHaulingAnalysisMethod();
 
-   if (method==pgsTypes::hmWSDOT)
+   if (method==pgsTypes::HaulingAnalysisMethod::WSDOT)
    {
       return new pgsWsdotGirderHaulingChecker(m_pBroker, m_StatusGroupID);
    }
@@ -107,30 +107,6 @@ pgsGirderHaulingChecker* pgsGirderHandlingChecker::CreateGirderHaulingChecker()
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool pgsGirderHandlingChecker::AssertValid() const
-{
-   return true;
-}
-
-void pgsGirderHandlingChecker::Dump(dbgDumpContext& os) const
-{
-   os << "Dump for pgsGirderHandlingChecker" << endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool pgsGirderHandlingChecker::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("pgsGirderHandlingChecker");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for pgsGirderHandlingChecker");
-
-   TESTME_EPILOG("GirderHandlingChecker");
-}
-#endif // _UNITTEST
 
 
 void pgsGirderHandlingChecker::ComputeMoments(IBroker* pBroker, pgsGirderModelFactory* pGirderModelFactory,
@@ -207,7 +183,7 @@ void pgsGirderHandlingChecker::GetRequirementsForAlternativeTensileStress(const 
     pMaterial->GetLongitudinalRebarProperties(span,gdr,&Es,&fs,&fu);
     fs *= 0.5;
 
-    Float64 fsMax = (bUnitsSI ? ::ConvertToSysUnits(206.0,unitMeasure::MPa) : ::ConvertToSysUnits(30.0,unitMeasure::KSI) );
+    Float64 fsMax = (bUnitsSI ? WBFL::Units::ConvertToSysUnits(206.0,WBFL::Units::Measure::MPa) : WBFL::Units::ConvertToSysUnits(30.0,WBFL::Units::Measure::KSI) );
     if ( fsMax < fs )
        fs = fsMax;
 

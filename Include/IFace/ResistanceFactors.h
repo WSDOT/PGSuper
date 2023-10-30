@@ -39,12 +39,15 @@ DEFINE_GUID(IID_IResistanceFactors,
 interface IResistanceFactors : IUnknown
 {
    virtual void GetFlexureResistanceFactors(pgsTypes::ConcreteType type,Float64* phiTensionPS,Float64* phiTensionRC,Float64* phiTensionSpliced,Float64* phiCompression) const = 0;
-   virtual void GetFlexuralStrainLimits(matPsStrand::Grade grade,matPsStrand::Type type,Float64* pecl,Float64* petl) const = 0;
-   virtual void GetFlexuralStrainLimits(matRebar::Grade rebarGrade,Float64* pecl,Float64* petl) const = 0;
+   virtual void GetFlexuralStrainLimits(WBFL::Materials::PsStrand::Grade grade,WBFL::Materials::PsStrand::Type type,Float64* pecl,Float64* petl) const = 0;
+   virtual void GetFlexuralStrainLimits(WBFL::Materials::Rebar::Grade rebarGrade,Float64* pecl,Float64* petl) const = 0;
    virtual Float64 GetShearResistanceFactor(const pgsPointOfInterest& poi, pgsTypes::ConcreteType type) const = 0;
    virtual Float64 GetShearResistanceFactor(bool isDebonded, pgsTypes::ConcreteType type) const = 0;
 
    virtual Float64 GetClosureJointFlexureResistanceFactor(pgsTypes::ConcreteType type) const = 0;
    virtual Float64 GetClosureJointShearResistanceFactor(pgsTypes::ConcreteType type) const = 0;
+
+   /// Returns the ductility curvature ratio limit for UHPC GS 1.6.2
+   virtual Float64 GetDuctilityCurvatureRatioLimit() const = 0;
 };
 

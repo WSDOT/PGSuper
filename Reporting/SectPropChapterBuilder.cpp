@@ -34,7 +34,7 @@
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 
 
 #ifdef _DEBUG
@@ -66,11 +66,11 @@ LPCTSTR CSectPropChapterBuilder::GetName() const
    return TEXT("Section Properties");
 }
 
-rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CSectPropChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-   CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
-   CMultiGirderReportSpecification* pMultiGirderRptSpec = dynamic_cast<CMultiGirderReportSpecification*>(pRptSpec);
+   auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
+   auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
+   auto pMultiGirderRptSpec = std::dynamic_pointer_cast<const CMultiGirderReportSpecification>(pRptSpec);
 
    CComPtr<IBroker> pBroker;
    std::vector<CGirderKey> girderKeys;
@@ -342,7 +342,7 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
          {
             GET_IFACE2(pBroker, ISectionProperties, pSectProp);
             GET_IFACE2(pBroker,ILossParameters,pLossParams);
-            //if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+            //if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
             //{
             //   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
             //   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
@@ -376,7 +376,7 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
                }
             }
 
-            if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+            if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
             {
                pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
                *pChapter << pPara;
@@ -412,7 +412,7 @@ rptChapter* CSectPropChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
    return pChapter;
 }
 
-CChapterBuilder* CSectPropChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CSectPropChapterBuilder::Clone() const
 {
-   return new CSectPropChapterBuilder;
+   return std::make_unique<CSectPropChapterBuilder> ();
 }

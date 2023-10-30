@@ -4,7 +4,7 @@
 
 
 The Specification Check was Not Successful
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Horizontal Interface Shear check failed for Strength I Limit State.
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
@@ -16,8 +16,8 @@ The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
 Compression stress check failed for Service I Limit State in Interval 8 Remove temporary strands
 Compression stress check failed for Service I Limit State in Interval 12 Cast Deck
-Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic, Roadway Geometry Control
+Horizontal Interface Shear check failed for Strength I Limit State.
 Bursting check failed.
 Lifting checks failed
 Slab Offset ("A" Dimension) check failed

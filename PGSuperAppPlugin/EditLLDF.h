@@ -23,29 +23,29 @@
 #ifndef INCLUDED_EDITLLDFTXN_H_
 #define INCLUDED_EDITLLDFTXN_H_
 
-#include <System\Transaction.h>
+#include <EAF\EAFTransaction.h>
 #include <PgsExt\BridgeDescription2.h>
 #include <IFace\Project.h>
 
-class txnEditLLDF : public txnTransaction
+class txnEditLLDF : public CEAFTransaction
 {
 public:
    txnEditLLDF(const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc,
-               LldfRangeOfApplicabilityAction OldROA,LldfRangeOfApplicabilityAction newROA);
+               WBFL::LRFD::RangeOfApplicabilityAction OldROA,WBFL::LRFD::RangeOfApplicabilityAction newROA);
 
    ~txnEditLLDF();
 
    virtual bool Execute();
    virtual void Undo();
-   virtual txnTransaction* CreateClone() const;
+   virtual std::unique_ptr<CEAFTransaction>CreateClone() const;
    virtual std::_tstring Name() const;
-   virtual bool IsUndoable();
-   virtual bool IsRepeatable();
+   virtual bool IsUndoable() const;
+   virtual bool IsRepeatable() const;
 
 private:
    // index 0 = old data (before edit), index 1 = new data (after edit)
 	CBridgeDescription2* m_pBridgeDesc[2];
-   LldfRangeOfApplicabilityAction m_ROA[2];
+   WBFL::LRFD::RangeOfApplicabilityAction m_ROA[2];
 
    void DoExecute(int i);
 };

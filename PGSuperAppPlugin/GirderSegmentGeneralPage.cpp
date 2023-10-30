@@ -24,12 +24,9 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
 
 #include "GirderSegmentGeneralPage.h"
 #include "GirderSegmentDlg.h"
-#include "SelectItemDlg.h"
-#include "Utilities.h"
 
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Project.h>
@@ -39,7 +36,6 @@
 #include <PgsExt\ConcreteDetailsDlg.h>
 
 #include <System\Tokenizer.h>
-#include <Material\Material.h>
 
 #include "TimelineEventDlg.h"
 
@@ -94,6 +90,8 @@ void CGirderSegmentGeneralPage::DoDataExchange(CDataExchange* pDX)
    DDX_Control(pDX, IDC_RIGHT_TAPERED_FLANGE_DEPTH,   m_ctrlBottomFlangeDepth[pgsTypes::sztRightTapered]);
    DDX_Control(pDX, IDC_RIGHT_PRISMATIC_FLANGE_DEPTH, m_ctrlBottomFlangeDepth[pgsTypes::sztRightPrismatic]);
 
+   DDX_Control(pDX,IDC_START_SLAB_OFFSET,m_ctrlStartHaunch);
+   DDX_Control(pDX,IDC_END_SLAB_OFFSET,m_ctrlEndHaunch);
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -173,31 +171,6 @@ void CGirderSegmentGeneralPage::DoDataExchange(CDataExchange* pDX)
    // Validation: 0 < f'ci <= f'c   
    DDV_UnitValueLimitOrLess( pDX, IDC_FCI, pSegment->Material.Concrete.Fci,  pSegment->Material.Concrete.Fc, pDisplayUnits->GetStressUnit() );
 
-   DDX_CBItemData(pDX, IDC_SLAB_OFFSET_TYPE, m_SlabOffsetType);
-   DDX_UnitValueAndTag(pDX, IDC_START_SLAB_OFFSET, IDC_START_SLAB_OFFSET_UNIT, m_SlabOffset[pgsTypes::metStart], pDisplayUnits->GetComponentDimUnit());
-   DDX_UnitValueAndTag(pDX, IDC_END_SLAB_OFFSET, IDC_END_SLAB_OFFSET_UNIT, m_SlabOffset[pgsTypes::metEnd], pDisplayUnits->GetComponentDimUnit());
-
-   if (pDX->m_bSaveAndValidate && m_SlabOffsetType == pgsTypes::sotSegment)
-   {
-      if (::IsLT(m_SlabOffset[pgsTypes::metStart], m_MinSlabOffset))
-      {
-         pDX->PrepareEditCtrl(IDC_START_SLAB_OFFSET);
-         CString msg;
-         msg.Format(_T("The slab offset at the start of the segment must be at least equal to the slab depth of %s"), FormatDimension(m_MinSlabOffset, pDisplayUnits->GetComponentDimUnit()));
-         AfxMessageBox(msg, MB_ICONEXCLAMATION);
-         pDX->Fail();
-      }
-
-      if (::IsLT(m_SlabOffset[pgsTypes::metEnd], m_MinSlabOffset))
-      {
-         pDX->PrepareEditCtrl(IDC_END_SLAB_OFFSET);
-         CString msg;
-         msg.Format(_T("The slab offset at the end of the segment must be at least equal to the slab depth of %s"), FormatDimension(m_MinSlabOffset, pDisplayUnits->GetComponentDimUnit()));
-         AfxMessageBox(msg, MB_ICONEXCLAMATION);
-         pDX->Fail();
-      }
-   }
-
    if ( !pDX->m_bSaveAndValidate )
    {
       CString strMeasure;
@@ -221,8 +194,16 @@ void CGirderSegmentGeneralPage::DoDataExchange(CDataExchange* pDX)
       strSegmentLength.Format(_T("Segment Layout Length: %s\n%s"),FormatDimension(segment_length,pDisplayUnits->GetSpanLengthUnit(),true),strMeasure );
       DDX_Text(pDX,IDC_SEGMENT_LENGTH,strSegmentLength);
    }
-}
 
+   if (pDX->m_bSaveAndValidate)
+   {
+      UpdateHaunchAndCamberData(pDX);
+   }
+   else
+   {
+      UpdateHaunchAndCamberControls();
+   }
+}
 
 BEGIN_MESSAGE_MAP(CGirderSegmentGeneralPage, CPropertyPage)
    ON_BN_CLICKED(IDC_MOD_ECI, OnUserEci)
@@ -253,8 +234,6 @@ BEGIN_MESSAGE_MAP(CGirderSegmentGeneralPage, CPropertyPage)
    ON_BN_CLICKED(IDC_FC1, &CGirderSegmentGeneralPage::OnConcreteStrength)
    ON_BN_CLICKED(IDC_FC2, &CGirderSegmentGeneralPage::OnConcreteStrength)
    ON_BN_CLICKED(IDC_BOTTOM_FLANGE_DEPTH, &CGirderSegmentGeneralPage::OnBnClickedBottomFlangeDepth)
-   ON_CBN_DROPDOWN(IDC_SLAB_OFFSET_TYPE, &CGirderSegmentGeneralPage::OnChangingSlabOffsetType)
-   ON_CBN_SELCHANGE(IDC_SLAB_OFFSET_TYPE, &CGirderSegmentGeneralPage::OnChangeSlabOffsetType)
    ON_COMMAND(ID_HELP, &CGirderSegmentGeneralPage::OnHelp)
 END_MESSAGE_MAP()
 
@@ -265,30 +244,18 @@ BOOL CGirderSegmentGeneralPage::OnInitDialog()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2_NOCHECK(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    GET_IFACE2(pBroker, ISpecification, pSpec);
    std::_tstring strSpecName = pSpec->GetSpecification();
-
    GET_IFACE2(pBroker, ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(strSpecName.c_str());
-   m_LossMethod = pSpecEntry->GetLossMethod();
-   m_TimeDependentModel = pSpecEntry->GetTimeDependentModel();
+   const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
+   m_LossMethod = prestress_loss_criteria.LossMethod;
+   m_TimeDependentModel = prestress_loss_criteria.TimeDependentConcreteModel;
 
    m_ctrlDrawSegment.SubclassDlgItem(IDC_DRAW_SEGMENT, this);
    m_ctrlDrawSegment.CustomInit(this);
-
-   // since the bridge model isn't accessable from here,
-   // slab offset type and slab offset are initialized in CGirderSegmentDlg::CommonInit
-   //CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
-   //CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
-   //m_SlabOffsetType = pParent->m_Girder.GetGirderGroup()->GetBridgeDescription()->GetSlabOffsetType();
-   //pSegment->GetSlabOffset(&m_SlabOffset[pgsTypes::metStart], &m_SlabOffset[pgsTypes::metEnd]);
-
-   m_strSlabOffsetCache[pgsTypes::metStart].Format(_T("%s"), FormatDimension(m_SlabOffset[pgsTypes::metStart], pDisplayUnits->GetComponentDimUnit(), false));
-   m_strSlabOffsetCache[pgsTypes::metEnd].Format(_T("%s"), FormatDimension(m_SlabOffset[pgsTypes::metEnd], pDisplayUnits->GetComponentDimUnit(), false));
-
-   FillSlabOffsetComboBox();
 
    FillVariationTypeComboBox();
    FillEventList();
@@ -328,8 +295,6 @@ BOOL CGirderSegmentGeneralPage::OnInitDialog()
    {
       OnChangeFc();
    }
-
-   UpdateSlabOffsetControls();
 
    UpdateConcreteControls(true);
 
@@ -547,16 +512,16 @@ void CGirderSegmentGeneralPage::UpdateEci()
       CString strEc;
       m_ctrlEc.GetWindowText(strEc);
       Float64 Ec;
-      sysTokenizer::ParseDouble(strEc,&Ec);
-      Ec = ::ConvertToSysUnits(Ec,pDisplayUnits->GetModEUnit().UnitOfMeasure);
+      WBFL::System::Tokenizer::ParseDouble(strEc,&Ec);
+      Ec = WBFL::Units::ConvertToSysUnits(Ec,pDisplayUnits->GetModEUnit().UnitOfMeasure);
 
       CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
       CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
 
       Float64 Eci;
-      if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
+      if ( m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO || m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
       {
-         matACI209Concrete concrete;
+         WBFL::Materials::ACI209Concrete concrete;
          concrete.UserEc28(true);
          concrete.SetEc28(Ec);
          concrete.SetA(pSegment->Material.Concrete.A);
@@ -568,8 +533,8 @@ void CGirderSegmentGeneralPage::UpdateEci()
       }
       else
       {
-         ATLASSERT(m_TimeDependentModel == TDM_CEBFIP);
-         matCEBFIPConcrete concrete;
+         ATLASSERT(m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP);
+         WBFL::Materials::CEBFIPConcrete concrete;
          concrete.UserEc28(true);
          concrete.SetEc28(Ec);
          concrete.SetTimeAtCasting(0);
@@ -648,21 +613,21 @@ void CGirderSegmentGeneralPage::UpdateEc()
       CString strEci;
       m_ctrlEci.GetWindowText(strEci);
       Float64 Eci;
-      sysTokenizer::ParseDouble(strEci,&Eci);
-      Eci = ::ConvertToSysUnits(Eci,pDisplayUnits->GetModEUnit().UnitOfMeasure);
+      WBFL::System::Tokenizer::ParseDouble(strEci,&Eci);
+      Eci = WBFL::Units::ConvertToSysUnits(Eci,pDisplayUnits->GetModEUnit().UnitOfMeasure);
 
       CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
       CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
 
       Float64 Ec;
-      if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
+      if ( m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO || m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
       {
-         Ec = matACI209Concrete::ComputeEc28(Eci,m_AgeAtRelease,pSegment->Material.Concrete.A,pSegment->Material.Concrete.B);
+         Ec = WBFL::Materials::ACI209Concrete::ComputeEc28(Eci,m_AgeAtRelease,pSegment->Material.Concrete.A,pSegment->Material.Concrete.B);
       }
       else
       {
-         ATLASSERT( m_TimeDependentModel == TDM_CEBFIP );
-         Ec = matCEBFIPConcrete::ComputeEc28(Eci,m_AgeAtRelease,pSegment->Material.Concrete.S);
+         ATLASSERT( m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP );
+         Ec = WBFL::Materials::CEBFIPConcrete::ComputeEc28(Eci,m_AgeAtRelease,pSegment->Material.Concrete.S);
       }
 
       CString strEc;
@@ -706,21 +671,21 @@ void CGirderSegmentGeneralPage::UpdateFc()
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       Float64 fci;
-      sysTokenizer::ParseDouble(strFci, &fci);
-      fci = ::ConvertToSysUnits(fci,pDisplayUnits->GetStressUnit().UnitOfMeasure);
+      WBFL::System::Tokenizer::ParseDouble(strFci, &fci);
+      fci = WBFL::Units::ConvertToSysUnits(fci,pDisplayUnits->GetStressUnit().UnitOfMeasure);
 
       CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
       CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
       Float64 fc;
 
-      if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
+      if ( m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO || m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
       {
-         fc = matACI209Concrete::ComputeFc28(fci,m_AgeAtRelease,pSegment->Material.Concrete.A,pSegment->Material.Concrete.B);
+         fc = WBFL::Materials::ACI209Concrete::ComputeFc28(fci,m_AgeAtRelease,pSegment->Material.Concrete.A,pSegment->Material.Concrete.B);
       }
       else
       {
-         ATLASSERT(m_TimeDependentModel == TDM_CEBFIP);
-         fc = matCEBFIPConcrete::ComputeFc28(fci,m_AgeAtRelease,pSegment->Material.Concrete.S);
+         ATLASSERT(m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP);
+         fc = WBFL::Materials::CEBFIPConcrete::ComputeFc28(fci,m_AgeAtRelease,pSegment->Material.Concrete.S);
       }
 
       CString strFc;
@@ -744,16 +709,16 @@ void CGirderSegmentGeneralPage::UpdateFci()
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       Float64 fc;
-      sysTokenizer::ParseDouble(strFc, &fc);
-      fc = ::ConvertToSysUnits(fc,pDisplayUnits->GetStressUnit().UnitOfMeasure);
+      WBFL::System::Tokenizer::ParseDouble(strFc, &fc);
+      fc = WBFL::Units::ConvertToSysUnits(fc,pDisplayUnits->GetStressUnit().UnitOfMeasure);
 
       CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
       CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
 
       Float64 fci;
-      if ( m_TimeDependentModel == TDM_AASHTO || m_TimeDependentModel == TDM_ACI209 )
+      if ( m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO || m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
       {
-         matACI209Concrete concrete;
+         WBFL::Materials::ACI209Concrete concrete;
          concrete.SetTimeAtCasting(0);
          concrete.SetFc28(fc);
          concrete.SetA(pSegment->Material.Concrete.A);
@@ -762,8 +727,8 @@ void CGirderSegmentGeneralPage::UpdateFci()
       }
       else
       {
-         ATLASSERT(m_TimeDependentModel == TDM_CEBFIP);
-         matCEBFIPConcrete concrete;
+         ATLASSERT(m_TimeDependentModel == PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP);
+         WBFL::Materials::CEBFIPConcrete concrete;
          concrete.SetTimeAtCasting(0);
          concrete.SetFc28(fc);
          concrete.SetS(pSegment->Material.Concrete.S);
@@ -784,7 +749,7 @@ void CGirderSegmentGeneralPage::OnMoreConcreteProperties()
    int i = GetCheckedRadioButton(IDC_FC1,IDC_FC2);
    bool bFinalProperties = (i == IDC_FC2 ? true : false);
 
-   CConcreteDetailsDlg dlg(bFinalProperties);
+   CConcreteDetailsDlg dlg(bFinalProperties,false/*no UHPC for spliced girders*/);
 
    CDataExchange dx(this,TRUE);
    ExchangeConcreteData(&dx);
@@ -798,7 +763,7 @@ void CGirderSegmentGeneralPage::OnMoreConcreteProperties()
    dlg.m_Ec28 = pSegment->Material.Concrete.Ec;
    dlg.m_bUserEci  = pSegment->Material.Concrete.bUserEci;
    dlg.m_bUserEc28 = pSegment->Material.Concrete.bUserEc;
-   dlg.m_TimeAtInitialStrength = ::ConvertToSysUnits(m_AgeAtRelease,unitMeasure::Day);
+   dlg.m_TimeAtInitialStrength = WBFL::Units::ConvertToSysUnits(m_AgeAtRelease,WBFL::Units::Measure::Day);
 
    dlg.m_General.m_Type        = pSegment->Material.Concrete.Type;
    dlg.m_General.m_AggSize     = pSegment->Material.Concrete.MaxAggregateSize;
@@ -825,11 +790,22 @@ void CGirderSegmentGeneralPage::OnMoreConcreteProperties()
    dlg.m_CEBFIP.m_BetaSc          = pSegment->Material.Concrete.BetaSc;
    dlg.m_CEBFIP.m_CementType      = pSegment->Material.Concrete.CEBFIPCementType;
 
-   dlg.m_PCIUHPC.m_ffc = pSegment->Material.Concrete.Ffc;
-   dlg.m_PCIUHPC.m_frr = pSegment->Material.Concrete.Frr;
-   dlg.m_PCIUHPC.m_FiberLength = pSegment->Material.Concrete.FiberLength;
-   dlg.m_PCIUHPC.m_AutogenousShrinkage = pSegment->Material.Concrete.AutogenousShrinkage;
-   dlg.m_PCIUHPC.m_bPCTT = pSegment->Material.Concrete.bPCTT;
+   // Placeholder for PCI_UHPC and UHPC
+   //dlg.m_PCIUHPC.m_ffc = pSegment->Material.Concrete.Ffc;
+   //dlg.m_PCIUHPC.m_frr = pSegment->Material.Concrete.Frr;
+   //dlg.m_PCIUHPC.m_FiberLength = pSegment->Material.Concrete.FiberLength;
+   //dlg.m_PCIUHPC.m_AutogenousShrinkage = pSegment->Material.Concrete.AutogenousShrinkage;
+   //dlg.m_PCIUHPC.m_bPCTT = pSegment->Material.Concrete.bPCTT;
+
+   //dlg.m_UHPC.m_ftcri = pSegment->Material.Concrete.ftcri;
+   //dlg.m_UHPC.m_ftcr = pSegment->Material.Concrete.ftcr;
+   //dlg.m_UHPC.m_ftloc = pSegment->Material.Concrete.ftloc;
+   //dlg.m_UHPC.m_etloc = pSegment->Material.Concrete.etloc;
+   //dlg.m_UHPC.m_alpha_u = pSegment->Material.Concrete.alpha_u;
+   //dlg.m_UHPC.m_ecu = pSegment->Material.Concrete.ecu;
+   //dlg.m_UHPC.m_bExperimental_ecu = pSegment->Material.Concrete.bExperimental_ecu;
+   //dlg.m_UHPC.m_gamma_u = pSegment->Material.Concrete.gamma_u;
+   //dlg.m_UHPC.m_FiberLength = pSegment->Material.Concrete.FiberLength;
 
    dlg.m_General.m_strUserEc  = m_strUserEc;
 
@@ -867,12 +843,22 @@ void CGirderSegmentGeneralPage::OnMoreConcreteProperties()
       pSegment->Material.Concrete.BetaSc                = dlg.m_CEBFIP.m_BetaSc;
       pSegment->Material.Concrete.CEBFIPCementType      = dlg.m_CEBFIP.m_CementType;
 
-      pSegment->Material.Concrete.Ffc = dlg.m_PCIUHPC.m_ffc;
-      pSegment->Material.Concrete.Frr = dlg.m_PCIUHPC.m_frr;
-      pSegment->Material.Concrete.FiberLength = dlg.m_PCIUHPC.m_FiberLength;
-      pSegment->Material.Concrete.AutogenousShrinkage = dlg.m_PCIUHPC.m_AutogenousShrinkage;
-      pSegment->Material.Concrete.bPCTT = dlg.m_PCIUHPC.m_bPCTT;
+      // Placeholder for PCI_UHPC and UHPC
+      //pSegment->Material.Concrete.Ffc = dlg.m_PCIUHPC.m_ffc;
+      //pSegment->Material.Concrete.Frr = dlg.m_PCIUHPC.m_frr;
+      //pSegment->Material.Concrete.FiberLength = dlg.m_PCIUHPC.m_FiberLength;
+      //pSegment->Material.Concrete.AutogenousShrinkage = dlg.m_PCIUHPC.m_AutogenousShrinkage;
+      //pSegment->Material.Concrete.bPCTT = dlg.m_PCIUHPC.m_bPCTT;
 
+      //pSegment->Material.Concrete.ftcri = dlg.m_UHPC.m_ftcri;
+      //pSegment->Material.Concrete.ftcr = dlg.m_UHPC.m_ftcr;
+      //pSegment->Material.Concrete.ftloc = dlg.m_UHPC.m_ftloc;
+      //pSegment->Material.Concrete.etloc = dlg.m_UHPC.m_etloc;
+      //pSegment->Material.Concrete.alpha_u = dlg.m_UHPC.m_alpha_u;
+      //pSegment->Material.Concrete.ecu = dlg.m_UHPC.m_ecu;
+      //pSegment->Material.Concrete.bExperimental_ecu = dlg.m_UHPC.m_bExperimental_ecu;
+      //pSegment->Material.Concrete.gamma_u = dlg.m_UHPC.m_gamma_u;
+      //pSegment->Material.Concrete.FiberLength = dlg.m_UHPC.m_FiberLength;
 
       m_strUserEc  = dlg.m_General.m_strUserEc;
       m_ctrlEc.SetWindowText(m_strUserEc);
@@ -974,14 +960,14 @@ void CGirderSegmentGeneralPage::UpdateConcreteParametersToolTip()
    CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
    CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
 
-   const unitmgtDensityData& density = pDisplayUnits->GetDensityUnit();
-   const unitmgtLengthData&  aggsize = pDisplayUnits->GetComponentDimUnit();
-   const unitmgtStressData&  stress  = pDisplayUnits->GetStressUnit();
-   const unitmgtScalar&      scalar  = pDisplayUnits->GetScalarFormat();
+   const WBFL::Units::DensityData& density = pDisplayUnits->GetDensityUnit();
+   const WBFL::Units::LengthData&  aggsize = pDisplayUnits->GetComponentDimUnit();
+   const WBFL::Units::StressData&  stress  = pDisplayUnits->GetStressUnit();
+   const WBFL::Units::ScalarData&  scalar  = pDisplayUnits->GetScalarFormat();
 
    CString strTip;
    strTip.Format(_T("%-20s %s\r\n%-20s %s\r\n%-20s %s\r\n%-20s %s"),
-      _T("Type"), lrfdConcreteUtil::GetTypeName((matConcrete::Type)pSegment->Material.Concrete.Type,true).c_str(),
+      _T("Type"), WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pSegment->Material.Concrete.Type,true).c_str(),
       _T("Unit Weight"),FormatDimension(pSegment->Material.Concrete.StrengthDensity,density),
       _T("Unit Weight (w/ reinforcement)"),  FormatDimension(pSegment->Material.Concrete.WeightDensity,density),
       _T("Max Aggregate Size"),  FormatDimension(pSegment->Material.Concrete.MaxAggregateSize,aggsize)
@@ -1020,7 +1006,7 @@ void CGirderSegmentGeneralPage::OnVariationTypeChanged()
       EAFGetBroker(&pBroker);
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
       Float64 value = pSegment->GetBasicSegmentHeight();
-      Float64 height = ::ConvertFromSysUnits(value,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+      Float64 height = WBFL::Units::ConvertFromSysUnits(value,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
       CString strHeight = ::FormatDimension(value,pDisplayUnits->GetComponentDimUnit(),false);
       m_ctrlSectionHeight[pgsTypes::sztLeftPrismatic].SetDefaultValue(height,strHeight);
       m_ctrlSectionHeight[pgsTypes::sztRightPrismatic].SetDefaultValue(height, strHeight);
@@ -1267,7 +1253,7 @@ Float64 CGirderSegmentGeneralPage::GetLength(pgsTypes::SegmentZoneType segZone)
    return length;
 }
 
-Float64 CGirderSegmentGeneralPage::GetValue(UINT nIDC,const unitmgtLengthData& lengthUnit)
+Float64 CGirderSegmentGeneralPage::GetValue(UINT nIDC,const WBFL::Units::LengthData& lengthUnit)
 {
    CWnd* pWnd = GetDlgItem(nIDC);
    const int TEXT_BUFFER_SIZE = 400;
@@ -1279,7 +1265,7 @@ Float64 CGirderSegmentGeneralPage::GetValue(UINT nIDC,const unitmgtLengthData& l
       return 0;
    }
    
-   d = ::ConvertToSysUnits(d,lengthUnit.UnitOfMeasure );
+   d = WBFL::Units::ConvertToSysUnits(d,lengthUnit.UnitOfMeasure );
    return d;
 }
 
@@ -1592,144 +1578,6 @@ void CGirderSegmentGeneralPage::OnHelp()
    EAFHelp(EAFGetDocument()->GetDocumentationSetName(),IDH_SEGMENTDETAILS_GENERAL);
 }
 
-pgsTypes::SlabOffsetType CGirderSegmentGeneralPage::GetCurrentSlabOffsetType()
-{
-   CComboBox* pcbSlabOffsetType = (CComboBox*)GetDlgItem(IDC_SLAB_OFFSET_TYPE);
-   int curSel = pcbSlabOffsetType->GetCurSel();
-   return (pgsTypes::SlabOffsetType)pcbSlabOffsetType->GetItemData(curSel);
-}
-
-void CGirderSegmentGeneralPage::UpdateSlabOffsetControls()
-{
-   // Enable/Disable Slab Offset controls
-   pgsTypes::SlabOffsetType slabOffsetType = GetCurrentSlabOffsetType();
-   BOOL bEnable = (slabOffsetType == pgsTypes::sotSegment ? TRUE : FALSE);
-
-   GetDlgItem(IDC_START_SLAB_OFFSET_LABEL)->EnableWindow(bEnable);
-   GetDlgItem(IDC_START_SLAB_OFFSET)->EnableWindow(bEnable);
-   GetDlgItem(IDC_START_SLAB_OFFSET_UNIT)->EnableWindow(bEnable);
-
-   GetDlgItem(IDC_END_SLAB_OFFSET_LABEL)->EnableWindow(bEnable);
-   GetDlgItem(IDC_END_SLAB_OFFSET)->EnableWindow(bEnable);
-   GetDlgItem(IDC_END_SLAB_OFFSET_UNIT)->EnableWindow(bEnable);
-}
-
-void CGirderSegmentGeneralPage::OnChangingSlabOffsetType()
-{
-   m_PrevSlabOffsetType = GetCurrentSlabOffsetType();
-}
-
-void CGirderSegmentGeneralPage::OnChangeSlabOffsetType()
-{
-   pgsTypes::SlabOffsetType slabOffsetType = GetCurrentSlabOffsetType();
-
-   CWnd* pwndStart = GetDlgItem(IDC_START_SLAB_OFFSET);
-   CWnd* pwndEnd = GetDlgItem(IDC_END_SLAB_OFFSET);
-   if (slabOffsetType == pgsTypes::sotSegment)
-   {
-      // going into girder by girder slab offset mode
-      CString strTempStart = m_strSlabOffsetCache[pgsTypes::metStart];
-      CString strTempEnd = m_strSlabOffsetCache[pgsTypes::metEnd];
-
-      pwndStart->GetWindowText(m_strSlabOffsetCache[pgsTypes::metStart]);
-      pwndEnd->GetWindowText(m_strSlabOffsetCache[pgsTypes::metEnd]);
-
-      pwndStart->SetWindowText(strTempStart);
-      pwndEnd->SetWindowText(strTempEnd);
-   }
-   else if (slabOffsetType == pgsTypes::sotBearingLine)
-   {
-      // Do nothing here... the same data for segments is used for bearing lines
-   }
-   else
-   {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-
-      std::array<Float64,2> slabOffset;
-      CDataExchange dx(this, TRUE);
-      DDX_UnitValueAndTag(&dx, IDC_START_SLAB_OFFSET, IDC_START_SLAB_OFFSET_UNIT, slabOffset[pgsTypes::metStart], pDisplayUnits->GetComponentDimUnit());
-      DDX_UnitValueAndTag(&dx, IDC_END_SLAB_OFFSET, IDC_END_SLAB_OFFSET_UNIT, slabOffset[pgsTypes::metEnd], pDisplayUnits->GetComponentDimUnit());
-
-      Float64 slab_offset = slabOffset[pgsTypes::metStart];
-
-      if (!IsEqual(slabOffset[pgsTypes::metStart], slabOffset[pgsTypes::metEnd]))
-      {
-         // going to a single slab offset for the entire bridge, but the current start and end are different
-         // make the user choose one
-         CSelectItemDlg dlg;
-         dlg.m_ItemIdx = 0;
-         dlg.m_strTitle = _T("Select Slab Offset");
-         dlg.m_strLabel = _T("A single slab offset will be used for the entire bridge. Select a value.");
-
-         CString strItems;
-         strItems.Format(_T("Start of Segment (%s)\nEnd of Segment (%s)"),
-            ::FormatDimension(slabOffset[pgsTypes::metStart], pDisplayUnits->GetComponentDimUnit()),
-            ::FormatDimension(slabOffset[pgsTypes::metEnd], pDisplayUnits->GetComponentDimUnit()));
-
-         dlg.m_strItems = strItems;
-         if (dlg.DoModal() == IDOK)
-         {
-            slab_offset = slabOffset[dlg.m_ItemIdx == 0 ? pgsTypes::metStart : pgsTypes::metEnd];
-         }
-         else
-         {
-            // roll back the edit... nothing is changing
-            ComboBoxSelectByItemData(this, IDC_SLAB_OFFSET_TYPE, m_PrevSlabOffsetType);
-            return;
-         }
-      }
-
-      // when we switch to slab offset by bridge, the UI is disabled and you can't change the slab offset value
-      // the slab offset must be valid before going on
-      // when we switch to slab offset by bridge, the UI is disabled and you can't change the slab offset value
-      // the slab offset must be valid before going on
-      if (::IsLT(slab_offset, m_MinSlabOffset))
-      {
-         CDataExchange dx(this, TRUE);
-         dx.PrepareEditCtrl(IDC_START_SLAB_OFFSET);
-         CString msg;
-         msg.Format(_T("The slab offset must be at least equal to the slab depth of %s"), FormatDimension(m_MinSlabOffset, pDisplayUnits->GetComponentDimUnit()));
-         AfxMessageBox(msg, MB_ICONERROR | MB_OK);
-
-         // roll back the edit... nothing is changing
-         ComboBoxSelectByItemData(this, IDC_SLAB_OFFSET_TYPE, m_PrevSlabOffsetType);
-
-         dx.Fail();
-      }
-
-      GetDlgItem(IDC_START_SLAB_OFFSET)->GetWindowText(m_strSlabOffsetCache[pgsTypes::metStart]);
-      GetDlgItem(IDC_END_SLAB_OFFSET)->GetWindowText(m_strSlabOffsetCache[pgsTypes::metEnd]);
-
-      GetDlgItem(IDC_START_SLAB_OFFSET)->SetWindowText(::FormatDimension(slab_offset, pDisplayUnits->GetComponentDimUnit(), false));
-      GetDlgItem(IDC_END_SLAB_OFFSET)->SetWindowText(::FormatDimension(slab_offset, pDisplayUnits->GetComponentDimUnit(), false));
-   }
-
-   UpdateSlabOffsetControls();
-}
-
-void CGirderSegmentGeneralPage::FillSlabOffsetComboBox()
-{
-   CComboBox* pcbSlabOffsetType = (CComboBox*)GetDlgItem(IDC_SLAB_OFFSET_TYPE);
-
-   if (m_SlabOffsetType == pgsTypes::sotBridge || m_SlabOffsetType == pgsTypes::sotSegment)
-   {
-      int idx = pcbSlabOffsetType->AddString(GetSlabOffsetTypeAsString(pgsTypes::sotBridge, FALSE));
-      pcbSlabOffsetType->SetItemData(idx, (DWORD_PTR)pgsTypes::sotBridge);
-   }
-   else
-   {
-      int idx = pcbSlabOffsetType->AddString(GetSlabOffsetTypeAsString(pgsTypes::sotBearingLine, FALSE));
-      pcbSlabOffsetType->SetItemData(idx, (DWORD_PTR)pgsTypes::sotBearingLine);
-   }
-   int idx = pcbSlabOffsetType->AddString(GetSlabOffsetTypeAsString(pgsTypes::sotSegment, FALSE));
-   pcbSlabOffsetType->SetItemData(idx, (DWORD_PTR)pgsTypes::sotSegment);
-
-   pcbSlabOffsetType->SetCurSel(m_SlabOffsetType == pgsTypes::sotSegment ? 1 : 0);
-}
-
-
 BOOL CGirderSegmentGeneralPage::OnSetActive()
 {
    BOOL bResult = __super::OnSetActive();
@@ -1737,4 +1585,209 @@ BOOL CGirderSegmentGeneralPage::OnSetActive()
    OnVariationTypeChanged();
 
    return bResult;
+}
+
+void CGirderSegmentGeneralPage::UpdateHaunchAndCamberControls()
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IBridgeDescription,pBridgeDescr);
+   // We can pull haunch data high level information from here since we know that none of the pages in the dialog will change them
+   const CBridgeDescription2* pBridge = pBridgeDescr->GetBridgeDescription();
+
+   pgsTypes::HaunchInputDepthType inputType = pBridge->GetHaunchInputDepthType();
+   pgsTypes::HaunchInputLocationType haunchInputLocationType = pBridge->GetHaunchInputLocationType();
+   pgsTypes::HaunchLayoutType haunchLayoutType = pBridge->GetHaunchLayoutType();
+   pgsTypes::HaunchInputDistributionType haunchInputDistributionType = pBridge->GetHaunchInputDistributionType();
+
+   const CDeckDescription2* pDeck = pBridge->GetDeckDescription();
+
+   if (inputType == pgsTypes::hidACamber)
+   {
+      ATLASSERT(0); // spliced segments cannot have "A" descr
+      EnableHaunchAndCamberControls(FALSE,FALSE,true);
+      return;
+   }
+   else if (pDeck->GetDeckType() == pgsTypes::sdtNone)
+   {
+      EnableHaunchAndCamberControls(FALSE,FALSE,true);
+      return;
+   }
+
+   // direct haunch input is all we can deal with
+   if (inputType == pgsTypes::hidHaunchDirectly)
+   {
+      GetDlgItem(IDC_SLAB_OFFSET_GROUP)->SetWindowText(_T("Haunch Depth"));
+   }
+   else
+   {
+      GetDlgItem(IDC_SLAB_OFFSET_GROUP)->SetWindowText(_T("Haunch+Slab Depth"));
+   }
+
+   Float64 Tdeck;
+   if (pDeck->GetDeckType() == pgsTypes::sdtCompositeSIP)
+   {
+      Tdeck = pDeck->GrossDepth + pDeck->PanelDepth;
+   }
+   else
+   {
+      Tdeck = pDeck->GrossDepth;
+   }
+
+   CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
+
+   Float64 haunchDepth;
+   CString strHaunchVal;
+   if (haunchInputLocationType == pgsTypes::hilSame4Bridge && 
+      ((haunchInputDistributionType == pgsTypes::hidUniform) || (haunchLayoutType == pgsTypes::hltAlongSegments && haunchInputDistributionType == pgsTypes::hidAtEnds)))
+   {
+      // Put whole bridge value into disabled controls if needed
+      EnableHaunchAndCamberControls(FALSE,FALSE,true);
+
+      std::vector<Float64> allBridgeHaunches = pBridge->GetDirectHaunchDepths();
+
+      haunchDepth = allBridgeHaunches.front() + (inputType == pgsTypes::hidHaunchPlusSlabDirectly ? Tdeck : 0.0); // add deck depth if needed
+      strHaunchVal.Format(_T("%s"),FormatDimension(haunchDepth,pDisplayUnits->GetComponentDimUnit(),false));
+      m_ctrlStartHaunch.SetWindowText(strHaunchVal);
+
+      haunchDepth = allBridgeHaunches.back() + (inputType == pgsTypes::hidHaunchPlusSlabDirectly ? Tdeck : 0.0);
+      strHaunchVal.Format(_T("%s"),FormatDimension(haunchDepth,pDisplayUnits->GetComponentDimUnit(),false));
+      m_ctrlEndHaunch.SetWindowText(strHaunchVal);
+   }
+   else if (haunchLayoutType == pgsTypes::hltAlongSegments && 
+            (haunchInputLocationType == pgsTypes::hilSame4AllGirders || haunchInputLocationType == pgsTypes::hilPerEach) &&
+             haunchInputDistributionType == pgsTypes::hidAtEnds)
+         {
+      // Data is input at both ends. Only enable input if per-segment
+      BOOL bEnable = haunchInputLocationType == pgsTypes::hilPerEach ? TRUE : FALSE;
+      EnableHaunchAndCamberControls(bEnable,bEnable,true);
+
+      std::vector<Float64> haunches = pParent->m_Girder.GetDirectHaunchDepths(pParent->m_SegmentKey.segmentIndex,true);
+
+      haunchDepth = haunches.front() + (inputType == pgsTypes::hidHaunchPlusSlabDirectly ? Tdeck : 0.0);
+      strHaunchVal.Format(_T("%s"),FormatDimension(haunchDepth,pDisplayUnits->GetComponentDimUnit(),false));
+      m_ctrlStartHaunch.SetWindowText(strHaunchVal);
+
+      haunchDepth = haunches.back() + (inputType == pgsTypes::hidHaunchPlusSlabDirectly ? Tdeck : 0.0);
+      strHaunchVal.Format(_T("%s"),FormatDimension(haunchDepth,pDisplayUnits->GetComponentDimUnit(),false));
+      m_ctrlEndHaunch.SetWindowText(strHaunchVal);
+   }
+   else if (haunchLayoutType == pgsTypes::hltAlongSegments &&
+      (haunchInputLocationType == pgsTypes::hilSame4AllGirders || haunchInputLocationType == pgsTypes::hilPerEach) &&
+      haunchInputDistributionType == pgsTypes::hidUniform)
+   {
+      // Data is input uniformly along span. Put in Start location
+      BOOL bEnable = haunchInputLocationType == pgsTypes::hilPerEach ? TRUE : FALSE;
+      EnableHaunchAndCamberControls(bEnable,bEnable,false);
+
+      std::vector<Float64> haunches = pParent->m_Girder.GetDirectHaunchDepths(pParent->m_SegmentKey.segmentIndex,true);
+
+      haunchDepth = haunches.front() + (inputType == pgsTypes::hidHaunchPlusSlabDirectly ? Tdeck : 0.0);
+      strHaunchVal.Format(_T("%s"),FormatDimension(haunchDepth,pDisplayUnits->GetComponentDimUnit(),false));
+      m_ctrlStartHaunch.SetWindowText(strHaunchVal);
+         }
+         else
+         {
+      EnableHaunchAndCamberControls(FALSE,FALSE,true);
+   }
+}
+
+void CGirderSegmentGeneralPage::UpdateHaunchAndCamberData(CDataExchange* pDX)
+{
+   CComPtr<IBroker> pBroker;
+   EAFGetBroker(&pBroker);
+   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IBridgeDescription,pBridgeDescr);
+   // We can pull haunch data high level information from here since we know that none of the pages in the dialog will change them
+   const CBridgeDescription2* pBridgeDesc = pBridgeDescr->GetBridgeDescription();
+
+   pgsTypes::HaunchInputDepthType inputType = pBridgeDesc->GetHaunchInputDepthType();
+   pgsTypes::HaunchInputLocationType haunchInputLocationType = pBridgeDesc->GetHaunchInputLocationType();
+   pgsTypes::HaunchLayoutType haunchLayoutType = pBridgeDesc->GetHaunchLayoutType();
+   pgsTypes::HaunchInputDistributionType haunchInputDistributionType = pBridgeDesc->GetHaunchInputDistributionType();
+
+   const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
+   if (pDeck->GetDeckType() == pgsTypes::sdtNone || inputType == pgsTypes::hidACamber)
+   {
+            return;
+         }
+
+   if (haunchLayoutType == pgsTypes::hltAlongSegments && haunchInputLocationType == pgsTypes::hilPerEach &&
+      (haunchInputDistributionType == pgsTypes::hidAtEnds || haunchInputDistributionType == pgsTypes::hidUniform))
+   {
+      Float64 Tdeck;
+      if (pDeck->GetDeckType() == pgsTypes::sdtCompositeSIP)
+      {
+         Tdeck = pDeck->GrossDepth + pDeck->PanelDepth;
+      }
+      else
+      {
+         Tdeck = pDeck->GrossDepth;
+      }
+
+      Float64 minHaunch = pBridgeDesc->GetMinimumAllowableHaunchDepth(inputType);
+
+      CString strMinValError;
+      if (inputType == pgsTypes::hidHaunchPlusSlabDirectly)
+      {
+         strMinValError.Format(_T("Haunch+Slab Depth must be greater or equal to deck depth+fillet (%s)"),FormatDimension(minHaunch,pDisplayUnits->GetComponentDimUnit()));
+      }
+      else
+      {
+         strMinValError.Format(_T("Haunch Depth must be greater or equal to fillet (%s)"),FormatDimension(minHaunch,pDisplayUnits->GetComponentDimUnit()));
+      }
+
+      // Get current values out of the controls
+      CDataExchange dx(this,TRUE);
+      Float64 haunchDepth;
+      DDX_UnitValueAndTag(&dx,IDC_START_SLAB_OFFSET,IDC_START_SLAB_OFFSET_UNIT,haunchDepth,pDisplayUnits->GetComponentDimUnit());
+      if (::IsLT(haunchDepth,minHaunch))
+      {
+         pDX->PrepareCtrl(IDC_START_SLAB_OFFSET);
+         AfxMessageBox(strMinValError);
+         pDX->Fail();
+      }
+
+      CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
+      haunchDepth -= (inputType == pgsTypes::hidHaunchPlusSlabDirectly ? Tdeck : 0.0);
+      std::vector<Float64> haunchDepths(1,haunchDepth); // only value needed if haunchInputDistributionType == pgsTypes::hidUniform
+
+      if (haunchInputDistributionType == pgsTypes::hidAtEnds)
+      {
+         DDX_UnitValueAndTag(&dx,IDC_END_SLAB_OFFSET,IDC_END_SLAB_OFFSET_UNIT,haunchDepth,pDisplayUnits->GetComponentDimUnit());
+         if (::IsLT(haunchDepth,minHaunch))
+         {
+            pDX->PrepareCtrl(IDC_END_SLAB_OFFSET);
+            AfxMessageBox(strMinValError);
+            pDX->Fail();
+   }
+
+         haunchDepth -= (inputType == pgsTypes::hidHaunchPlusSlabDirectly ? Tdeck : 0.0);
+         haunchDepths.push_back(haunchDepth);
+
+         pParent->m_Girder.SetDirectHaunchDepths(pParent->m_SegmentKey.segmentIndex,haunchDepths);
+   }
+   else
+   {
+         // uniform
+         pParent->m_Girder.SetDirectHaunchDepths(haunchDepths);
+      }
+   }
+}
+
+void CGirderSegmentGeneralPage::EnableHaunchAndCamberControls(BOOL bStartControls,BOOL bEndControls, bool bShowBoth)
+{
+   GetDlgItem(IDC_START_SLAB_OFFSET_LABEL)->EnableWindow(bStartControls);
+   GetDlgItem(IDC_START_SLAB_OFFSET)->EnableWindow(bStartControls);
+   GetDlgItem(IDC_START_SLAB_OFFSET_UNIT)->EnableWindow(bStartControls);
+
+   GetDlgItem(IDC_END_SLAB_OFFSET_LABEL)->EnableWindow(bEndControls);
+   GetDlgItem(IDC_END_SLAB_OFFSET)->EnableWindow(bEndControls);
+   GetDlgItem(IDC_END_SLAB_OFFSET_UNIT)->EnableWindow(bEndControls);
+
+   int showEnd = bShowBoth ? SW_SHOW : SW_HIDE;
+   GetDlgItem(IDC_END_SLAB_OFFSET_LABEL)->ShowWindow(showEnd);
+   GetDlgItem(IDC_END_SLAB_OFFSET)->ShowWindow(showEnd);
+   GetDlgItem(IDC_END_SLAB_OFFSET_UNIT)->ShowWindow(showEnd);
 }

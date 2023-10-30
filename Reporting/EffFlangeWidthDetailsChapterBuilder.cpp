@@ -55,10 +55,10 @@ LPCTSTR CEffFlangeWidthDetailsChapterBuilder::GetName() const
    return TEXT("Effective Flange Width Details");
 }
 
-rptChapter* CEffFlangeWidthDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CEffFlangeWidthDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-   CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
+   auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
+   auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
    CComPtr<IBroker> pBroker;
    CGirderKey girderKey;
@@ -99,9 +99,9 @@ rptChapter* CEffFlangeWidthDetailsChapterBuilder::Build(CReportSpecification* pR
 }
 
 
-CChapterBuilder* CEffFlangeWidthDetailsChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CEffFlangeWidthDetailsChapterBuilder::Clone() const
 {
-   return new CEffFlangeWidthDetailsChapterBuilder;
+   return std::make_unique<CEffFlangeWidthDetailsChapterBuilder>();
 }
 
 //======================== ACCESS     =======================================

@@ -47,6 +47,10 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\StatusItem.h>
 
+#include <psgLib/SectionPropertiesCriteria.h>
+#include <psgLib/SpecificationCriteria.h>
+
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -73,52 +77,52 @@ HRESULT CVoidedSlab2Factory::FinalConstruct()
    m_DimNames.emplace_back(_T("Jmax"));
    m_DimNames.emplace_back(_T("EndBlockLength"));
 
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(18.0,unitMeasure::Inch)); // H
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(48.0,unitMeasure::Inch)); // W
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(18.0,WBFL::Units::Measure::Inch)); // H
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(48.0,WBFL::Units::Measure::Inch)); // W
    m_DefaultDims.emplace_back(3);                                           // Number of Voids
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(10.0,unitMeasure::Inch)); // D1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(10.0,unitMeasure::Inch)); // D2
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(12.0,unitMeasure::Inch)); // H1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(12.0,unitMeasure::Inch)); // H2
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(12.5,unitMeasure::Inch)); // S1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(12.5,unitMeasure::Inch)); // S2
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 3.0,unitMeasure::Inch)); // C1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 3.0,unitMeasure::Inch)); // C2
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 1.0,unitMeasure::Inch)); // C3
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(1.0,unitMeasure::Inch));  // Max Joint Spacing
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(36.0,unitMeasure::Inch)); // End Block Length
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(10.0,WBFL::Units::Measure::Inch)); // D1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(10.0,WBFL::Units::Measure::Inch)); // D2
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(12.0,WBFL::Units::Measure::Inch)); // H1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(12.0,WBFL::Units::Measure::Inch)); // H2
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(12.5,WBFL::Units::Measure::Inch)); // S1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(12.5,WBFL::Units::Measure::Inch)); // S2
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 3.0,WBFL::Units::Measure::Inch)); // C1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 3.0,WBFL::Units::Measure::Inch)); // C2
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 1.0,WBFL::Units::Measure::Inch)); // C3
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(1.0,WBFL::Units::Measure::Inch));  // Max Joint Spacing
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(36.0,WBFL::Units::Measure::Inch)); // End Block Length
 
    // SI Units
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H 
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W
-   m_DimUnits[0].emplace_back((const unitLength*)BFDIMUNITSCALAR);// Number of Voids
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D2
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H2
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // S1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // S2
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // C1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // C2
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // C3
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // Max joint size
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // End Block Length
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // H 
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W
+   m_DimUnits[0].emplace_back((const WBFL::Units::Length*)BFDIMUNITSCALAR);// Number of Voids
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // D1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // D2
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // H1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // H2
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // S1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // S2
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // C1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // C2
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // C3
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // Max joint size
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // End Block Length
 
    // US Units
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H 
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W
-   m_DimUnits[1].emplace_back((const unitLength*)BFDIMUNITSCALAR);// Number of Voids
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D2
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H2
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // S1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // S2
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // C1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // C2
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // C3
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // Max joint size
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // End Block Length
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // H 
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W
+   m_DimUnits[1].emplace_back((const WBFL::Units::Length*)BFDIMUNITSCALAR);// Number of Voids
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // D1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // D2
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // H1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // H2
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // S1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // S2
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // C1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // C2
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // C3
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // Max joint size
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // End Block Length
 
    return S_OK;
 }
@@ -180,7 +184,7 @@ void CVoidedSlab2Factory::CreateSegment(IBroker* pBroker,StatusGroupIDType statu
    // Beam materials
    GET_IFACE2(pBroker,ILossParameters,pLossParams);
    CComPtr<IMaterial> material;
-   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       CComPtr<IAgeAdjustedMaterial> aaMaterial;
       BuildAgeAdjustedGirderMaterialModel(pBroker,pSegment,segment,&aaMaterial);
@@ -323,7 +327,7 @@ void CVoidedSlab2Factory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupI
 void CVoidedSlab2Factory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const
 {
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
-   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       CComObject<CTimeStepLossEngineer>* pEngineer;
       CComObject<CTimeStepLossEngineer>::CreateInstance(&pEngineer);
@@ -519,7 +523,7 @@ const std::vector<Float64>& CVoidedSlab2Factory::GetDefaultDimensions() const
    return m_DefaultDims;
 }
 
-const std::vector<const unitLength*>& CVoidedSlab2Factory::GetDimensionUnits(bool bSIUnits) const
+const std::vector<const WBFL::Units::Length*>& CVoidedSlab2Factory::GetDimensionUnits(bool bSIUnits) const
 {
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
@@ -711,7 +715,7 @@ bool CVoidedSlab2Factory::ValidateDimensions(const IBeamFactory::Dimensions& dim
    return true;
 }
 
-void CVoidedSlab2Factory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
+void CVoidedSlab2Factory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
 {
    pSave->BeginUnit(_T("VoidedSlab2Dimensions"),3.0);
    for(const auto& name : m_DimNames)
@@ -722,7 +726,7 @@ void CVoidedSlab2Factory::SaveSectionDimensions(sysIStructuredSave* pSave,const 
    pSave->EndUnit();
 }
 
-IBeamFactory::Dimensions CVoidedSlab2Factory::LoadSectionDimensions(sysIStructuredLoad* pLoad) const
+IBeamFactory::Dimensions CVoidedSlab2Factory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
 {
    Float64 parent_version;
    if ( pLoad->GetParentUnit() == _T("GirderLibraryEntry") )
@@ -899,7 +903,10 @@ std::_tstring CVoidedSlab2Factory::GetInteriorGirderEffectiveFlangeWidthImage(IB
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
+   const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
+   const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();
+   if (section_properties_criteria.EffectiveFlangeWidthMethod == pgsTypes::efwmTribWidth ||
+      WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims <= specification_criteria.GetEdition())
    {
       return _T("VoidedSlab_Effective_Flange_Width_Interior_Girder_2008.gif");
    }
@@ -914,7 +921,10 @@ std::_tstring CVoidedSlab2Factory::GetExteriorGirderEffectiveFlangeWidthImage(IB
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
+   const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
+   const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();
+   if (section_properties_criteria.EffectiveFlangeWidthMethod == pgsTypes::efwmTribWidth ||
+      WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims <= specification_criteria.GetEdition())
    {
       return _T("VoidedSlab_Effective_Flange_Width_Exterior_Girder_2008.gif");
    }
@@ -1221,7 +1231,7 @@ bool CVoidedSlab2Factory::CanPrecamber() const
 void CVoidedSlab2Factory::DimensionAndPositionBeam(const IBeamFactory::Dimensions& dimensions, IVoidedSlab2* pBeam) const
 {
    Float64 H, W, D1, D2, H1, H2, S1, S2, C1, C2, C3, J, EndBlockLength;
-   CollectionIndexType N;
+   IndexType N;
    GetDimensions(dimensions, H, W, D1, D2, H1, H2, S1, S2, C1, C2, C3, N, J, EndBlockLength);
 
    pBeam->put_Height(H);

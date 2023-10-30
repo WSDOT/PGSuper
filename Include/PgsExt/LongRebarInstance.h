@@ -36,12 +36,11 @@
 // LOCAL INCLUDES
 //
 #if !defined INCLUDED_MATERIAL_REBAR_H_
-#include <Material\Rebar.h>
+#include <Materials/Rebar.h>
 #endif
 
-#if !defined INCLUDED_GEOMETRY_PRIMITIVES_H_
-#include <GeometricPrimitives\Primitives.h>
-#endif
+#include <GeomModel/Primitives.h>
+
 // FORWARD DECLARATIONS
 //
 
@@ -74,7 +73,7 @@ public:
 
    //------------------------------------------------------------------------
    // full constructor
-   pgsLongRebarInstance(const gpPoint2d& rloc, const matRebar* pRebar, Float64 minCutoffLength);
+   pgsLongRebarInstance(const WBFL::Geometry::Point2d& rloc, const WBFL::Materials::Rebar* pRebar, Float64 minCutoffLength);
 
    //------------------------------------------------------------------------
    // Copy constructor
@@ -94,13 +93,13 @@ public:
 
    //------------------------------------------------------------------------
    // Location in section where rebar occurs
-   gpPoint2d  GetLocation() const;
-   void SetLocation(const gpPoint2d& loc);
+   const WBFL::Geometry::Point2d& GetLocation() const;
+   void SetLocation(const WBFL::Geometry::Point2d& loc);
 
    //------------------------------------------------------------------------
    // a pointer to this rebar's material
-   const matRebar* GetRebar() const;
-   void SetRebar(const matRebar* prebar);
+   const WBFL::Materials::Rebar* GetRebar() const;
+   void SetRebar(const WBFL::Materials::Rebar* pRebar);
 
    //------------------------------------------------------------------------
     // Nearest Distance from cut location to either end of the bar
@@ -125,33 +124,14 @@ protected:
 
 private:
    // GROUP: DATA MEMBERS
-      gpPoint2d       m_Location;
-      const matRebar* m_pRebar;
+      WBFL::Geometry::Point2d       m_Location;
+      const WBFL::Materials::Rebar* m_pRebar;
       Float64         m_MinCutoffLength; // Distance from cut location
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
    // GROUP: ACCESS
    // GROUP: INQUIRY
-
-public:
-   // GROUP: DEBUG
-   #if defined _DEBUG
-   //------------------------------------------------------------------------
-   // Returns true if the object is in a valid state, otherwise returns false.
-   virtual bool AssertValid() const;
-
-   //------------------------------------------------------------------------
-   // Dumps the contents of the object to the given dump context.
-   virtual void Dump(dbgDumpContext& os) const;
-   #endif // _DEBUG
-
-   #if defined _UNITTEST
-   //------------------------------------------------------------------------
-   // Runs a self-diagnostic test.  Returns true if the test passed,
-   // otherwise false.
-   static bool TestMe(dbgLog& rlog);
-   #endif // _UNITTEST
 };
 
 // INLINE METHODS

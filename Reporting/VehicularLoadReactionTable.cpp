@@ -332,27 +332,3 @@ void CVehicularLoadReactionTable::MakeAssignment(const CVehicularLoadReactionTab
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CVehicularLoadReactionTable::AssertValid() const
-{
-   return true;
-}
-
-void CVehicularLoadReactionTable::Dump(dbgDumpContext& os) const
-{
-   os << _T("Dump for CVehicularLoadReactionTable") << endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CVehicularLoadReactionTable::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("CVehicularLoadReactionTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CVehicularLoadReactionTable");
-
-   TESTME_EPILOG("CVehicularLoadReactionTable");
-}
-#endif // _UNITTEST

@@ -40,8 +40,11 @@ private:
    CComPtr<ICogoEngine> m_CogoEngine;
    CComPtr<IAlignment> m_Alignment;
    std::vector<CDeckPoint> m_DeckPoints;
-   CollectionIndexType m_DeckPointIdx;
-   CollectionIndexType m_nDeckPoints;
+   IndexType m_DeckPointIdx;
+   IndexType m_nDeckPoints;
+
+   CComPtr<IPoint2d> m_LeftLinearTransitionStartPoint;
+   CComPtr<IPoint2d> m_RightLinearTransitionStartPoint;
 
    CComPtr<IPath> m_LeftPath, m_RightPath;
    CComPtr<ICubicSpline> m_LeftSpline, m_RightSpline;
@@ -61,7 +64,8 @@ private:
    int BeginParallel(Float64 station,Float64 offset,Float64* pStartStation,Float64* pOffset,pgsTypes::DeckPointTransitionType transition);
    int EndParallel(IPath* pPath,Float64 startStation,Float64 endStation,Float64 offset,pgsTypes::DeckPointTransitionType transition);
 
-   int LinearTransition(IPath* pPath,IPoint2d* pPoint,pgsTypes::DeckPointTransitionType transition);
+   int BeginLinearTransition(IPath* pPath, IPoint2d* pPoint, IPoint2d** ppBeginPoint,pgsTypes::DeckPointTransitionType transition);
+   int EndLinearTransition(IPath* pPath,IPoint2d* pPoint,IPoint2d* pBeginPoint,pgsTypes::DeckPointTransitionType transition);
 
    Float64 GetAlignmentOffset(Float64 station);
 };

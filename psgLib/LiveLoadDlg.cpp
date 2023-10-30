@@ -62,7 +62,7 @@ CLiveLoadDlg::CLiveLoadDlg(bool allowEditing, CWnd* pParent /*=nullptr*/)
 void CLiveLoadDlg::DoDataExchange(CDataExchange* pDX)
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CLiveLoadDlg)
@@ -270,7 +270,7 @@ void CLiveLoadDlg::UpdateTruckDimensions()
    if (bSuccessful)
    {
       CEAFApp* pApp = EAFGetApp();
-      const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+      const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
       if (IsEqual(Lmin,Lmax))
       {

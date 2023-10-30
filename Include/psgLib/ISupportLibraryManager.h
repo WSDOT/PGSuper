@@ -23,19 +23,25 @@
 #if !defined INCLUDED_ISUPPORTLIBRARYMANAGER_H_
 #define INCLUDED_ISUPPORTLIBRARYMANAGER_H_
 
-class libLibraryManager;
+namespace WBFL
+{
+   namespace Library
+   {
+      class LibraryManager;
+   };
+};
 
 interface libISupportLibraryManager
 {
    // get the number of library managers available
-   virtual CollectionIndexType GetNumberOfLibraryManagers() const=0;
+   virtual IndexType GetNumberOfLibraryManagers() const=0;
 
    // return a pointer to a in the list library manager
-   virtual libLibraryManager* GetLibraryManager(CollectionIndexType num)=0;
+   virtual WBFL::Library::LibraryManager* GetLibraryManager(IndexType num)=0;
 
    // return a pointer to the ONLY library manager that 
    // is a target for copied items
-   virtual libLibraryManager* GetTargetLibraryManager()=0;
+   virtual WBFL::Library::LibraryManager* GetTargetLibraryManager()=0;
 };
 
 #endif

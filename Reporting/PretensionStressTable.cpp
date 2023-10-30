@@ -33,7 +33,7 @@
 #include <IFace\Intervals.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\RatingSpecification.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -85,14 +85,11 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
    INIT_UV_PROTOTYPE( rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), true );
    INIT_UV_PROTOTYPE(rptLengthUnitValue, ecc, pDisplayUnits->GetComponentDimUnit(), true);
 
-   //gdrpoi.IncludeSpanAndGirder(span == ALL_SPANS);
-   //spanpoi.IncludeSpanAndGirder(span == ALL_SPANS);
-
    GET_IFACE2(pBroker, IBridge, pBridge);
    bool bIsAsymmetric = (pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing() ? true : false);
 
    GET_IFACE2(pBroker,ILossParameters,pLossParams);
-   bool bTimeStepAnalysis = pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? true : false;
+   bool bTimeStepAnalysis = pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false;
 
    // for transformed section analysis, stresses are computed with prestress force P at the start of the interval because elastic effects are intrinsic to the stress analysis
    // for gross section analysis, stresses are computed with prestress force P at the end of the interval because the elastic effects during the interval must be included in the prestress force
@@ -208,7 +205,7 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
       (*p_table)(1, col++) << _T("Service I");
       (*p_table)(1, col++) << _T("Service III");
 
-      pgsTypes::LimitState ls = (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI);
+      pgsTypes::LimitState ls = (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI);
       std::_tstring strLS(ls == pgsTypes::ServiceIA ? _T("Service IA") : _T("Fatigue I"));
       (*p_table)(1, col++) << strLS;
    }
@@ -274,8 +271,8 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
    {
       col = 0;
 
-      gpPoint2d ecc_p = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Permanent);
-      gpPoint2d ecc_t = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Temporary);
+      WBFL::Geometry::Point2d ecc_p = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Permanent);
+      WBFL::Geometry::Point2d ecc_t = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Temporary);
 
       if ( bDesign )
       {
@@ -299,8 +296,8 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
 
             if (intervalIdx < liveLoadIntervalIdx)
             {
-               Float64 Fp = pForce->GetPrestressForce(poi, pgsTypes::Permanent, intervalIdx, intervalTime);
-               Float64 Ft = pForce->GetPrestressForce(poi, pgsTypes::Temporary, intervalIdx, intervalTime);
+               Float64 Fp = pForce->GetPrestressForce(poi, pgsTypes::Permanent, intervalIdx, intervalTime, pgsTypes::TransferLengthType::Minimum);
+               Float64 Ft = pForce->GetPrestressForce(poi, pgsTypes::Temporary, intervalIdx, intervalTime, pgsTypes::TransferLengthType::Minimum);
                (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (permanent) = ") << force.SetValue(Fp) << rptNewLine;
                if (bIsAsymmetric)
                {
@@ -370,7 +367,7 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
 
                col++;
 
-               pgsTypes::LimitState ls = (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI);
+               pgsTypes::LimitState ls = (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI);
                Fp = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent, ls, bIncludeElasticEffects);
                (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (permanent) = ") << force.SetValue(Fp) << rptNewLine;
                if (bIsAsymmetric)

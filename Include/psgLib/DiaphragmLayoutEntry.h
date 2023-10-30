@@ -44,9 +44,7 @@
 // LOCAL INCLUDES
 //
 
-#if !defined INCLUDED_SYSTEM_SUBJECTT_H_
 #include <System\SubjectT.h>
-#endif
 
 // FORWARD DECLARATIONS
 //
@@ -54,7 +52,7 @@ class pgsLibraryEntryDifferenceItem;
 class DiaphragmLayoutEntry;
 class DiaphragmLayoutEntryObserver;
 #pragma warning(disable:4231)
-PSGLIBTPL sysSubjectT<DiaphragmLayoutEntryObserver, DiaphragmLayoutEntry>;
+PSGLIBTPL WBFL::System::SubjectT<DiaphragmLayoutEntryObserver, DiaphragmLayoutEntry>;
 
 // MISCELLANEOUS
 //
@@ -79,7 +77,7 @@ public:
    //------------------------------------------------------------------------
    // called by our subject to let us now he's changed, along with an optional
    // hint
-   virtual void Update(DiaphragmLayoutEntry* pSubject, Int32 hint)=0;
+   virtual void Update(DiaphragmLayoutEntry& subject, Int32 hint)=0;
 };
 
 /*****************************************************************************
@@ -96,8 +94,8 @@ LOG
    rdp : 07.20.1998 : Created file
 *****************************************************************************/
 
-class PSGLIBCLASS DiaphragmLayoutEntry : public libLibraryEntry, public ISupportIcon,
-       public sysSubjectT<DiaphragmLayoutEntryObserver, DiaphragmLayoutEntry>
+class PSGLIBCLASS DiaphragmLayoutEntry : public WBFL::Library::LibraryEntry, public ISupportIcon,
+       public WBFL::System::SubjectT<DiaphragmLayoutEntryObserver, DiaphragmLayoutEntry>
 {
 public:
    // GROUP: LIFECYCLE
@@ -116,20 +114,20 @@ public:
 
    //------------------------------------------------------------------------
    // Default constructor
-   DiaphragmLayoutEntry();
+   DiaphragmLayoutEntry() = default;
 
    //------------------------------------------------------------------------
    // Copy constructor
-   DiaphragmLayoutEntry(const DiaphragmLayoutEntry& rOther);
+   DiaphragmLayoutEntry(const DiaphragmLayoutEntry& rOther) = default;
 
    //------------------------------------------------------------------------
    // Destructor
-   virtual ~DiaphragmLayoutEntry();
+   virtual ~DiaphragmLayoutEntry() = default;
 
    // GROUP: OPERATORS
    //------------------------------------------------------------------------
    // Assignment operator
-   DiaphragmLayoutEntry& operator = (const DiaphragmLayoutEntry& rOther);
+   DiaphragmLayoutEntry& operator=(const DiaphragmLayoutEntry& rOther) = default;
 
    // GROUP: OPERATIONS
    //------------------------------------------------------------------------
@@ -142,15 +140,15 @@ public:
 
    //------------------------------------------------------------------------
    // Save to structured storage
-   virtual bool SaveMe(sysIStructuredSave* pSave);
+   virtual bool SaveMe(WBFL::System::IStructuredSave* pSave);
 
    //------------------------------------------------------------------------
    // Load from structured storage
-   virtual bool LoadMe(sysIStructuredLoad* pLoad);
+   virtual bool LoadMe(WBFL::System::IStructuredLoad* pLoad);
 
     // GROUP: ACCESS
    //------------------------------------------------------------------------
-   // SetDiaphragmLayout - set diaphram layout
+   // SetDiaphragmLayout - set diaphragm layout
    void SetDiaphragmLayout(const DiaphragmLayoutVec& vec);
 
    //------------------------------------------------------------------------
@@ -159,7 +157,7 @@ public:
 
    // Compares this library entry with rOther. Returns true if the entries are the same.
    // vDifferences contains a listing of the differences. The caller is responsible for deleting the difference items
-   bool Compare(const DiaphragmLayoutEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference=false,bool considerName=false) const;
+   bool Compare(const DiaphragmLayoutEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference=false,bool considerName=false) const;
 
    bool IsEqual(const DiaphragmLayoutEntry& rOther,bool bConsiderName=false) const;
 
@@ -170,10 +168,6 @@ protected:
    // GROUP: LIFECYCLE
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
-   void MakeCopy(const DiaphragmLayoutEntry& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const DiaphragmLayoutEntry& rOther);
   // GROUP: ACCESS
   // GROUP: INQUIRY
 
@@ -186,25 +180,6 @@ private:
    // GROUP: OPERATIONS
    // GROUP: ACCESS
    // GROUP: INQUIRY
-
-public:
-   // GROUP: DEBUG
-   #if defined _DEBUG
-   //------------------------------------------------------------------------
-   // Returns true if the object is in a valid state, otherwise returns false.
-   virtual bool AssertValid() const;
-
-   //------------------------------------------------------------------------
-   // Dumps the contents of the object to the given dump context.
-   virtual void Dump(dbgDumpContext& os) const;
-   #endif // _DEBUG
-
-   #if defined _UNITTEST
-   //------------------------------------------------------------------------
-   // Runs a self-diagnostic test.  Returns true if the test passed,
-   // otherwise false.
-   static bool TestMe(dbgLog& rlog);
-   #endif // _UNITTEST
 };
 
 // INLINE METHODS

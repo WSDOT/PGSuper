@@ -29,12 +29,12 @@
 
 #include "resource.h"
 #include "ConcreteEntryDlg.h"
-#include <Units\sysUnits.h>
+#include <Units\Convert.h>
 
 #include <MathEx.h>
-#include <Material\Concrete.h>
-#include <Material\ACI209Concrete.h>
-#include <Material\CEBFIPConcrete.h>
+#include <Materials/SimpleConcrete.h>
+#include <Materials/ACI209Concrete.h>
+#include <Materials/CEBFIPConcrete.h>
 
 #include <EAF\EAFApp.h>
 #include <psgLib\LibraryEntryDifferenceItem.h>
@@ -71,6 +71,10 @@ CString ConcreteLibraryEntry::GetConcreteType(pgsTypes::ConcreteType type)
 
    case pgsTypes::PCI_UHPC:
       lpszType = _T("PCI-UHPC");
+      break;
+
+   case pgsTypes::UHPC:
+      lpszType = _T("UHPC");
       break;
 
    default:
@@ -125,7 +129,7 @@ CString ConcreteLibraryEntry::GetCEBFIPCementType(pgsTypes::CEBFIPCementType typ
    switch(type)
    {
    case pgsTypes::RS:
-      lpszType = _T("Rapid Hardening, High Strength Cemetn (RS)");
+      lpszType = _T("Rapid Hardening, High Strength Cement (RS)");
       break;
 
    case pgsTypes::N:
@@ -152,12 +156,12 @@ CString ConcreteLibraryEntry::GetCEBFIPCementType(pgsTypes::CEBFIPCementType typ
 
 //======================== LIFECYCLE  =======================================
 ConcreteLibraryEntry::ConcreteLibraryEntry() :
-m_Fc(::ConvertToSysUnits(4.,unitMeasure::KSI)),
-m_Ec(::ConvertToSysUnits(4200.,unitMeasure::KSI)),
+m_Fc(WBFL::Units::ConvertToSysUnits(4.,WBFL::Units::Measure::KSI)),
+m_Ec(WBFL::Units::ConvertToSysUnits(4200.,WBFL::Units::Measure::KSI)),
 m_bUserEc(false),
-m_Ds(::ConvertToSysUnits(160.,unitMeasure::LbfPerFeet3)),
-m_Dw(::ConvertToSysUnits(160.,unitMeasure::LbfPerFeet3)),
-m_AggSize(::ConvertToSysUnits(0.75,unitMeasure::Inch)),
+m_Ds(WBFL::Units::ConvertToSysUnits(160.,WBFL::Units::Measure::LbfPerFeet3)),
+m_Dw(WBFL::Units::ConvertToSysUnits(160.,WBFL::Units::Measure::LbfPerFeet3)),
+m_AggSize(WBFL::Units::ConvertToSysUnits(0.75,WBFL::Units::Measure::Inch)),
 m_EccK1(1.0),
 m_EccK2(1.0),
 m_CreepK1(1.0),
@@ -166,56 +170,47 @@ m_ShrinkageK1(1.0),
 m_ShrinkageK2(1.0),
 m_Type(pgsTypes::Normal),
 m_Fct(0), // need a good default value
-m_Ffc(::ConvertToSysUnits(1.5,unitMeasure::KSI)),
-m_Frr(::ConvertToSysUnits(0.75,unitMeasure::KSI)),
-m_FiberLength(::ConvertToSysUnits(0.5,unitMeasure::Inch)),
+m_Ffc(WBFL::Units::ConvertToSysUnits(1.5,WBFL::Units::Measure::KSI)),
+m_Frr(WBFL::Units::ConvertToSysUnits(0.75,WBFL::Units::Measure::KSI)),
+m_FiberLength(WBFL::Units::ConvertToSysUnits(0.5,WBFL::Units::Measure::Inch)),
 m_bPCTT(false),
 m_bHasFct(false),
 m_AutogenousShrinkage(0.3e-03),
+m_ftcri(WBFL::Units::ConvertToSysUnits(0.75*0.75, WBFL::Units::Measure::KSI)),
+m_ftcr(WBFL::Units::ConvertToSysUnits(0.75,WBFL::Units::Measure::KSI)),
+m_ftloc(WBFL::Units::ConvertToSysUnits(0.75, WBFL::Units::Measure::KSI)),
+m_etloc(0.0025),
+m_alpha_u(0.85),
+m_ecu(-0.0035),
+m_gamma_u(1.0),
+m_bExperimental_ecu(false),
 m_bUserACIParameters(false),
 m_CureMethod(pgsTypes::Moist),
 m_ACI209CementType(pgsTypes::TypeI),
 m_bUserCEBFIPParameters(false),
 m_CEBFIPCementType(pgsTypes::N)
 {
-   matACI209Concrete::GetModelParameters((matACI209Concrete::CureMethod)m_CureMethod,(matACI209Concrete::CementType)m_ACI209CementType,&m_A,&m_B);
-   matCEBFIPConcrete::GetModelParameters((matCEBFIPConcrete::CementType)m_CEBFIPCementType,&m_S,&m_BetaSc);
-}
-
-ConcreteLibraryEntry::ConcreteLibraryEntry(const ConcreteLibraryEntry& rOther) :
-libLibraryEntry(rOther)
-{
-   MakeCopy(rOther);
+   WBFL::Materials::ACI209Concrete::GetModelParameters((WBFL::Materials::CuringType)m_CureMethod,(WBFL::Materials::CementType)m_ACI209CementType,&m_A,&m_B);
+   WBFL::Materials::CEBFIPConcrete::GetModelParameters((WBFL::Materials::CEBFIPConcrete::CementType)m_CEBFIPCementType,&m_S,&m_BetaSc);
 }
 
 ConcreteLibraryEntry::~ConcreteLibraryEntry()
 {
 }
 
-//======================== OPERATORS  =======================================
-ConcreteLibraryEntry& ConcreteLibraryEntry::operator= (const ConcreteLibraryEntry& rOther)
+bool ConcreteLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
 {
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
-//======================== OPERATIONS =======================================
-bool ConcreteLibraryEntry::SaveMe(sysIStructuredSave* pSave)
-{
-   pSave->BeginUnit(_T("ConcreteMaterialEntry"), 7.0);
+   pSave->BeginUnit(_T("ConcreteMaterialEntry"), 8.0);
 
    // Version 5, re-arranged data and added AASHTO and ACI groups.
    // Version 6, added CEB-FIP Concrete
    // Version 7, added PCI UHPC
+   // Version 8, added UHPC
 
    pSave->Property(_T("Name"),this->GetName().c_str());
    
    // added version 4
-   pSave->Property(_T("Type"),lrfdConcreteUtil::GetTypeName((matConcrete::Type)m_Type,false).c_str());
+   pSave->Property(_T("Type"),WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)m_Type,false).c_str());
    pSave->Property(_T("Dw"), m_Dw);
    pSave->Property(_T("Fc"), m_Fc);
    pSave->Property(_T("Ds"), m_Ds);
@@ -251,6 +246,19 @@ bool ConcreteLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->Property(_T("AutogenousShrinkage"), m_AutogenousShrinkage); // added in PCIUHPC 2.0
    pSave->EndUnit(); // PCIUHPC
 
+   // Added version 8
+   pSave->BeginUnit(_T("UHPC"), 2.0);
+   pSave->Property(_T("ftcri"),m_ftcri);
+   pSave->Property(_T("ftcr"), m_ftcr);
+   pSave->Property(_T("ftloc"),m_ftloc);
+   pSave->Property(_T("etloc"),m_etloc);
+   pSave->Property(_T("alpha_u"), m_alpha_u);
+   pSave->Property(_T("ecu"), m_ecu);
+   pSave->Property(_T("Experimental_ecu"), m_bExperimental_ecu);
+   pSave->Property(_T("gamma_u"), m_gamma_u); // added version 2 of this data block
+   pSave->Property(_T("FiberLength"), m_FiberLength);
+   pSave->EndUnit(); // UHPC
+
    pSave->BeginUnit(_T("ACI"),1.0);
    pSave->Property(_T("UserACI"),m_bUserACIParameters);
    pSave->Property(_T("A"),m_A);
@@ -272,12 +280,12 @@ bool ConcreteLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    return false;
 }
 
-bool ConcreteLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
+bool ConcreteLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 {
    if(pLoad->BeginUnit(_T("ConcreteMaterialEntry")))
    {
       Float64 version = pLoad->GetVersion();
-      if (7.0 < version )
+      if (8.0 < version )
       {
          THROW_LOAD(BadVersion,pLoad);
       }
@@ -298,7 +306,7 @@ bool ConcreteLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       {
          std::_tstring strType;
          pLoad->Property(_T("Type"),&strType);
-         m_Type = (pgsTypes::ConcreteType)lrfdConcreteUtil::GetTypeFromTypeName(strType.c_str());
+         m_Type = (pgsTypes::ConcreteType)WBFL::LRFD::ConcreteUtil::GetTypeFromTypeName(strType.c_str());
       }
 
       if(!pLoad->Property(_T("Dw"), &m_Dw))
@@ -472,7 +480,7 @@ bool ConcreteLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
             if (!pLoad->Property(_T("Ffc"), &m_Ffc)) THROW_LOAD(InvalidFileFormat, pLoad);
             if(!pLoad->Property(_T("Frr"), &m_Frr)) THROW_LOAD(InvalidFileFormat, pLoad);
-            if (!pLoad->Property(_T("FiberLength"), &m_FiberLength)) THROW_LOAD(InvalidFileFormat, pLoad);
+            if(!pLoad->Property(_T("FiberLength"), &m_FiberLength)) THROW_LOAD(InvalidFileFormat, pLoad);
             if(!pLoad->Property(_T("PCTT"), &m_bPCTT)) THROW_LOAD(InvalidFileFormat, pLoad);
 
             if (1 < PCIUHPC_Version)
@@ -481,6 +489,34 @@ bool ConcreteLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
             }
 
             if(!pLoad->EndUnit()) THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+
+         if (7 < version)
+         {
+            // added version 8
+            if (!pLoad->BeginUnit(_T("UHPC")))
+            {
+               // Early versions of this data block used FHWAUHPC
+               // If UHPC fails, try the old name
+               if (!pLoad->BeginUnit(_T("FHWAUHPC"))) 
+                  THROW_LOAD(InvalidFileFormat, pLoad);
+            }
+
+            Float64 uhpc_version = pLoad->GetVersion();
+            if (!pLoad->Property(_T("ftcri"), &m_ftcri)) THROW_LOAD(InvalidFileFormat, pLoad);
+            if (!pLoad->Property(_T("ftcr"), &m_ftcr)) THROW_LOAD(InvalidFileFormat, pLoad);
+            if (!pLoad->Property(_T("ftloc"), &m_ftloc)) THROW_LOAD(InvalidFileFormat, pLoad);
+            if (!pLoad->Property(_T("etloc"), &m_etloc)) THROW_LOAD(InvalidFileFormat, pLoad);
+            if (!pLoad->Property(_T("alpha_u"), &m_alpha_u)) THROW_LOAD(InvalidFileFormat, pLoad);
+            if (!pLoad->Property(_T("ecu"), &m_ecu)) THROW_LOAD(InvalidFileFormat, pLoad);
+            if (!pLoad->Property(_T("Experimental_ecu"), &m_bExperimental_ecu)) THROW_LOAD(InvalidFileFormat, pLoad);
+            if (1 < uhpc_version)
+            {
+               // added version 2 of this data block
+               if (!pLoad->Property(_T("gamma_u"), &m_gamma_u)) THROW_LOAD(InvalidFileFormat, pLoad);
+            }
+            if (!pLoad->Property(_T("FiberLength"), &m_FiberLength)) THROW_LOAD(InvalidFileFormat, pLoad);
+            if (!pLoad->EndUnit()) THROW_LOAD(InvalidFileFormat, pLoad); // UHPC
          }
 
          if ( !pLoad->BeginUnit(_T("ACI")) )
@@ -582,114 +618,109 @@ bool ConcreteLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
 bool ConcreteLibraryEntry::IsEqual(const ConcreteLibraryEntry& rOther,bool bConsiderName) const
 {
-   std::vector<pgsLibraryEntryDifferenceItem*> vDifferences;
+   std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>> vDifferences;
    bool bMustRename;
    return Compare(rOther,vDifferences,bMustRename,true,bConsiderName);
 }
 
-bool ConcreteLibraryEntry::Compare(const ConcreteLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
+bool ConcreteLibraryEntry::Compare(const ConcreteLibraryEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    bMustRename = false;
 
    if ( m_Type != rOther.m_Type )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Type"),GetConcreteType(m_Type),GetConcreteType(rOther.m_Type)));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Type"),GetConcreteType(m_Type),GetConcreteType(rOther.m_Type)));
    }
 
    if ( !::IsEqual(m_Fc,rOther.m_Fc) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStressItem(_T("f'c"),m_Fc,rOther.m_Fc,pDisplayUnits->Stress));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStressItem>(_T("f'c"),m_Fc,rOther.m_Fc,pDisplayUnits->Stress));
    }
 
    if ( !::IsEqual(m_Ds,rOther.m_Ds) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceDensityItem(_T("Unit Weight"),m_Ds,rOther.m_Ds,pDisplayUnits->Density));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceDensityItem>(_T("Unit Weight"),m_Ds,rOther.m_Ds,pDisplayUnits->Density));
    }
 
    if ( !::IsEqual(m_Dw,rOther.m_Dw) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceDensityItem(_T("Unit Weight with Reinforcement"),m_Dw,rOther.m_Dw,pDisplayUnits->Density));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceDensityItem>(_T("Unit Weight with Reinforcement"),m_Dw,rOther.m_Dw,pDisplayUnits->Density));
    }
 
    if ( m_bUserEc != rOther.m_bUserEc )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceBooleanItem(_T("Mod. Elasticity, Ec"),m_bUserEc,rOther.m_bUserEc,_T("Checked"),_T("Unchecked")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceBooleanItem>(_T("Mod. Elasticity, Ec"),m_bUserEc,rOther.m_bUserEc,_T("Checked"),_T("Unchecked")));
    }
 
    if ( m_bUserEc && !::IsEqual(m_Ec,rOther.m_Ec) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStressItem(_T("Ec"),m_Ec,rOther.m_Ec,pDisplayUnits->ModE));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStressItem>(_T("Ec"),m_Ec,rOther.m_Ec,pDisplayUnits->ModE));
    }
 
-   if ( !::IsEqual(m_AggSize,rOther.m_AggSize) )
+   if ( !IsUHPC(m_Type) && !::IsEqual(m_AggSize,rOther.m_AggSize) )
    {
+      // Agg Size not applicable to UHPC - the UI elements in the dialog are hidden
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceLengthItem(_T("Max. Aggregate Size"),m_AggSize,rOther.m_AggSize,pDisplayUnits->ComponentDim));
-   }
-
-   if (m_Type == pgsTypes::PCI_UHPC && !::IsEqual(m_FiberLength, rOther.m_FiberLength))
-   {
-      RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceLengthItem(_T("Fiber Length"), m_FiberLength, rOther.m_FiberLength, pDisplayUnits->ComponentDim));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceLengthItem>(_T("Max. Aggregate Size"), m_AggSize, rOther.m_AggSize, pDisplayUnits->ComponentDim));
    }
 
    if ( !::IsEqual(m_EccK1,rOther.m_EccK1) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceDoubleItem(_T("Mod. E, K1"),m_EccK1,rOther.m_EccK1));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceDoubleItem>(_T("Mod. E, K1"),m_EccK1,rOther.m_EccK1));
    }
 
    if ( !::IsEqual(m_EccK2,rOther.m_EccK2) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceDoubleItem(_T("Mod. E, K2"),m_EccK2,rOther.m_EccK2));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceDoubleItem>(_T("Mod. E, K2"),m_EccK2,rOther.m_EccK2));
    }
 
    if ( !::IsEqual(m_CreepK1,rOther.m_CreepK1) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceDoubleItem(_T("Creep, K1"),m_CreepK1,rOther.m_CreepK1));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceDoubleItem>(_T("Creep, K1"),m_CreepK1,rOther.m_CreepK1));
    }
 
    if ( !::IsEqual(m_CreepK2,rOther.m_CreepK2) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceDoubleItem(_T("Creep, K2"),m_CreepK2,rOther.m_CreepK2));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceDoubleItem>(_T("Creep, K2"),m_CreepK2,rOther.m_CreepK2));
    }
 
    if ( !::IsEqual(m_ShrinkageK1,rOther.m_ShrinkageK1) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceDoubleItem(_T("Shrinkage, K1"),m_ShrinkageK1,rOther.m_ShrinkageK1));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceDoubleItem>(_T("Shrinkage, K1"),m_ShrinkageK1,rOther.m_ShrinkageK1));
    }
 
    if ( !::IsEqual(m_ShrinkageK2,rOther.m_ShrinkageK2) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceDoubleItem(_T("Shrinkage, K2"),m_ShrinkageK2,rOther.m_ShrinkageK2));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceDoubleItem>(_T("Shrinkage, K2"),m_ShrinkageK2,rOther.m_ShrinkageK2));
    }
 
-   if ( m_Type != pgsTypes::Normal )
+   if ( IsLWC(m_Type) )
    {
       if ( m_bHasFct != rOther.m_bHasFct )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceBooleanItem(_T("Agg. Splitting Strength, fct"),m_bHasFct,rOther.m_bHasFct,_T("Checked"),_T("Unchecked")));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceBooleanItem>(_T("Agg. Splitting Strength, fct"),m_bHasFct,rOther.m_bHasFct,_T("Checked"),_T("Unchecked")));
       }
 
       if ( m_bHasFct && !::IsEqual(m_Fct,rOther.m_Fct) )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStressItem(_T("Fct"),m_Fct,rOther.m_Fct,pDisplayUnits->Stress));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStressItem>(_T("Fct"),m_Fct,rOther.m_Fct,pDisplayUnits->Stress));
       }
    }
 
@@ -698,38 +729,89 @@ bool ConcreteLibraryEntry::Compare(const ConcreteLibraryEntry& rOther, std::vect
       if (!::IsEqual(m_Ffc, rOther.m_Ffc))
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStressItem(_T("Ffc"), m_Ffc, rOther.m_Ffc, pDisplayUnits->Stress));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStressItem>(_T("Ffc"), m_Ffc, rOther.m_Ffc, pDisplayUnits->Stress));
       }
 
       if (!::IsEqual(m_Frr, rOther.m_Frr))
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStressItem(_T("Frr"), m_Frr, rOther.m_Frr, pDisplayUnits->Stress));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStressItem>(_T("Frr"), m_Frr, rOther.m_Frr, pDisplayUnits->Stress));
       }
 
       if (!::IsEqual(m_FiberLength, rOther.m_FiberLength))
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStressItem(_T("Fiber Length"), m_Frr, rOther.m_Frr, pDisplayUnits->Stress));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStressItem>(_T("Fiber Length"), m_Frr, rOther.m_Frr, pDisplayUnits->Stress));
       }
 
       if (m_bPCTT != rOther.m_bPCTT)
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceBooleanItem(_T("PCTT"), m_bPCTT, rOther.m_bPCTT, _T("Checked"), _T("Unchecked")));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceBooleanItem>(_T("PCTT"), m_bPCTT, rOther.m_bPCTT, _T("Checked"), _T("Unchecked")));
       }
 
       if (!::IsEqual(m_AutogenousShrinkage, rOther.m_AutogenousShrinkage))
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceDoubleItem(_T("Autogenous Shrinkage"),m_AutogenousShrinkage, rOther.m_AutogenousShrinkage));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceDoubleItem>(_T("Autogenous Shrinkage"),m_AutogenousShrinkage, rOther.m_AutogenousShrinkage));
+      }
+   }
+
+   if (m_Type == pgsTypes::UHPC)
+   {
+      if (!::IsEqual(m_ftcri, rOther.m_ftcri))
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStressItem>(_T("Initial effective cracking strength (ft,cri)"), m_ftcri, rOther.m_ftcri, pDisplayUnits->Stress));
+      }
+
+      if (!::IsEqual(m_ftcr, rOther.m_ftcr))
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStressItem>(_T("Design effective cracking strength (ft,cr)"), m_ftcr, rOther.m_ftcr, pDisplayUnits->Stress));
+      }
+
+      if (!::IsEqual(m_ftloc, rOther.m_ftloc))
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStressItem>(_T("Crack localization strength (ft,loc)"), m_ftloc, rOther.m_ftloc, pDisplayUnits->Stress));
+      }
+
+      if (!::IsEqual(m_etloc, rOther.m_etloc))
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Crack localization strain (et,loc)"), _T(""), _T("")));// m_etloc, rOther.m_etloc));
+      }
+
+      if (!::IsEqual(m_FiberLength, rOther.m_FiberLength))
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStressItem>(_T("Fiber Length"), m_Frr, rOther.m_Frr, pDisplayUnits->Stress));
+      }
+
+      if (!::IsEqual(m_alpha_u, rOther.m_alpha_u))
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Compression response reduction factor (alpha,u)"), _T(""), _T("")));
+      }
+
+      if (!::IsEqual(m_gamma_u, rOther.m_gamma_u))
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Fiber orientation reduction factor (gamma,u)"), _T(""), _T("")));
+      }
+
+      if (!::IsEqual(m_ecu, rOther.m_ecu))
+      {
+         RETURN_ON_DIFFERENCE;
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Ultimate compression strain (e,cu)"), _T(""), _T("")));
       }
    }
 
    if ( m_bUserACIParameters != rOther.m_bUserACIParameters )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceBooleanItem(_T("Use time parameters from ACI 209R-92"),m_bUserACIParameters,rOther.m_bUserACIParameters,_T("Checked"),_T("Unchecked")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceBooleanItem>(_T("Use time parameters from ACI 209R-92"),m_bUserACIParameters,rOther.m_bUserACIParameters,_T("Checked"),_T("Unchecked")));
    }
 
    if ( m_bUserACIParameters )
@@ -737,13 +819,13 @@ bool ConcreteLibraryEntry::Compare(const ConcreteLibraryEntry& rOther, std::vect
       if ( !::IsEqual(m_A,rOther.m_A) )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceDoubleItem(_T("a"),m_A,rOther.m_A));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceDoubleItem>(_T("a"),m_A,rOther.m_A));
       }
 
       if ( !::IsEqual(m_B,rOther.m_B) )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceDoubleItem(_T("Beta"),m_B,rOther.m_B));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceDoubleItem>(_T("Beta"),m_B,rOther.m_B));
       }
    }
    else
@@ -751,20 +833,20 @@ bool ConcreteLibraryEntry::Compare(const ConcreteLibraryEntry& rOther, std::vect
       if ( m_CureMethod != rOther.m_CureMethod )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Cure Method"),GetConcreteCureMethod(m_CureMethod),GetConcreteCureMethod(rOther.m_CureMethod)));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Cure Method"),GetConcreteCureMethod(m_CureMethod),GetConcreteCureMethod(rOther.m_CureMethod)));
       }
 
       if ( m_ACI209CementType != rOther.m_ACI209CementType )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Cement Type"),GetACI209CementType(m_ACI209CementType),GetACI209CementType(rOther.m_ACI209CementType)));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Cement Type"),GetACI209CementType(m_ACI209CementType),GetACI209CementType(rOther.m_ACI209CementType)));
       }
    }
 
    if ( m_bUserCEBFIPParameters != rOther.m_bUserCEBFIPParameters )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceBooleanItem(_T("Use time parameters from CEB-FIP Model Code"),m_bUserCEBFIPParameters,rOther.m_bUserCEBFIPParameters,_T("Checked"),_T("Unchecked")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceBooleanItem>(_T("Use time parameters from CEB-FIP Model Code"),m_bUserCEBFIPParameters,rOther.m_bUserCEBFIPParameters,_T("Checked"),_T("Unchecked")));
    }
 
    if ( m_bUserCEBFIPParameters )
@@ -772,13 +854,13 @@ bool ConcreteLibraryEntry::Compare(const ConcreteLibraryEntry& rOther, std::vect
       if ( !::IsEqual(m_S,rOther.m_S) )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceDoubleItem(_T("S"),m_S,rOther.m_S));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceDoubleItem>(_T("S"),m_S,rOther.m_S));
       }
 
       if ( !::IsEqual(m_BetaSc,rOther.m_BetaSc) )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceDoubleItem(_T("Beta SC"),m_BetaSc,rOther.m_BetaSc));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceDoubleItem>(_T("Beta SC"),m_BetaSc,rOther.m_BetaSc));
       }
    }
    else
@@ -786,14 +868,14 @@ bool ConcreteLibraryEntry::Compare(const ConcreteLibraryEntry& rOther, std::vect
       if ( m_CEBFIPCementType != rOther.m_CEBFIPCementType )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Cement Type"),GetCEBFIPCementType(m_CEBFIPCementType),GetCEBFIPCementType(rOther.m_CEBFIPCementType)));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Cement Type"),GetCEBFIPCementType(m_CEBFIPCementType),GetCEBFIPCementType(rOther.m_CEBFIPCementType)));
       }
    }
 
    if (considerName &&  GetName() != rOther.GetName() )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
    }
 
    return vDifferences.size() == 0 ? true : false;
@@ -970,6 +1052,32 @@ void ConcreteLibraryEntry::GetPCIUHPC(Float64* ffc, Float64* frr, Float64* fiber
    *pAutogenousShrinkage = m_AutogenousShrinkage;
 }
 
+void ConcreteLibraryEntry::SetUHPC(Float64 ft_cri, Float64 ft_cr, Float64 ft_loc, Float64 et_loc,Float64 alpha_u,Float64 ecu,bool bExperimentalEcu,Float64 gammaU,Float64 fiberLength)
+{
+   m_ftcri = ft_cri;
+   m_ftcr = ft_cr;
+   m_ftloc = ft_loc;
+   m_etloc = et_loc;
+   m_alpha_u = alpha_u;
+   m_ecu = ecu;
+   m_bExperimental_ecu = bExperimentalEcu;
+   m_gamma_u = gammaU;
+   m_FiberLength = fiberLength;
+}
+
+void ConcreteLibraryEntry::GetUHPC(Float64* ft_cri, Float64* ft_cr, Float64* ft_loc, Float64* et_loc,Float64* alpha_u,Float64* ecu,bool* pbExperimentalEcu,Float64* pGammaU,Float64* pFiberLength) const
+{
+   *ft_cri = m_ftcri;
+   *ft_cr = m_ftcr;
+   *ft_loc = m_ftloc;
+   *et_loc = m_etloc;
+   *alpha_u = m_alpha_u;
+   *ecu = m_ecu;
+   *pbExperimentalEcu = m_bExperimental_ecu;
+   *pGammaU = m_gamma_u;
+   *pFiberLength = m_FiberLength;
+}
+
 bool ConcreteLibraryEntry::UserACIParameters() const
 {
    return m_bUserACIParameters;
@@ -1089,6 +1197,7 @@ bool ConcreteLibraryEntry::Edit(bool allowEditing,int nPage)
    dlg.m_General.m_Type      = this->GetType();
 
    GetPCIUHPC(&dlg.m_PCIUHPC.m_ffc, &dlg.m_PCIUHPC.m_frr, &dlg.m_PCIUHPC.m_FiberLength, &dlg.m_PCIUHPC.m_AutogenousShrinkage, &dlg.m_PCIUHPC.m_bPCTT);
+   GetUHPC(&dlg.m_UHPC.m_ftcri, &dlg.m_UHPC.m_ftcr, &dlg.m_UHPC.m_ftloc, &dlg.m_UHPC.m_etloc, &dlg.m_UHPC.m_alpha_u,&dlg.m_UHPC.m_ecu,&dlg.m_UHPC.m_bExperimental_ecu,&dlg.m_UHPC.m_gamma_u,&dlg.m_UHPC.m_FiberLength);
 
    dlg.m_AASHTO.m_EccK1       = this->GetModEK1();
    dlg.m_AASHTO.m_EccK2       = this->GetModEK2();
@@ -1114,90 +1223,42 @@ bool ConcreteLibraryEntry::Edit(bool allowEditing,int nPage)
    dlg.SetActivePage(nPage);
    if (i==IDOK)
    {
-      this->SetName(dlg.m_General.m_EntryName);
-      this->SetFc(dlg.m_General.m_Fc);
-      this->SetStrengthDensity(dlg.m_General.m_Ds);
-      this->SetWeightDensity(dlg.m_General.m_Dw );
-      this->SetAggregateSize(dlg.m_General.m_AggSize);
-      this->SetEc(dlg.m_General.m_Ec);
-      this->UserEc(dlg.m_General.m_bUserEc);
-      this->SetType(dlg.m_General.m_Type);
+      SetName(dlg.m_General.m_EntryName);
+      SetFc(dlg.m_General.m_Fc);
+      SetStrengthDensity(dlg.m_General.m_Ds);
+      SetWeightDensity(dlg.m_General.m_Dw );
+      SetAggregateSize(dlg.m_General.m_AggSize);
+      SetEc(dlg.m_General.m_Ec);
+      UserEc(dlg.m_General.m_bUserEc);
+      SetType(dlg.m_General.m_Type);
 
-      this->SetModEK1(dlg.m_AASHTO.m_EccK1);
-      this->SetModEK2(dlg.m_AASHTO.m_EccK2);
-      this->SetCreepK1(dlg.m_AASHTO.m_CreepK1);
-      this->SetCreepK2(dlg.m_AASHTO.m_CreepK2);
-      this->SetShrinkageK1(dlg.m_AASHTO.m_ShrinkageK1);
-      this->SetShrinkageK2(dlg.m_AASHTO.m_ShrinkageK2);
-      this->HasAggSplittingStrength(dlg.m_AASHTO.m_bHasFct);
-      this->SetAggSplittingStrength(dlg.m_AASHTO.m_Fct);
+      SetModEK1(dlg.m_AASHTO.m_EccK1);
+      SetModEK2(dlg.m_AASHTO.m_EccK2);
+      SetCreepK1(dlg.m_AASHTO.m_CreepK1);
+      SetCreepK2(dlg.m_AASHTO.m_CreepK2);
+      SetShrinkageK1(dlg.m_AASHTO.m_ShrinkageK1);
+      SetShrinkageK2(dlg.m_AASHTO.m_ShrinkageK2);
+      HasAggSplittingStrength(dlg.m_AASHTO.m_bHasFct);
+      SetAggSplittingStrength(dlg.m_AASHTO.m_Fct);
 
       SetPCIUHPC(dlg.m_PCIUHPC.m_ffc, dlg.m_PCIUHPC.m_frr, dlg.m_PCIUHPC.m_FiberLength, dlg.m_PCIUHPC.m_AutogenousShrinkage, dlg.m_PCIUHPC.m_bPCTT);
+      SetUHPC(dlg.m_UHPC.m_ftcri, dlg.m_UHPC.m_ftcr, dlg.m_UHPC.m_ftloc, dlg.m_UHPC.m_etloc, dlg.m_UHPC.m_alpha_u,dlg.m_UHPC.m_ecu,dlg.m_UHPC.m_bExperimental_ecu,dlg.m_UHPC.m_gamma_u,dlg.m_UHPC.m_FiberLength);
 
-      this->UserACIParameters(dlg.m_ACI.m_bUserParameters);
-      this->SetAlpha(dlg.m_ACI.m_A);
-      this->SetBeta(dlg.m_ACI.m_B);
-      this->SetCureMethod(dlg.m_ACI.m_CureMethod);
-      this->SetACI209CementType(dlg.m_ACI.m_CementType);
+      UserACIParameters(dlg.m_ACI.m_bUserParameters);
+      SetAlpha(dlg.m_ACI.m_A);
+      SetBeta(dlg.m_ACI.m_B);
+      SetCureMethod(dlg.m_ACI.m_CureMethod);
+      SetACI209CementType(dlg.m_ACI.m_CementType);
 
-      this->UserCEBFIPParameters(dlg.m_CEBFIP.m_bUserParameters);
-      this->SetS(dlg.m_CEBFIP.m_S);
-      this->SetBetaSc(dlg.m_CEBFIP.m_BetaSc);
-      this->SetCEBFIPCementType(dlg.m_CEBFIP.m_CementType);
+      UserCEBFIPParameters(dlg.m_CEBFIP.m_bUserParameters);
+      SetS(dlg.m_CEBFIP.m_S);
+      SetBetaSc(dlg.m_CEBFIP.m_BetaSc);
+      SetCEBFIPCementType(dlg.m_CEBFIP.m_CementType);
 
       return true;
    }
 
    return false;
-}
-
-
-void ConcreteLibraryEntry::MakeCopy(const ConcreteLibraryEntry& rOther)
-{
-   m_Type    = rOther.m_Type;
-   m_Fc      = rOther.m_Fc;
-   m_Ds      = rOther.m_Ds;      
-   m_Dw      = rOther.m_Dw;       
-   m_AggSize = rOther.m_AggSize;
-   m_bUserEc = rOther.m_bUserEc;
-   m_Ec      = rOther.m_Ec;
-
-   // AASHTO
-   m_EccK1    = rOther.m_EccK1;
-   m_EccK2    = rOther.m_EccK2;
-   m_CreepK1  = rOther.m_CreepK1;
-   m_CreepK2  = rOther.m_CreepK2;
-   m_ShrinkageK1  = rOther.m_ShrinkageK1;
-   m_ShrinkageK2  = rOther.m_ShrinkageK2;
-   m_bHasFct  = rOther.m_bHasFct;
-   m_Fct      = rOther.m_Fct;
-
-   // PCI UHPC
-   m_Ffc = rOther.m_Ffc;
-   m_Frr = rOther.m_Frr;
-   m_FiberLength = rOther.m_FiberLength;
-   m_bPCTT = rOther.m_bPCTT;
-   m_AutogenousShrinkage = rOther.m_AutogenousShrinkage;
-
-
-   // ACI
-   m_bUserACIParameters = rOther.m_bUserACIParameters;
-   m_A                  = rOther.m_A;
-   m_B                  = rOther.m_B;
-   m_CureMethod         = rOther.m_CureMethod;
-   m_ACI209CementType   = rOther.m_ACI209CementType;
-
-   // CEB-FIP
-   m_bUserCEBFIPParameters = rOther.m_bUserCEBFIPParameters;
-   m_S                     = rOther.m_S;
-   m_BetaSc                = rOther.m_BetaSc;
-   m_CEBFIPCementType      = rOther.m_CEBFIPCementType;
-}
-
-void ConcreteLibraryEntry::MakeAssignment(const ConcreteLibraryEntry& rOther)
-{
-   libLibraryEntry::MakeAssignment( rOther );
-   MakeCopy( rOther );
 }
 
 //======================== ACCESS     =======================================
@@ -1212,33 +1273,3 @@ void ConcreteLibraryEntry::MakeAssignment(const ConcreteLibraryEntry& rOther)
 //======================== INQUERY    =======================================
 
 //======================== DEBUG      =======================================
-#if defined _DEBUG
-bool ConcreteLibraryEntry::AssertValid() const
-{
-   return libLibraryEntry::AssertValid();
-}
-
-void ConcreteLibraryEntry::Dump(dbgDumpContext& os) const
-{
-   os << _T("Dump for ConcreteLibraryEntry")<<endl;
-   os << _T("   m_Fc =")<< m_Fc <<endl;
-   os << _T("   m_Ec =")<< m_Ds << endl;
-   os << _T("   m_D  =")<< m_Dw <<endl;
-   os << _T("   m_AggSize ")<< m_AggSize <<endl;
-   os << _T("   m_EccK1 ") << m_EccK1 << endl;
-   os << _T("   m_EccK2 ") << m_EccK2 << endl;
-
-   libLibraryEntry::Dump( os );
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool ConcreteLibraryEntry::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("ConcreteLibraryEntry");
-
-   // tests are performed on entire library.
-
-   TESTME_EPILOG("ConcreteMaterial");
-}
-#endif // _UNITTEST

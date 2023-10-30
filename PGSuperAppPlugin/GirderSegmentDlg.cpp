@@ -123,10 +123,6 @@ void CGirderSegmentDlg::CommonInit(const CBridgeDescription2* pBridgeDesc,const 
    m_SegmentKey = segmentKey;
    m_SegmentID = pSegment->GetID();
 
-   m_GeneralPage.m_MinSlabOffset = pBridgeDesc->GetMinSlabOffset();
-   m_GeneralPage.m_SlabOffsetType = pBridgeDesc->GetSlabOffsetType();
-   pSegment->GetSlabOffset(&m_GeneralPage.m_SlabOffset[pgsTypes::metStart], &m_GeneralPage.m_SlabOffset[pgsTypes::metEnd]);
-
    m_TimelineMgr = *(pBridgeDesc->GetTimelineManager());
 
    m_StrandsPage.Init(m_Girder.GetSegment(segmentKey.segmentIndex));
@@ -221,7 +217,7 @@ void CGirderSegmentDlg::DestroyExtensionPages()
    m_ExtensionPages.clear();
 }
 
-txnTransaction* CGirderSegmentDlg::GetExtensionPageTransaction()
+std::unique_ptr<CEAFTransaction> CGirderSegmentDlg::GetExtensionPageTransaction()
 {
    if ( 0 < m_Macro.GetTxnCount() )
    {
@@ -241,10 +237,10 @@ void CGirderSegmentDlg::NotifyExtensionPages()
    {
       IEditSegmentCallback* pCallback = pageIter->first;
       CPropertyPage* pPage = pageIter->second;
-      txnTransaction* pTxn = pCallback->OnOK(pPage,this);
+      auto pTxn = pCallback->OnOK(pPage,this);
       if ( pTxn )
       {
-         m_Macro.AddTransaction(pTxn);
+         m_Macro.AddTransaction(std::move(pTxn));
       }
    }
 }

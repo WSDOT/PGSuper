@@ -32,6 +32,9 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\Helpers.h>
 
+#include <psgLib/CreepCriteria.h>
+
+
 HRESULT CPGSuperProjectImporter::FinalConstruct()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -175,14 +178,14 @@ void CPGSuperProjectImporter::BuildBridge(IBroker* pBroker)
       bridge.SetGirderSpacing(girder_spacing);
    }
 
-   Float64 span_length = ::ConvertToSysUnits(100.0, unitMeasure::Feet); // set span length to 100ft
+   Float64 span_length = WBFL::Units::ConvertToSysUnits(100.0, WBFL::Units::Measure::Feet); // set span length to 100ft
 
 
    bridge.CreateFirstSpan(nullptr,nullptr,nullptr,INVALID_INDEX); // creates 2 piers and a span
    bridge.SetSpanLength(0,span_length); 
 
-   bridge.SetSlabOffset(::ConvertToSysUnits(12.0,unitMeasure::Inch));
-   bridge.SetFillet(::ConvertToSysUnits(0.75,unitMeasure::Inch));
+   bridge.SetSlabOffset(WBFL::Units::ConvertToSysUnits(12.0,WBFL::Units::Measure::Inch));
+   bridge.SetFillet(WBFL::Units::ConvertToSysUnits(0.75,WBFL::Units::Measure::Inch));
 
    //
    // define the bridge deck
@@ -203,28 +206,28 @@ void CPGSuperProjectImporter::BuildBridge(IBroker* pBroker)
    switch( deckType )
    {
    case pgsTypes::sdtCompositeCIP:
-      deck.GrossDepth        = ::ConvertToSysUnits(8.0,unitMeasure::Inch);
+      deck.GrossDepth        = WBFL::Units::ConvertToSysUnits(8.0,WBFL::Units::Measure::Inch);
       deck.OverhangTaper[pgsTypes::stLeft] = pgsTypes::dotTopTopFlange;
       deck.OverhangTaper[pgsTypes::stRight] = pgsTypes::dotTopTopFlange;
-      deck.OverhangEdgeDepth[pgsTypes::stLeft] = ::ConvertToSysUnits(6.0, unitMeasure::Inch);
-      deck.OverhangEdgeDepth[pgsTypes::stRight] = ::ConvertToSysUnits(6.0, unitMeasure::Inch);
+      deck.OverhangEdgeDepth[pgsTypes::stLeft] = WBFL::Units::ConvertToSysUnits(6.0, WBFL::Units::Measure::Inch);
+      deck.OverhangEdgeDepth[pgsTypes::stRight] = WBFL::Units::ConvertToSysUnits(6.0, WBFL::Units::Measure::Inch);
       deck.DeckEdgePoints.push_back(point);
       break;
 
    case pgsTypes::sdtCompositeSIP:
-      deck.GrossDepth        = ::ConvertToSysUnits(4.0,unitMeasure::Inch);
-      deck.PanelDepth        = ::ConvertToSysUnits(4.0,unitMeasure::Inch);
-      deck.PanelSupport      = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
+      deck.GrossDepth        = WBFL::Units::ConvertToSysUnits(4.0,WBFL::Units::Measure::Inch);
+      deck.PanelDepth        = WBFL::Units::ConvertToSysUnits(4.0,WBFL::Units::Measure::Inch);
+      deck.PanelSupport      = WBFL::Units::ConvertToSysUnits(2.0,WBFL::Units::Measure::Inch);
       deck.OverhangTaper[pgsTypes::stLeft] = pgsTypes::dotTopTopFlange;
       deck.OverhangTaper[pgsTypes::stRight] = pgsTypes::dotTopTopFlange;
-      deck.OverhangEdgeDepth[pgsTypes::stLeft] = ::ConvertToSysUnits(6.0, unitMeasure::Inch);
-      deck.OverhangEdgeDepth[pgsTypes::stRight] = ::ConvertToSysUnits(6.0, unitMeasure::Inch);
+      deck.OverhangEdgeDepth[pgsTypes::stLeft] = WBFL::Units::ConvertToSysUnits(6.0, WBFL::Units::Measure::Inch);
+      deck.OverhangEdgeDepth[pgsTypes::stRight] = WBFL::Units::ConvertToSysUnits(6.0, WBFL::Units::Measure::Inch);
       deck.DeckEdgePoints.push_back(point);
       break;
 
    case pgsTypes::sdtCompositeOverlay:
    case pgsTypes::sdtNonstructuralOverlay:
-      deck.GrossDepth        = ::ConvertToSysUnits(3.0,unitMeasure::Inch);
+      deck.GrossDepth        = WBFL::Units::ConvertToSysUnits(3.0,WBFL::Units::Measure::Inch);
       break;
 
    case pgsTypes::sdtNone:
@@ -238,10 +241,10 @@ void CPGSuperProjectImporter::BuildBridge(IBroker* pBroker)
    if ( spacingType == pgsTypes::sbsUniformAdjacent )
       deck.TransverseConnectivity = pgsTypes::atcConnectedAsUnit;
 
-   deck.Concrete.Fc               = ::ConvertToSysUnits(5.0,unitMeasure::KSI);
-   deck.Concrete.WeightDensity    = ::ConvertToSysUnits(160.0,unitMeasure::LbfPerFeet3); 
-   deck.Concrete.StrengthDensity  = ::ConvertToSysUnits(160.0,unitMeasure::LbfPerFeet3); 
-   deck.Concrete.MaxAggregateSize = ::ConvertToSysUnits(0.5,unitMeasure::Inch); 
+   deck.Concrete.Fc               = WBFL::Units::ConvertToSysUnits(5.0,WBFL::Units::Measure::KSI);
+   deck.Concrete.WeightDensity    = WBFL::Units::ConvertToSysUnits(160.0,WBFL::Units::Measure::LbfPerFeet3); 
+   deck.Concrete.StrengthDensity  = WBFL::Units::ConvertToSysUnits(160.0,WBFL::Units::Measure::LbfPerFeet3); 
+   deck.Concrete.MaxAggregateSize = WBFL::Units::ConvertToSysUnits(0.5,WBFL::Units::Measure::Inch); 
 
    deck.Concrete.EcK1 = 1.0;
    deck.Concrete.EcK2 = 1.0;
@@ -251,9 +254,9 @@ void CPGSuperProjectImporter::BuildBridge(IBroker* pBroker)
    deck.Concrete.ShrinkageK2 = 1.0;
 
    deck.Concrete.bUserEc = false;
-   deck.Concrete.Ec = lrfdConcreteUtil::ModE((matConcrete::Type)deck.Concrete.Type,deck.Concrete.Fc,deck.Concrete.StrengthDensity,false);
+   deck.Concrete.Ec = WBFL::LRFD::ConcreteUtil::ModE((WBFL::Materials::ConcreteType)deck.Concrete.Type,deck.Concrete.Fc,deck.Concrete.StrengthDensity,false);
    deck.bInputAsDepthAndDensity = false;
-   deck.OverlayWeight = ::ConvertToSysUnits(0.025,unitMeasure::KSF);
+   deck.OverlayWeight = WBFL::Units::ConvertToSysUnits(0.025,WBFL::Units::Measure::KSF);
 
    *bridge.GetDeckDescription() = deck;
 
@@ -288,8 +291,12 @@ void CPGSuperProjectImporter::SetSpecification(IBroker* pBroker)
 
 void CPGSuperProjectImporter::InitGirderData(IBroker* pBroker)
 {
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
-   const matPsStrand* pStrand = pPool->GetStrand(matPsStrand::Gr1860,matPsStrand::LowRelaxation,matPsStrand::None,matPsStrand::D1524);
+   const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
+   const auto* pStrand = pPool->GetStrand(
+      WBFL::Materials::PsStrand::Grade::Gr1860,
+      WBFL::Materials::PsStrand::Type::LowRelaxation,
+      WBFL::Materials::PsStrand::Coating::None,
+      WBFL::Materials::PsStrand::Size::D1524);
 
    GET_IFACE2( pBroker, IBridgeDescription,pIBridgeDesc);
    GET_IFACE2( pBroker, ISegmentData, pSegmentData);
@@ -348,12 +355,13 @@ void CPGSuperProjectImporter::InitTimelineManager(IBroker* pBroker, CBridgeDescr
 
    // Casting yard stage... starts at day 0 when strands are stressed
    // The activities in this stage includes prestress release, lifting and storage
+   const auto& creep_criteria = pSpecEntry->GetCreepCriteria();
    std::unique_ptr<CTimelineEvent> pTimelineEvent = std::make_unique<CTimelineEvent>();
    pTimelineEvent->SetDay(0);
    pTimelineEvent->SetDescription(_T("Construct Girders, Erect Piers"));
    pTimelineEvent->GetConstructSegmentsActivity().Enable();
-   pTimelineEvent->GetConstructSegmentsActivity().SetTotalCuringDuration(::ConvertFromSysUnits(pSpecEntry->GetXferTime(), unitMeasure::Day));
-   pTimelineEvent->GetConstructSegmentsActivity().SetRelaxationTime(::ConvertFromSysUnits(pSpecEntry->GetXferTime(), unitMeasure::Day));
+   pTimelineEvent->GetConstructSegmentsActivity().SetTotalCuringDuration(WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime, WBFL::Units::Measure::Day));
+   pTimelineEvent->GetConstructSegmentsActivity().SetRelaxationTime(WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime, WBFL::Units::Measure::Day));
    pTimelineEvent->GetConstructSegmentsActivity().AddSegments(segmentIDs);
 
    // assume piers are erected at the same time girders are being constructed
@@ -373,7 +381,7 @@ void CPGSuperProjectImporter::InitTimelineManager(IBroker* pBroker, CBridgeDescr
    // are removed all on the same day. Assuming max construction sequence (D120). The actual
    // don't matter unless the user switches to time-step analysis.
    pTimelineEvent = std::make_unique<CTimelineEvent>();
-   Float64 day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration1Max(), unitMeasure::Day);
+   Float64 day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration1Max, WBFL::Units::Measure::Day);
    Float64 maxDay = 28.0;
    day = Max(day, maxDay);
    maxDay += 1.0;
@@ -391,7 +399,7 @@ void CPGSuperProjectImporter::InitTimelineManager(IBroker* pBroker, CBridgeDescr
    if (IsNonstructuralDeck(deckType))
    {
       // deck is non-composite or there is no deck so creep can continue
-      deck_diaphragm_curing_duration = Min(::ConvertFromSysUnits(pSpecEntry->GetTotalCreepDuration() - pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day), 28.0);
+      deck_diaphragm_curing_duration = Min(WBFL::Units::ConvertFromSysUnits(creep_criteria.TotalCreepDuration - creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day), 28.0);
    }
 
    if (IsJointSpacing(bridge.GetGirderSpacingType()) && bridge.HasStructuralLongitudinalJoints())
@@ -405,7 +413,7 @@ void CPGSuperProjectImporter::InitTimelineManager(IBroker* pBroker, CBridgeDescr
       // 2) Joints
       // 3) Deck
       pTimelineEvent = std::make_unique<CTimelineEvent>();
-      day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
+      day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day);
       day = Max(day, maxDay);
       pTimelineEvent->SetDay(day);
       pTimelineEvent->SetDescription(_T("Cast Diaphragms"));
@@ -415,7 +423,7 @@ void CPGSuperProjectImporter::InitTimelineManager(IBroker* pBroker, CBridgeDescr
       pTimelineEvent.release();
 
       pTimelineEvent = std::make_unique<CTimelineEvent>();
-      day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day) + 1.0;
+      day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day) + 1.0;
       day = Max(day, maxDay);
       pTimelineEvent->SetDay(day);
       pTimelineEvent->SetDescription(_T("Cast Longitudinal Joints"));
@@ -430,7 +438,7 @@ void CPGSuperProjectImporter::InitTimelineManager(IBroker* pBroker, CBridgeDescr
       if (deckType != pgsTypes::sdtNone)
       {
          pTimelineEvent = std::make_unique<CTimelineEvent>();
-         day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day) + 2.0;
+         day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day) + 2.0;
          day = Max(day, maxDay);
          pTimelineEvent->SetDay(day);
 
@@ -449,7 +457,7 @@ void CPGSuperProjectImporter::InitTimelineManager(IBroker* pBroker, CBridgeDescr
    {
       // Cast deck & diaphragms
       pTimelineEvent = std::make_unique<CTimelineEvent>();
-      day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
+      day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day);
       day = Max(day, maxDay);
       pTimelineEvent->SetDay(day);
       pTimelineEvent->SetDescription(_T("Cast Diaphragms"));
@@ -462,7 +470,7 @@ void CPGSuperProjectImporter::InitTimelineManager(IBroker* pBroker, CBridgeDescr
       if (deckType != pgsTypes::sdtNone)
       {
          pTimelineEvent = std::make_unique<CTimelineEvent>();
-         day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
+         day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day);
          day = Max(day, maxDay);
          pTimelineEvent->SetDay(day);
          pTimelineEvent->SetDescription(GetCastDeckEventName(deckType));
@@ -478,7 +486,7 @@ void CPGSuperProjectImporter::InitTimelineManager(IBroker* pBroker, CBridgeDescr
 
    // traffic barrier/superimposed dead loads
    pTimelineEvent = std::make_unique<CTimelineEvent>();
-   day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day) + deck_diaphragm_curing_duration;
+   day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day) + deck_diaphragm_curing_duration;
    day = Max(day, maxDay);
    pTimelineEvent->SetDay(day); // deck is continuous
    pTimelineEvent->GetApplyLoadActivity().ApplyRailingSystemLoad();
@@ -503,7 +511,7 @@ void CPGSuperProjectImporter::InitTimelineManager(IBroker* pBroker, CBridgeDescr
    if (wearingSurface == pgsTypes::wstFutureOverlay)
    {
       pTimelineEvent = std::make_unique<CTimelineEvent>();
-      day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day) + deck_diaphragm_curing_duration + 1.0;
+      day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day) + deck_diaphragm_curing_duration + 1.0;
       day = Max(day, maxDay);
       pTimelineEvent->SetDay(day);
       pTimelineEvent->SetDescription(_T("Final without Live Load"));
@@ -515,7 +523,7 @@ void CPGSuperProjectImporter::InitTimelineManager(IBroker* pBroker, CBridgeDescr
 
    // live load
    pTimelineEvent = std::make_unique<CTimelineEvent>();
-   day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day) + deck_diaphragm_curing_duration + 1.0;
+   day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day) + deck_diaphragm_curing_duration + 1.0;
    day = Max(day, maxDay);
    pTimelineEvent->SetDay(day);
    pTimelineEvent->SetDescription(_T("Final with Live Load"));

@@ -67,8 +67,8 @@ int TxDOT_WriteTOGAReportToFile (FILE *fp, IBroker* pBroker)
    Float64 stress_val_calc, stress_fac, stress_loc;
    pGetTogaResults->GetControllingCompressiveStress(&stress_val_calc, &stress_fac, &stress_loc);
 
-   Float64 stress_val_input = ::ConvertFromSysUnits( pProjectData->GetFt(), unitMeasure::KSI );
-   stress_val_calc = ::ConvertFromSysUnits( -stress_val_calc, unitMeasure::KSI );
+   Float64 stress_val_input = WBFL::Units::ConvertFromSysUnits( pProjectData->GetFt(), WBFL::Units::Measure::KSI );
+   stress_val_calc = WBFL::Units::ConvertFromSysUnits( -stress_val_calc, WBFL::Units::Measure::KSI );
 
    workerB.WriteFloat64(stress_val_input, _T("ftinp "),8,6,_T("%6.2f"));
    workerB.WriteFloat64(stress_val_calc, _T("ftcalc"),8,6,_T("%6.2f"));
@@ -77,38 +77,38 @@ int TxDOT_WriteTOGAReportToFile (FILE *fp, IBroker* pBroker)
    // Tensile stress - bottom
    pGetTogaResults->GetControllingTensileStress(&stress_val_calc, &stress_fac, &stress_loc);
 
-   stress_val_input = ::ConvertFromSysUnits( pProjectData->GetFb(), unitMeasure::KSI );
-   stress_val_calc = ::ConvertFromSysUnits( -stress_val_calc, unitMeasure::KSI );
+   stress_val_input = WBFL::Units::ConvertFromSysUnits( pProjectData->GetFb(), WBFL::Units::Measure::KSI );
+   stress_val_calc = WBFL::Units::ConvertFromSysUnits( -stress_val_calc, WBFL::Units::Measure::KSI );
 
    workerB.WriteFloat64(stress_val_input, _T("fbinp "),8,6,_T("%6.2f"));
    workerB.WriteFloat64(stress_val_calc, _T("fbcalc"),8,6,_T("%6.2f"));
    workerB.WriteFloat64(stress_fac, _T("fbfact"),8,6,_T("%6.2f"));
 
    // Ultimate moment
-   Float64 mu_input = ::ConvertFromSysUnits( pProjectData->GetMu(), unitMeasure::KipFeet);
-   Float64 mu_orig  = ::ConvertFromSysUnits( pGetTogaResults->GetRequiredUltimateMoment(), unitMeasure::KipFeet );
-   Float64 mu_fabr  = ::ConvertFromSysUnits( pGetTogaResults->GetUltimateMomentCapacity(), unitMeasure::KipFeet );
+   Float64 mu_input = WBFL::Units::ConvertFromSysUnits( pProjectData->GetMu(), WBFL::Units::Measure::KipFeet);
+   Float64 mu_orig  = WBFL::Units::ConvertFromSysUnits( pGetTogaResults->GetRequiredUltimateMoment(), WBFL::Units::Measure::KipFeet );
+   Float64 mu_fabr  = WBFL::Units::ConvertFromSysUnits( pGetTogaResults->GetUltimateMomentCapacity(), WBFL::Units::Measure::KipFeet );
 
    workerB.WriteFloat64(mu_input,_T(" muinp  "),10,8,_T("%8.2f"));
    workerB.WriteFloat64(mu_orig, _T(" muorig "),10,8,_T("%8.2f"));
    workerB.WriteFloat64(mu_fabr, _T(" mufabr "),10,8,_T("%8.2f"));
 
    // Required concrete strengths
-   Float64 input_fci = ::ConvertFromSysUnits(pProjectData->GetPrecasterDesignGirderData()->GetFci(), unitMeasure::KSI );
-   Float64 reqd_fci  = ::ConvertFromSysUnits(pGetTogaResults->GetRequiredFci(), unitMeasure::KSI );
+   Float64 input_fci = WBFL::Units::ConvertFromSysUnits(pProjectData->GetPrecasterDesignGirderData()->GetFci(), WBFL::Units::Measure::KSI );
+   Float64 reqd_fci  = WBFL::Units::ConvertFromSysUnits(pGetTogaResults->GetRequiredFci(), WBFL::Units::Measure::KSI );
 
    workerB.WriteFloat64(input_fci,_T("fciinp"),8,6,_T("%6.2f"));
    workerB.WriteFloat64(reqd_fci, _T("fcireq"),8,6,_T("%6.2f"));
 
-   Float64 input_fc = ::ConvertFromSysUnits(pProjectData->GetPrecasterDesignGirderData()->GetFc(), unitMeasure::KSI );
-   Float64 reqd_fc =  ::ConvertFromSysUnits(pGetTogaResults->GetRequiredFc(), unitMeasure::KSI );
+   Float64 input_fc = WBFL::Units::ConvertFromSysUnits(pProjectData->GetPrecasterDesignGirderData()->GetFc(), WBFL::Units::Measure::KSI );
+   Float64 reqd_fc =  WBFL::Units::ConvertFromSysUnits(pGetTogaResults->GetRequiredFc(), WBFL::Units::Measure::KSI );
 
    workerB.WriteFloat64(input_fc,_T("fc inp"),8,6,_T("%6.2f"));
    workerB.WriteFloat64(reqd_fc, _T("fc req"),8,6,_T("%6.2f"));
 
    // Camber
-   Float64 cbr_orig = ::ConvertFromSysUnits(pGetTogaResults->GetMaximumCamber(), unitMeasure::Feet );
-   Float64 cbr_fabr = ::ConvertFromSysUnits(pGetTogaResults->GetFabricatorMaximumCamber(), unitMeasure::Feet );
+   Float64 cbr_orig = WBFL::Units::ConvertFromSysUnits(pGetTogaResults->GetMaximumCamber(), WBFL::Units::Measure::Feet );
+   Float64 cbr_fabr = WBFL::Units::ConvertFromSysUnits(pGetTogaResults->GetFabricatorMaximumCamber(), WBFL::Units::Measure::Feet );
 
    workerB.WriteFloat64(cbr_orig,_T("cbr orig"),10,8,_T("%8.4f"));
    workerB.WriteFloat64(cbr_fabr,_T("cbr fabr"),10,8,_T("%8.4f"));

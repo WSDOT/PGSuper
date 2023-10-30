@@ -21,8 +21,8 @@
 ///////////////////////////////////////////////////////////////////////
 #include "StdAfx.h"
 #include <PsgLib\HorizontalInterfaceZoneData.h>
-#include <Units\SysUnits.h>
-#include <Lrfd\RebarPool.h>
+#include <Units\Convert.h>
+#include <LRFD\RebarPool.h>
 #include <StdIo.h>
 #include <StrData.cpp>
 #include <comdef.h> // for _variant_t
@@ -46,7 +46,7 @@ CHorizontalInterfaceZoneData::CHorizontalInterfaceZoneData():
 ZoneNum(0),
 BarSpacing(0),
 ZoneLength(0),
-BarSize(matRebar::bsNone),
+BarSize(WBFL::Materials::Rebar::Size::bsNone),
 nBars()
 {
 }
@@ -97,7 +97,7 @@ bool CHorizontalInterfaceZoneData::operator != (const CHorizontalInterfaceZoneDa
 }
 
 //======================== OPERATIONS =======================================
-HRESULT CHorizontalInterfaceZoneData::Load(sysIStructuredLoad* pStrLoad)
+HRESULT CHorizontalInterfaceZoneData::Load(WBFL::System::IStructuredLoad* pStrLoad)
 {
    HRESULT hr = S_OK;
 
@@ -120,7 +120,7 @@ HRESULT CHorizontalInterfaceZoneData::Load(sysIStructuredLoad* pStrLoad)
       if ( FAILED(pStrLoad->Property(_T("BarSize"),&key)) )
          return STRLOAD_E_INVALIDFORMAT;
 
-      BarSize = matRebar::Size(key);
+      BarSize = WBFL::Materials::Rebar::Size(key);
 
       if ( FAILED(pStrLoad->Property(_T("nBars"),&nBars)) )
          return STRLOAD_E_INVALIDFORMAT;
@@ -136,7 +136,7 @@ HRESULT CHorizontalInterfaceZoneData::Load(sysIStructuredLoad* pStrLoad)
    return hr;
 }
 
-HRESULT CHorizontalInterfaceZoneData::Save(sysIStructuredSave* pStrSave)
+HRESULT CHorizontalInterfaceZoneData::Save(WBFL::System::IStructuredSave* pStrSave)
 {
    HRESULT hr = S_OK;
 

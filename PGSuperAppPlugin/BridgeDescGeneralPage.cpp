@@ -461,7 +461,7 @@ void CBridgeDescGeneralPage::Init()
    m_WorkPointLocation = pParent->m_BridgeDesc.GetWorkPointLocation();
 
    int sign = ::Sign(m_RefGirderOffset);
-   LPTSTR strOffset = (sign == 0 ? _T("") : sign < 0 ? _T("L") : _T("R"));
+   auto strOffset = (sign == 0 ? _T("") : sign < 0 ? _T("L") : _T("R"));
    m_strCacheRefGirderOffset.Format(_T("%s %s"),FormatDimension(fabs(m_RefGirderOffset),pDisplayUnits->GetXSectionDimUnit(),false),strOffset);
 
    m_CacheDeckEdgePoints = pParent->m_BridgeDesc.GetDeckDescription()->DeckEdgePoints;
@@ -556,7 +556,7 @@ void CBridgeDescGeneralPage::UpdateBridgeDescription()
 
    if ( bNewGirderFamily )
    {
-      pParent->m_BridgeDesc.CopyDown(true,true,true,true,true,true);
+      pParent->m_BridgeDesc.CopyDown(true,true,true,true,true,true,true);
    }
 }
 
@@ -688,9 +688,9 @@ void CBridgeDescGeneralPage::EnableGirderSpacing(BOOL bEnable,BOOL bClearControl
    pTag->EnableWindow(bEnable);
    pTag->ShowWindow(bClearControls ? SW_HIDE : SW_SHOW);
 
-   CWnd* pAllowable = GetDlgItem(IDC_ALLOWABLE_SPACING);
-   pAllowable->EnableWindow(bEnable);
-   pAllowable->ShowWindow(bClearControls ? SW_HIDE : SW_SHOW);
+   CWnd* pLimits = GetDlgItem(IDC_ALLOWABLE_SPACING);
+   pLimits->EnableWindow(bEnable);
+   pLimits->ShowWindow(bClearControls ? SW_HIDE : SW_SHOW);
 
    if ( !bEnable && bClearControls )
    {
@@ -709,7 +709,7 @@ void CBridgeDescGeneralPage::EnableTopWidth(BOOL bEnable)
    CWnd* pRightLabel = GetDlgItem(IDC_RIGHT_TOP_WIDTH_LABEL);
    CWnd* pRightEdit = GetDlgItem(IDC_RIGHT_TOP_WIDTH);
    CWnd* pRightUnit = GetDlgItem(IDC_RIGHT_TOP_WIDTH_UNIT);
-   CWnd* pAllowable = GetDlgItem(IDC_ALLOWABLE_TOP_WIDTH);
+   CWnd* pLimits = GetDlgItem(IDC_ALLOWABLE_TOP_WIDTH);
    int nShowCommand = (bEnable ? SW_SHOW : SW_HIDE);
    pLabel->ShowWindow(nShowCommand);
    pType->ShowWindow(nShowCommand);
@@ -719,7 +719,7 @@ void CBridgeDescGeneralPage::EnableTopWidth(BOOL bEnable)
    pRightLabel->ShowWindow(nShowCommand);
    pRightEdit->ShowWindow(nShowCommand);
    pRightUnit->ShowWindow(nShowCommand);
-   pAllowable->ShowWindow(nShowCommand);
+   pLimits->ShowWindow(nShowCommand);
 }
 
 void CBridgeDescGeneralPage::EnableLongitudinalJointMaterial()
@@ -1542,7 +1542,7 @@ void CBridgeDescGeneralPage::OnGirderSpacingTypeChanged()
             // something reasonable
             m_GirderSpacing = m_MaxGirderSpacing; // get some spread since we a coming from that world
             pParent->m_BridgeDesc.SetGirderSpacing(m_GirderSpacing);
-            pParent->m_BridgeDesc.CopyDown(false,false,true,false,false,false);
+            pParent->m_BridgeDesc.CopyDown(false,false,true,false,false,false,false);
          }
          else if (m_GirderSpacingType == pgsTypes::sbsGeneral && old_spacing_type == pgsTypes::sbsUniformAdjacent)
          {
@@ -1550,7 +1550,7 @@ void CBridgeDescGeneralPage::OnGirderSpacingTypeChanged()
             // something reasonable
             m_GirderSpacing = m_MinGirderSpacing; // get some spread since we a coming from that world
             pParent->m_BridgeDesc.SetGirderSpacing(m_GirderSpacing);
-            pParent->m_BridgeDesc.CopyDown(false, false, true, false, false, false);
+            pParent->m_BridgeDesc.CopyDown(false, false, true, false, false, false, false);
          }
          else
          {
@@ -1751,7 +1751,7 @@ void CBridgeDescGeneralPage::OnDeckTypeChanged()
          if (pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth <= 0.0)
          {
             Float64 fillet = pParent->m_BridgeDesc.GetFillet();
-            pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth = Max(::ConvertToSysUnits(7.0, unitMeasure::Inch),fillet);
+            pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth = Max(WBFL::Units::ConvertToSysUnits(7.0, WBFL::Units::Measure::Inch),fillet);
          }
       }
    }
@@ -1767,7 +1767,7 @@ void CBridgeDescGeneralPage::OnDeckTypeChanged()
          if (pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth <= 0.0)
          {
             Float64 fillet = pParent->m_BridgeDesc.GetFillet();
-            pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth = Max(::ConvertToSysUnits(7.0, unitMeasure::Inch) - pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth, fillet);
+            pParent->m_BridgeDesc.GetDeckDescription()->GrossDepth = Max(WBFL::Units::ConvertToSysUnits(7.0, WBFL::Units::Measure::Inch) - pParent->m_BridgeDesc.GetDeckDescription()->PanelDepth, fillet);
          }
       }
    }
@@ -2225,9 +2225,9 @@ void CBridgeDescGeneralPage::UIHint(const CString& strText,UINT mask)
    CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
 
    Uint32 hintSettings = pDoc->GetUIHintSettings();
-   if ( sysFlags<Uint32>::IsClear(hintSettings,mask) && EAFShowUIHints(strText))
+   if ( WBFL::System::Flags<Uint32>::IsClear(hintSettings,mask) && EAFShowUIHints(strText))
    {
-      sysFlags<Uint32>::Set(&hintSettings,mask);
+      WBFL::System::Flags<Uint32>::Set(&hintSettings,mask);
       pDoc->SetUIHintSettings(hintSettings);
    }
 }
@@ -2279,7 +2279,7 @@ void CBridgeDescGeneralPage::InitGirderName()
 void CBridgeDescGeneralPage::UpdateConcreteTypeLabel()
 {
    CString strLabel;
-   strLabel.Format(_T("%s"), lrfdConcreteUtil::GetTypeName((matConcrete::Type)m_JointConcrete.Type, true).c_str());
+   strLabel.Format(_T("%s"), WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)m_JointConcrete.Type, true).c_str());
    GetDlgItem(IDC_CONCRETE_TYPE_LABEL)->SetWindowText(strLabel);
 }
 
@@ -2336,6 +2336,16 @@ void CBridgeDescGeneralPage::OnMoreProperties()
    dlg.m_PCIUHPC.m_AutogenousShrinkage = m_JointConcrete.AutogenousShrinkage;
    dlg.m_PCIUHPC.m_bPCTT = m_JointConcrete.bPCTT;
 
+   dlg.m_UHPC.m_ftcri = m_JointConcrete.ftcri;
+   dlg.m_UHPC.m_ftcr = m_JointConcrete.ftcr;
+   dlg.m_UHPC.m_ftloc = m_JointConcrete.ftloc;
+   dlg.m_UHPC.m_etloc = m_JointConcrete.etloc;
+   dlg.m_UHPC.m_alpha_u = m_JointConcrete.alpha_u;
+   dlg.m_UHPC.m_ecu = m_JointConcrete.ecu;
+   dlg.m_UHPC.m_bExperimental_ecu = m_JointConcrete.bExperimental_ecu;
+   dlg.m_UHPC.m_gamma_u = m_JointConcrete.gamma_u;
+   dlg.m_UHPC.m_FiberLength = m_JointConcrete.FiberLength;
+
    if (dlg.DoModal() == IDOK)
    {
       m_JointConcrete.Fc = dlg.m_fc28;
@@ -2360,6 +2370,16 @@ void CBridgeDescGeneralPage::OnMoreProperties()
       m_JointConcrete.FiberLength = dlg.m_PCIUHPC.m_FiberLength;
       m_JointConcrete.AutogenousShrinkage = dlg.m_PCIUHPC.m_AutogenousShrinkage;
       m_JointConcrete.bPCTT = dlg.m_PCIUHPC.m_bPCTT;
+
+      m_JointConcrete.ftcri = dlg.m_UHPC.m_ftcri;
+      m_JointConcrete.ftcr = dlg.m_UHPC.m_ftcr;
+      m_JointConcrete.ftloc = dlg.m_UHPC.m_ftloc;
+      m_JointConcrete.etloc = dlg.m_UHPC.m_etloc;
+      m_JointConcrete.alpha_u = dlg.m_UHPC.m_alpha_u;
+      m_JointConcrete.bExperimental_ecu = dlg.m_UHPC.m_bExperimental_ecu;
+      m_JointConcrete.ecu = dlg.m_UHPC.m_ecu;
+      m_JointConcrete.gamma_u = dlg.m_UHPC.m_gamma_u;
+      m_JointConcrete.FiberLength = dlg.m_UHPC.m_FiberLength;
 
       m_strUserEc = dlg.m_General.m_strUserEc;
       m_ctrlEc.SetWindowText(m_strUserEc);

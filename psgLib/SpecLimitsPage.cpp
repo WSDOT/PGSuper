@@ -28,6 +28,7 @@
 #include "psgLib\psglib.h"
 #include "SpecMainSheet.h"
 #include <EAF\EAFDocument.h>
+#include <psgLib/PrestressLossCriteria.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -76,13 +77,13 @@ BOOL CSpecLimitsPage::OnInitDialog()
 {
    CComboBox* pcbSagOptions = (CComboBox*)GetDlgItem(IDC_SAG_OPTIONS);
    int idx = pcbSagOptions->AddString(_T("Upper bound camber"));
-   pcbSagOptions->SetItemData(idx,(DWORD_PTR)pgsTypes::UpperBoundCamber);
+   pcbSagOptions->SetItemData(idx,(DWORD_PTR)pgsTypes::SagCamber::UpperBoundCamber);
 
    idx = pcbSagOptions->AddString(_T("Average camber"));
-   pcbSagOptions->SetItemData(idx,(DWORD_PTR)pgsTypes::AverageCamber);
+   pcbSagOptions->SetItemData(idx,(DWORD_PTR)pgsTypes::SagCamber::AverageCamber);
 
    idx = pcbSagOptions->AddString(_T("Lower bound camber"));
-   pcbSagOptions->SetItemData(idx,(DWORD_PTR)pgsTypes::LowerBoundCamber);
+   pcbSagOptions->SetItemData(idx,(DWORD_PTR)pgsTypes::SagCamber::LowerBoundCamber);
 
    CPropertyPage::OnInitDialog();
 
@@ -112,7 +113,7 @@ BOOL CSpecLimitsPage::OnSetActive()
 {
    // if this is third edition or earlier, enable the shipping loss controls
    CSpecMainSheet* pParent = (CSpecMainSheet*)GetParent();
-   if ( pParent->m_Entry.GetLossMethod() == LOSSES_TIME_STEP )
+   if ( pParent->m_Entry.GetPrestressLossCriteria().LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       GetDlgItem(IDC_SAG_OPTIONS_LABEL)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_SAG_OPTIONS)->ShowWindow(SW_HIDE);

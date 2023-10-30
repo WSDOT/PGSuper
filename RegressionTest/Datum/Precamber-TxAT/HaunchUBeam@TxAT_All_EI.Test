@@ -1,0 +1,58 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 62.00    6  10.25                     1     1     U54           56  0.6  270  19.20  19.08  25   2.17   27    13    0   3   6   2   2   5.500  7.600   4.502    -3.903    10052   0.665  0.937   3.380 -2.569  0.000 -0.205 -2.774 216.43  559.04    1.00    1.00    1.00    2.23    1.95    2.89    2.64    1.43 
+                                                                                                  4.14   27    12    4   8   0   0   0 
+
+
+The Specification Check was Not Successful
+Finished elevation check failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 62.00    6  10.25                     1     2     U54           56  0.6  270  19.20  19.08  25   2.17   27    13    0   3   6   2   2   5.500  7.600   4.444    -3.780     9701   0.657  0.937   3.382 -2.524  0.000 -0.105 -2.630 215.53  567.09    1.00    1.00    1.00    2.31    2.00    2.99    2.70    1.57 
+                                                                                                  4.14   27    12    4   8   0   0   0 
+
+
+The Specification Check was Not Successful
+Finished elevation check failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 62.00    6  10.25                     1     4     U54           56  0.6  270  19.20  19.08  25   2.17   27    13    0   3   6   2   2   5.500  7.600   4.469    -3.735     9569   0.659  0.942   3.385 -2.609  0.000  0.000 -2.609 213.71  570.39    1.00    1.00    1.00    2.32    2.01    3.01    2.71    1.61 
+                                                                                                  4.14   27    12    4   8   0   0   0 
+
+
+The Specification Check was Not Successful
+Finished elevation check failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 62.00    6  10.25                     2     1     U54           39  0.6  270  19.68  19.47  15   2.17   27    13    1   8   2   0   2   4.000  5.200   3.195    -2.823     7473   0.702  0.955   2.092 -1.240  0.000 -0.097 -1.337 122.50  371.76    1.00    1.00    1.00    2.04    2.18    2.64    2.91    1.43 
+                                                                                                  4.14   12     2    2   0   0   0   0 
+
+
+The Specification Check was Successful
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 62.00    6  10.25                     2     2     U54           39  0.6  270  19.68  19.47  15   2.17   27    13    1   8   2   0   2   4.000  5.200   3.146    -2.726     7188   0.688  0.954   2.095 -1.207  0.000 -0.050 -1.257 121.99  377.44    1.00    1.00    1.00    2.13    2.21    2.76    2.95    1.56 
+                                                                                                  4.14   12     2    2   0   0   0   0 
+
+
+The Specification Check was Successful
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 62.00    6  10.25                     2     4     U54           39  0.6  270  19.68  19.47  15   2.17   27    13    1   8   2   0   2   4.000  5.200   3.173    -2.697     7123   0.687  0.953   2.100 -1.248  0.000  0.000 -1.248 120.96  379.59    1.00    1.00    1.00    2.15    2.21    2.78    2.95    1.59 
+                                                                                                  4.14   12     2    2   0   0   0   0 
+
+
+The Specification Check was Not Successful
+Finished elevation check failed
+
+

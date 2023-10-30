@@ -205,7 +205,7 @@ void CClosureJointDlg::DestroyExtensionPages()
    m_ExtensionPages.clear();
 }
 
-txnTransaction* CClosureJointDlg::GetExtensionPageTransaction()
+std::unique_ptr<CEAFTransaction> CClosureJointDlg::GetExtensionPageTransaction()
 {
    if ( 0 < m_Macro.GetTxnCount() )
    {
@@ -258,10 +258,10 @@ void CClosureJointDlg::NotifyExtensionPages()
    {
       IEditClosureJointCallback* pCallback = pageIter->first;
       CPropertyPage* pPage = pageIter->second;
-      txnTransaction* pTxn = pCallback->OnOK(pPage,this);
-      if ( pTxn )
+      auto txn = pCallback->OnOK(pPage,this);
+      if ( txn )
       {
-         m_Macro.AddTransaction(pTxn);
+         m_Macro.AddTransaction(std::move(txn));
       }
    }
 }

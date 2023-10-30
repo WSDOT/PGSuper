@@ -5,7 +5,7 @@
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -19,8 +19,8 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -34,7 +34,7 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
@@ -48,8 +48,8 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -63,9 +63,9 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -79,9 +79,9 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -95,9 +95,9 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -111,9 +111,9 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -127,9 +127,9 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -143,9 +143,9 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -159,9 +159,9 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -176,9 +176,9 @@ Excess camber geometry check failed
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -192,8 +192,8 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -207,9 +207,9 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -223,8 +223,8 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -238,9 +238,9 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -254,8 +254,8 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -269,9 +269,9 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -285,8 +285,8 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -300,9 +300,9 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -316,8 +316,8 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -331,9 +331,9 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -347,8 +347,8 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -362,9 +362,9 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -378,7 +378,7 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
@@ -392,7 +392,7 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
@@ -406,9 +406,9 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -423,9 +423,9 @@ Excess camber geometry check failed
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -439,9 +439,9 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -455,8 +455,8 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -470,8 +470,8 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -485,8 +485,8 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -500,7 +500,7 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
@@ -514,7 +514,7 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -528,7 +528,7 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -542,8 +542,8 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -557,7 +557,7 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -571,8 +571,8 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -586,9 +586,9 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -602,9 +602,9 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -618,8 +618,8 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -633,9 +633,9 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -649,8 +649,8 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
@@ -664,9 +664,9 @@ Excess camber geometry check failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck, Apply User Defined Loads
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State

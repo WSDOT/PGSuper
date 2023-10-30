@@ -24,7 +24,10 @@
 // {70C00171-9F5B-4ac4-B776-2A2DF5B08803}
 DEFINE_GUID(IID_IDesign, 
 0x70c00171, 0x9f5b, 0x4ac4, 0xb7, 0x76, 0x2a, 0x2d, 0xf5, 0xb0, 0x88, 0x3);
-interface IDesign : IUnknown
+interface __declspec(uuid("{70C00171-9F5B-4ac4-B776-2A2DF5B08803}")) IDesign : IUnknown
 {
    virtual void DesignGirder(bool bPrompt,bool bDesignSlabOffset,const CGirderKey& girderKey) = 0;
+
+   // Always brings up dialog prompt. Returns true if design is done
+   virtual bool DesignHaunch(const CGirderKey& girderKey) = 0;
 };

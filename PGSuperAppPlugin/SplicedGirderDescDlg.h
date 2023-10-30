@@ -27,6 +27,7 @@
 
 #include "SplicedGirderGeneralPage.h"
 #include <IFace\ExtendUI.h>
+#include <EAF\EAFMacroTxn.h>
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -76,7 +77,7 @@ public:
 
    // Returns a macro transaction object that contains editing transactions
    // for all the extension pages. The caller is responsble for deleting this object
-   txnTransaction* GetExtensionPageTransaction();
+   std::unique_ptr<CEAFTransaction> GetExtensionPageTransaction();
 
 protected:
    void Init();
@@ -84,7 +85,7 @@ protected:
    void DestroyExtensionPages();
 
 
-   txnMacroTxn m_Macro;
+   CEAFMacroTxn m_Macro;
    std::vector<EditSplicedGirderExtension> m_ExtensionPages;
    void NotifyExtensionPages();
 

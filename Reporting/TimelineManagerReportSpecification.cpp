@@ -29,7 +29,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CTimelineManagerReportSpecification::CTimelineManagerReportSpecification(LPCTSTR strReportName, IBroker* pBroker) :
+CTimelineManagerReportSpecification::CTimelineManagerReportSpecification(const std::_tstring& strReportName, IBroker* pBroker) :
    CBrokerReportSpecification(strReportName,pBroker)
 {
    m_pTimelineMgr = nullptr;
@@ -49,10 +49,10 @@ const CTimelineManager* CTimelineManagerReportSpecification::GetTimelineManager(
    return m_pTimelineMgr;
 }
 
-HRESULT CTimelineManagerReportSpecification::Validate() const
+bool CTimelineManagerReportSpecification::IsValid() const
 {
    if (!m_pTimelineMgr)
-      return E_FAIL;
+      return false;
 
-   return CBrokerReportSpecification::Validate();
+   return CBrokerReportSpecification::IsValid();
 }

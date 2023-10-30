@@ -58,9 +58,9 @@ LPCTSTR CTemporarySupportReactionChapterBuilder::GetName() const
    return TEXT("Temporary Support Reactions");
 }
 
-rptChapter* CTemporarySupportReactionChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CTemporarySupportReactionChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
+   auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
    CComPtr<IBroker> pBroker;
    CGirderKey girderKey;
@@ -453,7 +453,7 @@ rptChapter* CTemporarySupportReactionChapterBuilder::Build(CReportSpecification*
    return pChapter;
 }
 
-CChapterBuilder* CTemporarySupportReactionChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTemporarySupportReactionChapterBuilder::Clone() const
 {
-   return new CTemporarySupportReactionChapterBuilder;
+   return std::make_unique<CTemporarySupportReactionChapterBuilder>();
 }

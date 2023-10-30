@@ -87,7 +87,7 @@ void CContinuityCheck::Build(rptChapter* pChapter,
 
    rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
-   *pTitle << _T("Continuity [") << LrfdCw8th(_T("5.14.1.4.5"),_T("5.12.3.3.5")) << _T("]");
+   *pTitle << _T("Continuity [") << WBFL::LRFD::LrfdCw8th(_T("5.14.1.4.5"),_T("5.12.3.3.5")) << _T("]");
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -192,27 +192,3 @@ void CContinuityCheck::MakeAssignment(const CContinuityCheck& rOther)
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CContinuityCheck::AssertValid() const
-{
-   return true;
-}
-
-void CContinuityCheck::Dump(dbgDumpContext& os) const
-{
-   os << _T("Dump for CContinuityCheck") << endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CContinuityCheck::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("CContinuityCheck");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CContinuityCheck");
-
-   TESTME_EPILOG("LiveLoadDistributionFactorTable");
-}
-#endif // _UNITTEST

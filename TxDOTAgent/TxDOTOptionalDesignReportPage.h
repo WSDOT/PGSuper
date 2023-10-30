@@ -51,14 +51,14 @@ public:
    ITxDOTBrokerRetriever* m_pBrokerRetriever;
 
    // Our reporting guts
-   std::shared_ptr<CReportSpecification> m_pRptSpec;
-   std::shared_ptr<CReportBrowser> m_pBrowser; // this is the actual browser window that displays the report
+   std::shared_ptr<WBFL::Reporting::ReportSpecification> m_pRptSpec;
+   std::shared_ptr<WBFL::Reporting::ReportBrowser> m_pBrowser; // this is the actual browser window that displays the report
 
    // listen to data change events
    virtual void OnTxDotDataChanged(int change) override;
 
    // create spec for currently selected report
-   std::shared_ptr<CReportSpecification> CreateSelectedReportSpec(IReportManager* pReportMgr);
+   std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateSelectedReportSpec(IReportManager* pReportMgr);
    void CreateNewBrowser(IBroker* pBroker);
    void DisplayErrorMode(TxDOTBrokerRetrieverException& exc);
 

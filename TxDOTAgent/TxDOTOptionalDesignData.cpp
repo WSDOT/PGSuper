@@ -23,7 +23,7 @@
 #include "StdAfx.h"
 #include "TxDOTOptionalDesignData.h"
 
-#include <Units\SysUnits.h>
+#include <Units\Convert.h>
 #include <WbflAtlExt.h>
 #include <limits>
 
@@ -67,7 +67,7 @@ void CTxDOTOptionalDesignData::ResetData()
    m_LeftConnectionEntryName.Empty();
    m_RightConnectionEntryName.Empty();
    m_PGSuperFileName.Empty();
-   m_GirderConcreteUnitWeight = ::ConvertToSysUnits(150.0, unitMeasure::LbfPerFeet3);
+   m_GirderConcreteUnitWeight = WBFL::Units::ConvertToSysUnits(150.0, WBFL::Units::Measure::LbfPerFeet3);
 
    m_Bridge.Empty();
    m_BridgeID.Empty();
@@ -89,9 +89,9 @@ void CTxDOTOptionalDesignData::ResetData()
    m_LldfMoment = Float64_Inf;
    m_LldfShear = Float64_Inf;
 
-   m_EcSlab = ::ConvertToSysUnits(5000.0, unitMeasure::KSI);
+   m_EcSlab = WBFL::Units::ConvertToSysUnits(5000.0, WBFL::Units::Measure::KSI);
    m_EcBeam = m_EcSlab;
-   m_FcSlab = ::ConvertToSysUnits(4.0, unitMeasure::KSI);
+   m_FcSlab = WBFL::Units::ConvertToSysUnits(4.0, WBFL::Units::Measure::KSI);
 
    m_Ft = Float64_Inf;
    m_Fb = Float64_Inf;

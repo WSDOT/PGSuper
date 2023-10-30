@@ -46,6 +46,10 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\StatusItem.h>
 
+#include <psgLib/SectionPropertiesCriteria.h>
+#include <psgLib/SpecificationCriteria.h>
+
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -67,37 +71,37 @@ HRESULT CDeckedSlabBeamFactory::FinalConstruct()
    m_DimNames.emplace_back(_T("Jmax"));
    m_DimNames.emplace_back(_T("EndBlockLength"));
 
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(77.75,unitMeasure::Inch)); // A
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(9.0,unitMeasure::Inch));   // B
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(12.0,unitMeasure::Inch));  // C
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(1.75,unitMeasure::Inch));  // F
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(6.0,unitMeasure::Inch));   // W
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(8.0,unitMeasure::Inch));   // Tt
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(7.0,unitMeasure::Inch));   // Tb
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(1.0,unitMeasure::Inch));   // Max Joint Spacing
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(36.0,unitMeasure::Inch));  // End Block Length
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(77.75,WBFL::Units::Measure::Inch)); // A
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(9.0,WBFL::Units::Measure::Inch));   // B
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(12.0,WBFL::Units::Measure::Inch));  // C
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(1.75,WBFL::Units::Measure::Inch));  // F
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(6.0,WBFL::Units::Measure::Inch));   // W
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(8.0,WBFL::Units::Measure::Inch));   // Tt
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(7.0,WBFL::Units::Measure::Inch));   // Tb
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(1.0,WBFL::Units::Measure::Inch));   // Max Joint Spacing
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(36.0,WBFL::Units::Measure::Inch));  // End Block Length
 
    // SI Units
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // A 
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // B
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // C
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // F
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // Tt
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // Tb
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // Max joint size
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // End Block Length
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // A 
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // B
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // C
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // F
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // Tt
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // Tb
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // Max joint size
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // End Block Length
 
    // US Units
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // A 
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // B
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // C
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // F
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // Tt
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // Tb
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // Max joint size
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // End Block Length
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // A 
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // B
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // C
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // F
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // Tt
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // Tb
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // Max joint size
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // End Block Length
 
    return S_OK;
 }
@@ -164,7 +168,7 @@ void CDeckedSlabBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType st
    // Beam materials
    GET_IFACE2(pBroker,ILossParameters,pLossParams);
    CComPtr<IMaterial> material;
-   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       CComPtr<IAgeAdjustedMaterial> aaMaterial;
       BuildAgeAdjustedGirderMaterialModel(pBroker,pSegment,segment,&aaMaterial);
@@ -308,7 +312,7 @@ void CDeckedSlabBeamFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGro
 void CDeckedSlabBeamFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const
 {
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
-   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       CComObject<CTimeStepLossEngineer>* pEngineer;
       CComObject<CTimeStepLossEngineer>::CreateInstance(&pEngineer);
@@ -402,7 +406,7 @@ const std::vector<Float64>& CDeckedSlabBeamFactory::GetDefaultDimensions() const
    return m_DefaultDims;
 }
 
-const std::vector<const unitLength*>& CDeckedSlabBeamFactory::GetDimensionUnits(bool bSIUnits) const
+const std::vector<const WBFL::Units::Length*>& CDeckedSlabBeamFactory::GetDimensionUnits(bool bSIUnits) const
 {
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
@@ -479,7 +483,7 @@ bool CDeckedSlabBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& 
    return true;
 }
 
-void CDeckedSlabBeamFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
+void CDeckedSlabBeamFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
 {
    pSave->BeginUnit(_T("DeckedSlabBeamDimensions"),2.0);
    for(const auto& name : m_DimNames)
@@ -490,7 +494,7 @@ void CDeckedSlabBeamFactory::SaveSectionDimensions(sysIStructuredSave* pSave,con
    pSave->EndUnit();
 }
 
-IBeamFactory::Dimensions CDeckedSlabBeamFactory::LoadSectionDimensions(sysIStructuredLoad* pLoad) const
+IBeamFactory::Dimensions CDeckedSlabBeamFactory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
 {
    Float64 parent_version;
    if (pLoad->GetParentUnit() == _T("GirderLibraryEntry"))
@@ -662,7 +666,10 @@ std::_tstring CDeckedSlabBeamFactory::GetInteriorGirderEffectiveFlangeWidthImage
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
+   const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
+   const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();
+   if ( section_properties_criteria.EffectiveFlangeWidthMethod == pgsTypes::efwmTribWidth || 
+      WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims <= specification_criteria.GetEdition() )
    {
       return _T("DeckedSlabBeam_Effective_Flange_Width_Interior_Girder_2008.gif");
    }
@@ -677,7 +684,10 @@ std::_tstring CDeckedSlabBeamFactory::GetExteriorGirderEffectiveFlangeWidthImage
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
+   const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
+   const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();
+   if ( section_properties_criteria.EffectiveFlangeWidthMethod == pgsTypes::efwmTribWidth || 
+      WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims <= specification_criteria.GetEdition() )
    {
       return _T("DeckedSlabBeam_Effective_Flange_Width_Exterior_Girder_2008.gif");
    }

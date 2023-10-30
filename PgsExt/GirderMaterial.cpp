@@ -22,11 +22,11 @@
 
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\GirderMaterial.h>
-#include <Units\SysUnits.h>
+#include <Units\Convert.h>
 #include <StdIo.h>
 
-#include <Lrfd\StrandPool.h>
-#include <Material\Concrete.h>
+#include <LRFD\StrandPool.h>
+#include <Materials/SimpleConcrete.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

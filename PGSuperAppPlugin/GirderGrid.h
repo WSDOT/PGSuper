@@ -57,9 +57,9 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
-   void AddRow(LPCTSTR lpszGirderName,CGXAbstractUserAttribute& rowType);
+   void AddRow(LPCTSTR lpszGirderName,const CGXAbstractUserAttribute& rowType);
    void OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol);
 
    void EditSegment(SegmentIndexType idx);
-   void EditClosure(CollectionIndexType idx);
+   void EditClosure(IndexType idx);
 };

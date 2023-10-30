@@ -212,7 +212,7 @@ BOOL CTrafficBarrierGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 void CTrafficBarrierGrid::ResetGrid()
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
 
    CTrafficBarrierDlg* pdlg = (CTrafficBarrierDlg*)GetParent();
@@ -281,7 +281,7 @@ void CTrafficBarrierGrid::ResetGrid()
 void CTrafficBarrierGrid::UploadData(CDataExchange* pDX, IPoint2dCollection* points)
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    CComPtr<IEnumPoint2d> enum_points;
    points->get__Enum(&enum_points);
@@ -294,8 +294,8 @@ void CTrafficBarrierGrid::UploadData(CDataExchange* pDX, IPoint2dCollection* poi
       point->get_X(&x);
       point->get_Y(&y);
 
-      x = ::ConvertFromSysUnits(x,pDisplayUnits->ComponentDim.UnitOfMeasure);
-      y = ::ConvertFromSysUnits(y,pDisplayUnits->ComponentDim.UnitOfMeasure);
+      x = WBFL::Units::ConvertFromSysUnits(x,pDisplayUnits->ComponentDim.UnitOfMeasure);
+      y = WBFL::Units::ConvertFromSysUnits(y,pDisplayUnits->ComponentDim.UnitOfMeasure);
 
       AppendRow();
       SetValueRange(CGXRange(nRow,1),x);
@@ -311,7 +311,7 @@ void CTrafficBarrierGrid::UploadData(CDataExchange* pDX, IPoint2dCollection* poi
 void CTrafficBarrierGrid::DownloadData(CDataExchange* pDX, IPoint2dCollection* points)
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    points->Clear();
 
@@ -323,8 +323,8 @@ void CTrafficBarrierGrid::DownloadData(CDataExchange* pDX, IPoint2dCollection* p
       Float64 x,y;
       ParseRow(nRow,pDX,&x,&y);
 
-      x = ::ConvertToSysUnits(x,pDisplayUnits->ComponentDim.UnitOfMeasure);
-      y = ::ConvertToSysUnits(y,pDisplayUnits->ComponentDim.UnitOfMeasure);
+      x = WBFL::Units::ConvertToSysUnits(x,pDisplayUnits->ComponentDim.UnitOfMeasure);
+      y = WBFL::Units::ConvertToSysUnits(y,pDisplayUnits->ComponentDim.UnitOfMeasure);
 
       CComPtr<IPoint2d> p;
       p.CoCreateInstance(CLSID_Point2d);
@@ -338,10 +338,10 @@ void CTrafficBarrierGrid::DownloadData(CDataExchange* pDX, IPoint2dCollection* p
 void CTrafficBarrierGrid::ParseRow(ROWCOL nRow, CDataExchange* pDX, Float64* pX,Float64* pY)
 {
 	CString s = GetCellValue(nRow, 1);
-   sysTokenizer::ParseDouble(s, pX);
+   WBFL::System::Tokenizer::ParseDouble(s, pX);
 
 	s = GetCellValue(nRow, 2);
-   sysTokenizer::ParseDouble(s, pY);
+   WBFL::System::Tokenizer::ParseDouble(s, pY);
 }
 
 void CTrafficBarrierGrid::OnChangedSelection(const CGXRange* pChangedRect,BOOL bIsDragging, BOOL bKey)

@@ -41,6 +41,7 @@
 #include <PgsExt\TendonStressArtifact.h>
 #include <PgsExt\DuctSizeArtifact.h>
 #include <PgsExt\PrincipalTensionStressArtifact.h>
+#include <PgsExt\ReinforcementFatigueArtifact.h>
 
 #include <Stability\Stability.h>
 
@@ -100,9 +101,9 @@ public:
    pgsPlantHandlingWeightArtifact* GetPlantHandlingWeightArtifact();
 
    void AddFlexuralStressArtifact(const pgsFlexuralStressArtifact& artifact);
-   CollectionIndexType GetFlexuralStressArtifactCount(const StressCheckTask& task) const;
-   const pgsFlexuralStressArtifact* GetFlexuralStressArtifact(const StressCheckTask& task,CollectionIndexType idx) const;
-   pgsFlexuralStressArtifact* GetFlexuralStressArtifact(const StressCheckTask& task,CollectionIndexType idx);
+   IndexType GetFlexuralStressArtifactCount(const StressCheckTask& task) const;
+   const pgsFlexuralStressArtifact* GetFlexuralStressArtifact(const StressCheckTask& task,IndexType idx) const;
+   pgsFlexuralStressArtifact* GetFlexuralStressArtifact(const StressCheckTask& task,IndexType idx);
    const pgsFlexuralStressArtifact* GetFlexuralStressArtifactAtPoi(const StressCheckTask& task,PoiIDType poiID) const;
 
    pgsStirrupCheckArtifact* GetStirrupCheckArtifact();
@@ -123,6 +124,9 @@ public:
 
    const pgsPrincipalTensionStressArtifact* GetPrincipalTensionStressArtifact() const;
    pgsPrincipalTensionStressArtifact* GetPrincipalTensionStressArtifact();
+
+   const pgsReinforcementFatigueArtifact* GetReinforcementFatigueArtifact() const;
+   pgsReinforcementFatigueArtifact* GetReinforcementFatigueArtifact();
 
    void SetTendonStressArtifact(DuctIndexType ductIdx, const pgsTendonStressArtifact& artifact);
    const pgsTendonStressArtifact* GetTendonStressArtifact(DuctIndexType ductIdx) const;
@@ -201,6 +205,7 @@ private:
    pgsHoldDownForceArtifact    m_HoldDownForceArtifact;
    pgsPlantHandlingWeightArtifact m_PlantHandlingWeightArtifact;
    pgsSegmentStabilityArtifact m_StabilityArtifact;
+   pgsReinforcementFatigueArtifact m_ReinforcementFatigueArtifact;
 
    mutable std::map<StressCheckTask,std::vector<pgsFlexuralStressArtifact>> m_FlexuralStressArtifacts;
    std::vector<pgsFlexuralStressArtifact>& GetFlexuralStressArtifacts(const StressCheckTask& task) const;

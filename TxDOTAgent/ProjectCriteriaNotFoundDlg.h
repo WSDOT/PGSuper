@@ -40,7 +40,7 @@ public:
 // Dialog Data
 	enum { IDD = IDD_PROJ_CRIT_NOT_FOUND };
 
-   libKeyListType m_Keys;
+   WBFL::Library::KeyListType m_Keys;
    CString m_SelectedProjectCriteriaLibrary;
 
 protected:

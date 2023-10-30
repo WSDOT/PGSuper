@@ -43,15 +43,15 @@ LPCTSTR CCamberChapterBuilder::GetName() const
    return TEXT("Camber Details");
 }
 
-rptChapter* CCamberChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CCamberChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
 
    rptChapter* pChapter;
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
-   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       pChapter = CTimeStepCamberChapterBuilder().Build(pRptSpec,level);
    }
@@ -62,7 +62,7 @@ rptChapter* CCamberChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
    return pChapter;
 }
 
-CChapterBuilder* CCamberChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CCamberChapterBuilder::Clone() const
 {
-   return new CCamberChapterBuilder;
+   return std::make_unique<CCamberChapterBuilder>();
 }

@@ -41,8 +41,8 @@
 
 #include <PgsExt\BridgeDescription2.h>
 
-#include <Material\PsStrand.h>
-#include <Lrfd\RebarPool.h>
+#include <Materials/PsStrand.h>
+#include <LRFD\RebarPool.h>
 
 
 #ifdef _DEBUG
@@ -89,10 +89,10 @@ LPCTSTR CBridgeDescDetailsChapterBuilder::GetName() const
    return TEXT("Bridge Description Details");
 }
 
-rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CBridgeDescDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-   CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
+   auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
+   auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
    CComPtr<IBroker> pBroker;
    CGirderKey girderKey;
@@ -222,9 +222,9 @@ rptChapter* CBridgeDescDetailsChapterBuilder::Build(CReportSpecification* pRptSp
    return pChapter;
 }
 
-CChapterBuilder* CBridgeDescDetailsChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CBridgeDescDetailsChapterBuilder::Clone() const
 {
-   return new CBridgeDescDetailsChapterBuilder;
+   return std::make_unique<CBridgeDescDetailsChapterBuilder>();
 }
 
 //======================== ACCESS     =======================================
@@ -270,26 +270,26 @@ void write_segment_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptC
 
    (*pTable)(0,0) << rptRcImage( std::_tstring(rptStyleManager::GetImagePath()) + factory->GetImage());
 
-   std::vector<const unitLength*> units = factory->GetDimensionUnits(bUnitsSI);
+   std::vector<const WBFL::Units::Length*> units = factory->GetDimensionUnits(bUnitsSI);
    GirderLibraryEntry::Dimensions dimensions = pGdrEntry->GetDimensions();
    GirderLibraryEntry::Dimensions::iterator dim_iter;
-   std::vector<const unitLength*>::iterator unit_iter;
+   std::vector<const WBFL::Units::Length*>::iterator unit_iter;
    for ( dim_iter = dimensions.begin(), unit_iter = units.begin(); 
          dim_iter != dimensions.end() && unit_iter != units.end(); 
          dim_iter++, unit_iter++ )
    {
-      const unitLength* pUnit = *unit_iter;
-      if ( pUnit == (const unitLength*)BFDIMUNITBOOLEAN)
+      const WBFL::Units::Length* pUnit = *unit_iter;
+      if ( pUnit == (const WBFL::Units::Length*)BFDIMUNITBOOLEAN)
       {
          (*pTable)(0,1) << (*dim_iter).first.c_str() << ((*dim_iter).second==0 ? _T(" = False") : _T(" = True")) << rptNewLine;
       }
-      else if ( pUnit == (const unitLength*)BFDIMUNITSCALAR)
+      else if ( pUnit == (const WBFL::Units::Length*)BFDIMUNITSCALAR)
       {
          (*pTable)(0,1) << (*dim_iter).first.c_str() << _T(" = ") << (*dim_iter).second << rptNewLine;
       }
       else
       {
-         const unitmgtLengthData& length_unit(pDisplayUnits->GetComponentDimUnit());
+         const WBFL::Units::LengthData& length_unit(pDisplayUnits->GetComponentDimUnit());
          rptFormattedLengthUnitValue cmpdim(pUnit,length_unit.Tol, true, !bUnitsSI, 8, false, rptFormattedLengthUnitValue::RoundOff);
          cmpdim.SetFormat(length_unit.Format);
          cmpdim.SetWidth(length_unit.Width);
@@ -301,7 +301,7 @@ void write_segment_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptC
 
    if (IsTopWidthSpacing(pBridgeDesc->GetGirderSpacingType()))
    {
-      const unitmgtLengthData& length_unit(pDisplayUnits->GetComponentDimUnit());
+      const WBFL::Units::LengthData& length_unit(pDisplayUnits->GetComponentDimUnit());
       rptFormattedLengthUnitValue cmpdim(&length_unit.UnitOfMeasure, length_unit.Tol, true, !bUnitsSI, 8, false, rptFormattedLengthUnitValue::RoundOff);
       cmpdim.SetFormat(length_unit.Format);
       cmpdim.SetWidth(length_unit.Width);
@@ -384,7 +384,7 @@ void write_debonding(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pD
       Float64 ndb, minDist;
       bool bMinDist;
       pGdrEntry->GetMinDistanceBetweenDebondSections(&ndb, &bMinDist, &minDist);
-      *pPara << _T("Longitudinal spacing of debonding termnation sections = ") << ndb << Sub2(_T("d"), _T("b"));
+      *pPara << _T("Longitudinal spacing of debonding termination sections = ") << ndb << Sub2(_T("d"), _T("b"));
       if (bMinDist)
       {
          *pPara << _T(" but not less than ") << cmpdim.SetValue(minDist) << rptNewLine;
@@ -397,7 +397,7 @@ void write_debonding(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnits* pD
 
       if (useSpanFraction || useHardDistance)
       {
-         *pPara << _T("Maximum debonded length is the lesser of: The half-girder length minus maximum development length (") << LrfdCw8th(_T("5.11.4.3)"),_T("5.9.4.3.3")) << _T(")");
+         *pPara << _T("Maximum debonded length is the lesser of: The half-girder length minus maximum development length (") << WBFL::LRFD::LrfdCw8th(_T("5.11.4.3)"),_T("5.9.4.3.3")) << _T(")");
 
          if (useSpanFraction)
          {
@@ -534,14 +534,14 @@ void write_camber_factors(rptChapter* pChapter,IBroker* pBroker, IEAFDisplayUnit
    (*pTable)(row++,1) << scalar.SetValue(cm.DeckPanelFactor);
 
    CString strLabel;
-   strLabel.Format(_T("Slab, User Defined Loads at %s"),pIntervals->GetDescription(noncompositeUserLoadIntervalIdx));
+   strLabel.Format(_T("Slab, User Defined Loads at %s"),pIntervals->GetDescription(noncompositeUserLoadIntervalIdx).c_str());
    (*pTable)(row,0) << strLabel;
    (*pTable)(row++,1) << scalar.SetValue(cm.CreepFactor);
 
    (*pTable)(row,0) << _T("Haunch");
    (*pTable)(row++,1) << scalar.SetValue(cm.SlabPadLoadFactor);
 
-   strLabel.Format(_T("Railing System (Traffic Barrier, Sidewalks), Overlay, User Defined Loads at %s"),pIntervals->GetDescription(compositeUserLoadIntervalIdx));
+   strLabel.Format(_T("Railing System (Traffic Barrier, Sidewalks), Overlay, User Defined Loads at %s"),pIntervals->GetDescription(compositeUserLoadIntervalIdx).c_str());
    (*pTable)(row,0) << strLabel;
    (*pTable)(row++,1) << scalar.SetValue(cm.BarrierSwOverlayUser2Factor);
 }
@@ -689,15 +689,15 @@ void write_intermedate_diaphragm_details(IBroker* pBroker,IEAFDisplayUnits* pDis
       switch( rule.MeasureType )
       {
          case GirderLibraryEntry::mtFractionOfSpanLength:
-            *pParagraph << _T("Diarphagm location is measured as a fraction of the span length") << rptNewLine;
+            *pParagraph << _T("Diaphragm location is measured as a fraction of the span length") << rptNewLine;
             break;
 
          case GirderLibraryEntry::mtFractionOfGirderLength:
-            *pParagraph << _T("Diarphagm location is measured as a fraction of the girder length") << rptNewLine;
+            *pParagraph << _T("Diaphragm location is measured as a fraction of the girder length") << rptNewLine;
             break;
 
          case GirderLibraryEntry::mtAbsoluteDistance:
-               *pParagraph << _T("Diarphagm location is measured as a fixed distance") << rptNewLine;
+               *pParagraph << _T("Diaphragm location is measured as a fixed distance") << rptNewLine;
             break;
       }
 
@@ -755,7 +755,7 @@ void write_traffic_barrier_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
    CComPtr<IEnumPoint2d> enum_points;
    points->get__Enum(&enum_points);
    CComPtr<IPoint2d> point;
-   long i = 1;
+   IndexType i = 1;
    while ( enum_points->Next(1,&point,nullptr) != S_FALSE )
    {
       Float64 x,y;
@@ -779,7 +779,7 @@ void write_traffic_barrier_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
    }
 }
 
-rptRcTable* write_strand_material(LPCTSTR strStrandType, const matPsStrand* pStrand, IEAFDisplayUnits* pDisplayUnits)
+rptRcTable* write_strand_material(LPCTSTR strStrandType, const WBFL::Materials::PsStrand* pStrand, IEAFDisplayUnits* pDisplayUnits)
 {
    INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true);
    INIT_UV_PROTOTYPE(rptStressUnitValue, modE, pDisplayUnits->GetModEUnit(), true);
@@ -794,7 +794,7 @@ rptRcTable* write_strand_material(LPCTSTR strStrandType, const matPsStrand* pStr
    row++;
 
    (*pTable)(row, 0) << _T("Type");
-   (*pTable)(row, 1) << (pStrand->GetType() == matPsStrand::LowRelaxation ? _T("Low Relaxation") : _T("Stress Relieved"));
+   (*pTable)(row, 1) << WBFL::Materials::PsStrand::GetType(pStrand->GetType());
    row++;
 
    (*pTable)(row, 0) << RPT_FPU;
@@ -838,7 +838,7 @@ void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
    {
       pgsTypes::StrandType strandType = (pgsTypes::StrandType)col;
 
-      const matPsStrand* pStrand = pSegmentData->GetStrandMaterial(segmentKey,strandType);
+      const auto* pStrand = pSegmentData->GetStrandMaterial(segmentKey,strandType);
       ATLASSERT(pStrand != nullptr);
 
       rptRcTable* pTable = write_strand_material(strStrandType[strandType].c_str(), pStrand, pDisplayUnits);
@@ -847,7 +847,7 @@ void write_strand_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
 
    if (0 < nDucts)
    {
-      const matPsStrand* pStrand = pSegmentData->GetSegmentPTData(segmentKey)->m_pStrand;
+      const auto* pStrand = pSegmentData->GetSegmentPTData(segmentKey)->m_pStrand;
       ATLASSERT(pStrand != nullptr);
 
       rptRcTable* pTable = write_strand_material(_T("Tendons"), pStrand, pDisplayUnits);
@@ -868,9 +868,9 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   lrfdRebarPool* pPool = lrfdRebarPool::GetInstance();
+   const auto* pPool = WBFL::LRFD::RebarPool::GetInstance();
 
-   const matRebar* pDeckRebar = nullptr;
+   const WBFL::Materials::Rebar* pDeckRebar = nullptr;
    if ( pBridgeDesc->GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone )
    {
       pDeckRebar = pPool->GetRebar(pBridgeDesc->GetDeckDescription()->DeckRebarData.TopRebarType,pBridgeDesc->GetDeckDescription()->DeckRebarData.TopRebarGrade,pBridgeDesc->GetDeckDescription()->DeckRebarData.TopRebarSize);
@@ -879,8 +879,8 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
    const CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
-   const matRebar* pShearRebar = pPool->GetRebar(pSegment->ShearData.ShearBarType,pSegment->ShearData.ShearBarGrade,matRebar::bs3);
-   const matRebar* pLongRebar  = pPool->GetRebar(pSegment->LongitudinalRebarData.BarType,pSegment->LongitudinalRebarData.BarGrade,matRebar::bs3);
+   const auto* pShearRebar = pPool->GetRebar(pSegment->ShearData.ShearBarType,pSegment->ShearData.ShearBarGrade,WBFL::Materials::Rebar::Size::bs3);
+   const auto* pLongRebar  = pPool->GetRebar(pSegment->LongitudinalRebarData.BarType,pSegment->LongitudinalRebarData.BarGrade,WBFL::Materials::Rebar::Size::bs3);
 
    if ( pShearRebar )
    {
@@ -890,7 +890,7 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
       RowIndexType row = 0;
 
       (*pTable)(row,0) << _T("Type");
-      (*pTable)(row,1) << lrfdRebarPool::GetMaterialName(pShearRebar->GetType(),pShearRebar->GetGrade()).c_str();
+      (*pTable)(row,1) << WBFL::LRFD::RebarPool::GetMaterialName(pShearRebar->GetType(),pShearRebar->GetGrade()).c_str();
       row++;
 
       (*pTable)(row,0) << RPT_FY;
@@ -909,7 +909,7 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
       RowIndexType row = 0;
 
       (*pTable)(row,0) << _T("Type");
-      (*pTable)(row,1) << lrfdRebarPool::GetMaterialName(pLongRebar->GetType(),pLongRebar->GetGrade()).c_str();
+      (*pTable)(row,1) << WBFL::LRFD::RebarPool::GetMaterialName(pLongRebar->GetType(),pLongRebar->GetGrade()).c_str();
       row++;
 
       (*pTable)(row,0) << RPT_FY;
@@ -928,7 +928,7 @@ void write_rebar_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCha
       RowIndexType row = 0;
 
       (*pTable)(row, 0) << _T("Type");
-      (*pTable)(row, 1) << lrfdRebarPool::GetMaterialName(pDeckRebar->GetType(), pDeckRebar->GetGrade()).c_str();
+      (*pTable)(row, 1) << WBFL::LRFD::RebarPool::GetMaterialName(pDeckRebar->GetType(), pDeckRebar->GetGrade()).c_str();
       row++;
 
       (*pTable)(row, 0) << RPT_FY;
@@ -1132,9 +1132,9 @@ void write_parabolic_tendon_geometry(rptParagraph* pPara, const CDuctData* pDuct
 
    (*pLayoutTable)(0, 0) << pTable << rptNewLine;
    (*pLayoutTable)(0, 1) << _T("Start: Start of tendon location measured from the start of the first span.") << rptNewLine;
-   (*pLayoutTable)(0, 1) << _T("Low: Distance from Start point or previous High point. Measured as a distance or percentagve of the distance between High points. Distance from End in last span.") << rptNewLine;
+   (*pLayoutTable)(0, 1) << _T("Low: Distance from Start point or previous High point. Measured as a distance or percentage of the distance between High points. Distance from End in last span.") << rptNewLine;
    (*pLayoutTable)(0, 1) << _T("IP: Location of inflection point measured from Hight point. Measured as distance or percentage of distance between High and Low points.") << rptNewLine;
-   (*pLayoutTable)(0, 1) << _T("High: High point at centerlien of pier.") << rptNewLine;
+   (*pLayoutTable)(0, 1) << _T("High: High point at centerline of pier.") << rptNewLine;
    (*pLayoutTable)(0, 1) << _T("End: End of tendon location measured from the end of the last span.") << rptNewLine;
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();

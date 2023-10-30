@@ -50,7 +50,7 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
    DEFINE_UV_PROTOTYPE( time,        pDisplayUnits->GetWholeDaysUnit(),        false );
 
-   scalar.SetFormat(sysNumericFormatTool::Automatic);
+   scalar.SetFormat(WBFL::System::NumericFormatTool::Format::Automatic);
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
 }
@@ -59,8 +59,6 @@ CCreepAtDeckPlacementTable* CCreepAtDeckPlacementTable::PrepareTable(rptChapter*
 {
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
-   bool bUHPC = pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC ? true : false;
-   bool bPCTT = (bUHPC ? pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.bPCTT : false);
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
@@ -80,7 +78,7 @@ CCreepAtDeckPlacementTable* CCreepAtDeckPlacementTable::PrepareTable(rptChapter*
 
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
-   *pParagraph << _T("[")<< LrfdCw8th(_T("5.9.5.4.2b"),_T("5.9.3.4.2b")) <<_T("] Creep of Girder Concrete : ") << symbol(DELTA) << RPT_STRESS(_T("pCR")) << rptNewLine;
+   *pParagraph << _T("[")<< WBFL::LRFD::LrfdCw8th(_T("5.9.5.4.2b"),_T("5.9.3.4.2b")) <<_T("] Creep of Girder Concrete : ") << symbol(DELTA) << RPT_STRESS(_T("pCR")) << rptNewLine;
 
    if (pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned)
    {
@@ -91,16 +89,20 @@ CCreepAtDeckPlacementTable* CCreepAtDeckPlacementTable::PrepareTable(rptChapter*
       *pParagraph << rptRcImage(strImagePath + _T("Delta_FpCR.png")) << rptNewLine;
    }
 
-   if (bUHPC)
+   if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC)
    {
-      if (bPCTT)
+      if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.bPCTT)
       {
-         *pParagraph << rptRcImage(strImagePath + _T("CreepAtDeckPlacement_UHPC_PCTT.png")) << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("CreepAtDeckPlacement_PCI_UHPC_PCTT.png")) << rptNewLine;
       }
       else
       {
-         *pParagraph << rptRcImage(strImagePath + _T("CreepAtDeckPlacement_UHPC.png")) << rptNewLine;
+         *pParagraph << rptRcImage(strImagePath + _T("CreepAtDeckPlacement_PCI_UHPC.png")) << rptNewLine;
       }
+   }
+   else if (pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::UHPC)
+   {
+      *pParagraph << rptRcImage(strImagePath + _T("CreepAtDeckPlacement_UHPC.png")) << rptNewLine;
    }
    else
    {
@@ -110,7 +112,7 @@ CCreepAtDeckPlacementTable* CCreepAtDeckPlacementTable::PrepareTable(rptChapter*
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
-   std::shared_ptr<const lrfdRefinedLosses2005> ptl = std::dynamic_pointer_cast<const lrfdRefinedLosses2005>(pDetails->pLosses);
+   std::shared_ptr<const WBFL::LRFD::RefinedLosses2005> ptl = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLosses2005>(pDetails->pLosses);
 
    table->time.ShowUnitTag(true);
    *pParagraph << Sub2(_T("k"), _T("td")) << _T(" = ") << table->scalar.SetValue(ptl->GetGirderCreep()->GetKtd(ptl->GetMaturityAtDeckPlacement())) << rptNewLine;
@@ -146,7 +148,7 @@ CCreepAtDeckPlacementTable* CCreepAtDeckPlacementTable::PrepareTable(rptChapter*
 void CCreepAtDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
   // Typecast to our known type (eating own doggy food)
-   std::shared_ptr<const lrfdRefinedLosses2005> ptl = std::dynamic_pointer_cast<const lrfdRefinedLosses2005>(pDetails->pLosses);
+   std::shared_ptr<const WBFL::LRFD::RefinedLosses2005> ptl = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLosses2005>(pDetails->pLosses);
    if (!ptl)
    {
       ATLASSERT(false); // made a bad cast? Bail...
@@ -158,13 +160,13 @@ void CCreepAtDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* pBroker,co
 
    if (m_pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPretensioned)
    {
-      (*this)(row+rowOffset, col++) << stress.SetValue(pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp());
+      (*this)(row+rowOffset, col++) << stress.SetValue(pDetails->pLosses->GetElasticShortening().PermanentStrand_Fcgp());
    }
    else
    {
-      (*this)(row+rowOffset, col++) << stress.SetValue(pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp());
+      (*this)(row+rowOffset, col++) << stress.SetValue(pDetails->pLosses->GetElasticShortening().PermanentStrand_Fcgp());
       (*this)(row+rowOffset, col++) << stress.SetValue(ptl->GetDeltaFpp());
-      (*this)(row+rowOffset, col++) << stress.SetValue(pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp() + ptl->GetDeltaFpp());
+      (*this)(row+rowOffset, col++) << stress.SetValue(pDetails->pLosses->GetElasticShortening().PermanentStrand_Fcgp() + ptl->GetDeltaFpp());
    }
 
    (*this)(row+rowOffset, col++) << scalar.SetValue(ptl->GetKid());

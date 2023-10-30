@@ -29,8 +29,15 @@
 // TrafficBarrierViewDialog.h : header file
 //
 
-#include <GeomModel\CompositeShape.h>
+#include <GeomModel/CompositeShape.h>
 
+namespace WBFL
+{
+	namespace Graphing
+	{
+		class PointMapper;
+	};
+};
 
 #define HARPED_COLOR   RGB(80 ,200 ,80)
 #define STRAIGHT_COLOR RGB(80 ,80   ,250)
@@ -65,8 +72,8 @@ public:
 protected:
    CComPtr<IShape> m_pShape;
 
-   void DrawShape(CDC* pDC,grlibPointMapper& Mapper);
-   void DrawShape(CDC* pDC,grlibPointMapper& Mapper,IShape* pShape);
+   void DrawShape(CDC* pDC,WBFL::Graphing::PointMapper& Mapper);
+   void DrawShape(CDC* pDC, WBFL::Graphing::PointMapper& Mapper,IShape* pShape);
 
 	// Generated message map functions
 	//{{AFX_MSG(CTrafficBarrierViewDialog)

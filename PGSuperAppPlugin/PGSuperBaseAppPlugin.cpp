@@ -258,10 +258,9 @@ void CPGSAppPluginBase::Process1250Testing(const CPGSBaseCommandLineInfo& rCmdIn
             ::AfxMessageBox(msg);
          }
       }
-      catch(const sysXBase& e)
+      catch(const WBFL::System::XBase& e)
       {
-         std::_tstring msg;
-         e.GetErrorMessage(&msg);
+         std::_tstring msg = e.GetErrorMessage();
          std::_tofstream os;
          os.open(errfile);
          os <<_T("Error running test for input file: ")<<rCmdInfo.m_strFileName<<std::endl<< msg;

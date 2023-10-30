@@ -30,6 +30,9 @@
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\HoldDownForceArtifact.h>
 
+#include <psgLib/HoldDownCriteria.h>
+
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -98,10 +101,7 @@ void CHoldDownForceCheck::Build(rptChapter* pChapter,IBroker* pBroker,const pgsG
    GET_IFACE2(pBroker,ISpecification, pSpec);
    GET_IFACE2(pBroker,ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-   bool bCheck, bDesign;
-   int holdDownForceType;
-   Float64 maxHoldDownForce, friction;
-   pSpecEntry->GetHoldDownForce(&bCheck, &bDesign, &holdDownForceType, &maxHoldDownForce, &friction);
+   const auto& hold_down_criteria = pSpecEntry->GetHoldDownCriteria();
 
    rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
@@ -132,13 +132,14 @@ void CHoldDownForceCheck::Build(rptChapter* pChapter,IBroker* pBroker,const pgsG
          rptRcTable* pTable = rptStyleManager::CreateDefaultTable(3,nullptr);
          *pBody << pTable;
 
-         if (holdDownForceType == HOLD_DOWN_TOTAL)
+         if (hold_down_criteria.type == HoldDownCriteria::Type::Total)
          {
             (*pTable)(0, 0) << COLHDR(_T("Hold Down Force"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
             (*pTable)(0, 1) << COLHDR(_T("Hold Down Force Limit"), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
          }
          else
          {
+            CHECK(hold_down_criteria.type == HoldDownCriteria::Type::PerStrand);
             (*pTable)(0, 0) << _T("Hold Down Force") << rptNewLine << _T("(") << rptForceUnitTag(&pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure) << _T("/strand)");
             (*pTable)(0, 1) << _T("Hold Down Force Limit") << rptNewLine << _T("(") << rptForceUnitTag(&pDisplayUnits->GetGeneralForceUnit().UnitOfMeasure) << _T("/strand)");
          }
@@ -187,27 +188,3 @@ void CHoldDownForceCheck::MakeAssignment(const CHoldDownForceCheck& rOther)
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CHoldDownForceCheck::AssertValid() const
-{
-   return true;
-}
-
-void CHoldDownForceCheck::Dump(dbgDumpContext& os) const
-{
-   os << _T("Dump for CHoldDownForceCheck") << endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CHoldDownForceCheck::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("CHoldDownForceCheck");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CHoldDownForceCheck");
-
-   TESTME_EPILOG("LiveLoadDistributionFactorTable");
-}
-#endif // _UNITTEST

@@ -44,7 +44,7 @@ extern CComModule _Module;
 
 // This library uses these WBFL services
 #include <System\System.h>
-#include <UnitMgt\UnitMgt.h>
+#include <Units\Units.h>
 
 #include <WBFLTools.h>
 #include <WBFLCore.h>

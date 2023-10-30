@@ -71,10 +71,10 @@ public:
                                   Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover) const override;
    virtual const std::vector<std::_tstring>& GetDimensionNames() const override;
    virtual const std::vector<Float64>& GetDefaultDimensions() const override;
-   virtual const std::vector<const unitLength*>& GetDimensionUnits(bool bSIUnits) const override;
+   virtual const std::vector<const WBFL::Units::Length*>& GetDimensionUnits(bool bSIUnits) const override;
    virtual bool ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg) const override;
-   virtual void SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const override;
-   virtual IBeamFactory::Dimensions LoadSectionDimensions(sysIStructuredLoad* pLoad) const override;
+   virtual void SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const override;
+   virtual IBeamFactory::Dimensions LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const override;
    virtual bool IsPrismatic(const IBeamFactory::Dimensions& dimensions) const override;
    virtual bool IsPrismatic(const CSegmentKey& segmentKey) const override;
    virtual bool IsSymmetric(const CSegmentKey& segmentKey) const override;
@@ -130,7 +130,7 @@ public:
 private:
    std::vector<std::_tstring> m_DimNames;
    std::vector<Float64> m_DefaultDims;
-   std::vector<const unitLength*> m_DimUnits[2];
+   std::vector<const WBFL::Units::Length*> m_DimUnits[2];
 
    mutable bool m_bHaveOldTopFlangeThickening; // set to true if we have an old D8 value that hasn't been retreived yet (this is just for debugging... we don't want to override a value and lose it)
    mutable Float64 m_OldTopFlangeThickening; /// this is the obsolete D8 value we justed loaded

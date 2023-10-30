@@ -31,7 +31,7 @@
 #include <system\tokenizer.h>
 
 #include <EAF\EAFApp.h>
-#include <Lrfd\RebarPool.h>
+#include <LRFD\RebarPool.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -183,7 +183,7 @@ void CLongSteelGrid::OnUpdateEditRemoverows(CCmdUI* pCmdUI)
 void CLongSteelGrid::CustomInit()
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
 
 // Initialize the grid. For CWnd based grids this call is // 
@@ -334,14 +334,14 @@ void CLongSteelGrid::SetRowStyle(ROWCOL nRow)
 
 
    CLongSteelPage* pParent = (CLongSteelPage*)GetParent();
-   matRebar::Type type;
-   matRebar::Grade grade;
+   WBFL::Materials::Rebar::Type type;
+   WBFL::Materials::Rebar::Grade grade;
    pParent->GetRebarMaterial(&type,&grade);
    CString strBarSizeChoiceList;
-   lrfdRebarIter rebarIter(type,grade);
+   WBFL::LRFD::RebarIter rebarIter(type,grade);
    for ( rebarIter.Begin(); rebarIter; rebarIter.Next() )
    {
-      const matRebar* pRebar = rebarIter.GetCurrentRebar();
+      const auto* pRebar = rebarIter.GetCurrentRebar();
       strBarSizeChoiceList += pRebar->GetName().c_str();
       strBarSizeChoiceList += _T("\n");
    }
@@ -352,7 +352,7 @@ void CLongSteelGrid::SetRowStyle(ROWCOL nRow)
       .SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
       .SetChoiceList(strBarSizeChoiceList)
       .SetHorizontalAlignment(DT_RIGHT)
-      .SetValue(lrfdRebarPool::GetBarSize(matRebar::bs4).c_str())
+      .SetValue(WBFL::LRFD::RebarPool::GetBarSize(WBFL::Materials::Rebar::Size::bs4).c_str())
       );
 
 	this->SetStyleRange(CGXRange(nRow,7), CGXStyle()
@@ -506,11 +506,11 @@ bool CLongSteelGrid::GetRowData(ROWCOL nRow, GirderLibraryEntry::LongSteelInfo* 
 void CLongSteelGrid::FillGrid(const GirderLibraryEntry::LongSteelInfoVec& rvec)
 {
    GetParam()->SetLockReadOnly(FALSE);
-   CollectionIndexType size = rvec.size();
+   IndexType size = rvec.size();
    if (size>0)
    {
       // size grid
-      for (CollectionIndexType i=0; i<size; i++)
+      for (IndexType i=0; i<size; i++)
 	      Insertrow();
 
       // fill grid
@@ -550,7 +550,7 @@ void CLongSteelGrid::FillGrid(const GirderLibraryEntry::LongSteelInfoVec& rvec)
 
          VERIFY(SetValueRange(CGXRange(nRow, 5), (*it).Cover));
 
-         tmp.Format(_T("%s"), lrfdRebarPool::GetBarSize((*it).BarSize).c_str());
+         tmp.Format(_T("%s"), WBFL::LRFD::RebarPool::GetBarSize((*it).BarSize).c_str());
          VERIFY(SetValueRange(CGXRange(nRow, 6), tmp));
 
          VERIFY(SetValueRange(CGXRange(nRow, 7), (LONG)(*it).NumberOfBars));
@@ -575,7 +575,7 @@ BOOL CLongSteelGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
    if (nCol==7  && !s.IsEmpty( ))
 	{
       long l;
-      if (!sysTokenizer::ParseLong(s, &l))
+      if (!WBFL::System::Tokenizer::ParseLong(s, &l))
 		{
 			SetWarningText (_T("Value must be an integer"));
 			return FALSE;
@@ -585,7 +585,7 @@ BOOL CLongSteelGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 	else if ((nCol==2 || nCol==3 || nCol==5 || nCol==8)  && !s.IsEmpty( ))
 	{
       Float64 d;
-      if (!sysTokenizer::ParseDouble(s, &d))
+      if (!WBFL::System::Tokenizer::ParseDouble(s, &d))
 		{
 			SetWarningText (_T("Value must be a number"));
 			return FALSE;
@@ -608,7 +608,7 @@ void CLongSteelGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
    }
 }
 
-matRebar::Size CLongSteelGrid::GetBarSize(ROWCOL row)
+WBFL::Materials::Rebar::Size CLongSteelGrid::GetBarSize(ROWCOL row)
 {
    CString s = GetCellValue(row, 6);
    s.TrimLeft();
@@ -616,25 +616,25 @@ matRebar::Size CLongSteelGrid::GetBarSize(ROWCOL row)
    CString s2 = s.Right(l-1);
    int i = _tstoi(s2);
    if (s.IsEmpty() || (i==0))
-      return matRebar::bsNone;
+      return WBFL::Materials::Rebar::Size::bsNone;
 
    switch(i)
    {
-   case 3:  return matRebar::bs3;
-   case 4:  return matRebar::bs4;
-   case 5:  return matRebar::bs5;
-   case 6:  return matRebar::bs6;
-   case 7:  return matRebar::bs7;
-   case 8:  return matRebar::bs8;
-   case 9:  return matRebar::bs9;
-   case 10: return matRebar::bs10;
-   case 11: return matRebar::bs11;
-   case 14: return matRebar::bs14;
-   case 18: return matRebar::bs18;
+   case 3:  return WBFL::Materials::Rebar::Size::bs3;
+   case 4:  return WBFL::Materials::Rebar::Size::bs4;
+   case 5:  return WBFL::Materials::Rebar::Size::bs5;
+   case 6:  return WBFL::Materials::Rebar::Size::bs6;
+   case 7:  return WBFL::Materials::Rebar::Size::bs7;
+   case 8:  return WBFL::Materials::Rebar::Size::bs8;
+   case 9:  return WBFL::Materials::Rebar::Size::bs9;
+   case 10: return WBFL::Materials::Rebar::Size::bs10;
+   case 11: return WBFL::Materials::Rebar::Size::bs11;
+   case 14: return WBFL::Materials::Rebar::Size::bs14;
+   case 18: return WBFL::Materials::Rebar::Size::bs18;
    default: ATLASSERT(false);
    }
 
-   return matRebar::bsNone;
+   return WBFL::Materials::Rebar::Size::bsNone;
 }
 
 pgsTypes::RebarLayoutType CLongSteelGrid::GetLayout(ROWCOL nRow)

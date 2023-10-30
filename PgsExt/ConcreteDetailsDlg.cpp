@@ -38,7 +38,7 @@
 #include <PgsExt\ConcreteDetailsDlg.h>
 
 #include <System\Tokenizer.h>
-#include <Lrfd\ConcreteUtil.h>
+#include <LRFD\ConcreteUtil.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Project.h>
 
@@ -92,6 +92,7 @@ void CConcreteDetailsDlg::Init()
    m_ACI.m_psp.dwFlags      |= PSP_HASHELP;
    m_CEBFIP.m_psp.dwFlags   |= PSP_HASHELP;
    m_PCIUHPC.m_psp.dwFlags |= PSP_HASHELP;
+   m_UHPC.m_psp.dwFlags |= PSP_HASHELP;
 
    AddPage( &m_General );
 
@@ -100,32 +101,36 @@ void CConcreteDetailsDlg::Init()
    CComPtr<ILossParameters> pLossParameters;
    HRESULT hr = pBroker->GetInterface(IID_ILossParameters,(IUnknown**)&pLossParameters);
    
-   pgsTypes::LossMethod loss_method = pgsTypes::AASHTO_REFINED_2005;
+   PrestressLossCriteria::LossMethodType loss_method = PrestressLossCriteria::LossMethodType::AASHTO_REFINED_2005;
    if ( SUCCEEDED(hr) )
    {
       loss_method = pLossParameters->GetLossMethod();
    }
 
-   if ( loss_method != pgsTypes::TIME_STEP )
+   if ( loss_method != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       AddPage( &m_AASHTO );
 
-      if(m_bIncludeUHPC) AddPage(&m_PCIUHPC);
+      if (m_bIncludeUHPC)
+      {
+         AddPage(&m_UHPC);
+         AddPage(&m_PCIUHPC);
+      }
    }
    else
    {
       switch( pLossParameters->GetTimeDependentModel() )
       {
-      case pgsTypes::tdmAASHTO:
+      case PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO:
          AddPage( &m_AASHTO );
          AddPage( &m_ACI );
          break;
 
-      case pgsTypes::tdmACI209:
+      case PrestressLossCriteria::TimeDependentConcreteModelType::ACI209:
          AddPage( &m_ACI );
          break;
 
-      case pgsTypes::tdmCEBFIP:
+      case PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP:
          AddPage( &m_CEBFIP );
          break;
 
@@ -141,10 +146,10 @@ CString CConcreteDetailsDlg::UpdateEc(pgsTypes::ConcreteType type, const CString
    CString strEc;
    Float64 fc, density, k1,k2;
    Float64 ec = 0;
-   if (sysTokenizer::ParseDouble(strFc, &fc) && 
-       sysTokenizer::ParseDouble(strDensity,&density) &&
-       sysTokenizer::ParseDouble(strK1,&k1) &&
-       sysTokenizer::ParseDouble(strK2,&k2) &&
+   if (WBFL::System::Tokenizer::ParseDouble(strFc, &fc) && 
+       WBFL::System::Tokenizer::ParseDouble(strDensity,&density) &&
+       WBFL::System::Tokenizer::ParseDouble(strK1,&k1) &&
+       WBFL::System::Tokenizer::ParseDouble(strK2,&k2) &&
        0 <= density && 0 <= fc && 0 <= k1 && 0 <= k2
        )
    {
@@ -152,13 +157,13 @@ CString CConcreteDetailsDlg::UpdateEc(pgsTypes::ConcreteType type, const CString
          EAFGetBroker(&pBroker);
          GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-         const unitPressure& stress_unit = pDisplayUnits->GetStressUnit().UnitOfMeasure;
-         const unitDensity& density_unit = pDisplayUnits->GetDensityUnit().UnitOfMeasure;
+         const WBFL::Units::Pressure& stress_unit = pDisplayUnits->GetStressUnit().UnitOfMeasure;
+         const WBFL::Units::Density& density_unit = pDisplayUnits->GetDensityUnit().UnitOfMeasure;
 
-         fc       = ::ConvertToSysUnits(fc,      stress_unit);
-         density  = ::ConvertToSysUnits(density, density_unit);
+         fc       = WBFL::Units::ConvertToSysUnits(fc,      stress_unit);
+         density  = WBFL::Units::ConvertToSysUnits(density, density_unit);
 
-         ec = k1*k2*lrfdConcreteUtil::ModE((matConcrete::Type)type,fc,density,false);
+         ec = k1*k2*WBFL::LRFD::ConcreteUtil::ModE((WBFL::Materials::ConcreteType)type,fc,density,false);
 
          strEc.Format(_T("%s"),FormatDimension(ec,pDisplayUnits->GetModEUnit(),false));
    }

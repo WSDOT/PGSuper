@@ -37,8 +37,8 @@ public:
 	virtual ~CAdditionalInterfaceShearBarDlg();
 
    bool m_bAreZonesSymmetrical;
-   matRebar::Type m_RebarType;
-   matRebar::Grade m_RebarGrade;
+   WBFL::Materials::Rebar::Type m_RebarType;
+   WBFL::Materials::Rebar::Grade m_RebarGrade;
 
    CShearData2::HorizontalInterfaceZoneVec m_HorizontalInterfaceZones;
 

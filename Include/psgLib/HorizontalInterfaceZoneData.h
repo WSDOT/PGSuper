@@ -33,15 +33,15 @@
 #include "psgLibLib.h"
 
 #include <StrData.h>
-#include <Material\Rebar.h>
+#include <Materials/Rebar.h>
 
 // LOCAL INCLUDES
 //
 
 // FORWARD DECLARATIONS
 //
-   class sysIStructuredLoad;
-   class sysIStructuredSave;
+   class WBFL::System::IStructuredLoad;
+   class WBFL::System::IStructuredSave;
 // MISCELLANEOUS
 //
 
@@ -66,7 +66,7 @@ public:
    ZoneIndexType ZoneNum;
    Float64 ZoneLength;
    Float64 BarSpacing;
-   matRebar::Size BarSize;
+   WBFL::Materials::Rebar::Size BarSize;
    Float64 nBars;
 
    // GROUP: LIFECYCLE
@@ -92,8 +92,8 @@ public:
 
    // GROUP: OPERATIONS
 
-	HRESULT Load(sysIStructuredLoad* pStrLoad);
-	HRESULT Save(sysIStructuredSave* pStrSave);
+	HRESULT Load(WBFL::System::IStructuredLoad* pStrLoad);
+	HRESULT Save(WBFL::System::IStructuredSave* pStrSave);
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

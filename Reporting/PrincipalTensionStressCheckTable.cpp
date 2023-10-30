@@ -26,8 +26,9 @@
 
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 #include <IFace\Project.h>
+#include <IFace\ReportOptions.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -75,9 +76,9 @@ void CPrincipalTensionStressCheckTable::Build(rptChapter* pChapter, IBroker* pBr
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
    // check applicability
-   if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::EighthEdition2017)
+   if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::EighthEdition2017)
    {
-      *pPara << _T("Principal tensile stresses in webs are not limited for the ") << lrfdVersionMgr::GetCodeString() << _T(", ") << lrfdVersionMgr::GetVersionString() << rptNewLine;
+      *pPara << _T("Principal tensile stresses in webs are not limited for the ") << WBFL::LRFD::BDSManager::GetSpecificationName() << _T(", ") << WBFL::LRFD::BDSManager::GetEditionAsString() << rptNewLine;
       return;
    }
 
@@ -104,16 +105,16 @@ void CPrincipalTensionStressCheckTable::Build(rptChapter* pChapter, IBroker* pBr
 
          if (pArtifact->GetApplicability() == pgsPrincipalTensionStressArtifact::Specification)
          {
-            *pPara << _T("Principal tensile stresses in webs are not limited for the ") << lrfdVersionMgr::GetCodeString() << _T(", ") << lrfdVersionMgr::GetVersionString() << rptNewLine;
+            *pPara << _T("Principal tensile stresses in webs are not limited for the ") << WBFL::LRFD::BDSManager::GetSpecificationName() << _T(", ") << WBFL::LRFD::BDSManager::GetEditionAsString() << rptNewLine;
          }
          else if (pArtifact->GetApplicability() == pgsPrincipalTensionStressArtifact::ConcreteStrength)
          {
             INIT_UV_PROTOTYPE(rptStressUnitValue, stress_u, pDisplayUnits->GetStressUnit(), true);
-            *pPara << _T("Concrete strength does not exceed the ") << stress_u.SetValue(::ConvertToSysUnits(10.0, unitMeasure::KSI)) << _T(" threshold") << rptNewLine;
+            *pPara << _T("Concrete strength does not exceed the ") << stress_u.SetValue(WBFL::Units::ConvertToSysUnits(10.0, WBFL::Units::Measure::KSI)) << _T(" threshold") << rptNewLine;
          }
          else
          {
-            ATLASSERT(false); // is there a new applicabilty reason?
+            ATLASSERT(false); // is there a new applicability reason?
          }
       }
    }
@@ -139,10 +140,11 @@ void CPrincipalTensionStressCheckTable::BuildTable(rptChapter* pChapter, IBroker
    rptCapacityToDemand cap_demand;
 
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
-   location.IncludeSpanAndGirder(1 < nSegments);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    GET_IFACE2(pBroker, IIntervals, pIntervals);
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount() - 1;
@@ -153,18 +155,33 @@ void CPrincipalTensionStressCheckTable::BuildTable(rptChapter* pChapter, IBroker
    GET_IFACE2(pBroker, ILibrary, pLib);
    std::_tstring specName = pSpec->GetSpecification();
    const auto* pSpecEntry = pLib->GetSpecEntry(specName.c_str());
-   pgsTypes::PrincipalTensileStressMethod method;
-   Float64 coefficient, ductDiameterFactor, ungroutedMultiplier, groutedMultiplier, principalTensileStressFcThreshold;
-   pSpecEntry->GetPrincipalTensileStressInWebsParameters(&method, &coefficient,&ductDiameterFactor,&ungroutedMultiplier,&groutedMultiplier,&principalTensileStressFcThreshold);
+   const auto& principal_tension_stress_criteria = pSpecEntry->GetPrincipalTensionStressCriteria();
 
-   GET_IFACE2(pBroker, IAllowableConcreteStress, pAllowables);
+   GET_IFACE2(pBroker, IConcreteStressLimits, pLimits);
 
    IntervalIndexType liveLoadInterval = pIntervals->GetLiveLoadInterval();
 
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
    *pChapter << pPara;
-   *pPara << _T("Principal Tension Stresses in Webs [5.9.2.3.3]") << rptNewLine;
    *pPara << _T("Interval ") << LABEL_INTERVAL(liveLoadInterval) << _T(" - ") << pIntervals->GetDescription(liveLoadInterval) << _T(", Service III") << rptNewLine;
+   
+   bool bIsUHPC = false;
+   if (pMaterials->GetSegmentConcreteType(CSegmentKey(girderKey, 0)) == pgsTypes::UHPC)
+   {
+      bIsUHPC = true;
+      ATLASSERT(nSegments == 1); // UHPC isn't available for spliced girders yet, so there better be only one segment
+   }
+
+   pPara = new rptParagraph;
+   *pChapter << pPara;
+   if (bIsUHPC)
+   {
+      *pPara << _T("AASHTO UHPC GS 1.9.2.3.3") << rptNewLine;
+   }
+   else
+   {
+      *pPara << _T("AASHTO LRFD BDS 5.9.2.3.3") << rptNewLine;
+   }
 
    pPara = new rptParagraph;
    *pChapter << pPara;
@@ -199,12 +216,18 @@ void CPrincipalTensionStressCheckTable::BuildTable(rptChapter* pChapter, IBroker
       Float64 fc = pMaterials->GetSegmentDesignFc(segmentKey, intervalIdx);
       *pSegmentPara << RPT_FC << _T(" = ") << stress_u.SetValue(fc) << rptNewLine;
 
-      pAllowables->ReportAllowableSegmentPrincipalWebTensionStress(segmentKey, pSegmentPara, pDisplayUnits);
+      pLimits->ReportSegmentConcreteWebPrincipalTensionStressLimit(segmentKey, pSegmentPara, pDisplayUnits);
 
       Float64 fc_reqd = pArtifact->GetRequiredSegmentConcreteStrength();
+      
+      GET_IFACE2(pBroker, IMaterials, pMaterials);
+      GET_IFACE2(pBroker, IConcreteStressLimits, pLimits);
+      auto name = pLimits->GetConcreteStressLimitParameterName(pgsTypes::Tension, pMaterials->GetSegmentConcreteType(segmentKey));
+
       if (0 < fc_reqd)
       {
-         *pSegmentPara << _T("Concrete strength required to satisfy this requirement = ") << stress_u.SetValue(fc_reqd) << rptNewLine;
+         name[0] = std::toupper(name[0]);
+         *pSegmentPara << name << _T(" required to satisfy this requirement = ") << stress_u.SetValue(fc_reqd) << rptNewLine;
       }
       else if (IsZero(fc_reqd))
       {
@@ -212,7 +235,7 @@ void CPrincipalTensionStressCheckTable::BuildTable(rptChapter* pChapter, IBroker
       }
       else
       {
-         *pSegmentPara << _T("Regardless of the concrete strength, the stress requirements will not be satisfied.") << rptNewLine;
+         *pSegmentPara << _T("Regardless of the ") << name << _T(", the stress requirements will not be satisfied.") << rptNewLine;
       }
       *pSegmentPara << rptNewLine;
 
@@ -224,7 +247,7 @@ void CPrincipalTensionStressCheckTable::BuildTable(rptChapter* pChapter, IBroker
          Float64 fc = pMaterials->GetClosureJointDesignFc(closureKey, intervalIdx);
          *pClosurePara << RPT_FC << _T(" = ") << stress_u.SetValue(fc) << rptNewLine;
 
-         pAllowables->ReportAllowableClosureJointPrincipalWebTensionStress(closureKey, pClosurePara, pDisplayUnits);
+         pLimits->ReportClosureJointConcreteWebPrincipalTensionStressLimit(closureKey, pClosurePara, pDisplayUnits);
 
          Float64 fc_reqd = pArtifact->GetRequiredClosureJointConcreteStrength();
          if (0 < fc_reqd)
@@ -285,8 +308,8 @@ void CPrincipalTensionStressCheckTable::BuildTable(rptChapter* pChapter, IBroker
             (*pTable)(row, col) << RPT_FAIL;
          }
 
-         Float64 fAllow = artifact.GetStressLimit();
-         (*pTable)(row, col) << rptNewLine << _T("(") << cap_demand.SetValue(fAllow, f_max, bPassed) << _T(")");
+         Float64 fLimit = artifact.GetStressLimit();
+         (*pTable)(row, col) << rptNewLine << _T("(") << cap_demand.SetValue(fLimit, f_max, bPassed) << _T(")");
          col++;
 
          row++;

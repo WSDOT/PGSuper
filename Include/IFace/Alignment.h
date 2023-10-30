@@ -37,7 +37,7 @@
 // FORWARD DECLARATIONS
 //
 interface ICompoundCurve;
-interface IVertCurve;
+interface IVerticalCurve;
 interface IDirection;
 interface IPoint2d;
 
@@ -107,11 +107,11 @@ interface IRoadway : IUnknown
    virtual HCURVESTATIONS GetCurveStations(IndexType hcIdx) const = 0;
 
    virtual IndexType GetVertCurveCount() const = 0;
-   virtual void GetVertCurve(IndexType idx,IVertCurve** ppCurve) const = 0;
+   virtual void GetVertCurve(IndexType idx,IVerticalCurve** ppCurve) const = 0;
 
-   // returns the points along the roadway surface for a line at the specified station and direction
+   // returns the points along the roadway surface for a line at the specified station and a skew angle relative to the left alignment normal
    // the x value is the alignment offset, and the y value is the elevation of the surface
-   virtual void GetRoadwaySurface(Float64 station,IDirection* pDirection,IPoint2dCollection** ppPoints) const = 0;
+   virtual void GetRoadwaySurface(Float64 station,IAngle* pSkewAngle,IPoint2dCollection** ppPoints) const = 0;
 
    // returns number of crown points along alignment
    virtual IndexType GetCrownPointIndexCount(Float64 station) const = 0;
@@ -168,14 +168,13 @@ interface IGeometry : IUnknown
    // Project
    virtual HRESULT PointOnLineByPoints(IPoint2d* pnt,IPoint2d* start,IPoint2d* end,Float64 offset,IPoint2d** point) const = 0;
    virtual HRESULT PointOnLineSegment(IPoint2d* from,ILineSegment2d* seg,Float64 offset,IPoint2d** point) const = 0;
-   virtual HRESULT PointOnCurve(IPoint2d* pnt,ICompoundCurve* curve,IPoint2d** point) const = 0;
 
    // Divide
-   virtual HRESULT Arc(IPoint2d* from, IPoint2d* vertex, IPoint2d* to,CollectionIndexType nParts,IPoint2dCollection** points) const = 0;
-   virtual HRESULT BetweenPoints(IPoint2d* from, IPoint2d* to,CollectionIndexType nParts,IPoint2dCollection** points) const = 0;
-   virtual HRESULT LineSegment(ILineSegment2d* seg,CollectionIndexType nParts,IPoint2dCollection** points) const = 0;
-	virtual HRESULT CompoundCurve(ICompoundCurve* curve, CollectionIndexType nParts, IPoint2dCollection** points) const = 0;
-   virtual HRESULT Path(IPath* pPath,CollectionIndexType nParts,Float64 start,Float64 end,IPoint2dCollection** points) const = 0;
+   virtual HRESULT Arc(IPoint2d* from, IPoint2d* vertex, IPoint2d* to,IndexType nParts,IPoint2dCollection** points) const = 0;
+   virtual HRESULT BetweenPoints(IPoint2d* from, IPoint2d* to,IndexType nParts,IPoint2dCollection** points) const = 0;
+   virtual HRESULT LineSegment(ILineSegment2d* seg,IndexType nParts,IPoint2dCollection** points) const = 0;
+	virtual HRESULT CompoundCurve(ICompoundCurve* curve, IndexType nParts, IPoint2dCollection** points) const = 0;
+   virtual HRESULT Path(IPath* pPath,IndexType nParts,Float64 start,Float64 end,IPoint2dCollection** points) const = 0;
 
    // Tangent
    virtual HRESULT External(IPoint2d* center1, Float64 radius1,IPoint2d* center2,Float64 radius2,TangentSignType sign, IPoint2d** t1,IPoint2d** t2) const = 0;

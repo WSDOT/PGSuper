@@ -174,7 +174,7 @@ void CSegmentSpacingGrid::UpdateGrid()
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    pgsTypes::SupportedBeamSpacing spacingType = m_pSpacing->GetBridgeDescription()->GetGirderSpacingType();
-   const unitmgtLengthData& spacingUnit = IsGirderSpacing(spacingType) // if
+   const WBFL::Units::LengthData& spacingUnit = IsGirderSpacing(spacingType) // if
                                         ? pDisplayUnits->GetXSectionDimUnit()     // then
                                         : pDisplayUnits->GetComponentDimUnit();   // else
 
@@ -560,7 +560,7 @@ BOOL CSegmentSpacingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    if ( IsGirderSpacing(spacingType) )
    {
-      spacing = ::ConvertToSysUnits(spacing,pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
+      spacing = WBFL::Units::ConvertToSysUnits(spacing,pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
       Float64 minGirderSpacing = m_MinGirderSpacing[nCol-1];
       Float64 maxGirderSpacing = m_MaxGirderSpacing[nCol-1];
       if ( IsLT(spacing,minGirderSpacing) || IsLT(maxGirderSpacing,spacing) )
@@ -571,7 +571,7 @@ BOOL CSegmentSpacingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
    }
    else
    {
-      spacing = ::ConvertToSysUnits(spacing,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+      spacing = WBFL::Units::ConvertToSysUnits(spacing,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
       Float64 minGirderSpacing = m_MinGirderSpacing[nCol-1];
       Float64 maxGirderSpacing = m_MaxGirderSpacing[nCol-1];
       if ( spacing < 0 || IsGT(maxGirderSpacing-minGirderSpacing,spacing) )
@@ -603,12 +603,12 @@ BOOL CSegmentSpacingGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
       if ( IsGirderSpacing(spacingType) )
       {
          // girder spacing
-         spacing = ::ConvertToSysUnits(spacing,pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
+         spacing = WBFL::Units::ConvertToSysUnits(spacing,pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
       }
       else
       {
          // joint spacing
-         spacing = ::ConvertToSysUnits(spacing,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+         spacing = WBFL::Units::ConvertToSysUnits(spacing,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
       }
 
       m_pSpacing->SetGirderSpacing(GroupIndexType(nCol-1),spacing);

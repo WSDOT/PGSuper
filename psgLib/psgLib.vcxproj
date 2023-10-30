@@ -69,7 +69,7 @@
     <OutDir>$(ARPDIR)\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
-    <LinkIncremental>false</LinkIncremental>
+    <LinkIncremental>true</LinkIncremental>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules />
     <CodeAnalysisRuleAssemblies />
@@ -84,9 +84,8 @@
       <HeaderFileName />
     </Midl>
     <ClCompile>
-      <AdditionalOptions>/Zm200  %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>BUILDPSGLIBLIB;_USRDLL;_ATL_NO_UUIDOF;_GXDLL;_DEBUG;WIN32;_WINDOWS;ENABLE_LOGGING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>BUILDPSGLIBLIB;_USRDLL;_GXDLL;_DEBUG;WIN32;_WINDOWS;ENABLE_LOGGING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -96,6 +95,9 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <AdditionalIncludeDirectories>..\Include;;$(ARPDIR)\BridgeLink\Include</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -109,11 +111,14 @@
       <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
       <IgnoreSpecificDefaultLibraries>PGSuperExt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ModuleDefinitionFile>.\psgLib.def</ModuleDefinitionFile>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention />
       <TargetMachine>MachineX64</TargetMachine>
+      <OptimizeReferences>false</OptimizeReferences>
+      <EnableCOMDATFolding>false</EnableCOMDATFolding>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -138,8 +143,7 @@
       <HeaderFileName />
     </Midl>
     <ClCompile>
-      <AdditionalOptions>/Zm200  %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;_USRDLL;BUILDPSGLIBLIB;_ATL_NO_UUIDOF;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;_USRDLL;BUILDPSGLIBLIB;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <PrecompiledHeader>Use</PrecompiledHeader>
@@ -148,6 +152,10 @@
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalIncludeDirectories>..\Include;;$(ARPDIR)\BridgeLink\Include</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -161,12 +169,13 @@
       <IgnoreSpecificDefaultLibraries>PGSuperExt.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ModuleDefinitionFile>.\psgLib.def</ModuleDefinitionFile>
       <SubSystem>Windows</SubSystem>
-      <OptimizeReferences>true</OptimizeReferences>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <OptimizeReferences>false</OptimizeReferences>
+      <EnableCOMDATFolding>false</EnableCOMDATFolding>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention />
       <TargetMachine>MachineX64</TargetMachine>
+      <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -187,18 +196,54 @@
     <ClCompile Include="AdditionalInterfaceShearBarDlg.cpp" />
     <ClCompile Include="BeamDimensionGrid.cpp" />
     <ClCompile Include="BeamFamilyManager.cpp" />
+    <ClCompile Include="BearingCriteria.cpp" />
+    <ClCompile Include="BottomFlangeClearanceCriteria.cpp" />
     <ClCompile Include="CEBFIPConcretePage.cpp" />
+    <ClCompile Include="ClosureJointCriteria.cpp" />
     <ClCompile Include="ConcreteEntryDlg.cpp" />
     <ClCompile Include="ConcreteEntryGeneralPage.cpp" />
     <ClCompile Include="ConcreteLibraryEntry.cpp" />
     <ClCompile Include="ConnectionEntryDlg.cpp" />
     <ClCompile Include="ConnectionLibraryEntry.cpp" />
+    <ClCompile Include="CreepCriteria.cpp" />
+    <ClCompile Include="DeadLoadDistributionCriteria.cpp" />
     <ClCompile Include="DiaphragmDefinitionDlg.cpp" />
     <ClCompile Include="DiaphragmGrid.cpp" />
     <ClCompile Include="DiaphragmLayoutEntry.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="DuctSizeCriteria.cpp" />
     <ClCompile Include="DuctEntryDlg.cpp" />
     <ClCompile Include="DuctLibraryEntry.cpp" />
+    <ClCompile Include="EndZoneCriteria.cpp" />
+    <ClCompile Include="GirderInclinationCriteria.cpp" />
+    <ClCompile Include="HarpedStrandDesignCriteria.cpp" />
+    <ClCompile Include="HaulingCriteria.cpp" />
+    <ClCompile Include="HaunchCriteria.cpp" />
+    <ClCompile Include="HoldDownCriteria.cpp" />
+    <ClCompile Include="InterfaceShearCriteria.cpp" />
+    <ClCompile Include="LiftingCriteria.cpp" />
+    <ClCompile Include="LimitsCriteria.cpp" />
+    <ClCompile Include="LimitStateConcreteStrengthCriteria.cpp" />
+    <ClCompile Include="LiveLoadCriteria.cpp" />
+    <ClCompile Include="LiveLoadDeflectionCriteria.cpp" />
+    <ClCompile Include="LiveLoadDistributionCriteria.cpp" />
+    <ClCompile Include="MomentCapacityCriteria.cpp" />
+    <ClCompile Include="PlantHandlingCriteria.cpp" />
+    <ClCompile Include="PrestressedElementCriteria.cpp" />
+    <ClCompile Include="PrestressLossCriteria.cpp" />
+    <ClCompile Include="PrincipalTensionStressCriteria.cpp" />
+    <ClCompile Include="RefactoredSpecLibraryParameters.cpp" />
+    <ClCompile Include="SectionPropertiesCriteria.cpp" />
+    <ClCompile Include="ShearCapacityCriteria.cpp" />
+    <ClCompile Include="SlabOffsetCriteria.cpp" />
+    <ClCompile Include="SpecificationCriteria.cpp" />
+    <ClCompile Include="SpecLibraryEntryImpl.cpp" />
+    <ClCompile Include="StrandSlopeCriteria.cpp" />
+    <ClCompile Include="StrandStressCriteria.cpp" />
+    <ClCompile Include="TendonStressCriteria.cpp" />
+    <ClCompile Include="TensionStressLimit.cpp" />
+    <ClCompile Include="TransferLengthCriteria.cpp" />
+    <ClCompile Include="UHPCConcretePage.cpp" />
     <ClCompile Include="GirderDebondCriteriaPage.cpp" />
     <ClCompile Include="GirderDiaphragmPage.cpp" />
     <ClCompile Include="GirderDimensionsPage.cpp" />
@@ -310,14 +355,27 @@
     <ClInclude Include="..\Include\PGSuperLibraryMgrCATID.h" />
     <ClInclude Include="..\Include\psgLib\AutoLib.h" />
     <ClInclude Include="..\Include\psgLib\BeamFamilyManager.h" />
+    <ClInclude Include="..\Include\psgLib\BearingCriteria.h" />
+    <ClInclude Include="..\Include\psgLib\BottomFlangeClearanceCriteria.h" />
+    <ClInclude Include="..\Include\psgLib\ClosureJointCriteria.h" />
     <ClInclude Include="..\Include\PsgLib\ConcreteLibraryEntry.h" />
     <ClInclude Include="..\Include\PsgLib\ConnectionLibraryEntry.h" />
+    <ClInclude Include="..\Include\psgLib\CreepCriteria.h" />
+    <ClInclude Include="..\Include\psgLib\DeadLoadDistributionCriteria.h" />
     <ClInclude Include="..\Include\PsgLib\DiaphragmLayoutEntry.h" />
     <ClInclude Include="..\Include\psgLib\DuctLibraryEntry.h" />
+    <ClInclude Include="..\Include\psgLib\DuctSizeCriteria.h" />
+    <ClInclude Include="..\Include\psgLib\EndZoneCriteria.h" />
+    <ClInclude Include="..\Include\psgLib\GirderInclinationCriteria.h" />
     <ClInclude Include="..\Include\PsgLib\GirderLibraryEntry.h" />
+    <ClInclude Include="..\Include\psgLib\HarpedStrandDesignCriteria.h" />
+    <ClInclude Include="..\Include\psgLib\HaulingCriteria.h" />
     <ClInclude Include="..\Include\psgLib\HaulTruckLibraryEntry.h" />
+    <ClInclude Include="..\Include\psgLib\HaunchCriteria.h" />
+    <ClInclude Include="..\Include\psgLib\HoldDownCriteria.h" />
     <ClInclude Include="..\Include\psgLib\HorizontalInterfaceZoneData.h" />
     <ClInclude Include="..\Include\psgLib\HorizShearGrid.h" />
+    <ClInclude Include="..\Include\psgLib\InterfaceShearCriteria.h" />
     <ClInclude Include="..\Include\psgLib\ISupportIcon.h" />
     <ClInclude Include="..\Include\psgLib\ISupportLibraryManager.h" />
     <ClInclude Include="..\Include\psgLib\LibChildFrm.h" />
@@ -328,20 +386,40 @@
     <ClInclude Include="..\Include\psgLib\libraryEditorView.h" />
     <ClInclude Include="..\Include\psgLib\LibraryEntryDifferenceItem.h" />
     <ClInclude Include="..\Include\PsgLib\LibraryManager.h" />
+    <ClInclude Include="..\Include\psgLib\LiftingCriteria.h" />
+    <ClInclude Include="..\Include\psgLib\LimitsCriteria.h" />
+    <ClInclude Include="..\Include\psgLib\LimitStateConcreteStrengthCriteria.h" />
+    <ClInclude Include="..\Include\psgLib\LiveLoadCriteria.h" />
+    <ClInclude Include="..\Include\psgLib\LiveLoadDeflectionCriteria.h" />
+    <ClInclude Include="..\Include\psgLib\LiveLoadDistributionCriteria.h" />
     <ClInclude Include="..\Include\psgLib\LiveLoadLibraryEntry.h" />
+    <ClInclude Include="..\Include\psgLib\MomentCapacityCriteria.h" />
     <ClInclude Include="..\Include\psgLib\OldHaulTruck.h" />
+    <ClInclude Include="..\Include\psgLib\PlantHandlingCriteria.h" />
+    <ClInclude Include="..\Include\psgLib\PrestressedElementCriteria.h" />
+    <ClInclude Include="..\Include\psgLib\PrestressLossCriteria.h" />
+    <ClInclude Include="..\Include\psgLib\PrincipalTensionStressCriteria.h" />
     <ClInclude Include="..\Include\PsgLib\psgLib.h" />
     <ClInclude Include="..\Include\PsgLib\psgLibLib.h" />
     <ClInclude Include="..\Include\psgLib\RatingLibraryEntry.h" />
-    <ClInclude Include="..\Include\psgLib\RebarUIUtils.h" />
+    <ClInclude Include="..\Include\psgLib\RefactoredSpecLibraryParameters.h" />
+    <ClInclude Include="..\Include\psgLib\SectionPropertiesCriteria.h" />
+    <ClInclude Include="..\Include\psgLib\ShearCapacityCriteria.h" />
     <ClInclude Include="..\Include\psgLib\ShearData.h" />
     <ClInclude Include="..\Include\psgLib\ShearSteelGrid.h" />
     <ClInclude Include="..\Include\psgLib\ShearSteelPage.h" />
     <ClInclude Include="..\Include\psgLib\ShearZoneData.h" />
+    <ClInclude Include="..\Include\psgLib\SlabOffsetCriteria.h" />
+    <ClInclude Include="..\Include\psgLib\SpecificationCriteria.h" />
     <ClInclude Include="..\Include\psgLib\SpecLibraryEntry.h" />
+    <ClInclude Include="..\Include\psgLib\StrandSlopeCriteria.h" />
+    <ClInclude Include="..\Include\psgLib\StrandStressCriteria.h" />
     <ClInclude Include="..\Include\psgLib\StructuredLoad.h" />
     <ClInclude Include="..\Include\psglib\StructuredSave.h" />
+    <ClInclude Include="..\Include\psgLib\TendonStressCriteria.h" />
+    <ClInclude Include="..\Include\psgLib\TensionStressLimit.h" />
     <ClInclude Include="..\Include\PsgLib\TrafficBarrierEntry.h" />
+    <ClInclude Include="..\Include\psgLib\TransferLengthCriteria.h" />
     <ClInclude Include="..\Include\psgLib\UnitServer.h" />
     <ClInclude Include="AASHTOConcretePage.h" />
     <ClInclude Include="ACIConcretePage.h" />
@@ -356,6 +434,8 @@
     <ClInclude Include="DiaphragmGrid.h" />
     <ClInclude Include="dllmain.h" />
     <ClInclude Include="DuctEntryDlg.h" />
+    <ClInclude Include="SpecLibraryEntryImpl.h" />
+    <ClInclude Include="UHPCConcretePage.h" />
     <ClInclude Include="GirderDebondCriteriaPage.h" />
     <ClInclude Include="GirderDiaphragmPage.h" />
     <ClInclude Include="GirderDimensionsPage.h" />
@@ -367,7 +447,6 @@
     <ClInclude Include="GirderMainSheet.h" />
     <ClInclude Include="GirderStraightStrandPage.h" />
     <ClInclude Include="GirderStrandGrid.h" />
-    <ClInclude Include="GirderStrandGridClient.h" />
     <ClInclude Include="HaulTruckDlg.h" />
     <ClInclude Include="KdotHaulingDlg.h" />
     <ClInclude Include="LibraryAppPlugin.h" />
@@ -389,7 +468,6 @@
     <ClInclude Include="SpecClosurePage.h" />
     <ClInclude Include="SpecCreepPage.h" />
     <ClInclude Include="SpecDeadLoadsPage.h" />
-    <ClInclude Include="SpecDebondingPage.h" />
     <ClInclude Include="SpecDescrPage.h" />
     <ClInclude Include="SpecDesignPage.h" />
     <ClInclude Include="SpecGirderStressPage.h" />

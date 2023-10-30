@@ -28,7 +28,7 @@ CLASS
 #include "stdafx.h"
 #include "ProjectAgent.h"
 #include "XSectionData.h"
-#include <Units\SysUnits.h>
+#include <Units\Convert.h>
 #include <StdIo.h>
 
 #include <IFace\Tools.h>
@@ -48,7 +48,7 @@ static char THIS_FILE[] = __FILE__;
 //======================== LIFECYCLE  =======================================
 CXSectionData::CXSectionData()
 {
-   GdrSpacing = ::ConvertToSysUnits( 5.0, unitMeasure::Feet );
+   GdrSpacing = WBFL::Units::ConvertToSysUnits( 5.0, WBFL::Units::Measure::Feet );
    GdrSpacingMeasurement = Normal;
    GdrLineCount = 5;
    Girder = _T("");
@@ -59,16 +59,16 @@ CXSectionData::CXSectionData()
    DeckType               = pgsTypes::sdtCompositeCIP;
    TransverseConnectivity = pgsTypes::atcConnectedAsUnit; // only applicable if girder spacing is adjacent
 
-   GrossDepth       = ::ConvertToSysUnits(  8.5, unitMeasure::Inch );
-   LeftOverhang     = ::ConvertToSysUnits(  1.5, unitMeasure::Feet );
-   RightOverhang    = ::ConvertToSysUnits(  1.5, unitMeasure::Feet );
-   SlabOffset       = ::ConvertToSysUnits( 10.0, unitMeasure::Inch );
-   Fillet           = ::ConvertToSysUnits( 0.75, unitMeasure::Inch );
+   GrossDepth       = WBFL::Units::ConvertToSysUnits(  8.5, WBFL::Units::Measure::Inch );
+   LeftOverhang     = WBFL::Units::ConvertToSysUnits(  1.5, WBFL::Units::Measure::Feet );
+   RightOverhang    = WBFL::Units::ConvertToSysUnits(  1.5, WBFL::Units::Measure::Feet );
+   SlabOffset       = WBFL::Units::ConvertToSysUnits( 10.0, WBFL::Units::Measure::Inch );
+   Fillet           = WBFL::Units::ConvertToSysUnits( 0.75, WBFL::Units::Measure::Inch );
 
-   SlabFc               = ::ConvertToSysUnits(4.,unitMeasure::KSI);
-   SlabStrengthDensity  = ::ConvertToSysUnits(160.,unitMeasure::LbfPerFeet3);
-   SlabWeightDensity    = ::ConvertToSysUnits(160.,unitMeasure::LbfPerFeet3);
-   SlabMaxAggregateSize = ::ConvertToSysUnits(0.75,unitMeasure::Inch);
+   SlabFc               = WBFL::Units::ConvertToSysUnits(4.,WBFL::Units::Measure::KSI);
+   SlabStrengthDensity  = WBFL::Units::ConvertToSysUnits(160.,WBFL::Units::Measure::LbfPerFeet3);
+   SlabWeightDensity    = WBFL::Units::ConvertToSysUnits(160.,WBFL::Units::Measure::LbfPerFeet3);
+   SlabMaxAggregateSize = WBFL::Units::ConvertToSysUnits(0.75,WBFL::Units::Measure::Inch);
    SlabEcK1             = 1.0;
    SlabEcK2             = 1.0;
    SlabCreepK1          = 1.0;
@@ -76,17 +76,17 @@ CXSectionData::CXSectionData()
    SlabShrinkageK1      = 1.0;
    SlabShrinkageK2      = 1.0;
    SlabUserEc           = false;
-   SlabEc               = ::ConvertToSysUnits(4200.,unitMeasure::KSI);
+   SlabEc               = WBFL::Units::ConvertToSysUnits(4200.,WBFL::Units::Measure::KSI);
 
    WearingSurface = pgsTypes::wstSacrificialDepth;
-   OverlayWeight    = ::ConvertToSysUnits( 25.0, unitMeasure::PSF );
-   SacrificialDepth = ::ConvertToSysUnits(  0.5, unitMeasure::Inch );
-   PanelDepth       = ::ConvertToSysUnits(  0.0, unitMeasure::Inch );
-   PanelSupport     = ::ConvertToSysUnits(  4.0, unitMeasure::Inch );
+   OverlayWeight    = WBFL::Units::ConvertToSysUnits( 25.0, WBFL::Units::Measure::PSF );
+   SacrificialDepth = WBFL::Units::ConvertToSysUnits(  0.5, WBFL::Units::Measure::Inch );
+   PanelDepth       = WBFL::Units::ConvertToSysUnits(  0.0, WBFL::Units::Measure::Inch );
+   PanelSupport     = WBFL::Units::ConvertToSysUnits(  4.0, WBFL::Units::Measure::Inch );
                          // for horizontal shear capacity)
 
    OverhangTaper = pgsTypes::dotTopTopFlange;
-   OverhangEdgeDepth = ::ConvertToSysUnits( 7.0, unitMeasure::Inch );
+   OverhangEdgeDepth = WBFL::Units::ConvertToSysUnits( 7.0, WBFL::Units::Measure::Inch );
 
    pLeftTrafficBarrierEntry = 0;
    pRightTrafficBarrierEntry = 0;
@@ -488,7 +488,7 @@ HRESULT CXSectionData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress, ILib
       var.vt = VT_R8;
       hr = pStrLoad->get_Property(_T("OverlayDensity"), &var );
       OverlayDensity = var.dblVal;
-      Float64 g = unitSysUnitsMgr::GetGravitationalAcceleration();
+      Float64 g = WBFL::Units::System::GetGravitationalAcceleration();
       OverlayWeight = OverlayDensity*OverlayDepth*g;
 
       if ( version < 13 )

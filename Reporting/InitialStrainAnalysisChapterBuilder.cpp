@@ -47,9 +47,9 @@ LPCTSTR CInitialStrainAnalysisChapterBuilder::GetName() const
    return TEXT("Initial Strain Analysis");
 }
 
-rptChapter* CInitialStrainAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CInitialStrainAnalysisChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CInitialStrainAnalysisReportSpecification* pGdrRptSpec = dynamic_cast<CInitialStrainAnalysisReportSpecification*>(pRptSpec);
+   auto pGdrRptSpec = std::dynamic_pointer_cast<const CInitialStrainAnalysisReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGdrRptSpec->GetBroker(&pBroker);
 
@@ -126,7 +126,7 @@ rptChapter* CInitialStrainAnalysisChapterBuilder::Build(CReportSpecification* pR
    return pChapter;
 }
 
-CChapterBuilder* CInitialStrainAnalysisChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CInitialStrainAnalysisChapterBuilder::Clone() const
 {
-   return new CInitialStrainAnalysisChapterBuilder;
+   return std::make_unique<CInitialStrainAnalysisChapterBuilder>();
 }

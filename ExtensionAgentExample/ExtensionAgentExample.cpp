@@ -48,8 +48,8 @@ STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
 
 void RegsiterAsExtensionAgent(bool bRegister)
 {
-   sysComCatMgr::RegWithCategory(CLSID_ExampleExtensionAgent, CATID_PGSuperExtensionAgent, bRegister);
-   sysComCatMgr::RegWithCategory(CLSID_ExampleExtensionAgent, CATID_PGSpliceExtensionAgent, bRegister);
+   WBFL::System::ComCatMgr::RegWithCategory(CLSID_ExampleExtensionAgent, CATID_PGSuperExtensionAgent, bRegister);
+   WBFL::System::ComCatMgr::RegWithCategory(CLSID_ExampleExtensionAgent, CATID_PGSpliceExtensionAgent, bRegister);
 }
 
 // DllRegisterServer - Adds entries to the system registry

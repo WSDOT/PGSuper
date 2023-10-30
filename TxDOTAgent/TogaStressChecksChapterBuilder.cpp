@@ -35,7 +35,7 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Artifact.h>
 #include <IFace\Project.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 #include <IFace\Intervals.h>
 
 #include <PgsExt\GirderArtifact.h>
@@ -69,9 +69,9 @@ LPCTSTR CTogaStressChecksChapterBuilder::GetName() const
    return TEXT("Stress Checks");
 }
 
-rptChapter* CTogaStressChecksChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CTogaStressChecksChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
@@ -140,7 +140,7 @@ void CTogaStressChecksChapterBuilder::BuildTableAndNotes(rptChapter* pChapter, I
    CFlexuralStressCheckTable().BuildTable(pChapter, pBroker, pFactoredGdrArtifact, fabrSegmentKey.segmentIndex, pDisplayUnits, task, true/*girder stresses*/);
 }
 
-CChapterBuilder* CTogaStressChecksChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTogaStressChecksChapterBuilder::Clone() const
 {
-   return new CTogaStressChecksChapterBuilder;
+   return std::make_unique<CTogaStressChecksChapterBuilder>();
 }

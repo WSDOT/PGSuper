@@ -111,11 +111,11 @@ BOOL CCopyPierDlg::OnInitDialog()
 
    // set up report window
    GET_IFACE(IReportManager, pReportMgr);
-   CReportDescription rptDesc = pReportMgr->GetReportDescription(_T("Copy Pier Properties Report"));
-   std::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
-   std::shared_ptr<CReportSpecification> pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
+   WBFL::Reporting::ReportDescription rptDesc = pReportMgr->GetReportDescription(_T("Copy Pier Properties Report"));
+   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
+   std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
 
-   m_pRptSpec = std::dynamic_pointer_cast<CCopyPierPropertiesReportSpecification, CReportSpecification>(pRptSpec);
+   m_pRptSpec = std::dynamic_pointer_cast<CCopyPierPropertiesReportSpecification, WBFL::Reporting::ReportSpecification>(pRptSpec);
 
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    HICON hIcon = (HICON)LoadImage(AfxGetResourceHandle(),MAKEINTRESOURCE(IDI_COPY_PROPERTIES),IMAGE_ICON,0,0,LR_DEFAULTSIZE);
@@ -132,7 +132,7 @@ BOOL CCopyPierDlg::OnInitDialog()
    UpdateReportData();
 
    GET_IFACE(IReportManager,pRptMgr);
-   std::shared_ptr<CReportSpecificationBuilder> nullSpecBuilder;
+   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> nullSpecBuilder;
    m_pBrowser = pRptMgr->CreateReportBrowser(GetSafeHwnd(),pRptSpec,nullSpecBuilder);
    m_pBrowser->GetBrowserWnd()->ModifyStyle(0,WS_BORDER );
 
@@ -353,7 +353,7 @@ void CCopyPierDlg::FillComboBoxes(CComboBox& cbPier, bool bIncludeAllPiers, Pier
 void CCopyPierDlg::UpdateReportData()
 {
    GET_IFACE(IReportManager,pReportMgr);
-   std::shared_ptr<CReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
+   std::shared_ptr<WBFL::Reporting::ReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
 
    PierIndexType pierIdx = GetFromPier();
    std::vector<PierIndexType> toPiers = GetToPiers();
@@ -361,11 +361,11 @@ void CCopyPierDlg::UpdateReportData()
    std::vector<ICopyPierPropertiesCallback*> callbacks = GetSelectedCopyPierPropertiesCallbacks();
 
    // We know we put at least one of our own chapter builders into the report builder. Find it and set its data
-   CollectionIndexType numchs = pBuilder->GetChapterBuilderCount();
-   for (CollectionIndexType ich = 0; ich < numchs; ich++)
+   IndexType numchs = pBuilder->GetChapterBuilderCount();
+   for (IndexType ich = 0; ich < numchs; ich++)
    {
-      std::shared_ptr<CChapterBuilder> pChb = pBuilder->GetChapterBuilder(ich);
-      std::shared_ptr<CCopyPierPropertiesChapterBuilder> pRptCpBuilder = std::dynamic_pointer_cast<CCopyPierPropertiesChapterBuilder,CChapterBuilder>(pChb);
+      std::shared_ptr<WBFL::Reporting::ChapterBuilder> pChb = pBuilder->GetChapterBuilder(ich);
+      std::shared_ptr<CCopyPierPropertiesChapterBuilder> pRptCpBuilder = std::dynamic_pointer_cast<CCopyPierPropertiesChapterBuilder,WBFL::Reporting::ChapterBuilder>(pChb);
 
       if (pRptCpBuilder)
       {
@@ -381,9 +381,9 @@ void CCopyPierDlg::UpdateReport()
       UpdateReportData();
 
       GET_IFACE(IReportManager,pReportMgr);
-      std::shared_ptr<CReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
+      std::shared_ptr<WBFL::Reporting::ReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
 
-      std::shared_ptr<CReportSpecification> pRptSpec = std::dynamic_pointer_cast<CReportSpecification,CCopyPierPropertiesReportSpecification>(m_pRptSpec);
+      std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = std::dynamic_pointer_cast<WBFL::Reporting::ReportSpecification,CCopyPierPropertiesReportSpecification>(m_pRptSpec);
 
       std::shared_ptr<rptReport> pReport = pBuilder->CreateReport( pRptSpec );
       m_pBrowser->UpdateReport( pReport, true );
@@ -432,20 +432,20 @@ void CCopyPierDlg::OnOK()
    UpdateData(TRUE);
 
    // execute transactions
-   pgsMacroTxn* pMacro = new pgsMacroTxn;
+   std::unique_ptr<pgsMacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
    pMacro->Name(_T("Copy Pier Properties"));
 
    std::vector<ICopyPierPropertiesCallback*> callbacks = GetSelectedCopyPierPropertiesCallbacks();
    for (auto callback : callbacks)
    {
-      txnTransaction* pTxn = callback->CreateCopyTransaction(m_FromPierIdx, m_ToPiers);
-      pMacro->AddTransaction(pTxn);
+      auto txn = callback->CreateCopyTransaction(m_FromPierIdx, m_ToPiers);
+      pMacro->AddTransaction(std::move(txn));
    }
 
-   if (pMacro->GetTxnCount() > 0)
+   if (0 < pMacro->GetTxnCount())
    {
       GET_IFACE(IEAFTransactions, pTransactions);
-      pTransactions->Execute(pMacro);
+      pTransactions->Execute(std::move(pMacro));
    }
 
    UpdateReport();
@@ -509,7 +509,7 @@ void CCopyPierDlg::CleanUp()
 {
    if ( m_pBrowser )
    {
-      m_pBrowser = std::shared_ptr<CReportBrowser>();
+      m_pBrowser = std::shared_ptr<WBFL::Reporting::ReportBrowser>();
    }
 
    // save the size of the window
@@ -592,6 +592,10 @@ void CCopyPierDlg::OnCmenuSelected(UINT id)
 
   case CCS_RB_SELECT_ALL:
      m_pBrowser->SelectAll();
+     break;
+
+  case CCS_RB_COPY:
+     m_pBrowser->Copy();
      break;
 
   case CCS_RB_PRINT:

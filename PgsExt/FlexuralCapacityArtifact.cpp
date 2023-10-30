@@ -189,26 +189,3 @@ void pgsFlexuralCapacityArtifact::MakeAssignment(const pgsFlexuralCapacityArtifa
 {
    MakeCopy( rOther );
 }
-
-#if defined _DEBUG
-bool pgsFlexuralCapacityArtifact::AssertValid() const
-{
-   return true;
-}
-
-void pgsFlexuralCapacityArtifact::Dump(dbgDumpContext& os) const
-{
-   os << "Dump for pgsFlexuralCapacityArtifact" << endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool pgsFlexuralCapacityArtifact::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("pgsFlexuralCapacityArtifact");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for pgsFlexuralCapacityArtifact");
-
-   TESTME_EPILOG("pgsFlexuralCapacityArtifact");
-}
-#endif // _UNITTEST

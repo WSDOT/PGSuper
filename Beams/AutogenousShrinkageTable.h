@@ -27,7 +27,7 @@
 #include <EAF\EAFDisplayUnits.h>
 
 
-class lrfdLosses;
+class WBFL::LRFD::Losses;
 
 class CAutogenousShrinkageTable : public rptRcTable
 {

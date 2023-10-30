@@ -22,9 +22,9 @@
 
 #pragma once
 
-#include <System\Transaction.h>
+#include <EAF\EAFTransaction.h>
 
-class txnEditTemporarySupportStation : public txnTransaction
+class txnEditTemporarySupportStation : public CEAFTransaction
 {
 public:
    txnEditTemporarySupportStation(SupportIndexType tsIdx,Float64 oldStation,Float64 newStation);
@@ -33,10 +33,10 @@ public:
 
    virtual bool Execute();
    virtual void Undo();
-   virtual txnTransaction* CreateClone() const;
+   virtual std::unique_ptr<CEAFTransaction>CreateClone() const;
    virtual std::_tstring Name() const;
-   virtual bool IsUndoable();
-   virtual bool IsRepeatable();
+   virtual bool IsUndoable() const;
+   virtual bool IsRepeatable() const;
 
 private:
    void DoExecute(int i);

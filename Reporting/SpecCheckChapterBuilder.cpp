@@ -45,6 +45,7 @@
 #include <Reporting\DuctGeometryCheckTable.h>
 #include <Reporting\PrincipalTensionStressCheckTable.h>
 #include <Reporting\RatingSummaryTable.h>
+#include <Reporting\ReinforcementFatigueCheck.h>
 
 #include <MathEx.h>
 
@@ -53,13 +54,16 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Artifact.h>
 #include <IFace\Project.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>
 #include <IFace\SplittingChecks.h>
 
 #include <PgsExt\GirderArtifact.h>
+
+#include <psgLib/EndZoneCriteria.h>
+#include <psgLib/SlabOffsetCriteria.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -97,14 +101,14 @@ LPCTSTR CSpecCheckChapterBuilder::GetName() const
    return TEXT("Specification Checks");
 }
 
-rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CSpecCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
 
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
    const CGirderKey& girderKey = pGirderRptSpec->GetGirderKey();
@@ -133,7 +137,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
 
    pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
-   *pPara << _T("Stress Limitations on Prestressing Tendons [") << LrfdCw8th(_T("5.9.3"),_T("5.9.2.2")) << _T("]");
+   *pPara << _T("Stress Limitations on Prestressing Tendons [") << WBFL::LRFD::LrfdCw8th(_T("5.9.3"),_T("5.9.2.2")) << _T("]");
    *pChapter << pPara;
 
    // Stresses in prestressing strands
@@ -167,7 +171,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    Float64 fc_reqd  = pGirderArtifact->GetRequiredGirderConcreteStrength();
    if ( 0 <= fci_reqd )
    {
-      Float64 fci_rounded = IS_SI_UNITS(pDisplayUnits) ? CeilOffTol(fci_reqd,::ConvertToSysUnits(6,unitMeasure::MPa)) : CeilOffTol(fci_reqd,::ConvertToSysUnits(100,unitMeasure::PSI));
+      Float64 fci_rounded = IS_SI_UNITS(pDisplayUnits) ? CeilOffTol(fci_reqd,WBFL::Units::ConvertToSysUnits(6,WBFL::Units::Measure::MPa)) : CeilOffTol(fci_reqd,WBFL::Units::ConvertToSysUnits(100,WBFL::Units::Measure::PSI));
       *p << _T("Required ") << RPT_FCI << _T(" = ") << stress_u.SetValue(fci_reqd);
       *p << _T(" ") << symbol(RIGHT_DOUBLE_ARROW) << _T(" ") << stress_u.SetValue(fci_rounded) << rptNewLine;
    }
@@ -189,7 +193,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    if ( 0 <= fc_reqd )
    {
-      Float64 fc_rounded = IS_SI_UNITS(pDisplayUnits) ? CeilOffTol(fc_reqd,::ConvertToSysUnits(6,unitMeasure::MPa)) : CeilOffTol(fc_reqd,::ConvertToSysUnits(100,unitMeasure::PSI));
+      Float64 fc_rounded = IS_SI_UNITS(pDisplayUnits) ? CeilOffTol(fc_reqd,WBFL::Units::ConvertToSysUnits(6,WBFL::Units::Measure::MPa)) : CeilOffTol(fc_reqd,WBFL::Units::ConvertToSysUnits(100,WBFL::Units::Measure::PSI));
       *p << _T("Required ") << RPT_FC  << _T(" = ") << stress_u.SetValue(fc_reqd);
       *p << _T(" ") << symbol(RIGHT_DOUBLE_ARROW) << _T(" ") << stress_u.SetValue(fc_rounded) << rptNewLine;
    }
@@ -240,7 +244,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
       Float64 fc_reqd = pGirderArtifact->GetRequiredDeckConcreteStrength();
       if ( 0 <= fc_reqd )
       {
-         Float64 fc_rounded = IS_SI_UNITS(pDisplayUnits) ? CeilOffTol(fc_reqd,::ConvertToSysUnits(6,unitMeasure::MPa)) : CeilOffTol(fc_reqd,::ConvertToSysUnits(100,unitMeasure::PSI));
+         Float64 fc_rounded = IS_SI_UNITS(pDisplayUnits) ? CeilOffTol(fc_reqd,WBFL::Units::ConvertToSysUnits(6,WBFL::Units::Measure::MPa)) : CeilOffTol(fc_reqd,WBFL::Units::ConvertToSysUnits(100,WBFL::Units::Measure::PSI));
          *p << _T("Required ") << RPT_FC  << _T(" = ") << stress_u.SetValue(fc_reqd);
          *p << _T(" ") << symbol(RIGHT_DOUBLE_ARROW) << _T(" ") << stress_u.SetValue(fc_rounded) << rptNewLine;
       }
@@ -263,6 +267,9 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
          CFlexuralStressCheckTable().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits,task,false/*deck stresses*/);
       } // next task
    }
+
+   // Reinforcement fatigue check
+   CReinforcementFatigueCheck().Build(pChapter, pBroker, pGirderArtifact, pDisplayUnits);
 
    // Flexural Capacity
    p = new rptParagraph( rptStyleManager::GetHeadingStyle() );
@@ -387,13 +394,14 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    // Principle tension stress in webs
    CPrincipalTensionStressCheckTable().Build(pChapter, pBroker, pGirderArtifact, pDisplayUnits);
 
-   if (pSpecEntry->IsSplittingCheckEnabled())
+   const auto& end_zone_criteria = pSpecEntry->GetEndZoneCriteria();
+   if (end_zone_criteria.bCheckSplitting)
    {
       // Splitting Zone check
       write_splitting_zone_check(pBroker,pGirderArtifact,pChapter);
    }
 
-   if (pSpecEntry->IsConfinementCheckEnabled())
+   if (end_zone_criteria.bCheckConfinement)
    {
       // confinement check
       write_confinement_check(pBroker,pDisplayUnits,pGirderArtifact,pChapter);
@@ -404,9 +412,9 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    // Lifting
    GET_IFACE2(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
-   if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled() || lrfdVersionMgr::NinthEdition2020 <= lrfdVersionMgr::GetVersion())
+   if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled() || WBFL::LRFD::BDSManager::Edition::NinthEdition2020 <= WBFL::LRFD::BDSManager::GetEdition())
    {
-      // starting with 9th edition, stability checks are manditory so always report the outcome
+      // starting with 9th edition, stability checks are mandatory so always report the outcome
       p = new rptParagraph;
       p->SetName(_T("Lifting"));
       *pChapter << p;
@@ -416,9 +424,9 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 
    // Hauling
    GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
-   if (pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled() || lrfdVersionMgr::NinthEdition2020 <= lrfdVersionMgr::GetVersion())
+   if (pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled() || WBFL::LRFD::BDSManager::Edition::NinthEdition2020 <= WBFL::LRFD::BDSManager::GetEdition())
    {
-      // starting with 9th edition, stability checks are manditory so always report the outcome
+      // starting with 9th edition, stability checks are mandatory so always report the outcome
       p = new rptParagraph;
       p->SetName(_T("Hauling"));
       *pChapter << p;
@@ -460,10 +468,53 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    // Bottom Flange Clearance Check
    CConstructabilityCheckTable().BuildBottomFlangeClearanceCheck(pChapter,pBroker,girderList,pDisplayUnits);
 
+   const auto& slab_offset_criteria = pSpecEntry->GetSlabOffsetCriteria();
    if (pBridge->GetDeckType() == pgsTypes::sdtNone)
    {
-      // Finished Elevation Check
-      CConstructabilityCheckTable().BuildFinishedElevationCheck(pChapter, pBroker, girderList, pDisplayUnits);
+      p = new rptParagraph(rptStyleManager::GetHeadingStyle());
+      p->SetName(_T("Finished Elevation Checks"));
+      *p << rptNewLine << _T("Finished Elevation Checks") << rptNewLine;
+      *pChapter << p;
+
+      if (slab_offset_criteria.bCheck)
+      {
+         // Finished Elevation Check
+         CConstructabilityCheckTable().BuildFinishedElevationCheck(pChapter, pBroker, girderList, pDisplayUnits);
+      }
+      else
+      {
+         p = new rptParagraph;
+         *p << color(Red) << Bold(_T("Note: Finished elevations specification Checks are Disabled in the Project Criteria.")) << color(Black) << rptNewLine;
+         *pChapter << p;
+      }
+   }
+   else if (pBridge->GetHaunchInputDepthType() != pgsTypes::hidACamber) // direct haunch input
+   {
+      p = new rptParagraph(rptStyleManager::GetHeadingStyle());
+      p->SetName(_T("Finished Elevation and Haunch Checks"));
+      *p << rptNewLine << _T("Finished Elevation and Haunch Checks") << rptNewLine;
+      *pChapter << p;
+
+      if (slab_offset_criteria.bCheck)
+      {
+         // Finished Elevation Check
+         CConstructabilityCheckTable().BuildFinishedElevationCheck(pChapter, pBroker, girderList, pDisplayUnits);
+
+         // Minimum Haunch Check
+         CConstructabilityCheckTable().BuildMinimumHaunchCheck(pChapter, pBroker, girderList, pDisplayUnits);
+
+         // Min Haunch at bearing centerlines check
+         CConstructabilityCheckTable().BuildMinimumHaunchCLCheck(pChapter, pBroker, girderList, pDisplayUnits);
+
+         // Fillet Check
+         CConstructabilityCheckTable().BuildMinimumFilletCheck(pChapter, pBroker, girderList, pDisplayUnits);
+      }
+      else
+      {
+         p = new rptParagraph;
+         *p << color(Red) << Bold(_T("Note: Finished elevations specification Checks are Disabled in the Project Criteria.")) << color(Black) << rptNewLine;
+         *pChapter << p;
+      }
    }
    else
    {
@@ -472,7 +523,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
       *p << rptNewLine << _T("Haunch Geometry Checks") << rptNewLine;
       *pChapter << p;
 
-      if (!pSpecEntry->IsSlabOffsetCheckEnabled())
+      if (!slab_offset_criteria.bCheck)
       {
          p = new rptParagraph;
          *p << color(Red) << Bold(_T("Note: Specification Checks for Haunch Geometry are Disabled in the Project Criteria. All Status values will be reported as N/A.")) << color(Black) << rptNewLine;
@@ -501,9 +552,9 @@ rptChapter* CSpecCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
    return pChapter;
 }
 
-CChapterBuilder* CSpecCheckChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CSpecCheckChapterBuilder::Clone() const
 {
-   return new CSpecCheckChapterBuilder;
+   return std::make_unique<CSpecCheckChapterBuilder>();
 }
 
 //======================== ACCESS     =======================================
@@ -547,7 +598,7 @@ void write_confinement_check(IBroker* pBroker,
 
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
-   (*pPara) << _T("Confinement Stirrup Check [") << LrfdCw8th(_T("5.10.10.2"),_T("5.9.4.4.2")) << _T("]") << rptNewLine;
+   (*pPara) << _T("Confinement Stirrup Check [") << WBFL::LRFD::LrfdCw8th(_T("5.10.10.2"),_T("5.9.4.4.2")) << _T("]") << rptNewLine;
 
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -566,7 +617,7 @@ void write_confinement_check(IBroker* pBroker,
       pPara = new rptParagraph;
       *pChapter << pPara;
 
-      (*pPara) << _T("  Minimum Required Bar Size in Confinement Zone: ")<< lrfdRebarPool::GetBarSize(rConfine.GetMinBar()->GetSize()) << rptNewLine;
+      (*pPara) << _T("  Minimum Required Bar Size in Confinement Zone: ")<< WBFL::LRFD::RebarPool::GetBarSize(rConfine.GetMinBar()->GetSize()) << rptNewLine;
       (*pPara) << _T("  Maximum Required Bar Spacing in Confinement Zone = ")<< dim.SetValue(rConfine.GetSMax()) << rptNewLine << rptNewLine;
 
       (*pPara) << Bold(_T("Left End of Girder:")) << rptNewLine;
@@ -574,8 +625,8 @@ void write_confinement_check(IBroker* pBroker,
                <<rConfine.GetZoneLengthFactor()<<_T(")(")<<length.SetValue(rConfine.GetStartd())<<_T(") = ")
                << length.SetValue(rConfine.GetStartRequiredZoneLength()) << rptNewLine;
       (*pPara) << _T("  Provided Confinement Zone Length within Required Zone Length = ") << length.SetValue(rConfine.GetStartProvidedZoneLength()) << rptNewLine;
-      matRebar::Size size = rConfine.GetStartBar()==nullptr ? matRebar::bsNone : rConfine.GetStartBar()->GetSize();
-      (*pPara) << _T("  Bar Size in Zone: ")<< lrfdRebarPool::GetBarSize(size) << rptNewLine;
+      WBFL::Materials::Rebar::Size size = rConfine.GetStartBar()==nullptr ? WBFL::Materials::Rebar::Size::bsNone : rConfine.GetStartBar()->GetSize();
+      (*pPara) << _T("  Bar Size in Zone: ")<< WBFL::LRFD::RebarPool::GetBarSize(size) << rptNewLine;
       (*pPara) << _T("  Bar Spacing in Zone = ")<< dim.SetValue(rConfine.GetStartS()) << rptNewLine;
       (*pPara) << _T("  Status = ");
       if ( rConfine.StartPassed() )
@@ -594,8 +645,8 @@ void write_confinement_check(IBroker* pBroker,
                <<rConfine.GetZoneLengthFactor()<<_T(")(")<<length.SetValue(rConfine.GetEndd())<<_T(") = ")
                << length.SetValue(rConfine.GetEndRequiredZoneLength()) << rptNewLine;
       (*pPara) << _T("  Provided Confinement Zone Length within Required Zone Length = ") << length.SetValue(rConfine.GetEndProvidedZoneLength()) << rptNewLine;
-      size = rConfine.GetEndBar()==nullptr ? matRebar::bsNone : rConfine.GetEndBar()->GetSize();
-      (*pPara) << _T("  Bar Size in Zone: ")<< lrfdRebarPool::GetBarSize(size) << rptNewLine;
+      size = rConfine.GetEndBar()==nullptr ? WBFL::Materials::Rebar::Size::bsNone : rConfine.GetEndBar()->GetSize();
+      (*pPara) << _T("  Bar Size in Zone: ")<< WBFL::LRFD::RebarPool::GetBarSize(size) << rptNewLine;
       (*pPara) << _T("  Bar Spacing in Zone = ")<< dim.SetValue(rConfine.GetEndS()) << rptNewLine;
       (*pPara) << _T("  Status = ");
       if ( rConfine.EndPassed() )

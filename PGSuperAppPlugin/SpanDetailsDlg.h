@@ -36,6 +36,7 @@
 #include "SpanGdrDetailsBearingsPage.h"
 #include "EditSpan.h"
 #include <IFace\ExtendUI.h>
+#include <EAF\EAFMacroTxn.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpanDetailsDlg
@@ -74,7 +75,7 @@ public:
 
    // Returns a macro transaction object that contains editing transactions
    // for all the extension pages. The caller is responsble for deleting this object
-   txnTransaction* GetExtensionPageTransaction();
+   std::unique_ptr<CEAFTransaction> GetExtensionPageTransaction();
 
    // Generated message map functions
 protected:
@@ -112,7 +113,7 @@ protected:
    CSpanGirderLayoutPage m_GirderLayoutPage;
    CSpanGdrDetailsBearingsPage m_SpanGdrDetailsBearingsPage;
 
-   txnMacroTxn m_Macro;
+   CEAFMacroTxn m_Macro;
    std::vector<std::pair<IEditSpanCallback*,CPropertyPage*>> m_ExtensionPages;
    std::vector<EditBridgeExtension> m_BridgeExtensionPages;
    void NotifyExtensionPages();

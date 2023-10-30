@@ -248,7 +248,7 @@ public:
       if (m_TableType == BearingReactionsTable && m_NumBearings > 1 )
       {
          // add second line
-         this->AddContent(rptNewLine);
+         this->AddContent(rptLineBreakFactory::GetLineBreak());
          this->AddContent(m_ReactUVal.SetValue(val/m_NumBearings));
       }
 

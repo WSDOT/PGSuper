@@ -28,7 +28,7 @@
 #include "CEBFIPParametersDlg.h"
 
 #include <EAF\EAFDisplayUnits.h>
-#include <Material\CEBFIPConcrete.h>
+#include <Materials/CEBFIPConcrete.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -44,9 +44,9 @@ IMPLEMENT_DYNAMIC(CCEBFIPParametersDlg, CDialog)
 CCEBFIPParametersDlg::CCEBFIPParametersDlg(CWnd* pParent /*=nullptr*/)
 	: CDialog(CCEBFIPParametersDlg::IDD, pParent)
 {
-   m_fc1 = ::ConvertToSysUnits(4.0,unitMeasure::KSI);
-   m_fc2 = ::ConvertToSysUnits(8.0,unitMeasure::KSI);
-   m_t1  = ::ConvertToSysUnits(1.0,unitMeasure::Day);
+   m_fc1 = WBFL::Units::ConvertToSysUnits(4.0,WBFL::Units::Measure::KSI);
+   m_fc2 = WBFL::Units::ConvertToSysUnits(8.0,WBFL::Units::Measure::KSI);
+   m_t1  = WBFL::Units::ConvertToSysUnits(1.0,WBFL::Units::Measure::Day);
 }
 
 CCEBFIPParametersDlg::~CCEBFIPParametersDlg()
@@ -94,8 +94,8 @@ void CCEBFIPParametersDlg::UpdateParameters()
 {
    UpdateData();
 
-   Float64 t1 = ::ConvertFromSysUnits(m_t1,unitMeasure::Day);
-   matCEBFIPConcrete::ComputeParameters(m_fc1,t1,m_fc2,28,&m_S);
+   Float64 t1 = WBFL::Units::ConvertFromSysUnits(m_t1,WBFL::Units::Measure::Day);
+   WBFL::Materials::CEBFIPConcrete::ComputeParameters(m_fc1,t1,m_fc2,28,&m_S);
 
    CString strResult;
    strResult.Format(_T("S = %.6f\r\nFor use in Eq'n. 2.1-54"),m_S);

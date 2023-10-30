@@ -37,7 +37,7 @@
 #include <IFace\RatingSpecification.h>
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 
 #include <psgLib\SpecLibraryEntry.h>
 
@@ -70,10 +70,10 @@ LPCTSTR CStressChapterBuilder::GetName() const
    return TEXT("Stresses");
 }
 
-rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CStressChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-   CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
+   auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
+   auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
    CComPtr<IBroker> pBroker;
    CGirderKey girderKey;
@@ -229,7 +229,7 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
       // if we are doing a time-step analysis, we need to report for all intervals from
       // the first prestress release to the end to report all time-dependent effects
       bool bTimeDependentNote = false;
-      if ( pSpecEntry->GetLossMethod() == pgsTypes::TIME_STEP )
+      if ( pSpecEntry->GetPrestressLossCriteria().LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP )
       {
          bTimeDependentNote = true;
          IntervalIndexType firstReleaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(thisGirderKey);
@@ -244,7 +244,7 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
          p = new rptParagraph(rptStyleManager::GetHeadingStyle());
          *pChapter << p;
          CString strName;
-         strName.Format(_T("Combined Stresses - Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+         strName.Format(_T("Combined Stresses - Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx).c_str());
          p->SetName(strName);
          *p << p->GetName();
 
@@ -346,7 +346,7 @@ rptChapter* CStressChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 l
    return pChapter;
 }
 
-CChapterBuilder* CStressChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CStressChapterBuilder::Clone() const
 {
-   return new CStressChapterBuilder(m_bDesign,m_bRating);
+   return std::make_unique<CStressChapterBuilder>(m_bDesign,m_bRating);
 }

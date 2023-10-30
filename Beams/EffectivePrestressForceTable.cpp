@@ -49,7 +49,7 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( area,        pDisplayUnits->GetAreaUnit(),            false );
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
 
-   scalar.SetFormat( sysNumericFormatTool::Fixed );
+   scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Fixed );
    scalar.SetWidth(6); // -99.9
    scalar.SetPrecision(3);
    scalar.SetTolerance(1.0e-6);
@@ -76,6 +76,15 @@ CEffectivePrestressForceTable* CEffectivePrestressForceTable::PrepareTable(rptCh
    *pParagraph << _T("In determining the resistance of pretensioned concrete components in their end zones, the gradual buildup of the strand force in the transfer and development lengths shall be taken into account. (5.9.4.3.1)") << rptNewLine;
    *pParagraph << Sub2(_T("P"), _T("pe")) << _T(" = ") << RPT_FPE << _T("[") << symbol(SUM) << _T("(") << symbol(zeta) << RPT_APS << _T(")]") << rptNewLine;
    *pParagraph << symbol(zeta) << _T(" = Prestress Transfer Length Reduction Factor");
+   GET_IFACE2(pBroker, IMaterials, pMaterials);
+   if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
+   {
+      // The way things are currently setup, we don't have a direct way of getting this value using code.
+      // In the AddRow function, we are reporting the transfer length factor based on the minimum transfer length.
+      // In AASHTO LRFD, there is currently only 1 transfer length. In UHPC, there are two (min and max).
+      *pParagraph << _T(" based on GS Eqn. 1.9.4.3.1-1 using ") << symbol(xi) << _T(" = 0.75");
+   }
+   *pParagraph << rptNewLine;
 
    ColumnIndexType col = 0;
    *pParagraph << table << rptNewLine;
@@ -112,7 +121,7 @@ CEffectivePrestressForceTable* CEffectivePrestressForceTable::PrepareTable(rptCh
    (*table)(1, col++) << COLHDR(Sub2(_T("P"), _T("pe")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
 
    table->SetColumnSpan(0, col, 2);
-   (*table)(0, col) << GetLimitStateString(lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI) << rptNewLine << _T("with Live load");
+   (*table)(0, col) << GetLimitStateString(WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI) << rptNewLine << _T("with Live load");
    (*table)(1, col++) << COLHDR(RPT_FPE, rptStressUnitTag, pDisplayUnits->GetStressUnit());
    (*table)(1, col++) << COLHDR(Sub2(_T("P"), _T("pe")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
 
@@ -131,15 +140,18 @@ void CEffectivePrestressForceTable::AddRow(rptChapter* pChapter,IBroker* pBroker
 
    Float64 fpe = pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, m_LiveLoadIntervalIdx, pgsTypes::End);
 
-   std::array<Float64, 2> adj{ pPrestressForce->GetTransferLengthAdjustment(poi,pgsTypes::Straight),  pPrestressForce->GetTransferLengthAdjustment(poi,pgsTypes::Harped) };
+   // From UHPC GS commentary, 1.9.4.3.1, the minimum transfer length is typically critical for service and fatigue limit states,
+   // for this reason, we report the minimum in this table.
+   std::array<Float64, 2> adj{ pPrestressForce->GetTransferLengthAdjustment(poi,pgsTypes::Straight,pgsTypes::TransferLengthType::Minimum),  
+                               pPrestressForce->GetTransferLengthAdjustment(poi,pgsTypes::Harped,pgsTypes::TransferLengthType::Minimum) };
 
    GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
    std::array<Float64, 2> Aps{ pStrandGeom->GetStrandArea(poi,m_LiveLoadIntervalIdx,pgsTypes::Straight), pStrandGeom->GetStrandArea(poi,m_LiveLoadIntervalIdx,pgsTypes::Harped) };
 
-   Float64 Ppe = pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, m_LiveLoadIntervalIdx, pgsTypes::End, true/*include elastic effects*/);
-   ATLASSERT(IsEqual(Ppe, pPrestressForce->GetPrestressForce(poi, pgsTypes::Straight, m_LiveLoadIntervalIdx, pgsTypes::End, true/*include elastic effects*/) + pPrestressForce->GetPrestressForce(poi, pgsTypes::Harped, m_LiveLoadIntervalIdx, pgsTypes::End, true/*include elastic effects*/)));
+   Float64 Ppe = pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, m_LiveLoadIntervalIdx, pgsTypes::End, true/*include elastic effects*/, pgsTypes::TransferLengthType::Minimum);
+   ATLASSERT(IsEqual(Ppe, pPrestressForce->GetPrestressForce(poi, pgsTypes::Straight, m_LiveLoadIntervalIdx, pgsTypes::End, true/*include elastic effects*/, pgsTypes::TransferLengthType::Minimum) + pPrestressForce->GetPrestressForce(poi, pgsTypes::Harped, m_LiveLoadIntervalIdx, pgsTypes::End, true/*include elastic effects*/, pgsTypes::TransferLengthType::Minimum)));
 
-   std::array<pgsTypes::LimitState, 3> vLimitStates{ pgsTypes::ServiceI, pgsTypes::ServiceIII, lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI };
+   std::array<pgsTypes::LimitState, 3> vLimitStates{ pgsTypes::ServiceI, pgsTypes::ServiceIII, WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI };
    std::array<Float64, 3> fpe_with_liveload;
    std::array<Float64, 3> Ppe_with_liveload;
    int i = 0;

@@ -368,14 +368,14 @@ void CGirderDescLongRebarGrid::SetRowStyle(ROWCOL nRow)
          );
 
    CGirderDescLongitudinalRebar* pParent = (CGirderDescLongitudinalRebar*)GetParent();
-   matRebar::Type type;
-   matRebar::Grade grade;
+   WBFL::Materials::Rebar::Type type;
+   WBFL::Materials::Rebar::Grade grade;
    pParent->GetRebarMaterial(&type,&grade);
    CString strBarSizeChoiceList;
-   lrfdRebarIter rebarIter(type,grade);
+   WBFL::LRFD::RebarIter rebarIter(type,grade);
    for ( rebarIter.Begin(); rebarIter; rebarIter.Next() )
    {
-      const matRebar* pRebar = rebarIter.GetCurrentRebar();
+      const auto* pRebar = rebarIter.GetCurrentRebar();
       strBarSizeChoiceList += pRebar->GetName().c_str();
       strBarSizeChoiceList += _T("\n");
    }
@@ -386,7 +386,7 @@ void CGirderDescLongRebarGrid::SetRowStyle(ROWCOL nRow)
       .SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
       .SetChoiceList(strBarSizeChoiceList)
       .SetHorizontalAlignment(DT_RIGHT)
-      .SetValue(lrfdRebarPool::GetBarSize(matRebar::bs4).c_str())
+      .SetValue(WBFL::LRFD::RebarPool::GetBarSize(WBFL::Materials::Rebar::Size::bs4).c_str())
       );
 
 	SetStyleRange(CGXRange(nRow, nCol++), CGXStyle()
@@ -457,7 +457,7 @@ Float64 CGirderDescLongRebarGrid::GetDistFromStart(ROWCOL row)
    return d;
 }
 
-matRebar::Size CGirderDescLongRebarGrid::GetBarSize(ROWCOL row)
+WBFL::Materials::Rebar::Size CGirderDescLongRebarGrid::GetBarSize(ROWCOL row)
 {
    CString s = GetCellValue(row, 6);
    s.TrimLeft();
@@ -466,26 +466,26 @@ matRebar::Size CGirderDescLongRebarGrid::GetBarSize(ROWCOL row)
    int i = _tstoi(s2);
    if (s.IsEmpty() || (i==0))
    {
-      return matRebar::bsNone;
+      return WBFL::Materials::Rebar::Size::bsNone;
    }
 
    switch(i)
    {
-   case 3:  return matRebar::bs3;
-   case 4:  return matRebar::bs4;
-   case 5:  return matRebar::bs5;
-   case 6:  return matRebar::bs6;
-   case 7:  return matRebar::bs7;
-   case 8:  return matRebar::bs8;
-   case 9:  return matRebar::bs9;
-   case 10: return matRebar::bs10;
-   case 11: return matRebar::bs11;
-   case 14: return matRebar::bs14;
-   case 18: return matRebar::bs18;
+   case 3:  return WBFL::Materials::Rebar::Size::bs3;
+   case 4:  return WBFL::Materials::Rebar::Size::bs4;
+   case 5:  return WBFL::Materials::Rebar::Size::bs5;
+   case 6:  return WBFL::Materials::Rebar::Size::bs6;
+   case 7:  return WBFL::Materials::Rebar::Size::bs7;
+   case 8:  return WBFL::Materials::Rebar::Size::bs8;
+   case 9:  return WBFL::Materials::Rebar::Size::bs9;
+   case 10: return WBFL::Materials::Rebar::Size::bs10;
+   case 11: return WBFL::Materials::Rebar::Size::bs11;
+   case 14: return WBFL::Materials::Rebar::Size::bs14;
+   case 18: return WBFL::Materials::Rebar::Size::bs18;
    default: ATLASSERT(false);
    }
 
-   return matRebar::bsNone;
+   return WBFL::Materials::Rebar::Size::bsNone;
 }
 
 bool CGirderDescLongRebarGrid::GetRowData(ROWCOL nRow, CLongitudinalRebarData::RebarRow* plsi)
@@ -665,11 +665,11 @@ void CGirderDescLongRebarGrid::FillGrid(const CLongitudinalRebarData& rebarData)
 	   RemoveRows(1, rows);
    }
 
-   CollectionIndexType size = rebarData.RebarRows.size();
+   IndexType size = rebarData.RebarRows.size();
    if (0 < size)
    {
       // size grid
-      for (CollectionIndexType i=0; i<size; i++)
+      for (IndexType i=0; i<size; i++)
       {
 	      Insertrow();
       }
@@ -717,23 +717,23 @@ void CGirderDescLongRebarGrid::FillGrid(const CLongitudinalRebarData& rebarData)
 
          VERIFY(SetValueRange(CGXRange(nRow, col++), tmp));
 
-         Float64 distFromEnd = ::ConvertFromSysUnits(rebar.DistFromEnd,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+         Float64 distFromEnd = WBFL::Units::ConvertFromSysUnits(rebar.DistFromEnd,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
          VERIFY(SetValueRange(CGXRange(nRow, col++), distFromEnd));
 
-         Float64 barLength = ::ConvertFromSysUnits(rebar.BarLength,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+         Float64 barLength = WBFL::Units::ConvertFromSysUnits(rebar.BarLength,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
          VERIFY(SetValueRange(CGXRange(nRow, col++), barLength));
 
          VERIFY(SetValueRange(CGXRange(nRow, col++), rebar.Face == pgsTypes::BottomFace ? _T("Bottom") : _T("Top")));
 
-         Float64 cover = ::ConvertFromSysUnits(rebar.Cover, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+         Float64 cover = WBFL::Units::ConvertFromSysUnits(rebar.Cover, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
          VERIFY(SetValueRange(CGXRange(nRow, col++), cover));
 
-         tmp.Format(_T("%s"), lrfdRebarPool::GetBarSize(rebar.BarSize).c_str());
+         tmp.Format(_T("%s"), WBFL::LRFD::RebarPool::GetBarSize(rebar.BarSize).c_str());
          VERIFY(SetValueRange(CGXRange(nRow, col++), tmp));
 
          VERIFY(SetValueRange(CGXRange(nRow, col++), (LONG)rebar.NumberOfBars));
 
-         Float64 barSpacing = ::ConvertFromSysUnits(rebar.BarSpacing, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+         Float64 barSpacing = WBFL::Units::ConvertFromSysUnits(rebar.BarSpacing, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
          VERIFY(SetValueRange(CGXRange(nRow, col++), barSpacing));
 
          SetStyleRange(CGXRange(nRow, col++), CGXStyle().SetValue(rebar.bExtendedLeft ? 1L : 0L).SetEnabled(TRUE).SetReadOnly(FALSE));
@@ -764,10 +764,10 @@ bool CGirderDescLongRebarGrid::GetRebarData(CLongitudinalRebarData* pRebarData)
       if (GetRowData(row,&rebarRow))
       {
          // values are in display units - must convert to system
-         rebarRow.DistFromEnd = ::ConvertToSysUnits(rebarRow.DistFromEnd, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
-         rebarRow.BarLength   = ::ConvertToSysUnits(rebarRow.BarLength,   pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
-         rebarRow.Cover       = ::ConvertToSysUnits(rebarRow.Cover,       pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-         rebarRow.BarSpacing  = ::ConvertToSysUnits(rebarRow.BarSpacing,  pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+         rebarRow.DistFromEnd = WBFL::Units::ConvertToSysUnits(rebarRow.DistFromEnd, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+         rebarRow.BarLength   = WBFL::Units::ConvertToSysUnits(rebarRow.BarLength,   pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+         rebarRow.Cover       = WBFL::Units::ConvertToSysUnits(rebarRow.Cover,       pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+         rebarRow.BarSpacing  = WBFL::Units::ConvertToSysUnits(rebarRow.BarSpacing,  pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
          pRebarData->RebarRows.push_back(rebarRow);
       }
       else
@@ -788,7 +788,7 @@ BOOL CGirderDescLongRebarGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
    if (nCol==7  && !s.IsEmpty( ))
 	{
       long l;
-      if (!sysTokenizer::ParseLong(s, &l))
+      if (!WBFL::System::Tokenizer::ParseLong(s, &l))
 		{
 			SetWarningText (_T("Value must be an integer"));
 			return FALSE;
@@ -798,7 +798,7 @@ BOOL CGirderDescLongRebarGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 	else if ((nCol==2 || nCol==3 || nCol==5 || nCol==8)  && !s.IsEmpty( ))
 	{
       Float64 d;
-      if (!sysTokenizer::ParseDouble(s, &d))
+      if (!WBFL::System::Tokenizer::ParseDouble(s, &d))
 		{
 			SetWarningText (_T("Value must be a number"));
 			return FALSE;

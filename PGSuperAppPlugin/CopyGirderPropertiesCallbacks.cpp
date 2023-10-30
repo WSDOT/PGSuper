@@ -101,7 +101,7 @@ inline const CString& GetStrandDefinitionType(pgsTypes::StrandDefinitionType str
    }
 }
 
-inline LPTSTR GetDuctMaterialStr(pgsTypes::DuctType dtype)
+inline LPCTSTR GetDuctMaterialStr(pgsTypes::DuctType dtype)
 {
    switch (dtype)
    {
@@ -116,7 +116,7 @@ inline LPTSTR GetDuctMaterialStr(pgsTypes::DuctType dtype)
    return _T("Invalid");
 }
 
-inline LPTSTR GetInstallEventStr(pgsTypes::SegmentPTEventType etype)
+inline LPCTSTR GetInstallEventStr(pgsTypes::SegmentPTEventType etype)
 {
    switch (etype)
    {
@@ -131,7 +131,7 @@ inline LPTSTR GetInstallEventStr(pgsTypes::SegmentPTEventType etype)
    return _T("Invalid");
 }
 
-inline LPTSTR GetJackEndStr(pgsTypes::JackingEndType etype)
+inline LPCTSTR GetJackEndStr(pgsTypes::JackingEndType etype)
 {
    switch (etype)
    {
@@ -146,7 +146,7 @@ inline LPTSTR GetJackEndStr(pgsTypes::JackingEndType etype)
    return _T("Invalid");
 }
    
-inline LPTSTR GetFaceTypeStr(pgsTypes::FaceType ftype)
+inline LPCTSTR GetFaceTypeStr(pgsTypes::FaceType ftype)
 {
    switch (ftype)
    {
@@ -159,7 +159,7 @@ inline LPTSTR GetFaceTypeStr(pgsTypes::FaceType ftype)
    return _T("Invalid");
 }
 
-inline LPTSTR GetRebarLayoutTypeStr(pgsTypes::RebarLayoutType layoutType)
+inline LPCTSTR GetRebarLayoutTypeStr(pgsTypes::RebarLayoutType layoutType)
 {
    switch(layoutType)
    {
@@ -273,9 +273,9 @@ void txnCopyGirderAllProperties::Undo()
    }
 }
 
-txnTransaction* txnCopyGirderAllProperties::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnCopyGirderAllProperties::CreateClone() const
 {
-   return new txnCopyGirderAllProperties(m_FromGirderKey,m_ToGirderKeys);
+   return std::make_unique<txnCopyGirderAllProperties>(m_FromGirderKey,m_ToGirderKeys);
 }
 
 std::_tstring txnCopyGirderAllProperties::Name() const
@@ -353,9 +353,9 @@ void txnCopyGirderStirrups::Undo()
    }
 }
 
-txnTransaction* txnCopyGirderStirrups::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnCopyGirderStirrups::CreateClone() const
 {
-   return new txnCopyGirderStirrups(m_FromGirderKey,m_ToGirderKeys);
+   return std::make_unique<txnCopyGirderStirrups>(m_FromGirderKey,m_ToGirderKeys);
 }
 
 std::_tstring txnCopyGirderStirrups::Name() const
@@ -465,9 +465,9 @@ void txnCopyGirderPrestressing::Undo()
    }
 }
 
-txnTransaction* txnCopyGirderPrestressing::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnCopyGirderPrestressing::CreateClone() const
 {
-   return new txnCopyGirderPrestressing(m_FromGirderKey,m_ToGirderKeys);
+   return std::make_unique<txnCopyGirderPrestressing>(m_FromGirderKey,m_ToGirderKeys);
 }
 
 std::_tstring txnCopyGirderPrestressing::Name() const
@@ -545,9 +545,9 @@ void txnCopyGirderHandling::Undo()
    }
 }
 
-txnTransaction* txnCopyGirderHandling::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnCopyGirderHandling::CreateClone() const
 {
-   return new txnCopyGirderHandling(m_FromGirderKey,m_ToGirderKeys);
+   return std::make_unique<txnCopyGirderHandling>(m_FromGirderKey,m_ToGirderKeys);
 }
 
 std::_tstring txnCopyGirderHandling::Name() const
@@ -625,9 +625,9 @@ void txnCopyGirderMaterial::Undo()
    }
 }
 
-txnTransaction* txnCopyGirderMaterial::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnCopyGirderMaterial::CreateClone() const
 {
-   return new txnCopyGirderMaterial(m_FromGirderKey,m_ToGirderKeys);
+   return std::make_unique<txnCopyGirderMaterial>(m_FromGirderKey,m_ToGirderKeys);
 }
 
 std::_tstring txnCopyGirderMaterial::Name() const
@@ -705,9 +705,9 @@ void txnCopyGirderRebar::Undo()
    }
 }
 
-txnTransaction* txnCopyGirderRebar::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnCopyGirderRebar::CreateClone() const
 {
-   return new txnCopyGirderRebar(m_FromGirderKey,m_ToGirderKeys);
+   return std::make_unique<txnCopyGirderRebar>(m_FromGirderKey,m_ToGirderKeys);
 }
 
 std::_tstring txnCopyGirderRebar::Name() const
@@ -733,9 +733,9 @@ BOOL CCopyGirderAllProperties::CanCopy(const CGirderKey& fromGirderKey,const std
    return TRUE;
 }
 
-txnTransaction* CCopyGirderAllProperties::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
+std::unique_ptr<CEAFTransaction> CCopyGirderAllProperties::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
 {
-   return new txnCopyGirderAllProperties(fromGirderKey,toGirderKeys);
+   return std::make_unique<txnCopyGirderAllProperties>(fromGirderKey,toGirderKeys);
 }
 
 UINT CCopyGirderAllProperties::GetGirderEditorTabIndex()
@@ -769,9 +769,9 @@ BOOL CCopyGirderMaterial::CanCopy(const CGirderKey& fromGirderKey,const std::vec
    return TRUE;
 }
 
-txnTransaction* CCopyGirderMaterial::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
+std::unique_ptr<CEAFTransaction> CCopyGirderMaterial::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
 {
-   return new txnCopyGirderMaterial(fromGirderKey,toGirderKeys);
+   return std::make_unique<txnCopyGirderMaterial>(fromGirderKey,toGirderKeys);
 }
 
 UINT CCopyGirderMaterial::GetGirderEditorTabIndex()
@@ -830,9 +830,9 @@ BOOL CCopyGirderRebar::CanCopy(const CGirderKey& fromGirderKey,const std::vector
    return TRUE;
 }
 
-txnTransaction* CCopyGirderRebar::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
+std::unique_ptr<CEAFTransaction> CCopyGirderRebar::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
 {
-   return new txnCopyGirderRebar(fromGirderKey,toGirderKeys);
+   return std::make_unique<txnCopyGirderRebar>(fromGirderKey,toGirderKeys);
 }
 
 UINT CCopyGirderRebar::GetGirderEditorTabIndex()
@@ -869,9 +869,9 @@ BOOL CCopyGirderStirrups::CanCopy(const CGirderKey& fromGirderKey,const std::vec
    return TRUE;
 }
 
-txnTransaction* CCopyGirderStirrups::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
+std::unique_ptr<CEAFTransaction> CCopyGirderStirrups::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
 {
-   return new txnCopyGirderStirrups(fromGirderKey,toGirderKeys);
+   return std::make_unique<txnCopyGirderStirrups>(fromGirderKey,toGirderKeys);
 }
 
 UINT CCopyGirderStirrups::GetGirderEditorTabIndex()
@@ -934,9 +934,9 @@ BOOL CCopyGirderPrestressing::CanCopy(const CGirderKey& fromGirderKey,const std:
    return TRUE;
 }
 
-txnTransaction* CCopyGirderPrestressing::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
+std::unique_ptr<CEAFTransaction> CCopyGirderPrestressing::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
 {
-   return new txnCopyGirderPrestressing(fromGirderKey,toGirderKeys);
+   return std::make_unique<txnCopyGirderPrestressing>(fromGirderKey,toGirderKeys);
 }
 
 UINT CCopyGirderPrestressing::GetGirderEditorTabIndex()
@@ -986,9 +986,9 @@ BOOL CCopyGirderHandling::CanCopy(const CGirderKey& fromGirderKey,const std::vec
    return TRUE;
 }
 
-txnTransaction* CCopyGirderHandling::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
+std::unique_ptr<CEAFTransaction> CCopyGirderHandling::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
 {
-   return new txnCopyGirderHandling(fromGirderKey,toGirderKeys);
+   return std::make_unique<txnCopyGirderHandling>(fromGirderKey, toGirderKeys);
 }
 
 UINT CCopyGirderHandling::GetGirderEditorTabIndex()
@@ -1149,11 +1149,11 @@ void GirderPrimaryStirrupComparison(rptParagraph* pPara, IBroker* pBroker,IEAFDi
                   {
                      (*p_table)(row, iCol++) << _T("to mid-span");
                   }
-                  (*p_table)(row, iCol++) << lrfdRebarPool::GetBarSize(stirrupZone.VertBarSize) << rptNewLine;
+                  (*p_table)(row, iCol++) << WBFL::LRFD::RebarPool::GetBarSize(stirrupZone.VertBarSize) << rptNewLine;
                   (*p_table)(row, iCol++) << dim.SetValue(stirrupZone.BarSpacing) << rptNewLine;
                   (*p_table)(row, iCol++) << stirrupZone.nVertBars << rptNewLine;
                   (*p_table)(row, iCol++) << stirrupZone.nHorzInterfaceBars << rptNewLine;
-                  (*p_table)(row, iCol++) << lrfdRebarPool::GetBarSize(stirrupZone.ConfinementBarSize) << rptNewLine;
+                  (*p_table)(row, iCol++) << WBFL::LRFD::RebarPool::GetBarSize(stirrupZone.ConfinementBarSize) << rptNewLine;
 
                   if (bFirst)
                   {
@@ -1224,7 +1224,7 @@ void GirderSecondaryStirrupComparison(rptParagraph* pPara, IBroker* pBroker,IEAF
 
             (*p_table)(row, col++) << pgsGirderLabel::GetSegmentLabel(segmentKey);
 
-            if (pShr->SplittingBarSize == matRebar::bsNone)
+            if (pShr->SplittingBarSize == WBFL::Materials::Rebar::Size::bsNone)
             {
                (*p_table)(row, col++) << RPT_NA;
                col += 3;
@@ -1232,12 +1232,12 @@ void GirderSecondaryStirrupComparison(rptParagraph* pPara, IBroker* pBroker,IEAF
             else
             {
                (*p_table)(row, col++) << span.SetValue(pShr->SplittingZoneLength) << rptNewLine;
-               (*p_table)(row, col++) << lrfdRebarPool::GetBarSize(pShr->SplittingBarSize) << rptNewLine;
+               (*p_table)(row, col++) << WBFL::LRFD::RebarPool::GetBarSize(pShr->SplittingBarSize) << rptNewLine;
                (*p_table)(row, col++) << dim.SetValue(pShr->SplittingBarSpacing) << rptNewLine;
                (*p_table)(row, col++) << pShr->nSplittingBars << rptNewLine;
             }
 
-            if (pShr->ConfinementBarSize == matRebar::bsNone)
+            if (pShr->ConfinementBarSize == WBFL::Materials::Rebar::Size::bsNone)
             {
                (*p_table)(row, col++) << RPT_NA;
                col += 2;
@@ -1245,7 +1245,7 @@ void GirderSecondaryStirrupComparison(rptParagraph* pPara, IBroker* pBroker,IEAF
             else
             {
                (*p_table)(row, col++) << span.SetValue(pShr->ConfinementZoneLength) << rptNewLine;
-               (*p_table)(row, col++) << lrfdRebarPool::GetBarSize(pShr->ConfinementBarSize) << rptNewLine;
+               (*p_table)(row, col++) << WBFL::LRFD::RebarPool::GetBarSize(pShr->ConfinementBarSize) << rptNewLine;
                (*p_table)(row, col++) << dim.SetValue(pShr->ConfinementBarSpacing) << rptNewLine;
             }
 
@@ -1272,7 +1272,7 @@ void GirderHandlingComparison(rptParagraph* pPara, IBroker* pBroker,IEAFDisplayU
    {
       nCols -= 2;
    }
-   else if ( pSegmentHaulingSpecCriteria->GetHaulingAnalysisMethod() == pgsTypes::hmWSDOT )
+   else if ( pSegmentHaulingSpecCriteria->GetHaulingAnalysisMethod() == pgsTypes::HaulingAnalysisMethod::WSDOT )
    {
       nCols++;
    }
@@ -1302,7 +1302,7 @@ void GirderHandlingComparison(rptParagraph* pPara, IBroker* pBroker,IEAFDisplayU
    {
       (*p_table)(0, col++) << COLHDR(_T("Trailing") << rptNewLine << _T("Truck") << rptNewLine << _T("Support") << rptNewLine << _T("Location"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
       (*p_table)(0, col++) << COLHDR(_T("Leading") << rptNewLine << _T("Truck") << rptNewLine << _T("Support") << rptNewLine << _T("Location"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-      if (pSegmentHaulingSpecCriteria->GetHaulingAnalysisMethod() == pgsTypes::hmWSDOT)
+      if (pSegmentHaulingSpecCriteria->GetHaulingAnalysisMethod() == pgsTypes::HaulingAnalysisMethod::WSDOT)
       {
          (*p_table)(0, col++) << _T("Haul Truck");
       }
@@ -1400,7 +1400,7 @@ void GirderHandlingComparison(rptParagraph* pPara, IBroker* pBroker,IEAFDisplayU
             {
                (*p_table)(row, col++) << loc.SetValue(pHandlingData->TrailingSupportPoint);
                (*p_table)(row, col++) << loc.SetValue(pHandlingData->LeadingSupportPoint);
-               if (pSegmentHaulingSpecCriteria->GetHaulingAnalysisMethod() == pgsTypes::hmWSDOT)
+               if (pSegmentHaulingSpecCriteria->GetHaulingAnalysisMethod() == pgsTypes::HaulingAnalysisMethod::WSDOT)
                {
                   (*p_table)(row, col++) << pHandlingData->HaulTruckName;
                }
@@ -1439,10 +1439,11 @@ void GirderMaterialsComparison(rptParagraph* pPara, CComPtr<IBroker> pBroker, co
    GET_IFACE2(pBroker,ILibrary, pLib );
    GET_IFACE2(pBroker,ISpecification, pSpec );
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
 
    // special considerations for f'ci if time step
-   int loss_method = pSpecEntry->GetLossMethod();
-   bool isTimeStep = loss_method == LOSSES_TIME_STEP;
+   auto loss_method = prestress_loss_criteria.LossMethod;
+   bool isTimeStep = loss_method == PrestressLossCriteria::LossMethodType::TIME_STEP;
 
    RowIndexType row = 1;
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
@@ -1477,7 +1478,7 @@ void GirderMaterialsComparison(rptParagraph* pPara, CComPtr<IBroker> pBroker, co
             WriteCompareCell(p_table, row, iCol++, isFrom, bEqual);
 
             pgsTypes::ConcreteType type = pMaterial->Concrete.Type;
-            std::_tstring  name = lrfdConcreteUtil::GetTypeName((matConcrete::Type)type, false);
+            std::_tstring  name = WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)type, false);
             (*p_table)(row, iCol++) << name;
 
             if (isTimeStep && pMaterial->Concrete.bBasePropertiesOnInitialValues)
@@ -1795,7 +1796,7 @@ DebondComparison::DebondStatus DebondComparison::Init(IBridge* pBridge, IStrandG
             CComPtr<IPoint2dCollection> strand_coords;
             pStrandGeometry->GetStrandPositions(pgsPointOfInterest(segmentKey, 0.0), pgsTypes::Straight, &strand_coords);
 
-            CollectionIndexType num_strands;
+            IndexType num_strands;
             strand_coords->get_Count(&num_strands);
 
             for (StrandIndexType istrand = 0; istrand < num_strands; istrand++)
@@ -2333,7 +2334,7 @@ void GirderLongRebarComparison(rptParagraph* pPara, IBroker* pBroker,IEAFDisplay
 
                   (*p_table)(row, iCol++) << (rebarRow.Face == pgsTypes::TopFace ? _T("Top") : _T("Bottom")) << rptNewLine;
                   (*p_table)(row, iCol++) << dim.SetValue(rebarRow.Cover) << rptNewLine;
-                  (*p_table)(row, iCol++) << lrfdRebarPool::GetBarSize(rebarRow.BarSize) << rptNewLine;
+                  (*p_table)(row, iCol++) << WBFL::LRFD::RebarPool::GetBarSize(rebarRow.BarSize) << rptNewLine;
                   (*p_table)(row, iCol++) << rebarRow.NumberOfBars << rptNewLine;
                   (*p_table)(row, iCol++) << dim.SetValue(rebarRow.BarSpacing) << rptNewLine;
 

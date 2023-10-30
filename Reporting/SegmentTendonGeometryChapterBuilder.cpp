@@ -27,6 +27,7 @@
 #include <IFace\PointOfInterest.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\Intervals.h>
+#include <IFace\ReportOptions.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -55,9 +56,9 @@ LPCTSTR CSegmentTendonGeometryChapterBuilder::GetName() const
    return TEXT("Segment Tendon Geometry");
 }
 
-rptChapter* CSegmentTendonGeometryChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CSegmentTendonGeometryChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
 
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
@@ -83,7 +84,8 @@ rptChapter* CSegmentTendonGeometryChapterBuilder::Build(CReportSpecification* pR
    INIT_UV_PROTOTYPE( rptLengthUnitValue,        ecc,      pDisplayUnits->GetComponentDimUnit(), false);
    INIT_UV_PROTOTYPE( rptStressUnitValue,        stress,   pDisplayUnits->GetStressUnit(), false);
 
-   location.IncludeSpanAndGirder(true);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -206,7 +208,7 @@ rptChapter* CSegmentTendonGeometryChapterBuilder::Build(CReportSpecification* pR
    return pChapter;
 }
 
-CChapterBuilder* CSegmentTendonGeometryChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CSegmentTendonGeometryChapterBuilder::Clone() const
 {
-   return new CSegmentTendonGeometryChapterBuilder;
+   return std::make_unique<CSegmentTendonGeometryChapterBuilder>();
 }

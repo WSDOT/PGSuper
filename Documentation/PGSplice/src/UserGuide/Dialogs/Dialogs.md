@@ -23,6 +23,7 @@ PGSplice Dialogs {#ug_dialogs}
 * @subpage ug_dialogs_copy_pier_properties
 * @subpage ug_dialogs_copy_tempsupport_properties
 * @subpage ug_dialogs_cracked_section_details_report
+* @subpage ug_dialogs_girder_define_individual_strands
 * @subpage ug_dialogs_design_live_loads
 * @subpage ug_dialogs_distributed_load
 * @subpage ug_dialogs_effective_flange_width
@@ -30,6 +31,7 @@ PGSplice Dialogs {#ug_dialogs}
 * @subpage ug_dialogs_erect_piers
 * @subpage ug_dialogs_erect_segments
 * @subpage ug_dialogs_file_compatibility_warning
+* @subpage ug_dialogs_fill_haunch
 * @subpage ug_dialogs_girder_details
 * @subpage ug_dialogs_girder_view_section_cut
 * @subpage ug_dialogs_girder_view_settings
@@ -55,6 +57,7 @@ PGSplice Dialogs {#ug_dialogs}
 * @subpage ug_dialogs_project_properties
 * @subpage ug_dialogs_remove_temporary_supports
 * @subpage ug_dialogs_report_options
+* @subpage ug_dialogs_geometry_control
 * @subpage ug_dialogs_segment_details
 * @subpage ug_dialogs_configure
 * @subpage ug_dialogs_span_description

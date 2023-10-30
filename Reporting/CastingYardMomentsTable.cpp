@@ -180,27 +180,3 @@ void CCastingYardMomentsTable::MakeAssignment(const CCastingYardMomentsTable& rO
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CCastingYardMomentsTable::AssertValid() const
-{
-   return true;
-}
-
-void CCastingYardMomentsTable::Dump(dbgDumpContext& os) const
-{
-   os << _T("Dump for CCastingYardMomentsTable") << endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CCastingYardMomentsTable::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("CCastingYardMomentsTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CCastingYardMomentsTable");
-
-   TESTME_EPILOG("CCastingYardMomentsTable");
-}
-#endif // _UNITTEST

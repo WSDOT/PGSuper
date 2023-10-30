@@ -35,6 +35,7 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\Intervals.h>
+#include <IFace\ReportOptions.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -123,8 +124,8 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDisplayUnits->GetShearUnit(), false );
 
-   GET_IFACE2(pBroker, IDocumentType, pDocType);
-   location.IncludeSpanAndGirder(pDocType->IsPGSpliceDocument() || girderKey.groupIndex == ALL_GROUPS);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -132,7 +133,7 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bTimeStepMethod = pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP;
+   bool bTimeStepMethod = pSpecEntry->GetPrestressLossCriteria().LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP;
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
@@ -143,7 +144,7 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(girderKey, &vGirderKeys);
    
-   RowIndexType row = CreateCombinedDeadLoadingTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table,pBroker,_T("Shear"),false,bRating,intervalIdx<liveLoadIntervalIdx,
+   RowIndexType row = CreateCombinedDeadLoadingTableHeading<rptForceUnitTag,WBFL::Units::ForceData>(&p_table,pBroker,_T("Shear"),false,bRating,intervalIdx<liveLoadIntervalIdx,
                                  analysisType,pDisplayUnits,pDisplayUnits->GetShearUnit());
    *p << p_table;
 
@@ -171,22 +172,22 @@ void CCombinedShearTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
       GetCombinedResultsPoi(pBroker,thisGirderKey,intervalIdx,&vPoi,&poiRefAttribute);
       poiRefAttribute = (girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : poiRefAttribute);
 
-      std::vector<sysSectionValue> dummy;
-      std::vector<sysSectionValue> minServiceI, maxServiceI;
-      std::vector<sysSectionValue> minDCinc, maxDCinc;
-      std::vector<sysSectionValue> minDCcum, maxDCcum;
-      std::vector<sysSectionValue> minDWinc, maxDWinc;
-      std::vector<sysSectionValue> minDWcum, maxDWcum;
-      std::vector<sysSectionValue> minDWRatinginc, maxDWRatinginc;
-      std::vector<sysSectionValue> minDWRatingcum, maxDWRatingcum;
-      std::vector<sysSectionValue> minCRinc, maxCRinc;
-      std::vector<sysSectionValue> minCRcum, maxCRcum;
-      std::vector<sysSectionValue> minSHinc, maxSHinc;
-      std::vector<sysSectionValue> minSHcum, maxSHcum;
-      std::vector<sysSectionValue> minREinc, maxREinc;
-      std::vector<sysSectionValue> minREcum, maxREcum;
-      std::vector<sysSectionValue> minPSinc, maxPSinc;
-      std::vector<sysSectionValue> minPScum, maxPScum;
+      std::vector<WBFL::System::SectionValue> dummy;
+      std::vector<WBFL::System::SectionValue> minServiceI, maxServiceI;
+      std::vector<WBFL::System::SectionValue> minDCinc, maxDCinc;
+      std::vector<WBFL::System::SectionValue> minDCcum, maxDCcum;
+      std::vector<WBFL::System::SectionValue> minDWinc, maxDWinc;
+      std::vector<WBFL::System::SectionValue> minDWcum, maxDWcum;
+      std::vector<WBFL::System::SectionValue> minDWRatinginc, maxDWRatinginc;
+      std::vector<WBFL::System::SectionValue> minDWRatingcum, maxDWRatingcum;
+      std::vector<WBFL::System::SectionValue> minCRinc, maxCRinc;
+      std::vector<WBFL::System::SectionValue> minCRcum, maxCRcum;
+      std::vector<WBFL::System::SectionValue> minSHinc, maxSHinc;
+      std::vector<WBFL::System::SectionValue> minSHcum, maxSHcum;
+      std::vector<WBFL::System::SectionValue> minREinc, maxREinc;
+      std::vector<WBFL::System::SectionValue> minREcum, maxREcum;
+      std::vector<WBFL::System::SectionValue> minPSinc, maxPSinc;
+      std::vector<WBFL::System::SectionValue> minPScum, maxPScum;
 
       if ( minBAT == maxBAT )
       {
@@ -425,7 +426,8 @@ void CCombinedShearTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDisplayUnits->GetShearUnit(), false );
 
-   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
@@ -445,7 +447,7 @@ void CCombinedShearTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
    *pChapter << p;
 
    rptRcTable* p_table;
-   RowIndexType Nhrows = CreateCombinedLiveLoadingTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table,strLabel,false,bDesign,bPermit,bPedLoading,bRating,false,true,
+   RowIndexType Nhrows = CreateCombinedLiveLoadingTableHeading<rptForceUnitTag,WBFL::Units::ForceData>(&p_table,strLabel,false,bDesign,bPermit,bPedLoading,bRating,false,true,
                            analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
 
    RowIndexType row = Nhrows;
@@ -476,16 +478,16 @@ void CCombinedShearTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
       GetCombinedResultsPoi(pBroker,thisGirderKey,liveLoadInteravlIdx,&vPoi,&poiRefAttribute);
       poiRefAttribute = (girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : poiRefAttribute);
 
-      std::vector<sysSectionValue> dummy;
-      std::vector<sysSectionValue> minPedestrianLL,    maxPedestrianLL;
-      std::vector<sysSectionValue> minDesignLL,        maxDesignLL;
-      std::vector<sysSectionValue> minFatigueLL,       maxFatigueLL;
-      std::vector<sysSectionValue> minPermitLL,        maxPermitLL;
-      std::vector<sysSectionValue> minLegalRoutineLL,  maxLegalRoutineLL;
-      std::vector<sysSectionValue> minLegalSpecialLL, maxLegalSpecialLL;
-      std::vector<sysSectionValue> minLegalEmergencyLL, maxLegalEmergencyLL;
-      std::vector<sysSectionValue> minPermitRoutineLL, maxPermitRoutineLL;
-      std::vector<sysSectionValue> minPermitSpecialLL, maxPermitSpecialLL;
+      std::vector<WBFL::System::SectionValue> dummy;
+      std::vector<WBFL::System::SectionValue> minPedestrianLL,    maxPedestrianLL;
+      std::vector<WBFL::System::SectionValue> minDesignLL,        maxDesignLL;
+      std::vector<WBFL::System::SectionValue> minFatigueLL,       maxFatigueLL;
+      std::vector<WBFL::System::SectionValue> minPermitLL,        maxPermitLL;
+      std::vector<WBFL::System::SectionValue> minLegalRoutineLL,  maxLegalRoutineLL;
+      std::vector<WBFL::System::SectionValue> minLegalSpecialLL, maxLegalSpecialLL;
+      std::vector<WBFL::System::SectionValue> minLegalEmergencyLL, maxLegalEmergencyLL;
+      std::vector<WBFL::System::SectionValue> minPermitRoutineLL, maxPermitRoutineLL;
+      std::vector<WBFL::System::SectionValue> minPermitSpecialLL, maxPermitSpecialLL;
 
       if ( bPedLoading )
       {
@@ -498,7 +500,7 @@ void CCombinedShearTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
          pForces2->GetCombinedLiveLoadShear( liveLoadInteravlIdx, pgsTypes::lltDesign, vPoi, maxBAT, true, &dummy, &maxDesignLL );
          pForces2->GetCombinedLiveLoadShear( liveLoadInteravlIdx, pgsTypes::lltDesign, vPoi, minBAT, true, &minDesignLL, &dummy );
 
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
          {
             pForces2->GetCombinedLiveLoadShear( liveLoadInteravlIdx, pgsTypes::lltFatigue, vPoi, maxBAT, true, &dummy, &maxFatigueLL );
             pForces2->GetCombinedLiveLoadShear( liveLoadInteravlIdx, pgsTypes::lltFatigue, vPoi, minBAT, true, &minFatigueLL, &dummy );
@@ -573,7 +575,7 @@ void CCombinedShearTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
             (*p_table)(row,col++) << shear.SetValue( maxDesignLL[index] );
             (*p_table)(row,col++) << shear.SetValue( minDesignLL[index] );
          
-            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
             {
                (*p_table)(row,col++) << shear.SetValue( maxFatigueLL[index] );
                (*p_table)(row,col++) << shear.SetValue( minFatigueLL[index] );
@@ -647,7 +649,7 @@ void CCombinedShearTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
 
          SumPedAndLiveLoad(DesignPedLoad, minDesignLL, maxDesignLL, minPedestrianLL, maxPedestrianLL);
 
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
          {
             SumPedAndLiveLoad(FatiguePedLoad, minFatigueLL, maxFatigueLL, minPedestrianLL, maxPedestrianLL);
          }
@@ -667,7 +669,7 @@ void CCombinedShearTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
             (*p_table)(row2,col++) << shear.SetValue( maxDesignLL[index] );
             (*p_table)(row2,col++) << shear.SetValue( minDesignLL[index] );
 
-            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
             {
                (*p_table)(row2,col++) << shear.SetValue( maxFatigueLL[index] );
                (*p_table)(row2,col++) << shear.SetValue( minFatigueLL[index] );
@@ -688,7 +690,7 @@ void CCombinedShearTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
             int lnum=1;
             *pNote<< lnum++ << PedestrianFootnote(DesignPedLoad) << rptNewLine;
 
-            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
             {
                *pNote << lnum++ << PedestrianFootnote(FatiguePedLoad) << rptNewLine;
             }
@@ -721,7 +723,8 @@ void CCombinedShearTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDisplayUnits->GetShearUnit(), false );
 
-   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -738,7 +741,7 @@ void CCombinedShearTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
    bool bPedLoading = pProductLoads->HasPedestrianLoad(girderKey);
 
    rptRcTable* p_table2;
-   RowIndexType row2 = CreateLimitStateTableHeading<rptForceUnitTag,unitmgtForceData>(&p_table2,_T("Shear, Vu"),false,bDesign,bPermit,bRating,false,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
+   RowIndexType row2 = CreateLimitStateTableHeading<rptForceUnitTag,WBFL::Units::ForceData>(&p_table2,_T("Shear, Vu"),false,bDesign,bPermit,bRating,false,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetShearUnit());
    *p << p_table2;
 
    if ( girderKey.groupIndex == ALL_GROUPS )
@@ -762,29 +765,29 @@ void CCombinedShearTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
       poiRefAttribute = (girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : poiRefAttribute);
 
       // create second table for BSS3 Limit states
-      std::vector<sysSectionValue> dummy;
-      std::vector<sysSectionValue> minServiceI,   maxServiceI;
-      std::vector<sysSectionValue> minServiceIA,  maxServiceIA;
-      std::vector<sysSectionValue> minServiceIII, maxServiceIII;
-      std::vector<sysSectionValue> minFatigueI,   maxFatigueI;
-      std::vector<sysSectionValue> minStrengthI,  maxStrengthI;
-      std::vector<sysSectionValue> minStrengthII, maxStrengthII;
-      std::vector<sysSectionValue> minStrengthI_Inventory, maxStrengthI_Inventory;
-      std::vector<sysSectionValue> minStrengthI_Operating, maxStrengthI_Operating;
-      std::vector<sysSectionValue> minStrengthI_Legal_Routine, maxStrengthI_Legal_Routine;
-      std::vector<sysSectionValue> minStrengthI_Legal_Special, maxStrengthI_Legal_Special;
-      std::vector<sysSectionValue> minStrengthI_Legal_Emergency, maxStrengthI_Legal_Emergency;
-      std::vector<sysSectionValue> minStrengthII_Permit_Routine, maxStrengthII_Permit_Routine;
-      std::vector<sysSectionValue> minServiceI_Permit_Routine, maxServiceI_Permit_Routine;
-      std::vector<sysSectionValue> minStrengthII_Permit_Special, maxStrengthII_Permit_Special;
-      std::vector<sysSectionValue> minServiceI_Permit_Special, maxServiceI_Permit_Special;
+      std::vector<WBFL::System::SectionValue> dummy;
+      std::vector<WBFL::System::SectionValue> minServiceI,   maxServiceI;
+      std::vector<WBFL::System::SectionValue> minServiceIA,  maxServiceIA;
+      std::vector<WBFL::System::SectionValue> minServiceIII, maxServiceIII;
+      std::vector<WBFL::System::SectionValue> minFatigueI,   maxFatigueI;
+      std::vector<WBFL::System::SectionValue> minStrengthI,  maxStrengthI;
+      std::vector<WBFL::System::SectionValue> minStrengthII, maxStrengthII;
+      std::vector<WBFL::System::SectionValue> minStrengthI_Inventory, maxStrengthI_Inventory;
+      std::vector<WBFL::System::SectionValue> minStrengthI_Operating, maxStrengthI_Operating;
+      std::vector<WBFL::System::SectionValue> minStrengthI_Legal_Routine, maxStrengthI_Legal_Routine;
+      std::vector<WBFL::System::SectionValue> minStrengthI_Legal_Special, maxStrengthI_Legal_Special;
+      std::vector<WBFL::System::SectionValue> minStrengthI_Legal_Emergency, maxStrengthI_Legal_Emergency;
+      std::vector<WBFL::System::SectionValue> minStrengthII_Permit_Routine, maxStrengthII_Permit_Routine;
+      std::vector<WBFL::System::SectionValue> minServiceI_Permit_Routine, maxServiceI_Permit_Routine;
+      std::vector<WBFL::System::SectionValue> minStrengthII_Permit_Special, maxStrengthII_Permit_Special;
+      std::vector<WBFL::System::SectionValue> minServiceI_Permit_Special, maxServiceI_Permit_Special;
 
       if ( bDesign )
       {
          pLsForces2->GetShear( intervalIdx, pgsTypes::ServiceI, vPoi, maxBAT, &dummy, &maxServiceI );
          pLsForces2->GetShear( intervalIdx, pgsTypes::ServiceI, vPoi, minBAT, &minServiceI, &dummy );
 
-         if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+         if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims )
          {
             pLsForces2->GetShear( intervalIdx, pgsTypes::ServiceIA, vPoi, maxBAT, &dummy, &maxServiceIA );
             pLsForces2->GetShear( intervalIdx, pgsTypes::ServiceIA, vPoi, minBAT, &minServiceIA, &dummy );
@@ -881,7 +884,7 @@ void CCombinedShearTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
                (*p_table2)(row2,col++) << shear.SetValue( maxServiceI[index] );
                (*p_table2)(row2,col++) << shear.SetValue( minServiceI[index] );
 
-               if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+               if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims )
                {
                   (*p_table2)(row2,col++) << shear.SetValue( maxServiceIA[index] );
                   (*p_table2)(row2,col++) << shear.SetValue( minServiceIA[index] );
@@ -890,7 +893,7 @@ void CCombinedShearTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
                (*p_table2)(row2,col++) << shear.SetValue( maxServiceIII[index] );
                (*p_table2)(row2,col++) << shear.SetValue( minServiceIII[index] );
 
-               if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+               if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
                {
                   (*p_table2)(row2,col++) << shear.SetValue( maxFatigueI[index] );
                   (*p_table2)(row2,col++) << shear.SetValue( minFatigueI[index] );
@@ -961,12 +964,12 @@ void CCombinedShearTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
             {
                (*p_table2)(row2,col++) << shear.SetValue( maxServiceI[index] );
 
-               if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+               if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims )
                   (*p_table2)(row2,col++) << shear.SetValue( maxServiceIA[index] );
 
                (*p_table2)(row2,col++) << shear.SetValue( maxServiceIII[index] );
 
-               if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+               if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
                   (*p_table2)(row2,col++) << shear.SetValue( maxFatigueI[index] );
 
                (*p_table2)(row2,col++) << shear.SetValue( maxStrengthI[index] );
@@ -1063,27 +1066,3 @@ void CCombinedShearTable::MakeAssignment(const CCombinedShearTable& rOther)
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CCombinedShearTable::AssertValid() const
-{
-   return true;
-}
-
-void CCombinedShearTable::Dump(dbgDumpContext& os) const
-{
-   os << _T("Dump for CCombinedShearTable") << endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CCombinedShearTable::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("CCombinedShearTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CCombinedShearTable");
-
-   TESTME_EPILOG("CCombinedShearTable");
-}
-#endif // _UNITTEST

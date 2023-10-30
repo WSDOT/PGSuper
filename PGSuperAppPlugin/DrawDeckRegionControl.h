@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <GraphicsLib\PointMapper.h>
+#include <Graphing/PointMapper.h>
 
 // CDrawDeckRegionControl
 class CDrawDeckRegionControl : public CWnd
@@ -38,7 +38,7 @@ public:
 protected:
 	DECLARE_MESSAGE_MAP()
 
-   void Draw(CDC* pDC,grlibPointMapper& mapper,IShape* pShape,BOOL bPolygon);
+   void Draw(CDC* pDC, WBFL::Graphing::PointMapper& mapper,IShape* pShape,BOOL bPolygon);
 public:
    afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 };

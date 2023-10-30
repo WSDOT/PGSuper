@@ -38,6 +38,9 @@
 #include <PgsExt\StatusItem.h>
 #include <PGSuperException.h>
 
+#include <psgLib/PrincipalTensionStressCriteria.h>
+
+
 #include <WBFLGenericBridgeTools.h>
 
 #include <Details.h>
@@ -92,7 +95,7 @@ void CTimeStepLossEngineer::SetBroker(IBroker* pBroker,StatusGroupIDType statusG
 const LOSSDETAILS* CTimeStepLossEngineer::GetLosses(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx)
 {
    GET_IFACE(ILossParameters,pLossParameters);
-   if ( pLossParameters->GetLossMethod() != pgsTypes::TIME_STEP )
+   if ( pLossParameters->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       std::_tstring msg(_T("Prestress losses cannot be computed. Use Project Criteria that specifies the time-step method for prestress loss calculations."));
       
@@ -592,10 +595,8 @@ void CTimeStepLossEngineer::ComputeLosses(GirderIndexType girderLineIdx,Interval
          GET_IFACE(ILibrary, pLib);
          std::_tstring specName = pSpec->GetSpecification();
          const auto* pSpecEntry = pLib->GetSpecEntry(specName.c_str());
-
-         pgsTypes::PrincipalTensileStressMethod method;
-         Float64 coefficient, principalTensileStressFcThreshold, ungroutedDiameterMultiplier, groutedDiameterMultiplier;
-         pSpecEntry->GetPrincipalTensileStressInWebsParameters(&method, &coefficient, &m_DuctDiameterNearnessFactor, &ungroutedDiameterMultiplier, &groutedDiameterMultiplier, &principalTensileStressFcThreshold);
+         const auto& principal_tension_stress_criteria = pSpecEntry->GetPrincipalTensionStressCriteria();
+         m_DuctDiameterNearnessFactor = principal_tension_stress_criteria.TendonNearnessFactor;
       }
 
       m_StrandTypes.clear();
@@ -684,7 +685,7 @@ void CTimeStepLossEngineer::ComputeFrictionLosses(const CGirderKey& girderKey,LO
       pLossDetails->GirderFrictionLossDetails.reserve(nDucts);
 #if defined _DEBUG
       ATLASSERT(pLossDetails->POI == poi);
-      ATLASSERT(pLossDetails->LossMethod == pgsTypes::TIME_STEP);
+      ATLASSERT(pLossDetails->LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP);
 #endif
 
       bool bIsOnGirder = m_pPoi->IsOnGirder(poi);
@@ -855,7 +856,7 @@ void CTimeStepLossEngineer::ComputeFrictionLosses(const CPrecastSegmentData* pSe
       const pgsPointOfInterest& poi(*iter);
 
       LOSSDETAILS* pLossDetails = &(pLosses->SectionLosses[poi]);
-      pLossDetails->LossMethod = pgsTypes::TIME_STEP;
+      pLossDetails->LossMethod = PrestressLossCriteria::LossMethodType::TIME_STEP;
 #if defined _DEBUG
       pLossDetails->POI = poi;
 #endif
@@ -1728,7 +1729,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
                if (intervalIdx == releaseIntervalIdx)
                {
                   // accounts for lack of development and location of debonding
-                  Float64 xfer_factor = m_pPSForce->GetTransferLengthAdjustment(poi, strandType);
+                  Float64 xfer_factor = m_pPSForce->GetTransferLengthAdjustment(poi, strandType, pgsTypes::TransferLengthType::Minimum);
 
                   // xfer_factor reduces the nominal strand force (force based on all strands)
                   // to the actual force by making adjustments for lack of full development
@@ -2160,7 +2161,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
             Xs = (bIsInClosure ? m_pMaterials->GetClosureJointAgingCoefficient(closureKey, intervalIdx) : m_pMaterials->GetSegmentAgingCoefficient(segmentKey, intervalIdx));
             Xe = (bIsInClosure ? m_pMaterials->GetClosureJointAgingCoefficient(closureKey, intervalIdx) : m_pMaterials->GetSegmentAgingCoefficient(segmentKey, intervalIdx));
          }
-         tsDetails.Girder.Creep.push_back(girderCreepDetails);
+         tsDetails.Girder.Creep.emplace_back(girderCreepDetails);
 
 
          Float64 dP_Girder = 0;
@@ -2205,8 +2206,8 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
          girderCreepCurvature.Xe = Xe;
          girderCreepCurvature.r = r;
 
-         tsDetails.Girder.ec.push_back(girderCreepStrain);
-         tsDetails.Girder.rc.push_back(girderCreepCurvature);
+         tsDetails.Girder.ec.emplace_back(girderCreepStrain);
+         tsDetails.Girder.rc.emplace_back(girderCreepCurvature);
 
          // Deck
          INCREMENTALCREEPDETAILS deckCreepDetails;
@@ -2227,7 +2228,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
             Xs = 1.0;
             Xe = 1.0;
          }
-         tsDetails.Deck.Creep.push_back(deckCreepDetails);
+         tsDetails.Deck.Creep.emplace_back(deckCreepDetails);
 
          // Modulus in interval i (not age adjusted because we apply the creep coefficients Ce and Cs)
          Float64 EiDeck = m_pMaterials->GetDeckEc(deckCastingRegionIdx, i);
@@ -2258,8 +2259,8 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
          deckCreepCurvature.Xe = Xe;
          deckCreepCurvature.r = r;
 
-         tsDetails.Deck.ec.push_back(deckCreepStrain);
-         tsDetails.Deck.rc.push_back(deckCreepCurvature);
+         tsDetails.Deck.ec.emplace_back(deckCreepStrain);
+         tsDetails.Deck.rc.emplace_back(deckCreepCurvature);
       }
 
       // Compute total unrestrained deformation due to creep and shrinkage during this interval
@@ -2267,7 +2268,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
       if ( !bIgnoreShrinkageEffects )
       {
          tsDetails.Girder.Shrinkage.pStartDetails = (bIsInClosure ? m_pMaterials->GetTotalClosureJointFreeShrinkageStrainDetails(closureKey,intervalIdx,pgsTypes::Start) : m_pMaterials->GetTotalSegmentFreeShrinkageStrainDetails(segmentKey,intervalIdx,pgsTypes::Start));
-         tsDetails.Girder.Shrinkage.pEndDetails   = (bIsInClosure ? m_pMaterials->GetTotalClosureJointFreeShrinkageStrainDetails(closureKey,intervalIdx,pgsTypes::End)   : m_pMaterials->GetTotalSegmentFreeShrinkageStrainDetails(segmentKey,intervalIdx,pgsTypes::End));
+         tsDetails.Girder.Shrinkage.pEndDetails   = (bIsInClosure ? m_pMaterials->GetTotalClosureJointFreeShrinkageStrainDetails(closureKey,intervalIdx,pgsTypes::End) : m_pMaterials->GetTotalSegmentFreeShrinkageStrainDetails(segmentKey,intervalIdx,pgsTypes::End));
          tsDetails.Girder.Shrinkage.esi = tsDetails.Girder.Shrinkage.pEndDetails->esh - tsDetails.Girder.Shrinkage.pStartDetails->esh;
       }
 
@@ -2362,7 +2363,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
       }
    }
 
-   details.TimeStepDetails.push_back(tsDetails);
+   details.TimeStepDetails.emplace_back(tsDetails);
 }
 
 void CTimeStepLossEngineer::AnalyzeInitialStrains(IntervalIndexType intervalIdx,const CGirderKey& girderKey,LOSSES* pLosses)
@@ -3683,11 +3684,11 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
    // Equilibrium Checks
    //
 #if defined _BETA_VERSION
-   Float64 incrementalAxialTolerance  = ::ConvertToSysUnits(0.1,unitMeasure::Newton);
-   Float64 incrementalMomentTolerance = ::ConvertToSysUnits(0.1,unitMeasure::KilonewtonMeter);
+   Float64 incrementalAxialTolerance  = WBFL::Units::ConvertToSysUnits(0.1,WBFL::Units::Measure::Newton);
+   Float64 incrementalMomentTolerance = WBFL::Units::ConvertToSysUnits(0.1,WBFL::Units::Measure::KilonewtonMeter);
 
-   Float64 axialTolerance  = ::ConvertToSysUnits(0.1*intervalIdx,unitMeasure::Newton) + 0.0001;
-   Float64 momentTolerance = ::ConvertToSysUnits(0.1*intervalIdx,unitMeasure::KilonewtonMeter) + 0.0001;
+   Float64 axialTolerance  = WBFL::Units::ConvertToSysUnits(0.1*intervalIdx,WBFL::Units::Measure::Newton) + 0.0001;
+   Float64 momentTolerance = WBFL::Units::ConvertToSysUnits(0.1*intervalIdx,WBFL::Units::Measure::KilonewtonMeter) + 0.0001;
 #endif
 
    // Check : Change in External Forces = Change in Internal Forces
@@ -4114,7 +4115,7 @@ void CTimeStepLossEngineer::BoundAnchorSet(const CPTData* pPTData,const CDuctDat
    m_pGirderTendonGeometry->GetDuctRange(girderKey, ductIdx, &Xgs, &Xge);
 
 
-   Float64 deltaX = ::ConvertToSysUnits(1.0,unitMeasure::Meter);
+   Float64 deltaX = WBFL::Units::ConvertToSysUnits(1.0,WBFL::Units::Measure::Meter);
    Float64 K = 1.5; // increase deltaX by 50% each time it is used... 
    // exponentially grow the values we are trying to bound the solution.
 
@@ -4232,7 +4233,7 @@ void CTimeStepLossEngineer::BoundAnchorSet(const CSegmentPTData* pPTData, const 
    const CPrecastSegmentData* pSegment = pPTData->GetSegment();
    const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
 
-   Float64 deltaX = ::ConvertToSysUnits(1.0, unitMeasure::Meter);
+   Float64 deltaX = WBFL::Units::ConvertToSysUnits(1.0, WBFL::Units::Measure::Meter);
    Float64 K = 1.5; // increase deltaX by 50% each time it is used... 
                     // exponentially grow the values we are trying to bound the solution.
 

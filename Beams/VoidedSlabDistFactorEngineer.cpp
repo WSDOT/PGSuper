@@ -24,7 +24,7 @@
 #include "stdafx.h"
 #include "VoidedSlabDistFactorEngineer.h"
 #include <PGSuperException.h>
-#include <Units\SysUnits.h>
+#include <Units\Convert.h>
 #include <PsgLib\TrafficBarrierEntry.h>
 #include <PsgLib\SpecLibraryEntry.h>
 #include <PgsExt\BridgeDescription2.h>
@@ -155,7 +155,8 @@ void CVoidedSlabDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptC
       GET_IFACE(ISpecification, pSpec);
       GET_IFACE(ILibrary, pLibrary);
       const auto* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
-      if (pSpecEntry->IgnoreSkewReductionForMoment())
+      const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
+      if (live_load_distribution_criteria.bIgnoreSkewReductionForMoment)
       {
          (*pPara) << _T("Skew reduction for moment distribution factors has been ignored (LRFD 4.6.2.2.2e)") << rptNewLine;
       }
@@ -204,7 +205,7 @@ void CVoidedSlabDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptC
          }
       }
 
-      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pPara) << _T("Strength and Service Limit States");
@@ -302,7 +303,7 @@ void CVoidedSlabDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptC
       ////////////////////////////////////////////////////////////////////////////
       // Fatigue limit states
       ////////////////////////////////////////////////////////////////////////////
-      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
          (*pPara) << _T("Fatigue Limit States");
@@ -379,7 +380,7 @@ void CVoidedSlabDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptC
    } // next span
 }
 
-lrfdLiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,Float64 fcgdr,VOIDEDSLAB_LLDFDETAILS* plldf)
+WBFL::LRFD::LiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,Float64 fcgdr,VOIDEDSLAB_LLDFDETAILS* plldf)
 {
    GET_IFACE(ISectionProperties, pSectProp);
    GET_IFACE(IGirder,            pGirder);
@@ -427,7 +428,7 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLLDFParame
 
    // Throws exception if fails requirement (no need to catch it)
    GET_IFACE(ILiveLoadDistributionFactors, pDistFactors);
-   pDistFactors->VerifyDistributionFactorRequirements(poi);
+   Int32 roaVal = pDistFactors->VerifyDistributionFactorRequirements(poi);
 
    Float64 Height       = pGirderEntry->GetDimension(_T("H"));
    Float64 Width        = pGirderEntry->GetDimension(_T("W"));
@@ -467,7 +468,7 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLLDFParame
 
    plldf->L = GetEffectiveSpanLength(spanOrPierIdx,gdrIdx,dfType);
 
-   lrfdLiveLoadDistributionFactorBase* pLLDF;
+   WBFL::LRFD::LiveLoadDistributionFactorBase* pLLDF;
 
    if ( nVoids == 0 )
    {
@@ -562,9 +563,9 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLLDFParame
    }
 
    // WSDOT deviation doesn't apply to this type of cross section because it isn't slab on girder construction
-   if (plldf->Method == LLDF_TXDOT)
+   if (plldf->Method == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
    {
-         pLLDF = new lrfdTxdotVoidedSlab(plldf->gdrNum,
+         pLLDF = new WBFL::LRFD::TxdotVoidedSlab(plldf->gdrNum,
                                          plldf->Savg,
                                          plldf->gdrSpacings,
                                          plldf->leftCurbOverhang,
@@ -588,11 +589,12 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLLDFParame
       GET_IFACE(ISpecification, pSpec);
       GET_IFACE(ILibrary, pLibrary);
       const auto* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
+      const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
       bool bSkew = !(IsZero(plldf->skew1) && IsZero(plldf->skew2));
-      bool bSkewMoment = pSpecEntry->IgnoreSkewReductionForMoment() ? false : bSkew;
+      bool bSkewMoment = live_load_distribution_criteria.bIgnoreSkewReductionForMoment ? false : bSkew;
       bool bSkewShear = bSkew;
 
-      if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::SeventhEdition2014 <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          // Starting with LRFD 7th Edition, 2014, skew correction is only applied from
          // the obtuse corner to mid-span of exterior and first interior girders.
@@ -623,10 +625,10 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLLDFParame
       }
 
       if ( pDeck->TransverseConnectivity == pgsTypes::atcConnectedAsUnit || 
-           lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion()  // sufficiently connected as unit was removed in LRFD 7th Edition 2014
+           WBFL::LRFD::BDSManager::Edition::SeventhEdition2014 <= WBFL::LRFD::BDSManager::GetEdition()  // sufficiently connected as unit was removed in LRFD 7th Edition 2014
          )
       {
-         pLLDF = new lrfdLldfTypeF(plldf->gdrNum,
+         pLLDF = new WBFL::LRFD::LldfTypeF(plldf->gdrNum,
                                    plldf->Savg,
                                    plldf->gdrSpacings,
                                    plldf->leftCurbOverhang,
@@ -649,7 +651,7 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLLDFParame
       }
       else
       {
-         pLLDF = new lrfdLldfTypeG(plldf->gdrNum,
+         pLLDF = new WBFL::LRFD::LldfTypeG(plldf->gdrNum,
                             plldf->Savg,
                             plldf->gdrSpacings,
                             plldf->leftCurbOverhang,
@@ -673,14 +675,14 @@ lrfdLiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLLDFParame
    }
 
    GET_IFACE(ILiveLoads,pLiveLoads);
-   pLLDF->SetRangeOfApplicabilityAction( pLiveLoads->GetLldfRangeOfApplicabilityAction() );
+   pLLDF->SetRangeOfApplicability( pLiveLoads->GetRangeOfApplicabilityAction(), roaVal );
 
    plldf->bExteriorGirder = pBridge->IsExteriorGirder(CGirderKey(0,gdrIdx));
 
    return pLLDF;
 }
 
-void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gM1,lrfdILiveLoadDistributionFactor::DFResult& gM2,Float64 gM,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
+void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM2,Float64 gM,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
 {
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
@@ -703,7 +705,7 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
 
       if (gM1.EqnData.bWasUsed)
       {
-         if (gM1.ControllingMethod & INTERIOR_OVERRIDE)
+         if (gM1.ControllingMethod & WBFL::LRFD::INTERIOR_OVERRIDE)
          {
             (*pPara) << Bold(_T("1 Loaded Lane: Exterior factor may not be less than that for interior")) << rptNewLine;
             (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("1")) << _T(" = ") << _T("mg") << Super(_T("MI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gM1.mg) << rptNewLine;
@@ -712,12 +714,12 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
          {
             (*pPara) << Bold(_T("1 Loaded Lane: Equation")) << rptNewLine;
 
-            if (lldf.Method == LLDF_TXDOT && !(gM1.ControllingMethod & LEVER_RULE))
+            if (lldf.Method == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT && !(gM1.ControllingMethod & WBFL::LRFD::LEVER_RULE))
             {
                (*pPara) << _T("For TxDOT Method, Use ") << _T("mg") << Super(_T("MI")) << Sub(_T("1")) << _T(". And,do not apply skew correction factor.") << rptNewLine;
 
                (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_MI_Type_G_SI.png") : _T("mg_1_MI_Type_G_US.png"))) << rptNewLine;
-               ATLASSERT(gM1.ControllingMethod & S_OVER_D_METHOD);
+               ATLASSERT(gM1.ControllingMethod & WBFL::LRFD::S_OVER_D_METHOD);
                (*pPara) << _T("K = ") << gM1.EqnData.K << rptNewLine;
                (*pPara) << _T("C = ") << gM1.EqnData.C << rptNewLine;
                (*pPara) << _T("D = ") << xdim.SetValue(gM1.EqnData.D) << rptNewLine;
@@ -730,14 +732,14 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
             {
                (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_ME_Type_G_SI.png") : _T("mg_1_ME_Type_G_US.png"))) << rptNewLine;
 
-               if (lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit || lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion())
+               if (lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit || WBFL::LRFD::BDSManager::Edition::SeventhEdition2014 <= WBFL::LRFD::BDSManager::GetEdition())
                {
                   (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_MI_Type_F_SI.png") : _T("mg_1_MI_Type_F_US.png"))) << rptNewLine;
                }
                else
                {
                   (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_MI_Type_G_SI.png") : _T("mg_1_MI_Type_G_US.png"))) << rptNewLine;
-                  ATLASSERT(gM1.ControllingMethod & S_OVER_D_METHOD);
+                  ATLASSERT(gM1.ControllingMethod & WBFL::LRFD::S_OVER_D_METHOD);
                   (*pPara) << _T("K = ") << gM1.EqnData.K << rptNewLine;
                   (*pPara) << _T("C = ") << gM1.EqnData.C << rptNewLine;
                   (*pPara) << _T("D = ") << xdim.SetValue(gM1.EqnData.D) << rptNewLine;
@@ -764,7 +766,7 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
 
          if (gM2.LeverRuleData.bWasUsed)
          {
-            ATLASSERT(gM2.ControllingMethod & LEVER_RULE);
+            ATLASSERT(gM2.ControllingMethod & WBFL::LRFD::LEVER_RULE);
             (*pPara) << rptNewLine;
             (*pPara) << Bold(_T("2+ Loaded Lanes: Lever Rule")) << rptNewLine;
             ReportLeverRule(pPara,true,1.0,gM2.LeverRuleData,m_pBroker,pDisplayUnits);
@@ -772,7 +774,7 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
 
          if (gM2.EqnData.bWasUsed)
          {
-            if (gM2.ControllingMethod & INTERIOR_OVERRIDE)
+            if (gM2.ControllingMethod & WBFL::LRFD::INTERIOR_OVERRIDE)
             {
                (*pPara) << Bold(_T("2+ Loaded Lanes: Exterior factor may not be less than that for interior")) << rptNewLine;
                (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("2")) << _T(" = ") << _T("mg") << Super(_T("MI")) << Sub(_T("2")) << _T(" = ") << scalar.SetValue(gM2.mg) << rptNewLine;
@@ -780,7 +782,7 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
             else
             {
                (*pPara) << Bold(_T("2+ Loaded Lanes: Equation Method")) << rptNewLine;
-               if (lldf.Method == LLDF_TXDOT && !(gM2.ControllingMethod & LEVER_RULE))
+               if (lldf.Method == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT && !(gM2.ControllingMethod & WBFL::LRFD::LEVER_RULE))
                {
                   (*pPara) << _T("Same as for 1 Loaded Lane") << rptNewLine;
                   (*pPara) << _T("mg") << Super(_T("ME")) << Sub(_T("2")) << _T(" = ") << scalar.SetValue(gM2.EqnData.mg) << rptNewLine;
@@ -789,14 +791,14 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
                {
                   (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_ME_Type_G_SI.png") : _T("mg_2_ME_Type_G_US.png"))) << rptNewLine;
 
-                  if (lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit || lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion())
+                  if (lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit || WBFL::LRFD::BDSManager::Edition::SeventhEdition2014 <= WBFL::LRFD::BDSManager::GetEdition())
                   {
                      (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_MI_Type_F_SI.png") : _T("mg_2_MI_Type_F_US.png"))) << rptNewLine;
                   }
                   else
                   {
                      (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_MI_Type_G_SI.png") : _T("mg_2_MI_Type_G_US.png"))) << rptNewLine;
-                     ATLASSERT(gM2.ControllingMethod & S_OVER_D_METHOD);
+                     ATLASSERT(gM2.ControllingMethod & WBFL::LRFD::S_OVER_D_METHOD);
                      (*pPara) << _T("K = ") << gM2.EqnData.K << rptNewLine;
                      (*pPara) << _T("C = ") << gM2.EqnData.C << rptNewLine;
                      (*pPara) << _T("D = ") << xdim.SetValue(gM2.EqnData.D) << rptNewLine;
@@ -820,12 +822,12 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
 
       (*pPara) << rptNewLine;
 
-      if ( gM1.ControllingMethod & MOMENT_SKEW_CORRECTION_APPLIED )
+      if ( gM1.ControllingMethod & WBFL::LRFD::MOMENT_SKEW_CORRECTION_APPLIED )
       {
          (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
-         if(lldf.Method != LLDF_TXDOT)
+         if(lldf.Method != pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
          {
-            Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
+            Float64 skew_delta_max = WBFL::Units::ConvertToSysUnits( 10.0, WBFL::Units::Measure::Degree );
             if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
                (*pPara) << rptRcImage(strImagePath + _T("SkewCorrection_Moment_TypeC.png")) << rptNewLine;
          }
@@ -851,12 +853,12 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
       if (gM1.EqnData.bWasUsed)
       {
          (*pPara) << Bold(_T("1 Loaded Lane: Equation")) << rptNewLine;
-         if (lldf.Method == LLDF_TXDOT && !(gM1.ControllingMethod & LEVER_RULE))
+         if (lldf.Method == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT && !(gM1.ControllingMethod & WBFL::LRFD::LEVER_RULE))
          {
             (*pPara) << _T("For TxDOT Method, do not apply skew correction factor.")<< rptNewLine;
 
             (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_MI_Type_G_SI.png") : _T("mg_1_MI_Type_G_US.png"))) << rptNewLine;
-            ATLASSERT(gM1.ControllingMethod & S_OVER_D_METHOD);
+            ATLASSERT(gM1.ControllingMethod & WBFL::LRFD::S_OVER_D_METHOD);
             (*pPara)<< _T("K = ")<< gM1.EqnData.K << rptNewLine;
             (*pPara)<< _T("C = ")<< gM1.EqnData.C << rptNewLine;
             (*pPara)<< _T("D = ")<< xdim.SetValue(gM1.EqnData.D) << rptNewLine;
@@ -866,14 +868,14 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
          }
          else
          {
-            if ( lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit || lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+            if ( lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit || WBFL::LRFD::BDSManager::Edition::SeventhEdition2014 <= WBFL::LRFD::BDSManager::GetEdition() )
             {
                (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_MI_Type_F_SI.png") : _T("mg_1_MI_Type_F_US.png"))) << rptNewLine;
             }
             else
             {
                (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_MI_Type_G_SI.png") : _T("mg_1_MI_Type_G_US.png"))) << rptNewLine;
-               ATLASSERT(gM1.ControllingMethod & S_OVER_D_METHOD);
+               ATLASSERT(gM1.ControllingMethod & WBFL::LRFD::S_OVER_D_METHOD);
                (*pPara)<< _T("K = ")<< gM1.EqnData.K << rptNewLine;
                (*pPara)<< _T("C = ")<< gM1.EqnData.C << rptNewLine;
                (*pPara)<< _T("D = ")<< xdim.SetValue(gM1.EqnData.D) << rptNewLine;
@@ -904,7 +906,7 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
          if (gM2.EqnData.bWasUsed)
          {
             (*pPara) << Bold(_T("2+ Loaded Lanes: Equation Method")) << rptNewLine;
-            if (lldf.Method == LLDF_TXDOT && !(gM2.ControllingMethod & LEVER_RULE))
+            if (lldf.Method == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT && !(gM2.ControllingMethod & WBFL::LRFD::LEVER_RULE))
             {
                (*pPara) << rptNewLine;
 
@@ -913,14 +915,14 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
             }
             else
             {
-               if ( lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit || lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+               if ( lldf.TransverseConnectivity == pgsTypes::atcConnectedAsUnit || WBFL::LRFD::BDSManager::Edition::SeventhEdition2014 <= WBFL::LRFD::BDSManager::GetEdition() )
                {
                   (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_MI_Type_F_SI.png") : _T("mg_2_MI_Type_F_US.png"))) << rptNewLine;
                }
                else
                {
                   (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_2_MI_Type_G_SI.png") : _T("mg_2_MI_Type_G_US.png"))) << rptNewLine;
-                  ATLASSERT(gM2.ControllingMethod & S_OVER_D_METHOD);
+                  ATLASSERT(gM2.ControllingMethod & WBFL::LRFD::S_OVER_D_METHOD);
                   (*pPara)<< _T("K = ")<< gM2.EqnData.K << rptNewLine;
                   (*pPara)<< _T("C = ")<< gM2.EqnData.C << rptNewLine;
                   (*pPara)<< _T("D = ")<< xdim.SetValue(gM2.EqnData.D) << rptNewLine;
@@ -941,12 +943,12 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
 
       (*pPara) << rptNewLine;
 
-      if ( gM1.ControllingMethod & MOMENT_SKEW_CORRECTION_APPLIED )
+      if ( gM1.ControllingMethod & WBFL::LRFD::MOMENT_SKEW_CORRECTION_APPLIED )
       {
          (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
-         if(lldf.Method != LLDF_TXDOT)
+         if(lldf.Method != pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
          {
-            Float64 skew_delta_max = ::ConvertToSysUnits( 10.0, unitMeasure::Degree );
+            Float64 skew_delta_max = WBFL::Units::ConvertToSysUnits( 10.0, WBFL::Units::Measure::Degree );
             if ( fabs(lldf.skew1 - lldf.skew2) < skew_delta_max )
                (*pPara) << rptRcImage(strImagePath + _T("SkewCorrection_Moment_TypeC.png")) << rptNewLine;
          }
@@ -963,7 +965,7 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
    }
 }
 
-void CVoidedSlabDistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_LLDFDETAILS& lldf,lrfdILiveLoadDistributionFactor::DFResult& gV1,lrfdILiveLoadDistributionFactor::DFResult& gV2,Float64 gV,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
+void CVoidedSlabDistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV2,Float64 gV,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
 {
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
@@ -980,12 +982,12 @@ void CVoidedSlabDistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_L
       {
          (*pPara) << Bold(_T("1 Loaded Lane: Equation")) << rptNewLine;
          REPORT_LLDF_INTOVERRIDE(gV1);
-         if( lldf.Method==LLDF_TXDOT )
+         if( lldf.Method== pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
          {
             (*pPara) << _T("For TxDOT Method, Use ")<<_T("mg") << Super(_T("MI")) << Sub(_T("1"))<<_T(". And,do not apply skew correction factor.")<< rptNewLine;
 
             (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_MI_Type_G_SI.png") : _T("mg_1_MI_Type_G_US.png"))) << rptNewLine;
-            ATLASSERT(gV1.ControllingMethod & S_OVER_D_METHOD);
+            ATLASSERT(gV1.ControllingMethod & WBFL::LRFD::S_OVER_D_METHOD);
             (*pPara)<< _T("K = ")<< gV1.EqnData.K << rptNewLine;
             (*pPara)<< _T("C = ")<< gV1.EqnData.C << rptNewLine;
             (*pPara)<< _T("D = ")<< xdim.SetValue(gV1.EqnData.D) << rptNewLine;
@@ -996,7 +998,7 @@ void CVoidedSlabDistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_L
          else 
          {
 
-            if (gV1.ControllingMethod & MOMENT_OVERRIDE)
+            if (gV1.ControllingMethod & WBFL::LRFD::MOMENT_OVERRIDE)
             {
                (*pPara) << _T("Overridden by moment factor because J or I was out of range for shear equation")<<rptNewLine;
                (*pPara) << _T("e = ") << gV1.EqnData.e << rptNewLine;
@@ -1031,7 +1033,7 @@ void CVoidedSlabDistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_L
       if ( 2 <= lldf.Nl )
       {
          (*pPara) << rptNewLine;
-         if ( gV2.ControllingMethod & LEVER_RULE )
+         if ( gV2.ControllingMethod & WBFL::LRFD::LEVER_RULE )
          {
             (*pPara) << Bold(_T("2+ Loaded Lane: Lever Rule")) << rptNewLine;
             REPORT_LLDF_INTOVERRIDE(gV2);
@@ -1040,7 +1042,7 @@ void CVoidedSlabDistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_L
 
          if ( gV1.EqnData.bWasUsed )
          {
-            if( lldf.Method==LLDF_TXDOT )
+            if( lldf.Method== pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
             {
                (*pPara) << Bold(_T("2+ Loaded Lane")) << rptNewLine;
                REPORT_LLDF_INTOVERRIDE(gV2);
@@ -1051,7 +1053,7 @@ void CVoidedSlabDistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_L
             {
                (*pPara) << Bold(_T("2+ Loaded Lane: Equation")) << rptNewLine;
                REPORT_LLDF_INTOVERRIDE(gV2);
-               if (gV2.ControllingMethod & MOMENT_OVERRIDE)
+               if (gV2.ControllingMethod & WBFL::LRFD::MOMENT_OVERRIDE)
                {
                   (*pPara) << _T("Overridden by moment factor because J or I was out of range for shear equation")<<rptNewLine;
                   (*pPara) << _T("e = ") << gV2.EqnData.e << rptNewLine;
@@ -1077,10 +1079,10 @@ void CVoidedSlabDistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_L
 
          (*pPara) << rptNewLine;
 
-         if ( gV1.ControllingMethod & SHEAR_SKEW_CORRECTION_APPLIED )
+         if ( gV1.ControllingMethod & WBFL::LRFD::SHEAR_SKEW_CORRECTION_APPLIED )
          {
             (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
-            if(lldf.Method != LLDF_TXDOT)
+            if(lldf.Method != pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
             {
                (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("SkewCorrection_Shear_TypeF_SI.png") : _T("SkewCorrection_Shear_TypeF_US.png"))) << rptNewLine;
             }
@@ -1106,12 +1108,12 @@ void CVoidedSlabDistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_L
       if ( gV1.EqnData.bWasUsed )
       {
          (*pPara) << Bold(_T("1 Loaded Lane: Equation")) << rptNewLine;
-         if( lldf.Method==LLDF_TXDOT )
+         if( lldf.Method== pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
          {
             (*pPara) << _T("For TxDOT Method, Use ")<<_T("mg") << Super(_T("MI")) << Sub(_T("1"))<<_T(". And,do not apply shear correction factor.")<< rptNewLine;
 
             (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("mg_1_MI_Type_G_SI.png") : _T("mg_1_MI_Type_G_US.png"))) << rptNewLine;
-            ATLASSERT(gV1.ControllingMethod &   S_OVER_D_METHOD);
+            ATLASSERT(gV1.ControllingMethod &   WBFL::LRFD::S_OVER_D_METHOD);
             (*pPara)<< _T("K = ")<< gV1.EqnData.K << rptNewLine;
             (*pPara)<< _T("C = ")<< gV1.EqnData.C << rptNewLine;
             (*pPara)<< _T("D = ")<< xdim.SetValue(gV1.EqnData.D) << rptNewLine;
@@ -1121,7 +1123,7 @@ void CVoidedSlabDistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_L
          }
          else 
          {
-            if (gV1.ControllingMethod & MOMENT_OVERRIDE)
+            if (gV1.ControllingMethod & WBFL::LRFD::MOMENT_OVERRIDE)
             {
                (*pPara) << _T("Overridden by moment factor because J or I was out of range for shear equation")<<rptNewLine;
                (*pPara) << _T("mg") << Super(_T("VI")) << Sub(_T("1")) << _T(" = ") << _T("mg") << Super(_T("MI")) << Sub(_T("1")) << _T(" = ") << scalar.SetValue(gV1.mg) << rptNewLine;
@@ -1152,7 +1154,7 @@ void CVoidedSlabDistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_L
          if ( gV2.EqnData.bWasUsed )
          {
             (*pPara) << Bold(_T("2+ Loaded Lane: Equation")) << rptNewLine;
-            if( lldf.Method==LLDF_TXDOT )
+            if( lldf.Method== pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
             {
                (*pPara) << Bold(_T("2+ Loaded Lane")) << rptNewLine;
                (*pPara) << _T("Same as for 1 Loaded Lane") << rptNewLine;
@@ -1160,7 +1162,7 @@ void CVoidedSlabDistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_L
             }
             else
             {
-               if (gV2.ControllingMethod & MOMENT_OVERRIDE)
+               if (gV2.ControllingMethod & WBFL::LRFD::MOMENT_OVERRIDE)
                {
                   (*pPara) << _T("Overridden by moment factor because J or I was out of range for shear equation")<<rptNewLine;
                   (*pPara) << _T("mg") << Super(_T("VI")) << Sub(_T("2")) << _T(" = ") << _T("mg") << Super(_T("MI")) << Sub(_T("2")) << _T(" = ") << scalar.SetValue(gV2.mg) << rptNewLine;
@@ -1189,7 +1191,7 @@ void CVoidedSlabDistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_L
 
       (*pPara) << rptNewLine;
 
-      if ( gV1.ControllingMethod & SHEAR_SKEW_CORRECTION_APPLIED )
+      if ( gV1.ControllingMethod & WBFL::LRFD::SHEAR_SKEW_CORRECTION_APPLIED )
       {
          (*pPara) << Bold(_T("Skew Correction")) << rptNewLine;
          (*pPara) << rptRcImage(strImagePath + (bSIUnits ? _T("SkewCorrection_Shear_TypeF_SI.png") : _T("SkewCorrection_Shear_TypeF_US.png"))) << rptNewLine;
@@ -1211,15 +1213,16 @@ std::_tstring CVoidedSlabDistFactorEngineer::GetComputationDescription(const CGi
    GET_IFACE(ILibrary, pLib);
    GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
 
-   Int16 lldfMethod = pSpecEntry->GetLiveLoadDistributionMethod();
+   auto lldfMethod = live_load_distribution_criteria.LldfMethod;
 
    std::_tstring descr;
-   if ( lldfMethod == LLDF_TXDOT )
+   if ( lldfMethod == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
    {
       descr += std::_tstring(_T("TxDOT method per TxDOT Bridge Design Manual - LRFD"));
    }
-   else if ( lldfMethod == LLDF_LRFD || lldfMethod == LLDF_WSDOT  )
+   else if ( lldfMethod == pgsTypes::LiveLoadDistributionFactorMethod::LRFD || lldfMethod == pgsTypes::LiveLoadDistributionFactorMethod::WSDOT)
    {
       if (decktype == pgsTypes::sdtCompositeOverlay)
       {

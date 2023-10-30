@@ -58,6 +58,7 @@ DESCRIPTION
 // {9454556F-E6F9-4c1c-BE34-6BF9027003D6}
 DEFINE_GUID(IID_IGetTogaData, 
 0x9454556f, 0xe6f9, 0x4c1c, 0xbe, 0x34, 0x6b, 0xf9, 0x2, 0x70, 0x3, 0xd6);
+struct __declspec(uuid("{9454556F-E6F9-4c1c-BE34-6BF9027003D6}")) IGetTogaData;
 interface IGetTogaData : IUnknown
 {
    virtual const CTxDOTOptionalDesignData* GetTogaData() = 0;
@@ -76,6 +77,7 @@ DESCRIPTION
 // {0D8A01DE-304F-48df-9650-EA797D059BF4}
 DEFINE_GUID(IID_IGetTogaResults, 
 0xd8a01de, 0x304f, 0x48df, 0x96, 0x50, 0xea, 0x79, 0x7d, 0x5, 0x9b, 0xf4);
+struct __declspec(uuid("{0D8A01DE-304F-48df-9650-EA797D059BF4}")) IGetTogaResults;
 interface IGetTogaResults : IUnknown
 {
    // Values from "original design" configuration

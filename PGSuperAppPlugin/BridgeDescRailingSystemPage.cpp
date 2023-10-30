@@ -56,8 +56,8 @@ CBridgeDescRailingSystemPage::CBridgeDescRailingSystemPage() : CPropertyPage(CBr
 	//}}AFX_DATA_INIT
    EAFGetBroker(&m_pBroker);
 
-   m_MinNWCDensity = lrfdConcreteUtil::GetNWCDensityLimit();
-   m_MaxLWCDensity = lrfdConcreteUtil::GetLWCDensityLimit();
+   m_MinNWCDensity = WBFL::LRFD::ConcreteUtil::GetNWCDensityLimit();
+   m_MaxLWCDensity = WBFL::LRFD::ConcreteUtil::GetLWCDensityLimit();
 }
 
 CBridgeDescRailingSystemPage::~CBridgeDescRailingSystemPage()
@@ -218,7 +218,7 @@ BOOL CBridgeDescRailingSystemPage::OnInitDialog()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,ILossParameters,pLossParams);
-   if ( pLossParams->GetLossMethod() != pgsTypes::TIME_STEP )
+   if ( pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       GetDlgItem(IDC_EVENT)->EnableWindow(FALSE);
    }
@@ -503,7 +503,7 @@ void CBridgeDescRailingSystemPage::OnMoreProperties(CRailingSystem* pRailingSyst
       pRailingSystem->Concrete.bUserEc            = dlg.m_bUserEc28;
 
       pRailingSystem->Concrete.Type               = dlg.m_General.m_Type;
-      ATLASSERT(pRailingSystem->Concrete.Type != pgsTypes::PCI_UHPC);
+      ATLASSERT(!IsUHPC(pRailingSystem->Concrete.Type)); // UHPC not permitted for railings
       pRailingSystem->Concrete.StrengthDensity    = dlg.m_General.m_Ds;
       pRailingSystem->Concrete.WeightDensity      = dlg.m_General.m_Dw;
       pRailingSystem->Concrete.MaxAggregateSize   = dlg.m_General.m_AggSize;
@@ -870,20 +870,20 @@ CString CBridgeDescRailingSystemPage::UpdateConcreteParametersToolTip(CRailingSy
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   const unitmgtDensityData& density = pDisplayUnits->GetDensityUnit();
-   const unitmgtLengthData&  aggsize = pDisplayUnits->GetComponentDimUnit();
-   const unitmgtStressData&  stress  = pDisplayUnits->GetStressUnit();
-   const unitmgtScalar&      scalar  = pDisplayUnits->GetScalarFormat();
+   const WBFL::Units::DensityData& density = pDisplayUnits->GetDensityUnit();
+   const WBFL::Units::LengthData&  aggsize = pDisplayUnits->GetComponentDimUnit();
+   const WBFL::Units::StressData&  stress  = pDisplayUnits->GetStressUnit();
+   const WBFL::Units::ScalarData&  scalar  = pDisplayUnits->GetScalarFormat();
 
    CString strTip;
    strTip.Format(_T("%-20s %s\r\n%-20s %s\r\n%-20s %s\r\n%-20s %s"),
-      _T("Type"), lrfdConcreteUtil::GetTypeName((matConcrete::Type)pRailingSystem->Concrete.Type,true).c_str(),
+      _T("Type"), WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pRailingSystem->Concrete.Type,true).c_str(),
       _T("Unit Weight"),FormatDimension(pRailingSystem->Concrete.StrengthDensity,density),
       _T("Unit Weight (w/ reinforcement)"),  FormatDimension(pRailingSystem->Concrete.WeightDensity,density),
       _T("Max Aggregate Size"),  FormatDimension(pRailingSystem->Concrete.MaxAggregateSize,aggsize)
       );
 
-   //if ( lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() )
+   //if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    //{
    //   // add K1 parameter
    //   CString strK1;
@@ -915,17 +915,17 @@ BOOL CBridgeDescRailingSystemPage::OnKillActive()
    if(bRetValue!=0)
    {
       // the UI should be preventing selection of PCI UHPC concrete
-      ATLASSERT(m_LeftRailingSystem.Concrete.Type != pgsTypes::PCI_UHPC);
-      ATLASSERT(m_RightRailingSystem.Concrete.Type != pgsTypes::PCI_UHPC);
+      ATLASSERT(!IsUHPC(m_LeftRailingSystem.Concrete.Type));
+      ATLASSERT(!IsUHPC(m_RightRailingSystem.Concrete.Type));
 
       if ( !IsDensityInRange(m_LeftRailingSystem.Concrete.StrengthDensity,m_LeftRailingSystem.Concrete.Type) )
       {
-         AfxMessageBox((m_LeftRailingSystem.Concrete.Type == pgsTypes::Normal || m_LeftRailingSystem.Concrete.Type == pgsTypes::PCI_UHPC) ? IDS_NWC_MESSAGE : IDS_LWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
+         AfxMessageBox((m_LeftRailingSystem.Concrete.Type == pgsTypes::Normal) ? IDS_NWC_MESSAGE : IDS_LWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
       }
       
       if ( !IsDensityInRange(m_RightRailingSystem.Concrete.StrengthDensity,m_RightRailingSystem.Concrete.Type) )
       {
-         AfxMessageBox((m_RightRailingSystem.Concrete.Type == pgsTypes::Normal || m_RightRailingSystem.Concrete.Type == pgsTypes::PCI_UHPC) ? IDS_NWC_MESSAGE : IDS_LWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
+         AfxMessageBox((m_RightRailingSystem.Concrete.Type == pgsTypes::Normal) ? IDS_NWC_MESSAGE : IDS_LWC_MESSAGE,MB_OK | MB_ICONINFORMATION);
       }
    }
 
@@ -935,17 +935,13 @@ BOOL CBridgeDescRailingSystemPage::OnKillActive()
 void CBridgeDescRailingSystemPage::SetConcreteTypeLabel(UINT nID,pgsTypes::ConcreteType type)
 {
    CWnd* pWnd = GetDlgItem(nID);
-   pWnd->SetWindowText( lrfdConcreteUtil::GetTypeName((matConcrete::Type)type,true).c_str() );
+   pWnd->SetWindowText( WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)type,true).c_str() );
 }
 
 bool CBridgeDescRailingSystemPage::IsDensityInRange(Float64 density,pgsTypes::ConcreteType type)
 {
-   if (type == pgsTypes::PCI_UHPC)
-   {
-      ATLASSERT(false); // should never get here - UI should prevent railing from being UHPC
-      return true;
-   }
-   else if (type == pgsTypes::Normal )
+   ATLASSERT(!IsUHPC(type));
+   if (type == pgsTypes::Normal )
    {
       return ( m_MinNWCDensity <= density );
    }

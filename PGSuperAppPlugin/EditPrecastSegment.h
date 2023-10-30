@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <System\Transaction.h>
+#include <EAF\EAFTransaction.h>
 #include <PgsExt\PrecastSegmentData.h>
 #include <PgsExt\TimelineManager.h>
 #include <IFace\Project.h>
@@ -33,11 +33,9 @@ struct txnEditPrecastSegmentData
    CSegmentKey m_SegmentKey;
    CPrecastSegmentData m_SegmentData;
    CTimelineManager m_TimelineMgr;
-   pgsTypes::SlabOffsetType m_SlabOffsetType;
-   std::array<Float64, 2> m_SlabOffset;
 };
 
-class txnEditPrecastSegment : public txnTransaction
+class txnEditPrecastSegment : public CEAFTransaction
 {
 public:
    txnEditPrecastSegment(const CSegmentKey& segmentKey,const txnEditPrecastSegmentData& newData);
@@ -46,10 +44,10 @@ public:
 
    virtual bool Execute();
    virtual void Undo();
-   virtual txnTransaction* CreateClone() const;
+   virtual std::unique_ptr<CEAFTransaction>CreateClone() const;
    virtual std::_tstring Name() const;
-   virtual bool IsUndoable();
-   virtual bool IsRepeatable();
+   virtual bool IsUndoable() const;
+   virtual bool IsRepeatable() const;
 
 private:
    void SetSegmentData(const CSegmentKey& segmentKey,const txnEditPrecastSegmentData& data);

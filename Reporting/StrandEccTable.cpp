@@ -91,7 +91,7 @@ rptRcTable* CStrandEccTable::Build_Y(IBroker* pBroker, const CSegmentKey& segmen
    pgsTypes::SectionPropertyType spType = (spMode == pgsTypes::spmGross ? pgsTypes::sptGrossNoncomposite : pgsTypes::sptNetGirder);
 
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
-   if (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP)
+   if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP)
    {
       // need eccentricity based on complete transformed section for time-step analysis
       spType = pgsTypes::sptTransformed;
@@ -266,7 +266,7 @@ rptRcTable* CStrandEccTable::Build_XY(IBroker* pBroker, const CSegmentKey& segme
    pgsTypes::SectionPropertyType spType = (spMode == pgsTypes::spmGross ? pgsTypes::sptGrossNoncomposite : pgsTypes::sptNetGirder);
 
    GET_IFACE2(pBroker,ILossParameters,pLossParams);
-   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       // need eccentricity based on complete transformed section for time-step analysis
       spType = pgsTypes::sptTransformed;
@@ -419,7 +419,7 @@ rptRcTable* CStrandEccTable::Build_XY(IBroker* pBroker, const CSegmentKey& segme
 
       if ( 0 < Ns )
       {
-         gpPoint2d ecc = pStrandGeom->GetEccentricity(spType, intervalIdx, poi, pgsTypes::Straight);
+         WBFL::Geometry::Point2d ecc = pStrandGeom->GetEccentricity(spType, intervalIdx, poi, pgsTypes::Straight);
          (*p_table)(row, col++) << eccentricity.SetValue(ecc.X());
          (*p_table)(row, col++) << eccentricity.SetValue(ecc.Y());
       }
@@ -431,7 +431,7 @@ rptRcTable* CStrandEccTable::Build_XY(IBroker* pBroker, const CSegmentKey& segme
 
       if ( 0 < Nh )
       {
-         gpPoint2d ecc = pStrandGeom->GetEccentricity(spType, intervalIdx, poi, pgsTypes::Harped);
+         WBFL::Geometry::Point2d ecc = pStrandGeom->GetEccentricity(spType, intervalIdx, poi, pgsTypes::Harped);
          (*p_table)(row, col++) << eccentricity.SetValue(ecc.X());
          (*p_table)(row, col++) << eccentricity.SetValue(ecc.Y());
       }
@@ -445,7 +445,7 @@ rptRcTable* CStrandEccTable::Build_XY(IBroker* pBroker, const CSegmentKey& segme
       {
          if ( 0 < Nt )
          {
-            gpPoint2d ecc = pStrandGeom->GetEccentricity(spType, intervalIdx, poi, pgsTypes::Temporary);
+            WBFL::Geometry::Point2d ecc = pStrandGeom->GetEccentricity(spType, intervalIdx, poi, pgsTypes::Temporary);
             (*p_table)(row, col++) << eccentricity.SetValue(ecc.X());
             (*p_table)(row, col++) << eccentricity.SetValue(ecc.Y());
          }
@@ -455,12 +455,12 @@ rptRcTable* CStrandEccTable::Build_XY(IBroker* pBroker, const CSegmentKey& segme
             (*p_table)(row, col++) << _T("-");
          }
 
-         gpPoint2d ecc = pStrandGeom->GetEccentricity(spType, intervalIdx, poi, true /*include temporary strands*/);
+         WBFL::Geometry::Point2d ecc = pStrandGeom->GetEccentricity(spType, intervalIdx, poi, true /*include temporary strands*/);
          (*p_table)(row, col++) << eccentricity.SetValue(ecc.X());
          (*p_table)(row, col++) << eccentricity.SetValue(ecc.Y());
       }
 
-      gpPoint2d ecc = pStrandGeom->GetEccentricity(spType, intervalIdx, poi, false/*exclude temporary strands*/);
+      WBFL::Geometry::Point2d ecc = pStrandGeom->GetEccentricity(spType, intervalIdx, poi, false/*exclude temporary strands*/);
       (*p_table)(row, col++) << eccentricity.SetValue(ecc.X());
       (*p_table)(row, col++) << eccentricity.SetValue(ecc.Y());
 
@@ -529,27 +529,3 @@ void CStrandEccTable::MakeAssignment(const CStrandEccTable& rOther)
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CStrandEccTable::AssertValid() const
-{
-   return true;
-}
-
-void CStrandEccTable::Dump(dbgDumpContext& os) const
-{
-   os << _T("Dump for CStrandEccTable") << endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CStrandEccTable::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("CStrandEccTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CStrandEccTable");
-
-   TESTME_EPILOG("StrandEccTable");
-}
-#endif // _UNITTEST

@@ -33,7 +33,7 @@
 #include <EAF\EAFApp.h>
 #include <EAF\EAFDocument.h>
 
-#include <Lrfd\Concreteutil.h>
+#include <LRFD\Concreteutil.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -51,10 +51,11 @@ CConcreteEntryGeneralPage::CConcreteEntryGeneralPage(): CPropertyPage(IDD_CONCRE
 	//}}AFX_DATA_INIT
    m_EntryName = _T("");
 
-   m_MinNWCDensity = lrfdConcreteUtil::GetNWCDensityLimit();
-   m_MaxLWCDensity = lrfdConcreteUtil::GetLWCDensityLimit();
+   m_MinNWCDensity = WBFL::LRFD::ConcreteUtil::GetNWCDensityLimit();
+   m_MaxLWCDensity = WBFL::LRFD::ConcreteUtil::GetLWCDensityLimit();
 
-   lrfdConcreteUtil::GetPCIUHPCStrengthRange(&m_MinFcUHPC, &m_MaxFcUHPC);
+   WBFL::LRFD::ConcreteUtil::GetPCIUHPCStrengthRange(&m_MinFcUHPC, &m_MaxFcUHPC);
+   // UHPC does not have a prescribed strength range
 }
 
 
@@ -66,7 +67,7 @@ void CConcreteEntryGeneralPage::DoDataExchange(CDataExchange* pDX)
    try
    {
       CEAFApp* pApp = EAFGetApp();
-      const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+      const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
       CPropertyPage::DoDataExchange(pDX);
 
@@ -109,7 +110,7 @@ void CConcreteEntryGeneralPage::DoDataExchange(CDataExchange* pDX)
       // Ds <= Dw
       DDV_UnitValueLimitOrMore(pDX, IDC_DW, m_Dw, m_Ds, pDisplayUnits->Density );
 
-      DDX_UnitValueAndTag(pDX, IDC_AGG_SIZE, IDC_AGG_SIZE_T, m_AggSize, pDisplayUnits->ComponentDim );
+      DDX_UnitValueAndTag(pDX, IDC_AGG_SIZE, IDC_AGG_SIZE_UNIT, m_AggSize, pDisplayUnits->ComponentDim );
       DDV_UnitValueGreaterThanZero(pDX, IDC_AGG_SIZE, m_AggSize, pDisplayUnits->ComponentDim );
    }
    catch(...)
@@ -153,6 +154,9 @@ BOOL CConcreteEntryGeneralPage::OnInitDialog()
 
    idx = pcbConcreteType->AddString(ConcreteLibraryEntry::GetConcreteType(pgsTypes::PCI_UHPC));
    pcbConcreteType->SetItemData(idx, (DWORD_PTR)pgsTypes::PCI_UHPC);
+
+   idx = pcbConcreteType->AddString(ConcreteLibraryEntry::GetConcreteType(pgsTypes::UHPC));
+   pcbConcreteType->SetItemData(idx, (DWORD_PTR)pgsTypes::UHPC);
 
 
 	CPropertyPage::OnInitDialog();
@@ -201,6 +205,12 @@ void CConcreteEntryGeneralPage::OnConcreteType()
 {
    GetDlgItem(IDC_DS)->Invalidate();
    GetDlgItem(IDC_DW)->Invalidate();
+
+
+   auto nShow = IsUHPC(GetConcreteType()) ? SW_HIDE : SW_SHOW;
+   GetDlgItem(IDC_AGG_SIZE_LABEL)->ShowWindow(nShow);
+   GetDlgItem(IDC_AGG_SIZE)->ShowWindow(nShow);
+   GetDlgItem(IDC_AGG_SIZE_UNIT)->ShowWindow(nShow);
 }
 
 HBRUSH CConcreteEntryGeneralPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
@@ -208,7 +218,7 @@ HBRUSH CConcreteEntryGeneralPage::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColo
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    HBRUSH hbr = CPropertyPage::OnCtlColor(pDC, pWnd, nCtlColor);
 
@@ -273,9 +283,9 @@ void CConcreteEntryGeneralPage::OnOK()
 bool CConcreteEntryGeneralPage::IsDensityInRange(Float64 density,pgsTypes::ConcreteType type)
 {
    CEAFApp* pApp = EAFGetApp();
-   if ( type == pgsTypes::PCI_UHPC )
+   if ( type == pgsTypes::PCI_UHPC || type == pgsTypes::UHPC)
    {
-      return true; // no density range for UHPC
+      return true; // no density range for UHPC provided by specification, only a typical value
    }
    else if ( type == pgsTypes::Normal )
    {
@@ -289,6 +299,7 @@ bool CConcreteEntryGeneralPage::IsDensityInRange(Float64 density,pgsTypes::Concr
 
 bool CConcreteEntryGeneralPage::IsStrengthInRange(Float64 fc, pgsTypes::ConcreteType type)
 {
+   // UHPC does not have a prescribed strength range
    if (type == pgsTypes::PCI_UHPC)
    {
       return InRange(m_MinFcUHPC, fc, m_MaxFcUHPC);

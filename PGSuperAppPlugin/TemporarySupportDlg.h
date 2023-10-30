@@ -6,6 +6,7 @@
 
 #include <PgsExt\TemporarySupportData.h>
 #include <IFace\ExtendUI.h>
+#include <EAF\EAFMacroTxn.h>
 
 // CTemporarySupportDlg
 
@@ -29,7 +30,7 @@ public:
 
    // Returns a macro transaction object that contains editing transactions
    // for all the extension pages. The caller is responsble for deleting this object
-   txnTransaction* GetExtensionPageTransaction();
+   std::unique_ptr<CEAFTransaction> GetExtensionPageTransaction();
 
 protected:
 	DECLARE_MESSAGE_MAP()
@@ -55,7 +56,7 @@ protected:
    friend CClosureJointGeometryPage;
    friend CGirderSegmentSpacingPage;
 
-   txnMacroTxn m_Macro;
+   CEAFMacroTxn m_Macro;
    std::vector<std::pair<IEditTemporarySupportCallback*,CPropertyPage*>> m_ExtensionPages;
    std::vector<EditBridgeExtension> m_BridgeExtensionPages; // sorted based on callback ID
    void NotifyExtensionPages();

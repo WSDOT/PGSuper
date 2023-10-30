@@ -232,13 +232,8 @@ void CBridgeSectionCutDisplayImpl::GetSectionCutPointsInWorldSpace(iPointDisplay
    m_pRoadway->GetPoint(station, left,  normal, pgsTypes::pcGlobal, p1);
    m_pRoadway->GetPoint(station, right, normal, pgsTypes::pcGlobal, p2);
 
-   Float64 x1,y1;
-   (*p1)->get_X(&x1);
-   (*p1)->get_Y(&y1);
-
-   Float64 x2,y2;
-   (*p2)->get_X(&x2);
-   (*p2)->get_Y(&y2);
+   Float64 x1, y1; (*p1)->Location(&x1, &y1);
+   Float64 x2, y2; (*p2)->Location(&x2, &y2);
 
    Float64 dx = x2 - x1;
    Float64 dy = y2 - y1;
@@ -257,11 +252,8 @@ void CBridgeSectionCutDisplayImpl::GetSectionCutPointsInWorldSpace(iPointDisplay
    CComPtr<iCoordinateMap> map;
    pDispMgr->GetCoordinateMap(&map);
 
-   (*p1)->get_X(&x1);
-   (*p1)->get_Y(&y1);
-
-   (*p2)->get_X(&x2);
-   (*p2)->get_Y(&y2);
+   (*p1)->Location(&x1, &y1);
+   (*p2)->Location(&x2, &y2);
 
    map->MPtoWP(x1,y1,&x1,&y1);
    map->MPtoWP(x2,y2,&x2,&y2);

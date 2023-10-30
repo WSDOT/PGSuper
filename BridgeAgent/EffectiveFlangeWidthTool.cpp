@@ -412,7 +412,7 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
    pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
 
    // Computes effective flange width, retaining details of calculation per LRFD 4.6.2.6.1
-   if ( m_bUseTribWidth == VARIANT_TRUE || lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion() )
+   if ( m_bUseTribWidth == VARIANT_TRUE || WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       GET_IFACE(IBridge,pBridge);
       GET_IFACE(IEffectiveFlangeWidth, pIEffFW);
@@ -895,7 +895,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirder_Prisma
 
           if ( 1 < count )
           {
-             (*pPara) << rptNewLine << _T("Web ") << long(flangeIdx+1) << rptNewLine;
+             (*pPara) << rptNewLine << _T("Web ") << FlangeIndexType(flangeIdx+1) << rptNewLine;
           }
 
           (*pPara) << Sub2(_T("w"),_T("2")) << _T(" = (12.0)(") << xdim2.SetValue(tSlab) << _T(") + greater of [ ");
@@ -1054,7 +1054,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_InteriorGirderRow(IEf
    {
       if ( 1 < count )
       {
-         (*table)(row,1) << rptNewLine << _T("Top Flange ") << long(flangeIdx + 1) << rptNewLine;
+         (*table)(row,1) << rptNewLine << _T("Top Flange ") << FlangeIndexType(flangeIdx + 1) << rptNewLine;
       }
 
       Float64 tSlab, tWeb, wFlange, lSpacing, rSpacing;
@@ -1416,7 +1416,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_Single
          {
             if ( 1 < count )
             {
-               (*table)(row,col) << rptNewLine << _T("Top Flange ") << long(flangeIdx + 1) << rptNewLine;
+               (*table)(row,col) << rptNewLine << _T("Top Flange ") << FlangeIndexType(flangeIdx + 1) << rptNewLine;
             }
 
             Float64 tSlab, tWeb, wFlange, lSpacing, rSpacing;
@@ -1559,7 +1559,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiT
 
       if ( 1 < count )
       {
-         (*pPara) << rptNewLine << _T("Top Flange ") << long(flangeIdx + 1) << rptNewLine;
+         (*pPara) << rptNewLine << _T("Top Flange ") << FlangeIndexType(flangeIdx + 1) << rptNewLine;
       }
 
       (*pPara) << Sub2(_T("w"),_T("2")) << _T(" = (12.0)(") << length.SetValue(tSlab) << _T(") + greater of [ ");
@@ -1679,7 +1679,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiT
       {
          if ( 1 < count )
          {
-            (*table)(row,1) << rptNewLine << _T("Web ") << long(flangeIdx + 1) << rptNewLine;
+            (*table)(row,1) << rptNewLine << _T("Web ") << FlangeIndexType(flangeIdx + 1) << rptNewLine;
          }
 
          Float64 tSlab, tWeb, wFlange, lSpacing, rSpacing;
@@ -1736,5 +1736,5 @@ bool CEffectiveFlangeWidthTool::DoUseTributaryWidth(const CBridgeDescription2* p
 {
    pgsTypes::SupportedBeamSpacing beamSpacing = pBridgeDesc->GetGirderSpacingType();
 
-   return m_bUseTribWidth || IsAdjacentSpacing(beamSpacing) || lrfdVersionMgr::FourthEditionWith2008Interims <= lrfdVersionMgr::GetVersion();
+   return m_bUseTribWidth || IsAdjacentSpacing(beamSpacing) || WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims <= WBFL::LRFD::BDSManager::GetEdition();
 }

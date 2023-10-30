@@ -48,7 +48,14 @@
 #include <PsgLib\SpecLibraryEntry.h>
 #include <PsgLib\GirderLibraryEntry.h>
 
-#include <Units\SysUnits.h>
+#include <psgLib/SectionPropertiesCriteria.h>
+#include <psgLib/SlabOffsetCriteria.h>
+#include <psgLib/HaunchCriteria.h>
+#include <psgLib/LiveLoadDistributionCriteria.h>
+#include <psgLib/ShearCapacityCriteria.h>
+#include <psgLib/SpecificationCriteria.h>
+
+#include <Units\Convert.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -107,10 +114,10 @@ Float64 GetVertPsComponent(IBroker* pBroker, const pgsPointOfInterest& poi, cons
 }
 
 //-----------------------------------------------------------------------------
-CollectionIndexType LimitStateToShearIndex(pgsTypes::LimitState limitState)
+IndexType LimitStateToShearIndex(pgsTypes::LimitState limitState)
 {
    ATLASSERT(IsStrengthLimitState(limitState));
-   CollectionIndexType idx;
+   IndexType idx;
 
    switch (limitState)
    {
@@ -154,12 +161,16 @@ public:
          // Designer does not handle transformed section properties well - set to gross
          if (m_bOverTransf)
          {
-            clone.SetSectionPropertyMode(pgsTypes::spmGross);
+            auto section_properties_criteria = clone.GetSectionPropertiesCriteria();
+            section_properties_criteria.SectionPropertyMode = pgsTypes::spmGross;
+            clone.SetSectionPropertiesCriteria(section_properties_criteria);
          }
 
          if (m_bOverHaunch)
          {
-            clone.SetHaunchAnalysisSectionPropertiesType(pgsTypes::hspConstFilletDepth);
+            auto haunch_criteria = clone.GetHaunchCriteria();
+            haunch_criteria.HaunchAnalysisSectionPropertiesType = pgsTypes::hspConstFilletDepth;
+            clone.SetHaunchCriteria(haunch_criteria);
          }
 
          // We've made changes to clone, now add it to library
@@ -190,8 +201,8 @@ public:
          pSpec->SetSpecification(m_OriginalSpecEntryName);
 
          SpecLibrary* pLibrary = pLib->GetSpecLibrary();
-         libILibrary::EntryRemoveOutcome outcome = pLibrary->RemoveEntry(m_CloneSpecEntryName.c_str());
-         ATLASSERT(libILibrary::RemOk == outcome);
+         WBFL::Library::ILibrary::EntryRemoveOutcome outcome = pLibrary->RemoveEntry(m_CloneSpecEntryName.c_str());
+         ATLASSERT(WBFL::Library::ILibrary::EntryRemoveOutcome::Ok == outcome);
       }
    }
 
@@ -322,15 +333,15 @@ void CEngAgentImp::ValidateLiveLoadDistributionFactors(const CGirderKey& girderK
          else
          {
             GET_IFACE(ILiveLoads,pLiveLoads);
-            LldfRangeOfApplicabilityAction action = pLiveLoads->GetLldfRangeOfApplicabilityAction();
-            if (action == roaIgnore)
+            WBFL::LRFD::RangeOfApplicabilityAction action = pLiveLoads->GetRangeOfApplicabilityAction();
+            if (action == WBFL::LRFD::RangeOfApplicabilityAction::Ignore)
             {
                GET_IFACE(IEAFStatusCenter,pStatusCenter);
                std::_tstring str(_T("Ranges of Applicability for Live Load Distribution Factor Equations have been ignored."));
                pgsLldfWarningStatusItem* pStatusItem = new pgsLldfWarningStatusItem(m_StatusGroupID,m_scidLldfWarning,str.c_str());
                pStatusCenter->Add(pStatusItem);
             }
-            else if (action == roaIgnoreUseLeverRule)
+            else if (action == WBFL::LRFD::RangeOfApplicabilityAction::IgnoreUseLeverRule)
             {
                GET_IFACE(IEAFStatusCenter,pStatusCenter);
                std::_tstring str(_T("The Lever Rule has been used for all cases where Ranges of Applicability for Live Load Distribution Factor Equations are exceeded. Otherwise, factors are computed using the Equations."));
@@ -439,8 +450,8 @@ void CEngAgentImp::InvalidateShearCapacity()
 {
    LOG(_T("Invalidating shear capacities"));
 #pragma Reminder("UPDATE: this should be done in a worker thread... see BridgeAgent")
-   CollectionIndexType size = sizeof(m_ShearCapacity)/sizeof(ShearCapacityContainer);
-   for (CollectionIndexType idx = 0; idx < size; idx++ )
+   IndexType size = sizeof(m_ShearCapacity)/sizeof(ShearCapacityContainer);
+   for (IndexType idx = 0; idx < size; idx++ )
    {
       m_ShearCapacity[idx].clear();
    }
@@ -450,7 +461,7 @@ void CEngAgentImp::InvalidateShearCapacity()
 
 const SHEARCAPACITYDETAILS* CEngAgentImp::ValidateShearCapacity(pgsTypes::LimitState limitState, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const
 {
-   CollectionIndexType idx = LimitStateToShearIndex(limitState);
+   IndexType idx = LimitStateToShearIndex(limitState);
 
    if ( poi.GetID() != INVALID_ID )
    {
@@ -504,8 +515,8 @@ void CEngAgentImp::InvalidateFpc()
 void CEngAgentImp::InvalidateShearCritSection()
 {
    LOG(_T("Invalidating critical section for shear"));
-   CollectionIndexType size = sizeof(m_CritSectionDetails)/sizeof(std::map<CGirderKey,std::vector<CRITSECTDETAILS>>);
-   for (CollectionIndexType idx = 0; idx < size; idx++ )
+   IndexType size = sizeof(m_CritSectionDetails)/sizeof(std::map<CGirderKey,std::vector<CRITSECTDETAILS>>);
+   for (IndexType idx = 0; idx < size; idx++ )
    {
       m_CritSectionDetails[idx].clear();
    }
@@ -522,7 +533,7 @@ const std::vector<CRITSECTDETAILS>& CEngAgentImp::ValidateShearCritSection(pgsTy
 
    // LRFD 2004 and later, critical section is only a function of dv, which comes from the calculation of Mu,
    // so critical section is not a function of the limit state. We will work with the Strength I limit state
-   if ( lrfdVersionMgr::ThirdEdition2004 <= pSpecEntry->GetSpecificationType() )
+   if ( WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 <= pSpecEntry->GetSpecificationCriteria().GetEdition() )
    {
       limitState = pgsTypes::StrengthI;
    }
@@ -560,7 +571,7 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
    // side of every pier. There could be zero, one, two, or more critical sections in a segment.
    // The critical sections do not necessarily occur near the ends of the segments (e.g. cantilever pier segment).
    //
-   // For convensional pretensioned girders, there are two critical sections per girder (each girder with one segment)
+   // For conventional pretensioned girders, there are two critical sections per girder (each girder with one segment)
    // and they occur near the ends of the girder.
    //
    //       Segment               Segment                Segment           Segment
@@ -571,7 +582,7 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
    //  |<-------------------------->|<---------------------->|<----------------------->|
    //
    // * = critical section location
-   // # = location between FOS and critical section (critial section zones)
+   // # = location between FOS and critical section (critical section zones)
 
    ASSERT_GIRDER_KEY(girderKey);
 
@@ -582,7 +593,7 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bThirdEdition = ( lrfdVersionMgr::ThirdEdition2004 <= pSpecEntry->GetSpecificationType() ? true : false );
+   bool bThirdEdition = ( WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 <= pSpecEntry->GetSpecificationCriteria().GetEdition() ? true : false );
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
@@ -694,18 +705,18 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
          }
       }
 
-#pragma Reminder("Can Optize here by reducing the number adjacent pois. The function below returns way too many.")
+#pragma Reminder("Can Optimize here by reducing the number adjacent pois. The function below returns way too many.")
       PoiList vPoi;
       pIPoi->GetPointsOfInterestInRange(left, poiFaceOfSupport, right, &vPoi);
 
-      mathPwLinearFunction2dUsingPoints theta;
-      mathPwLinearFunction2dUsingPoints dv;
-      mathPwLinearFunction2dUsingPoints dv_cos_theta;
-      mathPwLinearFunction2dUsingPoints unity;  // 45deg line from face of support
+      WBFL::Math::PiecewiseFunction theta;
+      WBFL::Math::PiecewiseFunction dv;
+      WBFL::Math::PiecewiseFunction dv_cos_theta;
+      WBFL::Math::PiecewiseFunction unity;  // 45deg line from face of support
 
       // create a graph for dv and 0.5d*dv*cot(theta)
       // create intercept lines as well since we are looping on poi.
-      LOG(endl<<_T("Critical Section Intercept graph"));
+      LOG(WBFL::Debug::endl<<_T("Critical Section Intercept graph"));
       LOG(_T("Location , Dv, Theta, 0.5*Dv*cotan(theta), Y"));
       for(const pgsPointOfInterest& poi : vPoi)
       {
@@ -732,7 +743,7 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
          GetRawShearCapacityDetails(limitState,intervalIdx,poi,pConfig,&scd);
 
          // dv
-         dv.AddPoint( gpPoint2d(x, scd.dv) );
+         dv.AddPoint( x, scd.dv );
          csdp.Poi = poi;
          csdp.DistFromFOS = x;
          csdp.Dv  = scd.dv;
@@ -742,8 +753,8 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
          if (scd.ShearInRange)
          {
             Float64 dvt   = 0.5*scd.dv/tan(scd.Theta);
-            dv_cos_theta.AddPoint( gpPoint2d(x, dvt) );
-            theta.AddPoint( gpPoint2d(x, scd.Theta) );
+            dv_cos_theta.AddPoint( x, dvt );
+            theta.AddPoint( x, scd.Theta );
 
             csdp.InRange          = true;
             csdp.Theta            = scd.Theta;
@@ -761,18 +772,18 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
 
          // intercept functions make a 45 degree angle upward from supports
          // the intercept line is the line of unity
-         unity.AddPoint( gpPoint2d(x,x) );
+         unity.AddPoint( x, x );
 
          LOG(poi.GetDistFromStart()<<_T(", ")<<csdp.Dv<<_T(", ")<<csdp.Theta<<_T(", ")<<csdp.CotanThetaDv05<<_T(", ")<<x);
       }
 
-      LOG(_T("End of intercept values")<<endl);
+      LOG(_T("End of intercept values")<< WBFL::Debug::endl);
 
-      // now that the graphs are created, find the intsection of the unity line with the dv and 0.5dvcot(theta) lines
+      // now that the graphs are created, find the intersection of the unity line with the dv and 0.5dvcot(theta) lines
       // determine intersections
-      gpPoint2d p;
+      WBFL::Geometry::Point2d p;
       Float64 x1;
-      math1dRange range = dv.GetRange();  // range is same for all
+      WBFL::Math::Range range = dv.GetRange();  // range is same for all
 
       try
       {
@@ -803,37 +814,40 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
             csDetails.CsDv.CotanThetaDv05 = 0.0;
          }
 
-         LOG(_T("Dv Intersection = (")<<p.X()<<_T(", ")<<p.Y()<<_T(")"));
+         LOG(_T("Dv Intersection = (") << p.X() << _T(", ") << p.Y() << _T(")"));
 
-         // dv cot(theta)
-         nIntersections = dv_cos_theta.Intersect(unity,range,&p);
-         if( nIntersections == 1 )
+         if (!bThirdEdition)
          {
-            x1 = p.X(); // distance from face of support where the intersection occurs
+            // dv cot(theta)
+            nIntersections = dv_cos_theta.Intersect(unity, range, &p);
+            if (nIntersections == 1)
+            {
+               x1 = p.X(); // distance from face of support where the intersection occurs
 
-            csDetails.CsDvt.InRange      = true;
-            csDetails.CsDvt.Intersection = CRITSECTIONDETAILSATPOI::ThetaIntersection;
-            csDetails.CsDvt.DistFromFOS  = x1;
+               csDetails.CsDvt.InRange = true;
+               csDetails.CsDvt.Intersection = CRITSECTIONDETAILSATPOI::ThetaIntersection;
+               csDetails.CsDvt.DistFromFOS = x1;
 
-            // set the critical section poi data... need the segment key and the
-            // distance from the start of the segment. Distance from start of segment is
-            // distance from face of support (x1) + distance from start of segment to the FOS
-	         
-            csDetails.CsDvt.Poi.SetSegmentKey(poiFaceOfSupport.GetSegmentKey());
-            csDetails.CsDvt.Poi.SetDistFromStart(face == pgsTypes::Ahead ? x1 + poiFaceOfSupport.GetDistFromStart() : poiFaceOfSupport.GetDistFromStart() - x1);
+               // set the critical section poi data... need the segment key and the
+               // distance from the start of the segment. Distance from start of segment is
+               // distance from face of support (x1) + distance from start of segment to the FOS
 
-            csDetails.CsDvt.Dv             = dv.Evaluate(x1);
-            csDetails.CsDvt.Theta          = theta.Evaluate(x1);
-            csDetails.CsDvt.CotanThetaDv05 = dv_cos_theta.Evaluate(x1);
+               csDetails.CsDvt.Poi.SetSegmentKey(poiFaceOfSupport.GetSegmentKey());
+               csDetails.CsDvt.Poi.SetDistFromStart(face == pgsTypes::Ahead ? x1 + poiFaceOfSupport.GetDistFromStart() : poiFaceOfSupport.GetDistFromStart() - x1);
 
-            LOG(_T(".5*Dv*cot(theta) Intersection = (")<<p.X()<<_T(", ")<<p.Y()<<_T(")"));
-         }
-         else
-         {
-            ATLASSERT(nIntersections == 0);
-            csDetails.CsDvt.InRange      = false;
-            csDetails.CsDvt.Intersection = CRITSECTIONDETAILSATPOI::NoIntersection;
-            LOG(_T(".5*Dv*cot(theta) on Left Intersection = No Intersection"));
+               csDetails.CsDvt.Dv = dv.Evaluate(x1);
+               csDetails.CsDvt.Theta = theta.Evaluate(x1);
+               csDetails.CsDvt.CotanThetaDv05 = dv_cos_theta.Evaluate(x1);
+
+               LOG(_T(".5*Dv*cot(theta) Intersection = (") << p.X() << _T(", ") << p.Y() << _T(")"));
+            }
+            else
+            {
+               ATLASSERT(nIntersections == 0);
+               csDetails.CsDvt.InRange = false;
+               csDetails.CsDvt.Intersection = CRITSECTIONDETAILSATPOI::NoIntersection;
+               LOG(_T(".5*Dv*cot(theta) on Left Intersection = No Intersection"));
+            }
          }
 
          // Determine the critical section. The critical section is the intersection
@@ -846,7 +860,7 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
          }
          else
          {
-            // 3rd edition and earilier
+            // 3rd edition and earlier
             if ( face == pgsTypes::Ahead )
             {
                if ( csDetails.CsDvt.Poi.GetDistFromStart() < csDetails.CsDv.Poi.GetDistFromStart() )
@@ -924,11 +938,11 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
 
          vcsDetails.push_back(csDetails);
       }
-      catch (const mathXEvalError&)
+      catch (const WBFL::Math::XFunction&)
       {
          GET_IFACE(IEAFStatusCenter,pStatusCenter);
 
-         std::_tstring msg(_T("An error occured while locating the critical section for shear"));
+         std::_tstring msg(_T("An error occurred while locating the critical section for shear"));
          pgsUnknownErrorStatusItem* pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID,m_scidUnknown,_T(__FILE__),__LINE__,msg.c_str());
          pStatusCenter->Add(pStatusItem);
 
@@ -1116,7 +1130,7 @@ Float64 CEngAgentImp::GetElasticShortening(const pgsPointOfInterest& poi,pgsType
    ATLASSERT(pDetails != 0);
 
    Float64 val;
-   if ( pDetails->LossMethod == pgsTypes::TIME_STEP )
+   if ( pDetails->LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       GET_IFACE(IIntervals,pIntervals);
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(poi.GetSegmentKey());
@@ -1347,8 +1361,8 @@ bool CEngAgentImp::AreElasticGainsApplicable() const
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-
-   return pSpecEntry->AreElasticGainsApplicable();
+   const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
+   return prestress_loss_criteria.AreElasticGainsApplicable(WBFL::LRFD::BDSManager::GetEdition());
 }
 
 bool CEngAgentImp::IsDeckShrinkageApplicable() const
@@ -1363,23 +1377,18 @@ bool CEngAgentImp::IsDeckShrinkageApplicable() const
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-
-   return pSpecEntry->IsDeckShrinkageApplicable();
+   const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
+   return prestress_loss_criteria.IsDeckShrinkageApplicable(WBFL::LRFD::BDSManager::GetEdition());
 }
 
 bool CEngAgentImp::LossesIncludeInitialRelaxation() const
 {
-   GET_IFACE(ILibrary, pLib);
-   GET_IFACE(ISpecification, pSpec);
-   std::_tstring spec_name = pSpec->GetSpecification();
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(spec_name.c_str());
-
    GET_IFACE_NOCHECK(ILossParameters, pLossParams); // not used if spec is before 3rd Edition 2004
-   bool bInitialRelaxation = (pSpecEntry->GetSpecificationType() <= lrfdVersionMgr::ThirdEdition2004 ||
-      pLossParams->GetLossMethod() == pgsTypes::WSDOT_REFINED ||
-      pLossParams->GetLossMethod() == pgsTypes::TXDOT_REFINED_2004 ||
-      pLossParams->GetLossMethod() == pgsTypes::WSDOT_LUMPSUM ||
-      pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? true : false);
+   bool bInitialRelaxation = (WBFL::LRFD::BDSManager::GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 ||
+      pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::WSDOT_REFINED ||
+      pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TXDOT_REFINED_2004 ||
+      pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::WSDOT_LUMPSUM ||
+      pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false);
 
    return bInitialRelaxation;
 }
@@ -1395,35 +1404,35 @@ Float64 CEngAgentImp::GetPjackMax(const CSegmentKey& segmentKey,pgsTypes::Strand
 }
 
 //-----------------------------------------------------------------------------
-Float64 CEngAgentImp::GetPjackMax(const CSegmentKey& segmentKey,const matPsStrand& strand,StrandIndexType nStrands) const
+Float64 CEngAgentImp::GetPjackMax(const CSegmentKey& segmentKey,const WBFL::Materials::PsStrand& strand,StrandIndexType nStrands) const
 {
    return m_PsForceEngineer.GetPjackMax(segmentKey,strand,nStrands);
 }
 
 //-----------------------------------------------------------------------------
-Float64 CEngAgentImp::GetTransferLength(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType, const GDRCONFIG* pConfig) const
+Float64 CEngAgentImp::GetTransferLength(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType, pgsTypes::TransferLengthType xferType, const GDRCONFIG* pConfig) const
 {
-   return m_TransferLengthEngineer.GetTransferLength(segmentKey,strandType,pConfig);
+   return m_TransferLengthEngineer.GetTransferLength(segmentKey,strandType,xferType,pConfig);
 }
 
-const std::shared_ptr<pgsTransferLength> CEngAgentImp::GetTransferLengthDetails(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig) const
+const std::shared_ptr<pgsTransferLength> CEngAgentImp::GetTransferLengthDetails(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, pgsTypes::TransferLengthType xferType, const GDRCONFIG* pConfig) const
 {
-   return m_TransferLengthEngineer.GetTransferLengthDetails(segmentKey, strandType, pConfig);
+   return m_TransferLengthEngineer.GetTransferLengthDetails(segmentKey, strandType, xferType, pConfig);
 }
 
-Float64 CEngAgentImp::GetTransferLengthAdjustment(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType, const GDRCONFIG* pConfig) const
+Float64 CEngAgentImp::GetTransferLengthAdjustment(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType, pgsTypes::TransferLengthType xferType, const GDRCONFIG* pConfig) const
 {
-   return m_TransferLengthEngineer.GetTransferLengthAdjustment(poi,strandType,pConfig);
+   return m_TransferLengthEngineer.GetTransferLengthAdjustment(poi,strandType, xferType,pConfig);
 }
 
-Float64 CEngAgentImp::GetTransferLengthAdjustment(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, StrandIndexType strandIdx, const GDRCONFIG* pConfig) const
+Float64 CEngAgentImp::GetTransferLengthAdjustment(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, pgsTypes::TransferLengthType xferType, StrandIndexType strandIdx, const GDRCONFIG* pConfig) const
 {
-   return m_TransferLengthEngineer.GetTransferLengthAdjustment(poi, strandType, strandIdx, pConfig);
+   return m_TransferLengthEngineer.GetTransferLengthAdjustment(poi, strandType, xferType, strandIdx, pConfig);
 }
 
-void CEngAgentImp::ReportTransferLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const
+void CEngAgentImp::ReportTransferLengthDetails(const CSegmentKey& segmentKey, pgsTypes::TransferLengthType xferType, rptChapter* pChapter) const
 {
-   return m_TransferLengthEngineer.ReportTransferLengthDetails(segmentKey, pChapter);
+   return m_TransferLengthEngineer.ReportTransferLengthDetails(segmentKey, xferType, pChapter);
 }
 
 //-----------------------------------------------------------------------------
@@ -1456,15 +1465,15 @@ Float64 CEngAgentImp::GetDevelopmentLengthAdjustment(const pgsPointOfInterest& p
 }
 
 //-----------------------------------------------------------------------------
-Float64 CEngAgentImp::GetHoldDownForce(const CSegmentKey& segmentKey,bool bTotal,Float64* pSlope,pgsPointOfInterest* pPoi,const GDRCONFIG* pConfig) const
+Float64 CEngAgentImp::GetHoldDownForce(const CSegmentKey& segmentKey, HoldDownCriteria::Type holdDownForceType,Float64* pSlope,pgsPointOfInterest* pPoi,const GDRCONFIG* pConfig) const
 {
-   return m_PsForceEngineer.GetHoldDownForce(segmentKey,bTotal,pSlope,pPoi,pConfig);
+   return m_PsForceEngineer.GetHoldDownForce(segmentKey,holdDownForceType,pSlope,pPoi,pConfig);
 }
 
 Float64 CEngAgentImp::GetHorizHarpedStrandForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig) const
 {
    Float64 cos = GetHorizPsComponent(m_pBroker,poi,pConfig);
-   Float64 P = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,intervalTime,pConfig);
+   Float64 P = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,intervalTime,pgsTypes::TransferLengthType::Maximum,pConfig);
    Float64 Hp = fabs(cos*P); // this should always be positive
    return Hp;
 }
@@ -1472,7 +1481,7 @@ Float64 CEngAgentImp::GetHorizHarpedStrandForce(const pgsPointOfInterest& poi,In
 Float64 CEngAgentImp::GetVertHarpedStrandForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig) const
 {
    Float64 sin = GetVertPsComponent(m_pBroker,poi);
-   Float64 P = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,intervalTime,pConfig);
+   Float64 P = GetPrestressForce(poi,pgsTypes::Harped,intervalIdx,intervalTime,pgsTypes::TransferLengthType::Maximum,pConfig);
    Float64 Vp = sin*P;
 
    // determine sign of Vp. If Vp has the opposite sign as the shear due to the externally applied
@@ -1482,7 +1491,7 @@ Float64 CEngAgentImp::GetVertHarpedStrandForce(const pgsPointOfInterest& poi,Int
    pgsTypes::BridgeAnalysisType batMin = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
 
    GET_IFACE(ILimitStateForces,pLsForces);
-   sysSectionValue Vmin, Vmax, dummy;
+   WBFL::System::SectionValue Vmin, Vmax, dummy;
    pLsForces->GetShear(intervalIdx,pgsTypes::StrengthI,poi,batMax,&dummy,&Vmax);
    pLsForces->GetShear(intervalIdx,pgsTypes::StrengthI,poi,batMin,&Vmin,&dummy);
 
@@ -1515,7 +1524,7 @@ Float64 CEngAgentImp::GetVertHarpedStrandForce(const pgsPointOfInterest& poi,Int
    return Vp;
 }
 
-Float64 CEngAgentImp::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig) const
+Float64 CEngAgentImp::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime, pgsTypes::TransferLengthType xferLengthType,const GDRCONFIG* pConfig) const
 {
    if (pConfig == nullptr)
    {
@@ -1528,33 +1537,33 @@ Float64 CEngAgentImp::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::
       }
       else
       {
-         Float64 F = m_PsForceEngineer.GetPrestressForce(poi, strandType, intervalIdx, intervalTime);
+         Float64 F = m_PsForceEngineer.GetPrestressForce(poi, strandType, intervalIdx, intervalTime, xferLengthType);
          m_PsForce.insert(std::make_pair(key, F));
          return F;
       }
    }
    else
    {
-      return m_PsForceEngineer.GetPrestressForce(poi, strandType, intervalIdx, intervalTime, pConfig);
+      return m_PsForceEngineer.GetPrestressForce(poi, strandType, intervalIdx, intervalTime, xferLengthType, pConfig);
    }
 }
 
-Float64 CEngAgentImp::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,bool bIncludeElasticEffects) const
+Float64 CEngAgentImp::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,bool bIncludeElasticEffects,pgsTypes::TransferLengthType xferLengthType) const
 {
-   return m_PsForceEngineer.GetPrestressForce(poi,strandType,intervalIdx,intervalTime,bIncludeElasticEffects);
+   return m_PsForceEngineer.GetPrestressForce(poi,strandType,intervalIdx,intervalTime,bIncludeElasticEffects,xferLengthType);
 }
 
 Float64 CEngAgentImp::GetPrestressForcePerStrand(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, bool bIncludeElasticEffects) const
 {
-   return GetPrestressForcePerStrand(poi, strandType, intervalIdx, intervalTime, nullptr, bIncludeElasticEffects);
+   return GetPrestressForcePerStrand(poi, strandType, intervalIdx, intervalTime, bIncludeElasticEffects, nullptr);
 }
 
 Float64 CEngAgentImp::GetPrestressForcePerStrand(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, const GDRCONFIG* pConfig) const
 {
-   return GetPrestressForcePerStrand(poi, strandType, intervalIdx, intervalTime, pConfig, true /*include elastic effects*/);
+   return GetPrestressForcePerStrand(poi, strandType, intervalIdx, intervalTime, true /*include elastic effects*/, pConfig);
 }
 
-Float64 CEngAgentImp::GetPrestressForcePerStrand(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig,bool bIncludeElasticEffects) const
+Float64 CEngAgentImp::GetPrestressForcePerStrand(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,bool bIncludeElasticEffects,const GDRCONFIG* pConfig) const
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -1562,11 +1571,11 @@ Float64 CEngAgentImp::GetPrestressForcePerStrand(const pgsPointOfInterest& poi,p
    Float64 Ps;
    if (pConfig)
    {
-      Ps = GetPrestressForce(poi, strandType, intervalIdx, intervalTime, pConfig);
+      Ps = GetPrestressForce(poi, strandType, intervalIdx, intervalTime,pgsTypes::TransferLengthType::Minimum, pConfig);
    }
    else
    {
-      Ps = GetPrestressForce(poi, strandType, intervalIdx, intervalTime, bIncludeElasticEffects);
+      Ps = GetPrestressForce(poi, strandType, intervalIdx, intervalTime, bIncludeElasticEffects,pgsTypes::TransferLengthType::Minimum);
    }
 
    StrandIndexType nStrands = pStrandGeom->GetStrandCount(segmentKey,strandType,pConfig);
@@ -1686,10 +1695,10 @@ Float64 CEngAgentImp::GetGirderTendonPjackMax(const CGirderKey& girderKey,Strand
    return GetGirderTendonPjackMax(girderKey,*pPTData->pStrand,nStrands);
 }
 
-Float64 CEngAgentImp::GetGirderTendonPjackMax(const CGirderKey& girderKey,const matPsStrand& strand,StrandIndexType nStrands) const
+Float64 CEngAgentImp::GetGirderTendonPjackMax(const CGirderKey& girderKey,const WBFL::Materials::PsStrand& strand,StrandIndexType nStrands) const
 {
-   GET_IFACE( IAllowableTendonStress, pAllowable);
-   Float64 fpj = (pAllowable->CheckTendonStressAtJacking() ? pAllowable->GetGirderTendonAllowableAtJacking(girderKey) : pAllowable->GetGirderTendonAllowablePriorToSeating(girderKey));
+   GET_IFACE( ITendonStressLimit, pLimits);
+   Float64 fpj = (pLimits->CheckTendonStressAtJacking() ? pLimits->GetGirderTendonStressLimitAtJacking(girderKey) : pLimits->GetGirderTendonStressLimitPriorToSeating(girderKey));
    Float64 aps = strand.GetNominalArea();
    Float64 Fpj = fpj*aps*nStrands;
 
@@ -1705,10 +1714,10 @@ Float64 CEngAgentImp::GetSegmentTendonPjackMax(const CSegmentKey& segmentKey, St
    return GetSegmentTendonPjackMax(segmentKey, *pPTData->m_pStrand, nStrands);
 }
 
-Float64 CEngAgentImp::GetSegmentTendonPjackMax(const CSegmentKey& segmentKey, const matPsStrand& strand, StrandIndexType nStrands) const
+Float64 CEngAgentImp::GetSegmentTendonPjackMax(const CSegmentKey& segmentKey, const WBFL::Materials::PsStrand& strand, StrandIndexType nStrands) const
 {
-   GET_IFACE(IAllowableTendonStress, pAllowable);
-   Float64 fpj = (pAllowable->CheckTendonStressAtJacking() ? pAllowable->GetSegmentTendonAllowableAtJacking(segmentKey) : pAllowable->GetSegmentTendonAllowablePriorToSeating(segmentKey));
+   GET_IFACE(ITendonStressLimit, pLimits);
+   Float64 fpj = (pLimits->CheckTendonStressAtJacking() ? pLimits->GetSegmentTendonStressLimitAtJacking(segmentKey) : pLimits->GetSegmentTendonStressLimitPriorToSeating(segmentKey));
    Float64 aps = strand.GetNominalArea();
    Float64 Fpj = fpj*aps*nStrands;
 
@@ -2201,7 +2210,7 @@ Float64 CEngAgentImp::GetGirderTendonVerticalForce(const pgsPointOfInterest& poi
    pgsTypes::BridgeAnalysisType batMin = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
 
    GET_IFACE(ILimitStateForces,pLsForces);
-   sysSectionValue Vmin, Vmax, dummy;
+   WBFL::System::SectionValue Vmin, Vmax, dummy;
    pLsForces->GetShear(intervalIdx,pgsTypes::StrengthI,poi,batMax,&dummy,&Vmax);
    pLsForces->GetShear(intervalIdx,pgsTypes::StrengthI,poi,batMin,&Vmin,&dummy);
 
@@ -2275,7 +2284,7 @@ Float64 CEngAgentImp::GetSegmentTendonVerticalForce(const pgsPointOfInterest& po
    pgsTypes::BridgeAnalysisType batMin = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
 
    GET_IFACE(ILimitStateForces, pLsForces);
-   sysSectionValue Vmin, Vmax, dummy;
+   WBFL::System::SectionValue Vmin, Vmax, dummy;
    pLsForces->GetShear(intervalIdx, pgsTypes::StrengthI, poi, batMax, &dummy, &Vmax);
    pLsForces->GetShear(intervalIdx, pgsTypes::StrengthI, poi, batMin, &Vmin, &dummy);
 
@@ -2327,11 +2336,13 @@ Float64 CEngAgentImp::GetSegmentTendonVerticalForce(const pgsPointOfInterest& po
 
 /////////////////////////////////////////////////////////////////////////////
 // IArtifact
-void CEngAgentImp::VerifyDistributionFactorRequirements(const pgsPointOfInterest& poi) const
+Int32 CEngAgentImp::VerifyDistributionFactorRequirements(const pgsPointOfInterest& poi) const
 {
-   CheckCurvatureRequirements(poi);
-   CheckGirderStiffnessRequirements(poi);
-   CheckParallelGirderRequirements(poi);
+   Int32 Roa(0);
+   Roa |= CheckCurvatureRequirements(poi);
+   Roa |= CheckGirderStiffnessRequirements(poi);
+   Roa |= CheckParallelGirderRequirements(poi);
+   return Roa;
 }
 
 void CEngAgentImp::TestRangeOfApplicability(const CSpanKey& spanKey) const
@@ -2340,14 +2351,36 @@ void CEngAgentImp::TestRangeOfApplicability(const CSpanKey& spanKey) const
    GetMomentDistFactor(spanKey, pgsTypes::ServiceI);
 }
 
-void CEngAgentImp::CheckCurvatureRequirements(const pgsPointOfInterest& poi) const
+Int32 CEngAgentImp::CheckCurvatureRequirements(const pgsPointOfInterest& poi) const
 {
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   if (pgsTypes::Calculated != pIBridgeDesc->GetBridgeDescription()->GetDistributionFactorMethod())
+   {
+      // ROA only applicable if Calculated
+      return 0;
+   }
+
    //
    // Check the curvature requirements (4.6.1.2.1)
    // throws exception if requirements not met
    //
 
    GET_IFACE(IRoadwayData,pRoadway);
+   const AlignmentData2& alignment_data = pRoadway->GetAlignmentData2();
+   IndexType nCurves = alignment_data.CompoundCurves.size();
+   if (nCurves == 0)
+   {
+      return 0; // no curves
+   }
+
+   if (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition()) // no longer required with 2005 specs
+   {
+      // this criteria is not applicable because the user has chosen to ignore the range of applicability requirements
+      // or we are using the LRFD 2005 or later (curvature limits were removed in 2005)
+      return 0;
+   }
+
+   // Ok, there are curves in the alignment
    GET_IFACE(IBridge,pBridge);
    GET_IFACE(IPointOfInterest,pIPoi);
 
@@ -2359,24 +2392,6 @@ void CEngAgentImp::CheckCurvatureRequirements(const pgsPointOfInterest& poi) con
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   const AlignmentData2& alignment_data = pRoadway->GetAlignmentData2();
-   IndexType nCurves = alignment_data.CompoundCurves.size();
-   if ( nCurves == 0 )
-   {
-      return; // no curves
-   }
-
-   GET_IFACE(ILiveLoads,pLiveLoads);
-   if ( pLiveLoads->IgnoreLLDFRangeOfApplicability() ||
-        lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() // no longer required with 2005 specs
-      ) 
-   {
-      // this criteria is not applicable because the user has chosen to ignore the range of applicability requirements
-      // or we are using the LRFD 2005 or later (curvature limits were removed in 2005)
-      return;
-   }
-
-   // Ok, there are curves in the alignment
    // The angle subtended by a span is equal to the change in tangent bearings between the
    // start and end of the span.
    PierIndexType start_pier = PierIndexType(spanKey.spanIndex); // start pier has same id as span
@@ -2433,30 +2448,44 @@ void CEngAgentImp::CheckCurvatureRequirements(const pgsPointOfInterest& poi) con
       bIsOK = ( delta < delta_limit ) ? true : false;
    }
 
-   if ( !bIsOK )
+   if (!bIsOK)
    {
-      std::_tostringstream os;
-      os << _T("Live Load Distribution Factors could not be calculated for the following reason") << std::endl;
-      os << _T("Per 4.6.1.2.1, the limiting central angle for neglecting curvature has been exceeded") << std::endl;
-      os << _T("Computed value = ") << delta << _T(" deg") << std::endl;
-      os << _T("Limiting value = ") << delta_limit << _T(" deg") << std::endl;
-      os << _T("A refined method of analysis is required for this bridge") << std::endl;
+      GET_IFACE(ILiveLoads,pLiveLoads);
+      if (pLiveLoads->GetRangeOfApplicabilityAction() == WBFL::LRFD::RangeOfApplicabilityAction::Enforce)
+      {
+         // We throw
+         std::_tostringstream os;
+         os << _T("Live Load Distribution Factors could not be calculated for the following reason") << std::endl;
+         os << _T("Per 4.6.1.2.1, the limiting central angle for neglecting curvature has been exceeded") << std::endl;
+         os << _T("Computed value = ") << delta << _T(" deg") << std::endl;
+         os << _T("Limiting value = ") << delta_limit << _T(" deg") << std::endl;
+         os << _T("A refined method of analysis is required for this bridge") << std::endl;
 
-      pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_StatusGroupID,m_scidRefinedAnalysis,os.str().c_str());
-      GET_IFACE(IEAFStatusCenter,pStatusCenter);
-      pStatusCenter->Add(pStatusItem);
+         pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_StatusGroupID,m_scidRefinedAnalysis,os.str().c_str());
+         GET_IFACE(IEAFStatusCenter,pStatusCenter);
+         pStatusCenter->Add(pStatusItem);
 
-      os << _T("See Status Center for Details") << std::endl;
-      THROW_UNWIND(os.str().c_str(),XREASON_REFINEDANALYSISREQUIRED);
+         os << _T("See Status Center for Details") << std::endl;
+         THROW_UNWIND(os.str().c_str(),XREASON_REFINEDANALYSISREQUIRED);
+      }
+      else
+      {
+         return WBFL::LRFD::LLDF_BWROA_EXCESSIVE_CURVATURE; // this will allow beams to decide our fate
+      }
+   }
+   else
+   {
+      return 0;
    }
 }
 
-void CEngAgentImp::CheckGirderStiffnessRequirements(const pgsPointOfInterest& poi) const
+Int32 CEngAgentImp::CheckGirderStiffnessRequirements(const pgsPointOfInterest& poi) const
 {
-   GET_IFACE(ILiveLoads,pLiveLoads);
-   if ( pLiveLoads->IgnoreLLDFRangeOfApplicability() )
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   if (pgsTypes::Calculated != pIBridgeDesc->GetBridgeDescription()->GetDistributionFactorMethod())
    {
-      return; // nothing to do here
+      // ROA only applicable if Calculated
+      return 0;
    }
 
    // get difference in stiffness between all girders in this span
@@ -2467,7 +2496,8 @@ void CEngAgentImp::CheckGirderStiffnessRequirements(const pgsPointOfInterest& po
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   Float64 minStiffnessRatio = pSpecEntry->GetMinGirderStiffnessRatio();
+   const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
+   Float64 minStiffnessRatio = live_load_distribution_criteria.MinGirderStiffnessRatio;
 
    GET_IFACE(IPointOfInterest,pPoi);
    CSpanKey spanKey;
@@ -2506,33 +2536,49 @@ void CEngAgentImp::CheckGirderStiffnessRequirements(const pgsPointOfInterest& po
       Imax = Max(Imax,I);
    }
 
+   GET_IFACE_NOCHECK(ILiveLoads,pLiveLoads);
+
    Float64 ratio = Imin/Imax;
    if ( ratio < minStiffnessRatio )
    {
-      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-      std::_tostringstream os;
-      os << _T("Live Load Distribution Factors could not be calculated for the following reason:") << std::endl;
-      os << _T("The girders in Span ") << LABEL_SPAN(spanKey.spanIndex) << _T(" do not have approximately the same stiffness as required by LRFD 4.6.2.2.1.") << std::endl;
-      os << _T("Minimum I = ") << (LPCTSTR)FormatDimension(Imin,pDisplayUnits->GetMomentOfInertiaUnit(),true) << std::endl;
-      os << _T("Maximum I = ") << (LPCTSTR)FormatDimension(Imax,pDisplayUnits->GetMomentOfInertiaUnit(),true) << std::endl;
-      os << _T("Stiffness Ratio (I min / I max) = ") << (LPCTSTR)FormatScalar(ratio,pDisplayUnits->GetScalarFormat()) << std::endl;
-      os << _T("Minimum stiffness ratio permitted by the Project Criteria = ") << (LPCTSTR)FormatScalar(minStiffnessRatio,pDisplayUnits->GetScalarFormat()) << std::endl;
-      os << _T("A refined method of analysis is required for this bridge") << std::endl;
+      if (pLiveLoads->GetRangeOfApplicabilityAction() == WBFL::LRFD::RangeOfApplicabilityAction::Enforce)
+      {
+         // We throw
 
-      pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_StatusGroupID,m_scidRefinedAnalysis,os.str().c_str());
-      pStatusCenter->Add(pStatusItem);
+         GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+         std::_tostringstream os;
+         os << _T("Live Load Distribution Factors could not be calculated for the following reason:") << std::endl;
+         os << _T("The girders in Span ") << LABEL_SPAN(spanKey.spanIndex) << _T(" do not have approximately the same stiffness as required by LRFD 4.6.2.2.1.") << std::endl;
+         os << _T("Minimum I = ") << (LPCTSTR)FormatDimension(Imin,pDisplayUnits->GetMomentOfInertiaUnit(),true) << std::endl;
+         os << _T("Maximum I = ") << (LPCTSTR)FormatDimension(Imax,pDisplayUnits->GetMomentOfInertiaUnit(),true) << std::endl;
+         os << _T("Stiffness Ratio (I min / I max) = ") << (LPCTSTR)FormatScalar(ratio,pDisplayUnits->GetScalarFormat()) << std::endl;
+         os << _T("Minimum stiffness ratio permitted by the Project Criteria = ") << (LPCTSTR)FormatScalar(minStiffnessRatio,pDisplayUnits->GetScalarFormat()) << std::endl;
+         os << _T("A refined method of analysis is required for this bridge") << std::endl;
 
-      os << _T("See Status Center for Details") << std::endl;
-      THROW_UNWIND(os.str().c_str(),XREASON_REFINEDANALYSISREQUIRED);
+         pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_StatusGroupID,m_scidRefinedAnalysis,os.str().c_str());
+         pStatusCenter->Add(pStatusItem);
+
+         os << _T("See Status Center for Details") << std::endl;
+         THROW_UNWIND(os.str().c_str(),XREASON_REFINEDANALYSISREQUIRED);
+      }
+      else
+      {
+         return WBFL::LRFD::LLDF_BWROA_DIFFERENT_STIFFNESS; // this will allow beams to decide our fate
+      }
+   }
+   else
+   {
+      return 0;
    }
 }
 
-void CEngAgentImp::CheckParallelGirderRequirements(const pgsPointOfInterest& poi) const
+Int32 CEngAgentImp::CheckParallelGirderRequirements(const pgsPointOfInterest& poi) const
 {
-   GET_IFACE(ILiveLoads,pLiveLoads);
-   if ( pLiveLoads->IgnoreLLDFRangeOfApplicability() )
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   if (pgsTypes::Calculated != pIBridgeDesc->GetBridgeDescription()->GetDistributionFactorMethod())
    {
-      return; // nothing to do here
+      // ROA only applicable if Calculated
+      return 0;
    }
 
    // get angle between all girders in this span
@@ -2543,7 +2589,8 @@ void CEngAgentImp::CheckParallelGirderRequirements(const pgsPointOfInterest& poi
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   Float64 maxAllowableAngle = pSpecEntry->GetMaxAngularDeviationBetweenGirders();
+   const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
+   Float64 maxAllowableAngle = live_load_distribution_criteria.MaxAngularDeviationBetweenGirders;
 
    GET_IFACE(IPointOfInterest,pPoi);
    CSpanKey spanKey;
@@ -2555,6 +2602,9 @@ void CEngAgentImp::CheckParallelGirderRequirements(const pgsPointOfInterest& poi
    GirderIndexType nGirders = pBridge->GetGirderCount(segmentKey.groupIndex);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(segmentKey);
    
+   GET_IFACE(ILiveLoads,pLiveLoads);
+   bool doThrow = pLiveLoads->GetRangeOfApplicabilityAction() == WBFL::LRFD::RangeOfApplicabilityAction::Enforce;
+
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       // direction is measured 0 to 2pi, we want it measured between 0 and +/- pi.
@@ -2588,21 +2638,30 @@ void CEngAgentImp::CheckParallelGirderRequirements(const pgsPointOfInterest& poi
 
       if ( maxAllowableAngle < maxAngularDifference )
       {
-         GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-         std::_tostringstream os;
-         os << _T("Live Load Distribution Factors could not be calculated for the following reason:") << std::endl;
-         os << _T("The girders in this span are not parallel as required by LRFD 4.6.2.2.1.") << std::endl;
-         os << _T("Greatest angular difference between girders in Span ") << LABEL_SPAN(spanKey.spanIndex) << _T(" = ") << (LPCTSTR)FormatDimension(maxAngularDifference,pDisplayUnits->GetAngleUnit(),true) << std::endl;
-         os << _T("Maximum angular difference permitted the Project Criteria = ") << (LPCTSTR)FormatDimension(maxAllowableAngle,pDisplayUnits->GetAngleUnit(),true) << std::endl;
-         os << _T("A refined method of analysis is required for this bridge.") << std::endl;
+         if (doThrow)
+         {
+            GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+            std::_tostringstream os;
+            os << _T("Live Load Distribution Factors could not be calculated for the following reason:") << std::endl;
+            os << _T("The girders in this span are not parallel as required by LRFD 4.6.2.2.1.") << std::endl;
+            os << _T("Greatest angular difference between girders in Span ") << LABEL_SPAN(spanKey.spanIndex) << _T(" = ") << (LPCTSTR)FormatDimension(maxAngularDifference,pDisplayUnits->GetAngleUnit(),true) << std::endl;
+            os << _T("Maximum angular difference permitted the Project Criteria = ") << (LPCTSTR)FormatDimension(maxAllowableAngle,pDisplayUnits->GetAngleUnit(),true) << std::endl;
+            os << _T("A refined method of analysis is required for this bridge.") << std::endl;
 
-         pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_StatusGroupID,m_scidRefinedAnalysis,os.str().c_str());
-         pStatusCenter->Add(pStatusItem);
+            pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_StatusGroupID,m_scidRefinedAnalysis,os.str().c_str());
+            pStatusCenter->Add(pStatusItem);
 
-         os << _T("See Status Center for Details") << std::endl;
-         THROW_UNWIND(os.str().c_str(),XREASON_REFINEDANALYSISREQUIRED);
+            os << _T("See Status Center for Details") << std::endl;
+            THROW_UNWIND(os.str().c_str(),XREASON_REFINEDANALYSISREQUIRED);
+         }
+         else
+         {
+            return WBFL::LRFD::LLDF_BWROA_NOT_PARALLEL; // this will allow beams to decide our fate
+         }
       }
    } // next segment
+
+   return 0;
 }
 
 Float64 CEngAgentImp::GetMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState limitState) const
@@ -2852,7 +2911,7 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
    *V  = GetShearDistFactor(spanKey,limitState);
 
 
-   if ( lrfdVersionMgr::SeventhEdition2014 <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::SeventhEdition2014 <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       // LRFD 7th Edition, 2014 added variable skew correction factor for shear
       Float64 skewFactor = GetSkewCorrectionFactorForShear(spanKey,limitState);
@@ -3140,7 +3199,7 @@ void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChap
    else
    {
       rptRcScalar scalar;
-      scalar.SetFormat( sysNumericFormatTool::Fixed );
+      scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Fixed );
       scalar.SetWidth(6);
       scalar.SetPrecision(3);
       scalar.SetTolerance(1.0e-6);
@@ -3154,7 +3213,7 @@ void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChap
       pgsTypes::GirderLocation gl = pGroup->IsInteriorGirder(girderKey.girderIndex) ? pgsTypes::Interior : pgsTypes::Exterior;
 
       ColumnIndexType nCols = 4;
-      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          nCols += 3;
       }
@@ -3165,7 +3224,7 @@ void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChap
 
 
       // Set up table headings
-      if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+      if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims )
       {
          table->SetNumberOfHeaderRows(1);
          (*table)(0,0) << _T("");
@@ -3222,7 +3281,7 @@ void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChap
 
          (*table)(row,3) << _T("");
 
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
          {
             (*table)(row,4) << _T("");
 
@@ -3267,7 +3326,7 @@ void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChap
 
             (*table)(row,3) << scalar.SetValue( pSpan->GetLLDFShear(girderKey.girderIndex,pgsTypes::StrengthI) );
 
-            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
             {
                (*table)(row,4) << scalar.SetValue( pSpan->GetLLDFPosMoment(girderKey.girderIndex,pgsTypes::FatigueI) );
                
@@ -3373,7 +3432,7 @@ Float64 CEngAgentImp::GetDeflectionDistFactorEx(const CSpanKey& spanKey,Float64*
 
    GirderIndexType nGirders = pGroup->GetGirderCount();
    Uint32 nLanes = GetNumberOfDesignLanes(spanKey.spanIndex);
-   Float64 mpf = lrfdUtility::GetMultiplePresenceFactor(nLanes);
+   Float64 mpf = WBFL::LRFD::Utility::GetMultiplePresenceFactor(nLanes);
    Float64 gD = mpf*nLanes / nGirders;
 
    *pMPF = mpf;
@@ -3395,6 +3454,7 @@ Uint32 CEngAgentImp::GetNumberOfDesignLanesEx(SpanIndexType spanIdx,Float64* pDi
    GET_IFACE(ILibrary, pLib);
    GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
 
    GET_IFACE(IBridge,pBridge);
    PierIndexType prev_pier_idx = spanIdx;
@@ -3404,7 +3464,7 @@ Uint32 CEngAgentImp::GetNumberOfDesignLanesEx(SpanIndexType spanIdx,Float64* pDi
 
    Float64 span_length = pBridge->GetSpanLength(spanIdx);
 
-   Float64 span_fraction_for_girder_spacing = pSpecEntry->GetLLDFGirderSpacingLocation();
+   Float64 span_fraction_for_girder_spacing = live_load_distribution_criteria.GirderSpacingLocation;
    Float64 loc1 = span_fraction_for_girder_spacing*span_length;
    Float64 loc2 = (1.0-span_fraction_for_girder_spacing)*span_length;
 
@@ -3426,7 +3486,7 @@ Uint32 CEngAgentImp::GetNumberOfDesignLanesEx(SpanIndexType spanIdx,Float64* pDi
 
    *pCurbToCurb = curb_to_curb_width;
 
-   return lrfdUtility::GetNumDesignLanes(curb_to_curb_width);
+   return WBFL::LRFD::Utility::GetNumDesignLanes(curb_to_curb_width);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -3570,9 +3630,9 @@ void CEngAgentImp::GetShearCapacityDetails(pgsTypes::LimitState limitState, Inte
    GET_IFACE(ISpecification, pSpec);
    GET_IFACE(ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   pgsTypes::ShearCapacityMethod shear_capacity_method = pSpecEntry->GetShearCapacityMethod();
+   const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
 
-   if ( shear_capacity_method == pgsTypes::scmBTEquations || shear_capacity_method == pgsTypes::scmWSDOT2007 )
+   if (shear_capacity_criteria.CapacityMethod == pgsTypes::scmBTEquations || shear_capacity_criteria.CapacityMethod == pgsTypes::scmWSDOT2007 )
    {
       ZoneIndexType csZoneIdx = GetCriticalSectionZoneIndex(limitState,poi);
       if ( csZoneIdx != INVALID_INDEX )
@@ -3598,7 +3658,7 @@ void CEngAgentImp::GetRawShearCapacityDetails(pgsTypes::LimitState limitState, I
 #if defined _DEBUG
    GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-   ATLASSERT(liveLoadIntervalIdx <= intervalIdx); // shear is only evaluted when live load is present
+   ATLASSERT(liveLoadIntervalIdx <= intervalIdx); // shear is only evaluated when live load is present
 #endif
 
    if (pConfig)
@@ -3635,8 +3695,8 @@ ZoneIndexType CEngAgentImp::GetCriticalSectionZoneIndex(pgsTypes::LimitState lim
    const auto& vCSDetails(ValidateShearCritSection(limitState,poi.GetSegmentKey()));
    Float64 x = poi.GetDistFromStart();
  
-   auto& iter = std::cbegin(vCSDetails);
-   auto& end = std::cend(vCSDetails);
+   auto iter = std::cbegin(vCSDetails);
+   auto end = std::cend(vCSDetails);
    for ( ; iter != end; iter++)
    {
       const auto& csDetails(*iter);
@@ -3717,8 +3777,8 @@ std::vector<SHEARCAPACITYDETAILS> CEngAgentImp::GetShearCapacityDetails(pgsTypes
 
 void CEngAgentImp::ClearDesignCriticalSections() const
 {
-   CollectionIndexType size = sizeof(m_DesignCritSectionDetails)/sizeof(std::map<CGirderKey,std::vector<CRITSECTDETAILS>>);
-   for (CollectionIndexType idx = 0; idx < size; idx++ )
+   IndexType size = sizeof(m_DesignCritSectionDetails)/sizeof(std::map<CGirderKey,std::vector<CRITSECTDETAILS>>);
+   for (IndexType idx = 0; idx < size; idx++ )
    {
       m_DesignCritSectionDetails[idx].clear();
    }
@@ -3780,7 +3840,7 @@ Float64 CEngAgentImp::GetSectionGirderOrientationEffect(const pgsPointOfInterest
 bool CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentKey,FABRICATIONOPTIMIZATIONDETAILS* pDetails) const
 {
    GET_IFACE(ILossParameters, pLossParams);
-   if (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP)
+   if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP)
    {
       // not doing this for time-step analysis
       return false;
@@ -3957,30 +4017,25 @@ bool CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       max_stress_WithoutTTS = Max(fBotMax_WithoutTTS,fTopMax_WithoutTTS,max_stress_WithoutTTS);
    }
 
-   GET_IFACE(IAllowableConcreteStress,pAllowStress);
+   GET_IFACE(IConcreteStressLimits,pAllowStress);
    pgsPointOfInterest dummyPOI(segmentKey,0.0);
-   Float64 c = -pAllowStress->GetAllowableCompressionStressCoefficient(dummyPOI,pgsTypes::TopGirder,StressCheckTask(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression));
-   Float64 t, fmax;
-   bool bfMax;
-   pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,StressCheckTask(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension),false/*without rebar*/,false,&t,&bfMax,&fmax);
+   Float64 c = -pAllowStress->GetConcreteCompressionStressLimitCoefficient(dummyPOI,pgsTypes::TopGirder,StressCheckTask(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Compression));
+   auto tension_stress_limit = pAllowStress->GetConcreteTensionStressLimitParameters(dummyPOI,pgsTypes::TopGirder,StressCheckTask(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension),false/*without rebar*/,false);
 
    Float64 fc_reqd_compression = min_stress_WithoutTTS/c;
    Float64 fc_reqd_tension = 0;
    if ( 0 < max_stress_WithoutTTS )
    {
-      if (0 < t)
+      if (0 < tension_stress_limit.Coefficient)
       {
-         fc_reqd_tension = pow(max_stress_WithoutTTS/t,2);
+         fc_reqd_tension = pow(max_stress_WithoutTTS/tension_stress_limit.Coefficient,2);
 
-         if ( bfMax && fmax < max_stress_WithoutTTS) 
+         if ( tension_stress_limit.bHasMaxValue && tension_stress_limit.MaxValue < max_stress_WithoutTTS) 
          {
             // allowable stress is limited to value lower than needed
             // look at the with rebar case
-            bool bCheckMaxAlt;
-            Float64 fMaxAlt;
-            Float64 talt;
-            pAllowStress->GetAllowableTensionStressCoefficient(dummyPOI,pgsTypes::TopGirder,StressCheckTask(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension),true/*with rebar*/,false/*in other than precompressed tensile zone*/,&talt,&bCheckMaxAlt,&fMaxAlt);
-            fc_reqd_tension = pow(max_stress_WithoutTTS/talt,2);
+            auto alt_tension_stress_limit = pAllowStress->GetConcreteTensionStressLimitParameters(dummyPOI,pgsTypes::TopGirder,StressCheckTask(releaseIntervalIdx,pgsTypes::ServiceI,pgsTypes::Tension),true/*with rebar*/,false/*in other than precompressed tensile zone*/);
+            fc_reqd_tension = pow(max_stress_WithoutTTS/alt_tension_stress_limit.Coefficient,2);
          }
       }
    }
@@ -4059,9 +4114,9 @@ bool CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
    
       Float64 fc;
       Float64 fc_tens1, fc_comp1, fc_tens_wrebar1;
-      hauling_artifact2->GetRequiredConcreteStrength(pgsTypes::CrownSlope, &fc_comp1, &fc_tens1, &fc_tens_wrebar1);
+      hauling_artifact2->GetRequiredConcreteStrength(WBFL::Stability::HaulingSlope::CrownSlope, &fc_comp1, &fc_tens1, &fc_tens_wrebar1);
       Float64 fc_tens2, fc_comp2, fc_tens_wrebar2;
-      hauling_artifact2->GetRequiredConcreteStrength(pgsTypes::Superelevation, &fc_comp2, &fc_tens2, &fc_tens_wrebar2);
+      hauling_artifact2->GetRequiredConcreteStrength(WBFL::Stability::HaulingSlope::Superelevation, &fc_comp2, &fc_tens2, &fc_tens_wrebar2);
 
       Float64 fc_tens = Max(fc_tens1, fc_tens2);
       Float64 fc_comp = Max(fc_comp1, fc_comp2);
@@ -4127,9 +4182,9 @@ bool CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
 
       Float64 fc;
       Float64 fc_tens1, fc_comp1, fc_tens_wrebar1;
-      hauling_artifact2->GetRequiredConcreteStrength(pgsTypes::CrownSlope, &fc_comp1, &fc_tens1, &fc_tens_wrebar1);
+      hauling_artifact2->GetRequiredConcreteStrength(WBFL::Stability::HaulingSlope::CrownSlope, &fc_comp1, &fc_tens1, &fc_tens_wrebar1);
       Float64 fc_tens2, fc_comp2, fc_tens_wrebar2;
-      hauling_artifact2->GetRequiredConcreteStrength(pgsTypes::Superelevation, &fc_comp2, &fc_tens2, &fc_tens_wrebar2);
+      hauling_artifact2->GetRequiredConcreteStrength(WBFL::Stability::HaulingSlope::Superelevation, &fc_comp2, &fc_tens2, &fc_tens_wrebar2);
 
       Float64 fc_tens = Max(fc_tens1, fc_tens2);
       Float64 fc_comp = Max(fc_comp1, fc_comp2);
@@ -4139,8 +4194,8 @@ bool CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       fc = Max(fc_tens, fc_comp, fc_tens_wrebar);
 
       // check factors of safety
-      Float64 FScr = Min(hauling_artifact2->GetMinFsForCracking(pgsTypes::CrownSlope),hauling_artifact2->GetMinFsForCracking(pgsTypes::Superelevation));
-      Float64 FSr  = Min(hauling_artifact2->GetFsRollover(pgsTypes::CrownSlope),hauling_artifact2->GetFsRollover(pgsTypes::Superelevation));
+      Float64 FScr = Min(hauling_artifact2->GetMinFsForCracking(WBFL::Stability::HaulingSlope::CrownSlope),hauling_artifact2->GetMinFsForCracking(WBFL::Stability::HaulingSlope::Superelevation));
+      Float64 FSr  = Min(hauling_artifact2->GetFsRollover(WBFL::Stability::HaulingSlope::CrownSlope),hauling_artifact2->GetFsRollover(WBFL::Stability::HaulingSlope::Superelevation));
 
       bool bFS = ( FSrMin <= FSr && FScrMin <= FScr );
 
@@ -4272,7 +4327,7 @@ const pgsGirderDesignArtifact* CEngAgentImp::CreateDesignArtifact(const CGirderK
       GET_IFACE(ISectionProperties, pSectProp);
 
       bool doTrans = pSectProp->GetSectionPropertiesMode() == pgsTypes::spmTransformed;
-      bool doHaunch = pSectProp->GetHaunchAnalysisSectionPropertiesType() == pgsTypes::hspVariableParabolic && IsStructuralDeck(pBridge->GetDeckType());
+      bool doHaunch = pSectProp->GetHaunchAnalysisSectionPropertiesType() == pgsTypes::hspDetailedDescription && IsStructuralDeck(pBridge->GetDeckType());
 
       // Use the class below to temporarly set transformed and prismatic haunch properties in library and then reset them back
       DesignOverrider overrider(doTrans, doHaunch, m_pBroker);

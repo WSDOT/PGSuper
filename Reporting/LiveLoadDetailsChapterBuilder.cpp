@@ -31,7 +31,8 @@
 #include <IFace\RatingSpecification.h>
 
 
-#include <PsgLib\LiveLoadLibraryEntry.h>
+#include <psgLib/LiveLoadLibraryEntry.h>
+#include <psgLib/LiveLoadCriteria.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -76,9 +77,9 @@ LPCTSTR CLiveLoadDetailsChapterBuilder::GetName() const
    return TEXT("Live Load Details");
 }
 
-rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CLiveLoadDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CBrokerReportSpecification* pBrokerRptSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
+   auto pBrokerRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pBrokerRptSpec->GetBroker(&pBroker);
 
@@ -134,7 +135,7 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(CReportSpecification* pRptSpec
       }
 
       // Fatigue live loads
-      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
          *pChapter << pPara;
@@ -436,7 +437,8 @@ void CLiveLoadDetailsChapterBuilder::ReportLiveLoad(IBroker* pBroker, std::_tstr
 
          GET_IFACE2(pBroker,ISpecification,pSpec);
          const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
-         *pPara << _T("A pedestrian load of ") << pressure.SetValue(pSpecEntry->GetPedestrianLiveLoad()) << _T(" is applied to sidewalks wider than ") << sw.SetValue(pSpecEntry->GetMinSidewalkWidth()) << _T(" and considered simultaneously with the vehicular design live load.") << rptNewLine;
+         const auto& live_load_criteria = pSpecEntry->GetLiveLoadCriteria();
+         *pPara << _T("A pedestrian load of ") << pressure.SetValue(live_load_criteria.PedestrianLoad) << _T(" is applied to sidewalks wider than ") << sw.SetValue(live_load_criteria.MinSidewalkWidth) << _T(" and considered simultaneously with the vehicular design live load.") << rptNewLine;
       }
       else if ( load_name == _T("AASHTO Legal Loads") )
       {
@@ -558,7 +560,7 @@ void CLiveLoadDetailsChapterBuilder::ReportLiveLoad(IBroker* pBroker, std::_tstr
    }
 }
 
-CChapterBuilder* CLiveLoadDetailsChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLiveLoadDetailsChapterBuilder::Clone() const
 {
-   return new CLiveLoadDetailsChapterBuilder(m_bDesign,m_bRating);
+   return std::make_unique<CLiveLoadDetailsChapterBuilder>(m_bDesign,m_bRating);
 }

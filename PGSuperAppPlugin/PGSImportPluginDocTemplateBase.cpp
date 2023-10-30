@@ -181,8 +181,8 @@ CPGSProjectImporterMgrBase* CPGSImportPluginDocTemplateBase::GetProjectImporterM
 
       // For each registered importer, add a template item to the template group
 
-      CollectionIndexType nImporters = m_pProjectImporterMgr->GetImporterCount();
-      for ( CollectionIndexType idx = 0; idx < nImporters; idx++ )
+      IndexType nImporters = m_pProjectImporterMgr->GetImporterCount();
+      for ( IndexType idx = 0; idx < nImporters; idx++ )
       {
          CComPtr<IPGSProjectImporter> importer;
          m_pProjectImporterMgr->GetImporter(idx,&importer);

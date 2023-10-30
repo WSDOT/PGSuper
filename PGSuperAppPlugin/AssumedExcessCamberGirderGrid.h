@@ -78,5 +78,5 @@ private:
    // get a cell value whether is is selected or not
    CString GetCellValue(ROWCOL nRow, ROWCOL nCol);
 
-   const unitmgtLengthData* m_pUnit;
+   const WBFL::Units::LengthData* m_pUnit;
 };

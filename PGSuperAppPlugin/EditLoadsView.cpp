@@ -270,8 +270,8 @@ void CEditLoadsView::OnAddMomentload()
 
 void CEditLoadsView::OnDeleteLoad() 
 {
-   pgsMacroTxn macro;
-   macro.Name(_T("Delete loads"));
+   std::unique_ptr<pgsMacroTxn> macro(std::make_unique<pgsMacroTxn>());
+   macro->Name(_T("Delete loads"));
 
    POSITION pos = m_LoadsListCtrl.GetFirstSelectedItemPosition( );
    while (pos != nullptr)
@@ -284,18 +284,18 @@ void CEditLoadsView::OnDeleteLoad()
 
       if (load_type == W_POINT_LOAD)
       {
-         txnDeletePointLoad* pTxn = new txnDeletePointLoad(load_id);
-         macro.AddTransaction(pTxn);
+         std::unique_ptr<txnDeletePointLoad> pTxn(std::make_unique<txnDeletePointLoad>(load_id));
+         macro->AddTransaction(std::move(pTxn));
       }
       else if (load_type == W_DISTRIBUTED_LOAD)
       {
-         txnDeleteDistributedLoad* pTxn = new txnDeleteDistributedLoad(load_id);
-         macro.AddTransaction(pTxn);
+         std::unique_ptr<txnDeleteDistributedLoad> pTxn(std::make_unique<txnDeleteDistributedLoad>(load_id));
+         macro->AddTransaction(std::move(pTxn));
       }
       else if (load_type == W_MOMENT_LOAD)
       {
-         txnDeleteMomentLoad* pTxn = new txnDeleteMomentLoad(load_id);
-         macro.AddTransaction(pTxn);
+         std::unique_ptr<txnDeleteMomentLoad> pTxn(std::make_unique<txnDeleteMomentLoad>(load_id));
+         macro->AddTransaction(std::move(pTxn));
       }
       else
       {
@@ -303,7 +303,7 @@ void CEditLoadsView::OnDeleteLoad()
       }
    }
 
-   txnTxnManager::GetInstance()->Execute(macro);
+   CEAFTxnManager::GetInstance().Execute(std::move(macro));
 }
 
 void CEditLoadsView::OnEditLoad() 
@@ -337,8 +337,8 @@ void CEditLoadsView::InsertData()
 
    // Add Point Loads
    GET_IFACE(IUserDefinedLoadData, pUdl);
-   CollectionIndexType pl_cnt = pUdl->GetPointLoadCount();
-   CollectionIndexType ipl;
+   IndexType pl_cnt = pUdl->GetPointLoadCount();
+   IndexType ipl;
    for (ipl = 0; ipl < pl_cnt; ipl++)
    {
       m_LoadsListCtrl.InsertItem(irow, _T("Point"));
@@ -370,8 +370,8 @@ void CEditLoadsView::InsertData()
    }
 
    // Add Distributed Loads
-   CollectionIndexType dl_cnt = pUdl->GetDistributedLoadCount();
-   for (CollectionIndexType idl = 0; idl < dl_cnt; idl++)
+   IndexType dl_cnt = pUdl->GetDistributedLoadCount();
+   for (IndexType idl = 0; idl < dl_cnt; idl++)
    {
       m_LoadsListCtrl.InsertItem(irow, _T("Distributed"));
 

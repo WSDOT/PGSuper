@@ -75,9 +75,6 @@ bool txnEditPrecastSegment::Execute()
       oldSegmentData.m_SegmentData = *pSegment;
       oldSegmentData.m_TimelineMgr = *(pIBridgeDesc->GetTimelineManager());
 
-      oldSegmentData.m_SlabOffsetType = pBridgeDesc->GetSlabOffsetType();
-      pSegment->GetSlabOffset(&oldSegmentData.m_SlabOffset[pgsTypes::metStart], &oldSegmentData.m_SlabOffset[pgsTypes::metEnd]);
-
       m_OldSegmentData.insert(oldSegmentData);
 
       // Copy the new segment data onto this segment
@@ -105,9 +102,9 @@ void txnEditPrecastSegment::Undo()
    }
 }
 
-txnTransaction* txnEditPrecastSegment::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnEditPrecastSegment::CreateClone() const
 {
-   return new txnEditPrecastSegment(m_SegmentKey,m_NewSegmentData);
+   return std::make_unique<txnEditPrecastSegment>(m_SegmentKey,m_NewSegmentData);
 }
 
 std::_tstring txnEditPrecastSegment::Name() const
@@ -117,12 +114,12 @@ std::_tstring txnEditPrecastSegment::Name() const
    return os.str();
 }
 
-bool txnEditPrecastSegment::IsUndoable()
+bool txnEditPrecastSegment::IsUndoable() const
 {
    return true;
 }
 
-bool txnEditPrecastSegment::IsRepeatable()
+bool txnEditPrecastSegment::IsRepeatable() const
 {
    return false;
 }
@@ -135,15 +132,4 @@ void txnEditPrecastSegment::SetSegmentData(const CSegmentKey& segmentKey,const t
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    pIBridgeDesc->SetPrecastSegmentData(segmentKey,data.m_SegmentData);
    pIBridgeDesc->SetTimelineManager(data.m_TimelineMgr);
-
-   // NOTE: Calling SetSlabOffset sets the bridge-level slab offset type parameter automatically
-   // we don't call SetSlabOffsetType here because it is redundant and creates extra events for processing
-   if (data.m_SlabOffsetType == pgsTypes::sotBridge)
-   {
-      pIBridgeDesc->SetSlabOffset(data.m_SlabOffset[pgsTypes::metStart]); 
-   }
-   else
-   {
-      pIBridgeDesc->SetSlabOffset(segmentKey, data.m_SlabOffset[pgsTypes::metStart], data.m_SlabOffset[pgsTypes::metEnd]);
-   }
 }

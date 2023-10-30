@@ -96,9 +96,9 @@ STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeForces(/*[in]*/BSTR LoadCom
          // load factor for the live load
 
          // for each result...
-         CollectionIndexType nResults;
+         IndexType nResults;
          (*results)->get_Count(&nResults);
-         for ( CollectionIndexType resultIdx = 0; resultIdx < nResults; resultIdx++ )
+         for ( IndexType resultIdx = 0; resultIdx < nResults; resultIdx++ )
          {
             singlePOI->Clear();
 
@@ -172,9 +172,9 @@ STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeDeflections(/*[in]*/BSTR Lo
          // load factor for the live load
 
          // for each result...
-         CollectionIndexType nResults;
+         IndexType nResults;
          (*results)->get_Count(&nResults);
-         for ( CollectionIndexType resultIdx = 0; resultIdx < nResults; resultIdx++ )
+         for ( IndexType resultIdx = 0; resultIdx < nResults; resultIdx++ )
          {
             singlePOI->Clear();
 
@@ -248,9 +248,9 @@ STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeReactions(/*[in]*/BSTR Load
          // load factor for the live load
 
          // for each result...
-         CollectionIndexType nResults;
+         IndexType nResults;
          (*results)->get_Count(&nResults);
-         for ( CollectionIndexType resultIdx = 0; resultIdx < nResults; resultIdx++ )
+         for ( IndexType resultIdx = 0; resultIdx < nResults; resultIdx++ )
          {
             singlePOI->Clear();
 
@@ -320,9 +320,9 @@ STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeSupportDeflections(/*[in]*/
          // load factor for the live load
 
          // for each result...
-         CollectionIndexType nResults;
+         IndexType nResults;
          (*results)->get_Count(&nResults);
-         for ( CollectionIndexType resultIdx = 0; resultIdx < nResults; resultIdx++ )
+         for ( IndexType resultIdx = 0; resultIdx < nResults; resultIdx++ )
          {
             singlePOI->Clear();
 
@@ -392,9 +392,9 @@ STDMETHODIMP CPGSuperLoadCombinationResponse::ComputeStresses(/*[in]*/BSTR LoadC
          // load factor for the live load
 
          // for each result...
-         CollectionIndexType nResults;
+         IndexType nResults;
          (*results)->get_Count(&nResults);
-         for ( CollectionIndexType resultIdx = 0; resultIdx < nResults; resultIdx++ )
+         for ( IndexType resultIdx = 0; resultIdx < nResults; resultIdx++ )
          {
             singlePOI->Clear();
 
@@ -447,7 +447,7 @@ void CPGSuperLoadCombinationResponse::GetNewLiveLoadFactors(BSTR bstrLoadCombina
    ATLASSERT( gLL_left_old < 0 );
    ATLASSERT( gLL_right_old < 0 );
 
-   CollectionIndexType nLiveLoadConfigs;
+   IndexType nLiveLoadConfigs;
    pLeftConfig->GetLiveLoadConfigurationCount(&nLiveLoadConfigs);
    ATLASSERT(nLiveLoadConfigs == 1);
    pRightConfig->GetLiveLoadConfigurationCount(&nLiveLoadConfigs);

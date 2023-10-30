@@ -27,7 +27,7 @@
 
 #include <IFace\Project.h>
 
-#include <Lrfd\RebarPool.h>
+#include <LRFD\RebarPool.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -105,15 +105,15 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       (*p_table)(row,1) << loc.SetValue(zoneStart);
       (*p_table)(row,2) << loc.SetValue(zoneEnd);
 
-      matRebar::Size barSize;
+      WBFL::Materials::Rebar::Size barSize;
       Float64 spacing;
       Float64 nStirrups;
       pStirrupGeometry->GetPrimaryVertStirrupBarInfo(segmentKey,iz,&barSize,&nStirrups,&spacing);
 
 
-      if (barSize != matRebar::bsNone)
+      if (barSize != WBFL::Materials::Rebar::Size::bsNone)
       {
-         (*p_table)(row,3) << lrfdRebarPool::GetBarSize(barSize).c_str();
+         (*p_table)(row,3) << WBFL::LRFD::RebarPool::GetBarSize(barSize).c_str();
          (*p_table)(row,4) << dim.SetValue(spacing);
          (*p_table)(row,5) << nStirrups;
 
@@ -130,9 +130,9 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       }
 
       barSize = pStirrupGeometry->GetPrimaryConfinementBarSize(segmentKey,iz);
-      if (barSize != matRebar::bsNone)
+      if (barSize != WBFL::Materials::Rebar::Size::bsNone)
       {
-         (*p_table)(row,7) << lrfdRebarPool::GetBarSize(barSize).c_str();
+         (*p_table)(row,7) << WBFL::LRFD::RebarPool::GetBarSize(barSize).c_str();
       }
       else
       {
@@ -167,14 +167,14 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       (*p_table)(row,1) << loc.SetValue(zoneStart);
       (*p_table)(row,2) << loc.SetValue(zoneEnd);
 
-      matRebar::Size barSize;
+      WBFL::Materials::Rebar::Size barSize;
       Float64 spacing;
       Float64 nStirrups;
       pStirrupGeometry->GetHorizInterfaceBarInfo(segmentKey,iz,&barSize,&nStirrups,&spacing);
 
-      if (barSize != matRebar::bsNone)
+      if (barSize != WBFL::Materials::Rebar::Size::bsNone)
       {
-         (*p_table)(row,3) << lrfdRebarPool::GetBarSize(barSize).c_str();
+         (*p_table)(row,3) << WBFL::LRFD::RebarPool::GetBarSize(barSize).c_str();
          (*p_table)(row,4) << dim.SetValue(spacing);
          (*p_table)(row,5) << nStirrups;
       }
@@ -189,11 +189,11 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    }
 
    // Additional Splitting Bars
-   matRebar::Size size;
+   WBFL::Materials::Rebar::Size size;
    Float64 zoneLength, nBars, spacing;
    pStirrupGeometry->GetAddSplittingBarInfo(segmentKey, &size, &zoneLength, &nBars, &spacing);
 
-   if (size != matRebar::bsNone)
+   if (size != WBFL::Materials::Rebar::Size::bsNone)
    {
       p_table = rptStyleManager::CreateDefaultTable(4,_T("Additional Splitting Stirrups"));
       *pPara << p_table;
@@ -202,7 +202,7 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       (*p_table)(1,0) << loc.SetValue(zoneLength);
 
       (*p_table)(0,1) << _T("Bar Size");
-      (*p_table)(1,1) << lrfdRebarPool::GetBarSize(size).c_str();
+      (*p_table)(1,1) << WBFL::LRFD::RebarPool::GetBarSize(size).c_str();
 
       (*p_table)(0,2) << COLHDR(_T("Bar Spacing"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
       (*p_table)(1,2) << dim.SetValue(spacing);
@@ -224,7 +224,7 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    // bottom flange confinement steel
    pStirrupGeometry->GetAddConfinementBarInfo(segmentKey, &size, &zoneLength, &spacing);
 
-   if (size != matRebar::bsNone)
+   if (size != WBFL::Materials::Rebar::Size::bsNone)
    {
       p_table = rptStyleManager::CreateDefaultTable(3,_T("Additional Bottom Flange Confinement Stirrups"));
       *pPara << p_table;
@@ -233,7 +233,7 @@ void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
       (*p_table)(1,0) << loc.SetValue(zoneLength);
 
       (*p_table)(0,1) << _T("Bar Size");
-      (*p_table)(1,1) << lrfdRebarPool::GetBarSize(size).c_str();
+      (*p_table)(1,1) << WBFL::LRFD::RebarPool::GetBarSize(size).c_str();
 
       (*p_table)(0,2) << COLHDR(_T("Bar Spacing"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
       (*p_table)(1,2) << dim.SetValue(spacing);
@@ -278,27 +278,3 @@ void CStirrupTable::MakeAssignment(const CStirrupTable& rOther)
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CStirrupTable::AssertValid() const
-{
-   return true;
-}
-
-void CStirrupTable::Dump(dbgDumpContext& os) const
-{
-   os << _T("Dump for CStirrupTable") << endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CStirrupTable::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("CStirrupTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CStirrupTable");
-
-   TESTME_EPILOG("CStirrupTable");
-}
-#endif // _UNITTEST

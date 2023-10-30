@@ -39,7 +39,7 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CStructuredLoad::CStructuredLoad(IStructuredLoad* pStrLoad)
+CStructuredLoad::CStructuredLoad(::IStructuredLoad* pStrLoad)
 {
    m_pStrLoad = pStrLoad;
    m_pStrLoad->AddRef();
@@ -237,30 +237,3 @@ std::_tstring CStructuredLoad::GetUnit() const
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CStructuredLoad::AssertValid() const
-{
-   if ( m_pStrLoad == 0 )
-      return false;
-
-   return true;
-}
-
-void CStructuredLoad::Dump(dbgDumpContext& os) const
-{
-   os << _T("Dump for CStructuredLoad") << endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CStructuredLoad::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("CStructuredLoad");
-
-   // Nothing to test
-
-   TESTME_EPILOG("CStructuredLoad");
-}
-#endif // _UNITTEST

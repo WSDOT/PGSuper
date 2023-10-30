@@ -30,6 +30,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
+#include <IFace\ReportOptions.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -80,7 +81,8 @@ void CConcurrentShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
    INIT_UV_PROTOTYPE( rptForceUnitValue, shear, pDisplayUnits->GetGeneralForceUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDisplayUnits->GetMomentUnit(), false );
 
-   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    GET_IFACE2(pBroker,IBridge,pBridge);
 
@@ -117,7 +119,7 @@ void CConcurrentShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
    pgsTypes::BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
 
    // Fill up the table
-   sysSectionValue Vmin, Vmax;
+   WBFL::System::SectionValue Vmin, Vmax;
    RowIndexType row = p_table->GetNumberOfHeaderRows();
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
@@ -172,26 +174,3 @@ void CConcurrentShearTable::MakeAssignment(const CConcurrentShearTable& rOther)
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
 
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CConcurrentShearTable::AssertValid() const
-{
-   return true;
-}
-
-void CConcurrentShearTable::Dump(dbgDumpContext& os) const
-{
-   os << _T("Dump for CConcurrentShearTable") << endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CConcurrentShearTable::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("CConcurrentShearTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CConcurrentShearTable");
-
-   TESTME_EPILOG("CConcurrentShearTable");
-}
-#endif // _UNITTEST

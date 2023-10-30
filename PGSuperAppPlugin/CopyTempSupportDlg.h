@@ -111,7 +111,7 @@ protected:
 
 private:
    std::shared_ptr<CCopyTempSupportPropertiesReportSpecification> m_pRptSpec;
-   std::shared_ptr<CReportBrowser> m_pBrowser; // this is the actual browser window that displays the report
+   std::shared_ptr<WBFL::Reporting::ReportBrowser> m_pBrowser; // this is the actual browser window that displays the report
 
    int m_cxMin;
    int m_cyMin;

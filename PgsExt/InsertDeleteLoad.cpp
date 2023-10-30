@@ -60,17 +60,17 @@ std::_tstring txnInsertPointLoad::Name() const
    return _T("Insert Point Load");
 }
 
-txnTransaction* txnInsertPointLoad::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnInsertPointLoad::CreateClone() const
 {
-   return new txnInsertPointLoad(m_LoadData,m_LoadingEventID,m_pTimelineMgr);
+   return std::make_unique<txnInsertPointLoad>(m_LoadData,m_LoadingEventID,m_pTimelineMgr);
 }
 
-bool txnInsertPointLoad::IsUndoable()
+bool txnInsertPointLoad::IsUndoable() const
 {
    return true;
 }
 
-bool txnInsertPointLoad::IsRepeatable()
+bool txnInsertPointLoad::IsRepeatable() const
 {
    return false;
 }
@@ -136,17 +136,17 @@ std::_tstring txnDeletePointLoad::Name() const
    return _T("Delete Point Load");
 }
 
-txnTransaction* txnDeletePointLoad::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnDeletePointLoad::CreateClone() const
 {
-   return new txnDeletePointLoad(m_LoadID);
+   return std::make_unique<txnDeletePointLoad>(m_LoadID);
 }
 
-bool txnDeletePointLoad::IsUndoable()
+bool txnDeletePointLoad::IsUndoable() const
 {
    return true;
 }
 
-bool txnDeletePointLoad::IsRepeatable()
+bool txnDeletePointLoad::IsRepeatable() const
 {
    return false;
 }
@@ -219,9 +219,9 @@ std::_tstring txnEditPointLoad::Name() const
    return _T("Edit Point Load");
 }
 
-txnTransaction* txnEditPointLoad::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnEditPointLoad::CreateClone() const
 {
-   return new txnEditPointLoad(m_LoadID,m_LoadData[0],m_LoadingEventID[0],m_LoadData[1],m_LoadingEventID[1],m_pTimelineMgr);
+   return std::make_unique<txnEditPointLoad>(m_LoadID,m_LoadData[0],m_LoadingEventID[0],m_LoadData[1],m_LoadingEventID[1],m_pTimelineMgr);
 }
 
 bool txnEditPointLoad::Execute()
@@ -235,12 +235,12 @@ void txnEditPointLoad::Undo()
    DoExecute(0);
 }
 
-bool txnEditPointLoad::IsUndoable()
+bool txnEditPointLoad::IsUndoable() const
 {
    return true;
 }
 
-bool txnEditPointLoad::IsRepeatable()
+bool txnEditPointLoad::IsRepeatable() const
 {
    return true;
 }
@@ -305,17 +305,17 @@ std::_tstring txnInsertDistributedLoad::Name() const
    return _T("Insert Distributed Load");
 }
 
-txnTransaction* txnInsertDistributedLoad::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnInsertDistributedLoad::CreateClone() const
 {
-   return new txnInsertDistributedLoad(m_LoadData,m_LoadingEventID,m_pTimelineMgr);
+   return std::make_unique<txnInsertDistributedLoad>(m_LoadData,m_LoadingEventID,m_pTimelineMgr);
 }
 
-bool txnInsertDistributedLoad::IsUndoable()
+bool txnInsertDistributedLoad::IsUndoable() const
 {
    return true;
 }
 
-bool txnInsertDistributedLoad::IsRepeatable()
+bool txnInsertDistributedLoad::IsRepeatable() const
 {
    return false;
 }
@@ -381,17 +381,17 @@ std::_tstring txnDeleteDistributedLoad::Name() const
    return _T("Delete Distributed Load");
 }
 
-txnTransaction* txnDeleteDistributedLoad::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnDeleteDistributedLoad::CreateClone() const
 {
-   return new txnDeleteDistributedLoad(m_LoadID);
+   return std::make_unique<txnDeleteDistributedLoad>(m_LoadID);
 }
 
-bool txnDeleteDistributedLoad::IsUndoable()
+bool txnDeleteDistributedLoad::IsUndoable() const
 {
    return true;
 }
 
-bool txnDeleteDistributedLoad::IsRepeatable()
+bool txnDeleteDistributedLoad::IsRepeatable() const
 {
    return false;
 }
@@ -463,9 +463,9 @@ std::_tstring txnEditDistributedLoad::Name() const
    return _T("Edit Distributed Load");
 }
 
-txnTransaction* txnEditDistributedLoad::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnEditDistributedLoad::CreateClone() const
 {
-   return new txnEditDistributedLoad(m_LoadID,m_LoadData[0],m_LoadingEventID[0],m_LoadData[1],m_LoadingEventID[1],m_pTimelineMgr);
+   return std::make_unique<txnEditDistributedLoad>(m_LoadID,m_LoadData[0],m_LoadingEventID[0],m_LoadData[1],m_LoadingEventID[1],m_pTimelineMgr);
 }
 
 bool txnEditDistributedLoad::Execute()
@@ -479,12 +479,12 @@ void txnEditDistributedLoad::Undo()
    DoExecute(0);
 }
 
-bool txnEditDistributedLoad::IsUndoable()
+bool txnEditDistributedLoad::IsUndoable() const
 {
    return true;
 }
 
-bool txnEditDistributedLoad::IsRepeatable()
+bool txnEditDistributedLoad::IsRepeatable() const
 {
    return true;
 }
@@ -548,17 +548,17 @@ std::_tstring txnInsertMomentLoad::Name() const
    return _T("Insert Moment Load");
 }
 
-txnTransaction* txnInsertMomentLoad::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnInsertMomentLoad::CreateClone() const
 {
-   return new txnInsertMomentLoad(m_LoadData,m_LoadingEventID,m_pTimelineMgr);
+   return std::make_unique<txnInsertMomentLoad>(m_LoadData,m_LoadingEventID,m_pTimelineMgr);
 }
 
-bool txnInsertMomentLoad::IsUndoable()
+bool txnInsertMomentLoad::IsUndoable() const
 {
    return true;
 }
 
-bool txnInsertMomentLoad::IsRepeatable()
+bool txnInsertMomentLoad::IsRepeatable() const
 {
    return false;
 }
@@ -624,17 +624,17 @@ std::_tstring txnDeleteMomentLoad::Name() const
    return _T("Delete Moment Load");
 }
 
-txnTransaction* txnDeleteMomentLoad::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnDeleteMomentLoad::CreateClone() const
 {
-   return new txnDeleteMomentLoad(m_LoadID);
+   return std::make_unique<txnDeleteMomentLoad>(m_LoadID);
 }
 
-bool txnDeleteMomentLoad::IsUndoable()
+bool txnDeleteMomentLoad::IsUndoable() const
 {
    return true;
 }
 
-bool txnDeleteMomentLoad::IsRepeatable()
+bool txnDeleteMomentLoad::IsRepeatable() const
 {
    return false;
 }
@@ -705,9 +705,9 @@ std::_tstring txnEditMomentLoad::Name() const
    return _T("Edit Moment Load");
 }
 
-txnTransaction* txnEditMomentLoad::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnEditMomentLoad::CreateClone() const
 {
-   return new txnEditMomentLoad(m_LoadID,m_LoadData[0],m_LoadingEventID[0],m_LoadData[1],m_LoadingEventID[1],m_pTimelineMgr);
+   return std::make_unique<txnEditMomentLoad>(m_LoadID,m_LoadData[0],m_LoadingEventID[0],m_LoadData[1],m_LoadingEventID[1],m_pTimelineMgr);
 }
 
 bool txnEditMomentLoad::Execute()
@@ -721,12 +721,12 @@ void txnEditMomentLoad::Undo()
    DoExecute(0);
 }
 
-bool txnEditMomentLoad::IsUndoable()
+bool txnEditMomentLoad::IsUndoable() const
 {
    return true;
 }
 
-bool txnEditMomentLoad::IsRepeatable()
+bool txnEditMomentLoad::IsRepeatable() const
 {
    return true;
 }

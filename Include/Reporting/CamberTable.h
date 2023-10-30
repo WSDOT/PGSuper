@@ -70,12 +70,12 @@ public:
    // Build the strand eccentricity tables
    void Build_Deck(IBroker* pBroker,const CSegmentKey& segmentKey, 
                   bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay, bool bDeckPanels,
-                  IEAFDisplayUnits* pDisplayUnits,Int16 time, const CamberMultipliers& cm,
+                  IEAFDisplayUnits* pDisplayUnits, pgsTypes::CreepTime time, const CamberMultipliers& cm,
                   rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const;
 
    void Build_NoDeck(IBroker* pBroker,const CSegmentKey& segmentKey,
                      bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay,
-                     IEAFDisplayUnits* pDisplayUnits,Int16 time, const CamberMultipliers& cm,
+                     IEAFDisplayUnits* pDisplayUnits, pgsTypes::CreepTime time, const CamberMultipliers& cm,
                      rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const;
 
    // GROUP: ACCESS
@@ -97,22 +97,22 @@ protected:
    // GROUP: INQUIRY
    void Build_Deck_Y(IBroker* pBroker, const CSegmentKey& segmentKey,
       bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay, bool bDeckPanels,
-      IEAFDisplayUnits* pDisplayUnits, Int16 time, const CamberMultipliers& cm,
+      IEAFDisplayUnits* pDisplayUnits, pgsTypes::CreepTime time, const CamberMultipliers& cm,
       rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const;
 
    void Build_Deck_XY(IBroker* pBroker, const CSegmentKey& segmentKey,
       bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay, bool bDeckPanels,
-      IEAFDisplayUnits* pDisplayUnits, Int16 time, const CamberMultipliers& cm,
+      IEAFDisplayUnits* pDisplayUnits, pgsTypes::CreepTime time, const CamberMultipliers& cm,
       rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const;
 
    void Build_NoDeck_Y(IBroker* pBroker, const CSegmentKey& segmentKey,
       bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay,
-      IEAFDisplayUnits* pDisplayUnits, Int16 time, const CamberMultipliers& cm,
+      IEAFDisplayUnits* pDisplayUnits, pgsTypes::CreepTime time, const CamberMultipliers& cm,
       rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const;
 
    void Build_NoDeck_XY(IBroker* pBroker, const CSegmentKey& segmentKey,
       bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay,
-      IEAFDisplayUnits* pDisplayUnits, Int16 time, const CamberMultipliers& cm,
+      IEAFDisplayUnits* pDisplayUnits, pgsTypes::CreepTime time, const CamberMultipliers& cm,
       rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const;
 
 private:

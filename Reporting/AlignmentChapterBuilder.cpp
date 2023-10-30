@@ -59,11 +59,11 @@ LPCTSTR CAlignmentChapterBuilder::GetName() const
    return TEXT("Alignment");
 }
 
-rptChapter* CAlignmentChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CAlignmentChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    USES_CONVERSION;
 
-   CBrokerReportSpecification* pBrokerSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
+   auto pBrokerSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
 
    // This report does not use the passd span and girder parameters
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
@@ -81,9 +81,9 @@ rptChapter* CAlignmentChapterBuilder::Build(CReportSpecification* pRptSpec,Uint1
 }
 
 
-CChapterBuilder* CAlignmentChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CAlignmentChapterBuilder::Clone() const
 {
-   return new CAlignmentChapterBuilder;
+   return std::make_unique<CAlignmentChapterBuilder>();
 }
 
 //======================== ACCESS     =======================================

@@ -29,7 +29,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CInitialStrainAnalysisReportSpecification::CInitialStrainAnalysisReportSpecification(LPCTSTR strReportName,IBroker* pBroker,const CGirderKey& girderKey,IntervalIndexType intervalIdx) :
+CInitialStrainAnalysisReportSpecification::CInitialStrainAnalysisReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,const CGirderKey& girderKey,IntervalIndexType intervalIdx) :
 CBrokerReportSpecification(strReportName,pBroker)
 {
    m_GirderKey = girderKey;

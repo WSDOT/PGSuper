@@ -204,6 +204,18 @@ void CSplicedGirderData::Resize(SegmentIndexType nSegments)
 #endif
 }
 
+void CSplicedGirderData::CopyHaunchData(const CSplicedGirderData& rOther)
+{
+   ATLASSERT(m_Segments.size() == rOther.m_Segments.size()); // this won't end well
+
+   SegmentIndexType nSegs = m_Segments.size();
+   for (SegmentIndexType iSeg=0; iSeg<nSegs; iSeg++)
+   {
+      std::vector<Float64> haunches = rOther.m_Segments[iSeg]->GetDirectHaunchDepths(true);
+      m_Segments[iSeg]->SetDirectHaunchDepths(haunches);
+   }
+}
+
 CSplicedGirderData& CSplicedGirderData::operator= (const CSplicedGirderData& rOther)
 {
    if( this != &rOther )
@@ -254,8 +266,8 @@ bool CSplicedGirderData::operator==(const CSplicedGirderData& rOther) const
       }
    }
 
-   CollectionIndexType nSegments = m_Segments.size();
-   for ( CollectionIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+   IndexType nSegments = m_Segments.size();
+   for ( IndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       if ( *m_Segments[segIdx] != *rOther.m_Segments[segIdx] )
       {
@@ -410,12 +422,12 @@ HRESULT CSplicedGirderData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
       pStrSave->put_Property(_T("GirderType"),CComVariant(m_GirderType.c_str()));
    }
 
-   CollectionIndexType nSegments = m_Segments.size();
+   IndexType nSegments = m_Segments.size();
    pStrSave->put_Property(_T("SegmentCount"),CComVariant(nSegments));
 
    m_PTData.Save(pStrSave,pProgress);
 
-   for ( CollectionIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
+   for ( IndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       m_Segments[segIdx]->Save(pStrSave,pProgress);
       if ( segIdx < nSegments-1 )
@@ -770,7 +782,7 @@ void CSplicedGirderData::UpdateSegments()
    PGS_ASSERT_VALID;
 }
 
-void CSplicedGirderData::SetClosureJoint(CollectionIndexType idx,const CClosureJointData& closure)
+void CSplicedGirderData::SetClosureJoint(IndexType idx,const CClosureJointData& closure)
 {
    *m_Closures[idx] = closure;
 }
@@ -832,17 +844,17 @@ std::vector<const CPrecastSegmentData*> CSplicedGirderData::GetSegmentsForSpan(S
    return vSegments;
 }
 
-CollectionIndexType CSplicedGirderData::GetClosureJointCount() const
+IndexType CSplicedGirderData::GetClosureJointCount() const
 {
    return m_Closures.size();
 }
 
-CClosureJointData* CSplicedGirderData::GetClosureJoint(CollectionIndexType idx)
+CClosureJointData* CSplicedGirderData::GetClosureJoint(IndexType idx)
 {
    return m_Closures.size() <= idx ? nullptr : m_Closures[idx];
 }
 
-const CClosureJointData* CSplicedGirderData::GetClosureJoint(CollectionIndexType idx) const
+const CClosureJointData* CSplicedGirderData::GetClosureJoint(IndexType idx) const
 {
    return m_Closures.size() <= idx ? nullptr : m_Closures[idx];
 }
@@ -1026,6 +1038,42 @@ pgsTypes::ConditionFactorType CSplicedGirderData::GetConditionFactorType() const
 void CSplicedGirderData::SetConditionFactorType(pgsTypes::ConditionFactorType conditionFactorType)
 {
    m_ConditionFactorType = conditionFactorType;
+}
+
+void CSplicedGirderData::SetDirectHaunchDepths(const std::vector<Float64>& haunchDepths)
+{
+   for (auto& segment: m_Segments)
+   {
+      segment->SetDirectHaunchDepths(haunchDepths);
+   }
+}
+
+void CSplicedGirderData::SetDirectHaunchDepths(SegmentIndexType segIdx, const std::vector<Float64>& rHaunchDepths)
+{
+   ATLASSERT(segIdx < m_Segments.size());
+   return m_Segments[segIdx]->SetDirectHaunchDepths(rHaunchDepths);
+}
+
+std::vector<Float64> CSplicedGirderData::GetDirectHaunchDepths(SegmentIndexType segIdx,bool bGetRawValue) const
+{
+   ATLASSERT(segIdx < m_Segments.size());
+   if (bGetRawValue)
+   {
+      return m_Segments[segIdx]->GetDirectHaunchDepths(bGetRawValue);
+   }
+   else
+   {
+      const CBridgeDescription2* pBridgeDesc = GetBridgeDescription();
+      pgsTypes::HaunchInputLocationType type = pBridgeDesc->GetHaunchInputLocationType();
+      if (type == pgsTypes::hilSame4Bridge)
+      {
+         return pBridgeDesc->GetDirectHaunchDepths();
+      }
+      else
+      {
+         return m_Segments[segIdx]->GetDirectHaunchDepths(true); // Get raw value - segment is our storage
+      }
+   }
 }
 
 CGirderKey CSplicedGirderData::GetGirderKey() const

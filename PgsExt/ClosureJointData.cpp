@@ -152,7 +152,7 @@ bool CClosureJointData::operator<(const CClosureJointData& rOther) const
    return station1 < station2;
 }
 
-CollectionIndexType CClosureJointData::GetIndex() const
+IndexType CClosureJointData::GetIndex() const
 {
    return GetLeftSegment()->GetIndex();
 }

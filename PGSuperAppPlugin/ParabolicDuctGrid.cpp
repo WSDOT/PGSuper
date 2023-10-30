@@ -317,7 +317,7 @@ void CParabolicDuctGrid::InsertFirstPoint(SpanIndexType spanIdx,Float64 distance
    else
    {
       choice = 0;
-      distance = ::ConvertFromSysUnits(distance, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+      distance = WBFL::Units::ConvertFromSysUnits(distance, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
    }
 
    SetStyleRange(CGXRange(row,2), CGXStyle()
@@ -332,7 +332,7 @@ void CParabolicDuctGrid::InsertFirstPoint(SpanIndexType spanIdx,Float64 distance
       .SetValue((long)choice)
    );
 
-   offset = ::ConvertFromSysUnits(offset,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+   offset = WBFL::Units::ConvertFromSysUnits(offset,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
    SetStyleRange(CGXRange(row,4), CGXStyle()
       .SetValue(offset)
       );
@@ -383,7 +383,7 @@ void CParabolicDuctGrid::InsertLowPoint(SpanIndexType spanIdx,Float64 distance,F
    else
    {
       choice = 0;
-      distance = ::ConvertFromSysUnits(distance,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+      distance = WBFL::Units::ConvertFromSysUnits(distance,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
    }
 
    SetStyleRange(CGXRange(row,2), CGXStyle()
@@ -399,7 +399,7 @@ void CParabolicDuctGrid::InsertLowPoint(SpanIndexType spanIdx,Float64 distance,F
       );
 
 
-   offset = ::ConvertFromSysUnits(offset,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+   offset = WBFL::Units::ConvertFromSysUnits(offset,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
    SetStyleRange(CGXRange(row,4), CGXStyle()
       .SetValue(offset)
       );
@@ -449,7 +449,7 @@ void CParabolicDuctGrid::InsertInflectionPoint(SpanIndexType spanIdx,Float64 dis
    else
    {
       choice = 0;
-      distance = ::ConvertFromSysUnits(distance,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+      distance = WBFL::Units::ConvertFromSysUnits(distance,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
    }
 
    SetStyleRange(CGXRange(row,2), CGXStyle()
@@ -522,7 +522,7 @@ void CParabolicDuctGrid::InsertHighPoint(PierIndexType pierIdx,Float64 offset,CD
       .SetInterior(::GetSysColor(COLOR_BTNFACE))
    );
 
-   offset = ::ConvertFromSysUnits(offset,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+   offset = WBFL::Units::ConvertFromSysUnits(offset,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
    SetStyleRange(CGXRange(row,4), CGXStyle()
       .SetValue(offset)
       );
@@ -572,7 +572,7 @@ void CParabolicDuctGrid::InsertLastPoint(SpanIndexType spanIdx,Float64 distance,
    else
    {
       choice = 0;
-      distance = ::ConvertFromSysUnits(distance, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+      distance = WBFL::Units::ConvertFromSysUnits(distance, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
    }
 
    SetStyleRange(CGXRange(row, 2), CGXStyle()
@@ -587,7 +587,7 @@ void CParabolicDuctGrid::InsertLastPoint(SpanIndexType spanIdx,Float64 distance,
       .SetValue((long)choice)
    );
 
-   offset = ::ConvertFromSysUnits(offset,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+   offset = WBFL::Units::ConvertFromSysUnits(offset,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
    SetStyleRange(CGXRange(row,4), CGXStyle()
       .SetValue(offset)
       );
@@ -630,7 +630,7 @@ void CParabolicDuctGrid::GetRowValues(ROWCOL row,Float64* pDistance,Float64* pOf
    long locationType = _tstol(GetCellValue(row,3));
    if ( locationType == 0 )
    {
-      distance = ::ConvertToSysUnits(distance,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+      distance = WBFL::Units::ConvertToSysUnits(distance,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
    }
    else
    {
@@ -638,7 +638,7 @@ void CParabolicDuctGrid::GetRowValues(ROWCOL row,Float64* pDistance,Float64* pOf
    }
 
    Float64 offset = _tstof(GetCellValue(row,4));
-   offset = ::ConvertToSysUnits(offset,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+   offset = WBFL::Units::ConvertToSysUnits(offset,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
 
    CDuctGeometry::OffsetType offsetType = CDuctGeometry::OffsetType(_tstoi(GetCellValue(row,5)));
 

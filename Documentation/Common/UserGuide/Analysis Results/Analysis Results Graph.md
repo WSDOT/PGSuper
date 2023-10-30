@@ -28,10 +28,8 @@ Top Deck | Toggles stress plot for top of deck
 Bottom Deck | Toggles stress plot for bottom of deck
 Include Elevation Adjustments | When checked, elevation adjustments are added to computed deflections (PGSplice)
 Structural Analysis Method | Select the structural analysis method (PGSuper)
-Include Unrecoverable Deflection | When checked, unrecoverable deflection from prior to erection are summed with deflections occuring at and after erection. Precamber (PGSuper) is treated as an unrecoverable deflection.
+Include Unrecoverable Deflection | When checked, unrecoverable deflection from prior to erection are summed with deflections occuring at and after erection. Precamber (PGSuper), and pretensioning are treated as unrecoverable deflections.
 Export Graph Data | Data from graphs can be exported to Microsoft Excel or CSV files by clicking on the [Export Graph Data] button. See @ref ug_exporting_graph_data for more information.
-
-> NOTE: Temporary support Elevation Adjustment feature has been disabled for this version of the software. Any existing adjustments created with previous versions of the software have been set to zero and an information item has been posted in the Status Center. This feature is being redeveloped and will be available in the next version of the software.
 
 > NOTE: Analysis results for the Lifting and Hauling Intervals are for plumb girder subjected to self-weight and prestress loading only.
 
@@ -41,6 +39,6 @@ Pretensioned elements are moved through a variety of support conditions from ini
 
 For this reason, precast elements (girders/segments) are not perfectly straight when they are erected. The analysis results graph shows the unrecoverable deflections at the time of erection.
 
-As an example, consider the dead load deflection of a simple span beam. The beam is initially supported near its ends and deflection is \f$ \Delta = \frac{5wL^4}{384E_{ci}I}\f$. Overtime, the elastic modulus increases from \f$E_{ci}\f$ to \f$E_c\f$. If the beam was then completely unloaded by an equal and opposite load to the self-weight, the deflection would not go back to zero because of the change in the elastic modulus. The unrecoverable deflection is \f$ \frac{5wL^4}{384E_{ci}I} - \frac{5wL^4}{384E_cI}\f$. When the deflection at erection is computed using \f$E_c\f$, the unrecoverable deflection must be add to this deflection to get the true deflection.
+As an example, consider the dead load deflection of a simple span beam. The beam is initially supported near its ends and deflection is \f$ \Delta = \frac{5wL^4}{384E_{ci}I}\f$. Overtime, the elastic modulus increases from \f$E_{ci}\f$ to \f$E_c\f$. If the beam was then completely unloaded by an equal and opposite load to the self-weight, deflection does not return to zero because of the change in the elastic modulus. The unrecoverable deflection is \f$ \frac{5wL^4}{384E_{ci}I} - \frac{5wL^4}{384E_cI}\f$. When the deflection at erection is computed using \f$E_c\f$, the unrecoverable deflection must be included to get the true deflection.
 
 See @ref tg_deflections in the @ref technical_guide for more information.

@@ -29,7 +29,7 @@
 
 #include "resource.h"
 #include "ConnectionEntryDlg.h"
-#include <Units\sysUnits.h>
+#include <Units\Convert.h>
 
 #include <MathEx.h>
 
@@ -188,29 +188,12 @@ m_DiaphragmLoadLocation(0.0)
 {
 }
 
-ConnectionLibraryEntry::ConnectionLibraryEntry(const ConnectionLibraryEntry& rOther) :
-libLibraryEntry(rOther)
-{
-   MakeCopy(rOther);
-}
-
 ConnectionLibraryEntry::~ConnectionLibraryEntry()
 {
 }
 
-//======================== OPERATORS  =======================================
-ConnectionLibraryEntry& ConnectionLibraryEntry::operator= (const ConnectionLibraryEntry& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
 //======================== OPERATIONS =======================================
-bool ConnectionLibraryEntry::SaveMe(sysIStructuredSave* pSave)
+bool ConnectionLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
 {
    pSave->BeginUnit(_T("ConnectionLibraryEntry"), 6.0);
 
@@ -250,7 +233,7 @@ bool ConnectionLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    return true;
 }
 
-bool ConnectionLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
+bool ConnectionLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 {
    if(pLoad->BeginUnit(_T("ConnectionLibraryEntry")))
    {
@@ -420,72 +403,72 @@ bool ConnectionLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
 bool ConnectionLibraryEntry::IsEqual(const ConnectionLibraryEntry& rOther,bool bConsiderName) const
 {
-   std::vector<pgsLibraryEntryDifferenceItem*> vDifferences;
+   std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>> vDifferences;
    bool bMustRename;
    return Compare(rOther,vDifferences,bMustRename,true,bConsiderName);
 }
 
-bool ConnectionLibraryEntry::Compare(const ConnectionLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
+bool ConnectionLibraryEntry::Compare(const ConnectionLibraryEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    bMustRename = false;
 
    if ( !::IsEqual(m_GirderEndDistance,rOther.m_GirderEndDistance) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceLengthItem(_T("End Distance"),m_GirderEndDistance,rOther.m_GirderEndDistance,pDisplayUnits->ComponentDim));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceLengthItem>(_T("End Distance"),m_GirderEndDistance,rOther.m_GirderEndDistance,pDisplayUnits->ComponentDim));
    }
 
    if ( m_EndDistanceMeasure != rOther.m_EndDistanceMeasure )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("End Distance Measure"),GetEndDistanceMeasurementType(m_EndDistanceMeasure),GetEndDistanceMeasurementType(rOther.m_EndDistanceMeasure)));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("End Distance Measure"),GetEndDistanceMeasurementType(m_EndDistanceMeasure),GetEndDistanceMeasurementType(rOther.m_EndDistanceMeasure)));
    }
 
    if ( !::IsEqual(m_GirderBearingOffset,rOther.m_GirderBearingOffset) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceLengthItem(_T("Bearing Offset"),m_GirderBearingOffset,rOther.m_GirderBearingOffset,pDisplayUnits->ComponentDim));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceLengthItem>(_T("Bearing Offset"),m_GirderBearingOffset,rOther.m_GirderBearingOffset,pDisplayUnits->ComponentDim));
    }
 
    if ( m_BearingOffsetMeasure != rOther.m_BearingOffsetMeasure )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Bearing Offset Measure"),GetBearingOffsetMeasurementType(m_BearingOffsetMeasure),GetBearingOffsetMeasurementType(rOther.m_BearingOffsetMeasure)));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Bearing Offset Measure"),GetBearingOffsetMeasurementType(m_BearingOffsetMeasure),GetBearingOffsetMeasurementType(rOther.m_BearingOffsetMeasure)));
    }
 
    if ( !::IsEqual(m_DiaphragmHeight,rOther.m_DiaphragmHeight) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceLengthKeywordItem(_T("Diaphragm Height"),m_DiaphragmHeight,rOther.m_DiaphragmHeight,pDisplayUnits->ComponentDim,_T("Compute")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceLengthKeywordItem>(_T("Diaphragm Height"),m_DiaphragmHeight,rOther.m_DiaphragmHeight,pDisplayUnits->ComponentDim,_T("Compute")));
    }
 
    if ( !::IsEqual(m_DiaphragmWidth,rOther.m_DiaphragmWidth) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceLengthKeywordItem(_T("Diaphragm Width"),m_DiaphragmWidth,rOther.m_DiaphragmWidth,pDisplayUnits->ComponentDim,_T("Compute")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceLengthKeywordItem>(_T("Diaphragm Width"),m_DiaphragmWidth,rOther.m_DiaphragmWidth,pDisplayUnits->ComponentDim,_T("Compute")));
    }
 
    if ( m_DiaphragmLoadType != rOther.m_DiaphragmLoadType )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Application of Diaphragm Load is different"),_T(""),_T("")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Application of Diaphragm Load is different"),_T(""),_T("")));
    }
    else
    {
       if ( !::IsEqual(m_DiaphragmLoadLocation, rOther.m_DiaphragmLoadLocation) )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceLengthItem(_T("Load Distance from CL Pier to CG of Diaphragm"),m_DiaphragmLoadLocation,rOther.m_DiaphragmLoadLocation,pDisplayUnits->ComponentDim));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceLengthItem>(_T("Load Distance from CL Pier to CG of Diaphragm"),m_DiaphragmLoadLocation,rOther.m_DiaphragmLoadLocation,pDisplayUnits->ComponentDim));
       }
    }
 
    if (considerName &&  GetName() != rOther.GetName() )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
    }
 
    return vDifferences.size() == 0 ? true : false;
@@ -624,26 +607,6 @@ bool ConnectionLibraryEntry::Edit(bool allowEditing,int nPage)
    return false;
 }
 
-
-void ConnectionLibraryEntry::MakeCopy(const ConnectionLibraryEntry& rOther)
-{
-   m_GirderEndDistance     = rOther.m_GirderEndDistance;
-   m_GirderBearingOffset   = rOther.m_GirderBearingOffset;     
-   m_SupportWidth          = rOther.m_SupportWidth;
-   m_DiaphragmHeight       = rOther.m_DiaphragmHeight;       
-   m_DiaphragmWidth        = rOther.m_DiaphragmWidth;
-   m_DiaphragmLoadType     = rOther.m_DiaphragmLoadType;
-   m_DiaphragmLoadLocation = rOther.m_DiaphragmLoadLocation;
-   m_EndDistanceMeasure    = rOther.m_EndDistanceMeasure;
-   m_BearingOffsetMeasure  = rOther.m_BearingOffsetMeasure;
-}
-
-void ConnectionLibraryEntry::MakeAssignment(const ConnectionLibraryEntry& rOther)
-{
-   libLibraryEntry::MakeAssignment( rOther );
-   MakeCopy( rOther );
-}
-
 //======================== ACCESS     =======================================
 //======================== INQUIRY    =======================================
 HICON  ConnectionLibraryEntry::GetIcon() const
@@ -662,33 +625,3 @@ HICON  ConnectionLibraryEntry::GetIcon() const
 //======================== INQUERY    =======================================
 
 //======================== DEBUG      =======================================
-#if defined _DEBUG
-bool ConnectionLibraryEntry::AssertValid() const
-{
-   return libLibraryEntry::AssertValid();
-}
-
-void ConnectionLibraryEntry::Dump(dbgDumpContext& os) const
-{
-   os << _T("Dump for ConnectionLibraryEntry")<<endl;
-   os << _T("   m_GirderEndDistance     =")<< m_GirderEndDistance <<endl;
-   os << _T("   m_GirderBearingOffset   =")<< m_GirderBearingOffset << endl;
-   os << _T("   m_DiaphragmHeight       =")<< m_DiaphragmHeight <<endl;
-   os << _T("   m_DiaphragmWidth        =")<< m_DiaphragmWidth <<endl;
-   os << _T("   m_DiaphragmLoadType     =")<<m_DiaphragmLoadType     <<endl;
-   os << _T("   m_DiaphragmLoadLocation =")<<m_DiaphragmLoadLocation <<endl;
-
-   libLibraryEntry::Dump( os );
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool ConnectionLibraryEntry::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("ConnectionLibraryEntry");
-
-   // tests are performed on entire library.
-
-   TESTME_EPILOG("ConnectionLibraryEntry");
-}
-#endif // _UNITTEST

@@ -46,15 +46,13 @@
 #include <IFace\EditByUI.h>
 #include <IFace\Intervals.h>
 
-#include <GraphicsLib\GraphTool.h>
-
 #include "GirderDisplayObjectEvents.h"
 #include "TrafficBarrierDisplayObjectEvents.h"
 
 #include <DManip\DManip.h>
 #include <DManipTools\DManipTools.h>
 
-#include <Material\Material.h>
+#include <Materials/Materials.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -148,7 +146,7 @@ bool CBridgeSectionView::IsDeckSelected()
       return false;
    }
 
-   CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
+   CComPtr<iDisplayObject> pDO = displayObjects.front();
 
    IDType ID = pDO->GetID();
    if ( ID == DECK_ID )
@@ -192,7 +190,7 @@ bool CBridgeSectionView::GetSelectedGirder(CGirderKey* pGirderKey)
       return false;
    }
 
-   CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
+   CComPtr<iDisplayObject> pDO = displayObjects.front();
 
    // girder IDs are positive values
    IDType ID = pDO->GetID();
@@ -408,11 +406,11 @@ CString DumpPoints(IShape* pShape)
    CComPtr<IPoint2dCollection> points;
    pShape->get_PolyPoints(&points);
 
-   CollectionIndexType nPoints;
+   IndexType nPoints;
    points->get_Count(&nPoints);
 
    CString strDump;
-   for ( CollectionIndexType i = 0; i < nPoints; i++ )
+   for ( IndexType i = 0; i < nPoints; i++ )
    {
       CComPtr<IPoint2d> point;
       points->get_Item(i,&point);
@@ -422,7 +420,7 @@ CString DumpPoints(IShape* pShape)
       point->get_Y(&y);
 
       CString str;
-      str.Format(_T("%f, %f\r\n"),::ConvertFromSysUnits(x,unitMeasure::Feet),::ConvertFromSysUnits(y,unitMeasure::Feet));
+      str.Format(_T("%f, %f\r\n"),WBFL::Units::ConvertFromSysUnits(x,WBFL::Units::Measure::Feet),WBFL::Units::ConvertFromSysUnits(y,WBFL::Units::Measure::Feet));
       strDump += str;
    }
 
@@ -633,14 +631,14 @@ void CBridgeSectionView::UpdateGirderTooltips()
       CString strMsg2;
       strMsg2.Format(_T("\n\nGirder: %s\n%s\nf'ci: %s\nf'c: %s"),
                      pBridgeDesc->GetGirderGroup(segmentKey.groupIndex)->GetGirder(segmentKey.girderIndex)->GetGirderName(),
-                     lrfdConcreteUtil::GetTypeName((matConcrete::Type)pMaterial->GetSegmentConcreteType(segmentKey),true).c_str(),
+                     WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pMaterial->GetSegmentConcreteType(segmentKey),true).c_str(),
                      FormatDimension(fci,pDisplayUnits->GetStressUnit()),
                      FormatDimension(fc, pDisplayUnits->GetStressUnit())
                     );
 
-      const matPsStrand* pStraightStrand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Straight);
-      const matPsStrand* pHarpedStrand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Harped);
-      const matPsStrand* pTempStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Temporary);
+      const auto* pStraightStrand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Straight);
+      const auto* pHarpedStrand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Harped);
+      const auto* pTempStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Temporary);
 
       StrandIndexType Ns = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Straight);
       StrandIndexType Nh = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Harped);
@@ -670,7 +668,7 @@ void CBridgeSectionView::UpdateGirderTooltips()
       }
 
       CString strMsg4;
-      if (pBridge->GetDeckType() != pgsTypes::sdtNone)
+      if (pBridge->GetDeckType() != pgsTypes::sdtNone && pBridge->GetHaunchInputDepthType() == pgsTypes::hidACamber)
       {
          // Slab Offset
          PierIndexType startPierIdx, endPierIdx;
@@ -853,7 +851,7 @@ void CBridgeSectionView::BuildTitleDisplayObjects()
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pdisp_units);
-   const unitStationFormat& station_format = pdisp_units->GetStationFormat();
+   const WBFL::Units::StationFormat& station_format = pdisp_units->GetStationFormat();
    CString strTitle;
    CString strStation = FormatStation(station_format,m_pFrame->GetCurrentCutLocation());
 
@@ -1069,7 +1067,7 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
       CComPtr<ICircle> wpcircle;
       wpcircle.CoCreateInstance(CLSID_Circle);
       wpcircle->putref_Center(pntWP);
-      wpcircle->put_Radius(::ConvertToSysUnits(0.75,unitMeasure::Inch)); // 1.5" diameter point
+      wpcircle->put_Radius(WBFL::Units::ConvertToSysUnits(0.75,WBFL::Units::Measure::Inch)); // 1.5" diameter point
       CComQIPtr<IShape> wpshape(wpcircle);
       draw_work_point_strategy->SetShape(wpshape);
       compound_strategy->AddStrategy(draw_work_point_strategy); // draw second so it goes over the girder shape
@@ -1315,16 +1313,18 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
    CString strMsg1(_T("Double click to edit deck.\r\nRight click for more options."));
 
    CString strMsg2;
-   if ( deckType != pgsTypes::sdtNone )
+   if (deckType != pgsTypes::sdtNone)
+   {
+      if (pBridge->GetHaunchInputDepthType() == pgsTypes::hidACamber)
    {
       pgsTypes::SlabOffsetType slabOffsetType = pBridgeDesc->GetSlabOffsetType();
-      if ( slabOffsetType == pgsTypes::sotBridge )
+         if (slabOffsetType == pgsTypes::sotBridge)
       {
          strMsg2.Format(_T("\r\n\nDeck: %s\r\nSlab Thickness: %s\r\nSlab Offset: %s\r\n%s\r\nf'c: %s"),
                         GetDeckTypeName(deckType),
                         FormatDimension(pDeck->GrossDepth,pDisplayUnits->GetComponentDimUnit()),
                         FormatDimension(pBridgeDesc->GetSlabOffset(),pDisplayUnits->GetComponentDimUnit()),
-                        lrfdConcreteUtil::GetTypeName((matConcrete::Type)pDeck->Concrete.Type,true).c_str(),
+                        WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pDeck->Concrete.Type,true).c_str(),
                         FormatDimension(pDeck->Concrete.Fc,pDisplayUnits->GetStressUnit())
                         );
       }
@@ -1333,9 +1333,19 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
          strMsg2.Format(_T("\r\n\nDeck: %s\r\nSlab Thickness: %s\r\nSlab Offset: per girder\r\n%s\r\nf'c: %s"),
                         GetDeckTypeName(deckType),
                         FormatDimension(pDeck->GrossDepth,pDisplayUnits->GetComponentDimUnit()),
-                        lrfdConcreteUtil::GetTypeName((matConcrete::Type)pDeck->Concrete.Type,true).c_str(),
+                        WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pDeck->Concrete.Type,true).c_str(),
                         FormatDimension(pDeck->Concrete.Fc,pDisplayUnits->GetStressUnit())
                         );
+      }
+   }
+      else
+      {
+         strMsg2.Format(_T("\r\n\nDeck: %s\r\nSlab Thickness: %s\r\nHaunch Depths Defined by Direct Input\r\n%s\r\nf'c: %s"),
+            GetDeckTypeName(deckType),
+            FormatDimension(pDeck->GrossDepth,pDisplayUnits->GetComponentDimUnit()),
+            WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pDeck->Concrete.Type,true).c_str(),
+            FormatDimension(pDeck->Concrete.Fc,pDisplayUnits->GetStressUnit())
+         );
       }
    }
 
@@ -1373,8 +1383,11 @@ void CBridgeSectionView::BuildOverlayDisplayObjects()
       return;
    }
 
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   IntervalIndexType geomCtrlInterval = pIntervals->GetGeometryControlInterval();
+
    Float64 overlay_weight = pBridge->GetOverlayWeight();
-   Float64 depth = pBridge->GetOverlayDepth();
+   Float64 depth = pBridge->GetOverlayDepth(geomCtrlInterval);
 
    CComPtr<iDisplayMgr> dispMgr;
    GetDisplayMgr(&dispMgr);
@@ -1709,7 +1722,7 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
 
    // get length unit so section can be labelled
    GET_IFACE2(pBroker,IEAFDisplayUnits,pdisp_units);
-   const unitmgtLengthData& rlen = pdisp_units->GetXSectionDimUnit();
+   const WBFL::Units::LengthData& rlen = pdisp_units->GetXSectionDimUnit();
 
    //
    // Create Girder Spacing Dimension Line
@@ -2605,7 +2618,7 @@ void CBridgeSectionView::BuildAlignmentDisplayObjects()
    // The alignment is at X=0 in Bridge Section Coordinates
    Float64 Xcl = 0;
    Float64 Ydeck = pAlignment->GetElevation(cut_station,0); // deck elevation at alignment
-   Float64 Yt = Ydeck + ::ConvertToSysUnits(1.0,unitMeasure::Feet); // add a little so it projects over the roadway surface
+   Float64 Yt = Ydeck + WBFL::Units::ConvertToSysUnits(1.0,WBFL::Units::Measure::Feet); // add a little so it projects over the roadway surface
 
    CComPtr<IPoint2d> pnt1;
    pnt1.CoCreateInstance(CLSID_Point2d);
@@ -2613,7 +2626,7 @@ void CBridgeSectionView::BuildAlignmentDisplayObjects()
 
    CComPtr<IPoint2d> pnt2;
    pnt2.CoCreateInstance(CLSID_Point2d);
-   pnt2->Move(Xcl,Yt - ::ConvertToSysUnits(3.0,unitMeasure::Feet));
+   pnt2->Move(Xcl,Yt - WBFL::Units::ConvertToSysUnits(3.0,WBFL::Units::Measure::Feet));
 
    CComPtr<iLineDisplayObject> doAlignment;
    CreateLineDisplayObject(pnt1,pnt2,&doAlignment);
@@ -2640,7 +2653,7 @@ void CBridgeSectionView::BuildAlignmentDisplayObjects()
    if ( !IsZero(BLO) )
    {
       Ydeck = pAlignment->GetElevation(cut_station,BLO);
-      Yt = Ydeck + ::ConvertToSysUnits(1.0,unitMeasure::Feet);
+      Yt = Ydeck + WBFL::Units::ConvertToSysUnits(1.0,WBFL::Units::Measure::Feet);
       pnt1.Release();
       pnt2.Release();
 
@@ -2648,7 +2661,7 @@ void CBridgeSectionView::BuildAlignmentDisplayObjects()
       pnt1->Move(Xcl+BLO,Yt);
 
       pnt2.CoCreateInstance(CLSID_Point2d);
-      pnt2->Move(Xcl+BLO,Yt - ::ConvertToSysUnits(3.0,unitMeasure::Feet));
+      pnt2->Move(Xcl+BLO,Yt - WBFL::Units::ConvertToSysUnits(3.0,WBFL::Units::Measure::Feet));
 
       CComPtr<iLineDisplayObject> doBridgeLine;
       CreateLineDisplayObject(pnt1,pnt2,&doBridgeLine);
@@ -2673,7 +2686,7 @@ void CBridgeSectionView::BuildAlignmentDisplayObjects()
       Float64 pgl_offset = -offset;
 
       Ydeck = pAlignment->GetElevation(cut_station, pgl_offset);
-      Yt = Ydeck + ::ConvertToSysUnits(1.0, unitMeasure::Feet);
+      Yt = Ydeck + WBFL::Units::ConvertToSysUnits(1.0, WBFL::Units::Measure::Feet);
       pnt1.Release();
       pnt2.Release();
 
@@ -2681,7 +2694,7 @@ void CBridgeSectionView::BuildAlignmentDisplayObjects()
       pnt1->Move(Xcl + pgl_offset, Yt);
 
       pnt2.CoCreateInstance(CLSID_Point2d);
-      pnt2->Move(Xcl + pgl_offset, Yt - ::ConvertToSysUnits(3.0, unitMeasure::Feet));
+      pnt2->Move(Xcl + pgl_offset, Yt - WBFL::Units::ConvertToSysUnits(3.0, WBFL::Units::Measure::Feet));
 
       CComPtr<iLineDisplayObject> doPGL;
       CreateLineDisplayObject(pnt1, pnt2, &doPGL);
@@ -2737,7 +2750,7 @@ void CBridgeSectionView::BuildRoadwayCrossSectionDisplayObjects()
    Float64 cut_station = m_pFrame->GetCurrentCutLocation();
    Float64 Xb = pPoi->ConvertRouteToBridgeLineCoordinate(cut_station);
 
-   Float64 feets = ::ConvertToSysUnits(1.0, unitMeasure::Feet); //  make sure alignment is also in there
+   Float64 feets = WBFL::Units::ConvertToSysUnits(1.0, WBFL::Units::Measure::Feet); //  make sure alignment is also in there
    Float64 left_offset = pBridge->GetLeftSlabEdgeOffset(Xb);
    left_offset = min(left_offset, 0.0);
    Float64 right_offset = pBridge->GetRightSlabEdgeOffset(Xb);
@@ -2837,7 +2850,7 @@ void CBridgeSectionView::BuildRoadwayCrossSectionDisplayObjects()
          doText->SetAngle((LONG)angle); 
 
          // change the slope from our analytical model to
-         // the sign convension of the input
+         // the sign convention of the input
          // slopes down and away from the controlling crown point are < 0
          if (pRoadwayData->GetRoadwaySectionData().slopeMeasure == RoadwaySectionData::RelativeToAlignmentPoint && icp <= contrl_crown_point)
          {
@@ -2880,8 +2893,6 @@ void CBridgeSectionView::BuildRoadwayCrossSectionDisplayObjects()
    // bridge plan view where the alignment display object is really a drop site
    CComQIPtr<iDropSite> drop_site(events);
    drop_site->SetDisplayObject(dispObj);
-
-   ATLASSERT(bfinished); // crown point model is not wide enough for our needs
 }
 
 void CBridgeSectionView::CreateLineDisplayObject(IPoint2d* pntStart,IPoint2d* pntEnd,iLineDisplayObject** ppLineDO)

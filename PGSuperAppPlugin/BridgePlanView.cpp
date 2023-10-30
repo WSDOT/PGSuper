@@ -57,9 +57,9 @@
 #include <WBFLDManip.h>
 #include <WBFLDManipTools.h>
 #include <DManipTools\DManipTools.h>
-#include <Units\SysUnits.h>
+#include <Units\Convert.h>
 
-#include <Material\Material.h>
+#include <Materials/Materials.h>
 
 #include <EAF\EAFMenu.h>
 
@@ -135,7 +135,7 @@ bool CBridgePlanView::IsDeckSelected()
       return false;
    }
 
-   CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
+   CComPtr<iDisplayObject> pDO = displayObjects.front();
 
    DeckDisplayObjectInfo* pInfo = nullptr;
    pDO->GetItemData((void**)&pInfo);
@@ -162,7 +162,7 @@ bool CBridgePlanView::IsAlignmentSelected()
       return false;
    }
 
-   CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
+   CComPtr<iDisplayObject> pDO = displayObjects.front();
 
    if ( pDO->GetID() == ALIGNMENT_ID )
    {
@@ -205,7 +205,7 @@ bool CBridgePlanView::GetSelectedSpan(SpanIndexType* pSpanIdx)
       return false;
    }
 
-   CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
+   CComPtr<iDisplayObject> pDO = displayObjects.front();
 
    SpanDisplayObjectInfo* pInfo;
    pDO->GetItemData((void**)&pInfo);
@@ -234,7 +234,7 @@ bool CBridgePlanView::GetSelectedPier(PierIndexType* pPierIdx)
       return false;
    }
 
-   CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
+   CComPtr<iDisplayObject> pDO = displayObjects.front();
 
    PierDisplayObjectInfo* pInfo;
    pDO->GetItemData((void**)&pInfo);
@@ -300,7 +300,7 @@ bool CBridgePlanView::GetSelectedGirder(CGirderKey* pGirderKey)
       return false;
    }
 
-   CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
+   CComPtr<iDisplayObject> pDO = displayObjects.front();
 
    GirderDisplayObjectInfo* pInfo = nullptr;
    pDO->GetItemData((void**)&pInfo);
@@ -356,7 +356,7 @@ bool CBridgePlanView::GetSelectedSegment(CSegmentKey* pSegmentKey)
       return false;
    }
 
-   CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
+   CComPtr<iDisplayObject> pDO = displayObjects.front();
 
    SegmentDisplayObjectInfo* pInfo = nullptr;
    pDO->GetItemData((void**)&pInfo);
@@ -413,7 +413,7 @@ bool CBridgePlanView::GetSelectedClosureJoint(CSegmentKey* pClosureKey)
       return false;
    }
 
-   CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
+   CComPtr<iDisplayObject> pDO = displayObjects.front();
 
    SegmentDisplayObjectInfo* pInfo = nullptr;
    pDO->GetItemData((void**)&pInfo);
@@ -506,7 +506,7 @@ bool CBridgePlanView::GetSelectedTemporarySupport(SupportIndexType* ptsIdx)
       return false;
    }
 
-   CComPtr<iDisplayObject> pDO = displayObjects.front().m_T;
+   CComPtr<iDisplayObject> pDO = displayObjects.front();
 
    TemporarySupportDisplayObjectInfo* pInfo;
    pDO->GetItemData((void**)&pInfo);
@@ -866,14 +866,14 @@ void CBridgePlanView::UpdateSegmentTooltips()
 
             CString strMsg3;
             strMsg3.Format(_T("\n\n%s\nf'ci: %s\nf'c: %s"),
-               lrfdConcreteUtil::GetTypeName((matConcrete::Type)pMaterial->GetSegmentConcreteType(segmentKey), true).c_str(),
+               WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pMaterial->GetSegmentConcreteType(segmentKey), true).c_str(),
                FormatDimension(fci, pDisplayUnits->GetStressUnit()),
                FormatDimension(fc, pDisplayUnits->GetStressUnit())
             );
 
-            const matPsStrand* pStraightStrand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Straight);
-            const matPsStrand* pHarpedStrand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Harped);
-            const matPsStrand* pTempStrand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Temporary);
+            const auto* pStraightStrand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Straight);
+            const auto* pHarpedStrand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Harped);
+            const auto* pTempStrand = pMaterial->GetStrandMaterial(segmentKey, pgsTypes::Temporary);
 
             StrandIndexType Ns = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Straight);
             StrandIndexType Nh = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Harped);
@@ -903,7 +903,7 @@ void CBridgePlanView::UpdateSegmentTooltips()
             }
 
             CString strMsg5;
-            if (pBridge->GetDeckType() != pgsTypes::sdtNone)
+            if (pBridge->GetDeckType() != pgsTypes::sdtNone && pBridge->GetHaunchInputDepthType() == pgsTypes::hidACamber)
             {
                // Slab Offset
                PierIndexType startPierIdx, endPierIdx;
@@ -1058,7 +1058,7 @@ void CBridgePlanView::UpdateClosureJointTooltips()
 
             CString strMsg2;
             strMsg2.Format(_T("\n\n%s\nf'ci: %s\nf'c: %s\n\nInstallation: Event %d, %s"),
-                           lrfdConcreteUtil::GetTypeName((matConcrete::Type)pClosureJoint->GetConcrete().Type,true).c_str(),
+                           WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)pClosureJoint->GetConcrete().Type,true).c_str(),
                            FormatDimension(fci,pDisplayUnits->GetStressUnit()),
                            FormatDimension(fc, pDisplayUnits->GetStressUnit()),
                            LABEL_EVENT(eventIdx),
@@ -1175,7 +1175,7 @@ void CBridgePlanView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
       bool bSectionCutSelected = false;
       if ( 0 < selObjs.size() )
       {
-         CComPtr<iDisplayObject> pDO = selObjs[0].m_T;
+         CComPtr<iDisplayObject> pDO = selObjs[0];
          if ( pDO->GetID() == SECTION_CUT_ID )
          {
             bSectionCutSelected = true;
@@ -1255,7 +1255,7 @@ BOOL CBridgePlanView::OnMouseWheel(UINT nFlags,short zDelta,CPoint pt)
    bool bLeftRight = true;
    if ( 0 < selObjs.size() )
    {
-      CComPtr<iDisplayObject> pDO = selObjs[0].m_T;
+      CComPtr<iDisplayObject> pDO = selObjs[0];
       CComPtr<iDisplayList> pDispList;
       pDO->GetDisplayList(&pDispList);
       IDType dispListID = pDispList->GetID();
@@ -2726,7 +2726,7 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
       }
       strategy_pier->DoFill(TRUE);
 
-      Float64 support_width = ::ConvertToSysUnits(6.0, unitMeasure::Inch); // a reasonable default. No other data
+      Float64 support_width = WBFL::Units::ConvertToSysUnits(6.0, WBFL::Units::Measure::Inch); // a reasonable default. No other data
       
       Float64 brg_offset;
       ConnectionLibraryEntry::BearingOffsetMeasurementType brg_offset_measurement_type;

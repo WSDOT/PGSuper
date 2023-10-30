@@ -84,9 +84,9 @@ BOOL CRatingDescriptionPage::OnInitDialog()
 {
    CComboBox* pSpec = (CComboBox*)GetDlgItem(IDC_SPECIFICATION);
    int idx;
-   for ( int i = 1; i < (int)lrfrVersionMgr::LastVersion; i++ )
+   for ( int i = 1; i < (int)WBFL::LRFD::MBEManager::Edition::LastEdition; i++ )
    {
-      idx = pSpec->AddString(lrfrVersionMgr::GetVersionString((lrfrVersionMgr::Version)(i)));
+      idx = pSpec->AddString(WBFL::LRFD::MBEManager::GetEditionAsString((WBFL::LRFD::MBEManager::Edition)(i)));
       pSpec->SetItemData(idx,(DWORD)(i));
    }
 
@@ -98,11 +98,11 @@ BOOL CRatingDescriptionPage::OnInitDialog()
 	              // EXCEPTION: OCX Property Pages should return FALSE
 }
 
-lrfrVersionMgr::Version CRatingDescriptionPage::GetSpecVersion()
+WBFL::LRFD::MBEManager::Edition CRatingDescriptionPage::GetSpecVersion()
 {
    CComboBox* pSpec = (CComboBox*)GetDlgItem(IDC_SPECIFICATION);
    int idx = pSpec->GetCurSel();
-   return (lrfrVersionMgr::Version)(pSpec->GetItemData(idx));
+   return (WBFL::LRFD::MBEManager::Edition)(pSpec->GetItemData(idx));
 }
 
 void CRatingDescriptionPage::OnSpecificationChanged()

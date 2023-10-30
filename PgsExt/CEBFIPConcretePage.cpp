@@ -30,7 +30,7 @@
 #include "CEBFIPParametersDlg.h"
 #include "..\Documentation\PGSuper.hh"
 
-#include <Material\CEBFIPConcrete.h>
+#include <Materials/CEBFIPConcrete.h>
 #include <EAF\EAFApp.h>
 #include <EAF\EAFDocument.h>
 
@@ -171,7 +171,7 @@ void CCEBFIPConcretePage::UpdateParameters()
 {
    UpdateData(TRUE);
 
-   matCEBFIPConcrete::GetModelParameters((matCEBFIPConcrete::CementType)m_CementType,&m_S,&m_BetaSc);
+   WBFL::Materials::CEBFIPConcrete::GetModelParameters((WBFL::Materials::CEBFIPConcrete::CementType)m_CementType,&m_S,&m_BetaSc);
 
    UpdateData(FALSE);
 }

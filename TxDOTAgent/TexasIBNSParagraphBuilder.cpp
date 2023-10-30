@@ -113,7 +113,7 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IBroker* pBroker
       INIT_UV_PROTOTYPE( rptLengthUnitValue, uloc, pDisplayUnits->GetSpanLengthUnit(), true);
       INIT_UV_PROTOTYPE( rptLengthUnitValue, ucomp,    pDisplayUnits->GetComponentDimUnit(), true );
 
-      uloc.SetFormat(sysNumericFormatTool::Automatic);
+      uloc.SetFormat(WBFL::System::NumericFormatTool::Format::Automatic);
 
       const ColumnIndexType num_cols=13;
       std::_tostringstream os;
@@ -178,12 +178,12 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,IBroker* pBroker
          point->get_Y(&curr_y);
 
          (*p_table)(row,0) << ucomp.SetValue(Hg + curr_y);
-         (*p_table)(row,1) << (long)vss.size();
+         (*p_table)(row,1) << (IndexType)vss.size();
 
-         // rest of colums are zeros
+         // rest of columns are zeros
          for (ColumnIndexType icol = 2; icol < num_cols; icol++)
          {
-            (*p_table)(row,icol) << (long)0;
+            (*p_table)(row,icol) << (IndexType)0;
          }
       }
       else
@@ -454,7 +454,7 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(IBroker*	pBroker, const std::vec
                for (OptionalDesignHarpedFillUtil::StrandRowIter srit = strandrows.begin(); srit != strandrows.end(); srit++)
                {
                   const OptionalDesignHarpedFillUtil::StrandRow& srow = *srit;
-                  Float64 elev_in = RoundOff(::ConvertFromSysUnits(srow.Elevation, unitMeasure::Inch), 0.001);
+                  Float64 elev_in = RoundOff(WBFL::Units::ConvertFromSysUnits(srow.Elevation, WBFL::Units::Measure::Inch), 0.001);
 
                   (*p_table)(row, 0) << elev_in;
                   (*p_table)(row++, 1) << srow.fillListString << _T(" (") << srow.fillListString.size() * 2 << _T(")");
@@ -506,7 +506,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
    GET_IFACE2(pBroker,IGirder,pGirder);
 #endif
 
-   CollectionIndexType ng = endIdx-startIdx+1;
+   IndexType ng = endIdx-startIdx+1;
    rptRcTable* p_table = rptStyleManager::CreateTableNoHeading(ng+1,_T("TxDOT Girder Schedule"));
 
    *p << p_table;
@@ -516,7 +516,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),       true );
    INIT_UV_PROTOTYPE( rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(),       true );
    rptRcScalar df;
-   df.SetFormat(sysNumericFormatTool::Fixed);
+   df.SetFormat(WBFL::System::NumericFormatTool::Format::Fixed);
    df.SetWidth(8);
    df.SetPrecision(5);
 
@@ -536,7 +536,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
       StrandIndexType nh = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
 
       const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
-      const matPsStrand* pstrand = pStrands->GetStrandMaterial(pgsTypes::Straight);
+      const auto* pstrand = pStrands->GetStrandMaterial(pgsTypes::Straight);
 
       // create pois at the start of girder and mid-span
       PoiList vPoiRel, vPoiEre;
@@ -606,17 +606,17 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
       std::_tstring strGrade;
       if ( bUnitsSI )
       {
-         strGrade = (pstrand->GetGrade() == matPsStrand::Gr1725 ? _T("1725") : _T("1860"));
+         strGrade = (pstrand->GetGrade() == WBFL::Materials::PsStrand::Grade::Gr1725 ? _T("1725") : _T("1860"));
          strData = _T("Grade ") + strGrade;
          strData += _T(" ");
-         strData += (pstrand->GetType() == matPsStrand::LowRelaxation ? _T("Low Relaxation") : _T("Stress Relieved"));
+         strData += (pstrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? _T("Low Relaxation") : _T("Stress Relieved"));
       }
       else
       {
-         strGrade = (pstrand->GetGrade() == matPsStrand::Gr1725 ? _T("250") : _T("270"));
+         strGrade = (pstrand->GetGrade() == WBFL::Materials::PsStrand::Grade::Gr1725 ? _T("250") : _T("270"));
          strData = _T("Grade ") + strGrade;
          strData += _T(" ");
-         strData += (pstrand->GetType() == matPsStrand::LowRelaxation ? _T("Low Relaxation") : _T("Stress Relieved"));
+         strData += (pstrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? _T("Low Relaxation") : _T("Stress Relieved"));
       }
 
       (*p_table)(row++,col) << strData;
@@ -766,7 +766,7 @@ void WriteGirderScheduleTable(rptParagraph* p, IBroker* pBroker, IEAFDisplayUnit
 
       (*p_table)(row++,col) << moment.SetValue( Max(pmmcd->Mu,pmmcd->MrMin) );
 
-      if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+      if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims )
       {
          if (bFirst)
             (*p_table)(row,0) << _T("Live Load Distribution Factor for Moment");

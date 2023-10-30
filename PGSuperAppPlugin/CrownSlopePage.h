@@ -105,8 +105,8 @@ protected:
 
    // tools for drawing section
    bool GetSelectedTemplate(RoadwaySectionTemplate* pTemplate);
-   gpRect2d GetRidgePointBounds();
-   std::vector<gpPoint2d> m_DrawnRidgePoints;
+   WBFL::Geometry::Rect2d GetRidgePointBounds();
+   std::vector<WBFL::Geometry::Point2d> m_DrawnRidgePoints;
 public:
    afx_msg void OnDeltaposViewTemplateSpin(NMHDR *pNMHDR, LRESULT *pResult);
    afx_msg void OnCbnSelchangeSlopeMeasureType();

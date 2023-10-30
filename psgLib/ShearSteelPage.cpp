@@ -36,7 +36,7 @@
 #include <MfcTools\CustomDDX.h>
 
 
-#include <Lrfd\RebarPool.h>
+#include <LRFD\RebarPool.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -46,7 +46,7 @@ static char THIS_FILE[] = __FILE__;
 
 const DWORD CShearSteelPage::IDD = IDD_EDIT_SHEAR_STEEL;
 
-static Float64 zone_bar_spacing_tolerance = ::ConvertToSysUnits(0.0001, unitMeasure::Feet);
+static Float64 zone_bar_spacing_tolerance = WBFL::Units::ConvertToSysUnits(0.0001, WBFL::Units::Measure::Feet);
 
 /////////////////////////////////////////////////////////////////////////////
 // CShearSteelPage property page
@@ -79,7 +79,7 @@ void CShearSteelPage::DoDataExchange(CDataExchange* pDX)
    DDX_Control(pDX,IDC_MILD_STEEL_SELECTOR,m_cbRebar);
 
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    DDX_Check_Bool(pDX,IDC_SYMMETRICAL,m_ShearData.bAreZonesSymmetrical);
    DDX_Check_Bool(pDX,IDC_ROUGHENED,           m_ShearData.bIsRoughenedSurface);
@@ -99,7 +99,7 @@ void CShearSteelPage::DoDataExchange(CDataExchange* pDX)
 
    if (pDX->m_bSaveAndValidate)
    {
-      if (matRebar::bsNone != m_ShearData.SplittingBarSize)
+      if (WBFL::Materials::Rebar::Size::bsNone != m_ShearData.SplittingBarSize)
       {
          if (m_ShearData.SplittingZoneLength<=0.00001)
          {
@@ -128,7 +128,7 @@ void CShearSteelPage::DoDataExchange(CDataExchange* pDX)
 
    if (pDX->m_bSaveAndValidate)
    {
-      if (matRebar::bsNone != m_ShearData.ConfinementBarSize)
+      if (WBFL::Materials::Rebar::Size::bsNone != m_ShearData.ConfinementBarSize)
       {
          if (m_ShearData.ConfinementZoneLength<=0.00001)
          {
@@ -166,9 +166,9 @@ void CShearSteelPage::DoDataExchange(CDataExchange* pDX)
             lsi.ZoneNum = zn;
             if ( !IsEqual(lsi.ZoneLength,Float64_Max) )
             {
-               lsi.ZoneLength = ::ConvertToSysUnits(lsi.ZoneLength, pDisplayUnits->XSectionDim.UnitOfMeasure);
+               lsi.ZoneLength = WBFL::Units::ConvertToSysUnits(lsi.ZoneLength, pDisplayUnits->XSectionDim.UnitOfMeasure);
             }
-            lsi.BarSpacing = ::ConvertToSysUnits(lsi.BarSpacing, pDisplayUnits->ComponentDim.UnitOfMeasure);
+            lsi.BarSpacing = WBFL::Units::ConvertToSysUnits(lsi.BarSpacing, pDisplayUnits->ComponentDim.UnitOfMeasure);
 
             if (IsEqual(lsi.ZoneLength, lsi.BarSpacing, zone_bar_spacing_tolerance))
             {
@@ -191,7 +191,7 @@ void CShearSteelPage::DoDataExchange(CDataExchange* pDX)
                }
             }
 
-            if ((matRebar::bsNone != lsi.VertBarSize || matRebar::bsNone != lsi.ConfinementBarSize) && zn < nrows)
+            if ((WBFL::Materials::Rebar::Size::bsNone != lsi.VertBarSize || WBFL::Materials::Rebar::Size::bsNone != lsi.ConfinementBarSize) && zn < nrows)
             {
                if (::IsLT(lsi.ZoneLength,lsi.BarSpacing))
                {
@@ -203,7 +203,7 @@ void CShearSteelPage::DoDataExchange(CDataExchange* pDX)
             }
 
             // make sure stirrup spacing is >0 if stirrups or confinement bars exist
-            if ( (matRebar::bsNone != lsi.VertBarSize || matRebar::bsNone != lsi.ConfinementBarSize) && lsi.BarSpacing<=0.0)
+            if ( (WBFL::Materials::Rebar::Size::bsNone != lsi.VertBarSize || WBFL::Materials::Rebar::Size::bsNone != lsi.ConfinementBarSize) && lsi.BarSpacing<=0.0)
             {
                CString msg;
                msg.Format(_T("Bar spacing must be greater than zero if stirrups exist in Shear Zone %d"),zn+1);
@@ -227,10 +227,10 @@ void CShearSteelPage::DoDataExchange(CDataExchange* pDX)
          CShearZoneData2 inf(*it);
          if ( !IsEqual(inf.ZoneLength,Float64_Max) )
          {
-            inf.ZoneLength = ::ConvertFromSysUnits((*it).ZoneLength, pDisplayUnits->XSectionDim.UnitOfMeasure);
+            inf.ZoneLength = WBFL::Units::ConvertFromSysUnits((*it).ZoneLength, pDisplayUnits->XSectionDim.UnitOfMeasure);
          }
 
-         inf.BarSpacing     = ::ConvertFromSysUnits((*it).BarSpacing, pDisplayUnits->ComponentDim.UnitOfMeasure);
+         inf.BarSpacing     = WBFL::Units::ConvertFromSysUnits((*it).BarSpacing, pDisplayUnits->ComponentDim.UnitOfMeasure);
          vec.push_back(inf);
       }
       m_pGrid->FillGrid(vec, m_ShearData.bAreZonesSymmetrical);
@@ -341,7 +341,7 @@ void CShearSteelPage::OnClickedSymmetrical()
    m_pGrid->SetSymmetry(IsDlgButtonChecked(IDC_SYMMETRICAL) == BST_CHECKED ? true : false);
 }
 
-void CShearSteelPage::GetRebarMaterial(matRebar::Type* pType,matRebar::Grade* pGrade)
+void CShearSteelPage::GetRebarMaterial(WBFL::Materials::Rebar::Type* pType,WBFL::Materials::Rebar::Grade* pGrade)
 {
    m_cbRebar.GetMaterial(pType,pGrade);
 }
@@ -368,11 +368,11 @@ void CShearSteelPage::OnHelp()
 void CShearSteelPage::FillBarComboBox(CComboBox* pcbRebar)
 {
    int idx = pcbRebar->AddString(_T("None"));
-   pcbRebar->SetItemData(idx,(DWORD_PTR)matRebar::bsNone);
-   lrfdRebarIter rebarIter(m_ShearData.ShearBarType,m_ShearData.ShearBarGrade,true);
+   pcbRebar->SetItemData(idx,(DWORD_PTR)WBFL::Materials::Rebar::Size::bsNone);
+   WBFL::LRFD::RebarIter rebarIter(m_ShearData.ShearBarType,m_ShearData.ShearBarGrade,true);
    for ( rebarIter.Begin(); rebarIter; rebarIter.Next() )
    {
-      const matRebar* pRebar = rebarIter.GetCurrentRebar();
+      const auto* pRebar = rebarIter.GetCurrentRebar();
       idx = pcbRebar->AddString(pRebar->GetName().c_str());
       pcbRebar->SetItemData(idx,(DWORD_PTR)pRebar->GetSize());
    }

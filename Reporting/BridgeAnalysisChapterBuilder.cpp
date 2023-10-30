@@ -57,7 +57,7 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 
 
 #ifdef _DEBUG
@@ -89,9 +89,9 @@ LPCTSTR CBridgeAnalysisChapterBuilder::GetName() const
    return m_strTitle.c_str();
 }
 
-rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CBridgeAnalysisChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CBridgeAnalysisReportSpecification* pBridgeAnalysisRptSpec = dynamic_cast<CBridgeAnalysisReportSpecification*>(pRptSpec);
+   auto pBridgeAnalysisRptSpec = std::dynamic_pointer_cast<const CBridgeAnalysisReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pBridgeAnalysisRptSpec->GetBroker(&pBroker);
 
@@ -285,7 +285,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
    {
       live_load_types.push_back(pgsTypes::lltDesign);
 
-      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
       {
         live_load_types.push_back(pgsTypes::lltFatigue);
       }
@@ -438,7 +438,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
       p = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << p;
       CString strName;
-      strName.Format(_T("Combined Results - Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+      strName.Format(_T("Combined Results - Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx).c_str());
       p->SetName(strName);
       *p << p->GetName();
 
@@ -478,7 +478,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(CReportSpecification* pRptSpec,
    return pChapter;
 }
 
-CChapterBuilder* CBridgeAnalysisChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CBridgeAnalysisChapterBuilder::Clone() const
 {
-   return new CBridgeAnalysisChapterBuilder(m_strTitle.c_str(),m_AnalysisType);
+   return std::make_unique<CBridgeAnalysisChapterBuilder>(m_strTitle.c_str(),m_AnalysisType);
 }

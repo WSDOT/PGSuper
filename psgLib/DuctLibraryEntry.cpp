@@ -30,7 +30,7 @@
 
 #include "resource.h"
 #include "DuctEntryDlg.h"
-#include <Units\sysUnits.h>
+#include <Units\Convert.h>
 
 #include <EAF\EAFApp.h>
 
@@ -40,37 +40,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-DuctLibraryEntry::DuctLibraryEntry() :
-m_OD(0),
-m_ID(0),
-m_ND(0),
-m_Z(0)
-{
-}
-
-DuctLibraryEntry::DuctLibraryEntry(const DuctLibraryEntry& rOther) :
-libLibraryEntry(rOther)
-{
-   MakeCopy(rOther);
-}
-
-DuctLibraryEntry::~DuctLibraryEntry()
-{
-}
-
-//======================== OPERATORS  =======================================
-DuctLibraryEntry& DuctLibraryEntry::operator= (const DuctLibraryEntry& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
 //======================== OPERATIONS =======================================
-bool DuctLibraryEntry::SaveMe(sysIStructuredSave* pSave)
+bool DuctLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
 {
    pSave->BeginUnit(_T("DuctEntry"), 2.0);
 
@@ -85,7 +56,7 @@ bool DuctLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    return false;
 }
 
-bool DuctLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
+bool DuctLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 {
    if(pLoad->BeginUnit(_T("DuctEntry")))
    {
@@ -143,46 +114,46 @@ bool DuctLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
 bool DuctLibraryEntry::IsEqual(const DuctLibraryEntry& rOther,bool bConsiderName) const
 {
-   std::vector<pgsLibraryEntryDifferenceItem*> vDifferences;
+   std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>> vDifferences;
    bool bMustRename;
    return Compare(rOther,vDifferences,bMustRename,true,bConsiderName);
 }
 
-bool DuctLibraryEntry::Compare(const DuctLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
+bool DuctLibraryEntry::Compare(const DuctLibraryEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    bMustRename = false;
 
    if ( !::IsEqual(m_OD,rOther.m_OD) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceLengthItem(_T("OD"),m_OD,rOther.m_OD,pDisplayUnits->ComponentDim));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceLengthItem>(_T("OD"),m_OD,rOther.m_OD,pDisplayUnits->ComponentDim));
    }
 
    if (!::IsEqual(m_ID, rOther.m_ID))
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceLengthItem(_T("ID"), m_ID, rOther.m_ID, pDisplayUnits->ComponentDim));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceLengthItem>(_T("ID"), m_ID, rOther.m_ID, pDisplayUnits->ComponentDim));
    }
 
    if (!::IsEqual(m_ND, rOther.m_ND))
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceLengthItem(_T("Nominal Diameter"), m_ND, rOther.m_ND, pDisplayUnits->ComponentDim));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceLengthItem>(_T("Nominal Diameter"), m_ND, rOther.m_ND, pDisplayUnits->ComponentDim));
    }
 
    if ( !::IsEqual(m_Z,rOther.m_Z) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceLengthItem(_T("Z"),m_Z,rOther.m_Z,pDisplayUnits->ComponentDim));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceLengthItem>(_T("Z"),m_Z,rOther.m_Z,pDisplayUnits->ComponentDim));
    }
 
    if (considerName &&  GetName() != rOther.GetName() )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
    }
 
    return vDifferences.size() == 0 ? true : false;
@@ -253,18 +224,4 @@ bool DuctLibraryEntry::Edit(bool allowEditing,int nPage)
    }
 
    return false;
-}
-
-void DuctLibraryEntry::MakeCopy(const DuctLibraryEntry& rOther)
-{
-   m_OD = rOther.m_OD;
-   m_ID = rOther.m_ID;
-   m_ND = rOther.m_ND;
-   m_Z  = rOther.m_Z;
-}
-
-void DuctLibraryEntry::MakeAssignment(const DuctLibraryEntry& rOther)
-{
-   libLibraryEntry::MakeAssignment( rOther );
-   MakeCopy( rOther );
 }

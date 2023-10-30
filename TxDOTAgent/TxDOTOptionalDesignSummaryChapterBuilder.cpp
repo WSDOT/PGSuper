@@ -45,6 +45,8 @@
 
 #include <psgLib\ConnectionLibraryEntry.h>
 
+#include <psgLib/PrestressedElementCriteria.h>
+
 #include <WBFLCogo.h>
 
 #ifdef _DEBUG
@@ -85,9 +87,9 @@ LPCTSTR CTxDOTOptionalDesignSummaryChapterBuilder::GetName() const
    return TEXT("Optional Design Summary");
 }
 
-rptChapter* CTxDOTOptionalDesignSummaryChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CTxDOTOptionalDesignSummaryChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CBrokerReportSpecification* pBrokerRptSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
+   auto pBrokerRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pBrokerRptSpec->GetBroker(&pBroker);
    
@@ -126,9 +128,9 @@ rptChapter* CTxDOTOptionalDesignSummaryChapterBuilder::Build(CReportSpecificatio
    return pChapter;
 }
 
-CChapterBuilder* CTxDOTOptionalDesignSummaryChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTxDOTOptionalDesignSummaryChapterBuilder::Clone() const
 {
-   return new CTxDOTOptionalDesignSummaryChapterBuilder;
+   return std::make_unique<CTxDOTOptionalDesignSummaryChapterBuilder>();
 }
 
 //======================== ACCESS     =======================================
@@ -285,8 +287,8 @@ static void design_data(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOption
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-
-   Float64 allow_stf = pSpecEntry->GetAtReleaseCompressionStressFactor();
+   const auto& prestressed_element_criteria = pSpecEntry->GetPrestressedElementCriteria();
+   Float64 allow_stf = prestressed_element_criteria.CompressionStressCoefficient_BeforeLosses;
    (*p_table)(row,0) << _T("Allowable Compressive Stress Factor at Release");
    (*p_table)(row++,1) << allow_stf << RPT_FCI;
 
@@ -324,12 +326,12 @@ void girder_design(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDes
    (*p_table)(row,0) << RPT_FC;
    (*p_table)(row++,1) << stress.SetValue( pGirderData->GetFc() );
 
-   const matPsStrand* pstrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Straight);
+   const auto* pstrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Straight);
 
    (*p_table)(row,0) << _T("Prestressing Strands");
    (*p_table)(row++,1) << get_strand_size(pstrand->GetSize()) <<_T(", ")
-                       <<(pstrand->GetGrade() == matPsStrand::Gr1725 ? _T("Grade 250, ") : _T("Grade 270, "))
-                       <<(pstrand->GetType() == matPsStrand::LowRelaxation ? _T("Low Relaxation") : _T("Stress Relieved"));
+                       <<(pstrand->GetGrade() == WBFL::Materials::PsStrand::Grade::Gr1725 ? _T("Grade 250, ") : _T("Grade 270, "))
+                       <<(pstrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? _T("Low Relaxation") : _T("Stress Relieved"));
 
    (*p_table)(row,0) << _T("No. Strands");
 
@@ -433,7 +435,7 @@ static void original_results_summary(rptChapter* pChapter,IBroker* pBroker,const
    INIT_UV_PROTOTYPE( rptMomentUnitValue,   moment,      pDisplayUnits->GetMomentUnit(), false );
 
    rptRcScalar Stress_Scalar;
-   Stress_Scalar.SetFormat(sysNumericFormatTool::Fixed);
+   Stress_Scalar.SetFormat(WBFL::System::NumericFormatTool::Format::Fixed);
    Stress_Scalar.SetPrecision(2);
 
    GET_IFACE2(pBroker,IGetTogaResults,pGetTogaResults);
@@ -500,7 +502,7 @@ static void optional_results_summary(rptChapter* pChapter,IBroker* pBroker,const
    INIT_UV_PROTOTYPE( rptLengthUnitValue,   length, pDisplayUnits->GetSpanLengthUnit(), false );
 
    rptRcScalar Stress_Scalar;
-   Stress_Scalar.SetFormat(sysNumericFormatTool::Fixed);
+   Stress_Scalar.SetFormat(WBFL::System::NumericFormatTool::Format::Fixed);
    Stress_Scalar.SetPrecision(2);
 
    GET_IFACE2(pBroker,IGetTogaResults,pGetTogaResults);
@@ -590,7 +592,7 @@ static void camber_summary(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOpt
 
    (*p_table)(row,3) << length.SetValue(camber_diff);
 
-   if(IsZero(camber_diff, ::ConvertToSysUnits( 0.5,unitMeasure::Inch)))
+   if(IsZero(camber_diff, WBFL::Units::ConvertToSysUnits( 0.5,WBFL::Units::Measure::Inch)))
       (*p_table)(row,4) << color(Green) << _T("Ok") << color(Black);
    else
       (*p_table)(row,4) << color(Red) << _T("Design Deficiency") << color(Black);

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <GraphicsLib\PointMapper.h>
+#include <Graphing/PointMapper.h>
 #include <PgsExt\PrecastSegmentData.h>
 #include <PgsExt\Keys.h>
 
@@ -31,8 +31,8 @@ protected:
    IPrecastSegmentDataSource* m_pSource;
 
    void CreateSegmentShape(const CSegmentKey& segmentKey,IShape** ppShape,IPoint2dCollection** ppPoints);
-   void DrawShape(CDC* pDC,grlibPointMapper& mapper,IShape* pShape);
-   void DrawBottomFlange(CDC* pDC,grlibPointMapper& mapper,IPoint2dCollection* pPoints);
+   void DrawShape(CDC* pDC, WBFL::Graphing::PointMapper& mapper,IShape* pShape);
+   void DrawBottomFlange(CDC* pDC, WBFL::Graphing::PointMapper& mapper,IPoint2dCollection* pPoints);
 public:
    afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 };

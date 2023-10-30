@@ -31,6 +31,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
+#include <IFace\ReportOptions.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -79,13 +80,13 @@ rptRcTable* CUserShearTable::Build(IBroker* pBroker,const CGirderKey& girderKey,
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDisplayUnits->GetShearUnit(), false );
 
-   GET_IFACE2(pBroker, IDocumentType, pDocType);
-   location.IncludeSpanAndGirder(pDocType->IsPGSpliceDocument() || girderKey.groupIndex == ALL_GROUPS);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    CString strTitle;
-   strTitle.Format(_T("Shears due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
-   rptRcTable* p_table = CreateUserLoadHeading<rptForceUnitTag,unitmgtForceData>(strTitle.GetBuffer(),false,analysisType,intervalIdx,pDisplayUnits,pDisplayUnits->GetShearUnit());
+   strTitle.Format(_T("Shears due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx).c_str());
+   rptRcTable* p_table = CreateUserLoadHeading<rptForceUnitTag,WBFL::Units::ForceData>(strTitle.GetBuffer(),false,analysisType,intervalIdx,pDisplayUnits,pDisplayUnits->GetShearUnit());
 
    if ( girderKey.groupIndex == ALL_GROUPS )
    {
@@ -111,9 +112,9 @@ rptRcTable* CUserShearTable::Build(IBroker* pBroker,const CGirderKey& girderKey,
       PoiList vPoi;
       pIPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey, ALL_SEGMENTS), POI_ERECTED_SEGMENT, &vPoi);
 
-      std::vector<sysSectionValue> minDC, maxDC;
-      std::vector<sysSectionValue> minDW, maxDW;
-      std::vector<sysSectionValue> minLLIM, maxLLIM;
+      std::vector<WBFL::System::SectionValue> minDC, maxDC;
+      std::vector<WBFL::System::SectionValue> minDW, maxDW;
+      std::vector<WBFL::System::SectionValue> minLLIM, maxLLIM;
 
 
       maxDC = pForces2->GetShear( intervalIdx, pgsTypes::pftUserDC, vPoi, maxBAT, rtIncremental );
@@ -185,27 +186,3 @@ void CUserShearTable::MakeAssignment(const CUserShearTable& rOther)
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CUserShearTable::AssertValid() const
-{
-   return true;
-}
-
-void CUserShearTable::Dump(dbgDumpContext& os) const
-{
-   os << _T("Dump for CUserShearTable") << endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CUserShearTable::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("CUserShearTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CUserShearTable");
-
-   TESTME_EPILOG("CUserShearTable");
-}
-#endif // _UNITTEST

@@ -69,9 +69,9 @@ LPCTSTR CBearingDesignParametersChapterBuilder::GetName() const
    return TEXT("Bearing Design Parameters");
 }
 
-rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CBearingDesignParametersChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
    const CGirderKey& girderKey( pGirderRptSpec->GetGirderKey() );
@@ -135,9 +135,10 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    *p << rptNewLine;
 
    std::vector<std::_tstring> strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltDesign,girderKey);
-   std::vector<std::_tstring>::iterator iter;
-   long j = 0;
-   for (iter = strLLNames.begin(); iter != strLLNames.end(); iter++, j++ )
+   IndexType j = 0;
+   auto iter = strLLNames.begin();
+   auto end = strLLNames.end();
+   for (; iter != end; iter++, j++ )
    {
       *p << _T("(D") << j << _T(") ") << *iter << rptNewLine;
    }
@@ -152,7 +153,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
       }
    }
 
-   if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltFatigue,girderKey);
       j = 0;
@@ -205,7 +206,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
       }
    }
 
-   if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltFatigue,girderKey);
       j = 0;
@@ -448,7 +449,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
          poi = pPoi->GetPierPointOfInterest(girderKey,pierIdx);
       }
 
-      Float64 slope2 = pCamber->GetExcessCamberRotation(poi,CREEP_MAXTIME);
+      Float64 slope2 = pCamber->GetExcessCamberRotation(poi,pgsTypes::CreepTime::Max);
       (*pTable)(row,col++) << scalar.SetValue(slope2);
 
       const CBearingData2* pbd = pIBridgeDesc->GetBearingData(pierIdx, pierFace, girderKey.girderIndex);
@@ -504,7 +505,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(CReportSpecification* 
    return pChapter;
 }
 
-CChapterBuilder* CBearingDesignParametersChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder>CBearingDesignParametersChapterBuilder::Clone() const
 {
-   return new CBearingDesignParametersChapterBuilder;
+   return std::make_unique<CBearingDesignParametersChapterBuilder>();
 }

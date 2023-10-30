@@ -30,7 +30,7 @@
 #include "ACIParametersDlg.h"
 #include "..\Documentation\PGSuper.hh"
 
-#include <Material\ACI209Concrete.h>
+#include <Materials/ACI209Concrete.h>
 #include <EAF\EAFApp.h>
 #include <EAF\EAFDocument.h>
 
@@ -61,7 +61,7 @@ void CACIConcretePage::DoDataExchange(CDataExchange* pDX)
 	CPropertyPage::DoDataExchange(pDX);
 
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    DDX_Check_Bool(pDX,IDC_USER,m_bUseACIParameters);
    DDX_CBItemData(pDX,IDC_CURE_METHOD,m_CureMethod);
@@ -189,8 +189,8 @@ void CACIConcretePage::UpdateParameters()
 {
    UpdateData(TRUE);
 
-   matACI209Concrete::GetModelParameters((matACI209Concrete::CureMethod)m_CureMethod,
-                                         (matACI209Concrete::CementType)m_CementType,
+   WBFL::Materials::ACI209Concrete::GetModelParameters((WBFL::Materials::CuringType)m_CureMethod,
+                                         (WBFL::Materials::CementType)m_CementType,
                                          &m_A,&m_B);
 
    UpdateData(FALSE);

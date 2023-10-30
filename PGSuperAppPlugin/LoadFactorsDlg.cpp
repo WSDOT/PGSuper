@@ -26,7 +26,7 @@
 #include "stdafx.h"
 #include "PGSuperAppPlugin.h"
 #include "LoadFactorsDlg.h"
-#include <Lrfd\VersionMgr.h>
+#include <Lrfd/BDSManager.h>
 
 #include <IFace\Project.h>
 #include <EAF\EAFDocument.h>
@@ -187,7 +187,7 @@ BOOL CLoadFactorsDlg::OnInitDialog()
 
    // TODO:  Add extra initialization here
    int swServiceIA, swFatigueI;
-   if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       // Fatigue I introduced 4th edition 2009
       // Hide Service IA, Show Fatigue I
@@ -235,7 +235,7 @@ BOOL CLoadFactorsDlg::OnInitDialog()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
-   if ( pLossParams->GetLossMethod() != pgsTypes::TIME_STEP )
+   if ( pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       GetDlgItem(IDC_SERVICE_I_PLUS)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_SERVICE_I_CR)->ShowWindow(SW_HIDE);

@@ -20,7 +20,7 @@ public:
 
    const CParabolicDuctGeometry& GetDuctGeometry() const;
 
-   grlibPointMapper::MapMode GetTendonControlMapMode() const;
+   WBFL::Graphing::PointMapper::MapMode GetTendonControlMapMode() const;
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support

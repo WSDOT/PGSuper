@@ -40,15 +40,15 @@
 
 // String for interior girder override and macro to report it
 #define LLDF_INTOVERRIDE_STR _T("Note: Using distribution factor for interior girder. Project Criteria set so exterior girder factor cannot be less than interior.")
-#define REPORT_LLDF_INTOVERRIDE(p) if (p.ControllingMethod & INTERIOR_OVERRIDE) { (*pPara) << rptNewLine << LLDF_INTOVERRIDE_STR << rptNewLine; }
+#define REPORT_LLDF_INTOVERRIDE(p) if (p.ControllingMethod & WBFL::LRFD::INTERIOR_OVERRIDE) { (*pPara) << rptNewLine << LLDF_INTOVERRIDE_STR << rptNewLine; }
 
 
 class rptParagraph;
 class pgsPoiMgr;
 
-void BEAMSFUNC ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, lrfdILiveLoadDistributionFactor::LeverRuleMethod& lrd,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits);
-void BEAMSFUNC ReportRigidMethod(rptParagraph* pPara,lrfdILiveLoadDistributionFactor::RigidMethod& rd,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits);
-void BEAMSFUNC ReportLanesBeamsMethod(rptParagraph* pPara,lrfdILiveLoadDistributionFactor::LanesBeamsMethod& rd,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits);
+void BEAMSFUNC ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, WBFL::LRFD::ILiveLoadDistributionFactor::LeverRuleMethod& lrd,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits);
+void BEAMSFUNC ReportRigidMethod(rptParagraph* pPara,WBFL::LRFD::ILiveLoadDistributionFactor::RigidMethod& rd,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits);
+void BEAMSFUNC ReportLanesBeamsMethod(rptParagraph* pPara,WBFL::LRFD::ILiveLoadDistributionFactor::LanesBeamsMethod& rd,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits);
 
 IndexType BEAMSFUNC GetBeamTypeCount();
 CLSID BEAMSFUNC GetBeamCLSID(IndexType idx);

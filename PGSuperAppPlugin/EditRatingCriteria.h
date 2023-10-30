@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <System\Transaction.h>
+#include <EAF\EAFTransaction.h>
 #include <PgsExt\TimelineManager.h>
 
 class txnGeneralRatingData
@@ -201,7 +201,7 @@ struct txnRatingCriteriaData
    }
 };
 
-class txnEditRatingCriteria : public txnTransaction
+class txnEditRatingCriteria : public CEAFTransaction
 {
 public:
    txnEditRatingCriteria(const txnRatingCriteriaData& oldData,const txnRatingCriteriaData& oldNewData);
@@ -210,10 +210,10 @@ public:
 
    virtual bool Execute();
    virtual void Undo();
-   virtual txnTransaction* CreateClone() const;
+   virtual std::unique_ptr<CEAFTransaction>CreateClone() const;
    virtual std::_tstring Name() const;
-   virtual bool IsUndoable();
-   virtual bool IsRepeatable();
+   virtual bool IsUndoable() const;
+   virtual bool IsRepeatable() const;
 
 private:
    void Execute(int i);

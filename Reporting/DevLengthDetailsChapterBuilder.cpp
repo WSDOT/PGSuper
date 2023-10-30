@@ -42,8 +42,8 @@ static char THIS_FILE[] = __FILE__;
 // Some utility functions
 rptRcTable* CreateDevelopmentTable(IEAFDisplayUnits* pDisplayUnits)
 {
-   bool is_2015 = lrfdVersionMgr::SeventhEditionWith2015Interims == lrfdVersionMgr::GetVersion();
-   bool is_2016 = lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion();
+   bool is_2015 = WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2015Interims == WBFL::LRFD::BDSManager::GetEdition();
+   bool is_2016 = WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition();
 
    ColumnIndexType nColumns = 8;
    if ( is_2015 || is_2016 )
@@ -76,11 +76,11 @@ rptRcTable* CreateDevelopmentTable(IEAFDisplayUnits* pDisplayUnits)
    return pTable;
 }
 
-void WriteRowToDevelopmentTable(rptRcTable* pTable, RowIndexType row, CComBSTR barname, const REBARDEVLENGTHDETAILS& devDetails,
+void WriteRowToDevelopmentTable(rptRcTable* pTable, RowIndexType row, CComBSTR barname, const WBFL::LRFD::REBARDEVLENGTHDETAILS& devDetails,
                                        rptAreaUnitValue& area, rptLengthUnitValue& length, rptStressUnitValue& stress, rptRcScalar& scalar)
 {
-   bool is_2015 = lrfdVersionMgr::SeventhEditionWith2015Interims == lrfdVersionMgr::GetVersion();
-   bool is_2016 = lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion();
+   bool is_2015 = WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2015Interims == WBFL::LRFD::BDSManager::GetEdition();
+   bool is_2016 = WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition();
 
    ColumnIndexType col=0;
    (*pTable)(row,col++) << barname;
@@ -120,10 +120,10 @@ LPCTSTR CDevLengthDetailsChapterBuilder::GetName() const
    return TEXT("Transfer and Development Length Details");
 }
 
-rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CDevLengthDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-   CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
+   auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
+   auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
    CComPtr<IBroker> pBroker;
    CGirderKey girderKey;
@@ -147,7 +147,7 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
    INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
 
    rptRcScalar scalar;
-   scalar.SetFormat(sysNumericFormatTool::Fixed);
+   scalar.SetFormat(WBFL::System::NumericFormatTool::Format::Fixed);
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
    scalar.SetTolerance(1.0e-6);
@@ -176,7 +176,18 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
          }
 
          CSegmentKey segmentKey(thisGirderKey, segIdx);
-         pPSForce->ReportTransferLengthDetails(segmentKey, pChapter);
+
+         if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
+         {
+            // UHPC has a two level transfer length model
+            // In the future regular LRFD may have this as well
+            pPSForce->ReportTransferLengthDetails(segmentKey, pgsTypes::TransferLengthType::Minimum, pChapter);
+            pPSForce->ReportTransferLengthDetails(segmentKey, pgsTypes::TransferLengthType::Maximum, pChapter);
+         }
+         else
+         {
+            pPSForce->ReportTransferLengthDetails(segmentKey, pgsTypes::TransferLengthType::Maximum, pChapter);
+         }
          pPSForce->ReportDevelopmentLengthDetails(segmentKey, pChapter);
 
 
@@ -190,10 +201,14 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
          pParagraph = new rptParagraph;
          *pChapter << pParagraph;
 
-         (*pParagraph) << _T("AASHTO LRFD BDS ") << LrfdCw8th(_T("5.11.2.1"), _T("5.10.8.2.1"));
+         (*pParagraph) << _T("AASHTO LRFD BDS ") << WBFL::LRFD::LrfdCw8th(_T("5.11.2.1"), _T("5.10.8.2.1"));
          if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC)
          {
             (*pParagraph) << _T(" and PCI UHPC SDG E.10.3.1");
+         }
+         else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
+         {
+            (*pParagraph) << _T(" and GS 1.10.8.2.1");
          }
          (*pParagraph) << rptNewLine;
 
@@ -201,7 +216,7 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
 
          CComPtr<IRebarLayout> rebarLayout;
          pLongRebarGeometry->GetRebarLayout(segmentKey, &rebarLayout);
-         CollectionIndexType nRebars;
+         IndexType nRebars;
          rebarLayout->get_Count(&nRebars);
          if (nRebars == 0)
          {
@@ -213,13 +228,17 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
             {
                (*pParagraph) << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalRebarDevelopment_PCIUHPC.png")) << rptNewLine;
             }
+            else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
+            {
+               (*pParagraph) << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalRebarDevelopment_UHPC.png")) << rptNewLine;
+            }
             else
             {
-               if (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion())
+               if (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition())
                {
                   (*pParagraph) << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalRebarDevelopment_2016.png")) << rptNewLine;
                }
-               else if (lrfdVersionMgr::SeventhEditionWith2015Interims == lrfdVersionMgr::GetVersion())
+               else if (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2015Interims == WBFL::LRFD::BDSManager::GetEdition())
                {
                   (*pParagraph) << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalRebarDevelopment_2015.png")) << rptNewLine;
                }
@@ -236,6 +255,12 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
                }
             }
 
+            if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
+            {
+               (*pParagraph) << RPT_FC << _T(" shall not be taken as a value greater than 15.0 ksi for UHPC (GS 1.10.8.2.1)") << rptNewLine;
+               (*pParagraph) << Sub2(symbol(lambda),_T("rl")) << _T(" is taken to be 1.0 for UHPC (GS 1.10.8.2.1)") << rptNewLine;
+            }
+
             rptRcTable* pTable = CreateDevelopmentTable(pDisplayUnits);
             (*pParagraph) << pTable << rptNewLine;
    
@@ -249,13 +274,13 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
             // Cycle over all rebar in section and output development details for each unique size
             RowIndexType row(1);
             std::set<Float64> diamSet;
-            for (CollectionIndexType rebarIdx = 0; rebarIdx < nRebars; rebarIdx++)
+            for (IndexType rebarIdx = 0; rebarIdx < nRebars; rebarIdx++)
             {
                CComPtr<IRebarLayoutItem> layoutItem;
                rebarLayout->get_Item(rebarIdx, &layoutItem);
-               CollectionIndexType nPatterns;
+               IndexType nPatterns;
                layoutItem->get_Count(&nPatterns);
-               for ( CollectionIndexType patternIdx = 0; patternIdx < nPatterns; patternIdx++ )
+               for ( IndexType patternIdx = 0; patternIdx < nPatterns; patternIdx++ )
                {
                   CComPtr<IRebarPattern> rebarPattern;
                   layoutItem->get_Item(patternIdx, &rebarPattern);
@@ -272,12 +297,12 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
                      rebar->get_Name(&barname);
 
                      // development length in fresh concrete
-                     REBARDEVLENGTHDETAILS devDetails = pLongRebarGeometry->GetSegmentRebarDevelopmentLengthDetails(segmentKey, rebar, concType, fci, hasFct, Fct);
+                     WBFL::LRFD::REBARDEVLENGTHDETAILS devDetails = pLongRebarGeometry->GetSegmentRebarDevelopmentLengthDetails(segmentKey, rebar, concType, fci, hasFct, Fct, false/*not top bar*/, false/*not epoxy coated*/, true/*meets cover requirements*/);
                      WriteRowToDevelopmentTable(pTable, row, barname, devDetails, area, length, stress, scalar);
                      row++;
 
                      // development length in mature concrete
-                     devDetails = pLongRebarGeometry->GetSegmentRebarDevelopmentLengthDetails(segmentKey, rebar, concType, fc, hasFct, Fct);
+                     devDetails = pLongRebarGeometry->GetSegmentRebarDevelopmentLengthDetails(segmentKey, rebar, concType, fc, hasFct, Fct, false/*not top bar*/, false/*not epoxy coated*/, true/*meets cover requirements*/);
                      WriteRowToDevelopmentTable(pTable, row, barname, devDetails, area, length, stress, scalar);
                      row++;
                   } // end if
@@ -301,11 +326,7 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
-   (*pParagraph) << _T("AASHTO LRFD BDS ") << LrfdCw8th(_T("5.11.2.1"), _T("5.10.8.2.1"));
-   if (pDeck->Concrete.Type == pgsTypes::PCI_UHPC)
-   {
-      (*pParagraph) << _T(" and PCI UHPC SDG E.10.3.1");
-   }
+   (*pParagraph) << _T("AASHTO LRFD BDS ") << WBFL::LRFD::LrfdCw8th(_T("5.11.2.1"), _T("5.10.8.2.1"));
    (*pParagraph) << rptNewLine;
 
    pParagraph = new rptParagraph;
@@ -342,10 +363,10 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
       {
          const CDeckRebarData::NegMomentRebarData& rdata = *iter;
 
-         matRebar::Size size = rdata.RebarSize;
-         if (size != matRebar::bsNone)
+         WBFL::Materials::Rebar::Size size = rdata.RebarSize;
+         if (size != WBFL::Materials::Rebar::Size::bsNone)
          {
-            const matRebar* pRebar = lrfdRebarPool::GetInstance()->GetRebar(rdata.RebarType, rdata.RebarGrade, size);
+            const auto* pRebar = WBFL::LRFD::RebarPool::GetInstance()->GetRebar(rdata.RebarType, rdata.RebarGrade, size);
 
             Float64 db = pRebar->GetNominalDimension();
 
@@ -373,7 +394,7 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
                // stage this rebar is introduced for purposes of computing development length. The
                // next line of code computes the development length on the lfy
 
-               REBARDEVLENGTHDETAILS devDetails = pLongRebarGeometry->GetDeckRebarDevelopmentLengthDetails(rebar, concType, fc, hasFct, Fct);
+               WBFL::LRFD::REBARDEVLENGTHDETAILS devDetails = pLongRebarGeometry->GetDeckRebarDevelopmentLengthDetails(rebar, concType, fc, hasFct, Fct,false,false,true);
 
                WriteRowToDevelopmentTable(pTable, row, barname, devDetails, area, length, stress, scalar);
                row++;
@@ -386,8 +407,8 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(CReportSpecification* pRptSpe
    return pChapter;
 }
 
-CChapterBuilder* CDevLengthDetailsChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CDevLengthDetailsChapterBuilder::Clone() const
 {
-   return new CDevLengthDetailsChapterBuilder;
+   return std::make_unique<CDevLengthDetailsChapterBuilder>();
 }
 

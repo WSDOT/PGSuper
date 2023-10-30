@@ -22,7 +22,7 @@
 
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\LongitudinalRebarData.h>
-#include <Units\SysUnits.h>
+#include <Units\Convert.h>
 #include <StdIo.h>
 #include <StrData.cpp>
 #include <atlbase.h>
@@ -46,8 +46,8 @@ CLASS
 
 //======================== LIFECYCLE  =======================================
 CLongitudinalRebarData::CLongitudinalRebarData() :
-BarType(matRebar::A615),
-BarGrade(matRebar::Grade60)
+BarType(WBFL::Materials::Rebar::Type::A615),
+BarGrade(WBFL::Materials::Rebar::Grade::Grade60)
 {
 }
 
@@ -117,10 +117,10 @@ HRESULT CLongitudinalRebarData::Load(IStructuredLoad* pStrLoad,IProgress* pProgr
       var.vt = VT_I4;
 
       pStrLoad->get_Property(_T("BarGrade"), &var );
-      BarGrade = matRebar::Grade(var.lVal);
+      BarGrade = WBFL::Materials::Rebar::Grade(var.lVal);
 
       pStrLoad->get_Property(_T("BarType"), &var );
-      BarType = matRebar::Type(var.lVal);
+      BarType = WBFL::Materials::Rebar::Type(var.lVal);
    }
 
 
@@ -172,15 +172,15 @@ HRESULT CLongitudinalRebarData::Load(IStructuredLoad* pStrLoad,IProgress* pProgr
          pStrLoad->get_Property(_T("BarSize"), &var);
          BarSizeType key = var.lVal;
 
-         matRebar::Grade grade;
-         matRebar::Type type;
-         lrfdRebarPool::MapOldRebarKey(key,grade,type,rebar_row.BarSize);
+         WBFL::Materials::Rebar::Grade grade;
+         WBFL::Materials::Rebar::Type type;
+         WBFL::LRFD::RebarPool::MapOldRebarKey(key,grade,type,rebar_row.BarSize);
       }
       else
       {
          var.vt = VT_I4;
          pStrLoad->get_Property(_T("BarSize"), &var );
-         rebar_row.BarSize = matRebar::Size(var.lVal);
+         rebar_row.BarSize = WBFL::Materials::Rebar::Size(var.lVal);
       }
 
       var.vt = VT_R8;
@@ -215,10 +215,10 @@ HRESULT CLongitudinalRebarData::Save(IStructuredSave* pStrSave,IProgress* pProgr
 
    pStrSave->BeginUnit(_T("LongitudinalRebar"),4.0);
 
-   pStrSave->put_Property(_T("BarGrade"),     CComVariant(BarGrade));
-   pStrSave->put_Property(_T("BarType"),      CComVariant(BarType));
+   pStrSave->put_Property(_T("BarGrade"),     CComVariant(+BarGrade));
+   pStrSave->put_Property(_T("BarType"),      CComVariant(+BarType));
 
-   CollectionIndexType count = RebarRows.size();
+   IndexType count = RebarRows.size();
    pStrSave->put_Property(_T("RebarRowCount"),CComVariant(count));
    std::vector<RebarRow>::iterator iter;
    for ( iter = RebarRows.begin(); iter != RebarRows.end(); iter++ )
@@ -233,7 +233,7 @@ HRESULT CLongitudinalRebarData::Save(IStructuredSave* pStrSave,IProgress* pProgr
       pStrSave->put_Property(_T("Face"),         CComVariant(rebar_row.Face));
       pStrSave->put_Property(_T("Cover"),        CComVariant(rebar_row.Cover));
       pStrSave->put_Property(_T("NumberOfBars"), CComVariant(rebar_row.NumberOfBars));
-      pStrSave->put_Property(_T("BarSize"),      CComVariant(rebar_row.BarSize));
+      pStrSave->put_Property(_T("BarSize"),      CComVariant(+rebar_row.BarSize));
       pStrSave->put_Property(_T("BarSpacing"),   CComVariant(rebar_row.BarSpacing));
 
       // added in version 4
@@ -355,7 +355,7 @@ bool CLongitudinalRebarData::RebarRow::GetRebarStartEnd(Float64 segmentLength, F
    *pBarStart = 0.0;
    *pBarEnd   = 0.0;
 
-   if ( matRebar::bsNone != BarSize && 0 < NumberOfBars )
+   if ( WBFL::Materials::Rebar::Size::bsNone != BarSize && 0 < NumberOfBars )
    {
       // Determine longitudinal start and end of rebar layout
       if(BarLayout == pgsTypes::blFullLength)

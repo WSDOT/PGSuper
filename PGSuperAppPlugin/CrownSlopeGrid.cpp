@@ -30,6 +30,7 @@
 #include "PGSuperDoc.h"
 
 #include <EAF\EAFDisplayUnits.h>
+#include <CoordGeom/Station.h>
 #include <algorithm>
 
 #ifdef _DEBUG
@@ -203,12 +204,6 @@ void CCrownSlopeGrid::InitRowData(ROWCOL row)
 
 void CCrownSlopeGrid::CustomInit()
 {
-   CCrownSlopePage* pParent = (CCrownSlopePage*)GetParent();
-
-   GET_IFACE2(pParent->GetBroker(), IEAFDisplayUnits, pDisplayUnits);
-   const unitmgtLengthData& alignment_unit = pDisplayUnits->GetAlignmentLengthUnit();
-   std::_tstring strUnitTag = alignment_unit.UnitOfMeasure.UnitTag();
-
    // Initialize the grid. For CWnd based grids this call is // 
    // essential. For view based grids this initialization is done 
    // in OnInitialUpdate.
@@ -400,7 +395,6 @@ void CCrownSlopeGrid::SetRowData(ROWCOL nRow, const RoadwaySectionTemplate& data
    UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
    Float64 station = data.Station;
-   station = ::ConvertFromSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
    ROWCOL col = 0;
    SetValueRange(CGXRange(nRow,col++),nRow-1); // row num
@@ -417,7 +411,7 @@ void CCrownSlopeGrid::SetRowData(ROWCOL nRow, const RoadwaySectionTemplate& data
 
    for (const auto& segment : data.SegmentDataVec)
    {
-      Float64 length = ::ConvertFromSysUnits(segment.Length, pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+      Float64 length = WBFL::Units::ConvertFromSysUnits(segment.Length, pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
       m_LengthCols.insert(col);
       SetValueRange(CGXRange(nRow,col++),length);
       m_SlopeCols.insert(col);
@@ -435,27 +429,22 @@ bool CCrownSlopeGrid::GetRowData(ROWCOL nRow,RoadwaySectionTemplate& data)
    data.SegmentDataVec.clear();
 
    CCrownSlopePage* pParent = (CCrownSlopePage*)GetParent();
+   GET_IFACE2(pParent->GetBroker(), IEAFDisplayUnits, pDisplayUnits);
 
-   GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
-   UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
-
-   CString strStation = GetCellValue(nRow,1);
-   CComPtr<IStation> station;
-   station.CoCreateInstance(CLSID_Station);
-   HRESULT hr = station->FromString(CComBSTR(strStation),unit_mode);
-   if (FAILED(hr))
+   try
+   {
+      std::_tstring strStation(GetCellValue(nRow, 1));
+      WBFL::COGO::Station station(strStation, pDisplayUnits->GetStationFormat());
+      data.Station = station.GetValue();
+   }
+   catch (...)
    {
       return false;
    }
 
-   Float64 station_value;
-   station->get_Value(&station_value);
-   station_value = ::ConvertToSysUnits(station_value,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
-   data.Station = station_value;
-
    CString strVal = GetCellValue(nRow,2);
    data.LeftSlope = 0.0;
-   if (!strVal.IsEmpty() && !sysTokenizer::ParseDouble(strVal, &data.LeftSlope))
+   if (!strVal.IsEmpty() && !WBFL::System::Tokenizer::ParseDouble(strVal, &data.LeftSlope))
 	{
       return false;
 	}
@@ -468,7 +457,7 @@ bool CCrownSlopeGrid::GetRowData(ROWCOL nRow,RoadwaySectionTemplate& data)
       RoadwaySegmentData seg;
       strVal = GetCellValue(nRow,col);
       Float64 length = 0.0;
-      if (!strVal.IsEmpty() && !sysTokenizer::ParseDouble(strVal, &length))
+      if (!strVal.IsEmpty() && !WBFL::System::Tokenizer::ParseDouble(strVal, &length))
 	   {
          return false;
 	   }
@@ -478,12 +467,12 @@ bool CCrownSlopeGrid::GetRowData(ROWCOL nRow,RoadwaySectionTemplate& data)
          return false;
       }
 
-      seg.Length = ::ConvertToSysUnits(length,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+      seg.Length = WBFL::Units::ConvertToSysUnits(length,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
       col++;
       strVal = GetCellValue(nRow,col);
       seg.Slope = 0.0;
-      if (!strVal.IsEmpty() && !sysTokenizer::ParseDouble(strVal, &seg.Slope))
+      if (!strVal.IsEmpty() && !WBFL::System::Tokenizer::ParseDouble(strVal, &seg.Slope))
 	   {
          return false;
 	   }
@@ -495,7 +484,7 @@ bool CCrownSlopeGrid::GetRowData(ROWCOL nRow,RoadwaySectionTemplate& data)
 
    strVal = GetCellValue(nRow,col);
    data.RightSlope = 0.0;
-   if (!strVal.IsEmpty() && !sysTokenizer::ParseDouble(strVal, &data.RightSlope))
+   if (!strVal.IsEmpty() && !WBFL::System::Tokenizer::ParseDouble(strVal, &data.RightSlope))
 	{
       return false;
 	}
@@ -595,17 +584,17 @@ BOOL CCrownSlopeGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
    CCrownSlopePage* pParent = (CCrownSlopePage*)GetParent();
 
    GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
-   UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
    Float64 bogus;
 
    if (nCol == 1)
    {
-      CString strStation = GetCellValue(nRow, 1);
-      CComPtr<IStation> station;
-      station.CoCreateInstance(CLSID_Station);
-      HRESULT hr = station->FromString(CComBSTR(strStation), unit_mode);
-      if (FAILED(hr))
+      try
+      {
+         std::_tstring strStation(GetCellValue(nRow, 1));
+         WBFL::COGO::Station station(strStation, pDisplayUnits->GetStationFormat());
+      }
+      catch(...)
       {
          CString msg;
          msg.Format(_T("Invalid station data for template %d"), nRow - 1);
@@ -616,7 +605,7 @@ BOOL CCrownSlopeGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
    else if (nCol == 2)
    {
       CString strVal = GetCellValue(nRow, 2);
-      if (!strVal.IsEmpty() && !sysTokenizer::ParseDouble(strVal, &bogus))
+      if (!strVal.IsEmpty() && !WBFL::System::Tokenizer::ParseDouble(strVal, &bogus))
       {
          CString msg;
          msg.Format(_T("Leftmost slope value not a number for template %d"), nRow - 1);
@@ -632,7 +621,7 @@ BOOL CCrownSlopeGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
       {
          // rightmost column
          CString strVal = GetCellValue(nRow, nCol);
-         if (!strVal.IsEmpty() && !sysTokenizer::ParseDouble(strVal, &bogus))
+         if (!strVal.IsEmpty() && !WBFL::System::Tokenizer::ParseDouble(strVal, &bogus))
          {
             CString msg;
             msg.Format(_T("Rightmost slope value not a number for template %d"), nRow - 1);
@@ -646,7 +635,7 @@ BOOL CCrownSlopeGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
          {
             CString strVal = GetCellValue(nRow, nCol);
             Float64 length;
-            if (!strVal.IsEmpty() && !sysTokenizer::ParseDouble(strVal, &length))
+            if (!strVal.IsEmpty() && !WBFL::System::Tokenizer::ParseDouble(strVal, &length))
             {
                CString msg;
                msg.Format(_T("Length value not a number for template %d"), nRow - 1);
@@ -665,7 +654,7 @@ BOOL CCrownSlopeGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
          else // even cols have slope
          {
             CString strVal = GetCellValue(nRow, nCol);
-            if (!strVal.IsEmpty() && !sysTokenizer::ParseDouble(strVal, &bogus))
+            if (!strVal.IsEmpty() && !WBFL::System::Tokenizer::ParseDouble(strVal, &bogus))
             {
                CString msg;
                msg.Format(_T("A slope value is not a number for template %d"), nRow - 1);

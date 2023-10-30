@@ -78,15 +78,19 @@ private:
    DECLARE_UV_PROTOTYPE(rptLength3UnitValue, l3);
    DECLARE_UV_PROTOTYPE(rptLength4UnitValue, l4);
 
-   bool m_bIsSpec2007orOlder;
+   bool m_bIsSpec2007orNewer;
    pgsTypes::ShearFlowMethod m_ShearFlowMethod;
+   bool m_bDeckPanels;
 
-   rptRcTable* CreateVuiTable(IBroker* pBroker, rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
+   rptRcTable* CreateVuiTable(IBroker* pBroker, rptChapter* pChapter,const CGirderKey& girderKey,IEAFDisplayUnits* pDisplayUnits);
    void FillVuiTable(rptRcTable* pTable, RowIndexType row, const pgsPointOfInterest& poi, const pgsHorizontalShearArtifact* pArtifact);
-   rptRcTable* CreateAvfTable(IEAFDisplayUnits* pDisplayUnits);
+   
+   rptRcTable* CreateAvfTable(IBroker* pBroker, rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits);
    void FillAvfTable(rptRcTable* pTable, RowIndexType row, const pgsPointOfInterest& poi, const pgsHorizontalShearArtifact* pArtifact);
-   rptRcTable* CreateVniTable(IBroker* pBroker, rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits, const std::vector<std::pair<SegmentIndexType, const pgsHorizontalShearArtifact*>>& vSegmentArtifacts, std::vector<std::pair<SegmentIndexType, const pgsHorizontalShearArtifact*>>& vClosureArtifacts);
-   void FillVniTable(rptRcTable* pTable, RowIndexType row, const pgsPointOfInterest& poi, const pgsHorizontalShearArtifact* pArtifact);
-   rptRcTable* CreateMinAvfTable(rptChapter* pChapter, IBridge* pBridge, IEAFDisplayUnits* pDisplayUnits, bool bIsRoughened, bool doAllStirrupsEngageDeck);
-   void FillMinAvfTable(rptRcTable* pTable, RowIndexType row, const pgsPointOfInterest& poi, const pgsHorizontalShearArtifact* pArtifact, Float64 llss, IEAFDisplayUnits* pDisplayUnits);
+   
+   rptRcTable* CreateVniTable(IBroker* pBroker, rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits, const CGirderKey& girderKey,bool bIsUHPC, const std::vector<std::pair<SegmentIndexType, const pgsHorizontalShearArtifact*>>& vSegmentArtifacts, std::vector<std::pair<SegmentIndexType, const pgsHorizontalShearArtifact*>>& vClosureArtifacts);
+   void FillVniTable(rptRcTable* pTable, RowIndexType row, const pgsPointOfInterest& poi, bool bIsUHPC, const pgsHorizontalShearArtifact* pArtifact);
+   
+   rptRcTable* CreateMinAvfTable(rptChapter* pChapter, IBridge* pBridge, IEAFDisplayUnits* pDisplayUnits, bool bIsRoughened, bool doAllStirrupsEngageDeck,bool bIsUHPC);
+   void FillMinAvfTable(rptRcTable* pTable, RowIndexType row, const pgsPointOfInterest& poi, const pgsHorizontalShearArtifact* pArtifact, Float64 llss, IEAFDisplayUnits* pDisplayUnits, bool bIsUHPC);
 };

@@ -1,12 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <ClCompile Include="ACI209CreepCoefficientChapterBuilder.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ACI209ShrinkageStrainChapterBuilder.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ADimChapterBuilder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -59,12 +53,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CastingYardStressTable.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CEBFIPCreepCoefficientChapterBuilder.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CEBFIPShrinkageStrainChapterBuilder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ColumnPropertiesTable.cpp">
@@ -245,15 +233,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="LossesChapterBuilder.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="LRFDCreepCoefficientChapterBuilder.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="LRFDTimeDependentCreepCoefficientChapterBuilder.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="LRFDTimeDependentShrinkageStrainChapterBuilder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MomentCapacityDetailsChapterBuilder.cpp">
@@ -592,14 +571,14 @@
     <ClCompile Include="PoiReportSpecification.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ReinforcementFatigueCheck.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LRFDCreepCoefficientChapterBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Include\Reporting\ACI209CreepCoefficientChapterBuilder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Reporting\ACI209ShrinkageStrainChapterBuilder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\Include\Reporting\ADimChapterBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -652,12 +631,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Reporting\CastingYardStressTable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Reporting\CEBFIPCreepCoefficientChapterBuilder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Reporting\CEBFIPShrinkageStrainChapterBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Reporting\ColumnPropertiesTable.h">
@@ -742,9 +715,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Reporting\FlexuralStressCheckTable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Reporting\GirderComparisonChapterBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Reporting\GirderDetailingCheck.h">
@@ -838,15 +808,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Reporting\LossesChapterBuilder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Reporting\LRFDCreepCoefficientChapterBuilder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Reporting\LRFDTimeDependentCreepCoefficientChapterBuilder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Include\Reporting\LRFDTimeDependentShrinkageStrainChapterBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Reporting\MomentCapacityDetailsChapterBuilder.h">
@@ -1195,6 +1156,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Reporting\CrackedSectionDetailsChapterBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\GirderGeometryChapterBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\ReinforcementFatigueCheck.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\LRFDCreepCoefficientChapterBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

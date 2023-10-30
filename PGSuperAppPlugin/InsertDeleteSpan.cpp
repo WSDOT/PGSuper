@@ -48,17 +48,17 @@ std::_tstring txnInsertSpan::Name() const
    return _T("Insert Span");
 }
 
-txnTransaction* txnInsertSpan::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnInsertSpan::CreateClone() const
 {
-   return new txnInsertSpan(m_RefPierIdx, m_PierFace,m_SpanLength,m_bCreateNewGroup,m_PierErectionEventIndex);
+   return std::make_unique<txnInsertSpan>(m_RefPierIdx, m_PierFace,m_SpanLength,m_bCreateNewGroup,m_PierErectionEventIndex);
 }
 
-bool txnInsertSpan::IsUndoable()
+bool txnInsertSpan::IsUndoable() const
 {
    return true;
 }
 
-bool txnInsertSpan::IsRepeatable()
+bool txnInsertSpan::IsRepeatable() const
 {
    return false;
 }
@@ -160,17 +160,17 @@ std::_tstring txnDeleteSpan::Name() const
    return _T("Delete Span");
 }
 
-txnTransaction* txnDeleteSpan::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnDeleteSpan::CreateClone() const
 {
-   return new txnDeleteSpan(*this);
+   return std::make_unique<txnDeleteSpan>(*this);
 }
 
-bool txnDeleteSpan::IsUndoable()
+bool txnDeleteSpan::IsUndoable() const
 {
    return true;
 }
 
-bool txnDeleteSpan::IsRepeatable()
+bool txnDeleteSpan::IsRepeatable() const
 {
    return false;
 }

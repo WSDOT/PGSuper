@@ -185,7 +185,7 @@ void pgsDebondArtifact::GetDebondSection(SectionIndexType idx,Float64* location,
    *fraStrandsDebonded = section.fraDebonded;
 }
 
-CollectionIndexType pgsDebondArtifact::GetNumDebondSections() const
+IndexType pgsDebondArtifact::GetNumDebondSections() const
 {
    return m_Sections.size();
 }
@@ -378,7 +378,7 @@ bool pgsDebondArtifact::Passed() const
       return true;
    }
 
-   CollectionIndexType nSections = m_Sections.size();
+   IndexType nSections = m_Sections.size();
    if (nSections == 0)
    {
       return true;
@@ -386,8 +386,8 @@ bool pgsDebondArtifact::Passed() const
 
    // if any one element of the check fails, return false and be done with checking
 
-   CollectionIndexType nRows = m_nStrandsInRow.size();
-   for ( CollectionIndexType row = 0; row < nRows; row++ )
+   IndexType nRows = m_nStrandsInRow.size();
+   for ( IndexType row = 0; row < nRows; row++ )
    {
       if (!RowPassed(row))
       {
@@ -395,7 +395,7 @@ bool pgsDebondArtifact::Passed() const
       }
    }
 
-   for ( CollectionIndexType section = 0; section < nSections; section++ )
+   for ( IndexType section = 0; section < nSections; section++ )
    {
       if (!SectionPassed(section))
       {
@@ -411,7 +411,7 @@ bool pgsDebondArtifact::Passed() const
    return true;
 }
 
-bool pgsDebondArtifact::RowPassed(CollectionIndexType rowIndex) const
+bool pgsDebondArtifact::RowPassed(IndexType rowIndex) const
 {
    bool bPassed = true;
 
@@ -437,7 +437,7 @@ bool pgsDebondArtifact::RowPassed(CollectionIndexType rowIndex) const
    return bPassed;
 }
 
-bool pgsDebondArtifact::SectionPassed(CollectionIndexType sectionIndex) const
+bool pgsDebondArtifact::SectionPassed(IndexType sectionIndex) const
 {
    StrandIndexType nMaxStrands2 = (StrandIndexType)floor(m_fraMaxDebondedAtSection * m_nDebondedStrands); // allow int to floor
    StrandIndexType nMaxStrands  = m_bCheckMaxFraDebondedStrandsPerSection ? Max(m_nMaxDebondedAtSection,nMaxStrands2) : m_nMaxDebondedAtSection;

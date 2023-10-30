@@ -47,9 +47,9 @@
 
 #include <memory>
 
-#include <Math\Polynomial2d.h>
-#include <Math\CompositeFunction2d.h>
-#include <Math\LinFunc2d.h>
+#include <Math\PolynomialFunction.h>
+#include <Math\CompositeFunction.h>
+#include <Math\LinearFunction.h>
 
 #include "StatusItems.h"
 #include "ConcreteManager.h"
@@ -60,7 +60,14 @@
 #endif
 
 class gmTrafficBarrier;
-class matPsStrand;
+
+namespace WBFL
+{
+   namespace Materials
+   {
+      class PsStrand;
+   };
+};
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeAgentImp
@@ -185,12 +192,12 @@ public:
    virtual void GetBearingNormal(Float64 station,IDirection** ppNormal) const override;
    virtual void GetPoint(Float64 station,Float64 offset,IDirection* pBearing,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppPoint) const override;
    virtual void GetStationAndOffset(pgsTypes::PlanCoordinateType pcType,IPoint2d* point,Float64* pStation,Float64* pOffset) const override;
-   virtual CollectionIndexType GetCurveCount() const override;
-   virtual void GetCurve(CollectionIndexType idx, pgsTypes::PlanCoordinateType pcType,ICompoundCurve** ppCurve) const override;
+   virtual IndexType GetCurveCount() const override;
+   virtual void GetCurve(IndexType idx, pgsTypes::PlanCoordinateType pcType,ICompoundCurve** ppCurve) const override;
    virtual HCURVESTATIONS GetCurveStations(IndexType hcIdx) const override;
-   virtual CollectionIndexType GetVertCurveCount() const override;
-   virtual void GetVertCurve(CollectionIndexType idx,IVertCurve** ppCurve) const override;
-   virtual void GetRoadwaySurface(Float64 station,IDirection* pDirection,IPoint2dCollection** ppPoints) const override;
+   virtual IndexType GetVertCurveCount() const override;
+   virtual void GetVertCurve(IndexType idx,IVerticalCurve** ppCurve) const override;
+   virtual void GetRoadwaySurface(Float64 station,IAngle* pSkewAngle, IPoint2dCollection** ppPoints) const override;
    virtual IndexType GetCrownPointIndexCount(Float64 station) const override;
    virtual IndexType GetAlignmentPointIndex(Float64 station) const override;
    virtual Float64 GetAlignmentOffset(IndexType crownPointIdx, Float64 station) const override;
@@ -219,12 +226,11 @@ public:
    virtual HRESULT LineSegmentCircle(ILineSegment2d* pSeg,Float64 offset,IPoint2d* center,Float64 radius,IPoint2d* nearest, IPoint2d** point) const override;
    virtual HRESULT PointOnLineByPoints(IPoint2d* pnt,IPoint2d* start,IPoint2d* end,Float64 offset,IPoint2d** point) const override;
    virtual HRESULT PointOnLineSegment(IPoint2d* from,ILineSegment2d* seg,Float64 offset,IPoint2d** point) const override;
-   virtual HRESULT PointOnCurve(IPoint2d* pnt,ICompoundCurve* curve,IPoint2d** point) const override;
-   virtual HRESULT Arc(IPoint2d* from, IPoint2d* vertex, IPoint2d* to,CollectionIndexType nParts,IPoint2dCollection** points) const override;
-   virtual HRESULT BetweenPoints(IPoint2d* from, IPoint2d* to,CollectionIndexType nParts,IPoint2dCollection** points) const override;
-   virtual HRESULT LineSegment(ILineSegment2d* seg,CollectionIndexType nParts,IPoint2dCollection** points) const override;
-	virtual HRESULT CompoundCurve(ICompoundCurve* curve, CollectionIndexType nParts, IPoint2dCollection** points) const override;
-   virtual HRESULT Path(IPath* pPath,CollectionIndexType nParts,Float64 start,Float64 end,IPoint2dCollection** points) const override;
+   virtual HRESULT Arc(IPoint2d* from, IPoint2d* vertex, IPoint2d* to,IndexType nParts,IPoint2dCollection** points) const override;
+   virtual HRESULT BetweenPoints(IPoint2d* from, IPoint2d* to,IndexType nParts,IPoint2dCollection** points) const override;
+   virtual HRESULT LineSegment(ILineSegment2d* seg,IndexType nParts,IPoint2dCollection** points) const override;
+	virtual HRESULT CompoundCurve(ICompoundCurve* curve, IndexType nParts, IPoint2dCollection** points) const override;
+   virtual HRESULT Path(IPath* pPath,IndexType nParts,Float64 start,Float64 end,IPoint2dCollection** points) const override;
    virtual HRESULT External(IPoint2d* center1, Float64 radius1,IPoint2d* center2,Float64 radius2,TangentSignType sign, IPoint2d** t1,IPoint2d** t2) const override;
    virtual HRESULT Cross(IPoint2d* center1, Float64 radius1,IPoint2d* center2, Float64 radius2, TangentSignType sign, IPoint2d** t1,IPoint2d** t2) const override;
    virtual HRESULT Point(IPoint2d* center, Float64 radius,IPoint2d* point, TangentSignType sign, IPoint2d** tangent) const override;
@@ -335,7 +341,7 @@ public:
    virtual bool HasOverlay() const override;
    virtual bool IsFutureOverlay() const override;
    virtual Float64 GetOverlayWeight() const override;
-   virtual Float64 GetOverlayDepth() const override;
+   virtual Float64 GetOverlayDepth(IntervalIndexType interval) const override;
    virtual Float64 GetSacrificalDepth() const override;
    virtual Float64 GetFillet() const override;
    virtual Float64 GetAssumedExcessCamber(SpanIndexType spanIdx,GirderIndexType gdr) const override;
@@ -343,6 +349,7 @@ public:
    virtual Float64 GetStructuralSlabDepth(const pgsPointOfInterest& poi) const override;
    virtual Float64 GetCastSlabDepth(const pgsPointOfInterest& poi) const override;
    virtual Float64 GetPanelDepth(const pgsPointOfInterest& poi) const override;
+   virtual pgsTypes::HaunchInputDepthType GetHaunchInputDepthType() const override;
    virtual Float64 GetLeftSlabEdgeOffset(Float64 Xb) const override;
    virtual Float64 GetRightSlabEdgeOffset(Float64 Xb) const override;
    virtual Float64 GetLeftSlabOverhang(Float64 Xb) const override;
@@ -369,10 +376,10 @@ public:
    virtual Float64 GetRightOverlayToeOffset(Float64 Xb) const override;
    virtual Float64 GetLeftOverlayToeOffset(const pgsPointOfInterest& poi) const override;
    virtual Float64 GetRightOverlayToeOffset(const pgsPointOfInterest& poi) const override;
-   virtual void GetSlabPerimeter(CollectionIndexType nPoints,pgsTypes::PlanCoordinateType pcType,IPoint2dCollection** points) const override;
-   virtual void GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType endSpanIdx,CollectionIndexType nPoints,pgsTypes::PlanCoordinateType pcType,IPoint2dCollection** points) const override;
-   virtual void GetSlabPerimeter(PierIndexType startPierIdx, Float64 Xstart, PierIndexType endPierIdx, Float64 Xend, CollectionIndexType nPoints, pgsTypes::PlanCoordinateType pcType, IPoint2dCollection** points) const override;
-   virtual void GetSpanPerimeter(SpanIndexType spanIdx,CollectionIndexType nPoints,pgsTypes::PlanCoordinateType pcType,IPoint2dCollection** points) const override;
+   virtual void GetSlabPerimeter(IndexType nPoints,pgsTypes::PlanCoordinateType pcType,IPoint2dCollection** points) const override;
+   virtual void GetSlabPerimeter(SpanIndexType startSpanIdx,SpanIndexType endSpanIdx,IndexType nPoints,pgsTypes::PlanCoordinateType pcType,IPoint2dCollection** points) const override;
+   virtual void GetSlabPerimeter(PierIndexType startPierIdx, Float64 Xstart, PierIndexType endPierIdx, Float64 Xend, IndexType nPoints, pgsTypes::PlanCoordinateType pcType, IPoint2dCollection** points) const override;
+   virtual void GetSpanPerimeter(SpanIndexType spanIdx,IndexType nPoints,pgsTypes::PlanCoordinateType pcType,IPoint2dCollection** points) const override;
    virtual void GetLeftSlabEdgePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint2d** point) const override;
    virtual void GetLeftSlabEdgePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint3d** point) const override;
    virtual void GetRightSlabEdgePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint2d** point) const override;
@@ -381,6 +388,7 @@ public:
    virtual void GetLeftCurbLinePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint3d** point) const override;
    virtual void GetRightCurbLinePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint2d** point) const override;
    virtual void GetRightCurbLinePoint(Float64 station, IDirection* direction,pgsTypes::PlanCoordinateType pcType,IPoint3d** point) const override;
+   virtual Float64 GetRoadwayToTopGirderChordDistance(const pgsPointOfInterest& poi) const override;
    virtual Float64 GetTopSlabToTopGirderChordDistance(const pgsPointOfInterest& poi) const override;
    virtual Float64 GetTopSlabToTopGirderChordDistance(const pgsPointOfInterest& poi, Float64 Astart, Float64 Aend) const override;
    virtual IndexType GetDeckCastingRegionCount() const override;
@@ -417,8 +425,8 @@ public:
    virtual void GetSegmentsAtTemporarySupport(GirderIndexType gdrIdx,SupportIndexType tsIdx,CSegmentKey* pLeftSegmentKey,CSegmentKey* pRightSegmentKey) const override;
    virtual void GetTemporarySupportDirection(SupportIndexType tsIdx,IDirection** ppDirection) const override;
    virtual bool HasTemporarySupportElevationAdjustments() const override;
-   virtual std::vector<BearingElevationDetails> GetBearingElevationDetails(PierIndexType pierIdx,pgsTypes::PierFaceType face) const override;
-   virtual std::vector<BearingElevationDetails> GetBearingElevationDetailsAtGirderEdges(PierIndexType pierIdx,pgsTypes::PierFaceType face) const override;
+   virtual std::vector<BearingElevationDetails> GetBearingElevationDetails(PierIndexType pierIdx,pgsTypes::PierFaceType face,GirderIndexType gdrIdx, bool bIgnoreUnrecoverableDeformations) const override;
+   virtual std::vector<BearingElevationDetails> GetBearingElevationDetailsAtGirderEdges(PierIndexType pierIdx,pgsTypes::PierFaceType face,GirderIndexType gdrIdx) const override;
    virtual void GetPierDisplaySettings(pgsTypes::DisplayEndSupportType* pStartPierType, pgsTypes::DisplayEndSupportType* pEndPierType, PierIndexType* pStartPierNumber) const override;
 
 // IMaterials
@@ -501,11 +509,11 @@ public:
    virtual Float64 GetTotalRailingSystemFreeShrinakgeStrain(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const override;
    virtual Float64 GetTotalLongitudinalJointFreeShrinkageStrain(IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType time) const override;
 
-   virtual std::shared_ptr<matConcreteBaseShrinkageDetails> GetTotalSegmentFreeShrinkageStrainDetails(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time) const override;
-   virtual std::shared_ptr<matConcreteBaseShrinkageDetails> GetTotalClosureJointFreeShrinkageStrainDetails(const CClosureKey& closureKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time) const override;
-   virtual std::shared_ptr<matConcreteBaseShrinkageDetails> GetTotalDeckFreeShrinkageStrainDetails(IndexType castingRegionIdx, IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time) const override;
-   virtual std::shared_ptr<matConcreteBaseShrinkageDetails> GetTotalRailingSystemFreeShrinakgeStrainDetails(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const override;
-   virtual std::shared_ptr<matConcreteBaseShrinkageDetails> GetTotalLongitudinalJointFreeShrinkageStrainDetails(IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType time) const override;
+   virtual std::unique_ptr<WBFL::Materials::ConcreteBaseShrinkageDetails> GetTotalSegmentFreeShrinkageStrainDetails(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time) const override;
+   virtual std::unique_ptr<WBFL::Materials::ConcreteBaseShrinkageDetails> GetTotalClosureJointFreeShrinkageStrainDetails(const CClosureKey& closureKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time) const override;
+   virtual std::unique_ptr<WBFL::Materials::ConcreteBaseShrinkageDetails> GetTotalDeckFreeShrinkageStrainDetails(IndexType castingRegionIdx, IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType time) const override;
+   virtual std::unique_ptr<WBFL::Materials::ConcreteBaseShrinkageDetails> GetTotalRailingSystemFreeShrinakgeStrainDetails(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const override;
+   virtual std::unique_ptr<WBFL::Materials::ConcreteBaseShrinkageDetails> GetTotalLongitudinalJointFreeShrinkageStrainDetails(IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType time) const override;
 
    virtual Float64 GetIncrementalSegmentFreeShrinkageStrain(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) const override;
    virtual Float64 GetIncrementalClosureJointFreeShrinkageStrain(const CClosureKey& closureKey,IntervalIndexType intervalIdx) const override;
@@ -529,11 +537,11 @@ public:
    virtual Float64 GetRailingSystemCreepCoefficient(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType) const override;
    virtual Float64 GetLongitudinalJointCreepCoefficient(IntervalIndexType loadingIntervalIdx, pgsTypes::IntervalTimeType loadingTimeType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType timeType) const override;
 
-   virtual std::shared_ptr<matConcreteBaseCreepDetails> GetSegmentCreepCoefficientDetails(const CSegmentKey& segmentKey,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const override;
-   virtual std::shared_ptr<matConcreteBaseCreepDetails> GetClosureJointCreepCoefficientDetails(const CClosureKey& closureKey,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const override;
-   virtual std::shared_ptr<matConcreteBaseCreepDetails> GetDeckCreepCoefficientDetails(IndexType castingRegionIdx, IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const override;
-   virtual std::shared_ptr<matConcreteBaseCreepDetails> GetRailingSystemCreepCoefficientDetails(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const override;
-   virtual std::shared_ptr<matConcreteBaseCreepDetails> GetLongitudinalJointCreepCoefficientDetails(IntervalIndexType loadingIntervalIdx, pgsTypes::IntervalTimeType loadingTimeType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType timeType) const override;
+   virtual std::unique_ptr<WBFL::Materials::ConcreteBaseCreepDetails> GetSegmentCreepCoefficientDetails(const CSegmentKey& segmentKey,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const override;
+   virtual std::unique_ptr<WBFL::Materials::ConcreteBaseCreepDetails> GetClosureJointCreepCoefficientDetails(const CClosureKey& closureKey,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const override;
+   virtual std::unique_ptr<WBFL::Materials::ConcreteBaseCreepDetails> GetDeckCreepCoefficientDetails(IndexType castingRegionIdx, IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const override;
+   virtual std::unique_ptr<WBFL::Materials::ConcreteBaseCreepDetails> GetRailingSystemCreepCoefficientDetails(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType loadingIntervalIdx,pgsTypes::IntervalTimeType loadingTimeType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const override;
+   virtual std::unique_ptr<WBFL::Materials::ConcreteBaseCreepDetails> GetLongitudinalJointCreepCoefficientDetails(IntervalIndexType loadingIntervalIdx, pgsTypes::IntervalTimeType loadingTimeType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType timeType) const override;
 
    virtual pgsTypes::ConcreteType GetSegmentConcreteType(const CSegmentKey& segmentKey) const override;
    virtual bool DoesSegmentConcreteHaveAggSplittingStrength(const CSegmentKey& segmentKey) const override;
@@ -547,8 +555,13 @@ public:
    virtual Float64 GetSegmentCreepK2(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetSegmentShrinkageK1(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetSegmentShrinkageK2(const CSegmentKey& segmentKey) const override;
-   virtual const matConcreteBase* GetSegmentConcrete(const CSegmentKey& segmentKey) const override;
+   virtual const std::unique_ptr<WBFL::Materials::ConcreteBase>& GetSegmentConcrete(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetSegmentConcreteFirstCrackingStrength(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentConcreteInitialEffectiveCrackingStrength(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentConcreteDesignEffectiveCrackingStrength(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentConcreteCrackLocalizationStrength(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentConcreteCrackLocalizationStrain(const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetSegmentConcreteFiberOrientationReductionFactor(const CSegmentKey& segmentKey) const override;
 
    virtual pgsTypes::ConcreteType GetClosureJointConcreteType(const CClosureKey& closureKey) const override;
    virtual bool DoesClosureJointConcreteHaveAggSplittingStrength(const CClosureKey& closureKey) const override;
@@ -562,14 +575,12 @@ public:
    virtual Float64 GetClosureJointCreepK2(const CClosureKey& closureKey) const override;
    virtual Float64 GetClosureJointShrinkageK1(const CClosureKey& closureKey) const override;
    virtual Float64 GetClosureJointShrinkageK2(const CClosureKey& closureKey) const override;
-   virtual const matConcreteBase* GetClosureJointConcrete(const CClosureKey& closureKey) const override;
-   virtual Float64 GetClosureJointConcreteFirstCrackingStrength(const CClosureKey& closureKey) const override;
+   virtual const std::unique_ptr<WBFL::Materials::ConcreteBase>& GetClosureJointConcrete(const CClosureKey& closureKey) const override;
 
    virtual pgsTypes::ConcreteType GetDeckConcreteType() const override;
    virtual bool DoesDeckConcreteHaveAggSplittingStrength() const override;
    virtual Float64 GetDeckConcreteAggSplittingStrength() const override;
    virtual Float64 GetDeckMaxAggrSize() const override;
-   virtual Float64 GetDeckConcreteFiberLength() const override;
    virtual Float64 GetDeckStrengthDensity() const override;
    virtual Float64 GetDeckEccK1() const override;
    virtual Float64 GetDeckEccK2() const override;
@@ -577,7 +588,7 @@ public:
    virtual Float64 GetDeckCreepK2() const override;
    virtual Float64 GetDeckShrinkageK1() const override;
    virtual Float64 GetDeckShrinkageK2() const override;
-   virtual const matConcreteBase* GetDeckConcrete(IndexType castingRegionIdx) const override;
+   virtual const std::unique_ptr<WBFL::Materials::ConcreteBase>& GetDeckConcrete(IndexType castingRegionIdx) const override;
 
 
    virtual pgsTypes::ConcreteType GetLongitudinalJointConcreteType() const override;
@@ -591,32 +602,32 @@ public:
    virtual Float64 GetLongitudinalJointCreepK2() const override;
    virtual Float64 GetLongitudinalJointShrinkageK1() const override;
    virtual Float64 GetLongitudinalJointShrinkageK2() const override;
-   virtual const matConcreteBase* GetLongitudinalJointConcrete() const override;
+   virtual const std::unique_ptr<WBFL::Materials::ConcreteBase>& GetLongitudinalJointConcrete() const override;
 
-   virtual const matPsStrand* GetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) const override;
+   virtual const WBFL::Materials::PsStrand* GetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) const override;
    virtual Float64 GetIncrementalStrandRelaxation(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,Float64 fpso,pgsTypes::StrandType strandType) const override;
    virtual INCREMENTALRELAXATIONDETAILS GetIncrementalStrandRelaxationDetails(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,Float64 fpso,pgsTypes::StrandType strandType) const override;
-   virtual const matPsStrand* GetGirderTendonMaterial(const CGirderKey& girderKey) const override;
+   virtual const WBFL::Materials::PsStrand* GetGirderTendonMaterial(const CGirderKey& girderKey) const override;
    virtual Float64 GetGirderTendonIncrementalRelaxation(const CGirderKey& girderKey,DuctIndexType ductIdx,IntervalIndexType intervalIdx,Float64 fpso) const override;
    virtual INCREMENTALRELAXATIONDETAILS GetGirderTendonIncrementalRelaxationDetails(const CGirderKey& girderKey,DuctIndexType ductIdx,IntervalIndexType intervalIdx,Float64 fpso) const override;
-   virtual const matPsStrand* GetSegmentTendonMaterial(const CSegmentKey& segmentKey) const override;
+   virtual const WBFL::Materials::PsStrand* GetSegmentTendonMaterial(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetSegmentTendonIncrementalRelaxation(const CSegmentKey& segmentKey, DuctIndexType ductIdx, IntervalIndexType intervalIdx, Float64 fpso) const override;
    virtual INCREMENTALRELAXATIONDETAILS GetSegmentTendonIncrementalRelaxationDetails(const CSegmentKey& segmentKey, DuctIndexType ductIdx, IntervalIndexType intervalIdx, Float64 fpso) const override;
    virtual void GetSegmentLongitudinalRebarProperties(const CSegmentKey& segmentKey,Float64* pE,Float64 *pFy,Float64* pFu) const override;
    virtual std::_tstring GetSegmentLongitudinalRebarName(const CSegmentKey& segmentKey) const override;
-   virtual void GetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey,matRebar::Type* pType,matRebar::Grade* pGrade) const override;
+   virtual void GetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey,WBFL::Materials::Rebar::Type* pType,WBFL::Materials::Rebar::Grade* pGrade) const override;
    virtual void GetClosureJointLongitudinalRebarProperties(const CClosureKey& closureKey,Float64* pE,Float64 *pFy,Float64* pFu) const override;
    virtual std::_tstring GetClosureJointLongitudinalRebarName(const CClosureKey& closureKey) const override;
-   virtual void GetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,matRebar::Type* pType,matRebar::Grade* pGrade) const override;
+   virtual void GetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,WBFL::Materials::Rebar::Type* pType,WBFL::Materials::Rebar::Grade* pGrade) const override;
    virtual void GetSegmentTransverseRebarProperties(const CSegmentKey& segmentKey,Float64* pE,Float64 *pFy,Float64* pFu) const override;
-   virtual void GetSegmentTransverseRebarMaterial(const CSegmentKey& segmentKey,matRebar::Type* pType,matRebar::Grade* pGrade) const override;
+   virtual void GetSegmentTransverseRebarMaterial(const CSegmentKey& segmentKey,WBFL::Materials::Rebar::Type* pType,WBFL::Materials::Rebar::Grade* pGrade) const override;
    virtual std::_tstring GetSegmentTransverseRebarName(const CSegmentKey& segmentKey) const override;
    virtual void GetClosureJointTransverseRebarProperties(const CClosureKey& closureKey,Float64* pE,Float64 *pFy,Float64* pFu) const override;
-   virtual void GetClosureJointTransverseRebarMaterial(const CClosureKey& closureKey,matRebar::Type* pType,matRebar::Grade* pGrade) const override;
+   virtual void GetClosureJointTransverseRebarMaterial(const CClosureKey& closureKey,WBFL::Materials::Rebar::Type* pType,WBFL::Materials::Rebar::Grade* pGrade) const override;
    virtual std::_tstring GetClosureJointTransverseRebarName(const CClosureKey& closureKey) const override;
    virtual void GetDeckRebarProperties(Float64* pE,Float64 *pFy,Float64* pFu) const override;
    virtual std::_tstring GetDeckRebarName() const override;
-   virtual void GetDeckRebarMaterial(matRebar::Type* pType,matRebar::Grade* pGrade) const override;
+   virtual void GetDeckRebarMaterial(WBFL::Materials::Rebar::Type* pType,WBFL::Materials::Rebar::Grade* pGrade) const override;
    virtual Float64 GetFlexureModRupture(Float64 fc,pgsTypes::ConcreteType type) const override;
    virtual Float64 GetShearModRupture(Float64 fc,pgsTypes::ConcreteType type) const override;
    virtual Float64 GetSegmentFlexureFrCoefficient(const CSegmentKey& segmentKey) const override;
@@ -646,8 +657,8 @@ public:
    virtual void GetDeckReinforcing(const pgsPointOfInterest& poi,pgsTypes::DeckRebarMatType matType,pgsTypes::DeckRebarBarType barType,pgsTypes::DeckRebarCategoryType barCategory,bool bAdjForDevLength,Float64* pAs,Float64* pYb) const override;
    virtual void GetRebarLayout(const CSegmentKey& segmentKey, IRebarLayout** rebarLayout) const override;
    virtual void GetClosureJointRebarLayout(const CClosureKey& closureKey, IRebarLayout** rebarLayout) const override;
-   virtual REBARDEVLENGTHDETAILS GetSegmentRebarDevelopmentLengthDetails(const CSegmentKey& segmetnKey,IRebar* rebar, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct) const override;
-   virtual REBARDEVLENGTHDETAILS GetDeckRebarDevelopmentLengthDetails(IRebar* rebar, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct) const override;
+   virtual WBFL::LRFD::REBARDEVLENGTHDETAILS GetSegmentRebarDevelopmentLengthDetails(const CSegmentKey& segmetnKey,IRebar* rebar, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct, bool bIsTopBar, bool bEpoxyCoated, bool bMeetsCoverRequirements) const override;
+   virtual WBFL::LRFD::REBARDEVLENGTHDETAILS GetDeckRebarDevelopmentLengthDetails(IRebar* rebar, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct, bool bIsTopBar, bool bEpoxyCoated, bool bMeetsCoverRequirements) const override;
    virtual bool IsAnchored(const pgsPointOfInterest& poi) const;
 
 // IStirrupGeometry
@@ -656,46 +667,46 @@ public:
 
    virtual ZoneIndexType GetPrimaryZoneCount(const CSegmentKey& segmentKey) const override;
    virtual void GetPrimaryZoneBounds(const CSegmentKey& segmentKey, ZoneIndexType zone, Float64* start, Float64* end) const override;
-   virtual void GetPrimaryVertStirrupBarInfo(const CSegmentKey& segmentKey,ZoneIndexType zone, matRebar::Size* pSize, Float64* pCount, Float64* pSpacing) const override;
+   virtual void GetPrimaryVertStirrupBarInfo(const CSegmentKey& segmentKey,ZoneIndexType zone, WBFL::Materials::Rebar::Size* pSize, Float64* pCount, Float64* pSpacing) const override;
    virtual Float64 GetPrimaryHorizInterfaceBarCount(const CSegmentKey& segmentKey,ZoneIndexType zone) const override;
-   virtual matRebar::Size GetPrimaryConfinementBarSize(const CSegmentKey& segmentKey,ZoneIndexType zone) const override;
+   virtual WBFL::Materials::Rebar::Size GetPrimaryConfinementBarSize(const CSegmentKey& segmentKey,ZoneIndexType zone) const override;
 
    virtual ZoneIndexType GetHorizInterfaceZoneCount(const CSegmentKey& segmentKey) const override;
    virtual void GetHorizInterfaceZoneBounds(const CSegmentKey& segmentKey, ZoneIndexType zone, Float64* start, Float64* end) const override;
-   virtual void GetHorizInterfaceBarInfo(const CSegmentKey& segmentKey,ZoneIndexType zone, matRebar::Size* pSize, Float64* pCount, Float64* pSpacing) const override;
+   virtual void GetHorizInterfaceBarInfo(const CSegmentKey& segmentKey,ZoneIndexType zone, WBFL::Materials::Rebar::Size* pSize, Float64* pCount, Float64* pSpacing) const override;
 
-   virtual void GetAddSplittingBarInfo(const CSegmentKey& segmentKey, matRebar::Size* pSize, Float64* pZoneLength, Float64* pnBars, Float64* pSpacing) const override;
-   virtual void GetAddConfinementBarInfo(const CSegmentKey& segmentKey, matRebar::Size* pSize, Float64* pZoneLength, Float64* pSpacing) const override;
+   virtual void GetAddSplittingBarInfo(const CSegmentKey& segmentKey, WBFL::Materials::Rebar::Size* pSize, Float64* pZoneLength, Float64* pnBars, Float64* pSpacing) const override;
+   virtual void GetAddConfinementBarInfo(const CSegmentKey& segmentKey, WBFL::Materials::Rebar::Size* pSize, Float64* pZoneLength, Float64* pSpacing) const override;
 
-   virtual Float64 GetVertStirrupAvs(const pgsPointOfInterest& poi, matRebar::Size* pSize, Float64* pSingleBarArea, Float64* pCount, Float64* pSpacing) const override;
+   virtual Float64 GetVertStirrupAvs(const pgsPointOfInterest& poi, WBFL::Materials::Rebar::Size* pSize, Float64* pSingleBarArea, Float64* pCount, Float64* pSpacing) const override;
    virtual Float64 GetVertStirrupBarNominalDiameter(const pgsPointOfInterest& poi) const override;
    virtual Float64 GetAlpha(const pgsPointOfInterest& poi) const override; // stirrup angle=90 for vertical
 
    virtual bool DoStirrupsEngageDeck(const CSegmentKey& segmentKey) const override;
    virtual bool DoAllPrimaryStirrupsEngageDeck(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetPrimaryHorizInterfaceBarSpacing(const pgsPointOfInterest& poi) const override;
-   virtual Float64 GetPrimaryHorizInterfaceAvs(const pgsPointOfInterest& poi, matRebar::Size* pSize, Float64* pSingleBarArea, Float64* pCount, Float64* pSpacing) const override;
+   virtual Float64 GetPrimaryHorizInterfaceAvs(const pgsPointOfInterest& poi, WBFL::Materials::Rebar::Size* pSize, Float64* pSingleBarArea, Float64* pCount, Float64* pSpacing) const override;
    virtual Float64 GetPrimaryHorizInterfaceBarCount(const pgsPointOfInterest& poi) const override;
    virtual Float64 GetAdditionalHorizInterfaceBarSpacing(const pgsPointOfInterest& poi) const override;
-   virtual Float64 GetAdditionalHorizInterfaceAvs(const pgsPointOfInterest& poi, matRebar::Size* pSize, Float64* pSingleBarArea, Float64* pCount, Float64* pSpacing) const override;
+   virtual Float64 GetAdditionalHorizInterfaceAvs(const pgsPointOfInterest& poi, WBFL::Materials::Rebar::Size* pSize, Float64* pSingleBarArea, Float64* pCount, Float64* pSpacing) const override;
    virtual Float64 GetAdditionalHorizInterfaceBarCount(const pgsPointOfInterest& poi) const override;
 
    virtual Float64 GetSplittingAv(const CSegmentKey& segmentKey,Float64 start,Float64 end) const override;
 
-   virtual void GetStartConfinementBarInfo(const CSegmentKey& segmentKey, Float64 requiredZoneLength, matRebar::Size* pSize, Float64* pProvidedZoneLength, Float64* pSpacing) const override;
-   virtual void GetEndConfinementBarInfo(  const CSegmentKey& segmentKey, Float64 requiredZoneLength, matRebar::Size* pSize, Float64* pProvidedZoneLength, Float64* pSpacing) const override;
+   virtual void GetStartConfinementBarInfo(const CSegmentKey& segmentKey, Float64 requiredZoneLength, WBFL::Materials::Rebar::Size* pSize, Float64* pProvidedZoneLength, Float64* pSpacing) const override;
+   virtual void GetEndConfinementBarInfo(  const CSegmentKey& segmentKey, Float64 requiredZoneLength, WBFL::Materials::Rebar::Size* pSize, Float64* pProvidedZoneLength, Float64* pSpacing) const override;
 
    virtual bool AreStirrupZoneLengthsCombatible(const CGirderKey& girderKey) const override;
 
 // IStrandGeometry
 public:
-   virtual gpPoint2d GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig = nullptr) const override;
-   virtual gpPoint2d GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const override;
+   virtual WBFL::Geometry::Point2d GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig = nullptr) const override;
+   virtual WBFL::Geometry::Point2d GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const override;
 
-   virtual gpPoint2d GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig = nullptr) const override;
-   virtual gpPoint2d GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const override;
-   virtual gpPoint2d GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig = nullptr) const override;
-   virtual gpPoint2d GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const override;
+   virtual WBFL::Geometry::Point2d GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig = nullptr) const override;
+   virtual WBFL::Geometry::Point2d GetEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const override;
+   virtual WBFL::Geometry::Point2d GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig = nullptr) const override;
+   virtual WBFL::Geometry::Point2d GetEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const override;
 
    virtual void GetStrandProfile(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, StrandIndexType strandIdx, IPoint2dCollection** ppProfilePoints) const override;
    virtual void GetStrandProfile(const CPrecastSegmentData* pSegment, const CStrandData* pStrands,pgsTypes::StrandType strandType, StrandIndexType strandIdx, IPoint2dCollection** ppProfilePoints) const override;
@@ -909,7 +920,7 @@ public:
 
    virtual pgsTypes::HaunchAnalysisSectionPropertiesType GetHaunchAnalysisSectionPropertiesType() const override;
 
-   virtual std::vector<gpPoint2d> GetStressPoints(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location, const GDRCONFIG* pConfig = nullptr) const override;
+   virtual std::vector<WBFL::Geometry::Point2d> GetStressPoints(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location, const GDRCONFIG* pConfig = nullptr) const override;
    virtual void GetStressCoefficients(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location, const GDRCONFIG* pConfig, Float64* pCa, Float64 *pCbx, Float64* pCby, IndexType* pControllingStressPointIndex = nullptr) const override;
 
    virtual Float64 GetHg(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const override;
@@ -1076,7 +1087,7 @@ public:
    virtual void GetDirection(SupportIndexType tsIdx,IDirection** ppDirection) const override;
    virtual void GetSkew(SupportIndexType tsIdx,IAngle** ppAngle) const override;
    virtual std::vector<SupportIndexType> GetTemporarySupports(GroupIndexType grpIdx) const override;
-   virtual std::vector<TEMPORARYSUPPORTELEVATIONDETAILS> GetElevationDetails(SupportIndexType tsIdx) const override;
+   virtual std::vector<TEMPORARYSUPPORTELEVATIONDETAILS> GetElevationDetails(SupportIndexType tsIdx,GirderIndexType gdrIndex) const override;
 
 // IGirder
 public:
@@ -1114,6 +1125,7 @@ public:
    virtual Float64 GetHeight(const pgsPointOfInterest& poi) const override;
    virtual Float64 GetShearWidth(const pgsPointOfInterest& poi) const override;
    virtual Float64 GetShearInterfaceWidth(const pgsPointOfInterest& poi) const override;
+   virtual InterfaceShearWidthDetails GetInterfaceShearWidthDetails(const pgsPointOfInterest& poi) const override;
    virtual WebIndexType GetWebCount(const CGirderKey& girderKey) const override;
 	virtual Float64 GetWebLocation(const pgsPointOfInterest& poi,WebIndexType webIdx) const override;
 	virtual Float64 GetWebSpacing(const pgsPointOfInterest& poi,WebIndexType spaceIdx) const override;
@@ -1128,9 +1140,6 @@ public:
    virtual Float64 GetProfileChordElevation(const pgsPointOfInterest& poi) const override;
    virtual Float64 GetTopGirderChordElevation(const pgsPointOfInterest& poi) const override;
    virtual Float64 GetTopGirderChordElevation(const pgsPointOfInterest& poi, Float64 Astart, Float64 Aend) const override;
-   virtual Float64 GetTopGirderElevation(const pgsPointOfInterest& poi,MatingSurfaceIndexType matingSurfaceIdx,const GDRCONFIG* pConfig=nullptr) const override;
-   virtual void GetTopGirderElevation(const pgsPointOfInterest& poi, IDirection* pDirection, Float64* pLeft, Float64* pCenter, Float64* pRight) const override;
-   virtual void GetFinishedElevation(const pgsPointOfInterest& poi, IDirection* pDirection, bool bIncludeOverlay, Float64* pLeft, Float64* pCenter, Float64* pRight) const override;
    virtual Float64 GetSplittingZoneHeight(const pgsPointOfInterest& poi) const override;
    virtual pgsTypes::SplittingDirection GetSplittingDirection(const CGirderKey& girderKey) const override;
    virtual bool CanPrecamber(const CSegmentKey& segmentKey) const override;
@@ -1239,7 +1248,7 @@ public:
    virtual EventIndexType GetEndEvent(IntervalIndexType idx) const override; 
    virtual Float64 GetTime(IntervalIndexType idx,pgsTypes::IntervalTimeType timeType) const override;
    virtual Float64 GetDuration(IntervalIndexType idx) const override;
-   virtual LPCTSTR GetDescription(IntervalIndexType idx) const override;
+   virtual std::_tstring GetDescription(IntervalIndexType idx) const override;
    virtual IntervalIndexType GetInterval(EventIndexType eventIdx) const override;
    virtual IntervalIndexType GetErectPierInterval(PierIndexType pierIdx) const override;
    virtual IntervalIndexType GetFirstStressStrandInterval(const CGirderKey& girderKey) const override;
@@ -1304,6 +1313,10 @@ public:
    virtual IntervalIndexType GetCompositeUserLoadInterval() const override;
    virtual IntervalIndexType GetLastNoncompositeInterval() const override;
    virtual IntervalIndexType GetLastCompositeInterval() const override;
+   virtual IntervalIndexType GetGeometryControlInterval() const override;
+   virtual std::vector<IntervalIndexType> GetReportingGeometryControlIntervals() const override;
+   virtual std::vector<IntervalIndexType> GetSpecCheckGeometryControlIntervals() const override;
+
 
 private:
    DECLARE_EAF_AGENT_DATA;
@@ -1326,11 +1339,11 @@ private:
 
    CComPtr<IBridgeGeometryTool> m_BridgeGeometryTool;
 
-   std::map<IndexType,std::pair<IndexType,CogoObjectID>> m_CompoundCurveKeys; // key is hc index in cogo model. value is (input hc index,cogomodel curve id)... if an input curve has zero radius it is not created in the curve collection in the cogo model
-   std::map<IndexType,std::pair<IndexType,CogoObjectID>> m_VertCurveKeys;
+   std::map<IndexType,std::pair<IndexType,IDType>> m_CompoundCurveKeys; // key is hc index in cogo model. value is (input hc index,cogomodel curve id)... if an input curve has zero radius it is not created in the curve collection in the cogo model
+   std::map<IndexType,std::pair<IndexType,IDType>> m_VertCurveKeys;
 
    // gets a horizontal curve in local coordinates without making a copy
-   void GetCurve(CollectionIndexType idx, ICompoundCurve** ppCurve) const;
+   void GetCurve(IndexType idx, ICompoundCurve** ppCurve) const;
 
    // Cache state of asymmetric prestressing information
    enum AsymmetricPrestressing  { Unknown, Yes,  No  };
@@ -1502,13 +1515,14 @@ private:
    void ValidateGirders();
 
    // helper function for computing station range for roadway surface objects
-   void ComputeReasonableSurfaceStationRange(ICogoModel* pCogoModel, const CBridgeDescription2* pBridgeDesc, const AlignmentData2& alignmentData, IAlignment* pAlignment, const ProfileData2& profileData, Float64* pStartStation, Float64* pEndStation);
+   std::pair<Float64,Float64> ComputeReasonableSurfaceStationRange(const CBridgeDescription2* pBridgeDesc, const AlignmentData2& alignmentData, IAlignment* pAlignment);
 
    // helper functions for building the bridge model
    bool LayoutPiers(const CBridgeDescription2* pBridgeDesc);
    bool LayoutGirders(const CBridgeDescription2* pBridgeDesc);
-   bool LayoutGirdersPass2();
-   void GetHaunchDepth(const CPrecastSegmentData* pSegment,Float64* pStartHaunch,Float64* pMidHaunch,Float64* pEndHaunch);
+   bool LayoutSsmHaunches();
+   void GetHaunchDepth4ADimInput(const CPrecastSegmentData* pSegment,CComPtr<IDblArray>& pHaunchDepths);
+   void GetHaunchDepth4BySpanInput(const CPrecastSegmentData* pSegment,const CBridgeDescription2* pBridgeDesc, CComPtr<IDblArray>& pHaunchDepths);
    bool LayoutDeck(const CBridgeDescription2* pBridgeDesc);
    bool LayoutOverlayDeck(const CBridgeDescription2* pBridgeDesc,IBridgeDeck** ppDeck);
    bool LayoutSimpleDeck(const CBridgeDescription2* pBridgeDesc,IBridgeDeck** ppDeck);
@@ -1631,9 +1645,9 @@ private:
    StrandIndexType GetPrevNumTempStrands(LPCTSTR strGirderName,StrandIndexType curNum) const;
 
    void GetSegmentShapeDirect(const pgsPointOfInterest& poi,IShape** ppShape) const;
-   BarSize GetBarSize(matRebar::Size size) const;
-   RebarGrade GetRebarGrade(matRebar::Grade grade) const;
-   MaterialSpec GetRebarSpecification(matRebar::Type type) const;
+   BarSize GetBarSize(WBFL::Materials::Rebar::Size size) const;
+   RebarGrade GetRebarGrade(WBFL::Materials::Rebar::Grade grade) const;
+   MaterialSpec GetRebarSpecification(WBFL::Materials::Rebar::Type type) const;
 
 
    Float64 GetAsTensionSideOfGirder(const pgsPointOfInterest& poi,bool bDevAdjust,bool bTensionTop) const;
@@ -1658,9 +1672,9 @@ private:
    void GetCurbLinePoint(Float64 station, IDirection* direction,DirectionType side,pgsTypes::PlanCoordinateType pcType,IPoint3d** point) const;
    void CreateOverlayDeckEdgePaths(const CBridgeDescription2* pBridgeDesc,IPath** ppLeftPath,IPath** ppRightPath);
 
-   std::shared_ptr<mathFunction2d> CreateGirderProfile(const CSplicedGirderData* pGirder) const;
-   std::shared_ptr<mathFunction2d> CreateGirderBottomFlangeProfile(const CSplicedGirderData* pGirder) const;
-   std::shared_ptr<mathFunction2d> CreateGirderProfile(const CSplicedGirderData* pGirder,bool bGirderProfile) const;
+   std::shared_ptr<WBFL::Math::Function> CreateGirderProfile(const CSplicedGirderData* pGirder) const;
+   std::shared_ptr<WBFL::Math::Function> CreateGirderBottomFlangeProfile(const CSplicedGirderData* pGirder) const;
+   std::shared_ptr<WBFL::Math::Function> CreateGirderProfile(const CSplicedGirderData* pGirder,bool bGirderProfile) const;
    void GetSegmentRange(const CSegmentKey& segmentKey,Float64* pXStart,Float64* pXEnd) const;
 
    Float64 ConvertSegmentDuctOffsetToDuctElevation(const CSegmentKey& segmentKey, const CPrecastSegmentData* pSegment, Float64 Xs, Float64 offset, pgsTypes::FaceType offsetType) const;
@@ -1670,8 +1684,8 @@ private:
    void CreateDuctCenterline(const CGirderKey& girderKey, const CSplicedGirderData* pGirder, const CParabolicDuctGeometry& geometry,IPoint2dCollection** ppPoints) const;
    void CreateDuctCenterline(const CGirderKey& girderKey, const CSplicedGirderData* pGirder, const COffsetDuctGeometry& geometry,IPoint2dCollection** ppPoints) const;
 
-   mathCompositeFunction2d CreateDuctCenterline(const CGirderKey& girderKey, const CSplicedGirderData* pGirder, const CLinearDuctGeometry& geometry) const;
-   mathCompositeFunction2d CreateDuctCenterline(const CGirderKey& girderKey, const CSplicedGirderData* pGirder, const CParabolicDuctGeometry& geometry) const;
+   std::unique_ptr<WBFL::Math::CompositeFunction> CreateDuctCenterline(const CGirderKey& girderKey, const CSplicedGirderData* pGirder, const CLinearDuctGeometry& geometry) const;
+   std::unique_ptr<WBFL::Math::CompositeFunction> CreateDuctCenterline(const CGirderKey& girderKey, const CSplicedGirderData* pGirder, const CParabolicDuctGeometry& geometry) const;
 
    SegmentIndexType GetSegmentIndex(const CSplicedGirderData* pGirder,Float64 Xb) const;
    SegmentIndexType GetSegmentIndex(const CGirderKey& girderKey,ILine2d* pLine,IPoint2d** ppIntersection) const;
@@ -1701,7 +1715,7 @@ private:
 
    void CreateStrandMover(LPCTSTR strGirderName,Float64 Hg,pgsTypes::AdjustableStrandType adjType,IStrandMover** ppStrandMover) const;
 
-   INCREMENTALRELAXATIONDETAILS GetIncrementalRelaxationDetails(Float64 fpi,const matPsStrand* pStrand,Float64 tStart,Float64 tEnd,Float64 tStress) const;
+   INCREMENTALRELAXATIONDETAILS GetIncrementalRelaxationDetails(Float64 fpi,const WBFL::Materials::PsStrand* pStrand,Float64 tStart,Float64 tEnd,Float64 tStress) const;
 
    /// Returns true if strands are engaged with the precast segment in the specified interval and location
    ///
@@ -1718,7 +1732,7 @@ private:
    Float64 ComputePierDiaphragmHeight(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace) const;
    Float64 ComputePierDiaphragmWidth(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace) const;
 
-   REBARDEVLENGTHDETAILS GetRebarDevelopmentLengthDetails(const CSegmentKey& segmentKey, IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct) const;
+   WBFL::LRFD::REBARDEVLENGTHDETAILS GetRebarDevelopmentLengthDetails(const CSegmentKey& segmentKey, IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct, bool bIsTopBar, bool bEpoxyCoated, bool bMeetsCoverRequirements) const;
 
    void ApplyDebonding(const CPrecastSegmentData* pSegment, IStrandGridModel* pStrandGridModel) const;
 
@@ -1727,19 +1741,20 @@ private:
 
    Float64 GetOverallHeight(const pgsPointOfInterest& poi) const;
 
-   const mathLinFunc2d& GetGirderTopChordElevationFunction(const CSegmentKey& segmentKey) const;
+   const WBFL::Math::LinearFunction& GetGirderTopChordElevationFunction(const CSegmentKey& segmentKey) const;
    void ValidateGirderTopChordElevation(const CGirderKey& girderKey) const;
-   void ValidateGirderTopChordElevation(const CGirderKey& girderKey,std::map<CSegmentKey, mathLinFunc2d>* pFunctions) const;
-   mutable std::map<CSegmentKey, mathLinFunc2d> m_GirderTopChordElevationFunctions; // linear functions that represent the top girder chord elevations
+   void ValidateGirderTopChordElevationADimInput(const CGirderKey& girderKey,const CBridgeDescription2* pBridgeDesc,std::map<CSegmentKey,WBFL::Math::LinearFunction>* pFunctions) const;
+   void ValidateGirderTopChordElevationDirectHaunchInput(const CGirderKey& girderKey,const CBridgeDescription2* pBridgeDesc,std::map<CSegmentKey,WBFL::Math::LinearFunction>* pFunctions) const;
+   mutable std::map<CSegmentKey,WBFL::Math::LinearFunction> m_GirderTopChordElevationFunctions; // linear functions that represent the top girder chord elevations
 
    // Common function to return bearing elevation details at bearings or at girder edges
    enum BearingElevLocType { batBearings, batGirderEdges };
-   std::vector<BearingElevationDetails> GetBearingElevationDetails_Generic(PierIndexType pierIdx,pgsTypes::PierFaceType face, BearingElevLocType locType) const;
+   std::vector<BearingElevationDetails> GetBearingElevationDetails_Generic(PierIndexType pierIdx,pgsTypes::PierFaceType face, BearingElevLocType locType,GirderIndexType gdrIdx,bool bIgnoreUnrecoverableDeformations) const;
 
-   std::vector<IntermedateDiaphragm> CBridgeAgentImp::GetCastInPlaceDiaphragms(const CSpanKey& spanKey, bool bLocationOnly) const;
+   std::vector<IntermedateDiaphragm> GetCastInPlaceDiaphragms(const CSpanKey& spanKey, bool bLocationOnly) const;
    Float64 GetHalfElevation(Float64 gdrHeight, Float64 deckThickness) const;
 
-   void GetSlabPerimeter(PierIndexType startPierIdx, Float64 Xstart, PierIndexType endPierIdx, Float64 Xend, CollectionIndexType nPoints, pgsTypes::PlanCoordinateType pcType, const CCastDeckActivity* pActivity, IPoint2dCollection** points) const;
+   void GetSlabPerimeter(PierIndexType startPierIdx, Float64 Xstart, PierIndexType endPierIdx, Float64 Xend, IndexType nPoints, pgsTypes::PlanCoordinateType pcType, const CCastDeckActivity* pActivity, IPoint2dCollection** points) const;
 
 // Orientation of girder segments. cached from bridge geometry model builder
    GirderOrientationCollection  m_GirderOrientationCollection;

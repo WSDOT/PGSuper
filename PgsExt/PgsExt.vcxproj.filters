@@ -418,6 +418,18 @@
     <ClCompile Include="SplittingCheckEngineer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ReinforcementFatigueArtifact.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UHPCConcretePage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GeometryControlActivity.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="HaunchDepthInputConversionTool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\PgsExt\AASHTOConcretePage.h">
@@ -850,6 +862,27 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\PgsExt\DevelopmentLength.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\PgsExt\ReinforcementFatigueArtifact.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\PgsExt\UHPCConcretePage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\PgsExt\GeometryControlActivity.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\PgsExt\HaunchDepthInputConversionTool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\PgsExt\Catalog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\PgsExt\CatalogServer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\PgsExt\CatalogServers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -5,7 +5,7 @@
 
 The Specification Check was Not Successful
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Horizontal Interface Shear check failed for Strength I Limit State.
 Stirrup detailing checks failed for the Strength I Limit State.
 Splitting check failed.
 Girder Dimension Detailing check failed
@@ -17,7 +17,7 @@ Girder Dimension Detailing check failed
 
 
 The Specification Check was Not Successful
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Horizontal Interface Shear check failed for Strength I Limit State.
 Splitting check failed.
 Girder Dimension Detailing check failed
 
@@ -28,7 +28,7 @@ Girder Dimension Detailing check failed
 
 
 The Specification Check was Not Successful
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Horizontal Interface Shear check failed for Strength I Limit State.
 Splitting check failed.
 Girder Dimension Detailing check failed
 

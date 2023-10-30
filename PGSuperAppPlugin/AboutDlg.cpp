@@ -152,10 +152,10 @@ BOOL CAboutDlg::OnInitDialog()
    {
       CPGSuperDoc* pDoc = (CPGSuperDoc*)pEAFDoc;
       CPGSuperComponentInfoManager* pComponentInfoMgr = pDoc->GetComponentInfoManager();
-      CollectionIndexType nPlugins = pComponentInfoMgr->GetPluginCount();
+      IndexType nPlugins = pComponentInfoMgr->GetPluginCount();
       
       // for each plugin
-      for ( CollectionIndexType pluginIdx = 0; pluginIdx < nPlugins; pluginIdx++ )
+      for ( IndexType pluginIdx = 0; pluginIdx < nPlugins; pluginIdx++ )
       {
          CComPtr<IPGSuperComponentInfo> plugin;
          pComponentInfoMgr->GetPlugin(pluginIdx,&plugin);
@@ -167,10 +167,10 @@ BOOL CAboutDlg::OnInitDialog()
    {
       CPGSpliceDoc* pDoc = (CPGSpliceDoc*)pEAFDoc;
       CPGSpliceComponentInfoManager* pComponentInfoMgr = pDoc->GetComponentInfoManager();
-      CollectionIndexType nPlugins = pComponentInfoMgr->GetPluginCount();
+      IndexType nPlugins = pComponentInfoMgr->GetPluginCount();
       
       // for each plugin
-      for ( CollectionIndexType pluginIdx = 0; pluginIdx < nPlugins; pluginIdx++ )
+      for ( IndexType pluginIdx = 0; pluginIdx < nPlugins; pluginIdx++ )
       {
          CComPtr<IPGSpliceComponentInfo> plugin;
          pComponentInfoMgr->GetPlugin(pluginIdx,&plugin);

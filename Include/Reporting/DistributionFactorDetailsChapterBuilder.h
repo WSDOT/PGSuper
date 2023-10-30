@@ -24,7 +24,7 @@
 #define INCLUDED_DISTRIBUTIONFACTORDETAILSCHAPTERBUILDER_H_
 
 #include <Reporting\ReportingExp.h>
-#include <Lrfd\ILiveLoadDistributionFactor.h>
+#include <LRFD\ILiveLoadDistributionFactor.h>
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
@@ -54,14 +54,14 @@ public:
    // GROUP: OPERATIONS
 
    //------------------------------------------------------------------------
-   virtual LPCTSTR GetName() const;
+   virtual LPCTSTR GetName() const override;
    
 
    //------------------------------------------------------------------------
-   virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const;
+   virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
 
    //------------------------------------------------------------------------
-   virtual CChapterBuilder* Clone() const;
+   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

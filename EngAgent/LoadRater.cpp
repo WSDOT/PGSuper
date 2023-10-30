@@ -31,6 +31,8 @@
 #include <IFace\PrestressForce.h>
 #include <EAF\EAFDisplayUnits.h>
 
+#include <psgLib/MomentCapacityCriteria.h>
+
 #if defined _USE_MULTITHREADING
 #include <future>
 #endif
@@ -71,67 +73,68 @@ void pgsLoadRater::SetBroker(IBroker* pBroker)
 pgsRatingArtifact pgsLoadRater::Rate(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx) const
 {
    GET_IFACE(IRatingSpecification,pRatingSpec);
-
-   //
-   // Rate for moment
-   //
-
-
-   // Get POI for flexure load ratings
-   GET_IFACE(IPointOfInterest,pPoi);
-   PoiList vPoi;
-   pPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS),&vPoi); // gets all POI
-   // remove poi at points that don't matter for load rating
-   pPoi->RemovePointsOfInterest(vPoi,POI_RELEASED_SEGMENT,POI_SPAN); // retain span points
-   pPoi->RemovePointsOfInterest(vPoi,POI_LIFT_SEGMENT,    POI_SPAN);
-   pPoi->RemovePointsOfInterest(vPoi,POI_STORAGE_SEGMENT, POI_SPAN);
-   pPoi->RemovePointsOfInterest(vPoi,POI_HAUL_SEGMENT,    POI_SPAN);
-   
-   // get some general information that all ratings need
+   GET_IFACE(IPointOfInterest, pPoi);
    GET_IFACE(IIntervals, pIntervals);
-   IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval();
+   GET_IFACE(ILossParameters, pLossParams);
 
    GET_IFACE(IBridge, pBridge);
-   bool bNegativeMoments = pBridge->ProcessNegativeMoments(ALL_SPANS);
+   auto firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
+   auto lastGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? pBridge->GetGirderGroupCount() - 1 : girderKey.groupIndex);
 
-   GET_IFACE(ILossParameters, pLossParams);
-   bool bTimeStep = (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP ? true : false);
-
-   // get the moments for flexure rating
-   Moments positive_moments, negative_moments;
-   GetMoments(girderKey, ratingType, vehicleIdx, vPoi, bTimeStep, &positive_moments, bNegativeMoments ? &negative_moments : nullptr);
-
-   // do the flexure rating.. this rates moment capcity, flexural stress, and reinforcement yielding
    pgsRatingArtifact ratingArtifact(ratingType);
-   FlexureRating(girderKey, vPoi, ratingType, vehicleIdx, loadRatingIntervalIdx, bTimeStep, &positive_moments, bNegativeMoments ? &negative_moments : nullptr, ratingArtifact);
 
-   // Rate for shear if applicable
-   if ( pRatingSpec->RateForShear(ratingType) )
+   for (auto groupIdx = firstGroupIdx; groupIdx <= lastGroupIdx; groupIdx++)
    {
-      // we don't load rate for shear in interior piers so make another collection
-      // of POI for shear... Same as for flexure but remove the POIs that are outside of the bearings
-      PoiList vShearPoi(vPoi);
-      GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-      GroupIndexType lastGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? pBridge->GetGirderGroupCount() - 1 : firstGroupIdx);
-      for (GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++)
+      CGirderKey this_girder_key(groupIdx, girderKey.girderIndex);
+      //
+      // Rate for moment
+      //
+
+
+      // Get POI for flexure load ratings
+      PoiList vPoi;
+      pPoi->GetPointsOfInterest(CSegmentKey(this_girder_key, ALL_SEGMENTS),&vPoi); // gets all POI
+      // remove poi at points that don't matter for load rating
+      pPoi->RemovePointsOfInterest(vPoi,POI_RELEASED_SEGMENT,POI_SPAN); // retain span points
+      pPoi->RemovePointsOfInterest(vPoi,POI_LIFT_SEGMENT,    POI_SPAN);
+      pPoi->RemovePointsOfInterest(vPoi,POI_STORAGE_SEGMENT, POI_SPAN);
+      pPoi->RemovePointsOfInterest(vPoi,POI_HAUL_SEGMENT,    POI_SPAN);
+      pPoi->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER,   POI_SPAN);
+   
+      // get some general information that all ratings need
+      IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval();
+
+      bool bNegativeMoments = pBridge->ProcessNegativeMoments(ALL_SPANS);
+
+      bool bTimeStep = (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false);
+
+      // get the moments for flexure rating
+      Moments positive_moments, negative_moments;
+      GetMoments(this_girder_key, ratingType, vehicleIdx, vPoi, bTimeStep, &positive_moments, bNegativeMoments ? &negative_moments : nullptr);
+
+      // do the flexure rating.. this rates moment capacity, flexural stress, and reinforcement yielding
+      FlexureRating(this_girder_key, vPoi, ratingType, vehicleIdx, loadRatingIntervalIdx, bTimeStep, &positive_moments, bNegativeMoments ? &negative_moments : nullptr, ratingArtifact);
+
+      // Rate for shear if applicable
+      if ( pRatingSpec->RateForShear(ratingType) )
       {
-         GirderIndexType nGirders = pBridge->GetGirderCount(grpIdx);
-         GirderIndexType gdrIdx = Min(girderKey.girderIndex, nGirders - 1);
-         CGirderKey thisGirderKey(grpIdx, gdrIdx);
-         SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
+         // we don't load rate for shear in interior piers so make another collection
+         // of POI for shear... Same as for flexure but remove the POIs that are outside of the bearings
+         PoiList vShearPoi(vPoi);
+         SegmentIndexType nSegments = pBridge->GetSegmentCount(this_girder_key);
          for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
          {
-            CSegmentKey segmentKey(thisGirderKey, segIdx);
+            CSegmentKey segmentKey(this_girder_key, segIdx);
             Float64 segmentSpanLength = pBridge->GetSegmentSpanLength(segmentKey);
             Float64 endDist = pBridge->GetSegmentStartEndDistance(segmentKey);
             vShearPoi.erase(std::remove_if(std::begin(vShearPoi), std::end(vShearPoi), PoiIsOutsideOfBearings(segmentKey, endDist, endDist + segmentSpanLength)), std::end(vShearPoi));
          }
+
+         pPoi->SortPoiList(&vShearPoi); // sort and remove duplicates
+
+         ShearRating(this_girder_key,vShearPoi,ratingType,vehicleIdx, loadRatingIntervalIdx, bTimeStep, ratingArtifact);
+         LongitudinalReinforcementForShearRating(this_girder_key, vShearPoi, ratingType, vehicleIdx, loadRatingIntervalIdx, bTimeStep, ratingArtifact);
       }
-
-      pPoi->SortPoiList(&vShearPoi); // sort and remove duplicates
-
-      ShearRating(girderKey,vShearPoi,ratingType,vehicleIdx, loadRatingIntervalIdx, bTimeStep, ratingArtifact);
-      LongitudinalReinforcementForShearRating(girderKey, vShearPoi, ratingType, vehicleIdx, loadRatingIntervalIdx, bTimeStep, ratingArtifact);
    }
 
    return ratingArtifact;
@@ -217,7 +220,7 @@ void pgsLoadRater::FlexureRating(const CGirderKey& girderKey, const PoiList& vPo
 
       ASSIGN_IFACE(ICombinedForces, stressRatingParams.pCombinedForces);
       ASSIGN_IFACE(IPretensionStresses, stressRatingParams.pPrestress);
-      ASSIGN_IFACE(IAllowableConcreteStress, stressRatingParams.pAllowables);
+      ASSIGN_IFACE(IConcreteStressLimits, stressRatingParams.pLimits);
       stressRatingParams.pRatingSpec = pRatingSpec;
       stressRatingParams.pProductForces = momentRatingParams.pProductForces;
       stressRatingParams.pProductLoads = pProductLoads;
@@ -290,7 +293,8 @@ void pgsLoadRater::FlexureRating(const CGirderKey& girderKey, const PoiList& vPo
       GET_IFACE(ISpecification, pSpec);
       GET_IFACE(ILibrary, pLibrary);
       const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
-      yieldingRatingParams.K_liveload = pSpecEntry->GetLiveLoadElasticGain();
+      const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
+      yieldingRatingParams.K_liveload = prestress_loss_criteria.LiveLoadElasticGain;
 
       yieldingRatingParams.analysisType = pSpec->GetAnalysisType();
 
@@ -535,7 +539,7 @@ void pgsLoadRater::GetCriticalSectionZones(const CGirderKey& girderKey,pgsTypes:
       PoiList vCSPoi;
       pPoi->GetCriticalSections(limitState, thisGirderKey,&vCSPoi);
       std::vector<CRITSECTDETAILS> vCS = pShearCapacity->GetCriticalSectionDetails(limitState, thisGirderKey);
-      if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEdition2004)
+      if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::ThirdEdition2004)
       {
          // if the LRFD is before 2004, critical section for shear was a function of loading.... we end up with many critical section POIs but
          // only a few (usually 2) critical section details. Match the details to the POIs and throw out the other POIs. LRFD 2004 and later only depend on Mu
@@ -577,8 +581,8 @@ ZoneIndexType pgsLoadRater::GetCriticalSectionZone(const pgsPointOfInterest& poi
 {
    Float64 Xpoi = poi.GetDistFromStart();
 
-   auto& iter(criticalSections.cbegin());
-   const auto& end(criticalSections.cend());
+   auto iter(criticalSections.cbegin());
+   auto end(criticalSections.cend());
    for (; iter != end; iter++)
    {
       const CRITSECTDETAILS& csDetails(*iter);
@@ -638,16 +642,16 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const PoiList& vPoi,p
    // remove all POIs that are in a critical section zone
    vMyPoi.erase(std::remove_if(vMyPoi.begin(), vMyPoi.end(), [&](const pgsPointOfInterest& poi) {return GetCriticalSectionZone(poi,criticalSections) != INVALID_INDEX;}), vMyPoi.end());
 
-   std::vector<sysSectionValue> vDCmin, vDCmax;
-   std::vector<sysSectionValue> vDWmin, vDWmax;
-   std::vector<sysSectionValue> vCRmin, vCRmax;
-   std::vector<sysSectionValue> vSHmin, vSHmax;
-   std::vector<sysSectionValue> vREmin, vREmax;
-   std::vector<sysSectionValue> vPSmin, vPSmax;
-   std::vector<sysSectionValue> vLLIMmin,vLLIMmax;
-   std::vector<sysSectionValue> vUnused;
+   std::vector<WBFL::System::SectionValue> vDCmin, vDCmax;
+   std::vector<WBFL::System::SectionValue> vDWmin, vDWmax;
+   std::vector<WBFL::System::SectionValue> vCRmin, vCRmax;
+   std::vector<WBFL::System::SectionValue> vSHmin, vSHmax;
+   std::vector<WBFL::System::SectionValue> vREmin, vREmax;
+   std::vector<WBFL::System::SectionValue> vPSmin, vPSmax;
+   std::vector<WBFL::System::SectionValue> vLLIMmin,vLLIMmax;
+   std::vector<WBFL::System::SectionValue> vUnused;
    std::vector<VehicleIndexType> vMinTruckIndex, vMaxTruckIndex, vUnusedIndex;
-   std::vector<sysSectionValue> vPLmin, vPLmax;
+   std::vector<WBFL::System::SectionValue> vPLmin, vPLmax;
 
    pgsTypes::LiveLoadType llType = GetLiveLoadType(ratingType);
 
@@ -722,8 +726,8 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const PoiList& vPoi,p
    GET_IFACE(IProductLoads,pProductLoads);
    std::vector<std::_tstring> strLLNames = pProductLoads->GetVehicleNames(llType,girderKey);
 
-   CollectionIndexType nPOI = vMyPoi.size();
-   for ( CollectionIndexType i = 0; i < nPOI; i++ )
+   IndexType nPOI = vMyPoi.size();
+   for ( IndexType i = 0; i < nPOI; i++ )
    {
       const pgsPointOfInterest& poi = vMyPoi[i];
 
@@ -797,7 +801,7 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const PoiList& vPoi,p
          // need to compute gLL based on axle weights
          if ( ::IsStrengthLimitState(limitState) )
          {
-            sysSectionValue Vmin, Vmax, Dummy;
+            WBFL::System::SectionValue Vmin, Vmax, Dummy;
             AxleConfiguration MinLeftAxleConfig, MaxLeftAxleConfig, MinRightAxleConfig, MaxRightAxleConfig, DummyLeftAxleConfig, DummyRightAxleConfig;
             pProdForces->GetVehicularLiveLoadShear(loadRatingIntervalIdx,llType,truck_index,poi,batMin,true,true,&Vmin,&Dummy,&MinLeftAxleConfig,&MinRightAxleConfig,&DummyLeftAxleConfig,&DummyRightAxleConfig);
             pProdForces->GetVehicularLiveLoadShear(loadRatingIntervalIdx,llType,truck_index,poi,batMax,true,true,&Dummy,&Vmax,&DummyLeftAxleConfig,&DummyRightAxleConfig,&MaxLeftAxleConfig,&MaxRightAxleConfig);
@@ -1012,7 +1016,7 @@ void pgsLoadRater::StressRating(const pgsPointOfInterest& poi, const StressRatin
 
       // do this in the loop because the vector of POI can be for multiple segments
       Float64 condition_factor = ratingParams.pRatingSpec->GetGirderConditionFactor(poi.GetSegmentKey());
-      Float64 fr = ratingParams.pAllowables->GetAllowableTensionStress(ratingParams.ratingType, poi, stressLocation);
+      Float64 fr = ratingParams.pLimits->GetConcreteTensionStressLimit(ratingParams.ratingType, poi, stressLocation);
 
       VehicleIndexType truck_index = ratingParams.vehicleIdx;
       if (ratingParams.vehicleIdx == INVALID_INDEX)
@@ -1524,7 +1528,8 @@ void pgsLoadRater::GetMoments(const CGirderKey& girderKey, pgsTypes::LoadRatingT
    GET_IFACE(ILibrary,pLib);
    GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bIncludeNoncompositeMoments = pSpecEntry->IncludeNoncompositeMomentsForNegMomentDesign();
+   const auto& moment_capacity_criteria = pSpecEntry->GetMomentCapacityCriteria();
+   bool bIncludeNoncompositeMoments = moment_capacity_criteria.bIncludeNoncompositeMomentsForNegMomentDesign;
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType constructionLoadIntervalIdx     = pIntervals->GetConstructionLoadInterval();
@@ -1626,7 +1631,7 @@ void pgsLoadRater::GetMoments(const CGirderKey& girderKey, pgsTypes::LoadRatingT
 
       bool bFutureOverlay = pBridge->HasOverlay() && pBridge->IsFutureOverlay();
 
-      // Get all the product load responces
+      // Get all the product load responses
       GET_IFACE(IProductForces2,pProductForces);
 
       if (constructionLoadIntervalIdx == INVALID_INDEX)

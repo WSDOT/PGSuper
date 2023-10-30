@@ -65,7 +65,7 @@ private:
 //////////////////////////////////////////////////////////////////////////
 template<class IteratorType>
 ZoneIndexType GetZoneIndexAtLocation(Float64 location, Float64 girderLength, Float64 startSupportLoc, Float64 endSupportLoc,
-                             bool bSymmetrical, IteratorType& rItBegin, IteratorType& rItEnd, ZoneIndexType collSize)
+                             bool bSymmetrical, IteratorType rItBegin, IteratorType rItEnd, ZoneIndexType collSize)
 {
    if (collSize == 0)
    {
@@ -194,12 +194,12 @@ ZoneIndexType GetZoneIndexAtLocation(Float64 location, Float64 girderLength, Flo
 
 enum PrimaryStirrupType {getVerticalStirrup, getHorizShearStirrup};
 
-Float64 PGSEXTFUNC GetPrimaryStirrupAvs(const STIRRUPCONFIG& config, PrimaryStirrupType type, Float64 location, Float64 gdrLength, Float64 leftSupportLoc,Float64 rgtSupportLoc, matRebar::Size* pSize, Float64* pSingleBarArea, Float64* pNBars, Float64* pSpacing);
-Float64 PGSEXTFUNC GetAdditionalHorizInterfaceAvs(const STIRRUPCONFIG& config, Float64 location, Float64 gdrLength, Float64 leftSupportLoc,Float64 rgtSupportLoc, matRebar::Size* pSize, Float64* pSingleBarArea, Float64* pNBars, Float64* pSpacing);
-void PGSEXTFUNC GetConfinementInfoFromStirrupConfig(const STIRRUPCONFIG& config, Float64 reqdStartZl, matRebar::Size* pStartRBsiz, Float64* pStartZL, Float64* pStartS, Float64 reqdEndZl,   matRebar::Size* pEndRBsiz,   Float64* pEndZL,   Float64* pEndS);
-Float64 PGSEXTFUNC GetPrimaryAvLeftEnd(const STIRRUPCONFIG& config, matRebar::Type barType, matRebar::Grade barGrade,Float64 gdrLength, Float64 rangeLength);
-Float64 PGSEXTFUNC GetPrimaryAvRightEnd(const STIRRUPCONFIG& config, matRebar::Type barType, matRebar::Grade barGrade,Float64 gdrLength, Float64 rangeLength);
-void PGSEXTFUNC GetSplittingAvFromStirrupConfig(const STIRRUPCONFIG& config, matRebar::Type barType, matRebar::Grade barGrade, Float64 gdrLength, Float64 reqdStartZl, Float64* pStartAv,Float64 reqdEndZl,   Float64* pEndAv);
+Float64 PGSEXTFUNC GetPrimaryStirrupAvs(const STIRRUPCONFIG& config, PrimaryStirrupType type, Float64 location, Float64 gdrLength, Float64 leftSupportLoc,Float64 rgtSupportLoc, WBFL::Materials::Rebar::Size* pSize, Float64* pSingleBarArea, Float64* pNBars, Float64* pSpacing);
+Float64 PGSEXTFUNC GetAdditionalHorizInterfaceAvs(const STIRRUPCONFIG& config, Float64 location, Float64 gdrLength, Float64 leftSupportLoc,Float64 rgtSupportLoc, WBFL::Materials::Rebar::Size* pSize, Float64* pSingleBarArea, Float64* pNBars, Float64* pSpacing);
+void PGSEXTFUNC GetConfinementInfoFromStirrupConfig(const STIRRUPCONFIG& config, Float64 reqdStartZl, WBFL::Materials::Rebar::Size* pStartRBsiz, Float64* pStartZL, Float64* pStartS, Float64 reqdEndZl,   WBFL::Materials::Rebar::Size* pEndRBsiz,   Float64* pEndZL,   Float64* pEndS);
+Float64 PGSEXTFUNC GetPrimaryAvLeftEnd(const STIRRUPCONFIG& config, WBFL::Materials::Rebar::Type barType, WBFL::Materials::Rebar::Grade barGrade,Float64 gdrLength, Float64 rangeLength);
+Float64 PGSEXTFUNC GetPrimaryAvRightEnd(const STIRRUPCONFIG& config, WBFL::Materials::Rebar::Type barType, WBFL::Materials::Rebar::Grade barGrade,Float64 gdrLength, Float64 rangeLength);
+void PGSEXTFUNC GetSplittingAvFromStirrupConfig(const STIRRUPCONFIG& config, WBFL::Materials::Rebar::Type barType, WBFL::Materials::Rebar::Grade barGrade, Float64 gdrLength, Float64 reqdStartZl, Float64* pStartAv,Float64 reqdEndZl,   Float64* pEndAv);
 void PGSEXTFUNC WriteShearDataToStirrupConfig(const CShearData2* pShearData, STIRRUPCONFIG& rConfig);
 bool PGSEXTFUNC DoAllStirrupsEngageDeck( const STIRRUPCONFIG& config);
 

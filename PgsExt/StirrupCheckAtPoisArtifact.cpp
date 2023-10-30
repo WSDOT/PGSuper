@@ -34,59 +34,6 @@ CLASS
    pgsLongReinfShearArtifact
 ****************************************************************************/
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-pgsLongReinfShearArtifact::pgsLongReinfShearArtifact():
-m_Fy(0),
-m_As(0),
-m_Aps(0),
-m_Fps(0),
-m_AptSegment(0),
-m_FptSegment(0),
-m_AptGirder(0),
-m_FptGirder(0),
-m_Mu(0),
-m_Mr(0),
-m_Dv(0),
-m_FlexuralPhi(0),
-m_Nu(0),
-m_AxialPhi(0),
-m_Vu(0),
-m_ShearPhi(0),
-m_Vs(0),
-m_Vp(0),
-m_Theta(0),
-m_DemandForce(0),
-m_CapacityForce(0),
-m_bIsApplicable(false),
-m_bPretesionForceLimit(false)
-{
-}
-
-pgsLongReinfShearArtifact::pgsLongReinfShearArtifact(const pgsLongReinfShearArtifact& rOther)
-{
-   MakeCopy(rOther);
-}
-
-pgsLongReinfShearArtifact::~pgsLongReinfShearArtifact()
-{
-}
-
-//======================== OPERATORS  =======================================
-pgsLongReinfShearArtifact& pgsLongReinfShearArtifact::operator= (const pgsLongReinfShearArtifact& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-
 
 Float64 pgsLongReinfShearArtifact::GetFy() const
 {
@@ -96,6 +43,16 @@ Float64 pgsLongReinfShearArtifact::GetFy() const
 void pgsLongReinfShearArtifact::SetFy(Float64 fy)
 {
    m_Fy = fy;
+}
+
+Float64 pgsLongReinfShearArtifact::GetEs() const
+{
+   return m_Es;
+}
+
+void pgsLongReinfShearArtifact::SetEs(Float64 Es)
+{
+   m_Es = Es;
 }
 
 Float64 pgsLongReinfShearArtifact::GetAs() const
@@ -285,9 +242,9 @@ void pgsLongReinfShearArtifact::SetEquation(Uint16 eqn)
     m_Equation = eqn;
 }
 
-void pgsLongReinfShearArtifact::SetDemandForce(Float64 area)
+void pgsLongReinfShearArtifact::SetDemandForce(Float64 demand)
 {
-   m_DemandForce = area;
+   m_DemandForce = demand;
 }
 
 Float64 pgsLongReinfShearArtifact::GetDemandForce() const
@@ -295,14 +252,25 @@ Float64 pgsLongReinfShearArtifact::GetDemandForce() const
    return m_DemandForce;
 }
 
-void pgsLongReinfShearArtifact::SetCapacityForce(Float64 area)
-{
-   m_CapacityForce = area;
-}
-
 Float64 pgsLongReinfShearArtifact::GetCapacityForce() const
 {
-   return m_CapacityForce;
+   Float64 Pr = GetRebarForce();
+   Float64 Pps = GetPretensionForce();
+   Float64 Pc = GetConcreteForce(); // UHPC has a contribution due to the tensile strength of UHPC
+   return Pr + Pps + Pc;
+}
+
+Float64 pgsLongReinfShearArtifact::GetConcreteForce() const
+{
+   if (m_bUHPC)
+   {
+      Float64 k = (m_Equation == 0 ? 1.0 : 0.6);
+      return k*m_Act * m_gamma_u * m_ft;
+   }
+   else
+   {
+      return 0.0;
+   }
 }
 
 Float64 pgsLongReinfShearArtifact::GetPretensionForce() const
@@ -312,13 +280,17 @@ Float64 pgsLongReinfShearArtifact::GetPretensionForce() const
 
 Float64 pgsLongReinfShearArtifact::GetRebarForce() const
 {
-   return m_As*m_Fy;
+   // need to return As*Es*gamma_u*et,loc <= As*Fy for UHPC
+   if (m_bUHPC)
+      return Min(m_As * m_Fy, m_As * m_Es * m_gamma_u * m_etloc); // GS 1.7.3.5 (Es*gamma_u*et,loc <= fy, As*Es*gamma_u*et,loc <= As*fy)
+   else
+      return m_As*m_Fy;
 }
 
 
 bool pgsLongReinfShearArtifact::PassedPretensionForce() const
 {
-   if (m_bPretesionForceLimit)
+   if (m_bPretensionForceLimit)
    {
       // new requirement in 9th Edition
       Float64 AsFy = GetRebarForce();
@@ -349,7 +321,7 @@ bool pgsLongReinfShearArtifact::PassedCapacity() const
       return true;
    }
 
-   return m_DemandForce <= m_CapacityForce;
+   return m_DemandForce <= GetCapacityForce();
 }
 
 bool pgsLongReinfShearArtifact::Passed() const
@@ -367,77 +339,66 @@ void pgsLongReinfShearArtifact::SetApplicability(bool isApplicable)
    m_bIsApplicable = isApplicable;
 }
 
+void pgsLongReinfShearArtifact::IsUHPC(bool bIsUHPC)
+{
+   m_bUHPC = bIsUHPC;
+}
+
+bool pgsLongReinfShearArtifact::IsUHPC() const
+{
+   return m_bUHPC;
+}
+
+void pgsLongReinfShearArtifact::SetCrackLocalizationStrain(Float64 etloc)
+{
+   m_etloc = etloc;
+}
+
+Float64 pgsLongReinfShearArtifact::GetCrackLocalizationStrain() const
+{
+   return m_etloc;
+}
+
+void pgsLongReinfShearArtifact::SetDesignEffectiveConcreteStrength(Float64 ft)
+{
+   m_ft = ft;
+}
+
+Float64 pgsLongReinfShearArtifact::GetDesignEffectiveConcreteStrength() const
+{
+   return m_ft;
+}
+
+void pgsLongReinfShearArtifact::SetFiberOrientationReductionFactor(Float64 gamma_u)
+{
+   m_gamma_u = gamma_u;
+}
+
+Float64 pgsLongReinfShearArtifact::GetFiberOrientationReductionFactor() const
+{
+   return m_gamma_u;
+}
+
+void pgsLongReinfShearArtifact::SetAct(Float64 Act)
+{
+   m_Act = Act;
+}
+
+Float64 pgsLongReinfShearArtifact::GetAct() const
+{
+   return m_Act;
+}
+
 bool pgsLongReinfShearArtifact::PretensionForceMustExceedBarForce() const
 {
-   return m_bPretesionForceLimit;
+   return m_bPretensionForceLimit;
 }
 
 void pgsLongReinfShearArtifact::PretensionForceMustExceedBarForce(bool bExceed)
 {
-   m_bPretesionForceLimit = bExceed;
+   m_bPretensionForceLimit = bExceed;
 }
 
-
-//======================== INQUIRY    =======================================
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool pgsLongReinfShearArtifact::AssertValid() const
-{
-   return true;
-}
-
-void pgsLongReinfShearArtifact::Dump(dbgDumpContext& os) const
-{
-   os << "Dump for pgsLongReinfShearArtifact" << endl;
-}
-#endif // _DEBUG
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-void pgsLongReinfShearArtifact::MakeCopy(const pgsLongReinfShearArtifact& rOther)
-{
-   m_Fy = rOther.m_Fy;
-   m_As = rOther.m_As;
-   m_Aps = rOther.m_Aps;
-   m_Fps = rOther.m_Fps;
-   m_AptSegment = rOther.m_AptSegment;
-   m_FptSegment = rOther.m_FptSegment;
-   m_AptGirder = rOther.m_AptGirder;
-   m_FptGirder = rOther.m_FptGirder;
-   m_Mu = rOther.m_Mu;
-   m_Mr = rOther.m_Mr;
-   m_Dv = rOther.m_Dv;
-   m_FlexuralPhi = rOther.m_FlexuralPhi;
-   m_Nu = rOther.m_Nu;
-   m_AxialPhi = rOther.m_AxialPhi;
-   m_Vu = rOther.m_Vu;
-   m_ShearPhi = rOther.m_ShearPhi;
-   m_Vs = rOther.m_Vs;
-   m_Vp = rOther.m_Vp;
-   m_Theta = rOther.m_Theta;
-   m_Equation = rOther.m_Equation;
-   m_DemandForce = rOther.m_DemandForce;
-   m_CapacityForce = rOther.m_CapacityForce;
-   m_bIsApplicable = rOther.m_bIsApplicable;
-   m_bPretesionForceLimit = rOther.m_bPretesionForceLimit;
-}
-
-void pgsLongReinfShearArtifact::MakeAssignment(const pgsLongReinfShearArtifact& rOther)
-{
-   MakeCopy( rOther );
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-////////////////////////// PRIVATE    ///////////////////////////////////////
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
 
 /****************************************************************************
 CLASS
@@ -446,43 +407,6 @@ CLASS
 
 #include <PGSExt\StirrupCheckAtPoisArtifact.h>
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-pgsVerticalShearArtifact::pgsVerticalShearArtifact() :
-m_bIsApplicable(true),
-m_AvOverSReqd(0.0),
-m_Capacity(0.0),
-m_Demand(0.0),
-m_bIsStrutAndTieRequired(false),
-m_bEndSpacingApplicable(false),
-m_AvSprovided(0.0),
-m_AvSatCS(0.0)
-{
-}
-
-pgsVerticalShearArtifact::pgsVerticalShearArtifact(const pgsVerticalShearArtifact& rOther)
-{
-   MakeCopy(rOther);
-}
-
-pgsVerticalShearArtifact::~pgsVerticalShearArtifact()
-{
-}
-
-//======================== OPERATORS  =======================================
-pgsVerticalShearArtifact& pgsVerticalShearArtifact::operator= (const pgsVerticalShearArtifact& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
 bool pgsVerticalShearArtifact::IsApplicable() const
 {
    return m_bIsApplicable;
@@ -617,117 +541,17 @@ bool pgsVerticalShearArtifact::AssertValid() const
    return true;
 }
 
-void pgsVerticalShearArtifact::Dump(dbgDumpContext& os) const
+void pgsVerticalShearArtifact::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << "Dump for pgsVerticalShearArtifact" << endl;
+   os << "Dump for pgsVerticalShearArtifact" << WBFL::Debug::endl;
 }
 #endif // _DEBUG
 
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-void pgsVerticalShearArtifact::MakeCopy(const pgsVerticalShearArtifact& rOther)
-{
-   m_bIsApplicable = rOther.m_bIsApplicable;
-
-   m_bIsStrutAndTieRequired = rOther.m_bIsStrutAndTieRequired;
-   m_AvSprovided            = rOther.m_AvSprovided;
-   m_AvSatCS                = rOther.m_AvSatCS;
-   m_bEndSpacingApplicable  = rOther.m_bEndSpacingApplicable;
-
-   m_AreStirrupsReqd     = rOther.m_AreStirrupsReqd;
-   m_AreStirrupsProvided = rOther.m_AreStirrupsProvided;
-
-   m_AvOverSReqd = rOther.m_AvOverSReqd;
-
-   m_Demand   = rOther.m_Demand;
-   m_Capacity = rOther.m_Capacity;
-}
-
-void pgsVerticalShearArtifact::MakeAssignment(const pgsVerticalShearArtifact& rOther)
-{
-   MakeCopy( rOther );
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-////////////////////////// PRIVATE    ///////////////////////////////////////
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
 
 /****************************************************************************
 CLASS
    pgsHorizontalShearArtifact
 ****************************************************************************/
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-pgsHorizontalShearArtifact::pgsHorizontalShearArtifact():
-m_AvfAdditional(0),
-m_SAdditional(0),
-m_AvfGirder(0),
-m_SGirder(0),
-m_NormalCompressionForce(0),
-m_Acv(0),
-m_CohesionFactor(0),
-m_FrictionFactor(0),
-m_K1(0),
-m_K2(0),
-m_Phi(0),
-m_Vn1(0),
-m_Vn2(0),
-m_Vn3(0),
-m_Fc(0),
-m_Bv(0),
-m_Smax(0),
-m_Fy(0),
-m_bWasFyLimited(false),
-m_AvOverSMin_5_7_4_2_1(0),
-m_AvOverSMin_5_7_4_1_3(0),
-m_AvOverSMin(0),
-m_NumLegs(0),
-m_NumLegsReqd(0),
-m_VsAvg(0),
-m_VsLimit(0),
-m_Dv(0),
-m_I(0),
-m_Q(0),
-m_UltimateHorizontalShear(0),
-m_AvsReqd(0.0),
-m_bDoAllPrimaryStirrupsEngageDeck(false),
-m_bIsTopFlangeRoughened(false),
-m_IsApplicable(false),
-m_bEndSpacingApplicable(false),
-m_AvSprovided(0.0),
-m_AvSatCS(0.0)
-{
-}
-
-pgsHorizontalShearArtifact::pgsHorizontalShearArtifact(const pgsHorizontalShearArtifact& rOther)
-{
-   MakeCopy(rOther);
-}
-
-pgsHorizontalShearArtifact::~pgsHorizontalShearArtifact()
-{
-}
-
-//======================== OPERATORS  =======================================
-pgsHorizontalShearArtifact& pgsHorizontalShearArtifact::operator= (const pgsHorizontalShearArtifact& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
 
 //======================== OPERATIONS =======================================
 bool pgsHorizontalShearArtifact::IsApplicable() const
@@ -807,10 +631,16 @@ bool pgsHorizontalShearArtifact::Passed() const
    }
 }
 
+Float64 pgsHorizontalShearArtifact::GetNominalCapacity() const
+{
+   ASSERTVALID;
+   return Min(m_Vn1, m_Vn2, m_Vn3);
+}
+
 Float64 pgsHorizontalShearArtifact::GetCapacity() const
 {
    ASSERTVALID;
-   return m_Phi * Min(m_Vn1, m_Vn2, m_Vn3);
+   return m_Phi * GetNominalCapacity();
 }
 
 Float64 pgsHorizontalShearArtifact::GetAvOverS() const
@@ -870,16 +700,6 @@ void pgsHorizontalShearArtifact::SetVn(Float64 Vn1, Float64 Vn2, Float64 Vn3)
    m_Vn3=Vn3;
 
    ASSERTVALID;
-}
-
-Float64 pgsHorizontalShearArtifact::GetBv() const
-{
-   return m_Bv;
-}
-
-void pgsHorizontalShearArtifact::SetBv(Float64 bv)
-{
-   m_Bv = bv;
 }
 
 Float64 pgsHorizontalShearArtifact::GetSAdditional() const
@@ -1144,80 +964,11 @@ bool pgsHorizontalShearArtifact::AssertValid() const
    return true;
 }
 
-void pgsHorizontalShearArtifact::Dump(dbgDumpContext& os) const
+void pgsHorizontalShearArtifact::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << "Dump for pgsHorizontalShearArtifact" << endl;
+   os << "Dump for pgsHorizontalShearArtifact" << WBFL::Debug::endl;
 }
 #endif // _DEBUG
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-void pgsHorizontalShearArtifact::MakeCopy(const pgsHorizontalShearArtifact& rOther)
-{
-   m_IsApplicable            = rOther.m_IsApplicable;
-   m_UltimateHorizontalShear = rOther.m_UltimateHorizontalShear;
-   m_NormalCompressionForce  = rOther.m_NormalCompressionForce;
-   m_gamma_Pc = rOther.m_gamma_Pc;
-   m_Acv                     = rOther.m_Acv;
-   m_CohesionFactor          = rOther.m_CohesionFactor;
-   m_FrictionFactor          = rOther.m_FrictionFactor;
-   m_K1                      = rOther.m_K1;
-   m_K2                      = rOther.m_K2;
-   m_Phi                     = rOther.m_Phi;
-   m_Vn1                     = rOther.m_Vn1;
-   m_Vn2                     = rOther.m_Vn2;
-   m_Vn3                     = rOther.m_Vn3;
-   m_Fc                      = rOther.m_Fc;
-
-   m_Bv           = rOther.m_Bv;
-   m_AvfAdditional = rOther.m_AvfAdditional;
-   m_SAdditional   = rOther.m_SAdditional;
-   m_AvfGirder    = rOther.m_AvfGirder;
-   m_SGirder      = rOther.m_SGirder;
-   m_Smax         = rOther.m_Smax;
-   m_Fy           = rOther.m_Fy;
-   m_bWasFyLimited = rOther.m_bWasFyLimited;
-   m_AvOverSMin_5_7_4_2_1   = rOther.m_AvOverSMin_5_7_4_2_1;
-   m_AvOverSMin_5_7_4_1_3   = rOther.m_AvOverSMin_5_7_4_1_3;
-   m_AvOverSMin   = rOther.m_AvOverSMin;
-   m_NumLegs      = rOther.m_NumLegs;
-   m_NumLegsReqd  = rOther.m_NumLegsReqd;
-   m_VsAvg        = rOther.m_VsAvg;
-   m_VsLimit      = rOther.m_VsLimit;
-
-   m_bDoAllPrimaryStirrupsEngageDeck = rOther.m_bDoAllPrimaryStirrupsEngageDeck;
-   m_bIsTopFlangeRoughened = rOther.m_bIsTopFlangeRoughened;
-
-   m_Dv = rOther.m_Dv;
-   m_I = rOther.m_I;
-   m_Q = rOther.m_Q;
-   m_Vu = rOther.m_Vu;
-
-   m_AvsReqd = rOther.m_AvsReqd;
-
-   m_AvSprovided            = rOther.m_AvSprovided;
-   m_AvSatCS                = rOther.m_AvSatCS;
-   m_bEndSpacingApplicable  = rOther.m_bEndSpacingApplicable;
-}
-
-void pgsHorizontalShearArtifact::MakeAssignment(const pgsHorizontalShearArtifact& rOther)
-{
-   MakeCopy( rOther );
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
 
 
 
@@ -1226,51 +977,6 @@ CLASS
    pgsStirrupDetailArtifact
 ****************************************************************************/
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-pgsStirrupDetailArtifact::pgsStirrupDetailArtifact():
-m_After1999(true),
-m_Fy(0),
-m_Fc(0),
-m_AvsMin(0),
-m_Avs(0),
-m_SMax(0),
-m_SMin(0),
-m_BarSize(matRebar::bsNone),
-m_S(0),
-m_Bv(0),
-m_Dv(0),
-m_Vu(0),
-m_VuLimit(0),
-m_vu(0),
-m_vuLimit(0),
-m_IsApplicable(false),
-m_IsInCritialSectionZone(false)
-{
-}
-
-pgsStirrupDetailArtifact::pgsStirrupDetailArtifact(const pgsStirrupDetailArtifact& rOther)
-{
-   MakeCopy(rOther);
-}
-
-pgsStirrupDetailArtifact::~pgsStirrupDetailArtifact()
-{
-}
-
-//======================== OPERATORS  =======================================
-pgsStirrupDetailArtifact& pgsStirrupDetailArtifact::operator= (const pgsStirrupDetailArtifact& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
-//======================== OPERATIONS =======================================
 
 bool pgsStirrupDetailArtifact::Passed() const
 {
@@ -1310,55 +1016,11 @@ bool pgsStirrupDetailArtifact::AssertValid() const
    return true;
 }
 
-void pgsStirrupDetailArtifact::Dump(dbgDumpContext& os) const
+void pgsStirrupDetailArtifact::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << "Dump for pgsStirrupDetailArtifact" << endl;
+   os << "Dump for pgsStirrupDetailArtifact" << WBFL::Debug::endl;
 }
 #endif // _DEBUG
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-void pgsStirrupDetailArtifact::MakeCopy(const pgsStirrupDetailArtifact& rOther)
-{
-   m_After1999 = rOther.m_After1999;
-   m_Fy = rOther.m_Fy;
-   m_Fc = rOther.m_Fc;
-   m_AvsMin = rOther.m_AvsMin;
-   m_Avs = rOther.m_Avs;
-   m_SMax = rOther.m_SMax;
-   m_SMin = rOther.m_SMin;
-   m_BarSize = rOther.m_BarSize;
-   m_S = rOther.m_S;
-   m_Bv = rOther.m_Bv;
-   m_Dv = rOther.m_Dv;
-   m_Vu = rOther.m_Vu;
-   m_VuLimit = rOther.m_VuLimit;
-   m_vu = rOther.m_vu;
-   m_vuLimit = rOther.m_vuLimit;
-   m_IsApplicable = rOther.m_IsApplicable;
-   m_IsInCritialSectionZone = rOther.m_IsInCritialSectionZone;
-}
-
-void pgsStirrupDetailArtifact::MakeAssignment(const pgsStirrupDetailArtifact& rOther)
-{
-   MakeCopy( rOther );
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
-
-
 
 /****************************************************************************
 CLASS
@@ -1371,29 +1033,6 @@ CLASS
 #pragma Reminder("UPDATE: rename this class to pgsSectionalShearCheckArtifact")
 // this class encapulates the results of section based shear checks.... it does more than
 // check stirrups
-pgsStirrupCheckAtPoisArtifact::pgsStirrupCheckAtPoisArtifact()
-{
-}
-
-pgsStirrupCheckAtPoisArtifact::pgsStirrupCheckAtPoisArtifact(const pgsStirrupCheckAtPoisArtifact& rOther)
-{
-   MakeCopy(rOther);
-}
-
-pgsStirrupCheckAtPoisArtifact::~pgsStirrupCheckAtPoisArtifact()
-{
-}
-
-//======================== OPERATORS  =======================================
-pgsStirrupCheckAtPoisArtifact& pgsStirrupCheckAtPoisArtifact::operator= (const pgsStirrupCheckAtPoisArtifact& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
 
 bool pgsStirrupCheckAtPoisArtifact::operator<(const pgsStirrupCheckAtPoisArtifact& artifact) const
 {
@@ -1488,39 +1127,8 @@ bool pgsStirrupCheckAtPoisArtifact::AssertValid() const
    return true;
 }
 
-void pgsStirrupCheckAtPoisArtifact::Dump(dbgDumpContext& os) const
+void pgsStirrupCheckAtPoisArtifact::Dump(WBFL::Debug::LogContext& os) const
 {
-   os << "Dump for pgsStirrupCheckAtPoisArtifact" << endl;
+   os << "Dump for pgsStirrupCheckAtPoisArtifact" << WBFL::Debug::endl;
 }
 #endif // _DEBUG
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-void pgsStirrupCheckAtPoisArtifact::MakeCopy(const pgsStirrupCheckAtPoisArtifact& rOther)
-{
-   m_Poi                     = rOther.m_Poi;
-   m_VerticalShearArtifact   = rOther.m_VerticalShearArtifact;
-   m_HorizontalShearArtifact = rOther.m_HorizontalShearArtifact;
-   m_StirrupDetailArtifact   = rOther.m_StirrupDetailArtifact;
-   m_LongReinfShearArtifact  = rOther.m_LongReinfShearArtifact;
-}
-
-void pgsStirrupCheckAtPoisArtifact::MakeAssignment(const pgsStirrupCheckAtPoisArtifact& rOther)
-{
-   MakeCopy( rOther );
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
-

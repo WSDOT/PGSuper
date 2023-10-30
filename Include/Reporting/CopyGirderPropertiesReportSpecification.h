@@ -28,10 +28,8 @@ class REPORTINGCLASS CCopyGirderPropertiesReportSpecification :
    public CBrokerReportSpecification
 {
 public:
-   CCopyGirderPropertiesReportSpecification(LPCTSTR strReportName, IBroker* pBroker);
+   CCopyGirderPropertiesReportSpecification(const std::_tstring& strReportName, IBroker* pBroker);
    ~CCopyGirderPropertiesReportSpecification(void);
 
-   virtual HRESULT Validate() const;
-
-protected:
+   virtual bool IsValid() const override;
 };

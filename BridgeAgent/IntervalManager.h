@@ -46,7 +46,7 @@ public:
    EventIndexType GetEndEvent(IntervalIndexType idx) const;
    Float64 GetTime(IntervalIndexType idx,pgsTypes::IntervalTimeType timeType) const;
    Float64 GetDuration(IntervalIndexType idx) const;
-   LPCTSTR GetDescription(IntervalIndexType idx) const;
+   std::_tstring GetDescription(IntervalIndexType idx) const;
 
    // returns the index of the first interval that starts with eventIdx
    IntervalIndexType GetInterval(EventIndexType eventIdx) const;
@@ -203,6 +203,13 @@ public:
    // returns the intervals when tendons are stressed for the specified girder
    std::vector<IntervalIndexType> GetGirderTendonStressingIntervals(const CGirderKey& girderKey) const;
 
+   // returns intervals for geometry control activities.
+   std::vector<IntervalIndexType> GetGeometryControlIntervals(pgsTypes::GeometryControlActivityType type) const;
+
+   // return the interval of THE Geometry Control Event
+   IntervalIndexType GetGeometryControlEventInterval() const;
+
+
 protected:
    IBroker* m_pBroker;
    StatusGroupIDType m_StatusGroupID;
@@ -279,6 +286,8 @@ protected:
    IntervalIndexType m_LiveLoadIntervalIdx;
    IntervalIndexType m_OverlayIntervalIdx;
    IntervalIndexType m_RailingSystemIntervalIdx;
+
+   std::vector< std::pair<IntervalIndexType, pgsTypes::pgsTypes::GeometryControlActivityType> > m_vGeometryControlIntervals;
 
    // map of when the strands are stressed for the first and last segment constructed for a girder
    std::map<CGirderKey,std::pair<IntervalIndexType,IntervalIndexType>> m_StrandStressingSequenceIntervalLimits;

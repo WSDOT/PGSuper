@@ -208,9 +208,9 @@ void CLinearDuctGrid::SetData(const CLinearDuctGeometry& ductGeometry)
 
    m_DuctGeometry = ductGeometry;
 
-   CollectionIndexType nPoints = ductGeometry.GetPointCount();
+   IndexType nPoints = ductGeometry.GetPointCount();
    InsertRows(1,(ROWCOL)nPoints);
-   for (CollectionIndexType idx = 0; idx < nPoints; idx++ )
+   for (IndexType idx = 0; idx < nPoints; idx++ )
    {
       ROWCOL row = ROWCOL(idx+1);
       SetRowStyle(row);
@@ -232,8 +232,8 @@ void CLinearDuctGrid::AddPoint()
    
    SetRowStyle(nRow);
 
-   Float64 location = ::ConvertToSysUnits(1.0,unitMeasure::Feet);
-   Float64 offset   = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
+   Float64 location = WBFL::Units::ConvertToSysUnits(1.0,WBFL::Units::Measure::Feet);
+   Float64 offset   = WBFL::Units::ConvertToSysUnits(2.0,WBFL::Units::Measure::Inch);
 
    FillRow(nRow,location,offset,CLinearDuctGeometry::BottomGirder);
 
@@ -329,11 +329,11 @@ void CLinearDuctGrid::GetPoint(ROWCOL row,Float64* pLocation,Float64* pOffset,CL
    }
    else
    {
-      *pLocation = ::ConvertToSysUnits(*pLocation,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+      *pLocation = WBFL::Units::ConvertToSysUnits(*pLocation,pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
    }
 
    *pOffset = _tstof(GetCellValue(row,nOffsetCol));
-   *pOffset = ::ConvertToSysUnits(*pOffset, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+   *pOffset = WBFL::Units::ConvertToSysUnits(*pOffset, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
    *pOffsetType = CLinearDuctGeometry::OffsetType(_tstoi(GetCellValue(row,nOffsetTypeCol)));
 }
 

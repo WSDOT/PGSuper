@@ -24,6 +24,7 @@
 #include <Reporting\LibraryUsageTable.h>
 
 #include <IFace\Project.h>
+#include <psgLib/SpecificationCriteria.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -61,26 +62,26 @@ rptRcTable* CLibraryUsageTable::Build(IBroker* pBroker) const
    (*table)(0,2) << _T("Source");
 
    GET_IFACE2(pBroker,ILibrary,pLibrary);
-   std::vector<libEntryUsageRecord> records = pLibrary->GetLibraryUsageRecords();
+   std::vector<WBFL::Library::EntryUsageRecord> records = pLibrary->GetLibraryUsageRecords();
 
-   std::vector<libEntryUsageRecord>::iterator iter;
+   std::vector<WBFL::Library::EntryUsageRecord>::iterator iter;
    RowIndexType row = table->GetNumberOfHeaderRows();
 
    for ( iter = records.begin(); iter != records.end(); iter++ )
    {
-      libEntryUsageRecord record = *iter;
+      WBFL::Library::EntryUsageRecord record = *iter;
       (*table)(row,0) << record.LibName;
       (*table)(row,1) << record.EntryName;
 
       if (record.LibName == _T("Project Criteria"))
       {
          const SpecLibraryEntry* pEntry = pLibrary->GetSpecEntry(record.EntryName.c_str());
-         (*table)(row, 1) << _T(" based on") << rptNewLine << lrfdVersionMgr::GetCodeString() << _T(", ") << lrfdVersionMgr::GetVersionString(pEntry->GetSpecificationType());
+         (*table)(row, 1) << _T(" based on") << rptNewLine << WBFL::LRFD::BDSManager::GetSpecificationName() << _T(", ") << WBFL::LRFD::BDSManager::GetEditionAsString(pEntry->GetSpecificationCriteria().GetEdition());
       }
       else if (record.LibName == _T("Load Rating Criteria"))
       {
          const RatingLibraryEntry* pEntry = pLibrary->GetRatingEntry(record.EntryName.c_str());
-         (*table)(row, 1) << _T(" based on") << rptNewLine << lrfrVersionMgr::GetCodeString() << _T(", ") << lrfrVersionMgr::GetVersionString(pEntry->GetSpecificationVersion());
+         (*table)(row, 1) << _T(" based on") << rptNewLine << WBFL::LRFD::MBEManager::GetSpecificationName() << _T(", ") << WBFL::LRFD::MBEManager::GetEditionAsString(pEntry->GetSpecificationVersion());
       }
       
       if ( record.bEditable )

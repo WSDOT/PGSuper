@@ -27,13 +27,14 @@
 #include "stdafx.h"
 #include <psgLib\psgLib.h>
 #include "TrafficBarrierViewDialog.h"
-#include <GraphicsLib\PointMapper.h>
+#include <Graphing/PointMapper.h>
 
-#include <GeomModel\IShape.h>
-#include <GeomModel\Circle.h>
+#include <GeomModel/Shape.h>
+#include <GeomModel/Circle.h>
+#include <GeomModel/Polygon.h>
+
 #include "PGSuperColors.h"
 
-#include <GeomModel\Polygon.h>
 #include <WBFLGeometry.h>
 
 #include <WBFLGenericBridge.h>
@@ -114,12 +115,12 @@ void CTrafficBarrierViewDialog::OnPaint()
 
    bbox->BoundPoint(0.0, 0.0); // make sure origin is inside
 
-   GraphRect box(left,bottom,right,top);
-   GraphSize size = box.Size();
-   GraphPoint org = box.BottomCenter();
+   WBFL::Graphing::Rect box(left,bottom,right,top);
+   WBFL::Graphing::Size size = box.Size();
+   WBFL::Graphing::Point org = box.BottomCenter();
 
-   grlibPointMapper mapper;
-   mapper.SetMappingMode(grlibPointMapper::Isotropic);
+   WBFL::Graphing::PointMapper mapper;
+   mapper.SetMappingMode(WBFL::Graphing::PointMapper::MapMode::Isotropic);
    mapper.SetWorldExt(size);
    mapper.SetWorldOrg(org);
    mapper.SetDeviceExt(csize.cx,csize.cy);
@@ -140,7 +141,7 @@ void CTrafficBarrierViewDialog::OnPaint()
    dc.SelectObject(pOldBrush);
 }
 
-void CTrafficBarrierViewDialog::DrawShape(CDC* pDC, grlibPointMapper& Mapper)
+void CTrafficBarrierViewDialog::DrawShape(CDC* pDC, WBFL::Graphing::PointMapper& Mapper)
 {
    CComQIPtr<ICompositeShape> compshape(m_pShape);
 
@@ -151,10 +152,10 @@ void CTrafficBarrierViewDialog::DrawShape(CDC* pDC, grlibPointMapper& Mapper)
 
    if ( compshape )
    {
-      CollectionIndexType count;
+      IndexType count;
       compshape->get_Count(&count);
 
-      for ( CollectionIndexType idx = 0; idx < count; idx++ )
+      for ( IndexType idx = 0; idx < count; idx++ )
       {
          CComPtr<ICompositeShapeItem> item;
          compshape->get_Item(idx,&item);
@@ -182,12 +183,12 @@ void CTrafficBarrierViewDialog::DrawShape(CDC* pDC, grlibPointMapper& Mapper)
    pDC->SelectObject(pOldBrush);
 }
 
-void CTrafficBarrierViewDialog::DrawShape(CDC* pDC,grlibPointMapper& Mapper,IShape* pShape)
+void CTrafficBarrierViewDialog::DrawShape(CDC* pDC, WBFL::Graphing::PointMapper& Mapper,IShape* pShape)
 {
    CComPtr<IPoint2dCollection> polypoints;
    pShape->get_PolyPoints(&polypoints);
 
-   CollectionIndexType nPoints;
+   IndexType nPoints;
    polypoints->get_Count(&nPoints);
 
    IPoint2d** points = new IPoint2d*[nPoints];
@@ -200,10 +201,10 @@ void CTrafficBarrierViewDialog::DrawShape(CDC* pDC,grlibPointMapper& Mapper,ISha
    ATLASSERT(nFetched == nPoints);
 
    CPoint* dev_points = new CPoint[nPoints];
-   for ( CollectionIndexType i = 0; i < nPoints; i++ )
+   for ( IndexType i = 0; i < nPoints; i++ )
    {
       long dx,dy;
-      GraphPoint point;
+      WBFL::Graphing::Point point;
       points[i]->Location(&point.X(), &point.Y());
       Mapper.WPtoDP(point,&dx,&dy);
       dev_points[i] = CPoint(dx,dy);

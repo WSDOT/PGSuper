@@ -64,9 +64,9 @@ void txnEditBridgeDescription::Execute(int i)
    pBridgeDesc->SetBridgeDescription( m_BridgeDesc[i] );
 }
 
-txnTransaction* txnEditBridgeDescription::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnEditBridgeDescription::CreateClone() const
 {
-   return new txnEditBridgeDescription(m_pBroker,m_BridgeDesc[0],m_BridgeDesc[1]);
+   return std::make_unique<txnEditBridgeDescription>(m_pBroker,m_BridgeDesc[0],m_BridgeDesc[1]);
 }
 
 std::_tstring txnEditBridgeDescription::Name() const
@@ -74,12 +74,12 @@ std::_tstring txnEditBridgeDescription::Name() const
    return _T("Modify bridge for Post-Tensioning");
 }
 
-bool txnEditBridgeDescription::IsUndoable()
+bool txnEditBridgeDescription::IsUndoable() const
 {
    return true;
 }
 
-bool txnEditBridgeDescription::IsRepeatable()
+bool txnEditBridgeDescription::IsRepeatable() const
 {
    return false;
 }

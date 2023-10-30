@@ -44,7 +44,7 @@ static char THIS_FILE[] = __FILE__;
 static COLORREF DISABLED_COLOR = RGB(200,200,200);
 static COLORREF SYS_COLOR = GetSysColor(COLOR_WINDOW);
 
-static COLORREF GetEntryColor(CollectionIndexType entryIndex)
+static COLORREF GetEntryColor(IndexType entryIndex)
 {
    return entryIndex%2 ? SYS_COLOR : DISABLED_COLOR;
 }
@@ -132,14 +132,14 @@ BOOL CGirderGlobalStrandGrid::OnGridKeyDown(UINT nChar, UINT nRepCnt, UINT nFlag
 
    if (nChar==VK_DOWN)
    {
-      CollectionIndexType orig_idx = GetRowEntry(row);
+      IndexType orig_idx = GetRowEntry(row);
       if ( (m_Entries.size()-1) <= orig_idx )
       {
          ::MessageBeep(MB_ICONASTERISK);
       }
       else
       {
-         CollectionIndexType idx=orig_idx;
+         IndexType idx=orig_idx;
          while(idx==orig_idx)
          {
             idx = GetRowEntry(++row);
@@ -152,14 +152,14 @@ BOOL CGirderGlobalStrandGrid::OnGridKeyDown(UINT nChar, UINT nRepCnt, UINT nFlag
    }
    else if (nChar==VK_UP)
    {
-      CollectionIndexType orig_idx =GetRowEntry(row);
+      IndexType orig_idx =GetRowEntry(row);
       if (orig_idx==0)
       {
          ::MessageBeep(MB_ICONASTERISK);
       }
       else
       {
-         CollectionIndexType idx=orig_idx;
+         IndexType idx=orig_idx;
          while(idx==orig_idx)
          {
             idx = GetRowEntry(--row);
@@ -212,7 +212,7 @@ BOOL CGirderGlobalStrandGrid::OnLButtonDblClkRowCol(ROWCOL nRow, ROWCOL nCol, UI
 void CGirderGlobalStrandGrid::EditSelectedRow()
 {
    ROWCOL row = GetSelectedRow();
-   CollectionIndexType idx =GetRowEntry(row);
+   IndexType idx =GetRowEntry(row);
    GlobalStrandGridEntry& entry = m_Entries[idx];
 
    // existing number of rows
@@ -254,7 +254,7 @@ BOOL CGirderGlobalStrandGrid::OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, U
 void CGirderGlobalStrandGrid::InsertSelectedRow()
 {
    ROWCOL sel_row = GetSelectedRow();
-   CollectionIndexType idx =GetRowEntry(sel_row);
+   IndexType idx =GetRowEntry(sel_row);
    EntryIteratorType entry_iter = m_Entries.begin()+idx;
    ATLASSERT(entry_iter != m_Entries.end());
 
@@ -272,9 +272,9 @@ void CGirderGlobalStrandGrid::InsertSelectedRow()
       m_Entries.insert(entry_iter, entry);
 
       // draw new entry and all below it
-      CollectionIndexType size = m_Entries.size();
+      IndexType size = m_Entries.size();
       ROWCOL row = sel_row;
-      for (CollectionIndexType cnt=idx; cnt<size; cnt++)
+      for (IndexType cnt=idx; cnt<size; cnt++)
       {
          COLORREF curr_color  =  GetEntryColor(cnt);
          row += FillRowsWithEntry(row, m_Entries[cnt], use_harped, adj_type, curr_color);
@@ -328,7 +328,7 @@ void CGirderGlobalStrandGrid::AppendSelectedRow()
       // add entry to data store
       m_Entries.push_back(entry);
 
-      CollectionIndexType idx = m_Entries.size()-1;
+      IndexType idx = m_Entries.size()-1;
       COLORREF curr_color  =  GetEntryColor(idx);
 
 
@@ -373,7 +373,7 @@ void CGirderGlobalStrandGrid::AppendEntry(CGirderGlobalStrandGrid::GlobalStrandG
    // add entry to data store
    m_Entries.push_back(entry);
 
-   CollectionIndexType idx = m_Entries.size()-1;
+   IndexType idx = m_Entries.size()-1;
    COLORREF curr_color  =  GetEntryColor(idx);
 
 
@@ -396,7 +396,7 @@ void CGirderGlobalStrandGrid::OnEditRemoverows()
 void CGirderGlobalStrandGrid::RemoveSelectedRow()
 {
    ROWCOL sel_row = GetSelectedRow();
-   CollectionIndexType idx =GetRowEntry(sel_row);
+   IndexType idx =GetRowEntry(sel_row);
    EntryIteratorType entry_iter = m_Entries.begin()+idx;
    ATLASSERT(entry_iter != m_Entries.end());
 
@@ -410,10 +410,10 @@ void CGirderGlobalStrandGrid::RemoveSelectedRow()
    m_Entries.erase(entry_iter);
 
    // now refill trailing entries so color matches
-   CollectionIndexType size = m_Entries.size();
+   IndexType size = m_Entries.size();
 
    ROWCOL row = sel_row;
-   for (CollectionIndexType cnt=idx; cnt<size; cnt++)
+   for (IndexType cnt=idx; cnt<size; cnt++)
    {
       COLORREF curr_color  =  GetEntryColor(cnt);
       row += FillRowsWithEntry(row, m_Entries[cnt], use_harped, adj_type, curr_color);
@@ -442,7 +442,7 @@ void CGirderGlobalStrandGrid::MoveUpSelectedRow()
    }
    else
    {
-      CollectionIndexType idx =GetRowEntry(sel_row);
+      IndexType idx =GetRowEntry(sel_row);
       EntryIteratorType entry_iter = m_Entries.begin()+idx;
       ATLASSERT(entry_iter!=m_Entries.end());
 
@@ -461,9 +461,9 @@ void CGirderGlobalStrandGrid::MoveUpSelectedRow()
       idx--;
 
       // draw moved entry and all below it
-      CollectionIndexType size = m_Entries.size();
+      IndexType size = m_Entries.size();
       ROWCOL row = top_row;
-      for (CollectionIndexType cnt=idx; cnt<size; cnt++)
+      for (IndexType cnt=idx; cnt<size; cnt++)
       {
          COLORREF curr_color  =  GetEntryColor(cnt);
          row += FillRowsWithEntry(row, m_Entries[cnt], use_harped, adj_type, curr_color);
@@ -481,8 +481,8 @@ void CGirderGlobalStrandGrid::MoveUpSelectedRow()
 void CGirderGlobalStrandGrid::MoveDownSelectedRow()
 {
    ROWCOL sel_row = GetSelectedRow();
-   CollectionIndexType idx =GetRowEntry(sel_row);
-   CollectionIndexType num_entries = m_Entries.size();
+   IndexType idx =GetRowEntry(sel_row);
+   IndexType num_entries = m_Entries.size();
    if (num_entries-1 <= idx)
    {
       ::MessageBeep(MB_ICONASTERISK);
@@ -505,9 +505,9 @@ void CGirderGlobalStrandGrid::MoveDownSelectedRow()
       m_Entries.insert(pivot_iter, entry);
 
       // draw pivot entry and all below it
-      CollectionIndexType size = m_Entries.size();
+      IndexType size = m_Entries.size();
       ROWCOL row = sel_row;
-      for (CollectionIndexType cnt=idx; cnt<size; cnt++)
+      for (IndexType cnt=idx; cnt<size; cnt++)
       {
          COLORREF curr_color  =  GetEntryColor(cnt);
          row += FillRowsWithEntry(row, m_Entries[cnt], use_harped, adj_type, curr_color);
@@ -597,7 +597,7 @@ void CGirderGlobalStrandGrid::OnChangeWebStrandType()
 void CGirderGlobalStrandGrid::CustomInit()
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    // Initialize the grid. For CWnd based grids this call is // 
 // essential. For view based grids this initialization is done 
@@ -906,14 +906,14 @@ void CGirderGlobalStrandGrid::SelectRow(ROWCOL nRow)
    m_pClient->OnEnableDelete(nRow!=0);
 }
 
-CollectionIndexType CGirderGlobalStrandGrid::GetRowEntry(ROWCOL nRow)
+IndexType CGirderGlobalStrandGrid::GetRowEntry(ROWCOL nRow)
 {
    ATLASSERT(0 < nRow && nRow <= GetRowCount());
 
    bool use_harped = m_pClient->DoUseHarpedGrid();
 
    // brute search from start
-   CollectionIndexType global_index=0;
+   IndexType global_index=0;
    ROWCOL curr_row=0;
    for(CGirderGlobalStrandGrid::EntryIteratorType it2=m_Entries.begin(); it2!=m_Entries.end(); it2++)
    {
@@ -956,7 +956,7 @@ bool CGirderGlobalStrandGrid::EditEntry(ROWCOL row, GlobalStrandGridEntry& entry
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    pgsTypes::AdjustableStrandType adj_type = m_pClient->GetAdjustableStrandType();
    bool use_harped = m_pClient->DoUseHarpedGrid();
@@ -1052,7 +1052,7 @@ void CGirderGlobalStrandGrid::ReverseHarpedStrandOrder()
    std::reverse(harped_strands.begin(),harped_strands.end());
 
    // do a 1 for 1 replacement of the harped strands in the main entry vector
-   CollectionIndexType idx = 0;
+   IndexType idx = 0;
    for ( iter = m_Entries.begin(); iter != m_Entries.end(); iter++ )
    {
       CGirderGlobalStrandGrid::GlobalStrandGridEntry& entry = *iter;
@@ -1070,14 +1070,14 @@ void CGirderGlobalStrandGrid::GenerateStrandPositions()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    CStrandGenerationDlg dlg; // this dialog works in system units
    dlg.m_DoUseHarpedGrid = m_pClient->DoUseHarpedGrid();
    dlg.m_AdjustableStrandType = m_pClient->GetAdjustableStrandType();
 
-   dlg.m_Xstart = ::ConvertToSysUnits(1.0,unitMeasure::Inch);
-   dlg.m_Ystart = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
+   dlg.m_Xstart = WBFL::Units::ConvertToSysUnits(1.0,WBFL::Units::Measure::Inch);
+   dlg.m_Ystart = WBFL::Units::ConvertToSysUnits(2.0,WBFL::Units::Measure::Inch);
    dlg.m_nStrandsX = 8;
    dlg.m_nStrandsY = 1;
    
@@ -1085,7 +1085,7 @@ void CGirderGlobalStrandGrid::GenerateStrandPositions()
 
    dlg.m_StrandGenerationType = CStrandGenerationDlg::sgSequential;
 
-   Float64 spacing = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
+   Float64 spacing = WBFL::Units::ConvertToSysUnits(2.0,WBFL::Units::Measure::Inch);
    dlg.m_Xend = spacing;
    dlg.m_Yend = spacing;
 
@@ -1112,7 +1112,7 @@ void CGirderGlobalStrandGrid::GenerateStrandPositions()
 void CGirderGlobalStrandGrid::GenerateStraightStrands(CStrandGenerationDlg& dlg)
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
 
    if ( dlg.m_bDelete )
@@ -1121,21 +1121,21 @@ void CGirderGlobalStrandGrid::GenerateStraightStrands(CStrandGenerationDlg& dlg)
    }
 
    // strand grid must be generated in display units
-   Float64 x_start = ::ConvertFromSysUnits(dlg.m_Xstart,pDisplayUnits->ComponentDim.UnitOfMeasure);
-   Float64 y_start = ::ConvertFromSysUnits(dlg.m_Ystart,pDisplayUnits->ComponentDim.UnitOfMeasure);
+   Float64 x_start = WBFL::Units::ConvertFromSysUnits(dlg.m_Xstart,pDisplayUnits->ComponentDim.UnitOfMeasure);
+   Float64 y_start = WBFL::Units::ConvertFromSysUnits(dlg.m_Ystart,pDisplayUnits->ComponentDim.UnitOfMeasure);
    Float64 x_end,y_end, Xspacing,Yspacing;
    if ( dlg.m_LayoutType == CStrandGenerationDlg::ltSpacing )
    {
-      Xspacing = ::ConvertFromSysUnits(dlg.m_Xend,  pDisplayUnits->ComponentDim.UnitOfMeasure);;
-      Yspacing = ::ConvertFromSysUnits(dlg.m_Yend,  pDisplayUnits->ComponentDim.UnitOfMeasure);
+      Xspacing = WBFL::Units::ConvertFromSysUnits(dlg.m_Xend,  pDisplayUnits->ComponentDim.UnitOfMeasure);;
+      Yspacing = WBFL::Units::ConvertFromSysUnits(dlg.m_Yend,  pDisplayUnits->ComponentDim.UnitOfMeasure);
 
       x_end = x_start + Xspacing*(dlg.m_nStrandsX-1);
       y_end = y_start + Yspacing*(dlg.m_nStrandsY-1);
    }
    else
    {
-      x_end = ::ConvertFromSysUnits(dlg.m_Xend,  pDisplayUnits->ComponentDim.UnitOfMeasure);
-      y_end = ::ConvertFromSysUnits(dlg.m_Yend,  pDisplayUnits->ComponentDim.UnitOfMeasure);
+      x_end = WBFL::Units::ConvertFromSysUnits(dlg.m_Xend,  pDisplayUnits->ComponentDim.UnitOfMeasure);
+      y_end = WBFL::Units::ConvertFromSysUnits(dlg.m_Yend,  pDisplayUnits->ComponentDim.UnitOfMeasure);
 
       Xspacing = (x_end-x_start)/(dlg.m_nStrandsX-1);
       Yspacing = (y_end-y_start)/(dlg.m_nStrandsY-1);
@@ -1196,7 +1196,7 @@ void CGirderGlobalStrandGrid::GenerateStraightStrands(CStrandGenerationDlg& dlg)
 void CGirderGlobalStrandGrid::GenerateHarpedStrands(CStrandGenerationDlg& dlg)
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    if ( dlg.m_bDelete )
    {
@@ -1204,36 +1204,36 @@ void CGirderGlobalStrandGrid::GenerateHarpedStrands(CStrandGenerationDlg& dlg)
    }
 
    // strand grid must be generated in display units
-   Float64 x_start_1 = ::ConvertFromSysUnits(dlg.m_Xstart, pDisplayUnits->ComponentDim.UnitOfMeasure);
-   Float64 y_start_1 = ::ConvertFromSysUnits(dlg.m_Ystart, pDisplayUnits->ComponentDim.UnitOfMeasure);
-   Float64 x_start_2 = ::ConvertFromSysUnits(dlg.m_Xstart2,pDisplayUnits->ComponentDim.UnitOfMeasure);
-   Float64 y_start_2 = ::ConvertFromSysUnits(dlg.m_Ystart2,pDisplayUnits->ComponentDim.UnitOfMeasure);
+   Float64 x_start_1 = WBFL::Units::ConvertFromSysUnits(dlg.m_Xstart, pDisplayUnits->ComponentDim.UnitOfMeasure);
+   Float64 y_start_1 = WBFL::Units::ConvertFromSysUnits(dlg.m_Ystart, pDisplayUnits->ComponentDim.UnitOfMeasure);
+   Float64 x_start_2 = WBFL::Units::ConvertFromSysUnits(dlg.m_Xstart2,pDisplayUnits->ComponentDim.UnitOfMeasure);
+   Float64 y_start_2 = WBFL::Units::ConvertFromSysUnits(dlg.m_Ystart2,pDisplayUnits->ComponentDim.UnitOfMeasure);
    Float64 x_end_1,y_end_1, Xspacing_1,Yspacing_1;
    Float64 x_end_2,y_end_2, Xspacing_2,Yspacing_2;
    if ( dlg.m_LayoutType == CStrandGenerationDlg::ltSpacing )
    {
-      Xspacing_1 = ::ConvertFromSysUnits(dlg.m_Xend,  pDisplayUnits->ComponentDim.UnitOfMeasure);;
-      Yspacing_1 = ::ConvertFromSysUnits(dlg.m_Yend,  pDisplayUnits->ComponentDim.UnitOfMeasure);
+      Xspacing_1 = WBFL::Units::ConvertFromSysUnits(dlg.m_Xend,  pDisplayUnits->ComponentDim.UnitOfMeasure);;
+      Yspacing_1 = WBFL::Units::ConvertFromSysUnits(dlg.m_Yend,  pDisplayUnits->ComponentDim.UnitOfMeasure);
 
       x_end_1 = x_start_1 + Xspacing_1*(dlg.m_nStrandsX-1);
       y_end_1 = y_start_1 + Yspacing_1*(dlg.m_nStrandsY-1);
 
-      Xspacing_2 = ::ConvertFromSysUnits(dlg.m_Xend2,  pDisplayUnits->ComponentDim.UnitOfMeasure);;
-      Yspacing_2 = ::ConvertFromSysUnits(dlg.m_Yend2,  pDisplayUnits->ComponentDim.UnitOfMeasure);
+      Xspacing_2 = WBFL::Units::ConvertFromSysUnits(dlg.m_Xend2,  pDisplayUnits->ComponentDim.UnitOfMeasure);;
+      Yspacing_2 = WBFL::Units::ConvertFromSysUnits(dlg.m_Yend2,  pDisplayUnits->ComponentDim.UnitOfMeasure);
 
       x_end_2 = x_start_2 + Xspacing_1*(dlg.m_nStrandsX-1);
       y_end_2 = y_start_2 + Yspacing_1*(dlg.m_nStrandsY-1);
    }
    else
    {
-      x_end_1 = ::ConvertFromSysUnits(dlg.m_Xend,  pDisplayUnits->ComponentDim.UnitOfMeasure);
-      y_end_1 = ::ConvertFromSysUnits(dlg.m_Yend,  pDisplayUnits->ComponentDim.UnitOfMeasure);
+      x_end_1 = WBFL::Units::ConvertFromSysUnits(dlg.m_Xend,  pDisplayUnits->ComponentDim.UnitOfMeasure);
+      y_end_1 = WBFL::Units::ConvertFromSysUnits(dlg.m_Yend,  pDisplayUnits->ComponentDim.UnitOfMeasure);
 
       Xspacing_1 = (x_end_1-x_start_1)/(dlg.m_nStrandsX-1);
       Yspacing_1 = (y_end_1-y_start_1)/(dlg.m_nStrandsY-1);
 
-      x_end_2 = ::ConvertFromSysUnits(dlg.m_Xend2,  pDisplayUnits->ComponentDim.UnitOfMeasure);
-      y_end_2 = ::ConvertFromSysUnits(dlg.m_Yend2,  pDisplayUnits->ComponentDim.UnitOfMeasure);
+      x_end_2 = WBFL::Units::ConvertFromSysUnits(dlg.m_Xend2,  pDisplayUnits->ComponentDim.UnitOfMeasure);
+      y_end_2 = WBFL::Units::ConvertFromSysUnits(dlg.m_Yend2,  pDisplayUnits->ComponentDim.UnitOfMeasure);
 
       Xspacing_2 = (x_end_2-x_start_2)/(dlg.m_nStrandsX-1);
       Yspacing_2 = (y_end_2-y_start_2)/(dlg.m_nStrandsY-1);

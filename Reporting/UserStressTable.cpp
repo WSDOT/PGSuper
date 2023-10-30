@@ -30,6 +30,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
+#include <IFace\ReportOptions.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -80,12 +81,13 @@ rptRcTable* CUserStressTable::Build(IBroker* pBroker,const CGirderKey& girderKey
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
 
-   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS ? true : false);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    CString strTitle;
-   strTitle.Format(_T("%s Stresses due to User Defined Loads in Interval %d: %s"),(bGirderStresses ? _T("Girder") : _T("Deck")),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
-   rptRcTable* p_table = CreateUserLoadHeading<rptStressUnitTag,unitmgtStressData>(strTitle.GetBuffer(),false,analysisType,intervalIdx,pDisplayUnits,pDisplayUnits->GetStressUnit());
+   strTitle.Format(_T("%s Stresses due to User Defined Loads in Interval %d: %s"),(bGirderStresses ? _T("Girder") : _T("Deck")),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx).c_str());
+   rptRcTable* p_table = CreateUserLoadHeading<rptStressUnitTag,WBFL::Units::StressData>(strTitle.GetBuffer(),false,analysisType,intervalIdx,pDisplayUnits,pDisplayUnits->GetStressUnit());
 
    if ( girderKey.groupIndex == ALL_GROUPS )
    {

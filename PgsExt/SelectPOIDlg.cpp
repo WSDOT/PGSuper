@@ -134,8 +134,8 @@ BOOL CSelectPOIDlg::OnInitDialog()
    m_Slider.SetRange(0,(int)(m_vPOI.size()-1)); // the range is number of spaces along slider... 
 
    // initial the slider position to the current poi location
-   CollectionIndexType pos = m_vPOI.size()/2; // default is mid-span
-   CollectionIndexType i = 0;
+   IndexType pos = m_vPOI.size()/2; // default is mid-span
+   IndexType i = 0;
    for(const pgsPointOfInterest& poi : m_vPOI)
    {
       if ( poi.GetID() == m_InitialPOI.GetID() )
@@ -242,7 +242,7 @@ void CSelectPOIDlg::FillIntervalCtrl()
    for ( IntervalIndexType intervalIdx = startIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
    {
       CString strInterval;
-      strInterval.Format(_T("Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+      strInterval.Format(_T("Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx).c_str());
       int idx = pcbIntervals->AddString(strInterval);
       pcbIntervals->SetItemData(idx,intervalIdx);
    }

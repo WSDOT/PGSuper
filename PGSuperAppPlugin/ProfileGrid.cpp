@@ -28,6 +28,7 @@
 #include "ProfilePage.h"
 
 #include <EAF\EAFDisplayUnits.h>
+#include <CoordGeom/Station.h>
 #include <algorithm>
 
 #ifdef _DEBUG
@@ -100,7 +101,7 @@ void CProfileGrid::CustomInit()
    CProfilePage* pParent = (CProfilePage*)GetParent();
 
    GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
-   const unitmgtLengthData& alignment_unit = pDisplayUnits->GetAlignmentLengthUnit();
+   const WBFL::Units::LengthData& alignment_unit = pDisplayUnits->GetAlignmentLengthUnit();
    std::_tstring strUnitTag = alignment_unit.UnitOfMeasure.UnitTag();
 
    // Initialize the grid. For CWnd based grids this call is // 
@@ -223,12 +224,9 @@ void CProfileGrid::SetRowData(ROWCOL nRow,VertCurveData& data)
    GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
    UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
-   Float64 station = data.PVIStation;
-   station = ::ConvertFromSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
-
    CComPtr<IStation> objStation;
    objStation.CoCreateInstance(CLSID_Station);
-   objStation->put_Value(station);
+   objStation->put_Value(data.PVIStation);
    CComBSTR bstrStation;
    objStation->AsString(unit_mode,VARIANT_FALSE,&bstrStation);
    SetValueRange(CGXRange(nRow,1),CString(bstrStation));
@@ -236,44 +234,42 @@ void CProfileGrid::SetRowData(ROWCOL nRow,VertCurveData& data)
    Float64 grade = data.ExitGrade*100;
    SetValueRange(CGXRange(nRow,2), grade);
 
-   Float64 L1 = ::ConvertFromSysUnits(data.L1,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   Float64 L1 = WBFL::Units::ConvertFromSysUnits(data.L1,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
    SetValueRange(CGXRange(nRow,3),L1);
 
-   Float64 L2 = ::ConvertFromSysUnits(data.L2,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   Float64 L2 = WBFL::Units::ConvertFromSysUnits(data.L2,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
    SetValueRange(CGXRange(nRow,4),L2);
 
    GetParam()->EnableUndo(TRUE);
 }
 
-bool CProfileGrid::GetRowData(ROWCOL nRow,Float64* pStation,Float64* pGrade,Float64* pL1,Float64* pL2)
+bool CProfileGrid::GetRowData(ROWCOL nRow, Float64* pStation, Float64* pGrade, Float64* pL1, Float64* pL2)
 {
    CProfilePage* pParent = (CProfilePage*)GetParent();
 
-   GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
-   UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
+   GET_IFACE2(pParent->GetBroker(), IEAFDisplayUnits, pDisplayUnits);
 
-   CString strStation = GetCellValue(nRow,1);
-   CComPtr<IStation> station;
-   station.CoCreateInstance(CLSID_Station);
-   HRESULT hr = station->FromString(CComBSTR(strStation),unit_mode);
-   if ( FAILED(hr) )
+   std::_tstring strStation(GetCellValue(nRow, 1));
+   try
+   {
+      WBFL::COGO::Station station(strStation, pDisplayUnits->GetStationFormat());
+      *pStation = station.GetValue();
+   }
+   catch (...)
+   {
       return false;
-
-   Float64 station_value;
-   station->get_Value(&station_value);
-   station_value = ::ConvertToSysUnits(station_value,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
-   *pStation = station_value;
+   }
 
    CString strGrade = GetCellValue(nRow,2);
    *pGrade = _tstof(strGrade)/100;
 
    CString strL1 = GetCellValue(nRow,3);
    *pL1 = _tstof(strL1);
-   *pL1 = ::ConvertToSysUnits(*pL1,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   *pL1 = WBFL::Units::ConvertToSysUnits(*pL1,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
    CString strL2 = GetCellValue(nRow,4);
    *pL2 = _tstof(strL2);
-   *pL2 = ::ConvertToSysUnits(*pL2,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   *pL2 = WBFL::Units::ConvertToSysUnits(*pL2,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
    if (*pL1 < 0 || *pL2 < 0 || (::IsZero(*pL1) && !::IsZero(*pL2)) )
    {

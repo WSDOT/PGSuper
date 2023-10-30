@@ -96,7 +96,7 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
    bool bAsymmetricGirders = pBridge->HasAsymmetricGirders();
 
    rptRcScalar scalar;
-   scalar.SetFormat( sysNumericFormatTool::Automatic );
+   scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Automatic );
    scalar.SetWidth(6);
    scalar.SetPrecision(2);
 
@@ -322,27 +322,3 @@ void CSectionPropertiesTable::MakeAssignment(const CSectionPropertiesTable& rOth
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CSectionPropertiesTable::AssertValid() const
-{
-   return true;
-}
-
-void CSectionPropertiesTable::Dump(dbgDumpContext& os) const
-{
-   os << _T("Dump for CSectionPropertiesTable") << endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CSectionPropertiesTable::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("CSectionPropertiesTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CSectionPropertiesTable");
-
-   TESTME_EPILOG("StrandEccTable");
-}
-#endif // _UNITTEST

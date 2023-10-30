@@ -5,7 +5,7 @@ Warning: Irregular, Non-standard debonding increments used for beam 1 in span 1.
 
 
 The Specification Check was Not Successful
-Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic, Roadway Geometry Control
 Debond arrangement checks failed.
 
 
@@ -16,7 +16,7 @@ Debond arrangement checks failed.
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
-Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic, Roadway Geometry Control
 Stirrup detailing checks failed for the Strength I Limit State.
 
 
@@ -27,8 +27,8 @@ Stirrup detailing checks failed for the Strength I Limit State.
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 10 Cast Deck
-Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic
-Tension stress check failed for Service III Limit State in Interval 17 Open to Traffic
+Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 17 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (positive moment) check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State

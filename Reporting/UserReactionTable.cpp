@@ -82,14 +82,14 @@ rptRcTable* CUserReactionTable::Build(IBroker* pBroker,const CGirderKey& girderK
    CString strTitle;
    if ( tableType == PierReactionsTable )
    {
-      strTitle.Format(_T("Girder Line Pier Reactions due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+      strTitle.Format(_T("Girder Line Pier Reactions due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx).c_str());
    }
    else
    {
-      strTitle.Format(_T("Girder Bearing Reactions due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+      strTitle.Format(_T("Girder Bearing Reactions due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx).c_str());
    }
 
-   rptRcTable* p_table = CreateUserLoadHeading<rptForceUnitTag,unitmgtForceData>( strTitle.GetBuffer(),
+   rptRcTable* p_table = CreateUserLoadHeading<rptForceUnitTag,WBFL::Units::ForceData>( strTitle.GetBuffer(),
                                                                                   true,analysisType,intervalIdx,pDisplayUnits,pDisplayUnits->GetShearUnit());
 
    p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
@@ -204,27 +204,3 @@ void CUserReactionTable::MakeAssignment(const CUserReactionTable& rOther)
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CUserReactionTable::AssertValid() const
-{
-   return true;
-}
-
-void CUserReactionTable::Dump(dbgDumpContext& os) const
-{
-   os << _T("Dump for CUserReactionTable") << endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CUserReactionTable::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("CUserReactionTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CUserReactionTable");
-
-   TESTME_EPILOG("CUserReactionTable");
-}
-#endif // _UNITTEST

@@ -36,6 +36,7 @@
 #include <PsgLib\GirderLibraryEntry.h>
 #include <PsgLib\TrafficBarrierEntry.h>
 
+#include <psgLib/LimitStateConcreteStrengthCriteria.h>
 
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\PierData2.h>
@@ -43,7 +44,7 @@
 #include <PgsExt\GirderLabel.h>
 #include <PgsExt\Helpers.h>
 
-#include <Material\Material.h>
+#include <Materials/Materials.h>
 #include <LRFD\LRFD.h>
 
 #include <WBFLCogo.h>
@@ -53,6 +54,26 @@
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+inline CString GetHaunchIncrementString(IndexType inc,IndexType numVals)
+{
+   CString strLabel;
+   if (numVals > 1)
+   {
+      strLabel.Format(_T("%.2f"),(float)(inc) / (numVals - 1));
+      if (strLabel.GetAt(3) == '0') // trim excess zeroes
+      {
+         strLabel.Truncate(3);
+      }
+   }
+   else
+   {
+      strLabel = _T("Uniform Depth");
+   }
+
+   return strLabel;
+}
+
 
 static void write_alignment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
 static void write_profile_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
@@ -70,6 +91,7 @@ static void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptCh
 static void write_pt_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rptChapter* pChapter, Uint16 level, const std::vector<CGirderKey>& girderKeys);
 static void write_segment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,GroupIndexType grpIdx,GirderIndexType gdrIdx,Uint16 level);
 static void write_slab_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
+static void write_haunch_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const std::vector<CGirderKey>& girderKeys,Uint16 level);
 static void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const std::vector<CGirderKey>& girderKeys,Uint16 level);
 static void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const std::vector<CGirderKey>& girderKeys,Uint16 level);
 static void write_lrfd_concrete_row(IEAFDisplayUnits* pDisplayUnits, rptRcTable* pTable, Float64 fci, Float64 fc, Float64 Eci, Float64 Ec, bool bHas90dayStrengthColumns, Float64 lambda, const CConcreteMaterial& concrete, RowIndexType row);
@@ -78,6 +100,7 @@ static void write_aci209_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDi
 static void write_aci209_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTable,Float64 fc28,Float64 Ec28,const CConcreteMaterial& concrete,RowIndexType row,bool bAASHTOParameters,Float64 lambda);
 static void write_cebfip_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const std::vector<CGirderKey>& girderKeys,Uint16 level);
 static void write_cebfip_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTable,Float64 fc28,Float64 Ec28,const CConcreteMaterial& concrete,RowIndexType row);
+static void write_uhpc_concrete_row(IEAFDisplayUnits* pDisplayUnits, std::unique_ptr<rptRcTable>& pUHPCTable, const CConcreteMaterial& concrete, RowIndexType row);
 static void write_deck_reinforcing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
 static void write_friction_loss_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,Uint16 level);
 
@@ -96,11 +119,11 @@ LPCTSTR CBridgeDescChapterBuilder::GetName() const
    return TEXT("Bridge Description");
 }
 
-rptChapter* CBridgeDescChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CBridgeDescChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-   CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
-   CMultiGirderReportSpecification* pMultiGirderRptSpec = dynamic_cast<CMultiGirderReportSpecification*>(pRptSpec);
+   auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
+   auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
+   auto pMultiGirderRptSpec = std::dynamic_pointer_cast<const CMultiGirderReportSpecification>(pRptSpec);
 
    CComPtr<IBroker> pBroker;
    std::vector<CGirderKey> girderKeys;
@@ -153,15 +176,21 @@ rptChapter* CBridgeDescChapterBuilder::Build(CReportSpecification* pRptSpec,Uint
    write_bearing_data( pBroker, pDisplayUnits, pChapter, level, girderKeys );
    write_ps_data( pBroker, pDisplayUnits, pChapter, level, girderKeys );
    write_pt_data(pBroker, pDisplayUnits, pChapter, level, girderKeys);
+
+   if (pBridge->GetHaunchInputDepthType() != pgsTypes::hidACamber)
+   {
+      write_haunch_data(pBroker, pDisplayUnits, pChapter, girderKeys, level);
+   }
+
    write_slab_data( pBroker, pDisplayUnits, pChapter, level );
    write_deck_reinforcing_data( pBroker, pDisplayUnits, pChapter, level );
 
    return pChapter;
 }
 
-CChapterBuilder* CBridgeDescChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CBridgeDescChapterBuilder::Clone() const
 {
-   return new CBridgeDescChapterBuilder(m_bSelect);
+   return std::make_unique<CBridgeDescChapterBuilder>(m_bSelect);
 }
 
 void CBridgeDescChapterBuilder::WriteAlignmentData(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rptChapter* pChapter,Uint16 level)
@@ -416,8 +445,8 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
       CComPtr<IDirection> fwdTangent;
       if (IsZero(hc_data.Radius))
       {
-         pRoadway->GetBearing(hc_data.PIStation - ::ConvertToSysUnits(1.0, unitMeasure::Feet), &bkTangent);
-         pRoadway->GetBearing(hc_data.PIStation + ::ConvertToSysUnits(1.0, unitMeasure::Feet), &fwdTangent);
+         pRoadway->GetBearing(hc_data.PIStation - WBFL::Units::ConvertToSysUnits(1.0, WBFL::Units::Measure::Feet), &bkTangent);
+         pRoadway->GetBearing(hc_data.PIStation + WBFL::Units::ConvertToSysUnits(1.0, WBFL::Units::Measure::Feet), &fwdTangent);
       }
       else
       {
@@ -684,7 +713,7 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
 
             CComBSTR bstrDC;
             delta.Release();
-            hc->get_DegreeCurvature(::ConvertToSysUnits(100.0, unitMeasure::Feet), dcHighway, &delta);
+            hc->get_DegreeCurvature(WBFL::Units::ConvertToSysUnits(100.0, WBFL::Units::Measure::Feet), dcHighway, &delta);
             delta->get_Value(&delta_value);
             angle_formatter->put_Signed(VARIANT_TRUE);
             angle_formatter->Format(delta_value, CComBSTR("°,\',\""), &bstrDC);
@@ -1066,7 +1095,7 @@ void write_profile_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
       }
       else
       {
-         CComPtr<IVertCurve> vc;
+         CComPtr<IVerticalCurve> vc;
          pRoadway->GetVertCurve(col-1,&vc);
 
          CComPtr<IProfilePoint> bvc;
@@ -1114,7 +1143,8 @@ void write_profile_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
          Float64 L1,L2, Length;
          vc->get_L1(&L1);
          vc->get_L2(&L2);
-         vc->get_Length(&Length);
+         CComQIPtr<IProfileElement> element(vc);
+         element->GetLength(&Length);
 
          CComPtr<IProfilePoint> high;
          vc->get_HighPoint(&high);
@@ -1303,21 +1333,20 @@ void write_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rpt
    GET_IFACE2(pBroker,ILibrary, pLib );
    GET_IFACE2(pBroker,ISpecification, pSpec );
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-
-   int loss_method = pSpecEntry->GetLossMethod();
-   if ( loss_method == LOSSES_TIME_STEP )
+   const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
+   if (prestress_loss_criteria.LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
-      switch( pSpecEntry->GetTimeDependentModel() )
+      switch( prestress_loss_criteria.TimeDependentConcreteModel )
       {
-      case TDM_AASHTO:
+      case PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO:
          write_aci209_concrete_details(pBroker,pDisplayUnits,pChapter,girderKeys,level,true/*AASHTO parameters*/);
          break;
 
-      case TDM_ACI209:
+      case PrestressLossCriteria::TimeDependentConcreteModelType::ACI209:
          write_aci209_concrete_details(pBroker,pDisplayUnits,pChapter,girderKeys,level,false/*AASHTO parameters*/);
          break;
 
-      case TDM_CEBFIP:
+      case PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP:
          write_cebfip_concrete_details(pBroker,pDisplayUnits,pChapter,girderKeys,level);
          break;
       }
@@ -1333,9 +1362,9 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   bool bK1 = (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion());
+   bool bK1 = (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition());
 
-   bool bLambda = (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion());
+   bool bLambda = (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition());
 
    ColumnIndexType nColumns = 10;
    if ( bK1 )
@@ -1350,11 +1379,9 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
    GET_IFACE2(pBroker,ILibrary, pLib);
    GET_IFACE2(pBroker,ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-   bool bUse90dayStrength;
-   Float64 factor;
-   pSpecEntry->Use90DayStrengthForSlowCuringConcrete(&bUse90dayStrength, &factor);
+   const auto& limit_state_concrete_strength_criteria = pSpecEntry->GetLimitStateConcreteStrengthCriteria();
 
-   if (bUse90dayStrength)
+   if (limit_state_concrete_strength_criteria.bUse90DayConcreteStrength)
    {
       nColumns += 2;
    }
@@ -1380,27 +1407,27 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
    *pPara << Sub2(_T("K"), _T("2")) << _T(" = bounding factor for course of aggregate") << rptNewLine;
    *pPara << symbol(lambda) << _T(" = concrete density modification factor") << rptNewLine;
 
-   if (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::ThirdEditionWith2005Interims)
+   if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims)
    {
       // Ec with square root, no K values
-      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (lrfdVersionMgr::GetUnits() == lrfdVersionMgr::SI ? _T("Ec_2004_SI.png") : _T("Ec_2004_US.png"))) << rptNewLine;
+      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (WBFL::LRFD::BDSManager::GetUnits() == WBFL::LRFD::BDSManager::Units::SI ? _T("Ec_2004_SI.png") : _T("Ec_2004_US.png"))) << rptNewLine;
    }
-   else if (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion() && lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2015Interims)
+   else if (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() && WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2015Interims)
    {
       // Ec with square root, with K values
-      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (lrfdVersionMgr::GetUnits() == lrfdVersionMgr::SI ? _T("Ec_2005_SI.png") : _T("Ec_2005_US.png"))) << rptNewLine;
+      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + (WBFL::LRFD::BDSManager::GetUnits() == WBFL::LRFD::BDSManager::Units::SI ? _T("Ec_2005_SI.png") : _T("Ec_2005_US.png"))) << rptNewLine;
    }
    else
    {
       // Ec with 0.33 exponent and K values
-      ATLASSERT(lrfdVersionMgr::GetUnits() == lrfdVersionMgr::US);
+      ATLASSERT(WBFL::LRFD::BDSManager::GetUnits() == WBFL::LRFD::BDSManager::Units::US);
       *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Ec_2016.png")) << rptNewLine;
    }
 
    GET_IFACE2(pBroker, IMaterials, pMaterials);
    if (pMaterials->HasUHPC())
    {
-      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Ec_PCI_UHPC.png")) << _T(" for PCI-UHPC") << rptNewLine;
+      *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Ec_PCI_UHPC.png")) << _T(" for PCI-UHPC and AASHTO UHPC GS") << rptNewLine;
    }
 
 
@@ -1412,7 +1439,7 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
    (*pTable)(row, col++) << COLHDR(RPT_ECI, rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*pTable)(row, col++) << COLHDR(RPT_FC,  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*pTable)(row, col++) << COLHDR(RPT_EC,  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   if (bUse90dayStrength)
+   if (limit_state_concrete_strength_criteria.bUse90DayConcreteStrength)
    {
       (*pTable)(row, col++) << COLHDR(RPT_FC << Sub(_T("90")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
       (*pTable)(row, col++) << COLHDR(RPT_EC << Sub(_T("90")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
@@ -1489,7 +1516,7 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
          Float64 Ec  = pMaterials->GetSegmentEc28(thisSegmentKey);
 
          Float64 fc90(-99999), Ec90(-99999);
-         if (bUse90dayStrength)
+         if (limit_state_concrete_strength_criteria.bUse90DayConcreteStrength)
          {
             IntervalIndexType finalIntervalIdx = pIntervals->GetIntervalCount() - 1;
             fc90 = pMaterials->GetSegmentFc(thisSegmentKey, finalIntervalIdx);
@@ -1500,7 +1527,7 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
 
          (*pTable)(row, 0) << pgsGirderLabel::GetGirderLabel(thisGirderKey);
 
-         write_lrfd_concrete_row(pDisplayUnits,pTable,fci,fc,Eci,Ec,bUse90dayStrength,bUse90dayStrength,fc90,Ec90,lambda,pSegment->Material.Concrete,row);
+         write_lrfd_concrete_row(pDisplayUnits,pTable,fci,fc,Eci,Ec, limit_state_concrete_strength_criteria.bUse90DayConcreteStrength, limit_state_concrete_strength_criteria.bUse90DayConcreteStrength,fc90,Ec90,lambda,pSegment->Material.Concrete,row);
          row++;
 
          const CClosureJointData* pClosure = pSegment->GetClosureJoint(pgsTypes::metEnd);
@@ -1520,7 +1547,7 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
       Float64 lambda = pMaterials->GetDeckLambda();
 
       (*pTable)(row,0) << _T("Deck");
-      write_lrfd_concrete_row(pDisplayUnits,pTable,-1.0,fc,-1.0,Ec,bUse90dayStrength,lambda,pDeck->Concrete,row);
+      write_lrfd_concrete_row(pDisplayUnits,pTable,-1.0,fc,-1.0,Ec, limit_state_concrete_strength_criteria.bUse90DayConcreteStrength,lambda,pDeck->Concrete,row);
       row++;
    }
 
@@ -1531,9 +1558,82 @@ void write_lrfd_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
       Float64 lambda = pMaterials->GetLongitudinalJointLambda();
 
       (*pTable)(row, 0) << _T("Longitudinal Joint");
-      write_lrfd_concrete_row(pDisplayUnits, pTable, -1.0, fc, -1.0, Ec, bUse90dayStrength, lambda, pBridgeDesc->GetLongitudinalJointMaterial(), row);
+      write_lrfd_concrete_row(pDisplayUnits, pTable, -1.0, fc, -1.0, Ec, limit_state_concrete_strength_criteria.bUse90DayConcreteStrength, lambda, pBridgeDesc->GetLongitudinalJointMaterial(), row);
       row++;
    }
+
+   // UHPC Concrete Properties
+   std::unique_ptr<rptRcTable> pUHPCTable;
+   pUHPCTable.reset(rptStyleManager::CreateDefaultTable(9, _T("UHPC Concrete Properties")));
+   // don't add to paragraph here. if we don't have UHPC, then this table will just get tossed out
+
+
+   pUHPCTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pUHPCTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+   pUHPCTable->SetColumnStyle(1, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+   pUHPCTable->SetStripeRowColumnStyle(1, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+
+
+   col = 0;
+   (*pUHPCTable)(0, col++) << _T("Element");
+   (*pUHPCTable)(0, col++) << COLHDR(RPT_STRESS(_T("t,cri")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pUHPCTable)(0, col++) << COLHDR(RPT_STRESS(_T("t,cr")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pUHPCTable)(0, col++) << COLHDR(RPT_STRESS(_T("t,loc")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*pUHPCTable)(0, col++) << Sub2(symbol(epsilon),_T("t,loc")) << _T(" x 1000");
+   (*pUHPCTable)(0, col++) << Sub2(symbol(alpha), _T("u"));
+   (*pUHPCTable)(0, col++) << Sub2(symbol(epsilon), _T("cu")) << _T(" x 1000");
+   (*pUHPCTable)(0, col++) << Sub2(symbol(gamma), _T("u"));
+   (*pUHPCTable)(0, col++) << COLHDR(_T("Fiber Length"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+
+
+   IndexType nUHPC = 0; // keep track of number of UHPC elements reported. Add table to paragraph if 1 or more
+   // otherwise table will automatically delete because it is a unique_ptr
+   row = pUHPCTable->GetNumberOfHeaderRows();
+   for (const auto& thisGirderKey : girderKeys)
+   {
+      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(thisGirderKey.groupIndex);
+      const CSplicedGirderData* pGirder = pGroup->GetGirder(thisGirderKey.girderIndex);
+      SegmentIndexType nSegments = pGirder->GetSegmentCount();
+      for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+      {
+         CSegmentKey thisSegmentKey(thisGirderKey, segIdx);
+
+         const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
+
+         if (pSegment->Material.Concrete.Type == pgsTypes::UHPC)
+         {
+            nUHPC++;
+            (*pUHPCTable)(row, 0) << pgsGirderLabel::GetGirderLabel(thisSegmentKey);
+
+            write_uhpc_concrete_row(pDisplayUnits, pUHPCTable, pSegment->Material.Concrete, row);
+            row++;
+         }
+      } // segIdx
+   } // girderKey
+
+   if (0 < nUHPC)
+   {
+      *pPara << pUHPCTable.release() << rptNewLine;
+   }
+}
+
+void write_uhpc_concrete_row(IEAFDisplayUnits* pDisplayUnits, std::unique_ptr<rptRcTable>& pUHPCTable, const CConcreteMaterial& concrete, RowIndexType row)
+{
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, cmpdim, pDisplayUnits->GetComponentDimUnit(), false);
+   INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
+   ColumnIndexType col = 1;
+   (*pUHPCTable)(row, col++) << stress.SetValue(concrete.ftcri);
+   (*pUHPCTable)(row, col++) << stress.SetValue(concrete.ftcr);
+   (*pUHPCTable)(row, col++) << stress.SetValue(concrete.ftloc);
+   (*pUHPCTable)(row, col++) << concrete.etloc * 1000;
+   (*pUHPCTable)(row, col++) << concrete.alpha_u;
+   if(concrete.bExperimental_ecu)
+      (*pUHPCTable)(row, col++) << concrete.ecu * 1000;
+   else
+      (*pUHPCTable)(row, col++) << _T("");
+
+   (*pUHPCTable)(row, col++) << concrete.gamma_u;
+   (*pUHPCTable)(row, col++) << cmpdim.SetValue(concrete.FiberLength);
 }
 
 void write_lrfd_concrete_row(IEAFDisplayUnits* pDisplayUnits, rptRcTable* pTable, Float64 fci, Float64 fc, Float64 Eci, Float64 Ec, bool bHas90dayStrengthColumns, Float64 lambda, const CConcreteMaterial& concrete, RowIndexType row)
@@ -1548,12 +1648,12 @@ void write_lrfd_concrete_row(IEAFDisplayUnits* pDisplayUnits, rptRcTable* pTable
    INIT_UV_PROTOTYPE( rptDensityUnitValue, density, pDisplayUnits->GetDensityUnit(),      false );
    INIT_UV_PROTOTYPE( rptStressUnitValue,  modE,    pDisplayUnits->GetModEUnit(),         false );
 
-   bool bK1 = (lrfdVersionMgr::ThirdEditionWith2005Interims <= lrfdVersionMgr::GetVersion());
-   bool bLambda = (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion());
+   bool bK1 = (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition());
+   bool bLambda = (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition());
 
    ColumnIndexType col = 1;
 
-   (*pTable)(row,col++) << lrfdConcreteUtil::GetTypeName( (matConcrete::Type)concrete.Type, true );
+   (*pTable)(row,col++) << WBFL::LRFD::ConcreteUtil::GetTypeName( (WBFL::Materials::ConcreteType)concrete.Type, true );
    if ( !concrete.bHasInitial )
    {
       (*pTable)(row,col++) << _T("-");
@@ -1636,7 +1736,7 @@ void write_aci209_concrete_details(IBroker* pBroker,IEAFDisplayUnits* pDisplayUn
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   bool bLambda = bAASHTOParameters && (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion());
+   bool bLambda = bAASHTOParameters && (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition());
 
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(11 + (bAASHTOParameters ? (bLambda ? 7 : 6) : 0),_T("Concrete Properties"));
    pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle( CB_NONE | CJ_LEFT) );
@@ -1755,10 +1855,10 @@ void write_aci209_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTabl
    INIT_UV_PROTOTYPE( rptStressUnitValue,  modE,    pDisplayUnits->GetModEUnit(),         false );
    INIT_UV_PROTOTYPE( rptTimeUnitValue,    time,    pDisplayUnits->GetFractionalDaysUnit(),     false );
 
-   bool bLambda = bAASHTOParameters && (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion());
+   bool bLambda = bAASHTOParameters && (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition());
 
    ColumnIndexType col = 1;
-   (*pTable)(row,col++) << lrfdConcreteUtil::GetTypeName( (matConcrete::Type)concrete.Type, true );
+   (*pTable)(row,col++) << WBFL::LRFD::ConcreteUtil::GetTypeName( (WBFL::Materials::ConcreteType)concrete.Type, true );
    (*pTable)(row,col++) << stress.SetValue( fc28 );
    (*pTable)(row,col++) << modE.SetValue( Ec28 );
 
@@ -1898,7 +1998,7 @@ void write_cebfip_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTabl
    INIT_UV_PROTOTYPE( rptStressUnitValue,  modE,    pDisplayUnits->GetModEUnit(),         false );
 
    ColumnIndexType col = 1;
-   (*pTable)(row,col++) << lrfdConcreteUtil::GetTypeName( (matConcrete::Type)concrete.Type, true );
+   (*pTable)(row,col++) << WBFL::LRFD::ConcreteUtil::GetTypeName( (WBFL::Materials::ConcreteType)concrete.Type, true );
    (*pTable)(row,col++) << stress.SetValue( fc28 );
    (*pTable)(row,col++) << modE.SetValue( Ec28 );
 
@@ -1908,7 +2008,7 @@ void write_cebfip_concrete_row(IEAFDisplayUnits* pDisplayUnits,rptRcTable* pTabl
    }
    else
    {
-      (*pTable)(row,col++) << matCEBFIPConcrete::GetCementType((matCEBFIPConcrete::CementType)concrete.CEBFIPCementType);
+      (*pTable)(row,col++) << WBFL::Materials::CEBFIPConcrete::GetCementType((WBFL::Materials::CEBFIPConcrete::CementType)concrete.CEBFIPCementType);
    }
 
    (*pTable)(row,col++) << concrete.S;
@@ -2978,7 +3078,7 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
          (*pTable)(row,1) << pGirder->GetGirderName();
          row++;
 
-         if (pBridgeDesc->GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone)
+         if (pBridgeDesc->GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone && pBridge->GetHaunchInputDepthType() == pgsTypes::hidACamber)
          {
             for (int i = 0; i < 2; i++)
             {
@@ -3452,7 +3552,7 @@ void write_ps_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
             }
          }
 
-         std::vector<std::pair<std::_tstring, const matPsStrand*>> vStrandData;
+         std::vector<std::pair<std::_tstring, const WBFL::Materials::PsStrand*>> vStrandData;
          vStrandData.emplace_back(_T("Prestressing Strand (Straight)"), pSegmentData->GetStrandMaterial(thisSegmentKey, pgsTypes::Straight));
          vStrandData.emplace_back(_T("Prestressing Strand (Harped)"), pSegmentData->GetStrandMaterial(thisSegmentKey, pgsTypes::Harped));
          if (0 < pStrandGeom->GetMaxStrands(thisSegmentKey, pgsTypes::Temporary))
@@ -3719,7 +3819,7 @@ void write_segment_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChap
 
          if ( segIdx < nSegments-1 )
          {
-            CollectionIndexType closureIdx = segIdx;
+            IndexType closureIdx = segIdx;
 
             std::_tostringstream os;
             os << _T("Girder ") << LABEL_GIRDER(gdrIdx) << _T(" Closure Joint ") << LABEL_SEGMENT(closureIdx) <<std::endl;
@@ -3816,17 +3916,22 @@ void write_slab_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
 
       if (!IsOverlayDeck(deckType))
       {
-         (*table)(0, 0) << _T("Fillet = ") << dim.SetValue(pBridgeDesc->GetFillet()) << rptNewLine;
+         (*table)(0,0) << _T("Fillet = ") << dim.SetValue(pBridgeDesc->GetFillet()) << rptNewLine;
+         (*table)(0,0) << _T("Fillet Shape: ") << (pBridgeDesc->GetDeckDescription()->HaunchShape==pgsTypes::hsSquare ? _T("Square") : _T("Filleted")) << _T(" Corners") << rptNewLine;
       }
 
-      if ( pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge )
+      if (pBridgeDesc->GetHaunchInputDepthType() == pgsTypes::hidACamber)
       {
-         (*table)(0,0) << _T("Slab Offset (\"A\" Dimension) = ") << dim.SetValue(pBridgeDesc->GetSlabOffset()) << rptNewLine;
+         if (pBridgeDesc->GetSlabOffsetType() == pgsTypes::sotBridge)
+         {
+            (*table)(0,0) << _T("Slab Offset (\"A\" Dimension) = ") << dim.SetValue(pBridgeDesc->GetSlabOffset()) << rptNewLine;
+         }
+         else
+         {
+            (*table)(0,0) << _T("Slab offset by girder") << rptNewLine;
+         }
       }
-      else
-      {
-         (*table)(0,0) << _T("Slab offset by girder") << rptNewLine;
-      }
+
       (*table)(0,0) << rptNewLine;
    }
 
@@ -3939,6 +4044,225 @@ void write_slab_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
 
    // Picture
    (*table)(1,0) << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + strPicture );
+}
+
+void write_haunch_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter,const std::vector<CGirderKey>& girderKeys,Uint16 level)
+{
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   bool isPGSuper = pDocType->IsPGSuperDocument();
+
+   rptParagraph* pPara1 = new rptParagraph;
+   pPara1->SetStyleName(rptStyleManager::GetHeadingStyle());
+   *pChapter << pPara1;
+   *pPara1 << _T("Haunch Depth Input");
+
+   rptParagraph* pPara2 = new rptParagraph;
+   *pChapter << pPara2;
+
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+   pgsTypes::HaunchLayoutType haunchLayoutType = pBridgeDesc->GetHaunchLayoutType();
+   pgsTypes::HaunchInputLocationType haunchInputLocationType = pBridgeDesc->GetHaunchInputLocationType();
+   pgsTypes::HaunchInputDistributionType haunchInputDistributionType = pBridgeDesc->GetHaunchInputDistributionType();
+
+   std::_tstring strLayout(haunchLayoutType == pgsTypes::hltAlongSpans ? _T("Span") : _T("Segment"));
+
+   *pPara2 << _T("Haunch depths are distributed ");
+   if (haunchInputDistributionType == pgsTypes::hidUniform)
+   {
+      *pPara2 << _T("Unformly");
+   }
+   else if (haunchInputDistributionType == pgsTypes::hidAtEnds)
+   {
+      *pPara2 << _T("Linearly between Ends");
+   }
+   else if (haunchInputDistributionType == pgsTypes::hidParabolic)
+   {
+      *pPara2 << _T("Parabolically");
+   }
+   else if (haunchInputDistributionType == pgsTypes::hidQuarterPoints)
+   {
+      *pPara2 << _T("Linearly between Quarter Points");
+   }
+   else if (haunchInputDistributionType == pgsTypes::hidTenthPoints)
+   {
+      *pPara2 << _T("Linearly between Tenth Points");
+   }
+   else
+   {
+      ATLASSERT(0);
+   }
+
+   *pPara2 << _T(" along ") << strLayout << _T("s, and are defined ");
+   if (haunchInputLocationType == pgsTypes::hilSame4Bridge)
+   {
+      *pPara2 << _T("the Same for all ")<<strLayout<<_T("s in the Bridge. ");
+   }
+   else if (haunchInputLocationType == pgsTypes::hilSame4AllGirders)
+   {
+      *pPara2 << _T("the Same for all Girder Lines. ");
+   }
+   else if (haunchInputLocationType == pgsTypes::hilPerEach)
+   {
+      *pPara2 << (isPGSuper ?  _T("Uniquely per Girder.") : _T("Uniquely per Segment."));
+   }
+   else
+   {
+      ATLASSERT(0);
+   }
+
+   if (haunchInputLocationType == pgsTypes::hilSame4Bridge && haunchInputDistributionType == pgsTypes::hidUniform)
+   {
+      // No table needed for this one
+      INIT_UV_PROTOTYPE(rptLengthUnitValue,dimtit,pDisplayUnits->GetComponentDimUnit(),true);
+      std::vector<Float64> haunches = pBridgeDesc->GetDirectHaunchDepths();
+      *pPara2 << rptNewLine << _T("Uniform haunch depth for all locations: ") << dimtit.SetValue(haunches.front());
+   }
+   else
+   {
+      *pPara2 << rptNewLine;
+      *pPara2 << _T("Locations are fractional distance along ") << strLayout << _T("s.") << _T("Tables contain Haunch Depth Values in (") << pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag() << _T(")");
+
+      INIT_UV_PROTOTYPE(rptLengthUnitValue,dim,pDisplayUnits->GetComponentDimUnit(),false);
+
+      if (haunchInputLocationType == pgsTypes::hilSame4Bridge)
+      {
+         std::vector<Float64> haunches = pBridgeDesc->GetDirectHaunchDepths();
+
+         IndexType numHaunches = haunches.size();
+         rptRcTable* pTable = rptStyleManager::CreateDefaultTable(numHaunches + 1,_T(""));
+         *pPara2 << pTable;
+
+         pTable->SetNumberOfHeaderRows(2);
+         pTable->SetRowSpan(0,0,2);
+         pTable->SetColumnSpan(0,1,numHaunches);
+         (*pTable)(2,0) << _T("All Girders");
+         (*pTable)(0,1) << _T("All ") << strLayout << _T("s");
+
+         RowIndexType row = pTable->GetNumberOfHeaderRows();
+         ColumnIndexType col = 1;
+         for (auto haunch : haunches)
+         {
+            (*pTable)(1,col) << GetHaunchIncrementString(col - 1,numHaunches);
+            (*pTable)(row,col++) << dim.SetValue(haunch);
+         }
+      }
+      else if (haunchLayoutType == pgsTypes::hltAlongSpans)
+      {
+         SpanIndexType numSpans = pBridgeDesc->GetSpanCount();
+         for (SpanIndexType iSpan = 0; iSpan < numSpans; iSpan++)
+         {
+            IndexType numHaunches = (IndexType)haunchInputDistributionType;
+            rptRcTable* pTable = rptStyleManager::CreateDefaultTable(numHaunches + 1,_T(""));
+            *pPara2 << pTable << rptNewLine;
+
+            pTable->SetNumberOfHeaderRows(2);
+            pTable->SetRowSpan(0,0,2);
+            pTable->SetColumnSpan(0,1,numHaunches);
+            (*pTable)(0,1) << _T("Span ") << LABEL_SPAN(iSpan);
+
+            if (haunchInputLocationType == pgsTypes::hilSame4AllGirders)
+            {
+               // Only need one girder
+               (*pTable)(2,0) << _T("All Girders");
+               std::vector<Float64> haunches = pBridgeDesc->GetSpan(iSpan)->GetDirectHaunchDepths(0); // All girders are same
+               ATLASSERT(numHaunches == haunches.size());
+
+               RowIndexType row = pTable->GetNumberOfHeaderRows();
+               ColumnIndexType col = 1;
+               for (auto haunch : haunches)
+               {
+                  (*pTable)(1,col) << GetHaunchIncrementString(col - 1,numHaunches);
+                  (*pTable)(row,col++) << dim.SetValue(haunch);
+               }
+            }
+            else
+            {
+               (*pTable)(0,0) << _T("Girder");
+               RowIndexType row = pTable->GetNumberOfHeaderRows();
+               GirderIndexType numGirders = pBridgeDesc->GetSpan(iSpan)->GetGirderCount();
+
+               for (GirderIndexType iGdr = 0; iGdr < numGirders; iGdr++)
+               {
+                  (*pTable)(row,0) << LABEL_GIRDER(iGdr);
+
+                  std::vector<Float64> haunches = pBridgeDesc->GetSpan(iSpan)->GetDirectHaunchDepths(iGdr);
+                  ATLASSERT(numHaunches == haunches.size());
+
+                  ColumnIndexType col = 1;
+                  for (auto haunch : haunches)
+                  {
+                     if (iGdr==0)
+                     {
+                        (*pTable)(1,col) << GetHaunchIncrementString(col - 1,numHaunches);
+                     }
+                     (*pTable)(row,col++) << dim.SetValue(haunch);
+                  }
+
+                  row++;
+               }
+            }
+         }
+      }
+      else if (haunchLayoutType == pgsTypes::hltAlongSegments)
+      {
+         auto* pGroup = pBridgeDesc->GetGirderGroup(girderKeys.front().groupIndex);
+         auto nGirders = haunchInputLocationType == pgsTypes::hilSame4AllGirders ? 1 : pGroup->GetGirderCount();
+
+         // assume number of segments is same for all girders in group
+         auto* pGirder0 = pGroup->GetGirder(0);
+         auto nSegments = pGirder0->GetSegmentCount();
+
+         for (auto iSeg = 0; iSeg < nSegments; iSeg++)
+         {
+            IndexType numHaunches = (IndexType)haunchInputDistributionType;
+            rptRcTable* pTable = rptStyleManager::CreateDefaultTable(numHaunches + 1,_T(""));
+            *pPara2 << pTable << rptNewLine;
+
+            pTable->SetNumberOfHeaderRows(2);
+            pTable->SetRowSpan(0,0,2);
+            pTable->SetColumnSpan(0,1,numHaunches);
+            if (haunchInputLocationType != pgsTypes::hilSame4AllGirders)
+            {
+               (*pTable)(0,0) << _T("Girder");
+            }
+            (*pTable)(0,1) << _T("Segment ") << LABEL_SEGMENT(iSeg);
+
+            RowIndexType row = pTable->GetNumberOfHeaderRows();
+
+            for (auto iGdr = 0; iGdr < nGirders; iGdr++,row++)
+            {
+               auto* pGirder = pGroup->GetGirder(iGdr);
+               std::vector<Float64> haunches = pGirder->GetDirectHaunchDepths(iSeg);
+
+               if (haunchInputLocationType == pgsTypes::hilSame4AllGirders)
+               {
+                  // Only need one girder
+                  (*pTable)(2,0) << _T("All Girders");
+               }
+               else
+               {
+                  (*pTable)(row,0) << LABEL_GIRDER(iGdr);
+               }
+
+               ColumnIndexType col = 1;
+               for (auto haunch : haunches)
+               {
+                  if (iGdr==0)
+                  {
+                     (*pTable)(1,col) << GetHaunchIncrementString(col - 1,numHaunches);
+                  }
+                  (*pTable)(row,col++) << dim.SetValue(haunch);
+               }
+            }
+         }
+      }
+      else
+      {
+         ATLASSERT(0);
+      }
+   }
 }
 
 void write_pt_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rptChapter* pChapter, Uint16 level, const std::vector<CGirderKey>& girderKeys)
@@ -4079,7 +4403,7 @@ void write_deck_reinforcing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   *pPara << _T("Reinforcement: ") << lrfdRebarPool::GetMaterialName(deckRebar.TopRebarType,deckRebar.TopRebarGrade).c_str() << rptNewLine;
+   *pPara << _T("Reinforcement: ") << WBFL::LRFD::RebarPool::GetMaterialName(deckRebar.TopRebarType,deckRebar.TopRebarGrade).c_str() << rptNewLine;
    *pPara << _T("Top Mat Cover: ") << cover.SetValue(deckRebar.TopCover) << rptNewLine;
    *pPara << _T("Bottom Mat Cover: ") << cover.SetValue(deckRebar.BottomCover) << rptNewLine;
 
@@ -4096,13 +4420,13 @@ void write_deck_reinforcing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
    (*pTable)(0,3) << COLHDR(_T("Lump Sum"), rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
 
    (*pTable)(1,0) << _T("Top");
-   (*pTable)(1,1) << lrfdRebarPool::GetBarSize(deckRebar.TopRebarSize) << _T(" @ ") << spacing.SetValue( deckRebar.TopSpacing );
+   (*pTable)(1,1) << WBFL::LRFD::RebarPool::GetBarSize(deckRebar.TopRebarSize) << _T(" @ ") << spacing.SetValue( deckRebar.TopSpacing );
 
    (*pTable)(1,2) << _T("AND");
    (*pTable)(1,3) << As.SetValue( deckRebar.TopLumpSum );
 
    (*pTable)(2,0) << _T("Bottom");
-   (*pTable)(2,1) << lrfdRebarPool::GetBarSize(deckRebar.BottomRebarSize) << _T(" @ ") << spacing.SetValue( deckRebar.BottomSpacing );
+   (*pTable)(2,1) << WBFL::LRFD::RebarPool::GetBarSize(deckRebar.BottomRebarSize) << _T(" @ ") << spacing.SetValue( deckRebar.BottomSpacing );
 
    (*pTable)(2,2) << _T("AND");
    (*pTable)(2,3) << As.SetValue( deckRebar.BottomLumpSum );
@@ -4137,7 +4461,7 @@ void write_deck_reinforcing_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnit
          (*pTable)(row,0) << LABEL_PIER(negMomentRebar.PierIdx);
          (*pTable)(row,1) << (negMomentRebar.Mat == CDeckRebarData::TopMat ? _T("Top") : _T("Bottom"));
          (*pTable)(row,2) << As.SetValue(negMomentRebar.LumpSum);
-         (*pTable)(row,3) << lrfdRebarPool::GetBarSize(negMomentRebar.RebarSize);
+         (*pTable)(row,3) << WBFL::LRFD::RebarPool::GetBarSize(negMomentRebar.RebarSize);
          (*pTable)(row,4) << spacing.SetValue(negMomentRebar.Spacing);
          (*pTable)(row,5) << cutoff.SetValue(negMomentRebar.LeftCutoff);
          (*pTable)(row,6) << cutoff.SetValue(negMomentRebar.RightCutoff);

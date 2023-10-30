@@ -65,15 +65,20 @@ BOOL CTxDOTAppPlugin::Init(CEAFApp* pParent)
 
       // TRICKY: Must lock temporary ole control maps in app module or the report browser window
       //         will vanish after about 10 seconds. See http://support.microsoft.com/kb/161874
-      //         for a sketchy discription
+      //         for a sketchy description
       AfxLockTempMaps();
    }
 
    {
-      AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-      if ( !EAFGetApp()->GetCommandLineInfo().m_bCommandLineMode )
-         UpdateCache(); // we don't want to do this if we are running in batch/command line mode
+      if (!EAFGetApp()->GetCommandLineInfo().m_bCommandLineMode && !EAFGetApp()->IsFirstRun())
+      {
+         // Don't update cache if there are other instances of bridgelink running. This avoids race condition on libraries and templates
+         if (!EAFAreOtherProgramInstancesRunning())
+         {
+            AFX_MANAGE_STATE(AfxGetStaticModuleState()); // need state of this dll
+            UpdateCache(); // we don't want to do this if we are running in batch/command line mode or if this is the first run situation (because configuration will happen later)
+         }
+      }
 
 
       m_DocumentationImpl.Init(this);
@@ -358,7 +363,7 @@ CString CTxDOTAppPlugin::GetDefaultWorkgroupTemplateFolder() const
 
 #else
    // in a real release, the path doesn't contain RegFreeCOM\\Release, but that's
-   // ok... the replace will fail and the string wont be altered.
+   // OK... the replace will fail and the string wont be altered.
 #if defined _WIN64
    strAppPath.Replace(_T("BRIDGELINK\\REGFREECOM\\X64\\RELEASE\\"),_T("PGSUPER\\TXDOTAGENT"));
 #else

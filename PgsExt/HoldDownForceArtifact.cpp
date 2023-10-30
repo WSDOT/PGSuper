@@ -138,27 +138,3 @@ void pgsHoldDownForceArtifact::MakeAssignment(const pgsHoldDownForceArtifact& rO
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool pgsHoldDownForceArtifact::AssertValid() const
-{
-   return true;
-}
-
-void pgsHoldDownForceArtifact::Dump(dbgDumpContext& os) const
-{
-   os << "Dump for pgsHoldDownForceArtifact" << endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool pgsHoldDownForceArtifact::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("pgsHoldDownForceArtifact");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for pgsHoldDownForceArtifact");
-
-   TESTME_EPILOG("pgsHoldDownForceArtifact");
-}
-#endif // _UNITTEST

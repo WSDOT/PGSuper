@@ -30,7 +30,7 @@
 #include <PgsExt\PCIUHPCConcretePage.h>
 #include <System\Tokenizer.h>
 #include "CopyConcreteEntry.h"
-#include <Lrfd\Lrfd.h>
+#include <LRFD\Lrfd.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
 #include <IFace\Bridge.h>
@@ -61,7 +61,7 @@ CPCIUHPCConcretePage::CPCIUHPCConcretePage() : CPropertyPage()
 void CPCIUHPCConcretePage::DoDataExchange(CDataExchange* pDX)
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    CPropertyPage::DoDataExchange(pDX);
 
@@ -90,7 +90,7 @@ void CPCIUHPCConcretePage::DoDataExchange(CDataExchange* pDX)
       DDV_UnitValueGreaterThanZero(pDX, IDC_FFC, m_ffc, pDisplayUnits->Stress);
       DDV_UnitValueGreaterThanZero(pDX, IDC_FRR, m_frr, pDisplayUnits->Stress);
       DDV_UnitValueGreaterThanZero(pDX, IDC_FIBER, m_FiberLength, pDisplayUnits->ComponentDim);
-      DDV_GreaterThanZero(pDX, IDC_AUTOGENOUS_SHRINKAGE, m_AutogenousShrinkage);
+      DDV_LimitOrMore(pDX, IDC_AUTOGENOUS_SHRINKAGE, m_AutogenousShrinkage,0.0);
    }
 }
 

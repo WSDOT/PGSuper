@@ -27,6 +27,8 @@
 
 #include <PgsExt\ReportPointOfInterest.h>
 
+#include <psgLib/MomentCapacityCriteria.h>
+
 #include <IFace\DocumentType.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
@@ -34,6 +36,7 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\Intervals.h>
+#include <IFace\ReportOptions.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -121,8 +124,8 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDisplayUnits->GetMomentUnit(), false );
 
-   GET_IFACE2(pBroker, IDocumentType, pDocType);
-   location.IncludeSpanAndGirder(pDocType->IsPGSpliceDocument() || girderKey.groupIndex == ALL_GROUPS);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -139,11 +142,12 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bExcludeNoncompositeMoments = !pSpecEntry->IncludeNoncompositeMomentsForNegMomentDesign();
+   const auto& moment_capacity_criteria = pSpecEntry->GetMomentCapacityCriteria();
+   bool bExcludeNoncompositeMoments = !moment_capacity_criteria.bIncludeNoncompositeMomentsForNegMomentDesign;
 
-   bool bTimeStepMethod = pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP;
+   bool bTimeStepMethod = pSpecEntry->GetPrestressLossCriteria().LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP;
 
-   RowIndexType row = CreateCombinedDeadLoadingTableHeading<rptMomentUnitTag,unitmgtMomentData>(&p_table,pBroker,_T("Moment"),false,bRating,intervalIdx<liveLoadIntervalIdx,
+   RowIndexType row = CreateCombinedDeadLoadingTableHeading<rptMomentUnitTag,WBFL::Units::MomentData>(&p_table,pBroker,_T("Moment"),false,bRating,intervalIdx<liveLoadIntervalIdx,
                                                                                     analysisType,pDisplayUnits,pDisplayUnits->GetMomentUnit());
    *p << p_table;
 
@@ -359,12 +363,14 @@ void CCombinedMomentsTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter*
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDisplayUnits->GetMomentUnit(), false );
 
-   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bExcludeNoncompositeMoments = !pSpecEntry->IncludeNoncompositeMomentsForNegMomentDesign();
+   const auto& moment_capacity_criteria = pSpecEntry->GetMomentCapacityCriteria();
+   bool bExcludeNoncompositeMoments = !moment_capacity_criteria.bIncludeNoncompositeMomentsForNegMomentDesign;
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    std::vector<CGirderKey> vGirderKeys;
@@ -384,7 +390,7 @@ void CCombinedMomentsTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter*
    *pChapter << p;
 
    rptRcTable* p_table;
-   RowIndexType Nhrows = CreateCombinedLiveLoadingTableHeading<rptMomentUnitTag,unitmgtMomentData>(&p_table,strLabel,false,bDesign,bPermit,bPedLoading,bRating,false,true,
+   RowIndexType Nhrows = CreateCombinedLiveLoadingTableHeading<rptMomentUnitTag,WBFL::Units::MomentData>(&p_table,strLabel,false,bDesign,bPermit,bPedLoading,bRating,false,true,
                            analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetMomentUnit());
 
    RowIndexType row = Nhrows;
@@ -437,7 +443,7 @@ void CCombinedMomentsTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter*
          pForces2->GetCombinedLiveLoadMoment( liveLoadIntervalIdx, pgsTypes::lltDesign, vPoi, maxBAT, &dummy, &maxDesignLL );
          pForces2->GetCombinedLiveLoadMoment( liveLoadIntervalIdx, pgsTypes::lltDesign, vPoi, minBAT, &minDesignLL, &dummy );
 
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
          {
             pForces2->GetCombinedLiveLoadMoment( liveLoadIntervalIdx, pgsTypes::lltFatigue, vPoi, maxBAT, &dummy, &maxFatigueLL );
             pForces2->GetCombinedLiveLoadMoment( liveLoadIntervalIdx, pgsTypes::lltFatigue, vPoi, minBAT, &minFatigueLL, &dummy );
@@ -517,7 +523,7 @@ void CCombinedMomentsTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter*
             (*p_table)(row,col++) << moment.SetValue( maxDesignLL[index] );
             (*p_table)(row,col++) << moment.SetValue( minDesignLL[index] );
 
-            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
             {
                (*p_table)(row,col++) << moment.SetValue( maxFatigueLL[index] );
                (*p_table)(row,col++) << moment.SetValue( minFatigueLL[index] );
@@ -592,7 +598,7 @@ void CCombinedMomentsTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter*
 
          SumPedAndLiveLoad(DesignPedLoad, minDesignLL, maxDesignLL, minPedestrianLL, maxPedestrianLL);
 
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
          {
             SumPedAndLiveLoad(FatiguePedLoad, minFatigueLL, maxFatigueLL, minPedestrianLL, maxPedestrianLL);
          }
@@ -612,7 +618,7 @@ void CCombinedMomentsTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter*
             (*p_table)(row2,col++) << moment.SetValue( maxDesignLL[index] );
             (*p_table)(row2,col++) << moment.SetValue( minDesignLL[index] );
 
-            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
             {
                (*p_table)(row2,col++) << moment.SetValue( maxFatigueLL[index] );
                (*p_table)(row2,col++) << moment.SetValue( minFatigueLL[index] );
@@ -633,7 +639,7 @@ void CCombinedMomentsTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter*
             int lnum=1;
             *pNote<< lnum++ << PedestrianFootnote(DesignPedLoad) << rptNewLine;
 
-            if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+            if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
             {
                *pNote << lnum++ << PedestrianFootnote(FatiguePedLoad) << rptNewLine;
             }
@@ -666,7 +672,8 @@ void CCombinedMomentsTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* p
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDisplayUnits->GetMomentUnit(), false );
 
-   location.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -678,8 +685,8 @@ void CCombinedMomentsTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* p
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bExcludeNoncompositeMoments = !pSpecEntry->IncludeNoncompositeMomentsForNegMomentDesign();
-
+   const auto& moment_capacity_criteria = pSpecEntry->GetMomentCapacityCriteria();
+   bool bExcludeNoncompositeMoments = !moment_capacity_criteria.bIncludeNoncompositeMomentsForNegMomentDesign;
 
    GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
    bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
@@ -690,7 +697,7 @@ void CCombinedMomentsTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* p
    bool bPedLoading = pProductLoads->HasPedestrianLoad(girderKey);
 
    rptRcTable * p_table2;
-   RowIndexType row2 = CreateLimitStateTableHeading<rptMomentUnitTag,unitmgtMomentData>(&p_table2,_T("Moment, Mu"),false,bDesign,bPermit,bRating,true,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetMomentUnit());
+   RowIndexType row2 = CreateLimitStateTableHeading<rptMomentUnitTag,WBFL::Units::MomentData>(&p_table2,_T("Moment, Mu"),false,bDesign,bPermit,bRating,true,analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetMomentUnit());
    *p << p_table2;
 
    if ( girderKey.groupIndex == ALL_GROUPS )
@@ -746,7 +753,7 @@ void CCombinedMomentsTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* p
          {
             pLsForces2->GetMoment( intervalIdx, pgsTypes::ServiceI, vPoi, maxBAT, &minServiceI, &maxServiceI );
 
-            if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+            if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims )
             {
                pLsForces2->GetMoment( intervalIdx, pgsTypes::ServiceIA, vPoi, maxBAT, &minServiceIA, &maxServiceIA );
             }
@@ -828,7 +835,7 @@ void CCombinedMomentsTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* p
             pLsForces2->GetMoment( intervalIdx, pgsTypes::ServiceI, vPoi, maxBAT, &dummy, &maxServiceI );
             pLsForces2->GetMoment( intervalIdx, pgsTypes::ServiceI, vPoi, minBAT, &minServiceI, &dummy );
 
-            if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+            if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims )
             {
                pLsForces2->GetMoment( intervalIdx, pgsTypes::ServiceIA, vPoi, maxBAT, &dummy, &maxServiceIA );
                pLsForces2->GetMoment( intervalIdx, pgsTypes::ServiceIA, vPoi, minBAT, &minServiceIA, &dummy );
@@ -934,7 +941,7 @@ void CCombinedMomentsTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* p
                (*p_table2)(row2,col++) << moment.SetValue( maxServiceI[index] );
                (*p_table2)(row2,col++) << moment.SetValue( minServiceI[index] );
 
-               if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+               if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims )
                {
                   (*p_table2)(row2,col++) << moment.SetValue( maxServiceIA[index] );
                   (*p_table2)(row2,col++) << moment.SetValue( minServiceIA[index] );
@@ -943,7 +950,7 @@ void CCombinedMomentsTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* p
                (*p_table2)(row2,col++) << moment.SetValue( maxServiceIII[index] );
                (*p_table2)(row2,col++) << moment.SetValue( minServiceIII[index] );
 
-               if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+               if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
                {
                   (*p_table2)(row2,col++) << moment.SetValue( maxFatigueI[index] );
                   (*p_table2)(row2,col++) << moment.SetValue( minFatigueI[index] );
@@ -1023,12 +1030,12 @@ void CCombinedMomentsTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* p
             {
                (*p_table2)(row2,col++) << moment.SetValue( maxServiceI[index] );
 
-               if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+               if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims )
                   (*p_table2)(row2,col++) << moment.SetValue( maxServiceIA[index] );
                
                (*p_table2)(row2,col++) << moment.SetValue( maxServiceIII[index] );
 
-               if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+               if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
                   (*p_table2)(row2,col++) << moment.SetValue( maxFatigueI[index] );
 
                (*p_table2)(row2,col++) << moment.SetValue( maxStrengthI[index] );
@@ -1146,31 +1153,6 @@ void CCombinedMomentsTable::MakeAssignment(const CCombinedMomentsTable& rOther)
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CCombinedMomentsTable::AssertValid() const
-{
-   return true;
-}
-
-void CCombinedMomentsTable::Dump(dbgDumpContext& os) const
-{
-   os << _T("Dump for CCombinedMomentsTable") << endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CCombinedMomentsTable::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("CCombinedMomentsTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CCombinedMomentsTable");
-
-   TESTME_EPILOG("CCombinedMomentsTable");
-}
-#endif // _UNITTEST
-
 
 void GetCombinedResultsPoi(IBroker* pBroker,const CGirderKey& girderKey,IntervalIndexType intervalIdx,PoiList* pPoi,PoiAttributeType* pRefAttribute)
 {

@@ -30,7 +30,7 @@
 #include <EAF\EAFApp.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFUtilities.h>
-#include <Lrfd\RebarPool.h>
+#include <LRFD\RebarPool.h>
 #include <IFace\Tools.h>
 
 #ifdef _DEBUG
@@ -138,7 +138,7 @@ void CShearBarsLegsGrid::InsertRow(bool bAppend)
 	ROWCOL nRow = 0;
 
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
 	// if there are no cells selected,
 	// copy the current cell's coordinates
@@ -269,10 +269,10 @@ void CShearBarsLegsGrid::SetRowStyle(ROWCOL nRow)
 	GetParam()->EnableUndo(FALSE);
 
    CString strBarSizeChoiceList;
-   lrfdRebarIter rebarIter(matRebar::A615,matRebar::Grade60,true);
+   WBFL::LRFD::RebarIter rebarIter(WBFL::Materials::Rebar::Type::A615,WBFL::Materials::Rebar::Grade::Grade60,true);
    for ( rebarIter.Begin(); rebarIter; rebarIter.Next() )
    {
-      const matRebar* pRebar = rebarIter.GetCurrentRebar();
+      const auto* pRebar = rebarIter.GetCurrentRebar();
       strBarSizeChoiceList += pRebar->GetName().c_str();
       strBarSizeChoiceList += _T("\n");
    }
@@ -283,7 +283,7 @@ void CShearBarsLegsGrid::SetRowStyle(ROWCOL nRow)
       .SetControl(GX_IDS_CTRL_CBS_DROPDOWNLIST)
       .SetChoiceList(strBarSizeChoiceList)
       .SetHorizontalAlignment(DT_RIGHT)
-      .SetValue(lrfdRebarPool::GetBarSize(matRebar::bs3).c_str())
+      .SetValue(WBFL::LRFD::RebarPool::GetBarSize(WBFL::Materials::Rebar::Size::bs3).c_str())
       );
 
 	SetStyleRange(CGXRange(nRow,2), CGXStyle()
@@ -311,7 +311,7 @@ CString CShearBarsLegsGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
    }
 }
 
-matRebar::Size CShearBarsLegsGrid::GetBarSize(ROWCOL row,ROWCOL col)
+WBFL::Materials::Rebar::Size CShearBarsLegsGrid::GetBarSize(ROWCOL row,ROWCOL col)
 {
    assert(col==1);
    CString s = GetCellValue(row, col);
@@ -320,28 +320,28 @@ matRebar::Size CShearBarsLegsGrid::GetBarSize(ROWCOL row,ROWCOL col)
    CString s2 = s.Right(l-1);
    int i = _tstoi(s2);
    if (s.IsEmpty() || (i==0))
-      return matRebar::bsNone;
+      return WBFL::Materials::Rebar::Size::bsNone;
 
    switch(i)
    {
-   case 3:  return matRebar::bs3;
-   case 4:  return matRebar::bs4;
-   case 5:  return matRebar::bs5;
-   case 6:  return matRebar::bs6;
-   case 7:  return matRebar::bs7;
-   case 8:  return matRebar::bs8;
-   case 9:  return matRebar::bs9;
-   case 10: return matRebar::bs10;
-   case 11: return matRebar::bs11;
-   case 14: return matRebar::bs14;
-   case 18: return matRebar::bs18;
+   case 3:  return WBFL::Materials::Rebar::Size::bs3;
+   case 4:  return WBFL::Materials::Rebar::Size::bs4;
+   case 5:  return WBFL::Materials::Rebar::Size::bs5;
+   case 6:  return WBFL::Materials::Rebar::Size::bs6;
+   case 7:  return WBFL::Materials::Rebar::Size::bs7;
+   case 8:  return WBFL::Materials::Rebar::Size::bs8;
+   case 9:  return WBFL::Materials::Rebar::Size::bs9;
+   case 10: return WBFL::Materials::Rebar::Size::bs10;
+   case 11: return WBFL::Materials::Rebar::Size::bs11;
+   case 14: return WBFL::Materials::Rebar::Size::bs14;
+   case 18: return WBFL::Materials::Rebar::Size::bs18;
    default: ATLASSERT(false);
    }
 
-   return matRebar::bsNone;
+   return WBFL::Materials::Rebar::Size::bsNone;
 }
 
-bool CShearBarsLegsGrid::GetRowData(ROWCOL nRow, matRebar::Size* pSize, Float64* pnLegs)
+bool CShearBarsLegsGrid::GetRowData(ROWCOL nRow, WBFL::Materials::Rebar::Size* pSize, Float64* pnLegs)
 {
 
    *pSize = GetBarSize(nRow,1);
@@ -398,7 +398,7 @@ void CShearBarsLegsGrid::FillGrid(const CShearDesignPage::StirrupSizeBarComboCol
       {
 
          CString tmp;
-         tmp.Format(_T("%s"),lrfdRebarPool::GetBarSize((*it).Size).c_str());
+         tmp.Format(_T("%s"),WBFL::LRFD::RebarPool::GetBarSize((*it).Size).c_str());
          VERIFY(SetValueRange(CGXRange(nRow, 1), tmp));
 
          VERIFY(SetValueRange(CGXRange(nRow, 2), (*it).NLegs));

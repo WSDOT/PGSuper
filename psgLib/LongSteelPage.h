@@ -78,7 +78,7 @@ protected:
    CRebarMaterialComboBox m_cbRebar;
 
 public:
-   void GetRebarMaterial(matRebar::Type* pType,matRebar::Grade* pGrade);
+   void GetRebarMaterial(WBFL::Materials::Rebar::Type* pType,WBFL::Materials::Rebar::Grade* pGrade);
    void OnEnableDelete(bool canDelete);
 };
 

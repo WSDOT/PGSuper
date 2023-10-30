@@ -75,7 +75,7 @@ void CDesignRatingPage::DoDataExchange(CDataExchange* pDX)
    GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
    DDX_UnitValueAndTag(pDX,IDC_ALLOWABLE_TENSION,IDC_ALLOWABLE_TENSION_UNIT,m_Data.AllowableTensionCoefficient,pDisplayUnits->GetTensionCoefficientUnit());
    CString tag;
-   if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SeventhEditionWith2016Interims )
+   if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims )
    {
       tag = pDisplayUnits->GetUnitMode() == eafTypes::umSI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))");
    }
@@ -188,7 +188,7 @@ BOOL CDesignRatingPage::OnSetActive()
    const RatingLibraryEntry* pRatingEntry = pLib->GetRatingEntry( pParent->m_GeneralPage.m_Data.CriteriaName.c_str() );
 
    bool bAllowUserOverride;
-   if ( pRatingEntry->GetSpecificationVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( pRatingEntry->GetSpecificationVersion() < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
    {
       const CLiveLoadFactorModel& inventory = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrDesign_Inventory);
       bAllowUserOverride = inventory.AllowUserOverride();
@@ -215,7 +215,7 @@ BOOL CDesignRatingPage::OnSetActive()
    }
 
 
-   if ( pRatingEntry->GetSpecificationVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( pRatingEntry->GetSpecificationVersion() < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
    {
       const CLiveLoadFactorModel& operating = pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrDesign_Operating);
       bAllowUserOverride = operating.AllowUserOverride();
@@ -237,7 +237,7 @@ BOOL CDesignRatingPage::OnSetActive()
    }
 
    GET_IFACE2(broker, ILossParameters, pLossParams);
-   if ( pLossParams->GetLossMethod() != pgsTypes::TIME_STEP )
+   if ( pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       GetDlgItem(IDC_STRENGTH_I_PLUS)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_STRENGTH_I_CR)->ShowWindow(SW_HIDE);

@@ -393,20 +393,20 @@ CString ConcreteDescription(const CConcreteMaterial& concrete)
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,ILossParameters,pLossParameters);
-   pgsTypes::LossMethod loss_method = pLossParameters->GetLossMethod();
+   PrestressLossCriteria::LossMethodType loss_method = pLossParameters->GetLossMethod();
 
    CString strLabel;
-   if ( pLossParameters->GetLossMethod() == pgsTypes::TIME_STEP )
+   if ( pLossParameters->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
-      if ( pLossParameters->GetTimeDependentModel() == pgsTypes::tdmAASHTO || 
-           pLossParameters->GetTimeDependentModel() == pgsTypes::tdmACI209 )
+      if ( pLossParameters->GetTimeDependentModel() == PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO || 
+           pLossParameters->GetTimeDependentModel() == PrestressLossCriteria::TimeDependentConcreteModelType::ACI209 )
       {
          if ( concrete.bACIUserParameters )
          {
             GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
             strLabel.Format(_T("%s, ACI 209R-92, %s cured, a = %s, Beta = %4.2f"),
-               lrfdConcreteUtil::GetTypeName((matConcrete::Type)concrete.Type,true).c_str(),
+               WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)concrete.Type,true).c_str(),
                concrete.CureMethod == pgsTypes::Steam ? _T("Steam") : _T("Moist"),
                ::FormatDimension(concrete.A,pDisplayUnits->GetFractionalDaysUnit()),
                concrete.B);
@@ -414,7 +414,7 @@ CString ConcreteDescription(const CConcreteMaterial& concrete)
          else
          {
             strLabel.Format(_T("%s, ACI 209R-92, %s cured, %s cement"),
-               lrfdConcreteUtil::GetTypeName((matConcrete::Type)concrete.Type,true).c_str(),
+               WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)concrete.Type,true).c_str(),
                concrete.CureMethod == pgsTypes::Steam ? _T("Steam") : _T("Moist"),
                concrete.ACI209CementType == pgsTypes::TypeI ? _T("Type I") : _T("Type III"));
          }
@@ -424,21 +424,21 @@ CString ConcreteDescription(const CConcreteMaterial& concrete)
          if ( concrete.bCEBFIPUserParameters )
          {
             strLabel.Format(_T("%s, CEB-FIP, s = %.6f, Beta SC = %.6f"),
-                  lrfdConcreteUtil::GetTypeName((matConcrete::Type)concrete.Type,true).c_str(),
+                  WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)concrete.Type,true).c_str(),
                   concrete.S,
                   concrete.BetaSc);
          }
          else
          {
             strLabel.Format(_T("%s, CEB-FIP, Type %s cement"),
-                  lrfdConcreteUtil::GetTypeName((matConcrete::Type)concrete.Type,true).c_str(),
-                  matCEBFIPConcrete::GetCementType((matCEBFIPConcrete::CementType)concrete.CEBFIPCementType));
+                  WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)concrete.Type,true).c_str(),
+                  WBFL::Materials::CEBFIPConcrete::GetCementType((WBFL::Materials::CEBFIPConcrete::CementType)concrete.CEBFIPCementType));
          }
       }
    }
    else
    {
-      strLabel.Format(_T("%s"),lrfdConcreteUtil::GetTypeName((matConcrete::Type)concrete.Type,true).c_str());
+      strLabel.Format(_T("%s"),WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)concrete.Type,true).c_str());
    }
 
    return strLabel;

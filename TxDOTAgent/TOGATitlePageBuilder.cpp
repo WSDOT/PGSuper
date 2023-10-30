@@ -42,14 +42,14 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 CTOGATitlePageBuilder::CTOGATitlePageBuilder(IBroker* pBroker,LPCTSTR strTitle,bool bFullVersion) :
-CTitlePageBuilder(strTitle),
+WBFL::Reporting::TitlePageBuilder(strTitle),
 m_pBroker(pBroker),
 m_bFullVersion(bFullVersion)
 {
 }
 
 CTOGATitlePageBuilder::CTOGATitlePageBuilder(const CTOGATitlePageBuilder& other) :
-CTitlePageBuilder(other),
+WBFL::Reporting::TitlePageBuilder(other),
 m_pBroker(other.m_pBroker),
 m_bFullVersion(other.m_bFullVersion)
 {
@@ -59,19 +59,19 @@ CTOGATitlePageBuilder::~CTOGATitlePageBuilder(void)
 {
 }
 
-CTitlePageBuilder* CTOGATitlePageBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::TitlePageBuilder> CTOGATitlePageBuilder::Clone() const
 {
-   return new CTOGATitlePageBuilder(*this);
+   return std::make_unique<CTOGATitlePageBuilder>(*this);
 }
 
 
-bool CTOGATitlePageBuilder::NeedsUpdate(CReportHint* pHint,std::shared_ptr<CReportSpecification>& pRptSpec)
+bool CTOGATitlePageBuilder::NeedsUpdate(const std::shared_ptr<const WBFL::Reporting::ReportHint>& pHint, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec) const
 {
    // don't let the title page control whether or not a report needs updating
    return false;
 }
 
-rptChapter* CTOGATitlePageBuilder::Build(std::shared_ptr<CReportSpecification>& pRptSpec)
+rptChapter* CTOGATitlePageBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec) const
 {
    // Create a title page for the report
    rptChapter* pTitlePage = new rptChapter;
@@ -92,7 +92,7 @@ rptChapter* CTOGATitlePageBuilder::Build(std::shared_ptr<CReportSpecification>& 
 
    pPara = new rptParagraph(rptStyleManager::GetCopyrightStyle());
    *pTitlePage << pPara;
-   *pPara << _T("Copyright ") << symbol(COPYRIGHT) << _T(" ") << sysDate().Year() << _T(", TxDOT, All Rights Reserved") << rptNewLine;
+   *pPara << _T("Copyright ") << symbol(COPYRIGHT) << _T(" ") << WBFL::System::Date().Year() << _T(", TxDOT, All Rights Reserved") << rptNewLine;
 
    pPara = new rptParagraph;
    pPara->SetStyleName(rptStyleManager::GetReportSubtitleStyle());
@@ -164,7 +164,7 @@ rptChapter* CTOGATitlePageBuilder::Build(std::shared_ptr<CReportSpecification>& 
 
    // Status Center Items
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
-   CollectionIndexType nItems = pStatusCenter->Count();
+   IndexType nItems = pStatusCenter->Count();
 
    if ( nItems != 0 )
    {
@@ -190,7 +190,7 @@ rptChapter* CTOGATitlePageBuilder::Build(std::shared_ptr<CReportSpecification>& 
 
       row = 1;
       CString strSeverityType[] = { _T("Information"), _T("Warning"), _T("Error") };
-      for ( CollectionIndexType i = 0; i < nItems; i++ )
+      for ( IndexType i = 0; i < nItems; i++ )
       {
          CEAFStatusItem* pItem = pStatusCenter->GetByIndex(i);
 

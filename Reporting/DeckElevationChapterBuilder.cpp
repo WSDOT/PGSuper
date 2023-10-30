@@ -27,8 +27,11 @@
 #include <IFace\Alignment.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
+#include <IFace\Intervals.h>
 
 #include <PgsExt\BridgeDescription2.h>
+
+#include <psgLib/SlabOffsetCriteria.h>
 
 
 #include <WBFLCogo.h>
@@ -60,9 +63,9 @@ LPCTSTR CDeckElevationChapterBuilder::GetName() const
    return TEXT("Roadway Elevations");
 }
 
-rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CDeckElevationChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CBrokerReportSpecification* pSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
+   auto pSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pSpec->GetBroker(&pBroker);
 
@@ -80,14 +83,14 @@ rptChapter* CDeckElevationChapterBuilder::Build(CReportSpecification* pRptSpec,U
 }
 
 
-CChapterBuilder* CDeckElevationChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CDeckElevationChapterBuilder::Clone() const
 {
-   return new CDeckElevationChapterBuilder;
+   return std::make_unique<CDeckElevationChapterBuilder>();
 }
 
-rptChapter* CDeckElevationChapterBuilder::BuildDeckOnGirder(CReportSpecification* pRptSpec, Uint16 level) const
+rptChapter* CDeckElevationChapterBuilder::BuildDeckOnGirder(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec, Uint16 level) const
 {
-   CBrokerReportSpecification* pSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
+   auto pSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pSpec->GetBroker(&pBroker);
 
@@ -95,7 +98,7 @@ rptChapter* CDeckElevationChapterBuilder::BuildDeckOnGirder(CReportSpecification
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
 
-   CGirderReportSpecification* pSGRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pSGRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
 
    CGirderKey girderKey;
    if (pSGRptSpec)
@@ -232,17 +235,23 @@ rptChapter* CDeckElevationChapterBuilder::BuildDeckOnGirder(CReportSpecification
    return pChapter;
 }
 
-rptChapter* CDeckElevationChapterBuilder::BuildNoDeck(CReportSpecification* pRptSpec, Uint16 level) const
+rptChapter* CDeckElevationChapterBuilder::BuildNoDeck(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CBrokerReportSpecification* pSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
+   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
+
+   BuildNoDeckElevationContent(pChapter,pRptSpec,level);
+
+   return pChapter;
+}
+
+void CDeckElevationChapterBuilder::BuildNoDeckElevationContent(rptChapter * pChapter,const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+{
+   auto pSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pSpec->GetBroker(&pBroker);
-
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
-   rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
-
-   CGirderReportSpecification* pSGRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pSGRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
 
    CGirderKey girderKey;
    if (pSGRptSpec)
@@ -256,14 +265,15 @@ rptChapter* CDeckElevationChapterBuilder::BuildNoDeck(CReportSpecification* pRpt
 
    pPara = new rptParagraph();
    (*pChapter) << pPara;
-   *pPara << _T("Offsets are measured from and normal to the left edge, centerline, and right edge of girder at top of girder.") << rptNewLine;
-   *pPara << _T("Design elevations are the deck surface elevations defined by the alignment, profile, and superelevations.") << rptNewLine;
-   *pPara << _T("Finished elevations are the top of the finished girder, or overlay if applicable, including the effects of camber.") << rptNewLine;
+   *pPara << _T("Offsets are measured from and normal to the left edge, centerline (CL), and right edge of girder at top of girder.") << rptNewLine;
+   *pPara << _T("Design elevations are the deck surface elevations along CL girder defined by the alignment, profile, and superelevations.") << rptNewLine;
+   *pPara << _T("Finished elevations are the top CL of the finished girder, or overlay if applicable, including the effects of camber.") << rptNewLine;
 
    GET_IFACE2(pBroker,ILibrary, pLib);
    GET_IFACE2(pBroker, ISpecification, pISpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pISpec->GetSpecification().c_str());
-   Float64 tolerance = pSpecEntry->GetFinishedElevationTolerance();
+   const auto& slab_offset_criteria = pSpecEntry->GetSlabOffsetCriteria();
+   Float64 tolerance = slab_offset_criteria.FinishedElevationTolerance;
    
    INIT_UV_PROTOTYPE(rptLengthSectionValue, dim1, pDisplayUnits->GetSpanLengthUnit(), true);
    INIT_UV_PROTOTYPE(rptLengthSectionValue, dim2, pDisplayUnits->GetComponentDimUnit(), true);
@@ -275,7 +285,10 @@ rptChapter* CDeckElevationChapterBuilder::BuildNoDeck(CReportSpecification* pRpt
    Float64 overlay = 0;
    if (pDeck->WearingSurface == pgsTypes::wstOverlay)
    {
-      overlay = pBridge->GetOverlayDepth();
+      GET_IFACE2(pBroker,IIntervals,pIntervals);
+      IntervalIndexType geomCtrlInterval = pIntervals->GetGeometryControlInterval();
+
+      overlay = pBridge->GetOverlayDepth(geomCtrlInterval);
 
       if (pDeck->bInputAsDepthAndDensity == false)
       {
@@ -296,6 +309,7 @@ rptChapter* CDeckElevationChapterBuilder::BuildNoDeck(CReportSpecification* pRpt
    GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    GET_IFACE2(pBroker, IGirder, pGirder);
    GET_IFACE2(pBroker, IGeometry, pGeometry);
+   GET_IFACE2(pBroker, IDeformedGirderGeometry, pDeformedGirderGeometry);
 
    RowIndexType row_step = 4; // number of rows used for each location (left,center,right)
 
@@ -409,7 +423,7 @@ rptChapter* CDeckElevationChapterBuilder::BuildNoDeck(CReportSpecification* pRpt
 
             (*pTable)(row + i*row_step + 0, col) << Bold(_T("Station"));
             (*pTable)(row + i*row_step + 1, col) << Bold(_T("Offset (")) << Bold(pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag()) << Bold(_T(")"));
-            (*pTable)(row + i*row_step + 2, col) << Bold(_T("Design Elev (")) << Bold(pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag()) << Bold(_T(")"));
+            (*pTable)(row + i*row_step + 2, col) << Bold(_T("Design Elev (PGL) (")) << Bold(pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag()) << Bold(_T(")"));
             (*pTable)(row + i*row_step + 3, col) << Bold(_T("Finished Elev (")) << Bold(pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag()) << Bold(_T(")"));
          }
 
@@ -442,8 +456,7 @@ rptChapter* CDeckElevationChapterBuilder::BuildNoDeck(CReportSpecification* pRpt
 
             // get parameters for finished elevation... for no deck, the finished elevation is the top of the girder
             std::array<Float64,3> finished_elevation;
-            pGirder->GetFinishedElevation(poi, direction, true /*include overlay depth*/, &finished_elevation[Left], &finished_elevation[Center], &finished_elevation[Right]);
-
+            pDeformedGirderGeometry->GetFinishedElevation(poi, direction, &finished_elevation[Left], &finished_elevation[Center], &finished_elevation[Right]);
 
             for (int i = 0; i < 3; i++) // left, center, right
             {
@@ -467,6 +480,4 @@ rptChapter* CDeckElevationChapterBuilder::BuildNoDeck(CReportSpecification* pRpt
          row += 3 * row_step;
       } // next girder
    } // next span
-
-   return pChapter;
 }

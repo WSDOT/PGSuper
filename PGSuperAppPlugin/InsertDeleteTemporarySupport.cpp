@@ -43,9 +43,9 @@ std::_tstring txnInsertTemporarySupport::Name() const
    return _T("Insert Temporary Support");
 }
 
-txnTransaction* txnInsertTemporarySupport::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnInsertTemporarySupport::CreateClone() const
 {
-   return new txnInsertTemporarySupport(m_tsIndex,m_BridgeDescription[0],m_BridgeDescription[1]);
+   return std::make_unique<txnInsertTemporarySupport>(m_tsIndex,m_BridgeDescription[0],m_BridgeDescription[1]);
 }
 
 ///////////////////////////////////////////////
@@ -61,7 +61,7 @@ std::_tstring txnDeleteTemporarySupport::Name() const
    return _T("Delete Temporary Support");
 }
 
-txnTransaction* txnDeleteTemporarySupport::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnDeleteTemporarySupport::CreateClone() const
 {
-   return new txnDeleteTemporarySupport(m_tsIndex,m_BridgeDescription[0],m_BridgeDescription[1]);
+   return std::make_unique<txnDeleteTemporarySupport>(m_tsIndex,m_BridgeDescription[0],m_BridgeDescription[1]);
 }

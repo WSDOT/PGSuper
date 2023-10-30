@@ -41,6 +41,10 @@
 
 #include <PgsExt\BridgeDescription2.h>
 
+#include <psgLib/SectionPropertiesCriteria.h>
+#include <psgLib/SpecificationCriteria.h>
+
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -70,55 +74,55 @@ HRESULT CUBeam2Factory::FinalConstruct()
    m_DimNames.emplace_back(_T("W7"));
 
    // Default beam is a TXDOT U40
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(0.750,unitMeasure::Inch)); // C1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(40.00,unitMeasure::Inch)); // D1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 8.25,unitMeasure::Inch)); // D2
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 3.00,unitMeasure::Inch)); // D3
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(0.875,unitMeasure::Inch)); // D4
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(5.875,unitMeasure::Inch)); // D5
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(21.625,unitMeasure::Inch)); // D6
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 0.0,unitMeasure::Inch)); // End Block Length
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(55.00,unitMeasure::Inch)); // W1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(89.00,unitMeasure::Inch)); // W2
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 3.00,unitMeasure::Inch)); // W3
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(0.375,unitMeasure::Inch)); // W4
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 8.25,unitMeasure::Inch)); // W5
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(15.75,unitMeasure::Inch)); // W6
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 1.75,unitMeasure::Inch)); // W7
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(0.750,WBFL::Units::Measure::Inch)); // C1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(40.00,WBFL::Units::Measure::Inch)); // D1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 8.25,WBFL::Units::Measure::Inch)); // D2
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 3.00,WBFL::Units::Measure::Inch)); // D3
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(0.875,WBFL::Units::Measure::Inch)); // D4
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(5.875,WBFL::Units::Measure::Inch)); // D5
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(21.625,WBFL::Units::Measure::Inch)); // D6
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 0.0,WBFL::Units::Measure::Inch)); // End Block Length
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(55.00,WBFL::Units::Measure::Inch)); // W1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(89.00,WBFL::Units::Measure::Inch)); // W2
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 3.00,WBFL::Units::Measure::Inch)); // W3
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(0.375,WBFL::Units::Measure::Inch)); // W4
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 8.25,WBFL::Units::Measure::Inch)); // W5
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(15.75,WBFL::Units::Measure::Inch)); // W6
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 1.75,WBFL::Units::Measure::Inch)); // W7
 
    // SI Units
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // C1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D2
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D3
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D4
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D5
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // D6
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // End Block Length
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W2
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W3
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W4
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W5
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W6
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W7
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // C1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // D1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // D2
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // D3
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // D4
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // D5
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // D6
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // End Block Length
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W2
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W3
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W4
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W5
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W6
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W7
 
    // US Units
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // C1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D2
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D3
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D4
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D5
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // D6
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // End Block Length
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W2
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W3
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W4
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W5
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W6
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W7
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // C1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // D1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // D2
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // D3
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // D4
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // D5
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // D6
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // End Block Length
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W2
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W3
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W4
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W5
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W6
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W7
 
    return S_OK;
 }
@@ -160,7 +164,7 @@ void CUBeam2Factory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGrou
    // Beam materials
    GET_IFACE2(pBroker,ILossParameters,pLossParams);
    CComPtr<IMaterial> material;
-   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       CComPtr<IAgeAdjustedMaterial> aaMaterial;
       BuildAgeAdjustedGirderMaterialModel(pBroker,pSegment,segment,&aaMaterial);
@@ -277,7 +281,7 @@ void CUBeam2Factory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType
 void CUBeam2Factory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const
 {
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
-   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       CComObject<CTimeStepLossEngineer>* pEngineer;
       CComObject<CTimeStepLossEngineer>::CreateInstance(&pEngineer);
@@ -391,7 +395,7 @@ const std::vector<Float64>& CUBeam2Factory::GetDefaultDimensions() const
    return m_DefaultDims;
 }
 
-const std::vector<const unitLength*>& CUBeam2Factory::GetDimensionUnits(bool bSIUnits) const
+const std::vector<const WBFL::Units::Length*>& CUBeam2Factory::GetDimensionUnits(bool bSIUnits) const
 {
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
@@ -419,7 +423,7 @@ bool CUBeam2Factory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
 
    if ( d1 <= 0.0 )
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][1];
+      const WBFL::Units::Length* pUnit = m_DimUnits[bSIUnits ? 0 : 1][1];
       std::_tostringstream os;
       os << _T("D1 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
@@ -428,7 +432,7 @@ bool CUBeam2Factory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
 
    if ( d2 <= 0.0 )
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][2];
+      const WBFL::Units::Length* pUnit = m_DimUnits[bSIUnits ? 0 : 1][2];
       std::_tostringstream os;
       os << _T("D2 must be greater than 0.0") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
@@ -437,7 +441,7 @@ bool CUBeam2Factory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
 
    if ( d3 < 0.0 )
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][3];
+      const WBFL::Units::Length* pUnit = m_DimUnits[bSIUnits ? 0 : 1][3];
       std::_tostringstream os;
       os << _T("D3 must be greater than or equal to 0.0") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
@@ -446,16 +450,16 @@ bool CUBeam2Factory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
 
    if ( d1 < d2+d3 )
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][1];
+      const WBFL::Units::Length* pUnit = m_DimUnits[bSIUnits ? 0 : 1][1];
       std::_tostringstream os;
-      os << _T("D1 must be greater than or equal to D2 + D3 (") << ::ConvertFromSysUnits(d2+d3,*pUnit) << _T(" ") << pUnit->UnitTag() << _T(")") << std::ends;
+      os << _T("D1 must be greater than or equal to D2 + D3 (") << WBFL::Units::ConvertFromSysUnits(d2+d3,*pUnit) << _T(" ") << pUnit->UnitTag() << _T(")") << std::ends;
       *strErrMsg = os.str();
       return false;
    }
 
    if ( w1 <= 0.0 )
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][7];
+      const WBFL::Units::Length* pUnit = m_DimUnits[bSIUnits ? 0 : 1][7];
       std::_tostringstream os;
       os << _T("W1 must be greater than 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
@@ -472,7 +476,7 @@ bool CUBeam2Factory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
 
    if ( w3 < 0.0 )
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][9];
+      const WBFL::Units::Length* pUnit = m_DimUnits[bSIUnits ? 0 : 1][9];
       std::_tostringstream os;
       os << _T("W3 must be greater than or equal to 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
@@ -481,7 +485,7 @@ bool CUBeam2Factory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
    
    if ( c1 < 0.0 )
    {
-      const unitLength* pUnit = m_DimUnits[bSIUnits ? 0 : 1][0];
+      const WBFL::Units::Length* pUnit = m_DimUnits[bSIUnits ? 0 : 1][0];
       std::_tostringstream os;
       os << _T("C1 must be greater than or equal to 0.0 ") << pUnit->UnitTag() << std::ends;
       *strErrMsg = os.str();
@@ -534,7 +538,7 @@ bool CUBeam2Factory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
    return true;
 }
 
-void CUBeam2Factory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
+void CUBeam2Factory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
 {
    // Version 2.0 - Added EndBlockLength
    pSave->BeginUnit(_T("UBeam2Dimensions"),2.0);
@@ -546,7 +550,7 @@ void CUBeam2Factory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeam
    pSave->EndUnit();
 }
 
-IBeamFactory::Dimensions CUBeam2Factory::LoadSectionDimensions(sysIStructuredLoad* pLoad) const
+IBeamFactory::Dimensions CUBeam2Factory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
 {
    Float64 parent_version;
    if (pLoad->GetParentUnit() == _T("GirderLibraryEntry"))
@@ -724,7 +728,10 @@ std::_tstring CUBeam2Factory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
+   const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
+   const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();
+   if (section_properties_criteria.EffectiveFlangeWidthMethod == pgsTypes::efwmTribWidth ||
+      WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims <= specification_criteria.GetEdition())
    {
       return _T("UBeam_Effective_Flange_Width_Interior_Girder_2008.gif");
    }
@@ -739,7 +746,10 @@ std::_tstring CUBeam2Factory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
+   const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
+   const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();
+   if (section_properties_criteria.EffectiveFlangeWidthMethod == pgsTypes::efwmTribWidth ||
+      WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims <= specification_criteria.GetEdition())
    {
       return _T("UBeam_Effective_Flange_Width_Exterior_Girder_2008.gif");
    }

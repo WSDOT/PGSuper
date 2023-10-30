@@ -31,7 +31,7 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 txnEditLLDF::txnEditLLDF(const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc,
-                         LldfRangeOfApplicabilityAction oldROA, LldfRangeOfApplicabilityAction newROA)
+                         WBFL::LRFD::RangeOfApplicabilityAction oldROA, WBFL::LRFD::RangeOfApplicabilityAction newROA)
 {
    m_pBridgeDesc[0] = new CBridgeDescription2(oldBridgeDesc);
    m_pBridgeDesc[1] = new CBridgeDescription2(newBridgeDesc);
@@ -57,9 +57,9 @@ void txnEditLLDF::Undo()
    DoExecute(0);
 }
 
-txnTransaction* txnEditLLDF::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnEditLLDF::CreateClone() const
 {
-   return new txnEditLLDF(*m_pBridgeDesc[0], *m_pBridgeDesc[1],m_ROA[0],m_ROA[1]);
+   return std::make_unique<txnEditLLDF>(*m_pBridgeDesc[0], *m_pBridgeDesc[1],m_ROA[0],m_ROA[1]);
 }
 
 std::_tstring txnEditLLDF::Name() const
@@ -67,12 +67,12 @@ std::_tstring txnEditLLDF::Name() const
    return _T("Edit Live Load Distribution Factors");
 }
 
-bool txnEditLLDF::IsUndoable()
+bool txnEditLLDF::IsUndoable() const
 {
    return true;
 }
 
-bool txnEditLLDF::IsRepeatable()
+bool txnEditLLDF::IsRepeatable() const
 {
    return false;
 }
@@ -90,5 +90,5 @@ void txnEditLLDF::DoExecute(int i)
    pBridgeDesc->SetBridgeDescription( *m_pBridgeDesc[i] );
 
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
-   pLiveLoads->SetLldfRangeOfApplicabilityAction(m_ROA[i]);
+   pLiveLoads->SetRangeOfApplicabilityAction(m_ROA[i]);
 }

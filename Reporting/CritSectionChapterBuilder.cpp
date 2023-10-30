@@ -33,6 +33,9 @@
 #include <IFace\RatingSpecification.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\DocumentType.h>
+#include <IFace\ReportOptions.h>
+
+#include <psgLib/SpecificationCriteria.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -59,10 +62,10 @@ LPCTSTR CCritSectionChapterBuilder::GetName() const
    return TEXT("Critical Section for Shear Details");
 }
 
-rptChapter* CCritSectionChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CCritSectionChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-   CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
+   auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
+   auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
    CComPtr<IBroker> pBroker;
    CGirderKey girderKey;
@@ -92,7 +95,7 @@ rptChapter* CCritSectionChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfterThirdEdition = ( pSpecEntry->GetSpecificationType() >= lrfdVersionMgr::ThirdEdition2004 ? true : false );
+   bool bAfterThirdEdition = ( pSpecEntry->GetSpecificationCriteria().GetEdition() >= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 ? true : false );
 
    GET_IFACE2_NOCHECK(pBroker,ILimitStateForces,pLimitStateForces); // not used if bDesign = false
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -187,12 +190,13 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
    INIT_UV_PROTOTYPE( rptLengthSectionValue,      dim,       pDisplayUnits->GetComponentDimUnit(),  false );
    INIT_UV_PROTOTYPE( rptAngleSectionValue,       ang,       pDisplayUnits->GetAngleUnit(),  false );
 
-   locationp.IncludeSpanAndGirder(girderKey.groupIndex == ALL_GROUPS);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   locationp.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bAfterThirdEdition = ( lrfdVersionMgr::ThirdEdition2004 <= pSpecEntry->GetSpecificationType() ? true : false );
+   bool bAfterThirdEdition = ( WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 <= pSpecEntry->GetSpecificationCriteria().GetEdition() ? true : false );
 
    GET_IFACE2(pBroker,IShearCapacity,pShearCapacity);
    const std::vector<CRITSECTDETAILS>& vcsDetails(pShearCapacity->GetCriticalSectionDetails(limitState,girderKey));
@@ -206,14 +210,14 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
    if ( bAfterThirdEdition )
    {
       *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Critical Section Picture 2004.jpg")) << rptNewLine;
-      *pPara << _T("LRFD ") << LrfdCw8th(_T("5.7.3.2"),_T("5.8.3.2"))<<rptNewLine;
+      *pPara << _T("LRFD ") << WBFL::LRFD::LrfdCw8th(_T("5.7.3.2"),_T("5.8.3.2"))<<rptNewLine;
       *pPara << _T("Critical Section = d") << Sub(_T("v")) << _T(" measured at d") << Sub(_T("v")) << _T(" from the face of support") << rptNewLine;
       nColumns = 4;
    }
    else
    {
       *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Critical Section Picture.jpg")) << rptNewLine;
-      *pPara << _T("LRFD ") << LrfdCw8th(_T("5.7.3.2"),_T("5.8.3.2"))<<rptNewLine;
+      *pPara << _T("LRFD ") << WBFL::LRFD::LrfdCw8th(_T("5.7.3.2"),_T("5.8.3.2"))<<rptNewLine;
       *pPara << _T("Critical Section = max(CS1, CS2)") << rptNewLine;
       *pPara << _T("CS1 = d")<<Sub(_T("v")) << rptNewLine;
       *pPara << _T("CS2 = 0.5 cot(")<<symbol(theta)<<_T(") d")<<Sub(_T("v")) << rptNewLine;
@@ -329,9 +333,9 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
    } // next CS
 }
 
-CChapterBuilder* CCritSectionChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CCritSectionChapterBuilder::Clone() const
 {
-   return new CCritSectionChapterBuilder(m_bDesign,m_bRating);
+   return std::make_unique<CCritSectionChapterBuilder>(m_bDesign,m_bRating);
 }
 
 //======================== ACCESS     =======================================

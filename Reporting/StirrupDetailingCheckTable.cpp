@@ -32,9 +32,10 @@
 #include <IFace\Project.h>
 #include <IFace\Artifact.h>
 #include <IFace\Intervals.h>
+#include <IFace\ReportOptions.h>
 
-#include <Lrfd\Rebar.h>
-#include <Lrfd\RebarPool.h>
+#include <LRFD\Rebar.h>
+#include <LRFD\RebarPool.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -72,48 +73,68 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,const pgsGirderA
 
    *pWriteNote = false;
 
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+
+   bool IsUHPC = false;
+   GET_IFACE2(pBroker, IMaterials, pMaterials);
+   for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+   {
+      if (pMaterials->GetSegmentConcreteType(CSegmentKey(girderKey, segIdx)) == pgsTypes::UHPC)
+      {
+         IsUHPC = true;
+         break;
+      }
+   }
+
+   std::_tstring strSpecArticles;
+   if (IsUHPC)
+      strSpecArticles = _T("1.7.2.5, 1.7.2.6, 1.10.3");
+   else
+      strSpecArticles = WBFL::LRFD::LrfdCw8th(_T("5.8.2.5, 5.8.2.7, 5.10.3.1.2"), _T("5.7.2.5, 5.7.2.6, 5.10.3.1.2"));
+
    rptRcTable* table = rptStyleManager::CreateDefaultTable(8,_T(" "));
-   table->TableLabel() << _T("Stirrup Detailing Check: ") << GetLimitStateString(ls) << _T(" [") << LrfdCw8th(_T("5.8.2.5, 5.8.2.7, 5.10.3.1.2"),_T("5.7.2.5, 5.7.2.6, 5.10.3.1.2")) << _T("]");
+   table->TableLabel() << _T("Stirrup Detailing Check: ") << GetLimitStateString(ls) << _T(" [") << strSpecArticles << _T("]");
+
+   ColumnIndexType col = 0;
 
    if ( girderKey.groupIndex == ALL_GROUPS )
    {
-      table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
-      table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+      table->SetColumnStyle(col,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+      table->SetStripeRowColumnStyle(col,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
-   (*table)(0,0)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-   (*table)(0,1)  << _T("Bar Size");
-   (*table)(0,2)  << COLHDR(_T("S"),            rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,3)  << COLHDR(_T("S")<<Sub(_T("max")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,4)  << COLHDR(_T("S")<<Sub(_T("min")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
-   (*table)(0,5)  << COLHDR(_T("A") << Sub(_T("v"))<<_T("/S") , rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
-   (*table)(0,6)  << COLHDR(_T("A") << Sub(_T("v"))<<_T("/S")<<Sub(_T("min")) , rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
-   (*table)(0,7)  << _T("Status");
+   (*table)(0, col++)  << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+   (*table)(0, col++)  << _T("Bar Size");
+   (*table)(0, col++)  << COLHDR(_T("S"),            rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0, col++)  << COLHDR(_T("S")<<Sub(_T("max")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0, col++)  << COLHDR(_T("S")<<Sub(_T("min")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+   (*table)(0, col++)  << COLHDR(_T("A") << Sub(_T("v"))<<_T("/S") , rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
+   (*table)(0, col++)  << COLHDR(_T("A") << Sub(_T("v"))<<_T("/S")<<Sub(_T("min")) , rptAreaPerLengthUnitTag, pDisplayUnits->GetAvOverSUnit() );
+   (*table)(0, col++)  << _T("Status");
 
    INIT_UV_PROTOTYPE( rptPointOfInterest,    location, pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptAreaPerLengthValue, AvS,      pDisplayUnits->GetAvOverSUnit(),      false );
    INIT_UV_PROTOTYPE( rptLengthSectionValue, dim,      pDisplayUnits->GetComponentDimUnit(), false );
 
-   GET_IFACE2(pBroker, IDocumentType, pDocType);
-   location.IncludeSpanAndGirder(pDocType->IsPGSpliceDocument() || girderKey.groupIndex == ALL_GROUPS);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    // Fill up the table
 
-   lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
+   const auto* pool = WBFL::LRFD::RebarPool::GetInstance();
    ATLASSERT(pool != nullptr);
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
       const pgsStirrupCheckArtifact* pStirrupArtifact = pSegmentArtifact->GetStirrupCheckArtifact();
       ATLASSERT(pStirrupArtifact != nullptr);
 
-      CollectionIndexType nArtifacts = pStirrupArtifact->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
-      for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
+      IndexType nArtifacts = pStirrupArtifact->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
+      for ( IndexType idx = 0; idx < nArtifacts; idx++ )
       {
          const pgsStirrupCheckAtPoisArtifact* psArtifact = pStirrupArtifact->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,idx );
          if ( psArtifact == nullptr )
@@ -125,24 +146,26 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,const pgsGirderA
 
          const pgsStirrupDetailArtifact* pArtifact = psArtifact->GetStirrupDetailArtifact();
 
-         (*table)(row,0) << location.SetValue( POI_SPAN, poi );
-         (*table)(row,1) << lrfdRebarPool::GetBarSize(pArtifact->GetBarSize()).c_str();
+         col = 0;
+
+         (*table)(row, col++) << location.SetValue( POI_SPAN, poi );
+         (*table)(row, col++) << WBFL::LRFD::RebarPool::GetBarSize(pArtifact->GetBarSize()).c_str();
 
          Float64 s = pArtifact->GetS();
          if (0 < s)
          {
-            (*table)(row,2) << dim.SetValue(s);
+            (*table)(row, col++) << dim.SetValue(s);
          }
          else
          {
-            (*table)(row,2) << _T("-");
+            (*table)(row, col++) << _T("-");
          }
 
-         (*table)(row,3) << dim.SetValue( pArtifact->GetSMax() );
-         (*table)(row,4) << dim.SetValue( pArtifact->GetSMin() );
+         (*table)(row, col++) << dim.SetValue( pArtifact->GetSMax() );
+         (*table)(row, col++) << dim.SetValue( pArtifact->GetSMin() );
 
-         (*table)(row,5) << AvS.SetValue(pArtifact->GetAvs());
-         (*table)(row,6) << AvS.SetValue(pArtifact->GetAvsMin());
+         (*table)(row, col++) << AvS.SetValue(pArtifact->GetAvs());
+         (*table)(row, col++) << AvS.SetValue(pArtifact->GetAvsMin());
 
          if (!pArtifact->IsApplicable())
          {
@@ -151,11 +174,11 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,const pgsGirderA
 
          if ( pArtifact->Passed() )
          {
-            (*table)(row,7) << RPT_PASS;
+            (*table)(row, col++) << RPT_PASS;
          }
          else
          {
-            (*table)(row,7) << RPT_FAIL;
+            (*table)(row, col++) << RPT_FAIL;
          }
 
          row++;
@@ -164,6 +187,7 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,const pgsGirderA
 
    if (*pWriteNote)
    {
+      // add the '*' to the column header only if the foot note is required
       (*table)(0,6)  << superscript(ON)<<_T("*")<<superscript(OFF);
    }
 
@@ -188,27 +212,3 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,const pgsGirderA
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CStirrupDetailingCheckTable::AssertValid() const
-{
-   return true;
-}
-
-void CStirrupDetailingCheckTable::Dump(dbgDumpContext& os) const
-{
-   os << _T("Dump for CStirrupDetailingCheckTable") << endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CStirrupDetailingCheckTable::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("CStirrupDetailingCheckTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CStirrupDetailingCheckTable");
-
-   TESTME_EPILOG("CStirrupDetailingCheckTable");
-}
-#endif // _UNITTEST

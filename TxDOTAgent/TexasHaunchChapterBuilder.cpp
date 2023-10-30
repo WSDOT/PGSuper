@@ -44,6 +44,8 @@
 
 #include <psgLib\ConnectionLibraryEntry.h>
 
+#include <psgLib/SlabOffsetCriteria.h>
+
 #include <WBFLCogo.h>
 
 #ifdef _DEBUG
@@ -79,13 +81,13 @@ LPCTSTR CTexasHaunchChapterBuilder::GetName() const
    return TEXT("TxDOT Haunch Summary");
 }
 
-rptChapter* CTexasHaunchChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CTexasHaunchChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    // This can be called for multi or single girders
    CComPtr<IBroker> pBroker;
    std::vector<CGirderKey> girder_list;
 
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    if (pGirderRptSpec!=nullptr)
    {
       pGirderRptSpec->GetBroker(&pBroker);
@@ -93,7 +95,7 @@ rptChapter* CTexasHaunchChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
    }
    else
    {
-      CMultiGirderReportSpecification* pReportSpec = dynamic_cast<CMultiGirderReportSpecification*>(pRptSpec);
+      auto pReportSpec = std::dynamic_pointer_cast<const CMultiGirderReportSpecification>(pRptSpec);
       pReportSpec->GetBroker(&pBroker);
 
       girder_list = pReportSpec->GetGirderKeys();
@@ -112,8 +114,8 @@ rptChapter* CTexasHaunchChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
    GET_IFACE2(pBroker,ISpecification, pSpec );
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
-
-   if (!pSpecEntry->IsSlabOffsetCheckEnabled())
+   const auto& slab_offset_criteria = pSpecEntry->GetSlabOffsetCriteria();
+   if (!slab_offset_criteria.bCheck)
    {
       return nullptr;
    }
@@ -166,9 +168,9 @@ rptChapter* CTexasHaunchChapterBuilder::Build(CReportSpecification* pRptSpec,Uin
    return pChapter;
 }
 
-CChapterBuilder* CTexasHaunchChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTexasHaunchChapterBuilder::Clone() const
 {
-   return new CTexasHaunchChapterBuilder;
+   return std::make_unique<CTexasHaunchChapterBuilder>();
 }
 
 //======================== ACCESS     =======================================
@@ -252,18 +254,18 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
    }
 
    // Setup up some unit value prototypes
-   static unitmgtLength3Data large_volume_unit(unitMeasure::Feet3);
+   static WBFL::Units::Length3Data large_volume_unit(WBFL::Units::Measure::Feet3);
    if ( pDisplayUnits->GetUnitMode() == eafTypes::umUS )
-      large_volume_unit.Update(unitMeasure::Yard3,0.001,12,2,sysNumericFormatTool::Fixed);
+      large_volume_unit.Update(WBFL::Units::Measure::Yard3,0.001,12,2,WBFL::System::NumericFormatTool::Format::Fixed);
    else
-      large_volume_unit.Update(unitMeasure::Meter3,0.001,12,2,sysNumericFormatTool::Fixed);
+      large_volume_unit.Update(WBFL::Units::Measure::Meter3,0.001,12,2,WBFL::System::NumericFormatTool::Format::Fixed);
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, disp,   pDisplayUnits->GetDeflectionUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dispft, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLength3UnitValue, volume,  large_volume_unit, false);
 
    // X, Y, Z rounded up to nearest 1/8"
-   Float64 xyzToler = ::ConvertToSysUnits(0.125, unitMeasure::Inch); 
+   Float64 xyzToler = WBFL::Units::ConvertToSysUnits(0.125, WBFL::Units::Measure::Inch); 
 
    // Get the interfaces we need
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -417,7 +419,7 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
       (*pTable)(row,col) <<  Bold(LABEL_GIRDER(girder));
       row++;
 
-      const unitmgtLengthData& length_unit(pDisplayUnits->GetSpanLengthUnit()); // feet
+      const WBFL::Units::LengthData& length_unit(pDisplayUnits->GetSpanLengthUnit()); // feet
       rptFormattedLengthUnitValue cmpdim(&length_unit.UnitOfMeasure,length_unit.Tol,false,true,8,true,rptFormattedLengthUnitValue::RoundOff);
       cmpdim.SetFormat(length_unit.Format);
       cmpdim.SetWidth(length_unit.Width);

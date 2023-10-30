@@ -52,7 +52,7 @@ CAASHTOConcretePage::CAASHTOConcretePage(): CPropertyPage(IDD_AASHTO_CONCRETE)
 void CAASHTOConcretePage::DoDataExchange(CDataExchange* pDX)
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    CPropertyPage::DoDataExchange(pDX);
 

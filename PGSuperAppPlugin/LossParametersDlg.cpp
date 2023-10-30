@@ -68,7 +68,7 @@ void CLossParametersDlg::Init()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,ILossParameters,pLossParameters);
-   if ( pLossParameters->GetLossMethod() != pgsTypes::TIME_STEP )
+   if ( pLossParameters->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       // General lump sum is only available if we aren't doing a time-step analysis
       AddPage(&m_Pretensioning);
@@ -76,7 +76,7 @@ void CLossParametersDlg::Init()
 
    AddPage(&m_PostTensioning);
 
-   if ( pLossParameters->GetLossMethod() == pgsTypes::TIME_STEP )
+   if ( pLossParameters->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       AddPage(&m_TimeStepProperties);
    }

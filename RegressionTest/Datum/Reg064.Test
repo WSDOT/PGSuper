@@ -5,8 +5,8 @@
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic, Roadway Geometry Control
+Horizontal Interface Shear check failed for Strength I Limit State.
 Splitting check failed.
 Lifting checks failed
 Hauling checks failed
@@ -19,8 +19,8 @@ Hauling checks failed
 
 The Specification Check was Not Successful
 Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic, Roadway Geometry Control
+Horizontal Interface Shear check failed for Strength I Limit State.
 Splitting check failed.
 Lifting checks failed
 Hauling checks failed

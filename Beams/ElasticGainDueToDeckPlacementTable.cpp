@@ -127,7 +127,7 @@ CElasticGainDueToDeckPlacementTable* CElasticGainDueToDeckPlacementTable::Prepar
    table->m_bHasDeckPanel = bHasDeckPanel;
    table->m_bHasUserLoads = bHasUserLoads;
    table->m_bHasLongitudinalJoints = bHasLongitudinalJoints;
-   table->scalar.SetFormat(sysNumericFormatTool::Fixed);
+   table->scalar.SetFormat(WBFL::System::NumericFormatTool::Format::Fixed);
    table->scalar.SetWidth(5);
    table->scalar.SetPrecision(2);
 
@@ -243,6 +243,7 @@ CElasticGainDueToDeckPlacementTable* CElasticGainDueToDeckPlacementTable::Prepar
    GET_IFACE2(pBroker,ISpecification,pSpec);
    GET_IFACE2(pBroker,ILibrary,pLibrary);
    const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
+   const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
 
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
@@ -255,21 +256,21 @@ CElasticGainDueToDeckPlacementTable* CElasticGainDueToDeckPlacementTable::Prepar
    {
       if (bHasDeckPanel)
       {
-         *pParagraph << _T("Slab+Panel: ") << Sub2(_T("K"), _T("s")) << _T(" = ") << table->scalar.SetValue(pSpecEntry->GetSlabElasticGain()) << rptNewLine;
+         *pParagraph << _T("Slab+Panel: ") << Sub2(_T("K"), _T("s")) << _T(" = ") << table->scalar.SetValue(prestress_loss_criteria.SlabElasticGain) << rptNewLine;
       }
       else
       {
-         *pParagraph << _T("Slab: ") << Sub2(_T("K"), _T("s")) << _T(" = ") << table->scalar.SetValue(pSpecEntry->GetSlabElasticGain()) << rptNewLine;
+         *pParagraph << _T("Slab: ") << Sub2(_T("K"), _T("s")) << _T(" = ") << table->scalar.SetValue(prestress_loss_criteria.SlabElasticGain) << rptNewLine;
       }
 
-      *pParagraph << _T("Haunch: ") << Sub2(_T("K"), _T("h")) << _T(" = ") << table->scalar.SetValue(pSpecEntry->GetSlabPadElasticGain()) << rptNewLine;
+      *pParagraph << _T("Haunch: ") << Sub2(_T("K"), _T("h")) << _T(" = ") << table->scalar.SetValue(prestress_loss_criteria.SlabPadElasticGain) << rptNewLine;
    }
-   *pParagraph << _T("Diaphragms: ") << Sub2(_T("K"),_T("d")) << _T(" = ") << table->scalar.SetValue(pSpecEntry->GetDiaphragmElasticGain()) << rptNewLine;
+   *pParagraph << _T("Diaphragms: ") << Sub2(_T("K"),_T("d")) << _T(" = ") << table->scalar.SetValue(prestress_loss_criteria.DiaphragmElasticGain) << rptNewLine;
 
    if ( bHasUserLoads )
    {
-      *pParagraph << _T("User DC: ") << Sub2(_T("K"),_T("dc")) << _T(" = ") << table->scalar.SetValue(pSpecEntry->GetUserLoadBeforeDeckDCElasticGain()) << rptNewLine;
-      *pParagraph << _T("User DW: ") << Sub2(_T("K"),_T("dw")) << _T(" = ") << table->scalar.SetValue(pSpecEntry->GetUserLoadBeforeDeckDWElasticGain()) << rptNewLine;
+      *pParagraph << _T("User DC: ") << Sub2(_T("K"),_T("dc")) << _T(" = ") << table->scalar.SetValue(prestress_loss_criteria.UserDCElasticGain_BeforeDeckPlacement) << rptNewLine;
+      *pParagraph << _T("User DW: ") << Sub2(_T("K"),_T("dw")) << _T(" = ") << table->scalar.SetValue(prestress_loss_criteria.UserDWElasticGain_BeforeDeckPlacement) << rptNewLine;
    }
 
    *pParagraph << table << rptNewLine;

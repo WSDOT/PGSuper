@@ -1,6 +1,6 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 41.00    6   7.17                     1     1    BT-72    *     30  1/2  270  29.36   8.12   7.00   7.00                                             12  69.6  5.0  2.394  8.726   3.031    -6.076    11589   0.663  0.755   3.183 -1.665  0.000 -0.481 -2.146  64.62  397.89    0.00    0.00    0.00    1.18    0.00    1.53    0.00    0.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 41.00    6   7.17                     1     1    BT-72    *     30  1/2  270  29.36   8.12                                             12  69.5  5.0  2.394  8.726   3.031    -6.076    11589   0.663  0.755   3.183 -1.665  0.000 -0.481 -2.146  64.62  397.89    0.00    0.00    0.00    1.18    0.00    1.53    0.00    0.00 
 
 
 The Specification Check was Not Successful
@@ -22,10 +22,11 @@ Tension stress check failed for Service III Limit State in Interval 29 Load Rati
 Tension stress check failed for Service I Limit State in Interval 10 Erect Segments for Segment 3
 Tension stress check failed for Service I Limit State in Interval 14 Cast closure joint and Cast Deck for Segment 3
 Tension stress check failed for Service III Limit State in Interval 29 Load Rating for Segment 3
+Tension stress check failed for Service III Limit State in Interval 29 Load Rating for Deck
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Horizontal Interface Shear check failed for Strength I Limit State.
 Stirrup detailing checks failed for the Strength I Limit State.
 Confinement zone check failed for Segment 1.
 Confinement zone check failed for Segment 2.
@@ -35,16 +36,17 @@ Hauling checks failed for Segment 1.
 Lifting checks failed for Segment 2.
 Lifting checks failed for Segment 3.
 Hauling checks failed for Segment 3.
-Slab Offset ("A" Dimension) check failed
+Finished elevation check failed
+Minimum haunch depth vs fillet check failed
 Minimum fillet value exceeded for bridge check failed
 Duct Size check failed for Duct 1.
 Duct Size check failed for Duct 2.
 Duct Size check failed for Duct 3.
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 41.00    6   7.17                     1     2    BT-72    *     30  1/2  270  29.36   8.12   7.00   7.00                                             12  69.6  5.0  2.394  8.726   2.919    -5.915    10924   0.580  0.755   3.183 -1.693  0.000 -0.478 -2.171  64.62  396.57    0.00    0.00    0.00    1.35    0.00    1.75    0.00    0.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 41.00    6   7.17                     1     2    BT-72    *     30  1/2  270  29.36   8.12                                             12  69.5  5.0  2.394  8.726   2.919    -5.915    10924   0.580  0.755   3.183 -1.693  0.000 -0.478 -2.171  64.62  396.57    0.00    0.00    0.00    1.35    0.00    1.75    0.00    0.00 
 
 
 The Specification Check was Not Successful
@@ -65,10 +67,11 @@ Tension stress check failed for Service III Limit State in Interval 29 Load Rati
 Tension stress check failed for Service I Limit State in Interval 10 Erect Segments for Segment 3
 Tension stress check failed for Service I Limit State in Interval 14 Cast closure joint and Cast Deck for Segment 3
 Tension stress check failed for Service III Limit State in Interval 29 Load Rating for Segment 3
+Tension stress check failed for Service III Limit State in Interval 29 Load Rating for Deck
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 Ultimate vertical shear capacity check failed for Strength I Limit State
-Horizontal Interface Shears/Length check failed for Strength I Limit State [5.8.4].
+Horizontal Interface Shear check failed for Strength I Limit State.
 Stirrup detailing checks failed for the Strength I Limit State.
 Confinement zone check failed for Segment 1.
 Confinement zone check failed for Segment 2.
@@ -78,7 +81,8 @@ Hauling checks failed for Segment 1.
 Lifting checks failed for Segment 2.
 Lifting checks failed for Segment 3.
 Hauling checks failed for Segment 3.
-Slab Offset ("A" Dimension) check failed
+Finished elevation check failed
+Minimum haunch depth vs fillet check failed
 Minimum fillet value exceeded for bridge check failed
 Duct Size check failed for Duct 1.
 Duct Size check failed for Duct 2.

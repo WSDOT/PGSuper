@@ -99,7 +99,7 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
       for (const auto& row : rebarData.RebarRows)
       {
          // make sure bars are inside of girder - use shape symmetry
-         gpPoint2d testpnt;
+         WBFL::Geometry::Point2d testpnt;
          testpnt.X() = row.BarSpacing * (row.NumberOfBars-1)/2.;
          if (row.Face == pgsTypes::TopFace)
          {
@@ -162,7 +162,7 @@ void CGirderDescLongitudinalRebar::RestoreToLibraryDefaults(CLongitudinalRebarDa
    pLongData->CopyGirderEntryData(pGirderEntry);
 }
 
-void CGirderDescLongitudinalRebar::GetRebarMaterial(matRebar::Type* pType,matRebar::Grade* pGrade)
+void CGirderDescLongitudinalRebar::GetRebarMaterial(WBFL::Materials::Rebar::Type* pType,WBFL::Materials::Rebar::Grade* pGrade)
 {
    m_cbRebar.GetMaterial(pType,pGrade);
 }

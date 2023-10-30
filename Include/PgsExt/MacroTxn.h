@@ -26,7 +26,7 @@
 #include <PgsExt\PgsExtExp.h>
 #endif
 
-#include <System\MacroTxn.h>
+#include <EAF\EAFMacroTxn.h>
 
 /*****************************************************************************
 CLASS 
@@ -39,21 +39,19 @@ DESCRIPTION
    A macro transaction is a collection of other transactions.
 
 KEYWORDS
-   txnTransaction, txnTxnManager
+   CEAFTransaction, CEAFTxnManager
 *****************************************************************************/
 
-class PGSEXTCLASS pgsMacroTxn : public txnMacroTxn
+class PGSEXTCLASS pgsMacroTxn : public CEAFMacroTxn
 {
 public:
-   pgsMacroTxn();
-   virtual ~pgsMacroTxn(); 
+   pgsMacroTxn() = default;
+   virtual ~pgsMacroTxn() = default; 
+   pgsMacroTxn(const pgsMacroTxn&) = delete;
+   pgsMacroTxn& operator=(const pgsMacroTxn&) = delete;
 
    virtual bool Execute() override;
    virtual void Undo() override;
 
-   txnTransaction* CreateClone() const;
-
-private:
-   pgsMacroTxn(const pgsMacroTxn& /*rOther*/) = delete;               // Remove to enable copy
-   pgsMacroTxn& operator=(const pgsMacroTxn& /*rOther*/) = delete;  // Remove to enable assignment
+   virtual std::unique_ptr<CEAFTransaction> CreateClone() const override;
 };

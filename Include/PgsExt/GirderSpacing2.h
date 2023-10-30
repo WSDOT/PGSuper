@@ -156,11 +156,15 @@ public:
    virtual Float64 GetGirderSpacing(SpacingIndexType spacingIdx) const override;
 
    // Returns the out-to-out width of the girder spacing (summation of the individual spaces)
-   Float64 GetSpacingWidth() const; 
+   // If model uses joint spacing and the joint spacing is measured along a pier line or CL Bearing line,
+   // the top width of the girder needs to be adjusted by the skew angle.
+   Float64 GetSpacingWidth(Float64 skew) const; 
 
    // Returns the width of the girder spacing from the left most girder to
-   // the specified girder index (summation of the individual spaces)
-   Float64 GetSpacingWidthToGirder(GirderIndexType gdrIdx) const; 
+   // the specified girder index (summation of the individual spaces).
+   // If model uses joint spacing and the joint spacing is measured along a pier line or CL Bearing line,
+   // the top width of the girder needs to be adjusted by the skew angle.
+   Float64 GetSpacingWidthToGirder(GirderIndexType gdrIdx, Float64 skew) const;
 
 
 protected:

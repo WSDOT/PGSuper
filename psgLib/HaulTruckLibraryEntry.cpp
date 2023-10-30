@@ -30,7 +30,7 @@
 
 #include "resource.h"
 #include "HaulTruckDlg.h"
-#include <Units\sysUnits.h>
+#include <Units\Convert.h>
 
 #include <EAF\EAFApp.h>
 
@@ -42,38 +42,17 @@ static char THIS_FILE[] = __FILE__;
 
 HaulTruckLibraryEntry::HaulTruckLibraryEntry()
 {
-   m_Hbg       = ::ConvertToSysUnits(72,unitMeasure::Inch);
-   m_Hrc       = ::ConvertToSysUnits(24,unitMeasure::Inch);
-   m_Wcc       = ::ConvertToSysUnits(72,unitMeasure::Inch);
-   m_Ktheta    = ::ConvertToSysUnits(40000,unitMeasure::KipInchPerRadian);
-   m_Lmax      = ::ConvertToSysUnits(130,unitMeasure::Feet);
-   m_MaxOH     = ::ConvertToSysUnits(15,unitMeasure::Feet);
-   m_MaxWeight = ::ConvertToSysUnits(200,unitMeasure::Kip);
-}
-
-HaulTruckLibraryEntry::HaulTruckLibraryEntry(const HaulTruckLibraryEntry& rOther) :
-libLibraryEntry(rOther)
-{
-   MakeCopy(rOther);
-}
-
-HaulTruckLibraryEntry::~HaulTruckLibraryEntry()
-{
-}
-
-//======================== OPERATORS  =======================================
-HaulTruckLibraryEntry& HaulTruckLibraryEntry::operator= (const HaulTruckLibraryEntry& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
+   m_Hbg       = WBFL::Units::ConvertToSysUnits(72,WBFL::Units::Measure::Inch);
+   m_Hrc       = WBFL::Units::ConvertToSysUnits(24,WBFL::Units::Measure::Inch);
+   m_Wcc       = WBFL::Units::ConvertToSysUnits(72,WBFL::Units::Measure::Inch);
+   m_Ktheta    = WBFL::Units::ConvertToSysUnits(40000,WBFL::Units::Measure::KipInchPerRadian);
+   m_Lmax      = WBFL::Units::ConvertToSysUnits(130,WBFL::Units::Measure::Feet);
+   m_MaxOH     = WBFL::Units::ConvertToSysUnits(15,WBFL::Units::Measure::Feet);
+   m_MaxWeight = WBFL::Units::ConvertToSysUnits(200,WBFL::Units::Measure::Kip);
 }
 
 //======================== OPERATIONS =======================================
-bool HaulTruckLibraryEntry::SaveMe(sysIStructuredSave* pSave)
+bool HaulTruckLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
 {
    pSave->BeginUnit(_T("HaulTruckEntry"), 1.0);
    pSave->Property(_T("Name"),GetName().c_str());
@@ -89,7 +68,7 @@ bool HaulTruckLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    return true;
 }
 
-bool HaulTruckLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
+bool HaulTruckLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 {
    if(pLoad->BeginUnit(_T("HaulTruckEntry")))
    {
@@ -153,55 +132,55 @@ bool HaulTruckLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
 bool HaulTruckLibraryEntry::IsEqual(const HaulTruckLibraryEntry& rOther,bool bConsiderName) const
 {
-   std::vector<pgsLibraryEntryDifferenceItem*> vDifferences;
+   std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>> vDifferences;
    bool bMustRename;
    return Compare(rOther,vDifferences,bMustRename,true,bConsiderName);
 }
 
-bool HaulTruckLibraryEntry::Compare(const HaulTruckLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
+bool HaulTruckLibraryEntry::Compare(const HaulTruckLibraryEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
 {
    bMustRename = false;
 
    if ( !::IsEqual(m_Hbg,rOther.m_Hbg) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Hauling trucks are different"),_T(""),_T("")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Hauling trucks are different"),_T(""),_T("")));
    }
 
    if ( !::IsEqual(m_Hrc,rOther.m_Hrc) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Hauling trucks are different"),_T(""),_T("")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Hauling trucks are different"),_T(""),_T("")));
    }
 
    if ( !::IsEqual(m_Wcc,rOther.m_Wcc) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Hauling trucks are different"),_T(""),_T("")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Hauling trucks are different"),_T(""),_T("")));
    }
 
    if ( !::IsEqual(m_Ktheta,rOther.m_Ktheta) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Hauling trucks are different"),_T(""),_T("")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Hauling trucks are different"),_T(""),_T("")));
    }
 
    if ( !::IsEqual(m_Lmax,rOther.m_Lmax) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Hauling trucks are different"),_T(""),_T("")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Hauling trucks are different"),_T(""),_T("")));
    }
 
    if ( !::IsEqual(m_MaxOH,rOther.m_MaxOH) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Hauling trucks are different"),_T(""),_T("")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Hauling trucks are different"),_T(""),_T("")));
    }
 
    if ( !::IsEqual(m_MaxWeight,rOther.m_MaxWeight) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Hauling trucks are different"),_T(""),_T("")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Hauling trucks are different"),_T(""),_T("")));
    }
 
    return vDifferences.size() == 0 ? true : false;
@@ -311,21 +290,4 @@ bool HaulTruckLibraryEntry::Edit(bool allowEditing,int nPage)
    }
 
    return false;
-}
-
-void HaulTruckLibraryEntry::MakeCopy(const HaulTruckLibraryEntry& rOther)
-{
-   m_Hbg       = rOther.m_Hbg;
-   m_Hrc       = rOther.m_Hrc;
-   m_Wcc       = rOther.m_Wcc;
-   m_Ktheta    = rOther.m_Ktheta;
-   m_Lmax      = rOther.m_Lmax;
-   m_MaxOH     = rOther.m_MaxOH;
-   m_MaxWeight = rOther.m_MaxWeight;
-}
-
-void HaulTruckLibraryEntry::MakeAssignment(const HaulTruckLibraryEntry& rOther)
-{
-   libLibraryEntry::MakeAssignment( rOther );
-   MakeCopy( rOther );
 }

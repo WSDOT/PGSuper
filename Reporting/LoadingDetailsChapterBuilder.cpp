@@ -86,11 +86,11 @@ LPCTSTR CLoadingDetailsChapterBuilder::GetName() const
    return TEXT("Loading Details");
 }
 
-rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CLoadingDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-   CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
-   CMultiGirderReportSpecification* pMultiGirderRptSpec = dynamic_cast<CMultiGirderReportSpecification*>(pRptSpec);
+   auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
+   auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
+   auto pMultiGirderRptSpec = std::dynamic_pointer_cast<const CMultiGirderReportSpecification>(pRptSpec);
 
    CComPtr<IBroker> pBroker;
    std::vector<CGirderKey> girderKeys;
@@ -331,9 +331,9 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(CReportSpecification* pRptSpec,
    return pChapter;
 }
 
-CChapterBuilder* CLoadingDetailsChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLoadingDetailsChapterBuilder::Clone() const
 {
-   return new CLoadingDetailsChapterBuilder(m_bSimplifiedVersion,m_bDesign,m_bRating,m_bSelect);
+   return std::make_unique<CLoadingDetailsChapterBuilder>(m_bSimplifiedVersion,m_bDesign,m_bRating,m_bSelect);
 }
 
 
@@ -345,7 +345,7 @@ void CLoadingDetailsChapterBuilder::ReportPedestrianLoad(rptChapter* pChapter,IB
    INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, fpl,    pDisplayUnits->GetForcePerLengthUnit(), false );
 
    rptRcScalar scalar;
-   scalar.SetFormat( sysNumericFormatTool::Fixed );
+   scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Fixed );
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
    scalar.SetTolerance(1.0e-6);
@@ -469,6 +469,8 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(IBroker* pBroker, rptChapter*
       GET_IFACE2_NOCHECK(pBroker,IIntervals,pIntervals);
       GET_IFACE2_NOCHECK(pBroker,IMaterials,pMaterial);
 
+      bool isSlabOffsetInput = pBridge->GetHaunchInputDepthType() == pgsTypes::hidACamber;
+
       pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << pPara;
 
@@ -500,8 +502,8 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(IBroker* pBroker, rptChapter*
       IndexType deckCastingRegionIdx = 0; // assume region zero to get properties that are common to all castings
       IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
       Float64 deck_density = pMaterial->GetDeckWeightDensity(deckCastingRegionIdx, castDeckIntervalIdx);
-      Float64 deck_unit_weight = deck_density; // *unitSysUnitsMgr::GetGravitationalAcceleration();
-      *pNotePara << strDeckName << _T("unit weight with reinforcement = ") << density.SetValue(deck_unit_weight);
+      Float64 deck_unit_weight = deck_density; // *WBFL::Units::System::GetGravitationalAcceleration();
+      *pNotePara << strDeckName << _T(" unit weight with reinforcement = ") << density.SetValue(deck_unit_weight);
 
       pPara = new rptParagraph;
       *pChapter << pPara;
@@ -537,7 +539,7 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(IBroker* pBroker, rptChapter*
             (*p_table)(0,0) << COLHDR(_T("Location")<<rptNewLine<<_T("From Left Bearing"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
             (*p_table)(0,1) << COLHDR(_T("Panel Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
             (*p_table)(0,2) << _T("Cast ") << strDeckName << _T(" Weight");
-            (*p_table)(0,3) << COLHDR(_T("Assumed")<<rptNewLine<<_T("Haunch Depth"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+            (*p_table)(0,3) << COLHDR(_T("Haunch Depth"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
             (*p_table)(0,4) << COLHDR(_T("Haunch Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
             (*p_table)(0,5) << COLHDR(_T("Total ") << strDeckName << _T(" Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
 
@@ -617,7 +619,7 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(IBroker* pBroker, rptChapter*
             (*p_table)(0, col++) << COLHDR(_T("Location")<<rptNewLine<<_T("From Left Bearing"),rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
             (*p_table)(0, col++) << _T("Casting") << rptNewLine << _T("Region");
             (*p_table)(0, col++) << COLHDR(_T("Main ") << strDeckName << _T(" Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
-            (*p_table)(0, col++) << COLHDR(_T("Assumed")<<rptNewLine<<_T("Haunch Depth"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+            (*p_table)(0, col++) << COLHDR(_T("Haunch Depth"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
             (*p_table)(0, col++) << COLHDR(_T("Haunch Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
             (*p_table)(0, col++) << COLHDR(_T("Total ") << strDeckName << _T(" Weight"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
 
@@ -639,18 +641,27 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(IBroker* pBroker, rptChapter*
          }
       } // end if ( pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP )
 
-      if(do_report_haunch)     
+      if(do_report_haunch)  
       {
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
-         GET_IFACE2( pBroker, ISpecification, pSpec );
-         if (pgsTypes::hlcAccountForCamber == pSpec->GetHaunchLoadComputationType())
+         GET_IFACE2_NOCHECK(pBroker,ISpecification,pSpec);
+         pgsTypes::HaunchLoadComputationType HaunchLoadComputationType = pSpec->GetHaunchLoadComputationType();
+         
+         if (pgsTypes::hlcZeroCamber == HaunchLoadComputationType)
          {
-            *pNotePara <<rptNewLine<< _T("Haunch weight includes effects of roadway geometry and is measured along the centerline of the girder. Haunch depth used when computing haunch load is reduced for camber assuming that excess camber is a linear-piecewise parabola defined by the user-input assumed excess camber at mid-span.");
+            *pNotePara << rptNewLine << _T("Haunch weight is computed on slab offset and includes effects of roadway geometry, and is measured along the centerline of the girder, but does not include a reduction for camber.");
+         }
+         else if (isSlabOffsetInput)
+         {
+            *pNotePara << rptNewLine << _T("Haunch weight includes effects of roadway geometry and is measured along the centerline of the girder. Haunch depth used when computing haunch load is reduced for camber assuming that excess camber is a linear-piecewise parabola defined by the user-input assumed excess camber at mid-span.");
          }
          else
          {
-            *pNotePara <<rptNewLine<< _T("Haunch weight includes effects of roadway geometry, and is measured along the centerline of the girder, but does not include a reduction for camber.");
+            *pNotePara << rptNewLine << _T("Haunch weight is computed from user-input haunch depths.");
+         }
+
+         if (deck_type == pgsTypes::sdtCompositeSIP)
+         {
+            *pNotePara << rptNewLine << _T(" Haunch weight includes material between edges of panels.");
          }
       }
 
@@ -708,9 +719,9 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(IBroker* pBroker, rptChapter*
       {
          CComPtr<IBroker> pBroker;
          EAFGetBroker(&pBroker);
-         GET_IFACE2(pBroker,ISpecification,pSpec);
+         GET_IFACE2_NOCHECK(pBroker,ISpecification,pSpec);
 
-         bool report_camber = pSpec->GetHaunchLoadComputationType() == pgsTypes::hlcAccountForCamber;
+         bool report_camber = isSlabOffsetInput &&  pSpec->GetHaunchLoadComputationType() == pgsTypes::hlcDetailedAnalysis;
 
          pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
          *pChapter << pPara;
@@ -732,7 +743,7 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(IBroker* pBroker, rptChapter*
          {
             (*p_table)(0, col++) << COLHDR(_T("*Assumed") << rptNewLine << _T("Excess") << rptNewLine << _T("Camber"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
          }
-         (*p_table)(0,col++) << COLHDR(_T("Assumed")<<rptNewLine<<_T("Haunch")<<rptNewLine<<_T("Depth"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
+         (*p_table)(0,col++) << COLHDR(_T("Haunch")<<rptNewLine<<_T("Depth"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
          (*p_table)(0,col++) << COLHDR(_T("Haunch")<<rptNewLine<<_T("Load"),rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit() );
 
          RowIndexType row = p_table->GetNumberOfHeaderRows();
@@ -1407,7 +1418,7 @@ void CLoadingDetailsChapterBuilder::ReportLiveLoad(rptChapter* pChapter,bool bDe
       }
       *pPara << rptNewLine;
 
-      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          std::vector<std::_tstring> fatigueLiveLoads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltFatigue);
          if ( fatigueLiveLoads.empty() )
@@ -1592,7 +1603,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
    EAFGetBroker(&pBroker);
 
    rptRcScalar scalar;
-   scalar.SetFormat( sysNumericFormatTool::Fixed );
+   scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Fixed );
    scalar.SetWidth(6);
    scalar.SetPrecision(2);
    scalar.SetTolerance(1.0e-6);
@@ -1602,7 +1613,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
    const CLoadFactors* pLoadFactors = pLF->GetLoadFactors();
 
    GET_IFACE2(pBroker,ILossParameters,pLossParameters);
-   pgsTypes::LossMethod loss_method = pLossParameters->GetLossMethod();
+   PrestressLossCriteria::LossMethodType loss_method = pLossParameters->GetLossMethod();
 
    // LRFD Limit States Load Factors
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -1613,7 +1624,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
    *pChapter << pPara;
 
    ColumnIndexType nColumns = 4;
-   if ( loss_method == pgsTypes::TIME_STEP )
+   if ( loss_method == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       nColumns = 7;
    }
@@ -1629,7 +1640,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
    (*p_table)(0,col++) << Sub2(symbol(gamma),_T("DC"));
    (*p_table)(0,col++) << Sub2(symbol(gamma),_T("DW"));
    (*p_table)(0,col++) << Sub2(symbol(gamma),_T("LL"));
-   if ( loss_method == pgsTypes::TIME_STEP )
+   if ( loss_method == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       (*p_table)(0,col++) << Sub2(symbol(gamma),_T("CR"));
       (*p_table)(0,col++) << Sub2(symbol(gamma),_T("SH"));
@@ -1645,7 +1656,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
       (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetDCMax(pgsTypes::ServiceI));
       (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetDWMax(pgsTypes::ServiceI));
       (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetLLIMMax(pgsTypes::ServiceI));
-      if ( loss_method == pgsTypes::TIME_STEP )
+      if ( loss_method == PrestressLossCriteria::LossMethodType::TIME_STEP )
       {
          (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetCRMax(pgsTypes::ServiceI));
          (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetSHMax(pgsTypes::ServiceI));
@@ -1653,14 +1664,14 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
       }
       row++;
 
-      if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+      if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims )
       {
          col = 0;
          (*p_table)(row,col++) << GetLimitStateString(pgsTypes::ServiceIA);
          (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetDCMax(pgsTypes::ServiceIA));
          (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetDWMax(pgsTypes::ServiceIA));
          (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetLLIMMax(pgsTypes::ServiceIA));
-         if ( loss_method == pgsTypes::TIME_STEP )
+         if ( loss_method == PrestressLossCriteria::LossMethodType::TIME_STEP )
          {
             (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetCRMax(pgsTypes::ServiceIA));
             (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetSHMax(pgsTypes::ServiceIA));
@@ -1674,7 +1685,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
       (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetDCMax(pgsTypes::ServiceIII));
       (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetDWMax(pgsTypes::ServiceIII));
       (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetLLIMMax(pgsTypes::ServiceIII));
-      if ( loss_method == pgsTypes::TIME_STEP )
+      if ( loss_method == PrestressLossCriteria::LossMethodType::TIME_STEP )
       {
          (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetCRMax(pgsTypes::ServiceIII));
          (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetSHMax(pgsTypes::ServiceIII));
@@ -1682,14 +1693,14 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
       }
       row++;
 
-      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          col = 0;
          (*p_table)(row,col++) << GetLimitStateString(pgsTypes::FatigueI);
          (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetDCMax(pgsTypes::FatigueI));
          (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetDWMax(pgsTypes::FatigueI));
          (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetLLIMMax(pgsTypes::FatigueI));
-         if ( loss_method == pgsTypes::TIME_STEP )
+         if ( loss_method == PrestressLossCriteria::LossMethodType::TIME_STEP )
          {
             (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetCRMax(pgsTypes::FatigueI));
             (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetSHMax(pgsTypes::FatigueI));
@@ -1705,7 +1716,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
       (*p_table)(row,col  ) << scalar.SetValue(pLoadFactors->GetDWMax(pgsTypes::StrengthI)) << _T("/");
       (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetDWMin(pgsTypes::StrengthI));
       (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetLLIMMax(pgsTypes::StrengthI));
-      if ( loss_method == pgsTypes::TIME_STEP )
+      if ( loss_method == PrestressLossCriteria::LossMethodType::TIME_STEP )
       {
          (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetCRMax(pgsTypes::StrengthI));
          (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetSHMax(pgsTypes::StrengthI));
@@ -1722,7 +1733,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
          (*p_table)(row,col  ) << scalar.SetValue(pLoadFactors->GetDWMax(pgsTypes::StrengthII)) << _T("/");
          (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetDWMin(pgsTypes::StrengthII));
          (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetLLIMMax(pgsTypes::StrengthII));
-         if ( loss_method == pgsTypes::TIME_STEP )
+         if ( loss_method == PrestressLossCriteria::LossMethodType::TIME_STEP )
          {
             (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetCRMax(pgsTypes::StrengthII));
             (*p_table)(row,col++) << scalar.SetValue(pLoadFactors->GetSHMax(pgsTypes::StrengthII));
@@ -1755,7 +1766,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
                (*p_table)(row,col++) << scalar.SetValue(gLL);
             }
 
-            if ( loss_method == pgsTypes::TIME_STEP )
+            if ( loss_method == PrestressLossCriteria::LossMethodType::TIME_STEP )
             {
                (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
                (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
@@ -1780,7 +1791,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
             (*p_table)(row,col++) << scalar.SetValue(gLL);
          }
 
-         if ( loss_method == pgsTypes::TIME_STEP )
+         if ( loss_method == PrestressLossCriteria::LossMethodType::TIME_STEP )
          {
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
@@ -1810,7 +1821,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
                (*p_table)(row,col++) << scalar.SetValue(gLL);
             }
 
-            if ( loss_method == pgsTypes::TIME_STEP )
+            if ( loss_method == PrestressLossCriteria::LossMethodType::TIME_STEP )
             {
                (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
                (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
@@ -1836,7 +1847,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
             (*p_table)(row,col++) << scalar.SetValue(gLL);
          }
 
-         if ( loss_method == pgsTypes::TIME_STEP )
+         if ( loss_method == PrestressLossCriteria::LossMethodType::TIME_STEP )
          {
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
@@ -1866,7 +1877,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
                (*p_table)(row,col++) << scalar.SetValue(gLL);
             }
 
-            if ( loss_method == pgsTypes::TIME_STEP )
+            if ( loss_method == PrestressLossCriteria::LossMethodType::TIME_STEP )
             {
                (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
                (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
@@ -1892,7 +1903,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
             (*p_table)(row,col++) << scalar.SetValue(gLL);
          }
 
-         if ( loss_method == pgsTypes::TIME_STEP )
+         if ( loss_method == PrestressLossCriteria::LossMethodType::TIME_STEP )
          {
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
@@ -1923,7 +1934,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
                (*p_table)(row,col++) << scalar.SetValue(gLL);
             }
 
-            if ( loss_method == pgsTypes::TIME_STEP )
+            if ( loss_method == PrestressLossCriteria::LossMethodType::TIME_STEP )
             {
                (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
                (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
@@ -1949,7 +1960,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
             (*p_table)(row,col++) << scalar.SetValue(gLL);
          }
 
-         if ( loss_method == pgsTypes::TIME_STEP )
+         if ( loss_method == PrestressLossCriteria::LossMethodType::TIME_STEP )
          {
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
@@ -1979,7 +1990,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
                (*p_table)(row, col++) << scalar.SetValue(gLL);
             }
 
-            if (loss_method == pgsTypes::TIME_STEP)
+            if (loss_method == PrestressLossCriteria::LossMethodType::TIME_STEP)
             {
                (*p_table)(row, col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
                (*p_table)(row, col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
@@ -2005,7 +2016,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
             (*p_table)(row, col++) << scalar.SetValue(gLL);
          }
 
-         if (loss_method == pgsTypes::TIME_STEP)
+         if (loss_method == PrestressLossCriteria::LossMethodType::TIME_STEP)
          {
             (*p_table)(row, col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
             (*p_table)(row, col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
@@ -2035,7 +2046,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
                (*p_table)(row,col++) << scalar.SetValue(gLL);
             }
 
-            if ( loss_method == pgsTypes::TIME_STEP )
+            if ( loss_method == PrestressLossCriteria::LossMethodType::TIME_STEP )
             {
                (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
                (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
@@ -2061,7 +2072,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
             (*p_table)(row,col++) << scalar.SetValue(gLL);
          }
 
-         if ( loss_method == pgsTypes::TIME_STEP )
+         if ( loss_method == PrestressLossCriteria::LossMethodType::TIME_STEP )
          {
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
@@ -2091,7 +2102,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
                (*p_table)(row,col++) << scalar.SetValue(gLL);
             }
 
-            if ( loss_method == pgsTypes::TIME_STEP )
+            if ( loss_method == PrestressLossCriteria::LossMethodType::TIME_STEP )
             {
                (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
                (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
@@ -2117,7 +2128,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
             (*p_table)(row,col++) << scalar.SetValue(gLL);
          }
 
-         if ( loss_method == pgsTypes::TIME_STEP )
+         if ( loss_method == PrestressLossCriteria::LossMethodType::TIME_STEP )
          {
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetCreepFactor(ls));
             (*p_table)(row,col++) << scalar.SetValue(pRatingSpec->GetShrinkageFactor(ls));
@@ -2554,7 +2565,7 @@ rptParagraph* CLoadingDetailsChapterBuilder::CreatePointLoadTable(IBroker* pBrok
    for (IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++)
    {
       CString strInterval;
-      strInterval.Format(_T("Interval %d: %s"), LABEL_INTERVAL(intervalIdx), pIntervals->GetDescription(intervalIdx));
+      strInterval.Format(_T("Interval %d: %s"), LABEL_INTERVAL(intervalIdx), pIntervals->GetDescription(intervalIdx).c_str());
 
       const std::vector<IUserDefinedLoads::UserPointLoad>* ppl = pUdl->GetPointLoads(intervalIdx, spanKey);
       if (ppl != nullptr)
@@ -2636,7 +2647,7 @@ rptParagraph* CLoadingDetailsChapterBuilder::CreateDistributedLoadTable(IBroker*
    for (IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++)
    {
       CString strInterval;
-      strInterval.Format(_T("Interval %d: %s"), LABEL_INTERVAL(intervalIdx), pIntervals->GetDescription(intervalIdx));
+      strInterval.Format(_T("Interval %d: %s"), LABEL_INTERVAL(intervalIdx), pIntervals->GetDescription(intervalIdx).c_str());
 
       const std::vector<IUserDefinedLoads::UserDistributedLoad>* ppl = pUdl->GetDistributedLoads(intervalIdx, spanKey);
       if (ppl != nullptr)
@@ -2718,7 +2729,7 @@ rptParagraph* CLoadingDetailsChapterBuilder::CreateMomentLoadTable(IBroker* pBro
    for (IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++)
    {
       CString strInterval;
-      strInterval.Format(_T("Interval %d: %s"), LABEL_INTERVAL(intervalIdx), pIntervals->GetDescription(intervalIdx));
+      strInterval.Format(_T("Interval %d: %s"), LABEL_INTERVAL(intervalIdx), pIntervals->GetDescription(intervalIdx).c_str());
 
       const std::vector<IUserDefinedLoads::UserMomentLoad>* ppl = pUdl->GetMomentLoads(intervalIdx, spanKey);
       if (ppl != nullptr)

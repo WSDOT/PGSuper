@@ -34,7 +34,7 @@ class pgsLibraryEntryDifferenceItem;
 class HaulTruckLibraryEntry;
 class HaulTruckLibraryEntryObserver;
 #pragma warning(disable:4231)
-PSGLIBTPL sysSubjectT<HaulTruckLibraryEntryObserver, HaulTruckLibraryEntry>;
+PSGLIBTPL WBFL::System::SubjectT<HaulTruckLibraryEntryObserver, HaulTruckLibraryEntry>;
 
 /*****************************************************************************
 CLASS 
@@ -45,7 +45,7 @@ CLASS
 class PSGLIBCLASS HaulTruckLibraryEntryObserver
 {
 public:
-   virtual void Update(HaulTruckLibraryEntry* pSubject, Int32 hint)=0;
+   virtual void Update(HaulTruckLibraryEntry& subject, Int32 hint)=0;
 };
 
 /*****************************************************************************
@@ -55,15 +55,15 @@ CLASS
    A library entry class for duct definitions.
 *****************************************************************************/
 
-class PSGLIBCLASS HaulTruckLibraryEntry : public libLibraryEntry, public ISupportIcon,
-       public sysSubjectT<HaulTruckLibraryEntryObserver, HaulTruckLibraryEntry>
+class PSGLIBCLASS HaulTruckLibraryEntry : public WBFL::Library::LibraryEntry, public ISupportIcon,
+       public WBFL::System::SubjectT<HaulTruckLibraryEntryObserver, HaulTruckLibraryEntry>
 {
 public:
    HaulTruckLibraryEntry();
-   HaulTruckLibraryEntry(const HaulTruckLibraryEntry& rOther);
-   virtual ~HaulTruckLibraryEntry();
+   HaulTruckLibraryEntry(const HaulTruckLibraryEntry& rOther) = default;
+   virtual ~HaulTruckLibraryEntry() = default;
 
-   HaulTruckLibraryEntry& operator = (const HaulTruckLibraryEntry& rOther);
+   HaulTruckLibraryEntry& operator=(const HaulTruckLibraryEntry& rOther) = default;
 
    //------------------------------------------------------------------------
    // Edit the entry
@@ -103,22 +103,20 @@ public:
 
    //------------------------------------------------------------------------
    // Save to structured storage
-   virtual bool SaveMe(sysIStructuredSave* pSave);
+   virtual bool SaveMe(WBFL::System::IStructuredSave* pSave);
 
    //------------------------------------------------------------------------
    // Load from structured storage
-   virtual bool LoadMe(sysIStructuredLoad* pLoad);
+   virtual bool LoadMe(WBFL::System::IStructuredLoad* pLoad);
 
    //------------------------------------------------------------------------
    // Compares this library entry with rOther. Returns true if the entries are the same.
    // vDifferences contains a listing of the differences. The caller is responsible for deleting the difference items
-   bool Compare(const HaulTruckLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference=false,bool considerName=false) const;
+   bool Compare(const HaulTruckLibraryEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference=false,bool considerName=false) const;
  
    bool IsEqual(const HaulTruckLibraryEntry& rOther,bool bConsiderName=false) const;
 
 protected:
-   void MakeCopy(const HaulTruckLibraryEntry& rOther);
-   void MakeAssignment(const HaulTruckLibraryEntry& rOther);
 
 private:
    Float64 m_Hbg; // height from roadway to bottom of girder

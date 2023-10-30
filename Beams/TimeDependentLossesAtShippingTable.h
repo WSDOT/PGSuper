@@ -31,7 +31,7 @@
 
 #include <PgsExt\StrandData.h>
 
-class lrfdLosses;
+class WBFL::LRFD::Losses;
 
 /////////////////////////////////////////////////////////////////////////////
 // CTimeDependentLossesAtShippingTable
@@ -58,7 +58,7 @@ private:
 
    const CStrandData* m_pStrands;
    bool m_bTemporaryStrands;
-   bool m_bUHPC;
+   bool m_bPCIUHPC;
 };
 
 #endif //__TIMEDEPENDENTLOSSESATSHIPPINGTABLE_H_

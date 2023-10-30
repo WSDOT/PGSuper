@@ -50,7 +50,7 @@ LPCTSTR CProductForcesChapterBuilder::GetName() const
 #pragma Reminder("OBSOLETE?: this chapter builder isn't used in any reports")
 // Delete this chapter builder, and the source files, if it isn't needed
 
-rptChapter* CProductForcesChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CProductForcesChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    ATLASSERT(false);
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
@@ -62,8 +62,8 @@ rptChapter* CProductForcesChapterBuilder::Build(CReportSpecification* pRptSpec,U
 
 #pragma Reminder("UPDATE: should only be a Girder Report Spec")
 
-   CGirderReportSpecification* pGdrRptSpec      = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-   CSegmentReportSpecification* pSegmentRptSpec = dynamic_cast<CSegmentReportSpecification*>(pRptSpec);
+   CGirderReportSpecification* pGdrRptSpec      = std::dynamic_pointer_cast<CGirderReportSpecification*>(pRptSpec);
+   CSegmentReportSpecification* pSegmentRptSpec = std::dynamic_pointer_cast<CSegmentReportSpecification*>(pRptSpec);
    CComPtr<IBroker> pBroker;
    if ( pGdrRptSpec )
       pGdrRptSpec->GetBroker(&pBroker);
@@ -195,7 +195,7 @@ rptChapter* CProductForcesChapterBuilder::Build(CReportSpecification* pRptSpec,U
 */
 }
 
-CChapterBuilder* CProductForcesChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CProductForcesChapterBuilder::Clone() const
 {
-   return new CProductForcesChapterBuilder;
+   return std::make_unique<CProductForcesChapterBuilder>();
 }

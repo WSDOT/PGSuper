@@ -27,6 +27,10 @@
 #include <psgLib\psglib.h>
 #include "SpecLossPage.h"
 #include "SpecMainSheet.h"
+#include <psgLib/SectionPropertiesCriteria.h>
+#include <psgLib/PrestressLossCriteria.h>
+#include <psgLib/SpecificationCriteria.h>
+#include <psgLib/HaulingCriteria.h>
 
 #include <EAF\EAFApp.h>
 #include <EAF\EAFDocument.h>
@@ -82,16 +86,16 @@ void CSpecLossPage::OnLossMethodChanged()
 
    if ( 0 <= method && method < 6 )
    {
-      EnableShippingLosses(m_SpecVersion <= lrfdVersionMgr::ThirdEdition2004 || method == 3 ? TRUE : FALSE);
-      EnableRefinedShippingTime(lrfdVersionMgr::ThirdEdition2004 < m_SpecVersion && (method == 0 || method == 1 || method == 2) ? TRUE : FALSE);
-      EnableApproximateShippingTime(lrfdVersionMgr::ThirdEdition2004 < m_SpecVersion && (method == 4 || method == 6) ? TRUE : FALSE);
+      EnableShippingLosses(m_SpecVersion <= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 || method == 3 ? TRUE : FALSE);
+      EnableRefinedShippingTime(WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 < m_SpecVersion && (method == 0 || method == 1 || method == 2) ? TRUE : FALSE);
+      EnableApproximateShippingTime(WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 < m_SpecVersion && (method == 4 || method == 6) ? TRUE : FALSE);
       EnableTxDOT2013(method==3);
       EnableTimeDependentModel(FALSE);
 
       CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
-      if ( pDad->m_Entry.GetSectionPropertyMode() == pgsTypes::spmGross )
+      if ( pDad->m_Entry.GetSectionPropertiesCriteria().SectionPropertyMode == pgsTypes::spmGross)
       {
-         BOOL bEnable = lrfdVersionMgr::ThirdEdition2004 < m_SpecVersion && (method == 0 || method == 1 || method == 4) ? TRUE : FALSE;
+         BOOL bEnable = WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 < m_SpecVersion && (method == 0 || method == 1 || method == 4) ? TRUE : FALSE;
          BOOL bEnableShrk = bEnable && method != 4 ? TRUE : FALSE;
          EnableElasticGains(bEnable, bEnableShrk);
       }
@@ -227,15 +231,15 @@ void CSpecLossPage::EnableElasticGains(BOOL bEnable, BOOL bEnableDeckShrinkage)
 
 void CSpecLossPage::InitComboBoxes()
 {
-   CString strApproxMethod(m_SpecVersion <= lrfdVersionMgr::ThirdEdition2004 ? _T("Approximate Lump Sum Estimate") : _T("Approximate Estimate"));
+   CString strApproxMethod(m_SpecVersion <= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 ? _T("Approximate Lump Sum Estimate") : _T("Approximate Estimate"));
    CComboBox* pBox = (CComboBox*)GetDlgItem(IDC_LOSS_METHOD);
    int curSel = pBox->GetCurSel();
    pBox->ResetContent();
-   pBox->AddString(CString(_T("Refined Estimate per LRFD ")) + CString(LrfdCw8th(_T("5.9.5.4"), _T("5.9.3.4"),m_SpecVersion)));
+   pBox->AddString(CString(_T("Refined Estimate per LRFD ")) + CString(WBFL::LRFD::LrfdCw8th(_T("5.9.5.4"), _T("5.9.3.4"),m_SpecVersion)));
    pBox->AddString(_T("Refined Estimate per WSDOT Bridge Design Manual"));
    pBox->AddString(_T("Refined Estimate per TxDOT Bridge Design Manual"));
    pBox->AddString(_T("Refined Estimate per TxDOT Research Report 0-6374-2"));
-   pBox->AddString(strApproxMethod + CString(_T(" per LRFD ")) + CString(LrfdCw8th(_T("5.9.5.3"), _T("5.9.3.3"), m_SpecVersion)));
+   pBox->AddString(strApproxMethod + CString(_T(" per LRFD ")) + CString(WBFL::LRFD::LrfdCw8th(_T("5.9.5.3"), _T("5.9.3.3"), m_SpecVersion)));
    pBox->AddString(strApproxMethod + CString(_T(" per WSDOT Bridge Design Manual")));
    pBox->AddString(_T("Time-Step Method"));
    pBox->SetCurSel(curSel == CB_ERR ? 0 : curSel);
@@ -243,15 +247,16 @@ void CSpecLossPage::InitComboBoxes()
    pBox = (CComboBox*)GetDlgItem(IDC_RELAXATION_LOSS_METHOD);
    curSel = pBox->GetCurSel();
    pBox->ResetContent();
-   pBox->AddString(CString(_T("LRFD Equation ")) + CString(LrfdCw8th(_T("5.9.5.4.2c-1"), _T("5.9.3.4.2c-1"), m_SpecVersion)));  // simplified
-   pBox->AddString(CString(_T("LRFD Equation ")) + CString(LrfdCw8th(_T("C5.9.5.4.2c-1"), _T("C5.9.3.4.2c-1"), m_SpecVersion))); // refined
-   pBox->AddString(CString(_T("1.2 KSI (LRFD ")) + CString(LrfdCw8th(_T("C5.9.5.4.2c"), _T("C5.9.3.4.2c"), m_SpecVersion)));   // lump sum
+   pBox->AddString(CString(_T("LRFD Equation ")) + CString(WBFL::LRFD::LrfdCw8th(_T("5.9.5.4.2c-1"), _T("5.9.3.4.2c-1"), m_SpecVersion)));  // simplified
+   pBox->AddString(CString(_T("LRFD Equation ")) + CString(WBFL::LRFD::LrfdCw8th(_T("C5.9.5.4.2c-1"), _T("C5.9.3.4.2c-1"), m_SpecVersion))); // refined
+   pBox->AddString(CString(_T("1.2 KSI (LRFD ")) + CString(WBFL::LRFD::LrfdCw8th(_T("C5.9.5.4.2c"), _T("C5.9.3.4.2c"), m_SpecVersion)) + CString(_T(")")));   // lump sum
    pBox->SetCurSel(curSel == CB_ERR ? 0 : curSel);
 
    pBox = (CComboBox*)GetDlgItem(IDC_FCPG_COMBO);
    curSel = pBox->GetCurSel();
+   pBox->ResetContent();
    pBox->AddString(_T("Assumption that strand stress at release is 0.7 fpu"));
-   pBox->AddString(_T("Iterative method described in LRFD ") + CString(LrfdCw8th(_T("C5.9.5.2.3a"), _T("C5.9.3.2.3a"))));
+   pBox->AddString(_T("Iterative method described in LRFD ") + CString(WBFL::LRFD::LrfdCw8th(_T("C5.9.5.2.3a"), _T("C5.9.3.2.3a"))));
    pBox->AddString(_T("Assumption of 0.7 fpu unless special conditions"));
    pBox->SetCurSel(curSel == CB_ERR ? 0 : curSel);
 }
@@ -267,9 +272,9 @@ BOOL CSpecLossPage::OnInitDialog()
    pBox->SetCurSel(0);
 
    pBox = (CComboBox*)GetDlgItem(IDC_TIME_DEPENDENT_MODEL);
-   pBox->SetItemData(pBox->AddString(_T("AASHTO LRFD")), TDM_AASHTO);
-   pBox->SetItemData(pBox->AddString(_T("ACI 209R-92")), TDM_ACI209);
-   pBox->SetItemData(pBox->AddString(_T("CEB-FIP 1990")),TDM_CEBFIP);
+   pBox->SetItemData(pBox->AddString(_T("AASHTO LRFD")), +PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO);
+   pBox->SetItemData(pBox->AddString(_T("ACI 209R-92")), +PrestressLossCriteria::TimeDependentConcreteModelType::ACI209);
+   pBox->SetItemData(pBox->AddString(_T("CEB-FIP 1990")),+PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP);
 
    CPropertyPage::OnInitDialog();
 
@@ -293,7 +298,7 @@ BOOL CSpecLossPage::IsFractionalShippingLoss()
 void CSpecLossPage::OnShippingLossMethodChanged() 
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    CWnd* pTag = GetDlgItem(IDC_SHIPPING_TAG);
 
@@ -311,9 +316,9 @@ BOOL CSpecLossPage::OnSetActive()
 {
    // if this is third edition or earlier, enable the shipping loss controls
    CSpecMainSheet* pDad = (CSpecMainSheet*)GetParent();
-   m_SpecVersion = pDad->m_Entry.GetSpecificationType();
+   m_SpecVersion = pDad->m_Entry.GetSpecificationCriteria().GetEdition();
 
-   m_IsShippingEnabled = pDad->m_Entry.IsHaulingAnalysisEnabled();
+   m_IsShippingEnabled = pDad->m_Entry.GetHaulingCriteria().bCheck;
 
    InitComboBoxes();
 

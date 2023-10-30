@@ -52,10 +52,12 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 
 #include <psgLib\SpecLibraryEntry.h>
 #include <psgLib\RatingLibraryEntry.h>
+#include <psgLib/LiveLoadDeflectionCriteria.h>
+#include <psgLib/ShearCapacityCriteria.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -85,10 +87,10 @@ LPCTSTR CMVRChapterBuilder::GetName() const
    return TEXT("Moments, Shears, and Reactions");
 }
 
-rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CMVRChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-   CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
+   auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
+   auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
    CComPtr<IBroker> pBroker;
    CGirderKey girderKey;
@@ -345,12 +347,12 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
          LiveLoadTableFooter(pBroker, p, thisGirderKey, bDesign, bRating);
 
          for (auto intervalIdx : vUserLoadIntervals)
-               {
+         {
             ATLASSERT(pUDL->DoUserLoadsExist(thisGirderKey, intervalIdx));
-                  *p << CUserRotationTable().Build(pBroker, thisGirderKey, analysisType, intervalIdx, pDisplayUnits) << rptNewLine;
-               }
+            *p << CUserRotationTable().Build(pBroker, thisGirderKey, analysisType, intervalIdx, pDisplayUnits) << rptNewLine;
+         }
 
-         if (pSpecEntry->GetDoEvaluateLLDeflection())
+         if (pSpecEntry->GetLiveLoadDeflectionCriteria().bCheck)
          {
             // Optional Live Load Deflections
             p = new rptParagraph;
@@ -374,14 +376,14 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
    // if we are doing a time-step analysis, we need to report for all intervals from
    // the first prestress release to the end to report all time-dependent effects
    bool bTimeDependentNote = false;
-   if ( pSpecEntry->GetLossMethod() == pgsTypes::TIME_STEP )
+   if ( pSpecEntry->GetPrestressLossCriteria().LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       bTimeDependentNote = true;
       IntervalIndexType firstReleaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(girderKey);
       vIntervals.clear();
       vIntervals.resize(nIntervals-firstReleaseIntervalIdx);
       std::generate(vIntervals.begin(),vIntervals.end(),IncrementValue<IntervalIndexType>(firstReleaseIntervalIdx));
-      // when we go to C++ 11, use the std::itoa algorithm
+#pragma Reminder("When we go to C++ 11, use the std::itoa algorithm")
    }
 
    for (const auto& intervalIdx : vIntervals)
@@ -389,7 +391,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
       p = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << p;
       CString strName;
-      strName.Format(_T("Combined Results - Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
+      strName.Format(_T("Combined Results - Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx).c_str());
       p->SetName(strName);
       *p << p->GetName() << rptNewLine;
 
@@ -435,7 +437,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
             CCombinedReactionTable().Build(pBroker,pChapter, girderKey,pDisplayUnits,intervalIdx,analysisType,BearingReactionsTable, bDesign, bRating);
          }
 
-         if ( pSpecEntry->GetShearCapacityMethod() == pgsTypes::scmVciVcw )
+         if ( pSpecEntry->GetShearCapacityCriteria().CapacityMethod == pgsTypes::scmVciVcw )
          {
             p = new rptParagraph(rptStyleManager::GetHeadingStyle());
             *pChapter << p;
@@ -458,7 +460,7 @@ rptChapter* CMVRChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 leve
    return pChapter;
 }
 
-CChapterBuilder* CMVRChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CMVRChapterBuilder::Clone() const
 {
-   return new CMVRChapterBuilder(m_bDesign,m_bRating);
+   return std::make_unique<CMVRChapterBuilder>(m_bDesign,m_bRating);
 }

@@ -29,17 +29,17 @@ enum Type { A615  = 0x1000,  // ASTM A615
             A1035 = 0x4000   // ASTM A1035
 };
 
-static std::_tstring GenerateReinfTypeName(matRebar::Type rtype)
+static std::_tstring GenerateReinfTypeName(WBFL::Materials::Rebar::Type rtype)
 {
    switch(rtype)
    {
-   case matRebar::A615:
+   case WBFL::Materials::Rebar::Type::A615:
       return _T("A615");
       break;
-   case matRebar::A706:
+   case WBFL::Materials::Rebar::Type::A706:
       return _T("A706");
       break;
-   case matRebar::A1035:
+   case WBFL::Materials::Rebar::Type::A1035:
       return _T("A1035");
       break;
    default:
@@ -48,20 +48,20 @@ static std::_tstring GenerateReinfTypeName(matRebar::Type rtype)
    }
 }
 
-static std::_tstring GenerateReinfGradeName(matRebar::Grade grade)
+static std::_tstring GenerateReinfGradeName(WBFL::Materials::Rebar::Grade grade)
 {
    switch(grade)
    {
-   case matRebar::Grade40:
+   case WBFL::Materials::Rebar::Grade40:
       return _T("40");
       break;
-   case matRebar::Grade60:
+   case WBFL::Materials::Rebar::Grade::Grade60:
       return _T("60");
       break;
-   case matRebar::Grade75:
+   case WBFL::Materials::Rebar::Grade75:
       return _T("75");
       break;
-   case matRebar::Grade80:
+   case WBFL::Materials::Rebar::Grade80:
       return _T("80");
       break;
    default:
@@ -206,7 +206,7 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
       IntervalIndexType finalIntervalIdx = pIntervals->GetLiveLoadInterval();
 
       Float64 dval = pMaterials->GetDeckFc(0,compositeDeckIntervalIdx);
-      dval = ::ConvertFromSysUnits(dval, unitMeasure::KSI);
+      dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::KSI);
       brdata.SlabFc(dval);
 
       // Assume uniform deck thickness
@@ -222,11 +222,11 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
          tDeck = pDeckDescription->GrossDepth;
       }
 
-      dval = ::ConvertFromSysUnits(tDeck, unitMeasure::Inch);
+      dval = WBFL::Units::ConvertFromSysUnits(tDeck, WBFL::Units::Measure::Inch);
       brdata.SlabThickness(dval);
 
       dval = pDeckDescription->OverhangEdgeDepth[pgsTypes::stLeft];
-      dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch);
+      dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::Inch);
       brdata.OverhangThickness(dval);
 
       SpanIndexType ns = pBridge->GetSpanCount();
@@ -237,7 +237,7 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
       for (SpanIndexType is=0; is<ns; is++)
       {
          Float64 sl = pBridge->GetSpanLength(is);
-         sl = ::ConvertFromSysUnits(sl, unitMeasure::Inch); 
+         sl = WBFL::Units::ConvertFromSysUnits(sl, WBFL::Units::Measure::Inch); 
          span_lengths.push_back(sl);
 
          GirderIndexType ng = pBridge->GetGirderCountBySpan(is);
@@ -255,13 +255,13 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
          KDOT::BridgeDataType::PierData_type pd;
 
          dval = pBridge->GetPierStation(ip);
-         dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch);
+         dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::Inch);
          pd.Station(dval);
 
          CComPtr<IAngle> angle;
          pBridge->GetPierSkew(ip, &angle);
          angle->get_Value(&dval);
-         dval = ::ConvertFromSysUnits(dval, unitMeasure::Radian);
+         dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::Radian);
          pd.Skew(dval);
 
          Float64 backEndOffset(0.0);
@@ -271,7 +271,7 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
             backEndOffset  = pBridge->GetSegmentEndBearingOffset(backSegmentKey) - pBridge->GetSegmentEndEndDistance(backSegmentKey);
          }
 
-         dval = ::ConvertFromSysUnits(backEndOffset, unitMeasure::Inch);
+         dval = WBFL::Units::ConvertFromSysUnits(backEndOffset, WBFL::Units::Measure::Inch);
          pd.backGirderEndOffset(dval);
 
          Float64 aheadEndOffset(0.0);
@@ -281,7 +281,7 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
             aheadEndOffset = pBridge->GetSegmentStartBearingOffset(aheadSegmentKey) - pBridge->GetSegmentStartEndDistance(aheadSegmentKey);
          }
 
-         dval = ::ConvertFromSysUnits(aheadEndOffset, unitMeasure::Inch);
+         dval = WBFL::Units::ConvertFromSysUnits(aheadEndOffset, WBFL::Units::Measure::Inch);
          pd.aheadGirderEndOffset(dval);
 
          pds.push_back(pd);
@@ -347,7 +347,7 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
             sd.ParameterName(dim.first);
 
             // assumes are dimensions are reals. This may not be the case (e.g., voided slab has #voids)
-            dval = ::ConvertFromSysUnits(dim.second, unitMeasure::Inch);
+            dval = WBFL::Units::ConvertFromSysUnits(dim.second, WBFL::Units::Measure::Inch);
             sd.Value(dval);
 
             sds.push_back(sd);
@@ -359,26 +359,26 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
          IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
          dval = pMaterials->GetSegmentFc(segmentKey, releaseIntervalIdx);
-         dval = ::ConvertFromSysUnits(dval, unitMeasure::KSI);
+         dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::KSI);
          gd.Fci(dval);
 
          dval = pMaterials->GetSegmentFc(segmentKey, finalIntervalIdx);
-         dval = ::ConvertFromSysUnits(dval, unitMeasure::KSI);
+         dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::KSI);
          gd.Fc(dval);
 
          dval = pMaterials->GetSegmentEc(segmentKey, releaseIntervalIdx);
-         dval = ::ConvertFromSysUnits(dval, unitMeasure::KSI);
+         dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::KSI);
          gd.Eci(dval);
 
          dval = pMaterials->GetSegmentEc(segmentKey, finalIntervalIdx);
-         dval = ::ConvertFromSysUnits(dval, unitMeasure::KSI);
+         dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::KSI);
          gd.Ec(dval);
 
          // Girder length 
          Float64 girderLength = pBridge->GetGirderLength(girderKey);
          Float64 girderSpanLength = pBridge->GetGirderSpanLength(girderKey);
 
-         dval = ::ConvertFromSysUnits(girderLength, unitMeasure::Inch);
+         dval = WBFL::Units::ConvertFromSysUnits(girderLength, WBFL::Units::Measure::Inch);
          gd.GirderLength(dval);
 
          // Station and offset of girder line ends
@@ -406,7 +406,7 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
          {
             dval = prevPierSpac[ig-1];
          }
-         dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch);
+         dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::Inch);
 
          gd.SpacingLeftStart(dval);
 
@@ -419,7 +419,7 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
          {
             dval = prevPierSpac[ig];
          }
-         dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch);
+         dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::Inch);
 
          gd.SpacingRightStart(dval);
 
@@ -432,7 +432,7 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
          {
             dval = nextPierSpac[ig-1];
          }
-         dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch);
+         dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::Inch);
 
          gd.SpacingLeftEnd(dval);
 
@@ -445,7 +445,7 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
          {
             dval = nextPierSpac[ig];
          }
-         dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch);
+         dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::Inch);
 
          gd.SpacingRightEnd(dval);
 
@@ -462,10 +462,10 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
             Float64 lhp, rhp;
             pStrandGeom->GetHarpingPointLocations(segmentKey,&lhp,&rhp);
 
-            dval = ::ConvertFromSysUnits(ihp==0 ? lhp:rhp, unitMeasure::Inch);
+            dval = WBFL::Units::ConvertFromSysUnits(ihp==0 ? lhp:rhp, WBFL::Units::Measure::Inch);
             hpdata.Location(dval);
 
-            dval = ::ConvertFromSysUnits(holddownforce/nhp, unitMeasure::Kip);
+            dval = WBFL::Units::ConvertFromSysUnits(holddownforce/nhp, WBFL::Units::Measure::Kip);
             hpdata.HoldDownForce(dval);
 
             hpseq.push_back(hpdata);
@@ -477,18 +477,18 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
 
          // Lifting location
          dval = pSegmentLifting->GetLeftLiftingLoopLocation(segmentKey);
-         dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch);
+         dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::Inch);
 
          gd.LiftingLocation(dval);
 
          // Hauling locations
          dval = pSegmentHauling->GetLeadingOverhang(segmentKey);
-         dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch);
+         dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::Inch);
 
          gd.LeadingHaulingLocation(dval);
 
          dval = pSegmentHauling->GetTrailingOverhang(segmentKey);
-         dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch);
+         dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::Inch);
 
          gd.TrailingHaulingLocation(dval);
 
@@ -513,100 +513,100 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
 
           // Non-composite properties
          dval = pSectProp->GetAg(releaseIntervalIdx,mid_poi);
-         dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch2);
+         dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::Inch2);
          gd.Area(dval);
 
          dval = pSectProp->GetIxx(releaseIntervalIdx,mid_poi);
-         dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch4);
+         dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::Inch4);
          gd.Ix(dval);
 
          dval = pSectProp->GetIyy(releaseIntervalIdx,mid_poi);
-         dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch4);
+         dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::Inch4);
          gd.Iy(dval);
 
          Float64 Hg = pSectProp->GetHg(releaseIntervalIdx,mid_poi);
-         dval = ::ConvertFromSysUnits(Hg, unitMeasure::Inch);
+         dval = WBFL::Units::ConvertFromSysUnits(Hg, WBFL::Units::Measure::Inch);
          gd.d(dval);
 
          dval = pSectProp->GetY(releaseIntervalIdx,mid_poi,pgsTypes::TopGirder);
-         dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch);
+         dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::Inch);
          gd.Yt(dval);
 
          dval = pSectProp->GetY(releaseIntervalIdx,mid_poi,pgsTypes::BottomGirder);
-         dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch);
+         dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::Inch);
          gd.Yb(dval);
 
          dval = pSectProp->GetS(releaseIntervalIdx,mid_poi,pgsTypes::TopGirder);
-         dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch3);
+         dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::Inch3);
          gd.St(dval);
 
          dval = pSectProp->GetS(releaseIntervalIdx,mid_poi,pgsTypes::BottomGirder);
-         dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch3);
+         dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::Inch3);
          gd.Sb(dval);
 
          dval = pSectProp->GetPerimeter(mid_poi);
-         dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch);
+         dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::Inch);
          gd.P(dval);
 
          dval = pSectProp->GetSegmentWeightPerLength(segmentKey);
-         dval = ::ConvertFromSysUnits(dval, unitMeasure::KipPerInch);
+         dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::KipPerInch);
          gd.W(dval);
 
          dval = pSectProp->GetSegmentWeight(segmentKey);
-         dval = ::ConvertFromSysUnits(dval, unitMeasure::Kip);
+         dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::Kip);
          gd.Wtotal(dval);
 
           // Composite properties
          dval = pSectProp->GetAg(finalIntervalIdx,mid_poi);
-         dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch2);
+         dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::Inch2);
          gd.Area_c(dval);
 
          dval = pSectProp->GetIxx(finalIntervalIdx,mid_poi);
-         dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch4);
+         dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::Inch4);
          gd.Ix_c(dval);
 
          dval = pSectProp->GetIyy(finalIntervalIdx,mid_poi);
-         dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch4);
+         dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::Inch4);
          gd.Iy_c(dval);
 
          dval = pSectProp->GetHg(finalIntervalIdx,mid_poi);
-         dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch);
+         dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::Inch);
          gd.d_c(dval);
 
          dval = pSectProp->GetY(finalIntervalIdx,mid_poi,pgsTypes::TopGirder);
-         dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch);
+         dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::Inch);
          gd.Yt_c(dval);
 
          dval = pSectProp->GetY(finalIntervalIdx,mid_poi,pgsTypes::BottomGirder);
-         dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch);
+         dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::Inch);
          gd.Yb_c(dval);
 
          dval = pSectProp->GetS(finalIntervalIdx,mid_poi,pgsTypes::TopGirder);
-         dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch3);
+         dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::Inch3);
          gd.St_c(dval);
 
          dval = pSectProp->GetS(finalIntervalIdx,mid_poi,pgsTypes::BottomGirder);
-         dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch3);
+         dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::Inch3);
          gd.Sb_c(dval);
 
          // Strand eccentricities
          dval = pStrandGeom->GetEccentricity( pgsTypes::sptGrossNoncomposite, releaseIntervalIdx, end_poi, false /*no temporary strands*/).Y();
-         dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch);
+         dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::Inch);
          gd.StrandEccentricityAtEnds(dval);
 
          dval = pStrandGeom->GetEccentricity( pgsTypes::sptGrossNoncomposite, releaseIntervalIdx, mid_poi, false /*no temporary strands*/).Y();
-         dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch);
+         dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::Inch);
          gd.StrandEccentricityAtHPs(dval);
 
          // prestressing strand material type
          KDOT::PrestressingStrandType pstype;
-         const matPsStrand* pmatps = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Straight);
+         const auto* pmatps = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Straight);
 
          std::_tstring name = pmatps->GetName();
          pstype.Name(name);
 
          dval = pmatps->GetNominalDiameter();
-         dval = ::ConvertFromSysUnits(dval, unitMeasure::Inch);
+         dval = WBFL::Units::ConvertFromSysUnits(dval, WBFL::Units::Measure::Inch);
          pstype.NominalDiameter(dval);
          
          gd.PrestressingStrandMaterial(pstype);
@@ -631,8 +631,8 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
             Float64 x, y;
             strPoint->Location(&x, &y);
             y += Hg; // strands in pgsuper measured from top, we want from bottom
-            x = ::ConvertFromSysUnits(x, unitMeasure::Inch);
-            y = ::ConvertFromSysUnits(y, unitMeasure::Inch);
+            x = WBFL::Units::ConvertFromSysUnits(x, WBFL::Units::Measure::Inch);
+            y = WBFL::Units::ConvertFromSysUnits(y, WBFL::Units::Measure::Inch);
 
             KDOT::Point2DType kpnt(x, y);
 
@@ -651,8 +651,8 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
             Float64 dstart, dend;
             if (pStrandGeom->IsStrandDebonded(segmentKey, istrand, pgsTypes::Straight, nullptr, &dstart, &dend))
             {
-               dstart = ::ConvertFromSysUnits(dstart, unitMeasure::Inch);
-               dend   = ::ConvertFromSysUnits(dend,   unitMeasure::Inch);
+               dstart = WBFL::Units::ConvertFromSysUnits(dstart, WBFL::Units::Measure::Inch);
+               dend   = WBFL::Units::ConvertFromSysUnits(dend,   WBFL::Units::Measure::Inch);
 
                ::KDOT::DebondDataType debond(istrand+1, dstart, dend);
                debonds.push_back(debond);
@@ -699,8 +699,8 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
             Float64 x, y;
             hePoint->Location(&x, &y);
             y += Hg; // strands in pgsuper measured from top, we want from bottom
-            x = ::ConvertFromSysUnits(x, unitMeasure::Inch);
-            y = ::ConvertFromSysUnits(y, unitMeasure::Inch);
+            x = WBFL::Units::ConvertFromSysUnits(x, WBFL::Units::Measure::Inch);
+            y = WBFL::Units::ConvertFromSysUnits(y, WBFL::Units::Measure::Inch);
 
             KDOT::Point2DType kpnt(x, y);
 
@@ -723,8 +723,8 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
             Float64 x, y;
             hpPoint->Location(&x, &y);
             y += Hg; // strands in pgsuper measured from top, we want from bottom
-            x = ::ConvertFromSysUnits(x, unitMeasure::Inch);
-            y = ::ConvertFromSysUnits(y, unitMeasure::Inch);
+            x = WBFL::Units::ConvertFromSysUnits(x, WBFL::Units::Measure::Inch);
+            y = WBFL::Units::ConvertFromSysUnits(y, WBFL::Units::Measure::Inch);
 
             KDOT::Point2DType kpnt(x, y);
 
@@ -750,8 +750,8 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
             Float64 x, y;
             tmpPoint->Location(&x, &y);
             y += Hg; // strands in pgsuper measured from top, we want from bottom
-            x = ::ConvertFromSysUnits(x, unitMeasure::Inch);
-            y = ::ConvertFromSysUnits(y, unitMeasure::Inch);
+            x = WBFL::Units::ConvertFromSysUnits(x, WBFL::Units::Measure::Inch);
+            y = WBFL::Units::ConvertFromSysUnits(y, WBFL::Units::Measure::Inch);
 
             KDOT::Point2DType kpnt(x, y);
 
@@ -763,8 +763,8 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
          // Long. rebar materials
          KDOT::RebarMaterialType lrbrmat;
 
-         matRebar::Type rebarType;
-         matRebar::Grade rebarGrade;
+         WBFL::Materials::Rebar::Type rebarType;
+         WBFL::Materials::Rebar::Grade rebarGrade;
          pMaterials->GetSegmentLongitudinalRebarMaterial(segmentKey, &rebarType, &rebarGrade);
 
          std::_tstring grd = GenerateReinfGradeName(rebarGrade);
@@ -778,7 +778,7 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
          // Longitudinal bar rows
          const CLongitudinalRebarData* pRebarData = pLongRebar->GetSegmentLongitudinalRebarData(segmentKey);
          const std::vector<CLongitudinalRebarData::RebarRow>& rebar_rows = pRebarData->RebarRows;
-         CollectionIndexType rowcnt = rebar_rows.size();
+         IndexType rowcnt = rebar_rows.size();
 
          gd.NumberOfLongitudinalRebarRows(rowcnt);
 
@@ -794,25 +794,25 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
             Float64 startLoc, endLoc;
             bool onGirder = rowData.GetRebarStartEnd(segment_length, &startLoc, &endLoc);
 
-            const matRebar* pRebar = lrfdRebarPool::GetInstance()->GetRebar(pRebarData->BarType, pRebarData->BarGrade, rowData.BarSize);
+            const auto* pRebar = WBFL::LRFD::RebarPool::GetInstance()->GetRebar(pRebarData->BarType, pRebarData->BarGrade, rowData.BarSize);
             if (pRebar)
             {
                KDOT::RebarRowInstanceType rebarRow;
 
-               dval = ::ConvertFromSysUnits(startLoc, unitMeasure::Inch);
+               dval = WBFL::Units::ConvertFromSysUnits(startLoc, WBFL::Units::Measure::Inch);
                rebarRow.BarStart(dval);
 
-               dval = ::ConvertFromSysUnits(endLoc, unitMeasure::Inch);
+               dval = WBFL::Units::ConvertFromSysUnits(endLoc, WBFL::Units::Measure::Inch);
                rebarRow.BarEnd(dval);
 
                rebarRow.Face(rowData.Face==pgsTypes::TopFace ? _T("Top") : _T("Bottom"));
 
-               dval = ::ConvertFromSysUnits(rowData.Cover, unitMeasure::Inch);
+               dval = WBFL::Units::ConvertFromSysUnits(rowData.Cover, WBFL::Units::Measure::Inch);
                rebarRow.Cover(dval);
 
                rebarRow.NumberOfBars(rowData.NumberOfBars);
 
-               dval = ::ConvertFromSysUnits(rowData.BarSpacing, unitMeasure::Inch);
+               dval = WBFL::Units::ConvertFromSysUnits(rowData.BarSpacing, WBFL::Units::Measure::Inch);
                rebarRow.Spacing(dval);
 
                rebarRow.Size(pRebar->GetName());
@@ -849,20 +849,20 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
             Float64 zoneStart, zoneEnd;
             pStirrupGeometry->GetPrimaryZoneBounds(segmentKey, iz, &zoneStart, &zoneEnd);
 
-            dval = ::ConvertFromSysUnits(zoneStart, unitMeasure::Inch);
+            dval = WBFL::Units::ConvertFromSysUnits(zoneStart, WBFL::Units::Measure::Inch);
             szone.StartLocation(dval);
 
-            dval = ::ConvertFromSysUnits(zoneEnd, unitMeasure::Inch);
+            dval = WBFL::Units::ConvertFromSysUnits(zoneEnd, WBFL::Units::Measure::Inch);
             szone.EndLocation(dval);
 
-            matRebar::Size barSize;
+            WBFL::Materials::Rebar::Size barSize;
             Float64 spacing;
             Float64 nStirrups;
             pStirrupGeometry->GetPrimaryVertStirrupBarInfo(segmentKey,iz,&barSize,&nStirrups,&spacing);
 
-            szone.BarSize(lrfdRebarPool::GetBarSize(barSize));
+            szone.BarSize(WBFL::LRFD::RebarPool::GetBarSize(barSize));
 
-            dval = ::ConvertFromSysUnits(spacing, unitMeasure::Inch);
+            dval = WBFL::Units::ConvertFromSysUnits(spacing, WBFL::Units::Measure::Inch);
             szone.BarSpacing(dval);
 
             szone.NumVerticalLegs(nStirrups);
@@ -871,7 +871,7 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
             szone.NumLegsExtendedIntoDeck(num_legs);
 
             barSize = pStirrupGeometry->GetPrimaryConfinementBarSize(segmentKey,iz);
-            szone.ConfinementBarSize(lrfdRebarPool::GetBarSize(barSize));
+            szone.ConfinementBarSize(WBFL::LRFD::RebarPool::GetBarSize(barSize));
 
             szones.push_back(szone);
          }
@@ -928,10 +928,10 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
             KDOT::CamberResultType camberResult;
             camberResult.FractionalLocation(poiloc.fracLoc);
 
-            dval = ::ConvertFromSysUnits(poiloc.distFromPier, unitMeasure::Inch);
+            dval = WBFL::Units::ConvertFromSysUnits(poiloc.distFromPier, WBFL::Units::Measure::Inch);
             camberResult.Location(dval);
 
-            dval = ::ConvertFromSysUnits(poiloc.distFromBrg, unitMeasure::Inch);
+            dval = WBFL::Units::ConvertFromSysUnits(poiloc.distFromBrg, WBFL::Units::Measure::Inch);
             camberResult.LocationFromEndOfGirder(dval);
 
             pgsPointOfInterest mpoi(segmentKey, poiloc.distFromBrg);
@@ -940,39 +940,39 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
             pBridge->GetStationAndOffset(mpoi,&sta,&offset);
 
             Float64 elev = pAlignment->GetElevation(sta,offset);
-            dval = ::ConvertFromSysUnits(elev, unitMeasure::Inch);
+            dval = WBFL::Units::ConvertFromSysUnits(elev, WBFL::Units::Measure::Inch);
 
             camberResult.TopOfDeckElevation(dval);
 
             // Girder chord elevation
             Float64 topOfGirderChord = elev - poiloc.Adim;
-            dval = ::ConvertFromSysUnits(topOfGirderChord, unitMeasure::Inch);
+            dval = WBFL::Units::ConvertFromSysUnits(topOfGirderChord, WBFL::Units::Measure::Inch);
             camberResult.TopOfGirderChordElevation(dval);
 
             // Get cambers at POI
             Float64 DpsRelease  = pProduct->GetDeflection(releaseIntervalIdx,pgsTypes::pftPretension,mpoi,bat,rtCumulative,false);
             Float64 DgdrRelease = pProduct->GetDeflection(releaseIntervalIdx,pgsTypes::pftGirder,mpoi,bat,rtCumulative,false);
-            Float64 Dcreep = pCamber->GetCreepDeflection( mpoi, ICamber::cpReleaseToDeck, CREEP_MAXTIME, pgsTypes::pddErected );
+            Float64 Dcreep = pCamber->GetCreepDeflection( mpoi, ICamber::cpReleaseToDeck, pgsTypes::CreepTime::Max, pgsTypes::pddErected );
 
             Float64 releaseCamber = DpsRelease + DgdrRelease;
             Float64 slabCastingCamber = releaseCamber + Dcreep;
-            Float64 excessCamber = pCamber->GetExcessCamber(mpoi,CREEP_MAXTIME);
+            Float64 excessCamber = pCamber->GetExcessCamber(mpoi,pgsTypes::CreepTime::Max);
 
             Float64 topAtSlabCasting = topOfGirderChord + slabCastingCamber;
-            dval = ::ConvertFromSysUnits(topAtSlabCasting, unitMeasure::Inch);
+            dval = WBFL::Units::ConvertFromSysUnits(topAtSlabCasting, WBFL::Units::Measure::Inch);
             camberResult.TopOfGirderElevationPriorToSlabCasting(dval);
 
             Float64 topAtFinal = topOfGirderChord + excessCamber;
-            dval = ::ConvertFromSysUnits(topAtFinal, unitMeasure::Inch);
+            dval = WBFL::Units::ConvertFromSysUnits(topAtFinal, WBFL::Units::Measure::Inch);
             camberResult.TopOfGirderElevationAtFinal(dval);
 
-            dval = ::ConvertFromSysUnits(releaseCamber, unitMeasure::Inch);
+            dval = WBFL::Units::ConvertFromSysUnits(releaseCamber, WBFL::Units::Measure::Inch);
             camberResult.GirderCamberAtRelease(dval);
 
-            dval = ::ConvertFromSysUnits(slabCastingCamber, unitMeasure::Inch);
+            dval = WBFL::Units::ConvertFromSysUnits(slabCastingCamber, WBFL::Units::Measure::Inch);
             camberResult.GirderCamberPriorToDeckCasting(dval);
 
-            dval = ::ConvertFromSysUnits(excessCamber, unitMeasure::Inch);
+            dval = WBFL::Units::ConvertFromSysUnits(excessCamber, WBFL::Units::Measure::Inch);
             camberResult.GirderCamberAtFinal(dval);
 
             camberResults.push_back(camberResult);
@@ -987,14 +987,14 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
          Float64 haunchVolNoCamber = girderLength * haunchWidth * ((adstart+adend)/2 - tDeck);
 
          // assume that camber makes a parabolic shape along entire length of girder
-         Float64 midSpanExcessCamber = pCamber->GetExcessCamber(mid_poi,CREEP_MAXTIME);
+         Float64 midSpanExcessCamber = pCamber->GetExcessCamber(mid_poi,pgsTypes::CreepTime::Max);
 
          // Area under parabolic segment is 2/3(width)(height) 
          Float64 camberVolume = 2.0/3.0 * haunchWidth * midSpanExcessCamber * girderLength;
 
          // camber adjusted haunch volume
          Float64 haunchVol = haunchVolNoCamber - camberVolume;
-         dval = ::ConvertFromSysUnits(haunchVol, unitMeasure::Inch3);
+         dval = WBFL::Units::ConvertFromSysUnits(haunchVol, WBFL::Units::Measure::Inch3);
          gd.GirderHaunchVolume(dval);
 
          bridgeHaunchVolume += haunchVol;
@@ -1006,14 +1006,14 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
       brdata.GirderData(gds);
 
       // total bridge haunch
-      dval = ::ConvertFromSysUnits(bridgeHaunchVolume, unitMeasure::Inch3);
+      dval = WBFL::Units::ConvertFromSysUnits(bridgeHaunchVolume, WBFL::Units::Measure::Inch3);
       brdata.HaunchVolumeForAllSelectedGirders(dval);
 
       // Now can compute haunch weight for entire bridge
-      Float64 haunchWDensity = pMaterials->GetDeckWeightDensity(0,compositeDeckIntervalIdx) * unitSysUnitsMgr::GetGravitationalAcceleration();
+      Float64 haunchWDensity = pMaterials->GetDeckWeightDensity(0,compositeDeckIntervalIdx) * WBFL::Units::System::GetGravitationalAcceleration();
       Float64 bridgeHaunchWeight = bridgeHaunchVolume * haunchWDensity;
 
-      dval = ::ConvertFromSysUnits(bridgeHaunchWeight, unitMeasure::Kip);
+      dval = WBFL::Units::ConvertFromSysUnits(bridgeHaunchWeight, WBFL::Units::Measure::Kip);
       brdata.HaunchWeightForAllSelectedGirders(dval);
 
       // Set data for main export class

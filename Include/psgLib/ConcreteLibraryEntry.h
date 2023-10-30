@@ -35,9 +35,7 @@
 
 // LOCAL INCLUDES
 //
-#if !defined INCLUDED_SYSTEM_SUBJECTT_H_
 #include <System\SubjectT.h>
-#endif
 
 // FORWARD DECLARATIONS
 //
@@ -45,7 +43,7 @@ class pgsLibraryEntryDifferenceItem;
 class ConcreteLibraryEntry;
 class ConcreteLibraryEntryObserver;
 #pragma warning(disable:4231)
-PSGLIBTPL sysSubjectT<ConcreteLibraryEntryObserver, ConcreteLibraryEntry>;
+PSGLIBTPL WBFL::System::SubjectT<ConcreteLibraryEntryObserver, ConcreteLibraryEntry>;
 
 // MISCELLANEOUS
 //
@@ -70,7 +68,7 @@ public:
    //------------------------------------------------------------------------
    // called by our subject to let us now he's changed, along with an optional
    // hint
-   virtual void Update(ConcreteLibraryEntry* pSubject, Int32 hint)=0;
+   virtual void Update(ConcreteLibraryEntry& subject, Int32 hint)=0;
 };
 
 /*****************************************************************************
@@ -87,8 +85,8 @@ LOG
    rdp : 07.20.1998 : Created file
 *****************************************************************************/
 
-class PSGLIBCLASS ConcreteLibraryEntry : public libLibraryEntry, public ISupportIcon,
-       public sysSubjectT<ConcreteLibraryEntryObserver, ConcreteLibraryEntry>
+class PSGLIBCLASS ConcreteLibraryEntry : public WBFL::Library::LibraryEntry, public ISupportIcon,
+   public WBFL::System::SubjectT<ConcreteLibraryEntryObserver, ConcreteLibraryEntry>
 {
 public:
    static CString GetConcreteType(pgsTypes::ConcreteType type);
@@ -104,7 +102,7 @@ public:
 
    //------------------------------------------------------------------------
    // Copy constructor
-   ConcreteLibraryEntry(const ConcreteLibraryEntry& rOther);
+   ConcreteLibraryEntry(const ConcreteLibraryEntry& rOther) = default;
 
    //------------------------------------------------------------------------
    // Destructor
@@ -113,7 +111,7 @@ public:
    // GROUP: OPERATORS
    //------------------------------------------------------------------------
    // Assignment operator
-   ConcreteLibraryEntry& operator = (const ConcreteLibraryEntry& rOther);
+   ConcreteLibraryEntry& operator=(const ConcreteLibraryEntry& rOther) = default;
 
    // GROUP: OPERATIONS
 
@@ -128,11 +126,11 @@ public:
 
    //------------------------------------------------------------------------
    // Save to structured storage
-   virtual bool SaveMe(sysIStructuredSave* pSave);
+   virtual bool SaveMe(WBFL::System::IStructuredSave* pSave);
 
    //------------------------------------------------------------------------
    // Load from structured storage
-   virtual bool LoadMe(sysIStructuredLoad* pLoad);
+   virtual bool LoadMe(WBFL::System::IStructuredLoad* pLoad);
 /*
    //------------------------------------------------------------------------
    // Description: Attaches an observer. The observer will be notified
@@ -164,7 +162,7 @@ public:
    bool UserEc() const;
 
    //------------------------------------------------------------------------
-   // SetEc - get density used for strenght calculation
+   // SetEc - get density used for strength calculation
    void SetStrengthDensity(Float64 d);
 
    //------------------------------------------------------------------------
@@ -217,6 +215,11 @@ public:
    void GetPCIUHPC(Float64* ffc, Float64* frr, Float64* pFiberLength,Float64* pAutogenousShrinkage,bool* bPCTT) const;
 
    //------------------------------------------------------------------------
+   // Parameters for the UHPC concrete
+   void SetUHPC(Float64 ft_cri, Float64 ft_cr, Float64 ft_loc, Float64 et_loc,Float64 alpha_u,Float64 ecu,bool bExperimentalEcu,Float64 gammaU,Float64 fiberLength);
+   void GetUHPC(Float64* ft_cri, Float64* ft_cr, Float64* ft_loc, Float64* et_loc,Float64* alpha_u,Float64* ecu,bool* pbExpermentalEcu,Float64* pGammaU,Float64* pFiberLength) const;
+
+   //------------------------------------------------------------------------
    // Parameters for the ACI 209R-92 model
    bool UserACIParameters() const;
    void UserACIParameters(bool bUser);
@@ -243,23 +246,9 @@ public:
    //------------------------------------------------------------------------
    // Compares this library entry with rOther. Returns true if the entries are the same.
    // vDifferences contains a listing of the differences. The caller is responsible for deleting the difference items
-   bool Compare(const ConcreteLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences,bool& bMustRename,bool bReturnOnFirstDifference=false, bool considerName=false) const;
+   bool Compare(const ConcreteLibraryEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences,bool& bMustRename,bool bReturnOnFirstDifference=false, bool considerName=false) const;
    
    bool IsEqual(const ConcreteLibraryEntry& rOther,bool bConsiderName=false) const;
-
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   void MakeCopy(const ConcreteLibraryEntry& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const ConcreteLibraryEntry& rOther);
-  // GROUP: ACCESS
-  // GROUP: INQUIRY
 
 private:
    // GROUP: DATA MEMBERS
@@ -288,6 +277,16 @@ private:
    bool m_bPCTT;
    Float64 m_AutogenousShrinkage;
 
+   // AASHTO UHPC Parameters
+   Float64 m_ftcri;
+   Float64 m_ftcr;
+   Float64 m_ftloc;
+   Float64 m_etloc;
+   Float64 m_alpha_u;
+   Float64 m_ecu;
+   bool m_bExperimental_ecu;
+   Float64 m_gamma_u;
+
    // ACI Model Parameters
    bool m_bUserACIParameters;
    Float64 m_A, m_B;
@@ -304,25 +303,6 @@ private:
    // GROUP: OPERATIONS
    // GROUP: ACCESS
    // GROUP: INQUIRY
-
-public:
-   // GROUP: DEBUG
-   #if defined _DEBUG
-   //------------------------------------------------------------------------
-   // Returns true if the object is in a valid state, otherwise returns false.
-   virtual bool AssertValid() const;
-
-   //------------------------------------------------------------------------
-   // Dumps the contents of the object to the given dump context.
-   virtual void Dump(dbgDumpContext& os) const;
-   #endif // _DEBUG
-
-   #if defined _UNITTEST
-   //------------------------------------------------------------------------
-   // Runs a self-diagnostic test.  Returns true if the test passed,
-   // otherwise false.
-   static bool TestMe(dbgLog& rlog);
-   #endif // _UNITTEST
 };
 
 // INLINE METHODS

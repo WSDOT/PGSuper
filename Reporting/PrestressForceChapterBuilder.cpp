@@ -31,7 +31,7 @@
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>
 
-#include <Material\PsStrand.h>
+#include <Materials/PsStrand.h>
 
 #include <PgsExt\StrandData.h>
 
@@ -41,31 +41,20 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-/****************************************************************************
-CLASS
-   CPrestressForceChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CPrestressForceChapterBuilder::CPrestressForceChapterBuilder(bool bRating,bool bSelect) :
 CPGSuperChapterBuilder(bSelect), m_bRating(bRating)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CPrestressForceChapterBuilder::GetName() const
 {
    return TEXT("Prestressing Force and Strand Stresses");
 }
 
-rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CPrestressForceChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
-   CGirderLineReportSpecification* pGdrLineRptSpec = dynamic_cast<CGirderLineReportSpecification*>(pRptSpec);
+   auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
+   auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
    CComPtr<IBroker> pBroker;
    CGirderKey girderKey;
@@ -86,7 +75,6 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    // These are the interfaces we are going to be using
    GET_IFACE2(pBroker,IStrandGeometry, pStrandGeom);
-   GET_IFACE2(pBroker,IPretensionForce, pPrestressForce ); 
    GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IPointOfInterest, pPoi);
@@ -166,11 +154,11 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
                break;
 
             case pgsTypes::ttsPTBeforeShipping:
-               *pPara << _T("Temporary Strands post-tensioned immedately before shipping") << rptNewLine;
+               *pPara << _T("Temporary Strands post-tensioned immediately before shipping") << rptNewLine;
                break;
 
             case pgsTypes::ttsPTAfterLifting:
-               *pPara << _T("Temporary Strands post-tensioned immedately after lifting") << rptNewLine;
+               *pPara << _T("Temporary Strands post-tensioned immediately after lifting") << rptNewLine;
                break;
 
             case pgsTypes::ttsPTBeforeLifting:
@@ -183,17 +171,12 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
                << RPT_APS << _T(" = ") << area.SetValue(pStrandGeom->GetStrandArea(poiMiddle,releaseIntervalIdx,pgsTypes::Permanent)) << rptNewLine;
 
             *pPara << rptNewLine;
-
-            *pPara << _T("Prestress Transfer Length (Straight) = ") << len.SetValue(pPrestressForce->GetTransferLength(thisSegmentKey, pgsTypes::Straight)) << rptNewLine;
-            *pPara << _T("Prestress Transfer Length (Harped) = ") << len.SetValue(pPrestressForce->GetTransferLength(thisSegmentKey, pgsTypes::Harped)) << rptNewLine;
-            *pPara << _T("Prestress Transfer Length (Temporary) = ") << len.SetValue( pPrestressForce->GetTransferLength(thisSegmentKey,pgsTypes::Temporary) ) << rptNewLine;
          }
          else
          {
+            // else... without temporary strands
             *pPara << RPT_APS << _T(" = ") << area.SetValue( pStrandGeom->GetStrandArea(poiMiddle,releaseIntervalIdx,pgsTypes::Permanent) )<< rptNewLine;
             *pPara << Sub2(_T("P"),_T("jack")) << _T(" = ") << force.SetValue( pStrandGeom->GetPjack(thisSegmentKey,false)) << rptNewLine;
-            *pPara << _T("Prestress Transfer Length (Straight) = ") << len.SetValue(pPrestressForce->GetTransferLength(thisSegmentKey, pgsTypes::Straight)) << rptNewLine;
-            *pPara << _T("Prestress Transfer Length (Harped) = ") << len.SetValue(pPrestressForce->GetTransferLength(thisSegmentKey, pgsTypes::Harped)) << rptNewLine;
          }
 
          // Write out strand forces and stresses at the various stages of prestress loss
@@ -219,26 +202,7 @@ rptChapter* CPrestressForceChapterBuilder::Build(CReportSpecification* pRptSpec,
    return pChapter;
 }
 
-CChapterBuilder* CPrestressForceChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CPrestressForceChapterBuilder::Clone() const
 {
-   return new CPrestressForceChapterBuilder(m_bRating,m_bSelect);
+   return std::make_unique<CPrestressForceChapterBuilder>(m_bRating,m_bSelect);
 }
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

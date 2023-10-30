@@ -22,7 +22,7 @@
 #pragma once
 
 #include <WBFLCore.h>
-#include <Material\PsStrand.h>
+#include <Materials/PsStrand.h>
 #include <PgsExt\PgsExtExp.h>
 #include <Units\Units.h>
 
@@ -105,10 +105,10 @@ public:
    void AddPoint(Float64 location,Float64 offset,OffsetType offsetType);
 
    // returns the number of points
-   CollectionIndexType GetPointCount() const;
+   IndexType GetPointCount() const;
 
    // gets a specific point
-   void GetPoint(CollectionIndexType pntIdx,Float64* location,Float64 *pOffset,OffsetType *pOffsetType) const;
+   void GetPoint(IndexType pntIdx,Float64* location,Float64 *pOffset,OffsetType *pOffsetType) const;
 
    // removes all points from the duct definition that are beyond Lmax
    // for a girder whose length is Lg (Lg only used if mesaurement type is AlongGirder
@@ -231,7 +231,7 @@ private:
       {
          distLeftIP = -0.5;
 
-         highOffset = ::ConvertToSysUnits(6.0,unitMeasure::Inch);
+         highOffset = WBFL::Units::ConvertToSysUnits(6.0,WBFL::Units::Measure::Inch);
          highOffsetType = CDuctGeometry::TopGirder;
 
          distRightIP = -0.5;
@@ -539,7 +539,7 @@ public:
    Float64 PjTemp;
    bool    bPjTempCalc;   // true if Pj was calculated.
    Float64 LastUserPjTemp;   // Last Pj entered by user
-   const matPsStrand* pStrand; // tendon strand type
+   const WBFL::Materials::PsStrand* pStrand; // tendon strand type
 
    pgsTypes::DuctType DuctType;
    pgsTypes::StrandInstallationType InstallationType;

@@ -30,7 +30,7 @@
 #include <map>
 #include <MathEx.h>
 #include <System\Time.h>
-#include <Units\SysUnits.h>
+#include <Units\Convert.h>
 #include <StrData.cpp>
 
 #include <GeomModel\GeomModel.h>
@@ -40,7 +40,7 @@
 #include <psgLib\StructuredSave.h>
 #include <psgLib\BeamFamilyManager.h>
 
-#include <Lrfd\StrandPool.h>
+#include <LRFD\StrandPool.h>
 
 #include <IFace\PrestressForce.h>
 #include <IFace\StatusCenter.h>
@@ -56,7 +56,7 @@
 
 #include <EAF\EAFDocument.h>
 
-// tranactions executed by this agent
+// transactions executed by this agent
 #include "txnEditBridgeDescription.h"
 
 #include <EAF\EAFAutoProgress.h>
@@ -65,12 +65,31 @@
 #include <PgsExt\StatusItem.h>
 #include <PgsExt\Helpers.h>
 #include <PgsExt\GirderData.h>
+#include <PgsExt\HaunchDepthInputConversionTool.h>
 
 #include <checks.h>
 #include <comdef.h>
 
 #include "PGSuperCatCom.h"
 #include "XSectionData.h"
+
+
+#include <psgLib/OldHaulTruck.h>
+#include <psgLib/RefactoredSpecLibraryParameters.h>
+#include <psgLib/SpecificationCriteria.h>
+#include <psgLib/CreepCriteria.h>
+#include <psgLib/LimitsCriteria.h>
+#include <psgLib/SlabOffsetCriteria.h>
+#include <psgLib/HaulingCriteria.h>
+#include <psgLib/LiftingCriteria.h>
+#include <psgLib/StrandSlopeCriteria.h>
+#include <psgLib/HarpedStrandDesignCriteria.h>
+#include <psgLib/HaunchCriteria.h>
+#include <psgLib/DeadLoadDistributionCriteria.h>
+#include <psgLib/BearingCriteria.h>
+#include <psgLib/PrincipalTensionStressCriteria.h>
+#include <psgLib/MomentCapacityCriteria.h>
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -98,7 +117,7 @@ void use_library_entry( pgsLibraryEntryObserver* pObserver, LPCTSTR lpcstrKey, E
    *ppEntry = pProjectEntry; // Reference count has been added.
    if ( *ppEntry )
    {
-      (*ppEntry)->Attach( pObserver );
+      (*ppEntry)->Attach( *pObserver );
    }
 }
 
@@ -111,14 +130,14 @@ void release_library_entry( pgsLibraryEntryObserver* pObserver, EntryType* pEntr
    }
 
    // Release from the project library
-   pEntry->Detach( pObserver );
+   pEntry->Detach( *pObserver );
 
    // Release it because we are no longer using it for input data
    pEntry->Release();
-   pEntry = 0;
+   pEntry = nullptr;
 }
 
-// pre-declare some needed functions
+// declare some needed functions
 static bool IsValidStraightStrandFill(const CDirectStrandFillCollection* pFill, const GirderLibraryEntry* pGirderEntry);
 static bool IsValidHarpedStrandFill(const CDirectStrandFillCollection* pFill, const GirderLibraryEntry* pGirderEntry);
 static bool IsValidTemporaryStrandFill(const CDirectStrandFillCollection* pFill, const GirderLibraryEntry* pGirderEntry);
@@ -144,7 +163,7 @@ CProjectAgentImp::CProjectAgentImp()
    m_bGetAnalysisTypeFromLibrary = false;
 
    // Initialize Environment Data
-   m_ExposureCondition = expNormal;
+   m_ExposureCondition = pgsTypes::ExposureCondition::Normal;
    m_RelHumidity = 75.;
 
    // Initialize Alignment Data
@@ -233,7 +252,7 @@ CProjectAgentImp::CProjectAgentImp()
    m_bIncludePedestrianLiveLoad = false;
    m_SpecialPermitType = pgsTypes::ptSingleTripWithEscort;
 
-   m_LldfRangeOfApplicabilityAction = roaEnforce;
+   m_RangeOfApplicabilityAction = WBFL::LRFD::RangeOfApplicabilityAction::Enforce;
    m_bGetIgnoreROAFromLibrary = true;
 
    m_bUpdateJackingForce = true;
@@ -381,13 +400,13 @@ CProjectAgentImp::CProjectAgentImp()
    m_gPS[pgsTypes::ServiceIII_PermitSpecial] = 1.00;
    m_gLL[pgsTypes::ServiceIII_PermitSpecial] = COMPUTE_LLDF;
 
-   m_AllowableTensileStress[pgsTypes::lrDesign_Inventory] = TensionStressParams(::ConvertToSysUnits(0.19, unitMeasure::SqrtKSI), false, ::ConvertToSysUnits(0.6, unitMeasure::KSI));
-   m_AllowableTensileStress[pgsTypes::lrDesign_Operating] = TensionStressParams(::ConvertToSysUnits(0.19, unitMeasure::SqrtKSI), false, ::ConvertToSysUnits(0.6, unitMeasure::KSI));
-   m_AllowableTensileStress[pgsTypes::lrLegal_Routine]    = TensionStressParams(::ConvertToSysUnits(0.19, unitMeasure::SqrtKSI), false, ::ConvertToSysUnits(0.6, unitMeasure::KSI));
-   m_AllowableTensileStress[pgsTypes::lrLegal_Special]    = TensionStressParams(::ConvertToSysUnits(0.19, unitMeasure::SqrtKSI), false, ::ConvertToSysUnits(0.6, unitMeasure::KSI));
-   m_AllowableTensileStress[pgsTypes::lrLegal_Emergency]  = TensionStressParams(::ConvertToSysUnits(0.19, unitMeasure::SqrtKSI), false, ::ConvertToSysUnits(0.6, unitMeasure::KSI));
-   m_AllowableTensileStress[pgsTypes::lrPermit_Routine]   = TensionStressParams(::ConvertToSysUnits(0.19, unitMeasure::SqrtKSI), false, ::ConvertToSysUnits(0.6, unitMeasure::KSI));
-   m_AllowableTensileStress[pgsTypes::lrPermit_Special]   = TensionStressParams(::ConvertToSysUnits(0.19, unitMeasure::SqrtKSI), false, ::ConvertToSysUnits(0.6, unitMeasure::KSI));
+   m_AllowableTensileStress[pgsTypes::lrDesign_Inventory] = TensionStressParams(WBFL::Units::ConvertToSysUnits(0.19, WBFL::Units::Measure::SqrtKSI), false, WBFL::Units::ConvertToSysUnits(0.6, WBFL::Units::Measure::KSI));
+   m_AllowableTensileStress[pgsTypes::lrDesign_Operating] = TensionStressParams(WBFL::Units::ConvertToSysUnits(0.19, WBFL::Units::Measure::SqrtKSI), false, WBFL::Units::ConvertToSysUnits(0.6, WBFL::Units::Measure::KSI));
+   m_AllowableTensileStress[pgsTypes::lrLegal_Routine]    = TensionStressParams(WBFL::Units::ConvertToSysUnits(0.19, WBFL::Units::Measure::SqrtKSI), false, WBFL::Units::ConvertToSysUnits(0.6, WBFL::Units::Measure::KSI));
+   m_AllowableTensileStress[pgsTypes::lrLegal_Special]    = TensionStressParams(WBFL::Units::ConvertToSysUnits(0.19, WBFL::Units::Measure::SqrtKSI), false, WBFL::Units::ConvertToSysUnits(0.6, WBFL::Units::Measure::KSI));
+   m_AllowableTensileStress[pgsTypes::lrLegal_Emergency]  = TensionStressParams(WBFL::Units::ConvertToSysUnits(0.19, WBFL::Units::Measure::SqrtKSI), false, WBFL::Units::ConvertToSysUnits(0.6, WBFL::Units::Measure::KSI));
+   m_AllowableTensileStress[pgsTypes::lrPermit_Routine]   = TensionStressParams(WBFL::Units::ConvertToSysUnits(0.19, WBFL::Units::Measure::SqrtKSI), false, WBFL::Units::ConvertToSysUnits(0.6, WBFL::Units::Measure::KSI));
+   m_AllowableTensileStress[pgsTypes::lrPermit_Special]   = TensionStressParams(WBFL::Units::ConvertToSysUnits(0.19, WBFL::Units::Measure::SqrtKSI), false, WBFL::Units::ConvertToSysUnits(0.6, WBFL::Units::Measure::KSI));
 
    m_bCheckYieldStress[pgsTypes::lrDesign_Inventory] = false;
    m_bCheckYieldStress[pgsTypes::lrDesign_Operating] = false;
@@ -441,19 +460,19 @@ CProjectAgentImp::CProjectAgentImp()
    m_BeforeXferLosses              = 0;
    m_AfterXferLosses               = 0;
    m_LiftingLosses                 = 0;
-   m_ShippingLosses                = ::ConvertToSysUnits(20,unitMeasure::KSI);
+   m_ShippingLosses                = WBFL::Units::ConvertToSysUnits(20,WBFL::Units::Measure::KSI);
    m_BeforeTempStrandRemovalLosses = m_ShippingLosses;
    m_AfterTempStrandRemovalLosses  = m_ShippingLosses;
    m_AfterDeckPlacementLosses      = m_ShippingLosses;
    m_AfterSIDLLosses               = m_ShippingLosses;
    m_FinalLosses                   = m_ShippingLosses;
 
-   m_Dset_PT                = ::ConvertToSysUnits(0.375,unitMeasure::Inch);
-   m_WobbleFriction_PT      = ::ConvertToSysUnits(0.0002,unitMeasure::PerFeet);
+   m_Dset_PT                = WBFL::Units::ConvertToSysUnits(0.375,WBFL::Units::Measure::Inch);
+   m_WobbleFriction_PT      = WBFL::Units::ConvertToSysUnits(0.0002,WBFL::Units::Measure::PerFeet);
    m_FrictionCoefficient_PT = 0.25;
 
-   m_Dset_TTS                = ::ConvertToSysUnits(0.375,unitMeasure::Inch);
-   m_WobbleFriction_TTS      = ::ConvertToSysUnits(0.0002,unitMeasure::PerFeet);
+   m_Dset_TTS                = WBFL::Units::ConvertToSysUnits(0.375,WBFL::Units::Measure::Inch);
+   m_WobbleFriction_TTS      = WBFL::Units::ConvertToSysUnits(0.0002,WBFL::Units::Measure::PerFeet);
    m_FrictionCoefficient_TTS = 0.25;
 
 
@@ -832,7 +851,7 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
    }
    else
    {
-      // it is ok if this fails... older versions files don't have this data block
+      // it is OK if this fails... older versions files don't have this data block
       if (!FAILED(pLoad->BeginUnit(_T("RatingSpecification"))) )
       {
          Float64 top_version;
@@ -894,7 +913,7 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
 
          /////////////////////////////
          // NOTE
-         // Vesrion 1 of all of these data blocks stored the data incorrectly. For example, the DC load factor for
+         // Version 1 of all of these data blocks stored the data incorrectly. For example, the DC load factor for
          // StrengthI_Inventory rating was stored in m_gDC[IndexFromLimitState(pgsTypes::StrengthI_Inventory)]. However,
          // when the data was written to the storage stream, the data from m_gDC[pgsTypes::StrengthI_Inventory] was used. 
          // The data written to the storage stream should have been m_gDC[0], but instead it was m_gDC[6].
@@ -3323,7 +3342,7 @@ HRESULT CProjectAgentImp::XSectionDataProc2(IStructuredSave* pSave,IStructuredLo
       pRightRailingSystem->strExteriorRailing = xSectionData.RightTrafficBarrier;
       pRightRailingSystem->Concrete           = pDeck->Concrete;
 
-      pObj->m_BridgeDescription.CopyDown(true,true,true,true,true,true);
+      pObj->m_BridgeDescription.CopyDown(true,true,true,true,true,true,true);
    }
 
    return S_OK;
@@ -3430,7 +3449,7 @@ HRESULT CProjectAgentImp::PrestressingDataProc2(IStructuredSave* pSave,IStructur
       pLoad->get_Version(&version);
 
       // removed at version 3 of data block
-      const matPsStrand* pStrandMaterial = 0;
+      const WBFL::Materials::PsStrand* pStrandMaterial = nullptr;
       if ( version < 3 )
       {
          hr = pLoad->get_Property(_T("PrestressStrandKey"), &var );
@@ -3440,9 +3459,9 @@ HRESULT CProjectAgentImp::PrestressingDataProc2(IStructuredSave* pSave,IStructur
          }
 
          Int64 key = var.lVal;
-         key |= matPsStrand::None;
+         key |= +WBFL::Materials::PsStrand::Coating::None;
 
-         lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+         const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
          pStrandMaterial = pPool->GetStrand( key );
          ATLASSERT(pStrandMaterial!=0);
       }
@@ -3511,7 +3530,7 @@ HRESULT CProjectAgentImp::PrestressingDataProc2(IStructuredSave* pSave,IStructur
             return hr;
          }
 
-         // pStrandMaterial will not be nullptr if this is a pre version 3 data block
+         // pStrandMaterial will not be nullptr if this is a pre-version 3 data block
          // in this case, the girderData object does not have a strand material set.
          // Set it now
          if ( pStrandMaterial != 0 )
@@ -4637,7 +4656,7 @@ HRESULT CProjectAgentImp::LiveLoadsDataProc(IStructuredSave* pSave,IStructuredLo
 
       // added in version 2
       // changed to enum values in version 3
-      int iaction= GetIntForLldfAction(pObj->m_LldfRangeOfApplicabilityAction);
+      int iaction= GetIntForLldfAction(pObj->m_RangeOfApplicabilityAction);
 
       pSave->put_Property(_T("IngoreLLDFRangeOfApplicability"),CComVariant(iaction));
 
@@ -4666,7 +4685,7 @@ HRESULT CProjectAgentImp::LiveLoadsDataProc(IStructuredSave* pSave,IStructuredLo
             // changed value to enum in Version 3
             var.vt = VT_I4;
             hr = pLoad->get_Property(_T("IngoreLLDFRangeOfApplicability"),&var);
-            pObj->m_LldfRangeOfApplicabilityAction = GetLldfActionForInt(var.intVal);
+            pObj->m_RangeOfApplicabilityAction = GetLldfActionForInt(var.intVal);
             pObj->m_bGetIgnoreROAFromLibrary = false;
          }
          else if ( 2==version )
@@ -4674,7 +4693,7 @@ HRESULT CProjectAgentImp::LiveLoadsDataProc(IStructuredSave* pSave,IStructuredLo
             // value was bool in Version 2
             var.vt = VT_BOOL;
             hr = pLoad->get_Property(_T("IngoreLLDFRangeOfApplicability"),&var);
-            pObj->m_LldfRangeOfApplicabilityAction =(var.boolVal == VARIANT_TRUE ? roaIgnore : roaEnforce);
+            pObj->m_RangeOfApplicabilityAction =(var.boolVal == VARIANT_TRUE ? WBFL::LRFD::RangeOfApplicabilityAction::Ignore : WBFL::LRFD::RangeOfApplicabilityAction::Enforce);
             pObj->m_bGetIgnoreROAFromLibrary = false;
          }
          else
@@ -4750,7 +4769,7 @@ HRESULT CProjectAgentImp::LiveLoadsDataProc(IStructuredSave* pSave,IStructuredLo
    return hr;
 }
 
-HRESULT CProjectAgentImp::SaveLiveLoad(IStructuredSave* pSave,IProgress* pProgress,CProjectAgentImp* pObj,LPTSTR lpszUnitName,pgsTypes::LiveLoadType llType)
+HRESULT CProjectAgentImp::SaveLiveLoad(IStructuredSave* pSave,IProgress* pProgress,CProjectAgentImp* pObj,LPCTSTR lpszUnitName,pgsTypes::LiveLoadType llType)
 {
    // version 2 added m_PedestrianLoadApplicationType
    pSave->BeginUnit(lpszUnitName,2.0);
@@ -4782,7 +4801,7 @@ HRESULT CProjectAgentImp::SaveLiveLoad(IStructuredSave* pSave,IProgress* pProgre
    return S_OK;
 }
 
-HRESULT CProjectAgentImp::LoadLiveLoad(IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj,LPTSTR lpszUnitName,pgsTypes::LiveLoadType llType)
+HRESULT CProjectAgentImp::LoadLiveLoad(IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj,LPCTSTR lpszUnitName,pgsTypes::LiveLoadType llType)
 {
    const LiveLoadLibrary* pLiveLoadLibrary = pObj->m_pLibMgr->GetLiveLoadLibrary();
 
@@ -4924,11 +4943,6 @@ bool CProjectAgentImp::AssertValid() const
 {
    // Check Libraries
    if (m_pLibMgr==0)
-   {
-      return false;
-   }
-
-   if ( !m_pLibMgr->AssertValid() )
    {
       return false;
    }
@@ -5257,17 +5271,29 @@ void CProjectAgentImp::UseGirderLibraryEntries()
                   CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
                   if ( pSegment->Strands.GetStrandMaterial(pgsTypes::Straight) == nullptr )
                   {
-                     pSegment->Strands.SetStrandMaterial(pgsTypes::Straight,lrfdStrandPool::GetInstance()->GetStrand(matPsStrand::Gr1725,matPsStrand::StressRelieved,matPsStrand::None,matPsStrand::D635));
+                     pSegment->Strands.SetStrandMaterial(pgsTypes::Straight,WBFL::LRFD::StrandPool::GetInstance()->GetStrand(
+                        WBFL::Materials::PsStrand::Grade::Gr1725,
+                        WBFL::Materials::PsStrand::Type::StressRelieved,
+                        WBFL::Materials::PsStrand::Coating::None,
+                        WBFL::Materials::PsStrand::Size::D635));
                   }
 
                   if ( pSegment->Strands.GetStrandMaterial(pgsTypes::Harped) == nullptr )
                   {
-                     pSegment->Strands.SetStrandMaterial(pgsTypes::Harped,lrfdStrandPool::GetInstance()->GetStrand(matPsStrand::Gr1725,matPsStrand::StressRelieved,matPsStrand::None,matPsStrand::D635));
+                     pSegment->Strands.SetStrandMaterial(pgsTypes::Harped,WBFL::LRFD::StrandPool::GetInstance()->GetStrand(
+                        WBFL::Materials::PsStrand::Grade::Gr1725,
+                        WBFL::Materials::PsStrand::Type::StressRelieved,
+                        WBFL::Materials::PsStrand::Coating::None,
+                        WBFL::Materials::PsStrand::Size::D635));
                   }
 
                   if ( pSegment->Strands.GetStrandMaterial(pgsTypes::Temporary)== nullptr )
                   {
-                     pSegment->Strands.SetStrandMaterial(pgsTypes::Temporary,lrfdStrandPool::GetInstance()->GetStrand(matPsStrand::Gr1725,matPsStrand::StressRelieved,matPsStrand::None,matPsStrand::D635));
+                     pSegment->Strands.SetStrandMaterial(pgsTypes::Temporary,WBFL::LRFD::StrandPool::GetInstance()->GetStrand(
+                        WBFL::Materials::PsStrand::Grade::Gr1725,
+                        WBFL::Materials::PsStrand::Type::StressRelieved,
+                        WBFL::Materials::PsStrand::Coating::None,
+                        WBFL::Materials::PsStrand::Size::D635));
                   }
 
                   use_library_entry(&m_LibObserver,pSegment->HandlingData.HaulTruckName,&pHaulTruckEntry,*pHaulTruckLibrary);
@@ -5481,7 +5507,7 @@ void CProjectAgentImp::ReleaseDuctLibraryEntries(CPrecastSegmentData* pSegment)
 
 void CProjectAgentImp::UpdateConcreteMaterial()
 {
-   bool bAfter2015 = (lrfdVersionMgr::SeventhEditionWith2016Interims <= lrfdVersionMgr::GetVersion() ? true : false);
+   bool bAfter2015 = (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false);
    // starting with LRFD 2016, AllLightweight is not a valid concrete type. Concrete is either Normal weight or lightweight.
    // We are using SandLightweight to mean lightweight so updated the concrete type if needed.
 
@@ -5501,12 +5527,12 @@ void CProjectAgentImp::UpdateConcreteMaterial()
             CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
             if ( !pSegment->Material.Concrete.bUserEci )
             {
-               pSegment->Material.Concrete.Eci = lrfdConcreteUtil::ModE((matConcrete::Type)(pSegment->Material.Concrete.Type),pSegment->Material.Concrete.Fci,pSegment->Material.Concrete.StrengthDensity,false);
+               pSegment->Material.Concrete.Eci = WBFL::LRFD::ConcreteUtil::ModE((WBFL::Materials::ConcreteType)(pSegment->Material.Concrete.Type),pSegment->Material.Concrete.Fci,pSegment->Material.Concrete.StrengthDensity,false);
             }
 
             if ( !pSegment->Material.Concrete.bUserEc )
             {
-               pSegment->Material.Concrete.Ec = lrfdConcreteUtil::ModE((matConcrete::Type)(pSegment->Material.Concrete.Type),pSegment->Material.Concrete.Fc,pSegment->Material.Concrete.StrengthDensity,false);
+               pSegment->Material.Concrete.Ec = WBFL::LRFD::ConcreteUtil::ModE((WBFL::Materials::ConcreteType)(pSegment->Material.Concrete.Type),pSegment->Material.Concrete.Fc,pSegment->Material.Concrete.StrengthDensity,false);
             }
 
             if ( bAfter2015 && pSegment->Material.Concrete.Type == pgsTypes::AllLightweight )
@@ -5519,12 +5545,12 @@ void CProjectAgentImp::UpdateConcreteMaterial()
             {
                if ( !pClosureJoint->GetConcrete().bUserEci )
                {
-                  pClosureJoint->GetConcrete().Eci = lrfdConcreteUtil::ModE((matConcrete::Type)(pClosureJoint->GetConcrete().Type),pClosureJoint->GetConcrete().Fci,pClosureJoint->GetConcrete().StrengthDensity,false);
+                  pClosureJoint->GetConcrete().Eci = WBFL::LRFD::ConcreteUtil::ModE((WBFL::Materials::ConcreteType)(pClosureJoint->GetConcrete().Type),pClosureJoint->GetConcrete().Fci,pClosureJoint->GetConcrete().StrengthDensity,false);
                }
 
                if ( !pClosureJoint->GetConcrete().bUserEc )
                {
-                  pClosureJoint->GetConcrete().Ec = lrfdConcreteUtil::ModE((matConcrete::Type)(pClosureJoint->GetConcrete().Type), pClosureJoint->GetConcrete().Fc,pClosureJoint->GetConcrete().StrengthDensity,false);
+                  pClosureJoint->GetConcrete().Ec = WBFL::LRFD::ConcreteUtil::ModE((WBFL::Materials::ConcreteType)(pClosureJoint->GetConcrete().Type), pClosureJoint->GetConcrete().Fc,pClosureJoint->GetConcrete().StrengthDensity,false);
                }
 
                if ( bAfter2015 && pClosureJoint->GetConcrete().Type == pgsTypes::AllLightweight )
@@ -5541,12 +5567,12 @@ void CProjectAgentImp::UpdateConcreteMaterial()
    {
       if ( !pDeck->Concrete.bUserEci )
       {
-         pDeck->Concrete.Eci = lrfdConcreteUtil::ModE((matConcrete::Type)(pDeck->Concrete.Type),pDeck->Concrete.Fci,pDeck->Concrete.StrengthDensity,false);
+         pDeck->Concrete.Eci = WBFL::LRFD::ConcreteUtil::ModE((WBFL::Materials::ConcreteType)(pDeck->Concrete.Type),pDeck->Concrete.Fci,pDeck->Concrete.StrengthDensity,false);
       }
 
       if ( !pDeck->Concrete.bUserEc )
       {
-         pDeck->Concrete.Ec = lrfdConcreteUtil::ModE((matConcrete::Type)(pDeck->Concrete.Type), pDeck->Concrete.Fc,pDeck->Concrete.StrengthDensity,false);
+         pDeck->Concrete.Ec = WBFL::LRFD::ConcreteUtil::ModE((WBFL::Materials::ConcreteType)(pDeck->Concrete.Type), pDeck->Concrete.Fc,pDeck->Concrete.StrengthDensity,false);
       }
 
       if ( bAfter2015 && pDeck->Concrete.Type == pgsTypes::AllLightweight )
@@ -5581,11 +5607,11 @@ void CProjectAgentImp::UpdateTimeDependentMaterials()
             pSegment->Material.Concrete.bBasePropertiesOnInitialValues = false;
 
             pSegment->Material.Concrete.bACIUserParameters = true;
-            matACI209Concrete::ComputeParameters(pSegment->Material.Concrete.Fci,ti,pSegment->Material.Concrete.Fc,28.0,&pSegment->Material.Concrete.A,&pSegment->Material.Concrete.B);
-            pSegment->Material.Concrete.A = ::ConvertToSysUnits(pSegment->Material.Concrete.A,unitMeasure::Day);
+            WBFL::Materials::ACI209Concrete::ComputeParameters(pSegment->Material.Concrete.Fci,ti,pSegment->Material.Concrete.Fc,28.0,&pSegment->Material.Concrete.A,&pSegment->Material.Concrete.B);
+            pSegment->Material.Concrete.A = WBFL::Units::ConvertToSysUnits(pSegment->Material.Concrete.A,WBFL::Units::Measure::Day);
 
             pSegment->Material.Concrete.bCEBFIPUserParameters = true;
-            matCEBFIPConcrete::ComputeParameters(pSegment->Material.Concrete.Fci,ti,pSegment->Material.Concrete.Fc,28.0,&pSegment->Material.Concrete.S);
+            WBFL::Materials::CEBFIPConcrete::ComputeParameters(pSegment->Material.Concrete.Fci,ti,pSegment->Material.Concrete.Fc,28.0,&pSegment->Material.Concrete.S);
 
             CClosureJointData* pClosureJoint = pSegment->GetClosureJoint(pgsTypes::metEnd);
             ATLASSERT(pClosureJoint == nullptr); // we can't go from a non-time step method to a time-step method unless we have a regular precast girder bridge. For a regular precast girder bridge, there aren't any closure joints
@@ -5605,18 +5631,18 @@ void CProjectAgentImp::UpdateTimeDependentMaterials()
    //   pDeck->Concrete.bBasePropertiesOnInitialValues = false;
 
    //   pDeck->Concrete.bACIUserParameters = true;
-   //   matACI209Concrete::ComputeParameters(pDeck->Concrete.Fci,ti,pDeck->Concrete.Fc,28.0,&pDeck->Concrete.A,&pDeck->Concrete.B);
-   //   pDeck->Concrete.A = ::ConvertToSysUnits(pDeck->Concrete.A,unitMeasure::Day);
+   //   WBFL::Materials::ACI209Concrete::ComputeParameters(pDeck->Concrete.Fci,ti,pDeck->Concrete.Fc,28.0,&pDeck->Concrete.A,&pDeck->Concrete.B);
+   //   pDeck->Concrete.A = WBFL::Units::ConvertToSysUnits(pDeck->Concrete.A,WBFL::Units::Measure::Day);
 
    //   pDeck->Concrete.bCEBFIPUserParameters = true;
-   //   matCEBFIPConcrete::ComputeParameters(pDeck->Concrete.Fci,ti,pDeck->Concrete.Fc,28.0,&pDeck->Concrete.S);
+   //   WBFL::Materials::CEBFIPConcrete::ComputeParameters(pDeck->Concrete.Fci,ti,pDeck->Concrete.Fc,28.0,&pDeck->Concrete.S);
    //}
 }
 
 void CProjectAgentImp::UpdateStrandMaterial()
 {
    // Get the lookup key for the strand material based on the current units
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
+   const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
 
    std::map<CSegmentKey,Int64> strandKeys[3]; // map value is strand pool key, array index is strand type
    std::map<CSegmentKey, Int64> segmentTendonKeys;
@@ -5645,7 +5671,7 @@ void CProjectAgentImp::UpdateStrandMaterial()
             for ( int i = 0; i < 3; i++ )
             {
                pgsTypes::StrandType type = (pgsTypes::StrandType)i;
-               const matPsStrand* pStrandMaterial = pSegment->Strands.GetStrandMaterial(type);
+               const auto* pStrandMaterial = pSegment->Strands.GetStrandMaterial(type);
                strand_pool_key = pPool->GetStrandKey(pStrandMaterial);
                strandKeys[type].insert(std::make_pair(segmentKey,strand_pool_key));
             }
@@ -5657,8 +5683,8 @@ void CProjectAgentImp::UpdateStrandMaterial()
    }
 
    // change the units
-   lrfdVersionMgr::SetVersion( m_pSpecEntry->GetSpecificationType() );
-   lrfdVersionMgr::SetUnits( m_pSpecEntry->GetSpecificationUnits() );
+   WBFL::LRFD::BDSManager::SetEdition( m_pSpecEntry->GetSpecificationCriteria().GetEdition() );
+   WBFL::LRFD::BDSManager::SetUnits( m_pSpecEntry->GetSpecificationCriteria().Units );
 
    // Get the new strand material based on the new units
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
@@ -5712,70 +5738,70 @@ void CProjectAgentImp::VerifyRebarGrade()
          {
             CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
 
-            if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SixthEditionWith2013Interims && pSegment->LongitudinalRebarData.BarGrade == matRebar::Grade100 )
+            if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims && pSegment->LongitudinalRebarData.BarGrade == WBFL::Materials::Rebar::Grade100 )
             {
                CString strMsg;
                strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nLongitudinal reinforcement for Group %d Girder %s Segment %d has been changed to %s"),
-                              lrfdVersionMgr::GetCodeString(),
-                              lrfdVersionMgr::GetVersionString(lrfdVersionMgr::SixthEditionWith2013Interims),
+                              WBFL::LRFD::BDSManager::GetSpecificationName(),
+                              WBFL::LRFD::BDSManager::GetEditionAsString(WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims),
                               LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx),
-                              lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade60).c_str());
+                              WBFL::LRFD::RebarPool::GetMaterialName(WBFL::Materials::Rebar::Type::A615,WBFL::Materials::Rebar::Grade::Grade60).c_str());
                pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pSegment->GetSegmentKey(),pgsRebarStrengthStatusItem::Longitudinal,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
 
                pStatusCenter->Add(pStatusItem);
 
-               pSegment->LongitudinalRebarData.BarType = matRebar::A615;
-               pSegment->LongitudinalRebarData.BarGrade = matRebar::Grade60;
+               pSegment->LongitudinalRebarData.BarType = WBFL::Materials::Rebar::Type::A615;
+               pSegment->LongitudinalRebarData.BarGrade = WBFL::Materials::Rebar::Grade::Grade60;
             }
 
-            if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SixthEditionWith2013Interims && pSegment->ShearData.ShearBarGrade == matRebar::Grade100 )
+            if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims && pSegment->ShearData.ShearBarGrade == WBFL::Materials::Rebar::Grade100 )
             {
                CString strMsg;
                strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nTransverse reinforcement for Group %d Girder %s Segment %d has been changed to %s"),
-                              lrfdVersionMgr::GetCodeString(),
-                              lrfdVersionMgr::GetVersionString(lrfdVersionMgr::SixthEditionWith2013Interims),
+                              WBFL::LRFD::BDSManager::GetSpecificationName(),
+                              WBFL::LRFD::BDSManager::GetEditionAsString(WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims),
                               LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx),
-                              lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade60).c_str());
+                              WBFL::LRFD::RebarPool::GetMaterialName(WBFL::Materials::Rebar::Type::A615,WBFL::Materials::Rebar::Grade::Grade60).c_str());
                pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pSegment->GetSegmentKey(),pgsRebarStrengthStatusItem::Transverse,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
 
                pStatusCenter->Add(pStatusItem);
 
-               pSegment->ShearData.ShearBarType  = matRebar::A615;
-               pSegment->ShearData.ShearBarGrade = matRebar::Grade60;
+               pSegment->ShearData.ShearBarType  = WBFL::Materials::Rebar::Type::A615;
+               pSegment->ShearData.ShearBarGrade = WBFL::Materials::Rebar::Grade::Grade60;
             }
 
             CClosureJointData* pClosure = pSegment->GetClosureJoint(pgsTypes::metEnd);
             if ( pClosure )
             {
-               if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SixthEditionWith2013Interims && pClosure->GetRebar().BarGrade == matRebar::Grade100 )
+               if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims && pClosure->GetRebar().BarGrade == WBFL::Materials::Rebar::Grade100 )
                {
                   CString strMsg;
                   strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nLongitudinal reinforcement for Group %d Girder %s Closure Joint %d has been changed to %s"),
-                                 lrfdVersionMgr::GetCodeString(),
-                                 lrfdVersionMgr::GetVersionString(lrfdVersionMgr::SixthEditionWith2013Interims),
+                                 WBFL::LRFD::BDSManager::GetSpecificationName(),
+                                 WBFL::LRFD::BDSManager::GetEditionAsString(WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims),
                                  LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx),
-                                 lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade60).c_str());
+                                 WBFL::LRFD::RebarPool::GetMaterialName(WBFL::Materials::Rebar::Type::A615,WBFL::Materials::Rebar::Grade::Grade60).c_str());
                   pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pClosure->GetClosureKey(),pgsRebarStrengthStatusItem::Longitudinal,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
 
                   pStatusCenter->Add(pStatusItem);
 
-                  pClosure->GetRebar().BarType = matRebar::A615;
-                  pClosure->GetRebar().BarGrade = matRebar::Grade60;
+                  pClosure->GetRebar().BarType = WBFL::Materials::Rebar::Type::A615;
+                  pClosure->GetRebar().BarGrade = WBFL::Materials::Rebar::Grade::Grade60;
                }
 
-               if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SixthEditionWith2013Interims && pClosure->GetStirrups().ShearBarGrade == matRebar::Grade100 )
+               if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims && pClosure->GetStirrups().ShearBarGrade == WBFL::Materials::Rebar::Grade100 )
                {
                   CString strMsg;
                   strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nTransverse reinforcement for Group %d Girder %s Closure Joint %d has been changed to %s"),
-                                 lrfdVersionMgr::GetCodeString(),
-                                 lrfdVersionMgr::GetVersionString(lrfdVersionMgr::SixthEditionWith2013Interims),
+                                 WBFL::LRFD::BDSManager::GetSpecificationName(),
+                                 WBFL::LRFD::BDSManager::GetEditionAsString(WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims),
                                  LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx),
-                                 lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade60).c_str());
+                                 WBFL::LRFD::RebarPool::GetMaterialName(WBFL::Materials::Rebar::Type::A615,WBFL::Materials::Rebar::Grade::Grade60).c_str());
                   pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pClosure->GetClosureKey(),pgsRebarStrengthStatusItem::Transverse,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
                   pStatusCenter->Add(pStatusItem);
 
-                  pClosure->GetStirrups().ShearBarType  = matRebar::A615;
-                  pClosure->GetStirrups().ShearBarGrade = matRebar::Grade60;
+                  pClosure->GetStirrups().ShearBarType  = WBFL::Materials::Rebar::Type::A615;
+                  pClosure->GetStirrups().ShearBarGrade = WBFL::Materials::Rebar::Grade::Grade60;
                }
             }
          } // next segment
@@ -5783,21 +5809,21 @@ void CProjectAgentImp::VerifyRebarGrade()
    } // next group
 
    CDeckDescription2* pDeck = m_BridgeDescription.GetDeckDescription();
-   if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::SixthEditionWith2013Interims && pDeck->DeckRebarData.TopRebarGrade == matRebar::Grade100 )
+   if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims && pDeck->DeckRebarData.TopRebarGrade == WBFL::Materials::Rebar::Grade100 )
    {
       CString strMsg;
       strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nDeck reinforcement has been changed to %s"),
-                     lrfdVersionMgr::GetCodeString(),
-                     lrfdVersionMgr::GetVersionString(lrfdVersionMgr::SixthEditionWith2013Interims,false),
-                     lrfdRebarPool::GetMaterialName(matRebar::A615,matRebar::Grade60).c_str());
+                     WBFL::LRFD::BDSManager::GetSpecificationName(),
+                     WBFL::LRFD::BDSManager::GetEditionAsString(WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims,false),
+                     WBFL::LRFD::RebarPool::GetMaterialName(WBFL::Materials::Rebar::Type::A615,WBFL::Materials::Rebar::Grade::Grade60).c_str());
       pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(CSegmentKey(),pgsRebarStrengthStatusItem::Deck,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
 
       pStatusCenter->Add(pStatusItem);
 
-      pDeck->DeckRebarData.TopRebarType     = matRebar::A615;
-      pDeck->DeckRebarData.TopRebarGrade    = matRebar::Grade60;
-      pDeck->DeckRebarData.BottomRebarType  = matRebar::A615;
-      pDeck->DeckRebarData.BottomRebarGrade = matRebar::Grade60;
+      pDeck->DeckRebarData.TopRebarType     = WBFL::Materials::Rebar::Type::A615;
+      pDeck->DeckRebarData.TopRebarGrade    = WBFL::Materials::Rebar::Grade::Grade60;
+      pDeck->DeckRebarData.BottomRebarType  = WBFL::Materials::Rebar::Type::A615;
+      pDeck->DeckRebarData.BottomRebarGrade = WBFL::Materials::Rebar::Grade::Grade60;
    }
 }
 
@@ -5869,7 +5895,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
 
          GET_IFACE(IEAFStatusCenter, pStatusCenter);
          CString strMsg;
-         strMsg.Format(_T("Horizonal curve %d: The curve radius is less than the minimum so it has been set to 0 to model an angle point in the alignment."), LABEL_INDEX(curveIdx));
+         strMsg.Format(_T("Horizontal curve %d: The curve radius is less than the minimum so it has been set to 0 to model an angle point in the alignment."), LABEL_INDEX(curveIdx));
 
          pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID, m_scidBridgeDescriptionInfo, strMsg);
          pStatusCenter->Add(pStatusItem);
@@ -5881,21 +5907,21 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    // if the values for this project are still in the library entry, get them now
    const SpecLibrary* pTempSpecLib = temp_manager.GetSpecLibrary();
    const SpecLibraryEntry* pTempSpecEntry = pTempSpecLib->LookupEntry( m_Spec.c_str() );
-   if ( m_bGetAnalysisTypeFromLibrary )
+   const auto& refactored_spec_library_parameters = pTempSpecEntry->GetRefactoredParameters();
+   if (refactored_spec_library_parameters.HasAnalysisType() )
    {
-      m_AnalysisType = pTempSpecEntry->GetAnalysisType();
+      ATLASSERT(m_bGetAnalysisTypeFromLibrary);
+      m_AnalysisType = refactored_spec_library_parameters.GetAnalysisType();
    }
 
-   if ( m_bGetIgnoreROAFromLibrary )
+   if (refactored_spec_library_parameters.HasLLDFRangeOfApplicabilityAction() )
    {
-      m_LldfRangeOfApplicabilityAction = pTempSpecEntry->IgnoreRangeOfApplicabilityRequirements() ? roaIgnore : roaEnforce;
+      ATLASSERT(m_bGetIgnoreROAFromLibrary);
+      m_RangeOfApplicabilityAction = refactored_spec_library_parameters.GetRangeOfApplicabilityAction();
    }
 
-   // get the old haul truck configuration here because we have the library entry
-   // though we aren't going to use it until later
-   // want to release the library entry, so it doesn't have a bad ref count if we leave this method early
-   const COldHaulTruck* pOldHaulTruck = pTempSpecEntry->GetOldHaulTruck();
-
+   // release our lock on the library entry - however this will not delete it so
+   // refactored_spec_library_parameters is still in scope
    pTempSpecEntry->Release();
    pTempSpecEntry = nullptr;
 
@@ -5973,9 +5999,9 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
          }
       }
 
-      m_BridgeDescription.CopyDown(false, false, true, false, false,false); // copy the joint spacing down to the individual span/pier level
+      m_BridgeDescription.CopyDown(false, false, true, false, false, false, false); // copy the joint spacing down to the individual span/pier level
 
-      if (m_pSpecEntry->GetLossMethod() != LOSSES_TIME_STEP)
+      if (m_pSpecEntry->GetPrestressLossCriteria().LossMethod != PrestressLossCriteria::LossMethodType::TIME_STEP)
       {
          // spacing type is a factor in the timeline... better update it
          CreatePrecastGirderBridgeTimelineEvents();
@@ -6007,7 +6033,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
          if ( 0 <= jointWidth )
          {
             m_BridgeDescription.SetGirderSpacing(jointWidth);
-            m_BridgeDescription.CopyDown(false,false,IsBridgeSpacing(m_BridgeDescription.GetGirderSpacingType()),false,false,false); // copy the joint spacing down
+            m_BridgeDescription.CopyDown(false,false,IsBridgeSpacing(m_BridgeDescription.GetGirderSpacingType()),false,false,false,false); // copy the joint spacing down
          }
       }
    }
@@ -6067,21 +6093,21 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    ATLASSERT(concLib.GetMinCount() == 0); // did this change???
 
    GirderLibrary& gdrLib = GetGirderLibrary();
-   CollectionIndexType nEntries    = gdrLib.GetCount();
-   CollectionIndexType nMinEntries = gdrLib.GetMinCount();
+   IndexType nEntries    = gdrLib.GetCount();
+   IndexType nMinEntries = gdrLib.GetMinCount();
    if ( nEntries < nMinEntries )
    {
       CString strMsg;
       strMsg.Format(_T("The %s library needs at least %d entries. Default entries have been created."),gdrLib.GetDisplayName().c_str(),nMinEntries);
       AfxMessageBox(strMsg,MB_OK | MB_ICONEXCLAMATION);
-      for ( CollectionIndexType i = 0; i < (nMinEntries-nEntries); i++ )
+      for ( IndexType i = 0; i < (nMinEntries-nEntries); i++ )
       {
          gdrLib.NewEntry(gdrLib.GetUniqueEntryName().c_str());
       }
 
       bUpdateLibraryUsage = true;
 
-      libKeyListType keys;
+      WBFL::Library::KeyListType keys;
       gdrLib.KeyList(keys);
       std::_tstring strGirderName = keys.front();
       if (m_BridgeDescription.UseSameGirderForEntireBridge())
@@ -6112,14 +6138,14 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       CString strMsg;
       strMsg.Format(_T("The %s library needs at least %d entries. Default entries have been created."),tbLib.GetDisplayName().c_str(),nMinEntries);
       AfxMessageBox(strMsg,MB_OK | MB_ICONEXCLAMATION);
-      for ( CollectionIndexType i = 0; i < (nMinEntries-nEntries); i++ )
+      for ( IndexType i = 0; i < (nMinEntries-nEntries); i++ )
       {
          tbLib.NewEntry(tbLib.GetUniqueEntryName().c_str());
       }
 
       bUpdateLibraryUsage = true;
 
-      libKeyListType keys;
+      WBFL::Library::KeyListType keys;
       tbLib.KeyList(keys);
       std::_tstring strBarrierName = keys.front();
       CRailingSystem* pLeftRailing = m_BridgeDescription.GetLeftRailingSystem();
@@ -6145,12 +6171,12 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       CString strMsg;
       strMsg.Format(_T("The %s library needs at least %d entries. Default entries have been created."),pSpecLib->GetDisplayName().c_str(),nMinEntries);
       AfxMessageBox(strMsg,MB_OK | MB_ICONEXCLAMATION);
-      for ( CollectionIndexType i = 0; i < (nMinEntries-nEntries); i++ )
+      for ( IndexType i = 0; i < (nMinEntries-nEntries); i++ )
       {
          pSpecLib->NewEntry(pSpecLib->GetUniqueEntryName().c_str());
       }
 
-      libKeyListType keys;
+      WBFL::Library::KeyListType keys;
       pSpecLib->KeyList(keys);
       std::_tstring strSpecName = keys.front();
       InitSpecification(strSpecName);
@@ -6164,12 +6190,12 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       CString strMsg;
       strMsg.Format(_T("The %s library needs at least %d entries. Default entries have been created."),pRatingLib->GetDisplayName().c_str(),nMinEntries);
       AfxMessageBox(strMsg,MB_OK | MB_ICONEXCLAMATION);
-      for ( CollectionIndexType i = 0; i < (nMinEntries-nEntries); i++ )
+      for ( IndexType i = 0; i < (nMinEntries-nEntries); i++ )
       {
          pRatingLib->NewEntry(pRatingLib->GetUniqueEntryName().c_str());
       }
 
-      libKeyListType keys;
+      WBFL::Library::KeyListType keys;
       pRatingLib->KeyList(keys);
       std::_tstring strSpecName = keys.front();
       InitRatingSpecification(strSpecName);
@@ -6183,7 +6209,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       nMinEntries = pDuctLibrary->GetMinCount();
       if (nEntries < nMinEntries)
       {
-         for (CollectionIndexType i = 0; i < (nMinEntries - nEntries); i++)
+         for (IndexType i = 0; i < (nMinEntries - nEntries); i++)
          {
             pDuctLibrary->NewEntry(pDuctLibrary->GetUniqueEntryName().c_str());
          }
@@ -6198,7 +6224,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
 
          bUpdateLibraryUsage = true;
 
-         libKeyListType keys;
+         WBFL::Library::KeyListType keys;
          pDuctLibrary->KeyList(keys);
          std::_tstring strDuctName = keys.front();
          GroupIndexType nGroups = m_BridgeDescription.GetGirderGroupCount();
@@ -6221,9 +6247,9 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       }
    }
 
-   if (pOldHaulTruck)
+   if (refactored_spec_library_parameters.HasOldHaulTruck())
    {
-      UpdateHaulTruck(pOldHaulTruck);
+      UpdateHaulTruck(refactored_spec_library_parameters.GetOldHaulTruck());
    }
 
    HaulTruckLibrary* pHaulTruckLibrary = GetHaulTruckLibrary();
@@ -6231,7 +6257,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    nMinEntries = pHaulTruckLibrary->GetMinCount();
    if ( nEntries < nMinEntries )
    {
-      for ( CollectionIndexType i = 0; i < (nMinEntries-nEntries); i++ )
+      for ( IndexType i = 0; i < (nMinEntries-nEntries); i++ )
       {
          pHaulTruckLibrary->NewEntry(pHaulTruckLibrary->GetUniqueEntryName().c_str());
       }
@@ -6245,7 +6271,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
 
       bUpdateLibraryUsage = true;
 
-      libKeyListType keys;
+      WBFL::Library::KeyListType keys;
       pHaulTruckLibrary->KeyList(keys);
       std::_tstring strHaulTruckName = keys.front();
       GroupIndexType nGroups = m_BridgeDescription.GetGirderGroupCount();
@@ -6276,11 +6302,11 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    }
 
    GirderLibrary& girderLibrary = GetGirderLibrary();
-   libKeyListType keyList;
+   WBFL::Library::KeyListType keyList;
    girderLibrary.KeyList(keyList);
    for (const auto& key : keyList)
    {
-      const libLibraryEntry* pEntry = girderLibrary.GetEntry(key.c_str());
+      const WBFL::Library::LibraryEntry* pEntry = girderLibrary.GetEntry(key.c_str());
       const GirderLibraryEntry* pGirderEntry = (GirderLibraryEntry*)pEntry;
       if (0 < pGirderEntry->GetRefCount())
       {
@@ -6374,6 +6400,49 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       pStatusCenter->Add(pStatusItem);
    }
 
+   if (pDocType->IsPGSpliceDocument() && m_BridgeDescription.GetHaunchInputDepthType() == pgsTypes::hidACamber && m_BridgeDescription.GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone)
+   {
+      // Before version bridedesc 15 PGSplice used the slab offset to define the haunch. This is no longer supported. Need to convert
+      // old "A" data to direct haunch input. First convert to per each, then try to condense
+      pgsTypes::HaunchInputLocationType hlt = pgsTypes::hilPerEach;
+
+      // Use conversion tool. attempt to match "A" input with a linear end-to-end fit
+      HaunchDepthInputConversionTool conversionTool(&m_BridgeDescription,m_pBroker,true);
+      auto convPair = conversionTool.ConvertToDirectHaunchInput(hlt, pgsTypes::hltAlongSegments, pgsTypes::hidAtEnds);
+
+      bool didCondense = conversionTool.CondenseDirectHaunchInput(&(convPair.second)); // try to condense
+
+      m_BridgeDescription.CopyHaunchSettings(convPair.second, false);
+
+      CString strMsg(_T("Definition of haunch depths using the slab offset method is no longer supported in PGSplice. Haunch input data has been converted to the direct input method. A Geometry Control Event has been added to the timeline at the Open to Traffic event. It is very likely that this has changed haunch loads slightly, and thus dead load responses. It is also likely that roadway elevation checks will be changed significantly. Please review haunch dead loads and finished elevation checks accordingly."));
+      GET_IFACE(IEAFStatusCenter,pStatusCenter);
+      pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidLoadDescriptionWarning,strMsg);
+      pStatusCenter->Add(pStatusItem);
+
+      // Another change made in version 8 was to have the option to use hanch depths when computing composite section properties. This was
+      // only allowed in PGSuper prior to this. Look at the setting in the spec entry and alert the user if haunch is now used in section props.
+      const auto& haunch_criteria = m_pSpecEntry->GetHaunchCriteria();
+      if (haunch_criteria.HaunchAnalysisSectionPropertiesType != pgsTypes::hspZeroHaunch)
+      {
+         CString msg;
+         if (pgsTypes::hspConstFilletDepth == haunch_criteria.HaunchAnalysisSectionPropertiesType)
+         {
+            msg = _T("a constant haunch depth equal to the fillet value. ");
+         }
+         else if (pgsTypes::hspDetailedDescription == haunch_criteria.HaunchAnalysisSectionPropertiesType)
+         {
+            msg = _T(" explicit haunch depths that are input directly on the Haunch Description dialog. ");
+         }
+
+         CString strMsg(_T("Previous versions of PGSplice always assumed a zero haunch depth when computing composite structural section properties regardless of settings in the project criteria. The project criteria setting is now considered and will now compute properties based "));
+         strMsg += msg;
+         strMsg += CString(_T("This will likely change analysis results compared to the prior version.  Please review composite section properties and responses accordingly. "));
+         strMsg += CString(_T("\nIf desired, you can change back to the original setting by editing the Project Criteria and selecting the Ignore Haunch option."));
+         pgsInformationalStatusItem* pPcStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidLoadDescriptionWarning,strMsg);
+         pStatusCenter->Add(pPcStatusItem);
+      }
+   }
+
    // The UI was allowing some invalid pier connection geometry. The code that follows checks for the invalid geometry and fixes it.
    // If the input is altered, a warning is posted to the status center.
    PierIndexType nPiers = m_BridgeDescription.GetPierCount();
@@ -6414,30 +6483,6 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
          }
       }
    }
-
-   // There are multiple bugs in the elevation adjustment feature for temporary supports. This will be redone in version 8, so just zero out any adjustment values
-   // and let user know that this happened.
-   bool wereAdjustmentsZeroed(false);
-   SupportIndexType nTs = m_BridgeDescription.GetTemporarySupportCount();
-   for (SupportIndexType iTs = 0; iTs < nTs; iTs++)
-   {
-      CTemporarySupportData* tsData = m_BridgeDescription.GetTemporarySupport(iTs);
-      if (!IsZero(tsData->GetElevationAdjustment()))
-      {
-         tsData->SetElevationAdjustment(0.0);
-         wereAdjustmentsZeroed = true;
-      }
-   }
-
-   if (wereAdjustmentsZeroed)
-   {
-      GET_IFACE(IEAFStatusCenter,pStatusCenter);
-      CString strMsg(_T("This project file contains temporary supports with non-zero elevation adjustments. The elevation adjustment feature has been disabled for this version of the program. All temporary support adjustments have been set to zero."));
-
-      pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidBridgeDescriptionInfo,strMsg);
-      pStatusCenter->Add(pStatusItem);
-   }
-
 
    ValidateBridgeModel();
 
@@ -6604,7 +6649,8 @@ void CProjectAgentImp::ValidateStrands(const CSegmentKey& segmentKey,CPrecastSeg
          {
             std::_tostringstream msg;
             msg << segmentLabel << _T(" specified debonding that is not allowed by the library entry. The invalid debond regions were removed.");
-            AddSegmentStatusItem(segmentKey, msg.str());
+            auto message = msg.str();
+            AddSegmentStatusItem(segmentKey, message);
          }
       }
    }
@@ -6821,12 +6867,12 @@ void CProjectAgentImp::SetComments(LPCTSTR comments)
 ////////////////////////////////////////////////////////////////////////
 // IEnviroment
 //
-enumExposureCondition CProjectAgentImp::GetExposureCondition() const
+pgsTypes::ExposureCondition CProjectAgentImp::GetExposureCondition() const
 {
    return m_ExposureCondition;
 }
 
-void CProjectAgentImp::SetExposureCondition(enumExposureCondition newVal)
+void CProjectAgentImp::SetExposureCondition(pgsTypes::ExposureCondition newVal)
 {
    if ( m_ExposureCondition != newVal )
    {
@@ -7236,6 +7282,16 @@ void CProjectAgentImp::SetWearingSurfaceType(pgsTypes::WearingSurfaceType wearin
    }
 }
 
+void CProjectAgentImp::SetHaunchInputDepthType(pgsTypes::HaunchInputDepthType type)
+{
+   m_BridgeDescription.SetHaunchInputDepthType(type);
+}
+
+pgsTypes::HaunchInputDepthType CProjectAgentImp::GetHaunchInputDepthType() const
+{
+   return m_BridgeDescription.GetHaunchInputDepthType();
+}
+
 void CProjectAgentImp::SetSlabOffsetType(pgsTypes::SlabOffsetType offsetType)
 {
    if ( m_BridgeDescription.GetSlabOffsetType() != pgsTypes::sotSegment || m_BridgeDescription.GetSlabOffsetType() != offsetType )
@@ -7250,10 +7306,8 @@ pgsTypes::SlabOffsetType CProjectAgentImp::GetSlabOffsetType() const
    return m_BridgeDescription.GetSlabOffsetType();
 }
 
-void CProjectAgentImp::SetSlabOffset(pgsTypes::SupportType supportType, SupportIndexType supportIdx, pgsTypes::PierFaceType face, Float64 offset)
+void CProjectAgentImp::SetSlabOffset(SupportIndexType supportIdx, pgsTypes::PierFaceType face, Float64 offset)
 {
-   if (supportType == pgsTypes::stPier)
-   {
       CPierData2* pPier = m_BridgeDescription.GetPier(supportIdx);
       if (m_BridgeDescription.GetSlabOffsetType() != pgsTypes::sotBearingLine || !IsEqual(pPier->GetSlabOffset(face), offset))
       {
@@ -7261,23 +7315,10 @@ void CProjectAgentImp::SetSlabOffset(pgsTypes::SupportType supportType, SupportI
          m_BridgeDescription.SetSlabOffsetType(pgsTypes::sotBearingLine);
          Fire_BridgeChanged();
       }
-   }
-   else
-   {
-      CTemporarySupportData* pTS = m_BridgeDescription.GetTemporarySupport(supportIdx);
-      if (m_BridgeDescription.GetSlabOffsetType() != pgsTypes::sotBearingLine || !IsEqual(pTS->GetSlabOffset(face), offset))
-      {
-         pTS->SetSlabOffset(face, offset);
-         m_BridgeDescription.SetSlabOffsetType(pgsTypes::sotBearingLine);
-         Fire_BridgeChanged();
-      }
-   }
 }
 
-void CProjectAgentImp::SetSlabOffset(pgsTypes::SupportType supportType, SupportIndexType supportIdx, Float64 backSlabOffset,Float64 aheadSlabOffset)
+void CProjectAgentImp::SetSlabOffset(SupportIndexType supportIdx, Float64 backSlabOffset,Float64 aheadSlabOffset)
 {
-   if (supportType == pgsTypes::stPier)
-   {
       CPierData2* pPier = m_BridgeDescription.GetPier(supportIdx);
       if (m_BridgeDescription.GetSlabOffsetType() != pgsTypes::sotBearingLine || !IsEqual(pPier->GetSlabOffset(pgsTypes::Back), backSlabOffset) || !IsEqual(pPier->GetSlabOffset(pgsTypes::Ahead), aheadSlabOffset))
       {
@@ -7285,45 +7326,18 @@ void CProjectAgentImp::SetSlabOffset(pgsTypes::SupportType supportType, SupportI
          m_BridgeDescription.SetSlabOffsetType(pgsTypes::sotBearingLine);
          Fire_BridgeChanged();
       }
-   }
-   else
-   {
-      CTemporarySupportData* pTS = m_BridgeDescription.GetTemporarySupport(supportIdx);
-      if (m_BridgeDescription.GetSlabOffsetType() != pgsTypes::sotBearingLine || !IsEqual(pTS->GetSlabOffset(pgsTypes::Back), backSlabOffset) || !IsEqual(pTS->GetSlabOffset(pgsTypes::Ahead), aheadSlabOffset))
-      {
-         pTS->SetSlabOffset(backSlabOffset, aheadSlabOffset);
-         m_BridgeDescription.SetSlabOffsetType(pgsTypes::sotBearingLine);
-         Fire_BridgeChanged();
-      }
-   }
 }
 
-Float64 CProjectAgentImp::GetSlabOffset(pgsTypes::SupportType supportType, SupportIndexType supportIdx, pgsTypes::PierFaceType face) const
+Float64 CProjectAgentImp::GetSlabOffset(SupportIndexType supportIdx, pgsTypes::PierFaceType face) const
 {
-   if (supportType == pgsTypes::stPier)
-   {
       const CPierData2* pPier = m_BridgeDescription.GetPier(supportIdx);
       return pPier->GetSlabOffset(face);
-   }
-   else
-   {
-      const CTemporarySupportData* pTS = m_BridgeDescription.GetTemporarySupport(supportIdx);
-      return pTS->GetSlabOffset(face);
-   }
 }
 
-void CProjectAgentImp::GetSlabOffset(pgsTypes::SupportType supportType, SupportIndexType supportIdx, Float64* pBackSlabOffset, Float64* pAheadSlabOffset) const
+void CProjectAgentImp::GetSlabOffset(SupportIndexType supportIdx, Float64* pBackSlabOffset, Float64* pAheadSlabOffset) const
 {
-   if (supportType == pgsTypes::stPier)
-   {
       const CPierData2* pPier = m_BridgeDescription.GetPier(supportIdx);
       pPier->GetSlabOffset(pBackSlabOffset,pAheadSlabOffset);
-   }
-   else
-   {
-      const CTemporarySupportData* pTS = m_BridgeDescription.GetTemporarySupport(supportIdx);
-      pTS->GetSlabOffset(pBackSlabOffset, pAheadSlabOffset);
-   }
 }
 
 void CProjectAgentImp::SetSlabOffset(const CSegmentKey& segmentKey, pgsTypes::MemberEndType end, Float64 offset)
@@ -7428,6 +7442,176 @@ Float64 CProjectAgentImp::GetAssumedExcessCamber( SpanIndexType spanIdx, GirderI
 {
    const CSpanData2* pSpan = m_BridgeDescription.GetSpan(spanIdx);
    return pSpan->GetAssumedExcessCamber(gdrIdx);
+}
+
+void CProjectAgentImp::SetHaunchInputLocationType(pgsTypes::HaunchInputLocationType type)
+{
+   if (m_BridgeDescription.GetHaunchInputLocationType() != type)
+   {
+      m_BridgeDescription.SetHaunchInputLocationType(type);
+      Fire_BridgeChanged();
+   }
+}
+
+pgsTypes::HaunchInputLocationType CProjectAgentImp::GetHaunchInputLocationType() const
+{
+   return m_BridgeDescription.GetHaunchInputLocationType();
+}
+
+void CProjectAgentImp::SetHaunchLayoutType(pgsTypes::HaunchLayoutType type)
+{
+   if (m_BridgeDescription.GetHaunchLayoutType() != type)
+   {
+      m_BridgeDescription.SetHaunchLayoutType(type);
+      Fire_BridgeChanged();
+   }
+}
+
+pgsTypes::HaunchLayoutType CProjectAgentImp::GetHaunchLayoutType() const
+{
+   return m_BridgeDescription.GetHaunchLayoutType();
+}
+
+void CProjectAgentImp::SetHaunchInputDistributionType(pgsTypes::HaunchInputDistributionType type)
+{
+   if (m_BridgeDescription.GetHaunchInputDistributionType() != type)
+   {
+      m_BridgeDescription.SetHaunchInputDistributionType(type);
+      Fire_BridgeChanged();
+   }
+}
+
+pgsTypes::HaunchInputDistributionType CProjectAgentImp::GetHaunchInputDistributionType() const
+{
+   return m_BridgeDescription.GetHaunchInputDistributionType();
+}
+
+void CProjectAgentImp::SetDirectHaunchDepths4Bridge(const std::vector<Float64>& haunchDepths)
+{
+   pgsTypes::HaunchInputDepthType haunchInputDepthType = m_BridgeDescription.GetHaunchInputDepthType();
+   pgsTypes::HaunchInputLocationType haunchInputLocationType = m_BridgeDescription.GetHaunchInputLocationType();
+   pgsTypes::HaunchInputDistributionType haunchInputDistributionType = m_BridgeDescription.GetHaunchInputDistributionType();
+   if (pgsTypes::hidACamber==haunchInputDepthType || pgsTypes::hilSame4Bridge!=haunchInputLocationType || haunchDepths.size()!=haunchInputDistributionType)
+   {
+      ATLASSERT(0); // Setting(s) are wrong above. Do nothing
+   }
+   else
+   {
+      m_BridgeDescription.SetDirectHaunchDepths(haunchDepths);
+      Fire_BridgeChanged();
+   }
+
+}
+
+void CProjectAgentImp::SetDirectHaunchDepthsPerSpan(SpanIndexType spanIdx,const std::vector<Float64>& haunchDepths)
+{
+   pgsTypes::HaunchInputDepthType haunchInputDepthType = m_BridgeDescription.GetHaunchInputDepthType();
+   pgsTypes::HaunchInputLocationType haunchInputLocationType = m_BridgeDescription.GetHaunchInputLocationType();
+   pgsTypes::HaunchLayoutType haunchLayoutType = m_BridgeDescription.GetHaunchLayoutType();
+   pgsTypes::HaunchInputDistributionType haunchInputDistributionType = m_BridgeDescription.GetHaunchInputDistributionType();
+   if (pgsTypes::hidACamber==haunchInputDepthType || pgsTypes::hilSame4AllGirders!=haunchInputLocationType || haunchLayoutType!=pgsTypes::hltAlongSpans || haunchDepths.size()!=haunchInputDistributionType )
+   {
+      ATLASSERT(0); // setting(s) are wrong above. Do nothing
+   }
+   else
+   {
+      CSpanData2* pSpan = m_BridgeDescription.GetSpan(spanIdx);
+      pSpan->SetDirectHaunchDepths(haunchDepths);
+      Fire_BridgeChanged();
+   }
+}
+
+void CProjectAgentImp::SetDirectHaunchDepthsPerSpan(SpanIndexType spanIdx,GirderIndexType gdrIdx,const std::vector<Float64>& haunchDepths)
+{
+   pgsTypes::HaunchInputDepthType haunchInputDepthType = m_BridgeDescription.GetHaunchInputDepthType();
+   pgsTypes::HaunchInputLocationType haunchInputLocationType = m_BridgeDescription.GetHaunchInputLocationType();
+   pgsTypes::HaunchLayoutType haunchLayoutType = m_BridgeDescription.GetHaunchLayoutType();
+   pgsTypes::HaunchInputDistributionType haunchInputDistributionType = m_BridgeDescription.GetHaunchInputDistributionType();
+   if (pgsTypes::hidACamber==haunchInputDepthType || pgsTypes::hilPerEach!=haunchInputLocationType || haunchLayoutType!=pgsTypes::hltAlongSpans || haunchDepths.size()!=haunchInputDistributionType)
+   {
+      ATLASSERT(0); // setting(s) are wrong above. Do nothing
+   }
+   else
+   {
+      CSpanData2* pSpan = m_BridgeDescription.GetSpan(spanIdx);
+      pSpan->SetDirectHaunchDepths(gdrIdx, haunchDepths);
+      Fire_BridgeChanged();
+   }
+}
+
+void CProjectAgentImp::SetDirectHaunchDepthsPerSegment(GroupIndexType group,SegmentIndexType segmentIdx,const std::vector<Float64>& haunchDepths)
+{
+   pgsTypes::HaunchInputDepthType haunchInputDepthType = m_BridgeDescription.GetHaunchInputDepthType();
+   pgsTypes::HaunchInputLocationType haunchInputLocationType = m_BridgeDescription.GetHaunchInputLocationType();
+   pgsTypes::HaunchLayoutType haunchLayoutType = m_BridgeDescription.GetHaunchLayoutType();
+   pgsTypes::HaunchInputDistributionType haunchInputDistributionType = m_BridgeDescription.GetHaunchInputDistributionType();
+   if (pgsTypes::hidACamber==haunchInputDepthType || pgsTypes::hilPerEach!=haunchInputLocationType || haunchLayoutType!=pgsTypes::hltAlongSegments || haunchDepths.size()!=haunchInputDistributionType)
+   {
+      ATLASSERT(0); // setting(s) are wrong above. Do nothing
+   }
+   else
+   {
+      CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(group);
+      GirderIndexType nGdrs = pGroup->GetGirderCount();
+      for (GirderIndexType iGdr = 0; iGdr < nGdrs; iGdr++)
+      {
+         pGroup->GetGirder(iGdr)->GetSegment(segmentIdx)->SetDirectHaunchDepths(haunchDepths);
+         Fire_BridgeChanged();
+      }
+   }
+}
+
+void CProjectAgentImp::SetDirectHaunchDepthsPerSegment(GroupIndexType group,GirderIndexType gdrIdx,SegmentIndexType segmentIdx,const std::vector<Float64>& haunchDepths)
+{
+   pgsTypes::HaunchInputDepthType haunchInputDepthType = m_BridgeDescription.GetHaunchInputDepthType();
+   pgsTypes::HaunchInputLocationType haunchInputLocationType = m_BridgeDescription.GetHaunchInputLocationType();
+   pgsTypes::HaunchLayoutType haunchLayoutType = m_BridgeDescription.GetHaunchLayoutType();
+   pgsTypes::HaunchInputDistributionType haunchInputDistributionType = m_BridgeDescription.GetHaunchInputDistributionType();
+   if (pgsTypes::hidACamber==haunchInputDepthType || pgsTypes::hilPerEach!=haunchInputLocationType || haunchLayoutType!=pgsTypes::hltAlongSegments || haunchDepths.size()!=haunchInputDistributionType)
+   {
+      ATLASSERT(0); // setting(s) are wrong above. Do nothing
+   }
+   else
+   {
+      CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(group);
+      pGroup->GetGirder(gdrIdx)->GetSegment(segmentIdx)->SetDirectHaunchDepths(haunchDepths);
+      Fire_BridgeChanged();
+   }
+}
+
+std::vector<Float64> CProjectAgentImp::GetDirectHaunchDepthsPerSpan(SpanIndexType spanIdx,GirderIndexType gdrIdx)
+{
+   pgsTypes::HaunchInputDepthType haunchInputDepthType = m_BridgeDescription.GetHaunchInputDepthType();
+   pgsTypes::HaunchLayoutType haunchLayoutType = m_BridgeDescription.GetHaunchLayoutType();
+   if (pgsTypes::hidACamber == haunchInputDepthType || haunchLayoutType != pgsTypes::hltAlongSpans)
+   {
+      ATLASSERT(0); // setting(s) are wrong above. Do nothing
+      pgsTypes::HaunchInputDistributionType haunchInputDistributionType = m_BridgeDescription.GetHaunchInputDistributionType();
+      return std::vector<Float64>(haunchInputDistributionType,0.0);
+   }
+   else
+   {
+      CSpanData2* pSpan = m_BridgeDescription.GetSpan(spanIdx);
+      return pSpan->GetDirectHaunchDepths(gdrIdx);
+   }
+}
+
+std::vector<Float64> CProjectAgentImp::GetDirectHaunchDepthsPerSegment(GroupIndexType group,GirderIndexType gdrIdx,SegmentIndexType segmentIdx)
+{
+   pgsTypes::HaunchInputDepthType haunchInputDepthType = m_BridgeDescription.GetHaunchInputDepthType();
+   pgsTypes::HaunchInputLocationType haunchInputLocationType = m_BridgeDescription.GetHaunchInputLocationType();
+   pgsTypes::HaunchLayoutType haunchLayoutType = m_BridgeDescription.GetHaunchLayoutType();
+   if (pgsTypes::hidACamber == haunchInputDepthType || haunchLayoutType != pgsTypes::hltAlongSegments)
+   {
+      ATLASSERT(0); // setting(s) are wrong above. Do nothing
+      pgsTypes::HaunchInputDistributionType haunchInputDistributionType = m_BridgeDescription.GetHaunchInputDistributionType();
+      return std::vector<Float64>(haunchInputDistributionType,0.0);
+   }
+   else
+   {
+      CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(group);
+      return pGroup->GetGirder(gdrIdx)->GetSegment(segmentIdx)->GetDirectHaunchDepths();
+   }
 }
 
 std::vector<pgsTypes::BoundaryConditionType> CProjectAgentImp::GetBoundaryConditionTypes(PierIndexType pierIdx) const
@@ -7668,19 +7852,19 @@ void CProjectAgentImp::GetSegmentEventsByID(const CSegmentKey& segmentKey,EventI
    *erectionEventID     = GetSegmentErectionEventID(segmentKey);
 }
 
-EventIndexType CProjectAgentImp::GetCastClosureJointEventIndex(GroupIndexType grpIdx,CollectionIndexType closureIdx) const
+EventIndexType CProjectAgentImp::GetCastClosureJointEventIndex(GroupIndexType grpIdx,IndexType closureIdx) const
 {
    const CClosureJointData* pClosure = m_BridgeDescription.GetGirderGroup(grpIdx)->GetGirder(0)->GetClosureJoint(closureIdx);
    return m_BridgeDescription.GetTimelineManager()->GetCastClosureJointEventIndex(pClosure);
 }
 
-EventIDType CProjectAgentImp::GetCastClosureJointEventID(GroupIndexType grpIdx,CollectionIndexType closureIdx) const
+EventIDType CProjectAgentImp::GetCastClosureJointEventID(GroupIndexType grpIdx,IndexType closureIdx) const
 {
    const CClosureJointData* pClosure = m_BridgeDescription.GetGirderGroup(grpIdx)->GetGirder(0)->GetClosureJoint(closureIdx);
    return m_BridgeDescription.GetTimelineManager()->GetCastClosureJointEventID(pClosure);
 }
 
-void CProjectAgentImp::SetCastClosureJointEventByIndex(GroupIndexType grpIdx,CollectionIndexType closureIdx,EventIndexType eventIdx)
+void CProjectAgentImp::SetCastClosureJointEventByIndex(GroupIndexType grpIdx,IndexType closureIdx,EventIndexType eventIdx)
 {
    const CClosureJointData* pClosure = m_BridgeDescription.GetGirderGroup(grpIdx)->GetGirder(0)->GetClosureJoint(closureIdx);
    if ( eventIdx != m_BridgeDescription.GetTimelineManager()->GetCastClosureJointEventIndex(pClosure) )
@@ -7690,7 +7874,7 @@ void CProjectAgentImp::SetCastClosureJointEventByIndex(GroupIndexType grpIdx,Col
    }
 }
 
-void CProjectAgentImp::SetCastClosureJointEventByID(GroupIndexType grpIdx,CollectionIndexType closureIdx,IDType eventID)
+void CProjectAgentImp::SetCastClosureJointEventByID(GroupIndexType grpIdx,IndexType closureIdx,IDType eventID)
 {
    const CClosureJointData* pClosure = m_BridgeDescription.GetGirderGroup(grpIdx)->GetGirder(0)->GetClosureJoint(closureIdx);
    if ( eventID != m_BridgeDescription.GetTimelineManager()->GetCastClosureJointEventID(pClosure) )
@@ -8144,7 +8328,7 @@ bool CProjectAgentImp::AreGirdersCompatible(const CBridgeDescription2& bridgeDes
    Float64 Smin, Smax;
    factory->GetAllowableSpacingRange(dimensions, deckType, spacingType, &Smin, &Smax);
 
-   auto& iter = vGirderNames.cbegin();
+   auto iter = vGirderNames.cbegin();
    iter++;
    const auto& end = vGirderNames.cend();
    for (; iter != end; iter++)
@@ -8498,7 +8682,7 @@ pgsTypes::MeasurementLocation CProjectAgentImp::GetMeasurementLocation() const
 ////////////////////////////////////////////////////////////////////////
 // ISegmentData Methods
 //
-const matPsStrand* CProjectAgentImp::GetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) const
+const WBFL::Materials::PsStrand* CProjectAgentImp::GetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType) const
 {
    ATLASSERT(strandType != pgsTypes::Permanent);
 
@@ -8509,7 +8693,7 @@ const matPsStrand* CProjectAgentImp::GetStrandMaterial(const CSegmentKey& segmen
    return pSegment->Strands.GetStrandMaterial(strandType);
 }
 
-void CProjectAgentImp::SetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType type,const matPsStrand* pMaterial)
+void CProjectAgentImp::SetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType type,const WBFL::Materials::PsStrand* pMaterial)
 {
    ATLASSERT(pMaterial != nullptr);
 
@@ -8714,17 +8898,17 @@ void CProjectAgentImp::SetHandlingData(const CSegmentKey& segmentKey,const CHand
 std::_tstring CProjectAgentImp::GetSegmentStirrupMaterial(const CSegmentKey& segmentKey) const
 {
    const CShearData2* pShearData = GetSegmentShearData(segmentKey);
-   return lrfdRebarPool::GetMaterialName(pShearData->ShearBarType,pShearData->ShearBarGrade);
+   return WBFL::LRFD::RebarPool::GetMaterialName(pShearData->ShearBarType,pShearData->ShearBarGrade);
 }
 
-void CProjectAgentImp::GetSegmentStirrupMaterial(const CSegmentKey& segmentKey,matRebar::Type& type,matRebar::Grade& grade) const
+void CProjectAgentImp::GetSegmentStirrupMaterial(const CSegmentKey& segmentKey,WBFL::Materials::Rebar::Type& type,WBFL::Materials::Rebar::Grade& grade) const
 {
    const CShearData2* pShearData = GetSegmentShearData(segmentKey);
    type = pShearData->ShearBarType;
    grade = pShearData->ShearBarGrade;
 }
 
-void CProjectAgentImp::SetSegmentStirrupMaterial(const CSegmentKey& segmentKey,matRebar::Type type,matRebar::Grade grade)
+void CProjectAgentImp::SetSegmentStirrupMaterial(const CSegmentKey& segmentKey,WBFL::Materials::Rebar::Type type,WBFL::Materials::Rebar::Grade grade)
 {
    CPrecastSegmentData* pSegment = GetSegment(segmentKey);
    if ( pSegment->ShearData.ShearBarType != type || pSegment->ShearData.ShearBarGrade != grade)
@@ -8754,17 +8938,17 @@ void CProjectAgentImp::SetSegmentShearData(const CSegmentKey& segmentKey,const C
 std::_tstring CProjectAgentImp::GetClosureJointStirrupMaterial(const CClosureKey& closureKey) const
 {
    const CShearData2* pShearData = GetClosureJointShearData(closureKey);
-   return lrfdRebarPool::GetMaterialName(pShearData->ShearBarType,pShearData->ShearBarGrade);
+   return WBFL::LRFD::RebarPool::GetMaterialName(pShearData->ShearBarType,pShearData->ShearBarGrade);
 }
 
-void CProjectAgentImp::GetClosureJointStirrupMaterial(const CClosureKey& closureKey,matRebar::Type& type,matRebar::Grade& grade) const
+void CProjectAgentImp::GetClosureJointStirrupMaterial(const CClosureKey& closureKey,WBFL::Materials::Rebar::Type& type,WBFL::Materials::Rebar::Grade& grade) const
 {
    const CShearData2* pShearData = GetClosureJointShearData(closureKey);
    type = pShearData->ShearBarType;
    grade = pShearData->ShearBarGrade;
 }
 
-void CProjectAgentImp::SetClosureJointStirrupMaterial(const CClosureKey& closureKey,matRebar::Type type,matRebar::Grade grade)
+void CProjectAgentImp::SetClosureJointStirrupMaterial(const CClosureKey& closureKey,WBFL::Materials::Rebar::Type type,WBFL::Materials::Rebar::Grade grade)
 {
    CPrecastSegmentData* pSegment = GetSegment(closureKey);
    CClosureJointData* pClosureJoint = pSegment->GetClosureJoint(pgsTypes::metEnd);
@@ -8804,17 +8988,17 @@ void CProjectAgentImp::SetClosureJointShearData(const CClosureKey& closureKey,co
 std::_tstring CProjectAgentImp::GetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey) const
 {
    const CLongitudinalRebarData* pLRD = GetSegmentLongitudinalRebarData(segmentKey);
-   return lrfdRebarPool::GetMaterialName(pLRD->BarType,pLRD->BarGrade);
+   return WBFL::LRFD::RebarPool::GetMaterialName(pLRD->BarType,pLRD->BarGrade);
 }
 
-void CProjectAgentImp::GetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey,matRebar::Type& type,matRebar::Grade& grade) const
+void CProjectAgentImp::GetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey,WBFL::Materials::Rebar::Type& type,WBFL::Materials::Rebar::Grade& grade) const
 {
    const CLongitudinalRebarData* pLRD = GetSegmentLongitudinalRebarData(segmentKey);
    grade = pLRD->BarGrade;
    type = pLRD->BarType;
 }
 
-void CProjectAgentImp::SetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey,matRebar::Type type,matRebar::Grade grade)
+void CProjectAgentImp::SetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey,WBFL::Materials::Rebar::Type type,WBFL::Materials::Rebar::Grade grade)
 {
    CPrecastSegmentData* pSegment = GetSegment(segmentKey);
    if ( pSegment->LongitudinalRebarData.BarGrade != grade || pSegment->LongitudinalRebarData.BarType != type )
@@ -8844,17 +9028,17 @@ void CProjectAgentImp::SetSegmentLongitudinalRebarData(const CSegmentKey& segmen
 std::_tstring CProjectAgentImp::GetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey) const
 {
    const CLongitudinalRebarData* pLRD = GetClosureJointLongitudinalRebarData(closureKey);
-   return lrfdRebarPool::GetMaterialName(pLRD->BarType,pLRD->BarGrade);
+   return WBFL::LRFD::RebarPool::GetMaterialName(pLRD->BarType,pLRD->BarGrade);
 }
 
-void CProjectAgentImp::GetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,matRebar::Type& type,matRebar::Grade& grade) const
+void CProjectAgentImp::GetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,WBFL::Materials::Rebar::Type& type,WBFL::Materials::Rebar::Grade& grade) const
 {
    const CLongitudinalRebarData* pLRD = GetClosureJointLongitudinalRebarData(closureKey);
    grade = pLRD->BarGrade;
    type = pLRD->BarType;
 }
 
-void CProjectAgentImp::SetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,matRebar::Type type,matRebar::Grade grade)
+void CProjectAgentImp::SetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,WBFL::Materials::Rebar::Type type,WBFL::Materials::Rebar::Grade grade)
 {
    CPrecastSegmentData* pSegment = GetSegment(closureKey);
    CClosureJointData* pClosureJoint = pSegment->GetClosureJoint(pgsTypes::metEnd);
@@ -9223,7 +9407,7 @@ Float64 CProjectAgentImp::GetLiveLoadFactor(pgsTypes::LimitState ls,pgsTypes::Sp
    if ( gLL < 0 && bResolveIfDefault )
    {
       pgsTypes::LoadRatingType ratingType = ::RatingTypeFromLimitState(ls);
-      if ( pRatingEntry->GetSpecificationVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
+      if ( pRatingEntry->GetSpecificationVersion() < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
       {
          CLiveLoadFactorModel model;
          if ( ratingType == pgsTypes::lrPermit_Routine )
@@ -9420,7 +9604,7 @@ Float64 CProjectAgentImp::GetStrengthLiveLoadFactor(pgsTypes::LoadRatingType rat
 
    Float64 gLL = 0;
    const RatingLibraryEntry* pRatingEntry = GetRatingEntry( GetRatingSpecification().c_str() );
-   if ( pRatingEntry->GetSpecificationVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( pRatingEntry->GetSpecificationVersion() < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
    {
       CLiveLoadFactorModel model;
       if ( ratingType == pgsTypes::lrPermit_Special )
@@ -9465,7 +9649,7 @@ Float64 CProjectAgentImp::GetServiceLiveLoadFactor(pgsTypes::LoadRatingType rati
 
    Float64 gLL = 0;
    const RatingLibraryEntry* pRatingEntry = GetRatingEntry( GetRatingSpecification().c_str() );
-   if ( pRatingEntry->GetSpecificationVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( pRatingEntry->GetSpecificationVersion() < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
    {
       CLiveLoadFactorModel model;
       if ( ratingType == pgsTypes::lrPermit_Special )
@@ -9572,11 +9756,11 @@ void CProjectAgentImp::SetSpecification(const std::_tstring& spec)
 {
    if ( m_Spec != spec )
    {
-      bool oldSpecTimeStepMethod = m_pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP ? true : false;
+      bool oldSpecTimeStepMethod = m_pSpecEntry->GetPrestressLossCriteria().LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false;
       
       InitSpecification(spec);
       
-      bool newSpecTimeStepMethod = m_pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP ? true : false;
+      bool newSpecTimeStepMethod = m_pSpecEntry->GetPrestressLossCriteria().LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false;
 
       if ( oldSpecTimeStepMethod == false && newSpecTimeStepMethod == true )
       {
@@ -9590,13 +9774,15 @@ void CProjectAgentImp::SetSpecification(const std::_tstring& spec)
 
 void CProjectAgentImp::GetTrafficBarrierDistribution(GirderIndexType* pNGirders,pgsTypes::TrafficBarrierDistribution* pDistType) const
 {
-   *pNGirders = m_pSpecEntry->GetMaxGirdersDistTrafficBarrier();
-   *pDistType = m_pSpecEntry->GetTrafficBarrierDistributionType();
+   const auto& dead_load_distribution_criteria = m_pSpecEntry->GetDeadLoadDistributionCriteria();
+   *pNGirders = dead_load_distribution_criteria.MaxGirdersTrafficBarrier;
+   *pDistType = dead_load_distribution_criteria.TrafficBarrierDistribution;
 }
 
 pgsTypes::OverlayLoadDistributionType CProjectAgentImp::GetOverlayLoadDistributionType() const
 {
-   return m_pSpecEntry->GetOverlayLoadDistributionType();
+   const auto& dead_load_distribution_criteria = m_pSpecEntry->GetDeadLoadDistributionCriteria();
+   return dead_load_distribution_criteria.OverlayDistribution;
 }
 
 pgsTypes::HaunchLoadComputationType CProjectAgentImp::GetHaunchLoadComputationType() const
@@ -9608,20 +9794,23 @@ pgsTypes::HaunchLoadComputationType CProjectAgentImp::GetHaunchLoadComputationTy
    }
    else
    {
-      return m_pSpecEntry->GetHaunchLoadComputationType();
+      const auto& haunch_criteria = m_pSpecEntry->GetHaunchCriteria();
+      return haunch_criteria.HaunchLoadComputationType;
    }
 }
 
 Float64 CProjectAgentImp::GetCamberTolerance() const
 {
-   ATLASSERT( m_pSpecEntry->GetHaunchLoadComputationType()==pgsTypes::hlcAccountForCamber);
-   return m_pSpecEntry->GetHaunchLoadCamberTolerance();
+   const auto& haunch_criteria = m_pSpecEntry->GetHaunchCriteria();
+   ATLASSERT(haunch_criteria.HaunchLoadComputationType == pgsTypes::hlcDetailedAnalysis);
+   return haunch_criteria.HaunchLoadCamberTolerance;
 }
 
 Float64 CProjectAgentImp::GetHaunchLoadCamberFactor() const
 {
-   ATLASSERT( m_pSpecEntry->GetHaunchLoadComputationType()==pgsTypes::hlcAccountForCamber);
-   return m_pSpecEntry->GetHaunchLoadCamberFactor();
+   const auto& haunch_criteria = m_pSpecEntry->GetHaunchCriteria();
+   ATLASSERT( haunch_criteria.HaunchLoadComputationType == pgsTypes::hlcDetailedAnalysis);
+   return haunch_criteria.HaunchLoadCamberFactor;
 }
 
 bool CProjectAgentImp::IsAssumedExcessCamberInputEnabled(bool considerDeckType) const
@@ -9645,43 +9834,36 @@ bool CProjectAgentImp::IsAssumedExcessCamberInputEnabled(bool considerDeckType) 
 
 bool CProjectAgentImp::IsAssumedExcessCamberForLoad() const
 {
-   GET_IFACE(IDocumentType, pDocType);
-   bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
-
-   return !bIsSplicedGirder && m_pSpecEntry->GetHaunchLoadComputationType() == pgsTypes::hlcAccountForCamber;
+   GET_IFACE(IBridge,pBridge);
+   const auto& haunch_criteria = m_pSpecEntry->GetHaunchCriteria();
+   return pBridge->GetHaunchInputDepthType()==pgsTypes::hidACamber && haunch_criteria.HaunchLoadComputationType == pgsTypes::hlcDetailedAnalysis;
 }
 
 bool CProjectAgentImp::IsAssumedExcessCamberForSectProps() const
 {
    GET_IFACE(IDocumentType, pDocType);
    bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
-
-   return !bIsSplicedGirder && m_pSpecEntry->GetHaunchAnalysisSectionPropertiesType() == pgsTypes::hspVariableParabolic;
-}
-
-void CProjectAgentImp::GetRequiredSlabOffsetRoundingParameters(pgsTypes::SlabOffsetRoundingMethod * pMethod, Float64 * pTolerance) const
-{
-   m_pSpecEntry->GetRequiredSlabOffsetRoundingParameters(pMethod, pTolerance);
+   const auto& haunch_criteria = m_pSpecEntry->GetHaunchCriteria();
+   return !bIsSplicedGirder && haunch_criteria.HaunchAnalysisSectionPropertiesType == pgsTypes::hspDetailedDescription;
 }
 
 void CProjectAgentImp::GetTaperedSolePlateRequirements(bool* pbCheckTaperedSolePlate, Float64* pTaperedSolePlateThreshold) const
 {
-   *pbCheckTaperedSolePlate = m_pSpecEntry->AlertTaperedSolePlateRequirement();
-   *pTaperedSolePlateThreshold = m_pSpecEntry->GetTaperedSolePlateInclinationThreshold();
+   const auto& bearing_criteria = m_pSpecEntry->GetBearingCriteria();
+   *pbCheckTaperedSolePlate = bearing_criteria.bAlertTaperedSolePlateRequirement;
+   *pTaperedSolePlateThreshold = bearing_criteria.TaperedSolePlateInclinationThreshold;
 }
 
 ISpecification::PrincipalWebStressCheckType CProjectAgentImp::GetPrincipalWebStressCheckType(const CSegmentKey& segmentKey) const
 {
-   pgsTypes::PrincipalTensileStressMethod method;
-   Float64 coefficient, ductDiameterFactor, ungroutedMultiplier, groutedMultiplier, principalTensileStressFcThreshold;
-   m_pSpecEntry->GetPrincipalTensileStressInWebsParameters(&method, &coefficient, &ductDiameterFactor, &ungroutedMultiplier, &groutedMultiplier, &principalTensileStressFcThreshold);
+   const auto& principal_tension_stress_criteria = m_pSpecEntry->GetPrincipalTensionStressCriteria();
 
    // spliced girder files always analyze principal web stress
    GET_IFACE(IDocumentType, pDocType);
    bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
    if (bIsSplicedGirder)
    {
-      return method == pgsTypes::ptsmLRFD ? pwcAASHTOMethod : pwcNCHRPTimeStepMethod;
+      return principal_tension_stress_criteria.Method == pgsTypes::ptsmLRFD ? pwcAASHTOMethod : pwcNCHRPTimeStepMethod;
    }
    else
    {
@@ -9715,20 +9897,20 @@ ISpecification::PrincipalWebStressCheckType CProjectAgentImp::GetPrincipalWebStr
          concStrength = pMaterials->GetSegmentFc28(segmentKey);
       }
 
-      if (concStrength < principalTensileStressFcThreshold)
+      if (concStrength < principal_tension_stress_criteria.FcThreshold && principal_tension_stress_criteria.FcThreshold != -1) // -1 means applicable to all
       {
          return ISpecification::pwcNotApplicable;
       }
       else
       {
-         if (method == pgsTypes::ptsmLRFD)
+         if (principal_tension_stress_criteria.Method == pgsTypes::ptsmLRFD)
          {
             return pwcAASHTOMethod;
          }
          else
          {
             GET_IFACE(ILossParameters, pLossParams);
-            if (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP)
+            if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP)
             {
                return pwcNCHRPTimeStepMethod;
             }
@@ -9742,14 +9924,14 @@ ISpecification::PrincipalWebStressCheckType CProjectAgentImp::GetPrincipalWebStr
 
 }
 
-lrfdVersionMgr::Version CProjectAgentImp::GetSpecificationType() const
+WBFL::LRFD::BDSManager::Edition CProjectAgentImp::GetSpecificationType() const
 {
-   return m_pSpecEntry->GetSpecificationType();
+   return m_pSpecEntry->GetSpecificationCriteria().GetEdition();
 }
 
 Uint16 CProjectAgentImp::GetMomentCapacityMethod() const
 {
-   return m_pSpecEntry->GetLRFDOverreinforcedMomentCapacity() == true ? LRFD_METHOD : WSDOT_METHOD;
+   return m_pSpecEntry->GetMomentCapacityCriteria().OverReinforcedMomentCapacity == 0 ? LRFD_METHOD : WSDOT_METHOD;
 }
 
 void CProjectAgentImp::SetAnalysisType(pgsTypes::AnalysisType analysisType)
@@ -9766,12 +9948,17 @@ pgsTypes::AnalysisType CProjectAgentImp::GetAnalysisType() const
    return m_AnalysisType;
 }
 
-bool CProjectAgentImp::IsSlabOffsetDesignEnabled() const
+const SlabOffsetCriteria& CProjectAgentImp::GetSlabOffsetCriteria() const
 {
-   GET_IFACE(ILibrary,pLib);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(m_Spec.c_str());
+   return m_pSpecEntry->GetSlabOffsetCriteria();
+}
 
-   return pSpecEntry->IsSlabOffsetDesignEnabled();
+bool CProjectAgentImp::DesignSlabHaunch() const
+{
+   bool bDesign = GetSlabOffsetCriteria().bDesign &&
+      m_BridgeDescription.GetHaunchInputDepthType() == pgsTypes::hidACamber && // We don't design if direct haunch input
+      IsStructuralDeck(this->m_BridgeDescription.GetDeckDescription()->GetDeckType()) ? true : false;
+   return bDesign;
 }
 
 std::vector<arDesignOptions> CProjectAgentImp::GetDesignOptions(const CGirderKey& girderKey) const
@@ -9783,6 +9970,9 @@ std::vector<arDesignOptions> CProjectAgentImp::GetDesignOptions(const CGirderKey
 
    GET_IFACE(ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(m_Spec.c_str());
+
+   const auto& lifting_criteria = pSpecEntry->GetLiftingCriteria();
+   const auto& harped_strand_design_criteria = pSpecEntry->GetHarpedStrandDesignCriteria();
 
    // For each girder we can have multiple design strategies
    IndexType nStrategies = pGirderEntry->GetNumPrestressDesignStrategies();
@@ -9798,20 +9988,17 @@ std::vector<arDesignOptions> CProjectAgentImp::GetDesignOptions(const CGirderKey
       option.maxFci = fci_max;
       option.maxFc  = fc_max;
 
-      option.doDesignSlabOffset = pSpecEntry->IsSlabOffsetDesignEnabled() ? sodDesignHaunch : sodPreserveHaunch; // option same as in 2.9x versions
-      option.doDesignHauling = pSpecEntry->IsHaulingDesignEnabled();
-      option.doDesignLifting = pSpecEntry->IsLiftingDesignEnabled();
+      option.doDesignSlabOffset = pSpecEntry->GetSlabOffsetCriteria().bDesign ? sodDesignHaunch : sodPreserveHaunch; // option same as in 2.9x versions
+      option.doDesignHauling = pSpecEntry->GetHaulingCriteria().bDesign;
+      option.doDesignLifting = lifting_criteria.bDesign;
 
       if (option.doDesignForFlexure == dtDesignForHarping)
       {
-         bool check, design;
-         int holdDownForceType;
-         Float64 d1, d2, d3, friction;
-         pSpecEntry->GetHoldDownForce(&check, &design, &holdDownForceType, &d1, &friction);
-         option.doDesignHoldDown = design;
+         const auto& hold_down_criteria = pSpecEntry->GetHoldDownCriteria();
+         option.doDesignHoldDown = hold_down_criteria.bDesign;
 
-         pSpecEntry->GetMaxStrandSlope(&check, &design, &d1, &d2, &d3);
-         option.doDesignSlope =  design;
+         const auto& strand_slope_criteria = pSpecEntry->GetStrandSlopeCriteria();
+         option.doDesignSlope =  strand_slope_criteria.bDesign;
       }
       else
       {
@@ -9824,7 +10011,7 @@ std::vector<arDesignOptions> CProjectAgentImp::GetDesignOptions(const CGirderKey
       if (!option.doForceHarpedStrandsStraight)
       {
          // Harping uses spec order (until design algorithm is changed to work for other option)
-         option.doStrandFillType = pSpecEntry->GetDesignStrandFillType();
+         option.doStrandFillType = harped_strand_design_criteria.StrandFillType;
       }
       else if (option.doDesignForFlexure == dtDesignFullyBondedRaised ||
                option.doDesignForFlexure == dtDesignForDebondingRaised)
@@ -9865,14 +10052,14 @@ void CProjectAgentImp::EnumGirderNames( LPCTSTR strGirderFamily, std::vector<std
    const GirderLibrary& prj_lib = m_pLibMgr->GetGirderLibrary();
    pNames->clear();
 
-   libKeyListType keys;
+   WBFL::Library::KeyListType keys;
    prj_lib.KeyList(keys);
 
-   libKeyListType::iterator iter(keys.begin());
-   libKeyListType::iterator iterEnd(keys.end());
+   WBFL::Library::KeyListType::iterator iter(keys.begin());
+   WBFL::Library::KeyListType::iterator iterEnd(keys.end());
    for ( ; iter != iterEnd; iter++ )
    {
-      const libLibraryEntry* pEntry = prj_lib.GetEntry( (*iter).c_str() );
+      const WBFL::Library::LibraryEntry* pEntry = prj_lib.GetEntry( (*iter).c_str() );
       const GirderLibraryEntry* pGirderEntry = (GirderLibraryEntry*)pEntry;
 
       std::_tstring strFamilyName = pGirderEntry->GetGirderFamilyName();
@@ -9988,7 +10175,7 @@ void CProjectAgentImp::SetLibraryManager(psgLibraryManager* pNewLibMgr)
    SpecLibrary* pSpecLib = GetSpecLibrary();
    if ( pSpecLib )
    {
-      libKeyListType keys;
+      WBFL::Library::KeyListType keys;
       pSpecLib->KeyList(keys);
 
       if ( 0 < keys.size() )
@@ -10001,7 +10188,7 @@ void CProjectAgentImp::SetLibraryManager(psgLibraryManager* pNewLibMgr)
    RatingLibrary* pRatingLib = GetRatingLibrary();
    if ( pRatingLib )
    {
-      libKeyListType keys;
+      WBFL::Library::KeyListType keys;
       pRatingLib->KeyList(keys);
 
       if ( 0 < keys.size() )
@@ -10161,12 +10348,12 @@ const RatingLibrary* CProjectAgentImp::GetRatingLibrary() const
    return m_pLibMgr->GetRatingLibrary();
 }
 
-std::vector<libEntryUsageRecord> CProjectAgentImp::GetLibraryUsageRecords() const
+std::vector<WBFL::Library::EntryUsageRecord> CProjectAgentImp::GetLibraryUsageRecords() const
 {
    return m_pLibMgr->GetInUseLibraryEntries();
 }
 
-void CProjectAgentImp::GetMasterLibraryInfo(std::_tstring& strServer, std::_tstring& strConfiguration, std::_tstring& strMasterLib,sysTime& time) const
+void CProjectAgentImp::GetMasterLibraryInfo(std::_tstring& strServer, std::_tstring& strConfiguration, std::_tstring& strMasterLib,WBFL::System::Time& time) const
 {
    m_pLibMgr->GetMasterLibraryInfo(strServer,strConfiguration,strMasterLib);
    time = m_pLibMgr->GetTimeStamp();
@@ -10306,7 +10493,7 @@ void CProjectAgentImp::SpecificationChanged(bool bFireEvent)
    UpdateStrandMaterial();
    VerifyRebarGrade();
 
-   if ( m_pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP)
+   if ( m_pSpecEntry->GetPrestressLossCriteria().LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP)
    {
       // analysis type must be continuous if the spec is using the time step loss method
       m_AnalysisType = pgsTypes::Continuous;
@@ -10318,7 +10505,7 @@ void CProjectAgentImp::SpecificationChanged(bool bFireEvent)
       }
    }
 
-   if ( m_pSpecEntry->GetLossMethod() != LOSSES_TIME_STEP )
+   if ( m_pSpecEntry->GetPrestressLossCriteria().LossMethod != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       // the timeline is based on settings in the project criteria for non-time-step loss methods (using the Creep and Camber timing parameters)
       CreatePrecastGirderBridgeTimelineEvents();
@@ -10360,19 +10547,19 @@ bool CProjectAgentImp::HasUserLLIM(const CGirderKey& girderKey) const
    return HasUserLoad(girderKey,UserLoads::LL_IM);
 }
 
-CollectionIndexType CProjectAgentImp::GetPointLoadCount() const
+IndexType CProjectAgentImp::GetPointLoadCount() const
 {
    return m_LoadManager.GetPointLoadCount();
 }
 
-CollectionIndexType CProjectAgentImp::AddPointLoad(EventIDType eventID,const CPointLoadData& pld)
+IndexType CProjectAgentImp::AddPointLoad(EventIDType eventID,const CPointLoadData& pld)
 {
-   CollectionIndexType idx = m_LoadManager.AddPointLoad(eventID,pld);
+   IndexType idx = m_LoadManager.AddPointLoad(eventID,pld);
    FireContinuityRelatedSpanChange(pld.m_SpanKey,GCH_LOADING_ADDED);
    return idx;
 }
 
-const CPointLoadData* CProjectAgentImp::GetPointLoad(CollectionIndexType idx) const
+const CPointLoadData* CProjectAgentImp::GetPointLoad(IndexType idx) const
 {
    return m_LoadManager.GetPointLoad(idx);
 }
@@ -10392,7 +10579,7 @@ EventIDType CProjectAgentImp::GetPointLoadEventID(LoadIDType loadID) const
    return m_LoadManager.GetPointLoadEventID(loadID);
 }
 
-void CProjectAgentImp::UpdatePointLoad(CollectionIndexType idx, EventIDType eventID,const CPointLoadData& pld)
+void CProjectAgentImp::UpdatePointLoad(IndexType idx, EventIDType eventID,const CPointLoadData& pld)
 {
    bool bMovedGirders;
    CSpanKey prevKey;
@@ -10424,7 +10611,7 @@ void CProjectAgentImp::UpdatePointLoadByID(LoadIDType loadID, EventIDType eventI
    }
 }
 
-void CProjectAgentImp::DeletePointLoad(CollectionIndexType idx)
+void CProjectAgentImp::DeletePointLoad(IndexType idx)
 {
    CSpanKey key;
    m_LoadManager.DeletePointLoad(idx,&key);
@@ -10443,19 +10630,19 @@ std::vector<CPointLoadData> CProjectAgentImp::GetPointLoads(const CSpanKey& span
    return m_LoadManager.GetPointLoads(spanKey);
 }
 
-CollectionIndexType CProjectAgentImp::GetDistributedLoadCount() const
+IndexType CProjectAgentImp::GetDistributedLoadCount() const
 {
    return m_LoadManager.GetDistributedLoadCount();
 }
 
-CollectionIndexType CProjectAgentImp::AddDistributedLoad(EventIDType eventID,const CDistributedLoadData& pld)
+IndexType CProjectAgentImp::AddDistributedLoad(EventIDType eventID,const CDistributedLoadData& pld)
 {
-   CollectionIndexType idx = m_LoadManager.AddDistributedLoad(eventID,pld);
+   IndexType idx = m_LoadManager.AddDistributedLoad(eventID,pld);
    FireContinuityRelatedSpanChange(pld.m_SpanKey,GCH_LOADING_ADDED);
    return idx;
 }
 
-const CDistributedLoadData* CProjectAgentImp::GetDistributedLoad(CollectionIndexType idx) const
+const CDistributedLoadData* CProjectAgentImp::GetDistributedLoad(IndexType idx) const
 {
    return m_LoadManager.GetDistributedLoad(idx);
 }
@@ -10475,7 +10662,7 @@ EventIDType CProjectAgentImp::GetDistributedLoadEventID(LoadIDType loadID) const
    return m_LoadManager.GetDistributedLoadEventID(loadID);
 }
 
-void CProjectAgentImp::UpdateDistributedLoad(CollectionIndexType idx, EventIDType eventID,const CDistributedLoadData& pld)
+void CProjectAgentImp::UpdateDistributedLoad(IndexType idx, EventIDType eventID,const CDistributedLoadData& pld)
 {
    bool bMovedGirder;
    CSpanKey prevKey;
@@ -10503,7 +10690,7 @@ void CProjectAgentImp::UpdateDistributedLoadByID(LoadIDType loadID, EventIDType 
    }
 }
 
-void CProjectAgentImp::DeleteDistributedLoad(CollectionIndexType idx)
+void CProjectAgentImp::DeleteDistributedLoad(IndexType idx)
 {
    CSpanKey key;
    m_LoadManager.DeleteDistributedLoad(idx, &key);
@@ -10522,19 +10709,19 @@ std::vector<CDistributedLoadData> CProjectAgentImp::GetDistributedLoads(const CS
    return m_LoadManager.GetDistributedLoads(spanKey);
 }
 
-CollectionIndexType CProjectAgentImp::GetMomentLoadCount() const
+IndexType CProjectAgentImp::GetMomentLoadCount() const
 {
    return m_LoadManager.GetMomentLoadCount();
 }
 
-CollectionIndexType CProjectAgentImp::AddMomentLoad(EventIDType eventID,const CMomentLoadData& pld)
+IndexType CProjectAgentImp::AddMomentLoad(EventIDType eventID,const CMomentLoadData& pld)
 {
-   CollectionIndexType idx = m_LoadManager.AddMomentLoad(eventID,pld);
+   IndexType idx = m_LoadManager.AddMomentLoad(eventID,pld);
    FireContinuityRelatedSpanChange(pld.m_SpanKey,GCH_LOADING_ADDED);
    return idx;
 }
 
-const CMomentLoadData* CProjectAgentImp::GetMomentLoad(CollectionIndexType idx) const
+const CMomentLoadData* CProjectAgentImp::GetMomentLoad(IndexType idx) const
 {
    return m_LoadManager.GetMomentLoad(idx);
 }
@@ -10554,7 +10741,7 @@ EventIDType CProjectAgentImp::GetMomentLoadEventID(LoadIDType loadID) const
    return m_LoadManager.GetMomentLoadEventID(loadID);
 }
 
-void CProjectAgentImp::UpdateMomentLoad(CollectionIndexType idx, EventIDType eventID,const CMomentLoadData& pld)
+void CProjectAgentImp::UpdateMomentLoad(IndexType idx, EventIDType eventID,const CMomentLoadData& pld)
 {
    bool bMovedGirder;
    CSpanKey prevKey;
@@ -10582,7 +10769,7 @@ void CProjectAgentImp::UpdateMomentLoadByID(LoadIDType loadID, EventIDType event
    }
 }
 
-void CProjectAgentImp::DeleteMomentLoad(CollectionIndexType idx)
+void CProjectAgentImp::DeleteMomentLoad(IndexType idx)
 {
    CSpanKey key;
    m_LoadManager.DeleteMomentLoad(idx, &key);
@@ -10644,35 +10831,35 @@ void CProjectAgentImp::FirePendingEvents()
          m_bFiringEvents = true;
 
 
-         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_PROJECTPROPERTIES))
+         if (WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents, EVT_PROJECTPROPERTIES))
          {
             Fire_ProjectPropertiesChanged();
          }
 
-         //if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_UNITS) )
+         //if ( WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents,EVT_UNITS) )
          //   Fire_UnitsChanged(m_Units);
 
-         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_ANALYSISTYPE))
+         if (WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents, EVT_ANALYSISTYPE))
          {
             Fire_AnalysisTypeChanged();
          }
 
-         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_EXPOSURECONDITION))
+         if (WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents, EVT_EXPOSURECONDITION))
          {
             Fire_ExposureConditionChanged();
          }
 
-         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_RELHUMIDITY))
+         if (WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents, EVT_RELHUMIDITY))
          {
             Fire_RelHumidityChanged();
          }
 
-         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_GIRDERFAMILY))
+         if (WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents, EVT_GIRDERFAMILY))
          {
             Fire_BridgeChanged(nullptr);
          }
 
-         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_BRIDGE))
+         if (WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents, EVT_BRIDGE))
          {
             // eliminate duplicates
             m_PendingBridgeChangedHints.erase(std::unique(m_PendingBridgeChangedHints.begin(), m_PendingBridgeChangedHints.end()), m_PendingBridgeChangedHints.end());
@@ -10689,41 +10876,41 @@ void CProjectAgentImp::FirePendingEvents()
          //
          // pretty much all the event handers do the same thing when the bridge or girder family changes
          // no sence firing two events
-         //   if ( sysFlags<Uint32>::IsSet(m_PendingEvents,EVT_GIRDERFAMILY) )
+         //   if ( WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents,EVT_GIRDERFAMILY) )
          //      Fire_GirderFamilyChanged();
 
 
-         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_SPECIFICATION))
+         if (WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents, EVT_SPECIFICATION))
          {
             SpecificationChanged(true);
          }
 
-         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_RATING_SPECIFICATION))
+         if (WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents, EVT_RATING_SPECIFICATION))
          {
             RatingSpecificationChanged(true);
          }
 
-         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_LIBRARYCONFLICT))
+         if (WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents, EVT_LIBRARYCONFLICT))
          {
             Fire_OnLibraryConflictResolved();
          }
 
-         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_LOADMODIFIER))
+         if (WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents, EVT_LOADMODIFIER))
          {
             Fire_LoadModifiersChanged();
          }
 
-         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_CONSTRUCTIONLOAD))
+         if (WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents, EVT_CONSTRUCTIONLOAD))
          {
             Fire_ConstructionLoadChanged();
          }
 
-         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_LIVELOAD))
+         if (WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents, EVT_LIVELOAD))
          {
             Fire_LiveLoadChanged();
          }
 
-         if (sysFlags<Uint32>::IsSet(m_PendingEvents, EVT_LOSSPARAMETERS))
+         if (WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents, EVT_LOSSPARAMETERS))
          {
             Fire_OnLossParametersChanged();
          }
@@ -10781,37 +10968,37 @@ void CProjectAgentImp::CancelPendingEvents()
 // ILimits
 Float64 CProjectAgentImp::GetMaxSlabFc(pgsTypes::ConcreteType concType) const
 {
-   return m_pSpecEntry->GetMaxSlabFc(concType);
+   return m_pSpecEntry->GetLimitsCriteria().MaxSlabFc[concType];
 }
 
 Float64 CProjectAgentImp::GetMaxSegmentFci(pgsTypes::ConcreteType concType) const
 {
-   return m_pSpecEntry->GetMaxSegmentFci(concType);
+   return m_pSpecEntry->GetLimitsCriteria().MaxSegmentFci[concType];
 }
 
 Float64 CProjectAgentImp::GetMaxSegmentFc(pgsTypes::ConcreteType concType) const
 {
-   return m_pSpecEntry->GetMaxSegmentFc(concType);
+   return m_pSpecEntry->GetLimitsCriteria().MaxSegmentFc[concType];
 }
 
 Float64 CProjectAgentImp::GetMaxClosureFci(pgsTypes::ConcreteType concType) const
 {
-   return m_pSpecEntry->GetMaxClosureFci(concType);
+   return m_pSpecEntry->GetLimitsCriteria().MaxClosureFci[concType];
 }
 
 Float64 CProjectAgentImp::GetMaxClosureFc(pgsTypes::ConcreteType concType) const
 {
-   return m_pSpecEntry->GetMaxClosureFc(concType);
+   return m_pSpecEntry->GetLimitsCriteria().MaxClosureFc[concType];
 }
 
 Float64 CProjectAgentImp::GetMaxConcreteUnitWeight(pgsTypes::ConcreteType concType) const
 {
-   return m_pSpecEntry->GetMaxConcreteUnitWeight(concType);
+   return m_pSpecEntry->GetLimitsCriteria().MaxConcreteUnitWeight[concType];
 }
 
 Float64 CProjectAgentImp::GetMaxConcreteAggSize(pgsTypes::ConcreteType concType) const
 {
-   return m_pSpecEntry->GetMaxConcreteAggSize(concType);
+   return m_pSpecEntry->GetLimitsCriteria().MaxConcreteAggSize[concType];
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -11018,34 +11205,18 @@ bool CProjectAgentImp::IsReservedLiveLoad(const std::_tstring& strName) const
    return false;
 }
 
-void CProjectAgentImp::SetLldfRangeOfApplicabilityAction(LldfRangeOfApplicabilityAction action)
+void CProjectAgentImp::SetRangeOfApplicabilityAction(WBFL::LRFD::RangeOfApplicabilityAction action)
 {
-   if ( m_LldfRangeOfApplicabilityAction != action )
+   if ( m_RangeOfApplicabilityAction != action )
    {
-      m_LldfRangeOfApplicabilityAction = action;
+      m_RangeOfApplicabilityAction = action;
       Fire_LiveLoadChanged();
    }
 }
 
-LldfRangeOfApplicabilityAction CProjectAgentImp::GetLldfRangeOfApplicabilityAction() const
+WBFL::LRFD::RangeOfApplicabilityAction CProjectAgentImp::GetRangeOfApplicabilityAction() const
 {
-   return m_LldfRangeOfApplicabilityAction;
-}
-
-bool CProjectAgentImp::IgnoreLLDFRangeOfApplicability() const
-{
-   if (m_BridgeDescription.GetDistributionFactorMethod() == pgsTypes::Calculated)
-   {
-      return m_LldfRangeOfApplicabilityAction != roaEnforce;
-   }
-   else if (m_BridgeDescription.GetDistributionFactorMethod() == pgsTypes::LeverRule)
-   {
-      return true;
-   }
-   else
-   {
-      return false;
-   }
+   return m_RangeOfApplicabilityAction;
 }
 
 std::_tstring CProjectAgentImp::GetLLDFSpecialActionText() const
@@ -11058,11 +11229,11 @@ std::_tstring CProjectAgentImp::GetLLDFSpecialActionText() const
    {
       return std::_tstring(_T("  Note: The project criteria was overriden: All live load distribution factors computed using the Lever Rule."));
    }
-   else if (m_LldfRangeOfApplicabilityAction==roaIgnore)
+   else if (m_RangeOfApplicabilityAction==WBFL::LRFD::RangeOfApplicabilityAction::Ignore)
    {
       return std::_tstring(_T(" Note that range of applicability requirements are ignored. The equations in LRFD 4.6.2.2 are used regardless of their validity."));
    }
-   else if (m_LldfRangeOfApplicabilityAction==roaIgnoreUseLeverRule)
+   else if (m_RangeOfApplicabilityAction==WBFL::LRFD::RangeOfApplicabilityAction::IgnoreUseLeverRule)
    {
       return std::_tstring(_T(" Note that the lever rule used to compute distribution factors if the range of applicability requirements are exceeded."));
    }
@@ -11093,61 +11264,61 @@ void CProjectAgentImp::IgnoreEffectiveFlangeWidthLimits(bool bIgnore)
 std::_tstring CProjectAgentImp::GetLossMethodDescription() const
 {
    std::_tstring strLossMethod;
-   pgsTypes::LossMethod lossMethod = GetLossMethod();
+   PrestressLossCriteria::LossMethodType lossMethod = GetLossMethod();
    switch (lossMethod)
    {
-   case pgsTypes::AASHTO_REFINED: 
-   case pgsTypes::AASHTO_REFINED_2005:
+   case PrestressLossCriteria::LossMethodType::AASHTO_REFINED:
+   case PrestressLossCriteria::LossMethodType::AASHTO_REFINED_2005:
       strLossMethod = _T("Refined estimate per AASHTO LRFD ");
-      strLossMethod += std::_tstring(LrfdCw8th(_T("5.9.5.4"), _T("5.9.3.4")));
+      strLossMethod += std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.5.4"), _T("5.9.3.4")));
       break;
 
-   case pgsTypes::AASHTO_LUMPSUM:
+   case PrestressLossCriteria::LossMethodType::AASHTO_LUMPSUM:
       strLossMethod = _T("Approximate lump sum estimate per AASHTO LRFD ");
-      strLossMethod += std::_tstring(LrfdCw8th(_T("5.9.5.3"), _T("5.9.3.3")));
+      strLossMethod += std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.5.3"), _T("5.9.3.3")));
       break;
 
-   case pgsTypes::AASHTO_LUMPSUM_2005:
+   case PrestressLossCriteria::LossMethodType::AASHTO_LUMPSUM_2005:
       strLossMethod = _T("Approximate estimate per AASHTO LRFD ");
-      strLossMethod += std::_tstring(LrfdCw8th(_T("5.9.5.3"), _T("5.9.3.3")));
+      strLossMethod += std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.5.3"), _T("5.9.3.3")));
       break;
 
-   case pgsTypes::GENERAL_LUMPSUM:
+   case PrestressLossCriteria::LossMethodType::GENERAL_LUMPSUM:
       strLossMethod = _T("General lump sum");
       break;
 
-   case pgsTypes::WSDOT_LUMPSUM:
+   case PrestressLossCriteria::LossMethodType::WSDOT_LUMPSUM:
       strLossMethod = _T("Approximate lump sum estimate per WSDOT Bridge Design Manual");
       break;
 
-   case pgsTypes::WSDOT_LUMPSUM_2005:
+   case PrestressLossCriteria::LossMethodType::WSDOT_LUMPSUM_2005:
       strLossMethod = _T("Approximate estimate per WSDOT Bridge Design Manual");
       break;
 
-   case pgsTypes::WSDOT_REFINED:
-   case pgsTypes::WSDOT_REFINED_2005:
+   case PrestressLossCriteria::LossMethodType::WSDOT_REFINED:
+   case PrestressLossCriteria::LossMethodType::WSDOT_REFINED_2005:
       strLossMethod = _T("Refined estimate per WSDOT Bridge Design Manual");
       break;
 
-   case pgsTypes::TXDOT_REFINED_2004:
+   case PrestressLossCriteria::LossMethodType::TXDOT_REFINED_2004:
       strLossMethod = _T("Refined estimate per TxDOT Bridge Design Manual");
       break;
 
-   case pgsTypes::TXDOT_REFINED_2013:
+   case PrestressLossCriteria::LossMethodType::TXDOT_REFINED_2013:
       strLossMethod = _T("Refined estimate per TxDOT Research Report 0-6374-2");
       break;
 
-   case pgsTypes::TIME_STEP:
+   case PrestressLossCriteria::LossMethodType::TIME_STEP:
       strLossMethod = _T("Time Step");
       switch (GetTimeDependentModel())
       {
-      case pgsTypes::tdmAASHTO:
+      case PrestressLossCriteria::TimeDependentConcreteModelType::AASHTO:
          strLossMethod += std::_tstring(_T(" (AASHTO LRFD)"));
          break;
-      case pgsTypes::tdmACI209:
+      case PrestressLossCriteria::TimeDependentConcreteModelType::ACI209:
          strLossMethod += std::_tstring(_T(" (ACI 209R-92)"));
          break;
-      case pgsTypes::tdmCEBFIP:
+      case PrestressLossCriteria::TimeDependentConcreteModelType::CEBFIP:
          strLossMethod += std::_tstring(_T(" (CEB-FIP 1990)"));
          break;
       default:
@@ -11162,26 +11333,26 @@ std::_tstring CProjectAgentImp::GetLossMethodDescription() const
    return strLossMethod;
 }
 
-pgsTypes::LossMethod CProjectAgentImp::GetLossMethod() const
+PrestressLossCriteria::LossMethodType CProjectAgentImp::GetLossMethod() const
 {
-   pgsTypes::LossMethod loss_method;
+   PrestressLossCriteria::LossMethodType loss_method;
    if ( m_bGeneralLumpSum )
    {
-      loss_method = pgsTypes::GENERAL_LUMPSUM;
+      loss_method = PrestressLossCriteria::LossMethodType::GENERAL_LUMPSUM;
    }
    else
    {
       const SpecLibraryEntry* pSpecEntry = GetSpecEntry(m_Spec.c_str());
-      loss_method = (pgsTypes::LossMethod)pSpecEntry->GetLossMethod();
+      loss_method = pSpecEntry->GetPrestressLossCriteria().LossMethod;
    }
 
    return loss_method;
 }
 
-pgsTypes::TimeDependentModel CProjectAgentImp::GetTimeDependentModel() const
+PrestressLossCriteria::TimeDependentConcreteModelType CProjectAgentImp::GetTimeDependentModel() const
 {
    const SpecLibraryEntry* pSpecEntry = GetSpecEntry(m_Spec.c_str());
-   return (pgsTypes::TimeDependentModel)pSpecEntry->GetTimeDependentModel();
+   return pSpecEntry->GetPrestressLossCriteria().TimeDependentConcreteModel;
 }
 
 void CProjectAgentImp::IgnoreCreepEffects(bool bIgnore)
@@ -11472,7 +11643,7 @@ bool CProjectAgentImp::ResolveLibraryConflicts(const ConflictList& rList)
    const GirderLibrary&  girderLibrary = m_pLibMgr->GetGirderLibrary();
    const DuctLibrary* pDuctLibrary = m_pLibMgr->GetDuctLibrary();
 
-   // only update at bridge level if gider is set for entire bridge
+   // only update at bridge level if girder is set for entire bridge
    if (m_BridgeDescription.UseSameGirderForEntireBridge() &&
        rList.IsConflict(girderLibrary, m_BridgeDescription.GetGirderName(), &new_name))
    {
@@ -11617,44 +11788,44 @@ bool CProjectAgentImp::ResolveLibraryConflicts(const ConflictList& rList)
 
    // now that the spec library entry has been set, see if there are any obsolete
    // values in the library that need to be brought into the project agent
-
-   if ( m_pSpecEntry->UpdateLoadFactors() )
+   const auto& refactored_spec_library_parameters = m_pSpecEntry->GetRefactoredParameters();
+   if (refactored_spec_library_parameters.HasLoadFactors() )
    {
       // recover parameters that are no longer part of the spec library entry
       for ( int i = 0; i < 6; i++ )
       {
          pgsTypes::LimitState ls = (pgsTypes::LimitState)i;
          Float64 min, max;
-         m_pSpecEntry->GetDCLoadFactors(ls, &min, &max);
+         std::tie(min,max) = refactored_spec_library_parameters.GetDCLoadFactors(ls);
          m_LoadFactors.SetDC(ls,min, max);
 
-         m_pSpecEntry->GetDWLoadFactors(ls, &min, &max);
+         std::tie(min,max) = refactored_spec_library_parameters.GetDWLoadFactors(ls);
          m_LoadFactors.SetDW(ls, min, max);
 
-         m_pSpecEntry->GetLLIMLoadFactors(ls, &min, &max);
+         std::tie(min,max) = refactored_spec_library_parameters.GetLLIMLoadFactors(ls);
          m_LoadFactors.SetLLIM(ls, min, max);
       }
    }
 
-   if ( m_pSpecEntry->GetLossMethod() == 3 ) // old general lump sum method
+   if (refactored_spec_library_parameters.HasLumpSumLosses()) // old general lump sum method
    {
       m_bGeneralLumpSum               = true;
-      m_BeforeXferLosses              = m_pSpecEntry->GetBeforeXferLosses();
-      m_AfterXferLosses               = m_pSpecEntry->GetAfterXferLosses();
-      m_LiftingLosses                 = m_pSpecEntry->GetLiftingLosses();
-      m_ShippingLosses                = m_pSpecEntry->GetShippingLosses();
-      m_BeforeTempStrandRemovalLosses = m_pSpecEntry->GetBeforeTempStrandRemovalLosses();
-      m_AfterTempStrandRemovalLosses  = m_pSpecEntry->GetAfterTempStrandRemovalLosses();
-      m_AfterDeckPlacementLosses      = m_pSpecEntry->GetAfterDeckPlacementLosses();
-      m_AfterSIDLLosses               = m_pSpecEntry->GetAfterSIDLLosses();
-      m_FinalLosses                   = m_pSpecEntry->GetFinalLosses();
+      m_BeforeXferLosses              = refactored_spec_library_parameters.GetBeforeXferLosses();
+      m_AfterXferLosses               = refactored_spec_library_parameters.GetAfterXferLosses();
+      m_LiftingLosses                 = refactored_spec_library_parameters.GetLiftingLosses();
+      m_ShippingLosses                = refactored_spec_library_parameters.GetShippingLosses();
+      m_BeforeTempStrandRemovalLosses = refactored_spec_library_parameters.GetBeforeTempStrandRemovalLosses();
+      m_AfterTempStrandRemovalLosses  = refactored_spec_library_parameters.GetAfterTempStrandRemovalLosses();
+      m_AfterDeckPlacementLosses      = refactored_spec_library_parameters.GetAfterDeckPlacementLosses();
+      m_AfterSIDLLosses               = refactored_spec_library_parameters.GetAfterSIDLLosses();
+      m_FinalLosses                   = refactored_spec_library_parameters.GetFinalLosses();
    }
 
-   if ( m_pSpecEntry->UpdatePTParameters() )
+   if (refactored_spec_library_parameters.HasPTParameters() )
    {
-      m_Dset_PT                = m_pSpecEntry->GetAnchorSet();
-      m_WobbleFriction_PT      = m_pSpecEntry->GetWobbleFrictionCoefficient();
-      m_FrictionCoefficient_PT = m_pSpecEntry->GetFrictionCoefficient();
+      m_Dset_PT                = refactored_spec_library_parameters.GetAnchorSet();
+      m_WobbleFriction_PT      = refactored_spec_library_parameters.GetWobbleFrictionCoefficient();
+      m_FrictionCoefficient_PT = refactored_spec_library_parameters.GetFrictionCoefficient();
 
       m_Dset_TTS                = m_Dset_PT;
       m_WobbleFriction_TTS      = m_WobbleFriction_PT;
@@ -11697,7 +11868,7 @@ void CProjectAgentImp::UpdateJackingForce()
       return; // jacking force is up to date
    }
 
-   // this parameter is to prevent a problem with recurssion
+   // this parameter is to prevent a problem with recursion
    // it must be a static data member
    static bool bUpdating = true;
    if ( bUpdating )
@@ -11818,13 +11989,16 @@ void CProjectAgentImp::DealWithGirderLibraryChanges(bool fromLibrary)
 
             ValidateStrands(segmentKey,pSegment,fromLibrary);
    
-            // make sure debond data is consistent with design algorithim
-            Float64 xfer_length = pPrestress->GetTransferLength(segmentKey,pgsTypes::Straight); // this is related to debonding so we assume only straight strands are debonded
+            // make sure debond data is consistent with design algorithm
+            Float64 xfer_length = pPrestress->GetTransferLength(segmentKey,pgsTypes::Straight, pgsTypes::TransferLengthType::Minimum); // this is related to debonding so we assume only straight strands are debonded
             Float64 ndb, minDist;
             bool bMinDist;
             pGdrEntry->GetMinDistanceBetweenDebondSections(&ndb, &bMinDist, &minDist);
 
-            bool bTooSmall = ndb < 60.0 ? true : false;
+            GET_IFACE(IMaterials, pMaterials);
+            Float64 ndb_max = pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC ? 24.0 : 60.0;
+
+            bool bTooSmall = ndb < ndb_max ? true : false;
             if (bMinDist)
             {
                bTooSmall &= ::IsLT(minDist, xfer_length, 0.001) ? true : false;
@@ -11842,7 +12016,7 @@ void CProjectAgentImp::DealWithGirderLibraryChanges(bool fromLibrary)
                {
                   os << _T("Span ") << LABEL_SPAN(segmentKey.groupIndex) << _T(" Girder ") << LABEL_GIRDER(segmentKey.girderIndex);
                }
-               os << _T(": The minimum longitudinal spacing of debonding termiation locations in the girder library is shorter than the transfer length (e.g., 60*Db). This may cause the debonding design algorithm to generate designs that do not pass a specification check.") << std::endl;
+               os << _T(": The minimum longitudinal spacing of debonding termination locations in the girder library is shorter than the transfer length (e.g., ") << ndb_max << Sub2(_T("d"),_T("b")) << _T(". This may cause the debonding design algorithm to generate designs that do not pass a specification check.") << std::endl;
                AddSegmentStatusItem(segmentKey, os.str() );
             }
 
@@ -11863,7 +12037,7 @@ void CProjectAgentImp::DealWithGirderLibraryChanges(bool fromLibrary)
    } // grooup loop
 }
 
-void CProjectAgentImp::AddSegmentStatusItem(const CSegmentKey& segmentKey,std::_tstring& message)
+void CProjectAgentImp::AddSegmentStatusItem(const CSegmentKey& segmentKey,const std::_tstring& message)
 {
    // first post message
    GET_IFACE(IEAFStatusCenter,pStatusCenter);
@@ -11923,8 +12097,8 @@ void CProjectAgentImp::InitSpecification(const std::_tstring& spec)
                          &m_pSpecEntry,
                          *(m_pLibMgr->GetSpecLibrary()) );
 
-      lrfdVersionMgr::SetVersion( m_pSpecEntry->GetSpecificationType() );
-      lrfdVersionMgr::SetUnits( m_pSpecEntry->GetSpecificationUnits() );
+      WBFL::LRFD::BDSManager::SetEdition( m_pSpecEntry->GetSpecificationCriteria().GetEdition() );
+      WBFL::LRFD::BDSManager::SetUnits( m_pSpecEntry->GetSpecificationCriteria().Units );
    }
 }
 
@@ -11944,10 +12118,10 @@ void CProjectAgentImp::InitRatingSpecification(const std::_tstring& spec)
                          &m_pRatingEntry,
                          *(m_pLibMgr->GetRatingLibrary()) );
 
-      lrfrVersionMgr::SetVersion( m_pRatingEntry->GetSpecificationVersion() );
+      WBFL::LRFD::MBEManager::SetEdition( m_pRatingEntry->GetSpecificationVersion() );
 
       // update live load factors
-      if ( m_pRatingEntry->GetSpecificationVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
+      if ( m_pRatingEntry->GetSpecificationVersion() < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
       {
          const CLiveLoadFactorModel& design_inventory_model = m_pRatingEntry->GetLiveLoadFactorModel(pgsTypes::lrDesign_Inventory);
          if ( !design_inventory_model.AllowUserOverride() )
@@ -12106,7 +12280,7 @@ Float64 CProjectAgentImp::GetMaxPjack(const CSegmentKey& segmentKey,pgsTypes::St
    return pPrestress->GetPjackMax(segmentKey,*GetStrandMaterial(segmentKey,type),nStrands);
 }
 
-Float64 CProjectAgentImp::GetMaxPjack(const CSegmentKey& segmentKey,StrandIndexType nStrands,const matPsStrand* pStrand) const
+Float64 CProjectAgentImp::GetMaxPjack(const CSegmentKey& segmentKey,StrandIndexType nStrands,const WBFL::Materials::PsStrand* pStrand) const
 {
    GET_IFACE(IPretensionForce,pPrestress);
    return pPrestress->GetPjackMax(segmentKey,*pStrand,nStrands);
@@ -12283,12 +12457,13 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
 
    // Casting yard stage... starts at day 0 when strands are stressed
    // The activities in this stage includes prestress release, lifting and storage
+   const auto& creep_criteria = pSpecEntry->GetCreepCriteria();
    std::unique_ptr<CTimelineEvent> pTimelineEvent = std::make_unique<CTimelineEvent>();
    pTimelineEvent->SetDay(0);
    pTimelineEvent->SetDescription(_T("Construct Girders, Erect Piers"));
    pTimelineEvent->GetConstructSegmentsActivity().Enable();
-   pTimelineEvent->GetConstructSegmentsActivity().SetTotalCuringDuration(  ::ConvertFromSysUnits(pSpecEntry->GetXferTime(),unitMeasure::Day));
-   pTimelineEvent->GetConstructSegmentsActivity().SetRelaxationTime(::ConvertFromSysUnits(pSpecEntry->GetXferTime(),unitMeasure::Day));
+   pTimelineEvent->GetConstructSegmentsActivity().SetTotalCuringDuration(  WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime,WBFL::Units::Measure::Day));
+   pTimelineEvent->GetConstructSegmentsActivity().SetRelaxationTime(WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime,WBFL::Units::Measure::Day));
    pTimelineEvent->GetConstructSegmentsActivity().AddSegments(segmentIDs);
 
    // assume piers are erected at the same time girders are being constructed
@@ -12308,7 +12483,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    // are removed all on the same day. Assuming max construction sequence (D120). The actual
    // don't matter unless the user switches to time-step analysis.
    pTimelineEvent = std::make_unique<CTimelineEvent>();
-   Float64 day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime()+pSpecEntry->GetCreepDuration1Max(),unitMeasure::Day);
+   Float64 day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration1Max,WBFL::Units::Measure::Day);
    Float64 maxDay = 28.0;
    day = Max(day,maxDay);
    maxDay += 1.0;
@@ -12326,7 +12501,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    if (IsNonstructuralDeck(deckType))
    {
       // deck is non-composite or there is no deck so creep can continue
-      deck_diaphragm_curing_duration = Min(::ConvertFromSysUnits(pSpecEntry->GetTotalCreepDuration() - pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day), 28.0);
+      deck_diaphragm_curing_duration = Min(WBFL::Units::ConvertFromSysUnits(creep_criteria.TotalCreepDuration - creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day), 28.0);
    }
 
    if ( IsJointSpacing(m_BridgeDescription.GetGirderSpacingType()) && m_BridgeDescription.HasStructuralLongitudinalJoints() )
@@ -12340,7 +12515,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
       // 2) Joints
       // 3) Deck
       pTimelineEvent = std::make_unique<CTimelineEvent>();
-      day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
+      day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day);
       day = Max(day, maxDay);
       pTimelineEvent->SetDay(day);
       pTimelineEvent->SetDescription(_T("Cast Diaphragms"));
@@ -12350,7 +12525,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
       pTimelineEvent.release();
 
       pTimelineEvent = std::make_unique<CTimelineEvent>();
-      day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day) + 1.0;
+      day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day) + 1.0;
       day = Max(day, maxDay);
       pTimelineEvent->SetDay(day);
       pTimelineEvent->SetDescription(_T("Cast Longitudinal Joints"));
@@ -12366,7 +12541,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
       if ( deckType != pgsTypes::sdtNone)
       {
          pTimelineEvent = std::make_unique<CTimelineEvent>();
-         day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day) + 2.0;
+         day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day) + 2.0;
          day = Max(day, maxDay);
          pTimelineEvent->SetDay(day);
 
@@ -12386,7 +12561,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    {
       // Cast deck & diaphragms
       pTimelineEvent = std::make_unique<CTimelineEvent>();
-      day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
+      day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day);
       day = Max(day, maxDay);
       pTimelineEvent->SetDay(day);
       pTimelineEvent->SetDescription(_T("Cast Diaphragms"));
@@ -12400,7 +12575,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
       if (deckType != pgsTypes::sdtNone)
       {
          pTimelineEvent = std::make_unique<CTimelineEvent>();
-         day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
+         day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day);
          day = Max(day, maxDay);
          pTimelineEvent->SetDay(day);
          pTimelineEvent->SetDescription(GetCastDeckEventName(deckType));
@@ -12417,7 +12592,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
 
    // traffic barrier/superimposed dead loads
    pTimelineEvent = std::make_unique<CTimelineEvent>();
-   day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime()+pSpecEntry->GetCreepDuration2Max(),unitMeasure::Day) + deck_diaphragm_curing_duration;
+   day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration2Max,WBFL::Units::Measure::Day) + deck_diaphragm_curing_duration;
    day = Max(day,maxDay);
    pTimelineEvent->SetDay( day ); // deck is continuous
    pTimelineEvent->GetApplyLoadActivity().ApplyRailingSystemLoad();
@@ -12443,7 +12618,7 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
    if ( wearingSurface == pgsTypes::wstFutureOverlay )
    {
       pTimelineEvent = std::make_unique<CTimelineEvent>();
-      day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day) + deck_diaphragm_curing_duration + 1.0;
+      day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day) + deck_diaphragm_curing_duration + 1.0;
       day = Max(day, maxDay);
       pTimelineEvent->SetDay( day ); 
       pTimelineEvent->SetDescription(_T("Final without Live Load"));
@@ -12455,12 +12630,13 @@ void CProjectAgentImp::CreatePrecastGirderBridgeTimelineEvents()
 
    // live load
    pTimelineEvent = std::make_unique<CTimelineEvent>();
-   day = ::ConvertFromSysUnits(pSpecEntry->GetXferTime() + pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day) + deck_diaphragm_curing_duration + 1.0;
+   day = WBFL::Units::ConvertFromSysUnits(creep_criteria.XferTime + creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day) + deck_diaphragm_curing_duration + 1.0;
    day = Max(day, maxDay);
    pTimelineEvent->SetDay( day );
    pTimelineEvent->SetDescription(_T("Final with Live Load"));
    pTimelineEvent->GetApplyLoadActivity().ApplyLiveLoad();
    pTimelineEvent->GetApplyLoadActivity().ApplyRatingLiveLoad();
+   pTimelineEvent->GetGeometryControlActivity().SetGeometryControlEventType(pgsTypes::gcaGeometryControlEvent); // precast bridges have this hard-coded
    pTimelineManager->AddTimelineEvent(pTimelineEvent.get(), true, &eventIdx);
    maxDay = pTimelineEvent->GetDay() + 1;
    pTimelineEvent.release();

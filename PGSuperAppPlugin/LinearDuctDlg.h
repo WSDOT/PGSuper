@@ -19,7 +19,7 @@ public:
 
    const CLinearDuctGeometry& GetDuctGeometry() const;
 
-   grlibPointMapper::MapMode GetTendonControlMapMode() const;
+   WBFL::Graphing::PointMapper::MapMode GetTendonControlMapMode() const;
 
 // Dialog Data
 	enum { IDD = IDD_LINEAR_DUCT };

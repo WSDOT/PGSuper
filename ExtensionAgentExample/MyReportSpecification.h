@@ -27,13 +27,13 @@ class CMyReportSpecification :
    public CBrokerReportSpecification // want the broker to be available when the report is generated
 {
 public:
-	CMyReportSpecification(LPCTSTR strReportName,IBroker* pBroker);
+	CMyReportSpecification(const std::_tstring& strReportName,IBroker* pBroker);
    ~CMyReportSpecification(void);
 
    void SetMessage(const CString& msg);
-   CString GetMessage();
+   const CString& GetMessage() const;
 
-   virtual HRESULT Validate() const override;
+   virtual bool IsValid() const override;
 
 protected:
    CString m_Message;

@@ -30,8 +30,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-IntervalTool::IntervalTool(const unitmgtScalar& umd) : 
-ScalarTool(umd)
+IntervalTool::IntervalTool(const WBFL::Units::ScalarData& umd) : 
+WBFL::Units::ScalarTool(umd)
 {
    m_LastValue = -1;
 }

@@ -31,6 +31,7 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>
+#include <IFace\ReportOptions.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -79,13 +80,13 @@ rptRcTable* CUserAxialTable::Build(IBroker* pBroker,const CGirderKey& girderKey,
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptForceUnitValue, axial, pDisplayUnits->GetGeneralForceUnit(), false );
 
-   GET_IFACE2(pBroker, IDocumentType, pDocType);
-   location.IncludeSpanAndGirder(pDocType->IsPGSpliceDocument() || girderKey.groupIndex == ALL_GROUPS);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    CString strTitle;
-   strTitle.Format(_T("Axial due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx));
-   rptRcTable* p_table = CreateUserLoadHeading<rptForceUnitTag,unitmgtForceData>(strTitle.GetBuffer(),false,analysisType,intervalIdx,pDisplayUnits,pDisplayUnits->GetGeneralForceUnit());
+   strTitle.Format(_T("Axial due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx).c_str());
+   rptRcTable* p_table = CreateUserLoadHeading<rptForceUnitTag,WBFL::Units::ForceData>(strTitle.GetBuffer(),false,analysisType,intervalIdx,pDisplayUnits,pDisplayUnits->GetGeneralForceUnit());
 
    if (girderKey.groupIndex == ALL_GROUPS)
    {
@@ -185,27 +186,3 @@ void CUserAxialTable::MakeAssignment(const CUserAxialTable& rOther)
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CUserAxialTable::AssertValid() const
-{
-   return true;
-}
-
-void CUserAxialTable::Dump(dbgDumpContext& os) const
-{
-   os << _T("Dump for CUserAxialTable") << endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CUserAxialTable::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("CUserAxialTable");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CUserAxialTable");
-
-   TESTME_EPILOG("CUserAxialTable");
-}
-#endif // _UNITTEST

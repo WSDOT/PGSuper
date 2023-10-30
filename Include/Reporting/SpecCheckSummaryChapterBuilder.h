@@ -51,14 +51,14 @@ public:
    CSpecCheckSummaryChapterBuilder(bool referToDetailsReport,bool bSelect = true);
 
    //------------------------------------------------------------------------
-   virtual LPCTSTR GetName() const;
+   virtual LPCTSTR GetName() const override;
    
 
    //------------------------------------------------------------------------
-   virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const;
+   virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
 
    //------------------------------------------------------------------------
-   virtual rptChapter* BuildEx(CReportSpecification* pRptSpec,Uint16 level,
+   virtual rptChapter* BuildEx(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level,
                                const pgsGirderArtifact* pGirderArtifact) const;
 
    //------------------------------------------------------------------------
@@ -67,7 +67,7 @@ public:
 
 
    //------------------------------------------------------------------------
-   virtual CChapterBuilder* Clone() const;
+   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 
 protected:
 

@@ -81,11 +81,11 @@ LPCTSTR CDistributionFactorSummaryChapterBuilder::GetName() const
    return TEXT("Live Load Distribution Factor Summary");
 }
 
-rptChapter* CDistributionFactorSummaryChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CDistributionFactorSummaryChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    USES_CONVERSION;
 
-   CBrokerReportSpecification* pBrokerSpec = dynamic_cast<CBrokerReportSpecification*>(pRptSpec);
+   auto pBrokerSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
 
    // This report does not use the passd span and girder parameters
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
@@ -112,9 +112,9 @@ rptChapter* CDistributionFactorSummaryChapterBuilder::Build(CReportSpecification
    return pChapter;
 }
 
-CChapterBuilder* CDistributionFactorSummaryChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CDistributionFactorSummaryChapterBuilder::Clone() const
 {
-   return new CDistributionFactorSummaryChapterBuilder;
+   return std::make_unique<CDistributionFactorSummaryChapterBuilder>();
 }
 
 void WriteSpanTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,IEAFDisplayUnits* pDisplayUnits)
@@ -132,7 +132,7 @@ void WriteSpanTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,
    *pChapter << pBody;
 
    ColumnIndexType nCols = 4;
-   if (lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion())
+   if (WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition())
    {
       nCols += 3; // for fatigue limit state LLDF
    }
@@ -144,7 +144,7 @@ void WriteSpanTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,
    *pBody << pTable;
 
    (*pTable)(0,0) << _T("");
-   if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+   if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims )
    {
       pTable->SetNumberOfHeaderRows(1);
       (*pTable)(0,1) << _T("+M");
@@ -193,7 +193,7 @@ void WriteSpanTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,
 
       Float64 pM, VStart, VEnd;
       Float64 nm;
-      sysSectionValue nM;
+      WBFL::System::SectionValue nM;
       pDistFact->GetDistributionFactors(poi_start, pgsTypes::StrengthI, &pM, &nm, &VStart);
       nM.Left() = nm;
 
@@ -222,7 +222,7 @@ void WriteSpanTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,
       }
 
 
-      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          pDistFact->GetDistributionFactors(poi_start,pgsTypes::FatigueI,&pM,&nm,&VStart);
          nM.Left() = nm;
@@ -276,7 +276,7 @@ void WritePierTable(rptChapter* pChapter,IBroker* pBroker,PierIndexType pierIdx,
    *pChapter << pBody;
 
    ColumnIndexType nCols = 2;
-   if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
       nCols += 2; // for fatigue limit state LLDF
 
    
@@ -287,7 +287,7 @@ void WritePierTable(rptChapter* pChapter,IBroker* pBroker,PierIndexType pierIdx,
    *pBody << pTable;
 
    (*pTable)(0,0) << _T("");
-   if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+   if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims )
    {
       pTable->SetNumberOfHeaderRows(1);
       (*pTable)(0,1) << _T("-M");
@@ -316,7 +316,7 @@ void WritePierTable(rptChapter* pChapter,IBroker* pBroker,PierIndexType pierIdx,
    {
       (*pTable)(row,0) << _T("Girder ") << LABEL_GIRDER(gdrIdx);
 
-      sysSectionValue nM;
+      WBFL::System::SectionValue nM;
       if ( bNegMoments )
       {
          if ( pierIdx == 0 )
@@ -341,7 +341,7 @@ void WritePierTable(rptChapter* pChapter,IBroker* pBroker,PierIndexType pierIdx,
          (*pTable)(row,1) << _T("------");
       }
 
-      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          if ( bNegMoments )
          {

@@ -91,7 +91,7 @@ void CTxDOTOptionalDesignStandardFillDlg::DoDataExchange(CDataExchange* pDX)
 
    DDX_CBStringExactCase(pDX, IDC_OPT_NUM_STRANDS, m_strNumStrands);
 
-   bool st = sysTokenizer::ParseULong(m_strNumStrands, (unsigned long*)&m_NumStrands);  // save num strands as integral value as well
+   bool st = WBFL::System::Tokenizer::ParseULong(m_strNumStrands, (unsigned long*)&m_NumStrands);  // save num strands as integral value as well
    ASSERT(st);
 
    // only parse To value if we have harped strands
@@ -173,7 +173,7 @@ void CTxDOTOptionalDesignStandardFillDlg::OnCbnSelchangeOptNumStrands()
    if (sel!=CB_ERR)
    {
       pBox->GetLBText(sel,m_strNumStrands);
-      bool st = sysTokenizer::ParseULong(m_strNumStrands, (unsigned long*)&m_NumStrands);  // save num strands as integral value as well
+      bool st = WBFL::System::Tokenizer::ParseULong(m_strNumStrands, (unsigned long*)&m_NumStrands);  // save num strands as integral value as well
       ASSERT(st);
    }
    else
@@ -230,8 +230,8 @@ void CTxDOTOptionalDesignStandardFillDlg::UpdateControls()
 
       Float64 toLower, toUpper;
       m_pGirderData->ComputeToRange(pLib, m_NumStrands, &toLower, &toUpper);
-      toLower = ::ConvertFromSysUnits(toLower, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
-      toUpper = ::ConvertFromSysUnits(toUpper, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+      toLower = WBFL::Units::ConvertFromSysUnits(toLower, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
+      toUpper = WBFL::Units::ConvertFromSysUnits(toUpper, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
 
       CString umsg;
       umsg.Format(_T("(Valid Range: %.3f to %.3f)"),toLower, toUpper);
@@ -274,8 +274,8 @@ void CTxDOTOptionalDesignStandardFillDlg::OnBnClickedOptCompute()
    Float64 eccEnds, eccCL;
    m_pGirderData->ComputeEccentricities(pLib,m_NumStrands,m_To,&eccEnds,&eccCL);
 
-   eccEnds = ::ConvertFromSysUnits(eccEnds,unitMeasure::Inch);
-   eccCL = ::ConvertFromSysUnits(eccCL,unitMeasure::Inch);
+   eccEnds = WBFL::Units::ConvertFromSysUnits(eccEnds,WBFL::Units::Measure::Inch);
+   eccCL = WBFL::Units::ConvertFromSysUnits(eccCL,WBFL::Units::Measure::Inch);
 
    CEccentricityDlg dlg;
    if (eccCL != eccEnds)

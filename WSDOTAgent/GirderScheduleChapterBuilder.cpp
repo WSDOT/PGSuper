@@ -37,6 +37,8 @@
 #include <IFace\GirderHandling.h>
 #include <PgsExt\GirderArtifact.h>
 #include <psgLib\SpecLibraryEntry.h>
+#include <psgLib/CreepCriteria.h>
+#include <psgLib/LimitsCriteria.h>
 
 #include <psgLib\ConnectionLibraryEntry.h>
 
@@ -87,9 +89,9 @@ LPCTSTR CGirderScheduleChapterBuilder::GetName() const
    return TEXT("Girder Schedule");
 }
 
-rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CGirderScheduleChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGdrRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGdrRptSpec->GetBroker(&pBroker);
    const CGirderKey& girderKey( pGdrRptSpec->GetGirderKey() );
@@ -199,8 +201,11 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    GET_IFACE2( pBroker, ISpecification, pSpec );
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
-   Float64 min_days =  ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Min(), unitMeasure::Day);
-   Float64 max_days =  ::ConvertFromSysUnits(pSpecEntry->GetCreepDuration2Max(), unitMeasure::Day);
+   const auto& creep_criteria = pSpecEntry->GetCreepCriteria();
+   const auto& limits_criteria = pSpecEntry->GetLimitsCriteria();
+
+   Float64 min_days =  WBFL::Units::ConvertFromSysUnits(creep_criteria.CreepDuration2Min, WBFL::Units::Measure::Day);
+   Float64 max_days =  WBFL::Units::ConvertFromSysUnits(creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day);
 
    GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
    PoiList pmid;
@@ -509,7 +514,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    Float64 C;
    if (IsNonstructuralDeck(deckType))
    {
-      C = pCamber->GetExcessCamber(poiMidSpan, CREEP_MAXTIME);
+      C = pCamber->GetExcessCamber(poiMidSpan, pgsTypes::CreepTime::Max);
    }
    else
    {
@@ -527,7 +532,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
          (*pTable)(row, 1) << gdim.SetValue(pSegment->GetSlabOffset(pgsTypes::metEnd));
       }
 
-      C = pCamber->GetScreedCamber(poiMidSpan, CREEP_MAXTIME);
+      C = pCamber->GetScreedCamber(poiMidSpan, pgsTypes::CreepTime::Max);
       (*pTable)(++row, 0) << _T("Screed Camber, C at mid-span");
       (*pTable)(row, 1) << gdim.SetValue(C);
    }
@@ -535,8 +540,8 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    // get # of days for creep
    Float64 Dmax_UpperBound, Dmax_Average, Dmax_LowerBound;
    Float64 Dmin_UpperBound, Dmin_Average, Dmin_LowerBound;
-   pCamber->GetDCamberForGirderScheduleEx(poiMidSpan, CREEP_MAXTIME, &Dmax_UpperBound, &Dmax_Average, &Dmax_LowerBound);
-   pCamber->GetDCamberForGirderScheduleEx(poiMidSpan, CREEP_MINTIME, &Dmin_UpperBound, &Dmin_Average, &Dmin_LowerBound);
+   pCamber->GetDCamberForGirderScheduleEx(poiMidSpan, pgsTypes::CreepTime::Max, &Dmax_UpperBound, &Dmax_Average, &Dmax_LowerBound);
+   pCamber->GetDCamberForGirderScheduleEx(poiMidSpan, pgsTypes::CreepTime::Min, &Dmin_UpperBound, &Dmin_Average, &Dmin_LowerBound);
 
 
    (*pTable)(++row,0) << _T("Lower bound @ ")<< min_days<<_T(" days");
@@ -604,21 +609,21 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
       {
          (*pTable)(++row,0) << _T("H1 (##)");
          Float64 Hg = pSectProp->GetHg(releaseIntervalIdx,poiStart);
-         Float64 H1 = pBridgeDesc->GetSlabOffset() + Hg + ::ConvertToSysUnits(3.0,unitMeasure::Inch);
+         Float64 H1 = pBridgeDesc->GetSlabOffset() + Hg + WBFL::Units::ConvertToSysUnits(3.0,WBFL::Units::Measure::Inch);
          (*pTable)(row,  1) << gdim.SetValue(H1);
       }
       else
       {
          (*pTable)(++row,0) << _T("H1 at End 1 (##)");
          Float64 Hg = pSectProp->GetHg(releaseIntervalIdx,poiStart);
-         Float64 H1 = pSegment->GetSlabOffset(pgsTypes::metStart) + Hg + ::ConvertToSysUnits(3.0,unitMeasure::Inch);
+         Float64 H1 = pSegment->GetSlabOffset(pgsTypes::metStart) + Hg + WBFL::Units::ConvertToSysUnits(3.0,WBFL::Units::Measure::Inch);
          (*pTable)(row,  1) << gdim.SetValue(H1);
 
          (*pTable)(++row,0) << _T("H1 at End 2 (##)");
          pgsPointOfInterest poiEnd(poiStart);
          poiEnd.SetDistFromStart(pBridge->GetSegmentLength(segmentKey));
          Hg = pSectProp->GetHg(releaseIntervalIdx,poiEnd);
-         H1 = pSegment->GetSlabOffset(pgsTypes::metEnd) + Hg + ::ConvertToSysUnits(3.0,unitMeasure::Inch);
+         H1 = pSegment->GetSlabOffset(pgsTypes::metEnd) + Hg + WBFL::Units::ConvertToSysUnits(3.0,WBFL::Units::Measure::Inch);
          (*pTable)(row,  1) << gdim.SetValue(H1);
       }
    }
@@ -687,7 +692,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    }
 
 
-   if ( pSpecEntry->CheckGirderSag() )
+   if (limits_criteria.bCheckSag )
    {
       if (IsNonstructuralDeck(deckType))
       {
@@ -703,17 +708,17 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
          std::_tstring camberType;
          Float64 D = 0;
 
-         switch (pSpecEntry->GetSagCamberType())
+         switch (limits_criteria.SagCamber)
          {
-         case pgsTypes::LowerBoundCamber:
+         case pgsTypes::SagCamber::LowerBoundCamber:
             D = Dmin_LowerBound;
             camberType = _T("lower bound");
             break;
-         case pgsTypes::AverageCamber:
+         case pgsTypes::SagCamber::AverageCamber:
             D = Dmin_Average;
             camberType = _T("average");
             break;
-         case pgsTypes::UpperBoundCamber:
+         case pgsTypes::SagCamber::UpperBoundCamber:
             D = Dmin_UpperBound;
             camberType = _T("upper bound");
             break;
@@ -726,7 +731,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
 
             *p << color(Red) << _T("WARNING: Screed camber (C) is greater than the ") << camberType.c_str() << _T(" camber at time of deck casting, D. The girder may end up with a sag.") << color(Black) << rptNewLine;
          }
-         else if (IsEqual(C, D, ::ConvertToSysUnits(0.25, unitMeasure::Inch)))
+         else if (IsEqual(C, D, WBFL::Units::ConvertToSysUnits(0.25, WBFL::Units::Measure::Inch)))
          {
             rptParagraph* p = new rptParagraph;
             *pChapter << p;
@@ -734,7 +739,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
             *p << color(Red) << _T("WARNING: Screed camber (C) is nearly equal to the ") << camberType.c_str() << _T(" camber at time of deck casting, D. The girder may end up with a sag.") << color(Black) << rptNewLine;
          }
 
-         if (Dmin_LowerBound < C && pSpecEntry->GetSagCamberType() != pgsTypes::LowerBoundCamber)
+         if (Dmin_LowerBound < C && limits_criteria.SagCamber != pgsTypes::SagCamber::LowerBoundCamber)
          {
             rptParagraph* p = new rptParagraph;
             *pChapter << p;
@@ -810,9 +815,9 @@ rptChapter* CGirderScheduleChapterBuilder::Build(CReportSpecification* pRptSpec,
    return pChapter;
 }
 
-CChapterBuilder* CGirderScheduleChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CGirderScheduleChapterBuilder::Clone() const
 {
-   return new CGirderScheduleChapterBuilder;
+   return std::make_unique<CGirderScheduleChapterBuilder>();
 }
 
 //======================== ACCESS     =======================================
@@ -850,7 +855,7 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,cons
    }
 
    // Check first zone... it must be 1-1/2" long with 1-1/2" spacing... one space
-   matRebar::Size barSize;
+   WBFL::Materials::Rebar::Size barSize;
    Float64 count, spacing;
    pStirrupGeometry->GetPrimaryVertStirrupBarInfo(segmentKey,0, &barSize, &count, &spacing);
 
@@ -860,12 +865,12 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,cons
    Float64 zoneLength = zoneEnd - zoneStart;
    Float64 v = zoneLength/spacing;
 
-   if ( barSize != matRebar::bs5 )
+   if ( barSize != WBFL::Materials::Rebar::Size::bs5 )
    {
       return STIRRUP_ERROR_BARSIZE;
    }
 
-   if ( !IsEqual(v,1.0) && !IsEqual(spacing,::ConvertToSysUnits(1.5,unitMeasure::Inch)) )
+   if ( !IsEqual(v,1.0) && !IsEqual(spacing,WBFL::Units::ConvertToSysUnits(1.5,WBFL::Units::Measure::Inch)) )
    {
       return STIRRUP_ERROR_STARTZONE;
    }
@@ -882,7 +887,7 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,cons
       return STIRRUP_ERROR_ZONES;
    }
 
-   if ( barSize != matRebar::bs5 )
+   if ( barSize != WBFL::Materials::Rebar::Size::bs5 )
    {
       return STIRRUP_ERROR_BARSIZE;
    }
@@ -900,7 +905,7 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,cons
       return STIRRUP_ERROR_ZONES;
    }
 
-   if ( barSize != matRebar::bs5 )
+   if ( barSize != WBFL::Materials::Rebar::Size::bs5 )
    {
       return STIRRUP_ERROR_BARSIZE;
    }
@@ -924,14 +929,14 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,cons
 
       if ( familyCLSID == CLSID_UBeamFamily )
       {
-         if ( barSize != matRebar::bs4 )
+         if ( barSize != WBFL::Materials::Rebar::Size::bs4 )
          {
             return STIRRUP_ERROR_BARSIZE;
          }
       }
       else
       {
-         if ( barSize != matRebar::bs5 )
+         if ( barSize != WBFL::Materials::Rebar::Size::bs5 )
          {
             return STIRRUP_ERROR_BARSIZE;
          }
@@ -957,14 +962,14 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,cons
 
    if ( familyCLSID == CLSID_UBeamFamily )
    {
-      if ( barSize != matRebar::bs4 )
+      if ( barSize != WBFL::Materials::Rebar::Size::bs4 )
       {
          return STIRRUP_ERROR_BARSIZE;
       }
    }
    else
    {
-      if ( barSize != matRebar::bs5 )
+      if ( barSize != WBFL::Materials::Rebar::Size::bs5 )
       {
          return STIRRUP_ERROR_BARSIZE;
       }
@@ -983,7 +988,7 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,cons
 
    if ( familyCLSID == CLSID_WFBeamFamily || familyCLSID == CLSID_UBeamFamily )
    {
-      if ( !IsEqual(spacing,::ConvertToSysUnits(18.0,unitMeasure::Inch)) )
+      if ( !IsEqual(spacing,WBFL::Units::ConvertToSysUnits(18.0,WBFL::Units::Measure::Inch)) )
       {
          return STIRRUP_ERROR_LASTZONE;
       }
@@ -996,7 +1001,7 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,cons
       GET_IFACE2(pBroker,IGirder, pGirder);
       Float64 H = pGirder->GetHeight(poi);
 
-      Float64 lastZoneSpacing = Min(H - ::ConvertToSysUnits(3.0, unitMeasure::Inch), ::ConvertToSysUnits(18.0, unitMeasure::Inch));
+      Float64 lastZoneSpacing = Min(H - WBFL::Units::ConvertToSysUnits(3.0, WBFL::Units::Measure::Inch), WBFL::Units::ConvertToSysUnits(18.0, WBFL::Units::Measure::Inch));
       if (!IsEqual(spacing, lastZoneSpacing))
       {
          return STIRRUP_ERROR_LASTZONE;
@@ -1004,7 +1009,7 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,cons
    }
    else
    {
-      if ( !IsEqual(spacing,::ConvertToSysUnits(9.0,unitMeasure::Inch)) )
+      if ( !IsEqual(spacing,WBFL::Units::ConvertToSysUnits(9.0,WBFL::Units::Measure::Inch)) )
       {
          return STIRRUP_ERROR_LASTZONE;
       }
@@ -1013,14 +1018,14 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,cons
 
    if ( familyCLSID == CLSID_UBeamFamily || familyCLSID == CLSID_SlabBeamFamily )
    {
-      if ( barSize != matRebar::bs4 )
+      if ( barSize != WBFL::Materials::Rebar::Size::bs4 )
       {
          return STIRRUP_ERROR_BARSIZE;
       }
    }
    else
    {
-      if ( barSize != matRebar::bs5 )
+      if ( barSize != WBFL::Materials::Rebar::Size::bs5 )
       {
          return STIRRUP_ERROR_BARSIZE;
       }

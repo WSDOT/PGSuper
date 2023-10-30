@@ -92,7 +92,7 @@ Range Name | Units | Description
 NSPattern | text | In form: *, **, ***,... referred from the main strand table from a designated girder having a non-standard strand pattern.
 NSArrangement | Text | In form: “2.5(ABCE)” or “2.5(10)” see details in section 3.5.1
 
-Range Names and Contents of Haunch and Deflectins Table Template Data
+Range Names and Contents of Haunch and Deflections Table Template Data
 --------------------------------
 
 Range Name | Units | Description
@@ -104,6 +104,8 @@ Y_Val | Inches | "Y" dimension as defined on TxDOT plan sheets
 Z_Val | Inches | "Z" dimension as defined on TxDOT plan sheets
 A_Val | Feet | "A" dimension as defined on TxDOT plan sheets
 B_Val | Feet | "B" dimension as defined on TxDOT plan sheets
+SKA_Val | Feet | Deflection due to Shear Key load at 1/4 points
+SKB_Val | Feet | Deflection due to Shear Key load at mid-span
 
 Semicolon-separated Text Files
 ---------

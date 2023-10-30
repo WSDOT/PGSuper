@@ -97,7 +97,7 @@ private:
 
    Float64 m_CDR;
 
-   sysNumericFormatTool m_FormatTool;
+   WBFL::System::NumericFormatTool m_FormatTool;
    rptRcSymbol m_RcSymbolInfinity;
 };
 

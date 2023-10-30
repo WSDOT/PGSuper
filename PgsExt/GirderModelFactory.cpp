@@ -451,9 +451,9 @@ void pgsGirderModelFactory::ApplyLoads(IBroker* pBroker,const CSegmentKey& segme
       mbrID = 0;
       bool bApplyLoad = false;
 
-      CollectionIndexType nJoints;
+      IndexType nJoints;
       joints->get_Count(&nJoints);
-      for ( CollectionIndexType jntIdx = 1; jntIdx < nJoints; jntIdx++, mbrID++ )
+      for ( IndexType jntIdx = 1; jntIdx < nJoints; jntIdx++, mbrID++ )
       {
          prevJoint.Release();
          nextJoint.Release();
@@ -511,7 +511,7 @@ void pgsGirderModelFactory::FindMember(IFem2dModel* pModel,Float64 distFromStart
    CComPtr<IFem2dMemberCollection> members;
    pModel->get_Members(&members);
 
-   CollectionIndexType mbrcnt;
+   IndexType mbrcnt;
    members->get_Count(&mbrcnt);
 
    CComPtr<IFem2dJointCollection> joints;
@@ -520,7 +520,7 @@ void pgsGirderModelFactory::FindMember(IFem2dModel* pModel,Float64 distFromStart
    CComPtr<IFem2dEnumMember> enumMembers;
    members->get__EnumElements(&enumMembers);
 
-   CollectionIndexType idx = 0;
+   IndexType idx = 0;
    CComPtr<IFem2dJoint> j1, j2;
    CComPtr<IFem2dMember> mbr;
    while ( enumMembers->Next(1,&mbr,nullptr) != S_FALSE )
@@ -569,7 +569,7 @@ PoiIDPairType pgsGirderModelFactory::AddPointOfInterest(IFem2dModel* pModel,cons
    // layout poi on fem model
    CComPtr<IFem2dJointCollection> joints;
    pModel->get_Joints(&joints);
-   CollectionIndexType nJoints;
+   IndexType nJoints;
    joints->get_Count(&nJoints);
 
    CComPtr<IFem2dPOICollection> pois;
@@ -578,7 +578,7 @@ PoiIDPairType pgsGirderModelFactory::AddPointOfInterest(IFem2dModel* pModel,cons
    Float64 dist_from_start_of_member;
    MemberIDType mbrID = 0;
    
-   CollectionIndexType jntIdx = 0;
+   IndexType jntIdx = 0;
 
    CComPtr<IFem2dJoint> prevJnt;
    joints->get_Item(jntIdx++,&prevJnt);

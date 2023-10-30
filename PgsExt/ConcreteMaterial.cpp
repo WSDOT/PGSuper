@@ -22,13 +22,13 @@
 
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\ConcreteMaterial.h>
-#include <Units\SysUnits.h>
+#include <Units\Convert.h>
 
 #include <StdIo.h>
 
-#include <Material\Concrete.h>
-#include <Material\ACI209Concrete.h>
-#include <Material\CEBFIPConcrete.h>
+#include <Materials/SimpleConcrete.h>
+#include <Materials/ACI209Concrete.h>
+#include <Materials/CEBFIPConcrete.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -42,13 +42,13 @@ CLASS
 ****************************************************************************/
 
 // Make conversions static so they are only done once
-static const Float64 gs_Fci    = ::ConvertToSysUnits( 4.0, unitMeasure::KSI );
-static const Float64 gs_Fc     = ::ConvertToSysUnits(5.0,unitMeasure::KSI);
-static const Float64 gs_StrengthDensity = ::ConvertToSysUnits(160.,unitMeasure::LbfPerFeet3);
+static const Float64 gs_Fci    = WBFL::Units::ConvertToSysUnits( 4.0, WBFL::Units::Measure::KSI );
+static const Float64 gs_Fc     = WBFL::Units::ConvertToSysUnits(5.0,WBFL::Units::Measure::KSI);
+static const Float64 gs_StrengthDensity = WBFL::Units::ConvertToSysUnits(160.,WBFL::Units::Measure::LbfPerFeet3);
 static const Float64 gs_WeightDensity = gs_StrengthDensity;
-static const Float64 gs_MaxAggregateSize = ::ConvertToSysUnits(0.75,unitMeasure::Inch);
-static const Float64 gs_Eci = ::ConvertToSysUnits(4200., unitMeasure::KSI);
-static const Float64 gs_Ec = ::ConvertToSysUnits(4700., unitMeasure::KSI);
+static const Float64 gs_MaxAggregateSize = WBFL::Units::ConvertToSysUnits(0.75,WBFL::Units::Measure::Inch);
+static const Float64 gs_Eci = WBFL::Units::ConvertToSysUnits(4200., WBFL::Units::Measure::KSI);
+static const Float64 gs_Ec = WBFL::Units::ConvertToSysUnits(4700., WBFL::Units::Measure::KSI);
 
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
@@ -77,22 +77,31 @@ CConcreteMaterial::CConcreteMaterial()
    bHasFct = false;
    Fct = 0;
 
-   Ffc = ::ConvertToSysUnits(1.5, unitMeasure::KSI);
-   Frr = ::ConvertToSysUnits(0.75, unitMeasure::KSI);
-   FiberLength = ::ConvertToSysUnits(0.5, unitMeasure::Inch);
+   Ffc = WBFL::Units::ConvertToSysUnits(1.5, WBFL::Units::Measure::KSI);
+   Frr = WBFL::Units::ConvertToSysUnits(0.75, WBFL::Units::Measure::KSI);
+   FiberLength = WBFL::Units::ConvertToSysUnits(0.5, WBFL::Units::Measure::Inch);
    AutogenousShrinkage = 0.0;
    bPCTT = false;
+
+   alpha_u = 0.85; // GS 1.4.2.4.2
+   ecu = -0.0035; // GS 1.4.2.4.2
+   bExperimental_ecu = false;
+   ftcr = WBFL::Units::ConvertToSysUnits(0.75, WBFL::Units::Measure::KSI);
+   ftcri = 0.75 * ftcr;
+   ftloc = WBFL::Units::ConvertToSysUnits(0.75, WBFL::Units::Measure::KSI);
+   etloc = 0.0025;
+   gamma_u = 1.0; // GS 1.4.2.5.4
 
    bBasePropertiesOnInitialValues = false;
 
    bACIUserParameters = false;
    CureMethod = pgsTypes::Moist;
    ACI209CementType = pgsTypes::TypeI;
-   matACI209Concrete::GetModelParameters((matACI209Concrete::CureMethod)CureMethod,(matACI209Concrete::CementType)ACI209CementType,&A,&B);
+   WBFL::Materials::ACI209Concrete::GetModelParameters((WBFL::Materials::CuringType)CureMethod,(WBFL::Materials::CementType)ACI209CementType,&A,&B);
 
    bCEBFIPUserParameters = false;
    CEBFIPCementType = pgsTypes::N;
-   matCEBFIPConcrete::GetModelParameters((matCEBFIPConcrete::CementType)CEBFIPCementType,&S,&BetaSc);
+   WBFL::Materials::CEBFIPConcrete::GetModelParameters((WBFL::Materials::CEBFIPConcrete::CementType)CEBFIPCementType,&S,&BetaSc);
 }  
 
 CConcreteMaterial::~CConcreteMaterial()
@@ -217,6 +226,36 @@ bool CConcreteMaterial::operator==(const CConcreteMaterial& rOther) const
          return false;
    }
 
+   if (Type == pgsTypes::UHPC)
+   {
+      if (!IsEqual(alpha_u, rOther.alpha_u))
+         return false;
+
+      if (bExperimental_ecu != rOther.bExperimental_ecu)
+         return false;
+
+      if (bExperimental_ecu && !IsEqual(ecu, rOther.ecu, 1.0E-6))
+         return false;
+
+      if (!IsEqual(ftcri, rOther.ftcri))
+         return false;
+
+      if (!IsEqual(ftcr, rOther.ftcr))
+         return false;
+
+      if (!IsEqual(ftloc, rOther.ftloc))
+         return false;
+
+      if (!IsEqual(etloc, rOther.etloc, 1.0E-6))
+         return false;
+
+      if (!IsEqual(gamma_u, rOther.gamma_u))
+         return false;
+
+      if (!IsEqual(FiberLength, rOther.FiberLength))
+         return false;
+   }
+
    if ( bBasePropertiesOnInitialValues != rOther.bBasePropertiesOnInitialValues )
    {
       return false;
@@ -288,8 +327,8 @@ bool CConcreteMaterial::operator!=(const CConcreteMaterial& rOther) const
 
 HRESULT CConcreteMaterial::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 {
-   pStrSave->BeginUnit(_T("Concrete"),4.0);
-   pStrSave->put_Property(_T("Type"),             CComVariant( lrfdConcreteUtil::GetTypeName((matConcrete::Type)Type,false).c_str() ));
+   pStrSave->BeginUnit(_T("Concrete"),6.0);
+   pStrSave->put_Property(_T("Type"),             CComVariant( WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)Type,false).c_str() ));
    pStrSave->put_Property(_T("Fc"),               CComVariant(Fc));
 
    pStrSave->put_Property(_T("UserEc"),           CComVariant(bUserEc));
@@ -302,7 +341,9 @@ HRESULT CConcreteMaterial::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->put_Property(_T("WeightDensity"),    CComVariant(WeightDensity));
    pStrSave->put_Property(_T("StrengthDensity"),  CComVariant(StrengthDensity));
    pStrSave->put_Property(_T("MaxAggregateSize"), CComVariant(MaxAggregateSize));
-   pStrSave->put_Property(_T("FiberLength"), CComVariant(FiberLength)); // added in version 4
+   
+   //pStrSave->put_Property(_T("FiberLength"), CComVariant(FiberLength)); // added in version 4, removed in version 6
+   // This parameter should never have been saved with the conventional concrete properties. It only applies to UHPC and is stored with the UHPC parameters.
 
    pStrSave->put_Property(_T("InitialParameters"),CComVariant(bHasInitial));
    if ( bHasInitial )
@@ -345,6 +386,19 @@ HRESULT CConcreteMaterial::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    pStrSave->put_Property(_T("PCTT"), CComVariant(bPCTT));
    pStrSave->EndUnit(); // PCI_UHPC
 
+   // Added in Version 5
+   pStrSave->BeginUnit(_T("UHPC"), 3.0);
+   pStrSave->put_Property(_T("alpha_u"), CComVariant(alpha_u)); // added in UHPC version 2
+   pStrSave->put_Property(_T("Experimental_ecu"), CComVariant(bExperimental_ecu));
+   if(bExperimental_ecu) pStrSave->put_Property(_T("ecu"), CComVariant(ecu)); // added in UHPC version 2
+   pStrSave->put_Property(_T("ftcri"), CComVariant(ftcri));
+   pStrSave->put_Property(_T("ftcr"), CComVariant(ftcr));
+   pStrSave->put_Property(_T("ftloc"), CComVariant(ftloc));
+   pStrSave->put_Property(_T("etloc"), CComVariant(etloc));
+   pStrSave->put_Property(_T("gamma_u"), CComVariant(gamma_u)); // added in UHPC version 3
+   pStrSave->put_Property(_T("FiberLength"), CComVariant(FiberLength));
+   pStrSave->EndUnit(); // UHPC
+
    pStrSave->put_Property(_T("BasePropertiesOnInitialValues"),CComVariant(bBasePropertiesOnInitialValues));
 
    // ACI
@@ -381,7 +435,7 @@ HRESULT CConcreteMaterial::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
    var.vt = VT_BSTR;
    pStrLoad->get_Property(_T("Type"),&var);
-   Type = (pgsTypes::ConcreteType)lrfdConcreteUtil::GetTypeFromTypeName(OLE2T(var.bstrVal));
+   Type = (pgsTypes::ConcreteType)WBFL::LRFD::ConcreteUtil::GetTypeFromTypeName(OLE2T(var.bstrVal));
 
    var.vt = VT_R8;
    pStrLoad->get_Property(_T("Fc"),&var);
@@ -408,11 +462,13 @@ HRESULT CConcreteMaterial::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
    pStrLoad->get_Property(_T("MaxAggregateSize"), &var);
    MaxAggregateSize = var.dblVal;
 
-   if (3 < version)
+   if (3 < version && version < 6)
    {
-      // added in version 4
+      // added in version 4 and removed in version 6
+      // This parameter should never have been saved with the conventional concrete properties. It only applies to UHPC and is stored with the UHPC parameters.
+      // Load the parameter then throw it away.
       pStrLoad->get_Property(_T("FiberLength"), &var);
-      FiberLength = var.dblVal;
+      //FiberLength = var.dblVal;
    }
 
    var.vt = VT_BOOL;
@@ -510,6 +566,64 @@ HRESULT CConcreteMaterial::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       pStrLoad->EndUnit(); // PCI_UHPC
    }
 
+   if (4 < version)
+   {
+      // added in Version 5
+      if (FAILED(pStrLoad->BeginUnit(_T("UHPC"))))
+      { 
+         // during early development this data block was called FHWA_UHPC
+         // if BeginLoad(UHPC) files, try the old name
+         pStrLoad->BeginUnit(_T("FHWA_UHPC"));
+      }
+      var.vt = VT_R8;
+
+      Float64 uhpc_version;
+      pStrLoad->get_Version(&uhpc_version);
+
+      if (1 < uhpc_version)
+      {
+         // added in version 2
+         pStrLoad->get_Property(_T("alpha_u"), &var);
+         alpha_u = var.dblVal;
+
+         var.vt = VT_BOOL;
+         pStrLoad->get_Property(_T("Experimental_ecu"), &var);
+         bExperimental_ecu = var.boolVal == VARIANT_TRUE ? true : false;
+         if (bExperimental_ecu)
+         {
+            var.vt = VT_R8;
+            pStrLoad->get_Property(_T("ecu"), &var);
+            ecu = var.dblVal;
+         }
+      }
+
+      var.vt = VT_R8;
+      pStrLoad->get_Property(_T("ftcri"), &var);
+      ftcri = var.dblVal;
+
+      pStrLoad->get_Property(_T("ftcr"), &var);
+      ftcr = var.dblVal;
+
+      pStrLoad->get_Property(_T("ftloc"), &var);
+      ftloc = var.dblVal;
+
+      pStrLoad->get_Property(_T("etloc"), &var);
+      etloc = var.dblVal;
+
+      if (2 < uhpc_version)
+      {
+         // added in Version 3
+         var.vt = VT_R8;
+         pStrLoad->get_Property(_T("gamma_u"), &var);
+         gamma_u = var.dblVal;
+      }
+
+      pStrLoad->get_Property(_T("FiberLength"), &var);
+      FiberLength = var.dblVal;
+
+      pStrLoad->EndUnit(); // UHPC
+   }
+
    var.vt = VT_BOOL;
    pStrLoad->get_Property(_T("BasePropertiesOnInitialValues"),&var);
    bBasePropertiesOnInitialValues = (var.boolVal == VARIANT_TRUE ? true : false);
@@ -562,7 +676,7 @@ HRESULT CConcreteMaterial::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       if ( cebFipVersion < 2 )
       {
-         matCEBFIPConcrete::GetModelParameters((matCEBFIPConcrete::CementType)CEBFIPCementType,&S,&BetaSc);
+         WBFL::Materials::CEBFIPConcrete::GetModelParameters((WBFL::Materials::CEBFIPConcrete::CementType)CEBFIPCementType,&S,&BetaSc);
       }
 
       pStrLoad->EndUnit(); // CEBFIP

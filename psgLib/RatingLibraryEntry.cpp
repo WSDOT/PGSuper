@@ -32,6 +32,8 @@
 
 #include <boost\algorithm\string\replace.hpp>
 
+#include <EAF/EAFDisplayUnits.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -42,8 +44,8 @@ static char THIS_FILE[] = __FILE__;
 
 CLiveLoadFactorModel::CLiveLoadFactorModel()
 {
-   m_Wlower = ::ConvertToSysUnits(100.0,unitMeasure::Kip);
-   m_Wupper = ::ConvertToSysUnits(150.0,unitMeasure::Kip);
+   m_Wlower = WBFL::Units::ConvertToSysUnits(100.0,WBFL::Units::Measure::Kip);
+   m_Wupper = WBFL::Units::ConvertToSysUnits(150.0,WBFL::Units::Measure::Kip);
 
    m_LiveLoadFactorType     = pgsTypes::gllBilinear;
    m_LiveLoadFactorModifier = pgsTypes::gllmInterpolate;
@@ -759,7 +761,7 @@ Float64 CLiveLoadFactorModel::GetServiceLiveLoadFactor(Int16 adtt) const
    return -9999; // something obviously bogus until this gets implemented
 }
 
-bool CLiveLoadFactorModel::SaveMe(sysIStructuredSave* pSave)
+bool CLiveLoadFactorModel::SaveMe(WBFL::System::IStructuredSave* pSave)
 {
    pSave->BeginUnit(_T("LoadFactors"),1.0);
    pSave->Property(_T("LiveLoadFactorType"),(long)m_LiveLoadFactorType);
@@ -834,7 +836,7 @@ bool CLiveLoadFactorModel::SaveMe(sysIStructuredSave* pSave)
    return true;
 }
 
-bool CLiveLoadFactorModel::LoadMe(sysIStructuredLoad* pLoad)
+bool CLiveLoadFactorModel::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 {
    if ( !pLoad->BeginUnit(_T("LoadFactors")) )
    {
@@ -1089,8 +1091,8 @@ bool CLiveLoadFactorModel::LoadMe(sysIStructuredLoad* pLoad)
 
 CLiveLoadFactorModel2::CLiveLoadFactorModel2()
 {
-   m_PWRlower = ::ConvertToSysUnits(2.0,unitMeasure::KipPerFoot);
-   m_PWRupper = ::ConvertToSysUnits(3.0,unitMeasure::KipPerFoot);
+   m_PWRlower = WBFL::Units::ConvertToSysUnits(2.0,WBFL::Units::Measure::KipPerFoot);
+   m_PWRupper = WBFL::Units::ConvertToSysUnits(3.0,WBFL::Units::Measure::KipPerFoot);
 
    m_LiveLoadFactorType     = pgsTypes::gllLinear;
    m_LiveLoadFactorModifier = pgsTypes::gllmInterpolate;
@@ -1852,7 +1854,7 @@ Float64 CLiveLoadFactorModel2::GetServiceLiveLoadFactor(Int16 adtt) const
    return -9999; // something obviously bogus until this gets implemented
 }
 
-bool CLiveLoadFactorModel2::SaveMe(sysIStructuredSave* pSave)
+bool CLiveLoadFactorModel2::SaveMe(WBFL::System::IStructuredSave* pSave)
 {
    pSave->BeginUnit(_T("LoadFactors"),1.0);
    pSave->Property(_T("LiveLoadFactorType"),(long)m_LiveLoadFactorType);
@@ -1931,7 +1933,7 @@ bool CLiveLoadFactorModel2::SaveMe(sysIStructuredSave* pSave)
    return true;
 }
 
-bool CLiveLoadFactorModel2::LoadMe(sysIStructuredLoad* pLoad)
+bool CLiveLoadFactorModel2::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 {
    if ( !pLoad->BeginUnit(_T("LoadFactors")) )
    {
@@ -2271,7 +2273,7 @@ CString RatingLibraryEntry::GetSpecialPermitType(pgsTypes::SpecialPermitType per
 
 RatingLibraryEntry::RatingLibraryEntry() :
 m_bUseCurrentSpecification(true),
-m_SpecificationVersion(lrfrVersionMgr::SecondEditionWith2016Interims)
+m_SpecificationVersion(WBFL::LRFD::MBEManager::Edition::SecondEditionWith2016Interims)
 {
    // default for LRFR before 2013
    m_LiveLoadFactorModels[pgsTypes::lrDesign_Inventory].SetLiveLoadFactorType(pgsTypes::gllSingleValue);
@@ -2296,7 +2298,7 @@ m_SpecificationVersion(lrfrVersionMgr::SecondEditionWith2016Interims)
 
    m_LiveLoadFactorModels[pgsTypes::lrPermit_Routine].SetLiveLoadFactorType(pgsTypes::gllBilinearWithWeight);
    m_LiveLoadFactorModels[pgsTypes::lrPermit_Routine].SetADTT(100,1000,5000,-1);
-   m_LiveLoadFactorModels[pgsTypes::lrPermit_Routine].SetVehicleWeight(::ConvertToSysUnits(100,unitMeasure::Kip),::ConvertToSysUnits(150,unitMeasure::Kip));
+   m_LiveLoadFactorModels[pgsTypes::lrPermit_Routine].SetVehicleWeight(WBFL::Units::ConvertToSysUnits(100,WBFL::Units::Measure::Kip),WBFL::Units::ConvertToSysUnits(150,WBFL::Units::Measure::Kip));
    m_LiveLoadFactorModels[pgsTypes::lrPermit_Routine].SetLowerLiveLoadFactor(1.40,1.60,1.80,1.80);
    m_LiveLoadFactorModels[pgsTypes::lrPermit_Routine].SetUpperLiveLoadFactor(1.10,1.20,1.30,1.30);
 
@@ -2335,7 +2337,7 @@ m_SpecificationVersion(lrfrVersionMgr::SecondEditionWith2016Interims)
 
    m_LiveLoadFactorModels2[pgsTypes::lrPermit_Routine].SetLiveLoadFactorType(pgsTypes::gllBilinearWithWeight);
    m_LiveLoadFactorModels2[pgsTypes::lrPermit_Routine].SetADTT(100,1000,5000,-1);
-   m_LiveLoadFactorModels2[pgsTypes::lrPermit_Routine].SetPermitWeightRatio(::ConvertToSysUnits(2.0,unitMeasure::KipPerFoot),::ConvertToSysUnits(3.0,unitMeasure::KipPerFoot));
+   m_LiveLoadFactorModels2[pgsTypes::lrPermit_Routine].SetPermitWeightRatio(WBFL::Units::ConvertToSysUnits(2.0,WBFL::Units::Measure::KipPerFoot),WBFL::Units::ConvertToSysUnits(3.0,WBFL::Units::Measure::KipPerFoot));
    m_LiveLoadFactorModels2[pgsTypes::lrPermit_Routine].SetLowerLiveLoadFactor(1.30,1.35,1.40,1.40);
    m_LiveLoadFactorModels2[pgsTypes::lrPermit_Routine].SetMiddleLiveLoadFactor(1.20,1.25,1.35,1.35);
    m_LiveLoadFactorModels2[pgsTypes::lrPermit_Routine].SetUpperLiveLoadFactor(1.15,1.20,1.30,1.30);
@@ -2348,26 +2350,6 @@ m_SpecificationVersion(lrfrVersionMgr::SecondEditionWith2016Interims)
 
    m_SpecialPermitLiveLoadFactorModels2[pgsTypes::ptMultipleTripWithTraffic].SetLiveLoadFactorType(pgsTypes::gllSingleValue);
    m_SpecialPermitLiveLoadFactorModels2[pgsTypes::ptMultipleTripWithTraffic].SetLowerLiveLoadFactor(1.40,-1,-1,-1);
-}
-
-RatingLibraryEntry::RatingLibraryEntry(const RatingLibraryEntry& rOther) :
-libLibraryEntry(rOther)
-{
-   MakeCopy(rOther);
-}
-
-RatingLibraryEntry::~RatingLibraryEntry()
-{
-}
-
-RatingLibraryEntry& RatingLibraryEntry::operator= (const RatingLibraryEntry& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
 }
 
 bool RatingLibraryEntry::Edit(bool allowEditing,int nPage)
@@ -2397,19 +2379,19 @@ HICON  RatingLibraryEntry::GetIcon() const
    return ::LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_RATING_ENTRY) );
 }
 
-bool RatingLibraryEntry::SaveMe(sysIStructuredSave* pSave)
+bool RatingLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
 {
    pSave->BeginUnit(_T("RatingLibraryEntry"), CURRENT_VERSION);
 
    pSave->Property(_T("Name"), GetName().c_str());
    pSave->Property(_T("Description"), GetDescription(false).c_str());
    pSave->Property(_T("UseCurrentSpecification"), m_bUseCurrentSpecification); // added in version 3
-   pSave->Property(_T("SpecificationVersion"), lrfrVersionMgr::GetVersionString(m_SpecificationVersion,true));
+   pSave->Property(_T("SpecificationVersion"), WBFL::LRFD::MBEManager::GetEditionAsString(m_SpecificationVersion,true));
 
    //pSave->Property(_T("AlwaysRate"), m_bAlwaysRate); // removed in version 4
 
    pSave->BeginUnit(_T("LiveLoadFactors_Design_Inventory"),1.0);
-   if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( m_SpecificationVersion < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
    {
       m_LiveLoadFactorModels[pgsTypes::lrDesign_Inventory].SaveMe(pSave);
    }
@@ -2420,7 +2402,7 @@ bool RatingLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->EndUnit();
 
    pSave->BeginUnit(_T("LiveLoadFactors_Design_Operating"),1.0);
-   if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( m_SpecificationVersion < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
    {
       m_LiveLoadFactorModels[pgsTypes::lrDesign_Operating].SaveMe(pSave);
    }
@@ -2431,7 +2413,7 @@ bool RatingLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->EndUnit();
 
    pSave->BeginUnit(_T("LiveLoadFactors_Legal_Routine"),1.0);
-   if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( m_SpecificationVersion < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
    {
       m_LiveLoadFactorModels[pgsTypes::lrLegal_Routine].SaveMe(pSave);
    }
@@ -2442,7 +2424,7 @@ bool RatingLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->EndUnit();
 
    pSave->BeginUnit(_T("LiveLoadFactors_Legal_Special"),1.0);
-   if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( m_SpecificationVersion < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
    {
       m_LiveLoadFactorModels[pgsTypes::lrLegal_Special].SaveMe(pSave);
    }
@@ -2454,7 +2436,7 @@ bool RatingLibraryEntry::SaveMe(sysIStructuredSave* pSave)
 
    // Added in version 2.0
    pSave->BeginUnit(_T("LiveLoadFactors_Legal_Emergency"), 1.0);
-   if (m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims)
+   if (m_SpecificationVersion < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims)
    {
       m_LiveLoadFactorModels[pgsTypes::lrLegal_Emergency].SaveMe(pSave);
    }
@@ -2465,7 +2447,7 @@ bool RatingLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->EndUnit();
 
    pSave->BeginUnit(_T("LiveLoadFactors_Permit_Routine"),1.0);
-   if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( m_SpecificationVersion < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
    {
       m_LiveLoadFactorModels[pgsTypes::lrPermit_Routine].SaveMe(pSave);
    }
@@ -2476,7 +2458,7 @@ bool RatingLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->EndUnit();
 
    pSave->BeginUnit(_T("LiveLoadFactors_Permit_SingleTripWithEscort"),1.0);
-   if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( m_SpecificationVersion < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
    {
       m_SpecialPermitLiveLoadFactorModels[pgsTypes::ptSingleTripWithEscort].SaveMe(pSave);
    }
@@ -2487,7 +2469,7 @@ bool RatingLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->EndUnit();
 
    pSave->BeginUnit(_T("LiveLoadFactors_Permit_SingleTripWithTraffic"),1.0);
-   if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( m_SpecificationVersion < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
    {
       m_SpecialPermitLiveLoadFactorModels[pgsTypes::ptSingleTripWithTraffic].SaveMe(pSave);
    }
@@ -2498,7 +2480,7 @@ bool RatingLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    pSave->EndUnit();
 
    pSave->BeginUnit(_T("LiveLoadFactors_Permit_MultipleTripWithTraffic"),1.0);
-   if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( m_SpecificationVersion < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
    {
       m_SpecialPermitLiveLoadFactorModels[pgsTypes::ptMultipleTripWithTraffic].SaveMe(pSave);
    }
@@ -2513,7 +2495,7 @@ bool RatingLibraryEntry::SaveMe(sysIStructuredSave* pSave)
    return true;
 }
 
-bool RatingLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
+bool RatingLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 {
    if ( !pLoad->BeginUnit(_T("RatingLibraryEntry")) )
    {
@@ -2562,7 +2544,7 @@ bool RatingLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
    try
    {
-      m_SpecificationVersion = lrfrVersionMgr::GetVersion(strSpecVersion.c_str());
+      m_SpecificationVersion = WBFL::LRFD::MBEManager::GetEdition(strSpecVersion.c_str());
    }
    catch(...)
    {
@@ -2581,7 +2563,7 @@ bool RatingLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       THROW_LOAD(InvalidFileFormat,pLoad);
    }
 
-   if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( m_SpecificationVersion < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
    {
       if ( !m_LiveLoadFactorModels[pgsTypes::lrDesign_Inventory].LoadMe(pLoad) )
       {
@@ -2607,7 +2589,7 @@ bool RatingLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       THROW_LOAD(InvalidFileFormat,pLoad);
    }
 
-   if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( m_SpecificationVersion < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
    {
       if ( !m_LiveLoadFactorModels[pgsTypes::lrDesign_Operating].LoadMe(pLoad) )
       {
@@ -2632,7 +2614,7 @@ bool RatingLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       THROW_LOAD(InvalidFileFormat,pLoad);
    }
 
-   if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( m_SpecificationVersion < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
    {
       if ( !m_LiveLoadFactorModels[pgsTypes::lrLegal_Routine].LoadMe(pLoad) )
       {
@@ -2657,7 +2639,7 @@ bool RatingLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       THROW_LOAD(InvalidFileFormat,pLoad);
    }
 
-   if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( m_SpecificationVersion < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
    {
       if ( !m_LiveLoadFactorModels[pgsTypes::lrLegal_Special].LoadMe(pLoad) )
       {
@@ -2685,7 +2667,7 @@ bool RatingLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
          THROW_LOAD(InvalidFileFormat, pLoad);
       }
 
-      if (m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims)
+      if (m_SpecificationVersion < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims)
       {
          if (!m_LiveLoadFactorModels[pgsTypes::lrLegal_Emergency].LoadMe(pLoad))
          {
@@ -2711,7 +2693,7 @@ bool RatingLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       THROW_LOAD(InvalidFileFormat,pLoad);
    }
 
-   if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( m_SpecificationVersion < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
    {
       if ( !m_LiveLoadFactorModels[pgsTypes::lrPermit_Routine].LoadMe(pLoad) )
       {
@@ -2736,7 +2718,7 @@ bool RatingLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       THROW_LOAD(InvalidFileFormat,pLoad);
    }
 
-   if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( m_SpecificationVersion < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
    {
       if ( !m_SpecialPermitLiveLoadFactorModels[pgsTypes::ptSingleTripWithEscort].LoadMe(pLoad) )
       {
@@ -2761,7 +2743,7 @@ bool RatingLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       THROW_LOAD(InvalidFileFormat,pLoad);
    }
 
-   if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( m_SpecificationVersion < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
    {
       if ( !m_SpecialPermitLiveLoadFactorModels[pgsTypes::ptSingleTripWithTraffic].LoadMe(pLoad) )
       {
@@ -2786,7 +2768,7 @@ bool RatingLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
       THROW_LOAD(InvalidFileFormat,pLoad);
    }
 
-   if ( m_SpecificationVersion < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( m_SpecificationVersion < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
    {
       if ( !m_SpecialPermitLiveLoadFactorModels[pgsTypes::ptMultipleTripWithTraffic].LoadMe(pLoad) )
       {
@@ -2817,31 +2799,31 @@ bool RatingLibraryEntry::LoadMe(sysIStructuredLoad* pLoad)
 
 bool RatingLibraryEntry::IsEqual(const RatingLibraryEntry& rOther,bool bConsiderName) const
 {
-   std::vector<pgsLibraryEntryDifferenceItem*> vDifferences;
+   std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>> vDifferences;
    bool bMustRename;
    return Compare(rOther,vDifferences,bMustRename,true,bConsiderName);
 }
 
-bool RatingLibraryEntry::Compare(const RatingLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
+bool RatingLibraryEntry::Compare(const RatingLibraryEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    bMustRename = false;
 
    if ( m_Description != rOther.m_Description )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Description"),m_Description.c_str(),rOther.m_Description.c_str()));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Description"),m_Description.c_str(),rOther.m_Description.c_str()));
    }
 
    if (m_bUseCurrentSpecification != rOther.m_bUseCurrentSpecification || m_SpecificationVersion != rOther.m_SpecificationVersion)
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Rating Criteria Basis"), lrfrVersionMgr::GetVersionString(m_SpecificationVersion), lrfrVersionMgr::GetVersionString(rOther.m_SpecificationVersion)));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Rating Criteria Basis"), WBFL::LRFD::MBEManager::GetEditionAsString(m_SpecificationVersion), WBFL::LRFD::MBEManager::GetEditionAsString(rOther.m_SpecificationVersion)));
    }
 
-   if ( lrfrVersionMgr::GetVersion() < lrfrVersionMgr::SecondEditionWith2013Interims)
+   if ( WBFL::LRFD::MBEManager::GetEdition() < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims)
    {
       int n = (int)pgsTypes::lrLoadRatingTypeCount;
       for ( int i = 0; i < n; i++ )
@@ -2852,7 +2834,7 @@ bool RatingLibraryEntry::Compare(const RatingLibraryEntry& rOther, std::vector<p
             RETURN_ON_DIFFERENCE;
             CString str;
             str.Format(_T("Live Load Factors are different for %s"),RatingLibraryEntry::GetLoadRatingType(ratingType));
-            vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(str,_T(""),_T("")));
+            vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(str,_T(""),_T("")));
          }
       }
 
@@ -2864,7 +2846,7 @@ bool RatingLibraryEntry::Compare(const RatingLibraryEntry& rOther, std::vector<p
             RETURN_ON_DIFFERENCE;
             CString str;
             str.Format(_T("Live Load Factors are different for %s"),RatingLibraryEntry::GetSpecialPermitType(permitType));
-            vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(str,_T(""),_T("")));
+            vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(str,_T(""),_T("")));
          }
       }
    }
@@ -2879,7 +2861,7 @@ bool RatingLibraryEntry::Compare(const RatingLibraryEntry& rOther, std::vector<p
             RETURN_ON_DIFFERENCE;
             CString str;
             str.Format(_T("Live Load Factors are different for %s"),RatingLibraryEntry::GetLoadRatingType(ratingType));
-            vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(str,_T(""),_T("")));
+            vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(str,_T(""),_T("")));
          }
       }
 
@@ -2891,7 +2873,7 @@ bool RatingLibraryEntry::Compare(const RatingLibraryEntry& rOther, std::vector<p
             RETURN_ON_DIFFERENCE;
             CString str;
             str.Format(_T("Live Load Factors are different for %s"),RatingLibraryEntry::GetSpecialPermitType(permitType));
-            vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(str,_T(""),_T("")));
+            vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(str,_T(""),_T("")));
          }
       }
    }
@@ -2899,28 +2881,10 @@ bool RatingLibraryEntry::Compare(const RatingLibraryEntry& rOther, std::vector<p
    if (considerName &&  GetName() != rOther.GetName() )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
    }
 
    return vDifferences.size() == 0 ? true : false;
-}
-
-void RatingLibraryEntry::MakeCopy(const RatingLibraryEntry& rOther)
-{
-   m_Description          = rOther.m_Description;
-   m_bUseCurrentSpecification = rOther.m_bUseCurrentSpecification;
-   m_SpecificationVersion = rOther.m_SpecificationVersion;
-
-   m_LiveLoadFactorModels  = rOther.m_LiveLoadFactorModels;
-   m_LiveLoadFactorModels2 = rOther.m_LiveLoadFactorModels2;
-   m_SpecialPermitLiveLoadFactorModels  = rOther.m_SpecialPermitLiveLoadFactorModels;
-   m_SpecialPermitLiveLoadFactorModels2 = rOther.m_SpecialPermitLiveLoadFactorModels2;
-}
-
-void RatingLibraryEntry::MakeAssignment(const RatingLibraryEntry& rOther)
-{
-   libLibraryEntry::MakeAssignment( rOther );
-   MakeCopy( rOther );
 }
 
 void RatingLibraryEntry::SetDescription(LPCTSTR name)
@@ -2934,9 +2898,9 @@ std::_tstring RatingLibraryEntry::GetDescription(bool bApplySymbolSubstitution) 
    if (bApplySymbolSubstitution)
    {
       std::_tstring description(m_Description);
-      std::_tstring strSubstitute(lrfrVersionMgr::GetCodeString());
+      std::_tstring strSubstitute(WBFL::LRFD::MBEManager::GetSpecificationName());
       strSubstitute += _T(", ");
-      strSubstitute += lrfrVersionMgr::GetVersionString();
+      strSubstitute += WBFL::LRFD::MBEManager::GetEditionAsString();
       boost::replace_all(description, _T("%MBE%"), strSubstitute);
       return description;
    }
@@ -2956,16 +2920,16 @@ bool RatingLibraryEntry::UseCurrentSpecification() const
    return m_bUseCurrentSpecification;
 }
 
-void RatingLibraryEntry::SetSpecificationVersion(lrfrVersionMgr::Version version)
+void RatingLibraryEntry::SetSpecificationVersion(WBFL::LRFD::MBEManager::Edition version)
 {
    m_SpecificationVersion = version;
 }
 
-lrfrVersionMgr::Version RatingLibraryEntry::GetSpecificationVersion() const
+WBFL::LRFD::MBEManager::Edition RatingLibraryEntry::GetSpecificationVersion() const
 {
    if (m_bUseCurrentSpecification)
    {
-      return (lrfrVersionMgr::Version)((int)lrfrVersionMgr::LastVersion - 1);
+      return WBFL::LRFD::MBEManager::GetLatestEdition();
    }
    else
    {
@@ -3015,4 +2979,164 @@ void RatingLibraryEntry::SetLiveLoadFactorModel2(pgsTypes::SpecialPermitType per
 const CLiveLoadFactorModel2& RatingLibraryEntry::GetLiveLoadFactorModel2(pgsTypes::SpecialPermitType permitType) const
 {
    return m_SpecialPermitLiveLoadFactorModels2[permitType];
+}
+
+void write_load_factors(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits, LPCTSTR lpszName, const CLiveLoadFactorModel& model);
+
+void RatingLibraryEntry::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+{
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
+   *pChapter << pPara;
+
+   *pPara << _T("Load Rating Criteria") << rptNewLine;
+
+   pPara = new rptParagraph;
+   *pChapter << pPara;
+
+   *pPara << Bold(_T("Name: ")) << GetName() << rptNewLine;
+   *pPara << Bold(_T("Description: ")) << GetDescription() << rptNewLine;
+   *pPara << Bold(_T("Based on:  ")) << WBFL::LRFD::MBEManager::GetSpecificationName() << _T(", ") << WBFL::LRFD::MBEManager::GetEditionAsString();
+
+
+   pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+   *pChapter << pPara;
+   *pPara << _T("Live Load Factors for Load Rating") << rptNewLine;
+
+   write_load_factors(pChapter, pDisplayUnits, _T("Design - Inventory"), GetLiveLoadFactorModel(pgsTypes::lrDesign_Inventory));
+   write_load_factors(pChapter, pDisplayUnits, _T("Design - Operating"), GetLiveLoadFactorModel(pgsTypes::lrDesign_Operating));
+   write_load_factors(pChapter, pDisplayUnits, _T("Legal - Routine"), GetLiveLoadFactorModel(pgsTypes::lrLegal_Routine));
+   write_load_factors(pChapter, pDisplayUnits, _T("Legal - Special"), GetLiveLoadFactorModel(pgsTypes::lrLegal_Special));
+   write_load_factors(pChapter, pDisplayUnits, _T("Permit - Routine"), GetLiveLoadFactorModel(pgsTypes::lrPermit_Routine));
+   write_load_factors(pChapter, pDisplayUnits, _T("Permit - Special - Single Trip, escorted"), GetLiveLoadFactorModel(pgsTypes::ptSingleTripWithEscort));
+   write_load_factors(pChapter, pDisplayUnits, _T("Permit - Special - Single Trip, mixed with traffic"), GetLiveLoadFactorModel(pgsTypes::ptSingleTripWithTraffic));
+   write_load_factors(pChapter, pDisplayUnits, _T("Permit - Special - Multiple Trip, mixed with traffic"), GetLiveLoadFactorModel(pgsTypes::ptMultipleTripWithTraffic));
+}
+
+void write_load_factors(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits, LPCTSTR lpszName, const CLiveLoadFactorModel& model)
+{
+   INIT_UV_PROTOTYPE(rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), true);
+
+   rptRcScalar scalar;
+   scalar.SetFormat(WBFL::System::NumericFormatTool::Format::Fixed);
+   scalar.SetWidth(6);
+   scalar.SetPrecision(2);
+   scalar.SetTolerance(1.0e-6);
+
+   std::_tstring strModel;
+   pgsTypes::LiveLoadFactorType llfType = model.GetLiveLoadFactorType();
+   switch (llfType)
+   {
+   case pgsTypes::gllSingleValue:
+      strModel = _T("Single Value");
+      break;
+
+   case pgsTypes::gllStepped:
+      strModel = _T("Stepped");
+      break;
+
+   case pgsTypes::gllLinear:
+      strModel = _T("Linear");
+      break;
+
+   case pgsTypes::gllBilinear:
+      strModel = _T("Bilinear");
+      break;
+
+   case pgsTypes::gllBilinearWithWeight:
+      strModel = _T("Bilinear with Vehicle Weight");
+      break;
+
+   }
+
+   rptParagraph* pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+   *pChapter << pPara;
+   *pPara << lpszName << rptNewLine;
+
+   pPara = new rptParagraph;
+   *pChapter << pPara;
+   *pPara << _T("Live Load Factor Model: ") << strModel << rptNewLine;
+
+   Int16 adtt1, adtt2, adtt3, adtt4;
+   model.GetADTT(&adtt1, &adtt2, &adtt3, &adtt4);
+
+   Float64 g1, g2, g3, g4;
+   model.GetLowerLiveLoadFactor(&g1, &g2, &g3, &g4);
+
+   if (llfType == pgsTypes::gllSingleValue)
+   {
+      *pPara << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(g1) << rptNewLine;
+   }
+   else if (llfType == pgsTypes::gllStepped)
+   {
+      *pPara << _T("ADTT < ") << adtt1 << _T(" ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(g1) << rptNewLine;
+      *pPara << _T("Otherwise ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(g2) << rptNewLine;
+      *pPara << _T("ADTT = Unknown ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(g4) << rptNewLine;
+   }
+   else if (llfType == pgsTypes::gllLinear)
+   {
+      *pPara << _T("ADTT < ") << adtt1 << _T(" ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(g1) << rptNewLine;
+      *pPara << _T("ADTT > ") << adtt2 << _T(" ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(g2) << rptNewLine;
+      *pPara << _T("ADTT = Unknown ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(g4) << rptNewLine;
+
+      *pPara << rptNewLine;
+      if (model.GetLiveLoadFactorModifier() == pgsTypes::gllmRoundUp)
+      {
+         *pPara << _T("Load factors are rounded up") << rptNewLine;
+      }
+      else
+      {
+         *pPara << _T("Load factors are linearly interpolated") << rptNewLine;
+      }
+   }
+   else if (llfType == pgsTypes::gllBilinear)
+   {
+      *pPara << _T("ADTT < ") << adtt1 << _T(" ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(g1) << rptNewLine;
+      *pPara << _T("ADTT = ") << adtt2 << _T(" ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(g2) << rptNewLine;
+      *pPara << _T("ADTT > ") << adtt3 << _T(" ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(g3) << rptNewLine;
+      *pPara << _T("ADTT = Unknown ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(g4) << rptNewLine;
+
+      *pPara << rptNewLine;
+      if (model.GetLiveLoadFactorModifier() == pgsTypes::gllmRoundUp)
+      {
+         *pPara << _T("Load factors are rounded up") << rptNewLine;
+      }
+      else
+      {
+         *pPara << _T("Load factors are linearly interpolated") << rptNewLine;
+      }
+   }
+   else if (llfType == pgsTypes::gllBilinearWithWeight)
+   {
+      Float64 Wlower, Wupper;
+      model.GetVehicleWeight(&Wlower, &Wupper);
+      *pPara << _T("For vehicle weight up to ") << force.SetValue(Wlower) << rptNewLine;
+      *pPara << _T("ADTT < ") << adtt1 << _T(" ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(g1) << rptNewLine;
+      *pPara << _T("ADTT = ") << adtt2 << _T(" ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(g2) << rptNewLine;
+      *pPara << _T("ADTT > ") << adtt3 << _T(" ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(g3) << rptNewLine;
+      *pPara << _T("ADTT = Unknown ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(g4) << rptNewLine;
+
+      *pPara << rptNewLine;
+
+      Float64 ga, gb, gc, gd;
+      model.GetUpperLiveLoadFactor(&ga, &gb, &gc, &gd);
+      *pPara << _T("For vehicle weight of ") << force.SetValue(Wupper) << _T(" or more") << rptNewLine;
+      *pPara << _T("ADTT < ") << adtt1 << _T(" ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(ga) << rptNewLine;
+      *pPara << _T("ADTT = ") << adtt2 << _T(" ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(gb) << rptNewLine;
+      *pPara << _T("ADTT > ") << adtt3 << _T(" ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(gc) << rptNewLine;
+      *pPara << _T("ADTT = Unknown ") << Sub2(symbol(gamma), _T("LL")) << _T(" = ") << scalar.SetValue(gd) << rptNewLine;
+
+      *pPara << rptNewLine;
+      if (model.GetLiveLoadFactorModifier() == pgsTypes::gllmRoundUp)
+      {
+         *pPara << _T("Load factors are rounded up") << rptNewLine;
+      }
+      else
+      {
+         *pPara << _T("Load factors are linearly interpolated") << rptNewLine;
+      }
+   }
+   else
+   {
+      ATLASSERT(false); // is there a new model???
+   }
 }

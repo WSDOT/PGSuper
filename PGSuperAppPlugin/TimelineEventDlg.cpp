@@ -34,6 +34,7 @@
 #include "StressTendonDlg.h"
 #include "CastDeckDlg.h"
 #include "CastLongitudinalJointsDlg.h"
+#include "GeometryControlDlg.h"
 
 #include <EAF\EAFDocument.h>
 #include <IFace\DocumentType.h>
@@ -141,6 +142,7 @@ BEGIN_MESSAGE_MAP(CTimelineEventDlg, CDialog)
    ON_COMMAND(ID_ACTIVITIES_CASTDECK, &CTimelineEventDlg::OnCastDeck)
    ON_COMMAND(ID_ACTIVITIES_CASTLONGITUDINALJOINTS, &CTimelineEventDlg::OnCastLongitudinalJoints)
    ON_COMMAND(ID_ACTIVITIES_APPLYLOADS,&CTimelineEventDlg::OnApplyLoads)
+   ON_COMMAND(ID_ACTIVITIES_GEOMETRYCONTROLEVENT,&CTimelineEventDlg::OnGeometryControl)
    ON_COMMAND(ID_ACTIVITIES_STRESSTENDON,&CTimelineEventDlg::OnStressTendons)
    ON_BN_CLICKED(ID_HELP, &CTimelineEventDlg::OnHelp)
 END_MESSAGE_MAP()
@@ -283,6 +285,7 @@ void CTimelineEventDlg::UpdateAddButton()
    CString strName(GetCastDeckEventName(pIBridgeDesc->GetDeckDescription()->GetDeckType()));
    m_btnAdd.AddMenuItem(ID_ACTIVITIES_CASTDECK,strName,MF_ENABLED);
    m_btnAdd.AddMenuItem(ID_ACTIVITIES_APPLYLOADS,_T("Apply Loads"),MF_ENABLED);
+   m_btnAdd.AddMenuItem(ID_ACTIVITIES_GEOMETRYCONTROLEVENT,_T("Geometry Control Event"),MF_ENABLED);
 }
 
 void CTimelineEventDlg::OnRemoveActivities()
@@ -394,6 +397,16 @@ void CTimelineEventDlg::OnApplyLoads()
    UpdateData();
    CApplyLoadsDlg dlg(m_TimelineManager,m_EventIndex,m_bReadOnly);
    if ( EditEvent(this,&dlg) )
+   {
+      m_Grid.Refresh();
+   }
+}
+
+void CTimelineEventDlg::OnGeometryControl()
+{
+   UpdateData();
+   CGeometryControlDlg dlg(m_TimelineManager,m_EventIndex,m_bReadOnly);
+   if (EditEvent(this,&dlg))
    {
       m_Grid.Refresh();
    }

@@ -54,9 +54,9 @@ void txnEditPierStation::Undo()
    DoExecute(0);
 }
 
-txnTransaction* txnEditPierStation::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnEditPierStation::CreateClone() const
 {
-   return new txnEditPierStation(m_PierIdx,m_Station[0],m_Station[1],m_MoveOption);
+   return std::make_unique<txnEditPierStation>(m_PierIdx,m_Station[0],m_Station[1],m_MoveOption);
 }
 
 std::_tstring txnEditPierStation::Name() const
@@ -66,12 +66,12 @@ std::_tstring txnEditPierStation::Name() const
    return os.str();
 }
 
-bool txnEditPierStation::IsUndoable()
+bool txnEditPierStation::IsUndoable() const
 {
    return true;
 }
 
-bool txnEditPierStation::IsRepeatable()
+bool txnEditPierStation::IsRepeatable() const
 {
    return false;
 }

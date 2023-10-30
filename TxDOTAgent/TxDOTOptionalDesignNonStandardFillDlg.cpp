@@ -84,7 +84,7 @@ void CTxDOTOptionalDesignNonStandardFillDlg::Init(CTxDOTOptionalDesignGirderData
 
    pShapeProps->get_Ybottom(&m_yBottom);
 
-   m_yBottom = ::ConvertFromSysUnits(m_yBottom,unitMeasure::Inch);
+   m_yBottom = WBFL::Units::ConvertFromSysUnits(m_yBottom,WBFL::Units::Measure::Inch);
 }
 
 void CTxDOTOptionalDesignNonStandardFillDlg::DoDataExchange(CDataExchange* pDX)

@@ -810,7 +810,7 @@ void CGirderModelSectionView::BuildStrandDisplayObjects(CPGSDocBase* pDoc,IBroke
 
    // Strands are measured in Girder Section Coordinates
    GET_IFACE2(pBroker,IMaterials,pMaterial);
-   const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Straight);
+   const auto* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Straight);
    Float64 diameter = pStrand->GetNominalDiameter();
 
    CComPtr<iSimpleDrawPointStrategy> strategy;
@@ -833,9 +833,9 @@ void CGirderModelSectionView::BuildStrandDisplayObjects(CPGSDocBase* pDoc,IBroke
 
    CComPtr<IPoint2dCollection> points;
    pStrandGeom->GetStrandPositions(poi, pgsTypes::Straight,&points);
-   CollectionIndexType nStrandPoints;
+   IndexType nStrandPoints;
    points->get_Count(&nStrandPoints);
-   CollectionIndexType strandPointIdx;
+   IndexType strandPointIdx;
    for ( strandPointIdx = 0; strandPointIdx < nStrandPoints; strandPointIdx++ )
    {
       CComPtr<IPoint2d> p;
@@ -1717,7 +1717,7 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
    CComPtr<iTextBlock> textBlock;
 
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-   const unitmgtLengthData& length_unit = pDisplayUnits->GetComponentDimUnit();
+   const WBFL::Units::LengthData& length_unit = pDisplayUnits->GetComponentDimUnit();
 
    textBlock.CoCreateInstance(CLSID_TextBlock);
    textBlock->SetPointSize(FONT_POINT_SIZE);

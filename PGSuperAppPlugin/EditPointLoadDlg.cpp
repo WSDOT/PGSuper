@@ -129,7 +129,7 @@ void CEditPointLoadDlg::DoDataExchange(CDataExchange* pDX)
       Float64 locval;
       CString str;
       m_LocationCtrl.GetWindowText(str);
-      if (!sysTokenizer::ParseDouble(str, &locval))
+      if (!WBFL::System::Tokenizer::ParseDouble(str, &locval))
       {
       	HWND hWndCtrl = pDX->PrepareEditCtrl(IDC_LOCATION);
          ::AfxMessageBox(_T("Please enter a number"));
@@ -155,7 +155,7 @@ void CEditPointLoadDlg::DoDataExchange(CDataExchange* pDX)
       {
          if (0.0 <= locval)
          {
-            m_Load.m_Location = ::ConvertToSysUnits(locval, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
+            m_Load.m_Location = WBFL::Units::ConvertToSysUnits(locval, pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
          }
          else
          {
@@ -284,7 +284,7 @@ BOOL CEditPointLoadDlg::OnInitDialog()
 
    if (m_Load.m_Fractional)
    {
-      sysNumericFormatTool tool;
+      WBFL::System::NumericFormatTool tool;
       m_LocationCtrl.SetWindowText(tool.AsString(m_Load.m_Location).c_str());
    }
    else

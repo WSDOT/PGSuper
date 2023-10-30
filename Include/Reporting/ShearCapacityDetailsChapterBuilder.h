@@ -52,14 +52,18 @@ public:
    // GROUP: OPERATIONS
 
    //------------------------------------------------------------------------
-   virtual LPCTSTR GetName() const;
+   virtual LPCTSTR GetName() const override;
    
 
    //------------------------------------------------------------------------
-   virtual rptChapter* Build(CReportSpecification* pRptSpec,Uint16 level) const;
+   virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
 
    //------------------------------------------------------------------------
-   virtual CChapterBuilder* Clone() const;
+   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
+
+   //------------------------------------------------------------------------
+   // Use static to determine how POI's are to be printed. This will save many, many duplicate calls for this information
+   static bool m_IncludeSpanAndGirderForPois;
 
    // GROUP: ACCESS
    // GROUP: INQUIRY

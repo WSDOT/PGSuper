@@ -1,6 +1,6 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 13.33    1  10.50  NW-2 Tail Track    1     1     U78     *     28  0.6  270  36.07  35.23  11.00  11.00                                              6.808  9.228   4.373    -5.084    25799   1.200  1.200   1.823 -1.131  0.000 -0.158 -1.289  43.35  224.94    5.00    5.00    5.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 13.33    1  10.50  NW-2 Tail Track    1     1     U78     *     28  0.6  270  36.07  35.23                                              6.808  9.228   4.372    -5.084    25799   1.200  1.200   3.511 -1.131  0.000 -0.158 -1.289  43.35  224.95    5.00    5.00    5.00 
 
 
 The Specification Check was Not Successful
@@ -18,6 +18,8 @@ Compression stress check failed for Service I Limit State in Interval 29 Load Ra
 Tension stress check failed for Service III Limit State in Interval 29 Load Rating for Segment 2
 Tension stress check failed for Service I Limit State in Interval 22 Apply User Defined Loads, Install Railing System for Deck
 Tension stress check failed for Service III Limit State in Interval 29 Load Rating for Deck
+Tension stress check failed for Service I Limit State in Interval 16 Cast Deck, Apply User Defined Loads for Segment 3
+Tension stress check failed for Service III Limit State in Interval 29 Load Rating for Segment 3
 Tension stress check failed for Service I Limit State in Interval 20 Stress Tendons for Deck
 Tension stress check failed for Service III Limit State in Interval 29 Load Rating for Deck
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
@@ -27,11 +29,12 @@ Hauling checks failed for Segment 1.
 Hauling checks failed for Segment 2.
 Lifting checks failed for Segment 3.
 Hauling checks failed for Segment 3.
+Finished elevation check failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 13.33    1  10.50  NW-2 Tail Track    1     1     U78     *     28  0.6  270  36.07  35.23  11.00  11.00                                              6.808  9.228   4.373    -5.084    25799   1.200  1.200   1.823 -1.131  0.000 -0.158 -1.289  43.35  224.94    5.00    5.00    5.00 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 13.33    1  10.50  NW-2 Tail Track    1     1     U78     *     28  0.6  270  36.07  35.23                                              6.808  9.228   4.372    -5.084    25799   1.200  1.200   3.511 -1.131  0.000 -0.158 -1.289  43.35  224.95    5.00    5.00    5.00 
 
 
 The Specification Check was Not Successful
@@ -49,6 +52,8 @@ Compression stress check failed for Service I Limit State in Interval 29 Load Ra
 Tension stress check failed for Service III Limit State in Interval 29 Load Rating for Segment 2
 Tension stress check failed for Service I Limit State in Interval 22 Apply User Defined Loads, Install Railing System for Deck
 Tension stress check failed for Service III Limit State in Interval 29 Load Rating for Deck
+Tension stress check failed for Service I Limit State in Interval 16 Cast Deck, Apply User Defined Loads for Segment 3
+Tension stress check failed for Service III Limit State in Interval 29 Load Rating for Segment 3
 Tension stress check failed for Service I Limit State in Interval 20 Stress Tendons for Deck
 Tension stress check failed for Service III Limit State in Interval 29 Load Rating for Deck
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
@@ -58,5 +63,6 @@ Hauling checks failed for Segment 1.
 Hauling checks failed for Segment 2.
 Lifting checks failed for Segment 3.
 Hauling checks failed for Segment 3.
+Finished elevation check failed
 
 

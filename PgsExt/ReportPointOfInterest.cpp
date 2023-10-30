@@ -35,7 +35,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-rptPointOfInterest::rptPointOfInterest(const unitLength* pUnitOfMeasure,
+rptPointOfInterest::rptPointOfInterest(const WBFL::Units::Length* pUnitOfMeasure,
                                        Float64 zeroTolerance,
                                        bool bShowUnitTag) :
 rptLengthUnitValue(pUnitOfMeasure,zeroTolerance,bShowUnitTag),m_bPrefixAttributes(true),m_bIncludeSpanAndGirder(false)
@@ -76,12 +76,12 @@ bool rptPointOfInterest::IncludeSpanAndGirder() const
 
 rptReportContent& rptPointOfInterest::SetValue(PoiAttributeType reference, const pgsPointOfInterest& poi)
 {
-   ATLASSERT(sysFlags<PoiAttributeType>::IsSet(reference, POI_RELEASED_SEGMENT) ||
-      sysFlags<PoiAttributeType>::IsSet(reference, POI_STORAGE_SEGMENT) ||
-      sysFlags<PoiAttributeType>::IsSet(reference, POI_LIFT_SEGMENT) ||
-      sysFlags<PoiAttributeType>::IsSet(reference, POI_HAUL_SEGMENT) ||
-      sysFlags<PoiAttributeType>::IsSet(reference, POI_ERECTED_SEGMENT) ||
-      sysFlags<PoiAttributeType>::IsSet(reference, POI_SPAN));
+   ATLASSERT(WBFL::System::Flags<PoiAttributeType>::IsSet(reference, POI_RELEASED_SEGMENT) ||
+      WBFL::System::Flags<PoiAttributeType>::IsSet(reference, POI_STORAGE_SEGMENT) ||
+      WBFL::System::Flags<PoiAttributeType>::IsSet(reference, POI_LIFT_SEGMENT) ||
+      WBFL::System::Flags<PoiAttributeType>::IsSet(reference, POI_HAUL_SEGMENT) ||
+      WBFL::System::Flags<PoiAttributeType>::IsSet(reference, POI_ERECTED_SEGMENT) ||
+      WBFL::System::Flags<PoiAttributeType>::IsSet(reference, POI_SPAN));
 
    m_POI = poi;
    m_Reference = reference;

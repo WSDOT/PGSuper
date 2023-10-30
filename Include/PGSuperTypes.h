@@ -31,50 +31,25 @@
 #include <vector>
 #include <array>
 
+#if 202002L <= _MSVC_LANG
+#include <ranges>
+#include <utility>
+#include <numeric>
+#endif
+
 #include <PgsExt\Keys.h> // goes with GDRCONFIG
 static long g_Ncopies = 0; // keeps track of the number of times GDRCONFIG is copied
 
-class dbgDumpContext;
-#include <Material\Rebar.h>
+#include <Materials/Rebar.h>
 
 // Constants for consistent behavior of tooltips
 #define TOOLTIP_WIDTH 400 // 400 characters
 #define TOOLTIP_DURATION 20000 // 20 seconds
 
-// defines the mehod used for computing creep coefficients
-#define CREEP_LRFD              0
-#define CREEP_WSDOT             1
-
-#define CREEP_SPEC_PRE_2005     1 // creep based on pre 2005 provisions
-#define CREEP_SPEC_2005         2 // creep based on 2005 interim provisions
-
-// curing method (effects ti for loss and creep calcuations)
-#define CURING_NORMAL           0
-#define CURING_ACCELERATED      1
 
 // truck roll stiffness method
 #define ROLLSTIFFNESS_LUMPSUM 0
 #define ROLLSTIFFNESS_PERAXLE 1
-
-// exposure conditions
-#define EXPOSURE_NORMAL 0
-#define EXPOSURE_SEVERE 1
-
-// defines the creep time frame (ie. D40 and D120 for WSDOT)
-#define CREEP_MINTIME           0
-#define CREEP_MAXTIME           1
-
-// method for computing fcgp - the concrete stress at the center of gravity of prestressing tendons at transfer
-// this method is only used for the TxDOT 2013 loss method
-#define FCGP_07FPU              0 // assume stress is 0.7fpu 
-#define FCGP_ITERATIVE          1 // iterate to find value
-#define FCGP_HYBRID             2 // iterate unless initial stress is 0.75fpu, then use 0.7fpu
-
-// methods for distribution factor calculation
-#define LLDF_LRFD               0
-#define LLDF_WSDOT              1
-// #define LLDF_DIRECT_INPUT       2 // Value is stored in project, not library.
-#define LLDF_TXDOT              2 
 
 // analysis or spec check method type
 #define LRFD_METHOD               0
@@ -98,10 +73,72 @@ class dbgDumpContext;
 // no concrete strength will satisfy the stress limits
 #define NO_AVAILABLE_CONCRETE_STRENGTH -99999
 
-#define MIN_CURVE_RADIUS ::ConvertToSysUnits(0.01,unitMeasure::Feet)
+#define MIN_CURVE_RADIUS WBFL::Units::ConvertToSysUnits(0.01,WBFL::Units::Measure::Feet)
 
 typedef struct pgsTypes
 {
+#if 202002L <= _MSVC_LANG
+   /// @brief creates a range enumerator for an enum class
+   /// for (auto e : pgsTypes::enum_range<MyEnum>(MyEnum::FirstValue,MyEnum::LastValue))
+   /// { ... }
+   /// Requires that the enumerated values are sequential
+   template <typename T>
+   static inline constexpr auto enum_range = [](auto f, auto l)
+      {
+         return std::views::iota(std::underlying_type<T>::type(f), std::underlying_type<T>::type(l) + 1) | std::views::transform([](auto e) {return decltype(f)(e); });
+      };
+#endif
+
+   /// @brief Indicates the method used for evaluating longitudinal reinforcement for shear requirements.
+   /// At one time there were both LRFD and WSDOT methods. However, the WSDOT method was rescinded leaving
+   /// only the LRFD method. This enum was retained has a placeholder for possible future alternative methods.
+   enum class LongitudinalReinforcementForShearMethod
+   {
+      LRFD
+   };
+
+   // methods for distribution factor calculation
+   enum class LiveLoadDistributionFactorMethod
+   {
+      LRFD,
+      WSDOT,
+      TxDOT
+   };
+
+   enum class ExposureCondition
+   {
+      Normal,
+      Severe
+   };
+
+
+   // curing method (effects ti for loss and creep calculations)
+   enum class CuringMethod
+   {
+      Normal,
+      Accelerated
+   };
+
+   // defines the method used for computing creep coefficients
+   enum class CreepMethod
+   {
+      LRFD,
+      WSDOT
+   };
+
+   enum class CreepSpecification
+   {
+      LRFDPre2005 = 1, // creep based on pre 2005 provisions
+      LRFD2005 = 2 // creep based on 2005 interim provisions
+   };
+
+   // defines the creep time frame (ie. D40 and D120 for WSDOT)
+   enum class CreepTime
+   {
+      Min,
+      Max
+   };
+
    typedef enum SectionCoordinateType
    {
       scBridge, // Bridge Section Coordinates
@@ -127,7 +164,7 @@ typedef struct pgsTypes
    {
       sptGrossNoncomposite,       // Based on concrete outline only. Gross section of non-composite girder only, regardless of analysis interval
       sptGross,                   // Based on concrete outline only. Deck is transformed to equivalent girder concrete
-      sptTransformedNoncomposite, // Transformed section of non-composite girder onlye, regardless of analysis interval. All materials transformed to equivalent girder concrete
+      sptTransformedNoncomposite, // Transformed section of non-composite girder only, regardless of analysis interval. All materials transformed to equivalent girder concrete
       sptTransformed,             // All materials including strand, rebar, tendons are transformed to equivalent girder concrete
       sptNetGirder,               // Non-composite girder section with holes for strands/rebar/ducts
       sptNetDeck,                 // Deck section with holes for rebar
@@ -182,7 +219,7 @@ typedef struct pgsTypes
       MaxSimpleContinuousEnvelope 
    } BridgeAnalysisType;
 
-   // Defines the meaning of a generic "SupportIndexType". Support indicies are used
+   // Defines the meaning of a generic "SupportIndexType". Support indices are used
    // in some methods to represent either a pier or a temporary support. This enum is used
    // to tell to what the support index refers
    typedef enum SupportType
@@ -290,10 +327,10 @@ typedef struct pgsTypes
                      ServiceIII_LegalSpecial = 13,
                      StrengthII_PermitRoutine = 14,
                      ServiceI_PermitRoutine = 15,
-                     ServiceIII_PermitRoutine = 16, // for WSDOT BDM Load Rating Requiements (See BDM Chapter 13)
+                     ServiceIII_PermitRoutine = 16, // for WSDOT BDM Load Rating Requirements (See BDM Chapter 13)
                      StrengthII_PermitSpecial = 17,
                      ServiceI_PermitSpecial = 18,
-                     ServiceIII_PermitSpecial = 19, // for WSDOT BDM Load Rating Requiements (See BDM Chapter 13)
+                     ServiceIII_PermitSpecial = 19, // for WSDOT BDM Load Rating Requirements (See BDM Chapter 13)
                      StrengthI_LegalEmergency = 20,
                      ServiceIII_LegalEmergency = 21,
                      LimitStateCount // this should always be the last one as it will define the total number of limit states
@@ -377,13 +414,13 @@ typedef struct pgsTypes
 
    typedef enum MeasurementType
    {
-      NormalToItem    = 0, // measrued normal to the item (alignment, cl pier, cl bearing, cl girder, etc)
+      NormalToItem    = 0, // measured normal to the item (alignment, cl pier, cl bearing, cl girder, etc)
       AlongItem       = 1, // measured along centerline of item (pier, bearing, girder, etc)
    } MeasurementType;
 
    typedef enum MeasurementLocation
    {
-      AtPierLine          = 0, // measrued at pier datum line
+      AtPierLine          = 0, // measured at pier datum line
       AtCenterlineBearing = 1, // measured at centerline bearing
    } MeasurementLocation;
 
@@ -425,7 +462,7 @@ typedef struct pgsTypes
 
    typedef enum DeckOverhangTaper
    {
-      dotNone            = 0,  // No taper, constant thickness deck in overhanges
+      dotNone            = 0,  // No taper, constant thickness deck in overhangs
       dotTopTopFlange    = 1,  // Taper overhang to top of girder top flange
       dotBottomTopFlange = 2   // Taper overhang to bottom of girder top flange
    } DeckOverhangTaper;
@@ -440,7 +477,7 @@ typedef struct pgsTypes
    {
       dptLinear,  // deck edge is linear between deck points
       dptSpline,  // deck edge is a cubic spline between points
-      dptParallel // deck edge parallels alignment. deck points on both sides of transtion must be the same
+      dptParallel // deck edge parallels alignment. deck points on both sides of transition must be the same
    } DeckPointTransitionType;
 
    typedef enum DeckRebarMatType
@@ -472,7 +509,7 @@ typedef struct pgsTypes
 
    typedef enum SupportedDeckType 
    {
-      // NOTE: Assigning explicit values to guarentee consistency with deck type constants
+      // NOTE: Assigning explicit values to guarantee consistency with deck type constants
       //       used prior to adding non-composite sections to PGSuper
       sdtCompositeCIP = 0,       // Composite cast-in-place deck
       sdtCompositeSIP = 1,       // Composite stay-in-place deck panels
@@ -499,6 +536,37 @@ typedef struct pgsTypes
       wplBottomGirder
    } WorkPointLocation;
 
+   //// Enums controlling direct input of haunch depths ////
+   typedef enum HaunchInputDepthType
+   {
+      hidACamber,               // Use "A" (slab offset) input for haunch. This is for PGSuper only
+      hidHaunchDirectly,        // Input haunch depths (top of girder to bottom of slab) directly 
+      hidHaunchPlusSlabDirectly // Input haunch depths as total depth from top of girder to top of slab
+   } HaunchInputDepthType;
+
+   typedef enum HaunchInputLocationType 
+   { 
+      hilSame4Bridge,       // Use same haunch distribution for entire bridge
+      hilSame4AllGirders,   // Use same distribution for all girders in a span or segment
+      hilPerEach            // Unique haunch distribution for each segment or girder
+   } HaunchInputLocationType;
+
+   typedef enum HaunchLayoutType
+   { 
+      hltAlongSpans,    // Layout haunch distribution on per span basis
+      hltAlongSegments  // Layout haunch distribution per segment
+   } HaunchLayoutType;
+
+   typedef enum HaunchInputDistributionType // Values of enums below represent number of values needed to define each method
+   { 
+      hidUniform = 1,      // Apply haunch uniformly along span or segment
+      hidAtEnds = 2,       // Apply haunch linearly between ends of span or segment
+      hidParabolic = 3,    // Haunch is distributed parabolically along span or segment. Control points at ends and middle of element
+      hidQuarterPoints = 5,// Haunch is linearly distributed along quarter points of span or segment
+      hidTenthPoints = 11  // Haunch is linearly distributed along 10th points of span or segment
+   } HaunchInputDistributionType;
+
+///////// Slab Offset and Assumed Excess Camber are older haunch definition methods and are used only to define haunch depths in PGSuper  ///////////
    typedef enum SlabOffsetType
    {
       sotBridge,  // a single slab offset is used in all spans
@@ -506,6 +574,12 @@ typedef struct pgsTypes
       sotSegment,  // the slab offset is defined at the end of each segment individually
    } SlabOffsetType;
 
+   typedef enum AssumedExcessCamberType 
+   {
+      aecBridge,  // a single camber is used in all spans
+      aecSpan,    // the camber is defined at each span
+      aecGirder,  // the camber is defined at each girder
+   } AssumedExcessCamberType;
 
    typedef enum BearingType
    {
@@ -513,14 +587,6 @@ typedef struct pgsTypes
       brtPier,    // unique bearing is defined at each abutment, pier, and temporary support and applies to all segments supported by that element
       brtGirder,  // unique bearing at each pier for each girder
    } BearingType;
-
-   // Assummed excess camber input
-   typedef enum AssumedExcessCamberType 
-   {
-      aecBridge,  // a single camber is used in all spans
-      aecSpan,    // the camber is defined at each span
-      aecGirder,  // the camber is defined at each girder
-   } AssumedExcessCamberType;
 
    // Define connectivity (per AASHTO jargon) of adjacent beams.
    // This is only used if SupportedBeamSpacing==sbsUniformAdjacent or sbsGeneralAdjacent
@@ -530,9 +596,9 @@ typedef struct pgsTypes
       atcConnectedRelativeDisplacement
    } AdjacentTransverseConnectivity;
 
-   typedef std::vector<SupportedDeckType>    SupportedDeckTypes;
-   typedef std::vector<SupportedBeamSpacing> SupportedBeamSpacings;
-   typedef std::vector<WorkPointLocation> WorkPointLocations;
+   using  SupportedDeckTypes = std::vector<SupportedDeckType>;
+   using  SupportedBeamSpacings = std::vector<SupportedBeamSpacing>;
+   using  WorkPointLocations = std::vector<WorkPointLocation>;
 
    typedef enum RemovePierType
    {
@@ -546,11 +612,16 @@ typedef struct pgsTypes
    typedef enum OverlayLoadDistributionType
    { olDistributeEvenly=0, olDistributeTributaryWidth=1 } OverlayLoadDistributionType;
 
+   // For computing haunch load
+   // hlcZeroCamber: Use geometric data to compute haunch assuming girder is flat
+   // hlcDetailedAnalysis:
+   //       - If HaunchInputDepthType==hidACamber, use assumed excess camber, "A" and geometry to determine haunch depth
+   //       - else, direct haunch input. Use input values directly
    typedef enum HaunchLoadComputationType
-   { hlcZeroCamber, hlcAccountForCamber } HaunchLoadComputationType;
+   { hlcZeroCamber, hlcDetailedAnalysis } HaunchLoadComputationType;
 
    typedef enum HaunchAnalysisSectionPropertiesType
-   { hspZeroHaunch, hspConstFilletDepth, hspVariableParabolic } HaunchAnalysisSectionPropertiesType;
+   { hspZeroHaunch, hspConstFilletDepth, hspDetailedDescription } HaunchAnalysisSectionPropertiesType;
 
    typedef enum GirderLocation
    { Interior = 0, Exterior = 1 } GirderLocation;
@@ -559,9 +630,20 @@ typedef struct pgsTypes
    {TopFace, BottomFace} FaceType;
 
    // Method for computing prestress transfer length
-   typedef enum PrestressTransferComputationType { ptUsingSpecification=60, // use current spec
-                                                   ptMinuteValue=0          // As close to zero length as we are comfortable
-   } PrestressTransferComputationType;
+   enum class TransferLengthCalculationMethod
+   {
+      Specification, // use the LRFD specifications
+      MinuteValue // Per TxDOT, assume transfer length is a minute value (something as close to zero as possible)
+   };
+
+   /// Defines the transfer length type. Transfer length is an uncertain value. The transfer length model
+   /// supports a minimum and maximum length value so a short or long transfer length can be used when
+   /// it is most critical.
+   enum class TransferLengthType
+   {
+      Minimum, ///< Short transfer length, typically critical for Service and Fatigue Limit States
+      Maximum ///< Long transfer length, typically critical for Strength and Extreme Event Limit States
+   };
 
    typedef enum TrafficBarrierOrientation
    {
@@ -614,7 +696,7 @@ typedef struct pgsTypes
    // describes the model used for determining live load factors for rating
    typedef enum LiveLoadFactorType
    {
-      gllSingleValue,  // a single constanst value is used
+      gllSingleValue,  // a single value is used
       gllStepped,      // ADTT < a1 gll = g1, otherwise gll = g2
       gllLinear,       // ADTT < a1 gll = g1, ADTT > a2 gll = g2
       gllBilinear,     // ADTT < a1 gll = g1, ADTT = a2, gll = g2, ADTT > a3, gll = g3
@@ -630,9 +712,10 @@ typedef struct pgsTypes
    typedef enum ConcreteType
    {
       Normal,
-      AllLightweight, // Starting with AASHTO LRFD 7th Edition, 2016 Interims, the destinction between All Lightweight and Sand Lightweight is removed. AllLightweight is considered an invalid parameter and it automatically gets converted to SandLightweight
+      AllLightweight, // Starting with AASHTO LRFD 7th Edition, 2016 Interims, the distinction between All Lightweight and Sand Lightweight is removed. AllLightweight is considered an invalid parameter and it automatically gets converted to SandLightweight
       SandLightweight, // Starting with AASHTO LRFD 7th Edition, 2016 Interims SandLightweight means "Lightweight" for all types of lightweight concrete
-      PCI_UHPC, // Concrete is defined by on PCI definition of UHPC
+      PCI_UHPC, // Concrete is defined by PCI definition of UHPC
+      UHPC, // Concrete is defined by AASHTO UHPC Guide Specification definition of UHPC 
       ConcreteTypeCount // this should always be the last value in the enum
    } ConcreteType;
 
@@ -647,14 +730,15 @@ typedef struct pgsTypes
    } RebarLayoutType;
 
    // Hauling analysis
-   typedef enum HaulingAnalysisMethod {hmWSDOT, hmKDOT } HaulingAnalysisMethod;
+   enum class HaulingAnalysisMethod {WSDOT, KDOT };
 
-   typedef enum SagCamberType
+   /// @brief Indicate the camber value that is evaluated for sag
+   enum class SagCamber
    {
       UpperBoundCamber,
       AverageCamber,
       LowerBoundCamber
-   } SagCamberType;
+   };
 
    typedef enum CureMethod
    {
@@ -671,7 +755,7 @@ typedef struct pgsTypes
    typedef enum CEBFIPCementType
    {
       RS, // rapid hardening, high strength
-      N,  // normal hardining
+      N,  // normal hardening
       R,  // rapid hardening
       SL  // slow hardening
    } CEBFIPCementType;
@@ -684,29 +768,6 @@ typedef struct pgsTypes
       Middle,
       End
    } IntervalTimeType;
-
-   typedef enum LossMethod
-   {
-      AASHTO_REFINED      = 0,
-      AASHTO_LUMPSUM      = 1,
-      GENERAL_LUMPSUM     = 3,
-      WSDOT_LUMPSUM       = 4, // same as PPR = 1.0 in aashto eqn's
-      AASHTO_LUMPSUM_2005 = 5, // 2005 AASHTO code
-      AASHTO_REFINED_2005 = 6, // 2005 AASHTO code
-      WSDOT_LUMPSUM_2005  = 7, // 2005 AASHTO, WSDOT (includes initial relaxation loss)
-      WSDOT_REFINED_2005  = 8, // 2005 AASHTO, WSDOT (includes initial relaxation loss)
-      WSDOT_REFINED       = 9,
-      TXDOT_REFINED_2004  = 10, // TxDOT's May, 09 decision is to use refined losses from AASHTO 2004
-      TXDOT_REFINED_2013  = 11, // TxDOT's Method based on Report No. FHWA/TX-12/0-6374-2
-      TIME_STEP           = 12  // Losses are computed with a time-step method
-   } LossMethod;
-
-   typedef enum TimeDependentModel
-   {
-      tdmAASHTO, 
-      tdmACI209,
-      tdmCEBFIP
-   } TimeDependentModel;
 
    typedef enum JackingEndType
    {
@@ -741,7 +802,7 @@ typedef struct pgsTypes
 
    typedef enum ProductForceType 
    { 
-      // externaly applied loads
+      // externally applied loads
       pftGirder,
       pftConstruction,
       pftSlab, 
@@ -796,31 +857,6 @@ typedef struct pgsTypes
       hsFilleted   // Haunch cut at 45 degrees (like WSDOT)
    } HaunchShapeType;
 
-   typedef enum WindType
-   {
-      Speed,
-      Pressure
-   } WindType;
-
-   typedef enum CFType // centrifugal force type
-   {
-      Adverse, // CF is towards the left (increases lateral deflection and roll over)
-      Favorable // CF is towards the right
-   } CFType;
-
-   typedef enum HaulingImpact
-   {
-      NormalCrown, // impact applied only to the normal crown condition
-      MaxSuper,    // impact applied only to the max superelevation condition   
-      Both         // impact applied to both conditions
-   } HaulingImpact;
-
-   typedef enum HaulingSlope
-   {
-      CrownSlope, // hauling at normal crown slope
-      Superelevation // hauling at maximum superelevation
-   } HaulingSlope;
-
    typedef enum SectionBias
    {
       sbLeft,
@@ -873,6 +909,17 @@ typedef struct pgsTypes
       ditYesFreeEndEnd 
    } DropInType;
 
+   // The Geometry Control Event is when elevations of segment chords in the bridge model are matched to
+   // controlling haunch depths. Other geometry control activities can be created to specify when alternate roadway
+   // geometry spec checks occur, or when only reporting of elevations are requested
+   typedef enum GeometryControlActivityType
+   {
+      gcaDisabled = 0,
+      gcaGeometryReportingEvent = 2,  // Generate report only
+      gcaSpecCheckEvent = 4,          // Generate spec check and geometry report
+      gcaGeometryControlEvent = 8,    // Controlling event. There can be only one activity of this type
+   } GeometryControlActivityType;
+
 } pgsTypes;
 
 //-----------------------------------------------------------------------------
@@ -885,18 +932,18 @@ struct STIRRUPCONFIG
    {
       Float64 ZoneLength;
       Float64 BarSpacing;
-      matRebar::Size VertBarSize;
+      WBFL::Materials::Rebar::Size VertBarSize;
       Float64 nVertBars;
       Float64 nHorzInterfaceBars;
-      matRebar::Size ConfinementBarSize;
+      WBFL::Materials::Rebar::Size ConfinementBarSize;
 
       // pre-computed values
       Float64 VertABar; // Area of single bar
 
       // This struct is complex enough to need a good constructor
       SHEARZONEDATA():
-      ZoneLength(0.0), VertBarSize(matRebar::bsNone), BarSpacing(0.0), nVertBars(0.0), 
-      nHorzInterfaceBars(0.0), ConfinementBarSize(matRebar::bsNone), VertABar(0.0)
+      ZoneLength(0.0), VertBarSize(WBFL::Materials::Rebar::Size::bsNone), BarSpacing(0.0), nVertBars(0.0), 
+      nHorzInterfaceBars(0.0), ConfinementBarSize(WBFL::Materials::Rebar::Size::bsNone), VertABar(0.0)
       {;}
 
       bool operator==(const SHEARZONEDATA& other) const
@@ -926,7 +973,7 @@ struct STIRRUPCONFIG
    {
       Float64 ZoneLength;
       Float64 BarSpacing;
-      matRebar::Size BarSize;
+      WBFL::Materials::Rebar::Size BarSize;
       Float64 nBars;
 
       // pre-computed values
@@ -934,7 +981,7 @@ struct STIRRUPCONFIG
 
       // default constructor
       HORIZONTALINTERFACEZONEDATA():
-      ZoneLength(0.0), BarSize(matRebar::bsNone),BarSpacing(0.0),nBars(0.0), ABar(0.0)
+      ZoneLength(0.0), BarSize(WBFL::Materials::Rebar::Size::bsNone),BarSpacing(0.0),nBars(0.0), ABar(0.0)
       {;}
 
       bool operator==(const HORIZONTALINTERFACEZONEDATA& other) const
@@ -966,19 +1013,19 @@ struct STIRRUPCONFIG
    bool bUsePrimaryForSplitting;
    bool bAreZonesSymmetrical;
 
-   matRebar::Size SplittingBarSize; // additional splitting bars
+   WBFL::Materials::Rebar::Size SplittingBarSize; // additional splitting bars
    Float64 SplittingBarSpacing;
    Float64 SplittingZoneLength;
    Float64 nSplittingBars;
 
-   matRebar::Size ConfinementBarSize; // additional confinement bars - only used if primary not used for confinement
+   WBFL::Materials::Rebar::Size ConfinementBarSize; // additional confinement bars - only used if primary not used for confinement
    Float64 ConfinementBarSpacing;
    Float64 ConfinementZoneLength;
 
    STIRRUPCONFIG():
    bIsRoughenedSurface(true), bUsePrimaryForSplitting(false), bAreZonesSymmetrical(true),
-   SplittingBarSize(matRebar::bsNone), SplittingBarSpacing(0.0), SplittingZoneLength(0.0), nSplittingBars(0.0),
-   ConfinementBarSize(matRebar::bsNone), ConfinementBarSpacing(0.0), ConfinementZoneLength(0.0)
+   SplittingBarSize(WBFL::Materials::Rebar::Size::bsNone), SplittingBarSpacing(0.0), SplittingZoneLength(0.0), nSplittingBars(0.0),
+   ConfinementBarSize(WBFL::Materials::Rebar::Size::bsNone), ConfinementBarSpacing(0.0), ConfinementZoneLength(0.0)
    {;}
 
    bool operator==(const STIRRUPCONFIG& other) const
@@ -1009,10 +1056,10 @@ struct STIRRUPCONFIG
    }
 };
 // NOTE: Data here is not used, but may be useful for someone in the future.
-//       This is a preliminary design for modelling longitudinal rebar.
-//       After some effort, I determined that the data is not necessessary for the 
+//       This is a preliminary design for modeling longitudinal rebar.
+//       After some effort, I determined that the data is not necessary for the 
 //       design algorithm since it is only used for longitudinal reinforcement for shear,
-//       and does not need to be iterated on. (e.g., the algoritm just picks a value
+//       and does not need to be iterated on. (e.g., the algorithm just picks a value
 //       and submits it directly to the final design).
 //-----------------------------------------------------------------------------
 // Struct for longitudinal rebar information.
@@ -1023,7 +1070,7 @@ public:
    struct RebarRow 
    {
       pgsTypes::FaceType  Face;
-      matRebar::Size BarSize;
+      WBFL::Materials::Rebar::Size BarSize;
       Int32       NumberOfBars;
       Float64     Cover;
       Float64     BarSpacing;
@@ -1040,8 +1087,8 @@ public:
       };
    };
 
-   matRebar::Type BarType;
-   matRebar::Grade BarGrade;
+   WBFL::Materials::Rebar::Type BarType;
+   WBFL::Materials::Rebar::Grade BarGrade;
    std::vector<RebarRow> RebarRows;
 
    bool operator==(const LONGITUDINALREBARCONFIG& other) const
@@ -1303,7 +1350,7 @@ struct GDRCONFIG
    PRESTRESSCONFIG PrestressConfig; // all prestressing information
 
    // fc/fc28 - The 115% f'c allowance per LRFD 5.12.3.2.5 is only applicable
-   // to stresses. Use Fc28 for strenght analysis
+   // to stresses. Use Fc28 for strength analysis
    Float64 fc28;      // 28 day concrete strength (used for strength)
    Float64 fc;        // 28 or 90 day compressive strength (used for stresses)
    Float64 fci;       // Concrete release strength
@@ -1835,32 +1882,32 @@ inline bool IsServiceIIILimitState(pgsTypes::LimitState ls)
 }
 
 #include <LRFD\LrfdTypes.h>
-inline lrfdTypes::LimitState PGSLimitStateToLRFDLimitState(pgsTypes::LimitState ls)
+inline WBFL::LRFD::LimitState PGSLimitStateToLRFDLimitState(pgsTypes::LimitState ls)
 {
-   lrfdTypes::LimitState lrfdLimitState;
+   WBFL::LRFD::LimitState lrfdLimitState;
    if (IsStrengthILimitState(ls))
    {
-      lrfdLimitState = lrfdTypes::StrengthI;
+      lrfdLimitState = WBFL::LRFD::LimitState::StrengthI;
    }
    else if (IsStrengthIILimitState(ls))
    {
-      lrfdLimitState = lrfdTypes::StrengthII;
+      lrfdLimitState = WBFL::LRFD::LimitState::StrengthII;
    }
    else if (IsServiceILimitState(ls))
    {
-      lrfdLimitState = lrfdTypes::ServiceI;
+      lrfdLimitState = WBFL::LRFD::LimitState::ServiceI;
    }
    else if (IsServiceIIILimitState(ls))
    {
-      lrfdLimitState = lrfdTypes::ServiceIII;
+      lrfdLimitState = WBFL::LRFD::LimitState::ServiceIII;
    }
    else if (ls == pgsTypes::ServiceIA)
    {
-      lrfdLimitState = lrfdTypes::ServiceIA;
+      lrfdLimitState = WBFL::LRFD::LimitState::ServiceIA;
    }
    else if (ls == pgsTypes::FatigueI)
    {
-      lrfdLimitState = lrfdTypes::FatigueI;
+      lrfdLimitState = WBFL::LRFD::LimitState::FatigueI;
    }
    else
    {
@@ -2228,5 +2275,22 @@ inline bool IsDirectStrandModel(pgsTypes::StrandDefinitionType strandModelType)
 {
    return (strandModelType == pgsTypes::sdtDirectRowInput || strandModelType == pgsTypes::sdtDirectStrandInput) ? true : false;
 }
+
+inline bool IsLNWC(pgsTypes::ConcreteType type)
+{
+   return type == pgsTypes::Normal;
+}
+
+inline bool IsLWC(pgsTypes::ConcreteType type)
+{
+   return (type == pgsTypes::AllLightweight || type == pgsTypes::SandLightweight);
+}
+
+inline bool IsUHPC(pgsTypes::ConcreteType type)
+{
+   return (type == pgsTypes::PCI_UHPC || type == pgsTypes::UHPC) ? true : false;
+}
+
+inline constexpr auto operator+(pgsTypes::CreepTime a) noexcept { return std::underlying_type<pgsTypes::CreepTime>::type(a); }
 
 #endif // INCLUDED_PGSUPERTYPES_H_

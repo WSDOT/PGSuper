@@ -57,9 +57,9 @@ LPCTSTR COptimizedFabricationChapterBuilder::GetName() const
    return TEXT("Fabrication Options");
 }
 
-rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* COptimizedFabricationChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
    const CGirderKey& girderKey( pGirderRptSpec->GetGirderKey());
@@ -67,7 +67,7 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
-   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
@@ -95,7 +95,7 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
       return pChapter;
    }
 
-   if (pSegmentHaulingSpecCriteria->GetHaulingAnalysisMethod() != pgsTypes::hmWSDOT)
+   if (pSegmentHaulingSpecCriteria->GetHaulingAnalysisMethod() != pgsTypes::HaulingAnalysisMethod::WSDOT)
    {
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
@@ -162,8 +162,8 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
       pPara = new rptParagraph;
       *pChapter << pPara;
 
-      Float64 fci_form_stripping_without_tts = (bUSUnits ? CeilOffTol(details.Fci_FormStripping_WithoutTTS, ::ConvertToSysUnits(100,unitMeasure::PSI)) 
-                                                        : CeilOffTol(details.Fci_FormStripping_WithoutTTS, ::ConvertToSysUnits(6,unitMeasure::MPa)) );
+      Float64 fci_form_stripping_without_tts = (bUSUnits ? CeilOffTol(details.Fci_FormStripping_WithoutTTS, WBFL::Units::ConvertToSysUnits(100,WBFL::Units::Measure::PSI)) 
+                                                        : CeilOffTol(details.Fci_FormStripping_WithoutTTS, WBFL::Units::ConvertToSysUnits(6,WBFL::Units::Measure::MPa)) );
       
       if ( 0 <  pStrandGeom->GetMaxStrands(segmentKey,pgsTypes::Temporary) )
       {
@@ -212,14 +212,14 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
             *pPara << _T("Jacking Force, ") << Sub2(_T("P"),_T("jack")) << _T(" = ") << force.SetValue(details.Pjack) << rptNewLine;
 
             Float64 fci[4];
-            fci[NO_TTS]          = (bUSUnits ? CeilOffTol(details.Fci[NO_TTS],          ::ConvertToSysUnits(100,unitMeasure::PSI)) 
-                                             : CeilOffTol(details.Fci[NO_TTS],          ::ConvertToSysUnits(6,  unitMeasure::MPa)));
-            fci[PS_TTS]          = (bUSUnits ? CeilOffTol(details.Fci[PS_TTS],          ::ConvertToSysUnits(100,unitMeasure::PSI)) 
-                                             : CeilOffTol(details.Fci[PS_TTS],          ::ConvertToSysUnits(6,  unitMeasure::MPa)));
-            fci[PT_TTS_REQUIRED] = (bUSUnits ? CeilOffTol(details.Fci[PT_TTS_REQUIRED], ::ConvertToSysUnits(100,unitMeasure::PSI)) 
-                                             : CeilOffTol(details.Fci[PT_TTS_REQUIRED], ::ConvertToSysUnits(6,  unitMeasure::MPa)));
-            fci[PT_TTS_OPTIONAL] = (bUSUnits ? CeilOffTol(details.Fci[PT_TTS_OPTIONAL], ::ConvertToSysUnits(100,unitMeasure::PSI)) 
-                                             : CeilOffTol(details.Fci[PT_TTS_OPTIONAL], ::ConvertToSysUnits(6,  unitMeasure::MPa)));
+            fci[NO_TTS]          = (bUSUnits ? CeilOffTol(details.Fci[NO_TTS],          WBFL::Units::ConvertToSysUnits(100,WBFL::Units::Measure::PSI)) 
+                                             : CeilOffTol(details.Fci[NO_TTS],          WBFL::Units::ConvertToSysUnits(6,  WBFL::Units::Measure::MPa)));
+            fci[PS_TTS]          = (bUSUnits ? CeilOffTol(details.Fci[PS_TTS],          WBFL::Units::ConvertToSysUnits(100,WBFL::Units::Measure::PSI)) 
+                                             : CeilOffTol(details.Fci[PS_TTS],          WBFL::Units::ConvertToSysUnits(6,  WBFL::Units::Measure::MPa)));
+            fci[PT_TTS_REQUIRED] = (bUSUnits ? CeilOffTol(details.Fci[PT_TTS_REQUIRED], WBFL::Units::ConvertToSysUnits(100,WBFL::Units::Measure::PSI)) 
+                                             : CeilOffTol(details.Fci[PT_TTS_REQUIRED], WBFL::Units::ConvertToSysUnits(6,  WBFL::Units::Measure::MPa)));
+            fci[PT_TTS_OPTIONAL] = (bUSUnits ? CeilOffTol(details.Fci[PT_TTS_OPTIONAL], WBFL::Units::ConvertToSysUnits(100,WBFL::Units::Measure::PSI)) 
+                                             : CeilOffTol(details.Fci[PT_TTS_OPTIONAL], WBFL::Units::ConvertToSysUnits(6,  WBFL::Units::Measure::MPa)));
             
 
             pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
@@ -325,8 +325,8 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
    //      *pPara << _T("Shipping Strength") << rptNewLine;
    //      pPara = new rptParagraph;
    //      *pChapter << pPara;
-   //      Float64 fc = (bUSUnits ? CeilOff(details.Fc, ::ConvertToSysUnits(100,unitMeasure::PSI)) 
-   //                            : CeilOff(details.Fc, ::ConvertToSysUnits(6,  unitMeasure::MPa)));
+   //      Float64 fc = (bUSUnits ? CeilOff(details.Fc, WBFL::Units::ConvertToSysUnits(100,WBFL::Units::Measure::PSI)) 
+   //                            : CeilOff(details.Fc, WBFL::Units::ConvertToSysUnits(6,  WBFL::Units::Measure::MPa)));
    //      *pPara << RPT_FC << _T(" = ") << stress.SetValue(details.Fc);
    //       *pPara << _T(" ") << symbol(RIGHT_DOUBLE_ARROW) << _T(" ") << stress.SetValue(fc) << rptNewLine;
 
@@ -352,9 +352,9 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(CReportSpecification* pRp
    return pChapter;
 }
 
-CChapterBuilder* COptimizedFabricationChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> COptimizedFabricationChapterBuilder::Clone() const
 {
-   return new COptimizedFabricationChapterBuilder;
+   return std::make_unique<COptimizedFabricationChapterBuilder>();
 }
 
 //======================== ACCESS     =======================================

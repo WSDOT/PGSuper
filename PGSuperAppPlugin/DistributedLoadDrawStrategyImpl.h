@@ -34,7 +34,7 @@ public:
    DECLARE_INTERFACE_MAP()
 
    BEGIN_INTERFACE_PART(Strategy,iDistributedLoadDrawStrategy)
-      STDMETHOD_(void,Init)(iPointDisplayObject* pDO, IBroker* pBroker, CDistributedLoadData load, CollectionIndexType loadIndex, 
+      STDMETHOD_(void,Init)(iPointDisplayObject* pDO, IBroker* pBroker, CDistributedLoadData load, IndexType loadIndex, 
                             Float64 loadLength, Float64 spanLength, Float64 maxMagnitude, 
                             COLORREF color);
    END_INTERFACE_PART(Strategy)
@@ -86,7 +86,7 @@ private:
    void GetLLoadHeight(iCoordinateMap* pMap, long* psx, long* psy);
    void GetTLoadHeight(iCoordinateMap* pMap, long* psx, long* psy);
    CDistributedLoadData m_Load;
-   CollectionIndexType  m_LoadIndex;
+   IndexType  m_LoadIndex;
    IBroker*       m_pBroker;
    COLORREF m_Color;
    Float64  m_StartLoc;

@@ -679,6 +679,12 @@ void CSpanGirderLayoutPage::OnChangeSameGirderSpacing()
       }
 
       pParent->m_BridgeDesc.SetGirderSpacing(bridgeSpacing);
+      
+      pgsTypes::MeasurementLocation ml;
+      pgsTypes::MeasurementType mt;
+      UnhashGirderSpacing(datum, &ml, &mt);
+      pParent->m_BridgeDesc.SetMeasurementLocation(ml);
+      pParent->m_BridgeDesc.SetMeasurementType(mt);
 
       CDataExchange dx(this,FALSE);
       DDX_CBItemData(&dx, IDC_PREV_PIER_GIRDER_SPACING_MEASURE, datum);

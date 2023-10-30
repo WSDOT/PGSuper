@@ -48,6 +48,10 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\StatusItem.h>
 
+#include <psgLib/SectionPropertiesCriteria.h>
+#include <psgLib/SpecificationCriteria.h>
+
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -66,28 +70,28 @@ HRESULT CVoidedSlabFactory::FinalConstruct()
    m_DimNames.emplace_back(_T("Number_of_Voids"));
    m_DimNames.emplace_back(_T("Jmax"));
 
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(18.0,unitMeasure::Inch)); // H
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(48.0,unitMeasure::Inch)); // W
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(10.0,unitMeasure::Inch)); // Void Diameter
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(12.5,unitMeasure::Inch)); // Void Spacing
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(18.0,WBFL::Units::Measure::Inch)); // H
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(48.0,WBFL::Units::Measure::Inch)); // W
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(10.0,WBFL::Units::Measure::Inch)); // Void Diameter
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(12.5,WBFL::Units::Measure::Inch)); // Void Spacing
    m_DefaultDims.emplace_back(3);                                           // Number of Voids
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(1.0,unitMeasure::Inch));  // Max Joint Spacing
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(1.0,WBFL::Units::Measure::Inch));  // Max Joint Spacing
 
    // SI Units
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H 
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // Void Diameter
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // Void Spacing
-   m_DimUnits[0].emplace_back((const unitLength*)BFDIMUNITSCALAR); // Number of Voids
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // Max joint size
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // H 
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // Void Diameter
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // Void Spacing
+   m_DimUnits[0].emplace_back((const WBFL::Units::Length*)BFDIMUNITSCALAR); // Number of Voids
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // Max joint size
 
    // US Units
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H 
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // Void Diameter
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // Void Spacing
-   m_DimUnits[1].emplace_back((const unitLength*)BFDIMUNITSCALAR);               // Number of Voids
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // Max joint size
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // H 
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // Void Diameter
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // Void Spacing
+   m_DimUnits[1].emplace_back((const WBFL::Units::Length*)BFDIMUNITSCALAR);               // Number of Voids
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // Max joint size
 
    return S_OK;
 }
@@ -125,7 +129,7 @@ void CVoidedSlabFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType status
    // Beam materials
    GET_IFACE2(pBroker,ILossParameters,pLossParams);
    CComPtr<IMaterial> material;
-   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       CComPtr<IAgeAdjustedMaterial> aaMaterial;
       BuildAgeAdjustedGirderMaterialModel(pBroker,pSegment,segment,&aaMaterial);
@@ -220,9 +224,10 @@ void CVoidedSlabFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupID
       GET_IFACE2(pBroker, ILibrary,       pLib);
       GET_IFACE2(pBroker, ISpecification, pSpec);
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+      const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
 
-      int lldf_method = pSpecEntry->GetLiveLoadDistributionMethod();
-      if (lldf_method == LLDF_TXDOT)
+      auto lldf_method = live_load_distribution_criteria.LldfMethod;
+      if (lldf_method == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
       {
          CComObject<CTxDOTSpreadSlabBeamDistFactorEngineer>* pEngineer;
          CComObject<CTxDOTSpreadSlabBeamDistFactorEngineer>::CreateInstance(&pEngineer);
@@ -248,7 +253,7 @@ void CVoidedSlabFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupID
 void CVoidedSlabFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const
 {
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
-   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       CComObject<CTimeStepLossEngineer>* pEngineer;
       CComObject<CTimeStepLossEngineer>::CreateInstance(&pEngineer);
@@ -374,7 +379,7 @@ const std::vector<Float64>& CVoidedSlabFactory::GetDefaultDimensions() const
    return m_DefaultDims;
 }
 
-const std::vector<const unitLength*>& CVoidedSlabFactory::GetDimensionUnits(bool bSIUnits) const
+const std::vector<const WBFL::Units::Length*>& CVoidedSlabFactory::GetDimensionUnits(bool bSIUnits) const
 {
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
@@ -494,7 +499,7 @@ bool CVoidedSlabFactory::ValidateDimensions(const IBeamFactory::Dimensions& dime
    return true;
 }
 
-void CVoidedSlabFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
+void CVoidedSlabFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
 {
    pSave->BeginUnit(_T("VoidedSlabDimensions"),2.0);
    for(const auto& name : m_DimNames)
@@ -505,7 +510,7 @@ void CVoidedSlabFactory::SaveSectionDimensions(sysIStructuredSave* pSave,const I
    pSave->EndUnit();
 }
 
-IBeamFactory::Dimensions CVoidedSlabFactory::LoadSectionDimensions(sysIStructuredLoad* pLoad) const
+IBeamFactory::Dimensions CVoidedSlabFactory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
 {
    Float64 parent_version;
    if (pLoad->GetParentUnit() == _T("GirderLibraryEntry"))
@@ -693,13 +698,16 @@ std::_tstring CVoidedSlabFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBr
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
+   const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();
 
    std::_tstring strImage;
    switch(deckType)
    {
    case pgsTypes::sdtCompositeCIP:
    case pgsTypes::sdtCompositeSIP:
-      if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
+      if (section_properties_criteria.EffectiveFlangeWidthMethod == pgsTypes::efwmTribWidth ||
+         WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims <= specification_criteria.GetEdition())
       {
          strImage =  _T("SpreadVoidedSlab_Effective_Flange_Width_Interior_Girder_2008.gif");
       }
@@ -710,7 +718,8 @@ std::_tstring CVoidedSlabFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBr
       break;
 
    case pgsTypes::sdtCompositeOverlay:
-      if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
+      if (section_properties_criteria.EffectiveFlangeWidthMethod == pgsTypes::efwmTribWidth ||
+         WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims <= specification_criteria.GetEdition())
       {
          return _T("VoidedSlab_Effective_Flange_Width_Interior_Girder_2008.gif");
       }
@@ -734,13 +743,16 @@ std::_tstring CVoidedSlabFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBr
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
+   const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
+   const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();
 
    std::_tstring strImage;
    switch(deckType)
    {
    case pgsTypes::sdtCompositeCIP:
    case pgsTypes::sdtCompositeSIP:
-      if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
+      if (section_properties_criteria.EffectiveFlangeWidthMethod == pgsTypes::efwmTribWidth ||
+         WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims <= specification_criteria.GetEdition())
       {
          strImage =  _T("SpreadVoidedSlab_Effective_Flange_Width_Exterior_Girder_2008.gif");
       }
@@ -751,7 +763,8 @@ std::_tstring CVoidedSlabFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBr
       break;
 
    case pgsTypes::sdtCompositeOverlay:
-      if ( pSpecEntry->GetEffectiveFlangeWidthMethod() == pgsTypes::efwmTribWidth || lrfdVersionMgr::FourthEditionWith2008Interims <= pSpecEntry->GetSpecificationType() )
+      if (section_properties_criteria.EffectiveFlangeWidthMethod == pgsTypes::efwmTribWidth ||
+         WBFL::LRFD::BDSManager::Edition::FourthEditionWith2008Interims <= specification_criteria.GetEdition())
       {
          return _T("VoidedSlab_Effective_Flange_Width_Exterior_Girder_2008.gif");
       }

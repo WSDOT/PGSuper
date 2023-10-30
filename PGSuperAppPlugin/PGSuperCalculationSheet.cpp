@@ -64,7 +64,7 @@ WsdotCalculationSheet()
    CComPtr<IEAFAppPlugin> appPlugin;
    pDocTemplate->GetPlugin(&appPlugin);
    CString strBottomTitle;
-   strBottomTitle.Format(_T("%s™ Version %s, Copyright © %4d, WSDOT, All rights reserved"),appPlugin->GetName(),pVerInfo->GetVersion(true),sysDate().Year());
+   strBottomTitle.Format(_T("%s™ Version %s, Copyright © %4d, WSDOT, All rights reserved"),appPlugin->GetName(),pVerInfo->GetVersion(true),WBFL::System::Date().Year());
 
    SetTitle(strBottomTitle);
 

@@ -597,7 +597,7 @@ HRESULT CTxDOTCadExporter::ExportHaunchDeflectionData(IBroker* pBroker, const st
          }
 
          // Write X, Y, and Z decimal in format rounded up to nearest 1/8" accuracy
-         Float64 xyzToler = ::ConvertToSysUnits(0.125, unitMeasure::Inch);
+         Float64 xyzToler = WBFL::Units::ConvertToSysUnits(0.125, WBFL::Units::Measure::Inch);
 
          CString fmtStr;
          Float64 val;
@@ -635,12 +635,34 @@ HRESULT CTxDOTCadExporter::ExportHaunchDeflectionData(IBroker* pBroker, const st
          }
 
          // DL Defl Deck @ Pt A{ 1 / 4 pt }
-         val = ConvertFromSysUnits((delta_slab2 + delta_slab3) / 2.0, unitMeasure::Feet);
+         val = ConvertFromSysUnits((delta_slab2 + delta_slab3) / 2.0, WBFL::Units::Measure::Feet);
          pExporter->WriteFloatToCell(1, _T("A_Val"), rowNum, val);
 
          // DL Defl Deck @ Pt B {1/2 pt} 
-         val = ConvertFromSysUnits(delta_slab5, unitMeasure::Feet);
+         val = ConvertFromSysUnits(delta_slab5, WBFL::Units::Measure::Feet);
          pExporter->WriteFloatToCell(1, _T("B_Val"), rowNum, val);
+
+         // ShearKey deflections
+         // deflections from ShearKey loading
+         Float64 delta_ShearKey2(0),delta_ShearKey3(0),delta_ShearKey5(0),delta_ShearKey7(0),delta_ShearKey8(0);
+         if (castDeckIntervalIdx != INVALID_INDEX)
+         {
+            GET_IFACE2(pBroker,IProductForces,pProductForces);
+            delta_ShearKey2 = pProductForces->GetDeflection(castDeckIntervalIdx,pgsTypes::pftShearKey,poi_2,bat,rtCumulative,false);
+            delta_ShearKey3 = pProductForces->GetDeflection(castDeckIntervalIdx,pgsTypes::pftShearKey,poi_3,bat,rtCumulative,false);
+            delta_ShearKey5 = pProductForces->GetDeflection(castDeckIntervalIdx,pgsTypes::pftShearKey,poi_5,bat,rtCumulative,false);
+            delta_ShearKey7 = pProductForces->GetDeflection(castDeckIntervalIdx,pgsTypes::pftShearKey,poi_7,bat,rtCumulative,false);
+            delta_ShearKey8 = pProductForces->GetDeflection(castDeckIntervalIdx,pgsTypes::pftShearKey,poi_8,bat,rtCumulative,false);
+         }
+
+         // DL Defl Shear Key @ Pt A{ 1 / 4 pt }
+         val = ConvertFromSysUnits((delta_ShearKey2 + delta_ShearKey3) / 2.0,WBFL::Units::Measure::Feet);
+         pExporter->WriteFloatToCell(1,_T("SKA_Val"),rowNum,val);
+
+         // DL Defl Shear Key @ Pt B {1/2 pt} 
+         val = ConvertFromSysUnits(delta_ShearKey5,WBFL::Units::Measure::Feet);
+         pExporter->WriteFloatToCell(1,_T("SKB_Val"),rowNum,val);
+
 
          pProgress->Increment();
 
@@ -765,7 +787,7 @@ void raised_strand_research(IBroker* pBroker, const std::vector<CGirderKey>& gir
    GET_IFACE2(pBroker, IPointOfInterest, pIPOI);
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
 
-   dbgLogDumpContext m_Log;
+   WBFL::Debug::LogDumpContext m_Log;
    ILogFile* __pLogFile__;
    DWORD __dwCookie__;
    HRESULT _xxHRxx_ = ::CoCreateInstance(CLSID_SysAgent, 0, CLSCTX_INPROC_SERVER, IID_ILogFile, (void**)&__pLogFile__);
@@ -804,11 +826,11 @@ void raised_strand_research(IBroker* pBroker, const std::vector<CGirderKey>& gir
       GET_IFACE2(pBroker, IBridge, pBridge);
       Float64 span_length = pBridge->GetSpanLength(segmentKey.groupIndex);
 
-      span_length = ConvertFromSysUnits(span_length, unitMeasure::Feet);
+      span_length = ConvertFromSysUnits(span_length, WBFL::Units::Measure::Feet);
       m_Log << _T(",") << span_length;
 
       Float64 gdr_hght = pGirderEntry->GetBeamHeight(pgsTypes::metEnd);
-      gdr_hght = ConvertFromSysUnits(gdr_hght, unitMeasure::Inch);
+      gdr_hght = ConvertFromSysUnits(gdr_hght, WBFL::Units::Measure::Inch);
       m_Log << _T(",") << gdr_hght;
 
       GET_IFACE2(pBroker, IArtifact, pIArtifact);
@@ -863,11 +885,11 @@ void raised_strand_research(IBroker* pBroker, const std::vector<CGirderKey>& gir
       m_Log << _T(",") << ndb;
 
       Float64 fci = pSegment->Material.Concrete.Fci;
-      fci = ::ConvertFromSysUnits(fci, unitMeasure::KSI);
+      fci = WBFL::Units::ConvertFromSysUnits(fci, WBFL::Units::Measure::KSI);
       m_Log << _T(",") << fci;
 
       Float64 fc = pSegment->Material.Concrete.Fc;
-      fc = ::ConvertFromSysUnits(fc, unitMeasure::KSI);
+      fc = WBFL::Units::ConvertFromSysUnits(fc, WBFL::Units::Measure::KSI);
       m_Log << _T(",") << fc;
 
       if (passed)

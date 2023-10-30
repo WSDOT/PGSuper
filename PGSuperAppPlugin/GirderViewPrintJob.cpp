@@ -105,16 +105,16 @@ void CGirderViewPrintJob::OnPrint(CDC* pDC, CPrintInfo* pInfo)
    if ( pDocType->IsPGSuperDocument() )
    {
       if ( girderKey.groupIndex == ALL_GROUPS )
-         title.Format(_T("Girder %s - PGSuper™ Version %s, Copyright © %4d, WSDOT, All rights reserved"), LABEL_GIRDER(girderKey.girderIndex), pVerInfo->GetVersion(), sysDate().Year());  
+         title.Format(_T("Girder %s - PGSuper™ Version %s, Copyright © %4d, WSDOT, All rights reserved"), LABEL_GIRDER(girderKey.girderIndex), pVerInfo->GetVersion(), WBFL::System::Date().Year());  
       else
-         title.Format(_T("Span %s Girder %s - PGSuper™ Version %s, Copyright © %4d, WSDOT, All rights reserved"), LABEL_SPAN(girderKey.groupIndex), LABEL_GIRDER(girderKey.girderIndex), pVerInfo->GetVersion(), sysDate().Year());
+         title.Format(_T("Span %s Girder %s - PGSuper™ Version %s, Copyright © %4d, WSDOT, All rights reserved"), LABEL_SPAN(girderKey.groupIndex), LABEL_GIRDER(girderKey.girderIndex), pVerInfo->GetVersion(), WBFL::System::Date().Year());
    }
    else
    {
       if ( girderKey.groupIndex == ALL_GROUPS )
-         title.Format(_T("Girder %s - PGSplice™ Version %s, Copyright © %4d, WSDOT, All rights reserved"), LABEL_GIRDER(girderKey.girderIndex), pVerInfo->GetVersion(), sysDate().Year());
+         title.Format(_T("Girder %s - PGSplice™ Version %s, Copyright © %4d, WSDOT, All rights reserved"), LABEL_GIRDER(girderKey.girderIndex), pVerInfo->GetVersion(), WBFL::System::Date().Year());
       else
-         title.Format(_T("Group %d Girder %s - PGSplice™ Version %s, Copyright © %4d, WSDOT, All rights reserved"), LABEL_GROUP(girderKey.groupIndex), LABEL_GIRDER(girderKey.girderIndex), pVerInfo->GetVersion(), sysDate().Year());
+         title.Format(_T("Group %d Girder %s - PGSplice™ Version %s, Copyright © %4d, WSDOT, All rights reserved"), LABEL_GROUP(girderKey.groupIndex), LABEL_GIRDER(girderKey.girderIndex), pVerInfo->GetVersion(), WBFL::System::Date().Year());
    }
 
    border.SetTitle(title);
@@ -166,7 +166,7 @@ void CGirderViewPrintJob::OnPrint(CDC* pDC, CPrintInfo* pInfo)
    CFont* oldfont = pDC->SelectObject(&pvf);
    pDC->SetTextAlign(TA_LEFT|TA_TOP);
    GET_IFACE(IEventMap,pEventMap);
-   CString tstr = pEventMap->GetEventName(m_pFrame->GetEvent());
+   CString tstr(pEventMap->GetEventName(m_pFrame->GetEvent()));
    CString topcap = _T("Elevation View (") + tstr + _T(")");
    CSize csiz = pDC->GetTextExtent( topcap );
    int x = (rcPrint.left+rcPrint.right)/2 - csiz.cx/2;
@@ -192,9 +192,9 @@ void CGirderViewPrintJob::OnPrint(CDC* pDC, CPrintInfo* pInfo)
    // label
    // get length unit for labelling
    GET_IFACE(IEAFDisplayUnits,pdisp_units);
-   const unitmgtLengthData& rlen = pdisp_units->GetSpanLengthUnit();
-   sysNumericFormatTool nf(rlen.Format, rlen.Width, rlen.Precision);
-   Float64 dist = ::ConvertFromSysUnits(m_pFrame->GetCurrentCutLocation(), rlen.UnitOfMeasure);
+   const WBFL::Units::LengthData& rlen = pdisp_units->GetSpanLengthUnit();
+   WBFL::System::NumericFormatTool nf(rlen.Format, rlen.Width, rlen.Precision);
+   Float64 dist = WBFL::Units::ConvertFromSysUnits(m_pFrame->GetCurrentCutLocation(), rlen.UnitOfMeasure);
    CString msg;
    msg.Format(_T("Section Cut At %s %s"),nf.AsString(dist).c_str(), rlen.UnitOfMeasure.UnitTag().c_str());
 

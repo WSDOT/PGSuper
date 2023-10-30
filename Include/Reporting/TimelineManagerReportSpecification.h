@@ -29,13 +29,13 @@ class REPORTINGCLASS CTimelineManagerReportSpecification :
    public CBrokerReportSpecification
 {
 public:
-   CTimelineManagerReportSpecification(LPCTSTR strReportName, IBroker* pBroker);
+   CTimelineManagerReportSpecification(const std::_tstring& strReportName, IBroker* pBroker);
    ~CTimelineManagerReportSpecification(void);
 
    void SetTimelineManager(const CTimelineManager* pTimelineMgr);
    const CTimelineManager* GetTimelineManager() const;
 
-   virtual HRESULT Validate() const;
+   virtual bool IsValid() const override;
 
 protected:
    const CTimelineManager* m_pTimelineMgr;

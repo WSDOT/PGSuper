@@ -134,27 +134,3 @@ void pgsPoiArtifactKey::MakeAssignment(const pgsPoiArtifactKey& rOther)
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool pgsPoiArtifactKey::AssertValid() const
-{
-   return true;
-}
-
-void pgsPoiArtifactKey::Dump(dbgDumpContext& os) const
-{
-   os << "Dump for pgsPoiArtifactKey" << endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool pgsPoiArtifactKey::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("pgsPoiArtifactKey");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for pgsPoiArtifactKey");
-
-   TESTME_EPILOG("pgsPoiArtifactKey");
-}
-#endif // _UNITTEST

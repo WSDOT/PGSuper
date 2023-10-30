@@ -55,6 +55,9 @@
 #define TLM_LOAD_RATING_ERROR                            0x00400000 // load rating occurs before bridge is open to traffic
 #define TLM_INTERMEDIATE_DIAPHRAGM_LOADING_ERROR         0x00800000 // intermediate diaphragm are cast after the deck is cast (must occur before) or before segment erection (must occur after)
 #define TLM_USER_LOAD_ERROR                              0x01000000 // user defined loads are applied before a segment is erected (must occur after)
+#define TLM_GEOM_EVENT_TIME_ERROR                        0x02000000 // a geometry control event is placed before deck casting
+#define TLM_GEOM_EVENT_MISSING_ERROR                     0x04000000 // must have one primary geometry control event
+#define TLM_GEOM_EVENT_DUPL_ERROR                        0x08000000 // cannot have more than one primary geometry control event
 
 #define TLM_SUCCESS                                      0x00000000 // event was successfully added
 
@@ -264,6 +267,13 @@ public:
    EventIndexType FindUserLoadEventIndex(LoadIDType loadID) const;
    EventIDType FindUserLoadEventID(LoadIDType loadID) const;
 
+   EventIndexType GetPrimaryGeometryControlEventIndex() const; // main activity where geometry is based
+   std::vector<EventIndexType> GetGeometryControlEventIndices(pgsTypes::GeometryControlActivityType type) const; // all other activities
+   std::vector <EventIDType> GetGeometryControlEventIDs(pgsTypes::GeometryControlActivityType type) const;
+   void SetGeometryControlEventByIndex(EventIndexType eventIdx,pgsTypes::GeometryControlActivityType type);
+   void SetGeometryControlEventByID(EventIDType eventID,pgsTypes::GeometryControlActivityType type);
+
+
    Uint32 Validate() const;
    Uint32 ValidateEvent(const CTimelineEvent* pTimelineEvent) const;
    std::_tstring GetErrorMessage(Uint32 errorCode) const;
@@ -298,6 +308,8 @@ protected:
    mutable std::vector<CClosureKey> m_ClosureJointError; // TLM_CLOSURE_JOINT_ERROR
    mutable std::vector<CGirderTendonKey> m_StressTendonsActivityError; // TLM_STRESS_TENDONS_ACTIVITY_REQUIRED
    mutable std::vector<CGirderTendonKey> m_StressTendonError; // TLM_STRESS_TENDON_ERROR
+   mutable std::vector<EventIndexType> m_GeomEventTimeError; //  TLM_GEOM_EVENT_TIME_ERROR
+   mutable std::vector<std::pair<EventIndexType,EventIndexType>> m_GeomEventDuplicateError; //  TLM_GEOM_EVENT_DUPL_ERROR
 
    static EventIDType ms_ID;
 

@@ -26,11 +26,11 @@
 #include <Reporting\ReportingExp.h>
 #include <Reporting\ReportNotes.h>
 #include <IFace\Project.h>
+#include <IFace\RatingSpecification.h>
 
 interface IBroker;
 interface IProductLoads;
 interface IEAFDisplayUnits;
-interface IRatingSpecification;
 interface ILiveLoads;
 interface IIntervals;
 interface IPointOfInterest;
@@ -122,25 +122,6 @@ private:
    // GROUP: OPERATIONS
    // GROUP: ACCESS
    // GROUP: INQUIRY
-
-public:
-   // GROUP: DEBUG
-   #if defined _DEBUG
-   //------------------------------------------------------------------------
-   // Returns true if the object is in a valid state, otherwise returns false.
-   virtual bool AssertValid() const;
-
-   //------------------------------------------------------------------------
-   // Dumps the contents of the object to the given dump context.
-   virtual void Dump(dbgDumpContext& os) const;
-   #endif // _DEBUG
-
-   #if defined _UNITTEST
-   //------------------------------------------------------------------------
-   // Runs a self-diagnostic test.  Returns true if the test passed,
-   // otherwise false.
-   static bool TestMe(dbgLog& rlog);
-   #endif // _UNITTEST
 };
 
 void GetCombinedResultsPoi(IBroker* pBroker,const CGirderKey& girderKey,IntervalIndexType intervalIdx,PoiList* pPoi,PoiAttributeType* pRefAttribute);
@@ -248,7 +229,7 @@ RowIndexType CreateLimitStateTableHeading(rptRcTable** ppTable,LPCTSTR strLabel,
          (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
          (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
 
-         if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+         if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims )
          {
             pTable->SetColumnSpan(ls_title_row,ls_title_col,2);
            (*pTable)(ls_title_row,ls_title_col++) << GetLimitStateString(pgsTypes::ServiceIA);
@@ -265,7 +246,7 @@ RowIndexType CreateLimitStateTableHeading(rptRcTable** ppTable,LPCTSTR strLabel,
          (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Max"), M, unitT );
          (*pTable)(min_max_row,min_max_col++) << COLHDR(_T("Min"), M, unitT );
 
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
          {
             pTable->SetColumnSpan(ls_title_row,ls_title_col,2);
            (*pTable)(ls_title_row,ls_title_col++) << GetLimitStateString(pgsTypes::FatigueI);
@@ -454,7 +435,7 @@ RowIndexType CreateLimitStateTableHeading(rptRcTable** ppTable,LPCTSTR strLabel,
          pTable->SetRowSpan(ls_title_row,ls_title_col,2);
          (*pTable)(ls_title_row,ls_title_col++) << COLHDR(GetLimitStateString(pgsTypes::ServiceI), M, unitT );
 
-         if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+         if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims )
          {
             pTable->SetRowSpan(ls_title_row,ls_title_col,2);
             (*pTable)(ls_title_row,ls_title_col++) << COLHDR(GetLimitStateString(pgsTypes::ServiceIA), M, unitT );
@@ -463,7 +444,7 @@ RowIndexType CreateLimitStateTableHeading(rptRcTable** ppTable,LPCTSTR strLabel,
          pTable->SetRowSpan(ls_title_row,ls_title_col,2);
          (*pTable)(ls_title_row,ls_title_col++) << COLHDR(GetLimitStateString(pgsTypes::ServiceIII), M, unitT );
 
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
          {
             pTable->SetRowSpan(ls_title_row,ls_title_col,2);
             (*pTable)(ls_title_row,ls_title_col++) << COLHDR(GetLimitStateString(pgsTypes::FatigueI), M, unitT );
@@ -648,7 +629,8 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,IBroker*
    GET_IFACE2(pBroker,ILibrary,pLib);
    GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
-   bool bTimeStepMethod = pSpecEntry->GetLossMethod() == LOSSES_TIME_STEP;
+   const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
+   bool bTimeStepMethod = prestress_loss_criteria.LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP;
 
    RowIndexType nHeaderRows = 0;
    ColumnIndexType nCols = 0;
@@ -843,7 +825,7 @@ RowIndexType CreateCombinedLiveLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
       nCols += 2; // Design LL+IM
       nVhls++;
 
-      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          nCols += 2; // fatigue
          nVhls++;
@@ -937,7 +919,7 @@ RowIndexType CreateCombinedLiveLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
          (*pTable)(2, col++) << COLHDR(_T("Max"),       M, unitT );
          (*pTable)(2, col++) << COLHDR(_T("Min"),       M, unitT );
 
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
          {
             pTable->SetColumnSpan(1, col, 2);
             (*pTable)(1,col) << _T("* Fatigue");
@@ -963,7 +945,7 @@ RowIndexType CreateCombinedLiveLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
          (*pTable)(2,col++) << COLHDR(_T("Max"),       M, unitT );
          (*pTable)(2,col++) << COLHDR(_T("Min"),       M, unitT );
 
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
          {
             pTable->SetColumnSpan(1, col, 2);
             (*pTable)(1,col) << _T("* Fatigue")<<Super(lcnt++);
@@ -988,7 +970,7 @@ RowIndexType CreateCombinedLiveLoadingTableHeading(rptRcTable** ppTable,LPCTSTR 
          (*pTable)(2,col++) << COLHDR(_T("Max"),       M, unitT );
          (*pTable)(2,col++) << COLHDR(_T("Min"),       M, unitT );
 
-         if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+         if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
          {
             pTable->SetColumnSpan(1,col,2);
             (*pTable)(1,col) << (includeImpact ? _T("* LL+IM Fatigue") : _T("* LL Fatigue"));
@@ -1154,8 +1136,8 @@ inline void SumPedAndLiveLoad(ILiveLoads::PedestrianLoadApplicationType appType,
    }
 }
 
-inline void SumPedAndLiveLoad(ILiveLoads::PedestrianLoadApplicationType appType, std::vector<sysSectionValue>& minLL, std::vector<sysSectionValue>& maxLL,
-                              const std::vector<sysSectionValue>& minPed, const std::vector<sysSectionValue>& maxPed)
+inline void SumPedAndLiveLoad(ILiveLoads::PedestrianLoadApplicationType appType, std::vector<WBFL::System::SectionValue>& minLL, std::vector<WBFL::System::SectionValue>& maxLL,
+                              const std::vector<WBFL::System::SectionValue>& minPed, const std::vector<WBFL::System::SectionValue>& maxPed)
 {
    ATLASSERT(minLL.size()==minPed.size());
    ATLASSERT(maxLL.size()==maxPed.size());
@@ -1167,9 +1149,9 @@ inline void SumPedAndLiveLoad(ILiveLoads::PedestrianLoadApplicationType appType,
    else if (appType==ILiveLoads::PedConcurrentWithVehicular)
    {
       // summ values
-      std::vector<sysSectionValue>::iterator minIt = minLL.begin();
-      std::vector<sysSectionValue>::iterator minEnd = minLL.end();
-      std::vector<sysSectionValue>::const_iterator minPedIt = minPed.begin();
+      std::vector<WBFL::System::SectionValue>::iterator minIt = minLL.begin();
+      std::vector<WBFL::System::SectionValue>::iterator minEnd = minLL.end();
+      std::vector<WBFL::System::SectionValue>::const_iterator minPedIt = minPed.begin();
       while(minIt != minEnd)
       {
          *minIt += *minPedIt;
@@ -1177,9 +1159,9 @@ inline void SumPedAndLiveLoad(ILiveLoads::PedestrianLoadApplicationType appType,
          minPedIt++;
       }
 
-      std::vector<sysSectionValue>::iterator maxIt = maxLL.begin();
-      std::vector<sysSectionValue>::iterator maxEnd = maxLL.end();
-      std::vector<sysSectionValue>::const_iterator maxPedIt = maxPed.begin();
+      std::vector<WBFL::System::SectionValue>::iterator maxIt = maxLL.begin();
+      std::vector<WBFL::System::SectionValue>::iterator maxEnd = maxLL.end();
+      std::vector<WBFL::System::SectionValue>::const_iterator maxPedIt = maxPed.begin();
       while(maxIt != maxEnd)
       {
          *maxIt += *maxPedIt;
@@ -1190,9 +1172,9 @@ inline void SumPedAndLiveLoad(ILiveLoads::PedestrianLoadApplicationType appType,
    else if (appType==ILiveLoads::PedEnvelopeWithVehicular)
    {
       // envelope values
-      std::vector<sysSectionValue>::iterator minIt = minLL.begin();
-      std::vector<sysSectionValue>::iterator minEnd = minLL.end();
-      std::vector<sysSectionValue>::const_iterator minPedIt = minPed.begin();
+      std::vector<WBFL::System::SectionValue>::iterator minIt = minLL.begin();
+      std::vector<WBFL::System::SectionValue>::iterator minEnd = minLL.end();
+      std::vector<WBFL::System::SectionValue>::const_iterator minPedIt = minPed.begin();
       while(minIt != minEnd)
       {
          minIt->Left()  = Min(minIt->Left(), minPedIt->Left());
@@ -1201,9 +1183,9 @@ inline void SumPedAndLiveLoad(ILiveLoads::PedestrianLoadApplicationType appType,
          minPedIt++;
       }
 
-      std::vector<sysSectionValue>::iterator maxIt = maxLL.begin();
-      std::vector<sysSectionValue>::iterator maxEnd = maxLL.end();
-      std::vector<sysSectionValue>::const_iterator maxPedIt = maxPed.begin();
+      std::vector<WBFL::System::SectionValue>::iterator maxIt = maxLL.begin();
+      std::vector<WBFL::System::SectionValue>::iterator maxEnd = maxLL.end();
+      std::vector<WBFL::System::SectionValue>::const_iterator maxPedIt = maxPed.begin();
       while(maxIt != maxEnd)
       {
          maxIt->Left()  = Max(maxIt->Left(), maxPedIt->Left());

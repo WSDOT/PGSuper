@@ -30,6 +30,7 @@
 #endif
 
 #include <Details.h>
+#include <PsgLib/HoldDownCriteria.h>
 
 // PROJECT INCLUDES
 //
@@ -40,11 +41,18 @@
 // FORWARD DECLARATIONS
 //
 class pgsPointOfInterest;
-class matPsStrand;
 class pgsTransferLength;
 class pgsDevelopmentLength;
 class rptChapter;
 interface IEAFDisplayUnits;
+
+namespace WBFL
+{
+   namespace Materials
+   {
+      class PsStrand;
+   };
+};
 
 // MISCELLANEOUS
 //
@@ -65,13 +73,13 @@ DEFINE_GUID(IID_IPretensionForce,
 interface IPretensionForce : IUnknown
 {
    virtual Float64 GetPjackMax(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType,StrandIndexType nStrands) const = 0;
-   virtual Float64 GetPjackMax(const CSegmentKey& segmentKey,const matPsStrand& strand,StrandIndexType nStrands) const = 0;
+   virtual Float64 GetPjackMax(const CSegmentKey& segmentKey,const WBFL::Materials::PsStrand& strand,StrandIndexType nStrands) const = 0;
 
-   virtual Float64 GetTransferLength(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const = 0;
-   virtual const std::shared_ptr<pgsTransferLength> GetTransferLengthDetails(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig = nullptr) const = 0;
-   virtual Float64 GetTransferLengthAdjustment(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG* pConfig=nullptr) const = 0;
-   virtual Float64 GetTransferLengthAdjustment(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, StrandIndexType strandIdx, const GDRCONFIG* pConfig = nullptr) const = 0;
-   virtual void ReportTransferLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const = 0;
+   virtual Float64 GetTransferLength(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType, pgsTypes::TransferLengthType xferType, const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual const std::shared_ptr<pgsTransferLength> GetTransferLengthDetails(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, pgsTypes::TransferLengthType xferType, const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual Float64 GetTransferLengthAdjustment(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType, pgsTypes::TransferLengthType xferType,const GDRCONFIG* pConfig=nullptr) const = 0;
+   virtual Float64 GetTransferLengthAdjustment(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, pgsTypes::TransferLengthType xferType, StrandIndexType strandIdx, const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual void ReportTransferLengthDetails(const CSegmentKey& segmentKey, pgsTypes::TransferLengthType xferType, rptChapter* pChapter) const = 0;
 
    virtual Float64 GetDevelopmentLength(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, bool bDebonded, const GDRCONFIG* pConfig=nullptr) const = 0;
    virtual const std::shared_ptr<pgsDevelopmentLength> GetDevelopmentLengthDetails(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, bool bDebonded,const GDRCONFIG* pConfig=nullptr) const = 0;
@@ -81,7 +89,7 @@ interface IPretensionForce : IUnknown
 
    // Returns the governing hold down force based on the average harped strand slope. The slope associated with
    // the hold down force is returned through the pSlope parameter. The poi where the max hold down force occurs is returned through pPoi
-   virtual Float64 GetHoldDownForce(const CSegmentKey& segmentKey,bool bTotalForce=true,Float64* pSlope=nullptr,pgsPointOfInterest* pPoi=nullptr,const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual Float64 GetHoldDownForce(const CSegmentKey& segmentKey,HoldDownCriteria::Type holdDownForceType=HoldDownCriteria::Type::Total,Float64* pSlope=nullptr,pgsPointOfInterest* pPoi=nullptr,const GDRCONFIG* pConfig = nullptr) const = 0;
 
    virtual Float64 GetHorizHarpedStrandForce(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig = nullptr) const = 0;
 
@@ -90,8 +98,8 @@ interface IPretensionForce : IUnknown
    virtual Float64 GetPrestressForcePerStrand(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, const GDRCONFIG* pConfig = nullptr) const = 0;
    virtual Float64 GetPrestressForcePerStrand(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, bool bIncludeElasticEffects) const = 0;
 
-   virtual Float64 GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig = nullptr) const = 0;
-   virtual Float64 GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,bool bIncludeElasticEffects) const = 0;
+   virtual Float64 GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime, pgsTypes::TransferLengthType xferLengthType,const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual Float64 GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,bool bIncludeElasticEffects, pgsTypes::TransferLengthType xferLengthType) const = 0;
    virtual Float64 GetEffectivePrestress(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, const GDRCONFIG* pConfig = nullptr) const = 0;
    virtual Float64 GetEffectivePrestress(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, bool bIncludeElasticEffects) const = 0;
 
@@ -121,9 +129,9 @@ interface IPosttensionForce : IUnknown
 {
    // Returns the maximum jacking force for a given number of strands
    virtual Float64 GetGirderTendonPjackMax(const CGirderKey& girderKey,StrandIndexType nStrands) const = 0;
-   virtual Float64 GetGirderTendonPjackMax(const CGirderKey& girderKey,const matPsStrand& strand,StrandIndexType nStrands) const = 0;
+   virtual Float64 GetGirderTendonPjackMax(const CGirderKey& girderKey,const WBFL::Materials::PsStrand& strand,StrandIndexType nStrands) const = 0;
    virtual Float64 GetSegmentTendonPjackMax(const CSegmentKey& segmentKey, StrandIndexType nStrands) const = 0;
-   virtual Float64 GetSegmentTendonPjackMax(const CSegmentKey& segmentKey, const matPsStrand& strand, StrandIndexType nStrands) const = 0;
+   virtual Float64 GetSegmentTendonPjackMax(const CSegmentKey& segmentKey, const WBFL::Materials::PsStrand& strand, StrandIndexType nStrands) const = 0;
 
    // Returns the force in the tendon at jacking including the effect of friction. 
    // If bIncludeAnchorSet, anchor set losses are taken into account as well. This force

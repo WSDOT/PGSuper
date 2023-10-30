@@ -38,6 +38,7 @@
 #include "DesignGirderDlg.h"
 #include "DesignOutcomeDlg.h"
 #include "StructuralAnalysisMethodDlg.h"
+#include "FillHaunchDlg.h"
 
 // Interfaces
 #include <IFace\EditByUI.h> // for EDG_GENERAL
@@ -79,7 +80,9 @@ BEGIN_MESSAGE_MAP(CPGSuperDoc, CPGSDocBase)
 	ON_COMMAND(ID_EDIT_HAUNCH, OnEditHaunch)
    ON_UPDATE_COMMAND_UI(ID_EDIT_HAUNCH,OnUpdateEditHaunch)
 	ON_COMMAND(ID_EDIT_HAUNCH, OnEditHaunch)
-	ON_COMMAND(ID_EDIT_BEARING, OnEditBearing)
+   ON_COMMAND(ID_PROJECT_DESIGNHAUNCH,OnProjectDesignHaunch)
+   ON_UPDATE_COMMAND_UI(ID_PROJECT_DESIGNHAUNCH,OnUpdateProjectDesignHaunch)
+   ON_COMMAND(ID_EDIT_BEARING, OnEditBearing)
    ON_UPDATE_COMMAND_UI(ID_EDIT_BEARING,OnUpdateEditBearing)
    //}}AFX_MSG_MAP
 END_MESSAGE_MAP()
@@ -181,12 +184,8 @@ bool CPGSuperDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,int
    const CSplicedGirderData*  pGirder     = pGroup->GetGirder(segmentKey.girderIndex);
    const CPrecastSegmentData* pSegment    = pGirder->GetSegment(segmentKey.segmentIndex);
 
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
-   const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-
    // resequence page if no debonding
-   bool bExtraPage = pSegment->Strands.IsSymmetricDebond() || pSpecEntry->AllowStraightStrandExtensions();
+   bool bExtraPage = pSegment->Strands.IsSymmetricDebond();
    if (EGD_DEBONDING <= nPage  && !bExtraPage)
    {
       nPage--;
@@ -218,12 +217,36 @@ bool CPGSuperDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,int
       newGirderData.m_Girder.SetTopWidth(type,leftStart,rightStart,leftEnd,rightEnd);
       *newGirderData.m_Girder.GetSegment(segmentKey.segmentIndex) = *dlg.GetSegment();
 
-      newGirderData.m_SlabOffsetType = dlg.m_General.m_SlabOffsetType;
-      newGirderData.m_SlabOffset[pgsTypes::metStart] = dlg.m_General.m_SlabOffset[pgsTypes::metStart];
-      newGirderData.m_SlabOffset[pgsTypes::metEnd]   = dlg.m_General.m_SlabOffset[pgsTypes::metEnd];
+      if (pBridgeDesc->GetHaunchInputDepthType() == pgsTypes::hidACamber)
+      {
+         newGirderData.m_SlabOffsetType = pBridgeDesc->GetSlabOffsetType(); // Not changed by the dialog
+         newGirderData.m_SlabOffset[pgsTypes::metStart] = dlg.m_General.m_SlabOffsetOrHaunch[pgsTypes::metStart];
+         newGirderData.m_SlabOffset[pgsTypes::metEnd] = dlg.m_General.m_SlabOffsetOrHaunch[pgsTypes::metEnd];
 
-      newGirderData.m_AssumedExcessCamberType = dlg.m_General.m_AssumedExcessCamberType;
+         newGirderData.m_AssumedExcessCamberType = pBridgeDesc->GetAssumedExcessCamberType(); // Not changed by the dialog
       newGirderData.m_AssumedExcessCamber = dlg.m_General.m_AssumedExcessCamber;
+      }
+      else
+      {
+         // Direct input of haunch depth
+         if (dlg.m_General.m_CanDisplayHauchDepths == CGirderDescGeneralPage::cdhEdit)
+         {
+            // Haunch value was edited in dialog. Determine if 1 or 2 values
+            if (pBridgeDesc->GetHaunchInputDistributionType() == pgsTypes::hidUniform)
+            {
+               newGirderData.m_HaunchDepths.push_back( dlg.m_General.m_SlabOffsetOrHaunch[pgsTypes::metStart]);
+            }
+            else if (pBridgeDesc->GetHaunchInputDistributionType() == pgsTypes::hidAtEnds)
+            {
+               newGirderData.m_HaunchDepths.push_back(dlg.m_General.m_SlabOffsetOrHaunch[pgsTypes::metStart]);
+               newGirderData.m_HaunchDepths.push_back(dlg.m_General.m_SlabOffsetOrHaunch[pgsTypes::metEnd]);
+            }
+            else
+            {
+               ATLASSERT(0); // above should be only options
+            }
+         }
+      }
 
       newGirderData.m_strGirderName = dlg.m_strGirderName;
 
@@ -242,20 +265,20 @@ bool CPGSuperDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,int
          newGirderData.m_BearingData[pgsTypes::metEnd] = dlg.m_SpanGdrDetailsBearingsPage.m_Bearings[pgsTypes::metEnd];
       }
 
-      txnTransaction* pTxn = new txnEditGirder(girderKey,newGirderData);
+      std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditGirder>(girderKey,newGirderData));
 
-      txnTransaction* pExtensionTxn = dlg.GetExtensionPageTransaction();
+      auto pExtensionTxn = dlg.GetExtensionPageTransaction();
       if ( pExtensionTxn )
       {
-         txnMacroTxn* pMacro = new pgsMacroTxn;
+         std::unique_ptr<CEAFMacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
          pMacro->Name(pTxn->Name());
-         pMacro->AddTransaction(pTxn);
-         pMacro->AddTransaction(pExtensionTxn);
-         pTxn = pMacro;
+         pMacro->AddTransaction(std::move(pTxn));
+         pMacro->AddTransaction(std::move(pExtensionTxn));
+         pTxn = std::move(pMacro);
       }
 
       GET_IFACE(IEAFTransactions,pTransactions);
-      pTransactions->Execute(pTxn);
+      pTransactions->Execute(std::move(pTxn));
 
       return true;
    }
@@ -275,9 +298,23 @@ bool CPGSuperDoc::EditClosureJointDescription(const CClosureKey& closureKey,int 
 void CPGSuperDoc::OnUpdateProjectDesignGirderDirectPreserveHaunch(CCmdUI* pCmdUI)
 {
    GET_IFACE(ISpecification,pSpecification);
-   GET_IFACE_NOCHECK(IBridge,pBridge); // short circuit evaluation may cause this interface to be unused
-   bool bDesignSlabOffset = pSpecification->IsSlabOffsetDesignEnabled() && pBridge->GetDeckType() != pgsTypes::sdtNone;
+   bool bDesignSlabOffset = pSpecification->DesignSlabHaunch();
    pCmdUI->Enable( bDesignSlabOffset );
+}
+
+void CPGSuperDoc::OnProjectDesignHaunch()
+{
+   GroupIndexType group = m_Selection.GroupIdx == ALL_GROUPS ? 0 : m_Selection.GroupIdx;
+   GirderIndexType girder = m_Selection.GirderIdx == ALL_GIRDERS ? 0 : m_Selection.GirderIdx;
+   
+   DoDesignHaunch(CGirderKey(group,girder));
+}
+
+void CPGSuperDoc::OnUpdateProjectDesignHaunch(CCmdUI* pCmdUI)
+{
+   GET_IFACE_NOCHECK(IBridge,pBridge); // short circuit evaluation may cause this interface to be unused
+   bool bDesign = pBridge->GetDeckType() != pgsTypes::sdtNone && pBridge->GetHaunchInputDepthType() != pgsTypes::hidACamber;
+   pCmdUI->Enable(bDesign);
 }
 
 void CPGSuperDoc::OnProjectAnalysis() 
@@ -292,9 +329,9 @@ void CPGSuperDoc::OnProjectAnalysis()
    {
       if ( currAnalysisType != dlg.m_AnalysisType )
       {
-         txnEditAnalysisType* pTxn = new txnEditAnalysisType(currAnalysisType,dlg.m_AnalysisType);
+         std::unique_ptr<txnEditAnalysisType> pTxn(std::make_unique<txnEditAnalysisType>(currAnalysisType,dlg.m_AnalysisType));
          GET_IFACE(IEAFTransactions,pTransactions);
-         pTransactions->Execute(pTxn);
+         pTransactions->Execute(std::move(pTxn));
       }
    }
 }
@@ -317,14 +354,13 @@ void CPGSuperDoc::OnProjectDesignGirderDirectPreserveHaunch()
    DesignGirder(false/*don't prompt for design options, used last values*/,sodPreserveHaunch,CGirderKey(m_Selection.GroupIdx,m_Selection.GirderIdx));
 }
 
-void CPGSuperDoc::DesignGirder(bool bPrompt, arSlabOffsetDesignType designSlabOffset, const CGirderKey& girderKey)
+void CPGSuperDoc::DesignGirder(bool bPrompt, arSlabOffsetDesignType haunchDesignRequest, const CGirderKey& girderKey)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    GET_IFACE_NOCHECK(IBridge, pBridge);
-   GET_IFACE(ISectionProperties, pSectProp);
    GET_IFACE(ILossParameters, pLossParams);
-   if (pLossParams->GetLossMethod() == pgsTypes::TIME_STEP)
+   if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP)
    {
       AfxMessageBox(_T("Prestress losses are computed by the time-step method. Girder design is not available for this prestress loss method."), MB_OK);
       return;
@@ -337,30 +373,39 @@ void CPGSuperDoc::DesignGirder(bool bPrompt, arSlabOffsetDesignType designSlabOf
       return;
    }
 
-   // We cannot design directly if transformed sections or non-prismatic haunch section properties are specified. Inform user if this is the case.
-   CString noDesignMsg;
-   if (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmTransformed)
+   if (pBridge->GetHaunchInputDepthType() != pgsTypes::hidACamber)
    {
-      noDesignMsg = (_T("The Project Criteria specifies an analysis based on Transformed Sections. "));
+      CString msg(_T("Geometric design of the slab haunch is only available if the \"A\" dimension input format is used to define the haunch. Haunch geometry will be not be modified during the design."));
+      AfxMessageBox(msg,MB_OK | MB_ICONWARNING);
    }
-
-   if (pSectProp->GetHaunchAnalysisSectionPropertiesType() == pgsTypes::hspVariableParabolic && IsStructuralDeck(pBridge->GetDeckType()))
+   else
    {
-      if (!noDesignMsg.IsEmpty())
+      GET_IFACE(ISectionProperties,pSectProp);
+      // We cannot design directly if transformed sections or non-prismatic haunch section properties are specified. Inform user if this is the case.
+      CString noDesignMsg;
+      if (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmTransformed)
       {
-         noDesignMsg += _T("Also, ");
+         noDesignMsg = (_T("The Project Criteria specifies an analysis based on Transformed Sections. "));
       }
 
-      noDesignMsg += _T("The Project Criteria specifies an analysis based on non-prismatic composite section properties accounting for Parabolic Haunch depth. ");
-   }
-
-   if (!noDesignMsg.IsEmpty())
-   {
-      CString msg;
-      msg.Format(_T("Warning: %s \n\nThese options are not accurately accounted for by the automated design algorithm. For this reason, girder designs are performed using gross section properties and a constant haunch depth.\n\nThe resulting design may not be optimal. Be sure to verify design results using a Spec Check.\n\nWould you like to proceed?"), noDesignMsg);
-      if (AfxMessageBox(msg, MB_YESNO | MB_ICONWARNING) != IDYES)
+      if (pSectProp->GetHaunchAnalysisSectionPropertiesType() == pgsTypes::hspDetailedDescription && IsStructuralDeck(pBridge->GetDeckType()))
       {
-         return;
+         if (!noDesignMsg.IsEmpty())
+         {
+            noDesignMsg += _T("Also, ");
+         }
+
+         noDesignMsg += _T("The Project Criteria specifies an analysis based on non-prismatic composite section properties accounting for Parabolic Haunch depth. ");
+      }
+
+      if (!noDesignMsg.IsEmpty())
+      {
+         CString msg;
+         msg.Format(_T("Warning: %s \n\nThese options are not accurately accounted for by the automated design algorithm. For this reason, girder designs are performed using gross section properties and a constant haunch depth.\n\nThe resulting design may not be optimal. Be sure to verify design results using a Spec Check.\n\nWould you like to proceed?"),noDesignMsg);
+         if (AfxMessageBox(msg,MB_YESNO | MB_ICONWARNING) != IDYES)
+         {
+            return;
+         }
       }
    }
 
@@ -371,10 +416,8 @@ void CPGSuperDoc::DesignGirder(bool bPrompt, arSlabOffsetDesignType designSlabOf
    std::vector<CGirderKey> girderKeys;
    if (bPrompt)
    {
-      // only show A design option if it's allowed in the library
-      // Do not save this in registry because library selection should be default for new documents
-
-      CDesignGirderDlg dlg(thisGirderKey, m_pBroker, designSlabOffset);
+      // Dialog saves design options in registery to be loaded later below
+      CDesignGirderDlg dlg(thisGirderKey, m_pBroker, haunchDesignRequest);
 
       if (dlg.DoModal() == IDOK)
       {
@@ -401,7 +444,7 @@ void CPGSuperDoc::DesignGirder(bool bPrompt, arSlabOffsetDesignType designSlabOf
    arSlabOffsetDesignType haunchDesignType;
    arConcreteDesignType concreteDesignType;
    arShearDesignType shearDesignType;
-   CDesignGirderDlg::LoadSettings(bDesignFlexure, haunchDesignType, concreteDesignType, shearDesignType);
+   CDesignGirderDlg::LoadSettings(haunchDesignRequest, bDesignFlexure, haunchDesignType, concreteDesignType, shearDesignType);
 
    DoDesignGirder(girderKeys, bDesignFlexure, haunchDesignType, concreteDesignType, shearDesignType);
 }
@@ -469,11 +512,11 @@ void CPGSuperDoc::DoDesignGirder(const std::vector<CGirderKey>& girderKeys, bool
    if (0 < myGirderKeys.size())
    {
       GET_IFACE(IReportManager, pReportMgr);
-      CReportDescription rptDesc = pReportMgr->GetReportDescription(_T("Design Outcome Report"));
-      std::shared_ptr<CReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
-      std::shared_ptr<CReportSpecification> pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
+      auto rptDesc = pReportMgr->GetReportDescription(_T("Design Outcome Report"));
+      auto pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
+      auto pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
 
-      std::shared_ptr<CMultiGirderReportSpecification> pMGRptSpec = std::dynamic_pointer_cast<CMultiGirderReportSpecification, CReportSpecification>(pRptSpec);
+      auto pMGRptSpec = std::dynamic_pointer_cast<CMultiGirderReportSpecification>(pRptSpec);
 
       pMGRptSpec->SetGirderKeys(myGirderKeys);
 
@@ -486,13 +529,55 @@ void CPGSuperDoc::DoDesignGirder(const std::vector<CGirderKey>& girderKeys, bool
          bool doDesignSO = dlg.GetSlabOffsetDesign(&slabOffsetDType, &fromSpan, &fromGirder);
 
          // Create our transaction and execute
+         std::unique_ptr<txnDesignGirder> pTxn(std::make_unique<txnDesignGirder>(pArtifacts, slabOffsetDType, fromSpan, fromGirder));
          GET_IFACE(IEAFTransactions, pTransactions);
-
-         txnDesignGirder* pTxn = new txnDesignGirder(pArtifacts, slabOffsetDType, fromSpan, fromGirder);
-
-         pTransactions->Execute(pTxn);
+         pTransactions->Execute(std::move(pTxn));
       }
    }
+}
+
+bool CPGSuperDoc::DesignHaunch(const CGirderKey& girderKey)
+{
+   return DoDesignHaunch(girderKey);
+}
+
+bool CPGSuperDoc::DoDesignHaunch(const CGirderKey& girderKey)
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   CFillHaunchDlg dlg(girderKey,m_pBroker);
+   if (IDOK == dlg.DoModal())
+   {
+      GET_IFACE(IBridgeDescription,pIBridgeDesc);
+      const CBridgeDescription2* pOldBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
+      CBridgeDescription2 newBridgeDescr(*pOldBridgeDesc);
+
+      if (dlg.ModifyBridgeDescription(newBridgeDescr))
+      {
+         GET_IFACE(IEnvironment,pEnvironment);
+         auto oldExposureCondition = pEnvironment->GetExposureCondition();
+         Float64 oldRelHumidity = pEnvironment->GetRelHumidity();
+
+         std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditBridge>(*pOldBridgeDesc,newBridgeDescr,
+            oldExposureCondition,oldExposureCondition,oldRelHumidity,oldRelHumidity));
+
+         GET_IFACE(IEAFTransactions,pTransactions);
+         pTransactions->Execute(std::move(pTxn));
+
+         // Give user some confirmation that values where changed. A report of some kind might be better, but not sure it's worth the effort.
+         CString msg(_T("Haunch depths were modified. Click Yes to view/edit new haunch values"));
+         AFX_MANAGE_STATE(AfxGetStaticModuleState());
+         if (AfxMessageBox(msg,MB_YESNO | MB_ICONQUESTION) == IDYES)
+         {
+            OnEditHaunch();
+         }
+
+         return true;
+      }
+   }
+
+   return false;
 }
 
 UINT CPGSuperDoc::GetStandardToolbarResourceID()

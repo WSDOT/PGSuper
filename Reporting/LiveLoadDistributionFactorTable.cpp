@@ -28,6 +28,7 @@
 #include <IFace\DistributionFactors.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
+#include <IFace\ReportOptions.h>
 
 #include <PsgLib\SpecLibraryEntry.h>
 
@@ -91,7 +92,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
    *pChapter << pBody;
 
    ColumnIndexType nCols = 4;
-   if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       nCols += 3; // for fatigue limit state LLDF
    }
@@ -106,7 +107,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
    }
 
    ColumnIndexType col = 0;
-   if ( lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims )
+   if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims )
    {
       pTable->SetNumberOfHeaderRows(1);
       (*pTable)(0, col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION,   rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
@@ -140,8 +141,8 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
 
-   GET_IFACE2(pBroker, IDocumentType, pDocType);
-   location.IncludeSpanAndGirder(pDocType->IsPGSpliceDocument() || girderKey.groupIndex == ALL_GROUPS);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
 
@@ -164,7 +165,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
       }
       (*pTable)(row, col++) << df.SetValue(V);
 
-      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          pDistFact->GetDistributionFactors(poi,pgsTypes::FatigueI,&pM,&nM,&V);
          (*pTable)(row, col++) << df.SetValue(pM);
@@ -185,7 +186,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
    }
 
    nCols = 2;
-   if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+   if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
       nCols++;
    }

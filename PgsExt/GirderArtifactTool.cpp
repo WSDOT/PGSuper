@@ -27,7 +27,7 @@
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
 #include <IFace\Bridge.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\DocumentType.h>
 
@@ -39,8 +39,8 @@ static char THIS_FILE[] = __FILE__;
 
 bool FlexureStressFailures(IBroker* pBroker,const CSegmentKey& segmentKey,const StressCheckTask& task,const pgsSegmentArtifact* pArtifact,bool bBeamStresses)
 {
-   CollectionIndexType nArtifacts = pArtifact->GetFlexuralStressArtifactCount(task);
-   for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
+   IndexType nArtifacts = pArtifact->GetFlexuralStressArtifactCount(task);
+   for ( IndexType idx = 0; idx < nArtifacts; idx++ )
    {
       const pgsFlexuralStressArtifact* pFlexure = pArtifact->GetFlexuralStressArtifact( task,idx );
       if ( bBeamStresses )
@@ -111,7 +111,7 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures, const pgsGirde
       {
          if (referToDetailsReport)
          {
-            std::_tstring msg(_T("Strand Stresses [") + std::_tstring(LrfdCw8th(_T("5.9.3"), _T("5.9.2.2"))) + _T("] have been exceeded.  See the Details Report for more information"));
+            std::_tstring msg(_T("Strand Stresses [") + std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.3"), _T("5.9.2.2"))) + _T("] have been exceeded.  See the Details Report for more information"));
             rFailures.emplace_back(msg);
          }
          else
@@ -210,13 +210,21 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures, const pgsGirde
          }
          rFailures.emplace_back(os.str());
       }
+
+      const auto* pFatigueArtifact = pArtifact->GetReinforcementFatigueArtifact();
+      if (!pArtifact->GetReinforcementFatigueArtifact()->Passed())
+      {
+         std::_tostringstream os;
+         os << _T("Reinforcement fatigue check failed.");
+         rFailures.emplace_back(os.str());
+      }
    } // next segment
 }
 
 bool MomentCapacityFailures(IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bPositiveMoment)
 {
-   CollectionIndexType nArtifacts = (bPositiveMoment ? pGirderArtifact->GetPositiveMomentFlexuralCapacityArtifactCount(intervalIdx,ls) : pGirderArtifact->GetNegativeMomentFlexuralCapacityArtifactCount(intervalIdx, ls));
-   for ( CollectionIndexType artifactIdx = 0; artifactIdx < nArtifacts; artifactIdx++ )
+   IndexType nArtifacts = (bPositiveMoment ? pGirderArtifact->GetPositiveMomentFlexuralCapacityArtifactCount(intervalIdx,ls) : pGirderArtifact->GetNegativeMomentFlexuralCapacityArtifactCount(intervalIdx, ls));
+   for ( IndexType artifactIdx = 0; artifactIdx < nArtifacts; artifactIdx++ )
    {
       const pgsFlexuralCapacityArtifact* pFlexure = (bPositiveMoment ? 
          pGirderArtifact->GetPositiveMomentFlexuralCapacityArtifact( intervalIdx, ls, artifactIdx ) :
@@ -277,8 +285,8 @@ void ListVerticalShearFailures(IBroker* pBroker,FailureList& rFailures,const pgs
       const pgsSegmentArtifact* pArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
       const pgsStirrupCheckArtifact *pStirrups = pArtifact->GetStirrupCheckArtifact();
 
-      CollectionIndexType nArtifacts = pStirrups->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
-      for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
+      IndexType nArtifacts = pStirrups->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
+      for ( IndexType idx = 0; idx < nArtifacts; idx++ )
       {
          const pgsStirrupCheckAtPoisArtifact* pPoiArtifacts = pStirrups->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,idx );
 
@@ -296,7 +304,7 @@ void ListVerticalShearFailures(IBroker* pBroker,FailureList& rFailures,const pgs
             bContinue1 = false;
          }
 
-         if ( bContinue2 && /*pLongReinf->IsApplicable() &&*/ !pLongReinf->Passed() )
+         if ( bContinue2 && !pLongReinf->Passed() )
          {
             std::_tostringstream os;
             os << _T("Longitudinal Reinforcement for Shear check failed for ") << strLimitState << _T(" Limit State") << std::ends;
@@ -331,8 +339,8 @@ void ListHorizontalShearFailures(IBroker* pBroker,FailureList& rFailures,const p
       const pgsSegmentArtifact* pArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
       const pgsStirrupCheckArtifact *pStirrups = pArtifact->GetStirrupCheckArtifact();
 
-      CollectionIndexType nArtifacts = pStirrups->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
-      for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
+      IndexType nArtifacts = pStirrups->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
+      for ( IndexType idx = 0; idx < nArtifacts; idx++ )
       {
          const pgsStirrupCheckAtPoisArtifact* pPoiArtifacts = pStirrups->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,idx );
 
@@ -341,7 +349,7 @@ void ListHorizontalShearFailures(IBroker* pBroker,FailureList& rFailures,const p
          if ( !pShear->Passed() )
          {
             std::_tostringstream os;
-            os << _T("Horizontal Interface Shears/Length check failed for ") << strLimitState << _T(" Limit State [") << LrfdCw8th(_T("5.8.4"),_T("5.7.4")) << _T("].") << std::ends;
+            os << _T("Horizontal Interface Shear check failed for ") << strLimitState << _T(" Limit State.") << std::ends;
             rFailures.emplace_back(os.str());
 
             return;
@@ -367,8 +375,8 @@ void ListStirrupDetailingFailures(IBroker* pBroker,FailureList& rFailures,const 
       const pgsSegmentArtifact* pArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
       const pgsStirrupCheckArtifact *pStirrups = pArtifact->GetStirrupCheckArtifact();
 
-      CollectionIndexType nArtifacts = pStirrups->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
-      for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
+      IndexType nArtifacts = pStirrups->GetStirrupCheckAtPoisArtifactCount( intervalIdx,ls );
+      for ( IndexType idx = 0; idx < nArtifacts; idx++ )
       {
          const pgsStirrupCheckAtPoisArtifact* pPoiArtifacts = pStirrups->GetStirrupCheckAtPoisArtifact( intervalIdx,ls,idx );
 
@@ -533,7 +541,7 @@ void ListVariousFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirder
       const pgsHaulingAnalysisArtifact* pHauling = pArtifact->GetHaulingAnalysisArtifact();
       if (pHauling != nullptr)
       {
-         if (!pHauling->Passed(pgsTypes::CrownSlope) || !pHauling->Passed(pgsTypes::Superelevation))
+         if (!pHauling->Passed(WBFL::Stability::HaulingSlope::CrownSlope) || !pHauling->Passed(WBFL::Stability::HaulingSlope::Superelevation))
          {
             std::_tostringstream os;
             if (1 < nSegments)
@@ -560,6 +568,11 @@ void ListVariousFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirder
    if (!pConstruct->FinishedElevationPassed())
    {
       rFailures.emplace_back(_T("Finished elevation check failed"));
+   }
+
+   if (!pConstruct->MinimumHaunchDepthPassed())
+   {
+      rFailures.emplace_back(_T("Minimum haunch depth vs fillet check failed"));
    }
 
    if ( pConstruct->IsHaunchAtBearingCLsApplicable() && !pConstruct->HaunchAtBearingCLsPassed() )

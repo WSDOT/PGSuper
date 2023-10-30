@@ -90,14 +90,14 @@ pgsHaulingAnalysisArtifact* pgsKdotGirderHaulingChecker::CheckHauling(const CSeg
 
    if (pHaulingSpecCriteria->IsHaulingAnalysisEnabled())
    {
-      ATLASSERT(pHaulingSpecCriteria->GetHaulingAnalysisMethod()==pgsTypes::hmKDOT);
+      ATLASSERT(pHaulingSpecCriteria->GetHaulingAnalysisMethod()==pgsTypes::HaulingAnalysisMethod::KDOT);
 
       // Run analysis to get check results
       std::unique_ptr<pgsHaulingAnalysisArtifact> artifact( AnalyzeHauling(segmentKey) );
 
       pgsKdotHaulingAnalysisArtifact* kart = dynamic_cast<pgsKdotHaulingAnalysisArtifact*>(artifact.get()); // eating our own dog food here
 
-      bool didpass = kart->Passed(pgsTypes::CrownSlope);
+      bool didpass = kart->Passed(WBFL::Stability::HaulingSlope::CrownSlope);
 
       // Next run design to get overhang limits
       GET_IFACE(IBridge,pBridge);
@@ -263,8 +263,8 @@ pgsHaulingAnalysisArtifact* pgsKdotGirderHaulingChecker::DesignHauling(const CSe
    Float64 inc = bigInc;
    bool bLargeStepSize = true;
 
-   LOG(_T("softMinHaulingDistance = ") << ::ConvertFromSysUnits(softMinHaulingDistance, unitMeasure::Feet)<<_T(" ft"));
-   LOG(_T("hardMinHaulingDistance = ") << ::ConvertFromSysUnits(hardMinHaulingDistance, unitMeasure::Feet)<<_T(" ft"));
+   LOG(_T("softMinHaulingDistance = ") << WBFL::Units::ConvertFromSysUnits(softMinHaulingDistance, WBFL::Units::Measure::Feet)<<_T(" ft"));
+   LOG(_T("hardMinHaulingDistance = ") << WBFL::Units::ConvertFromSysUnits(hardMinHaulingDistance, WBFL::Units::Measure::Feet)<<_T(" ft"));
 
    Float64 loc = hardMinHaulingDistance;
 
@@ -277,7 +277,7 @@ pgsHaulingAnalysisArtifact* pgsKdotGirderHaulingChecker::DesignHauling(const CSe
 
       this->AnalyzeHauling(segmentKey, true, shipping_config, pPOId, &temp_artifact);
 
-      bool passed = temp_artifact.Passed(pgsTypes::CrownSlope);
+      bool passed = temp_artifact.Passed(WBFL::Stability::HaulingSlope::CrownSlope);
 
       if(passed)
       {
@@ -347,7 +347,7 @@ pgsHaulingAnalysisArtifact* pgsKdotGirderHaulingChecker::DesignHauling(const CSe
    pArtifact->SetOverhangs(loc, loc);
    pArtifact->SetDesignOverhang(loc);
 
-   LOG(_T("Exiting pgsKdotGirderHaulingChecker::DesignHauling. Overhang location is ")<<::ConvertFromSysUnits(loc, unitMeasure::Feet)<<_T(" ft"));
+   LOG(_T("Exiting pgsKdotGirderHaulingChecker::DesignHauling. Overhang location is ")<<WBFL::Units::ConvertFromSysUnits(loc, WBFL::Units::Measure::Feet)<<_T(" ft"));
 
    return pArtifact.release();
 }
@@ -371,31 +371,6 @@ pgsHaulingAnalysisArtifact* pgsKdotGirderHaulingChecker::DesignHauling(const CSe
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
 
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool pgsKdotGirderHaulingChecker::AssertValid() const
-{
-   return true;
-}
-
-void pgsKdotGirderHaulingChecker::Dump(dbgDumpContext& os) const
-{
-   os << "Dump for pgsKdotGirderHaulingChecker" << endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool pgsKdotGirderHaulingChecker::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("pgsKdotGirderHaulingChecker");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for pgsKdotGirderHaulingChecker");
-
-   TESTME_EPILOG("GirderHandlingChecker");
-}
-#endif // _UNITTEST
-
-
 ////////////////////////////////////////////////////////
 // hauling
 ////////////////////////////////////////////////////////
@@ -414,7 +389,7 @@ void pgsKdotGirderHaulingChecker::PrepareHaulingAnalysisArtifact(const CSegmentK
 
    GET_IFACE(IMaterials,pMaterial);
    Float64 density = pMaterial->GetSegmentWeightDensity(segmentKey,haulSegmentIntervalIdx);
-   Float64 total_weight = volume * density * unitSysUnitsMgr::GetGravitationalAcceleration();
+   Float64 total_weight = volume * density * WBFL::Units::System::GetGravitationalAcceleration();
    pArtifact->SetGirderWeight(total_weight);
 
    Float64 span_len = girder_length - Loh - Roh;
@@ -506,12 +481,12 @@ void pgsKdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& segm
    IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
 
    // Get allowable tension for with and without rebar cases
-   Float64 fLowTensAllowable, fHighTensAllowable , fCompAllowable;
+   Float64 fLowTensAllowable, fHighTensAllowable , fCompLimits;
    if (!bUseConfig)
    {
       fLowTensAllowable  = pHaulingSpecCriteria->GetKdotHaulingAllowableTensileConcreteStress(segmentKey);
       fHighTensAllowable = pHaulingSpecCriteria->GetKdotHaulingWithMildRebarAllowableStress(segmentKey);
-      fCompAllowable     = pHaulingSpecCriteria->GetKdotHaulingAllowableCompressiveConcreteStress(segmentKey);
+      fCompLimits     = pHaulingSpecCriteria->GetKdotHaulingAllowableCompressiveConcreteStress(segmentKey);
    }
    else
    {
@@ -519,7 +494,7 @@ void pgsKdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& segm
 
       fLowTensAllowable  = pHaulingSpecCriteria->GetKdotHaulingAllowableTensileConcreteStressEx(segmentKey, fc, false);
       fHighTensAllowable = pHaulingSpecCriteria->GetKdotHaulingAllowableTensileConcreteStressEx(segmentKey, fc, true);
-      fCompAllowable     = pHaulingSpecCriteria->GetKdotHaulingAllowableCompressiveConcreteStressEx(segmentKey, fc);
+      fCompLimits     = pHaulingSpecCriteria->GetKdotHaulingAllowableCompressiveConcreteStressEx(segmentKey, fc);
    }
 
    // Parameters for computing required concrete strengths
@@ -530,9 +505,9 @@ void pgsKdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& segm
    pHaulingSpecCriteria->GetKdotHaulingAllowableTensileConcreteStressParameters(&rcsT,&rcsBfmax,&rcsFmax);
    Float64 rcsTalt = pHaulingSpecCriteria->GetKdotHaulingWithMildRebarAllowableStressFactor();
 
-   bool bSISpec = lrfdVersionMgr::GetVersion() == lrfdVersionMgr::SI ? true : false;
+   bool bSISpec = WBFL::LRFD::BDSManager::GetUnits() == WBFL::LRFD::BDSManager::Units::SI ? true : false;
    // Use calculator object to deal with casting yard higher allowable stress
-   Float64 fsMax = (bSISpec ? ::ConvertToSysUnits(206.0,unitMeasure::MPa) : ::ConvertToSysUnits(30.0,unitMeasure::KSI) );
+   Float64 fsMax = (bSISpec ? WBFL::Units::ConvertToSysUnits(206.0,WBFL::Units::Measure::MPa) : WBFL::Units::ConvertToSysUnits(30.0,WBFL::Units::Measure::KSI) );
    pgsAlternativeTensileStressCalculator altCalc(segmentKey, haulSegmentIntervalIdx, pBridge, pGdr, pShapes, pSectProps, pRebarGeom, pMaterials, pPoi, true/*limit bar stress*/, fsMax, true/*girder stresses*/);
 
    Float64 AsMax = 0;
@@ -561,7 +536,7 @@ void pgsKdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& segm
       for (int i = 0; i < 3; i++)
       {
          pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
-         P[strandType] = pPrestressForce->GetPrestressForce(poi, strandType, haulSegmentIntervalIdx, pgsTypes::Middle, pConfig);
+         P[strandType] = pPrestressForce->GetPrestressForce(poi, strandType, haulSegmentIntervalIdx, pgsTypes::Middle,pgsTypes::TransferLengthType::Minimum, pConfig);
          ecc[strandType] = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poi, strandType, pConfig).Y();
          Aps[strandType] = pStrandGeometry->GetStrandArea(poi, releaseIntervalIdx, strandType, pConfig);
       }
@@ -609,12 +584,12 @@ void pgsKdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& segm
       Float64 Yna, At, T, AsReqd, AsProvd;
       bool isAdequateBar;
  
-      Float64 fAllow = altCalc.ComputeAlternativeStressRequirements(poi, pConfig, ft_mo, fb_mo, fLowTensAllowable, fHighTensAllowable,
+      Float64 fLimit = altCalc.ComputeAlternativeStressRequirements(poi, pConfig, ft_mo, fb_mo, fLowTensAllowable, fHighTensAllowable,
                                                                       &Yna, &At, &T, &AsProvd, &AsReqd, &isAdequateBar);
 
-      haul_artifact.SetAlternativeTensileStressParameters(Yna, At, T, AsProvd, AsReqd, fAllow);
+      haul_artifact.SetAlternativeTensileStressParameters(Yna, At, T, AsProvd, AsReqd, fLimit);
 
-      haul_artifact.SetCompressiveCapacity(fCompAllowable);
+      haul_artifact.SetCompressiveCapacity(fCompLimits);
 
       // Compute required concrete strengths
       // Compression

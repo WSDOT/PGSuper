@@ -40,23 +40,23 @@ CLASS
 //======================== LIFECYCLE  =======================================
 CDeckRebarData::CDeckRebarData()
 {
-   TopCover    = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
-   BottomCover = ::ConvertToSysUnits(2.0,unitMeasure::Inch);
+   TopCover    = WBFL::Units::ConvertToSysUnits(2.0,WBFL::Units::Measure::Inch);
+   BottomCover = WBFL::Units::ConvertToSysUnits(2.0,WBFL::Units::Measure::Inch);
 
-   TopRebarType = matRebar::A615;
-   TopRebarGrade = matRebar::Grade60;
-   TopRebarSize = matRebar::bsNone;
+   TopRebarType = WBFL::Materials::Rebar::Type::A615;
+   TopRebarGrade = WBFL::Materials::Rebar::Grade::Grade60;
+   TopRebarSize = WBFL::Materials::Rebar::Size::bsNone;
 
-   BottomRebarType = matRebar::A615;
-   BottomRebarGrade = matRebar::Grade60;
-   BottomRebarSize = matRebar::bsNone;
+   BottomRebarType = WBFL::Materials::Rebar::Type::A615;
+   BottomRebarGrade = WBFL::Materials::Rebar::Grade::Grade60;
+   BottomRebarSize = WBFL::Materials::Rebar::Size::bsNone;
 
-   TopSpacing    = ::ConvertToSysUnits(18.0,unitMeasure::Inch);
-   BottomSpacing = ::ConvertToSysUnits(18.0,unitMeasure::Inch);
+   TopSpacing    = WBFL::Units::ConvertToSysUnits(18.0,WBFL::Units::Measure::Inch);
+   BottomSpacing = WBFL::Units::ConvertToSysUnits(18.0,WBFL::Units::Measure::Inch);
 
    // default values are for LRFD imperical deck design
-   TopLumpSum    = ::ConvertToSysUnits(0.18,unitMeasure::Inch2PerFoot);
-   BottomLumpSum = ::ConvertToSysUnits(0.27,unitMeasure::Inch2PerFoot);
+   TopLumpSum    = WBFL::Units::ConvertToSysUnits(0.18,WBFL::Units::Measure::Inch2PerFoot);
+   BottomLumpSum = WBFL::Units::ConvertToSysUnits(0.27,WBFL::Units::Measure::Inch2PerFoot);
 }
 
 CDeckRebarData::CDeckRebarData(const CDeckRebarData& rOther)
@@ -102,16 +102,16 @@ HRESULT CDeckRebarData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
 
    pStrSave->put_Property(_T("TopCover"),CComVariant(TopCover));
    pStrSave->put_Property(_T("TopLumpSumArea"),CComVariant(TopLumpSum));
-   pStrSave->put_Property(_T("TopRebarType"),CComVariant(TopRebarType));
-   pStrSave->put_Property(_T("TopRebarGrade"),CComVariant(TopRebarGrade));
-   pStrSave->put_Property(_T("TopRebarSize"),CComVariant(TopRebarSize));
+   pStrSave->put_Property(_T("TopRebarType"),CComVariant(+TopRebarType));
+   pStrSave->put_Property(_T("TopRebarGrade"),CComVariant(+TopRebarGrade));
+   pStrSave->put_Property(_T("TopRebarSize"),CComVariant(+TopRebarSize));
    pStrSave->put_Property(_T("TopSpacing"),CComVariant(TopSpacing));
 
    pStrSave->put_Property(_T("BottomCover"),CComVariant(BottomCover));
    pStrSave->put_Property(_T("BottomLumpSumArea"),CComVariant(BottomLumpSum));
-   pStrSave->put_Property(_T("BottomRebarType"),CComVariant(BottomRebarType));
-   pStrSave->put_Property(_T("BottomRebarGrade"),CComVariant(BottomRebarGrade));
-   pStrSave->put_Property(_T("BottomRebarSize"),CComVariant(BottomRebarSize));
+   pStrSave->put_Property(_T("BottomRebarType"),CComVariant(+BottomRebarType));
+   pStrSave->put_Property(_T("BottomRebarGrade"),CComVariant(+BottomRebarGrade));
+   pStrSave->put_Property(_T("BottomRebarSize"),CComVariant(+BottomRebarSize));
    pStrSave->put_Property(_T("BottomSpacing"),CComVariant(BottomSpacing));
 
    pStrSave->put_Property(_T("NegMomentCount"),CComVariant((long)NegMomentRebar.size()));
@@ -124,9 +124,9 @@ HRESULT CDeckRebarData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
       pStrSave->put_Property(_T("Pier"),CComVariant(rebar.PierIdx));
       pStrSave->put_Property(_T("Mat"),CComVariant(rebar.Mat));
       pStrSave->put_Property(_T("LumpSumArea"),CComVariant(rebar.LumpSum));
-      pStrSave->put_Property(_T("RebarType"),CComVariant(rebar.RebarType));
-      pStrSave->put_Property(_T("RebarGrade"),CComVariant(rebar.RebarGrade));
-      pStrSave->put_Property(_T("RebarSize"),CComVariant(rebar.RebarSize));
+      pStrSave->put_Property(_T("RebarType"),CComVariant(+rebar.RebarType));
+      pStrSave->put_Property(_T("RebarGrade"),CComVariant(+rebar.RebarGrade));
+      pStrSave->put_Property(_T("RebarSize"),CComVariant(+rebar.RebarSize));
       pStrSave->put_Property(_T("Spacing"),CComVariant(rebar.Spacing));
       pStrSave->put_Property(_T("LeftCutoff"),CComVariant(rebar.LeftCutoff));
       pStrSave->put_Property(_T("RightCutoff"),CComVariant(rebar.RightCutoff));
@@ -170,19 +170,19 @@ HRESULT CDeckRebarData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       var.vt = VT_I4;
       pStrLoad->get_Property(_T("TopRebarKey"),&var);
       BarSizeType TopRebarKey = BarSizeType(var.lVal);
-      lrfdRebarPool::MapOldRebarKey(TopRebarKey,TopRebarGrade,TopRebarType,TopRebarSize);
+      WBFL::LRFD::RebarPool::MapOldRebarKey(TopRebarKey,TopRebarGrade,TopRebarType,TopRebarSize);
    }
    else
    {
       var.vt = VT_I4;
       pStrLoad->get_Property(_T("TopRebarType"),&var);
-      TopRebarType = matRebar::Type(var.lVal);
+      TopRebarType = WBFL::Materials::Rebar::Type(var.lVal);
 
       pStrLoad->get_Property(_T("TopRebarGrade"),&var);
-      TopRebarGrade = matRebar::Grade(var.lVal);
+      TopRebarGrade = WBFL::Materials::Rebar::Grade(var.lVal);
 
       pStrLoad->get_Property(_T("TopRebarSize"),&var);
-      TopRebarSize = matRebar::Size(var.lVal);
+      TopRebarSize = WBFL::Materials::Rebar::Size(var.lVal);
    }
 
    var.vt = VT_R8;
@@ -201,19 +201,19 @@ HRESULT CDeckRebarData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       var.vt = VT_I4;
       pStrLoad->get_Property(_T("BottomRebarKey"),&var);
       BarSizeType BottomRebarKey = BarSizeType(var.lVal);
-      lrfdRebarPool::MapOldRebarKey(BottomRebarKey,BottomRebarGrade,BottomRebarType,BottomRebarSize);
+      WBFL::LRFD::RebarPool::MapOldRebarKey(BottomRebarKey,BottomRebarGrade,BottomRebarType,BottomRebarSize);
    }
    else
    {
       var.vt = VT_I4;
       pStrLoad->get_Property(_T("BottomRebarType"),&var);
-      BottomRebarType = matRebar::Type(var.lVal);
+      BottomRebarType = WBFL::Materials::Rebar::Type(var.lVal);
 
       pStrLoad->get_Property(_T("BottomRebarGrade"),&var);
-      BottomRebarGrade = matRebar::Grade(var.lVal);
+      BottomRebarGrade = WBFL::Materials::Rebar::Grade(var.lVal);
 
       pStrLoad->get_Property(_T("BottomRebarSize"),&var);
-      BottomRebarSize = matRebar::Size(var.lVal);
+      BottomRebarSize = WBFL::Materials::Rebar::Size(var.lVal);
    }
 
    var.vt = VT_R8;
@@ -246,19 +246,19 @@ HRESULT CDeckRebarData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          var.vt = VT_I4;
          pStrLoad->get_Property(_T("RebarKey"),&var);
          BarSizeType RebarKey = BarSizeType(var.lVal);
-         lrfdRebarPool::MapOldRebarKey(RebarKey,rebar.RebarGrade,rebar.RebarType,rebar.RebarSize);
+         WBFL::LRFD::RebarPool::MapOldRebarKey(RebarKey,rebar.RebarGrade,rebar.RebarType,rebar.RebarSize);
       }
       else
       {
          var.vt = VT_I4;
          pStrLoad->get_Property(_T("RebarType"),&var);
-         rebar.RebarType = matRebar::Type(var.lVal);
+         rebar.RebarType = WBFL::Materials::Rebar::Type(var.lVal);
 
          pStrLoad->get_Property(_T("RebarGrade"),&var);
-         rebar.RebarGrade = matRebar::Grade(var.lVal);
+         rebar.RebarGrade = WBFL::Materials::Rebar::Grade(var.lVal);
 
          pStrLoad->get_Property(_T("RebarSize"),&var);
-         rebar.RebarSize = matRebar::Size(var.lVal);
+         rebar.RebarSize = WBFL::Materials::Rebar::Size(var.lVal);
       }
 
       var.vt = VT_R8;

@@ -26,7 +26,7 @@
 #include "EditSpanLength.h"
 #include <PgsExt\BridgeDescription2.h>
 #include <IFace\Project.h>
-#include <System\System.h>
+#include <EAF\EAFTxnManager.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -58,7 +58,7 @@ void CInplaceSpanLengthEditEvents::Handle_OnChanged(iDisplayObject* pDO)
 
    if ( !IsEqual(old_span_length,new_span_length) )
    {
-      txnEditSpanLength* pTxn = new txnEditSpanLength(m_SpanIdx,old_span_length,new_span_length);
-      txnTxnManager::GetInstance()->Execute(pTxn);
+      std::unique_ptr<txnEditSpanLength> pTxn(std::make_unique<txnEditSpanLength>(m_SpanIdx,old_span_length,new_span_length));
+      CEAFTxnManager::GetInstance().Execute(std::move(pTxn));
    }
 }

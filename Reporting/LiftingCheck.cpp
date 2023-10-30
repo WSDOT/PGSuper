@@ -41,6 +41,8 @@
 
 #include <limits>
 
+#include <EAF/EAFApp.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -99,7 +101,7 @@ void CLiftingCheck::Build(rptChapter* pChapter,
       *pChapter << p;
 
       *p << color(Red) << _T("Lifting analysis disabled in Project Criteria. No analysis performed.") << color(Black) << rptNewLine;
-      if (lrfdVersionMgr::NinthEdition2020 <= lrfdVersionMgr::GetVersion())
+      if (WBFL::LRFD::BDSManager::Edition::NinthEdition2020 <= WBFL::LRFD::BDSManager::GetEdition())
       {
          *p << color(Red) << _T("Per LRFD 5.5.4.3, \"Buckling and stability of precast members during handling, transportation, and erection shall be investigated.\" Also see C5.5.4.3 and C5.12.3.2.1.") << color(Black) << rptNewLine;
       }
@@ -135,7 +137,8 @@ void CLiftingCheck::Build(rptChapter* pChapter,
       Float64 Ll, Lr;
       pStabilityProblem->GetSupportLocations(&Ll, &Lr);
       WBFL::Stability::LiftingStabilityReporter reporter;
-      reporter.BuildSpecCheckChapter(pStabilityModel, pStabilityProblem, pArtifact, pChapter, _T("Location from<BR/>Left Pick Point"), Ll);
+      auto* pApp = EAFGetApp();
+      reporter.BuildSpecCheckChapter(pStabilityModel, pStabilityProblem, pArtifact, pChapter, pApp->GetDisplayUnits(), _T("Location from<BR/>Left Pick Point"), Ll);
    }
    else
    {
@@ -147,7 +150,7 @@ void CLiftingCheck::Build(rptChapter* pChapter,
       *pChapter << p;
 
       *p << color(Red) << _T("Lifting analysis disabled in Project Criteria. No analysis performed.") << color(Black) << rptNewLine;
-      if (lrfdVersionMgr::NinthEdition2020 <= lrfdVersionMgr::GetVersion())
+      if (WBFL::LRFD::BDSManager::Edition::NinthEdition2020 <= WBFL::LRFD::BDSManager::GetEdition())
       {
          *p << color(Red) << _T("Per LRFD 5.5.4.3, \"Buckling and stability of precast members during handling, transportation, and erection shall be investigated.\" Also see C5.5.4.3 and C5.12.3.2.1.") << color(Black) << rptNewLine;
       }

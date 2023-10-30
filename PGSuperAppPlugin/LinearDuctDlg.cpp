@@ -17,7 +17,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-static Float64 gs_Millimeter = ::ConvertToSysUnits(1.0, unitMeasure::Millimeter);
+static Float64 gs_Millimeter = WBFL::Units::ConvertToSysUnits(1.0, WBFL::Units::Measure::Millimeter);
 
 void DDX_DuctGeometry(CDataExchange* pDX,CLinearDuctGrid& grid,CLinearDuctGeometry& ductGeometry)
 {
@@ -57,8 +57,8 @@ void DDV_DuctGeometry(CDataExchange* pDX,const CGirderKey& girderKey,CLinearDuct
 
    Float64 Xg = 0;
    Float64 Xg_Last = 0;
-   CollectionIndexType nPoints = ductGeometry.GetPointCount();
-   for ( CollectionIndexType pntIdx = 0; pntIdx < nPoints; pntIdx++ )
+   IndexType nPoints = ductGeometry.GetPointCount();
+   for ( IndexType pntIdx = 0; pntIdx < nPoints; pntIdx++ )
    {
       Float64 location, offset;
       CDuctGeometry::OffsetType offsetType;
@@ -260,11 +260,11 @@ const CLinearDuctGeometry& CLinearDuctDlg::GetDuctGeometry() const
 void CLinearDuctDlg::OnSchematicButton()
 {
    auto mm = m_DrawTendons.GetMapMode();
-   mm = (mm == grlibPointMapper::Isotropic ? grlibPointMapper::Anisotropic : grlibPointMapper::Isotropic);
+   mm = (mm == WBFL::Graphing::PointMapper::MapMode::Isotropic ? WBFL::Graphing::PointMapper::MapMode::Anisotropic : WBFL::Graphing::PointMapper::MapMode::Isotropic);
    m_DrawTendons.SetMapMode(mm);
 }
 
-grlibPointMapper::MapMode CLinearDuctDlg::GetTendonControlMapMode() const
+WBFL::Graphing::PointMapper::MapMode CLinearDuctDlg::GetTendonControlMapMode() const
 {
    return m_DrawTendons.GetMapMode();
 }

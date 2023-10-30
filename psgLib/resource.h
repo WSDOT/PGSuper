@@ -230,6 +230,7 @@
 #define IDC_DUCT_SIZE_RATIO             1017
 #define IDC_HBG                         1017
 #define IDC_RADIUS                      1017
+#define IDC_E_CU                        1017
 #define IDC_WEIGHT                      1018
 #define IDC_DEL_HARPED_STRAND           1018
 #define IDC_LONG_GRID                   1018
@@ -242,12 +243,14 @@
 #define IDC_MAX_SHEARCAP_CHG            1018
 #define IDC_MAX_SPACING_2               1018
 #define IDC_A_ROUNDING_EDIT             1018
+#define IDC_SERVICE_III_TENSION_WITH_REBAR_MAX 1018
 #define IDC_HE_ROADWAY_SUPERELEVATION   1019
 #define IDC_RELEASE_TENSION_MAX         1019
 #define IDC_APPEND_HARPED_STRAND        1019
 #define IDC_MAX_ZONELEN_BARS            1019
 #define IDC_MIN_ZONELEN_BARS            1019
 #define IDC_NWC_CLOSURE_FCI             1019
+#define IDC_A_ROUNDING_EDIT2            1019
 #define IDC_DEL_STRAIGHT_STRAND         1020
 #define IDC_ADD_HARPED_STRAND2          1020
 #define IDC_EDIT_STRAND                 1020
@@ -269,9 +272,11 @@
 #define IDC_HARP_LOCATION               1023
 #define IDC_HP_TOP_COVER                1023
 #define IDC_HP_LSL                      1023
+#define IDC_SERVICE_PTZ_TENSION_MAX     1023
 #define IDC_DIAPHRAGM_HEIGHT            1024
 #define IDC_HP_BOTTOM_COVER             1024
 #define IDC_HP_USL                      1024
+#define IDC_SERVICE_PTZ_TENSION_WITH_REBAR_MAX 1024
 #define IDC_EDIT                        1025
 #define IDC_DIAPHRAGM_WIDTH             1025
 #define IDC_HAULING_TENSION_MAX         1025
@@ -351,20 +356,28 @@
 #define IDC_CHECK_SERVICE_I_TENSION_MAX 1061
 #define IDC_HOLD_DOWN_FORCE_UNITS       1062
 #define IDC_AFTER_DECK_COMPRESSION_UNIT 1062
+#define IDC_CHECK_SERVICE_PTZ_TENSION_MAX 1062
 #define IDC_MAX_STIRRUP_SPACING_UNITS   1063
 #define IDC_HOLD_DOWN_FORCE_UNITS2      1063
 #define IDC_A_ROUNDING_UNIT             1063
+#define IDC_CHECK_SERVICE_PTZ_TENSION_WITH_REBAR_MAX 1063
 #define IDC_PICK_POINT_HEIGHT_UNITS     1064
 #define IDC_SERVICE_III_TENSION_MAX_UNIT 1064
+#define IDC_A_ROUNDING_UNIT2            1064
 #define IDC_CHECK_HOLD_DOWN             1065
 #define IDC_LIFTING_LOOP_TOLERANCE_UNITS 1065
 #define IDC_SEVERE_SERVICE_III_TENSION  1065
+#define IDC_CHECK_SERVICE_III_TENSION_WITH_REBAR_MAX 1065
 #define IDC_EXTREME_MAX_SQRT2           1066
 #define IDC_EXTREME_MAX_SQRT_UNITS3     1066
 #define IDC_SERVICE_I_TENSION_MAX_UNIT  1066
 #define IDC_CHECK_SEVERE_SERVICE_III_TENSION_MAX 1067
+#define IDC_SERVICE_PTZ_TENSION_MAX_UNIT 1067
 #define IDC_EXTREME_MAX_SQRT_UNITS2     1068
 #define IDC_SEVERE_SERVICE_III_TENSION_MAX_UNIT 1068
+#define IDC_SERVICE_PTZ_TENSION_WITH_REBAR_MAX_UNIT 1068
+#define IDC_SERVICE_III_TENSION_MAX_UNIT2 1069
+#define IDC_SERVICE_III_TENSION_WITH_REBAR_MAX_UNIT 1069
 #define IDC_SUPPORT_PLACEMENT_TOLERANCE_UNITS 1071
 #define IDC_PS_BEFORE_TRANSFER_SR       1072
 #define IDC_PS_BEFORE_TRANSFER_LR       1073
@@ -792,8 +805,10 @@
 #define IDC_FRR_UNIT                    1367
 #define IDC_WOBBLE                      1368
 #define IDC_PCTT                        1368
+#define IDC_ECU_CHECK                   1368
 #define IDC_FRICTION                    1369
 #define IDC_WOBBLE_TAG                  1370
+#define IDC_GAMMA_U                     1370
 #define IDC_ANCHORSET_TAG               1371
 #define IDC_TRUCK_SUPPORT_LOCATION_ACCURACY 1374
 #define IDC_TRUCK_SUPPORT_LOCATION_ACCURACY_UNIT 1375
@@ -1434,6 +1449,14 @@
 #define IDC_FIBER_UNIT                  1735
 #define IDC_SLICE_COUNT                 1736
 #define IDC_AUTOGENOUS_SHRINKAGE        1737
+#define IDC_ALPHA_U                     1738
+#define IDC_ECU                         1739
+#define IDC_AGG_SIZE_LABEL              1740
+#define IDC_INTERFACE_SHEAR_WIDTH_REDUCTION 1741
+#define IDC_INTERFACE_SHEAR_WIDTH_REDUCTION_UNIT 1742
+#define IDC_INTERFACE_SHEAR_WIDTH_REDUCTION_GROUP 1743
+#define IDC_INTERFACE_SHEAR_WIDTH_REDUCTION_LABEL 1744
+#define IDC_STATIC_SERVICE_I_TENSION    1745
 #define IDS_E_INVALIDVERSION            1750
 #define IDS_E_USERDEFINED               1752
 #define IDC_DIAPHRAGM_NOTE              1858
@@ -1441,6 +1464,14 @@
 #define IDC_UHPC_FR                     1900
 #define IDC_ALWC_FR                     2017
 #define IDC_ALWC_FR2                    2020
+#define IDC_FT_CRI                      2021
+#define IDC_FT_CRI_UNIT                 2022
+#define IDC_FT_CR                       2023
+#define IDC_FT_CR_UNIT                  2024
+#define IDC_FT_LOC                      2025
+#define IDC_FT_LOC_UNIT                 2026
+#define IDC_ET_LOC                      2027
+#define IDD_UHPC_CONCRETE               2028
 #define IDR_LIBEDITORTOOLBAR            12132
 #define IDM_ADD_ENTRY                   36864
 #define IDM_EDIT_ENTRY                  36865
@@ -1465,9 +1496,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        333
+#define _APS_NEXT_RESOURCE_VALUE        334
 #define _APS_NEXT_COMMAND_VALUE         36881
-#define _APS_NEXT_CONTROL_VALUE         1738
+#define _APS_NEXT_CONTROL_VALUE         1746
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

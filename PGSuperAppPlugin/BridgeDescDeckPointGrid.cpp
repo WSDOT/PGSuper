@@ -30,6 +30,7 @@
 #include "BridgeDescDlg.h"
 #include "BridgeDescDeckDetailsPage.h"
 #include <Units\Measure.h>
+#include <CoordGeom/Station.h>
 
 #include <EAF\EAFDisplayUnits.h>
 
@@ -58,7 +59,6 @@ void DDV_DeckPointGrid(CDataExchange* pDX,int nIDC,CBridgeDescDeckPointGrid* pGr
 
 CBridgeDescDeckPointGrid::CBridgeDescDeckPointGrid()
 {
-   HRESULT hr = m_objStation.CoCreateInstance(CLSID_Station);
    m_bEnabled = TRUE;
 }
 
@@ -167,16 +167,25 @@ BOOL CBridgeDescDeckPointGrid::OnValidateCell(ROWCOL nRow,ROWCOL nCol)
       EAFGetBroker(&pBroker);
       GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-      UnitModeType unitMode = (UnitModeType)(pDisplayUnits->GetUnitMode());
-      m_objStation->FromString(CComBSTR(strText),unitMode);
+      Float64 station_value = -99999999;
+      try
+      {
+         std::_tstring strStation(strText);
+         WBFL::COGO::Station station(strStation, pDisplayUnits->GetStationFormat());
+         station_value = station.GetValue();
+      }
+      catch (...)
+      {
+         SetWarningText(_T("Invalid Station"));
+         DisplayWarningText();
+         SetFocus(); // Don't let focus move outside of grid. See Mantis 1090
 
-      Float64 station;
-      m_objStation->get_Value(&station);
-      station = ::ConvertToSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+         return FALSE;
+      }
 
       CDeckPoint prevPoint, nextPoint;
-      prevPoint.Station = station - 100;
-      nextPoint.Station = station + 100;
+      prevPoint.Station = station_value - 100;
+      nextPoint.Station = station_value + 100;
 
       if ( nRow != 1 )
       {
@@ -189,10 +198,10 @@ BOOL CBridgeDescDeckPointGrid::OnValidateCell(ROWCOL nRow,ROWCOL nCol)
          GetPointRowData(nRow+2,&nextPoint);
       }
 
-      if ( station <= prevPoint.Station || nextPoint.Station <= station )
+      if ( station_value <= prevPoint.Station || nextPoint.Station <= station_value )
       {
          CString strPrevStation = FormatStation(pDisplayUnits->GetStationFormat(),prevPoint.Station);
-         CString strThisStation = FormatStation(pDisplayUnits->GetStationFormat(),station);
+         CString strThisStation = FormatStation(pDisplayUnits->GetStationFormat(),station_value);
          CString strNextStation = FormatStation(pDisplayUnits->GetStationFormat(),nextPoint.Station);
          CString strMsg;
          strMsg.Format(_T("Invalid Station. Station %s is not between %s and %s."),strThisStation,strPrevStation,strNextStation);
@@ -339,14 +348,14 @@ void CBridgeDescDeckPointGrid::SetPointRowData(ROWCOL row,const CDeckPoint& poin
       .SetValue(point.MeasurementType == pgsTypes::omtBridge ? _T("Bridge Line") : _T("Alignment"))
       );
 
-   Float64 offset = ::ConvertFromSysUnits(point.LeftEdge,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   Float64 offset = WBFL::Units::ConvertFromSysUnits(point.LeftEdge,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
    SetStyleRange(CGXRange(row,3),CGXStyle()
       .SetControl(GX_IDS_CTRL_EDIT)
       .SetHorizontalAlignment(DT_RIGHT)
       .SetValue(offset)
       );
 
-   offset = ::ConvertFromSysUnits(point.RightEdge,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   offset = WBFL::Units::ConvertFromSysUnits(point.RightEdge,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
    SetStyleRange(CGXRange(row,4),CGXStyle()
       .SetControl(GX_IDS_CTRL_EDIT)
       .SetHorizontalAlignment(DT_RIGHT)
@@ -363,13 +372,9 @@ void CBridgeDescDeckPointGrid::GetPointRowData(ROWCOL row,CDeckPoint* pPoint)
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // Station
-   CString strStation = GetCellValue(row,1);
-   UnitModeType unitMode = (UnitModeType)(pDisplayUnits->GetUnitMode());
-   m_objStation->FromString(CComBSTR(strStation),unitMode);
-
-   Float64 station;
-   m_objStation->get_Value(&station);
-   pPoint->Station = ::ConvertToSysUnits(station,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   std::_tstring strStation(GetCellValue(row, 1));
+   WBFL::COGO::Station station(strStation, pDisplayUnits->GetStationFormat());
+   pPoint->Station = station.GetValue();
 
    // Datum
    CString strDatum = GetCellValue(row,2);
@@ -377,11 +382,11 @@ void CBridgeDescDeckPointGrid::GetPointRowData(ROWCOL row,CDeckPoint* pPoint)
 
    // Left Edge
    Float64 offset = _tstof(GetCellValue(row,3));
-   pPoint->LeftEdge = ::ConvertToSysUnits(offset,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   pPoint->LeftEdge = WBFL::Units::ConvertToSysUnits(offset,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 
    // Right Edge
    offset = _tstof(GetCellValue(row,4));
-   pPoint->RightEdge = ::ConvertToSysUnits(offset,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
+   pPoint->RightEdge = WBFL::Units::ConvertToSysUnits(offset,pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure);
 }
 
 void CBridgeDescDeckPointGrid::SetTransitionRowData(ROWCOL row,const CDeckPoint& point)
@@ -485,8 +490,8 @@ void CBridgeDescDeckPointGrid::FillGrid(const CDeckDescription2* pDeck)
    }
 
    std::vector<CDeckPoint>::const_iterator iter;
-   CollectionIndexType cPoint = 0;
-   CollectionIndexType nPoints = pDeck->DeckEdgePoints.size();
+   IndexType cPoint = 0;
+   IndexType nPoints = pDeck->DeckEdgePoints.size();
    for ( iter = pDeck->DeckEdgePoints.begin(); iter != pDeck->DeckEdgePoints.end(); iter++, cPoint++ )
    {
       const CDeckPoint& point = *iter;

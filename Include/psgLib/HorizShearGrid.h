@@ -90,7 +90,7 @@ private:
    // set up styles for interior rows
    void SetRowStyle(ROWCOL nRow);
    BOOL EnableItemDelete();
-   matRebar::Size GetBarSize(ROWCOL row,ROWCOL col);
+   WBFL::Materials::Rebar::Size GetBarSize(ROWCOL row,ROWCOL col);
    bool m_IsSymmetrical;
 };
 

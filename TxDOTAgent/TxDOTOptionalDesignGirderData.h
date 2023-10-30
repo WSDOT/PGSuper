@@ -33,7 +33,7 @@
 #endif
 // PROJECT INCLUDES
 //
-#include <Material\PsStrand.h>
+#include <Materials/PsStrand.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <PgsExt\StrandData.h>
@@ -91,15 +91,15 @@ public:
    void SetStrandFillType(StrandFillType val);
    StrandFillType GetStrandFillType() const;
 
-   void SetStrandData(matPsStrand::Grade grade,
-                      matPsStrand::Type type,
-                      matPsStrand::Coating coating,
-                      matPsStrand::Size size);
+   void SetStrandData(WBFL::Materials::PsStrand::Grade grade,
+                      WBFL::Materials::PsStrand::Type type,
+                     WBFL::Materials::PsStrand::Coating coating,
+                      WBFL::Materials::PsStrand::Size size);
 
-   void GetStrandData(matPsStrand::Grade* pgrade,
-                      matPsStrand::Type* ptype,
-                      matPsStrand::Coating* pcoating,
-                      matPsStrand::Size* psize);
+   void GetStrandData(WBFL::Materials::PsStrand::Grade* pgrade,
+                      WBFL::Materials::PsStrand::Type* ptype,
+                     WBFL::Materials::PsStrand::Coating* pcoating,
+                      WBFL::Materials::PsStrand::Size* psize);
 
    void SetFci(Float64 val);
    Float64 GetFci() const;
@@ -296,10 +296,10 @@ private:
 
    StrandFillType m_StrandFillType;
 
-   matPsStrand::Grade m_Grade;
-   matPsStrand::Type  m_Type;
-   matPsStrand::Size  m_Size;
-   matPsStrand::Coating m_Coating;
+   WBFL::Materials::PsStrand::Grade m_Grade;
+   WBFL::Materials::PsStrand::Type  m_Type;
+   WBFL::Materials::PsStrand::Size  m_Size;
+   WBFL::Materials::PsStrand::Coating m_Coating;
 
    Float64 m_Fci;
    Float64 m_Fc;

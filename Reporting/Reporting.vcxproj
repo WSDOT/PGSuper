@@ -65,7 +65,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(ARPDIR)\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
-    <LinkIncremental>false</LinkIncremental>
+    <LinkIncremental>true</LinkIncremental>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules />
     <CodeAnalysisRuleAssemblies />
@@ -77,7 +77,6 @@
       <TargetEnvironment>X64</TargetEnvironment>
     </Midl>
     <ClCompile>
-      <AdditionalOptions>-Zm120 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\Include;;$(ARPDIR)\BridgeLink\Include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>BUILDREPORTINGLIB;xIGNORE_2007_CHANGES;WIN32;_WINDOWS;_DEBUG;_USRDLL;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -89,6 +88,9 @@
       <ProgramDataBaseFileName>$(IntDir)vc.pdb</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -100,9 +102,12 @@
       <OutputFile>$(OutDir)$(ProjectName).dll</OutputFile>
       <AdditionalLibraryDirectories>$(ARPDIR)\WBFL\RegFreeCOM\$(Platform)\$(Configuration);$(ARPDIR)\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\Reporting.def</ModuleDefinitionFile>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX64</TargetMachine>
+      <OptimizeReferences>false</OptimizeReferences>
+      <EnableCOMDATFolding>false</EnableCOMDATFolding>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
@@ -115,7 +120,6 @@
       <TargetEnvironment>X64</TargetEnvironment>
     </Midl>
     <ClCompile>
-      <AdditionalOptions>-Zm120 %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>..\Include;;$(ARPDIR)\BridgeLink\Include</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>BUILDREPORTINGLIB;WIN32;_WINDOWS;NDEBUG;_USRDLL;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -126,6 +130,10 @@
       <ProgramDataBaseFileName>$(IntDir)vc.pdb</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat />
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -138,10 +146,11 @@
       <AdditionalLibraryDirectories>$(ARPDIR)\WBFL\RegFreeCOM\$(Platform)\$(Configuration);$(ARPDIR)\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\Reporting.def</ModuleDefinitionFile>
       <SubSystem>Windows</SubSystem>
-      <OptimizeReferences>true</OptimizeReferences>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <OptimizeReferences>false</OptimizeReferences>
+      <EnableCOMDATFolding>false</EnableCOMDATFolding>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
       <TargetMachine>MachineX64</TargetMachine>
+      <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
     </Link>
     <Manifest>
       <EnableDpiAwareness>PerMonitorHighDPIAware</EnableDpiAwareness>
@@ -154,8 +163,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="ACI209CreepCoefficientChapterBuilder.cpp" />
-    <ClCompile Include="ACI209ShrinkageStrainChapterBuilder.cpp" />
     <ClCompile Include="ADimChapterBuilder.cpp" />
     <ClCompile Include="AlignmentChapterBuilder.cpp" />
     <ClCompile Include="BasicCamberChapterBuilder.cpp" />
@@ -170,14 +177,13 @@
     <ClCompile Include="BridgeDescDetailsChapterBuilder.cpp" />
     <ClCompile Include="BrokerReportSpecification.cpp" />
     <ClCompile Include="BrokerReportSpecificationBuilder.cpp" />
+    <ClCompile Include="ReinforcementFatigueCheck.cpp" />
     <ClCompile Include="SplittingCheckDetailsChapterBuilder.cpp" />
     <ClCompile Include="CamberChapterBuilder.cpp" />
     <ClCompile Include="CamberTable.cpp" />
     <ClCompile Include="CastingYardMomentsTable.cpp" />
     <ClCompile Include="CastingYardRebarRequirementChapterBuilder.cpp" />
     <ClCompile Include="CastingYardStressTable.cpp" />
-    <ClCompile Include="CEBFIPCreepCoefficientChapterBuilder.cpp" />
-    <ClCompile Include="CEBFIPShrinkageStrainChapterBuilder.cpp" />
     <ClCompile Include="ColumnPropertiesTable.cpp" />
     <ClCompile Include="CombinedAxialTable.cpp" />
     <ClCompile Include="CombinedMomentsTable.cpp" />
@@ -256,8 +262,6 @@
     <ClCompile Include="LongReinfShearCheckChapterBuilder.cpp" />
     <ClCompile Include="LossesChapterBuilder.cpp" />
     <ClCompile Include="LRFDCreepCoefficientChapterBuilder.cpp" />
-    <ClCompile Include="LRFDTimeDependentCreepCoefficientChapterBuilder.cpp" />
-    <ClCompile Include="LRFDTimeDependentShrinkageStrainChapterBuilder.cpp" />
     <ClCompile Include="MomentCapacityChapterBuilder.cpp" />
     <ClCompile Include="MomentCapacityDetailsChapterBuilder.cpp" />
     <ClCompile Include="MomentCapacityParagraphBuilder.cpp" />
@@ -361,8 +365,6 @@
     <None Include="res\Reporting.rc2" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\Include\Reporting\ACI209CreepCoefficientChapterBuilder.h" />
-    <ClInclude Include="..\Include\Reporting\ACI209ShrinkageStrainChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\ADimChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\AlignmentChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\AutoLib.h" />
@@ -384,8 +386,6 @@
     <ClInclude Include="..\Include\Reporting\CastingYardMomentsTable.h" />
     <ClInclude Include="..\Include\Reporting\CastingYardRebarRequirementChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\CastingYardStressTable.h" />
-    <ClInclude Include="..\Include\Reporting\CEBFIPCreepCoefficientChapterBuilder.h" />
-    <ClInclude Include="..\Include\Reporting\CEBFIPShrinkageStrainChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\ColumnPropertiesTable.h" />
     <ClInclude Include="..\Include\Reporting\CombinedAxialTable.h" />
     <ClInclude Include="..\Include\Reporting\CombinedMomentsTable.h" />
@@ -425,8 +425,8 @@
     <ClInclude Include="..\Include\Reporting\FinalLossesChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\FlexuralCapacityCheckTable.h" />
     <ClInclude Include="..\Include\Reporting\FlexuralStressCheckTable.h" />
-    <ClInclude Include="..\Include\Reporting\GirderComparisonChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\GirderDetailingCheck.h" />
+    <ClInclude Include="..\Include\Reporting\GirderGeometryChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\GirderSeedDataComparisonParagraph.h" />
     <ClInclude Include="..\Include\Reporting\HaulingCheck.h" />
     <ClInclude Include="..\Include\Reporting\HaulingCheckChapterBuilder.h" />
@@ -460,8 +460,6 @@
     <ClInclude Include="..\Include\Reporting\LongReinfShearCheckChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\LossesChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\LRFDCreepCoefficientChapterBuilder.h" />
-    <ClInclude Include="..\Include\Reporting\LRFDTimeDependentCreepCoefficientChapterBuilder.h" />
-    <ClInclude Include="..\Include\Reporting\LRFDTimeDependentShrinkageStrainChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\MomentCapacityChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\MomentCapacityDetailsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\MomentCapacityParagraphBuilder.h" />
@@ -501,6 +499,7 @@
     <ClInclude Include="..\Include\Reporting\ProjectCriteriaChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\RatingSummaryTable.h" />
     <ClInclude Include="..\Include\Reporting\ReactionInterfaceAdapters.h" />
+    <ClInclude Include="..\Include\Reporting\ReinforcementFatigueCheck.h" />
     <ClInclude Include="..\Include\Reporting\ReportingExp.h" />
     <ClInclude Include="..\Include\Reporting\ReportNotes.h" />
     <ClInclude Include="..\Include\Reporting\SectPropChapterBuilder.h" />

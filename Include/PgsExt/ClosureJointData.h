@@ -64,7 +64,7 @@ public:
    bool operator!=(const CClosureJointData& rOther) const;
    bool operator<(const CClosureJointData& rOther) const;
 
-   CollectionIndexType GetIndex() const;
+   IndexType GetIndex() const;
    IDType GetID() const;
 
    CClosureKey GetClosureKey() const;

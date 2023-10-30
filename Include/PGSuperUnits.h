@@ -23,8 +23,7 @@
 #ifndef INCLUDED_PGSUPERUNITS_H_
 #define INCLUDED_PGSUPERUNITS_H_
 
-#include <Units\SysUnitsMgr.h>
-#include <UnitMgt\UnitMgt.h>
+#include <Units\Units.h>
 #include <MFCTools\Format.h>
 #include <WBFLUnitServer.h>
 #include <WBFLCogo.h>

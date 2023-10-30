@@ -1,18 +1,18 @@
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    7   9.00  Freeport Unit 3    1     1     STX7    *     42  0.6  270  29.50  30.48   9.75   9.75                                              5.998 10.000   2.424    -3.092    13549   0.724  0.884   2.667 -0.530  0.000 -0.033 -0.563 109.22  477.44    2.00   18.00   18.00    2.48    2.92    3.22    4.13    2.06 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 61.00    7   9.00  Freeport Unit 3    1     1     STX7    *     42  0.6  270  29.50  30.48                                              5.998 10.000   2.425    -3.093    13555   0.724  0.884   2.667 -0.530  0.000 -0.033 -0.563 109.22  477.37    2.00   18.00   18.00    2.48    2.92    3.22    4.12    2.06 
 
 
 The Specification Check was Not Successful
-Slab Offset ("A" Dimension) check failed
+Finished elevation check failed
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 61.00    7   9.00  Freeport Unit 3    1     2     STX7    *     42  0.6  270  29.50  30.48   9.75   9.75                                              5.998 10.000   2.437    -3.105    13625   0.724  0.884   2.643 -0.479  0.000 -0.033 -0.512 109.22  476.60    2.00   18.00   18.00    2.46    2.83    3.19    4.00    2.03 
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 61.00    7   9.00  Freeport Unit 3    1     2     STX7    *     42  0.6  270  29.50  30.48                                              5.998 10.000   2.438    -3.106    13632   0.724  0.884   2.643 -0.479  0.000 -0.033 -0.512 109.22  476.53    2.00   18.00   18.00    2.46    2.82    3.20    3.99    2.03 
 
 
 The Specification Check was Not Successful
-Slab Offset ("A" Dimension) check failed
+Finished elevation check failed
 
 

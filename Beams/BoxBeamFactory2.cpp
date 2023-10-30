@@ -69,52 +69,52 @@ HRESULT CBoxBeamFactory2::FinalConstruct()
    m_DimNames.emplace_back(_T("Jmax"));
    m_DimNames.emplace_back(_T("EndBlockLength"));
 
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 5.5,unitMeasure::Inch)); // H1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(16.0,unitMeasure::Inch)); // H2
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 5.5,unitMeasure::Inch)); // H3
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 6.0,unitMeasure::Inch)); // H4
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 6.0,unitMeasure::Inch)); // H5
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 5.0,unitMeasure::Inch)); // W1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits(26.0,unitMeasure::Inch)); // W2
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 0.375,unitMeasure::Inch));// W3
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 0.75,unitMeasure::Inch)); // W4
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 3.0,unitMeasure::Inch)); // F1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 3.0,unitMeasure::Inch)); // F2
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 0.0,unitMeasure::Inch)); // C1
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 1.0,unitMeasure::Inch)); // Jmax
-   m_DefaultDims.emplace_back(::ConvertToSysUnits( 18.0,unitMeasure::Inch)); // end block
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 5.5,WBFL::Units::Measure::Inch)); // H1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(16.0,WBFL::Units::Measure::Inch)); // H2
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 5.5,WBFL::Units::Measure::Inch)); // H3
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 6.0,WBFL::Units::Measure::Inch)); // H4
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 6.0,WBFL::Units::Measure::Inch)); // H5
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 5.0,WBFL::Units::Measure::Inch)); // W1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits(26.0,WBFL::Units::Measure::Inch)); // W2
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 0.375,WBFL::Units::Measure::Inch));// W3
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 0.75,WBFL::Units::Measure::Inch)); // W4
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 3.0,WBFL::Units::Measure::Inch)); // F1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 3.0,WBFL::Units::Measure::Inch)); // F2
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 0.0,WBFL::Units::Measure::Inch)); // C1
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 1.0,WBFL::Units::Measure::Inch)); // Jmax
+   m_DefaultDims.emplace_back(WBFL::Units::ConvertToSysUnits( 18.0,WBFL::Units::Measure::Inch)); // end block
 
    // SI Units
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H2
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H3
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H4
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // H5
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W2
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W3
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // W4
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // F1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // F2
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // C1
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // Jmax
-   m_DimUnits[0].emplace_back(&unitMeasure::Millimeter); // end block
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // H1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // H2
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // H3
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // H4
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // H5
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W2
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W3
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // W4
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // F1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // F2
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // C1
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // Jmax
+   m_DimUnits[0].emplace_back(&WBFL::Units::Measure::Millimeter); // end block
 
    // US Units
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H2
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H3
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H4
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // H5
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W2
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W3
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // W4
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // F1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // F2
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // C1
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // Jmax
-   m_DimUnits[1].emplace_back(&unitMeasure::Inch); // end block
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // H1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // H2
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // H3
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // H4
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // H5
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W2
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W3
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W4
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // F1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // F2
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // C1
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // Jmax
+   m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // end block
 
    return S_OK;
 }
@@ -287,7 +287,7 @@ bool CBoxBeamFactory2::ValidateDimensions(const IBeamFactory::Dimensions& dimens
    return true;
 }
 
-void CBoxBeamFactory2::SaveSectionDimensions(sysIStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
+void CBoxBeamFactory2::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
 {
    pSave->BeginUnit(_T("AASHTOBoxBeamDimensions"),2.0);
    for ( const auto& name : m_DimNames)
@@ -298,7 +298,7 @@ void CBoxBeamFactory2::SaveSectionDimensions(sysIStructuredSave* pSave,const IBe
    pSave->EndUnit();
 }
 
-IBeamFactory::Dimensions CBoxBeamFactory2::LoadSectionDimensions(sysIStructuredLoad* pLoad) const
+IBeamFactory::Dimensions CBoxBeamFactory2::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
 {
    Float64 parent_version;
    if (pLoad->GetParentUnit() == _T("GirderLibraryEntry"))

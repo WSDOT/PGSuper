@@ -39,9 +39,9 @@ txnEditSpan::~txnEditSpan()
 {
 }
 
-txnTransaction* txnEditSpan::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnEditSpan::CreateClone() const
 {
-   return new txnEditSpan(m_SpanIdx,m_BridgeDescription[0],m_BridgeDescription[1]);
+   return std::make_unique<txnEditSpan>(m_SpanIdx,m_BridgeDescription[0],m_BridgeDescription[1]);
 }
 
 std::_tstring txnEditSpan::Name() const

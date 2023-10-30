@@ -23,7 +23,7 @@
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\DeckDescription2.h>
 #include <PgsExt\BridgeDescription2.h>
-#include <Units\SysUnits.h>
+#include <Units\Convert.h>
 #include <StdIo.h>
 
 #include <IFace\Tools.h>
@@ -45,12 +45,12 @@ CLASS
 
 CDeckDescription2::CDeckDescription2() :
    OverhangTaper{ pgsTypes::dotTopTopFlange,pgsTypes::dotTopTopFlange },
-   OverhangEdgeDepth{ ::ConvertToSysUnits(7.0, unitMeasure::Inch),::ConvertToSysUnits(7.0, unitMeasure::Inch) }
+   OverhangEdgeDepth{ WBFL::Units::ConvertToSysUnits(7.0, WBFL::Units::Measure::Inch),WBFL::Units::ConvertToSysUnits(7.0, WBFL::Units::Measure::Inch) }
 {
    DeckType               = pgsTypes::sdtCompositeCIP;
    TransverseConnectivity = pgsTypes::atcConnectedAsUnit; // only applicable if girder spacing is adjacent
 
-   GrossDepth       = ::ConvertToSysUnits(  8.5, unitMeasure::Inch );
+   GrossDepth       = WBFL::Units::ConvertToSysUnits(  8.5, WBFL::Units::Measure::Inch );
    HaunchShape      = pgsTypes::hsFilleted; // default until version 2
 
    Concrete.Type             = pgsTypes::Normal;
@@ -58,10 +58,10 @@ CDeckDescription2::CDeckDescription2() :
    Concrete.Fci              = 0; // not using
    Concrete.Eci              = 0; // not using
    Concrete.bUserEci         = false; // not using
-   Concrete.Fc               = ::ConvertToSysUnits(4.,unitMeasure::KSI);
-   Concrete.StrengthDensity  = ::ConvertToSysUnits(160.,unitMeasure::LbfPerFeet3);
-   Concrete.WeightDensity    = ::ConvertToSysUnits(160.,unitMeasure::LbfPerFeet3);
-   Concrete.MaxAggregateSize = ::ConvertToSysUnits(0.75,unitMeasure::Inch);
+   Concrete.Fc               = WBFL::Units::ConvertToSysUnits(4.,WBFL::Units::Measure::KSI);
+   Concrete.StrengthDensity  = WBFL::Units::ConvertToSysUnits(160.,WBFL::Units::Measure::LbfPerFeet3);
+   Concrete.WeightDensity    = WBFL::Units::ConvertToSysUnits(160.,WBFL::Units::Measure::LbfPerFeet3);
+   Concrete.MaxAggregateSize = WBFL::Units::ConvertToSysUnits(0.75,WBFL::Units::Measure::Inch);
    Concrete.EcK1             = 1.0;
    Concrete.EcK2             = 1.0;
    Concrete.CreepK1          = 1.0;
@@ -69,12 +69,12 @@ CDeckDescription2::CDeckDescription2() :
    Concrete.ShrinkageK1      = 1.0;
    Concrete.ShrinkageK2      = 1.0;
    Concrete.bUserEc          = false;
-   Concrete.Ec               = ::ConvertToSysUnits(4200.,unitMeasure::KSI);
+   Concrete.Ec               = WBFL::Units::ConvertToSysUnits(4200.,WBFL::Units::Measure::KSI);
    Concrete.bHasFct          = false;
    Concrete.Fct              = 0.0;
 
    Concrete.bACIUserParameters = false;
-   Concrete.A                  = ::ConvertToSysUnits(4.0,unitMeasure::Day);
+   Concrete.A                  = WBFL::Units::ConvertToSysUnits(4.0,WBFL::Units::Measure::Day);
    Concrete.B                  = 0.85;
    Concrete.CureMethod         = pgsTypes::Moist;
    Concrete.ACI209CementType   = pgsTypes::TypeI;
@@ -83,12 +83,12 @@ CDeckDescription2::CDeckDescription2() :
 
    WearingSurface = pgsTypes::wstSacrificialDepth;
    bInputAsDepthAndDensity = false;
-   OverlayWeight  = ::ConvertToSysUnits( 25.0, unitMeasure::PSF );
+   OverlayWeight  = WBFL::Units::ConvertToSysUnits( 25.0, WBFL::Units::Measure::PSF );
    OverlayDensity = 0;
    OverlayDepth = 0;
-   SacrificialDepth = ::ConvertToSysUnits(  0.5, unitMeasure::Inch );
-   PanelDepth       = ::ConvertToSysUnits(  0.0, unitMeasure::Inch );
-   PanelSupport     = ::ConvertToSysUnits(  4.0, unitMeasure::Inch );
+   SacrificialDepth = WBFL::Units::ConvertToSysUnits(  0.5, WBFL::Units::Measure::Inch );
+   PanelDepth       = WBFL::Units::ConvertToSysUnits(  0.0, WBFL::Units::Measure::Inch );
+   PanelSupport     = WBFL::Units::ConvertToSysUnits(  4.0, WBFL::Units::Measure::Inch );
                          // for horizontal shear capacity)
 
    Condition = pgsTypes::cfGood;
@@ -267,12 +267,12 @@ HRESULT CDeckDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
 
       var.vt = VT_INDEX;
       pStrLoad->get_Property(_T("DeckEdgePointCount"),&var);
-      CollectionIndexType nPoints = VARIANT2INDEX(var);
+      IndexType nPoints = VARIANT2INDEX(var);
 
       if ( 0 < nPoints )
       {
          pStrLoad->BeginUnit(_T("DeckEdgePoints"));
-         for ( CollectionIndexType i = 0;i < nPoints; i++ )
+         for ( IndexType i = 0;i < nPoints; i++ )
          {
             CDeckPoint point;
             point.Load(pStrLoad,pProgress);
@@ -369,7 +369,7 @@ HRESULT CDeckDescription2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
          hr = pStrLoad->get_Property(_T("OverlayDensity"), &var );
          OverlayDensity = var.dblVal;
 
-         Float64 g = unitSysUnitsMgr::GetGravitationalAcceleration();
+         Float64 g = WBFL::Units::System::GetGravitationalAcceleration();
          OverlayWeight = OverlayDepth*OverlayDensity*g;
       }
       else

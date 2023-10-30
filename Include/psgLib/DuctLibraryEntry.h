@@ -34,7 +34,7 @@ class pgsLibraryEntryDifferenceItem;
 class DuctLibraryEntry;
 class DuctLibraryEntryObserver;
 #pragma warning(disable:4231)
-PSGLIBTPL sysSubjectT<DuctLibraryEntryObserver, DuctLibraryEntry>;
+PSGLIBTPL WBFL::System::SubjectT<DuctLibraryEntryObserver, DuctLibraryEntry>;
 
 /*****************************************************************************
 CLASS 
@@ -45,7 +45,7 @@ CLASS
 class PSGLIBCLASS DuctLibraryEntryObserver
 {
 public:
-   virtual void Update(DuctLibraryEntry* pSubject, Int32 hint)=0;
+   virtual void Update(DuctLibraryEntry& subject, Int32 hint)=0;
 };
 
 /*****************************************************************************
@@ -55,15 +55,15 @@ CLASS
    A library entry class for duct definitions.
 *****************************************************************************/
 
-class PSGLIBCLASS DuctLibraryEntry : public libLibraryEntry, public ISupportIcon,
-       public sysSubjectT<DuctLibraryEntryObserver, DuctLibraryEntry>
+class PSGLIBCLASS DuctLibraryEntry : public WBFL::Library::LibraryEntry, public ISupportIcon,
+       public WBFL::System::SubjectT<DuctLibraryEntryObserver, DuctLibraryEntry>
 {
 public:
-   DuctLibraryEntry();
-   DuctLibraryEntry(const DuctLibraryEntry& rOther);
-   virtual ~DuctLibraryEntry();
+   DuctLibraryEntry() = default;
+   DuctLibraryEntry(const DuctLibraryEntry& rOther) = default;
+   virtual ~DuctLibraryEntry() = default;
 
-   DuctLibraryEntry& operator = (const DuctLibraryEntry& rOther);
+   DuctLibraryEntry& operator=(const DuctLibraryEntry& rOther) = default;
 
    //------------------------------------------------------------------------
    // Edit the entry
@@ -73,13 +73,15 @@ public:
    // Get the icon for this entry
    virtual HICON GetIcon() const;
 
+   virtual void Notify(int hint) override {};
+
    //------------------------------------------------------------------------
    // Save to structured storage
-   virtual bool SaveMe(sysIStructuredSave* pSave);
+   virtual bool SaveMe(WBFL::System::IStructuredSave* pSave);
 
    //------------------------------------------------------------------------
    // Load from structured storage
-   virtual bool LoadMe(sysIStructuredLoad* pLoad);
+   virtual bool LoadMe(WBFL::System::IStructuredLoad* pLoad);
 
    //------------------------------------------------------------------------
    // Set/Get Outside Diameter
@@ -107,18 +109,16 @@ public:
    //------------------------------------------------------------------------
    // Compares this library entry with rOther. Returns true if the entries are the same.
    // vDifferences contains a listing of the differences. The caller is responsible for deleting the difference items
-   bool Compare(const DuctLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference=false,bool considerName=false) const;
+   bool Compare(const DuctLibraryEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference=false,bool considerName=false) const;
  
    bool IsEqual(const DuctLibraryEntry& rOther,bool bConsiderName=false) const;
 
 protected:
-   void MakeCopy(const DuctLibraryEntry& rOther);
-   void MakeAssignment(const DuctLibraryEntry& rOther);
 
 private:
    // GROUP: DATA MEMBERS
-   Float64 m_OD;
-   Float64 m_ID;
-   Float64 m_ND;
-   Float64 m_Z;
+   Float64 m_OD = 0.0;
+   Float64 m_ID = 0.0;
+   Float64 m_ND = 0.0;
+   Float64 m_Z = 0.0;
 };

@@ -484,7 +484,7 @@ BOOL CLLDFGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 	   pControl->GetCurrentText(s);
 
       Float64 d;
-      if (!sysTokenizer::ParseDouble(s, &d))
+      if (!WBFL::System::Tokenizer::ParseDouble(s, &d))
 	   {
 		   SetWarningText (_T("Distribution factor value must be a non-negative number"));
 		   return FALSE;

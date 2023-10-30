@@ -23,7 +23,7 @@
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\DeckDescription.h>
 #include "BridgeDescription.h"
-#include <Units\SysUnits.h>
+#include <Units\Convert.h>
 #include <StdIo.h>
 
 #include <IFace\Tools.h>
@@ -48,14 +48,14 @@ CDeckDescription::CDeckDescription()
    DeckType               = pgsTypes::sdtCompositeCIP;
    TransverseConnectivity = pgsTypes::atcConnectedAsUnit; // only applicable if girder spacing is adjacent
 
-   GrossDepth       = ::ConvertToSysUnits(  8.5, unitMeasure::Inch );
-   Fillet           = ::ConvertToSysUnits( 0.75, unitMeasure::Inch );
+   GrossDepth       = WBFL::Units::ConvertToSysUnits(  8.5, WBFL::Units::Measure::Inch );
+   Fillet           = WBFL::Units::ConvertToSysUnits( 0.75, WBFL::Units::Measure::Inch );
 
    SlabConcreteType     = pgsTypes::Normal;
-   SlabFc               = ::ConvertToSysUnits(4.,unitMeasure::KSI);
-   SlabStrengthDensity  = ::ConvertToSysUnits(160.,unitMeasure::LbfPerFeet3);
-   SlabWeightDensity    = ::ConvertToSysUnits(160.,unitMeasure::LbfPerFeet3);
-   SlabMaxAggregateSize = ::ConvertToSysUnits(0.75,unitMeasure::Inch);
+   SlabFc               = WBFL::Units::ConvertToSysUnits(4.,WBFL::Units::Measure::KSI);
+   SlabStrengthDensity  = WBFL::Units::ConvertToSysUnits(160.,WBFL::Units::Measure::LbfPerFeet3);
+   SlabWeightDensity    = WBFL::Units::ConvertToSysUnits(160.,WBFL::Units::Measure::LbfPerFeet3);
+   SlabMaxAggregateSize = WBFL::Units::ConvertToSysUnits(0.75,WBFL::Units::Measure::Inch);
    SlabEcK1             = 1.0;
    SlabEcK2             = 1.0;
    SlabCreepK1          = 1.0;
@@ -63,22 +63,22 @@ CDeckDescription::CDeckDescription()
    SlabShrinkageK1      = 1.0;
    SlabShrinkageK2      = 1.0;
    SlabUserEc           = false;
-   SlabEc               = ::ConvertToSysUnits(4200.,unitMeasure::KSI);
+   SlabEc               = WBFL::Units::ConvertToSysUnits(4200.,WBFL::Units::Measure::KSI);
    SlabHasFct           = false;
    SlabFct              = 0.0;
 
    WearingSurface = pgsTypes::wstSacrificialDepth;
    bInputAsDepthAndDensity = false;
-   OverlayWeight  = ::ConvertToSysUnits( 25.0, unitMeasure::PSF );
+   OverlayWeight  = WBFL::Units::ConvertToSysUnits( 25.0, WBFL::Units::Measure::PSF );
    OverlayDensity = 0;
    OverlayDepth = 0;
-   SacrificialDepth = ::ConvertToSysUnits(  0.5, unitMeasure::Inch );
-   PanelDepth       = ::ConvertToSysUnits(  0.0, unitMeasure::Inch );
-   PanelSupport     = ::ConvertToSysUnits(  4.0, unitMeasure::Inch );
+   SacrificialDepth = WBFL::Units::ConvertToSysUnits(  0.5, WBFL::Units::Measure::Inch );
+   PanelDepth       = WBFL::Units::ConvertToSysUnits(  0.0, WBFL::Units::Measure::Inch );
+   PanelSupport     = WBFL::Units::ConvertToSysUnits(  4.0, WBFL::Units::Measure::Inch );
                          // for horizontal shear capacity)
 
    OverhangTaper = pgsTypes::dotTopTopFlange;
-   OverhangEdgeDepth = ::ConvertToSysUnits( 7.0, unitMeasure::Inch );
+   OverhangEdgeDepth = WBFL::Units::ConvertToSysUnits( 7.0, WBFL::Units::Measure::Inch );
 
    Condition = pgsTypes::cfGood;
    ConditionFactor = 1.0;
@@ -356,7 +356,7 @@ HRESULT CDeckDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pg
          hr = pStrLoad->get_Property(_T("OverlayDensity"), &var );
          OverlayDensity = var.dblVal;
 
-         Float64 g = unitSysUnitsMgr::GetGravitationalAcceleration();
+         Float64 g = WBFL::Units::System::GetGravitationalAcceleration();
          OverlayWeight = OverlayDepth*OverlayDensity*g;
 
          bInputAsDepthAndDensity = true;
@@ -380,7 +380,7 @@ HRESULT CDeckDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pg
             hr = pStrLoad->get_Property(_T("OverlayDensity"), &var );
             OverlayDensity = var.dblVal;
 
-            Float64 g = unitSysUnitsMgr::GetGravitationalAcceleration();
+            Float64 g = WBFL::Units::System::GetGravitationalAcceleration();
             OverlayWeight = OverlayDepth*OverlayDensity*g;
          }
          else
@@ -450,7 +450,7 @@ HRESULT CDeckDescription::Load(IStructuredLoad* pStrLoad,IProgress* pProgress,pg
          var.Clear();
          var.vt = VT_BSTR;
          hr = pStrLoad->get_Property(_T("Type"),&var);
-         SlabConcreteType = (pgsTypes::ConcreteType)lrfdConcreteUtil::GetTypeFromTypeName(OLE2T(var.bstrVal));
+         SlabConcreteType = (pgsTypes::ConcreteType)WBFL::LRFD::ConcreteUtil::GetTypeFromTypeName(OLE2T(var.bstrVal));
 
          var.Clear();
          var.vt = VT_R8;
@@ -625,7 +625,7 @@ HRESULT CDeckDescription::Save(IStructuredSave* pStrSave,IProgress* pProgress)
    // new parameters are Unit, SlabConcreteType, SlabHasFct, and SlabFct
    pStrSave->BeginUnit(_T("SlabConcrete"),1.0);
 
-      pStrSave->put_Property(_T("Type"),CComVariant( lrfdConcreteUtil::GetTypeName((matConcrete::Type)SlabConcreteType,false).c_str() ));
+      pStrSave->put_Property(_T("Type"),CComVariant( WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)SlabConcreteType,false).c_str() ));
       pStrSave->put_Property(_T("Fc"),               CComVariant(SlabFc));
       pStrSave->put_Property(_T("WeightDensity"),    CComVariant(SlabWeightDensity));
       pStrSave->put_Property(_T("StrengthDensity"),  CComVariant(SlabStrengthDensity));

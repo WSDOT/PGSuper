@@ -51,12 +51,12 @@ CBridgeDescription::CBridgeDescription()
 
    m_AlignmentOffset = 0;
 
-   m_SlabOffset     = ::ConvertToSysUnits( 10.0, unitMeasure::Inch );
+   m_SlabOffset     = WBFL::Units::ConvertToSysUnits( 10.0, WBFL::Units::Measure::Inch );
    m_SlabOffsetType = pgsTypes::sotBridge;
 
    m_nGirders = 0;
 
-   m_GirderSpacing     = ::ConvertToSysUnits(5.0,unitMeasure::Feet);
+   m_GirderSpacing     = WBFL::Units::ConvertToSysUnits(5.0,WBFL::Units::Measure::Feet);
    m_GirderSpacingType = pgsTypes::sbsUniform;
    m_GirderOrientation = pgsTypes::Plumb;
 
@@ -303,7 +303,7 @@ HRESULT CBridgeDescription::Load(Float64 version,IStructuredLoad* pStrLoad,IProg
             {
                m_GirderSpacingType = pgsTypes::sbsUniformAdjacent;
             }
-            else if (m_GirderSpacing == pgsTypes::sbsGeneral)
+            else if (m_GirderSpacingType == pgsTypes::sbsGeneral)
             {
                m_GirderSpacingType = pgsTypes::sbsGeneralAdjacent;
             }
@@ -629,11 +629,11 @@ void CBridgeDescription::SetBridgeData(CBridgeDescription2* pBridgeDesc) const
          pNewSegment->LongitudinalRebarData = girderData.LongitudinalRebarData;
          pNewSegment->Material              = girderData.Material;
          pNewSegment->Material.Concrete.CureMethod = pgsTypes::Steam; // Steam for precast components
-         matACI209Concrete::GetModelParameters( (matConcreteBase::CureMethod)pNewSegment->Material.Concrete.CureMethod,
-                                                (matACI209Concrete::CementType)pNewSegment->Material.Concrete.ACI209CementType,
+         WBFL::Materials::ACI209Concrete::GetModelParameters( (WBFL::Materials::CuringType)pNewSegment->Material.Concrete.CureMethod,
+                                                (WBFL::Materials::CementType)pNewSegment->Material.Concrete.ACI209CementType,
                                                  &pNewSegment->Material.Concrete.A,
                                                  &pNewSegment->Material.Concrete.B);
-         matCEBFIPConcrete::GetModelParameters((matCEBFIPConcrete::CementType)pNewSegment->Material.Concrete.CEBFIPCementType,
+         WBFL::Materials::CEBFIPConcrete::GetModelParameters((WBFL::Materials::CEBFIPConcrete::CementType)pNewSegment->Material.Concrete.CEBFIPCementType,
                                                 &pNewSegment->Material.Concrete.S,
                                                 &pNewSegment->Material.Concrete.BetaSc);
 
@@ -742,7 +742,7 @@ void CBridgeDescription::CreateFirstSpan(const CPierData* pFirstPier,const CSpan
    else
    {
       nextPier = new CPierData();
-      nextPier->SetStation( firstPier->GetStation() + ::ConvertToSysUnits(100.0,unitMeasure::Feet) );
+      nextPier->SetStation( firstPier->GetStation() + WBFL::Units::ConvertToSysUnits(100.0,WBFL::Units::Measure::Feet) );
    }
 
    firstPier->SetBridgeDescription(this);
@@ -778,7 +778,7 @@ void CBridgeDescription::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceT
       if (!pPierData)
       {
          ASSERT(false); // span length < 0 and a pier isn't provided
-         newSpanLength = ::ConvertToSysUnits(100.0,unitMeasure::Feet);
+         newSpanLength = WBFL::Units::ConvertToSysUnits(100.0,WBFL::Units::Measure::Feet);
       }
    }
 

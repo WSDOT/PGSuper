@@ -29,6 +29,7 @@
 #include <IFace\PrestressForce.h>
 #include <IFace\Intervals.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace\ReportOptions.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -48,9 +49,9 @@ LPCTSTR CEquilibriumCheckChapterBuilder::GetName() const
    return TEXT("Equilibrium Check");
 }
 
-rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CEquilibriumCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CEquilibriumCheckReportSpecification* pGdrRptSpec = dynamic_cast<CEquilibriumCheckReportSpecification*>(pRptSpec);
+   auto pGdrRptSpec = std::dynamic_pointer_cast<const CEquilibriumCheckReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGdrRptSpec->GetBroker(&pBroker);
 
@@ -62,7 +63,7 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
    *pChapter << pPara;
 
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
-   if ( pLossParams->GetLossMethod() != pgsTypes::TIME_STEP )
+   if ( pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       *pPara << color(Red) << _T("Time Step analysis results not available.") << color(Black) << rptNewLine;
       return pChapter;
@@ -89,7 +90,8 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
    INIT_UV_PROTOTYPE(rptStressUnitValue,    modE,       pDisplayUnits->GetModEUnit(),            true);
    INIT_UV_PROTOTYPE(rptPointOfInterest,    location,   pDisplayUnits->GetSpanLengthUnit(),      true);
 
-   location.IncludeSpanAndGirder(true);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    GET_IFACE2(pBroker,ILosses,pLosses);
    const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,intervalIdx);
@@ -470,7 +472,7 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(CReportSpecification* pRptSpe
    return pChapter;
 }
 
-CChapterBuilder* CEquilibriumCheckChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CEquilibriumCheckChapterBuilder::Clone() const
 {
-   return new CEquilibriumCheckChapterBuilder;
+   return std::make_unique<CEquilibriumCheckChapterBuilder>();
 }

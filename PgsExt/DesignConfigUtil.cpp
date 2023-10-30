@@ -320,7 +320,7 @@ ConfigStrandFillTool::ConfigStrandFillTool(const ConfigStrandFillVector& rFillVe
 
 Float64 GetPrimaryStirrupAvs(const STIRRUPCONFIG& config, PrimaryStirrupType type, Float64 location, 
                                  Float64 gdrLength, Float64 leftSupportLoc,Float64 rgtSupportLoc,
-                                 matRebar::Size* pSize, Float64* pSingleBarArea, Float64* pNBars, Float64* pSpacing)
+                                 WBFL::Materials::Rebar::Size* pSize, Float64* pSingleBarArea, Float64* pNBars, Float64* pSpacing)
 {
    // Use template function to do heavy work
    ZoneIndexType zone =  GetZoneIndexAtLocation(location, gdrLength, leftSupportLoc, rgtSupportLoc, config.bAreZonesSymmetrical, 
@@ -355,7 +355,7 @@ Float64 GetPrimaryStirrupAvs(const STIRRUPCONFIG& config, PrimaryStirrupType typ
    else
    {
       // this can happen with UHPC
-      *pSize = matRebar::bsNone;
+      *pSize = WBFL::Materials::Rebar::Size::bsNone;
       *pNBars = 0.0;
       *pSpacing = Float64_Max;
       return 0.0;
@@ -364,7 +364,7 @@ Float64 GetPrimaryStirrupAvs(const STIRRUPCONFIG& config, PrimaryStirrupType typ
 
 Float64 GetAdditionalHorizInterfaceAvs(const STIRRUPCONFIG& config, Float64 location, 
                                               Float64 gdrLength, Float64 leftSupportLoc,Float64 rgtSupportLoc,
-                                              matRebar::Size* pSize, Float64* pSingleBarArea, Float64* pNBars, Float64* pSpacing)
+                                              WBFL::Materials::Rebar::Size* pSize, Float64* pSingleBarArea, Float64* pNBars, Float64* pSpacing)
 {
    // Use template function to do heavy work
    ZoneIndexType zone =  GetZoneIndexAtLocation(location, gdrLength, leftSupportLoc, rgtSupportLoc, config.bAreZonesSymmetrical, 
@@ -389,7 +389,7 @@ Float64 GetAdditionalHorizInterfaceAvs(const STIRRUPCONFIG& config, Float64 loca
    }
    else
    {
-      *pSize = matRebar::bsNone;
+      *pSize = WBFL::Materials::Rebar::Size::bsNone;
       *pNBars = 0.0;
       *pSpacing = 0.0;
       return 0.0;
@@ -398,11 +398,11 @@ Float64 GetAdditionalHorizInterfaceAvs(const STIRRUPCONFIG& config, Float64 loca
 
 
 void GetConfinementInfoFromStirrupConfig(const STIRRUPCONFIG& config, 
-                                                Float64 reqdStartZl, matRebar::Size* pStartRBsiz, Float64* pStartZL, Float64* pStartS,
-                                                Float64 reqdEndZl,   matRebar::Size* pEndRBsiz,   Float64* pEndZL,   Float64* pEndS)
+                                                Float64 reqdStartZl, WBFL::Materials::Rebar::Size* pStartRBsiz, Float64* pStartZL, Float64* pStartS,
+                                                Float64 reqdEndZl,   WBFL::Materials::Rebar::Size* pEndRBsiz,   Float64* pEndZL,   Float64* pEndS)
 {
    // Design for confinement will either use additional bars or primary bars
-   if (config.ConfinementBarSize != matRebar::bsNone)
+   if (config.ConfinementBarSize != WBFL::Materials::Rebar::Size::bsNone)
    {
       // Additional bars are used
       *pStartRBsiz = config.ConfinementBarSize;
@@ -416,8 +416,8 @@ void GetConfinementInfoFromStirrupConfig(const STIRRUPCONFIG& config,
    else
    {
       // Primary bars are used for confinement - see if there are any
-      *pStartRBsiz = matRebar::bsNone;
-      *pEndRBsiz = matRebar::bsNone;
+      *pStartRBsiz = WBFL::Materials::Rebar::Size::bsNone;
+      *pEndRBsiz = WBFL::Materials::Rebar::Size::bsNone;
       *pStartZL = 0.0;
       *pStartS  = 0.0;
       *pEndZL   = 0.0;
@@ -435,7 +435,7 @@ void GetConfinementInfoFromStirrupConfig(const STIRRUPCONFIG& config,
          {
             const STIRRUPCONFIG::SHEARZONEDATA& zd = *itl;
             // Use bar size from first zone
-            if (zd.ConfinementBarSize==matRebar::bsNone)
+            if (zd.ConfinementBarSize==WBFL::Materials::Rebar::Size::bsNone)
             {
                break; // no use looking further - we can't have zones with confinement bars
             }
@@ -470,7 +470,7 @@ void GetConfinementInfoFromStirrupConfig(const STIRRUPCONFIG& config,
             else
             {
                const STIRRUPCONFIG::SHEARZONEDATA& zd = *itr;
-               if (zd.ConfinementBarSize==matRebar::bsNone)
+               if (zd.ConfinementBarSize==WBFL::Materials::Rebar::Size::bsNone)
                {
                   break;
                }
@@ -488,12 +488,12 @@ void GetConfinementInfoFromStirrupConfig(const STIRRUPCONFIG& config,
    }
 }
 
-Float64 GetPrimaryAvLeftEnd(const STIRRUPCONFIG& config, matRebar::Type barType, matRebar::Grade barGrade,
+Float64 GetPrimaryAvLeftEnd(const STIRRUPCONFIG& config, WBFL::Materials::Rebar::Type barType, WBFL::Materials::Rebar::Grade barGrade,
                                 Float64 gdrLength, Float64 rangeLength)
 {
    ATLASSERT(rangeLength<gdrLength/2.0); // This function was designed for splitting zone, which should never be too long
 
-   lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
+   const auto* pool = WBFL::LRFD::RebarPool::GetInstance();
    ATLASSERT(pool != nullptr);
 
    Float64 Av=0.0;
@@ -508,13 +508,13 @@ Float64 GetPrimaryAvLeftEnd(const STIRRUPCONFIG& config, matRebar::Type barType,
       {
          const STIRRUPCONFIG::SHEARZONEDATA& zd = *itl;
 
-         if (zd.VertBarSize==matRebar::bsNone)
+         if (zd.VertBarSize==WBFL::Materials::Rebar::Size::bsNone)
          {
             break; // no use looking further - we have no bars
          }
 
-         matRebar::Size size = zd.VertBarSize;
-         const matRebar* pRebar = pool->GetRebar(barType,barGrade,size);
+         WBFL::Materials::Rebar::Size size = zd.VertBarSize;
+         const auto* pRebar = pool->GetRebar(barType,barGrade,size);
 
          Float64 Abars = pRebar->GetNominalArea() * zd.nVertBars;
          Float64 spacing = zd.BarSpacing;
@@ -538,7 +538,7 @@ Float64 GetPrimaryAvLeftEnd(const STIRRUPCONFIG& config, matRebar::Type barType,
    return Av;
 }
 
-Float64 GetPrimaryAvRightEnd(const STIRRUPCONFIG& config, matRebar::Type barType, matRebar::Grade barGrade,
+Float64 GetPrimaryAvRightEnd(const STIRRUPCONFIG& config, WBFL::Materials::Rebar::Type barType, WBFL::Materials::Rebar::Grade barGrade,
                                     Float64 gdrLength, Float64 rangeLength)
 {
    ATLASSERT(rangeLength<gdrLength/2.0); // This function was designed for splitting zone, which should never be too long
@@ -552,7 +552,7 @@ Float64 GetPrimaryAvRightEnd(const STIRRUPCONFIG& config, matRebar::Type barType
    else
    {
       // Search in reverse from right end
-      lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
+      const auto* pool = WBFL::LRFD::RebarPool::GetInstance();
       ATLASSERT(pool != nullptr);
 
       Float64 endloc=0.0;
@@ -566,13 +566,13 @@ Float64 GetPrimaryAvRightEnd(const STIRRUPCONFIG& config, matRebar::Type barType
          {
             const STIRRUPCONFIG::SHEARZONEDATA& zd = *itl;
 
-            if (zd.VertBarSize==matRebar::bsNone)
+            if (zd.VertBarSize==WBFL::Materials::Rebar::Size::bsNone)
             {
                break; // no use looking further - we have no bars
             }
 
-            matRebar::Size size = zd.VertBarSize;
-            const matRebar* pRebar = pool->GetRebar(barType,barGrade,size);
+            WBFL::Materials::Rebar::Size size = zd.VertBarSize;
+            const auto* pRebar = pool->GetRebar(barType,barGrade,size);
 
             Float64 Abars = pRebar->GetNominalArea() * zd.nVertBars;
             Float64 spacing = zd.BarSpacing;
@@ -597,7 +597,7 @@ Float64 GetPrimaryAvRightEnd(const STIRRUPCONFIG& config, matRebar::Type barType
    return Av;
 }
 
-void GetSplittingAvFromStirrupConfig(const STIRRUPCONFIG& config, matRebar::Type barType, matRebar::Grade barGrade,
+void GetSplittingAvFromStirrupConfig(const STIRRUPCONFIG& config, WBFL::Materials::Rebar::Type barType, WBFL::Materials::Rebar::Grade barGrade,
                                             Float64 gdrLength,
                                             Float64 reqdStartZl, Float64* pStartAv,
                                             Float64 reqdEndZl,   Float64* pEndAv)
@@ -606,14 +606,14 @@ void GetSplittingAvFromStirrupConfig(const STIRRUPCONFIG& config, matRebar::Type
    *pStartAv = 0.0; 
    *pEndAv   = 0.0; 
 
-   lrfdRebarPool* pool = lrfdRebarPool::GetInstance();
+   const auto* pool = WBFL::LRFD::RebarPool::GetInstance();
    ATLASSERT(pool != nullptr);
 
-   if (config.SplittingBarSize != matRebar::bsNone)
+   if (config.SplittingBarSize != WBFL::Materials::Rebar::Size::bsNone)
    {
       // Additional bars
-      matRebar::Size barSize = config.SplittingBarSize;
-      const matRebar* pRebar = pool->GetRebar(barType,barGrade,barSize);
+      WBFL::Materials::Rebar::Size barSize = config.SplittingBarSize;
+      const auto* pRebar = pool->GetRebar(barType,barGrade,barSize);
       Float64 Abar = pRebar->GetNominalArea();
 
       ATLASSERT(!IsZero(config.SplittingBarSpacing));
@@ -645,7 +645,7 @@ void WriteShearDataToStirrupConfig(const CShearData2* pShearData, STIRRUPCONFIG&
    rConfig.bIsRoughenedSurface     = pShearData->bIsRoughenedSurface;
    rConfig.bUsePrimaryForSplitting = pShearData->bUsePrimaryForSplitting;
 
-   lrfdRebarPool* prp = lrfdRebarPool::GetInstance();
+   const auto* prp = WBFL::LRFD::RebarPool::GetInstance();
 
    // Primary zones
    rConfig.ShearZones.clear();
@@ -663,9 +663,9 @@ void WriteShearDataToStirrupConfig(const CShearData2* pShearData, STIRRUPCONFIG&
       SZ_data.nHorzInterfaceBars = sz_data.nHorzInterfaceBars;
       SZ_data.ConfinementBarSize = sz_data.ConfinementBarSize;
 
-      if(sz_data.VertBarSize!=matRebar::bsNone)
+      if(sz_data.VertBarSize!=WBFL::Materials::Rebar::Size::bsNone)
       {
-         const matRebar* pRebar = prp->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,sz_data.VertBarSize);
+         const auto* pRebar = prp->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,sz_data.VertBarSize);
          SZ_data.VertABar = pRebar->GetNominalArea();
       }
       else
@@ -692,9 +692,9 @@ void WriteShearDataToStirrupConfig(const CShearData2* pShearData, STIRRUPCONFIG&
       HI_data.BarSize    = hi_data.BarSize;
       HI_data.nBars      = hi_data.nBars;
 
-      if(hi_data.BarSize!=matRebar::bsNone)
+      if(hi_data.BarSize!=WBFL::Materials::Rebar::Size::bsNone)
       {
-         const matRebar* pRebar = prp->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,hi_data.BarSize);
+         const auto* pRebar = prp->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,hi_data.BarSize);
          HI_data.ABar = pRebar->GetNominalArea();
       }
       else
@@ -731,7 +731,7 @@ bool DoAllStirrupsEngageDeck( const STIRRUPCONFIG& config)
       {
          const STIRRUPCONFIG::SHEARZONEDATA& zd = *itl;
 
-         if (zd.VertBarSize==matRebar::bsNone  ||
+         if (zd.VertBarSize==WBFL::Materials::Rebar::Size::bsNone  ||
              zd.nVertBars <= 0                ||
              zd.nHorzInterfaceBars < zd.nVertBars)
          {

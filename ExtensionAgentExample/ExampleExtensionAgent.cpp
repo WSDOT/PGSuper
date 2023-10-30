@@ -33,6 +33,7 @@
 #include <EAF\EAFStatusCenter.h>
 #include <EAF\EAFMenu.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <EAF\EAFTransaction.h>
 
 // Includes for reporting
 #include <IReportManager.h>
@@ -103,17 +104,17 @@ void CExampleExtensionAgent::RegisterGraphs()
 {
    GET_IFACE(IGraphManager,pGraphMgr);
 
-   CTestGraphBuilder* pTestGraphBuilder = new CTestGraphBuilder;
+   std::unique_ptr<CTestGraphBuilder> pTestGraphBuilder = std::make_unique<CTestGraphBuilder>();
    pTestGraphBuilder->SetMenuBitmap(&m_bmpMenu);
-   pGraphMgr->AddGraphBuilder(pTestGraphBuilder);
+   pGraphMgr->AddGraphBuilder(std::move(pTestGraphBuilder));
 
-   CTestGraphBuilder2* pTestGraphBuilder2 = new CTestGraphBuilder2;
+   std::unique_ptr<CTestGraphBuilder2> pTestGraphBuilder2 = std::make_unique<CTestGraphBuilder2>();
    pTestGraphBuilder2->SetMenuBitmap(&m_bmpMenu);
-   pGraphMgr->AddGraphBuilder(pTestGraphBuilder2);
+   pGraphMgr->AddGraphBuilder(std::move(pTestGraphBuilder2));
 
-   CTestGraphBuilder3* pTestGraphBuilder3 = new CTestGraphBuilder3;
+   std::unique_ptr<CTestGraphBuilder3> pTestGraphBuilder3 = std::make_unique<CTestGraphBuilder3>();
    pTestGraphBuilder3->SetMenuBitmap(&m_bmpMenu);
-   pGraphMgr->AddGraphBuilder(pTestGraphBuilder3);
+   pGraphMgr->AddGraphBuilder(std::move(pTestGraphBuilder3));
 }
 
 void CExampleExtensionAgent::CreateMenus()
@@ -173,15 +174,15 @@ void CExampleExtensionAgent::RegisterReports()
    // Create report spec builders
    //
 
-   std::shared_ptr<CReportSpecificationBuilder> pMyRptSpecBuilder(std::make_shared<CMyReportSpecificationBuilder>(m_pBroker) );
+   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pMyRptSpecBuilder(std::make_shared<CMyReportSpecificationBuilder>(m_pBroker) );
 
    // My report
-   std::unique_ptr<CReportBuilder> pRptBuilder(std::make_unique<CReportBuilder>(_T("Extension Agent Report")));
+   std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Extension Agent Report")));
    pRptBuilder->SetMenuBitmap(&m_bmpMenu);
-   pRptBuilder->AddTitlePageBuilder( std::shared_ptr<CTitlePageBuilder>(new CPGSuperTitlePageBuilder(m_pBroker,pRptBuilder->GetName(),false)) );
+   pRptBuilder->AddTitlePageBuilder( std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(std::make_shared<CPGSuperTitlePageBuilder>(m_pBroker,pRptBuilder->GetName(),false)) );
    pRptBuilder->SetReportSpecificationBuilder( pMyRptSpecBuilder );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<CChapterBuilder>(new CMyChapterBuilder) );
-   pRptMgr->AddReportBuilder( pRptBuilder.release() );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CMyChapterBuilder>()) );
+   pRptMgr->AddReportBuilder( pRptBuilder );
 }
 
 void CExampleExtensionAgent::RegisterUIExtensions()
@@ -449,7 +450,7 @@ CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditBridgeData* pBrid
    return new CPropertyPage(IDD_EDIT_PIER_PAGE);
 }
 
-txnTransaction* CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditBridgeData* pBridgeData)
+std::unique_ptr<CEAFTransaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditBridgeData* pBridgeData)
 {
    return nullptr;
 }
@@ -480,7 +481,7 @@ CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditPierData* pEditPi
    return nullptr;
 }
 
-txnTransaction* CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditPierData* pEditPierData)
+std::unique_ptr<CEAFTransaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditPierData* pEditPierData)
 {
    CEditPierPage* pMyPage = (CEditPierPage*)pPage;
    m_bCheck = pMyPage->m_bCheck;
@@ -504,7 +505,7 @@ CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditTemporarySupportD
    return nullptr;
 }
 
-txnTransaction* CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditTemporarySupportData* pEditTemporarySupportData)
+std::unique_ptr<CEAFTransaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditTemporarySupportData* pEditTemporarySupportData)
 {
    return nullptr;
 }
@@ -521,7 +522,7 @@ CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditSpanData* pEditSp
    return nullptr;
 }
 
-txnTransaction* CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditSpanData* pSpanData)
+std::unique_ptr<CEAFTransaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditSpanData* pSpanData)
 {
    return nullptr;
 }
@@ -532,7 +533,7 @@ CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditSegmentData* pSeg
    return new CPropertyPage(IDD_EDIT_PIER_PAGE);
 }
 
-txnTransaction* CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditSegmentData* pSegmentData)
+std::unique_ptr<CEAFTransaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditSegmentData* pSegmentData)
 {
    return nullptr;
 }
@@ -553,7 +554,7 @@ CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditClosureJointData*
    return new CPropertyPage(IDD_EDIT_PIER_PAGE);
 }
 
-txnTransaction* CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditClosureJointData* pClosureJointData)
+std::unique_ptr<CEAFTransaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditClosureJointData* pClosureJointData)
 {
    return nullptr;
 }
@@ -569,7 +570,7 @@ CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditSplicedGirderData
    return new CPropertyPage(IDD_EDIT_PIER_PAGE);
 }
 
-txnTransaction* CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditSplicedGirderData* pGirderData)
+std::unique_ptr<CEAFTransaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditSplicedGirderData* pGirderData)
 {
    return nullptr;
 }
@@ -588,7 +589,7 @@ CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditGirderData* pGird
    return new CPropertyPage(IDD_EDIT_PIER_PAGE);
 }
 
-txnTransaction* CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditGirderData* pGirderData)
+std::unique_ptr<CEAFTransaction> CExampleExtensionAgent::OnOK(CPropertyPage* pPage,IEditGirderData* pGirderData)
 {
    return nullptr;
 }

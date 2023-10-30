@@ -61,6 +61,7 @@ Graph | Description
 @subpage ug_analysis_results_graph | Traditional engineering graphs for moment, shear, deflection, rotation, stress, and reactions.  Note that these are separated into two views: 1) Individual girder results prior to erection and 2) In the full bridge after girder erections have taken place.
 @subpage ug_concrete_properties_graph | Graphical representation of various concrete properties
 @subpage ug_deflection_history_graph | Change in deflection at a point over time
+@subpage ug_finished_elevations_graph | Elevations of deformed roadway and structure
 @subpage ug_effective_prestress_graph | Changes in effective prestress by position and time
 @subpage ug_girder_properties_graph | Graphical representation of various girder properties such as area, moment of inertia, and section modulus
 @subpage ug_girder_stability_graph | Graphs stability factors of safety as a function of support location for lifting and hauling

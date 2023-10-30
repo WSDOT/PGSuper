@@ -26,8 +26,10 @@
 #include <PGSuperTypes.h>
 
 #include <PgsExt\ReportPointOfInterest.h>
-#include <Lrfd\Lrfd.h>
+#include <LRFD\Lrfd.h>
 #include <WBFLRCCapacity.h>
+
+#include <psgLib/PrestressLossCriteria.h>
 
 struct PIER_DIAPHRAGM_LOAD_DETAILS
 {
@@ -84,6 +86,7 @@ struct MOMENTCAPACITYDETAILS
    Float64 dc{ 0.0 };        // Distance from extreme compression fiber to the resultant compressive force
    Float64 de{ 0.0 };        // Distance from extreme compression fiber to the resultant tensile force (used to compute c/de)
    Float64 de_shear{ 0.0 };  // Distance from extreme compression fiber to the resultant tensile force for only those strands in tension (used for shear)
+   WBFL::Geometry::Point2d pnt_de; // Location of the resultant tensile force for only those strands in tension (location of de_shear)
    Float64 C{ 0.0 };         // Resultant compressive force
    Float64 T{ 0.0 };         // Resultant tensile force
 
@@ -112,23 +115,55 @@ struct MOMENTCAPACITYDETAILS
    Float64 bw{ 0.0 };
    Float64 MnMin{ 0.0 };           // Minimum nominal capacity of a over reinforced section (Eqn C5.7.3.3.1-1 or 2)
 
-   Float64 fpe_ps{ 0.0 }; // Effective prestress
-   Float64 eps_initial{ 0.0 }; // Initial strain in strands
-
-   std::vector<Float64> fpe_pt_segment; // Effective prestress in segment tendons
-   std::vector<Float64> ept_initial_segment; // Initial strain in segment tendons
-
-   std::vector<Float64> fpe_pt_girder; // Effective prestress in girder tendons
-   std::vector<Float64> ept_initial_girder; // Initial strain in girder  tendons
-
    // solution object provides the full equilibrium state of the moment
    // capacity solution
+   IndexType girderShapeIndex{ INVALID_INDEX }; // Index of the girder shape in the general section model
+   IndexType deckShapeIndex{ INVALID_INDEX }; // Index of the deck shape in the general section model
    CComPtr<IGeneralSection> Section; // this is the section that is analyzed
-   CComPtr<IMomentCapacitySolution> CapacitySolution;
+   CComPtr<IMomentCapacitySolution> ConcreteCrushingSolution; // deck compressive strain at -0.003 (or bottom of girder at concrete strain limit for negative moment)
+   CComPtr<IMomentCapacitySolution> UHPCGirderCrushingSolution; // compressive strain in UHPC girder concrete at it's crushing limit
+   CComPtr<IMomentCapacitySolution> UHPCCrackLocalizationSolution; // tension strain in UHPC girder is at crack localization strain
+   CComPtr<IMomentCapacitySolution> ReinforcementFractureSolution; // reinforcement is at it's fraction strain limit
+   CComPtr<IMomentCapacitySolution> ReinforcementStressLimitStateSolution; // stress in the strand or reinforcement is at its service limit state (0.8fpy or 0.8fy, respectively). This is used for UHPC capacity reduction factor.
    
-   enum class ControllingType { Concrete, ReinforcementStrain, Development };
-   ControllingType Controlling{ ControllingType::Concrete };
+   enum class ControllingType 
+   { 
+      ConcreteCrushing, // ConcreteCrushingSolution is controlling
+      GirderConcreteCrushing, // UHPCGirderCrushingSolution is controlling
+      GirderConcreteLocalization, // UHPCCrackLocalizationSolution is controlling
+      ReinforcementFracture // ReinforcementFractureSolution is controlling
+   };
+   ControllingType Controlling{ ControllingType::ConcreteCrushing };
+   void GetControllingSolution(IMomentCapacitySolution** ppSolution)
+   {
+      switch (Controlling)
+      {
+      case MOMENTCAPACITYDETAILS::ControllingType::ConcreteCrushing:
+         ConcreteCrushingSolution.CopyTo(ppSolution);
+         break;
+
+      case MOMENTCAPACITYDETAILS::ControllingType::GirderConcreteCrushing:
+         UHPCGirderCrushingSolution.CopyTo(ppSolution);
+         break;
+
+      case MOMENTCAPACITYDETAILS::ControllingType::GirderConcreteLocalization:
+         UHPCCrackLocalizationSolution.CopyTo(ppSolution);
+         break;
+
+      case MOMENTCAPACITYDETAILS::ControllingType::ReinforcementFracture:
+         ReinforcementFractureSolution.CopyTo(ppSolution);
+         break;
+
+      default:
+         ASSERT(false); // is there a new controlling type?
+         break;
+      }
+   }
+
+
+   bool bDevelopmentLengthReducedStress{ false };// when true, the section was analyzed with development length reduced stress capability of the strands
 };
+inline constexpr auto operator+(MOMENTCAPACITYDETAILS::ControllingType t) noexcept { return std::underlying_type<MOMENTCAPACITYDETAILS::ControllingType>::type(t); }
 
 struct CRACKINGMOMENTDETAILS
 {
@@ -208,8 +243,10 @@ struct SHEARCAPACITYDETAILS
    Float64 VptSegment; // vertical component of prestress due to segment tendons
    Float64 VptGirder; // vertical component of prestress due to girder tendons
    Float64 Phi;
-   Float64 dv;
    Float64 bv;
+   Float64 dv;
+   Float64 dv_uhpc; // dv portion of UHPC beams (see GS 1.7.3.3)
+   Float64 controlling_uhpc_dv; // controlling value of dv per GS 1.7.2.8 (used for Vuhpc and shear stress)
    Float64 fpeps;
    Float64 fpeptSegment; // average effective prestress in segment tendons
    Float64 fpeptGirder; // average effective prestress in girder tendons
@@ -256,8 +293,18 @@ struct SHEARCAPACITYDETAILS
    Float64 sxe; // [E5.8.3.4.2-5]
    Float64 sxe_tbl;
    Float64 Theta;
-   Float64 FiberStress;// coefficient for compute the contribution of fibers in UHPC to the shear capacity (taken as 0.75 ksi for now)
-   Float64 Vc; // Shear strength of concrete (= Vcf for PCI UHPC)
+   Float64 fv; // stress in stirrups (this parameter is for UHPC, but is set equal to fy for other concrete types so calculation of Vs works more generically)
+   Float64 e2; // UHPC
+   Float64 ev; // UHPC
+   Float64 etcr; // UHPC
+   Float64 et_loc; // UHPC
+   Float64 ft_loc; // UHPC
+   Float64 gamma_u; // UHPC
+   Float64 rho; // UHPC
+   Float64 FiberStress;// coefficient for compute the contribution of fibers in PCI UHPC to the shear capacity (taken as 0.75 ksi for now)
+                       // also taken as gamma_u*ft,loc for UHPC
+   Float64 Vuhpc; // Value of Vuhpc per GS Eq. 1.7.3.3-3
+   Float64 Vc; // Shear strength of concrete (= Vcf for PCI UHPC, Vuhpc for UHPC)
    Float64 Vs;
    Float64 Vn1;  // [Eqn 5.8.3.3-1]
    Float64 Vn2;  // [Eqn 5.8.3.3-2]
@@ -265,7 +312,7 @@ struct SHEARCAPACITYDETAILS
    Float64 pVn;  // Factored nominal shear resistance
    Float64 VuLimit; // Limiting Vu where stirrups are required [Eqn 5.8.2.4-1]
    bool bStirrupsReqd; // If true, stirrups and/or Vf from fibers is required LRFD 5.7.2.3-1
-   Int16 Equation; // Equation used to comupte ex (Only applicable after LRFD 1999)
+   Int16 Equation; // Equation used to compute ex (Only applicable after LRFD 1999)
    Float64 vfc_tbl;
    Float64 ex_tbl;
 
@@ -284,7 +331,7 @@ struct SHEARCAPACITYDETAILS
    // LRFD 9th Edition
    Float64 bw; // web width without any deductions
    Float64 duct_diameter; // diameter of largest duct in section
-   Float64 delta; // duct diamter correction factor
+   Float64 delta; // duct diameter correction factor
    Float64 lambda_duct; // shear strength reduction factor
 
 };
@@ -400,15 +447,14 @@ struct CRITSECTDETAILS
 
 struct CREEPCOEFFICIENTDETAILS
 {
-   Uint32 Method;          // a CREEP_xxx constant
-   Uint32 Spec; // spec type... pre 2005 or 2005 and later... CREEP_SPEC_XXXX constant
+   pgsTypes::CreepSpecification Spec; // spec type... pre 2005 or 2005 and later... CREEP_SPEC_XXXX constant
    Float64 Ct; // This is the creep coefficient
 
    Float64 ti; // concrete age at time of loading
    Float64 t;  // amount of time load has been applied to concrete
 
    // The remaining parameters are for LRFD method
-   Uint32 CuringMethod;
+   pgsTypes::CuringMethod CuringMethod;
    Float64 VSratio; // Volume to surface ratio
    Float64 Fc;      // Concrete strength at time of loading
    Float64 H;       // Relative Humidity
@@ -423,52 +469,55 @@ struct CREEPCOEFFICIENTDETAILS
    //Float64 kf; // using the kf above
    Float64 ktd;
 
+   Float64 kl; // time factor
+
    Float64 K1, K2; // 2005 and later, from NCHRP Report 496
 };
 
 struct INCREMENTALCREEPDETAILS
 {
-   std::shared_ptr<matConcreteBaseCreepDetails> pStartDetails;
-   std::shared_ptr<matConcreteBaseCreepDetails> pEndDetails;
+   // ideally this should be unique pointers, but I haven't been able to figure
+   // out all of the details to make this work in a complex data structure
+   //std::unique_ptr<WBFL::Materials::ConcreteBaseCreepDetails> pStartDetails;
+   //std::unique_ptr<WBFL::Materials::ConcreteBaseCreepDetails> pEndDetails;
+   std::shared_ptr<WBFL::Materials::ConcreteBaseCreepDetails> pStartDetails;
+   std::shared_ptr<WBFL::Materials::ConcreteBaseCreepDetails> pEndDetails;
 };
 
 struct INCREMENTALSHRINKAGEDETAILS
 {
-   INCREMENTALSHRINKAGEDETAILS() : esi(0) {}
-   std::shared_ptr<matConcreteBaseShrinkageDetails> pStartDetails;
-   std::shared_ptr<matConcreteBaseShrinkageDetails> pEndDetails;
-   Float64 esi;
+   // ideally this should be unique pointers, but I haven't been able to figure
+   // out all of the details to make this work in a complex data structure
+   //std::unique_ptr<WBFL::Materials::ConcreteBaseShrinkageDetails> pStartDetails;
+   //std::unique_ptr<WBFL::Materials::ConcreteBaseShrinkageDetails> pEndDetails;
+   std::shared_ptr<WBFL::Materials::ConcreteBaseShrinkageDetails> pStartDetails;
+   std::shared_ptr<WBFL::Materials::ConcreteBaseShrinkageDetails> pEndDetails;
+   Float64 esi{ 0.0 };
 };
 
 // Details of incremental relaxation computation used for time-step analysis
 struct INCREMENTALRELAXATIONDETAILS
 {
-   INCREMENTALRELAXATIONDETAILS()
-   {
-      memset((void*)this,0,sizeof(INCREMENTALRELAXATIONDETAILS));
-      epoxyFactor = 1.0;
-   }
-
    // common parameters
-   Float64 fpi; // effective prestress at the start of the interval
-   Float64 fpy;
-   Float64 fpu;
-   Float64 tStart;
-   Float64 tEnd;
-   Float64 epoxyFactor; // this factor is multiplied to the relaxation.
+   Float64 fpi{ 0 }; // effective prestress at the start of the interval
+   Float64 fpy{ 0 };
+   Float64 fpu{ 0 };
+   Float64 tStart{ 0 };
+   Float64 tEnd{ 0 };
+   Float64 epoxyFactor{ 1.0 }; // this factor is multiplied to the relaxation.
                         // see PCI "Guidelines for the use of Epoxy-Coated Strand", PCI Journal, July-August 1993
-                        // relaxation is doubled, so this factor is 2.0, for expoxy coated strands
+                        // relaxation is doubled, so this factor is 2.0, for epoxy coated strands
 
 
    // These parameters are for AASHTO and ACI209 models
-   Float64 K;
+   Float64 K{ 0 };
 
    // These parameters are for CEB-FEP model
-   Float64 p;
-   Float64 k;
+   Float64 p{ 0 };
+   Float64 k{ 0 };
 
    // Incremental relaxation
-   Float64 fr;
+   Float64 fr{ 0 };
 };
 
 #define TIMESTEP_CR  0
@@ -499,49 +548,28 @@ struct TIME_STEP_CONCRETE
    // Creep Strains during this interval due to loads applied in previous intervals
    struct CREEP_STRAIN
    {
-      Float64 P;
-      Float64 E; // modulus of elasticity used to compute creep strain (Not age adjusted)
-      Float64 A;
-      Float64 Cs; // C(i+1/2,j)
-      Float64 Ce; // C(i-1/2,j)
-      Float64 Xs; // concrete Aging coefficient X(i+1/2,j)
-      Float64 Xe; // concrete Aging coefficient X(i-1/2,j)
-      Float64 e;
-      CREEP_STRAIN()
-      {
-         P = 0;
-         E = 0;
-         A = 0;
-         Cs = 0;
-         Ce = 0;
-         Xs = 1;
-         Xe = 1;
-         e = 0;
-      }
+      Float64 P{ 0 };
+      Float64 E{ 0 }; // modulus of elasticity used to compute creep strain (Not age adjusted)
+      Float64 A{ 0 };
+      Float64 Cs{ 0 }; // C(i+1/2,j)
+      Float64 Ce{ 0 }; // C(i-1/2,j)
+      Float64 Xs{ 1 }; // concrete Aging coefficient X(i+1/2,j)
+      Float64 Xe{ 1 }; // concrete Aging coefficient X(i-1/2,j)
+      Float64 e{ 0 };
    };
 
    struct CREEP_CURVATURE
    {
-      Float64 M;
-      Float64 E; // modulus of elasticity used to compute creep curvature (Not age adjusted)
-      Float64 I;
-      Float64 Cs; // C(i+1/2,j)
-      Float64 Ce; // C(i-1/2,j)
-      Float64 Xs; // concrete Aging coefficient X(i+1/2,j)
-      Float64 Xe; // concrete Aging coefficient X(i-1/2,j)
-      Float64 r;
-      CREEP_CURVATURE()
-      {
-         M = 0;
-         E = 0;
-         I = 0;
-         Cs = 0;
-         Ce = 0;
-         Xs = 1;
-         Xe = 1;
-         r = 0;
-      }
+      Float64 M{ 0 };
+      Float64 E{ 0 }; // modulus of elasticity used to compute creep curvature (Not age adjusted)
+      Float64 I{ 0 };
+      Float64 Cs{ 0 }; // C(i+1/2,j)
+      Float64 Ce{ 0 }; // C(i-1/2,j)
+      Float64 Xs{ 1 }; // concrete Aging coefficient X(i+1/2,j)
+      Float64 Xe{ 1 }; // concrete Aging coefficient X(i-1/2,j)
+      Float64 r{ 0 };
    };
+
    std::vector<CREEP_STRAIN> ec;    // = (dN(j)/(AE(j))*[X(i+1/2,j)*C(i+1/2,j) - X(i-1/2,j*)C(i-1/2,j)]
    std::vector<CREEP_CURVATURE> rc; // = (dM(j)/(IE(j))*[X(i+1/2,j)*C(i+1/2,j) - X(i-1/2,j)*C(i-1/2,j)]
    std::vector<INCREMENTALCREEPDETAILS> Creep; // creep coefficient details
@@ -833,7 +861,7 @@ struct TIME_STEP_PRINCIPALSTRESSINWEBDETAILS
    Float64 I; // moment of inertia  section
    Float64 fTop; // Stress at top of non-composite girder for computing maximum fpcx
    Float64 fBot; // Stress at bottom of non-composite girder for computing maximum fpcx
-   std::vector<TIME_STEP_PRINCIPALTENSIONWEBSECTIONDETAILS> WebSections; // points along the web height where principal tension is evaluted
+   std::vector<TIME_STEP_PRINCIPALTENSIONWEBSECTIONDETAILS> WebSections; // points along the web height where principal tension is evaluated
 };
 
 // This struct holds the computation details for a specific interval 
@@ -892,7 +920,7 @@ struct TIME_STEP_DETAILS
    // Time step parameters for girder rebar
    std::vector<TIME_STEP_REBAR> GirderRebar;
 
-   // Forces required to totally restrain the cross section for initial strains occuring during this interval
+   // Forces required to totally restrain the cross section for initial strains occurring during this interval
    std::array<Float64,3> Pr, Mr; // index is one of the TIMESTEP_XXX constants
 
    // Initial Strains 
@@ -1002,14 +1030,10 @@ struct ANCHORSETDETAILS
 // losses at a POI
 struct FRICTIONLOSSDETAILS
 {
-   FRICTIONLOSSDETAILS()
-   { 
-      memset((void*)this, 0, sizeof(FRICTIONLOSSDETAILS));
-   };
-   Float64 alpha; // total angular change from jacking end to this POI
-   Float64 X;     // distance from start of tendon to this POI
-   Float64 dfpF;  // friction loss at this POI
-   Float64 dfpA;  // anchor set loss at this POI
+   Float64 alpha{ 0 }; // total angular change from jacking end to this POI
+   Float64 X{ 0 };     // distance from start of tendon to this POI
+   Float64 dfpF{ 0 };  // friction loss at this POI
+   Float64 dfpA{ 0 };  // anchor set loss at this POI
 };
 
 // This struct holds the computation details for prestress losses
@@ -1018,32 +1042,9 @@ struct LOSSDETAILS
 {
    LOSSDETAILS() {;}
 
-   LOSSDETAILS(const LOSSDETAILS& other)
-   { MakeCopy(other); }
-
-   LOSSDETAILS& operator=(const LOSSDETAILS& other)
-   { return MakeCopy(other); }
-
-   LOSSDETAILS& MakeCopy(const LOSSDETAILS& other)
-   {
-      LossMethod = other.LossMethod;
-      pLosses = other.pLosses;
-
-      GirderFrictionLossDetails = other.GirderFrictionLossDetails;
-      SegmentFrictionLossDetails = other.SegmentFrictionLossDetails;
-
-      TimeStepDetails = other.TimeStepDetails;
-
-#if defined _DEBUG
-      POI = other.POI;
-#endif
-
-      return *this;
-   }
-
    // Method for computing prestress losses... the value of this parameter
    // defines which of the loss details given below are applicable
-   pgsTypes::LossMethod LossMethod;
+   PrestressLossCriteria::LossMethodType LossMethod;
 
    ///////////////////////////////////////////////////////////////////////////////
    // Losses computed by LRFD Approximate or Refined methods or general lump sum
@@ -1053,7 +1054,7 @@ struct LOSSDETAILS
 
    // LRFD Method Losses
    // Base class can be casted to derived class to get details. You know who you are!
-   std::shared_ptr<const lrfdLosses> pLosses;
+   std::shared_ptr<const WBFL::LRFD::Losses> pLosses;
 
 
    ///////////////////////////////////////////////////////////////////////////////
@@ -1128,12 +1129,14 @@ struct TEMPORARYSUPPORTELEVATIONDETAILS
 
    Float64 Station;
    Float64 Offset;
-   Float64 FinishedGradeElevation;
+   Float64 DesignGradeElevation; // Design (target) roadway elevation at Station and Offset (top of overlay if overlay built with bridge, top of deck for no overlay or future overlay)
+   Float64 FinishedGradeElevation; // Computed roadway elevation at bearing. For "A" dim input this is always same as the design elevation. For spliced girders this may vary from design
    Float64 OverlayDepth;
    Float64 ProfileGrade;
    Float64 GirderGrade;
    Float64 GirderOrientation;
    Float64 SlabOffset;
+   Float64 HaunchDepth;
    Float64 Hg;
    Float64 ElevationAdjustment; // elevation adjustment from temporary support tower
    Float64 Elevation; // elevation at bottom of girder

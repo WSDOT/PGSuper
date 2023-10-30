@@ -1,0 +1,28 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 59.25    6  10.25                     1     1     U54           51  0.6  270  19.36  19.30  12.00  12.00   1.00  23   2.17   27    13    0   5   4   2   2   5.000  7.400   4.604    -4.012    10387   0.656  0.936   3.007 -2.153  0.000 -0.196 -2.349 178.39  469.93    1.00    1.00    1.00    1.98    1.91    2.56    2.56    0.99 
+                                                                                                                       4.14   24    10    4   6   0   0   0 
+
+
+The Specification Check was Not Successful
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 59.25    6  10.25                     1     2     U54           51  0.6  270  19.36  19.30  12.00  12.00   1.00  23   2.17   27    13    0   5   4   2   2   5.000  7.400   4.644    -3.964    10183   0.656  0.936   3.007 -2.111  0.000 -0.098 -2.209 178.39  475.62    1.00    1.00    1.00    2.03    1.95    2.63    2.62    1.04 
+                                                                                                                       4.14   24    10    4   6   0   0   0 
+
+
+The Specification Check was Successful
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr Ndb Elev    Nsr   Ndb   1   2   3   4   5   Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 59.25    6  10.25                     1     4     U54           51  0.6  270  19.36  19.30  12.00  12.00   1.00  23   2.17   27    13    0   5   4   2   2   5.000  7.400   4.617    -3.865     9884   0.656  0.936   3.007 -2.111  0.000  0.000 -2.111 178.39  484.00    1.00    1.00    1.00    2.10    2.00    2.73    2.69    1.15 
+                                                                                                                       4.14   24    10    4   6   0   0   0 
+
+
+The Specification Check was Successful
+
+

@@ -522,7 +522,7 @@ bool CTOGAStrandFillGrid::UpdateData(bool doCheckData)
          CString strval = style.GetValue();
          if( !strval.IsEmpty())
          {
-            bool st = sysTokenizer::ParseDouble(strval, &leftDebond);
+            bool st = WBFL::System::Tokenizer::ParseDouble(strval, &leftDebond);
             if(!st && doCheckData)
             {
                AfxMessageBox( _T("Debond length is not a number - must be a postive number"), MB_ICONEXCLAMATION);
@@ -534,7 +534,7 @@ bool CTOGAStrandFillGrid::UpdateData(bool doCheckData)
             EAFGetBroker(&pBroker);
             GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-            leftDebond  = ::ConvertToSysUnits(leftDebond,  pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
+            leftDebond  = WBFL::Units::ConvertToSysUnits(leftDebond,  pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
          }
 
          rightDebond = leftDebond;

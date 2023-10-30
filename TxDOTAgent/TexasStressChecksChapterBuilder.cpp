@@ -46,7 +46,7 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Artifact.h>
 #include <IFace\Project.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 #include <IFace\Intervals.h>
 
 #include <PgsExt\GirderArtifact.h>
@@ -79,9 +79,9 @@ LPCTSTR CTexasStressChecksChapterBuilder::GetName() const
    return TEXT("Stress Checks");
 }
 
-rptChapter* CTexasStressChecksChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CTexasStressChecksChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
@@ -117,9 +117,9 @@ rptChapter* CTexasStressChecksChapterBuilder::Build(CReportSpecification* pRptSp
     return pChapter;
 }
 
-CChapterBuilder* CTexasStressChecksChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTexasStressChecksChapterBuilder::Clone() const
 {
-   return new CTexasStressChecksChapterBuilder;
+   return std::make_unique<CTexasStressChecksChapterBuilder>();
 }
 
 //======================== ACCESS     =======================================

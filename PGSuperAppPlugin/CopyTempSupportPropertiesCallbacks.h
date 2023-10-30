@@ -23,7 +23,7 @@
 #pragma once
 
 #include <IFace\ExtendUI.h>
-#include <System\Transaction.h>
+#include <EAF\EAFTransaction.h>
 #include <PgsExt\MacroTxn.h>
 #include <PsgLib\ShearData.h>
 #include <PgsExt\LongitudinalRebarData.h>
@@ -71,17 +71,17 @@ public:
 ////////////////////////////////////////////////////////////////////////
 
 
-class txnCopyTempSupportConnectionProperties :  public txnTransaction
+class txnCopyTempSupportConnectionProperties :  public CEAFTransaction
 {
 public:
    txnCopyTempSupportConnectionProperties(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports);
    virtual ~txnCopyTempSupportConnectionProperties();
    virtual bool Execute();
    virtual void Undo();
-   virtual txnTransaction* CreateClone() const;
+   virtual std::unique_ptr<CEAFTransaction> CreateClone() const;
    virtual std::_tstring Name() const;
-   virtual bool IsUndoable() { return true; }
-   virtual bool IsRepeatable() { return false; }
+   virtual bool IsUndoable() const { return true; }
+   virtual bool IsRepeatable() const { return false; }
 
 private:
    PierIndexType m_FromTempSupportIdx;
@@ -98,7 +98,7 @@ public:
    CCopyTempSupportConnectionProperties();
    virtual LPCTSTR GetName() override;
    virtual BOOL CanCopy(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports) override;
-   virtual txnTransaction* CreateCopyTransaction(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports) override;
+   virtual std::unique_ptr<CEAFTransaction> CreateCopyTransaction(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports) override;
    virtual UINT GetTempSupportEditorTabIndex() override;
    virtual rptParagraph* BuildComparisonReportParagraph(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports) override;
 };

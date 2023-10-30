@@ -54,7 +54,7 @@ public:
    CString m_Name;
    CString m_Description;
 
-   //lrfrVersionMgr::Version GetSpecVersion();
+   //WBFL::LRFD::MBEManager::Edition GetSpecVersion();
 
 // Operations
 public:
@@ -98,5 +98,5 @@ private:
    void ExchangeLoadFactorData(CDataExchange* pDX,CLiveLoadFactorModel* pModel);
    void ExchangeLoadFactorData(CDataExchange* pDX,CLiveLoadFactorModel2* pModel);
 
-   void UpdatePageLayout(lrfrVersionMgr::Version version);
+   void UpdatePageLayout(WBFL::LRFD::MBEManager::Edition version);
 };

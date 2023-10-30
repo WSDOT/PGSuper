@@ -48,7 +48,7 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
    DEFINE_UV_PROTOTYPE( time,        pDisplayUnits->GetWholeDaysUnit(),        false );
 
-   scalar.SetFormat( sysNumericFormatTool::Automatic );
+   scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Automatic );
    scalar.SetWidth(6);
    scalar.SetPrecision(2);
 }
@@ -68,8 +68,6 @@ CTimeDependentLossesTable* CTimeDependentLossesTable::PrepareTable(rptChapter* p
    ColumnIndexType numColumns = 4;
    CTimeDependentLossesTable* table = new CTimeDependentLossesTable( numColumns, pDisplayUnits );
    rptStyleManager::ConfigureTable(table);
-
-   std::_tstring strImagePath(rptStyleManager::GetImagePath());
    
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;

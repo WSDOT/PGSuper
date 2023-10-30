@@ -32,6 +32,8 @@ if (machine=="RICHARDSDELL")
    PGSuperDrive = "C:";
 else if (machine=="ACERI7WIN7")
    PGSuperDrive = "C:";
+else if (machine=="RICHARDSGRAM")
+   PGSuperDrive = "C:";
 else if (machine=="HQB0630025")
    PGSuperDrive = "F:";
 else if (machine=="HQE3609046")

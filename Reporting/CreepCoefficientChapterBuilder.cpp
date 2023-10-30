@@ -53,9 +53,9 @@ LPCTSTR CCreepCoefficientChapterBuilder::GetName() const
    return TEXT("Creep Coefficient Details");
 }
 
-rptChapter* CCreepCoefficientChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CCreepCoefficientChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
 
@@ -63,7 +63,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build(CReportSpecification* pRptSpe
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
 
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
-   if ( pLossParams->GetLossMethod() == pgsTypes::TIME_STEP )
+   if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       rptParagraph* pPara = new rptParagraph;
       (*pChapter) << pPara;
@@ -76,7 +76,7 @@ rptChapter* CCreepCoefficientChapterBuilder::Build(CReportSpecification* pRptSpe
    return pChapter;
 }
 
-CChapterBuilder* CCreepCoefficientChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CCreepCoefficientChapterBuilder::Clone() const
 {
-   return new CCreepCoefficientChapterBuilder;
+   return std::make_unique<CCreepCoefficientChapterBuilder>();
 }

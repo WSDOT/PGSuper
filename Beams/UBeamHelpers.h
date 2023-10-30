@@ -25,7 +25,7 @@
 
 void GetSlope(IUBeam* beam,Float64* slope);
 
-class SlopeFn : public mathFunction2d
+class SlopeFn : public WBFL::Math::Function
 {
 public:
    SlopeFn(Float64 t,Float64 d1,Float64 d6,Float64 w1,Float64 w2,Float64 w4)
@@ -43,7 +43,7 @@ public:
       return T*sqrt(x*x+1) + D6 + ((W2/2) - W4 - (W1)/2)*x - D1;
    }
 
-   mathFunction2d* Clone() const
+  std::unique_ptr<WBFL::Math::Function> Clone() const
    {
       ASSERT(false); // should never get here
       return nullptr;

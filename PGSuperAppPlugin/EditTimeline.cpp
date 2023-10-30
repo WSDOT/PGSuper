@@ -51,9 +51,9 @@ void txnEditTimeline::Undo()
    DoExecute(0);
 }
 
-txnTransaction* txnEditTimeline::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnEditTimeline::CreateClone() const
 {
-   return new txnEditTimeline(m_TimelineManager[0],m_TimelineManager[1]);
+   return std::make_unique<txnEditTimeline>(m_TimelineManager[0],m_TimelineManager[1]);
 }
 
 std::_tstring txnEditTimeline::Name() const
@@ -61,12 +61,12 @@ std::_tstring txnEditTimeline::Name() const
    return _T("Edit Timeline");
 }
 
-bool txnEditTimeline::IsUndoable()
+bool txnEditTimeline::IsUndoable() const
 {
    return true;
 }
 
-bool txnEditTimeline::IsRepeatable()
+bool txnEditTimeline::IsRepeatable() const
 {
    return false;
 }

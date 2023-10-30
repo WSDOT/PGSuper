@@ -26,10 +26,10 @@
 #include <Reporting\ReportingExp.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
+#include <IFace\RatingSpecification.h>
 #include "ReportNotes.h"
 
 interface IEAFDisplayUnits;
-interface IRatingSpecification;
 
 std::_tstring REPORTINGFUNC LiveLoadPrefix(pgsTypes::LiveLoadType llType);
 void REPORTINGFUNC LiveLoadTableFooter(IBroker* pBroker,rptParagraph* pPara,const CGirderKey& girderKey,bool bDesign,bool bRating);
@@ -92,7 +92,7 @@ protected:
 
 template <class M,class T>
 RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_table,bool bPierTable,bool bSlabShrinkage,bool bSegments,bool bConstruction,bool bDeck, bool bDeckPanels,bool bSidewalk,bool bShearKey,bool bLongitudinalJoints,bool bOverlay,bool bIsFutureOverlay,
-                                     bool bDesign,bool bPedLoading,bool bPermit,bool bRating,pgsTypes::AnalysisType analysisType,bool bContinuousBeforeDeckCasting,IRatingSpecification* pRatingSpec,IEAFDisplayUnits* pDisplayUnits,const T& unitT)
+                                     bool bDesign,bool bPedLoading,bool bPermit,bool bRating,pgsTypes::AnalysisType analysisType,bool bContinuousBeforeDeckCasting,typename IRatingSpecification* pRatingSpec,IEAFDisplayUnits* pDisplayUnits,const T& unitT)
 {
    p_table->SetNumberOfHeaderRows(2);
 
@@ -290,7 +290,7 @@ RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_tab
       (*p_table)(1,col++) << COLHDR(_T("Max"),   M, unitT );
       (*p_table)(1,col++) << COLHDR(_T("Min"),   M, unitT );
 
-      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
       {
          p_table->SetColumnSpan(0,col,2);
          (*p_table)(0,col) << _T("* Fatigue Live Load");

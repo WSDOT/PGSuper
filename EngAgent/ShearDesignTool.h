@@ -31,6 +31,7 @@
 #include <IFace\PointOfInterest.h>
 #include <PgsExt\PgsExt.h>
 #include <psgLib\GirderLibraryEntry.h>
+#include <psgLib/EndZoneCriteria.h>
 
 // LOCAL INCLUDES
 //
@@ -67,7 +68,7 @@ public:
 
       Float64 Xpoi = poi.GetDistFromStart();
       if ( 
-           (Xpoi < m_StartBrg || m_EndBrg < Xpoi) ||
+           (IsLT(Xpoi,m_StartBrg) || IsLT(m_EndBrg,Xpoi)) ||
            (IsEqual(Xpoi,m_StartBrg) && poi.HasAttribute(POI_SPAN | POI_CANTILEVER)) || // POI is at the left bearing but it is on the cantilever side
            (IsEqual(Xpoi,m_EndBrg)   && poi.HasAttribute(POI_SPAN | POI_CANTILEVER))    // POI is at the right bearing but it is on the cantilever side
          )
@@ -164,7 +165,7 @@ private:
 
    // Design by Modifying existing stirrup layout 
    bool ModifyPreExistingStirrupDesign() const;
-   bool DesignPreExistingStirrups(StirrupZoneIter& rIter, Float64 locCSS,  matRebar::Grade barGrade, matRebar::Type barType, lrfdRebarPool* pool) const;
+   bool DesignPreExistingStirrups(StirrupZoneIter& rIter, Float64 locCSS,  WBFL::Materials::Rebar::Grade barGrade, WBFL::Materials::Rebar::Type barType, const WBFL::LRFD::RebarPool* pool) const;
    void ExpandStirrupZoneLengths(CShearData2::ShearZoneVec& ShearZones) const;
 
    // Design additional horizontal shear bars if needed
@@ -194,7 +195,7 @@ private:
    bool DoDesignFromScratch() const;
 
    IndexType GetNumStirrupSizeBarCombos() const;
-   void GetStirrupSizeBarCombo(IndexType index, matRebar::Size* pSize, Float64* pNLegs, Float64* pAv) const;
+   void GetStirrupSizeBarCombo(IndexType index, WBFL::Materials::Rebar::Size* pSize, Float64* pNLegs, Float64* pAv) const;
 
    // Available bar spacings for design
    IndexType GetNumAvailableBarSpacings() const;
@@ -256,8 +257,8 @@ private:
 
    bool m_bIsCurrentStirrupLayoutSymmetrical;
 
-   bool m_bDoDesignForConfinement;
-   bool m_bDoDesignForSplitting;
+   EndZoneCriteria m_EndZoneCriteria;
+
    bool m_bDoDesignFromScratch;
 
    pgsTypes::ConcreteType m_ConcreteType;
@@ -283,7 +284,7 @@ private:
    // Shear design parameters
    struct BarLegCombo
    {
-      matRebar::Size m_Size;
+      WBFL::Materials::Rebar::Size m_Size;
       Float64        m_Legs;
       Float64        m_Av; // area of size*legs
    };
@@ -321,11 +322,11 @@ private:
 
    // Two ways to store same vert av/s demand data here, by POI, and by X location
    mutable std::vector<std::pair<Float64,bool>> m_VertShearAvsDemandAtPois;    // Avs demand by POI, bool indicates if stirrups are required regardless of Avs = 0
-   mutable mathPwLinearFunction2dUsingPoints m_VertShearAvsDemandAtX; // Avs demand at locations along girder
+   mutable WBFL::Math::PiecewiseFunction m_VertShearAvsDemandAtX; // Avs demand at locations along girder
 
    // Two ways to store same Horiz av/s demand data here, by POI, and by X location
    mutable std::vector<std::pair<Float64,bool>> m_HorizShearAvsDemandAtPois;    // Avs demand by POI
-   mutable mathPwLinearFunction2dUsingPoints m_HorizShearAvsDemandAtX; // Avs demand at locations along girder
+   mutable WBFL::Math::PiecewiseFunction m_HorizShearAvsDemandAtX; // Avs demand at locations along girder
 
    // Store entire stirrup check artifact
    pgsStirrupCheckArtifact m_StirrupCheckArtifact;
@@ -337,16 +338,16 @@ private:
    Float64 ComputeMaxStirrupSpacing(Float64 location) const;
 
    // Get min stirrup spacing for given bar size
-   Float64 GetMinStirrupSpacing(matRebar::Size size) const;
+   Float64 GetMinStirrupSpacing(WBFL::Materials::Rebar::Size size) const;
 
    // Get bar size - nlegs - spacing for av/s demand
-   bool GetBarSizeSpacingForAvs(Float64 avsDemand, Float64 maxSpacing, matRebar::Size* pSize, Float64* pNLegs, Float64* pAv, Float64* pSpacing) const;
+   bool GetBarSizeSpacingForAvs(Float64 avsDemand, Float64 maxSpacing, WBFL::Materials::Rebar::Size* pSize, Float64* pNLegs, Float64* pAv, Float64* pSpacing) const;
 
    // Get bar size - nlegs - spacing for av/s demand - For a particular bar size
-   bool GetBarSpacingForAvs(Float64 avsDemand, Float64 maxSpacing, matRebar::Size Size, Float64 Av, Float64* pSpacing) const;
+   bool GetBarSpacingForAvs(Float64 avsDemand, Float64 maxSpacing, WBFL::Materials::Rebar::Size Size, Float64 Av, Float64* pSpacing) const;
 
    // Get next (or same) available bar size for a given min bar size
-   bool GetMinAvailableBarSize(matRebar::Size minSize, matRebar::Grade barGrade, matRebar::Type barType, lrfdRebarPool* pool, matRebar::Size* pSize) const;
+   bool GetMinAvailableBarSize(WBFL::Materials::Rebar::Size minSize, WBFL::Materials::Rebar::Grade barGrade, WBFL::Materials::Rebar::Type barType, const WBFL::LRFD::RebarPool* pool, WBFL::Materials::Rebar::Size* pSize) const;
 
    // Av/S demand at poi
    Float64 GetVerticalAvsDemand(IndexType PoiIdx) const;
@@ -393,7 +394,7 @@ private:
    ShearDesignOutcome ValidateVerticalAvsDemand() const;
    void ValidateHorizontalAvsDemand() const;
 
-   void ProcessAvsDemand(std::vector<std::pair<Float64,bool>>& rDemandAtPois, mathPwLinearFunction2dUsingPoints& rDemandAtLocations) const;
+   void ProcessAvsDemand(std::vector<std::pair<Float64,bool>>& rDemandAtPois, WBFL::Math::PiecewiseFunction& rDemandAtLocations) const;
 
 private:
 	DECLARE_SHARED_LOGFILE;

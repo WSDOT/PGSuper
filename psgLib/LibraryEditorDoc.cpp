@@ -33,8 +33,8 @@
 #include <psgLib\BeamFamilyManager.h>
 
 #include <System\FileStream.h>
-#include <System\StructuredLoadXmlPrs.h>
-#include <System\StructuredSaveXmlPrs.h>
+#include <System\StructuredLoadXml.h>
+#include <System\StructuredSaveXml.h>
 
 
 #include <WBFLCore.h>
@@ -216,7 +216,7 @@ HRESULT CLibraryEditorDoc::WriteTheDocument(IStructuredSave* pStrSave)
 
       mysave.EndUnit();
    }
-   catch (const sysXStructuredSave& rXSave)
+   catch (const WBFL::System::XStructuredSave& rXSave)
    {
       rXSave; // unused
       AfxMessageBox(_T("Error saving library data. You may have a full hard disk"),MB_OK|MB_ICONEXCLAMATION);

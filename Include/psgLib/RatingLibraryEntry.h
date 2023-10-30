@@ -27,14 +27,17 @@
 #include <psgLib\ISupportIcon.h>
 #include <libraryFw\LibraryEntry.h>
 #include <System\SubjectT.h>
-#include <Lrfd\LRFRVersionMgr.h>
+#include <LRFD\MBEManager.h>
 #include <array>
 
 class pgsLibraryEntryDifferenceItem;
 class CRatingDialog;
 class RatingLibraryEntry;
 class RatingLibraryEntryObserver;
-PSGLIBTPL sysSubjectT<RatingLibraryEntryObserver, RatingLibraryEntry>;
+PSGLIBTPL WBFL::System::SubjectT<RatingLibraryEntryObserver, RatingLibraryEntry>;
+
+class rptChapter;
+interface IEAFDisplayUnits;
 
 // Live Load, Load Factor Model before LRFR2013
 class PSGLIBCLASS CLiveLoadFactorModel
@@ -77,11 +80,11 @@ public:
 
    //------------------------------------------------------------------------
    // Save to structured storage
-   bool SaveMe(sysIStructuredSave* pSave);
+   bool SaveMe(WBFL::System::IStructuredSave* pSave);
 
    //------------------------------------------------------------------------
    // Load from structured storage
-   bool LoadMe(sysIStructuredLoad* pLoad);
+   bool LoadMe(WBFL::System::IStructuredLoad* pLoad);
 
 private:
    Float64 m_Wlower, m_Wupper; // vehicle weight boundaries
@@ -139,18 +142,18 @@ public:
 
    //------------------------------------------------------------------------
    // Save to structured storage
-   bool SaveMe(sysIStructuredSave* pSave);
+   bool SaveMe(WBFL::System::IStructuredSave* pSave);
 
    //------------------------------------------------------------------------
    // Load from structured storage
-   bool LoadMe(sysIStructuredLoad* pLoad);
+   bool LoadMe(WBFL::System::IStructuredLoad* pLoad);
 
 private:
-   Float64 m_PWRlower, m_PWRupper; // permit weight ratiot boundaries
+   Float64 m_PWRlower, m_PWRupper; // permit weight ratio boundaries
    std::array<Int16, 4> m_ADTT; // index, 0=lower,1=middle,2=upper,3=unknown
    std::array<Float64, 4> m_gLL_Lower;  // associated with lower value of PWR
    std::array<Float64, 4> m_gLL_Middle; // for PWR between lower and upper PWR, not used unless m_LoadFactorType is gllBilinearWithWeight
-   std::array<Float64, 4> m_gLL_Upper;  // associated with uper value of PWR, not used unless m_LoadFactorType is gllBilinearWithWeight
+   std::array<Float64, 4> m_gLL_Upper;  // associated with upper value of PWR, not used unless m_LoadFactorType is gllBilinearWithWeight
    std::array<Float64, 4> m_gLL_Service;
    pgsTypes::LiveLoadFactorType m_LiveLoadFactorType;
    pgsTypes::LiveLoadFactorModifier m_LiveLoadFactorModifier;
@@ -176,7 +179,7 @@ public:
 
    // called by our subject to let us now he's changed, along with an optional
    // hint
-   virtual void Update(RatingLibraryEntry* pSubject, Int32 hint)=0;
+   virtual void Update(RatingLibraryEntry& subject, Int32 hint)=0;
 };
 
 
@@ -195,8 +198,8 @@ LOG
    rab : 12.07.2009 : Created file
 *****************************************************************************/
 
-class PSGLIBCLASS RatingLibraryEntry : public libLibraryEntry, public ISupportIcon,
-       public sysSubjectT<RatingLibraryEntryObserver, RatingLibraryEntry>
+class PSGLIBCLASS RatingLibraryEntry : public WBFL::Library::LibraryEntry, public ISupportIcon,
+       public WBFL::System::SubjectT<RatingLibraryEntryObserver, RatingLibraryEntry>
 {
    // the dialog is our friend.
    friend CRatingDialog;
@@ -212,15 +215,15 @@ public:
 
    //------------------------------------------------------------------------
    // Copy constructor
-   RatingLibraryEntry(const RatingLibraryEntry& rOther);
+   RatingLibraryEntry(const RatingLibraryEntry& rOther) = default;
 
    //------------------------------------------------------------------------
    // Destructor
-   virtual ~RatingLibraryEntry();
+   virtual ~RatingLibraryEntry() = default;
 
    //------------------------------------------------------------------------
    // Assignment operator
-   RatingLibraryEntry& operator = (const RatingLibraryEntry& rOther);
+   RatingLibraryEntry& operator=(const RatingLibraryEntry& rOther) = default;
 
    //------------------------------------------------------------------------
    // Edit the entry
@@ -228,15 +231,15 @@ public:
 
    //------------------------------------------------------------------------
    // Save to structured storage
-   virtual bool SaveMe(sysIStructuredSave* pSave);
+   virtual bool SaveMe(WBFL::System::IStructuredSave* pSave);
 
    //------------------------------------------------------------------------
    // Load from structured storage
-   virtual bool LoadMe(sysIStructuredLoad* pLoad);
+   virtual bool LoadMe(WBFL::System::IStructuredLoad* pLoad);
 
    // Compares this library entry with rOther. Returns true if the entries are the same.
    // vDifferences contains a listing of the differences. The caller is responsible for deleting the difference items
-   bool Compare(const RatingLibraryEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference=false,bool considerName=false) const;
+   bool Compare(const RatingLibraryEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference=false,bool considerName=false) const;
 
    bool IsEqual(const RatingLibraryEntry& rOther,bool bConsiderName=false) const;
 
@@ -250,8 +253,8 @@ public:
    void UseCurrentSpecification(bool bUseCurrent);
    bool UseCurrentSpecification() const;
 
-   void SetSpecificationVersion(lrfrVersionMgr::Version version);
-   lrfrVersionMgr::Version GetSpecificationVersion() const;
+   void SetSpecificationVersion(WBFL::LRFD::MBEManager::Edition version);
+   WBFL::LRFD::MBEManager::Edition GetSpecificationVersion() const;
 
    // For use with LRFR before LRFR2013
    void SetLiveLoadFactorModel(pgsTypes::LoadRatingType ratingType,const CLiveLoadFactorModel& model);
@@ -269,6 +272,9 @@ public:
    void SetLiveLoadFactorModel2(pgsTypes::SpecialPermitType permitType,const CLiveLoadFactorModel2& model);
    const CLiveLoadFactorModel2& GetLiveLoadFactorModel2(pgsTypes::SpecialPermitType permitType) const;
 
+
+   void Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const;
+
 protected:
    //------------------------------------------------------------------------
    void MakeCopy(const RatingLibraryEntry& rOther);
@@ -280,7 +286,7 @@ private:
 
    // general
    bool m_bUseCurrentSpecification;
-   lrfrVersionMgr::Version m_SpecificationVersion;
+   WBFL::LRFD::MBEManager::Edition m_SpecificationVersion;
    std::_tstring m_Description;
 
    // for use with LRFR before 2013

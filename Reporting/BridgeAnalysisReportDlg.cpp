@@ -44,7 +44,7 @@ static char THIS_FILE[] = __FILE__;
 
 IMPLEMENT_DYNAMIC(CBridgeAnalysisReportDlg, CSpanGirderReportDlg)
 
-CBridgeAnalysisReportDlg::CBridgeAnalysisReportDlg(IBroker* pBroker,const CReportDescription& rptDesc,std::shared_ptr<CReportSpecification>& pRptSpec,UINT nIDTemplate,CWnd* pParent)
+CBridgeAnalysisReportDlg::CBridgeAnalysisReportDlg(IBroker* pBroker,const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate,CWnd* pParent)
 	: CSpanGirderReportDlg(pBroker,rptDesc, CSpanGirderReportDlg::Mode::GirderAndChapters,pRptSpec,nIDTemplate, pParent)
 {
    m_bDesign = true;
@@ -80,7 +80,7 @@ BOOL CBridgeAnalysisReportDlg::OnInitDialog()
 {
    if ( m_pInitRptSpec )
    {
-      std::shared_ptr<CBridgeAnalysisReportSpecification> pRptSpec = std::dynamic_pointer_cast<CBridgeAnalysisReportSpecification,CReportSpecification>(m_pInitRptSpec);
+      std::shared_ptr<CBridgeAnalysisReportSpecification> pRptSpec = std::dynamic_pointer_cast<CBridgeAnalysisReportSpecification,WBFL::Reporting::ReportSpecification>(m_pInitRptSpec);
       m_bDesign = pRptSpec->ReportDesignResults();
       m_bRating = pRptSpec->ReportRatingResults();
    }
@@ -126,13 +126,13 @@ void CBridgeAnalysisReportDlg::UpdateChapterList()
    m_ChList.ResetContent();
 
    // Get the chapters in the report
-   std::vector<CChapterInfo> chInfos = m_RptDesc.GetChapterInfo();
+   std::vector<WBFL::Reporting::ChapterInfo> chInfos = m_RptDesc.GetChapterInfo();
 
    // Populate the list box with the names of the chapters
-   std::vector<CChapterInfo>::iterator iter;
+   std::vector<WBFL::Reporting::ChapterInfo>::iterator iter;
    for ( iter = chInfos.begin(); iter != chInfos.end(); iter++ )
    {
-      CChapterInfo chInfo = *iter;
+      WBFL::Reporting::ChapterInfo chInfo = *iter;
 
       bool bIncludeChapter = false;
       if ( chInfo.Name == _T("Simple Span") && (analysisType == pgsTypes::Simple || analysisType == pgsTypes::Envelope) )

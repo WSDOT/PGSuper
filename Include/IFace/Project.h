@@ -24,11 +24,12 @@
 
 #include <WbflTypes.h>
 #include <psglib\librarymanager.h>
-#include <Lrfd\ILiveLoadDistributionFactor.h>
+#include <psgLib/PrestressLossCriteria.h>
+#include <LRFD\ILiveLoadDistributionFactor.h>
 
 #include <PgsExt\Keys.h>
 
-#include <Material\Material.h>
+#include <Materials/Materials.h>
 
 #include <EAF\EAFProjectLog.h> // IEAFProjectLog was moved... do the include here so other files don't have to change
 
@@ -71,17 +72,17 @@ interface IDirection;
 // MISCELLANEOUS
 //
 /// integer conversions for LLDF ROA values - so we decouple pgsuper from WBFL changes
-inline long GetIntForLldfAction(LldfRangeOfApplicabilityAction action)
+inline long GetIntForLldfAction(WBFL::LRFD::RangeOfApplicabilityAction action)
 {
-   if (action == roaEnforce)
+   if (action == WBFL::LRFD::RangeOfApplicabilityAction::Enforce)
    {
       return 0;
    }
-   else if (action == roaIgnore)
+   else if (action == WBFL::LRFD::RangeOfApplicabilityAction::Ignore)
    {
       return 1;
    }
-   else if (action == roaIgnoreUseLeverRule)
+   else if (action == WBFL::LRFD::RangeOfApplicabilityAction::IgnoreUseLeverRule)
    {
       return 2;
    }
@@ -92,24 +93,24 @@ inline long GetIntForLldfAction(LldfRangeOfApplicabilityAction action)
    }
 }
 
-inline LldfRangeOfApplicabilityAction GetLldfActionForInt(long iaction)
+inline WBFL::LRFD::RangeOfApplicabilityAction GetLldfActionForInt(long iaction)
 {
    if (iaction == 0)
    {
-      return roaEnforce;
+      return WBFL::LRFD::RangeOfApplicabilityAction::Enforce;
    }
    else if (iaction == 1)
    {
-      return roaIgnore;
+      return WBFL::LRFD::RangeOfApplicabilityAction::Ignore;
    }
    else if (iaction == 2)
    {
-      return roaIgnoreUseLeverRule;
+      return WBFL::LRFD::RangeOfApplicabilityAction::IgnoreUseLeverRule;
    }
    else
    {
       ATLASSERT(false); // something got hosed?
-      return roaEnforce;
+      return WBFL::LRFD::RangeOfApplicabilityAction::Enforce;
    }
 }
 
@@ -153,7 +154,7 @@ DESCRIPTION
 // {FD1DA96A-D57C-11d2-88F9-006097C68A9C}
 DEFINE_GUID(IID_IProjectPropertiesEventSink, 
 0xfd1da96a, 0xd57c, 0x11d2, 0x88, 0xf9, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
-interface IProjectPropertiesEventSink : IUnknown
+interface __declspec(uuid("{FD1DA96A-D57C-11d2-88F9-006097C68A9C}")) IProjectPropertiesEventSink : IUnknown
 {
    virtual HRESULT OnProjectPropertiesChanged() = 0;
 };
@@ -170,11 +171,10 @@ DESCRIPTION
 // {880AE100-2F4C-11d2-8D11-94FA07C10000}
 DEFINE_GUID(IID_IEnvironment,
 0x880AE100, 0x2F4C, 0x11d2, 0x8D, 0x11, 0x94, 0xFA, 0x07, 0xC1, 0x00, 0x00);
-typedef enum enumExposureCondition { expNormal, expSevere } enumExposureCondition;
 interface IEnvironment : IUnknown
 {
-   virtual enumExposureCondition GetExposureCondition() const = 0;
-	virtual void SetExposureCondition(enumExposureCondition newVal) = 0;
+   virtual pgsTypes::ExposureCondition GetExposureCondition() const = 0;
+	virtual void SetExposureCondition(pgsTypes::ExposureCondition newVal) = 0;
 	virtual Float64 GetRelHumidity() const = 0;
 	virtual void SetRelHumidity(Float64 newVal) = 0;
 };
@@ -183,15 +183,15 @@ interface IEnvironment : IUnknown
 INTERFACE
    IEnvironmentEventSink
 
-   Callback interface for enviroment events
+   Callback interface for environment events
 
 DESCRIPTION
-   Callback interface for enviroment events
+   Callback interface for environment events
 *****************************************************************************/
 // {DBA24DC0-2F4D-11d2-8D11-94FA07C10000}
 DEFINE_GUID(IID_IEnvironmentEventSink,
 0xDBA24DC0, 0x2F4D, 0x11d2, 0x8D, 0x11, 0x94, 0xFA, 0x07, 0xC1, 0x00, 0x00);
-interface IEnvironmentEventSink : IUnknown
+interface __declspec(uuid("{DBA24DC0-2F4D-11d2-8D11-94FA07C10000}")) IEnvironmentEventSink : IUnknown
 {
    virtual HRESULT OnExposureConditionChanged() = 0;
    virtual HRESULT OnRelHumidityChanged() = 0;
@@ -441,8 +441,8 @@ DEFINE_GUID(IID_ISegmentData,
 0xd660f3c1, 0x328e, 0x4ef2, 0x92, 0x4b, 0xdb, 0xb8, 0xb8, 0xd4, 0xdb, 0x6f);
 interface ISegmentData : IUnknown
 {
-   virtual const matPsStrand* GetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType type) const = 0;
-   virtual void SetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType type,const matPsStrand* pmat) = 0;
+   virtual const WBFL::Materials::PsStrand* GetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType type) const = 0;
+   virtual void SetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType type,const WBFL::Materials::PsStrand* pmat) = 0;
 
    virtual const CGirderMaterial* GetSegmentMaterial(const CSegmentKey& segmentKey) const = 0;
    virtual void SetSegmentMaterial(const CSegmentKey& segmentKey,const CGirderMaterial& material) = 0;
@@ -472,14 +472,14 @@ DEFINE_GUID(IID_IShear,
 interface IShear : IUnknown
 {
    virtual std::_tstring GetSegmentStirrupMaterial(const CSegmentKey& segmentKey) const = 0;
-   virtual void GetSegmentStirrupMaterial(const CSegmentKey& segmentKey,matRebar::Type& type,matRebar::Grade& grade) const = 0;
-   virtual void SetSegmentStirrupMaterial(const CSegmentKey& segmentKey,matRebar::Type type,matRebar::Grade grade) = 0;
+   virtual void GetSegmentStirrupMaterial(const CSegmentKey& segmentKey,WBFL::Materials::Rebar::Type& type,WBFL::Materials::Rebar::Grade& grade) const = 0;
+   virtual void SetSegmentStirrupMaterial(const CSegmentKey& segmentKey,WBFL::Materials::Rebar::Type type,WBFL::Materials::Rebar::Grade grade) = 0;
    virtual const CShearData2* GetSegmentShearData(const CSegmentKey& segmentKey) const = 0;
    virtual void SetSegmentShearData(const CSegmentKey& segmentKey,const CShearData2& data) = 0;
 
    virtual std::_tstring GetClosureJointStirrupMaterial(const CClosureKey& closureKey) const = 0;
-   virtual void GetClosureJointStirrupMaterial(const CClosureKey& closureKey,matRebar::Type& type,matRebar::Grade& grade) const = 0;
-   virtual void SetClosureJointStirrupMaterial(const CClosureKey& closureKey,matRebar::Type type,matRebar::Grade grade) = 0;
+   virtual void GetClosureJointStirrupMaterial(const CClosureKey& closureKey,WBFL::Materials::Rebar::Type& type,WBFL::Materials::Rebar::Grade& grade) const = 0;
+   virtual void SetClosureJointStirrupMaterial(const CClosureKey& closureKey,WBFL::Materials::Rebar::Type type,WBFL::Materials::Rebar::Grade grade) = 0;
    virtual const CShearData2* GetClosureJointShearData(const CClosureKey& closureKey) const = 0;
    virtual void SetClosureJointShearData(const CClosureKey& closureKey,const CShearData2& data) = 0;
 };
@@ -499,14 +499,14 @@ DEFINE_GUID(IID_ILongitudinalRebar,
 interface ILongitudinalRebar : IUnknown
 {
    virtual std::_tstring GetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey) const = 0;
-   virtual void GetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey,matRebar::Type& type,matRebar::Grade& grade) const = 0;
-   virtual void SetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey,matRebar::Type type,matRebar::Grade grade) = 0;
+   virtual void GetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey,WBFL::Materials::Rebar::Type& type,WBFL::Materials::Rebar::Grade& grade) const = 0;
+   virtual void SetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey,WBFL::Materials::Rebar::Type type,WBFL::Materials::Rebar::Grade grade) = 0;
    virtual const CLongitudinalRebarData* GetSegmentLongitudinalRebarData(const CSegmentKey& segmentKey) const = 0;
    virtual void SetSegmentLongitudinalRebarData(const CSegmentKey& segmentKey,const CLongitudinalRebarData& data) = 0;
 
    virtual std::_tstring GetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey) const = 0;
-   virtual void GetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,matRebar::Type& type,matRebar::Grade& grade) const = 0;
-   virtual void SetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,matRebar::Type type,matRebar::Grade grade) = 0;
+   virtual void GetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,WBFL::Materials::Rebar::Type& type,WBFL::Materials::Rebar::Grade& grade) const = 0;
+   virtual void SetClosureJointLongitudinalRebarMaterial(const CClosureKey& closureKey,WBFL::Materials::Rebar::Type type,WBFL::Materials::Rebar::Grade grade) = 0;
    virtual const CLongitudinalRebarData* GetClosureJointLongitudinalRebarData(const CClosureKey& closureKey) const = 0;
    virtual void SetClosureJointLongitudinalRebarData(const CClosureKey& closureKey,const CLongitudinalRebarData& data) = 0;
 };
@@ -538,11 +538,12 @@ interface ISpecification : IUnknown
 
    virtual std::vector<arDesignOptions> GetDesignOptions(const CGirderKey& girderKey) const = 0;
 
-   virtual bool IsSlabOffsetDesignEnabled() const = 0; // global setting from library
+   virtual const SlabOffsetCriteria& GetSlabOffsetCriteria() const = 0;
+   virtual bool DesignSlabHaunch() const = 0;
 
    virtual pgsTypes::OverlayLoadDistributionType GetOverlayLoadDistributionType() const = 0;
 
-   // Tolerance value is only used if HaunchLoadComputationType==hlcAccountForCamber
+   // Tolerance value is only used if HaunchLoadComputationType==hlcDetailedAnalysis && slab offset input
    virtual pgsTypes::HaunchLoadComputationType GetHaunchLoadComputationType() const = 0;
    virtual Float64 GetCamberTolerance() const = 0;
    virtual Float64 GetHaunchLoadCamberFactor() const = 0;
@@ -556,17 +557,14 @@ interface ISpecification : IUnknown
    virtual bool IsAssumedExcessCamberForLoad() const = 0; 
    virtual bool IsAssumedExcessCamberForSectProps() const = 0; 
 
-   // Rounding method for required slab offset value
-   virtual void GetRequiredSlabOffsetRoundingParameters(pgsTypes::SlabOffsetRoundingMethod* pMethod, Float64* pTolerance) const = 0;
-
    virtual void GetTaperedSolePlateRequirements(bool* pbCheckTaperedSolePlate, Float64* pTaperedSolePlateThreshold) const = 0;
 
-   // Method and applicabiity for Principal Web stress check are based on several requirements
+   // Method and applicability for Principal Web stress check are based on several requirements
    typedef enum PrincipalWebStressCheckType { pwcNotApplicable, pwcAASHTOMethod, pwcNCHRPMethod, pwcNCHRPTimeStepMethod } PrincipalWebStressCheckType;
 
    virtual PrincipalWebStressCheckType GetPrincipalWebStressCheckType(const CSegmentKey& segmentKey) const = 0;
 
-   virtual lrfdVersionMgr::Version GetSpecificationType() const = 0;
+   virtual WBFL::LRFD::BDSManager::Edition GetSpecificationType() const = 0;
 };
 
 /*****************************************************************************
@@ -581,7 +579,7 @@ DESCRIPTION
 // {B72842B1-5BB1-11d2-8ED7-006097DF3C68}
 DEFINE_GUID(IID_ISpecificationEventSink, 
 0xb72842b1, 0x5bb1, 0x11d2, 0x8e, 0xd7, 0x0, 0x60, 0x97, 0xdf, 0x3c, 0x68);
-interface ISpecificationEventSink : IUnknown
+interface __declspec(uuid("{B72842B1-5BB1-11d2-8ED7-006097DF3C68}")) ISpecificationEventSink : IUnknown
 {
    virtual HRESULT OnSpecificationChanged() = 0;
    virtual HRESULT OnAnalysisTypeChanged() = 0;
@@ -654,8 +652,8 @@ interface ILibrary : IUnknown
    virtual DuctLibrary*            GetDuctLibrary() = 0;
    virtual HaulTruckLibrary*       GetHaulTruckLibrary() = 0;
 
-   virtual std::vector<libEntryUsageRecord> GetLibraryUsageRecords() const = 0;
-   virtual void GetMasterLibraryInfo(std::_tstring& strServer, std::_tstring& strConfiguration, std::_tstring& strMasterLib,sysTime& time) const = 0;
+   virtual std::vector<WBFL::Library::EntryUsageRecord> GetLibraryUsageRecords() const = 0;
+   virtual void GetMasterLibraryInfo(std::_tstring& strServer, std::_tstring& strConfiguration, std::_tstring& strMasterLib,WBFL::System::Time& time) const = 0;
 
    virtual const RatingLibrary* GetRatingLibrary() const = 0;
    virtual RatingLibrary* GetRatingLibrary() = 0;
@@ -697,7 +695,7 @@ public:
 // {6132E890-719D-11d2-8EF1-006097DF3C68}
 DEFINE_GUID(IID_IBridgeDescriptionEventSink, 
 0x6132e890, 0x719d, 0x11d2, 0x8e, 0xf1, 0x0, 0x60, 0x97, 0xdf, 0x3c, 0x68);
-interface IBridgeDescriptionEventSink : IUnknown
+interface __declspec(uuid("{6132E890-719D-11d2-8EF1-006097DF3C68}")) IBridgeDescriptionEventSink : IUnknown
 {
    virtual HRESULT OnBridgeChanged(CBridgeChangedHint* pHint) = 0;
    virtual HRESULT OnGirderFamilyChanged() = 0;
@@ -748,7 +746,7 @@ DESCRIPTION
 // {2C1A3E71-727E-11d2-8EF2-006097DF3C68}
 DEFINE_GUID(IID_ILoadModifiersEventSink, 
 0x2c1a3e71, 0x727e, 0x11d2, 0x8e, 0xf2, 0x0, 0x60, 0x97, 0xdf, 0x3c, 0x68);
-interface ILoadModifiersEventSink : IUnknown
+interface __declspec(uuid("{2C1A3E71-727E-11d2-8EF2-006097DF3C68}")) ILoadModifiersEventSink : IUnknown
 {
    virtual HRESULT OnLoadModifiersChanged() = 0;
 };
@@ -766,7 +764,7 @@ enum LibConflictResult {RenameEntry, ReplaceEntry};
 // {BCE5B018-2149-11d3-AD79-00105A9AF985}
 DEFINE_GUID(IID_ILibraryConflictEventSink, 
 0xbce5b018, 0x2149, 0x11d3, 0xad, 0x79, 0x0, 0x10, 0x5a, 0x9a, 0xf9, 0x85);
-interface ILibraryConflictEventSink : IUnknown
+interface __declspec(uuid("{BCE5B018-2149-11d3-AD79-00105A9AF985}")) ILibraryConflictEventSink : IUnknown
 {
    virtual HRESULT OnLibraryConflictResolved() = 0;
 };
@@ -804,44 +802,44 @@ interface IUserDefinedLoadData : IUnknown
    virtual bool HasUserLLIM(const CGirderKey& girderKey) const = 0;
 
    // point loads
-   virtual CollectionIndexType GetPointLoadCount() const = 0;
+   virtual IndexType GetPointLoadCount() const = 0;
    // add point load and return current count
-   virtual CollectionIndexType AddPointLoad(EventIDType eventID,const CPointLoadData& pld) = 0;
-   virtual const CPointLoadData* GetPointLoad(CollectionIndexType idx) const = 0;
+   virtual IndexType AddPointLoad(EventIDType eventID,const CPointLoadData& pld) = 0;
+   virtual const CPointLoadData* GetPointLoad(IndexType idx) const = 0;
    virtual const CPointLoadData* FindPointLoad(LoadIDType loadID) const = 0;
    virtual EventIndexType GetPointLoadEventIndex(LoadIDType loadID) const = 0;
    virtual EventIDType GetPointLoadEventID(LoadIDType loadID) const = 0;
-   virtual void UpdatePointLoad(CollectionIndexType idx, EventIDType eventID, const CPointLoadData& pld) = 0;
+   virtual void UpdatePointLoad(IndexType idx, EventIDType eventID, const CPointLoadData& pld) = 0;
    virtual void UpdatePointLoadByID(LoadIDType loadID, EventIDType eventID, const CPointLoadData& pld) = 0;
-   virtual void DeletePointLoad(CollectionIndexType idx) = 0;
+   virtual void DeletePointLoad(IndexType idx) = 0;
    virtual void DeletePointLoadByID(LoadIDType loadID) = 0;
    virtual std::vector<CPointLoadData> GetPointLoads(const CSpanKey& spanKey) const = 0;
 
    // distributed loads
-   virtual CollectionIndexType GetDistributedLoadCount() const = 0;
+   virtual IndexType GetDistributedLoadCount() const = 0;
    // add distributed load and return current count
-   virtual CollectionIndexType AddDistributedLoad(EventIDType eventID,const CDistributedLoadData& pld) = 0;
-   virtual const CDistributedLoadData* GetDistributedLoad(CollectionIndexType idx) const = 0;
+   virtual IndexType AddDistributedLoad(EventIDType eventID,const CDistributedLoadData& pld) = 0;
+   virtual const CDistributedLoadData* GetDistributedLoad(IndexType idx) const = 0;
    virtual const CDistributedLoadData* FindDistributedLoad(LoadIDType loadID) const = 0;
    virtual EventIndexType GetDistributedLoadEventIndex(LoadIDType loadID) const = 0;
    virtual EventIDType GetDistributedLoadEventID(LoadIDType loadID) const = 0;
-   virtual void UpdateDistributedLoad(CollectionIndexType idx, EventIDType eventID, const CDistributedLoadData& pld) = 0;
+   virtual void UpdateDistributedLoad(IndexType idx, EventIDType eventID, const CDistributedLoadData& pld) = 0;
    virtual void UpdateDistributedLoadByID(LoadIDType loadID, EventIDType eventID, const CDistributedLoadData& pld) = 0;
-   virtual void DeleteDistributedLoad(CollectionIndexType idx) = 0;
+   virtual void DeleteDistributedLoad(IndexType idx) = 0;
    virtual void DeleteDistributedLoadByID(LoadIDType loadID) = 0;
    virtual std::vector<CDistributedLoadData> GetDistributedLoads(const CSpanKey& spanKey) const = 0;
 
    // moment loads
-   virtual CollectionIndexType GetMomentLoadCount() const = 0;
+   virtual IndexType GetMomentLoadCount() const = 0;
    // add moment load and return current count
-   virtual CollectionIndexType AddMomentLoad(EventIDType eventID,const CMomentLoadData& pld) = 0;
-   virtual const CMomentLoadData* GetMomentLoad(CollectionIndexType idx) const = 0;
+   virtual IndexType AddMomentLoad(EventIDType eventID,const CMomentLoadData& pld) = 0;
+   virtual const CMomentLoadData* GetMomentLoad(IndexType idx) const = 0;
    virtual const CMomentLoadData* FindMomentLoad(LoadIDType loadID) const = 0;
    virtual EventIndexType GetMomentLoadEventIndex(LoadIDType loadID) const = 0;
    virtual EventIDType GetMomentLoadEventID(LoadIDType loadID) const = 0;
-   virtual void UpdateMomentLoad(CollectionIndexType idx, EventIDType eventID, const CMomentLoadData& pld) = 0;
+   virtual void UpdateMomentLoad(IndexType idx, EventIDType eventID, const CMomentLoadData& pld) = 0;
    virtual void UpdateMomentLoadByID(LoadIDType loadID, EventIDType eventID, const CMomentLoadData& pld) = 0;
-   virtual void DeleteMomentLoad(CollectionIndexType idx) = 0;
+   virtual void DeleteMomentLoad(IndexType idx) = 0;
    virtual void DeleteMomentLoadByID(LoadIDType loadID) = 0;
    virtual std::vector<CMomentLoadData> GetMomentLoads(const CSpanKey& spanKey) const = 0;
 
@@ -922,9 +920,10 @@ INTERFACE
 DESCRIPTION
    Interface to control events in the user interface
 *****************************************************************************/
+// {74A056FD-CCFD-496F-B312-D22E22E6B773}
 DEFINE_GUID(IID_IUIEvents, 
 0x74a056fd, 0xccfd, 0x496f, 0xb3, 0x12, 0xd2, 0x2e, 0x22, 0xe6, 0xb7, 0x73);
-interface IUIEvents : IUnknown
+interface __declspec(uuid("{74A056FD-CCFD-496F-B312-D22E22E6B773}")) IUIEvents : IUnknown
 {
    virtual void HoldEvents(bool bHold=true) = 0;
    virtual void FirePendingEvents() = 0;
@@ -999,10 +998,9 @@ interface ILiveLoads : IUnknown
    virtual void SetTruckImpact(pgsTypes::LiveLoadType llType,Float64 impact) = 0;
    virtual Float64 GetLaneImpact(pgsTypes::LiveLoadType llType) const = 0;
    virtual void SetLaneImpact(pgsTypes::LiveLoadType llType,Float64 impact) = 0;
-   virtual void SetLldfRangeOfApplicabilityAction(LldfRangeOfApplicabilityAction action) = 0;
-   virtual LldfRangeOfApplicabilityAction GetLldfRangeOfApplicabilityAction() const = 0;
+   virtual void SetRangeOfApplicabilityAction(WBFL::LRFD::RangeOfApplicabilityAction action) = 0;
+   virtual WBFL::LRFD::RangeOfApplicabilityAction GetRangeOfApplicabilityAction() const = 0;
    virtual std::_tstring GetLLDFSpecialActionText() const = 0; // get common string for ignore roa case
-   virtual bool IgnoreLLDFRangeOfApplicability() const = 0; // true if action is to ignore ROA
 };
 
 // {483673C2-9F4E-40ec-9DC2-6B36B0D34498}
@@ -1093,23 +1091,28 @@ interface IBridgeDescription : IUnknown
 
    virtual void SetWearingSurfaceType(pgsTypes::WearingSurfaceType wearingSurfaceType) = 0;
 
-   // slab offset
+   /////////// Haunch Input //////////////
+   // Define how haunch is input. This can be older Slab Offset dimension method or newer hidHaunchDirectly and hidHaunchPlusSlabDirectly methods
+   virtual void SetHaunchInputDepthType(pgsTypes::HaunchInputDepthType type) = 0;
+   virtual pgsTypes::HaunchInputDepthType GetHaunchInputDepthType() const = 0;
+
+   // slab offset (valid only when HaunchInputDepthType == pgsTypes::hidACamber)
    // changes slab offset type to be sotBridge
    virtual void SetSlabOffsetType(pgsTypes::SlabOffsetType offsetType) = 0;
    virtual void SetSlabOffset( Float64 slabOffset) = 0;
    virtual pgsTypes::SlabOffsetType GetSlabOffsetType() const = 0;
-   // changes slab offset type to sotBearingLine
-   virtual void SetSlabOffset(pgsTypes::SupportType supportType, SupportIndexType supportIdx, pgsTypes::PierFaceType face, Float64 offset) = 0;
-   virtual void SetSlabOffset(pgsTypes::SupportType supportType, SupportIndexType supportIdx, Float64 backSlabOffset,Float64 aheadSlabOffset) = 0;
-   virtual Float64 GetSlabOffset(pgsTypes::SupportType supportType, SupportIndexType supportIdx, pgsTypes::PierFaceType face) const = 0;
-   virtual void GetSlabOffset(pgsTypes::SupportType supportType, SupportIndexType supportIdx, Float64* pBackSlabOffset, Float64* pAheadSlabOffset) const = 0;
+   // changes slab offset type to sotBearingLine at permanent piers.
+   virtual void SetSlabOffset(SupportIndexType supportIdx, pgsTypes::PierFaceType face, Float64 offset) = 0;
+   virtual void SetSlabOffset(SupportIndexType supportIdx, Float64 backSlabOffset,Float64 aheadSlabOffset) = 0;
+   virtual Float64 GetSlabOffset(SupportIndexType supportIdx, pgsTypes::PierFaceType face) const = 0;
+   virtual void GetSlabOffset(SupportIndexType supportIdx, Float64* pBackSlabOffset, Float64* pAheadSlabOffset) const = 0;
    // sets slab offset per girder ... sets the slab offset type to sotSegment
    virtual void SetSlabOffset(const CSegmentKey& segmentKey, pgsTypes::MemberEndType end, Float64 offset) = 0;
    virtual void SetSlabOffset(const CSegmentKey& segmentKey, Float64 startSlabOffset,Float64 endSlabOffset) = 0;
    virtual Float64 GetSlabOffset(const CSegmentKey& segmentKey, pgsTypes::MemberEndType end) const = 0;
    virtual void GetSlabOffset(const CSegmentKey& segmentKey, Float64* pStartSlabOffset,Float64* pEndSlabOffset) const = 0;
 
-   // fillet
+   // fillet is used for both slab offset and direct haunch input
    virtual void SetFillet( Float64 Fillet) = 0;
    virtual Float64 GetFillet() const = 0;
 
@@ -1123,6 +1126,28 @@ interface IBridgeDescription : IUnknown
    // sets AssumedExcessCamber per girder ... sets the AssumedExcessCamber type to aecGirder
    virtual void SetAssumedExcessCamber( SpanIndexType spanIdx, GirderIndexType gdrIdx, Float64 assumedExcessCamber) = 0;
    virtual Float64 GetAssumedExcessCamber( SpanIndexType spanIdx, GirderIndexType gdrIdx) const = 0;
+
+   // Direct input of haunch depths (valid only when HaunchInputDepthType == pgsTypes::hidHaunchDirectly or hidHaunchPlusSlabDirectly)
+   virtual void SetHaunchInputLocationType(pgsTypes::HaunchInputLocationType type) = 0;
+   virtual pgsTypes::HaunchInputLocationType GetHaunchInputLocationType() const = 0;
+   virtual void SetHaunchLayoutType(pgsTypes::HaunchLayoutType type) = 0;
+   virtual pgsTypes::HaunchLayoutType GetHaunchLayoutType() const = 0;
+   virtual void SetHaunchInputDistributionType(pgsTypes::HaunchInputDistributionType type) = 0;
+   virtual pgsTypes::HaunchInputDistributionType GetHaunchInputDistributionType() const = 0;
+   // Set haunch depths for entire bridge (segments or spans depending on HaunchLayoutType) (HaunchInputLocationType must be preset to hilSame4Bridge)
+   virtual void SetDirectHaunchDepths4Bridge(const std::vector<Float64>& haunchDepths) = 0;
+   // Method valid only when HaunchLayoutType==hltAlongSpans && HaunchInputLocationType==hilSame4AllGirders
+   virtual void SetDirectHaunchDepthsPerSpan(SpanIndexType spanIdx,const std::vector<Float64>& haunchDepths) = 0;
+   // Method valid only when HaunchLayoutType==hltAlongSpans && HaunchInputLocationType==hilPerEach
+   virtual void SetDirectHaunchDepthsPerSpan(SpanIndexType spanIdx,GirderIndexType gdrIdx,const std::vector<Float64>& haunchDepths) = 0;
+   // Method valid only when HaunchLayoutType==hltAlongSegments && HaunchInputLocationType==hilSame4AllGirders
+   virtual void SetDirectHaunchDepthsPerSegment(GroupIndexType group,SegmentIndexType SegmentIdx,const std::vector<Float64>& haunchDepths) = 0;
+   // Method valid only when HaunchLayoutType==hltAlongSegments && HaunchInputLocationType==hilPerEach
+   virtual void SetDirectHaunchDepthsPerSegment(GroupIndexType group,GirderIndexType gdrIdx,SegmentIndexType SegmentIdx,const std::vector<Float64>& haunchDepths) = 0;
+   // Method valid only when HaunchLayoutType==hltAlongSpans
+   virtual std::vector<Float64> GetDirectHaunchDepthsPerSpan(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
+   // Method valid only when HaunchLayoutType==hltAlongSegments
+   virtual std::vector<Float64> GetDirectHaunchDepthsPerSegment(GroupIndexType group,GirderIndexType gdrIdx, SegmentIndexType SegmentIdx) = 0;
 
    // Returns a vector of valid connection types
    virtual std::vector<pgsTypes::BoundaryConditionType> GetBoundaryConditionTypes(PierIndexType pierIdx) const = 0;
@@ -1160,10 +1185,10 @@ interface IBridgeDescription : IUnknown
    virtual void GetSegmentEventsByIndex(const CSegmentKey& segmentKey,EventIndexType* constructionEventIdx,EventIndexType* erectionEventIdx) const = 0;
    virtual void GetSegmentEventsByID(const CSegmentKey& segmentKey,EventIDType* constructionEventID,EventIDType* erectionEventID) const = 0;
 
-   virtual EventIndexType GetCastClosureJointEventIndex(GroupIndexType grpIdx,CollectionIndexType closureIdx) const = 0;
-   virtual EventIDType GetCastClosureJointEventID(GroupIndexType grpIdx,CollectionIndexType closureIdx) const = 0;
-   virtual void SetCastClosureJointEventByIndex(GroupIndexType grpIdx,CollectionIndexType closureIdx,EventIndexType eventIdx) = 0;
-   virtual void SetCastClosureJointEventByID(GroupIndexType grpIdx,CollectionIndexType closureIdx,EventIDType eventID) = 0;
+   virtual EventIndexType GetCastClosureJointEventIndex(GroupIndexType grpIdx,IndexType closureIdx) const = 0;
+   virtual EventIDType GetCastClosureJointEventID(GroupIndexType grpIdx,IndexType closureIdx) const = 0;
+   virtual void SetCastClosureJointEventByIndex(GroupIndexType grpIdx,IndexType closureIdx,EventIndexType eventIdx) = 0;
+   virtual void SetCastClosureJointEventByID(GroupIndexType grpIdx,IndexType closureIdx,EventIDType eventID) = 0;
 
    virtual EventIndexType GetStressTendonEventIndex(const CGirderKey& girderKey,DuctIndexType ductIdx) const = 0;
    virtual EventIDType GetStressTendonEventID(const CGirderKey& girderKey,DuctIndexType ductIdx) const = 0;
@@ -1285,10 +1310,10 @@ interface ILossParameters : IUnknown
    virtual std::_tstring GetLossMethodDescription() const = 0;
 
    // Returns the method for computing prestress losses
-   virtual pgsTypes::LossMethod GetLossMethod() const = 0;
+   virtual PrestressLossCriteria::LossMethodType GetLossMethod() const = 0;
 
    // Returns the time-dependent model type
-   virtual pgsTypes::TimeDependentModel GetTimeDependentModel() const = 0;
+   virtual PrestressLossCriteria::TimeDependentConcreteModelType GetTimeDependentModel() const = 0;
 
    // Indicates if time dependent effects are ignored during time-step analysis.
    // This setting only applies to time-step analysis. If ignored, the time-step
@@ -1370,7 +1395,7 @@ DESCRIPTION
 // {E677C320-9E35-4ce2-9FA6-083E99F87742}
 DEFINE_GUID(IID_ILossParametersEventSink, 
 0xe677c320, 0x9e35, 0x4ce2, 0x9f, 0xa6, 0x8, 0x3e, 0x99, 0xf8, 0x77, 0x42);
-interface ILossParametersEventSink : IUnknown
+interface __declspec(uuid("{E677C320-9E35-4ce2-9FA6-083E99F87742}")) ILossParametersEventSink : IUnknown
 {
    virtual HRESULT OnLossParametersChanged() = 0;
 };

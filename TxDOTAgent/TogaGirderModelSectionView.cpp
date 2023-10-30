@@ -331,7 +331,7 @@ void CTogaGirderModelSectionView::BuildStrandDisplayObjects(CTxDOTOptionalDesign
 
 
    GET_IFACE2(pBroker,IMaterials,pMaterial);
-   const matPsStrand* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Straight);
+   const auto* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Straight);
    Float64 diameter = pStrand->GetNominalDiameter();
 
    CComPtr<iSimpleDrawPointStrategy> strategy;
@@ -354,9 +354,9 @@ void CTogaGirderModelSectionView::BuildStrandDisplayObjects(CTxDOTOptionalDesign
 
    CComPtr<IPoint2dCollection> points;
    pStrandGeom->GetStrandPositions(poi, pgsTypes::Straight,&points);
-   CollectionIndexType nStrandPoints;
+   IndexType nStrandPoints;
    points->get_Count(&nStrandPoints);
-   CollectionIndexType strandPointIdx;
+   IndexType strandPointIdx;
    for ( strandPointIdx = 0; strandPointIdx < nStrandPoints; strandPointIdx++ )
    {
       CComPtr<IPoint2d> p;
@@ -647,7 +647,7 @@ void CTogaGirderModelSectionView::BuildDimensionDisplayObjects(CTxDOTOptionalDes
    CComPtr<iTextBlock> textBlock;
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   const unitmgtLengthData& length_unit = pDisplayUnits->GetComponentDimUnit();
+   const WBFL::Units::LengthData& length_unit = pDisplayUnits->GetComponentDimUnit();
 
    textBlock.CoCreateInstance(CLSID_TextBlock);
    strDim = FormatDimension(top_width,length_unit);

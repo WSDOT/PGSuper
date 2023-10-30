@@ -96,7 +96,7 @@ public:
 
    CShearData2 m_ShearData;
 
-   void GetRebarMaterial(matRebar::Type* pType,matRebar::Grade* pGrade);
+   void GetRebarMaterial(WBFL::Materials::Rebar::Type* pType,WBFL::Materials::Rebar::Grade* pGrade);
 
    virtual void GetLastZoneName(CString& strSymmetric, CString& strEnd);
 

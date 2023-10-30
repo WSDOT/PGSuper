@@ -33,7 +33,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-void ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, lrfdILiveLoadDistributionFactor::LeverRuleMethod& lrd,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits)
+void ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, WBFL::LRFD::ILiveLoadDistributionFactor::LeverRuleMethod& lrd,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits)
 {
    if (lrd.Nb>1)
    {
@@ -155,7 +155,7 @@ void ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, l
    {
       ATLASSERT(lrd.Nb==1);
       (*pPara) << _T("For a single-beam superstructure, the lever rule decomposes to the Lanes/Beams method") << rptNewLine;
-      lrfdILiveLoadDistributionFactor::LanesBeamsMethod lbm;
+      WBFL::LRFD::ILiveLoadDistributionFactor::LanesBeamsMethod lbm;
       lbm.mg = lrd.mg;
       lbm.Nl = lrd.nLanesUsed;
       lbm.Nb = 1;
@@ -165,7 +165,7 @@ void ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, l
    }
 }
 
-void ReportRigidMethod(rptParagraph* pPara,lrfdILiveLoadDistributionFactor::RigidMethod& rd,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits)
+void ReportRigidMethod(rptParagraph* pPara,WBFL::LRFD::ILiveLoadDistributionFactor::RigidMethod& rd,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits)
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim,    pDisplayUnits->GetSpanLengthUnit(),    true );
 
@@ -197,7 +197,7 @@ void ReportRigidMethod(rptParagraph* pPara,lrfdILiveLoadDistributionFactor::Rigi
    (*pPara) << _T("mg") << Super(_T("ME")) << Sub((rd.e.size() > 1 ? _T("2+") : _T("1"))) << _T(" = ") << scalar.SetValue(rd.mg) << rptNewLine;
 }
 
-void ReportLanesBeamsMethod(rptParagraph* pPara,lrfdILiveLoadDistributionFactor::LanesBeamsMethod& rd,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits)
+void ReportLanesBeamsMethod(rptParagraph* pPara,WBFL::LRFD::ILiveLoadDistributionFactor::LanesBeamsMethod& rd,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits)
 {
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 

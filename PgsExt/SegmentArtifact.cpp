@@ -133,13 +133,13 @@ void pgsSegmentArtifact::AddFlexuralStressArtifact(const pgsFlexuralStressArtifa
    std::sort(std::begin(artifacts),std::end(artifacts));
 }
 
-CollectionIndexType pgsSegmentArtifact::GetFlexuralStressArtifactCount(const StressCheckTask& task) const
+IndexType pgsSegmentArtifact::GetFlexuralStressArtifactCount(const StressCheckTask& task) const
 {
    const auto& artifacts( GetFlexuralStressArtifacts(task) );
    return artifacts.size();
 }
 
-const pgsFlexuralStressArtifact* pgsSegmentArtifact::GetFlexuralStressArtifact(const StressCheckTask& task,CollectionIndexType idx) const
+const pgsFlexuralStressArtifact* pgsSegmentArtifact::GetFlexuralStressArtifact(const StressCheckTask& task,IndexType idx) const
 {
    const auto& artifacts( GetFlexuralStressArtifacts(task) );
    if ( idx < artifacts.size() )
@@ -152,7 +152,7 @@ const pgsFlexuralStressArtifact* pgsSegmentArtifact::GetFlexuralStressArtifact(c
    }
 }
 
-pgsFlexuralStressArtifact* pgsSegmentArtifact::GetFlexuralStressArtifact(const StressCheckTask& task,CollectionIndexType idx)
+pgsFlexuralStressArtifact* pgsSegmentArtifact::GetFlexuralStressArtifact(const StressCheckTask& task,IndexType idx)
 {
    auto& artifacts( GetFlexuralStressArtifacts(task) );
    if ( idx < artifacts.size() )
@@ -242,6 +242,16 @@ const pgsPrincipalTensionStressArtifact* pgsSegmentArtifact::GetPrincipalTension
 pgsPrincipalTensionStressArtifact* pgsSegmentArtifact::GetPrincipalTensionStressArtifact()
 {
    return &m_PrincipalTensionStressArtifact;
+}
+
+const pgsReinforcementFatigueArtifact* pgsSegmentArtifact::GetReinforcementFatigueArtifact() const
+{
+   return &m_ReinforcementFatigueArtifact;
+}
+
+pgsReinforcementFatigueArtifact* pgsSegmentArtifact::GetReinforcementFatigueArtifact()
+{
+   return &m_ReinforcementFatigueArtifact;
 }
 
 void pgsSegmentArtifact::SetTendonStressArtifact(DuctIndexType ductIdx, const pgsTendonStressArtifact& artifact)
@@ -580,12 +590,12 @@ bool pgsSegmentArtifact::Passed() const
 
    if (m_pHaulingAnalysisArtifact != nullptr)
    {
-      if (!m_pHaulingAnalysisArtifact->Passed(pgsTypes::CrownSlope))
+      if (!m_pHaulingAnalysisArtifact->Passed(WBFL::Stability::HaulingSlope::CrownSlope))
       {
          return false;
       }
 
-      if (!m_pHaulingAnalysisArtifact->Passed(pgsTypes::Superelevation))
+      if (!m_pHaulingAnalysisArtifact->Passed(WBFL::Stability::HaulingSlope::Superelevation))
       {
          return false;
       }
@@ -853,11 +863,11 @@ Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength() const
    if (m_pHaulingAnalysisArtifact != nullptr)
    {
        Float64 fc_reqd_hauling_comp1, fc_reqd_hauling_tens1, fc_reqd_hauling_tens_wbar1;
-       m_pHaulingAnalysisArtifact->GetRequiredConcreteStrength(pgsTypes::CrownSlope, &fc_reqd_hauling_comp1, &fc_reqd_hauling_tens1, &fc_reqd_hauling_tens_wbar1);
+       m_pHaulingAnalysisArtifact->GetRequiredConcreteStrength(WBFL::Stability::HaulingSlope::CrownSlope, &fc_reqd_hauling_comp1, &fc_reqd_hauling_tens1, &fc_reqd_hauling_tens_wbar1);
        Float64 fc_reqd_hauling_1 = Max(fc_reqd_hauling_comp1, fc_reqd_hauling_tens1, fc_reqd_hauling_tens_wbar1);
 
        Float64 fc_reqd_hauling_comp2, fc_reqd_hauling_tens2, fc_reqd_hauling_tens_wbar2;
-       m_pHaulingAnalysisArtifact->GetRequiredConcreteStrength(pgsTypes::Superelevation, &fc_reqd_hauling_comp2, &fc_reqd_hauling_tens2, &fc_reqd_hauling_tens_wbar2);
+       m_pHaulingAnalysisArtifact->GetRequiredConcreteStrength(WBFL::Stability::HaulingSlope::Superelevation, &fc_reqd_hauling_comp2, &fc_reqd_hauling_tens2, &fc_reqd_hauling_tens_wbar2);
        Float64 fc_reqd_hauling_2 = Max(fc_reqd_hauling_comp2, fc_reqd_hauling_tens2, fc_reqd_hauling_tens_wbar2);
 
        Float64 fc_reqd_hauling = Max(fc_reqd_hauling_1,fc_reqd_hauling_2);

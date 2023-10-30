@@ -57,9 +57,9 @@ LPCTSTR CIntervalChapterBuilder::GetName() const
    return TEXT("Analysis Intervals");
 }
 
-rptChapter* CIntervalChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16 level) const
+rptChapter* CIntervalChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CGirderReportSpecification* pGirderRptSpec = dynamic_cast<CGirderReportSpecification*>(pRptSpec);
+   auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
 
    CComPtr<IBroker> pBroker;
    pGirderRptSpec->GetBroker(&pBroker);
@@ -110,7 +110,7 @@ rptChapter* CIntervalChapterBuilder::Build(CReportSpecification* pRptSpec,Uint16
    return pChapter;
 }
 
-CChapterBuilder* CIntervalChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder> CIntervalChapterBuilder::Clone() const
 {
-   return new CIntervalChapterBuilder;
+   return std::make_unique<CIntervalChapterBuilder>();
 }

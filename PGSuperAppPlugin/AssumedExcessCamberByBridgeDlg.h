@@ -36,7 +36,7 @@ public:
    virtual BOOL OnInitDialog();
 
 // Dialog Data
-	enum { IDD = IDD_ASSUMED_EXCESS_CAMBER_BY_BRIDGE };
+	enum { IDD = IDD_ASSUMED_EXCESS_CAMBER_BRIDGE };
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support

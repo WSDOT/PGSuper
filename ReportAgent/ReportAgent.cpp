@@ -116,12 +116,12 @@ HRESULT RegisterAgent(bool bRegister)
 
    // Register the PGSuper Report Agent with the PGSuper Agent category
    HRESULT hr = S_OK;
-   hr = sysComCatMgr::RegWithCategory(CLSID_PGSuperReportAgent,CATID_PGSuperAgent,bRegister);
+   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_PGSuperReportAgent,CATID_PGSuperAgent,bRegister);
    if ( FAILED(hr) )
       return hr;
 
    // Register the PGSplice Report Agent with the PGSplice Agent category
-   hr = sysComCatMgr::RegWithCategory(CLSID_PGSpliceReportAgent,CATID_PGSpliceAgent,bRegister);
+   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_PGSpliceReportAgent,CATID_PGSpliceAgent,bRegister);
    if ( FAILED(hr) )
       return hr;
 

@@ -1,0 +1,86 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 56.00    6  12.05 Non-Std Debonded    1     1     Tx62    *     36  0.6  270  18.33  16.49  10.00  10.00                                               0   0.0  0.0  4.578  5.926   2.585    -2.904     7616   0.858  1.082   2.253 -0.932  0.000 -0.050 -0.982 132.69  369.45    1.00    1.00    1.00    1.58    1.15    2.05    2.10    1.25 
+
+
+The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 56.00    6  12.05 Non-Std Debonded    1     2     Tx62    *     36  0.6  270  18.33  16.49  10.00  10.00                                               0   0.0  0.0  4.578  5.926   2.745    -3.092     7979   0.858  1.082   2.253 -1.152  0.000 -0.047 -1.199 132.65  362.42    1.00    1.00    1.00    1.52    1.01    1.98    1.80    1.08 
+
+
+The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 56.00    6   9.84 Non-Std Debonded    1     4     Tx62    *     36  0.6  270  18.33  16.49  10.00  10.00                                               0   0.0  0.0  4.578  5.926   2.655    -2.952     7556   0.799  1.011   2.255 -1.063  0.000 -0.049 -1.112 132.55  365.10    1.00    1.00    1.00    1.66    1.24    2.15    2.21    1.23 
+
+
+The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 56.00    6  11.85 Non-Std Debonded    2     1     Tx62    *     42  0.6  270  18.82  17.15  10.00  10.00                                               0   0.0  0.0  5.239  6.215   3.134    -3.478     8915   0.836  1.079   2.896 -1.463  0.000 -0.071 -1.534 167.61  464.93    1.00    1.00    1.00    1.62    1.04    2.09    1.94    1.09 
+
+
+The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 56.00    6  11.85 Non-Std Debonded    2     2     Tx62    *     42  0.6  270  18.82  17.15  10.00  10.00                                               0   0.0  0.0  5.239  6.215   3.270    -3.627     9196   0.836  1.079   2.896 -1.671  0.000 -0.068 -1.739 167.61  458.39    1.00    1.00    1.00    1.58    0.94    2.04    1.75    0.97 
+
+
+The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tension stress check failed for Service III Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+Ultimate vertical shear capacity check failed for Strength I Limit State
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 56.00    6   9.71 Non-Std Debonded    2     4     Tx62    *     42  0.6  270  18.82  17.15  10.00  10.00                                               0   0.0  0.0  5.239  6.215   3.154    -3.458     8703   0.780  1.009   2.896 -1.535  0.000 -0.070 -1.605 167.60  462.66    1.00    1.00    1.00    1.72    1.18    2.23    2.07    1.12 
+
+
+The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 56.00    6  11.83 Non-Std Debonded    3     1     Tx62    *     40  0.6  270  18.68  17.15  10.00  10.00                                               0   0.0  0.0  5.121  6.048   2.544    -2.870     7531   0.859  1.076   2.581 -0.929  0.000 -0.047 -0.976 155.17  440.55    1.00    1.00    1.00    1.88    1.45    2.44    1.94    1.57 
+
+
+The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 56.00    6  11.83 Non-Std Debonded    3     2     Tx62    *     40  0.6  270  18.68  17.15  10.00  10.00                                               0   0.0  0.0  5.121  6.048   2.666    -3.014     7808   0.859  1.076   2.581 -1.095  0.000 -0.045 -1.139 155.17  434.48    1.00    1.00    1.00    1.85    1.28    2.39    1.86    1.44 
+
+
+The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 56.00    6   9.68 Non-Std Debonded    3     4     Tx62    *     40  0.6  270  18.68  17.15  10.00  10.00                                               0   0.0  0.0  5.121  6.048   2.573    -2.871     7381   0.801  1.006   2.581 -1.005  0.000 -0.046 -1.051 155.17  437.76    1.00    1.00    1.00    2.00    1.53    2.60    2.05    1.62 
+
+
+The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
+Compression stress check failed for Service I Limit State in Interval 15 Open to Traffic, Roadway Geometry Control
+
+

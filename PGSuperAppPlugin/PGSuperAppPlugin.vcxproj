@@ -67,7 +67,7 @@
     <OutDir>$(ARPDIR)\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration)\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
-    <LinkIncremental>false</LinkIncremental>
+    <LinkIncremental>true</LinkIncremental>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisRules />
     <CodeAnalysisRuleAssemblies />
@@ -92,16 +92,18 @@
       <ProxyFileName>PGSuperAppPlugin_p.c</ProxyFileName>
     </Midl>
     <ClCompile>
-      <AdditionalOptions>-Zm111 %(AdditionalOptions)</AdditionalOptions>
       <Optimization>Disabled</Optimization>
       <AdditionalIncludeDirectories>..\Include;;$(ARPDIR)\BridgeLink\Include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_USRDLL;_ATL_NO_UUIDOF;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_USRDLL;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderOutputFile>$(IntDir)$(TargetName).pch</PrecompiledHeaderOutputFile>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -112,9 +114,12 @@
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(ARPDIR)\WBFL\RegFreeCOM\$(Platform)\$(Configuration);$(ARPDIR)\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\PGSuperAppPlugin.def</ModuleDefinitionFile>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX64</TargetMachine>
+      <OptimizeReferences>false</OptimizeReferences>
+      <EnableCOMDATFolding>false</EnableCOMDATFolding>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
       <Message>Copying files to BridgeLink</Message>
@@ -149,11 +154,15 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     </Midl>
     <ClCompile>
       <AdditionalIncludeDirectories>..\Include;;$(ARPDIR)\BridgeLink\Include</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_USRDLL;_ATL_NO_UUIDOF;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_USRDLL;_GXDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat />
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -164,11 +173,11 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(ARPDIR)\WBFL\RegFreeCOM\$(Platform)\$(Configuration);$(ARPDIR)\BridgeLink\RegFreeCOM\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <ModuleDefinitionFile>.\PGSuperAppPlugin.def</ModuleDefinitionFile>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>DebugFastLink</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
-      <OptimizeReferences>true</OptimizeReferences>
-      <EnableCOMDATFolding>true</EnableCOMDATFolding>
-      <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <OptimizeReferences>false</OptimizeReferences>
+      <EnableCOMDATFolding>false</EnableCOMDATFolding>
+      <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
       <TargetMachine>MachineX64</TargetMachine>
     </Link>
     <PostBuildEvent>
@@ -203,7 +212,11 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClCompile Include="CopyTempSupportDlg.cpp" />
     <ClCompile Include="CopyTempSupportPropertiesCallbacks.cpp" />
     <ClCompile Include="DrawDeckRegionControl.cpp" />
+    <ClCompile Include="EditHaunchACamberDlg.cpp" />
+    <ClCompile Include="EditHaunchByHaunchDlg.cpp" />
     <ClCompile Include="FileSaveWarningDlg.cpp" />
+    <ClCompile Include="FillHaunchDlg.cpp" />
+    <ClCompile Include="GeometryControlDlg.cpp" />
     <ClCompile Include="GirderDescGeneralPage.cpp" />
     <ClCompile Include="BridgeDescLiftingPage.cpp" />
     <ClCompile Include="BridgeDescLongitudinalRebar.cpp" />
@@ -287,6 +300,10 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClCompile Include="GMDisplayMgrEventsImpl.cpp" />
     <ClCompile Include="GraphView.cpp" />
     <ClCompile Include="GraphViewChildFrame.cpp" />
+    <ClCompile Include="HaunchDirectEntireBridgeGrid.cpp" />
+    <ClCompile Include="HaunchDirectSameAsGrid.cpp" />
+    <ClCompile Include="HaunchDirectSegmentGrid.cpp" />
+    <ClCompile Include="HaunchDirectSpansGrid.cpp" />
     <ClCompile Include="HorizontalAlignmentGrid.cpp" />
     <ClCompile Include="HorizontalAlignmentPage.cpp" />
     <ClCompile Include="InplaceEditDisplayObjectEvents.cpp" />
@@ -376,6 +393,7 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClCompile Include="StructuralAnalysisMethodDlg.cpp" />
     <ClCompile Include="SupportDrawStrategyImpl.cpp" />
     <ClCompile Include="SegmentTendonGrid.cpp" />
+    <ClCompile Include="TempSupportElevAdjustGrid.cpp" />
     <ClCompile Include="TimelineReportDlg.cpp" />
     <ClCompile Include="TrafficBarrierDisplayObjectEvents.cpp" />
     <ClCompile Include="AboutDlg.cpp" />
@@ -574,6 +592,7 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\Hints.h" />
+    <ClInclude Include="..\Include\PGSuperUIUtil.h" />
     <ClInclude Include="AbutmentConnectionsPage.h" />
     <ClInclude Include="AlignmentDescriptionDlg.h" />
     <ClInclude Include="AlignmentDisplayObjectEvents.h" />
@@ -593,7 +612,12 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClInclude Include="CopyTempSupportDlg.h" />
     <ClInclude Include="CopyTempSupportPropertiesCallbacks.h" />
     <ClInclude Include="DrawDeckRegionControl.h" />
+    <ClInclude Include="EditAnalysisType.h" />
+    <ClInclude Include="EditHaunchACamberDlg.h" />
+    <ClInclude Include="EditHaunchByHaunchDlg.h" />
     <ClInclude Include="FileSaveWarningDlg.h" />
+    <ClInclude Include="FillHaunchDlg.h" />
+    <ClInclude Include="GeometryControlDlg.h" />
     <ClInclude Include="GirderDescGeneralPage.h" />
     <ClInclude Include="BridgeDescLiftingPage.h" />
     <ClInclude Include="BridgeDescLongitudinalRebar.h" />
@@ -680,6 +704,10 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClInclude Include="GMDisplayMgrEventsImpl.h" />
     <ClInclude Include="GraphView.h" />
     <ClInclude Include="GraphViewChildFrame.h" />
+    <ClInclude Include="HaunchDirectEntireBridgeGrid.h" />
+    <ClInclude Include="HaunchDirectSameAsGrid.h" />
+    <ClInclude Include="HaunchDirectSegmentGrid.h" />
+    <ClInclude Include="HaunchDirectSpansGrid.h" />
     <ClInclude Include="HorizontalAlignmentGrid.h" />
     <ClInclude Include="HorizontalAlignmentPage.h" />
     <ClInclude Include="..\Include\BridgeModelViewController.h" />
@@ -702,7 +730,6 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClInclude Include="..\Include\PGSuperAll.h" />
     <ClInclude Include="..\Include\PGSuperCatCom.h" />
     <ClInclude Include="..\Include\PGSuperColors.h" />
-    <ClInclude Include="..\Include\PGSuperDebug.h" />
     <ClInclude Include="..\Include\PGSuperTypes.h" />
     <ClInclude Include="..\Include\PGSuperUnits.h" />
     <ClInclude Include="..\Include\PGSuperVersion.h" />
@@ -791,6 +818,7 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClInclude Include="SupportDrawStrategy.h" />
     <ClInclude Include="SupportDrawStrategyImpl.h" />
     <ClInclude Include="SegmentTendonGrid.h" />
+    <ClInclude Include="TempSupportElevAdjustGrid.h" />
     <ClInclude Include="TimelineReportDlg.h" />
     <ClInclude Include="TrafficBarrierDisplayObjectEvents.h" />
     <ClInclude Include="AboutDlg.h" />
@@ -975,10 +1003,6 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     </ProjectReference>
     <ProjectReference Include="..\GraphingAgent\GraphingAgent.vcxproj">
       <Project>{30dd6886-34ba-48bd-9bb6-08e8cd79cad7}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="..\Graphing\Graphing.vcxproj">
-      <Project>{a29f3c02-af58-4e29-a791-caa5a1ce28b6}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
     <ProjectReference Include="..\KDOTExport\KDOTExport.vcxproj">

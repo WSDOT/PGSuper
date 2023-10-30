@@ -179,7 +179,7 @@ void CRatingDialog::ExchangeLoadFactorData(CDataExchange* pDX,pgsTypes::LoadRati
    ATLASSERT(ratingType != pgsTypes::lrPermit_Special);
    if ( pDX->m_bSaveAndValidate )
    {
-      if ( m_RatingDescriptionPage.GetSpecVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
+      if ( m_RatingDescriptionPage.GetSpecVersion() < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
       {
          CLiveLoadFactorModel model1;
          ExchangeLoadFactorData(pDX,&model1);
@@ -194,7 +194,7 @@ void CRatingDialog::ExchangeLoadFactorData(CDataExchange* pDX,pgsTypes::LoadRati
    }
    else
    {
-      if ( m_RatingDescriptionPage.GetSpecVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
+      if ( m_RatingDescriptionPage.GetSpecVersion() < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
       {
          CLiveLoadFactorModel model1 = m_Entry.GetLiveLoadFactorModel(ratingType);
          ExchangeLoadFactorData(pDX,&model1);
@@ -211,7 +211,7 @@ void CRatingDialog::ExchangeLoadFactorData(CDataExchange* pDX,pgsTypes::SpecialP
 {
    if ( pDX->m_bSaveAndValidate )
    {
-      if ( m_RatingDescriptionPage.GetSpecVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
+      if ( m_RatingDescriptionPage.GetSpecVersion() < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
       {
          CLiveLoadFactorModel model;
          ExchangeLoadFactorData(pDX,&model);
@@ -226,7 +226,7 @@ void CRatingDialog::ExchangeLoadFactorData(CDataExchange* pDX,pgsTypes::SpecialP
    }
    else
    {
-      if ( m_RatingDescriptionPage.GetSpecVersion() < lrfrVersionMgr::SecondEditionWith2013Interims )
+      if ( m_RatingDescriptionPage.GetSpecVersion() < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
       {
          CLiveLoadFactorModel model = m_Entry.GetLiveLoadFactorModel(permitType);
          ExchangeLoadFactorData(pDX,&model);
@@ -242,7 +242,7 @@ void CRatingDialog::ExchangeLoadFactorData(CDataExchange* pDX,pgsTypes::SpecialP
 void CRatingDialog::ExchangeLoadFactorData(CDataExchange* pDX,CLiveLoadFactorModel* pModel)
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    DDX_UnitValueAndTag(pDX,IDC_LOWER_VEHICLE_WEIGHT,IDC_LOWER_VEHICLE_WEIGHT_UNIT,pModel->m_Wlower,pDisplayUnits->GeneralForce);
    DDX_UnitValueAndTag(pDX,IDC_UPPER_VEHICLE_WEIGHT,IDC_UPPER_VEHICLE_WEIGHT_UNIT,pModel->m_Wupper,pDisplayUnits->GeneralForce);
@@ -380,7 +380,7 @@ void CRatingDialog::ExchangeLoadFactorData(CDataExchange* pDX,CLiveLoadFactorMod
 void CRatingDialog::ExchangeLoadFactorData(CDataExchange* pDX,CLiveLoadFactorModel2* pModel)
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    DDX_UnitValueAndTag(pDX,IDC_LOWER_VEHICLE_WEIGHT,IDC_LOWER_VEHICLE_WEIGHT_UNIT,pModel->m_PWRlower,pDisplayUnits->ForcePerLength);
    DDX_UnitValueAndTag(pDX,IDC_UPPER_VEHICLE_WEIGHT,IDC_UPPER_VEHICLE_WEIGHT_UNIT,pModel->m_PWRupper,pDisplayUnits->ForcePerLength);
@@ -529,7 +529,7 @@ void CRatingDialog::UpdatePageLayout()
    UpdatePageLayout(m_RatingDescriptionPage.GetSpecVersion());
 }
 
-void CRatingDialog::UpdatePageLayout(lrfrVersionMgr::Version version)
+void CRatingDialog::UpdatePageLayout(WBFL::LRFD::MBEManager::Edition version)
 {
    for ( int i = 0; i < 5; i++ )
    {
@@ -549,7 +549,7 @@ void CRatingDialog::UpdatePageLayout(lrfrVersionMgr::Version version)
          RemovePage(m_PermitLiveLoadFactorsPage2[i]);
    }
 
-   if ( version < lrfrVersionMgr::SecondEditionWith2013Interims )
+   if ( version < WBFL::LRFD::MBEManager::Edition::SecondEditionWith2013Interims )
    {
       for ( int i = 0; i < 5; i++ )
       {

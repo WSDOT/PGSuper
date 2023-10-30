@@ -26,12 +26,11 @@
 #include "TxDOTOptionalDesignData.h"
 #include "TxDOTOptionalDesignUtilities.h"
 
-#include <Units\SysUnits.h>
-#include <Lrfd\StrandPool.h>
+#include <Units\Convert.h>
+#include <LRFD\StrandPool.h>
 #include <WbflAtlExt.h>
 #include <limits>
-#include <GeomModel\IShape.h>
-#include <WBFLSections.h>
+#include <GeomModel/Shape.h>
 #include <WBFLGenericBridge.h>
 
 #include <IFace\BeamFactory.h>
@@ -75,10 +74,10 @@ CTxDOTOptionalDesignGirderData::~CTxDOTOptionalDesignGirderData()
 // Resets all data to default values
 void CTxDOTOptionalDesignGirderData::ResetData()
 {
-   m_Grade = matPsStrand::Gr1860;
-   m_Type  = matPsStrand::LowRelaxation;
-   m_Size  = matPsStrand::D1270;
-   m_Coating = matPsStrand::None;
+   m_Grade = WBFL::Materials::PsStrand::Grade::Gr1860;
+   m_Type  = WBFL::Materials::PsStrand::Type::LowRelaxation;
+   m_Size  = WBFL::Materials::PsStrand::Size::D1270;
+   m_Coating = WBFL::Materials::PsStrand::Coating::None;
 
    m_Fci = Float64_Inf;
    m_Fc  = Float64_Inf;
@@ -144,8 +143,8 @@ HRESULT CTxDOTOptionalDesignGirderData::Save(IStructuredSave* pStrSave,IProgress
 
    pStrSave->put_Property(_T("StrandFillType"),         CComVariant(m_StrandFillType));
 
-   lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
-   const matPsStrand* pStrand = pPool->GetStrand(m_Grade, m_Type, m_Coating, m_Size);
+   const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
+   const auto* pStrand = pPool->GetStrand(m_Grade, m_Type, m_Coating, m_Size);
    Int64 key=0;
    if (pStrand!=nullptr)
    {
@@ -213,7 +212,7 @@ HRESULT CTxDOTOptionalDesignGirderData::Save(IStructuredSave* pStrSave,IProgress
       pStrSave->EndUnit(); // StraightStrands
 
       pStrSave->BeginUnit(_T("StraightStrandDebonding"),1.0);
-      CollectionIndexType nDebondInfo = m_DirectFilledStraightDebond.size();
+      IndexType nDebondInfo = m_DirectFilledStraightDebond.size();
       pStrSave->put_Property(_T("DebondInfoCount"),CComVariant(nDebondInfo));
       std::vector<CDebondData>::iterator debond_iter;
       for ( debond_iter = m_DirectFilledStraightDebond.begin(); debond_iter != m_DirectFilledStraightDebond.end(); debond_iter++ )
@@ -277,11 +276,11 @@ HRESULT CTxDOTOptionalDesignGirderData::Load(IStructuredLoad* pStrLoad,IProgress
       {
          // prior to version 3, strand key did not contain a coating type bit.
          // the assumption was the strand was uncoated. Add the bit for uncoated strand here.
-         key |= matPsStrand::None;
+         key |= +WBFL::Materials::PsStrand::Coating::None;
       }
 
-      lrfdStrandPool* pPool = lrfdStrandPool::GetInstance();
-      const matPsStrand* pStrand = pPool->GetStrand(key);
+      const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
+      const auto* pStrand = pPool->GetStrand(key);
       if (pStrand!=nullptr)
       {
          m_Grade = pStrand->GetGrade();
@@ -497,10 +496,10 @@ CTxDOTOptionalDesignGirderData::StrandFillType CTxDOTOptionalDesignGirderData::G
    return m_StrandFillType;
 }
 
-void CTxDOTOptionalDesignGirderData::SetStrandData(matPsStrand::Grade grade,
-                   matPsStrand::Type type,
-                   matPsStrand::Coating coating,
-                   matPsStrand::Size size)
+void CTxDOTOptionalDesignGirderData::SetStrandData(WBFL::Materials::PsStrand::Grade grade,
+                   WBFL::Materials::PsStrand::Type type,
+                  WBFL::Materials::PsStrand::Coating coating,
+                   WBFL::Materials::PsStrand::Size size)
 {
    if (m_Grade!=grade || m_Type!=type || m_Coating != coating || m_Size!=size)
    {
@@ -513,10 +512,10 @@ void CTxDOTOptionalDesignGirderData::SetStrandData(matPsStrand::Grade grade,
    }
 }
 
-void CTxDOTOptionalDesignGirderData::GetStrandData(matPsStrand::Grade* pgrade,
-                   matPsStrand::Type* ptype,
-                   matPsStrand::Coating* pcoating,
-                   matPsStrand::Size* psize)
+void CTxDOTOptionalDesignGirderData::GetStrandData(WBFL::Materials::PsStrand::Grade* pgrade,
+                   WBFL::Materials::PsStrand::Type* ptype,
+                  WBFL::Materials::PsStrand::Coating* pcoating,
+                   WBFL::Materials::PsStrand::Size* psize)
 {
    *pgrade = m_Grade;
    *ptype  = m_Type;
@@ -1092,7 +1091,7 @@ bool CTxDOTOptionalDesignGirderData::CheckAndBuildStrandRows(const GirderLibrary
       }
       else
       {
-         Float64 elev_in = ::ConvertFromSysUnits(elev, unitMeasure::Inch);
+         Float64 elev_in = WBFL::Units::ConvertFromSysUnits(elev, WBFL::Units::Measure::Inch);
          rErrMsg.Format(_T("Non-Standard strand input data at girder centerline specified a strand at %.3f in. from the girder bottom. There are no stands at this location in the library."),elev_in);
          return false;
       }
@@ -1127,7 +1126,7 @@ bool CTxDOTOptionalDesignGirderData::CheckAndBuildStrandRows(const GirderLibrary
       }
       else
       {
-         Float64 elev_in = ::ConvertFromSysUnits(elev, unitMeasure::Inch);
+         Float64 elev_in = WBFL::Units::ConvertFromSysUnits(elev, WBFL::Units::Measure::Inch);
          rErrMsg.Format(_T("Non-Standard strand input data at girder ends specified a strand at %.3f in. from the girder bottom. There are no stands at this location in the library."),elev_in);
          return false;
       }
@@ -1179,7 +1178,7 @@ bool CTxDOTOptionalDesignGirderData::CheckAndBuildStrandRows(const GirderLibrary
 
       if (shrow.NumStraightCL != shrow.NumStraightEnd)
       {
-         Float64 elev_in = ::ConvertFromSysUnits(shrow.RowElev, unitMeasure::Inch);
+         Float64 elev_in = WBFL::Units::ConvertFromSysUnits(shrow.RowElev, WBFL::Units::Measure::Inch);
          rErrMsg.Format(_T("The number of straight strands in each row at the C.L. and ends must be the same. They are not at row %.3f in. Ncl=%d, Nends=%d."),elev_in, shrow.NumStraightCL, shrow.NumStraightEnd);
          return false;
       }
@@ -1214,7 +1213,7 @@ bool CTxDOTOptionalDesignGirderData::CheckAndBuildStrandRows(const GirderLibrary
 
             if (shit_cl->NumHarpedCL != shit_end->NumHarpedEnd)
             {
-               Float64 elev_in = ::ConvertFromSysUnits(shit_cl->RowElev, unitMeasure::Inch);
+               Float64 elev_in = WBFL::Units::ConvertFromSysUnits(shit_cl->RowElev, WBFL::Units::Measure::Inch);
                rErrMsg.Format(_T("The number of harped strands at connecting locations must be the same. They are not at CL row %.3f in. Ncl=%d, Nends=%d."),elev_in, shit_cl->NumHarpedCL, shit_end->NumHarpedEnd);
                return false;
             }

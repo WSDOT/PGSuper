@@ -26,7 +26,7 @@
 #include "GirderGrid.h"
 #include "DuctGrid.h"
 #include <PgsExt\BridgeDescription2.h>
-#include <Material\PsStrand.h>
+#include <Materials/PsStrand.h>
 
 #include "DrawTendonsControl.h"
 
@@ -48,10 +48,10 @@ public:
    int GetDuctCount();
    void EventCreated();
 
-   const matPsStrand* GetStrand();
+   const WBFL::Materials::PsStrand* GetStrand();
    pgsTypes::StrandInstallationType GetInstallationType();
 
-   grlibPointMapper::MapMode GetTendonControlMapMode() const;
+   WBFL::Graphing::PointMapper::MapMode GetTendonControlMapMode() const;
 
    CSplicedGirderData* GetGirder();
 
@@ -60,7 +60,7 @@ protected:
 
    void FillGirderComboBox();
    void FillStrandList(UINT nIDC);
-   void FillStrandList(CComboBox* pList,matPsStrand::Grade grade,matPsStrand::Type type);
+   void FillStrandList(CComboBox* pList,WBFL::Materials::PsStrand::Grade grade,WBFL::Materials::PsStrand::Type type);
 
    void FillDuctType();
    void FillInstallationType();

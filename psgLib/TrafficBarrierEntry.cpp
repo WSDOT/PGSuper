@@ -35,13 +35,13 @@ CLASS
 
 #include "resource.h"
 #include "TrafficBarrierDlg.h"
-#include <Units\sysUnits.h>
+#include <Units\Convert.h>
 
 #include <MathEx.h>
 #include <WBFLGenericBridge.h>
 
 #include <LRFD\ConcreteUtil.h>
-#include <LRFD\VersionMgr.h>
+#include <Lrfd/BDSManager.h>
 
 #include <EAF\EAFApp.h>
 #include <psgLib\LibraryEntryDifferenceItem.h>
@@ -65,31 +65,27 @@ typedef enum Configuration
 //======================== LIFECYCLE  =======================================
 TrafficBarrierEntry::TrafficBarrierEntry() :
 m_WeightMethod(Compute),
-m_Weight(::ConvertToSysUnits(0.100,unitMeasure::KipPerFoot)),
+m_Weight(WBFL::Units::ConvertToSysUnits(0.100,WBFL::Units::Measure::KipPerFoot)),
 m_CurbOffset(0)
 {
    m_BarrierPoints.CoCreateInstance(CLSID_Point2dCollection);
    m_bStructurallyContinuous = false;
 
-   Float64 fc = ::ConvertToSysUnits(4.0,unitMeasure::KSI);
-   Float64 density = ::ConvertToSysUnits(155.0,unitMeasure::LbmPerFeet3);
+   Float64 fc = WBFL::Units::ConvertToSysUnits(4.0,WBFL::Units::Measure::KSI);
+   Float64 density = WBFL::Units::ConvertToSysUnits(155.0,WBFL::Units::Measure::LbmPerFeet3);
 
-   lrfdVersionMgr::Units old_units = lrfdVersionMgr::GetUnits();
-   lrfdVersionMgr::SetUnits(lrfdVersionMgr::US);
-   m_Ec = lrfdConcreteUtil::ModE(matConcrete::Normal, fc,density,false);
-   lrfdVersionMgr::SetUnits(old_units);
+   WBFL::LRFD::BDSManager::Units old_units = WBFL::LRFD::BDSManager::GetUnits();
+   WBFL::LRFD::BDSManager::SetUnits(WBFL::LRFD::BDSManager::Units::US);
+   m_Ec = WBFL::LRFD::ConcreteUtil::ModE(WBFL::Materials::ConcreteType::Normal, fc,density,false);
+   WBFL::LRFD::BDSManager::SetUnits(old_units);
 }
 
 TrafficBarrierEntry::TrafficBarrierEntry(const TrafficBarrierEntry& rOther) :
-libLibraryEntry(rOther)
+WBFL::Library::LibraryEntry(rOther)
 {
    m_BarrierPoints.CoCreateInstance(CLSID_Point2dCollection);
 
-   MakeCopy(rOther);
-}
-
-TrafficBarrierEntry::~TrafficBarrierEntry()
-{
+   CopyValuesAndAttributes(rOther);
 }
 
 //======================== OPERATORS  =======================================
@@ -97,14 +93,14 @@ TrafficBarrierEntry& TrafficBarrierEntry::operator= (const TrafficBarrierEntry& 
 {
    if( this != &rOther )
    {
-      MakeAssignment(rOther);
+      CopyValuesAndAttributes(rOther);
    }
 
    return *this;
 }
 
 //======================== OPERATIONS =======================================
-bool TrafficBarrierEntry::SaveMe(sysIStructuredSave* pSave)
+bool TrafficBarrierEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
 {
    pSave->BeginUnit(_T("TrafficBarrierEntry"), 7.0);
 
@@ -112,7 +108,7 @@ bool TrafficBarrierEntry::SaveMe(sysIStructuredSave* pSave)
 
    pSave->BeginUnit(_T("BarrierPoints"),1.0);
    
-   CollectionIndexType count;
+   IndexType count;
    m_BarrierPoints->get_Count(&count);
    pSave->Property(_T("Count"),count);
 
@@ -149,7 +145,7 @@ bool TrafficBarrierEntry::SaveMe(sysIStructuredSave* pSave)
    return false;
 }
 
-bool TrafficBarrierEntry::LoadMe(sysIStructuredLoad* pLoad)
+bool TrafficBarrierEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 {
    m_BarrierPoints->Clear();
 
@@ -210,7 +206,7 @@ bool TrafficBarrierEntry::LoadMe(sysIStructuredLoad* pLoad)
       else
       {
          // version 3 and later
-         CollectionIndexType count;
+         IndexType count;
          Float64 x,y;
 
          Configuration configuration;
@@ -239,7 +235,7 @@ bool TrafficBarrierEntry::LoadMe(sysIStructuredLoad* pLoad)
          if ( !pLoad->Property(_T("Count"),&count) )
             THROW_LOAD(InvalidFileFormat,pLoad);
 
-         for ( CollectionIndexType i = 0; i < count; i++ )
+         for ( IndexType i = 0; i < count; i++ )
          {
             if ( !pLoad->BeginUnit(_T("Point")) )
                THROW_LOAD(InvalidFileFormat,pLoad);
@@ -302,7 +298,7 @@ bool TrafficBarrierEntry::LoadMe(sysIStructuredLoad* pLoad)
                if ( !pLoad->Property(_T("Count"),&count) )
                   THROW_LOAD(InvalidFileFormat,pLoad);
 
-               for ( CollectionIndexType i = 0; i < count; i++ )
+               for ( IndexType i = 0; i < count; i++ )
                {
                   if ( !pLoad->BeginUnit(_T("Point")) )
                      THROW_LOAD(InvalidFileFormat,pLoad);
@@ -401,22 +397,22 @@ CString TrafficBarrierEntry::GetWeightMethodType(TrafficBarrierEntry::WeightMeth
 
 bool TrafficBarrierEntry::IsEqual(const TrafficBarrierEntry& rOther,bool bConsiderName) const
 {
-   std::vector<pgsLibraryEntryDifferenceItem*> vDifferences;
+   std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>> vDifferences;
    bool bMustRename;
    return Compare(rOther,vDifferences,bMustRename,true,bConsiderName);
 }
 
-bool TrafficBarrierEntry::Compare(const TrafficBarrierEntry& rOther, std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences,bool &bMustRename, bool bReturnOnFirstDifference, bool considerName) const
+bool TrafficBarrierEntry::Compare(const TrafficBarrierEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences,bool &bMustRename, bool bReturnOnFirstDifference, bool considerName) const
 {
    CEAFApp* pApp = EAFGetApp();
-   const unitmgtIndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+   const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
    bMustRename = false;
    
    if ( m_WeightMethod != rOther.m_WeightMethod )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Properties"),GetWeightMethodType(m_WeightMethod),GetWeightMethodType(rOther.m_WeightMethod)));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Properties"),GetWeightMethodType(m_WeightMethod),GetWeightMethodType(rOther.m_WeightMethod)));
    }
 
    if ( m_WeightMethod == TrafficBarrierEntry::Input )
@@ -424,38 +420,38 @@ bool TrafficBarrierEntry::Compare(const TrafficBarrierEntry& rOther, std::vector
       if ( !::IsEqual(m_Weight,rOther.m_Weight) )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceForcePerLengthItem(_T("Weight"),m_Weight,rOther.m_Weight,pDisplayUnits->ForcePerLength));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceForcePerLengthItem>(_T("Weight"),m_Weight,rOther.m_Weight,pDisplayUnits->ForcePerLength));
       }
 
       if ( !::IsEqual(m_Ec,rOther.m_Ec) )
       {
          RETURN_ON_DIFFERENCE;
-         vDifferences.push_back(new pgsLibraryEntryDifferenceStressItem(_T("Ec"),m_Ec,rOther.m_Ec,pDisplayUnits->ModE));
+         vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStressItem>(_T("Ec"),m_Ec,rOther.m_Ec,pDisplayUnits->ModE));
       }
    }
 
    if ( m_bStructurallyContinuous != rOther.m_bStructurallyContinuous )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceBooleanItem(_T("Barrier is Structurally Continuous"),m_bStructurallyContinuous,rOther.m_bStructurallyContinuous,_T("Checked"),_T("Unchecked")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceBooleanItem>(_T("Barrier is Structurally Continuous"),m_bStructurallyContinuous,rOther.m_bStructurallyContinuous,_T("Checked"),_T("Unchecked")));
    }
 
    if ( !::IsEqual(m_CurbOffset,rOther.m_CurbOffset) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceLengthItem(_T("Curb Offset"),m_CurbOffset,rOther.m_CurbOffset,pDisplayUnits->ComponentDim));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceLengthItem>(_T("Curb Offset"),m_CurbOffset,rOther.m_CurbOffset,pDisplayUnits->ComponentDim));
    }
 
    if ( !ComparePoints(m_BarrierPoints,rOther.m_BarrierPoints) )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Barrier Shapes are different"),_T(""),_T("")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Barrier Shapes are different"),_T(""),_T("")));
    }
    
    if (considerName &&  GetName() != rOther.GetName() )
    {
       RETURN_ON_DIFFERENCE;
-      vDifferences.push_back(new pgsLibraryEntryDifferenceStringItem(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Name"),GetName().c_str(),rOther.GetName().c_str()));
    }
 
    return vDifferences.size() == 0 ? true : false;
@@ -575,8 +571,10 @@ bool TrafficBarrierEntry::Edit(bool allowEditing,int nPage)
    return false;
 }
 
-void TrafficBarrierEntry::MakeCopy(const TrafficBarrierEntry& rOther)
+void TrafficBarrierEntry::CopyValuesAndAttributes(const TrafficBarrierEntry& rOther)
 {
+   __super::CopyValuesAndAttributes(rOther);
+
    CopyPoints(m_BarrierPoints,rOther.m_BarrierPoints);
 
    m_Weight = rOther.m_Weight;
@@ -585,12 +583,6 @@ void TrafficBarrierEntry::MakeCopy(const TrafficBarrierEntry& rOther)
    m_bStructurallyContinuous = rOther.m_bStructurallyContinuous;
 
    m_CurbOffset = rOther.m_CurbOffset;
-}
-
-void TrafficBarrierEntry::MakeAssignment(const TrafficBarrierEntry& rOther)
-{
-   libLibraryEntry::MakeAssignment( rOther );
-   MakeCopy( rOther );
 }
 
 HICON  TrafficBarrierEntry::GetIcon() const
@@ -602,14 +594,14 @@ HICON  TrafficBarrierEntry::GetIcon() const
 
 bool TrafficBarrierEntry::ComparePoints(IPoint2dCollection* points1,IPoint2dCollection* points2) const
 {
-   CollectionIndexType count1, count2;
+   IndexType count1, count2;
    points1->get_Count(&count1);
    points2->get_Count(&count2);
 
    if ( count1 != count2 )
       return false;
 
-   for (CollectionIndexType i = 0; i < count1; i++ )
+   for (IndexType i = 0; i < count1; i++ )
    {
       CComPtr<IPoint2d> p1,p2;
       points1->get_Item(i,&p1);
@@ -676,7 +668,7 @@ void TrafficBarrierEntry::CopyPoints(IPoint2dCollection* points1,IPoint2dCollect
 
 void TrafficBarrierEntry::ConvertDimensionsToPoints(Float64 x1,Float64 x2,Float64 x3,Float64 x4,Float64 x5,Float64 y1,Float64 y2,Float64 y3)
 {
-   Float64 y4 = ::ConvertToSysUnits(7.0,unitMeasure::Inch);
+   Float64 y4 = WBFL::Units::ConvertToSysUnits(7.0,WBFL::Units::Measure::Inch);
    CComPtr<ITrafficBarrier> barrier;
    barrier.CoCreateInstance(CLSID_TrafficBarrier);
    barrier->put_X1(x1);
@@ -724,7 +716,7 @@ void TrafficBarrierEntry::CreatePolyShape(pgsTypes::TrafficBarrierOrientation or
       point.Release();
    }
 
-   CollectionIndexType nPoints;
+   IndexType nPoints;
    polyshape->get_Count(&nPoints);
    if ( nPoints == 0 )
    {
@@ -745,29 +737,3 @@ void TrafficBarrierEntry::CreatePolyShape(pgsTypes::TrafficBarrierOrientation or
 //======================== OPERATIONS =======================================
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool TrafficBarrierEntry::AssertValid() const
-{
-   return libLibraryEntry::AssertValid();
-}
-
-void TrafficBarrierEntry::Dump(dbgDumpContext& os) const
-{
-   os << _T("Dump for TrafficBarrierEntry ")<< GetName() <<endl;
-
-   libLibraryEntry::Dump( os );
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool TrafficBarrierEntry::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("TrafficBarrierEntry");
-
-   // tests are performed on entire library.
-
-   TESTME_EPILOG("TrafficBarrierEntry");
-}
-#endif // _UNITTEST

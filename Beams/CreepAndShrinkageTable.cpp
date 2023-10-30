@@ -62,7 +62,7 @@ CCreepAndShrinkageTable* CCreepAndShrinkageTable::PrepareTable(rptChapter* pChap
 
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
-   ATLASSERT(lrfdVersionMgr::GetVersion() < lrfdVersionMgr::EighthEdition2017); // code reference below is invalid
+   ATLASSERT(WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::EighthEdition2017); // code reference below is invalid
    *pParagraph << _T("Losses Due to Creep and Shrinkage [5.9.5.4.2, 5.9.5.4.3]") << rptNewLine;
 
    pParagraph = new rptParagraph;
@@ -96,7 +96,7 @@ CCreepAndShrinkageTable* CCreepAndShrinkageTable::PrepareTable(rptChapter* pChap
 void CCreepAndShrinkageTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
   // Typecast to our known type (eating own doggy food)
-   std::shared_ptr<const lrfdRefinedLosses> ptl = std::dynamic_pointer_cast<const lrfdRefinedLosses>(pDetails->pLosses);
+   std::shared_ptr<const WBFL::LRFD::RefinedLosses> ptl = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLosses>(pDetails->pLosses);
    if (!ptl)
    {
       ATLASSERT(false); // made a bad cast? Bail...
@@ -107,7 +107,7 @@ void CCreepAndShrinkageTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const
    ColumnIndexType col = 1;
 
    (*this)(row+rowOffset,col++) << stress.SetValue( ptl->ShrinkageLosses() );
-   (*this)(row+rowOffset,col++) << stress.SetValue( pDetails->pLosses->ElasticShortening().PermanentStrand_Fcgp() );
+   (*this)(row+rowOffset,col++) << stress.SetValue( pDetails->pLosses->GetElasticShortening().PermanentStrand_Fcgp() );
    (*this)(row+rowOffset,col++) << stress.SetValue( -pDetails->pLosses->GetDeltaFcd1(true/*apply elastic gains reduction*/));
    (*this)(row+rowOffset,col++) << stress.SetValue( ptl->CreepLosses() );
 }

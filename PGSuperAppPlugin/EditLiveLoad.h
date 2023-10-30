@@ -23,7 +23,7 @@
 #ifndef INCLUDED_EDITLIVELOADTXN_H_
 #define INCLUDED_EDITLIVELOADTXN_H_
 
-#include <System\Transaction.h>
+#include <EAF\EAFTransaction.h>
 #include <PgsExt\BridgeDescription2.h>
 #include <IFace\Project.h>
 
@@ -35,7 +35,7 @@ struct txnEditLiveLoadData
    ILiveLoads::PedestrianLoadApplicationType m_PedestrianLoadApplicationType;
 };
 
-class txnEditLiveLoad : public txnTransaction
+class txnEditLiveLoad : public CEAFTransaction
 {
 public:
    txnEditLiveLoad(const txnEditLiveLoadData& oldDesign,const txnEditLiveLoadData& newDesign,
@@ -47,10 +47,10 @@ public:
 
    virtual bool Execute();
    virtual void Undo();
-   virtual txnTransaction* CreateClone() const;
+   virtual std::unique_ptr<CEAFTransaction>CreateClone() const;
    virtual std::_tstring Name() const;
-   virtual bool IsUndoable();
-   virtual bool IsRepeatable();
+   virtual bool IsUndoable() const;
+   virtual bool IsRepeatable() const;
 
 private:
    txnEditLiveLoadData m_Design[2];

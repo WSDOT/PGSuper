@@ -92,7 +92,7 @@ void txnDesignGirder::Undo()
    DoExecute(0);
 }
 
-txnTransaction* txnDesignGirder::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnDesignGirder::CreateClone() const
 {
    std::vector<const pgsGirderDesignArtifact*> artifacts;
    for (DesignDataConstIter iter = m_DesignDataColl.begin(); iter!=m_DesignDataColl.end(); iter++)
@@ -100,7 +100,7 @@ txnTransaction* txnDesignGirder::CreateClone() const
       artifacts.push_back(&(iter->m_DesignArtifact));
    }
 
-   return new txnDesignGirder(artifacts, m_NewSlabOffsetType, m_FromSpanIdx, m_FromGirderIdx);
+   return std::make_unique<txnDesignGirder>(artifacts, m_NewSlabOffsetType, m_FromSpanIdx, m_FromGirderIdx);
 }
 
 std::_tstring txnDesignGirder::Name() const
@@ -128,12 +128,12 @@ std::_tstring txnDesignGirder::Name() const
    return os.str();
 }
 
-bool txnDesignGirder::IsUndoable()
+bool txnDesignGirder::IsUndoable() const
 {
    return true;
 }
 
-bool txnDesignGirder::IsRepeatable()
+bool txnDesignGirder::IsRepeatable() const
 {
    return false;
 }
@@ -319,7 +319,7 @@ void txnDesignGirder::DoExecute(int i)
             PierIndexType pierIdx = 0;
             for (const auto& offsets : m_OldPierSlabOffsets)
             {
-               pIBridgeDesc->SetSlabOffset(pgsTypes::stPier,pierIdx, offsets.first, offsets. second);
+               pIBridgeDesc->SetSlabOffset(pierIdx, offsets.first, offsets. second);
                pierIdx++;
             }
          }
@@ -360,8 +360,8 @@ void txnDesignGirder::DoExecute(int i)
          else if (m_NewSlabOffsetType==sodtPier)
          {
             pIBridgeDesc->SetSlabOffsetType(pgsTypes::sotBearingLine);
-            pIBridgeDesc->SetSlabOffset(pgsTypes::stPier, (PierIndexType)m_FromSpanIdx, pgsTypes::Ahead,   m_DesignSlabOffset[pgsTypes::metStart]);
-            pIBridgeDesc->SetSlabOffset(pgsTypes::stPier, (PierIndexType)(m_FromSpanIdx+1), pgsTypes::Back, m_DesignSlabOffset[pgsTypes::metEnd]);
+            pIBridgeDesc->SetSlabOffset((PierIndexType)m_FromSpanIdx, pgsTypes::Ahead,   m_DesignSlabOffset[pgsTypes::metStart]);
+            pIBridgeDesc->SetSlabOffset((PierIndexType)(m_FromSpanIdx+1), pgsTypes::Back, m_DesignSlabOffset[pgsTypes::metEnd]);
          }
          else if (m_NewSlabOffsetType==sodtGirder)
          {

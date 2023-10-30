@@ -90,9 +90,9 @@ void txnEditProjectProperties::Execute(int i)
    pProjProp->SetComments(   m_Comment[i].c_str()    );
 }
 
-txnTransaction* txnEditProjectProperties::CreateClone() const
+std::unique_ptr<CEAFTransaction> txnEditProjectProperties::CreateClone() const
 {
-   return new txnEditProjectProperties(m_BridgeName[0],
+   return std::make_unique<txnEditProjectProperties>(m_BridgeName[0],
                                        m_BridgeName[1],
                                        m_BridgeID[0],
                                        m_BridgeID[1],
@@ -111,12 +111,12 @@ std::_tstring txnEditProjectProperties::Name() const
    return _T("Edit Project Properties");
 }
 
-bool txnEditProjectProperties::IsUndoable()
+bool txnEditProjectProperties::IsUndoable() const
 {
    return true;
 }
 
-bool txnEditProjectProperties::IsRepeatable()
+bool txnEditProjectProperties::IsRepeatable() const
 {
    return false;
 }

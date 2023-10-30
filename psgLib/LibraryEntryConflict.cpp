@@ -41,7 +41,7 @@ static char THIS_FILE[] = __FILE__;
 
 
 CLibraryEntryConflict::CLibraryEntryConflict(const std::_tstring& strServer, const std::_tstring& strConfiguration, const std::_tstring& entryName, const std::_tstring& libName,
-                                             const std::vector<std::_tstring>& keylists, bool isImported,const std::vector<pgsLibraryEntryDifferenceItem*>& vDifferences,bool bMustRename,CWnd* pParent)
+                                             const std::vector<std::_tstring>& keylists, bool isImported,const std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences,bool bMustRename,CWnd* pParent)
 	: CDialog(CLibraryEntryConflict::IDD, pParent),
    m_KeyList(keylists),
    m_Server(strServer.c_str()),
@@ -159,11 +159,11 @@ BOOL CLibraryEntryConflict::OnInitDialog()
    int maxItemLength = 4;
    CString strConflicts;
    int idx = 0;
-   std::vector<pgsLibraryEntryDifferenceItem*>::const_iterator iter(m_vDifferences.begin());
-   std::vector<pgsLibraryEntryDifferenceItem*>::const_iterator iterEnd(m_vDifferences.end());
+   std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>::const_iterator iter(m_vDifferences.begin());
+   std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>::const_iterator iterEnd(m_vDifferences.end());
    for ( ; iter != iterEnd; iter++, idx++ )
    {
-      const pgsLibraryEntryDifferenceItem* pConflict = *iter;
+      const pgsLibraryEntryDifferenceItem* pConflict = (*iter).get();
       CString strItem, strOldValue, strNewValue;
       pConflict->GetConflict(&strItem,&strOldValue,&strNewValue);
 

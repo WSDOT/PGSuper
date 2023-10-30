@@ -42,9 +42,9 @@ static HRESULT GetNextNumStrands(StrandIndexType currNum, IIndexArray* array, St
    }
 
    StrandIndexType running_cnt=0;
-   CollectionIndexType size;
+   IndexType size;
    array->get_Count(&size);
-   for (CollectionIndexType ip = 0; ip < size && running_cnt <= currNum; ip++)
+   for (IndexType ip = 0; ip < size && running_cnt <= currNum; ip++)
    {
       IndexType val;
       array->get_Item(ip, &val);
@@ -80,9 +80,9 @@ static HRESULT GetPrevNumStrands(StrandIndexType currNum, IIndexArray* array, St
    else
    {
       StrandIndexType running_cnt=0;
-      CollectionIndexType size;
+      IndexType size;
       array->get_Count(&size);
-      for (CollectionIndexType ip = 0; ip < size; ip++)
+      for (IndexType ip = 0; ip < size; ip++)
       {
          StrandIndexType prev_cnt = running_cnt;
 
@@ -273,7 +273,7 @@ HRESULT CStrandFiller::ComputeStraightStrandFill(IStrandGridFiller* pGridFiller,
       return hr;
    }
 
-   CollectionIndexType size;
+   IndexType size;
    array->get_Count(&size);
 
    // Array is size of max fill
@@ -281,8 +281,8 @@ HRESULT CStrandFiller::ComputeStraightStrandFill(IStrandGridFiller* pGridFiller,
 
    if (0 < nStrands)
    {
-      CollectionIndexType cnt=0;
-      for (CollectionIndexType ip = 0; ip < size; ip++)
+      IndexType cnt=0;
+      for (IndexType ip = 0; ip < size; ip++)
       {
          IndexType val;
          array->get_Item(ip, &val);
@@ -329,7 +329,7 @@ HRESULT CStrandFiller::ComputeHarpedStrandFill(bool bAllowOddNumberOfHarpedStran
    CComPtr<IIndexArray> array;
    m_StrandFillTool->ComputeHarpedStrandMaxFill(pEndGridFiller,pHPGridFiller,&nMaxStrands,&array);
 
-   CollectionIndexType size;
+   IndexType size;
    array->get_Count(&size);
 
    // Array is size of max fill
@@ -337,8 +337,8 @@ HRESULT CStrandFiller::ComputeHarpedStrandFill(bool bAllowOddNumberOfHarpedStran
 
    if (0 < nStrands)
    {
-      CollectionIndexType cnt=0;
-      for (CollectionIndexType ip = 0; ip < size; ip++)
+      IndexType cnt=0;
+      for (IndexType ip = 0; ip < size; ip++)
       {
          IndexType val;
          array->get_Item(ip, &val);
@@ -406,7 +406,7 @@ HRESULT CStrandFiller::ComputeTemporaryStrandFill(IStrandGridFiller* pGridFiller
       return hr;
    }
 
-   CollectionIndexType size;
+   IndexType size;
    array->get_Count(&size);
 
    // Array is size of max fill
@@ -415,8 +415,8 @@ HRESULT CStrandFiller::ComputeTemporaryStrandFill(IStrandGridFiller* pGridFiller
    if (0 < nStrands)
    {
 
-      CollectionIndexType cnt=0;
-      for (CollectionIndexType ip = 0; ip < size; ip++)
+      IndexType cnt=0;
+      for (IndexType ip = 0; ip < size; ip++)
       {
          IndexType val;
          array->get_Item(ip, &val);
@@ -502,7 +502,7 @@ HRESULT CStrandFiller::GetNextNumberOfHarpedStrands(bool bAllowOddStrand,IStrand
       return hr;
    }
 
-   CollectionIndexType size;
+   IndexType size;
    array->get_Count(&size);
    if (size == 0)
    {
@@ -512,7 +512,7 @@ HRESULT CStrandFiller::GetNextNumberOfHarpedStrands(bool bAllowOddStrand,IStrand
 
    if (bAllowOddStrand)
    {
-      CollectionIndexType val;
+      IndexType val;
       array->get_Item(0,&val);
       if (val == 2)
       {
@@ -569,7 +569,7 @@ HRESULT CStrandFiller::GetPrevNumberOfHarpedStrands(bool bAllowOddStrand,IStrand
    // possible that odd strands will help us out
    if (bAllowOddStrand)
    {
-      CollectionIndexType val;
+      IndexType val;
       array->get_Item(0,&val);
       if (val == 2)
       {
@@ -640,7 +640,7 @@ HRESULT CStrandFiller::GetNextNumberOfHarpedStrands(IStrandGridModel* pStrandGri
       return hr;
    }
 
-   CollectionIndexType size;
+   IndexType size;
    array->get_Count(&size);
    if (size == 0)
    {
@@ -911,7 +911,7 @@ HRESULT CStrandFiller::ComputeStraightStrandFill(IStrandGridModel* pStrandGridMo
    m_TempArray->Clear();
 
    // Max strand fill array has same indexing as girder library entry
-   CollectionIndexType cnt;
+   IndexType cnt;
    maxarray->get_Count(&cnt);
    ATLASSERT(cnt==m_pGdrEntry->GetNumStraightStrandCoordinates());
 
@@ -925,7 +925,7 @@ HRESULT CStrandFiller::ComputeStraightStrandFill(IStrandGridModel* pStrandGridMo
    {
       if (it->permStrandGridIdx < cnt)
       {
-         CollectionIndexType maxf;
+         IndexType maxf;
          maxarray->get_Item(it->permStrandGridIdx, &maxf);
          if (it->numFilled <= maxf)
          {
@@ -963,7 +963,7 @@ HRESULT CStrandFiller::ComputeHarpedStrandFill(IStrandGridModel* pStrandGridMode
    m_TempArray->Clear();
 
    // Max strand fill array has same indexing as girder library entry
-   CollectionIndexType cnt;
+   IndexType cnt;
    maxarray->get_Count(&cnt);
    ATLASSERT(cnt==m_pGdrEntry->GetNumHarpedStrandCoordinates());
 
@@ -977,7 +977,7 @@ HRESULT CStrandFiller::ComputeHarpedStrandFill(IStrandGridModel* pStrandGridMode
    {
       if (it->permStrandGridIdx < cnt)
       {
-         CollectionIndexType maxf;
+         IndexType maxf;
          maxarray->get_Item(it->permStrandGridIdx, &maxf);
          if (it->numFilled <= maxf)
          {
@@ -1015,7 +1015,7 @@ HRESULT CStrandFiller::ComputeTemporaryStrandFill(IStrandGridModel* pStrandGridM
    m_TempArray->Clear();
 
    // Max strand fill array has same indexing as girder library entry
-   CollectionIndexType cnt;
+   IndexType cnt;
    maxarray->get_Count(&cnt);
    ATLASSERT(cnt==m_pGdrEntry->GetNumTemporaryStrandCoordinates());
 
@@ -1029,7 +1029,7 @@ HRESULT CStrandFiller::ComputeTemporaryStrandFill(IStrandGridModel* pStrandGridM
    {
       if (it->permStrandGridIdx < cnt)
       {
-         CollectionIndexType maxf;
+         IndexType maxf;
          maxarray->get_Item(it->permStrandGridIdx, &maxf);
          if (it->numFilled <= maxf)
          {

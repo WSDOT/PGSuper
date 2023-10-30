@@ -73,7 +73,7 @@
 #include <IFace\UpdateTemplates.h>
 #include <IFace\Test1250.h>
 #include <IFace\GirderHandling.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 #include <IFace\EditByUI.h>
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>
@@ -111,34 +111,34 @@ HRESULT Register(bool bRegister)
 
    // The TxDOTAppPlugin plugs into the BridgeLink application executable and brings the
    // TxDOT Optional Design Document functionality
-   hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTAppPlugin,CATID_BridgeLinkAppPlugin,bRegister);
+   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_TxDOTAppPlugin,CATID_BridgeLinkAppPlugin,bRegister);
    if ( FAILED(hr) )
       return hr;
 
-   hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTAppPluginComponentInfo,CATID_BridgeLinkComponentInfo,bRegister);
+   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_TxDOTAppPluginComponentInfo,CATID_BridgeLinkComponentInfo,bRegister);
    if ( FAILED(hr) )
       return hr;
 
    // The TxDOT Agent extends the functionality of PGSuper by adding custom reporting and
    // other features
-   hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTAgent,CATID_PGSuperExtensionAgent,bRegister);
+   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_TxDOTAgent,CATID_PGSuperExtensionAgent,bRegister);
    if ( FAILED(hr) )
       return hr;
 
    // The TxDOT Agent extends the functionality of Toga by adding custom reporting and
    // other features
-   hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTAgent,CATID_TogaExtensionAgent,bRegister);
+   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_TxDOTAgent,CATID_TogaExtensionAgent,bRegister);
    if ( FAILED(hr) )
       return hr;
 
    // The TxDOT Cad Exporter provides custom export functionatlity
-   hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTCadExporter,CATID_PGSuperDataExporter,bRegister);
+   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_TxDOTCadExporter,CATID_PGSuperDataExporter,bRegister);
    if ( FAILED(hr) )
       return hr;
 
    // The TxDOT component info objects provides information about this entire plug-in component
    // This information is used in the "About" dialog
-   hr = sysComCatMgr::RegWithCategory(CLSID_TxDOTComponentInfo,CATID_PGSuperComponentInfo,bRegister);
+   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_TxDOTComponentInfo,CATID_PGSuperComponentInfo,bRegister);
    if ( FAILED(hr) )
       return hr;
 

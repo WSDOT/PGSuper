@@ -32,6 +32,8 @@
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\PrecastIGirderDetailingArtifact.h>
 
+#include <psgLib/LimitsCriteria.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -94,11 +96,14 @@ void CGirderDetailingCheck::Build(rptChapter* pChapter,
    GET_IFACE2(pBroker, IMaterials, pMaterials);
    GET_IFACE2(pBroker, IBridge, pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+
+   // neither of the UHPC Specs, PCI or AASHTO UHPC GS, requirement minimum stirrups
+   // use this flag to skip the note
    bool bUHPC = false;
    for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
    {
       CSegmentKey segmentKey(girderKey, segIdx);
-      if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC)
+      if (IsUHPC(pMaterials->GetSegmentConcreteType(segmentKey)))
       {
          bUHPC = true; 
          break;
@@ -106,8 +111,9 @@ void CGirderDetailingCheck::Build(rptChapter* pChapter,
 
       if (segIdx < nSegments-1)
       {
-         if (pMaterials->GetClosureJointConcreteType(segmentKey) == pgsTypes::PCI_UHPC)
+         if (IsUHPC(pMaterials->GetClosureJointConcreteType(segmentKey)))
          {
+            ATLASSERT(false); // closure joints should not be UHPC
             bUHPC = true;
             break;
          }
@@ -123,10 +129,10 @@ void CGirderDetailingCheck::Build(rptChapter* pChapter,
    *p << CStirrupDetailingCheckTable().Build(pBroker,pGirderArtifact,pDisplayUnits,intervalIdx,pgsTypes::StrengthI,&write_note) << rptNewLine;
    *pChapter << p;
 
-   if (!bUHPC && write_note)
+   if (write_note && !bUHPC)
    {
       *p << _T("* - Transverse reinforcement required if ") << Sub2(_T("V"),_T("u")) << _T(" > 0.5") << symbol(phi) << _T("(") << Sub2(_T("V"),_T("c"));
-      *p  << _T(" + ") << Sub2(_T("V"),_T("p")) << _T(") [Eqn ") << LrfdCw8th(_T("5.8.2.4-1"),_T("5.7.2.3-1")) << _T("]")<< rptNewLine;
+      *p  << _T(" + ") << Sub2(_T("V"),_T("p")) << _T(") [Eqn ") << WBFL::LRFD::LrfdCw8th(_T("5.8.2.4-1"),_T("5.7.2.3-1")) << _T("]")<< rptNewLine;
    }
 
    GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
@@ -137,10 +143,10 @@ void CGirderDetailingCheck::Build(rptChapter* pChapter,
       *p << CStirrupDetailingCheckTable().Build(pBroker,pGirderArtifact,pDisplayUnits,intervalIdx,pgsTypes::StrengthII,&write_note) << rptNewLine;
       *pChapter << p;
 
-      if (!bUHPC && write_note)
+      if (write_note && !bUHPC)
       {
          *p << _T("* - Transverse reinforcement required if ") << Sub2(_T("V"),_T("u")) << _T(" > 0.5") << symbol(phi) << _T("(") << Sub2(_T("V"),_T("c"));
-         *p  << _T(" + ") << Sub2(_T("V"),_T("p")) << _T(") [Eqn ") << LrfdCw8th(_T("5.8.2.4-1"),_T("5.7.2.3-1")) << _T("]")<< rptNewLine;
+         *p  << _T(" + ") << Sub2(_T("V"),_T("p")) << _T(") [Eqn ") << WBFL::LRFD::LrfdCw8th(_T("5.8.2.4-1"),_T("5.7.2.3-1")) << _T("]")<< rptNewLine;
       }
    }
 
@@ -153,8 +159,9 @@ void CGirderDetailingCheck::Build(rptChapter* pChapter,
       GET_IFACE2(pBroker,ILibrary,pLib);
       std::_tstring strSpecName = pSpec->GetSpecification();
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
+      const auto& limits_criteria = pSpecEntry->GetLimitsCriteria();
 
-      if ( pSpecEntry->GetDoCheckStirrupSpacingCompatibility() )
+      if ( limits_criteria.bCheckStirrupSpacingCompatibility )
       {
          // Stirrup Layout Check
          BuildStirrupLayoutCheck(pChapter, pBroker, pGirderArtifact, pDisplayUnits);
@@ -194,7 +201,7 @@ void CGirderDetailingCheck::BuildDimensionCheck(rptChapter* pChapter,
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
-   *pPara << _T("Girder Dimensions Detailing Check [") << LrfdCw8th(_T("5.14.1.2.2"),_T("5.12.3.2.2")) << _T("]") << rptNewLine;
+   *pPara << _T("Girder Dimensions Detailing Check [") << WBFL::LRFD::LrfdCw8th(_T("5.14.1.2.2"),_T("5.12.3.2.2")) << _T("]") << rptNewLine;
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(pGirderArtifact->GetGirderKey());
@@ -235,7 +242,7 @@ void CGirderDetailingCheck::BuildDimensionCheck(rptChapter* pChapter,
          // There is no top flange... Assume this is not a bulb-T or I type section
          (*pTable)(1,1) << _T("-");
          (*pTable)(1,2) << _T("-");
-         (*pTable)(1, 3) << RPT_NA << rptNewLine << _T("See LRFD C") << LrfdCw8th(_T("5.14.1.2.2"), _T("5.12.3.2.2"));
+         (*pTable)(1, 3) << RPT_NA << rptNewLine << _T("See LRFD C") << WBFL::LRFD::LrfdCw8th(_T("5.14.1.2.2"), _T("5.12.3.2.2"));
       }
       else
       {
@@ -357,12 +364,12 @@ void CGirderDetailingCheck::BuildStirrupLayoutCheck(rptChapter* pChapter,
             pStirrupGeometry->GetPrimaryZoneBounds(segmentKey, zoneIdx, &zoneStart, &zoneEnd);
             Float64 zoneLength = zoneEnd - zoneStart;
 
-            matRebar::Size barSize;
+            WBFL::Materials::Rebar::Size barSize;
             Float64 spacing;
             Float64 nStirrups;
             pStirrupGeometry->GetPrimaryVertStirrupBarInfo(segmentKey, zoneIdx, &barSize, &nStirrups, &spacing);
 
-            if (barSize != matRebar::bsNone && TOLERANCE < spacing)
+            if (barSize != WBFL::Materials::Rebar::Size::bsNone && TOLERANCE < spacing)
             {
                // If spacings fit within 1%, then pass. Otherwise fail
                Float64 nFSpaces = zoneLength / spacing;
@@ -408,27 +415,3 @@ void CGirderDetailingCheck::BuildStirrupLayoutCheck(rptChapter* pChapter,
 
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-#if defined _DEBUG
-bool CGirderDetailingCheck::AssertValid() const
-{
-   return true;
-}
-
-void CGirderDetailingCheck::Dump(dbgDumpContext& os) const
-{
-   os << _T("Dump for CGirderDetailingCheck") << endl;
-}
-#endif // _DEBUG
-
-#if defined _UNITTEST
-bool CGirderDetailingCheck::TestMe(dbgLog& rlog)
-{
-   TESTME_PROLOGUE("CGirderDetailingCheck");
-
-   TEST_NOT_IMPLEMENTED("Unit Tests Not Implemented for CGirderDetailingCheck");
-
-   TESTME_EPILOG("LiveLoadDistributionFactorTable");
-}
-#endif // _UNITTEST

@@ -30,12 +30,12 @@
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\PrestressForce.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 
 #include <IFace\Project.h>
 #include <PgsExt\LoadFactors.h>
 
-#include <algorithm>
+#include <psgLib/PrincipalTensionStressCriteria.h>
 
 /////////// Misc
 
@@ -176,7 +176,7 @@ std::vector<TimeStepCombinedPrincipalWebStressDetailsAtWebSection> pgsPrincipalW
       pgsTypes::BridgeAnalysisType maxBat = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
       pgsTypes::BridgeAnalysisType minBat = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
 
-      sysSectionValue dummy, Vmin, Vmax;
+      WBFL::System::SectionValue dummy, Vmin, Vmax;
       pProductForces->GetLiveLoadShear(interval, pgsTypes::lltDesign, poi, maxBat, true, true, &dummy, &Vmax);
       pProductForces->GetLiveLoadShear(interval, pgsTypes::lltDesign, poi, minBat, true, true, &Vmin, &dummy);
       // Want max absolute value, but to retain sign. 
@@ -302,7 +302,7 @@ void pgsPrincipalWebStressEngineer::Check(const PoiList& vPois, pgsPrincipalTens
 
    // Assume that if the first poi needs checked a certain way, they all do
    const pgsPointOfInterest& rpoi(vPois.front());
-   ISpecification::PrincipalWebStressCheckType  checkType = pSpec->GetPrincipalWebStressCheckType(rpoi.GetSegmentKey());
+   ISpecification::PrincipalWebStressCheckType checkType = pSpec->GetPrincipalWebStressCheckType(rpoi.GetSegmentKey());
    ATLASSERT(ISpecification::pwcNotApplicable != checkType);
 
    if (ISpecification::pwcNCHRPTimeStepMethod == checkType)
@@ -320,8 +320,8 @@ void pgsPrincipalWebStressEngineer::CheckTimeStep(const PoiList& vPois, pgsPrinc
    GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType liveLoadInterval = pIntervals->GetLiveLoadInterval();
 
-   GET_IFACE(IAllowableConcreteStress, pAllowables);
-   Float64 coefficient = pAllowables->GetAllowablePrincipalWebTensionStressCoefficient();
+   GET_IFACE(IConcreteStressLimits, pLimits);
+   Float64 coefficient = pLimits->GetConcreteWebPrincipalTensionStressLimitCoefficient();
 
    Float64 fcReqd = -Float64_Max;
    for (const pgsPointOfInterest& poi : vPois)
@@ -329,7 +329,7 @@ void pgsPrincipalWebStressEngineer::CheckTimeStep(const PoiList& vPois, pgsPrinc
       // Time step analysis:
       const auto* pWebSectionDetails =  GetTimeStepPrincipalWebStressDetails(poi, liveLoadInterval);
 
-      Float64 stress_limit = pAllowables->GetAllowablePrincipalWebTensionStress(poi);
+      Float64 stress_limit = pLimits->GetConcreteWebPrincipalTensionStressLimit(poi);
 
       // find controlling web section
       Float64 fmax = -Float64_Max;
@@ -345,7 +345,7 @@ void pgsPrincipalWebStressEngineer::CheckTimeStep(const PoiList& vPois, pgsPrinc
          }
       }
 
-      Float64 fc_reqd = pAllowables->GetPrincipalTensileStressRequiredConcreteStrength(poi, fmax);
+      Float64 fc_reqd = pLimits->GetPrincipalTensileStressRequiredConcreteStrength(poi, fmax);
       fcReqd = Max(fcReqd, fc_reqd); // we want the max
 
       // create check artifact for this poi
@@ -357,15 +357,15 @@ void pgsPrincipalWebStressEngineer::CheckTimeStep(const PoiList& vPois, pgsPrinc
 
 void pgsPrincipalWebStressEngineer::CheckSimpleLosses(const PoiList & vPois, pgsPrincipalTensionStressArtifact * pArtifact) const
 {
-   GET_IFACE(IAllowableConcreteStress, pAllowables);
-   Float64 coefficient = pAllowables->GetAllowablePrincipalWebTensionStressCoefficient();
+   GET_IFACE(IConcreteStressLimits, pLimits);
+   Float64 coefficient = pLimits->GetConcreteWebPrincipalTensionStressLimitCoefficient();
 
    Float64 fcReqd = -Float64_Max;
    for (const pgsPointOfInterest& poi : vPois)
    {
       const auto* pDetails = GetPrincipalStressInWeb(poi);
 
-      Float64 stress_limit = pAllowables->GetAllowablePrincipalWebTensionStress(poi);
+      Float64 stress_limit = pLimits->GetConcreteWebPrincipalTensionStressLimit(poi);
 
       // find controlling web section
       Float64 fmax = -Float64_Max;
@@ -381,7 +381,7 @@ void pgsPrincipalWebStressEngineer::CheckSimpleLosses(const PoiList & vPois, pgs
          }
       }
 
-      Float64 fc_reqd = pAllowables->GetPrincipalTensileStressRequiredConcreteStrength(poi, fmax);
+      Float64 fc_reqd = pLimits->GetPrincipalTensileStressRequiredConcreteStrength(poi, fmax);
       fcReqd = Max(fcReqd, fc_reqd); // we want the max
 
       // create check artifact for this poi
@@ -400,7 +400,7 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
    GET_IFACE(ILimitStateForces, pLSForces);
    GET_IFACE(IIntervals, pIntervals);
    GET_IFACE(IProductForces, pProductForces);
-   GET_IFACE(IAllowableConcreteStress, pAllowables);
+   GET_IFACE(IConcreteStressLimits, pLimits);
    GET_IFACE(IGirder, pGirder);
    GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
    GET_IFACE(IGirderTendonGeometry, pGirderTendonGeometry);
@@ -409,10 +409,7 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
    GET_IFACE(ILibrary, pLib);
    std::_tstring specName = pSpec->GetSpecification();
    const auto* pSpecEntry = pLib->GetSpecEntry(specName.c_str());
-
-   pgsTypes::PrincipalTensileStressMethod method;
-   Float64 coefficient, ductDiameterFactor, ungroutedMultiplier, groutedMultiplier,principalTensileStressFcThreshold;
-   pSpecEntry->GetPrincipalTensileStressInWebsParameters(&method, &coefficient,&ductDiameterFactor,&ungroutedMultiplier,&groutedMultiplier,&principalTensileStressFcThreshold);
+   const auto& principal_tension_stress_criteria = pSpecEntry->GetPrincipalTensionStressCriteria();
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
@@ -434,7 +431,7 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
       bInClosureJoint = true;
    }
 
-   Float64 stress_limit = pAllowables->GetAllowablePrincipalWebTensionStress(poi);
+   Float64 stress_limit = pLimits->GetConcreteWebPrincipalTensionStressLimit(poi);
 
    if (bInClosureJoint)
    {
@@ -492,7 +489,7 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
       // stress in the bottom of the girder for the minimum moment which is the minimum (compressive) stress.
 
       // if the web section is below the composite girder centroid, we want the maximum (tensile) stress near the bottom of the girder. This occurs with positive (maximum) moment.
-      // The corresponding stress at the top of the girder for the maximum moment is the minimum (compressive) stression.
+      // The corresponding stress at the top of the girder for the maximum moment is the minimum (compressive) stress.
 
       bool bWebSectionAboveCentroid = ::IsLE(-Ytc, YwebSection) ? true : false; // -Ytc because YwebSection is in girder section coordinates (Y=0 at top, negative is downwards)
       auto bat = pProductForces->GetBridgeAnalysisType(bWebSectionAboveCentroid ? pgsTypes::Minimize /*want minimum, or negative moments*/ : pgsTypes::Maximize /*want maximum, or positive moment*/);
@@ -500,13 +497,13 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
       pLSForces->GetStress(intervalIdx, limitState, poi, bat, true/*include prestress*/, pgsTypes::TopGirder, &fMin[pgsTypes::TopGirder], &fMax[pgsTypes::TopGirder]);
       pLSForces->GetStress(intervalIdx, limitState, poi, bat, true/*include prestress*/, pgsTypes::BottomGirder, &fMin[pgsTypes::BottomGirder], &fMax[pgsTypes::BottomGirder]);
 
-      // we are seeking the maximum principal tensile stress so we want the maximum axial stress. At the extremeties of the section, it is typically easy to know
-      // which case governings, however at the centroids, it can get a little more tricky. we will compute them both to determine which controls
+      // we are seeking the maximum principal tensile stress so we want the maximum axial stress. At the extremities of the section, it is typically easy to know
+      // which case governing, however at the centroids, it can get a little more tricky. we will compute them both to determine which controls
       Float64 fpcx1 = fMax[pgsTypes::TopGirder] - (fMin[pgsTypes::BottomGirder] - fMax[pgsTypes::TopGirder])*YwebSection / details.Hg;
       Float64 fpcx2 = fMin[pgsTypes::TopGirder] - (fMax[pgsTypes::BottomGirder] - fMin[pgsTypes::TopGirder])*YwebSection / details.Hg;
 
       Float64 fTop, fBot, fpcx;
-      if (::IsLT(fpcx2,fpcx1))
+      if (::IsLT(fpcx2, fpcx1))
       {
          fpcx = fpcx1;
          fTop = fMax[pgsTypes::TopGirder];
@@ -536,6 +533,7 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
             Float64 Yduct;
             pntDuct->get_Y(&Yduct);
 
+            Float64 ductDiameterFactor = principal_tension_stress_criteria.TendonNearnessFactor;
             if (::InRange(Yduct - ductDiameterFactor*OD, YwebSection, Yduct + ductDiameterFactor*OD))
             {
                // the duct is near. compute the deduction for this duct
@@ -560,6 +558,7 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
             Float64 Yduct;
             pntDuct->get_Y(&Yduct);
 
+            Float64 ductDiameterFactor = principal_tension_stress_criteria.TendonNearnessFactor;
             if (::InRange(Yduct - ductDiameterFactor*OD, YwebSection, Yduct + ductDiameterFactor*OD))
             {
                // the duct is near. compute the deduction for this duct
@@ -582,20 +581,20 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
       auto maxBat = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
       auto minBat = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
       Float64 Vnc, Vc;
-      if (method == pgsTypes::ptsmLRFD)
+      if (principal_tension_stress_criteria.Method == pgsTypes::ptsmLRFD)
       {
-         sysSectionValue dummy, Vmin, Vmax;
+         WBFL::System::SectionValue dummy, Vmin, Vmax;
          pLSForces->GetShear(intervalIdx, limitState, poi, maxBat, &dummy, &Vmax);
          pLSForces->GetShear(intervalIdx, limitState, poi, minBat, &Vmin, &dummy);
          Vc = Max(fabs(Vmin.Left()), fabs(Vmin.Right()), fabs(Vmax.Left()), fabs(Vmax.Right()));
       }
       else
       {
-         sysSectionValue V_nc = GetNonCompositeShear(maxBat, noncompositeIntervalIdx, limitState, poi);
+         WBFL::System::SectionValue V_nc = GetNonCompositeShear(maxBat, noncompositeIntervalIdx, limitState, poi);
          Vnc = Max(fabs(V_nc.Left()), fabs(V_nc.Right()));
          details.Vnc = Vnc;
 
-         sysSectionValue dummy, Vmin, Vmax;
+         WBFL::System::SectionValue dummy, Vmin, Vmax;
          GetCompositeShear(maxBat, intervalIdx, limitState, poi, &dummy, &Vmax);
          GetCompositeShear(minBat, intervalIdx, limitState, poi, &Vmin, &dummy);
          Vc = Max(fabs(Vmin.Left()), fabs(Vmin.Right()), fabs(Vmax.Left()), fabs(Vmax.Right()));
@@ -603,7 +602,7 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
 
       Float64 Qc, Qnc;
       Float64 t, f_max;
-      if (method == pgsTypes::ptsmLRFD)
+      if (principal_tension_stress_criteria.Method == pgsTypes::ptsmLRFD)
       {
          Qnc = 0;
          Qc = pSectProps->GetQ(spType, intervalIdx, poi, YwebSection);
@@ -643,7 +642,7 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
    return details;
 }
 
-sysSectionValue pgsPrincipalWebStressEngineer::GetNonCompositeShear(pgsTypes::BridgeAnalysisType bat,IntervalIndexType intervalIdx, pgsTypes::LimitState limitState, const pgsPointOfInterest& poi) const
+WBFL::System::SectionValue pgsPrincipalWebStressEngineer::GetNonCompositeShear(pgsTypes::BridgeAnalysisType bat,IntervalIndexType intervalIdx, pgsTypes::LimitState limitState, const pgsPointOfInterest& poi) const
 {
    GET_IFACE(ILoadFactors, pILoadFactors);
    const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
@@ -661,22 +660,22 @@ sysSectionValue pgsPrincipalWebStressEngineer::GetNonCompositeShear(pgsTypes::Br
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    GET_IFACE(ICombinedForces, pCombinedForces);
-   sysSectionValue Vdc = pCombinedForces->GetShear(intervalIdx, lcDC, poi, bat, rtCumulative);
-   sysSectionValue Vdw = pCombinedForces->GetShear(intervalIdx, lcDW, poi, bat, rtCumulative);
-   sysSectionValue Vnc = gDC*Vdc + gDW*Vdw;
+   WBFL::System::SectionValue Vdc = pCombinedForces->GetShear(intervalIdx, lcDC, poi, bat, rtCumulative);
+   WBFL::System::SectionValue Vdw = pCombinedForces->GetShear(intervalIdx, lcDW, poi, bat, rtCumulative);
+   WBFL::System::SectionValue Vnc = gDC*Vdc + gDW*Vdw;
 
    return Vnc;
 }
 
-void pgsPrincipalWebStressEngineer::GetCompositeShear(pgsTypes::BridgeAnalysisType bat, IntervalIndexType intervalIdx, pgsTypes::LimitState limitState, const pgsPointOfInterest& poi, sysSectionValue* pVmin, sysSectionValue* pVmax) const
+void pgsPrincipalWebStressEngineer::GetCompositeShear(pgsTypes::BridgeAnalysisType bat, IntervalIndexType intervalIdx, pgsTypes::LimitState limitState, const pgsPointOfInterest& poi, WBFL::System::SectionValue* pVmin, WBFL::System::SectionValue* pVmax) const
 {
    GET_IFACE(ILimitStateForces, pLimitStateForces);
-   sysSectionValue Vu_min, Vu_max;
+   WBFL::System::SectionValue Vu_min, Vu_max;
    pLimitStateForces->GetShear(intervalIdx, limitState, poi, bat, &Vu_min, &Vu_max);
 
    GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType noncompositeIntervalIdx = pIntervals->GetLastNoncompositeInterval();
-   sysSectionValue Vnc = GetNonCompositeShear(bat, noncompositeIntervalIdx, limitState, poi);
+   WBFL::System::SectionValue Vnc = GetNonCompositeShear(bat, noncompositeIntervalIdx, limitState, poi);
 
    *pVmin = Vu_min - Vnc;
    *pVmax = Vu_max - Vnc;

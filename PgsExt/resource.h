@@ -27,6 +27,7 @@
 #define IDD_SELECT_POI                  299
 #define IDD_CONCRETE_DETAILS            300
 #define IDC_CONCRETE_TYPE               301
+#define IDD_UHPC_CONCRETE           301
 #define IDC_FC_LABEL                    302
 #define IDC_FC                          303
 #define IDC_FC_UNIT                     304
@@ -92,6 +93,8 @@
 #define IDS_LWC_MESSAGE                 367
 #define IDC_RADIO_IGNORE_LEVER          1010
 #define IDC_LIST                        1012
+#define IDC_E_CU                        1017
+#define IDC_ECU                         1017
 #define IDC_SPAN                        1049
 #define IDC_GIRDER                      1050
 #define IDC_TEST_SERVER                 1101
@@ -116,6 +119,10 @@
 #define IDC_FRR_UNIT                    1367
 #define IDC_CHECK1                      1368
 #define IDC_PCTT                        1368
+#define IDC_ECU_CHECK                   1368
+#define IDC_AGG_SIZE_LABEL              1369
+#define IDC_EDIT1                       1370
+#define IDC_GAMMA_U                     1370
 #define IDC_BOUNDARY_CONDITION          1407
 #define IDC_UPDATE_FREQUENCY            1412
 #define IDC_SERVERS                     1429
@@ -142,8 +149,16 @@
 #define IDC_FIBER                       1734
 #define IDC_FIBER_UNIT                  1735
 #define IDC_AUTOGENOUS_SHRINKAGE        1737
+#define IDC_ALPHA_U                     1738
 #define IDC_CONFIGURATION_GROUP         1804
 #define IDC_TITLE                       1805
+#define IDC_FT_CRI                      2021
+#define IDC_FT_CRI_UNIT                 2022
+#define IDC_FT_CR                       2023
+#define IDC_FT_CR_UNIT                  2024
+#define IDC_FT_LOC                      2025
+#define IDC_FT_LOC_UNIT                 2026
+#define IDC_ET_LOC                      2027
 #define IDC_INTERVAL                    3016
 #define ID_EDIT_INSERTROW               36894
 #define ID_EDIT_REMOVEROWS              36897
@@ -152,9 +167,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        300
+#define _APS_NEXT_RESOURCE_VALUE        303
 #define _APS_NEXT_COMMAND_VALUE         32776
-#define _APS_NEXT_CONTROL_VALUE         1369
+#define _APS_NEXT_CONTROL_VALUE         1371
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

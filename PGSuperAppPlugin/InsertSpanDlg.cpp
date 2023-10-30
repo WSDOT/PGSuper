@@ -52,7 +52,7 @@ CInsertSpanDlg::CInsertSpanDlg(const CBridgeDescription2* pBridgeDesc,CWnd* pPar
 	//{{AFX_DATA_INIT(CInsertSpanDlg)
 	//}}AFX_DATA_INIT
    m_RefPierIdx = INVALID_INDEX;
-   m_SpanLength = ::ConvertToSysUnits(100.0,unitMeasure::Feet);
+   m_SpanLength = WBFL::Units::ConvertToSysUnits(100.0,WBFL::Units::Measure::Feet);
    m_bCreateNewGroup = false;
    m_pBridgeDesc = pBridgeDesc;
    m_EventIndex = 0;

@@ -50,8 +50,8 @@ rptParagraph* CLibraryUsageParagraph::Build(IBroker* pBroker, bool doPrintTable)
    rptParagraph* pParagraph = new rptParagraph;
 
    GET_IFACE2(pBroker,ILibrary,pLibrary);
-   sysTime time;
-   bool bPrintDate = sysTime::PrintDate(true);
+   WBFL::System::Time time;
+   bool bPrintDate = WBFL::System::Time::PrintDate(true);
    
    std::_tstring strServer;
    std::_tstring strConfiguration;
@@ -69,7 +69,7 @@ rptParagraph* CLibraryUsageParagraph::Build(IBroker* pBroker, bool doPrintTable)
       *pParagraph << table << rptNewLine;
    }
 
-   sysTime::PrintDate(bPrintDate);
+   WBFL::System::Time::PrintDate(bPrintDate);
 
    return pParagraph;
 }

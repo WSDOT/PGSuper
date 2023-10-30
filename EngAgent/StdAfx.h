@@ -43,7 +43,6 @@ extern CComModule _Module;
 #include <IFace\Tools.h>
 #include <WBFLTools.h>
 #include <WBFLGeometry.h>
-#include <WBFLSections.h>
 #include <WBFLCogo.h>
 #include <WBFLFem2d.h>
 #include <WBFLGenericBridge.h>
@@ -53,7 +52,7 @@ extern CComModule _Module;
 #include <Stability\Stability.h>
 
 #include <System\System.h>
-#include <Lrfd\Lrfd.h>
+#include <LRFD\Lrfd.h>
 #include <Math\Math.h>
 
 //{{AFX_INSERT_LOCATION}}

@@ -25,11 +25,14 @@
 #include <PgsExt\StrandData.h>
 #include <PgsExt\DesignConfigUtil.h>
 
+#include <psgLib/EndZoneCriteria.h>
+
 #include <IFace\Project.h> // for ISpecification
 #include <IFace\Bridge.h>
 #include <IFace\SplittingChecks.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\Intervals.h>
+#include <IFace/Limits.h>
 #include <EAF\EAFDisplayUnits.h>
 
 #ifdef _DEBUG
@@ -53,7 +56,7 @@ pgsLRFDSplittingCheckEngineer::~pgsLRFDSplittingCheckEngineer()
 
 std::shared_ptr<pgsSplittingCheckArtifact> pgsLRFDSplittingCheckEngineer::Check(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig) const
 {
-   std::shared_ptr<pgsSplittingCheckArtifact> pArtifact(new pgsSplittingCheckArtifact(segmentKey));
+   std::shared_ptr<pgsSplittingCheckArtifact> pArtifact(std::make_shared<pgsSplittingCheckArtifact>(segmentKey));
 
    GET_IFACE(IBridge, pBridge);
    GET_IFACE(IMaterials, pMaterials);
@@ -197,8 +200,8 @@ std::shared_ptr<pgsSplittingCheckArtifact> pgsLRFDSplittingCheckEngineer::Check(
    }
    else
    {
-      matRebar::Type barType;
-      matRebar::Grade barGrade;
+      WBFL::Materials::Rebar::Type barType;
+      WBFL::Materials::Rebar::Grade barGrade;
       pMaterials->GetSegmentTransverseRebarMaterial(segmentKey, &barType, &barGrade);
       GetSplittingAvFromStirrupConfig(pConfig->StirrupConfig, barType, barGrade, segment_length,start_zl, &Avs[pgsTypes::metStart], end_zl, &Avs[pgsTypes::metEnd]);
    }
@@ -324,7 +327,8 @@ Float64 pgsLRFDSplittingCheckEngineer::GetSplittingZoneLength(const CSegmentKey&
    GET_IFACE(ISpecification, pSpec);
 
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-   Float64 n = pSpecEntry->GetSplittingZoneLengthFactor();
+   const auto& end_zone_criteria = pSpecEntry->GetEndZoneCriteria();
+   Float64 n = end_zone_criteria.SplittingZoneLengthFactor;
 
    std::array<pgsPointOfInterest, 2> poi = GetPointsOfInterest(segmentKey);
 
@@ -336,7 +340,7 @@ Float64 pgsLRFDSplittingCheckEngineer::GetSplittingZoneLength(const CSegmentKey&
 std::_tstring pgsLRFDSplittingCheckEngineer::GetSpecReference() const
 {
    std::_tostringstream os;
-   os << _T("AASHTO LRFD BDS ") << LrfdCw8th(_T("5.10.10.1"), _T("5.9.4.4.1"));
+   os << _T("AASHTO LRFD BDS ") << WBFL::LRFD::LrfdCw8th(_T("5.10.10.1"), _T("5.9.4.4.1"));
    return os.str();
 }
 
@@ -370,7 +374,7 @@ void pgsLRFDSplittingCheckEngineer::ReportDemand(rptParagraph* pPara, IEAFDispla
 
       if (bInitialRelaxation)
       {
-         if (pSpecification->GetSpecificationType() <= lrfdVersionMgr::ThirdEdition2004)
+         if (pSpecification->GetSpecificationType() <= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004)
          {
             (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pR1")) << _T(" - ");
          }
@@ -393,7 +397,7 @@ void pgsLRFDSplittingCheckEngineer::ReportDemand(rptParagraph* pPara, IEAFDispla
 
       if (bInitialRelaxation)
       {
-         if (pSpecification->GetSpecificationType() <= lrfdVersionMgr::ThirdEdition2004)
+         if (pSpecification->GetSpecificationType() <= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004)
          {
             (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pR1")) << _T(" - ");
          }
@@ -420,7 +424,7 @@ void pgsLRFDSplittingCheckEngineer::ReportDemand(rptParagraph* pPara, IEAFDispla
 
       if (bInitialRelaxation)
       {
-         if (pSpecification->GetSpecificationType() <= lrfdVersionMgr::ThirdEdition2004)
+         if (pSpecification->GetSpecificationType() <= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004)
          {
             (*pPara) << symbol(DELTA) << RPT_STRESS(_T("pR1")) << _T(" - ");
          }
@@ -460,7 +464,7 @@ Float64 pgsLRFDSplittingCheckEngineer::GetConcreteCapacity(pgsTypes::MemberEndTy
 
 Float64 pgsLRFDSplittingCheckEngineer::GetMaxSplittingStress(Float64 fy) const
 {
-   return lrfdRebar::GetMaxBurstingStress(fy);
+   return WBFL::LRFD::Rebar::GetMaxBurstingStress(fy);
 }
 
 Float64 pgsLRFDSplittingCheckEngineer::GetSplittingZoneLengthFactor() const
@@ -469,7 +473,7 @@ Float64 pgsLRFDSplittingCheckEngineer::GetSplittingZoneLengthFactor() const
    GET_IFACE(ISpecification, pSpec);
 
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-   return pSpecEntry->GetSplittingZoneLengthFactor();
+   return pSpecEntry->GetEndZoneCriteria().SplittingZoneLengthFactor;
 }
 
 std::array<pgsPointOfInterest, 2> pgsLRFDSplittingCheckEngineer::GetPointsOfInterest(const CSegmentKey& segmentKey) const
@@ -482,6 +486,8 @@ std::array<pgsPointOfInterest, 2> pgsLRFDSplittingCheckEngineer::GetPointsOfInte
    return poi;
 }
 
+///////////////////////////////////
+///////////////////////////////////
 ///////////////////////////////////
 
 pgsPCIUHPCSplittingCheckEngineer::pgsPCIUHPCSplittingCheckEngineer() :
@@ -505,9 +511,8 @@ std::shared_ptr<pgsSplittingCheckArtifact> pgsPCIUHPCSplittingCheckEngineer::Che
    GET_IFACE(IMaterials, pMaterials);
    ATLASSERT(pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC);
 
-   const auto* pConcrete1 = dynamic_cast<const lrfdLRFDConcrete*>(pMaterials->GetSegmentConcrete(segmentKey));
-   const auto* pConcrete2 = dynamic_cast<const lrfdLRFDTimeDependentConcrete*>(pMaterials->GetSegmentConcrete(segmentKey));
-   Float64 f_rr = pConcrete1 ? pConcrete1->GetPostCrackingTensileStrength() : pConcrete2->GetPostCrackingTensileStrength();
+   const auto* pConcrete = dynamic_cast<const WBFL::LRFD::LRFDConcreteBase*>(pMaterials->GetSegmentConcrete(segmentKey).get());
+   Float64 f_rr = pConcrete->GetPostCrackingTensileStrength();
    pArtifact->SetUHPCDesignTensileStrength(f_rr);
 
    GET_IFACE(IGirder, pGdr);
@@ -535,7 +540,9 @@ std::shared_ptr<pgsSplittingCheckArtifact> pgsPCIUHPCSplittingCheckEngineer::Che
       Float64 Ppo = Ps / 0.04;
 
       Float64 h = pArtifact->GetH(endType);
-      Float64 lt = Max(pPrestress->GetTransferLength(segmentKey, pgsTypes::Straight), pPrestress->GetTransferLength(segmentKey, pgsTypes::Harped));
+      pgsTypes::TransferLengthType xferType = pgsTypes::TransferLengthType::Minimum; // using minimum so the splitting force is applied over the shorter distance, even thought this is a strength check
+      // also, it doesn't really matter since PCI UHPC only has one transfer length
+      Float64 lt = Max(pPrestress->GetTransferLength(segmentKey, pgsTypes::Straight, xferType), pPrestress->GetTransferLength(segmentKey, pgsTypes::Harped,xferType));
       pArtifact->SetTransferLength(endType, lt);
       Float64 Pb = (0.021 * h / lt)*Ppo; // PCI UHPC Eq 9.3.3.1-1
       pArtifact->SetBurstingForce(endType, Pb);
@@ -568,7 +575,7 @@ void pgsPCIUHPCSplittingCheckEngineer::ReportDemand(rptParagraph* pPara, IEAFDis
    __super::ReportDemand(pPara, pDisplayUnits, strSplittingType, pArtifact, endType);
    (*pPara) << _T("Bursting Force: ") << Sub2(_T("P"), _T("b")) << _T(" = ") << _T("0.021") << _T("(h/") << Sub2(_T("l"), _T("t")) << _T(")") << Sub2(_T("P"), _T("po"));
    (*pPara) << _T(" = ") << _T("0.021") << _T("(h/") << Sub2(_T("l"), _T("t")) << _T(")(") << Sub2(_T("P"), _T("s")) << _T("/0.04)");
-
+                           
    Float64 h = pArtifact->GetH(endType);
    Float64 lt = pArtifact->GetTransferLength(endType);
    Float64 Ps = pArtifact->GetSplittingForce(endType);
@@ -605,5 +612,110 @@ Float64 pgsPCIUHPCSplittingCheckEngineer::GetConcreteCapacity(pgsTypes::MemberEn
    Float64 bv = pArtifact->GetShearWidth(endType);
 
    Float64 Pc = (f_rr / 2) * Lz * bv;
+   return Pc;
+}
+
+///////////////////////////////////
+///////////////////////////////////
+///////////////////////////////////
+
+pgsUHPCSplittingCheckEngineer::pgsUHPCSplittingCheckEngineer() :
+   pgsLRFDSplittingCheckEngineer()
+{
+}
+
+pgsUHPCSplittingCheckEngineer::pgsUHPCSplittingCheckEngineer(IBroker* pBroker) :
+   pgsLRFDSplittingCheckEngineer(pBroker)
+{
+}
+
+pgsUHPCSplittingCheckEngineer::~pgsUHPCSplittingCheckEngineer()
+{
+}
+
+std::shared_ptr<pgsSplittingCheckArtifact> pgsUHPCSplittingCheckEngineer::Check(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig) const
+{
+   std::shared_ptr<pgsSplittingCheckArtifact> pArtifact = pgsLRFDSplittingCheckEngineer::Check(segmentKey, pConfig);
+
+   GET_IFACE(IMaterials, pMaterials);
+   ATLASSERT(pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC);
+
+   Float64 ft_cri = pMaterials->GetSegmentConcreteInitialEffectiveCrackingStrength(segmentKey);
+   pArtifact->SetUHPCDesignTensileStrength(ft_cri);
+
+   GET_IFACE(IConcreteStressLimits, pLimits);
+   Float64 gamma_u = pLimits->GetUHPCTensionStressLimitCoefficient(segmentKey);
+
+   GET_IFACE(IGirder, pGdr);
+   for (int i = 0; i < 2; i++)
+   {
+      pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
+
+      // Add the contribution of the fibers to the splitting resistance
+      Float64 Pr = pArtifact->GetSplittingResistance(endType); // get basic splitting resistance
+
+      const pgsPointOfInterest& poi = pArtifact->GetPointOfInterest(endType);
+
+      Float64 bv = pGdr->GetShearWidth(poi);
+      pArtifact->SetShearWidth(endType, bv);
+      Float64 splitting_zone_length = pArtifact->GetSplittingZoneLength(endType); // (h/n)
+
+      Float64 Pr_UHPC = gamma_u * ft_cri * bv * splitting_zone_length;
+
+      pArtifact->SetSplittingResistance(endType, Pr + Pr_UHPC); // update the artifact
+   }
+   return pArtifact;
+}
+
+std::_tstring pgsUHPCSplittingCheckEngineer::GetSpecReference() const
+{
+   std::_tostringstream os;
+   os << __super::GetSpecReference() << _T(" and GS 1.9.4.4.1");
+   return os.str();
+}
+
+void pgsUHPCSplittingCheckEngineer::ReportDimensions(rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const
+{
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, short_length, pDisplayUnits->GetComponentDimUnit(), true);
+
+   __super::ReportDimensions(pPara, pDisplayUnits, strSplittingType, pArtifact, endType);
+
+   (*pPara) << strSplittingType << _T(" Shear Width: ") << Sub2(_T("b"), _T("v")) << _T(" = ") << short_length.SetValue(pArtifact->GetShearWidth(endType)) << rptNewLine;
+}
+
+void pgsUHPCSplittingCheckEngineer::ReportDemand(rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const
+{
+   __super::ReportDemand(pPara, pDisplayUnits, strSplittingType, pArtifact, endType);
+}
+
+void pgsUHPCSplittingCheckEngineer::ReportResistance(rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const
+{
+   // NOTE: This method does not call it's superclass method - that's by design.
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, short_length, pDisplayUnits->GetComponentDimUnit(), true);
+   INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true);
+   INIT_UV_PROTOTYPE(rptAreaUnitValue, area, pDisplayUnits->GetAreaUnit(), true);
+   INIT_UV_PROTOTYPE(rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), true);
+   INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
+
+   const auto& segmentKey = pArtifact->GetSegmentKey();
+
+   GET_IFACE(IConcreteStressLimits, pLimits);
+   Float64 gamma_u = pLimits->GetUHPCTensionStressLimitCoefficient(segmentKey);
+
+   (*pPara) << strSplittingType << _T(" Resistance: ") << Sub2(_T("P"), _T("r")) << _T(" = ") << RPT_STRESS(_T("s")) << Sub2(_T("A"), _T("s")) << _T(" + ") << Sub2(symbol(gamma),_T("u")) << RPT_STRESS(_T("t,cri")) << Sub2(_T("b"),_T("v")) << _T("h/") << scalar.SetValue(pArtifact->GetSplittingZoneLengthFactor());
+   (*pPara) << _T(" = ");
+   (*pPara) << _T("(") << stress.SetValue(pArtifact->GetFs(endType)) << _T(")(") << area.SetValue(pArtifact->GetAvs(endType)) << _T(")");
+   (*pPara) << _T(" + (") << scalar.SetValue(gamma_u) << _T(")(") << stress.SetValue(pArtifact->GetUHPCDesignTensileStrength()) << _T(")(") << short_length.SetValue(pArtifact->GetShearWidth(endType)) << _T(")");
+   (*pPara) << _T("(") << short_length.SetValue(pArtifact->GetH(endType)) << _T("/") << scalar.SetValue(pArtifact->GetSplittingZoneLengthFactor()) << _T(")");
+   (*pPara) << _T(" = ") << force.SetValue(pArtifact->GetSplittingResistance(endType)) << rptNewLine;
+}
+
+Float64 pgsUHPCSplittingCheckEngineer::GetConcreteCapacity(pgsTypes::MemberEndType endType, const pgsSplittingCheckArtifact* pArtifact) const
+{
+   Float64 ft_cr = pArtifact->GetUHPCDesignTensileStrength();
+   Float64 Lz = pArtifact->GetSplittingZoneLength(endType); // this is h/n
+   Float64 bv = pArtifact->GetShearWidth(endType);
+
+   Float64 Pc = ft_cr * Lz * bv;
    return Pc;
 }

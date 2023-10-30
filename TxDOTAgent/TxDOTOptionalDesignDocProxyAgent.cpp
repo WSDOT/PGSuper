@@ -32,7 +32,7 @@
 
 #include <IFace\Artifact.h>
 #include <IFace\AnalysisResults.h>
-#include <IFace\Allowables.h>
+#include <IFace/Limits.h>
 #include <IFace\Intervals.h>
 
 #ifdef _DEBUG
@@ -388,7 +388,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
       // build model
       IBroker* pBroker = this->m_pTxDOTOptionalDesignDoc->GetUpdatedBroker();
 
-      GET_IFACE2(pBroker,IAllowableConcreteStress, pAllowable );
+      GET_IFACE2(pBroker,IConcreteStressLimits, pLimits );
 
       GET_IFACE2(pBroker,IIntervals,pIntervals);
       IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(origSegmentKey);
@@ -444,7 +444,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
 
       // Camber from original model
       GET_IFACE2(pBroker,ICamber,pCamber);
-      m_MaximumCamber = pCamber->GetDCamberForGirderScheduleUnfactored(orig_ms_poi,CREEP_MAXTIME);
+      m_MaximumCamber = pCamber->GetDCamberForGirderScheduleUnfactored(orig_ms_poi,pgsTypes::CreepTime::Max);
 
       // Now we need results from fabricator model
       // =========================================
@@ -467,7 +467,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
       pgsTypes::LimitState lstates[num_cases] = {pgsTypes::ServiceI,   pgsTypes::ServiceI,   pgsTypes::ServiceI,    pgsTypes::ServiceI   , pgsTypes::ServiceIII,  pgsTypes::FatigueI,    pgsTypes::ServiceIA};
       pgsTypes::StressType ststype[num_cases] = {pgsTypes::Tension,    pgsTypes::Compression,pgsTypes::Compression, pgsTypes::Compression, pgsTypes::Tension,     pgsTypes::Compression, pgsTypes::Compression};
 
-      if ( lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion() )
+      if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
          lstates[num_cases-1] = pgsTypes::FatigueI;
 
       // Loop over all pois and limit states and factor results in our copy
@@ -479,8 +479,8 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
          pIPoi->GetPointsOfInterest(fabrSegmentKey,&vPOI);
          ATLASSERT(vPOI.size()>0);
 
-         if ( (lrfdVersionMgr::GetVersion() < lrfdVersionMgr::FourthEditionWith2009Interims && lstates[icase] == pgsTypes::FatigueI) || 
-              (lrfdVersionMgr::FourthEditionWith2009Interims <= lrfdVersionMgr::GetVersion()&& lstates[icase] == pgsTypes::ServiceIA)
+         if ( (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims && lstates[icase] == pgsTypes::FatigueI) || 
+              (WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition()&& lstates[icase] == pgsTypes::ServiceIA)
               )
          {
             // if before LRFD 2009 and Fatigue I 
@@ -501,10 +501,10 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
          task.limitState = lstates[icase];
          task.stressType = ststype[icase];
          task.bIncludeLiveLoad = true;
-         CollectionIndexType nArtifacts = m_GirderArtifact.GetSegmentArtifact(0)->GetFlexuralStressArtifactCount( task);
-         for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++) 
+         IndexType nArtifacts = m_GirderArtifact.GetSegmentArtifact(0)->GetFlexuralStressArtifactCount( task);
+         for (IndexType idx = 0; idx < nArtifacts; idx++)
          {
-            pFabrStressArtifact = m_GirderArtifact.GetSegmentArtifact(0)->GetFlexuralStressArtifact( task,idx );
+            pFabrStressArtifact = m_GirderArtifact.GetSegmentArtifact(0)->GetFlexuralStressArtifact(task,idx);
             const pgsPointOfInterest& poi(pFabrStressArtifact->GetPointOfInterest());
 
             // factor external stresses
@@ -514,77 +514,35 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
             fTopExt *= m_CtrlCompressiveStressFactor;
             fBotExt *= m_CtrlTensileStressFactor;
 
-            pFabrStressArtifact->SetExternalEffects( pgsTypes::TopGirder,    fTopExt);
-            pFabrStressArtifact->SetExternalEffects( pgsTypes::BottomGirder, fBotExt);
+            pFabrStressArtifact->SetExternalEffects(pgsTypes::TopGirder,fTopExt);
+            pFabrStressArtifact->SetExternalEffects(pgsTypes::BottomGirder,fBotExt);
 
             // recompute demand
             Float64 fTopPs = pFabrStressArtifact->GetPretensionEffects(pgsTypes::TopGirder);
             Float64 fBotPs = pFabrStressArtifact->GetPretensionEffects(pgsTypes::BottomGirder);
 
-            fTop = k*fTopPs + fTopExt;
-            fBot = k*fBotPs + fBotExt;
+            fTop = k * fTopPs + fTopExt;
+            fBot = k * fBotPs + fBotExt;
 
-            pFabrStressArtifact->SetDemand(pgsTypes::TopGirder,   fTop);
+            pFabrStressArtifact->SetDemand(pgsTypes::TopGirder,fTop);
             pFabrStressArtifact->SetDemand(pgsTypes::BottomGirder,fBot);
 
             // Compute and store required concrete strength
-            if ( ststype[icase] == pgsTypes::Compression )
+            bool bIsInPTZ;
+            Float64 fc_reqd;
+
+            // top
+            if (! (intervals[icase] == liveLoadIntervalIdx && ststype[icase] == pgsTypes::Tension)) // don't consider top tension at final
             {
-               Float64 c = pAllowable->GetSegmentAllowableCompressionStressCoefficient(poi,StressCheckTask(intervals[icase],lstates[icase],pgsTypes::Compression));
-               Float64 fc_reqd = (IsZero(c) ? 0 : Min(fTop,fBot)/-c);
-               
-               if ( fc_reqd < 0 ) // the minimum stress is tensile so compression isn't an issue
-                  fc_reqd = 0;
-
-               if ( MinIndex(fTop,fBot) == 0 )
-               {
-                  pFabrStressArtifact->SetRequiredConcreteStrength(ststype[icase], pgsTypes::TopGirder,fc_reqd);
-               }
-               else
-               {
-                  pFabrStressArtifact->SetRequiredConcreteStrength(ststype[icase], pgsTypes::BottomGirder,fc_reqd);
-               }
+               bIsInPTZ = pFabrStressArtifact->IsInPrecompressedTensileZone(pgsTypes::TopGirder);
+               fc_reqd = pLimits->ComputeRequiredConcreteStrength(poi,pgsTypes::TopGirder,fTop,task,false/*inadequate rebar*/,bIsInPTZ);
+               pFabrStressArtifact->SetRequiredConcreteStrength(ststype[icase],pgsTypes::TopGirder,fc_reqd);
             }
-            else
-            {
-               Float64 t;
-               bool bCheckMax;
-               Float64 fmax;
 
-               pAllowable->GetAllowableTensionStressCoefficient(poi,pgsTypes::TopGirder,StressCheckTask(intervals[icase],lstates[icase],pgsTypes::Tension),false/*without rebar*/,false,&t,&bCheckMax,&fmax);
-
-               // if this is bridge site 3, only look at the bottom stress (stress in the precompressed tensile zone)
-               // otherwise, take the controlling tension
-               Float64 f = (intervals[icase] == liveLoadIntervalIdx ? fBot : Max(fTop,fBot));
-
-               Float64 fc_reqd;
-               if (f>0.0)
-               {
-                  fc_reqd = (IsZero(t) ? 0 : BinarySign(f)*pow(f/t,2));
-               }
-               else
-               {
-                  // the maximum stress is compressive so tension isn't an issue
-                  fc_reqd = 0;
-               }
-
-               if ( bCheckMax &&                  // allowable stress is limited -AND-
-                    (0 < fc_reqd) &&              // there is a concrete strength that might work -AND-
-                    (pow(fmax/t,2) < fc_reqd) )   // that strength will exceed the max limit on allowable
-               {
-                  // too bad... this isn't going to work
-                  fc_reqd = NO_AVAILABLE_CONCRETE_STRENGTH;
-               }
-
-               if ( MaxIndex(fTop,fBot) == 0 )
-               {
-                  pFabrStressArtifact->SetRequiredConcreteStrength(ststype[icase], pgsTypes::TopGirder,fc_reqd);
-               }
-               else
-               {
-                  pFabrStressArtifact->SetRequiredConcreteStrength(ststype[icase], pgsTypes::BottomGirder,fc_reqd);
-               }
-            }
+            // bottom
+            bIsInPTZ = pFabrStressArtifact->IsInPrecompressedTensileZone(pgsTypes::BottomGirder);
+            fc_reqd = pLimits->ComputeRequiredConcreteStrength(poi,pgsTypes::BottomGirder,fBot,task,false/*inadequate rebar*/,bIsInPTZ);
+            pFabrStressArtifact->SetRequiredConcreteStrength(ststype[icase],pgsTypes::BottomGirder,fc_reqd);
          }
       }
    
@@ -612,7 +570,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
       Float64 fciReqd = m_GirderArtifact.GetRequiredReleaseStrength();
       if (NO_AVAILABLE_CONCRETE_STRENGTH != fciReqd)
       {
-         m_RequiredFci = Max(fciReqd,::ConvertToSysUnits(4.0,unitMeasure::KSI));
+         m_RequiredFci = Max(fciReqd,WBFL::Units::ConvertToSysUnits(4.0,WBFL::Units::Measure::KSI));
       }
       else
       {
@@ -622,7 +580,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
       Float64 fcReqd = m_GirderArtifact.GetRequiredGirderConcreteStrength();
       if (NO_AVAILABLE_CONCRETE_STRENGTH != fcReqd)
       {
-         m_RequiredFc = Max(fcReqd,::ConvertToSysUnits(5.0,unitMeasure::KSI));
+         m_RequiredFc = Max(fcReqd,WBFL::Units::ConvertToSysUnits(5.0,WBFL::Units::Measure::KSI));
       }
       else
       {
@@ -630,7 +588,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
       }
 
       // Get camber from fabricator model
-      m_FabricatorMaximumCamber = pCamber->GetDCamberForGirderScheduleUnfactored(fabr_ms_poi,CREEP_MAXTIME);
+      m_FabricatorMaximumCamber = pCamber->GetDCamberForGirderScheduleUnfactored(fabr_ms_poi,pgsTypes::CreepTime::Max);
 
       // Shear 
       CheckShear(pIPoi);
@@ -652,8 +610,8 @@ void CTxDOTOptionalDesignDocProxyAgent::CheckShear(IPointOfInterest* pIPoi)
    m_ShearPassed = true; // until otherwise
 
    const pgsStirrupCheckArtifact *pStirrups = m_GirderArtifact.GetSegmentArtifact(0)->GetStirrupCheckArtifact();
-   CollectionIndexType nArtifacts = pStirrups->GetStirrupCheckAtPoisArtifactCount(liveLoadIntervalIdx,pgsTypes::StrengthI);
-   for ( CollectionIndexType idx = 0; idx < nArtifacts; idx++ )
+   IndexType nArtifacts = pStirrups->GetStirrupCheckAtPoisArtifactCount(liveLoadIntervalIdx,pgsTypes::StrengthI);
+   for ( IndexType idx = 0; idx < nArtifacts; idx++ )
    {
       // Only checking Strength I here. No TxDOT permit truck
       const pgsStirrupCheckAtPoisArtifact* pPoiArtifacts = pStirrups->GetStirrupCheckAtPoisArtifact( liveLoadIntervalIdx,pgsTypes::StrengthI,idx );
