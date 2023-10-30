@@ -75,25 +75,28 @@ void CPGSProjectImporterAppPluginBase::FinalRelease()
 
 void CPGSProjectImporterAppPluginBase::ConfigureProjectImporters()
 {
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CWinApp* pApp = AfxGetApp();
+
    CString str;
    str.Format(_T("Manage %s Project Importers"),GetAppName());
    CATID catid = GetProjectImporterCATID();
-   std::vector<CEAFPluginState> vPluginStates = EAFManageApplicationPlugins(str,_T("Select the Project Importers that you want to be available."),catid,EAFGetMainFrame(),IDH_PLUGINS,GetAppName());
+   std::vector<CEAFPluginState> vPluginStates = EAFManageApplicationPlugins(str,_T("Select the Project Importers that you want to be available."),catid,EAFGetMainFrame(), pApp,IDH_PLUGINS,GetAppName());
    if ( vPluginStates.size() == 0 )
    {
       return;
    }
 
    // Find our document template
-   CEAFApp* pApp = EAFGetApp();
+   CEAFApp* pEAFApp = EAFGetApp();
 
    POSITION template_position;
    CPGSImportPluginDocTemplateBase* pMyTemplate = nullptr;
-   POSITION pos = pApp->m_pDocManager->GetFirstDocTemplatePosition();
+   POSITION pos = pEAFApp->m_pDocManager->GetFirstDocTemplatePosition();
    while ( pos != nullptr )
    {
       template_position = pos;
-      CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)(pApp->m_pDocManager->GetNextDocTemplate(pos));
+      CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)(pEAFApp->m_pDocManager->GetNextDocTemplate(pos));
       if ( pTemplate->IsKindOf(RUNTIME_CLASS(CPGSImportPluginDocTemplateBase)) )
       {
          pMyTemplate = (CPGSImportPluginDocTemplateBase*)pTemplate;
