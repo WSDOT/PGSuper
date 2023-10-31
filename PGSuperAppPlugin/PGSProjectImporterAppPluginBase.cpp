@@ -76,7 +76,7 @@ void CPGSProjectImporterAppPluginBase::FinalRelease()
 void CPGSProjectImporterAppPluginBase::ConfigureProjectImporters()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CWinApp* pApp = AfxGetApp();
+   CEAFApp* pApp = (CEAFApp*)AfxGetApp(); // DLLs CEAFApp
 
    CString str;
    str.Format(_T("Manage %s Project Importers"),GetAppName());
@@ -88,7 +88,7 @@ void CPGSProjectImporterAppPluginBase::ConfigureProjectImporters()
    }
 
    // Find our document template
-   CEAFApp* pEAFApp = EAFGetApp();
+   CEAFApp* pEAFApp = EAFGetApp(); // EXEs CEAFApp
 
    POSITION template_position;
    CPGSImportPluginDocTemplateBase* pMyTemplate = nullptr;
