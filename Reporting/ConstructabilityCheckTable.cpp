@@ -225,7 +225,6 @@ void CConstructabilityCheckTable::BuildMonoSlabOffsetTable(rptChapter* pChapter,
       Float64 Areqd = 0;
       Float64 MaxHaunchDiff = 0;
       bool bCheckStirrupLengths = false;
-      pgsSegmentConstructabilityArtifact::SlabOffsetStatusType slabOffsetStatus;
 
       SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
       for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
@@ -233,6 +232,8 @@ void CConstructabilityCheckTable::BuildMonoSlabOffsetTable(rptChapter* pChapter,
          CSegmentKey segmentKey(girderKey, segIdx);
          const auto& artifact = pConstrArtifact->GetSegmentArtifact(segIdx);
          const auto& haunch_details = pGdrHaunch->GetSlabOffsetDetails(segmentKey);
+
+         auto slabOffsetStatus = artifact.SlabOffsetStatus();
 
          Float64 endA, startA;
          artifact.GetProvidedSlabOffset(&startA, &endA); // both values are same because of what function we are in
@@ -297,7 +298,7 @@ void CConstructabilityCheckTable::BuildMonoSlabOffsetTable(rptChapter* pChapter,
          if ( bCheckStirrupLengths )
          {
             didNote = true;
-            (*pTable)(row, col) << color(Red) << _T("The difference betwen the minimum and maximum CL haunch depths along the girder is ") << dim2.SetValue(MaxHaunchDiff) 
+            (*pTable)(row, col) << color(Red) << _T("The difference between the minimum and maximum CL haunch depths along the girder is ") << dim2.SetValue(MaxHaunchDiff) 
                                                 << _T(". This exceeds one half of the slab depth. Check stirrup lengths to ensure they engage the deck in all locations.");
                                                  
             if(pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP)
