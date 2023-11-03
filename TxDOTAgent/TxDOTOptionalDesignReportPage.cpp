@@ -196,7 +196,7 @@ void CTxDOTOptionalDesignReportPage::CreateNewBrowser(IBroker* pBroker)
    GET_IFACE2(pBroker,IProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
 
-   m_pBrowser = pReportMgr->CreateReportBrowser(m_BrowserPlaceholder.GetSafeHwnd(),m_pRptSpec,std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder>());
+   m_pBrowser = pReportMgr->CreateReportBrowser(m_BrowserPlaceholder.GetSafeHwnd(),0,m_pRptSpec,std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder>());
    m_pBrowser->Size(rect.Size());
 
    // resize browser window

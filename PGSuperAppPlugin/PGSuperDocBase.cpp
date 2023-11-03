@@ -44,8 +44,6 @@
 #include "BridgePlanView.h"
 
 #include <WBFLCore_i.c>
-#include <WBFLReportManagerAgent_i.c>
-#include <WBFLGraphManagerAgent_i.c>
 #include <WBFLTools_i.c>
 #include <WBFLUnitServer_i.c>
 #include <WBFLGeometry_i.c>
@@ -310,7 +308,7 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CPGSDocBase construction/destruction
 
-CPGSDocBase::CPGSDocBase():
+CPGSDocBase::CPGSDocBase() :
 m_bAutoCalcEnabled(true)
 {
 	EnableAutomation();
@@ -2071,7 +2069,7 @@ void CPGSDocBase::OnCreateFinalize()
    PopulateCopyGirderMenu();
    PopulateCopyPierMenu();
 
-#pragma Reminder("REVIEW - send email option stopped working, the code has been commented out")
+// send email option stopped working, the code has been commented out
 /* This option works if Outlook and PGSuper are running at the same UAC level
 
    // if user is on Windows Vista or Windows 7, the Send Email feature doesn't work
@@ -2117,7 +2115,7 @@ void CPGSDocBase::OnCreateFinalize()
 
    pStatusBar->AutoSaveEnabled(EAFGetApp()->IsAutoSaveEnabled());
 
-   // views have been initilized so fire any pending events
+   // views have been initialized so fire any pending events
    GET_IFACE(IEvents,pEvents);
    GET_IFACE(IUIEvents,pUIEvents);
    pEvents->FirePendingEvents(); 
@@ -2564,13 +2562,6 @@ BOOL CPGSDocBase::LoadSpecialAgents(IBrokerInitEx2* pBrokerInit)
    
    HRESULT hr = pBrokerInit->AddAgent( pAgent );
    if ( FAILED(hr) )
-   {
-      return FALSE;
-   }
-
-   // we want to use some special agents
-   CLSID clsid[] = {CLSID_ReportManagerAgent,CLSID_GraphManagerAgent};
-   if ( !CEAFBrokerDocument::LoadAgents(pBrokerInit, clsid, sizeof(clsid)/sizeof(CLSID) ) )
    {
       return FALSE;
    }

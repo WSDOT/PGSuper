@@ -133,8 +133,8 @@ BOOL CCopyPierDlg::OnInitDialog()
 
    GET_IFACE(IReportManager,pRptMgr);
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> nullSpecBuilder;
-   m_pBrowser = pRptMgr->CreateReportBrowser(GetSafeHwnd(),pRptSpec,nullSpecBuilder);
-   m_pBrowser->GetBrowserWnd()->ModifyStyle(0,WS_BORDER );
+   CWnd* pWnd = GetDlgItem(IDC_BROWSER);
+   m_pBrowser = pRptMgr->CreateReportBrowser(pWnd->GetSafeHwnd(), WS_BORDER,pRptSpec,nullSpecBuilder);
 
    // restore the size of the window
    {
@@ -270,51 +270,7 @@ void CCopyPierDlg::OnSize(UINT nType, int cx, int cy)
 
    if (m_pBrowser)
    {
-      CRect clientRect;
-      GetClientRect( &clientRect );
-
-      CRect sizeRect(0,0,7,7);
-      MapDialogRect(&sizeRect);
-
-      CRect hiddenRect;
-      GetDlgItem(IDC_BROWSER)->GetWindowRect(&hiddenRect);
-      ScreenToClient(hiddenRect);
-      m_pBrowser->Move(hiddenRect.TopLeft());
-      m_pBrowser->Size(hiddenRect.Size());
-
-      // bottom buttons
-      CRect btnSizeRect(0,0,50,14);
-      MapDialogRect( &btnSizeRect );
-
-      CRect btnRect;
-      btnRect.bottom = clientRect.bottom - sizeRect.Height();
-      btnRect.right  = clientRect.right  - LONG(sizeRect.Width() * 3); 
-      btnRect.left   = btnRect.right   - btnSizeRect.Width();
-      btnRect.top    = btnRect.bottom  - btnSizeRect.Height();
-
-      CButton* pButton = (CButton*)GetDlgItem(ID_HELP);
-      pButton->MoveWindow( btnRect, FALSE );
-
-      CRect printRect(btnRect); // put print button directly above Help
-
-      CRect horizOffsetRect(0,0,66,0); // horizontal spacing between buttons
-      MapDialogRect( &horizOffsetRect );
-      CSize horizOffset(-1*horizOffsetRect.Width(),0);
-
-      btnRect += horizOffset;
-      pButton = (CButton*)GetDlgItem(IDCANCEL);
-      pButton->MoveWindow( btnRect, FALSE );
-
-      btnRect += horizOffset;
-      pButton = (CButton*)GetDlgItem(IDOK);
-      pButton->MoveWindow( btnRect, FALSE );
-
-      CSize vertOffset(0, int(btnSizeRect.Height() * 1.75));
-      printRect -= vertOffset;
-      pButton = (CButton*)GetDlgItem(IDC_PRINT);
-      pButton->MoveWindow( printRect, FALSE );
-
-      Invalidate();
+      m_pBrowser->FitToParent();
    }
 }
 

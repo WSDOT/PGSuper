@@ -982,9 +982,6 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ResourceCompile Include="PGSuperAppPlugin.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\AnalysisAgent\AnalysisAgent.vcxproj">
       <Project>{13860d0c-a73b-4ea6-bce6-5f84fc9bbce8}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
