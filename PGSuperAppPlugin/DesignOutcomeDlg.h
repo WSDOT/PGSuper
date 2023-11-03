@@ -86,6 +86,7 @@ protected:
 	afx_msg void OnPrint();
 	virtual void OnCancel();
 	virtual void OnOK();
+	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam) override;
 	afx_msg void OnHelp();
    afx_msg void OnCmenuSelected(UINT id);
 	virtual BOOL OnInitDialog();
@@ -99,6 +100,9 @@ private:
    SlabOffsetDesignSelectionType m_SoSelectionType;
    SpanIndexType m_FromSpanIdx;
    GirderIndexType m_FromGirderIdx;
+
+	int m_cxMin;
+	int m_cyMin;
 };
 
 //{{AFX_INSERT_LOCATION}}

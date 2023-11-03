@@ -136,109 +136,8 @@ END_MESSAGE_MAP()
 void CDesignOutcomeDlg::OnSize(UINT nType, int cx, int cy) 
 {
 	CDialog::OnSize(nType, cx, cy);
-	
-   ATLASSERT(m_Ok.m_hWnd!=0);
 
-   // Convert a 7du x 7du rect into pixels
-   CRect sizeRect(0,0,7,7);
-   MapDialogRect(&sizeRect);
-
-   CRect btnSizeRect(0,0,50,14);
-   MapDialogRect( &btnSizeRect );
-
-   CRect btnResultSizeRect(0,0,95,14);
-   MapDialogRect( &btnResultSizeRect );
-
-   CRect clientRect;
-   GetClientRect( &clientRect );
-
-   // Figure out the print button's new position
-   CRect printRect;
-   printRect.bottom = clientRect.bottom - sizeRect.Height();
-   printRect.right  = clientRect.right  - sizeRect.Width();
-   printRect.left   = printRect.right   - btnSizeRect.Width();
-   printRect.top    = printRect.bottom  - btnSizeRect.Height();
-
-   // Figure out the help button's new position
-   CRect helpRect;
-   helpRect.bottom = printRect.bottom;
-   helpRect.right  = printRect.left   - sizeRect.Width();
-   helpRect.left   = helpRect.right  - btnSizeRect.Width();
-   helpRect.top    = printRect.top;
-
-   // Figure out the ok button's new position
-   CRect okRect;
-   okRect.bottom = printRect.bottom;
-   okRect.top    = printRect.top;
-   okRect.left   = clientRect.left + sizeRect.Width();
-   okRect.right  = okRect.left    + btnResultSizeRect.Width();
-
-   CRect cancelRect;
-   cancelRect.bottom = printRect.bottom;
-   cancelRect.top    = printRect.top;
-   cancelRect.left   = okRect.right  + sizeRect.Width();
-   cancelRect.right  = okRect.right + btnResultSizeRect.Width();
-
-   // Figure out the static box and its controls' new positions
-   CRect staticRect;
-   staticRect.bottom = printRect.top - sizeRect.Height()/10;
-   staticRect.right  = printRect.right;
-   staticRect.left   = clientRect.left  + sizeRect.Width();
-   staticRect.top    = staticRect.bottom - btnSizeRect.Height();
-
-   // A Design options control positions
-   CRect aDimCheckSizeRect(0,0,143,14);
-   MapDialogRect( &aDimCheckSizeRect );
-
-   CRect ADimCheckRect;
-   ADimCheckRect.bottom = staticRect.top - sizeRect.Height();
-   ADimCheckRect.top    = ADimCheckRect.bottom - btnSizeRect.Height();
-   ADimCheckRect.left   = clientRect.left  + sizeRect.Width();
-   ADimCheckRect.right  = ADimCheckRect.left + aDimCheckSizeRect.Width();
-
-   CRect aDimComboRect(0,0,95,14);
-   MapDialogRect( &aDimComboRect );
-
-   CRect ADimFromRect;
-   ADimFromRect.bottom = ADimCheckRect.bottom;
-   ADimFromRect.top    = ADimCheckRect.top;
-   ADimFromRect.left   = ADimCheckRect.right;
-   ADimFromRect.right  = ADimFromRect.left + aDimComboRect.Width();
-
-   CRect ADimStaticRect;
-   ADimStaticRect.bottom = ADimCheckRect.bottom;
-   ADimStaticRect.top    = ADimCheckRect.top;
-   ADimStaticRect.left   = ADimFromRect.right;
-   ADimStaticRect.right  = ADimStaticRect.left + 2*sizeRect.Width();
-
-   CRect AToRect;
-   AToRect.bottom = ADimCheckRect.bottom;
-   AToRect.top    = ADimCheckRect.top;
-   AToRect.left   = ADimStaticRect.right;
-   AToRect.right  = AToRect.left + aDimComboRect.Width();
-
-   // Figure out the browser's new position
-   CRect browserRect;
-   browserRect.left   = clientRect.left + sizeRect.Width();
-   browserRect.top    = clientRect.top  + sizeRect.Height();
-   browserRect.right  = printRect.right;
-   browserRect.bottom = ADimCheckRect.top - sizeRect.Height();
-
-   m_Ok.MoveWindow( okRect, FALSE );
-   m_Cancel.MoveWindow( cancelRect, FALSE );
-   m_Help.MoveWindow( helpRect, FALSE );
-   m_Print.MoveWindow( printRect, FALSE );
-   m_Static.MoveWindow( staticRect, FALSE );
-
-   m_ADesignCheckBox.MoveWindow( ADimCheckRect, FALSE );
-   m_ADesignFromCombo.MoveWindow( ADimFromRect, FALSE );
-   m_ADesignStatic.MoveWindow( ADimStaticRect, FALSE );
-   m_ADesignToCombo.MoveWindow( AToRect, FALSE );
-
-   m_pBrowser->Move(browserRect.TopLeft());
-   m_pBrowser->Size( browserRect.Size() );
-
-   Invalidate();
+   m_pBrowser->FitToParent();
 }
 
 void CDesignOutcomeDlg::OnPrint() 
@@ -263,9 +162,55 @@ void CDesignOutcomeDlg::OnHelp()
    EAFHelp( EAFGetDocument()->GetDocumentationSetName(), IDH_DIALOG_DESIGNCOMPLETE );
 }
 
+LRESULT CDesignOutcomeDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
+{
+   // prevent the dialog from getting smaller than the original size
+   if (message == WM_SIZING)
+   {
+      LPRECT rect = (LPRECT)lParam;
+      int cx = rect->right - rect->left;
+      int cy = rect->bottom - rect->top;
+
+      if (cx < m_cxMin || cy < m_cyMin)
+      {
+         // prevent the dialog from moving right or down
+         if (wParam == WMSZ_BOTTOMLEFT ||
+            wParam == WMSZ_LEFT ||
+            wParam == WMSZ_TOP ||
+            wParam == WMSZ_TOPLEFT ||
+            wParam == WMSZ_TOPRIGHT)
+         {
+            CRect r;
+            GetWindowRect(&r);
+            rect->left = r.left;
+            rect->top = r.top;
+         }
+
+         if (cx < m_cxMin)
+         {
+            rect->right = rect->left + m_cxMin;
+         }
+
+         if (cy < m_cyMin)
+         {
+            rect->bottom = rect->top + m_cyMin;
+         }
+
+         return TRUE;
+      }
+   }
+
+   return CDialog::WindowProc(message, wParam, lParam);
+}
+
 BOOL CDesignOutcomeDlg::OnInitDialog() 
 {
 	CDialog::OnInitDialog();
+
+   CRect rect;
+   GetWindowRect(&rect);
+   m_cxMin = rect.Width();
+   m_cyMin = rect.Height();
 
    // don't show A dim controls if no A design
    if (m_DesignADimType==sodPreserveHaunch)
@@ -303,7 +248,8 @@ BOOL CDesignOutcomeDlg::OnInitDialog()
    GET_IFACE2(pBroker,IReportManager,pRptMgr);
    std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = std::dynamic_pointer_cast<WBFL::Reporting::ReportSpecification,CMultiGirderReportSpecification>(m_pRptSpec);
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> nullSpecBuilder;
-   m_pBrowser = pRptMgr->CreateReportBrowser(GetSafeHwnd(),pRptSpec,nullSpecBuilder);
+   CWnd* pWnd = GetDlgItem(IDC_BROWSER);
+   m_pBrowser = pRptMgr->CreateReportBrowser(pWnd->GetSafeHwnd(), WS_BORDER, pRptSpec, nullSpecBuilder);
 
    // restore the size of the window
    {
