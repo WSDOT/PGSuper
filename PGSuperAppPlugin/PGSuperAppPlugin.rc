@@ -14,7 +14,8 @@
 #include <EAF\EAFResources.h>
 #if !defined _NOGRID
 #include "grid\gxresrc.h"
-#endif
+#endif
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -1296,7 +1297,7 @@ BEGIN
     LTEXT           "Haul Truck",IDC_STATIC,208,197,36,8
 END
 
-IDD_COPY_GIRDER_PROPERTIES DIALOGEX 0, 0, 635, 294
+IDD_COPY_GIRDER_PROPERTIES DIALOGEX 0, 0, 635, 300
 STYLE DS_SETFONT | WS_MAXIMIZEBOX | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "Copy Girder Properties"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -1309,13 +1310,13 @@ BEGIN
     COMBOBOX        IDC_TO_GIRDER,93,99,59,57,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Multiple Girders",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,17,120,64,10
     PUSHBUTTON      "Select Girders\n(0 Selected)",IDC_SELECT_GIRDERS,49,134,78,23,BS_MULTILINE
-    DEFPUSHBUTTON   "Copy Now",IDOK,455,269,48,15
-    PUSHBUTTON      "Close",IDCANCEL,509,269,48,15
-    PUSHBUTTON      "Help",ID_HELP,561,269,50,15
+    DEFPUSHBUTTON   "Copy Now",IDOK,455,275,48,15
+    PUSHBUTTON      "Close",IDCANCEL,509,275,48,15
+    PUSHBUTTON      "Help",ID_HELP,561,275,50,15
     GROUPBOX        "Copy From",IDC_STATIC,8,6,154,60
     GROUPBOX        "Comparison Report",IDC_COMPREP,172,6,455,265
     GROUPBOX        "Copy To",IDC_STATIC,8,72,154,89
-    GROUPBOX        "Browser Placeholder",IDC_BROWSER,188,17,431,225,BS_NOTIFY | NOT WS_VISIBLE | WS_TABSTOP,WS_EX_STATICEDGE
+    GROUPBOX        "Browser Placeholder",IDC_BROWSER,188,17,431,225,BS_NOTIFY | WS_TABSTOP,WS_EX_STATICEDGE
     PUSHBUTTON      "Print",IDC_PRINT,561,249,50,14
     PUSHBUTTON      "Edit",IDC_EDIT,58,43,50,14
     GROUPBOX        "Select Properties to be Copied",IDC_STATIC,8,169,154,102
@@ -1341,7 +1342,7 @@ FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "Accept the Design",IDOK,7,276,93,14
     PUSHBUTTON      "Reject the Design",IDCANCEL,115,276,93,14
-    GROUPBOX        "Browser Placeholder",IDC_BROWSER,7,7,420,214,NOT WS_VISIBLE
+    GROUPBOX        "Browser Placeholder",IDC_BROWSER,7,7,420,214
     PUSHBUTTON      "Help",ID_HELP,320,276,50,14
     PUSHBUTTON      "&Print",IDC_PRINT,377,276,50,14
     LTEXT           "Update the Current Girder Parameters with the Proposed Design?",IDC_STATIC_TEXT,7,258,253,8
@@ -1359,7 +1360,7 @@ FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "Close",IDOK,377,269,50,14
     PUSHBUTTON      "Print",IDC_PRINT,324,269,50,14
-    GROUPBOX        "Browser Placeholder",IDC_BROWSER,7,7,420,255,NOT WS_VISIBLE | WS_TABSTOP
+    GROUPBOX        "Browser Placeholder",IDC_BROWSER,7,7,420,255,WS_TABSTOP
 END
 
 IDD_STABILITY_BAR DIALOG 0, 0, 240, 26
@@ -3853,7 +3854,7 @@ BEGIN
     GROUPBOX        "Copy From",IDC_STATIC,8,5,154,71
     GROUPBOX        "Comparison Report",IDC_COMPREP,173,5,454,232
     GROUPBOX        "Copy To",IDC_STATIC,8,87,154,39
-    GROUPBOX        "Browser Placeholder",IDC_BROWSER,186,17,428,193,NOT WS_VISIBLE | WS_TABSTOP,WS_EX_CLIENTEDGE
+    GROUPBOX        "Browser Placeholder",IDC_BROWSER,186,17,428,193,WS_TABSTOP,WS_EX_CLIENTEDGE
     PUSHBUTTON      "Print",IDC_PRINT,560,216,50,14
     PUSHBUTTON      "Edit",IDC_EDIT,61,51,50,14
     GROUPBOX        "Select Properties to be Copied",IDC_STATIC,8,136,154,102
@@ -4001,13 +4002,19 @@ BEGIN
 
     IDD_COPY_GIRDER_PROPERTIES, DIALOG
     BEGIN
+        LEFTMARGIN, 8
         RIGHTMARGIN, 627
         VERTGUIDE, 8
-        BOTTOMMARGIN, 284
+        TOPMARGIN, 6
+        BOTTOMMARGIN, 290
     END
 
     IDD_DESIGN_OUTCOME, DIALOG
     BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 427
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 290
     END
 
     IDD_TIMELINE_REPORT, DIALOG
@@ -4739,7 +4746,17 @@ END
 
 IDD_DESIGN_OUTCOME AFX_DIALOG_LAYOUT
 BEGIN
-    0
+    0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 0, 100, 100,
+    100, 100, 0, 0,
+    100, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0
 END
 
 IDD_TIMELINE_REPORT AFX_DIALOG_LAYOUT
@@ -4915,14 +4932,14 @@ BEGIN
     0, 0, 0, 0,
     0, 0, 0, 0,
     0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 100, 100,
+    100, 100, 0, 0,
+    100, 100, 0, 0,
+    100, 100, 0, 0,
     0, 0, 0, 0,
     0, 0, 100, 100,
     0, 0, 0, 0,
+    0, 0, 100, 100,
+    100, 100, 0, 0,
     0, 0, 0, 0,
     0, 0, 0, 0,
     0, 0, 0, 0
@@ -4933,14 +4950,14 @@ BEGIN
     0,
     0, 0, 0, 0,
     0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 100, 100,
+    100, 100, 0, 0,
+    100, 100, 0, 0,
+    100, 100, 0, 0,
     0, 0, 0, 0,
     0, 0, 100, 100,
     0, 0, 0, 0,
+    0, 0, 100, 100,
+    100, 100, 0, 0,
     0, 0, 0, 0,
     0, 0, 0, 0,
     0, 0, 0, 0

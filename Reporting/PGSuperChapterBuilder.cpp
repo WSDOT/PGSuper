@@ -50,10 +50,9 @@ rptChapter* CPGSuperChapterBuilder::Build(const std::shared_ptr<const WBFL::Repo
    ASSERT( level <= GetMaxLevel() );
 
    rptChapter* pChapter = new rptChapter(GetName());
-   rptParagraph* p_para = new rptParagraph;
-   p_para->SetStyleName(rptStyleManager::GetChapterTitleStyle());
-   *pChapter << p_para;
-   *p_para << GetName() << rptNewLine;
+   rptHeading* pHeading = rptStyleManager::CreateChapterHeading();
+   *pChapter << pHeading;
+   *pHeading << GetName() << rptNewLine;
    return pChapter;
 }
 

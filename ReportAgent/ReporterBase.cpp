@@ -171,6 +171,8 @@ void CReporterBase::CreateBridgeGeometryReport()
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pBrokerRptSpecBuilder(  std::make_shared<CBrokerReportSpecificationBuilder>(m_pBroker) );
 
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Bridge Geometry Report")));
+   pRptBuilder->EnableHeadingNumbers(true);
+
 #if defined _DEBUG || defined _BETA_VERSION
    pRptBuilder->IncludeTimingChapter();
 #endif
@@ -192,6 +194,7 @@ void CReporterBase::CreateDetailsReport()
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pGirderRptSpecBuilder(std::make_shared<CGirderReportSpecificationBuilder>(m_pBroker,CGirderKey(0,0)));
 
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Details Report")));
+   pRptBuilder->EnableHeadingNumbers(true);
 #if defined _DEBUG || defined _BETA_VERSION
    pRptBuilder->IncludeTimingChapter();
 #endif

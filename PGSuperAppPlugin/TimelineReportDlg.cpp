@@ -66,14 +66,7 @@ END_MESSAGE_MAP()
 void CTimelineReportDlg::OnSize(UINT nType, int cx, int cy)
 {
 	CDialog::OnSize(nType, cx, cy);
-
-   CRect hiddenRect;
-   GetDlgItem(IDC_BROWSER)->GetWindowRect(&hiddenRect);
-   ScreenToClient(hiddenRect);
-   m_pBrowser->Move(hiddenRect.TopLeft());
-   m_pBrowser->Size( hiddenRect.Size() );
-
-   Invalidate();
+   m_pBrowser->FitToParent();
 }
 
 void CTimelineReportDlg::OnPrint()
@@ -98,7 +91,8 @@ BOOL CTimelineReportDlg::OnInitDialog()
 
    GET_IFACE2(pBroker,IReportManager,pRptMgr);
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> nullSpecBuilder;
-   m_pBrowser = pRptMgr->CreateReportBrowser(GetSafeHwnd(),pRptSpec,nullSpecBuilder);
+   CWnd* pWnd = GetDlgItem(IDC_BROWSER);
+   m_pBrowser = pRptMgr->CreateReportBrowser(pWnd->GetSafeHwnd(),0,pRptSpec,nullSpecBuilder);
 
    // restore the size of the window
    {
