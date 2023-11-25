@@ -9787,13 +9787,23 @@ pgsTypes::OverlayLoadDistributionType CProjectAgentImp::GetOverlayLoadDistributi
 
 pgsTypes::HaunchLoadComputationType CProjectAgentImp::GetHaunchLoadComputationType() const
 {
-   if(!IsAssumedExcessCamberForLoad())
+   GET_IFACE(IBridge,pBridge);
+
+   if(pBridge->GetHaunchInputDepthType() == pgsTypes::hidACamber)
    {
-      // Practically impossible to compute excess camber on the fly for spliced girders. Don't even try
-      return pgsTypes::hlcZeroCamber;
+      if (!IsAssumedExcessCamberForLoad())
+      {
+         return pgsTypes::hlcZeroCamber;
+      }
+      else
+      {
+         const auto& haunch_criteria = m_pSpecEntry->GetHaunchCriteria();
+         return haunch_criteria.HaunchLoadComputationType;
+      }
    }
    else
    {
+      // Direct input
       const auto& haunch_criteria = m_pSpecEntry->GetHaunchCriteria();
       return haunch_criteria.HaunchLoadComputationType;
    }

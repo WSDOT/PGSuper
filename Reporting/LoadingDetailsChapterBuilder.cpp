@@ -648,7 +648,7 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(IBroker* pBroker, rptChapter*
          
          if (pgsTypes::hlcZeroCamber == HaunchLoadComputationType)
          {
-            *pNotePara << rptNewLine << _T("Haunch weight is computed on slab offset and includes effects of roadway geometry, and is measured along the centerline of the girder, but does not include a reduction for camber.");
+            *pNotePara << rptNewLine << _T("Haunch weight is computed based on slab offset and includes effects of roadway geometry, and is measured along the center chordline of the girder, and hence does not include a reduction for camber.");
          }
          else if (isSlabOffsetInput)
          {
@@ -656,7 +656,7 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(IBroker* pBroker, rptChapter*
          }
          else
          {
-            *pNotePara << rptNewLine << _T("Haunch weight is computed from user-input haunch depths.");
+            *pNotePara << rptNewLine << _T("Haunch weight is computed from user-input explicit haunch depths.");
          }
 
          if (deck_type == pgsTypes::sdtCompositeSIP)
@@ -715,11 +715,15 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(IBroker* pBroker, rptChapter*
          p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
       }
 
-      if (do_report_haunch && !is_uniform)
+      CComPtr<IBroker> pBroker;
+      EAFGetBroker(&pBroker);
+      GET_IFACE2_NOCHECK(pBroker,ISpecification,pSpec);
+
+      // detailed input not useful for direct haunch input with detailed analysis
+      bool dont_report_dirdet = !isSlabOffsetInput && pSpec->GetHaunchLoadComputationType() == pgsTypes::hlcDetailedAnalysis;
+
+      if (do_report_haunch && !is_uniform && !dont_report_dirdet)
       {
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
-         GET_IFACE2_NOCHECK(pBroker,ISpecification,pSpec);
 
          bool report_camber = isSlabOffsetInput &&  pSpec->GetHaunchLoadComputationType() == pgsTypes::hlcDetailedAnalysis;
 
