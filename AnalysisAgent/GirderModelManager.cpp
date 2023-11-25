@@ -15678,6 +15678,9 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
       if (isHaunchDirect && pgsTypes::hlcDetailedAnalysis == HaunchLoadComputationType)
       {
          real_pad_hgt = pSectProps->GetStructuralHaunchDepth(poi,pgsTypes::hspDetailedDescription);
+
+         // Add panel depth to account for cast material between panel edges
+         real_pad_hgt += panel_depth;
       }
       else
       {
@@ -15686,7 +15689,8 @@ void CGirderModelManager::GetMainSpanSlabLoadEx(const CSegmentKey& segmentKey, b
 
       // Don't use negative haunch depth for loading
       Float64 pad_hgt = 0.0 < real_pad_hgt ? real_pad_hgt : 0.0;
-      // mating surface
+
+      // Mating surface
       Float64 mating_surface_width = 0;
       MatingSurfaceIndexType nMatingSurfaces = pGirder->GetMatingSurfaceCount(segmentKey);
       ATLASSERT( nMatingSurfaces == pGirder->GetMatingSurfaceCount(segmentKey) );
