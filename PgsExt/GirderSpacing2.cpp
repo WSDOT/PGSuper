@@ -1034,7 +1034,8 @@ Float64 CGirderSpacing2::GetSpacingWidthToGirder(GirderIndexType targetGirderIdx
    }
    else
    {
-      return std::accumulate(m_GirderSpacing.begin(),m_GirderSpacing.begin()+ targetGirderIdx,0.0);
+      auto end = targetGirderIdx < m_GirderSpacing.size() ? m_GirderSpacing.begin() + targetGirderIdx : m_GirderSpacing.end();
+      return std::accumulate(m_GirderSpacing.begin(),end,0.0);
    }
 }
 
