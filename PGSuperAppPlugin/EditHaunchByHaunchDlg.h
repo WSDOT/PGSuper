@@ -46,6 +46,7 @@ public:
    // Current selections for haunch depth spec
    pgsTypes::HaunchInputLocationType m_HaunchInputLocationType;
    pgsTypes::HaunchInputDistributionType m_HaunchInputDistributionType;
+   pgsTypes::HaunchLayoutType m_HaunchLayoutType;
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
