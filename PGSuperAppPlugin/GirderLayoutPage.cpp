@@ -276,8 +276,8 @@ BOOL CSpanGirderLayoutPage::OnInitDialog()
    // Fill up the combo boxes for how girder spacing is measured
    Float64 offset;
    ConnectionLibraryEntry::BearingOffsetMeasurementType start_measure, end_measure;
-   pParent->m_pPrevPier->GetBearingOffset(pgsTypes::Ahead, &offset,&start_measure,true);
-   pParent->m_pNextPier->GetBearingOffset(pgsTypes::Back,  &offset,&end_measure,true);
+   std::tie(offset,start_measure) = pParent->m_pPrevPier->GetBearingOffset(pgsTypes::Ahead, true);
+   std::tie(offset,end_measure) = pParent->m_pNextPier->GetBearingOffset(pgsTypes::Back, true);
    FillGirderSpacingMeasurementComboBox(IDC_PREV_PIER_GIRDER_SPACING_MEASURE,pgsTypes::metStart,start_measure);
    FillGirderSpacingMeasurementComboBox(IDC_NEXT_PIER_GIRDER_SPACING_MEASURE,pgsTypes::metEnd,  end_measure);
 
@@ -644,8 +644,8 @@ void CSpanGirderLayoutPage::OnChangeSameGirderSpacing()
          // check connections to see what spacing locations we can use
          Float64 offset;
          ConnectionLibraryEntry::BearingOffsetMeasurementType start_measure, end_measure;
-         pParent->m_pPrevPier->GetBearingOffset(pgsTypes::Ahead,&offset,&start_measure,true);
-         pParent->m_pNextPier->GetBearingOffset(pgsTypes::Back, &offset,&end_measure,true);
+         std::tie(offset,start_measure) = pParent->m_pPrevPier->GetBearingOffset(pgsTypes::Ahead,true);
+         std::tie(offset,end_measure) = pParent->m_pNextPier->GetBearingOffset(pgsTypes::Back,true);
          dlg.m_RestrictSpacing = start_measure==ConnectionLibraryEntry::AlongGirder || end_measure==ConnectionLibraryEntry::AlongGirder;
 
          dlg.m_strSpacings = strItems;

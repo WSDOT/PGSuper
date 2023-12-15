@@ -1426,7 +1426,7 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
    // If this fires, then the call to CreateFirstSpan hasn't been made yet
    ASSERT( 2 <= m_Piers.size() && 1 <= m_Spans.size() && 1 <= m_GirderGroups.size() ); 
 
-   // get the refernece pier index
+   // get the reference pier index
    if ( refPierIdx == INVALID_INDEX )
    {
       // append at end of bridge
@@ -1545,15 +1545,11 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
 
       if ( pierFace == pgsTypes::Ahead && m_Piers[refPierIdx]->GetNextSpan() == nullptr )
       {
+         // end pier becomes interior pier, populate ahead face data
          pRefPier->SetGirderSpacing(pgsTypes::Ahead,*(pRefPier->GetGirderSpacing(pgsTypes::Back)));
 
-         Float64 endDist;
-         ConnectionLibraryEntry::EndDistanceMeasurementType endDistMeasure;
-         pRefPier->GetGirderEndDistance(pgsTypes::Back,&endDist,&endDistMeasure);
-
-         Float64 brgOffset;
-         ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetMeasure;
-         pRefPier->GetBearingOffset(pgsTypes::Back,&brgOffset,&brgOffsetMeasure);
+         auto [endDist,endDistMeasure] = pRefPier->GetGirderEndDistance(pgsTypes::Back,true);
+         auto [brgOffset,brgOffsetMeasure] = pRefPier->GetBearingOffset(pgsTypes::Back);
 
          if ( brgOffset < endDist )
          {
@@ -1588,15 +1584,11 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
       }
       else if ( pierFace == pgsTypes::Back && m_Piers[refPierIdx]->GetPrevSpan() == nullptr )
       {
+         // start pier becomes interior pier, need to populate back face data
          pRefPier->SetGirderSpacing(pgsTypes::Back,*(pRefPier->GetGirderSpacing(pgsTypes::Ahead)));
 
-         Float64 endDist;
-         ConnectionLibraryEntry::EndDistanceMeasurementType endDistMeasure;
-         pRefPier->GetGirderEndDistance(pgsTypes::Ahead,&endDist,&endDistMeasure);
-
-         Float64 brgOffset;
-         ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetMeasure;
-         pRefPier->GetBearingOffset(pgsTypes::Ahead,&brgOffset,&brgOffsetMeasure);
+         auto [endDist, endDistMeasure] = pRefPier->GetGirderEndDistance(pgsTypes::Ahead, true);
+         auto [brgOffset, brgOffsetMeasure] = pRefPier->GetBearingOffset(pgsTypes::Ahead, true);
 
          if ( brgOffset < endDist )
          {
@@ -1628,19 +1620,94 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
 
          pRefPier->SetSlabOffset(pgsTypes::Back, pRefPier->GetSlabOffset(pgsTypes::Ahead, true));
       }
+      else if (pierFace == pgsTypes::Ahead && refPierIdx == 0 && pPierData == nullptr)
+      {
+         // new pier is interior, but is initialized from first pier
+         // need to populate back face data
+         pNewPier->SetGirderSpacing(pgsTypes::Back, *(pNewPier->GetGirderSpacing(pgsTypes::Ahead)));
+
+         auto [endDist,endDistMeasure] = pNewPier->GetGirderEndDistance(pgsTypes::Ahead,true);
+         auto [brgOffset,brgOffsetMeasure] = pNewPier->GetBearingOffset(pgsTypes::Ahead, true);
+
+         if (brgOffset < endDist)
+         {
+            // the ends of the girders are going to overlap... adjust the end
+            // distance on both sides of the pier
+
+            // NOTE: this isn't exactly the perfect way to do it. The measurement type
+            // of brgOffset and endDist are not taking into account. The goal is to
+            // ensure that the ends of girders at a common pier don't occupy the same space
+            endDist = brgOffset;
+            pNewPier->SetGirderEndDistance(pgsTypes::Ahead, endDist, endDistMeasure);
+            pNewPier->SetBearingOffset(pgsTypes::Ahead, brgOffset, brgOffsetMeasure);
+            pNewPier->SetGirderEndDistance(pgsTypes::Back, endDist, endDistMeasure);
+            pNewPier->SetBearingOffset(pgsTypes::Back, brgOffset, brgOffsetMeasure);
+         }
+         else
+         {
+            pNewPier->SetGirderEndDistance(pgsTypes::Back, endDist, endDistMeasure);
+            pNewPier->SetBearingOffset(pgsTypes::Back, brgOffset, brgOffsetMeasure);
+         }
+
+         pNewPier->MirrorBearingData(pgsTypes::Ahead); // make back bearings same as ahead
+
+         pNewPier->SetDiaphragmHeight(pgsTypes::Back, pNewPier->GetDiaphragmHeight(pgsTypes::Ahead));
+         pNewPier->SetDiaphragmWidth(pgsTypes::Back, pNewPier->GetDiaphragmWidth(pgsTypes::Ahead));
+
+         pNewPier->SetDiaphragmLoadType(pgsTypes::Back, pNewPier->GetDiaphragmLoadType(pgsTypes::Ahead));
+         pNewPier->SetDiaphragmLoadLocation(pgsTypes::Back, pNewPier->GetDiaphragmLoadLocation(pgsTypes::Ahead));
+
+         pNewPier->SetSlabOffset(pgsTypes::Back, pNewPier->GetSlabOffset(pgsTypes::Ahead, true));
+      }
+      else if (pierFace == pgsTypes::Back && refPierIdx == m_Piers.size()-1 && pPierData == nullptr)
+      {
+         // new pier is interior, but is initialized from last pier
+         // need to populate ahead face data
+         pNewPier->SetGirderSpacing(pgsTypes::Ahead, *(pNewPier->GetGirderSpacing(pgsTypes::Back)));
+
+         auto [endDist, endDistMeasure] = pNewPier->GetGirderEndDistance(pgsTypes::Back, true);
+         auto [brgOffset, brgOffsetMeasure] = pNewPier->GetBearingOffset(pgsTypes::Back, true);
+
+         if (brgOffset < endDist)
+         {
+            // the ends of the girders are going to overlap... adjust the end
+            // distance on both sides of the pier
+
+            // NOTE: this isn't exactly the perfect way to do it. The measurement type
+            // of brgOffset and endDist are not taking into account. The goal is to
+            // ensure that the ends of girders at a common pier don't occupy the same space
+            endDist = brgOffset;
+            pNewPier->SetGirderEndDistance(pgsTypes::Back, endDist, endDistMeasure);
+            pNewPier->SetBearingOffset(pgsTypes::Back, brgOffset, brgOffsetMeasure);
+
+            pNewPier->SetGirderEndDistance(pgsTypes::Ahead, endDist, endDistMeasure);
+            pNewPier->SetBearingOffset(pgsTypes::Ahead, brgOffset, brgOffsetMeasure);
+         }
+         else
+         {
+            pNewPier->SetGirderEndDistance(pgsTypes::Ahead, endDist, endDistMeasure);
+            pNewPier->SetBearingOffset(pgsTypes::Ahead, brgOffset, brgOffsetMeasure);
+         }
+
+         pNewPier->MirrorBearingData(pgsTypes::Back); // make ahead bearings same as back
+
+         pNewPier->SetDiaphragmHeight(pgsTypes::Ahead, pNewPier->GetDiaphragmHeight(pgsTypes::Back));
+         pNewPier->SetDiaphragmWidth(pgsTypes::Ahead, pNewPier->GetDiaphragmWidth(pgsTypes::Back));
+
+         pNewPier->SetDiaphragmLoadType(pgsTypes::Ahead, pNewPier->GetDiaphragmLoadType(pgsTypes::Back));
+         pNewPier->SetDiaphragmLoadLocation(pgsTypes::Ahead, pNewPier->GetDiaphragmLoadLocation(pgsTypes::Back));
+
+         pNewPier->SetSlabOffset(pgsTypes::Ahead, pNewPier->GetSlabOffset(pgsTypes::Back, true));
+      }
       else
       {
          // the new pier is an interior pier so make sure the connection geometry is ok
          for ( int i = 0; i < 2; i++ )
          {
             pgsTypes::PierFaceType face = (pgsTypes::PierFaceType)i;
-            Float64 endDist;
-            ConnectionLibraryEntry::EndDistanceMeasurementType endDistMeasure;
-            pNewPier->GetGirderEndDistance(face,&endDist,&endDistMeasure);
-
-            Float64 brgOffset;
-            ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetMeasure;
-            pNewPier->GetBearingOffset(face,&brgOffset,&brgOffsetMeasure);
+            
+            auto [endDist,endDistMeasure] = pNewPier->GetGirderEndDistance(face,true);
+            auto [brgOffset, brgOffsetMeasure] = pNewPier->GetBearingOffset(face,true);
 
             // NOTE: this isn't exactly the perfect way to do it. The measurement type
             // of brgOffset and endDist are not taking into account. The goal is to
@@ -1707,7 +1774,7 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
 
    RenumberSpans(); // updates indicies as well as Pier<-->Span<-->Pier pointers
 
-   // now, update the group pier referneces
+   // now, update the group pier references
    // notice that the comparison to refPierIdx is based on the pier indices prior to renumbering
    // so that is why we had to capture the start/end pier indicies before renumbering.
    // Updating the piers must be done after renumbering otherwise it messes up the girder objects
@@ -2057,7 +2124,7 @@ void CBridgeDescription2::RemoveSpan(SpanIndexType spanIdx,pgsTypes::RemovePierT
    // Remove negative rebar data at the pier that is being removed
    RemoveNegMomentRebar(removePierIdx);
 
-   // for all neg moment rebar data occuring after the removed pier, decrement the pier index by one
+   // for all neg moment rebar data occurring after the removed pier, decrement the pier index by one
    for (auto& nmRebar : m_Deck.DeckRebarData.NegMomentRebar)
    {
       if (removePierIdx < nmRebar.PierIdx)
@@ -2158,7 +2225,7 @@ GroupIndexType CBridgeDescription2::CreateGirderGroup(GroupIndexType refGroupIdx
    CPierData2* pEndPier   = (end == pgsTypes::metStart ? pRefGroup->GetPier(pgsTypes::metEnd) : nullptr);
    
    Float64 offset = 0; // the amount the piers and temporary supports must be
-                       // offset to accomodate the new spans
+                       // offset to accommodate the new spans
 
    // Create new spans and piers
    auto iter = std::begin(spanLengths);
@@ -2605,7 +2672,7 @@ bool CBridgeDescription2::SetSpanLength(SpanIndexType spanIdx,Float64 newLength)
       else if ( newEndSpanStation < tsStation )
       {
          // the temporary support is in the span that is changing length and the end of the span will come before the temporary 
-         // support making it invalid. move the temorary support keeping its relative location within the span
+         // support making it invalid. move the temporary support keeping its relative location within the span
 
          ATLASSERT(::InRange(startSpanStation,tsStation,endSpanStation));
          ATLASSERT(deltaL < 0);

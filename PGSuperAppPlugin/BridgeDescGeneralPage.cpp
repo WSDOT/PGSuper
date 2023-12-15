@@ -1133,8 +1133,8 @@ bool CBridgeDescGeneralPage::AreAnyBearingsMeasuredAlongGirder()
 
       Float64 offset;
       ConnectionLibraryEntry::BearingOffsetMeasurementType mbs, mbe;
-      pPrevPier->GetBearingOffset(pgsTypes::Ahead,&offset,&mbs,true);
-      pNextPier->GetBearingOffset(pgsTypes::Back, &offset,&mbe,true);
+      std::tie(offset,mbs) = pPrevPier->GetBearingOffset(pgsTypes::Ahead,true);
+      std::tie(offset,mbe) = pNextPier->GetBearingOffset(pgsTypes::Back, true);
 
       if (mbs == ConnectionLibraryEntry::AlongGirder || mbe == ConnectionLibraryEntry::AlongGirder )
       {

@@ -167,14 +167,9 @@ private:
    // 0 for strength/service limit state, 1 for fatigue limit state
    struct LLDF
    {
-      Float64 gNM[2];
-      Float64 gPM[2];
-      Float64 gV[2];
-
-      LLDF()
-      {
-         gNM[0]=1.0; gNM[1]=1.0; gPM[0]=1.0; gPM[1]=1.0; gV[0]=1.0; gV[1]=1.0;
-      }
+      std::array<Float64,2> gNM{1.0,1.0};
+      std::array<Float64,2> gPM{1.0,1.0};
+      std::array<Float64,2> gV{ 1.0,1.0 };
 
       bool operator==(const LLDF& rOther) const
       {
@@ -186,10 +181,10 @@ private:
 
    mutable std::vector<LLDF> m_LLDFs; // this is mutable because we may have to change the container size on Get functions
 
-   // safe internal function for getting lldfs in lieue of girder count changes
+   // safe internal function for getting lldfs in lieu of girder count changes
    LLDF& GetLLDF(GirderIndexType igs) const;
 
-   mutable std::vector<Float64> m_vAssumedExcessCambers; // Assummed Excess Camber for each girder in span. First value is used for aec:Span
+   mutable std::vector<Float64> m_vAssumedExcessCambers; // Assumed Excess Camber for each girder in span. First value is used for aec:Span
 
    // make sure AssumedExcessCamber data stays intact from girder count changes
    void ProtectAssumedExcessCamber() const;

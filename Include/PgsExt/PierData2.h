@@ -179,13 +179,13 @@ public:
    // returns true if data changed
    bool SetGirderEndDistance(pgsTypes::PierFaceType face,Float64 endDist,ConnectionLibraryEntry::EndDistanceMeasurementType measure);
    // Set bRaw=true to avoid an Assert if trying to get invalid data
-   void GetGirderEndDistance(pgsTypes::PierFaceType face,Float64* pEndDist,ConnectionLibraryEntry::EndDistanceMeasurementType* pMeasure, bool bRaw=false) const;
+   std::pair<Float64, ConnectionLibraryEntry::EndDistanceMeasurementType> GetGirderEndDistance(pgsTypes::PierFaceType face, bool bRaw=false) const;
 
    // Set/Get the distance from the CL pier (defined by its station) to the CL bearing
    // These parameters are meaningless if the connection type is pgsTypes::ContinuousSegment
    // returns true if data changed
    bool SetBearingOffset(pgsTypes::PierFaceType face,Float64 offset,ConnectionLibraryEntry::BearingOffsetMeasurementType measure);
-   void GetBearingOffset(pgsTypes::PierFaceType face,Float64* pOffset,ConnectionLibraryEntry::BearingOffsetMeasurementType* pMeasure, bool bRaw = false) const;
+   std::pair<Float64, ConnectionLibraryEntry::BearingOffsetMeasurementType> GetBearingOffset(pgsTypes::PierFaceType face,bool bRaw = false) const;
 
    // Set/Get the bearing data - uniform at this girder line (pier face), or per girder
    void SetBearingData(pgsTypes::PierFaceType face, const CBearingData2& bd);

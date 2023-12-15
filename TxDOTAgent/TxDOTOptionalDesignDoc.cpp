@@ -1299,13 +1299,11 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
    pRgtPier->SetDiaphragmLoadLocation(pgsTypes::Back,pConREntry->GetDiaphragmLoadLocation());
 
    // Span length is bearing to bearing - must subtract connection length
-   Float64 offset;
-   ConnectionLibraryEntry::BearingOffsetMeasurementType mtOffset;
-   pLftPier->GetBearingOffset(pgsTypes::Ahead,&offset,&mtOffset);
+   auto [offset,mtOffset] = pLftPier->GetBearingOffset(pgsTypes::Ahead);
 
    Float64 conn_len = offset;
 
-   pRgtPier->GetBearingOffset(pgsTypes::Back,&offset,&mtOffset);
+   std::tie(offset,mtOffset) = pRgtPier->GetBearingOffset(pgsTypes::Back);
    conn_len += offset;
 
    Float64 span_length = m_ProjectData.GetSpanLength();

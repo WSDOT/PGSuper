@@ -207,8 +207,8 @@ void CClosureJointGeometryPage::Init(const CTemporarySupportData* pTS)
    m_bIsPier = false;
    m_strSupportLabel = _T("Temporary Support");
 
-   pTS->GetGirderEndDistance(&m_EndDistance,&m_EndDistanceMeasurementType);
-   pTS->GetBearingOffset(&m_BearingOffset,&m_BearingOffsetMeasurementType);
+   std::tie(m_EndDistance, m_EndDistanceMeasurementType) = pTS->GetGirderEndDistance();
+   std::tie(m_BearingOffset, m_BearingOffsetMeasurementType) = pTS->GetBearingOffset();
 
    const CClosureJointData* pClosureJoint = pTS->GetClosureJoint(0);
    if ( pClosureJoint )
@@ -224,8 +224,8 @@ void CClosureJointGeometryPage::Init(const CPierData2* pPierData)
    m_strSupportLabel = _T("Pier");
 
    // we are forcing both sides of the pier to be the same so just use Ahead face
-   pPierData->GetGirderEndDistance(pgsTypes::Ahead,&m_EndDistance,&m_EndDistanceMeasurementType,true);
-   pPierData->GetBearingOffset(pgsTypes::Ahead,&m_BearingOffset,&m_BearingOffsetMeasurementType,true);
+   std::tie(m_EndDistance, m_EndDistanceMeasurementType) = pPierData->GetGirderEndDistance(pgsTypes::Ahead,true);
+   std::tie(m_BearingOffset, m_BearingOffsetMeasurementType) = pPierData->GetBearingOffset(pgsTypes::Ahead,true);
 
    m_DiaphragmWidth = pPierData->GetDiaphragmWidth(pgsTypes::Back) + pPierData->GetDiaphragmWidth(pgsTypes::Ahead);
    m_DiaphragmWidth = Max(m_DiaphragmWidth, -1.0);

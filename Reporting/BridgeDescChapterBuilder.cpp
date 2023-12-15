@@ -2376,16 +2376,12 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
       // back side
       if (CPierData2::pcfBothFaces == conFlag || CPierData2::pcfBackOnly == conFlag)
       {
-         Float64 brgOffset;
-         ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetMeasure;
-         pPier->GetBearingOffset(pgsTypes::Back,&brgOffset,&brgOffsetMeasure);
+         auto [brgOffset, brgOffsetMeasure] = pPier->GetBearingOffset(pgsTypes::Back);
          (*pConnectionTable)(row3,1) << cmpdim.SetValue(brgOffset);
 
          (*pConnectionTable)(row3,2) << GetBearingOffsetMeasureString(brgOffsetMeasure,bAbutment,true);
 
-         Float64 endDist;
-         ConnectionLibraryEntry::EndDistanceMeasurementType endDistMeasure;
-         pPier->GetGirderEndDistance(pgsTypes::Back,&endDist,&endDistMeasure);
+         auto [endDist,endDistMeasure] = pPier->GetGirderEndDistance(pgsTypes::Back);
          (*pConnectionTable)(row3,3) << cmpdim.SetValue(endDist);
          (*pConnectionTable)(row3,4) << GetEndDistanceMeasureString(endDistMeasure,bAbutment,true);
       }
@@ -2400,15 +2396,11 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
       // Ahead side
       if (CPierData2::pcfBothFaces == conFlag || CPierData2::pcfAheadOnly == conFlag)
       {
-         Float64 brgOffset;
-         ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetMeasure;
-         pPier->GetBearingOffset(pgsTypes::Ahead,&brgOffset,&brgOffsetMeasure);
+         auto [brgOffset,brgOffsetMeasure] = pPier->GetBearingOffset(pgsTypes::Ahead);
          (*pConnectionTable)(row3,5) << cmpdim.SetValue(brgOffset);
          (*pConnectionTable)(row3,6) << GetBearingOffsetMeasureString(brgOffsetMeasure,bAbutment,true);
 
-         Float64 endDist;
-         ConnectionLibraryEntry::EndDistanceMeasurementType endDistMeasure;
-         pPier->GetGirderEndDistance(pgsTypes::Ahead,&endDist,&endDistMeasure);
+         auto [endDist,endDistMeasure] = pPier->GetGirderEndDistance(pgsTypes::Ahead);
          (*pConnectionTable)(row3,7) << cmpdim.SetValue(endDist);
          (*pConnectionTable)(row3,8) << GetEndDistanceMeasureString(endDistMeasure,bAbutment,true);
       }
@@ -2686,15 +2678,11 @@ void write_ts_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
 
       if ( pTS->GetConnectionType() == pgsTypes::tsctClosureJoint )
       {
-         Float64 brgOffset;
-         ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetMeasure;
-         pTS->GetBearingOffset(&brgOffset,&brgOffsetMeasure);
+         auto [brgOffset,brgOffsetMeasure] = pTS->GetBearingOffset();
          (*pConnectionsTable)(connections_row, connections_col++) << cmpdim.SetValue(brgOffset);
          (*pConnectionsTable)(connections_row, connections_col++) << GetTempSupportBearingOffsetMeasureString(brgOffsetMeasure,true);
 
-         Float64 endDist;
-         ConnectionLibraryEntry::EndDistanceMeasurementType endDistMeasure;
-         pTS->GetGirderEndDistance(&endDist,&endDistMeasure);
+         auto [endDist,endDistMeasure] = pTS->GetGirderEndDistance();
          (*pConnectionsTable)(connections_row, connections_col++) << cmpdim.SetValue(endDist);
          (*pConnectionsTable)(connections_row, connections_col++) << GetTempSupportEndDistanceMeasureString(endDistMeasure,true);
 
