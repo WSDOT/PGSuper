@@ -6450,13 +6450,10 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    {
       CPierData2* pPier = m_BridgeDescription.GetPier(pierIdx);
 
-      Float64 brgOffset, endDist;
-      ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetMeasure;
-      ConnectionLibraryEntry::EndDistanceMeasurementType endDistMeasure;
       if (pPier->GetPrevSpan())
       {
-         pPier->GetBearingOffset(pgsTypes::Back, &brgOffset, &brgOffsetMeasure,true);
-         pPier->GetGirderEndDistance(pgsTypes::Back, &endDist, &endDistMeasure,true);
+         auto [brgOffset,brgOffsetMeasure] = pPier->GetBearingOffset(pgsTypes::Back, true);
+         auto [endDist, endDistMeasure] = pPier->GetGirderEndDistance(pgsTypes::Back, true);
          if (brgOffset < endDist)
          {
             pPier->SetGirderEndDistance(pgsTypes::Back, brgOffset, endDistMeasure);
@@ -6470,8 +6467,8 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
 
       if (pPier->GetNextSpan())
       {
-         pPier->GetBearingOffset(pgsTypes::Ahead, &brgOffset, &brgOffsetMeasure,true);
-         pPier->GetGirderEndDistance(pgsTypes::Ahead, &endDist, &endDistMeasure,true);
+         auto [brgOffset,brgOffsetMeasure] = pPier->GetBearingOffset(pgsTypes::Ahead, true);
+         auto [endDist, endDistMeasure] = pPier->GetGirderEndDistance(pgsTypes::Ahead, true);
          if (brgOffset < endDist)
          {
             pPier->SetGirderEndDistance(pgsTypes::Ahead, brgOffset, endDistMeasure);
@@ -8240,11 +8237,11 @@ void CProjectAgentImp::SetConnectionGeometry(PierIndexType pierIdx, pgsTypes::Pi
 
 void CProjectAgentImp::GetConnectionGeometry(PierIndexType pierIdx, pgsTypes::PierFaceType face,
                                              Float64* endDist, ConnectionLibraryEntry::EndDistanceMeasurementType* endDistMeasure,
-                                             Float64* bearingOffset, ConnectionLibraryEntry::BearingOffsetMeasurementType* bearingOffsetMeasurementType) const
+                                             Float64* bearingOffset, ConnectionLibraryEntry::BearingOffsetMeasurementType* bearingOffsetMeasure) const
 {
    const CPierData2* pPier = m_BridgeDescription.GetPier(pierIdx);
-   pPier->GetGirderEndDistance(face, endDist, endDistMeasure,true);
-   pPier->GetBearingOffset(face, bearingOffset, bearingOffsetMeasurementType,true);
+   std::tie(*endDist,*endDistMeasure) = pPier->GetGirderEndDistance(face, true);
+   std::tie(*bearingOffset,*bearingOffsetMeasure) = pPier->GetBearingOffset(face, true);
 }
 
 void CProjectAgentImp::SetPierDiaphragmData(PierIndexType pierIdx, pgsTypes::PierFaceType face,

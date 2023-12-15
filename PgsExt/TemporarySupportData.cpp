@@ -286,7 +286,7 @@ HRESULT CTemporarySupportData::Load(IStructuredLoad* pStrLoad,IProgress* pProgre
 
       if ( 2 < version )
       {
-         // conditional changed in vesrion 5 from erection tower to HasElevationAdjustment()
+         // conditional changed in version 5 from erection tower to HasElevationAdjustment()
          if ( (version < 5 && m_SupportType == pgsTypes::ErectionTower) || (4 < version && HasElevationAdjustment()) )
          {
             var.vt = VT_R8;
@@ -611,10 +611,9 @@ void CTemporarySupportData::SetGirderEndDistance(Float64 endDist,ConnectionLibra
    m_EndDistanceMeasurementType = measure;
 }
 
-void CTemporarySupportData::GetGirderEndDistance(Float64* pEndDist,ConnectionLibraryEntry::EndDistanceMeasurementType* pMeasure) const
+std::pair<Float64, ConnectionLibraryEntry::EndDistanceMeasurementType> CTemporarySupportData::GetGirderEndDistance() const
 {
-   *pEndDist = m_GirderEndDistance;
-   *pMeasure = m_EndDistanceMeasurementType;
+   return { m_GirderEndDistance, m_EndDistanceMeasurementType };
 }
 
 void CTemporarySupportData::SetBearingOffset(Float64 offset,ConnectionLibraryEntry::BearingOffsetMeasurementType measure)
@@ -623,10 +622,9 @@ void CTemporarySupportData::SetBearingOffset(Float64 offset,ConnectionLibraryEnt
    m_BearingOffsetMeasurementType = measure;
 }
 
-void CTemporarySupportData::GetBearingOffset(Float64* pOffset,ConnectionLibraryEntry::BearingOffsetMeasurementType* pMeasure) const
+std::pair<Float64, ConnectionLibraryEntry::BearingOffsetMeasurementType> CTemporarySupportData::GetBearingOffset() const
 {
-   *pOffset  = m_GirderBearingOffset;
-   *pMeasure = m_BearingOffsetMeasurementType;
+   return { m_GirderBearingOffset, m_BearingOffsetMeasurementType };
 }
 
 void CTemporarySupportData::GetSlabOffsetPrivate(Float64* pBackSlabOffset, Float64* pAheadSlabOffset) const

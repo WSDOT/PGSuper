@@ -76,15 +76,12 @@ inline void WriteCompareCell(rptRcTable* p_table, RowIndexType row, ColumnIndexT
 static PierConnectionData MakePierConnectionData(PierCBLocType locType, const CPierData2* pPier)
 {
    pgsTypes::BoundaryConditionType bcType = pPier->GetBoundaryConditionType();
-   Float64 backBrgOffset, aheadBrgOffset;
-   ConnectionLibraryEntry::BearingOffsetMeasurementType backBrgOffsetMeasure, aheadBrgOffsetMeasure;
-   pPier->GetBearingOffset(pgsTypes::Back, &backBrgOffset,&backBrgOffsetMeasure,true);
-   pPier->GetBearingOffset(pgsTypes::Ahead,&aheadBrgOffset,&aheadBrgOffsetMeasure,true);
 
-   Float64 backEndDist, aheadEndDist;
-   ConnectionLibraryEntry::EndDistanceMeasurementType backEndDistMeasure, aheadEndDistMeasure;
-   pPier->GetGirderEndDistance(pgsTypes::Back, &backEndDist, &backEndDistMeasure,true);
-   pPier->GetGirderEndDistance(pgsTypes::Ahead, &aheadEndDist, &aheadEndDistMeasure,true);
+   auto [backBrgOffset,backBrgOffsetMeasure] = pPier->GetBearingOffset(pgsTypes::Back, true);
+   auto [aheadBrgOffset, aheadBrgOffsetMeasure] = pPier->GetBearingOffset(pgsTypes::Ahead,true);
+
+   auto [backEndDist,backEndDistMeasure] = pPier->GetGirderEndDistance(pgsTypes::Back, true);
+   auto [aheadEndDist,aheadEndDistMeasure] = pPier->GetGirderEndDistance(pgsTypes::Ahead, true);
 
    return PierConnectionData(locType, bcType,
                                       backEndDist,  backEndDistMeasure,  backBrgOffset,  backBrgOffsetMeasure,

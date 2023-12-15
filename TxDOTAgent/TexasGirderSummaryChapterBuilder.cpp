@@ -375,18 +375,15 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    (*pTable)(row,0) << _T("Traffic Barrier Weight (per girder)");
    (*pTable)(row++,1) << fpl.SetValue( -pProductLoads->GetTrafficBarrierLoad(segmentKey) );
 
-   Float64 brgOffset, endDistance;
-   ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetMeasure;
-   ConnectionLibraryEntry::EndDistanceMeasurementType endDistanceMeasure;
-   pPrevPier->GetBearingOffset(pgsTypes::Ahead,&brgOffset,&brgOffsetMeasure);
-   pPrevPier->GetGirderEndDistance(pgsTypes::Ahead,&endDistance,&endDistanceMeasure);
+   auto [brgOffset,brgOffsetMeasure] = pPrevPier->GetBearingOffset(pgsTypes::Ahead);
+   auto [endDistance,endDistanceMeasure] = pPrevPier->GetGirderEndDistance(pgsTypes::Ahead);
    (*pTable)(row,0) << _T("Connection Geometry at ") << LABEL_PIER_EX(pPrevPier->IsAbutment(),pPrevPier->GetIndex());
    (*pTable)(row,1) << _T("Bearing Offset: ") << length.SetValue(brgOffset) << _T(" ") << GetBearingOffsetMeasureString(brgOffsetMeasure,pPrevPier->IsAbutment(),false) << rptNewLine;
    (*pTable)(row,1) << _T("End Distance: ") << length.SetValue(endDistance) << _T(" ") << GetEndDistanceMeasureString(endDistanceMeasure,pPrevPier->IsAbutment(),false);
    row++;
 
-   pNextPier->GetBearingOffset(pgsTypes::Back,&brgOffset,&brgOffsetMeasure);
-   pNextPier->GetGirderEndDistance(pgsTypes::Back,&endDistance,&endDistanceMeasure);
+   std::tie(brgOffset,brgOffsetMeasure) = pNextPier->GetBearingOffset(pgsTypes::Back);
+   std::tie(endDistance,endDistanceMeasure) = pNextPier->GetGirderEndDistance(pgsTypes::Back);
    (*pTable)(row,0) << _T("Connection Geometry at ") << LABEL_PIER_EX(pNextPier->IsAbutment(), pNextPier->GetIndex());
    (*pTable)(row,1) << _T("Bearing Offset: ") << length.SetValue(brgOffset) << _T(" ") << GetBearingOffsetMeasureString(brgOffsetMeasure,pNextPier->IsAbutment(),false) << rptNewLine;
    (*pTable)(row,1) << _T("End Distance: ") << length.SetValue(endDistance) << _T(" ") << GetEndDistanceMeasureString(endDistanceMeasure,pNextPier->IsAbutment(),false);

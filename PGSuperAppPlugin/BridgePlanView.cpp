@@ -2210,7 +2210,7 @@ void CBridgePlanView::BuildPierDisplayObjects()
             if (CPierData2::pcfBothFaces==conFlag || CPierData2::pcfBackOnly == conFlag)
             {
                ConnectionLibraryEntry::BearingOffsetMeasurementType left_brg_offset_measure_type;
-               pPier->GetBearingOffset(pgsTypes::Back, &left_offset, &left_brg_offset_measure_type);
+               std::tie(left_offset,left_brg_offset_measure_type) = pPier->GetBearingOffset(pgsTypes::Back);
                if (left_brg_offset_measure_type == ConnectionLibraryEntry::NormalToPier)
                {
                   left_offset /= cos(skew);
@@ -2220,7 +2220,7 @@ void CBridgePlanView::BuildPierDisplayObjects()
             if (CPierData2::pcfBothFaces == conFlag || CPierData2::pcfAheadOnly == conFlag)
             {
                ConnectionLibraryEntry::BearingOffsetMeasurementType right_brg_offset_measure_type;
-               pPier->GetBearingOffset(pgsTypes::Ahead, &right_offset, &right_brg_offset_measure_type);
+               std::tie(right_offset,right_brg_offset_measure_type) = pPier->GetBearingOffset(pgsTypes::Ahead);
                if (right_brg_offset_measure_type == ConnectionLibraryEntry::NormalToPier)
                {
                   right_offset /= cos(skew);
@@ -2728,9 +2728,7 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
 
       Float64 support_width = WBFL::Units::ConvertToSysUnits(6.0, WBFL::Units::Measure::Inch); // a reasonable default. No other data
       
-      Float64 brg_offset;
-      ConnectionLibraryEntry::BearingOffsetMeasurementType brg_offset_measurement_type;
-      pTS->GetBearingOffset(&brg_offset,&brg_offset_measurement_type);
+      auto [brg_offset,brg_offset_measurement_type] = pTS->GetBearingOffset();
       if ( brg_offset_measurement_type == ConnectionLibraryEntry::NormalToPier )
       {
          brg_offset /= cos(skew);

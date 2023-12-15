@@ -1759,7 +1759,7 @@ bool CPierData2::SetGirderEndDistance(pgsTypes::PierFaceType face,Float64 endDis
    }
 }
 
-void CPierData2::GetGirderEndDistance(pgsTypes::PierFaceType face,Float64* pEndDist,ConnectionLibraryEntry::EndDistanceMeasurementType* pMeasure,bool bRaw) const
+std::pair<Float64, ConnectionLibraryEntry::EndDistanceMeasurementType> CPierData2::GetGirderEndDistance(pgsTypes::PierFaceType face,bool bRaw) const
 {
 #ifdef DEBUG
    // Check if caller has any business asking for connection data
@@ -1777,8 +1777,7 @@ void CPierData2::GetGirderEndDistance(pgsTypes::PierFaceType face,Float64* pEndD
    }
 #endif // DEBUG
 
-   *pEndDist = m_GirderEndDistance[face];
-   *pMeasure = m_EndDistanceMeasurementType[face];
+   return { m_GirderEndDistance[face], m_EndDistanceMeasurementType[face] };
 }
 
 bool CPierData2::SetBearingOffset(pgsTypes::PierFaceType face, Float64 offset, ConnectionLibraryEntry::BearingOffsetMeasurementType measure)
@@ -1795,7 +1794,7 @@ bool CPierData2::SetBearingOffset(pgsTypes::PierFaceType face, Float64 offset, C
    }
 }
 
-void CPierData2::GetBearingOffset(pgsTypes::PierFaceType face,Float64* pOffset,ConnectionLibraryEntry::BearingOffsetMeasurementType* pMeasure,bool bRaw) const
+std::pair<Float64, ConnectionLibraryEntry::BearingOffsetMeasurementType> CPierData2::GetBearingOffset(pgsTypes::PierFaceType face,bool bRaw) const
 {
 #ifdef DEBUG
    // Check if caller has any business asking for connection data
@@ -1813,8 +1812,7 @@ void CPierData2::GetBearingOffset(pgsTypes::PierFaceType face,Float64* pOffset,C
    }
 #endif // DEBUG
 
-   *pOffset = m_GirderBearingOffset[face];
-   *pMeasure = m_BearingOffsetMeasurementType[face];
+   return { m_GirderBearingOffset[face], m_BearingOffsetMeasurementType[face] };
 }
 
 void CPierData2::SetBearingData(pgsTypes::PierFaceType face, const CBearingData2 & bd)
@@ -1891,7 +1889,7 @@ Float64 CPierData2::GetNetBearingHeight(GirderIndexType gdrIdx, pgsTypes::PierFa
 
 void CPierData2::ProtectBearingData() const
 {
-   // This function keeps bearing data from being compromized when the bearing type (bridge, pier, girder) changes
+   // This function keeps bearing data from being compromised when the bearing type (bridge, pier, girder) changes
    ATLASSERT(0 == (int)pgsTypes::Ahead); // whole scheme below breaks if this is not true
 
    for (Uint32 i = 0; i < 2; i++)

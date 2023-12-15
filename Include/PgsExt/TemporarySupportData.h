@@ -91,10 +91,10 @@ public:
    const CBridgeDescription2* GetBridgeDescription() const;
 
    void SetGirderEndDistance(Float64 endDist,ConnectionLibraryEntry::EndDistanceMeasurementType measure);
-   void GetGirderEndDistance(Float64* pEndDist,ConnectionLibraryEntry::EndDistanceMeasurementType* pMeasure) const;
+   std::pair<Float64, ConnectionLibraryEntry::EndDistanceMeasurementType> GetGirderEndDistance() const;
 
    void SetBearingOffset(Float64 offset,ConnectionLibraryEntry::BearingOffsetMeasurementType measure);
-   void GetBearingOffset(Float64* pOffset,ConnectionLibraryEntry::BearingOffsetMeasurementType* pMeasure) const;
+   std::pair<Float64, ConnectionLibraryEntry::BearingOffsetMeasurementType> GetBearingOffset() const;
 
    // Slab offset input was removed from PGSplice in 2022. This function is only needed for compatibility with older file format
    void GetSlabOffsetPrivate(Float64* pBackSlabOffset, Float64* pAheadSlabOffset) const;

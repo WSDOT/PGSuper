@@ -196,15 +196,11 @@ bool CBridgeGeometryModelBuilder::LayoutPiers(const CBridgeDescription2* pBridge
       // Layout connection geometry on back side of pier
       if ( CPierData2::pcfBackOnly==conFlag || CPierData2::pcfBothFaces == conFlag)
       {
-         Float64 offset;
-         ConnectionLibraryEntry::BearingOffsetMeasurementType offsetMeasureType;
-         pPier->GetBearingOffset(pgsTypes::Back,&offset,&offsetMeasureType);
+         auto [offset, offsetMeasureType] = pPier->GetBearingOffset(pgsTypes::Back);
          factory->put_BearingOffset( pfBack, offset );
          factory->put_BearingOffsetMeasurementType( pfBack, offsetMeasureType == ConnectionLibraryEntry::AlongGirder ? mtAlongItem : mtNormal );
 
-         Float64 endDist;
-         ConnectionLibraryEntry::EndDistanceMeasurementType endDistMeasureType;
-         pPier->GetGirderEndDistance(pgsTypes::Back,&endDist,&endDistMeasureType);
+         auto [endDist,endDistMeasureType] = pPier->GetGirderEndDistance(pgsTypes::Back);
          factory->put_EndDistance( pfBack, endDist );
          if ( endDistMeasureType == ConnectionLibraryEntry::FromBearingAlongGirder )
          {
@@ -231,15 +227,11 @@ bool CBridgeGeometryModelBuilder::LayoutPiers(const CBridgeDescription2* pBridge
       // Layout connection geometry on ahead side of pier
       if (CPierData2::pcfAheadOnly == conFlag || CPierData2::pcfBothFaces == conFlag)
       {
-         Float64 offset;
-         ConnectionLibraryEntry::BearingOffsetMeasurementType offsetMeasureType;
-         pPier->GetBearingOffset(pgsTypes::Ahead,&offset,&offsetMeasureType);
+         auto [offset, offsetMeasureType] = pPier->GetBearingOffset(pgsTypes::Ahead);
          factory->put_BearingOffset( pfAhead, offset );
          factory->put_BearingOffsetMeasurementType( pfAhead, offsetMeasureType == ConnectionLibraryEntry::AlongGirder ? mtAlongItem : mtNormal );
 
-         Float64 endDist;
-         ConnectionLibraryEntry::EndDistanceMeasurementType endDistMeasureType;
-         pPier->GetGirderEndDistance(pgsTypes::Ahead,&endDist,&endDistMeasureType);
+         auto [endDist, endDistMeasureType] = pPier->GetGirderEndDistance(pgsTypes::Ahead);
          factory->put_EndDistance( pfAhead, endDist );
          if ( endDistMeasureType == ConnectionLibraryEntry::FromBearingAlongGirder )
          {
@@ -410,18 +402,14 @@ bool CBridgeGeometryModelBuilder::LayoutTemporarySupports(const CBridgeDescripti
       factory->put_Length(pier_width);
       factory->put_Offset(left_end_offset);
 
-      Float64 brgOffset;
-      ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetMeasure;
-      pTS->GetBearingOffset(&brgOffset,&brgOffsetMeasure);
+      auto [brgOffset,brgOffsetMeasure] = pTS->GetBearingOffset();
       factory->put_BearingOffset( pfBack, brgOffset);
       factory->put_BearingOffsetMeasurementType( pfBack, (MeasurementType)brgOffsetMeasure );
       factory->put_BearingOffset( pfAhead, brgOffset);
       factory->put_BearingOffsetMeasurementType( pfAhead, (MeasurementType)brgOffsetMeasure );
 
       // layout connection geometry on both sides of temporary support
-      Float64 endDistance;
-      ConnectionLibraryEntry::EndDistanceMeasurementType measureType;
-      pTS->GetGirderEndDistance(&endDistance,&measureType);
+      auto [endDistance, measureType] = pTS->GetGirderEndDistance();
       factory->put_EndDistance( pfBack, endDistance );
       factory->put_EndDistance( pfAhead, endDistance );
       if ( measureType == ConnectionLibraryEntry::FromBearingAlongGirder )
@@ -1012,9 +1000,7 @@ void CBridgeGeometryModelBuilder::GetSpacingDataAtPier(IBridgeGeometry* pBridgeG
       // intersects the alignment
 
       // Bearing offset must be adjusted for how it is measured
-      Float64 brgOffset;
-      ConnectionLibraryEntry::BearingOffsetMeasurementType measureType;
-      pPier->GetBearingOffset(pierFace,&brgOffset,&measureType);
+      auto [brgOffset, measureType] = pPier->GetBearingOffset(pierFace);
 
       if ( measureType == ConnectionLibraryEntry::AlongGirder)
       {

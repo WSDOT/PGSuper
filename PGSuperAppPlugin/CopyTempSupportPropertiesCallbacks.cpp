@@ -76,13 +76,8 @@ inline void WriteCompareCell(rptRcTable* p_table, RowIndexType row, ColumnIndexT
 static TempSupportConnectionData MakeTempSupportConnectionData(const CTemporarySupportData* pTempSupport)
 {
    pgsTypes::TempSupportSegmentConnectionType tsType = pTempSupport->GetConnectionType();
-   Float64 brgOffset;
-   ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetMeasure;
-   pTempSupport->GetBearingOffset(&brgOffset,&brgOffsetMeasure);
-
-   Float64 endDist;
-   ConnectionLibraryEntry::EndDistanceMeasurementType endDistMeasure;
-   pTempSupport->GetGirderEndDistance(&endDist, &endDistMeasure);
+   auto [brgOffset, brgOffsetMeasure] = pTempSupport->GetBearingOffset();
+   auto [endDist,endDistMeasure] = pTempSupport->GetGirderEndDistance();
 
    return TempSupportConnectionData(tsType, endDist, endDistMeasure, brgOffset, brgOffsetMeasure);
 }

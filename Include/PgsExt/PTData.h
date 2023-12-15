@@ -111,7 +111,7 @@ public:
    void GetPoint(IndexType pntIdx,Float64* location,Float64 *pOffset,OffsetType *pOffsetType) const;
 
    // removes all points from the duct definition that are beyond Lmax
-   // for a girder whose length is Lg (Lg only used if mesaurement type is AlongGirder
+   // for a girder whose length is Lg (Lg only used if measurement type is AlongGirder
    void RemovePoints(Float64 Lmax,Float64 Lg);
 
    void InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType face);

@@ -511,7 +511,7 @@ void CParabolicDuctGeometry::InsertSpan(PierIndexType refPierIdx, pgsTypes::Pier
       {
          HighPoints.insert(HighPoints.begin(), HighPoints.front());
       }
-      else if ((SpanIndexType)(EndPierIdx - 1) < spanIdx)
+      else if ((SpanIndexType)(EndPierIdx - 1) <= spanIdx)
       {
          HighPoints.push_back(HighPoints.back());
       }

@@ -2364,15 +2364,13 @@ bool CTestAgentImp::RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
 
-   Float64 endDist;
-   ConnectionLibraryEntry::EndDistanceMeasurementType mtEndDist;
-   pIBridgeDesc->GetPier(spanKey.spanIndex)->GetGirderEndDistance(pgsTypes::Ahead,&endDist,&mtEndDist);
+   auto[endDist,mtEndDist] = pIBridgeDesc->GetPier(spanKey.spanIndex)->GetGirderEndDistance(pgsTypes::Ahead);
 
    Float64 N1 = endDist;
 
    resultsFile<<bridgeId<<", "<<pid<<", 123003, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(N1, WBFL::Units::Measure::Millimeter)) <<   ", 101, "<<SEGMENT(segmentKey)<<std::endl;
 
-   pIBridgeDesc->GetPier(spanKey.spanIndex+1)->GetGirderEndDistance(pgsTypes::Back,&endDist,&mtEndDist);
+   std::tie(endDist,mtEndDist) = pIBridgeDesc->GetPier(spanKey.spanIndex+1)->GetGirderEndDistance(pgsTypes::Back);
    Float64 N2 = endDist;
 
    resultsFile<<bridgeId<<", "<<pid<<", 123004, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(N2, WBFL::Units::Measure::Millimeter)) <<   ", 101, "<<SEGMENT(segmentKey)<<std::endl;

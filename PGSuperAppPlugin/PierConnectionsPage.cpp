@@ -310,8 +310,8 @@ BOOL CPierConnectionsPage::OnInitDialog()
 
    for ( int i = 0; i < 2; i++ )
    {
-      m_pPier->GetBearingOffset(pgsTypes::PierFaceType(i),&m_BearingOffset[i],&m_BearingOffsetMeasurementType,true);
-      m_pPier->GetGirderEndDistance(pgsTypes::PierFaceType(i),&m_EndDistance[i],&m_EndDistanceMeasurementType,true);
+      std::tie(m_BearingOffset[i], m_BearingOffsetMeasurementType) = m_pPier->GetBearingOffset(pgsTypes::PierFaceType(i),true);
+      std::tie(m_EndDistance[i], m_EndDistanceMeasurementType) = m_pPier->GetGirderEndDistance(pgsTypes::PierFaceType(i),true);
 
       m_DiaphragmHeight[i]       = m_pPier->GetDiaphragmHeight(pgsTypes::PierFaceType(i));
       m_DiaphragmWidth[i]        = m_pPier->GetDiaphragmWidth(pgsTypes::PierFaceType(i));
@@ -810,9 +810,9 @@ BOOL CPierConnectionsPage::OnSetActive()
 
    FillBearingOffsetComboBox(); // this is going to change the current selection that was set by DoDataExchange which will cause OnBearingOffsetMeasureChanged to crash
 
-   // the the beariong offset measurement type and reset the control so OnBearingOffsetMeasureChanged will work property
+   // the the bearing offset measurement type and reset the control so OnBearingOffsetMeasureChanged will work property
    Float64 brgOffset;
-   m_pPier->GetBearingOffset(m_pPier->GetNextSpan() == nullptr ? pgsTypes::Back : pgsTypes::Ahead, &brgOffset, &m_BearingOffsetMeasurementType,true);
+   std::tie(brgOffset,m_BearingOffsetMeasurementType) = m_pPier->GetBearingOffset(m_pPier->GetNextSpan() == nullptr ? pgsTypes::Back : pgsTypes::Ahead,true);
    CDataExchange dx(this, FALSE);
    DDX_CBItemData(&dx, IDC_BEARING_OFFSET_MEASURE, m_BearingOffsetMeasurementType);
 

@@ -26862,19 +26862,19 @@ void CBridgeAgentImp::GetSegmentEndDistance(const CSegmentKey& segmentKey,const 
 
       if ( pTS )
       {
-         pTS->GetGirderEndDistance(&leftEndDistance,&leftMeasureType);
+         std::tie(leftEndDistance,leftMeasureType) = pTS->GetGirderEndDistance();
          GetSkew(pTS->GetIndex(),&leftSkewAngle);
       }
       else
       {
-         pPier->GetGirderEndDistance(pgsTypes::Ahead,&leftEndDistance,&leftMeasureType);
+         std::tie(leftEndDistance,leftMeasureType) = pPier->GetGirderEndDistance(pgsTypes::Ahead);
          GetPierSkew(pPier->GetIndex(),&leftSkewAngle);
       }
    }
    else
    {
       const CPierData2* pPier = pBridgeDesc->GetPier(pGirder->GetPierIndex(pgsTypes::metStart));
-      pPier->GetGirderEndDistance(pgsTypes::Ahead,&leftEndDistance,&leftMeasureType);
+      std::tie(leftEndDistance,leftMeasureType) = pPier->GetGirderEndDistance(pgsTypes::Ahead);
       GetPierSkew(pPier->GetIndex(),&leftSkewAngle);
    }
    
@@ -26921,19 +26921,19 @@ void CBridgeAgentImp::GetSegmentEndDistance(const CSegmentKey& segmentKey,const 
 
       if ( pTS )
       {
-         pTS->GetGirderEndDistance(&rightEndDistance,&rightMeasureType);
+         std::tie(rightEndDistance,rightMeasureType) = pTS->GetGirderEndDistance();
          GetSkew(pTS->GetIndex(),&rightSkewAngle);
       }
       else
       {
-         pPier->GetGirderEndDistance(pgsTypes::Back,&rightEndDistance,&rightMeasureType);
+         std::tie(rightEndDistance, rightMeasureType) = pPier->GetGirderEndDistance(pgsTypes::Back);
          GetPierSkew(pPier->GetIndex(),&rightSkewAngle);
       }
    }
    else
    {
       const CPierData2* pPier = pBridgeDesc->GetPier(pGirder->GetPierIndex(pgsTypes::metEnd));
-      pPier->GetGirderEndDistance(pgsTypes::Back,&rightEndDistance,&rightMeasureType);
+      std::tie(rightEndDistance, rightMeasureType) = pPier->GetGirderEndDistance(pgsTypes::Back);
       GetPierSkew(pPier->GetIndex(),&rightSkewAngle);
    }
    
