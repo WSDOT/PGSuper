@@ -159,6 +159,9 @@
     <ClInclude Include="DevelopmentLengthEngineer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\Include\IFace\BearingDesignParameters.h">
+      <Filter>IFace</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="EngAgent.def" />

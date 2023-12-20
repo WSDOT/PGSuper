@@ -90,7 +90,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(const std::shared_ptr<
    GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
    bool are_user_loads = pUDL->DoUserLoadsExist(girderKey);
 
-   GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
+   GET_IFACE2(pBroker,IBearingDesign,pBearingDesign); ///////////////////////////////////////////////
 
    bool bIncludeImpact = pBearingDesign->BearingLiveLoadReactionsIncludeImpact();
 
@@ -231,8 +231,11 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(const std::shared_ptr<
    PierIndexType startPierIdx,endPierIdx;
    pBridge->GetGirderGroupPiers(girderKey.groupIndex,&startPierIdx,&endPierIdx);
 
+
+
    GET_IFACE2(pBroker,ICamber,pCamber);
    GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+
 
    // TRICKY: use adapter class to get correct reaction interfaces
    std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, intervalIdx, girderKey) );

@@ -154,7 +154,7 @@ void CCombinedReactionTable::BuildForBearingDesign(IBroker* pBroker, rptChapter*
    if (liveLoadIntervalIdx <= intervalIdx)
    {
       BuildLiveLoad(pBroker, pChapter, girderKey, pDisplayUnits, analysisType, bIncludeImpact, true, false);
-      BuildBearingLimitStateTable(pBroker, pChapter, girderKey, bIncludeImpact, pDisplayUnits, intervalIdx, analysisType, true, false);
+      //BuildBearingLimitStateTable(pBroker, pChapter, girderKey, bIncludeImpact, pDisplayUnits, intervalIdx, analysisType, true, false);
    }
 }
 

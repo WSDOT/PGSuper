@@ -167,6 +167,8 @@
     <ClCompile Include="AlignmentChapterBuilder.cpp" />
     <ClCompile Include="BasicCamberChapterBuilder.cpp" />
     <ClCompile Include="BearingDesignParametersChapterBuilder.cpp" />
+    <ClCompile Include="BearingDesignSummaryChapterBuilder.cpp" />
+    <ClCompile Include="BearingRotationTable.cpp" />
     <ClCompile Include="BearingSeatElevationsChapterBuilder2.cpp" />
     <ClCompile Include="BearingSeatElevationsDetailsChapterBuilder2.cpp" />
     <ClCompile Include="BridgeAnalysisChapterBuilder.cpp" />
@@ -370,6 +372,8 @@
     <ClInclude Include="..\Include\Reporting\AutoLib.h" />
     <ClInclude Include="..\Include\Reporting\BasicCamberChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\BearingDesignParametersChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\BearingDesignSummaryChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\BearingRotationTable.h" />
     <ClInclude Include="..\Include\Reporting\BearingSeatElevationsChapterBuilder2.h" />
     <ClInclude Include="..\Include\Reporting\BearingSeatElevationsDetailsChapterBuilder2.h" />
     <ClInclude Include="..\Include\Reporting\BridgeAnalysisChapterBuilder.h" />

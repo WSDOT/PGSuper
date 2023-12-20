@@ -978,6 +978,8 @@ STDMETHODIMP CEngAgentImp::RegInterfaces()
    pBrokerInit->RegInterface(IID_IFabricationOptimization,     this);
    pBrokerInit->RegInterface(IID_IArtifact,                    this);
    pBrokerInit->RegInterface(IID_ICrackedSection,              this);
+   pBrokerInit->RegInterface(IID_IBearingDesignParameters,     this);
+
 
     return S_OK;
 }
@@ -3836,6 +3838,21 @@ Float64 CEngAgentImp::GetSectionGirderOrientationEffect(const pgsPointOfInterest
 
 
 /////////////////////////////////////////////////////////////////////////////
+// IBearingDesignParamters
+void CEngAgentImp::GetBearingRotationDetails(bool isFlexural, bool isMax, STATICROTATIONDETAILS* pDetails) const
+{
+    pDetails->girderRotation = 0.0;
+    pDetails->diaphragmRotation = 0.0;
+    pDetails->haunchRotation = 0.0;
+    pDetails->slabRotiaton = 0.0;
+    pDetails->railingSystemRotation = 0.0;
+
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+
+
 // IFabricationOptimization
 bool CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentKey,FABRICATIONOPTIMIZATIONDETAILS* pDetails) const
 {

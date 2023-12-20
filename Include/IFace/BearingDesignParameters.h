@@ -19,24 +19,45 @@
 // P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
-
 #pragma once
 
-#include <PgsExt\PgsExt.h>
 
-#include <IFace\PrestressForce.h>
-#include <IFace\DistributionFactors.h>
-#include <IFace\MomentCapacity.h>
-#include <IFace\ShearCapacity.h>
-#include <IFace\Constructability.h>
-#include <IFace\Project.h>
-#include <IFace\Bridge.h>
-#include <IFace\Alignment.h>
-#include <IFace\AnalysisResults.h>
-#include <IFace/Limits.h>
-#include <IFace\TransverseReinforcementSpec.h>
-#include <IFace\PointOfInterest.h>
-#include <IFace\GirderHandling.h>
-#include <IFace\GirderHandlingSpecCriteria.h>
-#include <IFace\BearingDesignParameters.h>
+
+
+/*****************************************************************************
+INTERFACE
+   IBearingDesignParameters
+
+   <<Summary here>>
+
+DESCRIPTION
+   <<Detailed description here>>
+*****************************************************************************/
+
+
+struct STATICROTATIONDETAILS
+{
+	Float64 girderRotation;
+	Float64 diaphragmRotation;
+	Float64 slabRotiaton;
+	Float64 haunchRotation;
+	Float64 railingSystemRotation;
+};
+
+
+
+// {D88670F0-3B83-11d2-8EC5-006097DF3C68}
+DEFINE_GUID(IID_IBearingDesignParameters,
+	0xD88670F0, 0x3B83, 0x11d2, 0x8E, 0xC5, 0x00, 0x60, 0x97, 0xDF, 0x3C, 0x68);
+interface IBearingDesignParameters : IUnknown
+{
+
+	virtual void GetBearingRotationDetails(bool isFlexural, bool isMax, STATICROTATIONDETAILS* pDetails) const = 0;
+
+
+};
+
+
+
+
 

@@ -224,6 +224,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\IFace\Artifact.h" />
+    <ClInclude Include="..\Include\IFace\BearingDesignParameters.h" />
     <ClInclude Include="..\Include\IFace\Constructability.h" />
     <ClInclude Include="..\Include\IFace\CrackedSection.h" />
     <ClInclude Include="..\Include\IFace\DistributionFactors.h" />

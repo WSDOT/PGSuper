@@ -49,6 +49,7 @@
 #if defined _USE_MULTITHREADING
 #include <PgsExt\ThreadManager.h>
 #endif
+#include <Reporting/ReactionInterfaceAdapters.h>
 
 class PrestressWithLiveLoadSubKey
 {
@@ -126,6 +127,7 @@ class ATL_NO_VTABLE CEngAgentImp :
    public IShearCapacity,
    public IPrincipalWebStress,
    public IGirderHaunch,
+   public IBearingDesignParameters,
    public IFabricationOptimization,
    public IArtifact,
    public IBridgeDescriptionEventSink,
@@ -157,6 +159,7 @@ BEGIN_COM_MAP(CEngAgentImp)
    COM_INTERFACE_ENTRY(IShearCapacity)
    COM_INTERFACE_ENTRY(IPrincipalWebStress)
    COM_INTERFACE_ENTRY(IGirderHaunch)
+   COM_INTERFACE_ENTRY(IBearingDesignParameters)
    COM_INTERFACE_ENTRY(IFabricationOptimization)
    COM_INTERFACE_ENTRY(IArtifact)
    COM_INTERFACE_ENTRY(IBridgeDescriptionEventSink)
@@ -376,6 +379,11 @@ public:
    virtual const SLABOFFSETDETAILS& GetSlabOffsetDetails(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetSectionGirderOrientationEffect(const pgsPointOfInterest& poi) const override;
 
+
+// IBearingDesignParameters
+ public:
+   virtual void GetBearingRotationDetails(bool isFlexural, bool isMax, STATICROTATIONDETAILS* pDetails) const override;
+
 // IFabricationOptimization
 public:
    virtual bool GetFabricationOptimizationDetails(const CSegmentKey& segmentKey,FABRICATIONOPTIMIZATIONDETAILS* pDetails) const override;
@@ -501,6 +509,8 @@ private:
    void InvalidateShearCritSection();
 
    mutable std::map<CSegmentKey,SLABOFFSETDETAILS> m_SlabOffsetDetails;
+
+   STATICROTATIONDETAILS m_staticRotationDetails;
 
    // Lifting and hauling analysis artifact cache for ad-hoc analysis (typically during design)
    mutable std::map<CSegmentKey, std::map<Float64,WBFL::Stability::LiftingCheckArtifact,Float64_less> > m_LiftingArtifacts;
