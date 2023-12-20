@@ -3839,14 +3839,22 @@ Float64 CEngAgentImp::GetSectionGirderOrientationEffect(const pgsPointOfInterest
 
 /////////////////////////////////////////////////////////////////////////////
 // IBearingDesignParamters
-void CEngAgentImp::GetBearingRotationDetails(bool isFlexural, bool isMax, STATICROTATIONDETAILS* pDetails) const
+void CEngAgentImp::GetBearingRotationDetails(bool isFlexural, ROTATIONDETAILS* pDetails) const
 {
     pDetails->girderRotation = 0.0;
     pDetails->diaphragmRotation = 0.0;
-    pDetails->haunchRotation = 0.0;
     pDetails->slabRotiaton = 0.0;
-    pDetails->railingSystemRotation = 0.0;
-
+    pDetails->haunchRotation = 0.0;
+    pDetails->maxRailingSystemRotation = 0.0;
+    pDetails->minRailingSystemRotation = 0.0;
+    pDetails->maxFutureOverlayRotation = 0.0;
+    pDetails->minFutureOverlayRotation = 0.0;
+    pDetails->maxDCrotation = 0.0;
+    pDetails->maxDWrotation = 0.0;
+    pDetails->maxDesignLLrotation = 0.0;
+    pDetails->minDesignLLrotation = 0.0;
+    pDetails->maxServiceIRotation = 0.0;
+//only details for things not yet calculated
 }
 
 /////////////////////////////////////////////////////////////////////////////

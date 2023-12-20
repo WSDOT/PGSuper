@@ -166,6 +166,7 @@
     <ClCompile Include="ADimChapterBuilder.cpp" />
     <ClCompile Include="AlignmentChapterBuilder.cpp" />
     <ClCompile Include="BasicCamberChapterBuilder.cpp" />
+    <ClCompile Include="BearingDesignDetailsChapterBuilder.cpp" />
     <ClCompile Include="BearingDesignParametersChapterBuilder.cpp" />
     <ClCompile Include="BearingDesignSummaryChapterBuilder.cpp" />
     <ClCompile Include="BearingRotationTable.cpp" />
@@ -371,6 +372,7 @@
     <ClInclude Include="..\Include\Reporting\AlignmentChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\AutoLib.h" />
     <ClInclude Include="..\Include\Reporting\BasicCamberChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\BearingDesignDetailsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\BearingDesignParametersChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\BearingDesignSummaryChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\BearingRotationTable.h" />

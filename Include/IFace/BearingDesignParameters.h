@@ -35,13 +35,29 @@ DESCRIPTION
 *****************************************************************************/
 
 
-struct STATICROTATIONDETAILS
+struct DESIGNPROPERTIES
+{
+	Float64 Fy{ WBFL::Units::ConvertToSysUnits(36, WBFL::Units::Measure::KSI) };///< steel yield strength
+	Float64 Fth{ WBFL::Units::ConvertToSysUnits(24, WBFL::Units::Measure::KSI) };///< steel fatigue threshold
+	Float64 Gmin;
+	Float64 Gmax;
+};
+
+struct ROTATIONDETAILS
 {
 	Float64 girderRotation;
 	Float64 diaphragmRotation;
 	Float64 slabRotiaton;
 	Float64 haunchRotation;
-	Float64 railingSystemRotation;
+	Float64 maxRailingSystemRotation;
+	Float64 minRailingSystemRotation;
+	Float64 maxFutureOverlayRotation;
+	Float64 minFutureOverlayRotation;
+	Float64 maxDCrotation;
+	Float64 maxDWrotation;
+	Float64 maxDesignLLrotation;
+	Float64 minDesignLLrotation;
+	Float64 maxServiceIRotation;
 };
 
 
@@ -52,7 +68,7 @@ DEFINE_GUID(IID_IBearingDesignParameters,
 interface IBearingDesignParameters : IUnknown
 {
 
-	virtual void GetBearingRotationDetails(bool isFlexural, bool isMax, STATICROTATIONDETAILS* pDetails) const = 0;
+	virtual void GetBearingRotationDetails(bool isFlexural, ROTATIONDETAILS* pDetails) const = 0;
 
 
 };

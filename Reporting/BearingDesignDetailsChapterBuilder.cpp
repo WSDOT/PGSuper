@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-#include <Reporting\BearingDesignSummaryChapterBuilder.h>
+#include <Reporting\BearingDesignDetailsChapterBuilder.h>
 #include <Reporting\ReportNotes.h>
 #include <Reporting\ProductReactionTable.h>
 #include <Reporting\BearingRotationTable.h>
@@ -58,19 +58,19 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-CBearingDesignSummaryChapterBuilder::CBearingDesignSummaryChapterBuilder(bool bSelect) :
+CBearingDesignDetailsChapterBuilder::CBearingDesignDetailsChapterBuilder(bool bSelect) :
     CPGSuperChapterBuilder(bSelect)
 {
 }
 
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
-LPCTSTR CBearingDesignSummaryChapterBuilder::GetName() const
+LPCTSTR CBearingDesignDetailsChapterBuilder::GetName() const
 {
-    return TEXT("Bearing Design Summary");
+    return TEXT("Bearing Design Details");
 }
 
-rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec, Uint16 level) const
+rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec, Uint16 level) const
 {
     auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
     CComPtr<IBroker> pBroker;
@@ -161,7 +161,7 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
     return pChapter;
 }
 
-std::unique_ptr<WBFL::Reporting::ChapterBuilder>CBearingDesignSummaryChapterBuilder::Clone() const
+std::unique_ptr<WBFL::Reporting::ChapterBuilder>CBearingDesignDetailsChapterBuilder::Clone() const
 {
-    return std::make_unique<CBearingDesignSummaryChapterBuilder>();
+    return std::make_unique<CBearingDesignDetailsChapterBuilder>();
 }

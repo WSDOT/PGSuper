@@ -382,7 +382,7 @@ public:
 
 // IBearingDesignParameters
  public:
-   virtual void GetBearingRotationDetails(bool isFlexural, bool isMax, STATICROTATIONDETAILS* pDetails) const override;
+   virtual void GetBearingRotationDetails(bool isFlexural, ROTATIONDETAILS* pDetails) const override;
 
 // IFabricationOptimization
 public:
@@ -510,7 +510,7 @@ private:
 
    mutable std::map<CSegmentKey,SLABOFFSETDETAILS> m_SlabOffsetDetails;
 
-   STATICROTATIONDETAILS m_staticRotationDetails;
+   ROTATIONDETAILS m_staticRotationDetails;
 
    // Lifting and hauling analysis artifact cache for ad-hoc analysis (typically during design)
    mutable std::map<CSegmentKey, std::map<Float64,WBFL::Stability::LiftingCheckArtifact,Float64_less> > m_LiftingArtifacts;
