@@ -190,7 +190,7 @@ ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBrok
 
     if (!bDetail)
     {
-        nCols += 2;
+        nCols += 3;
     }
 
     if (bDesign)
@@ -803,12 +803,21 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
             GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
             pForces = std::make_unique<CmbLsBearingDesignReactionAdapter>(pBearingDesign, lastIntervalIdx, girderKey);
 
-            GET_IFACE2(pBroker, ICombinedForces, combForces);
+            GET_IFACE2(pBroker, ICombinedForces, comboForces);
+
+            GET_IFACE2(pBroker, ILimitStateForces, limitForces);
+
+            Float64 pMin, pMax;
             
 
 
             if (!bDetail)
             {
+                limitForces->GetRotation(
+                    lastIntervalIdx, pgsTypes::ServiceI, poi, maxBAT, true,
+                    true, true, true, true, &pMin, &pMax);
+
+
                 if (!isFlexural)
                 {
                     CComPtr<IAngle> pSkew;
@@ -816,24 +825,28 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                     Float64 skew;
                     pSkew->get_Value(&skew);
 
-                    Float64 flexural_rotation_max_DC = combForces->GetRotation(lastIntervalIdx, lcDC, poi, maxBAT, rtCumulative);
+                    Float64 flexural_rotation_max_DC = comboForces->GetRotation(lastIntervalIdx, lcDC, poi, maxBAT, rtCumulative);
                     Float64 torsional_rotation_max_DC = flexural_rotation_max_DC * tan(skew);
                     (*p_table)(row, col++) << rotation.SetValue(torsional_rotation_max_DC);
 
-                    Float64 flexural_rotation_max_DW = combForces->GetRotation(lastIntervalIdx, lcDW, poi, maxBAT, rtCumulative);
+                    Float64 flexural_rotation_max_DW = comboForces->GetRotation(lastIntervalIdx, lcDW, poi, maxBAT, rtCumulative);
                     Float64 torsional_rotation_max_DW = flexural_rotation_max_DW * tan(skew);
                     (*p_table)(row, col++) << rotation.SetValue(torsional_rotation_max_DW);
+
+                    Float64 torsional_pMax = pMax * tan(skew);
+                    (*p_table)(row, col++) << rotation.SetValue(torsional_pMax);
                 }
                 else
                 {
-                    Float64 flexural_rotation_max_DC = combForces->GetRotation(lastIntervalIdx, lcDC, poi, maxBAT, rtCumulative);
+                    Float64 flexural_rotation_max_DC = comboForces->GetRotation(lastIntervalIdx, lcDC, poi, maxBAT, rtCumulative);
                     (*p_table)(row, col++) << rotation.SetValue(flexural_rotation_max_DC);
 
-                    Float64 flexural_rotation_max_DW = combForces->GetRotation(lastIntervalIdx, lcDW, poi, maxBAT, rtCumulative);
+                    Float64 flexural_rotation_max_DW = comboForces->GetRotation(lastIntervalIdx, lcDW, poi, maxBAT, rtCumulative);
                     (*p_table)(row, col++) << rotation.SetValue(flexural_rotation_max_DW);
 
-                    //Float64 flexural_rotation_max_DW = combForces->GetRotation(lastIntervalIdx, , poi, maxBAT, rtCumulative);
-                    //(*p_table)(row, col++) << rotation.SetValue(flexural_rotation_max_DW);
+                    (*p_table)(row, col++) << rotation.SetValue(pMax);
+
+
                 }
                 
             }
