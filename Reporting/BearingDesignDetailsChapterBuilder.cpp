@@ -85,8 +85,6 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
 
     GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
-    GET_IFACE2(pBroker, ILimitStateForces, pLimitStateForces);
-    bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
 
     GET_IFACE2(pBroker, IUserDefinedLoads, pUDL);
     bool are_user_loads = pUDL->DoUserLoadsExist(girderKey);
@@ -112,14 +110,8 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
 
     GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
 
-    *p << CBearingRotationTable().BuildBearingRotationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact, 
-        true, true, true, pDisplayUnits, false, true) << rptNewLine;
-
     *p << CBearingRotationTable().BuildBearingRotationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, true, pDisplayUnits, true, true) << rptNewLine;
-
-    *p << CBearingRotationTable().BuildBearingRotationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
-        true, true, true, pDisplayUnits, false, false) << rptNewLine;
 
     *p << CBearingRotationTable().BuildBearingRotationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, true, pDisplayUnits, true, false) << rptNewLine;

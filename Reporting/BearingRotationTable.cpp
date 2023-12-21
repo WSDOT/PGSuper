@@ -195,7 +195,7 @@ ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBrok
 
     if (bDesign)
     {
-        nCols += 2; // design live loads
+        nCols ++; // design live loads
     }
 
     if (tParam->bPedLoading && bDetail)
@@ -442,20 +442,16 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
 
     if (!bDetail)
     {
-        p_table->SetColumnSpan(0, col, 2);
         (*p_table)(0, col) << Sub2(symbol(theta), _T("t-DC"));
         (*p_table)(1, col++) << COLHDR(_T("Max"), rptAngleUnitTag, unitT);
-        (*p_table)(1, col++) << COLHDR(_T("Min"), rptAngleUnitTag, unitT);
+        (*p_table)(0, col) << Sub2(symbol(theta), _T("t-DW"));
+        (*p_table)(1, col++) << COLHDR(_T("Max"), rptAngleUnitTag, unitT);
     }
 
     if (bDesign)
     {
-
-        p_table->SetColumnSpan(0, col, 2);
         (*p_table)(0, col) << _T("* Design Live Load");
         (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
-        (*p_table)(1, col++) << COLHDR(_T("Min"), M, unitT);
-
     }
 
     return p_table->GetNumberOfHeaderRows(); // index of first row to report data
@@ -815,16 +811,29 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
             {
                 if (!isFlexural)
                 {
-                    Float64 flexural_rotation_max = combForces->GetRotation(lastIntervalIdx, lcDC, poi, maxBAT, rtCumulative);
-                    Float64 flexural_rotation_min = combForces->GetRotation(lastIntervalIdx, lcDC, poi, minBAT, rtCumulative);
                     CComPtr<IAngle> pSkew;
                     pBridge->GetPierSkew(reactionLocation.PierIdx, &pSkew);
                     Float64 skew;
                     pSkew->get_Value(&skew);
-                    Float64 torsional_rotation_max = flexural_rotation_max * tan(skew);
-                    (*p_table)(row, col++) << rotation.SetValue(torsional_rotation_max);
-                    Float64 torsional_rotation_min = flexural_rotation_min * tan(skew);
-                    (*p_table)(row, col++) << rotation.SetValue(torsional_rotation_min);
+
+                    Float64 flexural_rotation_max_DC = combForces->GetRotation(lastIntervalIdx, lcDC, poi, maxBAT, rtCumulative);
+                    Float64 torsional_rotation_max_DC = flexural_rotation_max_DC * tan(skew);
+                    (*p_table)(row, col++) << rotation.SetValue(torsional_rotation_max_DC);
+
+                    Float64 flexural_rotation_max_DW = combForces->GetRotation(lastIntervalIdx, lcDW, poi, maxBAT, rtCumulative);
+                    Float64 torsional_rotation_max_DW = flexural_rotation_max_DW * tan(skew);
+                    (*p_table)(row, col++) << rotation.SetValue(torsional_rotation_max_DW);
+                }
+                else
+                {
+                    Float64 flexural_rotation_max_DC = combForces->GetRotation(lastIntervalIdx, lcDC, poi, maxBAT, rtCumulative);
+                    (*p_table)(row, col++) << rotation.SetValue(flexural_rotation_max_DC);
+
+                    Float64 flexural_rotation_max_DW = combForces->GetRotation(lastIntervalIdx, lcDW, poi, maxBAT, rtCumulative);
+                    (*p_table)(row, col++) << rotation.SetValue(flexural_rotation_max_DW);
+
+                    //Float64 flexural_rotation_max_DW = combForces->GetRotation(lastIntervalIdx, , poi, maxBAT, rtCumulative);
+                    //(*p_table)(row, col++) << rotation.SetValue(flexural_rotation_max_DW);
                 }
                 
             }
@@ -835,22 +844,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
             VehicleIndexType minConfig, maxConfig;
             if (bDesign)
             {
-                if (tParam.bPedLoading)
-                {
-                    if (reactionDecider.DoReport(lastIntervalIdx))
-                    {
-                        pProductForces->GetLiveLoadRotation(lastIntervalIdx, pgsTypes::lltPedestrian, poi, maxBAT, bIncludeImpact, true, &min, &max);
-                        (*p_table)(row, col++) << rotation.SetValue(max);
 
-                        pProductForces->GetLiveLoadRotation(lastIntervalIdx, pgsTypes::lltPedestrian, poi, minBAT, bIncludeImpact, true, &min, &max);
-                        (*p_table)(row, col++) << rotation.SetValue(min);
-                    }
-                    else
-                    {
-                        (*p_table)(row, col++) << RPT_NA;
-                        (*p_table)(row, col++) << RPT_NA;
-                    }
-                }
 
                 if (reactionDecider.DoReport(lastIntervalIdx))
                 {
@@ -862,13 +856,17 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                     }
                     col++;
 
-                    pProductForces->GetLiveLoadRotation(lastIntervalIdx, pgsTypes::lltDesign, poi, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig);
-                    (*p_table)(row, col) << rotation.SetValue(min);
-                    if (bIndicateControllingLoad && 0 <= minConfig)
+                    if (bDetail)
                     {
-                        (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << minConfig << _T(")");
+                        pProductForces->GetLiveLoadRotation(lastIntervalIdx, pgsTypes::lltDesign, poi, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig);
+                        (*p_table)(row, col) << rotation.SetValue(min);
+                        if (bIndicateControllingLoad && 0 <= minConfig)
+                        {
+                            (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << minConfig << _T(")");
+                        }
+                        col++;
                     }
-                    col++;
+
                 }
                 else
                 {
