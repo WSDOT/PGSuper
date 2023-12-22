@@ -87,7 +87,7 @@ public:
 
 
    ColumnIndexType GetBearingTableColumnCount(IBroker* pBroker, const CGirderKey& girderKey, 
-       pgsTypes::AnalysisType analysisType, bool bDesign, TABLEPARAMETERS* tParam, bool bDetail) const;
+       pgsTypes::AnalysisType analysisType, bool bDesign, TABLEPARAMETERS* tParam, bool bDetail, DuctIndexType nDucts, bool bTimeStep) const;
    // 
    // 
    // 

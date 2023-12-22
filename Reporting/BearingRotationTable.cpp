@@ -77,7 +77,7 @@ CBearingRotationTable& CBearingRotationTable::operator= (const CBearingRotationT
 
 
 ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBroker, const CGirderKey& girderKey, 
-    pgsTypes::AnalysisType analysisType, bool bDesign, TABLEPARAMETERS* tParam, bool bDetail) const
+    pgsTypes::AnalysisType analysisType, bool bDesign, TABLEPARAMETERS* tParam, bool bDetail, DuctIndexType nDucts, bool bTimeStep) const
 {
 
     ColumnIndexType nCols = 1; // location
@@ -239,6 +239,22 @@ ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBrok
         }
     }
 
+    nCols++;
+
+    if (0 < nDucts)
+    {
+        nCols++;
+    }
+
+    if (bTimeStep)
+    {
+        nCols += 3;
+    }
+    else
+    {
+        nCols++;
+    }
+
 
     return nCols;
 }
@@ -246,7 +262,7 @@ ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBrok
 
 template <class M, class T>
 RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* p_table, bool bPierTable, bool bSegments, bool bConstruction, bool bDeck, bool bDeckPanels, bool bSidewalk, bool bShearKey, bool bLongitudinalJoints, bool bOverlay, bool bIsFutureOverlay,
-    bool bDesign, bool bPedLoading, pgsTypes::AnalysisType analysisType, bool bContinuousBeforeDeckCasting, IEAFDisplayUnits* pDisplayUnits, const T& unitT, bool bDetail)
+    bool bDesign, bool bPedLoading, pgsTypes::AnalysisType analysisType, bool bContinuousBeforeDeckCasting, IEAFDisplayUnits* pDisplayUnits, const T& unitT, bool bDetail, DuctIndexType nDucts, bool bTimeStep)
 {
     p_table->SetNumberOfHeaderRows(2);
 
@@ -442,17 +458,43 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
 
     if (!bDetail)
     {
-        (*p_table)(0, col) << Sub2(symbol(theta), _T("t-DC"));
-        (*p_table)(1, col++) << COLHDR(_T("Max"), rptAngleUnitTag, unitT);
-        (*p_table)(0, col) << Sub2(symbol(theta), _T("t-DW"));
-        (*p_table)(1, col++) << COLHDR(_T("Max"), rptAngleUnitTag, unitT);
+            (*p_table)(0, col) << Sub2(symbol(theta), _T("DC"));
+            (*p_table)(1, col++) << COLHDR(_T("Max"), rptAngleUnitTag, unitT);
+            (*p_table)(0, col) << Sub2(symbol(theta), _T("DW"));
+            (*p_table)(1, col++) << COLHDR(_T("Max"), rptAngleUnitTag, unitT);
+
     }
 
     if (bDesign)
     {
-        (*p_table)(0, col) << _T("* Design Live Load");
+        (*p_table)(0, col) << Sub2(symbol(theta), _T("LL"));
         (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
     }
+
+    if (!bDetail)
+    {
+            (*p_table)(0, col) << Sub2(symbol(theta), _T("Service I"));
+            (*p_table)(1, col++) << COLHDR(_T("Max"), rptAngleUnitTag, unitT);
+    }
+
+
+    (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftPretension), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
+    if (0 < nDucts)
+    {
+        (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftPostTensioning), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
+    }
+    if (bTimeStep)
+    {
+        (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftCreep), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
+        (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftShrinkage), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
+        (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftRelaxation), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
+    }
+    else
+    {
+        (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftCreep), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
+    }
+
+
 
     return p_table->GetNumberOfHeaderRows(); // index of first row to report data
 }
@@ -482,7 +524,16 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
 
     TABLEPARAMETERS tParam;
 
-    ColumnIndexType nCols = GetBearingTableColumnCount(pBroker, girderKey, analysisType, bDesign, &tParam, bDetail);
+
+    GET_IFACE2_NOCHECK(pBroker, ICamber, pCamber);
+
+    GET_IFACE2(pBroker, IGirderTendonGeometry, pTendonGeom);
+    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
+
+    GET_IFACE2(pBroker, ILossParameters, pLossParams);
+    bool bTimeStep = (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false);
+
+    ColumnIndexType nCols = GetBearingTableColumnCount(pBroker, girderKey, analysisType, bDesign, &tParam, bDetail, nDucts, bTimeStep);
 
 
     CString label = _T("Flexural Rotations");
@@ -495,7 +546,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
         pBroker, p_table, true, tParam.bSegments, tParam.bConstruction, tParam.bDeck, tParam.bDeckPanels, 
         tParam.bSidewalk, tParam.bShearKey, tParam.bLongitudinalJoint, bHasOverlay, 
         bFutureOverlay, bDesign, tParam.bPedLoading, analysisType, tParam.bContinuousBeforeDeckCasting, 
-        pDisplayUnits, pDisplayUnits->GetRadAngleUnit(), bDetail);
+        pDisplayUnits, pDisplayUnits->GetRadAngleUnit(), bDetail, nDucts, bTimeStep);
 
     p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
     p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -545,6 +596,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
     pgsTypes::BridgeAnalysisType maxBAT = pProductForces->GetBridgeAnalysisType(analysisType, pgsTypes::Maximize);
     pgsTypes::BridgeAnalysisType minBAT = pProductForces->GetBridgeAnalysisType(analysisType, pgsTypes::Minimize);
 
+
     ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
     iter.First();
     PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
@@ -558,6 +610,10 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
     // TRICKY:
     // Use the adapter class to get the reaction response functions we need and to iterate piers
     ReactionUnitValueTool reaction(tableType, reactu);
+
+
+    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+
 
     
 
@@ -574,6 +630,10 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
         ReactionDecider reactionDecider(BearingReactionsTable, reactionLocation, thisGirderKey, pBridge, pIntervals);
 
         const pgsPointOfInterest& poi = vPoi[reactionLocation.PierIdx - startPierIdx];
+
+        const CSegmentKey& segmentKey(poi.GetSegmentKey());
+        const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+        IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
         IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
 
@@ -792,13 +852,9 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                 }
             }
 
-            /////////////////
-
-            
 
 
-               // TRICKY:
-               // Use the adapter class to get the reaction response functions we need and to iterate piers
+
             std::unique_ptr<ICmbLsReactionAdapter> pForces;
             GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
             pForces = std::make_unique<CmbLsBearingDesignReactionAdapter>(pBearingDesign, lastIntervalIdx, girderKey);
@@ -974,7 +1030,30 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
 
             }
 
+
         }
+
+
+        (*p_table)(row, col++) << rotation.SetValue(pProductForces->GetRotation(releaseIntervalIdx, pgsTypes::pftPretension, poi, maxBAT, rtCumulative, false));
+        if (0 < nDucts)
+        {
+            (*p_table)(row, col++) << rotation.SetValue(pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftPostTensioning, poi, maxBAT, rtCumulative, false));
+        }
+
+        if (bTimeStep)
+        {
+            (*p_table)(row, col++) << rotation.SetValue(pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftCreep, poi, maxBAT, rtCumulative, false));
+            (*p_table)(row, col++) << rotation.SetValue(pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftShrinkage, poi, maxBAT, rtCumulative, false));
+            (*p_table)(row, col++) << rotation.SetValue(pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftRelaxation, poi, maxBAT, rtCumulative, false));
+        }
+        else
+        {
+            Float64 Dcreep1, Rcreep1;
+            pCamber->GetCreepDeflection(poi, ICamber::cpReleaseToDeck, pgsTypes::CreepTime::Max, pgsTypes::pddErected, nullptr, &Dcreep1, &Rcreep1);
+
+            (*p_table)(row, col++) << rotation.SetValue(Rcreep1 /*+ Rcreep2*/);
+        }
+
 
         row++;
     }

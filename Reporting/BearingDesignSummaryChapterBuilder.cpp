@@ -109,11 +109,13 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
 
     GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
 
+
     *p << CBearingRotationTable().BuildBearingRotationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact, 
         true, true, true, pDisplayUnits, false, true) << rptNewLine;
 
     *p << CBearingRotationTable().BuildBearingRotationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, true, pDisplayUnits, false, false) << rptNewLine;
+
 
     
     ///////////////////////////////////////
