@@ -544,7 +544,7 @@ BEGIN
     POPUP "&Project",                       65535,MFT_STRING,MFS_ENABLED
     BEGIN
         MENUITEM "&Design Girder...\tCtrl+D",   ID_PROJECT_DESIGNGIRDER,MFT_STRING,MFS_ENABLED
-        MENUITEM "Design Haunch Depths...",     37014,MFT_STRING,MFS_ENABLED
+        MENUITEM "Design Haunch Depths...",     ID_PROJECT_DESIGNHAUNCH,MFT_STRING,MFS_ENABLED
         MENUITEM MFT_SEPARATOR
         MENUITEM "Update &Now\tF5",             EAFID_AUTOCALC_UPDATENOW,MFT_STRING,MFS_ENABLED
         MENUITEM MFT_SEPARATOR
@@ -3603,6 +3603,7 @@ BEGIN
     LTEXT           "Describe Haunch Depth Using ",IDC_HAUNCH_SHAPE_LABEL2,10,31,101,8
     LTEXT           "Gross Depth of Deck: 123.123 in",IDC_DECK_DEPTH,504,7,116,8
     GROUPBOX        "Elevation Adjustments at Temporary Supports",IDC_TS_ELEV_GROUPBOX,3,307,277,55
+    LTEXT           "Haunch Design note",IDC_HAUNCH_DESIGN_NOTE,301,309,315,33
 END
 
 IDD_HAUNCH_BY_BRIDGE DIALOGEX 0, 0, 219, 65
@@ -3942,8 +3943,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 8,0,1,0
- PRODUCTVERSION 8,0,1,0
+ FILEVERSION 8,0,0,5
+ PRODUCTVERSION 8,0,0,5
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -3960,12 +3961,12 @@ BEGIN
         BEGIN
             VALUE "CompanyName", "Washington State Department of Transportation"
             VALUE "FileDescription", "PGSuper"
-            VALUE "FileVersion", "8.0.1.0"
+            VALUE "FileVersion", "8.0.0.5"
             VALUE "InternalName", "PGSuper"
             VALUE "LegalCopyright", "Copyright © 1999-2023, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperAppPlugin.DLL"
             VALUE "ProductName", "PGSuper"
-            VALUE "ProductVersion", "8.0.1.0"
+            VALUE "ProductVersion", "8.0.0.5"
         END
     END
     BLOCK "VarFileInfo"
@@ -4222,6 +4223,7 @@ BEGIN
     IDD_EDIT_HAUNCH, DIALOG
     BEGIN
         RIGHTMARGIN, 623
+        TOPMARGIN, 4
         BOTTOMMARGIN, 362
         HORZGUIDE, 43
     END

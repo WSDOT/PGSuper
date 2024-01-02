@@ -40,7 +40,8 @@ public:
    virtual ~CExportGraphXYTool();
 
    // returns true if successful
-   static bool ExportGraphData(const WBFL::Graphing::GraphXY& rGraph, LPCTSTR rstrDefaultFileName);
+   // bAllowDuplicatePoints - This tool can clean out any duplicate graph points if asked. In some cases we may not want this
+   static bool ExportGraphData(const WBFL::Graphing::GraphXY& rGraph, LPCTSTR rstrDefaultFileName, bool bAllowDuplicatePoints=false);
 
    static CString GetTruncatedFileName();
 };

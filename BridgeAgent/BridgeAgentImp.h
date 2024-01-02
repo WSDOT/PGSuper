@@ -1522,7 +1522,7 @@ private:
    bool LayoutGirders(const CBridgeDescription2* pBridgeDesc);
    bool LayoutSsmHaunches();
    void GetHaunchDepth4ADimInput(const CPrecastSegmentData* pSegment,CComPtr<IDblArray>& pHaunchDepths);
-   void GetHaunchDepth4BySpanInput(const CPrecastSegmentData* pSegment,const CBridgeDescription2* pBridgeDesc, CComPtr<IDblArray>& pHaunchDepths);
+   void GetHaunchDepth4BySpanInput(const CPrecastSegmentData* pSegment,const CBridgeDescription2* pBridgeDesc, CComPtr<IHaunchDepthFunction>& pHaunchFunction);
    bool LayoutDeck(const CBridgeDescription2* pBridgeDesc);
    bool LayoutOverlayDeck(const CBridgeDescription2* pBridgeDesc,IBridgeDeck** ppDeck);
    bool LayoutSimpleDeck(const CBridgeDescription2* pBridgeDesc,IBridgeDeck** ppDeck);

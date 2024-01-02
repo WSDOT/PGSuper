@@ -92,6 +92,7 @@ protected:
    afx_msg void OnCopyTempSupportProps();
    afx_msg void OnUpdateCopyTempSupportProps(CCmdUI* pCmdUI);
    afx_msg BOOL OnCopyTempSupportPropsTb(NMHDR* pnmtb,LRESULT* plr);
+   afx_msg void OnProjectDesignHaunch();
 
    //}}AFX_MSG
    afx_msg BOOL OnEditGirderDropDown(NMHDR* pnmhdr,LRESULT* plr);

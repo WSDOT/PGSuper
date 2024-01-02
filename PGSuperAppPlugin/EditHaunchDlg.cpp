@@ -294,6 +294,18 @@ void CEditHaunchDlg::OnHaunchDepthTypeChanged()
       ATLASSERT(0);
       break;
    };
+
+   // Update note about haunch design
+   CStatic* pStat = (CStatic*)GetDlgItem(IDC_HAUNCH_DESIGN_NOTE);
+   if (m_HaunchInputDepthType == pgsTypes::hidHaunchDirectly || m_HaunchInputDepthType == pgsTypes::hidHaunchPlusSlabDirectly)
+   {
+      pStat->SetWindowText(_T("Note: Haunch depths can be designed automatically by accessing \"Project->Design Haunch Depths\" from the main program menu, and also from the Finished Elevations graph view."));
+   }
+   else
+   {
+      pStat->SetWindowText(_T("Note: Slab offsets can be designed automatically by the Girder Design tool. Go to the main program menu \"Project->Design Girder\" for more information."));
+   }
+
 }
 
 void CEditHaunchDlg::OnHaunchLayoutTypeChanged()

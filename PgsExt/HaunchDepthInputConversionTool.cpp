@@ -40,6 +40,12 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+// Pick up as many pois as available except for closure pois
+static PoiAttributeType attribDesign = POI_START_FACE | POI_END_FACE | POI_STIRRUP_ZONE | POI_CRITSECTSHEAR1 | POI_CRITSECTSHEAR2 | POI_HARPINGPOINT | POI_CONCLOAD |
+POI_DIAPHRAGM | POI_PSXFER | POI_PSDEV | POI_DEBOND | POI_DECKBARCUTOFF | POI_BARCUTOFF | POI_BARDEVELOP |
+POI_H | POI_15H | POI_FACEOFSUPPORT;
+
+
 inline bool CompareFloatVectors(const std::vector<Float64>& vec1, const std::vector<Float64>& vec2)
 {
    if (vec1.size() != vec2.size())
@@ -580,24 +586,40 @@ std::pair<bool,CBridgeDescription2> HaunchDepthInputConversionTool::ConvertToDir
 
 std::pair<bool,CBridgeDescription2> HaunchDepthInputConversionTool::DesignHaunches(const CGirderKey& rDesignGirderKey,GirderIndexType sourceGirderIdx,pgsTypes::HaunchInputDistributionType inputDistributionType,bool bApply2AllGdrs)
 {
-   GET_IFACE(IBridge,pBridge);
-   GET_IFACE(IPointOfInterest,pPoi);
-   GET_IFACE(IRoadway,pRoadway);
-   GET_IFACE_NOCHECK(IGirder,pGirder);
-   GET_IFACE(IDeformedGirderGeometry,pDeformedGirderGeometry);
+   if (pgsTypes::hltAlongSpans == m_pBridgeDescr->GetHaunchLayoutType())
+   {
+      return DesignSpanHaunches(rDesignGirderKey, sourceGirderIdx, inputDistributionType, bApply2AllGdrs);
+   }
+   else
+   {
+      return DesignSegmentHaunches(rDesignGirderKey, sourceGirderIdx, inputDistributionType, bApply2AllGdrs);
+   }
+}
 
-   // First convert haunch data in bridgdescr2 so we can operate on individual segments/girderlines. 
-   // We will compute design values at 1/10th points and convert to simpler format if needed
+std::pair<bool, CBridgeDescription2> HaunchDepthInputConversionTool::DesignSegmentHaunches(const CGirderKey& rDesignGirderKey, GirderIndexType sourceGirderIdx, pgsTypes::HaunchInputDistributionType inputDistributionType, bool bApply2AllGdrs)
+{
+   GET_IFACE(IBridge, pBridge);
+   GET_IFACE(IPointOfInterest, pPoi);
+   GET_IFACE(IRoadway, pRoadway);
+   GET_IFACE_NOCHECK(IGirder, pGirder);
+   GET_IFACE(IDeformedGirderGeometry, pDeformedGirderGeometry);
 
-   // NOTE that function below will call this->Initialize(), so we don't need to call it here.
-   auto convertedBridgeDescrPair = ConvertToDirectHaunchInput(pgsTypes::hilPerEach,pgsTypes::hltAlongSegments,pgsTypes::hidTenthPoints,true);
+   // First convert current haunch data in bridgdescr2 so we can operate on individual segments/girderlines. 
+   // This will also serve as our initial design guess.
+   // We will compute design values at 1/40th points and convert to simpler format if needed.
+
+   // Use fine-grained haunch layout for design. We'll convert to other distribution later
+   pgsTypes::HaunchInputDistributionType designHaunchDistribution = pgsTypes::hid40thPoints;
+
+   // NOTE that function below will call this->Initialize() to do the conversion, so we don't need to call it here.
+   auto convertedBridgeDescrPair = ConvertToDirectHaunchInput(pgsTypes::hilPerEach, pgsTypes::hltAlongSegments, designHaunchDistribution, true);
    ATLASSERT(convertedBridgeDescrPair.first);
 
    // Use a reference for readability
    CBridgeDescription2& rDesignBridgeDescr(convertedBridgeDescrPair.second);
 
    // Theory:
-   // The design algo here is pretty simple 2-step process. 
+   // The design algo here is pretty simple 2-step process using the current input as a guess 
    //     1. Compute the difference between the computed CL girder deck elevation (based on the current haunch depths) to
    //        the cl girder PGL, and add this difference to the current haunch depths. This results in design CL haunch.
    //     2. Take a second pass through the design haunch depths and make it that the minimum depth is slightly greater than the fillet
@@ -606,10 +628,10 @@ std::pair<bool,CBridgeDescription2> HaunchDepthInputConversionTool::DesignHaunch
    // In reality the algo is iterative in order to refine the result, but I have a found that a single iteration does a pretty good job.
    // Users can make a second pass if a better solution is desired.
 
-   // We will use our (tool's) computed haunch layout to get input haunch depths at POI locations
+   // We will use our (tool's) computed haunch layout to get currently-input haunch depths at POI locations
    const GirderlineHaunchLayout& rLayout = m_GirderlineHaunchLayouts[sourceGirderIdx];
 
-   GroupIndexType startGrp,endGrp;
+   GroupIndexType startGrp, endGrp;
    if (rDesignGirderKey.groupIndex == ALL_GROUPS)
    {
       startGrp = 0;
@@ -622,16 +644,16 @@ std::pair<bool,CBridgeDescription2> HaunchDepthInputConversionTool::DesignHaunch
    }
 
    // We design for the GCE
-   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType gceIntervalIdx = pIntervals->GetGeometryControlInterval();
 
    // Use a buffer of 1/16" for a fillet tolerance. This will ensure that our design doesn't miss by a tiny amount
-   Float64 filletBuffer = WBFL::Units::ConvertToSysUnits(1.0 / 16.0,WBFL::Units::Measure::Inch);
+   Float64 filletBuffer = WBFL::Units::ConvertToSysUnits(1.0 / 16.0, WBFL::Units::Measure::Inch);
    Float64 nominalFillet = pBridge->GetFillet() + filletBuffer;
 
    for (GroupIndexType iGrp = startGrp; iGrp <= endGrp; iGrp++)
    {
-      SegmentIndexType numSegs = pBridge->GetSegmentCount(iGrp,rDesignGirderKey.girderIndex);
+      SegmentIndexType numSegments = pBridge->GetSegmentCount(iGrp, rDesignGirderKey.girderIndex);
 
       // The goal is to have the smallest haunch depth possible based on fillet and cross slope effects.
       // Hence, we compute required CL haunches along each segment and the max fillet-cross slope effect and the adjustment
@@ -640,34 +662,30 @@ std::pair<bool,CBridgeDescription2> HaunchDepthInputConversionTool::DesignHaunch
       Float64 maxHaunchAdjustment4Group(-Float64_Max);
 
       // Design haunches computed using CL effects only for each segment 
-      std::vector< std::vector<Float64> > designClHaunches;
-      designClHaunches.assign(numSegs,std::vector<Float64>());
+      std::vector< std::vector<Float64> > designClHaunchLayouts;
+      designClHaunchLayouts.assign(numSegments, std::vector<Float64>());
 
-      for (SegmentIndexType iSeg = 0; iSeg < numSegs; iSeg++)
+      std::vector <PoiList> vPoiLists;
+      vPoiLists.assign(numSegments, PoiList());
+
+      for (SegmentIndexType iSegment = 0; iSegment < numSegments; iSegment++)
       {
-         // Get points of interest at locations where we are going to compute design haunch depths (1/10th points on segment)
-         PoiList vPoi;
-         CSegmentKey segmentKey(iGrp, sourceGirderIdx, iSeg);
+         // Get points of interest at locations where we are going to compute design haunch depths
+         CSegmentKey segmentKey(iGrp, sourceGirderIdx,iSegment);
 
-         PoiList vPoi2;
-         pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT | POI_TENTH_POINTS,&vPoi2);
-         if (vPoi2.empty())
+         PoiList& vPoi = vPoiLists[iSegment];
+         pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT | POI_TENTH_POINTS, &vPoi);
+         if (vPoi.empty())
          {
-            // We could have a non-existant location if there is a different number of girders per span (or group)
+            // We could have a non-existant location if there is a different number of girders per segment (or group)
             continue;
          }
 
-         // Remove first and last elements at segment since they are at support locations (they are not 10th points), and then add segment ends
-         vPoi2.pop_back();
-         vPoi2.erase(vPoi2.begin());
-         vPoi.insert(vPoi.end(),vPoi2.begin(),vPoi2.end());
-         pPoi->GetPointsOfInterest(segmentKey,POI_START_FACE | POI_END_FACE,&vPoi);
-         pPoi->SortPoiList(&vPoi); // sorts and removes duplicates
-         ATLASSERT(vPoi.size() == 11);
 
-         // Compute CL haunch design values. Use reference for readability
-         std::vector<Float64>& designHaunches (designClHaunches[iSeg] );
-         designHaunches.reserve(vPoi.size());
+         pPoi->GetPointsOfInterest(segmentKey, attribDesign, &vPoi);
+         pPoi->SortPoiList(&vPoi);
+
+         designClHaunchLayouts[iSegment].reserve(vPoi.size());
 
          // Save minimum CL haunch and its index location. We will perform the fillet (crossSlope) analysis there since this should
          // be where the fillet most likely will control (that's our assumption)
@@ -681,13 +699,13 @@ std::pair<bool,CBridgeDescription2> HaunchDepthInputConversionTool::DesignHaunch
             Float64 currHaunch = rLayout.m_pHaunchDepths->Evaluate(xpoi);
 
             // roadway elevation
-            Float64 station,offset;
-            pBridge->GetStationAndOffset(poi,&station,&offset);
-            Float64 rwelev = pRoadway->GetElevation(station,offset);
+            Float64 station, offset;
+            pBridge->GetStationAndOffset(poi, &station, &offset);
+            Float64 rwelev = pRoadway->GetElevation(station, offset);
 
             // Current finished deck
-            Float64 lftHaunch,clHaunch,rgtHaunch;
-            Float64 clFinishedElev = pDeformedGirderGeometry->GetFinishedElevation(poi,gceIntervalIdx,&lftHaunch,&clHaunch,&rgtHaunch);
+            Float64 lftHaunch, clHaunch, rgtHaunch;
+            Float64 clFinishedElev = pDeformedGirderGeometry->GetFinishedElevation(poi, gceIntervalIdx, &lftHaunch, &clHaunch, &rgtHaunch);
 
             Float64 designHaunch = currHaunch + (rwelev - clFinishedElev);
 
@@ -697,7 +715,7 @@ std::pair<bool,CBridgeDescription2> HaunchDepthInputConversionTool::DesignHaunch
                minClHaunchIdx = idx;
             }
 
-            designHaunches.push_back(designHaunch);
+            designClHaunchLayouts[iSegment].push_back(designHaunch);
 
             idx++;
          }
@@ -707,8 +725,8 @@ std::pair<bool,CBridgeDescription2> HaunchDepthInputConversionTool::DesignHaunch
          const pgsPointOfInterest& rPoiCtrl = vPoi[minClHaunchIdx];
 
          // Left and right haunch depths from function below account for both cross slope and girder orientation.
-         Float64 lftHaunch,clHaunch,rgtHaunch;
-         Float64 clFinishedElev = pDeformedGirderGeometry->GetFinishedElevation(rPoiCtrl,gceIntervalIdx,&lftHaunch,&clHaunch,&rgtHaunch);
+         Float64 lftHaunch, clHaunch, rgtHaunch;
+         Float64 clFinishedElev = pDeformedGirderGeometry->GetFinishedElevation(rPoiCtrl, gceIntervalIdx, &lftHaunch, &clHaunch, &rgtHaunch);
 
          Float64 crossSlopeEffectLeft = clHaunch - lftHaunch;
          Float64 crossSlopeEffectRight = clHaunch - rgtHaunch;
@@ -717,28 +735,29 @@ std::pair<bool,CBridgeDescription2> HaunchDepthInputConversionTool::DesignHaunch
          Float64 slopeEffect(0.0);
          if (crossSlopeEffectLeft > 0.0 || crossSlopeEffectRight > 0.0)
          {
-            slopeEffect = max(crossSlopeEffectLeft,crossSlopeEffectRight);
+            slopeEffect = max(crossSlopeEffectLeft, crossSlopeEffectRight);
          }
 
-         // Add slope affects with nominal fillet to determine minimum cl haunch anywhere along segment.
+         // Add slope effects with nominal fillet to determine minimum cl haunch anywhere along segment.
          Float64 minAllowCLHaunch = nominalFillet + slopeEffect;
 
          Float64 filletHaunchAdjustment = minAllowCLHaunch - minClHaunch;
 
-         const CGirderGroupData* pGroup = rDesignBridgeDescr.GetGirderGroup(segmentKey.groupIndex);
-         const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
+         const CGirderGroupData* pGroup = rDesignBridgeDescr.GetGirderGroup((GroupIndexType)0); // assume that all girders in group are of same type
+         const CSplicedGirderData* pGirder = pGroup->GetGirder(sourceGirderIdx);
          const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
 
          // Optional min haunch check at CL bearings
          Float64 bearingHaunchAdjustment(0.0);
          Float64 minBearingHaunch;
-         if (pGirderEntry->GetMinHaunchAtBearingLines(&minBearingHaunch))
+         bool doBearingHaunch = pGirderEntry->GetMinHaunchAtBearingLines(&minBearingHaunch);
+         if (doBearingHaunch)
          {
             // Add a buffer to min haunch value. This is because we don't get the exact CL bearing locations from GetPoi... below and the design can often miss by a smidge
-            minBearingHaunch += WBFL::Units::ConvertToSysUnits(0.125,WBFL::Units::Measure::Inch);
+            minBearingHaunch += WBFL::Units::ConvertToSysUnits(0.125, WBFL::Units::Measure::Inch);
 
             PoiList vSupportPois;
-            pPoi->GetPointsOfInterest(segmentKey,POI_FACEOFSUPPORT,&vSupportPois);
+            pPoi->GetPointsOfInterest(segmentKey, POI_FACEOFSUPPORT, &vSupportPois);
 
             // check at all CL suport locations (this is an approximation, bearings might be slightly offset)
             for (const auto& poi : vSupportPois)
@@ -750,28 +769,69 @@ std::pair<bool,CBridgeDescription2> HaunchDepthInputConversionTool::DesignHaunch
 
                if (currHaunch < minBearingHaunch)
                {
-                  bearingHaunchAdjustment = max(bearingHaunchAdjustment, minBearingHaunch-currHaunch);
+                  bearingHaunchAdjustment = max(bearingHaunchAdjustment, minBearingHaunch - currHaunch);
                }
             }
          }
 
-         Float64 haunchSegAdjustment = max(filletHaunchAdjustment,bearingHaunchAdjustment);
+         Float64 haunchSegAdjustment = doBearingHaunch ? max(filletHaunchAdjustment, bearingHaunchAdjustment) : filletHaunchAdjustment;
 
          // Controlling adjustment along entire group
          maxHaunchAdjustment4Group = max(maxHaunchAdjustment4Group, haunchSegAdjustment);
+
       } // segments
 
-      // Now we have unadjusted CL design haunch values. Adjust these to match haunch depths to fillet + buffer
-      for (SegmentIndexType iSeg = 0; iSeg < numSegs; iSeg++)
+      // Now we have unadjusted CL design haunch values at poi locations. Adjust these to match haunch depths to fillet + buffer
+      // and place in function so we can interpolate along entire segment
+      for (SegmentIndexType iSegment = 0; iSegment < numSegments; iSegment++)
       {
-         std::vector<Float64>& segHaunches (designClHaunches[iSeg]);
-
-         // Don't set if the segment wasn't designed. This will be the case when the number of girders is different, and we are in a group with girderlines that don't actually exist.
-         if (segHaunches.size() > 0)
+         // Don't set if the segment wasn't designed. This will be the case when the number of girders is different, and we are 
+         // in a group with girderlines that don't actually exist.
+         if (!designClHaunchLayouts[iSegment].empty())
          {
             // Add slope adjustment to all haunch values
-            std::for_each(segHaunches.begin(),segHaunches.end(),[maxHaunchAdjustment4Group](Float64& d) { d += maxHaunchAdjustment4Group; });
+            std::for_each(designClHaunchLayouts[iSegment].begin(), designClHaunchLayouts[iSegment].end(), [maxHaunchAdjustment4Group](Float64& d) { d += maxHaunchAdjustment4Group; });
 
+            ASSERT(designClHaunchLayouts[iSegment].size() == vPoiLists[iSegment].size());
+
+            WBFL::Math::PiecewiseFunction designHaunchLayoutFunction; // interpolation function at all poi locations
+
+            auto haunchIter = designClHaunchLayouts[iSegment].begin();
+            auto haunchEnd = designClHaunchLayouts[iSegment].end();
+            auto poiIter = vPoiLists[iSegment].begin();
+            while (haunchIter != haunchEnd)
+            {
+               auto& poi = *poiIter;
+               Float64 xpoi = pPoi->ConvertPoiToGirderlineCoordinate(poi);
+               Float64 hdepth = *haunchIter;
+
+               // we'll use this function to interpolate haunch depths at x locations along segment
+               designHaunchLayoutFunction.AddPoint(xpoi, hdepth);
+
+               haunchIter++;
+               poiIter++;
+            }
+
+            // Build list of haunch lengths at even increments along segment using interpolation function
+            CSegmentKey segmentKey(iGrp, sourceGirderIdx, iSegment);
+
+            PoiList vSegmentPoi0;
+            pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE, &vSegmentPoi0);
+            ASSERT(vSegmentPoi0.size() == 1);
+            Float64 xSegmentStart = pPoi->ConvertPoiToGirderlineCoordinate(vSegmentPoi0.front());
+
+            Float64 segmentLength = pBridge->GetSegmentLength(segmentKey);
+
+            std::vector<Float64> segmentHaunches;
+            segmentHaunches.reserve(designHaunchDistribution);
+            for (IndexType iLoc = 0; iLoc < designHaunchDistribution; iLoc++)
+            {
+               Float64 loc = xSegmentStart + ((Float64)iLoc / Float64(designHaunchDistribution-1)) * segmentLength;
+
+               segmentHaunches.push_back(designHaunchLayoutFunction.Evaluate(loc));
+            }
+
+            // We have our design. Now set segment values
             // We have our design. Now set segment values
             CGirderGroupData* pGroup = rDesignBridgeDescr.GetGirderGroup(iGrp);
             if (bApply2AllGdrs)
@@ -781,37 +841,283 @@ std::pair<bool,CBridgeDescription2> HaunchDepthInputConversionTool::DesignHaunch
                for (GirderIndexType gdrIdx = 0; gdrIdx < numGdrs; gdrIdx++)
                {
                   CSplicedGirderData* pGirder = pGroup->GetGirder(gdrIdx);
-                  CPrecastSegmentData* pSegment = pGirder->GetSegment(iSeg);
-                  pSegment->SetDirectHaunchDepths(segHaunches);
+                  CPrecastSegmentData* pSegment = pGirder->GetSegment(iSegment);
+                  pSegment->SetDirectHaunchDepths(segmentHaunches);
                }
             }
             else
             {
                // set only for our design girderline
                CSplicedGirderData* pGirder = pGroup->GetGirder(rDesignGirderKey.girderIndex);
-               CPrecastSegmentData* pSegment = pGirder->GetSegment(iSeg);
-               pSegment->SetDirectHaunchDepths(segHaunches);
+               CPrecastSegmentData* pSegment = pGirder->GetSegment(iSegment);
+               pSegment->SetDirectHaunchDepths(segmentHaunches);
+            }
+         }
+      } // segment
+   } // group
+
+   // Just finished a design at points along segments. We may need to convert
+   // to a different user-specified format. If so, we'll need another instance of ourself to do it.
+   GET_IFACE(IDocumentType, pDocType);
+   pgsTypes::HaunchLayoutType haunchLayoutType = pDocType->IsPGSuperDocument() ? pgsTypes::hltAlongSegments : m_pBridgeDescr->GetHaunchLayoutType();
+   if (inputDistributionType != designHaunchDistribution || pgsTypes::hltAlongSegments != haunchLayoutType)
+   {
+      HaunchDepthInputConversionTool newTool(&rDesignBridgeDescr, m_pBroker, false);
+      auto newPair = newTool.ConvertToDirectHaunchInput(rDesignBridgeDescr.GetHaunchInputLocationType(), haunchLayoutType, inputDistributionType, true);
+
+      // Copy converted bridgedesc to our return value
+      rDesignBridgeDescr = newPair.second;
+   }
+
+   return convertedBridgeDescrPair;
+}
+
+std::pair<bool, CBridgeDescription2> HaunchDepthInputConversionTool::DesignSpanHaunches(const CGirderKey& rDesignGirderKey, GirderIndexType sourceGirderIdx, pgsTypes::HaunchInputDistributionType inputDistributionType, bool bApply2AllGdrs)
+{
+   GET_IFACE(IBridge, pBridge);
+   GET_IFACE(IPointOfInterest, pPoi);
+   GET_IFACE(IRoadway, pRoadway);
+   GET_IFACE_NOCHECK(IGirder, pGirder);
+   GET_IFACE(IDeformedGirderGeometry, pDeformedGirderGeometry);
+
+   // First convert current haunch data in bridgdescr2 so we can operate on individual spans/girderlines. 
+   // This will also serve as our initial design guess.
+   // We will compute design values at 1/40th points and convert to simpler format if needed.
+
+   // Use fine-grained haunch layout for design. We'll convert to other distribution later
+   pgsTypes::HaunchInputDistributionType designHaunchDistribution = pgsTypes::hid40thPoints;
+
+   // NOTE that function below will call this->Initialize() to do the conversion, so we don't need to call it here.
+   auto convertedBridgeDescrPair = ConvertToDirectHaunchInput(pgsTypes::hilPerEach, pgsTypes::hltAlongSpans, designHaunchDistribution, true);
+   ATLASSERT(convertedBridgeDescrPair.first);
+
+   // Use a reference for readability
+   CBridgeDescription2& rDesignBridgeDescr(convertedBridgeDescrPair.second);
+
+   // Theory:
+   // The design algo here is pretty simple 2-step process using the current input as a guess 
+   //     1. Compute the difference between the computed CL girder deck elevation (based on the current haunch depths) to
+   //        the cl girder PGL, and add this difference to the current haunch depths. This results in design CL haunch.
+   //     2. Take a second pass through the design haunch depths and make it that the minimum depth is slightly greater than the fillet
+   //        accounting for cross-slope and girder orientation effects.
+   // 
+   // In reality the algo is iterative in order to refine the result, but I have a found that a single iteration does a pretty good job.
+   // Users can make a second pass if a better solution is desired.
+
+   // We will use our (tool's) computed haunch layout to get currently-input haunch depths at POI locations
+   const GirderlineHaunchLayout& rLayout = m_GirderlineHaunchLayouts[sourceGirderIdx];
+
+   // We design for the GCE
+   GET_IFACE(IIntervals, pIntervals);
+   IntervalIndexType gceIntervalIdx = pIntervals->GetGeometryControlInterval();
+
+   // Use a buffer of 1/16" for a fillet tolerance. This will ensure that our design doesn't miss by a tiny amount
+   Float64 filletBuffer = WBFL::Units::ConvertToSysUnits(1.0 / 16.0, WBFL::Units::Measure::Inch);
+   Float64 nominalFillet = pBridge->GetFillet() + filletBuffer;
+
+   SpanIndexType numSpans = pBridge->GetSpanCount();
+
+   // The goal is to have the smallest haunch depth possible based on fillet and cross slope effects.
+   // Hence, we compute required CL haunches along each span and the max fillet-cross slope effect and the adjustment
+   // required to obtain the smallest haunch depth. However, the adjustment must be made to all haunches along the total group
+   // or else we get jumps in haunch depth between segment ends. Below is the total group adjustment
+   Float64 maxHaunchAdjustment4Group(-Float64_Max);
+
+   // Design haunches computed using CL effects only for each span 
+   std::vector< std::vector<Float64> > designClHaunchLayouts;
+   designClHaunchLayouts.assign(numSpans, std::vector<Float64>());
+
+   std::vector <PoiList> vPoiLists;
+   vPoiLists.assign(numSpans, PoiList());
+
+   for (SpanIndexType iSpan = 0; iSpan < numSpans; iSpan++)
+   {
+      // Get points of interest at locations where we are going to compute design haunch depths
+      CSpanKey spanKey(iSpan, sourceGirderIdx);
+
+      PoiList& vPoi = vPoiLists[iSpan];
+      pPoi->GetPointsOfInterest(spanKey, POI_SPAN | POI_TENTH_POINTS, &vPoi);
+      if (vPoi.empty())
+      {
+         // We could have a non-existant location if there is a different number of girders per span (or group)
+         continue;
+      }
+
+      PoiList vSegPoi;
+      pPoi->GetPointsOfInterest(spanKey, attribDesign, &vSegPoi);
+      vPoi.insert(vPoi.end(), vSegPoi.begin(), vSegPoi.end());
+      pPoi->SortPoiList(&vPoi);
+
+      designClHaunchLayouts[iSpan].reserve(vPoi.size());
+
+      // Save minimum CL haunch and its index location. We will perform the fillet (crossSlope) analysis there since this should
+      // be where the fillet most likely will control (that's our assumption)
+      Float64 minClHaunch(Float64_Max);
+      std::size_t idx(0), minClHaunchIdx(0);
+      for (auto poi : vPoi)
+      {
+         Float64 xpoi = pPoi->ConvertPoiToGirderlineCoordinate(poi);
+
+         // CL haunch depth we computed in our Init function
+         Float64 currHaunch = rLayout.m_pHaunchDepths->Evaluate(xpoi);
+
+         // roadway elevation
+         Float64 station, offset;
+         pBridge->GetStationAndOffset(poi, &station, &offset);
+         Float64 rwelev = pRoadway->GetElevation(station, offset);
+
+         // Current finished deck
+         Float64 lftHaunch, clHaunch, rgtHaunch;
+         Float64 clFinishedElev = pDeformedGirderGeometry->GetFinishedElevation(poi, gceIntervalIdx, &lftHaunch, &clHaunch, &rgtHaunch);
+
+         Float64 designHaunch = currHaunch + (rwelev - clFinishedElev);
+
+         if (designHaunch < minClHaunch)
+         {
+            minClHaunch = designHaunch;
+            minClHaunchIdx = idx;
+         }
+
+         designClHaunchLayouts[iSpan].push_back(designHaunch);
+
+         idx++;
+      }
+
+      // We now have CL haunch design values. However, it's possible that the new values are excessive, or will not pass the fillet check
+      // because of cross slope and girder orientation effects. Get relative haunch depths due to cross slope at control location
+      const pgsPointOfInterest& rPoiCtrl = vPoi[minClHaunchIdx];
+
+      // Left and right haunch depths from function below account for both cross slope and girder orientation.
+      Float64 lftHaunch, clHaunch, rgtHaunch;
+      Float64 clFinishedElev = pDeformedGirderGeometry->GetFinishedElevation(rPoiCtrl, gceIntervalIdx, &lftHaunch, &clHaunch, &rgtHaunch);
+
+      Float64 crossSlopeEffectLeft = clHaunch - lftHaunch;
+      Float64 crossSlopeEffectRight = clHaunch - rgtHaunch;
+
+      // Use slope effect that reduces haunch depth the most at edge
+      Float64 slopeEffect(0.0);
+      if (crossSlopeEffectLeft > 0.0 || crossSlopeEffectRight > 0.0)
+      {
+         slopeEffect = max(crossSlopeEffectLeft, crossSlopeEffectRight);
+      }
+
+      // Add slope effects with nominal fillet to determine minimum cl haunch anywhere along span.
+      Float64 minAllowCLHaunch = nominalFillet + slopeEffect;
+
+      Float64 filletHaunchAdjustment = minAllowCLHaunch - minClHaunch;
+
+      const CGirderGroupData* pGroup = rDesignBridgeDescr.GetGirderGroup((GroupIndexType)0); // assume that all girders in group are of same type
+      const CSplicedGirderData* pGirder = pGroup->GetGirder(sourceGirderIdx);
+      const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
+
+      // Optional min haunch check at CL bearings
+      Float64 bearingHaunchAdjustment(0.0);
+      Float64 minBearingHaunch;
+      bool doBearingHaunch = pGirderEntry->GetMinHaunchAtBearingLines(&minBearingHaunch);
+      if (doBearingHaunch)
+      {
+         // Add a buffer to min haunch value. This is because we don't get the exact CL bearing locations from GetPoi... below and the design can often miss by a smidge
+         minBearingHaunch += WBFL::Units::ConvertToSysUnits(0.125, WBFL::Units::Measure::Inch);
+
+         PoiList vSupportPois;
+         pPoi->GetPointsOfInterest(spanKey, POI_FACEOFSUPPORT, &vSupportPois);
+
+         // check at all CL suport locations (this is an approximation, bearings might be slightly offset)
+         for (const auto& poi : vSupportPois)
+         {
+            Float64 xpoi = pPoi->ConvertPoiToGirderlineCoordinate(poi);
+
+            // CL haunch depth we computed in our Init function
+            Float64 currHaunch = rLayout.m_pHaunchDepths->Evaluate(xpoi);
+
+            if (currHaunch < minBearingHaunch)
+            {
+               bearingHaunchAdjustment = max(bearingHaunchAdjustment, minBearingHaunch - currHaunch);
             }
          }
       }
-   } // groups
 
-   // simplify input if we can
-   if (bApply2AllGdrs && rDesignGirderKey.groupIndex == ALL_GROUPS)
+      Float64 haunchSegAdjustment = doBearingHaunch ? max(filletHaunchAdjustment, bearingHaunchAdjustment) : filletHaunchAdjustment;
+
+      // Controlling adjustment along entire group
+      maxHaunchAdjustment4Group = max(maxHaunchAdjustment4Group, haunchSegAdjustment);
+
+   } // spans
+
+   // Now we have unadjusted CL design haunch values at poi locations. Adjust these to match haunch depths to fillet + buffer
+   // and place in function so we can interpolate along entire span
+   for (SpanIndexType iSpan = 0; iSpan < numSpans; iSpan++)
    {
-      rDesignBridgeDescr.SetHaunchInputLocationType(pgsTypes::hilSame4AllGirders);
+      // Don't set if the span wasn't designed. This will be the case when the number of girders is different, and we are 
+      // in a group with girderlines that don't actually exist.
+      if (!designClHaunchLayouts[iSpan].empty())
+      {
+         // Add slope adjustment to all haunch values
+         std::for_each(designClHaunchLayouts[iSpan].begin(), designClHaunchLayouts[iSpan].end(), [maxHaunchAdjustment4Group](Float64& d) { d += maxHaunchAdjustment4Group; });
+
+         ASSERT(designClHaunchLayouts[iSpan].size() == vPoiLists[iSpan].size());
+
+         WBFL::Math::PiecewiseFunction designHaunchLayoutFunction; // interpolation function at all poi locations
+
+         auto haunchIter = designClHaunchLayouts[iSpan].begin();
+         auto haunchEnd = designClHaunchLayouts[iSpan].end();
+         auto poiIter = vPoiLists[iSpan].begin();
+         while (haunchIter != haunchEnd)
+         {
+            auto& poi = *poiIter;
+            Float64 xpoi = pPoi->ConvertPoiToGirderlineCoordinate(poi);
+            Float64 hdepth = *haunchIter;
+
+            // we'll use this function to interpolate haunch depths at x locations along span
+            designHaunchLayoutFunction.AddPoint(xpoi, hdepth);
+
+            haunchIter++;
+            poiIter++;
+         }
+
+         // Build list of haunch lengths at even increments along span using interpolation function
+         CSpanKey spanKey(iSpan, sourceGirderIdx);
+
+         PoiList vSpanPoi0;
+         pPoi->GetPointsOfInterest(spanKey, POI_SPAN | POI_0L, &vSpanPoi0);
+         ASSERT(vSpanPoi0.size() == 1);
+         Float64 xSpanStart = pPoi->ConvertPoiToGirderlineCoordinate(vSpanPoi0.front());
+
+         Float64 spanLength = pBridge->GetSpanLength(spanKey);
+
+         std::vector<Float64> spanHaunches;
+         spanHaunches.reserve(designHaunchDistribution);
+         for (IndexType iLoc = 0; iLoc < designHaunchDistribution; iLoc++)
+         {
+            Float64 loc = xSpanStart + ((Float64)iLoc / Float64(designHaunchDistribution-1)) * spanLength;
+
+            spanHaunches.push_back(designHaunchLayoutFunction.Evaluate(loc));
+         }
+
+         // We have our design. Now set span values
+         if (bApply2AllGdrs)
+         {
+            // Set for all girders in span
+            CSpanData2* pSpan = convertedBridgeDescrPair.second.GetSpan(iSpan);
+            pSpan->SetDirectHaunchDepths(spanHaunches);
+         }
+         else
+         {
+            // set only for our design girderline
+            CSpanData2* pSpan = convertedBridgeDescrPair.second.GetSpan(iSpan);
+            pSpan->SetDirectHaunchDepths(sourceGirderIdx, spanHaunches);
+         }
+      }
    }
 
-   // Just finished a design at 1/10th points along segments. We may need to convert
+   // Just finished a design at points along spans. We may need to convert
    // to a different user-specified format. If so, we'll need another instance of ourself to do it.
-   GET_IFACE(IDocumentType,pDocType);
-   bool bIsPGSuper = pDocType->IsPGSuperDocument();
-   if (bIsPGSuper || inputDistributionType != pgsTypes::hidTenthPoints)
+   GET_IFACE(IDocumentType, pDocType);
+   pgsTypes::HaunchLayoutType haunchLayoutType = pDocType->IsPGSuperDocument() ? pgsTypes::hltAlongSpans : m_pBridgeDescr->GetHaunchLayoutType();
+   if (inputDistributionType != designHaunchDistribution || pgsTypes::hltAlongSpans != haunchLayoutType)
    {
-      // PGSuper only does haunch layouts by span
-      pgsTypes::HaunchLayoutType haunchLayoutType = bIsPGSuper ? pgsTypes::hltAlongSpans : pgsTypes::hltAlongSegments;
-      HaunchDepthInputConversionTool newTool(&rDesignBridgeDescr,m_pBroker,false);
-      auto newPair = newTool.ConvertToDirectHaunchInput(rDesignBridgeDescr.GetHaunchInputLocationType(),haunchLayoutType,inputDistributionType,true);
+      HaunchDepthInputConversionTool newTool(&rDesignBridgeDescr, m_pBroker, false);
+      auto newPair = newTool.ConvertToDirectHaunchInput(rDesignBridgeDescr.GetHaunchInputLocationType(), haunchLayoutType, inputDistributionType, true);
 
       // Copy converted bridgedesc to our return value
       rDesignBridgeDescr = newPair.second;
@@ -889,7 +1195,8 @@ void HaunchDepthInputConversionTool::InitializeGeometrics(bool bSingleGirderLine
          }
       }
 
-      // Now we can layout haunch depths along girderline in GL coordinates. The conversion process will use these for our new layout
+      // Now we can layout the current haunch depths along girderline in GL coordinates. 
+      // The conversion and design processes will use these to create our new layout
       if (m_pBridgeDescr->GetHaunchInputDepthType() == pgsTypes::hidACamber)
       {
          GET_IFACE_NOCHECK(IGirder,pIGirder);

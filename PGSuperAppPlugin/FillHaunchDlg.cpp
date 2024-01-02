@@ -103,12 +103,14 @@ BOOL CFillHaunchDlg::OnInitDialog()
 	if (bBySpan)
 	{
 		pBox->SetItemData(pBox->AddString(_T("1/4 points along Spans")),  (DWORD_PTR)pgsTypes::hidQuarterPoints);
-		pBox->SetItemData(pBox->AddString(_T("1/10 points along Spans")), (DWORD_PTR)pgsTypes::hidTenthPoints);
+		pBox->SetItemData(pBox->AddString(_T("1/10th points along Spans")), (DWORD_PTR)pgsTypes::hidTenthPoints);
+		pBox->SetItemData(pBox->AddString(_T("1/20th points along Spans")), (DWORD_PTR)pgsTypes::hid20thPoints);
 	}
 	else
 	{
 		pBox->SetItemData(pBox->AddString(_T("1/4 points along Segments")),  (DWORD_PTR)pgsTypes::hidQuarterPoints);
 		pBox->SetItemData(pBox->AddString(_T("1/10 points along Segments")), (DWORD_PTR)pgsTypes::hidTenthPoints);
+		pBox->SetItemData(pBox->AddString(_T("1/20th points along Segments")), (DWORD_PTR)pgsTypes::hid20thPoints);
 	}
 
 	// determine girders where we can compute required haunch depths
