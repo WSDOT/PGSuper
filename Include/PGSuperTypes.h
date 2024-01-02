@@ -563,7 +563,9 @@ typedef struct pgsTypes
       hidAtEnds = 2,       // Apply haunch linearly between ends of span or segment
       hidParabolic = 3,    // Haunch is distributed parabolically along span or segment. Control points at ends and middle of element
       hidQuarterPoints = 5,// Haunch is linearly distributed along quarter points of span or segment
-      hidTenthPoints = 11  // Haunch is linearly distributed along 10th points of span or segment
+      hidTenthPoints = 11, // Haunch is linearly distributed along 10th points of span or segment
+      hid20thPoints =  21, // Haunch is linearly distributed along 20th points of span or segment
+      hid40thPoints  = 41  // Haunch is linearly distributed along 40th points of span or segment (experimental)
    } HaunchInputDistributionType;
 
 ///////// Slab Offset and Assumed Excess Camber are older haunch definition methods and are used only to define haunch depths in PGSuper  ///////////

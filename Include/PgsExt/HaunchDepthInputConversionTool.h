@@ -53,11 +53,15 @@ public:
    std::pair<bool,CBridgeDescription2> DesignHaunches(const CGirderKey& rDesignGirderKey, GirderIndexType sourceGirderIdx, pgsTypes::HaunchInputDistributionType inputDistributionType, bool bApply2AllGdrs);
 
 private:
+   HaunchDepthInputConversionTool();
+
    // Compute span ends, segment ends, and current haunch layout along girderline(s) using a piecewise-linear approx
    void InitializeGeometrics(bool bSingleGirderLineOnly);
    bool m_WasGeometricsInitialized;
 
-   HaunchDepthInputConversionTool();
+   // Use slightly different design algos for segment and span layouts
+   std::pair<bool, CBridgeDescription2> DesignSegmentHaunches(const CGirderKey& rDesignGirderKey, GirderIndexType sourceGirderIdx, pgsTypes::HaunchInputDistributionType inputDistributionType, bool bApply2AllGdrs);
+   std::pair<bool, CBridgeDescription2> DesignSpanHaunches(const CGirderKey& rDesignGirderKey, GirderIndexType sourceGirderIdx, pgsTypes::HaunchInputDistributionType inputDistributionType, bool bApply2AllGdrs);
 
    const CBridgeDescription2* m_pBridgeDescr;
    CComPtr<IBroker> m_pBroker;

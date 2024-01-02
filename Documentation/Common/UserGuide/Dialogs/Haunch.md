@@ -30,7 +30,7 @@ These two methods are identical except that the slab depth is included in the se
 
 Both methods can define the haunch the same for every member in the bridge, same in each span or segment, or unique for every span or segment
 
-> Tip: An automated design algorithm can be used to design Explicit haunch depths. The option is available from the "Fill Haunch Depth Input with Computed Values" option on the @ref ug_finished_elevations_graph window.
+> Tip: An automated design algorithm can be used to design Explicit haunch depths. The option is available from the "Fill Haunch Depth Input with Computed Values" option on the @ref ug_finished_elevations_graph window. Design can also be accessed from the main program menu at "Project->Design Haunch Depths".
 
 "A" (Slab Offset) and Assumed Excess Camber Method (PGSuper Only)
 --------------------------------

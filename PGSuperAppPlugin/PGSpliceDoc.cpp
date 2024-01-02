@@ -85,6 +85,7 @@ BEGIN_MESSAGE_MAP(CPGSpliceDoc, CPGSDocBase)
 	ON_UPDATE_COMMAND_UI(ID_COPY_TEMPSUPPORT_PROPS, OnUpdateCopyTempSupportProps)
 	ON_UPDATE_COMMAND_UI(ID_EDIT_COPYTEMPSUPPORTPROPERTIES, OnUpdateCopyTempSupportProps)
    ON_COMMAND(ID_EDIT_COPYTEMPSUPPORTPROPERTIES,OnCopyTempSupportProps)
+   ON_COMMAND(ID_PROJECT_DESIGNHAUNCH, OnProjectDesignHaunch)
 
    //}}AFX_MSG_MAP
 
@@ -540,6 +541,15 @@ void CPGSpliceDoc::OnCopyTempSupportProps(UINT nID)
       ATLASSERT(0); // map access out of range is the likely problem
    }
 }
+
+void CPGSpliceDoc::OnProjectDesignHaunch()
+{
+   GroupIndexType group = m_Selection.GroupIdx == ALL_GROUPS ? 0 : m_Selection.GroupIdx;
+   GirderIndexType girder = m_Selection.GirderIdx == ALL_GIRDERS ? 0 : m_Selection.GirderIdx;
+
+   DoDesignHaunch(CGirderKey(group, girder));
+}
+
 
 void CPGSpliceDoc::OnUpdateCopyTempSupportProps(CCmdUI * pCmdUI)
 {

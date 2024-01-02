@@ -3259,152 +3259,82 @@ void CBridgeAgentImp::GetHaunchDepth4ADimInput(const CPrecastSegmentData* pSegme
    }
 }
 
-void CBridgeAgentImp::GetHaunchDepth4BySpanInput(const CPrecastSegmentData* pSegment,const CBridgeDescription2* pBridgeDesc,CComPtr<IDblArray>& pHaunchDepths)
+void CBridgeAgentImp::GetHaunchDepth4BySpanInput(const CPrecastSegmentData* pSegment,const CBridgeDescription2* pBridgeDesc, CComPtr<IHaunchDepthFunction>& pHaunchFunction)
 {
-   // Haunch is direct input across spans. Need to convert to per-segment layout
    CSegmentKey segmentKey = pSegment->GetSegmentKey();
    GirderIndexType gdrIdx = segmentKey.girderIndex;
 
-   if (pBridgeDesc->GetHaunchInputDistributionType() == pgsTypes::hidUniform)
-   {
-      // Special, trivial case. Haunch is uniform across span. Just use haunch depth of first span on segment
-      const CSpanData2* pSpan = pSegment->GetSpan(pgsTypes::metStart);
-      std::vector<Float64> spanHaunches = pSpan->GetDirectHaunchDepths(gdrIdx);
-      ATLASSERT(spanHaunches.size() == 1);
+   SpanIndexType startSpanIdx = pSegment->GetSpan(pgsTypes::metStart)->GetIndex();
+   SpanIndexType endSpanIdx = pSegment->GetSpan(pgsTypes::metEnd)->GetIndex();
 
-      pHaunchDepths->Add(spanHaunches.front());
+   // Two cases here. 1) segment is entirely within one span, and 2) multiple spans cross segment
+   if (startSpanIdx == endSpanIdx)
+   {
+      SpanIndexType spanIdx = startSpanIdx;
+
+      // Use girderline coordinates to measure relative locations of segment<->span locations
+      Float64 xStartSegment = ConvertSegmentCoordinateToGirderlineCoordinate(segmentKey, 0.0);
+
+      CSpanKey spanKey(spanIdx, gdrIdx);
+      Float64 spanLength = GetSpanLength(spanKey); // this is cl pier to cl pier
+      pgsPointOfInterest spanPoi = ConvertSpanPointToPoi(spanKey, 0.0);
+      Float64 xStartSpan = ConvertPoiToGirderlineCoordinate(spanPoi);
+
+      // Haunch is direct input across spans. 
+      const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanIdx);
+      std::vector<Float64> spanHaunches = pSpan->GetDirectHaunchDepths(gdrIdx);
+
+      CComPtr<IDblArray> pHaunchDepths;
+      pHaunchDepths.CoCreateInstance(CLSID_DblArray);
+      for (auto haunch : spanHaunches)
+      {
+         pHaunchDepths->Add(haunch);
+      }
+
+      // We can use the simple haunch function since segment lies entirely within span
+      CComPtr<ISimpleHaunchDepthFunction> pSimpleHaunchDepthFunction;
+      pSimpleHaunchDepthFunction.CoCreateInstance(CLSID_SimpleHaunchDepthFunction);
+      pSimpleHaunchDepthFunction.QueryInterface(&pHaunchFunction);      // let smart pointer handle cast
+
+      Float64 spanStartOffset = xStartSpan - xStartSegment;
+
+      pSimpleHaunchDepthFunction->Initialize(spanStartOffset, spanLength, pHaunchDepths);
    }
    else
    {
-      pgsTypes::HaunchInputDistributionType haunchInputDistributionType = pBridgeDesc->GetHaunchInputDistributionType();
+      // More than one span crosses segment. We need to use the composite haunch function
+      CComPtr<ICompositeHaunchDepthFunction> pCompositeHaunchDepthFunction;
+      pCompositeHaunchDepthFunction.CoCreateInstance(CLSID_CompositeHaunchDepthFunction);
+      pCompositeHaunchDepthFunction.QueryInterface(&pHaunchFunction);
 
-      // The parabolic case needs special treatment in the case of pgsuper-type models where a segment lies entirely 
-      // within a span.
-      SpanIndexType startSpanIdx = pSegment->GetSpan(pgsTypes::metStart)->GetIndex();
-      SpanIndexType endSpanIdx = pSegment->GetSpan(pgsTypes::metEnd)->GetIndex();
+      // Use girderline coordinates to measure relative locations of segment<->span locations
+      Float64 xStartSegment = ConvertSegmentCoordinateToGirderlineCoordinate(segmentKey, 0.0);
 
-      if (haunchInputDistributionType != pgsTypes::hidParabolic)
+      for (SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++)
       {
-         // For all cases Except for parabolic when segment lies within a single span:
-         // Use linear interpolation of piecewise linear span locations to determine haunch values across segments
-         // Values at span locations can be outside of the bounds of segments - extrapolate those values
-         WBFL::Math::PiecewiseFunction pwLinearFunction;
-         pwLinearFunction.SetOutOfRangeBehavior(WBFL::Math::PiecewiseFunction::OutOfRangeBehavior::Extrapolate);
-
-         Float64 segmentLength = GetSegmentLength(segmentKey);
-
-         // Build layout along segments. Use GirderLineCoord's as basis
-         for (SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++)
-         {
-            CSpanKey spanKey(spanIdx,gdrIdx);
-            // Need location of XSpan below in "Span Coordinates". This starts at bearing location in first span
-            Float64 spanLength = GetSpanLength(spanKey); // this is cl pier to cl pier
-
-            const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanIdx);
-            std::vector<Float64> spanHaunches = pSpan->GetDirectHaunchDepths(gdrIdx);
-
-            std::size_t numHaunches = spanHaunches.size();
-            std::size_t currLoc = 0;
-            for (auto haunch : spanHaunches)
-            {
-               Float64 Xspan = spanLength * (Float64)currLoc / (Float64)(numHaunches - 1);
-               pgsPointOfInterest spanPoi = ConvertSpanPointToPoi(spanKey,Xspan);
-               Float64 Xgirderline = ConvertPoiToGirderlineCoordinate(spanPoi);
-               pwLinearFunction.AddPoint(Xgirderline,haunch);
-               currLoc++;
-            }
-         }
-
-         // Create haunch depths along segment at same distribution as for spans. Don't try to match jumps 
-         int numSegmentLocs = (int)haunchInputDistributionType;
-         for (int iSegmentLoc = 0; iSegmentLoc < numSegmentLocs; iSegmentLoc++)
-         {
-            Float64 XSegment = segmentLength * (Float64)iSegmentLoc / (Float64)(numSegmentLocs - 1);
-            Float64 Xgl = ConvertSegmentCoordinateToGirderlineCoordinate(segmentKey,XSegment);
-            Float64 haunch = pwLinearFunction.Evaluate(Xgl);
-
-            pHaunchDepths->Add(haunch);
-         }
-      }
-      else if (haunchInputDistributionType == pgsTypes::hidParabolic && startSpanIdx != endSpanIdx)
-      {
-         // For parabolic when segment lies within multiple spans:
-         // Use linear interpolation of piecewise linear span locations to determine haunch values across segments
-         // Place haunch depths at along span to attempt to capture odd jump
-         const IndexType numSpanSegs = 45; // after some experimentation, these values seem to work well
-         const IndexType numSegSegs = numSpanSegs / 3;
-
-         WBFL::Math::PiecewiseFunction pwLinearFunction;
-         pwLinearFunction.SetOutOfRangeBehavior(WBFL::Math::PiecewiseFunction::OutOfRangeBehavior::Extrapolate);
-
-         Float64 segmentLength = GetSegmentLength(segmentKey);
-
-         // Build layout along spans. Use GirderLineCoord's as basis
-         for (SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++)
-         {
-            CSpanKey spanKey(spanIdx,gdrIdx);
-            // Need location of XSpan below in "Span Coordinates". This starts at bearing location in first span
-            Float64 spanLength = GetSpanLength(spanKey); // this is cl pier to cl pier
-
-            const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanIdx);
-            std::vector<Float64> spanHaunches = pSpan->GetDirectHaunchDepths(gdrIdx);
-
-            for (IndexType iseg = 0; iseg <= numSpanSegs; iseg++)
-            {
-               Float64 xSpan = spanLength * (Float64)iseg / (Float64)(numSpanSegs - 1);
-               pgsPointOfInterest spanPoi = ConvertSpanPointToPoi(spanKey,xSpan);
-               Float64 Xgirderline = ConvertPoiToGirderlineCoordinate(spanPoi);
-
-               Float64 haunch = ::ComputeHaunchDepthAlongSegment(xSpan,spanLength,spanHaunches);
-
-               pwLinearFunction.AddPoint(Xgirderline,haunch);
-            }
-         }
-
-         // Create haunch depths along segment. Use less resolution than above for performance
-         for (IndexType iseg = 0; iseg < numSegSegs; iseg++)
-         {
-            Float64 XSegment = segmentLength * (Float64)iseg / (Float64)(numSegSegs - 1);
-            Float64 Xgl = ConvertSegmentCoordinateToGirderlineCoordinate(segmentKey,XSegment);
-
-            Float64 haunch = pwLinearFunction.Evaluate(Xgl);
-            pHaunchDepths->Add(haunch);
-         }
-      }
-      else
-      {
-         // Parabolic distribution  where a segment lies entirely within a span
-         ATLASSERT(startSpanIdx == endSpanIdx);
-
-         SpanIndexType spanIdx = startSpanIdx;
-         CSpanKey spanKey(spanIdx,gdrIdx);
-         const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanIdx);
-
-         std::vector<Float64> spanHaunches = pSpan->GetDirectHaunchDepths(gdrIdx);
-         std::size_t numHaunches = spanHaunches.size();
-         ATLASSERT(numHaunches == 3);
-
-         // Span length below starts at bearing location in first span
+         CSpanKey spanKey(spanIdx, gdrIdx);
          Float64 spanLength = GetSpanLength(spanKey); // this is cl pier to cl pier
+         pgsPointOfInterest spanPoi = ConvertSpanPointToPoi(spanKey, 0.0);
+         Float64 xStartSpan = ConvertPoiToGirderlineCoordinate(spanPoi);
 
-         Float64 segmentLength = GetSegmentLength(segmentKey);
-
-         // Create haunch depths along segment at same distribution as for spans.
-         std::size_t numSegmentLocs = numHaunches;
-         for (int iSegmentLoc = 0; iSegmentLoc < numHaunches; iSegmentLoc++)
+         const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanIdx);
+         std::vector<Float64> spanHaunches = pSpan->GetDirectHaunchDepths(gdrIdx);
+         CComPtr<IDblArray> pHaunchDepths;
+         pHaunchDepths.CoCreateInstance(CLSID_DblArray);
+         for (auto haunch : spanHaunches)
          {
-            Float64 XSegment = segmentLength * (Float64)iSegmentLoc / (Float64)(numSegmentLocs - 1);
-
-            // Get distance along span of segment location
-            CSpanKey newSpanKey;
-            Float64 xSpan;
-            ConvertSegmentCoordinateToSpanPoint(segmentKey,XSegment,&newSpanKey,&xSpan);
-
-            // use generic bridge helper function to determine haunch values along span
-#pragma Reminder("This could be optimized by turning function below into a tool class and pre-multiplying many of the values")
-            Float64 haunch = ::ComputeHaunchDepthAlongSegment(xSpan,spanLength,spanHaunches);
-
             pHaunchDepths->Add(haunch);
+         }
+
+         Float64 spanStartOffset = xStartSpan - xStartSegment;
+
+         if (spanIdx == startSpanIdx)
+         {
+            pCompositeHaunchDepthFunction->Initialize(spanStartOffset, spanLength, pHaunchDepths);
+         }
+         else
+         {
+            pCompositeHaunchDepthFunction->AddLayout(spanLength, pHaunchDepths);
          }
       }
    }
@@ -4195,20 +4125,33 @@ bool CBridgeAgentImp::LayoutSsmHaunches()
          SegmentIndexType nSegments = pGirder->GetSegmentCount();
          for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
          {
+            CSegmentKey segmentKey(girderKey, segIdx);
             const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
 
             CComPtr<ISuperstructureMemberSegment> segment;
             ssmbr->get_Segment(segIdx, &segment);
 
+            Float64 Lseg = GetSegmentLength(segmentKey);
             Float64 fillet = 0;
+
+            CComPtr<IHaunchDepthFunction> pHaunchDepthFunction;
+
             CComPtr<IDblArray> pHaunchDepths;
             pHaunchDepths.CoCreateInstance(CLSID_DblArray);
+
             if ( deckType != pgsTypes::sdtNone )
             {
                if (haunchInputDepthType == pgsTypes::hidACamber)
                {
                   // Haunch depths were input using "A" and assumed excess camber. This is only supported in PGSuper models
                   GetHaunchDepth4ADimInput(pSegment,pHaunchDepths);
+
+                  CComPtr<ISimpleHaunchDepthFunction> pSimpleHaunchDepthFunction;
+                  pSimpleHaunchDepthFunction.CoCreateInstance(CLSID_SimpleHaunchDepthFunction);
+
+                  pSimpleHaunchDepthFunction->Initialize(0.0, Lseg,pHaunchDepths);
+
+                  pSimpleHaunchDepthFunction.QueryInterface(&pHaunchDepthFunction);      // let smart pointer handle cast
                }
                else
                {
@@ -4223,11 +4166,18 @@ bool CBridgeAgentImp::LayoutSsmHaunches()
                      {
                         pHaunchDepths->Add(haunch);
                      }
+
+                     CComPtr<ISimpleHaunchDepthFunction> pSimpleHaunchDepthFunction;
+                     pSimpleHaunchDepthFunction.CoCreateInstance(CLSID_SimpleHaunchDepthFunction);
+
+                     pSimpleHaunchDepthFunction->Initialize(0.0, Lseg, pHaunchDepths);
+
+                     pSimpleHaunchDepthFunction.QueryInterface(&pHaunchDepthFunction);
                   }
                   else if (haunchLayoutType == pgsTypes::hltAlongSpans)
                   {
                      // Loads are laid out along spans - need to do some work to map to segment
-                     GetHaunchDepth4BySpanInput(pSegment, pBridgeDesc, pHaunchDepths);
+                     GetHaunchDepth4BySpanInput(pSegment, pBridgeDesc, pHaunchDepthFunction);
                   }
                }
 
@@ -4239,7 +4189,8 @@ bool CBridgeAgentImp::LayoutSsmHaunches()
                pHaunchDepths->Add(0.0); // constant haunch of zero
             }
 
-            segment->SetHaunchDepth(pHaunchDepths);
+            // set haunch layout along segment
+            segment->SetHaunchDepthFunction(pHaunchDepthFunction);
 
             // fillet in model is only used to draw
             segment->put_Fillet(fillet);

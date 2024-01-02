@@ -204,7 +204,7 @@ void CTempSupportElevAdjustGrid::GetGridData(CDataExchange* pDX)
 {
    CComPtr<IBroker> pBroker;
    ::EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CBridgeDescription2* pBridge = GetBridgeDesc();
    ROWCOL col = 1;
