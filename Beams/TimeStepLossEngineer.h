@@ -30,6 +30,8 @@
 #include <IFace/Limits.h>
 #include <EAF\EAFDisplayUnits.h>
 
+#include <Beams/Interfaces.h>
+
 #include <PgsExt\PoiKey.h>
 #include <PgsExt\PTData.h>
 
@@ -44,7 +46,8 @@ typedef std::map<pgsPointOfInterest,LOSSDETAILS> SectionLossContainer;
 class ATL_NO_VTABLE CTimeStepLossEngineer : 
    public CComObjectRootEx<CComSingleThreadModel>,
    public CComCoClass<CTimeStepLossEngineer, &CLSID_TimeStepLossEngineer>,
-   public IPsLossEngineer
+   public IPsLossEngineer,
+   public IInitialize
 {
 public:
 	CTimeStepLossEngineer()
@@ -58,10 +61,12 @@ DECLARE_REGISTRY_RESOURCEID(IDR_TIMESTEPLOSSENGINEER)
 
 BEGIN_COM_MAP(CTimeStepLossEngineer)
    COM_INTERFACE_ENTRY(IPsLossEngineer)
+   COM_INTERFACE_ENTRY(IInitialize)
 END_COM_MAP()
 
+   // IInitialize
 public:
-   virtual void SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID);
+   virtual void SetBroker(IBroker* pBroker, StatusGroupIDType statusGroupID) override;
 
 // IPsLossEngineer
 public:
