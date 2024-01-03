@@ -494,7 +494,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
     {
         if (!bDetail)
         {
-            (*p_table)(0, col) << Sub2(symbol(theta), _T("LL")); ////////////add to total LL...
+            (*p_table)(0, col) << Sub2(symbol(theta), _T("CY"));
             (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
         }
         else
@@ -938,41 +938,12 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
 
 
             Float64 pMin, pMax;
-            
-
 
             if (!bDetail)
             {
                 GET_IFACE2(pBroker, ICombinedForces, comboForces);
-
-
-
-                if (!isFlexural)
-                {
-
-
-                    Float64 flexural_rotation_max_DC = comboForces->GetRotation(lastIntervalIdx, lcDC, poi, maxBAT, rtCumulative);
-                    Float64 torsional_rotation_max_DC = flexural_rotation_max_DC * tan(skew);
-                    (*p_table)(row, col++) << rotation.SetValue(torsional_rotation_max_DC);
-
-                    Float64 flexural_rotation_max_DW = comboForces->GetRotation(lastIntervalIdx, lcDW, poi, maxBAT, rtCumulative);
-                    Float64 torsional_rotation_max_DW = flexural_rotation_max_DW * tan(skew);
-                    (*p_table)(row, col++) << rotation.SetValue(torsional_rotation_max_DW);
-
-                }
-                else
-                {
-                    Float64 flexural_rotation_max_DC = comboForces->GetRotation(lastIntervalIdx, lcDC, poi, maxBAT, rtCumulative);
-                    (*p_table)(row, col++) << rotation.SetValue(flexural_rotation_max_DC);
-
-                    Float64 flexural_rotation_max_DW = comboForces->GetRotation(lastIntervalIdx, lcDW, poi, maxBAT, rtCumulative);
-                    (*p_table)(row, col++) << rotation.SetValue(flexural_rotation_max_DW);
-
-
-
-
-                }
-                
+                (*p_table)(row, col++) << rotation.SetValue(skewFactor*comboForces->GetRotation(lastIntervalIdx, lcDC, poi, maxBAT, rtCumulative));
+                (*p_table)(row, col++) << rotation.SetValue(skewFactor*comboForces->GetRotation(lastIntervalIdx, lcDW, poi, maxBAT, rtCumulative));
             }
 
             if (bDetail && bUserLoads)
@@ -993,16 +964,17 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
 
                 if (reactionDecider.DoReport(lastIntervalIdx))
                 {
-                    pProductForces->GetLiveLoadRotation(lastIntervalIdx, pgsTypes::lltDesign, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig);
-                    (*p_table)(row, col) << rotation.SetValue(skewFactor*max);
-                    if (bIndicateControllingLoad && 0 <= maxConfig)
-                    {
-                        (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << maxConfig << _T(")");
-                    }
-                    col++;
 
                     if (bDetail)
                     {
+                        pProductForces->GetLiveLoadRotation(lastIntervalIdx, pgsTypes::lltDesign, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig);
+                        (*p_table)(row, col) << rotation.SetValue(skewFactor * max);
+                        if (bIndicateControllingLoad && 0 <= maxConfig)
+                        {
+                            (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << maxConfig << _T(")");
+                        }
+                        col++;
+
                         pProductForces->GetLiveLoadRotation(lastIntervalIdx, pgsTypes::lltDesign, poi, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig);
                         (*p_table)(row, col) << rotation.SetValue(skewFactor*min);
                         if (bIndicateControllingLoad && 0 <= minConfig)
@@ -1015,7 +987,17 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                             (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftUserLLIM, poi, maxBAT, rtCumulative, false));
                             (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftUserLLIM, poi, minBAT, rtCumulative, false));
                         }
-                   }
+                    }
+                    else
+                    {
+                        pProductForces->GetLiveLoadRotation(lastIntervalIdx, pgsTypes::lltDesign, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig);
+                        (*p_table)(row, col) << rotation.SetValue(skewFactor * max + skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftUserLLIM, poi, maxBAT, rtCumulative, false));
+                        if (bIndicateControllingLoad && 0 <= maxConfig)
+                        {
+                            (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << maxConfig << _T(")");
+                        }
+                        col++;
+                    }
 
 
                 }
