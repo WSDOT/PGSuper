@@ -87,13 +87,13 @@ public:
 
 
    ColumnIndexType GetBearingTableColumnCount(IBroker* pBroker, const CGirderKey& girderKey, 
-       pgsTypes::AnalysisType analysisType, bool bDesign, TABLEPARAMETERS* tParam, bool bDetail, DuctIndexType nDucts, bool bTimeStep) const;
+       pgsTypes::AnalysisType analysisType, bool bDesign, bool bUserLoads, TABLEPARAMETERS* tParam, bool bDetail, DuctIndexType nDucts, bool bTimeStep) const;
    // 
    // 
    // 
    // Builds ......
    virtual rptRcTable* BuildBearingRotationTable(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
-                             bool bIncludeImpact,bool bIncludeLLDF,bool bDesign,bool bIndicateControllingLoad,
+                             bool bIncludeImpact,bool bIncludeLLDF,bool bDesign,bool bUserLoads, bool bIndicateControllingLoad,
                              IEAFDisplayUnits* pDisplayUnits, bool bDetail, bool isFlexural) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY

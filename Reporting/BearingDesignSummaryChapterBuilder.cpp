@@ -88,7 +88,7 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
     GET_IFACE2(pBroker, IUserDefinedLoads, pUDL);
     bool are_user_loads = pUDL->DoUserLoadsExist(girderKey);
 
-    GET_IFACE2(pBroker, IBearingDesign, pBearingDesign); ///////////////////////////////////////////////
+    GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
 
     bool bIncludeImpact = pBearingDesign->BearingLiveLoadReactionsIncludeImpact();
 
@@ -107,14 +107,14 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
     GET_IFACE2(pBroker, IBridge, pBridge);
     SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
-    GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
+    //GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
 
 
     *p << CBearingRotationTable().BuildBearingRotationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact, 
-        true, true, true, pDisplayUnits, false, true) << rptNewLine;
+        true, true, are_user_loads,  true, pDisplayUnits, false, true) << rptNewLine;
 
     *p << CBearingRotationTable().BuildBearingRotationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
-        true, true, true, pDisplayUnits, false, false) << rptNewLine;
+        true, true, are_user_loads, true, pDisplayUnits, false, false) << rptNewLine;
 
 
     
