@@ -344,8 +344,8 @@ public:
 
 // IDocumentType
 public:
-   virtual bool IsPGSuperDocument() override;
-   virtual bool IsPGSpliceDocument() override;
+   virtual bool IsPGSuperDocument() const override;
+   virtual bool IsPGSpliceDocument() const override;
 
 // IDocumentUnitSystem
 public:

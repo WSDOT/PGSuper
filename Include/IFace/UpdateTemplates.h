@@ -20,40 +20,17 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_IFACE_UPDATETEMPLATES_H_
-#define INCLUDED_IFACE_UPDATETEMPLATES_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
-
-// PROJECT INCLUDES
-//
-
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
-
-// MISCELLANEOUS
-//
-
-/*****************************************************************************
-INTERFACE
-   IUpdateTemplates
-
-   Interface that manages the state of the automatic template update feature
-
-DESCRIPTION
-   Interface that manages the state of the automatic template update feature
-*****************************************************************************/
 // {979E9DD4-9103-42ce-9601-1913EF69513E}
 DEFINE_GUID(IID_IUpdateTemplates, 
 0x979e9dd4, 0x9103, 0x42ce, 0x96, 0x1, 0x19, 0x13, 0xef, 0x69, 0x51, 0x3e);
 struct __declspec(uuid("{979E9DD4-9103-42ce-9601-1913EF69513E}")) IUpdateTemplates;
+/// @brief Interface that returns the state of the automatic template update feature.
+/// The automatic template update feature is a "hidden" feature used by software developers
+/// to programmatically modify templates when the automatic template update command is used (Ctrl+U for PGSuper and Ctrl+I for PGSplice)
 interface IUpdateTemplates : IUnknown
 {
-   virtual bool UpdatingTemplates() = 0; // returns true if PGSuper is in the process of automatically updating templates
+   /// @brief Returns true if application is in the process of automatically updating templates
+   virtual bool UpdatingTemplates() = 0;
 };
-
-#endif // INCLUDED_IFACE_UPDATETEMPLATES_H_

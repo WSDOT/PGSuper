@@ -1553,12 +1553,12 @@ bool CPGSuperDocProxyAgent::UnregisterEditLoadRatingOptionsCallback(IDType ID)
    return m_pMyDocument->UnregisterEditLoadRatingOptionsCallback(ID);
 }
 
-bool CPGSuperDocProxyAgent::IsPGSuperDocument()
+bool CPGSuperDocProxyAgent::IsPGSuperDocument() const
 {
    return m_pMyDocument->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) ? true : false;
 }
 
-bool CPGSuperDocProxyAgent::IsPGSpliceDocument()
+bool CPGSuperDocProxyAgent::IsPGSpliceDocument() const
 {
    return m_pMyDocument->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) ? true : false;
 }
