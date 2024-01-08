@@ -335,6 +335,7 @@ ASALocalRun/
 *.hxx
 *.bak
 bin/
+devdocs/API/
 Docs/
 Documentation/Common/doc/
 Documentation/PGSLibrary/doc/
