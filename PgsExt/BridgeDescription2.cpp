@@ -1420,7 +1420,7 @@ void CBridgeDescription2::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFace
    // be created if refPierIdx is the first/last pier in a group and the pierFace is not inside the group.
    // The new group will have the same number of girders as the adjacent group
    // in the bridge. If the adjacent group has more than one span, single segment girders will be created,
-   // otherwise the girders from the adjacent group will be copied. If bCreateNewGrouop is false, the
+   // otherwise the girders from the adjacent group will be copied. If bCreateNewGroup is false, the
    // adjacent or containing group will be expanded and so will the girders in that group
 
    // If this fires, then the call to CreateFirstSpan hasn't been made yet

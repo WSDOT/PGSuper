@@ -732,16 +732,6 @@ void CSplicedGirderData::UpdateSegments()
    Float64 nextSpanStart = prevSpanStart;
    Float64 nextSpanEnd   = prevSpanEnd;
 
-   CPrecastSegmentData* pFirstSegment = m_Segments.front();
-   CSpanData2* pFirstSegmentStartSpan = pFirstSegment->GetSpan(pgsTypes::metStart);
-   if (pFirstSegmentStartSpan && (pStartSpan->GetIndex() < pFirstSegmentStartSpan->GetIndex()))
-   {
-      // the girder group begins before the first segment
-      // this can happen when adding a segment at the start of the girder
-      // reset the first segment's start span to the first span in the group
-      pFirstSegment->SetSpan(pgsTypes::metStart, pStartSpan);
-   }
-
    SegmentIndexType nSegments = m_Segments.size();
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
@@ -787,17 +777,6 @@ void CSplicedGirderData::UpdateSegments()
       {
          pSegment->SetID(pBridgeDesc->GetNextSegmentID());
       }
-   }
-
-   CPrecastSegmentData* pLastSegment = m_Segments.back();
-   CSpanData2* pLastSegmentEndSpan = pLastSegment->GetSpan(pgsTypes::metEnd);
-   CSpanData2* pLastSpan = pEndPier->GetPrevSpan();
-   if (pLastSegmentEndSpan && (pLastSegmentEndSpan->GetIndex() < pLastSpan->GetIndex()))
-   {
-      // the girder group ends after the last segment
-      // this can happen when adding a segment at the end of the girder
-      // reset the last segment's end span to the last span in the group
-      pLastSegment->SetSpan(pgsTypes::metEnd, pLastSpan);
    }
 
    PGS_ASSERT_VALID;
@@ -1111,7 +1090,30 @@ CGirderKey CSplicedGirderData::GetGirderKey() const
 
 void CSplicedGirderData::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType face)
 {
+   CSpanData2* pStartSpan = m_pGirderGroup->GetPier(pgsTypes::metStart)->GetNextSpan();
+   CPrecastSegmentData* pFirstSegment = m_Segments.front();
+   CSpanData2* pFirstSegmentStartSpan = pFirstSegment->GetSpan(pgsTypes::metStart);
+   if (pFirstSegmentStartSpan && (pStartSpan->GetIndex() < pFirstSegmentStartSpan->GetIndex()))
+   {
+      // the girder group begins before the first segment
+      // this can happen when adding a segment at the start of the girder
+      // reset the first segment's start span to the first span in the group
+      pFirstSegment->SetSpan(pgsTypes::metStart, pStartSpan);
+   }
+
    UpdateSegments();
+
+   CSpanData2* pLastSpan = m_pGirderGroup->GetPier(pgsTypes::metEnd)->GetPrevSpan();
+   CPrecastSegmentData* pLastSegment = m_Segments.back();
+   CSpanData2* pLastSegmentEndSpan = pLastSegment->GetSpan(pgsTypes::metEnd);
+   if (pLastSegmentEndSpan && (pLastSegmentEndSpan->GetIndex() < pLastSpan->GetIndex()))
+   {
+      // the girder group ends after the last segment
+      // this can happen when adding a segment at the end of the girder
+      // reset the last segment's end span to the last span in the group
+      pLastSegment->SetSpan(pgsTypes::metEnd, pLastSpan);
+   }
+
    m_PTData.InsertSpan(refPierIdx,face);
 }
 
