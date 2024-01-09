@@ -220,7 +220,8 @@ private:
 /////////////////////////////////////////////////////////////////////////////
 // CEngAgentImp
 CEngAgentImp::CEngAgentImp() :
-m_ShearCapEngineer(nullptr,0),
+    m_ShearCapEngineer(nullptr, 0),
+    m_BearingEngineer(nullptr),
 m_bAreDistFactorEngineersValidated(false)
 {
 }
@@ -999,6 +1000,7 @@ STDMETHODIMP CEngAgentImp::Init()
    m_ShearCapEngineer.SetBroker(m_pBroker);
    m_Designer.SetBroker(m_pBroker);
    m_LoadRater.SetBroker(m_pBroker);
+   m_BearingEngineer.SetBroker(m_pBroker);
 
    m_Designer.SetStatusGroupID(m_StatusGroupID);
    m_PsForceEngineer.SetStatusGroupID(m_StatusGroupID);
@@ -3839,25 +3841,18 @@ Float64 CEngAgentImp::GetSectionGirderOrientationEffect(const pgsPointOfInterest
 
 /////////////////////////////////////////////////////////////////////////////
 // IBearingDesignParamters
-void CEngAgentImp::GetBearingRotationDetails(bool isFlexural, ROTATIONDETAILS* pDetails) const
+void CEngAgentImp::GetBearingRotationDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi, 
+    const ReactionLocation& reactionLocation, bool bIncludeImpact, bool bIncludeLLDF, bool isFlexural, ROTATIONDETAILS* pDetails) const
 {
-    pDetails->girderRotation = 0.0;
-    pDetails->diaphragmRotation = 0.0;
-    pDetails->slabRotiaton = 0.0;
-    pDetails->haunchRotation = 0.0;
-    pDetails->maxRailingSystemRotation = 0.0;
-    pDetails->minRailingSystemRotation = 0.0;
-    pDetails->maxFutureOverlayRotation = 0.0;
-    pDetails->minFutureOverlayRotation = 0.0;
-    pDetails->maxDCrotation = 0.0;
-    pDetails->maxDWrotation = 0.0;
-    pDetails->maxDesignLLrotation = 0.0;
-    pDetails->minDesignLLrotation = 0.0;
-    pDetails->maxServiceIRotation = 0.0;
-//only details for things not yet calculated
+
+
+    m_BearingEngineer.GetBearingRotationDetails(analysisType, poi,
+        reactionLocation, bIncludeImpact, bIncludeLLDF, isFlexural, pDetails);
+
+
 }
 
-/////////////////////////////////////////////////////////////////////////////
+
 
 
 

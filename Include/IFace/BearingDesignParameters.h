@@ -20,6 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 #pragma once
+#include "AnalysisResults.h"
 
 
 
@@ -45,19 +46,44 @@ struct DESIGNPROPERTIES
 
 struct ROTATIONDETAILS
 {
+	Float64 skewFactor;
+
+	Float64 maxDCrotation;
+	Float64 maxDWrotation;
+	Float64 cyclicRotation;
+	Float64 serviceIRotation;
+	Float64 preTensionRotation;
+	Float64 postTensionRotation;
+	Float64 creepRotation;
+	Float64 shrinkageRotation;
+	Float64 relaxationRotation;
+	Float64 totalTimeDependentRotation;
+
 	Float64 girderRotation;
 	Float64 diaphragmRotation;
-	Float64 slabRotiaton;
-	Float64 haunchRotation;
+	Float64 maxSlabRotation;
+	Float64 minSlabRotation;
+	Float64 maxHaunchRotation;
+	Float64 minHaunchRotation;
 	Float64 maxRailingSystemRotation;
 	Float64 minRailingSystemRotation;
 	Float64 maxFutureOverlayRotation;
 	Float64 minFutureOverlayRotation;
-	Float64 maxDCrotation;
-	Float64 maxDWrotation;
+	Float64 maxUserDCRotation;
+	Float64 minUserDCRotation;
+	Float64 maxUserDWRotation;
+	Float64 minUserDWRotation;
 	Float64 maxDesignLLrotation;
 	Float64 minDesignLLrotation;
-	Float64 maxServiceIRotation;
+	Float64 maxUserLLrotation;
+	Float64 minUserLLrotation;
+	Float64 longitudinalJointRotation;
+	Float64 maxConstructionRotation;
+	Float64 minConstructionRotation;
+	Float64 maxSlabPanelRotation;
+	Float64 minSlabPanelRotation;
+	Float64 maxSidewalkRotation;
+	Float64 minSidewalkRotation;
 };
 
 
@@ -68,7 +94,8 @@ DEFINE_GUID(IID_IBearingDesignParameters,
 interface IBearingDesignParameters : IUnknown
 {
 
-	virtual void GetBearingRotationDetails(bool isFlexural, ROTATIONDETAILS* pDetails) const = 0;
+	virtual void GetBearingRotationDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi, 
+		const ReactionLocation& reactionLocation, bool bIncludeImpact, bool bIncludeLLDF, bool isFlexural, ROTATIONDETAILS* pDetails) const = 0;
 
 
 };

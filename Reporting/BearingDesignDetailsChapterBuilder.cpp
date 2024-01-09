@@ -78,7 +78,6 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
 
-
     rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
 
     GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
@@ -88,13 +87,9 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     bool are_user_loads = pUDL->DoUserLoadsExist(girderKey);
 
 
-
     GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
 
     bool bIncludeImpact = pBearingDesign->BearingLiveLoadReactionsIncludeImpact();
-
-
-
 
 
     GET_IFACE2(pBroker, ISpecification, pSpec);

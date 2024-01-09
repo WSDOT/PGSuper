@@ -24,6 +24,7 @@
 #include <Reporting\BearingRotationTable.h>
 #include <Reporting\ProductMomentsTable.h>
 #include <Reporting\ReactionInterfaceAdapters.h>
+#include <IFace\BearingDesignParameters.h>
 
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -82,6 +83,8 @@ ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBrok
 
     ColumnIndexType nCols = 1; // location
 
+    //nCols++;
+
     if (bDetail)
     {
         nCols = 4; // location, girder, diaphragm, and traffic barrier
@@ -93,7 +96,7 @@ ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBrok
 
     }
 
-    GET_IFACE2(pBroker, IProductLoads, pLoads);
+    //GET_IFACE2(pBroker, IProductLoads, pLoads);
     GET_IFACE2(pBroker, IBridge, pBridge);
     GET_IFACE2(pBroker, IUserDefinedLoadData, pUserLoads);
 
@@ -110,8 +113,9 @@ ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBrok
 
     tParam->startGroup = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
     tParam->endGroup = (girderKey.groupIndex == ALL_GROUPS ? pBridge->GetGirderGroupCount() - 1 : tParam->startGroup);
-
+    
     CGirderKey key(tParam->startGroup, girderKey.girderIndex);
+    GET_IFACE2(pBroker, IProductLoads, pLoads);
     tParam->bSegments = (1 < pBridge->GetSegmentCount(key) ? true : false);
     tParam->bPedLoading = pLoads->HasPedestrianLoad(key);
     tParam->bSidewalk = pLoads->HasSidewalkLoad(key);
@@ -248,20 +252,31 @@ ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBrok
         }
     }
 
-    nCols++;
 
-    if (0 < nDucts)
+
+
+    if (0 < nDucts && bDetail)
     {
         nCols++;
     }
-
-    if (bTimeStep)
+                
+    if (bTimeStep && bDetail)
     {
-        nCols += 3;
+
+        nCols += 4;
+     
     }
     else
     {
-        nCols++;
+        if (bDetail)
+        {
+            nCols += 2;
+        }
+        else
+        {
+            nCols++;
+        }
+        
     }
 
 
@@ -275,11 +290,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
 {
     p_table->SetNumberOfHeaderRows(2);
 
-    GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
-    //
-    // Set up table headings
-    //
     ColumnIndexType col = 0;
 
     p_table->SetRowSpan(0, col, 2);
@@ -301,6 +312,10 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
     
     if (bDetail)
     {
+
+        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+
+
         p_table->SetRowSpan(0, col, 2);
         (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftGirder), M, unitT);
 
@@ -311,6 +326,10 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
 
     if (bShearKey && bDetail)
     {
+
+        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+
+
         if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
         {
             p_table->SetColumnSpan(0, col, 2);
@@ -327,6 +346,9 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
 
     if (bLongitudinalJoints && bDetail)
     {
+
+        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+
         if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
         {
             p_table->SetColumnSpan(0, col, 2);
@@ -343,6 +365,9 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
 
     if (bConstruction && bDetail)
     {
+
+        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+
         if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
         {
             p_table->SetColumnSpan(0, col, 2);
@@ -359,6 +384,9 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
 
     if (bDeck && bDetail)
     {
+
+        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+
         if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
         {
             p_table->SetColumnSpan(0, col, 2);
@@ -384,6 +412,9 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
 
     if (bDeckPanels && bDetail)
     {
+
+        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+
         if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
         {
             p_table->SetColumnSpan(0, col, 2);
@@ -400,8 +431,15 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
 
     if (analysisType == pgsTypes::Envelope)
     {
+
+
+
         if (bSidewalk && bDetail)
         {
+
+            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+
+
             p_table->SetColumnSpan(0, col, 2);
             (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftSidewalk);
             (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
@@ -410,6 +448,9 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
 
         if (bDetail)
         {
+
+            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+
             p_table->SetColumnSpan(0, col, 2);
             (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftTrafficBarrier);
             (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
@@ -419,6 +460,9 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
 
         if (bOverlay && bDetail)
         {
+
+            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+
             p_table->SetColumnSpan(0, col, 2);
             if (bIsFutureOverlay)
             {
@@ -426,6 +470,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
             }
             else
             {
+
                 (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftOverlay);
             }
             (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
@@ -437,15 +482,28 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
     {
         if (bSidewalk && bDetail)
         {
+
+            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+
             p_table->SetRowSpan(0, col, 2);
             (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftSidewalk), M, unitT);
         }
 
-        p_table->SetRowSpan(0, col, 2);
-        (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftTrafficBarrier), M, unitT);
+        if (bDetail)
+        {
+
+            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+
+            p_table->SetRowSpan(0, col, 2);
+            (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftTrafficBarrier), M, unitT);
+        }
+
 
         if (bOverlay && bDetail)
         {
+
+            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+
             p_table->SetRowSpan(0, col, 2);
             if (bIsFutureOverlay)
             {
@@ -494,7 +552,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
     {
         if (!bDetail)
         {
-            (*p_table)(0, col) << Sub2(symbol(theta), _T("CY"));
+            (*p_table)(0, col) << Sub2(symbol(theta), _T("cy"));
             (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
         }
         else
@@ -526,34 +584,73 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
 
     p_table->SetRowSpan(0, col, 2);
 
+    if (bDetail)
+    {
 
-    (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftPretension), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
+        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
 
+        (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftPretension), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
+    }
+   
     p_table->SetRowSpan(0, col, 2);
 
-    if (0 < nDucts)
+    if (bDetail)
     {
-        (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftPostTensioning), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
+        if (0 < nDucts)
+        {
+
+            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+
+            (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftPostTensioning), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
+        }
     }
 
-    p_table->SetRowSpan(0, col, 2);
+
+    
 
     if (bTimeStep)
     {
-        (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftCreep), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
-        (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftShrinkage), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
-        (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftRelaxation), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
+        if (bDetail)
+        {
+
+            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+
+
+            p_table->SetRowSpan(0, col, 2);
+            (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftCreep), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
+            p_table->SetRowSpan(0, col, 2);
+            (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftShrinkage), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
+            p_table->SetRowSpan(0, col, 2);
+            (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftRelaxation), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
+        }
+        else
+        {
+            p_table->SetRowSpan(0, col, 2);
+            (*p_table)(0, col++) << COLHDR(_T("Time Dependent"), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
+        }
     }
     else
     {
-        (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftCreep), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
+        if (bDetail)
+        {
+
+            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+
+
+            (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftCreep), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
+        }
+        else
+        {
+            (*p_table)(0, col++) << COLHDR(_T("Time Dependent"), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
+        }
     }
 
 
 
-    return p_table->GetNumberOfHeaderRows(); // index of first row to report data
-}
+        return p_table->GetNumberOfHeaderRows(); // index of first row to report data
+        }
+    
 
 
 
@@ -643,6 +740,8 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
         }
     }
 
+    
+
     GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
     IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
     std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, girderKey));
@@ -693,39 +792,31 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
 
         IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
 
+        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        CComPtr<IAngle> pSkew;
-        pBridge->GetPierSkew(reactionLocation.PierIdx, &pSkew);
-        Float64 skew;
-        pSkew->get_Value(&skew);
+        GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
+        ROTATIONDETAILS details;
+        pBearingDesignParameters->GetBearingRotationDetails(analysisType, poi, reactionLocation, bIncludeImpact, bIncludeLLDF, isFlexural, &details);
 
-        Float64 skewFactor;
 
-        if (isFlexural)
-        {
-            skewFactor = 1.0;
-        }
-        else
-        {
-            skewFactor = tan(skew);
-        }
+        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
         if (bDetail)
         {
             if (tParam.bSegments)
             {
-                (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(erectSegmentIntervalIdx, pgsTypes::pftGirder, poi, maxBAT, rtCumulative, false));
-                (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftGirder, poi, maxBAT, rtCumulative, false));
+                (*p_table)(row, col++) << rotation.SetValue(pProductForces->GetRotation(erectSegmentIntervalIdx, pgsTypes::pftGirder, poi, maxBAT, rtCumulative, false));
+                (*p_table)(row, col++) << rotation.SetValue(details.girderRotation);
             }
             else
             {
-                (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(erectSegmentIntervalIdx, pgsTypes::pftGirder, poi, maxBAT, rtCumulative, false));
+                (*p_table)(row, col++) << rotation.SetValue(details.girderRotation);
             }
 
             if (reactionDecider.DoReport(lastIntervalIdx))
             {
-                (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftDiaphragm, poi, maxBAT, rtCumulative, false));
+                (*p_table)(row, col++) << rotation.SetValue(details.diaphragmRotation);
             }
             else
             {
@@ -738,8 +829,8 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                 {
                     if (reactionDecider.DoReport(lastIntervalIdx))
                     {
-                        (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftShearKey, poi, maxBAT, rtCumulative, false));
-                        (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftShearKey, poi, minBAT, rtCumulative, false));
+                        (*p_table)(row, col++) << rotation.SetValue(pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftShearKey, poi, maxBAT, rtCumulative, false));
+                        (*p_table)(row, col++) << rotation.SetValue(pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftShearKey, poi, minBAT, rtCumulative, false));
                     }
                     else
                     {
@@ -751,7 +842,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                 {
                     if (reactionDecider.DoReport(lastIntervalIdx))
                     {
-                        (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftShearKey, poi, maxBAT, rtCumulative, false));
+                        (*p_table)(row, col++) << rotation.SetValue(pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftShearKey, poi, maxBAT, rtCumulative, false));
                     }
                     else
                     {
@@ -767,8 +858,8 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                 {
                     if (reactionDecider.DoReport(lastIntervalIdx))
                     {
-                        (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftLongitudinalJoint, poi, maxBAT, rtCumulative, false));
-                        (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftLongitudinalJoint, poi, minBAT, rtCumulative, false));
+                        (*p_table)(row, col++) << rotation.SetValue(pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftLongitudinalJoint, poi, maxBAT, rtCumulative, false));
+                        (*p_table)(row, col++) << rotation.SetValue(pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftLongitudinalJoint, poi, minBAT, rtCumulative, false));
                     }
                     else
                     {
@@ -780,7 +871,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                 {
                     if (reactionDecider.DoReport(lastIntervalIdx))
                     {
-                        (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftLongitudinalJoint, poi, maxBAT, rtCumulative, false));
+                        (*p_table)(row, col++) << rotation.SetValue(details.longitudinalJointRotation);
                     }
                     else
                     {
@@ -795,8 +886,8 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                 {
                     if (reactionDecider.DoReport(lastIntervalIdx))
                     {
-                        (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftConstruction, poi, maxBAT, rtCumulative, false));
-                        (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftConstruction, poi, minBAT, rtCumulative, false));
+                        (*p_table)(row, col++) << rotation.SetValue(details.maxConstructionRotation);
+                        (*p_table)(row, col++) << rotation.SetValue(details.minConstructionRotation);
                     }
                     else
                     {
@@ -808,7 +899,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                 {
                     if (reactionDecider.DoReport(lastIntervalIdx))
                     {
-                        (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftConstruction, poi, maxBAT, rtCumulative, false));
+                        (*p_table)(row, col++) << rotation.SetValue(details.maxConstructionRotation);
                     }
                     else
                     {
@@ -817,17 +908,19 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                 }
             }
 
+
+
             if (tParam.bDeck)
             {
                 if (analysisType == pgsTypes::Envelope && tParam.bContinuousBeforeDeckCasting)
                 {
                     if (reactionDecider.DoReport(lastIntervalIdx))
                     {
-                        (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftSlab, poi, maxBAT, rtCumulative, false));
-                        (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftSlab, poi, minBAT, rtCumulative, false));
+                        (*p_table)(row, col++) << rotation.SetValue(details.maxSlabRotation);
+                        (*p_table)(row, col++) << rotation.SetValue(details.minSlabRotation);
 
-                        (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftSlabPad, poi, maxBAT, rtCumulative, false));
-                        (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftSlabPad, poi, minBAT, rtCumulative, false));
+                        (*p_table)(row, col++) << rotation.SetValue(details.maxHaunchRotation);
+                        (*p_table)(row, col++) << rotation.SetValue(details.minHaunchRotation);
                     }
                     else
                     {
@@ -842,8 +935,8 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                 {
                     if (reactionDecider.DoReport(lastIntervalIdx))
                     {
-                        (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftSlab, poi, maxBAT, rtCumulative, false));
-                        (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftSlabPad, poi, maxBAT, rtCumulative, false));
+                        (*p_table)(row, col++) << rotation.SetValue(details.maxSlabRotation);
+                        (*p_table)(row, col++) << rotation.SetValue(details.maxHaunchRotation);
                     }
                     else
                     {
@@ -859,8 +952,8 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                 {
                     if (reactionDecider.DoReport(lastIntervalIdx))
                     {
-                        (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftSlabPanel, poi, maxBAT, rtCumulative, false));
-                        (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftSlabPanel, poi, minBAT, rtCumulative, false));
+                        (*p_table)(row, col++) << rotation.SetValue(details.maxSlabPanelRotation);
+                        (*p_table)(row, col++) << rotation.SetValue(details.minSlabPanelRotation);
                     }
                     else
                     {
@@ -872,7 +965,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                 {
                     if (reactionDecider.DoReport(lastIntervalIdx))
                     {
-                        (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftSlabPanel, poi, maxBAT, rtCumulative, false));
+                        (*p_table)(row, col++) << rotation.SetValue(details.maxSlabPanelRotation);
                     }
                     else
                     {
@@ -890,8 +983,8 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                 {
                     if (reactionDecider.DoReport(lastIntervalIdx))
                     {
-                        (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftSidewalk, poi, maxBAT, rtCumulative, false));
-                        (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftSidewalk, poi, minBAT, rtCumulative, false));
+                        (*p_table)(row, col++) << rotation.SetValue(details.maxSidewalkRotation);
+                        (*p_table)(row, col++) << rotation.SetValue(details.minSidewalkRotation);
                     }
                     else
                     {
@@ -902,8 +995,8 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
 
                 if (reactionDecider.DoReport(lastIntervalIdx))
                 {
-                    (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftTrafficBarrier, poi, maxBAT, rtCumulative, false));
-                    (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftTrafficBarrier, poi, minBAT, rtCumulative, false));
+                    (*p_table)(row, col++) << rotation.SetValue(details.maxRailingSystemRotation);
+                    (*p_table)(row, col++) << rotation.SetValue(details.minRailingSystemRotation);
                 }
                 else
                 {
@@ -915,8 +1008,8 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                 {
                     if (reactionDecider.DoReport(lastIntervalIdx))
                     {
-                        (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, false && !bDesign ? pgsTypes::pftOverlayRating : pgsTypes::pftOverlay, poi, maxBAT, rtCumulative, false));
-                        (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, false && !bDesign ? pgsTypes::pftOverlayRating : pgsTypes::pftOverlay, poi, minBAT, rtCumulative, false));
+                        (*p_table)(row, col++) << rotation.SetValue(details.maxFutureOverlayRotation);
+                        (*p_table)(row, col++) << rotation.SetValue(details.minFutureOverlayRotation);
                     }
                     else
                     {
@@ -937,21 +1030,20 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
 
 
 
-            Float64 pMin, pMax;
+
 
             if (!bDetail)
             {
-                GET_IFACE2(pBroker, ICombinedForces, comboForces);
-                (*p_table)(row, col++) << rotation.SetValue(skewFactor*comboForces->GetRotation(lastIntervalIdx, lcDC, poi, maxBAT, rtCumulative));
-                (*p_table)(row, col++) << rotation.SetValue(skewFactor*comboForces->GetRotation(lastIntervalIdx, lcDW, poi, maxBAT, rtCumulative));
+                (*p_table)(row, col++) << rotation.SetValue(details.maxDCrotation);
+                (*p_table)(row, col++) << rotation.SetValue(details.maxDWrotation);
             }
 
             if (bDetail && bUserLoads)
             {
-                (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftUserDC, poi, maxBAT, rtCumulative, false));
-                (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftUserDC, poi, minBAT, rtCumulative, false));
-                (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftUserDW, poi, maxBAT, rtCumulative, false));
-                (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftUserDW, poi, minBAT, rtCumulative, false));
+                (*p_table)(row, col++) << rotation.SetValue(details.maxUserDCRotation);
+                (*p_table)(row, col++) << rotation.SetValue(details.minUserDCRotation);
+                (*p_table)(row, col++) << rotation.SetValue(details.maxUserDWRotation);
+                (*p_table)(row, col++) << rotation.SetValue(details.minUserDWRotation);
             }
 
 
@@ -961,14 +1053,13 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
             if (bDesign)
             {
 
-
                 if (reactionDecider.DoReport(lastIntervalIdx))
                 {
 
                     if (bDetail)
                     {
                         pProductForces->GetLiveLoadRotation(lastIntervalIdx, pgsTypes::lltDesign, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig);
-                        (*p_table)(row, col) << rotation.SetValue(skewFactor * max);
+                        (*p_table)(row, col) << rotation.SetValue(details.minDesignLLrotation);
                         if (bIndicateControllingLoad && 0 <= maxConfig)
                         {
                             (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << maxConfig << _T(")");
@@ -976,7 +1067,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                         col++;
 
                         pProductForces->GetLiveLoadRotation(lastIntervalIdx, pgsTypes::lltDesign, poi, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig);
-                        (*p_table)(row, col) << rotation.SetValue(skewFactor*min);
+                        (*p_table)(row, col) << rotation.SetValue(details.maxDesignLLrotation);
                         if (bIndicateControllingLoad && 0 <= minConfig)
                         {
                             (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << minConfig << _T(")");
@@ -984,19 +1075,23 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                         col++;
                         if (bUserLoads)
                         {
-                            (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftUserLLIM, poi, maxBAT, rtCumulative, false));
-                            (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftUserLLIM, poi, minBAT, rtCumulative, false));
+                            (*p_table)(row, col++) << rotation.SetValue(details.maxUserLLrotation);
+                            (*p_table)(row, col++) << rotation.SetValue(details.minUserLLrotation);
                         }
                     }
                     else
                     {
+                       
                         pProductForces->GetLiveLoadRotation(lastIntervalIdx, pgsTypes::lltDesign, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig);
-                        (*p_table)(row, col) << rotation.SetValue(skewFactor * max + skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftUserLLIM, poi, maxBAT, rtCumulative, false));
+                        (*p_table)(row, col) << rotation.SetValue(details.cyclicRotation);
                         if (bIndicateControllingLoad && 0 <= maxConfig)
                         {
                             (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << maxConfig << _T(")");
                         }
                         col++;
+
+                        (*p_table)(row, col++) << rotation.SetValue(details.serviceIRotation);
+                        
                     }
 
 
@@ -1009,17 +1104,6 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                 }
 
             }
-
-
-            if (!bDetail)
-            {
-                GET_IFACE2(pBroker, ILimitStateForces, limitForces);
-                limitForces->GetRotation(
-                    lastIntervalIdx, pgsTypes::ServiceI, poi, maxBAT, true,
-                    true, true, true, true, &pMin, &pMax);
-                    (*p_table)(row, col++) << rotation.SetValue(skewFactor*pMax);
-            }
-
 
         }
         else
@@ -1032,7 +1116,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                 {
                     if (reactionDecider.DoReport(lastIntervalIdx))
                     {
-                        (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftSidewalk, poi, maxBAT, rtCumulative, false));
+                        (*p_table)(row, col++) << rotation.SetValue(details.maxSidewalkRotation);
                     }
                     else
                     {
@@ -1042,7 +1126,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
 
                 if (reactionDecider.DoReport(lastIntervalIdx))
                 {
-                    (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftTrafficBarrier, poi, maxBAT, rtCumulative, false));
+                    (*p_table)(row, col++) << rotation.SetValue(details.maxRailingSystemRotation);
                 }
                 else
                 {
@@ -1053,7 +1137,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                 {
                     if (reactionDecider.DoReport(lastIntervalIdx))
                     {
-                        (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, false && !bDesign ? pgsTypes::pftOverlayRating : pgsTypes::pftOverlay, poi, maxBAT, rtCumulative, false));
+                        (*p_table)(row, col++) << rotation.SetValue(details.maxFutureOverlayRotation);
                     }
                     else
                     {
@@ -1066,8 +1150,8 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                     if (reactionDecider.DoReport(lastIntervalIdx))
                     {
                         pProductForces->GetLiveLoadRotation(lastIntervalIdx, pgsTypes::lltPedestrian, poi, maxBAT, bIncludeImpact, true, &min, &max);
-                        (*p_table)(row, col++) << rotation.SetValue(skewFactor*max);
-                        (*p_table)(row, col++) << rotation.SetValue(skewFactor*min);
+                        (*p_table)(row, col++) << rotation.SetValue(max);
+                        (*p_table)(row, col++) << rotation.SetValue(min);
                     }
                     else
                     {
@@ -1083,14 +1167,14 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                 if (reactionDecider.DoReport(lastIntervalIdx))
                 {
                     pProductForces->GetLiveLoadRotation(lastIntervalIdx, pgsTypes::lltDesign, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig);
-                    (*p_table)(row, col) << rotation.SetValue(skewFactor*max);
+                    (*p_table)(row, col) << rotation.SetValue(max);
                     if (bIndicateControllingLoad && 0 <= maxConfig)
                     {
                         (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << maxConfig << _T(")");
                     }
                     col++;
 
-                    (*p_table)(row, col) << rotation.SetValue(skewFactor*min);
+                    (*p_table)(row, col) << rotation.SetValue(min);
                     if (bIndicateControllingLoad && 0 <= minConfig)
                     {
                         (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << minConfig << _T(")");
@@ -1105,27 +1189,35 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
 
             }
 
+
+            if (!bDetail)
+            {
+                (*p_table)(row, col++) << rotation.SetValue(details.serviceIRotation);
+                (*p_table)(row, col++) << rotation.SetValue(details.totalTimeDependentRotation);
+            }
+
+
+
         }
 
-
-        (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(releaseIntervalIdx, pgsTypes::pftPretension, poi, maxBAT, rtCumulative, false));
-        if (0 < nDucts)
+        if (bDetail)
         {
-            (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftPostTensioning, poi, maxBAT, rtCumulative, false));
-        }
+            (*p_table)(row, col++) << rotation.SetValue(details.preTensionRotation);
+            if (0 < nDucts)
+            {
+                (*p_table)(row, col++) << rotation.SetValue(details.postTensionRotation);
+            }
+            (*p_table)(row, col++) << rotation.SetValue(details.creepRotation);
+            if (bTimeStep)
+            {
+                (*p_table)(row, col++) << rotation.SetValue(details.shrinkageRotation);
+                (*p_table)(row, col++) << rotation.SetValue(details.relaxationRotation);
+            }
 
-        if (bTimeStep)
-        {
-            (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftCreep, poi, maxBAT, rtCumulative, false));
-            (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftShrinkage, poi, maxBAT, rtCumulative, false));
-            (*p_table)(row, col++) << rotation.SetValue(skewFactor*pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftRelaxation, poi, maxBAT, rtCumulative, false));
         }
         else
         {
-            Float64 Dcreep1, Rcreep1;
-            pCamber->GetCreepDeflection(poi, ICamber::cpReleaseToDeck, pgsTypes::CreepTime::Max, pgsTypes::pddErected, nullptr, &Dcreep1, &Rcreep1);
-
-            (*p_table)(row, col++) << rotation.SetValue(skewFactor*Rcreep1 /*+ Rcreep2*/);
+            (*p_table)(row, col++) << rotation.SetValue(details.totalTimeDependentRotation);
         }
 
 

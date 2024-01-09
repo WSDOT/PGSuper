@@ -64,6 +64,9 @@
     <ClCompile Include="DevelopmentLengthEngineer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="BearingDesignEngineer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\IFace\MomentCapacity.h">
@@ -161,6 +164,9 @@
     </ClInclude>
     <ClInclude Include="..\Include\IFace\BearingDesignParameters.h">
       <Filter>IFace</Filter>
+    </ClInclude>
+    <ClInclude Include="BearingDesignEngineer.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

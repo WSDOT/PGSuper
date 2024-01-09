@@ -77,37 +77,26 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
     pGirderRptSpec->GetBroker(&pBroker);
     const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
-    // we want the final configuration... that would be in the last interval
-    GET_IFACE2(pBroker, IIntervals, pIntervals);
-    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount() - 1;
 
     rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
 
     GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
+
     GET_IFACE2(pBroker, IUserDefinedLoads, pUDL);
     bool are_user_loads = pUDL->DoUserLoadsExist(girderKey);
+
 
     GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
 
     bool bIncludeImpact = pBearingDesign->BearingLiveLoadReactionsIncludeImpact();
 
-    // Don't create much of report if no simple span ends
-    std::vector<PierIndexType> vPiers = pBearingDesign->GetBearingReactionPiers(intervalIdx, girderKey);
-    bool doFinalLoads = (0 < vPiers.size() ? true : false);
-
-    GET_IFACE2(pBroker, IProductLoads, pProductLoads);
-    bool bPedestrian = pProductLoads->HasPedestrianLoad();
 
     GET_IFACE2(pBroker, ISpecification, pSpec);
 
     rptParagraph* p = new rptParagraph;
     *pChapter << p;
 
-    GET_IFACE2(pBroker, IBridge, pBridge);
-    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
-
-    //GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
 
 
     *p << CBearingRotationTable().BuildBearingRotationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact, 

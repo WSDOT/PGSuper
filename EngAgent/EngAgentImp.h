@@ -34,6 +34,7 @@
 #include "ShearCapacityEngineer.h"
 #include "TransferLengthEngineer.h"
 #include "DevelopmentLengthEngineer.h"
+#include "BearingDesignEngineer.h"
 #include "PrincipalWebStressEngineer.h"
 #include <IFace\DistFactorEngineer.h>
 #include <IFace\RatingSpecification.h>
@@ -382,7 +383,8 @@ public:
 
 // IBearingDesignParameters
  public:
-   virtual void GetBearingRotationDetails(bool isFlexural, ROTATIONDETAILS* pDetails) const override;
+   virtual void GetBearingRotationDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi, const ReactionLocation& reactionLocation, 
+       bool bIncludeImpact, bool bIncludeLLDF, bool isFlexural, ROTATIONDETAILS* pDetails) const override;
 
 // IFabricationOptimization
 public:
@@ -478,6 +480,7 @@ private:
    pgsDesigner2              m_Designer;
    pgsLoadRater              m_LoadRater;
    pgsShearCapacityEngineer  m_ShearCapEngineer;
+   pgsBearingDesignEngineer  m_BearingEngineer;
    
    mutable bool m_bAreDistFactorEngineersValidated;
    mutable CComPtr<IDistFactorEngineer> m_pDistFactorEngineer; // assigned a polymorphic object during validation (must be mutable for delayed assignment)
