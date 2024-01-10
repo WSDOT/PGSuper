@@ -29,29 +29,30 @@ struct __declspec(uuid("{EEA46351-7884-47e2-ADD8-5FD35BF51ABE}")) IPGSuperCompon
 
 class CPGSuperDoc;
 
+/// @brief Interface that returns information about PGSuper components
 interface IPGSuperComponentInfo : IUnknown
 {
-   /// Called by the application framework to initialize this object
+   /// @brief Called by the application framework to initialize this object.
    /// This is a good place to validate license keys for 3rd party components
+   /// @return Returns TRUE if the component is successfully initialized
    virtual BOOL Init(CPGSuperDoc* pDoc) = 0;
 
-   /// Called by the application framework to do any clean up while terminating
+   /// @brief Called by the application framework to do any clean up while terminating
    virtual void Terminate() = 0;
 
-   /// Return the name of your component
+   /// @brief Returns the name of your component
    virtual CString GetName() const = 0;
 
-   /// Return a description of the component
+   /// @brief Returns a description of the component
    virtual CString GetDescription() const = 0;
 
-   /// The icon returned goes in the About dialog
+   /// @brief The icon returned goes in the About dialog
    virtual HICON GetIcon() const = 0;
 
-   /// Return true if there is additional information to be displayed about the componenet
+   /// @brief Return true if there is additional information to be displayed about the component
    virtual bool HasMoreInfo() const = 0;
 
-   /// When this function is called, display more detailed information
-   /// about your component
+   /// @brief When this function is called, display more detailed information about your component
    virtual void OnMoreInfo() const = 0;
 };
 
@@ -62,28 +63,29 @@ struct __declspec(uuid("{4D566A4F-289C-4e73-B47C-6A4CC7905BA9}")) IPGSpliceCompo
 
 class CPGSpliceDoc;
 
+/// @brief Interface that returns information about PGSplice components
 interface IPGSpliceComponentInfo : IUnknown
 {
-   /// Called by the application framework to initialize this object
+   /// @brief Called by the application framework to initialize this object.
    /// This is a good place to validate license keys for 3rd party components
+   /// @return Returns TRUE if the component is successfully initialized
    virtual BOOL Init(CPGSpliceDoc* pDoc) = 0;
 
-   /// Called by the application framework to do any clean up while terminating
+   /// @brief Called by the application framework to do any clean up while terminating
    virtual void Terminate() = 0;
 
-   /// Return the name of your component
+   /// @brief Returns the name of your component
    virtual CString GetName() const = 0;
 
-   /// Return a description of the component
+   /// @brief Returns a description of the component
    virtual CString GetDescription() const = 0;
 
-   /// The icon returned goes in the About dialog
+   /// @brief The icon returned goes in the About dialog
    virtual HICON GetIcon() const = 0;
 
-   /// Return true if there is additional information to be displayed about the componenet
+   /// @brief Return true if there is additional information to be displayed about the component
    virtual bool HasMoreInfo() const = 0;
 
-   /// When this function is called, display more detailed information
-   /// about your component
+   ///@ brief When this function is called, display more detailed information about your component
    virtual void OnMoreInfo() const = 0;
 };

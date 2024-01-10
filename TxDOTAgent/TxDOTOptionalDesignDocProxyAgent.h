@@ -130,8 +130,8 @@ public:
 
 // IDocumentType
 public:
-   virtual bool IsPGSuperDocument() override { return true; }
-   virtual bool IsPGSpliceDocument() override { return false; }
+   virtual bool IsPGSuperDocument() const override { return true; }
+   virtual bool IsPGSpliceDocument() const override { return false; }
 
 // IVersionInfo
 public:

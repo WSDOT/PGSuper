@@ -73,7 +73,8 @@ bool compare_point (const WBFL::Graphing::Point& i, const WBFL::Graphing::Point&
 class GraphExportUtil
 {
 public:
-   GraphExportUtil()
+   GraphExportUtil(bool bAllowDuplicatePoints):
+      m_bAllowDuplicatePoints(bAllowDuplicatePoints)
    { ; }
 
    bool ProcessGraph(const WBFL::Graphing::GraphXY& rGraph);
@@ -91,10 +92,14 @@ private:
 
 
 private:
-   // Raw data
+   GraphExportUtil();
+
+      // Raw data
    CString m_Title;
    CString m_SubTitle;
    CString m_YTitle;
+
+   bool m_bAllowDuplicatePoints;
 
    struct SeriesType
    {
@@ -118,7 +123,7 @@ CExportGraphXYTool::~CExportGraphXYTool()
 {
 }
 
-bool CExportGraphXYTool::ExportGraphData(const WBFL::Graphing::GraphXY& rGraph,LPCTSTR strDefaultFileName)
+bool CExportGraphXYTool::ExportGraphData(const WBFL::Graphing::GraphXY& rGraph,LPCTSTR strDefaultFileName, bool bAllowDuplicatePoints)
 {
    if (rGraph.GetDataSeriesCount() == 0)
    {
@@ -171,7 +176,7 @@ bool CExportGraphXYTool::ExportGraphData(const WBFL::Graphing::GraphXY& rGraph,L
    }
 
    // We have the information we need. Process graph data into the structure we need and then write it to file
-   GraphExportUtil graphUtil;
+   GraphExportUtil graphUtil(bAllowDuplicatePoints);
    if (!graphUtil.ProcessGraph(rGraph))
    {
       ::AfxMessageBox(_T("Error Processing Graph Data. This is a permanent error - cannot continue export"),MB_OK | MB_ICONEXCLAMATION);
@@ -496,8 +501,11 @@ bool GraphExportUtil::ProcessGraph(const WBFL::Graphing::GraphXY& rGraph)
    }
 
    // Now we have a collection of series of the same length. GraphXY can contain unnecessary duplicate values.
-   // Let's clean up the garbage
-   CleanupSeriesData();
+   // Let's clean up the garbage if the client asks
+   if (!m_bAllowDuplicatePoints)
+   {
+      CleanupSeriesData();
+   }
 
    return true;
 }

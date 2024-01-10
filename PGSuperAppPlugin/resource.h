@@ -1453,6 +1453,7 @@
 #define IDC_H_UNIT                      2050
 #define IDC_HAUNCH_INPUT_UNIT           2050
 #define IDC_TS_ELEVATION_ADJUST_GRID    2051
+#define IDC_HAUNCH_DESIGN_NOTE          2052
 #define IDS_E_WRITE                     2500
 #define IDS_E_UNSAFESAVE                2501
 #define IDS_E_SAVERECOVER1              2502
@@ -1628,21 +1629,21 @@
 #define ID_OPTIONS_AUTOSAVE             37010
 #define ID_COPY_TEMPORARYSUPPORT        37012
 #define ID_TEMPORARYSUPPORT_PLACEHOLDER 37013
-#define ID_ACTIVITIES_GEOMETRYCONTROLEVENT 37013
-#define IDM_COPY_TEMPSUPPORT_PROPS      37014
-#define ID_PROJECT_DESIGNHAUNCH         37014
-#define IDM_COPY_PIER_PROPS             37015
-#define ID_COPY_GIRDER_PROPS            37016
-#define ID_COPY_PIER_PROPS              37017
-#define ID_COPY_TEMPSUPPORT_PROPS       37019
+#define ID_ACTIVITIES_GEOMETRYCONTROLEVENT 37014
+#define IDM_COPY_TEMPSUPPORT_PROPS      37015
+#define ID_PROJECT_DESIGNHAUNCH         37016
+#define IDM_COPY_PIER_PROPS             37017
+#define ID_COPY_GIRDER_PROPS            37018
+#define ID_COPY_PIER_PROPS              37019
+#define ID_COPY_TEMPSUPPORT_PROPS       37020
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        410
-#define _APS_NEXT_COMMAND_VALUE         37015
-#define _APS_NEXT_CONTROL_VALUE         2052
+#define _APS_NEXT_COMMAND_VALUE         37021
+#define _APS_NEXT_CONTROL_VALUE         2053
 #define _APS_NEXT_SYMED_VALUE           115
 #endif
 #endif

@@ -94,6 +94,10 @@ inline CString GetHaunchInputDistributionTypeAsString(pgsTypes::HaunchInputDistr
    {
       return _T("Linearly Between 1/10th points");
    }
+   else if (type == pgsTypes::hid20thPoints)
+   {
+      return _T("Linearly Between 1/20th points");
+   }
    else
    {
       ATLASSERT(0);
@@ -215,6 +219,8 @@ BOOL CEditHaunchByHaunchDlg::OnInitDialog()
    pBox->SetItemData(sqidx,(DWORD)pgsTypes::hidQuarterPoints);
    sqidx = pBox->AddString(GetHaunchInputDistributionTypeAsString(pgsTypes::hidTenthPoints));
    pBox->SetItemData(sqidx,(DWORD)pgsTypes::hidTenthPoints);
+   sqidx = pBox->AddString(GetHaunchInputDistributionTypeAsString(pgsTypes::hid20thPoints));
+   pBox->SetItemData(sqidx, (DWORD)pgsTypes::hid20thPoints);
 
    CWnd* pPlaceBox = GetDlgItem(IDC_PLACEHOLDER);
    pPlaceBox->ShowWindow(SW_HIDE);

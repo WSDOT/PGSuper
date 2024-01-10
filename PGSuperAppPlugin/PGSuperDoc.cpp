@@ -541,45 +541,6 @@ bool CPGSuperDoc::DesignHaunch(const CGirderKey& girderKey)
    return DoDesignHaunch(girderKey);
 }
 
-bool CPGSuperDoc::DoDesignHaunch(const CGirderKey& girderKey)
-{
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   CFillHaunchDlg dlg(girderKey,m_pBroker);
-   if (IDOK == dlg.DoModal())
-   {
-      GET_IFACE(IBridgeDescription,pIBridgeDesc);
-      const CBridgeDescription2* pOldBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-
-      CBridgeDescription2 newBridgeDescr(*pOldBridgeDesc);
-
-      if (dlg.ModifyBridgeDescription(newBridgeDescr))
-      {
-         GET_IFACE(IEnvironment,pEnvironment);
-         auto oldExposureCondition = pEnvironment->GetExposureCondition();
-         Float64 oldRelHumidity = pEnvironment->GetRelHumidity();
-
-         std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditBridge>(*pOldBridgeDesc,newBridgeDescr,
-            oldExposureCondition,oldExposureCondition,oldRelHumidity,oldRelHumidity));
-
-         GET_IFACE(IEAFTransactions,pTransactions);
-         pTransactions->Execute(std::move(pTxn));
-
-         // Give user some confirmation that values where changed. A report of some kind might be better, but not sure it's worth the effort.
-         CString msg(_T("Haunch depths were modified. Click Yes to view/edit new haunch values"));
-         AFX_MANAGE_STATE(AfxGetStaticModuleState());
-         if (AfxMessageBox(msg,MB_YESNO | MB_ICONQUESTION) == IDYES)
-         {
-            OnEditHaunch();
-         }
-
-         return true;
-      }
-   }
-
-   return false;
-}
-
 UINT CPGSuperDoc::GetStandardToolbarResourceID()
 {
    return IDR_PGSUPER_STDTOOLBAR;

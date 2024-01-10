@@ -89,7 +89,6 @@ protected:
    CPGSuperComponentInfoManager m_ComponentInfoManager;
 
    void DoDesignGirder(const std::vector<CGirderKey>& girderKeys,bool bDesignFlexure,arSlabOffsetDesignType haunchDesignType,arConcreteDesignType concreteDesignType,arShearDesignType shearDesignType);
-   bool DoDesignHaunch(const CGirderKey& girderKey);
 
    virtual CPGSuperPluginMgrBase* CreatePluginManager() override { return new CPGSuperPluginMgr(); }
 

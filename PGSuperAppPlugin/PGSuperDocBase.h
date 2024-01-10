@@ -474,6 +474,8 @@ protected:
 
    void UIHint(const CString& strText, UINT hint);
 
+   bool DoDesignHaunch(const CGirderKey& girderKey);
+
 // Generated message map functions
 protected:
 	//{{AFX_MSG(CPGSDocBase)
