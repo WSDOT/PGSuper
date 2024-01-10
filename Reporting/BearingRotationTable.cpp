@@ -91,7 +91,7 @@ ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBrok
 
         if (bUserLoads)
         {
-            nCols += 6;
+            nCols += 6; // user loads for DC DW and LL
         }
 
     }
@@ -198,7 +198,16 @@ ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBrok
 
     if (!bDetail)
     {
-        nCols += 3;
+        if (pgsTypes::Envelope)
+        {
+            nCols += 3;
+        }
+        else
+        {
+            nCols += 4;
+        }
+
+        
     }
 
     if (bDesign)
@@ -257,7 +266,7 @@ ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBrok
 
     if (0 < nDucts && bDetail)
     {
-        nCols++;
+        nCols++;  //add for post-tensioning
     }
                 
     if (bTimeStep && bDetail)
@@ -274,10 +283,12 @@ ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBrok
         }
         else
         {
-            nCols++;
+            nCols ++;
         }
         
     }
+
+
 
 
     return nCols;
@@ -975,6 +986,24 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
             }
         }
 
+        std::unique_ptr<ICmbLsReactionAdapter> pForces;
+        GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
+        pForces = std::make_unique<CmbLsBearingDesignReactionAdapter>(pBearingDesign, lastIntervalIdx, girderKey);
+
+        if (!bDetail)
+        {
+            (*p_table)(row, col++) << rotation.SetValue(details.maxDCrotation);
+            (*p_table)(row, col++) << rotation.SetValue(details.maxDWrotation);
+        }
+
+        if (bDetail && bUserLoads)
+        {
+            (*p_table)(row, col++) << rotation.SetValue(details.maxUserDCRotation);
+            (*p_table)(row, col++) << rotation.SetValue(details.minUserDCRotation);
+            (*p_table)(row, col++) << rotation.SetValue(details.maxUserDWRotation);
+            (*p_table)(row, col++) << rotation.SetValue(details.minUserDWRotation);
+        }
+
         if (analysisType == pgsTypes::Envelope)
         {
             if (bDetail)
@@ -1021,33 +1050,6 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
 
 
 
-
-            std::unique_ptr<ICmbLsReactionAdapter> pForces;
-            GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
-            pForces = std::make_unique<CmbLsBearingDesignReactionAdapter>(pBearingDesign, lastIntervalIdx, girderKey);
-
-            
-
-
-
-
-
-            if (!bDetail)
-            {
-                (*p_table)(row, col++) << rotation.SetValue(details.maxDCrotation);
-                (*p_table)(row, col++) << rotation.SetValue(details.maxDWrotation);
-            }
-
-            if (bDetail && bUserLoads)
-            {
-                (*p_table)(row, col++) << rotation.SetValue(details.maxUserDCRotation);
-                (*p_table)(row, col++) << rotation.SetValue(details.minUserDCRotation);
-                (*p_table)(row, col++) << rotation.SetValue(details.maxUserDWRotation);
-                (*p_table)(row, col++) << rotation.SetValue(details.minUserDWRotation);
-            }
-
-
-
             Float64 min, max;
             VehicleIndexType minConfig, maxConfig;
             if (bDesign)
@@ -1089,7 +1091,6 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                             (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << maxConfig << _T(")");
                         }
                         col++;
-
                         (*p_table)(row, col++) << rotation.SetValue(details.serviceIRotation);
                         
                     }
@@ -1174,12 +1175,16 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                     }
                     col++;
 
-                    (*p_table)(row, col) << rotation.SetValue(min);
-                    if (bIndicateControllingLoad && 0 <= minConfig)
+                    if (bDetail)
                     {
-                        (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << minConfig << _T(")");
+                        (*p_table)(row, col) << rotation.SetValue(min);
                     }
-                    col++;
+                    
+                    if (bIndicateControllingLoad && 0 <= minConfig && bDetail)
+                    {
+                        (*p_table)(row, col++) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << minConfig << _T(")");
+                    }
+
                 }
                 else
                 {
@@ -1193,7 +1198,6 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
             if (!bDetail)
             {
                 (*p_table)(row, col++) << rotation.SetValue(details.serviceIRotation);
-                (*p_table)(row, col++) << rotation.SetValue(details.totalTimeDependentRotation);
             }
 
 

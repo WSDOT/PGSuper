@@ -270,7 +270,7 @@ public:
    virtual void GetDistanceBetweenGirders(const pgsPointOfInterest& poi,Float64 *pLeft,Float64* pRight) const override;
    virtual void GetBottomFlangeClearance(const pgsPointOfInterest& poi,Float64* pLeft,Float64* pRight) const override;
    virtual std::vector<Float64> GetGirderSpacing(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,pgsTypes::MeasurementLocation measureLocation,pgsTypes::MeasurementType measureType) const override;
-   virtual std::vector<Float64> CBridgeAgentImp::GetGirderSpacingAtTemporarySupport(SupportIndexType tsIdx, pgsTypes::PierFaceType pierFace, pgsTypes::MeasurementLocation measureLocation, pgsTypes::MeasurementType measureType) const override;
+   virtual std::vector<Float64> GetGirderSpacingAtTemporarySupport(SupportIndexType tsIdx, pgsTypes::PierFaceType pierFace, pgsTypes::MeasurementLocation measureLocation, pgsTypes::MeasurementType measureType) const override;
    virtual Float64 GetGirderOffset(GirderIndexType gdrIdx,PierIndexType pierIdx,pgsTypes::PierFaceType pierFace,pgsTypes::OffsetMeasurementType offsetMeasureDatum) const override;
    virtual std::vector<SpaceBetweenGirder> GetGirderSpacing(Float64 station) const override;
    virtual std::vector<Float64> GetGirderSpacing(SpanIndexType spanIdx,Float64 Xspan) const override;
