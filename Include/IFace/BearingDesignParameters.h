@@ -74,7 +74,9 @@ struct ROTATIONDETAILS
 	Float64 maxUserDWRotation;
 	Float64 minUserDWRotation;
 	Float64 maxDesignLLrotation;
+	VehicleIndexType maxConfig;
 	Float64 minDesignLLrotation;
+	VehicleIndexType minConfig;
 	Float64 maxUserLLrotation;
 	Float64 minUserLLrotation;
 	Float64 longitudinalJointRotation;
@@ -84,6 +86,8 @@ struct ROTATIONDETAILS
 	Float64 minSlabPanelRotation;
 	Float64 maxSidewalkRotation;
 	Float64 minSidewalkRotation;
+	Float64 maxPedRotation;
+	Float64 minPedRotation;
 };
 
 

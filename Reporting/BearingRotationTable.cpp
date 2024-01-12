@@ -91,7 +91,15 @@ ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBrok
 
         if (bUserLoads)
         {
-            nCols += 6; // user loads for DC DW and LL
+            if (analysisType == pgsTypes::Envelope)
+            {
+                nCols += 6; // user loads for DC DW and LL
+            }
+            else
+            {
+                nCols += 3;
+            }
+            
         }
 
     }
@@ -488,6 +496,20 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
             (*p_table)(1, col++) << COLHDR(_T("Min"), M, unitT);
         }
 
+        if (bUserLoads && bDetail)
+        {
+            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+
+            p_table->SetColumnSpan(0, col, 2);
+            (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftUserDC);
+            (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
+            (*p_table)(1, col++) << COLHDR(_T("Min"), M, unitT);
+            p_table->SetColumnSpan(0, col, 2);
+            (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftUserDW);
+            (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
+            (*p_table)(1, col++) << COLHDR(_T("Min"), M, unitT);
+        }
+
     }
     else
     {
@@ -525,26 +547,22 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
                 (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftOverlay), M, unitT);
             }
         }
-    }
 
-    if (bUserLoads && bDetail)
-    {
-        p_table->SetColumnSpan(0, col, 2);
-        (*p_table)(0, col) << Sub2(symbol(theta), _T("User DC"));
-        (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
-        (*p_table)(1, col++) << COLHDR(_T("Min"), M, unitT);
-
-        p_table->SetColumnSpan(0, col, 2);
-        (*p_table)(0, col) << Sub2(symbol(theta), _T("User DW"));
-        (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
-        (*p_table)(1, col++) << COLHDR(_T("Min"), M, unitT);
+        if (bUserLoads && bDetail)
+        {
+            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftUserDC), M, unitT);
+            (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftUserDW), M, unitT);
+        }
 
     }
+
+
 
     if (bPedLoading && bDetail)
     {
         p_table->SetColumnSpan(0, col, 2);
-        (*p_table)(0, col) << _T("$ Pedestrian");
+        (*p_table)(0, col) << _T("Pedestrian");
         (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
         (*p_table)(1, col++) << COLHDR(_T("Min"), M, unitT);
     }
@@ -573,12 +591,21 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
             (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
             (*p_table)(1, col++) << COLHDR(_T("Min"), M, unitT);
 
-            if (bUserLoads)
+            if (bUserLoads && analysisType == pgsTypes::Envelope)
             {
+                GET_IFACE2(pBroker, IProductLoads, pProductLoads);
                 p_table->SetColumnSpan(0, col, 2);
-                (*p_table)(0, col) << Sub2(symbol(theta), _T("User LL+IM"));
+                (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftUserLLIM);
                 (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
                 (*p_table)(1, col++) << COLHDR(_T("Min"), M, unitT);
+            }
+            else
+            {
+                if (bUserLoads)
+                {
+                    GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+                    (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftUserLLIM), M, unitT);
+                }
             }
 
 
@@ -998,10 +1025,19 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
 
         if (bDetail && bUserLoads)
         {
-            (*p_table)(row, col++) << rotation.SetValue(details.maxUserDCRotation);
-            (*p_table)(row, col++) << rotation.SetValue(details.minUserDCRotation);
-            (*p_table)(row, col++) << rotation.SetValue(details.maxUserDWRotation);
-            (*p_table)(row, col++) << rotation.SetValue(details.minUserDWRotation);
+            if (analysisType == pgsTypes::Envelope)
+            {
+                (*p_table)(row, col++) << rotation.SetValue(details.maxUserDCRotation);
+                (*p_table)(row, col++) << rotation.SetValue(details.minUserDCRotation);
+                (*p_table)(row, col++) << rotation.SetValue(details.maxUserDWRotation);
+                (*p_table)(row, col++) << rotation.SetValue(details.minUserDWRotation);
+            }
+            else
+            {
+                (*p_table)(row, col++) << rotation.SetValue(details.maxUserDCRotation);
+                (*p_table)(row, col++) << rotation.SetValue(details.maxUserDWRotation);
+            }
+
         }
 
         if (analysisType == pgsTypes::Envelope)
@@ -1046,12 +1082,26 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                         (*p_table)(row, col++) << RPT_NA;
                     }
                 }
+
+                if (tParam.bPedLoading)
+                {
+                    if (reactionDecider.DoReport(lastIntervalIdx))
+                    {
+                        (*p_table)(row, col++) << rotation.SetValue(details.maxPedRotation);
+                        (*p_table)(row, col++) << rotation.SetValue(details.minPedRotation);
+                    }
+                    else
+                    {
+                        (*p_table)(row, col++) << RPT_NA;
+                        (*p_table)(row, col++) << RPT_NA;
+                    }
+                }
+
             }
 
 
 
-            Float64 min, max;
-            VehicleIndexType minConfig, maxConfig;
+
             if (bDesign)
             {
 
@@ -1060,19 +1110,17 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
 
                     if (bDetail)
                     {
-                        pProductForces->GetLiveLoadRotation(lastIntervalIdx, pgsTypes::lltDesign, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig);
                         (*p_table)(row, col) << rotation.SetValue(details.minDesignLLrotation);
-                        if (bIndicateControllingLoad && 0 <= maxConfig)
+                        if (bIndicateControllingLoad && 0 <= details.maxConfig)
                         {
-                            (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << maxConfig << _T(")");
+                            (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << details.maxConfig << _T(")");
                         }
                         col++;
 
-                        pProductForces->GetLiveLoadRotation(lastIntervalIdx, pgsTypes::lltDesign, poi, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig);
                         (*p_table)(row, col) << rotation.SetValue(details.maxDesignLLrotation);
-                        if (bIndicateControllingLoad && 0 <= minConfig)
+                        if (bIndicateControllingLoad && 0 <= details.minConfig)
                         {
-                            (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << minConfig << _T(")");
+                            (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << details.minConfig << _T(")");
                         }
                         col++;
                         if (bUserLoads)
@@ -1082,13 +1130,11 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                         }
                     }
                     else
-                    {
-                       
-                        pProductForces->GetLiveLoadRotation(lastIntervalIdx, pgsTypes::lltDesign, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig);
+                    {    
                         (*p_table)(row, col) << rotation.SetValue(details.cyclicRotation);
-                        if (bIndicateControllingLoad && 0 <= maxConfig)
+                        if (bIndicateControllingLoad && 0 <= details.maxConfig)
                         {
-                            (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << maxConfig << _T(")");
+                            (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << details.maxConfig << _T(")");
                         }
                         col++;
                         (*p_table)(row, col++) << rotation.SetValue(details.serviceIRotation);
@@ -1109,8 +1155,6 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
         }
         else
         {
-            Float64 min, max;
-            VehicleIndexType minConfig, maxConfig;
             if (bDetail)
             {
                 if (tParam.bSidewalk)
@@ -1150,9 +1194,8 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                 {
                     if (reactionDecider.DoReport(lastIntervalIdx))
                     {
-                        pProductForces->GetLiveLoadRotation(lastIntervalIdx, pgsTypes::lltPedestrian, poi, maxBAT, bIncludeImpact, true, &min, &max);
-                        (*p_table)(row, col++) << rotation.SetValue(max);
-                        (*p_table)(row, col++) << rotation.SetValue(min);
+                        (*p_table)(row, col++) << rotation.SetValue(details.maxPedRotation);
+                        (*p_table)(row, col++) << rotation.SetValue(details.minPedRotation);
                     }
                     else
                     {
@@ -1167,22 +1210,25 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
             {
                 if (reactionDecider.DoReport(lastIntervalIdx))
                 {
-                    pProductForces->GetLiveLoadRotation(lastIntervalIdx, pgsTypes::lltDesign, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig);
-                    (*p_table)(row, col) << rotation.SetValue(max);
-                    if (bIndicateControllingLoad && 0 <= maxConfig)
+                    (*p_table)(row, col) << rotation.SetValue(details.minDesignLLrotation);
+                    if (bIndicateControllingLoad && 0 <= details.maxConfig)
                     {
-                        (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << maxConfig << _T(")");
+                        (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << details.maxConfig << _T(")");
                     }
                     col++;
 
                     if (bDetail)
                     {
-                        (*p_table)(row, col) << rotation.SetValue(min);
+                        (*p_table)(row, col) << rotation.SetValue(details.minDesignLLrotation);
                     }
                     
-                    if (bIndicateControllingLoad && 0 <= minConfig && bDetail)
+                    if (bIndicateControllingLoad && 0 <= details.minConfig && bDetail)
                     {
-                        (*p_table)(row, col++) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << minConfig << _T(")");
+                        (*p_table)(row, col++) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << details.minConfig << _T(")");
+                    }
+                    if (bDetail && bUserLoads)
+                    {
+                        (*p_table)(row, col++) << rotation.SetValue(details.maxUserLLrotation);
                     }
 
                 }

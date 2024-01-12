@@ -347,7 +347,7 @@ bool CGirderModelManager::HasPedestrianLoad() const
    bool isRatingPed = pRatingSpec->IncludePedestrianLiveLoad();
 
    // if the Pedestrian on Sidewalk live load is not defined, then there can't be ped loading
-   if ( DesignPedLoad==ILiveLoads::PedDontApply && PermitPedLoad==ILiveLoads::PedDontApply && 
+   if ( DesignPedLoad==ILiveLoads::PedDontApply && PermitPedLoad==ILiveLoads::PedDontApply &&
       FatiguePedLoad==ILiveLoads::PedDontApply && !isRatingPed)
    {
       return false;
