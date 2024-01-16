@@ -1375,6 +1375,12 @@ HRESULT CPierData2::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       THROW_LOAD(InvalidFileFormat,pStrLoad);
    }
 
+   // when bearing data is stored per pier line, only one set of data is stored
+   // this causes crashes later because there is expected to be data for both sides of the pier
+   // this little code block fixes that problem.
+   if (m_BearingData[pgsTypes::Ahead].size() == 0)
+      m_BearingData[pgsTypes::Ahead] = m_BearingData[pgsTypes::Back];
+
    PGS_ASSERT_VALID;
 
    return S_OK;
@@ -1927,7 +1933,7 @@ void CPierData2::ProtectBearingData() const
          }
       }
 
-      if (i == 0 && IsInteriorPier())
+      if (face == pgsTypes::Ahead && IsInteriorPier())
       {
          // Interior piers have a single bearing line. Enforce this
          m_BearingData[pgsTypes::Back] = m_BearingData[pgsTypes::Ahead];
