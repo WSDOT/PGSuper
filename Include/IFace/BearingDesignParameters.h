@@ -47,20 +47,14 @@ struct DESIGNPROPERTIES
 struct ROTATIONDETAILS
 {
 	Float64 skewFactor;
-
-	Float64 maxDCrotation;
-	Float64 maxDWrotation;
+	Float64 staticRotation;
 	Float64 cyclicRotation;
-	Float64 serviceIRotation;
-	Float64 preTensionRotation;
-	Float64 postTensionRotation;
-	Float64 creepRotation;
-	Float64 shrinkageRotation;
-	Float64 relaxationRotation;
-	Float64 totalTimeDependentRotation;
-
-	Float64 girderRotation;
+	Float64 totalRotation;
+	Float64 maxGirderRotation;
+	Float64 minGirderRotation;
 	Float64 diaphragmRotation;
+	Float64 maxShearKeyRotation;
+	Float64 minShearKeyRotation;
 	Float64 maxSlabRotation;
 	Float64 minSlabRotation;
 	Float64 maxHaunchRotation;
@@ -79,7 +73,8 @@ struct ROTATIONDETAILS
 	VehicleIndexType minConfig;
 	Float64 maxUserLLrotation;
 	Float64 minUserLLrotation;
-	Float64 longitudinalJointRotation;
+	Float64 maxLongitudinalJointRotation;
+	Float64 minLongitudinalJointRotation;
 	Float64 maxConstructionRotation;
 	Float64 minConstructionRotation;
 	Float64 maxSlabPanelRotation;
@@ -88,6 +83,69 @@ struct ROTATIONDETAILS
 	Float64 minSidewalkRotation;
 	Float64 maxPedRotation;
 	Float64 minPedRotation;
+	Float64 preTensionRotation;
+	Float64 postTensionRotation;
+	Float64 creepRotation;
+	Float64 shrinkageRotation;
+	Float64 relaxationRotation;
+};
+
+struct REACTIONDETAILS {
+	Float64 totalDLreaction;
+	Float64 totalLLreaction;
+	Float64 maxGirderReaction;
+	Float64 minGirderReaction;
+	Float64 diaphragmReaction;
+	Float64 maxShearKeyReaction;
+	Float64 minShearKeyReaction;
+	Float64 maxSlabReaction;
+	Float64 minSlabReaction;
+	Float64 maxHaunchReaction;
+	Float64 minHaunchReaction;
+	Float64 maxRailingSystemReaction;
+	Float64 minRailingSystemReaction;
+	Float64 maxFutureOverlayReaction;
+	Float64 minFutureOverlayReaction;
+	Float64 maxUserDCReaction;
+	Float64 minUserDCReaction;
+	Float64 maxUserDWReaction;
+	Float64 minUserDWReaction;
+	Float64 maxDesignLLReaction;
+	VehicleIndexType maxConfig;
+	Float64 minDesignLLReaction;
+	VehicleIndexType minConfig;
+	Float64 maxUserLLReaction;
+	Float64 minUserLLReaction;
+	Float64 maxLongitudinalJointReaction;
+	Float64 minLongitudinalJointReaction;
+	Float64 maxConstructionReaction;
+	Float64 minConstructionReaction;
+	Float64 maxSlabPanelReaction;
+	Float64 minSlabPanelReaction;
+	Float64 maxSidewalkReaction;
+	Float64 minSidewalkReaction;
+	Float64 maxPedReaction;
+	Float64 minPedReaction;
+	Float64 preTensionReaction;
+	Float64 postTensionReaction;
+	Float64 creepReaction;
+	Float64 shrinkageReaction;
+	Float64 relaxationReaction;
+};
+
+
+struct SHEARDEFORMATIONDETAILS {
+	Float64 thermalLRFDWarm;
+	Float64 thermalLRFDCold;
+	Float64 thermalBDMWarm;
+	Float64 thermalBDMCold;
+	Float64 preTension;
+	Float64 postTension;
+	Float64 girderAxialCreep;
+	Float64 bottomCurvatureCreep;
+	Float64 totalCreep;
+	Float64 shrinkage;
+	Float64 relaxation;
 };
 
 
@@ -100,6 +158,12 @@ interface IBearingDesignParameters : IUnknown
 
 	virtual void GetBearingRotationDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi, 
 		const ReactionLocation& reactionLocation, bool bIncludeImpact, bool bIncludeLLDF, bool isFlexural, ROTATIONDETAILS* pDetails) const = 0;
+
+	virtual void GetBearingReactionDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi,
+		const ReactionLocation& reactionLocation, bool bIncludeImpact, bool bIncludeLLDF, REACTIONDETAILS* pDetails) const = 0;
+
+	//virtual void GetBearingShearDeformationDetails() const = 0;
+
 
 
 };

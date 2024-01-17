@@ -586,6 +586,9 @@
     <ClCompile Include="BearingDesignDetailsChapterBuilder.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="BearingReactionTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\Reporting\ADimChapterBuilder.h">
@@ -1183,6 +1186,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Reporting\BearingDesignDetailsChapterBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\BearingReactionTable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

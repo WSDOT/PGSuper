@@ -169,6 +169,7 @@
     <ClCompile Include="BearingDesignDetailsChapterBuilder.cpp" />
     <ClCompile Include="BearingDesignParametersChapterBuilder.cpp" />
     <ClCompile Include="BearingDesignSummaryChapterBuilder.cpp" />
+    <ClCompile Include="BearingReactionTable.cpp" />
     <ClCompile Include="BearingRotationTable.cpp" />
     <ClCompile Include="BearingSeatElevationsChapterBuilder2.cpp" />
     <ClCompile Include="BearingSeatElevationsDetailsChapterBuilder2.cpp" />
@@ -375,6 +376,7 @@
     <ClInclude Include="..\Include\Reporting\BearingDesignDetailsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\BearingDesignParametersChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\BearingDesignSummaryChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\BearingReactionTable.h" />
     <ClInclude Include="..\Include\Reporting\BearingRotationTable.h" />
     <ClInclude Include="..\Include\Reporting\BearingSeatElevationsChapterBuilder2.h" />
     <ClInclude Include="..\Include\Reporting\BearingSeatElevationsDetailsChapterBuilder2.h" />

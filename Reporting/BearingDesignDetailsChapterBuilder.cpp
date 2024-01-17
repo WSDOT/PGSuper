@@ -23,7 +23,7 @@
 #include "StdAfx.h"
 #include <Reporting\BearingDesignDetailsChapterBuilder.h>
 #include <Reporting\ReportNotes.h>
-#include <Reporting\ProductReactionTable.h>
+#include <Reporting\BearingReactionTable.h>
 #include <Reporting\BearingRotationTable.h>
 #include <Reporting\PrestressRotationTable.h>
 #include <Reporting\UserReactionTable.h>
@@ -98,9 +98,8 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     *pChapter << p;
 
 
-
-
-
+    *p << CBearingReactionTable().BuildBearingReactionTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
+        true, true, are_user_loads, true, pDisplayUnits, true) << rptNewLine;
 
     *p << CBearingRotationTable().BuildBearingRotationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true,are_user_loads, true, pDisplayUnits, true, true) << rptNewLine;

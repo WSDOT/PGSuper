@@ -3841,18 +3841,27 @@ Float64 CEngAgentImp::GetSectionGirderOrientationEffect(const pgsPointOfInterest
 
 /////////////////////////////////////////////////////////////////////////////
 // IBearingDesignParamters
-void CEngAgentImp::GetBearingRotationDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi, 
+void CEngAgentImp::GetBearingRotationDetails(pgsTypes::AnalysisType AnalysisType, const pgsPointOfInterest& poi, 
     const ReactionLocation& reactionLocation, bool bIncludeImpact, bool bIncludeLLDF, bool isFlexural, ROTATIONDETAILS* pDetails) const
 {
 
 
-    m_BearingEngineer.GetBearingRotationDetails(analysisType, poi,
+    m_BearingEngineer.GetBearingRotationDetails(AnalysisType, poi,
         reactionLocation, bIncludeImpact, bIncludeLLDF, isFlexural, pDetails);
 
 
 }
 
+void CEngAgentImp::GetBearingReactionDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi,
+    const ReactionLocation& reactionLocation, bool bIncludeImpact, bool bIncludeLLDF, REACTIONDETAILS* pDetails) const
+{
 
+
+    m_BearingEngineer.GetBearingReactionDetails(analysisType, poi,
+        reactionLocation, bIncludeImpact, bIncludeLLDF, pDetails);
+
+
+}
 
 
 

@@ -37,14 +37,15 @@ public:
    Float64 BearingSkewFactor(const ReactionLocation& reactionLocation, bool isFlexural) const;
 
    Float64 GetBearingCyclicRotation(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi,
-	   const ReactionLocation& reactionLocation, bool bIncludeImpact, bool bIncludeLLDF, bool isFlexural) const;
+	   const ReactionLocation& reactionLocation, bool bIncludeImpact, bool bIncludeLLDF) const;
 
    void GetBearingRotationDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi,
 	   const ReactionLocation& reactionLocation, bool bIncludeImpact, bool bIncludeLLDF, bool isFlexural, ROTATIONDETAILS* pDetails) const;
 
    void GetBearingDesignProperties();
 
-   void GetBearingReactionDetails();
+   void GetBearingReactionDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi, 
+	   const ReactionLocation& reactionLocation, bool bIncludeImpact, bool bIncludeLLDF, REACTIONDETAILS* pDetails) const;
 
    void GetShearDeformationDetails();
 

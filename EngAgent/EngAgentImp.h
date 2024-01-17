@@ -386,6 +386,9 @@ public:
    virtual void GetBearingRotationDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi, const ReactionLocation& reactionLocation, 
        bool bIncludeImpact, bool bIncludeLLDF, bool isFlexural, ROTATIONDETAILS* pDetails) const override;
 
+   virtual void GetBearingReactionDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi, const ReactionLocation& reactionLocation,
+       bool bIncludeImpact, bool bIncludeLLDF, REACTIONDETAILS* pDetails) const override;
+
 // IFabricationOptimization
 public:
    virtual bool GetFabricationOptimizationDetails(const CSegmentKey& segmentKey,FABRICATIONOPTIMIZATIONDETAILS* pDetails) const override;
@@ -513,7 +516,7 @@ private:
 
    mutable std::map<CSegmentKey,SLABOFFSETDETAILS> m_SlabOffsetDetails;
 
-   ROTATIONDETAILS m_staticRotationDetails;
+   //ROTATIONDETAILS m_staticRotationDetails;
 
    // Lifting and hauling analysis artifact cache for ad-hoc analysis (typically during design)
    mutable std::map<CSegmentKey, std::map<Float64,WBFL::Stability::LiftingCheckArtifact,Float64_less> > m_LiftingArtifacts;

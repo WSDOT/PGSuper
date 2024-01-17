@@ -25,6 +25,7 @@
 #include <Reporting\ReportNotes.h>
 #include <Reporting\ProductReactionTable.h>
 #include <Reporting\BearingRotationTable.h>
+#include <Reporting\BearingReactionTable.h>
 #include <Reporting\PrestressRotationTable.h>
 #include <Reporting\UserReactionTable.h>
 #include <Reporting\UserRotationTable.h>
@@ -97,7 +98,8 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
     rptParagraph* p = new rptParagraph;
     *pChapter << p;
 
-
+    *p << CBearingReactionTable().BuildBearingReactionTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
+        true, true, are_user_loads, true, pDisplayUnits, false) << rptNewLine;
 
     *p << CBearingRotationTable().BuildBearingRotationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact, 
         true, true, are_user_loads,  true, pDisplayUnits, false, true) << rptNewLine;
