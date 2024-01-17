@@ -88,7 +88,7 @@ BEGIN
             VALUE "FileDescription", "PGSuper Reporting"
             VALUE "FileVersion", "8.0.1.0"
             VALUE "InternalName", "Reporting"
-            VALUE "LegalCopyright", "Copyright © 1999-2023, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "LegalCopyright", "Copyright © 1999-2024, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "PGSuperReporting.dll"
             VALUE "ProductName", "PGSuper"
             VALUE "ProductVersion", "8.0.1.0"

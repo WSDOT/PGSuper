@@ -288,6 +288,7 @@
     <None Include="IBeamFactory.rgs" />
     <None Include="IBeamFamily.rgs" />
     <None Include="MultiWeb2Factory.rgs" />
+    <None Include="MultiWebDistFactorEngineer.rgs" />
     <None Include="MultiWebfactory.rgs" />
     <None Include="MultiWebFamily.rgs" />
     <None Include="NUBeamFactory.rgs" />
@@ -303,6 +304,8 @@
     <None Include="Res\MultiWeb.emf" />
     <None Include="Res\MultiWeb2.emf" />
     <None Include="Res\NUbeam.emf" />
+    <None Include="res\NUDeckedBulbTee.emf" />
+    <None Include="res\PCIDeckedBulbTee.emf" />
     <None Include="Res\SplicedIBeam.emf" />
     <None Include="Res\SplicedNUBeam.emf" />
     <None Include="Res\TaperedIBeam.emf" />
