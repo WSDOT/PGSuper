@@ -83,7 +83,6 @@ ColumnIndexType CBearingReactionTable::GetBearingTableColumnCount(IBroker* pBrok
 
     ColumnIndexType nCols = 1; // location
 
-    //nCols++;
 
     if (bDetail)
     {
@@ -93,7 +92,7 @@ ColumnIndexType CBearingReactionTable::GetBearingTableColumnCount(IBroker* pBrok
         {
             if (analysisType == pgsTypes::Envelope)
             {
-                nCols += 6; // user loads for DC DW and LL
+                nCols += 6;
             }
             else
             {
@@ -102,6 +101,10 @@ ColumnIndexType CBearingReactionTable::GetBearingTableColumnCount(IBroker* pBrok
 
         }
 
+    }
+    else
+    {
+        nCols++; //Pdl
     }
 
     //GET_IFACE2(pBroker, IProductLoads, pLoads);
@@ -204,20 +207,6 @@ ColumnIndexType CBearingReactionTable::GetBearingTableColumnCount(IBroker* pBrok
         nCols++; // add for min/max traffic barrier
     }
 
-    if (!bDetail)
-    {
-        if (pgsTypes::Envelope)
-        {
-            nCols += 3;
-        }
-        else
-        {
-            nCols += 4;
-        }
-
-
-    }
-
     if (bDesign)
     {
         nCols++; // design live loads
@@ -289,11 +278,6 @@ ColumnIndexType CBearingReactionTable::GetBearingTableColumnCount(IBroker* pBrok
         {
             nCols += 2;
         }
-        else
-        {
-            nCols++;
-        }
-
     }
 
 
@@ -307,12 +291,16 @@ template <class M, class T>
 RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* p_table, bool bPierTable, bool bSegments, bool bConstruction, bool bDeck, bool bDeckPanels, bool bSidewalk, bool bShearKey, bool bLongitudinalJoints, bool bOverlay, bool bIsFutureOverlay,
     bool bDesign, bool bUserLoads, bool bPedLoading, pgsTypes::AnalysisType analysisType, bool bContinuousBeforeDeckCasting, IEAFDisplayUnits* pDisplayUnits, const T& unitT, bool bDetail, DuctIndexType nDucts, bool bTimeStep)
 {
-    p_table->SetNumberOfHeaderRows(2);
-
+   
 
     ColumnIndexType col = 0;
 
-    p_table->SetRowSpan(0, col, 2);
+    if (bDetail)
+    {
+        p_table->SetNumberOfHeaderRows(2);
+        p_table->SetRowSpan(0, col, 2);
+    }
+    
     if (bPierTable)
     {
         (*p_table)(0, col++) << _T("");
@@ -569,11 +557,7 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
 
     if (!bDetail)
     {
-        (*p_table)(0, col) << Sub2(symbol(theta), _T("DC"));
-        (*p_table)(1, col++) << COLHDR(_T("Max"), rptAngleUnitTag, unitT);
-        (*p_table)(0, col) << Sub2(symbol(theta), _T("DW"));
-        (*p_table)(1, col++) << COLHDR(_T("Max"), rptAngleUnitTag, unitT);
-
+        (*p_table)(0, col++) << COLHDR(Sub2(_T("P"), _T("DL")), M, unitT);
     }
 
 
@@ -581,13 +565,12 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
     {
         if (!bDetail)
         {
-            (*p_table)(0, col) << Sub2(symbol(theta), _T("cy"));
-            (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
+            (*p_table)(0, col) << COLHDR(Sub2(_T("P"), _T("LL")), M, unitT);
         }
         else
         {
             p_table->SetColumnSpan(0, col, 2);
-            (*p_table)(0, col) << Sub2(symbol(theta), _T("Design LL"));
+            (*p_table)(0, col) << Sub2(_T("P"), _T("LL"));
             (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
             (*p_table)(1, col++) << COLHDR(_T("Min"), M, unitT);
 
@@ -607,23 +590,15 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
                     (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftUserLLIM), M, unitT);
                 }
             }
-
-
-
-
         }
     }
 
-    if (!bDetail)
-    {
-        (*p_table)(0, col) << Sub2(symbol(theta), _T("Service I"));
-        (*p_table)(1, col++) << COLHDR(_T("Max"), rptAngleUnitTag, unitT);
-    }
 
-    p_table->SetRowSpan(0, col, 2);
+    
 
     if (bDetail)
     {
+        p_table->SetRowSpan(0, col, 2);
 
         GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
@@ -631,10 +606,13 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
         (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftPretension), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
     }
 
-    p_table->SetRowSpan(0, col, 2);
+    
 
     if (bDetail)
     {
+
+        p_table->SetRowSpan(0, col, 2);
+
         if (0 < nDucts)
         {
 
@@ -662,11 +640,6 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
             p_table->SetRowSpan(0, col, 2);
             (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftRelaxation), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
         }
-        else
-        {
-            p_table->SetRowSpan(0, col, 2);
-            (*p_table)(0, col++) << COLHDR(_T("Time Dependent"), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
-        }
     }
     else
     {
@@ -678,10 +651,7 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
 
             (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftCreep), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
         }
-        else
-        {
-            (*p_table)(0, col++) << COLHDR(_T("Time Dependent"), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
-        }
+
     }
 
 
@@ -1016,7 +986,6 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
         if (!bDetail)
         {
             (*p_table)(row, col++) << Reaction.SetValue(0);
-            (*p_table)(row, col++) << Reaction.SetValue(0);
         }
 
         if (bDetail && bUserLoads)
@@ -1132,9 +1101,6 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
                         {
                             (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << details.maxConfig << _T(")");
                         }
-                        col++;
-                        (*p_table)(row, col++) << Reaction.SetValue(0);
-
                     }
 
 
@@ -1237,13 +1203,6 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
             }
 
 
-            if (!bDetail)
-            {
-                (*p_table)(row, col++) << Reaction.SetValue(0);
-            }
-
-
-
         }
 
         if (bDetail)
@@ -1261,10 +1220,7 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
             }
 
         }
-        else
-        {
-            (*p_table)(row, col++) << Reaction.SetValue(0);
-        }
+
 
 
         row++;

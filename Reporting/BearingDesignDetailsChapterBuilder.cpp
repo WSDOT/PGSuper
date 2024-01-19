@@ -25,9 +25,11 @@
 #include <Reporting\ReportNotes.h>
 #include <Reporting\BearingReactionTable.h>
 #include <Reporting\BearingRotationTable.h>
+#include <Reporting\BearingShearDeformationTable.h>
 #include <Reporting\PrestressRotationTable.h>
 #include <Reporting\UserReactionTable.h>
 #include <Reporting\UserRotationTable.h>
+
 #include <Reporting\VehicularLoadResultsTable.h>
 #include <Reporting\VehicularLoadReactionTable.h>
 #include <Reporting\CombinedReactionTable.h>
@@ -42,6 +44,7 @@
 #include <IFace\DistributionFactors.h>
 
 #include <PgsExt\PierData2.h>
+#include <Reporting/BearingDesignPropertiesTable.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -106,7 +109,11 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
 
     *p << CBearingRotationTable().BuildBearingRotationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, are_user_loads, true, pDisplayUnits, true, false) << rptNewLine;
+
+    *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
+        true, true, are_user_loads, true, pDisplayUnits, true) << rptNewLine;
     
+
     ///////////////////////////////////////
     //GET_IFACE2(pBroker, IMaterials, pMaterial);
     //pgsPointOfInterest poi;

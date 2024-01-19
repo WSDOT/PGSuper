@@ -40,8 +40,12 @@ struct DESIGNPROPERTIES
 {
 	Float64 Fy{ WBFL::Units::ConvertToSysUnits(36, WBFL::Units::Measure::KSI) };///< steel yield strength
 	Float64 Fth{ WBFL::Units::ConvertToSysUnits(24, WBFL::Units::Measure::KSI) };///< steel fatigue threshold
-	Float64 Gmin;
-	Float64 Gmax;
+	Float64 Gmin50{ WBFL::Units::ConvertToSysUnits(0.095, WBFL::Units::Measure::KSI) };///< elastomer minimum shear modulus @ 50 hardness
+	Float64 Gmax50{ WBFL::Units::ConvertToSysUnits(0.130, WBFL::Units::Measure::KSI) };///< elastomer maximum shear modulus @ 50 hardness
+	Float64 Gmin60{ WBFL::Units::ConvertToSysUnits(0.130, WBFL::Units::Measure::KSI) };///< elastomer minimum shear modulus @ 60 hardness
+	Float64 Gmax60{ WBFL::Units::ConvertToSysUnits(0.200, WBFL::Units::Measure::KSI) };///< elastomer maximum shear modulus @ 60 hardness
+	Float64 Gmin70{ WBFL::Units::ConvertToSysUnits(0.200, WBFL::Units::Measure::KSI) };///< elastomer minimum shear modulus @ 70 hardness
+	Float64 Gmax70{ WBFL::Units::ConvertToSysUnits(0.300, WBFL::Units::Measure::KSI) };///< elastomer maximum shear modulus @ 70 hardness
 };
 
 struct ROTATIONDETAILS
@@ -141,9 +145,7 @@ struct SHEARDEFORMATIONDETAILS {
 	Float64 thermalBDMCold;
 	Float64 preTension;
 	Float64 postTension;
-	Float64 girderAxialCreep;
-	Float64 bottomCurvatureCreep;
-	Float64 totalCreep;
+	Float64 creep;
 	Float64 shrinkage;
 	Float64 relaxation;
 };
@@ -162,8 +164,10 @@ interface IBearingDesignParameters : IUnknown
 	virtual void GetBearingReactionDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi,
 		const ReactionLocation& reactionLocation, bool bIncludeImpact, bool bIncludeLLDF, REACTIONDETAILS* pDetails) const = 0;
 
-	//virtual void GetBearingShearDeformationDetails() const = 0;
+	virtual void GetBearingShearDeformationDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi,
+		const ReactionLocation& reactionLocation, bool bIncludeImpact, bool bIncludeLLDF, SHEARDEFORMATIONDETAILS* pDetails) const = 0;
 
+	virtual void GetBearingDesignProperties(DESIGNPROPERTIES* pDetails) const = 0;
 
 
 };

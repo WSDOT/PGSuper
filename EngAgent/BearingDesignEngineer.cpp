@@ -76,6 +76,12 @@ void pgsBearingDesignEngineer::SetBroker(IBroker* pBroker)
 }
 
 
+void pgsBearingDesignEngineer::GetBearingDesignProperties(DESIGNPROPERTIES* pDetails) const
+{
+
+}
+
+
 Float64 pgsBearingDesignEngineer::BearingSkewFactor(const ReactionLocation& reactionLocation, bool isFlexural) const
 {
     GET_IFACE(IBridge, pBridge);
@@ -237,5 +243,9 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(pgsTypes::AnalysisType 
 
 }
 
+void pgsBearingDesignEngineer::GetBearingShearDeformationDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi,
+    const ReactionLocation& reactionLocation, bool bIncludeImpact, bool bIncludeLLDF, SHEARDEFORMATIONDETAILS* pDetails) const
+{
 
+}
 

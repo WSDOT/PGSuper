@@ -168,11 +168,13 @@
     <ClCompile Include="BasicCamberChapterBuilder.cpp" />
     <ClCompile Include="BearingDesignDetailsChapterBuilder.cpp" />
     <ClCompile Include="BearingDesignParametersChapterBuilder.cpp" />
+    <ClCompile Include="BearingDesignPropertiesTable.cpp" />
     <ClCompile Include="BearingDesignSummaryChapterBuilder.cpp" />
     <ClCompile Include="BearingReactionTable.cpp" />
     <ClCompile Include="BearingRotationTable.cpp" />
     <ClCompile Include="BearingSeatElevationsChapterBuilder2.cpp" />
     <ClCompile Include="BearingSeatElevationsDetailsChapterBuilder2.cpp" />
+    <ClCompile Include="BearingShearDeformationTable.cpp" />
     <ClCompile Include="BridgeAnalysisChapterBuilder.cpp" />
     <ClCompile Include="BridgeAnalysisReportDlg.cpp" />
     <ClCompile Include="BridgeAnalysisReportSpecification.cpp" />
@@ -375,11 +377,13 @@
     <ClInclude Include="..\Include\Reporting\BasicCamberChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\BearingDesignDetailsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\BearingDesignParametersChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\BearingDesignPropertiesTable.h" />
     <ClInclude Include="..\Include\Reporting\BearingDesignSummaryChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\BearingReactionTable.h" />
     <ClInclude Include="..\Include\Reporting\BearingRotationTable.h" />
     <ClInclude Include="..\Include\Reporting\BearingSeatElevationsChapterBuilder2.h" />
     <ClInclude Include="..\Include\Reporting\BearingSeatElevationsDetailsChapterBuilder2.h" />
+    <ClInclude Include="..\Include\Reporting\BearingShearDeformationTable.h" />
     <ClInclude Include="..\Include\Reporting\BridgeAnalysisChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\BridgeAnalysisReportDlg.h" />
     <ClInclude Include="..\Include\Reporting\BridgeAnalysisReportSpecification.h" />

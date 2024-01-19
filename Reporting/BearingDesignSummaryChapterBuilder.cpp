@@ -25,6 +25,7 @@
 #include <Reporting\ReportNotes.h>
 #include <Reporting\ProductReactionTable.h>
 #include <Reporting\BearingRotationTable.h>
+#include <Reporting\BearingDesignPropertiesTable.h>
 #include <Reporting\BearingReactionTable.h>
 #include <Reporting\PrestressRotationTable.h>
 #include <Reporting\UserReactionTable.h>
@@ -43,6 +44,7 @@
 #include <IFace\DistributionFactors.h>
 
 #include <PgsExt\PierData2.h>
+#include <Reporting/BearingShearDeformationTable.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -98,6 +100,9 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
     rptParagraph* p = new rptParagraph;
     *pChapter << p;
 
+    *p << CBearingDesignPropertiesTable().BuildBearingDesignPropertiesTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
+        true, true, are_user_loads, true, pDisplayUnits, false) << rptNewLine;
+
     *p << CBearingReactionTable().BuildBearingReactionTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, are_user_loads, true, pDisplayUnits, false) << rptNewLine;
 
@@ -106,6 +111,9 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
 
     *p << CBearingRotationTable().BuildBearingRotationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, are_user_loads, true, pDisplayUnits, false, false) << rptNewLine;
+
+    *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
+        true, true, are_user_loads, true, pDisplayUnits, false) << rptNewLine;
 
 
     
