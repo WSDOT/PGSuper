@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////
 //// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-//// Copyright © 1999-2023  Washington State Department of Transportation
+//// Copyright © 1999-2024  Washington State Department of Transportation
 ////                        Bridge and Structures Office
 ////
 //// This program is free software; you can redistribute it and/or modify
@@ -122,29 +122,29 @@ RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptR
 
     p_table->SetColumnSpan(0, col, 2);
     (*p_table)(0, col) << _T("Thermal (Warm)");
-    (*p_table)(1, col++) << _T("LRFD (0.65)");
-    (*p_table)(1, col++) << _T("BDM (0.75)");
+    (*p_table)(1, col++) << COLHDR(_T("BDM (0.65)"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+    (*p_table)(1, col++) << COLHDR(_T("BDM (0.75)"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
     p_table->SetColumnSpan(0, col, 2);
     (*p_table)(0, col) << _T("Thermal (Cold)");
-    (*p_table)(1, col++) << _T("LRFD (0.65)");
-    (*p_table)(1, col++) << _T("BDM (0.75)");
+    (*p_table)(1, col++) << COLHDR(_T("BDM (0.65)"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+    (*p_table)(1, col++) << COLHDR(_T("BDM (0.75)"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
     if (0 < nDucts)
     {
         p_table->SetRowSpan(0, col, 2);
-        (*p_table)(0, col++) << _T("Post-Tension");
+        (*p_table)(0, col++) << COLHDR(_T("Post-Tensioning"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
     }
     if (bTimeStep)
     {
         p_table->SetColumnSpan(0, col, 3);
         (*p_table)(0, col) << _T("Time-Dependent");
-        (*p_table)(1, col++) << _T("Creep");
-        (*p_table)(1, col++) << _T("Shrinkage");
-        (*p_table)(1, col) << _T("Relaxation");
+        (*p_table)(1, col++) << COLHDR(_T("Creep"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+        (*p_table)(1, col++) << COLHDR(_T("Shrinkage"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+        (*p_table)(1, col++) << COLHDR(_T("Relaxation"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
     }
     else
     {
         p_table->SetRowSpan(0, col, 2);
-        (*p_table)(0, col++) << _T("Creep");
+        (*p_table)(0, col++) << COLHDR(_T("Creep"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
     }
 
 
@@ -163,7 +163,7 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
 {
 
     // Build table
-    INIT_UV_PROTOTYPE(rptAngleUnitValue, Reaction, pDisplayUnits->GetRadAngleUnit(), false);
+    INIT_UV_PROTOTYPE(rptLengthUnitValue, Reaction, pDisplayUnits->GetDeflectionUnit(), false);
 
     GET_IFACE2(pBroker, IBridge, pBridge);
     bool bHasOverlay = pBridge->HasOverlay();

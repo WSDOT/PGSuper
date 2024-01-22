@@ -84,7 +84,7 @@ rptRcTable* CBearingDesignPropertiesTable::BuildBearingDesignPropertiesTable(IBr
     bool bIncludeImpact, bool bIncludeLLDF, bool bDesign, bool bUserLoads, bool bIndicateControllingLoad, IEAFDisplayUnits* pDisplayUnits, bool bDetail) const
 {
 
-    INIT_UV_PROTOTYPE(rptAngleUnitValue, Reaction, pDisplayUnits->GetRadAngleUnit(), false);
+    INIT_UV_PROTOTYPE(rptStressUnitValue, Reaction, pDisplayUnits->GetStressUnit(), false);
 
 
 
@@ -107,21 +107,29 @@ rptRcTable* CBearingDesignPropertiesTable::BuildBearingDesignPropertiesTable(IBr
     p_table->SetRowSpan(0, col, 2);
     (*p_table)(0, col++) << _T("");
     p_table->SetRowSpan(0, col, 2);
-    (*p_table)(0, col++) << _T("Fy");
+    (*p_table)(0, col++) << COLHDR(Sub2(_T("F"), _T("y")),
+        rptStressUnitTag, pDisplayUnits->GetStressUnit());
     p_table->SetRowSpan(0, col, 2);
-    (*p_table)(0, col++) << _T("Fth");
+    (*p_table)(0, col++) << COLHDR(Sub2(_T("F"), _T("th")),
+        rptStressUnitTag, pDisplayUnits->GetStressUnit());
     p_table->SetColumnSpan(0,col, 2);
     (*p_table)(0, col) << _T("50 Hardness");
-    (*p_table)(1, col++) << _T("Gmin");
-    (*p_table)(1, col++) << _T("Gmax");
+    (*p_table)(1, col++) << COLHDR(Sub2(_T("G"),_T("min")),
+        rptStressUnitTag, pDisplayUnits->GetStressUnit());
+    (*p_table)(1, col++) << COLHDR(Sub2(_T("G"), _T("max")),
+        rptStressUnitTag, pDisplayUnits->GetStressUnit());
     p_table->SetColumnSpan(0, col, 2);
     (*p_table)(0, col) << _T("60 Hardness");
-    (*p_table)(1, col++) << _T("Gmin");
-    (*p_table)(1, col++) << _T("Gmax");
+    (*p_table)(1, col++) << COLHDR(Sub2(_T("G"), _T("min")),
+        rptStressUnitTag, pDisplayUnits->GetStressUnit());
+    (*p_table)(1, col++) << COLHDR(Sub2(_T("G"), _T("max")),
+        rptStressUnitTag, pDisplayUnits->GetStressUnit());
     p_table->SetColumnSpan(0, col, 2);
     (*p_table)(0, col) << _T("70 Hardness");
-    (*p_table)(1, col++) << _T("Gmin");
-    (*p_table)(1, col++) << _T("Gmax");
+    (*p_table)(1, col++) << COLHDR(Sub2(_T("G"), _T("min")),
+        rptStressUnitTag, pDisplayUnits->GetStressUnit());
+    (*p_table)(1, col++) << COLHDR(Sub2(_T("G"), _T("max")),
+        rptStressUnitTag, pDisplayUnits->GetStressUnit());
 
 
     col = 0;

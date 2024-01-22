@@ -159,7 +159,8 @@ interface IBearingDesignParameters : IUnknown
 {
 
 	virtual void GetBearingRotationDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi, 
-		const ReactionLocation& reactionLocation, bool bIncludeImpact, bool bIncludeLLDF, bool isFlexural, ROTATIONDETAILS* pDetails) const = 0;
+		const ReactionLocation& reactionLocation, bool bIncludeImpact, bool bIncludeLLDF, 
+		bool isFlexural, ROTATIONDETAILS* pDetails) const = 0;
 
 	virtual void GetBearingReactionDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi,
 		const ReactionLocation& reactionLocation, bool bIncludeImpact, bool bIncludeLLDF, REACTIONDETAILS* pDetails) const = 0;

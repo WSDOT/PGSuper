@@ -288,8 +288,11 @@ ColumnIndexType CBearingReactionTable::GetBearingTableColumnCount(IBroker* pBrok
 
 
 template <class M, class T>
-RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* p_table, bool bPierTable, bool bSegments, bool bConstruction, bool bDeck, bool bDeckPanels, bool bSidewalk, bool bShearKey, bool bLongitudinalJoints, bool bOverlay, bool bIsFutureOverlay,
-    bool bDesign, bool bUserLoads, bool bPedLoading, pgsTypes::AnalysisType analysisType, bool bContinuousBeforeDeckCasting, IEAFDisplayUnits* pDisplayUnits, const T& unitT, bool bDetail, DuctIndexType nDucts, bool bTimeStep)
+RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* p_table, bool bPierTable, bool bSegments, 
+    bool bConstruction, bool bDeck, bool bDeckPanels, bool bSidewalk, bool bShearKey, bool bLongitudinalJoints, bool bOverlay, 
+    bool bIsFutureOverlay, bool bDesign, bool bUserLoads, bool bPedLoading, pgsTypes::AnalysisType analysisType, 
+    bool bContinuousBeforeDeckCasting, IEAFDisplayUnits* pDisplayUnits, const T& unitT, bool bDetail, DuctIndexType nDucts, 
+    bool bTimeStep)
 {
    
 
@@ -603,7 +606,7 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
         GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
 
-        (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftPretension), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
+        (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftPretension), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
     }
 
     
@@ -618,7 +621,7 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
 
             GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
-            (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftPostTensioning), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
+            (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftPostTensioning), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
         }
     }
 
@@ -634,11 +637,11 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
 
 
             p_table->SetRowSpan(0, col, 2);
-            (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftCreep), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
+            (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftCreep), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
             p_table->SetRowSpan(0, col, 2);
-            (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftShrinkage), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
+            (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftShrinkage), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
             p_table->SetRowSpan(0, col, 2);
-            (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftRelaxation), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
+            (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftRelaxation), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
         }
     }
     else
@@ -649,7 +652,7 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
             GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
 
-            (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftCreep), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
+            (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftCreep), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
         }
 
     }
@@ -669,7 +672,7 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
 {
 
     // Build table
-    INIT_UV_PROTOTYPE(rptAngleUnitValue, Reaction, pDisplayUnits->GetRadAngleUnit(), false);
+    INIT_UV_PROTOTYPE(rptForceUnitValue, Reaction, pDisplayUnits->GetGeneralForceUnit(), false);
 
     GET_IFACE2(pBroker, IBridge, pBridge);
     bool bHasOverlay = pBridge->HasOverlay();
@@ -699,11 +702,11 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
 
     CString label = _T("Reactions");
     rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols, label);
-    RowIndexType row = ConfigureBearingReactionTableHeading<rptAngleUnitTag, WBFL::Units::AngleData>(
+    RowIndexType row = ConfigureBearingReactionTableHeading<rptForceUnitTag, WBFL::Units::ForceData>(
         pBroker, p_table, true, tParam.bSegments, tParam.bConstruction, tParam.bDeck, tParam.bDeckPanels,
         tParam.bSidewalk, tParam.bShearKey, tParam.bLongitudinalJoint, bHasOverlay,
         bFutureOverlay, bDesign, bUserLoads, tParam.bPedLoading, analysisType, tParam.bContinuousBeforeDeckCasting,
-        pDisplayUnits, pDisplayUnits->GetRadAngleUnit(), bDetail, nDucts, bTimeStep);
+        pDisplayUnits, pDisplayUnits->GetGeneralForceUnit(), bDetail, nDucts, bTimeStep);
 
     p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
     p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));

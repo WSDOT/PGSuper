@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////
 //// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-//// Copyright © 1999-2023  Washington State Department of Transportation
+//// Copyright © 1999-2024  Washington State Department of Transportation
 ////                        Bridge and Structures Office
 ////
 //// This program is free software; you can redistribute it and/or modify
@@ -206,7 +206,7 @@ ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBrok
 
     if (!bDetail)
     {
-            nCols ++;
+        nCols ++;
     }
 
     if (bDesign)
@@ -565,7 +565,8 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
 
     if (!bDetail)
     {
-            (*p_table)(0, col++) << Sub2(symbol(theta), _T("static"));
+            (*p_table)(0, col++) << COLHDR(Sub2(symbol(theta), _T("static")), 
+                    rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
     }
 
 
@@ -573,7 +574,8 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
     {
         if (!bDetail)
         {
-            (*p_table)(0, col++) << Sub2(symbol(theta), _T("cyclic"));
+            (*p_table)(0, col++) << COLHDR(Sub2(symbol(theta), _T("cyclic")), 
+                    rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
         }
         else
         {
@@ -607,7 +609,8 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
 
     if (!bDetail)
     {
-            (*p_table)(0, col) << Sub2(symbol(theta), _T("total"));
+            (*p_table)(0, col++) << COLHDR(Sub2(symbol(theta), _T("static")), 
+                    rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
     }
 
     

@@ -78,7 +78,6 @@ void pgsBearingDesignEngineer::SetBroker(IBroker* pBroker)
 
 void pgsBearingDesignEngineer::GetBearingDesignProperties(DESIGNPROPERTIES* pDetails) const
 {
-
 }
 
 
@@ -143,7 +142,6 @@ void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType 
     IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
     IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
 
-    GET_IFACE(ICombinedForces, comboForces);
 
 
     GET_IFACE(ILimitStateForces, limitForces);
