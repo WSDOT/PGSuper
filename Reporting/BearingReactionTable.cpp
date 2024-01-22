@@ -813,8 +813,8 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
         {
             if (tParam.bSegments)
             {
+                (*p_table)(row, col++) << Reaction.SetValue(details.erectedSegmentReaction);
                 (*p_table)(row, col++) << Reaction.SetValue(details.maxGirderReaction);
-                (*p_table)(row, col++) << Reaction.SetValue(details.minGirderReaction);
             }
             else
             {

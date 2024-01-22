@@ -210,6 +210,9 @@ void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType 
 
     pDetails->minPedRotation = min;
 
+    pDetails->erectedSegmentRotation = skewFactor * pProductForces->GetRotation(erectSegmentIntervalIdx, pgsTypes::pftGirder, poi, maxBAT, rtCumulative, false);
+
+    pDetails->maxShearKeyRotation = 0.0;
 
     pDetails->maxGirderRotation = skewFactor * pProductForces->GetRotation(erectSegmentIntervalIdx, pgsTypes::pftGirder, poi, maxBAT, rtCumulative, false);
     pDetails->maxGirderRotation = skewFactor * pProductForces->GetRotation(erectSegmentIntervalIdx, pgsTypes::pftGirder, poi, minBAT, rtCumulative, false);
@@ -238,12 +241,61 @@ void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType 
 void pgsBearingDesignEngineer::GetBearingReactionDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi,
     const ReactionLocation& reactionLocation, bool bIncludeImpact, bool bIncludeLLDF, REACTIONDETAILS* pDetails) const
 {
+    pDetails->creepReaction = 0.0;
+    pDetails->relaxationReaction = 0.0;
+    pDetails->preTensionReaction = 0.0;
+    pDetails->postTensionReaction = 0.0;
+    pDetails->shrinkageReaction = 0.0;
+    pDetails->diaphragmReaction = 0.0;
 
+    pDetails->erectedSegmentReaction = 0.0;
+
+    pDetails->maxConfig = 0.0;
+    pDetails->maxConstructionReaction = 0.0;
+    pDetails->maxDesignLLReaction = 0.0;
+    pDetails->maxFutureOverlayReaction = 0.0;
+    pDetails->maxGirderReaction = 0.0;
+    pDetails->maxHaunchReaction = 0.0;
+    pDetails->maxLongitudinalJointReaction = 0.0;
+    pDetails->maxPedReaction = 0.0;
+    pDetails->maxRailingSystemReaction = 0.0;
+    pDetails->maxShearKeyReaction = 0.0;
+    pDetails->maxSidewalkReaction = 0.0;
+    pDetails->maxSlabPanelReaction = 0.0;
+    pDetails->maxSlabReaction = 0.0;
+    pDetails->maxUserDCReaction = 0.0;
+    pDetails->maxUserDWReaction = 0.0;
+    pDetails->maxUserLLReaction = 0.0;
+
+    pDetails->minConfig = 0.0;
+    pDetails->minConstructionReaction = 0.0;
+    pDetails->minDesignLLReaction = 0.0;
+    pDetails->minFutureOverlayReaction = 0.0;
+    pDetails->minGirderReaction = 0.0;
+    pDetails->minHaunchReaction = 0.0;
+    pDetails->minLongitudinalJointReaction = 0.0;
+    pDetails->minPedReaction = 0.0;
+    pDetails->minRailingSystemReaction = 0.0;
+    pDetails->minShearKeyReaction = 0.0;
+    pDetails->minSidewalkReaction = 0.0;
+    pDetails->minSlabPanelReaction = 0.0;
+    pDetails->minSlabReaction = 0.0;
+    pDetails->minUserDCReaction = 0.0;
+    pDetails->minUserDWReaction = 0.0;
+    pDetails->minUserLLReaction = 0.0;
 }
 
 void pgsBearingDesignEngineer::GetBearingShearDeformationDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi,
     const ReactionLocation& reactionLocation, bool bIncludeImpact, bool bIncludeLLDF, SHEARDEFORMATIONDETAILS* pDetails) const
 {
-
+    pDetails->creep = 0.0;
+    pDetails->postTension = 0.0;
+    pDetails->preTension = 0.0;
+    pDetails->relaxation = 0.0;
+    pDetails->shrinkage = 0.0;
+    pDetails->thermalBDMCold = 0.0;
+    pDetails->thermalBDMWarm = 0.0;
+    pDetails->thermalLRFDCold = 0.0;
+    pDetails->thermalLRFDWarm = 0.0;
 }
 

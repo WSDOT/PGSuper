@@ -828,8 +828,8 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
         {
             if (tParam.bSegments)
             {
+                (*p_table)(row, col++) << rotation.SetValue(details.erectedSegmentRotation);
                 (*p_table)(row, col++) << rotation.SetValue(details.maxGirderRotation);
-                (*p_table)(row, col++) << rotation.SetValue(details.minGirderRotation);
             }
             else
             {

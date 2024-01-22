@@ -54,6 +54,7 @@ struct ROTATIONDETAILS
 	Float64 staticRotation;
 	Float64 cyclicRotation;
 	Float64 totalRotation;
+	Float64 erectedSegmentRotation;
 	Float64 maxGirderRotation;
 	Float64 minGirderRotation;
 	Float64 diaphragmRotation;
@@ -98,6 +99,7 @@ struct REACTIONDETAILS {
 	Float64 totalDLreaction;
 	Float64 totalLLreaction;
 	Float64 maxGirderReaction;
+	Float64 erectedSegmentReaction;
 	Float64 minGirderReaction;
 	Float64 diaphragmReaction;
 	Float64 maxShearKeyReaction;
