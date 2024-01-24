@@ -280,9 +280,6 @@ ColumnIndexType CBearingReactionTable::GetBearingTableColumnCount(IBroker* pBrok
         }
     }
 
-
-
-
     return nCols;
 }
 
@@ -490,7 +487,6 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
         if (bUserLoads && bDetail)
         {
             GET_IFACE2(pBroker, IProductLoads, pProductLoads);
-
             p_table->SetColumnSpan(0, col, 2);
             (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftUserDC);
             (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
@@ -539,10 +535,14 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
             }
         }
 
+
+
         if (bUserLoads && bDetail)
         {
             GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            p_table->SetRowSpan(0, col, 2);
             (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftUserDC), M, unitT);
+            p_table->SetRowSpan(0, col, 2);
             (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftUserDW), M, unitT);
         }
 
@@ -550,13 +550,9 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
 
 
 
-    if (bPedLoading && bDetail)
-    {
-        p_table->SetColumnSpan(0, col, 2);
-        (*p_table)(0, col) << _T("Pedestrian");
-        (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
-        (*p_table)(1, col++) << COLHDR(_T("Min"), M, unitT);
-    }
+
+
+
 
     if (!bDetail)
     {
@@ -566,6 +562,45 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
 
     if (bDesign)
     {
+
+        if (bUserLoads && analysisType == pgsTypes::Envelope && bDetail)
+        {
+
+            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            p_table->SetColumnSpan(0, col, 2);
+            (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftUserLLIM);
+            (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
+            (*p_table)(1, col++) << COLHDR(_T("Min"), M, unitT);
+
+            if (bPedLoading)
+            {
+                p_table->SetColumnSpan(0, col, 2);
+                (*p_table)(0, col) << _T("Pedestrian");
+                (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
+                (*p_table)(1, col++) << COLHDR(_T("Min"), M, unitT);
+            }
+
+
+        }
+        else
+        {
+            if (bUserLoads && bDetail)
+            {
+                GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+                p_table->SetRowSpan(0, col, 2);
+                (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftUserLLIM), M, unitT);
+            }
+
+            if (bPedLoading && bDetail)
+            {
+                p_table->SetColumnSpan(0, col, 2);
+                (*p_table)(0, col) << _T("Pedestrian");
+                (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
+                (*p_table)(1, col++) << COLHDR(_T("Min"), M, unitT);
+            }
+        }
+
+
         if (!bDetail)
         {
             (*p_table)(0, col) << COLHDR(Sub2(_T("P"), _T("LL")), M, unitT);
@@ -577,22 +612,7 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
             (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
             (*p_table)(1, col++) << COLHDR(_T("Min"), M, unitT);
 
-            if (bUserLoads && analysisType == pgsTypes::Envelope)
-            {
-                GET_IFACE2(pBroker, IProductLoads, pProductLoads);
-                p_table->SetColumnSpan(0, col, 2);
-                (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftUserLLIM);
-                (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
-                (*p_table)(1, col++) << COLHDR(_T("Min"), M, unitT);
-            }
-            else
-            {
-                if (bUserLoads)
-                {
-                    GET_IFACE2(pBroker, IProductLoads, pProductLoads);
-                    (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftUserLLIM), M, unitT);
-                }
-            }
+
         }
     }
 
@@ -615,7 +635,6 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
     {
 
         p_table->SetRowSpan(0, col, 2);
-
         if (0 < nDucts)
         {
 
@@ -991,22 +1010,7 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
             (*p_table)(row, col++) << Reaction.SetValue(0);
         }
 
-        if (bDetail && bUserLoads)
-        {
-            if (analysisType == pgsTypes::Envelope)
-            {
-                (*p_table)(row, col++) << Reaction.SetValue(details.maxUserDCReaction);
-                (*p_table)(row, col++) << Reaction.SetValue(details.minUserDCReaction);
-                (*p_table)(row, col++) << Reaction.SetValue(details.maxUserDWReaction);
-                (*p_table)(row, col++) << Reaction.SetValue(details.minUserDWReaction);
-            }
-            else
-            {
-                (*p_table)(row, col++) << Reaction.SetValue(details.maxUserDCReaction);
-                (*p_table)(row, col++) << Reaction.SetValue(details.maxUserDWReaction);
-            }
 
-        }
 
         if (analysisType == pgsTypes::Envelope)
         {
@@ -1017,7 +1021,7 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
                     if (reactionDecider.DoReport(lastIntervalIdx))
                     {
                         (*p_table)(row, col++) << Reaction.SetValue(details.maxSidewalkReaction);
-                        (*p_table)(row, col++) << Reaction.SetValue(0);
+                        (*p_table)(row, col++) << Reaction.SetValue(details.minSidewalkReaction);
                     }
                     else
                     {
@@ -1051,19 +1055,15 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
                     }
                 }
 
-                if (tParam.bPedLoading)
+
+                if (bUserLoads)
                 {
-                    if (reactionDecider.DoReport(lastIntervalIdx))
-                    {
-                        (*p_table)(row, col++) << Reaction.SetValue(details.maxPedReaction);
-                        (*p_table)(row, col++) << Reaction.SetValue(details.minPedReaction);
-                    }
-                    else
-                    {
-                        (*p_table)(row, col++) << RPT_NA;
-                        (*p_table)(row, col++) << RPT_NA;
-                    }
+                    (*p_table)(row, col++) << Reaction.SetValue(details.maxUserDCReaction);
+                    (*p_table)(row, col++) << Reaction.SetValue(details.minUserDCReaction);
+                    (*p_table)(row, col++) << Reaction.SetValue(details.maxUserDWReaction);
+                    (*p_table)(row, col++) << Reaction.SetValue(details.minUserDWReaction);
                 }
+
 
             }
 
@@ -1078,28 +1078,48 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
 
                     if (bDetail)
                     {
-                        (*p_table)(row, col) << Reaction.SetValue(0);
+                        
+                        if (bUserLoads)
+                        {
+                            (*p_table)(row, col++) << Reaction.SetValue(details.maxUserLLReaction);
+                            (*p_table)(row, col++) << Reaction.SetValue(details.minUserLLReaction);
+                        }
+                        col++;
+
+
+                        if (tParam.bPedLoading)
+                        {
+                            if (reactionDecider.DoReport(lastIntervalIdx))
+                            {
+                                (*p_table)(row, col++) << Reaction.SetValue(details.maxPedReaction);
+                                (*p_table)(row, col++) << Reaction.SetValue(details.minPedReaction);
+                            }
+                            else
+                            {
+                                (*p_table)(row, col++) << RPT_NA;
+                                (*p_table)(row, col++) << RPT_NA;
+                            }
+                        }
+
+
+                        (*p_table)(row, col) << Reaction.SetValue(details.maxDesignLLReaction);
                         if (bIndicateControllingLoad && 0 <= details.maxConfig)
                         {
                             (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << details.maxConfig << _T(")");
                         }
                         col++;
 
-                        (*p_table)(row, col) << Reaction.SetValue(0);
+                        (*p_table)(row, col) << Reaction.SetValue(details.minDesignLLReaction);
                         if (bIndicateControllingLoad && 0 <= details.minConfig)
                         {
                             (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << details.minConfig << _T(")");
                         }
-                        col++;
-                        if (bUserLoads)
-                        {
-                            (*p_table)(row, col++) << Reaction.SetValue(0);
-                            (*p_table)(row, col++) << Reaction.SetValue(0);
-                        }
+
+
                     }
                     else
                     {
-                        (*p_table)(row, col) << Reaction.SetValue(0);
+                        (*p_table)(row, col) << Reaction.SetValue(details.maxDesignLLReaction);
                         if (bIndicateControllingLoad && 0 <= details.maxConfig)
                         {
                             (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << details.maxConfig << _T(")");
@@ -1168,6 +1188,12 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
                         (*p_table)(row, col++) << RPT_NA;
                     }
                 }
+
+                if (bUserLoads)
+                {
+                    (*p_table)(row, col++) << Reaction.SetValue(details.maxUserDCReaction);
+                    (*p_table)(row, col++) << Reaction.SetValue(details.maxUserDWReaction);
+                }
             }
 
 
@@ -1175,7 +1201,7 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
             {
                 if (reactionDecider.DoReport(lastIntervalIdx))
                 {
-                    (*p_table)(row, col) << Reaction.SetValue(0);
+                    (*p_table)(row, col) << Reaction.SetValue(details.maxDesignLLReaction);
                     if (bIndicateControllingLoad && 0 <= details.maxConfig)
                     {
                         (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << details.maxConfig << _T(")");
@@ -1184,7 +1210,7 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
 
                     if (bDetail)
                     {
-                        (*p_table)(row, col) << Reaction.SetValue(0);
+                        (*p_table)(row, col) << Reaction.SetValue(details.minDesignLLReaction);
                     }
 
                     if (bIndicateControllingLoad && 0 <= details.minConfig && bDetail)
@@ -1193,7 +1219,7 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
                     }
                     if (bDetail && bUserLoads)
                     {
-                        (*p_table)(row, col++) << Reaction.SetValue(0);
+                        (*p_table)(row, col++) << Reaction.SetValue(details.maxUserLLReaction);
                     }
 
                 }

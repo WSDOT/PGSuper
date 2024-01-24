@@ -142,8 +142,6 @@ void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType 
     IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
     IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
 
-
-
     GET_IFACE(ILimitStateForces, limitForces);
     limitForces->GetRotation(lastIntervalIdx, pgsTypes::ServiceI, poi, maxBAT, 
         true, true, true, true, true, &pMin, &pMax);
@@ -261,6 +259,7 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(pgsTypes::AnalysisType 
     pDetails->maxRailingSystemReaction = 0.0;
     pDetails->maxShearKeyReaction = 0.0;
     pDetails->maxSidewalkReaction = 0.0;
+    pDetails->minSidewalkReaction = 0.0;
     pDetails->maxSlabPanelReaction = 0.0;
     pDetails->maxSlabReaction = 0.0;
     pDetails->maxUserDCReaction = 0.0;
