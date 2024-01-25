@@ -32,6 +32,7 @@
 #include <IFace\MomentCapacity.h>
 #include <IFace\StatusCenter.h>
 #include <IFace\ResistanceFactors.h>
+#include <IFace\RatingSpecification.h>
 #include <IFace\EditByUI.h>
 #include <IFace\Intervals.h>
 #include <IFace/Limits.h>
@@ -202,15 +203,16 @@ void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType 
 
     pProductForces->GetLiveLoadRotation(lastIntervalIdx, pgsTypes::lltPedestrian, poi, minBAT, bIncludeImpact, true, &min, &max);
 
-    pDetails->maxPedRotation = max;
+    pDetails->maxPedRotation = skewFactor * max;
 
     pProductForces->GetLiveLoadRotation(lastIntervalIdx, pgsTypes::lltPedestrian, poi, maxBAT, bIncludeImpact, true, &min, &max);
 
-    pDetails->minPedRotation = min;
+    pDetails->minPedRotation = skewFactor * min;
 
     pDetails->erectedSegmentRotation = skewFactor * pProductForces->GetRotation(erectSegmentIntervalIdx, pgsTypes::pftGirder, poi, maxBAT, rtCumulative, false);
 
-    pDetails->maxShearKeyRotation = 0.0;
+    pDetails->maxShearKeyRotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftShearKey, poi, maxBAT, rtCumulative, false);
+
 
     pDetails->maxGirderRotation = skewFactor * pProductForces->GetRotation(erectSegmentIntervalIdx, pgsTypes::pftGirder, poi, maxBAT, rtCumulative, false);
     pDetails->maxGirderRotation = skewFactor * pProductForces->GetRotation(erectSegmentIntervalIdx, pgsTypes::pftGirder, poi, minBAT, rtCumulative, false);
@@ -239,46 +241,104 @@ void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType 
 void pgsBearingDesignEngineer::GetBearingReactionDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi,
     const ReactionLocation& reactionLocation, bool bIncludeImpact, bool bIncludeLLDF, REACTIONDETAILS* pDetails) const
 {
+
+
+    GET_IFACE_NOCHECK(IBridgeDescription, pIBridgeDesc);
+    GET_IFACE(IBridge, pBridge);
+    bool bHasOverlay = pBridge->HasOverlay();
+    bool bFutureOverlay = pBridge->IsFutureOverlay();
+    PierIndexType nPiers = pBridge->GetPierCount();
+
+    bIncludeLLDF = false; // this table never distributes live load
+
+    GET_IFACE(IIntervals, pIntervals);
+    IntervalIndexType diaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
+    IntervalIndexType lastCastDeckIntervalIdx = pIntervals->GetLastCastDeckInterval(); // deck cast be cast in multiple stages, use interval after entire deck is cast
+    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+    IntervalIndexType ljIntervalIdx = pIntervals->GetCastLongitudinalJointInterval();
+    IntervalIndexType shearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
+    IntervalIndexType constructionIntervalIdx = pIntervals->GetConstructionLoadInterval();
+    IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
+    IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
+
+    GET_IFACE(IRatingSpecification, pRatingSpec);
+
+    GET_IFACE(IProductForces, pProdForces);
+    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType, pgsTypes::Maximize);
+    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType, pgsTypes::Minimize);
+
+    pgsTypes::BridgeAnalysisType batSS = pgsTypes::SimpleSpan;
+    pgsTypes::BridgeAnalysisType batCS = pgsTypes::ContinuousSpan;
+
+    // TRICKY: use adapter class to get correct reaction interfaces
+    std::unique_ptr<IProductReactionAdapter> pForces;
+
+    GET_IFACE(IBearingDesign, pBearingDesign);
+
+
+    const CGirderKey& thisGirderKey(reactionLocation.GirderKey);
+    IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetLastSegmentErectionInterval(thisGirderKey);
+
+    pDetails->erectedSegmentReaction = pForces->GetReaction(erectSegmentIntervalIdx, reactionLocation, pgsTypes::pftGirder, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
+
+    //pDetails->erectedSegmentRotation = skewFactor * pProductForces->GetRotation(erectSegmentIntervalIdx, pgsTypes::pftGirder, poi, maxBAT, rtCumulative, false);
+
+    //pDetails->maxGirderReaction = pForces->GetReaction(erectSegmentIntervalIdx, reactionLocation, pgsTypes::pftGirder, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
+    //pDetails->diaphragmReaction = pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftDiaphragm, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
+
+    //pDetails->maxShearKeyReaction = pForces->GetReaction(shearKeyIntervalIdx, reactionLocation, pgsTypes::pftShearKey, maxBAT);
+    //pDetails->minShearKeyReaction = pForces->GetReaction(shearKeyIntervalIdx, reactionLocation, pgsTypes::pftShearKey, minBAT);
+
+
+    //pDetails->maxLongitudinalJointReaction = pForces->GetReaction(ljIntervalIdx, reactionLocation, pgsTypes::pftLongitudinalJoint, maxBAT);
+    //pDetails->minLongitudinalJointReaction = pForces->GetReaction(ljIntervalIdx, reactionLocation, pgsTypes::pftLongitudinalJoint, minBAT);
+
+    //pDetails->maxConstructionReaction = pForces->GetReaction(constructionIntervalIdx, reactionLocation, pgsTypes::pftConstruction, maxBAT);
+    //pDetails->minConstructionReaction = pForces->GetReaction(constructionIntervalIdx, reactionLocation, pgsTypes::pftConstruction, minBAT);
+
+    //pDetails->maxSlabReaction = pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlab, maxBAT);
+    //pDetails->minSlabReaction = pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlab, minBAT);
+    //pDetails->maxHaunchReaction = pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlabPad, maxBAT);
+    //pDetails->minHaunchReaction = pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlabPad, minBAT);
+
+    //pDetails->maxSidewalkReaction = pForces->GetReaction(railingSystemIntervalIdx, reactionLocation, pgsTypes::pftSidewalk, batSS);
+    //pDetails->minSidewalkReaction = pForces->GetReaction(railingSystemIntervalIdx, reactionLocation, pgsTypes::pftSidewalk, batCS);
+
+    //Float64 R1 = pForces->GetReaction(railingSystemIntervalIdx, reactionLocation, pgsTypes::pftTrafficBarrier, batSS);
+    //Float64 R2 = pForces->GetReaction(railingSystemIntervalIdx, reactionLocation, pgsTypes::pftTrafficBarrier, batCS);
+    //pDetails->maxRailingSystemReaction = Max(R1, R2);
+    //pDetails->minRailingSystemReaction = Min(R1, R2);
+
+    //R1 = pForces->GetReaction(overlayIntervalIdx, reactionLocation, pgsTypes::pftOverlay, batSS);
+    //R2 = pForces->GetReaction(overlayIntervalIdx, reactionLocation, pgsTypes::pftOverlay, batCS);
+    //pDetails->maxFutureOverlayReaction = Max(R1, R2);
+    //pDetails->minFutureOverlayReaction = Min(R1, R2);
+
+    //Float64 R1min, R1max, R2min, R2max;
+    //pForces->GetLiveLoadReaction(lastIntervalIdx, pgsTypes::lltPedestrian, reactionLocation, batSS, bIncludeImpact, true, &R1min, &R2max);
+    //pForces->GetLiveLoadReaction(lastIntervalIdx, pgsTypes::lltPedestrian, reactionLocation, batCS, bIncludeImpact, true, &R2min, &R2max);
+    //pDetails->maxPedReaction = Max(R1max, R2max);
+    //pDetails->minPedReaction = Min(R1min, R2min);
+
+    //VehicleIndexType minConfig1, maxConfig1, minConfig2, maxConfig2;
+    //pForces->GetLiveLoadReaction(lastIntervalIdx, pgsTypes::lltDesign, reactionLocation, batSS, bIncludeImpact, bIncludeLLDF, &R1min, &R1max, &minConfig1, &maxConfig1);
+    //pForces->GetLiveLoadReaction(lastIntervalIdx, pgsTypes::lltDesign, reactionLocation, batCS, bIncludeImpact, bIncludeLLDF, &R2min, &R2max, &minConfig2, &maxConfig2);
+
+    //pDetails->maxDesignLLReaction = Max(R1max, R2max);
+    //pDetails->maxConfig = MaxIndex(R1max, R2max) == 0 ? maxConfig1 : maxConfig2;
+
+    //pDetails->minDesignLLReaction = Min(R1min, R2min);
+    //pDetails->minConfig = MinIndex(R1min, R2min) == 0 ? minConfig1 : minConfig2;
+
     pDetails->creepReaction = 0.0;
     pDetails->relaxationReaction = 0.0;
     pDetails->preTensionReaction = 0.0;
     pDetails->postTensionReaction = 0.0;
     pDetails->shrinkageReaction = 0.0;
-    pDetails->diaphragmReaction = 0.0;
 
-    pDetails->erectedSegmentReaction = 0.0;
-
-    pDetails->maxConfig = 0.0;
-    pDetails->maxConstructionReaction = 0.0;
-    pDetails->maxDesignLLReaction = 0.0;
-    pDetails->maxFutureOverlayReaction = 0.0;
-    pDetails->maxGirderReaction = 0.0;
-    pDetails->maxHaunchReaction = 0.0;
-    pDetails->maxLongitudinalJointReaction = 0.0;
-    pDetails->maxPedReaction = 0.0;
-    pDetails->maxRailingSystemReaction = 0.0;
-    pDetails->maxShearKeyReaction = 0.0;
-    pDetails->maxSidewalkReaction = 0.0;
-    pDetails->minSidewalkReaction = 0.0;
-    pDetails->maxSlabPanelReaction = 0.0;
-    pDetails->maxSlabReaction = 0.0;
     pDetails->maxUserDCReaction = 0.0;
     pDetails->maxUserDWReaction = 0.0;
     pDetails->maxUserLLReaction = 0.0;
-
-    pDetails->minConfig = 0.0;
-    pDetails->minConstructionReaction = 0.0;
-    pDetails->minDesignLLReaction = 0.0;
-    pDetails->minFutureOverlayReaction = 0.0;
-    pDetails->minGirderReaction = 0.0;
-    pDetails->minHaunchReaction = 0.0;
-    pDetails->minLongitudinalJointReaction = 0.0;
-    pDetails->minPedReaction = 0.0;
-    pDetails->minRailingSystemReaction = 0.0;
-    pDetails->minShearKeyReaction = 0.0;
-    pDetails->minSidewalkReaction = 0.0;
-    pDetails->minSlabPanelReaction = 0.0;
-    pDetails->minSlabReaction = 0.0;
     pDetails->minUserDCReaction = 0.0;
     pDetails->minUserDWReaction = 0.0;
     pDetails->minUserLLReaction = 0.0;

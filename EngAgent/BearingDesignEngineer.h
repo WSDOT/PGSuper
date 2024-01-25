@@ -24,6 +24,7 @@
 
 #include <Details.h>
 #include <IFace\BearingDesignParameters.h>
+#include <Reporting\ReactionInterfaceAdapters.h>
 
 class pgsBearingDesignEngineer
 {
