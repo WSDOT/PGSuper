@@ -32,6 +32,8 @@
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
 
+#include <PgsExt\PierData2.h>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -690,31 +692,45 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
     bool bIncludeImpact, bool bIncludeLLDF, bool bDesign, bool bUserLoads, bool bIndicateControllingLoad, IEAFDisplayUnits* pDisplayUnits, bool bDetail) const
 {
 
-    // Build table
-    INIT_UV_PROTOTYPE(rptForceUnitValue, Reaction, pDisplayUnits->GetGeneralForceUnit(), false);
 
+    // Build table
+    INIT_UV_PROTOTYPE(rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false);
+    INIT_UV_PROTOTYPE(rptForceUnitValue, reactu, pDisplayUnits->GetShearUnit(), false);
+
+    // Tricky: the reaction tool below will dump out two lines per cell for bearing reactions with more than one bearing
+    ReactionUnitValueTool Reaction(BearingReactionsTable, reactu);
+
+    GET_IFACE2_NOCHECK(pBroker, IBridgeDescription, pIBridgeDesc);
     GET_IFACE2(pBroker, IBridge, pBridge);
     bool bHasOverlay = pBridge->HasOverlay();
     bool bFutureOverlay = pBridge->IsFutureOverlay();
     PierIndexType nPiers = pBridge->GetPierCount();
 
+    bIncludeLLDF = false; // this table never distributes live load
+
     GET_IFACE2(pBroker, IIntervals, pIntervals);
+    IntervalIndexType diaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
+    IntervalIndexType lastCastDeckIntervalIdx = pIntervals->GetLastCastDeckInterval(); // deck cast be cast in multiple stages, use interval after entire deck is cast
+    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+    IntervalIndexType ljIntervalIdx = pIntervals->GetCastLongitudinalJointInterval();
+    IntervalIndexType shearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
+    IntervalIndexType constructionIntervalIdx = pIntervals->GetConstructionLoadInterval();
     IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
     IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
 
+    bool bSegments, bConstruction, bDeck, bDeckPanels, bPedLoading, bSidewalk, bShearKey, bLongitudinalJoint, bPermit;
+    bool bContinuousBeforeDeckCasting;
+    GroupIndexType startGroup, endGroup;
 
-    GET_IFACE2(pBroker, IPointOfInterest, pPOI);
-
-    TABLEPARAMETERS tParam;
-
-
-    GET_IFACE2_NOCHECK(pBroker, ICamber, pCamber);
+    GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
 
     GET_IFACE2(pBroker, IGirderTendonGeometry, pTendonGeom);
     DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
 
     GET_IFACE2(pBroker, ILossParameters, pLossParams);
     bool bTimeStep = (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false);
+
+    TABLEPARAMETERS tParam;
 
     ColumnIndexType nCols = GetBearingTableColumnCount(pBroker, girderKey, analysisType, bDesign, bUserLoads, &tParam, bDetail, nDucts, bTimeStep);
 
@@ -727,105 +743,60 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
         bFutureOverlay, bDesign, bUserLoads, tParam.bPedLoading, analysisType, tParam.bContinuousBeforeDeckCasting,
         pDisplayUnits, pDisplayUnits->GetGeneralForceUnit(), bDetail, nDucts, bTimeStep);
 
-    p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
-    p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
+    p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_RIGHT));
+    p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
 
-    // get poi where pier Reactions occur
-    PoiList vPoi;
-    std::vector<CGirderKey> vGirderKeys;
-    pBridge->GetGirderline(girderKey.girderIndex, tParam.startGroup, tParam.endGroup, &vGirderKeys);
-    for (const auto& thisGirderKey : vGirderKeys)
-    {
-        PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(thisGirderKey.groupIndex);
-        PierIndexType endPierIdx = pBridge->GetGirderGroupEndPier(thisGirderKey.groupIndex);
-        for (PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++)
-        {
-            if (pierIdx == startPierIdx)
-            {
-                CSegmentKey segmentKey(thisGirderKey, 0);
-                PoiList segPoi;
-                pPOI->GetPointsOfInterest(segmentKey, POI_0L | POI_ERECTED_SEGMENT, &segPoi);
-                vPoi.push_back(segPoi.front());
-            }
-            else if (pierIdx == endPierIdx)
-            {
-                SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
-                CSegmentKey segmentKey(thisGirderKey, nSegments - 1);
-                PoiList segPoi;
-                pPOI->GetPointsOfInterest(segmentKey, POI_10L | POI_ERECTED_SEGMENT, &segPoi);
-                vPoi.push_back(segPoi.front());
-            }
-            else
-            {
-                Float64 Xgp;
-                VERIFY(pBridge->GetPierLocation(thisGirderKey, pierIdx, &Xgp));
-                pgsPointOfInterest poi = pPOI->ConvertGirderPathCoordinateToPoi(thisGirderKey, Xgp);
-                vPoi.push_back(poi);
-            }
-        }
-    }
+    GET_IFACE2(pBroker, IProductForces, pProdForces);
+    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType, pgsTypes::Maximize);
+    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType, pgsTypes::Minimize);
 
+    pgsTypes::BridgeAnalysisType batSS = pgsTypes::SimpleSpan;
+    pgsTypes::BridgeAnalysisType batCS = pgsTypes::ContinuousSpan;
 
+    // TRICKY: use adapter class to get correct reaction interfaces
+    std::unique_ptr<IProductReactionAdapter> pForces;
 
-    GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
-    IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
-    std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, girderKey));
-
-    // Fill up the table
-    GET_IFACE2(pBroker, IProductForces, pProductForces);
-    pgsTypes::BridgeAnalysisType maxBAT = pProductForces->GetBridgeAnalysisType(analysisType, pgsTypes::Maximize);
-    pgsTypes::BridgeAnalysisType minBAT = pProductForces->GetBridgeAnalysisType(analysisType, pgsTypes::Minimize);
+    GET_IFACE2(pBroker, IReactions, pReactions);
+    pForces = std::make_unique<ProductForcesReactionAdapter>(pReactions, girderKey);
 
 
     ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
-    iter.First();
-    PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
-
-    ReactionTableType tableType = BearingReactionsTable;
-
-    // Build table
-    INIT_UV_PROTOTYPE(rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false);
-    INIT_UV_PROTOTYPE(rptForceUnitValue, reactu, pDisplayUnits->GetShearUnit(), false);
-
-    // TRICKY:
-    // Use the adapter class to get the reaction response functions we need and to iterate piers
-    ReactionUnitValueTool reaction(tableType, reactu);
-
-
-    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
-
-
 
 
     // Use iterator to walk locations
     for (iter.First(); !iter.IsDone(); iter.Next())
+
     {
-        ColumnIndexType col = 0;
 
         const ReactionLocation& reactionLocation(iter.CurrentItem());
-        const CGirderKey& thisGirderKey(reactionLocation.GirderKey);
 
-        (*p_table)(row, col++) << reactionLocation.PierLabel;
+        const CGirderKey& thisGirderKey(reactionLocation.GirderKey);
+        IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetLastSegmentErectionInterval(thisGirderKey);
+
+        const CBearingData2* pbd = pIBridgeDesc->GetBearingData(reactionLocation.PierIdx, (reactionLocation.Face == rftBack ? pgsTypes::Back : pgsTypes::Ahead), girderKey.girderIndex);
+        IndexType numBearings = pbd->BearingCount;
+
+        Reaction.SetNumBearings(numBearings); // class will dump per-bearing reaction if applicable:
 
         ReactionDecider reactionDecider(BearingReactionsTable, reactionLocation, thisGirderKey, pBridge, pIntervals);
 
-        const pgsPointOfInterest& poi = vPoi[reactionLocation.PierIdx - startPierIdx];
-
-        const CSegmentKey& segmentKey(poi.GetSegmentKey());
-        const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
-        IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-
-        IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
-
-        ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
         GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
         REACTIONDETAILS details;
-        pBearingDesignParameters->GetBearingReactionDetails(analysisType, poi, reactionLocation, bIncludeImpact, bIncludeLLDF, &details);
+        pBearingDesignParameters->GetBearingReactionDetails(erectSegmentIntervalIdx, lastIntervalIdx, reactionLocation, girderKey, analysisType, &details);
 
 
-        /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+        ColumnIndexType col = 0;
+
+        Reaction.SetNumBearings(numBearings); // class will dump per-bearing reaction if applicable:
+
+        (*p_table)(row, col) << reactionLocation.PierLabel;
+        if (numBearings > 1) // add second line for per-bearing value
+        {
+            (*p_table)(row, col) << _T(" - Total") << rptNewLine << _T("Per Bearing");
+        }
+
+        col++;
 
 
         if (bDetail)

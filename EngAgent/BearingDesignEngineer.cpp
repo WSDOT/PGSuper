@@ -238,46 +238,18 @@ void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType 
 }
 
 
-void pgsBearingDesignEngineer::GetBearingReactionDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi,
-    const ReactionLocation& reactionLocation, bool bIncludeImpact, bool bIncludeLLDF, REACTIONDETAILS* pDetails) const
+void pgsBearingDesignEngineer::GetBearingReactionDetails(IntervalIndexType erectSegmentIntervalIdx, IntervalIndexType lastIntervalIdx, const ReactionLocation& reactionLocation,
+    CGirderKey girderKey, pgsTypes::AnalysisType analysisType, REACTIONDETAILS* pDetails) const
+
+
 {
-
-
-    GET_IFACE_NOCHECK(IBridgeDescription, pIBridgeDesc);
-    GET_IFACE(IBridge, pBridge);
-    bool bHasOverlay = pBridge->HasOverlay();
-    bool bFutureOverlay = pBridge->IsFutureOverlay();
-    PierIndexType nPiers = pBridge->GetPierCount();
-
-    bIncludeLLDF = false; // this table never distributes live load
-
-    GET_IFACE(IIntervals, pIntervals);
-    IntervalIndexType diaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
-    IntervalIndexType lastCastDeckIntervalIdx = pIntervals->GetLastCastDeckInterval(); // deck cast be cast in multiple stages, use interval after entire deck is cast
-    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
-    IntervalIndexType ljIntervalIdx = pIntervals->GetCastLongitudinalJointInterval();
-    IntervalIndexType shearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
-    IntervalIndexType constructionIntervalIdx = pIntervals->GetConstructionLoadInterval();
-    IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
-    IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
-
-    GET_IFACE(IRatingSpecification, pRatingSpec);
-
-    GET_IFACE(IProductForces, pProdForces);
-    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType, pgsTypes::Maximize);
-    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType, pgsTypes::Minimize);
-
-    pgsTypes::BridgeAnalysisType batSS = pgsTypes::SimpleSpan;
-    pgsTypes::BridgeAnalysisType batCS = pgsTypes::ContinuousSpan;
 
     // TRICKY: use adapter class to get correct reaction interfaces
     std::unique_ptr<IProductReactionAdapter> pForces;
 
-    GET_IFACE(IBearingDesign, pBearingDesign);
+    GET_IFACE(IReactions, pReactions);
+    pForces = std::make_unique<ProductForcesReactionAdapter>(pReactions, girderKey);
 
-
-    const CGirderKey& thisGirderKey(reactionLocation.GirderKey);
-    IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetLastSegmentErectionInterval(thisGirderKey);
 
     pDetails->erectedSegmentReaction = pForces->GetReaction(erectSegmentIntervalIdx, reactionLocation, pgsTypes::pftGirder, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
 
