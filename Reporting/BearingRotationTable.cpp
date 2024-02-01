@@ -24,7 +24,7 @@
 #include <Reporting\BearingRotationTable.h>
 #include <Reporting\ProductMomentsTable.h>
 #include <Reporting\ReactionInterfaceAdapters.h>
-#include <IFace\BearingDesignParameters.h>
+
 
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -78,12 +78,11 @@ CBearingRotationTable& CBearingRotationTable::operator= (const CBearingRotationT
 
 
 ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBroker, const CGirderKey& girderKey, 
-    pgsTypes::AnalysisType analysisType, bool bDesign, bool bUserLoads, TABLEPARAMETERS* tParam, bool bDetail, DuctIndexType nDucts, bool bTimeStep) const
+    pgsTypes::AnalysisType analysisType, bool bDesign, bool bUserLoads, ROTATIONDETAILS* pDetails, bool bDetail) const
 {
 
     ColumnIndexType nCols = 1; // location
 
-    //nCols++;
 
     if (bDetail)
     {
@@ -108,30 +107,15 @@ ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBrok
     GET_IFACE2(pBroker, IBridge, pBridge);
     GET_IFACE2(pBroker, IUserDefinedLoadData, pUserLoads);
 
-    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
-
-    tParam->bDeck = false;
-    if (deckType != pgsTypes::sdtNone && bDetail)
+    if (pDetails->bDeck && bDetail)
     {
-        tParam->bDeck = true;
         nCols += 2; // slab + slab pad
     }
 
-    tParam->bDeckPanels = (deckType == pgsTypes::sdtCompositeSIP ? true : false);
-
-    tParam->startGroup = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-    tParam->endGroup = (girderKey.groupIndex == ALL_GROUPS ? pBridge->GetGirderGroupCount() - 1 : tParam->startGroup);
     
-    CGirderKey key(tParam->startGroup, girderKey.girderIndex);
-    GET_IFACE2(pBroker, IProductLoads, pLoads);
-    tParam->bSegments = (1 < pBridge->GetSegmentCount(key) ? true : false);
-    tParam->bPedLoading = pLoads->HasPedestrianLoad(key);
-    tParam->bSidewalk = pLoads->HasSidewalkLoad(key);
-    tParam->bShearKey = pLoads->HasShearKeyLoad(key);
-    tParam->bLongitudinalJoint = pLoads->HasLongitudinalJointLoad();
-    tParam->bConstruction = !IsZero(pUserLoads->GetConstructionLoad());
+    pDetails->bConstruction = !IsZero(pUserLoads->GetConstructionLoad());
 
-    if (tParam->bSegments && bDetail)
+    if (pDetails->bSegments && bDetail)
     {
         nCols++;
     }
@@ -147,8 +131,8 @@ ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBrok
     // determine continuity stage
     GET_IFACE2(pBroker, IIntervals, pIntervals);
     IntervalIndexType continuityIntervalIdx = MAX_INDEX;
-    PierIndexType firstPierIdx = pBridge->GetGirderGroupStartPier(tParam->startGroup);
-    PierIndexType lastPierIdx = pBridge->GetGirderGroupEndPier(tParam->endGroup);
+    PierIndexType firstPierIdx = pBridge->GetGirderGroupStartPier(pDetails->startGroup);
+    PierIndexType lastPierIdx = pBridge->GetGirderGroupEndPier(pDetails->endGroup);
     for (PierIndexType pierIdx = firstPierIdx; pierIdx <= lastPierIdx; pierIdx++)
     {
         if (pBridge->IsBoundaryPier(pierIdx))
@@ -161,18 +145,18 @@ ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBrok
     }
 
     IntervalIndexType firstCastDeckIntervalIdx = pIntervals->GetFirstCastDeckInterval();
-    if (tParam->bDeck)
+    if (pDetails->bDeck)
     {
-        tParam->bContinuousBeforeDeckCasting = (continuityIntervalIdx <= firstCastDeckIntervalIdx) ? true : false;
+        pDetails->bContinuousBeforeDeckCasting = (continuityIntervalIdx <= firstCastDeckIntervalIdx) ? true : false;
     }
     else
     {
-        tParam->bContinuousBeforeDeckCasting = false;
+        pDetails->bContinuousBeforeDeckCasting = false;
     }
 
-    if (tParam->bConstruction && bDetail)
+    if (pDetails->bConstruction && bDetail)
     {
-        if (analysisType == pgsTypes::Envelope && tParam->bContinuousBeforeDeckCasting)
+        if (analysisType == pgsTypes::Envelope && pDetails->bContinuousBeforeDeckCasting)
         {
             nCols += 2;
         }
@@ -182,9 +166,9 @@ ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBrok
         }
     }
 
-    if (tParam->bDeckPanels && bDetail)
+    if (pDetails->bDeckPanels && bDetail)
     {
-        if (analysisType == pgsTypes::Envelope && tParam->bContinuousBeforeDeckCasting)
+        if (analysisType == pgsTypes::Envelope && pDetails->bContinuousBeforeDeckCasting)
         {
             nCols += 2;
         }
@@ -194,7 +178,7 @@ ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBrok
         }
     }
 
-    if (tParam->bDeck && analysisType == pgsTypes::Envelope && tParam->bContinuousBeforeDeckCasting && bDetail)
+    if (pDetails->bDeck && analysisType == pgsTypes::Envelope && pDetails->bContinuousBeforeDeckCasting && bDetail)
     {
         nCols += 2; // add one more each for min/max slab and min/max slab pad
     }
@@ -219,12 +203,12 @@ ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBrok
         }
     }
 
-    if (tParam->bPedLoading && bDetail)
+    if (pDetails->bPedLoading && bDetail)
     {
         nCols += 2;
     }
 
-    if (tParam->bSidewalk && bDetail)
+    if (pDetails->bSidewalk && bDetail)
     {
         if (analysisType == pgsTypes::Envelope)
         {
@@ -236,7 +220,7 @@ ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBrok
         }
     }
 
-    if (tParam->bShearKey && bDetail)
+    if (pDetails->bShearKey && bDetail)
     {
         if (analysisType == pgsTypes::Envelope)
         {
@@ -248,9 +232,9 @@ ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBrok
         }
     }
 
-    if (tParam->bLongitudinalJoint && bDetail)
+    if (pDetails->bLongitudinalJoint && bDetail)
     {
-        if (analysisType == pgsTypes::Envelope && tParam->bContinuousBeforeDeckCasting)
+        if (analysisType == pgsTypes::Envelope && pDetails->bContinuousBeforeDeckCasting)
         {
             nCols += 2;
         }
@@ -263,12 +247,12 @@ ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBrok
 
 
 
-    if (0 < nDucts && bDetail)
+    if (0 < pDetails->nDucts && bDetail)
     {
         nCols++;  //add for post-tensioning
     }
                 
-    if (bTimeStep && bDetail)
+    if (pDetails->bTimeStep && bDetail)
     {
 
         nCols += 4;
@@ -292,8 +276,10 @@ ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBrok
 
 
 template <class M, class T>
-RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* p_table, bool bPierTable, bool bSegments, bool bConstruction, bool bDeck, bool bDeckPanels, bool bSidewalk, bool bShearKey, bool bLongitudinalJoints, bool bOverlay, bool bIsFutureOverlay,
-    bool bDesign, bool bUserLoads, bool bPedLoading, pgsTypes::AnalysisType analysisType, bool bContinuousBeforeDeckCasting, IEAFDisplayUnits* pDisplayUnits, const T& unitT, bool bDetail, DuctIndexType nDucts, bool bTimeStep)
+RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* p_table, bool bPierTable, bool bSegments, 
+    bool bConstruction, bool bDeck, bool bDeckPanels, bool bSidewalk, bool bShearKey, bool bLongitudinalJoints, bool bOverlay, bool bIsFutureOverlay,
+    bool bDesign, bool bUserLoads, bool bPedLoading, pgsTypes::AnalysisType analysisType, bool bContinuousBeforeDeckCasting, IEAFDisplayUnits* pDisplayUnits, 
+    const T& unitT, bool bDetail, DuctIndexType nDucts, bool bTimeStep)
 {
     if (bDetail)
     {
@@ -683,30 +669,19 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
     INIT_UV_PROTOTYPE(rptAngleUnitValue, rotation, pDisplayUnits->GetRadAngleUnit(), false);
 
     GET_IFACE2(pBroker, IBridge, pBridge);
-    bool bHasOverlay = pBridge->HasOverlay();
-    bool bFutureOverlay = pBridge->IsFutureOverlay();
-    PierIndexType nPiers = pBridge->GetPierCount();
 
     GET_IFACE2(pBroker, IIntervals, pIntervals);
     IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
     IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
 
-
     GET_IFACE2(pBroker, IPointOfInterest, pPOI);
 
-    TABLEPARAMETERS tParam;
+    GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
+    ROTATIONDETAILS details;
 
+    pBearingDesignParameters->GetBearingTableParameters(girderKey, &details);
 
-    GET_IFACE2_NOCHECK(pBroker, ICamber, pCamber);
-
-    GET_IFACE2(pBroker, IGirderTendonGeometry, pTendonGeom);
-    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
-
-    GET_IFACE2(pBroker, ILossParameters, pLossParams);
-    bool bTimeStep = (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false);
-
-    ColumnIndexType nCols = GetBearingTableColumnCount(pBroker, girderKey, analysisType, bDesign, bUserLoads, &tParam, bDetail, nDucts, bTimeStep);
-
+    ColumnIndexType nCols = GetBearingTableColumnCount(pBroker, girderKey, analysisType, bDesign, bUserLoads, &details, bDetail);
 
     CString label = _T("Flexural Rotations");
     if (!isFlexural)
@@ -715,10 +690,10 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
     }
     rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols, label);
     RowIndexType row = ConfigureBearingRotationTableHeading<rptAngleUnitTag, WBFL::Units::AngleData>(
-        pBroker, p_table, true, tParam.bSegments, tParam.bConstruction, tParam.bDeck, tParam.bDeckPanels, 
-        tParam.bSidewalk, tParam.bShearKey, tParam.bLongitudinalJoint, bHasOverlay, 
-        bFutureOverlay, bDesign, bUserLoads, tParam.bPedLoading, analysisType, tParam.bContinuousBeforeDeckCasting, 
-        pDisplayUnits, pDisplayUnits->GetRadAngleUnit(), bDetail, nDucts, bTimeStep);
+        pBroker, p_table, true, details.bSegments, details.bConstruction, details.bDeck, details.bDeckPanels, 
+        details.bSidewalk, details.bShearKey, details.bLongitudinalJoint, details.bHasOverlay, 
+        details.bFutureOverlay, bDesign, bUserLoads, details.bPedLoading, analysisType, details.bContinuousBeforeDeckCasting, 
+        pDisplayUnits, pDisplayUnits->GetRadAngleUnit(), bDetail, details.nDucts, details.bTimeStep);
 
     p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
     p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -727,7 +702,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
     // get poi where pier rotations occur
     PoiList vPoi;
     std::vector<CGirderKey> vGirderKeys;
-    pBridge->GetGirderline(girderKey.girderIndex, tParam.startGroup, tParam.endGroup, &vGirderKeys);
+    pBridge->GetGirderline(girderKey.girderIndex, details.startGroup, details.endGroup, &vGirderKeys);
     for (const auto& thisGirderKey : vGirderKeys)
     {
         PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(thisGirderKey.groupIndex);
@@ -765,10 +740,6 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
     IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
     std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, girderKey));
 
-    // Fill up the table
-    GET_IFACE2(pBroker, IProductForces, pProductForces);
-    pgsTypes::BridgeAnalysisType maxBAT = pProductForces->GetBridgeAnalysisType(analysisType, pgsTypes::Maximize);
-    pgsTypes::BridgeAnalysisType minBAT = pProductForces->GetBridgeAnalysisType(analysisType, pgsTypes::Minimize);
 
 
     ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
@@ -813,9 +784,8 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
 
         ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
-        ROTATIONDETAILS details;
-        pBearingDesignParameters->GetBearingRotationDetails(analysisType, poi, reactionLocation, bIncludeImpact, bIncludeLLDF, isFlexural, &details);
+
+        pBearingDesignParameters->GetBearingRotationDetails(analysisType, poi, reactionLocation, girderKey, bIncludeImpact, bIncludeLLDF, isFlexural, &details);
 
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -823,7 +793,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
 
         if (bDetail)
         {
-            if (tParam.bSegments)
+            if (details.bSegments)
             {
                 (*p_table)(row, col++) << rotation.SetValue(details.erectedSegmentRotation);
                 (*p_table)(row, col++) << rotation.SetValue(details.maxGirderRotation);
@@ -842,7 +812,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                 (*p_table)(row, col++) << RPT_NA;
             }
 
-            if (tParam.bShearKey)
+            if (details.bShearKey)
             {
                 if (analysisType == pgsTypes::Envelope)
                 {
@@ -871,9 +841,9 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
             }
 
 
-            if (tParam.bLongitudinalJoint)
+            if (details.bLongitudinalJoint)
             {
-                if (analysisType == pgsTypes::Envelope && tParam.bContinuousBeforeDeckCasting)
+                if (analysisType == pgsTypes::Envelope && details.bContinuousBeforeDeckCasting)
                 {
                     if (reactionDecider.DoReport(lastIntervalIdx))
                     {
@@ -899,9 +869,9 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                 }
             }
 
-            if (tParam.bConstruction)
+            if (details.bConstruction)
             {
-                if (analysisType == pgsTypes::Envelope && tParam.bContinuousBeforeDeckCasting)
+                if (analysisType == pgsTypes::Envelope && details.bContinuousBeforeDeckCasting)
                 {
                     if (reactionDecider.DoReport(lastIntervalIdx))
                     {
@@ -929,9 +899,9 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
 
 
 
-            if (tParam.bDeck)
+            if (details.bDeck)
             {
-                if (analysisType == pgsTypes::Envelope && tParam.bContinuousBeforeDeckCasting)
+                if (analysisType == pgsTypes::Envelope && details.bContinuousBeforeDeckCasting)
                 {
                     if (reactionDecider.DoReport(lastIntervalIdx))
                     {
@@ -965,9 +935,9 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                 }
             }
 
-            if (tParam.bDeckPanels)
+            if (details.bDeckPanels)
             {
-                if (analysisType == pgsTypes::Envelope && tParam.bContinuousBeforeDeckCasting)
+                if (analysisType == pgsTypes::Envelope && details.bContinuousBeforeDeckCasting)
                 {
                     if (reactionDecider.DoReport(lastIntervalIdx))
                     {
@@ -1009,7 +979,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
         {
             if (bDetail)
             {
-                if (tParam.bSidewalk)
+                if (details.bSidewalk)
                 {
                     if (reactionDecider.DoReport(lastIntervalIdx))
                     {
@@ -1034,7 +1004,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                     (*p_table)(row, col++) << RPT_NA;
                 }
 
-                if (bHasOverlay)
+                if (details.bHasOverlay)
                 {
                     if (reactionDecider.DoReport(lastIntervalIdx))
                     {
@@ -1065,7 +1035,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                     (*p_table)(row, col++) << rotation.SetValue(details.minUserLLrotation);
                 }
 
-                if (tParam.bPedLoading)
+                if (details.bPedLoading)
                 {
                     if (reactionDecider.DoReport(lastIntervalIdx))
                     {
@@ -1134,7 +1104,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
         {
             if (bDetail)
             {
-                if (tParam.bSidewalk)
+                if (details.bSidewalk)
                 {
                     if (reactionDecider.DoReport(lastIntervalIdx))
                     {
@@ -1155,7 +1125,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                     (*p_table)(row, col++) << RPT_NA;
                 }
 
-                if (bHasOverlay)
+                if (details.bHasOverlay)
                 {
                     if (reactionDecider.DoReport(lastIntervalIdx))
                     {
@@ -1180,7 +1150,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                 }
 
 
-                if (tParam.bPedLoading)
+                if (details.bPedLoading)
                 {
                     if (reactionDecider.DoReport(lastIntervalIdx))
                     {
@@ -1240,12 +1210,12 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
         if (bDetail)
         {
             (*p_table)(row, col++) << rotation.SetValue(details.preTensionRotation);
-            if (0 < nDucts)
+            if (0 < details.nDucts)
             {
                 (*p_table)(row, col++) << rotation.SetValue(details.postTensionRotation);
             }
             (*p_table)(row, col++) << rotation.SetValue(details.creepRotation);
-            if (bTimeStep)
+            if (details.bTimeStep)
             {
                 (*p_table)(row, col++) << rotation.SetValue(details.shrinkageRotation);
                 (*p_table)(row, col++) << rotation.SetValue(details.relaxationRotation);

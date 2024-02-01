@@ -101,6 +101,9 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     *pChapter << p;
 
 
+
+
+
     *p << CBearingReactionTable().BuildBearingReactionTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, are_user_loads, true, pDisplayUnits, true) << rptNewLine;
 
@@ -114,38 +117,6 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
         true, true, are_user_loads, true, pDisplayUnits, true) << rptNewLine;
     
 
-    ///////////////////////////////////////
-    //GET_IFACE2(pBroker, IMaterials, pMaterial);
-    //pgsPointOfInterest poi;
-    //PoiList vPoi;
-    //poi = vPoi.front();
-    //IndexType rgn = pPoi->GetDeckCastingRegion(poi);
-    //CSegmentKey seg_key = pBridge->GetSegmentAtPier(startPierIdx, girderKey);
-    //pPoi->GetPointsOfInterest(seg_key, POI_0L | POI_ERECTED_SEGMENT, &vPoi);
-    //IntervalIndexType cd_event = pIntervals->GetCastDeckInterval(rgn);
-    //IntervalIndexType eg_event = pIntervals->GetErectSegmentInterval(seg_key);
-    //IntervalIndexType release = pIntervals->GetFirstPrestressReleaseInterval(girderKey);
-    
-    // CREEP //
-    //Float64 cstrain1 = pMaterial->GetSegmentCreepCoefficient(
-    //    seg_key,
-    //    release,
-    //    pgsTypes::IntervalTimeType::Start,
-    //    eg_event, 
-    //    pgsTypes::IntervalTimeType::Start
-    //    );
-    //
-    //Float64 cstrain2 = pMaterial->GetSegmentCreepCoefficient(
-    //    seg_key,
-    //    release,
-    //    pgsTypes::IntervalTimeType::Start,
-    //    cd_event,
-    //    pgsTypes::IntervalTimeType::Start
-    //);
-
-    // SHRINKAGE //
-    //Float64 sstrain1 = pMaterial->GetTotalSegmentFreeShrinkageStrain(seg_key, eg_event, pgsTypes::IntervalTimeType::Start);
-    //Float64 sstrain2 = pMaterial->GetTotalSegmentFreeShrinkageStrain(seg_key, cd_event, pgsTypes::IntervalTimeType::Start);
 
 
     return pChapter;

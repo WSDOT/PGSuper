@@ -3842,33 +3842,35 @@ Float64 CEngAgentImp::GetSectionGirderOrientationEffect(const pgsPointOfInterest
 /////////////////////////////////////////////////////////////////////////////
 // IBearingDesignParamters
 
-
+void CEngAgentImp::GetBearingTableParameters(CGirderKey girderKey, TABLEPARAMETERS* pDetails) const
+{
+    m_BearingEngineer.GetBearingTableParameters(girderKey, pDetails);
+}
 
 void CEngAgentImp::GetBearingDesignProperties(DESIGNPROPERTIES* pDetails) const
 {
     m_BearingEngineer.GetBearingDesignProperties(pDetails);
 }
 
-
 void CEngAgentImp::GetBearingRotationDetails(pgsTypes::AnalysisType AnalysisType, const pgsPointOfInterest& poi, 
-    const ReactionLocation& reactionLocation, bool bIncludeImpact, bool bIncludeLLDF, bool isFlexural, ROTATIONDETAILS* pDetails) const
+    const ReactionLocation& reactionLocation, CGirderKey girderKey, bool bIncludeImpact, bool bIncludeLLDF, bool isFlexural, ROTATIONDETAILS* pDetails) const
 {
-    m_BearingEngineer.GetBearingRotationDetails(AnalysisType, poi,
-        reactionLocation, bIncludeImpact, bIncludeLLDF, isFlexural, pDetails);
+    m_BearingEngineer.GetBearingRotationDetails(AnalysisType, poi, reactionLocation, girderKey, 
+        bIncludeImpact, bIncludeLLDF, isFlexural, pDetails);
 }
 
 
-void CEngAgentImp::GetBearingReactionDetails(IntervalIndexType erectSegmentIntervalIdx, IntervalIndexType lastIntervalIdx, const ReactionLocation& reactionLocation,
-    CGirderKey girderKey, pgsTypes::AnalysisType analysisType, REACTIONDETAILS* pDetails) const
+void CEngAgentImp::GetBearingReactionDetails(const ReactionLocation& reactionLocation,
+    CGirderKey girderKey, pgsTypes::AnalysisType analysisType, bool bIncludeImpact, bool bIncludeLLDF, REACTIONDETAILS* pDetails) const
 {
-    m_BearingEngineer.GetBearingReactionDetails(erectSegmentIntervalIdx, lastIntervalIdx, reactionLocation, girderKey, analysisType, pDetails);
+    m_BearingEngineer.GetBearingReactionDetails(reactionLocation, girderKey, analysisType, bIncludeImpact, bIncludeLLDF, pDetails);
 }
 
 void CEngAgentImp::GetBearingShearDeformationDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi,
-    const ReactionLocation& reactionLocation, bool bIncludeImpact, bool bIncludeLLDF, SHEARDEFORMATIONDETAILS* pDetails) const
+    const ReactionLocation& reactionLocation, CGirderKey girderKey, bool bIncludeImpact, bool bIncludeLLDF, SHEARDEFORMATIONDETAILS* pDetails) const
 {
     m_BearingEngineer.GetBearingShearDeformationDetails(analysisType, poi,
-        reactionLocation, bIncludeImpact, bIncludeLLDF, pDetails);
+        reactionLocation, girderKey, bIncludeImpact, bIncludeLLDF, pDetails);
 }
 
 

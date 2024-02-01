@@ -383,16 +383,18 @@ public:
 
 // IBearingDesignParameters
  public:
+   virtual void GetBearingTableParameters(CGirderKey girderKey, TABLEPARAMETERS* pDetails) const override;
+
    virtual void GetBearingDesignProperties(DESIGNPROPERTIES* pDetails) const override;
 
    virtual void GetBearingRotationDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi, const ReactionLocation& reactionLocation, 
-       bool bIncludeImpact, bool bIncludeLLDF, bool isFlexural, ROTATIONDETAILS* pDetails) const override;
+       CGirderKey girderKey, bool bIncludeImpact, bool bIncludeLLDF, bool isFlexural, ROTATIONDETAILS* pDetails) const override;
 
-   virtual void GetBearingReactionDetails(IntervalIndexType erectSegmentIntervalIdx, IntervalIndexType lastIntervalIdx, const ReactionLocation& reactionLocation,
-       CGirderKey girderKey, pgsTypes::AnalysisType analysisType, REACTIONDETAILS* pDetails) const override;
+   virtual void GetBearingReactionDetails(const ReactionLocation& reactionLocation,
+       CGirderKey girderKey, pgsTypes::AnalysisType analysisType, bool bIncludeImpact, bool bIncludeLLDF, REACTIONDETAILS* pDetails) const override;
 
    virtual void GetBearingShearDeformationDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi,
-       const ReactionLocation& reactionLocation, bool bIncludeImpact, bool bIncludeLLDF, SHEARDEFORMATIONDETAILS* pDetails) const override;
+       const ReactionLocation& reactionLocation, CGirderKey girderKey, bool bIncludeImpact, bool bIncludeLLDF, SHEARDEFORMATIONDETAILS* pDetails) const override;
 
 // IFabricationOptimization
 public:

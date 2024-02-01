@@ -40,16 +40,18 @@ public:
    Float64 GetBearingCyclicRotation(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi,
 	   const ReactionLocation& reactionLocation, bool bIncludeImpact, bool bIncludeLLDF) const;
 
+   void GetBearingTableParameters(const CGirderKey& girderKey, TABLEPARAMETERS* pDetails) const;
+
    void GetBearingRotationDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi,
-	   const ReactionLocation& reactionLocation, bool bIncludeImpact, bool bIncludeLLDF, bool isFlexural, ROTATIONDETAILS* pDetails) const;
+	   const ReactionLocation& reactionLocation, CGirderKey girderKey, bool bIncludeImpact, bool bIncludeLLDF, bool isFlexural, ROTATIONDETAILS* pDetails) const;
 
    void GetBearingDesignProperties(DESIGNPROPERTIES* pDetails) const;
 
-   void GetBearingReactionDetails(IntervalIndexType erectSegmentIntervalIdx, IntervalIndexType lastIntervalIdx, const ReactionLocation& reactionLocation,
-	   CGirderKey girderKey, pgsTypes::AnalysisType analysisType, REACTIONDETAILS* pDetails) const;
+   void GetBearingReactionDetails(const ReactionLocation& reactionLocation,
+	   CGirderKey girderKey, pgsTypes::AnalysisType analysisType, bool bIncludeImpact, bool bIncludeLLDF, REACTIONDETAILS* pDetails) const;
 
    void GetBearingShearDeformationDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi,
-	   const ReactionLocation& reactionLocation, bool bIncludeImpact, bool bIncludeLLDF, SHEARDEFORMATIONDETAILS* pDetails) const;
+	   const ReactionLocation& reactionLocation, CGirderKey girderKey, bool bIncludeImpact, bool bIncludeLLDF, SHEARDEFORMATIONDETAILS* pDetails) const;
 
 private:
    IBroker* m_pBroker;

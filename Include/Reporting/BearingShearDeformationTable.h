@@ -24,6 +24,7 @@
 
 #include <Reporting\ReportingExp.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace\BearingDesignParameters.h>
 
 interface IEAFDisplayUnits;
 
@@ -31,11 +32,11 @@ interface IEAFDisplayUnits;
 CLASS 
    CProductRotationTable
 
-   Encapsulates the construction of the product Rotation table.
+   Encapsulates the construction of the shear deformation table.
 
 
 DESCRIPTION
-   Encapsulates the construction of the product Rotation table.
+   Encapsulates the construction of the shear deformation table.
 
 LOG
    rab : 11.05.1998 : Created file
@@ -87,8 +88,7 @@ public:
 
 
    ColumnIndexType GetBearingTableColumnCount(IBroker* pBroker, const CGirderKey& girderKey, 
-       pgsTypes::AnalysisType analysisType, TABLEPARAMETERS* tParam, 
-       DuctIndexType nDucts, bool bTimeStep, bool bDetail) const;
+       pgsTypes::AnalysisType analysisType, SHEARDEFORMATIONDETAILS* details, bool bDetail) const;
    // 
    // 
    // 

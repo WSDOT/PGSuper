@@ -36,6 +36,29 @@ DESCRIPTION
 *****************************************************************************/
 
 
+
+
+struct TABLEPARAMETERS
+{
+	bool bSegments;
+	bool bConstruction;
+	bool bDeck;
+	bool bHasOverlay;
+	bool bFutureOverlay;
+	bool bDeckPanels;
+	bool bPedLoading;
+	bool bSidewalk;
+	bool bShearKey;
+	bool bLongitudinalJoint;
+	bool bContinuousBeforeDeckCasting;
+	bool bTimeStep;
+	DuctIndexType nDucts;
+	GroupIndexType startGroup;
+	GroupIndexType endGroup;
+};
+
+
+
 struct DESIGNPROPERTIES
 {
 	Float64 Fy{ WBFL::Units::ConvertToSysUnits(36, WBFL::Units::Measure::KSI) };///< steel yield strength
@@ -48,7 +71,7 @@ struct DESIGNPROPERTIES
 	Float64 Gmax70{ WBFL::Units::ConvertToSysUnits(0.300, WBFL::Units::Measure::KSI) };///< elastomer maximum shear modulus @ 70 hardness
 };
 
-struct ROTATIONDETAILS
+struct ROTATIONDETAILS : public TABLEPARAMETERS
 {
 	Float64 skewFactor;
 	Float64 staticRotation;
@@ -95,7 +118,8 @@ struct ROTATIONDETAILS
 	Float64 relaxationRotation;
 };
 
-struct REACTIONDETAILS {
+struct REACTIONDETAILS : public TABLEPARAMETERS
+{
 	Float64 totalDLreaction;
 	Float64 totalLLreaction;
 	Float64 erectedSegmentReaction;
@@ -140,7 +164,8 @@ struct REACTIONDETAILS {
 };
 
 
-struct SHEARDEFORMATIONDETAILS {
+struct SHEARDEFORMATIONDETAILS : public TABLEPARAMETERS
+{
 	Float64 thermalLRFDWarm;
 	Float64 thermalLRFDCold;
 	Float64 thermalBDMWarm;
@@ -159,17 +184,18 @@ DEFINE_GUID(IID_IBearingDesignParameters,
 	0xD88670F0, 0x3B83, 0x11d2, 0x8E, 0xC5, 0x00, 0x60, 0x97, 0xDF, 0x3C, 0x68);
 interface IBearingDesignParameters : IUnknown
 {
+	virtual void GetBearingTableParameters(CGirderKey girderKey, TABLEPARAMETERS* pDetails) const = 0;
 
 	virtual void GetBearingRotationDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi, 
-		const ReactionLocation& reactionLocation, bool bIncludeImpact, bool bIncludeLLDF, 
+		const ReactionLocation& reactionLocation, CGirderKey girderKey, bool bIncludeImpact, bool bIncludeLLDF,
 		bool isFlexural, ROTATIONDETAILS* pDetails) const = 0;
 
-	virtual void GetBearingReactionDetails(IntervalIndexType erectSegmentIntervalIdx, IntervalIndexType lastIntervalIdx, const ReactionLocation& reactionLocation,
-		CGirderKey girderKey, pgsTypes::AnalysisType analysisType, REACTIONDETAILS* pDetails) const = 0;
-
+	virtual void GetBearingReactionDetails(const ReactionLocation& reactionLocation,
+		CGirderKey girderKey, pgsTypes::AnalysisType analysisType, bool bIncludeImpact, 
+		bool bIncludeLLDF, REACTIONDETAILS* pDetails) const = 0;
 
 	virtual void GetBearingShearDeformationDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi,
-		const ReactionLocation& reactionLocation, bool bIncludeImpact, bool bIncludeLLDF, SHEARDEFORMATIONDETAILS* pDetails) const = 0;
+		const ReactionLocation& reactionLocation, CGirderKey girderKey, bool bIncludeImpact, bool bIncludeLLDF, SHEARDEFORMATIONDETAILS* pDetails) const = 0;
 
 	virtual void GetBearingDesignProperties(DESIGNPROPERTIES* pDetails) const = 0;
 

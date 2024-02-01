@@ -21,9 +21,9 @@
 ///////////////////////////////////////////////////////////////////////
 #pragma once
 
-
 #include <Reporting\ReportingExp.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace\BearingDesignParameters.h>
 
 interface IEAFDisplayUnits;
 
@@ -68,26 +68,10 @@ public:
    //------------------------------------------------------------------------
    // 
 
-   struct TABLEPARAMETERS
-   {
-       bool bSegments;
-       bool bConstruction;
-       bool bDeck;
-       bool bDeckPanels;
-       bool bPedLoading;
-       bool bSidewalk;
-       bool bShearKey;
-       bool bLongitudinalJoint;
-       bool bContinuousBeforeDeckCasting;
-       GroupIndexType startGroup;
-       GroupIndexType endGroup;
-   };
-
-
 
 
    ColumnIndexType GetBearingTableColumnCount(IBroker* pBroker, const CGirderKey& girderKey, 
-       pgsTypes::AnalysisType analysisType, bool bDesign, bool bUserLoads, TABLEPARAMETERS* tParam, bool bDetail, DuctIndexType nDucts, bool bTimeStep) const;
+       pgsTypes::AnalysisType analysisType, bool bDesign, bool bUserLoads, ROTATIONDETAILS* details, bool bDetail) const;
    // 
    // 
    // 

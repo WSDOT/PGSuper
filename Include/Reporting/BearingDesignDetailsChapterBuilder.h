@@ -41,6 +41,13 @@ LOG
    rab : 12.12.2008 : Created file
 *****************************************************************************/
 
+
+
+
+
+
+
+
 class REPORTINGCLASS CBearingDesignDetailsChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
@@ -52,6 +59,8 @@ public:
 
 	//------------------------------------------------------------------------
 	virtual LPCTSTR GetName() const override;
+
+
 
 
 	//------------------------------------------------------------------------
