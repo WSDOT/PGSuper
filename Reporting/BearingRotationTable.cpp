@@ -276,10 +276,9 @@ ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBrok
 
 
 template <class M, class T>
-RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* p_table, bool bPierTable, bool bSegments, 
-    bool bConstruction, bool bDeck, bool bDeckPanels, bool bSidewalk, bool bShearKey, bool bLongitudinalJoints, bool bOverlay, bool bIsFutureOverlay,
-    bool bDesign, bool bUserLoads, bool bPedLoading, pgsTypes::AnalysisType analysisType, bool bContinuousBeforeDeckCasting, IEAFDisplayUnits* pDisplayUnits, 
-    const T& unitT, bool bDetail, DuctIndexType nDucts, bool bTimeStep)
+RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* p_table,
+    bool bDesign, bool bUserLoads, pgsTypes::AnalysisType analysisType, IEAFDisplayUnits* pDisplayUnits, 
+    const T& unitT, bool bDetail, ROTATIONDETAILS* pDetails)
 {
     if (bDetail)
     {
@@ -293,18 +292,12 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
         p_table->SetRowSpan(0, col, 2);
     }
     
-    
-    
-    if (bPierTable)
-    {
-        (*p_table)(0, col++) << _T("");
-    }
-    else
-    {
-        (*p_table)(0, col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-    }
 
-    if (bSegments && bDetail)
+    (*p_table)(0, col++) << _T("");
+    
+
+
+    if (pDetails->bSegments && bDetail)
     {
         p_table->SetRowSpan(0, col, 2);
         (*p_table)(0, col++) << COLHDR(_T("Erected") << rptNewLine << _T("Segments"), M, unitT);
@@ -325,13 +318,13 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
     }
 
 
-    if (bShearKey && bDetail)
+    if (pDetails->bShearKey && bDetail)
     {
 
         GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
 
-        if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
+        if (analysisType == pgsTypes::Envelope && pDetails->bContinuousBeforeDeckCasting)
         {
             p_table->SetColumnSpan(0, col, 2);
             (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftShearKey);
@@ -345,12 +338,12 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
         }
     }
 
-    if (bLongitudinalJoints && bDetail)
+    if (pDetails->bLongitudinalJoint && bDetail)
     {
 
         GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
-        if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
+        if (analysisType == pgsTypes::Envelope && pDetails->bContinuousBeforeDeckCasting)
         {
             p_table->SetColumnSpan(0, col, 2);
             (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftLongitudinalJoint);
@@ -364,12 +357,12 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
         }
     }
 
-    if (bConstruction && bDetail)
+    if (pDetails->bConstruction && bDetail)
     {
 
         GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
-        if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
+        if (analysisType == pgsTypes::Envelope && pDetails->bContinuousBeforeDeckCasting)
         {
             p_table->SetColumnSpan(0, col, 2);
             (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftConstruction);
@@ -383,12 +376,12 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
         }
     }
 
-    if (bDeck && bDetail)
+    if (pDetails->bDeck && bDetail)
     {
 
         GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
-        if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
+        if (analysisType == pgsTypes::Envelope && pDetails->bContinuousBeforeDeckCasting)
         {
             p_table->SetColumnSpan(0, col, 2);
             (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftSlab);
@@ -411,12 +404,12 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
 
     }
 
-    if (bDeckPanels && bDetail)
+    if (pDetails->bDeckPanels && bDetail)
     {
 
         GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
-        if (analysisType == pgsTypes::Envelope && bContinuousBeforeDeckCasting)
+        if (analysisType == pgsTypes::Envelope && pDetails->bContinuousBeforeDeckCasting)
         {
             p_table->SetColumnSpan(0, col, 2);
             (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftSlabPanel);
@@ -435,7 +428,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
 
 
 
-        if (bSidewalk && bDetail)
+        if (pDetails->bSidewalk && bDetail)
         {
 
             GET_IFACE2(pBroker, IProductLoads, pProductLoads);
@@ -459,13 +452,13 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
         }
 
 
-        if (bOverlay && bDetail)
+        if (pDetails->bHasOverlay && bDetail)
         {
 
             GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
             p_table->SetColumnSpan(0, col, 2);
-            if (bIsFutureOverlay)
+            if (pDetails->bFutureOverlay)
             {
                 (*p_table)(0, col) << _T("Future") << rptNewLine << pProductLoads->GetProductLoadName(pgsTypes::pftOverlay);
             }
@@ -504,7 +497,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
     }
     else
     {
-        if (bSidewalk && bDetail)
+        if (pDetails->bSidewalk && bDetail)
         {
 
             GET_IFACE2(pBroker, IProductLoads, pProductLoads);
@@ -523,13 +516,13 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
         }
 
 
-        if (bOverlay && bDetail)
+        if (pDetails->bHasOverlay && bDetail)
         {
 
             GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
             p_table->SetRowSpan(0, col, 2);
-            if (bIsFutureOverlay)
+            if (pDetails->bFutureOverlay)
             {
                 (*p_table)(0, col++) << COLHDR(_T("Future") << rptNewLine << pProductLoads->GetProductLoadName(pgsTypes::pftOverlay), M, unitT);
             }
@@ -558,7 +551,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
 
 
 
-    if (bPedLoading && bDetail)
+    if (pDetails->bPedLoading && bDetail)
     {
         p_table->SetColumnSpan(0, col, 2);
         (*p_table)(0, col) << _T("Pedestrian");
@@ -610,7 +603,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
    
         p_table->SetRowSpan(0, col, 2);
 
-        if (0 < nDucts)
+        if (0 < pDetails->nDucts)
         {
 
             GET_IFACE2(pBroker, IProductLoads, pProductLoads);
@@ -622,7 +615,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
 
     
 
-    if (bTimeStep)
+    if (pDetails->bTimeStep)
     {
         if (bDetail)
         {
@@ -688,12 +681,12 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
     {
         label = _T("Torsional Rotations");
     }
+
+
     rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols, label);
     RowIndexType row = ConfigureBearingRotationTableHeading<rptAngleUnitTag, WBFL::Units::AngleData>(
-        pBroker, p_table, true, details.bSegments, details.bConstruction, details.bDeck, details.bDeckPanels, 
-        details.bSidewalk, details.bShearKey, details.bLongitudinalJoint, details.bHasOverlay, 
-        details.bFutureOverlay, bDesign, bUserLoads, details.bPedLoading, analysisType, details.bContinuousBeforeDeckCasting, 
-        pDisplayUnits, pDisplayUnits->GetRadAngleUnit(), bDetail, details.nDucts, details.bTimeStep);
+        pBroker, p_table, bDesign, bUserLoads, analysisType, pDisplayUnits, pDisplayUnits->GetRadAngleUnit(), 
+        bDetail, &details);
 
     p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
     p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
