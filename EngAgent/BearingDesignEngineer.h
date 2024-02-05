@@ -48,9 +48,10 @@ public:
    void GetBearingDesignProperties(DESIGNPROPERTIES* pDetails) const;
 
    void GetBearingReactionDetails(const ReactionLocation& reactionLocation,
-	   CGirderKey girderKey, pgsTypes::AnalysisType analysisType, bool bIncludeImpact, bool bIncludeLLDF, REACTIONDETAILS* pDetails) const;
+	   CGirderKey girderKey, pgsTypes::AnalysisType analysisType, 
+	   bool bIncludeImpact, bool bIncludeLLDF, REACTIONDETAILS* pDetails) const;
 
-   void GetBearingShearDeformationDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi,
+   void GetBearingShearDeformationDetails(pgsTypes::AnalysisType analysisType, PierIndexType startPierIdx, const pgsPointOfInterest& poi,
 	   const ReactionLocation& reactionLocation, CGirderKey girderKey, bool bIncludeImpact, bool bIncludeLLDF, SHEARDEFORMATIONDETAILS* pDetails) const;
 
 private:

@@ -3866,10 +3866,10 @@ void CEngAgentImp::GetBearingReactionDetails(const ReactionLocation& reactionLoc
     m_BearingEngineer.GetBearingReactionDetails(reactionLocation, girderKey, analysisType, bIncludeImpact, bIncludeLLDF, pDetails);
 }
 
-void CEngAgentImp::GetBearingShearDeformationDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi,
+void CEngAgentImp::GetBearingShearDeformationDetails(pgsTypes::AnalysisType analysisType, PierIndexType startPierIdx, const pgsPointOfInterest& poi,
     const ReactionLocation& reactionLocation, CGirderKey girderKey, bool bIncludeImpact, bool bIncludeLLDF, SHEARDEFORMATIONDETAILS* pDetails) const
 {
-    m_BearingEngineer.GetBearingShearDeformationDetails(analysisType, poi,
+    m_BearingEngineer.GetBearingShearDeformationDetails(analysisType, startPierIdx, poi,
         reactionLocation, girderKey, bIncludeImpact, bIncludeLLDF, pDetails);
 }
 

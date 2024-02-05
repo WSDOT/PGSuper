@@ -247,11 +247,6 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
     ReactionUnitValueTool reaction(tableType, reactu);
 
 
-    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
-
-
-
-
     // Use iterator to walk locations
     for (iter.First(); !iter.IsDone(); iter.Next())
     {
@@ -266,18 +261,11 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
 
         const pgsPointOfInterest& poi = vPoi[reactionLocation.PierIdx - startPierIdx];
 
-        const CSegmentKey& segmentKey(poi.GetSegmentKey());
-        const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
-        IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-
-        IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
-
-        pBearingDesignParameters->GetBearingShearDeformationDetails(analysisType, poi, reactionLocation, girderKey, bIncludeImpact, bIncludeLLDF, &details);
+        pBearingDesignParameters->GetBearingShearDeformationDetails(analysisType, startPierIdx, poi, reactionLocation, girderKey, bIncludeImpact, bIncludeLLDF, &details);
 
 
-
-        (*p_table)(row, col++) << Reaction.SetValue(details.thermalLRFDWarm);
-        (*p_table)(row, col++) << Reaction.SetValue(details.thermalBDMWarm);
+        (*p_table)(row, col++) << Reaction.SetValue(details.thermalLRFDModerate);
+        (*p_table)(row, col++) << Reaction.SetValue(details.thermalBDMModerate);
         (*p_table)(row, col++) << Reaction.SetValue(details.thermalLRFDCold);
         (*p_table)(row, col++) << Reaction.SetValue(details.thermalBDMCold);
         if (0 < details.nDucts)

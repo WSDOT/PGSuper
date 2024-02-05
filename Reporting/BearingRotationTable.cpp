@@ -585,7 +585,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
 
     if (!bDetail)
     {
-            (*p_table)(0, col++) << COLHDR(Sub2(symbol(theta), _T("static")), 
+            (*p_table)(0, col++) << COLHDR(Sub2(symbol(theta), _T("total")), 
                     rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
     }
 

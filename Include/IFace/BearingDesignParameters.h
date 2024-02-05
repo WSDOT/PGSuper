@@ -166,9 +166,9 @@ struct REACTIONDETAILS : public TABLEPARAMETERS
 
 struct SHEARDEFORMATIONDETAILS : public TABLEPARAMETERS
 {
-	Float64 thermalLRFDWarm;
+	Float64 thermalLRFDModerate;
 	Float64 thermalLRFDCold;
-	Float64 thermalBDMWarm;
+	Float64 thermalBDMModerate;
 	Float64 thermalBDMCold;
 	Float64 preTension;
 	Float64 postTension;
@@ -191,14 +191,13 @@ interface IBearingDesignParameters : IUnknown
 		bool isFlexural, ROTATIONDETAILS* pDetails) const = 0;
 
 	virtual void GetBearingReactionDetails(const ReactionLocation& reactionLocation,
-		CGirderKey girderKey, pgsTypes::AnalysisType analysisType, bool bIncludeImpact, 
+		CGirderKey girderKey, pgsTypes::AnalysisType analysisType, bool bIncludeImpact,
 		bool bIncludeLLDF, REACTIONDETAILS* pDetails) const = 0;
 
-	virtual void GetBearingShearDeformationDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi,
+	virtual void GetBearingShearDeformationDetails(pgsTypes::AnalysisType analysisType, PierIndexType startPierIdx, const pgsPointOfInterest& poi,
 		const ReactionLocation& reactionLocation, CGirderKey girderKey, bool bIncludeImpact, bool bIncludeLLDF, SHEARDEFORMATIONDETAILS* pDetails) const = 0;
 
 	virtual void GetBearingDesignProperties(DESIGNPROPERTIES* pDetails) const = 0;
-
 
 };
 

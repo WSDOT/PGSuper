@@ -194,6 +194,60 @@ Float64 pgsBearingDesignEngineer::GetBearingCyclicRotation(pgsTypes::AnalysisTyp
 }
 
 
+
+//Float64 pgsBearingDesignEngineer::GetCreepShrinkageShearDeformation(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi,
+//    const ReactionLocation& reactionLocation, bool bIncludeImpact, bool bIncludeLLDF) const
+//{
+//    GET_IFACE(IBridge, pBridge);
+//    GET_IFACE(IIntervals, pIntervals);
+//    GET_IFACE(IPointOfInterest, pPoi);
+//    GET_IFACE(IMaterials, pMaterial);
+//    GET_IFACE(IBridgeDescription, pIBridgeDesc);
+//
+//    const CSegmentKey& segmentKey(poi.GetSegmentKey());
+//    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+//    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+//    IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
+//
+//    PoiList vPoi;
+//    IndexType rgn = pPoi->GetDeckCastingRegion(poi);
+//    CSegmentKey seg_key = pBridge->GetSegmentAtPier(startPierIdx, girderKey);
+//    pPoi->GetPointsOfInterest(seg_key, POI_0L | POI_ERECTED_SEGMENT, &vPoi);
+//    IntervalIndexType cd_event = pIntervals->GetCastDeckInterval(rgn);
+//    IntervalIndexType eg_event = pIntervals->GetErectSegmentInterval(seg_key);
+//    IntervalIndexType release = pIntervals->GetFirstPrestressReleaseInterval(girderKey);
+//
+//    //axial creep strain
+//    Float64 cstrain1 = pMaterial->GetSegmentCreepCoefficient(
+//        seg_key,
+//        release,
+//        pgsTypes::IntervalTimeType::Start,
+//        eg_event,
+//        pgsTypes::IntervalTimeType::Start
+//    );
+//    Float64 cstrain2 = pMaterial->GetSegmentCreepCoefficient(
+//        seg_key,
+//        release,
+//        pgsTypes::IntervalTimeType::Start,
+//        cd_event,
+//        pgsTypes::IntervalTimeType::Start
+//    );
+//
+//    //shrinkage strain
+//    Float64 sstrain1 = pMaterial->GetTotalSegmentFreeShrinkageStrain(seg_key, eg_event, pgsTypes::IntervalTimeType::Start);
+//    Float64 sstrain2 = pMaterial->GetTotalSegmentFreeShrinkageStrain(seg_key, cd_event, pgsTypes::IntervalTimeType::Start);
+//
+//
+//    pDetails->creep = 0.0; //AXIAL:: k * (cd-eg) * L, k=0.5 for simple span, 1.0 for continuous BENDING::
+//    pDetails->shrinkage = 0.0002;  //k * (cd-eg) * L, k=0.5 for simple span, 1.0 for continuous
+//
+//
+//}
+
+
+
+
+
 void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi,
     const ReactionLocation& reactionLocation, CGirderKey girderKey, bool bIncludeImpact, bool bIncludeLLDF, bool isFlexural, ROTATIONDETAILS* pDetails) const
 {
@@ -321,9 +375,6 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
     pgsTypes::BridgeAnalysisType batCS = pgsTypes::ContinuousSpan;
 
 
-    
-
-
     GET_IFACE(IIntervals, pIntervals);
     IntervalIndexType diaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
     IntervalIndexType lastCastDeckIntervalIdx = pIntervals->GetLastCastDeckInterval(); // deck cast be cast in multiple stages, use interval after entire deck is cast
@@ -339,10 +390,6 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
     GET_IFACE(IBridge, pBridge);
 
     PierIndexType nPiers = pBridge->GetPierCount();
-
-
-
-
 
     // TRICKY: use adapter class to get correct reaction interfaces
     std::unique_ptr<IProductReactionAdapter> pForces;
@@ -373,7 +420,6 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
         pDetails->minLongitudinalJointReaction = pForces->GetReaction(ljIntervalIdx, reactionLocation, pgsTypes::pftLongitudinalJoint, minBAT);
     }
 
-
     pDetails->maxConstructionReaction = pForces->GetReaction(constructionIntervalIdx, reactionLocation, pgsTypes::pftConstruction, maxBAT);
     pDetails->minConstructionReaction = pForces->GetReaction(constructionIntervalIdx, reactionLocation, pgsTypes::pftConstruction, minBAT);
 
@@ -381,6 +427,12 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
     pDetails->minSlabReaction = pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlab, minBAT);
     pDetails->maxHaunchReaction = pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlabPad, maxBAT);
     pDetails->minHaunchReaction = pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlabPad, minBAT);
+
+    if (pDetails->bDeckPanels)
+    {
+        pDetails->maxSlabPanelReaction = pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlabPanel, maxBAT);
+        pDetails->minSlabPanelReaction = pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlabPanel, minBAT);
+    }
 
     pDetails->maxSidewalkReaction = pForces->GetReaction(railingSystemIntervalIdx, reactionLocation, pgsTypes::pftSidewalk, batSS);
     pDetails->minSidewalkReaction = pForces->GetReaction(railingSystemIntervalIdx, reactionLocation, pgsTypes::pftSidewalk, batCS);
@@ -402,13 +454,11 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
 
     if (pDetails->bPedLoading)
     {
-        
         pForces->GetLiveLoadReaction(lastIntervalIdx, pgsTypes::lltPedestrian, reactionLocation, batSS, bIncludeImpact, true, &R1min, &R2max);
         pForces->GetLiveLoadReaction(lastIntervalIdx, pgsTypes::lltPedestrian, reactionLocation, batCS, bIncludeImpact, true, &R2min, &R2max);
         pDetails->maxPedReaction = Max(R1max, R2max);
         pDetails->minPedReaction = Min(R1min, R2min);
     }
-
 
     VehicleIndexType minConfig1, maxConfig1, minConfig2, maxConfig2;
     pForces->GetLiveLoadReaction(lastIntervalIdx, pgsTypes::lltDesign, reactionLocation, batSS, bIncludeImpact, bIncludeLLDF, &R1min, &R1max, &minConfig1, &maxConfig1);
@@ -418,70 +468,63 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
     pDetails->minDesignLLReaction = Min(R1min, R2min);
     pDetails->minConfig = MinIndex(R1min, R2min) == 0 ? minConfig1 : minConfig2;
 
-
-
-
     pDetails->creepReaction = 0.0;
     pDetails->relaxationReaction = 0.0;
     pDetails->preTensionReaction = 0.0;
     pDetails->postTensionReaction = 0.0;
     pDetails->shrinkageReaction = 0.0;
 
-    pDetails->maxUserDCReaction = 0.0;
-    pDetails->maxUserDWReaction = 0.0;
-    pDetails->maxUserLLReaction = 0.0;
-    pDetails->minUserDCReaction = 0.0;
-    pDetails->minUserDWReaction = 0.0;
-    pDetails->minUserLLReaction = 0.0;
+    pDetails->maxUserDCReaction = pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftUserDC, maxBAT);
+    pDetails->maxUserDWReaction = pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftUserDW, maxBAT);
+    pDetails->maxUserLLReaction = pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftUserLLIM, maxBAT);
+    pDetails->minUserDCReaction = pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftUserDC, minBAT);
+    pDetails->minUserDWReaction = pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftUserDW, minBAT);
+    pDetails->minUserLLReaction = pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftUserLLIM, minBAT);
 }
 
-void pgsBearingDesignEngineer::GetBearingShearDeformationDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi,
+void pgsBearingDesignEngineer::GetBearingShearDeformationDetails(pgsTypes::AnalysisType analysisType, PierIndexType startPierIdx, const pgsPointOfInterest& poi,
     const ReactionLocation& reactionLocation, CGirderKey girderKey, bool bIncludeImpact, bool bIncludeLLDF, SHEARDEFORMATIONDETAILS* pDetails) const
 {
 
-    ///////////////////////////////////////
-//GET_IFACE2(pBroker, IMaterials, pMaterial);
-//pgsPointOfInterest poi;
-//PoiList vPoi;
-//poi = vPoi.front();
-//IndexType rgn = pPoi->GetDeckCastingRegion(poi);
-//CSegmentKey seg_key = pBridge->GetSegmentAtPier(startPierIdx, girderKey);
-//pPoi->GetPointsOfInterest(seg_key, POI_0L | POI_ERECTED_SEGMENT, &vPoi);
-//IntervalIndexType cd_event = pIntervals->GetCastDeckInterval(rgn);
-//IntervalIndexType eg_event = pIntervals->GetErectSegmentInterval(seg_key);
-//IntervalIndexType release = pIntervals->GetFirstPrestressReleaseInterval(girderKey);
+    GET_IFACE(IProductForces, pProductForces);
 
-// CREEP //
-//Float64 cstrain1 = pMaterial->GetSegmentCreepCoefficient(
-//    seg_key,
-//    release,
-//    pgsTypes::IntervalTimeType::Start,
-//    eg_event, 
-//    pgsTypes::IntervalTimeType::Start
-//    );
-//
-//Float64 cstrain2 = pMaterial->GetSegmentCreepCoefficient(
-//    seg_key,
-//    release,
-//    pgsTypes::IntervalTimeType::Start,
-//    cd_event,
-//    pgsTypes::IntervalTimeType::Start
-//);
-
-// SHRINKAGE //
-//Float64 sstrain1 = pMaterial->GetTotalSegmentFreeShrinkageStrain(seg_key, eg_event, pgsTypes::IntervalTimeType::Start);
-//Float64 sstrain2 = pMaterial->GetTotalSegmentFreeShrinkageStrain(seg_key, cd_event, pgsTypes::IntervalTimeType::Start);
+    GET_IFACE(IIntervals, pIntervals);
+    IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
+    IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
 
 
+    //const CSegmentKey& segmentKey(poi.GetSegmentKey());
+    //IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+    //IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
 
-    pDetails->creep = 0.0;
-    pDetails->postTension = 0.0;
-    pDetails->preTension = 0.0;
-    pDetails->relaxation = 0.0;
-    pDetails->shrinkage = 0.0;
-    pDetails->thermalBDMCold = 0.0;
-    pDetails->thermalBDMWarm = 0.0;
-    pDetails->thermalLRFDCold = 0.0;
-    pDetails->thermalLRFDWarm = 0.0;
+
+    //pDetails->postTension = pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftPostTensioning, poi, );
+    //pDetails->preTension = 0.0;
+    //pDetails->relaxation = 0.0;
+
+    //Float64 CAnalysisAgentImp::GetDeflection(IntervalIndexType intervalIdx, pgsTypes::ProductForceType pfType, const pgsPointOfInterest & poi, pgsTypes::BridgeAnalysisType bat, ResultsType resultsType, bool bIncludeElevationAdjustment, bool bIncludePrecamber, bool bIncludePreErectionUnrecov) const
+
+    
+
+    GET_IFACE(IBridge, pBridge);
+
+    Float64 L = 0;
+    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+    for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+    {
+
+        CSegmentKey segmentKey(girderKey, segIdx);
+
+        L += pBridge->GetSegmentLayoutLength(segmentKey);
+
+    }
+
+    Float64 inv_thermal_exp_coefficient = { WBFL::Units::ConvertToSysUnits(166666.6667, WBFL::Units::Measure::Fahrenheit) };
+    Float64 thermal_expansion_coefficient = 1.0 / inv_thermal_exp_coefficient;
+
+    pDetails->thermalBDMCold = 0.75 * thermal_expansion_coefficient * L * (80.0-0.0);
+    pDetails->thermalBDMModerate = 0.75 * thermal_expansion_coefficient * L * (80.0 - 10.0);
+    pDetails->thermalLRFDCold = 0.65 * thermal_expansion_coefficient * L * (80.0 - 0.0);
+    pDetails->thermalLRFDModerate = 0.65 * thermal_expansion_coefficient * L * (80.0 - 10.0);
 }
 

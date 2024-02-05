@@ -1089,6 +1089,17 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
                     }
                 }
 
+                if (bUserLoads)
+                {
+                    (*p_table)(row, col++) << Reaction.SetValue(details.maxUserDCReaction);
+                    (*p_table)(row, col++) << Reaction.SetValue(details.maxUserDWReaction);
+                    if (bDesign)
+                    {
+                        (*p_table)(row, col++) << Reaction.SetValue(details.maxUserDWReaction);
+                    }
+                    
+                }
+
                 if (details.bPedLoading)
                 {
                     if (reactionDecider.DoReport(lastIntervalIdx))
@@ -1103,16 +1114,13 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
                     }
                 }
 
-                if (bUserLoads)
-                {
-                    (*p_table)(row, col++) << Reaction.SetValue(details.maxUserDCReaction);
-                    (*p_table)(row, col++) << Reaction.SetValue(details.maxUserDWReaction);
-                }
+
             }
 
 
             if (bDesign)
             {
+
                 if (reactionDecider.DoReport(lastIntervalIdx))
                 {
                     (*p_table)(row, col) << Reaction.SetValue(details.maxDesignLLReaction);
@@ -1131,10 +1139,7 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
                     {
                         (*p_table)(row, col++) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << details.minConfig << _T(")");
                     }
-                    if (bDetail && bUserLoads)
-                    {
-                        (*p_table)(row, col++) << Reaction.SetValue(details.maxUserLLReaction);
-                    }
+
 
                 }
                 else
