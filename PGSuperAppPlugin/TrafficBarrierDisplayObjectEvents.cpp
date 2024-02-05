@@ -27,20 +27,12 @@
 #include "resource.h"
 #include "TrafficBarrierDisplayObjectEvents.h"
 #include "BridgeModelViewChildFrame.h"
-#include "mfcdual.h"
 #include "PGSuperDocBase.h"
 #include "BridgeSectionView.h"
 
 #include <PgsExt\BridgeDescription2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/////////////////////////////////////////////////////////////////////////////
-// CTrafficBarrierDisplayObjectEvents
+#include <DManip/DisplayObject.h>
 
 CTrafficBarrierDisplayObjectEvents::CTrafficBarrierDisplayObjectEvents(IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,pgsTypes::TrafficBarrierOrientation orientation)
 {
@@ -52,13 +44,6 @@ CTrafficBarrierDisplayObjectEvents::CTrafficBarrierDisplayObjectEvents(IBroker* 
 CTrafficBarrierDisplayObjectEvents::~CTrafficBarrierDisplayObjectEvents()
 {
 }
-
-BEGIN_INTERFACE_MAP(CTrafficBarrierDisplayObjectEvents, CCmdTarget)
-	INTERFACE_PART(CTrafficBarrierDisplayObjectEvents, IID_iDisplayObjectEvents, Events)
-END_INTERFACE_MAP()
-
-DELEGATE_CUSTOM_INTERFACE(CTrafficBarrierDisplayObjectEvents,Events);
-
 
 void CTrafficBarrierDisplayObjectEvents::EditBarrier()
 {
@@ -98,13 +83,11 @@ void CTrafficBarrierDisplayObjectEvents::SelectNext()
 
 /////////////////////////////////////////////////////////////////////////////
 // CTrafficBarrierDisplayObjectEvents message handlers
-STDMETHODIMP_(bool) CTrafficBarrierDisplayObjectEvents::XEvents::OnLButtonDblClk(iDisplayObject* pDO, UINT nFlags, CPoint point)
+STDMETHODIMP_(bool) CTrafficBarrierDisplayObjectEvents::OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CTrafficBarrierDisplayObjectEvents, Events);
-
    if (pDO->IsSelected())
    {
-      pThis->EditBarrier();
+      EditBarrier();
       return true;
    }
    else
@@ -113,83 +96,67 @@ STDMETHODIMP_(bool) CTrafficBarrierDisplayObjectEvents::XEvents::OnLButtonDblClk
    }
 }
 
-STDMETHODIMP_(bool) CTrafficBarrierDisplayObjectEvents::XEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+STDMETHODIMP_(bool) CTrafficBarrierDisplayObjectEvents::OnLButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CTrafficBarrierDisplayObjectEvents,Events);
    return true;
 }
 
-STDMETHODIMP_(bool) CTrafficBarrierDisplayObjectEvents::XEvents::OnLButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+STDMETHODIMP_(bool) CTrafficBarrierDisplayObjectEvents::OnLButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CTrafficBarrierDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CTrafficBarrierDisplayObjectEvents::XEvents::OnRButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+STDMETHODIMP_(bool) CTrafficBarrierDisplayObjectEvents::OnRButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CTrafficBarrierDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CTrafficBarrierDisplayObjectEvents::XEvents::OnRButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+STDMETHODIMP_(bool) CTrafficBarrierDisplayObjectEvents::OnRButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CTrafficBarrierDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CTrafficBarrierDisplayObjectEvents::XEvents::OnRButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+STDMETHODIMP_(bool) CTrafficBarrierDisplayObjectEvents::OnRButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CTrafficBarrierDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CTrafficBarrierDisplayObjectEvents::XEvents::OnMouseMove(iDisplayObject* pDO,UINT nFlags,CPoint point)
+STDMETHODIMP_(bool) CTrafficBarrierDisplayObjectEvents::OnMouseMove(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CTrafficBarrierDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CTrafficBarrierDisplayObjectEvents::XEvents::OnMouseWheel(iDisplayObject* pDO,UINT nFlags,short zDelta,CPoint point)
+STDMETHODIMP_(bool) CTrafficBarrierDisplayObjectEvents::OnMouseWheel(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,short zDelta,const POINT& point)
 {
-   METHOD_PROLOGUE(CTrafficBarrierDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CTrafficBarrierDisplayObjectEvents::XEvents::OnKeyDown(iDisplayObject* pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
+STDMETHODIMP_(bool) CTrafficBarrierDisplayObjectEvents::OnKeyDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-   METHOD_PROLOGUE(CTrafficBarrierDisplayObjectEvents,Events);
-
    if ( nChar == VK_RETURN )
    {
-      pThis->EditBarrier();
+      EditBarrier();
       return true;
    }
    else if (nChar == VK_LEFT)
    {
-      pThis->SelectPrev();
+      SelectPrev();
       return true;
    }
    else if (nChar == VK_RIGHT)
    {
-      pThis->SelectNext();
+      SelectNext();
       return true;
    }
 
    return false;
 }
 
-STDMETHODIMP_(bool) CTrafficBarrierDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObject* pDO,CWnd* pWnd,CPoint point)
+STDMETHODIMP_(bool) CTrafficBarrierDisplayObjectEvents::OnContextMenu(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,CWnd* pWnd,const POINT& point)
 {
-   METHOD_PROLOGUE(CTrafficBarrierDisplayObjectEvents,Events);
    if ( pDO->IsSelected() )
    {
-      CComPtr<iDisplayList> pList;
-      pDO->GetDisplayList(&pList);
-
-      CComPtr<iDisplayMgr> pDispMgr;
-      pList->GetDisplayMgr(&pDispMgr);
-
-      CDisplayView* pView = pDispMgr->GetView();
+      auto pView = pDO->GetDisplayList()->GetDisplayMgr()->GetView();
       CPGSDocBase* pDoc = (CPGSDocBase*)pView->GetDocument();
 
       CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
@@ -198,7 +165,7 @@ STDMETHODIMP_(bool) CTrafficBarrierDisplayObjectEvents::XEvents::OnContextMenu(i
       bool bResult = false;
       if ( 0 < pMenu->GetMenuItemCount() )
       {
-         pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);
+         pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,m_pFrame);
          bResult = true;
       }
 
@@ -210,34 +177,28 @@ STDMETHODIMP_(bool) CTrafficBarrierDisplayObjectEvents::XEvents::OnContextMenu(i
    return false;
 }
 
-STDMETHODIMP_(void) CTrafficBarrierDisplayObjectEvents::XEvents::OnChanged(iDisplayObject* pDO)
+void CTrafficBarrierDisplayObjectEvents::OnChanged(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CTrafficBarrierDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CTrafficBarrierDisplayObjectEvents::XEvents::OnDragMoved(iDisplayObject* pDO,ISize2d* offset)
+void CTrafficBarrierDisplayObjectEvents::OnDragMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,const WBFL::Geometry::Size2d& offset)
 {
-   METHOD_PROLOGUE(CTrafficBarrierDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CTrafficBarrierDisplayObjectEvents::XEvents::OnMoved(iDisplayObject* pDO)
+void CTrafficBarrierDisplayObjectEvents::OnMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CTrafficBarrierDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CTrafficBarrierDisplayObjectEvents::XEvents::OnCopied(iDisplayObject* pDO)
+void CTrafficBarrierDisplayObjectEvents::OnCopied(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CTrafficBarrierDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CTrafficBarrierDisplayObjectEvents::XEvents::OnSelect(iDisplayObject* pDO)
+void CTrafficBarrierDisplayObjectEvents::OnSelect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CTrafficBarrierDisplayObjectEvents,Events);
-   pThis->m_pFrame->ClearSelection();
-   pThis->m_pFrame->SelectTrafficBarrier(pThis->m_TrafficBarrierOrientation);
+   m_pFrame->ClearSelection();
+   m_pFrame->SelectTrafficBarrier(m_TrafficBarrierOrientation);
 }
 
-STDMETHODIMP_(void) CTrafficBarrierDisplayObjectEvents::XEvents::OnUnselect(iDisplayObject* pDO)
+void CTrafficBarrierDisplayObjectEvents::OnUnselect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CTrafficBarrierDisplayObjectEvents,Events);
 }

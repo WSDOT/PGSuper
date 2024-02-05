@@ -26,18 +26,13 @@
 #include "stdafx.h"
 #include "resource.h"
 
-#include <WBFLDManip.h>
-#include <WBFLDManipTools.h>
 #include <WBFLGeometry.h>
 
 #include <initguid.h>
 #include "CLSID.h"
 
 // interfaces used in this DLL.... resolves symbols for the linker
-#include <WBFLDManip_i.c>
-#include <WBFLDManipTools_i.c>
-#include <DManip\DManip_clsid.cpp>
-#include <DManipTools\DManipTools_clsid.cpp>
+
 #include <WBFLCore_i.c>
 #include <WBFLTools_i.c>
 #include <WBFLGeometry_i.c>

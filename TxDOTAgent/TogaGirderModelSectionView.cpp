@@ -40,7 +40,8 @@
 #include <IFace\Intervals.h>
 
 #include <WBFLGenericBridgeTools.h>
-#include <WBFLDManip.h>
+#include <WBFLGeometry/GeomHelpers.h>
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -135,76 +136,38 @@ void CTogaGirderModelSectionView::OnInitialUpdate()
 
    CTxDOTOptionalDesignDoc* pDoc = (CTxDOTOptionalDesignDoc*)GetDocument();
 
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-   dispMgr->SetSelectionLineColor(SELECTED_OBJECT_LINE_COLOR);
-   dispMgr->SetSelectionFillColor(SELECTED_OBJECT_FILL_COLOR);
+   m_pDispMgr->SetSelectionLineColor(SELECTED_OBJECT_LINE_COLOR);
+   m_pDispMgr->SetSelectionFillColor(SELECTED_OBJECT_FILL_COLOR);
 
-   CTogaDisplayObjectFactory* factory = new CTogaDisplayObjectFactory(pDoc);
-   IUnknown* unk = factory->GetInterface(&IID_iDisplayObjectFactory);
-   dispMgr->AddDisplayObjectFactory((iDisplayObjectFactory*)unk);
+   auto factory = std::make_shared<CTogaDisplayObjectFactory>(pDoc);
+   m_pDispMgr->AddDisplayObjectFactory(factory);
 
    // set up default event handler for canvas
-   CTogaGMDisplayMgrEventsImpl* events = new CTogaGMDisplayMgrEventsImpl(pDoc, m_pFrame, this);
-   unk = events->GetInterface(&IID_iDisplayMgrEvents);
-   dispMgr->RegisterEventSink((iDisplayMgrEvents*)unk);
+   auto events = std::make_shared<CTogaGMDisplayMgrEventsImpl>(pDoc, m_pFrame, this);
+   m_pDispMgr->RegisterEventSink(events);
 }
 
 void CTogaGirderModelSectionView::CreateDisplayLists()
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   dispMgr->EnableLBtnSelect(TRUE);
-   dispMgr->EnableRBtnSelect(TRUE);
-   dispMgr->SetSelectionLineColor(SELECTED_OBJECT_LINE_COLOR);
-   dispMgr->SetSelectionFillColor(SELECTED_OBJECT_FILL_COLOR);
+   m_pDispMgr->EnableLBtnSelect(TRUE);
+   m_pDispMgr->EnableRBtnSelect(TRUE);
+   m_pDispMgr->SetSelectionLineColor(SELECTED_OBJECT_LINE_COLOR);
+   m_pDispMgr->SetSelectionFillColor(SELECTED_OBJECT_FILL_COLOR);
 
    // Create display lists
-   CComPtr<iDisplayList> straight_strand_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&straight_strand_list);
-   straight_strand_list->SetID(STRAIGHT_STRAND_LIST);
-   dispMgr->AddDisplayList(straight_strand_list);
-
-   CComPtr<iDisplayList> harped_strand_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&harped_strand_list);
-   harped_strand_list->SetID(HARPED_STRAND_LIST);
-   dispMgr->AddDisplayList(harped_strand_list);
-
-   CComPtr<iDisplayList> temp_strand_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&temp_strand_list);
-   temp_strand_list->SetID(TEMP_STRAND_LIST);
-   dispMgr->AddDisplayList(temp_strand_list);
-
-   CComPtr<iDisplayList> long_reinf_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&long_reinf_list);
-   long_reinf_list->SetID(LONG_REINF_LIST);
-   dispMgr->AddDisplayList(long_reinf_list);
-
-   CComPtr<iDisplayList> cg_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&cg_list);
-   cg_list->SetID(CG_LIST);
-   dispMgr->AddDisplayList(cg_list);
-
-   CComPtr<iDisplayList> dimension_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&dimension_list);
-   dimension_list->SetID(DIMENSION_LIST);
-   dispMgr->AddDisplayList(dimension_list);
-
-   CComPtr<iDisplayList> section_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&section_list);
-   section_list->SetID(SECTION_LIST);
-   dispMgr->AddDisplayList(section_list);
+   m_pDispMgr->CreateDisplayList(STRAIGHT_STRAND_LIST);
+   m_pDispMgr->CreateDisplayList(HARPED_STRAND_LIST);
+   m_pDispMgr->CreateDisplayList(TEMP_STRAND_LIST);
+   m_pDispMgr->CreateDisplayList(LONG_REINF_LIST);
+   m_pDispMgr->CreateDisplayList(CG_LIST);
+   m_pDispMgr->CreateDisplayList(DIMENSION_LIST);
+   m_pDispMgr->CreateDisplayList(SECTION_LIST);
 }
 
 void CTogaGirderModelSectionView::UpdateDisplayObjects()
 {
-   // get the display manager
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
    // clean out all the display objects
-   dispMgr->ClearDisplayObjects();
+   m_pDispMgr->ClearDisplayObjects();
 
    CTxDOTOptionalDesignDoc* pDoc = (CTxDOTOptionalDesignDoc*)GetDocument();
 
@@ -224,21 +187,21 @@ void CTogaGirderModelSectionView::UpdateDisplayObjects()
 
       UINT settings = pDoc->GetGirderEditorSettings();
 
-      BuildSectionDisplayObjects(pDoc, pBroker, segmentKey, dispMgr);
+      BuildSectionDisplayObjects(pDoc, pBroker, segmentKey);
 
       if ( settings & IDG_SV_SHOW_STRANDS )
-         BuildStrandDisplayObjects(pDoc, pBroker, segmentKey, dispMgr);
+         BuildStrandDisplayObjects(pDoc, pBroker, segmentKey);
 
       if ( settings & IDG_SV_SHOW_LONG_REINF )
-         BuildLongReinfDisplayObjects(pDoc, pBroker, segmentKey, dispMgr);
+         BuildLongReinfDisplayObjects(pDoc, pBroker, segmentKey);
 
       if (settings & IDG_SV_SHOW_PS_CG)
-         BuildCGDisplayObjects(pDoc, pBroker, segmentKey, dispMgr);
+         BuildCGDisplayObjects(pDoc, pBroker, segmentKey);
 
       if ( settings & IDG_SV_SHOW_DIMENSIONS )
-         BuildDimensionDisplayObjects(pDoc, pBroker, segmentKey, dispMgr);
+         BuildDimensionDisplayObjects(pDoc, pBroker, segmentKey);
 
-      SetMappingMode(DManip::Isotropic);
+      SetMappingMode(WBFL::DManip::MapMode::Isotropic);
    }
    catch(...)
    {
@@ -246,10 +209,9 @@ void CTogaGirderModelSectionView::UpdateDisplayObjects()
    }
 }
 
-void CTogaGirderModelSectionView::BuildSectionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey,iDisplayMgr* pDispMgr)
+void CTogaGirderModelSectionView::BuildSectionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey)
 {
-   CComPtr<iDisplayList> pDL;
-   pDispMgr->FindDisplayList(SECTION_LIST,&pDL);
+   auto pDL = m_pDispMgr->FindDisplayList(SECTION_LIST);
    ATLASSERT(pDL);
    pDL->Clear();
 
@@ -261,12 +223,8 @@ void CTogaGirderModelSectionView::BuildSectionDisplayObjects(CTxDOTOptionalDesig
    Float64 top_width = pGirder->GetTopWidth(poi);
    Float64 bottom_width = pGirder->GetBottomWidth(poi);
 
-   CComPtr<iPointDisplayObject> doPnt;
-   ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
-   doPnt->SetID(1);
-
-   CComPtr<iShapeDrawStrategy> strategy;
-   ::CoCreateInstance(CLSID_ShapeDrawStrategy,nullptr,CLSCTX_ALL,IID_iShapeDrawStrategy,(void**)&strategy);
+   auto doPnt = WBFL::DManip::PointDisplayObject::Create(1);
+   auto strategy = WBFL::DManip::ShapeDrawStrategy::Create();
    doPnt->SetDrawingStrategy(strategy);
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
@@ -275,34 +233,33 @@ void CTogaGirderModelSectionView::BuildSectionDisplayObjects(CTxDOTOptionalDesig
    CComPtr<IShape> shape;
    pShapes->GetSegmentShape(releaseIntervalIdx,poi,false,pgsTypes::scGirder,&shape);
 
-   strategy->SetShape(shape);
+   strategy->SetShape(geomUtil::ConvertShape(shape));
    strategy->SetSolidLineColor(SEGMENT_BORDER_COLOR);
    strategy->SetSolidFillColor(SEGMENT_FILL_COLOR);
    strategy->SetVoidLineColor(VOID_BORDER_COLOR);
    strategy->SetVoidFillColor(GetSysColor(COLOR_WINDOW));
-   strategy->DoFill(true);
+   strategy->Fill(true);
 
    // Set up sockets so dimension lines can plug into the girder shape
    CComPtr<IRect2d> box;
    shape->get_BoundingBox(&box);
    CComPtr<IPoint2d> pntTC, pntBC; // top and bottom center
 
-   CComPtr<iSocket> socketHT, socketHB, socketTFL, socketTFR, socketBFL, socketBFR, socketBC;
-   CComQIPtr<iConnectable> connectable(doPnt);
+   auto connectable = std::dynamic_pointer_cast<WBFL::DManip::iConnectable>(doPnt);
 
    // sockets for top flange dimension line
    box->get_TopCenter(&pntTC);
    pntTC->Offset(-top_width/2,0);
-   connectable->AddSocket(SOCKET_TFL,pntTC,&socketTFL);
+   auto socketTFL = connectable->AddSocket(SOCKET_TFL,geomUtil::GetPoint(pntTC));
    pntTC->Offset(top_width,0);
-   connectable->AddSocket(SOCKET_TFR,pntTC,&socketTFR);
+   auto socketTFR = connectable->AddSocket(SOCKET_TFR,geomUtil::GetPoint(pntTC));
 
    // sockets for bottom flange dimension line
    box->get_BottomCenter(&pntBC);
    pntBC->Offset(-bottom_width/2,0);
-   connectable->AddSocket(SOCKET_BFL,pntBC,&socketBFL);
+   auto socketBFL = connectable->AddSocket(SOCKET_BFL,geomUtil::GetPoint(pntBC));
    pntBC->Offset(bottom_width,0);
-   connectable->AddSocket(SOCKET_BFR,pntBC,&socketBFR);
+   auto socketBFR = connectable->AddSocket(SOCKET_BFR,geomUtil::GetPoint(pntBC));
 
    // sockets for height dimension line
    pntTC.Release();
@@ -312,18 +269,18 @@ void CTogaGirderModelSectionView::BuildSectionDisplayObjects(CTxDOTOptionalDesig
    Float64 dx = -Max(top_width,bottom_width)/2.0;
    pntTC->Offset(dx,0);
    pntBC->Offset(dx,0);
-   connectable->AddSocket(SOCKET_HT,pntTC,&socketHT);
-   connectable->AddSocket(SOCKET_HB,pntBC,&socketHB);
+   auto socketHT = connectable->AddSocket(SOCKET_HT, geomUtil::GetPoint(pntTC));
+   auto socketHB = connectable->AddSocket(SOCKET_HB, geomUtil::GetPoint(pntBC));
 
    // sockets for center of prestressing
    pntBC.Release();
    box->get_BottomCenter(&pntBC);
-   connectable->AddSocket(SOCKET_BC,pntBC,&socketBC);
+   auto socketBC = connectable->AddSocket(SOCKET_BC,geomUtil::GetPoint(pntBC));
 
    pDL->AddDisplayObject(doPnt);
 }
 
-void CTogaGirderModelSectionView::BuildStrandDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey,iDisplayMgr* pDispMgr)
+void CTogaGirderModelSectionView::BuildStrandDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey)
 {
    pgsPointOfInterest poi(segmentKey,m_pFrame->GetCurrentCutLocation());
 
@@ -334,21 +291,18 @@ void CTogaGirderModelSectionView::BuildStrandDisplayObjects(CTxDOTOptionalDesign
    const auto* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Straight);
    Float64 diameter = pStrand->GetNominalDiameter();
 
-   CComPtr<iSimpleDrawPointStrategy> strategy;
-   ::CoCreateInstance(CLSID_SimpleDrawPointStrategy,nullptr,CLSCTX_ALL,IID_iSimpleDrawPointStrategy,(void**)&strategy);
+   auto strategy = WBFL::DManip::SimpleDrawPointStrategy::Create();
    strategy->SetColor(STRAND_FILL_COLOR);
-   strategy->SetPointType(ptCircle);
+   strategy->SetPointType(WBFL::DManip::PointType::Circle);
    strategy->SetPointSize(diameter);
 
-   CComPtr<iSimpleDrawPointStrategy> debond_strategy;
-   ::CoCreateInstance(CLSID_SimpleDrawPointStrategy,nullptr,CLSCTX_ALL,IID_iSimpleDrawPointStrategy,(void**)&debond_strategy);
+   auto debond_strategy = WBFL::DManip::SimpleDrawPointStrategy::Create();
    debond_strategy->SetColor(DEBOND_FILL_COLOR);
-   debond_strategy->SetPointType(ptCircle);
+   debond_strategy->SetPointType(WBFL::DManip::PointType::Circle);
    debond_strategy->SetPointSize(diameter);
 
    // Straight strands
-   CComPtr<iDisplayList> pStraightDL;
-   pDispMgr->FindDisplayList(STRAIGHT_STRAND_LIST,&pStraightDL);
+   auto pStraightDL = m_pDispMgr->FindDisplayList(STRAIGHT_STRAND_LIST);
    ATLASSERT(pStraightDL);
    pStraightDL->Clear();
 
@@ -362,24 +316,21 @@ void CTogaGirderModelSectionView::BuildStrandDisplayObjects(CTxDOTOptionalDesign
       CComPtr<IPoint2d> p;
       points->get_Item(strandPointIdx,&p);
 
-      CComPtr<iPointDisplayObject> doPnt;
-      ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
-      doPnt->SetPosition(p,FALSE,FALSE);
-      doPnt->SetID(strandPointIdx);
+      auto doPnt = WBFL::DManip::PointDisplayObject::Create(strandPointIdx);
+      doPnt->SetPosition(geomUtil::GetPoint(p),false,false);
 
       if ( pStrandGeom->IsStrandDebonded(poi,strandPointIdx,pgsTypes::Straight) )
          doPnt->SetDrawingStrategy(debond_strategy);
       else
          doPnt->SetDrawingStrategy(strategy);
 
-      doPnt->SetSelectionType(stAll);
+      doPnt->SetSelectionType(WBFL::DManip::SelectionType::All);
 
       pStraightDL->AddDisplayObject(doPnt);
    }
 
    // Harped Strands
-   CComPtr<iDisplayList> pHarpedDL;
-   pDispMgr->FindDisplayList(HARPED_STRAND_LIST,&pHarpedDL);
+   auto pHarpedDL = m_pDispMgr->FindDisplayList(HARPED_STRAND_LIST);
    ATLASSERT(pHarpedDL);
    pHarpedDL->Clear();
 
@@ -394,18 +345,15 @@ void CTogaGirderModelSectionView::BuildStrandDisplayObjects(CTxDOTOptionalDesign
       CComPtr<IPoint2d> p;
       points->get_Item(strandPointIdx,&p);
 
-      CComPtr<iPointDisplayObject> doPnt;
-      ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
-      doPnt->SetPosition(p,FALSE,FALSE);
-      doPnt->SetID(strandPointIdx);
+      auto doPnt = WBFL::DManip::PointDisplayObject::Create(strandPointIdx);
+      doPnt->SetPosition(geomUtil::GetPoint(p), false, false);
       doPnt->SetDrawingStrategy(strategy);
 
       pHarpedDL->AddDisplayObject(doPnt);
    }
 
    // Temporary Strands
-   CComPtr<iDisplayList> pTempDL;
-   pDispMgr->FindDisplayList(TEMP_STRAND_LIST,&pTempDL);
+   auto pTempDL = m_pDispMgr->FindDisplayList(TEMP_STRAND_LIST);
    ATLASSERT(pTempDL);
    pTempDL->Clear();
 
@@ -420,29 +368,25 @@ void CTogaGirderModelSectionView::BuildStrandDisplayObjects(CTxDOTOptionalDesign
       CComPtr<IPoint2d> p;
       points->get_Item(strandPointIdx,&p);
 
-      CComPtr<iPointDisplayObject> doPnt;
-      ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
-      doPnt->SetPosition(p,FALSE,FALSE);
-      doPnt->SetID(strandPointIdx);
+      auto doPnt = WBFL::DManip::PointDisplayObject::Create(strandPointIdx);
+      doPnt->SetPosition(geomUtil::GetPoint(p), false, false);
       doPnt->SetDrawingStrategy(strategy);
 
       pTempDL->AddDisplayObject(doPnt);
    }
 }
 
-void CTogaGirderModelSectionView::BuildLongReinfDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey,iDisplayMgr* pDispMgr)
+void CTogaGirderModelSectionView::BuildLongReinfDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey)
 {
-   CComPtr<iDisplayList> pDL;
-   pDispMgr->FindDisplayList(LONG_REINF_LIST,&pDL);
+   auto pDL = m_pDispMgr->FindDisplayList(LONG_REINF_LIST);
    ATLASSERT(pDL);
    pDL->Clear();
 
    pgsPointOfInterest poi(segmentKey,m_pFrame->GetCurrentCutLocation());
 
-   CComPtr<iSimpleDrawPointStrategy> strategy;
-   ::CoCreateInstance(CLSID_SimpleDrawPointStrategy,nullptr,CLSCTX_ALL,IID_iSimpleDrawPointStrategy,(void**)&strategy);
+   auto strategy = WBFL::DManip::SimpleDrawPointStrategy::Create();
    strategy->SetColor(REBAR_COLOR);
-   strategy->SetPointType(ptCircle);
+   strategy->SetPointType(WBFL::DManip::PointType::Circle);
 
    GET_IFACE2(pBroker,ILongRebarGeometry,pLongRebarGeom);
 
@@ -465,24 +409,20 @@ void CTogaGirderModelSectionView::BuildLongReinfDisplayObjects(CTxDOTOptionalDes
       location->get_Y(&y);
 
       item.Release();
-      CComPtr<IPoint2d> p;
-      p.CoCreateInstance(CLSID_Point2d);
-      p->Move(x,y);
 
-      CComPtr<iPointDisplayObject> doPnt;
-      ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
-      doPnt->SetPosition(p,FALSE,FALSE);
-      doPnt->SetID(id++);
+      WBFL::Geometry::Point2d p(x, y);
+
+      auto doPnt = WBFL::DManip::PointDisplayObject::Create(id++);
+      doPnt->SetPosition(p,false,false);
       doPnt->SetDrawingStrategy(strategy);
 
       pDL->AddDisplayObject(doPnt);
    }
 }
 
-void CTogaGirderModelSectionView::BuildCGDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey,iDisplayMgr* pDispMgr)
+void CTogaGirderModelSectionView::BuildCGDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey)
 {
-   CComPtr<iDisplayList> pDL;
-   pDispMgr->FindDisplayList(CG_LIST,&pDL);
+   auto pDL = m_pDispMgr->FindDisplayList(CG_LIST);
    ATLASSERT(pDL);
    pDL->Clear();
 
@@ -498,17 +438,12 @@ void CTogaGirderModelSectionView::BuildCGDisplayObjects(CTxDOTOptionalDesignDoc*
    Float64 Yb = pSectProp->GetY(releaseIntervalIdx,poi,pgsTypes::BottomGirder);
    Float64 Hg = pSectProp->GetHg(releaseIntervalIdx,poi);
 
-   CComPtr<IPoint2d> point;
-   point.CoCreateInstance(__uuidof(Point2d));
-   point->Move(0,Yb - (Hg+ecc));
+   WBFL::Geometry::Point2d point(0,Yb - (Hg+ecc));
 
-   CComPtr<iPointDisplayObject> doPnt;
-   ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
-   doPnt->SetID(1);
-   doPnt->SetPosition(point,FALSE,FALSE);
+   auto doPnt = WBFL::DManip::PointDisplayObject::Create(1);
+   doPnt->SetPosition(point,false,false);
 
-   CComPtr<iTargetDrawStrategy> strategy;
-   ::CoCreateInstance(CLSID_TargetDrawStrategy,nullptr,CLSCTX_ALL,IID_iTargetDrawStrategy,(void**)&strategy);
+   auto strategy = WBFL::DManip::TargetDrawStrategy::Create();
    CRect rc;
    GetClientRect(&rc);
    strategy->SetRadius(rc.Width()/80);
@@ -516,115 +451,88 @@ void CTogaGirderModelSectionView::BuildCGDisplayObjects(CTxDOTOptionalDesignDoc*
    doPnt->SetDrawingStrategy(strategy);
 
    // setup socket for dimension line
-   CComQIPtr<iConnectable> connectable(doPnt);
+   auto connectable = std::dynamic_pointer_cast<WBFL::DManip::iConnectable>(doPnt);
 
    // sockets for top flange dimension line
-   CComPtr<iSocket> socketCGPS;
-   connectable->AddSocket(SOCKET_CGPS,point,&socketCGPS);
+   auto socketCGPS = connectable->AddSocket(SOCKET_CGPS,point);
 
    pDL->AddDisplayObject(doPnt);
 }
 
-void CTogaGirderModelSectionView::BuildDimensionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey,iDisplayMgr* pDispMgr)
+void CTogaGirderModelSectionView::BuildDimensionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey)
 {
-   CComPtr<iDisplayList> pDL;
-   pDispMgr->FindDisplayList(DIMENSION_LIST,&pDL);
+   auto pDL = m_pDispMgr->FindDisplayList(DIMENSION_LIST);
    ATLASSERT(pDL);
    pDL->Clear();
 
-   CComPtr<iDimensionLine> doDimLineTopFlangeWidth;
-   CComPtr<iDimensionLine> doDimLineBottomFlangeWidth;
-   CComPtr<iDimensionLine> doDimLineHeight;
-   CComPtr<iDimensionLine> doDimLineCGPS;
-
-   ::CoCreateInstance(CLSID_DimensionLineDisplayObject,nullptr,CLSCTX_ALL,IID_iDimensionLine,(void**)&doDimLineTopFlangeWidth);
-   ::CoCreateInstance(CLSID_DimensionLineDisplayObject,nullptr,CLSCTX_ALL,IID_iDimensionLine,(void**)&doDimLineBottomFlangeWidth);
-   ::CoCreateInstance(CLSID_DimensionLineDisplayObject,nullptr,CLSCTX_ALL,IID_iDimensionLine,(void**)&doDimLineHeight);
-   ::CoCreateInstance(CLSID_DimensionLineDisplayObject,nullptr,CLSCTX_ALL,IID_iDimensionLine,(void**)&doDimLineCGPS);
-
-   doDimLineTopFlangeWidth->SetID(0);
-   doDimLineBottomFlangeWidth->SetID(1);
-   doDimLineHeight->SetID(2);
-   doDimLineCGPS->SetID(3);
+   auto doDimLineTopFlangeWidth = WBFL::DManip::DimensionLine::Create(0);
+   auto doDimLineBottomFlangeWidth = WBFL::DManip::DimensionLine::Create(1);
+   auto doDimLineHeight = WBFL::DManip::DimensionLine::Create(2);
+   auto doDimLineCGPS = WBFL::DManip::DimensionLine::Create(3);
 
    // Connect the dimension lines to the sockets in the section display object
-   CComPtr<iDisplayList> pSectionDL;
-   pDispMgr->FindDisplayList(SECTION_LIST,&pSectionDL);
+   auto pSectionDL = m_pDispMgr->FindDisplayList(SECTION_LIST);
    ATLASSERT(pSectionDL);
 
    // get the girder section display object
-   CComPtr<iDisplayObject> doSection;
-   pSectionDL->GetDisplayObject(0,&doSection);
+   auto doSection = pSectionDL->GetDisplayObject(0);
 
    // get it's iConnectable interface
-   CComQIPtr<iConnectable> connectableSection(doSection);
+   auto connectableSection = std::dynamic_pointer_cast<WBFL::DManip::iConnectable>(doSection);
 
    // get the sockets
-   CComPtr<iSocket> socketTFL,socketTFR,socketBFL,socketBFR,socketHT,socketHB,socketBC;
-   connectableSection->GetSocket(SOCKET_TFL,  atByID, &socketTFL);
-   connectableSection->GetSocket(SOCKET_TFR,  atByID, &socketTFR);
-   connectableSection->GetSocket(SOCKET_BFL,  atByID, &socketBFL);
-   connectableSection->GetSocket(SOCKET_BFR,  atByID, &socketBFR);
-   connectableSection->GetSocket(SOCKET_HT,   atByID, &socketHT);
-   connectableSection->GetSocket(SOCKET_HB,   atByID, &socketHB);
-   connectableSection->GetSocket(SOCKET_BC,   atByID, &socketBC);
+   auto socketTFL = connectableSection->GetSocket(SOCKET_TFL, WBFL::DManip::AccessType::ByID);
+   auto socketTFR = connectableSection->GetSocket(SOCKET_TFR, WBFL::DManip::AccessType::ByID);
+   auto socketBFL = connectableSection->GetSocket(SOCKET_BFL, WBFL::DManip::AccessType::ByID);
+   auto socketBFR = connectableSection->GetSocket(SOCKET_BFR, WBFL::DManip::AccessType::ByID);
+   auto socketHT = connectableSection->GetSocket(SOCKET_HT, WBFL::DManip::AccessType::ByID);
+   auto socketHB = connectableSection->GetSocket(SOCKET_HB, WBFL::DManip::AccessType::ByID);
+   auto socketBC = connectableSection->GetSocket(SOCKET_BC,   WBFL::DManip::AccessType::ByID);
 
    UINT settings = pDoc->GetGirderEditorSettings();
 
-   CComPtr<iSocket> socketCGPS;
+   std::shared_ptr<WBFL::DManip::iSocket> socketCGPS;
    if (settings & IDG_SV_SHOW_PS_CG)
    {
-      CComPtr<iDisplayList> pCGList;
-      pDispMgr->FindDisplayList(CG_LIST,&pCGList);
+      auto pCGList = m_pDispMgr->FindDisplayList(CG_LIST);
 
-      CComPtr<iDisplayObject> doCGPS;
-      pCGList->GetDisplayObject(0,&doCGPS);
-      CComQIPtr<iConnectable> connectableCGPS(doCGPS);
-      connectableCGPS->GetSocket(SOCKET_CGPS, atByID, &socketCGPS);
+      auto doCGPS = pCGList->GetDisplayObject(0);
+      auto connectableCGPS = std::dynamic_pointer_cast<WBFL::DManip::iConnectable>(doCGPS);
+      socketCGPS = connectableCGPS->GetSocket(SOCKET_CGPS, WBFL::DManip::AccessType::ByID);
    }
 
    // get the connector interface from the dimension lines
-   CComQIPtr<iConnector> connectorTopFlangeWidth(doDimLineTopFlangeWidth);
-   CComQIPtr<iConnector> connectorBottomFlangeWidth(doDimLineBottomFlangeWidth);
-   CComQIPtr<iConnector> connectorHeight(doDimLineHeight);
-   CComQIPtr<iConnector> connectorCGPS(doDimLineCGPS);
+   auto connectorTopFlangeWidth = std::dynamic_pointer_cast<WBFL::DManip::iConnector>(doDimLineTopFlangeWidth);
+   auto connectorBottomFlangeWidth = std::dynamic_pointer_cast<WBFL::DManip::iConnector>(doDimLineBottomFlangeWidth);
+   auto connectorHeight = std::dynamic_pointer_cast<WBFL::DManip::iConnector>(doDimLineHeight);
+   auto connectorCGPS = std::dynamic_pointer_cast<WBFL::DManip::iConnector>(doDimLineCGPS);
 
    // connect the top flange width dimension line (across the top)
-   CComPtr<iPlug> startPlug, endPlug;
-   connectorTopFlangeWidth->GetStartPlug(&startPlug);
-   connectorTopFlangeWidth->GetEndPlug(&endPlug);
+   auto startPlug = connectorTopFlangeWidth->GetStartPlug();
+   auto endPlug = connectorTopFlangeWidth->GetEndPlug();
    
-   DWORD dwCookie;
-   socketTFL->Connect(startPlug,&dwCookie);
-   socketTFR->Connect(endPlug,&dwCookie);
+   socketTFL->Connect(startPlug);
+   socketTFR->Connect(endPlug);
 
    // connect the bottom flange width dimension line (across the bottom)
-   startPlug.Release();
-   endPlug.Release();
-   connectorBottomFlangeWidth->GetStartPlug(&startPlug);
-   connectorBottomFlangeWidth->GetEndPlug(&endPlug);
-   socketBFR->Connect(startPlug,&dwCookie);
-   socketBFL->Connect(endPlug,&dwCookie);
+   startPlug = connectorBottomFlangeWidth->GetStartPlug();
+   endPlug = connectorBottomFlangeWidth->GetEndPlug();
+   socketBFR->Connect(startPlug);
+   socketBFL->Connect(endPlug);
 
    // connect the height dimension line (left side)
-   startPlug.Release();
-   endPlug.Release();
-   connectorHeight->GetStartPlug(&startPlug);
-   connectorHeight->GetEndPlug(&endPlug);
-
-   socketHB->Connect(startPlug,&dwCookie);
-   socketHT->Connect(endPlug,&dwCookie);
+   startPlug = connectorHeight->GetStartPlug();
+   endPlug = connectorHeight->GetEndPlug();
+   socketHB->Connect(startPlug);
+   socketHT->Connect(endPlug);
 
    // connect cg ps dimension line (bottom center to cg symbol)
    if (settings & IDG_SV_SHOW_PS_CG)
    {
-      startPlug.Release();
-      endPlug.Release();
-      connectorCGPS->GetStartPlug(&startPlug);
-      connectorCGPS->GetEndPlug(&endPlug);
-
-      socketBC->Connect(startPlug,&dwCookie);
-      socketCGPS->Connect(endPlug,&dwCookie);
+      startPlug = connectorCGPS->GetStartPlug();
+      endPlug = connectorCGPS->GetEndPlug();
+      socketBC->Connect(startPlug);
+      socketCGPS->Connect(endPlug);
    }
 
    // set the text labels on the dimension lines
@@ -644,24 +552,21 @@ void CTogaGirderModelSectionView::BuildDimensionDisplayObjects(CTxDOTOptionalDes
    Float64 yps = pSectProp->GetY(releaseIntervalIdx,poi,pgsTypes::BottomGirder) - ecc;
 
    CString strDim;
-   CComPtr<iTextBlock> textBlock;
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::LengthData& length_unit = pDisplayUnits->GetComponentDimUnit();
 
-   textBlock.CoCreateInstance(CLSID_TextBlock);
+   auto textBlock = WBFL::DManip::TextBlock::Create();
    strDim = FormatDimension(top_width,length_unit);
    textBlock->SetText(strDim);
    doDimLineTopFlangeWidth->SetTextBlock(textBlock);
 
-   textBlock.Release();
-   textBlock.CoCreateInstance(CLSID_TextBlock);
+   textBlock = WBFL::DManip::TextBlock::Create();
    strDim = FormatDimension(bottom_width,length_unit);
    textBlock->SetText(strDim);
    doDimLineBottomFlangeWidth->SetTextBlock(textBlock);
 
-   textBlock.Release();
-   textBlock.CoCreateInstance(CLSID_TextBlock);
+   textBlock = WBFL::DManip::TextBlock::Create();
    strDim = FormatDimension(height,length_unit);
    textBlock->SetText(strDim);
    textBlock->SetBkMode(TRANSPARENT);
@@ -669,8 +574,7 @@ void CTogaGirderModelSectionView::BuildDimensionDisplayObjects(CTxDOTOptionalDes
 
    if (settings & IDG_SV_SHOW_PS_CG)
    {
-      textBlock.Release();
-      textBlock.CoCreateInstance(CLSID_TextBlock);
+      textBlock = WBFL::DManip::TextBlock::Create();
       strDim = FormatDimension(yps,length_unit);
       textBlock->SetText(strDim);
       doDimLineCGPS->SetTextBlock(textBlock);
@@ -783,9 +687,6 @@ void CTogaGirderModelSectionView::OnSize(UINT nType, int cx, int cy)
    CSize size = rect.Size();
    size.cx = Max(0L,size.cx);
    size.cy = Max(0L,size.cy);
-
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
 
    SetLogicalViewRect(MM_TEXT,rect);
 

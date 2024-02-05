@@ -28,7 +28,7 @@
 #endif // _MSC_VER >= 1000
 // TogaGirderModelSectionView.h : header file
 
-#include <DManip\DisplayView.h>
+#include <DManip/DManip.h>
 
 //
 class CTxDOTOptionalDesignDoc;
@@ -88,11 +88,11 @@ private:
 
    void CreateDisplayLists();
    void UpdateDisplayObjects();
-   void BuildSectionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey,iDisplayMgr* pDispMgr);
-   void BuildStrandDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey,iDisplayMgr* pDispMgr);
-   void BuildLongReinfDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey,iDisplayMgr* pDispMgr);
-   void BuildCGDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey,iDisplayMgr* pDispMgr);
-   void BuildDimensionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey,iDisplayMgr* pDispMgr);
+   void BuildSectionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey);
+   void BuildStrandDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey);
+   void BuildLongReinfDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey);
+   void BuildCGDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey);
+   void BuildDimensionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey);
 
    bool m_bUpdateError;
    std::_tstring m_ErrorMsg;

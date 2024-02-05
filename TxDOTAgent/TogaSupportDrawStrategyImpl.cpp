@@ -23,13 +23,8 @@
 #include "stdafx.h"
 #include "TxDOTOptionalDesignDoc.h"
 #include "TogaSupportDrawStrategyImpl.h"
-#include "mfcdual.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <DManip/PointDisplayObject.h>
+#include <DManip/DisplayMgr.h>
 
 // make our symbols 3/8" in size
 static const long SSIZE = 1440 * 3/8; // (twips)
@@ -38,27 +33,12 @@ static const long SSIZE = 1440 * 3/8; // (twips)
 CTogaSupportDrawStrategyImpl::CTogaSupportDrawStrategyImpl(CTxDOTOptionalDesignDoc* pDoc)
 {
    m_pDoc = pDoc;
-
-   m_CachePoint.CoCreateInstance(CLSID_Point2d);
 }
 
-BEGIN_INTERFACE_MAP(CTogaSupportDrawStrategyImpl,CCmdTarget)
-   INTERFACE_PART(CTogaSupportDrawStrategyImpl,IID_iDrawPointStrategy,DrawPointStrategy)
-   INTERFACE_PART(CTogaSupportDrawStrategyImpl,IID_iTogaSupportDrawStrategy,Strategy)
-END_INTERFACE_MAP()
-
-DELEGATE_CUSTOM_INTERFACE(CTogaSupportDrawStrategyImpl,DrawPointStrategy);
-DELEGATE_CUSTOM_INTERFACE(CTogaSupportDrawStrategyImpl,Strategy);
-
-STDMETHODIMP_(void) CTogaSupportDrawStrategyImpl::XDrawPointStrategy::Draw(iPointDisplayObject* pDO,CDC* pDC)
+void CTogaSupportDrawStrategyImpl::Draw(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC) const
 {
-   METHOD_PROLOGUE(CTogaSupportDrawStrategyImpl,DrawPointStrategy);
-
-   CComPtr<iDisplayList> pDL;
-   pDO->GetDisplayList(&pDL);
-
-   CComPtr<iDisplayMgr> pDispMgr;
-   pDL->GetDisplayMgr(&pDispMgr);
+   auto pDL = pDO->GetDisplayList();
+   auto pDispMgr = pDL->GetDisplayMgr();
 
    COLORREF color;
 
@@ -67,64 +47,35 @@ STDMETHODIMP_(void) CTogaSupportDrawStrategyImpl::XDrawPointStrategy::Draw(iPoin
    else
       color = RGB(140,70,0);
 
-   CComPtr<IPoint2d> pos;
-   pDO->GetPosition(&pos);
-   pThis->Draw(pDO,pDC,color,pos);
+   auto pos = pDO->GetPosition();
+   Draw(pDO,pDC,color,pos);
 }
 
-STDMETHODIMP_(void) CTogaSupportDrawStrategyImpl::XDrawPointStrategy::DrawHighlite(iPointDisplayObject* pDO,CDC* pDC,BOOL bHighlite)
+void CTogaSupportDrawStrategyImpl::DrawHighlight(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC, bool bHighlite) const
 {
-   METHOD_PROLOGUE(CTogaSupportDrawStrategyImpl,DrawPointStrategy);
    Draw(pDO,pDC);
 }
 
-STDMETHODIMP_(void) CTogaSupportDrawStrategyImpl::XDrawPointStrategy::DrawDragImage(iPointDisplayObject* pDO,CDC* pDC, iCoordinateMap* map, const CPoint& dragStart, const CPoint& dragPoint)
+void CTogaSupportDrawStrategyImpl::DrawDragImage(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC, std::shared_ptr<const WBFL::DManip::iCoordinateMap> map, const POINT& dragStart, const POINT& dragPoint) const
 {
-   METHOD_PROLOGUE(CTogaSupportDrawStrategyImpl,DrawPointStrategy);
-
-   Float64 wx, wy;
-   map->LPtoWP(dragPoint.x, dragPoint.y, &wx, &wy);
-   pThis->m_CachePoint->put_X(wx);
-   pThis->m_CachePoint->put_Y(wy);
-
-   // Draw the support
-   pThis->Draw(pDO,pDC,RGB(255,0,0),pThis->m_CachePoint);
+   m_CachePoint = map->LPtoWP(dragPoint.x, dragPoint.y);
+   Draw(pDO, pDC, RGB(255,0,0), m_CachePoint);
 }
 
-STDMETHODIMP_(void) CTogaSupportDrawStrategyImpl::XDrawPointStrategy::GetBoundingBox(iPointDisplayObject* pDO,IRect2d** rect)
+WBFL::Geometry::Rect2d CTogaSupportDrawStrategyImpl::GetBoundingBox(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO) const
 {
-   METHOD_PROLOGUE(CTogaSupportDrawStrategyImpl,DrawPointStrategy);
+   auto point = pDO->GetPosition();
+   auto [px, py] = point.GetLocation();
 
-   CComPtr<IPoint2d> point;
-   pDO->GetPosition(&point);
+   auto map = pDO->GetDisplayList()->GetDisplayMgr()->GetCoordinateMap();
 
-   Float64 px, py;
-   point->get_X(&px);
-   point->get_Y(&py);
+   Float64 wid, hgt;
+   GetWSymbolSize(map, &wid, &hgt);
 
-   CComPtr<iDisplayList> pDL;
-   pDO->GetDisplayList(&pDL);
-   CComPtr<iDisplayMgr> pDispMgr;
-   pDL->GetDisplayMgr(&pDispMgr);
-   CComPtr<iCoordinateMap> pMap;
-   pDispMgr->GetCoordinateMap(&pMap);
-
-   Float64 wid,hgt;
-   pThis->GetWSymbolSize(pMap, &wid, &hgt);
-
-   CComPtr<IRect2d> bounding_box;
-   bounding_box.CoCreateInstance(CLSID_Rect2d);
-
-   bounding_box->put_Left(px-wid);
-   bounding_box->put_Bottom(py-hgt);
-   bounding_box->put_Right(px+wid);
-   bounding_box->put_Top(py+hgt);
-
-   (*rect) = bounding_box;
-   (*rect)->AddRef();
+   return { (px - wid), (py - hgt), (px + wid), (py + hgt) };
 }
 
-void CTogaSupportDrawStrategyImpl::GetWSymbolSize(iCoordinateMap* pMap, Float64* psx, Float64* psy)
+void CTogaSupportDrawStrategyImpl::GetWSymbolSize(std::shared_ptr<const WBFL::DManip::iCoordinateMap> pMap, Float64* psx, Float64* psy) const
 {
 
    Float64 xo,yo;
@@ -136,7 +87,7 @@ void CTogaSupportDrawStrategyImpl::GetWSymbolSize(iCoordinateMap* pMap, Float64*
    *psy = fabs(y2-yo)/2.0;
 }
 
-void CTogaSupportDrawStrategyImpl::GetLSymbolSize(iCoordinateMap* pMap, long* psx, long* psy)
+void CTogaSupportDrawStrategyImpl::GetLSymbolSize(std::shared_ptr<const WBFL::DManip::iCoordinateMap> pMap, long* psx, long* psy) const
 {
    long xo,yo;
    pMap->TPtoLP(0,0,&xo,&yo);
@@ -193,16 +144,11 @@ void DrawPinnedSupport(CDC* pDC, long cx, long cy, long wid, long hgt)
 }
 
 
-void CTogaSupportDrawStrategyImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF color, IPoint2d* loc)
+void CTogaSupportDrawStrategyImpl::Draw(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO,CDC* pDC,COLORREF color, const WBFL::Geometry::Point2d& loc) const
 {
-   CComPtr<iDisplayList> pDL;
-   pDO->GetDisplayList(&pDL);
-
-   CComPtr<iDisplayMgr> pDispMgr;
-   pDL->GetDisplayMgr(&pDispMgr);
-
-   CComPtr<iCoordinateMap> pMap;
-   pDispMgr->GetCoordinateMap(&pMap);
+   auto pDL = pDO->GetDisplayList();
+   auto pDispMgr = pDL->GetDisplayMgr();
+   auto pMap = pDispMgr->GetCoordinateMap();
 
    long wid,hgt;
    GetLSymbolSize(pMap, &wid, &hgt);

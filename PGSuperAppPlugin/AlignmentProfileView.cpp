@@ -36,7 +36,8 @@
 #include <IFace\Alignment.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <DManipTools\DManipTools.h>
+
+#include <WBFLGeometry/GeomHelpers.h>
 
 #include <algorithm>
 
@@ -85,40 +86,21 @@ void CAlignmentProfileView::OnInitialUpdate()
 
 void CAlignmentProfileView::BuildDisplayLists()
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   dispMgr->EnableLBtnSelect(TRUE);
-   dispMgr->EnableRBtnSelect(TRUE);
-   dispMgr->SetSelectionLineColor(SELECTED_OBJECT_LINE_COLOR);
-   dispMgr->SetSelectionFillColor(SELECTED_OBJECT_FILL_COLOR);
+   m_pDispMgr->EnableLBtnSelect(TRUE);
+   m_pDispMgr->EnableRBtnSelect(TRUE);
+   m_pDispMgr->SetSelectionLineColor(SELECTED_OBJECT_LINE_COLOR);
+   m_pDispMgr->SetSelectionFillColor(SELECTED_OBJECT_FILL_COLOR);
 
    CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
    UINT settings = pDoc->GetAlignmentEditorSettings();
-   DManip::MapMode mode = (settings & IDP_AP_DRAW_ISOTROPIC) ? DManip::Isotropic : DManip::Anisotropic;
+   auto mode = (settings & IDP_AP_DRAW_ISOTROPIC) ? WBFL::DManip::MapMode::Isotropic : WBFL::DManip::MapMode::Anisotropic;
    CBridgeViewPane::SetMappingMode(mode);
 
    // Setup display lists
-
-   CComPtr<iDisplayList> label_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&label_list);
-   label_list->SetID(LABEL_DISPLAY_LIST);
-   dispMgr->AddDisplayList(label_list);
-
-   CComPtr<iDisplayList> title_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&title_list);
-   title_list->SetID(TITLE_DISPLAY_LIST);
-   dispMgr->AddDisplayList(title_list);
-
-   CComPtr<iDisplayList> bridge_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&bridge_list);
-   bridge_list->SetID(BRIDGE_DISPLAY_LIST);
-   dispMgr->AddDisplayList(bridge_list);
-
-   CComPtr<iDisplayList> profile_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&profile_list);
-   profile_list->SetID(PROFILE_DISPLAY_LIST);
-   dispMgr->AddDisplayList(profile_list);
+   m_pDispMgr->CreateDisplayList(LABEL_DISPLAY_LIST);
+   m_pDispMgr->CreateDisplayList(TITLE_DISPLAY_LIST);
+   m_pDispMgr->CreateDisplayList(BRIDGE_DISPLAY_LIST);
+   m_pDispMgr->CreateDisplayList(PROFILE_DISPLAY_LIST);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -196,12 +178,9 @@ void CAlignmentProfileView::UpdateDisplayObjects()
 {
    CWaitCursor wait;
 
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
    CDManipClientDC dc(this);
 
-   dispMgr->ClearDisplayObjects();
+   m_pDispMgr->ClearDisplayObjects();
 
    BuildTitleDisplayObjects();
    BuildProfileDisplayObjects();
@@ -210,22 +189,17 @@ void CAlignmentProfileView::UpdateDisplayObjects()
 
    CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
    UINT settings = pDoc->GetAlignmentEditorSettings();
-   DManip::MapMode mode = (settings & IDP_AP_DRAW_ISOTROPIC) ? DManip::Isotropic : DManip::Anisotropic;
+   auto mode = (settings & IDP_AP_DRAW_ISOTROPIC) ? WBFL::DManip::MapMode::Isotropic : WBFL::DManip::MapMode::Anisotropic;
    CBridgeViewPane::SetMappingMode(mode);
 }
 
 void CAlignmentProfileView::BuildTitleDisplayObjects()
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iDisplayList> title_list;
-   dispMgr->FindDisplayList(TITLE_DISPLAY_LIST,&title_list);
+   auto title_list = m_pDispMgr->FindDisplayList(TITLE_DISPLAY_LIST);
 
    title_list->Clear();
 
-   CComPtr<iViewTitle> title;
-   title.CoCreateInstance(CLSID_ViewTitle);
+   auto title = WBFL::DManip::ViewTitle::Create();
 
    title->SetText(_T("Profile"));
    title_list->AddDisplayObject(title);
@@ -233,12 +207,7 @@ void CAlignmentProfileView::BuildTitleDisplayObjects()
 
 void CAlignmentProfileView::BuildProfileDisplayObjects()
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iDisplayList> display_list;
-   dispMgr->FindDisplayList(PROFILE_DISPLAY_LIST,&display_list);
-
+   auto display_list = m_pDispMgr->FindDisplayList(PROFILE_DISPLAY_LIST);
    display_list->Clear();
 
    CComPtr<IBroker> pBroker;
@@ -254,38 +223,30 @@ void CAlignmentProfileView::BuildProfileDisplayObjects()
    pRoadway->GetEndPoint(  n,&end_station,  &end_elevation,  &end_grade,  &pntEnd);
 
    // The profile is represented on the screen by a poly line object
-   CComPtr<iPolyLineDisplayObject> doProfile;
-   doProfile.CoCreateInstance(CLSID_PolyLineDisplayObject);
-   doProfile->put_Width(PROFILE_LINE_WEIGHT);
-   doProfile->put_Color(PROFILE_COLOR);
-   doProfile->put_PointType(plpNone);
-   doProfile->SetSelectionType(stAll);
+   auto doProfile = WBFL::DManip::PolyLineDisplayObject::Create();
+   doProfile->SetWidth(PROFILE_LINE_WEIGHT);
+   doProfile->SetColor(PROFILE_COLOR);
+   doProfile->SetPointType(WBFL::DManip::PointType::None);
+   doProfile->SetSelectionType(WBFL::DManip::SelectionType::All);
    doProfile->SetID(PROFILE_ID);
 
-   CComPtr<iPolyLineDisplayObject> doLeftCurb;
-   doLeftCurb.CoCreateInstance(CLSID_PolyLineDisplayObject);
-   doLeftCurb->put_Width(1);
-   doLeftCurb->put_Color(RED);
-   doLeftCurb->put_PointType(plpNone);
+   auto doLeftCurb = WBFL::DManip::PolyLineDisplayObject::Create();
+   doLeftCurb->SetWidth(1);
+   doLeftCurb->SetColor(RED);
+   doLeftCurb->SetPointType(WBFL::DManip::PointType::None);
 
-   CComPtr<iPolyLineDisplayObject> doRightCurb;
-   doRightCurb.CoCreateInstance(CLSID_PolyLineDisplayObject);
-   doRightCurb->put_Width(1);
-   doRightCurb->put_Color(GREEN);
-   doRightCurb->put_PointType(plpNone);
+   auto doRightCurb = WBFL::DManip::PolyLineDisplayObject::Create();
+   doRightCurb->SetWidth(1);
+   doRightCurb->SetColor(GREEN);
+   doRightCurb->SetPointType(WBFL::DManip::PointType::None);
 
    // Register an event sink with the alignment object so that we can handle double clicks
    // on the alignment differently then a general dbl-click
-   CComPtr<iDisplayObject> dispObj;
-   doProfile->QueryInterface(IID_iDisplayObject,(void**)&dispObj);
-   CProfileDisplayObjectEvents* pEvents = new CProfileDisplayObjectEvents(pBroker,m_pFrame,dispObj);
-   CComPtr<iDisplayObjectEvents> events;
-   events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));
-
-   dispObj->RegisterEventSink(events);
-   dispObj->SetToolTipText(_T("Double click to edit profile.\r\nRight click for more options."));
-   dispObj->SetMaxTipWidth(TOOLTIP_WIDTH);
-   dispObj->SetTipDisplayTime(TOOLTIP_DURATION);
+   auto events = std::make_shared<CProfileDisplayObjectEvents>(pBroker, m_pFrame, doProfile);
+   doProfile->RegisterEventSink(events);
+   doProfile->SetToolTipText(_T("Double click to edit profile.\r\nRight click for more options."));
+   doProfile->SetMaxTipWidth(TOOLTIP_WIDTH);
+   doProfile->SetTipDisplayTime(TOOLTIP_DURATION);
 
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 leftOffset  = pBridge->GetLeftCurbOffset((PierIndexType)0);
@@ -326,14 +287,13 @@ void CAlignmentProfileView::BuildProfileDisplayObjects()
       CComPtr<IPoint2d> pnt;
       pnt.CoCreateInstance(CLSID_Point2d);
       pnt->Move(station,y);
-      doProfile->AddPoint(pnt);
+      doProfile->AddPoint(geomUtil::GetPoint(pnt));
 
       if (IsEqual(station, vStations.front()))
       {
          Float64 grade = pRoadway->GetProfileGrade(station);
-         CComPtr<iTextBlock> doText;
-         doText.CoCreateInstance(CLSID_TextBlock);
-         doText->SetPosition(pnt);
+         auto doText = WBFL::DManip::TextBlock::Create();
+         doText->SetPosition(geomUtil::GetPoint(pnt));
          doText->SetText(_T("PGL"));
          doText->SetTextAlign(TA_BOTTOM | TA_LEFT);
          doText->SetBkMode(TRANSPARENT);
@@ -347,20 +307,16 @@ void CAlignmentProfileView::BuildProfileDisplayObjects()
       pnt.Release();
       pnt.CoCreateInstance(CLSID_Point2d);
       pnt->Move(station,y);
-      doLeftCurb->AddPoint(pnt);
+      doLeftCurb->AddPoint(geomUtil::GetPoint(pnt));
 
       y = pRoadway->GetElevation(station,rightOffset);
       pnt.Release();
       pnt.CoCreateInstance(CLSID_Point2d);
       pnt->Move(station,y);
-      doRightCurb->AddPoint(pnt);
+      doRightCurb->AddPoint(geomUtil::GetPoint(pnt));
    }
 
-   doProfile->Commit();
-   doLeftCurb->Commit();
-   doRightCurb->Commit();
-
-   display_list->AddDisplayObject(dispObj);
+   display_list->AddDisplayObject(doProfile);
    display_list->AddDisplayObject(doLeftCurb);
    display_list->AddDisplayObject(doRightCurb);
 }
@@ -374,12 +330,7 @@ void CAlignmentProfileView::BuildBridgeDisplayObjects()
       return;
    }
 
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iDisplayList> display_list;
-   dispMgr->FindDisplayList(BRIDGE_DISPLAY_LIST,&display_list);
-
+   auto display_list = m_pDispMgr->FindDisplayList(BRIDGE_DISPLAY_LIST);
    display_list->Clear();
 
    CComPtr<IBroker> pBroker;
@@ -390,21 +341,16 @@ void CAlignmentProfileView::BuildBridgeDisplayObjects()
    GET_IFACE2(pBroker,IGirder,pIGirder);
    GET_IFACE2(pBroker, IPointOfInterest, pPoi);
 
-   CComPtr<iCompositeDisplayObject> doBridge;
-   doBridge.CoCreateInstance(CLSID_CompositeDisplayObject);
-   doBridge->SetSelectionType(stAll);
+   auto doBridge = WBFL::DManip::CompositeDisplayObject::Create();
+   doBridge->SetSelectionType(WBFL::DManip::SelectionType::All);
    doBridge->SetID(BRIDGE_ID);
    display_list->AddDisplayObject(doBridge);
 
-   CComPtr<iDisplayObject> dispObj;
-   doBridge->QueryInterface(IID_iDisplayObject,(void**)&dispObj);
-   CBridgeDisplayObjectEvents* pEvents = new CBridgeDisplayObjectEvents(pBroker,m_pFrame,dispObj,CBridgeDisplayObjectEvents::Profile);
-   CComPtr<iDisplayObjectEvents> events;
-   events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));
-   dispObj->RegisterEventSink(events);
-   dispObj->SetToolTipText(_T("Double click to edit bridge.\r\nRight click for more options."));
-   dispObj->SetMaxTipWidth(TOOLTIP_WIDTH);
-   dispObj->SetTipDisplayTime(TOOLTIP_DURATION);
+   auto events = std::make_shared<CBridgeDisplayObjectEvents>(pBroker,m_pFrame,doBridge,CBridgeDisplayObjectEvents::Profile);
+   doBridge->RegisterEventSink(events);
+   doBridge->SetToolTipText(_T("Double click to edit bridge.\r\nRight click for more options."));
+   doBridge->SetMaxTipWidth(TOOLTIP_WIDTH);
+   doBridge->SetTipDisplayTime(TOOLTIP_DURATION);
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    GirderIndexType nGirderLines = pBridge->GetGirderlineCount();
@@ -454,15 +400,13 @@ void CAlignmentProfileView::BuildBridgeDisplayObjects()
          position->Offset(station-x,elev-y);
 
 
-         CComPtr<iPointDisplayObject> doSegment;
-         doSegment.CoCreateInstance(CLSID_PointDisplayObject);
+         auto doSegment = WBFL::DManip::PointDisplayObject::Create();
 
-         CComPtr<iShapeDrawStrategy> strategy;
-         strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
-         strategy->SetShape(segmentShape);
+         auto strategy = WBFL::DManip::ShapeDrawStrategy::Create();
+         strategy->SetShape(geomUtil::ConvertShape(segmentShape));
          strategy->SetSolidLineColor(SEGMENT_BORDER_COLOR);
          strategy->SetSolidFillColor(SEGMENT_FILL_COLOR);
-         strategy->DoFill(TRUE);
+         strategy->Fill(true);
          doSegment->SetDrawingStrategy(strategy);
 
          doBridge->AddDisplayObject(doSegment);
@@ -472,12 +416,7 @@ void CAlignmentProfileView::BuildBridgeDisplayObjects()
 
 void CAlignmentProfileView::BuildLabelDisplayObjects()
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iDisplayList> label_display_list;
-   dispMgr->FindDisplayList(LABEL_DISPLAY_LIST,&label_display_list);
-
+   auto label_display_list = m_pDispMgr->FindDisplayList(LABEL_DISPLAY_LIST);
    label_display_list->Clear();
 
    CComPtr<IBroker> pBroker;
@@ -600,11 +539,7 @@ void CAlignmentProfileView::BuildLabelDisplayObjects()
 
 void CAlignmentProfileView::UpdateDrawingScale()
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iDisplayList> title_display_list;
-   dispMgr->FindDisplayList(TITLE_DISPLAY_LIST,&title_display_list);
+   auto title_display_list = m_pDispMgr->FindDisplayList(TITLE_DISPLAY_LIST);
 
    if ( title_display_list == nullptr )
    {
@@ -625,7 +560,7 @@ void CAlignmentProfileView::UpdateDrawingScale()
    title_display_list->HideDisplayObjects(false);
 }
 
-void CAlignmentProfileView::CreateStationLabel(iDisplayList* pDisplayList,Float64 station,LPCTSTR strBaseLabel,UINT textAlign)
+void CAlignmentProfileView::CreateStationLabel(std::shared_ptr<WBFL::DManip::iDisplayList> pDisplayList,Float64 station,LPCTSTR strBaseLabel,UINT textAlign)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -639,19 +574,16 @@ void CAlignmentProfileView::CreateStationLabel(iDisplayList* pDisplayList,Float6
    CreateStationLabel(pDisplayList,station,y,strBaseLabel,textAlign);
 }
 
-void CAlignmentProfileView::CreateStationLabel(iDisplayList* pDisplayList,Float64 station,Float64 elevation,LPCTSTR strBaseLabel,UINT textAlign)
+void CAlignmentProfileView::CreateStationLabel(std::shared_ptr<WBFL::DManip::iDisplayList> pDisplayList,Float64 station,Float64 elevation,LPCTSTR strBaseLabel,UINT textAlign)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
    GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   CComPtr<IPoint2d> p;
-   p.CoCreateInstance(CLSID_Point2d);
-   p->Move(station,elevation);
+   WBFL::Geometry::Point2d p(station,elevation);
 
-   CComPtr<iTextBlock> doLabel;
-   doLabel.CoCreateInstance(CLSID_TextBlock);
+   auto doLabel = WBFL::DManip::TextBlock::Create();
    doLabel->SetPosition(p);
    
    CString strLabel;

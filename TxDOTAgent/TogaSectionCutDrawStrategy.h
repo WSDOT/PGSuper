@@ -25,7 +25,13 @@
 
 #include <PgsExt\Keys.h>
 
-interface iPointDisplayObject;
+namespace WBFL
+{
+   namespace DManip
+   {
+      class iPointDisplayObject;
+   };
+};
 
 // pure virtual class for determining cut location along girder
 // no need for com here
@@ -38,14 +44,11 @@ public:
    virtual void ShowCutDlg() = 0;
 };
 
-// {8F1327F9-3055-4e44-9E23-71FCDB3B9AA5}
-DEFINE_GUID(IID_iTogaSectionCutDrawStrategy, 
-0x8f1327f9, 0x3055, 0x4e44, 0x9e, 0x23, 0x71, 0xfc, 0xdb, 0x3b, 0x9a, 0xa5);
-
-interface iTogaSectionCutDrawStrategy : public IUnknown
+class iTogaSectionCutDrawStrategy
 {
-   STDMETHOD_(void,SetColor)(COLORREF color) PURE;
-	STDMETHOD_(void,Init)(iPointDisplayObject* pDO, IBroker* pBroker,const CSegmentKey& segmentKey, iCutLocation* pCutLoc) PURE;
+public:
+   virtual void SetColor(COLORREF color) = 0;
+   virtual void Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, IBroker* pBroker, const CSegmentKey& segmentKey, iCutLocation* pCutLoc) = 0;
 };
 
 #endif // INCLUDED_TOGASECTIONCUTDRAWSTRATEGY_H_

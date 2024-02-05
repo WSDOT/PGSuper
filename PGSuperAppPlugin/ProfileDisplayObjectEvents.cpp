@@ -29,54 +29,20 @@
 #include "BridgeModelViewChildFrame.h"
 #include "PGSuperDocBase.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <DManip/DisplayObject.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CProfileDisplayObjectEvents
 
-CProfileDisplayObjectEvents::CProfileDisplayObjectEvents(IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,iDisplayObject* pDO)
+CProfileDisplayObjectEvents::CProfileDisplayObjectEvents(IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,std::weak_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
    m_pBroker = pBroker;
    m_pFrame = pFrame;
-   m_DispObj.Attach(pDO);
+   m_DispObj = pDO;
 }
 
 CProfileDisplayObjectEvents::~CProfileDisplayObjectEvents()
 {
-}
-
-void CProfileDisplayObjectEvents::OnFinalRelease()
-{
-   m_DispObj.Detach();
-   CCmdTarget::OnFinalRelease();
-}
-
-BEGIN_INTERFACE_MAP(CProfileDisplayObjectEvents, CCmdTarget)
-	INTERFACE_PART(CProfileDisplayObjectEvents, IID_iDisplayObjectEvents, Events)
-END_INTERFACE_MAP()
-
-// Not sure why, but the DELEGATE_CUSTOM_INTERFACE macro isn't working
-// Since the is simple, I've just implemented it directly
-//DELEGATE_CUSTOM_INTERFACE(CProfileDisplayObjectEvents,Events);
-STDMETHODIMP_(ULONG) CProfileDisplayObjectEvents::XEvents::AddRef() 
-{ 
-   METHOD_PROLOGUE(CProfileDisplayObjectEvents, Events) 
-   return pThis->ExternalAddRef(); 
-} 
-STDMETHODIMP_(ULONG) CProfileDisplayObjectEvents::XEvents::Release() 
-{ 
-   METHOD_PROLOGUE(CProfileDisplayObjectEvents, Events) 
-   return pThis->ExternalRelease(); 
-} 
-STDMETHODIMP CProfileDisplayObjectEvents::XEvents::QueryInterface( 
-   REFIID iid, LPVOID* ppvObj) 
-{ 
-   METHOD_PROLOGUE(CProfileDisplayObjectEvents, Events) 
-   return pThis->ExternalQueryInterface( &iid, ppvObj ); 
 }
 
 void CProfileDisplayObjectEvents::EditProfile()
@@ -86,13 +52,11 @@ void CProfileDisplayObjectEvents::EditProfile()
 
 /////////////////////////////////////////////////////////////////////////////
 // CProfileDisplayObjectEvents message handlers
-STDMETHODIMP_(bool) CProfileDisplayObjectEvents::XEvents::OnLButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CProfileDisplayObjectEvents::OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CProfileDisplayObjectEvents,Events);
-
    if (pDO->IsSelected())
    {
-      pThis->EditProfile();
+      EditProfile();
       return true;
    }
    else
@@ -101,64 +65,54 @@ STDMETHODIMP_(bool) CProfileDisplayObjectEvents::XEvents::OnLButtonDblClk(iDispl
    }
 }
 
-STDMETHODIMP_(bool) CProfileDisplayObjectEvents::XEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CProfileDisplayObjectEvents::OnLButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CProfileDisplayObjectEvents,Events);
    return true;
 }
 
-STDMETHODIMP_(bool) CProfileDisplayObjectEvents::XEvents::OnLButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CProfileDisplayObjectEvents::OnLButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CProfileDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CProfileDisplayObjectEvents::XEvents::OnRButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CProfileDisplayObjectEvents::OnRButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CProfileDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CProfileDisplayObjectEvents::XEvents::OnRButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CProfileDisplayObjectEvents::OnRButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CProfileDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CProfileDisplayObjectEvents::XEvents::OnRButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CProfileDisplayObjectEvents::OnRButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CProfileDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CProfileDisplayObjectEvents::XEvents::OnMouseMove(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CProfileDisplayObjectEvents::OnMouseMove(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CProfileDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CProfileDisplayObjectEvents::XEvents::OnMouseWheel(iDisplayObject* pDO,UINT nFlags,short zDelta,CPoint point)
+bool CProfileDisplayObjectEvents::OnMouseWheel(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,short zDelta,const POINT& point)
 {
-   METHOD_PROLOGUE(CProfileDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CProfileDisplayObjectEvents::XEvents::OnKeyDown(iDisplayObject* pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
+bool CProfileDisplayObjectEvents::OnKeyDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-   METHOD_PROLOGUE(CProfileDisplayObjectEvents,Events);
-
    if ( nChar == VK_RETURN )
    {
-      pThis->EditProfile();
+      EditProfile();
       return true;
    }
 
    return false;
 }
 
-STDMETHODIMP_(bool) CProfileDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObject* pDO,CWnd* pWnd,CPoint point)
+bool CProfileDisplayObjectEvents::OnContextMenu(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,CWnd* pWnd,const POINT& point)
 {
-   METHOD_PROLOGUE(CProfileDisplayObjectEvents,Events);
    if ( pDO->IsSelected() )
    {
       CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
@@ -183,7 +137,7 @@ STDMETHODIMP_(bool) CProfileDisplayObjectEvents::XEvents::OnContextMenu(iDisplay
       bool bResult = false;
       if ( 0 < pMenu->GetMenuItemCount() )
       {
-         pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);
+         pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,m_pFrame);
          bResult = true;
       }
 
@@ -195,34 +149,28 @@ STDMETHODIMP_(bool) CProfileDisplayObjectEvents::XEvents::OnContextMenu(iDisplay
    return false;
 }
 
-STDMETHODIMP_(void) CProfileDisplayObjectEvents::XEvents::OnChanged(iDisplayObject* pDO)
+STDMETHODIMP_(void) CProfileDisplayObjectEvents::OnChanged(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CProfileDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CProfileDisplayObjectEvents::XEvents::OnDragMoved(iDisplayObject* pDO,ISize2d* offset)
+STDMETHODIMP_(void) CProfileDisplayObjectEvents::OnDragMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,const WBFL::Geometry::Size2d& offset)
 {
-   METHOD_PROLOGUE(CProfileDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CProfileDisplayObjectEvents::XEvents::OnMoved(iDisplayObject* pDO)
+STDMETHODIMP_(void) CProfileDisplayObjectEvents::OnMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CProfileDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CProfileDisplayObjectEvents::XEvents::OnCopied(iDisplayObject* pDO)
+STDMETHODIMP_(void) CProfileDisplayObjectEvents::OnCopied(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CProfileDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CProfileDisplayObjectEvents::XEvents::OnSelect(iDisplayObject* pDO)
+STDMETHODIMP_(void) CProfileDisplayObjectEvents::OnSelect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CProfileDisplayObjectEvents,Events);
-   pThis->m_pFrame->ClearSelection();
-   pThis->m_pFrame->SelectAlignment();
+   m_pFrame->ClearSelection();
+   m_pFrame->SelectAlignment();
 }
 
-STDMETHODIMP_(void) CProfileDisplayObjectEvents::XEvents::OnUnselect(iDisplayObject* pDO)
+STDMETHODIMP_(void) CProfileDisplayObjectEvents::OnUnselect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CProfileDisplayObjectEvents,Events);
 }

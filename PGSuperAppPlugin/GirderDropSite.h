@@ -24,41 +24,29 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_GIRDERDROPSITE_H__1F8A97C9_F789_11D4_8B9B_006097C68A9C__INCLUDED_)
-#define AFX_GIRDERDROPSITE_H__1F8A97C9_F789_11D4_8B9B_006097C68A9C__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 
-#include <DManip\DManip.h>
 #include "GirderModelChildFrame.h"
+#include <DManip/DropSite.h>
 
 class CPGSDocBase;
 
-class CGirderDropSite : public CCmdTarget  
+class CGirderDropSite : public WBFL::DManip::iDropSite
 {
 public:
 	CGirderDropSite(CPGSDocBase* pDoc, const CSpanKey& spanKey, CGirderModelChildFrame* pFrame);
 	virtual ~CGirderDropSite();
 
-   virtual void OnFinalRelease();
-
-   DECLARE_INTERFACE_MAP()
-
-
-   BEGIN_INTERFACE_PART(DropSite,iDropSite)
-      STDMETHOD_(DROPEFFECT,CanDrop)(COleDataObject* pDataObject,DWORD dwKeyState,IPoint2d* point) override;
-      STDMETHOD_(void,OnDropped)(COleDataObject* pDataObject,DROPEFFECT dropEffect,IPoint2d* point) override;
-      STDMETHOD_(void,SetDisplayObject)(iDisplayObject* pDO) override;
-      STDMETHOD_(void,GetDisplayObject)(iDisplayObject** dispObj) override;
-      STDMETHOD_(void,Highlite)(CDC* pDC,BOOL bHighlite) override;
-   END_INTERFACE_PART(DropSite)
+   virtual DROPEFFECT CanDrop(COleDataObject* pDataObject, DWORD dwKeyState, const WBFL::Geometry::Point2d& point) override;
+   virtual void OnDropped(COleDataObject* pDataObject, DROPEFFECT dropEffect, const WBFL::Geometry::Point2d& point) override;
+   virtual void SetDisplayObject(std::weak_ptr<WBFL::DManip::iDisplayObject> pDO) override;
+   virtual std::shared_ptr<WBFL::DManip::iDisplayObject> GetDisplayObject() override;
+   virtual void Highlight(CDC* pDC, BOOL bHighlight) override;
 
 private:
    CPGSDocBase* m_pDoc;
    CGirderModelChildFrame* m_pFrame;
-   CComPtr<iDisplayObject> m_DispObj;
+   std::weak_ptr<WBFL::DManip::iDisplayObject> m_DispObj;
    CSpanKey m_SpanKey;
 
    template <class T>
@@ -84,4 +72,3 @@ private:
    }
 };
 
-#endif // !defined(AFX_GIRDERDROPSITE_H__1F8A97C9_F789_11D4_8B9B_006097C68A9C__INCLUDED_)

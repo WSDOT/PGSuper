@@ -117,8 +117,8 @@ public:
    void GetGroupRange(GroupIndexType* pStartGroupIdx,GroupIndexType* pEndGroupIdx);
    void SetGroupRange(GroupIndexType startGroupIdx,GroupIndexType endGroupIdx,bool bUpdate = true);
 
-   virtual DROPEFFECT CanDrop(COleDataObject* pDataObject,DWORD dwKeyState,IPoint2d* point);
-   virtual void OnDropped(COleDataObject* pDataObject,DROPEFFECT dropEffect,IPoint2d* point);
+   virtual DROPEFFECT CanDrop(COleDataObject* pDataObject,DWORD dwKeyState, const WBFL::Geometry::Point2d& point) override;
+   virtual void OnDropped(COleDataObject* pDataObject,DROPEFFECT dropEffect, const WBFL::Geometry::Point2d& point) override;
 
 // Overrides
 	// ClassWizard generated virtual function overrides
@@ -173,7 +173,7 @@ protected:
    void BuildDiaphragmDisplayObjects();
 
    void UpdateSectionCut();
-   void UpdateSectionCut(iPointDisplayObject* pntDO,BOOL bRedraw);
+   void UpdateSectionCut(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pntDO,BOOL bRedraw);
 
    void UpdateSegmentTooltips();
    void UpdateClosureJointTooltips();

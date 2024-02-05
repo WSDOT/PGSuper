@@ -37,8 +37,9 @@
 #include <IFace\Alignment.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <WBFLDManipTools.h>
-#include <DManipTools\DManipTools.h>
+
+#include <DManip/PolyLineDisplayObjectImpl.h>
+#include <WBFLGeometry/GeomHelpers.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -87,42 +88,19 @@ void CAlignmentPlanView::OnInitialUpdate()
 
 void CAlignmentPlanView::BuildDisplayLists()
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
+   m_pDispMgr->EnableLBtnSelect(TRUE);
+   m_pDispMgr->EnableRBtnSelect(TRUE);
+   m_pDispMgr->SetSelectionLineColor(SELECTED_OBJECT_LINE_COLOR);
+   m_pDispMgr->SetSelectionFillColor(SELECTED_OBJECT_FILL_COLOR);
 
-   dispMgr->EnableLBtnSelect(TRUE);
-   dispMgr->EnableRBtnSelect(TRUE);
-   dispMgr->SetSelectionLineColor(SELECTED_OBJECT_LINE_COLOR);
-   dispMgr->SetSelectionFillColor(SELECTED_OBJECT_FILL_COLOR);
-
-   CBridgeViewPane::SetMappingMode(DManip::Isotropic);
+   CBridgeViewPane::SetMappingMode(WBFL::DManip::MapMode::Isotropic);
 
    // Setup display lists
-
-   CComPtr<iDisplayList> label_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&label_list);
-   label_list->SetID(LABEL_DISPLAY_LIST);
-   dispMgr->AddDisplayList(label_list);
-
-   CComPtr<iDisplayList> title_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&title_list);
-   title_list->SetID(TITLE_DISPLAY_LIST);
-   dispMgr->AddDisplayList(title_list);
-
-   CComPtr<iDisplayList> alignment_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&alignment_list);
-   alignment_list->SetID(ALIGNMENT_DISPLAY_LIST);
-   dispMgr->AddDisplayList(alignment_list);
-
-   CComPtr<iDisplayList> bridge_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&bridge_list);
-   bridge_list->SetID(BRIDGE_DISPLAY_LIST);
-   dispMgr->AddDisplayList(bridge_list);
-
-   CComPtr<iDisplayList> north_arrow_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&north_arrow_list);
-   north_arrow_list->SetID(NORTH_ARROW_DISPLAY_LIST);
-   dispMgr->AddDisplayList(north_arrow_list);
+   m_pDispMgr->CreateDisplayList(LABEL_DISPLAY_LIST);
+   m_pDispMgr->CreateDisplayList(TITLE_DISPLAY_LIST);
+   m_pDispMgr->CreateDisplayList(ALIGNMENT_DISPLAY_LIST);
+   m_pDispMgr->CreateDisplayList(BRIDGE_DISPLAY_LIST);
+   m_pDispMgr->CreateDisplayList(NORTH_ARROW_DISPLAY_LIST);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -211,12 +189,9 @@ void CAlignmentPlanView::UpdateDisplayObjects()
 {
    CWaitCursor wait;
 
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
    CDManipClientDC dc(this);
 
-   dispMgr->ClearDisplayObjects();
+   m_pDispMgr->ClearDisplayObjects();
 
    BuildTitleDisplayObjects();
    BuildAlignmentDisplayObjects();
@@ -227,28 +202,17 @@ void CAlignmentPlanView::UpdateDisplayObjects()
 
 void CAlignmentPlanView::BuildTitleDisplayObjects()
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iDisplayList> title_list;
-   dispMgr->FindDisplayList(TITLE_DISPLAY_LIST,&title_list);
-
+   auto title_list = m_pDispMgr->FindDisplayList(TITLE_DISPLAY_LIST);
    title_list->Clear();
 
-   CComPtr<iViewTitle> title;
-   title.CoCreateInstance(CLSID_ViewTitle);
+   auto title = WBFL::DManip::ViewTitle::Create();
    title->SetText(_T("Alignment"));
    title_list->AddDisplayObject(title);
 }
 
 void CAlignmentPlanView::BuildAlignmentDisplayObjects()
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iDisplayList> display_list;
-   dispMgr->FindDisplayList(ALIGNMENT_DISPLAY_LIST,&display_list);
-
+   auto display_list = m_pDispMgr->FindDisplayList(ALIGNMENT_DISPLAY_LIST);
    display_list->Clear();
 
    CComPtr<IBroker> pBroker;
@@ -265,21 +229,16 @@ void CAlignmentPlanView::BuildAlignmentDisplayObjects()
    pRoadway->GetEndPoint(  n,&end_station,  &end_elevation,  &end_grade,  &pntEnd);
 
    // The alignment is represented on the screen by a poly line object
-   CComPtr<iPolyLineDisplayObject> doAlignment;
-   doAlignment.CoCreateInstance(CLSID_PolyLineDisplayObject);
+   auto doAlignment = WBFL::DManip::PolyLineDisplayObject::Create();
 
    // Register an event sink with the alignment object so that we can handle dbl-clicks
    // on the alignment differently then a general dbl-click
-   CComPtr<iDisplayObject> dispObj;
-   doAlignment->QueryInterface(IID_iDisplayObject,(void**)&dispObj);
-   CAlignmentDisplayObjectEvents* pEvents = new CAlignmentDisplayObjectEvents(pBroker,m_pFrame,CAlignmentDisplayObjectEvents::Alignment,dispObj);
-   CComPtr<iDisplayObjectEvents> events;
-   events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));
-   dispObj->RegisterEventSink(events);
+   auto events = std::make_shared<CAlignmentDisplayObjectEvents>(pBroker, m_pFrame, CAlignmentDisplayObjectEvents::Alignment, doAlignment);
+   doAlignment->RegisterEventSink(events);
 
-   dispObj->SetToolTipText(_T("Double click to edit alignment.\r\nRight click for more options."));
-   dispObj->SetMaxTipWidth(TOOLTIP_WIDTH);
-   dispObj->SetTipDisplayTime(TOOLTIP_DURATION);
+   doAlignment->SetToolTipText(_T("Double click to edit alignment.\r\nRight click for more options."));
+   doAlignment->SetMaxTipWidth(TOOLTIP_WIDTH);
+   doAlignment->SetTipDisplayTime(TOOLTIP_DURATION);
 
    // model the alignment as a series of individual points
    CComPtr<IDirection> bearing;
@@ -291,13 +250,12 @@ void CAlignmentPlanView::BuildAlignmentDisplayObjects()
    {
       CComPtr<IPoint2d> p;
       pRoadway->GetPoint(station,0.00,bearing,pgsTypes::pcGlobal,&p);
-      doAlignment->AddPoint(p);
+      doAlignment->AddPoint(geomUtil::GetPoint(p));
 
       if (i == 0)
       {
-         CComPtr<iTextBlock> doText;
-         doText.CoCreateInstance(CLSID_TextBlock);
-         doText->SetPosition(p);
+         auto doText = WBFL::DManip::TextBlock::Create();
+         doText->SetPosition(geomUtil::GetPoint(p));
          doText->SetText(pRoadwayData->GetAlignmentData2().Name.c_str());
          doText->SetTextAlign(TA_BOTTOM | TA_LEFT);
          doText->SetBkMode(TRANSPARENT);
@@ -312,22 +270,20 @@ void CAlignmentPlanView::BuildAlignmentDisplayObjects()
       }
    }
 
-   doAlignment->put_Width(ALIGNMENT_LINE_WEIGHT);
-   doAlignment->put_Color(ALIGNMENT_COLOR);
-   doAlignment->put_PointType(plpNone);
-   doAlignment->Commit();
+   doAlignment->SetWidth(ALIGNMENT_LINE_WEIGHT);
+   doAlignment->SetColor(ALIGNMENT_COLOR);
+   doAlignment->SetPointType(WBFL::DManip::PointType::None);
+   doAlignment->SetSelectionType(WBFL::DManip::SelectionType::All);
+   doAlignment->SetID(ALIGNMENT_ID);
 
-   display_list->AddDisplayObject(dispObj);
+   display_list->AddDisplayObject(doAlignment);
 
-   dispObj->SetSelectionType(stAll);
-   dispObj->SetID(ALIGNMENT_ID);
 
    ////////////////
    if (pRoadwayData->GetRoadwaySectionData().AlignmentPointIdx != pRoadwayData->GetRoadwaySectionData().ProfileGradePointIdx)
    {
       // draw the profile grade line
-      CComPtr<iPolyLineDisplayObject> doPGL;
-      doPGL.CoCreateInstance(CLSID_PolyLineDisplayObject);
+      auto doPGL = WBFL::DManip::PolyLineDisplayObject::Create();
 
       Float64 station = start_station;
       for (long i = 0; i < nPoints; i++, station += station_inc)
@@ -343,13 +299,12 @@ void CAlignmentPlanView::BuildAlignmentDisplayObjects()
          // use -offset because offset is from PGL to alignment... we need to plot alignemnt to PGL offset
          CComPtr<IPoint2d> p;
          pRoadway->GetPoint(station, -offset, bearing, pgsTypes::pcGlobal, &p);
-         doPGL->AddPoint(p);
+         doPGL->AddPoint(geomUtil::GetPoint(p));
 
          if (i == 0)
          {
-            CComPtr<iTextBlock> doText;
-            doText.CoCreateInstance(CLSID_TextBlock);
-            doText->SetPosition(p);
+            auto doText = WBFL::DManip::TextBlock::Create();
+            doText->SetPosition(geomUtil::GetPoint(p));
             doText->SetText(_T("PGL"));
             doText->SetTextAlign(TA_BOTTOM | TA_LEFT);
             doText->SetBkMode(TRANSPARENT);
@@ -364,22 +319,14 @@ void CAlignmentPlanView::BuildAlignmentDisplayObjects()
          }
       }
 
-      doPGL->put_Width(PROFILE_LINE_WEIGHT);
-      doPGL->put_Color(PROFILE_COLOR);
-      doPGL->put_PointType(plpNone);
-      doPGL->Commit();
+      doPGL->SetWidth(PROFILE_LINE_WEIGHT);
+      doPGL->SetColor(PROFILE_COLOR);
+      doPGL->SetPointType(WBFL::DManip::PointType::None);
 
-      CComPtr<iDisplayObject> dispObj;
-      doPGL->QueryInterface(IID_iDisplayObject, (void**)&dispObj);
-      display_list->AddDisplayObject(dispObj);
-
+      display_list->AddDisplayObject(doPGL);
    }
 
    ////////////////
-
-   CComPtr<iCoordinateMap> map;
-   dispMgr->GetCoordinateMap(&map);
-   CComQIPtr<iMapping> mapping(map);
 
    // get point on alignment at start
    CComPtr<IDirection> dir;
@@ -411,12 +358,12 @@ void CAlignmentPlanView::BuildAlignmentDisplayObjects()
    UINT settings = pDoc->GetAlignmentEditorSettings();
    if ( settings & IDA_AP_NORTH_UP )
    {
-      mapping->SetRotation((x1+x2)/2,(y1+y2)/2,0);
+      m_pMapping->SetRotation((x1+x2)/2,(y1+y2)/2,0);
    }
    else
    {
       // rotation by negative of the angle
-      mapping->SetRotation((x1+x2)/2,(y1+y2)/2,-angle);
+      m_pMapping->SetRotation((x1+x2)/2,(y1+y2)/2,-angle);
    }
 }
 
@@ -429,12 +376,7 @@ void CAlignmentPlanView::BuildBridgeDisplayObjects()
       return;
    }
 
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iDisplayList> display_list;
-   dispMgr->FindDisplayList(BRIDGE_DISPLAY_LIST,&display_list);
-
+   auto display_list = m_pDispMgr->FindDisplayList(BRIDGE_DISPLAY_LIST);
    display_list->Clear();
    
    // Build the deck shape
@@ -498,42 +440,35 @@ void CAlignmentPlanView::BuildBridgeDisplayObjects()
       points->get_Item(0, &pntShape);
    }
 
-   CComPtr<iPointDisplayObject> doBridge;
-   doBridge.CoCreateInstance(CLSID_PointDisplayObject);
-   doBridge->SetPosition(pntShape,FALSE,FALSE);
+   auto doBridge = WBFL::DManip::PointDisplayObject::Create();
+   doBridge->SetPosition(geomUtil::GetPoint(pntShape),false, false);
 
-   CComPtr<iShapeDrawStrategy> strategy;
-   strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
-   strategy->SetShape(shape);
+   auto strategy = WBFL::DManip::ShapeDrawStrategy::Create();
+   strategy->SetShape(geomUtil::ConvertShape(shape));
    strategy->SetSolidLineColor(IsStructuralDeck(deckType) ? DECK_BORDER_COLOR : NONSTRUCTURAL_DECK_BORDER_COLOR);
    strategy->SetSolidFillColor(IsStructuralDeck(deckType) ? DECK_FILL_COLOR : NONSTRUCTURAL_DECK_FILL_COLOR);
-   strategy->DoFill(TRUE);
+   strategy->Fill(true);
    doBridge->SetDrawingStrategy(strategy);
 
-   doBridge->SetSelectionType(stAll);
+   doBridge->SetSelectionType(WBFL::DManip::SelectionType::All);
    doBridge->SetID(BRIDGE_ID);
 
    display_list->AddDisplayObject(doBridge);
 
    // Register an event sink with the alignment object so that we can handle double clicks
    // on the alignment differently then a general dbl-click
-   CComPtr<iDisplayObject> dispObj;
-   doBridge->QueryInterface(IID_iDisplayObject,(void**)&dispObj);
-   CBridgeDisplayObjectEvents* pEvents = new CBridgeDisplayObjectEvents(pBroker,m_pFrame,dispObj,CBridgeDisplayObjectEvents::Plan);
-   CComPtr<iDisplayObjectEvents> events;
-   events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));
-   dispObj->RegisterEventSink(events);
-   dispObj->SetToolTipText(_T("Double click to edit bridge.\r\nRight click for more options."));
-   dispObj->SetMaxTipWidth(TOOLTIP_WIDTH);
-   dispObj->SetTipDisplayTime(TOOLTIP_DURATION);
+   auto events = std::make_shared<CBridgeDisplayObjectEvents>(pBroker, m_pFrame, doBridge, CBridgeDisplayObjectEvents::Plan);
+   doBridge->RegisterEventSink(events);
+   doBridge->SetToolTipText(_T("Double click to edit bridge.\r\nRight click for more options."));
+   doBridge->SetMaxTipWidth(TOOLTIP_WIDTH);
+   doBridge->SetTipDisplayTime(TOOLTIP_DURATION);
 
    // Draw the Bridge Line
    Float64 start_station = pBridge->GetPierStation(0);
    Float64 end_station = pBridge->GetPierStation(pBridge->GetPierCount()-1);
 
    // The bridge is represented on the screen by a poly line object
-   CComPtr<iPolyLineDisplayObject> doBridgeLine;
-   doBridgeLine.CoCreateInstance(CLSID_PolyLineDisplayObject);
+   auto doBridgeLine = WBFL::DManip::PolyLineDisplayObject::Create();
 
    Float64 alignment_offset = pBridge->GetAlignmentOffset();
 
@@ -548,15 +483,14 @@ void CAlignmentPlanView::BuildBridgeDisplayObjects()
       pRoadway->GetBearingNormal(station,&normal);
       CComPtr<IPoint2d> p;
       pRoadway->GetPoint(station,alignment_offset,normal,pgsTypes::pcGlobal,&p);
-      doBridgeLine->AddPoint(p);
+      doBridgeLine->AddPoint(geomUtil::GetPoint(p));
    }
 
-   doBridgeLine->put_Width(BRIDGE_LINE_WEIGHT);
-   doBridgeLine->put_Color(BRIDGE_COLOR);
-   doBridgeLine->put_PointType(plpNone);
-   doBridgeLine->Commit();
+   doBridgeLine->SetWidth(BRIDGE_LINE_WEIGHT);
+   doBridgeLine->SetColor(BRIDGE_COLOR);
+   doBridgeLine->SetPointType(WBFL::DManip::PointType::None);
 
-   doBridgeLine->SetSelectionType(stNone);
+   doBridgeLine->SetSelectionType(WBFL::DManip::SelectionType::None);
    doBridgeLine->SetID(BRIDGELINE_ID);
 
    display_list->AddDisplayObject(doBridgeLine);
@@ -564,11 +498,7 @@ void CAlignmentPlanView::BuildBridgeDisplayObjects()
 
 void CAlignmentPlanView::BuildLabelDisplayObjects()
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iDisplayList> label_display_list;
-   dispMgr->FindDisplayList(LABEL_DISPLAY_LIST,&label_display_list);
+   auto label_display_list = m_pDispMgr->FindDisplayList(LABEL_DISPLAY_LIST);
    label_display_list->Clear();
 
    CComPtr<IBroker> pBroker;
@@ -675,7 +605,7 @@ void CAlignmentPlanView::BuildLabelDisplayObjects()
    }
 }
 
-void CAlignmentPlanView::CreateStationLabel(iDisplayList* pDisplayList,Float64 station,LPCTSTR strBaseLabel,long angle,UINT textAlign)
+void CAlignmentPlanView::CreateStationLabel(std::shared_ptr<WBFL::DManip::iDisplayList> pDisplayList,Float64 station,LPCTSTR strBaseLabel,long angle,UINT textAlign)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -687,9 +617,8 @@ void CAlignmentPlanView::CreateStationLabel(iDisplayList* pDisplayList,Float64 s
    CComPtr<IPoint2d> p;
    pRoadway->GetPoint(station,0.00,nullptr,pgsTypes::pcGlobal,&p);
 
-   CComPtr<iTextBlock> doLabel;
-   doLabel.CoCreateInstance(CLSID_TextBlock);
-   doLabel->SetPosition(p);
+   auto doLabel = WBFL::DManip::TextBlock::Create();
+   doLabel->SetPosition(geomUtil::GetPoint(p));
    
    CString strLabel;
    if ( strBaseLabel == nullptr )
@@ -725,23 +654,14 @@ void CAlignmentPlanView::BuildNorthArrowDisplayObjects()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iDisplayList> display_list;
-   dispMgr->FindDisplayList(NORTH_ARROW_DISPLAY_LIST,&display_list);
+   auto display_list = m_pDispMgr->FindDisplayList(NORTH_ARROW_DISPLAY_LIST);
    display_list->Clear();
 
 
-   CComPtr<iNorthArrow> doNorth;
-   doNorth.CoCreateInstance(CLSID_NorthArrow);
+   auto doNorth = WBFL::DManip::NorthArrow::Create();
 
-   CComPtr<iCoordinateMap> map;
-   dispMgr->GetCoordinateMap(&map);
+   auto [center,angle] = m_pMapping->GetRotation();
 
-   CComQIPtr<iMapping> mapping(map);
-   Float64 cx,cy,angle;
-   mapping->GetRotation(&cx,&cy,&angle);
    Float64 direction = PI_OVER_2 + angle;
    doNorth->SetDirection(direction);
 
@@ -750,14 +670,8 @@ void CAlignmentPlanView::BuildNorthArrowDisplayObjects()
 
 void CAlignmentPlanView::UpdateDrawingScale()
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iDisplayList> title_display_list;
-   dispMgr->FindDisplayList(TITLE_DISPLAY_LIST,&title_display_list);
-
-   CComPtr<iDisplayList> na_display_list;
-   dispMgr->FindDisplayList(NORTH_ARROW_DISPLAY_LIST,&na_display_list);
+   auto title_display_list = m_pDispMgr->FindDisplayList(TITLE_DISPLAY_LIST);
+   auto na_display_list = m_pDispMgr->FindDisplayList(NORTH_ARROW_DISPLAY_LIST);
 
    if ( title_display_list == nullptr || na_display_list == nullptr )
    {

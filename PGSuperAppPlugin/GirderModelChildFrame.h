@@ -32,11 +32,11 @@
 #include "SectionCutDrawStrategy.h"
 #include "pgsExt\PointLoadData.h"
 #include <PgsExt/GirderGroupData.h>
-#include <DManip\ToolPalette.h>
 #include <EAF\EAFViewControllerFactory.h>
 #include <MfcTools\WideDropDownComboBox.h>
 #include <IFace/Project.h>
 #include <IFace/Selection.h>
+#include <DManip/ToolPalette.h>
 
 class CGirderModelElevationView;
 class CGirderModelSectionView;

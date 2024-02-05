@@ -36,13 +36,14 @@
 
 #include "BridgePlanView.h"
 
+#include <DManip/DisplayObjectEvents.h>
+#include <DManip/DisplayList.h>
+#include <DManip/DisplayMgr.h>
+#include <DManip/DisplayView.h>
+
 #include <PgsExt\BridgeDescription2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+using namespace WBFL::DManip;
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgePlanViewGirderDisplayObjectEvents
@@ -55,18 +56,12 @@ CBridgePlanViewGirderDisplayObjectEvents::CBridgePlanViewGirderDisplayObjectEven
    m_pFrame            = pFrame;
 }
 
-BEGIN_INTERFACE_MAP(CBridgePlanViewGirderDisplayObjectEvents, CCmdTarget)
-	INTERFACE_PART(CBridgePlanViewGirderDisplayObjectEvents, IID_iDisplayObjectEvents, Events)
-END_INTERFACE_MAP()
-
-DELEGATE_CUSTOM_INTERFACE(CBridgePlanViewGirderDisplayObjectEvents,Events);
-
-void CBridgePlanViewGirderDisplayObjectEvents::EditGirder(iDisplayObject* pDO)
+void CBridgePlanViewGirderDisplayObjectEvents::EditGirder(std::shared_ptr<iDisplayObject> pDO)
 {
    m_pFrame->PostMessage(WM_COMMAND,ID_EDIT_GIRDER,0);
 }
 
-void CBridgePlanViewGirderDisplayObjectEvents::SelectGirder(iDisplayObject* pDO)
+void CBridgePlanViewGirderDisplayObjectEvents::SelectGirder(std::shared_ptr<iDisplayObject> pDO)
 {
    m_pFrame->SelectGirder(m_GirderKey);
 }
@@ -137,12 +132,11 @@ void CBridgePlanViewGirderDisplayObjectEvents::SelectSpan()
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgePlanViewGirderDisplayObjectEvents message handlers
-STDMETHODIMP_(bool) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnLButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgePlanViewGirderDisplayObjectEvents::OnLButtonDblClk(std::shared_ptr<iDisplayObject> pDO,UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgePlanViewGirderDisplayObjectEvents,Events);
    if (pDO->IsSelected())
    {
-      pThis->EditGirder(pDO);
+      EditGirder(pDO);
       return true;
    }
    else
@@ -151,90 +145,76 @@ STDMETHODIMP_(bool) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnLButton
    }
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgePlanViewGirderDisplayObjectEvents::OnLButtonDown(std::shared_ptr<iDisplayObject> pDO,UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgePlanViewGirderDisplayObjectEvents,Events);
    return true; // acknowledge the event so that the object can become selected
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnLButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgePlanViewGirderDisplayObjectEvents::OnLButtonUp(std::shared_ptr<iDisplayObject> pDO,UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgePlanViewGirderDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnRButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgePlanViewGirderDisplayObjectEvents::OnRButtonDblClk(std::shared_ptr<iDisplayObject> pDO,UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgePlanViewGirderDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnRButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgePlanViewGirderDisplayObjectEvents::OnRButtonDown(std::shared_ptr<iDisplayObject> pDO,UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgePlanViewGirderDisplayObjectEvents,Events);
    return true; // acknowledge the event so that the object can become selected
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnRButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgePlanViewGirderDisplayObjectEvents::OnRButtonUp(std::shared_ptr<iDisplayObject> pDO,UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgePlanViewGirderDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnMouseMove(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgePlanViewGirderDisplayObjectEvents::OnMouseMove(std::shared_ptr<iDisplayObject> pDO,UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgePlanViewGirderDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnMouseWheel(iDisplayObject* pDO,UINT nFlags,short zDelta,CPoint point)
+bool CBridgePlanViewGirderDisplayObjectEvents::OnMouseWheel(std::shared_ptr<iDisplayObject> pDO,UINT nFlags,short zDelta, const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgePlanViewGirderDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnKeyDown(iDisplayObject* pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
+bool CBridgePlanViewGirderDisplayObjectEvents::OnKeyDown(std::shared_ptr<iDisplayObject> pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-   METHOD_PROLOGUE(CBridgePlanViewGirderDisplayObjectEvents,Events);
-
    if ( nChar == VK_RETURN )
    {
-      pThis->EditGirder(pDO);
+      EditGirder(pDO);
       return true;
    }
    else if ( nChar == VK_LEFT || nChar == VK_RIGHT )
    {
-      pThis->SelectSpan();
+      SelectSpan();
       return true;
    }
    else if ( nChar == VK_UP )
    {
-      pThis->SelectPrevGirder();
+      SelectPrevGirder();
       return true;
    }
    else if ( nChar == VK_DOWN )
    {
-      pThis->SelectNextGirder();
+      SelectNextGirder();
       return true;
    }
 
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObject* pDO,CWnd* pWnd,CPoint point)
+bool CBridgePlanViewGirderDisplayObjectEvents::OnContextMenu(std::shared_ptr<iDisplayObject> pDO,CWnd* pWnd, const POINT& point)
 {
-   METHOD_PROLOGUE_(CBridgePlanViewGirderDisplayObjectEvents,Events);
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    if ( pDO->IsSelected() )
    {
-      CComPtr<iDisplayList> pList;
-      pDO->GetDisplayList(&pList);
-
-      CComPtr<iDisplayMgr> pDispMgr;
-      pList->GetDisplayMgr(&pDispMgr);
-
-      CDisplayView* pView = pDispMgr->GetView();
+      auto pList = pDO->GetDisplayList();
+      auto pDispMgr = pList->GetDisplayMgr();
+      auto pView = pDispMgr->GetView();
       CDocument* pDoc = pView->GetDocument();
 
       CPGSDocBase* pPGSDoc = (CPGSDocBase*)pDoc;
@@ -261,10 +241,10 @@ STDMETHODIMP_(bool) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnContext
       for ( ; callbackIter != callbackIterEnd; callbackIter++ )
       {
          IBridgePlanViewEventCallback* pCallback = callbackIter->second;
-         pCallback->OnGirderContextMenu(pThis->m_GirderKey,pMenu);
+         pCallback->OnGirderContextMenu(m_GirderKey,pMenu);
       }
 
-      pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);
+      pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,m_pFrame);
 
       delete pMenu;
 
@@ -274,35 +254,29 @@ STDMETHODIMP_(bool) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnContext
    return false;
 }
 
-STDMETHODIMP_(void) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnChanged(iDisplayObject* pDO)
+void CBridgePlanViewGirderDisplayObjectEvents::OnChanged(std::shared_ptr<iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgePlanViewGirderDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnDragMoved(iDisplayObject* pDO,ISize2d* offset)
+void CBridgePlanViewGirderDisplayObjectEvents::OnDragMoved(std::shared_ptr<iDisplayObject> pDO,const WBFL::Geometry::Size2d& size)
 {
-   METHOD_PROLOGUE(CBridgePlanViewGirderDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnMoved(iDisplayObject* pDO)
+void CBridgePlanViewGirderDisplayObjectEvents::OnMoved(std::shared_ptr<iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgePlanViewGirderDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnCopied(iDisplayObject* pDO)
+void CBridgePlanViewGirderDisplayObjectEvents::OnCopied(std::shared_ptr<iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgePlanViewGirderDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnSelect(iDisplayObject* pDO)
+void CBridgePlanViewGirderDisplayObjectEvents::OnSelect(std::shared_ptr<iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgePlanViewGirderDisplayObjectEvents,Events);
-   pThis->SelectGirder(pDO);
+   SelectGirder(pDO);
 }
 
-STDMETHODIMP_(void) CBridgePlanViewGirderDisplayObjectEvents::XEvents::OnUnselect(iDisplayObject* pDO)
+void CBridgePlanViewGirderDisplayObjectEvents::OnUnselect(std::shared_ptr<iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgePlanViewGirderDisplayObjectEvents,Events);
 }
 
 
@@ -332,18 +306,12 @@ CBridgePlanViewSegmentDisplayObjectEvents::CBridgePlanViewSegmentDisplayObjectEv
    m_nGirders = pGroup->GetGirderCount();
 }
 
-BEGIN_INTERFACE_MAP(CBridgePlanViewSegmentDisplayObjectEvents, CCmdTarget)
-	INTERFACE_PART(CBridgePlanViewSegmentDisplayObjectEvents, IID_iDisplayObjectEvents, Events)
-END_INTERFACE_MAP()
-
-DELEGATE_CUSTOM_INTERFACE(CBridgePlanViewSegmentDisplayObjectEvents,Events);
-
-void CBridgePlanViewSegmentDisplayObjectEvents::EditSegment(iDisplayObject* pDO)
+void CBridgePlanViewSegmentDisplayObjectEvents::EditSegment(std::shared_ptr<iDisplayObject> pDO)
 {
    m_pFrame->PostMessage(WM_COMMAND,ID_EDIT_SEGMENT,0);
 }
 
-void CBridgePlanViewSegmentDisplayObjectEvents::SelectSegment(iDisplayObject* pDO)
+void CBridgePlanViewSegmentDisplayObjectEvents::SelectSegment(std::shared_ptr<iDisplayObject> pDO)
 {
    m_pFrame->SelectSegment(m_SegmentKey);
 }
@@ -441,11 +409,9 @@ void CBridgePlanViewSegmentDisplayObjectEvents::SelectAdjacentNextSegment()
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgePlanViewSegmentDisplayObjectEvents message handlers
-STDMETHODIMP_(bool) CBridgePlanViewSegmentDisplayObjectEvents::XEvents::OnLButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgePlanViewSegmentDisplayObjectEvents::OnLButtonDblClk(std::shared_ptr<iDisplayObject> pDO,UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSegmentDisplayObjectEvents,Events);
-   CComPtr<iDisplayObject> pParent;
-   pDO->GetParent(&pParent);
+   auto pParent = pDO->GetParent();
    if (pParent && pParent->IsSelected())
    {
       // we are part of a composite display object and the parent is selected
@@ -455,7 +421,7 @@ STDMETHODIMP_(bool) CBridgePlanViewSegmentDisplayObjectEvents::XEvents::OnLButto
 
    if (pDO->IsSelected())
    {
-      pThis->EditSegment(pDO);
+      EditSegment(pDO);
       return true;
    }
    else
@@ -464,95 +430,81 @@ STDMETHODIMP_(bool) CBridgePlanViewSegmentDisplayObjectEvents::XEvents::OnLButto
    }
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewSegmentDisplayObjectEvents::XEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgePlanViewSegmentDisplayObjectEvents::OnLButtonDown(std::shared_ptr<iDisplayObject> pDO,UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSegmentDisplayObjectEvents,Events);
    return true; // acknowledge the event so that the object can become selected
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewSegmentDisplayObjectEvents::XEvents::OnLButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgePlanViewSegmentDisplayObjectEvents::OnLButtonUp(std::shared_ptr<iDisplayObject> pDO,UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSegmentDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewSegmentDisplayObjectEvents::XEvents::OnRButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgePlanViewSegmentDisplayObjectEvents::OnRButtonDblClk(std::shared_ptr<iDisplayObject> pDO,UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSegmentDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewSegmentDisplayObjectEvents::XEvents::OnRButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgePlanViewSegmentDisplayObjectEvents::OnRButtonDown(std::shared_ptr<iDisplayObject> pDO,UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSegmentDisplayObjectEvents,Events);
    return true; // acknowledge the event so that the object can become selected
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewSegmentDisplayObjectEvents::XEvents::OnRButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgePlanViewSegmentDisplayObjectEvents::OnRButtonUp(std::shared_ptr<iDisplayObject> pDO,UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSegmentDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewSegmentDisplayObjectEvents::XEvents::OnMouseMove(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgePlanViewSegmentDisplayObjectEvents::OnMouseMove(std::shared_ptr<iDisplayObject> pDO,UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSegmentDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewSegmentDisplayObjectEvents::XEvents::OnMouseWheel(iDisplayObject* pDO,UINT nFlags,short zDelta,CPoint point)
+bool CBridgePlanViewSegmentDisplayObjectEvents::OnMouseWheel(std::shared_ptr<iDisplayObject> pDO,UINT nFlags,short zDelta, const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSegmentDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewSegmentDisplayObjectEvents::XEvents::OnKeyDown(iDisplayObject* pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
+bool CBridgePlanViewSegmentDisplayObjectEvents::OnKeyDown(std::shared_ptr<iDisplayObject> pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSegmentDisplayObjectEvents,Events);
-
    if ( nChar == VK_RETURN )
    {
-      pThis->EditSegment(pDO);
+      EditSegment(pDO);
       return true;
    }
    else if ( nChar == VK_LEFT )
    {
-      pThis->SelectPrevSegment();
+      SelectPrevSegment();
       return true;
    }
    else if ( nChar == VK_RIGHT )
    {
-      pThis->SelectNextSegment();
+      SelectNextSegment();
       return true;
    }
    else if ( nChar == VK_UP )
    {
-      pThis->SelectAdjacentPrevSegment();
+      SelectAdjacentPrevSegment();
       return true;
    }
    else if ( nChar == VK_DOWN )
    {
-      pThis->SelectAdjacentNextSegment();
+      SelectAdjacentNextSegment();
       return true;
    }
 
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewSegmentDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObject* pDO,CWnd* pWnd,CPoint point)
+bool CBridgePlanViewSegmentDisplayObjectEvents::OnContextMenu(std::shared_ptr<iDisplayObject> pDO,CWnd* pWnd, const POINT& point)
 {
-   METHOD_PROLOGUE_(CBridgePlanViewSegmentDisplayObjectEvents,Events);
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    if ( pDO->IsSelected() )
    {
-      CComPtr<iDisplayList> pList;
-      pDO->GetDisplayList(&pList);
-
-      CComPtr<iDisplayMgr> pDispMgr;
-      pList->GetDisplayMgr(&pDispMgr);
-
-      CDisplayView* pView = pDispMgr->GetView();
+      auto pList = pDO->GetDisplayList();
+      auto pDispMgr = pList->GetDisplayMgr();
+      auto pView = pDispMgr->GetView();
       CDocument* pDoc = pView->GetDocument();
 
       CPGSDocBase* pPGSuperDoc = (CPGSDocBase*)pDoc;
@@ -574,10 +526,10 @@ STDMETHODIMP_(bool) CBridgePlanViewSegmentDisplayObjectEvents::XEvents::OnContex
       for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
       {
          IBridgePlanViewEventCallback* callback = iter->second;
-         callback->OnGirderSegmentContextMenu(pThis->m_SegmentKey,pMenu);
+         callback->OnGirderSegmentContextMenu(m_SegmentKey,pMenu);
       }
 
-      pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);
+      pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,m_pFrame);
 
       delete pMenu;
 
@@ -587,38 +539,30 @@ STDMETHODIMP_(bool) CBridgePlanViewSegmentDisplayObjectEvents::XEvents::OnContex
    return false;
 }
 
-STDMETHODIMP_(void) CBridgePlanViewSegmentDisplayObjectEvents::XEvents::OnChanged(iDisplayObject* pDO)
+void CBridgePlanViewSegmentDisplayObjectEvents::OnChanged(std::shared_ptr<iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSegmentDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CBridgePlanViewSegmentDisplayObjectEvents::XEvents::OnDragMoved(iDisplayObject* pDO,ISize2d* offset)
+void CBridgePlanViewSegmentDisplayObjectEvents::OnDragMoved(std::shared_ptr<iDisplayObject> pDO,const WBFL::Geometry::Size2d& size)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSegmentDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CBridgePlanViewSegmentDisplayObjectEvents::XEvents::OnMoved(iDisplayObject* pDO)
+void CBridgePlanViewSegmentDisplayObjectEvents::OnMoved(std::shared_ptr<iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSegmentDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CBridgePlanViewSegmentDisplayObjectEvents::XEvents::OnCopied(iDisplayObject* pDO)
+void CBridgePlanViewSegmentDisplayObjectEvents::OnCopied(std::shared_ptr<iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSegmentDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CBridgePlanViewSegmentDisplayObjectEvents::XEvents::OnSelect(iDisplayObject* pDO)
+void CBridgePlanViewSegmentDisplayObjectEvents::OnSelect(std::shared_ptr<iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSegmentDisplayObjectEvents,Events);
-   pThis->SelectSegment(pDO);
+   SelectSegment(pDO);
 }
 
-STDMETHODIMP_(void) CBridgePlanViewSegmentDisplayObjectEvents::XEvents::OnUnselect(iDisplayObject* pDO)
+void CBridgePlanViewSegmentDisplayObjectEvents::OnUnselect(std::shared_ptr<iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSegmentDisplayObjectEvents,Events);
 }
-
-
 
 /////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
@@ -642,18 +586,12 @@ CBridgeSectionViewGirderDisplayObjectEvents::CBridgeSectionViewGirderDisplayObje
    m_pFrame            = pFrame;
 }
 
-BEGIN_INTERFACE_MAP(CBridgeSectionViewGirderDisplayObjectEvents, CCmdTarget)
-	INTERFACE_PART(CBridgeSectionViewGirderDisplayObjectEvents, IID_iDisplayObjectEvents, Events)
-END_INTERFACE_MAP()
-
-DELEGATE_CUSTOM_INTERFACE(CBridgeSectionViewGirderDisplayObjectEvents,Events);
-
-void CBridgeSectionViewGirderDisplayObjectEvents::EditGirder(iDisplayObject* pDO)
+void CBridgeSectionViewGirderDisplayObjectEvents::EditGirder(std::shared_ptr<iDisplayObject> pDO)
 {
    m_pFrame->PostMessage(WM_COMMAND,ID_EDIT_GIRDER,0);
 }
 
-void CBridgeSectionViewGirderDisplayObjectEvents::SelectGirder(iDisplayObject* pDO)
+void CBridgeSectionViewGirderDisplayObjectEvents::SelectGirder(std::shared_ptr<iDisplayObject> pDO)
 {
    // do the selection at the frame level because it will do this view
    // and the other view
@@ -696,12 +634,11 @@ void CBridgeSectionViewGirderDisplayObjectEvents::SelectSpan()
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeSectionViewGirderDisplayObjectEvents message handlers
-STDMETHODIMP_(bool) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnLButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgeSectionViewGirderDisplayObjectEvents::OnLButtonDblClk(std::shared_ptr<iDisplayObject> pDO,UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewGirderDisplayObjectEvents,Events);
    if (pDO->IsSelected())
    {
-      pThis->EditGirder(pDO);
+      EditGirder(pDO);
       return true;
    }
    else
@@ -710,75 +647,65 @@ STDMETHODIMP_(bool) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnLBut
    }
 }
 
-STDMETHODIMP_(bool) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgeSectionViewGirderDisplayObjectEvents::OnLButtonDown(std::shared_ptr<iDisplayObject> pDO,UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewGirderDisplayObjectEvents,Events);
    return true; // acknowledge the event so that the object can become selected
 }
 
-STDMETHODIMP_(bool) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnLButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgeSectionViewGirderDisplayObjectEvents::OnLButtonUp(std::shared_ptr<iDisplayObject> pDO,UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewGirderDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnRButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgeSectionViewGirderDisplayObjectEvents::OnRButtonDblClk(std::shared_ptr<iDisplayObject> pDO,UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewGirderDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnRButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgeSectionViewGirderDisplayObjectEvents::OnRButtonDown(std::shared_ptr<iDisplayObject> pDO,UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewGirderDisplayObjectEvents,Events);
    return true; // acknowledge the event so that the object can become selected
 }
 
-STDMETHODIMP_(bool) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnRButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgeSectionViewGirderDisplayObjectEvents::OnRButtonUp(std::shared_ptr<iDisplayObject> pDO,UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewGirderDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnMouseMove(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgeSectionViewGirderDisplayObjectEvents::OnMouseMove(std::shared_ptr<iDisplayObject> pDO,UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewGirderDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnMouseWheel(iDisplayObject* pDO,UINT nFlags,short zDetla,CPoint point)
+bool CBridgeSectionViewGirderDisplayObjectEvents::OnMouseWheel(std::shared_ptr<iDisplayObject> pDO,UINT nFlags,short zDetla, const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewGirderDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnKeyDown(iDisplayObject* pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
+bool CBridgeSectionViewGirderDisplayObjectEvents::OnKeyDown(std::shared_ptr<iDisplayObject> pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewGirderDisplayObjectEvents,Events);
-
    bool bEventHandled = false;
    if ( nChar == VK_RETURN )
    {
-      pThis->EditGirder(pDO);
+      EditGirder(pDO);
       bEventHandled = true;
    }
    else if ( nChar == VK_LEFT )
    {
-      pThis->SelectPrevGirder();
+      SelectPrevGirder();
       bEventHandled = true;
    }
    else if ( nChar == VK_RIGHT )
    {
-      pThis->SelectNextGirder();
+      SelectNextGirder();
       bEventHandled = true;
    }
 
    return bEventHandled;
 }
 
-STDMETHODIMP_(bool) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObject* pDO,CWnd* pWnd,CPoint point)
+bool CBridgeSectionViewGirderDisplayObjectEvents::OnContextMenu(std::shared_ptr<iDisplayObject> pDO,CWnd* pWnd, const POINT& point)
 {
-   METHOD_PROLOGUE_(CBridgeSectionViewGirderDisplayObjectEvents,Events);
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    if ( pDO->IsSelected() )
@@ -799,7 +726,7 @@ STDMETHODIMP_(bool) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnCont
          CComPtr<IBroker> pBroker;
          EAFGetBroker(&pBroker);
          GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-         SegmentIndexType nSegments = pIBridgeDesc->GetBridgeDescription()->GetGirderGroup(pThis->m_GirderKey.groupIndex)->GetGirder(pThis->m_GirderKey.girderIndex)->GetSegmentCount();
+         SegmentIndexType nSegments = pIBridgeDesc->GetBridgeDescription()->GetGirderGroup(m_GirderKey.groupIndex)->GetGirder(m_GirderKey.girderIndex)->GetSegmentCount();
          for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
          {
             CString strMenuItem;
@@ -821,10 +748,10 @@ STDMETHODIMP_(bool) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnCont
       for ( ; callbackIter != callbackIterEnd; callbackIter++ )
       {
          IBridgeSectionViewEventCallback* pCallback = callbackIter->second;
-         pCallback->OnGirderContextMenu(pThis->m_GirderKey,pMenu);
+         pCallback->OnGirderContextMenu(m_GirderKey,pMenu);
       }
 
-      pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);
+      pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,m_pFrame);
 
       delete pMenu;
 
@@ -834,43 +761,37 @@ STDMETHODIMP_(bool) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnCont
    return false;
 }
 
-STDMETHODIMP_(void) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnChanged(iDisplayObject* pDO)
+void CBridgeSectionViewGirderDisplayObjectEvents::OnChanged(std::shared_ptr<iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewGirderDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnDragMoved(iDisplayObject* pDO,ISize2d* offset)
+void CBridgeSectionViewGirderDisplayObjectEvents::OnDragMoved(std::shared_ptr<iDisplayObject> pDO,const WBFL::Geometry::Size2d& offset)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewGirderDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnMoved(iDisplayObject* pDO)
+void CBridgeSectionViewGirderDisplayObjectEvents::OnMoved(std::shared_ptr<iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewGirderDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnCopied(iDisplayObject* pDO)
+void CBridgeSectionViewGirderDisplayObjectEvents::OnCopied(std::shared_ptr<iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewGirderDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnSelect(iDisplayObject* pDO)
+void CBridgeSectionViewGirderDisplayObjectEvents::OnSelect(std::shared_ptr<iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewGirderDisplayObjectEvents,Events);
-   pThis->SelectGirder(pDO);
+   SelectGirder(pDO);
 }
 
-STDMETHODIMP_(void) CBridgeSectionViewGirderDisplayObjectEvents::XEvents::OnUnselect(iDisplayObject* pDO)
+void CBridgeSectionViewGirderDisplayObjectEvents::OnUnselect(std::shared_ptr<iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewGirderDisplayObjectEvents,Events);
 }
 
 
-/////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -882,13 +803,7 @@ CGirderElevationViewSegmentDisplayObjectEvents::CGirderElevationViewSegmentDispl
    m_pFrame = pFrame;
 }
 
-BEGIN_INTERFACE_MAP(CGirderElevationViewSegmentDisplayObjectEvents, CCmdTarget)
-   INTERFACE_PART(CGirderElevationViewSegmentDisplayObjectEvents, IID_iDisplayObjectEvents, Events)
-END_INTERFACE_MAP()
-
-DELEGATE_CUSTOM_INTERFACE(CGirderElevationViewSegmentDisplayObjectEvents, Events);
-
-void CGirderElevationViewSegmentDisplayObjectEvents::EditSegment(iDisplayObject* pDO)
+void CGirderElevationViewSegmentDisplayObjectEvents::EditSegment(std::shared_ptr<iDisplayObject> pDO)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -898,73 +813,59 @@ void CGirderElevationViewSegmentDisplayObjectEvents::EditSegment(iDisplayObject*
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderElevationViewSegmentDisplayObjectEvents message handlers
-STDMETHODIMP_(bool) CGirderElevationViewSegmentDisplayObjectEvents::XEvents::OnLButtonDblClk(iDisplayObject* pDO, UINT nFlags, CPoint point)
+bool CGirderElevationViewSegmentDisplayObjectEvents::OnLButtonDblClk(std::shared_ptr<iDisplayObject> pDO, UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CGirderElevationViewSegmentDisplayObjectEvents, Events);
-   pThis->EditSegment(pDO);
+   EditSegment(pDO);
    return true;
 }
 
-STDMETHODIMP_(bool) CGirderElevationViewSegmentDisplayObjectEvents::XEvents::OnLButtonDown(iDisplayObject* pDO, UINT nFlags, CPoint point)
+bool CGirderElevationViewSegmentDisplayObjectEvents::OnLButtonDown(std::shared_ptr<iDisplayObject> pDO, UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CGirderElevationViewSegmentDisplayObjectEvents, Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CGirderElevationViewSegmentDisplayObjectEvents::XEvents::OnLButtonUp(iDisplayObject* pDO, UINT nFlags, CPoint point)
+bool CGirderElevationViewSegmentDisplayObjectEvents::OnLButtonUp(std::shared_ptr<iDisplayObject> pDO, UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CGirderElevationViewSegmentDisplayObjectEvents, Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CGirderElevationViewSegmentDisplayObjectEvents::XEvents::OnRButtonDblClk(iDisplayObject* pDO, UINT nFlags, CPoint point)
+bool CGirderElevationViewSegmentDisplayObjectEvents::OnRButtonDblClk(std::shared_ptr<iDisplayObject> pDO, UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CGirderElevationViewSegmentDisplayObjectEvents, Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CGirderElevationViewSegmentDisplayObjectEvents::XEvents::OnRButtonDown(iDisplayObject* pDO, UINT nFlags, CPoint point)
+bool CGirderElevationViewSegmentDisplayObjectEvents::OnRButtonDown(std::shared_ptr<iDisplayObject> pDO, UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CGirderElevationViewSegmentDisplayObjectEvents, Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CGirderElevationViewSegmentDisplayObjectEvents::XEvents::OnRButtonUp(iDisplayObject* pDO, UINT nFlags, CPoint point)
+bool CGirderElevationViewSegmentDisplayObjectEvents::OnRButtonUp(std::shared_ptr<iDisplayObject> pDO, UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CGirderElevationViewSegmentDisplayObjectEvents, Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CGirderElevationViewSegmentDisplayObjectEvents::XEvents::OnMouseMove(iDisplayObject* pDO, UINT nFlags, CPoint point)
+bool CGirderElevationViewSegmentDisplayObjectEvents::OnMouseMove(std::shared_ptr<iDisplayObject> pDO, UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CGirderElevationViewSegmentDisplayObjectEvents, Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CGirderElevationViewSegmentDisplayObjectEvents::XEvents::OnMouseWheel(iDisplayObject* pDO, UINT nFlags, short zDelta, CPoint point)
+bool CGirderElevationViewSegmentDisplayObjectEvents::OnMouseWheel(std::shared_ptr<iDisplayObject> pDO, UINT nFlags, short zDelta, const POINT& point)
 {
-   METHOD_PROLOGUE(CGirderElevationViewSegmentDisplayObjectEvents, Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CGirderElevationViewSegmentDisplayObjectEvents::XEvents::OnKeyDown(iDisplayObject* pDO, UINT nChar, UINT nRepCnt, UINT nFlags)
+bool CGirderElevationViewSegmentDisplayObjectEvents::OnKeyDown(std::shared_ptr<iDisplayObject> pDO, UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-   METHOD_PROLOGUE(CGirderElevationViewSegmentDisplayObjectEvents, Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CGirderElevationViewSegmentDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObject* pDO, CWnd* pWnd, CPoint point)
+bool CGirderElevationViewSegmentDisplayObjectEvents::OnContextMenu(std::shared_ptr<iDisplayObject> pDO, CWnd* pWnd, const POINT& point)
 {
-   METHOD_PROLOGUE_(CGirderElevationViewSegmentDisplayObjectEvents, Events);
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    if (pDO->IsSelected())
    {
-      CComPtr<iDisplayList> pList;
-      pDO->GetDisplayList(&pList);
-
-      CComPtr<iDisplayMgr> pDispMgr;
-      pList->GetDisplayMgr(&pDispMgr);
+      auto pDispMgr = pDO->GetDisplayList()->GetDisplayMgr();
 
       CDisplayView* pView = pDispMgr->GetView();
       CDocument* pDoc = pView->GetDocument();
@@ -988,10 +889,10 @@ STDMETHODIMP_(bool) CGirderElevationViewSegmentDisplayObjectEvents::XEvents::OnC
       for (iter = callbacks.begin(); iter != callbacks.end(); iter++)
       {
          IGirderElevationViewEventCallback* callback = iter->second;
-         callback->OnGirderSegmentContextMenu(pThis->m_SegmentKey, pMenu);
+         callback->OnGirderSegmentContextMenu(m_SegmentKey, pMenu);
       }
 
-      pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, pThis->m_pFrame);
+      pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, m_pFrame);
 
       delete pMenu;
 
@@ -1001,34 +902,28 @@ STDMETHODIMP_(bool) CGirderElevationViewSegmentDisplayObjectEvents::XEvents::OnC
    return false;
 }
 
-STDMETHODIMP_(void) CGirderElevationViewSegmentDisplayObjectEvents::XEvents::OnChanged(iDisplayObject* pDO)
+void CGirderElevationViewSegmentDisplayObjectEvents::OnChanged(std::shared_ptr<iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CGirderElevationViewSegmentDisplayObjectEvents, Events);
 }
 
-STDMETHODIMP_(void) CGirderElevationViewSegmentDisplayObjectEvents::XEvents::OnDragMoved(iDisplayObject* pDO, ISize2d* offset)
+void CGirderElevationViewSegmentDisplayObjectEvents::OnDragMoved(std::shared_ptr<iDisplayObject> pDO, const WBFL::Geometry::Size2d& offset)
 {
-   METHOD_PROLOGUE(CGirderElevationViewSegmentDisplayObjectEvents, Events);
 }
 
-STDMETHODIMP_(void) CGirderElevationViewSegmentDisplayObjectEvents::XEvents::OnMoved(iDisplayObject* pDO)
+void CGirderElevationViewSegmentDisplayObjectEvents::OnMoved(std::shared_ptr<iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CGirderElevationViewSegmentDisplayObjectEvents, Events);
 }
 
-STDMETHODIMP_(void) CGirderElevationViewSegmentDisplayObjectEvents::XEvents::OnCopied(iDisplayObject* pDO)
+void CGirderElevationViewSegmentDisplayObjectEvents::OnCopied(std::shared_ptr<iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CGirderElevationViewSegmentDisplayObjectEvents, Events);
 }
 
-STDMETHODIMP_(void) CGirderElevationViewSegmentDisplayObjectEvents::XEvents::OnSelect(iDisplayObject* pDO)
+void CGirderElevationViewSegmentDisplayObjectEvents::OnSelect(std::shared_ptr<iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CGirderElevationViewSegmentDisplayObjectEvents, Events);
 }
 
-STDMETHODIMP_(void) CGirderElevationViewSegmentDisplayObjectEvents::XEvents::OnUnselect(iDisplayObject* pDO)
+void CGirderElevationViewSegmentDisplayObjectEvents::OnUnselect(std::shared_ptr<iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CGirderElevationViewSegmentDisplayObjectEvents, Events);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1047,13 +942,8 @@ CGirderSectionViewSegmentDisplayObjectEvents::CGirderSectionViewSegmentDisplayOb
    m_pFrame = pFrame;
 }
 
-BEGIN_INTERFACE_MAP(CGirderSectionViewSegmentDisplayObjectEvents, CCmdTarget)
-   INTERFACE_PART(CGirderSectionViewSegmentDisplayObjectEvents, IID_iDisplayObjectEvents, Events)
-END_INTERFACE_MAP()
 
-DELEGATE_CUSTOM_INTERFACE(CGirderSectionViewSegmentDisplayObjectEvents, Events);
-
-void CGirderSectionViewSegmentDisplayObjectEvents::EditSegment(iDisplayObject* pDO)
+void CGirderSectionViewSegmentDisplayObjectEvents::EditSegment(std::shared_ptr<iDisplayObject> pDO)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -1063,73 +953,60 @@ void CGirderSectionViewSegmentDisplayObjectEvents::EditSegment(iDisplayObject* p
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderElevationViewSegmentDisplayObjectEvents message handlers
-STDMETHODIMP_(bool) CGirderSectionViewSegmentDisplayObjectEvents::XEvents::OnLButtonDblClk(iDisplayObject* pDO, UINT nFlags, CPoint point)
+bool CGirderSectionViewSegmentDisplayObjectEvents::OnLButtonDblClk(std::shared_ptr<iDisplayObject> pDO, UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CGirderSectionViewSegmentDisplayObjectEvents, Events);
-   pThis->EditSegment(pDO);
+   EditSegment(pDO);
    return true;
 }
 
-STDMETHODIMP_(bool) CGirderSectionViewSegmentDisplayObjectEvents::XEvents::OnLButtonDown(iDisplayObject* pDO, UINT nFlags, CPoint point)
+bool CGirderSectionViewSegmentDisplayObjectEvents::OnLButtonDown(std::shared_ptr<iDisplayObject> pDO, UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CGirderSectionViewSegmentDisplayObjectEvents, Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CGirderSectionViewSegmentDisplayObjectEvents::XEvents::OnLButtonUp(iDisplayObject* pDO, UINT nFlags, CPoint point)
+bool CGirderSectionViewSegmentDisplayObjectEvents::OnLButtonUp(std::shared_ptr<iDisplayObject> pDO, UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CGirderSectionViewSegmentDisplayObjectEvents, Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CGirderSectionViewSegmentDisplayObjectEvents::XEvents::OnRButtonDblClk(iDisplayObject* pDO, UINT nFlags, CPoint point)
+bool CGirderSectionViewSegmentDisplayObjectEvents::OnRButtonDblClk(std::shared_ptr<iDisplayObject> pDO, UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CGirderSectionViewSegmentDisplayObjectEvents, Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CGirderSectionViewSegmentDisplayObjectEvents::XEvents::OnRButtonDown(iDisplayObject* pDO, UINT nFlags, CPoint point)
+bool CGirderSectionViewSegmentDisplayObjectEvents::OnRButtonDown(std::shared_ptr<iDisplayObject> pDO, UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CGirderSectionViewSegmentDisplayObjectEvents, Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CGirderSectionViewSegmentDisplayObjectEvents::XEvents::OnRButtonUp(iDisplayObject* pDO, UINT nFlags, CPoint point)
+bool CGirderSectionViewSegmentDisplayObjectEvents::OnRButtonUp(std::shared_ptr<iDisplayObject> pDO, UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CGirderSectionViewSegmentDisplayObjectEvents, Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CGirderSectionViewSegmentDisplayObjectEvents::XEvents::OnMouseMove(iDisplayObject* pDO, UINT nFlags, CPoint point)
+bool CGirderSectionViewSegmentDisplayObjectEvents::OnMouseMove(std::shared_ptr<iDisplayObject> pDO, UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CGirderSectionViewSegmentDisplayObjectEvents, Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CGirderSectionViewSegmentDisplayObjectEvents::XEvents::OnMouseWheel(iDisplayObject* pDO, UINT nFlags, short zDelta, CPoint point)
+bool CGirderSectionViewSegmentDisplayObjectEvents::OnMouseWheel(std::shared_ptr<iDisplayObject> pDO, UINT nFlags, short zDelta, const POINT& point)
 {
-   METHOD_PROLOGUE(CGirderSectionViewSegmentDisplayObjectEvents, Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CGirderSectionViewSegmentDisplayObjectEvents::XEvents::OnKeyDown(iDisplayObject* pDO, UINT nChar, UINT nRepCnt, UINT nFlags)
+bool CGirderSectionViewSegmentDisplayObjectEvents::OnKeyDown(std::shared_ptr<iDisplayObject> pDO, UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-   METHOD_PROLOGUE(CGirderSectionViewSegmentDisplayObjectEvents, Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CGirderSectionViewSegmentDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObject* pDO, CWnd* pWnd, CPoint point)
+bool CGirderSectionViewSegmentDisplayObjectEvents::OnContextMenu(std::shared_ptr<iDisplayObject> pDO, CWnd* pWnd, const POINT& point)
 {
-   METHOD_PROLOGUE_(CGirderSectionViewSegmentDisplayObjectEvents, Events);
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    if (pDO->IsSelected())
    {
-      CComPtr<iDisplayList> pList;
-      pDO->GetDisplayList(&pList);
-
-      CComPtr<iDisplayMgr> pDispMgr;
-      pList->GetDisplayMgr(&pDispMgr);
+      auto pList = pDO->GetDisplayList();
+      auto pDispMgr = pList->GetDisplayMgr();
 
       CDisplayView* pView = pDispMgr->GetView();
       CDocument* pDoc = pView->GetDocument();
@@ -1153,10 +1030,10 @@ STDMETHODIMP_(bool) CGirderSectionViewSegmentDisplayObjectEvents::XEvents::OnCon
       for (iter = callbacks.begin(); iter != callbacks.end(); iter++)
       {
          IGirderSectionViewEventCallback* callback = iter->second;
-         callback->OnGirderSectionContextMenu(pThis->m_POI, pMenu);
+         callback->OnGirderSectionContextMenu(m_POI, pMenu);
       }
 
-      pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, pThis->m_pFrame);
+      pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, m_pFrame);
 
       delete pMenu;
 
@@ -1166,32 +1043,26 @@ STDMETHODIMP_(bool) CGirderSectionViewSegmentDisplayObjectEvents::XEvents::OnCon
    return false;
 }
 
-STDMETHODIMP_(void) CGirderSectionViewSegmentDisplayObjectEvents::XEvents::OnChanged(iDisplayObject* pDO)
+void CGirderSectionViewSegmentDisplayObjectEvents::OnChanged(std::shared_ptr<iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CGirderSectionViewSegmentDisplayObjectEvents, Events);
 }
 
-STDMETHODIMP_(void) CGirderSectionViewSegmentDisplayObjectEvents::XEvents::OnDragMoved(iDisplayObject* pDO, ISize2d* offset)
+void CGirderSectionViewSegmentDisplayObjectEvents::OnDragMoved(std::shared_ptr<iDisplayObject> pDO, const WBFL::Geometry::Size2d& offset)
 {
-   METHOD_PROLOGUE(CGirderSectionViewSegmentDisplayObjectEvents, Events);
 }
 
-STDMETHODIMP_(void) CGirderSectionViewSegmentDisplayObjectEvents::XEvents::OnMoved(iDisplayObject* pDO)
+void CGirderSectionViewSegmentDisplayObjectEvents::OnMoved(std::shared_ptr<iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CGirderSectionViewSegmentDisplayObjectEvents, Events);
 }
 
-STDMETHODIMP_(void) CGirderSectionViewSegmentDisplayObjectEvents::XEvents::OnCopied(iDisplayObject* pDO)
+void CGirderSectionViewSegmentDisplayObjectEvents::OnCopied(std::shared_ptr<iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CGirderSectionViewSegmentDisplayObjectEvents, Events);
 }
 
-STDMETHODIMP_(void) CGirderSectionViewSegmentDisplayObjectEvents::XEvents::OnSelect(iDisplayObject* pDO)
+void CGirderSectionViewSegmentDisplayObjectEvents::OnSelect(std::shared_ptr<iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CGirderSectionViewSegmentDisplayObjectEvents, Events);
 }
 
-STDMETHODIMP_(void) CGirderSectionViewSegmentDisplayObjectEvents::XEvents::OnUnselect(iDisplayObject* pDO)
+void CGirderSectionViewSegmentDisplayObjectEvents::OnUnselect(std::shared_ptr<iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CGirderSectionViewSegmentDisplayObjectEvents, Events);
 }

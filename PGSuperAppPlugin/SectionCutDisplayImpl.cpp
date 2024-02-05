@@ -22,7 +22,6 @@
 
 #include "stdafx.h"
 #include "SectionCutDisplayImpl.h"
-#include "mfcdual.h"
 #include <MathEx.h>
 #include <PGSuperColors.h>
 #include <IFace\Bridge.h>
@@ -33,14 +32,10 @@
 #include <PgsExt\BridgeDescription2.h>
 #include "PGSuperDoc.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-// NOTE: See GirderModelChildFrame.cpp for information about the coordinate systems used girder model views
-
+#include <DManip/PointDisplayObject.h>
+#include <DManip/DisplayMgr.h>
+#include <DManip/TaskFactory.h>
+#include <DManip/DisplayView.h>
 
 // height of section cut above/below girder
 static const Uint32 SSIZE = 1440 * 3/8; // (twips)
@@ -52,89 +47,50 @@ CSectionCutDisplayImpl::CSectionCutDisplayImpl():
 m_pCutLocation(nullptr),
 m_Color(CUT_COLOR)
 {
-   EnableAutomation ();
-
-   m_CachePoint.CoCreateInstance(CLSID_Point2d);
 }
 
 CSectionCutDisplayImpl::~CSectionCutDisplayImpl()
 {
 }
 
-BEGIN_MESSAGE_MAP(CSectionCutDisplayImpl, CCmdTarget)
-	//{{AFX_MSG_MAP(CSectionCutDisplayImpl)
-		// NOTE - the ClassWizard will add and remove mapping macros here.
-		//    DO NOT EDIT what you see in these blocks of generated code!
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-BEGIN_INTERFACE_MAP(CSectionCutDisplayImpl,CCmdTarget)
-   INTERFACE_PART(CSectionCutDisplayImpl,IID_iDrawPointStrategy,DrawPointStrategy)
-   INTERFACE_PART(CSectionCutDisplayImpl,IID_iSectionCutDrawStrategy,Strategy)
-//   INTERFACE_PART(CSectionCutDisplayImpl,IID_iSectionCutEvents,Events)
-   INTERFACE_PART(CSectionCutDisplayImpl,IID_iDisplayObjectEvents,DisplayObjectEvents)
-   INTERFACE_PART(CSectionCutDisplayImpl,IID_iDragData,DragData)
-END_INTERFACE_MAP()
-
-DELEGATE_CUSTOM_INTERFACE(CSectionCutDisplayImpl,DrawPointStrategy);
-DELEGATE_CUSTOM_INTERFACE(CSectionCutDisplayImpl,Strategy);
-//DELEGATE_CUSTOM_INTERFACE(CSectionCutDisplayImpl,Events);
-DELEGATE_CUSTOM_INTERFACE(CSectionCutDisplayImpl,DisplayObjectEvents);
-DELEGATE_CUSTOM_INTERFACE(CSectionCutDisplayImpl,DragData);
-
-// This goes in the source code file
- // Note: ClassWizard looks for these comments:
- BEGIN_DISPATCH_MAP(CSectionCutDisplayImpl, CCmdTarget)
-     //{{AFX_DISPATCH_MAP(AClassWithAutomation)
-        // NOTE - the ClassWizard will add and remove mapping macros here.
-     //}}AFX_DISPATCH_MAP
- END_DISPATCH_MAP()
- 
-
-STDMETHODIMP_(void) CSectionCutDisplayImpl::XStrategy::Init(iPointDisplayObject* pDO, IBroker* pBroker, const CGirderKey& girderKey, iCutLocation* pCutLoc)
+void CSectionCutDisplayImpl::Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, IBroker* pBroker, const CGirderKey& girderKey, iCutLocation* pCutLoc)
 {
-   METHOD_PROLOGUE(CSectionCutDisplayImpl,Strategy);
+   m_pBroker = pBroker;
 
-   pThis->m_pBroker = pBroker;
+   m_GirderKey = girderKey;
 
-   pThis->m_GirderKey = girderKey;
-
-   pCutLoc->GetCutRange(&(pThis->m_MinCutLocation), &(pThis->m_MaxCutLocation));
+   pCutLoc->GetCutRange(&(m_MinCutLocation), &(m_MaxCutLocation));
   
-   pThis->m_pCutLocation = pCutLoc;
+   m_pCutLocation = pCutLoc;
 
-   Float64 Xgl = pThis->m_pCutLocation->GetCurrentCutLocation();
+   Float64 Xgl = m_pCutLocation->GetCurrentCutLocation();
 
-   CComPtr<IPoint2d> pnt;
-   pnt.CoCreateInstance(CLSID_Point2d);
-   pnt->put_X(Xgl);
-   pnt->put_Y(0.0);
-   pDO->SetPosition(pnt, FALSE, FALSE);
+   WBFL::Geometry::Point2d pnt(Xgl, 0.0);
+   pDO->SetPosition(pnt, false, false);
 }
 
-
-STDMETHODIMP_(void) CSectionCutDisplayImpl::XStrategy::SetColor(COLORREF color)
+void CSectionCutDisplayImpl::SetColor(COLORREF color)
 {
-   METHOD_PROLOGUE(CSectionCutDisplayImpl,Strategy);
-   pThis->m_Color = color;
+   m_Color = color;
 }
 
-
-STDMETHODIMP_(pgsPointOfInterest) CSectionCutDisplayImpl::XStrategy::GetCutPOI(Float64 Xgl)
+pgsPointOfInterest CSectionCutDisplayImpl::GetCutPOI(Float64 Xgl) const
 {
-   METHOD_PROLOGUE(CSectionCutDisplayImpl,Strategy);
-   return pThis->GetCutPOI(Xgl);
+   GET_IFACE(IPointOfInterest, pPoi);
+   if (m_GirderKey.groupIndex == ALL_GROUPS)
+   {
+      return pPoi->ConvertGirderlineCoordinateToPoi(m_GirderKey.girderIndex, Xgl);
+   }
+   else
+   {
+      return pPoi->ConvertGirderPathCoordinateToPoi(m_GirderKey, Xgl);
+   }
 }
 
-STDMETHODIMP_(void) CSectionCutDisplayImpl::XDrawPointStrategy::Draw(iPointDisplayObject* pDO,CDC* pDC)
+void CSectionCutDisplayImpl::Draw(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC) const
 {
-   METHOD_PROLOGUE(CSectionCutDisplayImpl,DrawPointStrategy);
-
-   CComPtr<iDisplayList> pDL;
-   pDO->GetDisplayList(&pDL);
-
-   CComPtr<iDisplayMgr> pDispMgr;
-   pDL->GetDisplayMgr(&pDispMgr);
+   auto pDL = pDO->GetDisplayList();
+   auto pDispMgr = pDL->GetDisplayMgr();
 
    COLORREF color;
 
@@ -144,68 +100,47 @@ STDMETHODIMP_(void) CSectionCutDisplayImpl::XDrawPointStrategy::Draw(iPointDispl
    }
    else
    {
-      color = pThis->m_Color;
+      color = m_Color;
    }
 
-   CComPtr<IPoint2d> pos;
-   pDO->GetPosition(&pos);
+   auto pos = pDO->GetPosition();
 
-   pThis->Draw(pDO,pDC,color,pos);
+   Draw(pDO,pDC,color,pos);
 }
 
-STDMETHODIMP_(void) CSectionCutDisplayImpl::XDrawPointStrategy::DrawHighlite(iPointDisplayObject* pDO,CDC* pDC,BOOL bHighlite)
+void CSectionCutDisplayImpl::DrawHighlight(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO,CDC* pDC,bool bHighlite) const
 {
-   METHOD_PROLOGUE(CSectionCutDisplayImpl,DrawPointStrategy);
    Draw(pDO,pDC);
 }
 
-STDMETHODIMP_(void) CSectionCutDisplayImpl::XDrawPointStrategy::DrawDragImage(iPointDisplayObject* pDO,CDC* pDC, iCoordinateMap* map, const CPoint& dragStart, const CPoint& dragPoint)
+void CSectionCutDisplayImpl::DrawDragImage(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO,CDC* pDC, std::shared_ptr<const WBFL::DManip::iCoordinateMap> map, const POINT& dragStart, const POINT& dragPoint) const
 {
-   METHOD_PROLOGUE(CSectionCutDisplayImpl,DrawPointStrategy);
-
    Float64 wx, wy;
    map->LPtoWP(dragPoint.x, dragPoint.y, &wx, &wy);
-   pThis->m_CachePoint->Move(wx, wy);
+   m_CachePoint.Move(wx, wy);
 
-   pThis->Draw(pDO,pDC,SELECTED_OBJECT_LINE_COLOR,pThis->m_CachePoint);
+   Draw(pDO,pDC,SELECTED_OBJECT_LINE_COLOR,m_CachePoint);
 }
 
 
-STDMETHODIMP_(void) CSectionCutDisplayImpl::XDrawPointStrategy::GetBoundingBox(iPointDisplayObject* pDO, IRect2d** rect)
+WBFL::Geometry::Rect2d CSectionCutDisplayImpl::GetBoundingBox(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO) const
 {
-   METHOD_PROLOGUE(CSectionCutDisplayImpl,DrawPointStrategy);
-
-   CComPtr<IPoint2d> pnt;
-   pDO->GetPosition(&pnt);
+   auto pnt = pDO->GetPosition();
    
-   Float64 Xgl;
-   pnt->get_X(&Xgl);
+   Float64 Xgl = pnt.X();
 
    Float64 top, left, right, bottom;
-   pThis->GetBoundingBox(pDO, Xgl, &top, &left, &right, &bottom);
+   GetBoundingBox(pDO, Xgl, &top, &left, &right, &bottom);
 
-
-   CComPtr<IRect2d> bounding_box;
-   bounding_box.CoCreateInstance(CLSID_Rect2d);
-
-   bounding_box->put_Top(top);
-   bounding_box->put_Bottom(bottom);
-   bounding_box->put_Left(left);
-   bounding_box->put_Right(right);
-
-   (*rect) = bounding_box;
-   (*rect)->AddRef();
+   return { left,bottom,right,top };
 }
 
-void CSectionCutDisplayImpl::GetBoundingBox(iPointDisplayObject* pDO, Float64 Xgl, 
-                                            Float64* top, Float64* left, Float64* right, Float64* bottom)
+void CSectionCutDisplayImpl::GetBoundingBox(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, Float64 Xgl, 
+                                            Float64* top, Float64* left, Float64* right, Float64* bottom) const
 {
-   CComPtr<iDisplayList> pDL;
-   pDO->GetDisplayList(&pDL);
-   CComPtr<iDisplayMgr> pDispMgr;
-   pDL->GetDisplayMgr(&pDispMgr);
-   CComPtr<iCoordinateMap> pMap;
-   pDispMgr->GetCoordinateMap(&pMap);
+   auto pDL = pDO->GetDisplayList();
+   auto pDispMgr = pDL->GetDisplayMgr();
+   auto pMap = pDispMgr->GetCoordinateMap();
 
    // height of cut above/below girder
    Float64 xo,yo;
@@ -231,21 +166,17 @@ void CSectionCutDisplayImpl::GetBoundingBox(iPointDisplayObject* pDO, Float64 Xg
    *right  = *left + dx;
 }
 
-void CSectionCutDisplayImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF color,IPoint2d* userLoc)
+void CSectionCutDisplayImpl::Draw(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO,CDC* pDC,COLORREF color,const WBFL::Geometry::Point2d& userLoc) const
 {
-   Float64 Xgl;
-   userLoc->get_X(&Xgl); // userLoc is in view coordinates... this has something to do with why we can't draw a section cut in the start cantilever
+   Float64 Xgl = userLoc.X(); // userLoc is in view coordinates... this has something to do with why we can't draw a section cut in the start cantilever
    Xgl = ::ForceIntoRange(m_MinCutLocation,Xgl,m_MaxCutLocation);
 
    Float64 wtop, wleft, wright, wbottom;
    GetBoundingBox(pDO, Xgl, &wtop, &wleft, &wright, &wbottom);
 
-   CComPtr<iDisplayList> pDL;
-   pDO->GetDisplayList(&pDL);
-   CComPtr<iDisplayMgr> pDispMgr;
-   pDL->GetDisplayMgr(&pDispMgr);
-   CComPtr<iCoordinateMap> pMap;
-   pDispMgr->GetCoordinateMap(&pMap);
+   auto pDL = pDO->GetDisplayList();
+   auto pDispMgr = pDL->GetDisplayMgr();
+   auto pMap = pDispMgr->GetCoordinateMap();
 
    long ltop, lleft, lright, lbottom;
    pMap->WPtoLP(wleft, wtop, &lleft, &ltop);
@@ -291,72 +222,46 @@ void CSectionCutDisplayImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF col
    pDC->SelectObject(old_brush);
 }
 
-pgsPointOfInterest CSectionCutDisplayImpl::GetCutPOI(Float64 Xgl)
+void CSectionCutDisplayImpl::OnChanged(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   GET_IFACE(IPointOfInterest,pPoi);
-   if ( m_GirderKey.groupIndex == ALL_GROUPS )
-   {
-      return pPoi->ConvertGirderlineCoordinateToPoi(m_GirderKey.girderIndex,Xgl);
-   }
-   else
-   {
-      return pPoi->ConvertGirderPathCoordinateToPoi(m_GirderKey,Xgl);
-   }
-}
-
-STDMETHODIMP_(void) CSectionCutDisplayImpl::XDisplayObjectEvents::OnChanged(iDisplayObject* pDO)
-{
-   METHOD_PROLOGUE(CSectionCutDisplayImpl,DisplayObjectEvents);
-
-   iPointDisplayObject* pPointDO = dynamic_cast<iPointDisplayObject*>(pDO);
+   auto pPointDO = std::dynamic_pointer_cast<WBFL::DManip::iPointDisplayObject>(pDO);
    ATLASSERT(pPointDO);
 
    if (pPointDO)
    {
-      Float64 Xgl = pThis->m_pCutLocation->GetCurrentCutLocation();
-   
-      CComPtr<IPoint2d> pnt;
-      pnt.CoCreateInstance(CLSID_Point2d);
-      pnt->put_X(Xgl);
-      pnt->put_Y(0.0);
-      pPointDO->SetPosition(pnt, TRUE, FALSE);
+      Float64 Xgl = m_pCutLocation->GetCurrentCutLocation();
+      WBFL::Geometry::Point2d pnt(Xgl, 0.0);
+      pPointDO->SetPosition(pnt, true, false);
    }
 }
 
 
-STDMETHODIMP_(void) CSectionCutDisplayImpl::XDisplayObjectEvents::OnDragMoved(iDisplayObject* pDO,ISize2d* offset)
+void CSectionCutDisplayImpl::OnDragMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,const WBFL::Geometry::Size2d& offset)
 {
-   METHOD_PROLOGUE(CSectionCutDisplayImpl,DisplayObjectEvents);
+   Float64 Xgl =  m_pCutLocation->GetCurrentCutLocation();
 
-   Float64 Xgl =  pThis->m_pCutLocation->GetCurrentCutLocation();
-
-   Float64 xOffset;
-   offset->get_Dx(&xOffset);
+   Float64 xOffset = offset.Dx();
 
    Xgl += xOffset;
 
-   pThis->PutPosition(Xgl);
+   PutPosition(Xgl);
 }
 
-STDMETHODIMP_(void) CSectionCutDisplayImpl::XDisplayObjectEvents::OnMoved(iDisplayObject* pDO)
-{
-   METHOD_PROLOGUE(CSectionCutDisplayImpl,DisplayObjectEvents);
-
-   ASSERT(FALSE); 
-}
-
-STDMETHODIMP_(void) CSectionCutDisplayImpl::XDisplayObjectEvents::OnCopied(iDisplayObject* pDO)
+void CSectionCutDisplayImpl::OnMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
    ASSERT(FALSE); 
 }
 
-STDMETHODIMP_(bool) CSectionCutDisplayImpl::XDisplayObjectEvents::OnLButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+void CSectionCutDisplayImpl::OnCopied(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CSectionCutDisplayImpl,DisplayObjectEvents);
+   ASSERT(FALSE); 
+}
 
+bool CSectionCutDisplayImpl::OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
+{
    if (pDO->IsSelected())
    {
-      pThis->m_pCutLocation->ShowCutDlg();
+      m_pCutLocation->ShowCutDlg();
       return true;
    }
    else
@@ -365,13 +270,10 @@ STDMETHODIMP_(bool) CSectionCutDisplayImpl::XDisplayObjectEvents::OnLButtonDblCl
    }
 }
 
-STDMETHODIMP_(bool) CSectionCutDisplayImpl::XDisplayObjectEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CSectionCutDisplayImpl::OnLButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   CComPtr<iDisplayList> list;
-   pDO->GetDisplayList(&list);
-
-   CComPtr<iDisplayMgr> dispMgr;
-   list->GetDisplayMgr(&dispMgr);
+   auto list = pDO->GetDisplayList();
+   auto dispMgr = list->GetDisplayMgr();
 
    // If control key is pressed, don't clear current selection
    // (i.e. we want multi-select)
@@ -380,96 +282,79 @@ STDMETHODIMP_(bool) CSectionCutDisplayImpl::XDisplayObjectEvents::OnLButtonDown(
    dispMgr->SelectObject(pDO,!bMultiSelect);
 
    // d&d task
-   CComPtr<iTaskFactory> factory;
-   dispMgr->GetTaskFactory(&factory);
-   CComPtr<iTask> task;
-   factory->CreateLocalDragDropTask(dispMgr,point,&task);
+   auto factory = dispMgr->GetTaskFactory();
+   auto task = factory->CreateLocalDragDropTask(dispMgr,point);
    dispMgr->SetTask(task);
 
    return true;
 }
 
-STDMETHODIMP_(bool) CSectionCutDisplayImpl::XDisplayObjectEvents::OnRButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CSectionCutDisplayImpl::OnRButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CSectionCutDisplayImpl,DisplayObjectEvents);
    return false;
 }
 
-STDMETHODIMP_(bool) CSectionCutDisplayImpl::XDisplayObjectEvents::OnLButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CSectionCutDisplayImpl::OnLButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CSectionCutDisplayImpl,DisplayObjectEvents);
    return false;
 }
 
 
-STDMETHODIMP_(bool) CSectionCutDisplayImpl::XDisplayObjectEvents::OnRButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CSectionCutDisplayImpl::OnRButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CSectionCutDisplayImpl,DisplayObjectEvents);
    return false;
 }
 
-STDMETHODIMP_(bool) CSectionCutDisplayImpl::XDisplayObjectEvents::OnRButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CSectionCutDisplayImpl::OnRButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CSectionCutDisplayImpl,DisplayObjectEvents);
-   return false;
-  
-}
-
-STDMETHODIMP_(bool) CSectionCutDisplayImpl::XDisplayObjectEvents::OnMouseMove(iDisplayObject* pDO,UINT nFlags,CPoint point)
-{
-   METHOD_PROLOGUE(CSectionCutDisplayImpl,DisplayObjectEvents);
    return false;
 }
 
-STDMETHODIMP_(bool) CSectionCutDisplayImpl::XDisplayObjectEvents::OnMouseWheel(iDisplayObject* pDO,UINT nFlags,short zDelta,CPoint point)
+bool CSectionCutDisplayImpl::OnMouseMove(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CSectionCutDisplayImpl,DisplayObjectEvents);
+   return false;
+}
+
+bool CSectionCutDisplayImpl::OnMouseWheel(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,short zDelta,const POINT& point)
+{
    if ( zDelta < 0 )
    {
-      pThis->m_pCutLocation->CutAtPrev();
+      m_pCutLocation->CutAtPrev();
    }
    else
    {
-      pThis->m_pCutLocation->CutAtNext();
+      m_pCutLocation->CutAtNext();
    }
    return true;
 }
 
-STDMETHODIMP_(bool) CSectionCutDisplayImpl::XDisplayObjectEvents::OnKeyDown(iDisplayObject* pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
+bool CSectionCutDisplayImpl::OnKeyDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-   METHOD_PROLOGUE(CSectionCutDisplayImpl,DisplayObjectEvents);
-
    switch(nChar)
    {
    case VK_RIGHT:
-      pThis->m_pCutLocation->CutAtNext();
+      m_pCutLocation->CutAtNext();
       break;
 
    case VK_LEFT:
-      pThis->m_pCutLocation->CutAtPrev();
+      m_pCutLocation->CutAtPrev();
       break;
 
    case VK_RETURN:
-      pThis->m_pCutLocation->ShowCutDlg();
+      m_pCutLocation->ShowCutDlg();
       break;
    }
 
    return true;
 }
 
-STDMETHODIMP_(bool) CSectionCutDisplayImpl::XDisplayObjectEvents::OnContextMenu(iDisplayObject* pDO,CWnd* pWnd,CPoint point)
+bool CSectionCutDisplayImpl::OnContextMenu(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,CWnd* pWnd,const POINT& point)
 {
-   METHOD_PROLOGUE(CSectionCutDisplayImpl,DisplayObjectEvents);
-
    if ( pDO->IsSelected() )
    {
-      CComPtr<iDisplayList> pList;
-      pDO->GetDisplayList(&pList);
-
-      CComPtr<iDisplayMgr> pDispMgr;
-      pList->GetDisplayMgr(&pDispMgr);
-
-      CDisplayView* pView = pDispMgr->GetView();
+      auto pList = pDO->GetDisplayList();
+      auto pDispMgr =  pList->GetDisplayMgr();
+      auto pView = pDispMgr->GetView();
       CPGSDocBase* pDoc = (CPGSDocBase*)pView->GetDocument();
 
       const std::map<IDType,IBridgePlanViewEventCallback*>& callbacks = pDoc->GetBridgePlanViewCallbacks();
@@ -506,24 +391,21 @@ void CSectionCutDisplayImpl::PutPosition(Float64 X)
 }
 
 
-STDMETHODIMP_(void) CSectionCutDisplayImpl::XDisplayObjectEvents::OnSelect(iDisplayObject* pDO)
-{
-
-}
-
-STDMETHODIMP_(void) CSectionCutDisplayImpl::XDisplayObjectEvents::OnUnselect(iDisplayObject* pDO)
+void CSectionCutDisplayImpl::OnSelect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
 }
 
-STDMETHODIMP_(UINT) CSectionCutDisplayImpl::XDragData::Format()
+void CSectionCutDisplayImpl::OnUnselect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
+{
+}
+
+UINT CSectionCutDisplayImpl::Format()
 {
    return ms_Format;
 }
 
-STDMETHODIMP_(BOOL) CSectionCutDisplayImpl::XDragData::PrepareForDrag(iDisplayObject* pDO,iDragDataSink* pSink)
+bool CSectionCutDisplayImpl::PrepareForDrag(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,std::shared_ptr<WBFL::DManip::iDragDataSink> pSink)
 {
-   METHOD_PROLOGUE(CSectionCutDisplayImpl,DragData);
-
    // Create a place to store the drag data for this object
    pSink->CreateFormat(ms_Format);
 
@@ -531,20 +413,18 @@ STDMETHODIMP_(BOOL) CSectionCutDisplayImpl::XDragData::PrepareForDrag(iDisplayOb
    DWORD threadid = thread->m_nThreadID;
 
    pSink->Write(ms_Format,&threadid,sizeof(DWORD));
-   pSink->Write(ms_Format,&pThis->m_Color,sizeof(COLORREF));
-   pSink->Write(ms_Format,&pThis->m_pBroker,sizeof(IBroker*));
-   pSink->Write(ms_Format,&pThis->m_GirderKey,sizeof(CGirderKey));
-   pSink->Write(ms_Format,&pThis->m_MinCutLocation,sizeof(Float64));
-   pSink->Write(ms_Format,&pThis->m_MaxCutLocation,sizeof(Float64));
-   pSink->Write(ms_Format,&pThis->m_pCutLocation,sizeof(iCutLocation*));
+   pSink->Write(ms_Format,&m_Color,sizeof(COLORREF));
+   pSink->Write(ms_Format,&m_pBroker,sizeof(IBroker*));
+   pSink->Write(ms_Format,&m_GirderKey,sizeof(CGirderKey));
+   pSink->Write(ms_Format,&m_MinCutLocation,sizeof(Float64));
+   pSink->Write(ms_Format,&m_MaxCutLocation,sizeof(Float64));
+   pSink->Write(ms_Format,&m_pCutLocation,sizeof(iCutLocation*));
 
    return TRUE;
 }
 
-STDMETHODIMP_(void) CSectionCutDisplayImpl::XDragData::OnDrop(iDisplayObject* pDO,iDragDataSource* pSource)
+void CSectionCutDisplayImpl::OnDrop(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,std::shared_ptr<WBFL::DManip::iDragDataSource> pSource)
 {
-   METHOD_PROLOGUE(CSectionCutDisplayImpl,DragData);
-
    // Tell the source we are about to read from our format
    pSource->PrepareFormat(ms_Format);
 
@@ -556,11 +436,11 @@ STDMETHODIMP_(void) CSectionCutDisplayImpl::XDragData::OnDrop(iDisplayObject* pD
 
    ATLASSERT(threadid == threadl);
 
-   pSource->Read(ms_Format,&pThis->m_Color,sizeof(COLORREF));
-   pSource->Read(ms_Format,&pThis->m_pBroker,sizeof(IBroker*));
-   pSource->Read(ms_Format,&pThis->m_GirderKey,sizeof(CGirderKey));
-   pSource->Read(ms_Format,&pThis->m_MinCutLocation,sizeof(Float64));
-   pSource->Read(ms_Format,&pThis->m_MaxCutLocation,sizeof(Float64));
-   pSource->Read(ms_Format,&pThis->m_pCutLocation,sizeof(iCutLocation*));
+   pSource->Read(ms_Format,&m_Color,sizeof(COLORREF));
+   pSource->Read(ms_Format,&m_pBroker,sizeof(IBroker*));
+   pSource->Read(ms_Format,&m_GirderKey,sizeof(CGirderKey));
+   pSource->Read(ms_Format,&m_MinCutLocation,sizeof(Float64));
+   pSource->Read(ms_Format,&m_MaxCutLocation,sizeof(Float64));
+   pSource->Read(ms_Format,&m_pCutLocation,sizeof(iCutLocation*));
 }
 

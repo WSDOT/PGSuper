@@ -20,55 +20,22 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_DISPLAYOBJECTFACTORY_H__D4D8B50C_0A5F_431C_8D9A_F6DBACB22A89__INCLUDED_)
-#define AFX_DISPLAYOBJECTFACTORY_H__D4D8B50C_0A5F_431C_8D9A_F6DBACB22A89__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-// DisplayObjectFactory.h : header file
-//
-
-#include <DManip\DManip.h>
 
 class CPGSDocBase;
 
-/////////////////////////////////////////////////////////////////////////////
-// CDisplayObjectFactory command target
+#include <DManip/DisplayObjectFactory.h>
 
-class CDisplayObjectFactory : public CCmdTarget
+/////////////////////////////////////////////////////////////////////////////
+class CDisplayObjectFactory : public WBFL::DManip::iDisplayObjectFactory
 {
 public:
 	CDisplayObjectFactory(CPGSDocBase* pDoc);
+   virtual ~CDisplayObjectFactory() = default;
 
-// Attributes
-public:
-
-// Operations
-public:
-
-
-// Implementation
-protected:
-	CDisplayObjectFactory();
-
-	virtual ~CDisplayObjectFactory();
-
-   DECLARE_INTERFACE_MAP()
-
-   // iDisplayObjectFactory Implementation
-   BEGIN_INTERFACE_PART(Factory,iDisplayObjectFactory)
-      STDMETHOD_(void,Create)(CLIPFORMAT cfFormat,COleDataObject* pDataObject,iDisplayObject** dispObj);
-   END_INTERFACE_PART(Factory)
+   virtual std::shared_ptr<WBFL::DManip::iDisplayObject> Create(CLIPFORMAT cfFormat, COleDataObject* pDataObject) const override;
 
 private:
-   CComPtr<iDisplayObjectFactory> m_Factory;
+   std::shared_ptr<WBFL::DManip::iDisplayObjectFactory> m_Factory;
    CPGSDocBase* m_pDoc;
 };
-
-/////////////////////////////////////////////////////////////////////////////
-
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
-
-#endif // !defined(AFX_DISPLAYOBJECTFACTORY_H__D4D8B50C_0A5F_431C_8D9A_F6DBACB22A89__INCLUDED_)

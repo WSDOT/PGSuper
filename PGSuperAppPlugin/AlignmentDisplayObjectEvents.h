@@ -20,24 +20,15 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_ALIGNMENTDISPLAYOBJECTEVENTS_H__4C0EE0CB_964D_407D_9204_311964B859D5__INCLUDED_)
-#define AFX_ALIGNMENTDISPLAYOBJECTEVENTS_H__4C0EE0CB_964D_407D_9204_311964B859D5__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-// AlignmentDisplayObjectEvents.h : header file
-//
 
-#include <DManip\DManip.h>
+#include <DManip/DisplayObjectEvents.h>
+#include <DManip/DropSite.h>
+
 interface IBroker;
 class CBridgeModelViewChildFrame;
 
-
-/////////////////////////////////////////////////////////////////////////////
-// CAlignmentDisplayObjectEvents command target
-
-class CAlignmentDisplayObjectEvents : public CCmdTarget
+class CAlignmentDisplayObjectEvents : public WBFL::DManip::iDisplayObjectEvents, public WBFL::DManip::iDropSite
 {
 public:
    typedef enum ViewType
@@ -47,54 +38,37 @@ public:
       Alignment
    } ViewType;
 
-   CAlignmentDisplayObjectEvents(IBroker* pDoc, CBridgeModelViewChildFrame* pFrame,ViewType viewType,iDisplayObject* pDO = nullptr);
+   CAlignmentDisplayObjectEvents(IBroker* pDoc, CBridgeModelViewChildFrame* pFrame,ViewType viewType,std::shared_ptr<WBFL::DManip::iDisplayObject> pDO = nullptr);
    ~CAlignmentDisplayObjectEvents();
 
-   virtual void OnFinalRelease();
+   virtual bool OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnLButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnLButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnRButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnRButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnRButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnMouseMove(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnMouseWheel(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, short zDelta, const POINT& point) override;
+   virtual bool OnKeyDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nChar, UINT nRepCnt, UINT nFlags) override;
+   virtual bool OnContextMenu(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, CWnd* pWnd, const POINT& point) override;
+   virtual void OnChanged(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
+   virtual void OnDragMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, const WBFL::Geometry::Size2d& offset) override;
+   virtual void OnMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
+   virtual void OnCopied(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
+   virtual void OnSelect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
+   virtual void OnUnselect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
 
-protected:
-
-	DECLARE_INTERFACE_MAP()
-
-   BEGIN_INTERFACE_PART(Events,iDisplayObjectEvents)
-      STDMETHOD_(bool,OnLButtonDblClk)(iDisplayObject* pDO,UINT nFlags,CPoint point);
-      STDMETHOD_(bool,OnLButtonDown)(iDisplayObject* pDO,UINT nFlags,CPoint point);
-      STDMETHOD_(bool,OnLButtonUp)(iDisplayObject* pDO,UINT nFlags,CPoint point);
-      STDMETHOD_(bool,OnRButtonDblClk)(iDisplayObject* pDO,UINT nFlags,CPoint point);
-      STDMETHOD_(bool,OnRButtonDown)(iDisplayObject* pDO,UINT nFlags,CPoint point);
-      STDMETHOD_(bool,OnRButtonUp)(iDisplayObject* pDO,UINT nFlags,CPoint point);
-      STDMETHOD_(bool,OnMouseMove)(iDisplayObject* pDO,UINT nFlags,CPoint point);
-      STDMETHOD_(bool,OnMouseWheel)(iDisplayObject* pDO,UINT nFlags,short zDelta,CPoint point);
-      STDMETHOD_(bool,OnKeyDown)(iDisplayObject* pDO,UINT nChar, UINT nRepCnt, UINT nFlags);
-      STDMETHOD_(bool,OnContextMenu)(iDisplayObject* pDO,CWnd* pWnd,CPoint point);
-      STDMETHOD_(void,OnChanged)(iDisplayObject* pDO);
-      STDMETHOD_(void,OnDragMoved)(iDisplayObject* pDO,ISize2d* offset);
-      STDMETHOD_(void,OnMoved)(iDisplayObject* pDO);
-      STDMETHOD_(void,OnCopied)(iDisplayObject* pDO);
-      STDMETHOD_(void,OnSelect)(iDisplayObject* pDO);
-      STDMETHOD_(void,OnUnselect)(iDisplayObject* pDO);
-   END_INTERFACE_PART(Events)
-
-   BEGIN_INTERFACE_PART(DropSite,iDropSite)
-      STDMETHOD_(DROPEFFECT,CanDrop)(COleDataObject* pDataObject,DWORD dwKeyState,IPoint2d* point);
-      STDMETHOD_(void,OnDropped)(COleDataObject* pDataObject,DROPEFFECT dropEffect,IPoint2d* point);
-      STDMETHOD_(void,SetDisplayObject)(iDisplayObject* pDO);
-      STDMETHOD_(void,GetDisplayObject)(iDisplayObject** dispObj);
-      STDMETHOD_(void,Highlite)(CDC* pDC,BOOL bHighlite);
-   END_INTERFACE_PART(DropSite)
+   virtual DROPEFFECT CanDrop(COleDataObject* pDataObject, DWORD dwKeyState, const WBFL::Geometry::Point2d& point) override;
+   virtual void OnDropped(COleDataObject* pDataObject, DROPEFFECT dropEffect, const WBFL::Geometry::Point2d& point) override;
+   virtual void SetDisplayObject(std::weak_ptr<WBFL::DManip::iDisplayObject> pDO) override;
+   virtual std::shared_ptr<WBFL::DManip::iDisplayObject> GetDisplayObject() override;
+   virtual void Highlight(CDC* pDC, BOOL bHighlight) override;
 
 private:
    ViewType m_ViewType;
    IBroker* m_pBroker;
    CBridgeModelViewChildFrame* m_pFrame;
-   CComPtr<iDisplayObject> m_DispObj;
+   std::weak_ptr<WBFL::DManip::iDisplayObject> m_DispObj;
 
    void EditAlignment();
 };
-
-/////////////////////////////////////////////////////////////////////////////
-
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
-
-#endif // !defined(AFX_ALIGNMENTDISPLAYOBJECTEVENTS_H__4C0EE0CB_964D_407D_9204_311964B859D5__INCLUDED_)

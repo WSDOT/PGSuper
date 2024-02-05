@@ -27,17 +27,16 @@
 #include "resource.h"
 #include "PGSuperApp.h"
 #include "SpanDisplayObjectEvents.h"
-#include "mfcdual.h"
 #include "PGSuperDocBase.h"
 #include <IFace\EditByUI.h>
 
 #include <PgsExt\SpanData2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <DManip/DisplayObject.h>
+#include <DManip/DisplayList.h>
+#include <DManip/DisplayMgr.h>
+#include <DManip/DisplayView.h>
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgePlanViewSpanDisplayObjectEvents
@@ -54,34 +53,22 @@ CBridgePlanViewSpanDisplayObjectEvents::CBridgePlanViewSpanDisplayObjectEvents(S
    m_TempSupports         = pSpan->GetTemporarySupports();
 }
 
-BEGIN_INTERFACE_MAP(CBridgePlanViewSpanDisplayObjectEvents, CCmdTarget)
-	INTERFACE_PART(CBridgePlanViewSpanDisplayObjectEvents, IID_iDisplayObjectEvents, Events)
-END_INTERFACE_MAP()
-
-DELEGATE_CUSTOM_INTERFACE(CBridgePlanViewSpanDisplayObjectEvents,Events);
-
-void CBridgePlanViewSpanDisplayObjectEvents::EditSpan(iDisplayObject* pDO)
+void CBridgePlanViewSpanDisplayObjectEvents::EditSpan(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   CComPtr<iDisplayList> pList;
-   pDO->GetDisplayList(&pList);
-
-   CComPtr<iDisplayMgr> pDispMgr;
-   pList->GetDisplayMgr(&pDispMgr);
-
-   CDisplayView* pView = pDispMgr->GetView();
+   auto pView = pDO->GetDisplayList()->GetDisplayMgr()->GetView();
    CDocument* pDoc = pView->GetDocument();
 
    ((CPGSDocBase*)pDoc)->EditSpanDescription(m_SpanIdx,ESD_GENERAL);
 }
 
-void CBridgePlanViewSpanDisplayObjectEvents::SelectSpan(iDisplayObject* pDO)
+void CBridgePlanViewSpanDisplayObjectEvents::SelectSpan(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
    // do the selection at the frame level because it will do this view
    // and the other view
    m_pFrame->SelectSpan(m_SpanIdx);
 }
 
-void CBridgePlanViewSpanDisplayObjectEvents::SelectPrev(iDisplayObject* pDO)
+void CBridgePlanViewSpanDisplayObjectEvents::SelectPrev(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
    if ( m_TempSupports.size() == 0 )
    {
@@ -96,7 +83,7 @@ void CBridgePlanViewSpanDisplayObjectEvents::SelectPrev(iDisplayObject* pDO)
    }
 }
 
-void CBridgePlanViewSpanDisplayObjectEvents::SelectNext(iDisplayObject* pDO)
+void CBridgePlanViewSpanDisplayObjectEvents::SelectNext(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
    if (m_TempSupports.size() == 0 )
    {
@@ -114,12 +101,11 @@ void CBridgePlanViewSpanDisplayObjectEvents::SelectNext(iDisplayObject* pDO)
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgePlanViewSpanDisplayObjectEvents message handlers
-STDMETHODIMP_(bool) CBridgePlanViewSpanDisplayObjectEvents::XEvents::OnLButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgePlanViewSpanDisplayObjectEvents::OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSpanDisplayObjectEvents,Events);
    if (pDO->IsSelected())
    {
-      pThis->EditSpan(pDO);
+      EditSpan(pDO);
       return true;
    }
    else
@@ -128,96 +114,79 @@ STDMETHODIMP_(bool) CBridgePlanViewSpanDisplayObjectEvents::XEvents::OnLButtonDb
    }
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewSpanDisplayObjectEvents::XEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgePlanViewSpanDisplayObjectEvents::OnLButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSpanDisplayObjectEvents,Events);
    return true; // acknowledge the event so that the object can become selected
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewSpanDisplayObjectEvents::XEvents::OnLButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgePlanViewSpanDisplayObjectEvents::OnLButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSpanDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewSpanDisplayObjectEvents::XEvents::OnRButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgePlanViewSpanDisplayObjectEvents::OnRButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSpanDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewSpanDisplayObjectEvents::XEvents::OnRButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgePlanViewSpanDisplayObjectEvents::OnRButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSpanDisplayObjectEvents,Events);
    return true; // acknowledge the event so that the object can become selected
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewSpanDisplayObjectEvents::XEvents::OnRButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgePlanViewSpanDisplayObjectEvents::OnRButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSpanDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewSpanDisplayObjectEvents::XEvents::OnMouseMove(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgePlanViewSpanDisplayObjectEvents::OnMouseMove(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSpanDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewSpanDisplayObjectEvents::XEvents::OnMouseWheel(iDisplayObject* pDO,UINT nFlags,short zDelta,CPoint point)
+bool CBridgePlanViewSpanDisplayObjectEvents::OnMouseWheel(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,short zDelta,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSpanDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewSpanDisplayObjectEvents::XEvents::OnKeyDown(iDisplayObject* pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
+bool CBridgePlanViewSpanDisplayObjectEvents::OnKeyDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSpanDisplayObjectEvents,Events);
-
    if ( nChar == VK_RETURN )
    {
-      pThis->EditSpan(pDO);
+      EditSpan(pDO);
       return true;
    }
    else if ( nChar == VK_LEFT )
    {
-      pThis->SelectPrev(pDO);
+      SelectPrev(pDO);
       return true;
    }
    else if ( nChar == VK_RIGHT )
    {
-      pThis->SelectNext(pDO);
+      SelectNext(pDO);
       return true;
    }
    else if ( nChar == VK_UP || nChar == VK_DOWN )
    {
-      pThis->m_pFrame->SelectGirder( CSegmentKey(pThis->m_SpanIdx,0,INVALID_INDEX) );
+      m_pFrame->SelectGirder( CSegmentKey(m_SpanIdx,0,INVALID_INDEX) );
       return true;
    }
    else if ( nChar == VK_DELETE )
    {
-      pThis->m_pFrame->PostMessage(WM_COMMAND,ID_DELETE,0);
+      m_pFrame->PostMessage(WM_COMMAND,ID_DELETE,0);
       return true;
    }
 
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewSpanDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObject* pDO,CWnd* pWnd,CPoint point)
+bool CBridgePlanViewSpanDisplayObjectEvents::OnContextMenu(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,CWnd* pWnd,const POINT& point)
 {
-   METHOD_PROLOGUE_(CBridgePlanViewSpanDisplayObjectEvents,Events);
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
+   AFX_MANAGE_STATE(AfxGetStaticModuleState())
 
    if ( pDO->IsSelected() )
    {
-      CComPtr<iDisplayList> pList;
-      pDO->GetDisplayList(&pList);
-
-      CComPtr<iDisplayMgr> pDispMgr;
-      pList->GetDisplayMgr(&pDispMgr);
-
-      CDisplayView* pView = pDispMgr->GetView();
+      auto pView = pDO->GetDisplayList()->GetDisplayMgr()->GetView();
       CPGSDocBase* pDoc = (CPGSDocBase*)pView->GetDocument();
 
       CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
@@ -229,10 +198,10 @@ STDMETHODIMP_(bool) CBridgePlanViewSpanDisplayObjectEvents::XEvents::OnContextMe
       for ( ; callbackIter != callbackIterEnd; callbackIter++ )
       {
          IBridgePlanViewEventCallback* pCallback = callbackIter->second;
-         pCallback->OnSpanContextMenu(pThis->m_SpanIdx,pMenu);
+         pCallback->OnSpanContextMenu(m_SpanIdx,pMenu);
       }
 
-      pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);
+      pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,m_pFrame);
 
       return true;
    }
@@ -241,35 +210,29 @@ STDMETHODIMP_(bool) CBridgePlanViewSpanDisplayObjectEvents::XEvents::OnContextMe
    return false;
 }
 
-STDMETHODIMP_(void) CBridgePlanViewSpanDisplayObjectEvents::XEvents::OnChanged(iDisplayObject* pDO)
+void CBridgePlanViewSpanDisplayObjectEvents::OnChanged(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSpanDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CBridgePlanViewSpanDisplayObjectEvents::XEvents::OnDragMoved(iDisplayObject* pDO,ISize2d* offset)
+void CBridgePlanViewSpanDisplayObjectEvents::OnDragMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, const WBFL::Geometry::Size2d& offset)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSpanDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CBridgePlanViewSpanDisplayObjectEvents::XEvents::OnMoved(iDisplayObject* pDO)
+void CBridgePlanViewSpanDisplayObjectEvents::OnMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSpanDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CBridgePlanViewSpanDisplayObjectEvents::XEvents::OnCopied(iDisplayObject* pDO)
+void CBridgePlanViewSpanDisplayObjectEvents::OnCopied(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSpanDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CBridgePlanViewSpanDisplayObjectEvents::XEvents::OnSelect(iDisplayObject* pDO)
+void CBridgePlanViewSpanDisplayObjectEvents::OnSelect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSpanDisplayObjectEvents,Events);
-   pThis->SelectSpan(pDO);
+   SelectSpan(pDO);
 }
 
-STDMETHODIMP_(void) CBridgePlanViewSpanDisplayObjectEvents::XEvents::OnUnselect(iDisplayObject* pDO)
+void CBridgePlanViewSpanDisplayObjectEvents::OnUnselect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSpanDisplayObjectEvents,Events);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -285,51 +248,38 @@ CBridgeSectionViewSpanDisplayObjectEvents::CBridgeSectionViewSpanDisplayObjectEv
    m_pFrame  = pFrame;
 }
 
-BEGIN_INTERFACE_MAP(CBridgeSectionViewSpanDisplayObjectEvents, CCmdTarget)
-	INTERFACE_PART(CBridgeSectionViewSpanDisplayObjectEvents, IID_iDisplayObjectEvents, Events)
-END_INTERFACE_MAP()
-
-DELEGATE_CUSTOM_INTERFACE(CBridgeSectionViewSpanDisplayObjectEvents,Events);
-
-void CBridgeSectionViewSpanDisplayObjectEvents::EditSpan(iDisplayObject* pDO)
+void CBridgeSectionViewSpanDisplayObjectEvents::EditSpan(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   CComPtr<iDisplayList> pList;
-   pDO->GetDisplayList(&pList);
-
-   CComPtr<iDisplayMgr> pDispMgr;
-   pList->GetDisplayMgr(&pDispMgr);
-
-   CDisplayView* pView = pDispMgr->GetView();
+   auto pView = pDO->GetDisplayList()->GetDisplayMgr()->GetView();
    CDocument* pDoc = pView->GetDocument();
 
    ((CPGSDocBase*)pDoc)->EditSpanDescription(m_SpanIdx,ESD_GENERAL);
 }
 
-void CBridgeSectionViewSpanDisplayObjectEvents::SelectSpan(iDisplayObject* pDO)
+void CBridgeSectionViewSpanDisplayObjectEvents::SelectSpan(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
    // do the selection at the frame level because it will do this view
    // and the other view
    m_pFrame->SelectSpan(m_SpanIdx);
 }
 
-void CBridgeSectionViewSpanDisplayObjectEvents::SelectPrev(iDisplayObject* pDO)
+void CBridgeSectionViewSpanDisplayObjectEvents::SelectPrev(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
    m_pFrame->SelectPier(m_SpanIdx);
 }
 
-void CBridgeSectionViewSpanDisplayObjectEvents::SelectNext(iDisplayObject* pDO)
+void CBridgeSectionViewSpanDisplayObjectEvents::SelectNext(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
    m_pFrame->SelectPier(m_SpanIdx+1);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeSectionViewSpanDisplayObjectEvents message handlers
-STDMETHODIMP_(bool) CBridgeSectionViewSpanDisplayObjectEvents::XEvents::OnLButtonDblClk(iDisplayObject* pDO, UINT nFlags, CPoint point)
+bool CBridgeSectionViewSpanDisplayObjectEvents::OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewSpanDisplayObjectEvents, Events);
    if (pDO->IsSelected())
    {
-      pThis->EditSpan(pDO);
+      EditSpan(pDO);
       return true;
    }
    else
@@ -338,86 +288,75 @@ STDMETHODIMP_(bool) CBridgeSectionViewSpanDisplayObjectEvents::XEvents::OnLButto
    }
 }
 
-STDMETHODIMP_(bool) CBridgeSectionViewSpanDisplayObjectEvents::XEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgeSectionViewSpanDisplayObjectEvents::OnLButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewSpanDisplayObjectEvents,Events);
    return true; // acknowledge the event so that the object can become selected
 }
 
-STDMETHODIMP_(bool) CBridgeSectionViewSpanDisplayObjectEvents::XEvents::OnLButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgeSectionViewSpanDisplayObjectEvents::OnLButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewSpanDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgeSectionViewSpanDisplayObjectEvents::XEvents::OnRButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgeSectionViewSpanDisplayObjectEvents::OnRButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewSpanDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgeSectionViewSpanDisplayObjectEvents::XEvents::OnRButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgeSectionViewSpanDisplayObjectEvents::OnRButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewSpanDisplayObjectEvents,Events);
    return true; // acknowledge the event so that the object can become selected
 }
 
-STDMETHODIMP_(bool) CBridgeSectionViewSpanDisplayObjectEvents::XEvents::OnRButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgeSectionViewSpanDisplayObjectEvents::OnRButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewSpanDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgeSectionViewSpanDisplayObjectEvents::XEvents::OnMouseMove(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgeSectionViewSpanDisplayObjectEvents::OnMouseMove(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewSpanDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgeSectionViewSpanDisplayObjectEvents::XEvents::OnMouseWheel(iDisplayObject* pDO,UINT nFlags,short zDelta,CPoint point)
+bool CBridgeSectionViewSpanDisplayObjectEvents::OnMouseWheel(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,short zDelta,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewSpanDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgeSectionViewSpanDisplayObjectEvents::XEvents::OnKeyDown(iDisplayObject* pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
+bool CBridgeSectionViewSpanDisplayObjectEvents::OnKeyDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewSpanDisplayObjectEvents,Events);
-
    if ( nChar == VK_RETURN )
    {
-      pThis->EditSpan(pDO);
+      EditSpan(pDO);
       return true;
    }
    else if ( nChar == VK_LEFT )
    {
-      pThis->SelectPrev(pDO);
+      SelectPrev(pDO);
       return true;
    }
    else if ( nChar == VK_RIGHT )
    {
-      pThis->SelectNext(pDO);
+      SelectNext(pDO);
       return true;
    }
    else if ( nChar == VK_UP || nChar == VK_DOWN )
    {
-      pThis->m_pFrame->SelectGirder( CSegmentKey(pThis->m_SpanIdx,0,INVALID_INDEX) );
+      m_pFrame->SelectGirder( CSegmentKey(m_SpanIdx,0,INVALID_INDEX) );
       return true;
    }
    else if ( nChar == VK_DELETE )
    {
-      pThis->m_pFrame->PostMessage(WM_COMMAND,ID_DELETE,0);
+      m_pFrame->PostMessage(WM_COMMAND,ID_DELETE,0);
       return true;
    }
 
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgeSectionViewSpanDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObject* pDO,CWnd* pWnd,CPoint point)
+bool CBridgeSectionViewSpanDisplayObjectEvents::OnContextMenu(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,CWnd* pWnd,const POINT& point)
 {
-   METHOD_PROLOGUE_(CBridgeSectionViewSpanDisplayObjectEvents,Events);
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
 
    if ( pDO->IsSelected() )
    {
@@ -431,33 +370,27 @@ STDMETHODIMP_(bool) CBridgeSectionViewSpanDisplayObjectEvents::XEvents::OnContex
    return false;
 }
 
-STDMETHODIMP_(void) CBridgeSectionViewSpanDisplayObjectEvents::XEvents::OnChanged(iDisplayObject* pDO)
+void CBridgeSectionViewSpanDisplayObjectEvents::OnChanged(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewSpanDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CBridgeSectionViewSpanDisplayObjectEvents::XEvents::OnDragMoved(iDisplayObject* pDO,ISize2d* offset)
+void CBridgeSectionViewSpanDisplayObjectEvents::OnDragMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,const WBFL::Geometry::Size2d& offset)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewSpanDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CBridgeSectionViewSpanDisplayObjectEvents::XEvents::OnMoved(iDisplayObject* pDO)
+void CBridgeSectionViewSpanDisplayObjectEvents::OnMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewSpanDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CBridgeSectionViewSpanDisplayObjectEvents::XEvents::OnCopied(iDisplayObject* pDO)
+void CBridgeSectionViewSpanDisplayObjectEvents::OnCopied(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewSpanDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CBridgeSectionViewSpanDisplayObjectEvents::XEvents::OnSelect(iDisplayObject* pDO)
+void CBridgeSectionViewSpanDisplayObjectEvents::OnSelect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewSpanDisplayObjectEvents,Events);
-   pThis->SelectSpan(pDO);
+   SelectSpan(pDO);
 }
 
-STDMETHODIMP_(void) CBridgeSectionViewSpanDisplayObjectEvents::XEvents::OnUnselect(iDisplayObject* pDO)
+void CBridgeSectionViewSpanDisplayObjectEvents::OnUnselect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewSpanDisplayObjectEvents,Events);
 }

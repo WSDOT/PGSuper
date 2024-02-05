@@ -43,16 +43,10 @@
 #include <IFace\EditByUI.h>
 
 #include <WBFLGenericBridgeTools.h>
-#include <WBFLDManip.h>
+#include <WBFLGeometry/GeomHelpers.h>
 
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\DeckDescription2.h>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define SOCKET_TL   0 // top left (top left of girder or slab)
 #define SOCKET_TC   1 // top center (on CL of non-composite girder)
@@ -134,7 +128,7 @@ void CGirderModelSectionView::DoPrint(CDC* pDC, CPrintInfo* pInfo)
 
    // the leader lines for the vertical dimension lines are set in twips units which depend on the display
    // the screen and printer have different resolution so the dpi to twips conversion is going to be different
-   // to get the dimension lines to scale property, we have to rebuild all of the display objects.
+   // to get the dimension lines to scale properly, we have to rebuild all of the display objects.
    // at this point, the mapping objects have been updated for printing so all we need to do is rebuild the display objects and print
    UpdateDisplayObjects(); //rebuild display objects with printer mapping
    UpdateDrawingScale();
@@ -185,23 +179,17 @@ void CGirderModelSectionView::OnInitialUpdate()
 
    CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
 
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-//   dispMgr->EnableLBtnSelectRect(TRUE);
-//   dispMgr->EnableLBtnMultiSelect(TRUE,MK_SHIFT);
-   dispMgr->SetSelectionLineColor(SELECTED_OBJECT_LINE_COLOR);
-   dispMgr->SetSelectionFillColor(SELECTED_OBJECT_FILL_COLOR);
+   m_pDispMgr->EnableLBtnSelectRect(true);
+   m_pDispMgr->EnableLBtnMultiSelect(true,MK_SHIFT);
+   m_pDispMgr->SetSelectionLineColor(SELECTED_OBJECT_LINE_COLOR);
+   m_pDispMgr->SetSelectionFillColor(SELECTED_OBJECT_FILL_COLOR);
 
-   CDisplayObjectFactory* pFactory = new CDisplayObjectFactory(pDoc);
-   CComPtr<iDisplayObjectFactory> factory;
-   factory.Attach((iDisplayObjectFactory*)pFactory->GetInterface(&IID_iDisplayObjectFactory));
-   dispMgr->AddDisplayObjectFactory(factory);
+   auto factory = std::make_shared<CDisplayObjectFactory>(pDoc);
+   m_pDispMgr->AddDisplayObjectFactory(factory);
 
    // set up default event handler for canvas
-   CGMDisplayMgrEventsImpl* pEvents = new CGMDisplayMgrEventsImpl(pDoc, m_pFrame, this, false);
-   CComPtr<iDisplayMgrEvents> events;
-   events.Attach((iDisplayMgrEvents*)pEvents->GetInterface(&IID_iDisplayMgrEvents));
-   dispMgr->RegisterEventSink(events);
+   auto events = CGMDisplayMgrEventsImpl::Create(pDoc, m_pFrame, this, false);
+   m_pDispMgr->RegisterEventSink(events);
 
    CSelection selection = pDoc->GetSelection();
    if ( selection.Type != CSelection::Girder )
@@ -214,80 +202,30 @@ void CGirderModelSectionView::OnInitialUpdate()
 
 void CGirderModelSectionView::CreateDisplayLists()
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   dispMgr->EnableLBtnSelect(TRUE);
-   dispMgr->EnableRBtnSelect(TRUE);
-   dispMgr->SetSelectionLineColor(SELECTED_OBJECT_LINE_COLOR);
-   dispMgr->SetSelectionFillColor(SELECTED_OBJECT_FILL_COLOR);
+   m_pDispMgr->EnableLBtnSelect(TRUE);
+   m_pDispMgr->EnableRBtnSelect(TRUE);
+   m_pDispMgr->SetSelectionLineColor(SELECTED_OBJECT_LINE_COLOR);
+   m_pDispMgr->SetSelectionFillColor(SELECTED_OBJECT_FILL_COLOR);
 
 
    // Create display lists
-   CComPtr<iDisplayList> straight_strand_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&straight_strand_list);
-   straight_strand_list->SetID(STRAIGHT_STRAND_LIST);
-   dispMgr->AddDisplayList(straight_strand_list);
-
-   CComPtr<iDisplayList> harped_strand_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&harped_strand_list);
-   harped_strand_list->SetID(HARPED_STRAND_LIST);
-   dispMgr->AddDisplayList(harped_strand_list);
-
-   CComPtr<iDisplayList> temp_strand_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&temp_strand_list);
-   temp_strand_list->SetID(TEMP_STRAND_LIST);
-   dispMgr->AddDisplayList(temp_strand_list);
-
-   CComPtr<iDisplayList> duct_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&duct_list);
-   duct_list->SetID(DUCT_LIST);
-   dispMgr->AddDisplayList(duct_list);
-
-   CComPtr<iDisplayList> long_reinf_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&long_reinf_list);
-   long_reinf_list->SetID(LONG_REINF_LIST);
-   dispMgr->AddDisplayList(long_reinf_list);
-
-   CComPtr<iDisplayList> strand_cg_list;
-   ::CoCreateInstance(CLSID_DisplayList, nullptr, CLSCTX_ALL, IID_iDisplayList, (void**)&strand_cg_list);
-   strand_cg_list->SetID(STRAND_CG_LIST);
-   dispMgr->AddDisplayList(strand_cg_list);
-
-   CComPtr<iDisplayList> cg_list;
-   ::CoCreateInstance(CLSID_DisplayList, nullptr, CLSCTX_ALL, IID_iDisplayList, (void**)&cg_list);
-   cg_list->SetID(CG_LIST);
-   dispMgr->AddDisplayList(cg_list);
-
-   CComPtr<iDisplayList> dimension_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&dimension_list);
-   dimension_list->SetID(DIMENSION_LIST);
-   dispMgr->AddDisplayList(dimension_list);
-
-   CComPtr<iDisplayList> section_list;
-   ::CoCreateInstance(CLSID_DisplayList, nullptr, CLSCTX_ALL, IID_iDisplayList, (void**)&section_list);
-   section_list->SetID(SECTION_LIST);
-   dispMgr->AddDisplayList(section_list);
-
-   CComPtr<iDisplayList> joint_list;
-   ::CoCreateInstance(CLSID_DisplayList, nullptr, CLSCTX_ALL, IID_iDisplayList, (void**)&joint_list);
-   joint_list->SetID(JOINT_LIST);
-   dispMgr->AddDisplayList(joint_list);
-
-   CComPtr<iDisplayList> properties_list;
-   ::CoCreateInstance(CLSID_DisplayList, nullptr, CLSCTX_ALL, IID_iDisplayList, (void**)&properties_list);
-   properties_list->SetID(PROPERTIES_LIST);
-   dispMgr->AddDisplayList(properties_list);
+   m_pDispMgr->CreateDisplayList(STRAIGHT_STRAND_LIST);
+   m_pDispMgr->CreateDisplayList(HARPED_STRAND_LIST);
+   m_pDispMgr->CreateDisplayList(TEMP_STRAND_LIST);
+   m_pDispMgr->CreateDisplayList(DUCT_LIST);
+   m_pDispMgr->CreateDisplayList(LONG_REINF_LIST);
+   m_pDispMgr->CreateDisplayList(STRAND_CG_LIST);
+   m_pDispMgr->CreateDisplayList(CG_LIST);
+   m_pDispMgr->CreateDisplayList(DIMENSION_LIST);
+   m_pDispMgr->CreateDisplayList(SECTION_LIST);
+   m_pDispMgr->CreateDisplayList(JOINT_LIST);
+   m_pDispMgr->CreateDisplayList(PROPERTIES_LIST);
 }
 
 void CGirderModelSectionView::UpdateDisplayObjects()
 {
-   // get the display manager
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
    // clean out all the display objects
-   dispMgr->ClearDisplayObjects();
+   m_pDispMgr->ClearDisplayObjects();
 
    pgsPointOfInterest poi(m_pFrame->GetCutLocation());
 
@@ -327,45 +265,44 @@ void CGirderModelSectionView::UpdateDisplayObjects()
 
    if (settings & IDG_SV_PROPERTIES)
    {
-      BuildPropertiesDisplayObjects(pDoc, pBroker, poi, dispMgr);
+      BuildPropertiesDisplayObjects(pDoc, pBroker, poi);
    }
 
-   BuildSectionDisplayObjects(pDoc, pBroker, poi, dispMgr);
-   BuildLongitudinalJointDisplayObject(pDoc, pBroker, poi, dispMgr);
+   BuildSectionDisplayObjects(pDoc, pBroker, poi);
+   BuildLongitudinalJointDisplayObject(pDoc, pBroker, poi);
 
    if (settings & IDG_SV_GIRDER_CG)
    {
-      BuildCGDisplayObjects(pDoc, pBroker, poi, dispMgr);
+      BuildCGDisplayObjects(pDoc, pBroker, poi);
    }
 
    if ( settings & IDG_SV_SHOW_STRANDS )
    {
-      BuildStrandDisplayObjects(pDoc, pBroker, poi, dispMgr);
-      BuildDuctDisplayObjects(pDoc, pBroker, poi, dispMgr);
+      BuildStrandDisplayObjects(pDoc, pBroker, poi);
+      BuildDuctDisplayObjects(pDoc, pBroker, poi);
    }
 
    if ( settings & IDG_SV_SHOW_LONG_REINF )
    {
-      BuildLongReinfDisplayObjects(pDoc, pBroker, poi, dispMgr);
+      BuildLongReinfDisplayObjects(pDoc, pBroker, poi);
    }
 
    if (settings & IDG_SV_SHOW_PS_CG)
    {
-      BuildStrandCGDisplayObjects(pDoc, pBroker, poi, dispMgr);
+      BuildStrandCGDisplayObjects(pDoc, pBroker, poi);
    }
 
    if ( settings & IDG_SV_SHOW_DIMENSIONS )
    {
-      BuildDimensionDisplayObjects(pDoc, pBroker, poi, dispMgr);
+      BuildDimensionDisplayObjects(pDoc, pBroker, poi);
    }
 
-   SetMappingMode(DManip::Isotropic);
+   SetMappingMode(WBFL::DManip::MapMode::Isotropic);
 }
 
-void CGirderModelSectionView::BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi, iDisplayMgr* pDispMgr)
+void CGirderModelSectionView::BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi)
 {
-   CComPtr<iDisplayList> pDL;
-   pDispMgr->FindDisplayList(PROPERTIES_LIST, &pDL);
+   auto pDL = m_pDispMgr->FindDisplayList(PROPERTIES_LIST);
    ATLASSERT(pDL);
    pDL->Clear();
 
@@ -466,20 +403,16 @@ void CGirderModelSectionView::BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, I
          }
       }
 
-      CComPtr<iAnchoredTextBlock> textBlock;
-      textBlock.CoCreateInstance(CLSID_AnchoredTextBlock);
+      auto textBlock = WBFL::DManip::AnchoredTextBlock::Create();
       textBlock->SetLocation(CPoint(5,5)); // location of text block relative to top left corner
-
       textBlock->SetText(strProps);
-
       pDL->AddDisplayObject(textBlock);
    }
 }
 
-void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi,iDisplayMgr* pDispMgr)
+void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi)
 {
-   CComPtr<iDisplayList> pDL;
-   pDispMgr->FindDisplayList(SECTION_LIST,&pDL);
+   auto pDL = m_pDispMgr->FindDisplayList(SECTION_LIST);
    ATLASSERT(pDL);
    pDL->Clear();
 
@@ -497,12 +430,8 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
 
    pgsTypes::SupportedDeckType deckType = pIBridgeDesc->GetDeckDescription()->GetDeckType();
 
-   CComPtr<iPointDisplayObject> doPnt;
-   ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
-   doPnt->SetID(1);
-
-   CComPtr<iShapeDrawStrategy> strategy;
-   ::CoCreateInstance(CLSID_ShapeDrawStrategy,nullptr,CLSCTX_ALL,IID_iShapeDrawStrategy,(void**)&strategy);
+   auto doPnt = WBFL::DManip::PointDisplayObject::Create(1);
+   auto strategy = WBFL::DManip::ShapeDrawStrategy::Create();
    doPnt->SetDrawingStrategy(strategy);
 
    // Get the shape in Girder Section Coordinates so that it is in the same coordinate system
@@ -510,12 +439,12 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
    IndexType girderShapeIdx, slabShapeIdx;
    CComPtr<IShape> shape;
    pShapes->GetSegmentShape(intervalIdx, poi,false/*don't orient... shape is always plumb*/,pgsTypes::scGirder,&shape, &girderShapeIdx, &slabShapeIdx);
-   strategy->SetShape(shape);
+   strategy->SetShape(geomUtil::ConvertShape(shape));
    strategy->SetSolidLineColor(SEGMENT_BORDER_COLOR);
    strategy->SetSolidFillColor(segmentKey.girderIndex == m_pFrame->GetSelection().girderIndex ? SEGMENT_FILL_COLOR : SEGMENT_FILL_GHOST_COLOR);
    strategy->SetVoidLineColor(VOID_BORDER_COLOR);
    strategy->SetVoidFillColor(GetSysColor(COLOR_WINDOW));
-   strategy->DoFill(true);
+   strategy->Fill(true);
 
    // Set up sockets so dimension lines can plug into the girder shape
    CComQIPtr<ICompositeShape> composite(shape);
@@ -587,31 +516,32 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
 
 
    CComPtr<IPoint2d> pntNCL; // nominal centerline top
-   boxGirder->get_TopCenter(&pntNCL);
-   pntNCL->put_X(xNCL); // now at the nominal centerline girder
-   pntNCL->put_Y(tyCL);
+   //boxGirder->get_TopCenter(&pntNCL);
+   //pntNCL->put_X(xNCL); // now at the nominal centerline girder
+   //pntNCL->put_Y(tyCL);
 
    // sockets for top flange dimension lines
-   CComPtr<iSocket> socketTL, socketTC, socketTR, socketBL, socketBC, socketBR;
-   CComQIPtr<iConnectable> connectable(doPnt);
+   auto connectable = std::dynamic_pointer_cast<WBFL::DManip::iConnectable>(doPnt);
 
-   connectable->AddSocket(SOCKET_TC, pntNCL, &socketTC);
+   auto socketTC = connectable->AddSocket(SOCKET_TC, {xNCL,tyCL});
 
-   CComPtr<IPoint2d> pntTL;
-   pntTL.CoCreateInstance(CLSID_Point2d);
-   pntTL->Move(txLeft, tyCL);
-   connectable->AddSocket(SOCKET_TL,pntTL,&socketTL);
+   //CComPtr<IPoint2d> pntTL;
+   //pntTL.CoCreateInstance(CLSID_Point2d);
+   //pntTL->Move(txLeft, tyCL);
+   auto socketTL = connectable->AddSocket(SOCKET_TL,{txLeft,tyCL});
 
-   CComPtr<IPoint2d> pntTR;
-   pntTR.CoCreateInstance(CLSID_Point2d);
-   pntTR->Move(txRight, tyCL);
-   connectable->AddSocket(SOCKET_TR,pntTR,&socketTR);
+   //CComPtr<IPoint2d> pntTR;
+   //pntTR.CoCreateInstance(CLSID_Point2d);
+   //pntTR->Move(txRight, tyCL);
+   auto socketTR = connectable->AddSocket(SOCKET_TR,{txRight,tyCL});
 
    // sockets for bottom flange dimension line
    pntNCL.Release();
    boxGirder->get_BottomCenter(&pntNCL);
    pntNCL->put_X(xNCL);
-   connectable->AddSocket(SOCKET_BC, pntNCL,&socketBC);
+   Float64 byCL;
+   pntNCL->get_Y(&byCL);
+   auto socketBC = connectable->AddSocket(SOCKET_BC, {xNCL,byCL});
 
    CComQIPtr<IGirderSection> section(girderShape);
    FlangeIndexType nBottomFlanges, nWebs;
@@ -620,23 +550,24 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
 
    Float64 Hg = pSectProps->GetHg(releaseIntervalIdx, poi); // CL height of girder
 
+   std::shared_ptr<WBFL::DManip::iSocket> socketBL, socketBR;
    if (0 < nBottomFlanges)
    {
       Float64 x;
       section->get_BottomFlangeLocation(0, &x);
       Float64 wx;
       section->get_BottomFlangeWidth(0, &wx);
-      CComPtr<IPoint2d> pntBL;
-      pntBL.CoCreateInstance(CLSID_Point2d);
-      pntBL->Move(x - 0.5*(bwLeft - bwRight + wx), -Hg);
-      connectable->AddSocket(SOCKET_BL, pntBL, &socketBL);
+      //CComPtr<IPoint2d> pntBL;
+      //pntBL.CoCreateInstance(CLSID_Point2d);
+      //pntBL->Move(x - 0.5*(bwLeft - bwRight + wx), -Hg);
+      socketBL = connectable->AddSocket(SOCKET_BL, { x - 0.5 * (bwLeft - bwRight + wx), -Hg });
 
       section->get_BottomFlangeLocation(nBottomFlanges - 1, &x);
       section->get_BottomFlangeWidth(nBottomFlanges - 1, &wx);
-      CComPtr<IPoint2d> pntBR;
-      pntBR.CoCreateInstance(CLSID_Point2d);
-      pntBR->Move(x - 0.5*(bwLeft - bwRight - wx), -Hg);
-      connectable->AddSocket(SOCKET_BR, pntBR, &socketBR);
+      //CComPtr<IPoint2d> pntBR;
+      //pntBR.CoCreateInstance(CLSID_Point2d);
+      //pntBR->Move(x - 0.5*(bwLeft - bwRight - wx), -Hg);
+      socketBR = connectable->AddSocket(SOCKET_BR, { x - 0.5 * (bwLeft - bwRight - wx), -Hg });
    }
    else if (0 < nWebs)
    {
@@ -644,35 +575,35 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
       section->get_WebLocation(0, &x);
       Float64 wx;
       section->get_WebThickness(0, &wx);
-      CComPtr<IPoint2d> pntBL;
-      pntBL.CoCreateInstance(CLSID_Point2d);
-      pntBL->Move(x - 0.5*(bwLeft - bwRight + wx), -Hg);
-      connectable->AddSocket(SOCKET_BL, pntBL, &socketBL);
+      //CComPtr<IPoint2d> pntBL;
+      //pntBL.CoCreateInstance(CLSID_Point2d);
+      //pntBL->Move(x - 0.5*(bwLeft - bwRight + wx), -Hg);
+      socketBL = connectable->AddSocket(SOCKET_BL, { x - 0.5 * (bwLeft - bwRight + wx), -Hg });
 
       section->get_WebLocation(nWebs-1, &x);
       section->get_WebThickness(nWebs - 1, &wx);
-      CComPtr<IPoint2d> pntBR;
-      pntBR.CoCreateInstance(CLSID_Point2d);
-      pntBR->Move(x - 0.5*(bwLeft - bwRight - wx), -Hg);
-      connectable->AddSocket(SOCKET_BR, pntBR, &socketBR);
+      //CComPtr<IPoint2d> pntBR;
+      //pntBR.CoCreateInstance(CLSID_Point2d);
+      //pntBR->Move(x - 0.5*(bwLeft - bwRight - wx), -Hg);
+      socketBR = connectable->AddSocket(SOCKET_BR, { x - 0.5 * (bwLeft - bwRight - wx), -Hg });
    }
    else
    {
       CComPtr<IPoint2d> pntBC;
       boxGirder->get_BottomCenter(&pntBC);
       pntBC->Offset(-bottom_width / 2, 0.0);
-      connectable->AddSocket(SOCKET_BL, pntBC, &socketBL);
+      Float64 x, y;
+      pntBC->Location(&x, &y);
+      socketBL = connectable->AddSocket(SOCKET_BL, {x,y});
       pntBC->Offset(bottom_width, 0.0);
-      connectable->AddSocket(SOCKET_BR, pntBC, &socketBR);
+      pntBC->Location(&x, &y);
+      socketBR = connectable->AddSocket(SOCKET_BR, {x,y});
    }
 
    // Register an event sink with the segment display object so that we can handle double clicks
    // on the segment differently then a general double click
-   CGirderSectionViewSegmentDisplayObjectEvents* pEvents = new CGirderSectionViewSegmentDisplayObjectEvents(poi, GetFrame());
-   CComPtr<iDisplayObjectEvents> events;
-   events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));
-   CComQIPtr<iDisplayObject, &IID_iDisplayObject> dispObj(doPnt);
-   dispObj->RegisterEventSink(events);
+   auto events = std::make_shared<CGirderSectionViewSegmentDisplayObjectEvents>(poi, GetFrame());
+   doPnt->RegisterEventSink(events);
 
 
    pDL->AddDisplayObject(doPnt);
@@ -682,19 +613,15 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
    Float64 y_offset = 0.01*Hg;
 
    // create a point at the top of the section
-   CComPtr<IPoint2d> pntTop;
-   pntTop.CoCreateInstance(CLSID_Point2d);
-   pntTop->Move(xNCL, y_offset);
+   WBFL::Geometry::Point2d pntTop(xNCL, y_offset);
 
    // create a point at the bottom of the section
-   CComPtr<IPoint2d> pntBottom;
-   pntBottom.CoCreateInstance(CLSID_Point2d);
-   pntBottom->Move(xNCL, -(Hg + y_offset));
+   WBFL::Geometry::Point2d pntBottom(xNCL, -(Hg + y_offset));
 
-   CreateLineDisplayObject(pDL, pntTop, pntBottom, BLACK, lsCenterline);
+   CreateLineDisplayObject(pDL, pntTop, pntBottom, BLACK, WBFL::DManip::LineStyleType::Centerline);
 }
 
-void CGirderModelSectionView::BuildLongitudinalJointDisplayObject(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi, iDisplayMgr* pDispMgr)
+void CGirderModelSectionView::BuildLongitudinalJointDisplayObject(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi)
 {
    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -714,8 +641,7 @@ void CGirderModelSectionView::BuildLongitudinalJointDisplayObject(CPGSDocBase* p
       return;
    }
 
-   CComPtr<iDisplayList> pDL;
-   pDispMgr->FindDisplayList(JOINT_LIST, &pDL);
+   auto pDL = m_pDispMgr->FindDisplayList(JOINT_LIST);
    ATLASSERT(pDL);
    pDL->Clear();
 
@@ -724,12 +650,8 @@ void CGirderModelSectionView::BuildLongitudinalJointDisplayObject(CPGSDocBase* p
    GET_IFACE2(pBroker, IShapes, pShapes);
    //GET_IFACE2(pBroker, IGirder, pGirder);
 
-   CComPtr<iPointDisplayObject> doPnt;
-   ::CoCreateInstance(CLSID_PointDisplayObject, nullptr, CLSCTX_ALL, IID_iPointDisplayObject, (void**)&doPnt);
-   doPnt->SetID(1);
-
-   CComPtr<iShapeDrawStrategy> strategy;
-   ::CoCreateInstance(CLSID_ShapeDrawStrategy, nullptr, CLSCTX_ALL, IID_iShapeDrawStrategy, (void**)&strategy);
+   auto doPnt = WBFL::DManip::PointDisplayObject::Create(1);
+   auto strategy = WBFL::DManip::ShapeDrawStrategy::Create();
    doPnt->SetDrawingStrategy(strategy);
 
    // Get the shape in Girder Section Coordinates so that it is in the same coordinate system
@@ -758,10 +680,10 @@ void CGirderModelSectionView::BuildLongitudinalJointDisplayObject(CPGSDocBase* p
 
    CComQIPtr<IShape> shape(compShape);
 
-   strategy->SetShape(shape);
+   strategy->SetShape(geomUtil::ConvertShape(shape));
    strategy->SetSolidLineColor(JOINT_BORDER_COLOR);
    strategy->SetSolidFillColor(segmentKey.girderIndex == m_pFrame->GetSelection().girderIndex ? JOINT_FILL_COLOR : SEGMENT_FILL_GHOST_COLOR);
-   strategy->DoFill(true);
+   strategy->Fill(true);
 
    // Set up sockets so dimension lines can plug into the joint shapes
    CComPtr<IRect2d> boxLeftJoint, boxRightJoint;
@@ -775,8 +697,7 @@ void CGirderModelSectionView::BuildLongitudinalJointDisplayObject(CPGSDocBase* p
       rightJointShape->get_BoundingBox(&boxRightJoint);
    }
 
-   CComPtr<iSocket> socketLeftJoint, socketRightJoint;
-   CComQIPtr<iConnectable> connectable(doPnt);
+   auto connectable = std::dynamic_pointer_cast<WBFL::DManip::iConnectable>(doPnt);
 
    // sockets for top flange dimension lines
    CComPtr<IPoint2d> pntTL, pntTR;
@@ -786,7 +707,7 @@ void CGirderModelSectionView::BuildLongitudinalJointDisplayObject(CPGSDocBase* p
       Float64 x, y;
       pntTL->Location(&x, &y);
       pntTL->Move(x, 0);
-      connectable->AddSocket(SOCKET_TLJ, pntTL, &socketLeftJoint);
+      connectable->AddSocket(SOCKET_TLJ, geomUtil::GetPoint(pntTL));
    }
 
    if (rightJointShape)
@@ -795,14 +716,13 @@ void CGirderModelSectionView::BuildLongitudinalJointDisplayObject(CPGSDocBase* p
       Float64 x, y;
       pntTR->Location(&x, &y);
       pntTR->Move(x, 0);
-      connectable->AddSocket(SOCKET_TRJ, pntTR, &socketRightJoint);
+      connectable->AddSocket(SOCKET_TRJ, geomUtil::GetPoint(pntTR));
    }
 
    pDL->AddDisplayObject(doPnt);
-
 }
 
-void CGirderModelSectionView::BuildStrandDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi,iDisplayMgr* pDispMgr)
+void CGirderModelSectionView::BuildStrandDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi)
 {
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
@@ -813,21 +733,18 @@ void CGirderModelSectionView::BuildStrandDisplayObjects(CPGSDocBase* pDoc,IBroke
    const auto* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Straight);
    Float64 diameter = pStrand->GetNominalDiameter();
 
-   CComPtr<iSimpleDrawPointStrategy> strategy;
-   ::CoCreateInstance(CLSID_SimpleDrawPointStrategy,nullptr,CLSCTX_ALL,IID_iSimpleDrawPointStrategy,(void**)&strategy);
+   auto strategy = WBFL::DManip::SimpleDrawPointStrategy::Create();
    strategy->SetColor(STRAND_FILL_COLOR);
-   strategy->SetPointType(ptCircle);
+   strategy->SetPointType(WBFL::DManip::PointType::Circle);
    strategy->SetPointSize(diameter);
 
-   CComPtr<iSimpleDrawPointStrategy> debond_strategy;
-   ::CoCreateInstance(CLSID_SimpleDrawPointStrategy,nullptr,CLSCTX_ALL,IID_iSimpleDrawPointStrategy,(void**)&debond_strategy);
+   auto debond_strategy = WBFL::DManip::SimpleDrawPointStrategy::Create();
    debond_strategy->SetColor(DEBOND_FILL_COLOR);
-   debond_strategy->SetPointType(ptCircle);
+   debond_strategy->SetPointType(WBFL::DManip::PointType::Circle);
    debond_strategy->SetPointSize(diameter);
 
    // Straight strands
-   CComPtr<iDisplayList> pStraightDL;
-   pDispMgr->FindDisplayList(STRAIGHT_STRAND_LIST,&pStraightDL);
+   auto pStraightDL = m_pDispMgr->FindDisplayList(STRAIGHT_STRAND_LIST);
    ATLASSERT(pStraightDL);
    pStraightDL->Clear();
 
@@ -841,9 +758,8 @@ void CGirderModelSectionView::BuildStrandDisplayObjects(CPGSDocBase* pDoc,IBroke
       CComPtr<IPoint2d> p;
       points->get_Item(strandPointIdx,&p);
 
-      CComPtr<iPointDisplayObject> doPnt;
-      ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
-      doPnt->SetPosition(p,FALSE,FALSE);
+      auto doPnt = WBFL::DManip::PointDisplayObject::Create();
+      doPnt->SetPosition(geomUtil::GetPoint(p),false,false);
       doPnt->SetID(strandPointIdx);
 
       if ( pStrandGeom->IsStrandDebonded(poi,strandPointIdx,pgsTypes::Straight) )
@@ -855,14 +771,13 @@ void CGirderModelSectionView::BuildStrandDisplayObjects(CPGSDocBase* pDoc,IBroke
          doPnt->SetDrawingStrategy(strategy);
       }
 
-      doPnt->SetSelectionType(stAll);
+      doPnt->SetSelectionType(WBFL::DManip::SelectionType::All);
 
       pStraightDL->AddDisplayObject(doPnt);
    }
 
    // Harped Strands
-   CComPtr<iDisplayList> pHarpedDL;
-   pDispMgr->FindDisplayList(HARPED_STRAND_LIST,&pHarpedDL);
+   auto pHarpedDL = m_pDispMgr->FindDisplayList(HARPED_STRAND_LIST);
    ATLASSERT(pHarpedDL);
    pHarpedDL->Clear();
 
@@ -877,9 +792,8 @@ void CGirderModelSectionView::BuildStrandDisplayObjects(CPGSDocBase* pDoc,IBroke
       CComPtr<IPoint2d> p;
       points->get_Item(strandPointIdx,&p);
 
-      CComPtr<iPointDisplayObject> doPnt;
-      ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
-      doPnt->SetPosition(p,FALSE,FALSE);
+      auto doPnt = WBFL::DManip::PointDisplayObject::Create();
+      doPnt->SetPosition(geomUtil::GetPoint(p),false,false);
       doPnt->SetID(strandPointIdx);
       doPnt->SetDrawingStrategy(strategy);
 
@@ -894,8 +808,7 @@ void CGirderModelSectionView::BuildStrandDisplayObjects(CPGSDocBase* pDoc,IBroke
    if ( tsrIntervalIdx != INVALID_INDEX && intervalIdx < tsrIntervalIdx )
    {
       // only show temporary strands if they haven't been removed yet
-      CComPtr<iDisplayList> pTempDL;
-      pDispMgr->FindDisplayList(TEMP_STRAND_LIST,&pTempDL);
+      auto pTempDL = m_pDispMgr->FindDisplayList(TEMP_STRAND_LIST);
       ATLASSERT(pTempDL);
       pTempDL->Clear();
 
@@ -910,9 +823,8 @@ void CGirderModelSectionView::BuildStrandDisplayObjects(CPGSDocBase* pDoc,IBroke
          CComPtr<IPoint2d> p;
          points->get_Item(strandPointIdx,&p);
 
-         CComPtr<iPointDisplayObject> doPnt;
-         ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
-         doPnt->SetPosition(p,FALSE,FALSE);
+         auto doPnt = WBFL::DManip::PointDisplayObject::Create();
+         doPnt->SetPosition(geomUtil::GetPoint(p),false,false);
          doPnt->SetID(strandPointIdx);
          doPnt->SetDrawingStrategy(strategy);
 
@@ -921,41 +833,30 @@ void CGirderModelSectionView::BuildStrandDisplayObjects(CPGSDocBase* pDoc,IBroke
    }
 }
 
-void CGirderModelSectionView::GetDuctDisplayObject(IntervalIndexType intervalIdx,IntervalIndexType ptIntervalIdx,IPoint2d* pntDuct,Float64 ductDiameter,StrandIndexType nStrands,COLORREF fillColor,COLORREF borderColor,iDisplayObject** ppDO)
+std::shared_ptr<WBFL::DManip::iDisplayObject> CGirderModelSectionView::GetDuctDisplayObject(IntervalIndexType intervalIdx,IntervalIndexType ptIntervalIdx, const WBFL::Geometry::Point2d& pntDuct,Float64 ductDiameter,StrandIndexType nStrands,COLORREF fillColor,COLORREF borderColor)
 {
-   CComPtr<iCompositeDisplayObject> compDO;
-   compDO.CoCreateInstance(CLSID_CompositeDisplayObject);
+   auto compDO = WBFL::DManip::CompositeDisplayObject::Create();
 
    if (ptIntervalIdx < intervalIdx)
    {
-      CComPtr<iPointDisplayObject> pntDO;
-      pntDO.CoCreateInstance(CLSID_PointDisplayObject);
+      auto pntDO = WBFL::DManip::PointDisplayObject::Create();
 
-      CComPtr<iShapeDrawStrategy> shape_draw_strategy;
-      shape_draw_strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
+      auto shape_draw_strategy = WBFL::DManip::ShapeDrawStrategy::Create();
       pntDO->SetDrawingStrategy(shape_draw_strategy);
       shape_draw_strategy->SetSolidFillColor(fillColor);
       shape_draw_strategy->SetSolidLineColor(borderColor);
-
-      CComPtr<ICircle> circle;
-      circle.CoCreateInstance(CLSID_Circle);
-      circle->putref_Center(pntDuct);
-      circle->put_Radius(ductDiameter / 2);
-      CComQIPtr<IShape> shape(circle);
-      shape_draw_strategy->SetShape(shape);
-
+      auto circle = std::make_shared<WBFL::Geometry::Circle>(pntDuct, ductDiameter / 2);
+      shape_draw_strategy->SetShape(circle);
       compDO->AddDisplayObject(pntDO);
    }
 
    CString strStrands;
    strStrands.Format(_T("%d"), nStrands);
 
-   CComPtr<iTextBlock> textBlock;
-   ::CoCreateInstance(CLSID_TextBlock, nullptr, CLSCTX_ALL, IID_iTextBlock, (void**)&textBlock);
+   auto textBlock = WBFL::DManip::TextBlock::Create();
 
-   CComPtr<IPoint2d> pntBottomCircle;
-   pntDuct->Clone(&pntBottomCircle);
-   pntBottomCircle->Offset(0, -ductDiameter / 2);
+   auto pntBottomCircle(pntDuct);
+   pntBottomCircle.Offset(0, -ductDiameter / 2);
    textBlock->SetText(strStrands);
    textBlock->SetPosition(pntBottomCircle);
    textBlock->SetTextAlign(TA_BASELINE | TA_CENTER);
@@ -964,16 +865,14 @@ void CGirderModelSectionView::GetDuctDisplayObject(IntervalIndexType intervalIdx
    textBlock->SetPointSize(FONT_POINT_SIZE);
    compDO->AddDisplayObject(textBlock);
 
-   CComQIPtr<iDisplayObject> dispObj(compDO);
-   dispObj.CopyTo(ppDO);
+   return compDO;
 }
 
-void CGirderModelSectionView::BuildDuctDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi,iDisplayMgr* pDispMgr)
+void CGirderModelSectionView::BuildDuctDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi)
 {
    // The outlines of the ducts are drawn as part of the girder cross section
    // This method adds the text labels to the ducts
-   CComPtr<iDisplayList> pDisplayList;
-   pDispMgr->FindDisplayList(DUCT_LIST,&pDisplayList);
+   auto pDisplayList = m_pDispMgr->FindDisplayList(DUCT_LIST);
    ATLASSERT(pDisplayList);
    pDisplayList->Clear();
 
@@ -997,8 +896,7 @@ void CGirderModelSectionView::BuildDuctDisplayObjects(CPGSDocBase* pDoc,IBroker*
       Float64 diameter = pSegmentTendonGeometry->GetOutsideDiameter(segmentKey, ductIdx);
       StrandIndexType nStrands = pSegmentTendonGeometry->GetTendonStrandCount(segmentKey, ductIdx);
 
-      CComPtr<iDisplayObject> doDuct;
-      GetDuctDisplayObject(intervalIdx, ptIntervalIdx, pntDuct, diameter, nStrands, SEGMENT_TENDON_FILL_COLOR, SEGMENT_TENDON_BORDER_COLOR, &doDuct);
+      auto doDuct = GetDuctDisplayObject(intervalIdx, ptIntervalIdx, geomUtil::GetPoint(pntDuct), diameter, nStrands, SEGMENT_TENDON_FILL_COLOR, SEGMENT_TENDON_BORDER_COLOR);
 
       pDisplayList->AddDisplayObject(doDuct);
    }
@@ -1020,26 +918,23 @@ void CGirderModelSectionView::BuildDuctDisplayObjects(CPGSDocBase* pDoc,IBroker*
 
       StrandIndexType nStrands = pTendonGeom->GetTendonStrandCount(girderKey, ductIdx);
 
-      CComPtr<iDisplayObject> doDuct;
-      GetDuctDisplayObject(intervalIdx, ptIntervalIdx, pntDuct, diameter, nStrands, GIRDER_TENDON_FILL_COLOR, GIRDER_TENDON_BORDER_COLOR, &doDuct);
+      auto doDuct = GetDuctDisplayObject(intervalIdx, ptIntervalIdx, geomUtil::GetPoint(pntDuct), diameter, nStrands, GIRDER_TENDON_FILL_COLOR, GIRDER_TENDON_BORDER_COLOR);
 
       pDisplayList->AddDisplayObject(doDuct);
    }
 }
 
-void CGirderModelSectionView::BuildLongReinfDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi,iDisplayMgr* pDispMgr)
+void CGirderModelSectionView::BuildLongReinfDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi)
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   CComPtr<iDisplayList> pDL;
-   pDispMgr->FindDisplayList(LONG_REINF_LIST,&pDL);
+   auto pDL = m_pDispMgr->FindDisplayList(LONG_REINF_LIST);
    ATLASSERT(pDL);
    pDL->Clear();
 
-   CComPtr<iSimpleDrawPointStrategy> strategy;
-   ::CoCreateInstance(CLSID_SimpleDrawPointStrategy,nullptr,CLSCTX_ALL,IID_iSimpleDrawPointStrategy,(void**)&strategy);
+   auto strategy = WBFL::DManip::SimpleDrawPointStrategy::Create();
    strategy->SetColor(REBAR_COLOR);
-   strategy->SetPointType(ptCircle);
+   strategy->SetPointType(WBFL::DManip::PointType::Circle);
 
    GET_IFACE2(pBroker,ILongRebarGeometry,pLongRebarGeom);
 
@@ -1058,9 +953,8 @@ void CGirderModelSectionView::BuildLongReinfDisplayObjects(CPGSDocBase* pDoc,IBr
       CComPtr<IPoint2d> p;
       item->get_Location(&p);
 
-      CComPtr<iPointDisplayObject> doPnt;
-      ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
-      doPnt->SetPosition(p,FALSE,FALSE);
+      auto doPnt = WBFL::DManip::PointDisplayObject::Create();
+      doPnt->SetPosition(geomUtil::GetPoint(p),false,false);
       doPnt->SetID(id++);
       doPnt->SetDrawingStrategy(strategy);
 
@@ -1070,10 +964,9 @@ void CGirderModelSectionView::BuildLongReinfDisplayObjects(CPGSDocBase* pDoc,IBr
    }
 }
 
-void CGirderModelSectionView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi,iDisplayMgr* pDispMgr)
+void CGirderModelSectionView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi)
 {
-   CComPtr<iDisplayList> pDL;
-   pDispMgr->FindDisplayList(STRAND_CG_LIST,&pDL);
+   auto pDL = m_pDispMgr->FindDisplayList(STRAND_CG_LIST);
    ATLASSERT(pDL);
    pDL->Clear();
 
@@ -1117,46 +1010,34 @@ void CGirderModelSectionView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc,IBro
    GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    auto cg = pStrandGeom->GetStrandCG(intervalIdx, poi, true);
 
-   CComPtr<IPoint2d> point;
-   point.CoCreateInstance(__uuidof(Point2d));
-   point->Move(cg.X(),cg.Y());
+   auto doPnt = WBFL::DManip::PointDisplayObject::Create(1);
+   doPnt->SetPosition(cg,false,false);
 
-   CComPtr<iPointDisplayObject> doPnt;
-   ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doPnt);
-   doPnt->SetID(1);
-   doPnt->SetPosition(point,FALSE,FALSE);
-
-   CComPtr<iTargetDrawStrategy> strategy;
-   ::CoCreateInstance(CLSID_TargetDrawStrategy,nullptr,CLSCTX_ALL,IID_iTargetDrawStrategy,(void**)&strategy);
+   auto strategy = WBFL::DManip::TargetDrawStrategy::Create();
    CRect rc;
    GetClientRect(&rc);
    strategy->SetRadius(rc.Width()/80);
-
    strategy->SetFgColor(STRAND_CG_COLOR_1);
    strategy->SetBgColor(STRAND_CG_COLOR_2);
 
    doPnt->SetDrawingStrategy(strategy);
 
    // setup socket for dimension line
-   CComQIPtr<iConnectable> connectable(doPnt);
-
-   CComPtr<iSocket> socketCGPS;
-   connectable->AddSocket(SOCKET_CGPS,point,&socketCGPS);
+   auto connectable = std::dynamic_pointer_cast<WBFL::DManip::iConnectable>(doPnt);
+   auto socketCGPS = connectable->AddSocket(SOCKET_CGPS,cg);
 
    // we don't know where the top/bottom of the dimensions are going to be
    // but we will create the sockets for them now. We will move these sockets
    // when we make the dimensions lines
-   CComPtr<iSocket> socketCGPS_TC, socketCGPS_BC;
-   connectable->AddSocket(SOCKET_CGPS_TC, point, &socketCGPS_TC);
-   connectable->AddSocket(SOCKET_CGPS_BC, point, &socketCGPS_BC);
+   connectable->AddSocket(SOCKET_CGPS_TC, cg);
+   connectable->AddSocket(SOCKET_CGPS_BC, cg);
 
    pDL->AddDisplayObject(doPnt);
 }
 
-void CGirderModelSectionView::BuildCGDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi, iDisplayMgr* pDispMgr)
+void CGirderModelSectionView::BuildCGDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi)
 {
-   CComPtr<iDisplayList> pDL;
-   pDispMgr->FindDisplayList(CG_LIST, &pDL);
+   auto pDL = m_pDispMgr->FindDisplayList(CG_LIST);
    ATLASSERT(pDL);
    pDL->Clear();
 
@@ -1191,61 +1072,42 @@ void CGirderModelSectionView::BuildCGDisplayObjects(CPGSDocBase* pDoc, IBroker* 
    CComPtr<IPoint2d> point;
    pSectProp->GetCentroid(intervalIdx, poi, &point);
 
-   CComPtr<iPointDisplayObject> doPnt;
-   ::CoCreateInstance(CLSID_PointDisplayObject, nullptr, CLSCTX_ALL, IID_iPointDisplayObject, (void**)&doPnt);
-   doPnt->SetID(1);
-   doPnt->SetPosition(point, FALSE, FALSE);
+   auto doPnt = WBFL::DManip::PointDisplayObject::Create(1);
+   doPnt->SetPosition(geomUtil::GetPoint(point), false, false);
 
-   CComPtr<iTargetDrawStrategy> strategy;
-   ::CoCreateInstance(CLSID_TargetDrawStrategy, nullptr, CLSCTX_ALL, IID_iTargetDrawStrategy, (void**)&strategy);
+   auto strategy = WBFL::DManip::TargetDrawStrategy::Create();
    CRect rc;
    GetClientRect(&rc);
    strategy->SetRadius(rc.Width() / 80);
-
    strategy->SetFgColor(SECTION_CG_COLOR_1);
    strategy->SetBgColor(SECTION_CG_COLOR_2);
 
    doPnt->SetDrawingStrategy(strategy);
 
    // setup socket for dimension line
-   CComQIPtr<iConnectable> connectable(doPnt);
-
-   CComPtr<IPoint2d> socketCGPoint;
-   socketCGPoint.CoCreateInstance(CLSID_Point2d);
-   socketCGPoint->MoveEx(point);
-   CComPtr<iSocket> socketCG;
-   connectable->AddSocket(SOCKET_CG, socketCGPoint, &socketCG);
+   auto connectable = std::dynamic_pointer_cast<WBFL::DManip::iConnectable>(doPnt);
+   connectable->AddSocket(SOCKET_CG, geomUtil::GetPoint(point));
 
    Float64 cgx, cgy;
    point->Location(&cgx, &cgy);
-   CComPtr<IPoint2d> socketCGXTopPoint;
-   socketCGXTopPoint.CoCreateInstance(CLSID_Point2d);
-   socketCGXTopPoint->Move(cgx, 0);
-   CComPtr<iSocket> socketCGX_Top;
-   connectable->AddSocket(SOCKET_CGX_TOP, socketCGXTopPoint, &socketCGX_Top);
 
-   CComPtr<IPoint2d> socketCGXBottomPoint;
-   socketCGXBottomPoint.CoCreateInstance(CLSID_Point2d);
-   socketCGXBottomPoint->Move(cgx, Yb - Hg);
-   CComPtr<iSocket> socketCGX_Bottom;
-   connectable->AddSocket(SOCKET_CGX_BOTTOM, socketCGXBottomPoint, &socketCGX_Bottom);
+   connectable->AddSocket(SOCKET_CGX_TOP, { cgx,0 });
+   connectable->AddSocket(SOCKET_CGX_BOTTOM, { cgx, Yb - Hg });
 
    // we don't know where the top/bottom of the dimensions are going to be
    // but we will create the sockets for them now. We will move these sockets
    // when we make the dimensions lines
-   CComPtr<iSocket> socketCG_Top, socketCG_Bottom, socketCGX_TopLeft, socketCGX_TopRight, socketCGX_BottomLeft, socketCGX_BottomRight;
-   connectable->AddSocket(SOCKET_CG_TOP, point, &socketCG_Top);
-   connectable->AddSocket(SOCKET_CG_BOTTOM, point, &socketCG_Bottom);
-   connectable->AddSocket(SOCKET_CGX_TOP_LEFT, point, &socketCGX_TopLeft);
-   connectable->AddSocket(SOCKET_CGX_TOP_RIGHT, point, &socketCGX_TopRight);
-   connectable->AddSocket(SOCKET_CGX_BOTTOM_LEFT, point, &socketCGX_BottomLeft);
-   connectable->AddSocket(SOCKET_CGX_BOTTOM_RIGHT, point, &socketCGX_BottomRight);
-
+   connectable->AddSocket(SOCKET_CG_TOP, geomUtil::GetPoint(point));
+   connectable->AddSocket(SOCKET_CG_BOTTOM, geomUtil::GetPoint(point));
+   connectable->AddSocket(SOCKET_CGX_TOP_LEFT, geomUtil::GetPoint(point));
+   connectable->AddSocket(SOCKET_CGX_TOP_RIGHT, geomUtil::GetPoint(point));
+   connectable->AddSocket(SOCKET_CGX_BOTTOM_LEFT, geomUtil::GetPoint(point));
+   connectable->AddSocket(SOCKET_CGX_BOTTOM_RIGHT, geomUtil::GetPoint(point));
 
    pDL->AddDisplayObject(doPnt);
 }
 
-void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi, iDisplayMgr* pDispMgr)
+void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi)
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -1274,366 +1136,274 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
    // need to layout dimension line witness lines in twips
    const long twip_offset = 1440 / 2;
 
-   CComPtr<iDisplayList> pDL;
-   pDispMgr->FindDisplayList(DIMENSION_LIST, &pDL);
+   auto pDL = m_pDispMgr->FindDisplayList(DIMENSION_LIST);
    ATLASSERT(pDL);
    pDL->Clear();
 
-   CComPtr<iDimensionLine> doDimLineTopFlangeWidth;
-   CComPtr<iDimensionLine> doDimLineBottomFlangeWidth;
-   CComPtr<iDimensionLine> doDimLineHeight;
-   CComPtr<iDimensionLine> doDimLineTopCGPS;
-   CComPtr<iDimensionLine> doDimLineBottomCGPS;
-   CComPtr<iDimensionLine> doDimLineTopCG;
-   CComPtr<iDimensionLine> doDimLineBottomCG;
-   CComPtr<iDimensionLine> doDimLineTopLeftCG;
-   CComPtr<iDimensionLine> doDimLineTopRightCG;
-   CComPtr<iDimensionLine> doDimLineBottomLeftCG;
-   CComPtr<iDimensionLine> doDimLineBottomRightCG;
-
-   ::CoCreateInstance(CLSID_DimensionLineDisplayObject, nullptr, CLSCTX_ALL, IID_iDimensionLine, (void**)&doDimLineTopFlangeWidth);
-   ::CoCreateInstance(CLSID_DimensionLineDisplayObject, nullptr, CLSCTX_ALL, IID_iDimensionLine, (void**)&doDimLineBottomFlangeWidth);
-   ::CoCreateInstance(CLSID_DimensionLineDisplayObject, nullptr, CLSCTX_ALL, IID_iDimensionLine, (void**)&doDimLineHeight);
-   ::CoCreateInstance(CLSID_DimensionLineDisplayObject, nullptr, CLSCTX_ALL, IID_iDimensionLine, (void**)&doDimLineTopCGPS);
-   ::CoCreateInstance(CLSID_DimensionLineDisplayObject, nullptr, CLSCTX_ALL, IID_iDimensionLine, (void**)&doDimLineBottomCGPS);
-   ::CoCreateInstance(CLSID_DimensionLineDisplayObject, nullptr, CLSCTX_ALL, IID_iDimensionLine, (void**)&doDimLineTopCG);
-   ::CoCreateInstance(CLSID_DimensionLineDisplayObject, nullptr, CLSCTX_ALL, IID_iDimensionLine, (void**)&doDimLineBottomCG);
-   ::CoCreateInstance(CLSID_DimensionLineDisplayObject, nullptr, CLSCTX_ALL, IID_iDimensionLine, (void**)&doDimLineTopLeftCG);
-   ::CoCreateInstance(CLSID_DimensionLineDisplayObject, nullptr, CLSCTX_ALL, IID_iDimensionLine, (void**)&doDimLineTopRightCG);
-   ::CoCreateInstance(CLSID_DimensionLineDisplayObject, nullptr, CLSCTX_ALL, IID_iDimensionLine, (void**)&doDimLineBottomLeftCG);
-   ::CoCreateInstance(CLSID_DimensionLineDisplayObject, nullptr, CLSCTX_ALL, IID_iDimensionLine, (void**)&doDimLineBottomRightCG);
-
    IDType id = 0;
-   doDimLineTopFlangeWidth->SetID(id++);
-   doDimLineBottomFlangeWidth->SetID(id++);
-   doDimLineHeight->SetID(id++);
-   doDimLineTopCGPS->SetID(id++);
-   doDimLineBottomCGPS->SetID(id++);
-   doDimLineTopCG->SetID(id++);
-   doDimLineBottomCG->SetID(id++);
-   doDimLineTopLeftCG->SetID(id++);
-   doDimLineTopRightCG->SetID(id++);
-   doDimLineBottomLeftCG->SetID(id++);
-   doDimLineBottomRightCG->SetID(id++);
+   auto doDimLineTopFlangeWidth = WBFL::DManip::DimensionLine::Create(id++);
+   auto doDimLineBottomFlangeWidth = WBFL::DManip::DimensionLine::Create(id++);
+   auto doDimLineHeight = WBFL::DManip::DimensionLine::Create(id++);
+   auto doDimLineTopCGPS = WBFL::DManip::DimensionLine::Create(id++);
+   auto doDimLineBottomCGPS = WBFL::DManip::DimensionLine::Create(id++);
+   auto doDimLineTopCG = WBFL::DManip::DimensionLine::Create(id++);
+   auto doDimLineBottomCG = WBFL::DManip::DimensionLine::Create(id++);
+   auto doDimLineTopLeftCG = WBFL::DManip::DimensionLine::Create(id++);
+   auto doDimLineTopRightCG = WBFL::DManip::DimensionLine::Create(id++);
+   auto doDimLineBottomLeftCG = WBFL::DManip::DimensionLine::Create(id++);
+   auto doDimLineBottomRightCG = WBFL::DManip::DimensionLine::Create(id++);
 
    // Connect the dimension lines to the sockets in the section display object
-   CComPtr<iDisplayList> pSectionDL;
-   pDispMgr->FindDisplayList(SECTION_LIST, &pSectionDL);
+   auto pSectionDL = m_pDispMgr->FindDisplayList(SECTION_LIST);
    ATLASSERT(pSectionDL);
 
-   CComPtr<iDisplayList> pJointDL;
-   pDispMgr->FindDisplayList(JOINT_LIST, &pJointDL);
+   auto pJointDL = m_pDispMgr->FindDisplayList(JOINT_LIST);
    ATLASSERT(pJointDL);
 
    // get the girder section display object
-   CComPtr<iDisplayObject> doSection;
-   pSectionDL->GetDisplayObject(0, &doSection);
+   auto doSection = pSectionDL->GetDisplayObject(0);
 
-   CComPtr<iDisplayObject> doJoint;
-   pJointDL->GetDisplayObject(0, &doJoint);
+   auto doJoint = pJointDL->GetDisplayObject(0);
 
    // get it's iConnectable interface
-   CComQIPtr<iConnectable> connectableSection(doSection);
-   CComQIPtr<iConnectable> connectableJoint(doJoint);
+   auto connectableSection = std::dynamic_pointer_cast<WBFL::DManip::iConnectable>(doSection);
+   auto connectableJoint = std::dynamic_pointer_cast<WBFL::DManip::iConnectable>(doJoint);
 
    // get the sockets
-   CComPtr<iSocket> socketTL, socketTC, socketTR, socketBL, socketBC, socketBR;
-   connectableSection->GetSocket(SOCKET_TL, atByID, &socketTL);
-   connectableSection->GetSocket(SOCKET_TC, atByID, &socketTC);
-   connectableSection->GetSocket(SOCKET_TR, atByID, &socketTR);
-   connectableSection->GetSocket(SOCKET_BL, atByID, &socketBL);
-   connectableSection->GetSocket(SOCKET_BC, atByID, &socketBC);
-   connectableSection->GetSocket(SOCKET_BR, atByID, &socketBR);
+   auto socketTL = connectableSection->GetSocket(SOCKET_TL, WBFL::DManip::AccessType::ByID);
+   auto socketTC = connectableSection->GetSocket(SOCKET_TC, WBFL::DManip::AccessType::ByID);
+   auto socketTR = connectableSection->GetSocket(SOCKET_TR, WBFL::DManip::AccessType::ByID);
+   auto socketBL = connectableSection->GetSocket(SOCKET_BL, WBFL::DManip::AccessType::ByID);
+   auto socketBC = connectableSection->GetSocket(SOCKET_BC, WBFL::DManip::AccessType::ByID);
+   auto socketBR = connectableSection->GetSocket(SOCKET_BR, WBFL::DManip::AccessType::ByID);
 
-   CComPtr<iSocket> socketTLJ, socketTRJ;
+   std::shared_ptr<WBFL::DManip::iSocket> socketTLJ, socketTRJ;
    if (connectableJoint)
    {
-      connectableJoint->GetSocket(SOCKET_TLJ, atByID, &socketTLJ);
-      connectableJoint->GetSocket(SOCKET_TRJ, atByID, &socketTRJ);
+      socketTLJ = connectableJoint->GetSocket(SOCKET_TLJ, WBFL::DManip::AccessType::ByID);
+      socketTRJ = connectableJoint->GetSocket(SOCKET_TRJ, WBFL::DManip::AccessType::ByID);
    }
 
    UINT settings = pDoc->GetGirderEditorSettings();
 
-   CComPtr<iSocket> socketCG, socketCG_Top, socketCG_Bottom, socketCGX_Top, socketCGX_Bottom, socketCGX_TopLeft, socketCGX_TopRight, socketCGX_BottomLeft, socketCGX_BottomRight;
+   std::shared_ptr<WBFL::DManip::iSocket> socketCG, socketCG_Top, socketCG_Bottom, socketCGX_Top, socketCGX_Bottom, socketCGX_TopLeft, socketCGX_TopRight, socketCGX_BottomLeft, socketCGX_BottomRight;
    if (settings & IDG_SV_GIRDER_CG)
    {
-      CComPtr<iDisplayList> pCGList;
-      pDispMgr->FindDisplayList(CG_LIST, &pCGList);
+      auto pCGList = m_pDispMgr->FindDisplayList(CG_LIST);
 
-      CComPtr<iDisplayObject> doCG;
-      pCGList->GetDisplayObject(0, &doCG);
+      auto doCG = pCGList->GetDisplayObject(0);
       if (doCG)
       {
-         CComQIPtr<iConnectable> connectableCG(doCG);
-         connectableCG->GetSocket(SOCKET_CG, atByID, &socketCG);
-         connectableCG->GetSocket(SOCKET_CG_TOP, atByID, &socketCG_Top);
-         connectableCG->GetSocket(SOCKET_CG_BOTTOM, atByID, &socketCG_Bottom);
-         connectableCG->GetSocket(SOCKET_CGX_TOP, atByID, &socketCGX_Top);
-         connectableCG->GetSocket(SOCKET_CGX_BOTTOM, atByID, &socketCGX_Bottom);
-         connectableCG->GetSocket(SOCKET_CGX_TOP_LEFT, atByID, &socketCGX_TopLeft);
-         connectableCG->GetSocket(SOCKET_CGX_TOP_RIGHT, atByID, &socketCGX_TopRight);
-         connectableCG->GetSocket(SOCKET_CGX_BOTTOM_LEFT, atByID, &socketCGX_BottomLeft);
-         connectableCG->GetSocket(SOCKET_CGX_BOTTOM_RIGHT, atByID, &socketCGX_BottomRight);
+         auto connectableCG = std::dynamic_pointer_cast<WBFL::DManip::iConnectable>(doCG);
+         socketCG = connectableCG->GetSocket(SOCKET_CG, WBFL::DManip::AccessType::ByID);
+         socketCG_Top = connectableCG->GetSocket(SOCKET_CG_TOP, WBFL::DManip::AccessType::ByID);
+         socketCG_Bottom = connectableCG->GetSocket(SOCKET_CG_BOTTOM, WBFL::DManip::AccessType::ByID);
+         socketCGX_Top = connectableCG->GetSocket(SOCKET_CGX_TOP, WBFL::DManip::AccessType::ByID);
+         socketCGX_Bottom = connectableCG->GetSocket(SOCKET_CGX_BOTTOM, WBFL::DManip::AccessType::ByID);
+         socketCGX_TopLeft = connectableCG->GetSocket(SOCKET_CGX_TOP_LEFT, WBFL::DManip::AccessType::ByID);
+         socketCGX_TopRight = connectableCG->GetSocket(SOCKET_CGX_TOP_RIGHT, WBFL::DManip::AccessType::ByID);
+         socketCGX_BottomLeft = connectableCG->GetSocket(SOCKET_CGX_BOTTOM_LEFT, WBFL::DManip::AccessType::ByID);
+         socketCGX_BottomRight = connectableCG->GetSocket(SOCKET_CGX_BOTTOM_RIGHT, WBFL::DManip::AccessType::ByID);
       }
    }
 
-   CComPtr<iSocket> socketCGPS, socketCGPS_TC, socketCGPS_BC;
+   std::shared_ptr<WBFL::DManip::iSocket> socketCGPS, socketCGPS_TC, socketCGPS_BC;
    if (settings & IDG_SV_SHOW_PS_CG)
    {
-      CComPtr<iDisplayList> pStrandCGList;
-      pDispMgr->FindDisplayList(STRAND_CG_LIST, &pStrandCGList);
+      auto pStrandCGList = m_pDispMgr->FindDisplayList(STRAND_CG_LIST);
 
-      CComPtr<iDisplayObject> doCGPS;
-      pStrandCGList->GetDisplayObject(0, &doCGPS);
+      auto doCGPS = pStrandCGList->GetDisplayObject(0);
       if (doCGPS)
       {
-         CComQIPtr<iConnectable> connectableCGPS(doCGPS);
-         connectableCGPS->GetSocket(SOCKET_CGPS, atByID, &socketCGPS);
-         connectableCGPS->GetSocket(SOCKET_CGPS_TC, atByID, &socketCGPS_TC);
-         connectableCGPS->GetSocket(SOCKET_CGPS_BC, atByID, &socketCGPS_BC);
+         auto connectableCGPS = std::dynamic_pointer_cast<WBFL::DManip::iConnectable>(doCGPS);
+         socketCGPS = connectableCGPS->GetSocket(SOCKET_CGPS, WBFL::DManip::AccessType::ByID);
+         socketCGPS_TC = connectableCGPS->GetSocket(SOCKET_CGPS_TC, WBFL::DManip::AccessType::ByID);
+         socketCGPS_BC = connectableCGPS->GetSocket(SOCKET_CGPS_BC, WBFL::DManip::AccessType::ByID);
       }
    }
 
    // get the connector interface from the dimension lines
-   CComQIPtr<iConnector> connectorTopFlangeWidth(doDimLineTopFlangeWidth);
-   CComQIPtr<iConnector> connectorBottomFlangeWidth(doDimLineBottomFlangeWidth);
-   CComQIPtr<iConnector> connectorHeight(doDimLineHeight);
-   CComQIPtr<iConnector> connectorTopCGPS(doDimLineTopCGPS);
-   CComQIPtr<iConnector> connectorBottomCGPS(doDimLineBottomCGPS);
-   CComQIPtr<iConnector> connectorTopCG(doDimLineTopCG);
-   CComQIPtr<iConnector> connectorBottomCG(doDimLineBottomCG);
-   CComQIPtr<iConnector> connectorTopLeftCG(doDimLineTopLeftCG);
-   CComQIPtr<iConnector> connectorTopRightCG(doDimLineTopRightCG);
-   CComQIPtr<iConnector> connectorBottomLeftCG(doDimLineBottomLeftCG);
-   CComQIPtr<iConnector> connectorBottomRightCG(doDimLineBottomRightCG);
+   auto connectorTopFlangeWidth = std::dynamic_pointer_cast<WBFL::DManip::iConnector>(doDimLineTopFlangeWidth);
+   auto connectorBottomFlangeWidth = std::dynamic_pointer_cast<WBFL::DManip::iConnector>(doDimLineBottomFlangeWidth);
+   auto connectorHeight = std::dynamic_pointer_cast<WBFL::DManip::iConnector>(doDimLineHeight);
+   auto connectorTopCGPS = std::dynamic_pointer_cast<WBFL::DManip::iConnector>(doDimLineTopCGPS);
+   auto connectorBottomCGPS = std::dynamic_pointer_cast<WBFL::DManip::iConnector>(doDimLineBottomCGPS);
+   auto connectorTopCG = std::dynamic_pointer_cast<WBFL::DManip::iConnector>(doDimLineTopCG);
+   auto connectorBottomCG = std::dynamic_pointer_cast<WBFL::DManip::iConnector>(doDimLineBottomCG);
+   auto connectorTopLeftCG = std::dynamic_pointer_cast<WBFL::DManip::iConnector>(doDimLineTopLeftCG);
+   auto connectorTopRightCG = std::dynamic_pointer_cast<WBFL::DManip::iConnector>(doDimLineTopRightCG);
+   auto connectorBottomLeftCG = std::dynamic_pointer_cast<WBFL::DManip::iConnector>(doDimLineBottomLeftCG);
+   auto connectorBottomRightCG = std::dynamic_pointer_cast<WBFL::DManip::iConnector>(doDimLineBottomRightCG);
 
    // connect the top flange width dimension line (across the top)
-   CComPtr<iPlug> startPlug, endPlug;
-   connectorTopFlangeWidth->GetStartPlug(&startPlug);
-   connectorTopFlangeWidth->GetEndPlug(&endPlug);
+   auto startPlug = connectorTopFlangeWidth->GetStartPlug();
+   auto endPlug = connectorTopFlangeWidth->GetEndPlug();
 
-   DWORD dwCookie;
    if ((IsStructuralDeck(deckType) && castDeckEventIdx < eventIdx) || socketTLJ == nullptr)
    {
-      socketTL->Connect(startPlug, &dwCookie);
+      socketTL->Connect(startPlug);
    }
    else
    {
-      socketTLJ->Connect(startPlug, &dwCookie);
+      socketTLJ->Connect(startPlug);
    }
 
    if ((IsStructuralDeck(deckType) && castDeckEventIdx < eventIdx) || socketTRJ == nullptr)
    {
-      socketTR->Connect(endPlug, &dwCookie);
+      socketTR->Connect(endPlug);
    }
    else
    {
-      socketTRJ->Connect(endPlug, &dwCookie);
+      socketTRJ->Connect(endPlug);
    }
 
    // connect the bottom flange width dimension line (across the bottom)
-   startPlug.Release();
-   endPlug.Release();
-   connectorBottomFlangeWidth->GetStartPlug(&startPlug);
-   connectorBottomFlangeWidth->GetEndPlug(&endPlug);
-   socketBR->Connect(startPlug, &dwCookie);
-   socketBL->Connect(endPlug, &dwCookie);
+   startPlug = connectorBottomFlangeWidth->GetStartPlug();
+   endPlug = connectorBottomFlangeWidth->GetEndPlug();
+   socketBR->Connect(startPlug);
+   socketBL->Connect(endPlug);
    
    // connect the height dimension line (left side)
-   startPlug.Release();
-   endPlug.Release();
-   connectorHeight->GetStartPlug(&startPlug);
-   connectorHeight->GetEndPlug(&endPlug);
+   startPlug = connectorHeight->GetStartPlug();
+   endPlug = connectorHeight->GetEndPlug();
 
-   socketBC->Connect(startPlug, &dwCookie);
-   socketTC->Connect(endPlug, &dwCookie);
+   socketBC->Connect(startPlug);
+   socketTC->Connect(endPlug);
 
    // connect the CG dimension line (right side)
    if ((settings & IDG_SV_GIRDER_CG) && socketCG)
    {
-      startPlug.Release();
-      endPlug.Release();
-      connectorTopCG->GetStartPlug(&startPlug);
-      connectorTopCG->GetEndPlug(&endPlug);
+      startPlug = connectorTopCG->GetStartPlug();
+      endPlug = connectorTopCG->GetEndPlug();
 
       // need to determine the top center location for the upper dimension line
       // we want x of the CG and y for the top of the girder
-      CComPtr<IPoint2d> cg;
-      socketCG->GetPosition(&cg);
-      Float64 x;
-      cg->get_X(&x);
+      auto cg = socketCG->GetPosition();
+      Float64 x = cg.X();
 
-      CComPtr<IPoint2d> tc;
-      socketTC->GetPosition(&tc);
-      Float64 y;
-      tc->get_Y(&y);
+      auto tc = socketTC->GetPosition();
+      Float64 y = tc.Y();
 
-      CComPtr<IPoint2d> pntTC;
-      pntTC.CoCreateInstance(CLSID_Point2d);
-      pntTC->Move(x, y);
+      WBFL::Geometry::Point2d pntTC(x, y);
       socketCG_Top->SetPosition(pntTC);
 
-      socketCG->Connect(startPlug, &dwCookie);
-      socketCG_Top->Connect(endPlug, &dwCookie);
+      socketCG->Connect(startPlug);
+      socketCG_Top->Connect(endPlug);
 
-      startPlug.Release();
-      endPlug.Release();
-      connectorBottomCG->GetStartPlug(&startPlug);
-      connectorBottomCG->GetEndPlug(&endPlug);
+      startPlug = connectorBottomCG->GetStartPlug();
+      endPlug = connectorBottomCG->GetEndPlug();
 
       // need y of the bottom center point
-      CComPtr<IPoint2d> bc;
-      socketBC->GetPosition(&bc);
-      bc->get_Y(&y);
+      auto bc = socketBC->GetPosition();
+      y = bc.Y();
 
-      CComPtr<IPoint2d> pntBC;
-      pntBC.CoCreateInstance(CLSID_Point2d);
-      pntBC->Move(x, y);
+      WBFL::Geometry::Point2d pntBC(x, y);
       socketCG_Bottom->SetPosition(pntBC);
 
-      socketCG_Bottom->Connect(startPlug, &dwCookie);
-      socketCG->Connect(endPlug, &dwCookie);
+      socketCG_Bottom->Connect(startPlug);
+      socketCG->Connect(endPlug);
 
       // Xcg
-      CComPtr<IPoint2d> pntTL;
-      socketTL->GetPosition(&pntTL);
-      Float64 tlX, tlY;
-      pntTL->Location(&tlX, &tlY);
+      auto pntTL = socketTL->GetPosition();
+      auto [tlX, tlY] = pntTL.GetLocation();
 
-      CComPtr<IPoint2d> pntTR;
-      socketTR->GetPosition(&pntTR);
-      Float64 trX, trY;
-      pntTR->Location(&trX, &trY);
+      auto pntTR = socketTR->GetPosition();
+      auto [trX, trY] = pntTR.GetLocation();
 
       y = Max(tlY, trY);
 
-      CComPtr<IPoint2d> pntCGX_Top;
-      socketCGX_Top->GetPosition(&pntCGX_Top);
-      pntCGX_Top->put_Y(y);
+      auto pntCGX_Top = socketCGX_Top->GetPosition();
+      pntCGX_Top.Y() = y;
       socketCGX_Top->SetPosition(pntCGX_Top);
 
-      CComPtr<IPoint2d> pntTopLeft;
-      pntTopLeft.CoCreateInstance(CLSID_Point2d);
-      pntTopLeft->Move(tlX,y);
+      WBFL::Geometry::Point2d pntTopLeft(tlX,y);
       socketCGX_TopLeft->SetPosition(pntTopLeft);
 
-      CComPtr<IPoint2d> pntTopRight;
-      pntTopRight.CoCreateInstance(CLSID_Point2d);
-      pntTopRight->Move(trX, y);
+      WBFL::Geometry::Point2d pntTopRight(trX, y);
       socketCGX_TopRight->SetPosition(pntTopRight);
 
 
-      CComPtr<IPoint2d> pntBL;
-      socketBL->GetPosition(&pntBL);
-      Float64 blX, blY;
-      pntBL->Location(&blX, &blY);
+      auto pntBL = socketBL->GetPosition();
+      auto [blX, blY] = pntBL.GetLocation();
 
-      CComPtr<IPoint2d> pntBR;
-      socketBR->GetPosition(&pntBR);
-      Float64 brX, brY;
-      pntBR->Location(&brX, &brY);
+      auto pntBR = socketBR->GetPosition();
+      auto [brX, brY] = pntBR.GetLocation();
 
       y = Max(blY, brY);
 
-      CComPtr<IPoint2d> pntCGX_Bottom;
-      socketCGX_Bottom->GetPosition(&pntCGX_Bottom);
-      pntCGX_Bottom->put_Y(y);
+      auto pntCGX_Bottom = socketCGX_Bottom->GetPosition();
+      pntCGX_Bottom.Y() = y;
       socketCGX_Bottom->SetPosition(pntCGX_Bottom);
 
-      CComPtr<IPoint2d> pntBottomLeft;
-      pntBottomLeft.CoCreateInstance(CLSID_Point2d);
-      pntBottomLeft->Move(blX, y);
+      WBFL::Geometry::Point2d pntBottomLeft(blX, y);
       socketCGX_BottomLeft->SetPosition(pntBottomLeft);
 
-      CComPtr<IPoint2d> pntBottomRight;
-      pntBottomRight.CoCreateInstance(CLSID_Point2d);
-      pntBottomRight->Move(brX, y);
+      WBFL::Geometry::Point2d pntBottomRight(brX, y);
       socketCGX_BottomRight->SetPosition(pntBottomRight);
 
       // Top-Left corner to CG dimension line
-      startPlug.Release();
-      endPlug.Release();
-      connectorTopLeftCG->GetStartPlug(&startPlug);
-      connectorTopLeftCG->GetEndPlug(&endPlug);
+      startPlug = connectorTopLeftCG->GetStartPlug();
+      endPlug = connectorTopLeftCG->GetEndPlug();
 
-      socketCGX_TopLeft->Connect(startPlug, &dwCookie);
-      socketCGX_Top->Connect(endPlug, &dwCookie);
+      socketCGX_TopLeft->Connect(startPlug);
+      socketCGX_Top->Connect(endPlug);
 
       // Top-Right corner to CG dimension line
-      startPlug.Release();
-      endPlug.Release();
-      connectorTopRightCG->GetStartPlug(&startPlug);
-      connectorTopRightCG->GetEndPlug(&endPlug);
-      socketCGX_Top->Connect(startPlug, &dwCookie);
-      socketCGX_TopRight->Connect(endPlug, &dwCookie);
+      startPlug = connectorTopRightCG->GetStartPlug();
+      endPlug = connectorTopRightCG->GetEndPlug();
+      socketCGX_Top->Connect(startPlug);
+      socketCGX_TopRight->Connect(endPlug);
 
       // Bottom left corner to CG dimension line
-      startPlug.Release();
-      endPlug.Release();
-      connectorBottomLeftCG->GetStartPlug(&startPlug);
-      connectorBottomLeftCG->GetEndPlug(&endPlug);
+      startPlug = connectorBottomLeftCG->GetStartPlug();
+      endPlug = connectorBottomLeftCG->GetEndPlug();
 
-      socketCGX_Bottom->Connect(startPlug, &dwCookie);
-      socketCGX_BottomLeft->Connect(endPlug, &dwCookie);
+      socketCGX_Bottom->Connect(startPlug);
+      socketCGX_BottomLeft->Connect(endPlug);
 
       // Bottom right corner to CG dimension line
-      startPlug.Release();
-      endPlug.Release();
-      connectorBottomRightCG->GetStartPlug(&startPlug);
-      connectorBottomRightCG->GetEndPlug(&endPlug);
-      socketCGX_BottomRight->Connect(startPlug, &dwCookie);
-      socketCGX_Bottom->Connect(endPlug, &dwCookie);
+      startPlug = connectorBottomRightCG->GetStartPlug();
+      endPlug = connectorBottomRightCG->GetEndPlug();
+      socketCGX_BottomRight->Connect(startPlug);
+      socketCGX_Bottom->Connect(endPlug);
 
       // Draw a vertical line that connects the horizontal CG dimension leader lines
-      CreateLineDisplayObject(pDL, pntCGX_Top, pntCGX_Bottom, BLACK, lsSolid);
+      CreateLineDisplayObject(pDL, pntCGX_Top, pntCGX_Bottom, BLACK, WBFL::DManip::LineStyleType::Solid);
    }
 
 
    // connect cg ps dimension line (bottom center to cg symbol)
    if ((settings & IDG_SV_SHOW_PS_CG) && socketCGPS)
    {
-      startPlug.Release();
-      endPlug.Release();
-      connectorTopCGPS->GetStartPlug(&startPlug);
-      connectorTopCGPS->GetEndPlug(&endPlug);
+      startPlug = connectorTopCGPS->GetStartPlug();
+      endPlug = connectorTopCGPS->GetEndPlug();
 
       // need to determine the top center location for the upper dimension line
       // we want x of the CG and y for the top of the girder
-      CComPtr<IPoint2d> cg;
-      socketCGPS->GetPosition(&cg);
-      Float64 x;
-      cg->get_X(&x);
+      auto cg = socketCGPS->GetPosition();
+      auto x = cg.X();
 
-      CComPtr<IPoint2d> tc;
-      socketTC->GetPosition(&tc);
-      Float64 y;
-      tc->get_Y(&y);
+      auto tc = socketTC->GetPosition();
+      auto y = tc.Y();
 
-      CComPtr<IPoint2d> pntTC;
-      pntTC.CoCreateInstance(CLSID_Point2d);
-      pntTC->Move(x, y);
+      WBFL::Geometry::Point2d pntTC(x, y);
       socketCGPS_TC->SetPosition(pntTC);
 
-      socketCGPS->Connect(startPlug, &dwCookie);
-      socketCGPS_TC->Connect(endPlug, &dwCookie);
+      socketCGPS->Connect(startPlug);
+      socketCGPS_TC->Connect(endPlug);
 
-      startPlug.Release();
-      endPlug.Release();
-      connectorBottomCGPS->GetStartPlug(&startPlug);
-      connectorBottomCGPS->GetEndPlug(&endPlug);
+      startPlug = connectorBottomCGPS->GetStartPlug();
+      endPlug = connectorBottomCGPS->GetEndPlug();
 
       // need y of the bottom center point
-      CComPtr<IPoint2d> bc;
-      socketBC->GetPosition(&bc);
-      bc->get_Y(&y);
+      auto bc = socketBC->GetPosition();
+      y = bc.Y();
 
-      CComPtr<IPoint2d> pntBC;
-      pntBC.CoCreateInstance(CLSID_Point2d);
-      pntBC->Move(x, y);
+      WBFL::Geometry::Point2d pntBC(x, y);
       socketCGPS_BC->SetPosition(pntBC);
 
-      socketCGPS_BC->Connect(startPlug, &dwCookie);
-      socketCGPS->Connect(endPlug, &dwCookie);
+      socketCGPS_BC->Connect(startPlug);
+      socketCGPS->Connect(endPlug);
    }
 
    // set the text labels on the dimension lines
@@ -1713,31 +1483,26 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
    }
 
 
-   CString strDim;
-   CComPtr<iTextBlock> textBlock;
-
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
    const WBFL::Units::LengthData& length_unit = pDisplayUnits->GetComponentDimUnit();
 
-   textBlock.CoCreateInstance(CLSID_TextBlock);
+   auto textBlock = WBFL::DManip::TextBlock::Create();
    textBlock->SetPointSize(FONT_POINT_SIZE);
-   strDim = FormatDimension(top_width, length_unit);
+   auto strDim = FormatDimension(top_width, length_unit);
    textBlock->SetText(strDim);
    doDimLineTopFlangeWidth->SetTextBlock(textBlock);
 
    // move the top flange width line up
    doDimLineTopFlangeWidth->SetWitnessLength(3 * twip_offset / 2);
 
-   textBlock.Release();
-   textBlock.CoCreateInstance(CLSID_TextBlock);
+   textBlock = WBFL::DManip::TextBlock::Create();
    textBlock->SetPointSize(FONT_POINT_SIZE);
    strDim = FormatDimension(bottom_width, length_unit);
    textBlock->SetText(strDim);
    doDimLineBottomFlangeWidth->SetTextBlock(textBlock);
    doDimLineBottomFlangeWidth->SetWitnessLength(3 * twip_offset / 2);
 
-   textBlock.Release();
-   textBlock.CoCreateInstance(CLSID_TextBlock);
+   textBlock = WBFL::DManip::TextBlock::Create();
    textBlock->SetPointSize(FONT_POINT_SIZE);
    strDim = FormatDimension(height, length_unit);
    textBlock->SetText(strDim);
@@ -1745,10 +1510,8 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
    doDimLineHeight->SetTextBlock(textBlock);
 
    // adjust the witness line
-   CComPtr<IPoint2d> pntTC;
-   socketTC->GetPosition(&pntTC);
-   Float64 X;
-   pntTC->get_X(&X);
+   auto pntTC = socketTC->GetPosition();
+   auto X = pntTC.X();
    long tx0, ty0;
    long tx1, ty1;
    m_pCoordinateMap->WPtoTP(X, 0, &tx0, &ty0);
@@ -1757,52 +1520,44 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
 
    if ((settings & IDG_SV_GIRDER_CG) && socketCG)
    {
-      textBlock.Release();
-      textBlock.CoCreateInstance(CLSID_TextBlock);
+      textBlock = WBFL::DManip::TextBlock::Create();
       textBlock->SetPointSize(FONT_POINT_SIZE);
       strDim = FormatDimension(Yt, length_unit);
       textBlock->SetText(strDim);
       doDimLineTopCG->SetTextBlock(textBlock);
 
-      textBlock.Release();
-      textBlock.CoCreateInstance(CLSID_TextBlock);
+      textBlock = WBFL::DManip::TextBlock::Create();
       textBlock->SetPointSize(FONT_POINT_SIZE);
       strDim = FormatDimension(Yb, length_unit);
       textBlock->SetText(strDim);
       doDimLineBottomCG->SetTextBlock(textBlock);
 
-      textBlock.Release();
-      textBlock.CoCreateInstance(CLSID_TextBlock);
+      textBlock = WBFL::DManip::TextBlock::Create();
       textBlock->SetPointSize(FONT_POINT_SIZE);
       strDim = FormatDimension(top_left_dim, length_unit);
       textBlock->SetText(strDim);
       doDimLineTopLeftCG->SetTextBlock(textBlock);
 
-      textBlock.Release();
-      textBlock.CoCreateInstance(CLSID_TextBlock);
+      textBlock = WBFL::DManip::TextBlock::Create();
       textBlock->SetPointSize(FONT_POINT_SIZE);
       strDim = FormatDimension(top_right_dim, length_unit);
       textBlock->SetText(strDim);
       doDimLineTopRightCG->SetTextBlock(textBlock);
 
-      textBlock.Release();
-      textBlock.CoCreateInstance(CLSID_TextBlock);
+      textBlock = WBFL::DManip::TextBlock::Create();
       textBlock->SetPointSize(FONT_POINT_SIZE);
       strDim = FormatDimension(bottom_left_dim, length_unit);
       textBlock->SetText(strDim);
       doDimLineBottomLeftCG->SetTextBlock(textBlock);
 
-      textBlock.Release();
-      textBlock.CoCreateInstance(CLSID_TextBlock);
+      textBlock = WBFL::DManip::TextBlock::Create();
       textBlock->SetPointSize(FONT_POINT_SIZE);
       strDim = FormatDimension(bottom_right_dim, length_unit);
       textBlock->SetText(strDim);
       doDimLineBottomRightCG->SetTextBlock(textBlock);
 
-      CComPtr<IPoint2d> cg;
-      socketCG->GetPosition(&cg);
-      Float64 x1;
-      cg->get_X(&x1);
+      auto cg = socketCG->GetPosition();
+      auto x1 = cg.X();
 
       // adjust the witness lines on the vertical dimensions
       Float64 x2 = Max(twRight, bottom_width / 2);
@@ -1821,8 +1576,7 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
       Float64 ecc = pStrandGeometry->GetEccentricity(intervalIdx, poi, true).Y();
       Float64 yps = pSectProp->GetY(intervalIdx,poi,pgsTypes::BottomGirder) - ecc;
 
-      textBlock.Release();
-      textBlock.CoCreateInstance(CLSID_TextBlock);
+      textBlock = WBFL::DManip::TextBlock::Create();
       textBlock->SetPointSize(FONT_POINT_SIZE);
       strDim = FormatDimension(yps,length_unit);
       textBlock->SetText(strDim);
@@ -1830,17 +1584,14 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
 
       yps = height - yps;
 
-      textBlock.Release();
-      textBlock.CoCreateInstance(CLSID_TextBlock);
+      textBlock = WBFL::DManip::TextBlock::Create();
       textBlock->SetPointSize(FONT_POINT_SIZE);
       strDim = FormatDimension(yps, length_unit);
       textBlock->SetText(strDim);
       doDimLineTopCGPS->SetTextBlock(textBlock);
 
-      CComPtr<IPoint2d> cg;
-      socketCGPS->GetPosition(&cg);
-      Float64 x1;
-      cg->get_X(&x1);
+      auto cg = socketCGPS->GetPosition();
+      auto x1 = cg.X();
 
       // adjust the witness lines on the vertical dimensions
       Float64 x2 = Max(twLeft, bottom_width / 2);
@@ -1995,11 +1746,6 @@ void CGirderModelSectionView::OnSize(UINT nType, int cx, int cy)
 
       CDManipClientDC dc2(this);
 
-
-      // get the display manager
-      CComPtr<iDisplayMgr> dispMgr;
-      GetDisplayMgr(&dispMgr);
-
       // Get the POI
       pgsPointOfInterest poi(m_pFrame->GetCutLocation());
 
@@ -2019,7 +1765,7 @@ void CGirderModelSectionView::OnSize(UINT nType, int cx, int cy)
       // build the dimension lines
       if ( settings & IDG_SV_SHOW_DIMENSIONS )
       {
-         BuildDimensionDisplayObjects(pDoc, pBroker, poi, dispMgr);
+         BuildDimensionDisplayObjects(pDoc, pBroker, poi);
       }
    }
 }
@@ -2101,11 +1847,7 @@ CGirderKey CGirderModelSectionView::GetGirderKey()
 
 void CGirderModelSectionView::UpdateDrawingScale()
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iDisplayList> display_list;
-   dispMgr->FindDisplayList(PROPERTIES_LIST, &display_list);
+   auto display_list = m_pDispMgr->FindDisplayList(PROPERTIES_LIST);
 
    CDManipClientDC dc(this);
 
@@ -2127,15 +1869,13 @@ void CGirderModelSectionView::UpdateDrawingScale()
    }
 }
 
-void CGirderModelSectionView::CreateLineDisplayObject(iDisplayList* pDL, IPoint2d* pStart, IPoint2d* pEnd,COLORREF color,LineStyleType lineStyle)
+void CGirderModelSectionView::CreateLineDisplayObject(std::shared_ptr<WBFL::DManip::iDisplayList> pDL, const WBFL::Geometry::Point2d& start, const WBFL::Geometry::Point2d& end,COLORREF color,WBFL::DManip::LineStyleType lineStyle)
 {
    // create the line display object
-   CComPtr<iLineDisplayObject> doLine;
-   doLine.CoCreateInstance(CLSID_LineDisplayObject);
+   auto doLine = WBFL::DManip::LineDisplayObject::Create();
 
    // create the line drawing strategy
-   CComPtr<iSimpleDrawLineStrategy> line_draw_strategy;
-   line_draw_strategy.CoCreateInstance(CLSID_SimpleDrawLineStrategy);
+   auto line_draw_strategy = WBFL::DManip::SimpleDrawLineStrategy::Create();
    line_draw_strategy->SetColor(color);
    line_draw_strategy->SetLineStyle(lineStyle);
 
@@ -2143,48 +1883,40 @@ void CGirderModelSectionView::CreateLineDisplayObject(iDisplayList* pDL, IPoint2
    doLine->SetDrawLineStrategy(line_draw_strategy);
 
    // get the plugs at the end of the line
-   CComQIPtr<iConnector> centerline_connector(doLine);
-   CComQIPtr<iPlug> startPlug, endPlug;
-   centerline_connector->GetStartPlug(&startPlug);
-   centerline_connector->GetEndPlug(&endPlug);
+   auto centerline_connector = std::dynamic_pointer_cast<WBFL::DManip::iConnector>(doLine);
+   auto startPlug = centerline_connector->GetStartPlug();
+   auto endPlug = centerline_connector->GetEndPlug();
 
    // create a point display object at the start of the line
-   CComPtr<iPointDisplayObject> doStart;
-   doStart.CoCreateInstance(CLSID_PointDisplayObject);
-   doStart->SetPosition(pStart, FALSE, FALSE);
+   auto doStart = WBFL::DManip::PointDisplayObject::Create();
+   doStart->SetPosition(start, false, false);
 
    // update the draw point strategy so that the point isn't displayed
-   CComPtr<iDrawPointStrategy> dps;
-   doStart->GetDrawingStrategy(&dps);
-   CComQIPtr<iSimpleDrawPointStrategy> draw_point_strategy(dps);
-   if (draw_point_strategy) draw_point_strategy->SetPointType(ptNone);
+   auto dps = doStart->GetDrawingStrategy();
+   auto draw_point_strategy = std::dynamic_pointer_cast<WBFL::DManip::SimpleDrawPointStrategy>(dps);
+   if (draw_point_strategy) draw_point_strategy->SetPointType(WBFL::DManip::PointType::None);
 
    // add a socket at the start for the line's plug
-   CComQIPtr<iConnectable> start_connectable(doStart);
-   CComPtr<iSocket> start_socket;
-   start_connectable->AddSocket(0, pStart, &start_socket);
+   auto start_connectable = std::dynamic_pointer_cast<WBFL::DManip::iConnectable>(doStart);
+   auto start_socket = start_connectable->AddSocket(0, start);
 
    // create a point display object at the end of the line
-   CComPtr<iPointDisplayObject> doEnd;
-   doEnd.CoCreateInstance(CLSID_PointDisplayObject);
-   doEnd->SetPosition(pEnd, FALSE, FALSE);
+   auto doEnd = WBFL::DManip::PointDisplayObject::Create();
+   doEnd->SetPosition(end, false, false);
 
    // update the draw point strategy so that the point isn't displayed
-   dps.Release();
-   doEnd->GetDrawingStrategy(&dps);
-   draw_point_strategy.Release();
-   dps.QueryInterface(&draw_point_strategy);
-   if (draw_point_strategy) draw_point_strategy->SetPointType(ptNone);
+   dps = doEnd->GetDrawingStrategy();
+   draw_point_strategy = std::dynamic_pointer_cast<WBFL::DManip::SimpleDrawPointStrategy>(dps);
+   if (draw_point_strategy) draw_point_strategy->SetPointType(WBFL::DManip::PointType::None);
 
    // add a socket at the end for the line's plug
-   CComQIPtr<iConnectable> end_connectable(doEnd);
-   CComPtr<iSocket> end_socket;
-   end_connectable->AddSocket(0, pEnd, &end_socket);
+   auto end_connectable = std::dynamic_pointer_cast<WBFL::DManip::iConnectable>(doEnd);
+   auto end_socket = end_connectable->AddSocket(0, end);
 
    // connect the line's plugs into the sockets
    DWORD dwCookie;
-   start_connectable->Connect(0, atByID, startPlug, &dwCookie);
-   end_connectable->Connect(0, atByID, endPlug, &dwCookie);
+   dwCookie = start_connectable->Connect(0, WBFL::DManip::AccessType::ByID, startPlug);
+   dwCookie = end_connectable->Connect(0, WBFL::DManip::AccessType::ByID, endPlug);
 
    // add the display objects to the display list
    pDL->AddDisplayObject(doStart);

@@ -27,19 +27,15 @@
 #include "resource.h"
 #include "PGSuperApp.h"
 #include "ClosureJointDisplayObjectEvents.h"
-#include "mfcdual.h"
 #include "PGSpliceDoc.h"
 #include <IFace\Project.h>
 #include <PgsExt\BridgeDescription2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <DManip/DisplayObject.h>
+#include <DManip/DisplayList.h>
+#include <DManip/DisplayMgr.h>
+#include <DManip/DisplayView.h>
 
-/////////////////////////////////////////////////////////////////////////////
-// CClosureJointDisplayObjectEvents
 
 CClosureJointDisplayObjectEvents::CClosureJointDisplayObjectEvents(const CSegmentKey& closureKey,const CSegmentKey& leftSegmentKey,const CSegmentKey& rightSegmentKey,CBridgeModelViewChildFrame* pFrame)
 {
@@ -50,35 +46,29 @@ CClosureJointDisplayObjectEvents::CClosureJointDisplayObjectEvents(const CSegmen
    m_RightSegmentKey = rightSegmentKey;
 }
 
-BEGIN_INTERFACE_MAP(CClosureJointDisplayObjectEvents, CCmdTarget)
-	INTERFACE_PART(CClosureJointDisplayObjectEvents, IID_iDisplayObjectEvents, Events)
-END_INTERFACE_MAP()
-
-DELEGATE_CUSTOM_INTERFACE(CClosureJointDisplayObjectEvents,Events);
-
-void CClosureJointDisplayObjectEvents::EditClosureJoint(iDisplayObject* pDO)
+void CClosureJointDisplayObjectEvents::EditClosureJoint(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
    m_pFrame->PostMessage(WM_COMMAND,ID_EDIT_CLOSURE,0);
 }
 
-void CClosureJointDisplayObjectEvents::SelectClosureJoint(iDisplayObject* pDO)
+void CClosureJointDisplayObjectEvents::SelectClosureJoint(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
    // do the selection at the frame level because it will do this view
    // and the other view
    m_pFrame->SelectClosureJoint(m_ClosureKey);
 }
 
-void CClosureJointDisplayObjectEvents::SelectPrev(iDisplayObject* pDO)
+void CClosureJointDisplayObjectEvents::SelectPrev(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
    m_pFrame->SelectSegment(m_LeftSegmentKey);
 }
 
-void CClosureJointDisplayObjectEvents::SelectNext(iDisplayObject* pDO)
+void CClosureJointDisplayObjectEvents::SelectNext(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
    m_pFrame->SelectSegment(m_RightSegmentKey);
 }
 
-void CClosureJointDisplayObjectEvents::SelectPrevAdjacent(iDisplayObject* pDO)
+void CClosureJointDisplayObjectEvents::SelectPrevAdjacent(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
    // select closure joint in adjacent girder
    if ( m_ClosureKey.girderIndex == 0 )
@@ -99,7 +89,7 @@ void CClosureJointDisplayObjectEvents::SelectPrevAdjacent(iDisplayObject* pDO)
    }
 }
 
-void CClosureJointDisplayObjectEvents::SelectNextAdjacent(iDisplayObject* pDO)
+void CClosureJointDisplayObjectEvents::SelectNextAdjacent(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -124,12 +114,11 @@ void CClosureJointDisplayObjectEvents::SelectNextAdjacent(iDisplayObject* pDO)
 
 /////////////////////////////////////////////////////////////////////////////
 // CClosureJointDisplayObjectEvents message handlers
-STDMETHODIMP_(bool) CClosureJointDisplayObjectEvents::XEvents::OnLButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CClosureJointDisplayObjectEvents::OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CClosureJointDisplayObjectEvents,Events);
    if (pDO->IsSelected())
    {
-      pThis->EditClosureJoint(pDO);
+      EditClosureJoint(pDO);
       return true;
    }
    else
@@ -138,96 +127,80 @@ STDMETHODIMP_(bool) CClosureJointDisplayObjectEvents::XEvents::OnLButtonDblClk(i
    }
 }
 
-STDMETHODIMP_(bool) CClosureJointDisplayObjectEvents::XEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CClosureJointDisplayObjectEvents::OnLButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CClosureJointDisplayObjectEvents,Events);
    return true; // acknowledge the event so that the object can become selected
 }
 
-STDMETHODIMP_(bool) CClosureJointDisplayObjectEvents::XEvents::OnLButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CClosureJointDisplayObjectEvents::OnLButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CClosureJointDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CClosureJointDisplayObjectEvents::XEvents::OnRButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CClosureJointDisplayObjectEvents::OnRButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CClosureJointDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CClosureJointDisplayObjectEvents::XEvents::OnRButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CClosureJointDisplayObjectEvents::OnRButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CClosureJointDisplayObjectEvents,Events);
    return true; // acknowledge the event so that the object can become selected
 }
 
-STDMETHODIMP_(bool) CClosureJointDisplayObjectEvents::XEvents::OnRButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CClosureJointDisplayObjectEvents::OnRButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CClosureJointDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CClosureJointDisplayObjectEvents::XEvents::OnMouseMove(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CClosureJointDisplayObjectEvents::OnMouseMove(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CClosureJointDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CClosureJointDisplayObjectEvents::XEvents::OnMouseWheel(iDisplayObject* pDO,UINT nFlags,short zDelta,CPoint point)
+bool CClosureJointDisplayObjectEvents::OnMouseWheel(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,short zDelta,const POINT& point)
 {
-   METHOD_PROLOGUE(CClosureJointDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CClosureJointDisplayObjectEvents::XEvents::OnKeyDown(iDisplayObject* pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
+bool CClosureJointDisplayObjectEvents::OnKeyDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-   METHOD_PROLOGUE(CClosureJointDisplayObjectEvents,Events);
-
    if ( nChar == VK_RETURN )
    {
-      pThis->EditClosureJoint(pDO);
+      EditClosureJoint(pDO);
       return true;
    }
    else if ( nChar == VK_LEFT )
    {
-      pThis->SelectPrev(pDO);
+      SelectPrev(pDO);
       return true;
    }
    else if ( nChar == VK_RIGHT )
    {
-      pThis->SelectNext(pDO);
+      SelectNext(pDO);
       return true;
    }
    else if ( nChar == VK_UP )
    {
-      pThis->SelectPrevAdjacent(pDO);
+      SelectPrevAdjacent(pDO);
       return true;
    }
    else if ( nChar == VK_DOWN )
    {
-      pThis->SelectNextAdjacent(pDO);
+      SelectNextAdjacent(pDO);
       return true;
    }
 
    return false;
 }
 
-STDMETHODIMP_(bool) CClosureJointDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObject* pDO,CWnd* pWnd,CPoint point)
+bool CClosureJointDisplayObjectEvents::OnContextMenu(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,CWnd* pWnd,const POINT& point)
 {
-   METHOD_PROLOGUE_(CClosureJointDisplayObjectEvents,Events);
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
 
    if ( pDO->IsSelected() )
    {
-      CComPtr<iDisplayList> pList;
-      pDO->GetDisplayList(&pList);
-
-      CComPtr<iDisplayMgr> pDispMgr;
-      pList->GetDisplayMgr(&pDispMgr);
-
-      CDisplayView* pView = pDispMgr->GetView();
+      auto pView = pDO->GetDisplayList()->GetDisplayMgr()->GetView();
       CPGSpliceDoc* pDoc = (CPGSpliceDoc*)pView->GetDocument();
 
       CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
@@ -238,10 +211,10 @@ STDMETHODIMP_(bool) CClosureJointDisplayObjectEvents::XEvents::OnContextMenu(iDi
       for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
       {
          IBridgePlanViewEventCallback* callback = iter->second;
-         callback->OnClosureJointContextMenu(pThis->m_ClosureKey,pMenu);
+         callback->OnClosureJointContextMenu(m_ClosureKey,pMenu);
       }
 
-      pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);
+      pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,m_pFrame);
 
       delete pMenu;
 
@@ -251,34 +224,28 @@ STDMETHODIMP_(bool) CClosureJointDisplayObjectEvents::XEvents::OnContextMenu(iDi
    return false;
 }
 
-STDMETHODIMP_(void) CClosureJointDisplayObjectEvents::XEvents::OnChanged(iDisplayObject* pDO)
+void CClosureJointDisplayObjectEvents::OnChanged(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CClosureJointDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CClosureJointDisplayObjectEvents::XEvents::OnDragMoved(iDisplayObject* pDO,ISize2d* offset)
+void CClosureJointDisplayObjectEvents::OnDragMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,const WBFL::Geometry::Size2d& offset)
 {
-   METHOD_PROLOGUE(CClosureJointDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CClosureJointDisplayObjectEvents::XEvents::OnMoved(iDisplayObject* pDO)
+void CClosureJointDisplayObjectEvents::OnMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CClosureJointDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CClosureJointDisplayObjectEvents::XEvents::OnCopied(iDisplayObject* pDO)
+void CClosureJointDisplayObjectEvents::OnCopied(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CClosureJointDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CClosureJointDisplayObjectEvents::XEvents::OnSelect(iDisplayObject* pDO)
+void CClosureJointDisplayObjectEvents::OnSelect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CClosureJointDisplayObjectEvents,Events);
-   pThis->SelectClosureJoint(pDO);
+   SelectClosureJoint(pDO);
 }
 
-STDMETHODIMP_(void) CClosureJointDisplayObjectEvents::XEvents::OnUnselect(iDisplayObject* pDO)
+void CClosureJointDisplayObjectEvents::OnUnselect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CClosureJointDisplayObjectEvents,Events);
 }
 

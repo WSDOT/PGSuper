@@ -30,8 +30,7 @@
 //
 class CTxDOTOptionalDesignDoc;
 
-#include <DManip\DManip.h>
-#include <DManipTools\DManipTools.h>
+#include <DManip/DManip.h>
 #include "TxDOTOptionalDesignGirderViewPage.h"
 
 interface IBroker;
@@ -48,8 +47,7 @@ protected:
 // Attributes
 public:
 
-   virtual DROPEFFECT CanDrop(COleDataObject* pDataObject,DWORD dwKeyState,IPoint2d* point) override;
-   virtual void OnDropped(COleDataObject* pDataObject,DROPEFFECT dropEffect,IPoint2d* point) override;
+   virtual DROPEFFECT CanDrop(COleDataObject* pDataObject,DWORD dwKeyState, const WBFL::Geometry::Point2d& point) override;
 
 
 // Operations
@@ -100,23 +98,23 @@ private:
    bool                    m_First;
    long                    m_CurrID;
 
-   CComPtr<iLegendDisplayObject> m_Legend;
+	std::shared_ptr<WBFL::DManip::iLegendDisplayObject> m_Legend;
 
    bool m_DoBlockUpdate;
 
-   void BuildGirderDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, IBroker* pBroker, const CSegmentKey& segmentKey,iDisplayMgr* dispMgr);
-   void BuildSupportDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, IBroker* pBroker, const CSegmentKey& segmentKey,iDisplayMgr* dispMgr);
-   void BuildStrandDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, IBroker* pBroker,const CSegmentKey& segmentKey, iDisplayMgr* dispMgr);
-   void BuildStrandCGDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, IBroker* pBroker, const CSegmentKey& segmentKey,iDisplayMgr* dispMgr);
-   void BuildRebarDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, IBroker* pBroker, const CSegmentKey& segmentKey,iDisplayMgr* dispMgr);
-   void BuildDimensionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, IBroker* pBroker, const CSegmentKey& segmentKey,iDisplayMgr* dispMgr);
-   void BuildSectionCutDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, IBroker* pBroker, const CSegmentKey& segmentKey,iDisplayMgr* dispMgr);
-   void BuildStirrupDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, IBroker* pBroker,const CSegmentKey& segmentKey,iDisplayMgr* dispMgr);
+   void BuildGirderDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, IBroker* pBroker, const CSegmentKey& segmentKey);
+   void BuildSupportDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, IBroker* pBroker, const CSegmentKey& segmentKey);
+   void BuildStrandDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, IBroker* pBroker,const CSegmentKey& segmentKey);
+   void BuildStrandCGDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, IBroker* pBroker, const CSegmentKey& segmentKey);
+   void BuildRebarDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, IBroker* pBroker, const CSegmentKey& segmentKey);
+   void BuildDimensionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, IBroker* pBroker, const CSegmentKey& segmentKey);
+   void BuildSectionCutDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, IBroker* pBroker, const CSegmentKey& segmentKey);
+   void BuildStirrupDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, IBroker* pBroker,const CSegmentKey& segmentKey);
    
-   iDimensionLine* BuildDimensionLine(iDisplayList* pDL, IPoint2d* fromPoint,IPoint2d* toPoint,Float64 dimension);
-   void BuildLine(iDisplayList* pDL, Float64 offset,IPoint2d* fromPoint,IPoint2d* toPoint, COLORREF color);
-   void BuildDebondTick(iDisplayList* pDL, Float64 offset, IPoint2d* tickPoint,COLORREF color);
-   void UpdateDisplayObjects();
+	std::shared_ptr<WBFL::DManip::DimensionLine> BuildDimensionLine(std::shared_ptr<WBFL::DManip::iDisplayList> pDL, const WBFL::Geometry::Point2d& fromPoint, const WBFL::Geometry::Point2d& toPoint, Float64 dimension);
+	void BuildLine(std::shared_ptr<WBFL::DManip::iDisplayList> pDL, Float64 offset, WBFL::Geometry::Point2d fromPoint, WBFL::Geometry::Point2d toPoint, COLORREF color);
+	void BuildDebondTick(std::shared_ptr<WBFL::DManip::iDisplayList> pDL, Float64 offset, WBFL::Geometry::Point2d tickPoint, COLORREF color);
+	void UpdateDisplayObjects();
 
    bool m_bUpdateError;
    std::_tstring m_ErrorMsg;

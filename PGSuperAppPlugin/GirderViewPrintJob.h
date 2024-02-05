@@ -57,8 +57,8 @@ private:
 	int      m_iFtPrint;	// font size
 
    CGirderModelElevationView*    m_pElevationView;
-   CGirderModelSectionView* m_pSectionView;
-   CGirderModelChildFrame* m_pFrame;
+	CGirderModelSectionView* m_pSectionView = nullptr;
+	CGirderModelChildFrame* m_pFrame;
    IBroker* m_pBroker;
 };
 

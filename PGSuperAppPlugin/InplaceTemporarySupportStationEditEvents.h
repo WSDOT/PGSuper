@@ -30,7 +30,7 @@ public:
    CInplaceTemporarySupportStationEditEvents(IBroker* pBroker,SupportIndexType tsIdx);
 
 protected:
-   virtual void Handle_OnChanged(iDisplayObject* pDO);
+   virtual void Handle_OnChanged(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO);
 
 private:
    SupportIndexType m_TSIdx;

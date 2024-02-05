@@ -45,9 +45,6 @@
 #include <EAF\EAFApp.h>
 #include <EAF\EAFUtilities.h>
 
-#include <DManip/DManip.h>
-#include <DManipTools/DManipTools.h>
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE

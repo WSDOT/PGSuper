@@ -32,7 +32,7 @@
 #include "SectionCutDrawStrategy.h"
 #include "PGSuperTypes.h"
 
-#include <DManip\ToolPalette.h>
+#include <DManip/ToolPalette.h>
 
 #include <EAF\EAFViewControllerFactory.h>
 

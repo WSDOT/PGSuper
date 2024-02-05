@@ -112,7 +112,7 @@ protected:
 
    void TrimSurface(IPoint2dCollection* pPoints,Float64 Xleft,Float64 Xright);
 
-   void CreateLineDisplayObject(IPoint2d* pntStart,IPoint2d* pntEnd,iLineDisplayObject** ppLineDO);
+   std::shared_ptr<WBFL::DManip::iLineDisplayObject> CreateLineDisplayObject(IPoint2d* pntStart,IPoint2d* pntEnd);
 
    void SkewGirderShape(Float64 skew, Float64 shear, IShape* pShape, IShape** ppSkewedShape);
 

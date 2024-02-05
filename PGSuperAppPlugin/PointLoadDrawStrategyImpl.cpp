@@ -23,17 +23,13 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "PointLoadDrawStrategyImpl.h"
-#include "mfcdual.h"
 #include <IFace\EditByUI.h> 
 #include "PGSuperColors.h"
 
 #include <MathEx.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <DManip/DisplayMgr.h>
+#include <DManip/DisplayView.h>
 
 // height of maximum loads
 static const long SSIZE = 1440 * 3/4; // (twips)
@@ -43,122 +39,79 @@ UINT CPointLoadDrawStrategyImpl::ms_Format = ::RegisterClipboardFormat(_T("Point
 
 CPointLoadDrawStrategyImpl::CPointLoadDrawStrategyImpl()
 {
-   m_CachePoint.CoCreateInstance(CLSID_Point2d);
 }
 
-BEGIN_INTERFACE_MAP(CPointLoadDrawStrategyImpl,CCmdTarget)
-   INTERFACE_PART(CPointLoadDrawStrategyImpl,IID_iDrawPointStrategy,DrawPointStrategy)
-   INTERFACE_PART(CPointLoadDrawStrategyImpl,IID_iPointLoadDrawStrategy,Strategy)
-   INTERFACE_PART(CPointLoadDrawStrategyImpl,IID_iDisplayObjectEvents,DisplayObjectEvents)
-   INTERFACE_PART(CPointLoadDrawStrategyImpl,IID_iGevEditLoad,EditLoad)
-END_INTERFACE_MAP()
-
-DELEGATE_CUSTOM_INTERFACE(CPointLoadDrawStrategyImpl,DrawPointStrategy);
-DELEGATE_CUSTOM_INTERFACE(CPointLoadDrawStrategyImpl,Strategy);
-DELEGATE_CUSTOM_INTERFACE(CPointLoadDrawStrategyImpl,DisplayObjectEvents);
-DELEGATE_CUSTOM_INTERFACE(CPointLoadDrawStrategyImpl,EditLoad);
-
-
-void CPointLoadDrawStrategyImpl::XStrategy::Init(iPointDisplayObject* pDO, IBroker* pBroker, const CPointLoadData& load,
+void CPointLoadDrawStrategyImpl::Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, IBroker* pBroker, const CPointLoadData& load,
                                                  IndexType loadIndex, Float64 spanLength, 
                                                  Float64 maxMagnitude, COLORREF color)
 {
-   METHOD_PROLOGUE(CPointLoadDrawStrategyImpl,Strategy);
-
-   pThis->m_Load          = load;
-   pThis->m_LoadIndex     = loadIndex;
-   pThis->m_pBroker       = pBroker;
-   pThis->m_Color         = color;
-   pThis->m_MaxMagnitude  = maxMagnitude;
-   pThis->m_SpanLength    = spanLength;
+   m_Load          = load;
+   m_LoadIndex     = loadIndex;
+   m_pBroker       = pBroker;
+   m_Color         = color;
+   m_MaxMagnitude  = maxMagnitude;
+   m_SpanLength    = spanLength;
 }
 
 
-STDMETHODIMP_(void) CPointLoadDrawStrategyImpl::XDrawPointStrategy::Draw(iPointDisplayObject* pDO,CDC* pDC)
+void CPointLoadDrawStrategyImpl::Draw(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO,CDC* pDC) const
 {
-   METHOD_PROLOGUE(CPointLoadDrawStrategyImpl,DrawPointStrategy);
+   auto pDL = pDO->GetDisplayList();
+   auto pDispMgr = pDL->GetDisplayMgr();
 
-   CComPtr<iDisplayList> pDL;
-   pDO->GetDisplayList(&pDL);
+   COLORREF color = pDO->IsSelected() ? pDispMgr->GetSelectionLineColor() : m_Color;
 
-   CComPtr<iDisplayMgr> pDispMgr;
-   pDL->GetDisplayMgr(&pDispMgr);
+   auto pos = pDO->GetPosition();
 
-   COLORREF color = pDO->IsSelected() ? pDispMgr->GetSelectionLineColor() : pThis->m_Color;
-
-   CComPtr<IPoint2d> pos;
-   pDO->GetPosition(&pos);
-
-   pThis->Draw(pDO,pDC,color, pos);
+   Draw(pDO,pDC,color, pos);
 }
 
-STDMETHODIMP_(void) CPointLoadDrawStrategyImpl::XDrawPointStrategy::DrawHighlite(iPointDisplayObject* pDO,CDC* pDC,BOOL bHighlite)
+void CPointLoadDrawStrategyImpl::DrawHighlight(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO,CDC* pDC,bool bHighlite) const
 {
-   METHOD_PROLOGUE(CPointLoadDrawStrategyImpl,DrawPointStrategy);
    Draw(pDO,pDC);
 }
 
-STDMETHODIMP_(void) CPointLoadDrawStrategyImpl::XDrawPointStrategy::DrawDragImage(iPointDisplayObject* pDO,CDC* pDC, iCoordinateMap* map, const CPoint& dragStart, const CPoint& dragPoint)
+void CPointLoadDrawStrategyImpl::DrawDragImage(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO,CDC* pDC, std::shared_ptr<const WBFL::DManip::iCoordinateMap> map, const POINT& dragStart, const POINT& dragPoint) const
 {
-   METHOD_PROLOGUE(CPointLoadDrawStrategyImpl,DrawPointStrategy);
-
    Float64 wx, wy;
    map->LPtoWP(dragPoint.x, dragPoint.y, &wx, &wy);
-   pThis->m_CachePoint->put_X(wx);
-   pThis->m_CachePoint->put_Y(wy);
+   m_CachePoint.Move(wx,wy);
 
-   pThis->Draw(pDO,pDC,SELECTED_OBJECT_LINE_COLOR, pThis->m_CachePoint);
+   Draw(pDO,pDC,SELECTED_OBJECT_LINE_COLOR, m_CachePoint);
 }
 
-STDMETHODIMP_(void) CPointLoadDrawStrategyImpl::XDrawPointStrategy::GetBoundingBox(iPointDisplayObject* pDO,IRect2d** rect)
+WBFL::Geometry::Rect2d CPointLoadDrawStrategyImpl::GetBoundingBox(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO) const
 {
-   METHOD_PROLOGUE(CPointLoadDrawStrategyImpl,DrawPointStrategy);
+   auto point = pDO->GetPosition();
 
-   CComPtr<IPoint2d> point;
-   pDO->GetPosition(&point);
+   Float64 xpos = point.X();
 
-   Float64 xpos;
-   point->get_X(&xpos);
-
-   CComPtr<iDisplayList> pDL;
-   pDO->GetDisplayList(&pDL);
-
-   CComPtr<iDisplayMgr> pDispMgr;
-   pDL->GetDisplayMgr(&pDispMgr);
-
-   CComPtr<iCoordinateMap> pMap;
-   pDispMgr->GetCoordinateMap(&pMap);
+   auto pDL = pDO->GetDisplayList();
+   auto pDispMgr = pDL->GetDisplayMgr();
+   auto pMap = pDispMgr->GetCoordinateMap();
 
    Float64 height, width;
-   pThis->GetWSymbolSize(pMap, &width, &height);
+   GetWSymbolSize(pMap, &width, &height);
 
-   CComPtr<IRect2d> bounding_box;
-   bounding_box.CoCreateInstance(CLSID_Rect2d);
+   WBFL::Geometry::Rect2d bounding_box;
+   bounding_box.Top() = height;
+   bounding_box.Left() = xpos-width;
+   bounding_box.Bottom() = 0;
+   bounding_box.Right() = xpos+width;
 
-   bounding_box->put_Top(height);
-   bounding_box->put_Left(xpos-width);
-   bounding_box->put_Bottom(0);
-   bounding_box->put_Right(xpos+width);
-
-   (*rect) = bounding_box;
-   (*rect)->AddRef();
+   return bounding_box;
 }
 
 
-void CPointLoadDrawStrategyImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF color, IPoint2d* loc)
+void CPointLoadDrawStrategyImpl::Draw(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO,CDC* pDC,COLORREF color, const WBFL::Geometry::Point2d& loc) const
 {
-   CComPtr<iDisplayList> pDL;
-   pDO->GetDisplayList(&pDL);
-
-   CComPtr<iDisplayMgr> pDispMgr;
-   pDL->GetDisplayMgr(&pDispMgr);
-
-   CComPtr<iCoordinateMap> pMap;
-   pDispMgr->GetCoordinateMap(&pMap);
+   auto pDL = pDO->GetDisplayList();
+   auto pDispMgr = pDL->GetDisplayMgr();
+   auto pMap = pDispMgr->GetCoordinateMap();
 
    // bottom of load is at top of girder
    Float64 wx, wyb;
-   loc->get_X(&wx);
+   wx = loc.X();
    wyb = 0;
 
    long cxb,cyb;
@@ -221,31 +174,29 @@ void CPointLoadDrawStrategyImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF
 }
 
 
-STDMETHODIMP_(void) CPointLoadDrawStrategyImpl::XDisplayObjectEvents::OnChanged(iDisplayObject* pDO)
+void CPointLoadDrawStrategyImpl::OnChanged(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
 }
 
-STDMETHODIMP_(void) CPointLoadDrawStrategyImpl::XDisplayObjectEvents::OnDragMoved(iDisplayObject* pDO,ISize2d* offset)
+void CPointLoadDrawStrategyImpl::OnDragMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,const WBFL::Geometry::Size2d& offset)
 {
    ASSERT(FALSE); // Points must be dropped on a member. This event should never occur
 }
 
-STDMETHODIMP_(void) CPointLoadDrawStrategyImpl::XDisplayObjectEvents::OnMoved(iDisplayObject* pDO)
+void CPointLoadDrawStrategyImpl::OnMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CPointLoadDrawStrategyImpl,DisplayObjectEvents);
 }
 
-STDMETHODIMP_(void) CPointLoadDrawStrategyImpl::XDisplayObjectEvents::OnCopied(iDisplayObject* pDO)
+void CPointLoadDrawStrategyImpl::OnCopied(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
    // No big deal...
 }
 
-STDMETHODIMP_(bool) CPointLoadDrawStrategyImpl::XDisplayObjectEvents::OnLButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CPointLoadDrawStrategyImpl::OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CPointLoadDrawStrategyImpl,DisplayObjectEvents);
    if (pDO->IsSelected())
    {
-      pThis->EditLoad();
+      EditLoad();
       return true;
    }
    else
@@ -254,155 +205,87 @@ STDMETHODIMP_(bool) CPointLoadDrawStrategyImpl::XDisplayObjectEvents::OnLButtonD
    }
 }
 
-STDMETHODIMP_(bool) CPointLoadDrawStrategyImpl::XDisplayObjectEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CPointLoadDrawStrategyImpl::OnLButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   CComPtr<iDisplayList> list;
-   pDO->GetDisplayList(&list);
-
-   CComPtr<iDisplayMgr> dispMgr;
-   list->GetDisplayMgr(&dispMgr);
+   auto list = pDO->GetDisplayList();
+   auto dispMgr = list->GetDisplayMgr();
 
    dispMgr->SelectObject(pDO, true);
 
    return true;
 }
 
-STDMETHODIMP_(bool) CPointLoadDrawStrategyImpl::XDisplayObjectEvents::OnRButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CPointLoadDrawStrategyImpl::OnRButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CPointLoadDrawStrategyImpl,DisplayObjectEvents);
    return false;
 }
 
-STDMETHODIMP_(bool) CPointLoadDrawStrategyImpl::XDisplayObjectEvents::OnRButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CPointLoadDrawStrategyImpl::OnRButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE_(CPointLoadDrawStrategyImpl,DisplayObjectEvents);
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CComPtr<iDisplayList> list;
-   pDO->GetDisplayList(&list);
-
-   CComPtr<iDisplayMgr> dispMgr;
-   list->GetDisplayMgr(&dispMgr);
+   auto list = pDO->GetDisplayList();
+   auto dispMgr = list->GetDisplayMgr();
 
    dispMgr->SelectObject(pDO, true);
 
-   CDisplayView* view = dispMgr->GetView();
-   view->ClientToScreen(&point);
+   auto view = dispMgr->GetView();
+   POINT screen_point = point;
+   view->ClientToScreen(&screen_point);
 
    CMenu menu;
    VERIFY( menu.LoadMenu(IDR_LOADS_CTX) );
-   menu.GetSubMenu(0)->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x,point.y, view);
+   menu.GetSubMenu(0)->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, screen_point.x, screen_point.y, view);
 
    return true;
 }
 
-STDMETHODIMP_(bool) CPointLoadDrawStrategyImpl::XDisplayObjectEvents::OnRButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CPointLoadDrawStrategyImpl::OnRButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CPointLoadDrawStrategyImpl,DisplayObjectEvents);
    return false;
 }
 
-STDMETHODIMP_(bool) CPointLoadDrawStrategyImpl::XDisplayObjectEvents::OnLButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CPointLoadDrawStrategyImpl::OnLButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CPointLoadDrawStrategyImpl,DisplayObjectEvents);
    return false;
 }
 
-STDMETHODIMP_(bool) CPointLoadDrawStrategyImpl::XDisplayObjectEvents::OnMouseMove(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CPointLoadDrawStrategyImpl::OnMouseMove(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CPointLoadDrawStrategyImpl,DisplayObjectEvents);
    return false;
 }
 
-STDMETHODIMP_(bool) CPointLoadDrawStrategyImpl::XDisplayObjectEvents::OnMouseWheel(iDisplayObject* pDO,UINT nFlags,short zDelta,CPoint point)
+bool CPointLoadDrawStrategyImpl::OnMouseWheel(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,short zDelta,const POINT& point)
 {
-   METHOD_PROLOGUE(CPointLoadDrawStrategyImpl,DisplayObjectEvents);
    return false;
 }
 
-STDMETHODIMP_(bool) CPointLoadDrawStrategyImpl::XDisplayObjectEvents::OnKeyDown(iDisplayObject* pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
+bool CPointLoadDrawStrategyImpl::OnKeyDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-   METHOD_PROLOGUE(CPointLoadDrawStrategyImpl,DisplayObjectEvents);
    switch(nChar)
    {
    case VK_RETURN:
-      pThis->EditLoad();
+      EditLoad();
       return true;
       
    case VK_DELETE:
-      pThis->DeleteLoad();
+      DeleteLoad();
       return true;
    }
    return false;
 }
 
-STDMETHODIMP_(bool) CPointLoadDrawStrategyImpl::XDisplayObjectEvents::OnContextMenu(iDisplayObject* pDO,CWnd* pWnd,CPoint point)
+bool CPointLoadDrawStrategyImpl::OnContextMenu(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,CWnd* pWnd,const POINT& point)
 {
-   METHOD_PROLOGUE(CPointLoadDrawStrategyImpl,DisplayObjectEvents);
-
    return false;
 }
 
-STDMETHODIMP_(void) CPointLoadDrawStrategyImpl::XDisplayObjectEvents::OnSelect(iDisplayObject* pDO)
+void CPointLoadDrawStrategyImpl::OnSelect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
 }
 
-STDMETHODIMP_(void) CPointLoadDrawStrategyImpl::XDisplayObjectEvents::OnUnselect(iDisplayObject* pDO)
+void CPointLoadDrawStrategyImpl::OnUnselect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-}
-
-
-STDMETHODIMP_(HRESULT) CPointLoadDrawStrategyImpl::XEditLoad::EditLoad()
-{
-   METHOD_PROLOGUE(CPointLoadDrawStrategyImpl, EditLoad);
-   pThis->EditLoad();
-   return S_OK;
-}
-
-STDMETHODIMP_(HRESULT) CPointLoadDrawStrategyImpl::XEditLoad::DeleteLoad()
-{
-   METHOD_PROLOGUE(CPointLoadDrawStrategyImpl, EditLoad);
-   pThis->DeleteLoad();
-   return S_OK;
-}
-
-void CPointLoadDrawStrategyImpl::GetTSymbolSize(iCoordinateMap* pMap, long* psx, long* psy)
-{
-   Float64 frac = Max( (fabs(m_Load.m_Magnitude)/m_MaxMagnitude), 1.0/6.0); // minimum symbol size
-   if (frac!=0.0)
-      *psy = long(floor(frac * SSIZE));
-   else
-      *psy = SSIZE;
-
-   *psx = SSIZE/6;
-}
-
-void CPointLoadDrawStrategyImpl::GetWSymbolSize(iCoordinateMap* pMap, Float64* psx, Float64* psy)
-{
-   long hgt, wid2;
-   GetTSymbolSize(pMap, &wid2, &hgt);
-
-   Float64 xo,yo;
-   pMap->TPtoWP(0,0,&xo,&yo);
-   Float64 x2,y2;
-   pMap->TPtoWP(wid2,hgt,&x2,&y2);
-
-   *psx = x2-xo;
-   *psy = y2-yo;
-}
-
-void CPointLoadDrawStrategyImpl::GetLSymbolSize(iCoordinateMap* pMap, long* psx, long* psy)
-{
-   long hgt, wid2;
-   GetTSymbolSize(pMap, &wid2, &hgt);
-
-   long xo,yo;
-   pMap->TPtoLP(0,0,&xo,&yo);
-   long x2,y2;
-   pMap->TPtoLP(wid2,hgt,&x2,&y2);
-
-   *psx = x2-xo;
-   *psy = y2-yo;
 }
 
 
@@ -416,4 +299,43 @@ void CPointLoadDrawStrategyImpl::DeleteLoad()
 {
    GET_IFACE(IEditByUI, pEditByUI);
    pEditByUI->DeletePointLoad(m_LoadIndex);
+}
+
+void CPointLoadDrawStrategyImpl::GetTSymbolSize(std::shared_ptr<const WBFL::DManip::iCoordinateMap> pMap, long* psx, long* psy) const
+{
+   Float64 frac = Max( (fabs(m_Load.m_Magnitude)/m_MaxMagnitude), 1.0/6.0); // minimum symbol size
+   if (frac!=0.0)
+      *psy = long(floor(frac * SSIZE));
+   else
+      *psy = SSIZE;
+
+   *psx = SSIZE/6;
+}
+
+void CPointLoadDrawStrategyImpl::GetWSymbolSize(std::shared_ptr<const WBFL::DManip::iCoordinateMap> pMap, Float64* psx, Float64* psy) const
+{
+   long hgt, wid2;
+   GetTSymbolSize(pMap, &wid2, &hgt);
+
+   Float64 xo,yo;
+   pMap->TPtoWP(0,0,&xo,&yo);
+   Float64 x2,y2;
+   pMap->TPtoWP(wid2,hgt,&x2,&y2);
+
+   *psx = x2-xo;
+   *psy = y2-yo;
+}
+
+void CPointLoadDrawStrategyImpl::GetLSymbolSize(std::shared_ptr<const WBFL::DManip::iCoordinateMap> pMap, long* psx, long* psy) const
+{
+   long hgt, wid2;
+   GetTSymbolSize(pMap, &wid2, &hgt);
+
+   long xo,yo;
+   pMap->TPtoLP(0,0,&xo,&yo);
+   long x2,y2;
+   pMap->TPtoLP(wid2,hgt,&x2,&y2);
+
+   *psx = x2-xo;
+   *psy = y2-yo;
 }

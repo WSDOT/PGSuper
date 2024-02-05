@@ -24,15 +24,14 @@
 #include "PGSuperApp.h"
 #include "PGSuperColors.h"
 #include "SupportDrawStrategyImpl.h"
-#include "mfcdual.h"
 
 #include <PgsExt\PierData2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <DManip/PointDisplayObject.h>
+#include <DManip/DisplayMgr.h>
+
+using namespace WBFL::DManip;
+
 
 // make our symbols 1/4" in size
 static const long SSIZE = 1440 * 1/4; // (twips)
@@ -41,26 +40,12 @@ static const long SSIZE = 1440 * 1/4; // (twips)
 CSupportDrawStrategyImpl::CSupportDrawStrategyImpl(const CPierData2* pPier)
 {
    m_pPier = pPier;
-   m_CachePoint.CoCreateInstance(CLSID_Point2d);
 }
 
-BEGIN_INTERFACE_MAP(CSupportDrawStrategyImpl,CCmdTarget)
-   INTERFACE_PART(CSupportDrawStrategyImpl,IID_iDrawPointStrategy,DrawPointStrategy)
-   INTERFACE_PART(CSupportDrawStrategyImpl,IID_iSupportDrawStrategy,Strategy)
-END_INTERFACE_MAP()
-
-DELEGATE_CUSTOM_INTERFACE(CSupportDrawStrategyImpl,DrawPointStrategy);
-DELEGATE_CUSTOM_INTERFACE(CSupportDrawStrategyImpl,Strategy);
-
-STDMETHODIMP_(void) CSupportDrawStrategyImpl::XDrawPointStrategy::Draw(iPointDisplayObject* pDO,CDC* pDC)
+void CSupportDrawStrategyImpl::Draw(std::shared_ptr<const iPointDisplayObject> pDO,CDC* pDC) const
 {
-   METHOD_PROLOGUE(CSupportDrawStrategyImpl,DrawPointStrategy);
-
-   CComPtr<iDisplayList> pDL;
-   pDO->GetDisplayList(&pDL);
-
-   CComPtr<iDisplayMgr> pDispMgr;
-   pDL->GetDisplayMgr(&pDispMgr);
+   auto pDL = pDO->GetDisplayList();
+   auto pDispMgr = pDL->GetDisplayMgr();
 
    COLORREF pen_color;
    COLORREF brush_color;
@@ -76,64 +61,35 @@ STDMETHODIMP_(void) CSupportDrawStrategyImpl::XDrawPointStrategy::Draw(iPointDis
       brush_color = PIER_FILL_COLOR;
    }
 
-   CComPtr<IPoint2d> pos;
-   pDO->GetPosition(&pos);
-   pThis->Draw(pDO,pDC,pen_color,brush_color,pos);
+   auto pos = pDO->GetPosition();
+   Draw(pDO,pDC,pen_color,brush_color,pos);
 }
 
-STDMETHODIMP_(void) CSupportDrawStrategyImpl::XDrawPointStrategy::DrawHighlite(iPointDisplayObject* pDO,CDC* pDC,BOOL bHighlite)
+void CSupportDrawStrategyImpl::DrawHighlight(std::shared_ptr<const iPointDisplayObject> pDO,CDC* pDC,bool bHighlite) const
 {
-   METHOD_PROLOGUE(CSupportDrawStrategyImpl,DrawPointStrategy);
    Draw(pDO,pDC);
 }
 
-STDMETHODIMP_(void) CSupportDrawStrategyImpl::XDrawPointStrategy::DrawDragImage(iPointDisplayObject* pDO,CDC* pDC, iCoordinateMap* map, const CPoint& dragStart, const CPoint& dragPoint)
+void CSupportDrawStrategyImpl::DrawDragImage(std::shared_ptr<const iPointDisplayObject> pDO,CDC* pDC, std::shared_ptr<const iCoordinateMap> map, const POINT& dragStart, const POINT& dragPoint) const
 {
-   METHOD_PROLOGUE(CSupportDrawStrategyImpl,DrawPointStrategy);
-
-   Float64 wx, wy;
-   map->LPtoWP(dragPoint.x, dragPoint.y, &wx, &wy);
-   pThis->m_CachePoint->put_X(wx);
-   pThis->m_CachePoint->put_Y(wy);
-
-   // Draw the support
-   pThis->Draw(pDO,pDC,PIER_BORDER_COLOR,PIER_FILL_COLOR,pThis->m_CachePoint);
+   m_CachePoint = map->LPtoWP(dragPoint.x, dragPoint.y);
+   Draw(pDO,pDC,PIER_BORDER_COLOR,PIER_FILL_COLOR,m_CachePoint);
 }
 
-STDMETHODIMP_(void) CSupportDrawStrategyImpl::XDrawPointStrategy::GetBoundingBox(iPointDisplayObject* pDO,IRect2d** rect)
+WBFL::Geometry::Rect2d CSupportDrawStrategyImpl::GetBoundingBox(std::shared_ptr<const iPointDisplayObject> pDO) const
 {
-   METHOD_PROLOGUE(CSupportDrawStrategyImpl,DrawPointStrategy);
+   auto point = pDO->GetPosition();
+   auto [px, py] = point.GetLocation();
 
-   CComPtr<IPoint2d> point;
-   pDO->GetPosition(&point);
-
-   Float64 px, py;
-   point->get_X(&px);
-   point->get_Y(&py);
-
-   CComPtr<iDisplayList> pDL;
-   pDO->GetDisplayList(&pDL);
-   CComPtr<iDisplayMgr> pDispMgr;
-   pDL->GetDisplayMgr(&pDispMgr);
-   CComPtr<iCoordinateMap> pMap;
-   pDispMgr->GetCoordinateMap(&pMap);
+   auto map = pDO->GetDisplayList()->GetDisplayMgr()->GetCoordinateMap();
 
    Float64 wid,hgt;
-   pThis->GetWSymbolSize(pMap, &wid, &hgt);
+   GetWSymbolSize(map, &wid, &hgt);
 
-   CComPtr<IRect2d> bounding_box;
-   bounding_box.CoCreateInstance(CLSID_Rect2d);
-
-   bounding_box->put_Left(px-wid);
-   bounding_box->put_Bottom(py-hgt);
-   bounding_box->put_Right(px+wid);
-   bounding_box->put_Top(py+hgt);
-
-   (*rect) = bounding_box;
-   (*rect)->AddRef();
+   return { (px - wid), (py - hgt), (px + wid), (py + hgt) };
 }
 
-void CSupportDrawStrategyImpl::GetWSymbolSize(iCoordinateMap* pMap, Float64* psx, Float64* psy)
+void CSupportDrawStrategyImpl::GetWSymbolSize(std::shared_ptr<const iCoordinateMap> pMap, Float64* psx, Float64* psy) const
 {
 
    Float64 xo,yo;
@@ -145,7 +101,7 @@ void CSupportDrawStrategyImpl::GetWSymbolSize(iCoordinateMap* pMap, Float64* psx
    *psy = fabs(y2-yo)/2.0;
 }
 
-void CSupportDrawStrategyImpl::GetLSymbolSize(iCoordinateMap* pMap, long* psx, long* psy)
+void CSupportDrawStrategyImpl::GetLSymbolSize(std::shared_ptr<const iCoordinateMap> pMap, long* psx, long* psy) const
 {
    long xo,yo;
    pMap->TPtoLP(0,0,&xo,&yo);
@@ -157,7 +113,7 @@ void CSupportDrawStrategyImpl::GetLSymbolSize(iCoordinateMap* pMap, long* psx, l
 }
 
 
-void CSupportDrawStrategyImpl::DrawGround(CDC* pDC, long cx, long cy, long wid, long hgt)
+void CSupportDrawStrategyImpl::DrawGround(CDC* pDC, long cx, long cy, long wid, long hgt) const
 {
    // base
    pDC->MoveTo(cx-wid,cy);
@@ -178,7 +134,7 @@ void CSupportDrawStrategyImpl::DrawGround(CDC* pDC, long cx, long cy, long wid, 
    }
 }
 
-void CSupportDrawStrategyImpl::DrawFixedSupport(CDC* pDC, long cx, long cy, long wid, long hgt)
+void CSupportDrawStrategyImpl::DrawFixedSupport(CDC* pDC, long cx, long cy, long wid, long hgt) const
 {
    // pinned support
    DrawGround(pDC, cx, cy+hgt, wid, hgt);
@@ -192,7 +148,7 @@ void CSupportDrawStrategyImpl::DrawFixedSupport(CDC* pDC, long cx, long cy, long
    pDC->Rectangle(&rect);
 }
 
-void CSupportDrawStrategyImpl::DrawPinnedSupport(CDC* pDC, long cx, long cy, long wid, long hgt)
+void CSupportDrawStrategyImpl::DrawPinnedSupport(CDC* pDC, long cx, long cy, long wid, long hgt) const
 {
    // pinned support
    DrawGround(pDC, cx, cy+hgt, wid, hgt);
@@ -214,7 +170,7 @@ void CSupportDrawStrategyImpl::DrawPinnedSupport(CDC* pDC, long cx, long cy, lon
    //pDC->Ellipse(cx-es, cy-es, cx+es, cy+es);
 }
 
-void CSupportDrawStrategyImpl::DrawRollerSupport(CDC* pDC, long cx, long cy, long wid, long hgt)
+void CSupportDrawStrategyImpl::DrawRollerSupport(CDC* pDC, long cx, long cy, long wid, long hgt) const
 {
    // pinned support
    DrawGround(pDC, cx, cy+hgt, wid, hgt);
@@ -228,22 +184,15 @@ void CSupportDrawStrategyImpl::DrawRollerSupport(CDC* pDC, long cx, long cy, lon
    pDC->Ellipse(&rect);
 }
 
-void CSupportDrawStrategyImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF outline_color,COLORREF fill_color,IPoint2d* loc)
+void CSupportDrawStrategyImpl::Draw(std::shared_ptr<const iPointDisplayObject> pDO,CDC* pDC,COLORREF outline_color,COLORREF fill_color,const WBFL::Geometry::Point2d& loc) const
 {
-   CComPtr<iDisplayList> pDL;
-   pDO->GetDisplayList(&pDL);
-
-   CComPtr<iDisplayMgr> pDispMgr;
-   pDL->GetDisplayMgr(&pDispMgr);
-
-   CComPtr<iCoordinateMap> pMap;
-   pDispMgr->GetCoordinateMap(&pMap);
+   auto map = pDO->GetDisplayList()->GetDisplayMgr()->GetCoordinateMap();
 
    long wid,hgt;
-   GetLSymbolSize(pMap, &wid, &hgt);
+   GetLSymbolSize(map, &wid, &hgt);
 
    long topx,topy; // location of top
-   pMap->WPtoLP(loc,&topx,&topy);
+   map->WPtoLP(loc,&topx,&topy);
 
    CPen pen(PS_SOLID,1,outline_color);
    CPen* pOldPen = pDC->SelectObject(&pen);

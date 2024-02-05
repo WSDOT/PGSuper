@@ -29,12 +29,6 @@
 #include "mfcdual.h"
 #include "pgsuperdoc.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 /////////////////////////////////////////////////////////////////////////////
 // CInplaceEditDisplayObjectEvents
 
@@ -43,117 +37,95 @@ CInplaceEditDisplayObjectEvents::CInplaceEditDisplayObjectEvents(IBroker* pBroke
    m_pBroker = pBroker;
 }
 
-BEGIN_INTERFACE_MAP(CInplaceEditDisplayObjectEvents, CCmdTarget)
-   INTERFACE_PART(CInplaceEditDisplayObjectEvents, IID_iDisplayObjectEvents, Events)
-END_INTERFACE_MAP()
-
-DELEGATE_CUSTOM_INTERFACE(CInplaceEditDisplayObjectEvents,Events);
-
 /////////////////////////////////////////////////////////////////////////////
 // CInplaceEditDisplayObjectEvents message handlers
-STDMETHODIMP_(bool) CInplaceEditDisplayObjectEvents::XEvents::OnLButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CInplaceEditDisplayObjectEvents::OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CInplaceEditDisplayObjectEvents,Events);
    // do nothing
    return false;
 }
 
-STDMETHODIMP_(bool) CInplaceEditDisplayObjectEvents::XEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CInplaceEditDisplayObjectEvents::OnLButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CInplaceEditDisplayObjectEvents,Events);
    // do nothing
    return false;
 }
 
-STDMETHODIMP_(bool) CInplaceEditDisplayObjectEvents::XEvents::OnLButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CInplaceEditDisplayObjectEvents::OnLButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CInplaceEditDisplayObjectEvents,Events);
    // do nothing
    return false;
 }
 
-STDMETHODIMP_(bool) CInplaceEditDisplayObjectEvents::XEvents::OnRButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CInplaceEditDisplayObjectEvents::OnRButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CInplaceEditDisplayObjectEvents,Events);
    // do nothing
    return false;
 }
 
-STDMETHODIMP_(bool) CInplaceEditDisplayObjectEvents::XEvents::OnRButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CInplaceEditDisplayObjectEvents::OnRButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CInplaceEditDisplayObjectEvents,Events);
    // do nothing
    return false;
 }
 
-STDMETHODIMP_(bool) CInplaceEditDisplayObjectEvents::XEvents::OnRButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CInplaceEditDisplayObjectEvents::OnRButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CInplaceEditDisplayObjectEvents,Events);
    // do nothing
    return false;
 }
 
-STDMETHODIMP_(bool) CInplaceEditDisplayObjectEvents::XEvents::OnMouseMove(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CInplaceEditDisplayObjectEvents::OnMouseMove(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CInplaceEditDisplayObjectEvents,Events);
    // do nothing
    return false;
 }
 
-STDMETHODIMP_(bool) CInplaceEditDisplayObjectEvents::XEvents::OnMouseWheel(iDisplayObject* pDO,UINT nFlags,short zDelta,CPoint point)
+bool CInplaceEditDisplayObjectEvents::OnMouseWheel(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,short zDelta,const POINT& point)
 {
-   METHOD_PROLOGUE(CInplaceEditDisplayObjectEvents,Events);
    // do nothing
    return false;
 }
 
-STDMETHODIMP_(bool) CInplaceEditDisplayObjectEvents::XEvents::OnKeyDown(iDisplayObject* pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
+bool CInplaceEditDisplayObjectEvents::OnKeyDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-   METHOD_PROLOGUE(CInplaceEditDisplayObjectEvents,Events);
    // do nothing
    return false;
 }
 
-STDMETHODIMP_(bool) CInplaceEditDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObject* pDO,CWnd* pWnd,CPoint point)
+bool CInplaceEditDisplayObjectEvents::OnContextMenu(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,CWnd* pWnd,const POINT& point)
 {
-   METHOD_PROLOGUE(CInplaceEditDisplayObjectEvents,Events);
    // do nothing
    return false;
 }
 
-STDMETHODIMP_(void) CInplaceEditDisplayObjectEvents::XEvents::OnChanged(iDisplayObject* pDO)
+void CInplaceEditDisplayObjectEvents::OnChanged(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CInplaceEditDisplayObjectEvents,Events);
    // delgate to a virtual function that subclasses can override
-   pThis->Handle_OnChanged(pDO);
+   Handle_OnChanged(pDO);
 }
 
-STDMETHODIMP_(void) CInplaceEditDisplayObjectEvents::XEvents::OnDragMoved(iDisplayObject* pDO,ISize2d* offset)
+void CInplaceEditDisplayObjectEvents::OnDragMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,const WBFL::Geometry::Size2d& offset)
 {
-   METHOD_PROLOGUE(CInplaceEditDisplayObjectEvents,Events);
    // do nothing
 }
 
-STDMETHODIMP_(void) CInplaceEditDisplayObjectEvents::XEvents::OnMoved(iDisplayObject* pDO)
+void CInplaceEditDisplayObjectEvents::OnMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CInplaceEditDisplayObjectEvents,Events);
    // do nothing
 }
 
-STDMETHODIMP_(void) CInplaceEditDisplayObjectEvents::XEvents::OnCopied(iDisplayObject* pDO)
+void CInplaceEditDisplayObjectEvents::OnCopied(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CInplaceEditDisplayObjectEvents,Events);
    // do nothing
 }
 
-STDMETHODIMP_(void) CInplaceEditDisplayObjectEvents::XEvents::OnSelect(iDisplayObject* pDO)
+void CInplaceEditDisplayObjectEvents::OnSelect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CInplaceEditDisplayObjectEvents,Events);
    // do nothing
 }
 
-STDMETHODIMP_(void) CInplaceEditDisplayObjectEvents::XEvents::OnUnselect(iDisplayObject* pDO)
+void CInplaceEditDisplayObjectEvents::OnUnselect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CInplaceEditDisplayObjectEvents,Events);
    // do nothing
 }

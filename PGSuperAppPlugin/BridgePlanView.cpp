@@ -54,10 +54,11 @@
 #include <IFace\DocumentType.h>
 
 #include <PgsExt\BridgeDescription2.h>
-#include <WBFLDManip.h>
-#include <WBFLDManipTools.h>
-#include <DManipTools\DManipTools.h>
 #include <Units\Convert.h>
+
+#include <DManip/EditableUnitValueTextBlock.h>
+#include <DManip/PointDisplayObject.h>
+#include <DManip/TaskFactory.h>
 
 #include <Materials/Materials.h>
 
@@ -65,6 +66,8 @@
 
 #include <PgsExt\ClosureJointData.h>
 #include <PgsExt\Helpers.h>
+
+#include <WBFLGeometry/GeomHelpers.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -122,11 +125,7 @@ END_MESSAGE_MAP()
 // CBridgePlanView drawing
 bool CBridgePlanView::IsDeckSelected()
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   DisplayObjectContainer displayObjects;
-   dispMgr->GetSelectedObjects(&displayObjects);
+   auto displayObjects = m_pDispMgr->GetSelectedObjects();
 
    ATLASSERT(displayObjects.size() == 0 || displayObjects.size() == 1 );
 
@@ -135,7 +134,7 @@ bool CBridgePlanView::IsDeckSelected()
       return false;
    }
 
-   CComPtr<iDisplayObject> pDO = displayObjects.front();
+   auto pDO = displayObjects.front();
 
    DeckDisplayObjectInfo* pInfo = nullptr;
    pDO->GetItemData((void**)&pInfo);
@@ -149,11 +148,7 @@ bool CBridgePlanView::IsDeckSelected()
 
 bool CBridgePlanView::IsAlignmentSelected()
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   DisplayObjectContainer displayObjects;
-   dispMgr->GetSelectedObjects(&displayObjects);
+   auto displayObjects = m_pDispMgr->GetSelectedObjects();
 
    ATLASSERT(displayObjects.size() == 0 || displayObjects.size() == 1 );
 
@@ -162,7 +157,7 @@ bool CBridgePlanView::IsAlignmentSelected()
       return false;
    }
 
-   CComPtr<iDisplayObject> pDO = displayObjects.front();
+   auto pDO = displayObjects.front();
 
    if ( pDO->GetID() == ALIGNMENT_ID )
    {
@@ -192,11 +187,7 @@ void CBridgePlanView::SetGroupRange(GroupIndexType startGroupIdx,GroupIndexType 
 
 bool CBridgePlanView::GetSelectedSpan(SpanIndexType* pSpanIdx)
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   DisplayObjectContainer displayObjects;
-   dispMgr->GetSelectedObjects(&displayObjects);
+   auto displayObjects = m_pDispMgr->GetSelectedObjects();
 
    ATLASSERT(displayObjects.size() == 0 || displayObjects.size() == 1 );
 
@@ -205,7 +196,7 @@ bool CBridgePlanView::GetSelectedSpan(SpanIndexType* pSpanIdx)
       return false;
    }
 
-   CComPtr<iDisplayObject> pDO = displayObjects.front();
+   auto pDO = displayObjects.front();
 
    SpanDisplayObjectInfo* pInfo;
    pDO->GetItemData((void**)&pInfo);
@@ -221,11 +212,7 @@ bool CBridgePlanView::GetSelectedSpan(SpanIndexType* pSpanIdx)
 
 bool CBridgePlanView::GetSelectedPier(PierIndexType* pPierIdx)
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   DisplayObjectContainer displayObjects;
-   dispMgr->GetSelectedObjects(&displayObjects);
+   auto displayObjects = m_pDispMgr->GetSelectedObjects();
 
    ATLASSERT(displayObjects.size() == 0 || displayObjects.size() == 1 );
 
@@ -234,7 +221,7 @@ bool CBridgePlanView::GetSelectedPier(PierIndexType* pPierIdx)
       return false;
    }
 
-   CComPtr<iDisplayObject> pDO = displayObjects.front();
+   auto pDO = displayObjects.front();
 
    PierDisplayObjectInfo* pInfo;
    pDO->GetItemData((void**)&pInfo);
@@ -251,47 +238,35 @@ bool CBridgePlanView::GetSelectedPier(PierIndexType* pPierIdx)
 
 void CBridgePlanView::SelectSpan(SpanIndexType spanIdx,bool bSelect)
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iDisplayObject> pDO;
-   dispMgr->FindDisplayObject(spanIdx,SPAN_DISPLAY_LIST,atByID,&pDO);
+   auto pDO = m_pDispMgr->FindDisplayObject(spanIdx,SPAN_DISPLAY_LIST,WBFL::DManip::AccessType::ByID);
 
    if ( pDO )
    {
-      dispMgr->SelectObject(pDO,bSelect);
+      m_pDispMgr->SelectObject(pDO,bSelect);
    }
    else
    {
-      dispMgr->ClearSelectedObjects();
+      m_pDispMgr->ClearSelectedObjects();
    }
 }
 
 void CBridgePlanView::SelectPier(PierIndexType pierIdx,bool bSelect)
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iDisplayObject> pDO;
-   dispMgr->FindDisplayObject(pierIdx,PIER_DISPLAY_LIST,atByID,&pDO);
+   auto pDO = m_pDispMgr->FindDisplayObject(pierIdx, PIER_DISPLAY_LIST, WBFL::DManip::AccessType::ByID);
 
    if ( pDO )
    {
-      dispMgr->SelectObject(pDO,bSelect);
+      m_pDispMgr->SelectObject(pDO,bSelect);
    }
    else
    {
-      dispMgr->ClearSelectedObjects();
+      m_pDispMgr->ClearSelectedObjects();
    }
 }
 
 bool CBridgePlanView::GetSelectedGirder(CGirderKey* pGirderKey)
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   DisplayObjectContainer displayObjects;
-   dispMgr->GetSelectedObjects(&displayObjects);
+   auto displayObjects = m_pDispMgr->GetSelectedObjects();
 
    ATLASSERT(displayObjects.size() == 0 || displayObjects.size() == 1 );
 
@@ -300,7 +275,7 @@ bool CBridgePlanView::GetSelectedGirder(CGirderKey* pGirderKey)
       return false;
    }
 
-   CComPtr<iDisplayObject> pDO = displayObjects.front();
+   auto pDO = displayObjects.front();
 
    GirderDisplayObjectInfo* pInfo = nullptr;
    pDO->GetItemData((void**)&pInfo);
@@ -316,39 +291,30 @@ bool CBridgePlanView::GetSelectedGirder(CGirderKey* pGirderKey)
 
 void CBridgePlanView::SelectGirder(const CGirderKey& girderKey,bool bSelect)
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
    std::map<CGirderKey,IDType>::iterator found = m_GirderIDs.find(girderKey);
    if ( found == m_GirderIDs.end() )
    {
-      dispMgr->ClearSelectedObjects();
+      m_pDispMgr->ClearSelectedObjects();
       return;
    }
 
    IDType ID = (*found).second;
 
-   CComPtr<iDisplayObject> pDO;
-   dispMgr->FindDisplayObject(ID,GIRDER_DISPLAY_LIST,atByID,&pDO);
+   auto pDO = m_pDispMgr->FindDisplayObject(ID,GIRDER_DISPLAY_LIST,WBFL::DManip::AccessType::ByID);
 
    if ( pDO )
    {
-      dispMgr->SelectObject(pDO,bSelect);
+      m_pDispMgr->SelectObject(pDO,bSelect);
    }
    else
    {
-      dispMgr->ClearSelectedObjects();
+      m_pDispMgr->ClearSelectedObjects();
    }
 }
 
 bool CBridgePlanView::GetSelectedSegment(CSegmentKey* pSegmentKey)
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   DisplayObjectContainer displayObjects;
-   dispMgr->GetSelectedObjects(&displayObjects);
-
+   auto displayObjects = m_pDispMgr->GetSelectedObjects();
    ATLASSERT(displayObjects.size() == 0 || displayObjects.size() == 1 );
 
    if ( displayObjects.size() == 0 )
@@ -356,7 +322,7 @@ bool CBridgePlanView::GetSelectedSegment(CSegmentKey* pSegmentKey)
       return false;
    }
 
-   CComPtr<iDisplayObject> pDO = displayObjects.front();
+   auto pDO = displayObjects.front();
 
    SegmentDisplayObjectInfo* pInfo = nullptr;
    pDO->GetItemData((void**)&pInfo);
@@ -373,38 +339,30 @@ bool CBridgePlanView::GetSelectedSegment(CSegmentKey* pSegmentKey)
 
 void CBridgePlanView::SelectSegment(const CSegmentKey& segmentKey,bool bSelect)
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
    std::map<CSegmentKey,IDType>::iterator found = m_SegmentIDs.find(segmentKey);
    if ( found == m_SegmentIDs.end() )
    {
-      dispMgr->ClearSelectedObjects();
+      m_pDispMgr->ClearSelectedObjects();
       return;
    }
 
    IDType ID = (*found).second;
 
-   CComPtr<iDisplayObject> pDO;
-   dispMgr->FindDisplayObject(ID,SEGMENT_DISPLAY_LIST,atByID,&pDO);
+   auto pDO = m_pDispMgr->FindDisplayObject(ID,SEGMENT_DISPLAY_LIST,WBFL::DManip::AccessType::ByID);
 
    if ( pDO )
    {
-      dispMgr->SelectObject(pDO,bSelect);
+      m_pDispMgr->SelectObject(pDO,bSelect);
    }
    else
    {
-      dispMgr->ClearSelectedObjects();
+      m_pDispMgr->ClearSelectedObjects();
    }
 }
 
 bool CBridgePlanView::GetSelectedClosureJoint(CSegmentKey* pClosureKey)
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   DisplayObjectContainer displayObjects;
-   dispMgr->GetSelectedObjects(&displayObjects);
+   auto displayObjects = m_pDispMgr->GetSelectedObjects();
 
    ATLASSERT(displayObjects.size() == 0 || displayObjects.size() == 1 );
 
@@ -413,7 +371,7 @@ bool CBridgePlanView::GetSelectedClosureJoint(CSegmentKey* pClosureKey)
       return false;
    }
 
-   CComPtr<iDisplayObject> pDO = displayObjects.front();
+   auto pDO = displayObjects.front();
 
    SegmentDisplayObjectInfo* pInfo = nullptr;
    pDO->GetItemData((void**)&pInfo);
@@ -430,75 +388,58 @@ bool CBridgePlanView::GetSelectedClosureJoint(CSegmentKey* pClosureKey)
 
 void CBridgePlanView::SelectClosureJoint(const CSegmentKey& closureKey,bool bSelect)
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
    std::map<CSegmentKey,IDType>::iterator found = m_ClosureJointIDs.find(closureKey);
    if ( found == m_ClosureJointIDs.end() )
    {
-      dispMgr->ClearSelectedObjects();
+      m_pDispMgr->ClearSelectedObjects();
       return;
    }
 
    IDType ID = (*found).second;
 
-   CComPtr<iDisplayObject> pDO;
-   dispMgr->FindDisplayObject(ID,CLOSURE_JOINT_DISPLAY_LIST,atByID,&pDO);
+   auto pDO = m_pDispMgr->FindDisplayObject(ID,CLOSURE_JOINT_DISPLAY_LIST,WBFL::DManip::AccessType::ByID);
 
    if ( pDO )
    {
-      dispMgr->SelectObject(pDO,bSelect);
+      m_pDispMgr->SelectObject(pDO,bSelect);
    }
    else
    {
-      dispMgr->ClearSelectedObjects();
+      m_pDispMgr->ClearSelectedObjects();
    }
 }
 
 void CBridgePlanView::SelectDeck(bool bSelect)
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iDisplayObject> pDO;
-   dispMgr->FindDisplayObject(DECK_ID,SLAB_DISPLAY_LIST,atByID,&pDO);
+   auto pDO = m_pDispMgr->FindDisplayObject(DECK_ID,SLAB_DISPLAY_LIST,WBFL::DManip::AccessType::ByID);
 
    if ( pDO )
    {
-      dispMgr->SelectObject(pDO,bSelect);
+      m_pDispMgr->SelectObject(pDO,bSelect);
    }
    else
    {
-      dispMgr->ClearSelectedObjects();
+      m_pDispMgr->ClearSelectedObjects();
    }
 }
 
 void CBridgePlanView::SelectAlignment(bool bSelect)
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iDisplayObject> pDO;
-   dispMgr->FindDisplayObject(ALIGNMENT_ID,ALIGNMENT_DISPLAY_LIST,atByID,&pDO);
+   auto pDO = m_pDispMgr->FindDisplayObject(ALIGNMENT_ID,ALIGNMENT_DISPLAY_LIST,WBFL::DManip::AccessType::ByID);
 
    if ( pDO )
    {
-      dispMgr->SelectObject(pDO,bSelect);
+      m_pDispMgr->SelectObject(pDO,bSelect);
    }
    else
    {
-      dispMgr->ClearSelectedObjects();
+      m_pDispMgr->ClearSelectedObjects();
    }
 }
 
 bool CBridgePlanView::GetSelectedTemporarySupport(SupportIndexType* ptsIdx)
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   DisplayObjectContainer displayObjects;
-   dispMgr->GetSelectedObjects(&displayObjects);
-
+   auto displayObjects = m_pDispMgr->GetSelectedObjects();
    ATLASSERT(displayObjects.size() == 0 || displayObjects.size() == 1);
 
    if (displayObjects.size() == 0)
@@ -506,7 +447,7 @@ bool CBridgePlanView::GetSelectedTemporarySupport(SupportIndexType* ptsIdx)
       return false;
    }
 
-   CComPtr<iDisplayObject> pDO = displayObjects.front();
+   auto pDO = displayObjects.front();
 
    TemporarySupportDisplayObjectInfo* pInfo;
    pDO->GetItemData((void**)&pInfo);
@@ -523,19 +464,15 @@ bool CBridgePlanView::GetSelectedTemporarySupport(SupportIndexType* ptsIdx)
 
 void CBridgePlanView::SelectTemporarySupport(SupportIDType tsID,bool bSelect)
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iDisplayObject> pDO;
-   dispMgr->FindDisplayObject(tsID,TEMPORARY_SUPPORT_DISPLAY_LIST,atByID,&pDO);
+   auto pDO = m_pDispMgr->FindDisplayObject(tsID,TEMPORARY_SUPPORT_DISPLAY_LIST,WBFL::DManip::AccessType::ByID);
 
    if ( pDO )
    {
-      dispMgr->SelectObject(pDO,bSelect);
+      m_pDispMgr->SelectObject(pDO,bSelect);
    }
    else
    {
-      dispMgr->ClearSelectedObjects();
+      m_pDispMgr->ClearSelectedObjects();
    }
 }
 
@@ -544,105 +481,41 @@ void CBridgePlanView::OnInitialUpdate()
    EnableToolTips();
    CBridgeViewPane::OnInitialUpdate();
 
-   // Causes the child frame window to initalize the span range selection controls
+   // Causes the child frame window to initialize the span range selection controls
    m_pFrame->InitGroupRange();
 }
 
 void CBridgePlanView::BuildDisplayLists()
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
    CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
-   CDisplayObjectFactory* factory = new CDisplayObjectFactory(pDoc);
-   CComPtr<iDisplayObjectFactory> doFactory;
-   doFactory.Attach((iDisplayObjectFactory*)factory->GetInterface(&IID_iDisplayObjectFactory));
-   dispMgr->AddDisplayObjectFactory(doFactory);
+   auto doFactory = std::make_shared<CDisplayObjectFactory>(pDoc);
+   m_pDispMgr->AddDisplayObjectFactory(doFactory);
 
-   dispMgr->EnableLBtnSelect(TRUE);
-   dispMgr->EnableRBtnSelect(TRUE);
-   dispMgr->SetSelectionLineColor(SELECTED_OBJECT_LINE_COLOR);
-   dispMgr->SetSelectionFillColor(SELECTED_OBJECT_FILL_COLOR);
+   m_pDispMgr->EnableLBtnSelect(true);
+   m_pDispMgr->EnableRBtnSelect(true);
+   m_pDispMgr->SetSelectionLineColor(SELECTED_OBJECT_LINE_COLOR);
+   m_pDispMgr->SetSelectionFillColor(SELECTED_OBJECT_FILL_COLOR);
 
-   CBridgeViewPane::SetMappingMode(DManip::Isotropic);
+   CBridgeViewPane::SetMappingMode(WBFL::DManip::MapMode::Isotropic);
 
    // Setup display lists
 
    // section cut - add first so it is always on top
-   CComPtr<iDisplayList> section_cut_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&section_cut_list);
-   section_cut_list->SetID(SECTION_CUT_DISPLAY_LIST);
-   dispMgr->AddDisplayList(section_cut_list);
-
-   CComPtr<iDisplayList> label_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&label_list);
-   label_list->SetID(LABEL_DISPLAY_LIST);
-   dispMgr->AddDisplayList(label_list);
-
-   CComPtr<iDisplayList> title_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&title_list);
-   title_list->SetID(TITLE_DISPLAY_LIST);
-   dispMgr->AddDisplayList(title_list);
-
-   CComPtr<iDisplayList> alignment_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&alignment_list);
-   alignment_list->SetID(ALIGNMENT_DISPLAY_LIST);
-   dispMgr->AddDisplayList(alignment_list);
-
-   CComPtr<iDisplayList> segment_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&segment_list);
-   segment_list->SetID(SEGMENT_DISPLAY_LIST);
-   dispMgr->AddDisplayList(segment_list);
-
-   CComPtr<iDisplayList> joint_list;
-   ::CoCreateInstance(CLSID_DisplayList, nullptr, CLSCTX_ALL, IID_iDisplayList, (void**)&joint_list);
-   joint_list->SetID(JOINT_DISPLAY_LIST);
-   dispMgr->AddDisplayList(joint_list);
-
-   CComPtr<iDisplayList> girder_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&girder_list);
-   girder_list->SetID(GIRDER_DISPLAY_LIST);
-   dispMgr->AddDisplayList(girder_list);
-
-   CComPtr<iDisplayList> diaphragm_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&diaphragm_list);
-   diaphragm_list->SetID(DIAPHRAGM_DISPLAY_LIST);
-   dispMgr->AddDisplayList(diaphragm_list);
-
-   CComPtr<iDisplayList> closure_joint_list;
-   ::CoCreateInstance(CLSID_DisplayList, nullptr, CLSCTX_ALL, IID_iDisplayList, (void**)&closure_joint_list);
-   closure_joint_list->SetID(CLOSURE_JOINT_DISPLAY_LIST);
-   dispMgr->AddDisplayList(closure_joint_list);
-
-   CComPtr<iDisplayList> pier_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&pier_list);
-   pier_list->SetID(PIER_DISPLAY_LIST);
-   dispMgr->AddDisplayList(pier_list);
-
-   CComPtr<iDisplayList> temporary_support_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&temporary_support_list);
-   temporary_support_list->SetID(TEMPORARY_SUPPORT_DISPLAY_LIST);
-   dispMgr->AddDisplayList(temporary_support_list);
-
-   CComPtr<iDisplayList> bearing_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&bearing_list);
-   bearing_list->SetID(BEARING_DISPLAY_LIST);
-   dispMgr->AddDisplayList(bearing_list);
-
-   CComPtr<iDisplayList> slab_list;
-   ::CoCreateInstance(CLSID_DisplayList, nullptr, CLSCTX_ALL, IID_iDisplayList, (void**)&slab_list);
-   slab_list->SetID(SLAB_DISPLAY_LIST);
-   dispMgr->AddDisplayList(slab_list);
-
-   CComPtr<iDisplayList> span_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&span_list);
-   span_list->SetID(SPAN_DISPLAY_LIST);
-   dispMgr->AddDisplayList(span_list);
-
-   CComPtr<iDisplayList> north_arrow_list;
-   ::CoCreateInstance(CLSID_DisplayList,nullptr,CLSCTX_ALL,IID_iDisplayList,(void**)&north_arrow_list);
-   north_arrow_list->SetID(NORTH_ARROW_DISPLAY_LIST);
-   dispMgr->AddDisplayList(north_arrow_list);
+   m_pDispMgr->CreateDisplayList(SECTION_CUT_DISPLAY_LIST);
+   m_pDispMgr->CreateDisplayList(LABEL_DISPLAY_LIST);
+   m_pDispMgr->CreateDisplayList(TITLE_DISPLAY_LIST);
+   m_pDispMgr->CreateDisplayList(ALIGNMENT_DISPLAY_LIST);
+   m_pDispMgr->CreateDisplayList(SEGMENT_DISPLAY_LIST);
+   m_pDispMgr->CreateDisplayList(JOINT_DISPLAY_LIST);
+   m_pDispMgr->CreateDisplayList(GIRDER_DISPLAY_LIST);
+   m_pDispMgr->CreateDisplayList(DIAPHRAGM_DISPLAY_LIST);
+   m_pDispMgr->CreateDisplayList(CLOSURE_JOINT_DISPLAY_LIST);
+   m_pDispMgr->CreateDisplayList(PIER_DISPLAY_LIST);
+   m_pDispMgr->CreateDisplayList(TEMPORARY_SUPPORT_DISPLAY_LIST);
+   m_pDispMgr->CreateDisplayList(BEARING_DISPLAY_LIST);
+   m_pDispMgr->CreateDisplayList(SLAB_DISPLAY_LIST);
+   m_pDispMgr->CreateDisplayList(SPAN_DISPLAY_LIST);
+   m_pDispMgr->CreateDisplayList(NORTH_ARROW_DISPLAY_LIST);
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -741,23 +614,6 @@ void CBridgePlanView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
          m_StartGroupIdx = 0;
       }
 
-      //// Make sure we aren't splitting a group
-      //GroupIndexType startGroupIdx = pBridge->GetGirderGroupIndex(m_StartGroupIdx);
-      //GroupIndexType startSpanIdx, endSpanIdx;
-      //pBridge->GetGirderGroupSpans(startGroupIdx, &startSpanIdx, &endSpanIdx);
-      //if (startSpanIdx != m_StartGroupIdx)
-      //{
-      //   m_StartGroupIdx = startSpanIdx;
-      //}
-
-      //GroupIndexType endGroupIdx = pBridge->GetGirderGroupIndex(m_EndGroupIdx);
-      //pBridge->GetGirderGroupSpans(endGroupIdx, &startSpanIdx, &endSpanIdx);
-      //if (endSpanIdx != m_EndGroupIdx)
-      //{
-      //   m_EndGroupIdx = endSpanIdx;
-      //}
-
-
       if ( lHint != HINT_BRIDGEVIEWSETTINGSCHANGED )
       {
          m_pFrame->InitGroupRange();
@@ -797,11 +653,7 @@ void CBridgePlanView::UpdateSegmentTooltips()
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
 
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iDisplayList> display_list;
-   dispMgr->FindDisplayList(SEGMENT_DISPLAY_LIST,&display_list);
+   auto display_list = m_pDispMgr->FindDisplayList(SEGMENT_DISPLAY_LIST);
 
    GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
@@ -831,8 +683,7 @@ void CBridgePlanView::UpdateSegmentTooltips()
 
             IDType ID = (*found).second;
 
-            CComPtr<iDisplayObject> pDO;
-            display_list->FindDisplayObject(ID, &pDO);
+            auto pDO = display_list->FindDisplayObject(ID);
             ATLASSERT(pDO != nullptr);
 
             CComPtr<IDirection> direction;
@@ -1010,11 +861,7 @@ void CBridgePlanView::UpdateClosureJointTooltips()
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
 
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iDisplayList> display_list;
-   dispMgr->FindDisplayList(CLOSURE_JOINT_DISPLAY_LIST,&display_list);
+   auto display_list = m_pDispMgr->FindDisplayList(CLOSURE_JOINT_DISPLAY_LIST);
 
    GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
@@ -1040,8 +887,7 @@ void CBridgePlanView::UpdateClosureJointTooltips()
 
             IDType ID = (*found).second;
 
-            CComPtr<iDisplayObject> pDO;
-            display_list->FindDisplayObject(ID,&pDO);
+            auto pDO = display_list->FindDisplayObject(ID);
             ATLASSERT(pDO != nullptr);
 
             EventIndexType eventIdx = pTimelineMgr->GetCastClosureJointEventIndex(pClosureJoint);
@@ -1085,21 +931,16 @@ void CBridgePlanView::UpdateClosureJointTooltips()
 
 void CBridgePlanView::UpdateSectionCut()
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
+   auto display_list = m_pDispMgr->FindDisplayList(SECTION_CUT_DISPLAY_LIST);
 
-   CComPtr<iDisplayList> display_list;
-   dispMgr->FindDisplayList(SECTION_CUT_DISPLAY_LIST,&display_list);
+   auto dispObj = display_list->FindDisplayObject(SECTION_CUT_ID);
 
-   CComPtr<iDisplayObject> dispObj;
-   display_list->FindDisplayObject(SECTION_CUT_ID,&dispObj);
-
-   CComQIPtr<iPointDisplayObject> pntDO(dispObj);
+   auto pntDO = std::dynamic_pointer_cast<WBFL::DManip::iPointDisplayObject>(dispObj);
    
    UpdateSectionCut(pntDO,TRUE);
 }
 
-void CBridgePlanView::UpdateSectionCut(iPointDisplayObject* pntDO,BOOL bRedraw)
+void CBridgePlanView::UpdateSectionCut(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pntDO,BOOL bRedraw)
 {
    Float64 station = m_pFrame->GetCurrentCutLocation();
 
@@ -1113,7 +954,7 @@ void CBridgePlanView::UpdateSectionCut(iPointDisplayObject* pntDO,BOOL bRedraw)
    CComPtr<IPoint2d> point;
    pRoadway->GetPoint(station,0.00,bearing,pgsTypes::pcGlobal,&point);
 
-   pntDO->SetPosition(point,bRedraw,FALSE);
+   pntDO->SetPosition(geomUtil::GetPoint(point),bRedraw,FALSE);
 }
 
 void CBridgePlanView::HandleLButtonDblClk(UINT nFlags, CPoint logPoint) 
@@ -1168,14 +1009,11 @@ void CBridgePlanView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
    if ( nChar == VK_LEFT || nChar == VK_RIGHT )
    {
-      CComPtr<iDisplayMgr> dispMgr;
-      GetDisplayMgr(&dispMgr);
-      DisplayObjectContainer selObjs;
-      dispMgr->GetSelectedObjects(&selObjs);
+      auto selObjs = m_pDispMgr->GetSelectedObjects();
       bool bSectionCutSelected = false;
       if ( 0 < selObjs.size() )
       {
-         CComPtr<iDisplayObject> pDO = selObjs[0];
+         auto pDO = selObjs[0];
          if ( pDO->GetID() == SECTION_CUT_ID )
          {
             bSectionCutSelected = true;
@@ -1228,10 +1066,7 @@ void CBridgePlanView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
       }
       else
       {
-         CComPtr<iDisplayMgr> dispMgr;
-         GetDisplayMgr(&dispMgr);
-         DisplayObjectContainer selObjs;
-         dispMgr->GetSelectedObjects(&selObjs);
+         auto selObjs = m_pDispMgr->GetSelectedObjects();
          if ( 0 == selObjs.size() )
          {
             SelectAlignment(true);
@@ -1248,16 +1083,12 @@ BOOL CBridgePlanView::OnMouseWheel(UINT nFlags,short zDelta,CPoint pt)
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-   DisplayObjectContainer selObjs;
-   dispMgr->GetSelectedObjects(&selObjs);
+   auto selObjs = m_pDispMgr->GetSelectedObjects();
    bool bLeftRight = true;
    if ( 0 < selObjs.size() )
    {
-      CComPtr<iDisplayObject> pDO = selObjs[0];
-      CComPtr<iDisplayList> pDispList;
-      pDO->GetDisplayList(&pDispList);
+      auto pDO = selObjs[0];
+      auto pDispList = pDO->GetDisplayList();
       IDType dispListID = pDispList->GetID();
       if ( pDO->GetID() == SECTION_CUT_ID )
       {
@@ -1291,13 +1122,6 @@ BOOL CBridgePlanView::OnMouseWheel(UINT nFlags,short zDelta,CPoint pt)
 
 void CBridgePlanView::SetModelToWorldSpacingMapping()
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iCoordinateMap> map;
-   dispMgr->GetCoordinateMap(&map);
-   CComQIPtr<iMapping> mapping(map);
-
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker, IBridge, pBridge);
@@ -1338,12 +1162,12 @@ void CBridgePlanView::SetModelToWorldSpacingMapping()
    UINT settings = pDoc->GetBridgeEditorSettings();
    if (settings & IDB_PV_NORTH_UP)
    {
-      mapping->SetRotation((x1 + x2) / 2, (y1 + y2) / 2, 0);
+      m_pMapping->SetRotation((x1 + x2) / 2, (y1 + y2) / 2, 0);
    }
    else
    {
       // rotation by negative of the angle
-      mapping->SetRotation((x1 + x2) / 2, (y1 + y2) / 2, -angle);
+      m_pMapping->SetRotation((x1 + x2) / 2, (y1 + y2) / 2, -angle);
    }
 }
 
@@ -1355,15 +1179,11 @@ void CBridgePlanView::UpdateDisplayObjects()
    CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
    CSelection selection = pDoc->GetSelection();
 
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
    CDManipClientDC dc(this);
 
-   dispMgr->ClearDisplayObjects();
+   m_pDispMgr->ClearDisplayObjects();
 
-   CComPtr<iDisplayList> label_display_list;
-   dispMgr->FindDisplayList(LABEL_DISPLAY_LIST, &label_display_list);
+   auto label_display_list = m_pDispMgr->FindDisplayList(LABEL_DISPLAY_LIST);
    label_display_list->Clear();
 
    SetModelToWorldSpacingMapping(); // must do this before building display objects
@@ -1397,16 +1217,11 @@ void CBridgePlanView::UpdateDisplayObjects()
 
 void CBridgePlanView::BuildTitleDisplayObjects()
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iDisplayList> title_list;
-   dispMgr->FindDisplayList(TITLE_DISPLAY_LIST,&title_list);
+   auto title_list = m_pDispMgr->FindDisplayList(TITLE_DISPLAY_LIST);
 
    title_list->Clear();
 
-   CComPtr<iViewTitle> title;
-   title.CoCreateInstance(CLSID_ViewTitle);
+   auto title = WBFL::DManip::ViewTitle::Create();
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
@@ -1450,11 +1265,7 @@ void CBridgePlanView::BuildTitleDisplayObjects()
 
 void CBridgePlanView::BuildAlignmentDisplayObjects()
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iDisplayList> display_list;
-   dispMgr->FindDisplayList(ALIGNMENT_DISPLAY_LIST, &display_list);
+   auto display_list = m_pDispMgr->FindDisplayList(ALIGNMENT_DISPLAY_LIST);
 
    display_list->Clear();
 
@@ -1505,31 +1316,23 @@ void CBridgePlanView::BuildAlignmentDisplayObjects()
    end_station += length2 / n;
 
    // The alignment is represented on the screen by a poly line object
-   CComPtr<iPolyLineDisplayObject> doAlignment;
-   doAlignment.CoCreateInstance(CLSID_PolyLineDisplayObject);
+   auto doAlignment = WBFL::DManip::PolyLineDisplayObject::Create();
 
    // Register an event sink with the alignment object so that we can handle double clicks
    // on the alignment differently then a general dbl-click
-   CAlignmentDisplayObjectEvents* pEvents = new CAlignmentDisplayObjectEvents(pBroker, m_pFrame, CAlignmentDisplayObjectEvents::BridgePlan);
-   CComPtr<iDisplayObjectEvents> events;
-   events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));
-
-   CComPtr<iDisplayObject> dispObj;
-   doAlignment->QueryInterface(IID_iDisplayObject, (void**)&dispObj);
-   dispObj->RegisterEventSink(events);
-   dispObj->SetToolTipText(_T("Double click to edit alignment.\nRight click for more options."));
-   dispObj->SetMaxTipWidth(TOOLTIP_WIDTH);
-   dispObj->SetTipDisplayTime(TOOLTIP_DURATION);
+   auto events = std::make_shared<CAlignmentDisplayObjectEvents>(pBroker, m_pFrame, CAlignmentDisplayObjectEvents::BridgePlan);
+   doAlignment->RegisterEventSink(events);
+   doAlignment->SetToolTipText(_T("Double click to edit alignment.\nRight click for more options."));
+   doAlignment->SetMaxTipWidth(TOOLTIP_WIDTH);
+   doAlignment->SetTipDisplayTime(TOOLTIP_DURATION);
 
    // display object for CL bridge
-   CComPtr<iPolyLineDisplayObject> doCLBridge;
-   doCLBridge.CoCreateInstance(CLSID_PolyLineDisplayObject);
+   auto doCLBridge = WBFL::DManip::PolyLineDisplayObject::Create();
 
    Float64 alignment_offset = pBridge->GetAlignmentOffset();
 
    // display object for PGL
-   CComPtr<iPolyLineDisplayObject> doPGL;
-   doPGL.CoCreateInstance(CLSID_PolyLineDisplayObject);
+   auto doPGL = WBFL::DManip::PolyLineDisplayObject::Create();
 
    // model the alignment as a series of individual points
    CComPtr<IDirection> bearing;
@@ -1556,7 +1359,7 @@ void CBridgePlanView::BuildAlignmentDisplayObjects()
    {
       CComPtr<IPoint2d> pntAlignment;
       pRoadway->GetPoint(station,0.00,bearing,pgsTypes::pcGlobal,&pntAlignment);
-      doAlignment->AddPoint(pntAlignment);
+      doAlignment->AddPoint(geomUtil::GetPoint(pntAlignment));
 
       Float64 pgl_offset = 0;
       if (bIsPGLOffsetFromAlignment)
@@ -1578,21 +1381,20 @@ void CBridgePlanView::BuildAlignmentDisplayObjects()
       {
          CComPtr<IPoint2d> pntBridgeLine;
          pRoadway->GetPoint(station,alignment_offset,normal,pgsTypes::pcGlobal,&pntBridgeLine);
-         doCLBridge->AddPoint(pntBridgeLine);
+         doCLBridge->AddPoint(geomUtil::GetPoint(pntBridgeLine));
       }
 
       CComPtr<IPoint2d> pntPGL;
       if (!IsZero(pgl_offset))
       {
          pRoadway->GetPoint(station, pgl_offset, normal, pgsTypes::pcGlobal, &pntPGL);
-         doPGL->AddPoint(pntPGL);
+         doPGL->AddPoint(geomUtil::GetPoint(pntPGL));
       }
 
       if (IsEqual(station, vStations.front()))
       {
-         CComPtr<iTextBlock> doText;
-         doText.CoCreateInstance(CLSID_TextBlock);
-         doText->SetPosition(pntAlignment);
+         auto doText = WBFL::DManip::TextBlock::Create();
+         doText->SetPosition(geomUtil::GetPoint(pntAlignment));
          doText->SetText(pRoadwayData->GetAlignmentData2().Name.c_str());
          doText->SetTextAlign(TA_BOTTOM | TA_LEFT);
          doText->SetBkMode(TRANSPARENT);
@@ -1607,9 +1409,8 @@ void CBridgePlanView::BuildAlignmentDisplayObjects()
 
          if (bIsPGLOffsetFromAlignment)
          {
-            doText.Release();
-            doText.CoCreateInstance(CLSID_TextBlock);
-            doText->SetPosition(pntPGL);
+            doText = WBFL::DManip::TextBlock::Create();
+            doText->SetPosition(geomUtil::GetPoint(pntPGL));
             doText->SetText(_T("PGL"));
             doText->SetTextAlign(TA_BOTTOM | TA_LEFT);
             doText->SetBkMode(TRANSPARENT);
@@ -1619,41 +1420,36 @@ void CBridgePlanView::BuildAlignmentDisplayObjects()
       }
    }
 
-   doAlignment->put_Width(ALIGNMENT_LINE_WEIGHT);
-   doAlignment->put_Color(ALIGNMENT_COLOR);
-   doAlignment->put_PointType(plpNone);
-   doAlignment->Commit();
+   doAlignment->SetWidth(ALIGNMENT_LINE_WEIGHT);
+   doAlignment->SetColor(ALIGNMENT_COLOR);
+   doAlignment->SetPointType(WBFL::DManip::PointType::None);
 
-   doPGL->put_Width(PROFILE_LINE_WEIGHT);
-   doPGL->put_Color(PROFILE_COLOR);
-   doPGL->put_PointType(plpNone);
-   doPGL->Commit();
+   doPGL->SetWidth(PROFILE_LINE_WEIGHT);
+   doPGL->SetColor(PROFILE_COLOR);
+   doPGL->SetPointType(WBFL::DManip::PointType::None);
 
-   doCLBridge->put_Width(BRIDGELINE_LINE_WEIGHT);
-   doCLBridge->put_Color(BRIDGE_COLOR);
-   doCLBridge->put_PointType(plpNone);
-   doCLBridge->Commit();
+   doCLBridge->SetWidth(BRIDGELINE_LINE_WEIGHT);
+   doCLBridge->SetColor(BRIDGE_COLOR);
+   doCLBridge->SetPointType(WBFL::DManip::PointType::None);
 
-   display_list->AddDisplayObject(dispObj);
+   display_list->AddDisplayObject(doAlignment);
 
    if ( !IsZero(alignment_offset) )
    {
-      CComQIPtr<iDisplayObject> dispObj2(doCLBridge);
-      display_list->AddDisplayObject(dispObj2);
+      display_list->AddDisplayObject(doCLBridge);
    }
 
    if(bIsPGLOffsetFromAlignment)
    {
-      CComQIPtr<iDisplayObject> dispObj3(doPGL);
-      display_list->AddDisplayObject(dispObj3);
+      display_list->AddDisplayObject(doPGL);
    }
 
-   dispObj->SetSelectionType(stAll);
-   dispObj->SetID(ALIGNMENT_ID);
+   doAlignment->SetSelectionType(WBFL::DManip::SelectionType::All);
+   doAlignment->SetID(ALIGNMENT_ID);
 
    // the alignment is going to be the drop site for the section cut object
-   CComQIPtr<iDropSite> drop_site(events);
-   dispObj->RegisterDropSite(drop_site);
+   auto drop_site = std::dynamic_pointer_cast<WBFL::DManip::iDropSite>(events);
+   doAlignment->RegisterDropSite(drop_site);
 }
 
 void CBridgePlanView::BuildSegmentDisplayObjects()
@@ -1666,19 +1462,13 @@ void CBridgePlanView::BuildSegmentDisplayObjects()
    CComPtr<IBroker> pBroker;
    pDoc->GetBroker(&pBroker);
 
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iDisplayList> display_list;
-   dispMgr->FindDisplayList(SEGMENT_DISPLAY_LIST,&display_list);
+   auto display_list = m_pDispMgr->FindDisplayList(SEGMENT_DISPLAY_LIST);
    display_list->Clear();
 
-   CComPtr<iDisplayList> bearing_display_list;
-   dispMgr->FindDisplayList(BEARING_DISPLAY_LIST,&bearing_display_list);
+   auto bearing_display_list = m_pDispMgr->FindDisplayList(BEARING_DISPLAY_LIST);
    bearing_display_list->Clear();
 
-   CComPtr<iDisplayList> label_display_list;
-   dispMgr->FindDisplayList(LABEL_DISPLAY_LIST,&label_display_list);
+   auto label_display_list = m_pDispMgr->FindDisplayList(LABEL_DISPLAY_LIST);
 
    //
    // set up some drawing strategies
@@ -1686,12 +1476,12 @@ void CBridgePlanView::BuildSegmentDisplayObjects()
    UINT settings = pDoc->GetBridgeEditorSettings();
 
    // drawing the bearings
-   CComPtr<iSimpleDrawLineStrategy> strategy_brg;
+   std::shared_ptr<WBFL::DManip::SimpleDrawLineStrategy> strategy_brg;
    if ( settings & IDB_PV_LABEL_BEARINGS )
    {
-      strategy_brg.CoCreateInstance(CLSID_SimpleDrawLineStrategy);
+      strategy_brg = WBFL::DManip::SimpleDrawLineStrategy::Create();
       strategy_brg->SetColor(RGB(0,0,255));
-      strategy_brg->SetLineStyle(lsCenterline);
+      strategy_brg->SetLineStyle(WBFL::DManip::LineStyleType::Centerline);
    }
 
    // restart the display object ids
@@ -1738,16 +1528,15 @@ void CBridgePlanView::BuildSegmentDisplayObjects()
             polyShape->get_Point(1, &pntStart);
             polyShape->get_Point(2+(nPoints-6)/2+2, &pntEnd);
 
-            CComPtr<iPointDisplayObject> doSegment;
-            doSegment.CoCreateInstance(CLSID_PointDisplayObject);
-            doSegment->SetPosition(pntStart, FALSE, FALSE);
+            auto doSegment = WBFL::DManip::PointDisplayObject::Create();
+            doSegment->SetPosition(geomUtil::GetPoint(pntStart),false,false);
 
             IDType ID = m_NextSegmentID++;
             m_SegmentIDs.insert( std::make_pair(segmentKey,ID) );
             doSegment->SetID(ID);
             SegmentDisplayObjectInfo* pInfo = new SegmentDisplayObjectInfo(segmentKey,SEGMENT_DISPLAY_LIST);
             doSegment->SetItemData((void*)pInfo,true);
-            doSegment->SetSelectionType(stAll);
+            doSegment->SetSelectionType(WBFL::DManip::SelectionType::All);
             
             if (1 < nSegments)
             {
@@ -1756,16 +1545,15 @@ void CBridgePlanView::BuildSegmentDisplayObjects()
                doSegment->RetainSelection(FALSE);
             }
 
-            CComPtr<iShapeDrawStrategy> shapeDrawStrategy;
-            shapeDrawStrategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
-            shapeDrawStrategy->SetShape(shape);
-            shapeDrawStrategy->DoFill(true);
+            auto shapeDrawStrategy = WBFL::DManip::ShapeDrawStrategy::Create();
+            shapeDrawStrategy->SetShape(geomUtil::ConvertShape(shape));
+            shapeDrawStrategy->Fill(true);
             shapeDrawStrategy->SetSolidFillColor(SEGMENT_FILL_COLOR);
             shapeDrawStrategy->SetSolidLineColor(SEGMENT_BORDER_COLOR);
 
             doSegment->SetDrawingStrategy(shapeDrawStrategy);
 
-            CComQIPtr<iGravityWellStrategy> gravity_well(shapeDrawStrategy);
+            auto gravity_well = std::dynamic_pointer_cast<WBFL::DManip::iGravityWellStrategy>(shapeDrawStrategy);
             doSegment->SetGravityWellStrategy(gravity_well);
 
             display_list->AddDisplayObject(doSegment);
@@ -1784,8 +1572,7 @@ void CBridgePlanView::BuildSegmentDisplayObjects()
                CComPtr<IDirectionDisplayUnitFormatter> direction_formatter;
                direction_formatter.CoCreateInstance(CLSID_DirectionDisplayUnitFormatter);
                direction_formatter->put_BearingFormat(VARIANT_TRUE);
-               CComPtr<iTextBlock> doText2;
-               doText2.CoCreateInstance(CLSID_TextBlock);
+               auto doText2 = WBFL::DManip::TextBlock::Create();
 
                Float64 x1,y1, x2,y2;
                pntStart->Location(&x1,&y1);
@@ -1796,7 +1583,7 @@ void CBridgePlanView::BuildSegmentDisplayObjects()
                CComPtr<IPoint2d> pntText2;
                pntText2.CoCreateInstance(CLSID_Point2d);
                pntText2->Move(x,y);
-               doText2->SetPosition(pntText2);
+               doText2->SetPosition(geomUtil::GetPoint(pntText2));
 
                CComBSTR bstrBearing;
                direction_formatter->Format(dir,CComBSTR("°,\',\""),&bstrBearing);
@@ -1809,12 +1596,8 @@ void CBridgePlanView::BuildSegmentDisplayObjects()
 
             // Register an event sink with the segment display object so that we can handle double clicks
             // on the segment differently then a general double click
-            CBridgePlanViewSegmentDisplayObjectEvents* pEvents = new CBridgePlanViewSegmentDisplayObjectEvents(segmentKey,pFrame);
-            CComPtr<iDisplayObjectEvents> events;
-            events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));
-
-            CComQIPtr<iDisplayObject,&IID_iDisplayObject> dispObj(doSegment);
-            dispObj->RegisterEventSink(events);
+            auto events = std::make_shared<CBridgePlanViewSegmentDisplayObjectEvents>(segmentKey,pFrame);
+            doSegment->RegisterEventSink(events);
          } // segment loop
       } // girder loop
    } // group loop
@@ -1833,11 +1616,7 @@ void CBridgePlanView::BuildLongitudinalJointDisplayObject()
       return;
    }
 
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iDisplayList> display_list;
-   dispMgr->FindDisplayList(JOINT_DISPLAY_LIST, &display_list);
+   auto display_list = m_pDispMgr->FindDisplayList(JOINT_DISPLAY_LIST);
    display_list->Clear();
 
    GET_IFACE2_NOCHECK(pBroker, IGirder, pIGirder);
@@ -1865,9 +1644,8 @@ void CBridgePlanView::BuildLongitudinalJointDisplayObject()
             pIGirder->GetSegmentPlanPoints(leftSegmentKey, pgsTypes::pcGlobal, &pntEnd1Left[left], &pntEnd1[left], &pntEnd1Right[left], &pntEnd2Right[left], &pntEnd2[left], &pntEnd2Left[left]);
             pIGirder->GetSegmentPlanPoints(rightSegmentKey, pgsTypes::pcGlobal, &pntEnd1Left[right], &pntEnd1[right], &pntEnd1Right[right], &pntEnd2Right[right], &pntEnd2[right], &pntEnd2Left[right]);
 
-            CComPtr<iPointDisplayObject> doJoint;
-            doJoint.CoCreateInstance(CLSID_PointDisplayObject);
-            doJoint->SetPosition(pntEnd1[left], FALSE, FALSE);
+            auto doJoint = WBFL::DManip::PointDisplayObject::Create();
+            doJoint->SetPosition(geomUtil::GetPoint(pntEnd1[left]), false, false);
 
             CComPtr<IPolyShape> polyShape;
             polyShape.CoCreateInstance(CLSID_PolyShape);
@@ -1878,10 +1656,9 @@ void CBridgePlanView::BuildLongitudinalJointDisplayObject()
 
             CComQIPtr<IShape> shape(polyShape);
 
-            CComPtr<iShapeDrawStrategy> shapeDrawStrategy;
-            shapeDrawStrategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
-            shapeDrawStrategy->SetShape(shape);
-            shapeDrawStrategy->DoFill(true);
+            auto shapeDrawStrategy = WBFL::DManip::ShapeDrawStrategy::Create();
+            shapeDrawStrategy->SetShape(geomUtil::ConvertShape(shape));
+            shapeDrawStrategy->Fill(true);
             COLORREF fillColor = pBridgeDesc->HasStructuralLongitudinalJoints() ? JOINT_FILL_COLOR : JOINT_FILL_GHOST_COLOR;
             shapeDrawStrategy->SetSolidFillColor(fillColor);
             shapeDrawStrategy->SetSolidLineColor(JOINT_BORDER_COLOR);
@@ -1900,18 +1677,12 @@ void CBridgePlanView::BuildGirderDisplayObjects()
    // segment display objects. it will treat all the segment display objects as a single object.
    CBridgeModelViewChildFrame* pFrame = GetFrame();
 
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iDisplayList> girderline_display_list;
-   dispMgr->FindDisplayList(GIRDER_DISPLAY_LIST,&girderline_display_list);
+   auto girderline_display_list = m_pDispMgr->FindDisplayList(GIRDER_DISPLAY_LIST);
    girderline_display_list->Clear();
 
-   CComPtr<iDisplayList> segment_display_list;
-   dispMgr->FindDisplayList(SEGMENT_DISPLAY_LIST,&segment_display_list);
+   auto segment_display_list = m_pDispMgr->FindDisplayList(SEGMENT_DISPLAY_LIST);
 
-   CComPtr<iDisplayList> label_display_list;
-   dispMgr->FindDisplayList(LABEL_DISPLAY_LIST,&label_display_list);
+   auto label_display_list = m_pDispMgr->FindDisplayList(LABEL_DISPLAY_LIST);
 
 
    m_NextGirderID = 0;
@@ -1939,9 +1710,8 @@ void CBridgePlanView::BuildGirderDisplayObjects()
 
       for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirdersThisGroup; gdrIdx++ )
       {
-         CComPtr<iCompositeDisplayObject> doGirderLine;
-         doGirderLine.CoCreateInstance(CLSID_CompositeDisplayObject);
-         doGirderLine->SetSelectionType(stAll);
+         auto doGirderLine = WBFL::DManip::CompositeDisplayObject::Create();
+         doGirderLine->SetSelectionType(WBFL::DManip::SelectionType::All);
 
          CGirderKey girderKey(groupIdx,gdrIdx);
 
@@ -1963,8 +1733,7 @@ void CBridgePlanView::BuildGirderDisplayObjects()
 
             IDType ID = (*found).second;
 
-            CComPtr<iDisplayObject> doSegment;
-            segment_display_list->FindDisplayObject(ID,&doSegment);
+            auto doSegment = segment_display_list->FindDisplayObject(ID);
             ASSERT(doSegment);
 
             if ( settings & IDB_PV_LABEL_GIRDERS )
@@ -1989,11 +1758,10 @@ void CBridgePlanView::BuildGirderDisplayObjects()
                pntEnd2->get_Y(&y2);
                Float64 x = x1 + (x2-x1)/4;
                Float64 y = y1 + (y2-y1)/4;
-               CComPtr<IPoint2d> pntText;
-               pntText.CoCreateInstance(CLSID_Point2d);
-               pntText->Move(x,y);
-               CComPtr<iTextBlock> doText;
-               doText.CoCreateInstance(CLSID_TextBlock);
+
+               WBFL::Geometry::Point2d pntText(x,y);
+               
+               auto doText = WBFL::DManip::TextBlock::Create();
                doText->SetPosition(pntText);
 
                CString strText;
@@ -2011,12 +1779,8 @@ void CBridgePlanView::BuildGirderDisplayObjects()
 
          // Register an event sink with the girder display object so that we can handle double clicks
          // on the girder differently then a general double click
-         CBridgePlanViewGirderDisplayObjectEvents* pEvents = new CBridgePlanViewGirderDisplayObjectEvents(girderKey,nGroups,nGirdersThisGroup,pFrame);
-         CComPtr<iDisplayObjectEvents> events;
-         events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));
-
-         CComQIPtr<iDisplayObject,&IID_iDisplayObject> dispObj(doGirderLine);
-         dispObj->RegisterEventSink(events);
+         auto events = std::make_shared<CBridgePlanViewGirderDisplayObjectEvents>(girderKey,nGroups,nGirdersThisGroup,pFrame);
+         doGirderLine->RegisterEventSink(events);
 
          girderline_display_list->AddDisplayObject(doGirderLine);
       } // girder loop
@@ -2030,15 +1794,10 @@ void CBridgePlanView::BuildPierDisplayObjects()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iDisplayList> display_list;
-   dispMgr->FindDisplayList(PIER_DISPLAY_LIST,&display_list);
+   auto display_list = m_pDispMgr->FindDisplayList(PIER_DISPLAY_LIST);
    display_list->Clear();
 
-   CComPtr<iDisplayList> label_display_list;
-   dispMgr->FindDisplayList(LABEL_DISPLAY_LIST,&label_display_list);
+   auto label_display_list = m_pDispMgr->FindDisplayList(LABEL_DISPLAY_LIST);
 
    CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
    UINT settings = pDoc->GetBridgeEditorSettings();
@@ -2091,25 +1850,20 @@ void CBridgePlanView::BuildPierDisplayObjects()
 
          // create a point display object for the left side of the pier
          // add a socket to it
-         CComPtr<iPointDisplayObject> doLeft;
-         doLeft.CoCreateInstance(CLSID_PointDisplayObject);
-         doLeft->SetPosition(left, FALSE, FALSE);
-         CComQIPtr<iConnectable> connectable1(doLeft);
-         CComPtr<iSocket> socket1;
-         connectable1->AddSocket(0, left, &socket1);
+         auto doLeft = WBFL::DManip::PointDisplayObject::Create();
+         doLeft->SetPosition(geomUtil::GetPoint(left), false, false);
+         auto connectable1 = std::dynamic_pointer_cast<WBFL::DManip::iConnectable>(doLeft);
+         auto socket1 = connectable1->AddSocket(0, geomUtil::GetPoint(left));
 
          // create a point display object for the right side of the pier
          // add a socket to it
-         CComPtr<iPointDisplayObject> doRight;
-         doRight.CoCreateInstance(CLSID_PointDisplayObject);
-         doRight->SetPosition(right, FALSE, FALSE);
-         CComQIPtr<iConnectable> connectable2(doRight);
-         CComPtr<iSocket> socket2;
-         connectable2->AddSocket(0, right, &socket2);
+         auto doRight = WBFL::DManip::PointDisplayObject::Create();
+         doRight->SetPosition(geomUtil::GetPoint(right), false, false);
+         auto connectable2 = std::dynamic_pointer_cast<WBFL::DManip::iConnectable>(doRight);
+         auto socket2 = connectable2->AddSocket(0, geomUtil::GetPoint(right));
 
          // create a line display object for the pier centerline
-         CComPtr<iLineDisplayObject> doCenterLine;
-         doCenterLine.CoCreateInstance(CLSID_LineDisplayObject);
+         auto doCenterLine = WBFL::DManip::LineDisplayObject::Create();
 
          CString strMsg1;
          strMsg1.Format(_T("Double click to edit %s\nRight click for more options."), LABEL_PIER_EX(pPier->IsAbutment(),pierIdx));
@@ -2163,38 +1917,28 @@ void CBridgePlanView::BuildPierDisplayObjects()
          doCenterLine->SetItemData((void*)pInfo, true);
 
          // get the connectors from the line
-         CComQIPtr<iConnector> connector(doCenterLine);
-         CComQIPtr<iPlug> startPlug, endPlug;
-         connector->GetStartPlug(&startPlug);
-         connector->GetEndPlug(&endPlug);
+         auto connector = std::dynamic_pointer_cast<WBFL::DManip::iConnector>(doCenterLine);
+         auto startPlug = connector->GetStartPlug();
+         auto endPlug = connector->GetEndPlug();
 
          // connect the line to the points
-         DWORD dwCookie;
-         connectable1->Connect(0, atByID, startPlug, &dwCookie);
-         connectable2->Connect(0, atByID, endPlug, &dwCookie);
+         connectable1->Connect(0, WBFL::DManip::AccessType::ByID, startPlug);
+         connectable2->Connect(0, WBFL::DManip::AccessType::ByID, endPlug);
 
          // Register an event sink with the pier centerline display object so that we can handle dbl-clicks
          // on the piers differently then a general dbl-click
-         CPierDisplayObjectEvents* pEvents = new CPierDisplayObjectEvents(pierIdx,
-            pBridgeDesc,
-            pFrame);
-         CComPtr<iDisplayObjectEvents> events;
-         events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));
-
-         CComQIPtr<iDisplayObject, &IID_iDisplayObject> dispObj(doCenterLine);
-         dispObj->RegisterEventSink(events);
+         auto events = std::make_shared<CPierDisplayObjectEvents>(pierIdx,pBridgeDesc,pFrame);
+         doCenterLine->RegisterEventSink(events);
 
          // create line drawing strategies... use a compound strategy so
          // we can draw both the centerline and the pseudo-outline of the pier
-         CComPtr<iCompoundDrawLineStrategy> strategy;
-         strategy.CoCreateInstance(CLSID_CompoundDrawLineStrategy);
+         auto strategy = WBFL::DManip::CompoundDrawLineStrategy::Create();
 
          // strategy for pseudo-outline of the pier
-         CComPtr<iExtRectangleDrawLineStrategy> strategy_pier;
-         strategy_pier.CoCreateInstance(CLSID_ExtRectangleDrawLineStrategy);
+         auto strategy_pier = WBFL::DManip::ExtRectangleDrawLineStrategy::Create();
          strategy_pier->SetColor(PIER_BORDER_COLOR);
          strategy_pier->SetFillColor(PIER_FILL_COLOR);
-         strategy_pier->DoFill(TRUE);
+         strategy_pier->Fill(true);
 
          // make the pier outline just a bit wider
          SpanIndexType prev_span_idx = pierIdx - 1;
@@ -2312,17 +2056,16 @@ void CBridgePlanView::BuildPierDisplayObjects()
          // the line display object. this will make the entire pier the clickable part
          // of the display object
          strategy_pier->PerimeterGravityWell(TRUE);
-         CComQIPtr<iGravityWellStrategy> gravity_well(strategy_pier);
+         auto gravity_well = std::dynamic_pointer_cast<WBFL::DManip::iGravityWellStrategy>(strategy_pier);
          doCenterLine->SetGravityWellStrategy(gravity_well);
-         doCenterLine->SetSelectionType(stAll);
+         doCenterLine->SetSelectionType(WBFL::DManip::SelectionType::All);
 
          strategy->AddStrategy(strategy_pier);
 
          // pier centerline
-         CComPtr<iExtRectangleDrawLineStrategy> strategy_centerline;
-         strategy_centerline.CoCreateInstance(CLSID_ExtRectangleDrawLineStrategy);
+         auto strategy_centerline = WBFL::DManip::ExtRectangleDrawLineStrategy::Create();
          strategy_centerline->SetColor(BLUE);
-         strategy_centerline->SetLineStyle(lsCenterline);
+         strategy_centerline->SetLineStyle(WBFL::DManip::LineStyleType::Centerline);
          strategy_centerline->SetStartExtension(left_overhang);
          strategy_centerline->SetEndExtension(right_overhang);
          strategy->AddStrategy(strategy_centerline);
@@ -2341,13 +2084,12 @@ void CBridgePlanView::BuildPierDisplayObjects()
          if (settings & IDB_PV_LABEL_PIERS)
          {
             // pier label
-            CComPtr<iTextBlock> doPierName;
-            doPierName.CoCreateInstance(CLSID_TextBlock);
+            auto doPierName = WBFL::DManip::TextBlock::Create();
 
             CString strText;
             strText.Format(_T("%s"), LABEL_PIER_EX(pPier->IsAbutment(),pierIdx));
 
-            doPierName->SetPosition(ahead_point);
+            doPierName->SetPosition(geomUtil::GetPoint(ahead_point));
             doPierName->SetTextAlign(TA_BASELINE | TA_CENTER);
             doPierName->SetText(strText);
             doPierName->SetTextColor(BLACK);
@@ -2361,27 +2103,20 @@ void CBridgePlanView::BuildPierDisplayObjects()
             label_display_list->AddDisplayObject(doPierName);
 
             // pier station
-            CComPtr<iEditableUnitValueTextBlock> doStation;
-            doStation.CoCreateInstance(CLSID_EditableUnitValueTextBlock);
-            doStation->SetUnitSystem(docUnitSystem);
-            doStation->SetDisplayUnitGroupName(_T("Station"));
-            doStation->IsStation(true);
-            doStation->SetValue(station);
-            doStation->SetPosition(back_point);
+            auto doStation = WBFL::DManip::EditableStationTextBlock::Create(pDisplayUnits->GetStationFormat());
+            doStation->SetStation(station);
+            doStation->SetPosition(geomUtil::GetPoint(back_point));
             doStation->SetTextAlign(TA_TOP | TA_CENTER);
             doStation->SetTextColor(BLACK);
             doStation->SetBkMode(OPAQUE);
             doStation->SetAngle(angle);
-            doStation->SetSelectionType(stAll);
+            doStation->SetSelectionType(WBFL::DManip::SelectionType::All);
 
             doStation->SetToolTipText(_T("Click to edit"));
             doStation->SetMaxTipWidth(TOOLTIP_WIDTH);
             doStation->SetTipDisplayTime(TOOLTIP_DURATION);
 
-            CInplacePierStationEditEvents* pPierStationEvents = new CInplacePierStationEditEvents(pBroker, pierIdx);
-            CComPtr<iDisplayObjectEvents> pierStationEvents;
-            pierStationEvents.Attach((iDisplayObjectEvents*)pPierStationEvents->GetInterface(&IID_iDisplayObjectEvents));
-
+            auto pierStationEvents = std::make_shared<CInplacePierStationEditEvents>(pBroker, pierIdx);
             doStation->RegisterEventSink(pierStationEvents);
 
             label_display_list->AddDisplayObject(doStation);
@@ -2399,10 +2134,9 @@ void CBridgePlanView::BuildPierDisplayObjects()
             angle = long(1800.*dir / M_PI);
             angle = (900 < angle && angle < 2700) ? angle - 1800 : angle;
 
-            CComPtr<iTextBlock> doConnection;
-            doConnection.CoCreateInstance(CLSID_TextBlock);
-            doConnection->SetSelectionType(stNone);
-            doConnection->SetPosition(connection_label_point);
+            auto doConnection = WBFL::DManip::TextBlock::Create();
+            doConnection->SetSelectionType(WBFL::DManip::SelectionType::None);
+            doConnection->SetPosition(geomUtil::GetPoint(connection_label_point));
             doConnection->SetTextColor(CONNECTION_LABEL_COLOR);
             doConnection->SetBkMode(TRANSPARENT);
             doConnection->SetAngle(angle);
@@ -2428,12 +2162,8 @@ void CBridgePlanView::BuildPierDisplayObjects()
 
             // Register an event sink with the connection text display object so that we can handle double clicks
             // differently then a general double click
-            CConnectionDisplayObjectEvents* pEvents = new CConnectionDisplayObjectEvents(pierIdx);
-            CComPtr<iDisplayObjectEvents> events;
-            events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));
-
-            CComQIPtr<iDisplayObject, &IID_iDisplayObject> dispObj(doConnection);
-            dispObj->RegisterEventSink(events);
+            auto events = std::make_shared<CConnectionDisplayObjectEvents>(pierIdx);
+            doConnection->RegisterEventSink(events);
 
             label_display_list->AddDisplayObject(doConnection);
 
@@ -2454,27 +2184,21 @@ void CBridgePlanView::BuildPierDisplayObjects()
                angle = long(1800.*dir / M_PI);
                angle = (900 < angle && angle < 2700) ? angle - 1800 : angle;
 
-               CComPtr<iEditableUnitValueTextBlock> doSpanLength;
-               doSpanLength.CoCreateInstance(CLSID_EditableUnitValueTextBlock);
-               doSpanLength->SetUnitSystem(docUnitSystem);
-               doSpanLength->SetDisplayUnitGroupName(_T("SpanLength"));
+               auto doSpanLength = WBFL::DManip::EditableLengthUnitValueTextBlock::Create(pDisplayUnits->GetSpanLengthUnit());
                doSpanLength->SetValue(span_length);
-               doSpanLength->SetPosition(pntInSpan);
+               doSpanLength->SetPosition(geomUtil::GetPoint(pntInSpan));
                doSpanLength->SetTextAlign(TA_BASELINE | TA_CENTER);
                doSpanLength->SetTextColor(BLACK);
                doSpanLength->SetBkMode(OPAQUE);
                doSpanLength->SetAngle(angle);
-               doSpanLength->SetSelectionType(stAll);
+               doSpanLength->SetSelectionType(WBFL::DManip::SelectionType::All);
 
                doSpanLength->SetToolTipText(_T("Click to edit"));
                doSpanLength->SetMaxTipWidth(TOOLTIP_WIDTH);
                doSpanLength->SetTipDisplayTime(TOOLTIP_DURATION);
 
                // Register an event sink with the text block object so that we can handle change events
-               CInplaceSpanLengthEditEvents* pSpanLengthEvents = new CInplaceSpanLengthEditEvents(pBroker, pierIdx - 1);
-               CComPtr<iDisplayObjectEvents> spanLengthEvents;
-               spanLengthEvents.Attach((iDisplayObjectEvents*)pSpanLengthEvents->GetInterface(&IID_iDisplayObjectEvents));
-
+               auto spanLengthEvents = std::make_shared<CInplaceSpanLengthEditEvents>(pBroker, pierIdx - 1);
                doSpanLength->RegisterEventSink(spanLengthEvents);
 
                label_display_list->AddDisplayObject(doSpanLength);
@@ -2486,40 +2210,32 @@ void CBridgePlanView::BuildPierDisplayObjects()
          // it is an extension line from the center of the pier to the intersection
          // with the alignment. This line shows where the centerline of the pier (extended)
          // intersects the alignment.
-         CComPtr<iLineDisplayObject> doCenterLine2;
-         doCenterLine2.CoCreateInstance(CLSID_LineDisplayObject);
+         auto doCenterLine2 = WBFL::DManip::LineDisplayObject::Create();
 
          // create a point display object for the center of the pier
          // add a socket to it
-         CComPtr<iPointDisplayObject> doAlignment;
-         doAlignment.CoCreateInstance(CLSID_PointDisplayObject);
-         doAlignment->SetPosition(alignment_pt, FALSE, FALSE);
-         CComQIPtr<iConnectable> connectable3(doAlignment);
-         CComPtr<iSocket> socket3;
-         connectable3->AddSocket(0, alignment_pt, &socket3);
+         auto doAlignment = WBFL::DManip::PointDisplayObject::Create();
+         doAlignment->SetPosition(geomUtil::GetPoint(alignment_pt), false, false);
+         auto connectable3 = std::dynamic_pointer_cast<WBFL::DManip::iConnectable>(doAlignment);
+         auto socket3 = connectable3->AddSocket(0, geomUtil::GetPoint(alignment_pt));
 
-         CComPtr<iPointDisplayObject> doBridge;
-         doBridge.CoCreateInstance(CLSID_PointDisplayObject);
-         doBridge->SetPosition(bridge_pt, FALSE, FALSE);
-         CComQIPtr<iConnectable> connectable4(doBridge);
-         CComPtr<iSocket> socket4;
-         connectable4->AddSocket(0, bridge_pt, &socket4);
+         auto doBridge = WBFL::DManip::PointDisplayObject::Create();
+         doBridge->SetPosition(geomUtil::GetPoint(bridge_pt), false, false);
+         auto connectable4 = std::dynamic_pointer_cast<WBFL::DManip::iConnectable>(doBridge);
+         auto socket4 = connectable4->AddSocket(0, geomUtil::GetPoint(bridge_pt));
 
          // get the connectors from the line
-         CComQIPtr<iConnector> connector2(doCenterLine2);
-         startPlug.Release();
-         endPlug.Release();
-         connector2->GetStartPlug(&startPlug);
-         connector2->GetEndPlug(&endPlug);
+         auto connector2 = std::dynamic_pointer_cast<WBFL::DManip::iConnector>(doCenterLine2);
+         startPlug = connector2->GetStartPlug();
+         endPlug = connector2->GetEndPlug();
 
          // connect the line to the points
-         connectable3->Connect(0, atByID, startPlug, &dwCookie);
-         connectable4->Connect(0, atByID, endPlug, &dwCookie);
+         connectable3->Connect(0, WBFL::DManip::AccessType::ByID, startPlug);
+         connectable4->Connect(0, WBFL::DManip::AccessType::ByID, endPlug);
 
-         CComPtr<iSimpleDrawLineStrategy> offset_line_strategy;
-         offset_line_strategy.CoCreateInstance(CLSID_SimpleDrawLineStrategy);
+         auto offset_line_strategy = WBFL::DManip::SimpleDrawLineStrategy::Create();
          offset_line_strategy->SetColor(RGB(120, 120, 120));
-         offset_line_strategy->SetLineStyle(lsCenterline);
+         offset_line_strategy->SetLineStyle(WBFL::DManip::LineStyleType::Centerline);
 
          doCenterLine2->SetDrawLineStrategy(offset_line_strategy);
 
@@ -2550,15 +2266,10 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
 
    CBridgeModelViewChildFrame* pFrame = GetFrame();
 
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iDisplayList> display_list;
-   dispMgr->FindDisplayList(TEMPORARY_SUPPORT_DISPLAY_LIST,&display_list);
+   auto display_list = m_pDispMgr->FindDisplayList(TEMPORARY_SUPPORT_DISPLAY_LIST);
    display_list->Clear();
 
-   CComPtr<iDisplayList> label_display_list;
-   dispMgr->FindDisplayList(LABEL_DISPLAY_LIST,&label_display_list);
+   auto label_display_list = m_pDispMgr->FindDisplayList(LABEL_DISPLAY_LIST);
 
    CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
    UINT settings = pDoc->GetBridgeEditorSettings();
@@ -2627,30 +2338,25 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
 
       // create a point display object for the left side of the support
       // add a socket to it
-      CComPtr<iPointDisplayObject> doLeft;
-      doLeft.CoCreateInstance(CLSID_PointDisplayObject);
-      doLeft->SetPosition(left,FALSE,FALSE);
+      auto doLeft = WBFL::DManip::PointDisplayObject::Create();
+      doLeft->SetPosition(geomUtil::GetPoint(left),false,false);
       display_list->AddDisplayObject(doLeft);
 
-      CComQIPtr<iConnectable> connectable1(doLeft);
-      CComPtr<iSocket> socket1;
-      connectable1->AddSocket(0,left,&socket1);
+      auto connectable1 = std::dynamic_pointer_cast<WBFL::DManip::iConnectable>(doLeft);
+      auto socket1 = connectable1->AddSocket(0, geomUtil::GetPoint(left));
 
       // create a point display object for the right side of the support
       // add a socket to it
-      CComPtr<iPointDisplayObject> doRight;
-      doRight.CoCreateInstance(CLSID_PointDisplayObject);
-      doRight->SetPosition(right,FALSE,FALSE);
+      auto doRight = WBFL::DManip::PointDisplayObject::Create();
+      doRight->SetPosition(geomUtil::GetPoint(right),false,false);
       display_list->AddDisplayObject(doRight);
 
-      CComQIPtr<iConnectable> connectable2(doRight);
-      CComPtr<iSocket> socket2;
-      connectable2->AddSocket(0,right,&socket2);
+      auto connectable2 = std::dynamic_pointer_cast<WBFL::DManip::iConnectable>(doRight);
+      auto socket2 = connectable2->AddSocket(0,geomUtil::GetPoint(right));
 
       // create a line display object for the centerline
-      CComPtr<iLineDisplayObject> doCenterLine;
-      doCenterLine.CoCreateInstance(CLSID_LineDisplayObject);
-      doCenterLine->SetSelectionType(stAll);
+      auto doCenterLine = WBFL::DManip::LineDisplayObject::Create();
+      doCenterLine->SetSelectionType(WBFL::DManip::SelectionType::All);
       doCenterLine->SetID(tsID);
 
       TemporarySupportDisplayObjectInfo* pInfo = new TemporarySupportDisplayObjectInfo(tsIdx, TEMPORARY_SUPPORT_DISPLAY_LIST);
@@ -2658,23 +2364,17 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
 
       // Register an event sink with the centerline display object so that we can handle double clicks
       // on the temporary supports differently then a general double click
-      CTemporarySupportDisplayObjectEvents* pEvents = new CTemporarySupportDisplayObjectEvents(pTS,pFrame);
-      CComPtr<iDisplayObjectEvents> events;
-      events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));
-
-      CComQIPtr<iDisplayObject,&IID_iDisplayObject> dispObj(doCenterLine);
-      dispObj->RegisterEventSink(events);
+      auto events = std::make_shared<CTemporarySupportDisplayObjectEvents>(pTS,pFrame);
+      doCenterLine->RegisterEventSink(events);
 
       // get the connectors from the line
-      CComQIPtr<iConnector> connector(doCenterLine);
-      CComQIPtr<iPlug> startPlug, endPlug;
-      connector->GetStartPlug(&startPlug);
-      connector->GetEndPlug(&endPlug);
+      auto connector = std::dynamic_pointer_cast<WBFL::DManip::iConnector>(doCenterLine);
+      auto startPlug = connector->GetStartPlug();
+      auto endPlug = connector->GetEndPlug();
 
       // connect the line to the points
-      DWORD dwCookie;
-      connectable1->Connect(0,atByID,startPlug,&dwCookie);
-      connectable2->Connect(0,atByID,endPlug,  &dwCookie);
+      connectable1->Connect(0,WBFL::DManip::AccessType::ByID,startPlug);
+      connectable2->Connect(0,WBFL::DManip::AccessType::ByID,endPlug);
 
       CString strMsg1;
       strMsg1.Format(_T("Double click to edit Temporary Support %d\nRight click for more options."),LABEL_TEMPORARY_SUPPORT(tsIdx));
@@ -2707,12 +2407,10 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
 
       // create line drawing strategies... use a compound strategy so
       // we can draw both the centerline and the pseudo-outline of the pier
-      CComPtr<iCompoundDrawLineStrategy> strategy;
-      strategy.CoCreateInstance(CLSID_CompoundDrawLineStrategy);
+      auto strategy = WBFL::DManip::CompoundDrawLineStrategy::Create();
 
       // strategy for pseudo-outline of the pier
-      CComPtr<iExtRectangleDrawLineStrategy> strategy_pier;
-      strategy_pier.CoCreateInstance(CLSID_ExtRectangleDrawLineStrategy);
+      auto strategy_pier = WBFL::DManip::ExtRectangleDrawLineStrategy::Create();
 
       if ( pTS->GetSupportType() == pgsTypes::ErectionTower )
       {
@@ -2724,7 +2422,7 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
          strategy_pier->SetColor(SB_BORDER_COLOR);
          strategy_pier->SetFillColor(SB_FILL_COLOR);
       }
-      strategy_pier->DoFill(TRUE);
+      strategy_pier->Fill(true);
 
       Float64 support_width = WBFL::Units::ConvertToSysUnits(6.0, WBFL::Units::Measure::Inch); // a reasonable default. No other data
       
@@ -2764,15 +2462,14 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
       // the line display object. this will make the entire pier the clickable part
       // of the display object
       strategy_pier->PerimeterGravityWell(TRUE);
-      CComQIPtr<iGravityWellStrategy> gravity_well(strategy_pier);
+      auto gravity_well = std::dynamic_pointer_cast<WBFL::DManip::iGravityWellStrategy>(strategy_pier);
       doCenterLine->SetGravityWellStrategy(gravity_well);
       strategy->AddStrategy(strategy_pier);
 
       // centerline
-      CComPtr<iExtRectangleDrawLineStrategy> strategy_centerline;
-      strategy_centerline.CoCreateInstance(CLSID_ExtRectangleDrawLineStrategy);
+      auto strategy_centerline = WBFL::DManip::ExtRectangleDrawLineStrategy::Create();
       strategy_centerline->SetColor(BLUE);
-      strategy_centerline->SetLineStyle(lsCenterline);
+      strategy_centerline->SetLineStyle(WBFL::DManip::LineStyleType::Centerline);
       strategy_centerline->SetStartExtension(left_overhang);
       strategy_centerline->SetEndExtension(right_overhang);
       strategy->AddStrategy(strategy_centerline);
@@ -2791,12 +2488,11 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
       if ( settings & IDB_PV_LABEL_PIERS )
       {
          // label
-         CComPtr<iTextBlock> doPierName;
-         doPierName.CoCreateInstance(CLSID_TextBlock);
+         auto doPierName = WBFL::DManip::TextBlock::Create();
 
          CString strText;
          strText.Format(_T("TS %d"),LABEL_TEMPORARY_SUPPORT(tsIdx));
-         doPierName->SetPosition(ahead_point);
+         doPierName->SetPosition(geomUtil::GetPoint(ahead_point));
          doPierName->SetTextAlign(TA_BASELINE | TA_CENTER);
          doPierName->SetText(strText);
          doPierName->SetTextColor(BLACK);
@@ -2810,27 +2506,20 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
          label_display_list->AddDisplayObject(doPierName);
 
          // label temporary support station
-         CComPtr<iEditableUnitValueTextBlock> doStation;
-         doStation.CoCreateInstance(CLSID_EditableUnitValueTextBlock);
-         doStation->SetUnitSystem(docUnitSystem);
-         doStation->SetDisplayUnitGroupName(_T("Station"));
-         doStation->IsStation(true);
-         doStation->SetValue(station);
-         doStation->SetPosition(back_point);
+         auto doStation = WBFL::DManip::EditableStationTextBlock::Create();
+         doStation->SetStation(station);
+         doStation->SetPosition(geomUtil::GetPoint(back_point));
          doStation->SetTextAlign(TA_TOP | TA_CENTER);
          doStation->SetTextColor(BLACK);
          doStation->SetBkMode(OPAQUE);
          doStation->SetAngle(angle);
-         doStation->SetSelectionType(stAll);
+         doStation->SetSelectionType(WBFL::DManip::SelectionType::All);
          
          doStation->SetToolTipText(_T("Click to edit"));
          doStation->SetMaxTipWidth(TOOLTIP_WIDTH);
          doStation->SetTipDisplayTime(TOOLTIP_DURATION);
 
-         CInplaceTemporarySupportStationEditEvents* pTempSupportStationEvents = new CInplaceTemporarySupportStationEditEvents(pBroker,tsIdx);
-         CComPtr<iDisplayObjectEvents> tsStationEvents;
-         tsStationEvents.Attach((iDisplayObjectEvents*)pTempSupportStationEvents->GetInterface(&IID_iDisplayObjectEvents));
-
+         auto tsStationEvents = std::make_shared<CInplaceTemporarySupportStationEditEvents>(pBroker,tsIdx);
          doStation->RegisterEventSink(tsStationEvents);
 
          label_display_list->AddDisplayObject(doStation);
@@ -2849,10 +2538,9 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
          angle = long(1800.*dir/M_PI);
          angle = (900 < angle && angle < 2700 ) ? angle-1800 : angle;
 
-         CComPtr<iTextBlock> doConnection;
-         doConnection.CoCreateInstance(CLSID_TextBlock);
-         doConnection->SetSelectionType(stNone);
-         doConnection->SetPosition(connection_label_point);
+         auto doConnection = WBFL::DManip::TextBlock::Create();
+         doConnection->SetSelectionType(WBFL::DManip::SelectionType::None);
+         doConnection->SetPosition(geomUtil::GetPoint(connection_label_point));
          if ( pTS->GetSupportType() == pgsTypes::ErectionTower )
          {
             doConnection->SetTextColor(TS_LABEL_COLOR);
@@ -2884,11 +2572,7 @@ void CBridgePlanView::BuildClosureJointDisplayObjects()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iDisplayList> display_list;
-   dispMgr->FindDisplayList(CLOSURE_JOINT_DISPLAY_LIST,&display_list);
+   auto display_list = m_pDispMgr->FindDisplayList(CLOSURE_JOINT_DISPLAY_LIST);
    display_list->Clear();
 
    // restart the display object ids
@@ -2958,24 +2642,20 @@ void CBridgePlanView::BuildClosureJointDisplayObjects()
 
             // create display objects for points at ends of segments
             // also add a socket for each point
-            CComPtr<iPointDisplayObject> doEnd1, doEnd2;
-            doEnd1.CoCreateInstance(CLSID_PointDisplayObject);
-            doEnd1->SetPosition(pntEnd2[pgsTypes::Back],FALSE,FALSE); // end of left segment
+            auto doEnd1 = WBFL::DManip::PointDisplayObject::Create();
+            doEnd1->SetPosition(geomUtil::GetPoint(pntEnd2[pgsTypes::Back]),false,false); // end of left segment
             doEnd1->Visible(FALSE);
-            CComQIPtr<iConnectable> connectable_end1(doEnd1);
-            CComPtr<iSocket> socket_end1;
-            connectable_end1->AddSocket(0,pntEnd2[pgsTypes::Back],&socket_end1);
+            auto connectable_end1 = std::dynamic_pointer_cast<WBFL::DManip::iConnectable>(doEnd1);
+            auto socket_end1 = connectable_end1->AddSocket(0,geomUtil::GetPoint(pntEnd2[pgsTypes::Back]));
 
-            doEnd2.CoCreateInstance(CLSID_PointDisplayObject);
-            doEnd2->SetPosition(pntEnd1[pgsTypes::Ahead],FALSE,FALSE); // start of right segment
+            auto doEnd2 = WBFL::DManip::PointDisplayObject::Create();
+            doEnd2->SetPosition(geomUtil::GetPoint(pntEnd1[pgsTypes::Ahead]),false,false); // start of right segment
             doEnd2->Visible(FALSE);
-            CComQIPtr<iConnectable> connectable_end2(doEnd2);
-            CComPtr<iSocket> socket_end2;
-            connectable_end2->AddSocket(0,pntEnd1[pgsTypes::Ahead],&socket_end2);
+            auto connectable_end2 = std::dynamic_pointer_cast<WBFL::DManip::iConnectable>(doEnd2);
+            auto socket_end2 = connectable_end2->AddSocket(0,geomUtil::GetPoint(pntEnd1[pgsTypes::Ahead]));
 
             // create a display object for the closure
-            CComPtr<iLineDisplayObject> doClosure;
-            doClosure.CoCreateInstance(CLSID_LineDisplayObject);
+            auto doClosure = WBFL::DManip::LineDisplayObject::Create();
 
             IDType ID = m_NextClosureJointID++;
             m_ClosureJointIDs.insert( std::make_pair(closureKey,ID) );
@@ -2985,23 +2665,17 @@ void CBridgePlanView::BuildClosureJointDisplayObjects()
 
             // Register an event sink with the display object so that we can handle double clicks
             // differently then a general double click
-            CClosureJointDisplayObjectEvents* pEvents = new CClosureJointDisplayObjectEvents(closureKey,leftSegmentKey,rightSegmentKey,pFrame);
-            CComPtr<iDisplayObjectEvents> events;
-            events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));
-
-            CComQIPtr<iDisplayObject,&IID_iDisplayObject> dispObj(doClosure);
-            dispObj->RegisterEventSink(events);
+            auto events = std::make_shared<CClosureJointDisplayObjectEvents>(closureKey,leftSegmentKey,rightSegmentKey,pFrame);
+            doClosure->RegisterEventSink(events);
 
             // connect the closure display object to the display objects
             // at the segment ends
-            CComQIPtr<iConnector> connector(doClosure);
-            CComQIPtr<iPlug> startPlug, endPlug;
-            connector->GetStartPlug(&startPlug);
-            connector->GetEndPlug(&endPlug);
+            auto connector = std::dynamic_pointer_cast<WBFL::DManip::iConnector>(doClosure);
+            auto startPlug = connector->GetStartPlug();
+            auto endPlug = connector->GetEndPlug();
 
-            DWORD dwCookie;
-            connectable_end1->Connect(0,atByID,startPlug,&dwCookie);
-            connectable_end2->Connect(0,atByID,endPlug,  &dwCookie);
+            connectable_end1->Connect(0,WBFL::DManip::AccessType::ByID,startPlug);
+            connectable_end2->Connect(0,WBFL::DManip::AccessType::ByID,endPlug);
 
 
             display_list->AddDisplayObject(doEnd1);
@@ -3011,12 +2685,9 @@ void CBridgePlanView::BuildClosureJointDisplayObjects()
 
             // drawing strategy
             // use a compound strategy so we can draw both centerline and the top flange rectangle
-            CComPtr<iCompoundDrawLineStrategy> strategy;
-            strategy.CoCreateInstance(CLSID_CompoundDrawLineStrategy);
+            auto strategy = WBFL::DManip::CompoundDrawLineStrategy::Create();
 
-            CComPtr<iExtRectangleDrawLineStrategy> strategy1;
-            strategy1.CoCreateInstance(CLSID_ExtRectangleDrawLineStrategy);
-
+            auto strategy1 = WBFL::DManip::ExtRectangleDrawLineStrategy::Create();
             strategy1->SetLeftOffset(top_width/2);
             strategy1->SetRightOffset(top_width/2);
 
@@ -3036,16 +2707,16 @@ void CBridgePlanView::BuildClosureJointDisplayObjects()
             strategy1->SetEndSkew(end_skew);
 
             strategy1->SetColor(CLOSURE_BORDER_COLOR);
-            strategy1->DoFill(TRUE);
+            strategy1->Fill(true);
             strategy1->SetFillColor(CLOSURE_FILL_COLOR);
 
             // this strategy doubles as a gravity well.. get its interface and give it to 
             // the line display object. this will make the entire top flange the clickable part
             // of the display object
             strategy1->PerimeterGravityWell(TRUE);
-            CComQIPtr<iGravityWellStrategy> gravity_well(strategy1);
+            auto gravity_well = std::dynamic_pointer_cast<WBFL::DManip::iGravityWellStrategy>(strategy1);
             doClosure->SetGravityWellStrategy(gravity_well);
-            doClosure->SetSelectionType(stAll);
+            doClosure->SetSelectionType(WBFL::DManip::SelectionType::All);
 
             strategy->AddStrategy(strategy1);
 
@@ -3070,12 +2741,7 @@ void CBridgePlanView::BuildSpanDisplayObjects()
       return;
    }
 
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iDisplayList> display_list;
-   dispMgr->FindDisplayList(SPAN_DISPLAY_LIST,&display_list);
-
+   auto display_list = m_pDispMgr->FindDisplayList(SPAN_DISPLAY_LIST);
    display_list->Clear();
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
@@ -3095,45 +2761,38 @@ void CBridgePlanView::BuildSpanDisplayObjects()
          poly_shape->AddPoints(points);
 
 
-         CComPtr<iPointDisplayObject> doPnt;
-         doPnt.CoCreateInstance(CLSID_PointDisplayObject);
+         auto doPnt = WBFL::DManip::PointDisplayObject::Create();
          CComPtr<IPoint2d> p;
          points->get_Item(0, &p);
-         doPnt->SetPosition(p, FALSE, FALSE);
+         doPnt->SetPosition(geomUtil::GetPoint(p), false, false);
 
-         CComPtr<iShapeDrawStrategy> strategy;
-         strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
+         auto strategy = WBFL::DManip::ShapeDrawStrategy::Create();
          CComQIPtr<IShape> shape(poly_shape);
-         strategy->SetShape(shape);
+         strategy->SetShape(geomUtil::ConvertShape(shape));
          strategy->SetSolidLineColor(IsStructuralDeck(deckType) ? DECK_BORDER_COLOR : NONSTRUCTURAL_DECK_BORDER_COLOR);
          strategy->SetSolidFillColor(IsStructuralDeck(deckType) ? DECK_FILL_COLOR : NONSTRUCTURAL_DECK_FILL_COLOR);
-         strategy->DoFill(TRUE);
+         strategy->Fill(true);
          doPnt->SetDrawingStrategy(strategy);
 
-         doPnt->SetSelectionType(stAll);
+         doPnt->SetSelectionType(WBFL::DManip::SelectionType::All);
          doPnt->SetID(spanIdx);
 
          SpanDisplayObjectInfo* pInfo = new SpanDisplayObjectInfo(spanIdx, SPAN_DISPLAY_LIST);
          doPnt->SetItemData((void*)pInfo, true);
 
-         CComPtr<iShapeGravityWellStrategy> gravity_well;
-         gravity_well.CoCreateInstance(CLSID_ShapeGravityWellStrategy);
-         gravity_well->SetShape(shape);
+         auto gravity_well = WBFL::DManip::ShapeGravityWellStrategy::Create();
+         gravity_well->SetShape(geomUtil::ConvertShape(shape));
 
          doPnt->SetGravityWellStrategy(gravity_well);
 
-         CBridgePlanViewSpanDisplayObjectEvents* pEvents = new CBridgePlanViewSpanDisplayObjectEvents(spanIdx, m_pFrame);
-         CComPtr<iDisplayObjectEvents> events;
-         events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));
-
-         CComQIPtr<iDisplayObject, &IID_iDisplayObject> dispObj(doPnt);
-         dispObj->RegisterEventSink(events);
+         auto events = std::make_shared<CBridgePlanViewSpanDisplayObjectEvents>(spanIdx, m_pFrame);
+         doPnt->RegisterEventSink(events);
 
          CString strMsg(_T("Double click to edit span.\nRight click for more options."));
 
-         dispObj->SetToolTipText(strMsg);
-         dispObj->SetMaxTipWidth(TOOLTIP_WIDTH);
-         dispObj->SetTipDisplayTime(TOOLTIP_DURATION);
+         doPnt->SetToolTipText(strMsg);
+         doPnt->SetMaxTipWidth(TOOLTIP_WIDTH);
+         doPnt->SetTipDisplayTime(TOOLTIP_DURATION);
 
          display_list->AddDisplayObject(doPnt);
       } // next span
@@ -3157,19 +2816,13 @@ void CBridgePlanView::BuildSlabDisplayObjects()
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
 
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iDisplayList> display_list;
-   dispMgr->FindDisplayList(SLAB_DISPLAY_LIST, &display_list);
-
+   auto display_list = m_pDispMgr->FindDisplayList(SLAB_DISPLAY_LIST);
    display_list->Clear();
 
    // setup the display object for the slab. use a composite object
    // and composite it of the individual deck casting regions
-   CComPtr<iCompositeDisplayObject> doSlab;
-   doSlab.CoCreateInstance(CLSID_CompositeDisplayObject);
-   doSlab->SetSelectionType(stAll);
+   auto doSlab = WBFL::DManip::CompositeDisplayObject::Create();
+   doSlab->SetSelectionType(WBFL::DManip::SelectionType::All);
    doSlab->SetID(DECK_ID);
    display_list->AddDisplayObject(doSlab);
 
@@ -3179,12 +2832,8 @@ void CBridgePlanView::BuildSlabDisplayObjects()
 
    // deal with events at the composite display object level
    CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
-   CBridgePlanViewSlabDisplayObjectEvents* pEvents = new CBridgePlanViewSlabDisplayObjectEvents(pDoc, pBroker, m_pFrame, true);
-   CComPtr<iDisplayObjectEvents> events;
-   events.Attach((iDisplayObjectEvents*)pEvents->GetInterface(&IID_iDisplayObjectEvents));
-
-   CComQIPtr<iDisplayObject, &IID_iDisplayObject> dispObj(doSlab);
-   dispObj->RegisterEventSink(events);
+   auto events = std::make_shared<CBridgePlanViewSlabDisplayObjectEvents>(pDoc, pBroker, m_pFrame, true);
+   doSlab->RegisterEventSink(events);
 
 
    // display object tool tip messages
@@ -3239,25 +2888,22 @@ void CBridgePlanView::BuildSlabDisplayObjects()
          poly_shape.CoCreateInstance(CLSID_PolyShape);
          poly_shape->AddPoints(points);
 
-         CComPtr<iPointDisplayObject> doDeckRegion;
-         doDeckRegion.CoCreateInstance(CLSID_PointDisplayObject);
+         auto doDeckRegion = WBFL::DManip::PointDisplayObject::Create();
          CComPtr<IPoint2d> p;
          points->get_Item(0, &p);
-         doDeckRegion->SetPosition(p, FALSE, FALSE);
-         doDeckRegion->SetSelectionType(stAll);
+         doDeckRegion->SetPosition(geomUtil::GetPoint(p), false, false);
+         doDeckRegion->SetSelectionType(WBFL::DManip::SelectionType::All);
 
-         CComPtr<iShapeDrawStrategy> strategy;
-         strategy.CoCreateInstance(CLSID_ShapeDrawStrategy);
+         auto strategy = WBFL::DManip::ShapeDrawStrategy::Create();
          CComQIPtr<IShape> shape(poly_shape);
-         strategy->SetShape(shape);
+         strategy->SetShape(geomUtil::ConvertShape(shape));
          strategy->SetSolidLineColor(DECK_BORDER_COLOR);
          strategy->SetSolidFillColor(deck_fill_color);
-         strategy->DoFill(TRUE);
+         strategy->Fill(true);
          doDeckRegion->SetDrawingStrategy(strategy);
 
-         CComPtr<iShapeGravityWellStrategy> gravity_well;
-         gravity_well.CoCreateInstance(CLSID_ShapeGravityWellStrategy);
-         gravity_well->SetShape(shape);
+         auto gravity_well = WBFL::DManip::ShapeGravityWellStrategy::Create();
+         gravity_well->SetShape(geomUtil::ConvertShape(shape));
 
          doDeckRegion->SetGravityWellStrategy(gravity_well);
 
@@ -3278,31 +2924,24 @@ void CBridgePlanView::BuildSectionCutDisplayObjects()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
+   auto display_list = m_pDispMgr->FindDisplayList(SECTION_CUT_DISPLAY_LIST);
 
-   CComPtr<iDisplayList> display_list;
-   dispMgr->FindDisplayList(SECTION_CUT_DISPLAY_LIST,&display_list);
+   auto factory = m_pDispMgr->GetDisplayObjectFactory(0);
 
-   CComPtr<iDisplayObjectFactory> factory;
-   dispMgr->GetDisplayObjectFactory(0, &factory);
+   auto disp_obj = factory->Create(CBridgeSectionCutDisplayImpl::ms_Format,nullptr);
 
-   CComPtr<iDisplayObject> disp_obj;
-   factory->Create(CBridgeSectionCutDisplayImpl::ms_Format,nullptr,&disp_obj);
+   auto sink = disp_obj->GetEventSink();
+   
+   disp_obj->SetSelectionType(WBFL::DManip::SelectionType::All);
 
-   CComPtr<iDisplayObjectEvents> sink;
-   disp_obj->GetEventSink(&sink);
-
-   disp_obj->SetSelectionType(stAll);
-
-   CComQIPtr<iPointDisplayObject,&IID_iPointDisplayObject> point_disp(disp_obj);
+   auto point_disp = std::dynamic_pointer_cast<WBFL::DManip::iPointDisplayObject>(disp_obj);
    point_disp->SetMaxTipWidth(TOOLTIP_WIDTH);
    point_disp->SetToolTipText(_T("Drag me along the alignment to move section cut.\nDouble click to enter the cut station\nPress CTRL + -> to move ahead\nPress CTRL + <- to move back"));
    point_disp->SetTipDisplayTime(TOOLTIP_DURATION);
 
    GET_IFACE2_NOCHECK(pBroker,IRoadway,pRoadway); // this interface is simply stored in the section_cut_strategy object.. no usage here
    GET_IFACE2(pBroker,IBridge,pBridge);
-   CComQIPtr<iBridgeSectionCutDrawStrategy,&IID_iBridgeSectionCutDrawStrategy> section_cut_strategy(sink);
+   auto section_cut_strategy = std::dynamic_pointer_cast<iBridgeSectionCutDrawStrategy>(sink);
    section_cut_strategy->Init(m_pFrame, point_disp, pRoadway, pBridge, m_pFrame);
    section_cut_strategy->SetColor(CUT_COLOR);
 
@@ -3337,23 +2976,15 @@ void CBridgePlanView::BuildNorthArrowDisplayObjects()
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
 
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iDisplayList> display_list;
-   dispMgr->FindDisplayList(NORTH_ARROW_DISPLAY_LIST,&display_list);
+   auto display_list = m_pDispMgr->FindDisplayList(NORTH_ARROW_DISPLAY_LIST);
    display_list->Clear();
 
 
-   CComPtr<iNorthArrow> doNorth;
-   doNorth.CoCreateInstance(CLSID_NorthArrow);
+   auto doNorth = WBFL::DManip::NorthArrow::Create();
 
-   CComPtr<iCoordinateMap> map;
-   dispMgr->GetCoordinateMap(&map);
-
-   CComQIPtr<iMapping> mapping(map);
-   Float64 cx,cy,angle;
-   mapping->GetRotation(&cx,&cy,&angle);
+   auto map = m_pDispMgr->GetCoordinateMap();
+   auto mapping = std::dynamic_pointer_cast<const WBFL::DManip::iMapping>(map);
+   auto [center,angle] = mapping->GetRotation();
    Float64 direction = PI_OVER_2 + angle;
    doNorth->SetDirection(direction);
 
@@ -3368,12 +2999,8 @@ void CBridgePlanView::BuildDiaphragmDisplayObjects()
 
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iDisplayList> display_list;
-   dispMgr->FindDisplayList(DIAPHRAGM_DISPLAY_LIST,&display_list);
+   
+   auto display_list = m_pDispMgr->FindDisplayList(DIAPHRAGM_DISPLAY_LIST);
    display_list->Clear();
 
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -3430,40 +3057,32 @@ void CBridgePlanView::BuildDiaphragmDisplayObjects()
                   pAlignment->GetPoint(station, offset, normal, pgsTypes::pcGlobal, &pntRight);
 
                   // create a point on the left side of the diaphragm
-                  CComPtr<iPointDisplayObject> doLeft;
-                  doLeft.CoCreateInstance(CLSID_PointDisplayObject);
-                  doLeft->SetPosition(pntLeft, FALSE, FALSE);
-                  CComQIPtr<iConnectable> connectable1(doLeft);
-                  CComPtr<iSocket> socket1;
-                  connectable1->AddSocket(0, pntLeft, &socket1);
+                  auto doLeft = WBFL::DManip::PointDisplayObject::Create();
+                  doLeft->SetPosition(geomUtil::GetPoint(pntLeft), false, false);
+                  auto connectable1 = std::dynamic_pointer_cast<WBFL::DManip::iConnectable>(doLeft);
+                  auto socket1 = connectable1->AddSocket(0, geomUtil::GetPoint(pntLeft));
 
                   // create a point on the right side of the diaphragm
-                  CComPtr<iPointDisplayObject> doRight;
-                  doRight.CoCreateInstance(CLSID_PointDisplayObject);
-                  doRight->SetPosition(pntRight, FALSE, FALSE);
-                  CComQIPtr<iConnectable> connectable2(doRight);
-                  CComPtr<iSocket> socket2;
-                  connectable2->AddSocket(0, pntRight, &socket2);
+                  auto doRight = WBFL::DManip::PointDisplayObject::Create();
+                  doRight->SetPosition(geomUtil::GetPoint(pntRight), false, false);
+                  auto connectable2 = std::dynamic_pointer_cast<WBFL::DManip::iConnectable>(doRight);
+                  auto socket2 = connectable2->AddSocket(0, geomUtil::GetPoint(pntRight));
 
                   // create a line for the diaphragm
-                  CComPtr<iLineDisplayObject> doDiaphragmLine;
-                  doDiaphragmLine.CoCreateInstance(CLSID_LineDisplayObject);
+                  auto doDiaphragmLine = WBFL::DManip::LineDisplayObject::Create();
 
-                  CComQIPtr<iConnector> connector(doDiaphragmLine);
-                  CComQIPtr<iPlug> startPlug, endPlug;
-                  connector->GetStartPlug(&startPlug);
-                  connector->GetEndPlug(&endPlug);
+                  auto connector = std::dynamic_pointer_cast<WBFL::DManip::iConnector>(doDiaphragmLine);
+                  auto startPlug = connector->GetStartPlug();
+                  auto endPlug = connector->GetEndPlug();
 
                   // connect the line to the points
-                  DWORD dwCookie;
-                  connectable1->Connect(0, atByID, startPlug, &dwCookie);
-                  connectable2->Connect(0, atByID, endPlug, &dwCookie);
+                  connectable1->Connect(0, WBFL::DManip::AccessType::ByID, startPlug);
+                  connectable2->Connect(0, WBFL::DManip::AccessType::ByID, endPlug);
 
-                  CComPtr<iExtRectangleDrawLineStrategy> strategy;
-                  strategy.CoCreateInstance(CLSID_ExtRectangleDrawLineStrategy);
+                  auto strategy = WBFL::DManip::ExtRectangleDrawLineStrategy::Create();
                   strategy->SetColor(DIAPHRAGM_BORDER_COLOR);
                   strategy->SetFillColor(DIAPHRAGM_FILL_COLOR);
-                  strategy->DoFill(TRUE);
+                  strategy->Fill(true);
 
                   Float64 width = (left_diaphragm.T + right_diaphragm.T) / 2;
                   strategy->SetLeftOffset(width / 2);
@@ -3483,8 +3102,7 @@ void CBridgePlanView::BuildDiaphragmDisplayObjects()
                   doDiaphragmLine->SetTipDisplayTime(TOOLTIP_DURATION);
                   doDiaphragmLine->SetToolTipText(strTip);
 
-                  CComQIPtr<iDisplayObject> dispObj(doDiaphragmLine);
-                  display_list->AddDisplayObject(dispObj);
+                  display_list->AddDisplayObject(doDiaphragmLine);
                }
 	         }
          }
@@ -3494,14 +3112,8 @@ void CBridgePlanView::BuildDiaphragmDisplayObjects()
 
 void CBridgePlanView::UpdateDrawingScale()
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iDisplayList> title_display_list;
-   dispMgr->FindDisplayList(TITLE_DISPLAY_LIST,&title_display_list);
-
-   CComPtr<iDisplayList> na_display_list;
-   dispMgr->FindDisplayList(NORTH_ARROW_DISPLAY_LIST,&na_display_list);
+   auto title_display_list = m_pDispMgr->FindDisplayList(TITLE_DISPLAY_LIST);
+   auto na_display_list = m_pDispMgr->FindDisplayList(NORTH_ARROW_DISPLAY_LIST);
 
    if ( title_display_list == nullptr )
    {
@@ -3526,13 +3138,10 @@ void CBridgePlanView::UpdateDrawingScale()
 
 void CBridgePlanView::ClearSelection()
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   dispMgr->ClearSelectedObjects();
+   m_pDispMgr->ClearSelectedObjects();
 }
 
-DROPEFFECT CBridgePlanView::CanDrop(COleDataObject* pDataObject,DWORD dwKeyState,IPoint2d* point)
+DROPEFFECT CBridgePlanView::CanDrop(COleDataObject* pDataObject,DWORD dwKeyState, const WBFL::Geometry::Point2d& point)
 {
    // This override has to determine if the thing being dragged over it can
    // be dropped. In order to do that, it must unpackage the OleDataObject.
@@ -3547,8 +3156,7 @@ DROPEFFECT CBridgePlanView::CanDrop(COleDataObject* pDataObject,DWORD dwKeyState
    {
       // need to peek at our object first and make sure it's coming from the local process
       // this is ugly because it breaks encapsulation of CBridgeSectionCutDisplayImpl
-      CComPtr<iDragDataSource> source;               
-      ::CoCreateInstance(CLSID_DragDataSource,nullptr,CLSCTX_ALL,IID_iDragDataSource,(void**)&source);
+      auto source = WBFL::DManip::DragDataSource::Create();
       source->SetDataObject(pDataObject);
       source->PrepareFormat(CBridgeSectionCutDisplayImpl::ms_Format);
 
@@ -3568,7 +3176,7 @@ DROPEFFECT CBridgePlanView::CanDrop(COleDataObject* pDataObject,DWORD dwKeyState
    return DROPEFFECT_NONE;
 }
 
-void CBridgePlanView::OnDropped(COleDataObject* pDataObject,DROPEFFECT dropEffect,IPoint2d* point)
+void CBridgePlanView::OnDropped(COleDataObject* pDataObject,DROPEFFECT dropEffect, const WBFL::Geometry::Point2d& point)
 {
    AfxMessageBox(_T("CBridgePlanView::OnDropped"));
 }
@@ -3736,16 +3344,9 @@ std::_tstring CBridgePlanView::GetFullConnectionString(const CTemporarySupportDa
 
 void CBridgePlanView::OnZoom()
 {
-   CComPtr<iDisplayMgr> dispMgr;
-   GetDisplayMgr(&dispMgr);
-
-   CComPtr<iTaskFactory> taskFactory;
-   dispMgr->GetTaskFactory(&taskFactory);
-
-   CComPtr<iTask> task;
-   taskFactory->CreateZoomTask(this,nullptr,LIGHTSTEELBLUE,&task);
-
-   dispMgr->SetTask(task);
+   auto taskFactory = m_pDispMgr->GetTaskFactory();
+   auto task = taskFactory->CreateZoomTask(this,nullptr,LIGHTSTEELBLUE);
+   m_pDispMgr->SetTask(task);
 }
 
 void CBridgePlanView::OnScaleToFit()

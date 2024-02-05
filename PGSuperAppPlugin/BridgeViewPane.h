@@ -25,7 +25,7 @@
 // BridgeViewPane.h : header file
 //
 //
-#include <DManip\DManip.h>
+#include <DManip/DManip.h>
 #include "BridgeModelViewChildFrame.h"
 
 /////////////////////////////////////////////////////////////////////////////

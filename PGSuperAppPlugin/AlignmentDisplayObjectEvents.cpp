@@ -28,52 +28,31 @@
 #include "AlignmentDisplayObjectEvents.h"
 #include "BridgeSectionCutDisplayImpl.h"
 #include "BridgeModelViewChildFrame.h"
-#include "mfcdual.h"
 #include "PGSuperDocBase.h"
 #include <IFace\Bridge.h>
 #include <IFace\EditByUI.h>
-#include <WBFLDManip.h>
 
 #include <PgsExt\BridgeDescription2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <DManip/DisplayObject.h>
+#include <DManip/DisplayList.h>
+#include <DManip/DisplayView.h>
+#include <DManip/DragDataImpl.h>
 
-/////////////////////////////////////////////////////////////////////////////
-// CAlignmentDisplayObjectEvents
+using namespace WBFL::DManip;
 
-CAlignmentDisplayObjectEvents::CAlignmentDisplayObjectEvents(IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,ViewType viewType,iDisplayObject* pDO)
+CAlignmentDisplayObjectEvents::CAlignmentDisplayObjectEvents(IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,ViewType viewType,std::shared_ptr<iDisplayObject> pDO)
 {
    m_ViewType = viewType;
    m_pBroker = pBroker;
    m_pFrame = pFrame;
-   
-   if ( pDO )
-   {
-      m_DispObj.Attach(pDO);
-   }
+
+   m_DispObj = pDO;
 }
 
 CAlignmentDisplayObjectEvents::~CAlignmentDisplayObjectEvents()
 {
 }
-
-void CAlignmentDisplayObjectEvents::OnFinalRelease()
-{
-   m_DispObj.Detach();
-   CCmdTarget::OnFinalRelease();
-}
-
-BEGIN_INTERFACE_MAP(CAlignmentDisplayObjectEvents, CCmdTarget)
-	INTERFACE_PART(CAlignmentDisplayObjectEvents, IID_iDisplayObjectEvents, Events)
-   INTERFACE_PART(CAlignmentDisplayObjectEvents,IID_iDropSite,DropSite)
-END_INTERFACE_MAP()
-
-DELEGATE_CUSTOM_INTERFACE(CAlignmentDisplayObjectEvents,Events);
-DELEGATE_CUSTOM_INTERFACE(CAlignmentDisplayObjectEvents,DropSite);
 
 void CAlignmentDisplayObjectEvents::EditAlignment()
 {
@@ -84,13 +63,11 @@ void CAlignmentDisplayObjectEvents::EditAlignment()
 
 /////////////////////////////////////////////////////////////////////////////
 // CAlignmentDisplayObjectEvents message handlers
-STDMETHODIMP_(bool) CAlignmentDisplayObjectEvents::XEvents::OnLButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CAlignmentDisplayObjectEvents::OnLButtonDblClk(std::shared_ptr<iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CAlignmentDisplayObjectEvents,Events);
-
    if (pDO->IsSelected())
    {
-      pThis->EditAlignment();
+      EditAlignment();
       return true;
    }
    else
@@ -99,88 +76,79 @@ STDMETHODIMP_(bool) CAlignmentDisplayObjectEvents::XEvents::OnLButtonDblClk(iDis
    }
 }
 
-STDMETHODIMP_(bool) CAlignmentDisplayObjectEvents::XEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CAlignmentDisplayObjectEvents::OnLButtonDown(std::shared_ptr<iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CAlignmentDisplayObjectEvents,Events);
    return true;
 }
 
-STDMETHODIMP_(bool) CAlignmentDisplayObjectEvents::XEvents::OnLButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CAlignmentDisplayObjectEvents::OnLButtonUp(std::shared_ptr<iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CAlignmentDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CAlignmentDisplayObjectEvents::XEvents::OnRButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CAlignmentDisplayObjectEvents::OnRButtonDblClk(std::shared_ptr<iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CAlignmentDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CAlignmentDisplayObjectEvents::XEvents::OnRButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CAlignmentDisplayObjectEvents::OnRButtonDown(std::shared_ptr<iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CAlignmentDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CAlignmentDisplayObjectEvents::XEvents::OnRButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CAlignmentDisplayObjectEvents::OnRButtonUp(std::shared_ptr<iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CAlignmentDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CAlignmentDisplayObjectEvents::XEvents::OnMouseMove(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CAlignmentDisplayObjectEvents::OnMouseMove(std::shared_ptr<iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CAlignmentDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CAlignmentDisplayObjectEvents::XEvents::OnMouseWheel(iDisplayObject* pDO,UINT nFlags,short zDelta,CPoint point)
+bool CAlignmentDisplayObjectEvents::OnMouseWheel(std::shared_ptr<iDisplayObject> pDO,UINT nFlags,short zDelta,const POINT& point)
 {
-   METHOD_PROLOGUE(CAlignmentDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CAlignmentDisplayObjectEvents::XEvents::OnKeyDown(iDisplayObject* pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
+bool CAlignmentDisplayObjectEvents::OnKeyDown(std::shared_ptr<iDisplayObject> pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-   METHOD_PROLOGUE(CAlignmentDisplayObjectEvents,Events);
-
    if ( nChar == VK_RETURN )
    {
-      pThis->EditAlignment();
+      EditAlignment();
       return true;
    }
 
-   if (pThis->m_ViewType == BridgePlan || pThis->m_ViewType == BridgeSection)
+   if (m_ViewType == BridgePlan || m_ViewType == BridgeSection)
    {
       if ( nChar == VK_DOWN )
       {
-         pThis->m_pFrame->SelectGirder(CSegmentKey(0,0,0));
+         m_pFrame->SelectGirder(CSegmentKey(0,0,0));
          return true;
       }
       else if ( nChar == VK_UP )
       {
-         GET_IFACE2(pThis->m_pBroker,IBridgeDescription,pIBridgeDesc);
+         GET_IFACE2(m_pBroker,IBridgeDescription,pIBridgeDesc);
          const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
          GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
          GirderIndexType nGirders = pBridgeDesc->GetGirderGroup(nGroups-1)->GetGirderCount();
          SegmentIndexType nSegments = pBridgeDesc->GetGirderGroup(nGroups-1)->GetGirder(nGirders-1)->GetSegmentCount();
-         pThis->m_pFrame->SelectGirder(CSegmentKey(nGroups-1,nGirders-1,nSegments-1));
+         m_pFrame->SelectGirder(CSegmentKey(nGroups-1,nGirders-1,nSegments-1));
 
          return true;
       }
       else if ( nChar == VK_LEFT )
       {
-         GET_IFACE2(pThis->m_pBroker,IBridgeDescription,pIBridgeDesc);
+         GET_IFACE2(m_pBroker,IBridgeDescription,pIBridgeDesc);
          const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-         pThis->m_pFrame->SelectPier(pBridgeDesc->GetPierCount()-1);
+         m_pFrame->SelectPier(pBridgeDesc->GetPierCount()-1);
          return true;
       }
       else if ( nChar == VK_RIGHT )
       {
-         GET_IFACE2(pThis->m_pBroker,IBridgeDescription,pIBridgeDesc);
+         GET_IFACE2(m_pBroker,IBridgeDescription,pIBridgeDesc);
          const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-         pThis->m_pFrame->SelectPier(0);
+         m_pFrame->SelectPier(0);
          return true;
       }
    }
@@ -189,23 +157,19 @@ STDMETHODIMP_(bool) CAlignmentDisplayObjectEvents::XEvents::OnKeyDown(iDisplayOb
    return false;
 }
 
-STDMETHODIMP_(bool) CAlignmentDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObject* pDO,CWnd* pWnd,CPoint point)
+bool CAlignmentDisplayObjectEvents::OnContextMenu(std::shared_ptr<iDisplayObject> pDO,CWnd* pWnd,const POINT& point)
 {
-   METHOD_PROLOGUE(CAlignmentDisplayObjectEvents,Events);
    if ( pDO->IsSelected() )
    {
-      CComPtr<iDisplayList> pList;
-      pDO->GetDisplayList(&pList);
+      auto pList = pDO->GetDisplayList();
+      auto pDispMgr = pList->GetDisplayMgr();
+      auto pView = pDispMgr->GetView();
 
-      CComPtr<iDisplayMgr> pDispMgr;
-      pList->GetDisplayMgr(&pDispMgr);
-
-      CDisplayView* pView = pDispMgr->GetView();
       CPGSDocBase* pDoc = (CPGSDocBase*)pView->GetDocument();
 
       CEAFMenu* pMenu;
 
-      if ( pThis->m_ViewType == BridgePlan || pThis->m_ViewType == BridgeSection )
+      if ( m_ViewType == BridgePlan || m_ViewType == BridgeSection )
       {
          const std::map<IDType,IBridgePlanViewEventCallback*>& callbacks = pDoc->GetBridgePlanViewCallbacks();
 
@@ -249,7 +213,7 @@ STDMETHODIMP_(bool) CAlignmentDisplayObjectEvents::XEvents::OnContextMenu(iDispl
       bool bResult = false;
       if ( 0 < pMenu->GetMenuItemCount() )
       {
-         pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);
+         pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,m_pFrame);
          bResult = true;
       }
 
@@ -261,48 +225,39 @@ STDMETHODIMP_(bool) CAlignmentDisplayObjectEvents::XEvents::OnContextMenu(iDispl
    return false;
 }
 
-STDMETHODIMP_(void) CAlignmentDisplayObjectEvents::XEvents::OnChanged(iDisplayObject* pDO)
+void CAlignmentDisplayObjectEvents::OnChanged(std::shared_ptr<iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CAlignmentDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CAlignmentDisplayObjectEvents::XEvents::OnDragMoved(iDisplayObject* pDO,ISize2d* offset)
+void CAlignmentDisplayObjectEvents::OnDragMoved(std::shared_ptr<iDisplayObject> pDO,const WBFL::Geometry::Size2d& offset)
 {
-   METHOD_PROLOGUE(CAlignmentDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CAlignmentDisplayObjectEvents::XEvents::OnMoved(iDisplayObject* pDO)
+void CAlignmentDisplayObjectEvents::OnMoved(std::shared_ptr<iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CAlignmentDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CAlignmentDisplayObjectEvents::XEvents::OnCopied(iDisplayObject* pDO)
+void CAlignmentDisplayObjectEvents::OnCopied(std::shared_ptr<iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CAlignmentDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CAlignmentDisplayObjectEvents::XEvents::OnSelect(iDisplayObject* pDO)
+void CAlignmentDisplayObjectEvents::OnSelect(std::shared_ptr<iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CAlignmentDisplayObjectEvents,Events);
-   pThis->m_pFrame->SelectAlignment();
+   m_pFrame->SelectAlignment();
 }
 
-STDMETHODIMP_(void) CAlignmentDisplayObjectEvents::XEvents::OnUnselect(iDisplayObject* pDO)
+void CAlignmentDisplayObjectEvents::OnUnselect(std::shared_ptr<iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CAlignmentDisplayObjectEvents,Events);
 }
 
 
-STDMETHODIMP_(DROPEFFECT) CAlignmentDisplayObjectEvents::XDropSite::CanDrop(COleDataObject* pDataObject,DWORD dwKeyState,IPoint2d* point)
+DROPEFFECT CAlignmentDisplayObjectEvents::CanDrop(COleDataObject* pDataObject,DWORD dwKeyState,const WBFL::Geometry::Point2d& point)
 {
-   METHOD_PROLOGUE(CAlignmentDisplayObjectEvents,DropSite);
-
    if ( pDataObject->IsDataAvailable(CBridgeSectionCutDisplayImpl::ms_Format) )
    {
       // need to peek at our object first and make sure it's coming from the local process
       // this is ugly because it breaks encapsulation of CBridgeSectionCutDisplayImpl
-      CComPtr<iDragDataSource> source;               
-      ::CoCreateInstance(CLSID_DragDataSource,nullptr,CLSCTX_ALL,IID_iDragDataSource,(void**)&source);
+      auto source = WBFL::DManip::DragDataSource::Create();
       source->SetDataObject(pDataObject);
       source->PrepareFormat(CBridgeSectionCutDisplayImpl::ms_Format);
 
@@ -322,32 +277,25 @@ STDMETHODIMP_(DROPEFFECT) CAlignmentDisplayObjectEvents::XDropSite::CanDrop(COle
    return DROPEFFECT_NONE;
 }
 
-STDMETHODIMP_(void) CAlignmentDisplayObjectEvents::XDropSite::OnDropped(COleDataObject* pDataObject,DROPEFFECT dropEffect,IPoint2d* point)
+void CAlignmentDisplayObjectEvents::OnDropped(COleDataObject* pDataObject,DROPEFFECT dropEffect,const WBFL::Geometry::Point2d& point)
 {
-   METHOD_PROLOGUE(CAlignmentDisplayObjectEvents,DropSite);
-
    // Something was dropped on a display object that represents a Alignment
    AfxMessageBox(_T("Alignment drop"));
 }
 
-STDMETHODIMP_(void) CAlignmentDisplayObjectEvents::XDropSite::SetDisplayObject(iDisplayObject* pDO)
+void CAlignmentDisplayObjectEvents::SetDisplayObject(std::weak_ptr<iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CAlignmentDisplayObjectEvents,DropSite);
-   pThis->m_DispObj.Detach();
-   pThis->m_DispObj.Attach(pDO);
+   m_DispObj = pDO;
 }
 
-STDMETHODIMP_(void) CAlignmentDisplayObjectEvents::XDropSite::GetDisplayObject(iDisplayObject** dispObj)
+std::shared_ptr<iDisplayObject> CAlignmentDisplayObjectEvents::GetDisplayObject()
 {
-   METHOD_PROLOGUE(CAlignmentDisplayObjectEvents,DropSite);
-   *dispObj = pThis->m_DispObj;
-   (*dispObj)->AddRef();
+   return m_DispObj.lock();
 }
 
-STDMETHODIMP_(void) CAlignmentDisplayObjectEvents::XDropSite::Highlite(CDC* pDC,BOOL bHighlite)
+void CAlignmentDisplayObjectEvents::Highlight(CDC* pDC, BOOL bHighlite)
 {
-   METHOD_PROLOGUE(CAlignmentDisplayObjectEvents,DropSite);
-   pThis->m_DispObj->Highlite(pDC,bHighlite);
+   m_DispObj.lock()->Highlight(pDC, bHighlite);
 }
 
 

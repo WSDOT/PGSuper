@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <DManip\DManip.h>
+#include <DManip/DisplayObjectEvents.h>
 interface IBroker;
 class CBridgeModelViewChildFrame;
 
@@ -30,37 +30,28 @@ class CBridgeModelViewChildFrame;
 #define RIGHT_TRAFFIC_BARRIER_ID 1
 
 
-/////////////////////////////////////////////////////////////////////////////
-// CTrafficBarrierDisplayObjectEvents command target
-
-class CTrafficBarrierDisplayObjectEvents : public CCmdTarget
+class CTrafficBarrierDisplayObjectEvents : public WBFL::DManip::iDisplayObjectEvents
 {
 public:
    CTrafficBarrierDisplayObjectEvents(IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,pgsTypes::TrafficBarrierOrientation orientation);
    ~CTrafficBarrierDisplayObjectEvents();
 
-protected:
-
-	DECLARE_INTERFACE_MAP()
-
-   BEGIN_INTERFACE_PART(Events,iDisplayObjectEvents)
-      STDMETHOD_(bool,OnLButtonDblClk)(iDisplayObject* pDO,UINT nFlags,CPoint point);
-      STDMETHOD_(bool,OnLButtonDown)(iDisplayObject* pDO,UINT nFlags,CPoint point);
-      STDMETHOD_(bool,OnLButtonUp)(iDisplayObject* pDO,UINT nFlags,CPoint point);
-      STDMETHOD_(bool,OnRButtonDblClk)(iDisplayObject* pDO,UINT nFlags,CPoint point);
-      STDMETHOD_(bool,OnRButtonDown)(iDisplayObject* pDO,UINT nFlags,CPoint point);
-      STDMETHOD_(bool,OnRButtonUp)(iDisplayObject* pDO,UINT nFlags,CPoint point);
-      STDMETHOD_(bool,OnMouseMove)(iDisplayObject* pDO,UINT nFlags,CPoint point);
-      STDMETHOD_(bool,OnMouseWheel)(iDisplayObject* pDO,UINT nFlags,short zDelta,CPoint point);
-      STDMETHOD_(bool,OnKeyDown)(iDisplayObject* pDO,UINT nChar, UINT nRepCnt, UINT nFlags);
-      STDMETHOD_(bool,OnContextMenu)(iDisplayObject* pDO,CWnd* pWnd,CPoint point);
-      STDMETHOD_(void,OnChanged)(iDisplayObject* pDO);
-      STDMETHOD_(void,OnDragMoved)(iDisplayObject* pDO,ISize2d* offset);
-      STDMETHOD_(void,OnMoved)(iDisplayObject* pDO);
-      STDMETHOD_(void,OnCopied)(iDisplayObject* pDO);
-      STDMETHOD_(void,OnSelect)(iDisplayObject* pDO);
-      STDMETHOD_(void,OnUnselect)(iDisplayObject* pDO);
-   END_INTERFACE_PART(Events)
+   virtual bool OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnLButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnLButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnRButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnRButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnRButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnMouseMove(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnMouseWheel(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, short zDelta, const POINT& point) override;
+   virtual bool OnKeyDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nChar, UINT nRepCnt, UINT nFlags) override;
+   virtual bool OnContextMenu(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, CWnd* pWnd, const POINT& point) override;
+   virtual void OnChanged(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
+   virtual void OnDragMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, const WBFL::Geometry::Size2d& offset) override;
+   virtual void OnMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
+   virtual void OnCopied(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
+   virtual void OnSelect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
+   virtual void OnUnselect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
 
 private:
    IBroker* m_pBroker;
@@ -71,8 +62,3 @@ private:
    void SelectPrev();
    void SelectNext();
 };
-
-/////////////////////////////////////////////////////////////////////////////
-
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Visual C++ will insert additional declarations immediately before the previous line.

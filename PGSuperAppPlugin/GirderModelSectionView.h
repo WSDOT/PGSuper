@@ -20,16 +20,9 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_GIRDERMODELSECTIONVIEW_H__E2B376CA_2D38_11D2_8EB4_006097DF3C68__INCLUDED_)
-#define AFX_GIRDERMODELSECTIONVIEW_H__E2B376CA_2D38_11D2_8EB4_006097DF3C68__INCLUDED_
-
-#if _MSC_VER >= 1000
 #pragma once
-#endif // _MSC_VER >= 1000
-// GirderModelSectionView.h : header file
 
-#include <DManip\DisplayView.h>
-#include <DManip\LineStyles.h>
+#include <DManip/DManip.h>
 
 // Forward declarations
 class CGirderModelChildFrame;
@@ -94,17 +87,17 @@ private:
 
    void CreateDisplayLists();
    void UpdateDisplayObjects();
-   void BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi, iDisplayMgr* pDispMgr);
-   void BuildSectionDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi, iDisplayMgr* pDispMgr);
-   void BuildLongitudinalJointDisplayObject(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi, iDisplayMgr* pDispMgr);
-   void BuildStrandDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi,iDisplayMgr* pDispMgr);
-   void GetDuctDisplayObject(IntervalIndexType intervalIdx, IntervalIndexType ptIntervalIdx, IPoint2d* pntDuct, Float64 ductDiameter, StrandIndexType nStrands, COLORREF fillColor,COLORREF borderColor,iDisplayObject** ppDO);
-   void BuildDuctDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi,iDisplayMgr* pDispMgr);
-   void BuildLongReinfDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi,iDisplayMgr* pDispMgr);
-   void BuildStrandCGDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi, iDisplayMgr* pDispMgr);
-   void BuildCGDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi, iDisplayMgr* pDispMgr);
-   void BuildDimensionDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi,iDisplayMgr* pDispMgr);
-   void CreateLineDisplayObject(iDisplayList* pDL, IPoint2d* pStart, IPoint2d* pEnd, COLORREF color, LineStyleType lineStyle);
+   void BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi);
+   void BuildSectionDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi);
+   void BuildLongitudinalJointDisplayObject(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi);
+   void BuildStrandDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi);
+   std::shared_ptr<WBFL::DManip::iDisplayObject> GetDuctDisplayObject(IntervalIndexType intervalIdx, IntervalIndexType ptIntervalIdx, const WBFL::Geometry::Point2d& pntDuct, Float64 ductDiameter, StrandIndexType nStrands, COLORREF fillColor,COLORREF borderColor);
+   void BuildDuctDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi);
+   void BuildLongReinfDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi);
+   void BuildStrandCGDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi);
+   void BuildCGDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi);
+   void BuildDimensionDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi);
+   void CreateLineDisplayObject(std::shared_ptr<WBFL::DManip::iDisplayList> pDL, const WBFL::Geometry::Point2d& start, const WBFL::Geometry::Point2d& end, COLORREF color, WBFL::DManip::LineStyleType lineStyle);
 
    virtual void UpdateDrawingScale();
 
@@ -124,4 +117,3 @@ private:
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Developer Studio will insert additional declarations immediately before the previous line.
 
-#endif // !defined(AFX_GIRDERMODELSECTIONVIEW_H__E2B376CA_2D38_11D2_8EB4_006097DF3C68__INCLUDED_)
