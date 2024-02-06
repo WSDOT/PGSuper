@@ -268,7 +268,7 @@ void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType 
     limitForces->GetRotation(lastIntervalIdx, pgsTypes::ServiceI, poi, maxBAT, 
         true, true, true, true, true, &pMin, &pMax);
 
-    pProductForces->GetLiveLoadRotation(lastIntervalIdx, pgsTypes::lltDesign, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig);
+    
 
     const CSegmentKey& segmentKey(poi.GetSegmentKey());
     IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
@@ -315,24 +315,24 @@ void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType 
 
     pDetails->staticRotation = pDetails->totalRotation - pDetails->cyclicRotation;
 
-
+    pProductForces->GetLiveLoadRotation(lastIntervalIdx, pgsTypes::lltDesign, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig);
     pDetails->maxDesignLLrotation = skewFactor * max;
-    pDetails->minDesignLLrotation = skewFactor * min;
     pDetails->maxConfig = maxConfig;
+    pProductForces->GetLiveLoadRotation(lastIntervalIdx, pgsTypes::lltDesign, poi, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig);
+    pDetails->minDesignLLrotation = skewFactor * min;
     pDetails->minConfig = minConfig;
 
-    pProductForces->GetLiveLoadRotation(lastIntervalIdx, pgsTypes::lltPedestrian, poi, minBAT, bIncludeImpact, true, &min, &max);
-
-    pDetails->maxPedRotation = skewFactor * max;
+    
 
     pProductForces->GetLiveLoadRotation(lastIntervalIdx, pgsTypes::lltPedestrian, poi, maxBAT, bIncludeImpact, true, &min, &max);
+    pDetails->maxPedRotation = skewFactor * max;
 
+    pProductForces->GetLiveLoadRotation(lastIntervalIdx, pgsTypes::lltPedestrian, poi, minBAT, bIncludeImpact, true, &min, &max);
     pDetails->minPedRotation = skewFactor * min;
 
     pDetails->erectedSegmentRotation = skewFactor * pProductForces->GetRotation(erectSegmentIntervalIdx, pgsTypes::pftGirder, poi, maxBAT, rtCumulative, false);
 
     pDetails->maxShearKeyRotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftShearKey, poi, maxBAT, rtCumulative, false);
-
 
     pDetails->maxGirderRotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftGirder, poi, minBAT, rtCumulative, false);
     pDetails->diaphragmRotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftDiaphragm, poi, maxBAT, rtCumulative, false);

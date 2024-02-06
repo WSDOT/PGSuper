@@ -1095,7 +1095,7 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
                     (*p_table)(row, col++) << Reaction.SetValue(details.maxUserDWReaction);
                     if (bDesign)
                     {
-                        (*p_table)(row, col++) << Reaction.SetValue(details.maxUserDWReaction);
+                        (*p_table)(row, col++) << Reaction.SetValue(details.maxUserLLReaction);
                     }
                     
                 }
