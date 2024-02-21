@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2023  Washington State Department of Transportation
+// Copyright © 1999-2024  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,229 +28,179 @@
 #include "PGSuperApp.h"
 #include "PGSuperDoc.h"
 
-#include "mfcdual.h"
 #include "SectionCutDisplayImpl.h"
 #include "BridgeSectionCutDisplayImpl.h"
 #include "PointLoadDrawStrategyImpl.h"
 #include "DistributedLoadDrawStrategyImpl.h"
 #include "MomentLoadDrawStrategyImpl.h"
-#include <WBFLDManip.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <DManip/PointDisplayObjectImpl.h>
+#include <DManip/DisplayObjectFactoryImpl.h>
+#include <DManip/DragDataImpl.h>
 
-/////////////////////////////////////////////////////////////////////////////
-// CDisplayObjectFactory
 
 CDisplayObjectFactory::CDisplayObjectFactory(CPGSDocBase* pDoc)
 {
    m_pDoc = pDoc;
-   ::CoCreateInstance(CLSID_DisplayObjectFactory,nullptr,CLSCTX_ALL,IID_iDisplayObjectFactory,(void**)&m_Factory);
+   m_Factory = WBFL::DManip::DisplayObjectFactory::Create();
 }
-
-
-CDisplayObjectFactory::~CDisplayObjectFactory()
-{
-}
-
-
-
-
-BEGIN_INTERFACE_MAP(CDisplayObjectFactory,CCmdTarget)
-   INTERFACE_PART(CDisplayObjectFactory,IID_iDisplayObjectFactory,Factory)
-END_INTERFACE_MAP()
-
-DELEGATE_CUSTOM_INTERFACE(CDisplayObjectFactory,Factory);
-
 
 /////////////////////////////////////////////////////////////////////////////
 // CDisplayObjectFactory message handlers
-STDMETHODIMP_(void) CDisplayObjectFactory::XFactory::Create(CLIPFORMAT cfFormat,COleDataObject* pDataObject,iDisplayObject** dispObj)
+std::shared_ptr<WBFL::DManip::iDisplayObject> CDisplayObjectFactory::Create(CLIPFORMAT cfFormat, COleDataObject* pDataObject) const
 {
-   METHOD_PROLOGUE(CDisplayObjectFactory,Factory);
+   std::shared_ptr<WBFL::DManip::iDisplayObject> dispObj;
 
    if ( cfFormat == CSectionCutDisplayImpl::ms_Format )
    {
-      CComPtr<iPointDisplayObject> doSectionCut;
-      ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doSectionCut);
+      auto doSectionCut = WBFL::DManip::PointDisplayObject::Create();
 
-      doSectionCut->SetSelectionType(stAll);
+      doSectionCut->SetSelectionType(WBFL::DManip::SelectionType::All);
 
-      CSectionCutDisplayImpl* pDisplayImpl = new CSectionCutDisplayImpl();
-      CComPtr<iDrawPointStrategy> strategy;
-      strategy.Attach((iDrawPointStrategy*)pDisplayImpl->GetInterface(&IID_iDrawPointStrategy));
+      auto pDisplayImpl = std::make_shared<CSectionCutDisplayImpl>();
+      auto strategy = std::dynamic_pointer_cast<WBFL::DManip::iDrawPointStrategy>(pDisplayImpl);
       doSectionCut->SetDrawingStrategy(strategy);
 
-      CComPtr<iDisplayObjectEvents> events;
-      events.Attach((iDisplayObjectEvents*)pDisplayImpl->GetInterface(&IID_iDisplayObjectEvents));
-      doSectionCut->RegisterEventSink(events.Detach());
+      auto events = std::dynamic_pointer_cast<WBFL::DManip::iDisplayObjectEvents>(pDisplayImpl);
+      doSectionCut->RegisterEventSink(events);
       
-      CComPtr<iDragData> dragData;
-      dragData.Attach((iDragData*)pDisplayImpl->GetInterface(&IID_iDragData));
-      CComQIPtr<iDraggable,&IID_iDraggable> draggable(doSectionCut);
-      draggable->SetDragData(dragData.Detach());
+      auto dragData = std::dynamic_pointer_cast<WBFL::DManip::iDragData>(pDisplayImpl);
+      auto draggable = std::dynamic_pointer_cast<WBFL::DManip::iDraggable>(doSectionCut);
+      draggable->SetDragData(dragData);
 
       if ( pDataObject )
       {
          // Initialize from data object
-         CComPtr<iDragDataSource> source;
-         ::CoCreateInstance(CLSID_DragDataSource,nullptr,CLSCTX_ALL,IID_iDragDataSource,(void**)&source);
+         auto source = WBFL::DManip::DragDataSource::Create();
          source->SetDataObject(pDataObject);
 
          // rebuild the display object from the data source
          draggable->OnDrop(source);
       }
 
-      (*dispObj) = doSectionCut;
-      (*dispObj)->AddRef();
+      dispObj = doSectionCut;
    }
    else if ( cfFormat == CBridgeSectionCutDisplayImpl::ms_Format )
    {
-      CComPtr<iPointDisplayObject> doSectionCut;
-      ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&doSectionCut);
+      auto doSectionCut = WBFL::DManip::PointDisplayObject::Create();
 
-      CBridgeSectionCutDisplayImpl* pDisplayImpl = new CBridgeSectionCutDisplayImpl();
-      CComPtr<iDrawPointStrategy> strategy;
-      strategy.Attach((iDrawPointStrategy*)pDisplayImpl->GetInterface(&IID_iDrawPointStrategy));
+      auto pDisplayImpl = std::make_shared<CBridgeSectionCutDisplayImpl>();
+      auto strategy = std::dynamic_pointer_cast<WBFL::DManip::iDrawPointStrategy>(pDisplayImpl);
       doSectionCut->SetDrawingStrategy(strategy);
 
-      CComPtr<iDisplayObjectEvents> events;
-      events.Attach((iDisplayObjectEvents*)pDisplayImpl->GetInterface(&IID_iDisplayObjectEvents));
-      doSectionCut->RegisterEventSink(events.Detach());
+      auto events = std::dynamic_pointer_cast<WBFL::DManip::iDisplayObjectEvents>(pDisplayImpl);
+      doSectionCut->RegisterEventSink(events);
 
-      CComPtr<iDragData> dragData;
-      dragData.Attach((iDragData*)pDisplayImpl->GetInterface(&IID_iDragData));
-      CComQIPtr<iDraggable,&IID_iDraggable> draggable(doSectionCut);
-      draggable->SetDragData(dragData.Detach());
+      auto dragData = std::dynamic_pointer_cast<WBFL::DManip::iDragData>(pDisplayImpl);
+      auto draggable = std::dynamic_pointer_cast<WBFL::DManip::iDraggable>(doSectionCut);
+      draggable->SetDragData(dragData);
 
       if ( pDataObject )
       {
          // Initialize from data object
-         CComPtr<iDragDataSource> source;
-         ::CoCreateInstance(CLSID_DragDataSource,nullptr,CLSCTX_ALL,IID_iDragDataSource,(void**)&source);
+         auto source = WBFL::DManip::DragDataSource::Create();
          source->SetDataObject(pDataObject);
 
          // rebuild the display object from the data source
          draggable->OnDrop(source);
       }
 
-      (*dispObj) = doSectionCut;
-      (*dispObj)->AddRef();
+      dispObj = doSectionCut;
    }
    else if ( cfFormat == CPointLoadDrawStrategyImpl::ms_Format )
    {
-      CComPtr<iPointDisplayObject> LoadRep;
-      ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&LoadRep);
+      auto LoadRep = WBFL::DManip::PointDisplayObject::Create();
 
-      LoadRep->SetSelectionType(stAll);
+      LoadRep->SetSelectionType(WBFL::DManip::SelectionType::All);
 
-      CPointLoadDrawStrategyImpl* pDisplayImpl = new CPointLoadDrawStrategyImpl();
-      CComPtr<iDrawPointStrategy> strategy;
-      strategy.Attach((iDrawPointStrategy*)pDisplayImpl->GetInterface(&IID_iDrawPointStrategy));
+      auto pDisplayImpl = std::make_shared<CPointLoadDrawStrategyImpl>();
+      auto strategy = std::dynamic_pointer_cast<WBFL::DManip::iDrawPointStrategy>(pDisplayImpl);
       LoadRep->SetDrawingStrategy(strategy);
 
-      CComPtr<iDisplayObjectEvents> events;
-      events.Attach((iDisplayObjectEvents*)pDisplayImpl->GetInterface(&IID_iDisplayObjectEvents));
-      LoadRep->RegisterEventSink(events.Detach());
+      auto events = std::dynamic_pointer_cast<WBFL::DManip::iDisplayObjectEvents>(pDisplayImpl);
+      LoadRep->RegisterEventSink(events);
       
-      CComPtr<iDragData> dragData;
-      dragData.Attach((iDragData*)pDisplayImpl->GetInterface(&IID_iDragData));
-      CComQIPtr<iDraggable,&IID_iDraggable> draggable(LoadRep);
-      draggable->SetDragData(dragData.Detach());
+      auto dragData = std::dynamic_pointer_cast<WBFL::DManip::iDragData>(pDisplayImpl);
+      auto draggable = std::dynamic_pointer_cast<WBFL::DManip::iDraggable>(LoadRep);
+      draggable->SetDragData(dragData);
 
       if ( pDataObject )
       {
          // Initialize from data object
-         CComPtr<iDragDataSource> source;
-         ::CoCreateInstance(CLSID_DragDataSource,nullptr,CLSCTX_ALL,IID_iDragDataSource,(void**)&source);
+         auto source = WBFL::DManip::DragDataSource::Create();
          source->SetDataObject(pDataObject);
 
          // rebuild the display object from the data source
          draggable->OnDrop(source);
       }
 
-      (*dispObj) = LoadRep;
-      (*dispObj)->AddRef();
+      dispObj = LoadRep;
    }
    else if ( cfFormat == CDistributedLoadDrawStrategyImpl::ms_Format )
    {
-      CComPtr<iPointDisplayObject> LoadRep;
-      ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&LoadRep);
+      auto LoadRep = WBFL::DManip::PointDisplayObject::Create();
 
-      LoadRep->SetSelectionType(stAll);
+      LoadRep->SetSelectionType(WBFL::DManip::SelectionType::All);
 
-      CDistributedLoadDrawStrategyImpl* pDisplayImpl = new CDistributedLoadDrawStrategyImpl();
-      CComPtr<iDrawPointStrategy> strategy;
-      strategy.Attach((iDrawPointStrategy*)pDisplayImpl->GetInterface(&IID_iDrawPointStrategy));
+      auto pDisplayImpl = std::make_shared<CDistributedLoadDrawStrategyImpl>();
+      auto strategy = std::dynamic_pointer_cast<WBFL::DManip::iDrawPointStrategy>(pDisplayImpl);
       LoadRep->SetDrawingStrategy(strategy);
 
-      CComPtr<iDisplayObjectEvents> events;
-      events.Attach((iDisplayObjectEvents*)pDisplayImpl->GetInterface(&IID_iDisplayObjectEvents));
-      LoadRep->RegisterEventSink(events.Detach());
+      auto events = std::dynamic_pointer_cast<WBFL::DManip::iDisplayObjectEvents>(pDisplayImpl);
+      LoadRep->RegisterEventSink(events);
 
-      CComPtr<iGravityWellStrategy> gravityWell;
-      gravityWell.Attach((iGravityWellStrategy*)pDisplayImpl->GetInterface(&IID_iGravityWellStrategy));
-      LoadRep->SetGravityWellStrategy(gravityWell.Detach());
+      auto gravityWell = std::dynamic_pointer_cast<WBFL::DManip::iGravityWellStrategy>(pDisplayImpl);
+      LoadRep->SetGravityWellStrategy(gravityWell);
 
-      CComPtr<iDragData> dragData;
-      dragData.Attach((iDragData*)pDisplayImpl->GetInterface(&IID_iDragData));
-      CComQIPtr<iDraggable,&IID_iDraggable> draggable(LoadRep);
-      draggable->SetDragData(dragData.Detach());
+      auto dragData = std::dynamic_pointer_cast<WBFL::DManip::iDragData>(pDisplayImpl);
+      auto draggable = std::dynamic_pointer_cast<WBFL::DManip::iDraggable>(LoadRep);
+      draggable->SetDragData(dragData);
 
       if ( pDataObject )
       {
          // Initialize from data object
-         CComPtr<iDragDataSource> source;
-         ::CoCreateInstance(CLSID_DragDataSource,nullptr,CLSCTX_ALL,IID_iDragDataSource,(void**)&source);
+         auto source = WBFL::DManip::DragDataSource::Create();
          source->SetDataObject(pDataObject);
 
          // rebuild the display object from the data source
          draggable->OnDrop(source);
       }
 
-      (*dispObj) = LoadRep;
-      (*dispObj)->AddRef();
+      dispObj = LoadRep;
    }
    else if ( cfFormat == CMomentLoadDrawStrategyImpl::ms_Format )
    {
-      CComPtr<iPointDisplayObject> LoadRep;
-      ::CoCreateInstance(CLSID_PointDisplayObject,nullptr,CLSCTX_ALL,IID_iPointDisplayObject,(void**)&LoadRep);
+      auto LoadRep = WBFL::DManip::PointDisplayObject::Create();
 
-      LoadRep->SetSelectionType(stAll);
+      LoadRep->SetSelectionType(WBFL::DManip::SelectionType::All);
 
-      CMomentLoadDrawStrategyImpl* pDisplayImpl = new CMomentLoadDrawStrategyImpl();
-      CComPtr<iDrawPointStrategy> strategy;
-      strategy.Attach((iDrawPointStrategy*)pDisplayImpl->GetInterface(&IID_iDrawPointStrategy));
+      auto pDisplayImpl = std::make_shared<CMomentLoadDrawStrategyImpl>();
+      auto strategy = std::dynamic_pointer_cast<WBFL::DManip::iDrawPointStrategy>(pDisplayImpl);
       LoadRep->SetDrawingStrategy(strategy);
 
-      CComPtr<iDisplayObjectEvents> events;
-      events.Attach((iDisplayObjectEvents*)pDisplayImpl->GetInterface(&IID_iDisplayObjectEvents));
-      LoadRep->RegisterEventSink(events.Detach());
+      auto events = std::dynamic_pointer_cast<WBFL::DManip::iDisplayObjectEvents>(pDisplayImpl);
+      LoadRep->RegisterEventSink(events);
       
-      CComPtr<iDragData> dragData;
-      dragData.Attach((iDragData*)pDisplayImpl->GetInterface(&IID_iDragData));
-      CComQIPtr<iDraggable,&IID_iDraggable> draggable(LoadRep);
-      draggable->SetDragData(dragData.Detach());
+      auto dragData = std::dynamic_pointer_cast<WBFL::DManip::iDragData>(pDisplayImpl);
+      auto draggable = std::dynamic_pointer_cast<WBFL::DManip::iDraggable>(LoadRep);
+      draggable->SetDragData(dragData);
 
       if ( pDataObject )
       {
          // Initialize from data object
-         CComPtr<iDragDataSource> source;
-         ::CoCreateInstance(CLSID_DragDataSource,nullptr,CLSCTX_ALL,IID_iDragDataSource,(void**)&source);
+         auto source = WBFL::DManip::DragDataSource::Create();
          source->SetDataObject(pDataObject);
 
          // rebuild the display object from the data source
          draggable->OnDrop(source);
       }
 
-      (*dispObj) = LoadRep;
-      (*dispObj)->AddRef();
+      dispObj = LoadRep;
    }
    else
    {
-      pThis->m_Factory->Create(cfFormat,pDataObject,dispObj);
+      dispObj = m_Factory->Create(cfFormat,pDataObject);
    }
+
+   return dispObj;
 }

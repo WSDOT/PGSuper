@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2023  Washington State Department of Transportation
+// Copyright © 1999-2024  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -20,101 +20,80 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_SpanDISPLAYOBJECTEVENTS_H__4C0EE0CB_964D_407D_9204_311964B859D5__INCLUDED_)
-#define AFX_SpanDISPLAYOBJECTEVENTS_H__4C0EE0CB_964D_407D_9204_311964B859D5__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-// SpanDisplayObjectEvents.h : header file
-//
 
-#include <DManip\DManip.h>
+#include <DManip/DisplayObjectEvents.h>
 #include "BridgeModelViewChildFrame.h"
 #include <PgsExt\TemporarySupportData.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgePlanViewSpanDisplayObjectEvents command target
 
-class CBridgePlanViewSpanDisplayObjectEvents : public CCmdTarget
+class CBridgePlanViewSpanDisplayObjectEvents : public WBFL::DManip::iDisplayObjectEvents
 {
 public:
 	CBridgePlanViewSpanDisplayObjectEvents(SpanIndexType spanIdx,CBridgeModelViewChildFrame* pFrame);
+
+   virtual bool OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnLButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnLButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnRButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnRButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnRButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnMouseMove(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnMouseWheel(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, short zDelta, const POINT& point) override;
+   virtual bool OnKeyDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nChar, UINT nRepCnt, UINT nFlags) override;
+   virtual bool OnContextMenu(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, CWnd* pWnd, const POINT& point) override;
+   virtual void OnChanged(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
+   virtual void OnDragMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, const WBFL::Geometry::Size2d& offset) override;
+   virtual void OnMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
+   virtual void OnCopied(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
+   virtual void OnSelect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
+   virtual void OnUnselect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
 
 protected:
    SpanIndexType m_SpanIdx;
    CBridgeModelViewChildFrame* m_pFrame;
    std::vector<const CTemporarySupportData*> m_TempSupports;
 
-	DECLARE_INTERFACE_MAP()
-
-   BEGIN_INTERFACE_PART(Events,iDisplayObjectEvents)
-      STDMETHOD_(bool,OnLButtonDblClk)(iDisplayObject* pDO,UINT nFlags,CPoint point) override;
-      STDMETHOD_(bool,OnLButtonDown)(iDisplayObject* pDO,UINT nFlags,CPoint point) override;
-      STDMETHOD_(bool,OnLButtonUp)(iDisplayObject* pDO,UINT nFlags,CPoint point) override;
-      STDMETHOD_(bool,OnRButtonDblClk)(iDisplayObject* pDO,UINT nFlags,CPoint point) override;
-      STDMETHOD_(bool,OnRButtonDown)(iDisplayObject* pDO,UINT nFlags,CPoint point) override;
-      STDMETHOD_(bool,OnRButtonUp)(iDisplayObject* pDO,UINT nFlags,CPoint point) override;
-      STDMETHOD_(bool,OnMouseMove)(iDisplayObject* pDO,UINT nFlags,CPoint point) override;
-      STDMETHOD_(bool,OnMouseWheel)(iDisplayObject* pDO,UINT nFlags,short zDelta,CPoint point) override;
-      STDMETHOD_(bool,OnKeyDown)(iDisplayObject* pDO,UINT nChar, UINT nRepCnt, UINT nFlags) override;
-      STDMETHOD_(bool,OnContextMenu)(iDisplayObject* pDO,CWnd* pWnd,CPoint point) override;
-      STDMETHOD_(void,OnChanged)(iDisplayObject* pDO) override;
-      STDMETHOD_(void,OnDragMoved)(iDisplayObject* pDO,ISize2d* offset) override;
-      STDMETHOD_(void,OnMoved)(iDisplayObject* pDO) override;
-      STDMETHOD_(void,OnCopied)(iDisplayObject* pDO) override;
-      STDMETHOD_(void,OnSelect)(iDisplayObject* pDO) override;
-      STDMETHOD_(void,OnUnselect)(iDisplayObject* pDO) override;
-   END_INTERFACE_PART(Events)
-
-   void EditSpan(iDisplayObject* pDO);
-   void SelectSpan(iDisplayObject* pDO);
-   void SelectPrev(iDisplayObject* pDO);
-   void SelectNext(iDisplayObject* pDO);
+   void EditSpan(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO);
+   void SelectSpan(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO);
+   void SelectPrev(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO);
+   void SelectNext(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO);
 };
 
-/////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
 
-/////////////////////////////////////////////////////////////////////////////
-// CBridgeSectionViewSpanDisplayObjectEvents command target
+///////////////////////////////////////////////////////////////////////////
 
-class CBridgeSectionViewSpanDisplayObjectEvents : public CCmdTarget
+class CBridgeSectionViewSpanDisplayObjectEvents : public WBFL::DManip::iDisplayObjectEvents
 {
 public:
 	CBridgeSectionViewSpanDisplayObjectEvents(Uint16 spanIdx,CBridgeModelViewChildFrame* pFrame);
+
+   virtual bool OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnLButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnLButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnRButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnRButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnRButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnMouseMove(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnMouseWheel(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, short zDelta, const POINT& point) override;
+   virtual bool OnKeyDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nChar, UINT nRepCnt, UINT nFlags) override;
+   virtual bool OnContextMenu(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, CWnd* pWnd, const POINT& point) override;
+   virtual void OnChanged(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
+   virtual void OnDragMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, const WBFL::Geometry::Size2d& offset) override;
+   virtual void OnMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
+   virtual void OnCopied(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
+   virtual void OnSelect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
+   virtual void OnUnselect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
 
 protected:
    Uint16 m_SpanIdx;
    CBridgeModelViewChildFrame* m_pFrame;
 
-	DECLARE_INTERFACE_MAP()
-
-   BEGIN_INTERFACE_PART(Events,iDisplayObjectEvents)
-      STDMETHOD_(bool,OnLButtonDblClk)(iDisplayObject* pDO,UINT nFlags,CPoint point) override;
-      STDMETHOD_(bool,OnLButtonDown)(iDisplayObject* pDO,UINT nFlags,CPoint point) override;
-      STDMETHOD_(bool,OnLButtonUp)(iDisplayObject* pDO,UINT nFlags,CPoint point) override;
-      STDMETHOD_(bool,OnRButtonDblClk)(iDisplayObject* pDO,UINT nFlags,CPoint point) override;
-      STDMETHOD_(bool,OnRButtonDown)(iDisplayObject* pDO,UINT nFlags,CPoint point) override;
-      STDMETHOD_(bool,OnRButtonUp)(iDisplayObject* pDO,UINT nFlags,CPoint point) override;
-      STDMETHOD_(bool,OnMouseMove)(iDisplayObject* pDO,UINT nFlags,CPoint point) override;
-      STDMETHOD_(bool,OnMouseWheel)(iDisplayObject* pDO,UINT nFlags,short zDelta,CPoint point) override;
-      STDMETHOD_(bool,OnKeyDown)(iDisplayObject* pDO,UINT nChar, UINT nRepCnt, UINT nFlags) override;
-      STDMETHOD_(bool,OnContextMenu)(iDisplayObject* pDO,CWnd* pWnd,CPoint point) override;
-      STDMETHOD_(void,OnChanged)(iDisplayObject* pDO) override;
-      STDMETHOD_(void,OnDragMoved)(iDisplayObject* pDO,ISize2d* offset) override;
-      STDMETHOD_(void,OnMoved)(iDisplayObject* pDO) override;
-      STDMETHOD_(void,OnCopied)(iDisplayObject* pDO) override;
-      STDMETHOD_(void,OnSelect)(iDisplayObject* pDO) override;
-      STDMETHOD_(void,OnUnselect)(iDisplayObject* pDO) override;
-   END_INTERFACE_PART(Events)
-
-   void EditSpan(iDisplayObject* pDO);
-   void SelectSpan(iDisplayObject* pDO);
-   void SelectPrev(iDisplayObject* pDO);
-   void SelectNext(iDisplayObject* pDO);
+   void EditSpan(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO);
+   void SelectSpan(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO);
+   void SelectPrev(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO);
+   void SelectNext(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO);
 };
-
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Visual C++ will insert additional declarations immediately before the previous line.
-
-#endif // !defined(AFX_SpanDISPLAYOBJECTEVENTS_H__4C0EE0CB_964D_407D_9204_311964B859D5__INCLUDED_)

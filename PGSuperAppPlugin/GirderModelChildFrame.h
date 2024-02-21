@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2023  Washington State Department of Transportation
+// Copyright © 1999-2024  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -32,11 +32,11 @@
 #include "SectionCutDrawStrategy.h"
 #include "pgsExt\PointLoadData.h"
 #include <PgsExt/GirderGroupData.h>
-#include <DManip\ToolPalette.h>
 #include <EAF\EAFViewControllerFactory.h>
 #include <MfcTools\WideDropDownComboBox.h>
 #include <IFace/Project.h>
 #include <IFace/Selection.h>
+#include <DManip/ToolPalette.h>
 
 class CGirderModelElevationView;
 class CGirderModelSectionView;

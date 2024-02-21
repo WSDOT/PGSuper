@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2023  Washington State Department of Transportation
+// Copyright © 1999-2024  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,23 +27,20 @@
 #include "resource.h"
 #include "PGSuperApp.h"
 #include "GMDisplayMgrEventsImpl.h"
-#include "mfcdual.h"
 #include "GirderModelChildFrame.h"
 #include <IReportManager.h>
-
 #include <IFace\EditByUI.h>
-
 #include "PGSpliceDoc.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <DManip/DisplayMgr.h>
+#include <DManip/DisplayView.h>
+
+std::shared_ptr<CGMDisplayMgrEventsImpl> CGMDisplayMgrEventsImpl::Create(CPGSDocBase* pDoc, CGirderModelChildFrame* pFrame, CWnd* pParent, bool bGirderElevation)
+{
+   return std::shared_ptr<CGMDisplayMgrEventsImpl>(new CGMDisplayMgrEventsImpl(pDoc, pFrame, pParent, bGirderElevation));
+}
 
 
-/////////////////////////////////////////////////////////////////////////////
-// CGMDisplayMgrEventsImpl
 CGMDisplayMgrEventsImpl::CGMDisplayMgrEventsImpl(CPGSDocBase* pDoc,CGirderModelChildFrame* pFrame, CWnd* pParent,bool bGirderElevation)
 {
    m_pDoc    = pDoc;
@@ -52,83 +49,59 @@ CGMDisplayMgrEventsImpl::CGMDisplayMgrEventsImpl(CPGSDocBase* pDoc,CGirderModelC
    m_bGirderElevation = bGirderElevation;
 }
 
-CGMDisplayMgrEventsImpl::~CGMDisplayMgrEventsImpl()
+bool CGMDisplayMgrEventsImpl::OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDisplayMgr,UINT nFlags,const POINT& point)
 {
-}
-
-BEGIN_INTERFACE_MAP(CGMDisplayMgrEventsImpl,CCmdTarget)
-   INTERFACE_PART(CGMDisplayMgrEventsImpl,IID_iDisplayMgrEvents,Events)
-END_INTERFACE_MAP()
-
-DELEGATE_CUSTOM_INTERFACE(CGMDisplayMgrEventsImpl,Events);
-
-
-STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnLButtonDblClk(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point)
-{
-   METHOD_PROLOGUE(CGMDisplayMgrEventsImpl, Events);
-
    // only handle left button double click in the field of the section view
-
-   if (pThis->m_bGirderElevation) return false;
+   if (m_bGirderElevation) return false;
    
-   auto poi = pThis->m_pFrame->GetCutLocation();
-   pThis->m_pDoc->EditGirderDescription(poi.GetSegmentKey(), EGD_GENERAL);
+   auto poi = m_pFrame->GetCutLocation();
+   m_pDoc->EditGirderDescription(poi.GetSegmentKey(), EGD_GENERAL);
 
    return true;
 }
 
-STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnLButtonDown(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point)
+bool CGMDisplayMgrEventsImpl::OnLButtonDown(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDisplayMgr,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CGMDisplayMgrEventsImpl,Events);
-
    return false;
 }
 
-STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnRButtonDblClk(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point)
+bool CGMDisplayMgrEventsImpl::OnRButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDisplayMgr,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CGMDisplayMgrEventsImpl,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnRButtonDown(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point)
+bool CGMDisplayMgrEventsImpl::OnRButtonDown(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDisplayMgr,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CGMDisplayMgrEventsImpl,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnRButtonUp(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point)
+bool CGMDisplayMgrEventsImpl::OnRButtonUp(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDisplayMgr,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CGMDisplayMgrEventsImpl,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnLButtonUp(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point)
+bool CGMDisplayMgrEventsImpl::OnLButtonUp(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDisplayMgr,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CGMDisplayMgrEventsImpl,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnMouseMove(iDisplayMgr* pDisplayMgr,UINT nFlags,CPoint point)
+bool CGMDisplayMgrEventsImpl::OnMouseMove(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDisplayMgr,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CGMDisplayMgrEventsImpl,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnMouseWheel(iDisplayMgr* pDisplayMgr,UINT nFlags,short zDelta,CPoint point)
+bool CGMDisplayMgrEventsImpl::OnMouseWheel(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDisplayMgr,UINT nFlags,short zDelta,const POINT& point)
 {
-   METHOD_PROLOGUE(CGMDisplayMgrEventsImpl,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnKeyDown(iDisplayMgr* pDisplayMgr,UINT nChar, UINT nRepCnt, UINT nFlags)
+bool CGMDisplayMgrEventsImpl::OnKeyDown(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDisplayMgr,UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-   METHOD_PROLOGUE(CGMDisplayMgrEventsImpl,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnContextMenu(iDisplayMgr* pDisplayMgr,CWnd* pWnd,CPoint point)
+bool CGMDisplayMgrEventsImpl::OnContextMenu(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDisplayMgr,CWnd* pWnd,const POINT& point)
 {
-   METHOD_PROLOGUE_(CGMDisplayMgrEventsImpl,Events);
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CDisplayView* pView = pDisplayMgr->GetView();
@@ -151,7 +124,7 @@ STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnContextMenu(iDisplayMgr*
       pMenu->RemoveMenu(ID_ADD_MOMENT_LOAD,MF_BYCOMMAND,nullptr);
 
       // In the context of the whole view, harp points don't make sense for spliced girder bridges
-      // Each segment can have harp points... to which segment are we refering? Each segment
+      // Each segment can have harp points... to which segment are we referring? Each segment
       // can have a different number of harp points as well.
       pMenu->RemoveMenu(ID_LEFT_HP,MF_BYCOMMAND,nullptr);
       pMenu->RemoveMenu(ID_RIGHT_HP,MF_BYCOMMAND,nullptr);
@@ -163,18 +136,19 @@ STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnContextMenu(iDisplayMgr*
 
    pDoc->BuildReportMenu(pMenu,true);
 
-   if ( point.x < 0 || point.y < 0 )
+   CPoint p = point;
+   if ( p.x < 0 || p.y < 0 )
    {
       // the context menu key or Shift+F10 was pressed
       // need some real coordinates (how about the center of the client area)
       CRect rClient;
-      pThis->m_pParent->GetClientRect(&rClient);
+      m_pParent->GetClientRect(&rClient);
       CPoint center = rClient.TopLeft();
-      pThis->m_pParent->ClientToScreen(&center);
-      point = center;
+      m_pParent->ClientToScreen(&center);
+      p = center;
    }
 
-   if ( pThis->m_bGirderElevation )
+   if ( m_bGirderElevation )
    {
       const auto& callbacks = pDoc->GetGirderElevationViewCallbacks();
       for ( const auto& callback : callbacks )
@@ -193,6 +167,6 @@ STDMETHODIMP_(bool) CGMDisplayMgrEventsImpl::XEvents::OnContextMenu(iDisplayMgr*
       }
    }
 
-   pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x,point.y, pThis->m_pFrame );
+   pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, p.x,p.y, m_pFrame );
    return true;
 }

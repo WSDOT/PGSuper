@@ -13,13 +13,11 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
-#endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -80,7 +78,7 @@ BEGIN
             VALUE "FileDescription", "Beams Module for PGSuper"
             VALUE "FileVersion", "8.0.0.5"
             VALUE "InternalName", "Beams"
-            VALUE "LegalCopyright", "Copyright © 1999-2023, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "LegalCopyright", "Copyright © 1999-2024, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "Beams.DLL"
             VALUE "ProductName", "PGSuper"
             VALUE "ProductVersion", "8.0.0.5"
@@ -99,24 +97,43 @@ END
 //
 
 IBEAM                   METAFILE                "res\\IBeam.emf"
+
 SPLICEDIBEAM            METAFILE                "res\\SplicedIBeam.emf"
+
 UBEAM                   METAFILE                "res\\UBeam.emf"
+
 UBEAM2                  METAFILE                "res\\UBeam2.emf"
+
 NUBEAM                  METAFILE                "res\\NUBeam.emf"
+
 BULBTEE                 METAFILE                "res\\BulbTee.emf"
+
 MULTIWEB                METAFILE                "res\\MultiWeb.emf"
+
 DOUBLETEE               METAFILE                "res\\DoubleTee.emf"
+
 VOIDEDSLAB              METAFILE                "res\\VoidedSlab.emf"
+
 VOIDEDSLAB2             METAFILE                "res\\VoidedSlab2.emf"
+
 BOXBEAM                 METAFILE                "res\\BoxBeam.emf"
+
 BOXBEAM2                METAFILE                "res\\BoxBeam2.emf"
+
 MULTIWEB2               METAFILE                "res\\MultiWeb2.emf"
+
 TXDOTDOUBLET            METAFILE                "res\\txdotdou.emf"
+
 TAPEREDIBEAM            METAFILE                "res\\TaperedIBeam.emf"
+
 DECKEDSLABBEAM          METAFILE                "res\\DeckedSlabBeam.emf"
+
 SPLICEDNUBEAM           METAFILE                "res\\SplicedNUBeam.emf"
+
 NUDECKEDBULBTEE         METAFILE                "res\\NUDeckedBulbTee.emf"
-PCIDECKEDBULBTEE         METAFILE                "res\\PCIDeckedBulbTee.emf"
+
+PCIDECKEDBULBTEE        METAFILE                "res\\PCIDeckedBulbTee.emf"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -124,51 +141,89 @@ PCIDECKEDBULBTEE         METAFILE                "res\\PCIDeckedBulbTee.emf"
 //
 
 IDR_IBEAMFACTORY        REGISTRY                "IBeamFactory.rgs"
+
 IDR_UBEAMFACTORY        REGISTRY                "UBeamFactory.rgs"
+
 IDR_UBEAM2FACTORY       REGISTRY                "UBeam2Factory.rgs"
+
 IDR_NUBEAMFACTORY       REGISTRY                "NUBeamFactory.rgs"
+
 IDR_BULBTEEFACTORY      REGISTRY                "BulbTeeFactory.rgs"
+
 IDR_MULTIWEBFACTORY     REGISTRY                "MultiWebFactory.rgs"
+
 IDR_MULTIWEB2FACTORY    REGISTRY                "MultiWeb2Factory.rgs"
+
 IDR_DOUBLETEEFACTORY    REGISTRY                "DoubleTeeFactory.rgs"
+
 IDR_VOIDEDSLABFACTORY   REGISTRY                "VoidedSlabFactory.rgs"
+
 IDR_VOIDEDSLAB2FACTORY  REGISTRY                "VoidedSlabFactory2.rgs"
+
 IDR_BOXBEAMFACTORY      REGISTRY                "BoxBeamFactory.rgs"
+
 IDR_BOXBEAMFACTORY2     REGISTRY                "BoxBeamFactory2.rgs"
+
 IDR_TXDOTDOUBLETFACTORY REGISTRY                "TxDotDoubleTFactory.rgs"
+
 IDR_TAPEREDIBEAMFACTORY REGISTRY                "TaperedIBeamFactory.rgs"
+
 IDR_DECKEDSLABBEAMFACTORY REGISTRY                "DeckedSlabBeamFactory.rgs"
+
 IDR_STRANDMOVERIMPL     REGISTRY                "StrandMoverImpl.rgs"
+
 IDR_IBEAMFAMILY         REGISTRY                "IBeamFamily.rgs"
+
 IDR_UBEAMFAMILY         REGISTRY                "UBeamFamily.rgs"
+
 IDR_BOXBEAMFAMILY       REGISTRY                "BoxBeamFamily.rgs"
+
 IDR_DECKBULBTEEBEAMFAMILY REGISTRY                "BulbTeeFamily.rgs"
+
 IDR_DOUBLETEEBEAMFAMILY REGISTRY                "DoubleTeeFamily.rgs"
+
 IDR_RIBBEDBEAMFAMILY    REGISTRY                "MultiWebFamily.rgs"
+
 IDR_SLABBEAMFAMILY      REGISTRY                "VoidedSlabFamily.rgs"
+
 IDR_DECKEDSLABBEAMFAMILY REGISTRY                "DeckedSlabBeamFamily.rgs"
+
 IDR_PSBEAMLOSSENGINEER  REGISTRY                "PsBeamLossEngineer.rgs"
-IDR_TIMESTEPLOSSENGINEER  REGISTRY                "TimeStepLossEngineer.rgs"
-IDR_IBEAMDISTFACTORENGINEER REGISTRY           "IBeamDistFactorEngineer.rgs"
-IDR_BOXBEAMDISTFACTORENGINEER REGISTRY          "BoxBeamDistFactorEngineer.rgs"
-IDR_BULBTEEDISTFACTORENGINEER REGISTRY          "BulbTeeDistFactorEngineer.rgs"
-IDR_MULTIWEBDISTFACTORENGINEER REGISTRY          "MultiWebDistFactorEngineer.rgs"
-IDR_UBEAMDISTFACTORENGINEER REGISTRY           "UBeamDistFactorEngineer.rgs"
-IDR_VOIDEDSLABDISTFACTORENGINEER REGISTRY           "VoidedSlabDistFactorEngineer.rgs"
-IDR_VOIDEDSLAB2DISTFACTORENGINEER REGISTRY           "VoidedSlab2DistFactorEngineer.rgs"
-IDR_TXDOTSPREADSLABBEAMDISTFACTORENGINEER REGISTRY   "TxDOTSpreadSlabBeamDistFactorEngineer.rgs"
+
+IDR_TIMESTEPLOSSENGINEER REGISTRY                "TimeStepLossEngineer.rgs"
+
+IDR_IBEAMDISTFACTORENGINEER REGISTRY                "IBeamDistFactorEngineer.rgs"
+
+IDR_BOXBEAMDISTFACTORENGINEER REGISTRY                "BoxBeamDistFactorEngineer.rgs"
+
+IDR_BULBTEEDISTFACTORENGINEER REGISTRY                "BulbTeeDistFactorEngineer.rgs"
+
+IDR_MULTIWEBDISTFACTORENGINEER REGISTRY                "MultiWebDistFactorEngineer.rgs"
+
+IDR_UBEAMDISTFACTORENGINEER REGISTRY                "UBeamDistFactorEngineer.rgs"
+
+IDR_VOIDEDSLABDISTFACTORENGINEER REGISTRY                "VoidedSlabDistFactorEngineer.rgs"
+
+IDR_VOIDEDSLAB2DISTFACTORENGINEER REGISTRY                "VoidedSlab2DistFactorEngineer.rgs"
+
+IDR_TXDOTSPREADSLABBEAMDISTFACTORENGINEER REGISTRY                "TxDOTSpreadSlabBeamDistFactorEngineer.rgs"
 
 IDR_SPLICEDIBEAMFAMILY  REGISTRY                "SplicedIBeamFamily.rgs"
+
 IDR_SPLICEDUBEAMFAMILY  REGISTRY                "SplicedUBeamFamily.rgs"
 
 IDR_SPLICEDIBEAMFACTORY REGISTRY                "SplicedIBeamFactory.rgs"
+
 IDR_SPLICEDUBEAMFACTORY REGISTRY                "SplicedUBeamFactory.rgs"
+
 IDR_SPLICEDNUBEAMFACTORY REGISTRY                "SplicedNUBeamFactory.rgs"
 
-IDR_AGE_ADJUSTED_MATERIAL REGISTRY              "AgeAdjustedMaterial.rgs"
+IDR_AGE_ADJUSTED_MATERIAL REGISTRY                "AgeAdjustedMaterial.rgs"
 
-IDR_NUDECKEDBULBTEEFACTORY REGISTRY "NUDeckedBulbTeeFactory.rgs"
-IDR_PCIDECKEDBULBTEEFACTORY REGISTRY "PCIDeckedBulbTeeFactory.rgs"
+IDR_NUDECKEDBULBTEEFACTORY REGISTRY                "NUDeckedBulbTeeFactory.rgs"
+
+IDR_PCIDECKEDBULBTEEFACTORY REGISTRY                "PCIDeckedBulbTeeFactory.rgs"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -178,34 +233,51 @@ IDR_PCIDECKEDBULBTEEFACTORY REGISTRY "PCIDeckedBulbTeeFactory.rgs"
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_IBEAM               ICON                    "res\\icon1.ico"
+
 IDI_NUBEAM              ICON                    "res\\ico00001.ico"
+
 IDI_UBEAM               ICON                    "res\\ico00002.ico"
+
 IDI_MULTIWEB            ICON                    "res\\ico00003.ico"
+
 IDI_MULTIWEB2           ICON                    "res\\ico00004.ico"
+
 IDI_DOUBLETEE           ICON                    "res\\ico00004.ico"
+
 IDI_VOIDEDSLAB          ICON                    "res\\voided_slab.ico"
+
 IDI_BULBTEE             ICON                    "res\\bulb_tee.ico"
+
 IDI_TEXASU              ICON                    "res\\texas_u.ico"
+
 IDI_BOXBEAM             ICON                    "res\\boxbeam.ico"
+
 IDI_TXDOTDOUBLET        ICON                    "res\\txdotdou.ico"
+
 IDI_VOIDEDSLAB2         ICON                    "Res\\voided_slab2.ico"
+
 IDI_DECKEDSLAB          ICON                    "res\\DeckedSlab.ico"
+
 IDI_BOXBEAM2            ICON                    "res\\boxbeam2.ico"
+
 IDI_SPLICED_IBEAM       ICON                    "Res\\SplicedIBeam.ico"
+
 IDI_SPLICED_UBEAM       ICON                    "Res\\SplicedUBeam.ico"
-IDI_SPLICED_NUBEAM       ICON                    "Res\\SplicedNUBeam.ico"
+
+IDI_SPLICED_NUBEAM      ICON                    "Res\\SplicedNUBeam.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_PROJNAME            "Beams"
 END
 
-#endif    // English (U.S.) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2023  Washington State Department of Transportation
+// Copyright © 1999-2024  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -55,7 +55,7 @@
 
 #include <PgsExt\InsertDeleteLoad.h>
 
-#include <WBFLDManip.h>
+//#include <WBFLDManip.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -538,26 +538,24 @@ int CGirderModelChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
 
       // point load tool
-      CComPtr<iTool> point_load_tool;
-      ::CoCreateInstance(CLSID_Tool,nullptr,CLSCTX_ALL,IID_iTool,(void**)&point_load_tool);
+      auto point_load_tool = WBFL::DManip::Tool::Create();
       point_load_tool->SetID(IDC_POINT_LOAD_DRAG);
       point_load_tool->SetToolTipText(_T("Drag me onto girder to create a point load"));
 
-      CComQIPtr<iToolIcon, &IID_iToolIcon> pti(point_load_tool);
+      auto pti = std::dynamic_pointer_cast<WBFL::DManip::iToolIcon>(point_load_tool);
       HRESULT hr = pti->SetIcon(::AfxGetInstanceHandle(), IDI_POINT_LOAD);
       ATLASSERT(SUCCEEDED(hr));
 
       m_SettingsBar.AddTool(point_load_tool);
 
       // distributed load tool
-      CComPtr<iTool> distributed_load_tool;
-      ::CoCreateInstance(CLSID_Tool,nullptr,CLSCTX_ALL,IID_iTool,(void**)&distributed_load_tool);
+      auto distributed_load_tool = WBFL::DManip::Tool::Create();
       distributed_load_tool->SetID(IDC_DISTRIBUTED_LOAD_DRAG);
       distributed_load_tool->SetToolTipText(_T("Drag me onto girder to create a distributed load"));
 
       HINSTANCE hInstance = AfxGetInstanceHandle();
 
-      CComQIPtr<iToolIcon, &IID_iToolIcon> dti(distributed_load_tool);
+      auto dti = std::dynamic_pointer_cast<WBFL::DManip::iToolIcon>(distributed_load_tool);
       hr = dti->SetIcon(hInstance, IDI_DISTRIBUTED_LOAD);
       ATLASSERT(SUCCEEDED(hr));
 
@@ -567,12 +565,11 @@ int CGirderModelChildFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
       // Used only with PGSuper (not used for PGSplice)
       if ( EAFGetDocument()->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
       {
-         CComPtr<iTool> moment_load_tool;
-         ::CoCreateInstance(CLSID_Tool,nullptr,CLSCTX_ALL,IID_iTool,(void**)&moment_load_tool);
+         auto moment_load_tool = WBFL::DManip::Tool::Create();
          moment_load_tool->SetID(IDC_MOMENT_LOAD_DRAG);
          moment_load_tool->SetToolTipText(_T("Drag me onto girder to create a moment load"));
       
-         CComQIPtr<iToolIcon, &IID_iToolIcon> mti(moment_load_tool);
+         auto mti = std::dynamic_pointer_cast<WBFL::DManip::iToolIcon>(moment_load_tool);
          hr = mti->SetIcon(hInstance, IDI_MOMENT_LOAD);
          ATLASSERT(SUCCEEDED(hr));
 

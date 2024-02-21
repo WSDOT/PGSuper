@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2023  Washington State Department of Transportation
+// Copyright © 1999-2024  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -76,6 +76,6 @@ protected:
    void BuildBridgeDisplayObjects();
    void BuildLabelDisplayObjects();
 
-   void CreateStationLabel(iDisplayList* pDisplayList,Float64 station,LPCTSTR strBaseLabel=nullptr,UINT textAlign=TA_BASELINE | TA_RIGHT);
-   void CreateStationLabel(iDisplayList* pDisplayList,Float64 station,Float64 elevation,LPCTSTR strBaseLabel=nullptr,UINT textAlign=TA_BASELINE | TA_RIGHT);
+   void CreateStationLabel(std::shared_ptr<WBFL::DManip::iDisplayList> pDisplayList,Float64 station,LPCTSTR strBaseLabel=nullptr,UINT textAlign=TA_BASELINE | TA_RIGHT);
+   void CreateStationLabel(std::shared_ptr<WBFL::DManip::iDisplayList> pDisplayList,Float64 station,Float64 elevation,LPCTSTR strBaseLabel=nullptr,UINT textAlign=TA_BASELINE | TA_RIGHT);
 };

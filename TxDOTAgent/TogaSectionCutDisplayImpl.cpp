@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2023  Washington State Department of Transportation
+// Copyright © 1999-2024  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -22,18 +22,16 @@
 
 #include "stdafx.h"
 #include "TogaSectionCutDisplayImpl.h"
-#include "mfcdual.h"
 #include <MathEx.h>
 #include <MfcTools\MfcTools.h> 
 #include <PGSuperColors.h>
 #include <IFace\Bridge.h>
 #include "TxDOTOptionalDesignDoc.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <DManip/PointDisplayObject.h>
+#include <DManip/DisplayMgr.h>
+#include <DManip/TaskFactory.h>
+#include <DManip/DisplayView.h>
 
 // height of section cut above/below girder
 static const Uint32 SSIZE = 1440 * 3/8; // (twips)
@@ -45,150 +43,88 @@ CTogaSectionCutDisplayImpl::CTogaSectionCutDisplayImpl():
 m_pCutLocation(nullptr),
 m_Color(CUT_COLOR)
 {
-   EnableAutomation ();
-
-   m_CachePoint.CoCreateInstance(CLSID_Point2d);
 }
 
 CTogaSectionCutDisplayImpl::~CTogaSectionCutDisplayImpl()
 {
 }
 
-BEGIN_MESSAGE_MAP(CTogaSectionCutDisplayImpl, CCmdTarget)
-	//{{AFX_MSG_MAP(CTogaSectionCutDisplayImpl)
-		// NOTE - the ClassWizard will add and remove mapping macros here.
-		//    DO NOT EDIT what you see in these blocks of generated code!
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-BEGIN_INTERFACE_MAP(CTogaSectionCutDisplayImpl,CCmdTarget)
-   INTERFACE_PART(CTogaSectionCutDisplayImpl,IID_iDrawPointStrategy,DrawPointStrategy)
-   INTERFACE_PART(CTogaSectionCutDisplayImpl,IID_iTogaSectionCutDrawStrategy,Strategy)
-   INTERFACE_PART(CTogaSectionCutDisplayImpl,IID_iDisplayObjectEvents,DisplayObjectEvents)
-   INTERFACE_PART(CTogaSectionCutDisplayImpl,IID_iDragData,DragData)
-END_INTERFACE_MAP()
-
-DELEGATE_CUSTOM_INTERFACE(CTogaSectionCutDisplayImpl,DrawPointStrategy);
-DELEGATE_CUSTOM_INTERFACE(CTogaSectionCutDisplayImpl,Strategy);
-DELEGATE_CUSTOM_INTERFACE(CTogaSectionCutDisplayImpl,DisplayObjectEvents);
-DELEGATE_CUSTOM_INTERFACE(CTogaSectionCutDisplayImpl,DragData);
-
-// This goes in the source code file
- // Note: ClassWizard looks for these comments:
- BEGIN_DISPATCH_MAP(CTogaSectionCutDisplayImpl, CCmdTarget)
-     //{{AFX_DISPATCH_MAP(AClassWithAutomation)
-        // NOTE - the ClassWizard will add and remove mapping macros here.
-     //}}AFX_DISPATCH_MAP
- END_DISPATCH_MAP()
- 
-
-
-STDMETHODIMP_(void) CTogaSectionCutDisplayImpl::XStrategy::Init(iPointDisplayObject* pDO, IBroker* pBroker,const CSegmentKey& segmentKey, iCutLocation* pCutLoc)
+void CTogaSectionCutDisplayImpl::Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, IBroker* pBroker, const CSegmentKey& segmentKey, iCutLocation* pCutLoc)
 {
-   METHOD_PROLOGUE(CTogaSectionCutDisplayImpl,Strategy);
+   m_pBroker = pBroker;
 
-   pThis->m_pBroker = pBroker;
-   pThis->m_SegmentKey = segmentKey;
+   m_SegmentKey = segmentKey;
+   
+   GET_IFACE(IBridge, pBridge);
+   m_gdrLength = pBridge->GetSegmentLength(segmentKey);
 
-   GET_IFACE2(pThis->m_pBroker,IBridge,pBridge);
-   pThis->m_gdrLength = pBridge->GetSegmentLength(segmentKey);
+   m_pCutLocation = pCutLoc;
 
-   pThis->m_pCutLocation = pCutLoc;
+   Float64 Xgl = m_pCutLocation->GetCurrentCutLocation();
 
-   Float64 pos = pThis->m_pCutLocation->GetCurrentCutLocation();
-
-   CComPtr<IPoint2d> pnt;
-   pnt.CoCreateInstance(CLSID_Point2d);
-   pnt->put_X(pos);
-   pnt->put_Y( 0.0 );
-   pDO->SetPosition(pnt, FALSE, FALSE);
+   WBFL::Geometry::Point2d pnt(Xgl, 0.0);
+   pDO->SetPosition(pnt, false, false);
 }
 
-
-STDMETHODIMP_(void) CTogaSectionCutDisplayImpl::XStrategy::SetColor(COLORREF color)
+void CTogaSectionCutDisplayImpl::SetColor(COLORREF color)
 {
-   METHOD_PROLOGUE(CTogaSectionCutDisplayImpl,Strategy);
-   pThis->m_Color = color;
+   m_Color = color;
 }
 
-
-STDMETHODIMP_(void) CTogaSectionCutDisplayImpl::XDrawPointStrategy::Draw(iPointDisplayObject* pDO,CDC* pDC)
+void CTogaSectionCutDisplayImpl::Draw(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC) const
 {
-   METHOD_PROLOGUE(CTogaSectionCutDisplayImpl,DrawPointStrategy);
-
-   CComPtr<iDisplayList> pDL;
-   pDO->GetDisplayList(&pDL);
-
-   CComPtr<iDisplayMgr> pDispMgr;
-   pDL->GetDisplayMgr(&pDispMgr);
+   auto pDL = pDO->GetDisplayList();
+   auto pDispMgr = pDL->GetDisplayMgr();
 
    COLORREF color;
 
-   if ( pDO->IsSelected() )
+   if (pDO->IsSelected())
+   {
       color = pDispMgr->GetSelectionLineColor();
+   }
    else
-      color = pThis->m_Color;
+   {
+      color = m_Color;
+   }
 
-   CComPtr<IPoint2d> pos;
-   pDO->GetPosition(&pos);
+   auto pos = pDO->GetPosition();
 
-   pThis->Draw(pDO,pDC,color,pos);
+   Draw(pDO, pDC, color, pos);
 }
 
-STDMETHODIMP_(void) CTogaSectionCutDisplayImpl::XDrawPointStrategy::DrawHighlite(iPointDisplayObject* pDO,CDC* pDC,BOOL bHighlite)
+void CTogaSectionCutDisplayImpl::DrawHighlight(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC, bool bHighlite) const
 {
-   METHOD_PROLOGUE(CTogaSectionCutDisplayImpl,DrawPointStrategy);
-   Draw(pDO,pDC);
+   Draw(pDO, pDC);
 }
 
-STDMETHODIMP_(void) CTogaSectionCutDisplayImpl::XDrawPointStrategy::DrawDragImage(iPointDisplayObject* pDO,CDC* pDC, iCoordinateMap* map, const CPoint& dragStart, const CPoint& dragPoint)
+void CTogaSectionCutDisplayImpl::DrawDragImage(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC, std::shared_ptr<const WBFL::DManip::iCoordinateMap> map, const POINT& dragStart, const POINT& dragPoint) const
 {
-   METHOD_PROLOGUE(CTogaSectionCutDisplayImpl,DrawPointStrategy);
-
    Float64 wx, wy;
    map->LPtoWP(dragPoint.x, dragPoint.y, &wx, &wy);
-   pThis->m_CachePoint->put_X(wx);
-   pThis->m_CachePoint->put_Y(wy);
+   m_CachePoint.Move(wx, wy);
 
-   pThis->Draw(pDO,pDC,SELECTED_OBJECT_LINE_COLOR,pThis->m_CachePoint);
+   Draw(pDO, pDC, SELECTED_OBJECT_LINE_COLOR, m_CachePoint);
 }
 
 
-STDMETHODIMP_(void) CTogaSectionCutDisplayImpl::XDrawPointStrategy::GetBoundingBox(iPointDisplayObject* pDO, IRect2d** rect)
+WBFL::Geometry::Rect2d CTogaSectionCutDisplayImpl::GetBoundingBox(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO) const
 {
-   METHOD_PROLOGUE(CTogaSectionCutDisplayImpl,DrawPointStrategy);
+   auto pnt = pDO->GetPosition();
 
-   CComPtr<IPoint2d> pnt;
-   pDO->GetPosition(&pnt);
-   
-   Float64 xpos;
-   pnt->get_X(&xpos);
+   Float64 Xgl = pnt.X();
 
    Float64 top, left, right, bottom;
-   pThis->GetBoundingBox(pDO, xpos, &top, &left, &right, &bottom);
+   GetBoundingBox(pDO, Xgl, &top, &left, &right, &bottom);
 
-
-   CComPtr<IRect2d> bounding_box;
-   bounding_box.CoCreateInstance(CLSID_Rect2d);
-
-   bounding_box->put_Top(top);
-   bounding_box->put_Bottom(bottom);
-   bounding_box->put_Left(left);
-   bounding_box->put_Right(right);
-
-   (*rect) = bounding_box;
-   (*rect)->AddRef();
+   return { left,bottom,right,top };
 }
 
-void CTogaSectionCutDisplayImpl::GetBoundingBox(iPointDisplayObject* pDO, Float64 position, 
-                                            Float64* top, Float64* left, Float64* right, Float64* bottom)
+void CTogaSectionCutDisplayImpl::GetBoundingBox(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, Float64 Xgl,
+   Float64* top, Float64* left, Float64* right, Float64* bottom) const
 {
-   CComPtr<iDisplayList> pDL;
-   pDO->GetDisplayList(&pDL);
-   CComPtr<iDisplayMgr> pDispMgr;
-   pDL->GetDisplayMgr(&pDispMgr);
-   CComPtr<iCoordinateMap> pMap;
-   pDispMgr->GetCoordinateMap(&pMap);
+   auto pDL = pDO->GetDisplayList();
+   auto pDispMgr = pDL->GetDisplayMgr();
+   auto pMap = pDispMgr->GetCoordinateMap();
 
    // height of cut above/below girder
    Float64 xo,yo;
@@ -200,26 +136,22 @@ void CTogaSectionCutDisplayImpl::GetBoundingBox(iPointDisplayObject* pDO, Float6
    Float64 height = y2-yo;
 
    *top    = height;
-   *bottom = -(GetGirderHeight(position) + height);
-   *left   = position;
+   *bottom = -(GetGirderHeight(Xgl) + height);
+   *left   = Xgl;
    *right  = *left + width;
 }
 
-void CTogaSectionCutDisplayImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF color,IPoint2d* userLoc)
+void CTogaSectionCutDisplayImpl::Draw(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC, COLORREF color, const WBFL::Geometry::Point2d& userLoc) const
 {
-   Float64 x;
-   userLoc->get_X(&x);
+   auto x = userLoc.X();
    x = ::ForceIntoRange(0.0,x,m_gdrLength);
 
    Float64 wtop, wleft, wright, wbottom;
    GetBoundingBox(pDO, x, &wtop, &wleft, &wright, &wbottom);
 
-   CComPtr<iDisplayList> pDL;
-   pDO->GetDisplayList(&pDL);
-   CComPtr<iDisplayMgr> pDispMgr;
-   pDL->GetDisplayMgr(&pDispMgr);
-   CComPtr<iCoordinateMap> pMap;
-   pDispMgr->GetCoordinateMap(&pMap);
+   auto pDL = pDO->GetDisplayList();
+   auto pDispMgr = pDL->GetDisplayMgr();
+   auto pMap = pDispMgr->GetCoordinateMap();
 
    long ltop, lleft, lright, lbottom;
    pMap->WPtoLP(wleft, wtop, &lleft, &ltop);
@@ -265,7 +197,7 @@ void CTogaSectionCutDisplayImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF
    pDC->SelectObject(old_brush);
 }
 
-Float64 CTogaSectionCutDisplayImpl::GetGirderHeight(Float64 distFromStartOfGirder)
+Float64 CTogaSectionCutDisplayImpl::GetGirderHeight(Float64 distFromStartOfGirder) const
 {
    GET_IFACE(IGirder,pGirder);
    GET_IFACE(IPointOfInterest,pPOI);
@@ -278,69 +210,50 @@ Float64 CTogaSectionCutDisplayImpl::GetGirderHeight(Float64 distFromStartOfGirde
    return gdrHeight;
 }
 
-STDMETHODIMP_(void) CTogaSectionCutDisplayImpl::XDisplayObjectEvents::OnChanged(iDisplayObject* pDO)
+void CTogaSectionCutDisplayImpl::OnChanged(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CTogaSectionCutDisplayImpl,DisplayObjectEvents);
+   auto pPointDO = std::dynamic_pointer_cast<WBFL::DManip::iPointDisplayObject>(pDO);
+   ATLASSERT(pPointDO);
 
-   iPointDisplayObject* ppdo = dynamic_cast<iPointDisplayObject*>(pDO);
-
-   if (ppdo)
+   if (pPointDO)
    {
-      Float64 pos = pThis->m_pCutLocation->GetCurrentCutLocation();
-   
-      CComPtr<IPoint2d> pnt;
-      pnt.CoCreateInstance(CLSID_Point2d);
-      pnt->put_X(pos);
-      pnt->put_Y( 0.0 );
-      ppdo->SetPosition(pnt, TRUE, FALSE);
+      Float64 Xgl = m_pCutLocation->GetCurrentCutLocation();
+      WBFL::Geometry::Point2d pnt(Xgl, 0.0);
+      pPointDO->SetPosition(pnt, true, false);
    }
-   else
-      ATLASSERT(false);
 }
 
-
-STDMETHODIMP_(void) CTogaSectionCutDisplayImpl::XDisplayObjectEvents::OnDragMoved(iDisplayObject* pDO,ISize2d* offset)
+void CTogaSectionCutDisplayImpl::OnDragMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, const WBFL::Geometry::Size2d& offset)
 {
-   METHOD_PROLOGUE(CTogaSectionCutDisplayImpl,DisplayObjectEvents);
+   Float64 Xgl = m_pCutLocation->GetCurrentCutLocation();
 
-   Float64 pos =  pThis->m_pCutLocation->GetCurrentCutLocation();
+   Float64 xOffset = offset.Dx();
 
-   Float64 xoff;
-   offset->get_Dx(&xoff);
+   Xgl += xOffset;
 
-   pos += xoff;
-
-   pThis->PutPosition(pos);
+   PutPosition(Xgl);
 }
 
-STDMETHODIMP_(void) CTogaSectionCutDisplayImpl::XDisplayObjectEvents::OnMoved(iDisplayObject* pDO)
+void CTogaSectionCutDisplayImpl::OnMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CTogaSectionCutDisplayImpl,DisplayObjectEvents);
-
-   ASSERT(FALSE); 
+   ASSERT(FALSE);
 }
 
-STDMETHODIMP_(void) CTogaSectionCutDisplayImpl::XDisplayObjectEvents::OnCopied(iDisplayObject* pDO)
+void CTogaSectionCutDisplayImpl::OnCopied(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   ASSERT(FALSE); 
+   ASSERT(FALSE);
 }
 
-STDMETHODIMP_(bool) CTogaSectionCutDisplayImpl::XDisplayObjectEvents::OnLButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CTogaSectionCutDisplayImpl::OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CTogaSectionCutDisplayImpl,DisplayObjectEvents);
-
-   pThis->m_pCutLocation->ShowCutDlg();
-
+   m_pCutLocation->ShowCutDlg();
    return true;
 }
 
-STDMETHODIMP_(bool) CTogaSectionCutDisplayImpl::XDisplayObjectEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CTogaSectionCutDisplayImpl::OnLButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point)
 {
-   CComPtr<iDisplayList> list;
-   pDO->GetDisplayList(&list);
-
-   CComPtr<iDisplayMgr> dispMgr;
-   list->GetDisplayMgr(&dispMgr);
+   auto list = pDO->GetDisplayList();
+   auto dispMgr = list->GetDisplayMgr();
 
    // If control key is pressed, don't clear current selection
    // (i.e. we want multi-select)
@@ -355,99 +268,75 @@ STDMETHODIMP_(bool) CTogaSectionCutDisplayImpl::XDisplayObjectEvents::OnLButtonD
    dispMgr->SelectObject(pDO,!bMultiSelect);
 
    // d&d task
-   CComPtr<iTaskFactory> factory;
-   dispMgr->GetTaskFactory(&factory);
-   CComPtr<iTask> task;
-   factory->CreateLocalDragDropTask(dispMgr,point,&task);
+   auto factory = dispMgr->GetTaskFactory();
+   auto task = factory->CreateLocalDragDropTask(dispMgr, point);
    dispMgr->SetTask(task);
 
    return true;
 }
 
-STDMETHODIMP_(bool) CTogaSectionCutDisplayImpl::XDisplayObjectEvents::OnRButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CTogaSectionCutDisplayImpl::OnRButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CTogaSectionCutDisplayImpl,DisplayObjectEvents);
    return false;
 }
 
-STDMETHODIMP_(bool) CTogaSectionCutDisplayImpl::XDisplayObjectEvents::OnLButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CTogaSectionCutDisplayImpl::OnLButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CTogaSectionCutDisplayImpl,DisplayObjectEvents);
    return false;
 }
 
 
-STDMETHODIMP_(bool) CTogaSectionCutDisplayImpl::XDisplayObjectEvents::OnRButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CTogaSectionCutDisplayImpl::OnRButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CTogaSectionCutDisplayImpl,DisplayObjectEvents);
    return false;
 }
 
-STDMETHODIMP_(bool) CTogaSectionCutDisplayImpl::XDisplayObjectEvents::OnRButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CTogaSectionCutDisplayImpl::OnRButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CTogaSectionCutDisplayImpl,DisplayObjectEvents);
-   return false;
-  
-}
-
-STDMETHODIMP_(bool) CTogaSectionCutDisplayImpl::XDisplayObjectEvents::OnMouseMove(iDisplayObject* pDO,UINT nFlags,CPoint point)
-{
-   METHOD_PROLOGUE(CTogaSectionCutDisplayImpl,DisplayObjectEvents);
    return false;
 }
 
-STDMETHODIMP_(bool) CTogaSectionCutDisplayImpl::XDisplayObjectEvents::OnMouseWheel(iDisplayObject* pDO,UINT nFlags,short zDelta,CPoint point)
+bool CTogaSectionCutDisplayImpl::OnMouseMove(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point)
 {
-   METHOD_PROLOGUE(CTogaSectionCutDisplayImpl,DisplayObjectEvents);
-   Float64 pos = pThis->m_pCutLocation->GetCurrentCutLocation();
+   return false;
+}
+
+bool CTogaSectionCutDisplayImpl::OnMouseWheel(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, short zDelta, const POINT& point)
+{
+   Float64 pos = m_pCutLocation->GetCurrentCutLocation();
    Float64 xoff = BinarySign(zDelta)*1.0;
-   pos += xoff * pThis->m_gdrLength/100.0;
-   pThis->PutPosition(pos);
+   pos += xoff * m_gdrLength/100.0;
+   PutPosition(pos);
    return true;
 }
 
-STDMETHODIMP_(bool) CTogaSectionCutDisplayImpl::XDisplayObjectEvents::OnKeyDown(iDisplayObject* pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
+bool CTogaSectionCutDisplayImpl::OnKeyDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-   METHOD_PROLOGUE(CTogaSectionCutDisplayImpl,DisplayObjectEvents);
-
    switch(nChar)
    {
    case VK_RIGHT:
    case VK_LEFT:
       {
-         Float64 pos =  pThis->m_pCutLocation->GetCurrentCutLocation();
+         Float64 pos =  m_pCutLocation->GetCurrentCutLocation();
 
          Float64 xoff = nChar==VK_RIGHT ? 1.0 : -1.0;
-         pos += xoff * pThis->m_gdrLength/100.0;
+         pos += xoff * m_gdrLength/100.0;
 
-         pThis->PutPosition(pos);
+         PutPosition(pos);
 
       }
       break;
 
    case VK_RETURN:
-      pThis->m_pCutLocation->ShowCutDlg();
+      m_pCutLocation->ShowCutDlg();
       break;
    }
 
    return true;
 }
 
-STDMETHODIMP_(bool) CTogaSectionCutDisplayImpl::XDisplayObjectEvents::OnContextMenu(iDisplayObject* pDO,CWnd* pWnd,CPoint point)
+bool CTogaSectionCutDisplayImpl::OnContextMenu(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, CWnd* pWnd, const POINT& point)
 {
-   METHOD_PROLOGUE(CTogaSectionCutDisplayImpl,DisplayObjectEvents);
-
-   if ( pDO->IsSelected() )
-   {
-      CComPtr<iDisplayList> pList;
-      pDO->GetDisplayList(&pList);
-
-      CComPtr<iDisplayMgr> pDispMgr;
-      pList->GetDisplayMgr(&pDispMgr);
-
-      CDisplayView* pView = pDispMgr->GetView();
-   }
-
    return false;
 }
 
@@ -462,24 +351,21 @@ void CTogaSectionCutDisplayImpl::PutPosition(Float64 pos)
 }
 
 
-STDMETHODIMP_(void) CTogaSectionCutDisplayImpl::XDisplayObjectEvents::OnSelect(iDisplayObject* pDO)
-{
-
-}
-
-STDMETHODIMP_(void) CTogaSectionCutDisplayImpl::XDisplayObjectEvents::OnUnselect(iDisplayObject* pDO)
+void CTogaSectionCutDisplayImpl::OnSelect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
 }
 
-STDMETHODIMP_(UINT) CTogaSectionCutDisplayImpl::XDragData::Format()
+void CTogaSectionCutDisplayImpl::OnUnselect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
+{
+}
+
+UINT CTogaSectionCutDisplayImpl::Format()
 {
    return ms_Format;
 }
 
-STDMETHODIMP_(BOOL) CTogaSectionCutDisplayImpl::XDragData::PrepareForDrag(iDisplayObject* pDO,iDragDataSink* pSink)
+bool CTogaSectionCutDisplayImpl::PrepareForDrag(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, std::shared_ptr<WBFL::DManip::iDragDataSink> pSink)
 {
-   METHOD_PROLOGUE(CTogaSectionCutDisplayImpl,DragData);
-
    // Create a place to store the drag data for this object
    pSink->CreateFormat(ms_Format);
 
@@ -487,19 +373,17 @@ STDMETHODIMP_(BOOL) CTogaSectionCutDisplayImpl::XDragData::PrepareForDrag(iDispl
    DWORD threadid = thread->m_nThreadID;
 
    pSink->Write(ms_Format,&threadid,sizeof(DWORD));
-   pSink->Write(ms_Format,&pThis->m_Color,sizeof(COLORREF));
-   pSink->Write(ms_Format,&pThis->m_pBroker,sizeof(IBroker*));
-   pSink->Write(ms_Format,&pThis->m_SegmentKey,sizeof(CSegmentKey));
-   pSink->Write(ms_Format,&pThis->m_gdrLength,sizeof(Float64));
-   pSink->Write(ms_Format,&pThis->m_pCutLocation,sizeof(iCutLocation*));
+   pSink->Write(ms_Format,&m_Color,sizeof(COLORREF));
+   pSink->Write(ms_Format,&m_pBroker,sizeof(IBroker*));
+   pSink->Write(ms_Format,&m_SegmentKey,sizeof(CSegmentKey));
+   pSink->Write(ms_Format,&m_gdrLength,sizeof(Float64));
+   pSink->Write(ms_Format,&m_pCutLocation,sizeof(iCutLocation*));
 
    return TRUE;
 }
 
-STDMETHODIMP_(void) CTogaSectionCutDisplayImpl::XDragData::OnDrop(iDisplayObject* pDO,iDragDataSource* pSource)
+void CTogaSectionCutDisplayImpl::OnDrop(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, std::shared_ptr<WBFL::DManip::iDragDataSource> pSource)
 {
-   METHOD_PROLOGUE(CTogaSectionCutDisplayImpl,DragData);
-
    // Tell the source we are about to read from our format
    pSource->PrepareFormat(ms_Format);
 
@@ -511,10 +395,10 @@ STDMETHODIMP_(void) CTogaSectionCutDisplayImpl::XDragData::OnDrop(iDisplayObject
 
    ATLASSERT(threadid == threadl);
 
-   pSource->Read(ms_Format,&pThis->m_Color,sizeof(COLORREF));
-   pSource->Read(ms_Format,&pThis->m_pBroker,sizeof(IBroker*));
-   pSource->Read(ms_Format,&pThis->m_SegmentKey,sizeof(CSegmentKey));
-   pSource->Read(ms_Format,&pThis->m_gdrLength,sizeof(Float64));
-   pSource->Read(ms_Format,&pThis->m_pCutLocation,sizeof(iCutLocation*));
+   pSource->Read(ms_Format,&m_Color,sizeof(COLORREF));
+   pSource->Read(ms_Format,&m_pBroker,sizeof(IBroker*));
+   pSource->Read(ms_Format,&m_SegmentKey,sizeof(CSegmentKey));
+   pSource->Read(ms_Format,&m_gdrLength,sizeof(Float64));
+   pSource->Read(ms_Format,&m_pCutLocation,sizeof(iCutLocation*));
 }
 

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2023  Washington State Department of Transportation
+// Copyright © 1999-2024  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,20 +28,17 @@
 #include <IFace\Project.h>
 #include <EAF\EAFTxnManager.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <DManip/DisplayObject.h>
+#include <DManip/EditableUnitValueTextBlock.h>
 
 CInplaceSpanLengthEditEvents::CInplaceSpanLengthEditEvents(IBroker* pBroker,SpanIndexType spanIdx) :
 CInplaceEditDisplayObjectEvents(pBroker), m_SpanIdx(spanIdx)
 {
 }
 
-void CInplaceSpanLengthEditEvents::Handle_OnChanged(iDisplayObject* pDO)
+void CInplaceSpanLengthEditEvents::Handle_OnChanged(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   CComQIPtr<iEditableUnitValueTextBlock> pTextBlock(pDO);
+   auto pTextBlock = std::dynamic_pointer_cast<WBFL::DManip::EditableLengthUnitValueTextBlock>(pDO);
    ATLASSERT(pTextBlock);
 
    Float64 new_span_length = pTextBlock->GetEditedValue();

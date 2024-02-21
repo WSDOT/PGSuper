@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2023  Washington State Department of Transportation
+// Copyright © 1999-2024  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,55 +29,21 @@
 #include "BridgeModelViewChildFrame.h"
 #include "PGSuperDocBase.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <DManip/DisplayObject.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDisplayObjectEvents
 
-CBridgeDisplayObjectEvents::CBridgeDisplayObjectEvents(IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,iDisplayObject* pDO,CBridgeDisplayObjectEvents::ViewType viewType)
+CBridgeDisplayObjectEvents::CBridgeDisplayObjectEvents(IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,std::weak_ptr<WBFL::DManip::iDisplayObject> pDO,CBridgeDisplayObjectEvents::ViewType viewType)
 {
    m_pBroker = pBroker;
    m_pFrame = pFrame;
    m_ViewType = viewType;
-   m_DispObj.Attach(pDO);
+   m_DispObj = pDO;
 }
 
 CBridgeDisplayObjectEvents::~CBridgeDisplayObjectEvents()
 {
-}
-
-void CBridgeDisplayObjectEvents::OnFinalRelease()
-{
-   m_DispObj.Detach();
-   CCmdTarget::OnFinalRelease();
-}
-
-BEGIN_INTERFACE_MAP(CBridgeDisplayObjectEvents, CCmdTarget)
-	INTERFACE_PART(CBridgeDisplayObjectEvents, IID_iDisplayObjectEvents, Events)
-END_INTERFACE_MAP()
-
-// Not sure why, but the DELEGATE_CUSTOM_INTERFACE macro isn't working
-// Since the is simple, I've just implemented it directly
-//DELEGATE_CUSTOM_INTERFACE(CBridgeDisplayObjectEvents,Events);
-STDMETHODIMP_(ULONG) CBridgeDisplayObjectEvents::XEvents::AddRef() 
-{ 
-   METHOD_PROLOGUE(CBridgeDisplayObjectEvents, Events) 
-   return pThis->ExternalAddRef(); 
-} 
-STDMETHODIMP_(ULONG) CBridgeDisplayObjectEvents::XEvents::Release() 
-{ 
-   METHOD_PROLOGUE(CBridgeDisplayObjectEvents, Events) 
-   return pThis->ExternalRelease(); 
-} 
-STDMETHODIMP CBridgeDisplayObjectEvents::XEvents::QueryInterface( 
-   REFIID iid, LPVOID* ppvObj) 
-{ 
-   METHOD_PROLOGUE(CBridgeDisplayObjectEvents, Events) 
-   return pThis->ExternalQueryInterface( &iid, ppvObj ); 
 }
 
 void CBridgeDisplayObjectEvents::EditBridge()
@@ -87,13 +53,11 @@ void CBridgeDisplayObjectEvents::EditBridge()
 
 /////////////////////////////////////////////////////////////////////////////
 // CAlignmentDisplayObjectEvents message handlers
-STDMETHODIMP_(bool) CBridgeDisplayObjectEvents::XEvents::OnLButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgeDisplayObjectEvents::OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeDisplayObjectEvents,Events);
-
    if (pDO->IsSelected())
    {
-      pThis->EditBridge();
+      EditBridge();
       return true;
    }
    else
@@ -102,69 +66,59 @@ STDMETHODIMP_(bool) CBridgeDisplayObjectEvents::XEvents::OnLButtonDblClk(iDispla
    }
 }
 
-STDMETHODIMP_(bool) CBridgeDisplayObjectEvents::XEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgeDisplayObjectEvents::OnLButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeDisplayObjectEvents,Events);
    return true;
 }
 
-STDMETHODIMP_(bool) CBridgeDisplayObjectEvents::XEvents::OnLButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgeDisplayObjectEvents::OnLButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgeDisplayObjectEvents::XEvents::OnRButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgeDisplayObjectEvents::OnRButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgeDisplayObjectEvents::XEvents::OnRButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgeDisplayObjectEvents::OnRButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgeDisplayObjectEvents::XEvents::OnRButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgeDisplayObjectEvents::OnRButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgeDisplayObjectEvents::XEvents::OnMouseMove(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgeDisplayObjectEvents::OnMouseMove(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgeDisplayObjectEvents::XEvents::OnMouseWheel(iDisplayObject* pDO,UINT nFlags,short zDelta,CPoint point)
+bool CBridgeDisplayObjectEvents::OnMouseWheel(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,short zDelta,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgeDisplayObjectEvents::XEvents::OnKeyDown(iDisplayObject* pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
+bool CBridgeDisplayObjectEvents::OnKeyDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-   METHOD_PROLOGUE(CBridgeDisplayObjectEvents,Events);
-
    if ( nChar == VK_RETURN )
    {
-      pThis->EditBridge();
+      EditBridge();
       return true;
    }
 
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgeDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObject* pDO,CWnd* pWnd,CPoint point)
+bool CBridgeDisplayObjectEvents::OnContextMenu(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,CWnd* pWnd,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeDisplayObjectEvents,Events);
    if ( pDO->IsSelected() )
    {
       CPGSDocBase* pDoc = (CPGSDocBase*)EAFGetDocument();
       CEAFMenu* pMenu;
-      if ( pThis->m_ViewType == CBridgeDisplayObjectEvents::Plan )
+      if ( m_ViewType == CBridgeDisplayObjectEvents::Plan )
       {
          const std::map<IDType,IAlignmentPlanViewEventCallback*>& callbacks = pDoc->GetAlignmentPlanViewCallbacks();
 
@@ -208,7 +162,7 @@ STDMETHODIMP_(bool) CBridgeDisplayObjectEvents::XEvents::OnContextMenu(iDisplayO
       bool bResult = false;
       if ( 0 < pMenu->GetMenuItemCount() )
       {
-         pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);
+         pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,m_pFrame);
          bResult = true;
       }
 
@@ -220,34 +174,28 @@ STDMETHODIMP_(bool) CBridgeDisplayObjectEvents::XEvents::OnContextMenu(iDisplayO
    return false;
 }
 
-STDMETHODIMP_(void) CBridgeDisplayObjectEvents::XEvents::OnChanged(iDisplayObject* pDO)
+void CBridgeDisplayObjectEvents::OnChanged(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgeDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CBridgeDisplayObjectEvents::XEvents::OnDragMoved(iDisplayObject* pDO,ISize2d* offset)
+void CBridgeDisplayObjectEvents::OnDragMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,const WBFL::Geometry::Size2d& offset)
 {
-   METHOD_PROLOGUE(CBridgeDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CBridgeDisplayObjectEvents::XEvents::OnMoved(iDisplayObject* pDO)
+void CBridgeDisplayObjectEvents::OnMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgeDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CBridgeDisplayObjectEvents::XEvents::OnCopied(iDisplayObject* pDO)
+void CBridgeDisplayObjectEvents::OnCopied(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgeDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CBridgeDisplayObjectEvents::XEvents::OnSelect(iDisplayObject* pDO)
+void CBridgeDisplayObjectEvents::OnSelect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgeDisplayObjectEvents,Events);
-   pThis->m_pFrame->ClearSelection();
-   pThis->m_pFrame->SelectAlignment();
+   m_pFrame->ClearSelection();
+   m_pFrame->SelectAlignment();
 }
 
-STDMETHODIMP_(void) CBridgeDisplayObjectEvents::XEvents::OnUnselect(iDisplayObject* pDO)
+void CBridgeDisplayObjectEvents::OnUnselect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgeDisplayObjectEvents,Events);
 }

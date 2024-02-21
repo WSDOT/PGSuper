@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2023  Washington State Department of Transportation
+// Copyright © 1999-2024  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -20,45 +20,32 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_SUPPORTDRAWSTRATEGYIMPL_H_
-#define INCLUDED_SUPPORTDRAWSTRATEGYIMPL_H_
+#pragma once
 
 #include "SupportDrawStrategy.h"
-#include <DManip\DManip.h>
 
 class CPierData2;
 
-class CSupportDrawStrategyImpl : public CCmdTarget
+class CSupportDrawStrategyImpl : public iSupportDrawStrategy
 {
 public:
    CSupportDrawStrategyImpl(const CPierData2* pPier);
 
-
-   DECLARE_INTERFACE_MAP()
-
-   BEGIN_INTERFACE_PART(Strategy,iSupportDrawStrategy)
-//      STDMETHOD_(void,SetSupport)(ISupport* jnt, long supportID);
-   END_INTERFACE_PART(Strategy)
-
-   BEGIN_INTERFACE_PART(DrawPointStrategy,iDrawPointStrategy)
-      STDMETHOD_(void,Draw)(iPointDisplayObject* pDO,CDC* pDC);
-      STDMETHOD_(void,DrawDragImage)(iPointDisplayObject* pDO,CDC* pDC, iCoordinateMap* map, const CPoint& dragStart, const CPoint& dragPoint);
-      STDMETHOD_(void,DrawHighlite)(iPointDisplayObject* pDO,CDC* pDC,BOOL bHighlite);
-      STDMETHOD_(void,GetBoundingBox)(iPointDisplayObject* pDO, IRect2d** rect);
-   END_INTERFACE_PART(DrawPointStrategy)
+   virtual void Draw(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC) const override;
+   virtual void DrawDragImage(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC, std::shared_ptr<const WBFL::DManip::iCoordinateMap> map, const POINT& dragStart, const POINT& dragPoint) const override;
+   virtual void DrawHighlight(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC, bool bHighlight) const override;
+   virtual WBFL::Geometry::Rect2d GetBoundingBox(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO) const override;
 
 private:
    const CPierData2* m_pPier;
 
-   CComPtr<IPoint2d> m_CachePoint;
+   mutable WBFL::Geometry::Point2d m_CachePoint;
 
-   void Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF outline_color,COLORREF fill_color,IPoint2d* loc);
-   void DrawGround(CDC* pDC, long cx, long cy, long wid, long hgt);
-   void DrawFixedSupport(CDC* pDC, long cx, long cy, long wid, long hgt);
-   void DrawPinnedSupport(CDC* pDC, long cx, long cy, long wid, long hgt);
-   void DrawRollerSupport(CDC* pDC, long cx, long cy, long wid, long hgt);
-   void GetWSymbolSize(iCoordinateMap* pMap, Float64* psx, Float64 *psy);
-   void GetLSymbolSize(iCoordinateMap* pMap, long* psx, long* psy);
+   void Draw(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO,CDC* pDC,COLORREF outline_color,COLORREF fill_color,const WBFL::Geometry::Point2d& loc) const;
+   void DrawGround(CDC* pDC, long cx, long cy, long wid, long hgt) const;
+   void DrawFixedSupport(CDC* pDC, long cx, long cy, long wid, long hgt) const;
+   void DrawPinnedSupport(CDC* pDC, long cx, long cy, long wid, long hgt) const;
+   void DrawRollerSupport(CDC* pDC, long cx, long cy, long wid, long hgt) const;
+   void GetWSymbolSize(std::shared_ptr<const WBFL::DManip::iCoordinateMap> pMap, Float64* psx, Float64 *psy) const;
+   void GetLSymbolSize(std::shared_ptr<const WBFL::DManip::iCoordinateMap> pMap, long* psx, long* psy) const;
 };
-
-#endif // INCLUDED_SUPPORTDRAWSTRATEGYIMPL_H_

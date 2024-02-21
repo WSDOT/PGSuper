@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2023  Washington State Department of Transportation
+// Copyright © 1999-2024  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -20,12 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#if !defined INCLUDED_INPLACESPANLENGTHEDITEVENTS_H_
-#define INCLUDED_INPLACESPANLENGTHEDITEVENTS_H_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 
 #include "InplaceEditDisplayObjectEvents.h"
 
@@ -35,11 +30,8 @@ public:
    CInplaceSpanLengthEditEvents(IBroker* pBroker,SpanIndexType spanIdx);
 
 protected:
-   virtual void Handle_OnChanged(iDisplayObject* pDO);
+   virtual void Handle_OnChanged(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO);
 
 private:
    SpanIndexType m_SpanIdx;
 };
-
-
-#endif //INCLUDED_INPLACESPANLENGTHEDITEVENTS_H_

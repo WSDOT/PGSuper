@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2023  Washington State Department of Transportation
+// Copyright © 1999-2024  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,17 +29,19 @@
 // TogaDisplayObjectFactory.h : header file
 //
 
-#include <DManip\DManip.h>
+#include <DManip/DisplayObjectFactory.h>
 
 class CTxDOTOptionalDesignDoc;
 
 /////////////////////////////////////////////////////////////////////////////
 // CTogaDisplayObjectFactory command target
 
-class CTogaDisplayObjectFactory : public CCmdTarget
+class CTogaDisplayObjectFactory : public WBFL::DManip::iDisplayObjectFactory
 {
 public:
-	CTogaDisplayObjectFactory(CTxDOTOptionalDesignDoc* pDoc);
+   CTogaDisplayObjectFactory() = delete;
+   CTogaDisplayObjectFactory(CTxDOTOptionalDesignDoc* pDoc);
+   virtual ~CTogaDisplayObjectFactory() = default;
 
 // Attributes
 public:
@@ -50,19 +52,10 @@ public:
 
 // Implementation
 protected:
-	CTogaDisplayObjectFactory();
-
-	virtual ~CTogaDisplayObjectFactory();
-
-   DECLARE_INTERFACE_MAP()
-
-   // iTogaDisplayObjectFactory Implementation
-   BEGIN_INTERFACE_PART(Factory,iDisplayObjectFactory)
-      STDMETHOD_(void,Create)(CLIPFORMAT cfFormat,COleDataObject* pDataObject,iDisplayObject** dispObj) override;
-   END_INTERFACE_PART(Factory)
+   std::shared_ptr<WBFL::DManip::iDisplayObject> Create(CLIPFORMAT cfFormat,COleDataObject* pDataObject) const override;
 
 private:
-   CComPtr<iDisplayObjectFactory> m_Factory;
+   std::shared_ptr<WBFL::DManip::iDisplayObjectFactory> m_Factory;
    CTxDOTOptionalDesignDoc* m_pDoc;
 };
 

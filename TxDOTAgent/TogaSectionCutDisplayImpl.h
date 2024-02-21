@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2023  Washington State Department of Transportation
+// Copyright © 1999-2024  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -23,75 +23,59 @@
 #ifndef INCLUDED_SECTIONCUTDISPLAYOBJECT_H_
 #define INCLUDED_SECTIONCUTDISPLAYOBJECT_H_
 
-#include <DManip\DManip.h>
+#include <DManip/DisplayObject.h>
 #include "TogaSectionCutDrawStrategy.h" 
 #include <PgsExt\Keys.h>
 
-class CTogaSectionCutDisplayImpl : public CCmdTarget
+#include <DManip/DrawPointStrategy.h>
+#include <DManip/DisplayObjectEvents.h>
+#include <DManip/DragData.h>
+
+class CTogaSectionCutDisplayImpl : public iTogaSectionCutDrawStrategy, public WBFL::DManip::iDrawPointStrategy, public WBFL::DManip::iDisplayObjectEvents, public WBFL::DManip::iDragData
 {
 public:
    CTogaSectionCutDisplayImpl();
    ~CTogaSectionCutDisplayImpl();
 
-   DECLARE_INTERFACE_MAP()
+   virtual void SetColor(COLORREF color) override;
+   virtual void Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, IBroker* pBroker, const CSegmentKey& segmentKey, iCutLocation* pCutLoc) override;
 
-   BEGIN_INTERFACE_PART(Strategy,iTogaSectionCutDrawStrategy)
-   STDMETHOD_(void,SetColor)(COLORREF color) override;
-	STDMETHOD_(void,Init)(iPointDisplayObject* pDO, IBroker* pBroker,const CSegmentKey& segmentKey, iCutLocation* pCutLoc) override;
-   END_INTERFACE_PART(Strategy)
+   virtual void Draw(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC) const override;
+   virtual void DrawDragImage(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC, std::shared_ptr<const WBFL::DManip::iCoordinateMap> map, const POINT& dragStart, const POINT& dragPoint) const override;
+   virtual void DrawHighlight(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC, bool bHighlight) const override;
+   virtual WBFL::Geometry::Rect2d GetBoundingBox(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO) const override;
 
-//   BEGIN_INTERFACE_PART(Events,iSectionCutEvents)
-//   END_INTERFACE_PART(Events)
-
-   BEGIN_INTERFACE_PART(DrawPointStrategy,iDrawPointStrategy)
-      STDMETHOD_(void,Draw)(iPointDisplayObject* pDO,CDC* pDC) override;
-      STDMETHOD_(void,DrawDragImage)(iPointDisplayObject* pDO,CDC* pDC, iCoordinateMap* map, const CPoint& dragStart, const CPoint& dragPoint) override;
-      STDMETHOD_(void,DrawHighlite)(iPointDisplayObject* pDO,CDC* pDC,BOOL bHighlite) override;
-      STDMETHOD_(void,GetBoundingBox)(iPointDisplayObject* pDO, IRect2d** rect) override;
-   END_INTERFACE_PART(DrawPointStrategy)
-
-   BEGIN_INTERFACE_PART(DisplayObjectEvents,iDisplayObjectEvents)
-      STDMETHOD_(void,OnChanged)(iDisplayObject* pDO) override;
-      STDMETHOD_(void,OnDragMoved)(iDisplayObject* pDO,ISize2d* offset) override;
-      STDMETHOD_(void,OnMoved)(iDisplayObject* pDO) override;
-      STDMETHOD_(void,OnCopied)(iDisplayObject* pDO) override;
-      STDMETHOD_(bool,OnLButtonDblClk)(iDisplayObject* pDO,UINT nFlags,CPoint point) override;
-      STDMETHOD_(bool,OnLButtonDown)(iDisplayObject* pDO,UINT nFlags,CPoint point) override;
-      STDMETHOD_(bool,OnRButtonDblClk)(iDisplayObject* pDO,UINT nFlags,CPoint point) override;
-      STDMETHOD_(bool,OnRButtonDown)(iDisplayObject* pDO,UINT nFlags,CPoint point) override;
-      STDMETHOD_(bool,OnRButtonUp)(iDisplayObject* pDO,UINT nFlags,CPoint point) override;
-      STDMETHOD_(bool,OnLButtonUp)(iDisplayObject* pDO,UINT nFlags,CPoint point) override;
-      STDMETHOD_(bool,OnMouseMove)(iDisplayObject* pDO,UINT nFlags,CPoint point) override;
-      STDMETHOD_(bool,OnMouseWheel)(iDisplayObject* pDO,UINT nFlags,short zDelta,CPoint point) override;
-      STDMETHOD_(bool,OnKeyDown)(iDisplayObject* pDO,UINT nChar, UINT nRepCnt, UINT nFlags) override;
-      STDMETHOD_(bool,OnContextMenu)(iDisplayObject* pDO,CWnd* pWnd,CPoint point) override;
-      STDMETHOD_(void,OnSelect)(iDisplayObject* pDO) override;
-      STDMETHOD_(void,OnUnselect)(iDisplayObject* pDO) override;
-   END_INTERFACE_PART(DisplayObjectEvents)
+   virtual bool OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnLButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnLButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnRButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnRButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnRButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnMouseMove(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnMouseWheel(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nFlags, short zDelta, const POINT& point) override;
+   virtual bool OnKeyDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, UINT nChar, UINT nRepCnt, UINT nFlags) override;
+   virtual bool OnContextMenu(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, CWnd* pWnd, const POINT& point) override;
+   virtual void OnChanged(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
+   virtual void OnDragMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, const WBFL::Geometry::Size2d& offset) override;
+   virtual void OnMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
+   virtual void OnCopied(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
+   virtual void OnSelect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
+   virtual void OnUnselect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO) override;
  
    // iDragData Implementation
-   BEGIN_INTERFACE_PART(DragData,iDragData)
-      STDMETHOD_(UINT,Format)() override;
-      STDMETHOD_(BOOL,PrepareForDrag)(iDisplayObject* pDO,iDragDataSink* pSink) override;
-      STDMETHOD_(void,OnDrop)(iDisplayObject* pDO,iDragDataSource* pSource) override;
-   END_INTERFACE_PART(DragData)
+   virtual UINT Format() override;
+   virtual bool PrepareForDrag(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, std::shared_ptr<WBFL::DManip::iDragDataSink> pSink) override;
+   virtual void OnDrop(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO, std::shared_ptr<WBFL::DManip::iDragDataSource> pSource) override;
 
-	DECLARE_MESSAGE_MAP()
-
-   DECLARE_DISPATCH_MAP()
-
-    // Note from George Shepherd: ClassWizard looks for these comments:
-    // Generated OLE dispatch map functions
-    //{{AFX_DISPATCH(AClassWithAutomation)
-    //}}AFX_DISPATCH
 public: 
    static UINT ms_Format;
 
 private:
-   void Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF color, IPoint2d* loc);
-   void GetBoundingBox(iPointDisplayObject* pDO, Float64 position, 
-                       Float64* top, Float64* left, Float64* right, Float64* bottom);
-   Float64 GetGirderHeight(Float64 distFromStartOfGirder);
+   void Draw(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC, COLORREF color, const WBFL::Geometry::Point2d& loc) const;
+   void GetBoundingBox(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, Float64 Xgl,
+      Float64* top, Float64* left, Float64* right, Float64* bottom) const;
+
+   Float64 GetGirderHeight(Float64 distFromStartOfGirder) const;
 
    COLORREF           m_Color;
    CSegmentKey        m_SegmentKey;
@@ -99,7 +83,7 @@ private:
    Float64            m_gdrLength;
    iCutLocation*      m_pCutLocation;
    
-   CComPtr<IPoint2d> m_CachePoint;
+   mutable WBFL::Geometry::Point2d m_CachePoint;
 
    void PutPosition(Float64 pos);
 };

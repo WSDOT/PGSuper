@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2023  Washington State Department of Transportation
+// Copyright © 1999-2024  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,14 +25,13 @@
 #include "BridgeModelViewChildFrame.h"
 #include <IFace\Alignment.h>
 #include <IFace\Bridge.h>
-#include "mfcdual.h"
 #include <MathEx.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <WBFLGeometry/GeomHelpers.h>
+
+#include <DManip/PointDisplayObject.h>
+#include <DManip/DisplayMgr.h>
+#include <DManip/TaskFactory.h>
 
 // height of section cut above/below girder
 static const Float64 SSIZE = 1440 * 3/8; // (twips)
@@ -40,170 +39,84 @@ static const Float64 SSIZE = 1440 * 3/8; // (twips)
 
 UINT CBridgeSectionCutDisplayImpl::ms_Format = ::RegisterClipboardFormat(_T("BridgeSectionCutData"));
 
-CBridgeSectionCutDisplayImpl::CBridgeSectionCutDisplayImpl():
-m_pCutLocation(nullptr),
-m_Color(RGB(0,0,220)),
-m_pFrame(0)
+void CBridgeSectionCutDisplayImpl::Init(CBridgeModelViewChildFrame* pFrame,std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, IRoadway* pRoadway,IBridge* pBridge, iCutLocation* pCutLoc)
 {
-   EnableAutomation ();
+   m_pFrame = pFrame;
+   m_pRoadway = pRoadway;
+   m_pBridge = pBridge;
+   m_pCutLocation = pCutLoc;
 
-   m_CachePoint.CoCreateInstance(CLSID_Point2d);
-}
-
-CBridgeSectionCutDisplayImpl::~CBridgeSectionCutDisplayImpl()
-{
-}
-
-BEGIN_MESSAGE_MAP(CBridgeSectionCutDisplayImpl, CCmdTarget)
-	//{{AFX_MSG_MAP(CBridgeSectionCutDisplayImpl)
-		// NOTE - the ClassWizard will add and remove mapping macros here.
-		//    DO NOT EDIT what you see in these blocks of generated code!
-	//}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-
-BEGIN_INTERFACE_MAP(CBridgeSectionCutDisplayImpl,CCmdTarget)
-   INTERFACE_PART(CBridgeSectionCutDisplayImpl,IID_iDrawPointStrategy,DrawPointStrategy)
-   INTERFACE_PART(CBridgeSectionCutDisplayImpl,IID_iBridgeSectionCutDrawStrategy,Strategy)
-//   INTERFACE_PART(CBridgeSectionCutDisplayImpl,IID_iSectionCutEvents,Events)
-   INTERFACE_PART(CBridgeSectionCutDisplayImpl,IID_iDisplayObjectEvents,DisplayObjectEvents)
-   INTERFACE_PART(CBridgeSectionCutDisplayImpl,IID_iDragData,DragData)
-END_INTERFACE_MAP()
-
-DELEGATE_CUSTOM_INTERFACE(CBridgeSectionCutDisplayImpl,DrawPointStrategy);
-DELEGATE_CUSTOM_INTERFACE(CBridgeSectionCutDisplayImpl,Strategy);
-//DELEGATE_CUSTOM_INTERFACE(CBridgeSectionCutDisplayImpl,Events);
-DELEGATE_CUSTOM_INTERFACE(CBridgeSectionCutDisplayImpl,DisplayObjectEvents);
-DELEGATE_CUSTOM_INTERFACE(CBridgeSectionCutDisplayImpl,DragData);
-
-// This goes in the source code file
- // Note: ClassWizard looks for these comments:
- BEGIN_DISPATCH_MAP(CBridgeSectionCutDisplayImpl, CCmdTarget)
-     //{{AFX_DISPATCH_MAP(AClassWithAutomation)
-        // NOTE - the ClassWizard will add and remove mapping macros here.
-     //}}AFX_DISPATCH_MAP
- END_DISPATCH_MAP()
- 
-
-
-STDMETHODIMP_(void) CBridgeSectionCutDisplayImpl::XStrategy::Init(CBridgeModelViewChildFrame* pFrame,iPointDisplayObject* pDO, IRoadway* pRoadway,IBridge* pBridge, iCutLocation* pCutLoc)
-{
-   METHOD_PROLOGUE(CBridgeSectionCutDisplayImpl,Strategy);
-
-   pThis->m_pFrame = pFrame;
-   pThis->m_pRoadway = pRoadway;
-   pThis->m_pBridge = pBridge;
-   pThis->m_pCutLocation = pCutLoc;
-
-   Float64 pos = pThis->m_pCutLocation->GetCurrentCutLocation();
-
-   CComPtr<IPoint2d> pnt;
-   pnt.CoCreateInstance(CLSID_Point2d);
-   pnt->put_X(pos);
-   pnt->put_Y( 0.0 );
-   pDO->SetPosition(pnt, FALSE, FALSE);
-
+   Float64 pos = m_pCutLocation->GetCurrentCutLocation();
+   
+   WBFL::Geometry::Point2d pnt(pos, 0.0);
+   pDO->SetPosition(pnt, false, false);
 }
 
 
-STDMETHODIMP_(void) CBridgeSectionCutDisplayImpl::XStrategy::SetColor(COLORREF color)
+void CBridgeSectionCutDisplayImpl::SetColor(COLORREF color)
 {
-   METHOD_PROLOGUE(CBridgeSectionCutDisplayImpl,Strategy);
-   pThis->m_Color = color;
+   m_Color = color;
 }
 
-
-STDMETHODIMP_(void) CBridgeSectionCutDisplayImpl::XDrawPointStrategy::Draw(iPointDisplayObject* pDO,CDC* pDC)
+void CBridgeSectionCutDisplayImpl::Draw(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO,CDC* pDC) const
 {
-   METHOD_PROLOGUE(CBridgeSectionCutDisplayImpl,DrawPointStrategy);
-
-   CComPtr<iDisplayList> pDL;
-   pDO->GetDisplayList(&pDL);
-
-   CComPtr<iDisplayMgr> pDispMgr;
-   pDL->GetDisplayMgr(&pDispMgr);
+   auto pDL = pDO->GetDisplayList();
+   auto pDispMgr = pDL->GetDisplayMgr();
 
    COLORREF color;
 
    if ( pDO->IsSelected() )
       color = pDispMgr->GetSelectionLineColor();
    else
-      color = pThis->m_Color;
+      color = m_Color;
 
-   CComPtr<IPoint2d> pos;
-   pDO->GetPosition(&pos);
+   auto pos = pDO->GetPosition();
 
-   pThis->Draw(pDO,pDC,color,pos);
+   Draw(pDO,pDC,color,pos);
 }
 
-STDMETHODIMP_(void) CBridgeSectionCutDisplayImpl::XDrawPointStrategy::DrawHighlite(iPointDisplayObject* pDO,CDC* pDC,BOOL bHighlite)
+void CBridgeSectionCutDisplayImpl::DrawHighlight(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO,CDC* pDC,bool bHighlite) const
 {
-   METHOD_PROLOGUE(CBridgeSectionCutDisplayImpl,DrawPointStrategy);
    Draw(pDO,pDC);
 }
 
-STDMETHODIMP_(void) CBridgeSectionCutDisplayImpl::XDrawPointStrategy::DrawDragImage(iPointDisplayObject* pDO,CDC* pDC, iCoordinateMap* map, const CPoint& dragStart, const CPoint& dragPoint)
+void CBridgeSectionCutDisplayImpl::DrawDragImage(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO,CDC* pDC, std::shared_ptr<const WBFL::DManip::iCoordinateMap> map, const POINT& dragStart, const POINT& dragPoint) const 
 {
-   METHOD_PROLOGUE(CBridgeSectionCutDisplayImpl,DrawPointStrategy);
-
    Float64 wx, wy;
    map->LPtoWP(dragPoint.x, dragPoint.y, &wx, &wy);
    map->WPtoMP(wx, wy, &wx, &wy);
-   pThis->m_CachePoint->put_X(wx);
-   pThis->m_CachePoint->put_Y(wy);
-
-   pThis->Draw(pDO,pDC,RGB(150,150,150),pThis->m_CachePoint);
+   m_CachePoint.Move(wx, wy);
+   Draw(pDO,pDC,RGB(150,150,150),m_CachePoint);
 }
 
 
-STDMETHODIMP_(void) CBridgeSectionCutDisplayImpl::XDrawPointStrategy::GetBoundingBox(iPointDisplayObject* pDO, IRect2d** rect)
+WBFL::Geometry::Rect2d CBridgeSectionCutDisplayImpl::GetBoundingBox(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO) const
 {
-   METHOD_PROLOGUE(CBridgeSectionCutDisplayImpl,DrawPointStrategy);
-
-   CComPtr<IPoint2d> pnt;
-   pDO->GetPosition(&pnt);
+   auto pnt = pDO->GetPosition();
    
-   Float64 xpos;
-   pnt->get_X(&xpos);
+   Float64 xpos = pnt.X();
 
    Float64 top, left, right, bottom;
-   pThis->GetBoundingBox(pDO, xpos, &top, &left, &right, &bottom);
+   GetBoundingBox(pDO, xpos, &top, &left, &right, &bottom);
 
-   CComPtr<IRect2d> bounding_box;
-   bounding_box.CoCreateInstance(CLSID_Rect2d);
-
-   bounding_box->put_Top(top);
-   bounding_box->put_Bottom(bottom);
-   bounding_box->put_Left(left);
-   bounding_box->put_Right(right);
-
-   (*rect) = bounding_box;
-   (*rect)->AddRef();
+   return { left,bottom,right,top };
 }
 
-void CBridgeSectionCutDisplayImpl::GetBoundingBox(iPointDisplayObject* pDO, Float64 position, 
-                                            Float64* top, Float64* left, Float64* right, Float64* bottom)
+void CBridgeSectionCutDisplayImpl::GetBoundingBox(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, Float64 position, Float64* top, Float64* left, Float64* right, Float64* bottom) const
 {
-   CComPtr<IPoint2d> pos;
-   pDO->GetPosition(&pos);
+   auto pos = pDO->GetPosition();
 
-   CComPtr<IPoint2d> p1,p2;
-   GetSectionCutPointsInWorldSpace(pDO,pos,&p1,&p2);
+   auto [p1,p2] = GetSectionCutPointsInWorldSpace(pDO,pos);
 
-   Float64 x1,y1,x2,y2;
-   p1->get_X(&x1);
-   p1->get_Y(&y1);
-   p2->get_X(&x2);
-   p2->get_Y(&y2);
+   auto [x1, y1] = p1.GetLocation();
+   auto [x2, y2] = p2.GetLocation();
 
    POINT left_arrow[3], right_arrow[3];
    GetArrowHeadPoints(pDO,pos,left_arrow,right_arrow);
 
-   CComPtr<iDisplayList> pDL;
-   pDO->GetDisplayList(&pDL);
-   CComPtr<iDisplayMgr> pDispMgr;
-   pDL->GetDisplayMgr(&pDispMgr);
-   CComPtr<iCoordinateMap> pMap;
-   pDispMgr->GetCoordinateMap(&pMap);
+   auto pDL = pDO->GetDisplayList();
+   auto pDispMgr = pDL->GetDisplayMgr();
+   auto pMap = pDispMgr->GetCoordinateMap();
 
    Float64 lx, ly, rx, ry;
    pMap->LPtoWP(left_arrow[1].x, left_arrow[1].y,  &lx,&ly);
@@ -215,10 +128,13 @@ void CBridgeSectionCutDisplayImpl::GetBoundingBox(iPointDisplayObject* pDO, Floa
    *right  = Max( Max(x1,x2), Max(lx,rx) );
 }
 
-void CBridgeSectionCutDisplayImpl::GetSectionCutPointsInWorldSpace(iPointDisplayObject* pDO,IPoint2d* userLoc,IPoint2d** p1,IPoint2d** p2)
+std::pair<WBFL::Geometry::Point2d,WBFL::Geometry::Point2d> CBridgeSectionCutDisplayImpl::GetSectionCutPointsInWorldSpace(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO,const WBFL::Geometry::Point2d& userLoc) const
 {
+   CComPtr<IPoint2d> p;
+   p.CoCreateInstance(CLSID_Point2d);
+   p->Move(userLoc.X(), userLoc.Y());
    Float64 station, offset;
-   m_pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,userLoc,&station,&offset);
+   m_pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,p,&station,&offset);
    
    CComPtr<IDirection> normal;
    m_pRoadway->GetBearingNormal(station,&normal);
@@ -229,50 +145,42 @@ void CBridgeSectionCutDisplayImpl::GetSectionCutPointsInWorldSpace(iPointDisplay
    Float64 left  = m_pBridge->GetLeftSlabEdgeOffset(Xb);
    Float64 right = m_pBridge->GetRightSlabEdgeOffset(Xb);
 
-   m_pRoadway->GetPoint(station, left,  normal, pgsTypes::pcGlobal, p1);
-   m_pRoadway->GetPoint(station, right, normal, pgsTypes::pcGlobal, p2);
+   CComPtr<IPoint2d> p1, p2;
+   m_pRoadway->GetPoint(station, left,  normal, pgsTypes::pcGlobal, &p1);
+   m_pRoadway->GetPoint(station, right, normal, pgsTypes::pcGlobal, &p2);
 
-   Float64 x1, y1; (*p1)->Location(&x1, &y1);
-   Float64 x2, y2; (*p2)->Location(&x2, &y2);
+   Float64 x1, y1; p1->Location(&x1, &y1);
+   Float64 x2, y2; p2->Location(&x2, &y2);
 
    Float64 dx = x2 - x1;
    Float64 dy = y2 - y1;
 
    Float64 extension_factor = 0.1;
 
-   (*p1)->Offset(-extension_factor*dx,-extension_factor*dy);
-   (*p2)->Offset( extension_factor*dx, extension_factor*dy);
+   p1->Offset(-extension_factor*dx,-extension_factor*dy);
+   p2->Offset( extension_factor*dx, extension_factor*dy);
 
    // map to world space
-   CComPtr<iDisplayList> pDL;
-   pDO->GetDisplayList(&pDL);
-   CComPtr<iDisplayMgr> pDispMgr;
-   pDL->GetDisplayMgr(&pDispMgr);
+   auto pDL = pDO->GetDisplayList();
+   auto pDispMgr = pDL->GetDisplayMgr();
+   auto map = pDispMgr->GetCoordinateMap();
 
-   CComPtr<iCoordinateMap> map;
-   pDispMgr->GetCoordinateMap(&map);
-
-   (*p1)->Location(&x1, &y1);
-   (*p2)->Location(&x2, &y2);
+   p1->Location(&x1, &y1);
+   p2->Location(&x2, &y2);
 
    map->MPtoWP(x1,y1,&x1,&y1);
    map->MPtoWP(x2,y2,&x2,&y2);
 
-   (*p1)->Move(x1,y1);
-   (*p2)->Move(x2,y2);
+   return { {x1,y1}, {x2,y2} };
 }
 
-void CBridgeSectionCutDisplayImpl::GetSectionCutPointsInLogicalSpace(iPointDisplayObject* pDO,IPoint2d* userLoc,POINT& p1,POINT& p2)
+void CBridgeSectionCutDisplayImpl::GetSectionCutPointsInLogicalSpace(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO,const WBFL::Geometry::Point2d& userLoc,POINT& p1,POINT& p2) const
 {
-   CComPtr<IPoint2d> left_point,right_point;
-   GetSectionCutPointsInWorldSpace(pDO,userLoc,&left_point,&right_point);
+   auto [left_point,right_point] = GetSectionCutPointsInWorldSpace(pDO,userLoc);
 
-   CComPtr<iDisplayList> pDL;
-   pDO->GetDisplayList(&pDL);
-   CComPtr<iDisplayMgr> pDispMgr;
-   pDL->GetDisplayMgr(&pDispMgr);
-   CComPtr<iCoordinateMap> pMap;
-   pDispMgr->GetCoordinateMap(&pMap);
+   auto pDL = pDO->GetDisplayList();
+   auto pDispMgr = pDL->GetDisplayMgr();
+   auto pMap = pDispMgr->GetCoordinateMap();
 
    long x1,y1, x2,y2;
    pMap->WPtoLP(left_point,&x1,&y1);
@@ -285,14 +193,14 @@ void CBridgeSectionCutDisplayImpl::GetSectionCutPointsInLogicalSpace(iPointDispl
    p2.y = y2;
 }
 
-void CBridgeSectionCutDisplayImpl::GetArrowHeadPoints(iPointDisplayObject* pDO,IPoint2d* userLoc,POINT* left,POINT* right)
+void CBridgeSectionCutDisplayImpl::GetArrowHeadPoints(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO,const WBFL::Geometry::Point2d& userLoc, POINT* left, POINT* right) const
 {
    CPoint p1,p2;
    GetSectionCutPointsInLogicalSpace(pDO,userLoc,p1,p2);
    GetArrowHeadPoints(pDO,userLoc,p1,p2,left,right);
 }
 
-void CBridgeSectionCutDisplayImpl::GetArrowHeadPoints(iPointDisplayObject* pDO,IPoint2d* userLoc,CPoint p1,CPoint p2,POINT* left,POINT* right)
+void CBridgeSectionCutDisplayImpl::GetArrowHeadPoints(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, const WBFL::Geometry::Point2d& userLoc,CPoint p1,CPoint p2,POINT* left,POINT* right) const
 {
    // arrows
    Float64 dx,dy;
@@ -319,7 +227,7 @@ void CBridgeSectionCutDisplayImpl::GetArrowHeadPoints(iPointDisplayObject* pDO,I
    right[2].y = LONG(p2.y - xs*sin(angle));
 }
 
-void CBridgeSectionCutDisplayImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,COLORREF color,IPoint2d* userLoc)
+void CBridgeSectionCutDisplayImpl::Draw(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO,CDC* pDC,COLORREF color,const WBFL::Geometry::Point2d& userLoc) const
 {
    CPoint p1,p2;
    GetSectionCutPointsInLogicalSpace(pDO,userLoc,p1,p2);
@@ -343,49 +251,42 @@ void CBridgeSectionCutDisplayImpl::Draw(iPointDisplayObject* pDO,CDC* pDC,COLORR
    pDC->SelectObject(old_brush);
 }
 
-STDMETHODIMP_(void) CBridgeSectionCutDisplayImpl::XDisplayObjectEvents::OnChanged(iDisplayObject* pDO)
+void CBridgeSectionCutDisplayImpl::OnChanged(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgeSectionCutDisplayImpl,DisplayObjectEvents);
 }
 
-
-STDMETHODIMP_(void) CBridgeSectionCutDisplayImpl::XDisplayObjectEvents::OnDragMoved(iDisplayObject* pDO,ISize2d* offset)
+void CBridgeSectionCutDisplayImpl::OnDragMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,const WBFL::Geometry::Size2d& offset)
 {
-   METHOD_PROLOGUE(CBridgeSectionCutDisplayImpl,DisplayObjectEvents);
-
-   Float64 pos =  pThis->m_pCutLocation->GetCurrentCutLocation();
+   Float64 pos =  m_pCutLocation->GetCurrentCutLocation();
 
    CComPtr<IDirection> direction;
-   pThis->m_pRoadway->GetBearing(pos,&direction);
+   m_pRoadway->GetBearing(pos,&direction);
 
    CComPtr<IPoint2d> point;
-   pThis->m_pRoadway->GetPoint(pos,0.00,direction,pgsTypes::pcGlobal,&point);
+   m_pRoadway->GetPoint(pos,0.00,direction,pgsTypes::pcGlobal,&point);
 
-   point->OffsetEx(offset);
+   point->Offset(offset.Dx(), offset.Dy());
 
    Float64 station, alignment_offset;
-   pThis->m_pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,point,&station,&alignment_offset);
+   m_pRoadway->GetStationAndOffset(pgsTypes::pcGlobal,point,&station,&alignment_offset);
 
-   pThis->PutPosition(station);
+   PutPosition(station);
 }
 
-STDMETHODIMP_(void) CBridgeSectionCutDisplayImpl::XDisplayObjectEvents::OnMoved(iDisplayObject* pDO)
+void CBridgeSectionCutDisplayImpl::OnMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgeSectionCutDisplayImpl,DisplayObjectEvents);
 }
 
-STDMETHODIMP_(void) CBridgeSectionCutDisplayImpl::XDisplayObjectEvents::OnCopied(iDisplayObject* pDO)
+void CBridgeSectionCutDisplayImpl::OnCopied(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
    ASSERT(FALSE); 
 }
 
-STDMETHODIMP_(bool) CBridgeSectionCutDisplayImpl::XDisplayObjectEvents::OnLButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgeSectionCutDisplayImpl::OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeSectionCutDisplayImpl,DisplayObjectEvents);
-
    if (pDO->IsSelected())
    {
-      pThis->m_pCutLocation->ShowCutDlg();
+      m_pCutLocation->ShowCutDlg();
       return true;
    }
    else
@@ -394,72 +295,58 @@ STDMETHODIMP_(bool) CBridgeSectionCutDisplayImpl::XDisplayObjectEvents::OnLButto
    }
 }
 
-STDMETHODIMP_(bool) CBridgeSectionCutDisplayImpl::XDisplayObjectEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgeSectionCutDisplayImpl::OnLButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   CComPtr<iDisplayList> list;
-   pDO->GetDisplayList(&list);
-
-   CComPtr<iDisplayMgr> dispMgr;
-   list->GetDisplayMgr(&dispMgr);
+   auto list = pDO->GetDisplayList();
+   auto dispMgr = list->GetDisplayMgr();
 
    dispMgr->SelectObject(pDO,true);
 
    // d&d task
-   CComPtr<iTaskFactory> factory;
-   dispMgr->GetTaskFactory(&factory);
-   CComPtr<iTask> task;
-   factory->CreateLocalDragDropTask(dispMgr,point,&task);
+   auto factory = dispMgr->GetTaskFactory();
+   auto task = factory->CreateLocalDragDropTask(dispMgr,point);
    dispMgr->SetTask(task);
 
    return true;
 }
 
-STDMETHODIMP_(bool) CBridgeSectionCutDisplayImpl::XDisplayObjectEvents::OnRButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgeSectionCutDisplayImpl::OnRButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeSectionCutDisplayImpl,DisplayObjectEvents);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgeSectionCutDisplayImpl::XDisplayObjectEvents::OnLButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgeSectionCutDisplayImpl::OnLButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeSectionCutDisplayImpl,DisplayObjectEvents);
    return false;
 }
 
 
-STDMETHODIMP_(bool) CBridgeSectionCutDisplayImpl::XDisplayObjectEvents::OnRButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgeSectionCutDisplayImpl::OnRButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeSectionCutDisplayImpl,DisplayObjectEvents);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgeSectionCutDisplayImpl::XDisplayObjectEvents::OnRButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgeSectionCutDisplayImpl::OnRButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeSectionCutDisplayImpl,DisplayObjectEvents);
-   return false;
-  
-}
-
-STDMETHODIMP_(bool) CBridgeSectionCutDisplayImpl::XDisplayObjectEvents::OnMouseMove(iDisplayObject* pDO,UINT nFlags,CPoint point)
-{
-   METHOD_PROLOGUE(CBridgeSectionCutDisplayImpl,DisplayObjectEvents);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgeSectionCutDisplayImpl::XDisplayObjectEvents::OnMouseWheel(iDisplayObject* pDO,UINT nFlags,short zDelta,CPoint point)
+bool CBridgeSectionCutDisplayImpl::OnMouseMove(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeSectionCutDisplayImpl,DisplayObjectEvents);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgeSectionCutDisplayImpl::XDisplayObjectEvents::OnKeyDown(iDisplayObject* pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
+bool CBridgeSectionCutDisplayImpl::OnMouseWheel(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,short zDelta,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeSectionCutDisplayImpl,DisplayObjectEvents);
+   return false;
+}
 
+bool CBridgeSectionCutDisplayImpl::OnKeyDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
+{
    switch(nChar)
    {
       case VK_RETURN:
-         pThis->m_pCutLocation->ShowCutDlg();
+         m_pCutLocation->ShowCutDlg();
          return true;
       break;
    }
@@ -467,10 +354,8 @@ STDMETHODIMP_(bool) CBridgeSectionCutDisplayImpl::XDisplayObjectEvents::OnKeyDow
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgeSectionCutDisplayImpl::XDisplayObjectEvents::OnContextMenu(iDisplayObject* pDO,CWnd* pWnd,CPoint point)
+bool CBridgeSectionCutDisplayImpl::OnContextMenu(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,CWnd* pWnd,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeSectionCutDisplayImpl,DisplayObjectEvents);
-
    return false;
 }
 
@@ -479,28 +364,22 @@ void CBridgeSectionCutDisplayImpl::PutPosition(Float64 pos)
    m_pCutLocation->CutAt(pos);
 }
 
-
-STDMETHODIMP_(void) CBridgeSectionCutDisplayImpl::XDisplayObjectEvents::OnSelect(iDisplayObject* pDO)
+void CBridgeSectionCutDisplayImpl::OnSelect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgeSectionCutDisplayImpl,DisplayObjectEvents);
-   pThis->m_pFrame->ClearSelection();
+   m_pFrame->ClearSelection();
 }
 
-STDMETHODIMP_(void) CBridgeSectionCutDisplayImpl::XDisplayObjectEvents::OnUnselect(iDisplayObject* pDO)
+void CBridgeSectionCutDisplayImpl::OnUnselect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgeSectionCutDisplayImpl,DisplayObjectEvents);
 }
 
-STDMETHODIMP_(UINT) CBridgeSectionCutDisplayImpl::XDragData::Format()
+UINT CBridgeSectionCutDisplayImpl::Format()
 {
-   METHOD_PROLOGUE(CBridgeSectionCutDisplayImpl,DragData);
    return ms_Format;
 }
 
-STDMETHODIMP_(BOOL) CBridgeSectionCutDisplayImpl::XDragData::PrepareForDrag(iDisplayObject* pDO,iDragDataSink* pSink)
+bool CBridgeSectionCutDisplayImpl::PrepareForDrag(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,std::shared_ptr<WBFL::DManip::iDragDataSink> pSink)
 {
-   METHOD_PROLOGUE(CBridgeSectionCutDisplayImpl,DragData);
-
    // Create a place to store the drag data for this object
    pSink->CreateFormat(ms_Format);
 
@@ -508,19 +387,17 @@ STDMETHODIMP_(BOOL) CBridgeSectionCutDisplayImpl::XDragData::PrepareForDrag(iDis
    DWORD threadid = thread->m_nThreadID;
 
    pSink->Write(ms_Format,&threadid,sizeof(DWORD));
-   pSink->Write(ms_Format,&pThis->m_pFrame,sizeof(CBridgeModelViewChildFrame*));
-   pSink->Write(ms_Format,&pThis->m_Color,sizeof(COLORREF));
-   pSink->Write(ms_Format,&pThis->m_pRoadway,sizeof(IRoadway));
-   pSink->Write(ms_Format,&pThis->m_pBridge,sizeof(IBridge));
-   pSink->Write(ms_Format,&pThis->m_pCutLocation,sizeof(iCutLocation*));
+   pSink->Write(ms_Format,&m_pFrame,sizeof(CBridgeModelViewChildFrame*));
+   pSink->Write(ms_Format,&m_Color,sizeof(COLORREF));
+   pSink->Write(ms_Format,&m_pRoadway,sizeof(IRoadway));
+   pSink->Write(ms_Format,&m_pBridge,sizeof(IBridge));
+   pSink->Write(ms_Format,&m_pCutLocation,sizeof(iCutLocation*));
 
    return TRUE;
 }
 
-STDMETHODIMP_(void) CBridgeSectionCutDisplayImpl::XDragData::OnDrop(iDisplayObject* pDO,iDragDataSource* pSource)
+void CBridgeSectionCutDisplayImpl::OnDrop(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,std::shared_ptr<WBFL::DManip::iDragDataSource> pSource)
 {
-   METHOD_PROLOGUE(CBridgeSectionCutDisplayImpl,DragData);
-
    // Tell the source we are about to read from our format
    pSource->PrepareFormat(ms_Format);
 
@@ -530,11 +407,10 @@ STDMETHODIMP_(void) CBridgeSectionCutDisplayImpl::XDragData::OnDrop(iDisplayObje
    DWORD threadl;
    pSource->Read(ms_Format,&threadl,sizeof(DWORD));
    ATLASSERT(threadid == threadl);
-   pSource->Read(ms_Format,&pThis->m_pFrame,sizeof(CBridgeModelViewChildFrame*));
-   pSource->Read(ms_Format,&pThis->m_Color,sizeof(COLORREF));
-   pSource->Read(ms_Format,&pThis->m_pRoadway,sizeof(IRoadway));
-   pSource->Read(ms_Format,&pThis->m_pBridge ,sizeof(IBridge));
-   pSource->Read(ms_Format,&pThis->m_pCutLocation,sizeof(iCutLocation*));
-
+   pSource->Read(ms_Format,&m_pFrame,sizeof(CBridgeModelViewChildFrame*));
+   pSource->Read(ms_Format,&m_Color,sizeof(COLORREF));
+   pSource->Read(ms_Format,&m_pRoadway,sizeof(IRoadway));
+   pSource->Read(ms_Format,&m_pBridge ,sizeof(IBridge));
+   pSource->Read(ms_Format,&m_pCutLocation,sizeof(iCutLocation*));
 }
 

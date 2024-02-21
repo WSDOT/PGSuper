@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2023  Washington State Department of Transportation
+// Copyright © 1999-2024  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -34,11 +34,14 @@
 #include <IFace\Bridge.h>
 #include <IFace\EditByUI.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <DManip/DisplayObject.h>
+#include <DManip/DisplayList.h>
+#include <DManip/DisplayMgr.h>
+#include <DManip/DisplayView.h>
+#include <DManip/PointDisplayObject.h>
+#include <DManip/ShapeDrawStrategy.h>
+#include <DManip/CompositeDisplayObject.h>
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgePlanViewSlabDisplayObjectEvents
@@ -53,12 +56,6 @@ CBridgePlanViewSlabDisplayObjectEvents::CBridgePlanViewSlabDisplayObjectEvents(C
    GET_IFACE(IBridge,pBridge);
    m_nPiers = pBridge->GetPierCount();
 }
-
-BEGIN_INTERFACE_MAP(CBridgePlanViewSlabDisplayObjectEvents, CCmdTarget)
-	INTERFACE_PART(CBridgePlanViewSlabDisplayObjectEvents, IID_iDisplayObjectEvents, Events)
-END_INTERFACE_MAP()
-
-DELEGATE_CUSTOM_INTERFACE(CBridgePlanViewSlabDisplayObjectEvents,Events);
 
 void CBridgePlanViewSlabDisplayObjectEvents::EditSlab()
 {
@@ -77,13 +74,11 @@ void CBridgePlanViewSlabDisplayObjectEvents::SelectNext()
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgePlanViewSlabDisplayObjectEvents message handlers
-STDMETHODIMP_(bool) CBridgePlanViewSlabDisplayObjectEvents::XEvents::OnLButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgePlanViewSlabDisplayObjectEvents::OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSlabDisplayObjectEvents,Events);
-
    if (pDO->IsSelected())
    {
-      pThis->EditSlab();
+      EditSlab();
       return true;
    }
    else
@@ -92,91 +87,74 @@ STDMETHODIMP_(bool) CBridgePlanViewSlabDisplayObjectEvents::XEvents::OnLButtonDb
    }
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewSlabDisplayObjectEvents::XEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgePlanViewSlabDisplayObjectEvents::OnLButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSlabDisplayObjectEvents,Events);
    return true;
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewSlabDisplayObjectEvents::XEvents::OnLButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgePlanViewSlabDisplayObjectEvents::OnLButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSlabDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewSlabDisplayObjectEvents::XEvents::OnRButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgePlanViewSlabDisplayObjectEvents::OnRButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSlabDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewSlabDisplayObjectEvents::XEvents::OnRButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgePlanViewSlabDisplayObjectEvents::OnRButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSlabDisplayObjectEvents,Events);
    return true;
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewSlabDisplayObjectEvents::XEvents::OnRButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgePlanViewSlabDisplayObjectEvents::OnRButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSlabDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewSlabDisplayObjectEvents::XEvents::OnMouseMove(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgePlanViewSlabDisplayObjectEvents::OnMouseMove(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSlabDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewSlabDisplayObjectEvents::XEvents::OnMouseWheel(iDisplayObject* pDO,UINT nFlags,short zDelta,CPoint point)
+bool CBridgePlanViewSlabDisplayObjectEvents::OnMouseWheel(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,short zDelta,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSlabDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewSlabDisplayObjectEvents::XEvents::OnKeyDown(iDisplayObject* pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
+bool CBridgePlanViewSlabDisplayObjectEvents::OnKeyDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSlabDisplayObjectEvents,Events);
-
    if ( nChar == VK_RETURN )
    {
-      pThis->EditSlab();
+      EditSlab();
       return true;
    }
    else if ( nChar == VK_LEFT )
    {
-      pThis->SelectPrev();
+      SelectPrev();
       return true;
    }
    else if ( nChar == VK_RIGHT )
    {
-      pThis->SelectNext();
+      SelectNext();
       return true;
    }
    else if ( nChar == VK_UP || nChar == VK_DOWN )
    {
-      pThis->m_pFrame->SelectGirder( CSegmentKey(0,0,INVALID_INDEX) );
+      m_pFrame->SelectGirder( CSegmentKey(0,0,INVALID_INDEX) );
       return true;
    }
 
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgePlanViewSlabDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObject* pDO,CWnd* pWnd,CPoint point)
+bool CBridgePlanViewSlabDisplayObjectEvents::OnContextMenu(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,CWnd* pWnd,const POINT& point)
 {
-   METHOD_PROLOGUE_(CBridgePlanViewSlabDisplayObjectEvents,Events);
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
 
    if ( pDO->IsSelected() )
    {
-      CComPtr<iDisplayList> pList;
-      pDO->GetDisplayList(&pList);
-
-      CComPtr<iDisplayMgr> pDispMgr;
-      pList->GetDisplayMgr(&pDispMgr);
-
-      CDisplayView* pView = pDispMgr->GetView();
+      auto pView = pDO->GetDisplayList()->GetDisplayMgr()->GetView();
       CPGSuperDoc* pDoc = (CPGSuperDoc*)pView->GetDocument();
 
       CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
@@ -191,7 +169,7 @@ STDMETHODIMP_(bool) CBridgePlanViewSlabDisplayObjectEvents::XEvents::OnContextMe
          pCallback->OnDeckContextMenu(pMenu);
       }
 
-      pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);
+      pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,m_pFrame);
 
       return true;
    }
@@ -199,80 +177,60 @@ STDMETHODIMP_(bool) CBridgePlanViewSlabDisplayObjectEvents::XEvents::OnContextMe
    return false;
 }
 
-STDMETHODIMP_(void) CBridgePlanViewSlabDisplayObjectEvents::XEvents::OnChanged(iDisplayObject* pDO)
+void CBridgePlanViewSlabDisplayObjectEvents::OnChanged(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSlabDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CBridgePlanViewSlabDisplayObjectEvents::XEvents::OnDragMoved(iDisplayObject* pDO,ISize2d* offset)
+void CBridgePlanViewSlabDisplayObjectEvents::OnDragMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,const WBFL::Geometry::Size2d& offset)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSlabDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CBridgePlanViewSlabDisplayObjectEvents::XEvents::OnMoved(iDisplayObject* pDO)
+void CBridgePlanViewSlabDisplayObjectEvents::OnMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSlabDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CBridgePlanViewSlabDisplayObjectEvents::XEvents::OnCopied(iDisplayObject* pDO)
+void CBridgePlanViewSlabDisplayObjectEvents::OnCopied(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSlabDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CBridgePlanViewSlabDisplayObjectEvents::XEvents::OnSelect(iDisplayObject* pDO)
+void CBridgePlanViewSlabDisplayObjectEvents::OnSelect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSlabDisplayObjectEvents,Events);
-   
    IDType id = pDO->GetID();
    if ( id == DECK_ID ) // plan view
    {
       // fill when selected
-      CComQIPtr<iCompositeDisplayObject> doComp(pDO);
+      auto doComp = std::dynamic_pointer_cast<WBFL::DManip::CompositeDisplayObject>(pDO);
 
       IndexType nDO = doComp->GetDisplayObjectCount();
       for (IndexType i = 0; i < nDO; i++)
       {
-         CComPtr<iDisplayObject> dispObj;
-         doComp->GetDisplayObject(i, atByIndex, &dispObj);
-
-         CComQIPtr<iPointDisplayObject> pntDO(dispObj);
-
-         CComPtr<iDrawPointStrategy> strategy;
-         pntDO->GetDrawingStrategy(&strategy);
-
-         CComQIPtr<iShapeDrawStrategy> shape_draw(strategy);
-
-         shape_draw->DoFill(true);
+         auto dispObj = doComp->GetDisplayObject(i, WBFL::DManip::AccessType::ByIndex);
+         auto pntDO = std::dynamic_pointer_cast<WBFL::DManip::iPointDisplayObject>(dispObj);
+         auto strategy = pntDO->GetDrawingStrategy();
+         auto shape_draw = std::dynamic_pointer_cast<WBFL::DManip::ShapeDrawStrategy>(strategy);
+         shape_draw->Fill(true);
       }
    }
 
-   pThis->m_pFrame->SelectDeck();
+   m_pFrame->SelectDeck();
 }
 
-STDMETHODIMP_(void) CBridgePlanViewSlabDisplayObjectEvents::XEvents::OnUnselect(iDisplayObject* pDO)
+void CBridgePlanViewSlabDisplayObjectEvents::OnUnselect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgePlanViewSlabDisplayObjectEvents,Events);
-
    IDType id = pDO->GetID();
    if ( id == DECK_ID )
    {
       // don't fill when not selected
-      CComQIPtr<iCompositeDisplayObject> doComp(pDO);
+      auto doComp = std::dynamic_pointer_cast<WBFL::DManip::CompositeDisplayObject>(pDO);
 
       IndexType nDO = doComp->GetDisplayObjectCount();
       for (IndexType i = 0; i < nDO; i++)
       {
-         CComPtr<iDisplayObject> dispObj;
-         doComp->GetDisplayObject(i, atByIndex, &dispObj);
-
-         CComQIPtr<iPointDisplayObject> pntDO(dispObj);
-
-         CComPtr<iDrawPointStrategy> strategy;
-         pntDO->GetDrawingStrategy(&strategy);
-
-         CComQIPtr<iShapeDrawStrategy> shape_draw(strategy);
-
-         shape_draw->DoFill(pThis->m_bFillIfNotSelected);
+         auto dispObj = doComp->GetDisplayObject(i, WBFL::DManip::AccessType::ByIndex);
+         auto pntDO = std::dynamic_pointer_cast<WBFL::DManip::iPointDisplayObject>(dispObj);
+         auto strategy = pntDO->GetDrawingStrategy();
+         auto shape_draw = std::dynamic_pointer_cast<WBFL::DManip::ShapeDrawStrategy>(strategy);
+         shape_draw->Fill(m_bFillIfNotSelected);
       }
    }
 }
@@ -292,12 +250,6 @@ CBridgeSectionViewSlabDisplayObjectEvents::CBridgeSectionViewSlabDisplayObjectEv
    m_bFillIfNotSelected = bFillIfNotSelected;
 }
 
-BEGIN_INTERFACE_MAP(CBridgeSectionViewSlabDisplayObjectEvents, CCmdTarget)
-	INTERFACE_PART(CBridgeSectionViewSlabDisplayObjectEvents, IID_iDisplayObjectEvents, Events)
-END_INTERFACE_MAP()
-
-DELEGATE_CUSTOM_INTERFACE(CBridgeSectionViewSlabDisplayObjectEvents,Events);
-
 void CBridgeSectionViewSlabDisplayObjectEvents::EditSlab()
 {
    m_pDoc->EditBridgeDescription(EBD_DECK);
@@ -315,13 +267,11 @@ void CBridgeSectionViewSlabDisplayObjectEvents::SelectNext()
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeSectionViewSlabDisplayObjectEvents message handlers
-STDMETHODIMP_(bool) CBridgeSectionViewSlabDisplayObjectEvents::XEvents::OnLButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgeSectionViewSlabDisplayObjectEvents::OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewSlabDisplayObjectEvents,Events);
-
    if (pDO->IsSelected())
    {
-      pThis->EditSlab();
+      EditSlab();
       return true;
    }
    else
@@ -330,85 +280,69 @@ STDMETHODIMP_(bool) CBridgeSectionViewSlabDisplayObjectEvents::XEvents::OnLButto
    }
 }
 
-STDMETHODIMP_(bool) CBridgeSectionViewSlabDisplayObjectEvents::XEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgeSectionViewSlabDisplayObjectEvents::OnLButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewSlabDisplayObjectEvents,Events);
    return true;
 }
 
-STDMETHODIMP_(bool) CBridgeSectionViewSlabDisplayObjectEvents::XEvents::OnLButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgeSectionViewSlabDisplayObjectEvents::OnLButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewSlabDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgeSectionViewSlabDisplayObjectEvents::XEvents::OnRButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgeSectionViewSlabDisplayObjectEvents::OnRButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewSlabDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgeSectionViewSlabDisplayObjectEvents::XEvents::OnRButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgeSectionViewSlabDisplayObjectEvents::OnRButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewSlabDisplayObjectEvents,Events);
    return true;
 }
 
-STDMETHODIMP_(bool) CBridgeSectionViewSlabDisplayObjectEvents::XEvents::OnRButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgeSectionViewSlabDisplayObjectEvents::OnRButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewSlabDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgeSectionViewSlabDisplayObjectEvents::XEvents::OnMouseMove(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CBridgeSectionViewSlabDisplayObjectEvents::OnMouseMove(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewSlabDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgeSectionViewSlabDisplayObjectEvents::XEvents::OnMouseWheel(iDisplayObject* pDO,UINT nFlags,short zDelta,CPoint point)
+bool CBridgeSectionViewSlabDisplayObjectEvents::OnMouseWheel(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,short zDelta,const POINT& point)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewSlabDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgeSectionViewSlabDisplayObjectEvents::XEvents::OnKeyDown(iDisplayObject* pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
+bool CBridgeSectionViewSlabDisplayObjectEvents::OnKeyDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewSlabDisplayObjectEvents,Events);
-
    if ( nChar == VK_RETURN )
    {
-      pThis->EditSlab();
+      EditSlab();
       return true;
    }
    else if ( nChar == VK_LEFT )
    {
-      pThis->SelectPrev();
+      SelectPrev();
       return true;
    }
    else if ( nChar == VK_RIGHT )
    {
-      pThis->SelectNext();
+      SelectNext();
       return true;
    }
 
    return false;
 }
 
-STDMETHODIMP_(bool) CBridgeSectionViewSlabDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObject* pDO,CWnd* pWnd,CPoint point)
+bool CBridgeSectionViewSlabDisplayObjectEvents::OnContextMenu(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,CWnd* pWnd,const POINT& point)
 {
-   METHOD_PROLOGUE_(CBridgeSectionViewSlabDisplayObjectEvents,Events);
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    if ( pDO->IsSelected() )
    {
-      CComPtr<iDisplayList> pList;
-      pDO->GetDisplayList(&pList);
-
-      CComPtr<iDisplayMgr> pDispMgr;
-      pList->GetDisplayMgr(&pDispMgr);
-
-      CDisplayView* pView = pDispMgr->GetView();
+      auto pView = pDO->GetDisplayList()->GetDisplayMgr()->GetView();
       CPGSuperDoc* pDoc = (CPGSuperDoc*)pView->GetDocument();
 
       CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
@@ -423,7 +357,7 @@ STDMETHODIMP_(bool) CBridgeSectionViewSlabDisplayObjectEvents::XEvents::OnContex
          pCallback->OnDeckContextMenu(pMenu);
       }
 
-      pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);
+      pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,m_pFrame);
 
       return true;
    }
@@ -431,62 +365,46 @@ STDMETHODIMP_(bool) CBridgeSectionViewSlabDisplayObjectEvents::XEvents::OnContex
    return false;
 }
 
-STDMETHODIMP_(void) CBridgeSectionViewSlabDisplayObjectEvents::XEvents::OnChanged(iDisplayObject* pDO)
+void CBridgeSectionViewSlabDisplayObjectEvents::OnChanged(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewSlabDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CBridgeSectionViewSlabDisplayObjectEvents::XEvents::OnDragMoved(iDisplayObject* pDO,ISize2d* offset)
+void CBridgeSectionViewSlabDisplayObjectEvents::OnDragMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,const WBFL::Geometry::Size2d& offset)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewSlabDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CBridgeSectionViewSlabDisplayObjectEvents::XEvents::OnMoved(iDisplayObject* pDO)
+void CBridgeSectionViewSlabDisplayObjectEvents::OnMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewSlabDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CBridgeSectionViewSlabDisplayObjectEvents::XEvents::OnCopied(iDisplayObject* pDO)
+void CBridgeSectionViewSlabDisplayObjectEvents::OnCopied(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewSlabDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CBridgeSectionViewSlabDisplayObjectEvents::XEvents::OnSelect(iDisplayObject* pDO)
+void CBridgeSectionViewSlabDisplayObjectEvents::OnSelect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewSlabDisplayObjectEvents,Events);
-   
    IDType id = pDO->GetID();
    if ( id == DECK_ID ) // plan view
    {
       // fill when selected
-      CComQIPtr<iPointDisplayObject> pntDO(pDO);
-
-      CComPtr<iDrawPointStrategy> strategy;
-      pntDO->GetDrawingStrategy(&strategy);
-
-      CComQIPtr<iShapeDrawStrategy> shape_draw(strategy);
-
-      shape_draw->DoFill(true);
+      auto pntDO = std::dynamic_pointer_cast<WBFL::DManip::iPointDisplayObject>(pDO);
+      auto strategy = pntDO->GetDrawingStrategy();
+      auto shape_draw = std::dynamic_pointer_cast<WBFL::DManip::ShapeDrawStrategy>(strategy);
+      shape_draw->Fill(true);
    }
 
-   pThis->m_pFrame->SelectDeck();
+   m_pFrame->SelectDeck();
 }
 
-STDMETHODIMP_(void) CBridgeSectionViewSlabDisplayObjectEvents::XEvents::OnUnselect(iDisplayObject* pDO)
+void CBridgeSectionViewSlabDisplayObjectEvents::OnUnselect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CBridgeSectionViewSlabDisplayObjectEvents,Events);
-
    IDType id = pDO->GetID();
    if ( id == DECK_ID )
    {
       // don't fill when not selected
-      CComQIPtr<iPointDisplayObject> pntDO(pDO);
-
-      CComPtr<iDrawPointStrategy> strategy;
-      pntDO->GetDrawingStrategy(&strategy);
-
-      CComQIPtr<iShapeDrawStrategy> shape_draw(strategy);
-
-      shape_draw->DoFill(pThis->m_bFillIfNotSelected);
+      auto pntDO = std::dynamic_pointer_cast<WBFL::DManip::iPointDisplayObject>(pDO);
+      auto strategy = pntDO->GetDrawingStrategy();
+      auto shape_draw = std::dynamic_pointer_cast<WBFL::DManip::ShapeDrawStrategy>(strategy);
+      shape_draw->Fill(m_bFillIfNotSelected);
    }
 }

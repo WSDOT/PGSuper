@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2023  Washington State Department of Transportation
+// Copyright © 1999-2024  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -20,16 +20,11 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_TogaSupportDrawStrategy_H_
-#define INCLUDED_TogaSupportDrawStrategy_H_
+#pragma once
 
-// {DBA89E78-838D-4a9b-95DF-0885FD85580C}
-DEFINE_GUID(IID_iTogaSupportDrawStrategy, 
-0xdba89e78, 0x838d, 0x4a9b, 0x95, 0xdf, 0x8, 0x85, 0xfd, 0x85, 0x58, 0xc);
+#include <DManip/DrawPointStrategy.h>
 
-interface iTogaSupportDrawStrategy : public IUnknown
+class iSupportDrawStrategy : public WBFL::DManip::iDrawPointStrategy
 {
-//   STDMETHOD_(void,SetSupport)(ISupport* jnt, long supportID) PURE;
+public:
 };
-
-#endif // INCLUDED_TogaSupportDrawStrategy_H_

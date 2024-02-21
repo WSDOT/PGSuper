@@ -722,6 +722,11 @@
     <None Include="PCIDeckedBulbTeeFactory.rgs">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="res\NUDeckedBulbTee.emf" />
+    <None Include="res\PCIDeckedBulbTee.emf" />
+    <None Include="MultiWebDistFactorEngineer.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">

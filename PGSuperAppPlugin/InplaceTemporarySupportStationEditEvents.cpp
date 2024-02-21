@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2023  Washington State Department of Transportation
+// Copyright © 1999-2024  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -29,26 +29,22 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFTxnManager.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <DManip/EditableStationTextBlock.h>
 
 CInplaceTemporarySupportStationEditEvents::CInplaceTemporarySupportStationEditEvents(IBroker* pBroker,SupportIndexType tsIdx) :
 CInplaceEditDisplayObjectEvents(pBroker), m_TSIdx(tsIdx)
 {
 }
 
-void CInplaceTemporarySupportStationEditEvents::Handle_OnChanged(iDisplayObject* pDO)
+void CInplaceTemporarySupportStationEditEvents::Handle_OnChanged(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CComQIPtr<iEditableUnitValueTextBlock> pTextBlock(pDO);
+   auto pTextBlock = std::dynamic_pointer_cast<WBFL::DManip::EditableStationTextBlock>(pDO);
    ATLASSERT(pTextBlock);
 
-   Float64 old_station = pTextBlock->GetValue();
-   Float64 new_station = pTextBlock->GetEditedValue();
+   Float64 old_station = pTextBlock->GetStation().GetValue();
+   Float64 new_station = pTextBlock->GetEditedStation().GetValue();
 
    if (IsEqual(old_station, new_station))
       return;

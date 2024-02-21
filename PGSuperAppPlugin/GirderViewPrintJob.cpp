@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2023  Washington State Department of Transportation
+// Copyright © 1999-2024  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -45,26 +45,26 @@ static char THIS_FILE[]=__FILE__;
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
-//////////////////////////////////////////////////////////////////////
+////////////////////////////////////
 
-CGirderViewPrintJob::CGirderViewPrintJob(CGirderModelElevationView* pev, 
-                                         CGirderModelSectionView* psv, 
-                                         CGirderModelChildFrame* pframe,
-                                         IBroker* pBroker)
+CGirderViewPrintJob::CGirderViewPrintJob(CGirderModelElevationView* pev,
+   CGirderModelSectionView* psv,
+   CGirderModelChildFrame* pframe,
+   IBroker* pBroker)
 {
-   ATLASSERT(pev!=0);
-   ATLASSERT(psv!=0);
-   m_pElevationView=pev;
-   m_pSectionView=psv;
+   ATLASSERT(pev != 0);
+   ATLASSERT(psv != 0);
+   m_pElevationView = pev;
+   m_pSectionView = psv;
    m_pBroker = pBroker;
    m_pFrame = pframe;
 
-	m_rcMarginMM = CRect(10,10,10,10);
+   m_rcMarginMM = CRect(10, 10, 10, 10);
 
-	m_csFtPrint = "Arial";
-	m_iFtPrint = 120;
+   m_csFtPrint = "Arial";
+   m_iFtPrint = 120;
 
-	strTitle = "Girder View";
+   strTitle = "Girder View";
 }
 
 CGirderViewPrintJob::~CGirderViewPrintJob()

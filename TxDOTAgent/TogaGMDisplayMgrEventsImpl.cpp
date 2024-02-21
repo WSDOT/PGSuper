@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2023  Washington State Department of Transportation
+// Copyright © 1999-2024  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -26,15 +26,8 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "TogaGMDisplayMgrEventsImpl.h"
-#include "mfcdual.h"
 
 #include <IFace\EditByUI.h>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -50,105 +43,83 @@ CTogaGMDisplayMgrEventsImpl::~CTogaGMDisplayMgrEventsImpl()
 {
 }
 
-BEGIN_INTERFACE_MAP(CTogaGMDisplayMgrEventsImpl,CCmdTarget)
-   INTERFACE_PART(CTogaGMDisplayMgrEventsImpl,IID_iDisplayMgrEvents,Events)
-END_INTERFACE_MAP()
-
-DELEGATE_CUSTOM_INTERFACE(CTogaGMDisplayMgrEventsImpl,Events);
-
-
-STDMETHODIMP_(bool) CTogaGMDisplayMgrEventsImpl::XEvents::OnLButtonDblClk(iDisplayMgr* pDO,UINT nFlags,CPoint point)
+bool CTogaGMDisplayMgrEventsImpl::OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CTogaGMDisplayMgrEventsImpl,Events);
-
-   pThis->m_pFrame->ShowCutDlg();
-
+   m_pFrame->ShowCutDlg();
    return true;
 }
 
-STDMETHODIMP_(bool) CTogaGMDisplayMgrEventsImpl::XEvents::OnLButtonDown(iDisplayMgr* pDO,UINT nFlags,CPoint point)
+bool CTogaGMDisplayMgrEventsImpl::OnLButtonDown(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CTogaGMDisplayMgrEventsImpl,Events);
-
-   pThis->m_pParent->SetFocus();
-
+   m_pParent->SetFocus();
    return false;
 }
 
-STDMETHODIMP_(bool) CTogaGMDisplayMgrEventsImpl::XEvents::OnRButtonDblClk(iDisplayMgr* pDO,UINT nFlags,CPoint point)
+bool CTogaGMDisplayMgrEventsImpl::OnRButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CTogaGMDisplayMgrEventsImpl,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CTogaGMDisplayMgrEventsImpl::XEvents::OnRButtonDown(iDisplayMgr* pDO,UINT nFlags,CPoint point)
+bool CTogaGMDisplayMgrEventsImpl::OnRButtonDown(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CTogaGMDisplayMgrEventsImpl,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CTogaGMDisplayMgrEventsImpl::XEvents::OnRButtonUp(iDisplayMgr* pDO,UINT nFlags,CPoint point)
+bool CTogaGMDisplayMgrEventsImpl::OnRButtonUp(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CTogaGMDisplayMgrEventsImpl,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CTogaGMDisplayMgrEventsImpl::XEvents::OnLButtonUp(iDisplayMgr* pDO,UINT nFlags,CPoint point)
+bool CTogaGMDisplayMgrEventsImpl::OnLButtonUp(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CTogaGMDisplayMgrEventsImpl,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CTogaGMDisplayMgrEventsImpl::XEvents::OnMouseMove(iDisplayMgr* pDO,UINT nFlags,CPoint point)
+bool CTogaGMDisplayMgrEventsImpl::OnMouseMove(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CTogaGMDisplayMgrEventsImpl,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CTogaGMDisplayMgrEventsImpl::XEvents::OnMouseWheel(iDisplayMgr* pDO,UINT nFlags,short zDelta,CPoint point)
+bool CTogaGMDisplayMgrEventsImpl::OnMouseWheel(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDO,UINT nFlags,short zDelta,const POINT& point)
 {
-   METHOD_PROLOGUE(CTogaGMDisplayMgrEventsImpl,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CTogaGMDisplayMgrEventsImpl::XEvents::OnKeyDown(iDisplayMgr* pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
+bool CTogaGMDisplayMgrEventsImpl::OnKeyDown(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-   METHOD_PROLOGUE(CTogaGMDisplayMgrEventsImpl,Events);
-
    if ( nChar == VK_LEFT )
    {
-      pThis->m_pFrame->CutAtPrev();
+      m_pFrame->CutAtPrev();
       return true;
    }
    else if ( nChar == VK_RIGHT )
    {
-      pThis->m_pFrame->CutAtNext();
+      m_pFrame->CutAtNext();
       return true;
    }
 
    return false;
 }
 
-STDMETHODIMP_(bool) CTogaGMDisplayMgrEventsImpl::XEvents::OnContextMenu(iDisplayMgr* pDO,CWnd* pWnd,CPoint point)
+bool CTogaGMDisplayMgrEventsImpl::OnContextMenu(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDO,CWnd* pWnd,const POINT& point)
 {
-   METHOD_PROLOGUE_(CTogaGMDisplayMgrEventsImpl,Events);
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
    CMenu menu;
    menu.LoadMenu(IDR_GIRDER_VIEW_CTX);
    CMenu* pcontext = menu.GetSubMenu(0);
 
+   POINT client_point = point;
    if ( point.x < 0 || point.y < 0 )
    {
       // the context menu key or Shift+F10 was pressed
       // need some real coordinates (how about the center of the client area)
       CRect rClient;
-      pThis->m_pParent->GetClientRect(&rClient);
+      m_pParent->GetClientRect(&rClient);
       CPoint center = rClient.TopLeft();
-      pThis->m_pParent->ClientToScreen(&center);
-      point = center;
+      m_pParent->ClientToScreen(&center);
+      client_point = center;
    }
 
-   pcontext->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x,point.y, pThis->m_pParent );
+   pcontext->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, client_point.x, client_point.y, m_pParent );
    return true;
 }

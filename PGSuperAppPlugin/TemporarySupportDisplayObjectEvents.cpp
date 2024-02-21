@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2023  Washington State Department of Transportation
+// Copyright © 1999-2024  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -27,19 +27,13 @@
 #include "resource.h"
 #include "PGSuperApp.h"
 #include "TemporarySupportDisplayObjectEvents.h"
-#include "mfcdual.h"
 #include "PGSpliceDoc.h"
 #include <IFace\Project.h>
 #include <PgsExt\BridgeDescription2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/////////////////////////////////////////////////////////////////////////////
-// CTemporarySupportDisplayObjectEvents
+#include <DManip/DisplayObject.h>
+#include <DManip/DisplayList.h>
+#include <DManip/DisplayView.h>
 
 CTemporarySupportDisplayObjectEvents::CTemporarySupportDisplayObjectEvents(const CTemporarySupportData* pTS, CBridgeModelViewChildFrame* pFrame)
 {
@@ -70,25 +64,19 @@ CTemporarySupportDisplayObjectEvents::CTemporarySupportDisplayObjectEvents(const
    }
 }
 
-BEGIN_INTERFACE_MAP(CTemporarySupportDisplayObjectEvents, CCmdTarget)
-	INTERFACE_PART(CTemporarySupportDisplayObjectEvents, IID_iDisplayObjectEvents, Events)
-END_INTERFACE_MAP()
-
-DELEGATE_CUSTOM_INTERFACE(CTemporarySupportDisplayObjectEvents,Events);
-
-void CTemporarySupportDisplayObjectEvents::EditTemporarySupport(iDisplayObject* pDO)
+void CTemporarySupportDisplayObjectEvents::EditTemporarySupport(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
    m_pFrame->PostMessage(WM_COMMAND,ID_EDIT_TEMPORARY_SUPPORT,0);
 }
 
-void CTemporarySupportDisplayObjectEvents::SelectTemporarySupport(iDisplayObject* pDO)
+void CTemporarySupportDisplayObjectEvents::SelectTemporarySupport(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
    // do the selection at the frame level because it will do this view
    // and the other view
    m_pFrame->SelectTemporarySupport(m_pTS->GetID());
 }
 
-void CTemporarySupportDisplayObjectEvents::SelectPrev(iDisplayObject* pDO)
+void CTemporarySupportDisplayObjectEvents::SelectPrev(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
    if ( m_pPrevTS )
    {
@@ -100,7 +88,7 @@ void CTemporarySupportDisplayObjectEvents::SelectPrev(iDisplayObject* pDO)
    }
 }
 
-void CTemporarySupportDisplayObjectEvents::SelectNext(iDisplayObject* pDO)
+void CTemporarySupportDisplayObjectEvents::SelectNext(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
    if ( m_pNextTS )
    {
@@ -114,12 +102,11 @@ void CTemporarySupportDisplayObjectEvents::SelectNext(iDisplayObject* pDO)
 
 /////////////////////////////////////////////////////////////////////////////
 // CTemporarySupportDisplayObjectEvents message handlers
-STDMETHODIMP_(bool) CTemporarySupportDisplayObjectEvents::XEvents::OnLButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CTemporarySupportDisplayObjectEvents::OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CTemporarySupportDisplayObjectEvents,Events);
    if (pDO->IsSelected())
    {
-      pThis->EditTemporarySupport(pDO);
+      EditTemporarySupport(pDO);
       return true;
    }
    else
@@ -128,97 +115,81 @@ STDMETHODIMP_(bool) CTemporarySupportDisplayObjectEvents::XEvents::OnLButtonDblC
    }
 }
 
-STDMETHODIMP_(bool) CTemporarySupportDisplayObjectEvents::XEvents::OnLButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CTemporarySupportDisplayObjectEvents::OnLButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CTemporarySupportDisplayObjectEvents,Events);
    return true; // acknowledge the event so that the object can become selected
 }
 
-STDMETHODIMP_(bool) CTemporarySupportDisplayObjectEvents::XEvents::OnLButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CTemporarySupportDisplayObjectEvents::OnLButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CTemporarySupportDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CTemporarySupportDisplayObjectEvents::XEvents::OnRButtonDblClk(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CTemporarySupportDisplayObjectEvents::OnRButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CTemporarySupportDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CTemporarySupportDisplayObjectEvents::XEvents::OnRButtonDown(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CTemporarySupportDisplayObjectEvents::OnRButtonDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CTemporarySupportDisplayObjectEvents,Events);
    return true; // acknowledge the event so that the object can become selected
 }
 
-STDMETHODIMP_(bool) CTemporarySupportDisplayObjectEvents::XEvents::OnRButtonUp(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CTemporarySupportDisplayObjectEvents::OnRButtonUp(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CTemporarySupportDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CTemporarySupportDisplayObjectEvents::XEvents::OnMouseMove(iDisplayObject* pDO,UINT nFlags,CPoint point)
+bool CTemporarySupportDisplayObjectEvents::OnMouseMove(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,const POINT& point)
 {
-   METHOD_PROLOGUE(CTemporarySupportDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CTemporarySupportDisplayObjectEvents::XEvents::OnMouseWheel(iDisplayObject* pDO,UINT nFlags,short zDelta,CPoint point)
+bool CTemporarySupportDisplayObjectEvents::OnMouseWheel(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nFlags,short zDelta,const POINT& point)
 {
-   METHOD_PROLOGUE(CTemporarySupportDisplayObjectEvents,Events);
    return false;
 }
 
-STDMETHODIMP_(bool) CTemporarySupportDisplayObjectEvents::XEvents::OnKeyDown(iDisplayObject* pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
+bool CTemporarySupportDisplayObjectEvents::OnKeyDown(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-   METHOD_PROLOGUE(CTemporarySupportDisplayObjectEvents,Events);
-
    if ( nChar == VK_RETURN )
    {
-      pThis->EditTemporarySupport(pDO);
+      EditTemporarySupport(pDO);
       return true;
    }
    else if ( nChar == VK_LEFT )
    {
-      pThis->SelectPrev(pDO);
+      SelectPrev(pDO);
       return true;
    }
    else if ( nChar == VK_RIGHT )
    {
-      pThis->SelectNext(pDO);
+      SelectNext(pDO);
       return true;
    }
 #pragma Reminder("UPDATE")
    //else if ( nChar == VK_UP || nChar == VK_DOWN )
    //{
-   //   pThis->m_pFrame->SelectGirder(pThis->m_SpanIdx,0);
+   //   m_pFrame->SelectGirder(m_SpanIdx,0);
    //   return true;
    //}
    else if ( nChar == VK_DELETE )
    {
-      pThis->m_pFrame->PostMessage(WM_COMMAND,ID_DELETE,0);
+      m_pFrame->PostMessage(WM_COMMAND,ID_DELETE,0);
       return true;
    }
 
    return false;
 }
 
-STDMETHODIMP_(bool) CTemporarySupportDisplayObjectEvents::XEvents::OnContextMenu(iDisplayObject* pDO,CWnd* pWnd,CPoint point)
+bool CTemporarySupportDisplayObjectEvents::OnContextMenu(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,CWnd* pWnd,const POINT& point)
 {
-   METHOD_PROLOGUE_(CTemporarySupportDisplayObjectEvents,Events);
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
 
    if ( pDO->IsSelected() )
    {
-      CComPtr<iDisplayList> pList;
-      pDO->GetDisplayList(&pList);
-
-      CComPtr<iDisplayMgr> pDispMgr;
-      pList->GetDisplayMgr(&pDispMgr);
-
-      CDisplayView* pView = pDispMgr->GetView();
+      auto pView = pDO->GetDisplayList()->GetDisplayMgr()->GetView();
       CPGSpliceDoc* pDoc = (CPGSpliceDoc*)pView->GetDocument();
 
       CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
@@ -228,9 +199,9 @@ STDMETHODIMP_(bool) CTemporarySupportDisplayObjectEvents::XEvents::OnContextMenu
       pMenu->AppendMenu(IDM_ERECTION_TOWER, CTemporarySupportData::AsString(pgsTypes::ErectionTower), nullptr);
       pMenu->AppendMenu(IDM_STRONG_BACK, CTemporarySupportData::AsString(pgsTypes::StrongBack), nullptr);
 
-      if (pThis->m_pTS->GetSupportType() == pgsTypes::ErectionTower)
+      if (m_pTS->GetSupportType() == pgsTypes::ErectionTower)
       {
-         // toggling of segment conneciton type is only applicable to erection towers... segments must be joined with a closure joint at strongbacks
+         // toggling of segment connection type is only applicable to erection towers... segments must be joined with a closure joint at strongbacks
          pMenu->AppendSeparator();
          pMenu->AppendMenu(IDM_CONTINUOUS_SEGMENT, CTemporarySupportData::AsString(pgsTypes::tsctContinuousSegment), nullptr);
          pMenu->AppendMenu(IDM_CONTINUOUS_CLOSURE, CTemporarySupportData::AsString(pgsTypes::tsctClosureJoint), nullptr);
@@ -241,10 +212,10 @@ STDMETHODIMP_(bool) CTemporarySupportDisplayObjectEvents::XEvents::OnContextMenu
       for ( iter = callbacks.begin(); iter != callbacks.end(); iter++ )
       {
          IBridgePlanViewEventCallback* callback = iter->second;
-         callback->OnTemporarySupportContextMenu(pThis->m_pTS->GetID(),pMenu);
+         callback->OnTemporarySupportContextMenu(m_pTS->GetID(),pMenu);
       }
 
-      pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pThis->m_pFrame);
+      pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,m_pFrame);
 
       delete pMenu;
 
@@ -254,34 +225,28 @@ STDMETHODIMP_(bool) CTemporarySupportDisplayObjectEvents::XEvents::OnContextMenu
    return false;
 }
 
-STDMETHODIMP_(void) CTemporarySupportDisplayObjectEvents::XEvents::OnChanged(iDisplayObject* pDO)
+void CTemporarySupportDisplayObjectEvents::OnChanged(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CTemporarySupportDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CTemporarySupportDisplayObjectEvents::XEvents::OnDragMoved(iDisplayObject* pDO,ISize2d* offset)
+void CTemporarySupportDisplayObjectEvents::OnDragMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO,const WBFL::Geometry::Size2d& offset)
 {
-   METHOD_PROLOGUE(CTemporarySupportDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CTemporarySupportDisplayObjectEvents::XEvents::OnMoved(iDisplayObject* pDO)
+void CTemporarySupportDisplayObjectEvents::OnMoved(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CTemporarySupportDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CTemporarySupportDisplayObjectEvents::XEvents::OnCopied(iDisplayObject* pDO)
+void CTemporarySupportDisplayObjectEvents::OnCopied(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CTemporarySupportDisplayObjectEvents,Events);
 }
 
-STDMETHODIMP_(void) CTemporarySupportDisplayObjectEvents::XEvents::OnSelect(iDisplayObject* pDO)
+void CTemporarySupportDisplayObjectEvents::OnSelect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CTemporarySupportDisplayObjectEvents,Events);
-   pThis->SelectTemporarySupport(pDO);
+   SelectTemporarySupport(pDO);
 }
 
-STDMETHODIMP_(void) CTemporarySupportDisplayObjectEvents::XEvents::OnUnselect(iDisplayObject* pDO)
+void CTemporarySupportDisplayObjectEvents::OnUnselect(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CTemporarySupportDisplayObjectEvents,Events);
 }
 

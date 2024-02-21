@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2023  Washington State Department of Transportation
+// Copyright © 1999-2024  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,10 +25,17 @@
 #include <PgsExt\Keys.h>
 #include <PgsExt\PointOfInterest.h>
 
-interface iPointDisplayObject;
 interface IRoadway;
 interface IBridge;
 class CBridgeModelViewChildFrame;
+
+namespace WBFL
+{
+   namespace DManip
+   {
+      class iPointDisplayObject;
+   };
+};
 
 // pure virtual class for determining cut location
 class iCutLocation
@@ -43,25 +50,19 @@ public:
    virtual void GetCutRange(Float64* pMin, Float64* pMax) = 0;
 };
 
-// {C56878AE-5504-4f1a-A060-F2C56991663D}
-DEFINE_GUID(IID_iSectionCutDrawStrategy, 
-0xc56878ae, 0x5504, 0x4f1a, 0xa0, 0x60, 0xf2, 0xc5, 0x69, 0x91, 0x66, 0x3d);
-
-interface iSectionCutDrawStrategy : public IUnknown
+class iSectionCutDrawStrategy
 {
-   STDMETHOD_(void,SetColor)(COLORREF color) PURE;
-	STDMETHOD_(void,Init)(iPointDisplayObject* pDO, IBroker* pBroker,const CGirderKey& girderKey, iCutLocation* pCutLoc) PURE;
+public:
+   virtual void SetColor(COLORREF color) = 0;
+	virtual void Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, IBroker* pBroker,const CGirderKey& girderKey, iCutLocation* pCutLoc) = 0;
 
-   // Xgl is in the Girderline Coodinate System
-   STDMETHOD_(pgsPointOfInterest,GetCutPOI)(Float64 Xgl) PURE;
+   // Xgl is in the Girderline Coordinate System
+   virtual pgsPointOfInterest GetCutPOI(Float64 Xgl) const = 0;
 };
 
-// {2CDCA9C4-A9A3-4c75-B7B1-ED9E1E308203}
-DEFINE_GUID(IID_iBridgeSectionCutDrawStrategy, 
-0x2cdca9c4, 0xa9a3, 0x4c75, 0xb7, 0xb1, 0xed, 0x9e, 0x1e, 0x30, 0x82, 0x3);
-
-interface iBridgeSectionCutDrawStrategy : public IUnknown
+class iBridgeSectionCutDrawStrategy
 {
-   STDMETHOD_(void,SetColor)(COLORREF color) PURE;
-	STDMETHOD_(void,Init)(CBridgeModelViewChildFrame* pFrame,iPointDisplayObject* pDO, IRoadway* pRoadway, IBridge* pBridge, iCutLocation* pCutLoc) PURE;
+public:
+   virtual void SetColor(COLORREF color) = 0;
+	virtual void Init(CBridgeModelViewChildFrame* pFrame,std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, IRoadway* pRoadway, IBridge* pBridge, iCutLocation* pCutLoc) = 0;
 };

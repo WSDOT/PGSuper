@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2023  Washington State Department of Transportation
+// Copyright © 1999-2024  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -28,14 +28,16 @@
 #endif // _MSC_VER > 1000
 // TogaGMDisplayMgrEventsImpl.h : header file
 //
-#include <DManip\DManip.h>
+
+#include <DManip/DisplayMgrEvents.h>
+
 #include "TxDOTOptionalDesignDoc.h"
 #include "TxDOTOptionalDesignGirderViewPage.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CTogaGMDisplayMgrEventsImpl command target
 
-class CTogaGMDisplayMgrEventsImpl : public CCmdTarget
+class CTogaGMDisplayMgrEventsImpl : public WBFL::DManip::iDisplayMgrEvents
 {
 public:
    CTogaGMDisplayMgrEventsImpl(CTxDOTOptionalDesignDoc* pDoc, CTxDOTOptionalDesignGirderViewPage* pFrame, CWnd* pParent);
@@ -46,21 +48,16 @@ public:
    CTxDOTOptionalDesignGirderViewPage* m_pFrame;
    CWnd*                               m_pParent;
 
-   DECLARE_INTERFACE_MAP()
-
-   BEGIN_INTERFACE_PART(Events,iDisplayMgrEvents)
-      STDMETHOD_(bool,OnLButtonDblClk)(iDisplayMgr* pDO,UINT nFlags,CPoint point) override;
-      STDMETHOD_(bool,OnLButtonDown)(iDisplayMgr* pDO,UINT nFlags,CPoint point) override;
-      STDMETHOD_(bool,OnRButtonDblClk)(iDisplayMgr* pDO,UINT nFlags,CPoint point) override;
-      STDMETHOD_(bool,OnRButtonDown)(iDisplayMgr* pDO,UINT nFlags,CPoint point) override;
-      STDMETHOD_(bool,OnLButtonUp)(iDisplayMgr* pDO,UINT nFlags,CPoint point) override;
-      STDMETHOD_(bool,OnRButtonUp)(iDisplayMgr* pDO,UINT nFlags,CPoint point) override;
-      STDMETHOD_(bool,OnMouseMove)(iDisplayMgr* pDO,UINT nFlags,CPoint point) override;
-      STDMETHOD_(bool,OnMouseWheel)(iDisplayMgr* pDO,UINT nFlags,short zDelta,CPoint point) override;
-      STDMETHOD_(bool,OnKeyDown)(iDisplayMgr* pDO,UINT nChar, UINT nRepCnt, UINT nFlags) override;
-      STDMETHOD_(bool,OnContextMenu)(iDisplayMgr* pDO,CWnd* pWnd,CPoint point) override;
-   END_INTERFACE_PART(Events)
-
+   virtual bool OnLButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnLButtonDown(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnLButtonUp(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnRButtonDblClk(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnRButtonDown(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnRButtonUp(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnMouseMove(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDO, UINT nFlags, const POINT& point) override;
+   virtual bool OnMouseWheel(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDO, UINT nFlags, short zDelta, const POINT& point) override;
+   virtual bool OnKeyDown(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDO, UINT nChar, UINT nRepCnt, UINT nFlags) override;
+   virtual bool OnContextMenu(std::shared_ptr<WBFL::DManip::iDisplayMgr> pDO, CWnd* pWnd, const POINT& point) override;
 };
 
 /////////////////////////////////////////////////////////////////////////////

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2023  Washington State Department of Transportation
+// Copyright © 1999-2024  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -35,20 +35,12 @@
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\EditByUI.h>
-#include "mfcdual.h"
 
 #include <PgsExt\InsertDeleteLoad.h>
-#include <WBFLDManip.h>
 
-#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
-#endif
-
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
+#include <DManip/ToolImpl.h>
+#include <DManip/DragDataImpl.h>
+#include <DManip/LineDisplayObject.h>
 
 CGirderDropSite::CGirderDropSite(CPGSDocBase* pDoc, const CSpanKey& spanKey, CGirderModelChildFrame* pFrame) :
 m_SpanKey(spanKey)
@@ -62,32 +54,16 @@ CGirderDropSite::~CGirderDropSite()
 
 }
 
-void CGirderDropSite::OnFinalRelease()
+
+DROPEFFECT CGirderDropSite::CanDrop(COleDataObject* pDataObject,DWORD dwKeyState, const WBFL::Geometry::Point2d& point)
 {
-   m_DispObj.Detach();
-   CCmdTarget::OnFinalRelease();
-}
-
-BEGIN_INTERFACE_MAP(CGirderDropSite,CCmdTarget)
-   INTERFACE_PART(CGirderDropSite,IID_iDropSite,DropSite)
-END_INTERFACE_MAP()
-
-DELEGATE_CUSTOM_INTERFACE(CGirderDropSite,DropSite);
-
-
-STDMETHODIMP_(DROPEFFECT) CGirderDropSite::XDropSite::CanDrop(COleDataObject* pDataObject,DWORD dwKeyState,IPoint2d* point)
-{
-   METHOD_PROLOGUE(CGirderDropSite,DropSite);
-
    // Was a tool dragged over the Girder?
-   CComPtr<iTool> tool;
-   ::CoCreateInstance(CLSID_Tool,nullptr,CLSCTX_ALL,IID_iTool,(void**)&tool);
-   CComQIPtr<iDraggable,&IID_iDraggable> draggable(tool);
+   auto tool = WBFL::DManip::Tool::Create();
+   auto draggable = std::dynamic_pointer_cast<WBFL::DManip::iDraggable>(tool);
 
    if ( pDataObject->IsDataAvailable( draggable->Format() ) )
    {
-      CComPtr<iDragDataSource> source;
-      ::CoCreateInstance(CLSID_DragDataSource,nullptr,CLSCTX_ALL,IID_iDragDataSource,(void**)&source);
+      auto source = WBFL::DManip::DragDataSource::Create();
       source->SetDataObject(pDataObject);
       draggable->OnDrop(source); // Rebuild the tool object from the data object
 
@@ -103,9 +79,8 @@ STDMETHODIMP_(DROPEFFECT) CGirderDropSite::XDropSite::CanDrop(COleDataObject* pD
    return DROPEFFECT_NONE;
 }
 
-STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataObject,DROPEFFECT dropEffect,IPoint2d* point)
+void CGirderDropSite::OnDropped(COleDataObject* pDataObject,DROPEFFECT dropEffect, const WBFL::Geometry::Point2d& point)
 {
-   METHOD_PROLOGUE_(CGirderDropSite,DropSite);
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    // Something was dropped on a display object that represents a Girder
@@ -113,13 +88,11 @@ STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataO
    // Let's see what was dropped
 
    // Was it a tool from the palette?
-   CComPtr<iTool> tool;
-   ::CoCreateInstance(CLSID_Tool,nullptr,CLSCTX_ALL,IID_iTool,(void**)&tool);
-   CComQIPtr<iDraggable,&IID_iDraggable> draggable(tool);
+   auto tool = WBFL::DManip::Tool::Create();
+   auto draggable = std::dynamic_pointer_cast<WBFL::DManip::iDraggable>(tool);
    if ( pDataObject->IsDataAvailable(draggable->Format()) )
    {
-      CComPtr<iDragDataSource> source;
-      ::CoCreateInstance(CLSID_DragDataSource,nullptr,CLSCTX_ALL,IID_iDragDataSource,(void**)&source);
+      auto source = WBFL::DManip::DragDataSource::Create();
       source->SetDataObject(pDataObject);
       draggable->OnDrop(source); // Rebuild the tool object from the data object
 
@@ -132,14 +105,13 @@ STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataO
       {
          // set data to that of view
          CPointLoadData load;
-         pThis->InitLoad(load);
+         InitLoad(load);
 
-         CComPtr<IPoint2d> pntStart, pntEnd;
-         CComQIPtr<iLineDisplayObject> doLine(pThis->m_DispObj);
-         doLine->GetEndPoints(&pntStart,&pntEnd);
+         auto doLine = std::dynamic_pointer_cast<WBFL::DManip::iLineDisplayObject>(m_DispObj.lock());
+         auto [pntStart,pntEnd] = doLine->GetEndPoints();
          Float64 segX, wx;
-         pntStart->get_X(&segX);
-         point->get_X(&wx);
+         segX = pntStart.X();
+         wx = point.X();
 
          Float64 load_loc = wx - segX;
 
@@ -153,7 +125,7 @@ STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataO
       {
          // set data to that of view
          CDistributedLoadData load;
-         pThis->InitLoad(load);
+         InitLoad(load);
 
          // estimate where we are at
          GET_IFACE2(pBroker,IBridge,pBridge);
@@ -162,8 +134,7 @@ STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataO
          // set length of load to 1/10 span length
          Float64 load_length = span_length/10;
 
-         Float64 wx;
-         point->get_X(&wx);
+         Float64 wx = point.X();
 
          wx = wx - span_length;  // span coordinates
 
@@ -192,14 +163,13 @@ STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataO
       {
          // set data to that of view
          CMomentLoadData load;
-         pThis->InitLoad(load);
+         InitLoad(load);
 
          // estimate where we are at
          GET_IFACE2(pBroker,IBridge,pBridge);
          Float64 span_length = pBridge->GetSpanLength(load.m_SpanKey.spanIndex,load.m_SpanKey.girderIndex);
 
-         Float64 wx;
-         point->get_X(&wx);
+         Float64 wx = point.X();
 
          wx = wx - span_length;  // span coordinates
 
@@ -225,25 +195,20 @@ STDMETHODIMP_(void) CGirderDropSite::XDropSite::OnDropped(COleDataObject* pDataO
    }
 }
 
-STDMETHODIMP_(void) CGirderDropSite::XDropSite::SetDisplayObject(iDisplayObject* pDO)
+void CGirderDropSite::SetDisplayObject(std::weak_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   METHOD_PROLOGUE(CGirderDropSite,DropSite);
-   pThis->m_DispObj.Detach();
-   pThis->m_DispObj.Attach(pDO);
+   m_DispObj = pDO;
 }
 
-STDMETHODIMP_(void) CGirderDropSite::XDropSite::GetDisplayObject(iDisplayObject** dispObj)
+std::shared_ptr<WBFL::DManip::iDisplayObject> CGirderDropSite::GetDisplayObject()
 {
-   METHOD_PROLOGUE(CGirderDropSite,DropSite);
-   *dispObj = pThis->m_DispObj;
-   (*dispObj)->AddRef();
+   return m_DispObj.lock();
 }
 
-STDMETHODIMP_(void) CGirderDropSite::XDropSite::Highlite(CDC* pDC,BOOL bHighlite)
+void CGirderDropSite::Highlight(CDC* pDC,BOOL bHighlite)
 {
-   METHOD_PROLOGUE(CGirderDropSite,DropSite);
-   if ( pThis->m_DispObj )
-      pThis->m_DispObj->Highlite(pDC,bHighlite);
+   if ( m_DispObj.lock() )
+      m_DispObj.lock()->Highlight(pDC, bHighlite);
 }
 
 

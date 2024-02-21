@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////
 // PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-// Copyright © 1999-2023  Washington State Department of Transportation
+// Copyright © 1999-2024  Washington State Department of Transportation
 //                        Bridge and Structures Office
 //
 // This program is free software; you can redistribute it and/or modify
@@ -25,18 +25,14 @@
 
 #include "IFace\Bridge.h"
 #include "pgsExt\PointLoadData.h"
-#include "DManip\DManip.h"
+#include <DManip/PointDisplayObject.h>
 
 interface IBroker;
 
-// {1B3F3992-4CE5-4216-BF6F-50418291E670}
-DEFINE_GUID(IID_iPointLoadDrawStrategy, 
-0x1b3f3992, 0x4ce5, 0x4216, 0xbf, 0x6f, 0x50, 0x41, 0x82, 0x91, 0xe6, 0x70);
-
-interface iPointLoadDrawStrategy : public IUnknown
+class iPointLoadDrawStrategy
 {
-  STDMETHOD_(void,Init)(iPointDisplayObject* pDO, IBroker* pBroker, const CPointLoadData& load, IndexType loadIndex, 
-                        Float64 spanLength, Float64 maxMagnitude, COLORREF color) PURE;
+public:
+  virtual void Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, IBroker* pBroker, const CPointLoadData& load, IndexType loadIndex, Float64 spanLength, Float64 maxMagnitude, COLORREF color) = 0;
 };
 
 #endif // INCLUDED_POINTLOADDRAWSTRATEGY_H_
