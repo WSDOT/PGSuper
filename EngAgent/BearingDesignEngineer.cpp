@@ -46,6 +46,8 @@
 #include <PgsExt\DesignConfigUtil.h>
 #include <PgsExt\GirderLabel.h>
 
+
+
 #if defined _DEBUG
 #include <IFace\DocumentType.h>
 #endif
@@ -195,54 +197,81 @@ Float64 pgsBearingDesignEngineer::GetBearingCyclicRotation(pgsTypes::AnalysisTyp
 
 
 
-//Float64 pgsBearingDesignEngineer::GetCreepShrinkageShearDeformation(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi,
-//    const ReactionLocation& reactionLocation, bool bIncludeImpact, bool bIncludeLLDF) const
-//{
-//    GET_IFACE(IBridge, pBridge);
-//    GET_IFACE(IIntervals, pIntervals);
-//    GET_IFACE(IPointOfInterest, pPoi);
-//    GET_IFACE(IMaterials, pMaterial);
-//    GET_IFACE(IBridgeDescription, pIBridgeDesc);
-//
-//    const CSegmentKey& segmentKey(poi.GetSegmentKey());
-//    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
-//    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-//    IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
-//
-//    PoiList vPoi;
-//    IndexType rgn = pPoi->GetDeckCastingRegion(poi);
-//    CSegmentKey seg_key = pBridge->GetSegmentAtPier(startPierIdx, girderKey);
-//    pPoi->GetPointsOfInterest(seg_key, POI_0L | POI_ERECTED_SEGMENT, &vPoi);
-//    IntervalIndexType cd_event = pIntervals->GetCastDeckInterval(rgn);
-//    IntervalIndexType eg_event = pIntervals->GetErectSegmentInterval(seg_key);
-//    IntervalIndexType release = pIntervals->GetFirstPrestressReleaseInterval(girderKey);
-//
-//    //axial creep strain
-//    Float64 cstrain1 = pMaterial->GetSegmentCreepCoefficient(
-//        seg_key,
-//        release,
-//        pgsTypes::IntervalTimeType::Start,
-//        eg_event,
-//        pgsTypes::IntervalTimeType::Start
-//    );
-//    Float64 cstrain2 = pMaterial->GetSegmentCreepCoefficient(
-//        seg_key,
-//        release,
-//        pgsTypes::IntervalTimeType::Start,
-//        cd_event,
-//        pgsTypes::IntervalTimeType::Start
-//    );
-//
-//    //shrinkage strain
-//    Float64 sstrain1 = pMaterial->GetTotalSegmentFreeShrinkageStrain(seg_key, eg_event, pgsTypes::IntervalTimeType::Start);
-//    Float64 sstrain2 = pMaterial->GetTotalSegmentFreeShrinkageStrain(seg_key, cd_event, pgsTypes::IntervalTimeType::Start);
-//
-//
-//    pDetails->creep = 0.0; //AXIAL:: k * (cd-eg) * L, k=0.5 for simple span, 1.0 for continuous BENDING::
-//    pDetails->shrinkage = 0.0002;  //k * (cd-eg) * L, k=0.5 for simple span, 1.0 for continuous
-//
-//
-//}
+Float64 pgsBearingDesignEngineer::GetSpanContributoryLength(CGirderKey girderKey) const
+{
+    GET_IFACE(IBridge, pBridge);
+
+    Float64 L = 0;
+
+    SpanIndexType nSpans = pBridge->GetSpanCount();
+
+    Float64 halfOfSpans = std::ceil(nSpans / 2.0);
+
+    for (SpanIndexType spanIdx = 0; spanIdx < halfOfSpans; spanIdx++)
+    {
+        if (spanIdx == halfOfSpans && nSpans % 2 != 0)
+        {
+            L += pBridge->GetSpanLength(spanIdx) / 2.0;
+        }
+        else
+        {
+            L += pBridge->GetSpanLength(spanIdx);
+        }
+    }
+
+    return L;
+
+}
+
+Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girderKey, 
+    const pgsPointOfInterest& poi, PierIndexType startPierIdx, SHEARDEFORMATIONDETAILS* pDetails) const
+{
+    GET_IFACE(IBridge, pBridge);
+    GET_IFACE(IIntervals, pIntervals);
+    GET_IFACE(IMaterials, pMaterials);
+    GET_IFACE(IBridgeDescription, pIBridgeDesc);
+    GET_IFACE(IPointOfInterest, pPoi);
+    GET_IFACE(ILosses, pLosses);
+
+    const CSegmentKey& segmentKey(poi.GetSegmentKey());
+    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+    IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
+    
+    CSegmentKey seg_key = pBridge->GetSegmentAtPier(startPierIdx, girderKey);
+    auto lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
+
+
+    const LOSSDETAILS* td_details_erect = pLosses->GetLossDetails(poi, erectSegmentIntervalIdx);
+    TDCOMPONENTS components_erect;
+    Float64 fpLossErect = pLosses->GetTimeDependentLossesEX(poi, pgsTypes::StrandType::Straight, erectSegmentIntervalIdx, pgsTypes::IntervalTimeType::End, nullptr, td_details_erect, &components_erect);
+    const LOSSDETAILS* td_details_inf = pLosses->GetLossDetails(poi, lastIntervalIdx);
+    TDCOMPONENTS components_inf;
+    Float64 fpLossInfinity = pLosses->GetTimeDependentLossesEX(poi, pgsTypes::StrandType::Straight, lastIntervalIdx, pgsTypes::IntervalTimeType::End, nullptr, td_details_inf, &components_inf);
+    Float64 fpNetLoss = fpLossInfinity - fpLossErect;
+
+    Float64 L = GetSpanContributoryLength(girderKey);
+
+    Float64 Ep = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Straight)->GetE();
+
+    Float64 tendonShortening = fpNetLoss * L / Ep;
+
+    auto details = pLosses->GetLossDetails(poi, erectSegmentIntervalIdx);
+
+    Float64 ep = details->pLosses->GetEccpgRelease().Y();
+
+    GET_IFACE(ISectionProperties, pSection);
+
+    Float64 yb = pSection->GetNetYbg(erectSegmentIntervalIdx, poi);
+
+    Float64 r = sqrt(pSection->GetIxx(erectSegmentIntervalIdx, poi) / pSection->GetAg(erectSegmentIntervalIdx, poi));
+
+    Float64 FlangeBottomShortening = (1.0 + ep * yb / (r * r)) / (1 + ep * ep / (r * r)) * tendonShortening;
+
+    const CPierData2* pPier = nullptr;
+
+    return FlangeBottomShortening;
+
+}
 
 
 
@@ -480,29 +509,9 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
     pDetails->minUserLLReaction = pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftUserLLIM, minBAT);
 }
 
-void pgsBearingDesignEngineer::GetBearingShearDeformationDetails(pgsTypes::AnalysisType analysisType, PierIndexType startPierIdx, const pgsPointOfInterest& poi,
-    const ReactionLocation& reactionLocation, CGirderKey girderKey, bool bIncludeImpact, bool bIncludeLLDF, SHEARDEFORMATIONDETAILS* pDetails) const
+
+void pgsBearingDesignEngineer::GetThermalExpansionDetails(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const
 {
-
-    GET_IFACE(IProductForces, pProductForces);
-
-    GET_IFACE(IIntervals, pIntervals);
-    IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
-    IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
-
-
-    //const CSegmentKey& segmentKey(poi.GetSegmentKey());
-    //IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-    //IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
-
-
-    //pDetails->postTension = pProductForces->GetDeflection(lastIntervalIdx, pgsTypes::pftPostTensioning, poi, );
-    //pDetails->preTension = 0.0;
-    //pDetails->relaxation = 0.0;
-
-    //Float64 CAnalysisAgentImp::GetDeflection(IntervalIndexType intervalIdx, pgsTypes::ProductForceType pfType, const pgsPointOfInterest & poi, pgsTypes::BridgeAnalysisType bat, ResultsType resultsType, bool bIncludeElevationAdjustment, bool bIncludePrecamber, bool bIncludePreErectionUnrecov) const
-
-    
 
     GET_IFACE(IBridge, pBridge);
 
@@ -519,10 +528,27 @@ void pgsBearingDesignEngineer::GetBearingShearDeformationDetails(pgsTypes::Analy
 
     Float64 inv_thermal_exp_coefficient = { WBFL::Units::ConvertToSysUnits(166666.6667, WBFL::Units::Measure::Fahrenheit) };
     Float64 thermal_expansion_coefficient = 1.0 / inv_thermal_exp_coefficient;
+    pDetails->thermal_expansion_coefficient = thermal_expansion_coefficient;
 
-    pDetails->thermalBDMCold = 0.75 * thermal_expansion_coefficient * L * (80.0-0.0);
-    pDetails->thermalBDMModerate = 0.75 * thermal_expansion_coefficient * L * (80.0 - 10.0);
-    pDetails->thermalLRFDCold = 0.65 * thermal_expansion_coefficient * L * (80.0 - 0.0);
-    pDetails->thermalLRFDModerate = 0.65 * thermal_expansion_coefficient * L * (80.0 - 10.0);
+
+    pDetails->thermalBDMCold = 0.75 * thermal_expansion_coefficient * L * WBFL::Units::ConvertToSysUnits((80.0 - 0.0), WBFL::Units::Measure::Fahrenheit);
+    pDetails->thermalBDMModerate = 0.75 * thermal_expansion_coefficient * L * WBFL::Units::ConvertToSysUnits((80.0 - 10.0), WBFL::Units::Measure::Fahrenheit);
+    pDetails->thermalLRFDCold = 0.65 * thermal_expansion_coefficient * L * WBFL::Units::ConvertToSysUnits((80.0 - 0.0), WBFL::Units::Measure::Fahrenheit);
+    pDetails->thermalLRFDModerate = 0.65 * thermal_expansion_coefficient * L * WBFL::Units::ConvertToSysUnits((80.0 - 10.0), WBFL::Units::Measure::Fahrenheit);
+}
+
+
+void pgsBearingDesignEngineer::GetBearingShearDeformationDetails(pgsTypes::AnalysisType analysisType, PierIndexType startPierIdx, const pgsPointOfInterest& poi,
+    const ReactionLocation& reactionLocation, CGirderKey girderKey, bool bIncludeImpact, bool bIncludeLLDF, SHEARDEFORMATIONDETAILS* pDetails) const
+{
+    
+
+    GET_IFACE(IBearingDesignParameters, pBearing);
+
+    pBearing->GetThermalExpansionDetails(girderKey, pDetails);
+
+    pDetails->creep = pBearing->GetTimeDependentShearDeformation(girderKey, poi, startPierIdx, pDetails);
+
+
 }
 

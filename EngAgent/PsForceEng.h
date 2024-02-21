@@ -138,6 +138,7 @@ public:
    // Returns the prestress loss at the specified interval (does not include elastic effects)
    // Loss due to creep, shrinkage, and relaxation only
    Float64 GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig) const;
+   Float64 GetTimeDependentLossesEX(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, const GDRCONFIG* pConfig, const LOSSDETAILS* pDetails, TDCOMPONENTS* tdComponents) const;
 
    //------------------------------------------------------------------------
    // Returns the elastic gains due to externally applied loads, including elastic shortening effects, at the specified interval

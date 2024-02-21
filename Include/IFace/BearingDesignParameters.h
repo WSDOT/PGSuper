@@ -166,6 +166,7 @@ struct REACTIONDETAILS : public TABLEPARAMETERS
 
 struct SHEARDEFORMATIONDETAILS : public TABLEPARAMETERS
 {
+	Float64 thermal_expansion_coefficient;
 	Float64 thermalLRFDModerate;
 	Float64 thermalLRFDCold;
 	Float64 thermalBDMModerate;
@@ -193,6 +194,13 @@ interface IBearingDesignParameters : IUnknown
 	virtual void GetBearingReactionDetails(const ReactionLocation& reactionLocation,
 		CGirderKey girderKey, pgsTypes::AnalysisType analysisType, bool bIncludeImpact,
 		bool bIncludeLLDF, REACTIONDETAILS* pDetails) const = 0;
+
+	virtual void GetThermalExpansionDetails(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const = 0;
+
+	virtual Float64 GetSpanContributoryLength(CGirderKey girderKey) const = 0;
+
+	virtual Float64 GetTimeDependentShearDeformation(CGirderKey girderKey,
+		const pgsPointOfInterest& poi, PierIndexType startPierIdx, SHEARDEFORMATIONDETAILS* pDetails) const = 0;
 
 	virtual void GetBearingShearDeformationDetails(pgsTypes::AnalysisType analysisType, PierIndexType startPierIdx, const pgsPointOfInterest& poi,
 		const ReactionLocation& reactionLocation, CGirderKey girderKey, bool bIncludeImpact, bool bIncludeLLDF, SHEARDEFORMATIONDETAILS* pDetails) const = 0;

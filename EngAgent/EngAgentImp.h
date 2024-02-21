@@ -213,6 +213,8 @@ public:
 
    virtual Float64 GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig = nullptr) const override;
 
+   virtual Float64 GetTimeDependentLossesEX(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, const GDRCONFIG* pConfig, const LOSSDETAILS* pDetails, TDCOMPONENTS* tdComponents) const override;
+
    virtual Float64 GetInstantaneousEffects(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig = nullptr) const override;
    virtual Float64 GetInstantaneousEffectsWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState,VehicleIndexType vehicleIdx = INVALID_INDEX,const GDRCONFIG* pConfig = nullptr) const override;
 
@@ -392,6 +394,13 @@ public:
 
    virtual void GetBearingReactionDetails(const ReactionLocation& reactionLocation,
        CGirderKey girderKey, pgsTypes::AnalysisType analysisType, bool bIncludeImpact, bool bIncludeLLDF, REACTIONDETAILS* pDetails) const override;
+
+   virtual void GetThermalExpansionDetails(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const override;
+
+   virtual Float64 GetSpanContributoryLength(CGirderKey girderKey) const override;
+
+   virtual Float64 GetTimeDependentShearDeformation(CGirderKey girderKey, const pgsPointOfInterest& poi, 
+       PierIndexType startPierIdx, SHEARDEFORMATIONDETAILS* pDetails) const override;
 
    virtual void GetBearingShearDeformationDetails(pgsTypes::AnalysisType analysisType, PierIndexType startPierIdx, const pgsPointOfInterest& poi,
        const ReactionLocation& reactionLocation, CGirderKey girderKey, bool bIncludeImpact, bool bIncludeLLDF, SHEARDEFORMATIONDETAILS* pDetails) const override;

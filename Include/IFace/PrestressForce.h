@@ -212,6 +212,10 @@ interface ILosses : IUnknown
    // Returns the time-dependent losses only. They do not include elastic effects
    virtual Float64 GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig = nullptr) const = 0;
 
+   // Returns the time-dependent broken out into creep shrinkage, and relaxation
+   virtual Float64 GetTimeDependentLossesEX(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, const GDRCONFIG* pConfig, const LOSSDETAILS* pDetails, TDCOMPONENTS* tdComponents) const = 0;
+
+
    // Returns the change in prestress due to elastic effects including elastic shortening
    // and externally applied loads. Elastic gain due to live load is not included except for
    // the "WithLiveLoad" versions

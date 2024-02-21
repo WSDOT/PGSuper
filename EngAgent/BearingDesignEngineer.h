@@ -51,6 +51,13 @@ public:
 	   CGirderKey girderKey, pgsTypes::AnalysisType analysisType, 
 	   bool bIncludeImpact, bool bIncludeLLDF, REACTIONDETAILS* pDetails) const;
 
+   void GetThermalExpansionDetails(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const;
+
+   Float64 GetSpanContributoryLength(CGirderKey girderKey) const;
+
+   Float64 GetTimeDependentShearDeformation(CGirderKey girderKey,
+	   const pgsPointOfInterest& poi, PierIndexType startPierIdx, SHEARDEFORMATIONDETAILS* pDetails) const;
+
    void GetBearingShearDeformationDetails(pgsTypes::AnalysisType analysisType, PierIndexType startPierIdx, const pgsPointOfInterest& poi,
 	   const ReactionLocation& reactionLocation, CGirderKey girderKey, bool bIncludeImpact, bool bIncludeLLDF, SHEARDEFORMATIONDETAILS* pDetails) const;
 

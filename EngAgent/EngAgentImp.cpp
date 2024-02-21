@@ -1252,6 +1252,13 @@ Float64 CEngAgentImp::GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsTy
    return m_PsForceEngineer.GetTimeDependentLosses(poi,strandType,intervalIdx,intervalTime,pConfig);
 }
 
+Float64 CEngAgentImp::GetTimeDependentLossesEX(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, const GDRCONFIG* pConfig, const LOSSDETAILS* pDetails, TDCOMPONENTS* tdComponents) const
+{
+    return m_PsForceEngineer.GetTimeDependentLossesEX(poi, strandType, intervalIdx, intervalTime, pConfig, pDetails, tdComponents);
+}
+
+
+
 Float64 CEngAgentImp::GetInstantaneousEffects(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig) const
 {
    return m_PsForceEngineer.GetInstantaneousEffects(poi,strandType,intervalIdx,intervalTime,true/*apply elastic gain reduction*/, pConfig);
@@ -3859,11 +3866,26 @@ void CEngAgentImp::GetBearingRotationDetails(pgsTypes::AnalysisType AnalysisType
         bIncludeImpact, bIncludeLLDF, isFlexural, pDetails);
 }
 
-
 void CEngAgentImp::GetBearingReactionDetails(const ReactionLocation& reactionLocation,
     CGirderKey girderKey, pgsTypes::AnalysisType analysisType, bool bIncludeImpact, bool bIncludeLLDF, REACTIONDETAILS* pDetails) const
 {
     m_BearingEngineer.GetBearingReactionDetails(reactionLocation, girderKey, analysisType, bIncludeImpact, bIncludeLLDF, pDetails);
+}
+
+void CEngAgentImp::GetThermalExpansionDetails(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const
+{
+    m_BearingEngineer.GetThermalExpansionDetails(girderKey, pDetails);
+}
+
+Float64 CEngAgentImp::GetSpanContributoryLength(CGirderKey girderKey) const
+{
+    return m_BearingEngineer.GetSpanContributoryLength(girderKey);
+}
+
+Float64 CEngAgentImp::GetTimeDependentShearDeformation(CGirderKey girderKey,
+    const pgsPointOfInterest& poi, PierIndexType startPierIdx, SHEARDEFORMATIONDETAILS* pDetails) const
+{
+    return m_BearingEngineer.GetTimeDependentShearDeformation(girderKey, poi, startPierIdx, pDetails);
 }
 
 void CEngAgentImp::GetBearingShearDeformationDetails(pgsTypes::AnalysisType analysisType, PierIndexType startPierIdx, const pgsPointOfInterest& poi,

@@ -514,7 +514,7 @@ Float64 pgsPsForceEng::GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsT
    return GetTimeDependentLosses(poi,strandType,intervalIdx,intervalTime,pConfig,pDetails);
 }
 
-Float64 pgsPsForceEng::GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig,const LOSSDETAILS* pDetails) const
+Float64 pgsPsForceEng::GetTimeDependentLossesEX(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, const GDRCONFIG* pConfig, const LOSSDETAILS* pDetails, TDCOMPONENTS* tdComponents) const
 {
    GET_IFACE(IPointOfInterest,pPoi);
    if ( pPoi->IsOffSegment(poi) )
@@ -573,6 +573,9 @@ Float64 pgsPsForceEng::GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsT
          Float64 dfpe_creep_harped      = 0;
          Float64 dfpe_shrinkage_harped  = 0;
          Float64 dfpe_relaxation_harped = 0;
+
+         
+
          for ( IntervalIndexType i = 0; i <= theIntervalIdx; i++ )
          {
             dfpe_creep_straight += pDetails->TimeStepDetails[i].Strands[pgsTypes::Straight].dfpei[pgsTypes::pftCreep];
@@ -584,6 +587,11 @@ Float64 pgsPsForceEng::GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsT
             dfpe_relaxation_straight += pDetails->TimeStepDetails[i].Strands[pgsTypes::Straight].dfpei[pgsTypes::pftRelaxation];
             dfpe_relaxation_harped   += pDetails->TimeStepDetails[i].Strands[pgsTypes::Harped  ].dfpei[pgsTypes::pftRelaxation];
          }
+
+         tdComponents->creep = -(Aps[pgsTypes::Straight] * dfpe_creep_straight + Aps[pgsTypes::Harped] * dfpe_creep_harped) / A;
+         tdComponents->shrinkage = -(Aps[pgsTypes::Straight] * dfpe_shrinkage_straight + Aps[pgsTypes::Harped] * dfpe_shrinkage_harped) / A;
+         tdComponents->relaxation = -(Aps[pgsTypes::Straight] * dfpe_relaxation_straight + Aps[pgsTypes::Harped] * dfpe_relaxation_harped) / A;
+
 
          return -(Aps[pgsTypes::Straight]*(dfpe_creep_straight + dfpe_shrinkage_straight + dfpe_relaxation_straight) + Aps[pgsTypes::Harped] *(dfpe_creep_harped + dfpe_shrinkage_harped + dfpe_relaxation_harped))/(A);
 #else
@@ -600,9 +608,15 @@ Float64 pgsPsForceEng::GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsT
          {
             dfpe_creep += pDetails->TimeStepDetails[i].Strands[strandType].dfpei[pgsTypes::pftCreep];
 
+            tdComponents->creep = dfpe_creep;
+
             dfpe_shrinkage += pDetails->TimeStepDetails[i].Strands[strandType].dfpei[pgsTypes::pftShrinkage];
 
+            tdComponents->shrinkage = dfpe_shrinkage;
+
             dfpe_relaxation += pDetails->TimeStepDetails[i].Strands[strandType].dfpei[pgsTypes::pftRelaxation];
+
+            tdComponents->relaxation = dfpe_relaxation;
          }
 
          return -(dfpe_creep + dfpe_shrinkage + dfpe_relaxation);
@@ -629,6 +643,8 @@ Float64 pgsPsForceEng::GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsT
       IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();
       IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
+
+
       GET_IFACE(IBridge,pBridge);
       bool bIsFutureOverlay = pBridge->IsFutureOverlay();
 
@@ -644,6 +660,7 @@ Float64 pgsPsForceEng::GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsT
             if ( strandType == pgsTypes::Temporary )
             {
                loss = pDetails->pLosses->TemporaryStrand_BeforeTransfer();
+               tdComponents->relaxation = pDetails->pLosses->GetInitialRelaxation(WBFL::LRFD::TEMPORARY_STRAND);
             }
             else
             {
@@ -812,6 +829,13 @@ Float64 pgsPsForceEng::GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsT
       return loss;
    }
 }
+
+Float64 pgsPsForceEng::GetTimeDependentLosses(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, const GDRCONFIG* pConfig, const LOSSDETAILS* pDetails) const
+{
+    TDCOMPONENTS tdComponents;
+    return GetTimeDependentLossesEX(poi, strandType, intervalIdx, intervalTime, pConfig, pDetails, &tdComponents);
+}
+
 
 Float64 pgsPsForceEng::GetInstantaneousEffects(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime, bool bApplyElasticGainReduction,const GDRCONFIG* pConfig) const
 {
