@@ -1252,13 +1252,6 @@ Float64 CEngAgentImp::GetTimeDependentLosses(const pgsPointOfInterest& poi,pgsTy
    return m_PsForceEngineer.GetTimeDependentLosses(poi,strandType,intervalIdx,intervalTime,pConfig);
 }
 
-Float64 CEngAgentImp::GetTimeDependentLossesEX(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, const GDRCONFIG* pConfig, const LOSSDETAILS* pDetails, TDCOMPONENTS* tdComponents) const
-{
-    return m_PsForceEngineer.GetTimeDependentLossesEX(poi, strandType, intervalIdx, intervalTime, pConfig, pDetails, tdComponents);
-}
-
-
-
 Float64 CEngAgentImp::GetInstantaneousEffects(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,const GDRCONFIG* pConfig) const
 {
    return m_PsForceEngineer.GetInstantaneousEffects(poi,strandType,intervalIdx,intervalTime,true/*apply elastic gain reduction*/, pConfig);

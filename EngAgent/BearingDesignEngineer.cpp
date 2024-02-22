@@ -223,6 +223,351 @@ Float64 pgsBearingDesignEngineer::GetSpanContributoryLength(CGirderKey girderKey
 
 }
 
+
+Float64 pgsBearingDesignEngineer::GetBearingTimeDependentLosses(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, const GDRCONFIG* pConfig, const LOSSDETAILS* pDetails, TDCOMPONENTS* tdComponents) const
+{
+    GET_IFACE(IPointOfInterest, pPoi);
+    if (pPoi->IsOffSegment(poi))
+    {
+        return 0;
+    }
+
+    // NOTE: Losses are just time-dependent change in prestress force.
+    // Losses do not include elastic effects include elastic shortening or elastic gains due to external loads
+    //
+    // fpe = fpj - loss + gains
+
+    const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+    // if losses were computed with the time-step method
+    // look up change in stress in strands due to creep, shrinkage, and relaxation
+    if (pDetails->LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP)
+    {
+        if (intervalIdx == 0 && intervalTime == pgsTypes::Start)
+        {
+            return 0; // wanting losses at the start of the first interval.. nothing has happened yet
+        }
+
+        // time step losses are computed for the end of an interval
+        IntervalIndexType theIntervalIdx = intervalIdx;
+        switch (intervalTime)
+        {
+        case pgsTypes::Start:
+            theIntervalIdx--; // losses at start of this interval are equal to losses at end of previous interval
+            break;
+
+        case pgsTypes::Middle:
+            // drop through so we just use the end
+        case pgsTypes::End:
+            break; // do nothing... theIntervalIdx is correct
+        }
+
+#if !defined LUMP_STRANDS
+        GET_IFACE(IStrandGeometry, pStrandGeom);
+#endif
+
+        if (strandType == pgsTypes::Permanent)
+        {
+#if defined LUMP_STRANDS
+            GET_IFACE(IStrandGeometry, pStrandGeom);
+            std::array<Float64, 2> Aps{ pStrandGeom->GetStrandArea(poi, theIntervalIdx, pgsTypes::Straight, pConfig), pStrandGeom->GetStrandArea(poi, theIntervalIdx, pgsTypes::Harped, pConfig) };
+            Float64 A = std::accumulate(Aps.begin(), Aps.end(), 0.0);
+            if (IsZero(A))
+            {
+                return 0;
+            }
+
+            Float64 dfpe_creep_straight = 0;
+            Float64 dfpe_shrinkage_straight = 0;
+            Float64 dfpe_relaxation_straight = 0;
+            Float64 dfpe_creep_harped = 0;
+            Float64 dfpe_shrinkage_harped = 0;
+            Float64 dfpe_relaxation_harped = 0;
+
+
+
+            for (IntervalIndexType i = 0; i <= theIntervalIdx; i++)
+            {
+                dfpe_creep_straight += pDetails->TimeStepDetails[i].Strands[pgsTypes::Straight].dfpei[pgsTypes::pftCreep];
+                dfpe_creep_harped += pDetails->TimeStepDetails[i].Strands[pgsTypes::Harped].dfpei[pgsTypes::pftCreep];
+
+                dfpe_shrinkage_straight += pDetails->TimeStepDetails[i].Strands[pgsTypes::Straight].dfpei[pgsTypes::pftShrinkage];
+                dfpe_shrinkage_harped += pDetails->TimeStepDetails[i].Strands[pgsTypes::Harped].dfpei[pgsTypes::pftShrinkage];
+
+                dfpe_relaxation_straight += pDetails->TimeStepDetails[i].Strands[pgsTypes::Straight].dfpei[pgsTypes::pftRelaxation];
+                dfpe_relaxation_harped += pDetails->TimeStepDetails[i].Strands[pgsTypes::Harped].dfpei[pgsTypes::pftRelaxation];
+            }
+
+            tdComponents->creep = -(Aps[pgsTypes::Straight] * dfpe_creep_straight + Aps[pgsTypes::Harped] * dfpe_creep_harped) / A;
+            tdComponents->shrinkage = -(Aps[pgsTypes::Straight] * dfpe_shrinkage_straight + Aps[pgsTypes::Harped] * dfpe_shrinkage_harped) / A;
+            tdComponents->relaxation = -(Aps[pgsTypes::Straight] * dfpe_relaxation_straight + Aps[pgsTypes::Harped] * dfpe_relaxation_harped) / A;
+
+
+            return -(Aps[pgsTypes::Straight] * (dfpe_creep_straight + dfpe_shrinkage_straight + dfpe_relaxation_straight) + Aps[pgsTypes::Harped] * (dfpe_creep_harped + dfpe_shrinkage_harped + dfpe_relaxation_harped)) / (A);
+#else
+#pragma Reminder("IMPLEMENT")
+#endif
+        }
+        else
+        {
+#if defined LUMP_STRANDS
+            Float64 dfpe_creep = 0;
+            Float64 dfpe_shrinkage = 0;
+            Float64 dfpe_relaxation = 0;
+            for (IntervalIndexType i = 0; i <= theIntervalIdx; i++)
+            {
+                dfpe_creep += pDetails->TimeStepDetails[i].Strands[strandType].dfpei[pgsTypes::pftCreep];
+
+                tdComponents->creep = dfpe_creep;
+
+                dfpe_shrinkage += pDetails->TimeStepDetails[i].Strands[strandType].dfpei[pgsTypes::pftShrinkage];
+
+                tdComponents->shrinkage = dfpe_shrinkage;
+
+                dfpe_relaxation += pDetails->TimeStepDetails[i].Strands[strandType].dfpei[pgsTypes::pftRelaxation];
+
+                tdComponents->relaxation = dfpe_relaxation;
+            }
+
+            return -(dfpe_creep + dfpe_shrinkage + dfpe_relaxation);
+#else
+#pragma Reminder("IMPLEMENT")
+#endif
+        }
+    }
+    else
+    {
+        // some method other than Time Step
+        GET_IFACE(IIntervals, pIntervals);
+        IntervalIndexType stressStrandIntervalIdx = pIntervals->GetStressStrandInterval(segmentKey);
+        IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+        IntervalIndexType liftSegmentIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
+        IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
+        IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
+        IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
+        IntervalIndexType tsInstallationIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
+        IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
+        IntervalIndexType noncompositeCastingIntervalIdx = pIntervals->GetLastNoncompositeInterval();
+        IntervalIndexType compositeIntervalIdx = pIntervals->GetLastCompositeInterval();
+        IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
+        IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
+        IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
+
+
+
+        GET_IFACE(IBridge, pBridge);
+        bool bIsFutureOverlay = pBridge->IsFutureOverlay();
+
+        Float64 loss = 0;
+        if (intervalIdx == stressStrandIntervalIdx)
+        {
+            if (intervalTime == pgsTypes::Start)
+            {
+                loss = 0.0;
+            }
+            else if (intervalTime == pgsTypes::Middle)
+            {
+                if (strandType == pgsTypes::Temporary)
+                {
+                    loss = pDetails->pLosses->TemporaryStrand_BeforeTransfer();
+                    //tdComponents->relaxation = pDetails->pLosses->GetInitialRelaxation(WBFL::LRFD::TEMPORARY_STRAND);
+                }
+                else
+                {
+                    loss = pDetails->pLosses->PermanentStrand_BeforeTransfer();
+                    //tdComponents->relaxation = pDetails->pLosses->GetInitialRelaxation(WBFL::LRFD::PERMANENT_STRAND);
+                }
+
+                loss /= 2.0;
+                //tdComponents->relaxation /= 2.0;
+            }
+            else if (intervalTime == pgsTypes::End)
+            {
+                if (strandType == pgsTypes::Temporary)
+                {
+                    loss = pDetails->pLosses->TemporaryStrand_BeforeTransfer();
+                    //tdComponents->relaxation = pDetails->pLosses->GetInitialRelaxation(WBFL::LRFD::TEMPORARY_STRAND);
+                }
+                else
+                {
+                    loss = pDetails->pLosses->PermanentStrand_BeforeTransfer();
+                    //tdComponents->relaxation = pDetails->pLosses->GetInitialRelaxation(WBFL::LRFD::PERMANENT_STRAND);
+                }
+            }
+        }
+        else if (intervalIdx == releaseIntervalIdx || intervalIdx == storageIntervalIdx)
+        {
+            if (intervalTime == pgsTypes::Start)
+            {
+                if (strandType == pgsTypes::Temporary)
+                {
+                    loss = pDetails->pLosses->TemporaryStrand_BeforeTransfer();
+                    //tdComponents->relaxation = pDetails->pLosses->GetInitialRelaxation(WBFL::LRFD::TEMPORARY_STRAND);
+
+                }
+                else
+                {
+                    loss = pDetails->pLosses->PermanentStrand_BeforeTransfer();
+                    //tdComponents->relaxation = pDetails->pLosses->GetInitialRelaxation(WBFL::LRFD::PERMANENT_STRAND);
+                }
+            }
+            else
+            {
+                if (strandType == pgsTypes::Temporary)
+                {
+                    loss = pDetails->pLosses->TemporaryStrand_AfterTransfer();
+                    //tdComponents->relaxation = pDetails->pLosses->GetInitialRelaxation(WBFL::LRFD::TEMPORARY_STRAND);
+                }
+                else
+                {
+                    loss = pDetails->pLosses->PermanentStrand_AfterTransfer();
+                    //tdComponents->relaxation = pDetails->pLosses->GetInitialRelaxation(WBFL::LRFD::PERMANENT_STRAND);
+                }
+            }
+        }
+        else if (intervalIdx == liftSegmentIntervalIdx)
+        {
+            if (strandType == pgsTypes::Temporary)
+            {
+                loss = pDetails->pLosses->TemporaryStrand_AtLifting();
+                //if (pDetails->pLosses->GetTempStrandUsage() == WBFL::LRFD::Losses::TempStrandUsage::Pretensioned)
+                //{
+                //    tdComponents->relaxation = pDetails->pLosses->GetInitialRelaxation(WBFL::LRFD::TEMPORARY_STRAND);
+                //}
+                //else if (pDetails->pLosses->GetTempStrandUsage() == WBFL::LRFD::Losses::TempStrandUsage::PTBeforeLifting || 
+                //    pDetails->pLosses->GetTempStrandUsage() == WBFL::LRFD::Losses::TempStrandUsage::PTAfterLifting)
+                //{
+                //    if (pDetails->pLosses->GetTempStrandUsage() == WBFL::LRFD::Losses::TempStrandUsage::Pretensioned)
+                //    {
+                //        tdComponents->relaxation = pDetails->pLosses->GetInitialRelaxation(WBFL::LRFD::TEMPORARY_STRAND);
+                //    }
+                //    else
+                //    {
+                //        tdComponents->relaxation = pDetails->pLosses->FrictionLoss() + pDetails->pLosses->AnchorSetLoss() + pDetails->pLosses->GetDeltaFptAvg();
+                //    }
+                //}
+            }
+            else
+            {
+                loss = pDetails->pLosses->PermanentStrand_AtLifting();
+                //tdComponents->relaxation = pDetails->pLosses->GetInitialRelaxation(WBFL::LRFD::PERMANENT_STRAND);
+            }
+        }
+        else if (intervalIdx == haulSegmentIntervalIdx)
+        {
+            if (strandType == pgsTypes::Temporary)
+            {
+                loss = pDetails->pLosses->TemporaryStrand_AtShipping();
+            }
+            else
+            {
+                loss = pDetails->pLosses->PermanentStrand_AtShipping();
+            }
+        }
+        else if (intervalIdx == tsInstallationIntervalIdx)
+        {
+            if (intervalTime == pgsTypes::Start)
+            {
+                if (strandType == pgsTypes::Temporary)
+                {
+                    loss = pDetails->pLosses->TemporaryStrand_AtShipping();
+                }
+                else
+                {
+                    loss = pDetails->pLosses->PermanentStrand_AtShipping();
+                }
+            }
+            else
+            {
+                if (strandType == pgsTypes::Temporary)
+                {
+                    loss = pDetails->pLosses->TemporaryStrand_AfterTemporaryStrandInstallation();
+                }
+                else
+                {
+                    loss = pDetails->pLosses->PermanentStrand_AfterTemporaryStrandInstallation();
+                }
+            }
+        }
+        else if (intervalIdx == erectSegmentIntervalIdx)
+        {
+            if (strandType == pgsTypes::Temporary)
+            {
+                loss = pDetails->pLosses->TemporaryStrand_BeforeTemporaryStrandRemoval();
+            }
+            else
+            {
+                loss = pDetails->pLosses->PermanentStrand_BeforeTemporaryStrandRemoval();
+            }
+        }
+        else if (intervalIdx == tsRemovalIntervalIdx)
+        {
+            if (intervalTime == pgsTypes::Start)
+            {
+                if (strandType == pgsTypes::Temporary)
+                {
+                    loss = pDetails->pLosses->TemporaryStrand_BeforeTemporaryStrandRemoval();
+                }
+                else
+                {
+                    loss = pDetails->pLosses->PermanentStrand_BeforeTemporaryStrandRemoval();
+                }
+            }
+            else
+            {
+                if (strandType == pgsTypes::Temporary)
+                {
+                    loss = pDetails->pLosses->TemporaryStrand_AfterTemporaryStrandRemoval();
+                }
+                else
+                {
+                    loss = pDetails->pLosses->PermanentStrand_AfterTemporaryStrandRemoval();
+                }
+            }
+        }
+        else if (intervalIdx == noncompositeCastingIntervalIdx || (intervalIdx == compositeIntervalIdx && compositeIntervalIdx != railingSystemIntervalIdx))
+        {
+            if (intervalTime == pgsTypes::Start)
+            {
+                if (strandType == pgsTypes::Temporary)
+                {
+                    loss = pDetails->pLosses->TemporaryStrand_AfterTemporaryStrandRemoval();
+                }
+                else
+                {
+                    loss = pDetails->pLosses->PermanentStrand_AfterTemporaryStrandRemoval();
+                }
+            }
+            else
+            {
+                if (strandType == pgsTypes::Temporary)
+                {
+                    loss = pDetails->pLosses->TemporaryStrand_AfterDeckPlacement();
+                }
+                else
+                {
+                    loss = pDetails->pLosses->PermanentStrand_AfterDeckPlacement();
+                }
+            }
+        }
+        else
+        {
+            if (strandType == pgsTypes::Temporary)
+            {
+                loss = pDetails->pLosses->TemporaryStrand_Final();
+            }
+            else
+            {
+                loss = pDetails->pLosses->PermanentStrand_Final();
+            }
+        }
+
+        return loss;
+    }
+}
+
+
+
 Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girderKey, 
     const pgsPointOfInterest& poi, PierIndexType startPierIdx, SHEARDEFORMATIONDETAILS* pDetails) const
 {
@@ -243,10 +588,10 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey gi
 
     const LOSSDETAILS* td_details_erect = pLosses->GetLossDetails(poi, erectSegmentIntervalIdx);
     TDCOMPONENTS components_erect;
-    Float64 fpLossErect = pLosses->GetTimeDependentLossesEX(poi, pgsTypes::StrandType::Straight, erectSegmentIntervalIdx, pgsTypes::IntervalTimeType::End, nullptr, td_details_erect, &components_erect);
+    Float64 fpLossErect = GetBearingTimeDependentLosses(poi, pgsTypes::StrandType::Straight, erectSegmentIntervalIdx, pgsTypes::IntervalTimeType::End, nullptr, td_details_erect, &components_erect);
     const LOSSDETAILS* td_details_inf = pLosses->GetLossDetails(poi, lastIntervalIdx);
     TDCOMPONENTS components_inf;
-    Float64 fpLossInfinity = pLosses->GetTimeDependentLossesEX(poi, pgsTypes::StrandType::Straight, lastIntervalIdx, pgsTypes::IntervalTimeType::End, nullptr, td_details_inf, &components_inf);
+    Float64 fpLossInfinity = GetBearingTimeDependentLosses(poi, pgsTypes::StrandType::Straight, lastIntervalIdx, pgsTypes::IntervalTimeType::End, nullptr, td_details_inf, &components_inf);
     Float64 fpNetLoss = fpLossInfinity - fpLossErect;
 
     Float64 L = GetSpanContributoryLength(girderKey);

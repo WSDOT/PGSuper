@@ -55,6 +55,8 @@ public:
 
    Float64 GetSpanContributoryLength(CGirderKey girderKey) const;
 
+   Float64 GetBearingTimeDependentLosses(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, const GDRCONFIG* pConfig, const LOSSDETAILS* pDetails, TDCOMPONENTS* tdComponents) const;
+
    Float64 GetTimeDependentShearDeformation(CGirderKey girderKey,
 	   const pgsPointOfInterest& poi, PierIndexType startPierIdx, SHEARDEFORMATIONDETAILS* pDetails) const;
 
