@@ -397,6 +397,8 @@ public:
 
    virtual Float64 GetSpanContributoryLength(CGirderKey girderKey) const override;
 
+   virtual Float64 GetTimeDependentComponentShearDeformation(CGirderKey girderKey, const pgsPointOfInterest& poi, Float64 loss) const override;
+
    virtual Float64 GetTimeDependentShearDeformation(CGirderKey girderKey, const pgsPointOfInterest& poi, 
        PierIndexType startPierIdx, SHEARDEFORMATIONDETAILS* pDetails) const override;
 

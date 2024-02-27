@@ -224,6 +224,44 @@ Float64 pgsBearingDesignEngineer::GetSpanContributoryLength(CGirderKey girderKey
 }
 
 
+Float64 pgsBearingDesignEngineer::GetTimeDependentComponentShearDeformation(CGirderKey girderKey, const pgsPointOfInterest& poi, Float64 loss) const
+{
+
+    GET_IFACE(ISectionProperties, pSection);
+    GET_IFACE(ILosses, pLosses);
+    GET_IFACE(IBridge, pBridge);
+    GET_IFACE(IMaterials, pMaterials);
+    GET_IFACE(IIntervals, pIntervals);
+    GET_IFACE(IBridgeDescription, pIBridgeDesc);
+    GET_IFACE(IPointOfInterest, pPoi);
+
+    const CSegmentKey& segmentKey(poi.GetSegmentKey());
+    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+    IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
+
+    auto lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
+
+    Float64 L = GetSpanContributoryLength(girderKey);
+
+    Float64 Ep = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Straight)->GetE();
+
+    Float64 tendonShortening = loss * L / Ep;
+
+    auto details = pLosses->GetLossDetails(poi, erectSegmentIntervalIdx);
+
+    Float64 ep = details->pLosses->GetEccpgRelease().Y();
+
+    Float64 yb = pSection->GetNetYbg(erectSegmentIntervalIdx, poi);
+
+    Float64 r = sqrt(pSection->GetIxx(erectSegmentIntervalIdx, poi) / pSection->GetAg(erectSegmentIntervalIdx, poi));
+
+    Float64 FlangeBottomShortening = (1.0 + ep * yb / (r * r)) / (1 + ep * ep / (r * r)) * tendonShortening;
+
+    return FlangeBottomShortening;
+
+}
+
+
 Float64 pgsBearingDesignEngineer::GetBearingTimeDependentLosses(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, const GDRCONFIG* pConfig, const LOSSDETAILS* pDetails, TDCOMPONENTS* tdComponents) const
 {
     GET_IFACE(IPointOfInterest, pPoi);
@@ -339,157 +377,12 @@ Float64 pgsBearingDesignEngineer::GetBearingTimeDependentLosses(const pgsPointOf
     {
         // some method other than Time Step
         GET_IFACE(IIntervals, pIntervals);
-        IntervalIndexType stressStrandIntervalIdx = pIntervals->GetStressStrandInterval(segmentKey);
-        IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-        IntervalIndexType liftSegmentIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
-        IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
-        IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
         IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
-        IntervalIndexType tsInstallationIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
-        IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
-        IntervalIndexType noncompositeCastingIntervalIdx = pIntervals->GetLastNoncompositeInterval();
-        IntervalIndexType compositeIntervalIdx = pIntervals->GetLastCompositeInterval();
-        IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
-        IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
-        IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-
-
-
-        GET_IFACE(IBridge, pBridge);
-        bool bIsFutureOverlay = pBridge->IsFutureOverlay();
 
         Float64 loss = 0;
-        if (intervalIdx == stressStrandIntervalIdx)
-        {
-            if (intervalTime == pgsTypes::Start)
-            {
-                loss = 0.0;
-            }
-            else if (intervalTime == pgsTypes::Middle)
-            {
-                if (strandType == pgsTypes::Temporary)
-                {
-                    loss = pDetails->pLosses->TemporaryStrand_BeforeTransfer();
-                    //tdComponents->relaxation = pDetails->pLosses->GetInitialRelaxation(WBFL::LRFD::TEMPORARY_STRAND);
-                }
-                else
-                {
-                    loss = pDetails->pLosses->PermanentStrand_BeforeTransfer();
-                    //tdComponents->relaxation = pDetails->pLosses->GetInitialRelaxation(WBFL::LRFD::PERMANENT_STRAND);
-                }
 
-                loss /= 2.0;
-                //tdComponents->relaxation /= 2.0;
-            }
-            else if (intervalTime == pgsTypes::End)
-            {
-                if (strandType == pgsTypes::Temporary)
-                {
-                    loss = pDetails->pLosses->TemporaryStrand_BeforeTransfer();
-                    //tdComponents->relaxation = pDetails->pLosses->GetInitialRelaxation(WBFL::LRFD::TEMPORARY_STRAND);
-                }
-                else
-                {
-                    loss = pDetails->pLosses->PermanentStrand_BeforeTransfer();
-                    //tdComponents->relaxation = pDetails->pLosses->GetInitialRelaxation(WBFL::LRFD::PERMANENT_STRAND);
-                }
-            }
-        }
-        else if (intervalIdx == releaseIntervalIdx || intervalIdx == storageIntervalIdx)
-        {
-            if (intervalTime == pgsTypes::Start)
-            {
-                if (strandType == pgsTypes::Temporary)
-                {
-                    loss = pDetails->pLosses->TemporaryStrand_BeforeTransfer();
-                    //tdComponents->relaxation = pDetails->pLosses->GetInitialRelaxation(WBFL::LRFD::TEMPORARY_STRAND);
 
-                }
-                else
-                {
-                    loss = pDetails->pLosses->PermanentStrand_BeforeTransfer();
-                    //tdComponents->relaxation = pDetails->pLosses->GetInitialRelaxation(WBFL::LRFD::PERMANENT_STRAND);
-                }
-            }
-            else
-            {
-                if (strandType == pgsTypes::Temporary)
-                {
-                    loss = pDetails->pLosses->TemporaryStrand_AfterTransfer();
-                    //tdComponents->relaxation = pDetails->pLosses->GetInitialRelaxation(WBFL::LRFD::TEMPORARY_STRAND);
-                }
-                else
-                {
-                    loss = pDetails->pLosses->PermanentStrand_AfterTransfer();
-                    //tdComponents->relaxation = pDetails->pLosses->GetInitialRelaxation(WBFL::LRFD::PERMANENT_STRAND);
-                }
-            }
-        }
-        else if (intervalIdx == liftSegmentIntervalIdx)
-        {
-            if (strandType == pgsTypes::Temporary)
-            {
-                loss = pDetails->pLosses->TemporaryStrand_AtLifting();
-                //if (pDetails->pLosses->GetTempStrandUsage() == WBFL::LRFD::Losses::TempStrandUsage::Pretensioned)
-                //{
-                //    tdComponents->relaxation = pDetails->pLosses->GetInitialRelaxation(WBFL::LRFD::TEMPORARY_STRAND);
-                //}
-                //else if (pDetails->pLosses->GetTempStrandUsage() == WBFL::LRFD::Losses::TempStrandUsage::PTBeforeLifting || 
-                //    pDetails->pLosses->GetTempStrandUsage() == WBFL::LRFD::Losses::TempStrandUsage::PTAfterLifting)
-                //{
-                //    if (pDetails->pLosses->GetTempStrandUsage() == WBFL::LRFD::Losses::TempStrandUsage::Pretensioned)
-                //    {
-                //        tdComponents->relaxation = pDetails->pLosses->GetInitialRelaxation(WBFL::LRFD::TEMPORARY_STRAND);
-                //    }
-                //    else
-                //    {
-                //        tdComponents->relaxation = pDetails->pLosses->FrictionLoss() + pDetails->pLosses->AnchorSetLoss() + pDetails->pLosses->GetDeltaFptAvg();
-                //    }
-                //}
-            }
-            else
-            {
-                loss = pDetails->pLosses->PermanentStrand_AtLifting();
-                //tdComponents->relaxation = pDetails->pLosses->GetInitialRelaxation(WBFL::LRFD::PERMANENT_STRAND);
-            }
-        }
-        else if (intervalIdx == haulSegmentIntervalIdx)
-        {
-            if (strandType == pgsTypes::Temporary)
-            {
-                loss = pDetails->pLosses->TemporaryStrand_AtShipping();
-            }
-            else
-            {
-                loss = pDetails->pLosses->PermanentStrand_AtShipping();
-            }
-        }
-        else if (intervalIdx == tsInstallationIntervalIdx)
-        {
-            if (intervalTime == pgsTypes::Start)
-            {
-                if (strandType == pgsTypes::Temporary)
-                {
-                    loss = pDetails->pLosses->TemporaryStrand_AtShipping();
-                }
-                else
-                {
-                    loss = pDetails->pLosses->PermanentStrand_AtShipping();
-                }
-            }
-            else
-            {
-                if (strandType == pgsTypes::Temporary)
-                {
-                    loss = pDetails->pLosses->TemporaryStrand_AfterTemporaryStrandInstallation();
-                }
-                else
-                {
-                    loss = pDetails->pLosses->PermanentStrand_AfterTemporaryStrandInstallation();
-                }
-            }
-        }
-        else if (intervalIdx == erectSegmentIntervalIdx)
+        if (intervalIdx == erectSegmentIntervalIdx)
         {
             if (strandType == pgsTypes::Temporary)
             {
@@ -498,55 +391,13 @@ Float64 pgsBearingDesignEngineer::GetBearingTimeDependentLosses(const pgsPointOf
             else
             {
                 loss = pDetails->pLosses->PermanentStrand_BeforeTemporaryStrandRemoval();
-            }
-        }
-        else if (intervalIdx == tsRemovalIntervalIdx)
-        {
-            if (intervalTime == pgsTypes::Start)
-            {
-                if (strandType == pgsTypes::Temporary)
+
+                if (pDetails->LossMethod == PrestressLossCriteria::LossMethodType::WSDOT_REFINED_2005)
                 {
-                    loss = pDetails->pLosses->TemporaryStrand_BeforeTemporaryStrandRemoval();
-                }
-                else
-                {
-                    loss = pDetails->pLosses->PermanentStrand_BeforeTemporaryStrandRemoval();
-                }
-            }
-            else
-            {
-                if (strandType == pgsTypes::Temporary)
-                {
-                    loss = pDetails->pLosses->TemporaryStrand_AfterTemporaryStrandRemoval();
-                }
-                else
-                {
-                    loss = pDetails->pLosses->PermanentStrand_AfterTemporaryStrandRemoval();
-                }
-            }
-        }
-        else if (intervalIdx == noncompositeCastingIntervalIdx || (intervalIdx == compositeIntervalIdx && compositeIntervalIdx != railingSystemIntervalIdx))
-        {
-            if (intervalTime == pgsTypes::Start)
-            {
-                if (strandType == pgsTypes::Temporary)
-                {
-                    loss = pDetails->pLosses->TemporaryStrand_AfterTemporaryStrandRemoval();
-                }
-                else
-                {
-                    loss = pDetails->pLosses->PermanentStrand_AfterTemporaryStrandRemoval();
-                }
-            }
-            else
-            {
-                if (strandType == pgsTypes::Temporary)
-                {
-                    loss = pDetails->pLosses->TemporaryStrand_AfterDeckPlacement();
-                }
-                else
-                {
-                    loss = pDetails->pLosses->PermanentStrand_AfterDeckPlacement();
+                    auto pRefined2005 = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLosses2005>(pDetails->pLosses);
+                    tdComponents->shrinkage = pRefined2005->PermanentStrand_ShrinkageLossAtShipping();
+                    tdComponents->creep = pRefined2005->PermanentStrand_CreepLossAtShipping();
+                    tdComponents->relaxation = pRefined2005->PermanentStrand_RelaxationLossAtShipping();
                 }
             }
         }
@@ -571,9 +422,10 @@ Float64 pgsBearingDesignEngineer::GetBearingTimeDependentLosses(const pgsPointOf
 Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girderKey, 
     const pgsPointOfInterest& poi, PierIndexType startPierIdx, SHEARDEFORMATIONDETAILS* pDetails) const
 {
+
     GET_IFACE(IBridge, pBridge);
-    GET_IFACE(IIntervals, pIntervals);
     GET_IFACE(IMaterials, pMaterials);
+    GET_IFACE(IIntervals, pIntervals);
     GET_IFACE(IBridgeDescription, pIBridgeDesc);
     GET_IFACE(IPointOfInterest, pPoi);
     GET_IFACE(ILosses, pLosses);
@@ -581,40 +433,37 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey gi
     const CSegmentKey& segmentKey(poi.GetSegmentKey());
     const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
     IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
-    
+
     CSegmentKey seg_key = pBridge->GetSegmentAtPier(startPierIdx, girderKey);
     auto lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
 
-
     const LOSSDETAILS* td_details_erect = pLosses->GetLossDetails(poi, erectSegmentIntervalIdx);
     TDCOMPONENTS components_erect;
-    Float64 fpLossErect = GetBearingTimeDependentLosses(poi, pgsTypes::StrandType::Straight, erectSegmentIntervalIdx, pgsTypes::IntervalTimeType::End, nullptr, td_details_erect, &components_erect);
+    Float64 fpLossErect = GetBearingTimeDependentLosses(poi, pgsTypes::StrandType::Straight, erectSegmentIntervalIdx, pgsTypes::IntervalTimeType::End, 
+        nullptr, td_details_erect, &components_erect);
+
     const LOSSDETAILS* td_details_inf = pLosses->GetLossDetails(poi, lastIntervalIdx);
     TDCOMPONENTS components_inf;
-    Float64 fpLossInfinity = GetBearingTimeDependentLosses(poi, pgsTypes::StrandType::Straight, lastIntervalIdx, pgsTypes::IntervalTimeType::End, nullptr, td_details_inf, &components_inf);
-    Float64 fpNetLoss = fpLossInfinity - fpLossErect;
+    Float64 fpLossInfinity = GetBearingTimeDependentLosses(poi, pgsTypes::StrandType::Straight, lastIntervalIdx, pgsTypes::IntervalTimeType::End, 
+        nullptr, td_details_inf, &components_inf);
 
-    Float64 L = GetSpanContributoryLength(girderKey);
+    Float64 creepLoss = components_inf.creep - components_erect.creep;
 
-    Float64 Ep = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Straight)->GetE();
+    pDetails->creep = GetTimeDependentComponentShearDeformation(girderKey, poi, creepLoss);
 
-    Float64 tendonShortening = fpNetLoss * L / Ep;
+    Float64 shrinkageLoss = components_inf.shrinkage - components_erect.shrinkage;
 
-    auto details = pLosses->GetLossDetails(poi, erectSegmentIntervalIdx);
+    pDetails->shrinkage = GetTimeDependentComponentShearDeformation(girderKey, poi, shrinkageLoss);
 
-    Float64 ep = details->pLosses->GetEccpgRelease().Y();
+    Float64 relaxationLoss = components_inf.relaxation - components_erect.relaxation;
 
-    GET_IFACE(ISectionProperties, pSection);
+    pDetails->relaxation = GetTimeDependentComponentShearDeformation(girderKey, poi, relaxationLoss);
 
-    Float64 yb = pSection->GetNetYbg(erectSegmentIntervalIdx, poi);
+    Float64 tdLoss = fpLossInfinity - fpLossErect;
 
-    Float64 r = sqrt(pSection->GetIxx(erectSegmentIntervalIdx, poi) / pSection->GetAg(erectSegmentIntervalIdx, poi));
+    Float64 time_dependent = GetTimeDependentComponentShearDeformation(girderKey, poi, tdLoss);
 
-    Float64 FlangeBottomShortening = (1.0 + ep * yb / (r * r)) / (1 + ep * ep / (r * r)) * tendonShortening;
-
-    const CPierData2* pPier = nullptr;
-
-    return FlangeBottomShortening;
+    return time_dependent;
 
 }
 
@@ -875,11 +724,35 @@ void pgsBearingDesignEngineer::GetThermalExpansionDetails(CGirderKey girderKey, 
     Float64 thermal_expansion_coefficient = 1.0 / inv_thermal_exp_coefficient;
     pDetails->thermal_expansion_coefficient = thermal_expansion_coefficient;
 
+    pDetails->max_design_temperature_cold = WBFL::Units::ConvertToSysUnits(80.0, WBFL::Units::Measure::Fahrenheit);
+    pDetails->min_design_temperature_cold = WBFL::Units::ConvertToSysUnits(0.0, WBFL::Units::Measure::Fahrenheit);
+    pDetails->max_design_temperature_moderate = WBFL::Units::ConvertToSysUnits(80.0, WBFL::Units::Measure::Fahrenheit);
+    pDetails->min_design_temperature_moderate = WBFL::Units::ConvertToSysUnits(10.0, WBFL::Units::Measure::Fahrenheit);
 
-    pDetails->thermalBDMCold = 0.75 * thermal_expansion_coefficient * L * WBFL::Units::ConvertToSysUnits((80.0 - 0.0), WBFL::Units::Measure::Fahrenheit);
-    pDetails->thermalBDMModerate = 0.75 * thermal_expansion_coefficient * L * WBFL::Units::ConvertToSysUnits((80.0 - 10.0), WBFL::Units::Measure::Fahrenheit);
-    pDetails->thermalLRFDCold = 0.65 * thermal_expansion_coefficient * L * WBFL::Units::ConvertToSysUnits((80.0 - 0.0), WBFL::Units::Measure::Fahrenheit);
-    pDetails->thermalLRFDModerate = 0.65 * thermal_expansion_coefficient * L * WBFL::Units::ConvertToSysUnits((80.0 - 10.0), WBFL::Units::Measure::Fahrenheit);
+    GET_IFACE(ILibrary, pLibrary);
+    WBFL::System::Time time;
+    bool bPrintDate = WBFL::System::Time::PrintDate(true);
+
+    std::_tstring strServer;
+    std::_tstring strConfiguration;
+    std::_tstring strMasterLibFile;
+    pLibrary->GetMasterLibraryInfo(strServer, strConfiguration, strMasterLibFile, time);
+
+    if (strConfiguration == _T("WSDOT"))
+    {
+        pDetails->percentExpansion = 0.75;
+    }
+    else
+    {
+        pDetails->percentExpansion = 0.65;
+    }
+
+    pDetails->thermal_expansion_cold = pDetails->percentExpansion * pDetails->thermal_expansion_coefficient * L * (pDetails->max_design_temperature_cold - pDetails->min_design_temperature_cold);
+    pDetails->thermal_expansion_moderate = pDetails->percentExpansion * pDetails->thermal_expansion_coefficient * L * (pDetails->max_design_temperature_moderate - pDetails->min_design_temperature_moderate);
+
+    pDetails->total_shear_deformation_cold = pDetails->thermal_expansion_cold + pDetails->time_dependent;
+    pDetails->total_shear_deformation_moderate = pDetails->thermal_expansion_moderate + pDetails->time_dependent;
+
 }
 
 
@@ -892,7 +765,7 @@ void pgsBearingDesignEngineer::GetBearingShearDeformationDetails(pgsTypes::Analy
 
     pBearing->GetThermalExpansionDetails(girderKey, pDetails);
 
-    pDetails->creep = pBearing->GetTimeDependentShearDeformation(girderKey, poi, startPierIdx, pDetails);
+    pDetails->time_dependent = pBearing->GetTimeDependentShearDeformation(girderKey, poi, startPierIdx, pDetails);
 
 
 }

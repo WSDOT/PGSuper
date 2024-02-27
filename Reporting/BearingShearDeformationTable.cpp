@@ -83,21 +83,19 @@ ColumnIndexType CBearingShearDeformationTable::GetBearingTableColumnCount(IBroke
 
     ColumnIndexType nCols = 1; // location
 
-
-    nCols += 4; // thermal LRFD/BDM/warm/cold
-
-    if (0 < details->nDucts)
+    if (bDetail)
     {
-        nCols++;  //post-tensioning
-    }
+        nCols += 2; // thermal expansion cold or moderate
 
-    if (details->bTimeStep)
-    {
+        if (0 < details->nDucts)
+        {
+            nCols++;  //post-tensioning
+        }
         nCols += 3; // creep, shrinkage & relaxation
     }
     else
     {
-        nCols++; // creep
+        nCols += 2; // total deformation cold or moderate
     }
 
     return nCols;
@@ -115,21 +113,17 @@ RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptR
     p_table->SetRowSpan(0, col, 2);
     (*p_table)(0, col++) << _T("");
 
-    p_table->SetColumnSpan(0, col, 2);
-    (*p_table)(0, col) << _T("Thermal (Warm)");
-    (*p_table)(1, col++) << COLHDR(_T("BDM (0.65)"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
-    (*p_table)(1, col++) << COLHDR(_T("BDM (0.75)"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
-    p_table->SetColumnSpan(0, col, 2);
-    (*p_table)(0, col) << _T("Thermal (Cold)");
-    (*p_table)(1, col++) << COLHDR(_T("BDM (0.65)"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
-    (*p_table)(1, col++) << COLHDR(_T("BDM (0.75)"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
-    if (0 < pDetails->nDucts)
+    if (bDetail)
     {
-        p_table->SetRowSpan(0, col, 2);
-        (*p_table)(0, col++) << COLHDR(_T("Post-Tensioning"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
-    }
-    if (pDetails->bTimeStep)
-    {
+        p_table->SetColumnSpan(0, col, 2);
+        (*p_table)(0, col) << Sub2(symbol(DELTA),_T("thermal"));
+        (*p_table)(1, col++) << COLHDR(_T("Cold"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+        (*p_table)(1, col++) << COLHDR(_T("Moderate"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+        if (0 < pDetails->nDucts)
+        {
+            p_table->SetRowSpan(0, col, 2);
+            (*p_table)(0, col++) << COLHDR(_T("Post-Tensioning"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+        }
         p_table->SetColumnSpan(0, col, 3);
         (*p_table)(0, col) << _T("Time-Dependent");
         (*p_table)(1, col++) << COLHDR(_T("Creep"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
@@ -138,11 +132,11 @@ RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptR
     }
     else
     {
-        p_table->SetRowSpan(0, col, 2);
-        (*p_table)(0, col++) << COLHDR(_T("Creep"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+        p_table->SetColumnSpan(0, col, 2);
+        (*p_table)(0, col) << Sub2(symbol(DELTA),_T("total"));
+        (*p_table)(1, col++) << COLHDR(_T("Cold"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+        (*p_table)(1, col++) << COLHDR(_T("Moderate"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
     }
-
-
 
 
     return p_table->GetNumberOfHeaderRows(); // index of first row to report data
@@ -263,25 +257,24 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
 
         pBearingDesignParameters->GetBearingShearDeformationDetails(analysisType, startPierIdx, poi, reactionLocation, girderKey, bIncludeImpact, bIncludeLLDF, &details);
 
-
-        (*p_table)(row, col++) << Reaction.SetValue(details.thermalLRFDModerate);
-        (*p_table)(row, col++) << Reaction.SetValue(details.thermalBDMModerate);
-        (*p_table)(row, col++) << Reaction.SetValue(details.thermalLRFDCold);
-        (*p_table)(row, col++) << Reaction.SetValue(details.thermalBDMCold);
-        if (0 < details.nDucts)
+        if (bDetail)
         {
-            (*p_table)(row, col++) << Reaction.SetValue(details.postTension);
-        }
-        if (details.bTimeStep)
-        {
+            (*p_table)(row, col++) << Reaction.SetValue(details.thermal_expansion_cold);
+            (*p_table)(row, col++) << Reaction.SetValue(details.thermal_expansion_moderate);
+            if (0 < details.nDucts)
+            {
+                (*p_table)(row, col++) << Reaction.SetValue(details.postTension);
+            }
             (*p_table)(row, col++) << Reaction.SetValue(details.creep);
             (*p_table)(row, col++) << Reaction.SetValue(details.shrinkage);
             (*p_table)(row, col) << Reaction.SetValue(details.relaxation);
         }
         else
         {
-            (*p_table)(row, col) << Reaction.SetValue(details.creep);
+            (*p_table)(row, col++) << Reaction.SetValue(details.total_shear_deformation_cold);
+            (*p_table)(row, col++) << Reaction.SetValue(details.total_shear_deformation_moderate);
         }
+
 
         row++;
     }

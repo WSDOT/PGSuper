@@ -167,15 +167,21 @@ struct REACTIONDETAILS : public TABLEPARAMETERS
 struct SHEARDEFORMATIONDETAILS : public TABLEPARAMETERS
 {
 	Float64 thermal_expansion_coefficient;
-	Float64 thermalLRFDModerate;
-	Float64 thermalLRFDCold;
-	Float64 thermalBDMModerate;
-	Float64 thermalBDMCold;
+	Float64 max_design_temperature_cold;
+	Float64 min_design_temperature_cold;
+	Float64 max_design_temperature_moderate;
+	Float64 min_design_temperature_moderate;
+	Float64 percentExpansion;
+	Float64 thermal_expansion_cold;
+	Float64 thermal_expansion_moderate;
 	Float64 preTension;
 	Float64 postTension;
 	Float64 creep;
 	Float64 shrinkage;
 	Float64 relaxation;
+	Float64 time_dependent;
+	Float64 total_shear_deformation_cold;
+	Float64 total_shear_deformation_moderate;
 };
 
 
@@ -198,6 +204,8 @@ interface IBearingDesignParameters : IUnknown
 	virtual void GetThermalExpansionDetails(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const = 0;
 
 	virtual Float64 GetSpanContributoryLength(CGirderKey girderKey) const = 0;
+
+	virtual Float64 GetTimeDependentComponentShearDeformation(CGirderKey girderKey, const pgsPointOfInterest& poi, Float64 loss) const = 0;
 
 	virtual Float64 GetTimeDependentShearDeformation(CGirderKey girderKey,
 		const pgsPointOfInterest& poi, PierIndexType startPierIdx, SHEARDEFORMATIONDETAILS* pDetails) const = 0;
