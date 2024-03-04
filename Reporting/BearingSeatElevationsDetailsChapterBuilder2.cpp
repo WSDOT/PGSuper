@@ -238,8 +238,7 @@ inline void FillTable(rptRcTable* pTable, IEAFDisplayUnits* pDisplayUnits,
 
       if (isCL)
       {
-         // convert to right-hand rule convention
-         WRITE_NEWLINE_BEFORE(!newRow, Row, Col++, -1.0 * ElevDetails.GirderOrientation);
+         WRITE_NEWLINE_BEFORE(!newRow, Row, Col++, ElevDetails.GirderOrientation);
       }
       else
       {
