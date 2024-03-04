@@ -338,7 +338,7 @@ void write_moment_data_table(IBroker* pBroker,
 
    nColumns += 1; // for de_shear
 
-   if (bPositiveMoment || 0 < nGirderTendons || 0 < nMaxSegmentTendons)
+   if (bPositiveMoment || (!bPositiveMoment && moment_capacity_criteria.bIncludeStrandForNegMoment) || 0 < nGirderTendons || 0 < nMaxSegmentTendons)
    {
       nColumns += 1; // for fps_avg
    }
@@ -439,7 +439,7 @@ void write_moment_data_table(IBroker* pBroker,
    }
    else
    {
-      if ( 0 < nGirderTendons+nMaxSegmentTendons)
+      if (moment_capacity_criteria.bIncludeStrandForNegMoment || 0 < nGirderTendons+nMaxSegmentTendons)
       {
          (*table)(0,col++) << COLHDR(RPT_STRESS(_T("ps,avg")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
@@ -561,7 +561,7 @@ void write_moment_data_table(IBroker* pBroker,
       }
       else
       {
-         if ( 0 < nGirderTendons+nMaxSegmentTendons )
+         if (moment_capacity_criteria.bIncludeStrandForNegMoment || 0 < nGirderTendons+nMaxSegmentTendons )
          {
             (*table)(row,col++) << stress.SetValue( pmcd->fps_avg );
 
