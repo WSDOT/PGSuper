@@ -79,8 +79,7 @@ void CStationCutDlg::DoDataExchange(CDataExchange* pDX)
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CStationCutDlg) 
 	DDX_Station(pDX,IDC_VALUE,m_Value, m_bSIUnits ? WBFL::Units::StationFormats::SI : WBFL::Units::StationFormats::US);
-
-	DDV_MinMaxDouble(pDX, m_Value, m_LowerBound, m_UpperBound);
+   DDV_StationInRange(pDX, m_Value, m_LowerBound, m_UpperBound, m_bSIUnits ? WBFL::Units::StationFormats::SI : WBFL::Units::StationFormats::US);
 	//}}AFX_DATA_MAP
 }
 
