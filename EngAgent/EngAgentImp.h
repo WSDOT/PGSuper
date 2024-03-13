@@ -383,7 +383,7 @@ public:
 
 // IBearingDesignParameters
  public:
-   virtual void GetBearingTableParameters(CGirderKey girderKey, TABLEPARAMETERS* pDetails) const override;
+   void GetBearingTableParameters(CGirderKey girderKey, TABLEPARAMETERS* pDetails) const override;
 
    virtual void GetBearingDesignProperties(DESIGNPROPERTIES* pDetails) const override;
 

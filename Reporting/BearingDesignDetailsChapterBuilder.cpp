@@ -179,7 +179,7 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     *p << Sub2(symbol(DELTA), _T("temp")) << _T(" = ") << Sub2(symbol(DELTA), _T("0")) << _T(" ") << symbol(TIMES) << _T(" ") << symbol(alpha) << _T(" ") << symbol(TIMES) << _T(" ") << _T("L") << _T(" ");
     *p << symbol(TIMES) << _T(" (") << Sub2(_T("T"),_T("Max Design")) << _T(" - ") << Sub2(_T("T"), _T("Max Design")) << _T(")") << rptNewLine;
     *p << _T("L = ") << length.SetValue(pBridge->GetLength()) << rptNewLine;
-    *p << _T("From AASHTO LRFD Sect. 14.7.5.3.2: ") << Sub2(symbol(DELTA),_T("0")) << _T(" = 0.65") << rptNewLine;
+    *p << _T("From AASHTO LRFD Sect. 14.7.5.3.2: ") << Sub2(symbol(DELTA),_T("0")) << _T(" = ") << sf_details.percentExpansion << rptNewLine;
     //*p << _T("Moderate Climate: ") << symbol(RIGHT_SINGLE_ARROW) << Sub2(symbol(DELTA), _T("temp")) << _T(" = ") << deflection.SetValue(sf_details.thermalLRFDModerate) << rptNewLine;
     //*p << _T("Cold Climate: ") << symbol(RIGHT_SINGLE_ARROW) << Sub2(symbol(DELTA), _T("temp")) << _T(" = ") << deflection.SetValue(sf_details.thermalLRFDCold) << rptNewLine;
     //*p << _T("From WSDOT BDM Ch. 9: ") << Sub2(symbol(DELTA), _T("0")) << _T(" = 0.75") << rptNewLine;

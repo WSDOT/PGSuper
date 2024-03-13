@@ -661,8 +661,6 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
     GET_IFACE2(pBroker, IBridge, pBridge);
 
 
-    bIncludeLLDF = false; // this table never distributes live load
-
     GET_IFACE2(pBroker, IIntervals, pIntervals);
     IntervalIndexType diaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
     IntervalIndexType lastCastDeckIntervalIdx = pIntervals->GetLastCastDeckInterval(); // deck cast be cast in multiple stages, use interval after entire deck is cast
@@ -699,8 +697,9 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
     // TRICKY: use adapter class to get correct reaction interfaces
     std::unique_ptr<IProductReactionAdapter> pForces;
 
-    GET_IFACE2(pBroker, IReactions, pReactions);
-    pForces = std::make_unique<ProductForcesReactionAdapter>(pReactions, girderKey);
+    GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
+    pForces = std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, diaphragmIntervalIdx, girderKey);
+
 
 
     ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
@@ -920,7 +919,7 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
 
         if (!bDetail)
         {
-            (*p_table)(row, col++) << Reaction.SetValue(0);
+            (*p_table)(row, col++) << Reaction.SetValue(details.totalDLreaction);
         }
 
 

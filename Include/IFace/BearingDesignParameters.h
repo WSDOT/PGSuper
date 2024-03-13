@@ -121,7 +121,6 @@ struct ROTATIONDETAILS : public TABLEPARAMETERS
 struct REACTIONDETAILS : public TABLEPARAMETERS
 {
 	Float64 totalDLreaction;
-	Float64 totalLLreaction;
 	Float64 erectedSegmentReaction;
 	Float64 maxGirderReaction;
 	Float64 minGirderReaction;

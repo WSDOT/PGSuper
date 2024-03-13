@@ -20,6 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
+#include <algorithm>
 #include "StdAfx.h"
 #include "BearingDesignEngineer.h"
 #include <Units\Convert.h>
@@ -43,6 +44,7 @@
 #include <psgLib/LimitStateConcreteStrengthCriteria.h>
 
 #include <PgsExt\statusitem.h>
+#include <PgsExt\LoadFactors.h>
 #include <PgsExt\DesignConfigUtil.h>
 #include <PgsExt\GirderLabel.h>
 
@@ -229,11 +231,9 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentComponentShearDeformation(CGir
 
     GET_IFACE(ISectionProperties, pSection);
     GET_IFACE(ILosses, pLosses);
-    GET_IFACE(IBridge, pBridge);
     GET_IFACE(IMaterials, pMaterials);
     GET_IFACE(IIntervals, pIntervals);
     GET_IFACE(IBridgeDescription, pIBridgeDesc);
-    GET_IFACE(IPointOfInterest, pPoi);
 
     const CSegmentKey& segmentKey(poi.GetSegmentKey());
     const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
@@ -424,10 +424,8 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey gi
 {
 
     GET_IFACE(IBridge, pBridge);
-    GET_IFACE(IMaterials, pMaterials);
     GET_IFACE(IIntervals, pIntervals);
     GET_IFACE(IBridgeDescription, pIBridgeDesc);
-    GET_IFACE(IPointOfInterest, pPoi);
     GET_IFACE(ILosses, pLosses);
 
     const CSegmentKey& segmentKey(poi.GetSegmentKey());
@@ -476,6 +474,7 @@ void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType 
 {
 
     Float64 pMin, pMax;
+
     Float64 min, max;
     VehicleIndexType minConfig, maxConfig;
 
@@ -484,20 +483,22 @@ void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType 
     pgsTypes::BridgeAnalysisType minBAT = pProductForces->GetBridgeAnalysisType(analysisType, pgsTypes::Minimize);
 
     GET_IFACE(IIntervals, pIntervals);
+
     IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
     IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
 
     GET_IFACE(ILimitStateForces, limitForces);
-    limitForces->GetRotation(lastIntervalIdx, pgsTypes::ServiceI, poi, maxBAT, 
-        true, true, true, true, true, &pMin, &pMax);
 
+
+    auto skewFactor = this->BearingSkewFactor(reactionLocation, isFlexural);
+
+    pDetails->totalRotation = skewFactor * pMax;
     
+
 
     const CSegmentKey& segmentKey(poi.GetSegmentKey());
     IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
     IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
-
-    auto skewFactor = this->BearingSkewFactor(reactionLocation, isFlexural);
 
 
     pDetails->cyclicRotation = skewFactor * this->GetBearingCyclicRotation(analysisType, poi, reactionLocation, bIncludeImpact, bIncludeLLDF);
@@ -507,36 +508,140 @@ void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType 
     pDetails->minUserDWRotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftUserDW, poi, minBAT, rtCumulative, false);
     pDetails->maxUserLLrotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftUserLLIM, poi, maxBAT, rtCumulative, false);
     pDetails->minUserLLrotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftUserLLIM, poi, minBAT, rtCumulative, false);
-    pDetails->preTensionRotation = skewFactor * pProductForces->GetRotation(releaseIntervalIdx, pgsTypes::pftPretension, poi, maxBAT, rtCumulative, false);
+    pDetails->preTensionRotation = skewFactor * (
+        pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftPretension, poi, maxBAT, rtCumulative, false) - 
+        pProductForces->GetRotation(erectSegmentIntervalIdx, pgsTypes::pftPretension, poi, maxBAT, rtCumulative, false));
    
 
 
     GET_IFACE_NOCHECK(ICamber, pCamber);
-    Float64 Dcreep1, Rcreep1;
-    pCamber->GetCreepDeflection(poi, ICamber::cpReleaseToDeck, pgsTypes::CreepTime::Max, pgsTypes::pddErected, nullptr, &Dcreep1, &Rcreep1);
+    Float64 DcreepErect, RcreepErect;
+    pCamber->GetCreepDeflection(poi, ICamber::cpReleaseToDiaphragm, pgsTypes::CreepTime::Max, pgsTypes::pddErected, nullptr, &DcreepErect, &RcreepErect);
+    Float64 DcreepFinal, RcreepFinal;
+    pCamber->GetCreepDeflection(poi, ICamber::cpReleaseToDeck, pgsTypes::CreepTime::Max, pgsTypes::pddErected, nullptr, &DcreepFinal, &RcreepFinal);
 
     GET_IFACE(ILossParameters, pLossParams);
     bool bTimeStep = (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false);
 
     if (bTimeStep)
     {
-        pDetails->creepRotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftCreep, poi, maxBAT, rtCumulative, false);
+        Float64 cFinal = pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftCreep, poi, maxBAT, rtCumulative, false);
+        Float64 cErect = pProductForces->GetRotation(erectSegmentIntervalIdx, pgsTypes::pftCreep, poi, maxBAT, rtCumulative, false);
+
+        pDetails->creepRotation = skewFactor * (cFinal - cErect);
         pDetails->shrinkageRotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftShrinkage, poi, maxBAT, rtCumulative, false);
         pDetails->relaxationRotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftRelaxation, poi, maxBAT, rtCumulative, false);
         pDetails->postTensionRotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftPostTensioning, poi, maxBAT, rtCumulative, false);
     }
     else
     {
-        pDetails->creepRotation = skewFactor * Rcreep1;
+        pDetails->creepRotation = skewFactor * (RcreepFinal - RcreepErect);
         pDetails->shrinkageRotation = 0.0;
         pDetails->relaxationRotation = 0.0;
         pDetails->postTensionRotation = 0.0;
     }
 
-    pDetails->totalRotation = skewFactor * (pMax + pDetails->preTensionRotation + pDetails->creepRotation +
-        pDetails->shrinkageRotation + pDetails->relaxationRotation + pDetails->postTensionRotation);
 
-    pDetails->staticRotation = pDetails->totalRotation - pDetails->cyclicRotation;
+    Float64 stErectMin, stErectMax;
+    limitForces->GetRotation(
+        erectSegmentIntervalIdx,
+        pgsTypes::ServiceI,
+        poi,
+        maxBAT,
+        true,
+        false,
+        true,
+        true,
+        true,
+        &stErectMin, &stErectMax);
+
+
+    Float64 stInfMin, stInfMax;
+    limitForces->GetRotation(
+        lastIntervalIdx,
+        pgsTypes::ServiceI,
+        poi, 
+        maxBAT,
+        true, 
+        false, 
+        true,
+        true,
+        true,
+        &stInfMin, &stInfMax);
+
+
+    Float64 maxInfDiff = std::abs(stInfMax - stErectMax);
+    Float64 minInfDiff = std::abs(stInfMin - stErectMax);
+    Float64 maxErectDiff = std::abs(stErectMax - stInfMin);
+    Float64 minErectDiff = std::abs(stErectMin - stInfMin);
+
+    Float64 maxDiff = max(maxInfDiff, max(minInfDiff, max(maxErectDiff, minErectDiff)));
+
+    if (maxDiff == maxInfDiff) {
+        pDetails->staticRotation = skewFactor * (stInfMax - stErectMax);
+    }
+    else if (maxDiff == minInfDiff) {
+        pDetails->staticRotation = skewFactor * (stInfMin - stErectMax);
+    }
+    else if (maxDiff == maxErectDiff) {
+        pDetails->staticRotation = skewFactor * (stInfMax - stErectMin);
+    }
+    else {
+        pDetails->staticRotation = skewFactor * (stInfMin - stErectMin);
+    }
+
+
+
+
+    ///////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////
+
+
+    ///////////////////////////////////////
+    //GET_IFACE2(pBroker, IMaterials, pMaterial);
+    //pgsPointOfInterest poi;
+    //PoiList vPoi;
+    //poi = vPoi.front();
+    //IndexType rgn = pPoi->GetDeckCastingRegion(poi);
+    //CSegmentKey seg_key = pBridge->GetSegmentAtPier(startPierIdx, girderKey);
+    //pPoi->GetPointsOfInterest(seg_key, POI_0L | POI_ERECTED_SEGMENT, &vPoi);
+    //IntervalIndexType cd_event = pIntervals->GetCastDeckInterval(rgn);
+    //IntervalIndexType eg_event = pIntervals->GetErectSegmentInterval(seg_key);
+    //IntervalIndexType release = pIntervals->GetFirstPrestressReleaseInterval(girderKey);
+
+    // CREEP //
+    //Float64 cstrain1 = pMaterial->GetSegmentCreepCoefficient(
+    //    seg_key,
+    //    release,
+    //    pgsTypes::IntervalTimeType::Start,
+    //    eg_event, 
+    //    pgsTypes::IntervalTimeType::Start
+    //    );
+    //
+    //Float64 cstrain2 = pMaterial->GetSegmentCreepCoefficient(
+    //    seg_key,
+    //    release,
+    //    pgsTypes::IntervalTimeType::Start,
+    //    cd_event,
+    //    pgsTypes::IntervalTimeType::Start
+    //);
+
+    // SHRINKAGE //
+    //Float64 sstrain1 = pMaterial->GetTotalSegmentFreeShrinkageStrain(seg_key, eg_event, pgsTypes::IntervalTimeType::Start);
+    //Float64 sstrain2 = pMaterial->GetTotalSegmentFreeShrinkageStrain(seg_key, cd_event, pgsTypes::IntervalTimeType::Start);
+
+
+
+
+    
+
+
+    
+
+
+
+
+    ////////////
 
     pProductForces->GetLiveLoadRotation(lastIntervalIdx, pgsTypes::lltDesign, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig);
     pDetails->maxDesignLLrotation = skewFactor * max;
@@ -545,19 +650,18 @@ void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType 
     pDetails->minDesignLLrotation = skewFactor * min;
     pDetails->minConfig = minConfig;
 
-    
-
     pProductForces->GetLiveLoadRotation(lastIntervalIdx, pgsTypes::lltPedestrian, poi, maxBAT, bIncludeImpact, true, &min, &max);
     pDetails->maxPedRotation = skewFactor * max;
 
     pProductForces->GetLiveLoadRotation(lastIntervalIdx, pgsTypes::lltPedestrian, poi, minBAT, bIncludeImpact, true, &min, &max);
     pDetails->minPedRotation = skewFactor * min;
 
-    pDetails->erectedSegmentRotation = skewFactor * pProductForces->GetRotation(erectSegmentIntervalIdx, pgsTypes::pftGirder, poi, maxBAT, rtCumulative, false);
+    pDetails->erectedSegmentRotation = skewFactor * (pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftGirder, poi, maxBAT, rtCumulative, false) - 
+        pProductForces->GetRotation(erectSegmentIntervalIdx, pgsTypes::pftGirder, poi, maxBAT, rtCumulative, false));
 
     pDetails->maxShearKeyRotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftShearKey, poi, maxBAT, rtCumulative, false);
 
-    pDetails->maxGirderRotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftGirder, poi, minBAT, rtCumulative, false);
+    pDetails->maxGirderRotation = skewFactor * (pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftGirder, poi, minBAT, rtCumulative, false));
     pDetails->diaphragmRotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftDiaphragm, poi, maxBAT, rtCumulative, false);
     pDetails->maxSlabRotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftSlab, poi, maxBAT, rtCumulative, false);
     pDetails->minSlabRotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftSlab, poi, minBAT, rtCumulative, false);
@@ -576,6 +680,17 @@ void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType 
     pDetails->maxSidewalkRotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftSidewalk, poi, maxBAT, rtCumulative, false);
     pDetails->minSidewalkRotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftSidewalk, poi, minBAT, rtCumulative, false);
 
+
+    auto deck_components = pDetails->erectedSegmentRotation + pDetails->diaphragmRotation + pDetails->maxSlabRotation +
+        pDetails->maxHaunchRotation + pDetails->maxRailingSystemRotation +
+        pDetails->maxFutureOverlayRotation;
+
+    auto g1 = pDetails->maxGirderRotation;
+
+    auto td_components = pDetails->preTensionRotation + pDetails->creepRotation;
+
+   auto gFinal = pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftGirder, poi, maxBAT, rtCumulative, false);
+   auto gErect = pProductForces->GetRotation(erectSegmentIntervalIdx, pgsTypes::pftGirder, poi, maxBAT, rtCumulative, false);
 
 }
 
@@ -605,6 +720,7 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
     IntervalIndexType constructionIntervalIdx = pIntervals->GetConstructionLoadInterval();
     IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
     IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
+    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
 
     GET_IFACE_NOCHECK(IBridgeDescription, pIBridgeDesc);
@@ -671,6 +787,37 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
         pDetails->minFutureOverlayReaction = Min(R1, R2);
     }
 
+
+
+
+
+
+    // TRICKY:
+    // Use the adapter class to get the reaction response functions we need and to iterate piers
+    std::unique_ptr<ICmbLsReactionAdapter> pComboForces;
+
+    GET_IFACE(IBearingDesign, pBearingDesign);
+    pComboForces = std::make_unique<CmbLsBearingDesignReactionAdapter>(pBearingDesign, lastIntervalIdx, girderKey);
+
+    // LRFD Limit States
+    GET_IFACE(ILoadFactors, pLF);
+    const CLoadFactors* pLoadFactors = pLF->GetLoadFactors();
+    auto dcLF = pLoadFactors->GetDCMax(pgsTypes::ServiceI);
+    auto dwLF = pLoadFactors->GetDWMax(pgsTypes::ServiceI);
+
+    auto dcReaction = pComboForces->GetReaction(lastIntervalIdx, lcDC, reactionLocation, maxBAT, rtCumulative);
+    auto dwReaction = pComboForces->GetReaction(lastIntervalIdx, lcDW, reactionLocation, maxBAT, rtCumulative);
+
+    pDetails->totalDLreaction = dcLF * dcReaction + dwLF * dwReaction;
+
+
+
+
+
+
+
+
+
     Float64 R1min, R1max, R2min, R2max;
 
     if (pDetails->bPedLoading)
@@ -681,9 +828,12 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
         pDetails->minPedReaction = Min(R1min, R2min);
     }
 
+
+
     VehicleIndexType minConfig1, maxConfig1, minConfig2, maxConfig2;
-    pForces->GetLiveLoadReaction(lastIntervalIdx, pgsTypes::lltDesign, reactionLocation, batSS, bIncludeImpact, bIncludeLLDF, &R1min, &R1max, &minConfig1, &maxConfig1);
-    pForces->GetLiveLoadReaction(lastIntervalIdx, pgsTypes::lltDesign, reactionLocation, batCS, bIncludeImpact, bIncludeLLDF, &R2min, &R2max, &minConfig2, &maxConfig2);
+    pComboForces->GetCombinedLiveLoadReaction(liveLoadIntervalIdx, pgsTypes::lltDesign, reactionLocation, maxBAT, bIncludeImpact, &R1min, &R1max);
+    pComboForces->GetCombinedLiveLoadReaction(liveLoadIntervalIdx, pgsTypes::lltDesign, reactionLocation, minBAT, bIncludeImpact, &R2min, &R2max);
+
     pDetails->maxDesignLLReaction = Max(R1max, R2max);
     pDetails->maxConfig = MaxIndex(R1max, R2max) == 0 ? maxConfig1 : maxConfig2;
     pDetails->minDesignLLReaction = Min(R1min, R2min);
@@ -747,8 +897,8 @@ void pgsBearingDesignEngineer::GetThermalExpansionDetails(CGirderKey girderKey, 
         pDetails->percentExpansion = 0.65;
     }
 
-    pDetails->thermal_expansion_cold = pDetails->percentExpansion * pDetails->thermal_expansion_coefficient * L * (pDetails->max_design_temperature_cold - pDetails->min_design_temperature_cold);
-    pDetails->thermal_expansion_moderate = pDetails->percentExpansion * pDetails->thermal_expansion_coefficient * L * (pDetails->max_design_temperature_moderate - pDetails->min_design_temperature_moderate);
+    pDetails->thermal_expansion_cold = -pDetails->percentExpansion * pDetails->thermal_expansion_coefficient * L * (pDetails->max_design_temperature_cold - pDetails->min_design_temperature_cold);
+    pDetails->thermal_expansion_moderate = -pDetails->percentExpansion * pDetails->thermal_expansion_coefficient * L * (pDetails->max_design_temperature_moderate - pDetails->min_design_temperature_moderate);
 
     pDetails->total_shear_deformation_cold = pDetails->thermal_expansion_cold + pDetails->time_dependent;
     pDetails->total_shear_deformation_moderate = pDetails->thermal_expansion_moderate + pDetails->time_dependent;
