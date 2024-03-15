@@ -2325,8 +2325,6 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
       // need both traffic barriers to add dimension line
       CComPtr<iDimensionLine> curbDimLine;
       curbDimLine.CoCreateInstance(CLSID_DimensionLineDisplayObject);
-      CComPtr<iConnector> connector;
-      curbDimLine.QueryInterface(&connector);
 
       CComQIPtr<iConnectable> left_connectable(doLeftTB);
       CComQIPtr<iConnectable> right_connectable(doRightTB);
@@ -2345,7 +2343,6 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
 
       CComPtr<iTextBlock> ccText;
       ccText.CoCreateInstance(CLSID_TextBlock);
-
       ccText->SetBkMode(TRANSPARENT);
 
       Float64 ccWidth = pBridge->GetCurbToCurbWidth( Xb );
@@ -2360,6 +2357,45 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
       curbDimLine->SetTextBlock(ccText);
 
       display_list->AddDisplayObject(curbDimLine);
+
+
+      //
+      // Out-to-Out Dimension Line
+      //
+      CComPtr<iDimensionLine> ooDimLine;
+      ooDimLine.CoCreateInstance(CLSID_DimensionLineDisplayObject);
+      CComPtr<iConnector> ooConnector;
+      ooDimLine->QueryInterface(&ooConnector);
+      startPlug.Release();
+      endPlug.Release();
+      ooConnector->GetStartPlug(&startPlug);
+      ooConnector->GetEndPlug(&endPlug);
+
+      left_socket.Release();
+      right_socket.Release();
+      left_connectable->GetSocket(LEFT_SLAB_EDGE_SOCKET, atByID, &left_socket);
+      right_connectable->GetSocket(RIGHT_SLAB_EDGE_SOCKET, atByID, &right_socket);
+
+      left_socket->Connect(startPlug, &dwCookie);
+      right_socket->Connect(endPlug, &dwCookie);
+
+      CComPtr<iTextBlock> ooText;
+      ooText.CoCreateInstance(CLSID_TextBlock);
+      ooText->SetBkMode(TRANSPARENT);
+
+      auto left_offset = pBridge->GetLeftSlabEdgeOffset(Xb);
+      auto right_offset = pBridge->GetRightSlabEdgeOffset(Xb);
+      CString strOOWidth = FormatDimension(right_offset - left_offset, rlen);
+      ooText->SetText(strOOWidth);
+
+      // increase witness line length
+      witness_length = ooDimLine->GetWitnessLength();
+      witness_length *= 5;
+      ooDimLine->SetWitnessLength(witness_length);
+
+      ooDimLine->SetTextBlock(ooText);
+
+      display_list->AddDisplayObject(ooDimLine);
    }
 
    //
