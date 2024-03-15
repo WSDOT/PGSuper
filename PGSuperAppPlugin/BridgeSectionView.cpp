@@ -2122,7 +2122,6 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
    {
       // need both traffic barriers to add dimension line
       auto curbDimLine = WBFL::DManip::DimensionLine::Create();
-      auto connector = std::dynamic_pointer_cast<WBFL::DManip::iConnector>(curbDimLine);
 
       auto left_connectable = std::dynamic_pointer_cast<WBFL::DManip::iConnectable>(doLeftTB);
       auto right_connectable = std::dynamic_pointer_cast<WBFL::DManip::iConnectable>(doRightTB);
@@ -2152,6 +2151,37 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
       curbDimLine->SetTextBlock(ccText);
 
       display_list->AddDisplayObject(curbDimLine);
+
+      //
+      // Out-to-Out Dimension Line
+      //
+      auto ooDimLine = WBFL::DManip::DimensionLine::Create();
+      auto ooConnector = std::dynamic_pointer_cast<WBFL::DManip::iConnector>(ooDimLine);
+      startPlug = ooConnector->GetStartPlug();
+      endPlug = ooConnector->GetEndPlug();
+
+      left_socket = left_connectable->GetSocket(LEFT_SLAB_EDGE_SOCKET, WBFL::DManip::AccessType::ByID);
+      right_socket = right_connectable->GetSocket(RIGHT_SLAB_EDGE_SOCKET, WBFL::DManip::AccessType::ByID);
+
+      left_socket->Connect(startPlug);
+      right_socket->Connect(endPlug);
+
+      auto ooText = WBFL::DManip::TextBlock::Create();
+      ooText->SetBkMode(TRANSPARENT);
+
+      auto left_offset = pBridge->GetLeftSlabEdgeOffset(Xb);
+      auto right_offset = pBridge->GetRightSlabEdgeOffset(Xb);
+      CString strOOWidth = FormatDimension(right_offset - left_offset, rlen);
+      ooText->SetText(strOOWidth);
+
+      // increase witness line length
+      witness_length = ooDimLine->GetWitnessLength();
+      witness_length *= 5;
+      ooDimLine->SetWitnessLength(witness_length);
+
+      ooDimLine->SetTextBlock(ooText);
+
+      display_list->AddDisplayObject(ooDimLine);
    }
 
    //
