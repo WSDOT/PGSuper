@@ -271,6 +271,7 @@ ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBrok
         
     }
 
+
     return nCols;
 }
 
@@ -783,6 +784,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
 
         /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+        
 
         if (bDetail)
         {
@@ -961,11 +963,6 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
         GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
         pForces = std::make_unique<CmbLsBearingDesignReactionAdapter>(pBearingDesign, lastIntervalIdx, girderKey);
 
-        if (!bDetail)
-        {
-            (*p_table)(row, col++) << rotation.SetValue(details.staticRotation);
-        }
-
 
 
         if (analysisType == pgsTypes::Envelope)
@@ -1069,17 +1066,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                         }
                         col++;
                     }
-                    else
-                    {    
-                        (*p_table)(row, col) << rotation.SetValue(details.cyclicRotation);
-                        if (bIndicateControllingLoad && 0 <= details.maxConfig)
-                        {
-                            (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << details.maxConfig << _T(")");
-                        }
-                        col++;
-                        (*p_table)(row, col++) << rotation.SetValue(0);
-                        
-                    }
+
 
 
                 }
@@ -1190,14 +1177,6 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
 
             }
 
-
-            if (!bDetail)
-            {
-                (*p_table)(row, col++) << rotation.SetValue(details.totalRotation);
-            }
-
-
-
         }
 
         if (bDetail)
@@ -1214,6 +1193,17 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                 (*p_table)(row, col++) << rotation.SetValue(details.relaxationRotation);
             }
 
+        }
+        else
+        {
+            (*p_table)(row, col++) << rotation.SetValue(details.staticRotation);
+            (*p_table)(row, col) << rotation.SetValue(details.cyclicRotation);
+            if (bIndicateControllingLoad && 0 <= details.maxConfig)
+            {
+                (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << details.maxConfig << _T(")");
+            }
+            col++;
+            (*p_table)(row, col++) << rotation.SetValue(details.totalRotation);
         }
 
         row++;

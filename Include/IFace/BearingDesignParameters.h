@@ -71,6 +71,7 @@ struct DESIGNPROPERTIES
 	Float64 Gmax70{ WBFL::Units::ConvertToSysUnits(0.300, WBFL::Units::Measure::KSI) };///< elastomer maximum shear modulus @ 70 hardness
 };
 
+
 struct ROTATIONDETAILS : public TABLEPARAMETERS
 {
 	Float64 skewFactor;

@@ -37,8 +37,7 @@ public:
 
    Float64 BearingSkewFactor(const ReactionLocation& reactionLocation, bool isFlexural) const;
 
-   Float64 GetBearingCyclicRotation(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi,
-	   const ReactionLocation& reactionLocation, bool bIncludeImpact, bool bIncludeLLDF) const;
+   //Float64 GetStaticBearingRotation(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi) const;
 
    void GetBearingTableParameters(const CGirderKey& girderKey, TABLEPARAMETERS* pDetails) const;
 
