@@ -574,24 +574,39 @@ void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType 
         pDetails->postTensionRotation = 0.0;
     }
 
-
-
-    Float64 dcRotation{ 0.0 };
+    Float64 minDCrotation{ 0.0 };
+    Float64 maxDCrotation{ 0.0 };
     auto dcLoads = pProductLoads->GetProductForcesForCombo(LoadingCombinationType::lcDC);
     for (auto loadType : dcLoads)
     {
-        dcRotation += pProductForces->GetRotation(lastIntervalIdx, loadType, poi, maxBAT, rtCumulative, false) -
+        minDCrotation += pProductForces->GetRotation(lastIntervalIdx, loadType, poi, minBAT, rtCumulative, false) -
+            pProductForces->GetRotation(erectSegmentIntervalIdx, loadType, poi, minBAT, rtCumulative, false);
+        maxDCrotation += pProductForces->GetRotation(lastIntervalIdx, loadType, poi, maxBAT, rtCumulative, false) -
             pProductForces->GetRotation(erectSegmentIntervalIdx, loadType, poi, maxBAT, rtCumulative, false);
     }
-    Float64 dwRotation{ 0.0 };
+    Float64 minDWrotation{ 0.0 };
+    Float64 maxDWrotation{ 0.0 };
     auto dwLoads = pProductLoads->GetProductForcesForCombo(LoadingCombinationType::lcDW);
     for (auto loadType : dwLoads)
     {
-        dwRotation += pProductForces->GetRotation(lastIntervalIdx, loadType, poi, maxBAT, rtCumulative, false) -
+        minDWrotation += pProductForces->GetRotation(lastIntervalIdx, loadType, poi, minBAT, rtCumulative, false) -
+            pProductForces->GetRotation(erectSegmentIntervalIdx, loadType, poi, minBAT, rtCumulative, false);
+        maxDWrotation += pProductForces->GetRotation(lastIntervalIdx, loadType, poi, maxBAT, rtCumulative, false) -
             pProductForces->GetRotation(erectSegmentIntervalIdx, loadType, poi, maxBAT, rtCumulative, false);
     }
-    pDetails->staticRotation = skewFactor * (dcRotation + dwRotation) + pDetails->maxUserDCRotation + pDetails->creepRotation + pDetails->shrinkageRotation + 
-        pDetails->relaxationRotation + pDetails->postTensionRotation;
+
+
+    if (reactionLocation.Face == PierReactionFaceType::rftAhead)
+    {
+        pDetails->staticRotation = skewFactor * (minDCrotation + minDWrotation) + pDetails->minUserDCRotation + pDetails->creepRotation + pDetails->shrinkageRotation +
+            pDetails->relaxationRotation + pDetails->postTensionRotation;
+    }
+    else if (reactionLocation.Face == PierReactionFaceType::rftBack)
+    {
+        pDetails->staticRotation = skewFactor * (maxDCrotation + maxDWrotation) + pDetails->maxUserDCRotation + pDetails->creepRotation + pDetails->shrinkageRotation +
+            pDetails->relaxationRotation + pDetails->postTensionRotation;
+    }
+
 
     // Cyclic Rotations
 
@@ -611,7 +626,14 @@ void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType 
     pDetails->maxUserLLrotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftUserLLIM, poi, maxBAT, rtCumulative, false);
     pDetails->minUserLLrotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftUserLLIM, poi, minBAT, rtCumulative, false);
 
-    pDetails->cyclicRotation = skewFactor * (pDetails->maxDesignLLrotation + pDetails->maxPedRotation + pDetails->maxUserLLrotation);
+    if (reactionLocation.Face == PierReactionFaceType::rftAhead)
+    {
+        pDetails->cyclicRotation = skewFactor * (pDetails->minDesignLLrotation + pDetails->minPedRotation + pDetails->minUserLLrotation);
+    }
+    else if (reactionLocation.Face == PierReactionFaceType::rftBack)
+    {
+        pDetails->cyclicRotation = skewFactor * (pDetails->maxDesignLLrotation + pDetails->maxPedRotation + pDetails->maxUserLLrotation);
+    }
 
     // Total Rotations
     
@@ -620,9 +642,19 @@ void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType 
     auto dwDF = pLoadFactors->GetDWMax(pgsTypes::ServiceI);
     auto llDF = pLoadFactors->GetLLIMMax(pgsTypes::ServiceI);
 
-    pDetails->totalRotation = skewFactor * (dcDF * dcRotation + dwDF * dwRotation + pDetails->preTensionRotation +
-        pDetails->creepRotation + pDetails->shrinkageRotation + pDetails->relaxationRotation + 
-        llDF * (pDetails->maxDesignLLrotation + pDetails->maxUserLLrotation + pDetails->maxPedRotation));
+
+    if (reactionLocation.Face == PierReactionFaceType::rftAhead)
+    {
+        pDetails->totalRotation = skewFactor * (dcDF * minDCrotation + dwDF * minDWrotation + pDetails->preTensionRotation +
+            pDetails->creepRotation + pDetails->shrinkageRotation + pDetails->relaxationRotation +
+            llDF * (pDetails->minDesignLLrotation + pDetails->minUserLLrotation + pDetails->minPedRotation));
+    }
+    else if (reactionLocation.Face == PierReactionFaceType::rftBack)
+    {
+        pDetails->totalRotation = skewFactor * (dcDF * maxDCrotation + dwDF * maxDWrotation + pDetails->preTensionRotation +
+            pDetails->creepRotation + pDetails->shrinkageRotation + pDetails->relaxationRotation +
+            llDF * (pDetails->maxDesignLLrotation + pDetails->maxUserLLrotation + pDetails->maxPedRotation));
+    }
     
 
 }
