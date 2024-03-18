@@ -199,12 +199,14 @@ void CSelectCrackedSectionDlg::UpdateSliderLabel()
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    rptPointOfInterest rptPoi(&pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
-   rptPoi.SetValue(POI_SPAN,poi);
+   rptPoi.SetValue(POI_SPAN, poi);
    rptPoi.PrefixAttributes(false); // put the attributes after the location
+   rptPoi.IncludeSpanAndGirder(true);
 
-   strLabel.Format(_T("Distance from Left Support = %s"),rptPoi.AsString().c_str());
-   strLabel.Replace(_T("<sub>"),_T(""));
-   strLabel.Replace(_T("</sub>"),_T(""));
+   strLabel.Format(_T("Location = %s"), rptPoi.AsString().c_str());
+   // remove the HTML tags
+   strLabel.Replace(_T("<sub>"), _T(""));
+   strLabel.Replace(_T("</sub>"), _T(""));
 
    m_Label.SetWindowText(strLabel);
 }
@@ -228,8 +230,10 @@ void CSelectCrackedSectionDlg::UpdatePOI()
 {
    GET_IFACE(IPointOfInterest,pPOI);
 
-   m_vPOI.clear();
-   pPOI->GetPointsOfInterest(CSegmentKey(m_GirderKey, ALL_SEGMENTS), &m_vPOI);
+   // Get available pois from report spec so both classes are in synch
+   CSegmentKey segmentKey(m_GirderKey, ALL_SEGMENTS);
+   m_vPOI = CCrackedSectionReportSpecification::GetCrackedSectionPois(pPOI, segmentKey);
+
    if (m_Slider.GetSafeHwnd() != nullptr )
    {
       m_Slider.SetRange(0,int(m_vPOI.size()-1)); // the range is number of spaces along slider... 
