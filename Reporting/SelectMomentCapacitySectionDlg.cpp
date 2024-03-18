@@ -218,8 +218,10 @@ void CSelectMomentCapacitySectionDlg::OnGirderChanged()
 void CSelectMomentCapacitySectionDlg::UpdatePOI()
 {
    GET_IFACE(IPointOfInterest,pPOI);
-   m_vPOI.clear();
-   pPOI->GetPointsOfInterest(CSegmentKey(m_GirderKey, ALL_SEGMENTS), &m_vPOI);
+   // Get available pois from report spec so both classes are in synch
+   CSegmentKey segmentKey(m_GirderKey, ALL_SEGMENTS);
+   m_vPOI = CMomentCapacityReportSpecification::GetMomentCapacityDetailsPois(pPOI, segmentKey);
+
    if (m_Slider.GetSafeHwnd() != nullptr )
    {
       m_Slider.SetRange(0,(int)(m_vPOI.size()-1)); // the range is number of spaces along slider... 

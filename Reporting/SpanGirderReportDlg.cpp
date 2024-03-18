@@ -242,6 +242,15 @@ BOOL CSpanGirderReportDlg::OnInitDialog()
    GET_IFACE(IDocumentType,pDocType);
    bool bIsPGSuper = pDocType->IsPGSuperDocument();
 
+   // It is possible that a span was removed from the bridge, and if so, the report description for this report 
+   // will have a higher group that that exists. Nip in the bud here so we don't crash
+   GET_IFACE(IBridge, pBridge);
+   GroupIndexType numGroups = pBridge->GetGirderGroupCount();
+   if (m_SegmentKey.groupIndex != ALL_GROUPS && m_SegmentKey.groupIndex > numGroups - 1)
+   {
+      m_SegmentKey.groupIndex = numGroups - 1;
+   }
+
    // Fill up the span and girder combo boxes
    if ( m_Mode == Mode::GroupAndChapters || m_Mode == Mode::GroupGirderAndChapters || m_Mode == Mode::GroupGirderSegmentAndChapters)
    {
@@ -264,9 +273,7 @@ BOOL CSpanGirderReportDlg::OnInitDialog()
 
       // fill up the group list box
       CComboBox* pGroupBox = (CComboBox*)GetDlgItem( IDC_SPAN );
-      GET_IFACE( IBridge, pBridge );
-      GroupIndexType cGroups = pBridge->GetGirderGroupCount();
-      for ( GroupIndexType i = 0; i < cGroups; i++ )
+      for ( GroupIndexType i = 0; i < numGroups; i++ )
       {
          CString strGroup;
          if (bIsPGSuper)
