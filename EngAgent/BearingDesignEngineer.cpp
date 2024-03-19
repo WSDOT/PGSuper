@@ -884,9 +884,11 @@ void pgsBearingDesignEngineer::GetBearingShearDeformationDetails(pgsTypes::Analy
 
     GET_IFACE(IBearingDesignParameters, pBearing);
 
+    pDetails->time_dependent = pBearing->GetTimeDependentShearDeformation(girderKey, poi, startPierIdx, pDetails);
+
     pBearing->GetThermalExpansionDetails(girderKey, pDetails);
 
-    pDetails->time_dependent = pBearing->GetTimeDependentShearDeformation(girderKey, poi, startPierIdx, pDetails);
+    
 
 
 }
