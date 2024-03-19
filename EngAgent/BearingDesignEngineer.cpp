@@ -33,6 +33,7 @@
 #include <IFace\MomentCapacity.h>
 #include <IFace\StatusCenter.h>
 #include <IFace\ResistanceFactors.h>
+#include <IFace\DistributionFactors.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\EditByUI.h>
 #include <IFace\Intervals.h>
@@ -612,10 +613,10 @@ void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType 
 
     pProductForces->GetLiveLoadRotation(lastIntervalIdx, pgsTypes::lltDesign, poi, maxBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig);
     pDetails->maxDesignLLrotation = skewFactor * max;
-    pDetails->maxConfig = maxConfig;
+    pDetails->maxConfigRotation = maxConfig;
     pProductForces->GetLiveLoadRotation(lastIntervalIdx, pgsTypes::lltDesign, poi, minBAT, bIncludeImpact, bIncludeLLDF, &min, &max, &minConfig, &maxConfig);
     pDetails->minDesignLLrotation = skewFactor * min;
-    pDetails->minConfig = minConfig;
+    pDetails->minConfigRotation = minConfig;
 
     pProductForces->GetLiveLoadRotation(lastIntervalIdx, pgsTypes::lltPedestrian, poi, maxBAT, bIncludeImpact, true, &min, &max);
     pDetails->maxPedRotation = skewFactor * max;
@@ -688,7 +689,7 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
     IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
 
-    GET_IFACE_NOCHECK(IBridgeDescription, pIBridgeDesc);
+    
     GET_IFACE(IBridge, pBridge);
 
     PierIndexType nPiers = pBridge->GetPierCount();
@@ -775,14 +776,6 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
 
     pDetails->totalDLreaction = dcLF * dcReaction + dwLF * dwReaction;
 
-
-
-
-
-
-
-
-
     Float64 R1min, R1max, R2min, R2max;
 
     if (pDetails->bPedLoading)
@@ -794,15 +787,28 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
     }
 
 
-
-    VehicleIndexType minConfig1, maxConfig1, minConfig2, maxConfig2;
     pComboForces->GetCombinedLiveLoadReaction(liveLoadIntervalIdx, pgsTypes::lltDesign, reactionLocation, maxBAT, bIncludeImpact, &R1min, &R1max);
     pComboForces->GetCombinedLiveLoadReaction(liveLoadIntervalIdx, pgsTypes::lltDesign, reactionLocation, minBAT, bIncludeImpact, &R2min, &R2max);
 
-    pDetails->maxDesignLLReaction = Max(R1max, R2max);
-    pDetails->maxConfig = MaxIndex(R1max, R2max) == 0 ? maxConfig1 : maxConfig2;
-    pDetails->minDesignLLReaction = Min(R1min, R2min);
-    pDetails->minConfig = MinIndex(R1min, R2min) == 0 ? minConfig1 : minConfig2;
+    pDetails->maxComboDesignLLReaction = Max(R1max, R2max);
+    pDetails->minComboDesignLLReaction = Min(R1min, R2min);
+
+    VehicleIndexType minConfig1, maxConfig1, minConfig2, maxConfig2;
+    pForces->GetLiveLoadReaction(lastIntervalIdx, pgsTypes::lltDesign, reactionLocation, maxBAT, false, true, &R1min, &R1max, &minConfig1, &maxConfig1);
+    pForces->GetLiveLoadReaction(lastIntervalIdx, pgsTypes::lltDesign, reactionLocation, minBAT, false, true, &R2min, &R2max, &minConfig2, &maxConfig2);
+
+    GET_IFACE(ILiveLoadDistributionFactors, pLLDF);
+    SpanIndexType spanIdx = pBridge->GetGirderGroupEndSpan(girderKey.groupIndex);
+    CSpanKey spanKey(spanIdx, girderKey.girderIndex);
+    Float64 lldf = pLLDF->GetDeflectionDistFactor(spanKey);
+
+    pDetails->maxDesignLLReaction = Max(R1max, R2max)*lldf;
+    VehicleIndexType maxConfig = MaxIndex(R1max, R2max) == 0 ? maxConfig1 : maxConfig2;
+    pDetails->maxConfigReaction = maxConfig;
+
+    pDetails->minDesignLLReaction = Min(R1min, R2min)*lldf;
+    VehicleIndexType minConfig = MinIndex(R1min, R2min) == 0 ? minConfig1 : minConfig2;
+    pDetails->minConfigReaction = minConfig;
 
     pDetails->creepReaction = 0.0;
     pDetails->relaxationReaction = 0.0;

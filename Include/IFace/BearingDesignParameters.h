@@ -97,9 +97,9 @@ struct ROTATIONDETAILS : public TABLEPARAMETERS
 	Float64 maxUserDWRotation;
 	Float64 minUserDWRotation;
 	Float64 maxDesignLLrotation;
-	VehicleIndexType maxConfig;
+	VehicleIndexType maxConfigRotation;
 	Float64 minDesignLLrotation;
-	VehicleIndexType minConfig;
+	VehicleIndexType minConfigRotation;
 	Float64 maxUserLLrotation;
 	Float64 minUserLLrotation;
 	Float64 maxLongitudinalJointRotation;
@@ -140,10 +140,12 @@ struct REACTIONDETAILS : public TABLEPARAMETERS
 	Float64 minUserDCReaction;
 	Float64 maxUserDWReaction;
 	Float64 minUserDWReaction;
+	Float64 maxComboDesignLLReaction;
+	Float64 minComboDesignLLReaction;
 	Float64 maxDesignLLReaction;
-	VehicleIndexType maxConfig;
+	VehicleIndexType maxConfigReaction;
 	Float64 minDesignLLReaction;
-	VehicleIndexType minConfig;
+	VehicleIndexType minConfigReaction;
 	Float64 maxUserLLReaction;
 	Float64 minUserLLReaction;
 	Float64 maxLongitudinalJointReaction;

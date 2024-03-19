@@ -169,6 +169,8 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     *p << CBearingRotationTable().BuildBearingRotationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, are_user_loads, true, pDisplayUnits, true, false) << rptNewLine;
 
+    *p << LIVELOAD_PER_GIRDER_NO_IMPACT;
+
     *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, are_user_loads, true, pDisplayUnits, true) << rptNewLine;
     
@@ -185,6 +187,150 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     //*p << _T("From WSDOT BDM Ch. 9: ") << Sub2(symbol(DELTA), _T("0")) << _T(" = 0.75") << rptNewLine;
     //*p << _T("Moderate Climate: ") << symbol(RIGHT_SINGLE_ARROW) << Sub2(symbol(DELTA), _T("temp")) << _T(" = ") << deflection.SetValue(sf_details.thermalBDMModerate) << rptNewLine;
     //*p << _T("Cold Climate: ") << symbol(RIGHT_SINGLE_ARROW) << Sub2(symbol(DELTA), _T("temp")) << _T(" = ") << deflection.SetValue(sf_details.thermalBDMCold) << rptNewLine;
+
+    GET_IFACE2(pBroker, ILiveLoadDistributionFactors, pLLDF);
+    pLLDF->ReportReactionDistributionFactors(girderKey, pChapter, false/*full heading style*/);
+
+
+    ///////////////////////////////////////
+
+    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+    GET_IFACE2(pBroker, IGirder, pGirder);
+
+    p = new rptParagraph;
+    *pChapter << p;
+
+    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(9, _T("Bearing Recess Geometry"));
+
+    std::_tstring strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
+
+    INIT_FRACTIONAL_LENGTH_PROTOTYPE(recess_dimension, IS_US_UNITS(pDisplayUnits), 8, RoundOff, pDisplayUnits->GetComponentDimUnit(), false, true);
+
+    col = 0;
+
+    (*pTable)(0, col++) << _T("");
+    (*pTable)(0, col++) << _T("Girder") << rptNewLine << _T("Slope") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
+    (*pTable)(0, col++) << _T("Excess") << rptNewLine << _T("Camber") << rptNewLine << _T("Slope") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
+    (*pTable)(0, col++) << _T("Bearing") << rptNewLine << _T("Recess") << rptNewLine << _T("Slope") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
+    (*pTable)(0, col++) << _T("* Transverse") << rptNewLine << _T("Bearing") << rptNewLine << _T("Slope") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
+    (*pTable)(0, col++) << _T("** W") << rptNewLine << _T("Recess") << rptNewLine << _T("Length");
+    (*pTable)(0, col++) << _T("D") << rptNewLine << _T("Recess") << rptNewLine << _T("Height");
+    (*pTable)(0, col++) << Sub2(_T("D"), _T("1"));
+    (*pTable)(0, col++) << Sub2(_T("D"), _T("2"));
+
+    RowIndexType row = pTable->GetNumberOfHeaderRows();
+
+    bool bCheckTaperedSolePlate;
+    Float64 taperedSolePlateThreshold;
+    pSpec->GetTaperedSolePlateRequirements(&bCheckTaperedSolePlate, &taperedSolePlateThreshold);
+    bool bNeedTaperedSolePlateTransverse = false; // if bearing recess slope exceeds "taperedSolePlateThreshold", a tapered bearing plate is required per LRFD 14.8.2
+    bool bNeedTaperedSolePlateLongitudinal = false; // if bearing recess slope exceeds "taperedSolePlateThreshold", a tapered bearing plate is required per LRFD 14.8.2
+
+    PierIndexType startPierIdx, endPierIdx;
+    pBridge->GetGirderGroupPiers(girderKey.groupIndex, &startPierIdx, &endPierIdx);
+
+    GET_IFACE2(pBroker, ICamber, pCamber);
+    GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+
+    // we want the final configuration... that would be in the last interval
+    GET_IFACE2(pBroker, IIntervals, pIntervals);
+    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount() - 1;
+
+    // TRICKY: use adapter class to get correct reaction interfaces
+    std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, intervalIdx, girderKey));
+
+    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
+
+    for (PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++)
+    {
+        col = 0;
+
+        if (!pForces->DoReportAtPier(pierIdx, girderKey))
+        {
+            // Don't report pier if information is not available
+            continue;
+        }
+
+        (*pTable)(row, col++) << LABEL_PIER_EX(pBridge->IsAbutment(pierIdx), pierIdx);
+
+        CSegmentKey segmentKey = pBridge->GetSegmentAtPier(pierIdx, girderKey);
+
+        Float64 slope1 = pBridge->GetSegmentSlope(segmentKey);
+        (*pTable)(row, col++) << scalar.SetValue(slope1);
+
+        pgsPointOfInterest poi;
+        pgsTypes::PierFaceType pierFace(pgsTypes::Back);
+        if (pierIdx == startPierIdx)
+        {
+            PoiList vPoi;
+            pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_ERECTED_SEGMENT, &vPoi);
+            poi = vPoi.front();
+
+            pierFace = pgsTypes::Ahead;
+        }
+        else if (pierIdx == endPierIdx)
+        {
+            PoiList vPoi;
+            pPoi->GetPointsOfInterest(segmentKey, POI_10L | POI_ERECTED_SEGMENT, &vPoi);
+            poi = vPoi.front();
+        }
+        else
+        {
+            poi = pPoi->GetPierPointOfInterest(girderKey, pierIdx);
+        }
+
+        Float64 slope2 = pCamber->GetExcessCamberRotation(poi, pgsTypes::CreepTime::Max);
+        (*pTable)(row, col++) << scalar.SetValue(slope2);
+
+        const CBearingData2* pbd = pIBridgeDesc->GetBearingData(pierIdx, pierFace, girderKey.girderIndex);
+
+        Float64 slope3 = slope1 + slope2;
+        (*pTable)(row, col++) << scalar.SetValue(slope3);
+
+        Float64 transverse_slope = pGirder->GetOrientation(segmentKey);
+        (*pTable)(row, col++) << scalar.SetValue(transverse_slope);
+
+        bNeedTaperedSolePlateLongitudinal = taperedSolePlateThreshold < fabs(slope3); // see lrfd 14.8.2
+        bNeedTaperedSolePlateTransverse = taperedSolePlateThreshold < fabs(transverse_slope); // see lrfd 14.8.2
+
+        Float64 W = max(pbd->RecessLength, pbd->Length); // don't allow recess to be shorter than bearing
+        Float64 D = pbd->RecessHeight;
+        Float64 D1 = D + W * slope3 / 2;
+        Float64 D2 = D - W * slope3 / 2;
+
+        (*pTable)(row, col++) << recess_dimension.SetValue(W);
+        (*pTable)(row, col++) << recess_dimension.SetValue(D);
+        (*pTable)(row, col++) << recess_dimension.SetValue(D1);
+        (*pTable)(row, col++) << recess_dimension.SetValue(D2);
+
+        row++;
+    }
+
+    *p << pTable << rptNewLine;
+    *p << _T("* Orientation of the girder cross section with respect to vertical, zero indicates plumb and positive values indicate girder is rotated clockwise") << rptNewLine;
+    *p << _T("** W is maximum of input bearing length and recess length") << rptNewLine;
+
+    if (bCheckTaperedSolePlate && (bNeedTaperedSolePlateLongitudinal || bNeedTaperedSolePlateTransverse))
+    {
+        *p << bgcolor(rptRiStyle::Yellow);
+        *p << _T("The inclination of the underside of the girder to the horizontal exceeds ") << taperedSolePlateThreshold << _T(" rad.");
+        if (bNeedTaperedSolePlateLongitudinal && !bNeedTaperedSolePlateTransverse)
+        {
+            *p << _T(" in the longitudinal direction.");
+        }
+        else if (!bNeedTaperedSolePlateLongitudinal && bNeedTaperedSolePlateTransverse)
+        {
+            *p << _T(" in the transverse direction.");
+        }
+        else
+        {
+            ATLASSERT(bNeedTaperedSolePlateLongitudinal && bNeedTaperedSolePlateTransverse);
+            *p << _T(" in the longitudinal and transverse directions.");
+        }
+        *p << _T(" Per LRFD 14.8.2 a tapered sole plate shall be used in order to provide a level surface.") << rptNewLine;
+        *p << bgcolor(rptRiStyle::White);
+    }
+    *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("BearingRecessSlope.png")) << rptNewLine;
 
     return pChapter;
 }

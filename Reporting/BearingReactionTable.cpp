@@ -996,7 +996,6 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
                             (*p_table)(row, col++) << Reaction.SetValue(details.maxUserLLReaction);
                             (*p_table)(row, col++) << Reaction.SetValue(details.minUserLLReaction);
                         }
- //                       col++;
 
 
                         if (details.bPedLoading)
@@ -1015,16 +1014,16 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
 
 
                         (*p_table)(row, col) << Reaction.SetValue(details.maxDesignLLReaction);
-                        if (bIndicateControllingLoad && 0 <= details.maxConfig)
+                        if (bIndicateControllingLoad && 0 <= details.maxConfigReaction)
                         {
-                            (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << details.maxConfig << _T(")");
+                            (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << details.maxConfigReaction << _T(")");
                         }
                         col++;
 
                         (*p_table)(row, col) << Reaction.SetValue(details.minDesignLLReaction);
-                        if (bIndicateControllingLoad && 0 <= details.minConfig)
+                        if (bIndicateControllingLoad && 0 <= details.minConfigReaction)
                         {
-                            (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << details.minConfig << _T(")");
+                            (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << details.minConfigReaction << _T(")");
                         }
                         col++;
 
@@ -1032,11 +1031,7 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
                     }
                     else
                     {
-                        (*p_table)(row, col) << Reaction.SetValue(details.maxDesignLLReaction);
-                        if (bIndicateControllingLoad && 0 <= details.maxConfig)
-                        {
-                            (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << details.maxConfig << _T(")");
-                        }
+                        (*p_table)(row, col) << Reaction.SetValue(details.maxComboDesignLLReaction);
                     }
 
 
@@ -1123,9 +1118,9 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
                 if (reactionDecider.DoReport(lastIntervalIdx))
                 {
                     (*p_table)(row, col) << Reaction.SetValue(details.maxDesignLLReaction);
-                    if (bIndicateControllingLoad && 0 <= details.maxConfig)
+                    if (bIndicateControllingLoad && 0 <= details.maxConfigReaction)
                     {
-                        (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << details.maxConfig << _T(")");
+                        (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << details.maxConfigReaction << _T(")");
                     }
                     col++;
 
@@ -1134,9 +1129,9 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
                         (*p_table)(row, col) << Reaction.SetValue(details.minDesignLLReaction);
                     }
 
-                    if (bIndicateControllingLoad && 0 <= details.minConfig && bDetail)
+                    if (bIndicateControllingLoad && 0 <= details.minConfigReaction && bDetail)
                     {
-                        (*p_table)(row, col++) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << details.minConfig << _T(")");
+                        (*p_table)(row, col++) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << details.minConfigReaction << _T(")");
                     }
 
 

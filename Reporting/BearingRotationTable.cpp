@@ -1053,16 +1053,16 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                     if (bDetail)
                     {
                         (*p_table)(row, col) << rotation.SetValue(details.maxDesignLLrotation);
-                        if (bIndicateControllingLoad && 0 <= details.maxConfig)
+                        if (bIndicateControllingLoad && 0 <= details.maxConfigRotation)
                         {
-                            (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << details.maxConfig << _T(")");
+                            (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << details.maxConfigRotation << _T(")");
                         }
                         col++;
 
                         (*p_table)(row, col) << rotation.SetValue(details.minDesignLLrotation);
-                        if (bIndicateControllingLoad && 0 <= details.minConfig)
+                        if (bIndicateControllingLoad && 0 <= details.minConfigRotation)
                         {
-                            (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << details.minConfig << _T(")");
+                            (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << details.minConfigRotation << _T(")");
                         }
                         col++;
                     }
@@ -1151,9 +1151,9 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                 if (reactionDecider.DoReport(lastIntervalIdx))
                 {
                     (*p_table)(row, col) << rotation.SetValue(details.maxDesignLLrotation);
-                    if (bIndicateControllingLoad && 0 <= details.maxConfig)
+                    if (bIndicateControllingLoad && 0 <= details.maxConfigRotation)
                     {
-                        (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << details.maxConfig << _T(")");
+                        (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << details.maxConfigRotation << _T(")");
                     }
                     col++;
 
@@ -1162,9 +1162,9 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
                         (*p_table)(row, col) << rotation.SetValue(details.minDesignLLrotation);
                     }
                     
-                    if (bIndicateControllingLoad && 0 <= details.minConfig && bDetail)
+                    if (bIndicateControllingLoad && 0 <= details.minConfigRotation && bDetail)
                     {
-                        (*p_table)(row, col++) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << details.minConfig << _T(")");
+                        (*p_table)(row, col++) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << details.minConfigRotation << _T(")");
                     }
 
 
@@ -1198,10 +1198,6 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
         {
             (*p_table)(row, col++) << rotation.SetValue(details.staticRotation);
             (*p_table)(row, col) << rotation.SetValue(details.cyclicRotation);
-            if (bIndicateControllingLoad && 0 <= details.maxConfig)
-            {
-                (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << details.maxConfig << _T(")");
-            }
             col++;
             (*p_table)(row, col++) << rotation.SetValue(details.totalRotation);
         }
