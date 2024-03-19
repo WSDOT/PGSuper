@@ -122,6 +122,9 @@ struct ROTATIONDETAILS : public TABLEPARAMETERS
 struct REACTIONDETAILS : public TABLEPARAMETERS
 {
 	Float64 totalDLreaction;
+	Float64 maxComboDesignLLReaction;
+	Float64 minComboDesignLLReaction;
+	Float64 totalReaction;
 	Float64 erectedSegmentReaction;
 	Float64 maxGirderReaction;
 	Float64 minGirderReaction;
@@ -140,8 +143,6 @@ struct REACTIONDETAILS : public TABLEPARAMETERS
 	Float64 minUserDCReaction;
 	Float64 maxUserDWReaction;
 	Float64 minUserDWReaction;
-	Float64 maxComboDesignLLReaction;
-	Float64 minComboDesignLLReaction;
 	Float64 maxDesignLLReaction;
 	VehicleIndexType maxConfigReaction;
 	Float64 minDesignLLReaction;

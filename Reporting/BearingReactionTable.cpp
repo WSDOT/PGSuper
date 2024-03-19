@@ -113,7 +113,7 @@ ColumnIndexType CBearingReactionTable::GetBearingTableColumnCount(IBroker* pBrok
     }
     else
     {
-        nCols++; //Pdl
+        nCols += 2; //Pdl
     }
 
     
@@ -562,8 +562,11 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
 
         if (!bDetail)
         {
-            (*p_table)(0, col) << COLHDR(Sub2(_T("P"), _T("LL")), M, unitT);
+            (*p_table)(0, col++) << COLHDR(Sub2(_T("P"), _T("LL")), M, unitT);
+            (*p_table)(0, col) << COLHDR(Sub2(_T("P"), _T("TL")), M, unitT);
         }
+
+
         else
         {
             p_table->SetColumnSpan(0, col, 2);
@@ -1031,7 +1034,8 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
                     }
                     else
                     {
-                        (*p_table)(row, col) << Reaction.SetValue(details.maxComboDesignLLReaction);
+                        (*p_table)(row, col++) << Reaction.SetValue(details.maxComboDesignLLReaction);
+                        (*p_table)(row, col) << Reaction.SetValue(details.totalReaction);
                     }
 
 

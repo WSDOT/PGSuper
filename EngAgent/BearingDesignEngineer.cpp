@@ -765,16 +765,7 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
     GET_IFACE(IBearingDesign, pBearingDesign);
     pComboForces = std::make_unique<CmbLsBearingDesignReactionAdapter>(pBearingDesign, lastIntervalIdx, girderKey);
 
-    // LRFD Limit States
-    GET_IFACE(ILoadFactors, pLF);
-    const CLoadFactors* pLoadFactors = pLF->GetLoadFactors();
-    auto dcLF = pLoadFactors->GetDCMax(pgsTypes::ServiceI);
-    auto dwLF = pLoadFactors->GetDWMax(pgsTypes::ServiceI);
 
-    auto dcReaction = pComboForces->GetReaction(lastIntervalIdx, lcDC, reactionLocation, maxBAT, rtCumulative);
-    auto dwReaction = pComboForces->GetReaction(lastIntervalIdx, lcDW, reactionLocation, maxBAT, rtCumulative);
-
-    pDetails->totalDLreaction = dcLF * dcReaction + dwLF * dwReaction;
 
     Float64 R1min, R1max, R2min, R2max;
 
@@ -786,12 +777,13 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
         pDetails->minPedReaction = Min(R1min, R2min);
     }
 
+    pDetails->creepReaction = 0.0;
+    pDetails->relaxationReaction = 0.0;
+    pDetails->preTensionReaction = 0.0;
+    pDetails->postTensionReaction = 0.0;
+    pDetails->shrinkageReaction = 0.0;
 
-    pComboForces->GetCombinedLiveLoadReaction(liveLoadIntervalIdx, pgsTypes::lltDesign, reactionLocation, maxBAT, bIncludeImpact, &R1min, &R1max);
-    pComboForces->GetCombinedLiveLoadReaction(liveLoadIntervalIdx, pgsTypes::lltDesign, reactionLocation, minBAT, bIncludeImpact, &R2min, &R2max);
 
-    pDetails->maxComboDesignLLReaction = Max(R1max, R2max);
-    pDetails->minComboDesignLLReaction = Min(R1min, R2min);
 
     VehicleIndexType minConfig1, maxConfig1, minConfig2, maxConfig2;
     pForces->GetLiveLoadReaction(lastIntervalIdx, pgsTypes::lltDesign, reactionLocation, maxBAT, false, true, &R1min, &R1max, &minConfig1, &maxConfig1);
@@ -810,18 +802,37 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
     VehicleIndexType minConfig = MinIndex(R1min, R2min) == 0 ? minConfig1 : minConfig2;
     pDetails->minConfigReaction = minConfig;
 
-    pDetails->creepReaction = 0.0;
-    pDetails->relaxationReaction = 0.0;
-    pDetails->preTensionReaction = 0.0;
-    pDetails->postTensionReaction = 0.0;
-    pDetails->shrinkageReaction = 0.0;
-
     pDetails->maxUserDCReaction = pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftUserDC, maxBAT);
     pDetails->maxUserDWReaction = pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftUserDW, maxBAT);
     pDetails->maxUserLLReaction = pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftUserLLIM, maxBAT);
     pDetails->minUserDCReaction = pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftUserDC, minBAT);
     pDetails->minUserDWReaction = pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftUserDW, minBAT);
     pDetails->minUserLLReaction = pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftUserLLIM, minBAT);
+
+    auto dcReaction = pComboForces->GetReaction(lastIntervalIdx, lcDC, reactionLocation, maxBAT, rtCumulative);
+    auto dwReaction = pComboForces->GetReaction(lastIntervalIdx, lcDW, reactionLocation, maxBAT, rtCumulative);
+
+    pDetails->totalDLreaction = dcReaction + dwReaction + pDetails->preTensionReaction + pDetails->creepReaction + pDetails->relaxationReaction + pDetails->shrinkageReaction;
+
+
+    pComboForces->GetCombinedLiveLoadReaction(liveLoadIntervalIdx, pgsTypes::lltDesign, reactionLocation, maxBAT, bIncludeImpact, &R1min, &R1max);
+    pComboForces->GetCombinedLiveLoadReaction(liveLoadIntervalIdx, pgsTypes::lltDesign, reactionLocation, minBAT, bIncludeImpact, &R2min, &R2max);
+
+    pDetails->maxComboDesignLLReaction = Max(R1max, R2max) + pDetails->maxPedReaction;
+    pDetails->minComboDesignLLReaction = Min(R1min, R2min) + pDetails->minPedReaction;
+
+    // LRFD Limit States
+    GET_IFACE(ILoadFactors, pLF);
+    const CLoadFactors* pLoadFactors = pLF->GetLoadFactors();
+    auto dcLF = pLoadFactors->GetDCMax(pgsTypes::ServiceI);
+    auto dwLF = pLoadFactors->GetDWMax(pgsTypes::ServiceI);
+    auto llLF = pLoadFactors->GetLLIMMax(pgsTypes::ServiceI);
+
+
+    pDetails->totalReaction = dcLF * dcReaction + dwLF * dwReaction + pDetails->preTensionReaction + pDetails->creepReaction +
+        pDetails->relaxationReaction + pDetails->shrinkageReaction + llLF * pDetails->maxComboDesignLLReaction;
+
+
 }
 
 
