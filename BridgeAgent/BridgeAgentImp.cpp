@@ -21303,6 +21303,32 @@ void CBridgeAgentImp::RemovePointsOfInterest(PoiList& vPoi,PoiAttributeType targ
    }
 }
 
+void CBridgeAgentImp::RemovePointsOfInterestOffGirder(PoiList& vPoi) const
+{
+   // remove all poi before the start of the girder
+   auto iter = vPoi.begin();
+   auto end = vPoi.end();
+   for (; iter != end; iter++)
+   {
+      const pgsPointOfInterest& poi(*iter);
+      if (IsOnGirder(poi))
+         break;
+   }
+   vPoi.erase(vPoi.begin(), iter);
+
+   // remove all poi after end of the girder
+   auto riter = vPoi.rbegin();
+   auto rend = vPoi.rend();
+   iter = vPoi.end();
+   for (; riter != rend; riter++, iter--)
+   {
+      const pgsPointOfInterest& poi(*riter);
+      if (IsOnGirder(poi))
+         break;
+   }
+   vPoi.erase(iter, vPoi.end());
+}
+
 bool CBridgeAgentImp::IsInClosureJoint(const pgsPointOfInterest& poi,CClosureKey* pClosureKey) const
 {
    CSegmentKey segmentKey(poi.GetSegmentKey());

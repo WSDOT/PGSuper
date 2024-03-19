@@ -1201,4 +1201,6 @@ void GetCombinedResultsPoi(IBroker* pBroker,const CGirderKey& girderKey,Interval
 
       pIPoi->MergePoiLists(*pPoi, csPois, pPoi);
    }
+
+   pIPoi->RemovePointsOfInterestOffGirder(*pPoi);
 }
