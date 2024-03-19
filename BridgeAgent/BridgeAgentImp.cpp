@@ -2109,7 +2109,7 @@ bool CBridgeAgentImp::BuildCogoModel()
 
             // Make sure this curve and the previous curve don't overlap
             CComPtr<ICompoundCurve> hc;
-            m_CogoModel->CreateCompoundCurveByIndex(curveIdx, &hc);
+            m_CogoModel->CreateCompoundCurveByID(curveID, &hc);
             hc->get_BkTangentLength(&T);
             if ( 0 < curveIdx )
             {
@@ -6838,12 +6838,27 @@ void CBridgeAgentImp::GetCurve(IndexType idx, ICompoundCurve** ppCurve) const
    CComPtr<IAlignment> alignment;
    m_Bridge->get_Alignment(&alignment);
 
-   auto found = m_CompoundCurveKeys.find(idx);
-   ATLASSERT(found != std::end(m_CompoundCurveKeys));
-
+   IndexType nCurves = 0;
+   IndexType nItems;
+   alignment->get_Count(&nItems);
+   for (IndexType i = 0; i < nItems; i++)
+   {
    CComPtr<IPathElement> element;
-   alignment->get_Item(found->first, &element);
-   VERIFY(element.QueryInterface(ppCurve) == S_OK);
+      alignment->get_Item(i, &element);
+      CComQIPtr<ICompoundCurve> curve(element);
+      if (curve)
+      {
+         if (nCurves == idx)
+         {
+            curve.CopyTo(ppCurve);
+            break;
+         }
+         else
+         {
+            nCurves++;
+         }
+      }
+   }
 }
 
 void CBridgeAgentImp::GetCurve(IndexType idx, pgsTypes::PlanCoordinateType pcType,ICompoundCurve** ppCurve) const
