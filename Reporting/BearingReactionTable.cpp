@@ -113,12 +113,10 @@ ColumnIndexType CBearingReactionTable::GetBearingTableColumnCount(IBroker* pBrok
     }
     else
     {
-        nCols += 2; //Pdl
+        nCols ++;
     }
 
     
-
-
     if (details->bSegments && bDetail)
     {
         nCols++;
@@ -131,10 +129,6 @@ ColumnIndexType CBearingReactionTable::GetBearingTableColumnCount(IBroker* pBrok
         if (analysisType == pgsTypes::Envelope)
             nCols++; //overlay min
     }
-
-   
-
-
 
     if (details->bConstruction && bDetail)
     {
@@ -515,7 +509,7 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
 
     if (!bDetail)
     {
-        (*p_table)(0, col++) << COLHDR(Sub2(_T("P"), _T("DL")), M, unitT);
+        (*p_table)(0, col++) << COLHDR(Sub2(_T("P"), _T("D")), M, unitT);
     }
 
 
@@ -562,8 +556,8 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
 
         if (!bDetail)
         {
-            (*p_table)(0, col++) << COLHDR(Sub2(_T("P"), _T("LL")), M, unitT);
-            (*p_table)(0, col) << COLHDR(Sub2(_T("P"), _T("TL")), M, unitT);
+            (*p_table)(0, col++) << COLHDR(Sub2(_T("P"), _T("L")), M, unitT);
+            //(*p_table)(0, col) << COLHDR(Sub2(_T("P"), _T("Service I")), M, unitT);
         }
 
 
@@ -1035,7 +1029,7 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
                     else
                     {
                         (*p_table)(row, col++) << Reaction.SetValue(details.maxComboDesignLLReaction);
-                        (*p_table)(row, col) << Reaction.SetValue(details.totalReaction);
+                        //(*p_table)(row, col) << Reaction.SetValue(details.totalReaction);
                     }
 
 

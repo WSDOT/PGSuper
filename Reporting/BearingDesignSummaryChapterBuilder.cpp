@@ -100,6 +100,9 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
     rptParagraph* p = new rptParagraph;
     *pChapter << p;
 
+    *p << _T("-All loads and movements are per bearing and factored for Service I Limit State load combinations") << rptNewLine;
+    *p << _T("-Live loads do not include impact") << rptNewLine << rptNewLine;
+
     *p << CBearingDesignPropertiesTable().BuildBearingDesignPropertiesTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, are_user_loads, true, pDisplayUnits, false) << rptNewLine;
 
@@ -112,10 +115,13 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
     *p << CBearingRotationTable().BuildBearingRotationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, are_user_loads, true, pDisplayUnits, false, false) << rptNewLine;
 
-    *p << LIVELOAD_PER_GIRDER_NO_IMPACT;
+    *p << _T("*Static rotations include ") << symbol(PLUS_MINUS) << _T("0.005 radians tolerance for uncertainties") << rptNewLine;
+    *p << _T("**Used for Method A") << rptNewLine;
 
     *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, are_user_loads, true, pDisplayUnits, false) << rptNewLine;
+
+    *p << _T("Temperature range is computed based on Procedure A (Article 3.12.2.1)") << rptNewLine;
 
 
     

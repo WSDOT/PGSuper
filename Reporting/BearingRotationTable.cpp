@@ -562,7 +562,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
 
     if (!bDetail)
     {
-            (*p_table)(0, col++) << COLHDR(Sub2(symbol(theta), _T("static")), 
+            (*p_table)(0, col++) << COLHDR(Sub2(symbol(theta), _T("s-st*")), 
                     rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
     }
 
@@ -571,7 +571,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
     {
         if (!bDetail)
         {
-            (*p_table)(0, col++) << COLHDR(Sub2(symbol(theta), _T("cyclic")), 
+            (*p_table)(0, col++) << COLHDR(Sub2(symbol(theta), _T("s-cy")), 
                     rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
         }
         else
@@ -586,7 +586,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
 
     if (!bDetail)
     {
-            (*p_table)(0, col++) << COLHDR(Sub2(symbol(theta), _T("total")), 
+            (*p_table)(0, col++) << COLHDR(Sub2(symbol(theta), _T("s") << _T("**")),
                     rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
     }
 

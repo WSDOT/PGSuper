@@ -596,16 +596,21 @@ void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType 
             pProductForces->GetRotation(erectSegmentIntervalIdx, loadType, poi, maxBAT, rtCumulative, false);
     }
 
+    const CLoadFactors* pLoadFactors = pLF->GetLoadFactors();
+    auto dcDF = pLoadFactors->GetDCMax(pgsTypes::ServiceI);
+    auto dwDF = pLoadFactors->GetDWMax(pgsTypes::ServiceI);
+    auto llDF = pLoadFactors->GetLLIMMax(pgsTypes::ServiceI);
+
 
     if (reactionLocation.Face == PierReactionFaceType::rftAhead)
     {
-        pDetails->staticRotation = skewFactor * (minDCrotation + minDWrotation) + pDetails->minUserDCRotation + pDetails->creepRotation + pDetails->shrinkageRotation +
-            pDetails->relaxationRotation + pDetails->postTensionRotation;
+        pDetails->staticRotation = skewFactor * (dcDF * minDCrotation + dwDF * minDWrotation + pDetails->preTensionRotation +
+            pDetails->creepRotation + pDetails->shrinkageRotation + pDetails->relaxationRotation + pDetails->postTensionRotation - 0.005);
     }
     else if (reactionLocation.Face == PierReactionFaceType::rftBack)
     {
-        pDetails->staticRotation = skewFactor * (maxDCrotation + maxDWrotation) + pDetails->maxUserDCRotation + pDetails->creepRotation + pDetails->shrinkageRotation +
-            pDetails->relaxationRotation + pDetails->postTensionRotation;
+        pDetails->staticRotation = skewFactor * (dcDF * minDCrotation + dwDF * minDWrotation + pDetails->preTensionRotation +
+            pDetails->creepRotation + pDetails->shrinkageRotation + pDetails->relaxationRotation + pDetails->postTensionRotation + 0.005);
     }
 
 
@@ -629,33 +634,15 @@ void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType 
 
     if (reactionLocation.Face == PierReactionFaceType::rftAhead)
     {
-        pDetails->cyclicRotation = skewFactor * (pDetails->minDesignLLrotation + pDetails->minPedRotation + pDetails->minUserLLrotation);
+        pDetails->cyclicRotation = skewFactor * llDF * (pDetails->minDesignLLrotation + pDetails->minUserLLrotation + pDetails->minPedRotation);
     }
     else if (reactionLocation.Face == PierReactionFaceType::rftBack)
     {
-        pDetails->cyclicRotation = skewFactor * (pDetails->maxDesignLLrotation + pDetails->maxPedRotation + pDetails->maxUserLLrotation);
+        pDetails->cyclicRotation = skewFactor * llDF * (pDetails->maxDesignLLrotation + pDetails->maxUserLLrotation + pDetails->maxPedRotation);
     }
-
-    // Total Rotations
+        
     
-    const CLoadFactors* pLoadFactors = pLF->GetLoadFactors();
-    auto dcDF = pLoadFactors->GetDCMax(pgsTypes::ServiceI);
-    auto dwDF = pLoadFactors->GetDWMax(pgsTypes::ServiceI);
-    auto llDF = pLoadFactors->GetLLIMMax(pgsTypes::ServiceI);
-
-
-    if (reactionLocation.Face == PierReactionFaceType::rftAhead)
-    {
-        pDetails->totalRotation = skewFactor * (dcDF * minDCrotation + dwDF * minDWrotation + pDetails->preTensionRotation +
-            pDetails->creepRotation + pDetails->shrinkageRotation + pDetails->relaxationRotation +
-            llDF * (pDetails->minDesignLLrotation + pDetails->minUserLLrotation + pDetails->minPedRotation));
-    }
-    else if (reactionLocation.Face == PierReactionFaceType::rftBack)
-    {
-        pDetails->totalRotation = skewFactor * (dcDF * maxDCrotation + dwDF * maxDWrotation + pDetails->preTensionRotation +
-            pDetails->creepRotation + pDetails->shrinkageRotation + pDetails->relaxationRotation +
-            llDF * (pDetails->maxDesignLLrotation + pDetails->maxUserLLrotation + pDetails->maxPedRotation));
-    }
+    pDetails->totalRotation = pDetails->staticRotation +  pDetails->cyclicRotation;
     
 
 }
@@ -776,6 +763,11 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
         pDetails->maxPedReaction = Max(R1max, R2max);
         pDetails->minPedReaction = Min(R1min, R2min);
     }
+    else
+    {
+        pDetails->maxPedReaction = 0.0;
+        pDetails->minPedReaction = 0.0;
+    }
 
     pDetails->creepReaction = 0.0;
     pDetails->relaxationReaction = 0.0;
@@ -812,15 +804,6 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
     auto dcReaction = pComboForces->GetReaction(lastIntervalIdx, lcDC, reactionLocation, maxBAT, rtCumulative);
     auto dwReaction = pComboForces->GetReaction(lastIntervalIdx, lcDW, reactionLocation, maxBAT, rtCumulative);
 
-    pDetails->totalDLreaction = dcReaction + dwReaction + pDetails->preTensionReaction + pDetails->creepReaction + pDetails->relaxationReaction + pDetails->shrinkageReaction;
-
-
-    pComboForces->GetCombinedLiveLoadReaction(liveLoadIntervalIdx, pgsTypes::lltDesign, reactionLocation, maxBAT, bIncludeImpact, &R1min, &R1max);
-    pComboForces->GetCombinedLiveLoadReaction(liveLoadIntervalIdx, pgsTypes::lltDesign, reactionLocation, minBAT, bIncludeImpact, &R2min, &R2max);
-
-    pDetails->maxComboDesignLLReaction = Max(R1max, R2max) + pDetails->maxPedReaction;
-    pDetails->minComboDesignLLReaction = Min(R1min, R2min) + pDetails->minPedReaction;
-
     // LRFD Limit States
     GET_IFACE(ILoadFactors, pLF);
     const CLoadFactors* pLoadFactors = pLF->GetLoadFactors();
@@ -828,10 +811,14 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
     auto dwLF = pLoadFactors->GetDWMax(pgsTypes::ServiceI);
     auto llLF = pLoadFactors->GetLLIMMax(pgsTypes::ServiceI);
 
+    pDetails->totalDLreaction = dcLF * dcReaction + dwLF * dwReaction + pDetails->preTensionReaction + pDetails->creepReaction + pDetails->relaxationReaction + pDetails->shrinkageReaction;
 
-    pDetails->totalReaction = dcLF * dcReaction + dwLF * dwReaction + pDetails->preTensionReaction + pDetails->creepReaction +
-        pDetails->relaxationReaction + pDetails->shrinkageReaction + llLF * pDetails->maxComboDesignLLReaction;
+    pComboForces->GetCombinedLiveLoadReaction(liveLoadIntervalIdx, pgsTypes::lltDesign, reactionLocation, maxBAT, bIncludeImpact, &R1min, &R1max);
+    pComboForces->GetCombinedLiveLoadReaction(liveLoadIntervalIdx, pgsTypes::lltDesign, reactionLocation, minBAT, bIncludeImpact, &R2min, &R2max);
 
+    pDetails->maxComboDesignLLReaction = llLF * (Max(R1max, R2max) + pDetails->maxPedReaction);
+
+    pDetails->totalReaction = pDetails->totalDLreaction + pDetails->maxComboDesignLLReaction;
 
 }
 
