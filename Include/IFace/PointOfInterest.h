@@ -134,18 +134,23 @@ interface IPointOfInterest : public IUnknown
    // exception attribute, in which case it is retained
    virtual void RemovePointsOfInterest(PoiList& vPoi,PoiAttributeType targetAttribute,PoiAttributeType exceptionAttribute=0) const = 0;
 
+   // Removes all point from the list that are not on a girder. A poi can be off the girder when
+   // it is between groups at the CL pier of a continuous span. The poi is a span poi, but it 
+   // is not on the girder
+   virtual void RemovePointsOfInterestOffGirder(PoiList& vPoi) const = 0;
+
    // Returns true if the poi is in the closure joint. This includes points with the POI_CLOSURE attribute and
    // points that simply fall between the end face of segments. Returns false if the poi is not within
    // the closure joint or exactly on the end faces of the segment. pClosureKey will return the closure key
    // for the closure joint that the poi falls in.
    virtual bool IsInClosureJoint(const pgsPointOfInterest& poi,CClosureKey* pClosureKey) const = 0;
 
-   // returns true if the poi is on/off the segment. This determination is made based soley on
+   // returns true if the poi is on/off the segment. This determination is made based solely on
    // the location of the poi and the length of the segment
    virtual bool IsOnSegment(const pgsPointOfInterest& poi) const = 0;
    virtual bool IsOffSegment(const pgsPointOfInterest& poi) const = 0;
 
-   // returns true if the poi is on the girder. This determination is made based soley on
+   // returns true if the poi is on the girder. This determination is made based solely on
    // the location of the poi in girder coordinates and the and the length of the girder
    virtual bool IsOnGirder(const pgsPointOfInterest& poi) const = 0;
 
@@ -166,7 +171,7 @@ interface IPointOfInterest : public IUnknown
 
    // Note: conversion methods that are commented out haven't been implemented yet.
 
-   // pgsPointOfInterest::GetDistFromStart() is the POI coordinate in Segment Coordinates (no converion methods needed)
+   // pgsPointOfInterest::GetDistFromStart() is the POI coordinate in Segment Coordinates (no conversion methods needed)
 
    // Convert between POI and Segment Path Coordinates
    virtual Float64 ConvertPoiToSegmentPathCoordinate(const pgsPointOfInterest& poi) const = 0;

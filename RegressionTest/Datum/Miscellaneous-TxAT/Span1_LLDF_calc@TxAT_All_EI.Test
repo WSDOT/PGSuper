@@ -1,0 +1,34 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Debnd                                                          Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 110.0   26   0.00       EQRB          1     1     26"           44  1/2  270   8.02   7.23  13.00  13.00  10   0.00    0     0                                               6.000  7.000   2.916    -3.407     2774   0.315  1.098   2.127 -0.903 -0.039 -0.025 -0.967  66.91  177.34    1.00    1.75    1.75 
+                                                                                                                 3.9   14     2    0   0   0   0   0 
+Warning: Irregular, Non-standard debonding increments used for beam 1 in span 1. Cannot write debonding information to TxDOT CAD format.
+
+
+The Specification Check was Not Successful
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength II Limit State
+Slab Offset ("A" Dimension) check failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Debnd                                                          Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 110.0   26   0.00       EQRB          1     2     26"           44  1/2  270   8.02   7.23  13.00  13.00  10   0.00    0     0                                               6.000  7.000   3.342    -3.687     2690   0.274  0.660   2.127 -1.191 -0.045 -0.029 -1.265  66.91  167.13    1.00    1.75    1.75 
+                                                                                                                 3.9   14     2    0   0   0   0   0 
+Warning: Irregular, Non-standard debonding increments used for beam 2 in span 1. Cannot write debonding information to TxDOT CAD format.
+
+
+The Specification Check was Not Successful
+Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic, Roadway Geometry Control
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  Ndb Debnd                                                          Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul 
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 110.0   26   0.00       EQRB          1    14     26"           44  1/2  270   8.02   7.23  13.00  13.00  10   0.00    0     0                                               6.000  7.000   3.238    -3.426     2595   0.274  0.600   2.127 -1.191 -0.045  0.000 -1.236  66.91  168.79    1.00    1.75    1.75 
+                                                                                                                 3.9   14     2    0   0   0   0   0 
+Warning: Irregular, Non-standard debonding increments used for beam 14 in span 1. Cannot write debonding information to TxDOT CAD format.
+
+
+The Specification Check was Successful
+
+

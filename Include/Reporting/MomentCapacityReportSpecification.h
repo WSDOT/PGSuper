@@ -26,6 +26,8 @@
 #include <Reporting\BrokerReportSpecification.h>
 #include "PoiReportSpecification.h"
 
+interface IPointOfInterest;
+
 class REPORTINGCLASS CMomentCapacityReportSpecification :
    public CPoiReportSpecification
 {
@@ -36,6 +38,12 @@ public:
    void SetOptions(const pgsPointOfInterest& poi,bool bPositiveMoment);
 
    bool IsPositiveMoment() const;
+
+   // override to better check if poi is out of bounds
+   virtual bool IsValid() const override;
+
+   static PoiList GetMomentCapacityDetailsPois(IPointOfInterest* pPois, const CSegmentKey& segmentKey);
+
 
 protected:
    bool m_bPositiveMoment;

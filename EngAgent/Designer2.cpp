@@ -302,7 +302,7 @@ static Float64 GetSectionGirderOrientationEffect(const pgsPointOfInterest& poi, 
       Float64 ya_left  = pAlignment->GetElevation(x,z - Wtf /2);
       Float64 ya_right = pAlignment->GetElevation(x,z + Wtf /2);
 
-      *pCrownSlope = (ya_left - ya_right)/ Wtf;
+      *pCrownSlope = (ya_right - ya_left)/ Wtf;
 
       Float64 ya = pAlignment->GetElevation(x,z);
       if ( (ya_left < ya && ya_right < ya) || (ya < ya_left && ya < ya_right) )
@@ -380,7 +380,7 @@ static Float64 GetSectionGirderOrientationEffect(const pgsPointOfInterest& poi, 
       Float64 ya_left  = pAlignment->GetElevation(x,z+left_mating_surface_offset);
       Float64 ya_right = pAlignment->GetElevation(x,z+right_mating_surface_offset);
 
-      *pCrownSlope = (ya_left - ya_right)/(right_mating_surface_offset - left_mating_surface_offset);
+      *pCrownSlope = (ya_right - ya_left)/(right_mating_surface_offset - left_mating_surface_offset);
 
       Float64 ya = pAlignment->GetElevation(x,z);
       if ( (ya_left < ya && ya_right < ya) || (ya < ya_left && ya < ya_right) )

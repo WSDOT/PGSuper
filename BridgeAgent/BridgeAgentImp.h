@@ -872,6 +872,7 @@ public:
    virtual pgsPointOfInterest GetPierPointOfInterest(const CGirderKey& girderKey,PierIndexType pierIdx) const override;
    virtual pgsPointOfInterest GetTemporarySupportPointOfInterest(const CGirderKey& girderKey,SupportIndexType tsIdx) const override;
    virtual void RemovePointsOfInterest(PoiList& vPoi,PoiAttributeType targetAttribute,PoiAttributeType exceptionAttribute) const override;
+   virtual void RemovePointsOfInterestOffGirder(PoiList& vPoi) const override;
    virtual bool IsInClosureJoint(const pgsPointOfInterest& poi,CClosureKey* pClosureKey) const override;
    virtual bool IsOnSegment(const pgsPointOfInterest& poi) const override;
    virtual bool IsOffSegment(const pgsPointOfInterest& poi) const override;

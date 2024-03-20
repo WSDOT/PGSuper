@@ -810,7 +810,7 @@ bool CBridgeGeometryModelBuilder::LayoutGeneralGirderLines(const CBridgeDescript
             auto found = orientationCollection.find(segkey);
             if (found != orientationCollection.end())
             {
-               lineSegment->Offset(found->second.m_LayoutLineShift);
+               lineSegment->Offset(-found->second.m_LayoutLineShift);
             }
             else
             {
@@ -1477,7 +1477,7 @@ Float64 CBridgeGeometryModelBuilder::ComputeGirderOrientation(pgsTypes::GirderOr
       }
       else
       {
-         orientation = (leftElevation - rightElevation) / distApart;
+         orientation = (rightElevation - leftElevation) / distApart;
       }
    }
    else
@@ -1533,7 +1533,7 @@ Float64 CBridgeGeometryModelBuilder::ComputeGirderOrientation(pgsTypes::GirderOr
       }
       else
       {
-         orientation = (leftElevation - rightElevation) / distApart;
+         orientation = (rightElevation - leftElevation) / distApart;
       }
    }
 

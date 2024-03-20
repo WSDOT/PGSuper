@@ -24,6 +24,7 @@
 
 #include "StdAfx.h"
 #include <Reporting\MomentCapacityReportSpecification.h>
+#include <IFace\PointOfInterest.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -50,4 +51,39 @@ void CMomentCapacityReportSpecification::SetOptions(const pgsPointOfInterest& po
 bool CMomentCapacityReportSpecification::IsPositiveMoment() const
 {
    return m_bPositiveMoment;
+}
+
+bool CMomentCapacityReportSpecification::IsValid() const
+{
+   // parent checks if our poi is even on the bridge
+   if (!CPoiReportSpecification::IsValid())
+   {
+      return false;
+   }
+   else
+   {
+      // next check if POI is in a valid range 
+      // Note that moments range from start to end of span, not just on segment
+      GET_IFACE(IPointOfInterest, pPoi);
+      const CSegmentKey& segmentKey = m_Poi.GetSegmentKey();
+
+      PoiList vPoi = GetMomentCapacityDetailsPois(pPoi, segmentKey);
+
+      const pgsPointOfInterest& poiStart(vPoi.front());
+      const pgsPointOfInterest& poiEnd(vPoi.back());
+
+      Float64 loc = pPoi->ConvertPoiToGirderPathCoordinate(m_Poi);
+      Float64 startLoc = pPoi->ConvertPoiToGirderPathCoordinate(poiStart);
+      Float64 endLoc = pPoi->ConvertPoiToGirderPathCoordinate(poiEnd);
+
+      return InRange(startLoc, loc, endLoc);
+   }
+}
+
+PoiList CMomentCapacityReportSpecification::GetMomentCapacityDetailsPois(IPointOfInterest* pPois, const CSegmentKey& segmentKey)
+{
+   PoiList vPoi;
+   CSegmentKey segAsDialog(segmentKey.groupIndex, segmentKey.girderIndex, ALL_SEGMENTS);
+   pPois->GetPointsOfInterest(segAsDialog, &vPoi);
+   return vPoi;
 }

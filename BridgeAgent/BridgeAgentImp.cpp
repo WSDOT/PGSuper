@@ -2109,7 +2109,7 @@ bool CBridgeAgentImp::BuildCogoModel()
 
             // Make sure this curve and the previous curve don't overlap
             CComPtr<ICompoundCurve> hc;
-            m_CogoModel->CreateCompoundCurveByIndex(curveIdx, &hc);
+            m_CogoModel->CreateCompoundCurveByID(curveID, &hc);
             hc->get_BkTangentLength(&T);
             if ( 0 < curveIdx )
             {
@@ -6838,12 +6838,27 @@ void CBridgeAgentImp::GetCurve(IndexType idx, ICompoundCurve** ppCurve) const
    CComPtr<IAlignment> alignment;
    m_Bridge->get_Alignment(&alignment);
 
-   auto found = m_CompoundCurveKeys.find(idx);
-   ATLASSERT(found != std::end(m_CompoundCurveKeys));
-
-   CComPtr<IPathElement> element;
-   alignment->get_Item(found->first, &element);
-   VERIFY(element.QueryInterface(ppCurve) == S_OK);
+   IndexType nCurves = 0;
+   IndexType nItems;
+   alignment->get_Count(&nItems);
+   for (IndexType i = 0; i < nItems; i++)
+   {
+      CComPtr<IPathElement> element;
+      alignment->get_Item(i, &element);
+      CComQIPtr<ICompoundCurve> curve(element);
+      if (curve)
+      {
+         if (nCurves == idx)
+         {
+            curve.CopyTo(ppCurve);
+            break;
+         }
+         else
+         {
+            nCurves++;
+         }
+      }
+   }
 }
 
 void CBridgeAgentImp::GetCurve(IndexType idx, pgsTypes::PlanCoordinateType pcType,ICompoundCurve** ppCurve) const
@@ -12495,7 +12510,7 @@ std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails
       girderPierSkewAngle = M_PI - girderPierSkewAngle; // see sign convention in design doc
 
       // Horizontal distance between WP and BCL along pier line. Girder orientation is only aspect that affects this
-      Float64 horizDistAlongPierToBCL = heightBCL * girderOrientation / sin(girderPierSkewAngle);
+      Float64 horizDistAlongPierToBCL = -heightBCL * girderOrientation / sin(girderPierSkewAngle);
 
       CComPtr<IPoint2d> pointBCL;
       ByDistDir(workPointPoint, horizDistAlongPierToBCL, pierDirVar, 0.0, &pointBCL);
@@ -12505,7 +12520,7 @@ std::vector<BearingElevationDetails> CBridgeAgentImp::GetBearingElevationDetails
 
       // Girders can have multiple bearings measured by spacing from BCL. Need total slope of girder along pier
       // Sign convention here is looking up station; right to left going upwards
-      Float64 girderSlopeAlongPier = girderOrientation*sin(girderPierSkewAngle) + girderSlope*cos(girderPierSkewAngle);
+      Float64 girderSlopeAlongPier = -girderOrientation*sin(girderPierSkewAngle) + girderSlope*cos(girderPierSkewAngle);
       Float64 cosGirderSlopeAlongPier = CosSlope(girderSlopeAlongPier);
 
       // Tricky:
@@ -21303,6 +21318,32 @@ void CBridgeAgentImp::RemovePointsOfInterest(PoiList& vPoi,PoiAttributeType targ
    }
 }
 
+void CBridgeAgentImp::RemovePointsOfInterestOffGirder(PoiList& vPoi) const
+{
+   // remove all poi before the start of the girder
+   auto iter = vPoi.begin();
+   auto end = vPoi.end();
+   for (; iter != end; iter++)
+   {
+      const pgsPointOfInterest& poi(*iter);
+      if (IsOnGirder(poi))
+         break;
+   }
+   vPoi.erase(vPoi.begin(), iter);
+
+   // remove all poi after end of the girder
+   auto riter = vPoi.rbegin();
+   auto rend = vPoi.rend();
+   iter = vPoi.end();
+   for (; riter != rend; riter++, iter--)
+   {
+      const pgsPointOfInterest& poi(*riter);
+      if (IsOnGirder(poi))
+         break;
+   }
+   vPoi.erase(iter, vPoi.end());
+}
+
 bool CBridgeAgentImp::IsInClosureJoint(const pgsPointOfInterest& poi,CClosureKey* pClosureKey) const
 {
    CSegmentKey segmentKey(poi.GetSegmentKey());
@@ -23363,7 +23404,7 @@ void CBridgeAgentImp::GetSegmentShape(IntervalIndexType intervalIdx,const pgsPoi
       Float64 orientation = GetOrientation(poi.GetSegmentKey());
       if (!IsZero(orientation))
       {
-         Float64 rotation_angle = -orientation;
+         Float64 rotation_angle = orientation;
 
          // if possible, rotate the girder around its work point
          // if the workpoint isn't available, use the top center
@@ -23391,6 +23432,17 @@ void CBridgeAgentImp::GetSegmentShape(IntervalIndexType intervalIdx,const pgsPoi
          }
 
          position->RotateEx(pntWorkPoint, rotation_angle);
+
+#if defined _DEBUG
+         // just some check code to see if the work points moves after rotation around work point
+         CComPtr<IPoint2d> pntWorkPointAfter;
+         section->get_WorkPoint(&pntWorkPointAfter);
+         Float64 x1, y1;
+         pntWorkPoint->Location(&x1, &y1);
+         Float64 x2, y2;
+         pntWorkPointAfter->Location(&x2, &y2);
+         ATLASSERT(IsEqual(x1, x2) && IsEqual(y1, y2));
+#endif
       }
    }
 }
@@ -23512,7 +23564,7 @@ void CBridgeAgentImp::GetSegmentSectionShape(IntervalIndexType intervalIdx, cons
    {
       Float64 orientation = GetOrientation(poi.GetSegmentKey());
 
-      Float64 rotation_angle = -orientation;
+      Float64 rotation_angle = orientation;
 
       CComQIPtr<IXYPosition> position(*ppShape);
       CComPtr<IPoint2d> top_center;
@@ -23714,7 +23766,7 @@ void CBridgeAgentImp::GetJointShapes(IntervalIndexType intervalIdx,const pgsPoin
       if (bOrient)
       {
          Float64 orientation = GetOrientation(poi.GetSegmentKey());
-         Float64 rotation_angle = -orientation;
+         Float64 rotation_angle = orientation;
          position->Rotate(0, 0, rotation_angle);
       }
 
@@ -25990,7 +26042,6 @@ Float64 CBridgeAgentImp::GetTransverseTopFlangeSlope(const CSegmentKey& segmentK
    if (tfSegment)
    {
       tfSegment->get_TopFlangeSlope(&topFlangeSlope);
-      topFlangeSlope *= -1; // girder top flange slopes are different than roadway slopes... make an adjustment
    }
    else
    {

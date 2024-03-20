@@ -6937,15 +6937,18 @@ void CGirderModelManager::GetBearingLimitStateReaction(IntervalIndexType interva
       IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
       if(liveLoadIntervalIdx <= intervalIdx)
       {
-         Float64 LLIMmin(Float64_Max), LLIMmax(-Float64_Max);
-
          IndexType nlls;
          load_combo->GetLiveLoadModelCount(&nlls);
+
+         LiveLoadModelApplicationType llmat;
+         load_combo->get_LiveLoadModelApplicationType(&llmat);
+
+         Float64 LLIMmin(llmat == llmaSum ? 0.0 : Float64_Max), LLIMmax(llmat == llmaSum ? 0.0 : -Float64_Max);
 
          for (IndexType ills=0; ills<nlls; ills++)
          {
             LiveLoadModelType llm_type;
-            load_combo->GetLiveLoadModel(0, &llm_type);
+            load_combo->GetLiveLoadModel(ills, &llm_type);
 
             pgsTypes::LiveLoadType llType = GetLiveLoadTypeFromModelType(llm_type);
 
@@ -6958,8 +6961,20 @@ void CGirderModelManager::GetBearingLimitStateReaction(IntervalIndexType interva
             Float64 Rmin, Rmax;
             GetBearingCombinedLiveLoadReaction(intervalIdx,location,llType,bat,bIncludeImpact,&Rmin,&Rmax);
 
-            LLIMmin = Min(LLIMmin, Rmin);
-            LLIMmax = Max(LLIMmax, Rmax);
+            if (llmat == llmaSum)
+            {
+               LLIMmin += Rmin;
+               LLIMmax += Rmax;
+            }
+            else if (llmat == llmaEnvelope)
+            {
+               LLIMmin = Min(LLIMmin, Rmin);
+               LLIMmax = Max(LLIMmax, Rmax);
+            }
+            else
+            {
+               ATLASSERT(false); // is there a new type?
+            }
          }
 
          Float64 ll_factor;
@@ -11596,9 +11611,10 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel) const
    lc_pedestrian->put_LoadCombinationType(lctUserDefined);
    lc_pedestrian->put_LiveLoadFactor(1.00);
    lc_pedestrian->AddLiveLoadModel(lltPedestrian);
-
-   lc_pedestrian->AddLoadCaseFactor(CComBSTR("LL_IM"), 1.00, 1.00) ;
-
+   // Don't include LL_IM because this brings in the user LL_IM. 
+   // User LL_IM is part of the vehicular live load combinations. 
+   // Including it here will double count it, if PL are concurrent with vehicular live load
+   //lc_pedestrian->AddLoadCaseFactor(CComBSTR("LL_IM"), 1.00, 1.00) ; 
    loadcombos->Add(lc_pedestrian);
 
    // legal - routine commercial traffic
@@ -11720,7 +11736,7 @@ void CGirderModelManager::ConfigureLoadCombinations(ILBAMModel* pModel) const
       AddLoadGroup(loadGroups, GetLoadGroupName(pgsTypes::pftSecondaryEffects),CComBSTR("Secondary Effects"));
    }
 
-   // create a couple special load groups for getting effects of the differnet strand types
+   // create a couple special load groups for getting effects of the different strand types
    CComBSTR bstrLoadGroupX, bstrLoadGroupY;
    GetLoadGroupName(pgsTypes::Straight, bstrLoadGroupX, bstrLoadGroupY);
    AddLoadGroup(loadGroups, bstrLoadGroupX, CComBSTR("Straight Strand Equivalent Loading - Moment about Y axis"));

@@ -583,15 +583,12 @@ BOOL CCrownSlopeGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 {
    CCrownSlopePage* pParent = (CCrownSlopePage*)GetParent();
 
-   GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
-
-   Float64 bogus;
-
    if (nCol == 1)
    {
       try
       {
          std::_tstring strStation(GetCellValue(nRow, 1));
+         GET_IFACE2(pParent->GetBroker(), IEAFDisplayUnits, pDisplayUnits);
          WBFL::COGO::Station station(strStation, pDisplayUnits->GetStationFormat());
       }
       catch(...)
@@ -605,7 +602,8 @@ BOOL CCrownSlopeGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
    else if (nCol == 2)
    {
       CString strVal = GetCellValue(nRow, 2);
-      if (!strVal.IsEmpty() && !WBFL::System::Tokenizer::ParseDouble(strVal, &bogus))
+      Float64 value;
+      if (!strVal.IsEmpty() && !WBFL::System::Tokenizer::ParseDouble(strVal, &value))
       {
          CString msg;
          msg.Format(_T("Leftmost slope value not a number for template %d"), nRow - 1);
@@ -621,7 +619,8 @@ BOOL CCrownSlopeGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
       {
          // rightmost column
          CString strVal = GetCellValue(nRow, nCol);
-         if (!strVal.IsEmpty() && !WBFL::System::Tokenizer::ParseDouble(strVal, &bogus))
+         Float64 value;
+         if (!strVal.IsEmpty() && !WBFL::System::Tokenizer::ParseDouble(strVal, &value))
          {
             CString msg;
             msg.Format(_T("Rightmost slope value not a number for template %d"), nRow - 1);
@@ -654,7 +653,8 @@ BOOL CCrownSlopeGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
          else // even cols have slope
          {
             CString strVal = GetCellValue(nRow, nCol);
-            if (!strVal.IsEmpty() && !WBFL::System::Tokenizer::ParseDouble(strVal, &bogus))
+            Float64 value;
+            if (!strVal.IsEmpty() && !WBFL::System::Tokenizer::ParseDouble(strVal, &value))
             {
                CString msg;
                msg.Format(_T("A slope value is not a number for template %d"), nRow - 1);

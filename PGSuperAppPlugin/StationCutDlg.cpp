@@ -27,6 +27,7 @@
 #include "resource.h"
 #include "StationCutDlg.h"
 #include <Units\Units.h>
+#include <CoordGeom/Station.h>
 #include <ostream>
 
 #ifdef _DEBUG
@@ -77,9 +78,8 @@ void CStationCutDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CStationCutDlg) 
-	DDX_Station(pDX,IDC_VALUE,m_Value, m_bSIUnits,WBFL::Units::Measure::Feet,WBFL::Units::Measure::Meter);
-
-	DDV_MinMaxDouble(pDX, m_Value, m_LowerBound, m_UpperBound);
+	DDX_Station(pDX,IDC_VALUE,m_Value, m_bSIUnits ? WBFL::Units::StationFormats::SI : WBFL::Units::StationFormats::US);
+   DDV_StationInRange(pDX, m_Value, m_LowerBound, m_UpperBound, m_bSIUnits ? WBFL::Units::StationFormats::SI : WBFL::Units::StationFormats::US);
 	//}}AFX_DATA_MAP
 }
 
@@ -100,22 +100,14 @@ BOOL CStationCutDlg::OnInitDialog()
 
    CStatic* pprompt = (CStatic*)GetDlgItem(IDC_STATION_RANGE);
 
-   CComPtr<IStation> station;
-   station.CoCreateInstance(CLSID_Station);
-   station->put_Value(WBFL::Units::ConvertFromSysUnits(m_LowerBound, m_bSIUnits ? WBFL::Units::Measure::Meter : WBFL::Units::Measure::Feet) );
-
-   CComBSTR bstrLowerBound;
-   station->AsString(m_bSIUnits ? umSI : umUS, VARIANT_FALSE,&bstrLowerBound);
-
-   station->put_Value(WBFL::Units::ConvertFromSysUnits(m_UpperBound, m_bSIUnits ? WBFL::Units::Measure::Meter : WBFL::Units::Measure::Feet) );
-   CComBSTR bstrUpperBound;
-   station->AsString(m_bSIUnits ? umSI : umUS, VARIANT_FALSE,&bstrUpperBound);
-
-
+   WBFL::COGO::Station lower_station(m_LowerBound);
+   WBFL::COGO::Station upper_station(m_UpperBound);
+   auto strLower = lower_station.AsString(m_bSIUnits ? WBFL::Units::StationFormats::SI : WBFL::Units::StationFormats::US);
+   auto strUpper = upper_station.AsString(m_bSIUnits ? WBFL::Units::StationFormats::SI : WBFL::Units::StationFormats::US);
+   
    CString strLabel;
-   strLabel.Format(_T("Enter a station between %s and %s"),OLE2T(bstrLowerBound),OLE2T(bstrUpperBound));
+   strLabel.Format(_T("Enter a station between %s and %s"), strLower.c_str(), strUpper.c_str());
    pprompt->SetWindowText(strLabel);
-
    
 	return TRUE;  // return TRUE unless you set the focus to a control
 	              // EXCEPTION: OCX Property Pages should return FALSE

@@ -101,14 +101,17 @@ rptChapter* CCrackedSectionChapterBuilder::Build(const std::shared_ptr<const WBF
 
 #pragma Reminder("UPDATE: assuming precast girder bridge")
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
-   SpanIndexType spanIdx = segmentKey.groupIndex;
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   CSpanKey spanKey;
+   Float64 Xspan;
+   pPoi->ConvertPoiToSpanPoint(poi, &spanKey, &Xspan);
    GirderIndexType gdrIdx = segmentKey.girderIndex;
 
    location.PrefixAttributes(false); // put the attributes after the location
 
    //// Results
    (*pPara) << (bPositiveMoment ? _T("Positive Moment") : _T("Negative Moment")) << rptNewLine;
-   (*pPara) << _T("Span ") << LABEL_SPAN(spanIdx) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
+   (*pPara) << _T("Span ") << LABEL_SPAN(spanKey.spanIndex) << _T(" Girder ") << LABEL_GIRDER(gdrIdx) << rptNewLine;
    (*pPara) << _T("Location from Left Support ") << location.SetValue(POI_SPAN, poi) << rptNewLine;
    (*pPara) << _T("Depth to neutral axis, c = ") << dist.SetValue(pCSD->c) << rptNewLine;
    (*pPara) << _T("Cracked section moment of inertia, ") << Sub2(_T("I"),_T("cr")) << _T(" = ") << momI.SetValue(pCSD->Icr) << rptNewLine;
