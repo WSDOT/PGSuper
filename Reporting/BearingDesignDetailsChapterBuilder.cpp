@@ -46,6 +46,7 @@
 #include <PgsExt\PierData2.h>
 #include <Reporting/BearingDesignPropertiesTable.h>
 
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -103,6 +104,7 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
 
     rptParagraph* p = new rptParagraph(rptStyleManager::GetHeadingStyle());
     *pChapter << p;
+    *p << _T("Bearing Movement Description") << rptNewLine;
 
     *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("bearing_orientation_description.png")) << rptNewLine;
 
@@ -169,30 +171,69 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     *p << CBearingRotationTable().BuildBearingRotationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, are_user_loads, true, pDisplayUnits, true, false) << rptNewLine;
 
-    *p << LIVELOAD_PER_GIRDER_NO_IMPACT;
+    *p << _T("*Live loads due not include impact") << rptNewLine;
 
-    *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
-        true, true, are_user_loads, true, pDisplayUnits, true) << rptNewLine;
+    *p << _T("**Torsional rotations are calculated using ") << Sub2(symbol(theta), _T("t")) << _T(" = ") << Sub2(symbol(theta), _T("f")) << _T("tan") << Sub2(symbol(theta), _T("skew")) << rptNewLine << rptNewLine;
+
+
+    GET_IFACE2(pBroker, ILiveLoadDistributionFactors, pLLDF);
+    pLLDF->ReportReactionDistributionFactors(girderKey, pChapter, true);
+
     
     SHEARDEFORMATIONDETAILS sf_details;
     pBearingDesignParameters->GetThermalExpansionDetails(girderKey, &sf_details);
 
+    p = new rptParagraph(rptStyleManager::GetHeadingStyle());
+    *pChapter << p;
+    *p << rptNewLine;
+    *p << _T("Shear Deformation Details") << rptNewLine;
 
-    *p << Sub2(symbol(DELTA), _T("temp")) << _T(" = ") << Sub2(symbol(DELTA), _T("0")) << _T(" ") << symbol(TIMES) << _T(" ") << symbol(alpha) << _T(" ") << symbol(TIMES) << _T(" ") << _T("L") << _T(" ");
-    *p << symbol(TIMES) << _T(" (") << Sub2(_T("T"),_T("Max Design")) << _T(" - ") << Sub2(_T("T"), _T("Max Design")) << _T(")") << rptNewLine;
-    *p << _T("L = ") << length.SetValue(pBridge->GetLength()) << rptNewLine;
-    *p << _T("From AASHTO LRFD Sect. 14.7.5.3.2: ") << Sub2(symbol(DELTA),_T("0")) << _T(" = ") << sf_details.percentExpansion << rptNewLine;
-    //*p << _T("Moderate Climate: ") << symbol(RIGHT_SINGLE_ARROW) << Sub2(symbol(DELTA), _T("temp")) << _T(" = ") << deflection.SetValue(sf_details.thermalLRFDModerate) << rptNewLine;
-    //*p << _T("Cold Climate: ") << symbol(RIGHT_SINGLE_ARROW) << Sub2(symbol(DELTA), _T("temp")) << _T(" = ") << deflection.SetValue(sf_details.thermalLRFDCold) << rptNewLine;
-    //*p << _T("From WSDOT BDM Ch. 9: ") << Sub2(symbol(DELTA), _T("0")) << _T(" = 0.75") << rptNewLine;
-    //*p << _T("Moderate Climate: ") << symbol(RIGHT_SINGLE_ARROW) << Sub2(symbol(DELTA), _T("temp")) << _T(" = ") << deflection.SetValue(sf_details.thermalBDMModerate) << rptNewLine;
-    //*p << _T("Cold Climate: ") << symbol(RIGHT_SINGLE_ARROW) << Sub2(symbol(DELTA), _T("temp")) << _T(" = ") << deflection.SetValue(sf_details.thermalBDMCold) << rptNewLine;
+     p = new rptParagraph;
+    *pChapter << p;
 
-    GET_IFACE2(pBroker, ILiveLoadDistributionFactors, pLLDF);
-    pLLDF->ReportReactionDistributionFactors(girderKey, pChapter, false/*full heading style*/);
+    *p << Sub2(_T("L"), _T("eff")) << _T(" = ") << length.SetValue(pBearingDesignParameters->GetSpanContributoryLength(girderKey, &sf_details)) << rptNewLine;
+    *p << Sub2(_T("-L"), _T("eff")) << _T(" is the distance from the apparent point of fixity to bearing.") << rptNewLine;
+    *p << _T("-The midlength of the uperstructure between expansion joints") << rptNewLine;
+    *p << _T("-The central pier for a bridge with an even number of spans between expansion joints") << rptNewLine;
+    *p << _T("-The midpoint of the central span for a bridge with an odd number of spans between expansion joints") << rptNewLine << rptNewLine;
 
 
-    ///////////////////////////////////////
+    p = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+    *pChapter << p;
+    *p << _T("Shortening due to temperature difference:") << rptNewLine;
+
+    p = new rptParagraph;
+    *pChapter << p;
+
+    *p << Sub2(symbol(DELTA), _T("temp")) << _T(" = ") << Sub2(symbol(DELTA), _T("0")) << _T(" ") << symbol(TIMES) << _T(" ") << symbol(alpha) << _T(" ") << symbol(TIMES) << _T(" ") << Sub2(_T("L"), _T("eff")) << _T(" ");
+    *p << symbol(TIMES) << _T(" (") << Sub2(_T("T"), _T("Max Design")) << _T(" - ") << Sub2(_T("T"), _T("Max Design")) << _T(")") << rptNewLine;
+    
+
+    if (sf_details.libConfig == _T("WSDOT"))
+    {
+        *p << _T("From WSDOT BDM Ch. 9: ") << Sub2(symbol(DELTA), _T("0")) << _T(" = 0.75") << rptNewLine;
+    }
+    else
+    {
+        *p << _T("From AASHTO LRFD Sect. 14.7.5.3.2: ") << Sub2(symbol(DELTA), _T("0")) << _T(" = ") << sf_details.percentExpansion << rptNewLine;
+    }
+
+    p = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+    *pChapter << p;
+    *p << _T("Shortening of bottom flange due to tendon shortening:") << rptNewLine;
+
+    p = new rptParagraph;
+    *pChapter << p;
+
+    *p << _T("Bottom flange shortening is given by:") << rptNewLine;
+
+    *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("BottomFlangeShortening.png")) << rptNewLine;
+
+    *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
+        true, true, are_user_loads, true, pDisplayUnits, true) << rptNewLine;
+
+
+
 
     GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
     GET_IFACE2(pBroker, IGirder, pGirder);
@@ -213,7 +254,7 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     (*pTable)(0, col++) << _T("Excess") << rptNewLine << _T("Camber") << rptNewLine << _T("Slope") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
     (*pTable)(0, col++) << _T("Bearing") << rptNewLine << _T("Recess") << rptNewLine << _T("Slope") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
     (*pTable)(0, col++) << _T("* Transverse") << rptNewLine << _T("Bearing") << rptNewLine << _T("Slope") << rptNewLine << _T("(") << strSlopeTag << _T("/") << strSlopeTag << _T(")");
-    (*pTable)(0, col++) << _T("** W") << rptNewLine << _T("Recess") << rptNewLine << _T("Length");
+    (*pTable)(0, col++) << _T("** L") << rptNewLine << _T("Recess") << rptNewLine << _T("Length");
     (*pTable)(0, col++) << _T("D") << rptNewLine << _T("Recess") << rptNewLine << _T("Height");
     (*pTable)(0, col++) << Sub2(_T("D"), _T("1"));
     (*pTable)(0, col++) << Sub2(_T("D"), _T("2"));
@@ -293,12 +334,12 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
         bNeedTaperedSolePlateLongitudinal = taperedSolePlateThreshold < fabs(slope3); // see lrfd 14.8.2
         bNeedTaperedSolePlateTransverse = taperedSolePlateThreshold < fabs(transverse_slope); // see lrfd 14.8.2
 
-        Float64 W = max(pbd->RecessLength, pbd->Length); // don't allow recess to be shorter than bearing
+        Float64 L = max(pbd->RecessLength, pbd->Length); // don't allow recess to be shorter than bearing
         Float64 D = pbd->RecessHeight;
-        Float64 D1 = D + W * slope3 / 2;
-        Float64 D2 = D - W * slope3 / 2;
+        Float64 D1 = D + L * slope3 / 2;
+        Float64 D2 = D - L * slope3 / 2;
 
-        (*pTable)(row, col++) << recess_dimension.SetValue(W);
+        (*pTable)(row, col++) << recess_dimension.SetValue(L);
         (*pTable)(row, col++) << recess_dimension.SetValue(D);
         (*pTable)(row, col++) << recess_dimension.SetValue(D1);
         (*pTable)(row, col++) << recess_dimension.SetValue(D2);
@@ -308,7 +349,7 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
 
     *p << pTable << rptNewLine;
     *p << _T("* Orientation of the girder cross section with respect to vertical, zero indicates plumb and positive values indicate girder is rotated clockwise") << rptNewLine;
-    *p << _T("** W is maximum of input bearing length and recess length") << rptNewLine;
+    *p << _T("** L is maximum of input bearing length and recess length") << rptNewLine;
 
     if (bCheckTaperedSolePlate && (bNeedTaperedSolePlateLongitudinal || bNeedTaperedSolePlateTransverse))
     {

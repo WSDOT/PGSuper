@@ -395,7 +395,7 @@ public:
 
    virtual void GetThermalExpansionDetails(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const override;
 
-   virtual Float64 GetSpanContributoryLength(CGirderKey girderKey) const override;
+   virtual Float64 GetSpanContributoryLength(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const override;
 
    virtual Float64 GetTimeDependentComponentShearDeformation(CGirderKey girderKey, const pgsPointOfInterest& poi, Float64 loss) const override;
 

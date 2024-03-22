@@ -52,7 +52,7 @@ public:
 
    void GetThermalExpansionDetails(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const;
 
-   Float64 GetSpanContributoryLength(CGirderKey girderKey) const;
+   Float64 GetSpanContributoryLength(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const;
 
    Float64 GetTimeDependentComponentShearDeformation(CGirderKey girderKey, const pgsPointOfInterest& poi, Float64 tdNetLoss) const;
 

@@ -175,6 +175,7 @@ struct SHEARDEFORMATIONDETAILS : public TABLEPARAMETERS
 	Float64 max_design_temperature_moderate;
 	Float64 min_design_temperature_moderate;
 	Float64 percentExpansion;
+	std::_tstring libConfig;
 	Float64 thermal_expansion_cold;
 	Float64 thermal_expansion_moderate;
 	Float64 preTension;
@@ -206,7 +207,7 @@ interface IBearingDesignParameters : IUnknown
 
 	virtual void GetThermalExpansionDetails(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const = 0;
 
-	virtual Float64 GetSpanContributoryLength(CGirderKey girderKey) const = 0;
+	virtual Float64 GetSpanContributoryLength(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const = 0;
 
 	virtual Float64 GetTimeDependentComponentShearDeformation(CGirderKey girderKey, const pgsPointOfInterest& poi, Float64 loss) const = 0;
 

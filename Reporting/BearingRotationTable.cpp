@@ -577,7 +577,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
         else
         {
             p_table->SetColumnSpan(0, col, 2);
-            (*p_table)(0, col) << Sub2(symbol(theta), _T("Design LL"));
+            (*p_table)(0, col) << Sub2(symbol(theta), _T("Design LL")) << _T("*");
             (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
             (*p_table)(1, col++) << COLHDR(_T("Min"), M, unitT);
 
@@ -680,7 +680,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
     CString label = _T("Flexural Rotations");
     if (!isFlexural)
     {
-        label = _T("Torsional Rotations");
+        label = _T("Torsional Rotations**");
     }
 
 

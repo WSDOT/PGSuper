@@ -179,52 +179,13 @@ void pgsBearingDesignEngineer::GetBearingTableParameters(const CGirderKey& girde
 }
 
 
-//Float64 pgsBearingDesignEngineer::GetStaticBearingRotation(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi) const
-//{
-
-
-//
-//
-//    Float64 stInfMin, stInfMax;
-//    limitForces->GetRotation(
-//        lastIntervalIdx,
-//        pgsTypes::ServiceI,
-//        poi,
-//        maxBAT,
-//        true,
-//        false,
-//        true,
-//        true,
-//        true,
-//        &stInfMin, &stInfMax);
-//
-//
-//    Float64 maxInfDiff = std::abs(stInfMax - stErectMax);
-//    Float64 minInfDiff = std::abs(stInfMin - stErectMax);
-//    Float64 maxErectDiff = std::abs(stErectMax - stInfMin);
-//    Float64 minErectDiff = std::abs(stErectMin - stInfMin);
-//
-//    Float64 maxDiff = max(maxInfDiff, max(minInfDiff, max(maxErectDiff, minErectDiff)));
-//
-//    if (maxDiff == maxInfDiff) {
-//        return (stInfMax - stErectMax);
-//    }
-//    else if (maxDiff == minInfDiff) {
-//        return (stInfMin - stErectMax);
-//    }
-//    else if (maxDiff == maxErectDiff) {
-//        return (stInfMax - stErectMin);
-//    }
-//    else {
-//        return (stInfMin - stErectMin);
-//    }
-//
-//}
-
-
-
-Float64 pgsBearingDesignEngineer::GetSpanContributoryLength(CGirderKey girderKey) const
+Float64 pgsBearingDesignEngineer::GetSpanContributoryLength(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const
 {
+
+
+
+    // add more parameters for reporting purposes
+
     GET_IFACE(IBridge, pBridge);
 
     Float64 L = 0;
@@ -247,6 +208,8 @@ Float64 pgsBearingDesignEngineer::GetSpanContributoryLength(CGirderKey girderKey
 
     return L;
 
+
+
 }
 
 
@@ -265,7 +228,9 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentComponentShearDeformation(CGir
 
     auto lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
 
-    Float64 L = GetSpanContributoryLength(girderKey);
+
+    SHEARDEFORMATIONDETAILS sf_details;
+    Float64 L = GetSpanContributoryLength(girderKey, &sf_details);
 
     Float64 Ep = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Straight)->GetE();
 
@@ -516,8 +481,6 @@ void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType 
     IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
 
     // Static rotations
-
-    /////
 
     pDetails->erectedSegmentRotation = skewFactor * (pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftGirder, poi, maxBAT, rtCumulative, false) - 
         pProductForces->GetRotation(erectSegmentIntervalIdx, pgsTypes::pftGirder, poi, maxBAT, rtCumulative, false));
@@ -826,18 +789,8 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
 void pgsBearingDesignEngineer::GetThermalExpansionDetails(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const
 {
 
-    GET_IFACE(IBridge, pBridge);
-
     Float64 L = 0;
-    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
-    for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
-    {
-
-        CSegmentKey segmentKey(girderKey, segIdx);
-
-        L += pBridge->GetSegmentLayoutLength(segmentKey);
-
-    }
+    L = GetSpanContributoryLength(girderKey, pDetails);
 
     Float64 inv_thermal_exp_coefficient = { WBFL::Units::ConvertToSysUnits(166666.6667, WBFL::Units::Measure::Fahrenheit) };
     Float64 thermal_expansion_coefficient = 1.0 / inv_thermal_exp_coefficient;
@@ -851,13 +804,14 @@ void pgsBearingDesignEngineer::GetThermalExpansionDetails(CGirderKey girderKey, 
     GET_IFACE(ILibrary, pLibrary);
     WBFL::System::Time time;
     bool bPrintDate = WBFL::System::Time::PrintDate(true);
-
     std::_tstring strServer;
     std::_tstring strConfiguration;
     std::_tstring strMasterLibFile;
     pLibrary->GetMasterLibraryInfo(strServer, strConfiguration, strMasterLibFile, time);
 
-    if (strConfiguration == _T("WSDOT"))
+    pDetails->libConfig = strConfiguration;
+
+    if (pDetails->libConfig == _T("WSDOT"))
     {
         pDetails->percentExpansion = 0.75;
     }

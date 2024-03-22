@@ -3870,9 +3870,9 @@ void CEngAgentImp::GetThermalExpansionDetails(CGirderKey girderKey, SHEARDEFORMA
     m_BearingEngineer.GetThermalExpansionDetails(girderKey, pDetails);
 }
 
-Float64 CEngAgentImp::GetSpanContributoryLength(CGirderKey girderKey) const
+Float64 CEngAgentImp::GetSpanContributoryLength(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const
 {
-    return m_BearingEngineer.GetSpanContributoryLength(girderKey);
+    return m_BearingEngineer.GetSpanContributoryLength(girderKey, pDetails);
 }
 
 Float64 CEngAgentImp::GetTimeDependentComponentShearDeformation(CGirderKey girderKey, const pgsPointOfInterest& poi, Float64 loss) const

@@ -125,7 +125,7 @@ RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptR
             (*p_table)(0, col++) << COLHDR(_T("Post-Tensioning"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
         }
         p_table->SetColumnSpan(0, col, 3);
-        (*p_table)(0, col) << _T("Time-Dependent");
+        (*p_table)(0, col) << Sub2(symbol(DELTA), _T("time-dependent"));
         (*p_table)(1, col++) << COLHDR(_T("Creep"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
         (*p_table)(1, col++) << COLHDR(_T("Shrinkage"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
         (*p_table)(1, col++) << COLHDR(_T("Relaxation"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
@@ -171,8 +171,8 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
     ColumnIndexType nCols = GetBearingTableColumnCount(pBroker, girderKey, analysisType, &details, bDetail);
 
 
-    CString label = _T("Shear Deformations");
-    rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols, label);
+    //CString label = _T("Shear Deformations");
+    rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols, _T(""));
     RowIndexType row = ConfigureBearingShearDeformationTableHeading<rptAngleUnitTag, WBFL::Units::AngleData>(
         pBroker, p_table, analysisType, pDisplayUnits, pDisplayUnits->GetRadAngleUnit(), &details, bDetail);
 
