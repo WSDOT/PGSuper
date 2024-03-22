@@ -1329,6 +1329,7 @@ private:
    DWORD m_dwLossParametersCookie;
 
    StatusGroupIDType m_LoadStatusGroupID; // ID used to identify user load-related status items created by this agent
+   StatusGroupIDType m_HandlingParametersGroupID; // ID used to identify handling parameter related status items created by this agent
 
    CComPtr<ICogoEngine> m_CogoEngine; // this is not the cogo model!!! just an engine to do computations with
    CComPtr<ICogoModel> m_CogoModel;
@@ -1757,7 +1758,12 @@ private:
 
    void GetSlabPerimeter(PierIndexType startPierIdx, Float64 Xstart, PierIndexType endPierIdx, Float64 Xend, IndexType nPoints, pgsTypes::PlanCoordinateType pcType, const CCastDeckActivity* pActivity, IPoint2dCollection** points) const;
 
-// Orientation of girder segments. cached from bridge geometry model builder
+   // Gets the segment lifting loop locations, taking into account bad input. Returns Left and Right locations
+   std::pair<Float64, Float64> GetSegmentLiftingLoopLocations(const CSegmentKey& segmentKey) const;
+   // Gets the segment bunk point locations, taking into account bad input. Returns Trailing (first) and Leading (second) locations
+   std::pair<Float64, Float64> GetSegmentBunkPointLocations(const CSegmentKey& segmentKey) const;
+
+   // Orientation of girder segments. cached from bridge geometry model builder
    GirderOrientationCollection  m_GirderOrientationCollection;
 };
 
