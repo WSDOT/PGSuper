@@ -680,7 +680,13 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
     CString label = _T("Flexural Rotations");
     if (!isFlexural)
     {
-        label = _T("Torsional Rotations**");
+        if (bDetail)
+        {
+            label = _T("Torsional Rotations**");
+        }
+        {
+            label = _T("Torsional Rotations");
+        } 
     }
 
 

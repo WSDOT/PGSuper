@@ -182,10 +182,6 @@ void pgsBearingDesignEngineer::GetBearingTableParameters(const CGirderKey& girde
 Float64 pgsBearingDesignEngineer::GetSpanContributoryLength(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const
 {
 
-
-
-    // add more parameters for reporting purposes
-
     GET_IFACE(IBridge, pBridge);
 
     Float64 L = 0;

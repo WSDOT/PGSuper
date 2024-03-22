@@ -90,7 +90,7 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(const std::shared_ptr<
    GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
    bool are_user_loads = pUDL->DoUserLoadsExist(girderKey);
 
-   GET_IFACE2(pBroker,IBearingDesign,pBearingDesign); ///////////////////////////////////////////////
+   GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
 
    bool bIncludeImpact = pBearingDesign->BearingLiveLoadReactionsIncludeImpact();
 

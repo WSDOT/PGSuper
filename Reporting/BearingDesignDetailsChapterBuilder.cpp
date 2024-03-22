@@ -164,15 +164,16 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
 
     *p << CBearingReactionTable().BuildBearingReactionTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, are_user_loads, true, pDisplayUnits, true) << rptNewLine;
+    *p << _T("*Live loads due not include impact") << rptNewLine;
 
     *p << CBearingRotationTable().BuildBearingRotationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true,are_user_loads, true, pDisplayUnits, true, true) << rptNewLine;
+    *p << _T("*Live loads due not include impact") << rptNewLine;
 
     *p << CBearingRotationTable().BuildBearingRotationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, are_user_loads, true, pDisplayUnits, true, false) << rptNewLine;
 
     *p << _T("*Live loads due not include impact") << rptNewLine;
-
     *p << _T("**Torsional rotations are calculated using ") << Sub2(symbol(theta), _T("t")) << _T(" = ") << Sub2(symbol(theta), _T("f")) << _T("tan") << Sub2(symbol(theta), _T("skew")) << rptNewLine << rptNewLine;
 
 
@@ -193,7 +194,7 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
 
     *p << Sub2(_T("L"), _T("eff")) << _T(" = ") << length.SetValue(pBearingDesignParameters->GetSpanContributoryLength(girderKey, &sf_details)) << rptNewLine;
     *p << Sub2(_T("-L"), _T("eff")) << _T(" is the distance from the apparent point of fixity to bearing.") << rptNewLine;
-    *p << _T("-The midlength of the uperstructure between expansion joints") << rptNewLine;
+    *p << _T("-The midlength of the superstructure between expansion joints") << rptNewLine;
     *p << _T("-The central pier for a bridge with an even number of spans between expansion joints") << rptNewLine;
     *p << _T("-The midpoint of the central span for a bridge with an odd number of spans between expansion joints") << rptNewLine << rptNewLine;
 
@@ -205,13 +206,16 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     p = new rptParagraph;
     *pChapter << p;
 
+    *p << _T("Temperature range is computed based on Procedure A (Article 3.12.2.1)") << rptNewLine;
+
     *p << Sub2(symbol(DELTA), _T("temp")) << _T(" = ") << Sub2(symbol(DELTA), _T("0")) << _T(" ") << symbol(TIMES) << _T(" ") << symbol(alpha) << _T(" ") << symbol(TIMES) << _T(" ") << Sub2(_T("L"), _T("eff")) << _T(" ");
-    *p << symbol(TIMES) << _T(" (") << Sub2(_T("T"), _T("Max Design")) << _T(" - ") << Sub2(_T("T"), _T("Max Design")) << _T(")") << rptNewLine;
-    
+    *p << symbol(TIMES) << _T(" (") << Sub2(_T("T"), _T("Max Design")) << _T(" - ") << Sub2(_T("T"), _T("Min Design")) << _T(")") << rptNewLine;
+    *p << Sub2(_T("T"), _T("MaxDesign")) << _T(" is the maximum anticipated bridge deck average temperature") << rptNewLine;
+    *p << Sub2(_T("T"), _T("MinDesign")) << _T(" is the minimum anticipated bridge deck average temperature") << rptNewLine;
 
     if (sf_details.libConfig == _T("WSDOT"))
     {
-        *p << _T("From WSDOT BDM Ch. 9: ") << Sub2(symbol(DELTA), _T("0")) << _T(" = 0.75") << rptNewLine;
+        *p << _T("From WSDOT BDM Ch. 9.2.5A: ") << Sub2(symbol(DELTA), _T("0")) << _T(" = 0.75") << rptNewLine;
     }
     else
     {
@@ -225,9 +229,16 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     p = new rptParagraph;
     *pChapter << p;
 
-    *p << _T("Bottom flange shortening is given by:") << rptNewLine;
+    *p << _T("Bottom flange shortening is calculated using PCI BDM Eq. 10.8.3.8.2-6:") << rptNewLine;
 
     *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("BottomFlangeShortening.png")) << rptNewLine;
+
+    *p << Sub2(_T("L"),_T("bf")) << _T(" = bottom flange shortening due to a given time-dependent effect") << rptNewLine;
+    *p << Sub2(_T("L"),_T("ten")) << _T(" = tendon shortening due to girder self-weight and prestress losses") << rptNewLine;
+    *p << Sub2(_T("e"), _T("p")) << _T(" = eccentricity of prestressing tendon") << rptNewLine;
+    *p << Sub2(_T("y"), _T("b")) << _T(" = distance from girder centroid to bottom of girder") << rptNewLine;
+    *p << _T("radius of gyration, r = ") << symbol(ROOT) << Sub2(_T("I"),_T("xx")) << _T("/") << Sub2(_T("A"),_T("g")) << _T(")") << rptNewLine;
+
 
     *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, are_user_loads, true, pDisplayUnits, true) << rptNewLine;

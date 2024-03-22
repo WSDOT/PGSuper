@@ -116,48 +116,12 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
         true, true, are_user_loads, true, pDisplayUnits, false, false) << rptNewLine;
 
     *p << _T("*Static rotations include ") << symbol(PLUS_MINUS) << _T("0.005 radians tolerance for uncertainties") << rptNewLine;
-    *p << _T("**Used for Method A") << rptNewLine;
+    *p << _T("**Used for Method A") << rptNewLine << rptNewLine;
 
     *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, are_user_loads, true, pDisplayUnits, false) << rptNewLine;
 
     *p << _T("Temperature range is computed based on Procedure A (Article 3.12.2.1)") << rptNewLine;
-
-
-    
-    ///////////////////////////////////////
-    //GET_IFACE2(pBroker, IMaterials, pMaterial);
-    //pgsPointOfInterest poi;
-    //PoiList vPoi;
-    //poi = vPoi.front();
-    //IndexType rgn = pPoi->GetDeckCastingRegion(poi);
-    //CSegmentKey seg_key = pBridge->GetSegmentAtPier(startPierIdx, girderKey);
-    //pPoi->GetPointsOfInterest(seg_key, POI_0L | POI_ERECTED_SEGMENT, &vPoi);
-    //IntervalIndexType cd_event = pIntervals->GetCastDeckInterval(rgn);
-    //IntervalIndexType eg_event = pIntervals->GetErectSegmentInterval(seg_key);
-    //IntervalIndexType release = pIntervals->GetFirstPrestressReleaseInterval(girderKey);
-    
-    // CREEP //
-    //Float64 cstrain1 = pMaterial->GetSegmentCreepCoefficient(
-    //    seg_key,
-    //    release,
-    //    pgsTypes::IntervalTimeType::Start,
-    //    eg_event, 
-    //    pgsTypes::IntervalTimeType::Start
-    //    );
-    //
-    //Float64 cstrain2 = pMaterial->GetSegmentCreepCoefficient(
-    //    seg_key,
-    //    release,
-    //    pgsTypes::IntervalTimeType::Start,
-    //    cd_event,
-    //    pgsTypes::IntervalTimeType::Start
-    //);
-
-    // SHRINKAGE //
-    //Float64 sstrain1 = pMaterial->GetTotalSegmentFreeShrinkageStrain(seg_key, eg_event, pgsTypes::IntervalTimeType::Start);
-    //Float64 sstrain2 = pMaterial->GetTotalSegmentFreeShrinkageStrain(seg_key, cd_event, pgsTypes::IntervalTimeType::Start);
-
 
     return pChapter;
 }
