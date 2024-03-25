@@ -170,9 +170,13 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
 
     ColumnIndexType nCols = GetBearingTableColumnCount(pBroker, girderKey, analysisType, &details, bDetail);
 
-
-    //CString label = _T("Shear Deformations");
-    rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols, _T(""));
+    CString label{_T("")};
+    if (!bDetail)
+    {
+        label = _T("Shear Deformations");
+    }
+    
+    rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols, label);
     RowIndexType row = ConfigureBearingShearDeformationTableHeading<rptAngleUnitTag, WBFL::Units::AngleData>(
         pBroker, p_table, analysisType, pDisplayUnits, pDisplayUnits->GetRadAngleUnit(), &details, bDetail);
 

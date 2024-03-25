@@ -194,6 +194,7 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
 
     *p << Sub2(_T("L"), _T("eff")) << _T(" = ") << length.SetValue(pBearingDesignParameters->GetSpanContributoryLength(girderKey, &sf_details)) << rptNewLine;
     *p << Sub2(_T("-L"), _T("eff")) << _T(" is the distance from the apparent point of fixity to bearing.") << rptNewLine;
+    *p << _T("The location of the point of fixity is one of the following:") << rptNewLine;
     *p << _T("-The midlength of the superstructure between expansion joints") << rptNewLine;
     *p << _T("-The central pier for a bridge with an even number of spans between expansion joints") << rptNewLine;
     *p << _T("-The midpoint of the central span for a bridge with an odd number of spans between expansion joints") << rptNewLine << rptNewLine;
@@ -233,8 +234,8 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
 
     *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("BottomFlangeShortening.png")) << rptNewLine;
 
-    *p << Sub2(_T("L"),_T("bf")) << _T(" = bottom flange shortening due to a given time-dependent effect") << rptNewLine;
-    *p << Sub2(_T("L"),_T("ten")) << _T(" = tendon shortening due to girder self-weight and prestress losses") << rptNewLine;
+    *p << symbol(DELTA) << Sub2(_T("L"),_T("bf")) << _T(" = bottom flange shortening due to a given time-dependent effect") << rptNewLine;
+    *p << symbol(DELTA) << Sub2(_T("L"),_T("ten")) << _T(" = tendon shortening due to girder self-weight and prestress losses") << rptNewLine;
     *p << Sub2(_T("e"), _T("p")) << _T(" = eccentricity of prestressing tendon") << rptNewLine;
     *p << Sub2(_T("y"), _T("b")) << _T(" = distance from girder centroid to bottom of girder") << rptNewLine;
     *p << _T("radius of gyration, r = ") << symbol(ROOT) << Sub2(_T("I"),_T("xx")) << _T("/") << Sub2(_T("A"),_T("g")) << _T(")") << rptNewLine;
@@ -242,6 +243,9 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
 
     *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, are_user_loads, true, pDisplayUnits, true) << rptNewLine;
+
+    *p << _T("Deck shrinkage effects are not considered") << rptNewLine;
+    *p << _T("Temperature range is computed based on Procedure A (Article 3.12.2.1)") << rptNewLine << rptNewLine;
 
 
 
