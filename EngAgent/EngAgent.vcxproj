@@ -191,6 +191,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AlternativeTensileStressCalculator.cpp" />
+    <ClCompile Include="BearingDesignEngineer.cpp" />
     <ClCompile Include="Designer2.cpp" />
     <ClCompile Include="DevelopmentLengthEngineer.cpp" />
     <ClCompile Include="EngAgent.cpp" />
@@ -224,6 +225,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\IFace\Artifact.h" />
+    <ClInclude Include="..\Include\IFace\BearingDesignParameters.h" />
     <ClInclude Include="..\Include\IFace\Constructability.h" />
     <ClInclude Include="..\Include\IFace\CrackedSection.h" />
     <ClInclude Include="..\Include\IFace\DistributionFactors.h" />
@@ -232,6 +234,7 @@
     <ClInclude Include="..\Include\IFace\PrincipalWebStress.h" />
     <ClInclude Include="..\Include\IFace\ShearCapacity.h" />
     <ClInclude Include="AlternativeTensileStressCalculator.h" />
+    <ClInclude Include="BearingDesignEngineer.h" />
     <ClInclude Include="CLSID.h" />
     <ClInclude Include="DesignCodes.h" />
     <ClInclude Include="Designer2.h" />

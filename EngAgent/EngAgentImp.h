@@ -34,6 +34,7 @@
 #include "ShearCapacityEngineer.h"
 #include "TransferLengthEngineer.h"
 #include "DevelopmentLengthEngineer.h"
+#include "BearingDesignEngineer.h"
 #include "PrincipalWebStressEngineer.h"
 #include <IFace\DistFactorEngineer.h>
 #include <IFace\RatingSpecification.h>
@@ -49,6 +50,7 @@
 #if defined _USE_MULTITHREADING
 #include <PgsExt\ThreadManager.h>
 #endif
+#include <Reporting/ReactionInterfaceAdapters.h>
 
 class PrestressWithLiveLoadSubKey
 {
@@ -126,6 +128,7 @@ class ATL_NO_VTABLE CEngAgentImp :
    public IShearCapacity,
    public IPrincipalWebStress,
    public IGirderHaunch,
+   public IBearingDesignParameters,
    public IFabricationOptimization,
    public IArtifact,
    public IBridgeDescriptionEventSink,
@@ -157,6 +160,7 @@ BEGIN_COM_MAP(CEngAgentImp)
    COM_INTERFACE_ENTRY(IShearCapacity)
    COM_INTERFACE_ENTRY(IPrincipalWebStress)
    COM_INTERFACE_ENTRY(IGirderHaunch)
+   COM_INTERFACE_ENTRY(IBearingDesignParameters)
    COM_INTERFACE_ENTRY(IFabricationOptimization)
    COM_INTERFACE_ENTRY(IArtifact)
    COM_INTERFACE_ENTRY(IBridgeDescriptionEventSink)
@@ -376,6 +380,31 @@ public:
    virtual const SLABOFFSETDETAILS& GetSlabOffsetDetails(const CSegmentKey& segmentKey) const override;
    virtual Float64 GetSectionGirderOrientationEffect(const pgsPointOfInterest& poi) const override;
 
+
+// IBearingDesignParameters
+ public:
+   void GetBearingTableParameters(CGirderKey girderKey, TABLEPARAMETERS* pDetails) const override;
+
+   virtual void GetBearingDesignProperties(DESIGNPROPERTIES* pDetails) const override;
+
+   virtual void GetBearingRotationDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi, const ReactionLocation& reactionLocation, 
+       CGirderKey girderKey, bool bIncludeImpact, bool bIncludeLLDF, bool isFlexural, ROTATIONDETAILS* pDetails) const override;
+
+   virtual void GetBearingReactionDetails(const ReactionLocation& reactionLocation,
+       CGirderKey girderKey, pgsTypes::AnalysisType analysisType, bool bIncludeImpact, bool bIncludeLLDF, REACTIONDETAILS* pDetails) const override;
+
+   virtual void GetThermalExpansionDetails(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const override;
+
+   virtual Float64 GetSpanContributoryLength(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const override;
+
+   virtual Float64 GetTimeDependentComponentShearDeformation(CGirderKey girderKey, const pgsPointOfInterest& poi, Float64 loss) const override;
+
+   virtual Float64 GetTimeDependentShearDeformation(CGirderKey girderKey, const pgsPointOfInterest& poi, 
+       PierIndexType startPierIdx, SHEARDEFORMATIONDETAILS* pDetails) const override;
+
+   virtual void GetBearingShearDeformationDetails(pgsTypes::AnalysisType analysisType, PierIndexType startPierIdx, const pgsPointOfInterest& poi,
+       const ReactionLocation& reactionLocation, CGirderKey girderKey, bool bIncludeImpact, bool bIncludeLLDF, SHEARDEFORMATIONDETAILS* pDetails) const override;
+
 // IFabricationOptimization
 public:
    virtual bool GetFabricationOptimizationDetails(const CSegmentKey& segmentKey,FABRICATIONOPTIMIZATIONDETAILS* pDetails) const override;
@@ -470,6 +499,7 @@ private:
    pgsDesigner2              m_Designer;
    pgsLoadRater              m_LoadRater;
    pgsShearCapacityEngineer  m_ShearCapEngineer;
+   pgsBearingDesignEngineer  m_BearingEngineer;
    
    mutable bool m_bAreDistFactorEngineersValidated;
    mutable CComPtr<IDistFactorEngineer> m_pDistFactorEngineer; // assigned a polymorphic object during validation (must be mutable for delayed assignment)
@@ -501,6 +531,8 @@ private:
    void InvalidateShearCritSection();
 
    mutable std::map<CSegmentKey,SLABOFFSETDETAILS> m_SlabOffsetDetails;
+
+   //ROTATIONDETAILS m_staticRotationDetails;
 
    // Lifting and hauling analysis artifact cache for ad-hoc analysis (typically during design)
    mutable std::map<CSegmentKey, std::map<Float64,WBFL::Stability::LiftingCheckArtifact,Float64_less> > m_LiftingArtifacts;

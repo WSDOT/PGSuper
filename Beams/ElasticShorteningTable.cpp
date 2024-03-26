@@ -113,8 +113,8 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
       Float64 Aps = pDetails->pLosses->GetApsPermanent();
       Float64 P   = pDetails->pLosses->GetElasticShortening().P();
 
-      *pParagraph << Sub2(_T("0.7 f"),_T("pu")) << Sub2(_T(" A"),_T("ps")) << _T(" = 0.7(") 
-                  << stress.SetValue(Fpu) << _T(")(") << area.SetValue(Aps) 
+      *pParagraph << Sub2(_T("0.7 f"),_T("pu")) << Sub2(_T(" A"),_T("ps")) << _T(" = 0.7(")
+                  << stress.SetValue(Fpu) << _T(")(") << area.SetValue(Aps)
                   <<  _T(") = ") << force.SetValue(-P) << rptNewLine << rptNewLine;
 
       *pParagraph << Sub2(_T("f"),_T("cgp")) << _T(" = ") << stress.SetValue( pDetails->pLosses->GetElasticShortening().PermanentStrand_Fcgp() ) << rptNewLine << rptNewLine;

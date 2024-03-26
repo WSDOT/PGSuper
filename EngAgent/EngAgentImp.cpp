@@ -220,7 +220,8 @@ private:
 /////////////////////////////////////////////////////////////////////////////
 // CEngAgentImp
 CEngAgentImp::CEngAgentImp() :
-m_ShearCapEngineer(nullptr,0),
+    m_ShearCapEngineer(nullptr, 0),
+    m_BearingEngineer(nullptr),
 m_bAreDistFactorEngineersValidated(false)
 {
 }
@@ -978,6 +979,8 @@ STDMETHODIMP CEngAgentImp::RegInterfaces()
    pBrokerInit->RegInterface(IID_IFabricationOptimization,     this);
    pBrokerInit->RegInterface(IID_IArtifact,                    this);
    pBrokerInit->RegInterface(IID_ICrackedSection,              this);
+   pBrokerInit->RegInterface(IID_IBearingDesignParameters,     this);
+
 
     return S_OK;
 }
@@ -997,6 +1000,7 @@ STDMETHODIMP CEngAgentImp::Init()
    m_ShearCapEngineer.SetBroker(m_pBroker);
    m_Designer.SetBroker(m_pBroker);
    m_LoadRater.SetBroker(m_pBroker);
+   m_BearingEngineer.SetBroker(m_pBroker);
 
    m_Designer.SetStatusGroupID(m_StatusGroupID);
    m_PsForceEngineer.SetStatusGroupID(m_StatusGroupID);
@@ -3836,6 +3840,61 @@ Float64 CEngAgentImp::GetSectionGirderOrientationEffect(const pgsPointOfInterest
 
 
 /////////////////////////////////////////////////////////////////////////////
+// IBearingDesignParamters
+
+void CEngAgentImp::GetBearingTableParameters(CGirderKey girderKey, TABLEPARAMETERS* pDetails) const
+{
+    m_BearingEngineer.GetBearingTableParameters(girderKey, pDetails);
+}
+
+void CEngAgentImp::GetBearingDesignProperties(DESIGNPROPERTIES* pDetails) const
+{
+    m_BearingEngineer.GetBearingDesignProperties(pDetails);
+}
+
+void CEngAgentImp::GetBearingRotationDetails(pgsTypes::AnalysisType AnalysisType, const pgsPointOfInterest& poi, 
+    const ReactionLocation& reactionLocation, CGirderKey girderKey, bool bIncludeImpact, bool bIncludeLLDF, bool isFlexural, ROTATIONDETAILS* pDetails) const
+{
+    m_BearingEngineer.GetBearingRotationDetails(AnalysisType, poi, reactionLocation, girderKey, 
+        bIncludeImpact, bIncludeLLDF, isFlexural, pDetails);
+}
+
+void CEngAgentImp::GetBearingReactionDetails(const ReactionLocation& reactionLocation,
+    CGirderKey girderKey, pgsTypes::AnalysisType analysisType, bool bIncludeImpact, bool bIncludeLLDF, REACTIONDETAILS* pDetails) const
+{
+    m_BearingEngineer.GetBearingReactionDetails(reactionLocation, girderKey, analysisType, bIncludeImpact, bIncludeLLDF, pDetails);
+}
+
+void CEngAgentImp::GetThermalExpansionDetails(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const
+{
+    m_BearingEngineer.GetThermalExpansionDetails(girderKey, pDetails);
+}
+
+Float64 CEngAgentImp::GetSpanContributoryLength(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const
+{
+    return m_BearingEngineer.GetSpanContributoryLength(girderKey, pDetails);
+}
+
+Float64 CEngAgentImp::GetTimeDependentComponentShearDeformation(CGirderKey girderKey, const pgsPointOfInterest& poi, Float64 loss) const
+{
+    return m_BearingEngineer.GetTimeDependentComponentShearDeformation(girderKey, poi, loss);
+}
+
+Float64 CEngAgentImp::GetTimeDependentShearDeformation(CGirderKey girderKey,
+    const pgsPointOfInterest& poi, PierIndexType startPierIdx, SHEARDEFORMATIONDETAILS* pDetails) const
+{
+    return m_BearingEngineer.GetTimeDependentShearDeformation(girderKey, poi, startPierIdx, pDetails);
+}
+
+void CEngAgentImp::GetBearingShearDeformationDetails(pgsTypes::AnalysisType analysisType, PierIndexType startPierIdx, const pgsPointOfInterest& poi,
+    const ReactionLocation& reactionLocation, CGirderKey girderKey, bool bIncludeImpact, bool bIncludeLLDF, SHEARDEFORMATIONDETAILS* pDetails) const
+{
+    m_BearingEngineer.GetBearingShearDeformationDetails(analysisType, startPierIdx, poi,
+        reactionLocation, girderKey, bIncludeImpact, bIncludeLLDF, pDetails);
+}
+
+
+
 // IFabricationOptimization
 bool CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentKey,FABRICATIONOPTIMIZATIONDETAILS* pDetails) const
 {
