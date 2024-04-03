@@ -160,6 +160,12 @@ void CGirderSegmentGeneralPage::DoDataExchange(CDataExchange* pDX)
       pDX->Fail();
    }
 
+   if (pDX->m_bSaveAndValidate && !pSegment->AreEndBlocksValid(segment_length))
+   {
+      AfxMessageBox(_T("End block parameters exceed the overall length of the segment."), MB_OK);
+      pDX->Fail();
+   }
+
    // no precamber in spliced girder segments
    //DDX_UnitValueAndTag(pDX, IDC_PRECAMBER, IDC_PRECAMBER_UNIT, pSegment->Precamber, pDisplayUnits->GetComponentDimUnit());
    pSegment->Precamber = 0.0;

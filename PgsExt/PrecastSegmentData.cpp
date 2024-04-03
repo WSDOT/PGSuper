@@ -412,6 +412,13 @@ bool CPrecastSegmentData::AreSegmentVariationsValid(Float64 segmentFramingLength
    return (::IsLE(L,segmentFramingLength) ? true : false);
 }
 
+bool CPrecastSegmentData::AreEndBlocksValid(Float64 segmentFramingLength) const
+{
+   Float64 L = EndBlockLength[pgsTypes::metStart] + EndBlockTransitionLength[pgsTypes::metStart]
+      + EndBlockTransitionLength[pgsTypes::metEnd] + EndBlockLength[pgsTypes::metEnd];
+   return L < segmentFramingLength;
+}
+
 Float64 CPrecastSegmentData::GetBasicSegmentHeight() const
 {
    return GetSegmentHeight(true);
