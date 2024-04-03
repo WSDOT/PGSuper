@@ -133,36 +133,3 @@ Ultimate vertical shear capacity check failed for Strength I Limit State
 The Specification Check was Successful
 
 
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend   Ndb Elev    Nsr   Ndb   1   2   3   4   5                 Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00                     6     1    Tx54_          70  1/2  270  16.55  16.04   8.50   8.50   12    2.5   14     4    0   0   0   0   2                 6.000  7.300   4.526    -4.393     8570   0.611  0.814   4.851 -2.905  0.000 -0.195 -3.100 225.62  627.65    1.00    1.00    1.00    1.77    1.67    2.30    2.25    1.01 
-                                                                                                                  4.5   14     4    0   0   2   2   0 
-                                                                                                                  6.5   14     4    2   2   0   0   0 
-
-
-The Specification Check was Successful
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00                     6     2    Tx54_           4  1/2  270  21.01  -2.99   8.50   8.50                                               2  50.5  2.5  6.000  8.500   4.716    -4.575     8838   0.611  0.814  -5.030 -3.320  0.000 -0.187 -3.507  -3.22    5.58    1.00    1.00    1.00    0.00    0.08    0.00    0.10    0.00 
-
-
-Girder design was Not Successful
-The Specification Check was Not Successful
-Tension stress check failed for Service I Limit State in Interval 10 Cast Deck
-Compression stress check failed for Service I Limit State in Interval 17 Open to Traffic, Roadway Geometry Control
-Tension stress check failed for Service III Limit State in Interval 17 Open to Traffic, Roadway Geometry Control
-Ultimate moment capacity (positive moment) check failed for Strength I Limit State
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Ultimate vertical shear capacity check failed for Strength I Limit State
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.00    6   8.00                     6     4     Tx54          68  1/2  270  16.83  16.83   8.50   8.50                                               0   0.0  0.0 12.000 12.000   4.716    -4.575     8838   0.611  0.814   3.528 -3.320  0.000 -0.187 -3.507 163.00  554.23    1.00    1.00    1.00    1.71    1.97    2.22    2.66    1.03 
-
-
-The Specification Check was Successful
-
-
