@@ -95,6 +95,7 @@ public:
    std::array<Float64, 2> EndBlockLength;
    std::array<Float64, 2> EndBlockTransitionLength;
    std::array<Float64, 2> EndBlockWidth;
+   bool AreEndBlocksValid(Float64 segmentFramingLength) const;
 
    // Copies only segment definition data. Does not copy ID or Index
    void CopySegmentData(const CPrecastSegmentData* pSegment,bool bCopyLocation);
