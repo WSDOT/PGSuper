@@ -122,7 +122,7 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
     *p << _T("**Used for Method A") << rptNewLine << rptNewLine;
 
     *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
-        true, true, are_user_loads, true, pDisplayUnits, false) << rptNewLine;
+        true, true, are_user_loads, true, pDisplayUnits, false, true) << rptNewLine;
 
     *p << _T("Deck shrinkage effects are not considered") << rptNewLine;
     *p << _T("Temperature range is computed based on Procedure A (Article 3.12.2.1)") << rptNewLine << rptNewLine;

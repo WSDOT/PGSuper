@@ -184,6 +184,13 @@ struct SHEARDEFORMATIONDETAILS : public TABLEPARAMETERS
 	Float64 shrinkage;
 	Float64 relaxation;
 	Float64 time_dependent;
+	Float64 tendon_shortening;
+	Float64 Ixx;
+	Float64 Ag;
+	Float64 ep;
+	Float64 yb;
+	Float64 r;
+	Float64 flange_bottom_shortening;
 	Float64 total_shear_deformation_cold;
 	Float64 total_shear_deformation_moderate;
 };
@@ -213,9 +220,6 @@ interface IBearingDesignParameters : IUnknown
 
 	virtual Float64 GetTimeDependentShearDeformation(CGirderKey girderKey,
 		const pgsPointOfInterest& poi, PierIndexType startPierIdx, SHEARDEFORMATIONDETAILS* pDetails) const = 0;
-
-	virtual void GetBearingShearDeformationDetails(pgsTypes::AnalysisType analysisType, PierIndexType startPierIdx, const pgsPointOfInterest& poi,
-		const ReactionLocation& reactionLocation, CGirderKey girderKey, bool bIncludeImpact, bool bIncludeLLDF, SHEARDEFORMATIONDETAILS* pDetails) const = 0;
 
 	virtual void GetBearingDesignProperties(DESIGNPROPERTIES* pDetails) const = 0;
 

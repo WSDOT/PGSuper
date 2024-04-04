@@ -402,9 +402,6 @@ public:
    virtual Float64 GetTimeDependentShearDeformation(CGirderKey girderKey, const pgsPointOfInterest& poi, 
        PierIndexType startPierIdx, SHEARDEFORMATIONDETAILS* pDetails) const override;
 
-   virtual void GetBearingShearDeformationDetails(pgsTypes::AnalysisType analysisType, PierIndexType startPierIdx, const pgsPointOfInterest& poi,
-       const ReactionLocation& reactionLocation, CGirderKey girderKey, bool bIncludeImpact, bool bIncludeLLDF, SHEARDEFORMATIONDETAILS* pDetails) const override;
-
 // IFabricationOptimization
 public:
    virtual bool GetFabricationOptimizationDetails(const CSegmentKey& segmentKey,FABRICATIONOPTIMIZATIONDETAILS* pDetails) const override;

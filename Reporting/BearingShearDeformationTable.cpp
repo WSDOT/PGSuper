@@ -85,13 +85,13 @@ ColumnIndexType CBearingShearDeformationTable::GetBearingTableColumnCount(IBroke
 
     if (bDetail)
     {
-        nCols += 2; // thermal expansion cold or moderate
+        nCols += 6; // thermal expansion parameters
 
         if (0 < details->nDucts)
         {
             nCols++;  //post-tensioning
         }
-        nCols += 3; // creep, shrinkage & relaxation
+        nCols += 11; // creep, shrinkage & relaxation parameters
     }
     else
     {
@@ -106,29 +106,66 @@ template <class M, class T>
 RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptRcTable* p_table, pgsTypes::AnalysisType analysisType, 
     IEAFDisplayUnits* pDisplayUnits, const T& unitT, SHEARDEFORMATIONDETAILS* pDetails, bool bDetail)
 {
-    p_table->SetNumberOfHeaderRows(2);
+    p_table->SetNumberOfHeaderRows(3);
 
     ColumnIndexType col = 0;
 
-    p_table->SetRowSpan(0, col, 2);
+    p_table->SetRowSpan(0, col, 3);
     (*p_table)(0, col++) << _T("");
 
     if (bDetail)
     {
-        p_table->SetColumnSpan(0, col, 2);
-        (*p_table)(0, col) << Sub2(symbol(DELTA),_T("thermal"));
-        (*p_table)(1, col++) << COLHDR(_T("Cold"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
-        (*p_table)(1, col++) << COLHDR(_T("Moderate"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
-        if (0 < pDetails->nDucts)
-        {
-            p_table->SetRowSpan(0, col, 2);
-            (*p_table)(0, col++) << COLHDR(_T("Post-Tensioning"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
-        }
-        p_table->SetColumnSpan(0, col, 3);
-        (*p_table)(0, col) << Sub2(symbol(DELTA), _T("time-dependent"));
-        (*p_table)(1, col++) << COLHDR(_T("Creep"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
-        (*p_table)(1, col++) << COLHDR(_T("Shrinkage"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
-        (*p_table)(1, col++) << COLHDR(_T("Relaxation"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+        p_table->SetColumnSpan(0, col, 5);
+        p_table->SetRowSpan(0, col, 2);
+        (*p_table)(0, col) << _T("Thermal Deformation Parameters");
+        (*p_table)(2, col++) << Sub2(symbol(DELTA), _T("0"));
+        (*p_table)(2, col++) << symbol(alpha);
+        (*p_table)(2, col++) << Sub2(_T("L"), _T("pf"));
+        (*p_table)(2, col++) << Sub2(_T("T"), _T("max-design"));
+        (*p_table)(2, col++) << Sub2(_T("T"), _T("max-design"));
+
+        p_table->SetRowSpan(0, col, 3);
+        (*p_table)(0, col++) << Sub2(symbol(DELTA), _T("thermal"));
+
+        p_table->SetColumnSpan(0, col, 5);
+        p_table->SetRowSpan(0, col, 2);
+        (*p_table)(0, col) << _T("Girder Properties");
+        (*p_table)(2, col++) << Sub2(_T("y"), _T("b"));
+        (*p_table)(2, col++) << Sub2(_T("e"), _T("p"));
+        (*p_table)(2, col++) << Sub2(_T("I"), _T("xx"));
+        (*p_table)(2, col++) << Sub2(_T("A"), _T("g"));
+        (*p_table)(2, col++) << _T("r");
+
+
+        ///////////////////////////////////////////////////////////////////
+        p_table->SetColumnSpan(0, col, 6);
+        (*p_table)(0, col) << _T("Time-Dependent Deformations");
+        p_table->SetColumnSpan(1, col, 3);
+        (*p_table)(1, col) << _T("Test");   /////
+        (*p_table)(2, col++) << _T("Creep");
+        (*p_table)(2, col++) << _T("Shrinkage");
+        (*p_table)(2, col++) << _T("Relaxation");
+        p_table->SetColumnSpan(1, col, 3);
+        (*p_table)(1, col) << _T("Test");  //////
+        (*p_table)(2, col++) << _T("Creep");
+        (*p_table)(2, col++) << _T("Shrinkage");
+        (*p_table)(2, col++) << _T("Relaxation");
+
+        //p_table->SetRowSpan(0, col, 2);
+        //(*p_table)(1, col) << _T("Test");
+        //p_table->SetRowSpan(0, col, 2);
+        //(*p_table)(1, col) << _T("Test");
+
+
+        //p_table->SetColumnSpan(1, col, 3);
+        //(*p_table)(1, col++) << Sub2(symbol(DELTA) << _T("L"), _T("bf"));
+        //(*p_table)(1, col) << Sub2(symbol(DELTA) << _T("L"), _T("ten"));
+
+
+
+        //(*p_table)(2, col++) << _T("Creep");
+        //(*p_table)(2, col++) << _T("Shrinkage");
+        //(*p_table)(2, col++) << _T("Relaxation");
     }
     else
     {
@@ -148,7 +185,7 @@ RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptR
 
 //======================== OPERATIONS =======================================
 rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBroker* pBroker, const CGirderKey& girderKey, pgsTypes::AnalysisType analysisType,
-    bool bIncludeImpact, bool bIncludeLLDF, bool bDesign, bool bUserLoads, bool bIndicateControllingLoad, IEAFDisplayUnits* pDisplayUnits, bool bDetail) const
+    bool bIncludeImpact, bool bIncludeLLDF, bool bDesign, bool bUserLoads, bool bIndicateControllingLoad, IEAFDisplayUnits* pDisplayUnits, bool bDetail, bool bCold) const
 {
 
     // Build table
@@ -171,10 +208,16 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
     ColumnIndexType nCols = GetBearingTableColumnCount(pBroker, girderKey, analysisType, &details, bDetail);
 
     CString label{_T("")};
-    if (!bDetail)
+
+    if (bCold)
     {
-        label = _T("Shear Deformations");
+        label = _T("Shear Deformations - Cold Climate");
     }
+    else
+    {
+        label = _T("Shear Deformations - Moderate Climate");
+    }
+    
     
     rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols, label);
     RowIndexType row = ConfigureBearingShearDeformationTableHeading<rptAngleUnitTag, WBFL::Units::AngleData>(
@@ -259,7 +302,11 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
 
         const pgsPointOfInterest& poi = vPoi[reactionLocation.PierIdx - startPierIdx];
 
-        pBearingDesignParameters->GetBearingShearDeformationDetails(analysisType, startPierIdx, poi, reactionLocation, girderKey, bIncludeImpact, bIncludeLLDF, &details);
+        GET_IFACE2(pBroker, IBearingDesignParameters, pBearing);
+
+
+        pBearing->GetThermalExpansionDetails(girderKey, &details);
+        pBearing->GetTimeDependentShearDeformation(girderKey, poi, startPierIdx, &details);
 
         if (bDetail)
         {
@@ -282,6 +329,9 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
 
         row++;
     }
+
+
+
 
     return p_table;
 

@@ -271,6 +271,7 @@ ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBrok
         
     }
 
+    nCols++; //for debugging
 
     return nCols;
 }

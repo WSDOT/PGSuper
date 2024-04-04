@@ -96,7 +96,11 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
     INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true);
     INIT_UV_PROTOTYPE(rptLengthUnitValue, length, pDisplayUnits->GetSpanLengthUnit(), true);
+    INIT_UV_PROTOTYPE(rptLength4UnitValue, I, pDisplayUnits->GetMomentOfInertiaUnit(), true);
+    INIT_UV_PROTOTYPE(rptLength2UnitValue, A, pDisplayUnits->GetAreaUnit(), true);
     INIT_UV_PROTOTYPE(rptLengthUnitValue, deflection, pDisplayUnits->GetDeflectionUnit(), true);
+    INIT_UV_PROTOTYPE(rptTemperatureUnitValue, temperature, pDisplayUnits->GetTemperatureUnit(), true);
+
 
     GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
     DESIGNPROPERTIES details;
@@ -180,9 +184,6 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     GET_IFACE2(pBroker, ILiveLoadDistributionFactors, pLLDF);
     pLLDF->ReportReactionDistributionFactors(girderKey, pChapter, true);
 
-    
-    SHEARDEFORMATIONDETAILS sf_details;
-    pBearingDesignParameters->GetThermalExpansionDetails(girderKey, &sf_details);
 
     p = new rptParagraph(rptStyleManager::GetHeadingStyle());
     *pChapter << p;
@@ -192,8 +193,7 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
      p = new rptParagraph;
     *pChapter << p;
 
-    *p << Sub2(_T("L"), _T("eff")) << _T(" = ") << length.SetValue(pBearingDesignParameters->GetSpanContributoryLength(girderKey, &sf_details)) << rptNewLine;
-    *p << Sub2(_T("-L"), _T("eff")) << _T(" is the distance from the apparent point of fixity to bearing.") << rptNewLine;
+    *p << _T("Distance from the apparent point of fixity to bearing, ") << Sub2(_T("L"), _T("pf")) << _T(" = ");
     *p << _T("The location of the point of fixity is one of the following:") << rptNewLine;
     *p << _T("-The midlength of the superstructure between expansion joints") << rptNewLine;
     *p << _T("-The central pier for a bridge with an even number of spans between expansion joints") << rptNewLine;
@@ -209,18 +209,36 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
 
     *p << _T("Temperature range is computed based on Procedure A (Article 3.12.2.1)") << rptNewLine;
 
-    *p << Sub2(symbol(DELTA), _T("temp")) << _T(" = ") << Sub2(symbol(DELTA), _T("0")) << _T(" ") << symbol(TIMES) << _T(" ") << symbol(alpha) << _T(" ") << symbol(TIMES) << _T(" ") << Sub2(_T("L"), _T("eff")) << _T(" ");
-    *p << symbol(TIMES) << _T(" (") << Sub2(_T("T"), _T("Max Design")) << _T(" - ") << Sub2(_T("T"), _T("Min Design")) << _T(")") << rptNewLine;
-    *p << Sub2(_T("T"), _T("MaxDesign")) << _T(" is the maximum anticipated bridge deck average temperature") << rptNewLine;
-    *p << Sub2(_T("T"), _T("MinDesign")) << _T(" is the minimum anticipated bridge deck average temperature") << rptNewLine;
+    *p << Sub2(symbol(DELTA), _T("temp")) << _T(" = ") << Sub2(symbol(DELTA), _T("0")) << _T(" ") << symbol(TIMES) << _T(" ");
+    *p << symbol(alpha) << _T(" ") << symbol(TIMES) << _T(" ") << Sub2(_T("L"), _T("pf")) << _T(" ");
+    *p << symbol(TIMES) << _T(" (") << Sub2(_T("T"), _T("Max Design")) << _T(" - ");
+    *p << Sub2(_T("T"), _T("Min Design")) << _T(")") << rptNewLine;
+    //*p << Sub2(_T("T"), _T("MaxDesign-Cold")) << _T(" = ");
+    //*p << temperature.SetValue(sf_details.max_design_temperature_cold) << rptNewLine;
+    //*p << Sub2(_T("T"), _T("MaxDesign-Moderate")) << _T(" = ");
+    //*p << temperature.SetValue(sf_details.max_design_temperature_moderate) << rptNewLine;
+    //*p << Sub2(_T("T"), _T("MinDesign-Cold")) << _T(" = ");
+    //*p << temperature.SetValue(sf_details.min_design_temperature_cold) << rptNewLine;
+    //*p << Sub2(_T("T"), _T("MinDesign-Moderate")) << _T(" = ");
+    //*p << temperature.SetValue(sf_details.min_design_temperature_moderate) << rptNewLine;
 
-    if (sf_details.libConfig == _T("WSDOT"))
+
+    GET_IFACE2(pBroker, ILibrary, pLibrary);
+    WBFL::System::Time time;
+    bool bPrintDate = WBFL::System::Time::PrintDate(true);
+    std::_tstring strServer;
+    std::_tstring strConfiguration;
+    std::_tstring strMasterLibFile;
+    pLibrary->GetMasterLibraryInfo(strServer, strConfiguration, strMasterLibFile, time);
+
+
+    if (strConfiguration == _T("WSDOT"))
     {
         *p << _T("From WSDOT BDM Ch. 9.2.5A: ") << Sub2(symbol(DELTA), _T("0")) << _T(" = 0.75") << rptNewLine;
     }
     else
     {
-        *p << _T("From AASHTO LRFD Sect. 14.7.5.3.2: ") << Sub2(symbol(DELTA), _T("0")) << _T(" = ") << sf_details.percentExpansion << rptNewLine;
+        *p << _T("From AASHTO LRFD Sect. 14.7.5.3.2: ") << Sub2(symbol(DELTA), _T("0")) << _T(" = 0.65") << rptNewLine;
     }
 
     p = new rptParagraph(rptStyleManager::GetSubheadingStyle());
@@ -234,20 +252,27 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
 
     *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("BottomFlangeShortening.png")) << rptNewLine;
 
-    *p << symbol(DELTA) << Sub2(_T("L"),_T("bf")) << _T(" = bottom flange shortening due to a given time-dependent effect") << rptNewLine;
-    *p << symbol(DELTA) << Sub2(_T("L"),_T("ten")) << _T(" = tendon shortening due to girder self-weight and prestress losses") << rptNewLine;
-    *p << Sub2(_T("e"), _T("p")) << _T(" = eccentricity of prestressing tendon") << rptNewLine;
-    *p << Sub2(_T("y"), _T("b")) << _T(" = distance from girder centroid to bottom of girder") << rptNewLine;
-    *p << _T("radius of gyration, r = ") << symbol(ROOT) << Sub2(_T("I"),_T("xx")) << _T("/") << Sub2(_T("A"),_T("g")) << _T(")") << rptNewLine;
+    //*p << symbol(DELTA) << Sub2(_T("L"),_T("bf")) << _T(" = bottom flange shortening due to a given time-dependent effect") << rptNewLine;
+    //*p << symbol(DELTA) << Sub2(_T("L"), _T("ten")) << _T(" = ") << Sub2(symbol(DELTA), _T("time-dependent"));
+    //*p << _T(" = tendon shortening due to girder self-weight and prestress losses") << rptNewLine;
+    //*p << Sub2(_T("e"), _T("p")) << _T(" = ") << length.SetValue(sf_details.ep) << rptNewLine;
+    //*p << Sub2(_T("y"), _T("b")) << _T(" = ") << length.SetValue(sf_details.yb) << rptNewLine;
+    //*p << _T("r = ") << symbol(ROOT) << Sub2(_T("I"),_T("xx")) << _T("/") << Sub2(_T("A"),_T("g")) << _T(") = ") << length.SetValue(sf_details.r) << rptNewLine;
+    //*p << Sub2(_T("I"), _T("xx")) << _T(" = ") << I.SetValue(sf_details.Ixx) << rptNewLine;
+    //*p << Sub2(_T("A"), _T("g")) << _T(" = ") << A.SetValue(sf_details.Ag) << rptNewLine;
+
+
 
 
     *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
-        true, true, are_user_loads, true, pDisplayUnits, true) << rptNewLine;
+        true, true, are_user_loads, true, pDisplayUnits, true, true) << rptNewLine;
 
     *p << _T("Deck shrinkage effects are not considered") << rptNewLine;
-    *p << _T("Temperature range is computed based on Procedure A (Article 3.12.2.1)") << rptNewLine << rptNewLine;
 
+    *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
+        true, true, are_user_loads, true, pDisplayUnits, true, false) << rptNewLine;
 
+    *p << _T("Deck shrinkage effects are not considered") << rptNewLine << rptNewLine;
 
 
     GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);

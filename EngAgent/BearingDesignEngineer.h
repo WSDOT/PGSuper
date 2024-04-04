@@ -61,9 +61,6 @@ public:
    Float64 GetTimeDependentShearDeformation(CGirderKey girderKey,
 	   const pgsPointOfInterest& poi, PierIndexType startPierIdx, SHEARDEFORMATIONDETAILS* pDetails) const;
 
-   void GetBearingShearDeformationDetails(pgsTypes::AnalysisType analysisType, PierIndexType startPierIdx, const pgsPointOfInterest& poi,
-	   const ReactionLocation& reactionLocation, CGirderKey girderKey, bool bIncludeImpact, bool bIncludeLLDF, SHEARDEFORMATIONDETAILS* pDetails) const;
-
 private:
    IBroker* m_pBroker;
 

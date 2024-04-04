@@ -212,7 +212,7 @@ Float64 pgsBearingDesignEngineer::GetSpanContributoryLength(CGirderKey girderKey
 Float64 pgsBearingDesignEngineer::GetTimeDependentComponentShearDeformation(CGirderKey girderKey, const pgsPointOfInterest& poi, Float64 loss) const
 {
 
-    GET_IFACE(ISectionProperties, pSection);
+
     GET_IFACE(ILosses, pLosses);
     GET_IFACE(IMaterials, pMaterials);
     GET_IFACE(IIntervals, pIntervals);
@@ -229,19 +229,16 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentComponentShearDeformation(CGir
 
     Float64 Ep = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Straight)->GetE();
 
-    Float64 tendonShortening = - loss * L / Ep;
+    sf_details.tendon_shortening = - loss * L / Ep;
 
     auto details = pLosses->GetLossDetails(poi, erectSegmentIntervalIdx);
 
-    Float64 ep = details->pLosses->GetEccpgRelease().Y();
+    sf_details.r = sqrt(sf_details.Ixx / sf_details.Ag);
 
-    Float64 yb = pSection->GetNetYbg(erectSegmentIntervalIdx, poi);
+    sf_details.flange_bottom_shortening = (1.0 + sf_details.ep * sf_details.yb / (sf_details.r * sf_details.r)) / 
+        (1 + sf_details.ep * sf_details.ep / (sf_details.r * sf_details.r)) * sf_details.tendon_shortening;
 
-    Float64 r = sqrt(pSection->GetIxx(erectSegmentIntervalIdx, poi) / pSection->GetAg(erectSegmentIntervalIdx, poi));
-
-    Float64 FlangeBottomShortening = (1.0 + ep * yb / (r * r)) / (1 + ep * ep / (r * r)) * tendonShortening;
-
-    return FlangeBottomShortening;
+    return sf_details.flange_bottom_shortening;
 
 }
 
@@ -374,28 +371,34 @@ Float64 pgsBearingDesignEngineer::GetBearingTimeDependentLosses(const pgsPointOf
             {
                 loss = pDetails->pLosses->PermanentStrand_BeforeTemporaryStrandRemoval();
 
-                if (pDetails->LossMethod == PrestressLossCriteria::LossMethodType::WSDOT_REFINED_2005)
+                if (pDetails->LossMethod == PrestressLossCriteria::LossMethodType::WSDOT_REFINED_2005 || pDetails->LossMethod == PrestressLossCriteria::LossMethodType::AASHTO_REFINED_2005)
                 {
                     auto pRefined2005 = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLosses2005>(pDetails->pLosses);
+
                     tdComponents->shrinkage = pRefined2005->PermanentStrand_ShrinkageLossAtShipping();
                     tdComponents->creep = pRefined2005->PermanentStrand_CreepLossAtShipping();
                     tdComponents->relaxation = pRefined2005->PermanentStrand_RelaxationLossesBeforeTransfer() + pRefined2005->PermanentStrand_RelaxationLossAtShipping();
                 }
+       
             }
         }
         else
         {
             if (strandType == pgsTypes::Temporary)
             {
-                loss = pDetails->pLosses->TemporaryStrand_Final();
+                loss = pDetails->pLosses->TemporaryStrand_Final(); // probably don't need temporary
             }
             else
             {
                 loss = pDetails->pLosses->PermanentStrand_Final();
-                auto pRefined2005 = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLosses2005>(pDetails->pLosses);
-                tdComponents->shrinkage = pRefined2005->ShrinkageLossBeforeDeckPlacement() + pRefined2005->ShrinkageLossAfterDeckPlacement();
-                tdComponents->creep = pRefined2005->CreepLossBeforeDeckPlacement() + pRefined2005->CreepLossAfterDeckPlacement();
-                tdComponents->relaxation = pRefined2005->PermanentStrand_RelaxationLossesBeforeTransfer() + pRefined2005->RelaxationLossBeforeDeckPlacement() + pRefined2005->RelaxationLossAfterDeckPlacement();
+
+                if (pDetails->LossMethod == PrestressLossCriteria::LossMethodType::WSDOT_REFINED_2005 || pDetails->LossMethod == PrestressLossCriteria::LossMethodType::AASHTO_REFINED_2005)
+                {
+                    auto pRefined2005 = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLosses2005>(pDetails->pLosses);
+                    tdComponents->shrinkage = pRefined2005->ShrinkageLossBeforeDeckPlacement(); // +pRefined2005->ShrinkageLossAfterDeckPlacement();
+                    tdComponents->creep = pRefined2005->CreepLossBeforeDeckPlacement(); // +pRefined2005->CreepLossAfterDeckPlacement();
+                    tdComponents->relaxation = /*pRefined2005->PermanentStrand_RelaxationLossesBeforeTransfer() + */pRefined2005->RelaxationLossBeforeDeckPlacement(); // +pRefined2005->RelaxationLossAfterDeckPlacement();
+                }
             }
         }
 
@@ -413,6 +416,8 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey gi
     GET_IFACE(IIntervals, pIntervals);
     GET_IFACE(IBridgeDescription, pIBridgeDesc);
     GET_IFACE(ILosses, pLosses);
+    GET_IFACE(ISectionProperties, pSection);
+
 
     // bearing time-dependent effects begin at the erect segment interval
     const CSegmentKey& segmentKey(poi.GetSegmentKey());
@@ -423,15 +428,26 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey gi
     CSegmentKey seg_key = pBridge->GetSegmentAtPier(startPierIdx, girderKey);
     auto lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
 
+    auto details = pLosses->GetLossDetails(poi, erectSegmentIntervalIdx);
+
+    pDetails->ep = details->pLosses->GetEccpgRelease().Y();
+
+    pDetails->yb = pSection->GetNetYbg(erectSegmentIntervalIdx, poi);
+
+    pDetails->Ixx = pSection->GetIxx(erectSegmentIntervalIdx, poi);
+
+    pDetails->Ag = pSection->GetAg(erectSegmentIntervalIdx, poi);
+
+
     //get time-dependent losses from erection to last interval
     const LOSSDETAILS* td_details_erect = pLosses->GetLossDetails(poi, erectSegmentIntervalIdx);
     TDCOMPONENTS components_erect;
-    Float64 fpLossErect = GetBearingTimeDependentLosses(poi, pgsTypes::StrandType::Straight, erectSegmentIntervalIdx, pgsTypes::IntervalTimeType::End, 
+    Float64 fpLossErect = GetBearingTimeDependentLosses(poi, pgsTypes::StrandType::Permanent, erectSegmentIntervalIdx, pgsTypes::IntervalTimeType::End, 
         nullptr, td_details_erect, &components_erect);
 
     const LOSSDETAILS* td_details_inf = pLosses->GetLossDetails(poi, lastIntervalIdx);
     TDCOMPONENTS components_inf;
-    Float64 fpLossInfinity = GetBearingTimeDependentLosses(poi, pgsTypes::StrandType::Straight, lastIntervalIdx, pgsTypes::IntervalTimeType::End, 
+    Float64 fpLossInfinity = GetBearingTimeDependentLosses(poi, pgsTypes::StrandType::Permanent, lastIntervalIdx, pgsTypes::IntervalTimeType::End, 
         nullptr, td_details_inf, &components_inf);
 
     //calculate total time-dependent shear deformation
@@ -439,22 +455,22 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey gi
     Float64 total_time_dependent = GetTimeDependentComponentShearDeformation(girderKey, poi, tdLoss);
 
     //calculate creep deformation
-    Float64 creepLoss = components_inf.creep - components_erect.creep;
-    pDetails->creep = GetTimeDependentComponentShearDeformation(girderKey, poi, creepLoss);
+    Float64 creepLoss = components_inf.creep; // -components_erect.creep;
+    pDetails->creep = GetTimeDependentComponentShearDeformation(girderKey, poi, creepLoss)/3.0;
 
     //calculate shrinkage deformation
-    Float64 shrinkageLoss = components_inf.shrinkage - components_erect.shrinkage;
-    pDetails->shrinkage = GetTimeDependentComponentShearDeformation(girderKey, poi, shrinkageLoss);
+    Float64 shrinkageLoss = components_inf.shrinkage; // -components_erect.shrinkage;
+    pDetails->shrinkage = GetTimeDependentComponentShearDeformation(girderKey, poi, shrinkageLoss)/3.0;
 
     //calculate relaxation deformation
-    Float64 relaxationLoss = components_inf.relaxation - components_erect.relaxation;
+    Float64 relaxationLoss = components_inf.relaxation; // -components_erect.relaxation;
     pDetails->relaxation = GetTimeDependentComponentShearDeformation(girderKey, poi, relaxationLoss);
 
-    Float64 sum_components = pDetails->creep + pDetails->shrinkage + pDetails->relaxation;
+    Float64 sum_components = (pDetails->creep + pDetails->shrinkage + pDetails->relaxation)/3.0;
 
     //ASSERT(IsEqual(total_time_dependent, sum_components)); // use if differential shrinkage effects are considered
 
-    return sum_components;
+     return sum_components;
 
 }
 
@@ -721,7 +737,7 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
 
 
 
-    Float64 R1min, R1max, R2min, R2max;
+    Float64 R1min{ 0 }, R1max{ 0 }, R2min(0), R2max{ 0 };
 
     if (pDetails->bPedLoading)
     {
@@ -829,23 +845,6 @@ void pgsBearingDesignEngineer::GetThermalExpansionDetails(CGirderKey girderKey, 
 
     pDetails->total_shear_deformation_cold = pDetails->thermal_expansion_cold + pDetails->time_dependent;
     pDetails->total_shear_deformation_moderate = pDetails->thermal_expansion_moderate + pDetails->time_dependent;
-
-}
-
-
-void pgsBearingDesignEngineer::GetBearingShearDeformationDetails(pgsTypes::AnalysisType analysisType, PierIndexType startPierIdx, const pgsPointOfInterest& poi,
-    const ReactionLocation& reactionLocation, CGirderKey girderKey, bool bIncludeImpact, bool bIncludeLLDF, SHEARDEFORMATIONDETAILS* pDetails) const
-{
-    
-
-    GET_IFACE(IBearingDesignParameters, pBearing);
-
-    pDetails->time_dependent = pBearing->GetTimeDependentShearDeformation(girderKey, poi, startPierIdx, pDetails);
-
-    pBearing->GetThermalExpansionDetails(girderKey, pDetails);
-
-    
-
 
 }
 
