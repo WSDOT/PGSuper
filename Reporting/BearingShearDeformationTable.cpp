@@ -91,7 +91,7 @@ ColumnIndexType CBearingShearDeformationTable::GetBearingTableColumnCount(IBroke
         {
             nCols++;  //post-tensioning
         }
-        nCols += 11; // creep, shrinkage & relaxation parameters
+        nCols +=8; // creep, shrinkage & relaxation parameters
     }
     else
     {
@@ -138,18 +138,18 @@ RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptR
 
 
         ///////////////////////////////////////////////////////////////////
-        p_table->SetColumnSpan(0, col, 6);
+        p_table->SetColumnSpan(0, col, 3);
         (*p_table)(0, col) << _T("Time-Dependent Deformations");
         p_table->SetColumnSpan(1, col, 3);
-        (*p_table)(1, col) << _T("Test");   /////
+        (*p_table)(1, col) << _T("Test");
         (*p_table)(2, col++) << _T("Creep");
         (*p_table)(2, col++) << _T("Shrinkage");
         (*p_table)(2, col++) << _T("Relaxation");
-        p_table->SetColumnSpan(1, col, 3);
-        (*p_table)(1, col) << _T("Test");  //////
-        (*p_table)(2, col++) << _T("Creep");
-        (*p_table)(2, col++) << _T("Shrinkage");
-        (*p_table)(2, col++) << _T("Relaxation");
+        //p_table->SetColumnSpan(1, col, 3);
+        //(*p_table)(1, col) << _T("Test");  //////
+        //(*p_table)(2, col++) << _T("Creep");
+        //(*p_table)(2, col++) << _T("Shrinkage");
+        //(*p_table)(2, col++) << _T("Relaxation");
 
         //p_table->SetRowSpan(0, col, 2);
         //(*p_table)(1, col) << _T("Test");
