@@ -213,14 +213,7 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     *p << symbol(alpha) << _T(" ") << symbol(TIMES) << _T(" ") << Sub2(_T("L"), _T("pf")) << _T(" ");
     *p << symbol(TIMES) << _T(" (") << Sub2(_T("T"), _T("Max Design")) << _T(" - ");
     *p << Sub2(_T("T"), _T("Min Design")) << _T(")") << rptNewLine;
-    //*p << Sub2(_T("T"), _T("MaxDesign-Cold")) << _T(" = ");
-    //*p << temperature.SetValue(sf_details.max_design_temperature_cold) << rptNewLine;
-    //*p << Sub2(_T("T"), _T("MaxDesign-Moderate")) << _T(" = ");
-    //*p << temperature.SetValue(sf_details.max_design_temperature_moderate) << rptNewLine;
-    //*p << Sub2(_T("T"), _T("MinDesign-Cold")) << _T(" = ");
-    //*p << temperature.SetValue(sf_details.min_design_temperature_cold) << rptNewLine;
-    //*p << Sub2(_T("T"), _T("MinDesign-Moderate")) << _T(" = ");
-    //*p << temperature.SetValue(sf_details.min_design_temperature_moderate) << rptNewLine;
+
 
 
     GET_IFACE2(pBroker, ILibrary, pLibrary);
@@ -252,27 +245,18 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
 
     *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("BottomFlangeShortening.png")) << rptNewLine;
 
-    //*p << symbol(DELTA) << Sub2(_T("L"),_T("bf")) << _T(" = bottom flange shortening due to a given time-dependent effect") << rptNewLine;
-    //*p << symbol(DELTA) << Sub2(_T("L"), _T("ten")) << _T(" = ") << Sub2(symbol(DELTA), _T("time-dependent"));
-    //*p << _T(" = tendon shortening due to girder self-weight and prestress losses") << rptNewLine;
-    //*p << Sub2(_T("e"), _T("p")) << _T(" = ") << length.SetValue(sf_details.ep) << rptNewLine;
-    //*p << Sub2(_T("y"), _T("b")) << _T(" = ") << length.SetValue(sf_details.yb) << rptNewLine;
-    //*p << _T("r = ") << symbol(ROOT) << Sub2(_T("I"),_T("xx")) << _T("/") << Sub2(_T("A"),_T("g")) << _T(") = ") << length.SetValue(sf_details.r) << rptNewLine;
-    //*p << Sub2(_T("I"), _T("xx")) << _T(" = ") << I.SetValue(sf_details.Ixx) << rptNewLine;
-    //*p << Sub2(_T("A"), _T("g")) << _T(" = ") << A.SetValue(sf_details.Ag) << rptNewLine;
-
-
-
 
     *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, are_user_loads, true, pDisplayUnits, true, true) << rptNewLine;
 
-    *p << _T("Deck shrinkage effects are not considered") << rptNewLine;
+    *p << _T("-Two-thirds of the total girder creep and shrinkage is assumed to occur before girders are erected") << rptNewLine;
+    *p << _T("-Deck shrinkage effects are not considered") << rptNewLine << rptNewLine;
 
     *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, are_user_loads, true, pDisplayUnits, true, false) << rptNewLine;
 
-    *p << _T("Deck shrinkage effects are not considered") << rptNewLine << rptNewLine;
+    *p << _T("-Two-thirds of the total girder creep and shrinkage is assumed to occur before girders are erected") << rptNewLine;
+    *p << _T("-Deck shrinkage effects are not considered") << rptNewLine << rptNewLine;
 
 
     GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);

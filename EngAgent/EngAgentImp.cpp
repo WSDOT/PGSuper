@@ -3875,9 +3875,9 @@ Float64 CEngAgentImp::GetSpanContributoryLength(CGirderKey girderKey, SHEARDEFOR
     return m_BearingEngineer.GetSpanContributoryLength(girderKey, pDetails);
 }
 
-Float64 CEngAgentImp::GetTimeDependentComponentShearDeformation(CGirderKey girderKey, const pgsPointOfInterest& poi, Float64 loss) const
+Float64 CEngAgentImp::GetTimeDependentComponentShearDeformation(CGirderKey girderKey, const pgsPointOfInterest& poi, Float64 loss, Float64 tendon_deflection) const
 {
-    return m_BearingEngineer.GetTimeDependentComponentShearDeformation(girderKey, poi, loss);
+    return m_BearingEngineer.GetTimeDependentComponentShearDeformation(girderKey, poi, loss, tendon_deflection);
 }
 
 Float64 CEngAgentImp::GetTimeDependentShearDeformation(CGirderKey girderKey,

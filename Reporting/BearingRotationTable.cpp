@@ -686,7 +686,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
             label = _T("Torsional Rotations**");
         }
         {
-            label = _T("Torsional Rotations");
+            label = _T("Torsional Rotations**");
         } 
     }
 
