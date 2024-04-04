@@ -91,6 +91,8 @@
 #include <Reporting\TimeStepParametersChapterBuilder.h>
 
 #include <Reporting\BearingDesignParametersChapterBuilder.h>
+#include <Reporting\BearingDesignSummaryChapterBuilder.h>
+#include <Reporting\BearingDesignDetailsChapterBuilder.h>
 #include <Reporting\DistributionFactorDetailsChapterBuilder.h>
 
 #include <Reporting\TimeStepDetailsChapterBuilder.h>
@@ -314,7 +316,9 @@ void CReporterBase::CreateBearingDesignReport()
 #endif
    pRptBuilder->AddTitlePageBuilder( std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingDesignParametersChapterBuilder>()) );
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingDesignSummaryChapterBuilder>()));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingDesignDetailsChapterBuilder>()));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingDesignParametersChapterBuilder>()));
    pRptMgr->AddReportBuilder( pRptBuilder );
 }
 
