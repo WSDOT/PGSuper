@@ -209,7 +209,7 @@ Float64 pgsBearingDesignEngineer::GetSpanContributoryLength(CGirderKey girderKey
 }
 
 
-Float64 pgsBearingDesignEngineer::GetTimeDependentComponentShearDeformation(CGirderKey girderKey, const pgsPointOfInterest& poi, Float64 loss, Float64 tendon_deflection) const
+Float64 pgsBearingDesignEngineer::GetTimeDependentComponentShearDeformation(CGirderKey girderKey, const pgsPointOfInterest& poi, Float64 loss, SHEARDEFORMATIONDETAILS* pDetails) const
 {
 
 
@@ -223,24 +223,18 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentComponentShearDeformation(CGir
     IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
     auto lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
 
-
-    SHEARDEFORMATIONDETAILS sf_details;
-    Float64 L = GetSpanContributoryLength(girderKey, &sf_details);
+    Float64 L = GetSpanContributoryLength(girderKey, pDetails);
 
     Float64 Ep = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Straight)->GetE();
 
-    sf_details.tendon_shortening = - loss * L / Ep;
+    pDetails->tendon_shortening = - loss * L / Ep;
 
     auto details = pLosses->GetLossDetails(poi, erectSegmentIntervalIdx);
 
-    sf_details.r = sqrt(sf_details.Ixx / sf_details.Ag);
+   pDetails->flange_bottom_shortening = (1.0 + pDetails->ep * pDetails->yb / (pDetails->r * pDetails->r)) / 
+        (1 + pDetails->ep * pDetails->ep / (pDetails->r * pDetails->r)) * pDetails->tendon_shortening;
 
-    sf_details.flange_bottom_shortening = (1.0 + sf_details.ep * sf_details.yb / (sf_details.r * sf_details.r)) / 
-        (1 + sf_details.ep * sf_details.ep / (sf_details.r * sf_details.r)) * sf_details.tendon_shortening;
-
-    tendon_deflection = sf_details.tendon_shortening;
-
-    return sf_details.flange_bottom_shortening;
+    return pDetails->flange_bottom_shortening;
 
 }
 
@@ -440,6 +434,8 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey gi
 
     pDetails->Ag = pSection->GetAg(erectSegmentIntervalIdx, poi);
 
+    pDetails->r = sqrt(pDetails->Ixx / pDetails->Ag);  // td components or shear def details
+
 
     //get time-dependent losses from erection to last interval
     const LOSSDETAILS* td_details_erect = pLosses->GetLossDetails(poi, erectSegmentIntervalIdx);
@@ -453,24 +449,24 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey gi
         nullptr, td_details_inf, &components_inf);
 
     //calculate total time-dependent shear deformation
-    Float64 tendon_deflection{0};
+    Float64 tendon_shortening{0};
     Float64 tdLoss = fpLossInfinity - fpLossErect;
-    Float64 total_time_dependent = GetTimeDependentComponentShearDeformation(girderKey, poi, tdLoss, tendon_deflection);
+    Float64 total_time_dependent = GetTimeDependentComponentShearDeformation(girderKey, poi, tdLoss, pDetails);
 
     //calculate creep deformation
     Float64 creepLoss = components_inf.creep; // -components_erect.creep;
-    pDetails->creep = GetTimeDependentComponentShearDeformation(girderKey, poi, creepLoss, tendon_deflection)/3.0;
-    pDetails->tendon_creep = tendon_deflection;
+    pDetails->creep = GetTimeDependentComponentShearDeformation(girderKey, poi, creepLoss, pDetails)/3.0;
+    pDetails->tendon_creep = pDetails->tendon_shortening;
 
     //calculate shrinkage deformation
     Float64 shrinkageLoss = components_inf.shrinkage; // -components_erect.shrinkage;
-    pDetails->shrinkage = GetTimeDependentComponentShearDeformation(girderKey, poi, shrinkageLoss, tendon_deflection)/3.0; /////// add a pointer to get the contrib length----------------------------------------
-    pDetails->tendon_shrinkage = tendon_deflection;
+    pDetails->shrinkage = GetTimeDependentComponentShearDeformation(girderKey, poi, shrinkageLoss, pDetails)/3.0;
+    pDetails->tendon_shrinkage = pDetails->tendon_shortening;
 
     //calculate relaxation deformation
     Float64 relaxationLoss = components_inf.relaxation; // -components_erect.relaxation;
-    pDetails->relaxation = GetTimeDependentComponentShearDeformation(girderKey, poi, relaxationLoss, tendon_deflection);
-    pDetails->tendon_relaxation = tendon_deflection;
+    pDetails->relaxation = GetTimeDependentComponentShearDeformation(girderKey, poi, relaxationLoss, pDetails);
+    pDetails->tendon_relaxation = pDetails->tendon_shortening;
 
     Float64 sum_components = (pDetails->creep + pDetails->shrinkage + pDetails->relaxation)/3.0;
 
@@ -846,6 +842,7 @@ void pgsBearingDesignEngineer::GetThermalExpansionDetails(CGirderKey girderKey, 
     {
         pDetails->percentExpansion = 0.65;
     }
+
 
     pDetails->thermal_expansion_cold = -pDetails->percentExpansion * pDetails->thermal_expansion_coefficient * L * (pDetails->max_design_temperature_cold - pDetails->min_design_temperature_cold);
     pDetails->thermal_expansion_moderate = -pDetails->percentExpansion * pDetails->thermal_expansion_coefficient * L * (pDetails->max_design_temperature_moderate - pDetails->min_design_temperature_moderate);

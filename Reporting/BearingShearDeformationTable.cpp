@@ -120,8 +120,8 @@ RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptR
         (*p_table)(2, col++) << Sub2(symbol(DELTA), _T("0"));
         (*p_table)(2, col++) << symbol(alpha);
         (*p_table)(2, col++) << Sub2(_T("L"), _T("pf"));
-        (*p_table)(2, col++) << Sub2(_T("T"), _T("max-design"));
-        (*p_table)(2, col++) << Sub2(_T("T"), _T("max-design"));
+        (*p_table)(2, col++) << Sub2(_T("T"), _T("max"));
+        (*p_table)(2, col++) << Sub2(_T("T"), _T("min"));
 
         p_table->SetRowSpan(0, col, 3);
         (*p_table)(0, col++) << Sub2(symbol(DELTA), _T("thermal"));
@@ -171,7 +171,7 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
 {
 
     // Build table
-    INIT_UV_PROTOTYPE(rptLengthUnitValue, Reaction, pDisplayUnits->GetDeflectionUnit(), false);
+   
 
     GET_IFACE2(pBroker, IBridge, pBridge);
 
@@ -287,49 +287,59 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
         GET_IFACE2(pBroker, IBearingDesignParameters, pBearing);
 
 
+        details.time_dependent = pBearing->GetTimeDependentShearDeformation(girderKey, poi, startPierIdx, &details);
         pBearing->GetThermalExpansionDetails(girderKey, &details);
-        pBearing->GetTimeDependentShearDeformation(girderKey, poi, startPierIdx, &details);
+        
+
+
+        INIT_UV_PROTOTYPE(rptLengthUnitValue, Deflection, pDisplayUnits->GetDeflectionUnit(), false);
+        INIT_UV_PROTOTYPE(rptLengthUnitValue, Span, pDisplayUnits->GetSpanLengthUnit(), false);
+        INIT_UV_PROTOTYPE(rptTemperatureUnitValue, Temp, pDisplayUnits->GetTemperatureUnit(), false);
+        INIT_UV_PROTOTYPE(rptStressUnitValue, Stress, pDisplayUnits->GetStressUnit(), false);
+        INIT_UV_PROTOTYPE(rptLength4UnitValue, I, pDisplayUnits->GetMomentOfInertiaUnit(), false);
+        INIT_UV_PROTOTYPE(rptAreaUnitValue, A, pDisplayUnits->GetAreaUnit(), false);
+
 
         if (bDetail)
         {
-            (*p_table)(row, col++) << Reaction.SetValue(details.percentExpansion);
-            (*p_table)(row, col++) << Reaction.SetValue(details.thermal_expansion_coefficient);
-            (*p_table)(row, col++) << Reaction.SetValue(details.length_pf);
+            (*p_table)(row, col++) << details.percentExpansion;
+            (*p_table)(row, col++) << details.thermal_expansion_coefficient;
+            (*p_table)(row, col++) << Span.SetValue(details.length_pf);
             if (bCold)
             {
-                (*p_table)(row, col++) << Reaction.SetValue(details.max_design_temperature_cold);
-                (*p_table)(row, col++) << Reaction.SetValue(details.min_design_temperature_cold);
-                (*p_table)(row, col++) << Reaction.SetValue(details.total_shear_deformation_cold);
+                (*p_table)(row, col++) << Temp.SetValue(details.max_design_temperature_cold);
+                (*p_table)(row, col++) << Temp.SetValue(details.min_design_temperature_cold);
+                (*p_table)(row, col++) << Deflection.SetValue(details.total_shear_deformation_cold);
             }
             else
             {
-                (*p_table)(row, col++) << Reaction.SetValue(details.max_design_temperature_moderate);
-                (*p_table)(row, col++) << Reaction.SetValue(details.min_design_temperature_moderate);
-                (*p_table)(row, col++) << Reaction.SetValue(details.total_shear_deformation_moderate);
+                (*p_table)(row, col++) << Temp.SetValue(details.max_design_temperature_moderate);
+                (*p_table)(row, col++) << Temp.SetValue(details.min_design_temperature_moderate);
+                (*p_table)(row, col++) << Deflection.SetValue(details.total_shear_deformation_moderate);
             }
 
             if (0 < details.nDucts)
             {
-                (*p_table)(row, col++) << Reaction.SetValue(details.postTension);
+                (*p_table)(row, col++) << Stress.SetValue(details.postTension);
             }
 
-            (*p_table)(row, col++) << Reaction.SetValue(details.yb);
-            (*p_table)(row, col++) << Reaction.SetValue(details.ep);
-            (*p_table)(row, col++) << Reaction.SetValue(details.Ixx);
-            (*p_table)(row, col++) << Reaction.SetValue(details.Ag);
-            (*p_table)(row, col++) << Reaction.SetValue(details.r);
+            (*p_table)(row, col++) << Deflection.SetValue(details.yb);
+            (*p_table)(row, col++) << Deflection.SetValue(details.ep);
+            (*p_table)(row, col++) << I.SetValue(details.Ixx);
+            (*p_table)(row, col++) << A.SetValue(details.Ag);
+            (*p_table)(row, col++) << Deflection.SetValue(details.r);
 
-            (*p_table)(row, col++) << Reaction.SetValue(details.tendon_creep);
-            (*p_table)(row, col++) << Reaction.SetValue(details.tendon_shrinkage);
-            (*p_table)(row, col++) << Reaction.SetValue(details.tendon_relaxation);
-            (*p_table)(row, col++) << Reaction.SetValue(details.creep);
-            (*p_table)(row, col++) << Reaction.SetValue(details.shrinkage);
-            (*p_table)(row, col) << Reaction.SetValue(details.relaxation);
+            (*p_table)(row, col++) << Deflection.SetValue(details.tendon_creep);
+            (*p_table)(row, col++) << Deflection.SetValue(details.tendon_shrinkage);
+            (*p_table)(row, col++) << Deflection.SetValue(details.tendon_relaxation);
+            (*p_table)(row, col++) << Deflection.SetValue(details.creep);
+            (*p_table)(row, col++) << Deflection.SetValue(details.shrinkage);
+            (*p_table)(row, col) << Deflection.SetValue(details.relaxation);
         }
         else
         {
-            (*p_table)(row, col++) << Reaction.SetValue(details.total_shear_deformation_cold);
-            (*p_table)(row, col++) << Reaction.SetValue(details.total_shear_deformation_moderate);
+            (*p_table)(row, col++) << Deflection.SetValue(details.total_shear_deformation_cold);
+            (*p_table)(row, col++) << Deflection.SetValue(details.total_shear_deformation_moderate);
         }
 
 

@@ -181,6 +181,7 @@ struct SHEARDEFORMATIONDETAILS : public TABLEPARAMETERS
 	Float64 thermal_expansion_moderate;
 	Float64 preTension;
 	Float64 postTension;
+	Float64 tendon_shortening;
 	Float64 creep;
 	Float64 tendon_creep;
 	Float64 shrinkage;
@@ -188,7 +189,6 @@ struct SHEARDEFORMATIONDETAILS : public TABLEPARAMETERS
 	Float64 relaxation;
 	Float64 tendon_relaxation;
 	Float64 time_dependent;
-	Float64 tendon_shortening;
 	Float64 Ixx;
 	Float64 Ag;
 	Float64 ep;
@@ -220,7 +220,7 @@ interface IBearingDesignParameters : IUnknown
 
 	virtual Float64 GetSpanContributoryLength(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const = 0;
 
-	virtual Float64 GetTimeDependentComponentShearDeformation(CGirderKey girderKey, const pgsPointOfInterest& poi, Float64 loss, Float64 tendon_deflection) const = 0;
+	virtual Float64 GetTimeDependentComponentShearDeformation(CGirderKey girderKey, const pgsPointOfInterest& poi, Float64 loss, SHEARDEFORMATIONDETAILS* pDetails) const = 0;
 
 	virtual Float64 GetTimeDependentShearDeformation(CGirderKey girderKey,
 		const pgsPointOfInterest& poi, PierIndexType startPierIdx, SHEARDEFORMATIONDETAILS* pDetails) const = 0;
