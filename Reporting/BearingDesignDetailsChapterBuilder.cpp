@@ -209,13 +209,6 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
 
     *p << _T("Temperature range is computed based on Procedure A (Article 3.12.2.1)") << rptNewLine;
 
-    *p << Sub2(symbol(DELTA), _T("temp")) << _T(" = ") << Sub2(symbol(DELTA), _T("0")) << _T(" ") << symbol(TIMES) << _T(" ");
-    *p << symbol(alpha) << _T(" ") << symbol(TIMES) << _T(" ") << Sub2(_T("L"), _T("pf")) << _T(" ");
-    *p << symbol(TIMES) << _T(" (") << Sub2(_T("T"), _T("Max Design")) << _T(" - ");
-    *p << Sub2(_T("T"), _T("Min Design")) << _T(")") << rptNewLine;
-
-
-
     GET_IFACE2(pBroker, ILibrary, pLibrary);
     WBFL::System::Time time;
     bool bPrintDate = WBFL::System::Time::PrintDate(true);
@@ -224,6 +217,7 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     std::_tstring strMasterLibFile;
     pLibrary->GetMasterLibraryInfo(strServer, strConfiguration, strMasterLibFile, time);
 
+    *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("thermal_expansion.png")) << rptNewLine;
 
     if (strConfiguration == _T("WSDOT"))
     {
@@ -245,15 +239,18 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
 
     *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("BottomFlangeShortening.png")) << rptNewLine;
 
+    *p << _T("where") << rptNewLine;
 
-    *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
-        true, true, are_user_loads, true, pDisplayUnits, true, true) << rptNewLine;
+    *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("radius_of_gyration.png")) << rptNewLine;
+
+    *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(),
+        true, pDisplayUnits, true, true) << rptNewLine;
 
     *p << _T("-Two-thirds of the total girder creep and shrinkage is assumed to occur before girders are erected") << rptNewLine;
     *p << _T("-Deck shrinkage effects are not considered") << rptNewLine << rptNewLine;
 
-    *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
-        true, true, are_user_loads, true, pDisplayUnits, true, false) << rptNewLine;
+    *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(),
+        true, pDisplayUnits, true, false) << rptNewLine;
 
     *p << _T("-Two-thirds of the total girder creep and shrinkage is assumed to occur before girders are erected") << rptNewLine;
     *p << _T("-Deck shrinkage effects are not considered") << rptNewLine << rptNewLine;

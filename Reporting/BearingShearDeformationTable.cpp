@@ -102,10 +102,21 @@ ColumnIndexType CBearingShearDeformationTable::GetBearingTableColumnCount(IBroke
 }
 
 
-template <class M, class T>
 RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptRcTable* p_table, pgsTypes::AnalysisType analysisType, 
-    IEAFDisplayUnits* pDisplayUnits, const T& unitT, SHEARDEFORMATIONDETAILS* pDetails, bool bDetail)
+    IEAFDisplayUnits* pDisplayUnits, SHEARDEFORMATIONDETAILS* pDetails, bool bDetail)
+
 {
+
+    //INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
+    //INIT_UV_PROTOTYPE(rptLengthUnitValue, length, pDisplayUnits->GetSpanLengthUnit(), false);
+    //INIT_UV_PROTOTYPE(rptLength4UnitValue, I, pDisplayUnits->GetMomentOfInertiaUnit(), false);
+    //INIT_UV_PROTOTYPE(rptLength2UnitValue, A, pDisplayUnits->GetAreaUnit(), false);
+    //INIT_UV_PROTOTYPE(rptLengthUnitValue, deflection, pDisplayUnits->GetDeflectionUnit(), false);
+    //INIT_UV_PROTOTYPE(rptTemperatureUnitValue, temperature, pDisplayUnits->GetTemperatureUnit(), false);
+
+
+    
+
     p_table->SetNumberOfHeaderRows(3);
 
     ColumnIndexType col = 0;
@@ -115,39 +126,39 @@ RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptR
 
     if (bDetail)
     {
+
+
         p_table->SetRowColumnSpan(0, col, 2, 5);
         (*p_table)(0, col) << _T("Thermal Deformation Parameters");
         (*p_table)(2, col++) << Sub2(symbol(DELTA), _T("0"));
-        (*p_table)(2, col++) << symbol(alpha);
-        (*p_table)(2, col++) << Sub2(_T("L"), _T("pf"));
-        (*p_table)(2, col++) << Sub2(_T("T"), _T("max"));
-        (*p_table)(2, col++) << Sub2(_T("T"), _T("min"));
+        (*p_table)(2, col++) << symbol(alpha) << rptNewLine << _T("(") << pDisplayUnits->GetTemperatureUnit().UnitOfMeasure.UnitTag() << _T(")") << Super(_T("-1"));
+        (*p_table)(2, col++) << COLHDR(Sub2(_T("L"), _T("pf")), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+        (*p_table)(2, col++) << COLHDR(Sub2(_T("T"), _T("max")), rptTemperatureUnitTag, pDisplayUnits->GetTemperatureUnit());
+        (*p_table)(2, col++) << COLHDR(Sub2(_T("T"), _T("min")), rptTemperatureUnitTag, pDisplayUnits->GetTemperatureUnit());
 
         p_table->SetRowSpan(0, col, 3);
-        (*p_table)(0, col++) << Sub2(symbol(DELTA), _T("thermal"));
+        (*p_table)(0, col++) << COLHDR(Sub2(symbol(DELTA), _T("thermal")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
 
         p_table->SetRowColumnSpan(0, col, 2, 5);
         (*p_table)(0, col) << _T("Girder Properties");
-        (*p_table)(2, col++) << Sub2(_T("y"), _T("b"));
-        (*p_table)(2, col++) << Sub2(_T("e"), _T("p"));
-        (*p_table)(2, col++) << Sub2(_T("I"), _T("xx"));
-        (*p_table)(2, col++) << Sub2(_T("A"), _T("g"));
-        (*p_table)(2, col++) << _T("r");
+        (*p_table)(2, col++) << COLHDR(Sub2(_T("y"), _T("b")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+        (*p_table)(2, col++) << COLHDR(Sub2(_T("e"), _T("p")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+        (*p_table)(2, col++) << COLHDR(Sub2(_T("I"), _T("xx")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+        (*p_table)(2, col++) << COLHDR(Sub2(_T("A"), _T("g")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
+        (*p_table)(2, col++) << COLHDR(_T("r"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
 
-
-        ///////////////////////////////////////////////////////////////////
         p_table->SetColumnSpan(0, col, 6);
         (*p_table)(0, col) << _T("Time-Dependent Deformations");
         p_table->SetColumnSpan(1, col, 3);
         (*p_table)(1, col) << Sub2(symbol(DELTA) << _T("L"), _T("ten"));
-        (*p_table)(2, col++) << _T("Creep");
-        (*p_table)(2, col++) << _T("Shrinkage");
-        (*p_table)(2, col++) << _T("Relaxation");
+        (*p_table)(2, col++) << COLHDR(_T("Creep"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+        (*p_table)(2, col++) << COLHDR(_T("Shrinkage"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+        (*p_table)(2, col++) << COLHDR(_T("Relaxation"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
         p_table->SetColumnSpan(1, col, 3);
         (*p_table)(1, col) << Sub2(symbol(DELTA) << _T("L"), _T("bf"));
-        (*p_table)(2, col++) << _T("Creep");
-        (*p_table)(2, col++) << _T("Shrinkage");
-        (*p_table)(2, col++) << _T("Relaxation");
+        (*p_table)(2, col++) << COLHDR(_T("Creep"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+        (*p_table)(2, col++) << COLHDR(_T("Shrinkage"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+        (*p_table)(2, col++) << COLHDR(_T("Relaxation"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
     }
     else
     {
@@ -167,11 +178,8 @@ RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptR
 
 //======================== OPERATIONS =======================================
 rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBroker* pBroker, const CGirderKey& girderKey, pgsTypes::AnalysisType analysisType,
-    bool bIncludeImpact, bool bIncludeLLDF, bool bDesign, bool bUserLoads, bool bIndicateControllingLoad, IEAFDisplayUnits* pDisplayUnits, bool bDetail, bool bCold) const
+    bool bDesign, IEAFDisplayUnits* pDisplayUnits, bool bDetail, bool bCold) const
 {
-
-    // Build table
-   
 
     GET_IFACE2(pBroker, IBridge, pBridge);
 
@@ -185,6 +193,13 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
     GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
     SHEARDEFORMATIONDETAILS details;
     pBearingDesignParameters->GetBearingTableParameters(girderKey, &details);
+
+    INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
+    INIT_UV_PROTOTYPE(rptLengthUnitValue, length, pDisplayUnits->GetSpanLengthUnit(), false);
+    INIT_UV_PROTOTYPE(rptLength4UnitValue, I, pDisplayUnits->GetMomentOfInertiaUnit(), false);
+    INIT_UV_PROTOTYPE(rptLength2UnitValue, A, pDisplayUnits->GetAreaUnit(), false);
+    INIT_UV_PROTOTYPE(rptLengthUnitValue, deflection, pDisplayUnits->GetDeflectionUnit(), false);
+    INIT_UV_PROTOTYPE(rptTemperatureUnitValue, temperature, pDisplayUnits->GetTemperatureUnit(), false);
 
 
     ColumnIndexType nCols = GetBearingTableColumnCount(pBroker, girderKey, analysisType, &details, bDetail);
@@ -202,14 +217,13 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
     
     
     rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols, label);
-    RowIndexType row = ConfigureBearingShearDeformationTableHeading<rptAngleUnitTag, WBFL::Units::AngleData>(
-        pBroker, p_table, analysisType, pDisplayUnits, pDisplayUnits->GetRadAngleUnit(), &details, bDetail);
+    RowIndexType row = ConfigureBearingShearDeformationTableHeading(pBroker, p_table, analysisType, pDisplayUnits, &details, bDetail);
 
     p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
     p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
 
-
+    
 
 
 

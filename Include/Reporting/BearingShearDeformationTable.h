@@ -93,8 +93,7 @@ public:
    // 
    // 
    // Builds ......
-   virtual rptRcTable* BuildBearingShearDeformationTable(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
-                             bool bIncludeImpact,bool bIncludeLLDF,bool bDesign,bool bUserLoads, bool bIndicateControllingLoad,
+   virtual rptRcTable* BuildBearingShearDeformationTable(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType, bool bDesign,
                              IEAFDisplayUnits* pDisplayUnits, bool bDetail, bool bCold) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
