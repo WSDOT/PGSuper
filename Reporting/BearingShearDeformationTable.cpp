@@ -116,12 +116,26 @@ RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptR
 
 
     
-
-    p_table->SetNumberOfHeaderRows(3);
+    if (bDetail)
+    {
+        p_table->SetNumberOfHeaderRows(3);
+    }
+    else
+    {
+        p_table->SetNumberOfHeaderRows(2);
+    }
 
     ColumnIndexType col = 0;
 
-    p_table->SetRowSpan(0, col, 3);
+    if (bDetail)
+    {
+        p_table->SetRowSpan(0, col, 3);
+    }
+    else
+    {
+        p_table->SetRowSpan(0, col, 2);
+    }
+    
     (*p_table)(0, col++) << _T("");
 
     if (bDetail)
@@ -162,6 +176,7 @@ RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptR
     }
     else
     {
+        //p_table->SetRowSpan(0, col, 2);
         p_table->SetColumnSpan(0, col, 2);
         (*p_table)(0, col) << Sub2(symbol(DELTA),_T("total"));
         (*p_table)(1, col++) << COLHDR(_T("Cold"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
@@ -206,13 +221,20 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
 
     CString label{_T("")};
 
-    if (bCold)
+    if (bDetail)
     {
-        label = _T("Shear Deformations - Cold Climate");
+        if (bCold)
+        {
+            label = _T("Shear Deformations - Cold Climate");
+        }
+        else
+        {
+            label = _T("Shear Deformations - Moderate Climate");
+        }
     }
     else
     {
-        label = _T("Shear Deformations - Moderate Climate");
+        label = _T("Shear Deformations");
     }
     
     

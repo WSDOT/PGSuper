@@ -271,7 +271,7 @@ ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBrok
         
     }
 
-    nCols++; //for debugging
+    //nCols++; //for debugging
 
     return nCols;
 }
@@ -646,10 +646,8 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
         }
     }
 
-
-
-        return p_table->GetNumberOfHeaderRows(); // index of first row to report data
-        }
+    return p_table->GetNumberOfHeaderRows(); // index of first row to report data
+ }
     
 
 
@@ -1157,25 +1155,23 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
             {
                 if (reactionDecider.DoReport(lastIntervalIdx))
                 {
-                    (*p_table)(row, col) << rotation.SetValue(details.maxDesignLLrotation);
-                    if (bIndicateControllingLoad && 0 <= details.maxConfigRotation)
-                    {
-                        (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << details.maxConfigRotation << _T(")");
-                    }
-                    col++;
-
                     if (bDetail)
                     {
-                        (*p_table)(row, col) << rotation.SetValue(details.minDesignLLrotation);
-                    }
+                        (*p_table)(row, col) << rotation.SetValue(details.maxDesignLLrotation);
+                        if (bIndicateControllingLoad && 0 <= details.maxConfigRotation)
+                        {
+                            (*p_table)(row, col) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << details.maxConfigRotation << _T(")");
+                        }
+                        col++;
+
+                            (*p_table)(row, col) << rotation.SetValue(details.minDesignLLrotation);
+                        }
                     
-                    if (bIndicateControllingLoad && 0 <= details.minConfigRotation && bDetail)
-                    {
-                        (*p_table)(row, col++) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << details.minConfigRotation << _T(")");
+                        if (bIndicateControllingLoad && 0 <= details.minConfigRotation && bDetail)
+                        {
+                            (*p_table)(row, col++) << rptNewLine << _T("(") << LiveLoadPrefix(pgsTypes::lltDesign) << details.minConfigRotation << _T(")");
+                        }
                     }
-
-
-                }
                 else
                 {
                     (*p_table)(row, col++) << RPT_NA;

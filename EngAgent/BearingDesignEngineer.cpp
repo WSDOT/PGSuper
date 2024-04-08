@@ -227,7 +227,7 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentComponentShearDeformation(CGir
 
     Float64 Ep = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Straight)->GetE();
 
-    pDetails->tendon_shortening = - loss * L / Ep;
+    pDetails->tendon_shortening = - (loss * L / Ep) / 3.0; // assumes 2/3 of creep and shrinkage occurs before girders are erected
 
     auto details = pLosses->GetLossDetails(poi, erectSegmentIntervalIdx);
 
@@ -455,12 +455,12 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey gi
 
     //calculate creep deformation
     Float64 creepLoss = components_inf.creep; // -components_erect.creep;
-    pDetails->creep = GetTimeDependentComponentShearDeformation(girderKey, poi, creepLoss, pDetails)/3.0;
+    pDetails->creep = GetTimeDependentComponentShearDeformation(girderKey, poi, creepLoss, pDetails);
     pDetails->tendon_creep = pDetails->tendon_shortening;
 
     //calculate shrinkage deformation
     Float64 shrinkageLoss = components_inf.shrinkage; // -components_erect.shrinkage;
-    pDetails->shrinkage = GetTimeDependentComponentShearDeformation(girderKey, poi, shrinkageLoss, pDetails)/3.0;
+    pDetails->shrinkage = GetTimeDependentComponentShearDeformation(girderKey, poi, shrinkageLoss, pDetails);
     pDetails->tendon_shrinkage = pDetails->tendon_shortening;
 
     //calculate relaxation deformation
@@ -468,7 +468,7 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey gi
     pDetails->relaxation = GetTimeDependentComponentShearDeformation(girderKey, poi, relaxationLoss, pDetails);
     pDetails->tendon_relaxation = pDetails->tendon_shortening;
 
-    Float64 sum_components = (pDetails->creep + pDetails->shrinkage + pDetails->relaxation)/3.0;
+    Float64 sum_components = (pDetails->creep + pDetails->shrinkage + pDetails->relaxation);
 
     //ASSERT(IsEqual(total_time_dependent, sum_components)); // use if differential shrinkage effects are considered
 
