@@ -190,16 +190,6 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     *p << rptNewLine;
     *p << _T("Shear Deformation Details") << rptNewLine;
 
-     p = new rptParagraph;
-    *pChapter << p;
-
-    *p << _T("Distance from the apparent point of fixity to bearing, ") << Sub2(_T("L"), _T("pf")) << _T(" = ");
-    *p << _T("The location of the point of fixity is one of the following:") << rptNewLine;
-    *p << _T("-The midlength of the superstructure between expansion joints") << rptNewLine;
-    *p << _T("-The central pier for a bridge with an even number of spans between expansion joints") << rptNewLine;
-    *p << _T("-The midpoint of the central span for a bridge with an odd number of spans between expansion joints") << rptNewLine << rptNewLine;
-
-
     p = new rptParagraph(rptStyleManager::GetSubheadingStyle());
     *pChapter << p;
     *p << _T("Shortening due to temperature difference:") << rptNewLine;
@@ -219,18 +209,30 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
 
     *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("thermal_expansion.png")) << rptNewLine;
 
+    *p << symbol(alpha) << _T(" = coefficient of thermal expansion") << rptNewLine;
+
     if (strConfiguration == _T("WSDOT"))
     {
-        *p << _T("From WSDOT BDM Ch. 9.2.5A: ") << Sub2(symbol(DELTA), _T("0")) << _T(" = 0.75") << rptNewLine;
+        *p << Sub2(symbol(DELTA), _T("0")) << _T(" = 0.75 (WSDOT BDM Ch. 9.2.5A)") << rptNewLine;
     }
     else
     {
-        *p << _T("From AASHTO LRFD Sect. 14.7.5.3.2: ") << Sub2(symbol(DELTA), _T("0")) << _T(" = 0.65") << rptNewLine;
+        *p << Sub2(symbol(DELTA), _T("0")) << _T(" = 0.65 (AASHTO LRFD Sect. 14.7.5.3.2)") << rptNewLine;
     }
+
+    *p << Sub2(_T("L"), _T("pf")) << _T(" = ") << _T("Distance from the apparent point of fixity to bearing") << rptNewLine;
+    *p << _T("The location of the point of fixity is one of the following:") << rptNewLine;
+    *p << _T("-The midlength of the superstructure between expansion joints") << rptNewLine;
+    *p << _T("-The central pier for a bridge with an even number of spans between expansion joints") << rptNewLine;
+    *p << _T("-The midpoint of the central span for a bridge with an odd number of spans between expansion joints") << rptNewLine;
+
+    *p << Sub2(_T("T"), _T("max")) << _T(" = maximum temperature used for design") << rptNewLine;
+    *p << Sub2(_T("T"), _T("min")) << _T(" = minimum temperature used for design") << rptNewLine;
 
     p = new rptParagraph(rptStyleManager::GetSubheadingStyle());
     *pChapter << p;
-    *p << _T("Shortening of bottom flange due to tendon shortening:") << rptNewLine;
+    *p << _T("Shortening of bottom flange (") << symbol(DELTA) << Sub2(_T("L"), _T("bf"));
+    *p << _T(") due to tendon shortening (") << symbol(DELTA) << Sub2(_T("L"), _T("ten")) << _T("):") << rptNewLine;
 
     p = new rptParagraph;
     *pChapter << p;

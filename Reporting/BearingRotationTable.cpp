@@ -563,7 +563,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
 
     if (!bDetail)
     {
-            (*p_table)(0, col++) << COLHDR(Sub2(symbol(theta), _T("s-st*")), 
+            (*p_table)(0, col++) << COLHDR(_T("*") << Sub2(symbol(theta), _T("s-st")),
                     rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
     }
 
@@ -578,7 +578,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
         else
         {
             p_table->SetColumnSpan(0, col, 2);
-            (*p_table)(0, col) << Sub2(symbol(theta), _T("Design LL")) << _T("*");
+            (*p_table)(0, col) << _T("*") << Sub2(symbol(theta), _T("Design LL"));
             (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
             (*p_table)(1, col++) << COLHDR(_T("Min"), M, unitT);
 
@@ -587,7 +587,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
 
     if (!bDetail)
     {
-            (*p_table)(0, col++) << COLHDR(Sub2(symbol(theta), _T("s") << _T("**")),
+            (*p_table)(0, col++) << _T("**") << COLHDR(Sub2(symbol(theta), _T("s")),
                     rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
     }
 
@@ -681,10 +681,10 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
     {
         if (bDetail)
         {
-            label = _T("Torsional Rotations**");
+            label = _T("**Torsional Rotations");
         }
         {
-            label = _T("Torsional Rotations**");
+            label = _T("**Torsional Rotations");
         } 
     }
 
