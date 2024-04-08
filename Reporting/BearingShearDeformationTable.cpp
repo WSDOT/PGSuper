@@ -107,15 +107,6 @@ RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptR
 
 {
 
-    //INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
-    //INIT_UV_PROTOTYPE(rptLengthUnitValue, length, pDisplayUnits->GetSpanLengthUnit(), false);
-    //INIT_UV_PROTOTYPE(rptLength4UnitValue, I, pDisplayUnits->GetMomentOfInertiaUnit(), false);
-    //INIT_UV_PROTOTYPE(rptLength2UnitValue, A, pDisplayUnits->GetAreaUnit(), false);
-    //INIT_UV_PROTOTYPE(rptLengthUnitValue, deflection, pDisplayUnits->GetDeflectionUnit(), false);
-    //INIT_UV_PROTOTYPE(rptTemperatureUnitValue, temperature, pDisplayUnits->GetTemperatureUnit(), false);
-
-
-    
     if (bDetail)
     {
         p_table->SetNumberOfHeaderRows(3);
@@ -335,23 +326,29 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
         INIT_UV_PROTOTYPE(rptLength4UnitValue, I, pDisplayUnits->GetMomentOfInertiaUnit(), false);
         INIT_UV_PROTOTYPE(rptAreaUnitValue, A, pDisplayUnits->GetAreaUnit(), false);
 
-
         if (bDetail)
         {
             (*p_table)(row, col++) << details.percentExpansion;
-            (*p_table)(row, col++) << details.thermal_expansion_coefficient;
+            if (pDisplayUnits->GetUnitMode() == eafTypes::UnitMode::umUS)
+            {
+                (*p_table)(row, col++) << 1.0 / ((1.0 / details.thermal_expansion_coefficient) * 9.0 / 5.0 + 32.0);
+            }
+            else
+            {
+                (*p_table)(row, col++) << details.thermal_expansion_coefficient;
+            }
             (*p_table)(row, col++) << Span.SetValue(details.length_pf);
             if (bCold)
             {
                 (*p_table)(row, col++) << Temp.SetValue(details.max_design_temperature_cold);
                 (*p_table)(row, col++) << Temp.SetValue(details.min_design_temperature_cold);
-                (*p_table)(row, col++) << Deflection.SetValue(details.total_shear_deformation_cold);
+                (*p_table)(row, col++) << Deflection.SetValue(details.thermal_expansion_cold);
             }
             else
             {
                 (*p_table)(row, col++) << Temp.SetValue(details.max_design_temperature_moderate);
                 (*p_table)(row, col++) << Temp.SetValue(details.min_design_temperature_moderate);
-                (*p_table)(row, col++) << Deflection.SetValue(details.total_shear_deformation_moderate);
+                (*p_table)(row, col++) << Deflection.SetValue(details.thermal_expansion_moderate);
             }
 
             if (0 < details.nDucts)
