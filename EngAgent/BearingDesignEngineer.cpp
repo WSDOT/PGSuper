@@ -450,8 +450,8 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey gi
 
     //calculate total time-dependent shear deformation
     Float64 tendon_shortening{0};
-    Float64 tdLoss = fpLossInfinity; // -fpLossErect;
-    Float64 total_time_dependent = GetTimeDependentComponentShearDeformation(girderKey, poi, tdLoss, pDetails);
+    //Float64 tdLoss = fpLossInfinity; // -fpLossErect;
+    ////Float64 total_time_dependent = GetTimeDependentComponentShearDeformation(girderKey, poi, tdLoss, pDetails);
 
     //calculate creep deformation
     Float64 creepLoss = components_inf.creep; // -components_erect.creep;
