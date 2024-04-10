@@ -351,52 +351,20 @@ Float64 pgsBearingDesignEngineer::GetBearingTimeDependentLosses(const pgsPointOf
     else
     {
         // some method other than Time Step
-        //GET_IFACE(IIntervals, pIntervals);
-        //IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
 
-        Float64 loss = 0;
+            
+        Float64 loss = pDetails->pLosses->PermanentStrand_Final();
 
-
-        //if (intervalIdx == erectSegmentIntervalIdx)
-        //{
-        //    if (strandType == pgsTypes::Temporary)
-        //    {
-        //        loss = pDetails->pLosses->TemporaryStrand_BeforeTemporaryStrandRemoval();
-        //    }
-        //    else
-        //    {
-        //        loss = pDetails->pLosses->PermanentStrand_BeforeTemporaryStrandRemoval();
-
-        //        if (pDetails->LossMethod == PrestressLossCriteria::LossMethodType::WSDOT_REFINED_2005 || pDetails->LossMethod == PrestressLossCriteria::LossMethodType::AASHTO_REFINED_2005)
-        //        {
-        //            auto pRefined2005 = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLosses2005>(pDetails->pLosses);
-
-        //            tdComponents->shrinkage = pRefined2005->PermanentStrand_ShrinkageLossAtShipping();
-        //            tdComponents->creep = pRefined2005->PermanentStrand_CreepLossAtShipping();
-        //            tdComponents->relaxation = pRefined2005->PermanentStrand_RelaxationLossesBeforeTransfer() + pRefined2005->PermanentStrand_RelaxationLossAtShipping();
-        //        }
-       
-        //    }
-        //}
-        //else
+        if (pDetails->LossMethod == PrestressLossCriteria::LossMethodType::WSDOT_REFINED_2005 || pDetails->LossMethod == PrestressLossCriteria::LossMethodType::AASHTO_REFINED_2005)
         {
-            //if (strandType == pgsTypes::Temporary)
-            //{
-            //    loss = pDetails->pLosses->TemporaryStrand_Final(); // probably don't need temporary
-            //}
-            //else
-            {
-                loss = pDetails->pLosses->PermanentStrand_Final();
-
-                if (pDetails->LossMethod == PrestressLossCriteria::LossMethodType::WSDOT_REFINED_2005 || pDetails->LossMethod == PrestressLossCriteria::LossMethodType::AASHTO_REFINED_2005)
-                {
-                    auto pRefined2005 = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLosses2005>(pDetails->pLosses);
-                    tdComponents->shrinkage = pRefined2005->ShrinkageLossBeforeDeckPlacement(); // +pRefined2005->ShrinkageLossAfterDeckPlacement();
-                    tdComponents->creep = pRefined2005->CreepLossBeforeDeckPlacement(); // +pRefined2005->CreepLossAfterDeckPlacement();
-                    tdComponents->relaxation = /*pRefined2005->PermanentStrand_RelaxationLossesBeforeTransfer() + */pRefined2005->RelaxationLossBeforeDeckPlacement(); // +pRefined2005->RelaxationLossAfterDeckPlacement();
-                }
-            }
+            auto pRefined2005 = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLosses2005>(pDetails->pLosses);
+            tdComponents->shrinkage = pRefined2005->ShrinkageLossBeforeDeckPlacement();
+            tdComponents->creep = pRefined2005->CreepLossBeforeDeckPlacement();
+            tdComponents->relaxation = pRefined2005->RelaxationLossBeforeDeckPlacement();
         }
+
+            
+        
 
         return loss;
     }
