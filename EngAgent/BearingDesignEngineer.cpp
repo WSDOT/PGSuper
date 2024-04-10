@@ -351,40 +351,40 @@ Float64 pgsBearingDesignEngineer::GetBearingTimeDependentLosses(const pgsPointOf
     else
     {
         // some method other than Time Step
-        GET_IFACE(IIntervals, pIntervals);
-        IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
+        //GET_IFACE(IIntervals, pIntervals);
+        //IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
 
         Float64 loss = 0;
 
 
-        if (intervalIdx == erectSegmentIntervalIdx)
-        {
-            if (strandType == pgsTypes::Temporary)
-            {
-                loss = pDetails->pLosses->TemporaryStrand_BeforeTemporaryStrandRemoval();
-            }
-            else
-            {
-                loss = pDetails->pLosses->PermanentStrand_BeforeTemporaryStrandRemoval();
+        //if (intervalIdx == erectSegmentIntervalIdx)
+        //{
+        //    if (strandType == pgsTypes::Temporary)
+        //    {
+        //        loss = pDetails->pLosses->TemporaryStrand_BeforeTemporaryStrandRemoval();
+        //    }
+        //    else
+        //    {
+        //        loss = pDetails->pLosses->PermanentStrand_BeforeTemporaryStrandRemoval();
 
-                if (pDetails->LossMethod == PrestressLossCriteria::LossMethodType::WSDOT_REFINED_2005 || pDetails->LossMethod == PrestressLossCriteria::LossMethodType::AASHTO_REFINED_2005)
-                {
-                    auto pRefined2005 = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLosses2005>(pDetails->pLosses);
+        //        if (pDetails->LossMethod == PrestressLossCriteria::LossMethodType::WSDOT_REFINED_2005 || pDetails->LossMethod == PrestressLossCriteria::LossMethodType::AASHTO_REFINED_2005)
+        //        {
+        //            auto pRefined2005 = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLosses2005>(pDetails->pLosses);
 
-                    tdComponents->shrinkage = pRefined2005->PermanentStrand_ShrinkageLossAtShipping();
-                    tdComponents->creep = pRefined2005->PermanentStrand_CreepLossAtShipping();
-                    tdComponents->relaxation = pRefined2005->PermanentStrand_RelaxationLossesBeforeTransfer() + pRefined2005->PermanentStrand_RelaxationLossAtShipping();
-                }
+        //            tdComponents->shrinkage = pRefined2005->PermanentStrand_ShrinkageLossAtShipping();
+        //            tdComponents->creep = pRefined2005->PermanentStrand_CreepLossAtShipping();
+        //            tdComponents->relaxation = pRefined2005->PermanentStrand_RelaxationLossesBeforeTransfer() + pRefined2005->PermanentStrand_RelaxationLossAtShipping();
+        //        }
        
-            }
-        }
-        else
+        //    }
+        //}
+        //else
         {
-            if (strandType == pgsTypes::Temporary)
-            {
-                loss = pDetails->pLosses->TemporaryStrand_Final(); // probably don't need temporary
-            }
-            else
+            //if (strandType == pgsTypes::Temporary)
+            //{
+            //    loss = pDetails->pLosses->TemporaryStrand_Final(); // probably don't need temporary
+            //}
+            //else
             {
                 loss = pDetails->pLosses->PermanentStrand_Final();
 
@@ -438,10 +438,10 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey gi
 
 
     //get time-dependent losses from erection to last interval
-    const LOSSDETAILS* td_details_erect = pLosses->GetLossDetails(poi, erectSegmentIntervalIdx);
-    TDCOMPONENTS components_erect;
-    Float64 fpLossErect = GetBearingTimeDependentLosses(poi, pgsTypes::StrandType::Permanent, erectSegmentIntervalIdx, pgsTypes::IntervalTimeType::End, 
-        nullptr, td_details_erect, &components_erect);
+    //const LOSSDETAILS* td_details_erect = pLosses->GetLossDetails(poi, erectSegmentIntervalIdx);
+    //TDCOMPONENTS components_erect;
+    //Float64 fpLossErect = GetBearingTimeDependentLosses(poi, pgsTypes::StrandType::Permanent, erectSegmentIntervalIdx, pgsTypes::IntervalTimeType::End, 
+    //    nullptr, td_details_erect, &components_erect);
 
     const LOSSDETAILS* td_details_inf = pLosses->GetLossDetails(poi, lastIntervalIdx);
     TDCOMPONENTS components_inf;
