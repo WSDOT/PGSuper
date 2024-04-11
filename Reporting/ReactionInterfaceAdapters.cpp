@@ -139,7 +139,7 @@ ReactionLocationContainer GetPierReactionLocations(const CGirderKey& girderKey, 
       ATLASSERT(vGirderKeys.size() == 1);
       const auto& thisGirderKey = vGirderKeys.front();
 
-      PierReactionFaceType face = rftMid;
+      PierReactionFaceType face = (pierIdx == 0 ? rftAhead : (pierIdx == nPiers - 1 ? rftBack : rftMid));
       ReactionLocation location = MakeReactionLocation(pierIdx, nPiers, face, thisGirderKey);
       container.push_back( location );
    }
