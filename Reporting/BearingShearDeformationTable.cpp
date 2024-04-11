@@ -92,7 +92,17 @@ ColumnIndexType CBearingShearDeformationTable::GetBearingTableColumnCount(IBroke
         {
             nCols++;  //post-tensioning
         }
-        nCols +=11; // creep, shrinkage & relaxation parameters
+
+
+        GET_IFACE2(pBroker, ILossParameters, pLossParams);
+        if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::GENERAL_LUMPSUM)
+        {
+            nCols += 7; // lump sum time-dependent
+        }
+        else
+        {
+            nCols += 11; // creep, shrinkage & relaxation parameters
+        }
     }
     else
     {
@@ -108,9 +118,17 @@ RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptR
 
 {
 
+
+    RowIndexType rowSpan = 3;
+    GET_IFACE2(pBroker, ILossParameters, pLossParams);
+    if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::GENERAL_LUMPSUM)
+    {
+        rowSpan = 2;
+    }
+
     if (bDetail)
     {
-        p_table->SetNumberOfHeaderRows(3);
+        p_table->SetNumberOfHeaderRows(rowSpan);
     }
     else
     {
@@ -121,7 +139,7 @@ RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptR
 
     if (bDetail)
     {
-        p_table->SetRowSpan(0, col, 3);
+        p_table->SetRowSpan(0, col, rowSpan);
     }
     else
     {
@@ -133,42 +151,50 @@ RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptR
     if (bDetail)
     {
 
-
-        p_table->SetRowColumnSpan(0, col, 2, 5);
+        p_table->SetRowColumnSpan(0, col, rowSpan-1, 5);
         (*p_table)(0, col) << _T("Thermal Deformation Parameters");
-        (*p_table)(2, col++) << Sub2(symbol(DELTA), _T("0"));
-        (*p_table)(2, col++) << symbol(alpha) << rptNewLine << _T("(") << pDisplayUnits->GetTemperatureUnit().UnitOfMeasure.UnitTag() << _T(")") << Super(_T("-1"));
-        (*p_table)(2, col++) << COLHDR(Sub2(_T("L"), _T("pf")), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-        (*p_table)(2, col++) << COLHDR(Sub2(_T("T"), _T("max")), rptTemperatureUnitTag, pDisplayUnits->GetTemperatureUnit());
-        (*p_table)(2, col++) << COLHDR(Sub2(_T("T"), _T("min")), rptTemperatureUnitTag, pDisplayUnits->GetTemperatureUnit());
+        (*p_table)(rowSpan - 1, col++) << Sub2(symbol(DELTA), _T("0"));
+        (*p_table)(rowSpan - 1, col++) << symbol(alpha) << rptNewLine << _T("(") << pDisplayUnits->GetTemperatureUnit().UnitOfMeasure.UnitTag() << _T(")") << Super(_T("-1"));
+        (*p_table)(rowSpan - 1, col++) << COLHDR(Sub2(_T("L"), _T("pf")), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+        (*p_table)(rowSpan - 1, col++) << COLHDR(Sub2(_T("T"), _T("max")), rptTemperatureUnitTag, pDisplayUnits->GetTemperatureUnit());
+        (*p_table)(rowSpan - 1, col++) << COLHDR(Sub2(_T("T"), _T("min")), rptTemperatureUnitTag, pDisplayUnits->GetTemperatureUnit());
 
-        p_table->SetRowSpan(0, col, 3);
+        p_table->SetRowSpan(0, col, rowSpan);
         (*p_table)(0, col++) << COLHDR(Sub2(symbol(DELTA), _T("thermal")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
 
-        p_table->SetRowColumnSpan(0, col, 2, 5);
+        p_table->SetRowColumnSpan(0, col, rowSpan, 5);
         (*p_table)(0, col) << _T("Girder Properties");
-        (*p_table)(2, col++) << COLHDR(Sub2(_T("y"), _T("b")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
-        (*p_table)(2, col++) << COLHDR(Sub2(_T("e"), _T("p")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
-        (*p_table)(2, col++) << COLHDR(Sub2(_T("I"), _T("xx")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
-        (*p_table)(2, col++) << COLHDR(Sub2(_T("A"), _T("g")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
-        (*p_table)(2, col++) << COLHDR(_T("r"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+        (*p_table)(rowSpan - 1, col++) << COLHDR(Sub2(_T("e"), _T("p")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+        (*p_table)(rowSpan - 1, col++) << COLHDR(Sub2(_T("I"), _T("xx")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+        (*p_table)(rowSpan - 1, col++) << COLHDR(Sub2(_T("y"), _T("b")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+        (*p_table)(rowSpan - 1, col++) << COLHDR(Sub2(_T("A"), _T("g")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
+        (*p_table)(rowSpan - 1, col++) << COLHDR(_T("r"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
 
-        p_table->SetColumnSpan(0, col, 6);
-        (*p_table)(0, col) << _T("Time-Dependent Deformations");
-        p_table->SetColumnSpan(1, col, 3);
-        (*p_table)(1, col) << Sub2(symbol(DELTA) << _T("L"), _T("ten"));
-        (*p_table)(2, col++) << COLHDR(_T("Creep"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
-        (*p_table)(2, col++) << COLHDR(_T("Shrinkage"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
-        (*p_table)(2, col++) << COLHDR(_T("Relaxation"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
-        p_table->SetColumnSpan(1, col, 3);
-        (*p_table)(1, col) << Sub2(symbol(DELTA) << _T("L"), _T("bf"));
-        (*p_table)(2, col++) << COLHDR(_T("Creep"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
-        (*p_table)(2, col++) << COLHDR(_T("Shrinkage"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
-        (*p_table)(2, col++) << COLHDR(_T("Relaxation"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+        if (pLossParams->GetLossMethod()== PrestressLossCriteria::LossMethodType::GENERAL_LUMPSUM)
+        {
+            p_table->SetColumnSpan(0, col, 2);
+            (*p_table)(0, col) << _T("Time-Dependent Deformations");
+            (*p_table)(1, col++) << COLHDR(symbol(SUM) << Sub2(symbol(DELTA) << _T("L"), _T("ten")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+            (*p_table)(1, col++) << COLHDR(symbol(SUM) << Sub2(symbol(DELTA) << _T("L"), _T("bf")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+        }
+        else
+        {
+            p_table->SetColumnSpan(0, col, 6);
+            (*p_table)(0, col) << _T("Time-Dependent Deformations");
+            p_table->SetColumnSpan(1, col, 3);
+            (*p_table)(1, col) << Sub2(symbol(DELTA) << _T("L"), _T("ten"));
+            (*p_table)(2, col++) << COLHDR(_T("Creep"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+            (*p_table)(2, col++) << COLHDR(_T("Shrinkage"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+            (*p_table)(2, col++) << COLHDR(_T("Relaxation"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+            p_table->SetColumnSpan(1, col, 3);
+            (*p_table)(1, col) << Sub2(symbol(DELTA) << _T("L"), _T("bf"));
+            (*p_table)(2, col++) << COLHDR(_T("Creep"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+            (*p_table)(2, col++) << COLHDR(_T("Shrinkage"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+            (*p_table)(2, col++) << COLHDR(_T("Relaxation"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+        }
     }
     else
     {
-        //p_table->SetRowSpan(0, col, 2);
         p_table->SetColumnSpan(0, col, 2);
         (*p_table)(0, col) << Sub2(symbol(DELTA),_T("total"));
         (*p_table)(1, col++) << COLHDR(_T("Cold"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
@@ -363,8 +389,8 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
             (*p_table)(row, col++) << A.SetValue(details.Ag);
             (*p_table)(row, col++) << Deflection.SetValue(details.r);
 
-            GET_IFACE2(pBroker, ILosses, pLosses);
-            if (pLosses->GetLossDetails(poi, lastIntervalIdx)->LossMethod == PrestressLossCriteria::LossMethodType::GENERAL_LUMPSUM)
+            GET_IFACE2(pBroker, ILossParameters, pLossParams);
+            if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::GENERAL_LUMPSUM)
             {
                 (*p_table)(row, col++) << Deflection.SetValue(details.tendon_shortening);
                 (*p_table)(row, col++) << Deflection.SetValue(details.time_dependent);
