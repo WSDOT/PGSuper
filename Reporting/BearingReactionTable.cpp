@@ -694,7 +694,7 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
     std::unique_ptr<IProductReactionAdapter> pForces;
 
     GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
-    pForces = std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, diaphragmIntervalIdx, girderKey);
+    pForces = std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastIntervalIdx, girderKey);
 
 
 

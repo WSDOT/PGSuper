@@ -204,8 +204,6 @@ Float64 pgsBearingDesignEngineer::GetSpanContributoryLength(CGirderKey girderKey
 
     return L;
 
-
-
 }
 
 
@@ -403,14 +401,7 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey gi
 
     pDetails->Ag = pSection->GetAg(erectSegmentIntervalIdx, poi);
 
-    pDetails->r = sqrt(pDetails->Ixx / pDetails->Ag);  // td components or shear def details
-
-
-    //get time-dependent losses from erection to last interval
-    //const LOSSDETAILS* td_details_erect = pLosses->GetLossDetails(poi, erectSegmentIntervalIdx);
-    //TDCOMPONENTS components_erect;
-    //Float64 fpLossErect = GetBearingTimeDependentLosses(poi, pgsTypes::StrandType::Permanent, erectSegmentIntervalIdx, pgsTypes::IntervalTimeType::End, 
-    //    nullptr, td_details_erect, &components_erect);
+    pDetails->r = sqrt(pDetails->Ixx / pDetails->Ag);
 
     const LOSSDETAILS* td_details_inf = pLosses->GetLossDetails(poi, lastIntervalIdx);
     TDCOMPONENTS components_inf;

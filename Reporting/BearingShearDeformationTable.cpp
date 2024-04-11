@@ -162,7 +162,7 @@ RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptR
         p_table->SetRowSpan(0, col, rowSpan);
         (*p_table)(0, col++) << COLHDR(Sub2(symbol(DELTA), _T("thermal")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
 
-        p_table->SetRowColumnSpan(0, col, rowSpan, 5);
+        p_table->SetRowColumnSpan(0, col, rowSpan-1, 5);
         (*p_table)(0, col) << _T("Girder Properties");
         (*p_table)(rowSpan - 1, col++) << COLHDR(Sub2(_T("e"), _T("p")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
         (*p_table)(rowSpan - 1, col++) << COLHDR(Sub2(_T("I"), _T("xx")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
@@ -202,7 +202,7 @@ RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptR
     }
 
 
-    return p_table->GetNumberOfHeaderRows(); // index of first row to report data
+    return p_table->GetNumberOfHeaderRows();
 }
 
 
