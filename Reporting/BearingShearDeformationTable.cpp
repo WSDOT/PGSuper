@@ -27,6 +27,7 @@
 
 
 #include <IFace\Bridge.h>
+#include <IFace\PrestressForce.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
@@ -362,12 +363,21 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
             (*p_table)(row, col++) << A.SetValue(details.Ag);
             (*p_table)(row, col++) << Deflection.SetValue(details.r);
 
-            (*p_table)(row, col++) << Deflection.SetValue(details.tendon_creep);
-            (*p_table)(row, col++) << Deflection.SetValue(details.tendon_shrinkage);
-            (*p_table)(row, col++) << Deflection.SetValue(details.tendon_relaxation);
-            (*p_table)(row, col++) << Deflection.SetValue(details.creep);
-            (*p_table)(row, col++) << Deflection.SetValue(details.shrinkage);
-            (*p_table)(row, col) << Deflection.SetValue(details.relaxation);
+            GET_IFACE2(pBroker, ILosses, pLosses);
+            if (pLosses->GetLossDetails(poi, lastIntervalIdx)->LossMethod == PrestressLossCriteria::LossMethodType::GENERAL_LUMPSUM)
+            {
+                (*p_table)(row, col++) << Deflection.SetValue(details.tendon_shortening);
+                (*p_table)(row, col++) << Deflection.SetValue(details.time_dependent);
+            }
+            else
+            {
+                (*p_table)(row, col++) << Deflection.SetValue(details.tendon_creep);
+                (*p_table)(row, col++) << Deflection.SetValue(details.tendon_shrinkage);
+                (*p_table)(row, col++) << Deflection.SetValue(details.tendon_relaxation);
+                (*p_table)(row, col++) << Deflection.SetValue(details.creep);
+                (*p_table)(row, col++) << Deflection.SetValue(details.shrinkage);
+                (*p_table)(row, col) << Deflection.SetValue(details.relaxation);
+            }
         }
         else
         {

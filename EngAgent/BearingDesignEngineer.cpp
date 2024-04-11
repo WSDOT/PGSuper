@@ -381,6 +381,7 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey gi
     GET_IFACE(IBridgeDescription, pIBridgeDesc);
     GET_IFACE(ILosses, pLosses);
     GET_IFACE(ISectionProperties, pSection);
+    GET_IFACE(IStrandGeometry, pStrandGeom);
 
 
     // bearing time-dependent effects begin at the erect segment interval
@@ -394,7 +395,7 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey gi
 
     auto details = pLosses->GetLossDetails(poi, erectSegmentIntervalIdx);
 
-    pDetails->ep = details->pLosses->GetEccpgRelease().Y();
+    pDetails->ep = pStrandGeom->GetEccentricity(erectSegmentIntervalIdx, poi, pgsTypes::Permanent).Y();
 
     pDetails->yb = pSection->GetNetYbg(erectSegmentIntervalIdx, poi);
 
@@ -416,11 +417,6 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey gi
     Float64 fpLossInfinity = GetBearingTimeDependentLosses(poi, pgsTypes::StrandType::Permanent, lastIntervalIdx, pgsTypes::IntervalTimeType::End, 
         nullptr, td_details_inf, &components_inf);
 
-    //calculate total time-dependent shear deformation
-    Float64 tendon_shortening{0};
-    Float64 tdLoss = fpLossInfinity; // -fpLossErect;
-    Float64 total_time_dependent = GetTimeDependentComponentShearDeformation(girderKey, poi, tdLoss, pDetails);
-
     //calculate creep deformation
     Float64 creepLoss = components_inf.creep; // -components_erect.creep;
     pDetails->creep = GetTimeDependentComponentShearDeformation(girderKey, poi, creepLoss, pDetails);
@@ -437,6 +433,12 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey gi
     pDetails->tendon_relaxation = pDetails->tendon_shortening;
 
     Float64 sum_components = (pDetails->creep + pDetails->shrinkage + pDetails->relaxation);
+
+    //calculate total time-dependent shear deformation
+    Float64 tdLoss = fpLossInfinity; // -fpLossErect;
+    Float64 total_time_dependent = GetTimeDependentComponentShearDeformation(girderKey, poi, tdLoss, pDetails);
+
+    pDetails->total_tendon_shortening = pDetails->tendon_shortening;
 
     //ASSERT(IsEqual(total_time_dependent, sum_components)); // use if differential shrinkage effects are considered
 

@@ -182,6 +182,7 @@ struct SHEARDEFORMATIONDETAILS : public TABLEPARAMETERS
 	Float64 preTension;
 	Float64 postTension;
 	Float64 tendon_shortening;
+	Float64 total_tendon_shortening;
 	Float64 creep;
 	Float64 tendon_creep;
 	Float64 shrinkage;
