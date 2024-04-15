@@ -231,8 +231,8 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
 
     p = new rptParagraph(rptStyleManager::GetSubheadingStyle());
     *pChapter << p;
-    *p << _T("Shortening of bottom flange (") << symbol(DELTA) << Sub2(_T("L"), _T("bf"));
-    *p << _T(") due to tendon shortening (") << symbol(DELTA) << Sub2(_T("L"), _T("ten")) << _T("):") << rptNewLine;
+    *p << _T("Shortening of bottom flange, ") << symbol(DELTA) << Sub2(_T("L"), _T("bf"));
+    *p << _T(", due to tendon shortening, ") << symbol(DELTA) << Sub2(_T(" L"), _T("ten")) << _T(" :") << rptNewLine;
 
     p = new rptParagraph;
     *pChapter << p;

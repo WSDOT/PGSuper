@@ -88,11 +88,6 @@ ColumnIndexType CBearingShearDeformationTable::GetBearingTableColumnCount(IBroke
     {
         nCols += 6; // thermal expansion parameters
 
-        if (0 < details->nDucts)
-        {
-            nCols++;  //post-tensioning
-        }
-
 
         GET_IFACE2(pBroker, ILossParameters, pLossParams);
         if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::GENERAL_LUMPSUM)
@@ -376,11 +371,6 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
                 (*p_table)(row, col++) << Temp.SetValue(details.max_design_temperature_moderate);
                 (*p_table)(row, col++) << Temp.SetValue(details.min_design_temperature_moderate);
                 (*p_table)(row, col++) << Deflection.SetValue(details.thermal_expansion_moderate);
-            }
-
-            if (0 < details.nDucts)
-            {
-                (*p_table)(row, col++) << Stress.SetValue(details.postTension);
             }
 
             (*p_table)(row, col++) << Deflection.SetValue(details.yb);
