@@ -221,40 +221,55 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     }
 
     *p << Sub2(_T("L"), _T("pf")) << _T(" = ") << _T("Distance from the apparent point of fixity to bearing") << rptNewLine;
-    *p << _T("The location of the point of fixity is one of the following:") << rptNewLine;
-    *p << _T("-The midlength of the superstructure between expansion joints") << rptNewLine;
-    *p << _T("-The central pier for a bridge with an even number of spans between expansion joints") << rptNewLine;
-    *p << _T("-The midpoint of the central span for a bridge with an odd number of spans between expansion joints") << rptNewLine;
 
-    *p << Sub2(_T("T"), _T("max")) << _T(" = maximum temperature used for design") << rptNewLine;
-    *p << Sub2(_T("T"), _T("min")) << _T(" = minimum temperature used for design") << rptNewLine;
+    SHEARDEFORMATIONDETAILS sfDetails;
+    pBearingDesignParameters->GetBearingTableParameters(girderKey, &sfDetails);
 
-    p = new rptParagraph(rptStyleManager::GetSubheadingStyle());
-    *pChapter << p;
-    *p << _T("Shortening of bottom flange, ") << symbol(DELTA) << Sub2(_T("L"), _T("bf"));
-    *p << _T(", due to tendon shortening, ") << symbol(DELTA) << Sub2(_T(" L"), _T("ten")) << _T(" :") << rptNewLine;
 
-    p = new rptParagraph;
-    *pChapter << p;
+    GET_IFACE2(pBroker, ILossParameters, pLossParams);
+    if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
+    {
+        *p << _T("The location of the point of fixity is one of the following:") << rptNewLine;
+        *p << _T("-The midlength of the superstructure between expansion joints") << rptNewLine;
+        *p << _T("-The central pier for a bridge with an even number of spans between expansion joints") << rptNewLine;
+        *p << _T("-The midpoint of the central span for a bridge with an odd number of spans between expansion joints") << rptNewLine;
 
-    *p << _T("Bottom flange shortening is calculated using PCI BDM Eq. 10.8.3.8.2-6:") << rptNewLine;
+        *p << Sub2(_T("T"), _T("max")) << _T(" = maximum temperature used for design") << rptNewLine;
+        *p << Sub2(_T("T"), _T("min")) << _T(" = minimum temperature used for design") << rptNewLine;
 
-    *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("BottomFlangeShortening.png")) << rptNewLine;
+        p = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+        *pChapter << p;
+        *p << _T("Shortening of bottom flange, ") << symbol(DELTA) << Sub2(_T("L"), _T("bf"));
+        *p << _T(", due to tendon shortening, ") << symbol(DELTA) << Sub2(_T(" L"), _T("ten")) << _T(" :") << rptNewLine;
 
-    *p << _T("where") << rptNewLine;
+        p = new rptParagraph;
+        *pChapter << p;
 
-    *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("radius_of_gyration.png")) << rptNewLine;
+        *p << _T("Bottom flange shortening is calculated using PCI BDM Eq. 10.8.3.8.2-6:") << rptNewLine;
+        *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("BottomFlangeShortening.png")) << rptNewLine;
+        *p << _T("where") << rptNewLine;
+        *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("radius_of_gyration.png")) << rptNewLine;
+    }
+
 
     *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(),
-        true, pDisplayUnits, true, true) << rptNewLine;
+        true, pDisplayUnits, true, true, &sfDetails) << rptNewLine;
 
-    *p << _T("-Two-thirds of the total girder creep and shrinkage is assumed to occur before girders are erected") << rptNewLine;
+    if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
+    {
+        *p << _T("-Two-thirds of the total girder creep and shrinkage is assumed to occur before girders are erected") << rptNewLine;
+    }
+    *p << _T("-Bearing reset effects are not considered") << rptNewLine;
     *p << _T("-Deck shrinkage effects are not considered") << rptNewLine << rptNewLine;
 
     *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(),
-        true, pDisplayUnits, true, false) << rptNewLine;
+        true, pDisplayUnits, true, false, &sfDetails) << rptNewLine;
 
-    *p << _T("-Two-thirds of the total girder creep and shrinkage is assumed to occur before girders are erected") << rptNewLine;
+    if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
+    {
+        *p << _T("-Two-thirds of the total girder creep and shrinkage is assumed to occur before girders are erected") << rptNewLine;
+    }
+    *p << _T("-Bearing reset effects are not considered") << rptNewLine;
     *p << _T("-Deck shrinkage effects are not considered") << rptNewLine << rptNewLine;
 
 

@@ -121,10 +121,15 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
     *p << _T("*Static rotations include ") << symbol(PLUS_MINUS) << _T("0.005 radians tolerance for uncertainties") << rptNewLine;
     *p << _T("**Used for Method A") << rptNewLine << rptNewLine;
 
-    *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(), true, pDisplayUnits, false, true) << rptNewLine;
+    GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
+    SHEARDEFORMATIONDETAILS sfDetails;
+    pBearingDesignParameters->GetBearingTableParameters(girderKey, &sfDetails);
 
-    *p << _T("Deck shrinkage effects are not considered") << rptNewLine;
-    *p << _T("Temperature range is computed based on Procedure A (Article 3.12.2.1)") << rptNewLine << rptNewLine;
+    *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(), true, pDisplayUnits, false, true, &sfDetails) << rptNewLine;
+
+    *p << _T("-Deck shrinkage effects are not considered") << rptNewLine;
+    *p << _T("-Bearing reset effects are not considered") << rptNewLine;
+    *p << _T("-Temperature range is computed based on Procedure A (Article 3.12.2.1)") << rptNewLine << rptNewLine;
 
     return pChapter;
 }

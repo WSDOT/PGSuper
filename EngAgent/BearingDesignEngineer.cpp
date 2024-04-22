@@ -216,6 +216,8 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentComponentShearDeformation(CGir
     GET_IFACE(IIntervals, pIntervals);
     GET_IFACE(IBridgeDescription, pIBridgeDesc);
 
+    
+
     const CSegmentKey& segmentKey(poi.GetSegmentKey());
     const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
     IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
@@ -223,15 +225,16 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentComponentShearDeformation(CGir
 
     Float64 L = GetSpanContributoryLength(girderKey, pDetails);
 
+
     Float64 Ep = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Straight)->GetE();
 
-    pDetails->tendon_shortening = - (loss * L / Ep) / 3.0; // assumes 2/3 of creep and shrinkage occurs before girders are erected
+    pDetails->tendon_shortening = -(loss * L / Ep) / 3.0; // assumes 2/3 of creep and shrinkage occurs before girders are erected
 
     auto details = pLosses->GetLossDetails(poi, erectSegmentIntervalIdx);
 
-   pDetails->flange_bottom_shortening = (1.0 + pDetails->ep * pDetails->yb / (pDetails->r * pDetails->r)) / 
+    pDetails->flange_bottom_shortening = (1.0 + pDetails->ep * pDetails->yb / (pDetails->r * pDetails->r)) /
         (1 + pDetails->ep * pDetails->ep / (pDetails->r * pDetails->r)) * pDetails->tendon_shortening;
-
+   
     return pDetails->flange_bottom_shortening;
 
 }
@@ -386,8 +389,7 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey gi
     const CSegmentKey& segmentKey(poi.GetSegmentKey());
     const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
     IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
-
-    //bearing time-dependent effects end at the last interval
+    IntervalIndexType castDeckIntervalIdx = pIntervals->GetLastCastDeckInterval();
     CSegmentKey seg_key = pBridge->GetSegmentAtPier(startPierIdx, girderKey);
     auto lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
 
@@ -408,32 +410,116 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey gi
     Float64 fpLossInfinity = GetBearingTimeDependentLosses(poi, pgsTypes::StrandType::Permanent, lastIntervalIdx, pgsTypes::IntervalTimeType::End, 
         nullptr, td_details_inf, &components_inf);
 
-    //calculate creep deformation
-    Float64 creepLoss = components_inf.creep; // -components_erect.creep;
-    pDetails->creep = GetTimeDependentComponentShearDeformation(girderKey, poi, creepLoss, pDetails);
-    pDetails->tendon_creep = pDetails->tendon_shortening;
+    // losses are sort of bogus bc thy don't actually go to ininity but just up to before deck casting............2/3 of that is before erection. There is slightly more after deck casting
 
-    //calculate shrinkage deformation
-    Float64 shrinkageLoss = components_inf.shrinkage; // -components_erect.shrinkage;
-    pDetails->shrinkage = GetTimeDependentComponentShearDeformation(girderKey, poi, shrinkageLoss, pDetails);
-    pDetails->tendon_shrinkage = pDetails->tendon_shortening;
 
-    //calculate relaxation deformation
-    Float64 relaxationLoss = components_inf.relaxation; // -components_erect.relaxation;
-    pDetails->relaxation = GetTimeDependentComponentShearDeformation(girderKey, poi, relaxationLoss, pDetails);
-    pDetails->tendon_relaxation = pDetails->tendon_shortening;
 
-    Float64 sum_components = (pDetails->creep + pDetails->shrinkage + pDetails->relaxation);
 
-    //calculate total time-dependent shear deformation
-    Float64 tdLoss = fpLossInfinity; // -fpLossErect;
-    Float64 total_time_dependent = GetTimeDependentComponentShearDeformation(girderKey, poi, tdLoss, pDetails);
+    GET_IFACE(ILibrary, pLib);
+    GET_IFACE(ISpecification, pSpec);
+    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
+    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+    bool bTimeStepMethod = pSpecEntry->GetPrestressLossCriteria().LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP;
 
-    pDetails->total_tendon_shortening = pDetails->tendon_shortening;
 
-    //ASSERT(IsEqual(total_time_dependent, sum_components)); // use if differential shrinkage effects are considered
+    if (bTimeStepMethod)
+    {
+        GET_IFACE(IProductForces, pProdForces);
+        GET_IFACE(ICombinedForces2, pForces2);
 
-     return total_time_dependent;
+        Float64 L = GetSpanContributoryLength(girderKey, pDetails);
+
+        pgsTypes::BridgeAnalysisType bat = pProdForces->GetBridgeAnalysisType(analysisType, pgsTypes::Maximize);
+        GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+        GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
+        GroupIndexType lastGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? nGroups - 1 : firstGroupIdx);
+
+        for (GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++)
+        {
+
+            PoiList vPoi;
+            GET_IFACE(IPointOfInterest, pIPoi);
+            GET_IFACE(IMaterials, pMaterials);
+
+
+            pIPoi->GetPointsOfInterestInRange(0, poi, L, &vPoi);
+
+
+
+            //std::vector<Float64> fTopCRinc_last, fBotCRinc_last;
+            //std::vector<Float64> fTopSHinc_last, fBotSHinc_last;
+            //std::vector<Float64> fTopREinc_last, fBotREinc_last;
+            //pForces2->GetStress(lastIntervalIdx, lcCR, vPoi, bat, rtCumulative, pgsTypes::TopGirder, pgsTypes::BottomGirder, &fTopCRinc_last, &fBotCRinc_last);
+            //pForces2->GetStress(lastIntervalIdx, lcSH, vPoi, bat, rtCumulative, pgsTypes::TopGirder, pgsTypes::BottomGirder, &fTopSHinc_last, &fBotSHinc_last);
+            //pForces2->GetStress(lastIntervalIdx, lcRE, vPoi, bat, rtCumulative, pgsTypes::TopGirder, pgsTypes::BottomGirder, &fTopREinc_last, &fBotREinc_last);
+            std::vector<Float64> fTopCRinc_erect, fBotCRinc_erect;
+            std::vector<Float64> fTopSHinc_erect, fBotSHinc_erect;
+            std::vector<Float64> fTopREinc_erect, fBotREinc_erect;
+            pForces2->GetStress(erectSegmentIntervalIdx, lcCR, vPoi, bat, rtCumulative, pgsTypes::TopGirder, pgsTypes::BottomGirder, &fTopCRinc_erect, &fBotCRinc_erect);
+            pForces2->GetStress(erectSegmentIntervalIdx, lcSH, vPoi, bat, rtCumulative, pgsTypes::TopGirder, pgsTypes::BottomGirder, &fTopSHinc_erect, &fBotSHinc_erect);
+            pForces2->GetStress(erectSegmentIntervalIdx, lcRE, vPoi, bat, rtCumulative, pgsTypes::TopGirder, pgsTypes::BottomGirder, &fTopREinc_erect, &fBotREinc_erect);
+            std::vector<Float64> fTopCRinc_cast, fBotCRinc_cast;
+            std::vector<Float64> fTopSHinc_cast, fBotSHinc_cast;
+            std::vector<Float64> fTopREinc_cast, fBotREinc_cast;
+            pForces2->GetStress(castDeckIntervalIdx, lcCR, vPoi, bat, rtCumulative, pgsTypes::TopGirder, pgsTypes::BottomGirder, &fTopCRinc_cast, &fBotCRinc_cast);
+            pForces2->GetStress(castDeckIntervalIdx, lcSH, vPoi, bat, rtCumulative, pgsTypes::TopGirder, pgsTypes::BottomGirder, &fTopSHinc_cast, &fBotSHinc_cast);
+            pForces2->GetStress(castDeckIntervalIdx, lcRE, vPoi, bat, rtCumulative, pgsTypes::TopGirder, pgsTypes::BottomGirder, &fTopREinc_cast, &fBotREinc_cast);
+
+
+
+            Float64 Ec = pMaterials->GetSegmentEc28(segmentKey);
+            pgsPointOfInterest p0, p1;
+            Float64 d0, d1;
+            pDetails->creep = 0.0;
+            pDetails->shrinkage = 0.0;
+            pDetails->relaxation = 0.0;
+            for (IndexType idx = 1, nPoi = vPoi.size(); idx < nPoi; idx++)
+            {
+                p0 = vPoi[idx-1];
+                p1 = vPoi[idx];
+                d0 = p0.GetDistFromStart();
+                d1 = p1.GetDistFromStart();
+                if (d1 != d0)
+                {
+                    pDetails->creep += ((fBotCRinc_cast[idx] - fBotCRinc_erect[idx]) + (fBotCRinc_cast[idx - 1] - fBotCRinc_erect[idx - 1])) / (2 * Ec) * (d1 - d0);
+                    pDetails->shrinkage += ((fBotSHinc_cast[idx] - fBotSHinc_erect[idx]) + (fBotSHinc_cast[idx - 1] - fBotSHinc_erect[idx - 1])) / (2 * Ec) * (d1 - d0);
+                    pDetails->relaxation += ((fBotREinc_cast[idx] - fBotREinc_erect[idx]) + (fBotREinc_cast[idx - 1] - fBotREinc_erect[idx - 1])) / (2 * Ec) * (d1 - d0);
+                }
+            }
+        }
+
+    }
+    else
+    {
+
+        //calculate creep deformation
+        Float64 creepLoss = components_inf.creep; // -components_erect.creep;
+        pDetails->creep = GetTimeDependentComponentShearDeformation(girderKey, poi, creepLoss, pDetails);
+        pDetails->tendon_creep = pDetails->tendon_shortening;
+
+        //calculate shrinkage deformation
+        Float64 shrinkageLoss = components_inf.shrinkage; // -components_erect.shrinkage;
+        pDetails->shrinkage = GetTimeDependentComponentShearDeformation(girderKey, poi, shrinkageLoss, pDetails);
+        pDetails->tendon_shrinkage = pDetails->tendon_shortening;
+
+        //calculate relaxation deformation
+        Float64 relaxationLoss = components_inf.relaxation; // -components_erect.relaxation;
+        pDetails->relaxation = GetTimeDependentComponentShearDeformation(girderKey, poi, relaxationLoss, pDetails);
+        pDetails->tendon_relaxation = pDetails->tendon_shortening;
+
+        Float64 sum_components = (pDetails->creep + pDetails->shrinkage + pDetails->relaxation);
+
+        //calculate total time-dependent shear deformation
+        Float64 tdLoss = fpLossInfinity; // -fpLossErect;
+        Float64 total_time_dependent = GetTimeDependentComponentShearDeformation(girderKey, poi, tdLoss, pDetails);
+
+        pDetails->total_tendon_shortening = pDetails->tendon_shortening;
+
+        //ASSERT(IsEqual(total_time_dependent, sum_components)); // use if differential shrinkage effects are considered
+
+        return total_time_dependent;
+
+    }
 
 }
 

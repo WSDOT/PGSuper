@@ -96,7 +96,15 @@ ColumnIndexType CBearingShearDeformationTable::GetBearingTableColumnCount(IBroke
         }
         else
         {
-            nCols += 11; // creep, shrinkage & relaxation parameters
+            GET_IFACE2(pBroker, ILossParameters, pLossParams);
+            if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP)
+            {
+                nCols += 3;
+            }
+            else
+            {
+                nCols += 11; // creep, shrinkage & relaxation parameters
+            }
         }
     }
     else
@@ -157,15 +165,19 @@ RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptR
         p_table->SetRowSpan(0, col, rowSpan);
         (*p_table)(0, col++) << COLHDR(Sub2(symbol(DELTA), _T("thermal")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
 
-        p_table->SetRowColumnSpan(0, col, rowSpan-1, 5);
-        (*p_table)(0, col) << _T("Girder Properties");
-        (*p_table)(rowSpan - 1, col++) << COLHDR(Sub2(_T("e"), _T("p")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
-        (*p_table)(rowSpan - 1, col++) << COLHDR(Sub2(_T("I"), _T("xx")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
-        (*p_table)(rowSpan - 1, col++) << COLHDR(Sub2(_T("y"), _T("b")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
-        (*p_table)(rowSpan - 1, col++) << COLHDR(Sub2(_T("A"), _T("g")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
-        (*p_table)(rowSpan - 1, col++) << COLHDR(_T("r"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
 
-        if (pLossParams->GetLossMethod()== PrestressLossCriteria::LossMethodType::GENERAL_LUMPSUM)
+        if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
+        {
+            p_table->SetRowColumnSpan(0, col, rowSpan - 1, 5);
+            (*p_table)(0, col) << _T("Girder Properties");
+            (*p_table)(rowSpan - 1, col++) << COLHDR(Sub2(_T("e"), _T("p")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+            (*p_table)(rowSpan - 1, col++) << COLHDR(Sub2(_T("I"), _T("xx")), rptLength4UnitTag, pDisplayUnits->GetMomentOfInertiaUnit());
+            (*p_table)(rowSpan - 1, col++) << COLHDR(Sub2(_T("y"), _T("b")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+            (*p_table)(rowSpan - 1, col++) << COLHDR(Sub2(_T("A"), _T("g")), rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
+            (*p_table)(rowSpan - 1, col++) << COLHDR(_T("r"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+        }
+
+        if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::GENERAL_LUMPSUM)
         {
             p_table->SetColumnSpan(0, col, 2);
             (*p_table)(0, col) << _T("Time-Dependent Deformations");
@@ -174,18 +186,34 @@ RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptR
         }
         else
         {
-            p_table->SetColumnSpan(0, col, 6);
-            (*p_table)(0, col) << _T("Time-Dependent Deformations");
-            p_table->SetColumnSpan(1, col, 3);
-            (*p_table)(1, col) << Sub2(symbol(DELTA) << _T("L"), _T("ten"));
-            (*p_table)(2, col++) << COLHDR(_T("Creep"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
-            (*p_table)(2, col++) << COLHDR(_T("Shrinkage"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
-            (*p_table)(2, col++) << COLHDR(_T("Relaxation"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
-            p_table->SetColumnSpan(1, col, 3);
-            (*p_table)(1, col) << Sub2(symbol(DELTA) << _T("L"), _T("bf"));
-            (*p_table)(2, col++) << COLHDR(_T("Creep"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
-            (*p_table)(2, col++) << COLHDR(_T("Shrinkage"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
-            (*p_table)(2, col++) << COLHDR(_T("Relaxation"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+            if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
+            {
+                p_table->SetColumnSpan(0, col, 6);
+                (*p_table)(0, col) << _T("Time-Dependent Deformations");
+                p_table->SetColumnSpan(1, col, 3);
+                (*p_table)(1, col) << Sub2(symbol(DELTA) << _T("L"), _T("ten"));
+                (*p_table)(2, col++) << COLHDR(_T("Creep"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+                (*p_table)(2, col++) << COLHDR(_T("Shrinkage"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+                (*p_table)(2, col++) << COLHDR(_T("Relaxation"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+                p_table->SetColumnSpan(1, col, 3);
+                (*p_table)(1, col) << Sub2(symbol(DELTA) << _T("L"), _T("bf"));
+                (*p_table)(2, col++) << COLHDR(_T("Creep"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+                (*p_table)(2, col++) << COLHDR(_T("Shrinkage"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+                (*p_table)(2, col++) << COLHDR(_T("Relaxation"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+            }
+            else
+            {
+                p_table->SetColumnSpan(0, col, 3);
+                (*p_table)(0, col) << _T("Time-Dependent Deformations");
+                p_table->SetRowSpan(1, col, 2);
+                (*p_table)(1, col++) << COLHDR(_T("Creep"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+                p_table->SetRowSpan(1, col, 2);
+                (*p_table)(1, col++) << COLHDR(_T("Shrinkage"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+                p_table->SetRowSpan(1, col, 2);
+                (*p_table)(1, col++) << COLHDR(_T("Relaxation"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+            }
+
+            
         }
     }
     else
@@ -206,7 +234,7 @@ RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptR
 
 //======================== OPERATIONS =======================================
 rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBroker* pBroker, const CGirderKey& girderKey, pgsTypes::AnalysisType analysisType,
-    bool bDesign, IEAFDisplayUnits* pDisplayUnits, bool bDetail, bool bCold) const
+    bool bDesign, IEAFDisplayUnits* pDisplayUnits, bool bDetail, bool bCold, SHEARDEFORMATIONDETAILS* details) const
 {
 
     GET_IFACE2(pBroker, IBridge, pBridge);
@@ -218,9 +246,7 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
 
     GET_IFACE2(pBroker, IPointOfInterest, pPOI);
 
-    GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
-    SHEARDEFORMATIONDETAILS details;
-    pBearingDesignParameters->GetBearingTableParameters(girderKey, &details);
+
 
     INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
     INIT_UV_PROTOTYPE(rptLengthUnitValue, length, pDisplayUnits->GetSpanLengthUnit(), false);
@@ -230,7 +256,7 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
     INIT_UV_PROTOTYPE(rptTemperatureUnitValue, temperature, pDisplayUnits->GetTemperatureUnit(), false);
 
 
-    ColumnIndexType nCols = GetBearingTableColumnCount(pBroker, girderKey, analysisType, &details, bDetail);
+    ColumnIndexType nCols = GetBearingTableColumnCount(pBroker, girderKey, analysisType, details, bDetail);
 
     CString label{_T("")};
 
@@ -252,7 +278,7 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
     
     
     rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols, label);
-    RowIndexType row = ConfigureBearingShearDeformationTableHeading(pBroker, p_table, analysisType, pDisplayUnits, &details, bDetail);
+    RowIndexType row = ConfigureBearingShearDeformationTableHeading(pBroker, p_table, analysisType, pDisplayUnits, details, bDetail);
 
     p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
     p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
@@ -265,7 +291,7 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
     // get poi where pier Reactions occur
     PoiList vPoi;
     std::vector<CGirderKey> vGirderKeys;
-    pBridge->GetGirderline(girderKey.girderIndex, details.startGroup, details.endGroup, &vGirderKeys);
+    pBridge->GetGirderline(girderKey.girderIndex, details->startGroup, details->endGroup, &vGirderKeys);
     for (const auto& thisGirderKey : vGirderKeys)
     {
         PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(thisGirderKey.groupIndex);
@@ -336,9 +362,8 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
         GET_IFACE2(pBroker, IBearingDesignParameters, pBearing);
 
 
-        details.time_dependent = pBearing->GetTimeDependentShearDeformation(girderKey, poi, startPierIdx, &details);
-        pBearing->GetThermalExpansionDetails(girderKey, &details);
-        
+        details->time_dependent = pBearing->GetTimeDependentShearDeformation(girderKey, poi, startPierIdx, details);
+        pBearing->GetThermalExpansionDetails(girderKey, details);
 
 
         INIT_UV_PROTOTYPE(rptLengthUnitValue, Deflection, pDisplayUnits->GetDeflectionUnit(), false);
@@ -350,55 +375,63 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
 
         if (bDetail)
         {
-            (*p_table)(row, col++) << details.percentExpansion;
+            (*p_table)(row, col++) << details->percentExpansion;
             if (pDisplayUnits->GetUnitMode() == eafTypes::UnitMode::umUS)
             {
-                (*p_table)(row, col++) << 1.0 / ((1.0 / details.thermal_expansion_coefficient) * 9.0 / 5.0 + 32.0);
+                (*p_table)(row, col++) << 1.0 / ((1.0 / details->thermal_expansion_coefficient) * 9.0 / 5.0 + 32.0);
             }
             else
             {
-                (*p_table)(row, col++) << details.thermal_expansion_coefficient;
+                (*p_table)(row, col++) << details->thermal_expansion_coefficient;
             }
-            (*p_table)(row, col++) << Span.SetValue(details.length_pf);
+            (*p_table)(row, col++) << Span.SetValue(details->length_pf);
             if (bCold)
             {
-                (*p_table)(row, col++) << Temp.SetValue(details.max_design_temperature_cold);
-                (*p_table)(row, col++) << Temp.SetValue(details.min_design_temperature_cold);
-                (*p_table)(row, col++) << Deflection.SetValue(details.thermal_expansion_cold);
+                (*p_table)(row, col++) << Temp.SetValue(details->max_design_temperature_cold);
+                (*p_table)(row, col++) << Temp.SetValue(details->min_design_temperature_cold);
+                (*p_table)(row, col++) << Deflection.SetValue(details->thermal_expansion_cold);
             }
             else
             {
-                (*p_table)(row, col++) << Temp.SetValue(details.max_design_temperature_moderate);
-                (*p_table)(row, col++) << Temp.SetValue(details.min_design_temperature_moderate);
-                (*p_table)(row, col++) << Deflection.SetValue(details.thermal_expansion_moderate);
+                (*p_table)(row, col++) << Temp.SetValue(details->max_design_temperature_moderate);
+                (*p_table)(row, col++) << Temp.SetValue(details->min_design_temperature_moderate);
+                (*p_table)(row, col++) << Deflection.SetValue(details->thermal_expansion_moderate);
             }
 
-            (*p_table)(row, col++) << Deflection.SetValue(details.yb);
-            (*p_table)(row, col++) << Deflection.SetValue(details.ep);
-            (*p_table)(row, col++) << I.SetValue(details.Ixx);
-            (*p_table)(row, col++) << A.SetValue(details.Ag);
-            (*p_table)(row, col++) << Deflection.SetValue(details.r);
 
             GET_IFACE2(pBroker, ILossParameters, pLossParams);
+            if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
+            {
+                (*p_table)(row, col++) << Deflection.SetValue(details->yb);
+                (*p_table)(row, col++) << Deflection.SetValue(details->ep);
+                (*p_table)(row, col++) << I.SetValue(details->Ixx);
+                (*p_table)(row, col++) << A.SetValue(details->Ag);
+                (*p_table)(row, col++) << Deflection.SetValue(details->r);
+            }
+
             if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::GENERAL_LUMPSUM)
             {
-                (*p_table)(row, col++) << Deflection.SetValue(details.tendon_shortening);
-                (*p_table)(row, col++) << Deflection.SetValue(details.time_dependent);
+                (*p_table)(row, col++) << Deflection.SetValue(details->tendon_shortening);
+                (*p_table)(row, col++) << Deflection.SetValue(details->time_dependent);
             }
             else
             {
-                (*p_table)(row, col++) << Deflection.SetValue(details.tendon_creep);
-                (*p_table)(row, col++) << Deflection.SetValue(details.tendon_shrinkage);
-                (*p_table)(row, col++) << Deflection.SetValue(details.tendon_relaxation);
-                (*p_table)(row, col++) << Deflection.SetValue(details.creep);
-                (*p_table)(row, col++) << Deflection.SetValue(details.shrinkage);
-                (*p_table)(row, col) << Deflection.SetValue(details.relaxation);
+                if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
+                {
+                    (*p_table)(row, col++) << Deflection.SetValue(details->tendon_creep);
+                    (*p_table)(row, col++) << Deflection.SetValue(details->tendon_shrinkage);
+                    (*p_table)(row, col++) << Deflection.SetValue(details->tendon_relaxation);
+                }
+
+                (*p_table)(row, col++) << Deflection.SetValue(details->creep);
+                (*p_table)(row, col++) << Deflection.SetValue(details->shrinkage);
+                (*p_table)(row, col) << Deflection.SetValue(details->relaxation);
             }
         }
         else
         {
-            (*p_table)(row, col++) << Deflection.SetValue(details.total_shear_deformation_cold);
-            (*p_table)(row, col++) << Deflection.SetValue(details.total_shear_deformation_moderate);
+            (*p_table)(row, col++) << Deflection.SetValue(details->total_shear_deformation_cold);
+            (*p_table)(row, col++) << Deflection.SetValue(details->total_shear_deformation_moderate);
         }
 
 
