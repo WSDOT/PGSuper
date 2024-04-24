@@ -466,6 +466,8 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<const WB
          rptRcTable* pIncStressTable = BuildIncrementalStressTable(pBroker,vLoads,tsDetails, bHasDeck, pDisplayUnits);
          (*pPara) << pIncStressTable << rptNewLine;
          (*pPara) << _T("Change in stress in strands and tendons are the prestress losses during this interval.") << rptNewLine;
+         (*pPara) << _T("Incremental Total = Sum of incremental stresses from loads occurring during this interval.") << rptNewLine;
+         (*pPara) << _T("Cumulative Total = Sum of incremental stresses from loads occurring in all intervals up to and including interval.") << rptNewLine;
          *pPara << rptNewLine;
 
          prevGirderKey = CGirderKey(poi.GetSegmentKey());
@@ -1889,10 +1891,6 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
    }
 
    // fill the table
-   std::array<Float64, 2> f_top_girder = {0,0};
-   std::array<Float64, 2> f_bot_girder = {0,0};
-   std::array<Float64, 2> f_top_deck   = {0,0};
-   std::array<Float64, 2> f_bot_deck   = {0,0};
    colIdx = 1;
    for ( IndexType i = 0; i < nLoads; i++, colIdx++ )
    {
@@ -1901,12 +1899,8 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
       pgsTypes::ProductForceType pfType = vLoads[i];
 
       // Girder
-      f_top_girder[rtIncremental] += tsDetails.Girder.f[pgsTypes::TopFace   ][pfType][rtIncremental];
-      f_bot_girder[rtIncremental] += tsDetails.Girder.f[pgsTypes::BottomFace][pfType][rtIncremental];
-      f_top_girder[rtCumulative]  += tsDetails.Girder.f[pgsTypes::TopFace   ][pfType][rtCumulative];
-      f_bot_girder[rtCumulative]  += tsDetails.Girder.f[pgsTypes::BottomFace][pfType][rtCumulative];
-      (*pTable)(rowIdx++,colIdx) << stress.SetValue(tsDetails.Girder.f[pgsTypes::TopFace   ][pfType][rtIncremental]);
-      (*pTable)(rowIdx++,colIdx) << stress.SetValue(tsDetails.Girder.f[pgsTypes::BottomFace][pfType][rtIncremental]);
+      (*pTable)(rowIdx++,colIdx) << stress.SetValue(tsDetails.Girder.stress_by_load_type[pgsTypes::TopFace   ][pfType][rtIncremental]);
+      (*pTable)(rowIdx++,colIdx) << stress.SetValue(tsDetails.Girder.stress_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental]);
 
       // Strands
       for ( int i = 0; i < 3; i++ )
@@ -1918,12 +1912,8 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
       if (bHasDeck)
       {
          // Deck
-         f_top_deck[rtIncremental] += tsDetails.Deck.f[pgsTypes::TopFace][pfType][rtIncremental];
-         f_bot_deck[rtIncremental] += tsDetails.Deck.f[pgsTypes::BottomFace][pfType][rtIncremental];
-         f_top_deck[rtCumulative] += tsDetails.Deck.f[pgsTypes::TopFace][pfType][rtCumulative];
-         f_bot_deck[rtCumulative] += tsDetails.Deck.f[pgsTypes::BottomFace][pfType][rtCumulative];
-         (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsDetails.Deck.f[pgsTypes::TopFace][pfType][rtIncremental]);
-         (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsDetails.Deck.f[pgsTypes::BottomFace][pfType][rtIncremental]);
+         (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsDetails.Deck.stress_by_load_type[pgsTypes::TopFace][pfType][rtIncremental]);
+         (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsDetails.Deck.stress_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental]);
       }
 
       // Segment Tendons
@@ -1943,8 +1933,8 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
    rowIdx = pTable->GetNumberOfHeaderRows();
 
    // Girder
-   (*pTable)(rowIdx++,colIdx) << stress.SetValue(f_top_girder[rtIncremental]);
-   (*pTable)(rowIdx++,colIdx) << stress.SetValue(f_bot_girder[rtIncremental]);
+   (*pTable)(rowIdx++,colIdx) << stress.SetValue(tsDetails.Girder.stress[pgsTypes::TopFace][rtIncremental]);
+   (*pTable)(rowIdx++,colIdx) << stress.SetValue(tsDetails.Girder.stress[pgsTypes::BottomFace][rtIncremental]);
 
    // Strands
    for ( int i = 0; i < 3; i++ )
@@ -1956,8 +1946,8 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
    if (bHasDeck)
    {
       // Deck
-      (*pTable)(rowIdx++, colIdx) << stress.SetValue(f_top_deck[rtIncremental]);
-      (*pTable)(rowIdx++, colIdx) << stress.SetValue(f_bot_deck[rtIncremental]);
+      (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsDetails.Deck.stress[pgsTypes::TopFace][rtIncremental]);
+      (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsDetails.Deck.stress[pgsTypes::BottomFace][rtIncremental]);
    }
 
    // Segment Tendons
@@ -1977,8 +1967,8 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
    rowIdx = pTable->GetNumberOfHeaderRows();
 
    // Girder
-   (*pTable)(rowIdx++,colIdx) << stress.SetValue(f_top_girder[rtCumulative]);
-   (*pTable)(rowIdx++,colIdx) << stress.SetValue(f_bot_girder[rtCumulative]);
+   (*pTable)(rowIdx++,colIdx) << stress.SetValue(tsDetails.Girder.stress[pgsTypes::TopFace][rtCumulative]);
+   (*pTable)(rowIdx++,colIdx) << stress.SetValue(tsDetails.Girder.stress[pgsTypes::BottomFace][rtCumulative]);
 
    // Strands
    for ( int i = 0; i < 3; i++ )
@@ -1990,8 +1980,8 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
    if (bHasDeck)
    {
       // Deck
-      (*pTable)(rowIdx++, colIdx) << stress.SetValue(f_top_deck[rtCumulative]);
-      (*pTable)(rowIdx++, colIdx) << stress.SetValue(f_bot_deck[rtCumulative]);
+      (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsDetails.Deck.stress[pgsTypes::TopFace][rtCumulative]);
+      (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsDetails.Deck.stress[pgsTypes::BottomFace][rtCumulative]);
    }
 
    // Segment Tendons
@@ -2139,24 +2129,17 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildConcreteStressSummaryTable(IBro
 
       const TIME_STEP_CONCRETE* pConcrete = (bGirder ? &tsDetails.Girder : &tsDetails.Deck);
 
-      Float64 fTop = 0;
-      Float64 fBot = 0;
-
       for ( IndexType i = 0; i < nLoads; i++, colIdx++)
       {
          pgsTypes::ProductForceType pfType = vLoads[i];
-
-         fTop += pConcrete->f[pgsTypes::TopFace   ][pfType][resultsType];
-         fBot += pConcrete->f[pgsTypes::BottomFace][pfType][resultsType];
-
-         (*pTable)(rowIdx,  colIdx) << stress.SetValue(pConcrete->f[pgsTypes::TopFace   ][pfType][resultsType]);
-         (*pTable)(rowIdx+1,colIdx) << stress.SetValue(pConcrete->f[pgsTypes::BottomFace][pfType][resultsType]);
+         (*pTable)(rowIdx,  colIdx) << stress.SetValue(pConcrete->stress_by_load_type[pgsTypes::TopFace   ][pfType][resultsType]);
+         (*pTable)(rowIdx+1,colIdx) << stress.SetValue(pConcrete->stress_by_load_type[pgsTypes::BottomFace][pfType][resultsType]);
       } // next loading
 
       if ( resultsType == rtCumulative)
       {
-         (*pTable)(rowIdx,  colIdx) << stress.SetValue(fTop);
-         (*pTable)(rowIdx+1,colIdx) << stress.SetValue(fBot);
+         (*pTable)(rowIdx,  colIdx) << stress.SetValue(pConcrete->stress[pgsTypes::TopFace][resultsType]);
+         (*pTable)(rowIdx+1,colIdx) << stress.SetValue(pConcrete->stress[pgsTypes::BottomFace][resultsType]);
       }
    }
 
@@ -2179,8 +2162,8 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildConcreteStressSummaryTable(IBro
       {
          pgsTypes::ProductForceType pfType = vLoads[i];
 
-         (*pTable)(rowIdx,  colIdx) << stress.SetValue(pConcrete->f[pgsTypes::TopFace   ][pfType][rtCumulative]);
-         (*pTable)(rowIdx+1,colIdx) << stress.SetValue(pConcrete->f[pgsTypes::BottomFace][pfType][rtCumulative]);
+         (*pTable)(rowIdx,  colIdx) << stress.SetValue(pConcrete->stress_by_load_type[pgsTypes::TopFace   ][pfType][rtCumulative]);
+         (*pTable)(rowIdx+1,colIdx) << stress.SetValue(pConcrete->stress_by_load_type[pgsTypes::BottomFace][pfType][rtCumulative]);
       } // next loading
    }
 

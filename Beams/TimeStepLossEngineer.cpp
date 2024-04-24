@@ -2603,21 +2603,26 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
 
       // get some material properties that we are going to need for the analysis
       Float64 EaDeck = m_pMaterials->GetDeckAgeAdjustedEc(deckCastingRegionIdx, intervalIdx);
+      Float64 EcDeck = m_pMaterials->GetDeckEc(deckCastingRegionIdx, intervalIdx);
 
       Float64 EaGirder;
+      Float64 EcGirder;
       if (bIsOnSegment)
       {
          EaGirder = m_pMaterials->GetSegmentAgeAdjustedEc(segmentKey, intervalIdx);
+         EcGirder = m_pMaterials->GetSegmentEc(segmentKey, intervalIdx);
       }
       else if (bIsInClosure)
       {
          EaGirder = m_pMaterials->GetClosureJointAgeAdjustedEc(closureKey, intervalIdx);
+         EcGirder = m_pMaterials->GetClosureJointEc(closureKey, intervalIdx);
       }
       else
       {
          // poi is in the cast-in-place diaphragm between girder groups
          // this is assumed to be the same material as the deck
          EaGirder = EaDeck;
+         EcGirder = EcDeck;
       }
 
       std::array<Float64, 3> EStrand = { m_pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Straight)->GetE(),
@@ -2990,11 +2995,29 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
          // f = f end of previous interval + change in stress this interval
          if (!IsZero(tsDetails.Girder.An) && !IsZero(tsDetails.Girder.In))
          {
-            tsDetails.Girder.f[pgsTypes::TopFace][pfType][rtIncremental] = tsDetails.Girder.dPi[pfType] / tsDetails.Girder.An + tsDetails.Girder.dMi[pfType] * tsDetails.Girder.Yn / tsDetails.Girder.In;
-            tsDetails.Girder.f[pgsTypes::TopFace][pfType][rtCumulative] = prevTimeStepDetails.Girder.f[pgsTypes::TopFace][pfType][rtCumulative] + tsDetails.Girder.f[pgsTypes::TopFace][pfType][rtIncremental];
+            tsDetails.Girder.stress_by_load_type[pgsTypes::TopFace][pfType][rtIncremental] = tsDetails.Girder.dPi[pfType] / tsDetails.Girder.An + tsDetails.Girder.dMi[pfType] * (tsDetails.Girder.Yn - tsDetails.Girder.H) / tsDetails.Girder.In;
+            tsDetails.Girder.stress_by_load_type[pgsTypes::TopFace][pfType][rtCumulative] = prevTimeStepDetails.Girder.stress_by_load_type[pgsTypes::TopFace][pfType][rtCumulative] + tsDetails.Girder.stress_by_load_type[pgsTypes::TopFace][pfType][rtIncremental];
 
-            tsDetails.Girder.f[pgsTypes::BottomFace][pfType][rtIncremental] = tsDetails.Girder.dPi[pfType] / tsDetails.Girder.An + tsDetails.Girder.dMi[pfType] * (tsDetails.Girder.H + tsDetails.Girder.Yn) / tsDetails.Girder.In;
-            tsDetails.Girder.f[pgsTypes::BottomFace][pfType][rtCumulative] = prevTimeStepDetails.Girder.f[pgsTypes::BottomFace][pfType][rtCumulative] + tsDetails.Girder.f[pgsTypes::BottomFace][pfType][rtIncremental];
+            tsDetails.Girder.stress_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental] = tsDetails.Girder.dPi[pfType] / tsDetails.Girder.An + tsDetails.Girder.dMi[pfType] * tsDetails.Girder.Yn / tsDetails.Girder.In;
+            tsDetails.Girder.stress_by_load_type[pgsTypes::BottomFace][pfType][rtCumulative] = prevTimeStepDetails.Girder.stress_by_load_type[pgsTypes::BottomFace][pfType][rtCumulative] + tsDetails.Girder.stress_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental];
+
+            tsDetails.Girder.stress[pgsTypes::TopFace][rtIncremental] += tsDetails.Girder.stress_by_load_type[pgsTypes::TopFace][pfType][rtIncremental];
+            tsDetails.Girder.stress[pgsTypes::BottomFace][rtIncremental] += tsDetails.Girder.stress_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental];
+
+            tsDetails.Girder.stress[pgsTypes::TopFace][rtCumulative] = prevTimeStepDetails.Girder.stress[pgsTypes::TopFace][rtCumulative] + tsDetails.Girder.stress[pgsTypes::TopFace][rtIncremental];
+            tsDetails.Girder.stress[pgsTypes::BottomFace][rtCumulative] = prevTimeStepDetails.Girder.stress[pgsTypes::BottomFace][rtCumulative] + tsDetails.Girder.stress[pgsTypes::BottomFace][rtIncremental];
+
+            tsDetails.Girder.strain_by_load_type[pgsTypes::TopFace][pfType][rtIncremental] = tsDetails.Girder.stress_by_load_type[pgsTypes::TopFace][pfType][rtIncremental] / EcGirder;
+            tsDetails.Girder.strain_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental] = tsDetails.Girder.stress_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental] / EcGirder;
+
+            tsDetails.Girder.strain_by_load_type[pgsTypes::TopFace][pfType][rtCumulative] = prevTimeStepDetails.Girder.strain_by_load_type[pgsTypes::TopFace][pfType][rtCumulative] + tsDetails.Girder.strain_by_load_type[pgsTypes::TopFace][pfType][rtIncremental];
+            tsDetails.Girder.strain_by_load_type[pgsTypes::BottomFace][pfType][rtCumulative] = prevTimeStepDetails.Girder.strain_by_load_type[pgsTypes::BottomFace][pfType][rtCumulative] + tsDetails.Girder.strain_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental];
+
+            tsDetails.Girder.strain[pgsTypes::TopFace][rtIncremental] += tsDetails.Girder.strain_by_load_type[pgsTypes::TopFace][pfType][rtIncremental];
+            tsDetails.Girder.strain[pgsTypes::BottomFace][rtIncremental] += tsDetails.Girder.strain_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental];
+
+            tsDetails.Girder.strain[pgsTypes::TopFace][rtCumulative] = prevTimeStepDetails.Girder.strain[pgsTypes::TopFace][rtCumulative] + tsDetails.Girder.strain[pgsTypes::TopFace][rtIncremental];
+            tsDetails.Girder.strain[pgsTypes::BottomFace][rtCumulative] = prevTimeStepDetails.Girder.strain[pgsTypes::BottomFace][rtCumulative] + tsDetails.Girder.strain[pgsTypes::BottomFace][rtIncremental];
          }
 
          if (compositeDeckIntervalIdx <= intervalIdx)
@@ -3073,11 +3096,29 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
             // f = f end of previous interval + change in stress this interval
             if (!IsZero(tsDetails.Deck.An) && !IsZero(tsDetails.Deck.In))
             {
-               tsDetails.Deck.f[pgsTypes::TopFace][pfType][rtIncremental] = tsDetails.Deck.dPi[pfType] / tsDetails.Deck.An + tsDetails.Deck.dMi[pfType] * (tsDetails.Deck.Yn - tsDetails.Deck.H) / tsDetails.Deck.In;
-               tsDetails.Deck.f[pgsTypes::TopFace][pfType][rtCumulative] = prevTimeStepDetails.Deck.f[pgsTypes::TopFace][pfType][rtCumulative] + tsDetails.Deck.f[pgsTypes::TopFace][pfType][rtIncremental];
+               tsDetails.Deck.stress_by_load_type[pgsTypes::TopFace][pfType][rtIncremental] = tsDetails.Deck.dPi[pfType] / tsDetails.Deck.An + tsDetails.Deck.dMi[pfType] * (tsDetails.Deck.Yn - tsDetails.Deck.H) / tsDetails.Deck.In;
+               tsDetails.Deck.stress_by_load_type[pgsTypes::TopFace][pfType][rtCumulative] = prevTimeStepDetails.Deck.stress_by_load_type[pgsTypes::TopFace][pfType][rtCumulative] + tsDetails.Deck.stress_by_load_type[pgsTypes::TopFace][pfType][rtIncremental];
 
-               tsDetails.Deck.f[pgsTypes::BottomFace][pfType][rtIncremental] = tsDetails.Deck.dPi[pfType] / tsDetails.Deck.An + tsDetails.Deck.dMi[pfType] * tsDetails.Deck.Yn / tsDetails.Deck.In;
-               tsDetails.Deck.f[pgsTypes::BottomFace][pfType][rtCumulative] = prevTimeStepDetails.Deck.f[pgsTypes::BottomFace][pfType][rtCumulative] + tsDetails.Deck.f[pgsTypes::BottomFace][pfType][rtIncremental];
+               tsDetails.Deck.stress_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental] = tsDetails.Deck.dPi[pfType] / tsDetails.Deck.An + tsDetails.Deck.dMi[pfType] * tsDetails.Deck.Yn / tsDetails.Deck.In;
+               tsDetails.Deck.stress_by_load_type[pgsTypes::BottomFace][pfType][rtCumulative] = prevTimeStepDetails.Deck.stress_by_load_type[pgsTypes::BottomFace][pfType][rtCumulative] + tsDetails.Deck.stress_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental];
+
+               tsDetails.Deck.stress[pgsTypes::TopFace][rtIncremental] += tsDetails.Deck.stress_by_load_type[pgsTypes::TopFace][pfType][rtIncremental];
+               tsDetails.Deck.stress[pgsTypes::BottomFace][rtIncremental] += tsDetails.Deck.stress_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental];
+
+               tsDetails.Deck.stress[pgsTypes::TopFace][rtCumulative] = prevTimeStepDetails.Deck.stress[pgsTypes::TopFace][rtCumulative] + tsDetails.Deck.stress[pgsTypes::TopFace][rtIncremental];
+               tsDetails.Deck.stress[pgsTypes::BottomFace][rtCumulative] = prevTimeStepDetails.Deck.stress[pgsTypes::BottomFace][rtCumulative] + tsDetails.Deck.stress[pgsTypes::BottomFace][rtIncremental];
+
+               tsDetails.Deck.strain_by_load_type[pgsTypes::TopFace][pfType][rtIncremental] = tsDetails.Deck.stress_by_load_type[pgsTypes::TopFace][pfType][rtIncremental] / EcDeck;
+               tsDetails.Deck.strain_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental] = tsDetails.Deck.stress_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental] / EcDeck;
+
+               tsDetails.Deck.strain_by_load_type[pgsTypes::TopFace][pfType][rtCumulative] = prevTimeStepDetails.Deck.strain_by_load_type[pgsTypes::TopFace][pfType][rtCumulative] + tsDetails.Deck.strain_by_load_type[pgsTypes::TopFace][pfType][rtIncremental];
+               tsDetails.Deck.strain_by_load_type[pgsTypes::BottomFace][pfType][rtCumulative] = prevTimeStepDetails.Deck.strain_by_load_type[pgsTypes::BottomFace][pfType][rtCumulative] + tsDetails.Deck.strain_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental];
+
+               tsDetails.Deck.strain[pgsTypes::TopFace][rtIncremental] += tsDetails.Deck.strain_by_load_type[pgsTypes::TopFace][pfType][rtIncremental];
+               tsDetails.Deck.strain[pgsTypes::BottomFace][rtIncremental] += tsDetails.Deck.strain_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental];
+
+               tsDetails.Deck.strain[pgsTypes::TopFace][rtCumulative] = prevTimeStepDetails.Deck.strain[pgsTypes::TopFace][rtCumulative] + tsDetails.Deck.strain[pgsTypes::TopFace][rtIncremental];
+               tsDetails.Deck.strain[pgsTypes::BottomFace][rtCumulative] = prevTimeStepDetails.Deck.strain[pgsTypes::BottomFace][rtCumulative] + tsDetails.Deck.strain[pgsTypes::BottomFace][rtIncremental];
             }
 
             // Compute change in force in deck rebar
@@ -5161,8 +5202,8 @@ void CTimeStepLossEngineer::ComputePrincipalStressInWeb(IntervalIndexType interv
 
    // Vu and section stresses
    PsDetails.Vu = tsDetails.dVi[pfType];
-   PsDetails.fTop = tsDetails.Girder.f[pgsTypes::TopFace][pfType][rtIncremental];
-   PsDetails.fBot = tsDetails.Girder.f[pgsTypes::BottomFace][pfType][rtIncremental];
+   PsDetails.fTop = tsDetails.Girder.stress_by_load_type[pgsTypes::TopFace][pfType][rtIncremental];
+   PsDetails.fBot = tsDetails.Girder.stress_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental];
 
    /// Next build sorted list of elevations where we are computing principal stresses
    auto vPsWebElevations = m_pGirder->GetWebSections(poi);

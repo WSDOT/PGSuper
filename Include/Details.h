@@ -589,17 +589,17 @@ struct TIME_STEP_CONCRETE
    // TIME STEP ANALYSIS OUTPUT PARAMETERS
    //
 
-   std::array<Float64,pftTimeStepSize> dei;
-   Float64 de;
+   std::array<Float64,pftTimeStepSize> dei; // change in axial strain during this interval due to each load type
+   Float64 de; // total change in axial strain due to all loads during this interval
 
-   std::array<Float64, pftTimeStepSize> ei;
-   Float64 e;
+   std::array<Float64, pftTimeStepSize> ei; // cumulative change in axial strain due to each load type
+   Float64 e; // cumulative change in axial strain due to all loads
 
-   std::array<Float64, pftTimeStepSize> dri;
-   Float64 dr;
+   std::array<Float64, pftTimeStepSize> dri; // change in curvature during this interval due to each load type
+   Float64 dr; // total change in curvature during this interval due to all loads
 
-   std::array<Float64, pftTimeStepSize> ri;
-   Float64 r;
+   std::array<Float64, pftTimeStepSize> ri; // cumulative change in curvature due to each load type
+   Float64 r; // cumulative change in curvature due to all loads
 
    // Force on this concrete part due to elastic effects during this interval
    std::array<Float64, pftTimeStepSize> dPi; // index is one of the pgsTypes::ProductForceType enum values
@@ -611,12 +611,31 @@ struct TIME_STEP_CONCRETE
    std::array<Float64, pftTimeStepSize> Mi; // = (M in previous interval) + dM;
    Float64 P, M; // summation of Pi and Mi
 
+   // Top and bottom strain at the end of the interval
+   // first index is pgsTypes::FaceEnum
+   // second index is pgsTypes::ProductForceType
+   // third index is ResultsType (rtIncremental, rtCumulative)
+   std::array<std::array<std::array<Float64,2>,pftTimeStepSize>,2> strain_by_load_type;
+
+   // Top and bottom strain at the end of the interval
+   // first index is pgsTypes::FaceEnum
+   // second index is ResultsType (rtIncremental, rtCumulative)
+   std::array<std::array<Float64, 2>, 2> strain;
+
    // Stress at the end of this interval = stress at end of previous interval + dP/An + dM*y/In 
    // where y is the depth from the top of the concrete part
-   Float64 f[2][pftTimeStepSize][2]; // first index is one of the pgsTypes::FaceType enums, second index is one of the pgsTypes::ProductForceType enum values
-                        // third index is one of the ResultsType enum values
+   // first index is one of the pgsTypes::FaceType enums
+   // second index is one of the pgsTypes::ProductForceType enum values
+   // third index is one of the ResultsType enum values (rtIncremental, rtCumulative)
+   std::array<std::array<std::array<Float64, 2>, pftTimeStepSize>, 2> stress_by_load_type;
 
-   //// Stress in this due to live load
+   // Top and bottom strain at the end of the interval
+   // first index is pgsTypes::FaceEnum
+   // second index is ResultsType (rtIncremental, rtCumulative)
+   std::array<std::array<Float64, 2>, 2> stress;
+
+
+   //// Stress in this interval due to live load
    //Float64 fLLMin[2]; // index is pgsTypes::FaceType
    //Float64 fLLMax[2];
 
@@ -661,12 +680,28 @@ struct TIME_STEP_CONCRETE
          Pi[i] = 0;
          Mi[i] = 0;
 
-         f[pgsTypes::TopFace][i][0] = 0;
-         f[pgsTypes::TopFace][i][1] = 0;
+         stress_by_load_type[pgsTypes::TopFace][i][0/*rtIncremental*/] = 0;
+         stress_by_load_type[pgsTypes::TopFace][i][1/*rtCumulative*/] = 0;
 
-         f[pgsTypes::BottomFace][i][0] = 0;
-         f[pgsTypes::BottomFace][i][1] = 0;
+         stress_by_load_type[pgsTypes::BottomFace][i][0/*rtIncremental*/] = 0;
+         stress_by_load_type[pgsTypes::BottomFace][i][1/*rtCumulative*/] = 0;
+
+         strain_by_load_type[pgsTypes::TopFace][i][0/*rtIncremental*/] = 0;
+         strain_by_load_type[pgsTypes::TopFace][i][1/*rtCumulative*/] = 0;
+
+         strain_by_load_type[pgsTypes::BottomFace][i][0/*rtIncremental*/] = 0;
+         strain_by_load_type[pgsTypes::BottomFace][i][1/*rtCumulative*/] = 0;
       }
+
+      strain[pgsTypes::TopFace][0/*rtIncremental*/] = 0;
+      strain[pgsTypes::TopFace][1/*rtCumulative*/] = 0;
+      strain[pgsTypes::BottomFace][0/*rtIncremental*/] = 0;
+      strain[pgsTypes::BottomFace][1/*rtCumulative*/] = 0;
+
+      stress[pgsTypes::TopFace][0/*rtIncremental*/] = 0;
+      stress[pgsTypes::TopFace][1/*rtCumulative*/] = 0;
+      stress[pgsTypes::BottomFace][0/*rtIncremental*/] = 0;
+      stress[pgsTypes::BottomFace][1/*rtCumulative*/] = 0;
 
       //fLLMin[pgsTypes::TopFace]    = 0;
       //fLLMin[pgsTypes::BottomFace] = 0;

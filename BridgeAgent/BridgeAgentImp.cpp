@@ -880,6 +880,7 @@ void CBridgeAgentImp::Invalidate( Uint16 level )
       // remove our items from the status center
       GET_IFACE(IEAFStatusCenter,pStatusCenter);
       pStatusCenter->RemoveByStatusGroupID(m_StatusGroupID);
+      pStatusCenter->RemoveByStatusGroupID(m_HandlingParametersGroupID);
    }
 
    m_Level = level;
@@ -2392,11 +2393,11 @@ bool CBridgeAgentImp::BuildCogoModel()
 
 
    // NOTE: total width of roadway surface is arbitrary... just make sure it is wider than the bridge
-   Float64 width = 1e9;
-
-   // Before we start building the roadway surface, determine a reasonable station range in which to layout the surface
    GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+   auto width = pBridgeDesc->GetBridgeWidth() * 1.5;
+
+   // Before we start building the roadway surface, determine a reasonable station range in which to layout the surface
    CComPtr<IAlignment> alignment;
    m_CogoModel->CreateAlignmentByID(CBridgeGeometryModelBuilder::AlignmentID, &alignment);
    auto [startStation,endStation] = ComputeReasonableSurfaceStationRange(pBridgeDesc, alignment_data, alignment);
@@ -4307,7 +4308,7 @@ void CBridgeAgentImp::ValidateGirders()
                pSegment->Strands.GetStrandCount(pgsTypes::Harped) > 0 &&
                GetNumDebondedStrands(segmentKey, pgsTypes::Straight, pgsTypes::dbetEither) > 0)
             {
-               std::_tstring msg = std::_tstring(SEGMENT_LABEL(segmentKey)) + _T(": Has a mix of Harped and Debonded strands. Specification checks for debond constructability may be innacurate.");
+               std::_tstring msg = std::_tstring(SEGMENT_LABEL(segmentKey)) + _T(": Has a mix of Harped and Debonded strands. Specification checks for debond constructability may be inaccurate.");
                std::unique_ptr<pgsGirderDescriptionStatusItem> pStatusItem = std::make_unique<pgsGirderDescriptionStatusItem>(segmentKey,1,m_StatusGroupID,m_scidGirderDescriptionWarning,msg.c_str());
                pStatusCenter->Add(pStatusItem.release());
             }
@@ -5654,13 +5655,21 @@ void CBridgeAgentImp::LayoutPoiForSlabBarCutoffs(const CGirderKey& girderKey)
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckRebarData& rebarData = pBridgeDesc->GetDeckDescription()->DeckRebarData;
 
+   GET_IFACE_NOCHECK(IEAFStatusCenter, pStatusCenter);
+
    CComPtr<IGeomUtil2d> geomUtil;
    geomUtil.CoCreateInstance(CLSID_GeomUtil);
 
+   PierIndexType nPiers = GetPierCount();
    PierIndexType startPierIdx, endPierIdx;
    GetGirderGroupPiers(girderKey.groupIndex,&startPierIdx,&endPierIdx);
    for ( PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++ )
    {
+      SpanIndexType prevSpanIdx = (pierIdx == 0 ? INVALID_INDEX : pierIdx-1);
+      SpanIndexType nextSpanIdx = (pierIdx == nPiers-1 ? INVALID_INDEX : prevSpanIdx + 1);
+      Float64 prev_span_length = prevSpanIdx == INVALID_INDEX ? 999999 : GetSpanLength(prevSpanIdx);
+      Float64 next_span_length = nextSpanIdx == INVALID_INDEX ? 999999: GetSpanLength(nextSpanIdx);
+
       std::vector<CDeckRebarData::NegMomentRebarData> vSupplementalRebarData(rebarData.GetSupplementalReinforcement(pierIdx));
       for( const auto& nmRebarData : vSupplementalRebarData)
       {
@@ -5681,14 +5690,25 @@ void CBridgeAgentImp::LayoutPoiForSlabBarCutoffs(const CGirderKey& girderKey)
             // the ahead side doesn't exist if this is the last group or it will be handled
             // when the next group is processed
 
-            Float64 offset = nmRebarData.RightCutoff*cos(skewAngle);
+            Float64 cutoff = nmRebarData.RightCutoff;
+            if (next_span_length < cutoff)
+            {
+               ATLASSERT(nextSpanIdx != INVALID_INDEX);
+               cutoff = next_span_length;
+               CString strMsg;
+               strMsg.Format(_T("The right bar cut off length at %s is greater than the span length. The cut off length is adjusted to the span length"), LABEL_PIER_EX(IsAbutment(pierIdx),pierIdx));
+               std::unique_ptr<pgsBridgeDescriptionStatusItem> pStatusItem = std::make_unique<pgsBridgeDescriptionStatusItem>(m_StatusGroupID, m_scidBridgeDescriptionWarning, pgsBridgeDescriptionStatusItem::Deck, strMsg);
+               pStatusCenter->Add(pStatusItem.release());
+            }
+
+            Float64 offset = cutoff *cos(skewAngle);
 
             CComPtr<ILine2d> pAheadLine;
             geomUtil->CreateParallelLine(centerlinePier,offset,&pAheadLine);
 
             SpanIndexType spanIdx = (SpanIndexType)pierIdx;
             CSpanKey spanKey(spanIdx,girderKey.girderIndex);
-            Float64 Xspan = nmRebarData.RightCutoff;
+            Float64 Xspan = cutoff;
 
             // this is the poi measuring the right cutoff along the CL girder... this
             // we don't actually want to do this. we want to measure bar cutoff
@@ -5717,8 +5737,19 @@ void CBridgeAgentImp::LayoutPoiForSlabBarCutoffs(const CGirderKey& girderKey)
             // on back side of pier... do this for all pier except for first one in this group
             // the back side doesn't exist if this is the first group or it was handled
             // when the previous group was processed
+            Float64 cutoff = nmRebarData.LeftCutoff;
+            if (prev_span_length < cutoff)
+            {
+               ATLASSERT(prevSpanIdx != INVALID_INDEX);
+               cutoff = prev_span_length;
 
-            Float64 offset = nmRebarData.LeftCutoff*cos(skewAngle);
+               CString strMsg;
+               strMsg.Format(_T("The left bar cut off length at %s is greater than the span length. The cut off length is adjusted to the span length"), LABEL_PIER_EX(IsAbutment(pierIdx), pierIdx));
+               std::unique_ptr<pgsBridgeDescriptionStatusItem> pStatusItem = std::make_unique<pgsBridgeDescriptionStatusItem>(m_StatusGroupID, m_scidBridgeDescriptionWarning, pgsBridgeDescriptionStatusItem::Deck, strMsg);
+               pStatusCenter->Add(pStatusItem.release());
+            }
+
+            Float64 offset = cutoff *cos(skewAngle);
 
             CComPtr<ILine2d> pBackLine;
             geomUtil->CreateParallelLine(centerlinePier,-offset,&pBackLine);
@@ -5726,7 +5757,7 @@ void CBridgeAgentImp::LayoutPoiForSlabBarCutoffs(const CGirderKey& girderKey)
             SpanIndexType spanIdx = SpanIndexType(pierIdx-1);
             CSpanKey spanKey(spanIdx,girderKey.girderIndex);
             Float64 spanLength = GetSpanLength(spanKey);
-            Float64 Xspan = spanLength - nmRebarData.LeftCutoff;
+            Float64 Xspan = spanLength - cutoff;
 
             pgsPointOfInterest poi = ConvertSpanPointToPoi(spanKey,Xspan);
             Float64 Xpoi;
@@ -6382,19 +6413,13 @@ void CBridgeAgentImp::LayoutHandlingPoi(IntervalIndexType intervalIdx,const CSeg
    Float64 leftOverhang, rightOverhang;
    if (intervalIdx == GetLiftSegmentInterval(segmentKey))
    {
-      GET_IFACE(ISegmentLifting, pSegmentLifting);
-      leftOverhang  = pSegmentLifting->GetLeftLiftingLoopLocation(segmentKey);
-      rightOverhang = pSegmentLifting->GetRightLiftingLoopLocation(segmentKey);
-
+      std::tie(leftOverhang, rightOverhang) = GetSegmentLiftingLoopLocations(segmentKey);
       supportAttribute = POI_PICKPOINT;
       poiReference = POI_LIFT_SEGMENT;
    }
    else if (intervalIdx == GetHaulSegmentInterval(segmentKey))
    {
-      GET_IFACE(ISegmentHauling, pSegmentHauling);
-      leftOverhang  = pSegmentHauling->GetTrailingOverhang(segmentKey);
-      rightOverhang = pSegmentHauling->GetLeadingOverhang(segmentKey);
-
+      std::tie(leftOverhang, rightOverhang) = GetSegmentBunkPointLocations(segmentKey);
       supportAttribute = POI_BUNKPOINT;
       poiReference = POI_HAUL_SEGMENT;
    }
@@ -6519,6 +6544,7 @@ STDMETHODIMP CBridgeAgentImp::Init()
    CREATE_LOGFILE("BridgeAgent");
    EAF_AGENT_INIT; // this macro defines pStatusCenter
    m_LoadStatusGroupID = pStatusCenter->CreateStatusGroupID();
+   m_HandlingParametersGroupID = pStatusCenter->CreateStatusGroupID();
 
    // Register status callbacks that we want to use
    m_scidInformationalError       = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusError)); 
@@ -14611,7 +14637,7 @@ ZoneIndexType CBridgeAgentImp::GetPrimaryZoneCount(const CSegmentKey& segmentKey
                   {
                      strMsg.Format(_T("Group %d Girder %s Segment %d: %s is shorter than the stirrup layout. For symmetrical stirrup zones, the zones beyond mid-point are ignored"),LABEL_GROUP(segmentKey.groupIndex),LABEL_GIRDER(segmentKey.girderIndex),LABEL_SEGMENT(segmentKey.segmentIndex),strGirderLabel);
                   }
-                  std::unique_ptr<pgsGirderDescriptionStatusItem> pStatusItem = std::make_unique<pgsGirderDescriptionStatusItem>(segmentKey,EGD_STIRRUPS,m_StatusGroupID,m_scidGirderDescriptionInform,strMsg);
+                  std::unique_ptr<pgsGirderDescriptionStatusItem> pStatusItem = std::make_unique<pgsGirderDescriptionStatusItem>(segmentKey,EGD_STIRRUPS,m_StatusGroupID,m_scidGirderDescriptionWarning,strMsg);
                   pStatusCenter->Add(pStatusItem.release());
                }
                return 2*(zoneIdx+1)-1;
@@ -27353,6 +27379,47 @@ const WBFL::Stability::LiftingStabilityProblem* CBridgeAgentImp::GetSegmentLifti
    return &(found->second);
 }
 
+std::pair<Float64, Float64> CBridgeAgentImp::GetSegmentLiftingLoopLocations(const CSegmentKey& segmentKey) const
+{
+   GET_IFACE(ISegmentLifting, pSegmentLifting);
+   auto Loh = pSegmentLifting->GetLeftLiftingLoopLocation(segmentKey);
+   auto Roh = pSegmentLifting->GetRightLiftingLoopLocation(segmentKey);
+   Float64 Ls = GetSegmentLength(segmentKey);
+   if (Ls - Loh - Roh < 0.0)
+   {
+      Loh = 0;
+      Roh = 0;
+
+      GET_IFACE(IEAFStatusCenter, pStatusCenter);
+      CString strMsg;
+      strMsg.Format(_T("Lifting loop locations are past the center of the girder for %s. Lifting loops assumed to be at the ends of the girder."), SEGMENT_LABEL(segmentKey));
+      std::unique_ptr<pgsGirderDescriptionStatusItem> pStatusItem = std::make_unique<pgsGirderDescriptionStatusItem>(segmentKey, EGD_TRANSPORTATION,m_HandlingParametersGroupID, m_scidGirderDescriptionWarning, strMsg);
+      pStatusCenter->Add(pStatusItem.release());
+   }
+   return { Loh,Roh };
+}
+
+std::pair<Float64, Float64> CBridgeAgentImp::GetSegmentBunkPointLocations(const CSegmentKey& segmentKey) const
+{
+   GET_IFACE(ISegmentHauling, pSegmentHauling);
+   auto Loh = pSegmentHauling->GetTrailingOverhang(segmentKey);
+   auto Roh = pSegmentHauling->GetLeadingOverhang(segmentKey);
+   Float64 Ls = GetSegmentLength(segmentKey);
+   if (Ls - Loh - Roh < 0.0)
+   {
+      Loh = 0;
+      Roh = 0;
+
+      GET_IFACE(IEAFStatusCenter, pStatusCenter);
+      CString strMsg;
+      strMsg.Format(_T("Bunk point locations are past the center of the girder for %s. Bunk points are assumed to be at the ends of the girder."), SEGMENT_LABEL(segmentKey));
+      std::unique_ptr<pgsGirderDescriptionStatusItem> pStatusItem = std::make_unique<pgsGirderDescriptionStatusItem>(segmentKey, EGD_TRANSPORTATION, m_HandlingParametersGroupID, m_scidGirderDescriptionWarning, strMsg);
+      pStatusCenter->Add(pStatusItem.release());
+   }
+   return { Loh,Roh };
+}
+
+
 void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& handlingConfig,ISegmentLiftingDesignPointsOfInterest* pPoiD,WBFL::Stability::LiftingStabilityProblem* pProblem) const
 {
    IntervalIndexType intervalIdx = m_IntervalManager.GetLiftingInterval(segmentKey);
@@ -27436,9 +27503,7 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
    }
    else
    {
-      GET_IFACE(ISegmentLifting,pSegmentLifting);
-      Loh = pSegmentLifting->GetLeftLiftingLoopLocation(segmentKey);
-      Roh = pSegmentLifting->GetRightLiftingLoopLocation(segmentKey);
+      std::tie(Loh, Roh) = GetSegmentLiftingLoopLocations(segmentKey);
    }
    pProblem->SetSupportLocations(Loh,Roh);
 
