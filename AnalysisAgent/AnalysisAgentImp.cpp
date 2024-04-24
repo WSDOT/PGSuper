@@ -11454,8 +11454,8 @@ void CAnalysisAgentImp::GetTimeStepStress(IntervalIndexType intervalIdx,pgsTypes
          const TIME_STEP_CONCRETE* pTopConcreteElement = (IsGirderStressLocation(topLocation) ? &tsDetails.Girder : &tsDetails.Deck);
          const TIME_STEP_CONCRETE* pBotConcreteElement = (IsGirderStressLocation(botLocation) ? &tsDetails.Girder : &tsDetails.Deck);
 
-         Float64 fTop = pTopConcreteElement->f[topFace][pfType][resultsType];
-         Float64 fBot = pBotConcreteElement->f[botFace][pfType][resultsType];
+         Float64 fTop = pTopConcreteElement->stress_by_load_type[topFace][pfType][resultsType];
+         Float64 fBot = pBotConcreteElement->stress_by_load_type[botFace][pfType][resultsType];
 
          pfTop->push_back(fTop);
          pfBot->push_back(fBot);
@@ -11563,18 +11563,8 @@ void CAnalysisAgentImp::GetTimeStepStress(IntervalIndexType intervalIdx,LoadingC
       const TIME_STEP_CONCRETE* pTopConcreteElement = (IsGirderStressLocation(topLocation) ? &tsDetails.Girder : &tsDetails.Deck);
       const TIME_STEP_CONCRETE* pBotConcreteElement = (IsGirderStressLocation(botLocation) ? &tsDetails.Girder : &tsDetails.Deck);
 
-      Float64 fTop(0), fBot(0);
-      std::vector<pgsTypes::ProductForceType>::iterator pfTypeIter(pfTypes.begin());
-      std::vector<pgsTypes::ProductForceType>::iterator pfTypeIterEnd(pfTypes.end());
-      for ( ; pfTypeIter != pfTypeIterEnd; pfTypeIter++ )
-      {
-         pgsTypes::ProductForceType pfType = *pfTypeIter;
-         fTop += pTopConcreteElement->f[topFace][pfType][resultsType];
-         fBot += pBotConcreteElement->f[botFace][pfType][resultsType];
-      }
-
-      pfTop->push_back(fTop);
-      pfBot->push_back(fBot);
+      pfTop->push_back(pTopConcreteElement->stress[topFace][resultsType]);
+      pfBot->push_back(pBotConcreteElement->stress[botFace][resultsType]);
    }
 }
 
@@ -11763,8 +11753,8 @@ void CAnalysisAgentImp::GetTimeStepStress(IntervalIndexType intervalIdx,pgsTypes
 
       if ( bIncludePrestress )
       {
-         fPR = pConcreteElement->f[face][pgsTypes::pftPretension    ][rtCumulative];
-         fPT = pConcreteElement->f[face][pgsTypes::pftPostTensioning][rtCumulative];
+         fPR = pConcreteElement->stress_by_load_type[face][pgsTypes::pftPretension    ][rtCumulative];
+         fPT = pConcreteElement->stress_by_load_type[face][pgsTypes::pftPostTensioning][rtCumulative];
       }
 
       fLLMin = *llMinIter;
