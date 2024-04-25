@@ -2995,10 +2995,10 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
          // f = f end of previous interval + change in stress this interval
          if (!IsZero(tsDetails.Girder.An) && !IsZero(tsDetails.Girder.In))
          {
-            tsDetails.Girder.stress_by_load_type[pgsTypes::TopFace][pfType][rtIncremental] = tsDetails.Girder.dPi[pfType] / tsDetails.Girder.An + tsDetails.Girder.dMi[pfType] * (tsDetails.Girder.Yn - tsDetails.Girder.H) / tsDetails.Girder.In;
+            tsDetails.Girder.stress_by_load_type[pgsTypes::TopFace][pfType][rtIncremental] = tsDetails.Girder.dPi[pfType] / tsDetails.Girder.An + tsDetails.Girder.dMi[pfType] * tsDetails.Girder.Yn / tsDetails.Girder.In;
             tsDetails.Girder.stress_by_load_type[pgsTypes::TopFace][pfType][rtCumulative] = prevTimeStepDetails.Girder.stress_by_load_type[pgsTypes::TopFace][pfType][rtCumulative] + tsDetails.Girder.stress_by_load_type[pgsTypes::TopFace][pfType][rtIncremental];
 
-            tsDetails.Girder.stress_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental] = tsDetails.Girder.dPi[pfType] / tsDetails.Girder.An + tsDetails.Girder.dMi[pfType] * tsDetails.Girder.Yn / tsDetails.Girder.In;
+            tsDetails.Girder.stress_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental] = tsDetails.Girder.dPi[pfType] / tsDetails.Girder.An + tsDetails.Girder.dMi[pfType] * (tsDetails.Girder.H + tsDetails.Girder.Yn) / tsDetails.Girder.In;
             tsDetails.Girder.stress_by_load_type[pgsTypes::BottomFace][pfType][rtCumulative] = prevTimeStepDetails.Girder.stress_by_load_type[pgsTypes::BottomFace][pfType][rtCumulative] + tsDetails.Girder.stress_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental];
 
             tsDetails.Girder.stress[pgsTypes::TopFace][rtIncremental] += tsDetails.Girder.stress_by_load_type[pgsTypes::TopFace][pfType][rtIncremental];

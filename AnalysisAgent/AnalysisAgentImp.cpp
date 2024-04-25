@@ -11563,9 +11563,16 @@ void CAnalysisAgentImp::GetTimeStepStress(IntervalIndexType intervalIdx,LoadingC
       const TIME_STEP_CONCRETE* pTopConcreteElement = (IsGirderStressLocation(topLocation) ? &tsDetails.Girder : &tsDetails.Deck);
       const TIME_STEP_CONCRETE* pBotConcreteElement = (IsGirderStressLocation(botLocation) ? &tsDetails.Girder : &tsDetails.Deck);
 
-      pfTop->push_back(pTopConcreteElement->stress[topFace][resultsType]);
-      pfBot->push_back(pBotConcreteElement->stress[botFace][resultsType]);
-   }
+      Float64 fTop(0), fBot(0);
+      for(auto pfType : pfTypes)
+      {
+         fTop += pTopConcreteElement->stress_by_load_type[topFace][pfType][resultsType];
+         fBot += pBotConcreteElement->stress_by_load_type[botFace][pfType][resultsType];
+      }
+
+      pfTop->push_back(fTop);
+      pfBot->push_back(fBot);
+  }
 }
 
 void CAnalysisAgentImp::GetElasticStress(IntervalIndexType intervalIdx,LoadingCombinationType comboType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,std::vector<Float64>* pfTop,std::vector<Float64>* pfBot) const
