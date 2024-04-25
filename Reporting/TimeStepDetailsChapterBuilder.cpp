@@ -47,8 +47,8 @@ static char THIS_FILE[] = __FILE__;
 #define DELTA_V    symbol(DELTA) << _T("V")
 #define DELTA_Pk   symbol(DELTA) << Sub2(_T("P"),_T("k"))
 #define DELTA_Mk   symbol(DELTA) << Sub2(_T("M"),_T("k"))
-#define DELTA_E    symbol(DELTA) << symbol(epsilon)
-#define DELTA_R    symbol(DELTA) << symbol(varphi)
+#define DELTA_E    symbol(DELTA) << Sub2(symbol(epsilon),_T("cr"))
+#define DELTA_R    symbol(DELTA) << Sub2(symbol(varphi),_T("cr"))
 #define DELTA_FR   symbol(DELTA) << RPT_STRESS(_T("r"))
 #define DELTA_ER   symbol(DELTA) << Sub2(symbol(epsilon),_T("r"))
 #define DELTA_ESH  symbol(DELTA) << Sub2(symbol(epsilon),_T("sh"))
@@ -468,6 +468,17 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<const WB
          (*pPara) << _T("Change in stress in strands and tendons are the prestress losses during this interval.") << rptNewLine;
          (*pPara) << _T("Incremental Total = Sum of incremental stresses from loads occurring during this interval.") << rptNewLine;
          (*pPara) << _T("Cumulative Total = Sum of incremental stresses from loads occurring in all intervals up to and including interval.") << rptNewLine;
+         *pPara << rptNewLine;
+
+         // Incremental stains due to loads applied during this interval
+         pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
+         (*pChapter) << pPara;
+         (*pPara) << _T("Incremental component strain") << rptNewLine;
+         pPara = new rptParagraph;
+         (*pChapter) << pPara;
+         (*pPara) << rptRcImage(strImagePath + _T("IncrementalComponentStrain.png")) << rptNewLine;
+         rptRcTable* pIncStrainTable = BuildIncrementalStrainTable(pBroker, vLoads, tsDetails, bHasDeck, pDisplayUnits);
+         (*pPara) << pIncStrainTable << rptNewLine;
          *pPara << rptNewLine;
 
          prevGirderKey = CGirderKey(poi.GetSegmentKey());
@@ -2057,6 +2068,259 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(IBroker*
    return pTable;
 }
 
+rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStrainTable(IBroker* pBroker, const std::vector<pgsTypes::ProductForceType>& vLoads, const TIME_STEP_DETAILS& tsDetails, bool bHasDeck, IEAFDisplayUnits* pDisplayUnits) const
+{
+   GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+
+   IndexType nLoads = vLoads.size();
+   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nLoads + 3 + 3);
+   pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_LEFT));
+   pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CJ_LEFT));
+   pTable->SetNumberOfHeaderRows(2);
+
+   // label loading types across the top row
+   RowIndexType rowIdx = 0;
+   ColumnIndexType colIdx = 0;
+   pTable->SetRowSpan(rowIdx, colIdx, 2);
+   (*pTable)(rowIdx, colIdx++) << _T("Component");
+
+   pTable->SetColumnSpan(rowIdx, colIdx, nLoads);
+   (*pTable)(rowIdx, colIdx) << _T("Loading");
+   colIdx += nLoads;
+
+   rowIdx++;
+   colIdx = 1;
+   for (IndexType i = 0; i < nLoads; i++)
+   {
+      pgsTypes::ProductForceType pfType = vLoads[i];
+      (*pTable)(rowIdx, colIdx++) << pProductLoads->GetProductLoadName(pfType) << rptNewLine << symbol(epsilon) << Super2(_T("x10"), _T("6"));
+   }
+
+   rowIdx = 0;
+   pTable->SetRowSpan(rowIdx, colIdx, 2);
+   (*pTable)(rowIdx, colIdx++) << _T("Incremental") << rptNewLine << _T("Total") << rptNewLine << symbol(epsilon) << Super2(_T("x10"), _T("6"));
+
+   pTable->SetRowSpan(rowIdx, colIdx, 2);
+   (*pTable)(rowIdx, colIdx++) << _T("Cumulative") << rptNewLine << _T("Total") << rptNewLine << symbol(epsilon) << Super2(_T("x10"), _T("6"));
+
+   pTable->SetColumnSpan(rowIdx, colIdx, 3);
+   (*pTable)(rowIdx, colIdx) << _T("Cumulative Strains");
+   rowIdx++;
+   (*pTable)(rowIdx, colIdx++) << pProductLoads->GetProductLoadName(pgsTypes::pftCreep) << rptNewLine << symbol(epsilon) << Super2(_T("x10"), _T("6"));
+   (*pTable)(rowIdx, colIdx++) << pProductLoads->GetProductLoadName(pgsTypes::pftShrinkage) << rptNewLine << symbol(epsilon) << Super2(_T("x10"), _T("6"));
+   (*pTable)(rowIdx, colIdx++) << pProductLoads->GetProductLoadName(pgsTypes::pftRelaxation) << rptNewLine << symbol(epsilon) << Super2(_T("x10"), _T("6"));
+
+
+   // Label the rows in column 0
+   rowIdx = pTable->GetNumberOfHeaderRows();
+   colIdx = 0;
+   (*pTable)(rowIdx++, colIdx) << _T("Top Girder");
+   (*pTable)(rowIdx++, colIdx) << _T("Bottom Girder");
+
+   //for (int i = 0; i < 3; i++)
+   //{
+   //   pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+   //   if (strandType == pgsTypes::Straight)
+   //   {
+   //      (*pTable)(rowIdx++, colIdx) << _T("Straight Strands");
+   //   }
+   //   else if (strandType == pgsTypes::Harped)
+   //   {
+   //      (*pTable)(rowIdx++, colIdx) << _T("Harped Strands");
+   //   }
+   //   else if (strandType == pgsTypes::Temporary)
+   //   {
+   //      (*pTable)(rowIdx++, colIdx) << _T("Temporary Strands");
+   //   }
+   //}
+
+   if (bHasDeck)
+   {
+      (*pTable)(rowIdx++, colIdx) << _T("Top Deck");
+      (*pTable)(rowIdx++, colIdx) << _T("Bottom Deck");
+   }
+
+   //DuctIndexType nTendons = tsDetails.SegmentTendons.size();
+   //for (DuctIndexType tendonIdx = 0; tendonIdx < nTendons; tendonIdx++)
+   //{
+   //   const TIME_STEP_STRAND& tsTendon = tsDetails.SegmentTendons[tendonIdx];
+   //   (*pTable)(rowIdx++, colIdx) << _T("Segment Tendon ") << LABEL_DUCT(tendonIdx);
+   //}
+
+   //nTendons = tsDetails.GirderTendons.size();
+   //for (DuctIndexType tendonIdx = 0; tendonIdx < nTendons; tendonIdx++)
+   //{
+   //   const TIME_STEP_STRAND& tsTendon = tsDetails.GirderTendons[tendonIdx];
+   //   (*pTable)(rowIdx++, colIdx) << _T("Girder Tendon ") << LABEL_DUCT(tendonIdx);
+   //}
+
+   // fill the table
+   colIdx = 1;
+   for (IndexType i = 0; i < nLoads; i++, colIdx++)
+   {
+      rowIdx = pTable->GetNumberOfHeaderRows();
+
+      pgsTypes::ProductForceType pfType = vLoads[i];
+
+      // Girder
+      (*pTable)(rowIdx++, colIdx) << tsDetails.Girder.strain_by_load_type[pgsTypes::TopFace][pfType][rtIncremental] * 1E6;
+      (*pTable)(rowIdx++, colIdx) << tsDetails.Girder.strain_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental] * 1E6;
+
+      //// Strands
+      //for (int i = 0; i < 3; i++)
+      //{
+      //   pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+      //   (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsDetails.Strands[strandType].dfpei[pfType]);
+      //}
+
+      if (bHasDeck)
+      {
+         // Deck
+         (*pTable)(rowIdx++, colIdx) << tsDetails.Deck.strain_by_load_type[pgsTypes::TopFace][pfType][rtIncremental] * 1E6;
+         (*pTable)(rowIdx++, colIdx) << tsDetails.Deck.strain_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental] * 1E6;
+      }
+
+      //// Segment Tendons
+      //for (const auto& tsTendon : tsDetails.SegmentTendons)
+      //{
+      //   (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsTendon.dfpei[pfType]);
+      //}
+
+      //// Girder Tendons
+      //for (const auto& tsTendon : tsDetails.GirderTendons)
+      //{
+      //   (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsTendon.dfpei[pfType]);
+      //}
+   } // next loading
+
+   // Incremental Totals
+   rowIdx = pTable->GetNumberOfHeaderRows();
+
+   // Girder
+   (*pTable)(rowIdx++, colIdx) << tsDetails.Girder.strain[pgsTypes::TopFace][rtIncremental] * 1E6;
+   (*pTable)(rowIdx++, colIdx) << tsDetails.Girder.strain[pgsTypes::BottomFace][rtIncremental] * 1E6;
+
+   //// Strands
+   //for (int i = 0; i < 3; i++)
+   //{
+   //   pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+   //   (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsDetails.Strands[strandType].dfpe);
+   //}
+
+   if (bHasDeck)
+   {
+      // Deck
+      (*pTable)(rowIdx++, colIdx) << tsDetails.Deck.strain[pgsTypes::TopFace][rtIncremental] * 1E6;
+      (*pTable)(rowIdx++, colIdx) << tsDetails.Deck.strain[pgsTypes::BottomFace][rtIncremental] * 1E6;
+   }
+
+   //// Segment Tendons
+   //for (const auto& tsTendon : tsDetails.SegmentTendons)
+   //{
+   //   (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsTendon.dfpe);
+   //}
+
+   //// Girder Tendons
+   //for (const auto& tsTendon : tsDetails.GirderTendons)
+   //{
+   //   (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsTendon.dfpe);
+   //}
+
+   // Cumulative Totals
+   colIdx++;
+   rowIdx = pTable->GetNumberOfHeaderRows();
+
+   // Girder
+   (*pTable)(rowIdx++, colIdx) << tsDetails.Girder.strain[pgsTypes::TopFace][rtCumulative] * 1E6;
+   (*pTable)(rowIdx++, colIdx) << tsDetails.Girder.strain[pgsTypes::BottomFace][rtCumulative] * 1E6;
+
+   //// Strands
+   //for (int i = 0; i < 3; i++)
+   //{
+   //   pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+   //   (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsDetails.Strands[strandType].fpe);
+   //}
+
+   if (bHasDeck)
+   {
+      // Deck
+      (*pTable)(rowIdx++, colIdx) << tsDetails.Deck.strain[pgsTypes::TopFace][rtCumulative] * 1E6;
+      (*pTable)(rowIdx++, colIdx) << tsDetails.Deck.strain[pgsTypes::BottomFace][rtCumulative] * 1E6;
+   }
+
+   //// Segment Tendons
+   //for (const auto& tsTendon : tsDetails.SegmentTendons)
+   //{
+   //   (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsTendon.fpe);
+   //}
+
+   //// Girder Tendons
+   //for (const auto& tsTendon : tsDetails.GirderTendons)
+   //{
+   //   (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsTendon.fpe);
+   //}
+
+
+   // Cumulative Time-Dependent Effects
+   colIdx++;
+   rowIdx = pTable->GetNumberOfHeaderRows();
+
+   // Girder
+   (*pTable)(rowIdx, colIdx) << tsDetails.Girder.strain_by_load_type[pgsTypes::TopFace][pgsTypes::pftCreep][rtCumulative] * 1E6;
+   (*pTable)(rowIdx, colIdx + 1) << tsDetails.Girder.strain_by_load_type[pgsTypes::TopFace][pgsTypes::pftShrinkage][rtCumulative] * 1E6;
+   (*pTable)(rowIdx, colIdx + 2) << tsDetails.Girder.strain_by_load_type[pgsTypes::TopFace][pgsTypes::pftRelaxation][rtCumulative] * 1E6;
+   rowIdx++;
+
+   (*pTable)(rowIdx, colIdx) << tsDetails.Girder.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::pftCreep][rtCumulative] * 1E6;
+   (*pTable)(rowIdx, colIdx + 1) << tsDetails.Girder.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::pftShrinkage][rtCumulative] * 1E6;
+   (*pTable)(rowIdx, colIdx + 2) << tsDetails.Girder.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::pftRelaxation][rtCumulative] * 1E6;
+   rowIdx++;
+
+   //// Strands
+   //for (int i = 0; i < 3; i++)
+   //{
+   //   pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+   //   (*pTable)(rowIdx, colIdx) << stress.SetValue(tsDetails.Strands[strandType].fpei[pgsTypes::pftCreep]);
+   //   (*pTable)(rowIdx, colIdx + 1) << stress.SetValue(tsDetails.Strands[strandType].fpei[pgsTypes::pftShrinkage]);
+   //   (*pTable)(rowIdx, colIdx + 2) << stress.SetValue(tsDetails.Strands[strandType].fpei[pgsTypes::pftRelaxation]);
+   //   rowIdx++;
+   //}
+
+   if (bHasDeck)
+   {
+      // Deck
+      (*pTable)(rowIdx, colIdx) << tsDetails.Deck.strain_by_load_type[pgsTypes::TopFace][pgsTypes::pftCreep][rtCumulative] * 1E6;
+      (*pTable)(rowIdx, colIdx + 1) << tsDetails.Deck.strain_by_load_type[pgsTypes::TopFace][pgsTypes::pftShrinkage][rtCumulative] * 1E6;
+      (*pTable)(rowIdx, colIdx + 2) << tsDetails.Deck.strain_by_load_type[pgsTypes::TopFace][pgsTypes::pftRelaxation][rtCumulative] * 1E6;
+      rowIdx++;
+
+      (*pTable)(rowIdx, colIdx) << tsDetails.Deck.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::pftCreep][rtCumulative] * 1E6;
+      (*pTable)(rowIdx, colIdx + 1) << tsDetails.Deck.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::pftShrinkage][rtCumulative] * 1E6;
+      (*pTable)(rowIdx, colIdx + 2) << tsDetails.Deck.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::pftRelaxation][rtCumulative] * 1E6;
+      rowIdx++;
+   }
+
+   //// Segment Tendons
+   //for (const auto& tsTendon : tsDetails.SegmentTendons)
+   //{
+   //   (*pTable)(rowIdx, colIdx) << stress.SetValue(tsTendon.fpei[pgsTypes::pftCreep]);
+   //   (*pTable)(rowIdx, colIdx + 1) << stress.SetValue(tsTendon.fpei[pgsTypes::pftShrinkage]);
+   //   (*pTable)(rowIdx, colIdx + 2) << stress.SetValue(tsTendon.fpei[pgsTypes::pftRelaxation]);
+   //   rowIdx++;
+   //}
+
+   //// Girder Tendons
+   //for (const auto& tsTendon : tsDetails.GirderTendons)
+   //{
+   //   (*pTable)(rowIdx, colIdx) << stress.SetValue(tsTendon.fpei[pgsTypes::pftCreep]);
+   //   (*pTable)(rowIdx, colIdx + 1) << stress.SetValue(tsTendon.fpei[pgsTypes::pftShrinkage]);
+   //   (*pTable)(rowIdx, colIdx + 2) << stress.SetValue(tsTendon.fpei[pgsTypes::pftRelaxation]);
+   //   rowIdx++;
+   //}
+
+   return pTable;
+}
+
 rptRcTable* CTimeStepDetailsChapterBuilder::BuildConcreteStressSummaryTable(IBroker* pBroker,const pgsPointOfInterest& poi,ResultsType resultsType,bool bGirder,IEAFDisplayUnits* pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptStressUnitValue,     stress,      pDisplayUnits->GetStressUnit(),    false);
@@ -2082,7 +2346,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildConcreteStressSummaryTable(IBro
    (*pTable)(rowIdx,colIdx++) << _T("Interval");
 
    pTable->SetRowSpan(rowIdx,colIdx,2);
-   (*pTable)(rowIdx,colIdx++) << _T("Stress");
+   (*pTable)(rowIdx,colIdx++) << _T("Girder") << _T("Face");
 
    pTable->SetColumnSpan(rowIdx,colIdx,nLoads);
    (*pTable)(rowIdx,colIdx) << _T("Loading");
@@ -2100,7 +2364,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildConcreteStressSummaryTable(IBro
    {
       rowIdx = 0;
       pTable->SetRowSpan(rowIdx,colIdx,2);
-      (*pTable)(rowIdx,colIdx) << _T("Total");
+      (*pTable)(rowIdx,colIdx) << COLHDR(_T("Total"),rptStressUnitTag,pDisplayUnits->GetStressUnit());
    }
 
    rowIdx = pTable->GetNumberOfHeaderRows();
