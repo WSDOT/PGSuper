@@ -2603,14 +2603,14 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
 
       // get some material properties that we are going to need for the analysis
       Float64 EaDeck = m_pMaterials->GetDeckAgeAdjustedEc(deckCastingRegionIdx, intervalIdx);
-      Float64 EcDeck = m_pMaterials->GetDeckEc(deckCastingRegionIdx, intervalIdx);
+      Float64 EcDeck = m_pMaterials->GetDeckEc(deckCastingRegionIdx, intervalIdx, pgsTypes::Middle);
 
       Float64 EaGirder;
       Float64 EcGirder;
       if (bIsOnSegment)
       {
          EaGirder = m_pMaterials->GetSegmentAgeAdjustedEc(segmentKey, intervalIdx);
-         EcGirder = m_pMaterials->GetSegmentEc(segmentKey, intervalIdx);
+         EcGirder = m_pMaterials->GetSegmentEc(segmentKey, intervalIdx, pgsTypes::Middle);
       }
       else if (bIsInClosure)
       {
@@ -3009,6 +3009,16 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
 
             tsDetails.Girder.strain_by_load_type[pgsTypes::TopFace][pfType][rtIncremental] = tsDetails.Girder.stress_by_load_type[pgsTypes::TopFace][pfType][rtIncremental] / EcGirder;
             tsDetails.Girder.strain_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental] = tsDetails.Girder.stress_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental] / EcGirder;
+            if (pfType == pgsTypes::pftCreep)
+            {
+               tsDetails.Girder.strain_by_load_type[pgsTypes::TopFace][pfType][rtIncremental] += tsDetails.Girder.eci + tsDetails.Girder.rci * tsDetails.Girder.Yn;
+               tsDetails.Girder.strain_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental] += tsDetails.Girder.eci + tsDetails.Girder.rci * (tsDetails.Girder.H + tsDetails.Girder.Yn);
+            }
+            else if (pfType == pgsTypes::pftShrinkage)
+            {
+               tsDetails.Girder.strain_by_load_type[pgsTypes::TopFace][pfType][rtIncremental] += tsDetails.Girder.Shrinkage.esi;
+               tsDetails.Girder.strain_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental] += tsDetails.Girder.Shrinkage.esi;
+            }
 
             tsDetails.Girder.strain_by_load_type[pgsTypes::TopFace][pfType][rtCumulative] = prevTimeStepDetails.Girder.strain_by_load_type[pgsTypes::TopFace][pfType][rtCumulative] + tsDetails.Girder.strain_by_load_type[pgsTypes::TopFace][pfType][rtIncremental];
             tsDetails.Girder.strain_by_load_type[pgsTypes::BottomFace][pfType][rtCumulative] = prevTimeStepDetails.Girder.strain_by_load_type[pgsTypes::BottomFace][pfType][rtCumulative] + tsDetails.Girder.strain_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental];
@@ -3110,6 +3120,16 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
 
                tsDetails.Deck.strain_by_load_type[pgsTypes::TopFace][pfType][rtIncremental] = tsDetails.Deck.stress_by_load_type[pgsTypes::TopFace][pfType][rtIncremental] / EcDeck;
                tsDetails.Deck.strain_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental] = tsDetails.Deck.stress_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental] / EcDeck;
+               if (pfType == pgsTypes::pftCreep)
+               {
+                  tsDetails.Deck.strain_by_load_type[pgsTypes::TopFace][pfType][rtIncremental] += tsDetails.Deck.eci + tsDetails.Deck.rci * (tsDetails.Deck.Yn - tsDetails.Deck.H);
+                  tsDetails.Deck.strain_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental] += tsDetails.Deck.eci + tsDetails.Deck.rci * tsDetails.Deck.Yn;
+               }
+               else if (pfType == pgsTypes::pftShrinkage)
+               {
+                  tsDetails.Deck.strain_by_load_type[pgsTypes::TopFace][pfType][rtIncremental] += tsDetails.Deck.Shrinkage.esi;
+                  tsDetails.Deck.strain_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental] += tsDetails.Deck.Shrinkage.esi;
+               }
 
                tsDetails.Deck.strain_by_load_type[pgsTypes::TopFace][pfType][rtCumulative] = prevTimeStepDetails.Deck.strain_by_load_type[pgsTypes::TopFace][pfType][rtCumulative] + tsDetails.Deck.strain_by_load_type[pgsTypes::TopFace][pfType][rtIncremental];
                tsDetails.Deck.strain_by_load_type[pgsTypes::BottomFace][pfType][rtCumulative] = prevTimeStepDetails.Deck.strain_by_load_type[pgsTypes::BottomFace][pfType][rtCumulative] + tsDetails.Deck.strain_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental];
