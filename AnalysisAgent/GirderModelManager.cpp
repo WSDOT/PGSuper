@@ -1458,6 +1458,10 @@ void CGirderModelManager::GetDeckShrinkageStresses(const pgsPointOfInterest& poi
             n_bot = n;
       }
 
+      // this may look incorrect, but it's not
+      // St and Sb already account for the modular ratio, but P/A does not
+      // that is why the equations are as below and not n*(P/A + M/S)
+      // See reporting of S for the deck in the details report
       *pftop = n_top*P/A + M/St;
       *pfbot = n_bot*P/A + M/Sb;
    }
