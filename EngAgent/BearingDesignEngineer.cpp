@@ -197,7 +197,7 @@ Float64 pgsBearingDesignEngineer::GetDistanceToPointOfFixity(const pgsPointOfInt
     for (const auto& thisGirderKey : vGirderKeys)
     {
         SpanIndexType startSpanIdx, endSpanIdx;
-        pBridge->GetGirderGroupSpans(thisGirderKey.groupIndex, &startSpanIdx, &endSpanIdx);
+        pBridge->GetGirderGroupSpans(ALL_GROUPS, &startSpanIdx, &endSpanIdx);
         for (SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++)
         {
             CSpanKey spanKey(spanIdx, thisGirderKey.girderIndex);
