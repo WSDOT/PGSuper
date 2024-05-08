@@ -189,7 +189,6 @@ Float64 pgsBearingDesignEngineer::GetDistanceToPointOfFixity(const pgsPointOfInt
     pgsPointOfInterest poi_fixity;
 
     SpanIndexType nSpans = pBridge->GetSpanCount();
-    PierIndexType pierId = nSpans / 2 + 1;
     const CGirderKey& girderKey(poi_brg.GetSegmentKey());
         
 
@@ -206,9 +205,10 @@ Float64 pgsBearingDesignEngineer::GetDistanceToPointOfFixity(const pgsPointOfInt
             PierIndexType pierIdx = PierIndexType(spanIdx);
             if (nSpans % 2 == 0)
             {
-                if (pierIdx == pierId)
+                PierIndexType central_pierId = nSpans / 2;
+                if (pierIdx == central_pierId)
                 {
-                    poi_fixity = pPoi->GetPierPointOfInterest(girderKey, pierId);
+                    poi_fixity = pPoi->GetPierPointOfInterest(girderKey, central_pierId);
                 }
             }
             else
