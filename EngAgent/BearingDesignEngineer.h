@@ -50,15 +50,15 @@ public:
 	   CGirderKey girderKey, pgsTypes::AnalysisType analysisType, 
 	   bool bIncludeImpact, bool bIncludeLLDF, REACTIONDETAILS* pDetails) const;
 
-   void GetThermalExpansionDetails(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const;
+   void GetThermalExpansionDetails(const pgsPointOfInterest& poi, SHEARDEFORMATIONDETAILS* pDetails) const;
 
-   Float64 GetSpanContributoryLength(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const;
+   Float64 GetDistanceToPointOfFixity(const pgsPointOfInterest& poi, SHEARDEFORMATIONDETAILS* pDetails) const;
 
-   Float64 GetTimeDependentComponentShearDeformation(CGirderKey girderKey, const pgsPointOfInterest& poi, Float64 tdNetLoss, SHEARDEFORMATIONDETAILS* pDetails) const;
+   Float64 GetTimeDependentComponentShearDeformation(const pgsPointOfInterest& poi, Float64 tdNetLoss, SHEARDEFORMATIONDETAILS* pDetails) const;
 
    Float64 GetBearingTimeDependentLosses(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, const GDRCONFIG* pConfig, const LOSSDETAILS* pDetails, TDCOMPONENTS* tdComponents) const;
 
-   Float64 GetTimeDependentShearDeformation(CGirderKey girderKey,
+   Float64 GetTimeDependentShearDeformation(
 	   const pgsPointOfInterest& poi, PierIndexType startPierIdx, SHEARDEFORMATIONDETAILS* pDetails) const;
 
 private:

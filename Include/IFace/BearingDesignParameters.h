@@ -198,6 +198,7 @@ struct SHEARDEFORMATIONDETAILS : public TABLEPARAMETERS
 	Float64 flange_bottom_shortening;
 	Float64 total_shear_deformation_cold;
 	Float64 total_shear_deformation_moderate;
+	pgsPointOfInterest poi_fixity;
 };
 
 
@@ -217,13 +218,13 @@ interface IBearingDesignParameters : IUnknown
 		CGirderKey girderKey, pgsTypes::AnalysisType analysisType, bool bIncludeImpact,
 		bool bIncludeLLDF, REACTIONDETAILS* pDetails) const = 0;
 
-	virtual void GetThermalExpansionDetails(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const = 0;
+	virtual void GetThermalExpansionDetails(const pgsPointOfInterest& poi, SHEARDEFORMATIONDETAILS* pDetails) const = 0;
 
-	virtual Float64 GetSpanContributoryLength(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const = 0;
+	virtual Float64 GetDistanceToPointOfFixity(const pgsPointOfInterest& poi, SHEARDEFORMATIONDETAILS* pDetails) const = 0;
 
-	virtual Float64 GetTimeDependentComponentShearDeformation(CGirderKey girderKey, const pgsPointOfInterest& poi, Float64 loss, SHEARDEFORMATIONDETAILS* pDetails) const = 0;
+	virtual Float64 GetTimeDependentComponentShearDeformation(const pgsPointOfInterest& poi, Float64 loss, SHEARDEFORMATIONDETAILS* pDetails) const = 0;
 
-	virtual Float64 GetTimeDependentShearDeformation(CGirderKey girderKey,
+	virtual Float64 GetTimeDependentShearDeformation(
 		const pgsPointOfInterest& poi, PierIndexType startPierIdx, SHEARDEFORMATIONDETAILS* pDetails) const = 0;
 
 	virtual void GetBearingDesignProperties(DESIGNPROPERTIES* pDetails) const = 0;

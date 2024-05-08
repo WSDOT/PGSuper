@@ -167,15 +167,15 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     *p << p_table;
 
     *p << CBearingReactionTable().BuildBearingReactionTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
-        true, true, are_user_loads, true, pDisplayUnits, true) << rptNewLine;
+        true, true, are_user_loads, true, pDisplayUnits, true);
     *p << _T("*Live loads due not include impact") << rptNewLine;
 
     *p << CBearingRotationTable().BuildBearingRotationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
-        true, true,are_user_loads, true, pDisplayUnits, true, true) << rptNewLine;
+        true, true,are_user_loads, true, pDisplayUnits, true, true);
     *p << _T("*Live loads due not include impact") << rptNewLine;
 
     *p << CBearingRotationTable().BuildBearingRotationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
-        true, true, are_user_loads, true, pDisplayUnits, true, false) << rptNewLine;
+        true, true, are_user_loads, true, pDisplayUnits, true, false);
 
     *p << _T("*Live loads due not include impact") << rptNewLine;
     *p << _T("**Torsional rotations are calculated using ") << Sub2(symbol(theta), _T("t")) << _T(" = ") << Sub2(symbol(theta), _T("f")) << _T("tan") << Sub2(symbol(theta), _T("skew")) << rptNewLine << rptNewLine;
@@ -253,24 +253,30 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
 
 
     *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(),
-        true, pDisplayUnits, true, true, &sfDetails) << rptNewLine;
+        true, pDisplayUnits, true, true, &sfDetails);
 
     if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
     {
         *p << _T("-Two-thirds of the total girder creep and shrinkage is assumed to occur before girders are erected") << rptNewLine;
     }
     *p << _T("-Bearing reset effects are not considered") << rptNewLine;
-    *p << _T("-Deck shrinkage effects are not considered") << rptNewLine << rptNewLine;
+    if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
+    {
+        *p << _T("-Deck shrinkage effects are not considered") << rptNewLine << rptNewLine;
+    }
 
     *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(),
-        true, pDisplayUnits, true, false, &sfDetails) << rptNewLine;
+        true, pDisplayUnits, true, false, &sfDetails);
 
     if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
     {
         *p << _T("-Two-thirds of the total girder creep and shrinkage is assumed to occur before girders are erected") << rptNewLine;
     }
     *p << _T("-Bearing reset effects are not considered") << rptNewLine;
-    *p << _T("-Deck shrinkage effects are not considered") << rptNewLine << rptNewLine;
+    if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
+    {
+        *p << _T("-Deck shrinkage effects are not considered") << rptNewLine << rptNewLine;
+    }
 
 
     GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);

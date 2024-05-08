@@ -362,8 +362,8 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
         GET_IFACE2(pBroker, IBearingDesignParameters, pBearing);
 
 
-        details->time_dependent = pBearing->GetTimeDependentShearDeformation(girderKey, poi, startPierIdx, details);
-        pBearing->GetThermalExpansionDetails(girderKey, details);
+        details->time_dependent = pBearing->GetTimeDependentShearDeformation(poi, startPierIdx, details);
+        pBearing->GetThermalExpansionDetails(poi, details);
 
 
         INIT_UV_PROTOTYPE(rptLengthUnitValue, Deflection, pDisplayUnits->GetDeflectionUnit(), false);

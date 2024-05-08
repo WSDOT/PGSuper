@@ -393,13 +393,13 @@ public:
    virtual void GetBearingReactionDetails(const ReactionLocation& reactionLocation,
        CGirderKey girderKey, pgsTypes::AnalysisType analysisType, bool bIncludeImpact, bool bIncludeLLDF, REACTIONDETAILS* pDetails) const override;
 
-   virtual void GetThermalExpansionDetails(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const override;
+   virtual void GetThermalExpansionDetails(const pgsPointOfInterest& poi, SHEARDEFORMATIONDETAILS* pDetails) const override;
 
-   virtual Float64 GetSpanContributoryLength(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const override;
+   virtual Float64 GetDistanceToPointOfFixity(const pgsPointOfInterest& poi, SHEARDEFORMATIONDETAILS* pDetails) const override;
 
-   virtual Float64 GetTimeDependentComponentShearDeformation(CGirderKey girderKey, const pgsPointOfInterest& poi, Float64 loss, SHEARDEFORMATIONDETAILS* pDetails) const override;
+   virtual Float64 GetTimeDependentComponentShearDeformation(const pgsPointOfInterest& poi, Float64 loss, SHEARDEFORMATIONDETAILS* pDetails) const override;
 
-   virtual Float64 GetTimeDependentShearDeformation(CGirderKey girderKey, const pgsPointOfInterest& poi, 
+   virtual Float64 GetTimeDependentShearDeformation(const pgsPointOfInterest& poi, 
        PierIndexType startPierIdx, SHEARDEFORMATIONDETAILS* pDetails) const override;
 
 // IFabricationOptimization

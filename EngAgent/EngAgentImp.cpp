@@ -3865,25 +3865,25 @@ void CEngAgentImp::GetBearingReactionDetails(const ReactionLocation& reactionLoc
     m_BearingEngineer.GetBearingReactionDetails(reactionLocation, girderKey, analysisType, bIncludeImpact, bIncludeLLDF, pDetails);
 }
 
-void CEngAgentImp::GetThermalExpansionDetails(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const
+void CEngAgentImp::GetThermalExpansionDetails(const pgsPointOfInterest& poi, SHEARDEFORMATIONDETAILS* pDetails) const
 {
-    m_BearingEngineer.GetThermalExpansionDetails(girderKey, pDetails);
+    m_BearingEngineer.GetThermalExpansionDetails(poi, pDetails);
 }
 
-Float64 CEngAgentImp::GetSpanContributoryLength(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const
+Float64 CEngAgentImp::GetDistanceToPointOfFixity(const pgsPointOfInterest& poi, SHEARDEFORMATIONDETAILS* pDetails) const
 {
-    return m_BearingEngineer.GetSpanContributoryLength(girderKey, pDetails);
+    return m_BearingEngineer.GetDistanceToPointOfFixity(poi, pDetails);
 }
 
-Float64 CEngAgentImp::GetTimeDependentComponentShearDeformation(CGirderKey girderKey, const pgsPointOfInterest& poi, Float64 loss, SHEARDEFORMATIONDETAILS* pDetails) const
+Float64 CEngAgentImp::GetTimeDependentComponentShearDeformation(const pgsPointOfInterest& poi, Float64 loss, SHEARDEFORMATIONDETAILS* pDetails) const
 {
-    return m_BearingEngineer.GetTimeDependentComponentShearDeformation(girderKey, poi, loss, pDetails);
+    return m_BearingEngineer.GetTimeDependentComponentShearDeformation(poi, loss, pDetails);
 }
 
-Float64 CEngAgentImp::GetTimeDependentShearDeformation(CGirderKey girderKey,
+Float64 CEngAgentImp::GetTimeDependentShearDeformation(
     const pgsPointOfInterest& poi, PierIndexType startPierIdx, SHEARDEFORMATIONDETAILS* pDetails) const
 {
-    return m_BearingEngineer.GetTimeDependentShearDeformation(girderKey, poi, startPierIdx, pDetails);
+    return m_BearingEngineer.GetTimeDependentShearDeformation(poi, startPierIdx, pDetails);
 }
 
 
