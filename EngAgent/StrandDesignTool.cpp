@@ -2025,7 +2025,7 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
 
    ConcStrengthResultType result = ConcSuccess;
 
-   GET_IFACE(IConcreteStressLimits,pAllowStress);
+   GET_IFACE_NOCHECK(IConcreteStressLimits,pAllowStress);
    pgsPointOfInterest dummyPOI(m_SegmentKey,0.0);
    if ( task.stressType == pgsTypes::Compression )
    {
