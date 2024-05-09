@@ -196,6 +196,7 @@ Float64 pgsBearingDesignEngineer::GetDistanceToPointOfFixity(const pgsPointOfInt
     pgsPointOfInterest poi_fixity;
 
     SpanIndexType nSpans = pBridge->GetSpanCount();
+    PierIndexType central_pierId = nSpans / 2;
     const CGirderKey& girderKey(poi_brg.GetSegmentKey());
         
 
@@ -212,7 +213,7 @@ Float64 pgsBearingDesignEngineer::GetDistanceToPointOfFixity(const pgsPointOfInt
             PierIndexType pierIdx = PierIndexType(spanIdx);
             if (nSpans % 2 == 0)
             {
-                PierIndexType central_pierId = nSpans / 2;
+                
                 if (pierIdx == central_pierId)
                 {
                     poi_fixity = pPoi->GetPierPointOfInterest(girderKey, central_pierId);
@@ -454,7 +455,8 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(
     GET_IFACE(ISpecification, pSpec);
     pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
     const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-    bool bTimeStepMethod = pSpecEntry->GetPrestressLossCriteria().LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP;
+    PrestressLossCriteria::LossMethodType lossMethod = pSpecEntry->GetPrestressLossCriteria().LossMethod;
+    bool bTimeStepMethod = lossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP;
 
 
     if (bTimeStepMethod)
@@ -482,7 +484,7 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(
 
         
 
-        for (IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++)
+        for (IntervalIndexType intervalIdx = erectSegmentIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++)
         {
 
             Float64 prev_creep = pDetails->creep;
@@ -503,6 +505,11 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(
                 {
                     pIPoi->GetPointsOfInterestInRange(L, poi, 0, &vPoi);
                 }
+
+                vPoi.erase(std::remove_if(vPoi.begin(), vPoi.end(), [](const pgsPointOfInterest& i) {
+                    return i.HasAttribute(POI_BOUNDARY_PIER);
+                    }), vPoi.end());
+
 
 
                 pgsPointOfInterest p0, p1;
