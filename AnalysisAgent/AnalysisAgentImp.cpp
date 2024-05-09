@@ -8096,42 +8096,43 @@ void CAnalysisAgentImp::GetDesignStress(IntervalIndexType intervalIdx, const pgs
    // becase the stress analysis will intrinsically include elastic effects.
    pgsTypes::IntervalTimeType timeType(spMode == pgsTypes::spmGross ? pgsTypes::End : pgsTypes::Start);
 
-   Float64 P;
+   pgsTypes::SectionPropertyType spType = (spMode == pgsTypes::spmGross ? pgsTypes::sptGrossNoncomposite : pgsTypes::sptTransformedNoncomposite);
+
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-   if (intervalIdx < liveLoadIntervalIdx)
+   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+
+   Float64 fTop = 0.0;
+   Float64 fBot = 0.0;
+
+   for (int i = 0; i < 3; i++)
    {
-      P = pPsForce->GetPrestressForce(poi, pgsTypes::Permanent, intervalIdx, timeType, pgsTypes::TransferLengthType::Minimum, &config);
-   }
-   else
-   {
-      if (bIncludeLiveLoad)
+      pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
+
+      Float64 P;
+      if (intervalIdx < liveLoadIntervalIdx)
       {
-         P = pPsForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent, limitState, INVALID_INDEX/*controlling live load*/, &config);
+         P = pPsForce->GetPrestressForce(poi, strandType, intervalIdx, timeType, pgsTypes::TransferLengthType::Minimum, &config);
       }
       else
       {
-         P = pPsForce->GetPrestressForce(poi, pgsTypes::Permanent, intervalIdx, timeType, pgsTypes::TransferLengthType::Minimum, &config);
+         if (bIncludeLiveLoad)
+         {
+            P = pPsForce->GetPrestressForceWithLiveLoad(poi,strandType, limitState, INVALID_INDEX/*controlling live load*/, &config);
+         }
+         else
+         {
+            P = pPsForce->GetPrestressForce(poi, strandType, intervalIdx, timeType, pgsTypes::TransferLengthType::Minimum, &config);
+         }
       }
+
+      auto ecc = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, strandType, &config);
+
+      fTop += GetStress(releaseIntervalIdx, poi, topLoc, P, ecc.X(), ecc.Y());
+      fBot += GetStress(releaseIntervalIdx, poi, botLoc, P, ecc.X(), ecc.Y());
    }
 
-   // NOTE: since we are doing design, the main bridge model may not have temporary strand removal
-   // intervals. Use the deck casting interval as the break point for "before temporary strands are removed"
-   // and "after temporary strands are removed"
-   IntervalIndexType tsInstallationIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
-   IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
-   bool bIncludeTemporaryStrands = /*tsInstallationIntervalIdx <= intervalIdx &&*/ intervalIdx < tsRemovalIntervalIdx ? true : false;
-   if (bIncludeTemporaryStrands)
-   {
-      P += pPsForce->GetPrestressForce(poi, pgsTypes::Temporary, tsInstallationIntervalIdx, timeType, pgsTypes::TransferLengthType::Minimum, &config);
-   }
-
-   pgsTypes::SectionPropertyType spType = (spMode == pgsTypes::spmGross ? pgsTypes::sptGrossNoncomposite : pgsTypes::sptTransformedNoncomposite);
-   WBFL::Geometry::Point2d ecc = pStrandGeom->GetEccentricity(spType, bIncludeTemporaryStrands ? tsInstallationIntervalIdx : intervalIdx, poi, bIncludeTemporaryStrands, &config);
-
-   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-
-   *pfTop = GetStress(releaseIntervalIdx, poi, topLoc, P, ecc.X(), ecc.Y());
-   *pfBot = GetStress(releaseIntervalIdx, poi, botLoc, P, ecc.X(), ecc.Y());
+   *pfTop = fTop;
+   *pfBot = fBot;
 }
 
 /////////////////////////////////////////////////////////////////////////////
