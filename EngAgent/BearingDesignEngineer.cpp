@@ -50,10 +50,17 @@
 #include <PgsExt\GirderLabel.h>
 
 
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <locale>
+#include <codecvt>
+
 
 #if defined _DEBUG
 #include <IFace\DocumentType.h>
 #endif
+
 
 
 #ifdef _DEBUG
@@ -459,6 +466,7 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(
 
         GET_IFACE(IBridge, pBridge);
         GET_IFACE(IProductForces, pProdForces);
+        GET_IFACE(IPointOfInterest, pPoi);
 
 
         pDetails->creep = 0.0;
@@ -476,6 +484,10 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(
 
         for (IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++)
         {
+
+            Float64 prev_creep = pDetails->creep;
+            Float64 prev_shrinkage = pDetails->shrinkage;
+            Float64 prev_relax = pDetails->relaxation;
 
             for (GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++)
             {
@@ -500,8 +512,8 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(
                 {
                     p0 = vPoi[idx - 1];
                     p1 = vPoi[idx];
-                    d0 = p0.GetDistFromStart();
-                    d1 = p1.GetDistFromStart();
+                    d0 = pPoi->ConvertPoiToGirderlineCoordinate(p0);
+                    d1 = pPoi->ConvertPoiToGirderlineCoordinate(p1);
                     if (d1 != d0)
                     {
                         const LOSSDETAILS* pDetails0 = pLosses->GetLossDetails(p0, intervalIdx);
@@ -531,19 +543,36 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(
                         pDetails->relaxation += avg_strain_BotRE * (d1 - d0);
 
                         
-                        if (idx == 1) 
+                        if (idx == 36)
                         {
                             if (intervalIdx == 1)
                             {
-                                file << "shrinakge" << "," << "creep" << std::endl;
+                                file << "event, end day,incremental shrinkage,cumulative shrinakge,incremental creep,cumulative creep,incremental relaxtion,cumulative relaxation" << std::endl;
                             }
-                            file << intervalIdx << "," << pDetails->shrinkage << "," << pDetails->creep << std::endl;
+
+                            std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
+                            std::string narrowStr = converter.to_bytes(pIntervals->GetDescription(intervalIdx));
+
+                            narrowStr.erase(std::remove_if(narrowStr.begin(), narrowStr.end(), [](char c) { return c == ','; }), narrowStr.end());
+
+                            
+
+                            file
+                                << narrowStr << ","
+                                << pIntervals->GetTime(intervalIdx, pgsTypes::IntervalTimeType::End) << ","
+                                << pDetails->shrinkage - prev_shrinkage << "," << pDetails->shrinkage << ","
+                                << pDetails->creep - prev_creep << "," << pDetails->creep << ","
+                                << pDetails->relaxation - prev_relax << "," << pDetails->relaxation << ","<< std::endl;
+                            
                         }
 
-
-
                     }
+
+                    
+                    
                 }
+
+                
             }
         }
 
