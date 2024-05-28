@@ -1398,19 +1398,20 @@ BEGIN
     LTEXT           "Distribution factors must be entered for both the main spans and at the piers.",IDC_USER_LLDF_NOTE,37,111,260,12
 END
 
-IDD_BRIDGEDESC_ENVIRONMENTAL DIALOG 0, 0, 249, 141
+IDD_BRIDGEDESC_ENVIRONMENTAL DIALOGEX 0, 0, 249, 141
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION
 CAPTION "Environmental"
-FONT 8, "MS Sans Serif"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "Exposure Conditions",IDC_STATIC,7,7,136,40
-    CONTROL         "&Normal Exposure",IDC_EXPOSURE,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,14,18,68,10
-    CONTROL         "&Severe Corrosive Conditions",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,14,30,102,10
+    GROUPBOX        "Exposure Conditions",IDC_STATIC,7,50,136,40
+    CONTROL         "&Normal Exposure",IDC_EXPOSURE,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,14,61,68,10
+    CONTROL         "&Severe Corrosive Conditions",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,14,73,102,10
+    GROUPBOX        "Climate Conditions",IDC_STATIC,7,7,136,39
     CONTROL         "&Cold Climate",IDC_CLIMATE,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,14,18,68,10
     CONTROL         "&Moderate Climate",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,14,30,102,10
-    LTEXT           "Average Ambient Relative Humidity",IDC_STATIC,7,57,117,8
-    EDITTEXT        IDC_RELHUMIDITY,7,69,40,14,ES_AUTOHSCROLL
-    LTEXT           "%",IDC_STATIC,48,72,8,8
+    LTEXT           "Average Ambient Relative Humidity",IDC_STATIC,7,94,117,8
+    EDITTEXT        IDC_RELHUMIDITY,7,106,40,14,ES_AUTOHSCROLL
+    LTEXT           "%",IDC_STATIC,48,109,8,8
 END
 
 IDD_EDIT_POINTLOAD DIALOGEX 0, 0, 394, 170
@@ -4986,6 +4987,11 @@ BEGIN
 END
 
 IDD_ENVIRONMENT AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_BRIDGEDESC_ENVIRONMENTAL AFX_DIALOG_LAYOUT
 BEGIN
     0
 END
