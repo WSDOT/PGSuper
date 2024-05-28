@@ -44,6 +44,7 @@ CBridgeDescEnvironmental::CBridgeDescEnvironmental() : CPropertyPage(CBridgeDesc
 {
 	//{{AFX_DATA_INIT(CBridgeDescEnvironmental)
 	m_Exposure = -1;
+	m_Climate = -1;
 	m_RelHumidity = 0.0;
 	//}}AFX_DATA_INIT
 }

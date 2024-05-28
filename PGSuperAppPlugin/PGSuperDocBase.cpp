@@ -488,7 +488,7 @@ bool CPGSDocBase::EditBridgeDescription(int nPage)
 
       std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditBridge>(*pOldBridgeDesc,      dlg.GetBridgeDescription(),
                                               oldExposureCondition, dlg.m_EnvironmentalPage.m_Exposure == 0 ? pgsTypes::ExposureCondition::Normal : pgsTypes::ExposureCondition::Severe,
-                                              oldClimateCondition, dlg.m_EnvironmentalPage.m_Climate == 0 ? pgsTypes::ClimateCondition::Cold : pgsTypes::ClimateCondition::Cold,
+                                              oldClimateCondition, dlg.m_EnvironmentalPage.m_Climate == 0 ? pgsTypes::ClimateCondition::Cold : pgsTypes::ClimateCondition::Moderate,
                                               oldRelHumidity,       dlg.m_EnvironmentalPage.m_RelHumidity));
 
 
