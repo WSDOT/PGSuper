@@ -31,6 +31,7 @@ class txnEditEnvironment : public CEAFTransaction
 {
 public:
    txnEditEnvironment(pgsTypes::ExposureCondition oldExposureCondition, pgsTypes::ExposureCondition newExposureCondition,
+                      pgsTypes::ClimateCondition oldClimateCondition, pgsTypes::ClimateCondition newClimateCondition,
                       Float64 oldRelHumidity, Float64 newRelHumidity );
 
    ~txnEditEnvironment();
@@ -46,6 +47,7 @@ private:
    void Execute(int i);
 
    std::array<pgsTypes::ExposureCondition, 2> m_ExposureCondition;
+   std::array<pgsTypes::ClimateCondition, 2> m_ClimateCondition;
    std::array<Float64, 2> m_RelHumidity;
 };
 

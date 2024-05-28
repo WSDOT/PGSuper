@@ -111,6 +111,12 @@ typedef struct pgsTypes
       Severe
    };
 
+   enum class ClimateCondition
+   {
+       Cold,
+       Moderate
+   };
+
 
    // curing method (effects ti for loss and creep calculations)
    enum class CuringMethod

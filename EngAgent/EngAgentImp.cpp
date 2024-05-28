@@ -4650,6 +4650,12 @@ HRESULT CEngAgentImp::OnExposureConditionChanged()
    return S_OK;
 }
 
+HRESULT CEngAgentImp::OnClimateConditionChanged()
+{
+    InvalidateAll();
+    return S_OK;
+}
+
 HRESULT CEngAgentImp::OnRelHumidityChanged()
 {
    InvalidateAll();

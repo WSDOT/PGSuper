@@ -514,6 +514,8 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(
 
                 pgsPointOfInterest p0, p1;
                 Float64 d0, d1;
+                std::stringstream coordinate_stream;
+
 
                 for (IndexType idx = 1, nPoi = vPoi.size(); idx < nPoi; idx++)
                 {
@@ -549,12 +551,13 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(
                         pDetails->shrinkage += avg_strain_BotSH * (d1 - d0);
                         pDetails->relaxation += avg_strain_BotRE * (d1 - d0);
 
+                        coordinate_stream << "," << strain_bot_girder_SH1;
                         
-                        if (idx == 36)
+                        if (idx == nPoi-2)
                         {
-                            if (intervalIdx == 1)
+                            if (intervalIdx == 6)
                             {
-                                file << "event, end day,incremental shrinkage,cumulative shrinakge,incremental creep,cumulative creep,incremental relaxtion,cumulative relaxation" << std::endl;
+                                file << "event, end day,incremental shrinkage,cumulative shrinakge,incremental creep,cumulative creep,incremental relaxtion,cumulative relaxation, bottom shrinkage strain" << std::endl;
                             }
 
                             std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
@@ -562,15 +565,13 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(
 
                             narrowStr.erase(std::remove_if(narrowStr.begin(), narrowStr.end(), [](char c) { return c == ','; }), narrowStr.end());
 
-                            
-
                             file
                                 << narrowStr << ","
                                 << pIntervals->GetTime(intervalIdx, pgsTypes::IntervalTimeType::End) << ","
                                 << pDetails->shrinkage - prev_shrinkage << "," << pDetails->shrinkage << ","
                                 << pDetails->creep - prev_creep << "," << pDetails->creep << ","
-                                << pDetails->relaxation - prev_relax << "," << pDetails->relaxation << ","<< std::endl;
-                            
+                                << pDetails->relaxation - prev_relax << "," << pDetails->relaxation << coordinate_stream.str() << std::endl;
+                                
                         }
 
                     }

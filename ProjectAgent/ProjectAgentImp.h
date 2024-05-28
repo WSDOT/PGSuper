@@ -195,8 +195,12 @@ public:
 
 // IEnvironment
 public:
-   virtual pgsTypes::ExposureCondition GetExposureCondition() const override;
+    virtual pgsTypes::ExposureCondition GetExposureCondition() const override;
 	virtual void SetExposureCondition(pgsTypes::ExposureCondition newVal) override;
+
+    virtual pgsTypes::ClimateCondition GetClimateCondition() const override;
+    virtual void SetClimateCondition(pgsTypes::ClimateCondition newVal) override;
+
 	virtual Float64 GetRelHumidity() const override;
 	virtual void SetRelHumidity(Float64 newVal) override;
 
@@ -807,6 +811,7 @@ private:
 
    // Environment Data
    pgsTypes::ExposureCondition m_ExposureCondition;
+   pgsTypes::ClimateCondition m_ClimateCondition;
    Float64 m_RelHumidity;
 
    // Alignment Data

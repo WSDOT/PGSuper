@@ -164,6 +164,7 @@ CProjectAgentImp::CProjectAgentImp()
 
    // Initialize Environment Data
    m_ExposureCondition = pgsTypes::ExposureCondition::Normal;
+   m_ClimateCondition = pgsTypes::ClimateCondition::Cold;
    m_RelHumidity = 75.;
 
    // Initialize Alignment Data
@@ -4985,6 +4986,7 @@ BEGIN_STRSTORAGEMAP(CProjectAgentImp,_T("ProjectData"),8.0)
 
    BEGIN_UNIT(_T("Environment"),_T("Environmental Parameters"),1.0)
       PROPERTY(_T("ExpCond"), SDT_I4, m_ExposureCondition )
+      //PROPERTY(_T("ClimCond"), SDT_I4, m_ClimateCondition)
       PROPERTY(_T("RelHumidity"), SDT_R8, m_RelHumidity )
    END_UNIT // Environment
 
@@ -6876,6 +6878,20 @@ void CProjectAgentImp::SetExposureCondition(pgsTypes::ExposureCondition newVal)
       m_ExposureCondition = newVal;
       Fire_ExposureConditionChanged();
    }
+}
+
+pgsTypes::ClimateCondition CProjectAgentImp::GetClimateCondition() const
+{
+    return m_ClimateCondition;
+}
+
+void CProjectAgentImp::SetClimateCondition(pgsTypes::ClimateCondition newVal)
+{
+    if (m_ClimateCondition != newVal)
+    {
+        m_ClimateCondition = newVal;
+        Fire_ClimateConditionChanged();
+    }
 }
 
 Float64 CProjectAgentImp::GetRelHumidity() const
@@ -10854,6 +10870,11 @@ void CProjectAgentImp::FirePendingEvents()
          if (WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents, EVT_EXPOSURECONDITION))
          {
             Fire_ExposureConditionChanged();
+         }
+
+         if (WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents, EVT_CLIMATECONDITION))
+         {
+             Fire_ClimateConditionChanged();
          }
 
          if (WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents, EVT_RELHUMIDITY))

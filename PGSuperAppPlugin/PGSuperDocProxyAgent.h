@@ -165,6 +165,7 @@ public:
 // IEnvironmentEventSink
 public:
    virtual HRESULT OnExposureConditionChanged() override;
+   virtual HRESULT OnClimateConditionChanged() override;
    virtual HRESULT OnRelHumidityChanged() override;
 
 // IProjectPropertiesEventSink

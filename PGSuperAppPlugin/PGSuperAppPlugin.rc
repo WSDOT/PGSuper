@@ -1045,7 +1045,10 @@ FONT 8, "MS Sans Serif"
 BEGIN
     GROUPBOX        "Exposure Conditions",IDC_STATIC,7,7,110,40
     CONTROL         "&Normal Exposure",IDC_EXPOSURE,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,14,18,68,10
-    CONTROL         "&Severe Corrosive Conditions",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,14,30,102,10
+    CONTROL         "&Severe Corrosive Conditions", IDC_RADIO2, "Button", BS_AUTORADIOBUTTON, 14, 30, 102, 10
+    GROUPBOX        "Climate Conditions", IDC_STATIC, 7, 7, 110, 40
+    CONTROL         "&Cold Climate", IDC_CLIMATE, "Button", BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP, 14, 18, 68, 10
+    CONTROL         "&Moderate Climate", IDC_RADIO3, "Button", BS_AUTORADIOBUTTON, 14, 30, 102, 10
     LTEXT           "Average Ambient Relative Humidity",IDC_STATIC,7,57,117,8
     EDITTEXT        IDC_RELHUMIDITY,7,69,40,14,ES_AUTOHSCROLL
     LTEXT           "%",IDC_STATIC,48,72,8,8
@@ -1403,6 +1406,8 @@ BEGIN
     GROUPBOX        "Exposure Conditions",IDC_STATIC,7,7,136,40
     CONTROL         "&Normal Exposure",IDC_EXPOSURE,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,14,18,68,10
     CONTROL         "&Severe Corrosive Conditions",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,14,30,102,10
+    CONTROL         "&Cold Climate", IDC_CLIMATE, "Button", BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP, 14, 18, 68, 10
+    CONTROL         "&Moderate Climate", IDC_RADIO3, "Button", BS_AUTORADIOBUTTON, 14, 30, 102, 10
     LTEXT           "Average Ambient Relative Humidity",IDC_STATIC,7,57,117,8
     EDITTEXT        IDC_RELHUMIDITY,7,69,40,14,ES_AUTOHSCROLL
     LTEXT           "%",IDC_STATIC,48,72,8,8
