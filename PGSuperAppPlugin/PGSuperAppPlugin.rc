@@ -14,7 +14,8 @@
 #include <EAF\EAFResources.h>
 #if !defined _NOGRID
 #include "grid\gxresrc.h"
-#endif
+#endif
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -1046,9 +1047,9 @@ BEGIN
     GROUPBOX        "Exposure Conditions",IDC_STATIC,7,7,110,40
     CONTROL         "&Normal Exposure",IDC_EXPOSURE,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,14,18,68,10
     CONTROL         "&Severe Corrosive Conditions",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,14,30,102,10
-    GROUPBOX        "Climate Conditions",IDC_STATIC,7,50,110,38
-    CONTROL         "&Cold Climate",IDC_CLIMATE,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,14,61,68,9
-    CONTROL         "&Moderate Climate",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,14,71,102,10
+    GROUPBOX        "Climate",IDC_STATIC,7,50,110,38
+    CONTROL         "&Cold",IDC_CLIMATE,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,14,61,68,9
+    CONTROL         "&Moderate",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,14,71,102,10
     LTEXT           "Average Ambient Relative Humidity",IDC_STATIC,7,93,117,8
     EDITTEXT        IDC_RELHUMIDITY,7,105,40,14,ES_AUTOHSCROLL
     LTEXT           "%",IDC_STATIC,48,108,8,8
@@ -1406,9 +1407,9 @@ BEGIN
     GROUPBOX        "Exposure Conditions",IDC_STATIC,7,50,136,40
     CONTROL         "&Normal Exposure",IDC_EXPOSURE,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,14,61,68,10
     CONTROL         "&Severe Corrosive Conditions",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,14,73,102,10
-    GROUPBOX        "Climate Conditions",IDC_STATIC,7,7,136,39
-    CONTROL         "&Cold Climate",IDC_CLIMATE,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,14,18,68,10
-    CONTROL         "&Moderate Climate",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,14,30,102,10
+    GROUPBOX        "Climate",IDC_STATIC,7,7,136,39
+    CONTROL         "&Cold",IDC_CLIMATE,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,14,18,68,10
+    CONTROL         "&Moderate",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,14,30,102,10
     LTEXT           "Average Ambient Relative Humidity",IDC_STATIC,7,94,117,8
     EDITTEXT        IDC_RELHUMIDITY,7,106,40,14,ES_AUTOHSCROLL
     LTEXT           "%",IDC_STATIC,48,109,8,8
