@@ -251,22 +251,19 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
         *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("radius_of_gyration.png")) << rptNewLine;
     }
 
-
-    *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(),
-        true, pDisplayUnits, true, true, &sfDetails);
-
-    if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
+    bool bCold;
+    GET_IFACE2(pBroker, IEnvironment, pEnvironment);
+    if (pEnvironment->GetClimateCondition() == pgsTypes::ClimateCondition::Cold)
     {
-        *p << _T("-Two-thirds of the total girder creep and shrinkage is assumed to occur before girders are erected") << rptNewLine;
+        bCold = true;
     }
-    *p << _T("-Bearing reset effects are not considered") << rptNewLine;
-    if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
+    else
     {
-        *p << _T("-Deck shrinkage effects are not considered") << rptNewLine << rptNewLine;
+        bCold = false;
     }
 
     *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(),
-        true, pDisplayUnits, true, false, &sfDetails);
+        true, pDisplayUnits, true, bCold, &sfDetails);
 
     if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
     {

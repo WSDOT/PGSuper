@@ -82,6 +82,8 @@ ColumnIndexType CBearingShearDeformationTable::GetBearingTableColumnCount(IBroke
     pgsTypes::AnalysisType analysisType, SHEARDEFORMATIONDETAILS* details, bool bDetail) const
 {
 
+
+
     ColumnIndexType nCols = 1; // location
 
     if (bDetail)
@@ -109,7 +111,7 @@ ColumnIndexType CBearingShearDeformationTable::GetBearingTableColumnCount(IBroke
     }
     else
     {
-        nCols += 2; // total deformation cold or moderate
+        nCols += 1; // total deformation
     }
 
     return nCols;
@@ -135,7 +137,7 @@ RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptR
     }
     else
     {
-        p_table->SetNumberOfHeaderRows(2);
+        p_table->SetNumberOfHeaderRows(1);
     }
 
     ColumnIndexType col = 0;
@@ -146,7 +148,7 @@ RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptR
     }
     else
     {
-        p_table->SetRowSpan(0, col, 2);
+        p_table->SetRowSpan(0, col, 1);
     }
     
     (*p_table)(0, col++) << _T("");
@@ -218,10 +220,7 @@ RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptR
     }
     else
     {
-        p_table->SetColumnSpan(0, col, 2);
         (*p_table)(0, col) << Sub2(symbol(DELTA),_T("total"));
-        (*p_table)(1, col++) << COLHDR(_T("Cold"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
-        (*p_table)(1, col++) << COLHDR(_T("Moderate"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
     }
 
 
@@ -260,21 +259,16 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
 
     CString label{_T("")};
 
-    if (bDetail)
+
+    if (bCold)
     {
-        if (bCold)
-        {
-            label = _T("Shear Deformations - Cold Climate");
-        }
-        else
-        {
-            label = _T("Shear Deformations - Moderate Climate");
-        }
+        label = _T("Shear Deformations - Cold Climate");
     }
     else
     {
-        label = _T("Shear Deformations");
+        label = _T("Shear Deformations - Moderate Climate");
     }
+
     
     
     rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols, label);
@@ -430,8 +424,14 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
         }
         else
         {
-            (*p_table)(row, col++) << Deflection.SetValue(details->total_shear_deformation_cold);
-            (*p_table)(row, col++) << Deflection.SetValue(details->total_shear_deformation_moderate);
+            if (bCold)
+            {
+                (*p_table)(row, col++) << Deflection.SetValue(details->total_shear_deformation_cold);
+            }
+            else
+            {
+                (*p_table)(row, col++) << Deflection.SetValue(details->total_shear_deformation_moderate);
+            }
         }
 
 

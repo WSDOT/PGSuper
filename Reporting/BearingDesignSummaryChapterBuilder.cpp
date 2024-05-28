@@ -125,7 +125,18 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
     SHEARDEFORMATIONDETAILS sfDetails;
     pBearingDesignParameters->GetBearingTableParameters(girderKey, &sfDetails);
 
-    *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(), true, pDisplayUnits, false, true, &sfDetails) << rptNewLine;
+    bool bCold;
+    GET_IFACE2(pBroker, IEnvironment, pEnvironment);
+    if (pEnvironment->GetClimateCondition() == pgsTypes::ClimateCondition::Cold)
+    {
+        bCold = true;
+    }
+    else
+    {
+        bCold = false;
+    }
+
+    *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(), true, pDisplayUnits, false, bCold, &sfDetails) << rptNewLine;
 
     *p << _T("-Deck shrinkage effects are not considered") << rptNewLine;
     *p << _T("-Bearing reset effects are not considered") << rptNewLine;
