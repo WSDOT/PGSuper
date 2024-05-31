@@ -1382,7 +1382,10 @@ private:
             return true;
          }
 
-         if ( IsEqual(station,other.station) )
+         // use ==, not IsEqual()
+         // IsEqual() makes this an invalid predicate for
+         // the sort of the map
+         if ( station == other.station )
          {
             if ( direction < other.direction )
             {
