@@ -388,6 +388,9 @@
     <ClCompile Include="SpecLibraryEntryImpl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ThermalMovementCriteria.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="AASHTOConcretePage.h">
@@ -793,6 +796,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SpecLibraryEntryImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\psgLib\ThermalMovementCriteria.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

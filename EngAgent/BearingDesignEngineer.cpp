@@ -41,6 +41,7 @@
 #include <LRFD\Rebar.h>
 
 #include <PsgLib\SpecLibraryEntry.h>
+#include <psgLib/ThermalMovementCriteria.h>
 #include <psgLib/ShearCapacityCriteria.h>
 #include <psgLib/LimitStateConcreteStrengthCriteria.h>
 
@@ -974,24 +975,15 @@ void pgsBearingDesignEngineer::GetThermalExpansionDetails(const pgsPointOfIntere
     pDetails->max_design_temperature_moderate = WBFL::Units::ConvertToSysUnits(80.0, WBFL::Units::Measure::Fahrenheit);
     pDetails->min_design_temperature_moderate = WBFL::Units::ConvertToSysUnits(10.0, WBFL::Units::Measure::Fahrenheit);
 
-    GET_IFACE(ILibrary, pLibrary);
-    WBFL::System::Time time;
-    bool bPrintDate = WBFL::System::Time::PrintDate(true);
-    std::_tstring strServer;
-    std::_tstring strConfiguration;
-    std::_tstring strMasterLibFile;
-    pLibrary->GetMasterLibraryInfo(strServer, strConfiguration, strMasterLibFile, time);
+    GET_IFACE(ILibrary, pLib);
+    GET_IFACE(ISpecification, pSpec);
+    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
+    const auto pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+    const auto& thermalFactor = pSpecEntry->GetThermalMovementCriteria();
 
-    pDetails->libConfig = strConfiguration;
 
-    if (pDetails->libConfig == _T("WSDOT"))
-    {
-        pDetails->percentExpansion = 0.75;
-    }
-    else
-    {
-        pDetails->percentExpansion = 0.65;
-    }
+    pDetails->percentExpansion = thermalFactor.ThermalMovementFactor;
+
 
 
     pDetails->thermal_expansion_cold = -pDetails->percentExpansion * pDetails->thermal_expansion_coefficient * L * (pDetails->max_design_temperature_cold - pDetails->min_design_temperature_cold);

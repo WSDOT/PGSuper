@@ -220,7 +220,7 @@ RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptR
     }
     else
     {
-        (*p_table)(0, col) << Sub2(symbol(DELTA),_T("total"));
+        (*p_table)(0, col) << COLHDR(Sub2(symbol(DELTA), _T("total")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
     }
 
 

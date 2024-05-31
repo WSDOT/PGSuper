@@ -127,6 +127,7 @@ void CSpecMainSheet::ExchangeDescriptionData(CDataExchange* pDX)
    DDX_RadioEnum(pDX,IDC_GROSS,m_Entry.m_pImpl->m_SectionPropertiesCriteria.SectionPropertyMode);
    DDX_CBEnum(pDX,IDC_EFF_FLANGE_WIDTH,m_Entry.m_pImpl->m_SectionPropertiesCriteria.EffectiveFlangeWidthMethod);
 
+
    if (pDX->m_bSaveAndValidate)
    {
       DDX_Text(pDX, IDC_NAME, m_Name);
@@ -137,9 +138,11 @@ void CSpecMainSheet::ExchangeDescriptionData(CDataExchange* pDX)
       }
       m_Entry.SetName(m_Name);
 
-	   DDX_Text(pDX, IDC_EDIT_DESCRIPTION, m_Description);
+	  DDX_Text(pDX, IDC_EDIT_DESCRIPTION, m_Description);
       m_Entry.m_pImpl->m_SpecificationCriteria.Description = m_Description;
 
+      DDX_Text(pDX, IDC_THERMAL, m_Thermal);
+      m_Entry.m_pImpl->m_ThermalMovementCriteria.ThermalMovementFactor = m_Thermal;
 
       // specification units
       int chk = m_SpecDescrPage.GetCheckedRadioButton( IDC_SPEC_UNITS_SI,IDC_SPEC_UNITS_US);
@@ -158,6 +161,9 @@ void CSpecMainSheet::ExchangeDescriptionData(CDataExchange* pDX)
 
       m_Description = m_Entry.m_pImpl->m_SpecificationCriteria.Description.c_str();
 	   DDX_Text(pDX, IDC_EDIT_DESCRIPTION, m_Description);
+
+      m_Thermal = m_Entry.m_pImpl->m_ThermalMovementCriteria.ThermalMovementFactor;
+       DDX_Text(pDX, IDC_THERMAL, m_Thermal);
 
       // spec units
       WBFL::LRFD::BDSManager::Units Units = m_Entry.m_pImpl->m_SpecificationCriteria.Units;
