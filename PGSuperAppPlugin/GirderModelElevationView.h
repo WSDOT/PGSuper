@@ -113,6 +113,7 @@ private:
    void BuildDimensionDisplayObjects(       CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx);
    void BuildSectionCutDisplayObjects(      CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx);
    void BuildStirrupDisplayObjects(         CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx);
+   void BuildPropertiesDisplayObjects(      CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx);
    
    std::shared_ptr<WBFL::DManip::DimensionLine> BuildDimensionLine(std::shared_ptr<WBFL::DManip::iDisplayList> pDL, const WBFL::Geometry::Point2d& fromPoint, const WBFL::Geometry::Point2d& toPoint, Float64 dimension);
    std::shared_ptr<WBFL::DManip::iDisplayObject> BuildLine(std::shared_ptr<WBFL::DManip::iDisplayList> pDL, const std::vector<WBFL::Geometry::Point2d>& points, COLORREF color, UINT nWidth = 1);
