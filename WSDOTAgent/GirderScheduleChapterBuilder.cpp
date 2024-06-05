@@ -50,12 +50,6 @@
 #include <IFace\DocumentType.h>
 #endif
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 #define STIRRUP_ERROR_NONE        0
 #define STIRRUP_ERROR            -1
 #define STIRRUP_ERROR_BARSIZE    -2
@@ -68,22 +62,11 @@ static char THIS_FILE[] = __FILE__;
 #define DEBOND_ERROR_NONE        0
 #define DEBOND_ERROR_SYMMETRIC   -1
 
-/****************************************************************************
-CLASS
-   CGirderScheduleChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CGirderScheduleChapterBuilder::CGirderScheduleChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CGirderScheduleChapterBuilder::GetName() const
 {
    return TEXT("Girder Schedule");
@@ -232,8 +215,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(const std::shared_ptr<const WBF
       (*pTable)(++row,0) << _T("Girder Height, H");
       (*pTable)(row,1) << gdim.SetValue(Hg);
 
-      GET_IFACE2(pBroker, IGirder, pGdr);
-      Float64 W = pGdr->GetTopWidth(poiMidSpan);
+      Float64 W = pIGirder->GetTopWidth(poiMidSpan);
       (*pTable)(++row, 0) << _T("Girder Width, W");
       (*pTable)(row, 1) << gdim.SetValue(W);
    }
@@ -301,7 +283,12 @@ rptChapter* CGirderScheduleChapterBuilder::Build(const std::shared_ptr<const WBF
       }
       else
       {
-	      Float64 P1 = pBridge->GetSegmentStartEndDistance(segmentKey);
+         // start end distance is a plan view dimension that needs to
+         // be adjusted for the installed girder slope and the height of the girder
+	      Float64 D = pBridge->GetSegmentStartEndDistance(segmentKey);
+         Float64 slope = pBridge->GetSegmentSlope(segmentKey);
+         Float64 Hg = pSectProp->GetHg(releaseIntervalIdx, poiMidSpan);
+         Float64 P1 = D * sqrt(1 + slope * slope) - slope * Hg;
 	      (*pTable)(row  ,1) << gdim.SetValue(P1);
       }
 	
@@ -314,8 +301,13 @@ rptChapter* CGirderScheduleChapterBuilder::Build(const std::shared_ptr<const WBF
       }
       else
       {
-	      Float64 P2 = pBridge->GetSegmentEndEndDistance(segmentKey);
-	      (*pTable)(row  ,1) << gdim.SetValue(P2);
+         // start end distance is a plan view dimension that needs to
+         // be adjusted for the installed girder slope and the height of the girder
+         Float64 D = pBridge->GetSegmentEndEndDistance(segmentKey);
+         Float64 Hg = pSectProp->GetHg(releaseIntervalIdx, poiMidSpan);
+         Float64 slope = pBridge->GetSegmentSlope(segmentKey);
+         Float64 P2 = D * sqrt(1 + slope * slope) + slope * Hg;
+         (*pTable)(row  ,1) << gdim.SetValue(P2);
       }
    }
 
@@ -820,24 +812,6 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CGirderScheduleChapterBuilder::
    return std::make_unique<CGirderScheduleChapterBuilder>();
 }
 
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
 int CGirderScheduleChapterBuilder::GetReinforcementDetails(IBroker* pBroker,const CSegmentKey& segmentKey,CLSID& familyCLSID,Float64* pz1Spacing,Float64 *pz1Length,Float64 *pz2Spacing,Float64* pz2Length,Float64 *pz3Spacing,Float64* pz3Length) const
 {
    GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeometry);
