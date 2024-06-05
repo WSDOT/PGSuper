@@ -587,14 +587,14 @@ void girder_lengths(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
       *pPara << _T("C-C Pier = Abutment/Pier Line to Abutment/Pier Line length measured along the girder") << rptNewLine;
       *pPara << _T("C-C Bearing = Centerline bearing to centerline bearing length measured along the girder centerline") << rptNewLine;
       *pPara << _T("Girder Length, Plan = End to end length of the girder projected into a horizontal plane") << rptNewLine;
-      *pPara << _T("Girder Length, Along Grade = End to end length of girder measured along grade of the girder (slope adjusted) = ") << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("SlopeAdjustedGirderLength.png"),rptRcImage::Middle) << rptNewLine;
+      *pPara << _T("Girder Length, Along Grade = End to end length of girder measured along grade of the installed girder = ") << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("SlopeAdjustedGirderLength.png"),rptRcImage::Middle) << rptNewLine;
    }
    else
    {
       *pPara << _T("C-C Support = Abutment/Pier/Temp Support Line to Abutment/Pier/Temp Support Line length measured along the segment") << rptNewLine;
       *pPara << _T("C-C Bearing = Centerline bearing to centerline bearing length measured along the segment") << rptNewLine;
       *pPara << _T("Segment Length, Plan = End to end length of the segment projected into a horizontal plane") << rptNewLine;
-      *pPara << _T("Segment Length, Along Grade = End to end length of segment measured along grade of the segment (slope adjusted) = ") << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("SlopeAdjustedGirderLength.png"),rptRcImage::Middle) << rptNewLine;
+      *pPara << _T("Segment Length, Along Grade = End to end length of segment measured along grade of the installed segment = ") << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("SlopeAdjustedGirderLength.png"),rptRcImage::Middle) << rptNewLine;
    }
    *pPara << rptNewLine;
 
@@ -956,11 +956,14 @@ void girder_ends(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pC
    pPara = new rptParagraph;
    (*pChapter) << pPara;
 
+   *pPara << _T("All distances are plan view dimensions.") << rptNewLine;
+
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length,  pDisplayUnits->GetSpanLengthUnit(), false );
 
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
       SegmentIndexType nSegments = pBridge->GetSegmentCount(grpIdx, 0);
+
       ColumnIndexType nColumns;
       std::_tstring strSegmentLabel;
       std::_tstring strSupportLabel;
@@ -1015,11 +1018,11 @@ void girder_ends(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pC
       (*pTable)(2,col++) << COLHDR(symbol(NORMAL) << _T(" to ") << strSupportLabel, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       if ( nSegments == 1 )
       {
-         (*pTable)(2,col++) << COLHDR(_T("Along Girder"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*pTable)(2,col++) << COLHDR(_T("Along CL Girder"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       }
       else
       {
-         (*pTable)(2,col++) << COLHDR(_T("Along Segment"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*pTable)(2,col++) << COLHDR(_T("Along CL Segment"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       }
 
       pTable->SetColumnSpan(1,col,2);
@@ -1035,21 +1038,21 @@ void girder_ends(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pC
       (*pTable)(2,col++) << COLHDR(symbol(NORMAL) << _T(" to ") << strSupportLabel, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       if ( nSegments == 1 )
       {
-         (*pTable)(2,col++) << COLHDR(_T("Along Girder"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*pTable)(2,col++) << COLHDR(_T("Along CL Girder"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       }
       else
       {
-         (*pTable)(2,col++) << COLHDR(_T("Along Segment"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*pTable)(2,col++) << COLHDR(_T("Along CL Segment"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       }
 
       pTable->SetRowSpan(1,col,2);
       if (nSegments == 1)
       {
-         (*pTable)(1,col++)<< COLHDR(_T("CL Brg to Girder End") << rptNewLine << _T("Along Girder"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*pTable)(1,col++)<< COLHDR(_T("CL Brg to Girder End") << rptNewLine << _T("Along CL Girder"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       }
       else
       {
-         (*pTable)(1,col++)<< COLHDR(_T("CL Brg to Segment End") << rptNewLine << _T("Along Segment"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*pTable)(1,col++)<< COLHDR(_T("CL Brg to Segment End") << rptNewLine << _T("Along CL Segment"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       }
 
 
@@ -1058,11 +1061,11 @@ void girder_ends(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pC
       (*pTable)(2,col++) << COLHDR(symbol(NORMAL) << _T(" to ") << strSupportLabel, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       if ( nSegments == 1 )
       {
-         (*pTable)(2,col++) << COLHDR(_T("Along Girder"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*pTable)(2,col++) << COLHDR(_T("Along CL Girder"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       }
       else
       {
-         (*pTable)(2,col++) << COLHDR(_T("Along Segment"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*pTable)(2,col++) << COLHDR(_T("Along CL Segment"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       }
 
       pTable->SetColumnSpan(1,col,2);
@@ -1070,21 +1073,21 @@ void girder_ends(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pC
       (*pTable)(2,col++) << COLHDR(symbol(NORMAL) << _T(" to ") << strSupportLabel, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       if ( nSegments == 1 )
       {
-         (*pTable)(2,col++)<< COLHDR(_T("Along Girder"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*pTable)(2,col++)<< COLHDR(_T("Along CL Girder"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       }
       else
       {
-         (*pTable)(2,col++)<< COLHDR(_T("Along Segment"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*pTable)(2,col++)<< COLHDR(_T("Along CL Segment"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       }
 
       pTable->SetRowSpan(1,col,2);
       if ( nSegments == 1 )
       {
-         (*pTable)(1,col)<< COLHDR(_T("CL Brg to Girder End") << rptNewLine << _T("Along Girder"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*pTable)(1,col)<< COLHDR(_T("CL Brg to Girder End") << rptNewLine << _T("Along CL Girder"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       }
       else
       {
-         (*pTable)(1,col)<< COLHDR(_T("CL Brg to Segment End") << rptNewLine << _T("Along Segment"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
+         (*pTable)(1,col)<< COLHDR(_T("CL Brg to Segment End") << rptNewLine << _T("Along CL Segment"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit() );
       }
 
       RowIndexType row = pTable->GetNumberOfHeaderRows();
