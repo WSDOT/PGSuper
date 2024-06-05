@@ -135,7 +135,8 @@ rptChapter* CGirderTendonGeometryChapterBuilder::Build(const std::shared_ptr<con
 
 			   ATLASSERT(IsEqual(frDetails.X, pPoi->ConvertPoiToGirderCoordinate(poi)));
 
-			   Float64 ductOffset(0), eccY(0), slopeX(0), slopeY(0), angle_start(0), angle_end(0);
+			   Float64 ductOffset(0), slopeX(0), slopeY(0), angle_start(0), angle_end(0);
+            WBFL::Geometry::Point2d tendon_ecc;
 			   if (pTendonGeom->IsOnDuct(poi, ductIdx))
 			   {
 				   ductOffset = pTendonGeom->GetGirderDuctOffset(stressTendonIntervalIdx, poi, ductIdx);
@@ -145,8 +146,7 @@ rptChapter* CGirderTendonGeometryChapterBuilder::Build(const std::shared_ptr<con
 				   slope->get_X(&slopeX);
 				   slope->get_Y(&slopeY);
 
-               Float64 eccX;
-				   pTendonGeom->GetGirderTendonEccentricity(stressTendonIntervalIdx, poi, ductIdx,&eccX,&eccY);
+               tendon_ecc = pTendonGeom->GetGirderTendonEccentricity(stressTendonIntervalIdx, poi, ductIdx);
 
 				   angle_start = pTendonGeom->GetGirderTendonAngularChange(poi, ductIdx, pgsTypes::metStart);
 				   angle_end   = pTendonGeom->GetGirderTendonAngularChange(poi, ductIdx, pgsTypes::metEnd);
@@ -156,7 +156,7 @@ rptChapter* CGirderTendonGeometryChapterBuilder::Build(const std::shared_ptr<con
             (*pTable)(row,col++) << ecc.SetValue(ductOffset);
             (*pTable)(row,col++) << slopeX;
             (*pTable)(row,col++) << slopeY;
-            (*pTable)(row,col++) << ecc.SetValue(eccY);
+            (*pTable)(row,col++) << ecc.SetValue(tendon_ecc.Y());
             (*pTable)(row,col++) << angle_start;
             (*pTable)(row,col++) << angle_end;
             (*pTable)(row,col++) << stress.SetValue( frDetails.dfpF ); // friction

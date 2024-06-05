@@ -34,40 +34,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-/****************************************************************************
-CLASS
-   CSectionPropertiesTable
-****************************************************************************/
 
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-CSectionPropertiesTable::CSectionPropertiesTable()
-{
-}
-
-CSectionPropertiesTable::CSectionPropertiesTable(const CSectionPropertiesTable& rOther)
-{
-   MakeCopy(rOther);
-}
-
-CSectionPropertiesTable::~CSectionPropertiesTable()
-{
-}
-
-//======================== OPERATORS  =======================================
-CSectionPropertiesTable& CSectionPropertiesTable::operator= (const CSectionPropertiesTable& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
-//======================== OPERATIONS =======================================
 rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& segmentKey,bool bComposite,
                                            IEAFDisplayUnits* pDisplayUnits) const
 {
@@ -76,21 +43,12 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
    IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
    IntervalIndexType lastTendonStressingIntervalIdx = pIntervals->GetLastGirderTendonStressingInterval(segmentKey);
 
-#if defined _DEBUG
-   {
-      IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
+   // this table only reports gross properties, but we need to specify the properties type
+   // when requesting them, otherwise we get properties for the current properties type mode
+   pgsTypes::SectionPropertyType spType = pgsTypes::sptGross;
 
-      GET_IFACE2(pBroker,IGirder,pGirder);
-      ATLASSERT( pGirder->IsPrismatic(erectSegmentIntervalIdx,segmentKey) == true );
-      if ( bComposite )
-      {
-         ATLASSERT( pGirder->IsPrismatic(lastIntervalIdx,segmentKey) == true );
-      }
-   }
-#endif // _DEBUG
-
-   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker, ISectionProperties, pSectProp);
+   GET_IFACE2(pBroker, IBridge, pBridge);
 
    bool bHasDeck = IsStructuralDeck(pBridge->GetDeckType());
    bool bAsymmetricGirders = pBridge->HasAsymmetricGirders();
@@ -102,7 +60,7 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
 
    ColumnIndexType nColumns = (bComposite ? 3 : 2);
 
-   std::_tstring str(_T("Section Properties - "));
+   std::_tstring str(_T("Gross Section Properties - "));
    str += pgsGirderLabel::GetSegmentLabel(segmentKey);
 
    rptRcTable* xs_table = rptStyleManager::CreateDefaultTable(nColumns,str.c_str());
@@ -141,22 +99,22 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
     // Write non-composite properties
    RowIndexType row = xs_table->GetNumberOfHeaderRows();
 
-   Float64 depth = pSectProp->GetHg(constructionIntervalIdx,poi);
+   Float64 depth = pSectProp->GetHg(spType, constructionIntervalIdx,poi);
 
    Float64 span_length = pBridge->GetSegmentSpanLength(segmentKey);
 
    (*xs_table)(row, 0) << _T("Area (") << rptAreaUnitTag(&pDisplayUnits->GetAreaUnit().UnitOfMeasure) << _T(")");
-   (*xs_table)(row++,1) << l2.SetValue( pSectProp->GetAg(constructionIntervalIdx,poi) );
+   (*xs_table)(row++,1) << l2.SetValue( pSectProp->GetAg(spType, constructionIntervalIdx,poi) );
 
    (*xs_table)(row, 0) << _T("I") << Sub(_T("x")) << _T(" (") << rptLength4UnitTag(&pDisplayUnits->GetMomentOfInertiaUnit().UnitOfMeasure) << _T(")");
-   (*xs_table)(row++,1) << l4.SetValue( pSectProp->GetIxx(constructionIntervalIdx,poi) );
+   (*xs_table)(row++,1) << l4.SetValue( pSectProp->GetIxx(spType, constructionIntervalIdx,poi) );
    
    (*xs_table)(row, 0) << _T("I") << Sub(_T("y")) << _T(" (") << rptLength4UnitTag(&pDisplayUnits->GetMomentOfInertiaUnit().UnitOfMeasure) << _T(")");
-   (*xs_table)(row++,1) << l4.SetValue( pSectProp->GetIyy(constructionIntervalIdx,poi) );
+   (*xs_table)(row++,1) << l4.SetValue( pSectProp->GetIyy(spType, constructionIntervalIdx,poi) );
 
    if (bAsymmetricGirders)
    {
-      Float64 Ixy = pSectProp->GetIxy(constructionIntervalIdx, poi);
+      Float64 Ixy = pSectProp->GetIxy(spType, constructionIntervalIdx, poi);
       (*xs_table)(row, 0) << _T("I") << Sub(_T("xy")) << _T(" (") << rptLength4UnitTag(&pDisplayUnits->GetMomentOfInertiaUnit().UnitOfMeasure) << _T(")");
       (*xs_table)(row++, 1) << l4.SetValue(Ixy);
 
@@ -164,10 +122,10 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
       (*xs_table)(row++,1) << l1.SetValue( depth );
 
       (*xs_table)(row, 0) << RPT_XLEFT_GIRDER << _T(" (") << rptLengthUnitTag(&pDisplayUnits->GetComponentDimUnit().UnitOfMeasure) << _T(")");
-      (*xs_table)(row++, 1) << l1.SetValue(pSectProp->GetXleft(constructionIntervalIdx, poi));
+      (*xs_table)(row++, 1) << l1.SetValue(pSectProp->GetXleft(spType, constructionIntervalIdx, poi));
 
       (*xs_table)(row, 0) << RPT_XRIGHT_GIRDER << _T(" (") << rptLengthUnitTag(&pDisplayUnits->GetComponentDimUnit().UnitOfMeasure) << _T(")");
-      (*xs_table)(row++, 1) << l1.SetValue(pSectProp->GetXright(constructionIntervalIdx, poi));
+      (*xs_table)(row++, 1) << l1.SetValue(pSectProp->GetXright(spType, constructionIntervalIdx, poi));
    }
    else
    {
@@ -176,10 +134,10 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
    }
 
    (*xs_table)(row, 0) << RPT_YTOP_GIRDER << _T(" (") << rptLengthUnitTag(&pDisplayUnits->GetComponentDimUnit().UnitOfMeasure) << _T(")");
-   (*xs_table)(row++,1) << l1.SetValue( pSectProp->GetY(constructionIntervalIdx,poi,pgsTypes::TopGirder) );
+   (*xs_table)(row++,1) << l1.SetValue( pSectProp->GetY(spType, constructionIntervalIdx,poi,pgsTypes::TopGirder) );
 
    (*xs_table)(row, 0) << RPT_YBOT_GIRDER << _T(" (") << rptLengthUnitTag(&pDisplayUnits->GetComponentDimUnit().UnitOfMeasure) << _T(")");
-   (*xs_table)(row++,1) << l1.SetValue( pSectProp->GetY(constructionIntervalIdx,poi,pgsTypes::BottomGirder) );
+   (*xs_table)(row++,1) << l1.SetValue( pSectProp->GetY(spType, constructionIntervalIdx,poi,pgsTypes::BottomGirder) );
 
    if (bHasDeck)
    {
@@ -191,10 +149,10 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
    }
 
    (*xs_table)(row, 0) << RPT_STOP_GIRDER << _T(" (") << rptLength3UnitTag(&pDisplayUnits->GetSectModulusUnit().UnitOfMeasure) << _T(")");
-   (*xs_table)(row++,1) << l3.SetValue( pSectProp->GetS(constructionIntervalIdx,poi,pgsTypes::TopGirder) );
+   (*xs_table)(row++,1) << l3.SetValue( pSectProp->GetS(spType, constructionIntervalIdx,poi,pgsTypes::TopGirder) );
 
    (*xs_table)(row, 0) << RPT_SBOT_GIRDER << _T(" (") << rptLength3UnitTag(&pDisplayUnits->GetSectModulusUnit().UnitOfMeasure) << _T(")");
-   (*xs_table)(row++,1) << l3.SetValue( pSectProp->GetS(constructionIntervalIdx,poi,pgsTypes::BottomGirder) );
+   (*xs_table)(row++,1) << l3.SetValue( pSectProp->GetS(spType, constructionIntervalIdx,poi,pgsTypes::BottomGirder) );
 
    if (bHasDeck)
    {
@@ -212,10 +170,10 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
    }
 
    (*xs_table)(row, 0) << Sub2(_T("k"), _T("t")) << _T(" (") << rptLengthUnitTag(&pDisplayUnits->GetComponentDimUnit().UnitOfMeasure) << _T(") (Top kern point)");
-   (*xs_table)(row++,1) << l1.SetValue( pSectProp->GetKt(constructionIntervalIdx,poi) );
+   (*xs_table)(row++,1) << l1.SetValue( pSectProp->GetKt(spType, constructionIntervalIdx,poi) );
    
    (*xs_table)(row, 0) << Sub2(_T("k"), _T("b")) << _T(" (") << rptLengthUnitTag(&pDisplayUnits->GetComponentDimUnit().UnitOfMeasure) << _T(") (Bottom kern point)");
-   (*xs_table)(row++,1) << l1.SetValue( pSectProp->GetKb(constructionIntervalIdx,poi) );
+   (*xs_table)(row++,1) << l1.SetValue( pSectProp->GetKb(spType, constructionIntervalIdx,poi) );
 
    (*xs_table)(row, 0) << _T("Perimeter (") << rptLengthUnitTag(&pDisplayUnits->GetComponentDimUnit().UnitOfMeasure) << _T(")");
    (*xs_table)(row++,1) << l1.SetValue( pSectProp->GetPerimeter(poi) );
@@ -234,8 +192,8 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
       // Write composite properties
       row = xs_table->GetNumberOfHeaderRows();
 
-      (*xs_table)(row++,2) << l2.SetValue( pSectProp->GetAg(lastIntervalIdx,poi) );
-      (*xs_table)(row++,2) << l4.SetValue( pSectProp->GetIxx(lastIntervalIdx,poi) );
+      (*xs_table)(row++,2) << l2.SetValue( pSectProp->GetAg(spType, lastIntervalIdx,poi) );
+      (*xs_table)(row++,2) << l4.SetValue( pSectProp->GetIxx(spType, lastIntervalIdx,poi) );
       (*xs_table)(row++, 2) << _T("-");//l4.SetValue(pSectProp->GetIyy(lastIntervalIdx, poi));
 
       if (bAsymmetricGirders) 
@@ -243,31 +201,31 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
          (*xs_table)(row++, 2) << _T("-");//l4.SetValue(pSectProp->GetIxy(lastIntervalIdx, poi));
       }
 
-      depth = pSectProp->GetHg(lastIntervalIdx, poi);
+      depth = pSectProp->GetHg(spType, lastIntervalIdx, poi);
       (*xs_table)(row++,2) << l1.SetValue( depth );
 
       if (bAsymmetricGirders)
       {
-         (*xs_table)(row++, 2) << l1.SetValue(pSectProp->GetXleft(lastIntervalIdx, poi));
-         (*xs_table)(row++, 2) << l1.SetValue(pSectProp->GetXright(lastIntervalIdx, poi));
+         (*xs_table)(row++, 2) << l1.SetValue(pSectProp->GetXleft(spType, lastIntervalIdx, poi));
+         (*xs_table)(row++, 2) << l1.SetValue(pSectProp->GetXright(spType, lastIntervalIdx, poi));
       }
 
-      (*xs_table)(row++,2) << l1.SetValue( pSectProp->GetY(lastIntervalIdx,poi,pgsTypes::TopGirder) );
-      (*xs_table)(row++,2) << l1.SetValue( pSectProp->GetY(lastIntervalIdx,poi,pgsTypes::BottomGirder) );
+      (*xs_table)(row++,2) << l1.SetValue( pSectProp->GetY(spType, lastIntervalIdx,poi,pgsTypes::TopGirder) );
+      (*xs_table)(row++,2) << l1.SetValue( pSectProp->GetY(spType, lastIntervalIdx,poi,pgsTypes::BottomGirder) );
 
       if (bHasDeck)
       {
-         (*xs_table)(row++, 2) << l1.SetValue(pSectProp->GetY(lastIntervalIdx, poi, pgsTypes::TopDeck));
-         (*xs_table)(row++, 2) << l1.SetValue(pSectProp->GetY(lastIntervalIdx, poi, pgsTypes::BottomDeck));
+         (*xs_table)(row++, 2) << l1.SetValue(pSectProp->GetY(spType, lastIntervalIdx, poi, pgsTypes::TopDeck));
+         (*xs_table)(row++, 2) << l1.SetValue(pSectProp->GetY(spType, lastIntervalIdx, poi, pgsTypes::BottomDeck));
       }
 
-      (*xs_table)(row++,2) << l3.SetValue( pSectProp->GetS(lastIntervalIdx,poi,pgsTypes::TopGirder) );
-      (*xs_table)(row++,2) << l3.SetValue( pSectProp->GetS(lastIntervalIdx,poi,pgsTypes::BottomGirder) );
+      (*xs_table)(row++,2) << l3.SetValue( pSectProp->GetS(spType, lastIntervalIdx,poi,pgsTypes::TopGirder) );
+      (*xs_table)(row++,2) << l3.SetValue( pSectProp->GetS(spType, lastIntervalIdx,poi,pgsTypes::BottomGirder) );
 
       if (bHasDeck)
       {
-         (*xs_table)(row++, 2) << l3.SetValue(pSectProp->GetS(lastIntervalIdx, poi, pgsTypes::TopDeck));
-         (*xs_table)(row++, 2) << l3.SetValue(pSectProp->GetS(lastIntervalIdx, poi, pgsTypes::BottomDeck));
+         (*xs_table)(row++, 2) << l3.SetValue(pSectProp->GetS(spType, lastIntervalIdx, poi, pgsTypes::TopDeck));
+         (*xs_table)(row++, 2) << l3.SetValue(pSectProp->GetS(spType, lastIntervalIdx, poi, pgsTypes::BottomDeck));
          (*xs_table)(row++, 2) << l3.SetValue(pSectProp->GetQSlab(lastIntervalIdx,poi));
          (*xs_table)(row++, 2) << l1.SetValue(pSectProp->GetEffectiveFlangeWidth(poi));
       }
@@ -275,8 +233,8 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
       if ( lastTendonStressingIntervalIdx != INVALID_INDEX )
       {
          // PT occurs after the deck is composite so kern points are applicable
-         (*xs_table)(row++,2) << l1.SetValue( pSectProp->GetKt(lastIntervalIdx,poi) );
-         (*xs_table)(row++,2) << l1.SetValue( pSectProp->GetKb(lastIntervalIdx,poi) );
+         (*xs_table)(row++,2) << l1.SetValue( pSectProp->GetKt(spType, lastIntervalIdx,poi) );
+         (*xs_table)(row++,2) << l1.SetValue( pSectProp->GetKb(spType, lastIntervalIdx,poi) );
       }
       else
       {
@@ -293,32 +251,3 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
 
    return xs_table;
 }
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-void CSectionPropertiesTable::MakeCopy(const CSectionPropertiesTable& rOther)
-{
-   // Add copy code here...
-}
-
-void CSectionPropertiesTable::MakeAssignment(const CSectionPropertiesTable& rOther)
-{
-   MakeCopy( rOther );
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

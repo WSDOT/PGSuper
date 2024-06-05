@@ -21,6 +21,7 @@ Topics
 * @subpage tg_flexural_resistance_factor
 * @subpage tg_vertical_geometry
 * @subpage tg_girder_spacing
+* @subpage tg_girder_stress_from_prestress
 * @subpage tg_grade_300
 * @subpage tg_interface_shear
 * @subpage tg_lateral_deflections

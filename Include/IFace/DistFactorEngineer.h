@@ -65,18 +65,15 @@ interface IDistFactorEngineer : IUnknown
 
    //---------------------------------------------------------------------
    // Returns the distribution factor for moment
-   virtual Float64 GetMomentDF(const CSpanKey& spanKey,pgsTypes::LimitState ls) = 0;
-   virtual Float64 GetMomentDF(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr) = 0;
+   virtual Float64 GetMomentDF(const CSpanKey& spanKey,pgsTypes::LimitState ls, const GDRCONFIG* pConfig = nullptr) = 0;
 
    //---------------------------------------------------------------------
    // Returns the distribution factor for negative moment over a pier
-   virtual Float64 GetNegMomentDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace) = 0;
-   virtual Float64 GetNegMomentDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace,Float64 fcgdr) = 0;
+   virtual Float64 GetNegMomentDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace, const GDRCONFIG* pConfig = nullptr) = 0;
 
    //---------------------------------------------------------------------
    // Returns the distribution factor for shear
-   virtual Float64 GetShearDF(const CSpanKey& spanKey,pgsTypes::LimitState ls) = 0;
-   virtual Float64 GetShearDF(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr) = 0;
+   virtual Float64 GetShearDF(const CSpanKey& spanKey,pgsTypes::LimitState ls, const GDRCONFIG* pConfig = nullptr) = 0;
 
    //---------------------------------------------------------------------
    // Creates a detailed report of the distribution factor computation

@@ -1548,14 +1548,9 @@ Float64 CEngAgentImp::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::
    }
 }
 
-Float64 CEngAgentImp::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,bool bIncludeElasticEffects,pgsTypes::TransferLengthType xferLengthType) const
+Float64 CEngAgentImp::GetPrestressForce(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType intervalTime,bool bIncludeElasticEffects,pgsTypes::TransferLengthType xferLengthType, const GDRCONFIG* pConfig) const
 {
-   return m_PsForceEngineer.GetPrestressForce(poi,strandType,intervalIdx,intervalTime,bIncludeElasticEffects,xferLengthType);
-}
-
-Float64 CEngAgentImp::GetPrestressForcePerStrand(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, bool bIncludeElasticEffects) const
-{
-   return GetPrestressForcePerStrand(poi, strandType, intervalIdx, intervalTime, bIncludeElasticEffects, nullptr);
+   return m_PsForceEngineer.GetPrestressForce(poi,strandType,intervalIdx,intervalTime,bIncludeElasticEffects,xferLengthType, pConfig);
 }
 
 Float64 CEngAgentImp::GetPrestressForcePerStrand(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, const GDRCONFIG* pConfig) const
@@ -1632,12 +1627,12 @@ Float64 CEngAgentImp::GetEffectivePrestress(const pgsPointOfInterest& poi,pgsTyp
    return m_PsForceEngineer.GetEffectivePrestress(poi,strandType,intervalIdx,intervalTime,true/*include elastic effects*/,true/*include elastic gain reductions*/, pConfig);
 }
 
-Float64 CEngAgentImp::GetEffectivePrestress(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, bool bIncludeElasticEffects) const
+Float64 CEngAgentImp::GetEffectivePrestress(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, bool bIncludeElasticEffects, const GDRCONFIG* pConfig) const
 {
-   return m_PsForceEngineer.GetEffectivePrestress(poi, strandType, intervalIdx, intervalTime, bIncludeElasticEffects, true/*include elastic gain reductions*/, nullptr);
+   return m_PsForceEngineer.GetEffectivePrestress(poi, strandType, intervalIdx, intervalTime, bIncludeElasticEffects, true/*include elastic gain reductions*/, pConfig);
 }
 
-Float64 CEngAgentImp::GetPrestressForceWithLiveLoad(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, pgsTypes::LimitState limitState, bool bIncludeElasticEffects, VehicleIndexType vehicleIndex) const
+Float64 CEngAgentImp::GetPrestressForceWithLiveLoad(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, pgsTypes::LimitState limitState, bool bIncludeElasticEffects, VehicleIndexType vehicleIndex, const GDRCONFIG* pConfig) const
 {
 #pragma Reminder("UPDATE - moving caching into the PsForceEngineer")
    PrestressWithLiveLoadPoiKey key(poi, PrestressWithLiveLoadSubKey(strandType, limitState,vehicleIndex));
@@ -1648,8 +1643,9 @@ Float64 CEngAgentImp::GetPrestressForceWithLiveLoad(const pgsPointOfInterest& po
    }
    else
    {
-      Float64 F = m_PsForceEngineer.GetPrestressForceWithLiveLoad(poi, strandType, limitState, vehicleIndex, bIncludeElasticEffects, nullptr);
-      m_PsForceWithLiveLoad.insert(std::make_pair(key, F));
+      Float64 F = m_PsForceEngineer.GetPrestressForceWithLiveLoad(poi, strandType, limitState, vehicleIndex, bIncludeElasticEffects, pConfig);
+      if(!pConfig)
+         m_PsForceWithLiveLoad.insert(std::make_pair(key, F));
       return F;
    }
 }
@@ -1659,9 +1655,9 @@ Float64 CEngAgentImp::GetPrestressForceWithLiveLoad(const pgsPointOfInterest& po
    return m_PsForceEngineer.GetPrestressForceWithLiveLoad(poi, strandType, limitState, vehicleIndex, true /*include elastic effects*/, pConfig);
 }
 
-Float64 CEngAgentImp::GetEffectivePrestressWithLiveLoad(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, pgsTypes::LimitState limitState, bool bIncludeElasticEffects, bool bApplyElasticGainReduction, VehicleIndexType vehicleIndex) const
+Float64 CEngAgentImp::GetEffectivePrestressWithLiveLoad(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, pgsTypes::LimitState limitState, bool bIncludeElasticEffects, bool bApplyElasticGainReduction, VehicleIndexType vehicleIndex, const GDRCONFIG* pConfig) const
 {
-   return m_PsForceEngineer.GetEffectivePrestressWithLiveLoad(poi, strandType, limitState, vehicleIndex, bIncludeElasticEffects, bApplyElasticGainReduction, nullptr);
+   return m_PsForceEngineer.GetEffectivePrestressWithLiveLoad(poi, strandType, limitState, vehicleIndex, bIncludeElasticEffects, bApplyElasticGainReduction, pConfig);
 }
 
 Float64 CEngAgentImp::GetEffectivePrestressWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState, VehicleIndexType vehicleIndex, const GDRCONFIG* pConfig) const
@@ -2039,8 +2035,7 @@ Float64 CEngAgentImp::GetGirderTendonStress(const pgsPointOfInterest& poi,Interv
          }
 
          GET_IFACE(IGirderTendonGeometry, pGirderTendonGeometry);
-         Float64 eccX, eccY;
-         pGirderTendonGeometry->GetGirderTendonEccentricity(intervalIdx, poi, ductIdx, &eccX, &eccY);
+         auto ecc = pGirderTendonGeometry->GetGirderTendonEccentricity(intervalIdx, poi, ductIdx);
 
          GET_IFACE(ISectionProperties, pSectProps);
          Float64 Ixx = pSectProps->GetIxx(intervalIdx, poi);
@@ -2059,7 +2054,7 @@ Float64 CEngAgentImp::GetGirderTendonStress(const pgsPointOfInterest& poi,Interv
             M = Mmax;
          }
 
-         Float64 dfLL = gLL * M * eccY / Ixx;
+         Float64 dfLL = gLL * M * ecc.Y() / Ixx;
          fpe += dfLL;
       }
    }
@@ -2158,8 +2153,7 @@ Float64 CEngAgentImp::GetSegmentTendonStress(const pgsPointOfInterest& poi, Inte
          }
 
          GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeomGeometry);
-         Float64 eccX, eccY;
-         pSegmentTendonGeomGeometry->GetSegmentTendonEccentricity(intervalIdx, poi, ductIdx, &eccX, &eccY);
+         auto ecc = pSegmentTendonGeomGeometry->GetSegmentTendonEccentricity(intervalIdx, poi, ductIdx);
 
          GET_IFACE(ISectionProperties, pSectProps);
          Float64 Ixx = pSectProps->GetIxx(intervalIdx, poi);
@@ -2178,7 +2172,7 @@ Float64 CEngAgentImp::GetSegmentTendonStress(const pgsPointOfInterest& poi, Inte
             M = Mmax;
          }
 
-         Float64 dfLL = gLL * M * eccY / Ixx;
+         Float64 dfLL = gLL * M * ecc.Y() / Ixx;
          fpe += dfLL;
       }
    }
@@ -2664,7 +2658,7 @@ Int32 CEngAgentImp::CheckParallelGirderRequirements(const pgsPointOfInterest& po
    return 0;
 }
 
-Float64 CEngAgentImp::GetMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState limitState) const
+Float64 CEngAgentImp::GetMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState limitState, const GDRCONFIG* pConfig) const
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -2680,31 +2674,11 @@ Float64 CEngAgentImp::GetMomentDistFactor(const CSpanKey& spanKey,pgsTypes::Limi
       CGirderKey girderKey(pGroup->GetIndex(),spanKey.girderIndex);
       ValidateLiveLoadDistributionFactors(girderKey);
 
-      return m_pDistFactorEngineer->GetMomentDF(spanKey,limitState);
+      return m_pDistFactorEngineer->GetMomentDF(spanKey,limitState,pConfig);
    }
 }
-
-Float64 CEngAgentImp::GetMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState limitState,Float64 fcgdr) const
-{
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-
-   const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanKey.spanIndex);
-   if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
-   {
-      return pSpan->GetLLDFPosMoment(spanKey.girderIndex,limitState);
-   }
-   else
-   {
-      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
-      CGirderKey girderKey(pGroup->GetIndex(),spanKey.girderIndex);
-      ValidateLiveLoadDistributionFactors(girderKey);
-
-      return m_pDistFactorEngineer->GetMomentDF(spanKey,limitState,fcgdr);
-   }
-}
-   
-Float64 CEngAgentImp::GetNegMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState limitState) const
+     
+Float64 CEngAgentImp::GetNegMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState limitState, const GDRCONFIG* pConfig) const
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -2720,61 +2694,11 @@ Float64 CEngAgentImp::GetNegMomentDistFactor(const CSpanKey& spanKey,pgsTypes::L
       CGirderKey girderKey(pGroup->GetIndex(),spanKey.girderIndex);
       ValidateLiveLoadDistributionFactors(girderKey);
 
-      return m_pDistFactorEngineer->GetMomentDF(spanKey,limitState);
+      return m_pDistFactorEngineer->GetMomentDF(spanKey,limitState,pConfig);
    }
 }
    
-Float64 CEngAgentImp::GetNegMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState limitState,Float64 fcgdr) const
-{
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-
-   const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanKey.spanIndex);
-   if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
-   {
-      return pSpan->GetLLDFNegMoment(spanKey.girderIndex,limitState);
-   }
-   else
-   {
-      const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
-      CGirderKey girderKey(pGroup->GetIndex(),spanKey.girderIndex);
-      ValidateLiveLoadDistributionFactors(girderKey);
-
-      return m_pDistFactorEngineer->GetMomentDF(spanKey,limitState,fcgdr);
-   }
-}
-   
-Float64 CEngAgentImp::GetNegMomentDistFactorAtPier(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState,pgsTypes::PierFaceType pierFace) const
-{
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CPierData2* pPier = pBridgeDesc->GetPier(pierIdx);
-
-   if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
-   {
-      return pPier->GetLLDFNegMoment(gdrIdx, limitState);
-   }
-   else
-   {
-      const CSpanData2* pSpan = (pierFace == pgsTypes::Back) ? pPier->GetPrevSpan() : pPier->GetNextSpan();
-      GroupIndexType grpIdx;
-      if (pSpan == nullptr)
-      {
-         grpIdx = 0;
-      }
-      else
-      {
-         const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
-         grpIdx = pGroup->GetIndex();
-      }
-      CGirderKey girderKey(grpIdx,gdrIdx);
-      ValidateLiveLoadDistributionFactors(girderKey);
-
-      return m_pDistFactorEngineer->GetNegMomentDF(pierIdx,gdrIdx,limitState,pierFace);
-   }
-}
-   
-Float64 CEngAgentImp::GetNegMomentDistFactorAtPier(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState,pgsTypes::PierFaceType pierFace,Float64 fcgdr) const
+Float64 CEngAgentImp::GetNegMomentDistFactorAtPier(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState limitState,pgsTypes::PierFaceType pierFace, const GDRCONFIG* pConfig) const
 {
    GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -2800,11 +2724,11 @@ Float64 CEngAgentImp::GetNegMomentDistFactorAtPier(PierIndexType pierIdx,GirderI
       CGirderKey girderKey(grpIdx, gdrIdx);
       ValidateLiveLoadDistributionFactors(girderKey);
 
-      return m_pDistFactorEngineer->GetNegMomentDF(pierIdx,gdrIdx,limitState,pierFace,fcgdr);
+      return m_pDistFactorEngineer->GetNegMomentDF(pierIdx,gdrIdx,limitState,pierFace,pConfig);
    }
 }
 
-Float64 CEngAgentImp::GetShearDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState limitState) const
+Float64 CEngAgentImp::GetShearDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState limitState,const GDRCONFIG* pConfig) const
 {
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -2821,28 +2745,7 @@ Float64 CEngAgentImp::GetShearDistFactor(const CSpanKey& spanKey,pgsTypes::Limit
       CGirderKey girderKey(pGroup->GetIndex(),spanKey.girderIndex);
       ValidateLiveLoadDistributionFactors(girderKey);
 
-      return m_pDistFactorEngineer->GetShearDF(spanKey,limitState);
-   }
-}
-
-Float64 CEngAgentImp::GetShearDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState limitState,Float64 fcgdr) const
-{
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanKey.spanIndex);
-   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
-
-   if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
-   {
-      pgsTypes::GirderLocation gl = pGroup->IsExteriorGirder(spanKey.girderIndex) ? pgsTypes::Exterior : pgsTypes::Interior;
-      return pSpan->GetLLDFShear(spanKey.girderIndex,limitState);
-   }
-   else
-   {
-      CGirderKey girderKey(pGroup->GetIndex(),spanKey.girderIndex);
-      ValidateLiveLoadDistributionFactors(girderKey);
-
-      return m_pDistFactorEngineer->GetShearDF(spanKey,limitState,fcgdr);
+      return m_pDistFactorEngineer->GetShearDF(spanKey,limitState,pConfig);
    }
 }
 
@@ -2889,208 +2792,7 @@ Float64 CEngAgentImp::GetSkewCorrectionFactorForShear(const CSpanKey& spanKey,pg
    }
 }
 
-void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,Float64* pM,Float64* nM,Float64* V) const
-{
-   GET_IFACE(IBridge,pBridge);
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-   GET_IFACE(IPointOfInterest,pPOI);
-   CSpanKey spanKey;
-   Float64 Xspan;
-   pPOI->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
-
-   PierIndexType prev_pier = PierIndexType(spanKey.spanIndex);
-   PierIndexType next_pier = prev_pier + 1;
-
-   SpanIndexType nSpans = pBridge->GetSpanCount();
-
-   Float64 dfPoints[2];
-   IndexType nPoints;
-   GetNegMomentDistFactorPoints(spanKey,&dfPoints[0],&nPoints);
-
-   *V  = GetShearDistFactor(spanKey,limitState);
-
-
-   if ( WBFL::LRFD::BDSManager::Edition::SeventhEdition2014 <= WBFL::LRFD::BDSManager::GetEdition() )
-   {
-      // LRFD 7th Edition, 2014 added variable skew correction factor for shear
-      Float64 skewFactor = GetSkewCorrectionFactorForShear(spanKey,limitState);
-      if ( !IsEqual(skewFactor,1.0) )
-      {
-         Float64 span_length = pBridge->GetSpanLength(spanKey);
-         Float64 L = span_length/2;
-
-         // (*V) contains the skew correct factor.... divide it out so
-         // we are working with the base LLDF
-         Float64 gV = (*V)/skewFactor;
-
-         bool bObtuseStart = pBridge->IsObtuseCorner(spanKey,pgsTypes::metStart);
-         bool bObtuseEnd   = pBridge->IsObtuseCorner(spanKey,pgsTypes::metEnd);
-         if ( bObtuseStart && !bObtuseEnd )
-         {
-            // obtuse corner is at the start of the span...
-            if ( Xspan <= L )
-            {
-               // ... and this poi is in the first half of the span so 
-               // the skew factor needs to vary from its full value to 1.0 at mid-span
-               Float64 adjustedSkewFactor = (L - Xspan)*(skewFactor - 1.0)/L + 1.0;
-               (*V) = gV*adjustedSkewFactor;
-            }
-            else
-            {
-               // ... and this poi is past the first half of the span so
-               // the skew correction factor isn't used
-               (*V) = gV;
-            }
-         }
-         else if ( !bObtuseStart && bObtuseEnd )
-         {
-            ATLASSERT(pBridge->IsObtuseCorner(spanKey,pgsTypes::metEnd) == true);
-            // obtuse corner is at the end of the span...
-            if ( Xspan <= L )
-            {
-               // ... and this poi is in the first half of the span so
-               // the skew correction factor isn't used
-               (*V) = gV;
-            }
-            else
-            {
-               // ... and this poi is past the first half of the span so
-               // the skew factor needs vary from 1.0 at mid-span to its full value
-               // at the end of the span
-               Float64 adjustedSkewFactor = (Xspan - L)*(skewFactor - 1.0)/(span_length - L) + 1.0;
-               (*V) = gV*adjustedSkewFactor;
-            }
-         }
-         else if ( bObtuseStart && bObtuseEnd )
-         {
-            // obtuse on both ends
-            if ( Xspan <= L )
-            {
-               Float64 adjustedSkewFactor = (L - Xspan)*(skewFactor - 1.0)/L + 1.0;
-               (*V) = gV*adjustedSkewFactor;
-            }
-            else
-            {
-               Float64 adjustedSkewFactor = (Xspan - L)*(skewFactor - 1.0)/(span_length - L) + 1.0;
-               (*V) = gV*adjustedSkewFactor;
-            }
-         }
-         else
-         {
-            // There is a skew correct factor and neither end is obtuse... that means one end is in an acute corner
-            // and the other is a right angle. The skew "spanning" effect is still applicable. Shear spans from
-            // the obtuse corner to the right angle. Figure out which end has the right angle
-            CComPtr<IAngle> objSkewAngle;
-            pBridge->GetPierSkew((PierIndexType)spanKey.spanIndex,&objSkewAngle);
-            Float64 skewAngle;
-            objSkewAngle->get_Value(&skewAngle);
-            if ( IsZero(skewAngle) )
-            {
-               // right angle is at the start, treat is as the obtuse corner...
-               if ( Xspan <= L )
-               {
-                  // ... and this poi is in the first half of the span so 
-                  // the skew factor needs to vary from its full value to 1.0 at mid-span
-                  Float64 adjustedSkewFactor = (L - Xspan)*(skewFactor - 1.0)/L + 1.0;
-                  (*V) = gV*adjustedSkewFactor;
-               }
-               else
-               {
-                  // ... and this poi is past the first half of the span so
-                  // the skew correction factor isn't used
-                  (*V) = gV;
-               }
-            }
-            else
-            {
-               // right angle is at the end, treat it as the obtuse corner...
-               if ( Xspan <= L )
-               {
-                  // ... and this poi is in the first half of the span so
-                  // the skew correction factor isn't used
-                  (*V) = gV;
-               }
-               else
-               {
-                  // ... and this poi is past the first half of the span so
-                  // the skew factor needs vary from 1.0 at mid-span to its full value
-                  // at the end of the span
-                  Float64 adjustedSkewFactor = (Xspan - L)*(skewFactor - 1.0)/(span_length - L) + 1.0;
-                  (*V) = gV*adjustedSkewFactor;
-               }
-            }
-         }
-      }
-   }
-
-   *pM = GetMomentDistFactor(spanKey,limitState);
-
-   if ( nPoints == 0 )
-   {
-      *nM = GetNegMomentDistFactor(spanKey,limitState);
-   }
-   else if ( nPoints == 1 )
-   {
-      if ( Xspan < dfPoints[0] )
-      {  
-         // right of contraflexure point
-         bool bContinuousOnLeft, bContinuousOnRight;
-         pBridge->IsContinuousAtPier(prev_pier,&bContinuousOnLeft,&bContinuousOnRight);
-
-         bool bIntegralOnLeft, bIntegralOnRight;
-         pBridge->IsIntegralAtPier(prev_pier,&bIntegralOnLeft,&bIntegralOnRight);
-
-         if ( bContinuousOnLeft || bContinuousOnRight || bIntegralOnRight )
-         {
-            //Integral to the left of this point... use DF at prev pier
-            *nM = GetNegMomentDistFactorAtPier(prev_pier,spanKey.girderIndex,limitState,pgsTypes::Ahead);
-         }
-         else
-         {
-            // hinged to the left of this point... use DF for the span
-            *nM = GetNegMomentDistFactor(spanKey,limitState);
-         }
-      }
-      else
-      {
-         // left of contraflexure point
-         bool bContinuousOnLeft, bContinuousOnRight;
-         pBridge->IsContinuousAtPier(next_pier,&bContinuousOnLeft,&bContinuousOnRight);
-
-         bool bIntegralOnLeft, bIntegralOnRight;
-         pBridge->IsIntegralAtPier(next_pier,&bIntegralOnLeft,&bIntegralOnRight);
-
-         if ( bContinuousOnLeft || bContinuousOnRight || bIntegralOnLeft )
-         {
-            // hinged to the left of this point... use DF at the next pier
-            *nM = GetNegMomentDistFactorAtPier(next_pier,spanKey.girderIndex,limitState,pgsTypes::Back);
-         }
-         else
-         {
-            // Integral to the left of this point... use DF for the span
-            *nM = GetNegMomentDistFactor(spanKey,limitState);
-         }
-      }
-   }
-   else
-   {
-      if ( Xspan < dfPoints[0] )
-      {
-         *nM = GetNegMomentDistFactorAtPier(prev_pier,spanKey.girderIndex,limitState,pgsTypes::Ahead);
-      }
-      else if ( ::InRange(dfPoints[0],Xspan,dfPoints[1]) )
-      {
-         *nM = GetNegMomentDistFactor(spanKey,limitState);
-      }
-      else
-      {
-         *nM = GetNegMomentDistFactorAtPier(next_pier,spanKey.girderIndex,limitState,pgsTypes::Back);
-      }
-   }
-}
-
-void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,Float64 fcgdr,Float64* pM,Float64* nM,Float64* V) const
+void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,Float64* pM,Float64* nM,Float64* V,const GDRCONFIG* pConfig) const
 {
    GET_IFACE(IBridge,pBridge);
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
@@ -3112,12 +2814,12 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
    IndexType nPoints;
    GetNegMomentDistFactorPoints(spanKey,&dfPoints[0],&nPoints);
 
-   *V  = GetShearDistFactor(spanKey,limitState,fcgdr);
-   *pM = GetMomentDistFactor(spanKey,limitState,fcgdr);
+   *V  = GetShearDistFactor(spanKey,limitState,pConfig);
+   *pM = GetMomentDistFactor(spanKey,limitState,pConfig);
 
    if ( nPoints == 0 )
    {
-      *nM = GetNegMomentDistFactor(spanKey,limitState,fcgdr);
+      *nM = GetNegMomentDistFactor(spanKey,limitState,pConfig);
    }
    else if ( nPoints == 1 )
    {
@@ -3133,12 +2835,12 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
          if ( bContinuousOnLeft || bContinuousOnRight || bIntegralOnLeft || bIntegralOnRight )
          {
             //Integral to the left of this point... use DF at prev pier
-            *nM = GetNegMomentDistFactorAtPier(prev_pier,spanKey.girderIndex,limitState,pgsTypes::Ahead,fcgdr);
+            *nM = GetNegMomentDistFactorAtPier(prev_pier,spanKey.girderIndex,limitState,pgsTypes::Ahead,pConfig);
          }
          else
          {
             // hinged to the left of this point... use DF for the span
-            *nM = GetNegMomentDistFactor(spanKey,limitState,fcgdr);
+            *nM = GetNegMomentDistFactor(spanKey,limitState,pConfig);
          }
       }
       else
@@ -3153,12 +2855,12 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
          if ( bContinuousOnLeft || bContinuousOnRight || bIntegralOnLeft || bIntegralOnRight )
          {
             // Integral to the left of this point... use DF for the span
-            *nM = GetNegMomentDistFactor(spanKey,limitState,fcgdr);
+            *nM = GetNegMomentDistFactor(spanKey,limitState,pConfig);
          }
          else
          {
             // hinged to the left of this point... use DF at the next pier
-            *nM = GetNegMomentDistFactorAtPier(next_pier,spanKey.girderIndex,limitState,pgsTypes::Back,fcgdr);
+            *nM = GetNegMomentDistFactorAtPier(next_pier,spanKey.girderIndex,limitState,pgsTypes::Back,pConfig);
          }
       }
    }
@@ -3166,15 +2868,15 @@ void CEngAgentImp::GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes
    {
       if ( dist_from_start < dfPoints[0] )
       {
-         *nM = GetNegMomentDistFactorAtPier(prev_pier,spanKey.girderIndex,limitState,pgsTypes::Ahead,fcgdr);
+         *nM = GetNegMomentDistFactorAtPier(prev_pier,spanKey.girderIndex,limitState,pgsTypes::Ahead,pConfig);
       }
       else if ( dfPoints[0] <= dist_from_start && dist_from_start <= dfPoints[1] )
       {
-         *nM = GetNegMomentDistFactor(spanKey,limitState,fcgdr);
+         *nM = GetNegMomentDistFactor(spanKey,limitState,pConfig);
       }
       else
       {
-         *nM = GetNegMomentDistFactorAtPier(next_pier,spanKey.girderIndex,limitState,pgsTypes::Back,fcgdr);
+         *nM = GetNegMomentDistFactorAtPier(next_pier,spanKey.girderIndex,limitState,pgsTypes::Back,pConfig);
       }
    }
 }
@@ -4004,8 +3706,8 @@ bool CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       Float64 fBotLimitStateMin,fBotLimitStateMax;
       pLS->GetStress(releaseIntervalIdx,pgsTypes::ServiceI,poi,bat,false,pgsTypes::BottomGirder,&fBotLimitStateMin,&fBotLimitStateMax);
 
-      Float64 fTopPre_WithoutTTS = pPS->GetDesignStress(releaseIntervalIdx,poi,pgsTypes::TopGirder,config_WithoutTTS,false, pgsTypes::ServiceI);
-      Float64 fBotPre_WithoutTTS = pPS->GetDesignStress(releaseIntervalIdx,poi,pgsTypes::BottomGirder,config_WithoutTTS,false, pgsTypes::ServiceI);
+      Float64 fTopPre_WithoutTTS = pPS->GetStress(releaseIntervalIdx,poi,pgsTypes::TopGirder,false, pgsTypes::ServiceI, INVALID_INDEX, &config_WithoutTTS);
+      Float64 fBotPre_WithoutTTS = pPS->GetStress(releaseIntervalIdx,poi,pgsTypes::BottomGirder,false, pgsTypes::ServiceI, INVALID_INDEX, &config_WithoutTTS);
 
       Float64 fTopMin_WithoutTTS = fTopLimitStateMin + fTopPre_WithoutTTS;
       Float64 fTopMax_WithoutTTS = fTopLimitStateMax + fTopPre_WithoutTTS;

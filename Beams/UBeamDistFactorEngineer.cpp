@@ -98,16 +98,15 @@ void CUBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
    {
       CSpanKey spanKey(spanIdx,gdrIdx);
 
-      SPANDETAILS span_lldf;
-      GetSpanDF(spanKey,pgsTypes::StrengthI,USE_CURRENT_FC,&span_lldf);
+      SPANDETAILS span_lldf = GetSpanDF(spanKey,pgsTypes::StrengthI);
 
       PierIndexType pier1 = spanIdx;
       PierIndexType pier2 = spanIdx+1;
-      PIERDETAILS pier1_lldf, pier2_lldf;
-      GetPierDF(pier1, gdrIdx, pgsTypes::StrengthI, pgsTypes::Ahead, USE_CURRENT_FC, &pier1_lldf);
-      GetPierDF(pier2, gdrIdx, pgsTypes::StrengthI, pgsTypes::Back,  USE_CURRENT_FC, &pier2_lldf);
 
-      // do a sanity check to make sure the fundimental values are correct
+      PIERDETAILS pier1_lldf = GetPierDF(pier1, gdrIdx, pgsTypes::StrengthI, pgsTypes::Ahead);
+      PIERDETAILS pier2_lldf = GetPierDF(pier2, gdrIdx, pgsTypes::StrengthI, pgsTypes::Back);
+
+      // do a sanity check to make sure the fundamental values are correct
       ATLASSERT(span_lldf.Method  == pier1_lldf.Method);
       ATLASSERT(span_lldf.Method  == pier2_lldf.Method);
       ATLASSERT(pier1_lldf.Method == pier2_lldf.Method);
@@ -356,7 +355,7 @@ void CUBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
 }
 
 
-WBFL::LRFD::LiveLoadDistributionFactorBase* CUBeamDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,Float64 fcgdr,UBEAM_LLDFDETAILS* plldf)
+WBFL::LRFD::LiveLoadDistributionFactorBase* CUBeamDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,UBEAM_LLDFDETAILS* plldf,const GDRCONFIG* pConfig)
 {
    GET_IFACE(IGirder, pGdr);
    GET_IFACE(IBarriers,pBarriers);

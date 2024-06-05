@@ -1,10 +1,12 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.33    7   0.75                     1     1    WF69D          68  0.6  270  37.14  20.62  10.25  10.25                                              4.000 14.600   4.551    -6.104    15563   0.741  0.741  10.016 -1.485 -0.361 -0.374 -2.220 423.70  816.68   13.00   25.87   25.87    1.99    1.81    2.58    2.42    1.63 
+ 44.33    7   0.75                     1     1    WF69D          68  0.6  270  37.14  20.62  10.25  10.25                                              4.000 14.600   4.551    -6.104    15563   0.741  0.741  10.016 -1.485 -0.361 -0.374 -2.220 423.70  816.68   13.00   25.87   25.87    1.99    1.81    2.58    2.42    1.68 
 
 
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tension stress check failed for Service I Limit State in Interval 8 Remove temporary strands
+Principal tension stress in webs stress check failed.
 Splitting check failed.
 Lifting checks failed
 Hauling checks failed
@@ -12,11 +14,13 @@ Hauling checks failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.33    7   0.75                     1     2    WF69D          68  0.6  270  37.14  20.62  10.25  10.25                                              4.000 14.600   4.260    -5.861    14515   0.585  0.725   9.921 -1.531 -0.354 -0.368 -2.253 423.70  806.61   13.00   25.87   25.87    2.47    1.84    3.20    2.46    1.98 
+ 44.33    7   0.75                     1     2    WF69D          68  0.6  270  37.14  20.62  10.25  10.25                                              4.000 14.600   4.260    -5.861    14515   0.585  0.725   9.921 -1.531 -0.354 -0.368 -2.253 423.70  806.61   13.00   25.87   25.87    2.47    1.84    3.20    2.46    2.04 
 
 
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
+Tension stress check failed for Service I Limit State in Interval 8 Remove temporary strands
+Principal tension stress in webs stress check failed.
 Splitting check failed.
 Lifting checks failed
 Hauling checks failed
