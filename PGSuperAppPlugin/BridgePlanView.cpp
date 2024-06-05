@@ -544,7 +544,7 @@ void CBridgePlanView::OnInitialUpdate()
    EnableToolTips();
    CBridgeViewPane::OnInitialUpdate();
 
-   // Causes the child frame window to initalize the span range selection controls
+   // Causes the child frame window to initialize the span range selection controls
    m_pFrame->InitGroupRange();
 }
 
@@ -845,7 +845,7 @@ void CBridgePlanView::UpdateSegmentTooltips()
             CString strMsg2;
             if (nDucts == 0)
             {
-               strMsg2.Format(_T("\n\nGirder: %s\nGirder Length: %s\nSpan Length: %s\n\n%s"),
+               strMsg2.Format(_T("\n\nGirder: %s\nGirder Length (Plan): %s\nSpan Length (Plan): %s\n\n%s"),
                   pGirder->GetGirderName(),
                   FormatDimension(gdr_length, pDisplayUnits->GetSpanLengthUnit()),
                   FormatDimension(span_length, pDisplayUnits->GetSpanLengthUnit()),
@@ -854,7 +854,7 @@ void CBridgePlanView::UpdateSegmentTooltips()
             }
             else
             {
-               strMsg2.Format(_T("\n\nGirder: %s\nSegment Length: %s\n\n%s"),
+               strMsg2.Format(_T("\n\nGirder: %s\nSegment Length (Plan): %s\n\n%s"),
                   pGirder->GetGirderName(),
                   FormatDimension(gdr_length, pDisplayUnits->GetSpanLengthUnit()),
                   FormatDirection(direction)
