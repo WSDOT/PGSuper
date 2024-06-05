@@ -88,7 +88,7 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
    bool bIsUHPC = pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC ? true : false;
 
    // Create and configure the table
-   ColumnIndexType numColumns = bIsUHPC ? 17 : 13;
+   ColumnIndexType numColumns = bIsUHPC ? 18 : 14;
    CElasticGainDueToDeckShrinkageTable* table = new CElasticGainDueToDeckShrinkageTable( numColumns, pDisplayUnits );
    rptStyleManager::ConfigureTable(table);
 
@@ -373,6 +373,7 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
    (*table)(row, col++) << COLHDR( symbol(DELTA) << RPT_STRESS(_T("cdf")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*table)(row, col++) << Sub2(_T("K"), _T("df"));
    (*table)(row, col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pSS")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
+   (*table)(row, col++) << COLHDR(symbol(DELTA) << Sub2(_T("P"), _T("ds")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
    (*table)(row, col++) << COLHDR(RPT_FTOP << rptNewLine << _T("Girder"),rptStressUnitTag,pDisplayUnits->GetStressUnit());
    (*table)(row, col++) << COLHDR(RPT_FBOT << rptNewLine << _T("Girder"),rptStressUnitTag,pDisplayUnits->GetStressUnit());
    if (bIsUHPC)
@@ -392,7 +393,6 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
 
 void CElasticGainDueToDeckShrinkageTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-  // Typecast to our known type (eating own doggy food)
    std::shared_ptr<const WBFL::LRFD::RefinedLosses2005> ptl = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLosses2005>(pDetails->pLosses);
    if (!ptl)
    {
@@ -429,14 +429,17 @@ void CElasticGainDueToDeckShrinkageTable::AddRow(rptChapter* pChapter,IBroker* p
    (*this)(row+rowOffset, col++) << scalar.SetValue(ptl->GetKdf());
    (*this)(row+rowOffset, col++) << stress.SetValue( ptl->ElasticGainDueToDeckShrinkage() );
 
-   Float64 fTop, fBot;
-   pProductForces->GetDeckShrinkageStresses(poi, pgsTypes::TopGirder, pgsTypes::BottomGirder, &fTop, &fBot);
+   Float64 P, M;
+   pDetails->pLosses->GetDeckShrinkageEffects(&P, &M);
+   (*this)(row + rowOffset, col++) << force.SetValue(P);
+
+   auto [fTop, fBot] = pProductForces->GetDeckShrinkageStresses(poi, pgsTypes::TopGirder, pgsTypes::BottomGirder);
    (*this)(row+rowOffset, col++) << stress.SetValue( fTop );
    (*this)(row+rowOffset, col++) << stress.SetValue( fBot );
 
    if (m_bIsUHPC)
    {
-      pProductForces->GetDeckShrinkageStresses(poi, pgsTypes::TopDeck, pgsTypes::BottomDeck, &fTop, &fBot);
+      std::tie(fTop,fBot) = pProductForces->GetDeckShrinkageStresses(poi, pgsTypes::TopDeck, pgsTypes::BottomDeck);
       (*this)(row + rowOffset, col++) << stress.SetValue(fTop);
       (*this)(row + rowOffset, col++) << stress.SetValue(fBot);
    }

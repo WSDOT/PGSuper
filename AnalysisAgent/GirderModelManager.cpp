@@ -1345,58 +1345,7 @@ void CGirderModelManager::GetDeflLiveLoadDeflection(IProductForces::DeflectionLi
    *pDmax = DyMaxLeft;
 }
 
-void CGirderModelManager::GetDeckShrinkageStresses(const pgsPointOfInterest& poi,Float64 fcGdr, pgsTypes::StressLocation topStressLocation, pgsTypes::StressLocation botStressLocation,Float64* pftop,Float64* pfbot) const
-{
-   // This is sort of a dummy function until deck shrinkage stress issues are resolved.
-   // If you count on deck shrinkage for elastic gain, then you have to account for the fact
-   // that the deck shrinkage changes the stresses in the girder as well. Deck shrinkage is
-   // an external load to the girder
-
-   // Top and bottom girder stresses are computed using the composite section method described in
-   // Branson, D. E., "Time-Dependent Effects in Composite Concrete Beams", 
-   // American Concrete Institute J., Vol 61, Issue 2, (1964) pp. 213-230
-
-   GET_IFACE(IBridge, pBridge);
-   if (IsNonstructuralDeck(pBridge->GetDeckType()))
-   {
-      // no deck, no deck shrinkage stresses
-      *pftop = 0;
-      *pfbot = 0;
-      return;
-   }
-
-   VERIFY_ANALYSIS_TYPE;
-
-   GET_IFACE(IPointOfInterest, pPoi);
-   IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
-   ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
-
-   GET_IFACE(IIntervals,pIntervals);
-   IntervalIndexType compositeIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
-
-   GET_IFACE(ILosses,pLosses);
-   const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,INVALID_INDEX);
-
-   Float64 P, M;
-   pDetails->pLosses->GetDeckShrinkageEffects(&P,&M);
-
-   // Tricky: Eccentricity of deck changes with fc, so we need to recompute M
-   GET_IFACE(ISectionProperties,pProps);
-   Float64 ed  = pProps->GetY( compositeIntervalIdx, poi, pgsTypes::TopGirder, fcGdr ) 
-               + pBridge->GetGrossSlabDepth(poi) / 2; // use gross depth because shrinkage occurs at early age before sacrafical wearing surface is worn off
-   ed *= -1;
-
-   M = P * ed;
-
-   Float64 A  = pProps->GetAg(compositeIntervalIdx,poi,fcGdr);
-   Float64 St = pProps->GetS(compositeIntervalIdx,poi,topStressLocation,fcGdr);
-   Float64 Sb = pProps->GetS(compositeIntervalIdx,poi,botStressLocation,fcGdr);
-
-   *pftop = P/A + M/St;
-   *pfbot = P/A + M/Sb;
-}
-
-void CGirderModelManager::GetDeckShrinkageStresses(const pgsPointOfInterest& poi, pgsTypes::StressLocation topStressLocation, pgsTypes::StressLocation botStressLocation, Float64* pftop, Float64* pfbot) const
+std::pair<Float64,Float64> CGirderModelManager::GetDeckShrinkageStresses(const pgsPointOfInterest& poi, pgsTypes::StressLocation topStressLocation, pgsTypes::StressLocation botStressLocation, const GDRCONFIG* pConfig) const
 {
    // This is sort of a dummy function until deck shrinkage stress issues are resolved.
    // If you count on deck shrinkage for elastic gain, then you have to account for the fact
@@ -1410,9 +1359,7 @@ void CGirderModelManager::GetDeckShrinkageStresses(const pgsPointOfInterest& poi
    if (IsNonstructuralDeck(pBridge->GetDeckType()) || !pBridge->IsCompositeDeck())
    {
       // no deck or deck isn't composite with girder, no deck shrinkage stresses
-      *pftop = 0;
-      *pfbot = 0;
-      return;
+      return { 0.,0. };
    }
 
    VERIFY_ANALYSIS_TYPE;
@@ -1432,10 +1379,21 @@ void CGirderModelManager::GetDeckShrinkageStresses(const pgsPointOfInterest& poi
       Float64 P, M;
       pDetails->pLosses->GetDeckShrinkageEffects(&P, &M);
 
+      if (pConfig)
+      {
+         // Tricky: Eccentricity of deck changes with fc, so we need to recompute M
+         GET_IFACE(ISectionProperties, pProps);
+         Float64 ed = pProps->GetY(compositeIntervalIdx, poi, pgsTypes::TopGirder, pConfig)
+            + pBridge->GetGrossSlabDepth(poi) / 2; // use gross depth because shrinkage occurs at early age before sacrificial wearing surface is worn off
+         ed *= -1;
+
+         M = P * ed;
+      }
+
       GET_IFACE(ISectionProperties, pProps);
-      Float64 A = pProps->GetAg(compositeIntervalIdx, poi);
-      Float64 St = pProps->GetS(compositeIntervalIdx, poi, topStressLocation);
-      Float64 Sb = pProps->GetS(compositeIntervalIdx, poi, botStressLocation);
+      Float64 A = pProps->GetAg(compositeIntervalIdx, poi, pConfig);
+      Float64 St = pProps->GetS(compositeIntervalIdx, poi, topStressLocation, pConfig);
+      Float64 Sb = pProps->GetS(compositeIntervalIdx, poi, botStressLocation, pConfig);
 
       Float64 n_top = 1.0; // modular ratio for top stress calculation
       Float64 n_bot = 1.0; // modular ratio for bottom stress calculation
@@ -1447,7 +1405,16 @@ void CGirderModelManager::GetDeckShrinkageStresses(const pgsPointOfInterest& poi
          bool bIsTimeStepAnalysis = (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false);
 
          GET_IFACE(IMaterials, pMaterials);
-         Float64 Eg = (bIsTimeStepAnalysis ? pMaterials->GetSegmentAgeAdjustedEc(poi.GetSegmentKey(), compositeIntervalIdx) : pMaterials->GetSegmentEc(poi.GetSegmentKey(), compositeIntervalIdx));
+         Float64 Eg;
+         if(bIsTimeStepAnalysis)
+         {
+            Eg = pMaterials->GetSegmentAgeAdjustedEc(poi.GetSegmentKey(), compositeIntervalIdx);
+         }
+         else
+         {
+            bool bChanged;
+            std::tie(Eg, bChanged) = pMaterials->GetSegmentEc(poi.GetSegmentKey(), compositeIntervalIdx, pConfig);
+         }
          Float64 Ed = (bIsTimeStepAnalysis ? pMaterials->GetDeckAgeAdjustedEc(deckCastingRegionIdx, compositeIntervalIdx) : pMaterials->GetDeckEc(deckCastingRegionIdx, compositeIntervalIdx));
          Float64 n = Ed / Eg;
 
@@ -1462,13 +1429,11 @@ void CGirderModelManager::GetDeckShrinkageStresses(const pgsPointOfInterest& poi
       // St and Sb already account for the modular ratio, but P/A does not
       // that is why the equations are as below and not n*(P/A + M/S)
       // See reporting of S for the deck in the details report
-      *pftop = n_top*P/A + M/St;
-      *pfbot = n_bot*P/A + M/Sb;
+      return { n_top * P / A + M / St, n_bot * P / A + M / Sb };
    }
    else
    {
-      *pftop = 0.0;
-      *pfbot = 0.0;
+      return { 0.,0. };
    }
 }
 
@@ -4763,7 +4728,8 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,pgsTypes::Limi
 
       if ( bIncludePrestress )
       {
-         Float64 ps = GetStress(intervalIdx,poi,stressLocation,bIncludeLiveLoad==VARIANT_TRUE,limitState, INVALID_INDEX/*controlling live load*/);
+         auto [fTop,fBot] = GetStress(intervalIdx,poi,stressLocation, stressLocation,bIncludeLiveLoad==VARIANT_TRUE,limitState, INVALID_INDEX/*controlling live load*/);
+         auto ps = (stressLocation == pgsTypes::TopGirder ? fTop : fBot);
          fMin += k*ps;
          fMax += k*ps;
 
@@ -4778,8 +4744,7 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,pgsTypes::Limi
 
       if ( railingSystemIntervalIdx <= intervalIdx && pPoi->IsOnSegment(poi) )
       {
-         Float64 ft_ss, fb_ss;
-         GetDeckShrinkageStresses(poi, pgsTypes::TopGirder, pgsTypes::BottomGirder,&ft_ss,&fb_ss);
+         auto [ft_ss, fb_ss] = GetDeckShrinkageStresses(poi, pgsTypes::TopGirder, pgsTypes::BottomGirder);
 
          ft_ss *= k;
          fb_ss *= k;
@@ -12320,12 +12285,11 @@ void CGirderModelManager::GetPostTensionDeformationLoads(const CGirderKey& girde
       // make sure span location 1 comes before location 2
       ATLASSERT((spanKey1.spanIndex == spanKey2.spanIndex && Xspan1 <= Xspan2) || spanKey1.spanIndex < spanKey2.spanIndex);
 
-      Float64 eccX, eccY;
-      pTendonGeometry->GetGirderTendonEccentricity(stressTendonIntervalIdx,poi1,ductIdx, &eccX, &eccY);
-      Float64 M1 = -P1*eccY;
+      auto ecc = pTendonGeometry->GetGirderTendonEccentricity(stressTendonIntervalIdx,poi1,ductIdx);
+      Float64 M1 = -P1*ecc.Y();
 
-      pTendonGeometry->GetGirderTendonEccentricity(stressTendonIntervalIdx,poi2,ductIdx, &eccX, &eccY);
-      Float64 M2 = -P2*eccY;
+      ecc = pTendonGeometry->GetGirderTendonEccentricity(stressTendonIntervalIdx,poi2,ductIdx);
+      Float64 M2 = -P2*ecc.Y();
 
       CClosureKey closureKey1;
       bool bIsInClosure1 = pPoi->IsInClosureJoint(poi1,&closureKey1);
@@ -17749,15 +17713,7 @@ bool CGirderModelManager::GetLoadCaseTypeFromName(const CComBSTR& name, LoadingC
    return false;
 }
 
-Float64 CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,bool bIncludeLiveLoad, pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx) const
-{
-   Float64 fTop, fBot;
-   GetStress(intervalIdx,poi,stressLocation,stressLocation,bIncludeLiveLoad,limitState,vehicleIdx,&fTop,&fBot);
-   ATLASSERT(IsEqual(fTop,fBot));
-   return fTop;
-}
-
-void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation topLoc,pgsTypes::StressLocation botLoc,bool bIncludeLiveLoad, pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx,Float64* pfTop,Float64* pfBot) const
+std::pair<Float64,Float64> CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation topLoc,pgsTypes::StressLocation botLoc,bool bIncludeLiveLoad, pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx,const GDRCONFIG* pConfig) const
 {
    // Stress in the girder due to prestressing
    ATLASSERT(!IsStrengthLimitState(limitState));
@@ -17771,12 +17727,17 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPoint
    {
       // pretensioning does not cause stress in the deck
       // or the interval is before release, so no stress in girder either
-      *pfTop = 0;
-      *pfBot = 0;
-      return; 
+      return { 0.0,0.0 };
    }
 
+   GET_IFACE(IPointOfInterest, pPoi);
+   IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+
+   IntervalIndexType tsInstallIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
    IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
+   IntervalIndexType lastNoncompositeIntervalIdx = pIntervals->GetLastNoncompositeInterval();
+   IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
+   IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType liveLoadIntervalIdx  = pIntervals->GetLiveLoadInterval();
 
    pgsTypes::LimitState myLimitState = (intervalIdx < liveLoadIntervalIdx ? pgsTypes::ServiceI : limitState);
@@ -17786,6 +17747,11 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPoint
    GET_IFACE(IStrandGeometry,pStrandGeom);
    GET_IFACE(ISegmentData,pSegmentData);
 
+   GET_IFACE_NOCHECK(ILosses, pLosses);
+
+   GET_IFACE(IBridge, pBridge);
+   pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
+
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
    GET_IFACE(ISectionProperties,pSectProp);
@@ -17793,60 +17759,121 @@ void CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPoint
 
    // If gross properties analysis, we want the prestress force at the end of the interval. It will include
    // elastic effects. If transformed properties analysis, we want the force at the start of the interval.
-   pgsTypes::IntervalTimeType timeType (spMode == pgsTypes::spmGross ? pgsTypes::End : pgsTypes::Start);
+   pgsTypes::IntervalTimeType timeType(spMode == pgsTypes::spmGross ? pgsTypes::End : pgsTypes::Start);
    bool bIncludeElasticEffects(spMode == pgsTypes::spmGross ? true : false);
 
-   bool bIncTempStrands = (intervalIdx < tsRemovalIntervalIdx) ? true : false;
+   auto spTypeForLoads = (spMode == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed);
 
-   std::array<Float64, 3> P{ 0,0,0 };
-   if ( intervalIdx < liveLoadIntervalIdx )
+   // For transformed properties analysis, the correct section property to use for time-dependent losses is the net properties.
+   // However, PCI BDM recommends using gross properties as an approximation for net properties. So in either case (Gross or Transformed)
+   // the beam stresses are always use gross properties
+   auto spTypeForLosses = pgsTypes::sptGross;
+
+   Float64 fTop = 0;
+   Float64 fBot = 0;
+   for (int i = 0; i < 3; i++)
    {
-      P[pgsTypes::Straight] = pPsForce->GetPrestressForce(poi, pgsTypes::Straight, intervalIdx, timeType, bIncludeElasticEffects, pgsTypes::TransferLengthType::Minimum);
-      P[pgsTypes::Harped] = pPsForce->GetPrestressForce(poi, pgsTypes::Harped, intervalIdx, timeType, bIncludeElasticEffects, pgsTypes::TransferLengthType::Minimum);
+      pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
 
-      if ( bIncTempStrands )
+      // Reduce for transfer effect
+      Float64 adjust = pPsForce->GetTransferLengthAdjustment(poi, strandType, pgsTypes::TransferLengthType::Minimum, pConfig);
+
+      IntervalIndexType prestressIntervalIdx = releaseIntervalIdx;
+      if (strandType == pgsTypes::Temporary)
       {
-         P[pgsTypes::Temporary] = pPsForce->GetPrestressForce(poi, pgsTypes::Temporary, intervalIdx, timeType, bIncludeElasticEffects, pgsTypes::TransferLengthType::Minimum);
+         if (tsInstallIntervalIdx <= intervalIdx && intervalIdx < tsRemovalIntervalIdx)
+            prestressIntervalIdx = tsInstallIntervalIdx;
+         else
+            prestressIntervalIdx = INVALID_INDEX;
+      }
+
+      if (prestressIntervalIdx != INVALID_INDEX)
+      {
+         Float64 Aps = pStrandGeom->GetStrandArea(poi, prestressIntervalIdx, strandType, pConfig);
+
+         // Compute beam concrete stress at time the prestress force is applied to the section
+         auto P = pPsForce->GetPrestressForce(poi, strandType, prestressIntervalIdx, timeType, bIncludeElasticEffects, pgsTypes::TransferLengthType::Minimum, pConfig); // has transfer effect built in
+         auto ecc = pStrandGeom->GetEccentricity(prestressIntervalIdx, poi, strandType, pConfig);
+         auto fTopPS = GetStress(prestressIntervalIdx, poi, spTypeForLoads, topLoc, P, ecc, pConfig);
+         auto fBotPS = GetStress(prestressIntervalIdx, poi, spTypeForLoads, botLoc, P, ecc, pConfig);
+
+         // Compute change in beam concrete stress due to losses between time prestress force is applied and the current interval
+         // up to the time when the deck is made composite
+         Float64 delta_fTopPS_noncomposite = 0.0;
+         Float64 delta_fBotPS_noncomposite = 0.0;
+         Float64 delta_fTopPS_composite = 0.0;
+         Float64 delta_fBotPS_composite = 0.0;
+         if (prestressIntervalIdx < intervalIdx)
+         {
+            IntervalIndexType noncompositeIntervalIdx = (intervalIdx < lastNoncompositeIntervalIdx ? intervalIdx : lastNoncompositeIntervalIdx);
+            // time type is always end for time-dependent losses
+            auto Dfps_ri = pLosses->GetTimeDependentLosses(poi, strandType, prestressIntervalIdx, pgsTypes::End, pConfig);
+            auto Dfps_id = pLosses->GetTimeDependentLosses(poi, strandType, noncompositeIntervalIdx, pgsTypes::End, pConfig);
+            auto deltaP = adjust*(Dfps_id - Dfps_ri) * Aps;
+
+            ecc = pStrandGeom->GetEccentricity(spTypeForLosses, noncompositeIntervalIdx, poi, strandType, pConfig);
+            delta_fTopPS_noncomposite = GetStress(noncompositeIntervalIdx, poi, spTypeForLosses, topLoc, deltaP, ecc, pConfig);
+            delta_fBotPS_noncomposite = GetStress(noncompositeIntervalIdx, poi, spTypeForLosses, botLoc, deltaP, ecc, pConfig);
+
+            Float64 Dgain_ri = 0.0;
+            Float64 Dgain_id = 0.0;
+            if (bIncludeElasticEffects)
+            {
+               Dgain_ri = pLosses->GetInstantaneousEffects(poi, strandType, prestressIntervalIdx, timeType, pConfig);
+               Dgain_id = pLosses->GetInstantaneousEffects(poi, strandType, noncompositeIntervalIdx, timeType, pConfig);
+               deltaP = -1.0* adjust * (Dgain_id - Dgain_ri) * Aps;
+
+               ecc = pStrandGeom->GetEccentricity(spTypeForLoads, noncompositeIntervalIdx, poi, strandType, pConfig);
+               delta_fTopPS_noncomposite += GetStress(noncompositeIntervalIdx, poi, spTypeForLoads, topLoc, deltaP, ecc, pConfig);
+               delta_fBotPS_noncomposite += GetStress(noncompositeIntervalIdx, poi, spTypeForLoads, botLoc, deltaP, ecc, pConfig);
+            }
+
+            if ((deckType != pgsTypes::sdtNone && compositeDeckIntervalIdx <= intervalIdx) 
+               || 
+               (deckType == pgsTypes::sdtNone && railingSystemIntervalIdx <= intervalIdx))
+            {
+               auto Dfps = pLosses->GetTimeDependentLosses(poi, strandType, intervalIdx, pgsTypes::End, pConfig); // this is total loss
+               auto Dfps_df = Dfps - Dfps_id;
+               deltaP = adjust * Dfps_df * Aps;
+
+               ecc = pStrandGeom->GetEccentricity(spTypeForLosses, intervalIdx, poi, strandType, pConfig);
+               delta_fTopPS_composite = GetStress(intervalIdx, poi, spTypeForLosses, topLoc, deltaP, ecc, pConfig);
+               delta_fBotPS_composite = GetStress(intervalIdx, poi, spTypeForLosses, botLoc, deltaP, ecc, pConfig);
+
+               if (bIncludeElasticEffects)
+               {
+                  Float64 Dgain;
+                  if (bIncludeLiveLoad && liveLoadIntervalIdx <= intervalIdx)
+                     Dgain = pLosses->GetInstantaneousEffectsWithLiveLoad(poi, strandType, myLimitState, vehicleIdx, pConfig);
+                  else
+                     Dgain = pLosses->GetInstantaneousEffects(poi, strandType, intervalIdx, pgsTypes::End, pConfig);
+
+                  auto Dgain_df = Dgain - Dgain_id;
+                  deltaP =  -1.0 * adjust * Dgain_df * Aps;
+
+                  ecc = pStrandGeom->GetEccentricity(spTypeForLoads, intervalIdx, poi, strandType, pConfig);
+
+                  delta_fTopPS_composite += GetStress(intervalIdx, poi, spTypeForLoads, topLoc, deltaP, ecc, pConfig);
+                  delta_fBotPS_composite += GetStress(intervalIdx, poi, spTypeForLoads, botLoc, deltaP, ecc, pConfig);
+               }
+            }
+         }
+         fTop += fTopPS - delta_fTopPS_noncomposite - delta_fTopPS_composite;
+         fBot += fBotPS - delta_fBotPS_noncomposite - delta_fBotPS_composite;
       }
    }
-   else
-   {
-      if ( bIncludeLiveLoad )
-      {
-         P[pgsTypes::Straight] = pPsForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Straight, myLimitState, bIncludeElasticEffects, vehicleIdx);
-         P[pgsTypes::Harped]   = pPsForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Harped,   myLimitState, bIncludeElasticEffects, vehicleIdx);
-      }
-      else
-      {
-         P[pgsTypes::Straight] = pPsForce->GetPrestressForce(poi, pgsTypes::Straight, intervalIdx, timeType, bIncludeElasticEffects, pgsTypes::TransferLengthType::Minimum);
-         P[pgsTypes::Harped]   = pPsForce->GetPrestressForce(poi, pgsTypes::Harped, intervalIdx, timeType, bIncludeElasticEffects, pgsTypes::TransferLengthType::Minimum);
-      }
 
-      if ( bIncTempStrands )
-      {
-         P[pgsTypes::Temporary] += pPsForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Temporary, myLimitState, bIncludeElasticEffects, vehicleIdx);
-      }
-   }
-
-   std::array<WBFL::Geometry::Point2d, 3> ecc
-   {
-      pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Straight),
-      pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Harped),
-      pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Temporary)
-   };
-
-   // NOTE: We can't use the eccentricity of the total strands. The eccentricity given is the geometric
-   // centroid of the strands. We need the location of the resultant prestress force.
-
-   // Compute the resultant eccentricity of the prestress force (this is different than the geometric eccentricity of the strand area)
-   Float64 Pps = std::accumulate(std::cbegin(P), std::cend(P), 0.0);
-   WBFL::Geometry::Point2d E = IsZero(Pps) ? WBFL::Geometry::Point2d(0,0) : std::inner_product(std::cbegin(ecc),std::cend(ecc),std::cbegin(P), WBFL::Geometry::Point2d(0,0))/Pps;
-
-   *pfTop = GetStress(releaseIntervalIdx,poi,topLoc,Pps,E.X(), E.Y());
-   *pfBot = GetStress(releaseIntervalIdx,poi,botLoc,Pps,E.X(), E.Y());
+   return { fTop,fBot };
 }
 
-Float64 CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,Float64 P,Float64 ex,Float64 ey) const
+Float64 CGirderModelManager::GetStress(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation stressLocation, Float64 P, const WBFL::Geometry::Point2d& ecc, const GDRCONFIG* pConfig) const
+{
+   GET_IFACE(ISectionProperties, pSectProps);
+   auto spType = pSectProps->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed;
+   return GetStress(intervalIdx, poi, spType, stressLocation, P, ecc, pConfig);
+}
+
+Float64 CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::SectionPropertyType spType,pgsTypes::StressLocation stressLocation,Float64 P, const WBFL::Geometry::Point2d& ecc, const GDRCONFIG* pConfig) const
 {
    GET_IFACE(IPointOfInterest, pPoi);
    IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
@@ -17860,9 +17887,9 @@ Float64 CGirderModelManager::GetStress(IntervalIndexType intervalIdx,const pgsPo
 
    GET_IFACE(ISectionProperties,pSectProp);
    Float64 Ca, Cbx, Cby;
-   pSectProp->GetStressCoefficients(intervalIdx, poi, stressLocation, nullptr, &Ca, &Cbx, &Cby);
+   pSectProp->GetStressCoefficients(intervalIdx, poi, spType, stressLocation, pConfig, &Ca, &Cbx, &Cby);
 
-   Float64 f = -P*(Ca + ey*Cbx + ex*Cby);
+   Float64 f = -P*(Ca + ecc.Y()*Cbx + ecc.X()*Cby);
 
    return f;
 }
@@ -17898,7 +17925,7 @@ Float64 CGirderModelManager::GetStressFromSegmentPT(IntervalIndexType intervalId
    {
       // stress in girder or deck due to PT is computed based on the post-tension force and
       // the eccentricity when the force is applied plus all the incremental change in PT force
-      // times the eccentricty when the change occured.
+      // times the eccentricity when the change occurred.
       Float64 Pprev = 0; // total PT force at the end of the previous interval... start with 0
                          // so that the first "change" is the full PT force
       for (IntervalIndexType intIdx = ptIntervalIdx; intIdx <= intervalIdx; intIdx++)
@@ -17910,11 +17937,10 @@ Float64 CGirderModelManager::GetStressFromSegmentPT(IntervalIndexType intervalId
          Float64 dP = P - Pprev;
 
          // eccentricity this interval
-         Float64 eccX, eccY;
-         pTendonGeometry->GetSegmentTendonEccentricity(intIdx, poi, idx, &eccX, &eccY);
+         auto ecc = pTendonGeometry->GetSegmentTendonEccentricity(intIdx, poi, idx);
 
          // change in stress during this interval
-         Float64 f = GetStress(intIdx, poi, stressLocation, dP, eccX, eccY);
+         Float64 f = GetStress(intIdx, poi, stressLocation, dP, ecc);
 
          stress += f;
 
@@ -17955,7 +17981,7 @@ Float64 CGirderModelManager::GetStressFromGirderPT(IntervalIndexType intervalIdx
 
       // stress in girder or deck due to PT is computed based on the post-tension force and
       // the eccentricity when the force is applied plus all the incremental change in PT force
-      // times the eccentricty when the change occured.
+      // times the eccentricity when the change occurred.
       Float64 Pprev = 0; // total PT force at the end of the previous interval... start with 0
       // so that the first "change" is the full PT force
       for ( IntervalIndexType intIdx = ptIntervalIdx; intIdx <= intervalIdx; intIdx++ )
@@ -17974,11 +18000,10 @@ Float64 CGirderModelManager::GetStressFromGirderPT(IntervalIndexType intervalIdx
             Float64 dP = P - Pprev;
 
             // eccentricity this interval
-            Float64 eccX, eccY;
-            pTendonGeometry->GetGirderTendonEccentricity(intIdx,poi,idx,&eccX,&eccY);
+            auto ecc = pTendonGeometry->GetGirderTendonEccentricity(intIdx,poi,idx);
 
             // change in stress during this interval
-            f = GetStress(intIdx,poi,stressLocation,dP,eccX,eccY);
+            f = GetStress(intIdx,poi,stressLocation,dP,ecc);
 
             // update for next interval
             Pprev = P;

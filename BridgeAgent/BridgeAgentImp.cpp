@@ -13210,43 +13210,54 @@ Float64 CBridgeAgentImp::GetSegmentEc(const CSegmentKey& segmentKey,IntervalInde
    return E;
 }
 
-Float64 CBridgeAgentImp::GetSegmentEc(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,Float64 trialFc,bool* pbChanged) const
+std::pair<Float64,bool> CBridgeAgentImp::GetSegmentEc(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,const GDRCONFIG* pConfig) const
 {
-#if defined _DEBUG
-   // This function is for computing the modulus of elasticity during design for a trial concrete strength.
-   // Design is not available for time-step analysis so this should not get called
-   GET_IFACE(ILossParameters,pLossParams);
-   ATLASSERT( pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP);
-#endif
+   bool bChanged = false;
+   Float64 E = 0;
 
-   GET_IFACE(ISegmentData,pSegmentData);
-
-   const CGirderMaterial* pMaterial = pSegmentData->GetSegmentMaterial(segmentKey);
-
-   // storage interval is the last interval for release strength
-   IntervalIndexType storageIntervalIdx = GetStorageInterval(segmentKey);
-
-   bool bInitial = (intervalIdx <= storageIntervalIdx ? true : false);
-   Float64 E;
-   if ( (bInitial && pMaterial->Concrete.bUserEci) || (!bInitial && pMaterial->Concrete.bUserEc) )
+   if (pConfig == nullptr)
    {
-      E = (bInitial ? pMaterial->Concrete.Eci : pMaterial->Concrete.Ec);
-      *pbChanged = false;
+      E = GetSegmentEc(segmentKey, intervalIdx);
    }
    else
    {
-      E = WBFL::LRFD::ConcreteUtil::ModE( (WBFL::Materials::ConcreteType)pMaterial->Concrete.Type, trialFc, pMaterial->Concrete.StrengthDensity, false /*ignore LRFD range checks*/ );
+#if defined _DEBUG
+      // This function is for computing the modulus of elasticity during design for a trial concrete strength.
+      // Design is not available for time-step analysis so this should not get called
+      GET_IFACE(ILossParameters, pLossParams);
+      ATLASSERT(pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP);
+#endif
 
-      if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
+      GET_IFACE(ISegmentData, pSegmentData);
+
+      const CGirderMaterial* pMaterial = pSegmentData->GetSegmentMaterial(segmentKey);
+
+      // storage interval is the last interval for release strength
+      IntervalIndexType storageIntervalIdx = GetStorageInterval(segmentKey);
+
+      bool bInitial = (intervalIdx <= storageIntervalIdx ? true : false);
+      auto trialFc = (bInitial ? pConfig->fci : pConfig->fc);
+
+      if ((bInitial && pMaterial->Concrete.bUserEci) || (!bInitial && pMaterial->Concrete.bUserEc))
       {
-         E *= (pMaterial->Concrete.EcK1*pMaterial->Concrete.EcK2);
+         E = (bInitial ? pMaterial->Concrete.Eci : pMaterial->Concrete.Ec);
+         bChanged = false;
       }
+      else
+      {
+         E = WBFL::LRFD::ConcreteUtil::ModE((WBFL::Materials::ConcreteType)pMaterial->Concrete.Type, trialFc, pMaterial->Concrete.StrengthDensity, false /*ignore LRFD range checks*/);
 
-      Float64 Eorig = (bInitial ? pMaterial->Concrete.Eci : pMaterial->Concrete.Ec);
-      *pbChanged = IsEqual(E,Eorig) ? false : true;
+         if (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition())
+         {
+            E *= (pMaterial->Concrete.EcK1 * pMaterial->Concrete.EcK2);
+         }
+
+         Float64 Eorig = (bInitial ? pMaterial->Concrete.Eci : pMaterial->Concrete.Ec);
+         bChanged = IsEqual(E, Eorig) ? false : true;
+      }
    }
 
-   return E;
+   return { E,bChanged };
 }
 
 Float64 CBridgeAgentImp::GetClosureJointEc(const CClosureKey& closureKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
@@ -13255,7 +13266,7 @@ Float64 CBridgeAgentImp::GetClosureJointEc(const CClosureKey& closureKey,Interva
    return m_ConcreteManager.GetClosureJointEc(closureKey,time);
 }
 
-Float64 CBridgeAgentImp::GetClosureJointEc(const CClosureKey& closureKey,IntervalIndexType intervalIdx,Float64 trialFc,bool* pbChanged) const
+std::pair<Float64,bool> CBridgeAgentImp::GetClosureJointEc(const CClosureKey& closureKey,IntervalIndexType intervalIdx,Float64 trialFc) const
 {
 #if defined _DEBUG
    // This function is for computing the modulus of elasticity during design for a trial concrete strength.
@@ -13274,11 +13285,13 @@ Float64 CBridgeAgentImp::GetClosureJointEc(const CClosureKey& closureKey,Interva
    IntervalIndexType compositeClosureIntervalIdx = GetCompositeClosureJointInterval(closureKey);
 
    bool bInitial = (intervalIdx <= compositeClosureIntervalIdx ? true : false);
-   Float64 E;
+
+   bool bChanged = false;
+   Float64 E = 0;
    if ( (bInitial && concrete.bUserEci) || (!bInitial && concrete.bUserEc) )
    {
       E = (bInitial ? concrete.Eci : concrete.Ec);
-      *pbChanged = false;
+      bChanged = false;
    }
    else
    {
@@ -13290,10 +13303,10 @@ Float64 CBridgeAgentImp::GetClosureJointEc(const CClosureKey& closureKey,Interva
       }
 
       Float64 Eorig = (bInitial ? concrete.Eci : concrete.Ec);
-      *pbChanged = IsEqual(E,Eorig) ? false : true;
+      bChanged = IsEqual(E,Eorig) ? false : true;
    }
 
-   return E;
+   return { E,bChanged };
 }
 
 Float64 CBridgeAgentImp::GetDeckEc(IndexType castingRegionIdx, IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType) const
@@ -15947,7 +15960,7 @@ WBFL::Geometry::Point2d CBridgeAgentImp::GetStrandCG(IntervalIndexType intervalI
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
    if (!HasAsymmetricGirders() && IsGridBasedStrandModel(pStrands->GetStrandDefinitionType()))
    {
-      // direct stand input can be asymmetric - can't call HasAsymmetricPrestressing because that causes recursion with this metho
+      // direct stand input can be asymmetric - can't call HasAsymmetricPrestressing because that causes recursion with this method
       // don't have asymmetric effects, cg is on CL at X = 0
       ATLASSERT(IsZero(cg.X()));
       cg.X() = 0;
@@ -16003,7 +16016,14 @@ WBFL::Geometry::Point2d CBridgeAgentImp::GetEccentricity(pgsTypes::SectionProper
       return ecc;
    }
 
+   // cg is measured from top of non-composite girder
    auto cg = GetStrandCG(intervalIdx, poi, strandType, pConfig);
+
+   // need to measure cg from top of girder section at this interval
+   auto releaseIntervalIdx = GetPrestressReleaseInterval(poi.GetSegmentKey());
+   Float64 Hgr = GetHg(releaseIntervalIdx, poi);
+   Float64 Hg = GetHg(intervalIdx, poi);
+   cg.Y() -= Hg - Hgr; // subtract because cg.Y is negative (below top of beam).... this should increase the negative distance
 
    const SectProp& props = GetSectionProperties(intervalIdx, poi, spType);
    Float64 Yt;
@@ -21649,7 +21669,7 @@ std::vector<WBFL::Geometry::Point2d> CBridgeAgentImp::GetStressPoints(IntervalIn
    if (pConfig)
    {
       bool bEcChanged;
-      E = GetSegmentEc(segmentKey, intervalIdx, pConfig->fc, &bEcChanged);
+      std::tie(E, bEcChanged) = GetSegmentEc(segmentKey, intervalIdx, pConfig);
 
       // if the "trial" girder strength is the same as the real girder strength
       // don't do a bunch of extra work. Return the properties for the real girder
@@ -21729,7 +21749,7 @@ std::vector<WBFL::Geometry::Point2d> CBridgeAgentImp::GetStressPoints(IntervalIn
    else
    {
       Float64 x = 0;
-      Float64 y = (pConfig ? GetY(intervalIdx, poi, location, pConfig->fc) : GetY(intervalIdx, poi, location));
+      Float64 y = GetY(intervalIdx, poi, location, pConfig);
       if (location == pgsTypes::BottomGirder)
       {
          y *= -1;
@@ -21740,7 +21760,13 @@ std::vector<WBFL::Geometry::Point2d> CBridgeAgentImp::GetStressPoints(IntervalIn
    return vPoints;
 }
 
-void CBridgeAgentImp::GetStressCoefficients(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location, const GDRCONFIG* pConfig, Float64* pCa, Float64 *pCbx,Float64* pCby, IndexType* pControllingStressPointIndex) const
+void CBridgeAgentImp::GetStressCoefficients(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location, const GDRCONFIG* pConfig, Float64* pCa, Float64* pCbx, Float64* pCby, IndexType* pControllingStressPointIndex) const
+{
+   pgsTypes::SectionPropertyType sectPropType = GetSectionPropertiesType();
+   GetStressCoefficients(intervalIdx, poi, sectPropType, location, pConfig, pCa, pCbx, pCby, pControllingStressPointIndex);
+}
+
+void CBridgeAgentImp::GetStressCoefficients(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::SectionPropertyType spType, pgsTypes::StressLocation location, const GDRCONFIG* pConfig, Float64* pCa, Float64* pCbx, Float64* pCby, IndexType* pControllingStressPointIndex) const
 {
    bool bIsCompositeDeck = IsCompositeDeck();
    if (IsDeckStressLocation(location))
@@ -21770,7 +21796,7 @@ void CBridgeAgentImp::GetStressCoefficients(IntervalIndexType intervalIdx, const
    if (pConfig)
    {
       bool bEcChanged;
-      E = GetSegmentEc(segmentKey, intervalIdx, pConfig->fc, &bEcChanged);
+      std::tie(E,bEcChanged) = GetSegmentEc(segmentKey, intervalIdx, pConfig);
 
       // if the "trial" girder strength is the same as the real girder strength
       // don't do a bunch of extra work. Return the properties for the real girder
@@ -21781,21 +21807,22 @@ void CBridgeAgentImp::GetStressCoefficients(IntervalIndexType intervalIdx, const
       }
    }
 
-   pgsTypes::SectionPropertyType sectPropType = GetSectionPropertiesType();
-
    CComPtr<IShapeProperties> sprops;
    CComPtr<ISection> section;
 
-   IndexType gdr_idx, slab_idx;
+   IndexType gdr_idx(INVALID_INDEX), slab_idx(INVALID_INDEX);
    if (pConfig)
    {
-      GetShapeProperties(sectPropType, intervalIdx, poi, E, &sprops);
-      HRESULT hr = CreateSection(intervalIdx, poi, sectPropType, pgsTypes::scGirder, &gdr_idx, &slab_idx, &section);
-      ATLASSERT(SUCCEEDED(hr));
+      GetShapeProperties(spType, intervalIdx, poi, E, &sprops);
+      if (sprops)
+      {
+         HRESULT hr = CreateSection(intervalIdx, poi, spType, pgsTypes::scGirder, &gdr_idx, &slab_idx, &section);
+         ATLASSERT(SUCCEEDED(hr));
+      }
    }
    else
    {
-      const SectProp& props = GetSectionProperties(intervalIdx, poi, sectPropType);
+      const SectProp& props = GetSectionProperties(intervalIdx, poi, spType);
       gdr_idx = props.GirderShapeIndex;
       slab_idx = props.SlabShapeIndex;
       sprops = props.ShapeProps;
@@ -21916,7 +21943,7 @@ void CBridgeAgentImp::GetStressCoefficients(IntervalIndexType intervalIdx, const
    else
    {
       Float64 x = 0;
-      Float64 y = (pConfig ? GetY(intervalIdx,poi,location,pConfig->fc) : GetY(intervalIdx, poi, location));
+      Float64 y = GetY(spType,intervalIdx,poi,location,pConfig);
       if (location == pgsTypes::BottomGirder)
       {
          y *= -1;
@@ -21935,16 +21962,7 @@ void CBridgeAgentImp::GetStressCoefficients(IntervalIndexType intervalIdx, const
    // by the Deck/Girder modular ratio
    if (IsDeckStressLocation(location) && IsStructuralDeck(GetDeckType()))
    {
-      Float64 Eg;
-      if (pConfig)
-      {
-         bool bEcChanged;
-         Eg = GetSegmentEc(segmentKey, intervalIdx, pConfig->fc, &bEcChanged);
-      }
-      else
-      {
-         Eg = GetSegmentEc(segmentKey, intervalIdx);
-      }
+      auto [Eg, bEcChanged] = GetSegmentEc(segmentKey, intervalIdx, pConfig);
 
       IndexType deckCastingRegionIdx = GetDeckCastingRegion(poi);
 
@@ -21964,10 +21982,10 @@ Float64 CBridgeAgentImp::GetHg(IntervalIndexType intervalIdx,const pgsPointOfInt
    return GetHg(sectPropType,intervalIdx, poi);
 }
 
-Float64 CBridgeAgentImp::GetAg(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const
+Float64 CBridgeAgentImp::GetAg(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig) const
 {
    pgsTypes::SectionPropertyType sectPropType = GetSectionPropertiesType();
-   return GetAg(sectPropType,intervalIdx,poi);
+   return GetAg(sectPropType,intervalIdx,poi,pConfig);
 }
 
 void CBridgeAgentImp::GetCentroid(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, IPoint2d** ppCG) const
@@ -21976,22 +21994,22 @@ void CBridgeAgentImp::GetCentroid(IntervalIndexType intervalIdx, const pgsPointO
    GetCentroid(sectPropType, intervalIdx, poi, ppCG);
 }
 
-Float64 CBridgeAgentImp::GetIxx(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const
+Float64 CBridgeAgentImp::GetIxx(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG* pConfig) const
 {
    pgsTypes::SectionPropertyType sectPropType = GetSectionPropertiesType();
-   return GetIxx(sectPropType,intervalIdx,poi);
+   return GetIxx(sectPropType,intervalIdx,poi,pConfig);
 }
 
-Float64 CBridgeAgentImp::GetIyy(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const
+Float64 CBridgeAgentImp::GetIyy(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig) const
 {
    pgsTypes::SectionPropertyType sectPropType = GetSectionPropertiesType();
-   return GetIyy(sectPropType, intervalIdx, poi);
+   return GetIyy(sectPropType, intervalIdx, poi, pConfig);
 }
 
-Float64 CBridgeAgentImp::GetIxy(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const
+Float64 CBridgeAgentImp::GetIxy(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig) const
 {
    pgsTypes::SectionPropertyType sectPropType = GetSectionPropertiesType();
-   return GetIxy(sectPropType, intervalIdx, poi);
+   return GetIxy(sectPropType, intervalIdx, poi, pConfig);
 }
 
 Float64 CBridgeAgentImp::GetXleft(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const
@@ -22006,70 +22024,34 @@ Float64 CBridgeAgentImp::GetXright(IntervalIndexType intervalIdx, const pgsPoint
    return GetXright(sectPropType, intervalIdx, poi);
 }
 
-Float64 CBridgeAgentImp::GetY(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location) const
+Float64 CBridgeAgentImp::GetY(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location, const GDRCONFIG* pConfig) const
 {
    pgsTypes::SectionPropertyType sectPropType = GetSectionPropertiesType();
-   return GetY(sectPropType, intervalIdx, poi, location);
+   return GetY(sectPropType, intervalIdx, poi, location, pConfig);
 }
 
-Float64 CBridgeAgentImp::GetS(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location) const
+Float64 CBridgeAgentImp::GetS(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location, const GDRCONFIG* pConfig) const
 {
    pgsTypes::SectionPropertyType sectPropType = GetSectionPropertiesType();
-   return GetS(sectPropType, intervalIdx, poi, location);
+   return GetS(sectPropType, intervalIdx, poi, location, pConfig);
 }
 
-Float64 CBridgeAgentImp::GetKt(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const
+Float64 CBridgeAgentImp::GetKt(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig) const
 {
    pgsTypes::SectionPropertyType sectPropType = GetSectionPropertiesType();
-   return GetKt(sectPropType,intervalIdx,poi);
+   return GetKt(sectPropType,intervalIdx,poi,pConfig);
 }
 
-Float64 CBridgeAgentImp::GetKb(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const
+Float64 CBridgeAgentImp::GetKb(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG* pConfig) const
 {
    pgsTypes::SectionPropertyType sectPropType = GetSectionPropertiesType();
-   return GetKb(sectPropType,intervalIdx,poi);
+   return GetKb(sectPropType,intervalIdx,poi,pConfig);
 }
 
 Float64 CBridgeAgentImp::GetEIx(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const
 {
    pgsTypes::SectionPropertyType sectPropType = GetSectionPropertiesType();
    return GetEIx(sectPropType,intervalIdx,poi);
-}
-
-Float64 CBridgeAgentImp::GetAg(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fcgdr) const
-{
-   pgsTypes::SectionPropertyType sectPropType = GetSectionPropertiesType();
-   return GetAg(sectPropType,intervalIdx,poi,fcgdr);
-}
-
-Float64 CBridgeAgentImp::GetIxx(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fcgdr) const
-{
-   pgsTypes::SectionPropertyType sectPropType = GetSectionPropertiesType();
-   return GetIxx(sectPropType,intervalIdx,poi,fcgdr);
-}
-
-Float64 CBridgeAgentImp::GetIyy(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, Float64 fcgdr) const
-{
-   pgsTypes::SectionPropertyType sectPropType = GetSectionPropertiesType();
-   return GetIyy(sectPropType, intervalIdx, poi, fcgdr);
-}
-
-Float64 CBridgeAgentImp::GetIxy(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, Float64 fcgdr) const
-{
-   pgsTypes::SectionPropertyType sectPropType = GetSectionPropertiesType();
-   return GetIxy(sectPropType, intervalIdx, poi, fcgdr);
-}
-
-Float64 CBridgeAgentImp::GetY(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location,Float64 fcgdr) const
-{
-   pgsTypes::SectionPropertyType sectPropType = GetSectionPropertiesType();
-   return GetY(sectPropType,intervalIdx,poi,location,fcgdr);
-}
-
-Float64 CBridgeAgentImp::GetS(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location,Float64 fcgdr) const
-{
-   pgsTypes::SectionPropertyType sectPropType = GetSectionPropertiesType();
-   return GetS(sectPropType,intervalIdx,poi,location,fcgdr);
 }
 
 Float64 CBridgeAgentImp::GetHg(pgsTypes::SectionPropertyType sectPropType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const
@@ -22100,12 +22082,35 @@ Float64 CBridgeAgentImp::GetHg(pgsTypes::SectionPropertyType sectPropType, Inter
    return Yt+Yb;
 }
 
-Float64 CBridgeAgentImp::GetAg(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const
+Float64 CBridgeAgentImp::GetAg(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig) const
 {
-   const SectProp& props = GetSectionProperties(intervalIdx,poi,spType);
-   Float64 area;
-   props.ShapeProps->get_Area(&area);
-   return area;
+   if (pConfig)
+   {
+      const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+      auto [E,bEcChanged] = GetSegmentEc(segmentKey, intervalIdx, pConfig);
+
+      // if the "trial" girder strength is the same as the real girder strength
+      // don't do a bunch of extra work. Return the properties for the real girder
+      if (!bEcChanged)
+      {
+         return GetAg(spType, intervalIdx, poi);
+      }
+
+      CComPtr<IShapeProperties> sprops;
+      GetShapeProperties(spType, intervalIdx, poi, E, &sprops);
+
+      Float64 Ag;
+      sprops->get_Area(&Ag);
+      return Ag;
+   }
+   else
+   {
+      const SectProp& props = GetSectionProperties(intervalIdx,poi,spType);
+      Float64 area;
+      props.ShapeProps->get_Area(&area);
+      return area;
+   }
 }
 
 void CBridgeAgentImp::GetCentroid(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, IPoint2d** ppCG) const
@@ -22114,35 +22119,100 @@ void CBridgeAgentImp::GetCentroid(pgsTypes::SectionPropertyType spType, Interval
    props.ShapeProps->get_Centroid(ppCG);
 }
 
-Float64 CBridgeAgentImp::GetIxx(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const
+Float64 CBridgeAgentImp::GetIxx(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG* pConfig) const
 {
-   const SectProp& props = GetSectionProperties(intervalIdx,poi,spType);
-   Float64 ixx;
-   props.ShapeProps->get_Ixx(&ixx);
-   return ixx;
+   if (pConfig)
+   {
+      const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+      auto [E,bEcChanged] = GetSegmentEc(segmentKey, intervalIdx, pConfig);
+
+      // if the "trial" girder strength is the same as the real girder strength
+      // don't do a bunch of extra work. Return the properties for the real girder
+      if (!bEcChanged)
+      {
+         return GetIxx(spType, intervalIdx, poi);
+      }
+
+      CComPtr<IShapeProperties> sprops;
+      GetShapeProperties(spType, intervalIdx, poi, E, &sprops);
+
+      Float64 Ix;
+      sprops->get_Ixx(&Ix);
+      return Ix;
+   }
+   else
+   {
+      const SectProp& props = GetSectionProperties(intervalIdx, poi, spType);
+      Float64 ixx;
+      props.ShapeProps->get_Ixx(&ixx);
+      return ixx;
+   }
 }
 
-Float64 CBridgeAgentImp::GetIyy(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const
+Float64 CBridgeAgentImp::GetIyy(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi,const GDRCONFIG* pConfig) const
 {
-   const SectProp& props = GetSectionProperties(intervalIdx, poi, spType);
-   Float64 iyy;
-   props.ShapeProps->get_Iyy(&iyy);
-   return iyy;
+   if (pConfig)
+   {
+      const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+      auto [E,bEcChanged] = GetSegmentEc(segmentKey, intervalIdx, pConfig);
+
+      // if the "trial" girder strength is the same as the real girder strength
+      // don't do a bunch of extra work. Return the properties for the real girder
+      if (!bEcChanged)
+      {
+         return GetIyy(spType, intervalIdx, poi);
+      }
+
+      CComPtr<IShapeProperties> sprops;
+      GetShapeProperties(spType, intervalIdx, poi, E, &sprops);
+
+      Float64 Iy;
+      sprops->get_Iyy(&Iy);
+      return Iy;
+   }
+   else
+   {
+      const SectProp& props = GetSectionProperties(intervalIdx, poi, spType);
+      Float64 iyy;
+      props.ShapeProps->get_Iyy(&iyy);
+      return iyy;
+   }
 }
 
-Float64 CBridgeAgentImp::GetIxy(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const
+Float64 CBridgeAgentImp::GetIxy(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi,const GDRCONFIG* pConfig) const
 {
-   if (HasAsymmetricGirders())
+   // take Ixy to be zero if we are ignoring asymmetry
+   if (!HasAsymmetricGirders())
+      return 0.0;
+
+   if (pConfig)
+   {
+      const CSegmentKey& segmentKey = poi.GetSegmentKey();
+
+      auto [E,bEcChanged] = GetSegmentEc(segmentKey, intervalIdx, pConfig);
+
+      // if the "trial" girder strength is the same as the real girder strength
+      // don't do a bunch of extra work. Return the properties for the real girder
+      if (!bEcChanged)
+      {
+         return GetIxy(spType, intervalIdx, poi);
+      }
+
+      CComPtr<IShapeProperties> sprops;
+      GetShapeProperties(spType, intervalIdx, poi, E, &sprops);
+
+      Float64 Ixy;
+      sprops->get_Ixy(&Ixy);
+      return Ixy;
+   }
+   else
    {
       const SectProp& props = GetSectionProperties(intervalIdx, poi, spType);
       Float64 ixy;
       props.ShapeProps->get_Ixy(&ixy);
       return ixy;
-   }
-   else
-   {
-      // take Ixy to be zero if we are ignoring asymmetry
-      return 0.0;
    }
 }
 
@@ -22198,28 +22268,50 @@ Float64 CBridgeAgentImp::GetXright(pgsTypes::SectionPropertyType spType, Interva
    }
 }
 
-Float64 CBridgeAgentImp::GetY(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location) const
+Float64 CBridgeAgentImp::GetY(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location,const GDRCONFIG* pConfig) const
 {
-   const SectProp& props = GetSectionProperties(intervalIdx,poi,spType);
-
-   Float64 Y;
-   switch (location )
+   if (pConfig)
    {
-   case pgsTypes::TopGirder:
-   case pgsTypes::BottomDeck:
-      // top of girder and bottom of deck are at the same location
-      Y = props.YtopGirder;
-      break;
+      const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   case pgsTypes::BottomGirder:
-      props.ShapeProps->get_Ybottom(&Y);
-      break;
+      auto [E,bEcChanged] = GetSegmentEc(segmentKey, intervalIdx, pConfig);
 
-   case pgsTypes::TopDeck:
+      // if the "trial" girder strength is the same as the real girder strength
+      // don't do a bunch of extra work. Return the properties for the real girder
+      if (!bEcChanged)
+      {
+         return GetY(spType, intervalIdx, poi, location);
+      }
+
+      CComPtr<IShapeProperties> sprops;
+      GetShapeProperties(spType, intervalIdx, poi, E, &sprops);
+
+      Float64 Y = ComputeY(intervalIdx, poi, location, sprops);
+
+      return Y;
+   }
+   else
+   {
+      const SectProp& props = GetSectionProperties(intervalIdx, poi, spType);
+
+      Float64 Y;
+      switch (location)
+      {
+      case pgsTypes::TopGirder:
+      case pgsTypes::BottomDeck:
+         // top of girder and bottom of deck are at the same location
+         Y = props.YtopGirder;
+         break;
+
+      case pgsTypes::BottomGirder:
+         props.ShapeProps->get_Ybottom(&Y);
+         break;
+
+      case pgsTypes::TopDeck:
       {
          IndexType deckCastingRegionIdx = GetDeckCastingRegion(poi);
          IntervalIndexType compositeDeckIntervalIdx = GetCompositeDeckInterval(deckCastingRegionIdx);
-         if (IsStructuralDeck(GetDeckType()) && compositeDeckIntervalIdx <= intervalIdx && IsCompositeDeck() )
+         if (IsStructuralDeck(GetDeckType()) && compositeDeckIntervalIdx <= intervalIdx && IsCompositeDeck())
          {
             props.ShapeProps->get_Ytop(&Y);
          }
@@ -22228,80 +22320,133 @@ Float64 CBridgeAgentImp::GetY(pgsTypes::SectionPropertyType spType,IntervalIndex
             Y = props.YtopGirder;
          }
       }
-   }
+      }
 
-   return Y;
+      return Y;
+   }
 }
 
-Float64 CBridgeAgentImp::GetS(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location) const
+Float64 CBridgeAgentImp::GetS(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location,const GDRCONFIG* pConfig) const
 {
-   Float64 Ix = GetIxx(spType,intervalIdx,poi);
-   Float64 Y  = GetY(spType,intervalIdx,poi,location);
-   
-   Float64 S = (IsZero(Y) ? 0 : Ix/Y);
-
-   const CSegmentKey& segmentKey(poi.GetSegmentKey());
-
-   // S is negative above the neutral axis that way
-   // M/S results in compression top for positive moment (compression is < 0)
-   if ( location != pgsTypes::BottomGirder )
+   if (pConfig)
    {
-      S *= -1;
-   }
+      const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   if (IsStructuralDeck(GetDeckType()) && IsDeckStressLocation(location) )
-   {
-      // make S in terms of the deck material
-      IndexType deckCastingRegionIdx = GetDeckCastingRegion(poi);
-      IntervalIndexType compositeDeckInterval = m_IntervalManager.GetCompositeDeckInterval(deckCastingRegionIdx);
-      if ( compositeDeckInterval <= intervalIdx && IsCompositeDeck() ) // and the deck is composite with the section
+      auto [E,bEcChanged] = GetSegmentEc(segmentKey, intervalIdx, pConfig);
+
+      // if the "trial" girder strength is the same as the real girder strength
+      // don't do a bunch of extra work. Return the properties for the real girder
+      if (!bEcChanged)
       {
-         GET_IFACE(ILossParameters, pLossParams);
-         bool bIsTimeStepAnalysis = (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false);
+         return GetS(spType, intervalIdx, poi, location);
+      }
 
-         CClosureKey closureKey;
-         bool bIsInClosureJoint = IsInClosureJoint(poi, &closureKey);
-         bool bIsOnSegment = IsOnSegment(poi);
-         bool bIsInBoundaryPierDiaphragm = IsInBoundaryPierDiaphragm(poi);
+      CComPtr<IShapeProperties> sprops;
+      GetShapeProperties(spType, intervalIdx, poi, E, &sprops);
+      Float64 ixx;
+      sprops->get_Ixx(&ixx);
 
-         Float64 Eg;
-         if (bIsOnSegment)
-         {
-            Eg = (bIsTimeStepAnalysis ? GetSegmentAgeAdjustedEc(segmentKey, intervalIdx) : GetSegmentEc(segmentKey, intervalIdx));
-         }
-         else if (bIsInClosureJoint)
-         {
-            Eg = (bIsTimeStepAnalysis ? GetClosureJointAgeAdjustedEc(closureKey, intervalIdx) : GetClosureJointEc(closureKey, intervalIdx));
-         }
-         else if (bIsInBoundaryPierDiaphragm)
-         {
-            Eg = (bIsTimeStepAnalysis ? GetDeckAgeAdjustedEc(deckCastingRegionIdx,intervalIdx) : GetDeckEc(deckCastingRegionIdx,intervalIdx));
-         }
+      Float64 y = ComputeY(intervalIdx, poi, location, sprops);
 
-         Float64 Ed = (bIsTimeStepAnalysis ? GetDeckAgeAdjustedEc(deckCastingRegionIdx,intervalIdx) : GetDeckEc(deckCastingRegionIdx,intervalIdx));
+      Float64 S = (IsZero(y) ? 0 : ixx / y);
 
-         Float64 n = Eg / Ed;
+      // S is negative above the neutral axis that way
+      // M/S results in compression top for positive moment (compression is < 0)
+      if (location != pgsTypes::BottomGirder)
+      {
+         S *= -1;
+      }
+
+      IndexType deckCastingRegionIdx = GetDeckCastingRegion(poi);
+
+      IntervalIndexType compositeDeckInterval = m_IntervalManager.GetCompositeDeckInterval(deckCastingRegionIdx);
+      if (IsDeckStressLocation(location) && // want S for deck
+         IsStructuralDeck(GetDeckType()) && // this is a structural deck
+         compositeDeckInterval <= intervalIdx && IsCompositeDeck() // and the deck is composite with the section at this interval
+         )
+      {
+         ATLASSERT(IsOnSegment(poi)); // since we are doing girder design, the poi must be on the segment
+
+         // make S be in terms of deck material
+         Float64 Eg = E;
+         Float64 Es = GetDeckEc(deckCastingRegionIdx, intervalIdx);
+
+         Float64 n = Eg / Es;
          S *= n;
       }
-      else
-      {
-         // deck isn't composite yet, 
-         S = 0;
-      }
-   }
 
-   return S;
+      return S;
+   }
+   else
+   {
+      Float64 Ix = GetIxx(spType, intervalIdx, poi);
+      Float64 Y = GetY(spType, intervalIdx, poi, location);
+
+      Float64 S = (IsZero(Y) ? 0 : Ix / Y);
+
+      const CSegmentKey& segmentKey(poi.GetSegmentKey());
+
+      // S is negative above the neutral axis that way
+      // M/S results in compression top for positive moment (compression is < 0)
+      if (location != pgsTypes::BottomGirder)
+      {
+         S *= -1;
+      }
+
+      if (IsStructuralDeck(GetDeckType()) && IsDeckStressLocation(location))
+      {
+         // make S in terms of the deck material
+         IndexType deckCastingRegionIdx = GetDeckCastingRegion(poi);
+         IntervalIndexType compositeDeckInterval = m_IntervalManager.GetCompositeDeckInterval(deckCastingRegionIdx);
+         if (compositeDeckInterval <= intervalIdx && IsCompositeDeck()) // and the deck is composite with the section
+         {
+            GET_IFACE(ILossParameters, pLossParams);
+            bool bIsTimeStepAnalysis = (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false);
+
+            CClosureKey closureKey;
+            bool bIsInClosureJoint = IsInClosureJoint(poi, &closureKey);
+            bool bIsOnSegment = IsOnSegment(poi);
+            bool bIsInBoundaryPierDiaphragm = IsInBoundaryPierDiaphragm(poi);
+
+            Float64 Eg;
+            if (bIsOnSegment)
+            {
+               Eg = (bIsTimeStepAnalysis ? GetSegmentAgeAdjustedEc(segmentKey, intervalIdx) : GetSegmentEc(segmentKey, intervalIdx));
+            }
+            else if (bIsInClosureJoint)
+            {
+               Eg = (bIsTimeStepAnalysis ? GetClosureJointAgeAdjustedEc(closureKey, intervalIdx) : GetClosureJointEc(closureKey, intervalIdx));
+            }
+            else if (bIsInBoundaryPierDiaphragm)
+            {
+               Eg = (bIsTimeStepAnalysis ? GetDeckAgeAdjustedEc(deckCastingRegionIdx, intervalIdx) : GetDeckEc(deckCastingRegionIdx, intervalIdx));
+            }
+
+            Float64 Ed = (bIsTimeStepAnalysis ? GetDeckAgeAdjustedEc(deckCastingRegionIdx, intervalIdx) : GetDeckEc(deckCastingRegionIdx, intervalIdx));
+
+            Float64 n = Eg / Ed;
+            S *= n;
+         }
+         else
+         {
+            // deck isn't composite yet, 
+            S = 0;
+         }
+      }
+
+      return S;
+   }
 }
 
-Float64 CBridgeAgentImp::GetKt(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const
+Float64 CBridgeAgentImp::GetKt(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG* pConfig) const
 {
-   Float64 Sb = fabs(GetS(spType,intervalIdx,poi,pgsTypes::BottomGirder));
-   Float64 A  = GetAg(spType,intervalIdx,poi);
+   Float64 Sb = fabs(GetS(spType,intervalIdx,poi,pgsTypes::BottomGirder,pConfig));
+   Float64 A  = GetAg(spType,intervalIdx,poi,pConfig);
    Float64 Kt = IsZero(A) ? 0 : Sb/A ;
    return Kt;
 }
 
-Float64 CBridgeAgentImp::GetKb(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const
+Float64 CBridgeAgentImp::GetKb(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig) const
 {
    pgsTypes::StressLocation topLocation = pgsTypes::TopGirder;
    IndexType deckCastingRegionIdx = GetDeckCastingRegion(poi);
@@ -22311,8 +22456,8 @@ Float64 CBridgeAgentImp::GetKb(pgsTypes::SectionPropertyType spType,IntervalInde
       pgsTypes::TopDeck;
    }
 
-   Float64 St = fabs(GetS(spType,intervalIdx,poi,topLocation));
-   Float64 A  = GetAg(spType,intervalIdx,poi);
+   Float64 St = fabs(GetS(spType,intervalIdx,poi,topLocation,pConfig));
+   Float64 A  = GetAg(spType,intervalIdx,poi,pConfig);
    Float64 Kb = IsZero(A) ? 0 : St/A ;
    return Kb;
 }
@@ -22324,177 +22469,6 @@ Float64 CBridgeAgentImp::GetEIx(pgsTypes::SectionPropertyType spType,IntervalInd
    Float64 EIx;
    props.ElasticProps->get_EIxx(&EIx);
    return EIx;
-}
-
-Float64 CBridgeAgentImp::GetAg(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fcgdr) const
-{
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-   bool bEcChanged;
-   Float64 E = GetSegmentEc(segmentKey,intervalIdx,fcgdr,&bEcChanged);
-
-   // if the "trial" girder strength is the same as the real girder strength
-   // don't do a bunch of extra work. Return the properties for the real girder
-   if ( !bEcChanged )
-   {
-      return GetAg(spType,intervalIdx,poi);
-   }
-
-   CComPtr<IShapeProperties> sprops;
-   GetShapeProperties(spType,intervalIdx,poi,E,&sprops);
-
-   Float64 Ag;
-   sprops->get_Area(&Ag);
-   return Ag;
-}
-
-Float64 CBridgeAgentImp::GetIxx(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fcgdr) const
-{
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-   // Compute what the secant modulus would be if f'c = fcgdr
-   bool bEcChanged;
-   Float64 E = GetSegmentEc(segmentKey,intervalIdx,fcgdr,&bEcChanged);
-
-   // if the "trial" girder strength is the same as the real girder strength
-   // don't do a bunch of extra work. Return the properties for the real girder
-   if ( !bEcChanged )
-   {
-      return GetIxx(spType,intervalIdx,poi);
-   }
-
-   CComPtr<IShapeProperties> sprops;
-   GetShapeProperties(spType,intervalIdx,poi,E,&sprops);
-
-   Float64 Ix;
-   sprops->get_Ixx(&Ix);
-   return Ix;
-}
-
-Float64 CBridgeAgentImp::GetIyy(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, Float64 fcgdr) const
-{
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-   bool bEcChanged;
-   Float64 E = GetSegmentEc(segmentKey, intervalIdx, fcgdr, &bEcChanged);
-
-   // if the "trial" girder strength is the same as the real girder strength
-   // don't do a bunch of extra work. Return the properties for the real girder
-   if (!bEcChanged)
-   {
-      return GetIyy(spType, intervalIdx, poi);
-   }
-
-   CComPtr<IShapeProperties> sprops;
-   GetShapeProperties(spType, intervalIdx, poi, E, &sprops);
-
-   Float64 Iy;
-   sprops->get_Iyy(&Iy);
-   return Iy;
-}
-
-Float64 CBridgeAgentImp::GetIxy(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, Float64 fcgdr) const
-{
-   if (HasAsymmetricGirders())
-   {
-      const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-      bool bEcChanged;
-      Float64 E = GetSegmentEc(segmentKey, intervalIdx, fcgdr, &bEcChanged);
-
-      // if the "trial" girder strength is the same as the real girder strength
-      // don't do a bunch of extra work. Return the properties for the real girder
-      if (!bEcChanged)
-      {
-         return GetIxy(spType, intervalIdx, poi);
-      }
-
-      CComPtr<IShapeProperties> sprops;
-      GetShapeProperties(spType, intervalIdx, poi, E, &sprops);
-
-      Float64 Ixy;
-      sprops->get_Ixy(&Ixy);
-      return Ixy;
-   }
-   else
-   {
-      // take Ixy to be zero if we are ignoring asymmetry
-      return 0.0;
-   }
-
-}
-
-Float64 CBridgeAgentImp::GetY(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location,Float64 fcgdr) const
-{
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-   bool bEcChanged;
-   Float64 E = GetSegmentEc(segmentKey,intervalIdx,fcgdr,&bEcChanged);
-
-   // if the "trial" girder strength is the same as the real girder strength
-   // don't do a bunch of extra work. Return the properties for the real girder
-   if ( !bEcChanged )
-   {
-      return GetY(spType,intervalIdx,poi,location);
-   }
-
-   CComPtr<IShapeProperties> sprops;
-   GetShapeProperties(spType,intervalIdx,poi,E,&sprops);
-
-   Float64 Y = ComputeY(intervalIdx,poi,location,sprops);
-
-   return Y;
-}
-
-Float64 CBridgeAgentImp::GetS(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location,Float64 fcgdr) const
-{
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-   bool bEcChanged;
-   Float64 E = GetSegmentEc(segmentKey,intervalIdx,fcgdr,&bEcChanged);
-
-   // if the "trial" girder strength is the same as the real girder strength
-   // don't do a bunch of extra work. Return the properties for the real girder
-   if ( !bEcChanged )
-   {
-      return GetS(spType,intervalIdx,poi,location);
-   }
-
-   CComPtr<IShapeProperties> sprops;
-   GetShapeProperties(spType,intervalIdx,poi,E,&sprops);
-   Float64 ixx;
-   sprops->get_Ixx(&ixx);
-
-   Float64 y = ComputeY(intervalIdx,poi,location,sprops);
-
-   Float64 S = (IsZero(y) ? 0 : ixx/y);
-
-   // S is negative above the neutral axis that way
-   // M/S results in compression top for positive moment (compression is < 0)
-   if ( location != pgsTypes::BottomGirder )
-   {
-      S *= -1;
-   }
-
-   IndexType deckCastingRegionIdx = GetDeckCastingRegion(poi);
-
-   IntervalIndexType compositeDeckInterval = m_IntervalManager.GetCompositeDeckInterval(deckCastingRegionIdx);
-   if ( IsDeckStressLocation(location) && // want S for deck
-         IsStructuralDeck(GetDeckType()) && // this is a structural deck
-         compositeDeckInterval <= intervalIdx && IsCompositeDeck() // and the deck is composite with the section at this interval
-   )
-   {
-      ATLASSERT(IsOnSegment(poi)); // since we are doing girder design, the poi must be on the segment
-
-      // make S be in terms of deck material
-      Float64 Eg = E;
-      Float64 Es = GetDeckEc(deckCastingRegionIdx,intervalIdx);
-
-      Float64 n = Eg/Es;
-      S *= n;
-   }
-
-   return S;
 }
 
 Float64 CBridgeAgentImp::GetNetAg(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const
@@ -22585,38 +22559,39 @@ Float64 CBridgeAgentImp::GetNetYtd(IntervalIndexType intervalIdx,const pgsPointO
    return yt;
 }
 
-Float64 CBridgeAgentImp::GetQSlab(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const
+Float64 CBridgeAgentImp::GetQSlab(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig) const
 {
-   pgsTypes::SectionPropertyType sectPropType = GetSectionPropertiesType();
-   const SectProp& props = GetSectionProperties(intervalIdx,poi,sectPropType);
-   return props.Qslab;
-}
-
-Float64 CBridgeAgentImp::GetQSlab(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, Float64 fc) const
-{
-   Float64 Qslab = GetQSlab(intervalIdx, poi);
+   if (pConfig)
+   {
+      Float64 Qslab = GetQSlab(intervalIdx, poi);
 
 #if defined _DEBUG
-   GET_IFACE(ILossParameters, pLossParams);
-   bool bIsTimeStepAnalysis = (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false);
-   ATLASSERT(bIsTimeStepAnalysis == false); // this method is for design and we don't do design for time-step analysis
+      GET_IFACE(ILossParameters, pLossParams);
+      bool bIsTimeStepAnalysis = (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false);
+      ATLASSERT(bIsTimeStepAnalysis == false); // this method is for design and we don't do design for time-step analysis
 #endif
 
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-   Float64 Ec = GetSegmentEc(segmentKey, intervalIdx);
+      const CSegmentKey& segmentKey = poi.GetSegmentKey();
+      Float64 Ec = GetSegmentEc(segmentKey, intervalIdx);
 
-   bool bChanged;
-   Float64 EcNew = GetSegmentEc(segmentKey, intervalIdx, fc, &bChanged);
+      auto [EcNew, bChanged] = GetSegmentEc(segmentKey, intervalIdx, pConfig);
 
-   if (bChanged)
-   {
-      // Q = (Eslab/Egirder)(Aslab)(Moment Arm)
-      // We have a different fc for girder so Egirder has changed
-      // Multiply by the old Egirder and divide by the new Egirder
-      Qslab *= (Ec / EcNew);
+      if (bChanged)
+      {
+         // Q = (Eslab/Egirder)(Aslab)(Moment Arm)
+         // We have a different fc for girder so Egirder has changed
+         // Multiply by the old Egirder and divide by the new Egirder
+         Qslab *= (Ec / EcNew);
+      }
+
+      return Qslab;
    }
-
-   return Qslab;
+   else
+   {
+      pgsTypes::SectionPropertyType sectPropType = GetSectionPropertiesType();
+      const SectProp& props = GetSectionProperties(intervalIdx, poi, sectPropType);
+      return props.Qslab;
+   }
 }
 
 Float64 CBridgeAgentImp::GetQ(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, Float64 Yclip) const
@@ -27675,10 +27650,9 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
          for (int i = 3; i < vNames.size(); i++)
          {
             DuctIndexType ductIdx = DuctIndexType(i - 3);
-            Float64 eccx, eccy;
-            GetSegmentTendonEccentricity(tendonStressingIntervalIdx, poi, ductIdx,&eccx,&eccy);
-            Float64 Xps = Xleft - eccx;
-            Float64 Yps = Ytg - eccy;
+            auto ecc = GetSegmentTendonEccentricity(tendonStressingIntervalIdx, poi, ductIdx);
+            Float64 Xps = Xleft - ecc.X();
+            Float64 Yps = Ytg - ecc.Y();
             Float64 Fpe = pPTForce->GetSegmentTendonForce(poi, tendonStressingIntervalIdx, pgsTypes::Start, ductIdx);
             pProblem->AddFpe(vNames[i].c_str(), pAnalysisPoint->GetLocation(), Fpe, Xps, Yps);
          }
@@ -28062,10 +28036,9 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
          for (int i = 3; i < vNames.size(); i++)
          {
             DuctIndexType ductIdx = DuctIndexType(i - 3);
-            Float64 eccx, eccy;
-            GetSegmentTendonEccentricity(tendonStressingIntervalIdx, poi, ductIdx, &eccx, &eccy);
-            Float64 Xps = Xleft - eccx;
-            Float64 Yps = Ytg - eccy;
+            auto ecc = GetSegmentTendonEccentricity(tendonStressingIntervalIdx, poi, ductIdx);
+            Float64 Xps = Xleft - ecc.X();
+            Float64 Yps = Ytg - ecc.Y();
             Float64 Fpe = pPTForce->GetSegmentTendonForce(poi, tendonStressingIntervalIdx, pgsTypes::Start, ductIdx);
             pProblem->AddFpe(vNames[i].c_str(), pAnalysisPoint->GetLocation(), Fpe, Xps, Yps);
          }
@@ -29200,13 +29173,13 @@ Float64 CBridgeAgentImp::GetDuctLength(const CGirderKey& girderKey,DuctIndexType
    return length;
 }
 
-void CBridgeAgentImp::GetGirderTendonEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,DuctIndexType ductIdx,Float64* pEccX,Float64* pEccY) const
+WBFL::Geometry::Point2d CBridgeAgentImp::GetGirderTendonEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,DuctIndexType ductIdx) const
 {
    pgsTypes::SectionPropertyType sectPropType = GetSectionPropertiesType();
-   GetGirderTendonEccentricity(sectPropType,intervalIdx,poi,ductIdx,pEccX,pEccY);
+   return GetGirderTendonEccentricity(sectPropType,intervalIdx,poi,ductIdx);
 }
 
-void CBridgeAgentImp::GetGirderTendonEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,DuctIndexType ductIdx, Float64* pEccX, Float64* pEccY) const
+WBFL::Geometry::Point2d CBridgeAgentImp::GetGirderTendonEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,DuctIndexType ductIdx) const
 {
    ATLASSERT(ductIdx != INVALID_INDEX);
 
@@ -29214,10 +29187,10 @@ void CBridgeAgentImp::GetGirderTendonEccentricity(pgsTypes::SectionPropertyType 
    IntervalIndexType stressTendonIntervalIdx = GetStressGirderTendonInterval(poi.GetSegmentKey(),ductIdx);
    if ( intervalIdx < stressTendonIntervalIdx || !IsOnGirder(poi))
    {
-      *pEccX = 0;
-      *pEccY = 0;
-      return;
+      return { 0.0,0.0 };
    }
+
+   ATLASSERT(IsZero(GetPrecamber(poi))); // assuming no precamber for spliced girders
 
    // get location of duct in girder section coordinates
    CComPtr<IPoint2d> pntDuct;
@@ -29228,10 +29201,10 @@ void CBridgeAgentImp::GetGirderTendonEccentricity(pgsTypes::SectionPropertyType 
 
    Float64 Ytop = GetY(spType, intervalIdx, poi, pgsTypes::TopGirder);
 
-   *pEccX = Xd; // less than zero means tendon is to the left of the section cg
-   *pEccY = -(Yd + Ytop); // greater than zero means tendon is below the section cg
+   Float64 ex = Xd; // less than zero means tendon is to the left of the section cg
+   Float64 ey = -(Yd + Ytop); // greater than zero means tendon is below the section cg
 
-   ATLASSERT(IsZero(GetPrecamber(poi)));
+   return { ex,ey };
 }
 
 void CBridgeAgentImp::GetGirderTendonSlope(const pgsPointOfInterest& poi,DuctIndexType ductIdx,IVector3d** ppSlope) const
@@ -30015,13 +29988,13 @@ Float64 CBridgeAgentImp::GetDuctLength(const CSegmentKey& segmentKey, DuctIndexT
    return length;
 }
 
-void CBridgeAgentImp::GetSegmentTendonEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, DuctIndexType ductIdx,Float64* pEccX,Float64* pEccY) const
+WBFL::Geometry::Point2d CBridgeAgentImp::GetSegmentTendonEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, DuctIndexType ductIdx) const
 {
    pgsTypes::SectionPropertyType sectPropType = GetSectionPropertiesType();
-   GetSegmentTendonEccentricity(sectPropType, intervalIdx, poi, ductIdx, pEccX, pEccY);
+   return GetSegmentTendonEccentricity(sectPropType, intervalIdx, poi, ductIdx);
 }
 
-void CBridgeAgentImp::GetSegmentTendonEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, DuctIndexType ductIdx, Float64* pEccX, Float64* pEccY) const
+WBFL::Geometry::Point2d CBridgeAgentImp::GetSegmentTendonEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, DuctIndexType ductIdx) const
 {
    ATLASSERT(ductIdx != INVALID_INDEX);
 
@@ -30029,10 +30002,10 @@ void CBridgeAgentImp::GetSegmentTendonEccentricity(pgsTypes::SectionPropertyType
    IntervalIndexType stressTendonIntervalIdx = GetStressSegmentTendonInterval(poi.GetSegmentKey());
    if (intervalIdx < stressTendonIntervalIdx || !IsOnSegment(poi))
    {
-      *pEccX = 0;
-      *pEccY = 0;
-      return;
+      return { 0.0,0.0 };
    }
+
+   ATLASSERT(IsZero(GetPrecamber(poi)));
 
    // get location of duct in girder section coordinates
    CComPtr<IPoint2d> pntDuct;
@@ -30043,10 +30016,10 @@ void CBridgeAgentImp::GetSegmentTendonEccentricity(pgsTypes::SectionPropertyType
 
    Float64 Ytop = GetY(spType, intervalIdx, poi, pgsTypes::TopGirder);
 
-   *pEccX = Xd; // less than zero means tendon is to the left of the section cg
-   *pEccY = -(Yd + Ytop); // greater than zero means tendon is below the section cg
+   Float64 ex = Xd; // less than zero means tendon is to the left of the section cg
+   Float64 ey = -(Yd + Ytop); // greater than zero means tendon is below the section cg
 
-   ATLASSERT(IsZero(GetPrecamber(poi)));
+   return { ex,ey };
 }
 
 Float64 CBridgeAgentImp::GetSegmentTendonAngularChange(const pgsPointOfInterest& poi, DuctIndexType ductIdx, pgsTypes::MemberEndType endType) const
@@ -34242,6 +34215,14 @@ void CBridgeAgentImp::GetShapeProperties(IntervalIndexType intervalIdx,const pgs
 void CBridgeAgentImp::GetShapeProperties(pgsTypes::SectionPropertyType sectPropType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 Ecgdr,IShapeProperties** ppShapeProps) const
 {
    const auto& sprops = GetSectionProperties(intervalIdx, poi, sectPropType);
+   
+   if (sprops.Section == nullptr)
+   {
+      // this can happen if the POI is in a pier and there isn't continuity
+      *ppShapeProps = nullptr;
+      return;
+   }
+
    CComPtr<ISection> section;
 
    // we are going to be changing the section, so make a clone so we don't mess up the original   

@@ -780,8 +780,8 @@ interface IMaterials : IUnknown
    virtual Float64 GetRailingSystemEc(pgsTypes::TrafficBarrierOrientation orientation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType=pgsTypes::Middle) const = 0;
    virtual Float64 GetLongitudinalJointEc(IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType timeType = pgsTypes::Middle) const = 0;
 
-   virtual Float64 GetSegmentEc(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,Float64 trialFc,bool* pbChanged) const = 0;
-   virtual Float64 GetClosureJointEc(const CClosureKey& closureKey,IntervalIndexType intervalIdx,Float64 trialFc,bool* pbChanged) const = 0;
+   virtual std::pair<Float64,bool> GetSegmentEc(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,const GDRCONFIG* pConfig) const = 0;
+   virtual std::pair<Float64,bool> GetClosureJointEc(const CClosureKey& closureKey,IntervalIndexType intervalIdx,Float64 trialFc) const = 0;
 
    // Returns the concrete density modification factor (LRFD2016 5.4.2.8)
    virtual Float64 GetSegmentLambda(const CSegmentKey& segmentKey) const = 0;
@@ -1352,67 +1352,48 @@ interface ISectionProperties : IUnknown
    // returns the current section properties mode
    virtual pgsTypes::SectionPropertyMode GetSectionPropertiesMode() const = 0;
 
-   // returns how haunch is varried when computing section properties
+   // returns how haunch is varied when computing section properties
    virtual pgsTypes::HaunchAnalysisSectionPropertiesType GetHaunchAnalysisSectionPropertiesType() const = 0;
 
-   // Returns the stress points for a section. The controlling stress point indes returned by GetStressCoefficients can be used to access the container
+   // Returns the stress points for a section. The controlling stress point index returned by GetStressCoefficients can be used to access the container
    virtual std::vector<WBFL::Geometry::Point2d> GetStressPoints(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location, const GDRCONFIG* pConfig = nullptr) const = 0;
 
    // Get the stress coefficients at the specifed location
    // f = Ca*Axial + Cbx*Mx + Cby*My
    virtual void GetStressCoefficients(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location, const GDRCONFIG* pConfig, Float64* pCa, Float64 *pCbx,Float64* pCby,IndexType* pControllingStressPointIndex=nullptr) const = 0;
+   virtual void GetStressCoefficients(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::SectionPropertyType spType, pgsTypes::StressLocation location, const GDRCONFIG* pConfig, Float64* pCa, Float64* pCbx, Float64* pCby, IndexType* pControllingStressPointIndex = nullptr) const = 0;
 
    // Returns section properties for the specified interval. Section properties
    // are based on the section properties model defined in the project criteria
    virtual Float64 GetHg(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
-   virtual Float64 GetAg(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
+   virtual Float64 GetAg(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig = nullptr) const = 0;
    virtual void GetCentroid(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, IPoint2d** ppCG) const = 0;
-   virtual Float64 GetIxx(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
-   virtual Float64 GetIyy(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const = 0;
-   virtual Float64 GetIxy(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const = 0;
+   virtual Float64 GetIxx(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual Float64 GetIyy(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual Float64 GetIxy(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig = nullptr) const = 0;
    virtual Float64 GetXleft(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const = 0;
    virtual Float64 GetXright(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const = 0;
-   virtual Float64 GetY(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location) const = 0;
-   virtual Float64 GetS(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location) const = 0;
-   virtual Float64 GetKt(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
-   virtual Float64 GetKb(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
+   virtual Float64 GetY(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location, const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual Float64 GetS(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location, const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual Float64 GetKt(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual Float64 GetKb(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig = nullptr) const = 0;
    virtual Float64 GetEIx(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
-
-   // Returns section properties for the specified interval. Section properties
-   // are based on the section properties model defined in the project criteria, except that
-   // the segment concrete strength is taken to be fcgdr
-   virtual Float64 GetAg(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fcgdr) const = 0;
-   virtual Float64 GetIxx(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fcgdr) const = 0;
-   virtual Float64 GetIyy(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, Float64 fcgdr) const = 0;
-   virtual Float64 GetIxy(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, Float64 fcgdr) const = 0;
-   virtual Float64 GetY(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location,Float64 fcgdr) const = 0;
-   virtual Float64 GetS(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location,Float64 fcgdr) const = 0;
 
    // Returns section properties for the specified interval. Section properties
    // are based on the specified section property type
    virtual Float64 GetHg(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
-   virtual Float64 GetAg(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
+   virtual Float64 GetAg(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig = nullptr) const = 0;
    virtual void GetCentroid(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, IPoint2d** ppCG) const = 0;
-   virtual Float64 GetIxx(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
-   virtual Float64 GetIyy(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const = 0;
-   virtual Float64 GetIxy(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const = 0;
+   virtual Float64 GetIxx(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual Float64 GetIyy(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual Float64 GetIxy(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig = nullptr) const = 0;
    virtual Float64 GetXleft(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const = 0;
    virtual Float64 GetXright(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const = 0;
-   virtual Float64 GetY(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location) const = 0;
-   virtual Float64 GetS(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location) const = 0;
-   virtual Float64 GetKt(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
-   virtual Float64 GetKb(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
+   virtual Float64 GetY(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location, const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual Float64 GetS(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation location, const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual Float64 GetKt(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual Float64 GetKb(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig = nullptr) const = 0;
    virtual Float64 GetEIx(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
-
-   // Returns section properties for the specified interval. Section properties
-   // are based on the specified section property type, except that the segment concrete strength is
-   // taken to be fcgdr
-   virtual Float64 GetAg(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fc) const = 0;
-   virtual Float64 GetIxx(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,Float64 fc) const = 0;
-   virtual Float64 GetIyy(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, Float64 fc) const = 0;
-   virtual Float64 GetIxy(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, Float64 fc) const = 0;
-   virtual Float64 GetY(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location,Float64 fc) const = 0;
-   virtual Float64 GetS(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation location,Float64 fc) const = 0;
 
    // Net girder properties
    virtual Float64 GetNetAg(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
@@ -1429,8 +1410,7 @@ interface ISectionProperties : IUnknown
    virtual Float64 GetNetYtd(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
 
 
-   virtual Float64 GetQSlab(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const = 0;
-   virtual Float64 GetQSlab(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi,Float64 fc) const = 0;
+   virtual Float64 GetQSlab(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi, const GDRCONFIG* pConfig = nullptr) const = 0;
    virtual Float64 GetQ(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, Float64 Yclip) const = 0;
    virtual Float64 GetQ(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, Float64 Yclip) const = 0;
    virtual Float64 GetAcBottomHalf(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi) const = 0; // for Fig. 5.7.3.4.2-3
@@ -1442,7 +1422,7 @@ interface ISectionProperties : IUnknown
 
    virtual Float64 GetEffectiveDeckArea(const pgsPointOfInterest& poi) const = 0; // deck area based on effective flange width
    virtual Float64 GetTributaryDeckArea(const pgsPointOfInterest& poi) const = 0; // deck area based on tributary width
-   virtual Float64 GetGrossDeckArea(const pgsPointOfInterest& poi) const = 0;     // same as triburary deck area, except gross slab depth is used
+   virtual Float64 GetGrossDeckArea(const pgsPointOfInterest& poi) const = 0;     // same as tributary deck area, except gross slab depth is used
    // Depth of haunch for given haunch type. For parabolic case, assumes a parabolic variation and includes roadway effect and assumed excess camber at mid-span
    virtual Float64 GetStructuralHaunchDepth(const pgsPointOfInterest& poi,pgsTypes::HaunchAnalysisSectionPropertiesType haunchAType) const = 0;
 
@@ -1969,12 +1949,12 @@ interface IGirderTendonGeometry : public IUnknown
    // returns the distance from the CG of the girder to the tendon in the specified duct
    // at the specified interval. eccentricity is based on the current section properties mode.
    // adjustments are made for the tendon being shifted within the duct
-   virtual void GetGirderTendonEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,DuctIndexType ductIdx, Float64* pEccX, Float64* pEccY) const = 0;
+   virtual WBFL::Geometry::Point2d GetGirderTendonEccentricity(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,DuctIndexType ductIdx) const = 0;
 
    // returns the distance from the CG of the girder to the tendon in the specified duct
    // at the specified interval. eccentricity is based on the specified section properties type.
    // adjustments are made for the tendon being shifted within the duct
-   virtual void GetGirderTendonEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,DuctIndexType ductIdx, Float64* pEccX, Float64* pEccY) const = 0;
+   virtual WBFL::Geometry::Point2d GetGirderTendonEccentricity(pgsTypes::SectionPropertyType spType,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,DuctIndexType ductIdx) const = 0;
 
    // returns the cumulative angular change of the tendon path between one end of the tendon and a poi
    virtual Float64 GetGirderTendonAngularChange(const pgsPointOfInterest& poi,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) const = 0;
@@ -2076,12 +2056,12 @@ interface ISegmentTendonGeometry : public IUnknown
    // returns the distance from the CG of the girder to the tendon in the specified duct
    // at the specified interval. eccentricity is based on the current section properties mode.
    // adjustments are made for the tendon being shifted within the duct
-   virtual void GetSegmentTendonEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, DuctIndexType ductIdx, Float64* pEccX, Float64* pEccY) const = 0;
+   virtual WBFL::Geometry::Point2d GetSegmentTendonEccentricity(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, DuctIndexType ductIdx) const = 0;
 
    // returns the distance from the CG of the girder to the tendon in the specified duct
    // at the specified interval. eccentricity is based on the specified section properties type.
    // adjustments are made for the tendon being shifted within the duct
-   virtual void GetSegmentTendonEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, DuctIndexType ductIdx, Float64* pEccX, Float64* pEccY) const = 0;
+   virtual WBFL::Geometry::Point2d GetSegmentTendonEccentricity(pgsTypes::SectionPropertyType spType, IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, DuctIndexType ductIdx) const = 0;
 
    // returns the cumulative angular change of the tendon path between one end of the tendon and a poi
    virtual Float64 GetSegmentTendonAngularChange(const pgsPointOfInterest& poi, DuctIndexType ductIdx, pgsTypes::MemberEndType endType) const = 0;

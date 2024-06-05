@@ -10,10 +10,11 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 66.67    9  10.50 KAPOLEI BRIDGE (    1     2     IV      *     49  0.6  270  25.00  15.73   9.25   9.25                                               9  56.0  6.0  7.500  9.100   4.807    -5.498    10149   0.585  1.000   4.608 -1.942 -0.133 -0.215 -2.290 214.37  306.63    1.75    5.00    5.00    0.00    1.31    0.00    1.85    2.01 
+ 66.67    9  10.50 KAPOLEI BRIDGE (    1     2     IV      *     49  0.6  270  25.00  15.73   9.25   9.25                                               9  56.0  6.0  7.500  9.100   4.807    -5.498    10149   0.585  1.000   4.608 -1.942 -0.133 -0.215 -2.290 214.37  306.63    1.75    5.00    5.00    0.00    1.31    0.00    1.85    2.00 
 
 
 The Specification Check was Not Successful
+Tension stress check failed for Service III Limit State in Interval 19 Open to Traffic, Roadway Geometry Control
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Minimum fillet value exceeded for bridge check failed
 
@@ -50,7 +51,7 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 66.67    9   7.92 KAPOLEI BRIDGE (    2     5     IV      *     47  0.6  270  25.20  15.54  10.75  10.75                                               9  56.0  6.0  7.200  8.700   4.687    -5.222     9700   0.585  1.000   4.441 -2.002 -0.137  0.000 -2.139 200.14  303.76    1.75    5.00    5.00    0.00    1.50    0.00    2.12    2.03 
+ 66.67    9   7.92 KAPOLEI BRIDGE (    2     5     IV      *     47  0.6  270  25.20  15.54  10.75  10.75                                               9  56.0  6.0  7.200  8.700   4.687    -5.222     9700   0.585  1.000   4.441 -2.002 -0.137  0.000 -2.139 200.14  303.76    1.75    5.00    5.00    0.00    1.50    0.00    2.12    2.02 
 
 
 The Specification Check was Not Successful
@@ -69,16 +70,18 @@ Minimum fillet value exceeded for bridge check failed
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 66.67    9   7.92 KAPOLEI BRIDGE (    3     2     IV      *     46  0.6  270  25.22  16.35  10.75  10.75                                               8  56.0  5.0  7.200  8.700   4.545    -5.181     9635   0.600  1.000   4.241 -1.725 -0.117 -0.190 -2.032 195.99  291.38    1.75    5.00    5.00    0.00    1.37    0.00    1.92    2.00 
+ 66.67    9   7.92 KAPOLEI BRIDGE (    3     2     IV      *     46  0.6  270  25.22  16.35  10.75  10.75                                               8  56.0  5.0  7.200  8.700   4.545    -5.181     9635   0.600  1.000   4.241 -1.725 -0.117 -0.190 -2.032 195.99  291.38    1.75    5.00    5.00    0.00    1.37    0.00    1.92    1.99 
 
 
+Girder design was Not Successful
 The Specification Check was Not Successful
+Tension stress check failed for Service III Limit State in Interval 19 Open to Traffic, Roadway Geometry Control
 Minimum fillet value exceeded for bridge check failed
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 66.67    9   7.92 KAPOLEI BRIDGE (    3     5     IV      *     44  0.6  270  25.45  16.18  10.75  10.75                                               8  56.0  5.0  6.800  8.100   4.399    -4.903     9183   0.600  1.000   4.158 -1.788 -0.120  0.000 -1.908 184.27  291.01    1.75    5.00    5.00    0.00    1.46    0.00    2.05    2.02 
+ 66.67    9   7.92 KAPOLEI BRIDGE (    3     5     IV      *     44  0.6  270  25.45  16.18  10.75  10.75                                               8  56.0  5.0  6.800  8.100   4.399    -4.903     9183   0.600  1.000   4.158 -1.788 -0.120  0.000 -1.908 184.27  291.01    1.75    5.00    5.00    0.00    1.46    0.00    2.05    2.01 
 
 
 The Specification Check was Not Successful

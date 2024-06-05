@@ -34,46 +34,6 @@
 #include <IFace\Limits.h>
 #include <IFace\ReportOptions.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CPosttensionStressTable
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-CPosttensionStressTable::CPosttensionStressTable()
-{
-}
-
-CPosttensionStressTable::CPosttensionStressTable(const CPosttensionStressTable& rOther)
-{
-   MakeCopy(rOther);
-}
-
-CPosttensionStressTable::~CPosttensionStressTable()
-{
-}
-
-//======================== OPERATORS  =======================================
-CPosttensionStressTable& CPosttensionStressTable::operator= (const CPosttensionStressTable& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
-//======================== OPERATIONS =======================================
 rptRcTable* CPosttensionStressTable::Build(IBroker* pBroker,const CGirderKey& girderKey,
                                             bool bDesign,IEAFDisplayUnits* pDisplayUnits,bool bGirderStresses) const
 {
@@ -200,14 +160,4 @@ rptRcTable* CPosttensionStressTable::Build(IBroker* pBroker,const CGirderKey& gi
    }
 
    return p_table;
-}
-
-void CPosttensionStressTable::MakeCopy(const CPosttensionStressTable& rOther)
-{
-   // Add copy code here...
-}
-
-void CPosttensionStressTable::MakeAssignment(const CPosttensionStressTable& rOther)
-{
-   MakeCopy( rOther );
 }

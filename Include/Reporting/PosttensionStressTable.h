@@ -30,15 +30,11 @@ interface IEAFDisplayUnits;
 class REPORTINGCLASS CPosttensionStressTable
 {
 public:
-   CPosttensionStressTable();
-   CPosttensionStressTable(const CPosttensionStressTable& rOther);
-   virtual ~CPosttensionStressTable();
+   CPosttensionStressTable() = default;
+   CPosttensionStressTable(const CPosttensionStressTable& rOther) = default;
+   ~CPosttensionStressTable() = default;
 
-   CPosttensionStressTable& operator = (const CPosttensionStressTable& rOther);
-   virtual rptRcTable* Build(IBroker* pBroker,const CGirderKey& girderKey,
+   CPosttensionStressTable& operator = (const CPosttensionStressTable& rOther) = default;
+   rptRcTable* Build(IBroker* pBroker,const CGirderKey& girderKey,
                              bool bDesign,IEAFDisplayUnits* pDisplayUnits,bool bGirderStresses) const;
-
-protected:
-   void MakeCopy(const CPosttensionStressTable& rOther);
-   void MakeAssignment(const CPosttensionStressTable& rOther);
 };

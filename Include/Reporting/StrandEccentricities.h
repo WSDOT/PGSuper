@@ -26,48 +26,13 @@
 
 interface IEAFDisplayUnits;
 
-/*****************************************************************************
-CLASS 
-   CStrandEccentricities
-
-   Encapsulates the construction of the Strand Locations tables.
-
-
-DESCRIPTION
-   Encapsulates the construction of the Strand Locations tables.
-
-LOG
-   rdp : 08.17.1999 : Created file
-*****************************************************************************/
-
 class REPORTINGCLASS CStrandEccentricities
 {
 public:
-   //------------------------------------------------------------------------
-   // Default constructor
-   CStrandEccentricities();
+   CStrandEccentricities() = default;
+   CStrandEccentricities(const CStrandEccentricities&) = default;
+   ~CStrandEccentricities() = default;
+   CStrandEccentricities& operator = (const CStrandEccentricities&) = default;
 
-   //------------------------------------------------------------------------
-   // Copy constructor
-   CStrandEccentricities(const CStrandEccentricities& rOther);
-
-   //------------------------------------------------------------------------
-   // Destructor
-   virtual ~CStrandEccentricities();
-
-   //------------------------------------------------------------------------
-   // Assignment operator
-   CStrandEccentricities& operator = (const CStrandEccentricities& rOther);
-
-   //------------------------------------------------------------------------
-   // Builds the stirrup table.
-   virtual void Build(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,
-                      IEAFDisplayUnits* pDisplayUnits) const;
-
-protected:
-   //------------------------------------------------------------------------
-   void MakeCopy(const CStrandEccentricities& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const CStrandEccentricities& rOther);
+   void Build(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey, IEAFDisplayUnits* pDisplayUnits) const;
 };

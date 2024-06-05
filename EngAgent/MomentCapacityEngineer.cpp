@@ -728,8 +728,7 @@ void pgsMomentCapacityEngineer::GetDeckInitialStrain(IntervalIndexType intervalI
    IntervalIndexType iIdx = Min(intervalIdx, liveLoadIntervalIdx - 1);
 
    GET_IFACE(IProductForces, pProdForces);
-   Float64 deltaf_dtSS2, deltaf_dbSS2;
-   pProdForces->GetDeckShrinkageStresses(poi, pgsTypes::TopDeck, pgsTypes::BottomDeck, &deltaf_dtSS2, &deltaf_dbSS2);
+   auto [deltaf_dtSS2, deltaf_dbSS2] = pProdForces->GetDeckShrinkageStresses(poi, pgsTypes::TopDeck, pgsTypes::BottomDeck);
 
    Float64 deltaf_tLDF = 0;
    Float64 deltaf_bLDF = 0;
@@ -1818,9 +1817,10 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType interval
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-   Float64 eps = pStrandGeom->GetEccentricity( releaseIntervalIdx, poi, pgsTypes::Permanent).Y(); // eccentricity of non-composite section
+   auto eps = pStrandGeom->GetEccentricity( releaseIntervalIdx, poi, pgsTypes::Permanent); // eccentricity of non-composite section
+   eps.X() = 0.0; // at the strength limit state, we assume beams to be in a composite cross section with uniaxial bending. set the x eccentricty to zero.
 
-   Float64 dfcpe = pPrestress->GetStress(releaseIntervalIdx, poi,stressLocation,Pps,0.0,eps);
+   Float64 dfcpe = pPrestress->GetStress(releaseIntervalIdx, poi,stressLocation,Pps,eps);
    if ( dfcpe < 0 )
    {
       fcpe += dfcpe; // only want compression stress
@@ -1867,9 +1867,9 @@ void pgsMomentCapacityEngineer::ComputeCrackingMoment(IntervalIndexType interval
       Float64 P = pPrestressForce->GetPrestressForceWithLiveLoad(poi,pgsTypes::Permanent,pgsTypes::ServiceI,INVALID_INDEX/*controlling live load*/,&config);
       GET_IFACE(IIntervals,pIntervals);
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(poi.GetSegmentKey());
-      Float64 e = pStrandGeom->GetEccentricity( releaseIntervalIdx, poi, pgsTypes::Permanent, &config).Y(); // eccentricity of non-composite section
+      auto e = pStrandGeom->GetEccentricity( releaseIntervalIdx, poi, pgsTypes::Permanent, &config); // eccentricity of non-composite section
 
-      fcpe = -pPrestress->GetStress(releaseIntervalIdx,poi,pgsTypes::BottomGirder,P,0.0,e);
+      fcpe = -pPrestress->GetStress(releaseIntervalIdx,poi,pgsTypes::BottomGirder,P,e);
    }
    else
    {
@@ -2162,20 +2162,31 @@ void pgsMomentCapacityEngineer::GetSectionProperties(IntervalIndexType intervalI
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
    const auto& limit_state_concrete_strength_criteria = pSpecEntry->GetLimitStateConcreteStrengthCriteria();
 
+   // Trick code:
+   // if bUse90DayConcreteStrength is true, we need to use fc28. However, GetS uses fc from the config object
+   // config can't be changed because it is const. create a copy, change the copy if needed, then use
+   // the copy in GetS
+   GDRCONFIG my_config = config;
+   if (limit_state_concrete_strength_criteria.bUse90DayConcreteStrength)
+   {
+      my_config.fc = my_config.fc28;
+   }
+
+
    // Get the section moduli
    if ( bPositiveMoment )
    {
       GET_IFACE(IIntervals,pIntervals);
       IntervalIndexType idx = pIntervals->GetLastNoncompositeInterval();
-      Sb = pSectProp->GetS(idx, poi, pgsTypes::BottomGirder, limit_state_concrete_strength_criteria.bUse90DayConcreteStrength ? config.fc28 : config.fc);
-      Sbc = pSectProp->GetS(intervalIdx, poi, pgsTypes::BottomGirder, limit_state_concrete_strength_criteria.bUse90DayConcreteStrength ? config.fc28 : config.fc);
+      Sb = pSectProp->GetS(idx, poi, pgsTypes::BottomGirder, &my_config);
+      Sbc = pSectProp->GetS(intervalIdx, poi, pgsTypes::BottomGirder, &my_config);
    }
    else
    {
       GET_IFACE(IBridge, pBridge);
       pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
       pgsTypes::StressLocation stressLocation = (IsStructuralDeck(deckType) ? pgsTypes::TopDeck : pgsTypes::TopGirder);
-      Sbc = pSectProp->GetS(intervalIdx, poi, stressLocation, limit_state_concrete_strength_criteria.bUse90DayConcreteStrength ? config.fc28 : config.fc);
+      Sbc = pSectProp->GetS(intervalIdx, poi, stressLocation, &my_config);
       Sb  = Sbc;
    }
 
