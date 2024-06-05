@@ -3003,41 +3003,19 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
    *pYbg = pSectProp->GetY(spType, releaseIntervalIdx, poi, pgsTypes::BottomGirder);
    if (pGirder->HasStructuralLongitudinalJoints() && IsStructuralDeck(pDeck->GetDeckType()))
    {
-      if (pConfig)
-      {
-         *pAc1 = pSectProp->GetAg(spType, compositeLongitudinalJointIntervalIdx, poi, pConfig->fc);
-         *pIc1 = pSectProp->GetIxx(spType, compositeLongitudinalJointIntervalIdx, poi, pConfig->fc);
-         *pYbc1 = pSectProp->GetY(spType, compositeLongitudinalJointIntervalIdx, poi, pgsTypes::BottomGirder, pConfig->fc);
+      *pAc1 = pSectProp->GetAg(spType, compositeLongitudinalJointIntervalIdx, poi, pConfig);
+      *pIc1 = pSectProp->GetIxx(spType, compositeLongitudinalJointIntervalIdx, poi, pConfig);
+      *pYbc1 = pSectProp->GetY(spType, compositeLongitudinalJointIntervalIdx, poi, pgsTypes::BottomGirder, pConfig);
 
-         *pAc2 = pSectProp->GetAg(spType, liveLoadIntervalIdx, poi, pConfig->fc);
-         *pIc2 = pSectProp->GetIxx(spType, liveLoadIntervalIdx, poi, pConfig->fc);
-         *pYbc2 = pSectProp->GetY(spType, liveLoadIntervalIdx, poi, pgsTypes::BottomGirder, pConfig->fc);
-      }
-      else
-      {
-         *pAc1 = pSectProp->GetAg(spType, compositeLongitudinalJointIntervalIdx, poi);
-         *pIc1 = pSectProp->GetIxx(spType, compositeLongitudinalJointIntervalIdx, poi);
-         *pYbc1 = pSectProp->GetY(spType, compositeLongitudinalJointIntervalIdx, poi, pgsTypes::BottomGirder);
-
-         *pAc2 = pSectProp->GetAg(spType, liveLoadIntervalIdx, poi);
-         *pIc2 = pSectProp->GetIxx(spType, liveLoadIntervalIdx, poi);
-         *pYbc2 = pSectProp->GetY(spType, liveLoadIntervalIdx, poi, pgsTypes::BottomGirder);
-      }
+      *pAc2 = pSectProp->GetAg(spType, liveLoadIntervalIdx, poi, pConfig);
+      *pIc2 = pSectProp->GetIxx(spType, liveLoadIntervalIdx, poi, pConfig);
+      *pYbc2 = pSectProp->GetY(spType, liveLoadIntervalIdx, poi, pgsTypes::BottomGirder, pConfig);
    }
    else
    {
-      if (pConfig)
-      {
-         *pAc1 = pSectProp->GetAg(spType, liveLoadIntervalIdx, poi, pConfig->fc);
-         *pIc1 = pSectProp->GetIxx(spType, liveLoadIntervalIdx, poi, pConfig->fc);
-         *pYbc1 = pSectProp->GetY(spType, liveLoadIntervalIdx, poi, pgsTypes::BottomGirder, pConfig->fc);
-      }
-      else
-      {
-         *pAc1 = pSectProp->GetAg(spType, liveLoadIntervalIdx, poi);
-         *pIc1 = pSectProp->GetIxx(spType, liveLoadIntervalIdx, poi);
-         *pYbc1 = pSectProp->GetY(spType, liveLoadIntervalIdx, poi, pgsTypes::BottomGirder);
-      }
+      *pAc1 = pSectProp->GetAg(spType, liveLoadIntervalIdx, poi, pConfig);
+      *pIc1 = pSectProp->GetIxx(spType, liveLoadIntervalIdx, poi, pConfig);
+      *pYbc1 = pSectProp->GetY(spType, liveLoadIntervalIdx, poi, pgsTypes::BottomGirder, pConfig);
       *pAc2 = *pAc1;
       *pIc2 = *pIc1;
       *pYbc2 = *pYbc1;
@@ -3096,14 +3074,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
       }
 
       // eccentricity of deck... use gross slab depth because sacrificial wearing surface hasn't worn off while early age shrinkage is occurring
-      if (pConfig)
-      {
-         *ped = pSectProp->GetY(compositeDeckIntervalIdx, poi, pgsTypes::TopGirder, pConfig->fc) + pBridge->GetGrossSlabDepth(poi) / 2;
-      }
-      else
-      {
-         *ped = pSectProp->GetY(compositeDeckIntervalIdx, poi, pgsTypes::TopGirder) + pBridge->GetGrossSlabDepth(poi) / 2;
-      }
+      *ped = pSectProp->GetY(compositeDeckIntervalIdx, poi, pgsTypes::TopGirder, pConfig) + pBridge->GetGrossSlabDepth(poi) / 2;
       *ped *= -1;
    }
    else

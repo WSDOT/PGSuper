@@ -35,46 +35,6 @@
 #include <IFace\RatingSpecification.h>
 #include <IFace/Limits.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CPretensionStressTable
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-CPretensionStressTable::CPretensionStressTable()
-{
-}
-
-CPretensionStressTable::CPretensionStressTable(const CPretensionStressTable& rOther)
-{
-   MakeCopy(rOther);
-}
-
-CPretensionStressTable::~CPretensionStressTable()
-{
-}
-
-//======================== OPERATORS  =======================================
-CPretensionStressTable& CPretensionStressTable::operator= (const CPretensionStressTable& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
-//======================== OPERATIONS =======================================
 rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& segmentKey,
                                             bool bDesign,IEAFDisplayUnits* pDisplayUnits) const
 {
@@ -124,7 +84,7 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
    {
       nColumns = 2 // two location columns
          + nIntervals // one for each interval
-         + 2; // two additional columns for last intervale
+         + 2; // two additional columns for last interval
    }
    else
    {
@@ -259,10 +219,6 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
    pPoi->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER);
 
    GET_IFACE2(pBroker,IPretensionStresses,pPrestress);
-   GET_IFACE2(pBroker,IPretensionForce,pForce);
-   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
-
-   StrandIndexType Nt = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Temporary);
 
    // Fill up the table
    RowIndexType row = p_table->GetNumberOfHeaderRows();
@@ -270,9 +226,6 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
    for (const pgsPointOfInterest& poi : vPoi)
    {
       col = 0;
-
-      WBFL::Geometry::Point2d ecc_p = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Permanent);
-      WBFL::Geometry::Point2d ecc_t = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Temporary);
 
       if ( bDesign )
       {
@@ -296,91 +249,27 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
 
             if (intervalIdx < liveLoadIntervalIdx)
             {
-               Float64 Fp = pForce->GetPrestressForce(poi, pgsTypes::Permanent, intervalIdx, intervalTime, pgsTypes::TransferLengthType::Minimum);
-               Float64 Ft = pForce->GetPrestressForce(poi, pgsTypes::Temporary, intervalIdx, intervalTime, pgsTypes::TransferLengthType::Minimum);
-               (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (permanent) = ") << force.SetValue(Fp) << rptNewLine;
-               if (bIsAsymmetric)
-               {
-                  (*p_table)(row, col) << Sub2(_T("e"), _T("px")) << _T(" = ") << ecc.SetValue(ecc_p.X()) << rptNewLine;
-                  (*p_table)(row, col) << Sub2(_T("e"), _T("py")) << _T(" = ") << ecc.SetValue(ecc_p.Y()) << rptNewLine;
-               }
-               else
-               {
-                  (*p_table)(row, col) << Sub2(_T("e"), _T("p")) << _T(" = ") << ecc.SetValue(ecc_p.Y()) << rptNewLine;
-               }
-
-               if (0 < Nt && intervalIdx < tsRemovalIntervalIdx)
-               {
-                  (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (temporary) = ") << force.SetValue(Ft) << rptNewLine;
-                  if (bIsAsymmetric)
-                  {
-                     (*p_table)(row, col) << Sub2(_T("e"), _T("tx")) << _T(" = ") << ecc.SetValue(ecc_t.X()) << rptNewLine;
-                     (*p_table)(row, col) << Sub2(_T("e"), _T("ty")) << _T(" = ") << ecc.SetValue(ecc_t.Y()) << rptNewLine;
-                  }
-                  else
-                  {
-                     (*p_table)(row, col) << Sub2(_T("e"), _T("t")) << _T(" = ") << ecc.SetValue(ecc_t.Y()) << rptNewLine;
-                  }
-               }
-
-               Float64 fTop, fBot;
-               pPrestress->GetStress(intervalIdx, poi, pgsTypes::TopGirder, pgsTypes::BottomGirder,true/*include live load if applicable*/, pgsTypes::ServiceI, INVALID_INDEX/*controlling vehicle*/,&fTop,&fBot);
+               auto [fTop, fBot] = pPrestress->GetStress(intervalIdx, poi, pgsTypes::TopGirder, pgsTypes::BottomGirder,true/*include live load if applicable*/, pgsTypes::ServiceI, INVALID_INDEX/*controlling vehicle*/);
                (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTop) << rptNewLine;
                (*p_table)(row, col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBot);
             }
             else
             {
-               Float64 Fp = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent, pgsTypes::ServiceI, bIncludeElasticEffects);
-               (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (permanent) = ") << force.SetValue(Fp) << rptNewLine;
-               if (bIsAsymmetric)
-               {
-                  (*p_table)(row, col) << Sub2(_T("e"), _T("px")) << _T(" = ") << ecc.SetValue(ecc_p.X()) << rptNewLine;
-                  (*p_table)(row, col) << Sub2(_T("e"), _T("py")) << _T(" = ") << ecc.SetValue(ecc_p.Y()) << rptNewLine;
-               }
-               else
-               {
-                  (*p_table)(row, col) << Sub2(_T("e"), _T("p")) << _T(" = ") << ecc.SetValue(ecc_p.Y()) << rptNewLine;
-               }
-
-               Float64 fTop, fBot;
-               pPrestress->GetStress(intervalIdx, poi, pgsTypes::TopGirder, pgsTypes::BottomGirder, true/*include live load if applicable*/, pgsTypes::ServiceI, INVALID_INDEX/*controlling vehicle*/, &fTop, &fBot);
+               auto [fTop, fBot] = pPrestress->GetStress(intervalIdx, poi, pgsTypes::TopGirder, pgsTypes::BottomGirder, true/*include live load if applicable*/, pgsTypes::ServiceI, INVALID_INDEX/*controlling vehicle*/);
                (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTop) << rptNewLine;
                (*p_table)(row, col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBot) << rptNewLine;
 
                col++;
 
-               Fp = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent, pgsTypes::ServiceIII, bIncludeElasticEffects);
-               (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (permanent) = ") << force.SetValue(Fp) << rptNewLine;
-               if (bIsAsymmetric)
-               {
-                  (*p_table)(row, col) << Sub2(_T("e"), _T("px")) << _T(" = ") << ecc.SetValue(ecc_p.X()) << rptNewLine;
-                  (*p_table)(row, col) << Sub2(_T("e"), _T("py")) << _T(" = ") << ecc.SetValue(ecc_p.Y()) << rptNewLine;
-               }
-               else
-               {
-                  (*p_table)(row, col) << Sub2(_T("e"), _T("p")) << _T(" = ") << ecc.SetValue(ecc_p.Y()) << rptNewLine;
-               }
-
-               pPrestress->GetStress(intervalIdx, poi, pgsTypes::TopGirder, pgsTypes::BottomGirder, true/*include live load if applicable*/, pgsTypes::ServiceIII, INVALID_INDEX/*controlling vehicle*/, &fTop, &fBot);
+               std::tie(fTop,fBot) = pPrestress->GetStress(intervalIdx, poi, pgsTypes::TopGirder, pgsTypes::BottomGirder, true/*include live load if applicable*/, pgsTypes::ServiceIII, INVALID_INDEX/*controlling vehicle*/);
                (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTop) << rptNewLine;
                (*p_table)(row, col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBot) << rptNewLine;
 
                col++;
 
                pgsTypes::LimitState ls = (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI);
-               Fp = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent, ls, bIncludeElasticEffects);
-               (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (permanent) = ") << force.SetValue(Fp) << rptNewLine;
-               if (bIsAsymmetric)
-               {
-                  (*p_table)(row, col) << Sub2(_T("e"), _T("px")) << _T(" = ") << ecc.SetValue(ecc_p.X()) << rptNewLine;
-                  (*p_table)(row, col) << Sub2(_T("e"), _T("py")) << _T(" = ") << ecc.SetValue(ecc_p.Y()) << rptNewLine;
-               }
-               else
-               {
-                  (*p_table)(row, col) << Sub2(_T("e"), _T("p")) << _T(" = ") << ecc.SetValue(ecc_p.Y()) << rptNewLine;
-               }
 
-               pPrestress->GetStress(intervalIdx, poi, pgsTypes::TopGirder, pgsTypes::BottomGirder, true/*include live load if applicable*/, ls, INVALID_INDEX/*controlling vehicle*/, &fTop, &fBot);
+               std::tie(fTop,fBot) = pPrestress->GetStress(intervalIdx, poi, pgsTypes::TopGirder, pgsTypes::BottomGirder, true/*include live load if applicable*/, ls, INVALID_INDEX/*controlling vehicle*/);
                (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTop) << rptNewLine;
                (*p_table)(row, col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBot) << rptNewLine;
             }
@@ -402,20 +291,7 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
 
                if (IsDesignRatingType(ratingType))
                {
-                  Float64 Fp = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent, limitState);
-                  (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (permanent) = ") << force.SetValue(Fp) << rptNewLine;
-                  if (bIsAsymmetric)
-                  {
-                     (*p_table)(row, col) << Sub2(_T("e"), _T("px")) << _T(" = ") << ecc.SetValue(ecc_p.X()) << rptNewLine;
-                     (*p_table)(row, col) << Sub2(_T("e"), _T("py")) << _T(" = ") << ecc.SetValue(ecc_p.Y()) << rptNewLine;
-                  }
-                  else
-                  {
-                     (*p_table)(row, col) << Sub2(_T("e"), _T("p")) << _T(" = ") << ecc.SetValue(ecc_p.Y()) << rptNewLine;
-                  }
-
-                  Float64 fTop, fBot;
-                  pPrestress->GetStress(loadRatingIntervalIdx, poi, pgsTypes::TopGirder, pgsTypes::BottomGirder, true/*include live load if applicable*/, limitState,INVALID_INDEX/*controlling truck*/,&fTop,&fBot);
+                  auto [fTop, fBot] = pPrestress->GetStress(loadRatingIntervalIdx, poi, pgsTypes::TopGirder, pgsTypes::BottomGirder, true/*include live load if applicable*/, limitState,INVALID_INDEX/*controlling truck*/);
                   (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTop) << rptNewLine;
                   (*p_table)(row, col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBot) << rptNewLine;
 
@@ -431,20 +307,7 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
                      {
                         continue;
                      }
-                     Float64 Fp = pForce->GetPrestressForceWithLiveLoad(poi, pgsTypes::Permanent, limitState, bIncludeElasticEffects, vehicleIdx);
-                     (*p_table)(row, col) << Sub2(_T("P"), _T("e")) << _T(" (permanent) = ") << force.SetValue(Fp) << rptNewLine;
-                     if (bIsAsymmetric)
-                     {
-                        (*p_table)(row, col) << Sub2(_T("e"), _T("px")) << _T(" = ") << ecc.SetValue(ecc_p.X()) << rptNewLine;
-                        (*p_table)(row, col) << Sub2(_T("e"), _T("py")) << _T(" = ") << ecc.SetValue(ecc_p.Y()) << rptNewLine;
-                     }
-                     else
-                     {
-                        (*p_table)(row, col) << Sub2(_T("e"), _T("p")) << _T(" = ") << ecc.SetValue(ecc_p.Y()) << rptNewLine;
-                     }
-
-                     Float64 fTop = pPrestress->GetStress(loadRatingIntervalIdx, poi, pgsTypes::TopGirder, true/*include live load if applicable*/, limitState, vehicleIdx);
-                     Float64 fBot = pPrestress->GetStress(loadRatingIntervalIdx, poi, pgsTypes::BottomGirder, true/*include live load if applicable*/, limitState, vehicleIdx);
+                     auto [fTop, fBot] = pPrestress->GetStress(loadRatingIntervalIdx, poi, pgsTypes::TopGirder, pgsTypes::BottomGirder, true/*include live load if applicable*/, limitState, vehicleIdx);
                      (*p_table)(row, col) << RPT_FTOP << _T(" = ") << stress.SetValue(fTop) << rptNewLine;
                      (*p_table)(row, col) << RPT_FBOT << _T(" = ") << stress.SetValue(fBot);
 
@@ -468,33 +331,3 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
 
    return p_table;
 }
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-void CPretensionStressTable::MakeCopy(const CPretensionStressTable& rOther)
-{
-   // Add copy code here...
-}
-
-void CPretensionStressTable::MakeAssignment(const CPretensionStressTable& rOther)
-{
-   MakeCopy( rOther );
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
-

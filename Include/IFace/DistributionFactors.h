@@ -67,21 +67,15 @@ interface ILiveLoadDistributionFactors : IUnknown
    // Test if ROA is exceeded. A CXUnwind* will be thrown through this interface if not. 
    virtual void TestRangeOfApplicability(const CSpanKey& spanKey) const = 0;
 
-   virtual Float64 GetMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState ls) const = 0;
-   virtual Float64 GetNegMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState ls) const = 0;
-   virtual Float64 GetNegMomentDistFactorAtPier(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace) const = 0;
-   virtual Float64 GetShearDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState ls) const = 0;
-
-   virtual Float64 GetMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr) const = 0;
-   virtual Float64 GetNegMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr) const = 0;
-   virtual Float64 GetNegMomentDistFactorAtPier(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace,Float64 fcgdr) const = 0;
-   virtual Float64 GetShearDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr) const = 0;
+   virtual Float64 GetMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState ls,const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual Float64 GetNegMomentDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState ls, const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual Float64 GetNegMomentDistFactorAtPier(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace, const GDRCONFIG* pConfig = nullptr) const = 0;
+   virtual Float64 GetShearDistFactor(const CSpanKey& spanKey,pgsTypes::LimitState ls, const GDRCONFIG* pConfig = nullptr) const = 0;
 
    virtual Float64 GetSkewCorrectionFactorForMoment(const CSpanKey& spanKey,pgsTypes::LimitState ls) const = 0;
    virtual Float64 GetSkewCorrectionFactorForShear(const CSpanKey& spanKey,pgsTypes::LimitState ls) const = 0;
 
-   virtual void GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState ls,Float64* pM,Float64* nM,Float64* V) const = 0;
-   virtual void GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState ls,Float64 fcgdr,Float64* pM,Float64* nM,Float64* V) const = 0;
+   virtual void GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState ls,Float64* pM,Float64* nM,Float64* V,const GDRCONFIG* pConfig = nullptr) const = 0;
    virtual void GetNegMomentDistFactorPoints(const CSpanKey& spanKey,Float64* dfPoints,IndexType* nPoints) const = 0;
 
    virtual void ReportDistributionFactors(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) const = 0;

@@ -136,7 +136,8 @@ rptChapter* CSegmentTendonGeometryChapterBuilder::Build(const std::shared_ptr<co
 
                ATLASSERT(IsEqual(frDetails.X, poi.GetDistFromStart()));
 
-               Float64 ductOffset(0), eccY(0), slopeX(0), slopeY(0), angle_start(0), angle_end(0);
+               Float64 ductOffset(0), slopeX(0), slopeY(0), angle_start(0), angle_end(0);
+               WBFL::Geometry::Point2d tendon_ecc;
                if (pTendonGeom->IsOnDuct(poi))
                {
                   ductOffset = pTendonGeom->GetSegmentDuctOffset(stressTendonIntervalIdx, poi, ductIdx);
@@ -146,8 +147,7 @@ rptChapter* CSegmentTendonGeometryChapterBuilder::Build(const std::shared_ptr<co
                   slope->get_X(&slopeX);
                   slope->get_Y(&slopeY);
 
-                  Float64 eccX;
-                  pTendonGeom->GetSegmentTendonEccentricity(stressTendonIntervalIdx, poi, ductIdx, &eccX, &eccY);
+                  tendon_ecc = pTendonGeom->GetSegmentTendonEccentricity(stressTendonIntervalIdx, poi, ductIdx);
 
                   angle_start = pTendonGeom->GetSegmentTendonAngularChange(poi, ductIdx, pgsTypes::metStart);
                   angle_end = pTendonGeom->GetSegmentTendonAngularChange(poi, ductIdx, pgsTypes::metEnd);
@@ -157,7 +157,7 @@ rptChapter* CSegmentTendonGeometryChapterBuilder::Build(const std::shared_ptr<co
                (*pTable)(row, col++) << ecc.SetValue(ductOffset);
                (*pTable)(row, col++) << slopeX;
                (*pTable)(row, col++) << slopeY;
-               (*pTable)(row, col++) << ecc.SetValue(eccY);
+               (*pTable)(row, col++) << ecc.SetValue(tendon_ecc.Y());
                (*pTable)(row, col++) << angle_start;
                (*pTable)(row, col++) << angle_end;
                (*pTable)(row, col++) << stress.SetValue(frDetails.dfpF); // friction

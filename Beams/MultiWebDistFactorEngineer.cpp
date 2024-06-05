@@ -87,16 +87,15 @@ void CMultiWebDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptCha
    {
       CSpanKey spanKey(spanIdx,gdrIdx);
 
-      SPANDETAILS span_lldf;
-      GetSpanDF(spanKey,pgsTypes::StrengthI,USE_CURRENT_FC,&span_lldf);
+      SPANDETAILS span_lldf = GetSpanDF(spanKey,pgsTypes::StrengthI);
 
       PierIndexType pier1 = spanIdx;
       PierIndexType pier2 = spanIdx+1;
-      PIERDETAILS pier1_lldf, pier2_lldf;
-      GetPierDF(pier1, gdrIdx, pgsTypes::StrengthI, pgsTypes::Ahead, USE_CURRENT_FC, &pier1_lldf);
-      GetPierDF(pier2, gdrIdx, pgsTypes::StrengthI, pgsTypes::Back,  USE_CURRENT_FC, &pier2_lldf);
+      
+      PIERDETAILS pier1_lldf = GetPierDF(pier1, gdrIdx, pgsTypes::StrengthI, pgsTypes::Ahead);
+      PIERDETAILS pier2_lldf = GetPierDF(pier2, gdrIdx, pgsTypes::StrengthI, pgsTypes::Back);
 
-      // do a sanity check to make sure the fundimental values are correct
+      // do a sanity check to make sure the fundamental values are correct
       ATLASSERT(span_lldf.Method  == pier1_lldf.Method);
       ATLASSERT(span_lldf.Method  == pier2_lldf.Method);
       ATLASSERT(pier1_lldf.Method == pier2_lldf.Method);
@@ -408,7 +407,7 @@ void CMultiWebDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptCha
    } // next span
 }
 
-WBFL::LRFD::LiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,Float64 fcgdr,MULTIWEB_LLDFDETAILS* plldf)
+WBFL::LRFD::LiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,MULTIWEB_LLDFDETAILS* plldf,const GDRCONFIG* pConfig)
 {
    GET_IFACE(ISectionProperties, pSectProp);
    GET_IFACE(IGirder,            pGirder);
@@ -484,21 +483,11 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDF
    IntervalIndexType llIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
    // properties for computing J (see below)
-   Float64 Ix, Iy, A;
-   if (0 < fcgdr)
-   {
-      Ix = pSectProp->GetIxx(pgsTypes::sptGross,llIntervalIdx, spPoi,fcgdr);
-      Iy = pSectProp->GetIyy(pgsTypes::sptGross,llIntervalIdx, spPoi,fcgdr);
-      A  = pSectProp->GetAg(pgsTypes::sptGross,llIntervalIdx, spPoi,fcgdr);
-      plldf->I = Ix;
-   }
-   else
-   {
-      Ix = pSectProp->GetIxx(pgsTypes::sptGross,llIntervalIdx, spPoi);
-      Iy = pSectProp->GetIyy(pgsTypes::sptGross,llIntervalIdx, spPoi);
-      A  = pSectProp->GetAg(pgsTypes::sptGross,llIntervalIdx, spPoi);
-      plldf->I = Ix;
-   }
+   auto Ix = pSectProp->GetIxx(pgsTypes::sptGross,llIntervalIdx, spPoi, pConfig);
+   auto Iy = pSectProp->GetIyy(pgsTypes::sptGross,llIntervalIdx, spPoi, pConfig);
+   auto A  = pSectProp->GetAg(pgsTypes::sptGross,llIntervalIdx, spPoi, pConfig);
+
+   plldf->I = Ix;
    
    Float64 Yt = pSectProp->GetY(pgsTypes::sptGross,releaseIntervalIdx, spPoi,pgsTypes::TopGirder);
 
@@ -520,23 +509,8 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDF
       ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
 
       Float64 EcDeck = pMaterials->GetDeckEc(deckCastingRegionIdx,llIntervalIdx);
-      if ( fcgdr < 0 )
-      {
-         // fcgdr < 0 means use the current bridge model
-         Float64 EcSegment = pMaterials->GetSegmentEc(segmentKey,llIntervalIdx);
-   
-         plldf->n = EcSegment/EcDeck;
-      }
-      else
-      {
-         Float64 Ecgdr = pMaterials->GetEconc(pMaterials->GetSegmentConcreteType(segmentKey),fcgdr,
-                                              pMaterials->GetSegmentStrengthDensity(segmentKey),
-                                              pMaterials->GetSegmentEccK1(segmentKey),
-                                              pMaterials->GetSegmentEccK2(segmentKey)
-                                              );
-   
-         plldf->n = Ecgdr / EcDeck;
-      }
+      auto [EcGdr, bChanged] = pMaterials->GetSegmentEc(segmentKey, llIntervalIdx, pConfig);
+      plldf->n = EcGdr / EcDeck;
    }
 
    // compute de (inside edge of barrier to CL of exterior web)

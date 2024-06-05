@@ -20,92 +20,19 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_STRANDECCTABLE_H_
-#define INCLUDED_STRANDECCTABLE_H_
+#pragma once
 
 #include <Reporting\ReportingExp.h>
 
 interface IEAFDisplayUnits;
 
-/*****************************************************************************
-CLASS 
-   CStrandEccTable
-
-   Encapsulates the construction of the prestressing strand eccentricity
-   table.
-
-
-DESCRIPTION
-   Encapsulates the construction of the prestressing strand eccentricity
-   table.
-
-LOG
-   rab : 10.20.1998 : Created file
-*****************************************************************************/
-
 class REPORTINGCLASS CStrandEccTable
 {
 public:
-   // GROUP: LIFECYCLE
+   CStrandEccTable() = default;
+   CStrandEccTable(const CStrandEccTable& rOther) = default;
+   ~CStrandEccTable() = default;
+   CStrandEccTable& operator = (const CStrandEccTable& rOther) = default;
 
-   //------------------------------------------------------------------------
-   // Default constructor
-   CStrandEccTable();
-
-   //------------------------------------------------------------------------
-   // Copy constructor
-   CStrandEccTable(const CStrandEccTable& rOther);
-
-   //------------------------------------------------------------------------
-   // Destructor
-   virtual ~CStrandEccTable();
-
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
-   CStrandEccTable& operator = (const CStrandEccTable& rOther);
-
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
-   // Builds the strand eccentricity table.
-   virtual rptRcTable* Build(IBroker* pBroker,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,
-                             IEAFDisplayUnits* pDisplayUnits) const;
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   //------------------------------------------------------------------------
-   void MakeCopy(const CStrandEccTable& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const CStrandEccTable& rOther);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-   rptRcTable* Build_XY(IBroker* pBroker, const CSegmentKey& segmentKey, IntervalIndexType intervalIdx,
-      IEAFDisplayUnits* pDisplayUnits) const;
-
-   rptRcTable* Build_Y(IBroker* pBroker, const CSegmentKey& segmentKey, IntervalIndexType intervalIdx,
-      IEAFDisplayUnits* pDisplayUnits) const;
-
-private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
+   rptRcTable* Build(IBroker* pBroker,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx, IEAFDisplayUnits* pDisplayUnits) const;
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_STRANDECCTABLE_H_

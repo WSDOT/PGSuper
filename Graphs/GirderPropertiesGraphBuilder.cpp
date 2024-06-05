@@ -638,9 +638,8 @@ void CGirderPropertiesGraphBuilder::UpdateTendonGraph(PropertyType propertyType,
                Float64 value;
                if (propertyType == TendonEccentricity)
                {
-                  Float64 eccX, eccY;
-                  pGirderTendonGeometry->GetGirderTendonEccentricity(intervalIdx, poi, ductIdx, &eccX, &eccY);
-                  value = eccY;
+                  auto ecc = pGirderTendonGeometry->GetGirderTendonEccentricity(intervalIdx, poi, ductIdx);
+                  value = ecc.Y();
                }
                else
                {
@@ -679,9 +678,8 @@ void CGirderPropertiesGraphBuilder::UpdateTendonGraph(PropertyType propertyType,
                   Float64 value;
                   if (propertyType == TendonEccentricity)
                   {
-                     Float64 eccX, eccY;
-                     pSegmentTendonGeometry->GetSegmentTendonEccentricity(intervalIdx, poi, ductIdx, &eccX, &eccY);
-                     value = eccY;
+                     auto ecc = pSegmentTendonGeometry->GetSegmentTendonEccentricity(intervalIdx, poi, ductIdx);
+                     value = ecc.Y();
                   }
                   else
                   {

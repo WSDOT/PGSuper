@@ -27,40 +27,7 @@
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CStrandEccentricities
-****************************************************************************/
-
-
-CStrandEccentricities::CStrandEccentricities()
-{
-}
-
-CStrandEccentricities::CStrandEccentricities(const CStrandEccentricities& rOther)
-{
-   MakeCopy(rOther);
-}
-
-CStrandEccentricities::~CStrandEccentricities()
-{
-}
-
-CStrandEccentricities& CStrandEccentricities::operator= (const CStrandEccentricities& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-   return *this;
-}
+#include <IFace\Limits.h>
 
 void CStrandEccentricities::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,
                                 IEAFDisplayUnits* pDisplayUnits) const
@@ -73,11 +40,15 @@ void CStrandEccentricities::Build(rptChapter* pChapter,IBroker* pBroker,const CS
 
    *p << _T("Strand Eccentricity") << rptNewLine;
 
-   //GET_IFACE2( pBroker, ILossParameters, pLossParams);
-   //PrestressLossCriteria::LossMethodType lossMethod = pLossParams->GetLossMethod();
+   GET_IFACE2( pBroker, ILossParameters, pLossParams);
+   PrestressLossCriteria::LossMethodType lossMethod = pLossParams->GetLossMethod();
+
+   GET_IFACE2(pBroker, ISectionProperties, pSectProp);
+   pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker, IStressCheck, pStressCheck);
 
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(segmentKey, &vGirderKeys);
@@ -90,52 +61,21 @@ void CStrandEccentricities::Build(rptChapter* pChapter,IBroker* pBroker,const CS
       {
          CSegmentKey thisSegmentKey(thisGirderKey,segIdx);
 
-         //if ( lossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP )
-         //{
-         //   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
-         //   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
-         //   for (IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
-         //   {
-         //      CStrandEccTable ecc_table;
-         //      *p << ecc_table.Build(pBroker,thisSegmentKey,intervalIdx,pDisplayUnits) << rptNewLine;
-         //   }
-         //}
-         //else
-         //{
-            IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
+         std::vector<IntervalIndexType> vIntervals = pStressCheck->GetStressCheckIntervals(thisSegmentKey);
+         vIntervals.push_back(pIntervals->GetLiveLoadInterval());
+         std::sort(vIntervals.begin(), vIntervals.end());
+         vIntervals.erase(std::unique(vIntervals.begin(), vIntervals.end()), vIntervals.end());
+         for (const auto& intervalIdx : vIntervals)
+         {
             CStrandEccTable ecc_table;
-            *p << ecc_table.Build(pBroker,thisSegmentKey,releaseIntervalIdx,pDisplayUnits) << rptNewLine;
-         //}
+            *p << ecc_table.Build(pBroker, thisSegmentKey, intervalIdx, pDisplayUnits) << rptNewLine;
+         }
 
          p = new rptParagraph(rptStyleManager::GetFootnoteStyle());
          *pChapter << p;
-         GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-         if ( pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross )
-         {
-            *p << _T("Eccentricities are based on the gross non-composite girder section") << rptNewLine;
-         }
-         else
-         {
-            *p << _T("Eccentricities are based on the net non-composite girder section") << rptNewLine;
-         }
-         *p << _T("Eccentricities measured from neutral axis of non-composite section based on material properties at time of prestress release") << rptNewLine;
-
-         if (pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing())
-         {
-            *p << _T("Positive ") << Sub2(_T("e"), _T("x")) << _T(" values indicate strands are to the left of the centroid") << rptNewLine;
-         }
+         *p << _T("Eccentricities measured from centroid of the section") << rptNewLine;
          *p << _T("Positive ") << Sub2(_T("e"), _T("y")) << _T(" values indicate strands are below the centroid") << rptNewLine;
          *p << rptNewLine;
       } // next segment
    } // next group
-}
-
-void CStrandEccentricities::MakeCopy(const CStrandEccentricities& rOther)
-{
-   // Add copy code here...
-}
-
-void CStrandEccentricities::MakeAssignment(const CStrandEccentricities& rOther)
-{
-   MakeCopy( rOther );
 }

@@ -41,21 +41,52 @@
 
 #include <psgLib\SpecLibraryEntry.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-/****************************************************************************
-CLASS
-   CStressChapterBuilder
-****************************************************************************/
+std::_tstring GetImage(IBroker* pBroker)
+{
+   GET_IFACE2(pBroker, ISectionProperties, pSectProps);
+   GET_IFACE2(pBroker, ILossParameters, pLosses);
+   auto loss_method = pLosses->GetLossMethod();
+   bool bApproximate = (
+      loss_method == PrestressLossCriteria::LossMethodType::AASHTO_LUMPSUM_2005 ||
+      loss_method == PrestressLossCriteria::LossMethodType::WSDOT_LUMPSUM_2005
+      );
 
+   bool bApproximatePre2005 = (
+       loss_method == PrestressLossCriteria::LossMethodType::AASHTO_LUMPSUM ||
+       loss_method == PrestressLossCriteria::LossMethodType::WSDOT_LUMPSUM ||
+       loss_method == PrestressLossCriteria::LossMethodType::GENERAL_LUMPSUM
+       );
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
+   bool bTxdot = loss_method == PrestressLossCriteria::LossMethodType::TXDOT_REFINED_2004 || loss_method == PrestressLossCriteria::LossMethodType::TXDOT_REFINED_2013;
+   bool bLumpSum = pLosses->UseGeneralLumpSumLosses();
 
-//======================== LIFECYCLE  =======================================
+   if (pSectProps->GetSectionPropertiesMode() == pgsTypes::spmGross)
+   {
+      if (bLumpSum)
+         return _T("fps_gross_lumpsum.png");
+      else if (bApproximate)
+         return _T("fps_gross_approximate.png");
+      else if (bApproximatePre2005)
+          return _T("fps_gross_approximate_pre2005.png");
+      else if (bTxdot)
+          return _T("fps_gross_txdot.png");
+      else
+         return _T("fps_gross_refined.png");
+   }
+   else
+   {
+      if (bLumpSum || bTxdot)
+         return _T("fps_transformed_lumpsum.png");
+      else if (bApproximate)
+         return _T("fps_transformed_approximate.png");
+      else if (bApproximatePre2005)
+          return _T("fps_transformed_approximate_pre2005.png");
+      else
+         return _T("fps_transformed_refined.png");
+   }
+}
+
 CStressChapterBuilder::CStressChapterBuilder(bool bDesign,bool bRating,bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
 {
@@ -63,8 +94,6 @@ CPGSuperChapterBuilder(bSelect)
    m_bRating = bRating;
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CStressChapterBuilder::GetName() const
 {
    return TEXT("Stresses");
@@ -319,6 +348,7 @@ rptChapter* CStressChapterBuilder::Build(const std::shared_ptr<const WBFL::Repor
 
          p = new rptParagraph;
          *pChapter << p;
+         *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + GetImage(pBroker)) << rptNewLine;
          *p << CPretensionStressTable().Build(pBroker,segmentKey,bDesign,pDisplayUnits) << rptNewLine;
       }
    }

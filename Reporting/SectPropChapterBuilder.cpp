@@ -341,38 +341,22 @@ rptChapter* CSectPropChapterBuilder::Build(const std::shared_ptr<const WBFL::Rep
          else if ( !bIsPrismatic_CastingYard && !bIsPrismatic_Final )
          {
             GET_IFACE2(pBroker, ISectionProperties, pSectProp);
+            pgsTypes::SectionPropertyType spType = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed);
             GET_IFACE2(pBroker,ILossParameters,pLossParams);
-            //if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
-            //{
-            //   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
-            //   IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(thisSegmentKey);
-            //   for ( IntervalIndexType intervalIdx = releaseIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
-            //   {
-            //      rptRcTable* pTable = CSectionPropertiesTable2().Build(pBroker,pgsTypes::sptTransformed,thisSegmentKey,intervalIdx,pDisplayUnits);
-            //      *pPara << pTable << rptNewLine;
-            //   }
-            //}
-            //else
+            GET_IFACE2(pBroker, IStressCheck, pStressCheck);
+            std::vector<IntervalIndexType> vIntervals = pStressCheck->GetStressCheckIntervals(thisSegmentKey);
+            vIntervals.push_back(pIntervals->GetLiveLoadInterval());
+            std::sort(vIntervals.begin(),vIntervals.end());
+            vIntervals.erase(std::unique(vIntervals.begin(),vIntervals.end()),vIntervals.end());
+            for (const auto& intervalIdx : vIntervals)
             {
-               GET_IFACE2(pBroker, IStressCheck, pStressCheck);
-               std::vector<IntervalIndexType> vIntervals = pStressCheck->GetStressCheckIntervals(thisSegmentKey);
-               vIntervals.push_back(pIntervals->GetLiveLoadInterval());
-               std::sort(vIntervals.begin(),vIntervals.end());
-               vIntervals.erase(std::unique(vIntervals.begin(),vIntervals.end()),vIntervals.end());
-               IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
-               for (const auto& intervalIdx : vIntervals)
+               rptRcTable* pTable = CSectionPropertiesTable2().Build(pBroker,spType,thisSegmentKey,intervalIdx,pDisplayUnits);
+               *pPara << pTable << rptNewLine;
+
+               if (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmTransformed && pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
                {
-                  pgsTypes::SectionPropertyType spType1 = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformedNoncomposite);
-                  pgsTypes::SectionPropertyType spType2 = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed);
-
-                  rptRcTable* pTable = CSectionPropertiesTable2().Build(pBroker,spType1,thisSegmentKey,intervalIdx,pDisplayUnits);
+                  rptRcTable* pTable = CSectionPropertiesTable2().Build(pBroker,pgsTypes::sptGross,thisSegmentKey,intervalIdx,pDisplayUnits);
                   *pPara << pTable << rptNewLine;
-
-                  if (lastCompositeDeckIntervalIdx <= intervalIdx && pSectProp->GetSectionPropertiesMode() == pgsTypes::spmTransformed )
-                  {
-                     rptRcTable* pTable = CSectionPropertiesTable2().Build(pBroker,spType2,thisSegmentKey,intervalIdx,pDisplayUnits);
-                     *pPara << pTable << rptNewLine;
-                  }
                }
             }
 

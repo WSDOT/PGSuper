@@ -26,26 +26,13 @@
 
 interface IEAFDisplayUnits;
 
-/*****************************************************************************
-CLASS 
-   CSectionPropertiesTable2
-
-   Encapsulates the construction of the section properties table.
-
-
-DESCRIPTION
-   Encapsulates the construction of the section properties table.
-
-LOG
-   rab : 10.20.1998 : Created file
-*****************************************************************************/
-
+/// <summary>
+/// Tabular list of section properties for non-prismatic section (lists section properties a many POI)
+/// </summary>
 class REPORTINGCLASS CSectionPropertiesTable2
 {
 public:
-   CSectionPropertiesTable2();
-   virtual ~CSectionPropertiesTable2();
-
-   virtual rptRcTable* Build(IBroker* pBroker,pgsTypes::SectionPropertyType spType,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,
-                             IEAFDisplayUnits* pDisplayUnits) const;
+   CSectionPropertiesTable2() = default;
+   ~CSectionPropertiesTable2() = default;
+   rptRcTable* Build(IBroker* pBroker,pgsTypes::SectionPropertyType spType,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx, IEAFDisplayUnits* pDisplayUnits) const;
 };

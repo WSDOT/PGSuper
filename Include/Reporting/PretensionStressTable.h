@@ -30,15 +30,11 @@ interface IEAFDisplayUnits;
 class REPORTINGCLASS CPretensionStressTable
 {
 public:
-   CPretensionStressTable();
-   CPretensionStressTable(const CPretensionStressTable& rOther);
-   virtual ~CPretensionStressTable();
+   CPretensionStressTable() = default;
+   CPretensionStressTable(const CPretensionStressTable& rOther) = default;
+   ~CPretensionStressTable() = default;
 
-   CPretensionStressTable& operator = (const CPretensionStressTable& rOther);
-   virtual rptRcTable* Build(IBroker* pBroker,const CSegmentKey& segmentKey,
+   CPretensionStressTable& operator = (const CPretensionStressTable& rOther) = default;
+   rptRcTable* Build(IBroker* pBroker,const CSegmentKey& segmentKey,
                              bool bDesign,IEAFDisplayUnits* pDisplayUnits) const;
-
-protected:
-   void MakeCopy(const CPretensionStressTable& rOther);
-   void MakeAssignment(const CPretensionStressTable& rOther);
 };

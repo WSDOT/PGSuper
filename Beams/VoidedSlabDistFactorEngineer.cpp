@@ -82,14 +82,13 @@ void CVoidedSlabDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptC
    {
       CSpanKey spanKey(spanIdx,gdrIdx);
 
-      SPANDETAILS span_lldf;
-      GetSpanDF(spanKey,pgsTypes::StrengthI,USE_CURRENT_FC,&span_lldf);
+      SPANDETAILS span_lldf = GetSpanDF(spanKey, pgsTypes::StrengthI);
 
       PierIndexType pier1 = spanIdx;
-      PierIndexType pier2 = spanIdx+1;
-      PIERDETAILS pier1_lldf, pier2_lldf;
-      GetPierDF(pier1, gdrIdx, pgsTypes::StrengthI, pgsTypes::Ahead, USE_CURRENT_FC, &pier1_lldf);
-      GetPierDF(pier2, gdrIdx, pgsTypes::StrengthI, pgsTypes::Back,  USE_CURRENT_FC, &pier2_lldf);
+      PierIndexType pier2 = spanIdx + 1;
+
+      PIERDETAILS pier1_lldf = GetPierDF(pier1, gdrIdx, pgsTypes::StrengthI, pgsTypes::Ahead);
+      PIERDETAILS pier2_lldf = GetPierDF(pier2, gdrIdx, pgsTypes::StrengthI, pgsTypes::Back);
 
       // do a sanity check to make sure the fundamental values are correct
       ATLASSERT(span_lldf.Method  == pier1_lldf.Method);
@@ -380,7 +379,7 @@ void CVoidedSlabDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptC
    } // next span
 }
 
-WBFL::LRFD::LiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,Float64 fcgdr,VOIDEDSLAB_LLDFDETAILS* plldf)
+WBFL::LRFD::LiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,VOIDEDSLAB_LLDFDETAILS* plldf,const GDRCONFIG* pConfig)
 {
    GET_IFACE(ISectionProperties, pSectProp);
    GET_IFACE(IGirder,            pGirder);
@@ -442,14 +441,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLL
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType llIntervalIdx = pIntervals->GetLiveLoadInterval();
-   if (0 < fcgdr)
-   {
-      plldf->I = pSectProp->GetIxx(pgsTypes::sptGross,llIntervalIdx,poi,fcgdr);
-   }
-   else
-   {
-      plldf->I = pSectProp->GetIxx(pgsTypes::sptGross,llIntervalIdx,poi);
-   }
+   plldf->I = pSectProp->GetIxx(pgsTypes::sptGross,llIntervalIdx,poi,pConfig);
 
    plldf->PoissonRatio = 0.2;
    plldf->nVoids = nVoids; // need to make WBFL::LRFD consistent
@@ -473,22 +465,10 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLL
    if ( nVoids == 0 )
    {
       // solid slab
-
-      Float64 Ix, Iy, A, Ip;
-      if (0 < fcgdr)
-      {
-         Ix = pSectProp->GetIxx(pgsTypes::sptGross,llIntervalIdx,poi,fcgdr);
-         Iy = pSectProp->GetIyy(pgsTypes::sptGross,llIntervalIdx,poi,fcgdr);
-         A  = pSectProp->GetAg(pgsTypes::sptGross,llIntervalIdx,poi,fcgdr);
-      }
-      else
-      {
-         Ix = pSectProp->GetIxx(pgsTypes::sptGross,llIntervalIdx,poi);
-         Iy = pSectProp->GetIyy(pgsTypes::sptGross,llIntervalIdx,poi);
-         A  = pSectProp->GetAg(pgsTypes::sptGross,llIntervalIdx,poi);
-      }
-
-      Ip = Ix + Iy;
+      auto Ix = pSectProp->GetIxx(pgsTypes::sptGross,llIntervalIdx,poi,pConfig);
+      auto Iy = pSectProp->GetIyy(pgsTypes::sptGross,llIntervalIdx,poi,pConfig);
+      auto A  = pSectProp->GetAg(pgsTypes::sptGross,llIntervalIdx,poi,pConfig);
+      auto Ip = Ix + Iy;
 
       VOIDEDSLAB_J_SOLID Jsolid;
       Jsolid.A = A;
