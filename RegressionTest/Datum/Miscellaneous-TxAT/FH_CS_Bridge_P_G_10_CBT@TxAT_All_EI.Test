@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 64.00   10   6.75 51st Ave Bridge     1     1     BT45    *     42  0.6  270  18.40  11.87  16.75  16.75   4.00                                               6  42.0  6.2  6.500  8.500   3.402    -3.831     6109   0.600  0.619   5.680 -1.729 -0.140 -0.057 -1.926 167.60  393.03    4.00   14.00   14.00    2.59    1.60    3.36    2.11    1.84 
+ 64.00   10   6.75 51st Ave Bridge     1     1     BT45    *     42  0.6  270  18.40  11.87  16.75  16.75   4.00                                               6  42.0  6.2  6.500  8.500   3.402    -3.831     6109   0.600  0.619   5.680 -1.729 -0.140 -0.057 -1.926 167.60  393.03    4.00   14.00   14.00    2.59    1.60    3.36    2.11    1.85 
 Warning: Beam 1 in span 1 has mixed harped and debonded strands. This is an invalid strand configuration for TxDOT, and is not supported by the TxDOT CAD Data Export feature. Strand data may not be reported correctly.
 
 
@@ -9,7 +9,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 64.00   10   6.75 51st Ave Bridge     1     2     BT45    *     42  0.6  270  18.40  11.87  16.75  16.75   4.10                                               6  42.0  6.2  6.500  8.500   3.302    -3.727     6139   0.580  0.748   5.668 -1.642 -0.139 -0.057 -1.837 167.60  394.98    4.00   14.00   14.00    2.74    1.34    3.55    1.77    1.98 
+ 64.00   10   6.75 51st Ave Bridge     1     2     BT45    *     42  0.6  270  18.40  11.87  16.75  16.75   4.10                                               6  42.0  6.2  6.500  8.500   3.302    -3.727     6139   0.580  0.748   5.668 -1.642 -0.139 -0.057 -1.837 167.60  394.98    4.00   14.00   14.00    2.74    1.34    3.55    1.77    1.99 
 Warning: Beam 2 in span 1 has mixed harped and debonded strands. This is an invalid strand configuration for TxDOT, and is not supported by the TxDOT CAD Data Export feature. Strand data may not be reported correctly.
 
 
@@ -18,7 +18,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 64.00   10   6.75 51st Ave Bridge     1     6     BT45    *     42  0.6  270  18.40  11.87  16.75  16.75   4.10                                               6  42.0  6.2  6.500  8.500   3.279    -3.705     6144   0.580  0.725   5.668 -1.614 -0.139 -0.057 -1.809 167.60  395.61    4.00   14.00   14.00    2.75    1.38    3.56    1.82    2.00 
+ 64.00   10   6.75 51st Ave Bridge     1     6     BT45    *     42  0.6  270  18.40  11.87  16.75  16.75   4.10                                               6  42.0  6.2  6.500  8.500   3.279    -3.705     6144   0.580  0.725   5.668 -1.614 -0.139 -0.057 -1.809 167.60  395.61    4.00   14.00   14.00    2.75    1.38    3.56    1.82    2.01 
 Warning: Beam 6 in span 1 has mixed harped and debonded strands. This is an invalid strand configuration for TxDOT, and is not supported by the TxDOT CAD Data Export feature. Strand data may not be reported correctly.
 
 
