@@ -43,6 +43,8 @@
 #include <IFace\Intervals.h>
 #include <IFace\DistributionFactors.h>
 
+#include <psgLib/ThermalMovementCriteria.h>
+
 #include <PgsExt\PierData2.h>
 #include <Reporting/BearingDesignPropertiesTable.h>
 
@@ -168,16 +170,16 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
 
     *p << CBearingReactionTable().BuildBearingReactionTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, are_user_loads, true, pDisplayUnits, true);
-    *p << _T("*Live loads due not include impact") << rptNewLine;
+    *p << _T("*Live loads do not include impact") << rptNewLine;
 
     *p << CBearingRotationTable().BuildBearingRotationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true,are_user_loads, true, pDisplayUnits, true, true);
-    *p << _T("*Live loads due not include impact") << rptNewLine;
+    *p << _T("*Live loads do not include impact") << rptNewLine;
 
     *p << CBearingRotationTable().BuildBearingRotationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, are_user_loads, true, pDisplayUnits, true, false);
 
-    *p << _T("*Live loads due not include impact") << rptNewLine;
+    *p << _T("*Live loads do not include impact") << rptNewLine;
     *p << _T("**Torsional rotations are calculated using ") << Sub2(symbol(theta), _T("t")) << _T(" = ") << Sub2(symbol(theta), _T("f")) << _T("tan") << Sub2(symbol(theta), _T("skew")) << rptNewLine << rptNewLine;
 
 
@@ -199,19 +201,18 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
 
     *p << _T("Temperature range is computed based on Procedure A (Article 3.12.2.1)") << rptNewLine;
 
-    GET_IFACE2(pBroker, ILibrary, pLibrary);
-    WBFL::System::Time time;
-    bool bPrintDate = WBFL::System::Time::PrintDate(true);
-    std::_tstring strServer;
-    std::_tstring strConfiguration;
-    std::_tstring strMasterLibFile;
-    pLibrary->GetMasterLibraryInfo(strServer, strConfiguration, strMasterLibFile, time);
-
     *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("thermal_expansion.png")) << rptNewLine;
 
     *p << symbol(alpha) << _T(" = coefficient of thermal expansion") << rptNewLine;
 
-    if (strConfiguration == _T("WSDOT"))
+    GET_IFACE2(pBroker, ILibrary, pLib);
+    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
+    const auto pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+    const auto& thermalFactor = pSpecEntry->GetThermalMovementCriteria();
+
+
+
+    if (thermalFactor.ThermalMovementFactor == 0.75)
     {
         *p << Sub2(symbol(DELTA), _T("0")) << _T(" = 0.75 (WSDOT BDM Ch. 9.2.5A)") << rptNewLine;
     }
@@ -222,18 +223,10 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
 
     *p << Sub2(_T("L"), _T("pf")) << _T(" = ") << _T("Distance from the apparent point of fixity to bearing") << rptNewLine;
 
-    SHEARDEFORMATIONDETAILS sfDetails;
-    pBearingDesignParameters->GetBearingTableParameters(girderKey, &sfDetails);
-
 
     GET_IFACE2(pBroker, ILossParameters, pLossParams);
     if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
     {
-        *p << _T("The location of the point of fixity is one of the following:") << rptNewLine;
-        *p << _T("-The midlength of the superstructure between expansion joints") << rptNewLine;
-        *p << _T("-The central pier for a bridge with an even number of spans between expansion joints") << rptNewLine;
-        *p << _T("-The midpoint of the central span for a bridge with an odd number of spans between expansion joints") << rptNewLine;
-
         *p << Sub2(_T("T"), _T("max")) << _T(" = maximum temperature used for design") << rptNewLine;
         *p << Sub2(_T("T"), _T("min")) << _T(" = minimum temperature used for design") << rptNewLine;
 
@@ -261,6 +254,9 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     {
         bCold = false;
     }
+
+    SHEARDEFORMATIONDETAILS sfDetails;
+    pBearingDesignParameters->GetBearingTableParameters(girderKey, &sfDetails);
 
     *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(),
         true, pDisplayUnits, true, bCold, &sfDetails);

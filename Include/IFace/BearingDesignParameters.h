@@ -176,7 +176,6 @@ struct SHEARDEFORMATIONDETAILS : public TABLEPARAMETERS
 	Float64 max_design_temperature_moderate;
 	Float64 min_design_temperature_moderate;
 	Float64 percentExpansion;
-	std::_tstring libConfig;
 	Float64 thermal_expansion_cold;
 	Float64 thermal_expansion_moderate;
 	Float64 preTension;
