@@ -1,9 +1,11 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 27.83    5   6.00                     1     1    WF66G    *     38  0.6  270  28.65  13.49  11.50  11.50                                              12  57.0  4.0  4.700  5.700   3.807    -3.992     9434   0.553  0.671   4.482 -1.603 -0.215 -0.304 -2.121 149.08  272.34    3.00    5.50    5.50    1.84    2.15    2.39    2.86    1.48 
+ 27.83    5   6.00                     1     1    WF66G    *     38  0.6  270  28.65  13.49  11.50  11.50                                              12  57.0  4.0  4.700  5.700   3.807    -3.992     9434   0.553  0.671   4.482 -1.603 -0.215 -0.304 -2.121 149.08  272.34    3.00    5.50    5.50    1.84    2.15    2.39    2.86    1.47 
 
 
-The Specification Check was Successful
+Girder design was Not Successful
+The Specification Check was Not Successful
+Tension stress check failed for Service III Limit State in Interval 18 Open to Traffic, Roadway Geometry Control
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts

@@ -40,19 +40,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-/****************************************************************************
-CLASS
-   CSectionPropertiesTable2
-****************************************************************************/
-
-CSectionPropertiesTable2::CSectionPropertiesTable2()
-{
-}
-
-CSectionPropertiesTable2::~CSectionPropertiesTable2()
-{
-}
-
 rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
                                             pgsTypes::SectionPropertyType spType,
                                             const CSegmentKey& segmentKey,
@@ -72,9 +59,35 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
    std::_tostringstream os;
    os << "Interval " << LABEL_INTERVAL(intervalIdx) << _T(" : ") << pIntervals->GetDescription(intervalIdx);
 
-   if ( spType == pgsTypes::sptTransformedNoncomposite )
+   if (spType == pgsTypes::sptGross)
+   {
+      if (intervalIdx < firstCompositeDeckIntervalIdx)
+      {
+         os << _T(" - Gross non-composite properties");
+      }
+      else
+      {
+         os << _T(" - Gross composite properties");
+      }
+   }
+   else if (spType == pgsTypes::sptGrossNoncomposite)
+   {
+      os << _T(" - Gross non-composite properties");
+   }
+   else if ( spType == pgsTypes::sptTransformedNoncomposite)
    {
       os << _T(" - Transformed non-composite properties");
+   }
+   else if (spType == pgsTypes::sptNetGirder)
+   {
+      if (intervalIdx < firstCompositeDeckIntervalIdx)
+      {
+         os << _T(" - Net non-composite properties");
+      }
+      else
+      {
+         os << _T(" - Net composite properties");
+      }
    }
    else if ( spType == pgsTypes::sptTransformed )
    {
@@ -88,7 +101,7 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
       }
    }
 
-   os << _T("; for ") << pgsGirderLabel::GetSegmentLabel(segmentKey);
+   os << _T(" for ") << pgsGirderLabel::GetSegmentLabel(segmentKey);
 
    bool bIsCompositeDeck = pBridge->IsCompositeDeck();
    bool bAsymmetricGirders = pBridge->HasAsymmetricGirders();

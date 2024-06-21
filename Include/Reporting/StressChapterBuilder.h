@@ -20,78 +20,26 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_STRESSCHAPTERBUILDER_H_
-#define INCLUDED_STRESSCHAPTERBUILDER_H_
+#pragma once
 
 #include <Reporting\ReportingExp.h>
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-/*****************************************************************************
-CLASS 
-   CStressChapterBuilder
-
-   Chapter builder for stresses
-
-
-DESCRIPTION
-   Chapter builder for stresses
-
-LOG
-   rab : 04.05.2006 : Created file
-*****************************************************************************/
-
 class REPORTINGCLASS CStressChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   // GROUP: LIFECYCLE
    CStressChapterBuilder(bool bDesign,bool bRating,bool bSelect = true);
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
-   virtual LPCTSTR GetName() const override;
-   
-
-   //------------------------------------------------------------------------
-   virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-
-   // Prevent accidental copying and assignment
    CStressChapterBuilder(const CStressChapterBuilder&) = delete;
    CStressChapterBuilder& operator=(const CStressChapterBuilder&) = delete;
 
+   virtual LPCTSTR GetName() const override;
+
+   virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
+
+   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
+
+private:
    bool m_bDesign;
    bool m_bRating;
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_STRESSCHAPTERBUILDER_H_

@@ -82,6 +82,7 @@
 #define LOAD_LIST        12
 #define STIRRUP_LIST     13
 #define DROP_TARGET_LIST 14
+#define PROPERTIES_LIST  15
 
 // display object ID
 #define SECTION_CUT_ID   100
@@ -241,6 +242,7 @@ void CGirderModelElevationView::OnInitialUpdate()
    m_pDispMgr->CreateDisplayList(STIRRUP_LIST);
    m_pDispMgr->CreateDisplayList(CP_LIST);
    m_pDispMgr->CreateDisplayList(GDR_LIST);
+   m_pDispMgr->CreateDisplayList(PROPERTIES_LIST);
 
    // build display objects
    // set up a valid dc first
@@ -400,6 +402,9 @@ void CGirderModelElevationView::UpdateDisplayObjects()
    {
       BuildLegendDisplayObjects(pDoc, pBroker, girderKey, eventIdx, cases_exist);
    }
+
+   BuildPropertiesDisplayObjects(pDoc, pBroker, girderKey, eventIdx);
+
 
    auto mode = (settings & IDG_EV_DRAW_ISOTROPIC) ? WBFL::DManip::MapMode::Isotropic : WBFL::DManip::MapMode::Anisotropic;
    CDisplayView::SetMappingMode(mode);
@@ -2957,10 +2962,25 @@ void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSDocBase* pDoc, IB
    }
 }
 
-std::shared_ptr<WBFL::DManip::iDisplayObject> CGirderModelElevationView::BuildLine(std::shared_ptr<WBFL::DManip::iDisplayList> pDL,const std::vector<WBFL::Geometry::Point2d>& points, COLORREF color,UINT nWidth)
+void CGirderModelElevationView::BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const CGirderKey& girderKey, EventIndexType eventIdx)
+{
+   auto pDL = m_pDispMgr->FindDisplayList(PROPERTIES_LIST);
+   ATLASSERT(pDL);
+   pDL->Clear();
+
+   auto textBlock = WBFL::DManip::AnchoredTextBlock::Create();
+   textBlock->SetLocation(CPoint(5, 5)); // location of text block relative to top left corner
+
+   CString strProps(_T("Horizontal dimensions are based on plan view projection and do not include girder grade."));
+   textBlock->SetText(strProps);
+
+   pDL->AddDisplayObject(textBlock);
+}
+
+std::shared_ptr<WBFL::DManip::iDisplayObject> CGirderModelElevationView::BuildLine(std::shared_ptr<WBFL::DManip::iDisplayList> pDL, const std::vector<WBFL::Geometry::Point2d>& points, COLORREF color, UINT nWidth)
 {
    PRECONDITION(2 <= points.size());
-   
+
    auto compDO = WBFL::DManip::CompositeDisplayObject::Create();
 
    auto iter = points.begin();
@@ -3403,7 +3423,7 @@ CString CGirderModelElevationView::GetSegmentTooltip(IBroker* pBroker, const CSe
    CString strMsg1;
    if ( pDocType->IsPGSuperDocument() )
    {
-      strMsg1.Format(_T("Girder: %s\r\nGirder Length: %s\r\nSpan Length: %s"),
+      strMsg1.Format(_T("Girder: %s\r\nGirder Length (Plan): %s\r\nSpan Length (Plan): %s"),
                      strGirderName,
                      FormatDimension(segment_length,pDisplayUnits->GetSpanLengthUnit()),
                      FormatDimension(span_length,pDisplayUnits->GetSpanLengthUnit())
@@ -3411,7 +3431,7 @@ CString CGirderModelElevationView::GetSegmentTooltip(IBroker* pBroker, const CSe
    }
    else
    {
-      strMsg1.Format(_T("Girder: %s\r\nSegment Length: %s\r\nSpan Length: %s"),
+      strMsg1.Format(_T("Girder: %s\r\nSegment Length (Plan): %s\r\nSpan Length (Plan): %s"),
                      strGirderName,
                      FormatDimension(segment_length,pDisplayUnits->GetSpanLengthUnit()),
                      FormatDimension(span_length,pDisplayUnits->GetSpanLengthUnit())
@@ -3421,7 +3441,7 @@ CString CGirderModelElevationView::GetSegmentTooltip(IBroker* pBroker, const CSe
    Float64 start_conn_length = pBridge->GetSegmentStartEndDistance(segmentKey);
    Float64 end_conn_length   = pBridge->GetSegmentEndEndDistance(segmentKey);
    CString strMsgConn;
-   strMsgConn.Format(_T("\r\n\r\nLeft Overhang: %s\r\nRight Overhang: %s"),
+   strMsgConn.Format(_T("\r\n\r\nLeft Overhang (Plan): %s\r\nRight Overhang (Plan): %s"),
                      FormatDimension(start_conn_length,pDisplayUnits->GetComponentDimUnit()),
                      FormatDimension(end_conn_length,pDisplayUnits->GetComponentDimUnit())
                      );
@@ -3484,7 +3504,7 @@ CString CGirderModelElevationView::GetClosureTooltip(IBroker* pBroker, const CCl
 
    Float64 length = pBridge->GetClosureJointLength(closureKey);
    CString strMsg1;
-   strMsg1.Format(_T("Length: %s"),
+   strMsg1.Format(_T("Length (Plan): %s"),
                   FormatDimension(length,pDisplayUnits->GetSpanLengthUnit())
                   );
 

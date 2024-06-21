@@ -41,64 +41,26 @@ LOG
    rab : 10.20.1998 : Created file
 *****************************************************************************/
 
+/// <summary>
+/// Tabular list of gross section properties for prismatic section (lists a single set of properties)
+/// </summary>
 class REPORTINGCLASS CSectionPropertiesTable
 {
 public:
-   // GROUP: LIFECYCLE
+   CSectionPropertiesTable() = default;
+   CSectionPropertiesTable(const CSectionPropertiesTable& rOther) = default;
+   ~CSectionPropertiesTable() = default;
+   CSectionPropertiesTable& operator=(const CSectionPropertiesTable& rOther) = default;
 
-   //------------------------------------------------------------------------
-   // Default constructor
-   CSectionPropertiesTable();
-
-   //------------------------------------------------------------------------
-   // Copy constructor
-   CSectionPropertiesTable(const CSectionPropertiesTable& rOther);
-
-   //------------------------------------------------------------------------
-   // Destructor
-   virtual ~CSectionPropertiesTable();
-
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
-   CSectionPropertiesTable& operator = (const CSectionPropertiesTable& rOther);
-
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
-   // Builds the strand eccentricity table.
-   virtual rptRcTable* Build(IBroker* pBroker,const CSegmentKey& segmentKey,bool bComposite,
-                             IEAFDisplayUnits* pDisplayUnits) const;
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   //------------------------------------------------------------------------
-   void MakeCopy(const CSectionPropertiesTable& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const CSectionPropertiesTable& rOther);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
+   /// <summary>
+   /// 
+   /// </summary>
+   /// <param name="pBroker"></param>
+   /// <param name="segmentKey"></param>
+   /// <param name="bComposite">If true, lists properties for both the composite and non-composite section, otherwise just the non-composite section properties are listed</param>
+   /// <param name="pDisplayUnits"></param>
+   /// <returns></returns>
+   rptRcTable* Build(IBroker* pBroker,const CSegmentKey& segmentKey,bool bComposite, IEAFDisplayUnits* pDisplayUnits) const;
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
 
 #endif // INCLUDED_SECTPROPTABLE_H_

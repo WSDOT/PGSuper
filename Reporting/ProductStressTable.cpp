@@ -436,8 +436,7 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
          if ( bSlabShrinkage )
          {
             ATLASSERT(bGirderStresses); // slab shrinkage stresses only applicable to girder stresses
-            Float64 ft_ss, fb_ss;
-            pForces->GetDeckShrinkageStresses(poi,pgsTypes::TopGirder,pgsTypes::BottomGirder,&ft_ss,&fb_ss);
+            auto [ft_ss, fb_ss] = pForces->GetDeckShrinkageStresses(poi,pgsTypes::TopGirder,pgsTypes::BottomGirder);
 
             (*p_table)(row,col) << RPT_FTOP << _T(" = ") << stress.SetValue(ft_ss) << rptNewLine;
             (*p_table)(row,col) << RPT_FBOT << _T(" = ") << stress.SetValue(fb_ss);

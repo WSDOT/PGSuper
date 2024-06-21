@@ -322,11 +322,10 @@ void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const G
       {
          if (stressTendonIntervalIdx < compositeIntervalIdx)
          {
-            Float64 eccX, eccY;
-            pSegmentTendonGeometry->GetSegmentTendonEccentricity(finalIntervalIdx, poi, ductIdx, &eccX, &eccY);
+            auto ecc = pSegmentTendonGeometry->GetSegmentTendonEccentricity(finalIntervalIdx, poi, ductIdx);
             Float64 F = pPTForce->GetSegmentTendonForce(poi, finalIntervalIdx, pgsTypes::End, ductIdx, true, true);
             PptSegment += F;
-            PeSegment += F*eccY;
+            PeSegment += F*ecc.Y();
          }
       }
    }
@@ -344,11 +343,10 @@ void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const G
          IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressGirderTendonInterval(girderKey, ductIdx);
          if (stressTendonIntervalIdx < compositeIntervalIdx)
          {
-            Float64 eccX, eccY;
-            pGirderTendonGeometry->GetGirderTendonEccentricity(finalIntervalIdx, poi, ductIdx, &eccX, &eccY);
+            auto ecc = pGirderTendonGeometry->GetGirderTendonEccentricity(finalIntervalIdx, poi, ductIdx);
             Float64 F = pPTForce->GetGirderTendonForce(poi, finalIntervalIdx, pgsTypes::End, ductIdx, true, true);
             PptGirder += F;
-            PeGirder += F*eccY;
+            PeGirder += F*ecc.Y();
          }
       }
    }

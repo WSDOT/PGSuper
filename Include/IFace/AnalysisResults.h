@@ -430,7 +430,7 @@ interface IProductForces : IUnknown
 
    virtual void DumpAnalysisModels(GirderIndexType gdrIdx) const = 0;
 
-   virtual void GetDeckShrinkageStresses(const pgsPointOfInterest& poi, pgsTypes::StressLocation topStressLocation,pgsTypes::StressLocation botStressLocation,Float64* pftop,Float64* pfbot) const = 0;
+   virtual std::pair<Float64,Float64> GetDeckShrinkageStresses(const pgsPointOfInterest& poi, pgsTypes::StressLocation topStressLocation,pgsTypes::StressLocation botStressLocation, const GDRCONFIG* pConfig = nullptr) const = 0;
 };
 
 
@@ -693,14 +693,12 @@ DEFINE_GUID(IID_IPretensionStresses,
 0xfdcc4ed6, 0x7d9b, 0x11d2, 0x88, 0x57, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
 interface IPretensionStresses : IUnknown
 {
-   virtual Float64 GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,bool bIncludeLiveLoad,pgsTypes::LimitState limitState,VehicleIndexType vehicleIdx) const = 0;
-   virtual void GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation topLoc,pgsTypes::StressLocation botLocation,bool bIncludeLiveLoad, pgsTypes::LimitState limitState,VehicleIndexType vehicleIdx,Float64* pfTop,Float64* pfBot) const = 0;
+   virtual Float64 GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,bool bIncludeLiveLoad,pgsTypes::LimitState limitState,VehicleIndexType vehicleIdx,const GDRCONFIG* pConfig=nullptr) const = 0;
+   virtual std::pair<Float64,Float64> GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation topLoc,pgsTypes::StressLocation botLocation,bool bIncludeLiveLoad, pgsTypes::LimitState limitState,VehicleIndexType vehicleIdx, const GDRCONFIG* pConfig = nullptr) const = 0;
    virtual void GetStress(IntervalIndexType intervalIdx, const PoiList& vPoi, pgsTypes::StressLocation loc, bool bIncludeLiveLoad, pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx, std::vector<Float64>* pStress) const = 0;
    virtual void GetStress(IntervalIndexType intervalIdx, const PoiList& vPoi, pgsTypes::StressLocation topLoc,pgsTypes::StressLocation botLoc, bool bIncludeLiveLoad, pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx, std::vector<Float64>* pvfTop,std::vector<Float64>* pvfBot) const = 0;
-   virtual Float64 GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,Float64 P,Float64 ex,Float64 ey) const = 0;
+   virtual Float64 GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,Float64 P, const WBFL::Geometry::Point2d& ecc) const = 0;
    virtual Float64 GetStressPerStrand(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::StressLocation loc) const = 0;
-   virtual Float64 GetDesignStress(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation loc, const GDRCONFIG& config, bool bIncludeLiveLoad, pgsTypes::LimitState limitState) const = 0;
-   virtual void GetDesignStress(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StressLocation topLoc,pgsTypes::StressLocation botLoc, const GDRCONFIG& config, bool bIncludeLiveLoad, pgsTypes::LimitState limitState,Float64* pfTop,Float64* pfBot) const = 0;
 };
 
 /*****************************************************************************

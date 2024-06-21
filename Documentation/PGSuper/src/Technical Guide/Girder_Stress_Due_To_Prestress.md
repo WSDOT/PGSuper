@@ -1,0 +1,7 @@
+Girder stress due to prestressing {#tg_girder_stress_from_prestress}
+======================================
+The girder concrete stress due to prestressing is dependent on the initial strand jacking force, time dependent losses, and elastic effects known as elastic shortening and elastic gains. PGSuper computes girder concrete stress due to prestressing following industry recommendations in the PCI Bridge Design Manual. The 4th edition of the PCI Bridge Design Manual changed how girder concrete stresses should be computed from a simplifed approximation to the theoretically correct calculation. Starting with PGSuper version 8.0.6, the calculation procedure from the PCI Bridge Design Manual 4th Edition is used.
+
+The primary difference between the stress calculations from the PCI BDM 3rd and 4th editions is that time dependent losses in the time period *deck to final* that were applied to the non-composite girder section are now applied to the composite girder section.
+
+Some prestress loss methods, such as the AASHTO LRFD Approximate Estimate (LRFD 5.9.3.3), do not distinguish between the *initial to deck* and *deck to final* time periods. Because of this, the prestress losses cannot be applied to both the noncomposite and composite sections. For these case, the prestress losses are applied to only the noncomposite section.

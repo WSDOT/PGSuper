@@ -57,34 +57,19 @@ void CBulbTeeDistFactorEngineer::SetBroker(IBroker* pBroker,StatusGroupIDType st
 }
 
 
-Float64 CBulbTeeDistFactorEngineer::GetMomentDF(const CSpanKey& spanKey,pgsTypes::LimitState ls)
+Float64 CBulbTeeDistFactorEngineer::GetMomentDF(const CSpanKey& spanKey,pgsTypes::LimitState ls, const GDRCONFIG* pConfig)
 {
-   return m_pImpl->GetMomentDF(spanKey,ls);
+   return m_pImpl->GetMomentDF(spanKey,ls, pConfig);
 }
 
-Float64 CBulbTeeDistFactorEngineer::GetMomentDF(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr)
+Float64 CBulbTeeDistFactorEngineer::GetNegMomentDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace, const GDRCONFIG* pConfig)
 {
-   return m_pImpl->GetMomentDF(spanKey, ls, fcgdr);
+   return m_pImpl->GetNegMomentDF(pierIdx,gdrIdx,ls,pierFace,pConfig);
 }
 
-Float64 CBulbTeeDistFactorEngineer::GetNegMomentDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace)
+Float64 CBulbTeeDistFactorEngineer::GetShearDF(const CSpanKey& spanKey,pgsTypes::LimitState ls, const GDRCONFIG* pConfig)
 {
-   return m_pImpl->GetNegMomentDF(pierIdx,gdrIdx,ls,pierFace);
-}
-
-Float64 CBulbTeeDistFactorEngineer::GetNegMomentDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace,Float64 fcgdr)
-{
-   return m_pImpl->GetNegMomentDF(pierIdx,gdrIdx,ls,pierFace,fcgdr);
-}
-
-Float64 CBulbTeeDistFactorEngineer::GetShearDF(const CSpanKey& spanKey,pgsTypes::LimitState ls)
-{
-   return m_pImpl->GetShearDF(spanKey,ls);
-}
-
-Float64 CBulbTeeDistFactorEngineer::GetShearDF(const CSpanKey& spanKey,pgsTypes::LimitState ls,Float64 fcgdr)
-{
-   return m_pImpl->GetShearDF(spanKey,ls,fcgdr);
+   return m_pImpl->GetShearDF(spanKey,ls, pConfig);
 }
 
 void CBulbTeeDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)

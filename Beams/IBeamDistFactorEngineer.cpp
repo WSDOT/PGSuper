@@ -86,16 +86,15 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
    {
       CSpanKey spanKey(spanIdx,gdrIdx);
 
-      SPANDETAILS span_lldf;
-      GetSpanDF(spanKey,pgsTypes::StrengthI,USE_CURRENT_FC, &span_lldf);
+      SPANDETAILS span_lldf = GetSpanDF(spanKey,pgsTypes::StrengthI);
 
       PierIndexType pier1 = spanIdx;
       PierIndexType pier2 = spanIdx+1;
-      PIERDETAILS pier1_lldf, pier2_lldf;
-      GetPierDF(pier1, gdrIdx, pgsTypes::StrengthI, pgsTypes::Ahead, USE_CURRENT_FC, &pier1_lldf);
-      GetPierDF(pier2, gdrIdx, pgsTypes::StrengthI, pgsTypes::Back,  USE_CURRENT_FC, &pier2_lldf);
 
-      // do a sanity check to make sure the fundimental values are correct
+      PIERDETAILS pier1_lldf = GetPierDF(pier1, gdrIdx, pgsTypes::StrengthI, pgsTypes::Ahead);
+      PIERDETAILS pier2_lldf = GetPierDF(pier2, gdrIdx, pgsTypes::StrengthI, pgsTypes::Back);
+
+      // do a sanity check to make sure the fundamental values are correct
       ATLASSERT(span_lldf.Method  == pier1_lldf.Method);
       ATLASSERT(span_lldf.Method  == pier2_lldf.Method);
       ATLASSERT(pier1_lldf.Method == pier2_lldf.Method);
@@ -377,7 +376,7 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
    } // next span
 }
 
-WBFL::LRFD::LiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,Float64 fcgdr,IBEAM_LLDFDETAILS* plldf)
+WBFL::LRFD::LiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,IBEAM_LLDFDETAILS* plldf,const GDRCONFIG* pConfig)
 {
    GET_IFACE(IMaterials,    pMaterials);
    GET_IFACE(ISectionProperties,        pSectProp);
@@ -427,6 +426,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFPar
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType llIntervalIdx = pIntervals->GetLiveLoadInterval();
 
+   // use release interval for girder properties because we want the non-composite gross properties. we know it is non-composite at release
    plldf->I  = pSectProp->GetIxx(pgsTypes::sptGross,releaseIntervalIdx,poi);
    plldf->A  = pSectProp->GetAg(pgsTypes::sptGross,releaseIntervalIdx,poi);
    plldf->Yt = pSectProp->GetY(pgsTypes::sptGross,releaseIntervalIdx,poi,pgsTypes::TopGirder);
@@ -448,25 +448,8 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFPar
       ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
 
       Float64 EcDeck = pMaterials->GetDeckEc(deckCastingRegionIdx,llIntervalIdx);
-   
-      // use release interval for girder properties because we want the non-composite gross properties. we know it is non-composite at release
-      if ( fcgdr < 0 )
-      {
-         // fcgdr < 0 means use the current bridge model
-         Float64 EcSegment = pMaterials->GetSegmentEc(segmentKey,llIntervalIdx);
-   
-         plldf->n = EcSegment/EcDeck;
-      }
-      else
-      {
-         GET_IFACE(IMaterials,pMaterial);
-         Float64 Ecgdr = pMaterial->GetEconc(pMaterial->GetSegmentConcreteType(segmentKey),fcgdr,
-                                             pMaterial->GetSegmentStrengthDensity(segmentKey),
-                                             pMaterial->GetSegmentEccK1(segmentKey),
-                                             pMaterial->GetSegmentEccK2(segmentKey)
-                                             );
-         plldf->n  = Ecgdr / EcDeck;
-      }
+      auto [EcGdr, bChanged] = pMaterials->GetSegmentEc(segmentKey, llIntervalIdx, pConfig);
+      plldf->n = EcGdr / EcDeck;
 
       // Add in haunch (fillet) if required
       if (pSectProp->GetHaunchAnalysisSectionPropertiesType() == pgsTypes::hspZeroHaunch)
