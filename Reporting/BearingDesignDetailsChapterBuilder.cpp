@@ -264,6 +264,7 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
     {
         *p << _T("-Two-thirds of the total girder creep and shrinkage is assumed to occur before girders are erected") << rptNewLine;
+        *p << _T("-It is assumed that creep and shrinkage effects cease after deck casting") << rptNewLine;
     }
     *p << _T("-Bearing reset effects are not considered") << rptNewLine;
     if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)

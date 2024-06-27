@@ -389,8 +389,6 @@ Float64 pgsBearingDesignEngineer::GetBearingTimeDependentLosses(const pgsPointOf
     {
         // some method other than Time Step
 
-            
-        Float64 loss = pDetails->pLosses->PermanentStrand_Final();
 
         if (pDetails->LossMethod == PrestressLossCriteria::LossMethodType::WSDOT_REFINED_2005 || pDetails->LossMethod == PrestressLossCriteria::LossMethodType::AASHTO_REFINED_2005)
         {
@@ -401,7 +399,7 @@ Float64 pgsBearingDesignEngineer::GetBearingTimeDependentLosses(const pgsPointOf
         }
 
             
-        
+        Float64 loss = tdComponents->creep + tdComponents->shrinkage + tdComponents->relaxation;
 
         return loss;
     }
@@ -614,7 +612,7 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(
         Float64 sum_components = (pDetails->creep + pDetails->shrinkage + pDetails->relaxation);
 
         //calculate total time-dependent shear deformation
-        Float64 tdLoss = fpLossInfinity; // -fpLossErect;
+        Float64 tdLoss = fpLossInfinity; //- fpLossErect;
         Float64 total_time_dependent = GetTimeDependentComponentShearDeformation(poi, tdLoss, pDetails);
 
         pDetails->total_tendon_shortening = pDetails->tendon_shortening;
