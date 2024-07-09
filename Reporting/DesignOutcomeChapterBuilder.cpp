@@ -32,6 +32,7 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
+#include <EAF\EAFAutoProgress.h>
 
 #include <LRFD\RebarPool.h>
 
@@ -816,6 +817,11 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
 
          // Negative camber is not technically a spec check, but a warning
          GDRCONFIG config = pArtifact->GetSegmentConfiguration();
+
+         // Create progress window hear to avoid flashing screen at design conclusion (Mantis 1516) 
+         GET_IFACE2(pBroker, IProgress, pProgress);
+         CEAFAutoProgress ap(pProgress);
+         pProgress->UpdateMessage(_T("Excess Camber"));
 
          GET_IFACE2(pBroker,ICamber,pCamber);
          Float64 excess_camber = pCamber->GetExcessCamber(poiMS,pgsTypes::CreepTime::Max,&config);
