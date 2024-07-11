@@ -445,8 +445,6 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(
     Float64 fpLossInfinity = GetBearingTimeDependentLosses(poi, pgsTypes::StrandType::Permanent, castDeckIntervalIdx, pgsTypes::IntervalTimeType::End, 
         nullptr, td_details_inf, &components_inf);
 
-    // losses are sort of bogus bc thy don't actually go to ininity but just up to before deck casting............2/3 of that is before erection. There is slightly more after deck casting
-
 
 
 
@@ -552,7 +550,7 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(
 
                         coordinate_stream << "," << strain_bot_girder_SH1;
                         
-                        if (idx == nPoi-2)
+                        if (idx == nPoi-3)
                         {
                             if (intervalIdx == 6)
                             {
@@ -569,7 +567,8 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(
                                 << pIntervals->GetTime(intervalIdx, pgsTypes::IntervalTimeType::End) << ","
                                 << pDetails->shrinkage - prev_shrinkage << "," << pDetails->shrinkage << ","
                                 << pDetails->creep - prev_creep << "," << pDetails->creep << ","
-                                << pDetails->relaxation - prev_relax << "," << pDetails->relaxation << coordinate_stream.str() << std::endl;
+                                << pDetails->relaxation - prev_relax << "," << pDetails->relaxation << std::endl;
+                                //<< coordinate_stream.str();
                                 
                         }
 
