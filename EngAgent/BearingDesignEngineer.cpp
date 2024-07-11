@@ -442,7 +442,7 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(
 
     const LOSSDETAILS* td_details_inf = pLosses->GetLossDetails(poi, lastIntervalIdx);
     TDCOMPONENTS components_inf;
-    Float64 fpLossInfinity = GetBearingTimeDependentLosses(poi, pgsTypes::StrandType::Permanent, lastIntervalIdx, pgsTypes::IntervalTimeType::End, 
+    Float64 fpLossInfinity = GetBearingTimeDependentLosses(poi, pgsTypes::StrandType::Permanent, castDeckIntervalIdx, pgsTypes::IntervalTimeType::End, 
         nullptr, td_details_inf, &components_inf);
 
     // losses are sort of bogus bc thy don't actually go to ininity but just up to before deck casting............2/3 of that is before erection. There is slightly more after deck casting
