@@ -554,7 +554,7 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(
                         {
                             if (intervalIdx == 6)
                             {
-                                file << "event, end day,incremental shrinkage,cumulative shrinakge,incremental creep,cumulative creep,incremental relaxtion,cumulative relaxation, bottom shrinkage strain" << std::endl;
+                                file << "event, end day,,incSHdef.,incSH_avgs, cumSHdef.,,incCRdef.,incCR_avgs,cumCRdef.,,incREdef.,incRE_avgs,cumREdef.,, bottom shrinkage strain (later)" << std::endl;
                             }
 
                             std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
@@ -564,10 +564,10 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(
 
                             file
                                 << narrowStr << ","
-                                << pIntervals->GetTime(intervalIdx, pgsTypes::IntervalTimeType::End) << ","
-                                << pDetails->shrinkage - prev_shrinkage << "," << pDetails->shrinkage << ","
-                                << pDetails->creep - prev_creep << "," << pDetails->creep << ","
-                                << pDetails->relaxation - prev_relax << "," << pDetails->relaxation << std::endl;
+                                << pIntervals->GetTime(intervalIdx, pgsTypes::IntervalTimeType::End) << ",,"
+                                << pDetails->shrinkage - prev_shrinkage << "," << avg_strain_BotSH << "," << pDetails->shrinkage << ",,"
+                                << pDetails->creep - prev_creep << "," << avg_strain_BotCR << "," << pDetails->creep << ",,"
+                                << pDetails->relaxation - prev_relax << "," << avg_strain_BotRE << "," << pDetails->relaxation << std::endl;
                                 //<< coordinate_stream.str();
                                 
                         }
