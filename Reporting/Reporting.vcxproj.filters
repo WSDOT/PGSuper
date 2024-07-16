@@ -595,6 +595,9 @@
     <ClCompile Include="BearingDesignPropertiesTable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="BearingTimestepDetailsChapterBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\Reporting\ADimChapterBuilder.h">
@@ -1201,6 +1204,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Reporting\BearingDesignPropertiesTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\BearingTimeStepDetailsChapterBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -473,7 +473,7 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(
         pDetails->relaxation = 0.0;
 
 
-        Float64 L = GetDistanceToPointOfFixity(poi, pDetails);
+        Float64 L = GetDistanceToPointOfFixity(poi, pDetails);   ///// should I be using this????????? Does timestep report use this?
         pgsTypes::BridgeAnalysisType bat = pProdForces->GetBridgeAnalysisType(analysisType, pgsTypes::Maximize);
         GroupIndexType nGroups = pBridge->GetGirderGroupCount();
         GroupIndexType firstGroupIdx = (seg_key.groupIndex == ALL_GROUPS ? 0 : seg_key.groupIndex);

@@ -96,6 +96,7 @@
 #include <Reporting\DistributionFactorDetailsChapterBuilder.h>
 
 #include <Reporting\TimeStepDetailsChapterBuilder.h>
+#include <Reporting\BearingTimeStepDetailsChapterBuilder.h>
 #include <Reporting\TimeStepDetailsReportSpecificationBuilder.h>
 
 #include <Reporting\PrincipalWebStressDetailsChapterBuilder.h>
@@ -624,11 +625,13 @@ HRESULT CReporterBase::OnSpecificationChanged()
    {
       detailsRptBuilder->InsertChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CInternalForceChapterBuilder>()), _T("Moments, Shears, and Reactions"));
       loadRatingRptBuilder->InsertChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CInternalForceChapterBuilder>(false)), _T("Moments, Shears, and Reactions"));
+      detailsRptBuilder->InsertChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingTimeStepDetailsChapterBuilder>()), _T("Bearing Seat Elevation Details"));
    }
    else
    {
       detailsRptBuilder->RemoveChapterBuilder(_T("Internal Time-Dependent Forces"));
       loadRatingRptBuilder->RemoveChapterBuilder(_T("Internal Time-Dependent Forces"));
+      detailsRptBuilder->RemoveChapterBuilder(_T("Bearing Time-Dependent Shear Deformations"));
    }
 
    return S_OK;
