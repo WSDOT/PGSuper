@@ -724,7 +724,7 @@ void girder_lengths(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
             gdr_bearing->get_Value(&gdr_bearing_value);
 
             CComBSTR bstrBearing;
-            direction_formatter->Format(gdr_bearing_value,CComBSTR("°,\',\""),&bstrBearing);
+            direction_formatter->Format(gdr_bearing_value,CComBSTR("&deg;,\',\""),&bstrBearing);
 
             (*pTable)(row,col++) << RPT_BEARING(OLE2T(bstrBearing));
 

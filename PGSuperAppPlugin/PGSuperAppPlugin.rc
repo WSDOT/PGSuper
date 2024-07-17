@@ -14,8 +14,7 @@
 #include <EAF\EAFResources.h>
 #if !defined _NOGRID
 #include "grid\gxresrc.h"
-#endif
-
+#endif
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -1298,10 +1297,11 @@ BEGIN
 END
 
 IDD_COPY_GIRDER_PROPERTIES DIALOGEX 0, 0, 635, 300
-STYLE DS_SETFONT | WS_MAXIMIZEBOX | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+STYLE DS_SETFONT | WS_MAXIMIZEBOX | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "Copy Girder Properties"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
+    GROUPBOX        "Browser Placeholder - This control must be first in Tab Order or Edge Browser will crash dialog",IDC_BROWSER,188,17,431,225,BS_NOTIFY,WS_EX_CLIENTEDGE
     COMBOBOX        IDC_FROM_SPAN,22,22,59,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_FROM_GIRDER,88,22,59,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Single Girder, Span, Girderline, or All",IDC_RADIO1,
@@ -1314,13 +1314,12 @@ BEGIN
     PUSHBUTTON      "Close",IDCANCEL,509,275,48,15
     PUSHBUTTON      "Help",ID_HELP,561,275,50,15
     GROUPBOX        "Copy From",IDC_STATIC,8,6,154,60
-    GROUPBOX        "Comparison Report",IDC_COMPREP,172,6,455,265
     GROUPBOX        "Copy To",IDC_STATIC,8,72,154,89
-    GROUPBOX        "Browser Placeholder",IDC_BROWSER,188,17,431,225,BS_NOTIFY | WS_TABSTOP,WS_EX_STATICEDGE
     PUSHBUTTON      "Print",IDC_PRINT,561,249,50,14
     PUSHBUTTON      "Edit",IDC_EDIT,58,43,50,14
     GROUPBOX        "Select Properties to be Copied",IDC_STATIC,8,169,154,102
     LISTBOX         IDC_PROPERTY_LIST,15,182,141,83,LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Comparison Report",IDC_COMPREP,173,5,454,264
 END
 
 IDD_SECTION_CUT_DIALOG DIALOGEX 0, 0, 226, 62
@@ -1340,17 +1339,17 @@ STYLE DS_SETFONT | WS_MAXIMIZEBOX | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "Design Outcome"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "Accept the Design",IDOK,7,276,93,14
-    PUSHBUTTON      "Reject the Design",IDCANCEL,115,276,93,14
-    GROUPBOX        "Browser Placeholder",IDC_BROWSER,7,7,420,214
-    PUSHBUTTON      "Help",ID_HELP,320,276,50,14
-    PUSHBUTTON      "&Print",IDC_PRINT,377,276,50,14
-    LTEXT           "Update the Current Girder Parameters with the Proposed Design?",IDC_STATIC_TEXT,7,258,253,8
+    GROUPBOX        "Browser Placeholder - This control must be first in Tab Order or Edge Browser will crash dialog",IDC_BROWSER,7,7,420,214,0,WS_EX_CLIENTEDGE
     CONTROL         "Apply the Haunch Geometry design from",IDC_CHECK_ADESIGN,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,235,142,10
     COMBOBOX        IDC_DESIGNA_FROM,151,233,95,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CTEXT           "to",IDC_DESIGNA_STATIC,252,237,8,8
     COMBOBOX        IDC_DESIGNA_TO,264,233,101,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Update the Current Girder Parameters with the Proposed Design?",IDC_STATIC_TEXT,7,258,253,8
+    DEFPUSHBUTTON   "Accept the Design",IDOK,7,276,93,14
+    PUSHBUTTON      "Reject the Design",IDCANCEL,115,276,93,14
+    PUSHBUTTON      "Help",ID_HELP,320,276,50,14
+    PUSHBUTTON      "&Print",IDC_PRINT,377,276,50,14
+    CTEXT           "to",IDC_DESIGNA_STATIC,252,237,8,8
 END
 
 IDD_TIMELINE_REPORT DIALOGEX 0, 0, 435, 290
@@ -3846,19 +3845,19 @@ STYLE DS_SETFONT | WS_MAXIMIZEBOX | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "Copy Pier Properties"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
+    GROUPBOX        "Browser Placeholder - This control must be first in Tab Order or Edge Browser will crash dialog",IDC_BROWSER,186,17,428,193,WS_TABSTOP,WS_EX_CLIENTEDGE
     COMBOBOX        IDC_FROM_PIER,22,22,110,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Edit",IDC_EDIT,61,51,50,14
     COMBOBOX        IDC_TO_PIER,21,100,108,57,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_PROPERTY_LIST,15,149,141,83,LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
     DEFPUSHBUTTON   "Copy Now",IDOK,453,236,48,15
     PUSHBUTTON      "Close",IDCANCEL,507,236,48,15
     PUSHBUTTON      "Help",ID_HELP,559,236,50,15
+    PUSHBUTTON      "Print",IDC_PRINT,560,216,50,14
     GROUPBOX        "Copy From",IDC_STATIC,8,5,154,71
     GROUPBOX        "Comparison Report",IDC_COMPREP,173,5,454,232
     GROUPBOX        "Copy To",IDC_STATIC,8,87,154,39
-    GROUPBOX        "Browser Placeholder",IDC_BROWSER,186,17,428,193,WS_TABSTOP,WS_EX_CLIENTEDGE
-    PUSHBUTTON      "Print",IDC_PRINT,560,216,50,14
-    PUSHBUTTON      "Edit",IDC_EDIT,61,51,50,14
     GROUPBOX        "Select Properties to be Copied",IDC_STATIC,8,136,154,102
-    LISTBOX         IDC_PROPERTY_LIST,15,149,141,83,LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_EDIT_HAUNCH_ACAMBER DIALOGEX 0, 0, 568, 265
@@ -4747,15 +4746,15 @@ END
 IDD_DESIGN_OUTCOME AFX_DIALOG_LAYOUT
 BEGIN
     0,
-    0, 100, 0, 0,
-    0, 100, 0, 0,
     0, 0, 100, 100,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
     100, 100, 0, 0,
     100, 100, 0, 0,
-    0, 100, 0, 0,
-    0, 100, 0, 0,
-    0, 100, 0, 0,
-    0, 100, 0, 0,
     0, 100, 0, 0
 END
 
@@ -4925,40 +4924,40 @@ END
 IDD_COPY_GIRDER_PROPERTIES AFX_DIALOG_LAYOUT
 BEGIN
     0,
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    100, 100, 0, 0,
-    100, 100, 0, 0,
-    100, 100, 0, 0,
-    0, 0, 0, 0,
     0, 0, 100, 100,
     0, 0, 0, 0,
-    0, 0, 100, 100,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    100, 100, 0, 0,
+    100, 100, 0, 0,
     100, 100, 0, 0,
     0, 0, 0, 0,
     0, 0, 0, 0,
-    0, 0, 0, 0
+    100, 100, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 100, 100
 END
 
 IDD_COPY_PIER_PROPERTIES AFX_DIALOG_LAYOUT
 BEGIN
     0,
+    0, 0, 100, 100,
     0, 0, 0, 0,
     0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    100, 100, 0, 0,
     100, 100, 0, 0,
     100, 100, 0, 0,
     100, 100, 0, 0,
     0, 0, 0, 0,
     0, 0, 100, 100,
-    0, 0, 0, 0,
-    0, 0, 100, 100,
-    100, 100, 0, 0,
-    0, 0, 0, 0,
     0, 0, 0, 0,
     0, 0, 0, 0
 END
