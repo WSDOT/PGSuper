@@ -194,7 +194,7 @@ void pier_geometry(IBroker*pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDispl
       bearing->get_Value(&bearing_value);
 
       CComBSTR bstrBearing;
-      direction_formatter->Format(bearing_value,CComBSTR("°,\',\""),&bstrBearing);
+      direction_formatter->Format(bearing_value,CComBSTR("&deg;,\',\""),&bstrBearing);
 
       (*pTable)(row,col++) << LABEL_PIER_EX(pPier->IsAbutment(), pierIdx);
 

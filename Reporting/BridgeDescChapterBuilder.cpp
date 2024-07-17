@@ -239,7 +239,7 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
    *pPara << _T("Name: ") << alignment.Name << rptNewLine;
 
    CComBSTR bstrBearing;
-   direction_formatter->Format(alignment.Direction, CComBSTR("°,\',\""), &bstrBearing);
+   direction_formatter->Format(alignment.Direction, CComBSTR("&deg;,\',\""), &bstrBearing);
    *pPara << _T("Direction: ") << RPT_BEARING(OLE2T(bstrBearing)) << rptNewLine;
 
    *pPara << _T("Ref. Point: ") << rptRcStation(alignment.RefStation, &pDisplayUnits->GetStationFormat())
@@ -459,7 +459,7 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
       bkTangent->get_Value(&bk_tangent_value);
 
       CComBSTR bstrBkTangent;
-      direction_formatter->Format(bk_tangent_value, CComBSTR("°,\',\""), &bstrBkTangent);
+      direction_formatter->Format(bk_tangent_value, CComBSTR("&deg;,\',\""), &bstrBkTangent);
       (*pTable)(row++, col) << RPT_BEARING(OLE2T(bstrBkTangent));
 
       if (bHasEntrySpirals || bHasExitSpirals)
@@ -473,7 +473,7 @@ void write_alignment_data(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits, rpt
       fwdTangent->get_Value(&fwd_tangent_value);
 
       CComBSTR bstrFwdTangent;
-      direction_formatter->Format(fwd_tangent_value, CComBSTR("°,\',\""), &bstrFwdTangent);
+      direction_formatter->Format(fwd_tangent_value, CComBSTR("&deg;,\',\""), &bstrFwdTangent);
       (*pTable)(row++, col) << RPT_BEARING(OLE2T(bstrFwdTangent));
 
       if (bHasEntrySpirals || bHasExitSpirals)
@@ -2252,7 +2252,7 @@ void write_pier_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter
       bearing->get_Value(&bearing_value);
 
       CComBSTR bstrBearing;
-      direction_formatter->Format(bearing_value,CComBSTR("°,\',\""),&bstrBearing);
+      direction_formatter->Format(bearing_value,CComBSTR("&deg;,\',\""),&bstrBearing);
 
       bool bAbutment = pPier->IsAbutment();
       (*pLayoutTable)(row1,0)     <<  LABEL_PIER_EX(bAbutment,pierIdx);
@@ -2653,7 +2653,7 @@ void write_ts_data(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
       bearing->get_Value(&bearing_value);
 
       CComBSTR bstrBearing;
-      direction_formatter->Format(bearing_value,CComBSTR("°,\',\""),&bstrBearing);
+      direction_formatter->Format(bearing_value,CComBSTR("&deg;,\',\""),&bstrBearing);
 
       (*pLayoutTable)(layout_row, layout_col++) << _T("TS ") << LABEL_TEMPORARY_SUPPORT(tsIdx);
 

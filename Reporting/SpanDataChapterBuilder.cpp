@@ -98,10 +98,6 @@ rptChapter* CSpanDataChapterBuilder::Build(const std::shared_ptr<const WBFL::Rep
    scalar.SetPrecision(4);
    scalar.SetTolerance(1.0e-6);
 
-   CComPtr<IDirectionDisplayUnitFormatter> direction_formatter;
-   direction_formatter.CoCreateInstance(CLSID_DirectionDisplayUnitFormatter);
-   direction_formatter->put_BearingFormat(VARIANT_TRUE);
-
    std::_tstring strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
 
    GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
