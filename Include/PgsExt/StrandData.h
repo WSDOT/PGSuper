@@ -202,9 +202,9 @@ public:
    void AddStrandRows(const CStrandRowCollection& strandRows); // adds this collection to the current collection
    void SetStrandRows(const CStrandRowCollection& strandRows); // replaces the current collection this collection
    const CStrandRowCollection& GetStrandRows() const;
-   const CStrandRow& GetStrandRow(RowIndexType rowIdx) const;
+   const CStrandRow* GetStrandRow(RowIndexType rowIdx) const;
    // gets the strand row containing the specified strand
-   bool GetStrandRow(pgsTypes::StrandType strandType,StrandIndexType strandIdx, const CStrandRow** ppRow) const;
+   const CStrandRow* GetStrandRow(pgsTypes::StrandType strandType,StrandIndexType strandIdx) const;
 
    // Set number of strands for any fill except pgsTypes::sdtDirectRowInput or pgsTypes::sdtDirectStrandInput
    void SetStrandCount(pgsTypes::StrandType strandType,StrandIndexType nStrands);
@@ -216,7 +216,7 @@ public:
    pgsTypes::AdjustableStrandType GetAdjustableStrandType() const;
    void SetAdjustableStrandType(pgsTypes::AdjustableStrandType type);
 
-   // Strand extension paramaters (not used if using pgsTypes::sdtDirectRowInput)
+   // Strand extension parameters (not used if using pgsTypes::sdtDirectRowInput)
    void AddExtendedStrand(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType,GridIndexType gridIdx);
    const std::vector<GridIndexType>& GetExtendedStrands(pgsTypes::StrandType strandType,pgsTypes::MemberEndType endType) const;
    std::vector<GridIndexType>& GetExtendedStrands(pgsTypes::StrandType strandType, pgsTypes::MemberEndType endType);
