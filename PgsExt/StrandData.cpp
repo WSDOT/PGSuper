@@ -1657,12 +1657,12 @@ const CStrandRowCollection& CStrandData::GetStrandRows() const
    return m_StrandRows;
 }
 
-const CStrandRow& CStrandData::GetStrandRow(RowIndexType rowIdx) const
+const CStrandRow* CStrandData::GetStrandRow(RowIndexType rowIdx) const
 {
-   return m_StrandRows[rowIdx];
+   return (m_StrandRows.size() <= rowIdx ? nullptr : &m_StrandRows[rowIdx]);
 }
 
-bool CStrandData::GetStrandRow(pgsTypes::StrandType strandType, StrandIndexType strandIdx,const CStrandRow** ppStrandRow) const
+const CStrandRow* CStrandData::GetStrandRow(pgsTypes::StrandType strandType, StrandIndexType strandIdx) const
 {
    IndexType typeCount = 0;
    for (const auto& strandRow : m_StrandRows)
@@ -1671,16 +1671,14 @@ bool CStrandData::GetStrandRow(pgsTypes::StrandType strandType, StrandIndexType 
       {
          if (typeCount <= strandIdx && strandIdx < (typeCount + strandRow.m_nStrands))
          {
-            *ppStrandRow = &strandRow;
-            return true;
+            return &strandRow;
          }
          typeCount += strandRow.m_nStrands;
       }
    }
 
    ATLASSERT(false); // should never get here or rowIdx is invalid for the strand type given
-   *ppStrandRow = nullptr;
-   return false;
+   return nullptr;
 }
 
 void CStrandData::SetStrandCount(pgsTypes::StrandType strandType,StrandIndexType nStrands)
