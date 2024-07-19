@@ -199,7 +199,7 @@ void CDeckEdgeBuilder::NextDeckPoint()
       if ( m_LeftEdgeState == pgsTypes::dptLinear )
       {
          // moving into a linear transitions. 
-         // do nothing
+         m_LeftEdgeState = BeginLinearTransition(m_LeftPath, left_point, &m_LeftLinearTransitionStartPoint, deckPoint.LeftTransitionType);
       }
       else if ( m_LeftEdgeState == pgsTypes::dptParallel )
       {
@@ -289,7 +289,7 @@ void CDeckEdgeBuilder::NextDeckPoint()
       if ( m_RightEdgeState == pgsTypes::dptLinear )
       {
          // moving into a linear transitions. 
-         // do nothing
+         m_RightEdgeState = BeginLinearTransition(m_RightPath, right_point, &m_RightLinearTransitionStartPoint, deckPoint.RightTransitionType);
       }
       else if ( m_RightEdgeState == pgsTypes::dptParallel )
       {
@@ -473,6 +473,9 @@ int CDeckEdgeBuilder::BeginLinearTransition(IPath* pPath, IPoint2d* pPoint, IPoi
 
 int CDeckEdgeBuilder::EndLinearTransition(IPath* pPath,IPoint2d* pPoint,IPoint2d* pBeginPoint,pgsTypes::DeckPointTransitionType transition)
 {
+   CHECK(pPath);
+   CHECK(pPoint);
+   CHECK(pBeginPoint);
    CComPtr<IPathSegment> segment;
    segment.CoCreateInstance(CLSID_PathSegment);
    segment->ThroughPoints(pBeginPoint, pPoint);
