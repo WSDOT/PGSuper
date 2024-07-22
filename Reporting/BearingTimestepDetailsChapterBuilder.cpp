@@ -211,13 +211,15 @@ rptChapter* CBearingTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<c
    ReactionUnitValueTool reaction(tableType, reactu);
 
    GET_IFACE2(pBroker, IBearingDesignParameters, pBearing);
-   SHEARDEFORMATIONDETAILS sf_details;
+  
 
 
    // Use iterator to walk locations
    for (iter.First(); !iter.IsDone(); iter.Next())
    {
 
+
+       SHEARDEFORMATIONDETAILS sf_details;
 
 
        const ReactionLocation& reactionLocation(iter.CurrentItem());
@@ -315,6 +317,23 @@ rptChapter* CBearingTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<c
 
                RowIndexType row = p_table->GetNumberOfHeaderRows();
 
+               (*p_table)(row, 0) << location.SetValue(POI_SPAN, vPoi[0]);
+               (*p_table)(row, 1) << _T("N/A");
+               (*p_table)(row, 2) << _T("N/A");
+               (*p_table)(row, 3) << _T("N/A");
+               (*p_table)(row, 4) << _T("N/A");
+               (*p_table)(row, 5) << _T("N/A");
+               (*p_table)(row, 6) << _T("N/A");
+               (*p_table)(row, 7) << _T("N/A");
+               (*p_table)(row, 8) << _T("N/A");
+               (*p_table)(row, 9) << _T("N/A");
+               (*p_table)(row, 10) << _T("N/A");
+               (*p_table)(row, 11) << _T("N/A");
+               (*p_table)(row, 12) << _T("N/A");
+               (*p_table)(row, 13) << _T("N/A");
+               (*p_table)(row, 14) << _T("N/A");
+               (*p_table)(row++, 15) << _T("N/A");
+
 
                for (IndexType idx = 1, nPoi = vPoi.size(); idx < nPoi; idx++)
                {
@@ -323,7 +342,6 @@ rptChapter* CBearingTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<c
                    p1 = vPoi[idx];
 
                    (*p_table)(row, 0) << location.SetValue(POI_SPAN, p1);
-
 
                    std::vector<pgsTypes::ProductForceType> td_types{
                        pgsTypes::ProductForceType::pftCreep, pgsTypes::ProductForceType::pftShrinkage, pgsTypes::ProductForceType::pftRelaxation};
@@ -334,27 +352,11 @@ rptChapter* CBearingTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<c
                        TIMEDEPENDENTSHEARDEFORMATIONPARAMETERS sf_params;
                        pBearing->GetBearingTimeDependentShearDeformationParameters(poi, intervalIdx, p0, p1, td_types[ty], &sf_params);
 
-
-                       (*p_table)(row, ty * 5 + 1) << (idx == 1 ? _T("N/A") : std::to_wstring(sf_params.inc_strain_bot_girder1 * 1E6));
-                       (*p_table)(row, ty * 5 + 2) << (idx == 1 ? _T("N/A") : std::to_wstring(sf_params.cum_strain_bot_girder1 * 1E6));
-                       if (idx == 1)
-                       {
-                           (*p_table)(row, ty * 5 + 3) << _T("N/A");
-                       }
-                       else
-                       {
-                           (*p_table)(row, ty * 5 + 3) << deflection.SetValue(sf_params.delta_d);
-                       }
-                       (*p_table)(row, ty * 5 + 4) << (idx == 1 ? _T("N/A") : std::to_wstring(sf_params.average_cumulative_strain * 1E6));
-                       if (idx == 1)
-                       {
-                           (*p_table)(row, ty * 5 + 5) << _T("N/A");
-                       }
-                       else
-                       {
-                           (*p_table)(row, ty * 5 + 5) << deflection.SetValue(sf_params.inc_shear_def * 1E3);
-                       }
-                       
+                       (*p_table)(row, ty * 5 + 1) << std::to_wstring(sf_params.inc_strain_bot_girder1 * 1E6);
+                       (*p_table)(row, ty * 5 + 2) << std::to_wstring(sf_params.cum_strain_bot_girder1 * 1E6);
+                       (*p_table)(row, ty * 5 + 3) << deflection.SetValue(sf_params.delta_d);
+                       (*p_table)(row, ty * 5 + 4) << std::to_wstring(sf_params.average_cumulative_strain * 1E6);
+                       (*p_table)(row, ty * 5 + 5) << deflection.SetValue(sf_params.inc_shear_def * 1E3);                     
                    }
 
                    row++;
@@ -362,8 +364,6 @@ rptChapter* CBearingTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<c
                }
 
                pBearing->GetBearingTotalTimeDependentShearDeformation(poi, intervalIdx, &sf_details);
-
-
                
                p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_LEFT));
                p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_LEFT));

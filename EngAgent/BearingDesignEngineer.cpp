@@ -644,8 +644,6 @@ void pgsBearingDesignEngineer::GetBearingTotalTimeDependentShearDeformation(cons
     GET_IFACE(IBridge, pBridge);
     GET_IFACE(IPointOfInterest, pPoi);
 
-
-
     sf_details->incremental_creep = 0.0;
     sf_details->incremental_shrinkage = 0.0;
     sf_details->incremental_relaxation = 0.0;
