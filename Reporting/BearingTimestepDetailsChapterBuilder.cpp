@@ -367,23 +367,17 @@ rptChapter* CBearingTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<c
                
                p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_LEFT));
                p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_LEFT));
-               (*p_table)(row++, 0) << symbol(SIGMA) << _T(" Incrmental ") << Sub2(symbol(DELTA),_T("s"));
-               (*p_table)(row--, 0) << symbol(SIGMA) << _T(" Cumulative ") << Sub2(symbol(DELTA), _T("s"));
+
+               (*p_table)(row, 0) << symbol(SIGMA) << Sub2(symbol(DELTA), _T("s"));
 
                INIT_UV_PROTOTYPE(rptLengthUnitValue, deflection, pDisplayUnits->GetDeflectionUnit(), true);
 
                p_table->SetColumnSpan(row, 1, 5);
-               (*p_table)(row++, 1) << deflection.SetValue(sf_details.incremental_creep) << rptNewLine;
-               p_table->SetColumnSpan(row, 1, 5);
-               (*p_table)(row--, 1) << deflection.SetValue(sf_details.cumulative_creep) << rptNewLine;
+               (*p_table)(row, 1) << deflection.SetValue(sf_details.cumulative_creep) << rptNewLine;
                p_table->SetColumnSpan(row, 6, 5);
-               (*p_table)(row++, 6) << deflection.SetValue(sf_details.incremental_shrinkage) << rptNewLine;
-               p_table->SetColumnSpan(row, 6, 5);
-               (*p_table)(row--, 6) << deflection.SetValue(sf_details.cumulative_shrinkage) << rptNewLine;
+               (*p_table)(row, 6) << deflection.SetValue(sf_details.cumulative_shrinkage) << rptNewLine;
                p_table->SetColumnSpan(row, 11, 5);
-               (*p_table)(row++, 11) << deflection.SetValue(sf_details.incremental_relaxation) << rptNewLine;
-               p_table->SetColumnSpan(row, 11, 5);
-               (*p_table)(row--, 11) << deflection.SetValue(sf_details.cumulative_relaxation) << rptNewLine;
+               (*p_table)(row, 11) << deflection.SetValue(sf_details.cumulative_relaxation) << rptNewLine;
 
                *pPara << p_table << rptNewLine;
            }
