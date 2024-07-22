@@ -277,7 +277,7 @@ std::unique_ptr<WBFL::Graphing::GraphBuilder> CAnalysisResultsGraphBuilder::Clon
 
 std::vector<IntervalIndexType> CAnalysisResultsGraphBuilder::AddTSRemovalIntervals(IntervalIndexType loadingIntervalIdx,const std::vector<IntervalIndexType>& vIntervals,const std::vector<IntervalIndexType>& vTSRIntervals)
 {
-   // given an interval when a loading occors, a vector of intervals to make results available, and a secondary vector of intervals
+   // given an interval when a loading occurs, a vector of intervals to make results available, and a secondary vector of intervals
    // merge all the secondary intervals that occur at or after the loading interval into the primary vector
    std::vector<IntervalIndexType> intervals(vIntervals);
 
@@ -1450,10 +1450,10 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
          }
       }
 
-      // if we got this far either the interval is before any continuity has occured
+      // if we got this far either the interval is before any continuity has occurred
       // or the girder groups have one segment each which means this is a precast girder
       // bridge.... if this is a conventional precast girder bridge, check to see if the
-      // deck is composite with the girders (in which case we can assume continuity has occured)
+      // deck is composite with the girders (in which case we can assume continuity has occurred)
       if (bSimpleSpanSegments)
       {
          if (pIntervals->GetLastCompositeDeckInterval() <= intervalIdx && girderKey.groupIndex == ALL_GROUPS)
@@ -1494,32 +1494,34 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
          bool bSimpleSpanSegmentsThisGraph = bSimpleSpanSegments;
          if (graphDef.m_GraphType == graphProduct && graphDef.m_LoadType.ProductLoadType == pgsTypes::pftPretension)
          {
-            // pretensioning is always simple span
+            // pretension is always simple span graph
             bSimpleSpanSegmentsThisGraph = true;
          }
          
          SegmentIndexType endSegmentIdx = (bSimpleSpanSegmentsThisGraph ? nSegments-1 : 0);
-         for (SegmentIndexType segIdx = 0; segIdx <= endSegmentIdx; segIdx++)
+         //for (SegmentIndexType segIdx = 0; segIdx <= endSegmentIdx; segIdx++)
+         for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
          {
             CSegmentKey segmentKey(thisGirderKey, segIdx);
             IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
             IntervalIndexType segmentErectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
             IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
+
             // Get the X locations for the graph - we have to do this for each graph type because some
             // items graph as simple spans and some graph on the continuous span
-            GET_IFACE(IPointOfInterest, pIPoi);
             PoiList vPoi;
 
-            // Pois for pricipal web stress are unique. 
+            // Pois for principal web stress are unique. 
             ActionType actionType = ((CAnalysisResultsGraphController*)m_pGraphController)->GetActionType();
             if (actionPrincipalWebStress == actionType)
             {
                GET_IFACE(IPrincipalWebStress, pPrincipalWebStress);
-               pPrincipalWebStress->GetPrincipalWebStressPointsOfInterest(CSegmentKey(thisGirderKey, bSimpleSpanSegmentsThisGraph ? segIdx : ALL_SEGMENTS), lastPlottingIntervalIdx, &vPoi);
+               pPrincipalWebStress->GetPrincipalWebStressPointsOfInterest(segmentKey, lastPlottingIntervalIdx, &vPoi);
             }
             else
             {
-               pIPoi->GetPointsOfInterest(CSegmentKey(thisGirderKey, bSimpleSpanSegmentsThisGraph ? segIdx : ALL_SEGMENTS), &vPoi);
+               GET_IFACE(IPointOfInterest, pIPoi);
+               pIPoi->GetPointsOfInterest(segmentKey, &vPoi);
 
                // There are some blips (bugs likely) in computing deflections within closure joints. Clean out off-segment POIs to make graphs look pretty
                if (bSimpleSpanSegmentsThisGraph || actionType==actionDeflection || actionType == actionRotation)
@@ -1546,17 +1548,11 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
                intervalIdx = vIntervals[graphIdx];
             }
 
-            bool bIsHauilngInterval = pIntervals->IsHaulSegmentInterval(intervalIdx);
-            if( (intervalIdx < releaseIntervalIdx) ||
-                (!bIsHauilngInterval && firstSegmentErectionIntervalIdx <= intervalIdx && intervalIdx < segmentErectionIntervalIdx) ||
-                (bIsHauilngInterval && intervalIdx != haulSegmentIntervalIdx)
-              )
+            // these graphs are for after the first segment is erected
+            // if the current segment has not yet been erected, there is nothing to plot
+            // for the current segment
+            if (intervalIdx < segmentErectionIntervalIdx)
             {
-               // this interval is 
-               // 1) before the segment exists (no prestress release yet) -OR-
-               // 2) when hauling is not occuring and some segments have been erected but is before this segment is erected -OR-
-               // 3) when hauling is occuring, but this segment is not being hauled
-               // skip it
                continue;
             }
 
@@ -1599,7 +1595,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
                {
                   // Casting yard stress is its own animal
                   CyStressCapacityGraph(selectedGraphIdx,graphDef,intervalIdx,vPoi,xVals);
-                  break; // only break if we ploatted the allowables... otherwise drop through
+                  break; // only break if we plotted the stress limits... otherwise drop through
                }
             case graphDemand:
             case graphLimitState:
@@ -1680,8 +1676,8 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
             default:
                ASSERT(false); // should never get here
             } // end switch-case
-         } // next graph
-      } // next segment
+         } // next segment
+      } // next graph
    } // next group
 }
 
@@ -3933,7 +3929,7 @@ void CAnalysisResultsGraphBuilder::TimeStepPrincipalWebStressLiveLoadGraph(Index
    pgsTypes::LiveLoadType liveLoadType(graphDef.m_LoadType.LiveLoadType);
    ATLASSERT(liveLoadType == pgsTypes::lltDesign);
 
-   // Kind of a hack here, but we are eating our own dog food. Search for the word "Shear" in graphdef to determine whether to plot shear or axial stres
+   // Kind of a hack here, but we are eating our own dog food. Search for the word "Shear" in graphdef to determine whether to plot shear or axial stress
    bool bIsShear = std::wstring::npos != graphDef.m_Name.find(_T("Shear"));
 
    GET_IFACE(IArtifact, pArtifact);
@@ -4006,7 +4002,7 @@ void CAnalysisResultsGraphBuilder::TimeStepProductLoadPrincipalWebStressGraph(In
 {
    pgsTypes::ProductForceType pfType(graphDef.m_LoadType.ProductLoadType);
 
-   // Kind of a hack here, but we are eating our own dog food. Search for the word "Shear" in graphdef to determine whether to plot shear or axial stres
+   // Kind of a hack here, but we are eating our own dog food. Search for the word "Shear" in graphdef to determine whether to plot shear or axial stress
    bool bIsShear = std::wstring::npos != graphDef.m_Name.find(_T("Shear"));
 
    GET_IFACE(ILosses,pLosses);
