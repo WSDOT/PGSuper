@@ -425,7 +425,6 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(
     IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
     IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
     IntervalIndexType castDeckIntervalIdx = pIntervals->GetLastCastDeckInterval();
-    CSegmentKey seg_key = poi.GetSegmentKey();
     auto lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
 
     auto details = pLosses->GetLossDetails(poi, erectSegmentIntervalIdx);
@@ -459,12 +458,9 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(
     if (bTimeStepMethod)
     {
 
-        std::ofstream file;
-        file.open("td_output.csv");
 
 
         GET_IFACE(IBridge, pBridge);
-        GET_IFACE(IProductForces, pProdForces);
         GET_IFACE(IPointOfInterest, pPoi);
 
 
@@ -473,11 +469,10 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(
         pDetails->relaxation = 0.0;
 
 
-        Float64 L = GetDistanceToPointOfFixity(poi, pDetails);   ///// should I be using this????????? Does timestep report use this?
-        pgsTypes::BridgeAnalysisType bat = pProdForces->GetBridgeAnalysisType(analysisType, pgsTypes::Maximize);
+        Float64 L = GetDistanceToPointOfFixity(poi, pDetails);
         GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-        GroupIndexType firstGroupIdx = (seg_key.groupIndex == ALL_GROUPS ? 0 : seg_key.groupIndex);
-        GroupIndexType lastGroupIdx = (seg_key.groupIndex == ALL_GROUPS ? nGroups - 1 : firstGroupIdx);
+        GroupIndexType firstGroupIdx = (segmentKey.groupIndex == ALL_GROUPS ? 0 : segmentKey.groupIndex);
+        GroupIndexType lastGroupIdx = (segmentKey.groupIndex == ALL_GROUPS ? nGroups - 1 : firstGroupIdx);
 
         
 
@@ -511,12 +506,11 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(
 
                 pgsPointOfInterest p0, p1;
                 Float64 d0, d1;
-                std::stringstream coordinate_stream;
 
 
                 for (IndexType idx = 1, nPoi = vPoi.size(); idx < nPoi; idx++)
                 {
-                    p0 = vPoi[idx - 1];
+                    p0 = vPoi[idx-1];
                     p1 = vPoi[idx];
                     d0 = pPoi->ConvertPoiToGirderlineCoordinate(p0);
                     d1 = pPoi->ConvertPoiToGirderlineCoordinate(p1);
@@ -548,41 +542,15 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(
                         pDetails->shrinkage += avg_strain_BotSH * (d1 - d0);
                         pDetails->relaxation += avg_strain_BotRE * (d1 - d0);
 
-                        coordinate_stream << "," << strain_bot_girder_SH1;
-                        
-                        if (idx == nPoi-3)
-                        {
-                            if (intervalIdx == 6)
-                            {
-                                file << "event, end day,,incSHdef.,incSH_avgs, cumSHdef.,,incCRdef.,incCR_avgs,cumCRdef.,,incREdef.,incRE_avgs,cumREdef.,, bottom shrinkage strain (later)" << std::endl;
-                            }
-
-                            std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> converter;
-                            std::string narrowStr = converter.to_bytes(pIntervals->GetDescription(intervalIdx));
-
-                            narrowStr.erase(std::remove_if(narrowStr.begin(), narrowStr.end(), [](char c) { return c == ','; }), narrowStr.end());
-
-                            file
-                                << narrowStr << ","
-                                << pIntervals->GetTime(intervalIdx, pgsTypes::IntervalTimeType::End) << ",,"
-                                << pDetails->shrinkage - prev_shrinkage << "," << avg_strain_BotSH << "," << pDetails->shrinkage << ",,"
-                                << pDetails->creep - prev_creep << "," << avg_strain_BotCR << "," << pDetails->creep << ",,"
-                                << pDetails->relaxation - prev_relax << "," << avg_strain_BotRE << "," << pDetails->relaxation << std::endl;
-                                //<< coordinate_stream.str();
-                                
-                        }
-
                     }
-
-                    
                     
                 }
-
                 
             }
+
         }
 
-        file.close();
+
 
 
         Float64 total_time_dependent = pDetails->creep + pDetails->shrinkage + pDetails->relaxation;
@@ -625,7 +593,150 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(
 }
 
 
+void pgsBearingDesignEngineer::GetBearingTimeDependentShearDeformationParameters(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx,
+    const pgsPointOfInterest& p0, const pgsPointOfInterest& p1, pgsTypes::ProductForceType td_type, TIMEDEPENDENTSHEARDEFORMATIONPARAMETERS* sf_params) const
 
+{
+    GET_IFACE(IIntervals, pIntervals);
+    GET_IFACE(IBridgeDescription, pIBridgeDesc);
+    GET_IFACE(IPointOfInterest, pPoi);
+
+
+    // bearing time-dependent effects begin at the erect segment interval
+    const CSegmentKey& segmentKey(poi.GetSegmentKey());
+    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+    IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
+
+    
+
+    Float64 d0 = pPoi->ConvertPoiToGirderlineCoordinate(p0);
+    Float64 d1 = pPoi->ConvertPoiToGirderlineCoordinate(p1);
+
+    if (d1 != d0)
+    {
+        GET_IFACE(ILosses, pLosses);
+
+        const LOSSDETAILS* pDetails0erect = pLosses->GetLossDetails(p0, erectSegmentIntervalIdx);
+        const TIME_STEP_DETAILS& tsDetails0erect(pDetails0erect->TimeStepDetails[erectSegmentIntervalIdx]);
+        const LOSSDETAILS* pDetails0 = pLosses->GetLossDetails(p0, intervalIdx);
+        const TIME_STEP_DETAILS& tsDetails0(pDetails0->TimeStepDetails[intervalIdx]);
+        sf_params->inc_strain_bot_girder0  = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][td_type][rtIncremental];
+        sf_params->cum_strain_bot_girder0 = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][td_type][rtCumulative] - tsDetails0erect.Girder.strain_by_load_type[pgsTypes::BottomFace][td_type][rtCumulative];
+
+        const LOSSDETAILS* pDetails1erect = pLosses->GetLossDetails(p0, erectSegmentIntervalIdx);
+        const TIME_STEP_DETAILS& tsDetails1erect(pDetails1erect->TimeStepDetails[erectSegmentIntervalIdx]);
+        const LOSSDETAILS* pDetails1 = pLosses->GetLossDetails(p1, intervalIdx);
+        const TIME_STEP_DETAILS& tsDetails1(pDetails1->TimeStepDetails[intervalIdx]);
+        sf_params->inc_strain_bot_girder1 = tsDetails1.Girder.strain_by_load_type[pgsTypes::BottomFace][td_type][rtIncremental];
+        sf_params->cum_strain_bot_girder1 = tsDetails1.Girder.strain_by_load_type[pgsTypes::BottomFace][td_type][rtCumulative] - tsDetails1erect.Girder.strain_by_load_type[pgsTypes::BottomFace][td_type][rtCumulative];
+
+        sf_params->delta_d = d1 - d0;
+        sf_params->average_cumulative_strain = (sf_params->cum_strain_bot_girder0 + sf_params->cum_strain_bot_girder1) / 2.0;
+        sf_params->inc_shear_def = sf_params->average_cumulative_strain * (sf_params->delta_d);
+
+    }
+}
+
+
+void pgsBearingDesignEngineer::GetBearingTotalTimeDependentShearDeformation(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx, SHEARDEFORMATIONDETAILS* sf_details) const
+{
+
+    GET_IFACE(IBridge, pBridge);
+    GET_IFACE(IPointOfInterest, pPoi);
+
+
+
+    sf_details->incremental_creep = 0.0;
+    sf_details->incremental_shrinkage = 0.0;
+    sf_details->incremental_relaxation = 0.0;
+
+
+    Float64 L = GetDistanceToPointOfFixity(poi, sf_details);
+    const CSegmentKey& segmentKey(poi.GetSegmentKey());
+    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+    GroupIndexType firstGroupIdx = (segmentKey.groupIndex == ALL_GROUPS ? 0 : segmentKey.groupIndex);
+    GroupIndexType lastGroupIdx = (segmentKey.groupIndex == ALL_GROUPS ? nGroups - 1 : firstGroupIdx);
+
+    Float64 prev_creep = sf_details->incremental_creep;
+    Float64 prev_shrinkage = sf_details->incremental_shrinkage;
+    Float64 prev_relax = sf_details->incremental_relaxation;
+
+    GET_IFACE(ILosses, pLosses);
+
+    for (GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++)
+    {
+
+        PoiList vPoi;
+        GET_IFACE(IPointOfInterest, pIPoi);
+
+
+
+        if (pIPoi->ConvertPoiToGirderlineCoordinate(poi) < pIPoi->ConvertPoiToGirderlineCoordinate(sf_details->poi_fixity))
+        {
+            pIPoi->GetPointsOfInterestInRange(0, poi, L, &vPoi);
+        }
+        else
+        {
+            pIPoi->GetPointsOfInterestInRange(L, poi, 0, &vPoi);
+        }
+
+        vPoi.erase(std::remove_if(vPoi.begin(), vPoi.end(), [](const pgsPointOfInterest& i) {
+            return i.HasAttribute(POI_BOUNDARY_PIER);
+            }), vPoi.end());
+
+
+
+        pgsPointOfInterest p0, p1;
+        Float64 d0, d1;
+
+
+        for (IndexType idx = 1, nPoi = vPoi.size(); idx < nPoi; idx++)
+        {
+            p0 = vPoi[idx - 1];
+            p1 = vPoi[idx];
+            d0 = pPoi->ConvertPoiToGirderlineCoordinate(p0);
+            d1 = pPoi->ConvertPoiToGirderlineCoordinate(p1);
+            if (d1 != d0)
+            {
+                const LOSSDETAILS* pDetails0 = pLosses->GetLossDetails(p0, intervalIdx);
+                const TIME_STEP_DETAILS& tsDetails0(pDetails0->TimeStepDetails[intervalIdx]);
+                Float64 strain_bot_girder_CR0 = 0.0;
+                Float64 strain_bot_girder_SH0 = 0.0;
+                Float64 strain_bot_girder_RE0 = 0.0;
+                strain_bot_girder_CR0 = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::ProductForceType::pftCreep][rtIncremental];
+                strain_bot_girder_SH0 = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::ProductForceType::pftShrinkage][rtIncremental];
+                strain_bot_girder_RE0 = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::ProductForceType::pftRelaxation][rtIncremental];
+
+                const LOSSDETAILS* pDetails1 = pLosses->GetLossDetails(p1, intervalIdx);
+                const TIME_STEP_DETAILS& tsDetails1(pDetails1->TimeStepDetails[intervalIdx]);
+                Float64 strain_bot_girder_CR1 = 0.0;
+                Float64 strain_bot_girder_SH1 = 0.0;
+                Float64 strain_bot_girder_RE1 = 0.0;
+                strain_bot_girder_CR1 = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::ProductForceType::pftCreep][rtIncremental];
+                strain_bot_girder_SH1 = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::ProductForceType::pftShrinkage][rtIncremental];
+                strain_bot_girder_RE1 = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::ProductForceType::pftRelaxation][rtIncremental];
+
+                Float64 avg_strain_BotCR = (strain_bot_girder_CR0 + strain_bot_girder_CR1) / 2.0;
+                Float64 avg_strain_BotSH = (strain_bot_girder_SH0 + strain_bot_girder_SH1) / 2.0;
+                Float64 avg_strain_BotRE = (strain_bot_girder_RE0 + strain_bot_girder_RE1) / 2.0;
+
+                sf_details->incremental_creep += avg_strain_BotCR * (d1 - d0);
+                sf_details->incremental_shrinkage += avg_strain_BotSH * (d1 - d0);
+                sf_details->incremental_relaxation += avg_strain_BotRE * (d1 - d0);
+
+            }
+
+        }
+
+    }
+
+    sf_details->cumulative_creep += sf_details->incremental_creep;
+    sf_details->cumulative_shrinkage += sf_details->incremental_shrinkage;
+    sf_details->cumulative_relaxation += sf_details->incremental_relaxation;
+
+
+
+}
 
 
 void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi,

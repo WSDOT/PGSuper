@@ -183,11 +183,17 @@ struct SHEARDEFORMATIONDETAILS : public TABLEPARAMETERS
 	Float64 tendon_shortening;
 	Float64 total_tendon_shortening;
 	Float64 creep;
+	Float64 incremental_creep;
+	Float64 cumulative_creep{ 0.0 };
 	Float64 tendon_creep;
 	Float64 shrinkage;
+	Float64 incremental_shrinkage;
+	Float64 cumulative_shrinkage{ 0.0 };
 	Float64 tendon_shrinkage;
 	Float64 relaxation;
 	Float64 tendon_relaxation;
+	Float64 incremental_relaxation;
+	Float64 cumulative_relaxation{ 0.0 };
 	Float64 time_dependent;
 	Float64 Ixx;
 	Float64 Ag;
@@ -198,6 +204,19 @@ struct SHEARDEFORMATIONDETAILS : public TABLEPARAMETERS
 	Float64 total_shear_deformation_cold;
 	Float64 total_shear_deformation_moderate;
 	pgsPointOfInterest poi_fixity;
+};
+
+
+struct TIMEDEPENDENTSHEARDEFORMATIONPARAMETERS
+{
+	Float64 inc_strain_bot_girder0{0.0};
+	Float64 inc_strain_bot_girder1{0.0};
+	Float64 cum_strain_bot_girder0{0.0};
+	Float64 cum_strain_bot_girder1{0.0};
+	Float64 delta_d{0.0};
+	Float64 average_cumulative_strain{0.0};
+	Float64 inc_shear_def{0.0};
+	Float64 cum_shear_def{0.0};
 };
 
 
@@ -225,6 +244,12 @@ interface IBearingDesignParameters : IUnknown
 
 	virtual Float64 GetTimeDependentShearDeformation(
 		const pgsPointOfInterest& poi, PierIndexType startPierIdx, SHEARDEFORMATIONDETAILS* pDetails) const = 0;
+
+	virtual void GetBearingTimeDependentShearDeformationParameters(
+		const pgsPointOfInterest& poi, IntervalIndexType intervalIdx, const pgsPointOfInterest& p0, const pgsPointOfInterest& p1, 
+		pgsTypes::ProductForceType td_type, TIMEDEPENDENTSHEARDEFORMATIONPARAMETERS* sf_params) const = 0;
+
+	virtual void GetBearingTotalTimeDependentShearDeformation(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx, SHEARDEFORMATIONDETAILS* pDetails) const = 0;
 
 	virtual void GetBearingDesignProperties(DESIGNPROPERTIES* pDetails) const = 0;
 

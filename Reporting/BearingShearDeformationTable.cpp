@@ -122,8 +122,6 @@ RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptR
     IEAFDisplayUnits* pDisplayUnits, SHEARDEFORMATIONDETAILS* pDetails, bool bDetail)
 
 {
-
-
     RowIndexType rowSpan = 3;
     GET_IFACE2(pBroker, ILossParameters, pLossParams);
     if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::GENERAL_LUMPSUM)
@@ -214,8 +212,6 @@ RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptR
                 p_table->SetRowSpan(1, col, 2);
                 (*p_table)(1, col++) << COLHDR(_T("Relaxation"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
             }
-
-            
         }
     }
     else
@@ -239,7 +235,6 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
     GET_IFACE2(pBroker, IBridge, pBridge);
 
     GET_IFACE2(pBroker, IIntervals, pIntervals);
-    IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
     IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
 
 

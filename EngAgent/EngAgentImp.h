@@ -397,6 +397,11 @@ public:
    virtual Float64 GetTimeDependentShearDeformation(const pgsPointOfInterest& poi, 
        PierIndexType startPierIdx, SHEARDEFORMATIONDETAILS* pDetails) const override;
 
+   virtual void GetBearingTimeDependentShearDeformationParameters(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx,
+       const pgsPointOfInterest& p0, const pgsPointOfInterest& p1, pgsTypes::ProductForceType td_type, TIMEDEPENDENTSHEARDEFORMATIONPARAMETERS* sf_params) const override;
+
+   virtual void GetBearingTotalTimeDependentShearDeformation(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx, SHEARDEFORMATIONDETAILS* pDetails) const override;
+
 // IFabricationOptimization
 public:
    virtual bool GetFabricationOptimizationDetails(const CSegmentKey& segmentKey,FABRICATIONOPTIMIZATIONDETAILS* pDetails) const override;

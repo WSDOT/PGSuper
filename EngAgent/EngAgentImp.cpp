@@ -3588,6 +3588,20 @@ Float64 CEngAgentImp::GetTimeDependentShearDeformation(
     return m_BearingEngineer.GetTimeDependentShearDeformation(poi, startPierIdx, pDetails);
 }
 
+void CEngAgentImp::GetBearingTimeDependentShearDeformationParameters(
+    const pgsPointOfInterest& poi, IntervalIndexType intervalIdx,
+    const pgsPointOfInterest& p0, const pgsPointOfInterest& p1, pgsTypes::ProductForceType td_type, TIMEDEPENDENTSHEARDEFORMATIONPARAMETERS* sf_params) const
+{
+    return m_BearingEngineer.GetBearingTimeDependentShearDeformationParameters(poi, intervalIdx, p0, p1, td_type, sf_params);
+}
+
+
+void CEngAgentImp::GetBearingTotalTimeDependentShearDeformation(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx, SHEARDEFORMATIONDETAILS* pDetails) const
+{
+    return m_BearingEngineer.GetBearingTotalTimeDependentShearDeformation(poi, intervalIdx, pDetails);
+}
+
+
 
 
 // IFabricationOptimization

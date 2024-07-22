@@ -23,6 +23,7 @@
 #include "StdAfx.h"
 #include <Reporting\BearingTimeStepDetailsChapterBuilder.h>
 #include <Reporting\TimeStepDetailsReportSpecification.h>
+#include <Reporting\ReactionInterfaceAdapters.h>
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
@@ -35,6 +36,10 @@
 #include <WBFLGenericBridgeTools.h>
 
 #include <PgsExt\TimelineEvent.h>
+#include <IFace/BearingDesignParameters.h>
+
+#include <string>
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -115,9 +120,277 @@ rptChapter* CBearingTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<c
       return pChapter;
    }
 
-   //for poi and per interval.... i guess I need the poi in outer loop?
+   *pPara << rptNewLine;
+   *pPara << _T("Incremental ") << symbol(epsilon) << _T(" = longitudinal shear strain from time-dependent effects occuring during this interval.") << rptNewLine;
+   *pPara << _T("cumulative ") << symbol(epsilon) << _T(" = longitudinal shear strain from time-dependent effects occurring in all intervals up to and including interval.") << rptNewLine;
+   *pPara << Sub2(symbol(delta), _T("d")) << _T(" = longitudinal distance between current and previous POI.") << rptNewLine;
+   *pPara << Sub2(symbol(epsilon), _T("avg")) << _T(" = average cumulative longitudinal strain at current POI using the midpoint rule.") << rptNewLine;
+   *pPara << rptNewLine;
 
-   //create new strain table
+
+
+   GET_IFACE2(pBroker, IBridge, pBridge);
+
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
+
+
+   GET_IFACE2(pBroker, IPointOfInterest, pPOI);
+
+
+
+
+
+   SHEARDEFORMATIONDETAILS details;
+   GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
+   pBearingDesignParameters->GetBearingTableParameters(girderKey, &details);
+
+   // get poi where pier Reactions occur
+   PoiList vPoi;
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(girderKey.girderIndex, details.startGroup, details.endGroup, &vGirderKeys);
+   for (const auto& thisGirderKey : vGirderKeys)
+   {
+       PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(thisGirderKey.groupIndex);
+       PierIndexType endPierIdx = pBridge->GetGirderGroupEndPier(thisGirderKey.groupIndex);
+       for (PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++)
+       {
+           if (pierIdx == startPierIdx)
+           {
+               CSegmentKey segmentKey(thisGirderKey, 0);
+               PoiList segPoi;
+               pPOI->GetPointsOfInterest(segmentKey, POI_0L | POI_ERECTED_SEGMENT, &segPoi);
+               vPoi.push_back(segPoi.front());
+           }
+           else if (pierIdx == endPierIdx)
+           {
+               SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
+               CSegmentKey segmentKey(thisGirderKey, nSegments - 1);
+               PoiList segPoi;
+               pPOI->GetPointsOfInterest(segmentKey, POI_10L | POI_ERECTED_SEGMENT, &segPoi);
+               vPoi.push_back(segPoi.front());
+           }
+           else
+           {
+               Float64 Xgp;
+               VERIFY(pBridge->GetPierLocation(thisGirderKey, pierIdx, &Xgp));
+               pgsPointOfInterest poi = pPOI->ConvertGirderPathCoordinateToPoi(thisGirderKey, Xgp);
+               vPoi.push_back(poi);
+           }
+       }
+   }
+
+
+   GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
+   IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
+   std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, girderKey));
+
+
+   ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+   iter.First();
+   PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
+
+   ReactionTableType tableType = BearingReactionsTable;
+
+
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
+   INIT_UV_PROTOTYPE(rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false);
+   INIT_UV_PROTOTYPE(rptLength4UnitValue, I, pDisplayUnits->GetMomentOfInertiaUnit(), false);
+   INIT_UV_PROTOTYPE(rptLength2UnitValue, A, pDisplayUnits->GetAreaUnit(), false);
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, deflection, pDisplayUnits->GetDeflectionUnit(), false);
+   INIT_UV_PROTOTYPE(rptTemperatureUnitValue, temperature, pDisplayUnits->GetTemperatureUnit(), false);
+
+
+
+   // Build table
+   INIT_UV_PROTOTYPE(rptForceUnitValue, reactu, pDisplayUnits->GetShearUnit(), false);
+
+   // TRICKY:
+   // Use the adapter class to get the reaction response functions we need and to iterate piers
+   ReactionUnitValueTool reaction(tableType, reactu);
+
+   GET_IFACE2(pBroker, IBearingDesignParameters, pBearing);
+   SHEARDEFORMATIONDETAILS sf_details;
+
+
+   // Use iterator to walk locations
+   for (iter.First(); !iter.IsDone(); iter.Next())
+   {
+
+
+
+       const ReactionLocation& reactionLocation(iter.CurrentItem());
+       const CGirderKey& thisGirderKey(reactionLocation.GirderKey);
+
+       ReactionDecider reactionDecider(BearingReactionsTable, reactionLocation, thisGirderKey, pBridge, pIntervals);
+
+       const pgsPointOfInterest& poi = vPoi[reactionLocation.PierIdx - startPierIdx];
+
+       
+
+       // bearing time-dependent effects begin at the erect segment interval
+       const CSegmentKey& segmentKey(poi.GetSegmentKey());
+       GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+       const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
+       IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey()) + 1;
+       IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
+
+       Float64 L = pBearing->GetDistanceToPointOfFixity(poi, &details);
+       GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+       GroupIndexType firstGroupIdx = (segmentKey.groupIndex == ALL_GROUPS ? 0 : segmentKey.groupIndex);
+       GroupIndexType lastGroupIdx = (segmentKey.groupIndex == ALL_GROUPS ? nGroups - 1 : firstGroupIdx);
+
+       GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+
+       for (IntervalIndexType intervalIdx = erectSegmentIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++)
+       {
+ //          if (pIntervals->GetDuration(intervalIdx) != 0)
+
+           {
+               ColumnIndexType nCols = 16;
+               CString label{ reactionLocation.PierLabel.c_str() };
+               label += _T(" - ");
+               label += _T("Interval ");
+               label += std::to_string(intervalIdx).c_str();
+               label += _T(" (Previous Interval: ");
+               label += std::to_string(intervalIdx-1).c_str();
+               label += _T(" - ");
+               label += pIntervals->GetDescription(intervalIdx - 1).c_str();
+               label += _T(")");
+
+               rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols, label);
+
+               p_table->SetNumberOfHeaderRows(2);
+
+               p_table->SetRowSpan(0, 0, 2);
+               (*p_table)(0, 0) << COLHDR(_T("Location"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
+               p_table->SetRowSpan(0, 1, 1);
+
+               p_table->SetColumnSpan(0, 1, 5);
+               (*p_table)(0, 1) << pProductLoads->GetProductLoadName(pgsTypes::pftCreep);
+               (*p_table)(1, 1) << _T("Incremental") << rptNewLine << symbol(epsilon) << Super2(_T("x10"), _T("6"));
+               (*p_table)(1, 2) << _T("Cumulative") << rptNewLine << symbol(epsilon) << Super2(_T("x10"), _T("6"));
+               (*p_table)(1, 3) << COLHDR(Sub2(symbol(delta), _T("d")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+               (*p_table)(1, 4) << Sub2(symbol(epsilon), _T("avg")) << Super2(_T("x10"), _T("6"));
+               (*p_table)(1, 5) << COLHDR(Sub2(symbol(DELTA), _T("s")) << Super2(_T("x10"), _T("3")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+
+               p_table->SetColumnSpan(0, 6, 5);
+               (*p_table)(0, 6) << pProductLoads->GetProductLoadName(pgsTypes::pftShrinkage);
+               (*p_table)(1, 6) << _T("Incremental") << rptNewLine << symbol(epsilon) << Super2(_T("x10"), _T("6"));
+               (*p_table)(1, 7) << _T("Cumulative") << rptNewLine << symbol(epsilon) << Super2(_T("x10"), _T("6"));
+               (*p_table)(1, 8) << COLHDR(Sub2(symbol(delta), _T("d")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+               (*p_table)(1, 9) << Sub2(symbol(epsilon), _T("avg")) << Super2(_T("x10"), _T("6"));
+               (*p_table)(1, 10) << COLHDR(Sub2(symbol(DELTA), _T("s")) << Super2(_T("x10"), _T("3")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+
+               p_table->SetColumnSpan(0, 11, 5);
+               (*p_table)(0, 11) << pProductLoads->GetProductLoadName(pgsTypes::pftRelaxation);
+               (*p_table)(1, 11) << _T("Incremental") << rptNewLine << symbol(epsilon) << Super2(_T("x10"), _T("6"));
+               (*p_table)(1, 12) << _T("Cumulative") << rptNewLine << symbol(epsilon) << Super2(_T("x10"), _T("36"));
+               (*p_table)(1, 13) << COLHDR(Sub2(symbol(delta), _T("d")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+               (*p_table)(1, 14) << Sub2(symbol(epsilon), _T("avg")) << Super2(_T("x10"), _T("6"));
+               (*p_table)(1, 15) << COLHDR(Sub2(symbol(DELTA), _T("s")) << Super2(_T("x10"), _T("3")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+
+
+               PoiList vPoi;
+               GET_IFACE2(pBroker, IPointOfInterest, pIPoi);
+
+               if (pIPoi->ConvertPoiToGirderlineCoordinate(poi) < pIPoi->ConvertPoiToGirderlineCoordinate(details.poi_fixity))
+               {
+                   pIPoi->GetPointsOfInterestInRange(0, poi, L, &vPoi);
+               }
+               else
+               {
+                   pIPoi->GetPointsOfInterestInRange(L, poi, 0, &vPoi);
+               }
+
+               vPoi.erase(std::remove_if(vPoi.begin(), vPoi.end(), [](const pgsPointOfInterest& i) {
+                   return i.HasAttribute(POI_BOUNDARY_PIER);
+                   }), vPoi.end());
+
+
+
+               pgsPointOfInterest p0, p1;
+
+               RowIndexType row = p_table->GetNumberOfHeaderRows();
+
+
+               for (IndexType idx = 1, nPoi = vPoi.size(); idx < nPoi; idx++)
+               {
+
+                   p0 = vPoi[idx - 1];
+                   p1 = vPoi[idx];
+
+                   (*p_table)(row, 0) << location.SetValue(POI_SPAN, p1);
+
+
+                   std::vector<pgsTypes::ProductForceType> td_types{
+                       pgsTypes::ProductForceType::pftCreep, pgsTypes::ProductForceType::pftGirder, pgsTypes::ProductForceType::pftRelaxation};
+
+
+                   for (IndexType ty = 0, nTypes = td_types.size(); ty < nTypes; ty++)
+                   {
+                       TIMEDEPENDENTSHEARDEFORMATIONPARAMETERS sf_params;
+                       pBearing->GetBearingTimeDependentShearDeformationParameters(poi, intervalIdx, p0, p1, td_types[ty], &sf_params);
+
+
+                       (*p_table)(row, ty * 5 + 1) << (idx == 1 ? _T("N/A") : std::to_wstring(sf_params.inc_strain_bot_girder1 * 1E6));
+                       (*p_table)(row, ty * 5 + 2) << (idx == 1 ? _T("N/A") : std::to_wstring(sf_params.cum_strain_bot_girder1 * 1E6));
+                       if (idx == 1)
+                       {
+                           (*p_table)(row, ty * 5 + 3) << _T("N/A");
+                       }
+                       else
+                       {
+                           (*p_table)(row, ty * 5 + 3) << deflection.SetValue(sf_params.delta_d);
+                       }
+                       (*p_table)(row, ty * 5 + 4) << (idx == 1 ? _T("N/A") : std::to_wstring(sf_params.average_cumulative_strain * 1E6));
+                       if (idx == 1)
+                       {
+                           (*p_table)(row, ty * 5 + 5) << _T("N/A");
+                       }
+                       else
+                       {
+                           (*p_table)(row, ty * 5 + 5) << deflection.SetValue(sf_params.inc_shear_def * 1E3);
+                       }
+                       
+                   }
+
+                   row++;
+
+               }
+
+               pBearing->GetBearingTotalTimeDependentShearDeformation(poi, intervalIdx, &sf_details);
+
+
+               
+               p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_LEFT));
+               p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_LEFT));
+               (*p_table)(row++, 0) << symbol(SIGMA) << _T(" Incrmental ") << Sub2(symbol(DELTA),_T("s"));
+               (*p_table)(row--, 0) << symbol(SIGMA) << _T(" Cumulative ") << Sub2(symbol(DELTA), _T("s"));
+
+               INIT_UV_PROTOTYPE(rptLengthUnitValue, deflection, pDisplayUnits->GetDeflectionUnit(), true);
+
+               p_table->SetColumnSpan(row, 1, 5);
+               (*p_table)(row++, 1) << deflection.SetValue(sf_details.incremental_creep) << rptNewLine;
+               p_table->SetColumnSpan(row, 1, 5);
+               (*p_table)(row--, 1) << deflection.SetValue(sf_details.cumulative_creep) << rptNewLine;
+               p_table->SetColumnSpan(row, 6, 5);
+               (*p_table)(row++, 6) << deflection.SetValue(sf_details.incremental_shrinkage) << rptNewLine;
+               p_table->SetColumnSpan(row, 6, 5);
+               (*p_table)(row--, 6) << deflection.SetValue(sf_details.cumulative_shrinkage) << rptNewLine;
+               p_table->SetColumnSpan(row, 11, 5);
+               (*p_table)(row++, 11) << deflection.SetValue(sf_details.incremental_relaxation) << rptNewLine;
+               p_table->SetColumnSpan(row, 11, 5);
+               (*p_table)(row--, 11) << deflection.SetValue(sf_details.cumulative_relaxation) << rptNewLine;
+
+               *pPara << p_table << rptNewLine;
+           }
+
+       }    
+
+   }
 
 
    return pChapter;
@@ -127,258 +400,4 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CBearingTimeStepDetailsChapterB
 {
    return std::make_unique<CBearingTimeStepDetailsChapterBuilder>();
 }
-
-rptRcTable* CBearingTimeStepDetailsChapterBuilder::BuildIncrementalStrainTable(IBroker* pBroker, const std::vector<pgsTypes::ProductForceType>& vLoads, const TIME_STEP_DETAILS& tsDetails, bool bHasDeck, IEAFDisplayUnits* pDisplayUnits) const
-{
-   GET_IFACE2(pBroker, IProductLoads, pProductLoads);
-
-   IndexType nLoads = vLoads.size();
-   rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nLoads + 3 + 3);
-   pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_LEFT));
-   pTable->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CJ_LEFT));
-   pTable->SetNumberOfHeaderRows(2);
-
-   // label loading types across the top row
-   RowIndexType rowIdx = 0;
-   ColumnIndexType colIdx = 0;
-   pTable->SetRowSpan(rowIdx, colIdx, 2);
-   (*pTable)(rowIdx, colIdx++) << _T("Component");
-
-   pTable->SetColumnSpan(rowIdx, colIdx, nLoads);
-   (*pTable)(rowIdx, colIdx) << _T("Loading");
-   colIdx += nLoads;
-
-   rowIdx++;
-   colIdx = 1;
-   for (IndexType i = 0; i < nLoads; i++)
-   {
-      pgsTypes::ProductForceType pfType = vLoads[i];
-      (*pTable)(rowIdx, colIdx++) << pProductLoads->GetProductLoadName(pfType) << rptNewLine << symbol(epsilon) << Super2(_T("x10"), _T("6"));
-   }
-
-   rowIdx = 0;
-   pTable->SetRowSpan(rowIdx, colIdx, 2);
-   (*pTable)(rowIdx, colIdx++) << _T("Incremental") << rptNewLine << _T("Total") << rptNewLine << symbol(epsilon) << Super2(_T("x10"), _T("6"));
-
-   pTable->SetRowSpan(rowIdx, colIdx, 2);
-   (*pTable)(rowIdx, colIdx++) << _T("Cumulative") << rptNewLine << _T("Total") << rptNewLine << symbol(epsilon) << Super2(_T("x10"), _T("6"));
-
-   pTable->SetColumnSpan(rowIdx, colIdx, 3);
-   (*pTable)(rowIdx, colIdx) << _T("Cumulative Strains");
-   rowIdx++;
-   (*pTable)(rowIdx, colIdx++) << pProductLoads->GetProductLoadName(pgsTypes::pftCreep) << rptNewLine << symbol(epsilon) << Super2(_T("x10"), _T("6"));
-   (*pTable)(rowIdx, colIdx++) << pProductLoads->GetProductLoadName(pgsTypes::pftShrinkage) << rptNewLine << symbol(epsilon) << Super2(_T("x10"), _T("6"));
-   (*pTable)(rowIdx, colIdx++) << pProductLoads->GetProductLoadName(pgsTypes::pftRelaxation) << rptNewLine << symbol(epsilon) << Super2(_T("x10"), _T("6"));
-
-
-   // Label the rows in column 0
-   rowIdx = pTable->GetNumberOfHeaderRows();
-   colIdx = 0;
-   (*pTable)(rowIdx++, colIdx) << _T("Top Girder");
-   (*pTable)(rowIdx++, colIdx) << _T("Bottom Girder");
-
-   //for (int i = 0; i < 3; i++)
-   //{
-   //   pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
-   //   if (strandType == pgsTypes::Straight)
-   //   {
-   //      (*pTable)(rowIdx++, colIdx) << _T("Straight Strands");
-   //   }
-   //   else if (strandType == pgsTypes::Harped)
-   //   {
-   //      (*pTable)(rowIdx++, colIdx) << _T("Harped Strands");
-   //   }
-   //   else if (strandType == pgsTypes::Temporary)
-   //   {
-   //      (*pTable)(rowIdx++, colIdx) << _T("Temporary Strands");
-   //   }
-   //}
-
-   if (bHasDeck)
-   {
-      (*pTable)(rowIdx++, colIdx) << _T("Top Deck");
-      (*pTable)(rowIdx++, colIdx) << _T("Bottom Deck");
-   }
-
-   //DuctIndexType nTendons = tsDetails.SegmentTendons.size();
-   //for (DuctIndexType tendonIdx = 0; tendonIdx < nTendons; tendonIdx++)
-   //{
-   //   const TIME_STEP_STRAND& tsTendon = tsDetails.SegmentTendons[tendonIdx];
-   //   (*pTable)(rowIdx++, colIdx) << _T("Segment Tendon ") << LABEL_DUCT(tendonIdx);
-   //}
-
-   //nTendons = tsDetails.GirderTendons.size();
-   //for (DuctIndexType tendonIdx = 0; tendonIdx < nTendons; tendonIdx++)
-   //{
-   //   const TIME_STEP_STRAND& tsTendon = tsDetails.GirderTendons[tendonIdx];
-   //   (*pTable)(rowIdx++, colIdx) << _T("Girder Tendon ") << LABEL_DUCT(tendonIdx);
-   //}
-
-   // fill the table
-   colIdx = 1;
-   for (IndexType i = 0; i < nLoads; i++, colIdx++)
-   {
-      rowIdx = pTable->GetNumberOfHeaderRows();
-
-      pgsTypes::ProductForceType pfType = vLoads[i];
-
-      // Girder
-      (*pTable)(rowIdx++, colIdx) << tsDetails.Girder.strain_by_load_type[pgsTypes::TopFace][pfType][rtIncremental] * 1E6;
-      (*pTable)(rowIdx++, colIdx) << tsDetails.Girder.strain_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental] * 1E6;
-
-      //// Strands
-      //for (int i = 0; i < 3; i++)
-      //{
-      //   pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
-      //   (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsDetails.Strands[strandType].dfpei[pfType]);
-      //}
-
-      if (bHasDeck)
-      {
-         // Deck
-         (*pTable)(rowIdx++, colIdx) << tsDetails.Deck.strain_by_load_type[pgsTypes::TopFace][pfType][rtIncremental] * 1E6;
-         (*pTable)(rowIdx++, colIdx) << tsDetails.Deck.strain_by_load_type[pgsTypes::BottomFace][pfType][rtIncremental] * 1E6;
-      }
-
-      //// Segment Tendons
-      //for (const auto& tsTendon : tsDetails.SegmentTendons)
-      //{
-      //   (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsTendon.dfpei[pfType]);
-      //}
-
-      //// Girder Tendons
-      //for (const auto& tsTendon : tsDetails.GirderTendons)
-      //{
-      //   (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsTendon.dfpei[pfType]);
-      //}
-   } // next loading
-
-   // Incremental Totals
-   rowIdx = pTable->GetNumberOfHeaderRows();
-
-   // Girder
-   (*pTable)(rowIdx++, colIdx) << tsDetails.Girder.strain[pgsTypes::TopFace][rtIncremental] * 1E6;
-   (*pTable)(rowIdx++, colIdx) << tsDetails.Girder.strain[pgsTypes::BottomFace][rtIncremental] * 1E6;
-
-   //// Strands
-   //for (int i = 0; i < 3; i++)
-   //{
-   //   pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
-   //   (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsDetails.Strands[strandType].dfpe);
-   //}
-
-   if (bHasDeck)
-   {
-      // Deck
-      (*pTable)(rowIdx++, colIdx) << tsDetails.Deck.strain[pgsTypes::TopFace][rtIncremental] * 1E6;
-      (*pTable)(rowIdx++, colIdx) << tsDetails.Deck.strain[pgsTypes::BottomFace][rtIncremental] * 1E6;
-   }
-
-   //// Segment Tendons
-   //for (const auto& tsTendon : tsDetails.SegmentTendons)
-   //{
-   //   (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsTendon.dfpe);
-   //}
-
-   //// Girder Tendons
-   //for (const auto& tsTendon : tsDetails.GirderTendons)
-   //{
-   //   (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsTendon.dfpe);
-   //}
-
-   // Cumulative Totals
-   colIdx++;
-   rowIdx = pTable->GetNumberOfHeaderRows();
-
-   // Girder
-   (*pTable)(rowIdx++, colIdx) << tsDetails.Girder.strain[pgsTypes::TopFace][rtCumulative] * 1E6;
-   (*pTable)(rowIdx++, colIdx) << tsDetails.Girder.strain[pgsTypes::BottomFace][rtCumulative] * 1E6;
-
-   //// Strands
-   //for (int i = 0; i < 3; i++)
-   //{
-   //   pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
-   //   (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsDetails.Strands[strandType].fpe);
-   //}
-
-   if (bHasDeck)
-   {
-      // Deck
-      (*pTable)(rowIdx++, colIdx) << tsDetails.Deck.strain[pgsTypes::TopFace][rtCumulative] * 1E6;
-      (*pTable)(rowIdx++, colIdx) << tsDetails.Deck.strain[pgsTypes::BottomFace][rtCumulative] * 1E6;
-   }
-
-   //// Segment Tendons
-   //for (const auto& tsTendon : tsDetails.SegmentTendons)
-   //{
-   //   (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsTendon.fpe);
-   //}
-
-   //// Girder Tendons
-   //for (const auto& tsTendon : tsDetails.GirderTendons)
-   //{
-   //   (*pTable)(rowIdx++, colIdx) << stress.SetValue(tsTendon.fpe);
-   //}
-
-
-   // Cumulative Time-Dependent Effects
-   colIdx++;
-   rowIdx = pTable->GetNumberOfHeaderRows();
-
-   // Girder
-   (*pTable)(rowIdx, colIdx) << tsDetails.Girder.strain_by_load_type[pgsTypes::TopFace][pgsTypes::pftCreep][rtCumulative] * 1E6;
-   (*pTable)(rowIdx, colIdx + 1) << tsDetails.Girder.strain_by_load_type[pgsTypes::TopFace][pgsTypes::pftShrinkage][rtCumulative] * 1E6;
-   (*pTable)(rowIdx, colIdx + 2) << tsDetails.Girder.strain_by_load_type[pgsTypes::TopFace][pgsTypes::pftRelaxation][rtCumulative] * 1E6;
-   rowIdx++;
-
-   (*pTable)(rowIdx, colIdx) << tsDetails.Girder.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::pftCreep][rtCumulative] * 1E6;
-   (*pTable)(rowIdx, colIdx + 1) << tsDetails.Girder.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::pftShrinkage][rtCumulative] * 1E6;
-   (*pTable)(rowIdx, colIdx + 2) << tsDetails.Girder.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::pftRelaxation][rtCumulative] * 1E6;
-   rowIdx++;
-
-   //// Strands
-   //for (int i = 0; i < 3; i++)
-   //{
-   //   pgsTypes::StrandType strandType = (pgsTypes::StrandType)i;
-   //   (*pTable)(rowIdx, colIdx) << stress.SetValue(tsDetails.Strands[strandType].fpei[pgsTypes::pftCreep]);
-   //   (*pTable)(rowIdx, colIdx + 1) << stress.SetValue(tsDetails.Strands[strandType].fpei[pgsTypes::pftShrinkage]);
-   //   (*pTable)(rowIdx, colIdx + 2) << stress.SetValue(tsDetails.Strands[strandType].fpei[pgsTypes::pftRelaxation]);
-   //   rowIdx++;
-   //}
-
-   if (bHasDeck)
-   {
-      // Deck
-      (*pTable)(rowIdx, colIdx) << tsDetails.Deck.strain_by_load_type[pgsTypes::TopFace][pgsTypes::pftCreep][rtCumulative] * 1E6;
-      (*pTable)(rowIdx, colIdx + 1) << tsDetails.Deck.strain_by_load_type[pgsTypes::TopFace][pgsTypes::pftShrinkage][rtCumulative] * 1E6;
-      (*pTable)(rowIdx, colIdx + 2) << tsDetails.Deck.strain_by_load_type[pgsTypes::TopFace][pgsTypes::pftRelaxation][rtCumulative] * 1E6;
-      rowIdx++;
-
-      (*pTable)(rowIdx, colIdx) << tsDetails.Deck.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::pftCreep][rtCumulative] * 1E6;
-      (*pTable)(rowIdx, colIdx + 1) << tsDetails.Deck.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::pftShrinkage][rtCumulative] * 1E6;
-      (*pTable)(rowIdx, colIdx + 2) << tsDetails.Deck.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::pftRelaxation][rtCumulative] * 1E6;
-      rowIdx++;
-   }
-
-   //// Segment Tendons
-   //for (const auto& tsTendon : tsDetails.SegmentTendons)
-   //{
-   //   (*pTable)(rowIdx, colIdx) << stress.SetValue(tsTendon.fpei[pgsTypes::pftCreep]);
-   //   (*pTable)(rowIdx, colIdx + 1) << stress.SetValue(tsTendon.fpei[pgsTypes::pftShrinkage]);
-   //   (*pTable)(rowIdx, colIdx + 2) << stress.SetValue(tsTendon.fpei[pgsTypes::pftRelaxation]);
-   //   rowIdx++;
-   //}
-
-   //// Girder Tendons
-   //for (const auto& tsTendon : tsDetails.GirderTendons)
-   //{
-   //   (*pTable)(rowIdx, colIdx) << stress.SetValue(tsTendon.fpei[pgsTypes::pftCreep]);
-   //   (*pTable)(rowIdx, colIdx + 1) << stress.SetValue(tsTendon.fpei[pgsTypes::pftShrinkage]);
-   //   (*pTable)(rowIdx, colIdx + 2) << stress.SetValue(tsTendon.fpei[pgsTypes::pftRelaxation]);
-   //   rowIdx++;
-   //}
-
-   return pTable;
-}
-
 
