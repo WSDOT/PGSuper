@@ -623,7 +623,7 @@ void pgsBearingDesignEngineer::GetBearingTimeDependentShearDeformationParameters
         sf_params->inc_strain_bot_girder0  = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][td_type][rtIncremental];
         sf_params->cum_strain_bot_girder0 = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][td_type][rtCumulative] - tsDetails0erect.Girder.strain_by_load_type[pgsTypes::BottomFace][td_type][rtCumulative];
 
-        const LOSSDETAILS* pDetails1erect = pLosses->GetLossDetails(p0, erectSegmentIntervalIdx);
+        const LOSSDETAILS* pDetails1erect = pLosses->GetLossDetails(p1, erectSegmentIntervalIdx);
         const TIME_STEP_DETAILS& tsDetails1erect(pDetails1erect->TimeStepDetails[erectSegmentIntervalIdx]);
         const LOSSDETAILS* pDetails1 = pLosses->GetLossDetails(p1, intervalIdx);
         const TIME_STEP_DETAILS& tsDetails1(pDetails1->TimeStepDetails[intervalIdx]);

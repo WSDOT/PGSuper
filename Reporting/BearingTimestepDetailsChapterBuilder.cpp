@@ -234,7 +234,7 @@ rptChapter* CBearingTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<c
        GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
        const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
        IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-       IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey()) + 1;
+       IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
        IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
 
        Float64 L = pBearing->GetDistanceToPointOfFixity(poi, &details);
@@ -244,7 +244,7 @@ rptChapter* CBearingTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<c
 
        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
-       for (IntervalIndexType intervalIdx = erectSegmentIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++)
+       for (IntervalIndexType intervalIdx = erectSegmentIntervalIdx + 1; intervalIdx <= lastIntervalIdx; intervalIdx++)
        {
  //          if (pIntervals->GetDuration(intervalIdx) != 0)
 
@@ -326,7 +326,7 @@ rptChapter* CBearingTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<c
 
 
                    std::vector<pgsTypes::ProductForceType> td_types{
-                       pgsTypes::ProductForceType::pftCreep, pgsTypes::ProductForceType::pftGirder, pgsTypes::ProductForceType::pftRelaxation};
+                       pgsTypes::ProductForceType::pftCreep, pgsTypes::ProductForceType::pftShrinkage, pgsTypes::ProductForceType::pftRelaxation};
 
 
                    for (IndexType ty = 0, nTypes = td_types.size(); ty < nTypes; ty++)
