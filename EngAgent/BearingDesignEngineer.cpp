@@ -620,6 +620,7 @@ void pgsBearingDesignEngineer::GetBearingTimeDependentShearDeformationParameters
         const TIME_STEP_DETAILS& tsDetails0erect(pDetails0erect->TimeStepDetails[erectSegmentIntervalIdx]);
         const LOSSDETAILS* pDetails0 = pLosses->GetLossDetails(p0, intervalIdx);
         const TIME_STEP_DETAILS& tsDetails0(pDetails0->TimeStepDetails[intervalIdx]);
+
         sf_params->inc_strain_bot_girder0  = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][td_type][rtIncremental];
         sf_params->cum_strain_bot_girder0 = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][td_type][rtCumulative] - tsDetails0erect.Girder.strain_by_load_type[pgsTypes::BottomFace][td_type][rtCumulative];
 
@@ -904,6 +905,12 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
     pgsTypes::BridgeAnalysisType batSS = pgsTypes::SimpleSpan;
     pgsTypes::BridgeAnalysisType batCS = pgsTypes::ContinuousSpan;
 
+    GET_IFACE(IBridge, pBridge);
+
+    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
+
+    
+
 
     GET_IFACE(IIntervals, pIntervals);
     IntervalIndexType diaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
@@ -918,7 +925,7 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
 
 
     
-    GET_IFACE(IBridge, pBridge);
+    
 
     PierIndexType nPiers = pBridge->GetPierCount();
 
@@ -937,7 +944,16 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
 
     pDetails->erectedSegmentReaction = pForces->GetReaction(erectSegmentIntervalIdx, reactionLocation, pgsTypes::pftGirder, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
     pDetails->maxGirderReaction = pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftGirder, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
-    pDetails->diaphragmReaction = pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftDiaphragm, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
+
+    if (deckType != pgsTypes::sdtNone)
+    {
+        pDetails->diaphragmReaction = pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftDiaphragm, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
+        pDetails->maxSlabReaction = pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlab, maxBAT);
+        pDetails->minSlabReaction = pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlab, minBAT);
+        pDetails->maxHaunchReaction = pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlabPad, maxBAT);
+        pDetails->minHaunchReaction = pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlabPad, minBAT);
+    }
+
 
     if (pDetails->bShearKey)
     {
@@ -954,10 +970,7 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
     pDetails->maxConstructionReaction = pForces->GetReaction(constructionIntervalIdx, reactionLocation, pgsTypes::pftConstruction, maxBAT);
     pDetails->minConstructionReaction = pForces->GetReaction(constructionIntervalIdx, reactionLocation, pgsTypes::pftConstruction, minBAT);
 
-    pDetails->maxSlabReaction = pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlab, maxBAT);
-    pDetails->minSlabReaction = pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlab, minBAT);
-    pDetails->maxHaunchReaction = pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlabPad, maxBAT);
-    pDetails->minHaunchReaction = pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlabPad, minBAT);
+
 
     if (pDetails->bDeckPanels)
     {

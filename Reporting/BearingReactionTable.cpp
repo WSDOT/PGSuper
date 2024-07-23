@@ -657,6 +657,7 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
     GET_IFACE2(pBroker, IBridge, pBridge);
 
 
+
     GET_IFACE2(pBroker, IIntervals, pIntervals);
     IntervalIndexType diaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
     IntervalIndexType lastCastDeckIntervalIdx = pIntervals->GetLastCastDeckInterval(); // deck cast be cast in multiple stages, use interval after entire deck is cast
@@ -748,7 +749,7 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
                 (*p_table)(row, col++) << Reaction.SetValue(details.maxGirderReaction);
             }
 
-            if (reactionDecider.DoReport(diaphragmIntervalIdx) && reactionDecider.DoReport(lastIntervalIdx))
+            if (reactionDecider.DoReport(diaphragmIntervalIdx) && reactionDecider.DoReport(lastIntervalIdx) && details.bDeck)
             {
                 (*p_table)(row, col++) << Reaction.SetValue(details.diaphragmReaction);
             }
@@ -867,7 +868,7 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
                 }
                 else
                 {
-                    if (reactionDecider.DoReport(lastIntervalIdx))
+                    if (reactionDecider.DoReport(lastIntervalIdx) && details.bDeck)
                     {
                         (*p_table)(row, col++) << Reaction.SetValue(details.maxSlabReaction);
                         (*p_table)(row, col++) << Reaction.SetValue(details.maxHaunchReaction);
