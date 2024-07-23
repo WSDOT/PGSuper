@@ -248,8 +248,7 @@ rptChapter* CBearingTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<c
 
        for (IntervalIndexType intervalIdx = erectSegmentIntervalIdx + 1; intervalIdx <= lastIntervalIdx; intervalIdx++)
        {
- //          if (pIntervals->GetDuration(intervalIdx) != 0)
-
+           if (pIntervals->GetDuration(intervalIdx) != 0)
            {
                ColumnIndexType nCols = 16;
                CString label{ reactionLocation.PierLabel.c_str() };
