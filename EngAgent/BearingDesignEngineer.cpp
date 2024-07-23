@@ -907,8 +907,6 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
 
     GET_IFACE(IBridge, pBridge);
 
-    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
-
     
 
 
@@ -945,7 +943,7 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
     pDetails->erectedSegmentReaction = pForces->GetReaction(erectSegmentIntervalIdx, reactionLocation, pgsTypes::pftGirder, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
     pDetails->maxGirderReaction = pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftGirder, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
 
-    if (deckType != pgsTypes::sdtNone)
+    if (pDetails->bDeck)
     {
         pDetails->diaphragmReaction = pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftDiaphragm, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
         pDetails->maxSlabReaction = pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlab, maxBAT);
