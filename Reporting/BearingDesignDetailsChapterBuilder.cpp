@@ -123,50 +123,50 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     *p << _T(" LRFD Article 6.6 (Table 6.6.1.2.3-1 for Category A)") << rptNewLine;
     *p << _T("Method B is used per WSDOT Policy (BDM Ch. 9.2)") << rptNewLine;
 
-    ColumnIndexType nCols = 7;
+    //ColumnIndexType nCols = 7;
 
-    CString label = _T("Elastomer Shear Modulus (From Table 14.7.6.2-1)");
-    rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols, label);
+    //CString label = _T("Elastomer Shear Modulus (From Table 14.7.6.2-1)");
+    //rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols, label);
 
-    p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
-    p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
+    //p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
+    //p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
     ColumnIndexType col = 0;
-    p_table->SetNumberOfHeaderRows(2);
-    p_table->SetRowSpan(0, col, 2);
-    (*p_table)(0, col++) << _T("");
-    p_table->SetColumnSpan(0, col, 2);
-    (*p_table)(0, col) << _T("50 Hardness");
-    (*p_table)(1, col++) << COLHDR(Sub2(_T("G"), _T("min")),
-        rptStressUnitTag, pDisplayUnits->GetStressUnit());
-    (*p_table)(1, col++) << COLHDR(Sub2(_T("G"), _T("max")),
-        rptStressUnitTag, pDisplayUnits->GetStressUnit());
-    p_table->SetColumnSpan(0, col, 2);
-    (*p_table)(0, col) << _T("60 Hardness");
-    (*p_table)(1, col++) << COLHDR(Sub2(_T("G"), _T("min")),
-        rptStressUnitTag, pDisplayUnits->GetStressUnit());
-    (*p_table)(1, col++) << COLHDR(Sub2(_T("G"), _T("max")),
-        rptStressUnitTag, pDisplayUnits->GetStressUnit());
-    p_table->SetColumnSpan(0, col, 2);
-    (*p_table)(0, col) << _T("70 Hardness");
-    (*p_table)(1, col++) << COLHDR(Sub2(_T("G"), _T("min")),
-        rptStressUnitTag, pDisplayUnits->GetStressUnit());
-    (*p_table)(1, col++) << COLHDR(Sub2(_T("G"), _T("max")),
-        rptStressUnitTag, pDisplayUnits->GetStressUnit());
+    //p_table->SetNumberOfHeaderRows(2);
+    //p_table->SetRowSpan(0, col, 2);
+    //(*p_table)(0, col++) << _T("");
+    //p_table->SetColumnSpan(0, col, 2);
+    //(*p_table)(0, col) << _T("50 Hardness");
+    //(*p_table)(1, col++) << COLHDR(Sub2(_T("G"), _T("min")),
+    //    rptStressUnitTag, pDisplayUnits->GetStressUnit());
+    //(*p_table)(1, col++) << COLHDR(Sub2(_T("G"), _T("max")),
+    //    rptStressUnitTag, pDisplayUnits->GetStressUnit());
+    //p_table->SetColumnSpan(0, col, 2);
+    //(*p_table)(0, col) << _T("60 Hardness");
+    //(*p_table)(1, col++) << COLHDR(Sub2(_T("G"), _T("min")),
+    //    rptStressUnitTag, pDisplayUnits->GetStressUnit());
+    //(*p_table)(1, col++) << COLHDR(Sub2(_T("G"), _T("max")),
+    //    rptStressUnitTag, pDisplayUnits->GetStressUnit());
+    //p_table->SetColumnSpan(0, col, 2);
+    //(*p_table)(0, col) << _T("70 Hardness");
+    //(*p_table)(1, col++) << COLHDR(Sub2(_T("G"), _T("min")),
+    //    rptStressUnitTag, pDisplayUnits->GetStressUnit());
+    //(*p_table)(1, col++) << COLHDR(Sub2(_T("G"), _T("max")),
+    //    rptStressUnitTag, pDisplayUnits->GetStressUnit());
 
 
-    col = 0;
-    (*p_table)(2, col++) << _T("Design Value");
-    (*p_table)(2, col++) << stress.SetValue(details.Gmin50);
-    (*p_table)(2, col++) << stress.SetValue(details.Gmax50);
-    (*p_table)(2, col++) << stress.SetValue(details.Gmin60);
-    (*p_table)(2, col++) << stress.SetValue(details.Gmax60);
-    (*p_table)(2, col++) << stress.SetValue(details.Gmin70);
-    (*p_table)(2, col++) << stress.SetValue(details.Gmax70);
+    //col = 0;
+    //(*p_table)(2, col++) << _T("Design Value");
+    //(*p_table)(2, col++) << stress.SetValue(details.Gmin50);
+    //(*p_table)(2, col++) << stress.SetValue(details.Gmax50);
+    //(*p_table)(2, col++) << stress.SetValue(details.Gmin60);
+    //(*p_table)(2, col++) << stress.SetValue(details.Gmax60);
+    //(*p_table)(2, col++) << stress.SetValue(details.Gmin70);
+    //(*p_table)(2, col++) << stress.SetValue(details.Gmax70);
 
     GET_IFACE2(pBroker, IBridge, pBridge);
 
-    *p << p_table;
+    //*p << p_table;
 
     *p << CBearingReactionTable().BuildBearingReactionTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, are_user_loads, true, pDisplayUnits, true);
