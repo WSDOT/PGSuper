@@ -113,13 +113,13 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
         true, true, are_user_loads,  true, pDisplayUnits, false, true) << rptNewLine;
 
     *p << _T("*Static rotations include ") << symbol(PLUS_MINUS) << _T("0.005 radians tolerance for uncertainties") << rptNewLine;
-    *p << _T("**Used for Method A") << rptNewLine << rptNewLine;
+    *p << _T("**Used for Design Method A") << rptNewLine << rptNewLine;
 
     *p << CBearingRotationTable().BuildBearingRotationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, are_user_loads, true, pDisplayUnits, false, false) << rptNewLine;
 
     *p << _T("*Static rotations include ") << symbol(PLUS_MINUS) << _T("0.005 radians tolerance for uncertainties") << rptNewLine;
-    *p << _T("**Used for Method A") << rptNewLine << rptNewLine;
+    *p << _T("**Used for Design Method A") << rptNewLine << rptNewLine;
 
     GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
     SHEARDEFORMATIONDETAILS sfDetails;

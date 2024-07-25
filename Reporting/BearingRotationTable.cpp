@@ -801,7 +801,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
             }
             else
             {
-                (*p_table)(row, col++) << rotation.SetValue(details.erectedSegmentRotation);
+                (*p_table)(row, col++) << rotation.SetValue(details.maxGirderRotation);
             }
 
             if (reactionDecider.DoReport(lastIntervalIdx))

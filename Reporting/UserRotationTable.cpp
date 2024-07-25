@@ -103,7 +103,7 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderK
    {
       GirderIndexType gdrIdx = min( girderKey.girderIndex, pBridge->GetGirderCount(grpIdx)-1 );
 
-      // don't report giders that don't exist on bridge
+      // don't report girders that don't exist on bridge
       SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,gdrIdx));
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {

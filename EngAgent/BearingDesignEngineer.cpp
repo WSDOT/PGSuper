@@ -762,11 +762,11 @@ void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType 
 
     // Static rotations
 
-    pDetails->erectedSegmentRotation = skewFactor * (pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftGirder, poi, maxBAT, rtCumulative, false) - 
-        pProductForces->GetRotation(erectSegmentIntervalIdx, pgsTypes::pftGirder, poi, maxBAT, rtCumulative, false));
+    pDetails->erectedSegmentRotation = skewFactor * pProductForces->GetRotation(erectSegmentIntervalIdx, pgsTypes::pftGirder, poi, maxBAT, rtCumulative, false);
 
     pDetails->maxShearKeyRotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftShearKey, poi, maxBAT, rtCumulative, false);
-    pDetails->maxGirderRotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftGirder, poi, minBAT, rtCumulative, false);
+    pDetails->maxGirderRotation = skewFactor * (pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftGirder, poi, maxBAT, rtCumulative, false) -
+        pProductForces->GetRotation(erectSegmentIntervalIdx, pgsTypes::pftGirder, poi, maxBAT, rtCumulative, false));
     pDetails->diaphragmRotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftDiaphragm, poi, maxBAT, rtCumulative, false);
     pDetails->maxSlabRotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftSlab, poi, maxBAT, rtCumulative, false);
     pDetails->minSlabRotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftSlab, poi, minBAT, rtCumulative, false);
@@ -785,8 +785,12 @@ void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType 
     pDetails->maxSidewalkRotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftSidewalk, poi, maxBAT, rtCumulative, false);
     pDetails->minSidewalkRotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftSidewalk, poi, minBAT, rtCumulative, false);
 
-    pDetails->maxUserDCRotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftUserDC, poi, maxBAT, rtCumulative, false);
-    pDetails->minUserDCRotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftUserDC, poi, minBAT, rtCumulative, false);
+    pDetails->maxUserDCRotation = skewFactor * (
+        pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftUserDC, poi, maxBAT, rtCumulative, false) -
+        pProductForces->GetRotation(erectSegmentIntervalIdx, pgsTypes::pftUserDC, poi, maxBAT, rtCumulative, false));
+    pDetails->minUserDCRotation = skewFactor * (
+        pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftUserDC, poi, minBAT, rtCumulative, false) -
+        pProductForces->GetRotation(erectSegmentIntervalIdx, pgsTypes::pftUserDC, poi, minBAT, rtCumulative, false));
     pDetails->maxUserDWRotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftUserDW, poi, maxBAT, rtCumulative, false);
     pDetails->minUserDWRotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftUserDW, poi, minBAT, rtCumulative, false);
 
@@ -993,10 +997,6 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
     }
 
 
-
-
-
-
     // TRICKY:
     // Use the adapter class to get the reaction response functions we need and to iterate piers
     std::unique_ptr<ICmbLsReactionAdapter> pComboForces;
@@ -1082,7 +1082,22 @@ void pgsBearingDesignEngineer::GetThermalExpansionDetails(const pgsPointOfIntere
     L = GetDistanceToPointOfFixity(poi, pDetails);
     pDetails->length_pf = L;
 
-    Float64 inv_thermal_exp_coefficient = { WBFL::Units::ConvertToSysUnits(166666.6667, WBFL::Units::Measure::Fahrenheit) };
+    GET_IFACE(IMaterials, pMaterials);
+    const CSegmentKey& segmentKey(poi.GetSegmentKey());
+    auto concreteType = pMaterials->GetSegmentConcreteType(segmentKey);
+
+    Float64 inv_thermal_exp_coefficient;
+
+    if (concreteType == pgsTypes::Normal)
+    {
+        inv_thermal_exp_coefficient = { WBFL::Units::ConvertToSysUnits(166666.6667, WBFL::Units::Measure::Fahrenheit) };
+    }
+    if (concreteType == pgsTypes::AllLightweight || concreteType == pgsTypes::SandLightweight)
+    {
+        inv_thermal_exp_coefficient = { WBFL::Units::ConvertToSysUnits(20000.0, WBFL::Units::Measure::Fahrenheit) };
+    }
+
+
     Float64 thermal_expansion_coefficient = 1.0 / inv_thermal_exp_coefficient;
     pDetails->thermal_expansion_coefficient = thermal_expansion_coefficient;
 
