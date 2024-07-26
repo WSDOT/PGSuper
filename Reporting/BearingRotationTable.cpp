@@ -734,6 +734,30 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
         }
     }
 
+
+    //// get poi at start and end of each segment in the girder
+    //PoiList vPoi;
+    //for (GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++)
+    //{
+    //    GirderIndexType gdrIdx = min(girderKey.girderIndex, pBridge->GetGirderCount(grpIdx) - 1);
+
+    //    // don't report girders that don't exist on bridge
+    //    SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx, gdrIdx));
+    //    for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+    //    {
+    //        CSegmentKey segmentKey(grpIdx, gdrIdx, segIdx);
+    //        PoiList vSegPoi;
+    //        pPOI->GetPointsOfInterest(segmentKey, POI_0L | POI_10L | POI_ERECTED_SEGMENT, &vSegPoi);
+    //        ATLASSERT(vSegPoi.size() == 2);
+    //        vPoi.insert(vPoi.end(), vSegPoi.begin(), vSegPoi.end());
+    //    }
+    //}
+
+    //// TRICKY: use adapter class to get correct reaction interfaces
+    //std::unique_ptr<IProductReactionAdapter> pForcesAdapt(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, compositeDeckIntervalIdx, girderKey));
+
+    //// User iterator to walk locations
+    //ReactionLocationIter iter = pForcesAdapt->GetReactionLocations(pBridge);
     
 
     GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
