@@ -138,8 +138,8 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
 
     *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(), true, pDisplayUnits, false, bCold, &sfDetails) << rptNewLine;
 
-    *p << _T("-Deck shrinkage effects are not considered") << rptNewLine;
-    *p << _T("-Bearing reset effects are not considered") << rptNewLine;
+    *p << _T("-Deck and girder shrinkage effects are ignored") << rptNewLine;
+    *p << _T("-Bearing reset effects are ignored") << rptNewLine;
     *p << _T("-Temperature range is computed based on Procedure A (Article 3.12.2.1)") << rptNewLine << rptNewLine;
 
     return pChapter;

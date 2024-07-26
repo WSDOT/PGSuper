@@ -616,18 +616,15 @@ void pgsBearingDesignEngineer::GetBearingTimeDependentShearDeformationParameters
     {
         GET_IFACE(ILosses, pLosses);
 
-        const LOSSDETAILS* pDetails0erect = pLosses->GetLossDetails(p0, erectSegmentIntervalIdx);
-        const TIME_STEP_DETAILS& tsDetails0erect(pDetails0erect->TimeStepDetails[erectSegmentIntervalIdx]);
         const LOSSDETAILS* pDetails0 = pLosses->GetLossDetails(p0, intervalIdx);
         const TIME_STEP_DETAILS& tsDetails0(pDetails0->TimeStepDetails[intervalIdx]);
-
+        const TIME_STEP_DETAILS& tsDetails0erect(pDetails0->TimeStepDetails[erectSegmentIntervalIdx]);
         sf_params->inc_strain_bot_girder0  = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][td_type][rtIncremental];
         sf_params->cum_strain_bot_girder0 = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][td_type][rtCumulative] - tsDetails0erect.Girder.strain_by_load_type[pgsTypes::BottomFace][td_type][rtCumulative];
 
-        const LOSSDETAILS* pDetails1erect = pLosses->GetLossDetails(p1, erectSegmentIntervalIdx);
-        const TIME_STEP_DETAILS& tsDetails1erect(pDetails1erect->TimeStepDetails[erectSegmentIntervalIdx]);
         const LOSSDETAILS* pDetails1 = pLosses->GetLossDetails(p1, intervalIdx);
         const TIME_STEP_DETAILS& tsDetails1(pDetails1->TimeStepDetails[intervalIdx]);
+        const TIME_STEP_DETAILS& tsDetails1erect(pDetails1->TimeStepDetails[erectSegmentIntervalIdx]);
         sf_params->inc_strain_bot_girder1 = tsDetails1.Girder.strain_by_load_type[pgsTypes::BottomFace][td_type][rtIncremental];
         sf_params->cum_strain_bot_girder1 = tsDetails1.Girder.strain_by_load_type[pgsTypes::BottomFace][td_type][rtCumulative] - tsDetails1erect.Girder.strain_by_load_type[pgsTypes::BottomFace][td_type][rtCumulative];
 
@@ -808,10 +805,19 @@ void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType 
         Float64 cFinal = pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftCreep, poi, maxBAT, rtCumulative, false);
         Float64 cErect = pProductForces->GetRotation(erectSegmentIntervalIdx, pgsTypes::pftCreep, poi, maxBAT, rtCumulative, false);
 
+        Float64 sFinal = pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftShrinkage, poi, maxBAT, rtCumulative, false);
+        Float64 sErect = pProductForces->GetRotation(erectSegmentIntervalIdx, pgsTypes::pftShrinkage, poi, maxBAT, rtCumulative, false);
+
+        Float64 rFinal = pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftRelaxation, poi, maxBAT, rtCumulative, false);
+        Float64 rErect = pProductForces->GetRotation(erectSegmentIntervalIdx, pgsTypes::pftRelaxation, poi, maxBAT, rtCumulative, false);
+
+        Float64 pFinal = pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftPostTensioning, poi, maxBAT, rtCumulative, false);
+        Float64 pErect = pProductForces->GetRotation(erectSegmentIntervalIdx, pgsTypes::pftPostTensioning, poi, maxBAT, rtCumulative, false);
+
         pDetails->creepRotation = skewFactor * (cFinal - cErect);
-        pDetails->shrinkageRotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftShrinkage, poi, maxBAT, rtCumulative, false);
-        pDetails->relaxationRotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftRelaxation, poi, maxBAT, rtCumulative, false);
-        pDetails->postTensionRotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftPostTensioning, poi, maxBAT, rtCumulative, false);
+        pDetails->shrinkageRotation = skewFactor * (sFinal - sErect);
+        pDetails->relaxationRotation = skewFactor * (rFinal - rErect);
+        pDetails->postTensionRotation = skewFactor * (pFinal - pErect);
     }
     else
     {

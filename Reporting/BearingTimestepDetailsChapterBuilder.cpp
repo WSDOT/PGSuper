@@ -135,6 +135,9 @@ rptChapter* CBearingTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<c
    IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
 
 
+
+
+
    GET_IFACE2(pBroker, IPointOfInterest, pPOI);
 
 
