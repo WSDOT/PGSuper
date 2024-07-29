@@ -96,8 +96,10 @@
 #include <Reporting\DistributionFactorDetailsChapterBuilder.h>
 
 #include <Reporting\TimeStepDetailsChapterBuilder.h>
-#include <Reporting\BearingTimeStepDetailsChapterBuilder.h>
 #include <Reporting\TimeStepDetailsReportSpecificationBuilder.h>
+
+#include <Reporting\BearingTimeStepDetailsChapterBuilder.h>
+//#include <Reporting\BearingTimeStepDetailsReportSpecificationBuilder.h>
 
 #include <Reporting\PrincipalWebStressDetailsChapterBuilder.h>
 #include <Reporting\PrincipalWebStressDetailsReportSpecificationBuilder.h>
