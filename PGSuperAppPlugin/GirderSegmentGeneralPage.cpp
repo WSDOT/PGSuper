@@ -36,6 +36,7 @@
 #include <PgsExt\ConcreteDetailsDlg.h>
 
 #include <System\Tokenizer.h>
+#include <System\AutoVariable.h>
 
 #include "TimelineEventDlg.h"
 
@@ -1026,17 +1027,17 @@ void CGirderSegmentGeneralPage::OnVariationTypeChanged()
    m_ctrlDrawSegment.UpdateWindow();
 }
 
-void CGirderSegmentGeneralPage::GetSectionVariationControlState(BOOL* pbEnable)
+std::array<BOOL,4> CGirderSegmentGeneralPage::GetSectionVariationControlState()
 {
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_VARIATION_TYPE);
    int cursel = pCB->GetCurSel();
    pgsTypes::SegmentVariationType variationType = (pgsTypes::SegmentVariationType)pCB->GetItemData(cursel);
-   GetSectionVariationControlState(variationType,pbEnable);
+   return GetSectionVariationControlState(variationType);
 }
 
-void CGirderSegmentGeneralPage::GetSectionVariationControlState(pgsTypes::SegmentVariationType variationType,BOOL* pbEnable)
+std::array<BOOL,4> CGirderSegmentGeneralPage::GetSectionVariationControlState(pgsTypes::SegmentVariationType variationType)
 {
-   BOOL bEnable[4];
+   std::array<BOOL, 4> bEnable;
    if ( variationType == pgsTypes::svtNone )
    {
       bEnable[pgsTypes::sztLeftPrismatic]  = FALSE;
@@ -1075,16 +1076,20 @@ void CGirderSegmentGeneralPage::GetSectionVariationControlState(pgsTypes::Segmen
       bEnable[pgsTypes::sztRightPrismatic] = FALSE;
    }
 
-   pbEnable[0] = bEnable[0];
-   pbEnable[1] = bEnable[1];
-   pbEnable[2] = bEnable[2];
-   pbEnable[3] = bEnable[3];
+   return bEnable;
 }
 
 void CGirderSegmentGeneralPage::UpdateSegmentVariationParameters(pgsTypes::SegmentVariationType variationType)
 {
-   BOOL bEnable[4];
-   GetSectionVariationControlState(variationType,&bEnable[0]);
+   // set state variable to true indicating that the segment parameters are being updated due to a change
+   // in the segment variation type. OnSegmentChanged will get called from the CCacheEdit control objects
+   // when the Enable/Disabled state of the controls change. This in turn tries to updated the segment
+   // geometry and re-draw the graphic on the screen. However, the segment geometry parameters are in
+   // an undefined state until this method finishes. m_bUpdatingSegmentVariationParameters is checked
+   // in OnSegmentChanged and the function doesn't nothing if m_bUpdatingSegmentVariationParameters is true
+   WBFL::System::AutoVariable av(&m_bUpdatingSegmentVariationParameters, true);
+
+   auto bEnable = GetSectionVariationControlState(variationType);
 
    // if the input is enabled because of the section variation type,
    // show the default value, otherwise the input isn't applicable to
@@ -1297,6 +1302,10 @@ pgsTypes::SegmentVariationType CGirderSegmentGeneralPage::GetSegmentVariation()
 
 void CGirderSegmentGeneralPage::OnSegmentChanged()
 {
+   // Don't process this event is segment variations parameters are being updated
+   // See UpdateSegmentVariationParameters
+   if (m_bUpdatingSegmentVariationParameters) return;
+
    CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
    CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
 
@@ -1530,8 +1539,7 @@ void CGirderSegmentGeneralPage::InitEndBlockControls()
 
 void CGirderSegmentGeneralPage::OnBnClickedBottomFlangeDepth()
 {
-   BOOL bEnable[4];
-   GetSectionVariationControlState(&bEnable[0]);
+   auto bEnable = GetSectionVariationControlState();
 
    // if the input is enabled because of the section variation type,
    // show the default value, otherwise the input isn't applicable to

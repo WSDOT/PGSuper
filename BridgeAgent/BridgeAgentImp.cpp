@@ -16073,8 +16073,8 @@ void CBridgeAgentImp::GetStrandProfile(const CPrecastSegmentData* pSegment, cons
 
    Float64 Lg = GetSegmentLength(segmentKey);
 
-   const CStrandRow* pStrandRow;
-   pStrands->GetStrandRow(strandType, strandIdx, &pStrandRow);
+   const CStrandRow* pStrandRow = pStrands->GetStrandRow(strandType, strandIdx);
+   CHECK(pStrandRow);
 
    std::array<Float64, 4> Xhp, Y;
    ResolveStrandRowElevations(pSegment, pStrands, *pStrandRow, Xhp, Y); // gets Y in Girder Section Coordinates (measured from top of girder)
@@ -17885,18 +17885,19 @@ bool CBridgeAgentImp::IsStrandDebonded(const CSegmentKey& segmentKey,StrandIndex
    if (pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectStrandInput)
    {
       ATLASSERT(pConfig == nullptr);
-      const auto& strandRows = pSegment->Strands.GetStrandRows();
-      const auto& strandRow = strandRows[strandIdx];
-      if (strandRow.m_bIsDebonded[etStart] || strandRow.m_bIsDebonded[etEnd])
+      const auto* pStrandRow = pSegment->Strands.GetStrandRow(strandType, strandIdx);
+      CHECK(pStrandRow);
+
+      if (pStrandRow != nullptr && (pStrandRow->m_bIsDebonded[etStart] || pStrandRow->m_bIsDebonded[etEnd]))
       {
-         if (strandRow.m_bIsDebonded[etStart])
+         if (pStrandRow->m_bIsDebonded[etStart])
          {
-            *pStart = strandRow.m_DebondLength[etStart];
+            *pStart = pStrandRow->m_DebondLength[etStart];
          }
 
-         if (strandRow.m_bIsDebonded[etEnd])
+         if (pStrandRow->m_bIsDebonded[etEnd])
          {
-            *pEnd = length - strandRow.m_DebondLength[etEnd];
+            *pEnd = length - pStrandRow->m_DebondLength[etEnd];
          }
          bDebonded = true;
       }

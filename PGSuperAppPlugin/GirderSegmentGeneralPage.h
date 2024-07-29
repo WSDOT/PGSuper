@@ -90,8 +90,8 @@ protected:
    void ExchangeConcreteData(CDataExchange* pDX);
 
    void FillVariationTypeComboBox();
-   void GetSectionVariationControlState(BOOL* pbEnable);
-   void GetSectionVariationControlState(pgsTypes::SegmentVariationType variationType,BOOL* pbEnable);
+   std::array<BOOL,4> GetSectionVariationControlState();
+   std::array<BOOL,4> GetSectionVariationControlState(pgsTypes::SegmentVariationType variationType);
    void UpdateSegmentVariationParameters(pgsTypes::SegmentVariationType variationType);
 
    void UpdateFc();
@@ -120,6 +120,8 @@ protected:
 
    void InitBottomFlangeDepthControls();
    void InitEndBlockControls();
+
+   bool m_bUpdatingSegmentVariationParameters = false; // indicates if parameters are currently being updated.
 
 public:
    afx_msg void OnSegmentChanged();

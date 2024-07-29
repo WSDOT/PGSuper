@@ -2908,7 +2908,7 @@ void CBridgePlanView::BuildSlabDisplayObjects()
          doDeckRegion->SetGravityWellStrategy(gravity_well);
 
          CString strMsg;
-         strMsg.Format(_T("%s\n\nRegion %d\nSequence %d"), strBaseMsg, LABEL_INDEX(regionIdx), LABEL_INDEX(sequenceIdx));
+         strMsg.Format(_T("%s\n\nRegion: %d\nSequence: %d"), strBaseMsg, LABEL_INDEX(regionIdx), LABEL_INDEX(sequenceIdx));
 
          doDeckRegion->SetToolTipText(strMsg);
          doDeckRegion->SetMaxTipWidth(TOOLTIP_WIDTH);
