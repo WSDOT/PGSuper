@@ -236,7 +236,12 @@ Float64 pgsBearingDesignEngineer::GetDistanceToPointOfFixity(const pgsPointOfInt
 
     pDetails->poi_fixity = poi_fixity;
 
-    L = abs(pPoi->ConvertPoiToGirderlineCoordinate(poi_fixity) - pPoi->ConvertPoiToGirderlineCoordinate(poi_brg));
+    Float64 d_brg = pPoi->ConvertPoiToGirderlineCoordinate(poi_brg);
+    Float64 d_fixity = pPoi->ConvertPoiToGirderlineCoordinate(poi_fixity);
+
+
+
+    L = abs(d_fixity - d_brg);
 
     return L;
 
