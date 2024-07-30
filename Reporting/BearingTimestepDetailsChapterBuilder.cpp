@@ -120,73 +120,69 @@ rptChapter* CBearingTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<c
    *pPara << rptNewLine;
 
 
-
    GET_IFACE2(pBroker, IBridge, pBridge);
 
    GET_IFACE2(pBroker, IIntervals, pIntervals);
    IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
 
-
-
-
-
    GET_IFACE2(pBroker, IPointOfInterest, pPOI);
-
-
-
-
 
    SHEARDEFORMATIONDETAILS details;
    GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
    pBearingDesignParameters->GetBearingTableParameters(girderKey, &details);
 
-   // get poi where pier Reactions occur
+
    PoiList vPoi;
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(girderKey.girderIndex, details.startGroup, details.endGroup, &vGirderKeys);
    for (const auto& thisGirderKey : vGirderKeys)
    {
-       PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(thisGirderKey.groupIndex);
-       PierIndexType endPierIdx = pBridge->GetGirderGroupEndPier(thisGirderKey.groupIndex);
-       for (PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++)
-       {
-           if (pierIdx == startPierIdx)
-           {
-               CSegmentKey segmentKey(thisGirderKey, 0);
-               PoiList segPoi;
-               pPOI->GetPointsOfInterest(segmentKey, POI_0L | POI_ERECTED_SEGMENT, &segPoi);
-               vPoi.push_back(segPoi.front());
-           }
-           else if (pierIdx == endPierIdx)
-           {
-               SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
-               CSegmentKey segmentKey(thisGirderKey, nSegments - 1);
-               PoiList segPoi;
-               pPOI->GetPointsOfInterest(segmentKey, POI_10L | POI_ERECTED_SEGMENT, &segPoi);
-               vPoi.push_back(segPoi.front());
-           }
-           else
-           {
-               Float64 Xgp;
-               VERIFY(pBridge->GetPierLocation(thisGirderKey, pierIdx, &Xgp));
-               pgsPointOfInterest poi = pPOI->ConvertGirderPathCoordinateToPoi(thisGirderKey, Xgp);
-               vPoi.push_back(poi);
-           }
-       }
+        PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(thisGirderKey.groupIndex);
+        PierIndexType endPierIdx = pBridge->GetGirderGroupEndPier(thisGirderKey.groupIndex);
+        for (PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++)
+        {
+            if (pierIdx == startPierIdx)
+            {
+                CSegmentKey segmentKey(thisGirderKey, 0);
+                PoiList segPoi;
+                pPOI->GetPointsOfInterest(segmentKey, POI_0L | POI_ERECTED_SEGMENT, &segPoi);
+                vPoi.push_back(segPoi.front());
+            }
+            else if (pierIdx == endPierIdx)
+            {
+                SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
+                CSegmentKey segmentKey(thisGirderKey, nSegments - 1);
+                PoiList segPoi;
+                pPOI->GetPointsOfInterest(segmentKey, POI_10L | POI_ERECTED_SEGMENT, &segPoi);
+                vPoi.push_back(segPoi.front());
+            }
+            else
+            {
+                Float64 Xgp;
+                VERIFY(pBridge->GetPierLocation(thisGirderKey, pierIdx, &Xgp));
+                pgsPointOfInterest poi = pPOI->ConvertGirderPathCoordinateToPoi(thisGirderKey, Xgp);
+                vPoi.push_back(poi);
+            }
+        }
    }
-
 
    GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
    IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
    std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, girderKey));
 
-
    ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
    iter.First();
    PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
 
-   ReactionTableType tableType = BearingReactionsTable;
 
+
+
+
+
+
+
+
+   ReactionTableType tableType = BearingReactionsTable;
 
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
    INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
@@ -195,8 +191,6 @@ rptChapter* CBearingTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<c
    INIT_UV_PROTOTYPE(rptLength2UnitValue, A, pDisplayUnits->GetAreaUnit(), false);
    INIT_UV_PROTOTYPE(rptLengthUnitValue, deflection, pDisplayUnits->GetDeflectionUnit(), false);
    INIT_UV_PROTOTYPE(rptTemperatureUnitValue, temperature, pDisplayUnits->GetTemperatureUnit(), false);
-
-
 
    // Build table
    INIT_UV_PROTOTYPE(rptForceUnitValue, reactu, pDisplayUnits->GetShearUnit(), false);
