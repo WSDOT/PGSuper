@@ -26,6 +26,8 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <PgsExt\TemporarySupportData.h>
+#include <PgsExt\GirderGroupData.h>
+#include <PgsExt\BridgeDescription2.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -70,8 +72,9 @@ rptChapter* CTemporarySupportElevationDetailsChapterBuilder::Build(const std::sh
    }
    else
    {
-      ATLASSERT(false); // not expecting a different kind of report spec
-      return pChapter;
+      girderIndex = ALL_GIRDERS;
+      //ATLASSERT(false); // not expecting a different kind of report spec
+      //return pChapter;
    }
 
    rptParagraph* pPara = new rptParagraph;
@@ -101,6 +104,7 @@ rptChapter* CTemporarySupportElevationDetailsChapterBuilder::Build(const std::sh
 
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    bool bIsDirectHaunchInput = pIBridgeDesc->GetHaunchInputDepthType() != pgsTypes::hidACamber;
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    GET_IFACE2_NOCHECK(pBroker, ITempSupport, pTempSupport);
 
@@ -108,7 +112,12 @@ rptChapter* CTemporarySupportElevationDetailsChapterBuilder::Build(const std::sh
 
    for (SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++)
    {
-      std::vector<TEMPORARYSUPPORTELEVATIONDETAILS> vElevDetails = pTempSupport->GetElevationDetails(tsIdx,girderIndex);
+      const auto* pTS = pBridgeDesc->GetTemporarySupport(tsIdx);
+      auto group = pBridgeDesc->GetGirderGroup(pTS->GetSpan());
+      auto grpIdx = group->GetIndex();
+      auto nGirders = group->GetGirderCount();
+      auto first_girder_idx = (girderIndex == ALL_GIRDERS ? 0 : girderIndex);
+      auto last_girder_idx = (girderIndex == ALL_GIRDERS ? nGirders - 1 : girderIndex);
 
       CString strTitle;
       strTitle.Format(_T("Temporary Support %d - %s"), LABEL_TEMPORARY_SUPPORT(tsIdx), CTemporarySupportData::AsString(pBridge->GetTemporarySupportType(tsIdx)));
@@ -130,7 +139,7 @@ rptChapter* CTemporarySupportElevationDetailsChapterBuilder::Build(const std::sh
 
       if (bIsDirectHaunchInput)
       {
-         (*pTable)(0,col++) << COLHDR(_T("Design") << rptNewLine << _T("Deck") << rptNewLine << _T("Elev"),rptLengthUnitTag,pDisplayUnits->GetSpanLengthUnit());
+         (*pTable)(0, col++) << COLHDR(_T("Design") << rptNewLine << _T("Deck") << rptNewLine << _T("Elev"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
       }
 
       (*pTable)(0, col++) << COLHDR(_T("Finish") << rptNewLine << _T("Deck") << rptNewLine << _T("Elev"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
@@ -145,7 +154,7 @@ rptChapter* CTemporarySupportElevationDetailsChapterBuilder::Build(const std::sh
 
       if (bIsDirectHaunchInput)
       {
-         (*pTable)(0,col++) << COLHDR(_T("Haunch") << rptNewLine << _T("Depth"),rptLengthUnitTag,pDisplayUnits->GetComponentDimUnit());
+         (*pTable)(0, col++) << COLHDR(_T("Haunch") << rptNewLine << _T("Depth"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
       }
 
       (*pTable)(0, col++) << COLHDR(_T("Adjusted") << rptNewLine << _T("Girder") << rptNewLine << _T("Height"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
@@ -156,50 +165,56 @@ rptChapter* CTemporarySupportElevationDetailsChapterBuilder::Build(const std::sh
       (*pTable)(0, col++) << COLHDR(_T("Bottom") << rptNewLine << _T("Girder") << rptNewLine << _T("Elevation"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
       RowIndexType row = pTable->GetNumberOfHeaderRows();
-      for (const auto& details : vElevDetails)
+
+      for (auto gdrIdx = first_girder_idx; gdrIdx <= last_girder_idx; gdrIdx++)
       {
-         col = 0;
-         (*pTable)(row, col++) << LABEL_GIRDER(details.girderIdx);
-         (*pTable)(row, col++) << LABEL_SEGMENT(details.segmentIdx);
-         if (details.bContinuous)
-         {
-            (*pTable)(row, col++) << _T("CL TS");
-         }
-         else
-         {
-            (*pTable)(row, col++) << strMemberEnd[details.endType];
-         }
-         (*pTable)(row, col++) << rptRcStation(details.Station, &pDisplayUnits->GetStationFormat());
-         (*pTable)(row, col++) << RPT_OFFSET(details.Offset,elev);
+         std::vector<TEMPORARYSUPPORTELEVATIONDETAILS> vElevDetails = pTempSupport->GetElevationDetails(tsIdx, gdrIdx);
 
-         if (bIsDirectHaunchInput)
+         for (const auto& details : vElevDetails)
          {
-            (*pTable)(row,col++) << elev.SetValue(details.DesignGradeElevation);
-         }
+            col = 0;
+            (*pTable)(row, col++) << LABEL_GIRDER(details.girderIdx);
+            (*pTable)(row, col++) << LABEL_SEGMENT(details.segmentIdx);
+            if (details.bContinuous)
+            {
+               (*pTable)(row, col++) << _T("CL TS");
+            }
+            else
+            {
+               (*pTable)(row, col++) << strMemberEnd[details.endType];
+            }
+            (*pTable)(row, col++) << rptRcStation(details.Station, &pDisplayUnits->GetStationFormat());
+            (*pTable)(row, col++) << RPT_OFFSET(details.Offset, elev);
 
-         (*pTable)(row, col++) << elev.SetValue(details.FinishedGradeElevation);
-         (*pTable)(row, col++) << details.ProfileGrade;
-         (*pTable)(row, col++) << details.GirderGrade;
-         (*pTable)(row, col++) << details.GirderOrientation;
-         if (bHasOverlay)
-         {
-            (*pTable)(row, col++) << dim.SetValue(details.OverlayDepth);
-         }
-         (*pTable)(row, col++) << dim.SetValue(details.SlabOffset);
+            if (bIsDirectHaunchInput)
+            {
+               (*pTable)(row, col++) << elev.SetValue(details.DesignGradeElevation);
+            }
 
-         if (bIsDirectHaunchInput)
-         {
-            (*pTable)(row,col++) << dim.SetValue(details.HaunchDepth);
-         }
+            (*pTable)(row, col++) << elev.SetValue(details.FinishedGradeElevation);
+            (*pTable)(row, col++) << details.ProfileGrade;
+            (*pTable)(row, col++) << details.GirderGrade;
+            (*pTable)(row, col++) << details.GirderOrientation;
+            if (bHasOverlay)
+            {
+               (*pTable)(row, col++) << dim.SetValue(details.OverlayDepth);
+            }
+            (*pTable)(row, col++) << dim.SetValue(details.SlabOffset);
 
-         (*pTable)(row, col++) << dim.SetValue(details.Hg);
-         if (bHasElevationAdjustment)
-         {
-            (*pTable)(row, col++) << dim.SetValue(details.ElevationAdjustment);
-         }
-         (*pTable)(row, col++) << elev.SetValue(details.Elevation);
+            if (bIsDirectHaunchInput)
+            {
+               (*pTable)(row, col++) << dim.SetValue(details.HaunchDepth);
+            }
 
-         row++;
+            (*pTable)(row, col++) << dim.SetValue(details.Hg);
+            if (bHasElevationAdjustment)
+            {
+               (*pTable)(row, col++) << dim.SetValue(details.ElevationAdjustment);
+            }
+            (*pTable)(row, col++) << elev.SetValue(details.Elevation);
+
+            row++;
+         }
       }
       *pPara << rptNewLine;
    }

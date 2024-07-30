@@ -24,7 +24,10 @@
 
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
+#include <IFace\Project.h>
 #include <PgsExt\TemporarySupportData.h>
+#include <PgsExt\GirderGroupData.h>
+#include <PgsExt\BridgeDescription2.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -69,8 +72,9 @@ rptChapter* CTemporarySupportElevationsChapterBuilder::Build(const std::shared_p
    }
    else
    {
-      ATLASSERT(false); // not expecting a different kind of report spec
-      return pChapter;
+      //ATLASSERT(false); // not expecting a different kind of report spec
+      //return pChapter;
+      girderIndex = ALL_GIRDERS;
    }
 
    rptParagraph* pPara = new rptParagraph;
@@ -88,12 +92,13 @@ rptChapter* CTemporarySupportElevationsChapterBuilder::Build(const std::shared_p
 
    GET_IFACE2_NOCHECK(pBroker, ITempSupport, pTempSupport); // not used if no temp supports
 
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
+
    std::array<std::_tstring, 2> strMemberEnd{ _T("Start"),_T("End") };
 
    for (SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++)
    {
-      std::vector<TEMPORARYSUPPORTELEVATIONDETAILS> vElevDetails = pTempSupport->GetElevationDetails(tsIdx, girderIndex);
-
       CString strTitle;
       strTitle.Format(_T("Temporary Support %d - %s"), LABEL_TEMPORARY_SUPPORT(tsIdx), CTemporarySupportData::AsString(pBridge->GetTemporarySupportType(tsIdx)));
       rptRcTable* pTable = rptStyleManager::CreateDefaultTable(4, strTitle);
@@ -107,22 +112,35 @@ rptChapter* CTemporarySupportElevationsChapterBuilder::Build(const std::shared_p
       (*pTable)(0, col++) << COLHDR(_T("Bottom") << rptNewLine << _T("Girder") << rptNewLine << _T("Elevation"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
       RowIndexType row = pTable->GetNumberOfHeaderRows();
-      for (const auto& details : vElevDetails)
-      {
-         col = 0;
-         (*pTable)(row, col++) << LABEL_GIRDER(details.girderIdx);
-         (*pTable)(row, col++) << LABEL_SEGMENT(details.segmentIdx);
-         if (details.bContinuous)
-         {
-            (*pTable)(row, col++) << _T("CL TS");
-         }
-         else
-         {
-            (*pTable)(row, col++) << strMemberEnd[details.endType];
-         }
-         (*pTable)(row, col++) << dim.SetValue(details.Elevation);
+      
+      const auto* pTS = pBridgeDesc->GetTemporarySupport(tsIdx);
+      auto group = pBridgeDesc->GetGirderGroup(pTS->GetSpan());
+      auto grpIdx = group->GetIndex();
+      auto nGirders = group->GetGirderCount();
+      auto first_girder_idx = (girderIndex == ALL_GIRDERS ? 0 : girderIndex);
+      auto last_girder_idx = (girderIndex == ALL_GIRDERS ? nGirders - 1 : girderIndex);
 
-         row++;
+      for (auto gdrIdx = first_girder_idx; gdrIdx <= last_girder_idx; gdrIdx++)
+      {
+         std::vector<TEMPORARYSUPPORTELEVATIONDETAILS> vElevDetails = pTempSupport->GetElevationDetails(tsIdx, gdrIdx);
+
+         for (const auto& details : vElevDetails)
+         {
+            col = 0;
+            (*pTable)(row, col++) << LABEL_GIRDER(details.girderIdx);
+            (*pTable)(row, col++) << LABEL_SEGMENT(details.segmentIdx);
+            if (details.bContinuous)
+            {
+               (*pTable)(row, col++) << _T("CL TS");
+            }
+            else
+            {
+               (*pTable)(row, col++) << strMemberEnd[details.endType];
+            }
+            (*pTable)(row, col++) << dim.SetValue(details.Elevation);
+
+            row++;
+         }
       }
       *pPara << rptNewLine;
    }
