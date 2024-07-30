@@ -176,6 +176,9 @@
     <ClCompile Include="BearingSeatElevationsDetailsChapterBuilder2.cpp" />
     <ClCompile Include="BearingShearDeformationTable.cpp" />
     <ClCompile Include="BearingTimestepDetailsChapterBuilder.cpp" />
+    <ClCompile Include="BearingTimeStepDetailsDlg.cpp" />
+    <ClCompile Include="BearingTimeStepDetailsReportSpecification.cpp" />
+    <ClCompile Include="BearingTimeStepDetailsReportSpecificationBuilder.cpp" />
     <ClCompile Include="BridgeAnalysisChapterBuilder.cpp" />
     <ClCompile Include="BridgeAnalysisReportDlg.cpp" />
     <ClCompile Include="BridgeAnalysisReportSpecification.cpp" />
@@ -386,6 +389,8 @@
     <ClInclude Include="..\Include\Reporting\BearingSeatElevationsDetailsChapterBuilder2.h" />
     <ClInclude Include="..\Include\Reporting\BearingShearDeformationTable.h" />
     <ClInclude Include="..\Include\Reporting\BearingTimeStepDetailsChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\BearingTimeStepDetailsReportSpecification.h" />
+    <ClInclude Include="..\Include\Reporting\BearingTimeStepDetailsReportSpecificationBuilder.h" />
     <ClInclude Include="..\Include\Reporting\BridgeAnalysisChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\BridgeAnalysisReportDlg.h" />
     <ClInclude Include="..\Include\Reporting\BridgeAnalysisReportSpecification.h" />
@@ -562,6 +567,7 @@
     <ClInclude Include="..\Include\Reporting\VehicularLoadReactionTable.h" />
     <ClInclude Include="..\Include\Reporting\VehicularLoadResultsTable.h" />
     <ClInclude Include="..\Include\SharedCtrls\MultiGirderSelectGrid.h" />
+    <ClInclude Include="BearingTimeStepDetailsDlg.h" />
     <ClInclude Include="CrackedSectionReportSpecification.h" />
     <ClInclude Include="EquilibriumCheckDlg.h" />
     <ClInclude Include="InitialStrainAnalysisDlg.h" />

@@ -99,7 +99,7 @@
 #include <Reporting\TimeStepDetailsReportSpecificationBuilder.h>
 
 #include <Reporting\BearingTimeStepDetailsChapterBuilder.h>
-//#include <Reporting\BearingTimeStepDetailsReportSpecificationBuilder.h>
+#include <Reporting\BearingTimeStepDetailsReportSpecificationBuilder.h>
 
 #include <Reporting\PrincipalWebStressDetailsChapterBuilder.h>
 #include <Reporting\PrincipalWebStressDetailsReportSpecificationBuilder.h>
@@ -143,6 +143,7 @@ HRESULT CReporterBase::InitCommonReportBuilders()
    CreateLoadRatingReport();
    CreateLoadRatingSummaryReport();
    CreateBearingDesignReport();
+   CreateBearingTimeStepDetailsReport();
    CreateBridgeAnalysisReport();
    CreateHaulingReport();
    CreateLiftingReport();
@@ -323,6 +324,21 @@ void CReporterBase::CreateBearingDesignReport()
    pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingDesignDetailsChapterBuilder>()));
    pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingDesignParametersChapterBuilder>()));
    pRptMgr->AddReportBuilder( pRptBuilder );
+}
+
+void CReporterBase::CreateBearingTimeStepDetailsReport()
+{
+    GET_IFACE(IReportManager, pRptMgr);
+    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pPoiRptSpecBuilder(std::make_shared<CBearingTimeStepDetailsReportSpecificationBuilder>(m_pBroker));
+
+    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Bearing Shear Deformation Details Report")));
+#if defined _DEBUG || defined _BETA_VERSION
+    pRptBuilder->IncludeTimingChapter();
+#endif
+    pRptBuilder->AddTitlePageBuilder(std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())));
+    pRptBuilder->SetReportSpecificationBuilder(pPoiRptSpecBuilder);
+    pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingTimeStepDetailsChapterBuilder>()));
+    pRptMgr->AddReportBuilder(pRptBuilder);
 }
 
 void CReporterBase::CreateSpecChecReport()

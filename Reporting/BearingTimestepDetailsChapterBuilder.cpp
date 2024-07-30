@@ -22,7 +22,7 @@
 
 #include "StdAfx.h"
 #include <Reporting\BearingTimeStepDetailsChapterBuilder.h>
-#include <Reporting\TimeStepDetailsReportSpecification.h>
+#include <Reporting\BearingTimeStepDetailsReportSpecification.h>
 #include <Reporting\ReactionInterfaceAdapters.h>
 
 #include <IFace\Project.h>
@@ -96,22 +96,14 @@ rptChapter* CBearingTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<c
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
+   auto pBTSDRptSpec = std::dynamic_pointer_cast<const CBearingTimeStepDetailsReportSpecification>(pRptSpec);
 
    CComPtr<IBroker> pBroker;
-   CGirderKey girderKey;
+   pBTSDRptSpec->GetBroker(&pBroker);
+   const pgsPointOfInterest& rptPoi(pBTSDRptSpec->GetPointOfInterest());
+   const CSegmentKey& segmentKey(rptPoi.GetSegmentKey());
+   const CGirderKey& girderKey(segmentKey);
 
-   if (pGdrRptSpec)
-   {
-       pGdrRptSpec->GetBroker(&pBroker);
-       girderKey = pGdrRptSpec->GetGirderKey();
-   }
-   else
-   {
-       pGdrLineRptSpec->GetBroker(&pBroker);
-       girderKey = pGdrLineRptSpec->GetGirderKey();
-   }
 
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )

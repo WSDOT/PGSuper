@@ -28,7 +28,8 @@
 
 #include <IFace\AnalysisResults.h>
 
-struct TIME_STEP_DETAILS;
+struct SHEARDEFORMATIONDETAILS;
+struct TIMEDEPENDENTSHEARDEFORMATIONPARAMETERS;
 interface IIntervals;
 interface IMaterials;
 
@@ -58,8 +59,6 @@ public:
    virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 
 protected:
-   rptRcTable* BuildIncrementalStrainTable(IBroker* pBroker, const std::vector<pgsTypes::ProductForceType>& vLoads, const TIME_STEP_DETAILS& tsDetails, bool bHasDeck, IEAFDisplayUnits* pDisplayUnits) const;
-
    // Prevent accidental copying and assignment
    CBearingTimeStepDetailsChapterBuilder(const CBearingTimeStepDetailsChapterBuilder&) = delete;
    CBearingTimeStepDetailsChapterBuilder& operator=(const CBearingTimeStepDetailsChapterBuilder&) = delete;
