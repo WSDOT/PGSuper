@@ -2126,9 +2126,9 @@ void CIntervalManager::ProcessStep5(EventIndexType eventIdx,const CTimelineEvent
    // that goes from the end of last interval for the current event
    // to the start of the next event
    EventIndexType nEvents = pTimelineEvent->GetTimelineManager()->GetEventCount();
-   if ( eventIdx == nEvents-1 && pTimelineEvent->GetDuration() == 0 )
+   if ( eventIdx == nEvents-1 && pTimelineEvent->GetDuration() == 0 && m_Intervals.back().EndEventIdx == eventIdx)
    {
-      // don't need to create a zero duration time step at the end of the timeline
+      // don't need to create a zero duration time step at the end of the timeline unless it is explicitly defined
       return;
    }
 
@@ -2146,8 +2146,14 @@ void CIntervalManager::ProcessStep5(EventIndexType eventIdx,const CTimelineEvent
    timeStepInterval.Middle = 0.5*(timeStepInterval.Start + timeStepInterval.End);
    timeStepInterval.Description = _T("Time Step");
 
-   if ( 0 < timeStepInterval.Duration )
+   if ( 0 < timeStepInterval.Duration || eventIdx == nEvents-1)
    {
+      if (eventIdx == nEvents - 1)
+      {
+         // if this is the last event, it should start at the end of the previous event
+         timeStepInterval.StartEventIdx--;
+      }
+
       StoreInterval(timeStepInterval);
    }
 }
