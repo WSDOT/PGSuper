@@ -22,7 +22,6 @@
 //
 #include "StdAfx.h"
 #include <Reporting\BearingShearDeformationTable.h>
-#include <Reporting\ProductMomentsTable.h>
 #include <Reporting\ReactionInterfaceAdapters.h>
 
 
@@ -323,15 +322,9 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
     iter.First();
     PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
 
-    ReactionTableType tableType = BearingReactionsTable;
-
     // Build table
     INIT_UV_PROTOTYPE(rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false);
     INIT_UV_PROTOTYPE(rptForceUnitValue, reactu, pDisplayUnits->GetShearUnit(), false);
-
-    // TRICKY:
-    // Use the adapter class to get the reaction response functions we need and to iterate piers
-    ReactionUnitValueTool reaction(tableType, reactu);
 
 
     // Use iterator to walk locations
@@ -343,8 +336,6 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
         const CGirderKey& thisGirderKey(reactionLocation.GirderKey);
 
         (*p_table)(row, col++) << reactionLocation.PierLabel;
-
-        ReactionDecider reactionDecider(BearingReactionsTable, reactionLocation, thisGirderKey, pBridge, pIntervals);
 
         const pgsPointOfInterest& poi = vPoi[reactionLocation.PierIdx - startPierIdx];
 
