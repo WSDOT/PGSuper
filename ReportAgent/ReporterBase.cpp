@@ -468,14 +468,14 @@ void CReporterBase::CreateStageByStageDetailsReport()
 void CReporterBase::CreateTimeStepDetailsReport()
 {
    GET_IFACE(IReportManager,pRptMgr);
-   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pPoiRptSpecBuilder(  std::make_shared<CTimeStepDetailsReportSpecificationBuilder>(m_pBroker) );
+   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pTimeStepRptSpecBuilder(  std::make_shared<CTimeStepDetailsReportSpecificationBuilder>(m_pBroker) );
 
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Time Step Details Report")));
 #if defined _DEBUG || defined _BETA_VERSION
    pRptBuilder->IncludeTimingChapter();
 #endif
    pRptBuilder->AddTitlePageBuilder( std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
-   pRptBuilder->SetReportSpecificationBuilder( pPoiRptSpecBuilder );
+   pRptBuilder->SetReportSpecificationBuilder( pTimeStepRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTimeStepDetailsChapterBuilder>()) );
    pRptMgr->AddReportBuilder( pRptBuilder );
 }
