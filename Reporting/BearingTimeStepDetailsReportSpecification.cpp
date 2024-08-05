@@ -22,7 +22,6 @@
 
 #include "StdAfx.h"
 #include <Reporting\BearingTimeStepDetailsReportSpecification.h>
-#include <IFace\PointOfInterest.h>
 #include <PgsExt\GirderLabel.h>
 
 #ifdef _DEBUG
@@ -31,20 +30,21 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CBearingTimeStepDetailsReportSpecification::CBearingTimeStepDetailsReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,bool bReportAtAllLocations,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) :
+CBearingTimeStepDetailsReportSpecification::CBearingTimeStepDetailsReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,
+    bool bReportAtAllLocations,const ReactionLocation& location,IntervalIndexType intervalIdx) :
 CBrokerReportSpecification(strReportName,pBroker)
 {
-   SetOptions(bReportAtAllLocations,poi,intervalIdx);
+   SetOptions(bReportAtAllLocations,location,intervalIdx);
 }
 
 CBearingTimeStepDetailsReportSpecification::~CBearingTimeStepDetailsReportSpecification(void)
 {
 }
 
-void CBearingTimeStepDetailsReportSpecification::SetOptions(bool bReportAtAllLocations,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx)
+void CBearingTimeStepDetailsReportSpecification::SetOptions(bool bReportAtAllLocations,const ReactionLocation& location,IntervalIndexType intervalIdx)
 {
    m_bReportAtAllLocations = bReportAtAllLocations;
-   m_Poi = poi;
+   m_reactionLocation = location;
    m_IntervalIdx = intervalIdx;
 }
 
@@ -59,27 +59,18 @@ HRESULT CBearingTimeStepDetailsReportSpecification::Validate() const
 
 std::_tstring CBearingTimeStepDetailsReportSpecification::GetReportContextString() const
 {
-   CGirderKey girderKey = m_Poi.GetSegmentKey();
+   CGirderKey girderKey = m_reactionLocation.GirderKey;
    std::_tstring strLocation;
    if (m_bReportAtAllLocations)
    {
-      strLocation = _T("All Analysis Sections");
+      strLocation = _T("All Bearing Locations");
    }
    else if ( girderKey.groupIndex != ALL_GROUPS && girderKey.girderIndex != ALL_GIRDERS )
    {
-      CComPtr<IBroker> pBroker;
-      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-      rptPointOfInterest rptPoi(&pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
-      rptPoi.SetValue(POI_SPAN,m_Poi);
-      rptPoi.PrefixAttributes(false); // put the attributes after the location
-      rptPoi.IncludeSpanAndGirder(true);
-      CString strLabel;
-      strLabel.Format(_T("%s"), rptPoi.AsString().c_str());
-
-      strLabel.Replace(_T("<sub>"), _T(""));
-      strLabel.Replace(_T("</sub>"), _T(""));
+      CString strLabel{ m_reactionLocation.PierLabel.c_str() };
 
       strLocation = std::_tstring(strLabel);
+
    }
 
    std::_tstring strIntervals;
@@ -103,9 +94,9 @@ bool CBearingTimeStepDetailsReportSpecification::ReportAtAllLocations() const
    return m_bReportAtAllLocations;
 }
 
-pgsPointOfInterest CBearingTimeStepDetailsReportSpecification::GetPointOfInterest() const
+ReactionLocation CBearingTimeStepDetailsReportSpecification::GetReactionLocation() const
 {
-   return m_Poi;
+   return m_reactionLocation;
 }
 
 IntervalIndexType CBearingTimeStepDetailsReportSpecification::GetInterval() const

@@ -24,26 +24,28 @@
 
 #include <Reporting\ReportingExp.h>
 #include <Reporting\BrokerReportSpecification.h>
-#include <PgsExt\ReportPointOfInterest.h>
+#include <IFace/AnalysisResults.h>
+
 
 class REPORTINGCLASS CBearingTimeStepDetailsReportSpecification :
    public CBrokerReportSpecification
 {
 public:
-	CBearingTimeStepDetailsReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,bool bReportAtAllLocations,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx);
+	CBearingTimeStepDetailsReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,bool bReportAtAllLocations,
+		const ReactionLocation& location,IntervalIndexType intervalIdx);
    ~CBearingTimeStepDetailsReportSpecification(void);
 
-   void SetOptions(bool bReportAtAllLocations,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx);
+   void SetOptions(bool bReportAtAllLocations,const ReactionLocation& location,IntervalIndexType intervalIdx);
 
    virtual HRESULT Validate() const;
    virtual std::_tstring GetReportContextString() const override;
 
-   pgsPointOfInterest GetPointOfInterest() const;
+   ReactionLocation GetReactionLocation() const;
    IntervalIndexType GetInterval() const;
    bool ReportAtAllLocations() const;
 
 protected:
    bool m_bReportAtAllLocations;
-   pgsPointOfInterest m_Poi;
+   ReactionLocation m_reactionLocation;
    IntervalIndexType m_IntervalIdx;
 };

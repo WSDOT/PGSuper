@@ -27,6 +27,9 @@
 
 #include <IFace\Selection.h>
 #include <IFace\PointOfInterest.h>
+#include <IFace\Bridge.h>
+#include <Reporting/ReactionInterfaceAdapters.h>
+#include <IFace/BearingDesignParameters.h>
 
 
 #ifdef _DEBUG
@@ -52,35 +55,80 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CBearingTimeStepDetailsRep
    // initialize dialog for the current cut location
    std::shared_ptr<CBearingTimeStepDetailsReportSpecification> pInitRptSpec( std::dynamic_pointer_cast<CBearingTimeStepDetailsReportSpecification>(pOldRptSpec) );
 
-   pgsPointOfInterest initial_poi;
-   if ( pInitRptSpec )
+   GET_IFACE(IBridge, pBridge);
+   GET_IFACE(IPointOfInterest, pPOI);
+   GET_IFACE(IIntervals, pIntervals);
+   GET_IFACE(IBearingDesignParameters, pBearingDesignParameters);
+   SHEARDEFORMATIONDETAILS details;
+   CGirderKey girderKey;
+
+   ReactionLocation initial_location;
+   if (pInitRptSpec)
    {
-      initial_poi = pInitRptSpec->GetPointOfInterest();
+       initial_location = pInitRptSpec->GetReactionLocation();
    }
    else
    {
-      GET_IFACE(ISelection,pSelection);
-      CSelection selection = pSelection->GetSelection();
-      CGirderKey girderKey;
-      if ( selection.Type == CSelection::Girder || selection.Type == CSelection::Segment )
-      {
-         girderKey.groupIndex   = selection.GroupIdx;
-         girderKey.girderIndex  = selection.GirderIdx;
-      }
-      else
-      {
-         girderKey.groupIndex   = 0;
-         girderKey.girderIndex  = 0;
-      }
+       GET_IFACE(ISelection, pSelection);
+       CSelection selection = pSelection->GetSelection();
+       if (selection.Type == CSelection::Girder || selection.Type == CSelection::Segment)
+       {
+           girderKey.groupIndex = selection.GroupIdx;
+           girderKey.girderIndex = selection.GirderIdx;
+       }
+       else
+       {
+           girderKey.groupIndex = 0;
+           girderKey.girderIndex = 0;
+       }
 
-      GET_IFACE(IPointOfInterest,pPoi);
-      PoiList vPoi;
-      pPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), POI_5L | POI_SPAN, &vPoi);
-      ATLASSERT(0 < vPoi.size());
-      initial_poi = vPoi.front().get();
+       GET_IFACE(IBearingDesign, pBearingDesign);
+
+       IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
+       std::unique_ptr<CmbLsBearingDesignReactionAdapter> pForces(std::make_unique<CmbLsBearingDesignReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, girderKey));
+       ReactionLocationContainer vReactionLocations = pForces->GetBearingReactionLocations(lastCompositeDeckIntervalIdx, girderKey, pBridge, pBearingDesign);
+       initial_location = vReactionLocations.front();   //get first location based on girder
+   }
+   
+   pBearingDesignParameters->GetBearingTableParameters(girderKey, &details);
+
+   PoiList vPoi;
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(girderKey.girderIndex, details.startGroup, details.endGroup, &vGirderKeys);
+   for (const auto& thisGirderKey : vGirderKeys)
+   {
+       PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(thisGirderKey.groupIndex);
+       PierIndexType endPierIdx = pBridge->GetGirderGroupEndPier(thisGirderKey.groupIndex);
+       for (PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++)
+       {
+           if (pierIdx == startPierIdx)
+           {
+               CSegmentKey segmentKey(thisGirderKey, 0);
+               PoiList segPoi;
+               pPOI->GetPointsOfInterest(segmentKey, POI_0L | POI_ERECTED_SEGMENT, &segPoi);
+               vPoi.push_back(segPoi.front());
+           }
+           else if (pierIdx == endPierIdx)
+           {
+               SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
+               CSegmentKey segmentKey(thisGirderKey, nSegments - 1);
+               PoiList segPoi;
+               pPOI->GetPointsOfInterest(segmentKey, POI_10L | POI_ERECTED_SEGMENT, &segPoi);
+               vPoi.push_back(segPoi.front());
+           }
+           else
+           {
+               Float64 Xgp;
+               VERIFY(pBridge->GetPierLocation(thisGirderKey, pierIdx, &Xgp));
+               pgsPointOfInterest poi = pPOI->ConvertGirderPathCoordinateToPoi(thisGirderKey, Xgp);
+               vPoi.push_back(poi);
+           }
+       }
    }
 
-   CBearingTimeStepDetailsDlg dlg(m_pBroker,pInitRptSpec,initial_poi,INVALID_INDEX);
+
+
+   CBearingTimeStepDetailsDlg dlg(m_pBroker,pInitRptSpec,initial_location,INVALID_INDEX);
 
    if ( dlg.DoModal() == IDOK )
    {
@@ -89,13 +137,13 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CBearingTimeStepDetailsRep
       {
          std::shared_ptr<CBearingTimeStepDetailsReportSpecification> pNewGRptSpec(std::make_shared<CBearingTimeStepDetailsReportSpecification>(*pInitRptSpec) );
 
-         pNewGRptSpec->SetOptions(dlg.UseAllLocations(),dlg.GetPOI(),dlg.GetInterval());
+         pNewGRptSpec->SetOptions(dlg.UseAllLocations(),dlg.GetReactionLocation(),dlg.GetInterval());
 
          pNewRptSpec = std::static_pointer_cast<WBFL::Reporting::ReportSpecification>(pNewGRptSpec);
       }
       else
       {
-         pNewRptSpec = std::make_shared<CBearingTimeStepDetailsReportSpecification>(rptDesc.GetReportName(),m_pBroker,dlg.UseAllLocations(),dlg.GetPOI(),dlg.GetInterval());
+         pNewRptSpec = std::make_shared<CBearingTimeStepDetailsReportSpecification>(rptDesc.GetReportName(),m_pBroker,dlg.UseAllLocations(),dlg.GetReactionLocation(),dlg.GetInterval());
       }
 
       rptDesc.ConfigureReportSpecification(pNewRptSpec);

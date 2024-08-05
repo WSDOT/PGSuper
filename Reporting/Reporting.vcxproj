@@ -179,6 +179,7 @@
     <ClCompile Include="BearingTimeStepDetailsDlg.cpp" />
     <ClCompile Include="BearingTimeStepDetailsReportSpecification.cpp" />
     <ClCompile Include="BearingTimeStepDetailsReportSpecificationBuilder.cpp" />
+    <ClCompile Include="BearingTimeStepShearDeformationTable.cpp" />
     <ClCompile Include="BridgeAnalysisChapterBuilder.cpp" />
     <ClCompile Include="BridgeAnalysisReportDlg.cpp" />
     <ClCompile Include="BridgeAnalysisReportSpecification.cpp" />
@@ -391,6 +392,7 @@
     <ClInclude Include="..\Include\Reporting\BearingTimeStepDetailsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\BearingTimeStepDetailsReportSpecification.h" />
     <ClInclude Include="..\Include\Reporting\BearingTimeStepDetailsReportSpecificationBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\BearingTimeStepShearDeformationTable.h" />
     <ClInclude Include="..\Include\Reporting\BridgeAnalysisChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\BridgeAnalysisReportDlg.h" />
     <ClInclude Include="..\Include\Reporting\BridgeAnalysisReportSpecification.h" />

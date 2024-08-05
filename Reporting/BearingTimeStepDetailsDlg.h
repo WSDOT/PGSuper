@@ -25,6 +25,8 @@
 #include "resource.h"
 #include <Reporting\BearingTimeStepDetailsReportSpecification.h>
 #include "afxcmn.h"
+#include <IFace/AnalysisResults.h>
+#include <Reporting/ReactionInterfaceAdapters.h>
 
 // CBearingTimeStepDetailsDlg dialog
 
@@ -33,14 +35,14 @@ class CBearingTimeStepDetailsDlg : public CDialog
 	DECLARE_DYNAMIC(CBearingTimeStepDetailsDlg)
 
 public:
-	CBearingTimeStepDetailsDlg(IBroker* pBroker,std::shared_ptr<CBearingTimeStepDetailsReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,IntervalIndexType intervalIdx,CWnd* pParent = nullptr);   // standard constructor
+	CBearingTimeStepDetailsDlg(IBroker* pBroker,std::shared_ptr<CBearingTimeStepDetailsReportSpecification>& pRptSpec,const ReactionLocation& initialReactionLocation,IntervalIndexType intervalIdx,CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CBearingTimeStepDetailsDlg();
 
 // Dialog Data
 	enum { IDD = IDD_TIMESTEP_SHEAR_DEFORMATION_DETAILS };
 
    bool UseAllLocations();
-   pgsPointOfInterest GetPOI();
+   ReactionLocation GetReactionLocation();
    IntervalIndexType GetInterval();
 
 protected:
@@ -50,12 +52,12 @@ protected:
 
 private:
    IBroker* m_pBroker;
-   std::shared_ptr<CBearingTimeStepDetailsReportSpecification> m_pTsRptSpec;
+   std::shared_ptr<CBearingTimeStepDetailsReportSpecification> m_pBTsRptSpec;
 
-   pgsPointOfInterest m_InitialPOI;
+   ReactionLocation m_InitialReactionLocation;
    CGirderKey m_GirderKey;
 
-   PoiList m_vPOI;
+   ReactionLocationContainer m_vReactionLocations;
    IntervalIndexType m_IntervalIdx;
    bool m_bUseAllLocations;
 
@@ -64,7 +66,7 @@ private:
    int m_SliderPos;
 
    void UpdateSliderLabel();
-   void UpdatePOI();
+   void UpdateReactionLocation();
 
    void InitFromBearingTimeStepRptSpec();
 

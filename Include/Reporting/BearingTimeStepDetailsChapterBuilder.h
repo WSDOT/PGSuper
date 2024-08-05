@@ -49,14 +49,13 @@ public:
    CBearingTimeStepDetailsChapterBuilder(bool bSelect = true);
 
    //------------------------------------------------------------------------
-   virtual LPCTSTR GetName() const override;
-   
+   LPCTSTR GetName() const override;   
 
    //------------------------------------------------------------------------
-   virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
+   rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
 
    //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
+   std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 
 protected:
    // Prevent accidental copying and assignment

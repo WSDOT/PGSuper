@@ -33,6 +33,7 @@
 #include <IFace\PointOfInterest.h>
 #include <IFace\Bridge.h>
 
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -44,13 +45,14 @@ static char THIS_FILE[] = __FILE__;
 
 IMPLEMENT_DYNAMIC(CBearingTimeStepDetailsDlg, CDialog)
 
-CBearingTimeStepDetailsDlg::CBearingTimeStepDetailsDlg(IBroker* pBroker,std::shared_ptr<CBearingTimeStepDetailsReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,IntervalIndexType intervalIdx,CWnd* pParent)
+CBearingTimeStepDetailsDlg::CBearingTimeStepDetailsDlg(IBroker* pBroker,std::shared_ptr<CBearingTimeStepDetailsReportSpecification>& pRptSpec,
+    const ReactionLocation& initialReactionLocation,IntervalIndexType intervalIdx,CWnd* pParent)
 	: CDialog(CBearingTimeStepDetailsDlg::IDD, pParent)
    , m_SliderPos(0)
-   , m_pTsRptSpec(pRptSpec)
+   , m_pBTsRptSpec(pRptSpec)
 {
-   m_InitialPOI = initialPoi;
-   m_GirderKey = m_InitialPOI.GetSegmentKey();
+   m_InitialReactionLocation = initialReactionLocation;
+   m_GirderKey = m_InitialReactionLocation.GirderKey;
    m_IntervalIdx = intervalIdx;
    m_bUseAllLocations = false;
    m_pBroker = pBroker;
@@ -102,22 +104,25 @@ BOOL CBearingTimeStepDetailsDlg::OnInitDialog()
       int idx = pcbIntervals->AddString(strLabel);
       pcbIntervals->SetItemData(idx,(DWORD_PTR)intervalIdx);
    }
+
    int idx = pcbIntervals->AddString(_T("All Intervals"));
    pcbIntervals->SetItemData(idx,(DWORD_PTR)INVALID_INDEX);
 
-   UpdatePOI();
+   UpdateReactionLocation();
 
    CDialog::OnInitDialog();
 
-   // initial the slider range
-   m_Slider.SetRange(0,(int)(m_vPOI.size()-1)); // the range is number of spaces along slider... 
+   //   Reaction Locations
 
-   // initial the slider position to the current poi location
-   int pos = (int)m_vPOI.size()/2; // default is mid-span
+   // initial the slider range
+   m_Slider.SetRange(0,(int)(m_vReactionLocations.size()-1)); // the range is number of spaces along slider... 
+
+   // initial the slider position to the current reaction location
+   int pos = 0; // default Pier 1
    int cur_pos = 0;
-   for (const pgsPointOfInterest& poi : m_vPOI)
+   for (const ReactionLocation& location : m_vReactionLocations)
    {
-      if ( poi.GetID() == m_InitialPOI.GetID() )
+      if ( location.PierIdx == m_InitialReactionLocation.PierIdx && location.Face == m_InitialReactionLocation.Face)
       {
          pos = cur_pos;
       }
@@ -141,11 +146,11 @@ bool CBearingTimeStepDetailsDlg::UseAllLocations()
    return m_bUseAllLocations;
 }
 
-pgsPointOfInterest CBearingTimeStepDetailsDlg::GetPOI()
+ReactionLocation CBearingTimeStepDetailsDlg::GetReactionLocation()
 {
-   ASSERT((int)m_SliderPos < (int)m_vPOI.size());
-   pgsPointOfInterest poi = m_vPOI[m_SliderPos];
-   return poi;
+   ASSERT((int)m_SliderPos < (int)m_vReactionLocations.size());
+   ReactionLocation reactionLocation = m_vReactionLocations[m_SliderPos];
+   return reactionLocation;
 }
 
 IntervalIndexType CBearingTimeStepDetailsDlg::GetInterval()
@@ -153,34 +158,40 @@ IntervalIndexType CBearingTimeStepDetailsDlg::GetInterval()
    return m_IntervalIdx;
 }
 
-void CBearingTimeStepDetailsDlg::UpdatePOI()
+void CBearingTimeStepDetailsDlg::UpdateReactionLocation()
 {
-   GET_IFACE(IPointOfInterest,pPOI);
-   m_vPOI.clear();
-   pPOI->GetPointsOfInterest(CSegmentKey(ALL_GROUPS, m_GirderKey.girderIndex, ALL_SEGMENTS),&m_vPOI); /////////////// change for pier reactions
+   m_vReactionLocations.clear();
+
+   GET_IFACE(IBearingDesign, pBearingDesign);
+   GET_IFACE(IIntervals, pIntervals);
+   GET_IFACE(IBridge, pBridge);
+
+   IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
+   std::unique_ptr<CmbLsBearingDesignReactionAdapter> pForces(std::make_unique<CmbLsBearingDesignReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, m_GirderKey));
+   m_vReactionLocations = pForces->GetBearingReactionLocations(lastCompositeDeckIntervalIdx, m_GirderKey, pBridge, pBearingDesign);
    if (m_Slider.GetSafeHwnd() != nullptr )
    {
-      m_Slider.SetRange(0,(int)(m_vPOI.size()-1)); // the range is number of spaces along slider... 
+      m_Slider.SetRange(0,(int)(m_vReactionLocations.size()-1)); // the range is number of spaces along slider... 
                                                    // subtract one so we don't go past the end of the array
    }
 }
 
 void CBearingTimeStepDetailsDlg::InitFromBearingTimeStepRptSpec()
 {
-   if (!m_pTsRptSpec)
+   if (!m_pBTsRptSpec)
    {
       return;
    }
 
-   m_bUseAllLocations = m_pTsRptSpec->ReportAtAllLocations();
-   pgsPointOfInterest poi = m_pTsRptSpec->GetPointOfInterest();
+   m_bUseAllLocations = m_pBTsRptSpec->ReportAtAllLocations();
+   ReactionLocation location = m_pBTsRptSpec->GetReactionLocation();
 
-   m_GirderKey = poi.GetSegmentKey();
+   m_GirderKey = location.GirderKey;
 
    int cur_pos = 0;
-   for(const pgsPointOfInterest& p : m_vPOI)
+   for(const ReactionLocation& l : m_vReactionLocations)
    {
-      if ( p.AtSamePlace(poi) )
+      if ( l.PierIdx && l.Face)
       {
          m_SliderPos = cur_pos;
          break;
@@ -188,7 +199,7 @@ void CBearingTimeStepDetailsDlg::InitFromBearingTimeStepRptSpec()
       cur_pos++;
    }
 
-   m_IntervalIdx = m_pTsRptSpec->GetInterval();
+   m_IntervalIdx = m_pBTsRptSpec->GetInterval();
 
    UpdateData(FALSE);
 }
@@ -201,27 +212,11 @@ void CBearingTimeStepDetailsDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* 
 
 void CBearingTimeStepDetailsDlg::UpdateSliderLabel()
 {
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
-   CString strLabel;
-   ASSERT((int)m_SliderPos < (int)m_vPOI.size());
-   pgsPointOfInterest poi = m_vPOI[m_Slider.GetPos()];
+   ASSERT((int)m_SliderPos < (int)m_vReactionLocations.size());
+   ReactionLocation location = m_vReactionLocations[m_Slider.GetPos()];
 
-   const CSegmentKey& segmentKey = poi.GetSegmentKey();
-
-   rptPointOfInterest rptPoi(&pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
-   rptPoi.SetValue(POI_SPAN,poi);
-   rptPoi.PrefixAttributes(false); // put the attributes after the location
-   rptPoi.IncludeSpanAndGirder(true);
-
-#if defined _DEBUG || defined _BETA_VERSION
-   strLabel.Format(_T("Point Of Interest: ID = %d %s"),poi.GetID(),rptPoi.AsString().c_str());
-#else
-   strLabel.Format(_T("%s"),rptPoi.AsString().c_str());
-#endif
-   // remove the HTML tags
-   strLabel.Replace(_T("<sub>"),_T(""));
-   strLabel.Replace(_T("</sub>"),_T(""));
+   CString strLabel{ location.PierLabel.c_str() };
 
    m_Location.SetWindowText(strLabel);
 }
@@ -239,6 +234,6 @@ void CBearingTimeStepDetailsDlg::OnGirderLineChanged()
    CComboBox* pcbGirders = (CComboBox*)GetDlgItem(IDC_GIRDERLINE_SHEAR_DEF);
    GirderIndexType gdrIdx = (GirderIndexType)pcbGirders->GetCurSel();
    m_GirderKey.girderIndex = gdrIdx;
-   UpdatePOI();
+   UpdateReactionLocation();
    UpdateSliderLabel();
 }
