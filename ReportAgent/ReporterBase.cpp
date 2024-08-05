@@ -326,20 +326,6 @@ void CReporterBase::CreateBearingDesignReport()
    pRptMgr->AddReportBuilder( pRptBuilder );
 }
 
-void CReporterBase::CreateBearingTimeStepDetailsReport()
-{
-    GET_IFACE(IReportManager, pRptMgr);
-    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pBearingTimeStepRptSpecBuilder(std::make_shared<CBearingTimeStepDetailsReportSpecificationBuilder>(m_pBroker));
-
-    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Bearing Shear Deformation Details Report")));
-#if defined _DEBUG || defined _BETA_VERSION
-    pRptBuilder->IncludeTimingChapter();
-#endif
-    pRptBuilder->AddTitlePageBuilder(std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())));
-    pRptBuilder->SetReportSpecificationBuilder(pBearingTimeStepRptSpecBuilder);
-    pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingTimeStepDetailsChapterBuilder>()));
-    pRptMgr->AddReportBuilder(pRptBuilder);
-}
 
 void CReporterBase::CreateSpecChecReport()
 {
@@ -492,6 +478,21 @@ void CReporterBase::CreateTimeStepDetailsReport()
    pRptBuilder->SetReportSpecificationBuilder( pPoiRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTimeStepDetailsChapterBuilder>()) );
    pRptMgr->AddReportBuilder( pRptBuilder );
+}
+
+void CReporterBase::CreateBearingTimeStepDetailsReport()
+{
+    GET_IFACE(IReportManager, pRptMgr);
+    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pBearingTimeStepRptSpecBuilder(std::make_shared<CBearingTimeStepDetailsReportSpecificationBuilder>(m_pBroker));
+
+    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Bearing Shear Deformation Details Report")));
+#if defined _DEBUG || defined _BETA_VERSION
+    pRptBuilder->IncludeTimingChapter();
+#endif
+    pRptBuilder->AddTitlePageBuilder(std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())));
+    pRptBuilder->SetReportSpecificationBuilder(pBearingTimeStepRptSpecBuilder);
+    pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingTimeStepDetailsChapterBuilder>()));
+    pRptMgr->AddReportBuilder(pRptBuilder);
 }
 
 void CReporterBase::CreatePrincipalWebStressDetailsReport()
