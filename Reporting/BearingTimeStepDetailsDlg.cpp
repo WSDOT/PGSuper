@@ -97,7 +97,13 @@ BOOL CBearingTimeStepDetailsDlg::OnInitDialog()
    GET_IFACE( IIntervals, pIntervals);
    CComboBox* pcbIntervals = (CComboBox*)GetDlgItem(IDC_INTERVAL_SHEAR_DEF);
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
-   for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
+
+
+   
+   IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetLastSegmentErectionInterval(m_GirderKey);
+
+
+   for ( IntervalIndexType intervalIdx = erectSegmentIntervalIdx + 1; intervalIdx < nIntervals; intervalIdx++ )
    {
       CString strLabel;
       strLabel.Format(_T("Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx).c_str());
