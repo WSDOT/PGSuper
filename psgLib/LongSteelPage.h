@@ -55,6 +55,8 @@ public:
 
    CLongSteelGrid m_Grid;
 
+	bool m_bWarnLongReinfLibraryEquality;
+
 // Overrides
 	// ClassWizard generate virtual function overrides
 	//{{AFX_VIRTUAL(CLongSteelPage)

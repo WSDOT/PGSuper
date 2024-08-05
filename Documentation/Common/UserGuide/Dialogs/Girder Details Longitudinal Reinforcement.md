@@ -34,3 +34,7 @@ Anchored Left/Right | Bars measured as Full Length or from the Left and Right En
 All cells in the grid must be filled in. Blank cells are considered incomplete data.  
 
 > NOTE: The assumption of anchorage is not verified by the software. The engineer has the responsibility to ensure anchorage can be achieved.
+
+Copy From Library
+---------------------------
+Press button to replace all data on this tab with the data defined in the girder library for this girder.

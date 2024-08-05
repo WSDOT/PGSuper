@@ -72,26 +72,32 @@ rptParagraph* CGirderSeedDataComparisonParagraph::Build(IBroker* pBroker, const 
             *pParagraph << _T("Segment ") << LABEL_SEGMENT(segIdx) << rptNewLine;
          }
 
-         const CShearData2& currentShearData = pGirder->GetSegment(segIdx)->ShearData;
-
-         // compare shear data from library
-         CShearData2 shearData;
-         shearData.CopyGirderEntryData(pGirderLib);
-         if (currentShearData != shearData)
+         if (pGirderLib->DoWarnForTransReinfEquality())
          {
-            *pParagraph<<color(Red)<<_T("Trans. Reinforcement data for Girder ") << LABEL_GIRDER(gdrIdx) << _T(" does not match Girder Library entry ")<<pGirderLib->GetName()<<color(Black)<<rptNewLine;
-            was_diff = true;
+            const CShearData2& currentShearData = pGirder->GetSegment(segIdx)->ShearData;
+
+            // compare shear data from library
+            CShearData2 shearData;
+            shearData.CopyGirderEntryData(pGirderLib);
+            if (currentShearData != shearData)
+            {
+               *pParagraph << color(Red) << _T("Trans. Reinforcement data for Girder ") << LABEL_GIRDER(gdrIdx) << _T(" does not match Girder Library entry ") << pGirderLib->GetName() << color(Black) << rptNewLine;
+               was_diff = true;
+            }
          }
 
-         // compare long data from library
-         const CLongitudinalRebarData& currentLRD = pGirder->GetSegment(segIdx)->LongitudinalRebarData;
-
-         CLongitudinalRebarData longData;
-         longData.CopyGirderEntryData(pGirderLib);
-         if (currentLRD != longData)
+         if (pGirderLib->DoWarnForLongReinfEquality())
          {
-            *pParagraph<<color(Red)<<_T("Long. Reinforcement data for Girder ") << LABEL_GIRDER(gdrIdx) << _T(" does not match Girder Library entry ")<<pGirderLib->GetName()<<color(Black)<<rptNewLine;
-            was_diff = true;
+            // compare long data from library
+            const CLongitudinalRebarData& currentLRD = pGirder->GetSegment(segIdx)->LongitudinalRebarData;
+
+            CLongitudinalRebarData longData;
+            longData.CopyGirderEntryData(pGirderLib);
+            if (currentLRD != longData)
+            {
+               *pParagraph << color(Red) << _T("Long. Reinforcement data for Girder ") << LABEL_GIRDER(gdrIdx) << _T(" does not match Girder Library entry ") << pGirderLib->GetName() << color(Black) << rptNewLine;
+               was_diff = true;
+            }
          }
 
          if ( 1 < nSegments )

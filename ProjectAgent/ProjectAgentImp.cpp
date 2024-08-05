@@ -8980,6 +8980,15 @@ void CProjectAgentImp::SetClosureJointShearData(const CClosureKey& closureKey,co
    }
 }
 
+const CShearData2* CProjectAgentImp::GetSegmentShearLibraryData(const CSegmentKey& segmentKey, bool& bIsEqualityWarning) const
+{
+   const CSplicedGirderData* pGirder = GetGirder(segmentKey);
+   const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
+
+   bIsEqualityWarning = pGirderEntry->DoWarnForTransReinfEquality();
+   return &(pGirderEntry->GetShearData());
+}
+
 /////////////////////////////////////////////////
 // ILongitudinalRebar
 std::_tstring CProjectAgentImp::GetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey) const

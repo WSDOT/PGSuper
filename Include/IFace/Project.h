@@ -482,6 +482,8 @@ interface IShear : IUnknown
    virtual void SetClosureJointStirrupMaterial(const CClosureKey& closureKey,WBFL::Materials::Rebar::Type type,WBFL::Materials::Rebar::Grade grade) = 0;
    virtual const CShearData2* GetClosureJointShearData(const CClosureKey& closureKey) const = 0;
    virtual void SetClosureJointShearData(const CClosureKey& closureKey,const CShearData2& data) = 0;
+
+   virtual const CShearData2* GetSegmentShearLibraryData(const CSegmentKey& segmentKey, bool& bIsEqualityWarning) const = 0;
 };
 
 /*****************************************************************************

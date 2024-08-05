@@ -95,6 +95,7 @@ public:
    void DoInsertRow();
 
    CShearData2 m_ShearData;
+   bool m_bWarnTransReinfLibraryEquality;
 
    void GetRebarMaterial(WBFL::Materials::Rebar::Type* pType,WBFL::Materials::Rebar::Grade* pGrade);
 
@@ -102,7 +103,9 @@ public:
 
     virtual void DoRestoreDefaults(); // Allow children to implement
 protected:
-    bool m_bAllowRestoreDefaults;
+   // bools that control controls that support copying of seed values from library (visible only in pgsuper)
+   bool m_bCanCopyFromLibrary;
+   bool m_bIsDisplayedInProject;
     CRebarMaterialComboBox m_cbRebar;
 
     virtual UINT GetHelpID();

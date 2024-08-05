@@ -47,7 +47,7 @@ END_MESSAGE_MAP()
 
 BOOL CShearSteelPage2::OnInitDialog() 
 {
-   m_bAllowRestoreDefaults = true; // enable restoring library defaults
+   m_bIsDisplayedInProject = true; // enable restoring library defaults
 
    return CShearSteelPage::OnInitDialog();
 }

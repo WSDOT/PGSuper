@@ -47,3 +47,6 @@ Item | Description
 Splitting Reinforcement | This data allows input for two identical zones placed at both ends of the girder to provide splitting resistance. These bars are used in addition to any splitting resistance provided by primary bars.
 Bottom Flange Confinement Reinforcement | This data allows input for two identical zones placed at both ends of the girder to provide confinement resistance. These bars are used in addition to any primary confinement bars.
 
+Check For Equality Between Library and Project Transverse Reinforcement Input
+---------------------------------------------
+Some agencies, such as WSDOT and TxDOT, have standardized input for stirrup layouts and other transverse reinforcement. If this is the case, it is useful to generate a warning in output reports if project data does not exactly match library data. Enable the checkbox if a warning is desired.

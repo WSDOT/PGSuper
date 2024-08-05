@@ -54,7 +54,9 @@ static Float64 zone_bar_spacing_tolerance = WBFL::Units::ConvertToSysUnits(0.000
 IMPLEMENT_DYNCREATE(CShearSteelPage, CPropertyPage)
 
 CShearSteelPage::CShearSteelPage():
-m_bAllowRestoreDefaults(false)
+   m_bCanCopyFromLibrary(true),   // default to pgsuper's library mode
+   m_bIsDisplayedInProject(false),// ""
+m_bWarnTransReinfLibraryEquality(true)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -83,7 +85,9 @@ void CShearSteelPage::DoDataExchange(CDataExchange* pDX)
 
    DDX_Check_Bool(pDX,IDC_SYMMETRICAL,m_ShearData.bAreZonesSymmetrical);
    DDX_Check_Bool(pDX,IDC_ROUGHENED,           m_ShearData.bIsRoughenedSurface);
-   DDX_Check_Bool(pDX,IDC_CHECK_SPLITTING,     m_ShearData.bUsePrimaryForSplitting);
+   DDX_Check_Bool(pDX, IDC_CHECK_SPLITTING, m_ShearData.bUsePrimaryForSplitting);
+
+   DDX_Check_Bool(pDX, IDC_TRANS_REINF_EQUALITY_CHECK, m_bWarnTransReinfLibraryEquality);
 
    // Splitting
    DDX_UnitValueAndTag(pDX, IDC_SPLITTING_ZL, IDC_SPLITTING_ZL_UNIT, m_ShearData.SplittingZoneLength, pDisplayUnits->XSectionDim);
@@ -280,8 +284,12 @@ BOOL CShearSteelPage::OnInitDialog()
    FillBarComboBox((CComboBox*)GetDlgItem(IDC_SPLITTING_BAR_SIZE));
    FillBarComboBox((CComboBox*)GetDlgItem(IDC_CONFINE_BAR_SIZE));
 
-   GetDlgItem(IDC_RESTORE_DEFAULTS)->ShowWindow(m_bAllowRestoreDefaults ? SW_SHOW : SW_HIDE);
-   GetDlgItem(IDC_SEED_VALUE_NOTE)->ShowWindow(m_bAllowRestoreDefaults ? SW_HIDE : SW_SHOW);
+   // copying of seed values
+   GetDlgItem(IDC_RESTORE_DEFAULTS)->ShowWindow(m_bCanCopyFromLibrary && m_bIsDisplayedInProject ? SW_SHOW : SW_HIDE);
+   bool bshow = m_bCanCopyFromLibrary && !m_bIsDisplayedInProject;
+   GetDlgItem(IDC_SEED_VALUE_NOTE)->ShowWindow(bshow ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_EQUALITY_GRP_CTRL)->ShowWindow(bshow ? SW_SHOW : SW_HIDE);
+   GetDlgItem(IDC_TRANS_REINF_EQUALITY_CHECK)->ShowWindow(bshow ? SW_SHOW : SW_HIDE);
 
    CString strSymmetric, strEnd;
    GetLastZoneName(strSymmetric, strEnd);
