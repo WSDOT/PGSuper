@@ -100,7 +100,7 @@ BOOL CBearingTimeStepDetailsDlg::OnInitDialog()
 
 
    
-   IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetLastSegmentErectionInterval(m_GirderKey);
+   IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(m_GirderKey);
 
 
    for ( IntervalIndexType intervalIdx = erectSegmentIntervalIdx + 1; intervalIdx < nIntervals; intervalIdx++ )
