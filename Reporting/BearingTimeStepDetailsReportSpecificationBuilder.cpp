@@ -73,7 +73,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CBearingTimeStepDetailsRep
        CSelection selection = pSelection->GetSelection();
        if (selection.Type == CSelection::Girder || selection.Type == CSelection::Segment)
        {
-           girderKey.groupIndex = selection.GroupIdx;
+           girderKey.groupIndex = 0;
            girderKey.girderIndex = selection.GirderIdx;
        }
        else
