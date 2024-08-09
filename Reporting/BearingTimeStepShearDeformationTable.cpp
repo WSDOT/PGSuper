@@ -152,18 +152,20 @@ rptRcTable* CTimeStepShearDeformationTable::BuildTimeStepShearDeformationTable(I
 
     Float64 L = pBearing->GetDistanceToPointOfFixity(poi, &details);
 
+    PoiList vPoi2;
+
     if (pIPoi->ConvertPoiToGirderlineCoordinate(poi) < pIPoi->ConvertPoiToGirderlineCoordinate(details.poi_fixity))
     {
-        pIPoi->GetPointsOfInterestInRange(0, poi, L, &vPoi);
+        pIPoi->GetPointsOfInterestInRange(0, poi, L, &vPoi2);
     }
     else
     {
-        pIPoi->GetPointsOfInterestInRange(L, poi, 0, &vPoi);
+        pIPoi->GetPointsOfInterestInRange(L, poi, 0, &vPoi2);
     }
 
-    vPoi.erase(std::remove_if(vPoi.begin(), vPoi.end(), [](const pgsPointOfInterest& i) {
+    vPoi2.erase(std::remove_if(vPoi2.begin(), vPoi2.end(), [](const pgsPointOfInterest& i) {
         return i.HasAttribute(POI_BOUNDARY_PIER);
-        }), vPoi.end());
+        }), vPoi2.end());
 
 
 
@@ -215,7 +217,7 @@ rptRcTable* CTimeStepShearDeformationTable::BuildTimeStepShearDeformationTable(I
 
     RowIndexType row = p_table->GetNumberOfHeaderRows();
 
-    (*p_table)(row, 0) << location.SetValue(POI_SPAN, vPoi[0]);
+    (*p_table)(row, 0) << location.SetValue(POI_SPAN, vPoi2[0]);
     (*p_table)(row, 1) << _T("N/A");
     (*p_table)(row, 2) << _T("N/A");
     (*p_table)(row, 3) << _T("N/A");
@@ -233,11 +235,11 @@ rptRcTable* CTimeStepShearDeformationTable::BuildTimeStepShearDeformationTable(I
     (*p_table)(row++, 15) << _T("N/A");
 
 
-    for (IndexType idx = 1, nPoi = vPoi.size(); idx < nPoi; idx++)
+    for (IndexType idx = 1, nPoi = vPoi2.size(); idx < nPoi; idx++)
     {
 
-        p0 = vPoi[idx - 1];
-        p1 = vPoi[idx];
+        p0 = vPoi2[idx - 1];
+        p1 = vPoi2[idx];
 
         (*p_table)(row, 0) << location.SetValue(POI_SPAN, p1);
 
