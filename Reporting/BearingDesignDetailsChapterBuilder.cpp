@@ -147,6 +147,18 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     *p << _T("*Live loads do not include impact") << rptNewLine;
     *p << _T("**Torsional rotations are calculated using ") << Sub2(symbol(theta), _T("t")) << _T(" = ") << Sub2(symbol(theta), _T("f")) << _T("tan") << Sub2(symbol(theta), _T("skew")) << rptNewLine << rptNewLine;
 
+    GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+
+    std::vector<std::_tstring> strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltDesign, girderKey);
+    IndexType j = 0;
+    auto iter = strLLNames.begin();
+    auto end = strLLNames.end();
+    for (; iter != end; iter++, j++)
+    {
+        *p << _T("(D") << j << _T(") ") << *iter << rptNewLine;
+    }
+
+    *p << rptNewLine;
 
     GET_IFACE2(pBroker, ILiveLoadDistributionFactors, pLLDF);
     pLLDF->ReportReactionDistributionFactors(girderKey, pChapter, true);

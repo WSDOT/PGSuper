@@ -767,8 +767,9 @@ void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType 
     pDetails->erectedSegmentRotation = skewFactor * pProductForces->GetRotation(erectSegmentIntervalIdx, pgsTypes::pftGirder, poi, maxBAT, rtCumulative, false);
 
     pDetails->maxShearKeyRotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftShearKey, poi, maxBAT, rtCumulative, false);
-    pDetails->maxGirderRotation = skewFactor * (pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftGirder, poi, maxBAT, rtCumulative, false) -
-        pProductForces->GetRotation(erectSegmentIntervalIdx, pgsTypes::pftGirder, poi, maxBAT, rtCumulative, false));
+    Float64 girder_final_rotation = pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftGirder, poi, maxBAT, rtCumulative, false);
+    Float64 girder_erect_rotation = pProductForces->GetRotation(erectSegmentIntervalIdx, pgsTypes::pftGirder, poi, maxBAT, rtCumulative, false);
+    pDetails->maxGirderRotation = skewFactor * (girder_final_rotation - girder_erect_rotation);
     pDetails->diaphragmRotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftDiaphragm, poi, maxBAT, rtCumulative, false);
     pDetails->maxSlabRotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftSlab, poi, maxBAT, rtCumulative, false);
     pDetails->minSlabRotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftSlab, poi, minBAT, rtCumulative, false);
@@ -859,16 +860,20 @@ void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType 
     auto llDF = pLoadFactors->GetLLIMMax(pgsTypes::ServiceI);
 
 
-    if (reactionLocation.Face == PierReactionFaceType::rftAhead)
+    if (abs(dcDF * minDCrotation + dwDF * minDWrotation + pDetails->preTensionRotation +
+        pDetails->creepRotation + pDetails->shrinkageRotation + pDetails->relaxationRotation + pDetails->postTensionRotation - 0.005)
+        > abs(dcDF * maxDCrotation + dwDF * maxDWrotation + pDetails->preTensionRotation +
+            pDetails->creepRotation + pDetails->shrinkageRotation + pDetails->relaxationRotation + pDetails->postTensionRotation + 0.005))
     {
         pDetails->staticRotation = skewFactor * (dcDF * minDCrotation + dwDF * minDWrotation + pDetails->preTensionRotation +
             pDetails->creepRotation + pDetails->shrinkageRotation + pDetails->relaxationRotation + pDetails->postTensionRotation - 0.005);
     }
-    else if (reactionLocation.Face == PierReactionFaceType::rftBack)
+    else
     {
-        pDetails->staticRotation = skewFactor * (dcDF * minDCrotation + dwDF * minDWrotation + pDetails->preTensionRotation +
+        pDetails->staticRotation = skewFactor * (dcDF * maxDCrotation + dwDF * maxDWrotation + pDetails->preTensionRotation +
             pDetails->creepRotation + pDetails->shrinkageRotation + pDetails->relaxationRotation + pDetails->postTensionRotation + 0.005);
     }
+
 
 
     // Cyclic Rotations
@@ -889,16 +894,16 @@ void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType 
     pDetails->maxUserLLrotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftUserLLIM, poi, maxBAT, rtCumulative, false);
     pDetails->minUserLLrotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftUserLLIM, poi, minBAT, rtCumulative, false);
 
-    if (reactionLocation.Face == PierReactionFaceType::rftAhead)
+    if (abs(pDetails->minDesignLLrotation + pDetails->minUserLLrotation + pDetails->minPedRotation) > abs(pDetails->maxDesignLLrotation + pDetails->maxUserLLrotation + pDetails->maxPedRotation))
     {
         pDetails->cyclicRotation = skewFactor * llDF * (pDetails->minDesignLLrotation + pDetails->minUserLLrotation + pDetails->minPedRotation);
     }
-    else if (reactionLocation.Face == PierReactionFaceType::rftBack)
+    else
     {
         pDetails->cyclicRotation = skewFactor * llDF * (pDetails->maxDesignLLrotation + pDetails->maxUserLLrotation + pDetails->maxPedRotation);
+
     }
         
-    
     pDetails->totalRotation = pDetails->staticRotation +  pDetails->cyclicRotation;
     
 
