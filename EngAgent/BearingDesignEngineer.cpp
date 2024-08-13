@@ -894,7 +894,8 @@ void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType 
     pDetails->maxUserLLrotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftUserLLIM, poi, maxBAT, rtCumulative, false);
     pDetails->minUserLLrotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftUserLLIM, poi, minBAT, rtCumulative, false);
 
-    if (abs(pDetails->minDesignLLrotation + pDetails->minUserLLrotation + pDetails->minPedRotation) > abs(pDetails->maxDesignLLrotation + pDetails->maxUserLLrotation + pDetails->maxPedRotation))
+    if (abs(pDetails->minDesignLLrotation + pDetails->minUserLLrotation + pDetails->minPedRotation) 
+            > abs(pDetails->maxDesignLLrotation + pDetails->maxUserLLrotation + pDetails->maxPedRotation))
     {
         pDetails->cyclicRotation = skewFactor * llDF * (pDetails->minDesignLLrotation + pDetails->minUserLLrotation + pDetails->minPedRotation);
     }
@@ -903,8 +904,24 @@ void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType 
         pDetails->cyclicRotation = skewFactor * llDF * (pDetails->maxDesignLLrotation + pDetails->maxUserLLrotation + pDetails->maxPedRotation);
 
     }
-        
-    pDetails->totalRotation = pDetails->staticRotation +  pDetails->cyclicRotation;
+    
+    if (abs(pDetails->minDesignLLrotation + pDetails->minUserLLrotation + pDetails->minPedRotation +
+        dcDF * minDCrotation + dwDF * minDWrotation - 0.005) >
+        abs(pDetails->maxDesignLLrotation + pDetails->maxUserLLrotation + pDetails->maxPedRotation +
+            dcDF * maxDCrotation + dwDF * maxDWrotation + 0.005))
+    {
+        pDetails->totalRotation = skewFactor * (llDF * (pDetails->minDesignLLrotation + pDetails->minUserLLrotation + pDetails->minPedRotation) +
+            dcDF * minDCrotation + dwDF * minDWrotation + pDetails->preTensionRotation +
+            pDetails->creepRotation + pDetails->shrinkageRotation + pDetails->relaxationRotation + pDetails->postTensionRotation - 0.005);
+    }
+    else
+    {
+        pDetails->totalRotation = skewFactor * (llDF * (pDetails->maxDesignLLrotation + pDetails->maxUserLLrotation + pDetails->maxPedRotation) +
+            dcDF * maxDCrotation + dwDF * maxDWrotation + pDetails->preTensionRotation +
+            pDetails->creepRotation + pDetails->shrinkageRotation + pDetails->relaxationRotation + pDetails->postTensionRotation + 0.005);
+    }
+
+    
     
 
 }
