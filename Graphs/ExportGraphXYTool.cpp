@@ -247,14 +247,15 @@ bool GraphExportUtil::ProcessGraph(const WBFL::Graphing::GraphXY& rGraph)
       { ; }
 
       Float64 Value;
-      mutable bool bIsDouble; // One hard part is we can have two values at one location to signify a jump (e.g., shear jump)
+      mutable bool bIsDouble; // One hard part is we can have two points at one X location to signify a jump (e.g., shear jump)
       bool operator<(const XValue& other) const  { return Value < other.Value; }
       bool operator==(const XValue& other) const { return Value == other.Value;}
    };
 
-   // Build a list of all X Values in all series. Catch any jumps (duplicate X values)
+   // Build a list of all X Values in all series. Catch any jumps (duplicate X values), even those between series
    std::set<XValue> xValueSet;
 
+   Float64 lastVal(Float64_Max);
    std::vector<IndexType> cookies = rGraph.GetCookies();
    for (const auto& cookie : cookies)
    {
@@ -262,7 +263,6 @@ bool GraphExportUtil::ProcessGraph(const WBFL::Graphing::GraphXY& rGraph)
       rGraph.GetDataSeriesPoints(cookie, &vPoints);
       std::stable_sort(vPoints.begin(),vPoints.end(),compare_point); // There are some cases where points are not sorted properly
 
-      Float64 lastVal(Float64_Max);
       for (const auto& point : vPoints)
       {
          Float64 xval = point.X();
@@ -283,7 +283,7 @@ bool GraphExportUtil::ProcessGraph(const WBFL::Graphing::GraphXY& rGraph)
       }
    }
 
-   // We now have a list of all possible X values. Create a data series for X
+   // Build a list of all possible X values including duplicates. This will be our X axis
    m_SeriesNames.push_back(rGraph.GetXAxisTitle());
    m_SeriesData.push_back(std::vector<Float64>());
    auto& datavecx = m_SeriesData.back();
@@ -356,18 +356,49 @@ bool GraphExportUtil::ProcessGraph(const WBFL::Graphing::GraphXY& rGraph)
          auto iter = dataSeriesNames.find(dsn);
          if (iter != dataSeriesNames.end())
          {
-            // Found matching series. Deal with having possible two series. See if data fits in first slot
+            // Found matching series. Append current series to it and make jump if applicable
+            // 
+            // Also deal with having possible two series (e.g., top max, min stress). See if data fits in first slot
             std::size_t idx1 = iter->vectorIndex1;
-            if (rawSeriesGraphPoints[idx1].back().X() <= cleanPoints.front().X())
+
+            Float64 endxval = rawSeriesGraphPoints[idx1].back().X();
+
+            if (endxval <= cleanPoints.front().X())
             {
-               // Append, but don't allow duplicate point locations at juncture
-               auto iter = cleanPoints.begin();
-               while (rawSeriesGraphPoints[idx1].back().X() == iter->X())
+               auto iterc = cleanPoints.begin();
+               if (endxval == cleanPoints.front().X())
                {
-                  iter++;
+                  // start of current series exactly at end. See if it can jump
+                  auto found = xValueSet.find(endxval);
+                  bool isdup = found != xValueSet.end() && found->bIsDouble; // is dual value at end of previous series
+                  if (isdup)
+                  {
+                     // We have a jump. clear the way. remove any duplicate at ends of adjacent series
+                     auto iterc2 = iterc;
+                     iterc2++;
+                     if (iterc2->X() == iterc->X())
+                     {
+                        iterc++;
                }
 
-               rawSeriesGraphPoints[idx1].insert(rawSeriesGraphPoints[idx1].end(),iter,cleanPoints.end());
+                     auto iterrw = rawSeriesGraphPoints[idx1].end();
+                     iterrw--; iterrw--; // iterate to before last item
+                     if (iterrw->X() == rawSeriesGraphPoints[idx1].back().X())
+                     {
+                        rawSeriesGraphPoints[idx1].pop_back();
+                     }
+                  }
+               }
+               else
+               {
+                  // no jump. clean off start of current
+                  while (rawSeriesGraphPoints[idx1].back().X() == iterc->X())
+                  {
+                     iterc++;
+                  }
+               }
+
+               rawSeriesGraphPoints[idx1].insert(rawSeriesGraphPoints[idx1].end(), iterc, cleanPoints.end());
             }
             else
             {
@@ -383,15 +414,45 @@ bool GraphExportUtil::ProcessGraph(const WBFL::Graphing::GraphXY& rGraph)
                {
                   // append to list as long as data in correct order
                   std::size_t idx2 = iter->vectorIndex2;
-                  if (rawSeriesGraphPoints[idx2].back().X() <= cleanPoints.front().X())
+
+                  Float64 endxval = rawSeriesGraphPoints[idx2].back().X();
+
+                  if (endxval <= cleanPoints.front().X())
                   {
-                     auto iter = cleanPoints.begin();
-                     while (rawSeriesGraphPoints[idx2].back().X() == iter->X())
+                     auto iterc = cleanPoints.begin();
+                     if (endxval == cleanPoints.front().X())
+                  {
+                        // start of current series exactly at end. See if it can jump
+                        auto found = xValueSet.find(endxval);
+                        bool isdup = found != xValueSet.end() && found->bIsDouble; // is dual value at end of previous series
+                        if (isdup)
+                        {
+                           // We have a jump. clear the way. remove any duplicate at ends of adjacent series
+                           auto iterc2 = iterc;
+                           iterc2++;
+                           if (iterc2->X() == iterc->X())
                      {
-                        iter++;
+                              iterc++;
+                           }
+
+                           auto iterrw = rawSeriesGraphPoints[idx2].end();
+                           iterrw--; iterrw--; // iterate to before last item
+                           if (iterrw->X() == rawSeriesGraphPoints[idx2].back().X())
+                           {
+                              rawSeriesGraphPoints[idx2].pop_back();
+                           }
+                        }
+                     }
+                     else
+                     {
+                        // no jump. clean off start of current
+                        while (rawSeriesGraphPoints[idx2].back().X() == iterc->X())
+                        {
+                           iterc++;
+                        }
                      }
 
-                     rawSeriesGraphPoints[idx2].insert(rawSeriesGraphPoints[idx2].end(),iter,cleanPoints.end());
+                     rawSeriesGraphPoints[idx2].insert(rawSeriesGraphPoints[idx2].end(), iterc, cleanPoints.end());
                   }
                   else
                   {
