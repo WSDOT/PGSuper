@@ -645,7 +645,14 @@ void pgsBearingDesignEngineer::GetBearingTotalTimeDependentShearDeformation(cons
 {
 
     GET_IFACE(IBridge, pBridge);
+    GET_IFACE(IIntervals, pIntervals);
+    GET_IFACE(IBridgeDescription, pIBridgeDesc);
     GET_IFACE(IPointOfInterest, pPoi);
+
+    // bearing time-dependent effects begin at the erect segment interval
+    const CSegmentKey& segmentKey(poi.GetSegmentKey());
+    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+    IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
 
     sf_details->incremental_creep = 0.0;
     sf_details->incremental_shrinkage = 0.0;
@@ -653,7 +660,6 @@ void pgsBearingDesignEngineer::GetBearingTotalTimeDependentShearDeformation(cons
 
 
     Float64 L = GetDistanceToPointOfFixity(poi, sf_details);
-    const CSegmentKey& segmentKey(poi.GetSegmentKey());
     GroupIndexType nGroups = pBridge->GetGirderGroupCount();
     GroupIndexType firstGroupIdx = (segmentKey.groupIndex == ALL_GROUPS ? 0 : segmentKey.groupIndex);
     GroupIndexType lastGroupIdx = (segmentKey.groupIndex == ALL_GROUPS ? nGroups - 1 : firstGroupIdx);
@@ -701,21 +707,29 @@ void pgsBearingDesignEngineer::GetBearingTotalTimeDependentShearDeformation(cons
             {
                 const LOSSDETAILS* pDetails0 = pLosses->GetLossDetails(p0, intervalIdx);
                 const TIME_STEP_DETAILS& tsDetails0(pDetails0->TimeStepDetails[intervalIdx]);
+                const TIME_STEP_DETAILS& tsDetails0erect(pDetails0->TimeStepDetails[erectSegmentIntervalIdx]);
                 Float64 strain_bot_girder_CR0 = 0.0;
                 Float64 strain_bot_girder_SH0 = 0.0;
                 Float64 strain_bot_girder_RE0 = 0.0;
-                strain_bot_girder_CR0 = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::ProductForceType::pftCreep][rtIncremental];
-                strain_bot_girder_SH0 = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::ProductForceType::pftShrinkage][rtIncremental];
-                strain_bot_girder_RE0 = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::ProductForceType::pftRelaxation][rtIncremental];
+                strain_bot_girder_CR0 = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::ProductForceType::pftCreep][rtCumulative] -
+                    tsDetails0erect.Girder.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::ProductForceType::pftCreep][rtCumulative];
+                strain_bot_girder_SH0 = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::ProductForceType::pftShrinkage][rtCumulative] -
+                    tsDetails0erect.Girder.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::ProductForceType::pftShrinkage][rtCumulative];
+                strain_bot_girder_RE0 = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::ProductForceType::pftRelaxation][rtCumulative] -
+                    tsDetails0erect.Girder.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::ProductForceType::pftRelaxation][rtCumulative];
 
                 const LOSSDETAILS* pDetails1 = pLosses->GetLossDetails(p1, intervalIdx);
                 const TIME_STEP_DETAILS& tsDetails1(pDetails1->TimeStepDetails[intervalIdx]);
+                const TIME_STEP_DETAILS& tsDetails1erect(pDetails1->TimeStepDetails[erectSegmentIntervalIdx]);
                 Float64 strain_bot_girder_CR1 = 0.0;
                 Float64 strain_bot_girder_SH1 = 0.0;
                 Float64 strain_bot_girder_RE1 = 0.0;
-                strain_bot_girder_CR1 = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::ProductForceType::pftCreep][rtIncremental];
-                strain_bot_girder_SH1 = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::ProductForceType::pftShrinkage][rtIncremental];
-                strain_bot_girder_RE1 = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::ProductForceType::pftRelaxation][rtIncremental];
+                strain_bot_girder_CR1 = tsDetails1.Girder.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::ProductForceType::pftCreep][rtCumulative] -
+                    tsDetails1erect.Girder.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::ProductForceType::pftCreep][rtCumulative];
+                strain_bot_girder_SH1 = tsDetails1.Girder.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::ProductForceType::pftShrinkage][rtCumulative] -
+                    tsDetails1erect.Girder.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::ProductForceType::pftShrinkage][rtCumulative];
+                strain_bot_girder_RE1 = tsDetails1.Girder.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::ProductForceType::pftRelaxation][rtCumulative] -
+                    tsDetails1erect.Girder.strain_by_load_type[pgsTypes::BottomFace][pgsTypes::ProductForceType::pftRelaxation][rtCumulative];
 
                 Float64 avg_strain_BotCR = (strain_bot_girder_CR0 + strain_bot_girder_CR1) / 2.0;
                 Float64 avg_strain_BotSH = (strain_bot_girder_SH0 + strain_bot_girder_SH1) / 2.0;
