@@ -235,6 +235,9 @@ rptRcTable* CTimeStepShearDeformationTable::BuildTimeStepShearDeformationTable(I
     (*p_table)(row++, 15) << _T("N/A");
 
 
+    Float64 total_time_dependent_deformation{ 0 };
+
+
     for (IndexType idx = 1, nPoi = vPoi2.size(); idx < nPoi; idx++)
     {
 
@@ -257,6 +260,9 @@ rptRcTable* CTimeStepShearDeformationTable::BuildTimeStepShearDeformationTable(I
             (*p_table)(row, ty * 5 + 3) << deflection.SetValue(sf_params.delta_d);
             (*p_table)(row, ty * 5 + 4) << std::to_wstring(sf_params.average_cumulative_strain * 1E6);
             (*p_table)(row, ty * 5 + 5) << deflection.SetValue(sf_params.inc_shear_def * 1E3);
+
+            total_time_dependent_deformation += sf_params.inc_shear_def;
+
         }
 
         row++;
@@ -278,6 +284,8 @@ rptRcTable* CTimeStepShearDeformationTable::BuildTimeStepShearDeformationTable(I
     p_table->SetColumnSpan(row, 11, 5);
     (*p_table)(row, 11) << deflection.SetValue(details.cumulative_relaxation) << rptNewLine;
 
+    
+    ATLASSERT(IsEqual(total_time_dependent_deformation,details.cumulative_creep + details.cumulative_shrinkage + details.cumulative_relaxation));
 
     return p_table;
 

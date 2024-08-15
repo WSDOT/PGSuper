@@ -598,9 +598,8 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(
 }
 
 
-void pgsBearingDesignEngineer::GetBearingTimeDependentShearDeformationParameters(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx,
+void pgsBearingDesignEngineer::ComputeShearDeformationParameters(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx,
     const pgsPointOfInterest& p0, const pgsPointOfInterest& p1, pgsTypes::ProductForceType td_type, TIMEDEPENDENTSHEARDEFORMATIONPARAMETERS* sf_params) const
-
 {
     GET_IFACE(IIntervals, pIntervals);
     GET_IFACE(IBridgeDescription, pIBridgeDesc);
@@ -612,7 +611,7 @@ void pgsBearingDesignEngineer::GetBearingTimeDependentShearDeformationParameters
     const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
     IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
 
-    
+
 
     Float64 d0 = pPoi->ConvertPoiToGirderlineCoordinate(p0);
     Float64 d1 = pPoi->ConvertPoiToGirderlineCoordinate(p1);
@@ -624,7 +623,7 @@ void pgsBearingDesignEngineer::GetBearingTimeDependentShearDeformationParameters
         const LOSSDETAILS* pDetails0 = pLosses->GetLossDetails(p0, intervalIdx);
         const TIME_STEP_DETAILS& tsDetails0(pDetails0->TimeStepDetails[intervalIdx]);
         const TIME_STEP_DETAILS& tsDetails0erect(pDetails0->TimeStepDetails[erectSegmentIntervalIdx]);
-        sf_params->inc_strain_bot_girder0  = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][td_type][rtIncremental];
+        sf_params->inc_strain_bot_girder0 = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][td_type][rtIncremental];
         sf_params->cum_strain_bot_girder0 = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][td_type][rtCumulative] - tsDetails0erect.Girder.strain_by_load_type[pgsTypes::BottomFace][td_type][rtCumulative];
 
         const LOSSDETAILS* pDetails1 = pLosses->GetLossDetails(p1, intervalIdx);
@@ -638,6 +637,15 @@ void pgsBearingDesignEngineer::GetBearingTimeDependentShearDeformationParameters
         sf_params->inc_shear_def = sf_params->average_cumulative_strain * (sf_params->delta_d);
 
     }
+}
+
+
+
+void pgsBearingDesignEngineer::GetBearingTimeDependentShearDeformationParameters(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx,
+    const pgsPointOfInterest& p0, const pgsPointOfInterest& p1, pgsTypes::ProductForceType td_type, TIMEDEPENDENTSHEARDEFORMATIONPARAMETERS* sf_params) const
+
+{
+    ComputeShearDeformationParameters(poi, intervalIdx, p0, p1, td_type, sf_params);
 }
 
 
