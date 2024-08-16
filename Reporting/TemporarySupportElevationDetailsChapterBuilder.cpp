@@ -85,6 +85,7 @@ rptChapter* CTemporarySupportElevationDetailsChapterBuilder::Build(const std::sh
    if (nTS == 0)
    {
       *pPara << _T("No temporary supports modeled") << rptNewLine;
+      return pChapter;
    }
 
    *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("TemporarySupportElevation.png")) << rptNewLine;
