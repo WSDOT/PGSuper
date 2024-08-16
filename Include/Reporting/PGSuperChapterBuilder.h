@@ -57,6 +57,8 @@ public:
    // in the report definition dialog
    virtual bool Select() const;
 
+   virtual void SetSelect(bool bSelect);
+
    virtual bool NeedsUpdate(const std::shared_ptr<const WBFL::Reporting::ReportHint>& pHint, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
 
 protected:

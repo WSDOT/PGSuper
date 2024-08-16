@@ -62,6 +62,11 @@ bool CPGSuperChapterBuilder::Select() const
    return m_bSelect;
 }
 
+void CPGSuperChapterBuilder::SetSelect(bool bSelect)
+{
+   m_bSelect = bSelect;
+}
+
 bool CPGSuperChapterBuilder::NeedsUpdate(const std::shared_ptr<const WBFL::Reporting::ReportHint>& pHint,const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    int result = CGirderReportHint::IsMyGirder(pHint,pRptSpec);

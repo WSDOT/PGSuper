@@ -325,8 +325,7 @@ rptChapter* CBearingSeatElevationsDetailsChapterBuilder2::Build(const std::share
    }
    else
    {
-      ATLASSERT(false); // not expecting a different kind of report spec
-      return pChapter;
+      girderIndex = ALL_GIRDERS;
    }
 
    BuildBearingsTables(pBroker, pChapter, girderIndex);
