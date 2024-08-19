@@ -882,20 +882,6 @@ void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType 
     auto llDF = pLoadFactors->GetLLIMMax(pgsTypes::ServiceI);
 
 
-    if (abs(dcDF * minDCrotation + dwDF * minDWrotation + pDetails->preTensionRotation +
-        pDetails->creepRotation + pDetails->shrinkageRotation + pDetails->relaxationRotation + pDetails->postTensionRotation - 0.005)
-        > abs(dcDF * maxDCrotation + dwDF * maxDWrotation + pDetails->preTensionRotation +
-            pDetails->creepRotation + pDetails->shrinkageRotation + pDetails->relaxationRotation + pDetails->postTensionRotation + 0.005))
-    {
-        pDetails->staticRotation = skewFactor * (dcDF * minDCrotation + dwDF * minDWrotation + pDetails->preTensionRotation +
-            pDetails->creepRotation + pDetails->shrinkageRotation + pDetails->relaxationRotation + pDetails->postTensionRotation - 0.005);
-    }
-    else
-    {
-        pDetails->staticRotation = skewFactor * (dcDF * maxDCrotation + dwDF * maxDWrotation + pDetails->preTensionRotation +
-            pDetails->creepRotation + pDetails->shrinkageRotation + pDetails->relaxationRotation + pDetails->postTensionRotation + 0.005);
-    }
-
 
 
     // Cyclic Rotations
@@ -916,34 +902,40 @@ void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType 
     pDetails->maxUserLLrotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftUserLLIM, poi, maxBAT, rtCumulative, false);
     pDetails->minUserLLrotation = skewFactor * pProductForces->GetRotation(lastIntervalIdx, pgsTypes::pftUserLLIM, poi, minBAT, rtCumulative, false);
 
-    if (abs(pDetails->minDesignLLrotation + pDetails->minUserLLrotation + pDetails->minPedRotation) 
-            > abs(pDetails->maxDesignLLrotation + pDetails->maxUserLLrotation + pDetails->maxPedRotation))
-    {
-        pDetails->cyclicRotation = skewFactor * llDF * (pDetails->minDesignLLrotation + pDetails->minUserLLrotation + pDetails->minPedRotation);
-    }
-    else
-    {
-        pDetails->cyclicRotation = skewFactor * llDF * (pDetails->maxDesignLLrotation + pDetails->maxUserLLrotation + pDetails->maxPedRotation);
 
-    }
     
-    if (abs(pDetails->minDesignLLrotation + pDetails->minUserLLrotation + pDetails->minPedRotation +
-        dcDF * minDCrotation + dwDF * minDWrotation - 0.005) >
-        abs(pDetails->maxDesignLLrotation + pDetails->maxUserLLrotation + pDetails->maxPedRotation +
-            dcDF * maxDCrotation + dwDF * maxDWrotation + 0.005))
+    if (abs(skewFactor * (llDF * (pDetails->minDesignLLrotation + pDetails->minUserLLrotation + pDetails->minPedRotation) +
+        dcDF * minDCrotation + dwDF * minDWrotation + pDetails->preTensionRotation +
+        pDetails->creepRotation + pDetails->shrinkageRotation + pDetails->relaxationRotation + pDetails->postTensionRotation - 0.005)) >
+
+        abs(skewFactor*(llDF * (pDetails->maxDesignLLrotation + pDetails->maxUserLLrotation + pDetails->maxPedRotation) +
+        dcDF * maxDCrotation + dwDF * maxDWrotation + pDetails->preTensionRotation +
+        pDetails->creepRotation + pDetails->shrinkageRotation + pDetails->relaxationRotation + pDetails->postTensionRotation + 0.005)))
+
     {
-        pDetails->totalRotation = skewFactor * (llDF * (pDetails->minDesignLLrotation + pDetails->minUserLLrotation + pDetails->minPedRotation) +
+        pDetails->totalRotation = abs(skewFactor * (llDF * (pDetails->minDesignLLrotation + pDetails->minUserLLrotation + pDetails->minPedRotation) +
             dcDF * minDCrotation + dwDF * minDWrotation + pDetails->preTensionRotation +
-            pDetails->creepRotation + pDetails->shrinkageRotation + pDetails->relaxationRotation + pDetails->postTensionRotation - 0.005);
+            pDetails->creepRotation + pDetails->shrinkageRotation + pDetails->relaxationRotation + pDetails->postTensionRotation - 0.005));
+
+        pDetails->staticRotation = abs(skewFactor * (dcDF * minDCrotation + dwDF * minDWrotation + pDetails->preTensionRotation +
+            pDetails->creepRotation + pDetails->shrinkageRotation + pDetails->relaxationRotation + pDetails->postTensionRotation - 0.005));
+
+        pDetails->cyclicRotation = abs(skewFactor * llDF * (pDetails->minDesignLLrotation + pDetails->minUserLLrotation + pDetails->minPedRotation));
+
     }
     else
     {
-        pDetails->totalRotation = skewFactor * (llDF * (pDetails->maxDesignLLrotation + pDetails->maxUserLLrotation + pDetails->maxPedRotation) +
+        pDetails->totalRotation = abs(skewFactor * (llDF * (pDetails->maxDesignLLrotation + pDetails->maxUserLLrotation + pDetails->maxPedRotation) +
             dcDF * maxDCrotation + dwDF * maxDWrotation + pDetails->preTensionRotation +
-            pDetails->creepRotation + pDetails->shrinkageRotation + pDetails->relaxationRotation + pDetails->postTensionRotation + 0.005);
+            pDetails->creepRotation + pDetails->shrinkageRotation + pDetails->relaxationRotation + pDetails->postTensionRotation + 0.005));
+
+        pDetails->staticRotation = abs(skewFactor * (dcDF * maxDCrotation + dwDF * maxDWrotation + pDetails->preTensionRotation +
+            pDetails->creepRotation + pDetails->shrinkageRotation + pDetails->relaxationRotation + pDetails->postTensionRotation + 0.005));
+
+        pDetails->cyclicRotation = abs(skewFactor * llDF * (pDetails->maxDesignLLrotation + pDetails->maxUserLLrotation + pDetails->maxPedRotation));
     }
 
-    
+    ATLASSERT(IsEqual(pDetails->totalRotation, pDetails->staticRotation + pDetails->cyclicRotation));
     
 
 }

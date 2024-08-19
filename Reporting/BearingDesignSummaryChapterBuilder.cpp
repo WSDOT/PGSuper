@@ -100,7 +100,6 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
     rptParagraph* p = new rptParagraph;
     *pChapter << p;
 
-    *p << _T("-All loads and movements are per bearing and factored for Service I Limit State load combinations") << rptNewLine;
     *p << _T("-Live loads do not include impact") << rptNewLine << rptNewLine;
 
     *p << CBearingDesignPropertiesTable().BuildBearingDesignPropertiesTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
@@ -130,7 +129,7 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
     *p << Sub2(symbol(theta), _T("s-st")) << _T(" = static component of maximum service limit design rotation") << rptNewLine;
     *p << Sub2(symbol(theta), _T("s-cy")) << _T(" = cyclic component of maximum service limit design rotation") << rptNewLine;
     *p << Sub2(symbol(theta), _T("s")) << _T(" = maximum total service limit design rotation") << rptNewLine;
-    *p << _T("*Static rotations include ") << symbol(PLUS_MINUS) << _T("0.005 radians tolerance for uncertainties") << rptNewLine;
+    *p << _T("*Static rotations include 0.005 radians tolerance for uncertainties") << rptNewLine;
 
     GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
     SHEARDEFORMATIONDETAILS sfDetails;
@@ -149,7 +148,7 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
 
     *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(), true, pDisplayUnits, false, bCold, &sfDetails) << rptNewLine;
 
-    *p << _T("-Deck and girder shrinkage effects are ignored") << rptNewLine;
+    *p << _T("-Deck shrinkage effects are ignored") << rptNewLine;
     *p << _T("-Bearing reset effects are ignored") << rptNewLine;
     *p << _T("-Temperature range is computed based on Procedure A (Article 3.12.2.1)") << rptNewLine << rptNewLine;
 

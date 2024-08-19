@@ -129,20 +129,27 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
 
     *p << CBearingReactionTable().BuildBearingReactionTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, are_user_loads, true, pDisplayUnits, true);
+    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+    if (1 < nSegments)
+    {
+        *p << _T("Erected Segment reactions are the segment self-weight simple span reactions after erection. Girder reactions are for the completed girder after post-tensioning and temporary support removal.") << rptNewLine;
+    }
     *p << _T("*Live loads do not include impact") << rptNewLine;
 
     *p << CBearingRotationTable().BuildBearingRotationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true,are_user_loads, true, pDisplayUnits, true, true);
+    if (1 < nSegments)
+    {
+        *p << _T("Erected Segment rotations are the segment self-weight simple span rotations after erection. Girder rotations are for the completed girder after post-tensioning and temporary support removal.") << rptNewLine;
+    }
     *p << _T("*Live loads do not include impact") << rptNewLine;
 
     *p << CBearingRotationTable().BuildBearingRotationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, are_user_loads, true, pDisplayUnits, true, false);
 
-
-    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
     if (1 < nSegments)
     {
-        *p << _T("Erected Segments reactions are the segment self-weight simple span reactions after erection. Girder reactions are for the completed girder after post-tensioning and temporary support removal.") << rptNewLine;
+        *p << _T("Erected Segment rotations are the segment self-weight simple span rotations after erection. Girder rotations are for the completed girder after post-tensioning and temporary support removal.") << rptNewLine;
     }
     *p << _T("*Live loads do not include impact") << rptNewLine;
     *p << _T("**Torsional rotations are calculated using ") << Sub2(symbol(theta), _T("t")) << _T(" = ") << Sub2(symbol(theta), _T("f")) << _T("tan") << Sub2(symbol(theta), _T("skew")) << rptNewLine << rptNewLine;
@@ -198,7 +205,7 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
         *p << Sub2(symbol(DELTA), _T("0")) << _T(" = 0.65 (AASHTO LRFD Sect. 14.7.5.3.2)") << rptNewLine;
     }
 
-    *p << Sub2(_T("L"), _T("pf")) << _T(" = ") << _T("Distance from the apparent point of fixity to bearing") << rptNewLine;
+    *p << Sub2(_T("L"), _T("pf")) << _T(" = ") << _T("Distance from the apparent point of fixity to bearing for girders continuous over piers") << rptNewLine;
 
 
     GET_IFACE2(pBroker, ILossParameters, pLossParams);
@@ -243,7 +250,7 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
         *p << _T("-Two-thirds of the total girder creep and shrinkage is assumed to occur before girders are erected") << rptNewLine;
         *p << _T("-It is assumed that creep and shrinkage effects cease after deck casting") << rptNewLine;
     }
-    *p << _T("-Bearing reset effects are not considered") << rptNewLine;
+    *p << _T("-Bearing reset effects are ignored") << rptNewLine;
     if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
     {
         *p << _T("-Deck shrinkage effects are not considered") << rptNewLine << rptNewLine;
