@@ -291,7 +291,7 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
                 CSegmentKey segmentKey(thisGirderKey, 0);
                 PoiList segPoi;
                 pPOI->GetPointsOfInterest(segmentKey, POI_0L | POI_ERECTED_SEGMENT, &segPoi);
-                vPoi.push_back(segPoi.front());
+                vPoi.emplace_back(segPoi.front());
             }
             else if (pierIdx == endPierIdx)
             {
@@ -299,14 +299,14 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
                 CSegmentKey segmentKey(thisGirderKey, nSegments - 1);
                 PoiList segPoi;
                 pPOI->GetPointsOfInterest(segmentKey, POI_10L | POI_ERECTED_SEGMENT, &segPoi);
-                vPoi.push_back(segPoi.front());
+                vPoi.emplace_back(segPoi.front());
             }
             else
             {
                 Float64 Xgp;
                 VERIFY(pBridge->GetPierLocation(thisGirderKey, pierIdx, &Xgp));
                 pgsPointOfInterest poi = pPOI->ConvertGirderPathCoordinateToPoi(thisGirderKey, Xgp);
-                vPoi.push_back(poi);
+                vPoi.emplace_back(poi);
             }
         }
     }
