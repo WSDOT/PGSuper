@@ -705,33 +705,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
     pBridge->GetGirderline(girderKey.girderIndex, details.startGroup, details.endGroup, &vGirderKeys);
     for (const auto& thisGirderKey : vGirderKeys)
     {
-        PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(thisGirderKey.groupIndex);
-        PierIndexType endPierIdx = pBridge->GetGirderGroupEndPier(thisGirderKey.groupIndex);
-        for (PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++)
-        {
-            if (pierIdx == startPierIdx)
-            {
-                CSegmentKey segmentKey(thisGirderKey, 0);
-                PoiList segPoi;
-                pPOI->GetPointsOfInterest(segmentKey, POI_0L | POI_ERECTED_SEGMENT, &segPoi);
-                vPoi.push_back(segPoi.front());
-            }
-            else if (pierIdx == endPierIdx)
-            {
-                SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
-                CSegmentKey segmentKey(thisGirderKey, nSegments - 1);
-                PoiList segPoi;
-                pPOI->GetPointsOfInterest(segmentKey, POI_10L | POI_ERECTED_SEGMENT, &segPoi);
-                vPoi.push_back(segPoi.front());
-            }
-            else
-            {
-                Float64 Xgp;
-                VERIFY(pBridge->GetPierLocation(thisGirderKey, pierIdx, &Xgp));
-                pgsPointOfInterest poi = pPOI->ConvertGirderPathCoordinateToPoi(thisGirderKey, Xgp);
-                vPoi.push_back(poi);
-            }
-        }
+        pPOI->GetPointsOfInterest(CSpanKey(ALL_SPANS, thisGirderKey.girderIndex), POI_ABUTMENT | POI_BOUNDARY_PIER | POI_INTERMEDIATE_PIER, &vPoi);
     }
     
 
