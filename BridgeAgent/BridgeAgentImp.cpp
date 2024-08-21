@@ -4875,6 +4875,11 @@ void CBridgeAgentImp::LayoutSpanPoi(const CSpanKey& spanKey,Uint16 nPnts)
 
       poi.MakeTenthPoint(POI_SPAN,tenthPoint);
 
+      // Mantis 1529: Incorrect POI label at Intermediate Pier Closure Joint
+      // The direct call below was not made here, but was implicit in CBridgeAgentImp::ConvertPoiToSpanPoint() which made it 
+      // very difficult to measure which span a POI is in. 
+      poi.SetSpanPoint(spanKey.spanIndex, Xspan);
+
       VERIFY(m_pPoiMgr->AddPointOfInterest(poi) != INVALID_ID);
    }
 }
