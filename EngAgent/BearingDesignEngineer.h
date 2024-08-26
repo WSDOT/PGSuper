@@ -37,8 +37,6 @@ public:
 
    Float64 BearingSkewFactor(const ReactionLocation& reactionLocation, bool isFlexural) const;
 
-   //Float64 GetStaticBearingRotation(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi) const;
-
    void GetBearingTableParameters(const CGirderKey& girderKey, TABLEPARAMETERS* pDetails) const;
 
    void GetBearingRotationDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi,
@@ -58,16 +56,7 @@ public:
 
    Float64 GetBearingTimeDependentLosses(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, const GDRCONFIG* pConfig, const LOSSDETAILS* pDetails, TDCOMPONENTS* tdComponents) const;
 
-   Float64 GetTimeDependentShearDeformation(
-	   const pgsPointOfInterest& poi, PierIndexType startPierIdx, SHEARDEFORMATIONDETAILS* pDetails) const;
-
-   void ComputeShearDeformationParameters(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx,
-	   const pgsPointOfInterest& p0, const pgsPointOfInterest& p1, pgsTypes::ProductForceType td_type, TIMEDEPENDENTSHEARDEFORMATIONPARAMETERS* sf_params) const;
-
-   void GetBearingTimeDependentShearDeformationParameters(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx, 
-	   const pgsPointOfInterest& p0, const pgsPointOfInterest& p1, pgsTypes::ProductForceType td_type, TIMEDEPENDENTSHEARDEFORMATIONPARAMETERS* sf_params) const;
-
-   void GetBearingTotalTimeDependentShearDeformation(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx, SHEARDEFORMATIONDETAILS* sf_details) const;
+   Float64 GetTimeDependentShearDeformation(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const;
 
 private:
    IBroker* m_pBroker;

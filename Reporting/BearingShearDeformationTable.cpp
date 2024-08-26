@@ -230,6 +230,10 @@ RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptR
 rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBroker* pBroker, const CGirderKey& girderKey, pgsTypes::AnalysisType analysisType,
     bool bDesign, IEAFDisplayUnits* pDisplayUnits, bool bDetail, bool bCold, SHEARDEFORMATIONDETAILS* details) const
 {
+    
+
+    GET_IFACE2(pBroker, IBearingDesignParameters, pBearing);
+    details->time_dependent = pBearing->GetTimeDependentShearDeformation(girderKey, details); ////////
 
     GET_IFACE2(pBroker, IBridge, pBridge);
 
@@ -239,7 +243,9 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
 
     GET_IFACE2(pBroker, IPointOfInterest, pPOI);
 
-
+    // Build table
+    INIT_UV_PROTOTYPE(rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false);
+    INIT_UV_PROTOTYPE(rptForceUnitValue, reactu, pDisplayUnits->GetShearUnit(), false);
 
     INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
     INIT_UV_PROTOTYPE(rptLengthUnitValue, length, pDisplayUnits->GetSpanLengthUnit(), false);
@@ -271,53 +277,15 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
     p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
     p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
-
     
+    for (auto& bearing:details->td_details)
 
-
-
-    // get poi where pier Reactions occur
-    PoiList vPoi;
-    std::vector<CGirderKey> vGirderKeys;
-    pBridge->GetGirderline(girderKey.girderIndex, details->startGroup, details->endGroup, &vGirderKeys);
-    for (const auto& thisGirderKey : vGirderKeys)
-    {
-        pPOI->GetPointsOfInterest(CSpanKey(ALL_SPANS, thisGirderKey.girderIndex), POI_ABUTMENT | POI_BOUNDARY_PIER | POI_INTERMEDIATE_PIER, &vPoi);
-    }
-
-
-
-    GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
-    IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
-    std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, girderKey));
-
-
-    ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
-    iter.First();
-    PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
-
-    // Build table
-    INIT_UV_PROTOTYPE(rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false);
-    INIT_UV_PROTOTYPE(rptForceUnitValue, reactu, pDisplayUnits->GetShearUnit(), false);
-
-
-    // Use iterator to walk locations
-    for (iter.First(); !iter.IsDone(); iter.Next())
     {
         ColumnIndexType col = 0;
 
-        const ReactionLocation& reactionLocation(iter.CurrentItem());
-        const CGirderKey& thisGirderKey(reactionLocation.GirderKey);
+        (*p_table)(row, col++) << bearing.reactionLocation.PierLabel;
 
-        (*p_table)(row, col++) << reactionLocation.PierLabel;
-
-        const pgsPointOfInterest& poi = vPoi[reactionLocation.PierIdx - startPierIdx];
-
-        GET_IFACE2(pBroker, IBearingDesignParameters, pBearing);
-
-
-        details->time_dependent = pBearing->GetTimeDependentShearDeformation(poi, startPierIdx, details);
-        pBearing->GetThermalExpansionDetails(poi, details);
+        pBearing->GetThermalExpansionDetails(bearing.rPoi, details);
 
 
         INIT_UV_PROTOTYPE(rptLengthUnitValue, Deflection, pDisplayUnits->GetDeflectionUnit(), false);
@@ -394,12 +362,9 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
             }
         }
 
-
         row++;
     }
-
-
-
+    
 
     return p_table;
 

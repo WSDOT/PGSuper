@@ -71,11 +71,10 @@ CTimeStepShearDeformationTable& CTimeStepShearDeformationTable::operator= (const
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CTimeStepShearDeformationTable::BuildTimeStepShearDeformationTable(IBroker* pBroker, 
-    const ReactionLocation& reactionLocation, IntervalIndexType intervalIdx) const
+rptRcTable* CTimeStepShearDeformationTable::BuildTimeStepShearDeformationTable(IBroker* pBroker, TDSHEARDEFORMATIONDETAILS* pDetails) const
 {
     
-
+    /// gets poi where reaction
 
     GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
     GET_IFACE2(pBroker, IIntervals, pIntervals);
@@ -99,61 +98,19 @@ rptRcTable* CTimeStepShearDeformationTable::BuildTimeStepShearDeformationTable(I
 
     SHEARDEFORMATIONDETAILS details;
 
-    CGirderKey girderKey = reactionLocation.GirderKey;
+    CGirderKey girderKey = pDetails->reactionLocation.GirderKey;
 
     pBearing->GetBearingTableParameters(girderKey, &details);
 
-
-    PoiList vPoi;
-    std::vector<CGirderKey> vGirderKeys;
-    pBridge->GetGirderline(girderKey.girderIndex, details.startGroup, details.endGroup, &vGirderKeys);
-    for (const auto& thisGirderKey : vGirderKeys)
-    {
-        pPOI->GetPointsOfInterest(CSpanKey(ALL_SPANS, thisGirderKey.girderIndex), POI_ABUTMENT | POI_BOUNDARY_PIER | POI_INTERMEDIATE_PIER, &vPoi);
-    }
-    
-
-
-    GET_IFACE2(pBroker, IPointOfInterest, pIPoi);
-    GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
-    IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
-    std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, girderKey));
-
-    ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
-    iter.First();
-    PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
-
-    const pgsPointOfInterest& poi = vPoi[reactionLocation.PierIdx - startPierIdx];
-
-    Float64 L = pBearing->GetDistanceToPointOfFixity(poi, &details);
-
-    PoiList vPoi2;
-
-    if (pIPoi->ConvertPoiToGirderlineCoordinate(poi) < pIPoi->ConvertPoiToGirderlineCoordinate(details.poi_fixity))
-    {
-        pIPoi->GetPointsOfInterestInRange(0, poi, L, &vPoi2);
-    }
-    else
-    {
-        pIPoi->GetPointsOfInterestInRange(L, poi, 0, &vPoi2);
-    }
-
-    vPoi2.erase(std::remove_if(vPoi2.begin(), vPoi2.end(), [](const pgsPointOfInterest& i) {
-        return i.HasAttribute(POI_BOUNDARY_PIER);
-        }), vPoi2.end());
-
-
-
-
     ColumnIndexType nCols = 16;
-    CString label{ reactionLocation.PierLabel.c_str() };
+    CString label{ pDetails->reactionLocation.PierLabel.c_str() };
     label += _T(" - ");
     label += _T("Interval ");
-    label += std::to_string(intervalIdx).c_str();
+    label += std::to_string(pDetails->interval).c_str();
     label += _T(" (Previous Interval: ");
-    label += std::to_string(intervalIdx - 1).c_str();
+    label += std::to_string(pDetails->interval - 1).c_str();
     label += _T(" - ");
-    label += pIntervals->GetDescription(intervalIdx - 1).c_str();
+    label += pIntervals->GetDescription(pDetails->interval - 1).c_str();
     label += _T(")");
 
     rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols, label);
@@ -162,37 +119,36 @@ rptRcTable* CTimeStepShearDeformationTable::BuildTimeStepShearDeformationTable(I
 
     p_table->SetRowSpan(0, 0, 2);
     (*p_table)(0, 0) << COLHDR(_T("Location"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-    p_table->SetRowSpan(0, 1, 1);
+    p_table->SetRowSpan(0, 1, 2); //?
+    (*p_table)(0, 1) << COLHDR(Sub2(symbol(delta), _T("d")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+    p_table->SetRowSpan(0, 2, 1); //?
 
-    p_table->SetColumnSpan(0, 1, 5);
-    (*p_table)(0, 1) << pProductLoads->GetProductLoadName(pgsTypes::pftCreep);
-    (*p_table)(1, 1) << _T("Incremental") << rptNewLine << symbol(epsilon) << Super2(_T("x10"), _T("6"));
-    (*p_table)(1, 2) << _T("Cumulative") << rptNewLine << symbol(epsilon) << Super2(_T("x10"), _T("6"));
-    (*p_table)(1, 3) << COLHDR(Sub2(symbol(delta), _T("d")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+    p_table->SetColumnSpan(0, 2, 4);
+    (*p_table)(0, 2) << pProductLoads->GetProductLoadName(pgsTypes::pftCreep);
+    (*p_table)(1, 2) << _T("Incremental") << rptNewLine << symbol(epsilon) << Super2(_T("x10"), _T("6"));
+    (*p_table)(1, 3) << _T("Cumulative") << rptNewLine << symbol(epsilon) << Super2(_T("x10"), _T("6"));
     (*p_table)(1, 4) << Sub2(symbol(epsilon), _T("avg")) << Super2(_T("x10"), _T("6"));
     (*p_table)(1, 5) << COLHDR(Sub2(symbol(DELTA), _T("s")) << Super2(_T("x10"), _T("3")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
 
-    p_table->SetColumnSpan(0, 6, 5);
+    p_table->SetColumnSpan(0, 6, 4);
     (*p_table)(0, 6) << pProductLoads->GetProductLoadName(pgsTypes::pftShrinkage);
     (*p_table)(1, 6) << _T("Incremental") << rptNewLine << symbol(epsilon) << Super2(_T("x10"), _T("6"));
     (*p_table)(1, 7) << _T("Cumulative") << rptNewLine << symbol(epsilon) << Super2(_T("x10"), _T("6"));
-    (*p_table)(1, 8) << COLHDR(Sub2(symbol(delta), _T("d")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
-    (*p_table)(1, 9) << Sub2(symbol(epsilon), _T("avg")) << Super2(_T("x10"), _T("6"));
-    (*p_table)(1, 10) << COLHDR(Sub2(symbol(DELTA), _T("s")) << Super2(_T("x10"), _T("3")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+    (*p_table)(1, 8) << Sub2(symbol(epsilon), _T("avg")) << Super2(_T("x10"), _T("6"));
+    (*p_table)(1, 9) << COLHDR(Sub2(symbol(DELTA), _T("s")) << Super2(_T("x10"), _T("3")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
 
-    p_table->SetColumnSpan(0, 11, 5);
-    (*p_table)(0, 11) << pProductLoads->GetProductLoadName(pgsTypes::pftRelaxation);
-    (*p_table)(1, 11) << _T("Incremental") << rptNewLine << symbol(epsilon) << Super2(_T("x10"), _T("6"));
-    (*p_table)(1, 12) << _T("Cumulative") << rptNewLine << symbol(epsilon) << Super2(_T("x10"), _T("36"));
-    (*p_table)(1, 13) << COLHDR(Sub2(symbol(delta), _T("d")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
-    (*p_table)(1, 14) << Sub2(symbol(epsilon), _T("avg")) << Super2(_T("x10"), _T("6"));
-    (*p_table)(1, 15) << COLHDR(Sub2(symbol(DELTA), _T("s")) << Super2(_T("x10"), _T("3")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+    p_table->SetColumnSpan(0, 10, 4);
+    (*p_table)(0, 10) << pProductLoads->GetProductLoadName(pgsTypes::pftRelaxation);
+    (*p_table)(1, 10) << _T("Incremental") << rptNewLine << symbol(epsilon) << Super2(_T("x10"), _T("6"));
+    (*p_table)(1, 11) << _T("Cumulative") << rptNewLine << symbol(epsilon) << Super2(_T("x10"), _T("36"));
+    (*p_table)(1, 12) << Sub2(symbol(epsilon), _T("avg")) << Super2(_T("x10"), _T("6"));
+    (*p_table)(1, 13) << COLHDR(Sub2(symbol(DELTA), _T("s")) << Super2(_T("x10"), _T("3")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
 
     pgsPointOfInterest p0, p1;
 
     RowIndexType row = p_table->GetNumberOfHeaderRows();
 
-    (*p_table)(row, 0) << location.SetValue(POI_SPAN, vPoi2[0]);
+    (*p_table)(row, 0) << location.SetValue(POI_SPAN, pDetails->rPoi);
     (*p_table)(row, 1) << _T("N/A");
     (*p_table)(row, 2) << _T("N/A");
     (*p_table)(row, 3) << _T("N/A");
@@ -205,62 +161,40 @@ rptRcTable* CTimeStepShearDeformationTable::BuildTimeStepShearDeformationTable(I
     (*p_table)(row, 10) << _T("N/A");
     (*p_table)(row, 11) << _T("N/A");
     (*p_table)(row, 12) << _T("N/A");
-    (*p_table)(row, 13) << _T("N/A");
-    (*p_table)(row, 14) << _T("N/A");
-    (*p_table)(row++, 15) << _T("N/A");
+    (*p_table)(row++, 13) << _T("N/A");
 
 
-    Float64 total_time_dependent_deformation{ 0 };
 
-
-    for (IndexType idx = 1, nPoi = vPoi2.size(); idx < nPoi; idx++)
+    for (auto& r : pDetails->td_diff_elems)
     {
-
-        p0 = vPoi2[idx - 1];
-        p1 = vPoi2[idx];
-
-        (*p_table)(row, 0) << location.SetValue(POI_SPAN, p1);
-
-        std::vector<pgsTypes::ProductForceType> td_types{
-            pgsTypes::ProductForceType::pftCreep, pgsTypes::ProductForceType::pftShrinkage, pgsTypes::ProductForceType::pftRelaxation};
-
-
-        for (IndexType ty = 0, nTypes = td_types.size(); ty < nTypes; ty++)
-        {
-            TIMEDEPENDENTSHEARDEFORMATIONPARAMETERS sf_params;
-            pBearing->GetBearingTimeDependentShearDeformationParameters(poi, intervalIdx, p0, p1, td_types[ty], &sf_params);
-
-            (*p_table)(row, ty * 5 + 1) << std::to_wstring(sf_params.inc_strain_bot_girder1 * 1E6);
-            (*p_table)(row, ty * 5 + 2) << std::to_wstring(sf_params.cum_strain_bot_girder1 * 1E6);
-            (*p_table)(row, ty * 5 + 3) << deflection.SetValue(sf_params.delta_d);
-            (*p_table)(row, ty * 5 + 4) << std::to_wstring(sf_params.average_cumulative_strain * 1E6);
-            (*p_table)(row, ty * 5 + 5) << deflection.SetValue(sf_params.inc_shear_def * 1E3);
-
-            total_time_dependent_deformation += sf_params.inc_shear_def;
-
-        }
-
+        (*p_table)(row, 0) << location.SetValue(POI_SPAN, r.poi);
+        (*p_table)(row, 1) << deflection.SetValue(r.delta_d * 1E3);
+        (*p_table)(row, 2) << std::to_wstring(r.creep[0] * 1E6);
+        (*p_table)(row, 3) << std::to_wstring(r.creep[1] * 1E6);
+        (*p_table)(row, 4) << std::to_wstring(r.creep[2] * 1E6);
+        (*p_table)(row, 5) << deflection.SetValue(r.creep[3] * 1E3);
+        (*p_table)(row, 6) << std::to_wstring(r.shrinkage[0] * 1E6);
+        (*p_table)(row, 7) << std::to_wstring(r.shrinkage[1] * 1E6);
+        (*p_table)(row, 8) << std::to_wstring(r.shrinkage[2] * 1E6);
+        (*p_table)(row, 9) << deflection.SetValue(r.shrinkage[3] * 1E3);
+        (*p_table)(row, 10) << std::to_wstring(r.relaxation[0] * 1E6);
+        (*p_table)(row, 11) << std::to_wstring(r.relaxation[1] * 1E6);
+        (*p_table)(row, 12) << std::to_wstring(r.relaxation[2] * 1E6);
+        (*p_table)(row, 13) << deflection.SetValue(r.relaxation[3] * 1E3);
         row++;
-
     }
-
-    pBearing->GetBearingTotalTimeDependentShearDeformation(poi, intervalIdx, &details);
 
     p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_LEFT));
     p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_LEFT));
 
+    p_table->SetColumnSpan(row, 0, 2);
     (*p_table)(row, 0) << symbol(SIGMA) << Sub2(symbol(DELTA), _T("s"));
-
-
-    p_table->SetColumnSpan(row, 1, 5);
-    (*p_table)(row, 1) << deflection.SetValue(details.cumulative_creep) << rptNewLine;
-    p_table->SetColumnSpan(row, 6, 5);
-    (*p_table)(row, 6) << deflection.SetValue(details.cumulative_shrinkage) << rptNewLine;
-    p_table->SetColumnSpan(row, 11, 5);
-    (*p_table)(row, 11) << deflection.SetValue(details.cumulative_relaxation) << rptNewLine;
-
-    
-    ATLASSERT(IsEqual(total_time_dependent_deformation,details.cumulative_creep + details.cumulative_shrinkage + details.cumulative_relaxation));
+    p_table->SetColumnSpan(row, 2, 4);
+    (*p_table)(row, 2) << deflection.SetValue(pDetails->creep) << rptNewLine;
+    p_table->SetColumnSpan(row, 6, 4);
+    (*p_table)(row, 6) << deflection.SetValue(pDetails->shrinkage) << rptNewLine;
+    p_table->SetColumnSpan(row, 10, 4);
+    (*p_table)(row, 10) << deflection.SetValue(pDetails->relaxation) << rptNewLine;
 
     return p_table;
 

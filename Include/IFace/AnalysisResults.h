@@ -175,6 +175,12 @@ struct ReactionLocation
    PierReactionFaceType Face;      // Face of pier that reaction applies to
    CGirderKey           GirderKey; // GirderKey for the girder that provides the reaction
    std::_tstring        PierLabel; // Label (Abutment 1, Pier 2, etc)
+
+   bool operator==(const ReactionLocation& r) const
+   {
+       return ::IsEqual(PierIdx, r.PierIdx) /* && ::IsEqual(Face, r.Face) && ::IsEqual(GirderKey, r.GirderKey)*/ ? true : false;
+   };
+
 };
 
 typedef struct REACTION

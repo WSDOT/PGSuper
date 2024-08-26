@@ -71,7 +71,7 @@ public:
    // 
 
    // Builds ......
-   virtual rptRcTable* BuildTimeStepShearDeformationTable(IBroker* pBroker, const ReactionLocation& reactionLocation, IntervalIndexType intervalIdx) const;
+   virtual rptRcTable* BuildTimeStepShearDeformationTable(IBroker* pBroker, TDSHEARDEFORMATIONDETAILS* pDetails) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
 

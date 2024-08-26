@@ -23,7 +23,6 @@
 #include "StdAfx.h"
 #include <Reporting\BearingTimeStepDetailsChapterBuilder.h>
 #include <Reporting\BearingTimeStepDetailsReportSpecification.h>
-#include <Reporting\ReactionInterfaceAdapters.h>
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
@@ -103,13 +102,11 @@ rptChapter* CBearingTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<c
    pBTSDRptSpec->GetBroker(&pBroker);
    const ReactionLocation& rptLocation(pBTSDRptSpec->GetReactionLocation());
    const CGirderKey& girderKey(rptLocation.GirderKey);
-
-
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
-   if ( pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
+   if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
    {
-      *pPara << color(Red) << _T("Time Step analysis results not available.") << color(Black) << rptNewLine;
-      return pChapter;
+       *pPara << color(Red) << _T("Time Step analysis results not available.") << color(Black) << rptNewLine;
+       return pChapter;
    }
 
    *pPara << rptNewLine;
@@ -119,86 +116,43 @@ rptChapter* CBearingTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<c
    *pPara << Sub2(symbol(epsilon), _T("avg")) << _T(" = average cumulative longitudinal strain at current POI using the midpoint rule.") << rptNewLine;
    *pPara << rptNewLine;
 
-
-   GET_IFACE2(pBroker, IBridge, pBridge);
-
    GET_IFACE2(pBroker, IIntervals, pIntervals);
-   IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
-
+   GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
    GET_IFACE2(pBroker, IPointOfInterest, pPOI);
 
+   const pgsPointOfInterest poi = pPOI->GetPierPointOfInterest(girderKey, rptLocation.PierIdx);
+   IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
+   IntervalIndexType rptIntervalIdx = pBTSDRptSpec->GetInterval();
+   IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
+   IntervalIndexType firstIntervalIdx = (rptIntervalIdx == INVALID_INDEX ? erectSegmentIntervalIdx : rptIntervalIdx);
+   IntervalIndexType lastIntervalIdx = (rptIntervalIdx == INVALID_INDEX ? nIntervals - 1 : rptIntervalIdx);
+
+
    SHEARDEFORMATIONDETAILS details;
-   GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
-   pBearingDesignParameters->GetBearingTableParameters(girderKey, &details);
+   Float64 total_td_shear_def = pBearingDesignParameters->GetTimeDependentShearDeformation(girderKey, &details);
 
 
-   PoiList vPoi;
-   std::vector<CGirderKey> vGirderKeys;
-   pBridge->GetGirderline(girderKey.girderIndex, details.startGroup, details.endGroup, &vGirderKeys);
-
-   for (const auto& thisGirderKey : vGirderKeys)
+   for (auto intervalIdx = erectSegmentIntervalIdx + 1; intervalIdx <= lastIntervalIdx; intervalIdx++)
    {
-       pPOI->GetPointsOfInterest(CSpanKey(ALL_SPANS, thisGirderKey.girderIndex), POI_ABUTMENT | POI_BOUNDARY_PIER | POI_INTERMEDIATE_PIER, &vPoi);
+       for (auto& detail : details.td_details)
+       {
+           if (detail.interval == intervalIdx)
+           {
+               if (pBTSDRptSpec->ReportAtAllLocations())
+               {
+                   *pPara << CTimeStepShearDeformationTable().BuildTimeStepShearDeformationTable(pBroker, &detail);
+               }
+               else
+               {
+                   if (detail.reactionLocation == rptLocation)
+                   {
+                       *pPara << CTimeStepShearDeformationTable().BuildTimeStepShearDeformationTable(pBroker, &detail);
+                   }
+               }
+               
+           }
+       }
    }
-
-   GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
-   IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
-   std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, girderKey));
-
-   ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
-   iter.First();
-   PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
-
-
-  
-
-   // Use iterator to walk locations
-   for (iter.First(); !iter.IsDone(); iter.Next())
-   {
-
-       const ReactionLocation& reactionLocation(iter.CurrentItem());
-       const CGirderKey& thisGirderKey(reactionLocation.GirderKey);
-
-       const pgsPointOfInterest& poi = vPoi[reactionLocation.PierIdx - startPierIdx];
-
-
-       // bearing time-dependent effects begin at the erect segment interval
-       const CSegmentKey& segmentKey(poi.GetSegmentKey());
-       IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
-
-
-       
-       GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-       GroupIndexType firstGroupIdx = (segmentKey.groupIndex == ALL_GROUPS ? 0 : segmentKey.groupIndex);
-       GroupIndexType lastGroupIdx = (segmentKey.groupIndex == ALL_GROUPS ? nGroups - 1 : firstGroupIdx);
-
-       IntervalIndexType rptIntervalIdx = pBTSDRptSpec->GetInterval();
-       IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
-       IntervalIndexType firstIntervalIdx = (rptIntervalIdx == INVALID_INDEX ? erectSegmentIntervalIdx : rptIntervalIdx);
-       IntervalIndexType lastIntervalIdx = (rptIntervalIdx == INVALID_INDEX ? nIntervals - 1 : rptIntervalIdx);
-
-
-       
-        for (IntervalIndexType intervalIdx = erectSegmentIntervalIdx + 1; intervalIdx <= lastIntervalIdx; intervalIdx++)
-        {
-            if (pIntervals->GetDuration(intervalIdx) != 0)
-            {
-                if (pBTSDRptSpec->ReportAtAllLocations())
-                {
-                    *pPara << CTimeStepShearDeformationTable().BuildTimeStepShearDeformationTable(pBroker, reactionLocation, intervalIdx);
-                }
-                else
-                {
-                    if (reactionLocation.PierIdx == pBTSDRptSpec->GetReactionLocation().PierIdx && reactionLocation.Face == pBTSDRptSpec->GetReactionLocation().Face)
-                    {
-                        *pPara << CTimeStepShearDeformationTable().BuildTimeStepShearDeformationTable(pBroker, reactionLocation, intervalIdx);
-                    }
-                }
-            }
-        }
-
-   }
-
 
    return pChapter;
 }

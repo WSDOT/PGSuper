@@ -3582,23 +3582,9 @@ Float64 CEngAgentImp::GetTimeDependentComponentShearDeformation(const pgsPointOf
     return m_BearingEngineer.GetTimeDependentComponentShearDeformation(poi, loss, pDetails);
 }
 
-Float64 CEngAgentImp::GetTimeDependentShearDeformation(
-    const pgsPointOfInterest& poi, PierIndexType startPierIdx, SHEARDEFORMATIONDETAILS* pDetails) const
+Float64 CEngAgentImp::GetTimeDependentShearDeformation(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const
 {
-    return m_BearingEngineer.GetTimeDependentShearDeformation(poi, startPierIdx, pDetails);
-}
-
-void CEngAgentImp::GetBearingTimeDependentShearDeformationParameters(
-    const pgsPointOfInterest& poi, IntervalIndexType intervalIdx,
-    const pgsPointOfInterest& p0, const pgsPointOfInterest& p1, pgsTypes::ProductForceType td_type, TIMEDEPENDENTSHEARDEFORMATIONPARAMETERS* sf_params) const
-{
-    return m_BearingEngineer.GetBearingTimeDependentShearDeformationParameters(poi, intervalIdx, p0, p1, td_type, sf_params);
-}
-
-
-void CEngAgentImp::GetBearingTotalTimeDependentShearDeformation(const pgsPointOfInterest& poi, IntervalIndexType intervalIdx, SHEARDEFORMATIONDETAILS* pDetails) const
-{
-    return m_BearingEngineer.GetBearingTotalTimeDependentShearDeformation(poi, intervalIdx, pDetails);
+    return m_BearingEngineer.GetTimeDependentShearDeformation(girderKey, pDetails);
 }
 
 
