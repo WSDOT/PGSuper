@@ -10,8 +10,13 @@ PGSuper supports the following command options
 Option | Description
 -------|--------------
 /Configuration=<i>ServerName</i>:<i>PublisherName</i> | Sets the application configuration.
-/TestR | Generates NCHRP 12-50 test results for all problem domains
-/Test<i>n</i> | Generates NCHRP 12-50 test results for a specified problem domain. Substitute the problem domain ID for <i>n</i>.
+/TestR <i>filename.pgs</i>| Generates NCHRP 12-50 test results for all problem domains
+/Test<i>n</i> <i>filename.pgs</i> | Generates NCHRP 12-50 test results for a specified problem domain. Substitute the problem domain ID for <i>n</i>.
+
+> NOTE: The /Configuration option is not unique to PGSuper. Other BridgeLink applications also have a /Configuration option. Use the /App=PGSuper option along with /Configuration to configure PGSuper.
+
+               BridgeLink.exe /App=PGSuper /Configuration="WSDOT":"WSDOT"
+
 
 TxDOT Data Exporter
 -------------------
@@ -23,7 +28,7 @@ When the TxDOT data export options are given on the command line, PGSuper will c
 ### Command Line Options ("Tx" Options) ###
 To run PGSuper with the Tx options, use a command with the following format:
 
-               BridgeLink.exe /PGSuper /Option input_file.pgs Output_file  \<span\> \<girder\>
+               BridgeLink.exe /Option input_file.pgs Output_file  \<span\> \<girder\>
 
 Where:
 * /PGSuper is the BridgeLink command option that directs the remainder of the command line to PGSuper for processing
@@ -52,11 +57,11 @@ Library Entry conflicts will cause processing to cease. You need to make sure th
 ### Examples ###
 An example of a command line to run a design for span 1, girder C using input file "Route66.pgs" and creating an extended output file "Route66.txt" is as follows:
 
-                 BridgeLink.exe /PGSuper /TxDx Route66.pgs Route66.txt 1 C
+                 BridgeLink.exe /TxDx Route66.pgs Route66.txt 1 C
 
 Here is another example to run an analysis using standard output format for all beams in Span 2:
 
-                  BridgeLink.exe /PGSuper /TxA Route66.pgs Route66.txt 2 ALL
+                  BridgeLink.exe /TxA Route66.pgs Route66.txt 2 ALL
 
 ### Output File Format ###
 Output files are generated in "standard" or "enhanced" format. These are space-delimited text files (fields are separated by a single blank space). The data formats for draped and debonded strand layouts are different by nature. Refer to the TxDOT IGND and UBND girder design standard plan sheets for more information about data and formatting.
