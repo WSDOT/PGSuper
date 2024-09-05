@@ -370,11 +370,15 @@ void write_moment_data_table(IBroker* pBroker,
    }
    else
    {
-      *pPara << _T("+ Controlling: C=Concrete crushing, D=Reduced strand stress due to lack of full development per LRFD ") << WBFL::LRFD::LrfdCw8th(_T("5.11.4.2"), _T("5.9.4.3.2")) << _T(", R=Reinforcement strain limit");
-      if (!bConsiderReinforcementStrainLimits)
+      *pPara << _T("+ Controlling: C=Concrete crushing, D=Reduced strand stress due to lack of full development per LRFD ") << WBFL::LRFD::LrfdCw8th(_T("5.11.4.2"), _T("5.9.4.3.2"));
+      if (bConsiderReinforcementStrainLimits)
       {
-         *pPara << _T(", E=Reinforcement strain exceeds minimum elongation per the material specification");
+         *pPara << _T(", R=Reinforcement strain exceeds minimum elongation per the material specification");
       }  
+      else
+      {
+         *pPara << _T(", E=Reinforcement strain was not limited to minimum elongation per the material specification");
+      }
    }
 
 
@@ -584,6 +588,16 @@ void write_moment_data_table(IBroker* pBroker,
       (*table)(row, col++) << moment.SetValue(pmcd->Mn);
       (*table)(row, col++) << moment.SetValue(pmcd->Mr);
 
+#if defined _DEBUG
+      // sanity check - if this is not UHPC (which reinforcement strains are always checked)
+      // and we are not checking reinforcement strain limits, then the controlling type
+      // should be ReinforcementFracture - If this assert fires, verify that there isn't a good
+      // reason for Controlling to be ReinforcementFracture before assuming there is a bug.
+      if (!bUHPC && !bConsiderReinforcementStrainLimits)
+      {
+         ASSERT(pmcd->Controlling != MOMENTCAPACITYDETAILS::ControllingType::ReinforcementFracture);
+      }
+#endif
       (*table)(row, col) << strControlling[+(pmcd->Controlling)];
       
       if (pmcd->bDevelopmentLengthReducedStress)
