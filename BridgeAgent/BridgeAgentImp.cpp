@@ -14290,18 +14290,31 @@ void CBridgeAgentImp::GetRebars(const pgsPointOfInterest& poi,IRebarSection** re
 {
    Float64 Xpoi = poi.GetDistFromStart();
 
-   CComPtr<IPrecastGirder> girder;
-   GetGirder(poi.GetSegmentKey(),&girder);
-
    CComPtr<IRebarLayout> rebar_layout;
 
    CClosureKey closureKey;
    if ( IsInClosureJoint(poi,&closureKey) )
    {
+      // Closure key shows segment who's right end is where closure joint lies
+      CComPtr<IPrecastGirder> girder;
+      GetGirder(closureKey, &girder);
+
+      if (closureKey.segmentIndex < poi.GetSegmentKey().segmentIndex)
+      {
+         Float64 gdrCoord = poi.GetGirderCoordinate();
+         // Get location of start of segment that contains the CJ
+         pgsPointOfInterest cPoi = GetPointOfInterest(closureKey, 0.0);
+         Float64 segGdrCoord = cPoi.GetGirderCoordinate();
+         Xpoi = gdrCoord - segGdrCoord;
+      }
+
       girder->get_ClosureJointRebarLayout(&rebar_layout);
    }
    else
    {
+      CComPtr<IPrecastGirder> girder;
+      GetGirder(poi.GetSegmentKey(), &girder);
+
       girder->get_RebarLayout(&rebar_layout);
    }
 
