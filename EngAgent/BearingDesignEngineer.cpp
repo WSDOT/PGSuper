@@ -571,10 +571,10 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
                                 Float64 inc_strain_bot_girder_0 = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][td_types[ty]][rtIncremental];
                                 Float64 cum_strain_bot_girder_0 = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][td_types[ty]][rtCumulative] - strain_bot_girder_0_erect;
 
-                                const LOSSDETAILS* pDetails1 = pLosses->GetLossDetails(p1, intervalIdx);
-                                const TIME_STEP_DETAILS& tsDetails1(pDetails1->TimeStepDetails[intervalIdx]);
                                 const LOSSDETAILS* pDetails1erect = pLosses->GetLossDetails(p1, erectSegmentIntervalIdx);
                                 const TIME_STEP_DETAILS& tsDetails1erect(pDetails1erect->TimeStepDetails[erectSegmentIntervalIdx]);
+                                const LOSSDETAILS* pDetails1 = pLosses->GetLossDetails(p1, intervalIdx);
+                                const TIME_STEP_DETAILS& tsDetails1(pDetails1->TimeStepDetails[intervalIdx]);
                                 Float64 strain_bot_girder_1_erect = tsDetails1erect.Girder.strain_by_load_type[pgsTypes::BottomFace][td_types[ty]][rtCumulative];
                                 Float64 inc_strain_bot_girder_1 = tsDetails1.Girder.strain_by_load_type[pgsTypes::BottomFace][td_types[ty]][rtIncremental];
                                 Float64 cum_strain_bot_girder_1 = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][td_types[ty]][rtCumulative] - strain_bot_girder_1_erect;
