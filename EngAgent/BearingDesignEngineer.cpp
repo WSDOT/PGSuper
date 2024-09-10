@@ -494,7 +494,6 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
 
         if (bTimeStepMethod)
         {
-            TSSHEARDEFORMATIONDETAILS timestep_details;
 
             GET_IFACE(IBridge, pBridge);
             GET_IFACE(IPointOfInterest, pPoi);
@@ -510,6 +509,8 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
 
             for (IntervalIndexType intervalIdx = erectSegmentIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++)
             {
+
+                TSSHEARDEFORMATIONDETAILS timestep_details;
 
                 for (GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++)
                 {
