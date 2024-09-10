@@ -154,7 +154,7 @@ rptRcTable* CTimeStepShearDeformationTable::BuildTimeStepShearDeformationTable(I
     for (auto& r : pDetails->ts_diff_elems)
     {
         (*p_table)(row, 0) << location.SetValue(POI_SPAN, r.poi);
-        (*p_table)(row, 1) << deflection.SetValue(r.delta_d * 1E3);
+        (*p_table)(row, 1) << deflection.SetValue(r.delta_d);
         (*p_table)(row, 2) << std::to_wstring(r.creep[0] * 1E6);
         (*p_table)(row, 3) << std::to_wstring(r.creep[1] * 1E6);
         (*p_table)(row, 4) << std::to_wstring(r.creep[2] * 1E6);
