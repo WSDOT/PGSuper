@@ -129,28 +129,31 @@ rptChapter* CBearingTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<c
 
 
    SHEARDEFORMATIONDETAILS details;
-   Float64 total_td_shear_def = pBearingDesignParameters->GetTimeDependentShearDeformation(girderKey, &details);
+   pBearingDesignParameters->GetBearingTableParameters(girderKey, &details);
+   pBearingDesignParameters->GetTimeDependentShearDeformation(girderKey, &details);
 
 
    for (auto intervalIdx = erectSegmentIntervalIdx + 1; intervalIdx <= lastIntervalIdx; intervalIdx++)
    {
-       for (auto& detail : details.td_details)
+       for (auto&  bearing: details.brg_details)
        {
-           if (detail.interval == intervalIdx)
-           {
-               if (pBTSDRptSpec->ReportAtAllLocations())
-               {
-                   *pPara << CTimeStepShearDeformationTable().BuildTimeStepShearDeformationTable(pBroker, &detail);
-               }
-               else
-               {
-                   if (detail.reactionLocation == rptLocation)
-                   {
-                       *pPara << CTimeStepShearDeformationTable().BuildTimeStepShearDeformationTable(pBroker, &detail);
-                   }
-               }
-               
-           }
+            for (auto& detail_interval : bearing.timestep_details)
+            {
+                if (detail_interval.interval == intervalIdx)
+                {
+                    if (pBTSDRptSpec->ReportAtAllLocations())
+                    {
+                        *pPara << CTimeStepShearDeformationTable().BuildTimeStepShearDeformationTable(pBroker, bearing.reactionLocation, poi, &detail_interval);
+                    }
+                    else
+                    {
+                        if (bearing.reactionLocation == rptLocation)
+                        {
+                            *pPara << CTimeStepShearDeformationTable().BuildTimeStepShearDeformationTable(pBroker, bearing.reactionLocation, poi, &detail_interval);
+                        }
+                    }
+                }
+            }
        }
    }
 

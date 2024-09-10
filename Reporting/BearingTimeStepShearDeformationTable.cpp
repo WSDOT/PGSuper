@@ -71,10 +71,9 @@ CTimeStepShearDeformationTable& CTimeStepShearDeformationTable::operator= (const
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CTimeStepShearDeformationTable::BuildTimeStepShearDeformationTable(IBroker* pBroker, TDSHEARDEFORMATIONDETAILS* pDetails) const
+rptRcTable* CTimeStepShearDeformationTable::BuildTimeStepShearDeformationTable(IBroker* pBroker, ReactionLocation reactionLocation, 
+    const pgsPointOfInterest& poi, TSSHEARDEFORMATIONDETAILS* pDetails) const
 {
-    
-    /// gets poi where reaction
 
     GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
     GET_IFACE2(pBroker, IIntervals, pIntervals);
@@ -87,23 +86,11 @@ rptRcTable* CTimeStepShearDeformationTable::BuildTimeStepShearDeformationTable(I
     INIT_UV_PROTOTYPE(rptLength2UnitValue, A, pDisplayUnits->GetAreaUnit(), false);
     INIT_UV_PROTOTYPE(rptLengthUnitValue, deflection, pDisplayUnits->GetDeflectionUnit(), false);
     INIT_UV_PROTOTYPE(rptTemperatureUnitValue, temperature, pDisplayUnits->GetTemperatureUnit(), false);
-
-    // Build table
     INIT_UV_PROTOTYPE(rptForceUnitValue, reactu, pDisplayUnits->GetShearUnit(), false);
+    
 
-
-    GET_IFACE2(pBroker, IBearingDesignParameters, pBearing);
-    GET_IFACE2(pBroker, IBridge, pBridge);
-    GET_IFACE2(pBroker, IPointOfInterest, pPOI);
-
-    SHEARDEFORMATIONDETAILS details;
-
-    CGirderKey girderKey = pDetails->reactionLocation.GirderKey;
-
-    pBearing->GetBearingTableParameters(girderKey, &details);
-
-    ColumnIndexType nCols = 16;
-    CString label{ pDetails->reactionLocation.PierLabel.c_str() };
+    ColumnIndexType nCols = 14;
+    CString label{ reactionLocation.PierLabel.c_str() };
     label += _T(" - ");
     label += _T("Interval ");
     label += std::to_string(pDetails->interval).c_str();
@@ -119,9 +106,9 @@ rptRcTable* CTimeStepShearDeformationTable::BuildTimeStepShearDeformationTable(I
 
     p_table->SetRowSpan(0, 0, 2);
     (*p_table)(0, 0) << COLHDR(_T("Location"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
-    p_table->SetRowSpan(0, 1, 2); //?
+    p_table->SetRowSpan(0, 1, 2);
     (*p_table)(0, 1) << COLHDR(Sub2(symbol(delta), _T("d")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
-    p_table->SetRowSpan(0, 2, 1); //?
+    p_table->SetRowSpan(0, 2, 1);
 
     p_table->SetColumnSpan(0, 2, 4);
     (*p_table)(0, 2) << pProductLoads->GetProductLoadName(pgsTypes::pftCreep);
@@ -144,11 +131,10 @@ rptRcTable* CTimeStepShearDeformationTable::BuildTimeStepShearDeformationTable(I
     (*p_table)(1, 12) << Sub2(symbol(epsilon), _T("avg")) << Super2(_T("x10"), _T("6"));
     (*p_table)(1, 13) << COLHDR(Sub2(symbol(DELTA), _T("s")) << Super2(_T("x10"), _T("3")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
 
-    pgsPointOfInterest p0, p1;
 
     RowIndexType row = p_table->GetNumberOfHeaderRows();
 
-    (*p_table)(row, 0) << location.SetValue(POI_SPAN, pDetails->rPoi);
+    (*p_table)(row, 0) << location.SetValue(POI_SPAN, poi);
     (*p_table)(row, 1) << _T("N/A");
     (*p_table)(row, 2) << _T("N/A");
     (*p_table)(row, 3) << _T("N/A");
@@ -165,7 +151,7 @@ rptRcTable* CTimeStepShearDeformationTable::BuildTimeStepShearDeformationTable(I
 
 
 
-    for (auto& r : pDetails->td_diff_elems)
+    for (auto& r : pDetails->ts_diff_elems)
     {
         (*p_table)(row, 0) << location.SetValue(POI_SPAN, r.poi);
         (*p_table)(row, 1) << deflection.SetValue(r.delta_d * 1E3);
@@ -190,11 +176,11 @@ rptRcTable* CTimeStepShearDeformationTable::BuildTimeStepShearDeformationTable(I
     p_table->SetColumnSpan(row, 0, 2);
     (*p_table)(row, 0) << symbol(SIGMA) << Sub2(symbol(DELTA), _T("s"));
     p_table->SetColumnSpan(row, 2, 4);
-    (*p_table)(row, 2) << deflection.SetValue(pDetails->creep) << rptNewLine;
+    (*p_table)(row, 2) << deflection.SetValue(pDetails->interval_creep) << rptNewLine;
     p_table->SetColumnSpan(row, 6, 4);
-    (*p_table)(row, 6) << deflection.SetValue(pDetails->shrinkage) << rptNewLine;
+    (*p_table)(row, 6) << deflection.SetValue(pDetails->interval_shrinkage) << rptNewLine;
     p_table->SetColumnSpan(row, 10, 4);
-    (*p_table)(row, 10) << deflection.SetValue(pDetails->relaxation) << rptNewLine;
+    (*p_table)(row, 10) << deflection.SetValue(pDetails->interval_relaxation) << rptNewLine;
 
     return p_table;
 

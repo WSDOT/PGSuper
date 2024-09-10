@@ -71,17 +71,9 @@ CBearingShearDeformationTable& CBearingShearDeformationTable::operator= (const C
     return *this;
 }
 
-
-
-
-
-
-
 ColumnIndexType CBearingShearDeformationTable::GetBearingTableColumnCount(IBroker* pBroker, const CGirderKey& girderKey,
     pgsTypes::AnalysisType analysisType, SHEARDEFORMATIONDETAILS* details, bool bDetail) const
 {
-
-
 
     ColumnIndexType nCols = 1; // location
 
@@ -115,7 +107,6 @@ ColumnIndexType CBearingShearDeformationTable::GetBearingTableColumnCount(IBroke
 
     return nCols;
 }
-
 
 RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptRcTable* p_table, pgsTypes::AnalysisType analysisType, 
     IEAFDisplayUnits* pDisplayUnits, SHEARDEFORMATIONDETAILS* pDetails, bool bDetail)
@@ -231,17 +222,14 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
     bool bDesign, IEAFDisplayUnits* pDisplayUnits, bool bDetail, bool bCold, SHEARDEFORMATIONDETAILS* details) const
 {
     
-
     GET_IFACE2(pBroker, IBearingDesignParameters, pBearing);
-    details->time_dependent = pBearing->GetTimeDependentShearDeformation(girderKey, details); ////////
-
-    GET_IFACE2(pBroker, IBridge, pBridge);
+    
+    pBearing->GetTimeDependentShearDeformation(girderKey, details);
 
     GET_IFACE2(pBroker, IIntervals, pIntervals);
     IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
 
 
-    GET_IFACE2(pBroker, IPointOfInterest, pPOI);
 
     // Build table
     INIT_UV_PROTOTYPE(rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false);
@@ -278,15 +266,14 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
     p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
     
-    for (auto& bearing:details->td_details)
+    for (auto& bearing:details->brg_details)
 
     {
+        pBearing->GetThermalExpansionDetails(girderKey, &bearing);
+
         ColumnIndexType col = 0;
 
         (*p_table)(row, col++) << bearing.reactionLocation.PierLabel;
-
-        pBearing->GetThermalExpansionDetails(bearing.rPoi, details);
-
 
         INIT_UV_PROTOTYPE(rptLengthUnitValue, Deflection, pDisplayUnits->GetDeflectionUnit(), false);
         INIT_UV_PROTOTYPE(rptLengthUnitValue, Span, pDisplayUnits->GetSpanLengthUnit(), false);
@@ -297,68 +284,67 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
 
         if (bDetail)
         {
-            (*p_table)(row, col++) << details->percentExpansion;
+            (*p_table)(row, col++) << bearing.percentExpansion;
             if (pDisplayUnits->GetUnitMode() == eafTypes::UnitMode::umUS)
             {
-                (*p_table)(row, col++) << 1.0 / ((1.0 / details->thermal_expansion_coefficient) * 9.0 / 5.0 + 32.0);
+                (*p_table)(row, col++) << 1.0 / ((1.0 / bearing.thermal_expansion_coefficient) * 9.0 / 5.0 + 32.0);
             }
             else
             {
-                (*p_table)(row, col++) << details->thermal_expansion_coefficient;
+                (*p_table)(row, col++) << bearing.thermal_expansion_coefficient;
             }
-            (*p_table)(row, col++) << Span.SetValue(details->length_pf);
+            (*p_table)(row, col++) << Span.SetValue(bearing.length_pf);
             if (bCold)
             {
-                (*p_table)(row, col++) << Temp.SetValue(details->max_design_temperature_cold);
-                (*p_table)(row, col++) << Temp.SetValue(details->min_design_temperature_cold);
-                (*p_table)(row, col++) << Deflection.SetValue(details->thermal_expansion_cold);
+                (*p_table)(row, col++) << Temp.SetValue(bearing.max_design_temperature_cold);
+                (*p_table)(row, col++) << Temp.SetValue(bearing.min_design_temperature_cold);
+                (*p_table)(row, col++) << Deflection.SetValue(bearing.thermal_expansion_cold);
             }
             else
             {
-                (*p_table)(row, col++) << Temp.SetValue(details->max_design_temperature_moderate);
-                (*p_table)(row, col++) << Temp.SetValue(details->min_design_temperature_moderate);
-                (*p_table)(row, col++) << Deflection.SetValue(details->thermal_expansion_moderate);
+                (*p_table)(row, col++) << Temp.SetValue(bearing.max_design_temperature_moderate);
+                (*p_table)(row, col++) << Temp.SetValue(bearing.min_design_temperature_moderate);
+                (*p_table)(row, col++) << Deflection.SetValue(bearing.thermal_expansion_moderate);
             }
 
 
             GET_IFACE2(pBroker, ILossParameters, pLossParams);
             if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
             {
-                (*p_table)(row, col++) << Deflection.SetValue(details->yb);
-                (*p_table)(row, col++) << Deflection.SetValue(details->ep);
-                (*p_table)(row, col++) << I.SetValue(details->Ixx);
-                (*p_table)(row, col++) << A.SetValue(details->Ag);
-                (*p_table)(row, col++) << Deflection.SetValue(details->r);
+                (*p_table)(row, col++) << Deflection.SetValue(bearing.yb);
+                (*p_table)(row, col++) << Deflection.SetValue(bearing.ep);
+                (*p_table)(row, col++) << I.SetValue(bearing.Ixx);
+                (*p_table)(row, col++) << A.SetValue(bearing.Ag);
+                (*p_table)(row, col++) << Deflection.SetValue(bearing.r);
             }
 
             if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::GENERAL_LUMPSUM)
             {
-                (*p_table)(row, col++) << Deflection.SetValue(details->tendon_shortening);
-                (*p_table)(row, col++) << Deflection.SetValue(details->time_dependent);
+                (*p_table)(row, col++) << Deflection.SetValue(bearing.tendon_shortening);
+                (*p_table)(row, col++) << Deflection.SetValue(bearing.time_dependent);
             }
             else
             {
                 if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
                 {
-                    (*p_table)(row, col++) << Deflection.SetValue(details->tendon_creep);
-                    (*p_table)(row, col++) << Deflection.SetValue(details->tendon_shrinkage);
-                    (*p_table)(row, col++) << Deflection.SetValue(details->tendon_relaxation);
+                    (*p_table)(row, col++) << Deflection.SetValue(bearing.tendon_creep);
+                    (*p_table)(row, col++) << Deflection.SetValue(bearing.tendon_shrinkage);
+                    (*p_table)(row, col++) << Deflection.SetValue(bearing.tendon_relaxation);
                 }
-
-                (*p_table)(row, col++) << Deflection.SetValue(details->creep);
-                (*p_table)(row, col++) << Deflection.SetValue(details->shrinkage);
-                (*p_table)(row, col) << Deflection.SetValue(details->relaxation);
+                (*p_table)(row, col++) << Deflection.SetValue(bearing.creep);
+                (*p_table)(row, col++) << Deflection.SetValue(bearing.shrinkage);
+                (*p_table)(row, col) << Deflection.SetValue(bearing.relaxation);
             }
         }
         else
         {
             if (bCold)
             {
-                (*p_table)(row, col++) << Deflection.SetValue(details->total_shear_deformation_cold);
+                (*p_table)(row, col++) << Deflection.SetValue(bearing.total_shear_deformation_cold);
             }
             else
             {
-                (*p_table)(row, col++) << Deflection.SetValue(details->total_shear_deformation_moderate);
+                (*p_table)(row, col++) << Deflection.SetValue(bearing.total_shear_deformation_moderate);
             }
         }
 

@@ -164,8 +164,8 @@ typedef struct EquivPretensionLoad
 // Simple span bearing reactions can occur at back/ahead. Continuous and pier reactions are at mid
 typedef enum PierReactionFaceType 
 {
-   rftBack, 
-   rftMid, 
+   rftBack,
+   rftMid,
    rftAhead
 } PierReactionFaceType;
 
@@ -178,7 +178,7 @@ struct ReactionLocation
 
    bool operator==(const ReactionLocation& r) const
    {
-       return ::IsEqual(PierIdx, r.PierIdx) /* && ::IsEqual(Face, r.Face) && ::IsEqual(GirderKey, r.GirderKey)*/ ? true : false;
+       return ::IsEqual(PierIdx, r.PierIdx) && Face == r.Face && GirderKey == r.GirderKey ? true : false;
    };
 
 };

@@ -167,7 +167,7 @@ struct REACTIONDETAILS : public TABLEPARAMETERS
 };
 
 
-struct TDSHEARDEFORMATION_DIFF_ELEMS
+struct TSSHEARDEFORMATION_DIFF_ELEMS
 {
 	pgsPointOfInterest poi;
 	Float64 delta_d;
@@ -180,57 +180,52 @@ struct TDSHEARDEFORMATION_DIFF_ELEMS
 	std::array<Float64, 4> relaxation;
 };
 
-struct TDSHEARDEFORMATIONDETAILS
+struct TSSHEARDEFORMATIONDETAILS
 {
-	std::vector<TDSHEARDEFORMATION_DIFF_ELEMS> td_diff_elems;
 	IntervalIndexType interval;
-	ReactionLocation reactionLocation;
-	pgsPointOfInterest rPoi;
-	Float64 creep;
-	Float64 shrinkage;
-	Float64 relaxation;
-	Float64 total;
+	std::vector<TSSHEARDEFORMATION_DIFF_ELEMS> ts_diff_elems;
+	Float64 interval_creep;
+	Float64 interval_shrinkage;
+	Float64 interval_relaxation;
 };
 
 
-struct SHEARDEFORMATIONDETAILS : public TABLEPARAMETERS
+struct BEARINGSHEARDEFORMATIONDETAILS  //results per bearing
 {
-	Float64 thermal_expansion_coefficient;
+	ReactionLocation reactionLocation;
+	pgsPointOfInterest rPoi;
+	Float64 creep;
+	Float64 tendon_creep;
+	Float64 shrinkage;
+	Float64 tendon_shrinkage;
+	Float64 relaxation;
+	Float64 tendon_relaxation;
+	std::vector<TSSHEARDEFORMATIONDETAILS> timestep_details;  /// timestep method for td losses
+	Float64 ep;
+	Float64 yb;
+	Float64 r;
+	Float64 Ixx;
+	Float64 Ag;
 	Float64 length_pf;
+	Float64 percentExpansion;
+	Float64 thermal_expansion_coefficient;
 	Float64 max_design_temperature_cold;
 	Float64 min_design_temperature_cold;
 	Float64 max_design_temperature_moderate;
 	Float64 min_design_temperature_moderate;
-	Float64 percentExpansion;
 	Float64 thermal_expansion_cold;
 	Float64 thermal_expansion_moderate;
-	Float64 preTension;
-	Float64 postTension;
 	Float64 tendon_shortening;
-	Float64 total_tendon_shortening;
-	Float64 creep;
-	Float64 incremental_creep;
-	Float64 cumulative_creep{ 0.0 };
-	Float64 tendon_creep;
-	Float64 shrinkage;
-	Float64 incremental_shrinkage;
-	Float64 cumulative_shrinkage{ 0.0 };
-	Float64 tendon_shrinkage;
-	Float64 relaxation;
-	Float64 tendon_relaxation;
-	Float64 incremental_relaxation;
-	Float64 cumulative_relaxation{ 0.0 };
 	Float64 time_dependent;
-	Float64 Ixx;
-	Float64 Ag;
-	Float64 ep;
-	Float64 yb;
-	Float64 r;
-	Float64 flange_bottom_shortening;
 	Float64 total_shear_deformation_cold;
 	Float64 total_shear_deformation_moderate;
+};
+
+
+struct SHEARDEFORMATIONDETAILS : public TABLEPARAMETERS  // results per girder
+{
 	pgsPointOfInterest poi_fixity;
-	std::vector<TDSHEARDEFORMATIONDETAILS> td_details;
+	std::vector <BEARINGSHEARDEFORMATIONDETAILS> brg_details;
 };
 
 
@@ -252,13 +247,13 @@ interface IBearingDesignParameters : IUnknown
 		CGirderKey girderKey, pgsTypes::AnalysisType analysisType, bool bIncludeImpact,
 		bool bIncludeLLDF, REACTIONDETAILS* pDetails) const = 0;
 
-	virtual void GetThermalExpansionDetails(const pgsPointOfInterest& poi, SHEARDEFORMATIONDETAILS* pDetails) const = 0;
+	virtual void GetThermalExpansionDetails(CGirderKey girderKey, BEARINGSHEARDEFORMATIONDETAILS* bearing) const = 0;
 
 	virtual Float64 GetDistanceToPointOfFixity(const pgsPointOfInterest& poi, SHEARDEFORMATIONDETAILS* pDetails) const = 0;
 
-	virtual Float64 GetTimeDependentComponentShearDeformation(const pgsPointOfInterest& poi, Float64 loss, SHEARDEFORMATIONDETAILS* pDetails) const = 0;
+	virtual std::array<Float64,2> GetTimeDependentComponentShearDeformation(Float64 loss, BEARINGSHEARDEFORMATIONDETAILS* bearing) const = 0;
 
-	virtual Float64 GetTimeDependentShearDeformation(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const = 0;
+	virtual void GetTimeDependentShearDeformation(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const = 0;
 
 	virtual void GetBearingDesignProperties(DESIGNPROPERTIES* pDetails) const = 0;
 

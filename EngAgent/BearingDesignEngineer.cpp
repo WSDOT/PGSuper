@@ -27,7 +27,6 @@
 #include <PGSuperException.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
-#include <IFace\AnalysisResults.h>
 #include <IFace\ShearCapacity.h>
 #include <IFace\PrestressForce.h> 
 #include <IFace\MomentCapacity.h>
@@ -39,6 +38,8 @@
 #include <IFace\Intervals.h>
 #include <IFace/Limits.h>
 #include <LRFD\Rebar.h>
+
+#include <Reporting\ReactionInterfaceAdapters.h>
 
 #include <PsgLib\SpecLibraryEntry.h>
 #include <psgLib/ThermalMovementCriteria.h>
@@ -248,7 +249,7 @@ Float64 pgsBearingDesignEngineer::GetDistanceToPointOfFixity(const pgsPointOfInt
 }
 
 
-Float64 pgsBearingDesignEngineer::GetTimeDependentComponentShearDeformation(const pgsPointOfInterest& poi, Float64 loss, SHEARDEFORMATIONDETAILS* pDetails) const
+std::array<Float64, 2> pgsBearingDesignEngineer::GetTimeDependentComponentShearDeformation(Float64 loss, BEARINGSHEARDEFORMATIONDETAILS* bearing) const
 {
 
 
@@ -259,24 +260,24 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentComponentShearDeformation(cons
 
     
 
-    const CSegmentKey& segmentKey(poi.GetSegmentKey());
+    const CSegmentKey& segmentKey(bearing->rPoi.GetSegmentKey());
     const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
-    IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
+    IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(bearing->rPoi.GetSegmentKey());
     auto lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
-
-    Float64 L = GetDistanceToPointOfFixity(poi, pDetails);
 
 
     Float64 Ep = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Straight)->GetE();
 
-    pDetails->tendon_shortening = -(loss * L / Ep) / 3.0; // assumes 2/3 of creep and shrinkage occurs before girders are erected
+    Float64 tendon_shortening = -(loss * bearing->length_pf / Ep) / 3.0; // assumes 2/3 of creep and shrinkage occurs before girders are erected
 
-    auto details = pLosses->GetLossDetails(poi, erectSegmentIntervalIdx);
+    auto details = pLosses->GetLossDetails(bearing->rPoi, erectSegmentIntervalIdx);
 
-    pDetails->flange_bottom_shortening = (1.0 + pDetails->ep * pDetails->yb / (pDetails->r * pDetails->r)) /
-        (1 + pDetails->ep * pDetails->ep / (pDetails->r * pDetails->r)) * pDetails->tendon_shortening;
+    Float64 flange_bottom_shortening = (1.0 + bearing->ep * bearing->yb / (bearing->r * bearing->r)) /
+        (1 + bearing->ep * bearing->ep / (bearing->r * bearing->r)) * tendon_shortening;
+
+    std::array<Float64, 2> shortening = {tendon_shortening, flange_bottom_shortening};
    
-    return pDetails->flange_bottom_shortening;
+    return shortening;
 
 }
 
@@ -412,10 +413,8 @@ Float64 pgsBearingDesignEngineer::GetBearingTimeDependentLosses(const pgsPointOf
 
 
 
-Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const
+void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const
 {
-
-    //this gets called inside loops from the reports
 
     GET_IFACE(IIntervals, pIntervals);
     GET_IFACE(IBridgeDescription, pIBridgeDesc);
@@ -441,21 +440,26 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey gi
     }
 
     ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
-    iter.First();
-    PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
 
+    PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
 
     // Use iterator to walk locations
     for (iter.First(); !iter.IsDone(); iter.Next())
     {
-        ColumnIndexType col = 0;
+        GET_IFACE(IBearingDesignParameters, pBearing);
+        BEARINGSHEARDEFORMATIONDETAILS brg_details;
 
         const ReactionLocation& reactionLocation(iter.CurrentItem());
-        const CGirderKey& thisGirderKey(reactionLocation.GirderKey);
 
+        brg_details.reactionLocation = reactionLocation;
+
+        const CGirderKey& thisGirderKey(reactionLocation.GirderKey);
 
         const pgsPointOfInterest& poi = vPoi[reactionLocation.PierIdx - startPierIdx];
 
+        brg_details.rPoi = poi;
+
+        brg_details.length_pf = pBearing->GetDistanceToPointOfFixity(poi, pDetails);
 
         const CSegmentKey& segmentKey(poi.GetSegmentKey());
         const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
@@ -466,15 +470,15 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey gi
 
         auto details = pLosses->GetLossDetails(poi, erectSegmentIntervalIdx);
 
-        pDetails->ep = pStrandGeom->GetEccentricity(erectSegmentIntervalIdx, poi, pgsTypes::Permanent).Y();
+        brg_details.ep = pStrandGeom->GetEccentricity(erectSegmentIntervalIdx, poi, pgsTypes::Permanent).Y();
 
-        pDetails->yb = pSection->GetNetYbg(erectSegmentIntervalIdx, poi);
+        brg_details.yb = pSection->GetNetYbg(erectSegmentIntervalIdx, poi);
 
-        pDetails->Ixx = pSection->GetIxx(erectSegmentIntervalIdx, poi);
+        brg_details.Ixx = pSection->GetIxx(erectSegmentIntervalIdx, poi);
 
-        pDetails->Ag = pSection->GetAg(erectSegmentIntervalIdx, poi);
+        brg_details.Ag = pSection->GetAg(erectSegmentIntervalIdx, poi);
 
-        pDetails->r = sqrt(pDetails->Ixx / pDetails->Ag);
+        brg_details.r = sqrt(brg_details.Ixx / brg_details.Ag);
 
         const LOSSDETAILS* td_details_inf = pLosses->GetLossDetails(poi, lastIntervalIdx);
         TDCOMPONENTS components_inf;
@@ -488,29 +492,24 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey gi
         PrestressLossCriteria::LossMethodType lossMethod = pSpecEntry->GetPrestressLossCriteria().LossMethod;
         bool bTimeStepMethod = lossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP;
 
-
         if (bTimeStepMethod)
         {
+            TSSHEARDEFORMATIONDETAILS timestep_details;
 
             GET_IFACE(IBridge, pBridge);
             GET_IFACE(IPointOfInterest, pPoi);
 
-
-            pDetails->creep = 0.0;
-            pDetails->shrinkage = 0.0;
-            pDetails->relaxation = 0.0;
-
+            brg_details.creep = 0.0;
+            brg_details.shrinkage = 0.0;
+            brg_details.relaxation = 0.0;
 
             Float64 L = GetDistanceToPointOfFixity(poi, pDetails);
             GroupIndexType nGroups = pBridge->GetGirderGroupCount();
             GroupIndexType firstGroupIdx = (segmentKey.groupIndex == ALL_GROUPS ? 0 : segmentKey.groupIndex);
             GroupIndexType lastGroupIdx = (segmentKey.groupIndex == ALL_GROUPS ? nGroups - 1 : firstGroupIdx);
 
-
-
             for (IntervalIndexType intervalIdx = erectSegmentIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++)
             {
-
 
                 for (GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++)
                 {
@@ -531,22 +530,14 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey gi
                         return i.HasAttribute(POI_BOUNDARY_PIER);
                         }), vPoi.end());
 
-
-
                     pgsPointOfInterest p0, p1;
                     Float64 d0, d1;
 
+                    timestep_details.interval_creep = 0;
+                    timestep_details.interval_shrinkage = 0;
+                    timestep_details.interval_relaxation = 0;
 
-                    pDetails->creep = 0;
-                    pDetails->shrinkage = 0;
-                    pDetails->relaxation = 0;
-
-                    TDSHEARDEFORMATIONDETAILS td_details;
-                    td_details.interval = intervalIdx;
-                    td_details.rPoi = vPoi[0];
-                    td_details.creep = 0.0;
-                    td_details.shrinkage = 0.0;
-                    td_details.relaxation = 0.0;
+                    timestep_details.interval = intervalIdx;
 
                     for (IndexType idx = 1, nPoi = vPoi.size(); idx < nPoi; idx++)
                     {
@@ -555,18 +546,22 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey gi
                         d0 = pPoi->ConvertPoiToGirderlineCoordinate(p0);
                         d1 = pPoi->ConvertPoiToGirderlineCoordinate(p1);
 
-
-
                         std::vector<pgsTypes::ProductForceType> td_types{
-                            pgsTypes::ProductForceType::pftCreep, pgsTypes::ProductForceType::pftShrinkage, pgsTypes::ProductForceType::pftRelaxation};
+                            pgsTypes::ProductForceType::pftCreep,
+                                pgsTypes::ProductForceType::pftShrinkage,
+                                pgsTypes::ProductForceType::pftRelaxation};
 
-                        TDSHEARDEFORMATION_DIFF_ELEMS td_diff_elems;
+                        TSSHEARDEFORMATION_DIFF_ELEMS td_diff_elems;
 
-                        for (IndexType ty = 0, nTypes = td_types.size(); ty < nTypes; ty++)
+                        if (d1 != d0)
                         {
 
-                            if (d1 != d0)
+                            td_diff_elems.poi = p1;
+                            td_diff_elems.delta_d = d1 - d0;
+
+                            for (IndexType ty = 0, nTypes = td_types.size(); ty < nTypes; ty++)
                             {
+
                                 const LOSSDETAILS* pDetails0erect = pLosses->GetLossDetails(p0, erectSegmentIntervalIdx);
                                 const TIME_STEP_DETAILS& tsDetails0erect(pDetails0erect->TimeStepDetails[erectSegmentIntervalIdx]);
                                 Float64 strain_bot_girder_0_erect = tsDetails0erect.Girder.strain_by_load_type[pgsTypes::BottomFace][ty][rtCumulative];
@@ -583,9 +578,6 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey gi
                                 Float64 inc_strain_bot_girder_1 = tsDetails1.Girder.strain_by_load_type[pgsTypes::BottomFace][ty][rtIncremental];
                                 Float64 cum_strain_bot_girder_1 = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][ty][rtCumulative] - strain_bot_girder_1_erect;
 
-                                td_diff_elems.poi = p1;
-                                td_diff_elems.delta_d = d1 - d0;
-
                                 if (td_types[ty] == pgsTypes::pftCreep)
                                 {
                                     td_diff_elems.creep = {
@@ -594,7 +586,7 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey gi
                                         (cum_strain_bot_girder_0 + cum_strain_bot_girder_1) / 2.0, // average strain using mid-point rule
                                         (cum_strain_bot_girder_0 + cum_strain_bot_girder_1) * (d1 - d0) / 2.0
                                     };
-                                    td_details.creep += td_diff_elems.creep[4];
+                                    timestep_details.interval_creep += td_diff_elems.creep[3];
                                 }
                                 if (td_types[ty] == pgsTypes::pftShrinkage)
                                 {
@@ -604,7 +596,7 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey gi
                                         (cum_strain_bot_girder_0 + cum_strain_bot_girder_1) / 2.0, // average strain using mid-point rule
                                         (cum_strain_bot_girder_0 + cum_strain_bot_girder_1) * (d1 - d0) / 2.0
                                     };
-                                    td_details.shrinkage += td_diff_elems.shrinkage[4];
+                                    timestep_details.interval_shrinkage += td_diff_elems.shrinkage[3];
                                 }
                                 if (td_types[ty] == pgsTypes::pftRelaxation)
                                 {
@@ -614,65 +606,69 @@ Float64 pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey gi
                                         (cum_strain_bot_girder_0 + cum_strain_bot_girder_1) / 2.0, // average strain using mid-point rule
                                         (cum_strain_bot_girder_0 + cum_strain_bot_girder_1) * (d1 - d0) / 2.0
                                     };
-                                    td_details.relaxation += td_diff_elems.relaxation[4];
+                                    timestep_details.interval_relaxation += td_diff_elems.relaxation[3];
                                 }
 
                             }
 
+                            timestep_details.ts_diff_elems.emplace_back(td_diff_elems);
+
+                        }
+
+                        if (intervalIdx == lastIntervalIdx)
+                        {
+                            brg_details.creep += timestep_details.interval_creep;
+                            brg_details.shrinkage += timestep_details.interval_shrinkage;
+                            brg_details.relaxation += timestep_details.interval_relaxation;
                         }
 
                     }
 
-                    td_details.total = td_details.creep + td_details.shrinkage + td_details.relaxation;
-
-                    pDetails->td_details.emplace_back();
-
-                    if (intervalIdx == lastIntervalIdx)
-                    {
-                        pDetails->creep += td_details.creep;
-                        pDetails->shrinkage += td_details.shrinkage;
-                        pDetails->relaxation += td_details.relaxation;
-                    }
-
                 }
+
+                brg_details.timestep_details.emplace_back(timestep_details);
 
             }
 
-            Float64 total_time_dependent = pDetails->creep + pDetails->shrinkage + pDetails->relaxation;
 
-            return total_time_dependent;
+
+            Float64 total_time_dependent = brg_details.creep + brg_details.shrinkage + brg_details.relaxation;
+
+            brg_details.time_dependent = total_time_dependent;
+
+
         }
         else
         {
 
             //calculate creep deformation
             Float64 creepLoss = components_inf.creep; // -components_erect.creep;
-            pDetails->creep = GetTimeDependentComponentShearDeformation(poi, creepLoss, pDetails);
-            pDetails->tendon_creep = pDetails->tendon_shortening;
+            auto creep_shortening = GetTimeDependentComponentShearDeformation(creepLoss, &brg_details);
+            brg_details.tendon_creep = creep_shortening[0];
+            brg_details.creep = creep_shortening[1];
 
             //calculate shrinkage deformation
             Float64 shrinkageLoss = components_inf.shrinkage; // -components_erect.shrinkage;
-            pDetails->shrinkage = GetTimeDependentComponentShearDeformation(poi, shrinkageLoss, pDetails);
-            pDetails->tendon_shrinkage = pDetails->tendon_shortening;
+            auto shrinkage_shortening = GetTimeDependentComponentShearDeformation(shrinkageLoss, &brg_details);
+            brg_details.tendon_shrinkage = shrinkage_shortening[0];
+            brg_details.shrinkage = shrinkage_shortening[1];
 
             //calculate relaxation deformation
             Float64 relaxationLoss = components_inf.relaxation; // -components_erect.relaxation;
-            pDetails->relaxation = GetTimeDependentComponentShearDeformation(poi, relaxationLoss, pDetails);
-            pDetails->tendon_relaxation = pDetails->tendon_shortening;
+            auto relaxation_shortening = GetTimeDependentComponentShearDeformation(relaxationLoss, &brg_details);
+            brg_details.tendon_relaxation = relaxation_shortening[0];
+            brg_details.relaxation = relaxation_shortening[1];
 
-            Float64 sum_components = (pDetails->creep + pDetails->shrinkage + pDetails->relaxation);
+            Float64 sum_tendon_components = (brg_details.tendon_creep + brg_details.tendon_shrinkage + brg_details.tendon_relaxation);
+            brg_details.tendon_shortening = sum_tendon_components;
 
-            //calculate total time-dependent shear deformation
-            Float64 tdLoss = fpLossInfinity; //- fpLossErect;
-            Float64 total_time_dependent = GetTimeDependentComponentShearDeformation(poi, tdLoss, pDetails);
-
-            pDetails->total_tendon_shortening = pDetails->tendon_shortening;
-
-            //ASSERT(IsEqual(total_time_dependent, sum_components)); // use if differential shrinkage effects are considered
-
-            return total_time_dependent;
+            Float64 sum_components = (brg_details.creep + brg_details.shrinkage + brg_details.relaxation);
+            brg_details.time_dependent = sum_components;
 
         }
+
+        pDetails->brg_details.emplace_back(brg_details);
+
     }
 
 }
@@ -896,11 +892,11 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
 
     PierIndexType nPiers = pBridge->GetPierCount();
 
-    // TRICKY: use adapter class to get correct reaction interfaces
-    std::unique_ptr<IProductReactionAdapter> pForces;
+
+    
 
     GET_IFACE(IReactions, pReactions);
-    pForces = std::make_unique<ProductForcesReactionAdapter>(pReactions, girderKey);
+    std::unique_ptr<IProductReactionAdapter> pForces = std::make_unique<ProductForcesReactionAdapter>(pReactions, girderKey);
 
     const CGirderKey& thisGirderKey(reactionLocation.GirderKey);
     IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetLastSegmentErectionInterval(thisGirderKey);
@@ -1040,15 +1036,11 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
 }
 
 
-void pgsBearingDesignEngineer::GetThermalExpansionDetails(const pgsPointOfInterest& poi, SHEARDEFORMATIONDETAILS* pDetails) const
+void pgsBearingDesignEngineer::GetThermalExpansionDetails(CGirderKey girderKey, BEARINGSHEARDEFORMATIONDETAILS* bearing) const
 {
 
-    Float64 L = 0;
-    L = GetDistanceToPointOfFixity(poi, pDetails);
-    pDetails->length_pf = L;
-
     GET_IFACE(IMaterials, pMaterials);
-    const CSegmentKey& segmentKey(poi.GetSegmentKey());
+    const CSegmentKey& segmentKey(bearing->rPoi.GetSegmentKey());
     auto concreteType = pMaterials->GetSegmentConcreteType(segmentKey);
 
     Float64 inv_thermal_exp_coefficient;
@@ -1062,14 +1054,12 @@ void pgsBearingDesignEngineer::GetThermalExpansionDetails(const pgsPointOfIntere
         inv_thermal_exp_coefficient = { WBFL::Units::ConvertToSysUnits(20000.0, WBFL::Units::Measure::Fahrenheit) };
     }
 
-
     Float64 thermal_expansion_coefficient = 1.0 / inv_thermal_exp_coefficient;
-    pDetails->thermal_expansion_coefficient = thermal_expansion_coefficient;
-
-    pDetails->max_design_temperature_cold = WBFL::Units::ConvertToSysUnits(80.0, WBFL::Units::Measure::Fahrenheit);
-    pDetails->min_design_temperature_cold = WBFL::Units::ConvertToSysUnits(0.0, WBFL::Units::Measure::Fahrenheit);
-    pDetails->max_design_temperature_moderate = WBFL::Units::ConvertToSysUnits(80.0, WBFL::Units::Measure::Fahrenheit);
-    pDetails->min_design_temperature_moderate = WBFL::Units::ConvertToSysUnits(10.0, WBFL::Units::Measure::Fahrenheit);
+    bearing->thermal_expansion_coefficient = thermal_expansion_coefficient;
+    bearing->max_design_temperature_cold = WBFL::Units::ConvertToSysUnits(80.0, WBFL::Units::Measure::Fahrenheit);
+    bearing->min_design_temperature_cold = WBFL::Units::ConvertToSysUnits(0.0, WBFL::Units::Measure::Fahrenheit);
+    bearing->max_design_temperature_moderate = WBFL::Units::ConvertToSysUnits(80.0, WBFL::Units::Measure::Fahrenheit);
+    bearing->min_design_temperature_moderate = WBFL::Units::ConvertToSysUnits(10.0, WBFL::Units::Measure::Fahrenheit);
 
     GET_IFACE(ILibrary, pLib);
     GET_IFACE(ISpecification, pSpec);
@@ -1077,16 +1067,14 @@ void pgsBearingDesignEngineer::GetThermalExpansionDetails(const pgsPointOfIntere
     const auto pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
     const auto& thermalFactor = pSpecEntry->GetThermalMovementCriteria();
 
+    bearing->percentExpansion = thermalFactor.ThermalMovementFactor;
+    bearing->thermal_expansion_cold = -bearing->percentExpansion * bearing->thermal_expansion_coefficient * bearing->length_pf * (bearing->max_design_temperature_cold - bearing->min_design_temperature_cold);
+    bearing->thermal_expansion_moderate = -bearing->percentExpansion * bearing->thermal_expansion_coefficient * bearing->length_pf * (bearing->max_design_temperature_moderate - bearing->min_design_temperature_moderate);
+    bearing->total_shear_deformation_cold = bearing->thermal_expansion_cold + bearing->time_dependent;
+    bearing->total_shear_deformation_moderate = bearing->thermal_expansion_moderate + bearing->time_dependent;
 
-    pDetails->percentExpansion = thermalFactor.ThermalMovementFactor;
 
-
-
-    pDetails->thermal_expansion_cold = -pDetails->percentExpansion * pDetails->thermal_expansion_coefficient * L * (pDetails->max_design_temperature_cold - pDetails->min_design_temperature_cold);
-    pDetails->thermal_expansion_moderate = -pDetails->percentExpansion * pDetails->thermal_expansion_coefficient * L * (pDetails->max_design_temperature_moderate - pDetails->min_design_temperature_moderate);
-
-    pDetails->total_shear_deformation_cold = pDetails->thermal_expansion_cold + pDetails->time_dependent;
-    pDetails->total_shear_deformation_moderate = pDetails->thermal_expansion_moderate + pDetails->time_dependent;
+    
 
 }
 

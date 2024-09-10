@@ -23,8 +23,9 @@
 #pragma once
 
 #include <Details.h>
+#include <IFace\AnalysisResults.h>
 #include <IFace\BearingDesignParameters.h>
-#include <Reporting\ReactionInterfaceAdapters.h>
+
 
 class pgsBearingDesignEngineer
 {
@@ -48,15 +49,15 @@ public:
 	   CGirderKey girderKey, pgsTypes::AnalysisType analysisType, 
 	   bool bIncludeImpact, bool bIncludeLLDF, REACTIONDETAILS* pDetails) const;
 
-   void GetThermalExpansionDetails(const pgsPointOfInterest& poi, SHEARDEFORMATIONDETAILS* pDetails) const;
+   void GetThermalExpansionDetails(CGirderKey girderKey, BEARINGSHEARDEFORMATIONDETAILS* bearing) const;
 
    Float64 GetDistanceToPointOfFixity(const pgsPointOfInterest& poi, SHEARDEFORMATIONDETAILS* pDetails) const;
 
-   Float64 GetTimeDependentComponentShearDeformation(const pgsPointOfInterest& poi, Float64 tdNetLoss, SHEARDEFORMATIONDETAILS* pDetails) const;
+   std::array<Float64,2> GetTimeDependentComponentShearDeformation(Float64 tdNetLoss, BEARINGSHEARDEFORMATIONDETAILS* pDetails) const;
 
    Float64 GetBearingTimeDependentLosses(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, const GDRCONFIG* pConfig, const LOSSDETAILS* pDetails, TDCOMPONENTS* tdComponents) const;
 
-   Float64 GetTimeDependentShearDeformation(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const;
+   void GetTimeDependentShearDeformation(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const;
 
 private:
    IBroker* m_pBroker;
