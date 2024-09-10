@@ -565,19 +565,19 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
 
                                 const LOSSDETAILS* pDetails0erect = pLosses->GetLossDetails(p0, erectSegmentIntervalIdx);
                                 const TIME_STEP_DETAILS& tsDetails0erect(pDetails0erect->TimeStepDetails[erectSegmentIntervalIdx]);
-                                Float64 strain_bot_girder_0_erect = tsDetails0erect.Girder.strain_by_load_type[pgsTypes::BottomFace][ty][rtCumulative];
                                 const LOSSDETAILS* pDetails0 = pLosses->GetLossDetails(p0, intervalIdx);
                                 const TIME_STEP_DETAILS& tsDetails0(pDetails0->TimeStepDetails[intervalIdx]);
-                                Float64 inc_strain_bot_girder_0 = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][ty][rtIncremental];
-                                Float64 cum_strain_bot_girder_0 = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][ty][rtCumulative] - strain_bot_girder_0_erect;
+                                Float64 strain_bot_girder_0_erect = tsDetails0erect.Girder.strain_by_load_type[pgsTypes::BottomFace][td_types[ty]][rtCumulative];
+                                Float64 inc_strain_bot_girder_0 = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][td_types[ty]][rtIncremental];
+                                Float64 cum_strain_bot_girder_0 = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][td_types[ty]][rtCumulative] - strain_bot_girder_0_erect;
 
                                 const LOSSDETAILS* pDetails1 = pLosses->GetLossDetails(p1, intervalIdx);
                                 const TIME_STEP_DETAILS& tsDetails1(pDetails1->TimeStepDetails[intervalIdx]);
                                 const LOSSDETAILS* pDetails1erect = pLosses->GetLossDetails(p1, erectSegmentIntervalIdx);
                                 const TIME_STEP_DETAILS& tsDetails1erect(pDetails1erect->TimeStepDetails[erectSegmentIntervalIdx]);
-                                Float64 strain_bot_girder_1_erect = tsDetails1erect.Girder.strain_by_load_type[pgsTypes::BottomFace][ty][rtCumulative];
-                                Float64 inc_strain_bot_girder_1 = tsDetails1.Girder.strain_by_load_type[pgsTypes::BottomFace][ty][rtIncremental];
-                                Float64 cum_strain_bot_girder_1 = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][ty][rtCumulative] - strain_bot_girder_1_erect;
+                                Float64 strain_bot_girder_1_erect = tsDetails1erect.Girder.strain_by_load_type[pgsTypes::BottomFace][td_types[ty]][rtCumulative];
+                                Float64 inc_strain_bot_girder_1 = tsDetails1.Girder.strain_by_load_type[pgsTypes::BottomFace][td_types[ty]][rtIncremental];
+                                Float64 cum_strain_bot_girder_1 = tsDetails0.Girder.strain_by_load_type[pgsTypes::BottomFace][td_types[ty]][rtCumulative] - strain_bot_girder_1_erect;
 
                                 if (td_types[ty] == pgsTypes::pftCreep)
                                 {
