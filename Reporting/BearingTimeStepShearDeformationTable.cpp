@@ -173,6 +173,8 @@ rptRcTable* CTimeStepShearDeformationTable::BuildTimeStepShearDeformationTable(I
     p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_LEFT));
     p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_LEFT));
 
+    deflection.ShowUnitTag(true);
+
     p_table->SetColumnSpan(row, 0, 2);
     (*p_table)(row, 0) << symbol(SIGMA) << Sub2(symbol(DELTA), _T("s"));
     p_table->SetColumnSpan(row, 2, 4);

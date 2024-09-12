@@ -498,9 +498,6 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
             GET_IFACE(IBridge, pBridge);
             GET_IFACE(IPointOfInterest, pPoi);
 
-            brg_details.creep = 0.0;
-            brg_details.shrinkage = 0.0;
-            brg_details.relaxation = 0.0;
 
             Float64 L = GetDistanceToPointOfFixity(poi, pDetails);
             GroupIndexType nGroups = pBridge->GetGirderGroupCount();
@@ -534,9 +531,9 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
                     pgsPointOfInterest p0, p1;
                     Float64 d0, d1;
 
-                    timestep_details.interval_creep = 0;
-                    timestep_details.interval_shrinkage = 0;
-                    timestep_details.interval_relaxation = 0;
+                    timestep_details.interval_creep = 0.0;
+                    timestep_details.interval_shrinkage = 0.0;
+                    timestep_details.interval_relaxation = 0.0;
 
                     timestep_details.interval = intervalIdx;
 
@@ -611,6 +608,7 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
                                 }
 
                             }
+                            ;
 
                             timestep_details.ts_diff_elems.emplace_back(td_diff_elems);
 
@@ -618,9 +616,9 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
 
                         if (intervalIdx == lastIntervalIdx)
                         {
-                            brg_details.creep += timestep_details.interval_creep;
-                            brg_details.shrinkage += timestep_details.interval_shrinkage;
-                            brg_details.relaxation += timestep_details.interval_relaxation;
+                            brg_details.creep = timestep_details.interval_creep;
+                            brg_details.shrinkage = timestep_details.interval_shrinkage;
+                            brg_details.relaxation = timestep_details.interval_relaxation;
                         }
 
                     }
@@ -631,11 +629,10 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
 
             }
 
-
-
             Float64 total_time_dependent = brg_details.creep + brg_details.shrinkage + brg_details.relaxation;
 
             brg_details.time_dependent = total_time_dependent;
+
 
 
         }
@@ -669,6 +666,41 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
         }
 
         pDetails->brg_details.emplace_back(brg_details);
+
+        if (bTimeStepMethod)
+        {
+            
+            for (const auto& brg : pDetails->brg_details)
+            {
+
+                Float64 sum_last_interval = 0.0;
+
+                for (const auto& interval : brg.timestep_details)
+                {
+
+                    Float64 sum_td_elems = 0.0;
+
+                    for (const auto& elem : interval.ts_diff_elems)
+                    {
+
+                        sum_td_elems += elem.creep[3] + elem.shrinkage[3] + elem.relaxation[3];
+
+                    }
+
+                    Float64 sum_interval = interval.interval_creep + interval.interval_shrinkage + interval.interval_relaxation;
+
+                    ATLASSERT(IsEqual(sum_td_elems , sum_interval));
+
+                    sum_last_interval = sum_interval;
+
+                }
+
+                ATLASSERT(IsEqual(brg.time_dependent, brg.creep + brg.shrinkage + brg.relaxation));
+                ATLASSERT(IsEqual(sum_last_interval, brg.time_dependent));
+
+            }
+
+        }
 
     }
 
