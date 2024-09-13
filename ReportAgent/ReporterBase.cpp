@@ -177,6 +177,8 @@ void CReporterBase::CreateBridgeGeometryReport()
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pBrokerRptSpecBuilder(  std::make_shared<CBrokerReportSpecificationBuilder>(m_pBroker) );
 
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Bridge Geometry Report")));
+   pRptBuilder->EnableHeadingNumbers(true);
+
 #if defined _DEBUG || defined _BETA_VERSION
    pRptBuilder->IncludeTimingChapter();
 #endif
@@ -186,6 +188,8 @@ void CReporterBase::CreateBridgeGeometryReport()
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CDeckElevationChapterBuilder>()) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CPierGeometryChapterBuilder>()) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CGirderGeometryChapterBuilder>()) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingSeatElevationsChapterBuilder2>()) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingSeatElevationsDetailsChapterBuilder2>()) );
    pRptMgr->AddReportBuilder( pRptBuilder );
 }
 
@@ -196,6 +200,7 @@ void CReporterBase::CreateDetailsReport()
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pGirderRptSpecBuilder(std::make_shared<CGirderReportSpecificationBuilder>(m_pBroker,CGirderKey(0,0)));
 
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Details Report")));
+   pRptBuilder->EnableHeadingNumbers(true);
 #if defined _DEBUG || defined _BETA_VERSION
    pRptBuilder->IncludeTimingChapter();
 #endif
@@ -640,7 +645,8 @@ HRESULT CReporterBase::OnSpecificationChanged()
    std::shared_ptr<WBFL::Reporting::ReportBuilder> loadRatingRptBuilder = pRptMgr->GetReportBuilder(_T("Load Rating Report"));
 
    GET_IFACE( ILossParameters, pLossParams);
-   if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
+   bool is_timestep = pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP;
+   if ( is_timestep )
    {
       detailsRptBuilder->InsertChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CInternalForceChapterBuilder>()), _T("Moments, Shears, and Reactions"));
       loadRatingRptBuilder->InsertChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CInternalForceChapterBuilder>(false)), _T("Moments, Shears, and Reactions"));
@@ -652,6 +658,16 @@ HRESULT CReporterBase::OnSpecificationChanged()
       loadRatingRptBuilder->RemoveChapterBuilder(_T("Internal Time-Dependent Forces"));
       detailsRptBuilder->RemoveChapterBuilder(_T("Bearing Time-Dependent Shear Deformations"));
    }
+
+   // Disable bearing elevations chapters in geometry report for time step. They take too long 
+   std::shared_ptr<WBFL::Reporting::ReportBuilder> brgGeomRptBuilder = pRptMgr->GetReportBuilder(_T("Bridge Geometry Report"));
+   auto pbsChap = brgGeomRptBuilder->GetChapterBuilder(TEXT("Bearing Seat Elevations"));
+   auto pbsPgChap = std::static_pointer_cast<CPGSuperChapterBuilder>(pbsChap);
+   pbsPgChap->SetSelect(!is_timestep);
+
+   auto pbsdetChap = brgGeomRptBuilder->GetChapterBuilder(TEXT("Bearing Seat Elevation Details"));
+   auto pbsdetPgChap = std::static_pointer_cast<CPGSuperChapterBuilder>(pbsdetChap);
+   pbsdetPgChap->SetSelect(!is_timestep);
 
    return S_OK;
 }

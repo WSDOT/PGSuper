@@ -36,3 +36,6 @@ Spacing | Enter the center-to-center rebar spacing.
 
 > All cells in the grid must be filled in. Blank cells are considered incomplete data.  
 
+Check For Equality Between Library and Project Longitudinal Reinforcement Input
+---------------------------------------------
+Some agencies, such as WSDOT and TxDOT, have standardized input for longitudinal reinforcement. If this is the case, it is useful to generate a warning in output reports if project data does not exactly match library data. Enable the checkbox if a warning is desired.

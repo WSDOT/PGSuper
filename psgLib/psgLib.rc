@@ -302,7 +302,7 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,308,188,10
 END
 
-IDD_EDIT_SHEAR_STEEL DIALOGEX 0, 0, 421, 278
+IDD_EDIT_SHEAR_STEEL DIALOGEX 0, 0, 421, 318
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
@@ -338,10 +338,13 @@ BEGIN
     LTEXT           "Spacing",IDC_SPACING_LABEL,288,198,27,8
     LTEXT           "# of Legs",IDC_NLEGS_LABEL,354,198,31,8
     PUSHBUTTON      "Copy from Library",IDC_RESTORE_DEFAULTS,148,255,122,14
-    LTEXT           "NOTE: These are seed values. They must be copied into your project.",IDC_SEED_VALUE_NOTE,7,261,221,8
+    LTEXT           "NOTE: The above data are seed values. They can be copied into your project's girders from the Edit Girder dialog.",IDC_SEED_VALUE_NOTE,7,255,398,8
+    GROUPBOX        "Check For Equality Between Library and Project Transverse Reinforcement Input",IDC_EQUALITY_GRP_CTRL,7,273,407,37
+    CONTROL         "Issue a warning in reports if the data for a project's girder does not exactly match the library data presented on this tab",IDC_TRANS_REINF_EQUALITY_CHECK,
+                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,18,283,396,20
 END
 
-IDD_LONG_STEEL DIALOGEX 0, 0, 449, 227
+IDD_LONG_STEEL DIALOGEX 0, 0, 449, 278
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
@@ -352,7 +355,10 @@ BEGIN
     PUSHBUTTON      "Insert Row",IDC_INSERTROW,122,185,63,14
     PUSHBUTTON      "Delete Row",IDC_REMOVEROWS,192,185,63,14
     PUSHBUTTON      "Append Row",IDC_APPEND_ROW,262,185,63,14
-    LTEXT           "NOTE: These are seed values. They must be copied into your project.",IDC_STATIC,7,212,221,8
+    LTEXT           "NOTE: The above data are seed values. They can be copied into your project's girders from the Edit Girder dialog.",IDC_STATIC,7,215,359,8
+    GROUPBOX        "Check For Equality Between Library and Project Longitudinal Reinforcement Input",IDC_EQUALITY_GRP_CTRL,7,233,435,38
+    CONTROL         "Issue a warning in reports if the data for a project's girder does not exactly match the library data presented on this tab",IDC_LONG_REINF_EQUALITY_CHECK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,250,411,10
 END
 
 IDD_TRAFFIC_BARRIER DIALOGEX 0, 0, 426, 233
@@ -2128,7 +2134,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 414
         TOPMARGIN, 7
-        BOTTOMMARGIN, 270
+        BOTTOMMARGIN, 310
     END
 
     IDD_LONG_STEEL, DIALOG
@@ -2136,7 +2142,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 442
         TOPMARGIN, 7
-        BOTTOMMARGIN, 220
+        BOTTOMMARGIN, 271
     END
 
     IDD_TRAFFIC_BARRIER, DIALOG
@@ -2976,6 +2982,11 @@ BEGIN
 END
 
 IDD_SHEAR_DESIGN AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_LONG_STEEL AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

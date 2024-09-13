@@ -50,16 +50,20 @@ rptChapter* CPGSuperChapterBuilder::Build(const std::shared_ptr<const WBFL::Repo
    ASSERT( level <= GetMaxLevel() );
 
    rptChapter* pChapter = new rptChapter(GetName());
-   rptParagraph* p_para = new rptParagraph;
-   p_para->SetStyleName(rptStyleManager::GetChapterTitleStyle());
-   *pChapter << p_para;
-   *p_para << GetName() << rptNewLine;
+   rptHeading* pHeading = rptStyleManager::CreateChapterHeading();
+   *pChapter << pHeading;
+   *pHeading << GetName() << rptNewLine;
    return pChapter;
 }
 
 bool CPGSuperChapterBuilder::Select() const
 {
    return m_bSelect;
+}
+
+void CPGSuperChapterBuilder::SetSelect(bool bSelect)
+{
+   m_bSelect = bSelect;
 }
 
 bool CPGSuperChapterBuilder::NeedsUpdate(const std::shared_ptr<const WBFL::Reporting::ReportHint>& pHint,const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const

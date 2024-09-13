@@ -75,8 +75,7 @@ rptChapter* CBearingSeatElevationsChapterBuilderBase::Build(const std::shared_pt
    }
    else
    {
-      ATLASSERT(false); // not expecting a different kind of report spec
-      return pChapter;
+      girderIndex = ALL_GIRDERS;
    }
 
 
@@ -415,7 +414,7 @@ CBearingDeductChapterBuilder::~CBearingDeductChapterBuilder(void)
 
 LPCTSTR CBearingDeductChapterBuilder::GetName() const
 {
-   return TEXT("Bearing Seat Elevations");
+   return TEXT("Bearing Seat Deduct");
 }
 
 std::unique_ptr<WBFL::Reporting::ChapterBuilder> CBearingDeductChapterBuilder::Clone() const

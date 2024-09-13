@@ -1419,57 +1419,17 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
       return;
    }
 
-   // If the segments are simple span elements, we want to draw a graph for each segment individually.
-   // Determine if the segments are simple spans during the intervals being graphed
-   GET_IFACE(IIntervals, pIntervals);
+   // For most cases we want to draw a graph for each segment individually. Reaction graphs need all segments
    bool bSimpleSpanSegments = true;
+   if (actionReaction == actionType )
+   {
+      bSimpleSpanSegments = false; // reactions are returned along entire girder
+   }
+
+   GET_IFACE(IIntervals, pIntervals);
    GET_IFACE(IBridge, pBridge);
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(girderKey, &vGirderKeys);
-
-   std::vector<IntervalIndexType>::iterator intervalIter(vIntervals.begin());
-   std::vector<IntervalIndexType>::iterator intervalIterEnd(vIntervals.end());
-   for (; intervalIter != intervalIterEnd; intervalIter++)
-   {
-      IntervalIndexType intervalIdx = *intervalIter;
-
-      for(const auto& thisGirderKey : vGirderKeys)
-      {
-         SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
-         if (1 < nSegments)
-         {
-            for (SegmentIndexType segIdx = 0; segIdx < nSegments - 1; segIdx++)
-            {
-               CClosureKey closureKey(thisGirderKey, segIdx);
-               if (pIntervals->GetCompositeClosureJointInterval(closureKey) <= intervalIdx)
-               {
-                  bSimpleSpanSegments = false;
-                  break;
-               }
-            }
-         }
-      }
-
-      // if we got this far either the interval is before any continuity has occurred
-      // or the girder groups have one segment each which means this is a precast girder
-      // bridge.... if this is a conventional precast girder bridge, check to see if the
-      // deck is composite with the girders (in which case we can assume continuity has occurred)
-      if (bSimpleSpanSegments)
-      {
-         if (pIntervals->GetLastCompositeDeckInterval() <= intervalIdx && girderKey.groupIndex == ALL_GROUPS)
-         {
-            bSimpleSpanSegments = false;
-         }
-      }
-   }
-
-   // Determine the interval when the first segment is erected for the girder groups
-   // that are being plotted
-   IntervalIndexType firstSegmentErectionIntervalIdx = INVALID_INDEX;
-   for(const auto& thisGirderKey : vGirderKeys)
-   {
-      firstSegmentErectionIntervalIdx = Min(firstSegmentErectionIntervalIdx, pIntervals->GetFirstSegmentErectionInterval(thisGirderKey));
-   }
 
    IntervalIndexType firstPlottingIntervalIdx = vIntervals.front();
    IntervalIndexType lastPlottingIntervalIdx = vIntervals.back();
@@ -1491,16 +1451,8 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
          IDType graphID = ((CAnalysisResultsGraphController*)m_pGraphController)->SelectedGraphIndexToGraphID(graphIdx);
          const CAnalysisResultsGraphDefinition& graphDef = m_pGraphDefinitions->GetGraphDefinition(graphID);
 
-         bool bSimpleSpanSegmentsThisGraph = bSimpleSpanSegments;
-         if (graphDef.m_GraphType == graphProduct && graphDef.m_LoadType.ProductLoadType == pgsTypes::pftPretension)
-         {
-            // pretension is always simple span graph
-            bSimpleSpanSegmentsThisGraph = true;
-         }
-         
-         SegmentIndexType endSegmentIdx = (bSimpleSpanSegmentsThisGraph ? nSegments-1 : 0);
-         //for (SegmentIndexType segIdx = 0; segIdx <= endSegmentIdx; segIdx++)
-         for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+         SegmentIndexType endSegmentIdx = (bSimpleSpanSegments ? nSegments-1 : 0);
+         for (SegmentIndexType segIdx = 0; segIdx <= endSegmentIdx; segIdx++)
          {
             CSegmentKey segmentKey(thisGirderKey, segIdx);
             IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
@@ -1512,7 +1464,6 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
             PoiList vPoi;
 
             // Pois for principal web stress are unique. 
-            ActionType actionType = ((CAnalysisResultsGraphController*)m_pGraphController)->GetActionType();
             if (actionPrincipalWebStress == actionType)
             {
                GET_IFACE(IPrincipalWebStress, pPrincipalWebStress);
@@ -1524,7 +1475,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
                pIPoi->GetPointsOfInterest(segmentKey, &vPoi);
 
                // There are some blips (bugs likely) in computing deflections within closure joints. Clean out off-segment POIs to make graphs look pretty
-               if (bSimpleSpanSegmentsThisGraph || actionType==actionDeflection || actionType == actionRotation)
+               if (actionType==actionDeflection || actionType == actionRotation)
                {
                   // these POI are between segments so they don't apply
                   vPoi.erase(std::remove_if(vPoi.begin(), vPoi.end(), [pIPoi](const auto& poi) {return pIPoi->IsOffSegment(poi); }), vPoi.end());
@@ -1563,7 +1514,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
             case graphProduct:
                if ( actionType == actionReaction )
                {
-                  ProductReactionGraph(selectedGraphIdx,graphDef,intervalIdx,thisGirderKey,bSimpleSpanSegments ? segIdx : ALL_SEGMENTS);
+                  ProductReactionGraph(selectedGraphIdx,graphDef,intervalIdx,thisGirderKey, ALL_SEGMENTS);
                }
                else
                {
@@ -1578,7 +1529,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
             case graphCombined:
                if ( actionType == actionReaction )
                {
-                  CombinedReactionGraph(selectedGraphIdx,graphDef,intervalIdx,thisGirderKey,bSimpleSpanSegments ? segIdx : ALL_SEGMENTS);
+                  CombinedReactionGraph(selectedGraphIdx,graphDef,intervalIdx,thisGirderKey, ALL_SEGMENTS);
                }
                else
                {

@@ -566,6 +566,13 @@ public:
    void GetLongSteelMaterial(WBFL::Materials::Rebar::Type& type,WBFL::Materials::Rebar::Grade& grade) const;
 
    //------------------------------------------------------------------------
+   // Equality warning between project and library for long and trans reinf equality. Added in version 30
+   bool DoWarnForTransReinfEquality() const;
+   void SetDoWarnForTransReinfEquality(bool doCheck);
+   bool DoWarnForLongReinfEquality() const;
+   void SetDoWarnForLongReinfEquality(bool doCheck);
+
+   //------------------------------------------------------------------------
    // Set the location of the harping point as a ratio of span length
    void SetHarpingPointLocation(Float64 d);
 
@@ -797,6 +804,11 @@ private:
    StraightStrandCollection m_TemporaryStrands;
 
    LongSteelInfoVec m_LongSteelInfo;
+
+   // Equality check between project and library. Added in version 30
+   bool m_bWarnTransReinfLibraryEquality;
+   bool m_bWarnLongReinfLibraryEquality;
+
 
    // version 4.0 
    // Got rid of two separate collections of harped strands and consolidate into one.

@@ -14,8 +14,7 @@
 #include <EAF\EAFResources.h>
 #if !defined _NOGRID
 #include "grid\gxresrc.h"
-#endif
-
+#endif
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -1039,20 +1038,17 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,214,180,10
 END
 
-IDD_ENVIRONMENT DIALOGEX 0, 0, 187, 126
+IDD_ENVIRONMENT DIALOG 0, 0, 187, 97
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Environmental Conditions"
-FONT 8, "MS Sans Serif", 0, 0, 0x0
+FONT 8, "MS Sans Serif"
 BEGIN
     GROUPBOX        "Exposure Conditions",IDC_STATIC,7,7,110,40
     CONTROL         "&Normal Exposure",IDC_EXPOSURE,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,14,18,68,10
     CONTROL         "&Severe Corrosive Conditions",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,14,30,102,10
-    GROUPBOX        "Climate",IDC_STATIC,7,50,110,38
-    CONTROL         "&Cold",IDC_CLIMATE,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,14,61,68,9
-    CONTROL         "&Moderate",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,14,71,102,10
-    LTEXT           "Average Ambient Relative Humidity",IDC_STATIC,7,93,117,8
-    EDITTEXT        IDC_RELHUMIDITY,7,105,40,14,ES_AUTOHSCROLL
-    LTEXT           "%",IDC_STATIC,48,108,8,8
+    LTEXT           "Average Ambient Relative Humidity",IDC_STATIC,7,57,117,8
+    EDITTEXT        IDC_RELHUMIDITY,7,69,40,14,ES_AUTOHSCROLL
+    LTEXT           "%",IDC_STATIC,48,72,8,8
     DEFPUSHBUTTON   "OK",IDOK,130,7,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,130,24,50,14
     PUSHBUTTON      "Help",ID_HELP,130,41,50,14
@@ -1300,11 +1296,12 @@ BEGIN
     LTEXT           "Haul Truck",IDC_STATIC,208,197,36,8
 END
 
-IDD_COPY_GIRDER_PROPERTIES DIALOGEX 0, 0, 635, 294
-STYLE DS_SETFONT | WS_MAXIMIZEBOX | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+IDD_COPY_GIRDER_PROPERTIES DIALOGEX 0, 0, 635, 300
+STYLE DS_SETFONT | WS_MAXIMIZEBOX | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "Copy Girder Properties"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
+    GROUPBOX        "Browser Placeholder - This control must be first in Tab Order or Edge Browser will crash dialog",IDC_BROWSER,188,17,431,225,BS_NOTIFY,WS_EX_CLIENTEDGE
     COMBOBOX        IDC_FROM_SPAN,22,22,59,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_FROM_GIRDER,88,22,59,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Single Girder, Span, Girderline, or All",IDC_RADIO1,
@@ -1313,17 +1310,16 @@ BEGIN
     COMBOBOX        IDC_TO_GIRDER,93,99,59,57,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Multiple Girders",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,17,120,64,10
     PUSHBUTTON      "Select Girders\n(0 Selected)",IDC_SELECT_GIRDERS,49,134,78,23,BS_MULTILINE
-    DEFPUSHBUTTON   "Copy Now",IDOK,455,269,48,15
-    PUSHBUTTON      "Close",IDCANCEL,509,269,48,15
-    PUSHBUTTON      "Help",ID_HELP,561,269,50,15
+    DEFPUSHBUTTON   "Copy Now",IDOK,455,275,48,15
+    PUSHBUTTON      "Close",IDCANCEL,509,275,48,15
+    PUSHBUTTON      "Help",ID_HELP,561,275,50,15
     GROUPBOX        "Copy From",IDC_STATIC,8,6,154,60
-    GROUPBOX        "Comparison Report",IDC_COMPREP,172,6,455,265
     GROUPBOX        "Copy To",IDC_STATIC,8,72,154,89
-    GROUPBOX        "Browser Placeholder",IDC_BROWSER,188,17,431,225,BS_NOTIFY | NOT WS_VISIBLE | WS_TABSTOP,WS_EX_STATICEDGE
     PUSHBUTTON      "Print",IDC_PRINT,561,249,50,14
     PUSHBUTTON      "Edit",IDC_EDIT,58,43,50,14
     GROUPBOX        "Select Properties to be Copied",IDC_STATIC,8,169,154,102
     LISTBOX         IDC_PROPERTY_LIST,15,182,141,83,LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Comparison Report",IDC_COMPREP,173,5,454,264
 END
 
 IDD_SECTION_CUT_DIALOG DIALOGEX 0, 0, 226, 62
@@ -1343,17 +1339,17 @@ STYLE DS_SETFONT | WS_MAXIMIZEBOX | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "Design Outcome"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "Accept the Design",IDOK,7,276,93,14
-    PUSHBUTTON      "Reject the Design",IDCANCEL,115,276,93,14
-    GROUPBOX        "Browser Placeholder",IDC_BROWSER,7,7,420,214,NOT WS_VISIBLE
-    PUSHBUTTON      "Help",ID_HELP,320,276,50,14
-    PUSHBUTTON      "&Print",IDC_PRINT,377,276,50,14
-    LTEXT           "Update the Current Girder Parameters with the Proposed Design?",IDC_STATIC_TEXT,7,258,253,8
+    GROUPBOX        "Browser Placeholder - This control must be first in Tab Order or Edge Browser will crash dialog",IDC_BROWSER,7,7,420,214,0,WS_EX_CLIENTEDGE
     CONTROL         "Apply the Haunch Geometry design from",IDC_CHECK_ADESIGN,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,235,142,10
     COMBOBOX        IDC_DESIGNA_FROM,151,233,95,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CTEXT           "to",IDC_DESIGNA_STATIC,252,237,8,8
     COMBOBOX        IDC_DESIGNA_TO,264,233,101,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Update the Current Girder Parameters with the Proposed Design?",IDC_STATIC_TEXT,7,258,253,8
+    DEFPUSHBUTTON   "Accept the Design",IDOK,7,276,93,14
+    PUSHBUTTON      "Reject the Design",IDCANCEL,115,276,93,14
+    PUSHBUTTON      "Help",ID_HELP,320,276,50,14
+    PUSHBUTTON      "&Print",IDC_PRINT,377,276,50,14
+    CTEXT           "to",IDC_DESIGNA_STATIC,252,237,8,8
 END
 
 IDD_TIMELINE_REPORT DIALOGEX 0, 0, 435, 290
@@ -1363,7 +1359,7 @@ FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "Close",IDOK,377,269,50,14
     PUSHBUTTON      "Print",IDC_PRINT,324,269,50,14
-    GROUPBOX        "Browser Placeholder",IDC_BROWSER,7,7,420,255,NOT WS_VISIBLE | WS_TABSTOP
+    GROUPBOX        "Browser Placeholder",IDC_BROWSER,7,7,420,255,WS_TABSTOP
 END
 
 IDD_STABILITY_BAR DIALOG 0, 0, 240, 26
@@ -1399,20 +1395,17 @@ BEGIN
     LTEXT           "Distribution factors must be entered for both the main spans and at the piers.",IDC_USER_LLDF_NOTE,37,111,260,12
 END
 
-IDD_BRIDGEDESC_ENVIRONMENTAL DIALOGEX 0, 0, 249, 141
+IDD_BRIDGEDESC_ENVIRONMENTAL DIALOG 0, 0, 249, 141
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION
 CAPTION "Environmental"
-FONT 8, "MS Sans Serif", 0, 0, 0x0
+FONT 8, "MS Sans Serif"
 BEGIN
-    GROUPBOX        "Exposure Conditions",IDC_STATIC,7,50,136,40
-    CONTROL         "&Normal Exposure",IDC_EXPOSURE,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,14,61,68,10
-    CONTROL         "&Severe Corrosive Conditions",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,14,73,102,10
-    GROUPBOX        "Climate",IDC_STATIC,7,7,136,39
-    CONTROL         "&Cold",IDC_CLIMATE,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,14,18,68,10
-    CONTROL         "&Moderate",IDC_RADIO3,"Button",BS_AUTORADIOBUTTON,14,30,102,10
-    LTEXT           "Average Ambient Relative Humidity",IDC_STATIC,7,94,117,8
-    EDITTEXT        IDC_RELHUMIDITY,7,106,40,14,ES_AUTOHSCROLL
-    LTEXT           "%",IDC_STATIC,48,109,8,8
+    GROUPBOX        "Exposure Conditions",IDC_STATIC,7,7,136,40
+    CONTROL         "&Normal Exposure",IDC_EXPOSURE,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,14,18,68,10
+    CONTROL         "&Severe Corrosive Conditions",IDC_RADIO2,"Button",BS_AUTORADIOBUTTON,14,30,102,10
+    LTEXT           "Average Ambient Relative Humidity",IDC_STATIC,7,57,117,8
+    EDITTEXT        IDC_RELHUMIDITY,7,69,40,14,ES_AUTOHSCROLL
+    LTEXT           "%",IDC_STATIC,48,72,8,8
 END
 
 IDD_EDIT_POINTLOAD DIALOGEX 0, 0, 394, 170
@@ -3852,19 +3845,19 @@ STYLE DS_SETFONT | WS_MAXIMIZEBOX | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "Copy Pier Properties"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
+    GROUPBOX        "Browser Placeholder - This control must be first in Tab Order or Edge Browser will crash dialog",IDC_BROWSER,186,17,428,193,WS_TABSTOP,WS_EX_CLIENTEDGE
     COMBOBOX        IDC_FROM_PIER,22,22,110,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Edit",IDC_EDIT,61,51,50,14
     COMBOBOX        IDC_TO_PIER,21,100,108,57,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LISTBOX         IDC_PROPERTY_LIST,15,149,141,83,LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
     DEFPUSHBUTTON   "Copy Now",IDOK,453,236,48,15
     PUSHBUTTON      "Close",IDCANCEL,507,236,48,15
     PUSHBUTTON      "Help",ID_HELP,559,236,50,15
+    PUSHBUTTON      "Print",IDC_PRINT,560,216,50,14
     GROUPBOX        "Copy From",IDC_STATIC,8,5,154,71
     GROUPBOX        "Comparison Report",IDC_COMPREP,173,5,454,232
     GROUPBOX        "Copy To",IDC_STATIC,8,87,154,39
-    GROUPBOX        "Browser Placeholder",IDC_BROWSER,186,17,428,193,NOT WS_VISIBLE | WS_TABSTOP,WS_EX_CLIENTEDGE
-    PUSHBUTTON      "Print",IDC_PRINT,560,216,50,14
-    PUSHBUTTON      "Edit",IDC_EDIT,61,51,50,14
     GROUPBOX        "Select Properties to be Copied",IDC_STATIC,8,136,154,102
-    LISTBOX         IDC_PROPERTY_LIST,15,149,141,83,LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_EDIT_HAUNCH_ACAMBER DIALOGEX 0, 0, 568, 265
@@ -3990,11 +3983,6 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO
 BEGIN
-    IDD_ENVIRONMENT, DIALOG
-    BEGIN
-        BOTTOMMARGIN, 97
-    END
-
     IDD_GIRDERDESC_PRESTRESS, DIALOG
     BEGIN
     END
@@ -4013,13 +4001,19 @@ BEGIN
 
     IDD_COPY_GIRDER_PROPERTIES, DIALOG
     BEGIN
+        LEFTMARGIN, 8
         RIGHTMARGIN, 627
         VERTGUIDE, 8
-        BOTTOMMARGIN, 284
+        TOPMARGIN, 6
+        BOTTOMMARGIN, 290
     END
 
     IDD_DESIGN_OUTCOME, DIALOG
     BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 427
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 290
     END
 
     IDD_TIMELINE_REPORT, DIALOG
@@ -4031,10 +4025,6 @@ BEGIN
     END
 
     IDD_LLDF, DIALOG
-    BEGIN
-    END
-
-    IDD_BRIDGEDESC_ENVIRONMENTAL, DIALOG
     BEGIN
     END
 
@@ -4755,7 +4745,17 @@ END
 
 IDD_DESIGN_OUTCOME AFX_DIALOG_LAYOUT
 BEGIN
-    0
+    0,
+    0, 0, 100, 100,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    0, 100, 0, 0,
+    100, 100, 0, 0,
+    100, 100, 0, 0,
+    0, 100, 0, 0
 END
 
 IDD_TIMELINE_REPORT AFX_DIALOG_LAYOUT
@@ -4924,40 +4924,40 @@ END
 IDD_COPY_GIRDER_PROPERTIES AFX_DIALOG_LAYOUT
 BEGIN
     0,
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 100, 100,
-    0, 0, 0, 0,
     0, 0, 100, 100,
     0, 0, 0, 0,
     0, 0, 0, 0,
     0, 0, 0, 0,
-    0, 0, 0, 0
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    100, 100, 0, 0,
+    100, 100, 0, 0,
+    100, 100, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    100, 100, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 100, 100
 END
 
 IDD_COPY_PIER_PROPERTIES AFX_DIALOG_LAYOUT
 BEGIN
     0,
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 0, 0,
-    0, 0, 100, 100,
-    0, 0, 0, 0,
     0, 0, 100, 100,
     0, 0, 0, 0,
     0, 0, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 0, 0,
+    100, 100, 0, 0,
+    100, 100, 0, 0,
+    100, 100, 0, 0,
+    100, 100, 0, 0,
+    0, 0, 0, 0,
+    0, 0, 100, 100,
     0, 0, 0, 0,
     0, 0, 0, 0
 END
@@ -4983,16 +4983,6 @@ BEGIN
 END
 
 IDD_FILL_HAUNCH AFX_DIALOG_LAYOUT
-BEGIN
-    0
-END
-
-IDD_ENVIRONMENT AFX_DIALOG_LAYOUT
-BEGIN
-    0
-END
-
-IDD_BRIDGEDESC_ENVIRONMENTAL AFX_DIALOG_LAYOUT
 BEGIN
     0
 END

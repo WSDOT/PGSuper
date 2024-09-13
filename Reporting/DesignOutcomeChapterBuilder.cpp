@@ -697,7 +697,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
 
       rptParagraph* pParagraph = new rptParagraph( rptStyleManager::GetHeadingStyle() );
       *pChapter << pParagraph;
-      *pParagraph << _T("Shear Design:");
+      *pParagraph << rptNewLine << _T("Shear Design:");
 
       pParagraph = new rptParagraph();
       *pChapter << pParagraph;
@@ -714,61 +714,83 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
       GET_IFACE2(pBroker, IBridge, pBridge);
       Float64 girder_length = pBridge->GetSegmentLength(segmentKey);
 
-      *pParagraph << Bold(_T("Primary Bars")) << rptNewLine;
-
+      // Design shear data values
       const CShearData2* pShearData = pArtifact->GetShearData();
+
+      // Current values
+      GET_IFACE2(pBroker, IShear, pShear);
+      const CShearData2* p_curr_shear_data = pShear->GetSegmentShearData(segmentKey);
+
+      bool doWarnCompareLibrary;
+      const CShearData2* p__library_shear_data = pShear->GetSegmentShearLibraryData(segmentKey, doWarnCompareLibrary);
 
       if (!did_existing_pass)
       {
-         *pParagraph << _T("Proposed Design:") << rptNewLine;
+         // Write note if design is different than current
+         if (doWarnCompareLibrary)
+         {
+            if (*pShearData != *p__library_shear_data)
+            {
+               *pParagraph << Italic(_T("- Transverse reinforcement layout in proposed design is different than the layout defined in the girder library. Accepting the design will cause a warning in reports. Compare proposed design with the library to see differences.")) << rptNewLine << rptNewLine;
+            }
+         }
+         else
+         {
+            if (*pShearData != *p_curr_shear_data)
+            {
+               *pParagraph << Italic(_T("- Transverse reinforcement layout in proposed design is different than current. Review below to see differences.")) << rptNewLine << rptNewLine;
+            }
+         }
+      }
 
-        // stirrup design results
+      *pParagraph << Bold(_T("Primary Bars")) << rptNewLine;
+
+      // Write stirrup design results
+      if (!did_existing_pass)
+      {
          ZoneIndexType nZones = pArtifact->GetNumberOfStirrupZonesDesigned();
-
          if (0 < nZones)
          {
             write_primary_shear_data(pParagraph, pDisplayUnits, girder_length, nZones, pShearData);
          }
          else
          {
-            *pParagraph << _T("No Zones Designed")<<rptNewLine;
+            *pParagraph << _T("No Zones Designed") << rptNewLine;
          }
+
 
          // Current configuration
          *pParagraph << rptNewLine;
          *pParagraph << _T("Current Values:") << rptNewLine;
       }
 
-      GET_IFACE2(pBroker,IShear,pShear);
-      const CShearData2* p_shear_data = pShear->GetSegmentShearData(segmentKey);
-      ZoneIndexType nZones = p_shear_data->ShearZones.size();
-
-      write_primary_shear_data(pParagraph, pDisplayUnits, girder_length, nZones, p_shear_data);
+      ZoneIndexType nCurrZones = p_curr_shear_data->ShearZones.size();
+      write_primary_shear_data(pParagraph, pDisplayUnits, girder_length, nCurrZones, p_curr_shear_data);
 
       // Horiz interface bars
       *pParagraph <<rptNewLine<< Bold(_T("Additional Bars For Horizontal Interface Shear"))<<rptNewLine;
       if (!did_existing_pass)
       {
-         *pParagraph << _T("Proposed Design:") << rptNewLine;
+         *pParagraph << _T("Proposed Design Values:") << rptNewLine;
          write_horiz_shear_data(pParagraph, pDisplayUnits, girder_length, pShearData);
 
          *pParagraph << rptNewLine;
          *pParagraph << _T("Current Values:") << rptNewLine;
       }
-      write_horiz_shear_data(pParagraph, pDisplayUnits, girder_length, p_shear_data);
+      write_horiz_shear_data(pParagraph, pDisplayUnits, girder_length, p_curr_shear_data);
 
       // Additional Shear Reinforcement at Girder Ends
       *pParagraph <<rptNewLine<< Bold(_T("Additional Shear Reinforcement at Girder Ends"))<<rptNewLine;
       if (!did_existing_pass)
       {
-         *pParagraph << _T("Proposed Design:") << rptNewLine;
+         *pParagraph << _T("Proposed Design Values:") << rptNewLine;
          write_additional_shear_data(pParagraph, pDisplayUnits, girder_length, pShearData);
 
          *pParagraph << rptNewLine;
          *pParagraph << _T("Current Values:") << rptNewLine;
       }
 
-      write_additional_shear_data(pParagraph, pDisplayUnits, girder_length, p_shear_data);
+      write_additional_shear_data(pParagraph, pDisplayUnits, girder_length, p_curr_shear_data);
 
       if (!did_existing_pass && pArtifact->GetWasLongitudinalRebarForShearDesigned())
       {

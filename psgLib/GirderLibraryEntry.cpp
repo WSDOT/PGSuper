@@ -92,7 +92,8 @@ static char THIS_FILE[] = __FILE__;
 // from 26   to 27   Added drag coefficient
 // from 27 to 28, added precamber limit
 // from 28 to 29, added option to print bearing elevations at girder edges
-#define CURRENT_VERSION 29.0
+// from 29 to 30, made long. and trans. reinforcement equality check warnings optional
+#define CURRENT_VERSION 30.0
 
 
 // Initialize static class members
@@ -184,7 +185,9 @@ m_ExcessiveSlabOffsetWarningTolerance(WBFL::Units::ConvertToSysUnits(0.25,WBFL::
 m_DragCoefficient(2.2),
 m_PrecamberLimit(80),
 m_DoReportBearingElevationsAtGirderEdges(false),
-m_pCompatibilityData(nullptr)
+m_pCompatibilityData(nullptr),
+m_bWarnTransReinfLibraryEquality(true),
+m_bWarnLongReinfLibraryEquality(true)
 {
 	CWaitCursor cursor;
 
@@ -716,6 +719,9 @@ bool GirderLibraryEntry::SaveMe(WBFL::System::IStructuredSave* pSave)
    pSave->Property(_T("DragCoefficient"),m_DragCoefficient); // added version 27
    pSave->Property(_T("PrecamberLimit"), m_PrecamberLimit); // added version 28
    pSave->Property(_T("DoReportBearingElevationsAtGirderEdges"), m_DoReportBearingElevationsAtGirderEdges); // added version 29
+
+   pSave->Property(_T("WarnTransReinfLibraryEquality"), m_bWarnTransReinfLibraryEquality); // added version 30
+   pSave->Property(_T("WarnLongReinfLibraryEquality"), m_bWarnLongReinfLibraryEquality); // added version 30
 
    pSave->EndUnit();
 
@@ -2901,6 +2907,19 @@ bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
          }
       }
 
+      if (29 < version)
+      {
+         if (!pLoad->Property(_T("WarnTransReinfLibraryEquality"), &m_bWarnTransReinfLibraryEquality))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+
+         if (!pLoad->Property(_T("WarnLongReinfLibraryEquality"), &m_bWarnLongReinfLibraryEquality))
+         {
+            THROW_LOAD(InvalidFileFormat, pLoad);
+         }
+      }
+
 
       if(!pLoad->EndUnit())
       {
@@ -3339,6 +3358,18 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<s
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Options to Report Bearing Elevations at Girder Edges are different"), _T(""), _T("")));
+   }
+
+   if (m_bWarnTransReinfLibraryEquality != rOther.m_bWarnTransReinfLibraryEquality)
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Option to warn about difference between transverse reinforcement are different"), _T(""), _T("")));
+   }
+
+   if (m_bWarnLongReinfLibraryEquality != rOther.m_bWarnLongReinfLibraryEquality)
+   {
+      RETURN_ON_DIFFERENCE;
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Option to warn about difference between longitudinal reinforcement are different"), _T(""), _T("")));
    }
 
    //
@@ -4676,6 +4707,26 @@ void GirderLibraryEntry::GetLongSteelMaterial(WBFL::Materials::Rebar::Type& type
    grade = m_LongitudinalBarGrade;
 }
 
+bool GirderLibraryEntry::DoWarnForTransReinfEquality() const
+{
+   return m_bWarnTransReinfLibraryEquality;
+}
+
+void GirderLibraryEntry::SetDoWarnForTransReinfEquality(bool doCheck)
+{
+   m_bWarnTransReinfLibraryEquality = doCheck;
+}
+
+bool GirderLibraryEntry::DoWarnForLongReinfEquality() const
+{
+   return m_bWarnLongReinfLibraryEquality;
+}
+
+void GirderLibraryEntry::SetDoWarnForLongReinfEquality(bool doCheck)
+{
+   m_bWarnLongReinfLibraryEquality = doCheck;
+}
+
 void GirderLibraryEntry::SetHarpingPointLocation(Float64 d)
 {
    m_HarpingPointLocation = d;
@@ -4772,12 +4823,16 @@ bool GirderLibraryEntry::Edit(bool allowEditing,int nPage)
    GirderLibraryEntry tmp(*this);
 
    CGirderMainSheet dlg(tmp, allowEditing, GetRefCount());
+   dlg.m_ShearSteelPage.m_bWarnTransReinfLibraryEquality = this->DoWarnForTransReinfEquality();
+   dlg.m_LongSteelPage.m_bWarnLongReinfLibraryEquality = this->DoWarnForLongReinfEquality();
    dlg.SetActivePage(nPage);
    INT_PTR i = dlg.DoModal();
    if (i==IDOK)
    {
       *this = tmp;
       this->SetShearData(dlg.m_ShearSteelPage.m_ShearData);
+      this->SetDoWarnForTransReinfEquality(dlg.m_ShearSteelPage.m_bWarnTransReinfLibraryEquality);
+      this->SetDoWarnForLongReinfEquality(dlg.m_LongSteelPage.m_bWarnLongReinfLibraryEquality);
       return true;
    }
 
@@ -4862,6 +4917,9 @@ void GirderLibraryEntry::CopyValuesAndAttributes(const GirderLibraryEntry& rOthe
    m_DragCoefficient = rOther.m_DragCoefficient;
    m_PrecamberLimit = rOther.m_PrecamberLimit;
    m_DoReportBearingElevationsAtGirderEdges = rOther.m_DoReportBearingElevationsAtGirderEdges;
+
+   m_bWarnTransReinfLibraryEquality = rOther.m_bWarnTransReinfLibraryEquality;
+   m_bWarnLongReinfLibraryEquality = rOther.m_bWarnLongReinfLibraryEquality;
 }
 
 HICON  GirderLibraryEntry::GetIcon() const

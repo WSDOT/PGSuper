@@ -4875,6 +4875,11 @@ void CBridgeAgentImp::LayoutSpanPoi(const CSpanKey& spanKey,Uint16 nPnts)
 
       poi.MakeTenthPoint(POI_SPAN,tenthPoint);
 
+      // Mantis 1529: Incorrect POI label at Intermediate Pier Closure Joint
+      // The direct call below was not made here, but was implicit in CBridgeAgentImp::ConvertPoiToSpanPoint() which made it 
+      // very difficult to measure which span a POI is in. 
+      poi.SetSpanPoint(spanKey.spanIndex, Xspan);
+
       VERIFY(m_pPoiMgr->AddPointOfInterest(poi) != INVALID_ID);
    }
 }
@@ -14285,18 +14290,31 @@ void CBridgeAgentImp::GetRebars(const pgsPointOfInterest& poi,IRebarSection** re
 {
    Float64 Xpoi = poi.GetDistFromStart();
 
-   CComPtr<IPrecastGirder> girder;
-   GetGirder(poi.GetSegmentKey(),&girder);
-
    CComPtr<IRebarLayout> rebar_layout;
 
    CClosureKey closureKey;
    if ( IsInClosureJoint(poi,&closureKey) )
    {
+      // Closure key shows segment who's right end is where closure joint lies
+      CComPtr<IPrecastGirder> girder;
+      GetGirder(closureKey, &girder);
+
+      if (closureKey.segmentIndex < poi.GetSegmentKey().segmentIndex)
+      {
+         Float64 gdrCoord = poi.GetGirderCoordinate();
+         // Get location of start of segment that contains the CJ
+         pgsPointOfInterest cPoi = GetPointOfInterest(closureKey, 0.0);
+         Float64 segGdrCoord = cPoi.GetGirderCoordinate();
+         Xpoi = gdrCoord - segGdrCoord;
+      }
+
       girder->get_ClosureJointRebarLayout(&rebar_layout);
    }
    else
    {
+      CComPtr<IPrecastGirder> girder;
+      GetGirder(poi.GetSegmentKey(), &girder);
+
       girder->get_RebarLayout(&rebar_layout);
    }
 

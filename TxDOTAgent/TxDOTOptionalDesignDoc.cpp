@@ -145,6 +145,7 @@ END_MESSAGE_MAP()
 // CPGSuperDoc construction/destruction
 
 CTxDOTOptionalDesignDoc::CTxDOTOptionalDesignDoc():
+CEAFBrokerDocument(true,true), 
 m_ChangeStatus(ITxDataObserver::ctTemplateFile), // assume that all data must be rebuilt
 m_VirginBroker(true),
 m_InExportMode(false),
@@ -348,11 +349,6 @@ BOOL CTxDOTOptionalDesignDoc::LoadSpecialAgents(IBrokerInitEx2* pBrokerInit)
    HRESULT hr = pBrokerInit->AddAgent( pAgent );
    if ( FAILED(hr) )
       return hr;
-
-   // we want to use some special agents
-   CLSID clsid[] = {CLSID_ReportManagerAgent,CLSID_GraphManagerAgent};
-   if ( !LoadAgents(pBrokerInit, clsid, sizeof(clsid)/sizeof(CLSID) ) )
-      return FALSE;
 
    return TRUE;
 }

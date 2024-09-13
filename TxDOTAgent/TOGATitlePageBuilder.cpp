@@ -172,9 +172,7 @@ rptChapter* CTOGATitlePageBuilder::Build(const std::shared_ptr<const WBFL::Repor
       pPara->SetStyleName(rptStyleManager::GetHeadingStyle());
       *pTitlePage << pPara;
 
-      *pPara << _T("Status Items") << rptNewLine;
-
-      pTable = rptStyleManager::CreateDefaultTable(2,_T(""));
+      pTable = rptStyleManager::CreateDefaultTable(2, _T("Status Items"));
       pTable->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
       pTable->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
       pTable->SetColumnStyle(1,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));

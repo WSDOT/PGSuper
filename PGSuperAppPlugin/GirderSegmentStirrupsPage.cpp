@@ -63,6 +63,9 @@ END_MESSAGE_MAP()
 
 BOOL CGirderSegmentStirrupsPage::OnInitDialog() 
 {
+	m_bCanCopyFromLibrary = false; // copying of seed values not supported in pgsplice
+	m_bIsDisplayedInProject = true;
+
 	CShearSteelPage::OnInitDialog();
 
 	return TRUE;  // return TRUE unless you set the focus to a control

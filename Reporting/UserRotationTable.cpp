@@ -92,34 +92,54 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderK
    GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroupIdx);
 
-   PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(startGroupIdx);
-
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 
-   // get poi at start and end of each segment in the girder
+   // get poi where pier rotations occur
    PoiList vPoi;
-   for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
+   std::vector<CGirderKey> vGirderKeys;
+   pBridge->GetGirderline(girderKey.girderIndex, startGroupIdx, endGroupIdx, &vGirderKeys);
+   for (const auto& thisGirderKey : vGirderKeys)
    {
-      GirderIndexType gdrIdx = min( girderKey.girderIndex, pBridge->GetGirderCount(grpIdx)-1 );
 
-      // don't report girders that don't exist on bridge
-      SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx,gdrIdx));
-      for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
-      {
-         CSegmentKey segmentKey(grpIdx,gdrIdx,segIdx);
-         PoiList vSegPoi;
-         pPOI->GetPointsOfInterest(segmentKey, POI_0L | POI_10L | POI_ERECTED_SEGMENT, &vSegPoi);
-         ATLASSERT(vSegPoi.size() == 2);
-         vPoi.insert(vPoi.end(), vSegPoi.begin(), vSegPoi.end());
-      }
+       PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(thisGirderKey.groupIndex);
+       PierIndexType endPierIdx = pBridge->GetGirderGroupEndPier(thisGirderKey.groupIndex);
+       for (PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++)
+       {
+           if (pierIdx == startPierIdx)
+           {
+               CSegmentKey segmentKey(thisGirderKey, 0);
+               PoiList segPoi;
+               pPOI->GetPointsOfInterest(segmentKey, POI_0L | POI_ERECTED_SEGMENT, &segPoi);
+               vPoi.push_back(segPoi.front());
+           }
+           else if (pierIdx == endPierIdx)
+           {
+               SegmentIndexType nSegments = pBridge->GetSegmentCount(thisGirderKey);
+               CSegmentKey segmentKey(thisGirderKey, nSegments - 1);
+               PoiList segPoi;
+               pPOI->GetPointsOfInterest(segmentKey, POI_10L | POI_ERECTED_SEGMENT, &segPoi);
+               vPoi.push_back(segPoi.front());
+           }
+           else
+           {
+               Float64 Xgp;
+               VERIFY(pBridge->GetPierLocation(thisGirderKey, pierIdx, &Xgp));
+               pgsPointOfInterest poi = pPOI->ConvertGirderPathCoordinateToPoi(thisGirderKey, Xgp);
+               vPoi.push_back(poi);
+           }
+       }
+
    }
 
-   // TRICKY: use adapter class to get correct reaction interfaces
-   std::unique_ptr<IProductReactionAdapter> pForcesAdapt(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, compositeDeckIntervalIdx, girderKey) );
+   IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
+   std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, girderKey));
 
-   // User iterator to walk locations
-   ReactionLocationIter iter = pForcesAdapt->GetReactionLocations(pBridge);
+   // Fill up the table
+
+   ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
+   iter.First();
+   PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
 
    RowIndexType row = p_table->GetNumberOfHeaderRows();
    for (iter.First(); !iter.IsDone(); iter.Next())

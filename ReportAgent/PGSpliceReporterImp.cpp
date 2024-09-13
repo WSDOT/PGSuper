@@ -86,9 +86,10 @@ HRESULT CPGSpliceReporterImp::InitReportBuilders()
    VERIFY(pRptBuilder->InsertChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTemporarySupportElevationsChapterBuilder>()), TEXT("Bearing Seat Elevations")));
    VERIFY(pRptBuilder->InsertChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTemporarySupportElevationDetailsChapterBuilder>()), TEXT("Bearing Seat Elevation Details")));
 
+   // A full timestep analysis for all girders is requred for temp support elevations. Disable these chapters by default
    pRptBuilder = pRptMgr->GetReportBuilder(_T("Bridge Geometry Report"));
-   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTemporarySupportElevationsChapterBuilder>()));
-   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTemporarySupportElevationDetailsChapterBuilder>()));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTemporarySupportElevationsChapterBuilder>(false)));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTemporarySupportElevationDetailsChapterBuilder>(false)));
 
 
 #if defined _DEBUG || defined _BETA_VERSION
