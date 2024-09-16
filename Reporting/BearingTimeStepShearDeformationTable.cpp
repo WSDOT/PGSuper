@@ -90,17 +90,12 @@ rptRcTable* CTimeStepShearDeformationTable::BuildTimeStepShearDeformationTable(I
     
 
     ColumnIndexType nCols = 14;
-    CString label{ reactionLocation.PierLabel.c_str() };
-    label += _T(" - ");
-    label += _T("Interval ");
-    label += std::to_string(pDetails->interval).c_str();
-    label += _T(" (Previous Interval: ");
-    label += std::to_string(pDetails->interval - 1).c_str();
-    label += _T(" - ");
-    label += pIntervals->GetDescription(pDetails->interval - 1).c_str();
-    label += _T(")");
 
-    rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols, label);
+    CString strLabel;
+    strLabel.Format(_T("%s - Interval: %d (Previous Interval: %d - %s)"), 
+        reactionLocation.PierLabel.c_str(), LABEL_INTERVAL(pDetails->interval), LABEL_INTERVAL(pDetails->interval-1), pIntervals->GetDescription(pDetails->interval - 1).c_str());
+
+    rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols, strLabel);
 
     p_table->SetNumberOfHeaderRows(2);
 
