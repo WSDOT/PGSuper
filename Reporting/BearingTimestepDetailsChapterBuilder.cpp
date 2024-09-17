@@ -139,7 +139,7 @@ rptChapter* CBearingTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<c
        {
             for (auto& detail_interval : bearing.timestep_details)
             {
-                if (detail_interval.interval == intervalIdx)
+                if (detail_interval.interval == intervalIdx && !IsZero(pIntervals->GetDuration(intervalIdx)))
                 {
                     if (pBTSDRptSpec->ReportAtAllLocations())
                     {
