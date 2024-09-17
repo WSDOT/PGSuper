@@ -143,13 +143,13 @@ rptChapter* CBearingTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<c
                 {
                     if (pBTSDRptSpec->ReportAtAllLocations())
                     {
-                        *pPara << CTimeStepShearDeformationTable().BuildTimeStepShearDeformationTable(pBroker, bearing.reactionLocation, poi, &detail_interval);
+                        *pPara << CTimeStepShearDeformationTable().BuildTimeStepShearDeformationTable(pBroker, bearing.reactionLocation, poi, details.poi_fixity, &detail_interval);
                     }
                     else
                     {
                         if (bearing.reactionLocation == rptLocation)
                         {
-                            *pPara << CTimeStepShearDeformationTable().BuildTimeStepShearDeformationTable(pBroker, bearing.reactionLocation, poi, &detail_interval);
+                            *pPara << CTimeStepShearDeformationTable().BuildTimeStepShearDeformationTable(pBroker, bearing.reactionLocation, poi, details.poi_fixity, &detail_interval);
                         }
                     }
                 }

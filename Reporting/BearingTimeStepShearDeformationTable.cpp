@@ -72,12 +72,13 @@ CTimeStepShearDeformationTable& CTimeStepShearDeformationTable::operator= (const
 
 //======================== OPERATIONS =======================================
 rptRcTable* CTimeStepShearDeformationTable::BuildTimeStepShearDeformationTable(IBroker* pBroker, ReactionLocation reactionLocation, 
-    const pgsPointOfInterest& poi, TSSHEARDEFORMATIONDETAILS* pDetails) const
+    const pgsPointOfInterest& poi, const pgsPointOfInterest& poi_fixity, TSSHEARDEFORMATIONDETAILS* pDetails) const
 {
 
     GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
     GET_IFACE2(pBroker, IIntervals, pIntervals);
     GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+    GET_IFACE2(pBroker, IPointOfInterest, pPoi);
 
 
     INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
@@ -129,7 +130,18 @@ rptRcTable* CTimeStepShearDeformationTable::BuildTimeStepShearDeformationTable(I
 
     RowIndexType row = p_table->GetNumberOfHeaderRows();
 
-    (*p_table)(row, 0) << location.SetValue(POI_SPAN, poi);
+
+
+    if (pPoi->ConvertPoiToGirderlineCoordinate(poi) < pPoi->ConvertPoiToGirderlineCoordinate(poi_fixity))
+    {
+        (*p_table)(row, 0) << location.SetValue(POI_SPAN, poi);
+    }
+    else
+    {
+        (*p_table)(row, 0) << location.SetValue(POI_SPAN, poi_fixity);
+    }
+
+    
     (*p_table)(row, 1) << _T("N/A");
     (*p_table)(row, 2) << _T("N/A");
     (*p_table)(row, 3) << _T("N/A");
