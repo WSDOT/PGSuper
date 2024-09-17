@@ -59,18 +59,23 @@ std::_tstring GetImage(IBroker* pBroker)
        );
 
    bool bTxdot = loss_method == PrestressLossCriteria::LossMethodType::TXDOT_REFINED_2004 || loss_method == PrestressLossCriteria::LossMethodType::TXDOT_REFINED_2013;
+   bool bWSDOT = loss_method == PrestressLossCriteria::LossMethodType::WSDOT_REFINED || loss_method == PrestressLossCriteria::LossMethodType::WSDOT_REFINED_2005;
    bool bLumpSum = pLosses->UseGeneralLumpSumLosses();
 
    if (pSectProps->GetSectionPropertiesMode() == pgsTypes::spmGross)
    {
       if (bLumpSum)
          return _T("fps_gross_lumpsum.png");
-      else if (bApproximate)
+      else if (bApproximate && !bWSDOT)
          return _T("fps_gross_approximate.png");
+      else if (bApproximate && bWSDOT)
+         return _T("fps_gross_wsdot_approximate.png");
       else if (bApproximatePre2005)
           return _T("fps_gross_approximate_pre2005.png");
       else if (bTxdot)
           return _T("fps_gross_txdot.png");
+      else if (bWSDOT)
+         return _T("fps_gross_wsdot_refined.png");
       else
          return _T("fps_gross_refined.png");
    }
@@ -78,10 +83,14 @@ std::_tstring GetImage(IBroker* pBroker)
    {
       if (bLumpSum || bTxdot)
          return _T("fps_transformed_lumpsum.png");
-      else if (bApproximate)
+      else if (bApproximate && !bWSDOT)
          return _T("fps_transformed_approximate.png");
+      else if (bApproximate && bWSDOT)
+         return _T("fps_transformed_wsdot_approximate.png");
       else if (bApproximatePre2005)
           return _T("fps_transformed_approximate_pre2005.png");
+      else if(bWSDOT)
+         return _T("fps_transformed_wsdot_refined.png");
       else
          return _T("fps_transformed_refined.png");
    }
