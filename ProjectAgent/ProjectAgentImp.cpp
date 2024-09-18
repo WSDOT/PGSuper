@@ -5799,70 +5799,128 @@ void CProjectAgentImp::VerifyRebarGrade()
          {
             CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
 
-            if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims && pSegment->LongitudinalRebarData.BarGrade == WBFL::Materials::Rebar::Grade100 )
+            if (WBFL::LRFD::BDSManager::GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 && (pSegment->LongitudinalRebarData.BarGrade == WBFL::Materials::Rebar::Grade75 || pSegment->LongitudinalRebarData.BarGrade == WBFL::Materials::Rebar::Grade80 || pSegment->LongitudinalRebarData.BarGrade == WBFL::Materials::Rebar::Grade100 || pSegment->LongitudinalRebarData.BarGrade == WBFL::Materials::Rebar::Grade120))
             {
+               pSegment->LongitudinalRebarData.BarType = WBFL::Materials::Rebar::Type::A615;
+               pSegment->LongitudinalRebarData.BarGrade = WBFL::Materials::Rebar::Grade::Grade60;
+
+               CString strMsg;
+               strMsg.Format(_T("Grade 75, greater, reinforcement can only be used with %s, %s or later.\nLongitudinal reinforcement for Group %d Girder %s Segment %d has been changed to %s"),
+                  WBFL::LRFD::BDSManager::GetSpecificationName(),
+                  WBFL::LRFD::BDSManager::GetEditionAsString(WBFL::LRFD::BDSManager::Edition::ThirdEdition2004),
+                  LABEL_GROUP(grpIdx), LABEL_GIRDER(gdrIdx), LABEL_SEGMENT(segIdx),
+                  WBFL::LRFD::RebarPool::GetMaterialName(pSegment->LongitudinalRebarData.BarType, pSegment->LongitudinalRebarData.BarGrade).c_str());
+               pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pSegment->GetSegmentKey(), pgsRebarStrengthStatusItem::Transverse, m_StatusGroupID, m_scidRebarStrengthWarning, strMsg);
+
+               pStatusCenter->Add(pStatusItem);
+            }
+            else if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims && (pSegment->LongitudinalRebarData.BarGrade == WBFL::Materials::Rebar::Grade100 || pSegment->LongitudinalRebarData.BarGrade == WBFL::Materials::Rebar::Grade120))
+            {
+               pSegment->LongitudinalRebarData.BarType = WBFL::Materials::Rebar::Type::A615;
+               pSegment->LongitudinalRebarData.BarGrade = WBFL::Materials::Rebar::Grade::Grade60;
+
                CString strMsg;
                strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nLongitudinal reinforcement for Group %d Girder %s Segment %d has been changed to %s"),
                               WBFL::LRFD::BDSManager::GetSpecificationName(),
                               WBFL::LRFD::BDSManager::GetEditionAsString(WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims),
                               LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx),
-                              WBFL::LRFD::RebarPool::GetMaterialName(WBFL::Materials::Rebar::Type::A615,WBFL::Materials::Rebar::Grade::Grade60).c_str());
+                              WBFL::LRFD::RebarPool::GetMaterialName(pSegment->LongitudinalRebarData.BarType, pSegment->LongitudinalRebarData.BarGrade).c_str());
                pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pSegment->GetSegmentKey(),pgsRebarStrengthStatusItem::Longitudinal,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
 
                pStatusCenter->Add(pStatusItem);
-
-               pSegment->LongitudinalRebarData.BarType = WBFL::Materials::Rebar::Type::A615;
-               pSegment->LongitudinalRebarData.BarGrade = WBFL::Materials::Rebar::Grade::Grade60;
             }
 
-            if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims && pSegment->ShearData.ShearBarGrade == WBFL::Materials::Rebar::Grade100 )
+            if (WBFL::LRFD::BDSManager::GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 && (pSegment->ShearData.ShearBarGrade == WBFL::Materials::Rebar::Grade75 || pSegment->ShearData.ShearBarGrade == WBFL::Materials::Rebar::Grade80 || pSegment->ShearData.ShearBarGrade == WBFL::Materials::Rebar::Grade100 || pSegment->ShearData.ShearBarGrade == WBFL::Materials::Rebar::Grade120))
             {
+               pSegment->ShearData.ShearBarType = WBFL::Materials::Rebar::Type::A615;
+               pSegment->ShearData.ShearBarGrade = WBFL::Materials::Rebar::Grade::Grade60;
+
                CString strMsg;
-               strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nTransverse reinforcement for Group %d Girder %s Segment %d has been changed to %s"),
+               strMsg.Format(_T("Grade 75, greater, reinforcement can only be used with %s, %s or later.\nTransverse reinforcement for Group %d Girder %s Segment %d has been changed to %s"),
+                  WBFL::LRFD::BDSManager::GetSpecificationName(),
+                  WBFL::LRFD::BDSManager::GetEditionAsString(WBFL::LRFD::BDSManager::Edition::ThirdEdition2004),
+                  LABEL_GROUP(grpIdx), LABEL_GIRDER(gdrIdx), LABEL_SEGMENT(segIdx),
+                  WBFL::LRFD::RebarPool::GetMaterialName(pSegment->ShearData.ShearBarType, pSegment->ShearData.ShearBarGrade).c_str());
+               pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pSegment->GetSegmentKey(), pgsRebarStrengthStatusItem::Transverse, m_StatusGroupID, m_scidRebarStrengthWarning, strMsg);
+
+               pStatusCenter->Add(pStatusItem);
+            }
+            else if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims && (pSegment->ShearData.ShearBarGrade == WBFL::Materials::Rebar::Grade100 || pSegment->ShearData.ShearBarGrade == WBFL::Materials::Rebar::Grade120))
+            {
+               pSegment->ShearData.ShearBarType = WBFL::Materials::Rebar::Type::A615;
+               pSegment->ShearData.ShearBarGrade = WBFL::Materials::Rebar::Grade::Grade60;
+
+               CString strMsg;
+               strMsg.Format(_T("Grade 100, greater, reinforcement can only be used with %s, %s or later.\nTransverse reinforcement for Group %d Girder %s Segment %d has been changed to %s"),
                               WBFL::LRFD::BDSManager::GetSpecificationName(),
                               WBFL::LRFD::BDSManager::GetEditionAsString(WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims),
                               LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx),
-                              WBFL::LRFD::RebarPool::GetMaterialName(WBFL::Materials::Rebar::Type::A615,WBFL::Materials::Rebar::Grade::Grade60).c_str());
+                              WBFL::LRFD::RebarPool::GetMaterialName(pSegment->ShearData.ShearBarType, pSegment->ShearData.ShearBarGrade).c_str());
                pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pSegment->GetSegmentKey(),pgsRebarStrengthStatusItem::Transverse,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
 
                pStatusCenter->Add(pStatusItem);
-
-               pSegment->ShearData.ShearBarType  = WBFL::Materials::Rebar::Type::A615;
-               pSegment->ShearData.ShearBarGrade = WBFL::Materials::Rebar::Grade::Grade60;
             }
 
             CClosureJointData* pClosure = pSegment->GetClosureJoint(pgsTypes::metEnd);
             if ( pClosure )
             {
-               if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims && pClosure->GetRebar().BarGrade == WBFL::Materials::Rebar::Grade100 )
+               if (WBFL::LRFD::BDSManager::GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 && (pClosure->GetRebar().BarGrade == WBFL::Materials::Rebar::Grade75 || pClosure->GetRebar().BarGrade == WBFL::Materials::Rebar::Grade80 || pClosure->GetRebar().BarGrade == WBFL::Materials::Rebar::Grade100 || pClosure->GetRebar().BarGrade == WBFL::Materials::Rebar::Grade120))
                {
+                  pClosure->GetRebar().BarType = WBFL::Materials::Rebar::Type::A615;
+                  pClosure->GetRebar().BarGrade = WBFL::Materials::Rebar::Grade::Grade60;
+
                   CString strMsg;
-                  strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nLongitudinal reinforcement for Group %d Girder %s Closure Joint %d has been changed to %s"),
+                  strMsg.Format(_T("Grade 75, or greater, reinforcement can only be used with %s, %s or later.\nLongitudinal reinforcement for Group %d Girder %s Closure Joint %d has been changed to %s"),
+                     WBFL::LRFD::BDSManager::GetSpecificationName(),
+                     WBFL::LRFD::BDSManager::GetEditionAsString(WBFL::LRFD::BDSManager::Edition::ThirdEdition2004),
+                     LABEL_GROUP(grpIdx), LABEL_GIRDER(gdrIdx), LABEL_SEGMENT(segIdx),
+                     WBFL::LRFD::RebarPool::GetMaterialName(pClosure->GetRebar().BarType, pClosure->GetRebar().BarGrade).c_str());
+                  pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pClosure->GetClosureKey(), pgsRebarStrengthStatusItem::Transverse, m_StatusGroupID, m_scidRebarStrengthWarning, strMsg);
+                  pStatusCenter->Add(pStatusItem);
+               }
+               else if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims && (pClosure->GetRebar().BarGrade == WBFL::Materials::Rebar::Grade100 || pClosure->GetRebar().BarGrade == WBFL::Materials::Rebar::Grade120))
+               {
+                  pClosure->GetRebar().BarType = WBFL::Materials::Rebar::Type::A615;
+                  pClosure->GetRebar().BarGrade = WBFL::Materials::Rebar::Grade::Grade60;
+
+                  CString strMsg;
+                  strMsg.Format(_T("Grade 100, or greater, reinforcement can only be used with %s, %s or later.\nLongitudinal reinforcement for Group %d Girder %s Closure Joint %d has been changed to %s"),
                                  WBFL::LRFD::BDSManager::GetSpecificationName(),
                                  WBFL::LRFD::BDSManager::GetEditionAsString(WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims),
                                  LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx),
-                                 WBFL::LRFD::RebarPool::GetMaterialName(WBFL::Materials::Rebar::Type::A615,WBFL::Materials::Rebar::Grade::Grade60).c_str());
+                                 WBFL::LRFD::RebarPool::GetMaterialName(pClosure->GetRebar().BarType, pClosure->GetRebar().BarGrade).c_str());
                   pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pClosure->GetClosureKey(),pgsRebarStrengthStatusItem::Longitudinal,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
 
                   pStatusCenter->Add(pStatusItem);
-
-                  pClosure->GetRebar().BarType = WBFL::Materials::Rebar::Type::A615;
-                  pClosure->GetRebar().BarGrade = WBFL::Materials::Rebar::Grade::Grade60;
                }
 
-               if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims && pClosure->GetStirrups().ShearBarGrade == WBFL::Materials::Rebar::Grade100 )
+               if (WBFL::LRFD::BDSManager::GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 && (pClosure->GetStirrups().ShearBarGrade == WBFL::Materials::Rebar::Grade75 || pClosure->GetStirrups().ShearBarGrade == WBFL::Materials::Rebar::Grade80 || pClosure->GetStirrups().ShearBarGrade == WBFL::Materials::Rebar::Grade100 || pClosure->GetStirrups().ShearBarGrade == WBFL::Materials::Rebar::Grade120))
                {
+                  pClosure->GetStirrups().ShearBarType = WBFL::Materials::Rebar::Type::A615;
+                  pClosure->GetStirrups().ShearBarGrade = WBFL::Materials::Rebar::Grade::Grade60;
+
                   CString strMsg;
-                  strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nTransverse reinforcement for Group %d Girder %s Closure Joint %d has been changed to %s"),
+                  strMsg.Format(_T("Grade 75, or greater, reinforcement can only be used with %s, %s or later.\nTransverse reinforcement for Group %d Girder %s Closure Joint %d has been changed to %s"),
+                     WBFL::LRFD::BDSManager::GetSpecificationName(),
+                     WBFL::LRFD::BDSManager::GetEditionAsString(WBFL::LRFD::BDSManager::Edition::ThirdEdition2004),
+                     LABEL_GROUP(grpIdx), LABEL_GIRDER(gdrIdx), LABEL_SEGMENT(segIdx),
+                     WBFL::LRFD::RebarPool::GetMaterialName(pClosure->GetStirrups().ShearBarType, pClosure->GetStirrups().ShearBarGrade).c_str());
+                  pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pClosure->GetClosureKey(), pgsRebarStrengthStatusItem::Transverse, m_StatusGroupID, m_scidRebarStrengthWarning, strMsg);
+                  pStatusCenter->Add(pStatusItem);
+               }
+               else if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims && (pClosure->GetStirrups().ShearBarGrade == WBFL::Materials::Rebar::Grade100 || pClosure->GetStirrups().ShearBarGrade == WBFL::Materials::Rebar::Grade120))
+               {
+                  pClosure->GetStirrups().ShearBarType = WBFL::Materials::Rebar::Type::A615;
+                  pClosure->GetStirrups().ShearBarGrade = WBFL::Materials::Rebar::Grade::Grade60;
+
+                  CString strMsg;
+                  strMsg.Format(_T("Grade 100, or greater, reinforcement can only be used with %s, %s or later.\nTransverse reinforcement for Group %d Girder %s Closure Joint %d has been changed to %s"),
                                  WBFL::LRFD::BDSManager::GetSpecificationName(),
                                  WBFL::LRFD::BDSManager::GetEditionAsString(WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims),
                                  LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx),
-                                 WBFL::LRFD::RebarPool::GetMaterialName(WBFL::Materials::Rebar::Type::A615,WBFL::Materials::Rebar::Grade::Grade60).c_str());
+                                 WBFL::LRFD::RebarPool::GetMaterialName(pClosure->GetStirrups().ShearBarType, pClosure->GetStirrups().ShearBarGrade).c_str());
                   pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pClosure->GetClosureKey(),pgsRebarStrengthStatusItem::Transverse,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
                   pStatusCenter->Add(pStatusItem);
-
-                  pClosure->GetStirrups().ShearBarType  = WBFL::Materials::Rebar::Type::A615;
-                  pClosure->GetStirrups().ShearBarGrade = WBFL::Materials::Rebar::Grade::Grade60;
                }
             }
          } // next segment
@@ -5870,21 +5928,37 @@ void CProjectAgentImp::VerifyRebarGrade()
    } // next group
 
    CDeckDescription2* pDeck = m_BridgeDescription.GetDeckDescription();
-   if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims && pDeck->DeckRebarData.TopRebarGrade == WBFL::Materials::Rebar::Grade100 )
+   if (WBFL::LRFD::BDSManager::GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 && (pDeck->DeckRebarData.TopRebarGrade == WBFL::Materials::Rebar::Grade75 || pDeck->DeckRebarData.TopRebarGrade == WBFL::Materials::Rebar::Grade80 || pDeck->DeckRebarData.TopRebarGrade == WBFL::Materials::Rebar::Grade100 || pDeck->DeckRebarData.TopRebarGrade == WBFL::Materials::Rebar::Grade120))
    {
+      pDeck->DeckRebarData.TopRebarType = WBFL::Materials::Rebar::Type::A615;
+      pDeck->DeckRebarData.TopRebarGrade = WBFL::Materials::Rebar::Grade::Grade60;
+      pDeck->DeckRebarData.BottomRebarType = pDeck->DeckRebarData.TopRebarType;
+      pDeck->DeckRebarData.BottomRebarGrade = pDeck->DeckRebarData.TopRebarGrade;
+
       CString strMsg;
-      strMsg.Format(_T("Grade 100 reinforcement can only be used with %s, %s or later.\nDeck reinforcement has been changed to %s"),
+      strMsg.Format(_T("Grade 75, or greater, reinforcement can only be used with %s, %s or later.\nDeck reinforcement has been changed to %s"),
+         WBFL::LRFD::BDSManager::GetSpecificationName(),
+         WBFL::LRFD::BDSManager::GetEditionAsString(WBFL::LRFD::BDSManager::Edition::ThirdEdition2004, false),
+         WBFL::LRFD::RebarPool::GetMaterialName(pDeck->DeckRebarData.TopRebarType, pDeck->DeckRebarData.TopRebarGrade).c_str());
+      pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(CSegmentKey(), pgsRebarStrengthStatusItem::Deck, m_StatusGroupID, m_scidRebarStrengthWarning, strMsg);
+
+      pStatusCenter->Add(pStatusItem);
+   }
+   else if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims && (pDeck->DeckRebarData.TopRebarGrade == WBFL::Materials::Rebar::Grade100 || pDeck->DeckRebarData.TopRebarGrade == WBFL::Materials::Rebar::Grade120))
+   {
+      pDeck->DeckRebarData.TopRebarType = WBFL::Materials::Rebar::Type::A615;
+      pDeck->DeckRebarData.TopRebarGrade = WBFL::Materials::Rebar::Grade::Grade60;
+      pDeck->DeckRebarData.BottomRebarType = pDeck->DeckRebarData.TopRebarType;
+      pDeck->DeckRebarData.BottomRebarGrade = pDeck->DeckRebarData.TopRebarGrade;
+
+      CString strMsg;
+      strMsg.Format(_T("Grade 100, or greater, reinforcement can only be used with %s, %s or later.\nDeck reinforcement has been changed to %s"),
                      WBFL::LRFD::BDSManager::GetSpecificationName(),
                      WBFL::LRFD::BDSManager::GetEditionAsString(WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims,false),
-                     WBFL::LRFD::RebarPool::GetMaterialName(WBFL::Materials::Rebar::Type::A615,WBFL::Materials::Rebar::Grade::Grade60).c_str());
+                     WBFL::LRFD::RebarPool::GetMaterialName(pDeck->DeckRebarData.TopRebarType, pDeck->DeckRebarData.TopRebarGrade).c_str());
       pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(CSegmentKey(),pgsRebarStrengthStatusItem::Deck,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
 
       pStatusCenter->Add(pStatusItem);
-
-      pDeck->DeckRebarData.TopRebarType     = WBFL::Materials::Rebar::Type::A615;
-      pDeck->DeckRebarData.TopRebarGrade    = WBFL::Materials::Rebar::Grade::Grade60;
-      pDeck->DeckRebarData.BottomRebarType  = WBFL::Materials::Rebar::Type::A615;
-      pDeck->DeckRebarData.BottomRebarGrade = WBFL::Materials::Rebar::Grade::Grade60;
    }
 }
 

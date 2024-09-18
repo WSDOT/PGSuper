@@ -1754,6 +1754,8 @@ private:
 
    // Orientation of girder segments. cached from bridge geometry model builder
    GirderOrientationCollection  m_GirderOrientationCollection;
+
+   std::tuple<Float64, Float64, Float64> GetTransverseRebarProperties(const WBFL::Materials::Rebar* pRebar) const;
 };
 
 #endif //__BRIDGEAGENT_H_

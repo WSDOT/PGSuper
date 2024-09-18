@@ -569,15 +569,6 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
       pMaterial->GetSegmentTransverseRebarProperties(segmentKey,&Es,&fy,&fu);
    }
 
-   // added with LRFD 7th Edition 2014
-   // fy <= 100 ksi
-   // See LRFD 5.7.2.5 (pre2017: 5.8.2.5)
-   // Also see UHPC GS 1.7.3.4.1
-   if ( WBFL::LRFD::BDSManager::Edition::SeventhEdition2014 <= WBFL::LRFD::BDSManager::GetEdition() )
-   {
-      fy = min(fy,WBFL::Units::ConvertToSysUnits(100.0,WBFL::Units::Measure::KSI));
-   }
-
    Float64 s;
    WBFL::Materials::Rebar::Size size;
    Float64 nl;
