@@ -223,6 +223,7 @@
 #define IDC_MOREINFO                    1013
 #define IDC_MILD_STEEL_SELECTOR         1013
 #define IDC_RADIO2                      1015
+#define IDC_RADIO3                      1016
 #define IDC_DIAPHRAGM_OFFSET            1017
 #define IDC_BEFORE_XFER                 1017
 #define IDC_BACK_DIAPHRAGM_OFFSET       1017
@@ -247,9 +248,10 @@
 #define IDC_EXPOSURE                    1027
 #define IDC_BEARING_OFFSET_T            1027
 #define IDC_AHEAD_DIAPHRAGM_WIDTH       1027
-#define IDC_RELHUMIDITY                 1028
+#define IDC_CLIMATE                     1028
 #define IDC_DIAPHRAGM_HEIGHT_T          1028
 #define IDC_BACK_DIAPHRAGM_HEIGHT_T     1028
+#define IDC_RELHUMIDITY                 1029
 #define IDC_INSERTROW                   1029
 #define IDC_DIAPHRAGM_WIDTH_T           1029
 #define IDC_BACK_DIAPHRAGM_WIDTH_T      1029
