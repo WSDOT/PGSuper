@@ -14173,10 +14173,7 @@ void CBridgeAgentImp::GetSegmentTransverseRebarProperties(const CSegmentKey& seg
 	GET_IFACE(IShear,pShear);
 	const CShearData2* pShearData = pShear->GetSegmentShearData(segmentKey);
    const auto* pRebar = WBFL::LRFD::RebarPool::GetInstance()->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,WBFL::Materials::Rebar::Size::bs3);
-   *pE  = pRebar->GetE();
-   *pFy = pRebar->GetYieldStrength();
-   *pFu = pRebar->GetUltimateStrength();
-
+   std::tie(*pE, *pFy, *pFu) = GetTransverseRebarProperties(pRebar);
 }
 
 void CBridgeAgentImp::GetSegmentTransverseRebarMaterial(const CSegmentKey& segmentKey,WBFL::Materials::Rebar::Type* pType,WBFL::Materials::Rebar::Grade* pGrade) const
@@ -14198,10 +14195,7 @@ void CBridgeAgentImp::GetClosureJointTransverseRebarProperties(const CClosureKey
 	GET_IFACE(IShear,pShear);
 	const CShearData2* pShearData = pShear->GetClosureJointShearData(closureKey);
    const auto* pRebar = WBFL::LRFD::RebarPool::GetInstance()->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,WBFL::Materials::Rebar::Size::bs3);
-   *pE  = pRebar->GetE();
-   *pFy = pRebar->GetYieldStrength();
-   *pFu = pRebar->GetUltimateStrength();
-
+   std::tie(*pE, *pFy, *pFu) = GetTransverseRebarProperties(pRebar);
 }
 
 void CBridgeAgentImp::GetClosureJointTransverseRebarMaterial(const CClosureKey& closureKey,WBFL::Materials::Rebar::Type* pType,WBFL::Materials::Rebar::Grade* pGrade) const
@@ -36572,3 +36566,37 @@ void CBridgeAgentImp::ValidateGirderTopChordElevationDirectHaunchInput(const CGi
    }
 }
 
+std::tuple<Float64, Float64, Float64> CBridgeAgentImp::GetTransverseRebarProperties(const WBFL::Materials::Rebar* pRebar) const
+{
+   auto Es = pRebar->GetE();
+   auto fy = pRebar->GetYieldStrength();
+   auto fu = pRebar->GetUltimateStrength();
+
+   if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims)
+   {
+      // LRFD 3rd Edition 2004 and earlier, fy is limited to 60 ksi
+      // See pre2017 Section 5.8.2.8
+      fy = min(fy, WBFL::Units::ConvertToSysUnits(60.0, WBFL::Units::Measure::KSI));
+   }
+   else
+   {
+      // LRFD 3rd Edition 2004 + 2005 Interims, for fy > 60 ksi materials, fy is limited to
+      // fy = Es*0.0035 but not to exceed 75 ksi
+      if (WBFL::Units::ConvertToSysUnits(60.0, WBFL::Units::Measure::KSI) < fy)
+      {
+         auto fy_ = min(0.0035 * Es, WBFL::Units::ConvertToSysUnits(75.0, WBFL::Units::Measure::KSI));
+         fy = min(fy, fy_);
+      }
+   }
+
+   // added with LRFD 7th Edition 2014
+   // fy <= 100 ksi
+   // See LRFD 5.7.2.5 (pre2017: 5.8.2.5)
+   // Also see UHPC GS 1.7.3.4.1
+   if (WBFL::LRFD::BDSManager::Edition::SeventhEdition2014 <= WBFL::LRFD::BDSManager::GetEdition())
+   {
+      fy = min(fy, WBFL::Units::ConvertToSysUnits(100.0, WBFL::Units::Measure::KSI));
+   }
+
+   return { Es,fy,fu };
+}
