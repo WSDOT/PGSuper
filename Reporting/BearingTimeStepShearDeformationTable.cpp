@@ -135,27 +135,24 @@ rptRcTable* CTimeStepShearDeformationTable::BuildTimeStepShearDeformationTable(I
     if (pPoi->ConvertPoiToGirderlineCoordinate(poi) < pPoi->ConvertPoiToGirderlineCoordinate(poi_fixity))
     {
         (*p_table)(row, 0) << location.SetValue(POI_SPAN, poi);
+        (*p_table)(row, 1) << _T("N/A");
+        (*p_table)(row, 2) << _T("N/A");
+        (*p_table)(row, 3) << _T("N/A");
+        (*p_table)(row, 4) << _T("N/A");
+        (*p_table)(row, 5) << _T("N/A");
+        (*p_table)(row, 6) << _T("N/A");
+        (*p_table)(row, 7) << _T("N/A");
+        (*p_table)(row, 8) << _T("N/A");
+        (*p_table)(row, 9) << _T("N/A");
+        (*p_table)(row, 10) << _T("N/A");
+        (*p_table)(row, 11) << _T("N/A");
+        (*p_table)(row, 12) << _T("N/A");
+        (*p_table)(row++, 13) << _T("N/A");
     }
     else
     {
         (*p_table)(row, 0) << location.SetValue(POI_SPAN, poi_fixity);
     }
-
-    
-    (*p_table)(row, 1) << _T("N/A");
-    (*p_table)(row, 2) << _T("N/A");
-    (*p_table)(row, 3) << _T("N/A");
-    (*p_table)(row, 4) << _T("N/A");
-    (*p_table)(row, 5) << _T("N/A");
-    (*p_table)(row, 6) << _T("N/A");
-    (*p_table)(row, 7) << _T("N/A");
-    (*p_table)(row, 8) << _T("N/A");
-    (*p_table)(row, 9) << _T("N/A");
-    (*p_table)(row, 10) << _T("N/A");
-    (*p_table)(row, 11) << _T("N/A");
-    (*p_table)(row, 12) << _T("N/A");
-    (*p_table)(row++, 13) << _T("N/A");
-
 
 
     for (auto& r : pDetails->ts_diff_elems)
@@ -175,6 +172,23 @@ rptRcTable* CTimeStepShearDeformationTable::BuildTimeStepShearDeformationTable(I
         (*p_table)(row, 12) << std::to_wstring(r.relaxation[2] * 1E6);
         (*p_table)(row, 13) << deflection.SetValue(r.relaxation[3] * 1E3);
         row++;
+    }
+
+    if (pPoi->ConvertPoiToGirderlineCoordinate(poi) >= pPoi->ConvertPoiToGirderlineCoordinate(poi_fixity))
+    {
+        (*p_table)(row, 1) << _T("N/A");
+        (*p_table)(row, 2) << _T("N/A");
+        (*p_table)(row, 3) << _T("N/A");
+        (*p_table)(row, 4) << _T("N/A");
+        (*p_table)(row, 5) << _T("N/A");
+        (*p_table)(row, 6) << _T("N/A");
+        (*p_table)(row, 7) << _T("N/A");
+        (*p_table)(row, 8) << _T("N/A");
+        (*p_table)(row, 9) << _T("N/A");
+        (*p_table)(row, 10) << _T("N/A");
+        (*p_table)(row, 11) << _T("N/A");
+        (*p_table)(row, 12) << _T("N/A");
+        (*p_table)(row++, 13) << _T("N/A");
     }
 
     p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_LEFT));
