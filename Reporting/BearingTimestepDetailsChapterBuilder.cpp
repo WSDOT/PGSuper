@@ -120,23 +120,27 @@ rptChapter* CBearingTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<c
    GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
    GET_IFACE2(pBroker, IPointOfInterest, pPOI);
 
-   const pgsPointOfInterest poi = pPOI->GetPierPointOfInterest(girderKey, rptLocation.PierIdx);
-   IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
+   SHEARDEFORMATIONDETAILS details;
+   pBearingDesignParameters->GetBearingTableParameters(girderKey, &details);
+   pBearingDesignParameters->GetTimeDependentShearDeformation(girderKey, &details);
+
+   const pgsPointOfInterest first_girder_poi = pPOI->GetPierPointOfInterest(girderKey, details.brg_details[0].reactionLocation.PierIdx);
+   IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(first_girder_poi.GetSegmentKey());
    IntervalIndexType rptIntervalIdx = pBTSDRptSpec->GetInterval();
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    IntervalIndexType firstIntervalIdx = (rptIntervalIdx == INVALID_INDEX ? erectSegmentIntervalIdx : rptIntervalIdx);
    IntervalIndexType lastIntervalIdx = (rptIntervalIdx == INVALID_INDEX ? nIntervals - 1 : rptIntervalIdx);
 
 
-   SHEARDEFORMATIONDETAILS details;
-   pBearingDesignParameters->GetBearingTableParameters(girderKey, &details);
-   pBearingDesignParameters->GetTimeDependentShearDeformation(girderKey, &details);
+
 
 
    for (auto intervalIdx = erectSegmentIntervalIdx + 1; intervalIdx <= lastIntervalIdx; intervalIdx++)
    {
        for (auto&  bearing: details.brg_details)
        {
+           const pgsPointOfInterest poi = pPOI->GetPierPointOfInterest(girderKey, bearing.reactionLocation.PierIdx);
+
             for (auto& detail_interval : bearing.timestep_details)
             {
                 if (detail_interval.interval == intervalIdx && !IsZero(pIntervals->GetDuration(intervalIdx)))
