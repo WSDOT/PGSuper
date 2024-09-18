@@ -539,10 +539,20 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
 
                     for (IndexType idx = 1, nPoi = vPoi.size(); idx < nPoi; idx++)
                     {
-                        p0 = vPoi[idx - 1];
-                        p1 = vPoi[idx];
-                        d0 = pPoi->ConvertPoiToGirderlineCoordinate(p0);
-                        d1 = pPoi->ConvertPoiToGirderlineCoordinate(p1);
+                        if (pIPoi->ConvertPoiToGirderlineCoordinate(poi) < pIPoi->ConvertPoiToGirderlineCoordinate(pDetails->poi_fixity))
+                        {
+                            p0 = vPoi[idx - 1];
+                            p1 = vPoi[idx];
+                            d0 = pPoi->ConvertPoiToGirderlineCoordinate(p0);
+                            d1 = pPoi->ConvertPoiToGirderlineCoordinate(p1);
+                        }
+                        else 
+                        {
+                            p0 = vPoi[idx];
+                            p1 = vPoi[idx - 1];
+                            d0 = pPoi->ConvertPoiToGirderlineCoordinate(p1);
+                            d1 = pPoi->ConvertPoiToGirderlineCoordinate(p0);
+                        }
 
                         std::vector<pgsTypes::ProductForceType> td_types{
                             pgsTypes::ProductForceType::pftCreep,
@@ -553,7 +563,6 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
 
                         if (d1 != d0)
                         {
-
                             td_diff_elems.poi = p1;
                             td_diff_elems.delta_d = d1 - d0;
 
