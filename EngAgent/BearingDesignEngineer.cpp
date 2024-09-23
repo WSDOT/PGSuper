@@ -616,8 +616,8 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
                                     timestep_details.interval_relaxation += td_diff_elems.relaxation[3];
                                 }
 
-                            }
-                            ;
+                            };
+                            
 
                             timestep_details.ts_diff_elems.emplace_back(td_diff_elems);
 
