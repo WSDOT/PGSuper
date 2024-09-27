@@ -329,9 +329,7 @@ void girder_design(rptChapter* pChapter,IBroker* pBroker,const CTxDOTOptionalDes
    const auto* pstrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Straight);
 
    (*p_table)(row,0) << _T("Prestressing Strands");
-   (*p_table)(row++,1) << get_strand_size(pstrand->GetSize()) <<_T(", ")
-                       <<(pstrand->GetGrade() == WBFL::Materials::PsStrand::Grade::Gr1725 ? _T("Grade 250, ") : _T("Grade 270, "))
-                       <<(pstrand->GetType() == WBFL::Materials::PsStrand::Type::LowRelaxation ? _T("Low Relaxation") : _T("Stress Relieved"));
+   (*p_table)(row++, 1) << pstrand->GetName();
 
    (*p_table)(row,0) << _T("No. Strands");
 
