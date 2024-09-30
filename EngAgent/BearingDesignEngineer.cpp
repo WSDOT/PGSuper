@@ -496,7 +496,7 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
         {
 
             GET_IFACE(IBridge, pBridge);
-            GET_IFACE(IPointOfInterest, pPoi);
+
 
 
             Float64 L = GetDistanceToPointOfFixity(poi, pDetails);
@@ -512,7 +512,7 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
                 for (GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++)
                 {
 
-                    PoiList vPoi;
+                    std::vector<pgsPointOfInterest> vPoi;
                     GET_IFACE(IPointOfInterest, pIPoi);
 
                     if (pIPoi->ConvertPoiToGirderlineCoordinate(poi) < pIPoi->ConvertPoiToGirderlineCoordinate(pDetails->poi_fixity))
@@ -543,15 +543,15 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
                         {
                             p0 = vPoi[idx - 1];
                             p1 = vPoi[idx];
-                            d0 = pPoi->ConvertPoiToGirderlineCoordinate(p0);
-                            d1 = pPoi->ConvertPoiToGirderlineCoordinate(p1);
+                            d0 = pIPoi->ConvertPoiToGirderlineCoordinate(p0);
+                            d1 = pIPoi->ConvertPoiToGirderlineCoordinate(p1);
                         }
                         else 
                         {
                             p0 = vPoi[idx];
                             p1 = vPoi[idx - 1];
-                            d0 = pPoi->ConvertPoiToGirderlineCoordinate(p1);
-                            d1 = pPoi->ConvertPoiToGirderlineCoordinate(p0);
+                            d0 = pIPoi->ConvertPoiToGirderlineCoordinate(p1);
+                            d1 = pIPoi->ConvertPoiToGirderlineCoordinate(p0);
                         }
 
                         std::vector<pgsTypes::ProductForceType> td_types{
