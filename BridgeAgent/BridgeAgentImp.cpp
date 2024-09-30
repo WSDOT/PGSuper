@@ -20632,14 +20632,67 @@ void CBridgeAgentImp::ConvertSegmentPathCoordinateToSpanPoint(const CSegmentKey&
    ConvertSegmentCoordinateToSpanPoint(segmentKey,Xs,pSpanKey,pXspan);
 }
 
-void CBridgeAgentImp::GetPointsOfInterestInRange(Float64 xLeft,const pgsPointOfInterest& poi,Float64 xRight,PoiList* pPoiList) const
+void CBridgeAgentImp::GetPointsOfInterestInRange(Float64 xLeft, const pgsPointOfInterest& poi,
+    Float64 xRight, std::vector<pgsPointOfInterest>* vPois) const
 {
+   GET_IFACE(IPointOfInterest, pPOI);
+
    VALIDATE_POINTS_OF_INTEREST(poi.GetSegmentKey());
 
-   Float64 xMin = poi.GetDistFromStart() - xLeft;
-   Float64 xMax = poi.GetDistFromStart() + xRight;
+   CGirderKey girderKey = poi.GetSegmentKey();
+   SegmentIndexType reactionLocationSegmentIndex = poi.GetSegmentKey().segmentIndex;
+   GET_IFACE(IBridge, pBridge);
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   std::vector<pgsPointOfInterest> vPoi;
 
-   m_pPoiMgr->GetPointsOfInterestInRange(poi.GetSegmentKey(),xMin,xMax,pPoiList);
+   if (xRight != 0)
+   {
+       pgsPointOfInterest poiRight = pPOI->ConvertGirderPathCoordinateToPoi(girderKey, xRight);
+       IndexType segmentIndexRight = poiRight.GetSegmentKey().segmentIndex;
+       for (SegmentIndexType segIdx = reactionLocationSegmentIndex; segIdx <= segmentIndexRight; segIdx++)
+       {
+           CSegmentKey segmentKey(girderKey.groupIndex, girderKey.girderIndex, segIdx);
+
+           if (segIdx == reactionLocationSegmentIndex)
+           {
+               m_pPoiMgr->GetPointsOfInterestInRange(segmentKey, 0, poiRight.GetDistFromStart(), &vPoi);
+           }
+           else if (segIdx == segmentIndexRight)
+           {
+               m_pPoiMgr->GetPointsOfInterestInRange(segmentKey, 0, poiRight.GetDistFromStart(), &vPoi);
+           }
+           else
+           {
+               m_pPoiMgr->GetPointsOfInterestInRange(segmentKey, 0, pBridge->GetSegmentLength(segmentKey), &vPoi);
+           }
+       }
+   }
+
+   if (xLeft != 0)
+   {
+       pgsPointOfInterest poiLeft = pPOI->ConvertGirderPathCoordinateToPoi(girderKey, xLeft);
+       IndexType segmentIndexLeft = poiLeft.GetSegmentKey().segmentIndex;
+       for (SegmentIndexType segIdx = segmentIndexLeft; segIdx <= reactionLocationSegmentIndex; segIdx++)
+       {
+           CSegmentKey segmentKey(girderKey.groupIndex, girderKey.girderIndex, segIdx);
+
+           if (segIdx == segmentIndexLeft)
+           {
+               m_pPoiMgr->GetPointsOfInterestInRange(segmentKey, poiLeft.GetDistFromStart(), pBridge->GetSegmentLength(segmentKey), &vPoi);
+           }
+           else if (segIdx == reactionLocationSegmentIndex)
+           {
+               m_pPoiMgr->GetPointsOfInterestInRange(segmentKey, 0, poi.GetDistFromStart(), &vPoi);
+           }
+           else
+           {
+               m_pPoiMgr->GetPointsOfInterestInRange(segmentKey, 0, pBridge->GetSegmentLength(segmentKey), &vPoi);
+           }
+       }
+   }
+
+   vPois->insert(vPois->end(), vPoi.begin(), vPoi.end());
+
 }
 
 PierIndexType CBridgeAgentImp::GetPier(const pgsPointOfInterest& poi) const

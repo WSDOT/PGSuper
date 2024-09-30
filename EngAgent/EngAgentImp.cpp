@@ -706,7 +706,7 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
       }
 
 #pragma Reminder("Can Optimize here by reducing the number adjacent pois. The function below returns way too many.")
-      PoiList vPoi;
+      std::vector<pgsPointOfInterest> vPoi;
       pIPoi->GetPointsOfInterestInRange(left, poiFaceOfSupport, right, &vPoi);
 
       WBFL::Math::PiecewiseFunction theta;
