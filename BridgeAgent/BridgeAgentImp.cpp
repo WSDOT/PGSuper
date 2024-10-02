@@ -20648,7 +20648,6 @@ void CBridgeAgentImp::GetPointsOfInterestInRange(Float64 xLeft, const pgsPointOf
 
     if (xRight != 0)
     {
-        //Float64 brgOffset = pBridge->GetSegmentStartBearingOffset(poi.GetSegmentKey());
         pgsPointOfInterest poiRight = pPOI->ConvertGirderPathCoordinateToPoi(girderKey, pPOI->ConvertPoiToGirderPathCoordinate(poi) + xRight);
         IndexType segmentIndexRight = poiRight.GetSegmentKey().segmentIndex;
         for (SegmentIndexType segIdx = reactionLocationSegmentIndex; segIdx <= segmentIndexRight; segIdx++)
@@ -20681,7 +20680,6 @@ void CBridgeAgentImp::GetPointsOfInterestInRange(Float64 xLeft, const pgsPointOf
 
     if (xLeft != 0)
     {
-        //Float64 brgOffset = pBridge->GetSegmentEndBearingOffset(poi.GetSegmentKey());
         pgsPointOfInterest poiLeft = pPOI->ConvertGirderPathCoordinateToPoi(girderKey, pPOI->ConvertPoiToGirderPathCoordinate(poi) - xLeft);
 
         IndexType segmentIndexLeft = poiLeft.GetSegmentKey().segmentIndex;
