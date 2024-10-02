@@ -692,14 +692,14 @@ void pgsPoiMgr::GetTenthPointPOIs(PoiAttributeType reference,const CSegmentKey& 
    }
 }
 
-void pgsPoiMgr::GetPointsOfInterestInRange(const CSegmentKey& segmentKey,Float64 xMin,Float64 xMax, std::vector<pgsPointOfInterest>* vPois) const
+void pgsPoiMgr::GetPointsOfInterestInRange(const CSegmentKey& segmentKey,Float64 xMin,Float64 xMax, PoiList* pPois) const
 {
    const auto& poiContainer = GetPoiContainer(segmentKey);
    for ( const auto& poi : poiContainer)
    {
       if ( ::InRange(xMin,poi->GetDistFromStart(),xMax) )
       {
-         vPois->emplace_back(*poi);
+          pPois->push_back(*(poi.get()));
       }
    }
 }

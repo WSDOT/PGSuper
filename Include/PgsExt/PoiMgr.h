@@ -129,7 +129,7 @@ public:
 
    //------------------------------------------------------------------------
    // Gets all the points of interest on the specified section with distance from start between xMin and xMax
-   void GetPointsOfInterestInRange(const CSegmentKey& segmentKey,Float64 xMin,Float64 xMax,  std::vector<pgsPointOfInterest>* vPois) const;
+   void GetPointsOfInterestInRange(const CSegmentKey& segmentKey,Float64 xMin,Float64 xMax, PoiList* pPois) const;
 
 
    //------------------------------------------------------------------------

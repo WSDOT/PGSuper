@@ -20644,7 +20644,7 @@ void CBridgeAgentImp::GetPointsOfInterestInRange(Float64 xLeft, const pgsPointOf
     SegmentIndexType reactionLocationSegmentIndex = poi.GetSegmentKey().segmentIndex;
     GET_IFACE(IBridge, pBridge);
     SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
-    std::vector<pgsPointOfInterest> vPoi;
+    PoiList vPoi;
 
     if (xRight != 0)
     {
