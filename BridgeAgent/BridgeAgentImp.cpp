@@ -20649,7 +20649,7 @@ void CBridgeAgentImp::GetPointsOfInterestInRange(Float64 xLeft, const pgsPointOf
     if (xRight != 0)
     {
         Float64 brgOffset = pBridge->GetSegmentStartBearingOffset(poi.GetSegmentKey());
-        pgsPointOfInterest poiRight = pPOI->ConvertGirderCoordinateToPoi(girderKey, xRight + brgOffset);
+        pgsPointOfInterest poiRight = pPOI->ConvertGirderPathCoordinateToPoi(girderKey, xRight + brgOffset); // poi will not be correct if associated segment is not at the start of the girder.   But if I know the poi and xRight then I can get the poi
         IndexType segmentIndexRight = poiRight.GetSegmentKey().segmentIndex;
         for (SegmentIndexType segIdx = reactionLocationSegmentIndex; segIdx <= segmentIndexRight; segIdx++)
         {
@@ -20659,7 +20659,9 @@ void CBridgeAgentImp::GetPointsOfInterestInRange(Float64 xLeft, const pgsPointOf
             {
                 if (segIdx == segmentIndexRight)
                 {
-                    m_pPoiMgr->GetPointsOfInterestInRange(segmentKey, poi.GetDistFromStart(), poiRight.GetDistFromStart() + pBridge->GetSegmentStartEndDistance(segmentKey), &vPoi);
+                    Float64 startDist = poiRight.GetDistFromStart();
+                    Float64 endDist = pBridge->GetSegmentStartEndDistance(segmentKey);
+                    m_pPoiMgr->GetPointsOfInterestInRange(segmentKey, poi.GetDistFromStart(), poiRight.GetDistFromStart(), &vPoi);
                 }
                 else
                 {
@@ -20668,7 +20670,7 @@ void CBridgeAgentImp::GetPointsOfInterestInRange(Float64 xLeft, const pgsPointOf
             }
             else if (segIdx == segmentIndexRight)
             {
-                m_pPoiMgr->GetPointsOfInterestInRange(segmentKey, 0, poiRight.GetDistFromStart() + pBridge->GetSegmentStartEndDistance(segmentKey), &vPoi);
+                m_pPoiMgr->GetPointsOfInterestInRange(segmentKey, 0, poiRight.GetDistFromStart(), &vPoi);
             }
             else
             {
