@@ -512,7 +512,7 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
                 for (GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++)
                 {
 
-                    std::vector<pgsPointOfInterest> vPoi;
+                    PoiList vPoi;
                     GET_IFACE(IPointOfInterest, pIPoi);
 
                     if (pIPoi->ConvertPoiToGirderlineCoordinate(poi) < pIPoi->ConvertPoiToGirderlineCoordinate(pDetails->poi_fixity))

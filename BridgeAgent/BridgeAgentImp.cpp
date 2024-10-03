@@ -20633,7 +20633,7 @@ void CBridgeAgentImp::ConvertSegmentPathCoordinateToSpanPoint(const CSegmentKey&
 }
 
 void CBridgeAgentImp::GetPointsOfInterestInRange(Float64 xLeft, const pgsPointOfInterest& poi,
-    Float64 xRight, std::vector<pgsPointOfInterest>* vPois) const
+    Float64 xRight, PoiList* vPois) const
 
 {
     GET_IFACE(IPointOfInterest, pPOI);
