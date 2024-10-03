@@ -20634,64 +20634,82 @@ void CBridgeAgentImp::ConvertSegmentPathCoordinateToSpanPoint(const CSegmentKey&
 
 void CBridgeAgentImp::GetPointsOfInterestInRange(Float64 xLeft, const pgsPointOfInterest& poi,
     Float64 xRight, std::vector<pgsPointOfInterest>* vPois) const
+
 {
-   GET_IFACE(IPointOfInterest, pPOI);
+    GET_IFACE(IPointOfInterest, pPOI);
 
-   VALIDATE_POINTS_OF_INTEREST(poi.GetSegmentKey());
+    VALIDATE_POINTS_OF_INTEREST(poi.GetSegmentKey());
 
-   CGirderKey girderKey = poi.GetSegmentKey();
-   SegmentIndexType reactionLocationSegmentIndex = poi.GetSegmentKey().segmentIndex;
-   GET_IFACE(IBridge, pBridge);
-   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
-   std::vector<pgsPointOfInterest> vPoi;
+    CGirderKey girderKey = poi.GetSegmentKey();
+    SegmentIndexType reactionLocationSegmentIndex = poi.GetSegmentKey().segmentIndex;
+    GET_IFACE(IBridge, pBridge);
+    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+    PoiList vPoi;
 
-   if (xRight != 0)
-   {
-       pgsPointOfInterest poiRight = pPOI->ConvertGirderPathCoordinateToPoi(girderKey, xRight);
-       IndexType segmentIndexRight = poiRight.GetSegmentKey().segmentIndex;
-       for (SegmentIndexType segIdx = reactionLocationSegmentIndex; segIdx <= segmentIndexRight; segIdx++)
-       {
-           CSegmentKey segmentKey(girderKey.groupIndex, girderKey.girderIndex, segIdx);
+    if (xRight != 0)
+    {
+        pgsPointOfInterest poiRight = pPOI->ConvertGirderPathCoordinateToPoi(girderKey, pPOI->ConvertPoiToGirderPathCoordinate(poi) + xRight);
+        IndexType segmentIndexRight = poiRight.GetSegmentKey().segmentIndex;
+        for (SegmentIndexType segIdx = reactionLocationSegmentIndex; segIdx <= segmentIndexRight; segIdx++)
+        {
+            CSegmentKey segmentKey(girderKey.groupIndex, girderKey.girderIndex, segIdx);
 
-           if (segIdx == reactionLocationSegmentIndex)
-           {
-               m_pPoiMgr->GetPointsOfInterestInRange(segmentKey, 0, poiRight.GetDistFromStart(), &vPoi);
-           }
-           else if (segIdx == segmentIndexRight)
-           {
-               m_pPoiMgr->GetPointsOfInterestInRange(segmentKey, 0, poiRight.GetDistFromStart(), &vPoi);
-           }
-           else
-           {
-               m_pPoiMgr->GetPointsOfInterestInRange(segmentKey, 0, pBridge->GetSegmentLength(segmentKey), &vPoi);
-           }
-       }
-   }
+            if (segIdx == reactionLocationSegmentIndex)
+            {
+                if (segIdx == segmentIndexRight)
+                {
+                    Float64 startDist = poiRight.GetDistFromStart();
+                    Float64 endDist = pBridge->GetSegmentStartEndDistance(segmentKey);
+                    m_pPoiMgr->GetPointsOfInterestInRange(segmentKey, poi.GetDistFromStart(), poiRight.GetDistFromStart(), &vPoi);
+                }
+                else
+                {
+                    m_pPoiMgr->GetPointsOfInterestInRange(segmentKey, poi.GetDistFromStart(), pBridge->GetSegmentLength(segmentKey), &vPoi);
+                }
+            }
+            else if (segIdx == segmentIndexRight)
+            {
+                m_pPoiMgr->GetPointsOfInterestInRange(segmentKey, 0, poiRight.GetDistFromStart(), &vPoi);
+            }
+            else
+            {
+                m_pPoiMgr->GetPointsOfInterestInRange(segmentKey, 0, pBridge->GetSegmentLength(segmentKey), &vPoi);
+            }
+        }
+    }
 
-   if (xLeft != 0)
-   {
-       pgsPointOfInterest poiLeft = pPOI->ConvertGirderPathCoordinateToPoi(girderKey, xLeft);
-       IndexType segmentIndexLeft = poiLeft.GetSegmentKey().segmentIndex;
-       for (SegmentIndexType segIdx = segmentIndexLeft; segIdx <= reactionLocationSegmentIndex; segIdx++)
-       {
-           CSegmentKey segmentKey(girderKey.groupIndex, girderKey.girderIndex, segIdx);
+    if (xLeft != 0)
+    {
+        pgsPointOfInterest poiLeft = pPOI->ConvertGirderPathCoordinateToPoi(girderKey, pPOI->ConvertPoiToGirderPathCoordinate(poi) - xLeft);
 
-           if (segIdx == segmentIndexLeft)
-           {
-               m_pPoiMgr->GetPointsOfInterestInRange(segmentKey, poiLeft.GetDistFromStart(), pBridge->GetSegmentLength(segmentKey), &vPoi);
-           }
-           else if (segIdx == reactionLocationSegmentIndex)
-           {
-               m_pPoiMgr->GetPointsOfInterestInRange(segmentKey, 0, poi.GetDistFromStart(), &vPoi);
-           }
-           else
-           {
-               m_pPoiMgr->GetPointsOfInterestInRange(segmentKey, 0, pBridge->GetSegmentLength(segmentKey), &vPoi);
-           }
-       }
-   }
+        IndexType segmentIndexLeft = poiLeft.GetSegmentKey().segmentIndex;
+        for (SegmentIndexType segIdx = segmentIndexLeft; segIdx <= reactionLocationSegmentIndex; segIdx++)
+        {
+            CSegmentKey segmentKey(girderKey.groupIndex, girderKey.girderIndex, segIdx);
 
-   vPois->insert(vPois->end(), vPoi.begin(), vPoi.end());
+            if (segIdx == segmentIndexLeft)
+            {
+                if (segIdx == reactionLocationSegmentIndex)
+                {
+                    m_pPoiMgr->GetPointsOfInterestInRange(segmentKey, poiLeft.GetDistFromStart(), poi.GetDistFromStart(), &vPoi);
+                }
+                else
+                {
+                    m_pPoiMgr->GetPointsOfInterestInRange(segmentKey, poiLeft.GetDistFromStart(), pBridge->GetSegmentLength(segmentKey), &vPoi);
+                }
+            }
+            else if (segIdx == reactionLocationSegmentIndex)
+            {
+                m_pPoiMgr->GetPointsOfInterestInRange(segmentKey, 0, poi.GetDistFromStart(), &vPoi);
+            }
+            else
+            {
+                m_pPoiMgr->GetPointsOfInterestInRange(segmentKey, 0, pBridge->GetSegmentLength(segmentKey), &vPoi);
+            }
+        }
+    }
+
+    vPois->insert(vPois->end(), vPoi.begin(), vPoi.end());
 
 }
 
