@@ -104,7 +104,7 @@ interface IPointOfInterest : public IUnknown
    // Returns the points of interest located in the range xLeft-xRight around the given POI.
    // The returned vector of POI does not include POIs that are in adjacent segments
    virtual void GetPointsOfInterestInRange(Float64 XpoiLeft, const pgsPointOfInterest& poi,
-	   Float64 XpoiRight, std::vector<pgsPointOfInterest>* vPois) const = 0;
+	   Float64 XpoiRight, PoiList* vPois) const = 0;
 
    // Returns the pier index associated with the poi. The poi must have POI_BOUNDARY_PIER attribute set.
    // If this POI is not associated with a pier, INVALID_INDEX is returned.

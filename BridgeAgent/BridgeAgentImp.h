@@ -886,7 +886,7 @@ public:
    virtual void ConvertSegmentCoordinateToSpanPoint(const CSegmentKey& segmentKey,Float64 Xs,CSpanKey* pSpanKey,Float64* pXspan) const override;
    virtual void ConvertSpanPointToSegmentPathCoordiante(const CSpanKey& spanKey,Float64 Xspan,CSegmentKey* pSegmentKey,Float64* pXsp) const override;
    virtual void ConvertSegmentPathCoordinateToSpanPoint(const CSegmentKey& sSegmentKey,Float64 Xsp,CSpanKey* pSpanKey,Float64* pXspan) const override;
-   virtual void GetPointsOfInterestInRange(Float64 xLeft, const pgsPointOfInterest& poi, Float64 xRight, std::vector<pgsPointOfInterest>* vPois) const override;
+   virtual void GetPointsOfInterestInRange(Float64 xLeft, const pgsPointOfInterest& poi, Float64 xRight, PoiList* vPois) const override;
    virtual PierIndexType GetPier(const pgsPointOfInterest& poi) const override;
    virtual void GetDuctRange(const CGirderKey& girderKey, DuctIndexType ductIdx, const pgsPointOfInterest** ppEtartPoi, const pgsPointOfInterest** ppEndPoi) const override;
    virtual void GroupBySegment(const PoiList& vPoi, std::list<PoiList>* pList) const override;
