@@ -7308,16 +7308,53 @@ void CGirderModelManager::CreateLBAMSpans(GirderIndexType gdr,bool bContinuousMo
    if ( !bHasXConstraint )
    {
       // there isn't any constraints in the X-direction (probably all rollers)
-      // make the first support pinned
-      objSupport.Release();
-      supports->get_Item(0,&objSupport);
-#if defined _DEBUG
-      BoundaryConditionType bc;
-      objSupport->get_BoundaryCondition(&bc);
-      ATLASSERT(bc == bcRoller);
-#endif
-      objSupport->put_BoundaryCondition(bcPinned);
-      bHasXConstraint = true;
+
+       //try setting the apparent point of fixity at the center-most support
+       PierIndexType centermostPier = pBridge->GetSpanCount() / 2;
+
+        // do next pier stuff after trying centermost
+
+      // Layout the spans and supports along the girderline
+       CComPtr<ISpans> spans;
+       pModel->get_Spans(&spans);
+
+       std::vector<CGirderKey> vGirderKeys;
+       pBridge->GetGirderline(gdr, &vGirderKeys);
+       for (const auto& thisGirderKey : vGirderKeys)
+       {
+           SpanIndexType startSpanIdx, endSpanIdx;
+           pBridge->GetGirderGroupSpans(thisGirderKey.groupIndex, &startSpanIdx, &endSpanIdx);
+           for (SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++)
+           {
+               CSpanKey spanKey(spanIdx, thisGirderKey.girderIndex);
+
+               // pier indicies related to this span
+               PierIndexType prevPierIdx = PierIndexType(spanIdx);
+               PierIndexType nextPierIdx = prevPierIdx + 1;
+               auto nPiers = pBridge->GetPierCount();
+
+               if (pBridgeDesc->GetPier(nextPierIdx)->GetPierModelType() != pgsTypes::pmtPhysical && nextPierIdx == centermostPier && nextPierIdx != nPiers - 1)
+               {
+                    objSupport.Release();
+                    supports->get_Item(nextPierIdx, &objSupport);
+                    objSupport->put_BoundaryCondition(bcPinned);
+                    bHasXConstraint = true;
+               }
+
+           } // next span
+
+       } // next girder in the girderline
+
+       //if all physical piers, make the abutment support pinned
+
+       if (!bHasXConstraint)
+       {
+           objSupport.Release();
+           supports->get_Item(0, &objSupport);
+           objSupport->put_BoundaryCondition(bcPinned);
+           bHasXConstraint = true;
+       }
+
    }
 
    //
