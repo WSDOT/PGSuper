@@ -160,7 +160,7 @@ void CInterfaceShearDetails::BuildDesign( IBroker* pBroker, rptChapter* pChapter
    // UHPC is different, so we need to keep track if we have UHPC
    GET_IFACE2(pBroker, IMaterials, pMaterials);
    bool bIsUHPC = pMaterials->GetSegmentConcreteType(CSegmentKey(girderKey, 0)) == pgsTypes::UHPC ? true : false;
-   ATLASSERT(nSegments == 1); // UHPC is not available for spliced girders so there can only be one segment per girder
+   ATLASSERT(bIsUHPC ? nSegments == 1 : true); // UHPC is not available for spliced girders so there can only be one segment per girder
 
    // Initial Capacity Table
    rptRcTable* vui_table = CreateVuiTable(pBroker,pChapter,girderKey,pDisplayUnits); // creates the table and adds it to the chapter. also adds table footnotes
