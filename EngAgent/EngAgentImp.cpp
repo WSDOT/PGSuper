@@ -3572,9 +3572,9 @@ void CEngAgentImp::GetThermalExpansionDetails(CGirderKey girderKey, BEARINGSHEAR
     m_BearingEngineer.GetThermalExpansionDetails(girderKey, bearing);
 }
 
-Float64 CEngAgentImp::GetDistanceToPointOfFixity(const pgsPointOfInterest& poi, SHEARDEFORMATIONDETAILS* pDetails) const
+Float64 CEngAgentImp::GetDistanceToPointOfFixity(const pgsPointOfInterest& poi, bool bTimeStepMethod, SHEARDEFORMATIONDETAILS* pDetails) const
 {
-    return m_BearingEngineer.GetDistanceToPointOfFixity(poi, pDetails);
+    return m_BearingEngineer.GetDistanceToPointOfFixity(poi, bTimeStepMethod, pDetails);
 }
 
 std::array<Float64,2> CEngAgentImp::GetTimeDependentComponentShearDeformation(Float64 loss, BEARINGSHEARDEFORMATIONDETAILS* bearing) const

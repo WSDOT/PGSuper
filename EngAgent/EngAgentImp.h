@@ -390,7 +390,7 @@ public:
 
    void GetThermalExpansionDetails(CGirderKey girderKey, BEARINGSHEARDEFORMATIONDETAILS* bearing) const override;
 
-   Float64 GetDistanceToPointOfFixity(const pgsPointOfInterest& poi, SHEARDEFORMATIONDETAILS* pDetails) const override;
+   Float64 GetDistanceToPointOfFixity(const pgsPointOfInterest& poi, bool bTimeStepMethod, SHEARDEFORMATIONDETAILS* pDetails) const override;
 
    std::array<Float64,2> GetTimeDependentComponentShearDeformation(Float64 loss, BEARINGSHEARDEFORMATIONDETAILS* bearing) const override;
 

@@ -677,19 +677,14 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
 
     ColumnIndexType nCols = GetBearingTableColumnCount(pBroker, girderKey, analysisType, bDesign, bUserLoads, &details, bDetail);
 
-
     CString label = _T("Reactions");
     rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols, label);
-
 
     RowIndexType row = ConfigureBearingReactionTableHeading<rptForceUnitTag, WBFL::Units::ForceData>(
         pBroker, p_table, bDesign, bUserLoads, analysisType, pDisplayUnits, pDisplayUnits->GetGeneralForceUnit(), bDetail, &details);
 
-
     p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_RIGHT));
     p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
-
-
 
     // TRICKY: use adapter class to get correct reaction interfaces
     std::unique_ptr<IProductReactionAdapter> pForces;
@@ -697,20 +692,12 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
     GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
     pForces = std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastIntervalIdx, girderKey);
 
-
-
     ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
-
-
-
-    
-
 
     // Use iterator to walk locations
     for (iter.First(); !iter.IsDone(); iter.Next())
 
     {
-
         const ReactionLocation& reactionLocation(iter.CurrentItem());
 
         const CBearingData2* pbd = pIBridgeDesc->GetBearingData(reactionLocation.PierIdx, (reactionLocation.Face == rftBack ? pgsTypes::Back : pgsTypes::Ahead), girderKey.girderIndex);

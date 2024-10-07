@@ -188,19 +188,24 @@ void pgsBearingDesignEngineer::GetBearingTableParameters(const CGirderKey& girde
 }
 
 
-Float64 pgsBearingDesignEngineer::GetDistanceToPointOfFixity(const pgsPointOfInterest& poi_brg, SHEARDEFORMATIONDETAILS* pDetails) const
+Float64 pgsBearingDesignEngineer::GetDistanceToPointOfFixity(const pgsPointOfInterest& poi_brg, bool bTimeStepMethod,
+    SHEARDEFORMATIONDETAILS* pDetails) const
 {
 
     GET_IFACE(IBridge, pBridge);
+    GET_IFACE(IBridgeDescription, pBridgeDesc);
     GET_IFACE(IPointOfInterest, pPoi);
 
     Float64 L = 0;
     pgsPointOfInterest poi_fixity;
-
+    PierIndexType centermostPier;
     SpanIndexType nSpans = pBridge->GetSpanCount();
-    PierIndexType central_pierId = nSpans / 2;
+    bool bHasXConstraint = false;
+
+
+    centermostPier = nSpans / 2;
+
     const CGirderKey& girderKey(poi_brg.GetSegmentKey());
-        
 
     std::vector<CGirderKey> vGirderKeys;
     pBridge->GetGirderline(girderKey, &vGirderKeys);
@@ -210,29 +215,24 @@ Float64 pgsBearingDesignEngineer::GetDistanceToPointOfFixity(const pgsPointOfInt
         pBridge->GetGirderGroupSpans(ALL_GROUPS, &startSpanIdx, &endSpanIdx);
         for (SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++)
         {
-            CSpanKey spanKey(spanIdx, thisGirderKey.girderIndex);
+            // pier indicies related to this span
+            PierIndexType prevPierIdx = PierIndexType(spanIdx);
+            PierIndexType nextPierIdx = prevPierIdx + 1;
+            auto nPiers = pBridge->GetPierCount();
 
-            PierIndexType pierIdx = PierIndexType(spanIdx);
-            if (nSpans % 2 == 0)
+            if (pBridgeDesc->GetPier(nextPierIdx)->GetPierModelType() != pgsTypes::pmtPhysical && nextPierIdx == centermostPier && nextPierIdx != nPiers - 1)
             {
-                
-                if (pierIdx == central_pierId)
-                {
-                    poi_fixity = pPoi->GetPierPointOfInterest(girderKey, central_pierId);
-                }
-            }
-            else
-            {
-                if (spanIdx == (int)ceil(nSpans / 2))
-                {
-                    PoiList vPoi;
-                    pPoi->GetPointsOfInterest(spanKey, POI_SPAN | POI_5L, &vPoi);
-                    poi_fixity = vPoi[0];
-                }
+                poi_fixity = pPoi->GetPierPointOfInterest(girderKey, nextPierIdx);
+                bHasXConstraint = true;
             }
 
         }
 
+    }
+
+    if (!bHasXConstraint)
+    {
+        poi_fixity = pPoi->GetPierPointOfInterest(girderKey, 0);
     }
 
     pDetails->poi_fixity = poi_fixity;
@@ -459,7 +459,14 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
 
         brg_details.rPoi = poi;
 
-        brg_details.length_pf = pBearing->GetDistanceToPointOfFixity(poi, pDetails);
+        GET_IFACE(ILibrary, pLib);
+        GET_IFACE(ISpecification, pSpec);
+        pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
+        const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+        PrestressLossCriteria::LossMethodType lossMethod = pSpecEntry->GetPrestressLossCriteria().LossMethod;
+        bool bTimeStepMethod = lossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP;
+
+        brg_details.length_pf = pBearing->GetDistanceToPointOfFixity(poi, bTimeStepMethod, pDetails);
 
         const CSegmentKey& segmentKey(poi.GetSegmentKey());
         const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
@@ -485,12 +492,7 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
         Float64 fpLossInfinity = GetBearingTimeDependentLosses(poi, pgsTypes::StrandType::Permanent, castDeckIntervalIdx, pgsTypes::IntervalTimeType::End,
             nullptr, td_details_inf, &components_inf);
 
-        GET_IFACE(ILibrary, pLib);
-        GET_IFACE(ISpecification, pSpec);
-        pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
-        const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-        PrestressLossCriteria::LossMethodType lossMethod = pSpecEntry->GetPrestressLossCriteria().LossMethod;
-        bool bTimeStepMethod = lossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP;
+
 
         if (bTimeStepMethod)
         {
@@ -499,7 +501,7 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
 
 
 
-            Float64 L = GetDistanceToPointOfFixity(poi, pDetails);
+            Float64 L = GetDistanceToPointOfFixity(poi, bTimeStepMethod, pDetails);
             GroupIndexType nGroups = pBridge->GetGirderGroupCount();
             GroupIndexType firstGroupIdx = (segmentKey.groupIndex == ALL_GROUPS ? 0 : segmentKey.groupIndex);
             GroupIndexType lastGroupIdx = (segmentKey.groupIndex == ALL_GROUPS ? nGroups - 1 : firstGroupIdx);
