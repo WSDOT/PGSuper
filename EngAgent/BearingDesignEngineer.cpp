@@ -207,6 +207,7 @@ Float64 pgsBearingDesignEngineer::GetDistanceToPointOfFixity(const pgsPointOfInt
 
     const CGirderKey& girderKey(poi_brg.GetSegmentKey());
 
+
     std::vector<CGirderKey> vGirderKeys;
     pBridge->GetGirderline(girderKey, &vGirderKeys);
     for (const auto& thisGirderKey : vGirderKeys)
@@ -237,12 +238,27 @@ Float64 pgsBearingDesignEngineer::GetDistanceToPointOfFixity(const pgsPointOfInt
 
     pDetails->poi_fixity = poi_fixity;
 
-    Float64 d_brg = pPoi->ConvertPoiToGirderlineCoordinate(poi_brg);
-    Float64 d_fixity = pPoi->ConvertPoiToGirderlineCoordinate(poi_fixity);
+    CSegmentKey segmentKey = poi_fixity.GetSegmentKey();
+    Float64 gpcBrgOffset = pBridge->GetSegmentStartBearingOffset(segmentKey);
+
+    Float64 gpcBrg = pPoi->ConvertPoiToGirderPathCoordinate(poi_brg);
+    Float64 gpcFixity = pPoi->ConvertPoiToGirderPathCoordinate(poi_fixity);
+
+    PierIndexType fixityPier = pPoi->GetPier(poi_fixity);
 
 
 
-    L = abs(d_fixity - d_brg);
+    if (gpcBrg > gpcFixity && !IsEqual(gpcBrg, gpcFixity, 0.001) && pBridge->IsAbutment(fixityPier))
+    {
+        gpcFixity += gpcBrgOffset;
+    }
+    if (gpcBrg < gpcFixity && !IsEqual(gpcBrg, gpcFixity, 0.001) && pBridge->IsAbutment(fixityPier))
+    {
+        gpcFixity -= gpcBrgOffset;
+    }
+
+
+    L = abs(gpcFixity - gpcBrg);
 
     return L;
 
