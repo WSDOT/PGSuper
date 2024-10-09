@@ -1261,7 +1261,7 @@ MOMENTCAPACITYDETAILS pgsMomentCapacityEngineer::ComputeMomentCapacity(IntervalI
          {
             reinforcementType = ReinforcementType::GirderTendon;
          }
-         else if (CString(bstrName).Left(5) == _T("Girder Rebar"))
+         else if (CString(bstrName) == _T("Girder Rebar"))
          {
             reinforcementType = ReinforcementType::GirderRebar;
          }
