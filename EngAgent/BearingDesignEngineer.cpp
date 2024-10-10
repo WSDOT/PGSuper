@@ -197,16 +197,17 @@ Float64 pgsBearingDesignEngineer::GetDistanceToPointOfFixity(const pgsPointOfInt
     GET_IFACE(IPointOfInterest, pPoi);
 
     Float64 L = 0;
-    pgsPointOfInterest poi_fixity;
+
     PierIndexType centermostPier;
     SpanIndexType nSpans = pBridge->GetSpanCount();
     bool bHasXConstraint = false;
 
-
     centermostPier = nSpans / 2;
 
     const CGirderKey& girderKey(poi_brg.GetSegmentKey());
+    pgsPointOfInterest poi_fixity{ pPoi->GetPierPointOfInterest(girderKey, 0) };
 
+    PierIndexType fixityPier{0};
 
     std::vector<CGirderKey> vGirderKeys;
     pBridge->GetGirderline(girderKey, &vGirderKeys);
@@ -223,17 +224,16 @@ Float64 pgsBearingDesignEngineer::GetDistanceToPointOfFixity(const pgsPointOfInt
 
             if (pBridgeDesc->GetPier(nextPierIdx)->GetPierModelType() != pgsTypes::pmtPhysical && nextPierIdx == centermostPier && nextPierIdx != nPiers - 1)
             {
-                poi_fixity = pPoi->GetPierPointOfInterest(girderKey, nextPierIdx);
-                bHasXConstraint = true;
+                if (!bHasXConstraint)
+                {
+                    poi_fixity = pPoi->GetPierPointOfInterest(girderKey, nextPierIdx);
+                    bHasXConstraint = true;
+                    fixityPier = nextPierIdx;
+                }
             }
 
         }
 
-    }
-
-    if (!bHasXConstraint)
-    {
-        poi_fixity = pPoi->GetPierPointOfInterest(girderKey, 0);
     }
 
     pDetails->poi_fixity = poi_fixity;
@@ -243,10 +243,6 @@ Float64 pgsBearingDesignEngineer::GetDistanceToPointOfFixity(const pgsPointOfInt
 
     Float64 gpcBrg = pPoi->ConvertPoiToGirderPathCoordinate(poi_brg);
     Float64 gpcFixity = pPoi->ConvertPoiToGirderPathCoordinate(poi_fixity);
-
-    PierIndexType fixityPier = pPoi->GetPier(poi_fixity);
-
-
 
     if (gpcBrg > gpcFixity && !IsEqual(gpcBrg, gpcFixity, 0.001) && pBridge->IsAbutment(fixityPier))
     {
