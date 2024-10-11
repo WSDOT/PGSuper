@@ -2787,6 +2787,9 @@ bool CBridgeAgentImp::LayoutGirders(const CBridgeDescription2* pBridgeDesc)
             const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
             CSegmentKey segmentKey(pSegment->GetSegmentKey());
 
+            // Make sure any pre-computed data in the segment is cleared out
+            pSegment->ClearComputedCache();
+
             // Now that the segment is wired up to its girder line, configure its cross section, materials, etc.
             beamFactory->ConfigureSegment(m_pBroker, m_StatusGroupID, segmentKey, segment);
 
