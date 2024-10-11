@@ -222,19 +222,58 @@ Float64 pgsBearingDesignEngineer::GetDistanceToPointOfFixity(const pgsPointOfInt
             PierIndexType nextPierIdx = prevPierIdx + 1;
             auto nPiers = pBridge->GetPierCount();
 
-            if (pBridgeDesc->GetPier(nextPierIdx)->GetPierModelType() != pgsTypes::pmtPhysical && nextPierIdx == centermostPier && nextPierIdx != nPiers - 1)
+            pgsTypes::BoundaryConditionType bct = pBridgeDesc->GetPier(nextPierIdx)->GetBoundaryConditionType();
+            if (bct != pgsTypes::bctRoller || bct != pgsTypes::bctContinuousAfterDeck || bct != pgsTypes::bctContinuousBeforeDeck)
             {
-                if (!bHasXConstraint)
-                {
-                    poi_fixity = pPoi->GetPierPointOfInterest(girderKey, nextPierIdx);
-                    bHasXConstraint = true;
-                    fixityPier = nextPierIdx;
-                }
+                poi_fixity = pPoi->GetPierPointOfInterest(girderKey, nextPierIdx);
+                fixityPier = nextPierIdx;
+                bHasXConstraint = true;
             }
 
         }
 
     }
+
+    if (!bHasXConstraint)
+    {
+        for (const auto& thisGirderKey : vGirderKeys)
+        {
+            SpanIndexType startSpanIdx, endSpanIdx;
+            pBridge->GetGirderGroupSpans(ALL_GROUPS, &startSpanIdx, &endSpanIdx);
+            for (SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++)
+            {
+                // pier indicies related to this span
+                PierIndexType prevPierIdx = PierIndexType(spanIdx);
+                PierIndexType nextPierIdx = prevPierIdx + 1;
+                auto nPiers = pBridge->GetPierCount();
+
+                if (pBridgeDesc->GetPier(nextPierIdx)->GetPierModelType() != pgsTypes::pmtPhysical && nextPierIdx == centermostPier)
+                {
+                    poi_fixity = pPoi->GetPierPointOfInterest(girderKey, nextPierIdx);
+                    fixityPier = nextPierIdx;
+                    bHasXConstraint = true;
+                }
+
+            }
+        }
+    }
+
+    if (!bHasXConstraint)
+    {
+        poi_fixity = pPoi->GetPierPointOfInterest(girderKey, 0);
+        fixityPier = 0;
+        bHasXConstraint = true;
+    }
+
+
+
+
+
+    
+
+
+
+
 
     pDetails->poi_fixity = poi_fixity;
 
