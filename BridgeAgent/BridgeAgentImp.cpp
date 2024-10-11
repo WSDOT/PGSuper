@@ -32795,6 +32795,11 @@ void CBridgeAgentImp::LayoutClosureJointRebar(const CClosureKey& closureKey)
          row_pattern->put_Spacing( info.BarSpacing );
          row_pattern->put_Orientation( rroHCenter );
 
+         // When computing the development length, hooked bars are considered completely anchored.... use 90deg hook, but the actual hook type is
+         // not important. A better model may be a lap splice
+         row_pattern->put_Hook(qcbLeft, info.bExtendedLeft ? ht90 : htNone);
+         row_pattern->put_Hook(qcbRight, info.bExtendedRight ? ht90 : htNone);
+
          // add this pattern to the layout
          rebar_layout_item->AddRebarPattern(row_pattern);
       
