@@ -170,6 +170,10 @@ public:
    void SetDirectHaunchDepths(const std::vector<Float64>& HaunchDepths);
    std::vector<Float64> GetDirectHaunchDepths(bool bGetRawValue = false) const;
 
+   // This class caches some computed data for performance (girder height is requested thousands of times)
+   // The BridgeAgent needs to clear this cache when creating the bridge model
+   void ClearComputedCache() const;
+
 #if defined _DEBUG
    void AssertValid();
 #endif
