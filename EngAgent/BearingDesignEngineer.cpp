@@ -218,20 +218,33 @@ Float64 pgsBearingDesignEngineer::GetDistanceToPointOfFixity(const pgsPointOfInt
         for (SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++)
         {
             // pier indicies related to this span
-            PierIndexType prevPierIdx = PierIndexType(spanIdx);
-            PierIndexType nextPierIdx = prevPierIdx + 1;
-            auto nPiers = pBridge->GetPierCount();
+            PierIndexType PierIdx = PierIndexType(spanIdx);
+            const CPierData2* pPier = pBridgeDesc->GetPier(PierIdx);
 
-            pgsTypes::BoundaryConditionType bct = pBridgeDesc->GetPier(nextPierIdx)->GetBoundaryConditionType();
-            if (bct != pgsTypes::bctRoller || bct != pgsTypes::bctContinuousAfterDeck || bct != pgsTypes::bctContinuousBeforeDeck)
+            if (!bHasXConstraint)
             {
-                poi_fixity = pPoi->GetPierPointOfInterest(girderKey, nextPierIdx);
-                fixityPier = nextPierIdx;
-                bHasXConstraint = true;
+                if (pPier->IsBoundaryPier())
+                {
+                    pgsTypes::BoundaryConditionType bct = pPier->GetBoundaryConditionType();
+                    if (bct != pgsTypes::bctRoller && bct != pgsTypes::bctContinuousAfterDeck && bct != pgsTypes::bctContinuousBeforeDeck)
+                    {
+                        poi_fixity = pPoi->GetPierPointOfInterest(girderKey, PierIdx);
+                        fixityPier = PierIdx;
+                        bHasXConstraint = true;
+                    }
+                }
+                else if (pPier->IsInteriorPier())
+                {
+                    pgsTypes::PierSegmentConnectionType sct = pPier->GetSegmentConnectionType();
+                    if (sct == pgsTypes::psctIntegralClosureJoint || sct == pgsTypes::psctIntegralSegment)
+                    {
+                        poi_fixity = pPoi->GetPierPointOfInterest(girderKey, PierIdx);
+                        fixityPier = PierIdx;
+                        bHasXConstraint = true;
+                    }
+                }
             }
-
         }
-
     }
 
     if (!bHasXConstraint)
@@ -247,7 +260,7 @@ Float64 pgsBearingDesignEngineer::GetDistanceToPointOfFixity(const pgsPointOfInt
                 PierIndexType nextPierIdx = prevPierIdx + 1;
                 auto nPiers = pBridge->GetPierCount();
 
-                if (pBridgeDesc->GetPier(nextPierIdx)->GetPierModelType() != pgsTypes::pmtPhysical && nextPierIdx == centermostPier)
+                if (pBridgeDesc->GetPier(nextPierIdx)->GetPierModelType() != pgsTypes::pmtPhysical && nextPierIdx == centermostPier && nextPierIdx != nPiers - 1)
                 {
                     poi_fixity = pPoi->GetPierPointOfInterest(girderKey, nextPierIdx);
                     fixityPier = nextPierIdx;
