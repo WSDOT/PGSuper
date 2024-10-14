@@ -2787,6 +2787,9 @@ bool CBridgeAgentImp::LayoutGirders(const CBridgeDescription2* pBridgeDesc)
             const CPrecastSegmentData* pSegment = pGirder->GetSegment(segIdx);
             CSegmentKey segmentKey(pSegment->GetSegmentKey());
 
+            // Make sure any pre-computed data in the segment is cleared out
+            pSegment->ClearComputedCache();
+
             // Now that the segment is wired up to its girder line, configure its cross section, materials, etc.
             beamFactory->ConfigureSegment(m_pBroker, m_StatusGroupID, segmentKey, segment);
 
@@ -32867,6 +32870,11 @@ void CBridgeAgentImp::LayoutClosureJointRebar(const CClosureKey& closureKey)
          row_pattern->put_Count( info.NumberOfBars );
          row_pattern->put_Spacing( info.BarSpacing );
          row_pattern->put_Orientation( rroHCenter );
+
+         // When computing the development length, hooked bars are considered completely anchored.... use 90deg hook, but the actual hook type is
+         // not important. A better model may be a lap splice
+         row_pattern->put_Hook(qcbLeft, info.bExtendedLeft ? ht90 : htNone);
+         row_pattern->put_Hook(qcbRight, info.bExtendedRight ? ht90 : htNone);
 
          // add this pattern to the layout
          rebar_layout_item->AddRebarPattern(row_pattern);

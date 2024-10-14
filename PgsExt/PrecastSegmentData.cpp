@@ -72,10 +72,7 @@ CPrecastSegmentData::~CPrecastSegmentData()
 
 void CPrecastSegmentData::Init()
 {
-   m_bHeightComputed = false;
-   m_Height = -1;
-   m_bBottomFlangeThicknessComputed = false;
-   m_BottomFlangeThickness = -1;
+   ClearComputedCache();
 
    m_SegmentIndex = INVALID_INDEX;
    m_SegmentID    = INVALID_ID;
@@ -1564,11 +1561,20 @@ std::vector<Float64> CPrecastSegmentData::GetDirectHaunchDepths(bool bGetRawValu
    }
 }
 
+void CPrecastSegmentData::ClearComputedCache() const
+{
+   m_bHeightComputed = false;
+   m_Height = -1;
+   m_bBottomFlangeThicknessComputed = false;
+   m_BottomFlangeThickness = -1;
+}
+
 #if defined _DEBUG
 #include <PGSuperTypes.h>
 #undef _DEBUG
 #include <IFace\Bridge.h>
 #define _DEBUG
+
 void CPrecastSegmentData::AssertValid()
 {
    // if any of these first 3 checks are nullptr, then this segment isn't an a structure so it can't be validated
