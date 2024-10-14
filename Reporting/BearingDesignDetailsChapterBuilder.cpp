@@ -194,8 +194,6 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     const auto pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
     const auto& thermalFactor = pSpecEntry->GetThermalMovementCriteria();
 
-
-
     if (thermalFactor.ThermalMovementFactor == 0.75)
     {
         *p << Sub2(symbol(DELTA), _T("0")) << _T(" = 0.75 (WSDOT BDM Ch. 9.2.5A)") << rptNewLine;
@@ -205,7 +203,8 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
         *p << Sub2(symbol(DELTA), _T("0")) << _T(" = 0.65 (AASHTO LRFD Sect. 14.7.5.3.2)") << rptNewLine;
     }
 
-    *p << Sub2(_T("L"), _T("pf")) << _T(" = ") << _T("Distance from the apparent point of fixity to bearing for girders continuous over piers") << rptNewLine;
+    *p << Sub2(_T("L"), _T("pf")) << _T(" = ") << _T("Distance from the point of longitudinal fixity to the bearing location for girders continuous over piers.") << rptNewLine;
+    *p << _T("If all specified connection types are free to translate longitudinally, then the point of fixity is taken to be at the pier nearest the center.") << rptNewLine;
 
 
     GET_IFACE2(pBroker, ILossParameters, pLossParams);
