@@ -985,7 +985,6 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
 
     GET_IFACE(IIntervals, pIntervals);
     IntervalIndexType diaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
-    IntervalIndexType lastCastDeckIntervalIdx = pIntervals->GetLastCastDeckInterval(); // deck cast be cast in multiple stages, use interval after entire deck is cast
     IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
     IntervalIndexType ljIntervalIdx = pIntervals->GetCastLongitudinalJointInterval();
     IntervalIndexType shearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
@@ -1018,11 +1017,11 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
 
     if (pDetails->bDeck)
     {
-        pDetails->diaphragmReaction = pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftDiaphragm, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
-        pDetails->maxSlabReaction = pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlab, maxBAT);
-        pDetails->minSlabReaction = pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlab, minBAT);
-        pDetails->maxHaunchReaction = pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlabPad, maxBAT);
-        pDetails->minHaunchReaction = pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlabPad, minBAT);
+        pDetails->diaphragmReaction = pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftDiaphragm, analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
+        pDetails->maxSlabReaction = pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftSlab, maxBAT);
+        pDetails->minSlabReaction = pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftSlab, minBAT);
+        pDetails->maxHaunchReaction = pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftSlabPad, maxBAT);
+        pDetails->minHaunchReaction = pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftSlabPad, minBAT);
     }
 
 
@@ -1045,8 +1044,8 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
 
     if (pDetails->bDeckPanels)
     {
-        pDetails->maxSlabPanelReaction = pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlabPanel, maxBAT);
-        pDetails->minSlabPanelReaction = pForces->GetReaction(lastCastDeckIntervalIdx, reactionLocation, pgsTypes::pftSlabPanel, minBAT);
+        pDetails->maxSlabPanelReaction = pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftSlabPanel, maxBAT);
+        pDetails->minSlabPanelReaction = pForces->GetReaction(lastIntervalIdx, reactionLocation, pgsTypes::pftSlabPanel, minBAT);
     }
 
     pDetails->maxSidewalkReaction = pForces->GetReaction(railingSystemIntervalIdx, reactionLocation, pgsTypes::pftSidewalk, batSS);
@@ -1140,6 +1139,8 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
     pDetails->maxComboDesignLLReaction = llLF * (Max(R1max, R2max) + pDetails->maxPedReaction);
 
     pDetails->totalReaction = pDetails->totalDLreaction + pDetails->maxComboDesignLLReaction;
+
+    ATLASSERT(IsEqual(pDetails->totalReaction, ));
 
 }
 
