@@ -1,0 +1,48 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 46.00    7   7.00 SL 20 Cielito Li    1     1     Tx54          44  0.6  270  18.83  11.55  10.50  10.50   1.50                                               8  48.5  8.5  5.600  7.100   4.564    -4.324     8214   0.557  0.743   4.014 -2.884  0.000 -0.192 -3.076 182.59  476.15    1.00    1.00    1.00    1.76    1.74    2.28    2.34    1.11 
+
+
+The Specification Check was Successful
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 46.00    7   7.00 SL 20 Cielito Li    1     2     Tx54          44  0.6  270  18.83  11.55  10.50  10.50   1.50                                               8  48.5  8.5  5.600  7.100   4.654    -4.414     8346   0.557  0.743   4.014 -3.086  0.000 -0.188 -3.274 182.59  472.36    1.00    1.00    1.00    1.76    1.73    2.28    2.32    1.03 
+
+
+The Specification Check was Successful
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 46.00    7   7.00 SL 20 Cielito Li    1     4     Tx54          44  0.6  270  18.83  11.55  10.50  10.50   1.50                                               8  48.5  8.5  5.600  7.100   4.598    -4.258     8034   0.557  0.743   4.014 -3.086  0.000  0.000 -3.086 182.59  481.31    1.00    1.00    1.00    1.84    1.80    2.39    2.41    1.16 
+
+
+The Specification Check was Successful
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 46.00    7   7.00 SL 20 Cielito Li    2     1     Tx54          44  0.6  270  18.83  11.55  10.50  10.50   1.50                                               8  48.5  8.5  5.600  7.100   4.564    -4.324     8214   0.557  0.743   4.014 -2.884  0.000 -0.192 -3.076 182.59  476.15    1.00    1.00    1.00    1.76    1.74    2.28    2.34    1.11 
+
+
+The Specification Check was Successful
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 46.00    7   7.00 SL 20 Cielito Li    2     2     Tx54          44  0.6  270  18.83  11.55  10.50  10.50   1.50                                               8  48.5  8.5  5.600  7.100   4.654    -4.414     8346   0.557  0.743   4.014 -3.086  0.000 -0.188 -3.274 182.59  472.36    1.00    1.00    1.00    1.76    1.73    2.28    2.32    1.03 
+
+
+The Specification Check was Successful
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 46.00    7   7.00 SL 20 Cielito Li    2     4     Tx54          44  0.6  270  18.83  11.55  10.50  10.50   1.50                                               8  48.5  8.5  5.600  7.100   4.598    -4.258     8034   0.557  0.743   4.014 -3.086  0.000  0.000 -3.086 182.59  481.31    1.00    1.00    1.00    1.84    1.80    2.39    2.41    1.16 
+
+
+The Specification Check was Successful
+
+

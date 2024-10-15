@@ -692,7 +692,7 @@ void pgsPoiMgr::GetTenthPointPOIs(PoiAttributeType reference,const CSegmentKey& 
    }
 }
 
-void pgsPoiMgr::GetPointsOfInterestInRange(const CSegmentKey& segmentKey,Float64 xMin,Float64 xMax, PoiList* pPois) const
+void pgsPoiMgr::GetPointsOfInterestInRange(const CSegmentKey& segmentKey, Float64 xMin, Float64 xMax, PoiList* pPois) const
 {
    const auto& poiContainer = GetPoiContainer(segmentKey);
    for ( const auto& poi : poiContainer)
