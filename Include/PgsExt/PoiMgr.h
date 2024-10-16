@@ -59,6 +59,14 @@ public:
    // Destructor
    virtual ~pgsPoiMgr();
 
+   // Since PoiList (see PointOfInterest.h) is a container of references to pgsPointOfInterest objects
+   // we must store pointers to POIs... Consider this... if a function is holding a PoiList and
+   // another thread causes a new POI to be added to the POI manager and the PoiContainer must be
+   // resized, the POIs in the container get copied... The function holding the PoiList now holds
+   // references to POIs that no longer exist. If we instead hold pointers, only the pointers
+   // move when a container resizes but the actual POI remains
+   typedef std::vector<std::unique_ptr<pgsPointOfInterest>> PoiContainer; // because of unique_ptr, containers of this type are not copy-able
+
    //------------------------------------------------------------------------
    // Adds a point of interest. Returns its unique identifier.
    // Returns INVALID_ID if the POI could not be added.
@@ -143,13 +151,6 @@ private:
 
    pgsPointOfInterest m_DefaultPoi;
 
-   // Since PoiList (see PointOfInterest.h) is a container of references to pgsPointOfInterest objects
-   // we must store pointers to POIs... Consider this... if a function is holding a PoiList and
-   // another thread causes a new POI to be added to the POI manager and the PoiContainer must be
-   // resized, the POIs in the container get copied... The function holding the PoiList now holds
-   // references to POIs that no longer exist. If we instead hold pointers, only the pointers
-   // move when a container resizes but the actual POI remains
-   typedef std::vector<std::unique_ptr<pgsPointOfInterest>> PoiContainer; // because of unique_ptr, containers of this type are not copy-able
    mutable std::map<CSegmentKey,PoiContainer> m_PoiData;
    const PoiContainer& GetPoiContainer(const CSegmentKey& segmentKey) const;
    PoiContainer& GetPoiContainer(const CSegmentKey& segmentKey);

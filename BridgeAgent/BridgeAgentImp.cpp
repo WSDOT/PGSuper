@@ -20717,6 +20717,10 @@ void CBridgeAgentImp::GetPointsOfInterestInRange(Float64 xLeft, const pgsPointOf
 
 }
 
+
+
+
+
 PierIndexType CBridgeAgentImp::GetPier(const pgsPointOfInterest& poi) const
 {
    Uint16 tenthPt = poi.IsTenthPoint(POI_SPAN);

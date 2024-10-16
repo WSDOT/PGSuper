@@ -211,6 +211,7 @@ HRESULT CPGSuperReporterImp::OnSpecificationChanged()
    // Show/Hide time-step analysis reports based on the loss method
    std::vector<std::_tstring> strReportNames;
    strReportNames.push_back(_T("Time Step Details Report"));
+   strReportNames.push_back(_T("Bearing Shear Deformation Details Report"));
 
 #if defined _DEBUG || defined _BETA_VERSION
    strReportNames.push_back(_T("(DEBUG) Interval by Interval Details Report"));

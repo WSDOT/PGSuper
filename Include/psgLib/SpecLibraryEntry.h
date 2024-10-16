@@ -45,6 +45,7 @@ class rptChapter;
 
 struct SpecificationCriteria;
 struct SectionPropertiesCriteria;
+struct ThermalMovementCriteria;
 struct LimitStateConcreteStrengthCriteria;
 struct StrandSlopeCriteria;
 struct HoldDownCriteria;
@@ -196,6 +197,9 @@ public:
 
    const SpecificationCriteria& GetSpecificationCriteria() const;
    void SetSpecificationCriteria(const SpecificationCriteria& criteria);
+
+   const ThermalMovementCriteria& GetThermalMovementCriteria() const;
+   void SetThermalMovementCriteria(const ThermalMovementCriteria& criteria);
 
    const SectionPropertiesCriteria& GetSectionPropertiesCriteria() const;
    void SetSectionPropertiesCriteria(const SectionPropertiesCriteria& criteria);

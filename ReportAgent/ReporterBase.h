@@ -41,6 +41,7 @@ protected:
    void CreateLoadRatingReport();
    void CreateLoadRatingSummaryReport();
    void CreateBearingDesignReport();
+   void CreateBearingTimeStepDetailsReport();
 
    void CreateBridgeAnalysisReport();
    void CreateHaulingReport();

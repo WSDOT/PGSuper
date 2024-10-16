@@ -49,6 +49,7 @@ public:
 	//{{AFX_DATA(CBridgeDescEnvironmental)
 	enum { IDD = IDD_BRIDGEDESC_ENVIRONMENTAL };
 	int		m_Exposure;
+	int		m_Climate;
 	Float64	m_RelHumidity;
 	//}}AFX_DATA
 

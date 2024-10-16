@@ -44,7 +44,7 @@ enum ReactionTableType { PierReactionsTable, BearingReactionsTable};
 typedef std::vector<ReactionLocation> ReactionLocationContainer;
 typedef std::vector<ReactionLocation>::const_iterator ReactionLocationIterator;
 
-class ReactionLocationIter
+class REPORTINGCLASS ReactionLocationIter
 {
 public:
    ReactionLocationIter(const ReactionLocationContainer& container);

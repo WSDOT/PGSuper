@@ -30,11 +30,17 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-txnEditEnvironment::txnEditEnvironment(pgsTypes::ExposureCondition oldExposureCondition, pgsTypes::ExposureCondition newExposureCondition,
+txnEditEnvironment::txnEditEnvironment(pgsTypes::ExposureCondition oldExposureCondition, 
+                                       pgsTypes::ExposureCondition newExposureCondition,
+                                       pgsTypes::ClimateCondition oldClimateCondition,
+                                       pgsTypes::ClimateCondition newClimateCondition,
                                        Float64 oldRelHumidity, Float64 newRelHumidity)
 {
    m_ExposureCondition[0] = oldExposureCondition;
    m_ExposureCondition[1] = newExposureCondition;
+
+   m_ClimateCondition[0] = oldClimateCondition;
+   m_ClimateCondition[1] = newClimateCondition;
 
    m_RelHumidity[0] = oldRelHumidity;
    m_RelHumidity[1] = newRelHumidity;
@@ -66,12 +72,14 @@ void txnEditEnvironment::Execute(int i)
    CIEventsHolder event_holder(pEvents);
 
    pEnvironment->SetExposureCondition( m_ExposureCondition[i] );
+   pEnvironment->SetClimateCondition( m_ClimateCondition[i]);
    pEnvironment->SetRelHumidity( m_RelHumidity[i] );
 }
 
 std::unique_ptr<CEAFTransaction> txnEditEnvironment::CreateClone() const
 {
    return std::make_unique<txnEditEnvironment>(m_ExposureCondition[0], m_ExposureCondition[1],
+                                 m_ClimateCondition[0],  m_ClimateCondition[1],
                                  m_RelHumidity[0],       m_RelHumidity[1]);
 }
 
