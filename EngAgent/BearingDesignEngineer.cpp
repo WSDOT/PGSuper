@@ -1140,8 +1140,6 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
 
     pDetails->totalReaction = pDetails->totalDLreaction + pDetails->maxComboDesignLLReaction;
 
-    ATLASSERT(IsEqual(pDetails->totalReaction, ));
-
 }
 
 
