@@ -114,6 +114,15 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
 
     *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("bearing_orientation_description.png")) << rptNewLine;
 
+    p = new rptParagraph;
+    *pChapter << p;
+
+    *p <<  Sub2(symbol(theta), _T("f")) << _T(" = flexural bearing rotation") << rptNewLine;
+    *p << Sub2(symbol(theta), _T("t")) << _T(" = torsional bearing rotation = ") << Sub2(symbol(theta), _T("f")) << _T("tan") << Sub2(symbol(theta), _T("skew")) << rptNewLine << rptNewLine;
+
+    p = new rptParagraph(rptStyleManager::GetHeadingStyle());
+    *pChapter << p;
+
     *p << _T("Bearing Design Properties") << rptNewLine;
     p = new rptParagraph;
     *pChapter << p;
@@ -152,8 +161,7 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
         *p << _T("Erected Segment rotations are the segment self-weight simple span rotations after erection. Girder rotations are for the completed girder after post-tensioning and temporary support removal.") << rptNewLine;
     }
     *p << _T("*Live loads do not include impact") << rptNewLine;
-    *p << _T("**Torsional rotations are calculated using ") << Sub2(symbol(theta), _T("t")) << _T(" = ") << Sub2(symbol(theta), _T("f")) << _T("tan") << Sub2(symbol(theta), _T("skew")) << rptNewLine << rptNewLine;
-
+    
     GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
     std::vector<std::_tstring> strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltDesign, girderKey);
