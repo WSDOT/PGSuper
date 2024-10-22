@@ -145,6 +145,11 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     }
     *p << _T("*Live loads do not include impact") << rptNewLine;
 
+
+    SHEARDEFORMATIONDETAILS sfDetails;
+    pBearingDesignParameters->GetBearingTableParameters(girderKey, &sfDetails);
+
+
     *p << CBearingRotationTable().BuildBearingRotationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true,are_user_loads, true, pDisplayUnits, true, true);
     if (1 < nSegments)
@@ -246,8 +251,7 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
         bCold = false;
     }
 
-    SHEARDEFORMATIONDETAILS sfDetails;
-    pBearingDesignParameters->GetBearingTableParameters(girderKey, &sfDetails);
+
 
     *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(),
         true, pDisplayUnits, true, bCold, &sfDetails);

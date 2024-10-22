@@ -172,7 +172,7 @@ RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptR
             p_table->SetColumnSpan(0, col, 2);
             (*p_table)(0, col) << _T("Time-Dependent Deformations");
             (*p_table)(1, col++) << COLHDR(symbol(SUM) << Sub2(symbol(DELTA) << _T("L"), _T("ten")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
-            (*p_table)(1, col++) << COLHDR(symbol(SUM) << Sub2(symbol(DELTA) << _T("L"), _T("bf")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
+            (*p_table)(1, col++) << COLHDR(symbol(SUM) << Sub2(symbol(DELTA), _T("s")), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
         }
         else
         {
@@ -186,7 +186,7 @@ RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptR
                 (*p_table)(2, col++) << COLHDR(_T("Shrinkage"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
                 (*p_table)(2, col++) << COLHDR(_T("Relaxation"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
                 p_table->SetColumnSpan(1, col, 3);
-                (*p_table)(1, col) << Sub2(symbol(DELTA) << _T("L"), _T("bf"));
+                (*p_table)(1, col) << Sub2(symbol(DELTA), _T("s"));
                 (*p_table)(2, col++) << COLHDR(_T("Creep"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
                 (*p_table)(2, col++) << COLHDR(_T("Shrinkage"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());
                 (*p_table)(2, col++) << COLHDR(_T("Relaxation"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit());

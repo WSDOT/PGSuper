@@ -115,6 +115,10 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
 
     *p << Sub2(_T("P"), _T("L")) << _T(" = Vertical Live Load") << rptNewLine;
 
+    GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
+    SHEARDEFORMATIONDETAILS sfDetails;
+    pBearingDesignParameters->GetBearingTableParameters(girderKey, &sfDetails);
+
     *p << CBearingRotationTable().BuildBearingRotationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, are_user_loads,  true, pDisplayUnits, false, true) << rptNewLine;
 
@@ -131,10 +135,6 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
     *p << Sub2(symbol(theta), _T("s")) << _T(" = maximum total service limit design rotation") << rptNewLine;
     *p << _T("*Static rotations include 0.005 radians tolerance for uncertainties") << rptNewLine;
 
-    GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
-    SHEARDEFORMATIONDETAILS sfDetails;
-    pBearingDesignParameters->GetBearingTableParameters(girderKey, &sfDetails);
-
     bool bCold;
     GET_IFACE2(pBroker, IEnvironment, pEnvironment);
     if (pEnvironment->GetClimateCondition() == pgsTypes::ClimateCondition::Cold)
@@ -145,6 +145,8 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
     {
         bCold = false;
     }
+
+
 
     *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(), true, pDisplayUnits, false, bCold, &sfDetails) << rptNewLine;
 

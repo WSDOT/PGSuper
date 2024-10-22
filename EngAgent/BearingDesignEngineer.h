@@ -40,6 +40,8 @@ public:
 
    void GetBearingTableParameters(const CGirderKey& girderKey, TABLEPARAMETERS* pDetails) const;
 
+   void GetLongitudinalPointOfFixity(const CGirderKey& girderKey, TABLEPARAMETERS* pDetails) const;
+
    void GetBearingRotationDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi,
 	   const ReactionLocation& reactionLocation, CGirderKey girderKey, bool bIncludeImpact, bool bIncludeLLDF, bool isFlexural, ROTATIONDETAILS* pDetails) const;
 
@@ -51,7 +53,7 @@ public:
 
    void GetThermalExpansionDetails(CGirderKey girderKey, BEARINGSHEARDEFORMATIONDETAILS* bearing) const;
 
-   Float64 GetDistanceToPointOfFixity(const pgsPointOfInterest& poi, bool bTimeStepMethod, SHEARDEFORMATIONDETAILS* pDetails) const;
+   Float64 GetDistanceToPointOfFixity(const pgsPointOfInterest& poi, SHEARDEFORMATIONDETAILS* pDetails) const;
 
    std::array<Float64,2> GetTimeDependentComponentShearDeformation(Float64 tdNetLoss, BEARINGSHEARDEFORMATIONDETAILS* pDetails) const;
 
