@@ -660,9 +660,9 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
                                         inc_strain_bot_girder_1,
                                         cum_strain_bot_girder_1,
                                         (cum_strain_bot_girder_0 + cum_strain_bot_girder_1) / 2.0, // average strain using mid-point rule
-                                        (cum_strain_bot_girder_0 + cum_strain_bot_girder_1) * (d1 - d0) / 2.0
+                                        -(cum_strain_bot_girder_0 + cum_strain_bot_girder_1) * (d1 - d0) / 2.0
                                     };
-                                    timestep_details.interval_creep -= td_diff_elems.creep[3];
+                                    timestep_details.interval_creep += td_diff_elems.creep[3];
                                 }
                                 if (td_types[ty] == pgsTypes::pftShrinkage)
                                 {
@@ -670,9 +670,9 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
                                         inc_strain_bot_girder_1,
                                         cum_strain_bot_girder_1,
                                         (cum_strain_bot_girder_0 + cum_strain_bot_girder_1) / 2.0, // average strain using mid-point rule
-                                        (cum_strain_bot_girder_0 + cum_strain_bot_girder_1) * (d1 - d0) / 2.0
+                                        -(cum_strain_bot_girder_0 + cum_strain_bot_girder_1) * (d1 - d0) / 2.0
                                     };
-                                    timestep_details.interval_shrinkage -= td_diff_elems.shrinkage[3];
+                                    timestep_details.interval_shrinkage += td_diff_elems.shrinkage[3];
                                 }
                                 if (td_types[ty] == pgsTypes::pftRelaxation)
                                 {
@@ -680,9 +680,9 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
                                         inc_strain_bot_girder_1,
                                         cum_strain_bot_girder_1,
                                         (cum_strain_bot_girder_0 + cum_strain_bot_girder_1) / 2.0, // average strain using mid-point rule
-                                        (cum_strain_bot_girder_0 + cum_strain_bot_girder_1) * (d1 - d0) / 2.0
+                                        -(cum_strain_bot_girder_0 + cum_strain_bot_girder_1) * (d1 - d0) / 2.0
                                     };
-                                    timestep_details.interval_relaxation -= td_diff_elems.relaxation[3];
+                                    timestep_details.interval_relaxation += td_diff_elems.relaxation[3];
                                 }
 
                             };

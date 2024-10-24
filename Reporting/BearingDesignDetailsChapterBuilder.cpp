@@ -233,6 +233,8 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
 
         p = new rptParagraph;
         *pChapter << p;
+        //CString html = "<h1>TEST</h1>";
+        //*p << html;
 
         *p << _T("Bottom flange shortening is calculated using PCI BDM Eq. 10.8.3.8.2-6:") << rptNewLine;
         *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("BottomFlangeShortening.png")) << rptNewLine;
