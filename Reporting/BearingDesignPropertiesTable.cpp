@@ -96,7 +96,7 @@ rptRcTable* CBearingDesignPropertiesTable::BuildBearingDesignPropertiesTable(IBr
     pBearingDesignParameters->GetBearingDesignProperties(&details);
 
 
-    CString label = _T("Design Properties");
+    CString label = _T("Bearing Design Properties");
     rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols, label);
 
     p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
@@ -112,44 +112,17 @@ rptRcTable* CBearingDesignPropertiesTable::BuildBearingDesignPropertiesTable(IBr
     p_table->SetRowSpan(0, col, 2);
     (*p_table)(0, col++) << COLHDR(Sub2(_T("F"), _T("th")),
         rptStressUnitTag, pDisplayUnits->GetStressUnit());
-    //p_table->SetColumnSpan(0,col, 2);
-    //(*p_table)(0, col) << _T("50 Hardness");
-    //(*p_table)(1, col++) << COLHDR(Sub2(_T("G"),_T("min")),
-    //    rptStressUnitTag, pDisplayUnits->GetStressUnit());
-    //(*p_table)(1, col++) << COLHDR(Sub2(_T("G"), _T("max")),
-    //    rptStressUnitTag, pDisplayUnits->GetStressUnit());
-    //p_table->SetColumnSpan(0, col, 2);
-    //(*p_table)(0, col) << _T("60 Hardness");
-    //(*p_table)(1, col++) << COLHDR(Sub2(_T("G"), _T("min")),
-    //    rptStressUnitTag, pDisplayUnits->GetStressUnit());
-    //(*p_table)(1, col++) << COLHDR(Sub2(_T("G"), _T("max")),
-    //    rptStressUnitTag, pDisplayUnits->GetStressUnit());
-    //p_table->SetColumnSpan(0, col, 2);
-    //(*p_table)(0, col) << _T("70 Hardness");
-    //(*p_table)(1, col++) << COLHDR(Sub2(_T("G"), _T("min")),
-    //    rptStressUnitTag, pDisplayUnits->GetStressUnit());
-    //(*p_table)(1, col++) << COLHDR(Sub2(_T("G"), _T("max")),
-    //    rptStressUnitTag, pDisplayUnits->GetStressUnit());
 
 
     col = 0;
     (*p_table)(2, col++) << _T("Design Value");
     (*p_table)(2, col++) << Reaction.SetValue(details.Fy);
     (*p_table)(2, col++) << Reaction.SetValue(details.Fth);
-    //(*p_table)(2, col++) << Reaction.SetValue(details.Gmin50);
-    //(*p_table)(2, col++) << Reaction.SetValue(details.Gmax50);
-    //(*p_table)(2, col++) << Reaction.SetValue(details.Gmin60);
-    //(*p_table)(2, col++) << Reaction.SetValue(details.Gmax60);
-    //(*p_table)(2, col++) << Reaction.SetValue(details.Gmin70);
-    //(*p_table)(2, col++) << Reaction.SetValue(details.Gmax70);
 
 
     return p_table;
 
 }
-
-
-
 
 
 

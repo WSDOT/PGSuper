@@ -676,16 +676,16 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
 
     ColumnIndexType nCols = GetBearingTableColumnCount(pBroker, girderKey, analysisType, bDesign, bUserLoads, &details, bDetail);
 
-    CString label = _T("Flexural Rotations");
+    CString label = _T("Bearing Design Flexural Rotations");
     if (!isFlexural)
     {
         if (bDetail)
         {
-            label = _T("**Torsional Rotations");
+            label = _T("**Bearing Design Torsional Rotations");
         }
         else
         {
-            label = _T("Torsional Rotations");
+            label = _T("Bearing Design Torsional Rotations");
         } 
     }
 

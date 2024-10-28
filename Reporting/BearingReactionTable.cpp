@@ -677,7 +677,7 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
 
     ColumnIndexType nCols = GetBearingTableColumnCount(pBroker, girderKey, analysisType, bDesign, bUserLoads, &details, bDetail);
 
-    CString label = _T("Reactions");
+    CString label = _T("Bearing Design Reactions");
     rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols, label);
 
     RowIndexType row = ConfigureBearingReactionTableHeading<rptForceUnitTag, WBFL::Units::ForceData>(

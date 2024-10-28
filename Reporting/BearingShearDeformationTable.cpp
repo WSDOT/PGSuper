@@ -250,11 +250,11 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
 
     if (bCold)
     {
-        label = _T("Shear Deformations - Cold Climate");
+        label = _T("Bearing Design Shear Deformations - Cold Climate");
     }
     else
     {
-        label = _T("Shear Deformations - Moderate Climate");
+        label = _T("Bearing Design Shear Deformations - Moderate Climate");
     }
 
     
