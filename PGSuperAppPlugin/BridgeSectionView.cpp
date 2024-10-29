@@ -2423,6 +2423,14 @@ void CBridgeSectionView::BuildAlignmentDisplayObjects()
    drawAlignmentStrategy->SetColor(ALIGNMENT_COLOR);
    drawAlignmentStrategy->SetLineStyle(WBFL::DManip::LineStyleType::Centerline);
 
+   doAlignment->SetSelectionType(WBFL::DManip::SelectionType::All);
+
+   auto events = std::make_shared<CAlignmentDisplayObjectEvents>(pBroker, m_pFrame, CAlignmentDisplayObjectEvents::Alignment);
+   doAlignment->RegisterEventSink(events);
+   doAlignment->SetToolTipText(_T("Double click to edit alignment"));
+   doAlignment->SetMaxTipWidth(TOOLTIP_WIDTH);
+   doAlignment->SetTipDisplayTime(TOOLTIP_DURATION);
+
    displayList->AddDisplayObject(doAlignment);
 
    auto doText = WBFL::DManip::TextBlock::Create();
