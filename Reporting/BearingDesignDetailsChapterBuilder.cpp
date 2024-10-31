@@ -198,7 +198,7 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
 
     *p << _T("Temperature range is computed based on Procedure A (Article 3.12.2.1)") << rptNewLine;
 
-    *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("thermal_expansion.png")) << rptNewLine;
+    *p << rptRcEquation(std::_tstring(rptStyleManager::GetImagePath()) + _T("thermal_expansion.png"), _T("\\Delta_{\\text{thermal}} = \\Delta_0 \\times \\alpha \\times L_{pf} \\times (T_{\\max} - T_{\\min})")) << rptNewLine;
 
     *p << symbol(alpha) << _T(" = coefficient of thermal expansion") << rptNewLine;
 
@@ -228,7 +228,7 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
 
         p = new rptParagraph(rptStyleManager::GetSubheadingStyle());
         *pChapter << p;
-        *p << _T("Shortening of bottom flange, ") << symbol(DELTA) << Sub2(_T("L"), _T("bf"));
+        *p << _T("Shear deformation at bearing, ") << Sub2(symbol(DELTA), _T("s"));
         *p << _T(", due to tendon shortening, ") << symbol(DELTA) << Sub2(_T(" L"), _T("ten")) << _T(" :") << rptNewLine;
 
         p = new rptParagraph;
@@ -237,9 +237,12 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
         //*p << html;
 
         *p << _T("Bottom flange shortening is calculated using PCI BDM Eq. 10.8.3.8.2-6:") << rptNewLine;
-        *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("BottomFlangeShortening.png")) << rptNewLine;
+        *p << rptRcEquation(std::_tstring(rptStyleManager::GetImagePath()) + _T("BottomFlangeShortening.png"),
+        _T("\\Delta_S = -\\Delta L_{bf} = -\\frac{\\left(1 + \\dfrac{e_p y_b}{r ^ 2} \\right)}{\\left(1 + \\dfrac{e_p ^ 2}{r ^ 2} \\right)} \\left(\\Delta L_{ten} \\right)"));
+        *p << rptNewLine;
+
         *p << _T("where") << rptNewLine;
-        *p << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("radius_of_gyration.png")) << rptNewLine;
+        *p << rptRcEquation(std::_tstring(rptStyleManager::GetImagePath()) + _T("radius_of_gyration.png"), _T("r = \\sqrt{\\dfrac{I_{xx}}{A_g}}")) << rptNewLine;
     }
 
     bool bCold;
