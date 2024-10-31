@@ -321,7 +321,6 @@ std::array<Float64, 2> pgsBearingDesignEngineer::GetTimeDependentComponentShearD
 {
 
 
-    GET_IFACE(ILosses, pLosses);
     GET_IFACE(IMaterials, pMaterials);
     GET_IFACE(IIntervals, pIntervals);
     GET_IFACE(IBridgeDescription, pIBridgeDesc);
@@ -337,8 +336,6 @@ std::array<Float64, 2> pgsBearingDesignEngineer::GetTimeDependentComponentShearD
     Float64 Ep = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Straight)->GetE();
 
     Float64 tendon_shortening = -(loss * bearing->length_pf / Ep) / 3.0; // assumes 2/3 of creep and shrinkage occurs before girders are erected
-
-    auto details = pLosses->GetLossDetails(bearing->rPoi, erectSegmentIntervalIdx);
 
     Float64 flange_bottom_shortening = (1.0 + bearing->ep * bearing->yb / (bearing->r * bearing->r)) /
         (1 + bearing->ep * bearing->ep / (bearing->r * bearing->r)) * tendon_shortening;
@@ -467,8 +464,8 @@ Float64 pgsBearingDesignEngineer::GetBearingTimeDependentLosses(const pgsPointOf
         if (pDetails->LossMethod == PrestressLossCriteria::LossMethodType::WSDOT_REFINED_2005 || pDetails->LossMethod == PrestressLossCriteria::LossMethodType::AASHTO_REFINED_2005)
         {
             auto pRefined2005 = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLosses2005>(pDetails->pLosses);
-            tdComponents->shrinkage = pRefined2005->ShrinkageLossBeforeDeckPlacement();
             tdComponents->creep = pRefined2005->CreepLossBeforeDeckPlacement();
+            tdComponents->shrinkage = pRefined2005->ShrinkageLossBeforeDeckPlacement();
             tdComponents->relaxation = pRefined2005->RelaxationLossBeforeDeckPlacement();
         }
 
