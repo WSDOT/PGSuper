@@ -2811,14 +2811,14 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
       if (!IsEqual(tsDetails.Ytr, Ytr) || !IsEqual(tsDetails.Atr, Atr) || !IsEqual(tsDetails.Itr, Itr))
       {
          CString strMsg;
-         strMsg.Format(_T("Ytr (%s,%s)\nAtr (%s,%s)\nItr (%s,%s)\n at POI %d"),
+         strMsg.Format(_T("Ytr (%s,%s)\nAtr (%s,%s)\nItr (%s,%s)\n at POI %d, interval %d"),
             ::FormatDimension(tsDetails.Ytr, m_pDisplayUnits->GetComponentDimUnit()),
             ::FormatDimension(Ytr, m_pDisplayUnits->GetComponentDimUnit()),
             ::FormatDimension(tsDetails.Atr, m_pDisplayUnits->GetAreaUnit()),
             ::FormatDimension(Atr, m_pDisplayUnits->GetAreaUnit()),
             ::FormatDimension(tsDetails.Itr, m_pDisplayUnits->GetMomentOfInertiaUnit()),
             ::FormatDimension(Itr, m_pDisplayUnits->GetMomentOfInertiaUnit()),
-            poi.GetID());
+            poi.GetID(), intervalIdx);
 
          AfxMessageBox(strMsg);
       }
