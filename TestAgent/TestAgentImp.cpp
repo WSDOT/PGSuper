@@ -29,6 +29,7 @@
 #include <IFace\VersionInfo.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Bridge.h>
+#include <IFace\BearingDesignParameters.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\MomentCapacity.h>
 #include <IFace\ShearCapacity.h>
@@ -287,6 +288,18 @@ bool CTestAgentImp::RunTest(long type,
                return false;
             }
             break;
+          
+         case 70:
+             if (RunBearingTest(resf, poif, extSegmentKey))
+             {
+                 return RunBearingTest(resf, poif, intSegmentKey);
+             }
+             else
+             {
+                 return false;
+             }
+             break;
+
          case 499:
             if ( RunCamberTest(resf, poif, extSegmentKey) )
             {
@@ -333,6 +346,8 @@ bool CTestAgentImp::RunTest(long type,
             VERIFY( RunWsdotGirderScheduleTest(resf, poif, intSegmentKey) );
             VERIFY( RunHaunchTest(resf, poif, extSegmentKey) );
             VERIFY( RunHaunchTest(resf, poif, intSegmentKey) );
+            VERIFY(RunBearingTest(resf, poif, extSegmentKey));
+            VERIFY(RunBearingTest(resf, poif, intSegmentKey));
 
             if (type==RUN_REGRESSION && pDocType->IsPGSuperDocument()) // only do design for regression - cad test should have already run design
             { // design only applies to PGSuper documents (not spliced girders)
@@ -472,6 +487,12 @@ bool CTestAgentImp::RunTestEx(long type, const std::vector<SpanGirderHashType>& 
             return false;
          }
          break;
+      case 70:
+          if (!RunBearingTest(resf, poif, segmentKey))
+          {
+              return false;
+          }
+          break;
       case 499:
          if ( !RunCamberTest(resf, poif, segmentKey) )
          {
@@ -544,6 +565,10 @@ bool CTestAgentImp::RunTestEx(long type, const std::vector<SpanGirderHashType>& 
          if ( !RunHaunchTest(resf, poif, segmentKey) )
          {
             return false;
+         }
+         if (!RunBearingTest(resf, poif, segmentKey))
+         {
+             return false;
          }
 
          if (type==RUN_REGRESSION) // only do design for regression - cad test should have already run design if requested
@@ -664,6 +689,55 @@ std::_tstring CTestAgentImp::GetProcessID()
    // now using a "generic" number for the process id
    return std::_tstring(_T("0.0.0.0"));
 }
+
+
+
+bool CTestAgentImp::RunBearingTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, const CSegmentKey& segmentKey)
+{
+
+    GET_IFACE(IBridge, pBridge);
+
+    // Generate data
+    std::_tstring pid = GetProcessID();
+    std::_tstring bridgeId = GetBridgeID();
+
+    GET_IFACE(IBearingDesignParameters, pBearingDesignParameters);
+
+    SHEARDEFORMATIONDETAILS tdDetails;
+    pBearingDesignParameters->GetTimeDependentShearDeformation(segmentKey, &tdDetails);
+
+    for (const auto& brg : tdDetails.brg_details)
+    {
+        PierIndexType pierID = brg.reactionLocation.PierIdx;
+        PierReactionFaceType pierFace = brg.reactionLocation.Face;
+
+        Float64 total_shear_deformation_cold = WBFL::Units::ConvertFromSysUnits(brg.total_shear_deformation_cold, WBFL::Units::Measure::Millimeter);
+
+        REACTIONDETAILS reactionDetails;
+        pBearingDesignParameters->GetBearingReactionDetails(brg.reactionLocation, segmentKey, pgsTypes::AnalysisType::Continuous, false, true, &reactionDetails);
+
+        Float64 total_dl_reaction = WBFL::Units::ConvertFromSysUnits(reactionDetails.totalDLreaction, WBFL::Units::Measure::Newton);
+        Float64 total_ll_reaction = WBFL::Units::ConvertFromSysUnits(reactionDetails.maxComboDesignLLReaction, WBFL::Units::Measure::Newton);
+
+        ROTATIONDETAILS rotationDetails;
+        pBearingDesignParameters->GetBearingRotationDetails(pgsTypes::AnalysisType::Continuous, brg.rPoi, brg.reactionLocation, segmentKey, 
+            false, true, true, &rotationDetails);
+
+        Float64 static_rotation = WBFL::Units::ConvertFromSysUnits(rotationDetails.staticRotation, WBFL::Units::Measure::Millimeter);
+        Float64 cyclic_rotation = WBFL::Units::ConvertFromSysUnits(rotationDetails.cyclicRotation, WBFL::Units::Measure::Millimeter);
+
+        resultsFile << bridgeId << _T(", ") << pid << _T(", 70000, ") << pierID << _T("-") << pierFace << _T(", ") << QUIET(total_shear_deformation_cold) << _T(", 7, ") << SEGMENT(segmentKey) << std::endl;
+        resultsFile << bridgeId << _T(", ") << pid << _T(", 70001, ") << pierID << _T("-") << pierFace << _T(", ") << QUIET(total_dl_reaction) << _T(", 7, ") << SEGMENT(segmentKey) << std::endl;
+        resultsFile << bridgeId << _T(", ") << pid << _T(", 70002, ") << pierID << _T("-") << pierFace << _T(", ") << QUIET(total_ll_reaction) << _T(", 7, ") << SEGMENT(segmentKey) << std::endl;
+        resultsFile << bridgeId << _T(", ") << pid << _T(", 70003, ") << pierID << _T("-") << pierFace << _T(", ") << QUIET(static_rotation) << _T(", 7, ") << SEGMENT(segmentKey) << std::endl;
+        resultsFile << bridgeId << _T(", ") << pid << _T(", 70004, ") << pierID << _T("-") << pierFace << _T(", ") << QUIET(cyclic_rotation) << _T(", 7, ") << SEGMENT(segmentKey) << std::endl;
+
+    }
+
+    return true;
+
+}
+
 
 bool CTestAgentImp::RunHaunchTest(std::_tofstream& resultsFile, std::_tofstream& poiFile,const CSegmentKey& segmentKey)
 {
