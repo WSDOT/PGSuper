@@ -352,3 +352,4 @@ RegressionTest/Current/**/*.Test
 RegressionTest/SimpleTestResults.txt
 RegressionTest/*.bat
 !RegressionTest/Run*.bat
+/images/WBFLStability
