@@ -77,8 +77,9 @@
       <Command />
     </PreBuildEvent>
     <CustomBuildStep>
-      <Message />
-      <Command />
+      <Message>Installing WBFL Report Images</Message>
+      <Command>$(ARPDIR)\WBFL\InstallWBFL_ReportImages.bat $(ARPDIR)\PGSuper\images</Command>
+      <Outputs>$(ARPDIR)\PGSuper\images\*.*</Outputs>
     </CustomBuildStep>
     <Midl>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -138,8 +139,9 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
       <Command />
     </PreBuildEvent>
     <CustomBuildStep>
-      <Message />
-      <Command />
+      <Message>Installing WBFL Report Images</Message>
+      <Command>$(ARPDIR)\WBFL\InstallWBFL_ReportImages.bat $(ARPDIR)\PGSuper\images</Command>
+      <Outputs>$(ARPDIR)\PGSuper\images\*.*</Outputs>
     </CustomBuildStep>
     <Midl>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>

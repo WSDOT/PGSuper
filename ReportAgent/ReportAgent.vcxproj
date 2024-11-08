@@ -76,7 +76,7 @@
     <CustomBuildStep>
       <Message>Copying Images to BridgeLink\Image folder</Message>
       <Command>mkdir $(ARPDIR)\BridgeLink\Images
-xcopy /y /d $(ARPDIR)\PGSuper\Images\*.* $(ARPDIR)\BridgeLink\Images
+xcopy /y /d/s/e/i $(ARPDIR)\PGSuper\Images $(ARPDIR)\BridgeLink\Images
 </Command>
       <Inputs>$(ProjectDir)Images\*.*;%(Inputs)</Inputs>
       <Outputs>$(ARPDIR)\BridgeLink\Images\*.*;%(Outputs)</Outputs>
@@ -136,7 +136,7 @@ xcopy /y /d $(ARPDIR)\PGSuper\Images\*.* $(ARPDIR)\BridgeLink\Images
     <CustomBuildStep>
       <Message>Copying Images to BridgeLink\Image folder</Message>
       <Command>mkdir $(ARPDIR)\BridgeLink\Images
-xcopy /y /d $(ARPDIR)\PGSuper\Images\*.* $(ARPDIR)\BridgeLink\Images
+xcopy /y /d/s/e/i $(ARPDIR)\PGSuper\Images $(ARPDIR)\BridgeLink\Images
 </Command>
       <Inputs>$(ProjectDir)Images\*.*;%(Inputs)</Inputs>
       <Outputs>$(ARPDIR)\BridgeLink\Images\*.*;%(Outputs)</Outputs>
