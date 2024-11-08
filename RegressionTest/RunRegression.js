@@ -42,6 +42,8 @@ else if (machine=="HQD1764064")
    PGSuperDrive = "F:";
 else if (machine=="HQF2087073L")
    PGSuperDrive = "D:";
+else if (machine=="HQE8217017")
+   PGSuperDrive = "C:";
 
 var wsShell = new ActiveXObject("WScript.Shell");
 var FSO = new ActiveXObject("Scripting.FileSystemObject");
