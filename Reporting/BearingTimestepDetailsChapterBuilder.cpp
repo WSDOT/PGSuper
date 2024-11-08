@@ -121,7 +121,7 @@ rptChapter* CBearingTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<c
    GET_IFACE2(pBroker, IPointOfInterest, pPOI);
 
    SHEARDEFORMATIONDETAILS details;
-   pBearingDesignParameters->GetBearingTableParameters(girderKey, &details);
+   pBearingDesignParameters->GetBearingParameters(girderKey, &details);
    pBearingDesignParameters->GetTimeDependentShearDeformation(girderKey, &details);
 
    const pgsPointOfInterest first_girder_poi = pPOI->GetPierPointOfInterest(girderKey, details.brg_details[0].reactionLocation.PierIdx);

@@ -673,7 +673,7 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
 
     GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
     REACTIONDETAILS details;
-    pBearingDesignParameters->GetBearingTableParameters(girderKey, &details);
+    pBearingDesignParameters->GetBearingParameters(girderKey, &details);
 
     ColumnIndexType nCols = GetBearingTableColumnCount(pBroker, girderKey, analysisType, bDesign, bUserLoads, &details, bDetail);
 

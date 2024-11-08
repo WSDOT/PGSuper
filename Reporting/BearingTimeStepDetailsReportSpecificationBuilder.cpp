@@ -90,7 +90,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CBearingTimeStepDetailsRep
        initial_location = vReactionLocations.front();   //get first location based on girder
    }
    
-   pBearingDesignParameters->GetBearingTableParameters(girderKey, &details);
+   pBearingDesignParameters->GetBearingParameters(girderKey, &details);
 
    PoiList vPoi;
    std::vector<CGirderKey> vGirderKeys;

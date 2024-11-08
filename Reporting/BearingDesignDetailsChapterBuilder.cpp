@@ -147,7 +147,7 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
 
 
     SHEARDEFORMATIONDETAILS sfDetails;
-    pBearingDesignParameters->GetBearingTableParameters(girderKey, &sfDetails);
+    pBearingDesignParameters->GetBearingParameters(girderKey, &sfDetails);
 
 
     *p << CBearingRotationTable().BuildBearingRotationTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,

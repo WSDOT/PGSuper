@@ -3544,12 +3544,12 @@ Float64 CEngAgentImp::GetSectionGirderOrientationEffect(const pgsPointOfInterest
 /////////////////////////////////////////////////////////////////////////////
 // IBearingDesignParamters
 
-void CEngAgentImp::GetBearingTableParameters(CGirderKey girderKey, TABLEPARAMETERS* pDetails) const
+void CEngAgentImp::GetBearingParameters(CGirderKey girderKey, BEARINGPARAMETERS* pDetails) const
 {
-    m_BearingEngineer.GetBearingTableParameters(girderKey, pDetails);
+    m_BearingEngineer.GetBearingParameters(girderKey, pDetails);
 }
 
-void CEngAgentImp::GetLongitudinalPointOfFixity(const CGirderKey& girderKey, TABLEPARAMETERS* pDetails) const
+void CEngAgentImp::GetLongitudinalPointOfFixity(const CGirderKey& girderKey, BEARINGPARAMETERS* pDetails) const
 {
     m_BearingEngineer.GetLongitudinalPointOfFixity(girderKey, pDetails);
 }

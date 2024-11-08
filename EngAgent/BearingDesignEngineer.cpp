@@ -122,7 +122,7 @@ Float64 pgsBearingDesignEngineer::BearingSkewFactor(const ReactionLocation& reac
 }
 
 
-void pgsBearingDesignEngineer::GetLongitudinalPointOfFixity(const CGirderKey& girderKey, TABLEPARAMETERS* pDetails) const
+void pgsBearingDesignEngineer::GetLongitudinalPointOfFixity(const CGirderKey& girderKey, BEARINGPARAMETERS* pDetails) const
 {
     GET_IFACE(IBridge, pBridge);
     GET_IFACE(IBridgeDescription, pBridgeDesc);
@@ -212,7 +212,7 @@ void pgsBearingDesignEngineer::GetLongitudinalPointOfFixity(const CGirderKey& gi
 }
 
 
-void pgsBearingDesignEngineer::GetBearingTableParameters(const CGirderKey& girderKey, TABLEPARAMETERS* pDetails) const
+void pgsBearingDesignEngineer::GetBearingParameters(const CGirderKey& girderKey, BEARINGPARAMETERS* pDetails) const
 {
     GET_IFACE(IBridge, pBridge);
     GET_IFACE(IUserDefinedLoadData, pUserLoads);
@@ -292,6 +292,10 @@ Float64 pgsBearingDesignEngineer::GetDistanceToPointOfFixity(const pgsPointOfInt
 
     const CGirderKey& girderKey(poi_brg.GetSegmentKey());
 
+    GET_IFACE(IBearingDesignParameters, pBearingDesignParameters);
+
+    pBearingDesignParameters->GetBearingParameters(girderKey, pDetails);
+
     CSegmentKey segmentKey = pDetails->poi_fixity.GetSegmentKey();
     Float64 gpcBrgOffset = pBridge->GetSegmentStartBearingOffset(segmentKey);
 
@@ -328,6 +332,7 @@ std::array<Float64, 2> pgsBearingDesignEngineer::GetTimeDependentComponentShearD
     
 
     const CSegmentKey& segmentKey(bearing->rPoi.GetSegmentKey());
+
     const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
     IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(bearing->rPoi.GetSegmentKey());
     auto lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
@@ -347,7 +352,8 @@ std::array<Float64, 2> pgsBearingDesignEngineer::GetTimeDependentComponentShearD
 }
 
 
-Float64 pgsBearingDesignEngineer::GetBearingTimeDependentLosses(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, const GDRCONFIG* pConfig, const LOSSDETAILS* pDetails, TDCOMPONENTS* tdComponents) const
+Float64 pgsBearingDesignEngineer::GetBearingTimeDependentLosses(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, 
+    IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, const GDRCONFIG* pConfig, const LOSSDETAILS* pDetails, TDCOMPONENTS* tdComponents) const
 {
     GET_IFACE(IPointOfInterest, pPoi);
     if (pPoi->IsOffSegment(poi))
@@ -489,6 +495,9 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
     GET_IFACE(IBridge, pBridge);
     GET_IFACE(IPointOfInterest, pPOI);
     GET_IFACE(IBearingDesign, pBearingDesign);
+    GET_IFACE(IBearingDesignParameters, pBearingDesignParameters);
+
+    pBearingDesignParameters->GetBearingParameters(girderKey, pDetails);
 
 
     IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
@@ -797,6 +806,9 @@ void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType 
     GET_IFACE(ILossParameters, pLossParams);
     GET_IFACE(IPointOfInterest, pPoi);
 
+    GET_IFACE(IBearingDesignParameters, pBearingDesignParameters);
+    pBearingDesignParameters->GetBearingParameters(girderKey, pDetails);
+
     Float64 min, max, DcreepErect, RcreepErect, DcreepFinal, RcreepFinal;
     VehicleIndexType minConfig, maxConfig;
     pgsTypes::BridgeAnalysisType maxBAT = pProductForces->GetBridgeAnalysisType(analysisType, pgsTypes::Maximize);
@@ -985,7 +997,8 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
 
 
 {
-
+    GET_IFACE(IBearingDesignParameters, pBearingDesignParameters);
+    pBearingDesignParameters->GetBearingParameters(girderKey, pDetails);
 
     GET_IFACE(IProductForces, pProdForces);
     pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType, pgsTypes::Maximize);

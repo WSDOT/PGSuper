@@ -695,18 +695,16 @@ std::_tstring CTestAgentImp::GetProcessID()
 bool CTestAgentImp::RunBearingTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, const CSegmentKey& segmentKey)
 {
 
-    GET_IFACE(IBridge, pBridge);
-
     // Generate data
     std::_tstring pid = GetProcessID();
     std::_tstring bridgeId = GetBridgeID();
 
     GET_IFACE(IBearingDesignParameters, pBearingDesignParameters);
 
-    SHEARDEFORMATIONDETAILS tdDetails;
-    pBearingDesignParameters->GetTimeDependentShearDeformation(segmentKey, &tdDetails);
+    SHEARDEFORMATIONDETAILS sfDetails;
+    pBearingDesignParameters->GetTimeDependentShearDeformation(segmentKey, &sfDetails);
 
-    for (const auto& brg : tdDetails.brg_details)
+    for (const auto& brg : sfDetails.brg_details)
     {
         PierIndexType pierID = brg.reactionLocation.PierIdx;
         PierReactionFaceType pierFace = brg.reactionLocation.Face;

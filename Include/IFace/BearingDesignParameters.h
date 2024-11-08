@@ -38,7 +38,7 @@ DESCRIPTION
 
 
 
-struct TABLEPARAMETERS // should rename bridge parameters
+struct BEARINGPARAMETERS
 {
 	bool bSegments;
 	bool bConstruction;
@@ -74,7 +74,7 @@ struct DESIGNPROPERTIES
 };
 
 
-struct ROTATIONDETAILS : public TABLEPARAMETERS
+struct ROTATIONDETAILS : public BEARINGPARAMETERS
 {
 	Float64 skewFactor;
 	Float64 staticRotation;
@@ -121,7 +121,7 @@ struct ROTATIONDETAILS : public TABLEPARAMETERS
 	Float64 relaxationRotation;
 };
 
-struct REACTIONDETAILS : public TABLEPARAMETERS
+struct REACTIONDETAILS : public BEARINGPARAMETERS
 {
 	Float64 totalDLreaction;
 	Float64 maxComboDesignLLReaction;
@@ -224,7 +224,7 @@ struct BEARINGSHEARDEFORMATIONDETAILS  //results per bearing
 };
 
 
-struct SHEARDEFORMATIONDETAILS : public TABLEPARAMETERS  // results per girder
+struct SHEARDEFORMATIONDETAILS : public BEARINGPARAMETERS  // results per girder
 {
 	std::vector <BEARINGSHEARDEFORMATIONDETAILS> brg_details;
 };
@@ -238,9 +238,9 @@ DEFINE_GUID(IID_IBearingDesignParameters,
 	0xD88670F0, 0x3B83, 0x11d2, 0x8E, 0xC5, 0x00, 0x60, 0x97, 0xDF, 0x3C, 0x68);
 interface IBearingDesignParameters : IUnknown
 {
-	virtual void GetBearingTableParameters(CGirderKey girderKey, TABLEPARAMETERS* pDetails) const = 0;
+	virtual void GetBearingParameters(CGirderKey girderKey, BEARINGPARAMETERS* pDetails) const = 0;
 
-	virtual void GetLongitudinalPointOfFixity(const CGirderKey& girderKey, TABLEPARAMETERS* pDetails) const = 0;
+	virtual void GetLongitudinalPointOfFixity(const CGirderKey& girderKey, BEARINGPARAMETERS* pDetails) const = 0;
 
 	virtual void GetBearingRotationDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi, 
 		const ReactionLocation& reactionLocation, CGirderKey girderKey, bool bIncludeImpact, bool bIncludeLLDF,

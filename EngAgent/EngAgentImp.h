@@ -378,9 +378,9 @@ public:
 
 // IBearingDesignParameters
  public:
-   void GetBearingTableParameters(CGirderKey girderKey, TABLEPARAMETERS* pDetails) const override;
+   void GetBearingParameters(CGirderKey girderKey, BEARINGPARAMETERS* pDetails) const override;
 
-   void GetLongitudinalPointOfFixity(const CGirderKey& girderKey, TABLEPARAMETERS* pDetails) const override;
+   void GetLongitudinalPointOfFixity(const CGirderKey& girderKey, BEARINGPARAMETERS* pDetails) const override;
 
    void GetBearingDesignProperties(DESIGNPROPERTIES* pDetails) const override;
 
