@@ -8,7 +8,6 @@
 ///////////////////////////////////////////////////
 
 // first some defaults
-// first some defaults
 var PGSuperVersion = "Debug";
 var PGSuperPlatform = "WIN32";
 var DoSendEmail=false;
@@ -23,29 +22,20 @@ var startDate = new Date();
 var startTime = startDate.getTime();
 
 // hack for convenience:
-// set up drives so pickings' and brice's machines work without command line options
-var PGSuperDrive = "F:";
-var objNet = new ActiveXObject( "WScript.Network" );
-var machine = objNet.ComputerName;
-machine = machine.toUpperCase();
-if (machine=="RICHARDSDELL")
-   PGSuperDrive = "C:";
-else if (machine=="ACERI7WIN7")
-   PGSuperDrive = "C:";
-else if (machine=="RICHARDSGRAM")
-   PGSuperDrive = "C:";
-else if (machine=="HQB0630025")
-   PGSuperDrive = "F:";
-else if (machine=="HQE3609046")
-   PGSuperDrive = "F:";
-else if (machine=="HQD1764064")
-   PGSuperDrive = "F:";
-else if (machine=="HQF2087073L")
-   PGSuperDrive = "D:";
-else if (machine=="HQE8217017")
-   PGSuperDrive = "C:";
-
+// set up drives so all machines work without command line options
 var wsShell = new ActiveXObject("WScript.Shell");
+
+// Retrieve ARPDIR environment variable
+var projectDir = wsShell.ExpandEnvironmentStrings("%ARPDIR%");
+
+// Check if ARPDIR is defined
+if (!projectDir || projectDir === "%ARPDIR%") {
+    throw new Error("Environment variable ARPDIR is not defined.");
+}
+
+// Extract the drive letter from ARPDIR
+var PGSuperDrive = projectDir.split(':')[0] + ':';
+
 var FSO = new ActiveXObject("Scripting.FileSystemObject");
 
 // Create file name for timer file
@@ -80,10 +70,10 @@ var NewCatalogServer = new String("Regression");
 var OldCatalogPublisher = new String;
 var NewCatalogPublisher = new String("Regression");
 
-var Application = PGSuperDrive+"\\ARP\\BridgeLink\\RegFreeCOM\\" +PGSuperPlatform+"\\"+PGSuperVersion+"\\BridgeLink.exe ";
-var StartFolderSpec = new String( PGSuperDrive+"\\ARP\\PGSuper\\RegressionTest" );
-var CurrFolderSpec  = new String( PGSuperDrive+"\\ARP\\PGSuper\\RegressionTest\\Current" );
-var DatumFolderSpec = new String( PGSuperDrive+"\\ARP\\PGSuper\\RegressionTest\\Datum" );
+var Application = projectDir + "\\BridgeLink\\RegFreeCOM\\" +PGSuperPlatform+"\\"+PGSuperVersion+"\\BridgeLink.exe ";
+var StartFolderSpec = new String( projectDir + "\\PGSuper\\RegressionTest" );
+var CurrFolderSpec  = new String( projectDir + "\\PGSuper\\RegressionTest\\Current" );
+var DatumFolderSpec = new String( projectDir + "\\PGSuper\\RegressionTest\\Datum" );
 
 var ErrorsExist = "FALSE";
 
