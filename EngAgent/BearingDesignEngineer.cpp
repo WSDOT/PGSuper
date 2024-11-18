@@ -503,57 +503,61 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
     IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
     std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, girderKey));
 
-
-    // get poi where pier Reactions occur
-    //PoiList vPoi;
-    //std::vector<CGirderKey> vGirderKeys;
-    //pBridge->GetGirderline(girderKey.girderIndex, pDetails->startGroup, pDetails->endGroup, &vGirderKeys);
-    //for (const auto& thisGirderKey : vGirderKeys)
-    //{
-    //    pPOI->GetPointsOfInterest(CSpanKey(ALL_SPANS, thisGirderKey.girderIndex), POI_ABUTMENT | POI_BOUNDARY_PIER | POI_INTERMEDIATE_PIER, &vPoi);
-    //}
-
-    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
-    GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
-    GroupIndexType endGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? nGroups - 1 : startGroupIdx);
-
-
-    GET_IFACE(IProductForces, pProdForces);
-    GET_IFACE(ISpecification, pSpec);
-
-    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
-
-    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType, pgsTypes::Maximize);
-    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType, pgsTypes::Minimize);
-
-    // get poi at start and end of each segment in the girder
+    // get poi where reactions occur
     PoiList vPoi;
-    for (GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++)
+
+    if (pBridge->IsInteriorPier(1))
     {
-        GirderIndexType gdrIdx = Min(girderKey.girderIndex, pBridge->GetGirderCount(grpIdx) - 1);
-
-        // don't report girders that don't exist on bridge
-        SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx, gdrIdx));
-        CSegmentKey segmentKey(grpIdx, gdrIdx, 0);
-        PoiList vSegPoi;
-        pPOI->GetPointsOfInterest(segmentKey, POI_0L | POI_ERECTED_SEGMENT, &vSegPoi);
-        ATLASSERT(vSegPoi.size() == 1);
-        vPoi.insert(vPoi.end(), vSegPoi.begin(), vSegPoi.end());
-
-        segmentKey.segmentIndex = nSegments - 1;
-        vSegPoi.clear();
-        pPOI->GetPointsOfInterest(segmentKey, POI_10L | POI_ERECTED_SEGMENT, &vSegPoi);
-        ATLASSERT(vSegPoi.size() == 1);
-        vPoi.insert(vPoi.end(), vSegPoi.begin(), vSegPoi.end());
+        std::vector<CGirderKey> vGirderKeys;
+        pBridge->GetGirderline(girderKey.girderIndex, pDetails->startGroup, pDetails->endGroup, &vGirderKeys);
+        for (const auto& thisGirderKey : vGirderKeys)
+        {
+            pPOI->GetPointsOfInterest(CSpanKey(ALL_SPANS, thisGirderKey.girderIndex), POI_ABUTMENT | POI_BOUNDARY_PIER | POI_INTERMEDIATE_PIER, &vPoi);
+        }
     }
+    else
+    {
+        GroupIndexType nGroups = pBridge->GetGirderGroupCount();
+        GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
+        GroupIndexType endGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? nGroups - 1 : startGroupIdx);
 
+
+        GET_IFACE(IProductForces, pProdForces);
+        GET_IFACE(ISpecification, pSpec);
+
+        pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
+
+        pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType, pgsTypes::Maximize);
+        pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType, pgsTypes::Minimize);
+
+        // this only works for single span:
+        // get poi at start and end of each segment in the girder
+        for (GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++)
+        {
+            GirderIndexType gdrIdx = Min(girderKey.girderIndex, pBridge->GetGirderCount(grpIdx) - 1);
+
+            // don't report girders that don't exist on bridge
+            SegmentIndexType nSegments = pBridge->GetSegmentCount(CGirderKey(grpIdx, gdrIdx));
+            CSegmentKey segmentKey(grpIdx, gdrIdx, 0);
+            PoiList vSegPoi;
+            pPOI->GetPointsOfInterest(segmentKey, POI_0L | POI_ERECTED_SEGMENT, &vSegPoi);
+            ATLASSERT(vSegPoi.size() == 1);
+            vPoi.insert(vPoi.end(), vSegPoi.begin(), vSegPoi.end());
+
+            segmentKey.segmentIndex = nSegments - 1;
+            vSegPoi.clear();
+            pPOI->GetPointsOfInterest(segmentKey, POI_10L | POI_ERECTED_SEGMENT, &vSegPoi);
+            ATLASSERT(vSegPoi.size() == 1);
+            vPoi.insert(vPoi.end(), vSegPoi.begin(), vSegPoi.end());
+        }
+    }
 
 
     ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
 
     PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
 
-
+    // keep redefining start pier in loop???? No, the above vPoi just needs to be bigger
 
     // Use iterator to walk locations
     for (iter.First(); !iter.IsDone(); iter.Next())
@@ -567,7 +571,9 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
 
         const CGirderKey& thisGirderKey(reactionLocation.GirderKey);
 
-        const pgsPointOfInterest& poi = vPoi[reactionLocation.PierIdx - startPierIdx];
+        const pgsPointOfInterest& poi = vPoi[reactionLocation.PierIdx - startPierIdx]; // this breaks bc only expects 1 segment.
+
+        // so does this depend on what is going into the report? Adjust depending on report spec.
 
         brg_details.rPoi = poi;
 
