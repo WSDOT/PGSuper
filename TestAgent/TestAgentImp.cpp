@@ -712,8 +712,8 @@ bool CTestAgentImp::RunBearingTest(std::_tofstream& resultsFile, std::_tofstream
         REACTIONDETAILS reactionDetails;
         pBearingDesignParameters->GetBearingReactionDetails(brg.reactionLocation, segmentKey, pgsTypes::AnalysisType::Continuous, false, true, &reactionDetails);
 
-        Float64 total_dl_reaction = WBFL::Units::ConvertFromSysUnits(reactionDetails.totalDLreaction, WBFL::Units::Measure::Newton);
-        Float64 total_ll_reaction = WBFL::Units::ConvertFromSysUnits(reactionDetails.maxComboDesignLLReaction, WBFL::Units::Measure::Newton);
+        Float64 total_dl_reaction = WBFL::Units::ConvertFromSysUnits(reactionDetails.totalDLreaction, WBFL::Units::Measure::Kip);
+        Float64 total_ll_reaction = WBFL::Units::ConvertFromSysUnits(reactionDetails.maxComboDesignLLReaction, WBFL::Units::Measure::Kip);
 
         ROTATIONDETAILS rotationDetails;
         pBearingDesignParameters->GetBearingRotationDetails(pgsTypes::AnalysisType::Continuous, brg.rPoi, brg.reactionLocation, segmentKey, 
@@ -723,7 +723,7 @@ bool CTestAgentImp::RunBearingTest(std::_tofstream& resultsFile, std::_tofstream
         Float64 cyclic_rotation = rotationDetails.cyclicRotation;
 
         pBearingDesignParameters->GetThermalExpansionDetails(segmentKey, &brg);
-        Float64 total_shear_deformation_cold = brg.total_shear_deformation_cold;
+        Float64 total_shear_deformation_cold = WBFL::Units::ConvertFromSysUnits(brg.total_shear_deformation_cold, WBFL::Units::Measure::Inch);
 
         resultsFile << bridgeId << _T(", ") << pid << _T(", 70000, ") << pierID << _T("-") << pierFace << _T(", ") << QUIET(total_shear_deformation_cold) << _T(", 7, ") << SEGMENT(segmentKey) << std::endl;
         resultsFile << bridgeId << _T(", ") << pid << _T(", 70001, ") << pierID << _T("-") << pierFace << _T(", ") << QUIET(total_dl_reaction) << _T(", 7, ") << SEGMENT(segmentKey) << std::endl;
