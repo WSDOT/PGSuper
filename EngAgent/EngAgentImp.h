@@ -380,8 +380,6 @@ public:
  public:
    void GetBearingParameters(CGirderKey girderKey, BEARINGPARAMETERS* pDetails) const override;
 
-   void GetLongitudinalPointOfFixity(const CGirderKey& girderKey, BEARINGPARAMETERS* pDetails) const override;
-
    void GetBearingDesignProperties(DESIGNPROPERTIES* pDetails) const override;
 
    void GetBearingRotationDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi, const ReactionLocation& reactionLocation, 
@@ -394,9 +392,12 @@ public:
 
    Float64 GetDistanceToPointOfFixity(const pgsPointOfInterest& poi, SHEARDEFORMATIONDETAILS* pDetails) const override;
 
-   std::array<Float64,2> GetTimeDependentComponentShearDeformation(Float64 loss, BEARINGSHEARDEFORMATIONDETAILS* bearing) const override;
-
    void GetTimeDependentShearDeformation(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const override;
+
+private:
+    void GetLongitudinalPointOfFixity(const CGirderKey& girderKey, BEARINGPARAMETERS* pDetails) const;
+
+    std::array<Float64, 2> GetTimeDependentComponentShearDeformation(Float64 loss, BEARINGSHEARDEFORMATIONDETAILS* bearing) const;
 
 // IFabricationOptimization
 public:

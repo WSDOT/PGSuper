@@ -240,8 +240,6 @@ interface IBearingDesignParameters : IUnknown
 {
 	virtual void GetBearingParameters(CGirderKey girderKey, BEARINGPARAMETERS* pDetails) const = 0;
 
-	virtual void GetLongitudinalPointOfFixity(const CGirderKey& girderKey, BEARINGPARAMETERS* pDetails) const = 0;
-
 	virtual void GetBearingRotationDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi, 
 		const ReactionLocation& reactionLocation, CGirderKey girderKey, bool bIncludeImpact, bool bIncludeLLDF,
 		bool isFlexural, ROTATIONDETAILS* pDetails) const = 0;
@@ -253,8 +251,6 @@ interface IBearingDesignParameters : IUnknown
 	virtual void GetThermalExpansionDetails(CGirderKey girderKey, BEARINGSHEARDEFORMATIONDETAILS* bearing) const = 0;
 
 	virtual Float64 GetDistanceToPointOfFixity(const pgsPointOfInterest& poi, SHEARDEFORMATIONDETAILS* pDetails) const = 0;
-
-	virtual std::array<Float64,2> GetTimeDependentComponentShearDeformation(Float64 loss, BEARINGSHEARDEFORMATIONDETAILS* bearing) const = 0;
 
 	virtual void GetTimeDependentShearDeformation(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const = 0;
 

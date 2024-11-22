@@ -704,12 +704,10 @@ bool CTestAgentImp::RunBearingTest(std::_tofstream& resultsFile, std::_tofstream
     SHEARDEFORMATIONDETAILS sfDetails;
     pBearingDesignParameters->GetTimeDependentShearDeformation(segmentKey, &sfDetails);
 
-    for (const auto& brg : sfDetails.brg_details)
+    for (auto& brg : sfDetails.brg_details)
     {
         PierIndexType pierID = brg.reactionLocation.PierIdx;
         PierReactionFaceType pierFace = brg.reactionLocation.Face;
-
-        Float64 total_shear_deformation_cold = WBFL::Units::ConvertFromSysUnits(brg.total_shear_deformation_cold, WBFL::Units::Measure::Millimeter);
 
         REACTIONDETAILS reactionDetails;
         pBearingDesignParameters->GetBearingReactionDetails(brg.reactionLocation, segmentKey, pgsTypes::AnalysisType::Continuous, false, true, &reactionDetails);
@@ -721,8 +719,11 @@ bool CTestAgentImp::RunBearingTest(std::_tofstream& resultsFile, std::_tofstream
         pBearingDesignParameters->GetBearingRotationDetails(pgsTypes::AnalysisType::Continuous, brg.rPoi, brg.reactionLocation, segmentKey, 
             false, true, true, &rotationDetails);
 
-        Float64 static_rotation = WBFL::Units::ConvertFromSysUnits(rotationDetails.staticRotation, WBFL::Units::Measure::Millimeter);
-        Float64 cyclic_rotation = WBFL::Units::ConvertFromSysUnits(rotationDetails.cyclicRotation, WBFL::Units::Measure::Millimeter);
+        Float64 static_rotation = rotationDetails.staticRotation;
+        Float64 cyclic_rotation = rotationDetails.cyclicRotation;
+
+        pBearingDesignParameters->GetThermalExpansionDetails(segmentKey, &brg);
+        Float64 total_shear_deformation_cold = brg.total_shear_deformation_cold;
 
         resultsFile << bridgeId << _T(", ") << pid << _T(", 70000, ") << pierID << _T("-") << pierFace << _T(", ") << QUIET(total_shear_deformation_cold) << _T(", 7, ") << SEGMENT(segmentKey) << std::endl;
         resultsFile << bridgeId << _T(", ") << pid << _T(", 70001, ") << pierID << _T("-") << pierFace << _T(", ") << QUIET(total_dl_reaction) << _T(", 7, ") << SEGMENT(segmentKey) << std::endl;
