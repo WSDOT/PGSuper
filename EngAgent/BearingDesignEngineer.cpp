@@ -134,7 +134,8 @@ void pgsBearingDesignEngineer::GetLongitudinalPointOfFixity(const CGirderKey& gi
 
     centermostPier = nSpans / 2;
 
-    pgsPointOfInterest poi_fixity{ pPoi->GetPierPointOfInterest(girderKey, 0) };
+    const CGirderKey girderKey0(0, 0);
+    pgsPointOfInterest poi_fixity{ pPoi->GetPierPointOfInterest(girderKey0, 0) };
 
     PierIndexType fixityPier{ 0 };
 
@@ -143,7 +144,7 @@ void pgsBearingDesignEngineer::GetLongitudinalPointOfFixity(const CGirderKey& gi
     for (const auto& thisGirderKey : vGirderKeys)
     {
         SpanIndexType startSpanIdx, endSpanIdx;
-        pBridge->GetGirderGroupSpans(ALL_GROUPS, &startSpanIdx, &endSpanIdx);
+        pBridge->GetGirderGroupSpans(thisGirderKey.groupIndex, &startSpanIdx, &endSpanIdx);
         for (SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++)
         {
             // pier indicies related to this span
@@ -155,7 +156,8 @@ void pgsBearingDesignEngineer::GetLongitudinalPointOfFixity(const CGirderKey& gi
                 if (pPier->IsBoundaryPier())
                 {
                     pgsTypes::BoundaryConditionType bct = pPier->GetBoundaryConditionType();
-                    if (bct != pgsTypes::bctRoller && bct != pgsTypes::bctContinuousAfterDeck && bct != pgsTypes::bctContinuousBeforeDeck)
+                    if (bct != pgsTypes::bctRoller && bct != pgsTypes::bctContinuousAfterDeck && 
+                        bct != pgsTypes::bctContinuousBeforeDeck)
                     {
                         poi_fixity = pPoi->GetPierPointOfInterest(girderKey, PierIdx);
                         fixityPier = PierIdx;
@@ -181,7 +183,7 @@ void pgsBearingDesignEngineer::GetLongitudinalPointOfFixity(const CGirderKey& gi
         for (const auto& thisGirderKey : vGirderKeys)
         {
             SpanIndexType startSpanIdx, endSpanIdx;
-            pBridge->GetGirderGroupSpans(ALL_GROUPS, &startSpanIdx, &endSpanIdx);
+            pBridge->GetGirderGroupSpans(thisGirderKey.groupIndex, &startSpanIdx, &endSpanIdx);
             for (SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++)
             {
                 // pier indicies related to this span

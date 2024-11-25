@@ -66,7 +66,7 @@ CPGSuperChapterBuilder(bSelect)
 //======================== OPERATIONS =======================================
 LPCTSTR CBearingDesignParametersChapterBuilder::GetName() const
 {
-   return TEXT("Bearing Design Parameters");
+   return TEXT("Bearing Design Parameters (Obsolete)");
 }
 
 rptChapter* CBearingDesignParametersChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
