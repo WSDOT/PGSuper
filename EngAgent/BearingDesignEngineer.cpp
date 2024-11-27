@@ -134,10 +134,10 @@ void pgsBearingDesignEngineer::GetLongitudinalPointOfFixity(const CGirderKey& gi
 
     centermostPier = nSpans / 2;
 
-    const CGirderKey girderKey0(0, 0);
-    pgsPointOfInterest poi_fixity{ pPoi->GetPierPointOfInterest(girderKey0, 0) };
+    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
+    PierIndexType fixityPier = pGroup->GetPierIndex(pgsTypes::metStart);
+    pgsPointOfInterest poi_fixity = pPoi->GetPierPointOfInterest(girderKey, fixityPier);
 
-    PierIndexType fixityPier{ 0 };
 
     std::vector<CGirderKey> vGirderKeys;
     pBridge->GetGirderline(girderKey, &vGirderKeys);
@@ -207,7 +207,7 @@ void pgsBearingDesignEngineer::GetLongitudinalPointOfFixity(const CGirderKey& gi
         const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
         PierIndexType pier = pGroup->GetPierIndex(pgsTypes::metStart);
         poi_fixity = pPoi->GetPierPointOfInterest(girderKey, pier);
-        fixityPier = 0;
+        fixityPier = pier;
         bHasXConstraint = true;
     }
 
@@ -492,7 +492,7 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
 {
 
     GET_IFACE(IIntervals, pIntervals);
-    GET_IFACE(IBridgeDescription, pIBridgeDesc);
+    GET_IFACE(IBridgeDescription, pBridgeDesc);
     GET_IFACE(ILosses, pLosses);
     GET_IFACE(ISectionProperties, pSection);
     GET_IFACE(IStrandGeometry, pStrandGeom);
@@ -534,8 +534,7 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
         pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType, pgsTypes::Maximize);
         pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType, pgsTypes::Minimize);
 
-        // this only works for single span:
-        // get poi at start and end of each segment in the girder
+
         for (GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++)
         {
             GirderIndexType gdrIdx = Min(girderKey.girderIndex, pBridge->GetGirderCount(grpIdx) - 1);
@@ -557,11 +556,10 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
     }
 
 
+    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
+    PierIndexType startPierIdx = pGroup->GetPierIndex(pgsTypes::metStart);
+
     ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
-
-    PierIndexType startPierIdx = (iter.IsDone() ? INVALID_INDEX : iter.CurrentItem().PierIdx);
-
-    // keep redefining start pier in loop???? No, the above vPoi just needs to be bigger
 
     // Use iterator to walk locations
     for (iter.First(); !iter.IsDone(); iter.Next())
@@ -575,9 +573,7 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
 
         const CGirderKey& thisGirderKey(reactionLocation.GirderKey);
 
-        const pgsPointOfInterest& poi = vPoi[reactionLocation.PierIdx - startPierIdx]; // this breaks bc only expects 1 segment.
-
-        // so does this depend on what is going into the report? Adjust depending on report spec.
+        const pgsPointOfInterest& poi = vPoi[reactionLocation.PierIdx - startPierIdx];
 
         brg_details.rPoi = poi;
 
@@ -591,7 +587,7 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
         brg_details.length_pf = pBearing->GetDistanceToPointOfFixity(poi, pDetails);
 
         const CSegmentKey& segmentKey(poi.GetSegmentKey());
-        const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
+        const CPrecastSegmentData* pSegment = pBridgeDesc->GetPrecastSegmentData(segmentKey);
         IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
         IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
         IntervalIndexType castDeckIntervalIdx = pIntervals->GetLastCastDeckInterval();
