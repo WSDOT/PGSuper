@@ -204,7 +204,9 @@ void pgsBearingDesignEngineer::GetLongitudinalPointOfFixity(const CGirderKey& gi
 
     if (!bHasXConstraint)
     {
-        poi_fixity = pPoi->GetPierPointOfInterest(girderKey, 0);
+        const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
+        PierIndexType pier = pGroup->GetPierIndex(pgsTypes::metStart);
+        poi_fixity = pPoi->GetPierPointOfInterest(girderKey, pier);
         fixityPier = 0;
         bHasXConstraint = true;
     }
