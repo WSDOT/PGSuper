@@ -308,11 +308,11 @@ Float64 pgsBearingDesignEngineer::GetDistanceToPointOfFixity(const pgsPointOfInt
 
 
 
-    if (gpcBrg > gpcFixity && !IsEqual(gpcBrg, gpcFixity, 0.001) && pBridge->IsAbutment(pDetails->fixityPier))
+    if (gpcBrg > gpcFixity && !IsEqual(gpcBrg, gpcFixity, 0.001) && !pBridge->IsInteriorPier(pDetails->fixityPier))
     {
         gpcFixity += gpcBrgOffset;
     }
-    if (gpcBrg < gpcFixity && !IsEqual(gpcBrg, gpcFixity, 0.001) && pBridge->IsAbutment(pDetails->fixityPier))
+    if (gpcBrg < gpcFixity && !IsEqual(gpcBrg, gpcFixity, 0.001) && !pBridge->IsInteriorPier(pDetails->fixityPier))
     {
         gpcFixity -= gpcBrgOffset;
     }
