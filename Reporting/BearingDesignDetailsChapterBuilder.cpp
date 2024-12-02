@@ -273,8 +273,8 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     }
 
 
-    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
-    GET_IFACE2(pBroker, IGirder, pGirder);
+    
+    
 
     p = new rptParagraph;
     *pChapter << p;
@@ -308,8 +308,8 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     PierIndexType startPierIdx, endPierIdx;
     pBridge->GetGirderGroupPiers(girderKey.groupIndex, &startPierIdx, &endPierIdx);
 
-    GET_IFACE2(pBroker, ICamber, pCamber);
-    GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+    
+    
 
     // we want the final configuration... that would be in the last interval
     GET_IFACE2(pBroker, IIntervals, pIntervals);
@@ -342,6 +342,7 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
         if (pierIdx == startPierIdx)
         {
             PoiList vPoi;
+            GET_IFACE2(pBroker, IPointOfInterest, pPoi);
             pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_ERECTED_SEGMENT, &vPoi);
             poi = vPoi.front();
 
@@ -350,22 +351,26 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
         else if (pierIdx == endPierIdx)
         {
             PoiList vPoi;
+            GET_IFACE2(pBroker, IPointOfInterest, pPoi);
             pPoi->GetPointsOfInterest(segmentKey, POI_10L | POI_ERECTED_SEGMENT, &vPoi);
             poi = vPoi.front();
         }
         else
         {
+            GET_IFACE2(pBroker, IPointOfInterest, pPoi);
             poi = pPoi->GetPierPointOfInterest(girderKey, pierIdx);
         }
 
+        GET_IFACE2(pBroker, ICamber, pCamber);
         Float64 slope2 = pCamber->GetExcessCamberRotation(poi, pgsTypes::CreepTime::Max);
         (*pTable)(row, col++) << scalar.SetValue(slope2);
-
+        GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
         const CBearingData2* pbd = pIBridgeDesc->GetBearingData(pierIdx, pierFace, girderKey.girderIndex);
 
         Float64 slope3 = slope1 + slope2;
         (*pTable)(row, col++) << scalar.SetValue(slope3);
 
+        GET_IFACE2(pBroker, IGirder, pGirder);
         Float64 transverse_slope = pGirder->GetOrientation(segmentKey);
         (*pTable)(row, col++) << scalar.SetValue(transverse_slope);
 

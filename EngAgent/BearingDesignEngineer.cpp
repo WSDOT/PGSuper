@@ -395,10 +395,6 @@ Float64 pgsBearingDesignEngineer::GetBearingTimeDependentLosses(const pgsPointOf
             break; // do nothing... theIntervalIdx is correct
         }
 
-#if !defined LUMP_STRANDS
-        GET_IFACE(IStrandGeometry, pStrandGeom);
-#endif
-
         if (strandType == pgsTypes::Permanent)
         {
 #if defined LUMP_STRANDS
@@ -493,9 +489,8 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
 
     GET_IFACE(IIntervals, pIntervals);
     GET_IFACE(IBridgeDescription, pBridgeDesc);
-    GET_IFACE(ILosses, pLosses);
-    GET_IFACE(ISectionProperties, pSection);
-    GET_IFACE(IStrandGeometry, pStrandGeom);
+    
+    
     GET_IFACE(IBridge, pBridge);
     GET_IFACE(IPointOfInterest, pPOI);
     GET_IFACE(IBearingDesign, pBearingDesign);
@@ -593,7 +588,12 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
         IntervalIndexType castDeckIntervalIdx = pIntervals->GetLastCastDeckInterval();
         auto lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
 
+        GET_IFACE(ILosses, pLosses);
         auto details = pLosses->GetLossDetails(poi, erectSegmentIntervalIdx);
+
+
+        GET_IFACE(IStrandGeometry, pStrandGeom);
+        GET_IFACE(ISectionProperties, pSection);
 
         brg_details.ep = pStrandGeom->GetEccentricity(erectSegmentIntervalIdx, poi, pgsTypes::Permanent).Y();
 

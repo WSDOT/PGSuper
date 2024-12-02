@@ -730,7 +730,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
     ReactionUnitValueTool reaction(tableType, reactu);
 
 
-    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+    
 
 
     
@@ -750,6 +750,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
         const pgsPointOfInterest& poi = vPoi[reactionLocation.PierIdx - startPierIdx];
 
         const CSegmentKey& segmentKey(poi.GetSegmentKey());
+        GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
         const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
         IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
