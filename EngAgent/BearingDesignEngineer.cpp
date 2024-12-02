@@ -1225,13 +1225,13 @@ void pgsBearingDesignEngineer::GetThermalExpansionDetails(CGirderKey girderKey, 
 
     Float64 inv_thermal_exp_coefficient;
 
-    if (concreteType == pgsTypes::Normal)
-    {
-        inv_thermal_exp_coefficient = { WBFL::Units::ConvertToSysUnits(166666.6667, WBFL::Units::Measure::Fahrenheit) };
-    }
     if (concreteType == pgsTypes::AllLightweight || concreteType == pgsTypes::SandLightweight)
     {
         inv_thermal_exp_coefficient = { WBFL::Units::ConvertToSysUnits(20000.0, WBFL::Units::Measure::Fahrenheit) };
+    }
+    else
+    {
+        inv_thermal_exp_coefficient = { WBFL::Units::ConvertToSysUnits(166666.6667, WBFL::Units::Measure::Fahrenheit) };
     }
 
     Float64 thermal_expansion_coefficient = 1.0 / inv_thermal_exp_coefficient;
