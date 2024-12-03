@@ -91,10 +91,15 @@
 #include <Reporting\TimeStepParametersChapterBuilder.h>
 
 #include <Reporting\BearingDesignParametersChapterBuilder.h>
+#include <Reporting\BearingDesignSummaryChapterBuilder.h>
+#include <Reporting\BearingDesignDetailsChapterBuilder.h>
 #include <Reporting\DistributionFactorDetailsChapterBuilder.h>
 
 #include <Reporting\TimeStepDetailsChapterBuilder.h>
 #include <Reporting\TimeStepDetailsReportSpecificationBuilder.h>
+
+#include <Reporting\BearingTimeStepDetailsChapterBuilder.h>
+#include <Reporting\BearingTimeStepDetailsReportSpecificationBuilder.h>
 
 #include <Reporting\PrincipalWebStressDetailsChapterBuilder.h>
 #include <Reporting\PrincipalWebStressDetailsReportSpecificationBuilder.h>
@@ -138,6 +143,7 @@ HRESULT CReporterBase::InitCommonReportBuilders()
    CreateLoadRatingReport();
    CreateLoadRatingSummaryReport();
    CreateBearingDesignReport();
+   CreateBearingTimeStepDetailsReport();
    CreateBridgeAnalysisReport();
    CreateHaulingReport();
    CreateLiftingReport();
@@ -319,9 +325,12 @@ void CReporterBase::CreateBearingDesignReport()
 #endif
    pRptBuilder->AddTitlePageBuilder( std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
    pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
-   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingDesignParametersChapterBuilder>()) );
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingDesignSummaryChapterBuilder>()));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingDesignDetailsChapterBuilder>()));
+   pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingDesignParametersChapterBuilder>()));
    pRptMgr->AddReportBuilder( pRptBuilder );
 }
+
 
 void CReporterBase::CreateSpecChecReport()
 {
@@ -464,16 +473,31 @@ void CReporterBase::CreateStageByStageDetailsReport()
 void CReporterBase::CreateTimeStepDetailsReport()
 {
    GET_IFACE(IReportManager,pRptMgr);
-   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pPoiRptSpecBuilder(  std::make_shared<CTimeStepDetailsReportSpecificationBuilder>(m_pBroker) );
+   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pTimeStepRptSpecBuilder(  std::make_shared<CTimeStepDetailsReportSpecificationBuilder>(m_pBroker) );
 
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Time Step Details Report")));
 #if defined _DEBUG || defined _BETA_VERSION
    pRptBuilder->IncludeTimingChapter();
 #endif
    pRptBuilder->AddTitlePageBuilder( std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())) );
-   pRptBuilder->SetReportSpecificationBuilder( pPoiRptSpecBuilder );
+   pRptBuilder->SetReportSpecificationBuilder( pTimeStepRptSpecBuilder );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTimeStepDetailsChapterBuilder>()) );
    pRptMgr->AddReportBuilder( pRptBuilder );
+}
+
+void CReporterBase::CreateBearingTimeStepDetailsReport()
+{
+    GET_IFACE(IReportManager, pRptMgr);
+    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pBearingTimeStepRptSpecBuilder(std::make_shared<CBearingTimeStepDetailsReportSpecificationBuilder>(m_pBroker));
+
+    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("Bearing Shear Deformation Details Report")));
+#if defined _DEBUG || defined _BETA_VERSION
+    pRptBuilder->IncludeTimingChapter();
+#endif
+    pRptBuilder->AddTitlePageBuilder(std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(CreateTitlePageBuilder(pRptBuilder->GetName())));
+    pRptBuilder->SetReportSpecificationBuilder(pBearingTimeStepRptSpecBuilder);
+    pRptBuilder->AddChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingTimeStepDetailsChapterBuilder>()));
+    pRptMgr->AddReportBuilder(pRptBuilder);
 }
 
 void CReporterBase::CreatePrincipalWebStressDetailsReport()
@@ -626,11 +650,13 @@ HRESULT CReporterBase::OnSpecificationChanged()
    {
       detailsRptBuilder->InsertChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CInternalForceChapterBuilder>()), _T("Moments, Shears, and Reactions"));
       loadRatingRptBuilder->InsertChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CInternalForceChapterBuilder>(false)), _T("Moments, Shears, and Reactions"));
+      detailsRptBuilder->InsertChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingTimeStepDetailsChapterBuilder>()), _T("Bearing Seat Elevation Details"));
    }
    else
    {
       detailsRptBuilder->RemoveChapterBuilder(_T("Internal Time-Dependent Forces"));
       loadRatingRptBuilder->RemoveChapterBuilder(_T("Internal Time-Dependent Forces"));
+      detailsRptBuilder->RemoveChapterBuilder(_T("Bearing Time-Dependent Shear Deformations"));
    }
 
    // Disable bearing elevations chapters in geometry report for time step. They take too long 

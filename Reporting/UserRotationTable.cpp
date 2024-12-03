@@ -101,6 +101,7 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderK
    pBridge->GetGirderline(girderKey.girderIndex, startGroupIdx, endGroupIdx, &vGirderKeys);
    for (const auto& thisGirderKey : vGirderKeys)
    {
+
        PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(thisGirderKey.groupIndex);
        PierIndexType endPierIdx = pBridge->GetGirderGroupEndPier(thisGirderKey.groupIndex);
        for (PierIndexType pierIdx = startPierIdx; pierIdx <= endPierIdx; pierIdx++)
@@ -128,6 +129,7 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderK
                vPoi.push_back(poi);
            }
        }
+
    }
 
    IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();

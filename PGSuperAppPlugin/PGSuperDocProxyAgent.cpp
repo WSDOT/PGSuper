@@ -769,6 +769,15 @@ HRESULT CPGSuperDocProxyAgent::OnExposureConditionChanged()
    return S_OK;
 }
 
+HRESULT CPGSuperDocProxyAgent::OnClimateConditionChanged()
+{
+    AFX_MANAGE_STATE(AfxGetAppModuleState());
+    m_pMyDocument->SetModifiedFlag();
+
+    FireEvent(0, HINT_ENVCHANGED, nullptr);
+    return S_OK;
+}
+
 HRESULT CPGSuperDocProxyAgent::OnRelHumidityChanged()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());

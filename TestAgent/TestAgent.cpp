@@ -50,6 +50,7 @@
 #include <IFace\GirderHandling.h>
 #include <IFace\DocumentType.h>
 #include <IFace\PrincipalWebStress.h>
+#include <IFace\BearingDesignParameters.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

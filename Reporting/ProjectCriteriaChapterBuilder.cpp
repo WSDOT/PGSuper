@@ -160,8 +160,18 @@ void write_environmental_conditions(rptParagraph* pPara,IBroker* pBroker, IEAFDi
       (*p_table)(0,1) << _T("Severe");
    }
 
-   (*p_table)(1,0) << _T("Relative Humidity");
-   (*p_table)(1,1) <<  pEnvironment->GetRelHumidity()<<_T("%");
+   (*p_table)(1, 0) << _T("Climate");
+   if (pEnvironment->GetClimateCondition() == pgsTypes::ClimateCondition::Cold)
+   {
+       (*p_table)(1, 1) << _T("Cold");
+   }
+   else
+   {
+       (*p_table)(1, 1) << _T("Moderate");
+   }
+
+   (*p_table)(2,0) << _T("Relative Humidity");
+   (*p_table)(2,1) <<  pEnvironment->GetRelHumidity()<<_T("%");
 }
 
 void write_structural_analysis(rptParagraph* pPara,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits)
