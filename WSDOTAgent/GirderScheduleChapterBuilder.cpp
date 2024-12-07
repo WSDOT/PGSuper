@@ -72,7 +72,8 @@ LPCTSTR CGirderScheduleChapterBuilder::GetName() const
    return TEXT("Girder Schedule");
 }
 
-rptChapter* CGirderScheduleChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+rptChapter* CGirderScheduleChapterBuilder::Build(
+    const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec, Uint16 level) const
 {
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
@@ -683,6 +684,34 @@ rptChapter* CGirderScheduleChapterBuilder::Build(const std::shared_ptr<const WBF
       }
    }
 
+   Float64 tft = pIGirder->GetTopFlangeThickening(segmentKey);
+   if (!IsZero(tft))
+   {
+       GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+       INIT_UV_PROTOTYPE(rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), true);
+       INIT_UV_PROTOTYPE(rptLengthUnitValue, thickness, pDisplayUnits->GetComponentDimUnit(), true);
+
+       PoiList tfPoi;
+       pPoi->GetPointsOfInterest(segmentKey, POI_TENTH_POINTS | POI_SPAN, &tfPoi);
+
+       FlangeIndexType nFlanges = pIGirder->GetTopFlangeCount(girderKey);
+
+       (*pTable)(++row, 0) << _T("Top Flange Thickness:");
+       pTable->SetColumnSpan(row, 0, 2);
+
+       (*pTable)(++row, 0) << _T("Location:");
+       (*pTable)(row, 1) << _T("Thickness:");
+
+       for (const auto& poi : tfPoi)
+       {
+           for (FlangeIndexType i = 0; i < nFlanges; i++)
+           {
+                (*pTable)(++row, 0) << location.SetValue(POI_SPAN, poi);
+                (*pTable)(row, 1) << thickness.SetValue(pIGirder->GetTopFlangeThickness(poi, i));
+           }
+       }
+
+   }
 
    if (limits_criteria.bCheckSag )
    {
