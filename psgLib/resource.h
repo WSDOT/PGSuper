@@ -1272,6 +1272,7 @@
 #define IDC_HRC                         1598
 #define IDC_CROWN_SLOPE                 1598
 #define IDC_MIN_DISTANCE_DB             1598
+#define IDC_THERMAL                     1598
 #define IDC_LF_MIDDLE2                  1599
 #define IDC_CLEARANCE_UNIT              1599
 #define IDC_LF_MIDDLE1_LABEL            1600

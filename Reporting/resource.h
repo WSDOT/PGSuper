@@ -55,6 +55,12 @@
 #define IDC_AXIAL                       3020
 #define IDC_BUTTON2                     3021
 #define IDC_DESELECT_ALL                3021
+#define IDD_TIMESTEP_SHEAR_DEFORMATION_DETAILS 3022
+#define IDC_GIRDERLINE_SHEAR_DEF        3022
+#define IDC_INTERVAL_SHEAR_DEF          3023
+#define IDC_ALL_LOCATIONS_SHEAR_DEF     3024
+#define IDC_SLIDER_SHEAR_DEF            3025
+#define IDC_LOCATION_SHEAR_DEF          3026
 
 // Next default values for new objects
 // 
@@ -62,7 +68,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        3014
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         3022
+#define _APS_NEXT_CONTROL_VALUE         3027
 #define _APS_NEXT_SYMED_VALUE           3000
 #endif
 #endif

@@ -111,6 +111,7 @@ private:
    std::_tstring GetProcessID();
 
    bool RunHaunchTest(std::_tofstream& resultsFile, std::_tofstream& poiFile,const CSegmentKey& segmentKey);
+   bool RunBearingTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, const CSegmentKey& segmentKey);
    bool RunGeometryTest(std::_tofstream& resultsFile, std::_tofstream& poiFile,const CSegmentKey& segmentKey);
    bool RunDistFactorTest(std::_tofstream& resultsFile, std::_tofstream& poiFile,const CSegmentKey& segmentKey);
    bool RunHL93Test(std::_tofstream& resultsFile, std::_tofstream& poiFile,const CSegmentKey& segmentKey);

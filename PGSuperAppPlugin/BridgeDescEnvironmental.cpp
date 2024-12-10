@@ -44,6 +44,7 @@ CBridgeDescEnvironmental::CBridgeDescEnvironmental() : CPropertyPage(CBridgeDesc
 {
 	//{{AFX_DATA_INIT(CBridgeDescEnvironmental)
 	m_Exposure = -1;
+	m_Climate = -1;
 	m_RelHumidity = 0.0;
 	//}}AFX_DATA_INIT
 }
@@ -57,6 +58,7 @@ void CBridgeDescEnvironmental::DoDataExchange(CDataExchange* pDX)
 	CPropertyPage::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CBridgeDescEnvironmental)
 	DDX_Radio(pDX, IDC_EXPOSURE, m_Exposure);
+	DDX_Radio(pDX, IDC_CLIMATE, m_Climate);
 	DDX_Text(pDX, IDC_RELHUMIDITY, m_RelHumidity);
 	DDV_MinMaxDouble(pDX, m_RelHumidity, 0., 100.);
 	//}}AFX_DATA_MAP

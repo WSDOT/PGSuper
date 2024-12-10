@@ -215,6 +215,7 @@
     <ClCompile Include="DuctEntryDlg.cpp" />
     <ClCompile Include="DuctLibraryEntry.cpp" />
     <ClCompile Include="EndZoneCriteria.cpp" />
+    <ClCompile Include="ThermalMovementCriteria.cpp" />
     <ClCompile Include="GirderInclinationCriteria.cpp" />
     <ClCompile Include="HarpedStrandDesignCriteria.cpp" />
     <ClCompile Include="HaulingCriteria.cpp" />
@@ -366,6 +367,7 @@
     <ClInclude Include="..\Include\psgLib\DuctLibraryEntry.h" />
     <ClInclude Include="..\Include\psgLib\DuctSizeCriteria.h" />
     <ClInclude Include="..\Include\psgLib\EndZoneCriteria.h" />
+    <ClInclude Include="..\Include\psgLib\ThermalMovementCriteria.h" />
     <ClInclude Include="..\Include\psgLib\GirderInclinationCriteria.h" />
     <ClInclude Include="..\Include\PsgLib\GirderLibraryEntry.h" />
     <ClInclude Include="..\Include\psgLib\HarpedStrandDesignCriteria.h" />

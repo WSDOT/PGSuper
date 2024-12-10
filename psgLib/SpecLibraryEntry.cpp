@@ -144,6 +144,16 @@ void SpecLibraryEntry::SetSpecificationCriteria(const SpecificationCriteria& cri
    m_pImpl->SetSpecificationCriteria(criteria);
 }
 
+const ThermalMovementCriteria& SpecLibraryEntry::GetThermalMovementCriteria() const
+{
+    return m_pImpl->GetThermalMovementCriteria();
+}
+
+void SpecLibraryEntry::SetThermalMovementCriteria(const ThermalMovementCriteria& criteria)
+{
+    m_pImpl->SetThermalMovementCriteria(criteria);
+}
+
 const SectionPropertiesCriteria& SpecLibraryEntry::GetSectionPropertiesCriteria() const
 {
    return m_pImpl->GetSectionPropertiesCriteria();
@@ -153,6 +163,8 @@ void SpecLibraryEntry::SetSectionPropertiesCriteria(const SectionPropertiesCrite
 {
    m_pImpl->SetSectionPropertiesCriteria(criteria);
 }
+
+
 
 const StrandSlopeCriteria& SpecLibraryEntry::GetStrandSlopeCriteria() const
 {

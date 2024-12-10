@@ -404,7 +404,7 @@ BEGIN
     LTEXT           "You must correct all errors before the girder data is accepted.",IDC_STATIC,7,20,192,8
 END
 
-IDD_SPEC_DESCR DIALOGEX 0, 0, 355, 270
+IDD_SPEC_DESCR DIALOGEX 0, 0, 355, 328
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "General"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -422,12 +422,15 @@ BEGIN
     CONTROL         "SI Units Version (Note: SI not available after 2006)",IDC_SPEC_UNITS_SI,
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP,14,153,174,10
     CONTROL         "US Units Version",IDC_SPEC_UNITS_US,"Button",BS_AUTORADIOBUTTON,14,164,69,10
-    GROUPBOX        "Section Properties",IDC_STATIC,7,187,341,76
-    CONTROL         "Gross",IDC_GROSS,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,15,203,34,10
-    CONTROL         "Transformed",IDC_TRANSFORMED,"Button",BS_AUTORADIOBUTTON,15,216,55,10
-    LTEXT           "Compute effective flange width",IDC_STATIC,94,204,98,8
-    COMBOBOX        IDC_EFF_FLANGE_WIDTH,197,203,142,72,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "NOTE:\nThe slab haunch can be included in composite section properties. See settings on the Creep and Camber tab",IDC_STATIC,21,232,318,26,WS_BORDER
+    GROUPBOX        "Section Properties",IDC_STATIC,7,182,341,76
+    CONTROL         "Gross",IDC_GROSS,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,15,198,34,10
+    CONTROL         "Transformed",IDC_TRANSFORMED,"Button",BS_AUTORADIOBUTTON,15,211,55,10
+    LTEXT           "Compute effective flange width",IDC_STATIC,94,199,98,8
+    COMBOBOX        IDC_EFF_FLANGE_WIDTH,197,198,142,72,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "NOTE:\nThe slab haunch can be included in composite section properties. See settings on the Creep and Camber tab",IDC_STATIC,21,227,318,26,WS_BORDER
+    GROUPBOX        "Thermal Movement",IDC_STATIC,7,264,341,30
+    EDITTEXT        IDC_THERMAL,250,274,22,14,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "Thermal range factor for horizontal displacement of bridge superstructure:",IDC_STATIC,17,276,232,10
 END
 
 IDD_WSDOT_HAULING DIALOGEX 0, 0, 447, 390
@@ -2163,7 +2166,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 348
         TOPMARGIN, 7
-        BOTTOMMARGIN, 263
+        BOTTOMMARGIN, 321
     END
 
     IDD_WSDOT_HAULING, DIALOG

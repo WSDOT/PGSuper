@@ -1071,6 +1071,17 @@ struct FRICTIONLOSSDETAILS
    Float64 dfpA{ 0 };  // anchor set loss at this POI
 };
 
+// This is a struct that holds the losses seperated into creep, shrinkage, and relaxation components
+// at a  POI
+struct TDCOMPONENTS
+{
+    Float64 creep{ 0 };
+    Float64 shrinkage{ 0 };
+    Float64 relaxation{ 0 };
+};
+
+
+
 // This struct holds the computation details for prestress losses
 // at a POI
 struct LOSSDETAILS

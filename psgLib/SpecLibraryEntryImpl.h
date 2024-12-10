@@ -39,6 +39,7 @@
 #include <type_traits>
 
 #include <psgLib/SpecificationCriteria.h>
+#include <psgLib/ThermalMovementCriteria.h>
 #include <psgLib/SectionPropertiesCriteria.h>
 #include <psgLib/HoldDownCriteria.h>
 #include <psgLib/StrandSlopeCriteria.h>
@@ -130,6 +131,9 @@ public:
 
    const SpecificationCriteria& GetSpecificationCriteria() const;
    void SetSpecificationCriteria(const SpecificationCriteria& criteria);
+
+   const ThermalMovementCriteria& GetThermalMovementCriteria() const;
+   void SetThermalMovementCriteria(const ThermalMovementCriteria& criteria);
 
    const SectionPropertiesCriteria& GetSectionPropertiesCriteria() const;
    void SetSectionPropertiesCriteria(const SectionPropertiesCriteria& criteria);
@@ -313,6 +317,7 @@ private:
 
    SpecificationCriteria m_SpecificationCriteria;
    SectionPropertiesCriteria m_SectionPropertiesCriteria;
+   ThermalMovementCriteria m_ThermalMovementCriteria;
    LimitStateConcreteStrengthCriteria m_LimitStateConcreteStrengthCriteria;
    StrandSlopeCriteria m_StrandSlopeCriteria;
    HoldDownCriteria m_HoldDownCriteria;

@@ -90,6 +90,7 @@ public:
    SpecLibraryEntry& m_Entry;
    CString m_Name;
    CString m_Description;
+   Float64 m_Thermal;
 
    WBFL::LRFD::BDSManager::Edition GetSpecVersion();
 

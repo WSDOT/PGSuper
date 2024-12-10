@@ -25,6 +25,7 @@
 #define EVT_PROJECTPROPERTIES    0x0001
 //#define EVT_UNITS                0x0002
 #define EVT_EXPOSURECONDITION    0x0004
+#define EVT_CLIMATECONDITION     0x0004
 #define EVT_RELHUMIDITY          0x0008
 #define EVT_BRIDGE               0x0010
 #define EVT_SPECIFICATION        0x0020
@@ -111,6 +112,33 @@ public:
 		pT->Unlock();
 		return ret;
 	}
+
+	HRESULT Fire_ClimateConditionChanged()
+	{
+		T* pT = (T*)this;
+
+		if (0 < pT->m_EventHoldCount)
+		{
+			WBFL::System::Flags<Uint32>::Set(&pT->m_PendingEvents, EVT_CLIMATECONDITION);
+			return S_OK;
+		}
+
+		pT->Lock();
+		HRESULT ret = S_OK;
+		IUnknown** pp = this->m_vec.begin();
+		while (pp < this->m_vec.end())
+		{
+			if (*pp != nullptr)
+			{
+				IEnvironmentEventSink* pIEnvironmentEventSink = reinterpret_cast<IEnvironmentEventSink*>(*pp);
+				ret = pIEnvironmentEventSink->OnClimateConditionChanged();
+			}
+			pp++;
+		}
+		pT->Unlock();
+		return ret;
+	}
+
 	HRESULT Fire_RelHumidityChanged()
 	{
 		T* pT = (T*)this;

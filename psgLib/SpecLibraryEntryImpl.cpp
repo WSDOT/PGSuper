@@ -40,7 +40,7 @@
 // The develop (patches) branch started at version 64. We need to make room so
 // the version number can increment. Jump our version number to 70.
 // The version number has progressed past version 70
-#define CURRENT_VERSION 83.0 
+#define CURRENT_VERSION 84.0 
 
 /****************************************************************************
 CLASS
@@ -64,6 +64,7 @@ bool SpecLibraryEntryImpl::SaveMe(WBFL::Library::LibraryEntry* pParent,WBFL::Sys
    // all of the project criteria data is now modeled in "Criteria" objects.
    m_SpecificationCriteria.Save(pSave);
    m_SectionPropertiesCriteria.Save(pSave);
+   m_ThermalMovementCriteria.Save(pSave);
    m_HoldDownCriteria.Save(pSave);
    m_StrandSlopeCriteria.Save(pSave);
    m_EndZoneCriteria.Save(pSave);
@@ -133,6 +134,10 @@ bool SpecLibraryEntryImpl::LoadMe(WBFL::Library::LibraryEntry* pParent,WBFL::Sys
 
          m_SpecificationCriteria.Load(pLoad);
          m_SectionPropertiesCriteria.Load(pLoad);
+         if (version > 83)
+         {
+             m_ThermalMovementCriteria.Load(pLoad);
+         }
          m_HoldDownCriteria.Load(pLoad);
          m_StrandSlopeCriteria.Load(pLoad);
          m_EndZoneCriteria.Load(pLoad);
@@ -193,7 +198,7 @@ bool SpecLibraryEntryImpl::Compare(const SpecLibraryEntryImpl* pOther, std::vect
       RETURN_ON_DIFFERENCE;
    }
 
-   if ( !m_SectionPropertiesCriteria.Compare(pOther->m_SectionPropertiesCriteria,*this,vDifferences,bReturnOnFirstDifference))
+   if ( !m_ThermalMovementCriteria.Compare(pOther->m_ThermalMovementCriteria,*this,vDifferences,bReturnOnFirstDifference))
    {
       RETURN_ON_DIFFERENCE;
    }
@@ -354,6 +359,16 @@ const SpecificationCriteria& SpecLibraryEntryImpl::GetSpecificationCriteria() co
 void SpecLibraryEntryImpl::SetSpecificationCriteria(const SpecificationCriteria& criteria)
 {
    m_SpecificationCriteria = criteria;
+}
+
+const ThermalMovementCriteria& SpecLibraryEntryImpl::GetThermalMovementCriteria() const
+{
+    return m_ThermalMovementCriteria;
+}
+
+void SpecLibraryEntryImpl::SetThermalMovementCriteria(const ThermalMovementCriteria& criteria)
+{
+    m_ThermalMovementCriteria = criteria;
 }
 
 const SectionPropertiesCriteria& SpecLibraryEntryImpl::GetSectionPropertiesCriteria() const
@@ -676,6 +691,7 @@ void SpecLibraryEntryImpl::Report(rptChapter* pChapter, IEAFDisplayUnits* pDispl
 {
    m_SpecificationCriteria.Report(pChapter,pDisplayUnits);
    m_SectionPropertiesCriteria.Report(pChapter,pDisplayUnits);
+   m_ThermalMovementCriteria.Report(pChapter, pDisplayUnits);
 
    m_HoldDownCriteria.Report(pChapter, pDisplayUnits);
    m_StrandSlopeCriteria.Report(pChapter, pDisplayUnits);

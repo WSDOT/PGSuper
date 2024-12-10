@@ -470,11 +470,13 @@ bool CPGSDocBase::EditBridgeDescription(int nPage)
 
    const CBridgeDescription2* pOldBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    auto oldExposureCondition = pEnvironment->GetExposureCondition();
+   auto oldClimateCondition = pEnvironment->GetClimateCondition();
    Float64 oldRelHumidity = pEnvironment->GetRelHumidity();
 
    CBridgeDescDlg dlg(*pOldBridgeDesc);
 
    dlg.m_EnvironmentalPage.m_Exposure    = oldExposureCondition == pgsTypes::ExposureCondition::Normal ? 0 : 1;
+   dlg.m_EnvironmentalPage.m_Climate = oldClimateCondition == pgsTypes::ClimateCondition::Cold ? 0 : 1;
    dlg.m_EnvironmentalPage.m_RelHumidity = oldRelHumidity;
 
    dlg.SetActivePage(nPage);
@@ -484,6 +486,7 @@ bool CPGSDocBase::EditBridgeDescription(int nPage)
 
       std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditBridge>(*pOldBridgeDesc,      dlg.GetBridgeDescription(),
                                               oldExposureCondition, dlg.m_EnvironmentalPage.m_Exposure == 0 ? pgsTypes::ExposureCondition::Normal : pgsTypes::ExposureCondition::Severe,
+                                              oldClimateCondition, dlg.m_EnvironmentalPage.m_Climate == 0 ? pgsTypes::ClimateCondition::Cold : pgsTypes::ClimateCondition::Moderate,
                                               oldRelHumidity,       dlg.m_EnvironmentalPage.m_RelHumidity));
 
 
@@ -608,6 +611,7 @@ bool CPGSDocBase::DoEditBearing()
    {
       GET_IFACE(IEnvironment, pEnvironment );
       auto oldExposureCondition = pEnvironment->GetExposureCondition();
+      auto oldClimateCondition = pEnvironment->GetClimateCondition();
       Float64 oldRelHumidity = pEnvironment->GetRelHumidity();
       CBridgeDescription2 newBridgeDesc = *pOldBridgeDesc;
 
@@ -615,7 +619,8 @@ bool CPGSDocBase::DoEditBearing()
       dlg.ModifyBridgeDescr(&newBridgeDesc);
 
       std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditBridge>(*pOldBridgeDesc,     newBridgeDesc,
-                                              oldExposureCondition, oldExposureCondition, 
+                                              oldExposureCondition, oldExposureCondition,
+                                              oldClimateCondition, oldClimateCondition,
                                               oldRelHumidity,       oldRelHumidity));
 
 
@@ -649,10 +654,12 @@ bool CPGSDocBase::DoEditHaunch()
       {
          GET_IFACE(IEnvironment,pEnvironment);
          auto oldExposureCondition = pEnvironment->GetExposureCondition();
+         auto oldClimateCondition = pEnvironment->GetClimateCondition();
          Float64 oldRelHumidity = pEnvironment->GetRelHumidity();
 
          std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditBridge>(*pOldBridgeDesc,dlg.m_BridgeDesc,
             oldExposureCondition,oldExposureCondition,
+            oldClimateCondition, oldClimateCondition,
             oldRelHumidity,oldRelHumidity));
 
 
@@ -2780,18 +2787,25 @@ void CPGSDocBase::OnProjectEnvironment()
 
    auto ec = pEnvironment->GetExposureCondition();
    int expCond = ( ec == pgsTypes::ExposureCondition::Normal ? 0 : 1 );
+
+   auto cc = pEnvironment->GetClimateCondition();
+   int climCond = (cc == pgsTypes::ClimateCondition::Cold ? 0 : 1);
    
    Float64 relHumidity = pEnvironment->GetRelHumidity();
 
    CEnvironmentDlg dlg;
    dlg.m_Exposure = expCond;
+   dlg.m_Climate = climCond;
    dlg.m_RelHumidity = relHumidity;
 
    if ( dlg.DoModal() )
    {
-      if ( expCond != dlg.m_Exposure || relHumidity != dlg.m_RelHumidity )
+      if ( expCond != dlg.m_Exposure || climCond != dlg.m_Climate || relHumidity != dlg.m_RelHumidity)
       {
-         std::unique_ptr<txnEditEnvironment> pTxn(std::make_unique<txnEditEnvironment>(ec,dlg.m_Exposure == 0 ? pgsTypes::ExposureCondition::Normal : pgsTypes::ExposureCondition::Severe,relHumidity,dlg.m_RelHumidity));
+         std::unique_ptr<txnEditEnvironment> pTxn(std::make_unique<txnEditEnvironment>(
+             ec, dlg.m_Exposure == 0 ? pgsTypes::ExposureCondition::Normal : pgsTypes::ExposureCondition::Severe,
+             cc, dlg.m_Climate == 0 ? pgsTypes::ClimateCondition::Cold : pgsTypes::ClimateCondition::Moderate,
+             relHumidity,dlg.m_RelHumidity));
          GET_IFACE(IEAFTransactions,pTransactions);
          pTransactions->Execute(std::move(pTxn));
       }
@@ -5310,10 +5324,11 @@ bool CPGSDocBase::DoDesignHaunch(const CGirderKey& girderKey)
       {
          GET_IFACE(IEnvironment, pEnvironment);
          auto oldExposureCondition = pEnvironment->GetExposureCondition();
+         auto oldClimateCondition = pEnvironment->GetClimateCondition();
          Float64 oldRelHumidity = pEnvironment->GetRelHumidity();
 
          std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditBridge>(*pOldBridgeDesc, newBridgeDescr,
-            oldExposureCondition, oldExposureCondition, oldRelHumidity, oldRelHumidity));
+            oldExposureCondition, oldExposureCondition, oldClimateCondition, oldClimateCondition, oldRelHumidity, oldRelHumidity));
 
          GET_IFACE(IEAFTransactions, pTransactions);
          pTransactions->Execute(std::move(pTxn));

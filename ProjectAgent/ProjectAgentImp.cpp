@@ -164,6 +164,7 @@ CProjectAgentImp::CProjectAgentImp()
 
    // Initialize Environment Data
    m_ExposureCondition = pgsTypes::ExposureCondition::Normal;
+   m_ClimateCondition = pgsTypes::ClimateCondition::Cold;
    m_RelHumidity = 75.;
 
    // Initialize Alignment Data
@@ -618,6 +619,64 @@ HRESULT CProjectAgentImp::EffectiveFlangeWidthProc(IStructuredSave* pSave,IStruc
 
    return S_OK;
 }
+
+HRESULT CProjectAgentImp::EnvironmentProc(IStructuredSave* pSave, IStructuredLoad* pLoad, IProgress* pProgress, CProjectAgentImp* pObj)
+{
+    HRESULT hr = S_OK;
+    if (pSave)
+    {
+        hr = pSave->put_Property(_T("ExpCond"), CComVariant((int)pObj->m_ExposureCondition));
+        if (FAILED(hr))
+            return hr;
+
+        hr = pSave->put_Property(_T("RelHumidity"), CComVariant(pObj->m_RelHumidity));
+        if (FAILED(hr))
+            return hr;
+
+        // added in version 2 of the data block
+        hr = pSave->put_Property(_T("ClimCond"), CComVariant((int)pObj->m_ClimateCondition));
+        if (FAILED(hr))
+            return hr;
+
+    }
+    else
+    {
+        Float64 version;
+        pLoad->get_Version(&version);
+
+        CComVariant var;
+        var.vt = VT_I4;
+        hr = pLoad->get_Property(_T("ExpCond"), &var);
+        if (FAILED(hr))
+        {
+            return hr;
+        }
+        pObj->m_ExposureCondition = (pgsTypes::ExposureCondition)var.iVal;
+
+        var.vt = VT_R8;
+        hr = pLoad->get_Property(_T("RelHumidity"), &var);
+        if (FAILED(hr))
+        {
+            return hr;
+        }
+        pObj->m_RelHumidity = var.dblVal;
+
+        if (1.0 < version)
+        {
+            var.vt = VT_R8;
+            hr = pLoad->get_Property(_T("ClimCond"), &var);
+            if (FAILED(hr))
+            {
+                return hr;
+            }
+            pObj->m_ClimateCondition = (pgsTypes::ClimateCondition)var.dblVal;
+        }
+
+    }
+
+    return S_OK;
+}
+
 
 HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj)
 {
@@ -4983,10 +5042,12 @@ BEGIN_STRSTORAGEMAP(CProjectAgentImp,_T("ProjectData"),8.0)
       //PROPERTY(_T("Units"), SDT_I4, m_Units )
    END_UNIT // Project Settings
 
-   BEGIN_UNIT(_T("Environment"),_T("Environmental Parameters"),1.0)
-      PROPERTY(_T("ExpCond"), SDT_I4, m_ExposureCondition )
-      PROPERTY(_T("RelHumidity"), SDT_R8, m_RelHumidity )
+   BEGIN_UNIT(_T("Environment"), _T("Environmental Parameters"), 2.0)
+    //PROPERTY(_T("ExpCond"), SDT_I4, m_ExposureCondition )
+    //PROPERTY(_T("RelHumidity"), SDT_R8, m_RelHumidity )
+    PROP_CALLBACK(CProjectAgentImp::EnvironmentProc)
    END_UNIT // Environment
+
 
    BEGIN_UNIT(_T("Alignment"),_T("Roadway Alignment"),1.0)
       PROP_CALLBACK(CProjectAgentImp::AlignmentProc)
@@ -6950,6 +7011,20 @@ void CProjectAgentImp::SetExposureCondition(pgsTypes::ExposureCondition newVal)
       m_ExposureCondition = newVal;
       Fire_ExposureConditionChanged();
    }
+}
+
+pgsTypes::ClimateCondition CProjectAgentImp::GetClimateCondition() const
+{
+    return m_ClimateCondition;
+}
+
+void CProjectAgentImp::SetClimateCondition(pgsTypes::ClimateCondition newVal)
+{
+    if (m_ClimateCondition != newVal)
+    {
+        m_ClimateCondition = newVal;
+        Fire_ClimateConditionChanged();
+    }
 }
 
 Float64 CProjectAgentImp::GetRelHumidity() const
@@ -10937,6 +11012,11 @@ void CProjectAgentImp::FirePendingEvents()
          if (WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents, EVT_EXPOSURECONDITION))
          {
             Fire_ExposureConditionChanged();
+         }
+
+         if (WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents, EVT_CLIMATECONDITION))
+         {
+             Fire_ClimateConditionChanged();
          }
 
          if (WBFL::System::Flags<Uint32>::IsSet(m_PendingEvents, EVT_RELHUMIDITY))

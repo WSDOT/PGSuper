@@ -32,6 +32,7 @@ class PGSEXTCLASS txnEditBridge : public CEAFTransaction
 public:
    txnEditBridge(const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc,
       pgsTypes::ExposureCondition oldExposureCondition, pgsTypes::ExposureCondition newExposureCondition,
+       pgsTypes::ClimateCondition oldClimateCondition, pgsTypes::ClimateCondition newClimateCondition,
       Float64 oldRelHumidity, Float64 newRelHumidity
       );
 
@@ -53,5 +54,6 @@ private:
 
 	std::array<CBridgeDescription2, 2> m_BridgeDesc;
    std::array<pgsTypes::ExposureCondition, 2> m_ExposureCondition;
+   std::array<pgsTypes::ClimateCondition, 2> m_ClimateCondition;
    std::array<Float64, 2> m_RelHumidity;
 };

@@ -175,6 +175,10 @@ interface IEnvironment : IUnknown
 {
    virtual pgsTypes::ExposureCondition GetExposureCondition() const = 0;
 	virtual void SetExposureCondition(pgsTypes::ExposureCondition newVal) = 0;
+
+    virtual pgsTypes::ClimateCondition GetClimateCondition() const = 0;
+    virtual void SetClimateCondition(pgsTypes::ClimateCondition newVal) = 0;
+
 	virtual Float64 GetRelHumidity() const = 0;
 	virtual void SetRelHumidity(Float64 newVal) = 0;
 };
@@ -194,6 +198,7 @@ DEFINE_GUID(IID_IEnvironmentEventSink,
 interface __declspec(uuid("{DBA24DC0-2F4D-11d2-8D11-94FA07C10000}")) IEnvironmentEventSink : IUnknown
 {
    virtual HRESULT OnExposureConditionChanged() = 0;
+   virtual HRESULT OnClimateConditionChanged() = 0;
    virtual HRESULT OnRelHumidityChanged() = 0;
 };
 

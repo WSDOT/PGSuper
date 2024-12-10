@@ -195,8 +195,12 @@ public:
 
 // IEnvironment
 public:
-   virtual pgsTypes::ExposureCondition GetExposureCondition() const override;
+    virtual pgsTypes::ExposureCondition GetExposureCondition() const override;
 	virtual void SetExposureCondition(pgsTypes::ExposureCondition newVal) override;
+
+    virtual pgsTypes::ClimateCondition GetClimateCondition() const override;
+    virtual void SetClimateCondition(pgsTypes::ClimateCondition newVal) override;
+
 	virtual Float64 GetRelHumidity() const override;
 	virtual void SetRelHumidity(Float64 newVal) override;
 
@@ -808,6 +812,7 @@ private:
 
    // Environment Data
    pgsTypes::ExposureCondition m_ExposureCondition;
+   pgsTypes::ClimateCondition m_ClimateCondition;
    Float64 m_RelHumidity;
 
    // Alignment Data
@@ -929,6 +934,7 @@ private:
    static HRESULT ProfileProc(IStructuredSave*,IStructuredLoad*,IProgress*,CProjectAgentImp*);
    static HRESULT SuperelevationProc(IStructuredSave*,IStructuredLoad*,IProgress*,CProjectAgentImp*);
    static HRESULT PierDataProc(IStructuredSave*,IStructuredLoad*,IProgress*,CProjectAgentImp*);
+   static HRESULT EnvironmentProc(IStructuredSave*, IStructuredLoad*, IProgress*, CProjectAgentImp*);
    static HRESULT PierDataProc2(IStructuredSave*,IStructuredLoad*,IProgress*,CProjectAgentImp*);
    static HRESULT XSectionDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
    static HRESULT XSectionDataProc2(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);

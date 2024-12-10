@@ -240,7 +240,7 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
          {
             if ( reactionDecider.DoReport(constructionIntervalIdx) )
             {
-               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction(constructionIntervalIdx, reactionLocation, pgsTypes::pftConstruction,   maxBAT ) );
+               (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction(constructionIntervalIdx, reactionLocation, pgsTypes::pftConstruction, maxBAT ) );
                (*p_table)(row,col++) << reaction.SetValue( pForces->GetReaction(constructionIntervalIdx, reactionLocation, pgsTypes::pftConstruction, minBAT ) );
             }
             else
