@@ -149,7 +149,7 @@ const LOSSDETAILS* CTimeStepLossEngineer::GetLosses(const pgsPointOfInterest& po
       {
          // Losses have not been computed all the way up to and including the requested interval.
          
-         // Get the loss objects for this girderline
+         // Get the loss objects for this girder line
          GET_IFACE(IBridgeDescription,pIBridgeDesc);
          std::vector<LOSSES*> vpLosses;
          GroupIndexType nGroups = pIBridgeDesc->GetGirderGroupCount();
@@ -526,12 +526,12 @@ void CTimeStepLossEngineer::ComputeLosses(const CGirderKey& girderKey,IntervalIn
    {
       // Time-step losses must be computed for the entire girder line at once
 
-      // create the loss objects for this girderline
+      // create the loss objects for this girder line
       std::vector<LOSSES*> vpLosses;
 
       GET_IFACE(IBridge, pBridge);
       std::vector<CGirderKey> vGirderKeys;
-      pBridge->GetGirderline(girderKey.girderIndex, &vGirderKeys); // must use girderline index version here (not the girder key version)
+      pBridge->GetGirderline(girderKey.girderIndex, &vGirderKeys); // must use girder line index version here (not the girder key version)
       for(const auto& thisGirderKey : vGirderKeys)
       {
          LOSSES losses;
@@ -658,7 +658,7 @@ void CTimeStepLossEngineer::ComputeFrictionLosses(const CGirderKey& girderKey,LO
    }
 
    CString strMsg;
-   strMsg.Format(_T("Computing friction losses for tendons in Group %d Girderline %s"),LABEL_GROUP(girderKey.groupIndex),LABEL_GIRDER(girderKey.girderIndex));
+   strMsg.Format(_T("Computing friction losses for tendons in Group %d Girder %s"),LABEL_GROUP(girderKey.groupIndex),LABEL_GIRDER(girderKey.girderIndex));
    m_pProgress->UpdateMessage(strMsg);
 
    Float64 Dset, wobble, friction;
@@ -1892,7 +1892,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
 
             if (intervalIdx == stressTendonIntervalIdx)
             {
-               // The jacking force that is transfered to the girder is Pjack - Apt*(Friction Loss + Anchor Set Loss)
+               // The jacking force that is transferred to the girder is Pjack - Apt*(Friction Loss + Anchor Set Loss)
 #if defined USE_AVERAGE_TENDON_FORCE
                Float64 dfpF, dfpA; // equiv. PT loads are based on average loss so use the same thing here
 
@@ -1984,7 +1984,9 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
    // GIRDER TENDON PARAMETERS
    if (bIsOnGirder)
    {
-      if (m_pIntervals->IsGirderTendonStressingInterval(girderKey, intervalIdx))
+      // secondary effects occur once the first girder tendon is stressed
+      auto first_tendon_stressing_interval = m_pIntervals->GetFirstGirderTendonStressingInterval(girderKey);
+      if(first_tendon_stressing_interval <= intervalIdx)
       {
          // Secondary effects
          // NOTE: Don't do secondary effects in the loop below (looping over each duct)
@@ -2001,6 +2003,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
          tsDetails.dVi[pgsTypes::pftSecondaryEffects] += dV;
          tsDetails.Vi[pgsTypes::pftSecondaryEffects] += prevTimeStepDetails.Vi[pgsTypes::pftSecondaryEffects] + tsDetails.dVi[pgsTypes::pftSecondaryEffects];
 
+         // there are no axial secondary effects so just set dP to zero rather than computing a value that will always be 0.0
          //Float64 dP = m_pProductForces->GetAxial(intervalIdx,pgsTypes::pftSecondaryEffects,poi,m_Bat, rtIncremental);
          Float64 dP = 0;
          tsDetails.dPi[pgsTypes::pftSecondaryEffects] += dP;
@@ -2023,7 +2026,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
 
             if (intervalIdx == stressTendonIntervalIdx)
             {
-               // The jacking force that is transfered to the girder is Pjack - Apt*(Friction Loss + Anchor Set Loss)
+               // The jacking force that is transferred to the girder is Pjack - Apt*(Friction Loss + Anchor Set Loss)
 #if defined USE_AVERAGE_TENDON_FORCE
                Float64 dfpF, dfpA; // equiv. PT loads are based on average loss so use the same thing here
 
@@ -2283,7 +2286,7 @@ void CTimeStepLossEngineer::InitializeTimeStepAnalysis(IntervalIndexType interva
       // piece of the cross section. (Restraining force for relaxation deformations
       // was done above)
 
-      // Use actual modulus of elasticity because the restraining force is assumed to be an instantenous force
+      // Use actual modulus of elasticity because the restraining force is assumed to be an instantaneous force
       // The restraining force is assumed to happen in the middle of the interval it occurs. The effects
       // are then considered as time-dependent and age adjusted modulus is used to compute creep and shrinkage effects
 
@@ -2463,7 +2466,7 @@ void CTimeStepLossEngineer::AnalyzeInitialStrains(IntervalIndexType intervalIdx,
          tsDetails2.r[i] = r2;
 
          // The formulation in "Time-Dependent Analysis of Composite Frames (Tadros 1977)" assumes that the
-         // initial strains vary lineraly along the bridge. The underlying LBAM and FEM models
+         // initial strains vary linearly along the bridge. The underlying LBAM and FEM models
          // only supports constant imposed deformations so we are going to use the average
          // values between POI. In general, the POI are tightly spaced so this is a good approximation
          // NOTE: The negative sign is because we want equal and opposite strains
@@ -2846,7 +2849,7 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
          if (bIsInClosure && intervalIdx < compositeClosureIntervalIdx)
          {
             // If the POI is at a closure joint, and it is before the closure is composite
-            // with the adjacent girder segments, the moment is zero. At strongbacks,
+            // with the adjacent girder segments, the moment is zero. At strong backs,
             // a moment is computed, but this is the moment in the strongback hardware,
             // not the moment in the closure.
             dP = 0;
@@ -2863,7 +2866,7 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
          }
          else if (pfType == pgsTypes::pftCreep || pfType == pgsTypes::pftShrinkage || pfType == pgsTypes::pftRelaxation)
          {
-            // get the section forces in the restrained system due to the artifical restraining load
+            // get the section forces in the restrained system due to the artificial restraining load
             if (0 < tsDetails.tEnd - tsDetails.tStart)
             {
                CString strLoadName = m_pLosses->GetRestrainingLoadName(intervalIdx, pfType - pgsTypes::pftCreep);
@@ -3444,7 +3447,7 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
 #endif // LUMP_STRANDS
             } // next strand type
 
-            // force due to pretensioning at the end of this interval
+            // internal force due to pretension at the end of this interval
             tsDetails.Pi[pgsTypes::pftPretension] = prevTimeStepDetails.Pi[pgsTypes::pftPretension] + tsDetails.dPi[pgsTypes::pftPretension];
             tsDetails.Mi[pgsTypes::pftPretension] = prevTimeStepDetails.Mi[pgsTypes::pftPretension] + tsDetails.dMi[pgsTypes::pftPretension];
          } // if not closure joint
@@ -3607,7 +3610,7 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
                      tendon.dei[pfType] += dei;
                      tendon.dPi[pfType] += dPi;
 
-                     // Change in vertial component of prestress
+                     // Change in vertical component of prestress
                      if (!IsZero(dPi))
                      {
                         CComPtr<IVector3d> slope;
@@ -3718,7 +3721,7 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
          // in the first problem, we tension the strands and the change in force is a tension in the strands
          // in the second problem, we release the prestress force into the system so a compression is applied
          // if we add the force at the end of the previous interval with the change in force in this interval
-         // the tension and compression values for the pretensioning cancel each other out leaving no prestress in the system.
+         // the tension and compression values for pretension cancel each other out leaving no prestress in the system.
          // for that reason, we want only the change in the forces for this interval
          tsDetails.P = tsDetails.dP;
          tsDetails.M = tsDetails.dM;
@@ -3872,7 +3875,7 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
 #endif // !_DEBUG
 #endif // _BETA_VERSION
 
-   // Check: Final external forces = final interal forces
+   // Check: Final external forces = final interval forces
    tsDetails.Pext = 0;
    tsDetails.Mext = 0;
    
@@ -3915,7 +3918,7 @@ void CTimeStepLossEngineer::FinalizeTimeStepAnalysis(IntervalIndexType intervalI
 
 #if !defined _DEBUG
    // only want to put up message box if incremental values are the same but summation is different
-   // if incrementals are different, summation will also be different and we would get
+   // if incremental values are different, summation will also be different and we would get
    // twice as many message boxes
    if ( !IsEqual(tsDetails.Pext,tsDetails.Pint,axialTolerance) && IsEqual(tsDetails.dPext,tsDetails.dPint,incrementalAxialTolerance))
    {
@@ -3970,7 +3973,7 @@ void CTimeStepLossEngineer::ComputeAnchorSetLosses(const CPTData* pPTData,const 
       return;
    }
 
-   // solve with method of false position (aka regula falsi method)
+   // solve with method of false position (aka Regula Falsi method)
    // http://en.wikipedia.org/wiki/False_position_method
    // http://mathworld.wolfram.com/MethodofFalsePosition.html
 
@@ -4075,7 +4078,7 @@ void CTimeStepLossEngineer::ComputeAnchorSetLosses(const CSegmentPTData* pPTData
       return;
    }
 
-   // solve with method of false position (aka regula falsi method)
+   // solve with method of false position (aka Regula Falsi method)
    // http://en.wikipedia.org/wiki/False_position_method
    // http://mathworld.wolfram.com/MethodofFalsePosition.html
 
@@ -5098,13 +5101,13 @@ std::vector<pgsTypes::ProductForceType> CTimeStepLossEngineer::GetApplicableProd
    if ( !bIsInClosure || (bIsInClosure && compositeClosureIntervalIdx <= intervalIdx) )
    {
       bool bSegmentTendonStressingInterval = m_pIntervals->IsSegmentTendonStressingInterval(segmentKey, intervalIdx);
-      bool bGirderTendonStressingInterval = m_pIntervals->IsGirderTendonStressingInterval(segmentKey, intervalIdx);
-      if (bSegmentTendonStressingInterval || bGirderTendonStressingInterval)
+      auto first_tendon_stressing_interval = m_pIntervals->GetFirstGirderTendonStressingInterval(segmentKey);
+      if (bSegmentTendonStressingInterval || first_tendon_stressing_interval <= intervalIdx)
       {
          if ( !bExternalForcesOnly )
          {
             vProductForces.push_back(pgsTypes::pftPostTensioning);
-            if (bGirderTendonStressingInterval)
+            if (first_tendon_stressing_interval <= intervalIdx)
             {
                vProductForces.push_back(pgsTypes::pftSecondaryEffects);
             }
@@ -5248,7 +5251,7 @@ void CTimeStepLossEngineer::ComputePrincipalStressInWeb(IntervalIndexType interv
    vPsWebElevations.emplace_back(-Ytc, tw, _T("Composite Centroid"));
    vPsWebElevations.emplace_back(-Ytnc, tw, _T("Noncomposite Centroid"));
 
-   // store duct location information in tuple below so we don't have to retreive it twice
+   // store duct location information in tuple below so we don't have to retrieve it twice
    enum ductLocType { dltSegment, dltGirder };
    std::vector<std::tuple<Float64,Float64,ductLocType,DuctIndexType>> ductLocations; // elevation, diameter, type, index
    ductLocations.reserve(nSegmentDucts + nGirderDucts);
@@ -5372,7 +5375,7 @@ void CTimeStepLossEngineer::ComputePrincipalStressInWeb(IntervalIndexType interv
          fpcx_s += pPrevTsDetails->PrincipalStressDetails[pfType].WebSections[webSectionIdx].fpcx_s;
       }
 
-      // Special case for release interval. We have to carry and sum Vu from the stressing interval to compute the cummlative shear stress at release
+      // Special case for release interval. We have to carry and sum Vu from the stressing interval to compute the cumulative shear stress at release
       // because there is no concrete section at stressing for which to compute the stress
       if (intervalIdx == releaseIntervalIdx)
       {
