@@ -336,6 +336,19 @@ Float64 CPrecastSegmentData::GetVariationLength(pgsTypes::SegmentZoneType zone) 
    }
 }
 
+pgsTypes::SegmentZoneType CPrecastSegmentData::MapZoneType(pgsTypes::SegmentZoneType zone) const
+{
+   if (m_VariationType == pgsTypes::svtLinear)
+   {
+      if (zone == pgsTypes::sztLeftTapered)
+         zone = pgsTypes::sztLeftPrismatic;
+      else if (zone == pgsTypes::sztRightTapered)
+         zone = pgsTypes::sztRightPrismatic;
+   }
+
+   return zone;
+}
+
 Float64 CPrecastSegmentData::GetVariationHeight(pgsTypes::SegmentZoneType zone) const
 {
    if ( m_VariationType == pgsTypes::svtNone )
@@ -344,7 +357,7 @@ Float64 CPrecastSegmentData::GetVariationHeight(pgsTypes::SegmentZoneType zone) 
    }
    else
    {
-      return m_VariationHeight[zone];
+      return m_VariationHeight[MapZoneType(zone)];
    }
 }
 
@@ -356,7 +369,7 @@ Float64 CPrecastSegmentData::GetVariationBottomFlangeDepth(pgsTypes::SegmentZone
    }
    else
    {
-      return m_VariationBottomFlangeDepth[zone];
+      return m_VariationBottomFlangeDepth[MapZoneType(zone)];
    }
 }
 

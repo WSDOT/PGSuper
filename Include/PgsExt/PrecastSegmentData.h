@@ -184,8 +184,10 @@ protected:
    void MakeAssignment(const CPrecastSegmentData& rOther);
    void ResolveReferences();
 
+   pgsTypes::SegmentZoneType MapZoneType(pgsTypes::SegmentZoneType zone) const;
+
    // A segment can start/end of a temporary support or a pier (hinge/roller connections only)
-   // Temporary supports are acceesed through the closure joint object
+   // Temporary supports are accessed through the closure joint object
 
    // pointers to the closure joint data objects that are at the start and end of this segment.
    // use pgsTypes::MemberEndType to access the array
