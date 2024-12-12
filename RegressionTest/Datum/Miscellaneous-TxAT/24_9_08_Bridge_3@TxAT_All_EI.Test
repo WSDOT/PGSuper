@@ -1,0 +1,72 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 48.68    6  10.28         3           1     1     Tx46          36  0.6  270  15.94  10.27  12.25  12.25   2.25                                               6  40.5  6.5  5.100  5.800   3.433    -3.506     5654   0.672  0.986   3.447 -1.569  0.000 -0.089 -1.657 149.12  410.02    1.00    1.00    1.00    1.78    1.29    2.30    1.74    1.35 
+
+
+The Specification Check was Successful
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 48.68    6  10.28         3           1     2     Tx46          36  0.6  270  15.94  10.27  12.25  12.25   2.25                                               6  40.5  6.5  5.100  5.800   3.734    -3.800     5997   0.672  0.986   3.452 -2.013  0.000 -0.083 -2.096 148.82  398.75    1.00    1.00    1.00    1.75    1.23    2.27    1.67    1.12 
+
+
+The Specification Check was Successful
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 48.68    6  10.28         3           1     4     Tx46          36  0.6  270  15.94  10.27  12.25  12.25   2.25                                               6  40.5  6.5  5.100  5.800   3.775    -3.837     6046   0.669  0.888   3.460 -2.058  0.000 -0.085 -2.143 148.22  396.78    1.00    1.00    1.00    1.73    1.28    2.24    1.73    1.09 
+
+
+The Specification Check was Successful
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 48.68    6  10.63         3           2     1     Tx46          36  0.6  270  15.94  10.27  12.25  12.25   2.25                                               6  40.5  6.5  5.100  5.800   3.413    -3.501     5700   0.698  1.022   3.438 -1.513  0.000 -0.088 -1.601 149.77  412.64    1.00    1.00    1.00    1.72    1.25    2.24    1.68    1.34 
+
+
+The Specification Check was Successful
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 48.68    6  10.63         3           2     2     Tx46          36  0.6  270  15.94  10.27  12.25  12.25   2.25                                               6  40.5  6.5  5.100  5.800   3.787    -3.876     6144   0.697  1.022   3.445 -2.076  0.000 -0.080 -2.156 149.33  398.06    1.00    1.00    1.00    1.69    1.19    2.19    1.60    1.05 
+
+
+The Specification Check was Successful
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 48.68    6  10.63         3           2     4     Tx46          36  0.6  270  15.94  10.27  12.25  12.25   2.25                                               6  40.5  6.5  5.100  5.800   3.845    -3.927     6212   0.693  0.919   3.457 -2.142  0.000 -0.083 -2.225 148.46  395.21    1.00    1.00    1.00    1.67    1.23    2.16    1.66    1.01 
+
+
+The Specification Check was Successful
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 48.68    7   9.38         3           3     1     Tx46          36  0.6  270  15.94  10.27  12.25  12.25   2.25                                               6  40.5  6.5  5.100  5.800   3.212    -3.244     5246   0.648  0.947   3.425 -1.271  0.000 -0.089 -1.360 150.48  419.81    1.00    1.00    1.00    1.89    1.39    2.45    1.87    1.58 
+
+
+The Specification Check was Successful
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 48.68    7   9.38         3           3     2     Tx46          36  0.6  270  15.94  10.27  12.25  12.25   2.25                                               6  40.5  6.5  5.100  5.800   3.559    -3.607     5683   0.647  0.947   3.433 -1.814  0.000 -0.080 -1.894 150.02  405.43    1.00    1.00    1.00    1.88    1.34    2.44    1.80    1.29 
+
+
+The Specification Check was Successful
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 48.68    7   9.38         3           3     4     Tx46          36  0.6  270  15.94  10.27  12.25  12.25   2.25                                               6  40.5  6.5  5.100  5.800   3.587    -3.549     5569   0.643  0.851   3.448 -1.875  0.000  0.000 -1.875 149.08  408.34    1.00    1.00    1.00    1.91    1.43    2.47    1.93    1.34 
+
+
+The Specification Check was Successful
+
+
