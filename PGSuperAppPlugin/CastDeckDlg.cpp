@@ -52,7 +52,7 @@ CCastDeckDlg::CCastDeckDlg(LPCTSTR lpszTitle,const CTimelineManager& timelineMgr
    m_bReadOnly = bReadOnly;
 
    EventIndexType castDeckEventIdx = m_TimelineMgr.GetCastDeckEventIndex();
-   if (m_EventIndex != castDeckEventIdx)
+   if (m_EventIndex != castDeckEventIdx && castDeckEventIdx != INVALID_INDEX)
    {
       // initializes the cast deck activity in the target event with the
       // current cast deck activity details
