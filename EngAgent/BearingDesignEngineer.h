@@ -26,6 +26,9 @@
 #include <PgsExt\GirderGroupData.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\BearingDesignParameters.h>
+#include <EngTools\Bearing.h>
+#include <EngTools\BearingLoads.h>
+#include <EngTools\BearingCalculator.h>
 
 
 class pgsBearingDesignEngineer
@@ -48,6 +51,8 @@ public:
 
    void GetBearingDesignProperties(DESIGNPROPERTIES* pDetails) const;
 
+   virtual void CheckBearing(WBFL::EngTools::Bearing* brg, WBFL::EngTools::BearingLoads* brg_loads, WBFL::EngTools::BearingCalculator* brg_calc) const = 0;
+
    void GetBearingReactionDetails(const ReactionLocation& reactionLocation,
 	   CGirderKey girderKey, pgsTypes::AnalysisType analysisType, 
 	   bool bIncludeImpact, bool bIncludeLLDF, REACTIONDETAILS* pDetails) const;
@@ -61,6 +66,8 @@ public:
    Float64 GetBearingTimeDependentLosses(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, const GDRCONFIG* pConfig, const LOSSDETAILS* pDetails, TDCOMPONENTS* tdComponents) const;
 
    void GetTimeDependentShearDeformation(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const;
+
+   void CheckBearing(WBFL::EngTools::Bearing* brg, WBFL::EngTools::BearingLoads* brg_loads, WBFL::EngTools::BearingCalculator* brg_calc) const;
 
 private:
    IBroker* m_pBroker;
