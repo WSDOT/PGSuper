@@ -1480,7 +1480,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
                   // these POI are between segments so they don't apply
                   vPoi.erase(std::remove_if(vPoi.begin(), vPoi.end(), [pIPoi](const auto& poi) {return pIPoi->IsOffSegment(poi); }), vPoi.end());
                }
-               else
+               else if(actionType == actionStress)
                {
                   // POIs off segments or closures don't apply
                   vPoi.erase(std::remove_if(vPoi.begin(), vPoi.end(), [pIPoi](const auto& poi) {CClosureKey key; return pIPoi->IsOffSegment(poi) && !pIPoi->IsInClosureJoint(poi, &key); }), vPoi.end());
