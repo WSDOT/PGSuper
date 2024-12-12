@@ -72,7 +72,8 @@ LPCTSTR CGirderScheduleChapterBuilder::GetName() const
    return TEXT("Girder Schedule");
 }
 
-rptChapter* CGirderScheduleChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
+rptChapter* CGirderScheduleChapterBuilder::Build(
+    const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec, Uint16 level) const
 {
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    CComPtr<IBroker> pBroker;
@@ -683,7 +684,6 @@ rptChapter* CGirderScheduleChapterBuilder::Build(const std::shared_ptr<const WBF
       }
    }
 
-
    if (limits_criteria.bCheckSag )
    {
       if (IsNonstructuralDeck(deckType))
@@ -802,6 +802,56 @@ rptChapter* CGirderScheduleChapterBuilder::Build(const std::shared_ptr<const WBF
    if ( pSegment->HandlingData.pHaulTruckLibraryEntry == nullptr )
    {
       *p << _T("++ Shipping analysis not performed") << rptNewLine;
+   }
+
+   Float64 tft = pIGirder->GetTopFlangeThickening(segmentKey);
+   if (pIGirder->CanTopFlangeBeLongitudinallyThickened(segmentKey) && !IsZero(tft))
+   {
+       GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+       INIT_UV_PROTOTYPE(rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), true);
+       INIT_UV_PROTOTYPE(rptLengthUnitValue, thickness, pDisplayUnits->GetComponentDimUnit(), true);
+
+       // The table currently in the WSDOT girder standard drawing 5.6-A6-10 lists top flange thickness at 10th points
+       // with the first and last point being at the CL Bearing. This implies an erected segment. However, this is girder
+       // fabrication data so it makes more sence to list based on 10th points of the actual segment. For this reason,
+       // the reference_type variable is introduced. The reporting can be easily changed by changing this variable.
+       PoiAttributeType reference_type = POI_ERECTED_SEGMENT; // POI_RELEASED_SEGMENT;
+
+       PoiList tfPoi;
+       pPoi->GetPointsOfInterest(segmentKey, POI_TENTH_POINTS | reference_type, &tfPoi);
+
+       FlangeIndexType nFlanges = pIGirder->GetTopFlangeCount(girderKey);
+
+       rptRcTable* ptfTable = rptStyleManager::CreateDefaultTable(2,
+           _T("Top Flange Thickness"));
+       ptfTable->SetNumberOfHeaderRows(1);
+
+       *p << rptNewLine << ptfTable;
+
+       row = 0;
+       (*ptfTable)(row, 0) << _T("Location");
+       (*ptfTable)(row, 1) << _T("Thickness");
+
+       row = ptfTable->GetNumberOfHeaderRows();
+       for (const pgsPointOfInterest& poi : tfPoi)
+       {
+          auto tenth_point = poi.IsTenthPoint(reference_type);
+          CHECK(tenth_point != 0); // expecting only 10th Points
+          if (tenth_point == 1 || tenth_point == 11)
+             (*ptfTable)(row, 0) << _T("CL Brg.");
+          else
+             (*ptfTable)(row, 0) << (tenth_point - 1) / 10.;
+
+          for (FlangeIndexType i = 0; i < nFlanges; i++)
+          {
+             if (1 < nFlanges)
+                (*ptfTable)(row, 1) << _T("Flange ") << (i + 1) << _T(": ");
+
+              (*ptfTable)(row, 1) << thickness.SetValue(pIGirder->GetTopFlangeThickness(poi, i));
+          }
+
+          row++;
+       }
    }
 
    return pChapter;
