@@ -36,6 +36,12 @@
     <ClInclude Include="CLSID.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CPReportAgent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\ReporterEvents.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="ReportAgent.def" />

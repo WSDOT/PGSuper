@@ -4651,21 +4651,23 @@ BOOL CPGSDocBase::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO
 void CPGSDocBase::PopulateReportMenu()
 {
    CEAFMenu* pMainMenu = GetMainMenu();
+   if (pMainMenu != nullptr)
+   {
+       UINT viewPos = pMainMenu->FindMenuItem(_T("&View"));
+       ASSERT(0 <= viewPos);
 
-   UINT viewPos = pMainMenu->FindMenuItem(_T("&View"));
-   ASSERT( 0 <= viewPos );
+       CEAFMenu* pViewMenu = pMainMenu->GetSubMenu(viewPos);
+       ASSERT(pViewMenu != nullptr);
 
-   CEAFMenu* pViewMenu = pMainMenu->GetSubMenu(viewPos);
-   ASSERT( pViewMenu != nullptr );
+       UINT reportsPos = pViewMenu->FindMenuItem(_T("&Reports"));
+       ASSERT(0 <= reportsPos);
 
-   UINT reportsPos = pViewMenu->FindMenuItem(_T("&Reports"));
-   ASSERT( 0 <= reportsPos );
+       // Get the reports menu
+       CEAFMenu* pReportsMenu = pViewMenu->GetSubMenu(reportsPos);
+       ASSERT(pReportsMenu != nullptr);
 
-   // Get the reports menu
-   CEAFMenu* pReportsMenu = pViewMenu->GetSubMenu(reportsPos);
-   ASSERT(pReportsMenu != nullptr);
-
-   CEAFBrokerDocument::PopulateReportMenu(pReportsMenu);
+       CEAFBrokerDocument::PopulateReportMenu(pReportsMenu);
+   }
 }
 
 void CPGSDocBase::PopulateGraphMenu()
