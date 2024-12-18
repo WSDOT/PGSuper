@@ -38,6 +38,11 @@
 
 #include "ReporterBase.h"
 
+
+#include <Reporting\ReporterEvents.h>
+#include "CPReportAgent.h"
+
+
 class rptReport;
 
 /////////////////////////////////////////////////////////////////////////////
@@ -49,7 +54,8 @@ class ATL_NO_VTABLE CPGSpliceReporterImp :
 	public IConnectionPointContainerImpl<CPGSpliceReporterImp>,
    public IAgentEx,
    public IReportOptions,
-   public ISpecificationEventSink
+   public ISpecificationEventSink,
+   public CProxyIReporterEventSink<CPGSpliceReporterImp>
 {
 public:
 	CPGSpliceReporterImp()
@@ -68,6 +74,7 @@ BEGIN_COM_MAP(CPGSpliceReporterImp)
 END_COM_MAP()
 
 BEGIN_CONNECTION_POINT_MAP(CPGSpliceReporterImp)
+	CONNECTION_POINT_ENTRY(IID_IReporterEventSink)
 END_CONNECTION_POINT_MAP()
 
 

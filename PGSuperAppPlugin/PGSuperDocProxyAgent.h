@@ -42,6 +42,8 @@
 
 #include "CPPGSuperDocProxyAgent.h"
 
+#include "Reporting\ReporterEvents.h"
+
 class CPGSDocBase;
 class CBridgeModelViewChildFrame;
 struct IBroker;
@@ -83,6 +85,7 @@ class CPGSuperDocProxyAgent :
    public ILoadModifiersEventSink,
    public ILossParametersEventSink,
    public ILibraryConflictEventSink,
+   public IReporterEventSink,
    public IUIEvents,
    public IUpdateTemplates,
    public ISelection,
@@ -114,6 +117,7 @@ BEGIN_COM_MAP(CPGSuperDocProxyAgent)
    COM_INTERFACE_ENTRY(ILoadModifiersEventSink)
    COM_INTERFACE_ENTRY(ILossParametersEventSink)
    COM_INTERFACE_ENTRY(ILibraryConflictEventSink)
+   COM_INTERFACE_ENTRY(IReporterEventSink)
    COM_INTERFACE_ENTRY(IUIEvents)
    COM_INTERFACE_ENTRY(IUpdateTemplates)
    COM_INTERFACE_ENTRY(ISelection)
@@ -181,6 +185,10 @@ public:
 public:
    virtual HRESULT OnSpecificationChanged() override;
    virtual HRESULT OnAnalysisTypeChanged() override;
+
+   // IReporterEventSink
+public:
+	virtual HRESULT OnReportsChanged() override;
 
 // IRatingSpecificationEventSink
 public:
@@ -367,6 +375,7 @@ private:
    DWORD m_dwLoadModiferCookie;
    DWORD m_dwLibraryConflictGuiCookie;
    DWORD m_dwLossParametersCookie;
+   DWORD m_dwReportCookie;
 
    int m_EventHoldCount;
    bool m_bFiringEvents;
