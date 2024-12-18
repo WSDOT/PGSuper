@@ -41,7 +41,6 @@
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <EAF\EAFMenu.h>
 #include <IFace\StatusCenter.h>
 
 #include <IReportManager.h>
