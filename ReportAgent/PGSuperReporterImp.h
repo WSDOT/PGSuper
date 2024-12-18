@@ -39,18 +39,25 @@
 
 #include <map>
 
+
+#include <Reporting\ReporterEvents.h>
+#include "CPReportAgent.h"
+
+
+
 class rptReport;
 
 /////////////////////////////////////////////////////////////////////////////
 // CPGSuperReporterImp
 class ATL_NO_VTABLE CPGSuperReporterImp : 
-	public CComObjectRootEx<CComSingleThreadModel>,
-	public CComCoClass<CPGSuperReporterImp, &CLSID_PGSuperReportAgent>,
+   public CComObjectRootEx<CComSingleThreadModel>,
+   public CComCoClass<CPGSuperReporterImp, &CLSID_PGSuperReportAgent>,
    public CReporterBase,
-	public IConnectionPointContainerImpl<CPGSuperReporterImp>,
+   public IConnectionPointContainerImpl<CPGSuperReporterImp>,
    public IAgentEx,
    public IReportOptions,
-   public ISpecificationEventSink
+   public ISpecificationEventSink,
+   public CProxyIReporterEventSink<CPGSuperReporterImp>
 {
 public:
 	CPGSuperReporterImp()
@@ -69,6 +76,7 @@ BEGIN_COM_MAP(CPGSuperReporterImp)
 END_COM_MAP()
 
 BEGIN_CONNECTION_POINT_MAP(CPGSuperReporterImp)
+	CONNECTION_POINT_ENTRY(IID_IReporterEventSink)
 END_CONNECTION_POINT_MAP()
 
 

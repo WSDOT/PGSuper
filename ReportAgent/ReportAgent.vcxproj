@@ -212,7 +212,9 @@ xcopy /y /d $(ARPDIR)\PGSuper\Images\*.* $(ARPDIR)\BridgeLink\Images
     <ResourceCompile Include="ReportAgent.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Include\Reporting\ReporterEvents.h" />
     <ClInclude Include="CLSID.h" />
+    <ClInclude Include="CPReportAgent.h" />
     <ClInclude Include="PGSpliceReporterImp.h" />
     <ClInclude Include="PGSuperReporterImp.h" />
     <ClInclude Include="ReporterBase.h" />

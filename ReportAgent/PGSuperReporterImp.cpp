@@ -280,6 +280,10 @@ HRESULT CPGSuperReporterImp::OnSpecificationChanged()
       pRptBuilder->RemoveChapterBuilder(_T("Shrinkage Strain Details"));
    }
 
+
+   Fire_ReportsChanged();
+   
+
    return S_OK;
 }
 
