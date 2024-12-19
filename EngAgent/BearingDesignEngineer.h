@@ -51,8 +51,6 @@ public:
 
    void GetBearingDesignProperties(DESIGNPROPERTIES* pDetails) const;
 
-   virtual void CheckBearing(WBFL::EngTools::Bearing* brg, WBFL::EngTools::BearingLoads* brg_loads, WBFL::EngTools::BearingCalculator* brg_calc) const = 0;
-
    void GetBearingReactionDetails(const ReactionLocation& reactionLocation,
 	   CGirderKey girderKey, pgsTypes::AnalysisType analysisType, 
 	   bool bIncludeImpact, bool bIncludeLLDF, REACTIONDETAILS* pDetails) const;
