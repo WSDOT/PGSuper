@@ -14,6 +14,6 @@ Barrier | Use the grid to input the coordinates that make up the barrier shape. 
 Curb Offset | Offset from the face of barrier to the nominal curb line. 
 Weight | The weight of the barrier can be defined by an explicit value or computed based on the cross sectional area of the barrier. The deck material properties will be used for barrier density.
 Ec | Modulus of elasticity of the barrier concrete.
-Barrier is Structurally Continuous | Check this box if the barrier is to be considered structurally continuous per LRFD 2.5.2.6.2 and 4.6.2.6.1
+Barrier is Structurally Continuous | Check this box if the barrier is to be considered structurally continuous per LRFD 2.5.2.6.2 and 4.6.2.6.1. Note that if the barrier is used as an interior barrier it is not considered when computing effective flange width (4.6.2.6.1).
 
 
