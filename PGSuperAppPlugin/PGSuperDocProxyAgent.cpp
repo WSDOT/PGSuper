@@ -268,6 +268,12 @@ void CPGSuperDocProxyAgent::AdviseEventSinks()
    hr = pCP->Advise( GetUnknown(), &m_dwLossParametersCookie );
    ATLASSERT( SUCCEEDED(hr) );
    pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
+
+   hr = pBrokerInit->FindConnectionPoint(IID_IReporterEventSink, &pCP);
+   ATLASSERT(SUCCEEDED(hr));
+   hr = pCP->Advise(GetUnknown(), &m_dwReportCookie);
+   ATLASSERT(SUCCEEDED(hr));
+   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
 }
 
 void CPGSuperDocProxyAgent::UnadviseEventSinks()
@@ -331,6 +337,12 @@ void CPGSuperDocProxyAgent::UnadviseEventSinks()
    ATLASSERT( SUCCEEDED(hr) );
    hr = pCP->Unadvise( m_dwLossParametersCookie );
    ATLASSERT( SUCCEEDED(hr) );
+   pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
+
+   hr = pBrokerInit->FindConnectionPoint(IID_IReporterEventSink, &pCP);
+   ATLASSERT(SUCCEEDED(hr));
+   hr = pCP->Unadvise(m_dwReportCookie);
+   ATLASSERT(SUCCEEDED(hr));
    pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
 }
 
@@ -819,6 +831,14 @@ HRESULT CPGSuperDocProxyAgent::OnSpecificationChanged()
 
    FireEvent( 0, HINT_SPECCHANGED, nullptr );
    return S_OK;
+}
+
+// ISpecificationEventSink
+HRESULT CPGSuperDocProxyAgent::OnReportsChanged()
+{
+    m_pMyDocument->PopulateReportMenu();
+
+    return S_OK;
 }
 
 HRESULT CPGSuperDocProxyAgent::OnAnalysisTypeChanged()

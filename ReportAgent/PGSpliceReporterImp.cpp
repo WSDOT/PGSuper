@@ -51,6 +51,8 @@
 
 #include <IReportManager.h>
 
+
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -233,6 +235,8 @@ HRESULT CPGSpliceReporterImp::OnSpecificationChanged()
    {
       pPsRptBuilder->Hidden(!bIsTimeStepPrincStress);
    }
+
+   Fire_ReportsChanged();
 
    return S_OK;
 }
