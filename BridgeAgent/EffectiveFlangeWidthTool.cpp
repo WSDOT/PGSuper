@@ -671,14 +671,18 @@ HRESULT CEffectiveFlangeWidthTool::EffectiveFlangeWidthBySegmentDetails(IGeneric
          barrier->get_IsStructurallyContinuous(&bIsStructurallyContinuous);
          if ( bIsStructurallyContinuous == VARIANT_TRUE && !bOverhangCheckFailed )
          {
+            // This is for an exterior girder - strength and flexure. We only want the exterior barrier if it's marked applicable
             CComPtr<IShape> shape;
-            barrier->get_StructuralShape(&shape);
+            barrier->get_StructuralShape(VARIANT_TRUE, VARIANT_FALSE, VARIANT_FALSE,&shape);
 
+            if (shape)
+            {
             CComPtr<IShapeProperties> props;
             shape->get_ShapeProperties(&props);
 
             // get area of barrier
             props->get_Area(&Ab);
+            }
 
             // if there is a deck, get the slab thickness
             CComPtr<IBridgeDeck> deck;
