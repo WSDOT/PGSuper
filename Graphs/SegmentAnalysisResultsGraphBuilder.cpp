@@ -320,7 +320,7 @@ void CSegmentAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CSegmentK
    if ( pDocType->IsPGSpliceDocument() )
    {
       m_pGraphDefinitions->AddGraphDefinition(CSegmentAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftPostTensioning), pgsTypes::pftPostTensioning, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION) );
-      m_pGraphDefinitions->AddGraphDefinition(CSegmentAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftSecondaryEffects),      pgsTypes::pftSecondaryEffects,      vAllIntervals, ACTIONS_FORCE_STRESS | ACTIONS_X_DEFLECTION) );
+      m_pGraphDefinitions->AddGraphDefinition(CSegmentAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftSecondaryEffects),      pgsTypes::pftSecondaryEffects,      vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION) );
    }
 
    GET_IFACE(ILibrary,pLib);
