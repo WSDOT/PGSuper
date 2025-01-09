@@ -41,6 +41,7 @@ Topics
 * @subpage tg_reactions
 * @subpage tg_section_properties
 * @subpage tg_shear_capacity
+* @subpage tg_bearing_shear_deformation
 * @subpage tg_simple_spans_made_continuous
 * @subpage tg_sign_convention
 * @subpage tg_splitting_zone_checks
