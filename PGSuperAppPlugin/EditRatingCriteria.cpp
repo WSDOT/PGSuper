@@ -708,6 +708,14 @@ void txnEditRatingCriteria::Execute(int i)
    pRatingSpec->SetRelaxationFactor(       pgsTypes::ServiceI_PermitRoutine,m_Data[i].m_Permit.ServiceI_CR); // RE
    pRatingSpec->SetSecondaryEffectsFactor( pgsTypes::ServiceI_PermitRoutine,m_Data[i].m_Permit.ServiceI_PS);
 
+   pRatingSpec->SetDeadLoadFactor(         pgsTypes::ServiceIII_PermitRoutine, m_Data[i].m_Permit.ServiceIII_DC);
+   pRatingSpec->SetWearingSurfaceFactor(   pgsTypes::ServiceIII_PermitRoutine, m_Data[i].m_Permit.ServiceIII_DW);
+   pRatingSpec->SetLiveLoadFactor(         pgsTypes::ServiceIII_PermitRoutine, m_Data[i].m_Permit.ServiceIII_LL_Routine);
+   pRatingSpec->SetCreepFactor(            pgsTypes::ServiceIII_PermitRoutine, m_Data[i].m_Permit.ServiceIII_CR);
+   pRatingSpec->SetShrinkageFactor(        pgsTypes::ServiceIII_PermitRoutine, m_Data[i].m_Permit.ServiceIII_SH);
+   pRatingSpec->SetRelaxationFactor(       pgsTypes::ServiceIII_PermitRoutine, m_Data[i].m_Permit.ServiceIII_CR); // RE
+   pRatingSpec->SetSecondaryEffectsFactor( pgsTypes::ServiceIII_PermitRoutine, m_Data[i].m_Permit.ServiceIII_PS);
+
    // Permit Rating Parameters - Special
    pRatingSpec->SetDeadLoadFactor(         pgsTypes::StrengthII_PermitSpecial,m_Data[i].m_Permit.StrengthII_DC);
    pRatingSpec->SetWearingSurfaceFactor(   pgsTypes::StrengthII_PermitSpecial,m_Data[i].m_Permit.StrengthII_DW);
