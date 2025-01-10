@@ -1,0 +1,92 @@
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 42.17    6   0.08 Nooksack Overflo    1     1    WF39D    *     40  0.6  270  20.59  10.69   3.00   3.00                                              6.000  9.000   2.971    -4.992     6347   0.832  0.832   4.353 -0.305 -0.188 -0.282 -0.776 172.02  327.42    3.00    3.00    3.00    1.29    0.59    1.67    1.13    1.19 
+
+
+The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 21 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 21 Open to Traffic, Roadway Geometry Control
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Horizontal Interface Shear check failed for Strength I Limit State.
+Stirrup detailing checks failed for the Strength I Limit State.
+Splitting check failed.
+Slab Offset ("A" Dimension) check failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 42.17    6   0.08 Nooksack Overflo    1     2    WF39D    *     40  0.6  270  20.59  10.69   3.00   3.00                                              6.000  9.000   3.115    -4.680     5557   0.631  0.767   4.328 -0.322 -0.213 -0.319 -0.853 172.02  323.60    3.00    3.00    3.00    1.61    0.92    2.08    1.24    1.43 
+
+
+The Specification Check was Not Successful
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Horizontal Interface Shear check failed for Strength I Limit State.
+Stirrup detailing checks failed for the Strength I Limit State.
+Splitting check failed.
+Slab Offset ("A" Dimension) check failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 42.17    6   0.08 Nooksack Overflo    1     4    WF39D    *     40  0.6  270  20.59  10.69   3.00   3.00                                              6.000  9.000   2.748    -4.098     4910   0.631  0.767   4.328 -0.322 -0.213 -0.158 -0.692 172.02  347.46    3.00    3.00    3.00    1.76    1.05    2.28    1.42    1.61 
+
+
+The Specification Check was Not Successful
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Horizontal Interface Shear check failed for Strength I Limit State.
+Splitting check failed.
+Slab Offset ("A" Dimension) check failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 42.17    6   0.08 Nooksack Overflo    2     1    WF39D    *     40  0.6  270  20.59  10.69   3.00   3.00                                              6.000  9.000   2.971    -4.992     6347   0.832  0.832   4.353 -0.305 -0.188 -0.282 -0.776 172.02  327.42    3.00    3.00    3.00    1.29    0.59    1.67    1.13    1.19 
+
+
+The Specification Check was Not Successful
+Compression stress check failed for Service I Limit State in Interval 21 Open to Traffic, Roadway Geometry Control
+Tension stress check failed for Service III Limit State in Interval 21 Open to Traffic, Roadway Geometry Control
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Horizontal Interface Shear check failed for Strength I Limit State.
+Stirrup detailing checks failed for the Strength I Limit State.
+Splitting check failed.
+Slab Offset ("A" Dimension) check failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 42.17    6   0.08 Nooksack Overflo    2     2    WF39D    *     40  0.6  270  20.59  10.69   3.00   3.00                                              6.000  9.000   3.115    -4.680     5557   0.631  0.767   4.328 -0.322 -0.213 -0.319 -0.853 172.02  323.60    3.00    3.00    3.00    1.61    0.92    2.08    1.24    1.43 
+
+
+The Specification Check was Not Successful
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Horizontal Interface Shear check failed for Strength I Limit State.
+Stirrup detailing checks failed for the Strength I Limit State.
+Splitting check failed.
+Slab Offset ("A" Dimension) check failed
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 42.17    6   0.08 Nooksack Overflo    2     4    WF39D    *     40  0.6  270  20.59  10.69   3.00   3.00                                              6.000  9.000   2.748    -4.098     4910   0.631  0.767   4.328 -0.322 -0.213 -0.158 -0.692 172.02  347.46    3.00    3.00    3.00    1.76    1.05    2.28    1.42    1.61 
+
+
+The Specification Check was Not Successful
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Ultimate vertical shear capacity check failed for Strength I Limit State
+Horizontal Interface Shear check failed for Strength I Limit State.
+Splitting check failed.
+Slab Offset ("A" Dimension) check failed
+
+
