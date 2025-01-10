@@ -41,14 +41,14 @@
     <Import Project="..\..\BridgeLink\BridgeLink.props" />
     <Import Project="..\..\WBFL\WBFL.props" />
     <Import Project="..\PGSuper.props" />
-    <Import Project="C:\Program Files\Perforce\Stingray Studio 2021.1\Src\SS-X64-PropSheet16.props" />
+    <Import Project="$(GRID_PROPS)" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
     <Import Project="..\..\BridgeLink\BridgeLink.props" />
     <Import Project="..\..\WBFL\WBFL.props" />
     <Import Project="..\PGSuper.props" />
-    <Import Project="C:\Program Files\Perforce\Stingray Studio 2021.1\Src\SS-X64-PropSheet16.props" />
+    <Import Project="$(GRID_PROPS)" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
