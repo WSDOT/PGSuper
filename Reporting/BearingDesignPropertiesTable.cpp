@@ -80,13 +80,10 @@ CBearingDesignPropertiesTable& CBearingDesignPropertiesTable::operator= (const C
 
 
 //======================== OPERATIONS =======================================
-rptRcTable* CBearingDesignPropertiesTable::BuildBearingDesignPropertiesTable(IBroker* pBroker, const CGirderKey& girderKey, pgsTypes::AnalysisType analysisType,
-    bool bIncludeImpact, bool bIncludeLLDF, bool bDesign, bool bUserLoads, bool bIndicateControllingLoad, IEAFDisplayUnits* pDisplayUnits, bool bDetail) const
+rptRcTable* CBearingDesignPropertiesTable::BuildBearingDesignPropertiesTable(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const
 {
-
+    
     INIT_UV_PROTOTYPE(rptStressUnitValue, Reaction, pDisplayUnits->GetStressUnit(), false);
-
-
 
     ColumnIndexType nCols = 3;
 

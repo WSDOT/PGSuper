@@ -90,9 +90,7 @@ public:
    // 
    // 
    // Builds ......
-   virtual rptRcTable* BuildBearingDesignPropertiesTable(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
-                             bool bIncludeImpact,bool bIncludeLLDF,bool bDesign,bool bUserLoads, bool bIndicateControllingLoad,
-                             IEAFDisplayUnits* pDisplayUnits, bool bDetail) const;
+   virtual rptRcTable* BuildBearingDesignPropertiesTable(IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY
 
