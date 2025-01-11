@@ -87,13 +87,12 @@ public:
 
 
 
-   ColumnIndexType GetBearingTableColumnCount(IBroker* pBroker, const CGirderKey& girderKey, 
-       pgsTypes::AnalysisType analysisType, SHEARDEFORMATIONDETAILS* details, bool bDetail) const;
+   ColumnIndexType GetBearingTableColumnCount(IBroker* pBroker, const CGirderKey& girderKey, SHEARDEFORMATIONDETAILS* details, bool bDetail) const;
    // 
    // 
    // 
    // Builds ......
-   virtual rptRcTable* BuildBearingShearDeformationTable(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType, bool bDesign,
+   virtual rptRcTable* BuildBearingShearDeformationTable(IBroker* pBroker,const CGirderKey& girderKey,
                              IEAFDisplayUnits* pDisplayUnits, bool bDetail, bool bCold, SHEARDEFORMATIONDETAILS* details) const;
    // GROUP: ACCESS
    // GROUP: INQUIRY

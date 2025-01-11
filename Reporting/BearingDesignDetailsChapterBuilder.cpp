@@ -258,8 +258,8 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
 
 
 
-    *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(),
-        true, pDisplayUnits, true, bCold, &sfDetails);
+    *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pDisplayUnits,
+        true, bCold, &sfDetails);
 
     if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
     {

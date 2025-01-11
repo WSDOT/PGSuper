@@ -72,7 +72,7 @@ CBearingShearDeformationTable& CBearingShearDeformationTable::operator= (const C
 }
 
 ColumnIndexType CBearingShearDeformationTable::GetBearingTableColumnCount(IBroker* pBroker, const CGirderKey& girderKey,
-    pgsTypes::AnalysisType analysisType, SHEARDEFORMATIONDETAILS* details, bool bDetail) const
+    SHEARDEFORMATIONDETAILS* details, bool bDetail) const
 {
 
     ColumnIndexType nCols = 1; // location
@@ -108,7 +108,7 @@ ColumnIndexType CBearingShearDeformationTable::GetBearingTableColumnCount(IBroke
     return nCols;
 }
 
-RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptRcTable* p_table, pgsTypes::AnalysisType analysisType, 
+RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptRcTable* p_table, 
     IEAFDisplayUnits* pDisplayUnits, SHEARDEFORMATIONDETAILS* pDetails, bool bDetail)
 
 {
@@ -218,8 +218,8 @@ RowIndexType ConfigureBearingShearDeformationTableHeading(IBroker* pBroker, rptR
 
 
 //======================== OPERATIONS =======================================
-rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBroker* pBroker, const CGirderKey& girderKey, pgsTypes::AnalysisType analysisType,
-    bool bDesign, IEAFDisplayUnits* pDisplayUnits, bool bDetail, bool bCold, SHEARDEFORMATIONDETAILS* details) const
+rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBroker* pBroker, const CGirderKey& girderKey,
+    IEAFDisplayUnits* pDisplayUnits, bool bDetail, bool bCold, SHEARDEFORMATIONDETAILS* details) const
 {
     
     GET_IFACE2(pBroker, IBearingDesignParameters, pBearing);
@@ -243,7 +243,7 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
     INIT_UV_PROTOTYPE(rptTemperatureUnitValue, temperature, pDisplayUnits->GetTemperatureUnit(), false);
 
 
-    ColumnIndexType nCols = GetBearingTableColumnCount(pBroker, girderKey, analysisType, details, bDetail);
+    ColumnIndexType nCols = GetBearingTableColumnCount(pBroker, girderKey, details, bDetail);
 
     CString label{_T("")};
 
@@ -260,7 +260,7 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(IBr
     
     
     rptRcTable* p_table = rptStyleManager::CreateDefaultTable(nCols, label);
-    RowIndexType row = ConfigureBearingShearDeformationTableHeading(pBroker, p_table, analysisType, pDisplayUnits, details, bDetail);
+    RowIndexType row = ConfigureBearingShearDeformationTableHeading(pBroker, p_table, pDisplayUnits, details, bDetail);
 
     p_table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
     p_table->SetStripeRowColumnStyle(0, rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));

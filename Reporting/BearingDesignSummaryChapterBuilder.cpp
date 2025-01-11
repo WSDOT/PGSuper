@@ -146,7 +146,7 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
 
 
 
-    *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(), true, pDisplayUnits, false, bCold, &sfDetails) << rptNewLine;
+    *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pDisplayUnits, false, bCold, &sfDetails) << rptNewLine;
 
     *p << _T("-Deck shrinkage effects are ignored") << rptNewLine;
     *p << _T("-Bearing reset effects are ignored") << rptNewLine;
