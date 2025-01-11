@@ -82,20 +82,23 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     CComPtr<IBroker> pBroker;
     pGirderRptSpec->GetBroker(&pBroker);
     const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
-
-
     rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
 
     GET_IFACE2(pBroker, IUserDefinedLoads, pUDL);
-    bool are_user_loads = pUDL->DoUserLoadsExist(girderKey);
-
     GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
-
-    bool bIncludeImpact = pBearingDesign->BearingLiveLoadReactionsIncludeImpact();
-
     GET_IFACE2(pBroker, ISpecification, pSpec);
-
     GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+    GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
+    GET_IFACE2(pBroker, IBridge, pBridge);
+    GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+    GET_IFACE2(pBroker, ILiveLoadDistributionFactors, pLLDF);
+    GET_IFACE2(pBroker, IEnvironment, pEnvironment);
+    GET_IFACE2(pBroker, ILibrary, pLib);
+    GET_IFACE2(pBroker, ICamber, pCamber);
+    GET_IFACE2(pBroker, ILossParameters, pLossParams);
+    GET_IFACE2(pBroker, IIntervals, pIntervals);
+    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+    
     INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true);
     INIT_UV_PROTOTYPE(rptLengthUnitValue, length, pDisplayUnits->GetSpanLengthUnit(), true);
     INIT_UV_PROTOTYPE(rptLength4UnitValue, I, pDisplayUnits->GetMomentOfInertiaUnit(), true);
@@ -103,8 +106,10 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     INIT_UV_PROTOTYPE(rptLengthUnitValue, deflection, pDisplayUnits->GetDeflectionUnit(), true);
     INIT_UV_PROTOTYPE(rptTemperatureUnitValue, temperature, pDisplayUnits->GetTemperatureUnit(), true);
 
+    bool are_user_loads = pUDL->DoUserLoadsExist(girderKey);
 
-    GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
+    bool bIncludeImpact = pBearingDesign->BearingLiveLoadReactionsIncludeImpact();
+
     DESIGNPROPERTIES details;
     pBearingDesignParameters->GetBearingDesignProperties(&details);
 
@@ -131,10 +136,6 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     *p << Sub2(_T("F"), _T("th")) << _T(" = ") << stress.SetValue(details.Fth);
     *p << _T(" LRFD Article 6.6 (Table 6.6.1.2.3-1 for Category A)") << rptNewLine;
     *p << _T("Method B is used per WSDOT Policy (BDM Ch. 9.2)") << rptNewLine;
-
-
-    GET_IFACE2(pBroker, IBridge, pBridge);
-
 
     *p << CBearingReactionTable().BuildBearingReactionTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, are_user_loads, true, pDisplayUnits, true);
@@ -167,8 +168,6 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     }
     *p << _T("*Live loads do not include impact") << rptNewLine;
     
-    GET_IFACE2(pBroker, IProductLoads, pProductLoads);
-
     std::vector<std::_tstring> strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltDesign, girderKey);
     IndexType j = 0;
     auto iter = strLLNames.begin();
@@ -180,7 +179,7 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
 
     *p << rptNewLine;
 
-    GET_IFACE2(pBroker, ILiveLoadDistributionFactors, pLLDF);
+    
     pLLDF->ReportReactionDistributionFactors(girderKey, pChapter, true);
 
 
@@ -202,7 +201,6 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
 
     *p << symbol(alpha) << _T(" = coefficient of thermal expansion") << rptNewLine;
 
-    GET_IFACE2(pBroker, ILibrary, pLib);
     pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
     const auto pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
     const auto& thermalFactor = pSpecEntry->GetThermalMovementCriteria();
@@ -220,7 +218,7 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     *p << _T("If all specified connection types are free to translate longitudinally, then the point of fixity is taken to be at the pier nearest the center.") << rptNewLine;
 
 
-    GET_IFACE2(pBroker, ILossParameters, pLossParams);
+    
     if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
     {
         *p << Sub2(_T("T"), _T("max")) << _T(" = maximum temperature used for design") << rptNewLine;
@@ -246,7 +244,7 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     }
 
     bool bCold;
-    GET_IFACE2(pBroker, IEnvironment, pEnvironment);
+    
     if (pEnvironment->GetClimateCondition() == pgsTypes::ClimateCondition::Cold)
     {
         bCold = true;
@@ -271,10 +269,6 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     {
         *p << _T("-Deck shrinkage effects are not considered") << rptNewLine << rptNewLine;
     }
-
-
-    
-    
 
     p = new rptParagraph;
     *pChapter << p;
@@ -308,11 +302,7 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     PierIndexType startPierIdx, endPierIdx;
     pBridge->GetGirderGroupPiers(girderKey.groupIndex, &startPierIdx, &endPierIdx);
 
-    
-    
-
     // we want the final configuration... that would be in the last interval
-    GET_IFACE2(pBroker, IIntervals, pIntervals);
     IntervalIndexType intervalIdx = pIntervals->GetIntervalCount() - 1;
 
     // TRICKY: use adapter class to get correct reaction interfaces
@@ -361,10 +351,9 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
             poi = pPoi->GetPierPointOfInterest(girderKey, pierIdx);
         }
 
-        GET_IFACE2(pBroker, ICamber, pCamber);
         Float64 slope2 = pCamber->GetExcessCamberRotation(poi, pgsTypes::CreepTime::Max);
         (*pTable)(row, col++) << scalar.SetValue(slope2);
-        GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+        
         const CBearingData2* pbd = pIBridgeDesc->GetBearingData(pierIdx, pierFace, girderKey.girderIndex);
 
         Float64 slope3 = slope1 + slope2;
