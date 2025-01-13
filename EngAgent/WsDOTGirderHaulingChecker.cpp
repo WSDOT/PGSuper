@@ -263,8 +263,12 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
    bool bRollover = false;
    bool bCracking = false;
 
-   for (const auto& pHaulTruck : vHaulTrucks)
+   auto iter = vHaulTrucks.begin();
+   auto end = vHaulTrucks.end();
+   for (; iter != end && !bRollover; iter++)
    {
+      const auto& pHaulTruck = (*iter);
+
       LOG(_T("Attempting design for haul truck ") << pHaulTruck->GetName().c_str());
       shipping_config.pHaulTruckEntry = pHaulTruck;
 
@@ -329,7 +333,7 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
 
          LOG(_T("Trying Trailing Overhang = ") << WBFL::Units::ConvertFromSysUnits(shipping_config.LeftOverhang,WBFL::Units::Measure::Feet) << _T(" ft") << _T("      Leading Overhang = ") << WBFL::Units::ConvertFromSysUnits(shipping_config.RightOverhang,WBFL::Units::Measure::Feet) << _T(" ft"));
 
-         LOG_EXECUTION_TIME(AnalyzeHauling(segmentKey,true,shipping_config,pPOId,artifact.get()));
+         AnalyzeHauling(segmentKey,true,shipping_config,pPOId,artifact.get());
 
          Float64 FSr = Min(artifact->GetFsRollover(WBFL::Stability::HaulingSlope::CrownSlope),artifact->GetFsRollover(WBFL::Stability::HaulingSlope::Superelevation));
          LOG(_T("FSr = ") << FSr);
@@ -341,14 +345,14 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
             Float64 oldInc = inc;
             if (stepSize == bigStep)
             {
-               LOG(_T("Swithcing to medium step size"));
+               LOG(_T("Switching to medium step size"));
                inc = mediumInc;
                stepSize = mediumStep;
             }
             else
             {
                ATLASSERT(stepSize == mediumStep);
-               LOG(_T("Swithcing to small step size"));
+               LOG(_T("Switching to small step size"));
                inc = smallInc;
                stepSize = smallStep;
             }
@@ -379,7 +383,7 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
          loc += inc;
       } // next bunk point location
 
-      LOG(_T("")); // blank line before starting next truc
+      LOG(_T("")); // blank line before starting next truck
    } // next haul truck
 
    LOG(_T("Check FS cracking"));
@@ -400,24 +404,6 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
    return artifact.release();
 }
 
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
 
 
 ////////////////////////////////////////////////////////
