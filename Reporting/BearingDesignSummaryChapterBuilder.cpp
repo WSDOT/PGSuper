@@ -83,9 +83,6 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
 
     rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
 
-    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-
-
     GET_IFACE2(pBroker, IUserDefinedLoads, pUDL);
     bool are_user_loads = pUDL->DoUserLoadsExist(girderKey);
 
@@ -94,19 +91,19 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
 
     bool bIncludeImpact = pBearingDesign->BearingLiveLoadReactionsIncludeImpact();
 
-
-    GET_IFACE2(pBroker, ISpecification, pSpec);
-
     rptParagraph* p = new rptParagraph;
     *pChapter << p;
 
     *p << _T("-Live loads do not include impact") << rptNewLine << rptNewLine;
 
-    *p << CBearingDesignPropertiesTable().BuildBearingDesignPropertiesTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
-        true, true, are_user_loads, true, pDisplayUnits, false) << rptNewLine;
+    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+
+    *p << CBearingDesignPropertiesTable().BuildBearingDesignPropertiesTable(pBroker, pDisplayUnits) << rptNewLine;
 
     *p << Sub2(_T("F"), _T("y")) << _T(" = Steel reinforcement yield strength") << rptNewLine;
     *p << Sub2(_T("F"), _T("th")) << _T(" = Steel reinforcement constant-amplitude fatigue threshold for Detail Category A") << rptNewLine;
+
+    GET_IFACE2(pBroker, ISpecification, pSpec);
 
     *p << CBearingReactionTable().BuildBearingReactionTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, are_user_loads, true, pDisplayUnits, false) << rptNewLine;
@@ -149,7 +146,7 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
 
 
 
-    *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pSpec->GetAnalysisType(), true, pDisplayUnits, false, bCold, &sfDetails) << rptNewLine;
+    *p << CBearingShearDeformationTable().BuildBearingShearDeformationTable(pBroker, girderKey, pDisplayUnits, false, bCold, &sfDetails) << rptNewLine;
 
     *p << _T("-Deck shrinkage effects are ignored") << rptNewLine;
     *p << _T("-Bearing reset effects are ignored") << rptNewLine;
