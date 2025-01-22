@@ -138,7 +138,7 @@ void pgsBearingDesignEngineer::GetLongitudinalPointOfFixity(const CGirderKey& gi
     PierIndexType fixityPier = pGroup->GetPierIndex(pgsTypes::metStart);
     pgsPointOfInterest poi_fixity = pPoi->GetPierPointOfInterest(girderKey, fixityPier);
 
-
+    // first round looks for fixed boundaries
     std::vector<CGirderKey> vGirderKeys;
     pBridge->GetGirderline(girderKey, &vGirderKeys);
     for (const auto& thisGirderKey : vGirderKeys)
@@ -178,6 +178,7 @@ void pgsBearingDesignEngineer::GetLongitudinalPointOfFixity(const CGirderKey& gi
         }
     }
 
+    //Second round identifies center-most pier
     if (!bHasXConstraint)
     {
         for (const auto& thisGirderKey : vGirderKeys)
@@ -202,6 +203,7 @@ void pgsBearingDesignEngineer::GetLongitudinalPointOfFixity(const CGirderKey& gi
         }
     }
 
+    //default point of fixity at Pier 1
     if (!bHasXConstraint)
     {
         const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
