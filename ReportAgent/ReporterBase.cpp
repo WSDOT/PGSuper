@@ -242,6 +242,7 @@ void CReporterBase::CreateDetailsReport()
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CCamberChapterBuilder>()) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CADimChapterBuilder>()) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingSeatElevationsDetailsChapterBuilder2>()) );
+   pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingDesignDetailsChapterBuilder>()));
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingDesignParametersChapterBuilder>()) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CLiftingCheckDetailsChapterBuilder>()) );
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CHaulingCheckDetailsChapterBuilder>()) );
@@ -649,13 +650,11 @@ HRESULT CReporterBase::OnSpecificationChanged()
    if ( is_timestep )
    {
       detailsRptBuilder->InsertChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CInternalForceChapterBuilder>()), _T("Moments, Shears, and Reactions"));
-      detailsRptBuilder->InsertChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CBearingTimeStepDetailsChapterBuilder>()), _T("Bearing Seat Elevation Details"));
       loadRatingRptBuilder->InsertChapterBuilder(std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CInternalForceChapterBuilder>(false)), _T("Moments, Shears, and Reactions"));
    }
    else
    {
       detailsRptBuilder->RemoveChapterBuilder(_T("Internal Time-Dependent Forces"));
-      detailsRptBuilder->RemoveChapterBuilder(_T("Bearing Time-Dependent Shear Deformations"));
       loadRatingRptBuilder->RemoveChapterBuilder(_T("Internal Time-Dependent Forces"));
    }
 
