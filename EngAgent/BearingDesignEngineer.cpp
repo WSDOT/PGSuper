@@ -138,7 +138,7 @@ void pgsBearingDesignEngineer::GetLongitudinalPointOfFixity(const CGirderKey& gi
     PierIndexType fixityPier = pGroup->GetPierIndex(pgsTypes::metStart);
     pgsPointOfInterest poi_fixity = pPoi->GetPierPointOfInterest(girderKey, fixityPier);
 
-    // first round looks for fixed boundaries
+    // first round looks for fixed boundaries at span-related piers
     std::vector<CGirderKey> vGirderKeys;
     pBridge->GetGirderline(girderKey, &vGirderKeys);
     for (const auto& thisGirderKey : vGirderKeys)
@@ -176,6 +176,37 @@ void pgsBearingDesignEngineer::GetLongitudinalPointOfFixity(const CGirderKey& gi
                 }
             }
         }
+
+        // check if last pier has x constraint
+        if (!bHasXConstraint)
+        {
+
+            PierIndexType PierIdx = pBridge->GetGirderGroupEndPier(thisGirderKey.groupIndex);
+            const CPierData2* pPier = pBridgeDesc->GetPier(PierIdx);
+
+            if (pPier->IsBoundaryPier())
+            {
+                pgsTypes::BoundaryConditionType bct = pPier->GetBoundaryConditionType();
+                if (bct != pgsTypes::bctRoller && bct != pgsTypes::bctContinuousAfterDeck &&
+                    bct != pgsTypes::bctContinuousBeforeDeck)
+                {
+                    poi_fixity = pPoi->GetPierPointOfInterest(girderKey, PierIdx);
+                    fixityPier = PierIdx;
+                    bHasXConstraint = true;
+                }
+            }
+            else if (pPier->IsInteriorPier())
+            {
+                pgsTypes::PierSegmentConnectionType sct = pPier->GetSegmentConnectionType();
+                if (sct == pgsTypes::psctIntegralClosureJoint || sct == pgsTypes::psctIntegralSegment)
+                {
+                    poi_fixity = pPoi->GetPierPointOfInterest(girderKey, PierIdx);
+                    fixityPier = PierIdx;
+                    bHasXConstraint = true;
+                }
+            }
+        }
+
     }
 
     //Second round identifies center-most pier
