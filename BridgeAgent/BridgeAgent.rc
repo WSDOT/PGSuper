@@ -80,7 +80,7 @@ BEGIN
             VALUE "FileDescription", "BridgeAgent Module"
             VALUE "FileVersion", "8.1.0.1"
             VALUE "InternalName", "BRIDGEAGENT"
-            VALUE "LegalCopyright", "Copyright © 1999-2024, Washington State Department of Transportation, All Rights Reserved"
+            VALUE "LegalCopyright", "Copyright © 1999-2025, Washington State Department of Transportation, All Rights Reserved"
             VALUE "OriginalFilename", "BRIDGEAGENT.DLL"
             VALUE "ProductName", "PGSuper"
             VALUE "ProductVersion", "8.1.0.1"
