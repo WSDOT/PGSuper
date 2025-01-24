@@ -196,6 +196,7 @@ struct BEARINGSHEARDEFORMATIONDETAILS  //results per bearing
 {
 	ReactionLocation reactionLocation;
 	pgsPointOfInterest rPoi;
+	bool bXconstraint{false};
 	Float64 creep{ 0.0 };
 	Float64 tendon_creep{ 0.0 };
 	Float64 shrinkage{ 0.0 };
