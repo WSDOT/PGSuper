@@ -196,31 +196,31 @@ struct BEARINGSHEARDEFORMATIONDETAILS  //results per bearing
 {
 	ReactionLocation reactionLocation;
 	pgsPointOfInterest rPoi;
-	Float64 creep;
-	Float64 tendon_creep;
-	Float64 shrinkage;
+	Float64 creep{ 0.0 };
+	Float64 tendon_creep{ 0.0 };
+	Float64 shrinkage{ 0.0 };
 	Float64 tendon_shrinkage;
-	Float64 relaxation;
-	Float64 tendon_relaxation;
+	Float64 relaxation{ 0.0 };
+	Float64 tendon_relaxation{ 0.0 };
 	std::vector<TSSHEARDEFORMATIONDETAILS> timestep_details;  /// timestep method for td losses
-	Float64 ep;
-	Float64 yb;
-	Float64 r;
-	Float64 Ixx;
-	Float64 Ag;
-	Float64 length_pf;
-	Float64 percentExpansion;
-	Float64 thermal_expansion_coefficient;
-	Float64 max_design_temperature_cold;
-	Float64 min_design_temperature_cold;
-	Float64 max_design_temperature_moderate;
-	Float64 min_design_temperature_moderate;
-	Float64 thermal_expansion_cold;
-	Float64 thermal_expansion_moderate;
-	Float64 tendon_shortening;
-	Float64 time_dependent;
-	Float64 total_shear_deformation_cold;
-	Float64 total_shear_deformation_moderate;
+	Float64 ep{ 0.0};
+	Float64 yb{ 0.0 };
+	Float64 r{ 0.0 };
+	Float64 Ixx{ 0.0 };
+	Float64 Ag{ 0.0 };
+	Float64 length_pf{ 0.0 };
+	Float64 percentExpansion{ 0.0 };
+	Float64 thermal_expansion_coefficient{ 0.0 };
+	Float64 max_design_temperature_cold{ 0.0 };
+	Float64 min_design_temperature_cold{ 0.0 };
+	Float64 max_design_temperature_moderate{ 0.0 };
+	Float64 min_design_temperature_moderate{ 0.0 };
+	Float64 thermal_expansion_cold{ 0.0 };
+	Float64 thermal_expansion_moderate{ 0.0 };
+	Float64 tendon_shortening{ 0.0 };
+	Float64 time_dependent{ 0.0 };
+	Float64 total_shear_deformation_cold{ 0.0 };
+	Float64 total_shear_deformation_moderate{ 0.0 };
 };
 
 
