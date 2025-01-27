@@ -605,6 +605,22 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
 
         brg_details.rPoi = poi;
 
+        GET_IFACE(IStrandGeometry, pStrandGeom);
+        GET_IFACE(ISectionProperties, pSection);
+
+        IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
+
+        brg_details.ep = pStrandGeom->GetEccentricity(erectSegmentIntervalIdx, poi, pgsTypes::Permanent).Y();
+
+        brg_details.yb = pSection->GetNetYbg(erectSegmentIntervalIdx, poi);
+
+        brg_details.Ixx = pSection->GetIxx(erectSegmentIntervalIdx, poi);
+
+        brg_details.Ag = pSection->GetAg(erectSegmentIntervalIdx, poi);
+
+        brg_details.r = sqrt(brg_details.Ixx / brg_details.Ag);
+
+
         brg_details.bXconstraint = (reactionLocation.PierIdx == pDetails->fixityPier);
 
 
@@ -624,7 +640,7 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
             const CSegmentKey& segmentKey(poi.GetSegmentKey());
             const CPrecastSegmentData* pSegment = pBridgeDesc->GetPrecastSegmentData(segmentKey);
             IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
-            IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
+            
             IntervalIndexType castDeckIntervalIdx = pIntervals->GetLastCastDeckInterval();
             auto lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
 
@@ -632,18 +648,8 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
             auto details = pLosses->GetLossDetails(poi, erectSegmentIntervalIdx);
 
 
-            GET_IFACE(IStrandGeometry, pStrandGeom);
-            GET_IFACE(ISectionProperties, pSection);
+            
 
-            brg_details.ep = pStrandGeom->GetEccentricity(erectSegmentIntervalIdx, poi, pgsTypes::Permanent).Y();
-
-            brg_details.yb = pSection->GetNetYbg(erectSegmentIntervalIdx, poi);
-
-            brg_details.Ixx = pSection->GetIxx(erectSegmentIntervalIdx, poi);
-
-            brg_details.Ag = pSection->GetAg(erectSegmentIntervalIdx, poi);
-
-            brg_details.r = sqrt(brg_details.Ixx / brg_details.Ag);
 
             const LOSSDETAILS* td_details_inf = pLosses->GetLossDetails(poi, lastIntervalIdx);
             TDCOMPONENTS components_inf;
