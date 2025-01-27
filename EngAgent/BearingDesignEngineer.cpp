@@ -831,7 +831,6 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
 
             }
 
-            pDetails->brg_details.emplace_back(brg_details);
 
             if (bTimeStepMethod)
             {
@@ -869,6 +868,8 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
             }
 
         }
+
+        pDetails->brg_details.emplace_back(brg_details);
 
     }
 
