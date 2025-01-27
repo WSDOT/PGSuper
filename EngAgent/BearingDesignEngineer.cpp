@@ -1260,44 +1260,43 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
 void pgsBearingDesignEngineer::GetThermalExpansionDetails(CGirderKey girderKey, BEARINGSHEARDEFORMATIONDETAILS* bearing) const
 {
 
-    if (!bearing->bXconstraint)
+
+    GET_IFACE(IMaterials, pMaterials);
+    const CSegmentKey& segmentKey(bearing->rPoi.GetSegmentKey());
+    auto concreteType = pMaterials->GetSegmentConcreteType(segmentKey);
+
+    Float64 inv_thermal_exp_coefficient;
+
+    if (concreteType == pgsTypes::AllLightweight || concreteType == pgsTypes::SandLightweight)
     {
-        GET_IFACE(IMaterials, pMaterials);
-        const CSegmentKey& segmentKey(bearing->rPoi.GetSegmentKey());
-        auto concreteType = pMaterials->GetSegmentConcreteType(segmentKey);
-
-        Float64 inv_thermal_exp_coefficient;
-
-        if (concreteType == pgsTypes::AllLightweight || concreteType == pgsTypes::SandLightweight)
-        {
-            inv_thermal_exp_coefficient = { WBFL::Units::ConvertToSysUnits(20000.0, WBFL::Units::Measure::Fahrenheit) };
-        }
-        else
-        {
-            inv_thermal_exp_coefficient = { WBFL::Units::ConvertToSysUnits(166666.6667, WBFL::Units::Measure::Fahrenheit) };
-        }
-
-        Float64 thermal_expansion_coefficient = 1.0 / inv_thermal_exp_coefficient;
-        bearing->thermal_expansion_coefficient = thermal_expansion_coefficient;
-        bearing->max_design_temperature_cold = WBFL::Units::ConvertToSysUnits(80.0, WBFL::Units::Measure::Fahrenheit);
-        bearing->min_design_temperature_cold = WBFL::Units::ConvertToSysUnits(0.0, WBFL::Units::Measure::Fahrenheit);
-        bearing->max_design_temperature_moderate = WBFL::Units::ConvertToSysUnits(80.0, WBFL::Units::Measure::Fahrenheit);
-        bearing->min_design_temperature_moderate = WBFL::Units::ConvertToSysUnits(10.0, WBFL::Units::Measure::Fahrenheit);
-
-        GET_IFACE(ILibrary, pLib);
-        GET_IFACE(ISpecification, pSpec);
-        pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
-        const auto pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
-        const auto& thermalFactor = pSpecEntry->GetThermalMovementCriteria();
-
-        bearing->percentExpansion = thermalFactor.ThermalMovementFactor;
-        bearing->thermal_expansion_cold = bearing->percentExpansion * bearing->thermal_expansion_coefficient * bearing->length_pf *
-            (bearing->max_design_temperature_cold - bearing->min_design_temperature_cold);
-        bearing->thermal_expansion_moderate = bearing->percentExpansion * bearing->thermal_expansion_coefficient * bearing->length_pf *
-            (bearing->max_design_temperature_moderate - bearing->min_design_temperature_moderate);
-        bearing->total_shear_deformation_cold = bearing->thermal_expansion_cold + bearing->time_dependent;
-        bearing->total_shear_deformation_moderate = bearing->thermal_expansion_moderate + bearing->time_dependent;
+        inv_thermal_exp_coefficient = { WBFL::Units::ConvertToSysUnits(20000.0, WBFL::Units::Measure::Fahrenheit) };
     }
+    else
+    {
+        inv_thermal_exp_coefficient = { WBFL::Units::ConvertToSysUnits(166666.6667, WBFL::Units::Measure::Fahrenheit) };
+    }
+
+    Float64 thermal_expansion_coefficient = 1.0 / inv_thermal_exp_coefficient;
+    bearing->thermal_expansion_coefficient = thermal_expansion_coefficient;
+    bearing->max_design_temperature_cold = WBFL::Units::ConvertToSysUnits(80.0, WBFL::Units::Measure::Fahrenheit);
+    bearing->min_design_temperature_cold = WBFL::Units::ConvertToSysUnits(0.0, WBFL::Units::Measure::Fahrenheit);
+    bearing->max_design_temperature_moderate = WBFL::Units::ConvertToSysUnits(80.0, WBFL::Units::Measure::Fahrenheit);
+    bearing->min_design_temperature_moderate = WBFL::Units::ConvertToSysUnits(10.0, WBFL::Units::Measure::Fahrenheit);
+
+    GET_IFACE(ILibrary, pLib);
+    GET_IFACE(ISpecification, pSpec);
+    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
+    const auto pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
+    const auto& thermalFactor = pSpecEntry->GetThermalMovementCriteria();
+
+    bearing->percentExpansion = thermalFactor.ThermalMovementFactor;
+    bearing->thermal_expansion_cold = bearing->percentExpansion * bearing->thermal_expansion_coefficient * bearing->length_pf *
+        (bearing->max_design_temperature_cold - bearing->min_design_temperature_cold);
+    bearing->thermal_expansion_moderate = bearing->percentExpansion * bearing->thermal_expansion_coefficient * bearing->length_pf *
+        (bearing->max_design_temperature_moderate - bearing->min_design_temperature_moderate);
+    bearing->total_shear_deformation_cold = bearing->thermal_expansion_cold + bearing->time_dependent;
+    bearing->total_shear_deformation_moderate = bearing->thermal_expansion_moderate + bearing->time_dependent;
+    
 
 }
 
