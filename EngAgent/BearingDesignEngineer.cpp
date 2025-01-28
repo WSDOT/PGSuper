@@ -1275,7 +1275,7 @@ void pgsBearingDesignEngineer::GetThermalExpansionDetails(CGirderKey girderKey, 
 
     if (concreteType == pgsTypes::AllLightweight || concreteType == pgsTypes::SandLightweight)
     {
-        inv_thermal_exp_coefficient = { WBFL::Units::ConvertToSysUnits(20000.0, WBFL::Units::Measure::Fahrenheit) };
+        inv_thermal_exp_coefficient = { WBFL::Units::ConvertToSysUnits(200000.0, WBFL::Units::Measure::Fahrenheit) };
     }
     else
     {
