@@ -386,18 +386,18 @@ void pgsStrandDesignTool::RestoreDefaults(bool retainProportioning, bool justAdd
 
          StrandIndexType npnew = max(np, this->GetMinimumPermanentStrands());
 
-         // this is tricky - we just resequenced the strand order to account for raised strands, and we can't count on the 
+         // this is tricky - we just re-sequenced the strand order to account for raised strands, and we can't count on the 
          // current number of strands to fit into the new fill order - make sure:
          StrandIndexType npras = m_pRaisedStraightStrandDesignTool->GetNextNumPermanentStrands(npnew);
          npras = m_pRaisedStraightStrandDesignTool->GetPreviousNumPermanentStrands(npras);
          if (npras != npnew)
          {
-            npnew = npras; // old nsrands did not fit into new ordering
+            npnew = npras; // old nstrands did not fit into new ordering
          }
 
          SetNumPermanentStrands(npnew);
 
-         // Also, conscrete strength may be out of wack. Init back to min
+         // Also, concrete strength may be out of wack. Init back to min
          InitReleaseStrength( GetMinimumReleaseStrength(), m_FciControl.Interval() );
          InitFinalStrength( GetMinimumConcreteStrength(), m_FcControl.Interval() );
 
@@ -481,7 +481,7 @@ bool pgsStrandDesignTool::SetNumPermanentStrands(StrandIndexType numPerm)
       // Raised strand design - let tool do work
       StrandIndexType ns, nh;
       m_pRaisedStraightStrandDesignTool->ComputeNumStrands(numPerm, &ns, &nh);
-      LOG (_T("Using raised resequenced fill order to make Ns=")<<ns<<_T(", Nh=")<<nh<<_T(" from ")<< numPerm << _T(" with ")<<m_pRaisedStraightStrandDesignTool->GetNumUsedRaisedStrandLocations()<<_T(" raised grid locations"));
+      LOG (_T("Using raised re-sequenced fill order to make Ns=")<<ns<<_T(", Nh=")<<nh<<_T(" from ")<< numPerm << _T(" with ")<<m_pRaisedStraightStrandDesignTool->GetNumUsedRaisedStrandLocations()<<_T(" raised grid locations"));
 
       m_bConfigDirty = true; // cache is dirty
 
@@ -1072,7 +1072,7 @@ StrandIndexType pgsStrandDesignTool::GuessInitialStrands()
 {
    LOG(_T(""));
 
-   // Intialize with low number of strands to force tension to control
+   // Initialize with low number of strands to force tension to control
    StrandIndexType Np = GetNextNumPermanentStrands(m_MinPermanentStrands);
 
    if (Np < 1)
@@ -1191,7 +1191,7 @@ bool pgsStrandDesignTool::ResetHarpedStrandConfiguration()
          m_bConfigDirty = true; // cache is dirty
       }
 
-      if (m_StrandSlopeCriteria.bDesign)
+      if (m_StrandSlopeCriteria.bDesign && m_bConfigDirty)
       {
          if ( !AdjustForStrandSlope() )
          {
@@ -1309,7 +1309,7 @@ void pgsStrandDesignTool::ComputeMinStrands()
             }
             else
             {
-               // TRICKY: Just finding the point where eccentricity is postitive turns out not to be enough.
+               // TRICKY: Just finding the point where eccentricity is positive turns out not to be enough.
                //         The design algorithm will likely get stuck. So we double it.
                m_MinPermanentStrands = GetNextNumPermanentStrands(2*ns_prev);
                LOG(_T("Found m_MinPermanentStrands = ") << m_MinPermanentStrands << _T("Success"));
@@ -1367,7 +1367,7 @@ bool pgsStrandDesignTool::AdjustForStrandSlope()
       slope = fabs(slope); // all the code below is based on the slope being a positive value so get its absolute value
 
 
-      LOG(_T("Design for Maximum Strand Slope at ") << (pgsTypes::metStart ? _T("start") : _T("end")) << _T(" of girder"));
+      LOG(_T("Design for Maximum Strand Slope at ") << (endType == pgsTypes::metStart ? _T("start") : _T("end")) << _T(" of girder"));
       LOG(_T("Maximum Strand Slope 1 : ") << m_StrandSlopeLimit);
       LOG(_T("Actual  Strand Slope 1 : ") << slope);
 
@@ -1511,7 +1511,7 @@ bool pgsStrandDesignTool::AdjustStrandsForSlope(Float64 sl_reqd, Float64 slope, 
    Float64 adj2 = (X4-X3) * (1/fabs(slope) - 1/fabs(sl_reqd));
    Float64 adj = Max(adj1,adj2);
 
-   LOG(_T("Vertical adjustment required to acheive slope = ")<< WBFL::Units::ConvertFromSysUnits(adj,WBFL::Units::Measure::Inch) << _T(" in"));
+   LOG(_T("Vertical adjustment required to achieve slope = ")<< WBFL::Units::ConvertFromSysUnits(adj,WBFL::Units::Measure::Inch) << _T(" in"));
 
    // try to adjust end first
    Float64 end_offset_inc = this->GetHarpedEndOffsetIncrement(pStrandGeom);
@@ -1578,7 +1578,7 @@ bool pgsStrandDesignTool::AdjustStrandsForSlope(Float64 sl_reqd, Float64 slope, 
       }
       else
       {
-         LOG(_T("Strands at HP already adjusted as high as possible - cannot acheive target slope reduction"));
+         LOG(_T("Strands at HP already adjusted as high as possible - cannot achieve target slope reduction"));
       }
    }
 
@@ -1684,7 +1684,7 @@ bool pgsStrandDesignTool::AddRaisedStraightStrands()
 
 void pgsStrandDesignTool::SimplifyDesignFillOrder(pgsSegmentDesignArtifact* pArtifact) const
 {
-   // This only can happen for raised straight designs. For this case, it is assummed that
+   // This only can happen for raised straight designs. For this case, it is assumed that
    // we filled using direct fill. However, if we did not, we simply used girder fill order
    if ( IsDesignRaisedStraight() )
    {
@@ -1952,14 +1952,14 @@ bool pgsStrandDesignTool::UpdateConcreteStrengthForShear(Float64 fcRequired,Inte
 
 bool pgsStrandDesignTool::UpdateReleaseStrength(Float64 fciRequired,ConcStrengthResultType strengthResult,const StressCheckTask& task,pgsTypes::StressLocation stressLocation)
 {
-   LOG(_T("Update Concrete Strength if needed. f'ci required = ")<< WBFL::Units::ConvertFromSysUnits(fciRequired,WBFL::Units::Measure::KSI) << _T(" KSI"));;
+   LOG(_T("Update Release Strength if needed. f'ci required = ")<< WBFL::Units::ConvertFromSysUnits(fciRequired,WBFL::Units::Measure::KSI) << _T(" KSI"));;
 
    Float64 fci_current = m_pArtifact->GetConcreteStrength();
 
    Float64 fci_min = GetMinimumReleaseStrength();
    if( fciRequired < fci_min )
    {
-      LOG(_T("f'c min = ") << WBFL::Units::ConvertFromSysUnits(fci_min,WBFL::Units::Measure::KSI) << _T(" KSI"));
+      LOG(_T("f'ci min = ") << WBFL::Units::ConvertFromSysUnits(fci_min,WBFL::Units::Measure::KSI) << _T(" KSI"));
       LOG(_T("f'ci cannot be less than min"));
 
       fciRequired = fci_min;
@@ -1968,14 +1968,12 @@ bool pgsStrandDesignTool::UpdateReleaseStrength(Float64 fciRequired,ConcStrength
 
 
    fciRequired = CeilOff(fciRequired, m_ConcreteAccuracy );
-   LOG(_T("Round up to nearest 100psi. Required value is now = ")<< WBFL::Units::ConvertFromSysUnits(fciRequired,WBFL::Units::Measure::KSI) << _T(" KSI"));;
-
-   LOG(_T("Required fully adjusted f'ci now = ")<< WBFL::Units::ConvertFromSysUnits(fciRequired,WBFL::Units::Measure::KSI) << _T(" KSI, Current = ")<< WBFL::Units::ConvertFromSysUnits(m_pArtifact->GetReleaseStrength(), WBFL::Units::Measure::KSI) << _T(" KSI"));
+   LOG(_T("Round up to nearest 100psi. Required f'ci = ")<< WBFL::Units::ConvertFromSysUnits(fciRequired,WBFL::Units::Measure::KSI) << _T(" KSI"));;
 
    Float64 fci;
    if ( m_FciControl.DoUpdate(fciRequired,task,stressLocation,&fci) )
    {
-      LOG(_T("** Setting new release strength to  = ")<< WBFL::Units::ConvertFromSysUnits(fci, WBFL::Units::Measure::KSI) << _T(" KSI"));;
+      LOG(_T("** Setting f'ci to = ")<< WBFL::Units::ConvertFromSysUnits(fci, WBFL::Units::Measure::KSI) << _T(" KSI"));;
       m_pArtifact->SetReleaseStrength(fci);
       m_bConfigDirty = true; // cache is dirty
 
@@ -1989,7 +1987,7 @@ bool pgsStrandDesignTool::UpdateReleaseStrength(Float64 fciRequired,ConcStrength
    }
    else
    {
-      // allow tension to override the need to use min rebar even if concrete strenth doesn't need change
+      // allow tension to override the need to use min rebar even if concrete strength doesn't need change
       if (task.stressType == pgsTypes::Tension && strengthResult == ConcSuccessWithRebar)
       {
          if (m_ReleaseStrengthResult != ConcSuccessWithRebar)
@@ -2362,14 +2360,14 @@ bool pgsStrandDesignTool::KeepHarpedStrandsInBounds()
             if (end_upper_bound < end_offset)
             {
                m_pArtifact->SetHarpStrandOffsetEnd(endType,end_upper_bound);
+               m_bConfigDirty = true; // cache is dirty
             }
             else if (end_offset < end_lower_bound)
             {
                m_pArtifact->SetHarpStrandOffsetEnd(endType,end_lower_bound);
+               m_bConfigDirty = true; // cache is dirty
             }
          }
-
-         m_bConfigDirty = true; // cache is dirty
       }
 
       Float64 hp_offset_inc = this->GetHarpedHpOffsetIncrement(pStrandGeom);
@@ -2387,29 +2385,33 @@ bool pgsStrandDesignTool::KeepHarpedStrandsInBounds()
             if (hp_upper_bound < hp_offset)
             {
                m_pArtifact->SetHarpStrandOffsetHp(endType,hp_upper_bound);
+               m_bConfigDirty = true; // cache is dirty
             }
             else if (hp_offset < hp_lower_bound)
             {
                m_pArtifact->SetHarpStrandOffsetHp(endType,hp_lower_bound);
+               m_bConfigDirty = true; // cache is dirty
+            }
+         }
+      }
+
+      if (m_bConfigDirty)
+      {
+         // strand configuration has been changed, need to ensure dependent criteria is satisfied
+         if (m_StrandSlopeCriteria.bDesign)
+         {
+            if (!AdjustForStrandSlope())
+            {
+               return false;
             }
          }
 
-         m_bConfigDirty = true; // cache is dirty
-      }
-
-      if (m_StrandSlopeCriteria.bDesign)
-      {
-         if ( !AdjustForStrandSlope() )
+         if (m_HoldDownCriteria.bDesign)
          {
-            return false;
-         }
-      }
-
-      if (m_HoldDownCriteria.bDesign)
-      {
-         if ( !AdjustForHoldDownForce() )
-         {
-            return false;
+            if (!AdjustForHoldDownForce())
+            {
+               return false;
+            }
          }
       }
    }
@@ -2494,7 +2496,7 @@ Float64 pgsStrandDesignTool::GetPrestressForceAtLifting(const GDRCONFIG &guess,c
    Float64 distFromStart = poi.GetDistFromStart();
    ATLASSERT( !IsZero(distFromStart) && !IsEqual(distFromStart,m_SegmentLength));
 
-   LOG(_T("Compute total prestessing force at Release in end-zone for the current configuration at ") << WBFL::Units::ConvertFromSysUnits(distFromStart, WBFL::Units::Measure::Feet) << _T(" ft along girder"));
+   LOG(_T("Compute total prestressing force at Release in end-zone for the current configuration at ") << WBFL::Units::ConvertFromSysUnits(distFromStart, WBFL::Units::Measure::Feet) << _T(" ft along girder"));
 
    Float64 xFerFactor;
    Float64 xferLength = GetTransferLength(pgsTypes::Permanent);
@@ -2520,7 +2522,7 @@ Float64 pgsStrandDesignTool::GetPrestressForceAtLifting(const GDRCONFIG &guess,c
 
    if ( np == 0)
    {
-      ATLASSERT(false); // this really shouldn't happen in a design algoritm
+      ATLASSERT(false); // this really shouldn't happen in a design algorithm
       return 0.0;
    }
 
@@ -2561,7 +2563,7 @@ Float64 pgsStrandDesignTool::GetPrestressForceAtLifting(const GDRCONFIG &guess,c
 
 Float64 pgsStrandDesignTool::GetPrestressForceMidZone(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const
 {
-   LOG(_T("Compute total prestessing force in mid-zone for the current configuration"));
+   LOG(_T("Compute total prestressing force in mid-zone for the current configuration"));
 
    ATLASSERT(poi.GetSegmentKey() == m_SegmentKey);
 
@@ -2583,7 +2585,7 @@ Float64 pgsStrandDesignTool::GetPrestressForceMidZone(IntervalIndexType interval
 
    if ( np == 0)
    {
-      ATLASSERT(false); // this really shouldn't happen in a design algoritm
+      ATLASSERT(false); // this really shouldn't happen in a design algorithm
       return 0.0;
    }
 
@@ -2765,8 +2767,8 @@ bool pgsStrandDesignTool::ComputeMinHarpedForEndZoneEccentricity(const pgsPointO
 
    ATLASSERT(poi.GetSegmentKey() == m_SegmentKey);
 
-   LOG(_T("Attempting to swap harped for straight to acheive an ecc = ")<< WBFL::Units::ConvertFromSysUnits(eccTarget, WBFL::Units::Measure::Inch) << _T(" in"));
-   LOG(_T("At ")<< WBFL::Units::ConvertFromSysUnits(poi.GetDistFromStart(), WBFL::Units::Measure::Feet) << _T(" feet from left end of girder"));
+   LOG(_T("Attempting to swap harped for straight to achieve an ecc = ")<< WBFL::Units::ConvertFromSysUnits(eccTarget, WBFL::Units::Measure::Inch) << _T(" in"));
+   LOG(_T("at ")<< WBFL::Units::ConvertFromSysUnits(poi.GetDistFromStart(), WBFL::Units::Measure::Feet) << _T(" feet from left end of girder"));
 
    GET_IFACE(IStrandGeometry,pStrandGeom);
 
@@ -2775,7 +2777,7 @@ bool pgsStrandDesignTool::ComputeMinHarpedForEndZoneEccentricity(const pgsPointO
    LOG(_T("Current ecc = ")<< WBFL::Units::ConvertFromSysUnits(curr_ecc, WBFL::Units::Measure::Inch) << _T(" in"));
    if (eccTarget < curr_ecc)
    {
-      // If code hits here, we have a bug upstream computing lifing concrete strength - need to revisit
+      // If code hits here, we have a bug upstream computing lifting concrete strength - need to revisit
       ATLASSERT(false); // this should never happen
       LOG(_T("Warning - current eccentricity is already larger than requested"));
       return false;
@@ -2820,8 +2822,7 @@ bool pgsStrandDesignTool::ComputeMinHarpedForEndZoneEccentricity(const pgsPointO
 
    // loop until our eccentricity gets larger than the target
    StrandIndexType Ns, Nh;
-   Float64 eccDiffPrev = eccTarget - curr_ecc; // difference between the target eccentricity and the eccentricy
-                                               // for the previous guess
+   Float64 eccDiffPrev = eccTarget - curr_ecc; // difference between the target eccentricity and the eccentricity from the previous guess
    while(curr_ecc < eccTarget)
    {
       // try to swap harped for straight
@@ -2887,7 +2888,7 @@ bool pgsStrandDesignTool::ComputeMinHarpedForEndZoneEccentricity(const pgsPointO
 
       if (ms_ecc < GetMinimumFinalMidZoneEccentricity())
       {
-         LOG(_T("Swapping harped for straight voilates minimum mid-zone eccentricity for bottom service tension. Abort this strategy"));
+         LOG(_T("Swapping harped for straight violates minimum mid-zone eccentricity for bottom service tension. Abort this strategy"));
          return false;
       }
 
@@ -2930,10 +2931,10 @@ bool pgsStrandDesignTool::ComputeMinHarpedForEndZoneEccentricity(const pgsPointO
       }
    }
 
-   if (ns_prev != GetNs() || nh_prev != GetNh())
+   if (ns_orig != GetNs() || nh_orig != GetNh())
    {
       // we updated 
-      LOG(_T("Succeeded reducing harped strands ns = ")<<ns_prev<<_T(" nh = ")<<nh_prev<<_T(" np = ")<< ns_prev+nh_prev);
+      LOG(_T("Succeeded reducing harped strands, Ns = ")<<GetNs()<<_T(" Nh = ")<<GetNh());
       *pNs = ns_prev;
       *pNh = nh_prev;
       return true;
@@ -3469,7 +3470,7 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
 
       // It is possible that the psxfer location is outside of the girder span.
       // This can cause oddball end conditions to control, so add an 
-      // artifical xfer poi at the support locations if this is the case
+      // artificial xfer poi at the support locations if this is the case
       GET_IFACE(IPretensionForce,pPrestress);
       GET_IFACE(IBridge,pBridge);
 

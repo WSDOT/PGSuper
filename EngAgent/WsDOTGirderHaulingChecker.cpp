@@ -308,6 +308,8 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
 
       Float64 loc = minOverhang;
 
+      Float64 FSr_prev = 0.0;
+
       while ( loc < maxOverhang )
       {
          LOG(_T(""));
@@ -337,40 +339,42 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
 
          Float64 FSr = Min(artifact->GetFsRollover(WBFL::Stability::HaulingSlope::CrownSlope),artifact->GetFsRollover(WBFL::Stability::HaulingSlope::Superelevation));
          LOG(_T("FSr = ") << FSr);
+         if (FSr < FSr_prev || FSr == 0.0)
+            break; // FS is going down, not up... break and try the next haul truck
 
-         Float64 fra = (stepSize == bigStep ? 0.990 : 0.995);
-         if ((stepSize == bigStep || stepSize == mediumStep) && fra*FSrMin < FSr)
+         FSr_prev = FSr;
+
+         if ((stepSize == bigStep || stepSize == mediumStep) && FSrMin < FSr && !IsEqual(loc, minOverhang))
          {
-            // we are getting close... Use a smaller step size
+            // If we are using big steps
+            // and
+            // FSr is greater than the min value (a solution has been found)
+            // and
+            // The trial isn't equal to the min overhang (min overhang is first trial ... if it works, then done)
+            // then
+            // back up and use the small step
+
             Float64 oldInc = inc;
             if (stepSize == bigStep)
             {
-               LOG(_T("Switching to medium step size"));
+               LOG(_T("Switching to medium step size and backing up"));
                inc = mediumInc;
                stepSize = mediumStep;
             }
             else
             {
-               ATLASSERT(stepSize == mediumStep);
-               LOG(_T("Switching to small step size"));
+               LOG(_T("Switching to small step size and backing up"));
                inc = smallInc;
                stepSize = smallStep;
             }
+            loc -= oldInc;
 
-            if ( 1.05*FSrMin <= FSr && !IsEqual(loc,minOverhang) )
+            if ( loc < minOverhang )
             {
-               // We went past the solution and we aren't at the first location... 
-               // back up
-               LOG(_T("Went past the solution... backup"));
-               loc -= oldInc;
-
-               if ( loc < minOverhang )
-               {
-                  loc = minOverhang-inc; // inc will be added back when the loop continues
-               }
-
-               FSr = 0; // don't want to pass the test below
+               loc = minOverhang-inc; // inc will be added back when the loop continues
             }
+
+            FSr = 0; // don't want to pass the test below
          }
 
          if ( FSrMin <= FSr )

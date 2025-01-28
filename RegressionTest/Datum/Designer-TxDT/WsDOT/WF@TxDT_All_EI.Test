@@ -1,11 +1,12 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   6.58 Puyallup River B    1     1    WF74G    *     34  0.6  270  32.74  21.97  11.50  11.50                                               6  66.0  3.0  4.900  6.200   3.470    -3.165     9847   0.887  0.915   3.229 -0.787 -0.059 -0.060 -0.906 133.86  281.81    1.75    5.00    5.00    1.85    1.98    2.39    2.62    1.93 
+ 40.00    6   6.58 Puyallup River B    1     1    WF74G    *     33  0.6  270  32.92  13.74  11.25  11.25                                              11  66.0  3.0  4.700  5.400   3.383    -3.131     9529   0.887  0.915   2.951 -0.830 -0.062 -0.063 -0.955 128.70  271.76    1.75    5.00    5.00    1.78    1.78    2.31    2.36    1.85 
 
 
 The Specification Check was Not Successful
 Ultimate moment capacity (negative moment) check failed for Strength I Limit State
 Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+Stirrup detailing checks failed for the Strength I Limit State.
 
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
@@ -32,19 +33,7 @@ Stirrup detailing checks failed for the Strength I Limit State.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   6.58 Puyallup River B    2     1    WF74G          69  0.6  270  31.37  13.39  11.75  11.75                                              23  70.0  6.0  9.000 10.900   6.997    -6.612    18313   0.932  0.957   6.510 -3.161 -0.234 -0.236 -3.631 353.79  482.11    1.75   30.00   30.00    1.61    1.60    2.09    2.13    1.65 
-
-
-Girder design was Not Successful
-The Specification Check was Not Successful
-Ultimate moment capacity (negative moment) check failed for Strength I Limit State
-Longitudinal Reinforcement for Shear check failed for Strength I Limit State
-Hauling checks failed
-
-
- RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   6.58 Puyallup River B    2     2    WF74G    *     58  0.6  270  31.31  17.21  11.50  11.50                                              14  70.0  6.0  7.600  9.400   5.714    -5.538    15348   0.723  0.743   5.606 -2.578 -0.247 -0.249 -3.074 261.67  409.05    1.75   30.00   30.00    1.77    2.17    2.29    2.87    1.74 
+ 40.00    6   6.58 Puyallup River B    2     1    WF74G          69  0.6  270  31.37  13.39  11.50  11.50                                              23  70.0  6.0  9.000 10.300   6.917    -6.567    18242   0.932  0.957   6.536 -3.203 -0.239 -0.241 -3.683 353.79  479.09    1.75   12.50   12.50    1.62    1.59    2.10    2.12    1.67 
 
 
 The Specification Check was Not Successful
@@ -54,7 +43,17 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    6   6.58 Puyallup River B    2     4    WF74G    *     58  0.6  270  31.31  17.21  11.50  11.50                                              14  70.0  6.0  7.600  9.400   5.715    -5.539    15348   0.723  0.743   5.606 -2.579 -0.247 -0.249 -3.075 261.67  408.99    1.75   30.00   30.00    1.77    2.17    2.29    2.87    1.74 
+ 40.00    6   6.58 Puyallup River B    2     2    WF74G    *     58  0.6  270  31.58  13.90  11.25  11.25                                              18  70.0  6.0  7.400  8.700   5.643    -5.503    15309   0.723  0.743   5.519 -2.642 -0.254 -0.256 -3.152 266.51  415.84    1.75   12.50   12.50    1.79    2.15    2.31    2.84    1.76 
+
+
+The Specification Check was Not Successful
+Ultimate moment capacity (negative moment) check failed for Strength I Limit State
+Longitudinal Reinforcement for Shear check failed for Strength I Limit State
+
+
+ RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ 40.00    6   6.58 Puyallup River B    2     4    WF74G    *     58  0.6  270  31.58  13.90  11.25  11.25                                              18  70.0  6.0  7.400  8.700   5.644    -5.503    15309   0.723  0.743   5.519 -2.644 -0.254 -0.256 -3.154 266.51  415.77    1.75   12.50   12.50    1.78    2.15    2.31    2.84    1.76 
 
 
 The Specification Check was Not Successful

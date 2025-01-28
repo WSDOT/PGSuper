@@ -1,12 +1,11 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend  AECmbr                                             Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 44.33    7   0.75                     1     1    WF69D    *     39  0.6  270  37.84  27.30   8.50   8.50   3.50                                              5.200  9.400   2.686    -3.638    10442   0.652  0.652   3.600 -0.489 -0.173 -0.180 -0.843 138.95  294.09    3.00   14.00   14.00    1.68    2.55    2.18    3.38    1.73 
+ 44.33    7   0.75                     1     1    WF69D    *     39  0.6  270  37.68  19.19   8.25   8.25   3.50                                              4.400  5.700   2.594    -3.559    10407   0.652  0.652   3.632 -0.553 -0.197 -0.204 -0.953 144.70  313.25    3.00   14.00   14.00    1.67    2.18    2.17    2.88    1.63 
 
 
-Girder design was Not Successful
 The Specification Check was Not Successful
 Compression stress check failed for Service I Limit State in Interval 2 Prestress Release
-Tension stress check failed for Service I Limit State in Interval 2 Prestress Release
+Compression stress check failed for Service I Limit State in Interval 11 Cast Longitudinal Joints
 Lifting checks failed
 Hauling checks failed
 Excess camber geometry check failed
