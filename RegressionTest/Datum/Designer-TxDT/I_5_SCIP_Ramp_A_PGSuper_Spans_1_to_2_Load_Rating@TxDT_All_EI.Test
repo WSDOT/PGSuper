@@ -1,6 +1,6 @@
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    5   8.25 I-5 & I-205 SCIP    1     1    WF74G    *     34  0.6  270  32.60  17.77  12.75  12.75                                               8  70.0  4.0  4.200  5.600   3.135    -3.235     9686   0.765  0.831   3.774 -1.174  0.000 -0.124 -1.298 138.21  301.92    3.00    6.17    6.17    1.69    1.54    2.19    2.05    1.61 
+ 40.00    5   8.25 I-5 & I-205 SCIP    1     1    WF74G    *     33  0.6  270  32.63  12.14  12.25  12.25                                              11  70.0  4.0  4.200  5.200   3.078    -3.196     9448   0.762  0.831   3.327 -1.184  0.000 -0.127 -1.311 129.78  284.15    3.00    6.17    6.17    1.63    1.38    2.12    1.94    1.57 
 
 
 The Specification Check was Not Successful
@@ -11,7 +11,7 @@ Stirrup detailing checks failed for the Strength I Limit State.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    5   8.25 I-5 & I-205 SCIP    1     2    WF74G    *     34  0.6  270  32.60  17.77  12.00  12.00                                               8  70.0  4.0  4.200  5.200   3.164    -3.283     9704   0.711  0.831   3.716 -1.349  0.000 -0.127 -1.477 137.32  289.45    3.00    6.17    6.17    1.75    1.52    2.27    2.03    1.62 
+ 40.00    5   8.25 I-5 & I-205 SCIP    1     2    WF74G    *     34  0.6  270  32.60  14.36  11.75  11.75                                              10  70.0  4.0  4.200  5.200   3.150    -3.271     9704   0.711  0.831   3.543 -1.334  0.000 -0.127 -1.461 137.32  290.41    3.00    6.17    6.17    1.76    1.41    2.28    1.98    1.64 
 
 
 The Specification Check was Not Successful
@@ -22,7 +22,7 @@ Stirrup detailing checks failed for the Strength I Limit State.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    5   8.25 I-5 & I-205 SCIP    1     3    WF74G    *     35  0.6  270  32.57  16.51  11.50  11.50                                               9  70.0  4.0  4.300  5.400   3.226    -3.342     9948   0.710  0.831   3.777 -1.374  0.000 -0.131 -1.505 143.69  299.12    3.00    6.17    6.17    1.79    1.51    2.31    2.01    1.66 
+ 40.00    5   8.25 I-5 & I-205 SCIP    1     3    WF74G    *     35  0.6  270  32.57  13.26  11.50  11.50                                              11  70.0  4.0  4.300  5.400   3.226    -3.342     9948   0.710  0.831   3.608 -1.374  0.000 -0.131 -1.505 143.69  299.12    3.00    6.17    6.17    1.79    1.47    2.31    1.96    1.66 
 
 
 The Specification Check was Not Successful
@@ -33,7 +33,7 @@ Stirrup detailing checks failed for the Strength I Limit State.
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    5   8.25 I-5 & I-205 SCIP    2     1    WF74G    *     57  0.6  270  31.71  16.22  11.75  11.75                                              15  70.0  7.0  6.700  9.000   5.278    -5.548    16019   0.930  0.930   6.224 -2.816  0.000 -0.248 -3.065 287.58  452.53    3.00   26.17   26.17    1.55    1.42    2.01    1.91    1.46 
+ 40.00    5   8.25 I-5 & I-205 SCIP    2     1    WF74G    *     56  0.6  270  31.69  13.37  11.00  11.00                                              18  70.0  7.0  6.600  8.200   5.141    -5.452    15838   0.930  0.930   5.649 -2.822  0.000 -0.257 -3.079 276.86  446.10    3.00    8.67    8.67    1.53    1.36    1.99    1.83    1.44 
 
 
 The Specification Check was Not Successful
@@ -43,7 +43,7 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    5   8.25 I-5 & I-205 SCIP    2     2    WF74G    *     50  0.6  270  32.02  15.34  11.00  11.00                                              14  70.0  7.0  5.800  8.000   4.752    -4.848    13425   0.681  0.832   5.352 -2.573  0.000 -0.270 -2.843 231.80  396.83    3.00   26.17   26.17    1.79    1.61    2.32    2.15    1.58 
+ 40.00    5   8.25 I-5 & I-205 SCIP    2     2    WF74G    *     49  0.6  270  32.00  12.02  10.25  10.25                                              17  70.0  7.0  5.700  7.200   4.642    -4.771    13228   0.677  0.832   4.663 -2.614  0.000 -0.280 -2.894 221.42  389.04    3.00    8.67    8.67    1.77    1.53    2.29    2.03    1.55 
 
 
 The Specification Check was Not Successful
@@ -53,7 +53,7 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    5   8.25 I-5 & I-205 SCIP    2     3    WF74G    *     50  0.6  270  32.02  15.34  10.75  10.75                                              14  70.0  7.0  5.800  8.000   4.755    -4.852    13425   0.680  0.832   5.352 -2.575  0.000 -0.271 -2.846 231.63  396.58    3.00   26.17   26.17    1.79    1.61    2.32    2.15    1.58 
+ 40.00    5   8.25 I-5 & I-205 SCIP    2     3    WF74G    *     49  0.6  270  32.00  12.02  10.00  10.00                                              17  70.0  7.0  5.700  7.200   4.645    -4.775    13240   0.677  0.832   4.660 -2.615  0.000 -0.282 -2.897 221.25  388.80    3.00    8.67    8.67    1.77    1.53    2.29    2.03    1.55 
 
 
 The Specification Check was Not Successful
@@ -63,7 +63,7 @@ Longitudinal Reinforcement for Shear check failed for Strength I Limit State
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    5   8.25 I-5 & I-205 SCIP    3     1    WF74G    *      6  0.6  270  32.32  24.66   9.75   9.75                                               2  27.0  4.0  4.000  5.000   0.693    -0.566     2161   0.990  0.996   0.115 -0.014  0.000 -0.001 -0.016   7.48   34.40    3.00    6.17    6.17    1.58    3.70    2.05    5.19    3.55 
+ 40.00    5   8.25 I-5 & I-205 SCIP    3     1    WF74G    *      6  0.6  270  32.32  24.66   9.75   9.75                                               2  27.0  4.0  4.000  5.000   0.693    -0.566     2161   0.990  0.996   0.115 -0.014  0.000 -0.001 -0.016   7.48   34.40    3.00    6.17    6.17    1.58    3.70    2.05    5.18    3.55 
 
 
 The Specification Check was Successful
@@ -71,7 +71,7 @@ The Specification Check was Successful
 
  RoadW  Ng   Spcng     STRUCTURE     Span    Gdr  Type     N    Ns   Size Strn EccCL  EccEn  Astart  Aend                                              Nh ToEnd ToCL  Fci    Fc      fcomp     ftens    ultMo   LLDFm  LLDFs  Dinit  Dslab  Dolay  Dothr  Dtot   LossIn  LossFn  LiftLc  fwHaul  trHaul  RfInMom RfInShr RfOpMom RfOpShr RfInSts
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
- 40.00    5   8.25 I-5 & I-205 SCIP    3     2    WF74G    *      7  0.6  270  32.23  22.23   9.75   9.75                                               3  28.0  4.0  4.000  5.000   0.726    -0.611     2380   1.040  1.046   0.144 -0.017  0.000 -0.001 -0.018   9.74   42.16    3.00    6.17    6.17    1.69    3.55    2.20    4.65    3.49 
+ 40.00    5   8.25 I-5 & I-205 SCIP    3     2    WF74G    *      7  0.6  270  32.23  22.23   9.75   9.75                                               3  28.0  4.0  4.000  5.000   0.726    -0.611     2380   1.040  1.046   0.144 -0.017  0.000 -0.001 -0.018   9.74   42.16    3.00    6.17    6.17    1.69    3.54    2.20    4.65    3.49 
 
 
 The Specification Check was Successful
