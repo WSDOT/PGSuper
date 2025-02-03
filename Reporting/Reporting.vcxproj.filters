@@ -610,6 +610,9 @@
     <ClCompile Include="BearingTimeStepShearDeformationTable.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ReportNotes.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\Reporting\ADimChapterBuilder.h">

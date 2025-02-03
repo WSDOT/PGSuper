@@ -189,6 +189,7 @@
     <ClCompile Include="BrokerReportSpecification.cpp" />
     <ClCompile Include="BrokerReportSpecificationBuilder.cpp" />
     <ClCompile Include="ReinforcementFatigueCheck.cpp" />
+    <ClCompile Include="ReportNotes.cpp" />
     <ClCompile Include="SplittingCheckDetailsChapterBuilder.cpp" />
     <ClCompile Include="CamberChapterBuilder.cpp" />
     <ClCompile Include="CamberTable.cpp" />
