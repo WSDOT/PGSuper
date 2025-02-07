@@ -103,11 +103,29 @@ rptChapter* CBearingTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<c
    const ReactionLocation& rptLocation(pBTSDRptSpec->GetReactionLocation());
    const CGirderKey& girderKey(rptLocation.GirderKey);
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
+
+
+
    if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
    {
        *pPara << color(Red) << _T("Time Step analysis results not available.") << color(Black) << rptNewLine;
        return pChapter;
    }
+
+   SHEARDEFORMATIONDETAILS details;
+   GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
+   pBearingDesignParameters->GetBearingParameters(girderKey, &details);
+
+
+   if (details.fixityPier == rptLocation.PierIdx)
+   {
+       *pPara << color(Red) << _T("Results are not shown because the bearing is restrained at the selected location.") << color(Black) << rptNewLine;
+       return pChapter;
+   }
+
+   pBearingDesignParameters->GetTimeDependentShearDeformation(girderKey, &details);
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   GET_IFACE2(pBroker, IPointOfInterest, pPOI);
 
    *pPara << rptNewLine;
    *pPara << _T("Incremental ") << symbol(epsilon) << _T(" = longitudinal shear strain from time-dependent effects occuring during this interval.") << rptNewLine;
@@ -115,14 +133,6 @@ rptChapter* CBearingTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<c
    *pPara << Sub2(symbol(delta), _T("d")) << _T(" = longitudinal distance between current and previous POI.") << rptNewLine;
    *pPara << Sub2(symbol(epsilon), _T("avg")) << _T(" = average cumulative longitudinal strain at current POI using the midpoint rule.") << rptNewLine;
    *pPara << rptNewLine;
-
-   GET_IFACE2(pBroker, IIntervals, pIntervals);
-   GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
-   GET_IFACE2(pBroker, IPointOfInterest, pPOI);
-
-   SHEARDEFORMATIONDETAILS details;
-   pBearingDesignParameters->GetBearingParameters(girderKey, &details);
-   pBearingDesignParameters->GetTimeDependentShearDeformation(girderKey, &details);
 
    const pgsPointOfInterest first_girder_poi = pPOI->GetPierPointOfInterest(girderKey, details.brg_details[0].reactionLocation.PierIdx);
    IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(first_girder_poi.GetSegmentKey());

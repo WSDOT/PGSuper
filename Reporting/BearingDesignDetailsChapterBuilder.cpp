@@ -94,10 +94,9 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     GET_IFACE2(pBroker, ILiveLoadDistributionFactors, pLLDF);
     GET_IFACE2(pBroker, IEnvironment, pEnvironment);
     GET_IFACE2(pBroker, ILibrary, pLib);
-    GET_IFACE2(pBroker, ICamber, pCamber);
     GET_IFACE2(pBroker, ILossParameters, pLossParams);
     GET_IFACE2(pBroker, IIntervals, pIntervals);
-    GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+    
     
     INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true);
     INIT_UV_PROTOTYPE(rptLengthUnitValue, length, pDisplayUnits->GetSpanLengthUnit(), true);
@@ -351,9 +350,11 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
             poi = pPoi->GetPierPointOfInterest(girderKey, pierIdx);
         }
 
+        GET_IFACE2(pBroker, ICamber, pCamber);
         Float64 slope2 = pCamber->GetExcessCamberRotation(poi, pgsTypes::CreepTime::Max);
         (*pTable)(row, col++) << scalar.SetValue(slope2);
-        
+
+        GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
         const CBearingData2* pbd = pIBridgeDesc->GetBearingData(pierIdx, pierFace, girderKey.girderIndex);
 
         Float64 slope3 = slope1 + slope2;
