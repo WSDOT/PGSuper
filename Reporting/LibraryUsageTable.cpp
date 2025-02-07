@@ -22,9 +22,11 @@
 
 #include "stdafx.h"
 #include <Reporting\LibraryUsageTable.h>
+#include <Reporting\ReportNotes.h>
 
 #include <IFace\Project.h>
 #include <psgLib/SpecificationCriteria.h>
+
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -74,9 +76,9 @@ rptRcTable* CLibraryUsageTable::Build(IBroker* pBroker) const
       (*table)(row,1) << record.EntryName;
 
       if (record.LibName == _T("Project Criteria"))
-      {
-         const SpecLibraryEntry* pEntry = pLibrary->GetSpecEntry(record.EntryName.c_str());
-         (*table)(row, 1) << _T(" based on") << rptNewLine << WBFL::LRFD::BDSManager::GetSpecificationName() << _T(", ") << WBFL::LRFD::BDSManager::GetEditionAsString(pEntry->GetSpecificationCriteria().GetEdition());
+      {       
+         (*table)(row, 1) << _T(" based on") << rptNewLine;
+         ReportNotes::GetSpecificationCompleteInfo(&(*table)(row, 1));
       }
       else if (record.LibName == _T("Load Rating Criteria"))
       {

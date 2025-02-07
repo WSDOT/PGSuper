@@ -24,7 +24,9 @@
 
 
 #include "psgLibLib.h"
+#include <Reporting\ReportNotes.h>
 #include <Lrfd/BDSManager.h>
+
 
 class rptChapter;
 interface IEAFDisplayUnits;
@@ -44,6 +46,8 @@ struct PSGLIBCLASS SpecificationCriteria
 
    void Save(WBFL::System::IStructuredSave* pSave) const;
    void Load(WBFL::System::IStructuredLoad* pLoad);
+
+
 
    /// @brief Returns the description string
    /// @param bApplySymbolSubstitution if true, replaces %BDS% in the description string with the name of the specification edition

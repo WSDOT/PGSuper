@@ -23,6 +23,8 @@
 // ReportNotes.h : Define common notes in reports
 
 #pragma once
+#include <Reporting\ReportingExp.h>
+
 
 
 #define RPT_GDR_END_LOCATION      _T("Location from") << rptNewLine << _T("End of Girder")
@@ -40,4 +42,13 @@
 #define TIME_DEPENDENT_STRESS_NOTE _T("Time-dependent creep, shrinkage, and relaxation stresses are computed from internal forces on the concrete component using net section properties. Refer to the Time-Step Details Report for computation details.")
 
 #define EPOXY_RELAXATION_NOTE _T("Strands are epoxy coated. Epoxy-coated strand manufacturers recommend doubling the relaxation loss of uncoated strands") << rptNewLine << _T("See \"Guidelines for the Use of Epoxy-Coated Strands\", PCI Journal, July-August 1993, Section 5.2.")
+
+#define PT_SPEC_REQUIRED _T("PT materials shall also conform to the requirements") << rptNewLine << _T("of PTI /ASBI M50.3-19 and PTI M55.1-19");
+
+namespace ReportNotes
+{
+	/// @brief Returns the name of the specification, edition, along with any additional requirments
+	void REPORTINGFUNC GetSpecificationCompleteInfo(rptParagraph* pPara);
+}
+
 

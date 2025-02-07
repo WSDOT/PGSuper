@@ -22,6 +22,8 @@
 #include "StdAfx.h"
 #include <psgLib/SpecificationCriteria.h>
 #include <psgLib/LibraryEntryDifferenceItem.h>
+#include <Reporting\ReportNotes.h>
+
 //#include <EAF/EAFDisplayUnits.h>
 #include <boost\algorithm\string\replace.hpp>
 
@@ -53,13 +55,17 @@ bool SpecificationCriteria::Compare(const SpecificationCriteria& other, const Sp
    return bSame;
 }
 
+
+
 void SpecificationCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
    *pPara << Bold(_T("Description: ")) << GetDescription() << rptNewLine;
-   *pPara << Bold(_T("Based on: ")) << WBFL::LRFD::BDSManager::GetSpecificationName() << _T(", ") << WBFL::LRFD::BDSManager::GetEditionAsString();
+   *pPara << Bold(_T("Based on: "));
+   
+   ReportNotes::GetSpecificationCompleteInfo(pPara);
 
    if (Units == WBFL::LRFD::BDSManager::Units::SI)
    {
