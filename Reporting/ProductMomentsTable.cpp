@@ -498,7 +498,8 @@ rptRcTable* CProductMomentsTable::Build(IBroker* pBroker,const CGirderKey& girde
 
       CSegmentKey allSegmentsKey(thisGirderKey,ALL_SEGMENTS);
       PoiList vPoi;
-      pIPoi->GetPointsOfInterest(allSegmentsKey, poiRefAttribute, &vPoi);
+      pIPoi->GetPointsOfInterest(allSegmentsKey, &vPoi); // use POIs for the entire segment, including those into the pier (needed for Mu at CL Pier)
+
 
       // Add PSXFER poi's (but only at the ends... don't need them all from debonding)
       PoiList vPoi2;

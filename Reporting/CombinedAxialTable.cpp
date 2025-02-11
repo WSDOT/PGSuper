@@ -165,7 +165,7 @@ void CCombinedAxialTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* p
    {
       PoiAttributeType poiRefAttribute;
       PoiList vPoi;
-      GetCombinedResultsPoi(pBroker,thisGirderKey,intervalIdx,&vPoi,&poiRefAttribute);
+      GetCombinedResultsPoi(pBroker,thisGirderKey,intervalIdx,false,&vPoi,&poiRefAttribute);
       poiRefAttribute = (girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : poiRefAttribute);
 
       std::vector<Float64> dummy;
@@ -381,10 +381,8 @@ void CCombinedAxialTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
    *pChapter << p;
 
    rptRcTable* p_table;
-   RowIndexType Nhrows = CreateCombinedLiveLoadingTableHeading<rptForceUnitTag,WBFL::Units::ForceData>(&p_table,strLabel,false,bDesign,bPermit,bPedLoading,bRating,false,true,
+   RowIndexType row = CreateCombinedLiveLoadingTableHeading<rptForceUnitTag,WBFL::Units::ForceData>(&p_table,strLabel,false,bDesign,bPermit,bPedLoading,bRating,false,true,
                            analysisType,pRatingSpec,pDisplayUnits,pDisplayUnits->GetGeneralForceUnit());
-
-   RowIndexType row = Nhrows;
 
    *p << p_table;
 
@@ -409,7 +407,7 @@ void CCombinedAxialTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
    {
       PoiAttributeType poiRefAttribute;
       PoiList vPoi;
-      GetCombinedResultsPoi(pBroker,thisGirderKey,liveLoadIntervalIdx,&vPoi,&poiRefAttribute);
+      GetCombinedResultsPoi(pBroker,thisGirderKey,liveLoadIntervalIdx,false,&vPoi,&poiRefAttribute);
       poiRefAttribute = (girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : poiRefAttribute);
 
       std::vector<Float64> dummy;
@@ -600,10 +598,9 @@ void CCombinedAxialTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
          }
 
          // Now we can fill table
-         //RowIndexType    row = Nhrows;
          ColumnIndexType recCol = col;
-         IndexType psiz = (IndexType)vPoi.size();
-         for ( index=0; index<psiz; index++ )
+         IndexType nPoi = (IndexType)vPoi.size();
+         for ( index=0; index < nPoi; index++ )
          {
             col = recCol;
 
@@ -628,17 +625,17 @@ void CCombinedAxialTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* p
          // footnotes for pedestrian loads
          if ( thisGirderKey.groupIndex == vGirderKeys.front().groupIndex )
          {
-            int lnum=1;
-            *pNote<< lnum++ << PedestrianFootnote(DesignPedLoad) << rptNewLine;
+            int note_index = 1;
+            *pNote<< note_index++ << PedestrianFootnote(DesignPedLoad) << rptNewLine;
 
             if ( WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims <= WBFL::LRFD::BDSManager::GetEdition() )
             {
-               *pNote << lnum++ << PedestrianFootnote(FatiguePedLoad) << rptNewLine;
+               *pNote << note_index++ << PedestrianFootnote(FatiguePedLoad) << rptNewLine;
             }
 
             if ( bPermit )
             {
-               *pNote << lnum++ << PedestrianFootnote(PermitPedLoad) << rptNewLine;
+               *pNote << note_index++ << PedestrianFootnote(PermitPedLoad) << rptNewLine;
             }
          }
       }
@@ -707,7 +704,7 @@ void CCombinedAxialTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pCh
    {
       PoiAttributeType poiRefAttribute;
       PoiList vPoi;
-      GetCombinedResultsPoi(pBroker,thisGirderKey,intervalIdx,&vPoi,&poiRefAttribute);
+      GetCombinedResultsPoi(pBroker,thisGirderKey,intervalIdx,false,&vPoi,&poiRefAttribute);
       poiRefAttribute = (girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : poiRefAttribute);
 
       std::vector<Float64> dummy;

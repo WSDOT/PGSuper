@@ -240,7 +240,7 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
 
       PoiAttributeType poiRefAttribute;
       PoiList vPoi;
-      GetCombinedResultsPoi(pBroker,thisGirderKey,intervalIdx,&vPoi,&poiRefAttribute);
+      GetCombinedResultsPoi(pBroker,thisGirderKey,intervalIdx,false,&vPoi,&poiRefAttribute);
       poiRefAttribute = (girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : poiRefAttribute);
 
       pForces2->GetStress( intervalIdx, lcDC, vPoi, bat, rtIncremental, topLocation, botLocation, &fTopDCinc, &fBotDCinc);
@@ -416,7 +416,7 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
 
       PoiAttributeType poiRefAttribute;
       PoiList vPoi;
-      GetCombinedResultsPoi(pBroker,thisGirderKey,intervalIdx,&vPoi,&poiRefAttribute);
+      GetCombinedResultsPoi(pBroker,thisGirderKey,intervalIdx,false,&vPoi,&poiRefAttribute);
       poiRefAttribute = (girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : poiRefAttribute);
 
       std::vector<Float64> fTopMinPedestrianLL,   fBotMinPedestrianLL;
@@ -630,7 +630,7 @@ void CCombinedStressTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pC
 
    GET_IFACE2(pBroker,IIntervals,pIntervals);
 
-   // NOTE - Stregth II stresses not reported because they aren't used for anything
+   // NOTE - Strength II stresses not reported because they aren't used for anything
 
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -821,7 +821,7 @@ void CCombinedStressTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pC
 
       PoiAttributeType poiRefAttribute;
       PoiList vPoi;
-      GetCombinedResultsPoi(pBroker,thisGirderKey,intervalIdx,&vPoi,&poiRefAttribute);
+      GetCombinedResultsPoi(pBroker,thisGirderKey,intervalIdx,false,&vPoi,&poiRefAttribute);
       poiRefAttribute = (girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : poiRefAttribute);
 
       if ( bDesign )

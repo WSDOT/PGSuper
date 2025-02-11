@@ -152,7 +152,7 @@ rptChapter* CInternalForceChapterBuilder::Build(const std::shared_ptr<const WBFL
 
       PoiList vPoi;
       PoiAttributeType refAttribute;
-      GetCombinedResultsPoi(pBroker,girderKey,intervalIdx,&vPoi,&refAttribute);
+      GetCombinedResultsPoi(pBroker,girderKey,intervalIdx,false,&vPoi,&refAttribute);
 
       RowIndexType rowIdx = pTable->GetNumberOfHeaderRows();
       for (const auto& poi : vPoi)

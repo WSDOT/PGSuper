@@ -124,7 +124,7 @@ private:
    // GROUP: INQUIRY
 };
 
-void GetCombinedResultsPoi(IBroker* pBroker,const CGirderKey& girderKey,IntervalIndexType intervalIdx,PoiList* pPoi,PoiAttributeType* pRefAttribute);
+void GetCombinedResultsPoi(IBroker* pBroker,const CGirderKey& girderKey,IntervalIndexType intervalIdx,bool bMoment,PoiList* pPoi,PoiAttributeType* pRefAttribute);
 
 
 // INLINE METHODS
@@ -1090,7 +1090,7 @@ inline void SumPedAndLiveLoad(ILiveLoads::PedestrianLoadApplicationType appType,
    }
    else if (appType==ILiveLoads::PedConcurrentWithVehicular)
    {
-      // summ values
+      // sum values
       std::vector<Float64>::iterator minIt = minLL.begin();
       std::vector<Float64>::iterator minEnd = minLL.end();
       std::vector<Float64>::const_iterator minPedIt = minPed.begin();
@@ -1148,7 +1148,7 @@ inline void SumPedAndLiveLoad(ILiveLoads::PedestrianLoadApplicationType appType,
    }
    else if (appType==ILiveLoads::PedConcurrentWithVehicular)
    {
-      // summ values
+      // sum values
       std::vector<WBFL::System::SectionValue>::iterator minIt = minLL.begin();
       std::vector<WBFL::System::SectionValue>::iterator minEnd = minLL.end();
       std::vector<WBFL::System::SectionValue>::const_iterator minPedIt = minPed.begin();

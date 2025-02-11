@@ -172,7 +172,7 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
    {
       PoiAttributeType poiRefAttribute;
       PoiList vPoi;
-      GetCombinedResultsPoi(pBroker,thisGirderKey,intervalIdx,&vPoi,&poiRefAttribute);
+      GetCombinedResultsPoi(pBroker,thisGirderKey,intervalIdx,true,&vPoi,&poiRefAttribute);
       poiRefAttribute = (girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : poiRefAttribute);
 
       std::vector<Float64> dummy;
@@ -418,7 +418,7 @@ void CCombinedMomentsTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter*
    {
       PoiAttributeType poiRefAttribute;
       PoiList vPoi;
-      GetCombinedResultsPoi(pBroker,thisGirderKey,liveLoadIntervalIdx,&vPoi,&poiRefAttribute);
+      GetCombinedResultsPoi(pBroker,thisGirderKey,liveLoadIntervalIdx,true,&vPoi,&poiRefAttribute);
       poiRefAttribute = (girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : poiRefAttribute);
 
       std::vector<Float64> dummy;
@@ -717,7 +717,7 @@ void CCombinedMomentsTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* p
    {
       PoiAttributeType poiRefAttribute;
       PoiList vPoi;
-      GetCombinedResultsPoi(pBroker,thisGirderKey,intervalIdx,&vPoi,&poiRefAttribute);
+      GetCombinedResultsPoi(pBroker,thisGirderKey,intervalIdx,true,&vPoi,&poiRefAttribute);
       poiRefAttribute = (girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : poiRefAttribute);
 
       std::vector<Float64> dummy;
@@ -1154,7 +1154,7 @@ void CCombinedMomentsTable::MakeAssignment(const CCombinedMomentsTable& rOther)
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
 
-void GetCombinedResultsPoi(IBroker* pBroker,const CGirderKey& girderKey,IntervalIndexType intervalIdx,PoiList* pPoi,PoiAttributeType* pRefAttribute)
+void GetCombinedResultsPoi(IBroker* pBroker,const CGirderKey& girderKey,IntervalIndexType intervalIdx, bool bMoment,PoiList* pPoi,PoiAttributeType* pRefAttribute)
 {
    GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(girderKey);
@@ -1202,5 +1202,6 @@ void GetCombinedResultsPoi(IBroker* pBroker,const CGirderKey& girderKey,Interval
       pIPoi->MergePoiLists(*pPoi, csPois, pPoi);
    }
 
-   pIPoi->RemovePointsOfInterestOffGirder(*pPoi);
+   if(!bMoment)
+      pIPoi->RemovePointsOfInterestOffGirder(*pPoi);
 }
