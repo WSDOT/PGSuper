@@ -1890,7 +1890,7 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSDocBase* pDoc, 
             {
                if ( pLoad->m_bLoadOnCantilever[pgsTypes::metStart] )
                {
-                  Xspan *= cantilever_length;
+                  Xspan *= -cantilever_length;
                }
                else if ( pLoad->m_bLoadOnCantilever[pgsTypes::metEnd] )
                {
@@ -1900,6 +1900,13 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSDocBase* pDoc, 
                else
                {
                   Xspan *= span_length;
+               }
+            }
+            else
+            {
+               if (pLoad->m_bLoadOnCantilever[pgsTypes::metStart])
+               {
+                  Xspan -= cantilever_length;
                }
             }
 

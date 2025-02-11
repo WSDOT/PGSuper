@@ -1267,7 +1267,7 @@ void CBridgeAgentImp::ValidatePointLoads()
             // add a point of interest at this load location in every interval
             CSegmentKey segmentKey;
             Float64 Xs;
-            ConvertSpanPointToSegmentCoordiante(thisSpanKey,upl.m_Location,&segmentKey,&Xs);
+            ConvertSpanPointToSegmentCoordiante(thisSpanKey,upl.m_bLoadOnStartCantilever ? upl.m_Location - start_cantilever_length : upl.m_Location,&segmentKey,&Xs);
 
             Float64 segLength = GetSegmentLength(segmentKey);
             Xs = ::ForceIntoRange(0.0,Xs,segLength);
