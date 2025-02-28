@@ -31,7 +31,11 @@ bool BearingCriteria::operator==(const BearingCriteria& other) const
 
 bool BearingCriteria::operator!=(const BearingCriteria& other) const
 {
-   return bAlertTaperedSolePlateRequirement != other.bAlertTaperedSolePlateRequirement
+   return /*bCheckBearingDesign != other.bCheckBearingDesign
+      or
+      !IsEqual(bearingDesignMethod, other.bearingDesignMethod)
+      or*/
+      bAlertTaperedSolePlateRequirement != other.bAlertTaperedSolePlateRequirement
       or
       !IsEqual(TaperedSolePlateInclinationThreshold, other.TaperedSolePlateInclinationThreshold)
       or
@@ -41,6 +45,21 @@ bool BearingCriteria::operator!=(const BearingCriteria& other) const
 bool BearingCriteria::Compare(const BearingCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
+
+   //if (bCheckBearingDesign != other.bCheckBearingDesign)
+   //{
+   //    bSame = false;
+   //    vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Bearing design options are different"), _T(""), _T("")));
+   //    if (bReturnOnFirstDifference) return false;
+   //}
+
+   //if (bCheckBearingDesign && !::IsEqual(bearingDesignMethod, other.bearingDesignMethod))
+   //{
+   //    bSame = false;
+   //    vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Bearing design methods are different"), _T(""), _T("")));
+   //    if (bReturnOnFirstDifference) return false;
+   //}
+
    if (bAlertTaperedSolePlateRequirement != other.bAlertTaperedSolePlateRequirement)
    {
       bSame = false;
@@ -96,6 +115,8 @@ void BearingCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUni
 void BearingCriteria::Save(WBFL::System::IStructuredSave* pSave) const
 {
    pSave->BeginUnit(_T("BearingCriteria"), 1.0);
+   //pSave->Property(_T("bCheckBearingDesign"), bCheckBearingDesign);
+   //pSave->Property(_T("bearingDesignMethod"), static_cast<int>(bearingDesignMethod));
    pSave->Property(_T("bAlertTaperedSolePlateRequirement"), bAlertTaperedSolePlateRequirement);
    pSave->Property(_T("TaperedSolePlateInclinationThreshold"), TaperedSolePlateInclinationThreshold);
    pSave->Property(_T("bUseImpactForBearingReactions"), bUseImpactForBearingReactions);
