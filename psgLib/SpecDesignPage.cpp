@@ -70,6 +70,7 @@ BEGIN_MESSAGE_MAP(CSpecDesignPage, CPropertyPage)
 	//{{AFX_MSG_MAP(CSpecDesignPage)
 	ON_BN_CLICKED(IDC_CHECK_A, OnCheckA)
 	ON_BN_CLICKED(IDC_CHECK_HAULING, OnCheckHauling)
+    ON_BN_CLICKED(IDC_CHECK_BEARING, OnCheckBearing)
 	ON_BN_CLICKED(IDC_CHECK_HD, OnCheckHd)
 	ON_BN_CLICKED(IDC_CHECK_LIFTING, OnCheckLifting)
 	ON_BN_CLICKED(IDC_CHECK_SLOPE, OnCheckSlope)
@@ -187,6 +188,11 @@ void CSpecDesignPage::OnCheckHauling()
                IDC_SUPPORT_LESS_THAN_UNIT,IDC_STATIC_K,-1};
 
    CheckDesignCtrl(IDC_CHECK_HAULING, IDC_DESIGN_HAULING, list, this);
+}
+
+void CSpecDesignPage::OnCheckBearing()
+{
+
 }
 
 void CSpecDesignPage::OnCheckHd() 

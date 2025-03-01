@@ -1477,6 +1477,8 @@ void CSpecMainSheet::ExchangeBearingsData(CDataExchange* pDX)
    DDX_Text(pDX, IDC_TAPERED_SOLE_PLATE_THRESHOLD, m_Entry.m_pImpl->m_BearingCriteria.TaperedSolePlateInclinationThreshold);
    DDV_LimitOrMore(pDX, IDC_TAPERED_SOLE_PLATE_THRESHOLD, m_Entry.m_pImpl->m_BearingCriteria.TaperedSolePlateInclinationThreshold, 0.0);
    DDX_Check_Bool(pDX, IDC_BEARING_REACTION_IMPACT, m_Entry.m_pImpl->m_BearingCriteria.bUseImpactForBearingReactions);
+   int value = (int)m_Entry.m_pImpl->m_BearingCriteria.BearingDesignMethod;
+   DDX_Radio(pDX, IDC_BEARING_METHOD_A, value);
 }
 
 BOOL CSpecMainSheet::OnInitDialog() 
