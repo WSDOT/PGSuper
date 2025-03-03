@@ -1479,6 +1479,18 @@ void CSpecMainSheet::ExchangeBearingsData(CDataExchange* pDX)
    DDX_Check_Bool(pDX, IDC_BEARING_REACTION_IMPACT, m_Entry.m_pImpl->m_BearingCriteria.bUseImpactForBearingReactions);
    int value = (int)m_Entry.m_pImpl->m_BearingCriteria.BearingDesignMethod;
    DDX_Radio(pDX, IDC_BEARING_METHOD_A, value);
+   DDX_Text(pDX, IDC_SHEAR_MOD_MIN_LIMIT, m_Entry.m_pImpl->m_BearingCriteria.MinimumElastomerShearModulus);
+   DDX_Text(pDX, IDC_SHEAR_MOD_MAX_LIMIT, m_Entry.m_pImpl->m_BearingCriteria.MaximumElastomerShearModulus);
+   DDX_Check_Bool(pDX, IDC_REQ_INT_LAYER_THICK_CHECK, m_Entry.m_pImpl->m_BearingCriteria.bRequiredIntermediateElastomerThickness);
+   DDX_Text(pDX, IDC_REQ_INT_LAYER_THICK, m_Entry.m_pImpl->m_BearingCriteria.RequiredIntermediateElastomerThickness);
+   DDX_Check_Bool(pDX, IDC_MIN_BEARING_HEIGHT_CHECK, m_Entry.m_pImpl->m_BearingCriteria.bMinimumTotalBearingHeight);
+   DDX_Text(pDX, IDC_MIN_BEARING_HEIGHT, m_Entry.m_pImpl->m_BearingCriteria.MinimumTotalBearingHeight);
+   DDX_Check_Bool(pDX, IDC_MIN_BEARING_GIRDER_EDGE_CHECK, m_Entry.m_pImpl->m_BearingCriteria.bMinimumBearingEdgeToGirderEdgeDistance);
+   DDX_Text(pDX, IDC_MIN_BEARING_GIRDER_EDGE, m_Entry.m_pImpl->m_BearingCriteria.MinimumBearingEdgeToGirderEdgeDistance);
+   DDX_Check_Bool(pDX, IDC_MIN_BEARING_GIRDER_EDGE_CHECK, m_Entry.m_pImpl->m_BearingCriteria.bMinimumBearingEdgeToGirderEdgeDistance);
+   DDX_Text(pDX, IDC_MIN_BEARING_GIRDER_EDGE, m_Entry.m_pImpl->m_BearingCriteria.MinimumBearingEdgeToGirderEdgeDistance);
+   DDX_Check_Bool(pDX, IDC_MAX_BEARING_GIRDER_EDGE_CHECK, m_Entry.m_pImpl->m_BearingCriteria.bMinimumBearingEdgeToGirderEdgeDistance);
+   DDX_Text(pDX, IDC_MAX_BEARING_GIRDER_EDGE, m_Entry.m_pImpl->m_BearingCriteria.MinimumBearingEdgeToGirderEdgeDistance);
 }
 
 BOOL CSpecMainSheet::OnInitDialog() 

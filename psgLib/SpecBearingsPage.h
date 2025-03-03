@@ -64,7 +64,6 @@ protected:
 public:
    virtual BOOL OnInitDialog();
    virtual BOOL OnSetActive();
-   afx_msg void OnBnClickedReqBearingGirderEdgeCheck();
 };
 
 //{{AFX_INSERT_LOCATION}}

@@ -1176,8 +1176,8 @@ BEGIN
     EDITTEXT        IDC_A_ROUNDING_EDIT,299,304,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "in",IDC_A_ROUNDING_UNIT,342,307,23,8
     GROUPBOX        "Elastomeric Bearing Check (LRFD 14.7.5 and 14.7.6)",IDC_LIFTING_GROUP2,7,197,535,30
-    CONTROL         "Check (See Bearings tab for details)",IDC_CHECK_BEARING,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,210,135,8
+    CONTROL         "Check Bearing (See Bearings tab for details)",IDC_CHECK_BEARING,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,210,155,8
 END
 
 IDD_SPEC_SHEAR DIALOGEX 0, 0, 431, 377
@@ -2062,7 +2062,7 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,39,206,252,10
     EDITTEXT        IDC_MIN_BEARING_GIRDER_EDGE,298,204,40,14,ES_AUTOHSCROLL
     LTEXT           "Unit",IDC_MIN_BEARING_GIRDER_EDGE_UNIT,341,206,12,8
-    CONTROL         "Minimum edge of bearing to edge of girder bottom flange distance (WF/DG):",IDC_MAX_BEARING_GIRDER_EDGE_CHECK2,
+    CONTROL         "Maximum edge of bearing to edge of girder bottom flange distance (WF/DG):",IDC_MAX_BEARING_GIRDER_EDGE_CHECK,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,40,227,252,10
     EDITTEXT        IDC_MAX_BEARING_GIRDER_EDGE,299,225,40,14,ES_AUTOHSCROLL
     LTEXT           "Unit",IDC_MAX_BEARING_GIRDER_EDGE_UNIT,342,227,12,8
