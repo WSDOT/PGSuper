@@ -549,6 +549,8 @@ rptChapter* CSpecCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
    // Precamber Check
    CConstructabilityCheckTable().BuildPrecamberCheck(pChapter, pBroker, girderList, pDisplayUnits);
 
+   //placeholder: build spec check chapter for bearing here. See Phase 3 document for conditions and applicable bearings
+
    return pChapter;
 }
 
