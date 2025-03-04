@@ -1473,24 +1473,60 @@ void CSpecMainSheet::ExchangeDesignData(CDataExchange* pDX)
 
 void CSpecMainSheet::ExchangeBearingsData(CDataExchange* pDX)
 {
+    CEAFApp* pApp = EAFGetApp();
+    const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
+
    DDX_Check_Bool(pDX, IDC_TAPERED_SOLE_PLATE_REQUIRED, m_Entry.m_pImpl->m_BearingCriteria.bAlertTaperedSolePlateRequirement);
    DDX_Text(pDX, IDC_TAPERED_SOLE_PLATE_THRESHOLD, m_Entry.m_pImpl->m_BearingCriteria.TaperedSolePlateInclinationThreshold);
    DDV_LimitOrMore(pDX, IDC_TAPERED_SOLE_PLATE_THRESHOLD, m_Entry.m_pImpl->m_BearingCriteria.TaperedSolePlateInclinationThreshold, 0.0);
    DDX_Check_Bool(pDX, IDC_BEARING_REACTION_IMPACT, m_Entry.m_pImpl->m_BearingCriteria.bUseImpactForBearingReactions);
+
    int value = (int)m_Entry.m_pImpl->m_BearingCriteria.BearingDesignMethod;
    DDX_Radio(pDX, IDC_BEARING_METHOD_A, value);
+
+   DDX_UnitValueAndTag(pDX, IDC_SHEAR_MOD_MIN_LIMIT, IDC_SHEAR_MOD_MIN_LIMIT_UNIT,
+       m_Entry.m_pImpl->m_BearingCriteria.MinimumElastomerShearModulus, pDisplayUnits->ModE);
    DDX_Text(pDX, IDC_SHEAR_MOD_MIN_LIMIT, m_Entry.m_pImpl->m_BearingCriteria.MinimumElastomerShearModulus);
+
+   DDX_UnitValueAndTag(pDX, IDC_SHEAR_MOD_MAX_LIMIT, IDC_SHEAR_MOD_MAX_LIMIT_UNIT,
+       m_Entry.m_pImpl->m_BearingCriteria.MaximumElastomerShearModulus, pDisplayUnits->ModE);
    DDX_Text(pDX, IDC_SHEAR_MOD_MAX_LIMIT, m_Entry.m_pImpl->m_BearingCriteria.MaximumElastomerShearModulus);
+
    DDX_Check_Bool(pDX, IDC_REQ_INT_LAYER_THICK_CHECK, m_Entry.m_pImpl->m_BearingCriteria.bRequiredIntermediateElastomerThickness);
+   DDX_UnitValueAndTag(pDX, IDC_REQ_INT_LAYER_THICK, IDC_REQ_INT_LAYER_THICK_UNIT,
+       m_Entry.m_pImpl->m_BearingCriteria.RequiredIntermediateElastomerThickness, pDisplayUnits->ComponentDim);
    DDX_Text(pDX, IDC_REQ_INT_LAYER_THICK, m_Entry.m_pImpl->m_BearingCriteria.RequiredIntermediateElastomerThickness);
+
    DDX_Check_Bool(pDX, IDC_MIN_BEARING_HEIGHT_CHECK, m_Entry.m_pImpl->m_BearingCriteria.bMinimumTotalBearingHeight);
+   DDX_UnitValueAndTag(pDX, IDC_MIN_BEARING_HEIGHT, IDC_MIN_BEARING_HEIGHT_UNIT,
+       m_Entry.m_pImpl->m_BearingCriteria.MinimumTotalBearingHeight, pDisplayUnits->ComponentDim);
    DDX_Text(pDX, IDC_MIN_BEARING_HEIGHT, m_Entry.m_pImpl->m_BearingCriteria.MinimumTotalBearingHeight);
+
    DDX_Check_Bool(pDX, IDC_MIN_BEARING_GIRDER_EDGE_CHECK, m_Entry.m_pImpl->m_BearingCriteria.bMinimumBearingEdgeToGirderEdgeDistance);
+   DDX_UnitValueAndTag(pDX, IDC_MIN_BEARING_GIRDER_EDGE, IDC_MIN_BEARING_GIRDER_EDGE_UNIT,
+       m_Entry.m_pImpl->m_BearingCriteria.MinimumTotalBearingHeight, pDisplayUnits->ComponentDim);
    DDX_Text(pDX, IDC_MIN_BEARING_GIRDER_EDGE, m_Entry.m_pImpl->m_BearingCriteria.MinimumBearingEdgeToGirderEdgeDistance);
-   DDX_Check_Bool(pDX, IDC_MIN_BEARING_GIRDER_EDGE_CHECK, m_Entry.m_pImpl->m_BearingCriteria.bMinimumBearingEdgeToGirderEdgeDistance);
-   DDX_Text(pDX, IDC_MIN_BEARING_GIRDER_EDGE, m_Entry.m_pImpl->m_BearingCriteria.MinimumBearingEdgeToGirderEdgeDistance);
-   DDX_Check_Bool(pDX, IDC_MAX_BEARING_GIRDER_EDGE_CHECK, m_Entry.m_pImpl->m_BearingCriteria.bMinimumBearingEdgeToGirderEdgeDistance);
-   DDX_Text(pDX, IDC_MAX_BEARING_GIRDER_EDGE, m_Entry.m_pImpl->m_BearingCriteria.MinimumBearingEdgeToGirderEdgeDistance);
+
+   DDX_Check_Bool(pDX, IDC_MAX_BEARING_GIRDER_EDGE_CHECK, m_Entry.m_pImpl->m_BearingCriteria.bMaximumBearingEdgeToGirderEdgeDistance);
+   DDX_UnitValueAndTag(pDX, IDC_MAX_BEARING_GIRDER_EDGE, IDC_MAX_BEARING_GIRDER_EDGE_UNIT,
+       m_Entry.m_pImpl->m_BearingCriteria.MaximumBearingEdgeToGirderEdgeDistance, pDisplayUnits->ComponentDim);
+   DDX_Text(pDX, IDC_MAX_BEARING_GIRDER_EDGE, m_Entry.m_pImpl->m_BearingCriteria.MaximumBearingEdgeToGirderEdgeDistance);
+
+   DDX_Check_Bool(pDX, IDC_REQ_BEARING_GIRDER_EDGE_CHECK, m_Entry.m_pImpl->m_BearingCriteria.bRequiredBearingEdgeToGirderEdgeDistance);
+   DDX_UnitValueAndTag(pDX, IDC_REQ_BEARING_GIRDER_EDGE, IDC_REQ_BEARING_GIRDER_EDGE_UNIT,
+       m_Entry.m_pImpl->m_BearingCriteria.RequiredBearingEdgeToGirderEdgeDistance, pDisplayUnits->ComponentDim);
+   DDX_Text(pDX, IDC_REQ_BEARING_GIRDER_EDGE, m_Entry.m_pImpl->m_BearingCriteria.RequiredBearingEdgeToGirderEdgeDistance);
+
+   DDX_UnitValueAndTag(pDX, IDC_MAX_LL_DEF_LIMIT, IDC_MAX_LL_DEF_LIMIT_UNIT,
+       m_Entry.m_pImpl->m_BearingCriteria.MaximumLiveLoadDeflection, pDisplayUnits->ComponentDim);
+   DDX_Text(pDX, IDC_REQ_BEARING_GIRDER_EDGE, m_Entry.m_pImpl->m_BearingCriteria.MaximumLiveLoadDeflection);
+
+   DDX_Check_Bool(pDX,IDC_MAX_BEARING_TL, m_Entry.m_pImpl->m_BearingCriteria.bRequiredBearingEdgeToGirderEdgeDistance);
+   DDX_UnitValueAndTag(pDX, IDC_MAX_BEARING_TL, IDC_MAX_TL_UNIT,
+       m_Entry.m_pImpl->m_BearingCriteria.MaximumTotalLoad, pDisplayUnits->GeneralForce);
+   DDX_Text(pDX, IDC_MAX_BEARING_TL, m_Entry.m_pImpl->m_BearingCriteria.MaximumLiveLoadDeflection);
+
+
 }
 
 BOOL CSpecMainSheet::OnInitDialog() 

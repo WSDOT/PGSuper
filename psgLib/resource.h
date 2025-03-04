@@ -1484,6 +1484,7 @@
 #define IDS_E_INVALIDVERSION            1750
 #define IDC_SHEAR_MOD_MIN_LIMIT_UNIT    1750
 #define IDC_SHEAR_MOD_MAX_LIMIT_UNIT2   1751
+#define IDC_SHEAR_MOD_MAX_LIMIT_UNIT    1751
 #define IDS_E_USERDEFINED               1752
 #define IDC_REQ_INT_LAYER_THICK_UNIT    1752
 #define IDC_MIN_BEARING_HEIGHT_UNIT     1753
@@ -1492,6 +1493,7 @@
 #define IDC_REQ_BEARING_GIRDER_EDGE_UNIT 1756
 #define IDC_MAX_LL_DEF_LIMIT_UNIT       1757
 #define IDC_MAX_TL_LIMIT_UNIT           1758
+#define IDC_MAX_TL_UNIT                 1758
 #define IDC_DIAPHRAGM_NOTE              1858
 #define IDC_SEED_VALUE_NOTE             1859
 #define IDC_UHPC_FR                     1900
