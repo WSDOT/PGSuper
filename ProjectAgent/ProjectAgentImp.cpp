@@ -10019,6 +10019,12 @@ void CProjectAgentImp::GetTaperedSolePlateRequirements(bool* pbCheckTaperedSoleP
    *pTaperedSolePlateThreshold = bearing_criteria.TaperedSolePlateInclinationThreshold;
 }
 
+void CProjectAgentImp::GetBearingCheckRequirements() const
+{
+    const auto& bearing_criteria = m_pSpecEntry->GetBearingCriteria();
+    // placeholder so spec check reports and bearing objects can have access to bearing criteria
+}
+
 ISpecification::PrincipalWebStressCheckType CProjectAgentImp::GetPrincipalWebStressCheckType(const CSegmentKey& segmentKey) const
 {
    const auto& principal_tension_stress_criteria = m_pSpecEntry->GetPrincipalTensionStressCriteria();

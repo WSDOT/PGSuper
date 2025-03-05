@@ -36,11 +36,17 @@ bool BearingCriteria::operator!=(const BearingCriteria& other) const
       !IsEqual(TaperedSolePlateInclinationThreshold, other.TaperedSolePlateInclinationThreshold)
       or
       bUseImpactForBearingReactions != bUseImpactForBearingReactions;
+
+
+
+
+
 }
 
 bool BearingCriteria::Compare(const BearingCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
+
    if (bAlertTaperedSolePlateRequirement != other.bAlertTaperedSolePlateRequirement)
    {
       bSame = false;
@@ -95,22 +101,69 @@ void BearingCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUni
 
 void BearingCriteria::Save(WBFL::System::IStructuredSave* pSave) const
 {
-   pSave->BeginUnit(_T("BearingCriteria"), 1.0);
+   pSave->BeginUnit(_T("BearingCriteria"), 2.0);
+
    pSave->Property(_T("bAlertTaperedSolePlateRequirement"), bAlertTaperedSolePlateRequirement);
    pSave->Property(_T("TaperedSolePlateInclinationThreshold"), TaperedSolePlateInclinationThreshold);
    pSave->Property(_T("bUseImpactForBearingReactions"), bUseImpactForBearingReactions);
+
+   pSave->Property(_T("bCheck"), bCheck);
+   int design_method = static_cast<int>(BearingDesignMethod);
+   pSave->Property(_T("BearingDesignMethod"), design_method);
+   pSave->Property(_T("MinimumElastomerShearModulus"), MinimumElastomerShearModulus);
+   pSave->Property(_T("MaximumElastomerShearModulus"), MaximumElastomerShearModulus);
+   pSave->Property(_T("bRequiredIntermediateElastomerThickness"), bRequiredIntermediateElastomerThickness);
+   pSave->Property(_T("RequiredIntermediateElastomerThickness"), RequiredIntermediateElastomerThickness);
+   pSave->Property(_T("bMinimumTotalBearingHeight"), bMinimumTotalBearingHeight);
+   pSave->Property(_T("MinimumTotalBearingHeight"), MinimumTotalBearingHeight);
+   pSave->Property(_T("bMinimumBearingEdgeToGirderEdgeDistance"), bMinimumBearingEdgeToGirderEdgeDistance);
+   pSave->Property(_T("MinimumBearingEdgeToGirderEdgeDistance"), MinimumBearingEdgeToGirderEdgeDistance);
+   pSave->Property(_T("bMaximumBearingEdgeToGirderEdgeDistance"), bMaximumBearingEdgeToGirderEdgeDistance);
+   pSave->Property(_T("MaximumBearingEdgeToGirderEdgeDistance"), MaximumBearingEdgeToGirderEdgeDistance);
+   pSave->Property(_T("bRequiredBearingEdgeToGirderEdgeDistance"), bRequiredBearingEdgeToGirderEdgeDistance);
+   pSave->Property(_T("RequiredBearingEdgeToGirderEdgeDistance"), RequiredBearingEdgeToGirderEdgeDistance);
+   pSave->Property(_T("MaximumLiveLoadDeflection"), MaximumLiveLoadDeflection);
+   pSave->Property(_T("bMaximumTotalLoad"), bMaximumTotalLoad);
+   pSave->Property(_T("MaximumTotalLoad"), MaximumTotalLoad);
+
    pSave->EndUnit();
+
 }
 
 void BearingCriteria::Load(WBFL::System::IStructuredLoad* pLoad)
 {
+
    PRECONDITION(83 <= pLoad->GetVersion());
 
-   if (!pLoad->BeginUnit(_T("BearingCriteria")))  THROW_LOAD(InvalidFileFormat, pLoad);
+    if (!pLoad->BeginUnit(_T("BearingCriteria")))  THROW_LOAD(InvalidFileFormat, pLoad);
 
-   if (!pLoad->Property(_T("bAlertTaperedSolePlateRequirement"), &bAlertTaperedSolePlateRequirement)) THROW_LOAD(InvalidFileFormat, pLoad);
-   if (!pLoad->Property(_T("TaperedSolePlateInclinationThreshold"), &TaperedSolePlateInclinationThreshold)) THROW_LOAD(InvalidFileFormat, pLoad);
-   if (!pLoad->Property(_T("bUseImpactForBearingReactions"), &bUseImpactForBearingReactions)) THROW_LOAD(InvalidFileFormat, pLoad);
+    if (!pLoad->Property(_T("bAlertTaperedSolePlateRequirement"), &bAlertTaperedSolePlateRequirement)) THROW_LOAD(InvalidFileFormat, pLoad);
+    if (!pLoad->Property(_T("TaperedSolePlateInclinationThreshold"), &TaperedSolePlateInclinationThreshold)) THROW_LOAD(InvalidFileFormat, pLoad);
+    if (!pLoad->Property(_T("bUseImpactForBearingReactions"), &bUseImpactForBearingReactions)) THROW_LOAD(InvalidFileFormat, pLoad);
 
-   if (!pLoad->EndUnit()) THROW_LOAD(InvalidFileFormat, pLoad);
+
+    if (pLoad->GetVersion() > 1.0)
+    {
+        if (!pLoad->Property(_T("bCheck"), &bCheck)) THROW_LOAD(InvalidFileFormat, pLoad);
+        int design_method = static_cast<int>(BearingDesignMethod);
+        if (!pLoad->Property(_T("BearingDesignMethod"), &design_method)) THROW_LOAD(InvalidFileFormat, pLoad);
+        if (!pLoad->Property(_T("MinimumElastomerShearModulus"), &MinimumElastomerShearModulus)) THROW_LOAD(InvalidFileFormat, pLoad);
+        if (!pLoad->Property(_T("MaximumElastomerShearModulus"), &MaximumElastomerShearModulus)) THROW_LOAD(InvalidFileFormat, pLoad);
+        if (!pLoad->Property(_T("bRequiredIntermediateElastomerThickness"), &bRequiredIntermediateElastomerThickness)) THROW_LOAD(InvalidFileFormat, pLoad);
+        if (!pLoad->Property(_T("RequiredIntermediateElastomerThickness"), &RequiredIntermediateElastomerThickness)) THROW_LOAD(InvalidFileFormat, pLoad);
+        if (!pLoad->Property(_T("bMinimumTotalBearingHeight"), &bMinimumTotalBearingHeight)) THROW_LOAD(InvalidFileFormat, pLoad);
+        if (!pLoad->Property(_T("MinimumTotalBearingHeight"), &MinimumTotalBearingHeight)) THROW_LOAD(InvalidFileFormat, pLoad);
+        if (!pLoad->Property(_T("bMinimumBearingEdgeToGirderEdgeDistance"), &bMinimumBearingEdgeToGirderEdgeDistance)) THROW_LOAD(InvalidFileFormat, pLoad);
+        if (!pLoad->Property(_T("MinimumBearingEdgeToGirderEdgeDistance"), &MinimumBearingEdgeToGirderEdgeDistance)) THROW_LOAD(InvalidFileFormat, pLoad);
+        if (!pLoad->Property(_T("bMaximumBearingEdgeToGirderEdgeDistance"), &bMaximumBearingEdgeToGirderEdgeDistance)) THROW_LOAD(InvalidFileFormat, pLoad);
+        if (!pLoad->Property(_T("MaximumBearingEdgeToGirderEdgeDistance"), &MaximumBearingEdgeToGirderEdgeDistance)) THROW_LOAD(InvalidFileFormat, pLoad);
+        if (!pLoad->Property(_T("bRequiredBearingEdgeToGirderEdgeDistance"), &bRequiredBearingEdgeToGirderEdgeDistance)) THROW_LOAD(InvalidFileFormat, pLoad);
+        if (!pLoad->Property(_T("RequiredBearingEdgeToGirderEdgeDistance"), &RequiredBearingEdgeToGirderEdgeDistance)) THROW_LOAD(InvalidFileFormat, pLoad);
+        if (!pLoad->Property(_T("MaximumLiveLoadDeflection"), &MaximumLiveLoadDeflection)) THROW_LOAD(InvalidFileFormat, pLoad);
+        if (!pLoad->Property(_T("bMaximumTotalLoad"), &bMaximumTotalLoad)) THROW_LOAD(InvalidFileFormat, pLoad);
+        if (!pLoad->Property(_T("MaximumTotalLoad"), &MaximumTotalLoad)) THROW_LOAD(InvalidFileFormat, pLoad);
+    }
+
+    if (!pLoad->EndUnit()) THROW_LOAD(InvalidFileFormat, pLoad);
+
 }

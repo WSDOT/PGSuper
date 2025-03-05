@@ -3592,6 +3592,12 @@ void CEngAgentImp::GetTimeDependentShearDeformation(CGirderKey girderKey, SHEARD
     m_BearingEngineer.GetTimeDependentShearDeformation(girderKey, pDetails);
 }
 
+void CEngAgentImp::CheckBearing(WBFL::EngTools::Bearing * brg, WBFL::EngTools::BearingLoads * brg_loads,
+    WBFL::EngTools::BearingCalculator * brg_calc) const
+{
+    return m_BearingEngineer.CheckBearing(brg, brg_loads, brg_calc);
+}
+
 
 
 
