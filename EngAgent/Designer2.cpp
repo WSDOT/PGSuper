@@ -2201,8 +2201,10 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	                  {
 	                     // During a stressing activity, tension stress checks are only performed in areas
 	                     // other that the precompressed tensile zone
-	                     artifact.IsApplicable( topStressLocation, !bIsInPTZ[TOP] );
-	                     artifact.IsApplicable( botStressLocation, !bIsInPTZ[BOT] );
+                         //
+                         // Starting with the 10th edition, the tension stress check is always performed
+	                     artifact.IsApplicable( topStressLocation, WBFL::LRFD::BDSManager::Edition::TenthEdition2024 <= WBFL::LRFD::BDSManager::GetEdition() ? true : !bIsInPTZ[TOP] );
+	                     artifact.IsApplicable( botStressLocation, WBFL::LRFD::BDSManager::Edition::TenthEdition2024 <= WBFL::LRFD::BDSManager::GetEdition() ? true : !bIsInPTZ[BOT] );
                      }
 	                  else if ( bCheckTemporaryStresses )
 	                  {
@@ -2210,9 +2212,11 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	                     {
 	                        // During a stressing activity, tension stress checks are only performed in areas
 	                        // other that the precompressed tensile zone
+                            //
+                            // Starting with the 10th edition, the tension stress check is always performed
 	                        ATLASSERT(task.intervalIdx == tsRemovalIntervalIdx);
-	                        artifact.IsApplicable( topStressLocation, !bIsInPTZ[TOP] );
-	                        artifact.IsApplicable( botStressLocation, !bIsInPTZ[BOT] );
+	                        artifact.IsApplicable( topStressLocation, WBFL::LRFD::BDSManager::Edition::TenthEdition2024 <= WBFL::LRFD::BDSManager::GetEdition() ? true : !bIsInPTZ[TOP] );
+	                        artifact.IsApplicable( botStressLocation, WBFL::LRFD::BDSManager::Edition::TenthEdition2024 <= WBFL::LRFD::BDSManager::GetEdition() ? true : !bIsInPTZ[BOT] );
 	                     }
 	                     else
 	                     {
@@ -2263,11 +2267,13 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	                  // has been precompressed due to PT applied after the deck is composite, and
 	                  // the stress location is not in the precompressed tensile zone during a PT-stressing interval
 	                  // or in the precompressed tensile zone in a non-PT-stressing interval
+                      //
+                      // Starting with the 10th edition, the tension stress check is always performed in tendon stressing intervals
 	                  artifact.IsApplicable( topStressLocation, 
 	                     compositeDeckIntervalIdx <= task.intervalIdx && // composite deck
 	                     bIsDeckPrecompressed // deck is precompressed
 	                     && (
-	                           ( (bIsSegmentTendonStressingInterval || bIsGirderTendonStressingInterval) && !bIsInPTZ[TOP]) || // this is a tendon stressing interval and stress location is NOT in the PTZ -OR-
+	                           ( (bIsSegmentTendonStressingInterval || bIsGirderTendonStressingInterval) && WBFL::LRFD::BDSManager::Edition::TenthEdition2024 <= WBFL::LRFD::BDSManager::GetEdition() ? true : !bIsInPTZ[TOP]) || // this is a tendon stressing interval and stress location is NOT in the PTZ -OR-
 	                           (!(bIsSegmentTendonStressingInterval || bIsGirderTendonStressingInterval) &&  bIsInPTZ[TOP]) // this is NOT a tendon stressing interval and the stress location is in the PTZ
 	                         ));
 	
@@ -2275,7 +2281,7 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	                     compositeDeckIntervalIdx <= task.intervalIdx && // composite deck
 	                     bIsDeckPrecompressed // deck is precompressed
 	                     && (
-	                           ( (bIsSegmentTendonStressingInterval || bIsGirderTendonStressingInterval) && !bIsInPTZ[BOT]) || // this is a tendon stressing interval and stress location is NOT in the PTZ -OR-
+	                           ( (bIsSegmentTendonStressingInterval || bIsGirderTendonStressingInterval) && WBFL::LRFD::BDSManager::Edition::TenthEdition2024 <= WBFL::LRFD::BDSManager::GetEdition() ? true : !bIsInPTZ[BOT]) || // this is a tendon stressing interval and stress location is NOT in the PTZ -OR-
 	                           (!(bIsSegmentTendonStressingInterval || bIsGirderTendonStressingInterval) &&  bIsInPTZ[BOT]) // this is NOT a tendon stressing interval and the stress location is in the PTZ
 	                         ));
 	
