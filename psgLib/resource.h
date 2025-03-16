@@ -446,6 +446,7 @@
 #define IDC_TS_TENSION_WITH_REBAR       1109
 #define IDC_CURING_METHOD               1110
 #define IDC_PRINCIPAL_TENSION           1110
+#define IDC_COVER_LIMIT                 1111
 #define IDC_FINAL                       1112
 #define IDC_SHIPPING1_TAG               1113
 #define IDC_BEFORE_TEMP_STRAND_REMOVAL  1113
@@ -509,6 +510,7 @@
 #define IDC_PRINCIPAL_TENSION_UNIT      1143
 #define IDC_ADD_TEMPORARY_STRAND        1144
 #define IDC_APPLY_DR_TO_BEAM            1144
+#define IDC_COVER_LIMIT_UNIT            1144
 #define IDC_APPEND_TEMPORARY_STRAND     1145
 #define IDC_APPLY_DR_TO_BEARING         1145
 #define IDC_APPLY_DR_TO_BEARING2        1146
@@ -1461,6 +1463,7 @@
 #define IDC_STATIC_SERVICE_I_TENSION    1745
 #define IDC_EQUALITY_GRP_CTRL           1746
 #define IDC_LONG_REINF_EQUALITY_CHECK   1747
+#define IDC_COVER_LIMIT_TAG             1748
 #define IDS_E_INVALIDVERSION            1750
 #define IDS_E_USERDEFINED               1752
 #define IDC_DIAPHRAGM_NOTE              1858
@@ -1502,7 +1505,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        335
 #define _APS_NEXT_COMMAND_VALUE         36881
-#define _APS_NEXT_CONTROL_VALUE         1748
+#define _APS_NEXT_CONTROL_VALUE         1749
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

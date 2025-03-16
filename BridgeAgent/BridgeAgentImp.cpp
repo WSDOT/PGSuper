@@ -695,6 +695,69 @@ PierType GetPierType(const CPierData2* pPierData)
    }
 }
 
+// Utility class to implement data needs for alternate tensile stress requirement for pgsuper models
+class pgsAlternateTensStressDataProvider : public WBFL::Stability::IAlternateTensStressDataProvider
+{
+public:
+   pgsAlternateTensStressDataProvider(ISuperstructureMemberSegment* pSegment) :
+      m_pSegment(pSegment)
+   {
+   }
+
+   void SetSegment(ISuperstructureMemberSegment* segment)
+   {
+      m_pSegment = segment;
+   }
+
+   // IAlternateTensStressDataProvider
+   virtual HRESULT GetGirderShape(Float64 Xs, IShape** ppShape)  override
+   {
+      if (m_pSegment)
+      {
+         return m_pSegment->get_GirderShape(Xs, sbLeft, cstGirder, ppShape);
+      }
+      else
+      {
+         ATLASSERT(0);
+         *ppShape = nullptr;
+         return E_FAIL;
+      }
+   }
+
+   virtual HRESULT CreateRebarSection(Float64 Xs, IRebarSection** pSection) override
+   {
+      if (m_pSegment)
+      {
+         CComQIPtr<IItemData> itemData(m_pSegment);
+         CComPtr<IUnknown> punk;
+         itemData->GetItemData(CComBSTR("Precast Girder"), &punk);
+         CComQIPtr<IPrecastGirder> gdr(punk);
+         CComPtr<IRebarLayout> pRebarLayout;
+         gdr->get_RebarLayout(&pRebarLayout);
+         if (pRebarLayout)
+         {
+            return pRebarLayout->CreateRebarSection(Xs, INVALID_INDEX, pSection);
+         }
+         else
+         {
+            ATLASSERT(0);
+            *pSection = nullptr;
+            return E_FAIL;
+         }
+
+      }
+      else
+      {
+         ATLASSERT(0);
+         return E_FAIL;
+      }
+   }
+
+private:
+   pgsAlternateTensStressDataProvider();
+   CComPtr<ISuperstructureMemberSegment> m_pSegment;
+};
+
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeAgentImp
@@ -27184,7 +27247,9 @@ void CBridgeAgentImp::ConfigureSegmentStabilityModel(const CSegmentKey& segmentK
    hr = ssmbr->get_Segment(segmentKey.segmentIndex,&segment);
    ATLASSERT(SUCCEEDED(hr));
 
-   pGirder->SetSegment(segment);
+   // Use abstract data provider for alternative tensile stress data so we can use it with other applications
+   std::shared_ptr<WBFL::Stability::IAlternateTensStressDataProvider> pATSP(std::make_shared<pgsAlternateTensStressDataProvider>(segment));
+   pGirder->SetAlternateTensStressDataProvider(pATSP);
 
    pGirder->ClearSections();
 
@@ -27550,6 +27615,8 @@ void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey&
    GetSegmentLongitudinalRebarProperties(segmentKey,&E,&Fy,&Fu);
    pProblem->SetRebarYieldStrength(Fy);
 
+   GET_IFACE(IConcreteStressLimits, pLimits);
+   pProblem->SetMaxCoverToUseHigherTensionStressLimit(pLimits->GetMaxCoverToUseHigherTensionStressLimit());
 
    Float64 impactDown,impactUp;
    pLiftingCriteria->GetLiftingImpact(&impactDown,&impactUp);
@@ -27841,6 +27908,9 @@ void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey&
    Float64 E,Fy,Fu;
    GetSegmentLongitudinalRebarProperties(segmentKey,&E,&Fy,&Fu);
    pProblem->SetRebarYieldStrength(Fy);
+
+   GET_IFACE(IConcreteStressLimits, pLimits);
+   pProblem->SetMaxCoverToUseHigherTensionStressLimit(pLimits->GetMaxCoverToUseHigherTensionStressLimit());
 
    Float64 impactDown,impactUp;
    pHaulingCriteria->GetHaulingImpact(&impactDown,&impactUp);

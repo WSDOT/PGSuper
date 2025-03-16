@@ -139,6 +139,12 @@ BOOL CSpecGirderStressPage::OnSetActive()
    GetDlgItem(IDC_PRINCIPAL_FC_THRESHOLD)->ShowWindow(nShow);
    GetDlgItem(IDC_PRINCIPAL_FC_THRESHOLD_UNIT)->ShowWindow(nShow);
 
+   // This was not in the LRFD before 10th Edition 2024
+   nShow = (pDad->m_Entry.GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::TenthEdition2024 ? SW_HIDE : SW_SHOW);
+   GetDlgItem(IDC_COVER_LIMIT)->ShowWindow(nShow);
+   GetDlgItem(IDC_COVER_LIMIT_TAG)->ShowWindow(nShow);
+   GetDlgItem(IDC_COVER_LIMIT_UNIT)->ShowWindow(nShow);
+
    return CPropertyPage::OnSetActive();
 }
 

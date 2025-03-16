@@ -1763,6 +1763,9 @@ BEGIN
     LTEXT           "* duct diameter. For grouted ducts, reduce web width by",IDC_PRINCIPAL_TENSION_LABEL5,232,467,188,8
     EDITTEXT        IDC_GROUTED_MULTIPLIER,417,465,26,14,ES_AUTOHSCROLL
     LTEXT           "* duct diameter.",IDC_PRINCIPAL_TENSION_LABEL6,447,467,66,8
+    LTEXT           "Max cover for reinforcement to always resist tension force (5.9.2.3.1b)",IDC_COVER_LIMIT_TAG,306,65,151,15
+    EDITTEXT        IDC_COVER_LIMIT,458,65,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "in",IDC_COVER_LIMIT_UNIT,503,67,41,8
 END
 
 IDD_SPEC_DEAD_LOADS DIALOGEX 0, 0, 379, 154

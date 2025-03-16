@@ -2577,6 +2577,8 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
 	                  // in the precompressed tensile zone for closure joints
 	                  altTensionRequirements.bLimitBarStress = false;
 	               }
+
+                  altTensionRequirements.MaxCoverToUseHigherTensionStressLimit = pLimits->GetMaxCoverToUseHigherTensionStressLimit();
 	
                   CComPtr<IShape> shape;
                   pShapes->GetSegmentShape(task.intervalIdx, poi, false, pgsTypes::scCentroid, &shape);
@@ -3059,6 +3061,8 @@ void pgsDesigner2::CheckSegmentStressesAtRelease(const CSegmentKey& segmentKey, 
          CComPtr<IRebarSection> rebarSection;
          pRebarGeom->GetRebars(poi, &rebarSection);
          altTensionRequirements.rebarSection = rebarSection;
+
+         altTensionRequirements.MaxCoverToUseHigherTensionStressLimit = pLimits->GetMaxCoverToUseHigherTensionStressLimit();
 
          altTensionRequirements.bAdjustForDevelopmentLength = true; // anchorage of rebar never helps development at release
 
