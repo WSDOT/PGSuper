@@ -2981,26 +2981,29 @@ void pgsMomentCapacityEngineer::BuildCapacityProblem(IntervalIndexType intervalI
 
          Float64 dev_length_factor = pRebarGeom->GetDevLengthFactor(barCutPoi,item);
 
-         CComPtr<IGenericShape> bar_shape;
-         bar_shape.CoCreateInstance(CLSID_GenericShape);
-         bar_shape->put_Area(dev_length_factor* as);
-         CComPtr<IPoint2d> pntCG;
-         bar_shape->get_Centroid(&pntCG);
-         pntCG->MoveEx(location);
-         pntCG->Offset(0, sacDepth);
-
-         CComQIPtr<IShape> shape(bar_shape);
-         AddShape2Section(CComBSTR("Girder Rebar"), section, shape, ssGirderRebar, ssGirder, nullptr, 1.0, false);
-
-         // determine depth to lowest layer of strand
-         Float64 cy;
-         pntCG->get_Y(&cy);
-         Float64 _dt = fabs(Yc - cy);
-         if (dt < _dt)
+         if (dev_length_factor > 0) // don't add bars that are cut off
          {
-            dt = _dt;
-            section->get_ShapeCount(pExtremeTensionLayerIndex);
-            (*pExtremeTensionLayerIndex)--; // deduct 1. if count is 1, index is 0
+            CComPtr<IGenericShape> bar_shape;
+            bar_shape.CoCreateInstance(CLSID_GenericShape);
+            bar_shape->put_Area(dev_length_factor * as);
+            CComPtr<IPoint2d> pntCG;
+            bar_shape->get_Centroid(&pntCG);
+            pntCG->MoveEx(location);
+            pntCG->Offset(0, sacDepth);
+
+            CComQIPtr<IShape> shape(bar_shape);
+            AddShape2Section(CComBSTR("Girder Rebar"), section, shape, ssGirderRebar, ssGirder, nullptr, 1.0, false);
+
+            // determine depth to lowest layer of strand
+            Float64 cy;
+            pntCG->get_Y(&cy);
+            Float64 _dt = fabs(Yc - cy);
+            if (dt < _dt)
+            {
+               dt = _dt;
+               section->get_ShapeCount(pExtremeTensionLayerIndex);
+               (*pExtremeTensionLayerIndex)--; // deduct 1. if count is 1, index is 0
+            }
          }
 
          item.Release();
