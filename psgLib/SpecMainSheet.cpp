@@ -259,6 +259,9 @@ void CSpecMainSheet::ExchangeGirderData(CDataExchange* pDX)
    DDX_Text(pDX,IDC_RELEASE_TENSION_WITH_REBAR_UNIT,fciTag);
    DDV_UnitValueZeroOrMore(pDX, IDC_RELEASE_TENSION_WITH_REBAR,m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_WithReinforcement_BeforeLosses.Coefficient, pDisplayUnits->SqrtPressure );
 
+   DDX_UnitValueAndTag(pDX, IDC_COVER_LIMIT, IDC_COVER_LIMIT_UNIT, m_Entry.m_pImpl->m_PrestressedElementCriteria.MaxCoverToUseHigherTensionStressLimit, pDisplayUnits->ComponentDim);
+   DDV_UnitValueZeroOrMore(pDX, IDC_COVER_LIMIT_UNIT, m_Entry.m_pImpl->m_PrestressedElementCriteria.MaxCoverToUseHigherTensionStressLimit, pDisplayUnits->ComponentDim);
+
    if (pDX->m_bSaveAndValidate && m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_WithReinforcement_BeforeLosses.Coefficient < m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_OtherAreas_WithoutReinforcement_BeforeLosses.Coefficient)
    {
       AfxMessageBox(_T("Stress limits for Temporary Stresses before Losses (LRFD 5.9.4.1): Tensile stress limit with bonded reinforcement must be greater than or equal to than without"),MB_OK | MB_ICONWARNING);

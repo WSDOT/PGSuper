@@ -202,6 +202,7 @@ public:
    virtual bool IsConcreteStressLimitApplicable(const CSegmentKey& segmentKey, const StressCheckTask& task) const override;
    virtual bool IsConcreteStressLimitApplicable(const CGirderKey& girderKey, const StressCheckTask& task) const override;
    virtual bool HasConcreteTensionStressLimitWithRebarOption(IntervalIndexType intervalIdx,bool bInPTZ,bool bSegment,const CSegmentKey& segmentKey) const override;
+   virtual Float64 GetMaxCoverToUseHigherTensionStressLimit() const override;
 
    virtual bool CheckTemporaryStresses() const override;
    virtual bool CheckFinalDeadLoadTensionStress() const override;

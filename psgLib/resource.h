@@ -446,6 +446,7 @@
 #define IDC_TS_TENSION_WITH_REBAR       1109
 #define IDC_CURING_METHOD               1110
 #define IDC_PRINCIPAL_TENSION           1110
+#define IDC_COVER_LIMIT                 1111
 #define IDC_FINAL                       1112
 #define IDC_SHIPPING1_TAG               1113
 #define IDC_BEFORE_TEMP_STRAND_REMOVAL  1113
@@ -509,6 +510,7 @@
 #define IDC_PRINCIPAL_TENSION_UNIT      1143
 #define IDC_ADD_TEMPORARY_STRAND        1144
 #define IDC_APPLY_DR_TO_BEAM            1144
+#define IDC_COVER_LIMIT_UNIT            1144
 #define IDC_APPEND_TEMPORARY_STRAND     1145
 #define IDC_APPLY_DR_TO_BEARING         1145
 #define IDC_APPLY_DR_TO_BEARING2        1146
@@ -1481,6 +1483,7 @@
 #define IDC_LONG_REINF_EQUALITY_CHECK   1747
 #define IDC_BEARING_METHOD_A            1748
 #define IDC_BEARING_METHOD_B            1749
+#define IDC_COVER_LIMIT_TAG             1748
 #define IDS_E_INVALIDVERSION            1750
 #define IDC_SHEAR_MOD_MIN_LIMIT_UNIT    1750
 #define IDC_SHEAR_MOD_MAX_LIMIT_UNIT2   1751

@@ -38,6 +38,7 @@ struct PSGLIBCLASS PrestressedElementCriteria
    TensionStressLimit TensionStressLimit_WithReinforcement_BeforeLosses{ WBFL::Units::ConvertToSysUnits(0.24,WBFL::Units::Measure::SqrtKSI),false,0.0 }; // Table 5.9.2.3.1b-1 does not consider PTZ for this requirement
    TensionStressLimit TensionStressLimit_OtherAreas_WithoutReinforcement_BeforeLosses{ WBFL::Units::ConvertToSysUnits(0.0948,WBFL::Units::Measure::SqrtKSI),true,WBFL::Units::ConvertToSysUnits(0.200,WBFL::Units::Measure::KSI)};
    //TensionStressLimit TensionStressLimit_OtherAreas_WithReinforcement_BeforeLosses; // this case is not defined in Table 5.9.2.3.1b-1
+   Float64 MaxCoverToUseHigherTensionStressLimit = 0.0; // assume zero cover unless spec or input overrides
 
    Float64 CompressionStressCoefficient_PermanentLoadsOnly_AfterLosses = 0.60;
    Float64 CompressionStressCoefficient_AllLoads_AfterLosses = 0.60;

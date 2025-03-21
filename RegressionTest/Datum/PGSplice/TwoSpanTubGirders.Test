@@ -17,6 +17,7 @@ Compression stress check failed for Service I Limit State in Interval 32 Install
 Compression stress check failed for Service I Limit State in Interval 33 Time Step for Segment 1
 Compression stress check failed for Service I Limit State in Interval 33 Time Step for Segment 1
 Compression stress check failed for Fatigue I Limit State in Interval 33 Time Step for Segment 1
+Tension stress check failed for Service I Limit State in Interval 28 Install Railing System for Deck
 Tension stress check failed for Service III Limit State in Interval 32 Install Overlay for Deck
 Tension stress check failed for Service III Limit State in Interval 33 Time Step for Deck
 Tension stress check failed for Service I Limit State in Interval 3 Prestress Release for Segment 2
@@ -66,6 +67,7 @@ Compression stress check failed for Service I Limit State in Interval 32 Install
 Compression stress check failed for Service I Limit State in Interval 33 Time Step for Segment 1
 Compression stress check failed for Service I Limit State in Interval 33 Time Step for Segment 1
 Compression stress check failed for Fatigue I Limit State in Interval 33 Time Step for Segment 1
+Tension stress check failed for Service I Limit State in Interval 28 Install Railing System for Deck
 Tension stress check failed for Service III Limit State in Interval 32 Install Overlay for Deck
 Tension stress check failed for Service III Limit State in Interval 33 Time Step for Deck
 Tension stress check failed for Service I Limit State in Interval 3 Prestress Release for Segment 2

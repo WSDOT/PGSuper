@@ -1000,8 +1000,15 @@ void CSpecAgentImp::ReportSegmentConcreteTensionStressLimit(const pgsPointOfInte
 
       if (bIsStressingInterval || storageIntervalIdx <= task.intervalIdx && task.intervalIdx < haulIntervalIdx)
       {
-         (*pPara) << _T("Tension stress limit in precompressed tensile zone without bounded reinforcement = N/A") << rptNewLine;
-         (*pPara) << _T("Tension stress limit in areas other than the precompressed tensile zone and without bonded reinforcement = ");
+         if (WBFL::LRFD::BDSManager::Edition::TenthEdition2024 <= WBFL::LRFD::BDSManager::GetEdition())
+         {
+            (*pPara) << _T("Tension stress limit in areas without bonded reinforcement = ");
+         }
+         else
+         {
+            (*pPara) << _T("Tension stress limit in precompressed tensile zone without bounded reinforcement = N/A") << rptNewLine;
+            (*pPara) << _T("Tension stress limit in areas other than the precompressed tensile zone and without bonded reinforcement = ");
+         }
          tension_stress_limit.Report(pPara, pDisplayUnits, concrete_symbol);
          Float64 fLimit = GetSegmentConcreteTensionStressLimit(poi, task, false/*without rebar*/);
          (*pPara) << _T(" = ") << stress_u.SetValue(fLimit) << rptNewLine;
@@ -2356,6 +2363,20 @@ bool CSpecAgentImp::HasConcreteTensionStressLimitWithRebarOption(IntervalIndexTy
 
    // there is no "with rebar" in the other intervals
    return false;
+}
+
+Float64 CSpecAgentImp::GetMaxCoverToUseHigherTensionStressLimit() const
+{
+   if (WBFL::LRFD::BDSManager::Edition::TenthEdition2024 <= WBFL::LRFD::BDSManager::GetEdition())
+   {
+      // Cover limit was added in 10th edition
+      const SpecLibraryEntry* pSpec = GetSpec();
+      return pSpec->GetPrestressedElementCriteria().MaxCoverToUseHigherTensionStressLimit;
+   }
+   else
+   {
+      return 0.0;
+   }
 }
 
 bool CSpecAgentImp::CheckTemporaryStresses() const

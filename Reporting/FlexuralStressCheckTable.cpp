@@ -849,9 +849,16 @@ void CFlexuralStressCheckTable::BuildDeckStressLimitInformation(rptChapter* pCha
 
       auto tension_stress_limit = pLimits->GetDeckConcreteTensionStressLimitParameters(poi, task,false/*without rebar*/);
 
-      if ( bIsTendonStressingInterval )
+      if (bIsTendonStressingInterval)
       {
-         (*pPara) << _T("Tension stress limit in areas other than the precompressed tensile zone = ");
+         if (WBFL::LRFD::BDSManager::Edition::TenthEdition2024 <= WBFL::LRFD::BDSManager::GetEdition())
+         {
+            (*pPara) << _T("Tension stress limit = ");
+         }
+         else
+         {
+            (*pPara) << _T("Tension stress limit in areas other than the precompressed tensile zone = ");
+         }
          tension_stress_limit.Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fc);
          Float64 fLimit = pLimits->GetDeckConcreteTensionStressLimit(poi, task,false/*without rebar*/);
          *pPara  << _T(" = ") << stress_u.SetValue(fLimit) << rptNewLine;
