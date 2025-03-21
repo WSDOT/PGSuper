@@ -399,6 +399,8 @@ private:
 
     std::array<Float64, 2> GetTimeDependentComponentShearDeformation(Float64 loss, BEARINGSHEARDEFORMATIONDETAILS* bearing) const;
 
+    void CheckBearing(WBFL::EngTools::Bearing* brg, WBFL::EngTools::BearingLoads* brg_loads, WBFL::EngTools::BearingCalculator* brg_calc) const;
+
 // IFabricationOptimization
 public:
    virtual bool GetFabricationOptimizationDetails(const CSegmentKey& segmentKey,FABRICATIONOPTIMIZATIONDETAILS* pDetails) const override;
