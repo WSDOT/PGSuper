@@ -82,6 +82,8 @@ rptChapter* CSpecCheckSummaryChapterBuilder::Build(const std::shared_ptr<const W
       GET_IFACE2(pBroker,IArtifact,pIArtifact);
       const pgsGirderArtifact* pGirderArtifact = pIArtifact->GetGirderArtifact(girderKey);
 
+      //placeholder for bearing artifact to be included in spec check summary
+
       CreateContent(pChapter, pBroker, pGirderArtifact);
 
       return pChapter;

@@ -1078,7 +1078,7 @@ BEGIN
     LTEXT           "Static",IDC_UHPC_AGG_SIZE_UNIT,277,248,29,8,NOT WS_VISIBLE
 END
 
-IDD_SPEC_DESIGN DIALOGEX 0, 0, 549, 415
+IDD_SPEC_DESIGN DIALOGEX 0, 0, 549, 460
 STYLE DS_SETFONT | DS_MODALFRAME | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Spec. Checking and Design"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
@@ -1139,42 +1139,45 @@ BEGIN
     EDITTEXT        IDC_SUPPORT_LESS_THAN,166,174,25,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "* girder length",IDC_SUPPORT_LESS_THAN_UNIT,194,176,44,8
     LTEXT           "(For Kansas method only)",IDC_STATIC_K,249,176,97,8
-    GROUPBOX        "Final Check/Design Options",IDC_STATIC,7,196,535,131
-    CONTROL         "Check",IDC_CHECK_A,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,24,273,37,8
-    CONTROL         "Design slab offset",IDC_DESIGN_A,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,63,273,72,8
-    LTEXT           "Live Load Deflection (2.5.2.6.2)",IDC_STATIC,15,209,100,8
-    CONTROL         "Check",IDC_LL_DEFLECTION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,118,208,45,10
-    LTEXT           "Deflection Limit = Span / ",IDC_LL_DEF_STATIC,174,208,82,8
-    EDITTEXT        IDC_DEFLECTION_LIMIT,254,205,40,14,ES_AUTOHSCROLL
-    LTEXT           "Bottom Flange Clearance",IDC_STATIC,15,224,80,8
-    CONTROL         "Check",IDC_CHECK_BOTTOM_FLANGE_CLEARANCE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,118,224,37,10
-    LTEXT           "Min. Clearance",IDC_CLEARANCE_LABEL,174,223,48,8
-    EDITTEXT        IDC_CLEARANCE,233,220,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_CLEARANCE_UNIT,278,223,19,8
-    LTEXT           "Inclination of Tilted Girder",IDC_STATIC,15,239,81,8
-    CONTROL         "Check",IDC_CHECK_INCLINDED_GIRDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,118,239,37,10
-    LTEXT           "Factor of Safety",IDC_INCLINDED_GIRDER_FS_LABEL,173,239,51,8
-    EDITTEXT        IDC_INCLINDED_GIRDER_FS,233,236,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    GROUPBOX        "Harped Strand Design",IDC_STATIC,7,329,535,36
+    GROUPBOX        "Final Check/Design Options",IDC_STATIC,7,230,535,131
+    CONTROL         "Check",IDC_CHECK_A,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,24,307,37,8
+    CONTROL         "Design slab offset",IDC_DESIGN_A,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,63,307,72,8
+    LTEXT           "Live Load Deflection (2.5.2.6.2)",IDC_STATIC,15,243,100,8
+    CONTROL         "Check",IDC_LL_DEFLECTION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,118,242,45,10
+    LTEXT           "Deflection Limit = Span / ",IDC_LL_DEF_STATIC,174,242,82,8
+    EDITTEXT        IDC_DEFLECTION_LIMIT,254,239,40,14,ES_AUTOHSCROLL
+    LTEXT           "Bottom Flange Clearance",IDC_STATIC,15,258,80,8
+    CONTROL         "Check",IDC_CHECK_BOTTOM_FLANGE_CLEARANCE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,118,258,37,10
+    LTEXT           "Min. Clearance",IDC_CLEARANCE_LABEL,174,257,48,8
+    EDITTEXT        IDC_CLEARANCE,233,254,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_CLEARANCE_UNIT,278,257,19,8
+    LTEXT           "Inclination of Tilted Girder",IDC_STATIC,15,273,81,8
+    CONTROL         "Check",IDC_CHECK_INCLINDED_GIRDER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,118,273,37,10
+    LTEXT           "Factor of Safety",IDC_INCLINDED_GIRDER_FS_LABEL,173,273,51,8
+    EDITTEXT        IDC_INCLINDED_GIRDER_FS,233,270,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    GROUPBOX        "Harped Strand Design",IDC_STATIC,7,363,535,36
     CONTROL         "Add Strands Using the Permanent Strand Fill Order",IDC_RADIO_FILL_PERMANENT,
-                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,15,339,193,10
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,15,373,193,10
     CONTROL         "Minimize Number of Harped Strands (If necessary, straight strands may be traded for harped in order to control top tension)",IDC_RADIO2,
-                    "Button",BS_AUTORADIOBUTTON | WS_TABSTOP,15,350,504,10
-    GROUPBOX        "Roadway Finished Elevation Check and Haunch Geometry Check/Design",IDC_ELEVATION_TOLERANCE_GROUP,15,258,512,61
-    LTEXT           "Minimum difference between finished and design roadway surface elevation",IDC_ELEVATION_TOLERANCE_LABEL,37,292,240,8
-    EDITTEXT        IDC_ELEVATION_TOLERANCE,279,289,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "Static",IDC_ELEVATION_TOLERANCE_UNIT,322,292,19,8
-    LTEXT           "(Only applies when explicit haunch depths are input directly, and to adjacent girder bridges without a deck. See documentation for additional details)",IDC_ELEVATION_TOLERANCE_NOTE,37,304,481,8
-    GROUPBOX        "Concrete Strength for Limit State Evaluations",IDC_FC_GROUP,7,367,535,44
+                    "Button",BS_AUTORADIOBUTTON | WS_TABSTOP,15,384,504,10
+    GROUPBOX        "Roadway Finished Elevation Check and Haunch Geometry Check/Design",IDC_ELEVATION_TOLERANCE_GROUP,15,292,512,61
+    LTEXT           "Minimum difference between finished and design roadway surface elevation",IDC_ELEVATION_TOLERANCE_LABEL,37,326,240,8
+    EDITTEXT        IDC_ELEVATION_TOLERANCE,279,323,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "Static",IDC_ELEVATION_TOLERANCE_UNIT,322,326,19,8
+    LTEXT           "(Only applies when explicit haunch depths are input directly, and to adjacent girder bridges without a deck. See documentation for additional details)",IDC_ELEVATION_TOLERANCE_NOTE,37,338,481,8
+    GROUPBOX        "Concrete Strength for Limit State Evaluations",IDC_FC_GROUP,7,401,535,44
     CONTROL         "Use fc at the time of loading (5.14.3.2d and 5.14.1.3.3)",IDC_FC1,
-                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,15,381,188,10
-    CONTROL         "Use specified f'ci and f'c",IDC_FC2,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,15,394,93,10
-    CONTROL         "Use",IDC_USE_90_DAY_STRENGTH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,120,394,25,10
-    EDITTEXT        IDC_90_DAY_STRENGTH_FACTOR,150,392,36,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "% of f'c for stress combinations after 90 days for slow curing concretes (5.12.3.2.5)",IDC_90_DAY_STRENGTH_LABEL,188,395,278,8
-    COMBOBOX        IDC_A_ROUNDING_CB,136,270,163,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    EDITTEXT        IDC_A_ROUNDING_EDIT,299,270,40,14,ES_RIGHT | ES_AUTOHSCROLL
-    LTEXT           "in",IDC_A_ROUNDING_UNIT,342,273,23,8
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,15,415,188,10
+    CONTROL         "Use specified f'ci and f'c",IDC_FC2,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,15,428,93,10
+    CONTROL         "Use",IDC_USE_90_DAY_STRENGTH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,120,428,25,10
+    EDITTEXT        IDC_90_DAY_STRENGTH_FACTOR,150,426,36,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "% of f'c for stress combinations after 90 days for slow curing concretes (5.12.3.2.5)",IDC_90_DAY_STRENGTH_LABEL,188,429,278,8
+    COMBOBOX        IDC_A_ROUNDING_CB,136,304,163,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_A_ROUNDING_EDIT,299,304,40,14,ES_RIGHT | ES_AUTOHSCROLL
+    LTEXT           "in",IDC_A_ROUNDING_UNIT,342,307,23,8
+    GROUPBOX        "Elastomeric Bearing Check (LRFD 14.7.5 and 14.7.6)",IDC_LIFTING_GROUP2,7,197,535,30
+    CONTROL         "Check Bearing (See Bearings tab for details)",IDC_CHECK_BEARING,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,210,155,8
 END
 
 IDD_SPEC_SHEAR DIALOGEX 0, 0, 431, 377
@@ -2025,7 +2028,7 @@ BEGIN
     LTEXT           "This input generally isn't used. In the AASHTO LRFD 1st Edition, 1994, Article 5.8.4 required a minimum of four bars corssed the interface plane with the deck. Extra bars were commonly added to the top flange",IDC_STATIC,7,107,295,47
 END
 
-IDD_SPEC_BEARINGS DIALOGEX 0, 0, 379, 114
+IDD_SPEC_BEARINGS DIALOGEX 0, 0, 379, 328
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_CHILD | WS_CAPTION | WS_SYSMENU
 CAPTION "Bearings"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -2033,12 +2036,51 @@ BEGIN
     GROUPBOX        "Dynamic Load Allowance [LRFD 14.4.1]",IDC_STATIC,7,7,365,43
     CONTROL         "Include dynamic load allowance (impact) when computing bearing reactions and rotations",IDC_BEARING_REACTION_IMPACT,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,26,300,10
-    GROUPBOX        "Tapered Sole Plates [LRFD 14.8.2]",IDC_STATIC,7,52,365,55
+    GROUPBOX        "Tapered Sole Plates [LRFD 14.8.2]",IDC_STATIC,7,50,365,55
     CONTROL         "Alert if tapered sole plates are required",IDC_TAPERED_SOLE_PLATE_REQUIRED,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,69,142,10
     LTEXT           "Alert when the inclination of the underside of the girder to the horizontal exceeds",IDC_STATIC,27,86,262,8
     EDITTEXT        IDC_TAPERED_SOLE_PLATE_THRESHOLD,293,84,40,14,ES_AUTOHSCROLL
     LTEXT           "rad",IDC_STATIC,339,86,12,8
+    GROUPBOX        "Bearing Design Method",IDC_STATIC,7,107,181,47
+    CONTROL         "Method A [LRFD 14.7.6]",IDC_BEARING_METHOD_A,"Button",BS_AUTORADIOBUTTON | WS_GROUP,40,119,90,11
+    CONTROL         "Method B [LRFD 14.7.5]",IDC_BEARING_METHOD_B,"Button",BS_AUTORADIOBUTTON,40,135,90,11
+    GROUPBOX        "Elastomer Shear Modulus",IDC_STATIC,191,107,181,47
+    LTEXT           "Minimum Limit",IDC_STATIC,241,119,50,8
+    EDITTEXT        IDC_SHEAR_MOD_MIN_LIMIT,298,117,40,14,ES_AUTOHSCROLL
+    LTEXT           "Unit",IDC_SHEAR_MOD_MIN_LIMIT_UNIT,342,120,12,8
+    LTEXT           "Maximum Limit",IDC_STATIC,241,136,50,8
+    EDITTEXT        IDC_SHEAR_MOD_MAX_LIMIT,298,134,40,14,ES_AUTOHSCROLL
+    LTEXT           "Unit",IDC_SHEAR_MOD_MAX_LIMIT_UNIT,342,135,12,8
+    GROUPBOX        "Bearing Geometry Limits",IDC_STATIC,7,156,365,109
+    CONTROL         "Required intermediate elastomer layer thickness: ",IDC_REQ_INT_LAYER_THICK_CHECK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,128,164,166,10
+    EDITTEXT        IDC_REQ_INT_LAYER_THICK,297,162,40,14,ES_AUTOHSCROLL
+    LTEXT           "Unit",IDC_REQ_INT_LAYER_THICK_UNIT,341,165,12,8
+    CONTROL         "Minimum total bearing height:",IDC_MIN_BEARING_HEIGHT_CHECK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,185,185,108,10
+    EDITTEXT        IDC_MIN_BEARING_HEIGHT,297,183,40,14,ES_AUTOHSCROLL
+    LTEXT           "Unit",IDC_MIN_BEARING_HEIGHT_UNIT,341,185,12,8
+    CONTROL         "Minimum edge of bearing to edge of girder bottom flange distance (WF/DG):",IDC_MIN_BEARING_GIRDER_EDGE_CHECK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,39,206,252,10
+    EDITTEXT        IDC_MIN_BEARING_GIRDER_EDGE,298,204,40,14,ES_AUTOHSCROLL
+    LTEXT           "Unit",IDC_MIN_BEARING_GIRDER_EDGE_UNIT,341,206,12,8
+    CONTROL         "Maximum edge of bearing to edge of girder bottom flange distance (WF/DG):",IDC_MAX_BEARING_GIRDER_EDGE_CHECK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,40,227,252,10
+    EDITTEXT        IDC_MAX_BEARING_GIRDER_EDGE,299,225,40,14,ES_AUTOHSCROLL
+    LTEXT           "Unit",IDC_MAX_BEARING_GIRDER_EDGE_UNIT,342,227,12,8
+    CONTROL         "Required edge of bearing to edge of girder bottom flange distance (I, Bulb-Tee, Tub):",IDC_REQ_BEARING_GIRDER_EDGE_CHECK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,246,282,10
+    EDITTEXT        IDC_REQ_BEARING_GIRDER_EDGE,298,244,40,14,ES_AUTOHSCROLL
+    LTEXT           "Unit",IDC_REQ_BEARING_GIRDER_EDGE_UNIT,341,246,12,8
+    GROUPBOX        "Warnings",IDC_STATIC,7,266,365,55
+    LTEXT           "Maximum Live Load Deflection Limit:",IDC_STATIC,175,278,119,8
+    EDITTEXT        IDC_MAX_LL_DEF_LIMIT,297,276,40,14,ES_AUTOHSCROLL
+    LTEXT           "Unit",IDC_MAX_LL_DEF_LIMIT_UNIT,341,278,12,8
+    CONTROL         "Practical Service Load Limit:",IDC_MAX_TOTAL_BEARING_LOAD_CHECK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,191,297,99,10
+    EDITTEXT        IDC_MAX_BEARING_TL,296,296,40,14,ES_AUTOHSCROLL
+    LTEXT           "Unit",IDC_MAX_TL_UNIT,340,298,12,8
 END
 
 IDD_PCIUHPC_CONCRETE DIALOGEX 0, 0, 251, 130
@@ -2294,7 +2336,7 @@ BEGIN
         VERTGUIDE, 15
         VERTGUIDE, 26
         TOPMARGIN, 7
-        BOTTOMMARGIN, 408
+        BOTTOMMARGIN, 453
     END
 
     IDD_SPEC_SHEAR, DIALOG
@@ -2478,7 +2520,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 372
         TOPMARGIN, 7
-        BOTTOMMARGIN, 107
+        BOTTOMMARGIN, 321
     END
 
     IDD_PCIUHPC_CONCRETE, DIALOG
