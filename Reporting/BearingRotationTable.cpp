@@ -700,8 +700,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
 
 
     // get poi where pier rotations occur
-    PoiList vPoi;
-    std::vector<std::unique_ptr<pgsPointOfInterest>> vPoi2;
+    std::vector<pgsPointOfInterest> vPoi;
     std::vector<CGirderKey> vGirderKeys;
     GroupIndexType startGroup = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
     GroupIndexType endGroup = (girderKey.groupIndex == ALL_GROUPS ? pBridge->GetGirderGroupCount() - 1 : startGroup);
@@ -732,8 +731,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
 
                 Float64 Xgp;
                 VERIFY(pBridge->GetPierLocation(thisGirderKey, pierIdx, &Xgp));
-                vPoi2.push_back(std::make_unique<pgsPointOfInterest>(pPOI->ConvertGirderPathCoordinateToPoi(thisGirderKey, Xgp)));
-                vPoi.push_back(*vPoi2.back());
+                vPoi.push_back(pPOI->ConvertGirderPathCoordinateToPoi(thisGirderKey, Xgp));
             }
         }
     }

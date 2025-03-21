@@ -102,8 +102,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
    p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
    // get poi where pier rotations occur
-   PoiList vPoi;
-   std::vector<std::unique_ptr<pgsPointOfInterest>> vPoi2;
+   std::vector<pgsPointOfInterest> vPoi;
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(girderKey.girderIndex, startGroup, endGroup, &vGirderKeys);
    for (const auto& thisGirderKey : vGirderKeys)
@@ -132,8 +131,7 @@ rptRcTable* CProductRotationTable::Build(IBroker* pBroker,const CGirderKey& gird
 
                Float64 Xgp;
                VERIFY(pBridge->GetPierLocation(thisGirderKey, pierIdx, &Xgp));
-               vPoi2.push_back(std::make_unique<pgsPointOfInterest>(pPOI->ConvertGirderPathCoordinateToPoi(thisGirderKey, Xgp)));
-               vPoi.push_back(*vPoi2.back());
+               vPoi.push_back(pPOI->ConvertGirderPathCoordinateToPoi(thisGirderKey, Xgp));
            }
        }
    }
