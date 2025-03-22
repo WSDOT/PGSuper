@@ -131,7 +131,7 @@ void CTendonStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
          (*p_table)(3, 0) << _T("Elsewhere along length of member away from anchorages and couplers immediately after anchor set. (") << x << RPT_FPU << _T(")");
 
          x = pLimits->GetSegmentTendonStressLimitCoefficientAfterLosses(segmentKey);
-         (*p_table)(4, 0) << _T("At service limit state after losses, ") << RPT_FPE << _T(" (") << x << RPT_FPY << _T(")");
+         (*p_table)(4, 0) << _T("At service limit state") << WBFL::LRFD::LrfdLosses10th(WBFL::LRFD::ltService) << _T(", ") << RPT_FPE << _T(" (") << x << RPT_FPY << _T(")");
 
          (*p_table)(0, 1) << COLHDR(_T("Stress") << rptNewLine << _T("Limit"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
          (*p_table)(0, 2) << COLHDR(_T("Tendon") << rptNewLine << _T("Stress"), rptStressUnitTag, pDisplayUnits->GetStressUnit());
@@ -236,7 +236,7 @@ void CTendonStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
       (*p_table)(3,0) << _T("Elsewhere along length of member away from anchorages and couplers immediately after anchor set. (") << x << RPT_FPU << _T(")");
 
       x = pLimits->GetGirderTendonStressLimitCoefficientAfterLosses(girderKey);
-      (*p_table)(4,0) << _T("At service limit state after losses, ") << RPT_FPE << _T(" (") << x << RPT_FPY << _T(")");
+      (*p_table)(4,0) << _T("At service limit state") << WBFL::LRFD::LrfdLosses10th(WBFL::LRFD::ltService) << _T(", ") << RPT_FPE << _T(" (") << x << RPT_FPY << _T(")");
    
       (*p_table)(0,1) << COLHDR(_T("Stress") << rptNewLine << _T("Limit"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       (*p_table)(0,2) << COLHDR(_T("Tendon") << rptNewLine << _T("Stress"), rptStressUnitTag, pDisplayUnits->GetStressUnit() );

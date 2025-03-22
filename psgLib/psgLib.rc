@@ -12,7 +12,8 @@
 #include <WBFLGrid.h>
 #if !defined _NOGRID
 #include "grid\gxresrc.h"
-#endif
+#endif
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -1672,7 +1673,7 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "Prestressed Elements"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Stress Limits for Temporary Stresses before Losses (LRFD 5.9.4.1, 5.12.3.4.3)",IDC_GTEMP,7,7,597,77
+    GROUPBOX        "Stress Limits for Temporary Stresses (LRFD 5.9.4.1, 5.12.3.4.3)",IDC_GTEMP,7,7,597,77
     LTEXT           "Compressive Stress",IDC_STATIC,15,22,68,8
     EDITTEXT        IDC_RELEASE_COMPRESSION,86,20,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
     LTEXT           "f'ci",IDC_STATIC,129,22,19,8
@@ -1687,7 +1688,7 @@ BEGIN
     LTEXT           "In areas with sufficient bonded reinforcement",IDC_STATIC,22,68,147,8
     EDITTEXT        IDC_RELEASE_TENSION_WITH_REBAR,176,66,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "sqrt(f'ci (MPa))",IDC_RELEASE_TENSION_WITH_REBAR_UNIT,221,68,79,8
-    GROUPBOX        "Stress Limits at Service Limit State after Losses (LRFD 5.9.4.2, 5.12.3.4.3)",IDC_GPERM,7,87,597,120
+    GROUPBOX        "Stress Limits at Service Limit State (LRFD 5.9.4.2, 5.12.3.4.3)",IDC_GPERM,7,87,597,120
     LTEXT           "Compressive Stress (Effective Prestress + Permanent Loads)",IDC_STATIC,15,104,204,8
     EDITTEXT        IDC_SERVICE_COMPRESSION,274,100,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
     LTEXT           "f'c",IDC_STATIC,318,103,8,8
@@ -1828,7 +1829,7 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "Closure Joints"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Stress Limits for Temporary Stresses before Losses (LRFD 5.9.4.1, 5.14.1.3.2d)",IDC_GTEMP,7,7,504,140
+    GROUPBOX        "Stress Limits for Temporary Stresses (LRFD 5.9.4.1, 5.14.1.3.2d)",IDC_GTEMP,7,7,504,140
     LTEXT           "Compressive Stress",IDC_STATIC,15,23,68,8
     EDITTEXT        IDC_RELEASE_COMPRESSION,86,20,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
     LTEXT           "f'ci",IDC_STATIC,129,22,19,8
@@ -1846,7 +1847,7 @@ BEGIN
     LTEXT           "In areas with minimum bonded auxiliary reinforcement",IDC_STATIC,23,124,187,8
     EDITTEXT        IDC_RELEASE_TENSION_WITH_REBAR,213,121,40,14,ES_RIGHT | ES_AUTOHSCROLL
     LTEXT           "sqrt(f'ci (MPa))",IDC_RELEASE_TENSION_WITH_REBAR_UNIT,257,124,107,8
-    GROUPBOX        "Stress Limits at Service Limit State after Losses (LRFD 5.9.4.2, 5.14.1.3.2d)",IDC_GPERM,7,155,504,202
+    GROUPBOX        "Stress Limits at Service Limit State (LRFD 5.9.4.2, 5.14.1.3.2d)",IDC_GPERM,7,155,504,202
     LTEXT           "Compressive Stress (Effective Prestress + Permanent Loads)",IDC_STATIC,15,174,204,8
     EDITTEXT        IDC_SERVICE_COMPRESSION,274,170,40,14,ES_RIGHT | ES_AUTOHSCROLL | WS_GROUP
     LTEXT           "f'c",IDC_STATIC,318,173,8,8
@@ -3167,7 +3168,8 @@ LANGUAGE 9, 1
 #endif
 #if !defined _NOGRID
 #include "grid\gxres.rc"
-#endif
+#endif
+
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
 

@@ -35,14 +35,14 @@ bool PrestressedElementCriteria::Compare(const PrestressedElementCriteria& other
       TensionStressLimit_OtherAreas_WithoutReinforcement_BeforeLosses != other.TensionStressLimit_OtherAreas_WithoutReinforcement_BeforeLosses)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Stress Limits for Temporary Stresses before Losses are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Stress Limits for Temporary Stresses are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
    if(!IsEqual(MaxCoverToUseHigherTensionStressLimit, other.MaxCoverToUseHigherTensionStressLimit))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Cover Limits for Temporary Stresses before Losses are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Cover Limits for Temporary Stresses are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -63,7 +63,7 @@ bool PrestressedElementCriteria::Compare(const PrestressedElementCriteria& other
       TensionStressLimit_ServiceIII_InPTZ_SevereCorrosionConditions_AfterLosses != other.TensionStressLimit_ServiceIII_InPTZ_SevereCorrosionConditions_AfterLosses)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Stress Limits at Service Limit State after Losses are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Stress Limits at Service Limit State are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -116,7 +116,7 @@ void PrestressedElementCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* 
 
    pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
    *pChapter << pPara;
-   *pPara << _T("Concrete Stress Limits - Temporary Stresses before Losses, LRFD 5.9.2.3.1") << rptNewLine;
+   *pPara << _T("Concrete Stress Limits - Temporary Stresses ")<< WBFL::LRFD::LrfdLosses10th(WBFL::LRFD::ltTemporary) << _T("- LRFD 5.9.2.3.1") << rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;
@@ -131,7 +131,7 @@ void PrestressedElementCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* 
    }
    pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
    *pChapter << pPara;
-   *pPara << _T("Concrete Stress Limits - Stresses at Service Limit State after Losses, LRFD 5.9.2.3.2") << rptNewLine;
+   *pPara << _T("Concrete Stress Limits - Stresses at Service Limit State") << WBFL::LRFD::LrfdLosses10th(WBFL::LRFD::ltService) << _T("(LRFD 5.9.2.3.2") << rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;

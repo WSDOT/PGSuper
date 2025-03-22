@@ -226,11 +226,11 @@ void CFlexuralStressCheckTable::BuildSectionHeading(rptChapter* pChapter, IBroke
 
       if (bIsStressingInterval || (storageIntervalIdx <= task.intervalIdx && task.intervalIdx < haulIntervalIdx) )
       {
-         *pPara << _T("For Temporary Stresses before Losses (LRFD ") << WBFL::LRFD::LrfdCw8th(_T("5.9.4.1"), _T("5.9.2.3.1")) << _T(")") << rptNewLine;
+         *pPara << _T("For Temporary Stresses") << WBFL::LRFD::LrfdLosses10th(WBFL::LRFD::ltTemporary) << _T("(LRFD )") << WBFL::LRFD::LrfdCw8th(_T("5.9.4.1"), _T("5.9.2.3.1")) << _T(")") << rptNewLine;
       }
       else
       {
-         *pPara << _T("Stresses at Service Limit State after Losses (LRFD ") << WBFL::LRFD::LrfdCw8th(_T("5.9.4.2"), _T("5.9.2.3.2")) << _T(")") << rptNewLine;
+         *pPara << _T("Stresses at Service Limit State") << WBFL::LRFD::LrfdLosses10th(WBFL::LRFD::ltService) << _T("(LRFD )") << WBFL::LRFD::LrfdCw8th(_T("5.9.4.2"), _T("5.9.2.3.2")) << _T(")") << rptNewLine;
       }
 
       if ( task.stressType == pgsTypes::Compression )

@@ -47,7 +47,7 @@ bool ClosureJointCriteria::Compare(const ClosureJointCriteria& other, const Spec
       TensionStressLimit_OtherAreas_WithReinforcement_BeforeLosses != other.TensionStressLimit_OtherAreas_WithReinforcement_BeforeLosses)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Closure Joint Stress Limits for Temporary Stresses before Losses are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Closure Joint Stress Limits for Temporary Stresses are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -64,7 +64,7 @@ bool ClosureJointCriteria::Compare(const ClosureJointCriteria& other, const Spec
       TensionStressLimit_OtherAreas_WithReinforcement_AfterLosses != other.TensionStressLimit_OtherAreas_WithReinforcement_AfterLosses)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Closure Joint Stress Limits at Service Limit State after Losses are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Closure Joint Stress Limits at Service Limit State are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -86,7 +86,7 @@ void ClosureJointCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDispl
 
    pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
    *pChapter << pPara;
-   *pPara << _T("Stress Limits for Temporary Stresses before Losses (LRFD 5.9.4.1, 5.14.1.3.2d)") << rptNewLine;
+   *pPara << _T("Stress Limits for Temporary Stresses (LRFD 5.9.4.1, 5.14.1.3.2d)") << rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;
@@ -109,7 +109,7 @@ void ClosureJointCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDispl
 
    pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
    *pChapter << pPara;
-   *pPara << _T("Stress Limits at Service Limit State after Losses (LRFD 5.9.4.2, 5.14.1.3.2d)") << rptNewLine;
+   *pPara << _T("Stress Limits at Service Limit State") << WBFL::LRFD::LrfdLosses10th(WBFL::LRFD::ltService) << _T("(LRFD 5.9.4.2, 5.14.1.3.2d)") << rptNewLine;
    pPara = new rptParagraph;
    *pChapter << pPara;
    *pPara << _T("Compressive stress") << rptNewLine;

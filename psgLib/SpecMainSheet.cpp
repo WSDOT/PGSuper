@@ -264,7 +264,7 @@ void CSpecMainSheet::ExchangeGirderData(CDataExchange* pDX)
 
    if (pDX->m_bSaveAndValidate && m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_WithReinforcement_BeforeLosses.Coefficient < m_Entry.m_pImpl->m_PrestressedElementCriteria.TensionStressLimit_OtherAreas_WithoutReinforcement_BeforeLosses.Coefficient)
    {
-      AfxMessageBox(_T("Stress limits for Temporary Stresses before Losses (LRFD 5.9.4.1): Tensile stress limit with bonded reinforcement must be greater than or equal to than without"),MB_OK | MB_ICONWARNING);
+      AfxMessageBox(_T("Stress limits for Temporary Stresses (LRFD 5.9.4.1): Tensile stress limit with bonded reinforcement must be greater than or equal to than without"),MB_OK | MB_ICONWARNING);
       pDX->Fail();
    }
 
