@@ -4,7 +4,7 @@ Define project criteria for specification compliance checking of prestressed ele
 
 The parameters on this tab are stress limits. They can be set to match or deviate from AASHTO.
 
-Stress Limits for Temporary Stresses before Losses (LRFD 5.9.2.3.1 (*pre-2017: 5.9.4.1*) )
+Stress Limits for Temporary Stresses (LRFD 5.9.2.3.1 (*pre-2017: 5.9.4.1*) )
 -----------------------------------------------------------------
 The information in this section allows you to deviate from LRFD 5.9.2.3.1.
 
@@ -17,7 +17,7 @@ Max cover for reinforcement to always resist tension force (5.9.2.3.1b) | Enter 
 
 > NOTE: See @ref tg_longitudinal_reinforcement in the @ref technical_guide for discussion describing how longitudinal reinforcement in the girder factors into the determination of the tensile stress limit.
 
-Stress Limits at Service Limit States after Losses (LRFD 5.9.2.3.2 (*pre-2017: 5.9.4.2*))
+Stress Limits at Service Limit States (LRFD 5.9.2.3.2 (*pre-2017: 5.9.4.2*))
 -----------------------------------------------------------------
 The information in this section allows you to deviate from LRFD 5.9.2.3.2
 

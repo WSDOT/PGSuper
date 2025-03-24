@@ -42,7 +42,7 @@ V<sub>p</sub> = Shear resistance provided by vertical component of prestressing<
 
 Allowable Tensile Stress for Temporary Conditions
 ----------------------------------------------------
-LRFD 5.9.2.3.1b (*pre-2017: 5.9.4.1.2*), "Temporary Tensile Stress Limits in Prestressed Concrete before Losses, Fully Prestressed Components", allows tensile stress limits for temporary conditions to be increased if sufficient bonded reinforcing bars and/or prestressing steel are provided to resist the tensile force in the concrete computed assuming an uncracked section. The higher allowable limits may be specified for the following cases: 
+LRFD 5.9.2.3.1b (*pre-2017: 5.9.4.1.2*), "Temporary Tensile Stress Limits in Prestressed Concrete, Fully Prestressed Components", allows tensile stress limits for temporary conditions to be increased if sufficient bonded reinforcing bars and/or prestressing steel are provided to resist the tensile force in the concrete computed assuming an uncracked section. The higher allowable limits may be specified for the following cases: 
 * Release in the casting yard (See Project Criteria - @ref ug_library_dialogs_project_criteria_design_and_spec_checking tab).
 * During lifting (See Project Criterial - @ref ug_library_dialogs_project_criteria_lifting tab);
 * During hauling (See Project Criterial - @ref ug_library_dialogs_project_criteria_hauling tab);
