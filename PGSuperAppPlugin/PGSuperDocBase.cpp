@@ -1343,16 +1343,18 @@ void CPGSDocBase::EditBridgeViewSettings(int nPage)
    }
 }
 
-//#include <psglib\librarymanager.h> // remove unused project library entries
 void CPGSDocBase::ModifyTemplate(LPCTSTR strTemplate)
 {
+   // Secret keys - use Alt+Ctrl+U to update PGSuper
+   //  and Alt+Ctrl+I to update PGSplice
+   // 
    // called during UpdateTemplates
    // add code here, or override in a parent class to
    // add code to modify the template
    // For example, if you want to ensure that overlay depth in all templates
    // is a specific value, you can code that here.
 
-   // Set future wearing surace to 35 psf per Design Memo 06-2017 (9/12/2017)
+   // Set future wearing surface to 35 psf per Design Memo 06-2017 (9/12/2017)
    //GET_IFACE(IBridgeDescription, pIBridgeDesc);
    //CDeckDescription2 deck = *(pIBridgeDesc->GetDeckDescription());
    //deck.bInputAsDepthAndDensity = false;
@@ -1445,6 +1447,12 @@ void CPGSDocBase::ModifyTemplate(LPCTSTR strTemplate)
    //   pRatingSpec->SetAllowableTensionCoefficient(ratingType, coefficient, true, WBFL::Units::ConvertToSysUnits(0.6, WBFL::Units::Measure::KSI));
    //}
 
+   //// Adds the WA-105 truck to all the templates
+   //GET_IFACE(ILiveLoads, pLiveLoads);
+   //auto names = pLiveLoads->GetLiveLoadNames(pgsTypes::lltLegalRating_Routine);
+   //names.push_back(_T("WA-105"));
+   //pLiveLoads->SetLiveLoadNames(pgsTypes::lltLegalRating_Routine, names);
+
    //
    // Copy the updated template into the source tree
    //
@@ -1454,10 +1462,10 @@ void CPGSDocBase::ModifyTemplate(LPCTSTR strTemplate)
 
    //CString templateFileName(strTemplate);
 
-   //// for PGSuper templates
+   // for PGSuper templates
    //strAppData.Format(_T("%s\\PGSuperV3\\WorkgroupTemplates"), path);
-   //templateFileName.Replace(strAppData, _T("F:\\ARP\\PGSuper\\Configurations\\PGSuper\\AASHTO"));
-   //templateFileName.Replace(strAppData, _T("F:\\ARP\\PGSuper\\Configurations\\PGSuper\\WSDOT"));
+   //templateFileName.Replace(strAppData, _T("F:\\ARP\\PGSuper\\Configurations\\PGSuper\\AASHTO")); // uncomment if updating AASHTO configurations
+   //templateFileName.Replace(strAppData, _T("F:\\ARP\\PGSuper\\Configurations\\PGSuper\\WSDOT")); // uncomment if updating WSDOT configurations
 
    //// for PGSplice templates
    //strAppData.Format(_T("%s\\PGSplice\\WorkgroupTemplates"), path);
@@ -1503,7 +1511,7 @@ BOOL CPGSDocBase::UpdateTemplates(IProgress* pProgress,LPCTSTR lpszDir)
          return FALSE;
       }
 
-      ModifyTemplate(strTemplate); // allow for programatic changes to the bridge data before saving
+      ModifyTemplate(strTemplate); // allow for programmatic changes to the bridge data before saving
 
       CEAFBrokerDocument::SaveTheDocument(strTemplate);
 
