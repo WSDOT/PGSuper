@@ -31,7 +31,6 @@
 
 #include "PGSuperUnits.h"
 
-#include <Reporting\ReportNotes.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <PgsExt\GirderArtifact.h>
 

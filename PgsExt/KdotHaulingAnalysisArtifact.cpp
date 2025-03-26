@@ -30,7 +30,6 @@
 #include <IFace\Project.h>
 #include <IFace\PointOfInterest.h>
 
-#include <Reporting\ReportNotes.h>
 #include <EAF\EAFDisplayUnits.h>
 
 #include <psgLib/HaulingCriteria.h>

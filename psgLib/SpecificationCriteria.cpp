@@ -22,7 +22,6 @@
 #include "StdAfx.h"
 #include <psgLib/SpecificationCriteria.h>
 #include <psgLib/LibraryEntryDifferenceItem.h>
-#include <Reporting\ReportNotes.h>
 
 //#include <EAF/EAFDisplayUnits.h>
 #include <boost\algorithm\string\replace.hpp>
@@ -64,8 +63,6 @@ void SpecificationCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisp
 
    *pPara << Bold(_T("Description: ")) << GetDescription() << rptNewLine;
    *pPara << Bold(_T("Based on: "));
-   
-   ReportNotes::GetSpecificationCompleteInfo(pPara);
 
    if (Units == WBFL::LRFD::BDSManager::Units::SI)
    {
