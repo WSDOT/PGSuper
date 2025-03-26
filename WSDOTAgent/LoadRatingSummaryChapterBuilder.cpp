@@ -277,8 +277,8 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(const std::shared_ptr<const 
       {
          (*pTable)(row,1) << (*nameIter) << rptNewLine;
       }
-      (*pTable)(row,1) << _T("");
-      (*pTable)(row,2) << _T("AASHTO Legal Loads");
+      (*pTable)(row, 1) << _T("");
+      (*pTable)(row, 2) << _T("AASHTO Legal Loads") << rptNewLine << _T("WA-105");
       row++;
 
       (*pTable)(row,0) << _T("Legal Load Rating: Live Loads for Specialized Hauling Vehicles");
