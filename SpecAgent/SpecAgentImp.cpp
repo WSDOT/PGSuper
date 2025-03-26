@@ -2365,6 +2365,20 @@ bool CSpecAgentImp::HasConcreteTensionStressLimitWithRebarOption(IntervalIndexTy
    return false;
 }
 
+Float64 CSpecAgentImp::GetMaxCoverToUseHigherTensionStressLimit() const
+{
+   if (WBFL::LRFD::BDSManager::Edition::TenthEdition2024 <= WBFL::LRFD::BDSManager::GetEdition())
+   {
+      // Cover limit was added in 10th edition
+      const SpecLibraryEntry* pSpec = GetSpec();
+      return pSpec->GetPrestressedElementCriteria().MaxCoverToUseHigherTensionStressLimit;
+   }
+   else
+   {
+      return 0.0;
+   }
+}
+
 bool CSpecAgentImp::CheckTemporaryStresses() const
 {
    // I hate using the IDocumentType interface, but I don't

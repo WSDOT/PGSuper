@@ -331,6 +331,10 @@ interface IConcreteStressLimits : IUnknown
    /// otherwise it is for a closure joint and segmentKey is the closure key
    virtual bool HasConcreteTensionStressLimitWithRebarOption(IntervalIndexType intervalIdx,bool bInPTZ,bool bSegment,const CSegmentKey& segmentKey) const = 0;
 
+   /// @brief Max cover to always be used in resisting tensile forces to compute higher tensile limit. Note that HasConcreteTensionStressLimitWithRebarOption should
+   /// be called prior to insure that the cover value can be used.
+   virtual Float64 GetMaxCoverToUseHigherTensionStressLimit() const = 0;
+
    /// @brief Returns true if the girder stress checks are to include intermediate, temporary loading conditions
    virtual bool CheckTemporaryStresses() const = 0;
 

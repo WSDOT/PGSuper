@@ -35,7 +35,14 @@ bool PrestressedElementCriteria::Compare(const PrestressedElementCriteria& other
       TensionStressLimit_OtherAreas_WithoutReinforcement_BeforeLosses != other.TensionStressLimit_OtherAreas_WithoutReinforcement_BeforeLosses)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Stress Limits for Temporary Stresses before Losses are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Stress Limits for Temporary Stresses are different"), _T(""), _T("")));
+      if (bReturnOnFirstDifference) return false;
+   }
+
+   if(!IsEqual(MaxCoverToUseHigherTensionStressLimit, other.MaxCoverToUseHigherTensionStressLimit))
+   {
+      bSame = false;
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Cover Limits for Temporary Stresses are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -56,7 +63,7 @@ bool PrestressedElementCriteria::Compare(const PrestressedElementCriteria& other
       TensionStressLimit_ServiceIII_InPTZ_SevereCorrosionConditions_AfterLosses != other.TensionStressLimit_ServiceIII_InPTZ_SevereCorrosionConditions_AfterLosses)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Stress Limits at Service Limit State after Losses are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Stress Limits at Service Limit State are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 
@@ -101,13 +108,15 @@ bool PrestressedElementCriteria::Compare(const PrestressedElementCriteria& other
 
 void PrestressedElementCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
 {
+   INIT_UV_PROTOTYPE(rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), true);
+
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara << _T("Stress Limits for Concrete - Prestressed Members, LRFD 5.9.2.3") << rptNewLine;
 
    pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
    *pChapter << pPara;
-   *pPara << _T("Concrete Stress Limits - Temporary Stresses before Losses, LRFD 5.9.2.3.1") << rptNewLine;
+   *pPara << _T("Concrete Stress Limits - Temporary Stresses ")<< WBFL::LRFD::LrfdLosses10th(WBFL::LRFD::ltTemporary) << _T("- LRFD 5.9.2.3.1") << rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;
@@ -116,10 +125,13 @@ void PrestressedElementCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* 
    *pPara << _T("- Tension stress in areas other than the precompressed tensile zone and without bonded reinforcement : "); TensionStressLimit_WithReinforcement_BeforeLosses.Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fci); *pPara << rptNewLine;
    *pPara << _T("- Tension stress in areas with bonded reinforcement (reinforcing bars or prestress steel sufficient to resist the tensile force in the concrete computed assuming an uncracked section, where reinforcement is proportioned using a stress of 0.5") << RPT_FY << _T(", not to exceed 30.0 ksi : ");
    TensionStressLimit_OtherAreas_WithoutReinforcement_BeforeLosses.Report(pPara, pDisplayUnits, TensionStressLimit::ConcreteSymbol::fci); *pPara << rptNewLine;
-
+   if (WBFL::LRFD::BDSManager::Edition::TenthEdition2024 <= WBFL::LRFD::BDSManager::GetEdition())
+   {
+      *pPara << _T("Maximum cover needed for reinforcement bars to resist tensile force required to use higher stress limit : ") << dim.SetValue(MaxCoverToUseHigherTensionStressLimit) << rptNewLine;
+   }
    pPara = new rptParagraph(rptStyleManager::GetSubheadingStyle());
    *pChapter << pPara;
-   *pPara << _T("Concrete Stress Limits - Stresses at Service Limit State after Losses, LRFD 5.9.2.3.2") << rptNewLine;
+   *pPara << _T("Concrete Stress Limits - Stresses at Service Limit State") << WBFL::LRFD::LrfdLosses10th(WBFL::LRFD::ltService) << _T("(LRFD 5.9.2.3.2") << rptNewLine;
 
    pPara = new rptParagraph;
    *pChapter << pPara;
@@ -168,7 +180,7 @@ void PrestressedElementCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* 
 
 void PrestressedElementCriteria::Save(WBFL::System::IStructuredSave* pSave) const
 {
-   pSave->BeginUnit(_T("PrestressedElementCriteria"), 1.0);
+   pSave->BeginUnit(_T("PrestressedElementCriteria"), 2.0);
 
    pSave->BeginUnit(_T("BeforeLosses"), 1.0);
 
@@ -176,6 +188,8 @@ void PrestressedElementCriteria::Save(WBFL::System::IStructuredSave* pSave) cons
    TensionStressLimit_WithReinforcement_BeforeLosses.Save(_T("TensionStressLimit_WithReinforcement"), pSave);
 
    TensionStressLimit_OtherAreas_WithoutReinforcement_BeforeLosses.Save(_T("TensionStressLimit_WithoutReinforcement"), pSave);
+
+   pSave->Property(_T("MaxCoverToUseHigherTensionStressLimit"), MaxCoverToUseHigherTensionStressLimit);
 
    pSave->EndUnit(); // Before losses
 
@@ -220,12 +234,18 @@ void PrestressedElementCriteria::Load(WBFL::System::IStructuredLoad* pLoad)
 
    if (!pLoad->BeginUnit(_T("PrestressedElementCriteria"))) THROW_LOAD(InvalidFileFormat, pLoad);
 
+   Float64 elversion = pLoad->GetVersion();
 
    if (!pLoad->BeginUnit(_T("BeforeLosses")))  THROW_LOAD(InvalidFileFormat, pLoad);
 
    if (!pLoad->Property(_T("CompressionStressCoefficient"), &CompressionStressCoefficient_BeforeLosses)) THROW_LOAD(InvalidFileFormat, pLoad);
    TensionStressLimit_WithReinforcement_BeforeLosses.Load(_T("TensionStressLimit_WithReinforcement"),pLoad);
    TensionStressLimit_OtherAreas_WithoutReinforcement_BeforeLosses.Load(_T("TensionStressLimit_WithoutReinforcement"),pLoad);
+
+   if (elversion > 1)
+   {
+      if (!pLoad->Property(_T("MaxCoverToUseHigherTensionStressLimit"), &MaxCoverToUseHigherTensionStressLimit)) THROW_LOAD(InvalidFileFormat, pLoad);
+   }
 
    if(!pLoad->EndUnit()) THROW_LOAD(InvalidFileFormat, pLoad); // Before losses
 

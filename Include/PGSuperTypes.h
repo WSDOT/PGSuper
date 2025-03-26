@@ -117,6 +117,12 @@ typedef struct pgsTypes
        Moderate
    };
 
+   enum class BearingDesignMethod
+   {
+       MethodA,
+       MethodB
+   };
+
 
    // curing method (effects ti for loss and creep calculations)
    enum class CuringMethod

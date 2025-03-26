@@ -565,6 +565,7 @@ interface ISpecification : IUnknown
    virtual bool IsAssumedExcessCamberForSectProps() const = 0; 
 
    virtual void GetTaperedSolePlateRequirements(bool* pbCheckTaperedSolePlate, Float64* pTaperedSolePlateThreshold) const = 0;
+   virtual void GetBearingCheckRequirements() const = 0;
 
    // Method and applicability for Principal Web stress check are based on several requirements
    typedef enum PrincipalWebStressCheckType { pwcNotApplicable, pwcAASHTOMethod, pwcNCHRPMethod, pwcNCHRPTimeStepMethod } PrincipalWebStressCheckType;

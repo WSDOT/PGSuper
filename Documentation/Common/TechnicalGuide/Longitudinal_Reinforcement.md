@@ -42,15 +42,16 @@ V<sub>p</sub> = Shear resistance provided by vertical component of prestressing<
 
 Allowable Tensile Stress for Temporary Conditions
 ----------------------------------------------------
-LRFD 5.9.2.3.1b (*pre-2017: 5.9.4.1.2*), "Temporary Tensile Stress Limits in Prestressed Concrete before Losses, Fully Prestressed Components", allows tensile stress limits for temporary conditions to be increased if sufficient bonded reinforcing bars and/or prestressing steel are provided to resist the tensile force in the concrete computed assuming an uncracked section. The higher allowable limits may be specified for the following cases: 
-* release in the casting yard (See Project Criteria - @ref ug_library_dialogs_project_criteria_design_and_spec_checking tab).
-* during lifting (See Project Criterial - @ref ug_library_dialogs_project_criteria_lifting tab);
-* during hauling (See Project Criterial - @ref ug_library_dialogs_project_criteria_hauling tab);
+LRFD 5.9.2.3.1b (*pre-2017: 5.9.4.1.2*), "Temporary Tensile Stress Limits in Prestressed Concrete, Fully Prestressed Components", allows tensile stress limits for temporary conditions to be increased if sufficient bonded reinforcing bars and/or prestressing steel are provided to resist the tensile force in the concrete computed assuming an uncracked section. The higher allowable limits may be specified for the following cases: 
+* Release in the casting yard (See Project Criteria - @ref ug_library_dialogs_project_criteria_design_and_spec_checking tab).
+* During lifting (See Project Criterial - @ref ug_library_dialogs_project_criteria_lifting tab);
+* During hauling (See Project Criterial - @ref ug_library_dialogs_project_criteria_hauling tab);
 
 AASHTO suggests that the required tensile steel can be computed per the figure below:
 
 ![](IncreasedAllowableTension.gif)
 
+The 10th Edition, 2024 added an additional rule in Article 5.10.1: "the reinforcement at a depth equal to the clear cover may be assumed to resist the tension force in the concrete for the purpose of determining the appropriate tensile stress limit". This cover value can be specified in the Project Criteria library's Prestressed Elements tab for LRFD editions 10th and later.
 
 In addition to the basic approach descrbed in LRFD 5.9.2.3.1b (*pre-2017: 5.9.4.1.2*), the following assumptions are made:
 1. The actual area of the tension zone is computed based on the location of the neutral (bending) axis and the geometry of the girder cross section.

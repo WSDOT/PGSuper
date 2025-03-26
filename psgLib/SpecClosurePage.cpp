@@ -128,8 +128,8 @@ BOOL CSpecClosurePage::OnSetActive()
    GetDlgItem(IDC_SERVICE_I_TENSION_MAX)->EnableWindow(bEnable);
 
    // 2017 crosswalk chapter 5 reorg
-   GetDlgItem(IDC_GTEMP)->SetWindowText(CString(_T("Stress Limits for Temporary Stresses before Losses (LRFD ")) + WBFL::LRFD::LrfdCw8th(_T("5.9.4.1"), _T("5.9.2.3.1")) + _T(", ") + WBFL::LRFD::LrfdCw8th(_T("5.14.1.3.2d"),_T("5.12.3.4.2d")) + _T(")"));
-   GetDlgItem(IDC_GPERM)->SetWindowText(CString(_T("Stress Limits at Service Limit State after Losses (LRFD ")) + WBFL::LRFD::LrfdCw8th(_T("5.9.4.2"), _T("5.9.2.3.2")) + _T(", ") + WBFL::LRFD::LrfdCw8th(_T("5.14.1.3.2d"),_T("5.12.3.4.2d")) + _T(")"));
+   GetDlgItem(IDC_GTEMP)->SetWindowText(CString(_T("Stress Limits for Temporary Stresses") + (CString)WBFL::LRFD::LrfdLosses10th(WBFL::LRFD::ltTemporary) + _T("(LRFD ")) + WBFL::LRFD::LrfdCw8th(_T("5.9.4.1"), _T("5.9.2.3.1")) + _T(", ") + WBFL::LRFD::LrfdCw8th(_T("5.14.1.3.2d"),_T("5.12.3.4.2d")) + _T(")"));
+   GetDlgItem(IDC_GPERM)->SetWindowText(CString(_T("Stress Limits at Service Limit State") + (CString)WBFL::LRFD::LrfdLosses10th(WBFL::LRFD::ltService) + _T("(LRFD ")) + WBFL::LRFD::LrfdCw8th(_T("5.9.4.2"), _T("5.9.2.3.2")) + _T(", ") + WBFL::LRFD::LrfdCw8th(_T("5.14.1.3.2d"),_T("5.12.3.4.2d")) + _T(")"));
 
    OnCheckServiceITensionMax();
    OnCheckServicePtzTensionMax();
