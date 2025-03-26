@@ -72,7 +72,7 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(const std::shared_ptr<const 
    bool bIsWSDOTRating = true;
    GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    std::vector<std::_tstring> routine_legal_loads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltLegalRating_Routine);
-   if ( routine_legal_loads.size() != 1 || routine_legal_loads[0] != _T("AASHTO Legal Loads") )
+   if ( routine_legal_loads.size() != 2 || (routine_legal_loads[0] != _T("AASHTO Legal Loads") && routine_legal_loads[1] != _T("WA-105")))
    {
       bIsWSDOTRating = false;
    }
@@ -277,8 +277,8 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(const std::shared_ptr<const 
       {
          (*pTable)(row,1) << (*nameIter) << rptNewLine;
       }
-      (*pTable)(row,1) << _T("");
-      (*pTable)(row,2) << _T("AASHTO Legal Loads");
+      (*pTable)(row, 1) << _T("");
+      (*pTable)(row, 2) << _T("AASHTO Legal Loads") << rptNewLine << _T("WA-105");
       row++;
 
       (*pTable)(row,0) << _T("Legal Load Rating: Live Loads for Specialized Hauling Vehicles");
