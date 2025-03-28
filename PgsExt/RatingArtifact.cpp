@@ -23,6 +23,11 @@
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\RatingArtifact.h>
 
+// In Windows Sandbox virtual machines, load rating calculations crash when computing safe posting loads.
+// Those the true cause was never discovered, it is related to multithreading
+// for this reason, we turn off multithreading within this file scope
+#undef _USE_MULTITHREADING 
+
 #if defined _USE_MULTITHREADING
 #include <future>
 #endif
@@ -36,7 +41,7 @@ static char THIS_FILE[] = __FILE__;
 // Gets the controlling rating factor from a collection of rating factor artifacts
 //
 // NOTE: Some artifact collections can be the same length (e.g. all of the flexure ones... shear is a different length)
-// The LoadRater makes them the same length, this object has no guarentee that will always be true
+// The LoadRater makes them the same length, this object has no guarantee that will always be true
 // If there are collections that are the same length, it would be more efficient to loop over all of them at one time
 // rather than loop over each one by itself as done here
 template <class C,class T>
@@ -400,25 +405,25 @@ Float64 pgsRatingArtifact::GetRatingFactorEx(const pgsMomentRatingArtifact** ppP
    std::vector<std::future<Float64>> vFutures;
    if (!m_bPositiveMomentRatingCached)
    {
-      std::future<Float64> f(std::async([&,this]{return GetMomentRatingFactorEx(true, ppPositiveMoment);}));
+      std::future<Float64> f(std::async([&]{return GetMomentRatingFactorEx(true, ppPositiveMoment);}));
       vFutures.push_back(std::move(f));
    }
 
    if (!m_bNegativeMomentRatingCached)
    {
-      std::future<Float64> f(std::async([&,this] {return GetMomentRatingFactorEx(false, ppNegativeMoment);}));
+      std::future<Float64> f(std::async([&] {return GetMomentRatingFactorEx(false, ppNegativeMoment);}));
       vFutures.push_back(std::move(f));
    }
 
    if (!m_bShearRatingCached)
    {
-      std::future<Float64> f(std::async([&,this] {return GetShearRatingFactorEx(ppShear);}));
+      std::future<Float64> f(std::async([&] {return GetShearRatingFactorEx(ppShear);}));
       vFutures.push_back(std::move(f));
    }
 
    if (!m_bStressRatingCached)
    {
-      std::future<Float64> f(std::async([&,this] {return GetStressRatingFactorEx(ppStress);}));
+      std::future<Float64> f(std::async([&] {return GetStressRatingFactorEx(ppStress);}));
       vFutures.push_back(std::move(f));
    }
 
@@ -495,7 +500,7 @@ Float64 pgsRatingArtifact::GetRatingFactorEx(const pgsMomentRatingArtifact** ppP
       // ??? rating wasn't done?
       // this can happen if we are rating with a negative moment only truck
       // but the bridge is simple span... we run the truck because we want
-      // reactions, but the reating factors are DBL_MAX...
+      // reactions, but the rating factors are DBL_MAX...
       // since all types of ratings control equally, use positive moment as controlling factor
       ATLASSERT(i == -1);
       (*ppPositiveMoment)            = m_pControllingPositiveMoment;
@@ -539,12 +544,12 @@ void pgsRatingArtifact::GetSafePostingLoad(Float64* pPostingLoad, Float64* pWeig
    PostingLoad postingLoad;
 #if defined _USE_MULTITHREADING
    std::vector<std::future<PostingLoad>> vFutures;
-   vFutures.emplace_back(std::async([&, this] {return ComputeSafePostingLoad(m_PositiveMomentRatings);}));
-   vFutures.emplace_back(std::async([&, this] {return ComputeSafePostingLoad(m_NegativeMomentRatings);}));
-   vFutures.emplace_back(std::async([&, this] {return ComputeSafePostingLoad(m_ShearRatings);}));
-   vFutures.emplace_back(std::async([&, this] {return ComputeSafePostingLoad(m_StressRatings);}));
-   vFutures.emplace_back(std::async([&, this] {return ComputeSafePostingLoad(m_PositiveMomentYieldStressRatios);}));
-   vFutures.emplace_back(std::async([&, this] {return ComputeSafePostingLoad(m_NegativeMomentYieldStressRatios);}));
+   vFutures.emplace_back(std::async([&] {return ComputeSafePostingLoad(m_PositiveMomentRatings);}));
+   vFutures.emplace_back(std::async([&] {return ComputeSafePostingLoad(m_NegativeMomentRatings);}));
+   vFutures.emplace_back(std::async([&] {return ComputeSafePostingLoad(m_ShearRatings);}));
+   vFutures.emplace_back(std::async([&] {return ComputeSafePostingLoad(m_StressRatings);}));
+   vFutures.emplace_back(std::async([&] {return ComputeSafePostingLoad(m_PositiveMomentYieldStressRatios);}));
+   vFutures.emplace_back(std::async([&] {return ComputeSafePostingLoad(m_NegativeMomentYieldStressRatios);}));
 
    for (auto& f : vFutures)
    {

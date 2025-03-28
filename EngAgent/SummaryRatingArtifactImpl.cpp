@@ -193,6 +193,10 @@ Float64 pgsSummaryRatingArtifactImpl::GetRatingFactorEx(const pgsMomentRatingArt
 {
    // this may not look efficient, but we know that pgsRatingArtifact caches its answers, so it's not bad
    Float64 RF = DBL_MAX;
+   *ppPositiveMoment = nullptr;
+   *ppNegativeMoment = nullptr;
+   *ppShear = nullptr;
+   *ppStress = nullptr;
 
    // First find controlling girder
    Uint32 icontrol(0);
