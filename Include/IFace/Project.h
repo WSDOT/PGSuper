@@ -572,6 +572,10 @@ interface ISpecification : IUnknown
 
    virtual PrincipalWebStressCheckType GetPrincipalWebStressCheckType(const CSegmentKey& segmentKey) const = 0;
 
+   // Older versions of PGSuper did not consider the reinforcement location factor in 5.10.8.2.1b for development length. This setting 
+   // enables it to be turned off for backward compatibility.
+   virtual bool ConsiderReinforcementDevelopmentLocationFactor() const = 0;
+
    virtual WBFL::LRFD::BDSManager::Edition GetSpecificationType() const = 0;
 };
 

@@ -657,8 +657,8 @@ public:
    virtual void GetDeckReinforcing(const pgsPointOfInterest& poi,pgsTypes::DeckRebarMatType matType,pgsTypes::DeckRebarBarType barType,pgsTypes::DeckRebarCategoryType barCategory,bool bAdjForDevLength,Float64* pAs,Float64* pYb) const override;
    virtual void GetRebarLayout(const CSegmentKey& segmentKey, IRebarLayout** rebarLayout) const override;
    virtual void GetClosureJointRebarLayout(const CClosureKey& closureKey, IRebarLayout** rebarLayout) const override;
-   virtual WBFL::LRFD::REBARDEVLENGTHDETAILS GetSegmentRebarDevelopmentLengthDetails(const CSegmentKey& segmetnKey,IRebar* rebar, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct, bool bIsTopBar, bool bEpoxyCoated, bool bMeetsCoverRequirements) const override;
-   virtual WBFL::LRFD::REBARDEVLENGTHDETAILS GetDeckRebarDevelopmentLengthDetails(IRebar* rebar, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct, bool bIsTopBar, bool bEpoxyCoated, bool bMeetsCoverRequirements) const override;
+   virtual WBFL::LRFD::REBARDEVLENGTHDETAILS GetSegmentRebarDevelopmentLengthDetails(const CSegmentKey& segmentKey, IRebarLayoutItem* rebarItem, IndexType patternIdx, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct, bool bEpoxyCoated, bool bMeetsCoverRequirements) const override;
+   virtual WBFL::LRFD::REBARDEVLENGTHDETAILS GetDeckRebarDevelopmentLengthDetails(IRebar* rebar, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct, bool bEpoxyCoated, bool bMeetsCoverRequirements) const override;
    virtual bool IsAnchored(const pgsPointOfInterest& poi) const;
 
 // IStirrupGeometry
@@ -1723,7 +1723,7 @@ private:
    Float64 ComputePierDiaphragmHeight(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace) const;
    Float64 ComputePierDiaphragmWidth(PierIndexType pierIdx,pgsTypes::PierFaceType pierFace) const;
 
-   WBFL::LRFD::REBARDEVLENGTHDETAILS GetRebarDevelopmentLengthDetails(const CSegmentKey& segmentKey, IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct, bool bIsTopBar, bool bEpoxyCoated, bool bMeetsCoverRequirements) const;
+   WBFL::LRFD::REBARDEVLENGTHDETAILS GetRebarDevelopmentLengthDetails(const CSegmentKey& segmentKey, IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct, Float64 distFromBottom, bool bEpoxyCoated, bool bMeetsCoverRequirements) const;
 
    void ApplyDebonding(const CPrecastSegmentData* pSegment, IStrandGridModel* pStrandGridModel) const;
 

@@ -40,13 +40,17 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 // Some utility functions
-rptRcTable* CreateDevelopmentTable(IEAFDisplayUnits* pDisplayUnits)
+rptRcTable* CreateDevelopmentTable(IEAFDisplayUnits* pDisplayUnits, bool is_LocationFactor)
 {
    bool is_2015 = WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2015Interims == WBFL::LRFD::BDSManager::GetEdition();
    bool is_2016 = WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition();
 
    ColumnIndexType nColumns = 8;
-   if ( is_2015 || is_2016 )
+   if (is_LocationFactor)
+   {
+      nColumns += 3; // dist to bottom, lamda rl, lamda lw
+   }
+   else if ( is_2015 || is_2016 )
    {
       nColumns += 2; // lamda rl and lamda lw
    }
@@ -59,15 +63,21 @@ rptRcTable* CreateDevelopmentTable(IEAFDisplayUnits* pDisplayUnits)
    (*pTable)(0,col++) << COLHDR(Sub2(_T("d"),_T("b")),  rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
    (*pTable)(0,col++) << COLHDR(RPT_FY,  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
    (*pTable)(0,col++) << COLHDR(RPT_FC,  rptStressUnitTag, pDisplayUnits->GetStressUnit() );
-   if (is_2015)
+   if (is_LocationFactor)
+   {
+      (*pTable)(0, col++) << COLHDR(_T("Distance from") << rptNewLine << _T("Bottom"), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
+      (*pTable)(0, col++) << symbol(lambda) << Sub(_T("rl"));
+      (*pTable)(0, col++) << symbol(lambda);
+   }
+   else if (is_2016)
+   {
+      (*pTable)(0, col++) << symbol(lambda) << Sub(_T("rl"));
+      (*pTable)(0, col++) << symbol(lambda);
+   }
+   else if (is_2015)
    {
       (*pTable)(0,col++) << symbol(lambda) << Sub(_T("rl"));
       (*pTable)(0,col++) << symbol(lambda) << Sub(_T("lw"));
-   }
-   else if ( is_2016 )
-   {
-      (*pTable)(0,col++) << symbol(lambda) << Sub(_T("rl"));
-      (*pTable)(0,col++) << symbol(lambda);
    }
    (*pTable)(0,col++) << _T("Modification")<<rptNewLine<<_T("Factor");
    (*pTable)(0, col++) << COLHDR(Sub2(_T("l"), _T("db")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
@@ -77,7 +87,7 @@ rptRcTable* CreateDevelopmentTable(IEAFDisplayUnits* pDisplayUnits)
 }
 
 void WriteRowToDevelopmentTable(rptRcTable* pTable, RowIndexType row, CComBSTR barname, const WBFL::LRFD::REBARDEVLENGTHDETAILS& devDetails,
-                                       rptAreaUnitValue& area, rptLengthUnitValue& length, rptStressUnitValue& stress, rptRcScalar& scalar)
+                                       rptAreaUnitValue& area, rptLengthUnitValue& length, rptStressUnitValue& stress, rptRcScalar& scalar, bool is_LocationFactor)
 {
    bool is_2015 = WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2015Interims == WBFL::LRFD::BDSManager::GetEdition();
    bool is_2016 = WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition();
@@ -88,7 +98,13 @@ void WriteRowToDevelopmentTable(rptRcTable* pTable, RowIndexType row, CComBSTR b
    (*pTable)(row,col++) << length.SetValue(devDetails.db);
    (*pTable)(row,col++) << stress.SetValue(devDetails.fy);
    (*pTable)(row,col++) << stress.SetValue(devDetails.fc);
-   if (is_2015 || is_2016 )
+   if (is_LocationFactor)
+   {
+      (*pTable)(row, col++) << length.SetValue(devDetails.distFromBottom);
+      (*pTable)(row, col++) << scalar.SetValue(devDetails.lambdaRl);
+      (*pTable)(row, col++) << scalar.SetValue(devDetails.lambdaLw);
+   }
+   else if (is_2015 || is_2016 )
    {
       (*pTable)(row,col++) << scalar.SetValue(devDetails.lambdaRl);
       (*pTable)(row,col++) << scalar.SetValue(devDetails.lambdaLw);
@@ -159,6 +175,8 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(const std::shared_ptr<const W
    GET_IFACE2(pBroker, IMaterials, pMaterials);
 
    GET_IFACE2(pBroker, IPretensionForce, pPSForce);
+   GET_IFACE2(pBroker, ISpecification, pSpec);
+   bool is_LocationFactor = pSpec->ConsiderReinforcementDevelopmentLocationFactor();
 
    GET_IFACE2(pBroker, IBridge, pBridge);
    std::vector<CGirderKey> vGirderKeys;
@@ -234,7 +252,11 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(const std::shared_ptr<const W
             }
             else
             {
-               if (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition())
+               if (WBFL::LRFD::BDSManager::Edition::TenthEdition2024 <= WBFL::LRFD::BDSManager::GetEdition())
+               {
+                   (*pParagraph) << rptNewLine << rptRcEquation(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalRebarDevelopment_2024.png"), _T("l_d = l_{db} \\times \\lambda_{rl} \\times \\lambda_{cf} \\times \\lambda_{rc} \\\\ \\textit{in which:} \\hspace{5 mm}  l_{db} = 0.17 d_b \\left[ \\dfrac{{\\lambda_{er} f_y - \\frac{F_h} {A_b}}} {1.97 \\lambda {f'_c}^{0.25} }\\right]^2 \\\\ \\textit{where:} \\hspace{5 mm} \\lambda_{cf}=\\lambda_{rc}=\\lambda_{er} = 1.0, \\text{ and } F_h = 0.0")) << rptNewLine;
+               }
+               else if (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition())
                {
                   (*pParagraph) << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("LongitudinalRebarDevelopment_2016.png")) << rptNewLine;
                }
@@ -261,7 +283,7 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(const std::shared_ptr<const W
                (*pParagraph) << Sub2(symbol(lambda),_T("rl")) << _T(" is taken to be 1.0 for UHPC (GS 1.10.8.2.1)") << rptNewLine;
             }
 
-            rptRcTable* pTable = CreateDevelopmentTable(pDisplayUnits);
+            rptRcTable* pTable = CreateDevelopmentTable(pDisplayUnits, is_LocationFactor);
             (*pParagraph) << pTable << rptNewLine;
    
             IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
@@ -271,43 +293,78 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(const std::shared_ptr<const W
             bool hasFct = pMaterials->DoesSegmentConcreteHaveAggSplittingStrength(segmentKey);
             Float64 Fct = hasFct ? pMaterials->GetSegmentConcreteAggSplittingStrength(segmentKey) : 0.0;
 
-            // Cycle over all rebar in section and output development details for each unique size
-            RowIndexType row(1);
-            std::set<Float64> diamSet;
-            for (IndexType rebarIdx = 0; rebarIdx < nRebars; rebarIdx++)
+            if (WBFL::LRFD::BDSManager::Edition::TenthEdition2024 <= WBFL::LRFD::BDSManager::GetEdition())
             {
-               CComPtr<IRebarLayoutItem> layoutItem;
-               rebarLayout->get_Item(rebarIdx, &layoutItem);
-               IndexType nPatterns;
-               layoutItem->get_Count(&nPatterns);
-               for ( IndexType patternIdx = 0; patternIdx < nPatterns; patternIdx++ )
+               // With 10th edition, we have to report development length for all rows since they can have unique elevations
+               RowIndexType row(1);
+               for (IndexType rebarIdx = 0; rebarIdx < nRebars; rebarIdx++)
                {
-                  CComPtr<IRebarPattern> rebarPattern;
-                  layoutItem->get_Item(patternIdx, &rebarPattern);
-                  CComPtr<IRebar> rebar;
-                  rebarPattern->get_Rebar(&rebar);
-                  Float64 diam;
-                  rebar->get_NominalDiameter(&diam);
-                  if (diamSet.end()==diamSet.find(diam))
+                  CComPtr<IRebarLayoutItem> layoutItem;
+                  rebarLayout->get_Item(rebarIdx, &layoutItem);
+                  IndexType nPatterns;
+                  layoutItem->get_Count(&nPatterns);
+                  for (IndexType patternIdx = 0; patternIdx < nPatterns; patternIdx++)
                   {
-                     // We have a unique bar
-                     diamSet.insert(diam);
-                     
+                     CComPtr<IRebarPattern> rebarPattern;
+                     layoutItem->get_Item(patternIdx, &rebarPattern);
+                     CComPtr<IRebar> rebar;
+                     rebarPattern->get_Rebar(&rebar);
+
                      CComBSTR barname;
                      rebar->get_Name(&barname);
 
                      // development length in fresh concrete
-                     WBFL::LRFD::REBARDEVLENGTHDETAILS devDetails = pLongRebarGeometry->GetSegmentRebarDevelopmentLengthDetails(segmentKey, rebar, concType, fci, hasFct, Fct, false/*not top bar*/, false/*not epoxy coated*/, true/*meets cover requirements*/);
-                     WriteRowToDevelopmentTable(pTable, row, barname, devDetails, area, length, stress, scalar);
+                     WBFL::LRFD::REBARDEVLENGTHDETAILS devDetails = pLongRebarGeometry->GetSegmentRebarDevelopmentLengthDetails(segmentKey, layoutItem, patternIdx, concType, fci, hasFct, Fct, false/*not epoxy coated*/, true/*meets cover requirements*/);
+                     WriteRowToDevelopmentTable(pTable, row, barname, devDetails, area, length, stress, scalar, is_LocationFactor);
                      row++;
 
                      // development length in mature concrete
-                     devDetails = pLongRebarGeometry->GetSegmentRebarDevelopmentLengthDetails(segmentKey, rebar, concType, fc, hasFct, Fct, false/*not top bar*/, false/*not epoxy coated*/, true/*meets cover requirements*/);
-                     WriteRowToDevelopmentTable(pTable, row, barname, devDetails, area, length, stress, scalar);
+                     devDetails = pLongRebarGeometry->GetSegmentRebarDevelopmentLengthDetails(segmentKey, layoutItem, patternIdx, concType, fc, hasFct, Fct, false/*not epoxy coated*/, true/*meets cover requirements*/);
+                     WriteRowToDevelopmentTable(pTable, row, barname, devDetails, area, length, stress, scalar, is_LocationFactor);
                      row++;
-                  } // end if
-               } // next patternIdx
-            } // next rebarIdx
+                  } // next patternIdx
+               } // next rebarIdx
+            }
+            else
+            {
+               // Cycle over all rebar in section and output development details for each unique size
+               RowIndexType row(1);
+               std::set<Float64> diamSet;
+               for (IndexType rebarIdx = 0; rebarIdx < nRebars; rebarIdx++)
+               {
+                  CComPtr<IRebarLayoutItem> layoutItem;
+                  rebarLayout->get_Item(rebarIdx, &layoutItem);
+                  IndexType nPatterns;
+                  layoutItem->get_Count(&nPatterns);
+                  for (IndexType patternIdx = 0; patternIdx < nPatterns; patternIdx++)
+                  {
+                     CComPtr<IRebarPattern> rebarPattern;
+                     layoutItem->get_Item(patternIdx, &rebarPattern);
+                     CComPtr<IRebar> rebar;
+                     rebarPattern->get_Rebar(&rebar);
+                     Float64 diam;
+                     rebar->get_NominalDiameter(&diam);
+                     if (diamSet.end() == diamSet.find(diam))
+                     {
+                        // We have a unique bar
+                        diamSet.insert(diam);
+
+                        CComBSTR barname;
+                        rebar->get_Name(&barname);
+
+                        // development length in fresh concrete
+                        WBFL::LRFD::REBARDEVLENGTHDETAILS devDetails = pLongRebarGeometry->GetSegmentRebarDevelopmentLengthDetails(segmentKey, layoutItem, patternIdx, concType, fci, hasFct, Fct, false/*not epoxy coated*/, true/*meets cover requirements*/);
+                        WriteRowToDevelopmentTable(pTable, row, barname, devDetails, area, length, stress, scalar, is_LocationFactor);
+                        row++;
+
+                        // development length in mature concrete
+                        devDetails = pLongRebarGeometry->GetSegmentRebarDevelopmentLengthDetails(segmentKey, layoutItem, patternIdx, concType, fc, hasFct, Fct, false/*not epoxy coated*/, true/*meets cover requirements*/);
+                        WriteRowToDevelopmentTable(pTable, row, barname, devDetails, area, length, stress, scalar, is_LocationFactor);
+                        row++;
+                     } // end if
+                  } // next patternIdx
+               } // next rebarIdx
+            }
          }// end if
       } // next segment
    } // next girder
@@ -342,7 +399,7 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(const std::shared_ptr<const W
    {
       (*pParagraph) << _T("Supplemental reinforcement specified using ")<<Sub2(_T("A"),_T("s")) << _T(" is assumed to be developed along their entire length.") << rptNewLine;
 
-      rptRcTable* pTable = CreateDevelopmentTable(pDisplayUnits);
+      rptRcTable* pTable = CreateDevelopmentTable(pDisplayUnits, false);
       (*pParagraph) << pTable << rptNewLine;
 
       // Need deck concrete properties for all
@@ -394,9 +451,9 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(const std::shared_ptr<const W
                // stage this rebar is introduced for purposes of computing development length. The
                // next line of code computes the development length on the lfy
 
-               WBFL::LRFD::REBARDEVLENGTHDETAILS devDetails = pLongRebarGeometry->GetDeckRebarDevelopmentLengthDetails(rebar, concType, fc, hasFct, Fct,false,false,true);
+               WBFL::LRFD::REBARDEVLENGTHDETAILS devDetails = pLongRebarGeometry->GetDeckRebarDevelopmentLengthDetails(rebar, concType, fc, hasFct, Fct,false,true);
 
-               WriteRowToDevelopmentTable(pTable, row, barname, devDetails, area, length, stress, scalar);
+               WriteRowToDevelopmentTable(pTable, row, barname, devDetails, area, length, stress, scalar, false);
                row++;
             }
          }

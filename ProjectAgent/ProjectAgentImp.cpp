@@ -10095,6 +10095,12 @@ ISpecification::PrincipalWebStressCheckType CProjectAgentImp::GetPrincipalWebStr
 
 }
 
+bool CProjectAgentImp::ConsiderReinforcementDevelopmentLocationFactor() const
+{
+   // Versions before this did not consider the factor in pgsuper
+   return WBFL::LRFD::BDSManager::Edition::EighthEdition2017 <= WBFL::LRFD::BDSManager::GetEdition();
+}
+
 WBFL::LRFD::BDSManager::Edition CProjectAgentImp::GetSpecificationType() const
 {
    return m_pSpecEntry->GetSpecificationCriteria().GetEdition();

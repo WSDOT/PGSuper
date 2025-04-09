@@ -6135,7 +6135,7 @@ void CBridgeAgentImp::LayoutPoiForSegmentBarCutoffs(const CSegmentKey& segmentKe
          if (rebar)
          {
             // Get development length and add poi only if dev length is shorter than 1/2 rebar length
-            WBFL::LRFD::REBARDEVLENGTHDETAILS devDetails = GetSegmentRebarDevelopmentLengthDetails(segmentKey, rebar, concType, fc, hasFct, Fct,false/*not top bar*/, false/*not epoxy coated*/, true/*meets cover requirements*/);
+            WBFL::LRFD::REBARDEVLENGTHDETAILS devDetails = GetSegmentRebarDevelopmentLengthDetails(segmentKey, rebarLayoutItem, 0, concType, fc, hasFct, Fct, false/*not epoxy coated*/, true/*meets cover requirements*/);
             Float64 ld = devDetails.ld;
             if (ld < barLength/2.0)
             {
@@ -14440,16 +14440,42 @@ Float64 CBridgeAgentImp::GetDevLengthFactor(const pgsPointOfInterest& poi,IRebar
 
    CClosureKey closureKey;
    Float64 bIsInClosureJoint = IsInClosureJoint(poi,&closureKey);
+   CSegmentKey segmentKey(poi.GetSegmentKey());
 
    CComPtr<IRebar> rebar;
    rebarItem->get_Rebar(&rebar);
 
-   WBFL::LRFD::REBARDEVLENGTHDETAILS details = GetSegmentRebarDevelopmentLengthDetails(poi.GetSegmentKey(), rebar, type, fc, isFct, fct, false/*not top bar*/, false/*not epoxy coated*/, true/*meets cover requirements*/);
-
    // Get distances from section cut to ends of bar
-   Float64 start,end;
+   Float64 start, end;
    rebarItem->get_LeftExtension(&start);
    rebarItem->get_RightExtension(&end);
+
+   // NOTE: The same (almost) logic below is in GetSegmentRebarDevelopmentLengthDetails(). If you find a bug here, fix it there as well
+   // Need distance from bars to bottom of section
+   Float64 rebarDistToBottom = 0.0; // assume rebar is near bottom of section for computing development length
+   GET_IFACE(ISpecification, pSpec);
+   if (pSpec->ConsiderReinforcementDevelopmentLocationFactor())
+   {
+      // Need distance to bottom of girder. Use max from both ends
+      // Locations of rebar ends in girder coord's
+      Float64 startLoc = poi.GetDistFromStart() - start;
+      Float64 endLoc = poi.GetDistFromStart() + end;
+
+      // Height of girder at start and end of bar
+      Float64 HgStart = GetHeight(pgsPointOfInterest(segmentKey, startLoc));
+      Float64 HgEnd = GetHeight(pgsPointOfInterest(segmentKey, endLoc));
+      Float64 Hg = Max(HgStart, HgEnd);
+
+      // elevation of bar at poi
+      CComPtr<IPoint2d>  barLoc;
+      rebarItem->get_Location(&barLoc);
+      Float64 barY;
+      barLoc->get_Y(&barY);
+
+      rebarDistToBottom = Hg + barY;
+   }
+
+   WBFL::LRFD::REBARDEVLENGTHDETAILS details = GetRebarDevelopmentLengthDetails(segmentKey, rebar, type, fc, isFct, fct, rebarDistToBottom, false/*not epoxy coated*/, true/*meets cover requirements*/);
 
    Float64 Xpoi = poi.GetDistFromStart();
    Float64 Xs = Xpoi - start;
@@ -14552,14 +14578,48 @@ Float64 CBridgeAgentImp::GetPPRBottomHalf(const pgsPointOfInterest& poi,const GD
    return ppr;
 }
 
-WBFL::LRFD::REBARDEVLENGTHDETAILS CBridgeAgentImp::GetSegmentRebarDevelopmentLengthDetails(const CSegmentKey& segmentKey, IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct, bool bIsTopBar, bool bEpoxyCoated, bool bMeetsCoverRequirements) const
+WBFL::LRFD::REBARDEVLENGTHDETAILS CBridgeAgentImp::GetSegmentRebarDevelopmentLengthDetails(const CSegmentKey& segmentKey, IRebarLayoutItem* rebarItem , IndexType patternIdx, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct, bool bEpoxyCoated, bool bMeetsCoverRequirements) const
 {
-   return GetRebarDevelopmentLengthDetails(segmentKey, rebar,type, fc, isFct, Fct, bIsTopBar, bEpoxyCoated, bMeetsCoverRequirements);
+   CComPtr<IRebarPattern> rebarPattern;
+   rebarItem->get_Item(patternIdx, &rebarPattern);
+   CComPtr<IRebar> rebar;
+   rebarPattern->get_Rebar(&rebar);
+
+   // NOTE: The same logic below is in GetDevLengthFactor(). If you find a bug here, fix it there as well
+   // Need distance from bars to bottom of section
+   Float64 rebarDistToBottom = 0.0; // assume rebar is near bottom of section for computing development length
+   GET_IFACE(ISpecification, pSpec);
+   if (pSpec->ConsiderReinforcementDevelopmentLocationFactor())
+   {
+      // Need distance to bottom of girder. Use max from both ends
+      Float64 segment_length = GetSegmentLength(segmentKey);
+      Float64 startLoc, barLength;
+      rebarItem->get_Start(&startLoc);
+      rebarItem->get_Length(&barLength);
+      Float64 endLoc = startLoc + barLength;
+
+      // Height of girder at start and end of bar
+      Float64 HgStart = GetHeight(pgsPointOfInterest(segmentKey, startLoc));
+      Float64 HgEnd = GetHeight(pgsPointOfInterest(segmentKey, endLoc));
+
+      // elevation of bar at ends
+      CComPtr<IPoint2d> barStart, barEnd;
+      rebarPattern->get_Location(0.0, 0, &barStart);
+      rebarPattern->get_Location(barLength, 0, &barEnd);
+      Float64 barStartY, barEndY;
+      barStart->get_Y(&barStartY);
+      barEnd->get_Y(&barEndY);
+
+      rebarDistToBottom = Max(HgStart + barStartY, HgEnd + barEndY);
+   }
+
+   return GetRebarDevelopmentLengthDetails(segmentKey, rebar,type, fc, isFct, Fct, rebarDistToBottom, bEpoxyCoated, bMeetsCoverRequirements);
 }
 
-WBFL::LRFD::REBARDEVLENGTHDETAILS CBridgeAgentImp::GetDeckRebarDevelopmentLengthDetails(IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct, bool bIsTopBar, bool bEpoxyCoated, bool bMeetsCoverRequirements) const
+WBFL::LRFD::REBARDEVLENGTHDETAILS CBridgeAgentImp::GetDeckRebarDevelopmentLengthDetails(IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct, bool bEpoxyCoated, bool bMeetsCoverRequirements) const
 {
-   return GetRebarDevelopmentLengthDetails(CSegmentKey(), rebar,type, fc, isFct, Fct, bIsTopBar, bEpoxyCoated, bMeetsCoverRequirements);
+   Float64 distFromBottom(0.0); // assume deck is immune to accumulation of bleed water underneath top - cast bars
+   return GetRebarDevelopmentLengthDetails(CSegmentKey(), rebar,type, fc, isFct, Fct, distFromBottom, bEpoxyCoated, bMeetsCoverRequirements);
 }
 
 bool CBridgeAgentImp::IsAnchored(const pgsPointOfInterest& poi) const
@@ -14590,7 +14650,7 @@ bool CBridgeAgentImp::IsAnchored(const pgsPointOfInterest& poi) const
    return bAnchored;
 }
 
-WBFL::LRFD::REBARDEVLENGTHDETAILS CBridgeAgentImp::GetRebarDevelopmentLengthDetails(const CSegmentKey& segmentKey, IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct, bool bIsTopBar, bool bEpoxyCoated, bool bMeetsCoverRequirements) const
+WBFL::LRFD::REBARDEVLENGTHDETAILS CBridgeAgentImp::GetRebarDevelopmentLengthDetails(const CSegmentKey& segmentKey, IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct, Float64 distFromBottom, bool bEpoxyCoated, bool bMeetsCoverRequirements) const
 {
    USES_CONVERSION;
    CComBSTR name;
@@ -14614,7 +14674,7 @@ WBFL::LRFD::REBARDEVLENGTHDETAILS CBridgeAgentImp::GetRebarDevelopmentLengthDeta
    }
 
    // density is used to compute lambda factor
-   return WBFL::LRFD::Rebar::GetRebarDevelopmentLengthDetails(size, Ab, db, fy, (WBFL::Materials::ConcreteType)type, fc, isFct, Fct, density, bIsTopBar, bEpoxyCoated, bMeetsCoverRequirements);
+   return WBFL::LRFD::Rebar::GetRebarDevelopmentLengthDetails(size, Ab, db, fy, (WBFL::Materials::ConcreteType)type, fc, isFct, Fct, density, distFromBottom, bEpoxyCoated, bMeetsCoverRequirements);
 }
 
 Float64 CBridgeAgentImp::GetCoverTopMat() const

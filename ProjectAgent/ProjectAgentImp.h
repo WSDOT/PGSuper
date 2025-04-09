@@ -463,6 +463,7 @@ public:
    virtual void GetTaperedSolePlateRequirements(bool* pbCheckTaperedSolePlate, Float64* pTaperedSolePlateThreshold) const override;
    void GetBearingCheckRequirements() const override;
    virtual ISpecification::PrincipalWebStressCheckType GetPrincipalWebStressCheckType(const CSegmentKey& segmentKey) const override;
+   virtual bool ConsiderReinforcementDevelopmentLocationFactor() const override;
    virtual WBFL::LRFD::BDSManager::Edition GetSpecificationType() const override;
 
 // IRatingSpecification

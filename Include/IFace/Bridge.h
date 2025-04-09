@@ -72,6 +72,7 @@ interface IRebar;
 interface IRebarSection;
 interface IRebarSectionItem;
 interface IRebarLayout;
+interface IRebarLayoutItem;
 
 interface ISegmentLiftingDesignPointsOfInterest;
 interface ISegmentHaulingDesignPointsOfInterest;
@@ -1030,8 +1031,9 @@ interface ILongRebarGeometry : IUnknown
 
    virtual void GetClosureJointRebarLayout(const CClosureKey& closureKey, IRebarLayout** rebarLayout) const = 0;
 
-   virtual WBFL::LRFD::REBARDEVLENGTHDETAILS GetSegmentRebarDevelopmentLengthDetails(const CSegmentKey& segmentKey,IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct, bool bIsTopBar, bool bEpoxyCoated, bool bMeetsCoverRequirements) const = 0;
-   virtual WBFL::LRFD::REBARDEVLENGTHDETAILS GetDeckRebarDevelopmentLengthDetails(IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct, bool bIsTopBar, bool bEpoxyCoated, bool bMeetsCoverRequirements) const = 0;
+   // distFromBottom below is used to determine whether the rebar location factor per LRFD 5.10.8.2.1b should be increased. This used to be a bool (isTopBar), but is now a float to allow the LRFD module to make the determination.
+   virtual WBFL::LRFD::REBARDEVLENGTHDETAILS GetSegmentRebarDevelopmentLengthDetails(const CSegmentKey& segmentKey, IRebarLayoutItem* rebarItem, IndexType patternIdx, pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct, bool bEpoxyCoated, bool bMeetsCoverRequirements) const = 0;
+   virtual WBFL::LRFD::REBARDEVLENGTHDETAILS GetDeckRebarDevelopmentLengthDetails(IRebar* rebar,pgsTypes::ConcreteType type, Float64 fc, bool isFct, Float64 Fct, bool bEpoxyCoated, bool bMeetsCoverRequirements) const = 0;
 
    virtual bool IsAnchored(const pgsPointOfInterest& poi) const = 0;
 };
