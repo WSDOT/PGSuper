@@ -210,9 +210,6 @@
     <Image Include="MenuItem.bmp" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\PgsExt\PgsExt.vcxproj">
       <Project>{716009be-959b-4338-80f5-69abb0b12a91}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>

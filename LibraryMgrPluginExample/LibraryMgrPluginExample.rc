@@ -16,13 +16,11 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
-#endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -97,7 +95,9 @@ END
 //
 
 IDR_LIBRARYMGRPLUGINEXAMPLE REGISTRY                "LibraryMgrPluginExample.rgs"
+
 IDR_LIBMGRDOCPLUGIN     REGISTRY                "LibMgrDocPlugin.rgs"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -106,14 +106,15 @@ IDR_LIBMGRDOCPLUGIN     REGISTRY                "LibMgrDocPlugin.rgs"
 
 IDB_MENUITEM            BITMAP                  "MenuItem.bmp"
 
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // Menu
 //
 
-IDR_PLUGIN_MENU MENU 
+IDR_PLUGIN_MENU MENU
 BEGIN
-    MENUITEM "View",                        32768
+    MENUITEM "View",                        IDM_PLUGIN_VIEW
 END
 
 
@@ -122,17 +123,17 @@ END
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_PROJNAME            "LibraryMgrPluginExample"
 END
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDM_PLUGIN_VIEW         "Create a view from a plug in\nPlugin View"
 END
 
-#endif    // English (U.S.) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

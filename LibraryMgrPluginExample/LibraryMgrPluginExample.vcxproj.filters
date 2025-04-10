@@ -49,9 +49,6 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <Filter Include="Header Files">
       <UniqueIdentifier>{85f81854-d12c-4aeb-9fb6-c9bc1f5b30eb}</UniqueIdentifier>
       <Extensions>h;hpp;hxx;hm;inl</Extensions>

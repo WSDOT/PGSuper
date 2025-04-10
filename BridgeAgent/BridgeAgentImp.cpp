@@ -7459,7 +7459,7 @@ HRESULT CBridgeAgentImp::Point(IPoint2d* center, Float64 radius,IPoint2d* point,
 // IBridge
 //
 #include <MFCTools\AutoRegistry.h>
-#include <EAF\EAFApp.h>
+//#include <EAF\EAFApp.h>
 bool CBridgeAgentImp::IsAsymmetricGirder(const CGirderKey& girderKey) const
 {
    CSegmentKey segmentKey(girderKey, 0);
@@ -7512,9 +7512,10 @@ bool CBridgeAgentImp::HasAsymmetricGirders() const
    asymmetricSection->IgnoreBiaxialBending(&bIgnoreBiaxial);
 
    // Super secret registry setting....
-   // If you want to experiment with unaxial vs biaxial bending stresses and asymmetric section related lateral deflections
+   // If you want to experiment with uniaxial vs biaxial bending stresses and asymmetric section related lateral deflections
    // add the IgnoreBiaxialBending setting to the registry. Set a value of "Yes" to force uniaxial bending
-   CEAFApp* pApp = EAFGetApp();
+   //CEAFApp* pApp = EAFGetApp();
+   auto* pApp = AfxGetApp();
    CAutoRegistry autoReg(_T("PGSuper"));
    CString strIgnoreBiaxialBending = pApp->GetProfileString(_T("Settings"), _T("IgnoreBiaxialBending"), _T("Unknown"));
    strIgnoreBiaxialBending.MakeUpper();

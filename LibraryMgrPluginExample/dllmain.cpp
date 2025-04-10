@@ -27,6 +27,14 @@
 #include "LibraryMgrPluginExample_i.h"
 #include "dllmain.h"
 
+#include "LibMgrDocPlugin.h"
+#include <EAF\ComponentModule.h>
+WBFL::EAF::ComponentModule Module_;
+
+EAF_BEGIN_OBJECT_MAP(ObjectMap)
+   EAF_OBJECT_ENTRY(CLSID_LibMgrDocPlugin, LibraryMgr::ExampleDocPlugin)
+EAF_END_OBJECT_MAP()
+
 CLibraryMgrPluginExampleModule _AtlModule;
 
 class CLibraryMgrPluginExampleApp : public CWinApp
@@ -47,7 +55,8 @@ CLibraryMgrPluginExampleApp theApp;
 
 BOOL CLibraryMgrPluginExampleApp::InitInstance()
 {
-	return CWinApp::InitInstance();
+   Module_.Init(ObjectMap);
+   return CWinApp::InitInstance();
 }
 
 int CLibraryMgrPluginExampleApp::ExitInstance()

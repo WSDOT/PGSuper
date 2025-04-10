@@ -36,6 +36,10 @@
 #endif
 
 class CLibMgrDocPlugin;
+namespace LibraryMgr
+{
+   class ExampleDocPlugin;
+};
 
 class CMyCmdTarget : public CCmdTarget
 {
@@ -46,7 +50,8 @@ public:
    void OnUpdateMyCommand(CCmdUI* pCmdUI);
    void OnCreateView();
 
-   CLibMgrDocPlugin* m_pMyDocPlugin;
+   CLibMgrDocPlugin* m_pMyDocPlugin = nullptr;
+   LibraryMgr::ExampleDocPlugin* m_pMyDocPlugin2 = nullptr;
 
    DECLARE_MESSAGE_MAP()
 };
@@ -63,7 +68,7 @@ class ATL_NO_VTABLE CLibMgrDocPlugin :
 public:
 	CLibMgrDocPlugin()
 	{
-      m_MyCommandTarget.m_pMyDocPlugin = this;
+	   m_MyCommandTarget.m_pMyDocPlugin = this;
 	}
 
 DECLARE_REGISTRY_RESOURCEID(IDR_LIBMGRDOCPLUGIN)
@@ -104,7 +109,7 @@ END_COM_MAP()
 // IEAFDocumentPlugin
 public:
    virtual BOOL Init(CEAFDocument* pParent) override;
-   virtual BOOL IntagrateWithUI(BOOL bIntegrate) override;
+   virtual BOOL IntegrateWithUI(BOOL bIntegrate) override;
    virtual void Terminate() override;
    virtual CString GetName() override;
    virtual CString GetDocumentationSetName() override;
@@ -123,3 +128,57 @@ public:
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(LibMgrDocPlugin), CLibMgrDocPlugin)
+
+
+
+
+
+
+namespace LibraryMgr
+{
+   class ExampleDocPlugin :
+	  public WBFL::EAF::ComponentObject,
+	  public WBFL::EAF::IDocumentPlugin,
+	  public WBFL::EAF::ICommandCallback,
+	  public WBFL::EAF::IPluginPersist
+   {
+   public:
+	  ExampleDocPlugin()
+	  {
+		 m_MyCommandTarget.m_pMyDocPlugin2 = this;
+	  }
+
+	  CEAFDocument* m_pDoc;
+	  CMyCmdTarget m_MyCommandTarget;
+	  CBitmap m_bmpMenuItem;
+
+	  void CreateMenus();
+	  void RemoveMenus();
+	  CEAFMenu* m_pPluginMenu;
+
+	  void RegisterViews();
+	  void UnregisterViews();
+	  void CreateView();
+	  long m_MyViewKey;
+
+	  // IDocumentPlugin
+   public:
+	  BOOL Init(CEAFDocument* pParent) override;
+	  BOOL IntegrateWithUI(BOOL bIntegrate) override;
+	  void Terminate() override;
+	  CString GetName() override;
+	  CString GetDocumentationSetName() override;
+	  eafTypes::HelpResult GetDocumentLocation(LPCTSTR lpszDocSetName, UINT nHID, CString& strURL) override;
+
+	  // ICommandCallback
+   public:
+	  BOOL OnCommandMessage(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo) override;
+	  BOOL GetStatusBarMessageString(UINT nID, CString& rMessage) const override;
+	  BOOL GetToolTipMessageString(UINT nID, CString& rMessage) const override;
+
+	  // IPluginPersist
+   public:
+	  HRESULT Save(IStructuredSave* pStrSave) override;
+	  HRESULT Load(IStructuredLoad* pStrLoad) override;
+   };
+};
