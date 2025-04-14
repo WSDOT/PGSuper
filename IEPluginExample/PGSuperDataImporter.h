@@ -56,3 +56,24 @@ public:
    STDMETHOD(GetCommandHintText)(BSTR*  bstrText) const override;
    STDMETHOD(Import)(/*[in]*/IBroker* pBroker) override;
 };
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CPGSuperDataImporter2
+class CPGSuperDataImporter2 :
+   public IPGSDataImporter2
+{
+public:
+   CPGSuperDataImporter2()
+   {
+   }
+
+   // IPGSDataImporter2
+public:
+   STDMETHOD(Init)(UINT nCmdID) override;
+   CString GetMenuText() const override;
+   STDMETHOD(GetBitmapHandle)(/*[out]*/HBITMAP* phBmp) const override;
+   CString GetCommandHintText() const override;
+   STDMETHOD(Import)(/*[in]*/IBroker* pBroker) override;
+};

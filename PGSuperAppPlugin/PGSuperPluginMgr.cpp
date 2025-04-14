@@ -37,6 +37,11 @@ CPGSuperPluginMgrBase::CPGSuperPluginMgrBase()
 
 bool CPGSuperPluginMgrBase::LoadPlugins()
 {
+   return LoadPlugins_Old() && LoadPlugins_New();
+}
+
+bool CPGSuperPluginMgrBase::LoadPlugins_Old()
+{
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CWinApp* pApp = AfxGetApp();
 
@@ -174,10 +179,131 @@ bool CPGSuperPluginMgrBase::LoadPlugins()
    return true;
 }
 
+bool CPGSuperPluginMgrBase::LoadPlugins_New()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CWinApp* pApp = AfxGetApp();
+
+
+   USES_CONVERSION;
+
+   CWaitCursor cursor;
+
+   auto components = WBFL::EAF::ComponentCategoryManager::GetInstance().GetComponents(GetImporterCATID());
+
+   // Load Importers
+#pragma Reminder("WORKING HERE - Removing COM")
+   //UINT cmdImporter = FIRST_DATA_IMPORTER_PLUGIN; This is what we really want, line below is a workaround during development
+   UINT cmdImporter = LAST_DATA_IMPORTER_PLUGIN - components.size();
+   for(const auto& component : components)
+   {
+      if (LAST_DATA_IMPORTER_PLUGIN <= cmdImporter)
+      {
+         AfxMessageBox(_T("The maximum number of data importers has been exceeded."));
+         break; // get out of while loop
+      }
+
+      LPOLESTR pszCLSID;
+      ::StringFromCLSID(component.clsid, &pszCLSID);
+      CString strState = pApp->GetProfileString(_T("Plugins"), OLE2T(pszCLSID), _T("Enabled"));
+
+      if (strState.CompareNoCase(_T("Enabled")) == 0)
+      {
+         boost::dll::fs::path lib_path(component.dll);
+         auto factory = boost::dll::import_alias<factory_t>(lib_path, "create_class_object", boost::dll::load_mode::append_decorations);
+         m_factories.push_back(factory);
+
+         auto class_object = factory(component.clsid);
+         if (class_object)
+         {
+            auto importer = std::dynamic_pointer_cast<IPGSDataImporter2>(class_object);
+            ImporterRecord2 record;
+            record.commandID = cmdImporter++;
+            record.Plugin = importer;
+
+            importer->Init(record.commandID);
+
+            HBITMAP hBmp;
+            importer->GetBitmapHandle(&hBmp);
+            record.Bitmap.Attach(hBmp);
+            m_ImporterPlugins2.push_back(record);
+         }
+         else
+         {
+            CString strMsg;
+            strMsg.Format(_T("Failed to load %s PGSuper Data Importer plug in.\n\nWould you like to disable this plug-in?"), component.name.c_str());
+            if (AfxMessageBox(strMsg, MB_YESNO | MB_ICONQUESTION) == IDYES)
+            {
+               pApp->WriteProfileString(_T("Plugins"), OLE2T(pszCLSID), _T("Disabled"));
+            }
+         }
+      }
+
+      ::CoTaskMemFree((void*)pszCLSID);
+   }
+
+   // Load Exporters
+#pragma Reminder("WORKING HERE - Removing COM")
+   //UINT cmdExporter = FIRST_DATA_EXPORTER_PLUGIN; This is what we really want, line below is a workaround during development
+   UINT cmdExporter = LAST_DATA_EXPORTER_PLUGIN - components.size();
+   components = WBFL::EAF::ComponentCategoryManager::GetInstance().GetComponents(GetExporterCATID());
+   for(const auto& component : components)
+   {
+      if (LAST_DATA_EXPORTER_PLUGIN <= cmdExporter)
+      {
+         AfxMessageBox(_T("The maximum number of data exporters has been exceeded."));
+         break; // get out of the while loop
+      }
+
+      LPOLESTR pszCLSID;
+      ::StringFromCLSID(component.clsid, &pszCLSID);
+      CString strState = pApp->GetProfileString(_T("Plugins"), OLE2T(pszCLSID), _T("Enabled"));
+
+      if (strState.CompareNoCase(_T("Enabled")) == 0)
+      {
+         boost::dll::fs::path lib_path(component.dll);
+         auto factory = boost::dll::import_alias<factory_t>(lib_path, "create_class_object", boost::dll::load_mode::append_decorations);
+         m_factories.push_back(factory);
+
+         auto class_object = factory(component.clsid);
+         if (class_object)
+         {
+            auto exporter = std::dynamic_pointer_cast<IPGSDataExporter2>(class_object);
+            ExporterRecord2 record;
+            record.commandID = cmdExporter++;
+            record.Plugin = exporter;
+
+            exporter->Init(record.commandID);
+
+            HBITMAP hBmp;
+            exporter->GetBitmapHandle(&hBmp);
+            record.Bitmap.Attach(hBmp);
+            m_ExporterPlugins2.push_back(record);
+         }
+         else
+         {
+            CString strMsg;
+            strMsg.Format(_T("Failed to load %s PGSuper Data Export plug in.\n\nWould you like to disable this plug-in?"), component.name.c_str());
+            if (AfxMessageBox(strMsg, MB_YESNO | MB_ICONQUESTION) == IDYES)
+            {
+               pApp->WriteProfileString(_T("Plugins"), OLE2T(pszCLSID), _T("Disabled"));
+            }
+         }
+      }
+
+      ::CoTaskMemFree((void*)pszCLSID);
+   }
+
+   return true;
+}
+
 void CPGSuperPluginMgrBase::UnloadPlugins()
 {
    m_ImporterPlugins.clear();
    m_ExporterPlugins.clear();
+
+   m_ImporterPlugins2.clear();
+   m_ExporterPlugins2.clear();
 }
 
 IndexType CPGSuperPluginMgrBase::GetImporterCount()
@@ -188,6 +314,16 @@ IndexType CPGSuperPluginMgrBase::GetImporterCount()
 IndexType CPGSuperPluginMgrBase::GetExporterCount()
 {
    return m_ExporterPlugins.size();
+}
+
+IndexType CPGSuperPluginMgrBase::GetImporterCount2() const
+{
+   return m_ImporterPlugins2.size();
+}
+
+IndexType CPGSuperPluginMgrBase::GetExporterCount2() const
+{
+   return m_ExporterPlugins2.size();
 }
 
 void CPGSuperPluginMgrBase::GetImporter(IndexType key,bool bByIndex,IPGSDataImporter** ppImporter)
@@ -212,6 +348,26 @@ void CPGSuperPluginMgrBase::GetImporter(IndexType key,bool bByIndex,IPGSDataImpo
    }
 }
 
+std::shared_ptr<IPGSDataImporter2> CPGSuperPluginMgrBase::GetImporter(IndexType key, bool bByIndex) const
+{
+   if (bByIndex)
+   {
+      return m_ImporterPlugins2[key].Plugin;
+   }
+   else
+   {
+      for( const auto& record : m_ImporterPlugins2)
+      {
+         if (key == record.commandID)
+         {
+            return record.Plugin;
+         }
+      }
+   }
+
+   return nullptr;
+}
+
 void CPGSuperPluginMgrBase::GetExporter(IndexType key,bool bByIndex,IPGSDataExporter** ppExporter)
 {
    if ( bByIndex )
@@ -234,6 +390,27 @@ void CPGSuperPluginMgrBase::GetExporter(IndexType key,bool bByIndex,IPGSDataExpo
    }
 }
 
+
+std::shared_ptr<IPGSDataExporter2> CPGSuperPluginMgrBase::GetExporter(IndexType key, bool bByIndex) const
+{
+   if (bByIndex)
+   {
+      return m_ExporterPlugins2[key].Plugin;
+   }
+   else
+   {
+      for(const auto& record : m_ExporterPlugins2)
+      {
+         if (key == record.commandID)
+         {
+            return record.Plugin;
+         }
+      }
+   }
+
+   return nullptr;
+}
+
 UINT CPGSuperPluginMgrBase::GetImporterCommand(IndexType idx)
 {
    return m_ImporterPlugins[idx].commandID;
@@ -244,6 +421,16 @@ UINT CPGSuperPluginMgrBase::GetExporterCommand(IndexType idx)
    return m_ExporterPlugins[idx].commandID;
 }
 
+UINT CPGSuperPluginMgrBase::GetImporterCommand2(IndexType idx) const
+{
+   return m_ImporterPlugins2[idx].commandID;
+}
+
+UINT CPGSuperPluginMgrBase::GetExporterCommand2(IndexType idx) const
+{
+   return m_ExporterPlugins2[idx].commandID;
+}
+
 const CBitmap* CPGSuperPluginMgrBase::GetImporterBitmap(IndexType idx)
 {
    return &m_ImporterPlugins[idx].Bitmap;
@@ -252,6 +439,16 @@ const CBitmap* CPGSuperPluginMgrBase::GetImporterBitmap(IndexType idx)
 const CBitmap* CPGSuperPluginMgrBase::GetExporterBitmap(IndexType idx)
 {
    return &m_ExporterPlugins[idx].Bitmap;
+}
+
+const CBitmap* CPGSuperPluginMgrBase::GetImporterBitmap2(IndexType idx) const
+{
+   return &m_ImporterPlugins2[idx].Bitmap;
+}
+
+const CBitmap* CPGSuperPluginMgrBase::GetExporterBitmap2(IndexType idx) const
+{
+   return &m_ExporterPlugins2[idx].Bitmap;
 }
 
 void CPGSuperPluginMgrBase::LoadDocumentationMaps()
@@ -269,6 +466,24 @@ void CPGSuperPluginMgrBase::LoadDocumentationMaps()
    {
       CComQIPtr<IPGSDocumentation> pDocumentation(record.Plugin);
       if ( pDocumentation )
+      {
+         pDocumentation->LoadDocumentationMap();
+      }
+   }
+
+   for (const auto& record : m_ImporterPlugins2)
+   {
+      auto pDocumentation = std::dynamic_pointer_cast<IPGSDocumentation>(record.Plugin);
+      if (pDocumentation)
+      {
+         pDocumentation->LoadDocumentationMap();
+      }
+   }
+
+   for (const auto& record : m_ExporterPlugins2)
+   {
+      auto pDocumentation = std::dynamic_pointer_cast<IPGSDocumentation>(record.Plugin);
+      if (pDocumentation)
       {
          pDocumentation->LoadDocumentationMap();
       }
@@ -318,6 +533,58 @@ eafTypes::HelpResult CPGSuperPluginMgrBase::GetDocumentLocation(LPCTSTR lpszDocS
             CComBSTR bstrURL;
             HRESULT hr = pDocumentation->GetDocumentLocation(nHID,&bstrURL);
             if ( SUCCEEDED(hr) )
+            {
+               strURL = OLE2T(bstrURL);
+               return eafTypes::hrOK;
+            }
+            else
+            {
+               return eafTypes::hrTopicNotFound;
+            }
+         }
+      }
+   }
+
+
+
+   for (const auto& record : m_ImporterPlugins2)
+   {
+      auto pDocumentation = std::dynamic_pointer_cast<IPGSDocumentation>(record.Plugin);
+      if (pDocumentation)
+      {
+         CComBSTR bstrDocSetName;
+         pDocumentation->GetDocumentationSetName(&bstrDocSetName);
+
+         if (bstrDocSetName == bstrTargetDocSetName)
+         {
+            CComBSTR bstrURL;
+            HRESULT hr = pDocumentation->GetDocumentLocation(nHID, &bstrURL);
+            if (SUCCEEDED(hr))
+            {
+               strURL = OLE2T(bstrURL);
+               return eafTypes::hrOK;
+            }
+            else
+            {
+               return eafTypes::hrTopicNotFound;
+            }
+         }
+      }
+   }
+
+   for (const auto& record : m_ExporterPlugins2)
+   {
+      auto pDocumentation = std::dynamic_pointer_cast<IPGSDocumentation>(record.Plugin);
+      if (pDocumentation)
+      {
+         CComBSTR bstrDocSetName;
+         pDocumentation->GetDocumentationSetName(&bstrDocSetName);
+
+         if (bstrDocSetName == bstrTargetDocSetName)
+         {
+            CComBSTR bstrURL;
+            HRESULT hr = pDocumentation->GetDocumentLocation(nHID, &bstrURL);
+            if (SUCCEEDED(hr))
             {
                strURL = OLE2T(bstrURL);
                return eafTypes::hrOK;

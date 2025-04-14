@@ -27,6 +27,7 @@
 #endif // _MSC_VER > 1000
 
 #include "Plugins\PGSuperIEPlugin.h"
+#include <boost/dll/import.hpp>
 
 class CPGSuperPluginMgrBase
 {
@@ -37,18 +38,29 @@ public:
    void UnloadPlugins();
    IndexType GetImporterCount();
    IndexType GetExporterCount();
+   IndexType GetImporterCount2() const;
+   IndexType GetExporterCount2() const;
    void GetImporter(IndexType key,bool bByIndex,IPGSDataImporter** ppImporter);
    void GetExporter(IndexType key,bool bByIndex,IPGSDataExporter** ppExporter);
+   std::shared_ptr<IPGSDataImporter2> GetImporter(IndexType key, bool bByIndex) const;
+   std::shared_ptr<IPGSDataExporter2> GetExporter(IndexType key, bool bByIndex) const;
    UINT GetImporterCommand(IndexType idx);
    UINT GetExporterCommand(IndexType idx);
+   UINT GetImporterCommand2(IndexType idx) const;
+   UINT GetExporterCommand2(IndexType idx) const;
    const CBitmap* GetImporterBitmap(IndexType idx);
    const CBitmap* GetExporterBitmap(IndexType idx);
+   const CBitmap* GetImporterBitmap2(IndexType idx) const;
+   const CBitmap* GetExporterBitmap2(IndexType idx) const;
    void LoadDocumentationMaps();
    eafTypes::HelpResult GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nHID,CString& strURL);
 
 protected:
    virtual CATID GetImporterCATID() = 0;
    virtual CATID GetExporterCATID() = 0;
+
+   bool LoadPlugins_Old();
+   bool LoadPlugins_New();
 
 private:
    template <class T> 
@@ -83,6 +95,43 @@ private:
 
    std::vector<ImporterRecord> m_ImporterPlugins;
    std::vector<ExporterRecord> m_ExporterPlugins;
+
+   template <class T>
+   struct Record2
+   {
+      UINT commandID; CBitmap Bitmap; std::shared_ptr<T> Plugin;
+      Record2() {}
+      Record2(const Record2& other)
+      {
+         Bitmap.Detach();
+
+         CBitmap* pBmp = const_cast<CBitmap*>(&(other.Bitmap));
+         Bitmap.Attach(pBmp->Detach());
+
+         commandID = other.commandID;
+         Plugin = other.Plugin;
+      }
+      Record2& operator=(const Record2& other)
+      {
+         Bitmap.Detach();
+
+         CBitmap* pBmp = const_cast<CBitmap*>(&(other.Bitmap));
+         Bitmap.Attach(pBmp->Detach());
+
+         commandID = other.commandID;
+         Plugin = other.Plugin;
+         return *this;
+      }
+   };
+
+   typedef Record2<IPGSDataImporter2> ImporterRecord2;
+   typedef Record2<IPGSDataExporter2> ExporterRecord2;
+
+   std::vector<ImporterRecord2> m_ImporterPlugins2;
+   std::vector<ExporterRecord2> m_ExporterPlugins2;
+
+   using factory_t = std::shared_ptr<WBFL::EAF::ComponentObject>(CLSID);
+   std::vector<boost::dll::detail::library_function<factory_t>> m_factories; // this holds the DLL in memory
 };
 
 class CPGSuperPluginMgr : public CPGSuperPluginMgrBase

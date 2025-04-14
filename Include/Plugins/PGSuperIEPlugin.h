@@ -103,3 +103,33 @@ interface IPGSDocumentation : IUnknown
    virtual HRESULT LoadDocumentationMap() = 0;
    virtual HRESULT GetDocumentLocation(UINT nHID,BSTR* pbstrURL) const = 0;
 };
+
+
+#include <EAF\ComponentObject.h>
+class IPGSDataImporter2 : public WBFL::EAF::ComponentObject
+{
+public:
+   virtual HRESULT Init(UINT nCmdID) = 0;
+   virtual CString GetMenuText() const = 0;
+   virtual HRESULT GetBitmapHandle(HBITMAP* phBmp) const = 0;
+   virtual CString GetCommandHintText() const = 0;
+   virtual HRESULT Import(IBroker* pBroker) = 0;
+};
+
+class IPGSDataExporter2 : public WBFL::EAF::ComponentObject
+{
+public:
+   virtual HRESULT Init(UINT nCmdID) = 0;
+   virtual CString GetMenuText() const = 0;
+   virtual HRESULT GetBitmapHandle(HBITMAP* phBmp) const = 0;
+   virtual CString GetCommandHintText() const = 0;
+   virtual HRESULT Export(IBroker* pBroker) = 0;
+};
+
+class IPGSProjectImporter2 : public WBFL::EAF::ComponentObject
+{
+   virtual CString GetItemText() const = 0;
+   virtual HRESULT Import(IBroker* pBroker) = 0;
+   virtual HRESULT GetIcon(HICON* phIcon) const = 0;
+   virtual CLSID GetCLSID() const = 0;
+};

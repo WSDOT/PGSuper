@@ -61,4 +61,24 @@ public:
    STDMETHOD(Export)(/*[in]*/IBroker* pBroker) override;
 };
 
+
+/////////////////////////////////////////////////////////////////////////////
+// CPGSuperDataExporter2
+class CPGSuperDataExporter2 : public IPGSDataExporter2
+{
+public:
+   CPGSuperDataExporter2();
+
+   // IPGSDataExporter2
+public:
+   STDMETHOD(Init)(UINT nCmdID) override;
+   CString GetMenuText() const override;
+   STDMETHOD(GetBitmapHandle)(/*[out]*/HBITMAP* phBmp) const override;
+   CString GetCommandHintText() const override;
+   STDMETHOD(Export)(/*[in]*/IBroker* pBroker) override;
+
+private:
+   CBitmap m_Bitmap;
+};
+
 #endif //__PGSUPEREXPORTER_H_

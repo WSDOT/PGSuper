@@ -5091,6 +5091,45 @@ void CPGSDocBase::OnImportMenu(CCmdUI* pCmdUI)
       }
    }
 
+
+   nImporters = m_pPluginMgr->GetImporterCount2();
+   if (nImporters == 0)
+   {
+      pCmdUI->SetText(_T("Custom importers not installed"));
+      pCmdUI->Enable(FALSE);
+      return;
+   }
+   else
+   {
+      IndexType idx;
+#pragma Reminder("WORKING HERE - Removing COM")
+      // Commented out during development - this deletes the old plugin's menu item
+      // This will be needed after transition to new code
+      // clean up the menu
+      //for (idx = 0; idx < nImporters; idx++)
+      //{
+      //   pMenu->DeleteMenu(pCmdUI->m_nID + (UINT)idx, MF_BYCOMMAND);
+      //}
+
+      // populate the menu
+      for (idx = 0; idx < nImporters; idx++)
+      {
+         auto importer = m_pPluginMgr->GetImporter(idx, true);
+
+         UINT cmdID = m_pPluginMgr->GetImporterCommand2(idx);
+
+         CString strMenuText = importer->GetMenuText();
+         pMenu->InsertMenu(pCmdUI->m_nIndex, MF_BYPOSITION | MF_STRING, cmdID, strMenuText);
+
+         const CBitmap* pBmp = m_pPluginMgr->GetImporterBitmap2(idx);
+         pMenu->SetMenuItemBitmaps(cmdID, MF_BYCOMMAND, pBmp, nullptr);
+
+         pCmdUI->m_nIndexMax = pMenu->GetMenuItemCount();
+
+         pCmdUI->m_nIndex++;
+      }
+   }
+
    pCmdUI->m_nIndex--; // point to last menu added
 }
 
@@ -5146,7 +5185,45 @@ void CPGSDocBase::OnExportMenu(CCmdUI* pCmdUI)
       }
    }
 
-	// update end menu count
+
+   nExporters = m_pPluginMgr->GetExporterCount2();
+   if (nExporters == 0)
+   {
+      pCmdUI->SetText(_T("Custom exporters not installed"));
+      pCmdUI->Enable(FALSE);
+      return;
+   }
+   else
+   {
+      IndexType idx;
+#pragma Reminder("WORKING HERE - Removing COM")
+      // Commented out during development - this deletes the old plugin's menu item
+      // This will be needed after transition to new code
+      // clean up the menu
+      //for (idx = 0; idx < nExporters; idx++)
+      //{
+      //   pMenu->DeleteMenu(pCmdUI->m_nID + (UINT)idx, MF_BYCOMMAND);
+      //}
+
+      for (idx = 0; idx < nExporters; idx++)
+      {
+         auto exporter = m_pPluginMgr->GetExporter(idx, true);
+
+         UINT cmdID = m_pPluginMgr->GetExporterCommand2(idx);
+
+         auto strMenuText = exporter->GetMenuText();
+
+         pMenu->InsertMenu(pCmdUI->m_nIndex, MF_BYPOSITION | MF_STRING, cmdID, strMenuText);
+
+         const CBitmap* pBmp = m_pPluginMgr->GetExporterBitmap2(idx);
+         pMenu->SetMenuItemBitmaps(cmdID, MF_BYCOMMAND, pBmp, nullptr);
+
+         pCmdUI->m_nIndexMax = pMenu->GetMenuItemCount();
+         pCmdUI->m_nIndex++;
+      }
+   }
+   
+   // update end menu count
 	pCmdUI->m_nIndex--; // point to last menu added
 }
 
@@ -5159,6 +5236,12 @@ void CPGSDocBase::OnImport(UINT nID)
    {
       importer->Import(m_pBroker);
    }
+
+   auto importer2 = m_pPluginMgr->GetImporter(nID, false);
+   if (importer2)
+   {
+      importer2->Import(m_pBroker);
+   }
 }
 
 void CPGSDocBase::OnExport(UINT nID)
@@ -5169,6 +5252,12 @@ void CPGSDocBase::OnExport(UINT nID)
    if ( exporter )
    {
       exporter->Export(m_pBroker);
+   }
+
+   auto exporter2 = m_pPluginMgr->GetExporter(nID, false);
+   if (exporter2)
+   {
+      exporter2->Export(m_pBroker);
    }
 }
 

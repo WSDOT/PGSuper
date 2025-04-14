@@ -151,6 +151,28 @@ bool CPluginPage::InitList()
       }
    }
 
+
+   auto components = WBFL::EAF::ComponentCategoryManager::GetInstance().GetComponents(m_CATID);
+   for (auto& component : components)
+   {
+      int idx = m_ctlPluginList.AddString(CString(component.name.c_str()));
+      
+      LPOLESTR pszCLSID;
+      ::StringFromCLSID(component.clsid, &pszCLSID);
+      CString strCLSID(pszCLSID);
+
+      CString strState = pApp->GetProfileString(m_Section, strCLSID, _T("Enabled"));
+      m_CLSIDs.push_back(strCLSID);
+      CHECK(0 < m_CLSIDs.size());
+      int clsidIdx = (int)(m_CLSIDs.size() - 1);
+      m_ctlPluginList.SetItemData(idx, (DWORD_PTR)clsidIdx);
+
+      ::CoTaskMemFree((void*)pszCLSID);
+
+      bool bInitiallyEnabled = (strState.CompareNoCase(_T("Enabled")) == 0 ? true : false);
+      m_ctlPluginList.SetCheck(idx, bInitiallyEnabled);
+   }
+
    return true;
 }
 

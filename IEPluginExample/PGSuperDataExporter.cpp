@@ -23,7 +23,7 @@
 // PGSuperExporter.cpp : Implementation of CPGSuperExporter
 #include "stdafx.h"
 #include "IEPluginExample.h"
-#include "PGSuperExporter.h"
+#include "PGSuperDataExporter.h"
 
 #include "PGSuperInterfaces.h"
 #include <PgsExt\GirderLabel.h>
@@ -92,6 +92,71 @@ STDMETHODIMP CPGSuperDataExporter::Export(IBroker* pBroker)
       }
 
 	}		
+
+   return S_OK;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CPGSuperDataExporter2
+
+CPGSuperDataExporter2::CPGSuperDataExporter2()
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   VERIFY(m_Bitmap.LoadBitmap(IDB_IEPLUGIN));
+}
+
+STDMETHODIMP CPGSuperDataExporter2::Init(UINT nCmdID)
+{
+   return S_OK;
+}
+
+CString CPGSuperDataExporter2::GetMenuText() const
+{
+   return CString("Bridge Data to Text File (New)");
+}
+
+STDMETHODIMP CPGSuperDataExporter2::GetBitmapHandle(HBITMAP* phBmp) const
+{
+   *phBmp = m_Bitmap;
+   return S_OK;
+}
+
+CString CPGSuperDataExporter2::GetCommandHintText() const
+{
+   return CString("Status line hint text\nTool tip text");
+}
+
+STDMETHODIMP CPGSuperDataExporter2::Export(IBroker* pBroker)
+{
+   // write some bridge data to a text file
+   CFileDialog  fildlg(FALSE, _T("txt"), _T("PGSuperExport.txt"), OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, _T("PGSuper Export File (*.txt)|*.txt||"));
+   if (fildlg.DoModal() == IDOK)
+   {
+      CString file_path = fildlg.GetPathName();
+
+      std::_tofstream ofile(file_path);
+
+      GET_IFACE2(pBroker, IBridge, pBridge);
+      GET_IFACE2(pBroker, IProgress, pProgress);
+
+      ofile << _T("Pier 1: Station ") << pBridge->GetPierStation(0) << std::endl;
+
+      SpanIndexType nSpans = pBridge->GetSpanCount();
+      for (SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++)
+      {
+         ofile << _T("Span ") << LABEL_SPAN(spanIdx) << std::endl;
+         GirderIndexType nGirders = pBridge->GetGirderCount(spanIdx);
+         for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++)
+         {
+            CSegmentKey segmentKey(spanIdx, gdrIdx, 0);
+            ofile << _T("Girder ") << LABEL_GIRDER(gdrIdx) << _T(" Length: ") << pBridge->GetSegmentLength(segmentKey) << std::endl;
+         }
+
+         ofile << _T("Pier ") << LABEL_PIER(spanIdx + 1) << _T(": Station ") << pBridge->GetPierStation(spanIdx + 1) << std::endl;
+      }
+
+   }
 
    return S_OK;
 }

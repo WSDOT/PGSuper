@@ -37,7 +37,7 @@
 
 #include "PGSuperProjectImporter.h"
 #include "PGSuperDataImporter.h"
-#include "PGSuperExporter.h"
+#include "PGSuperDataExporter.h"
 
 #include "PGSpliceProjectImporter.h"
 
@@ -51,6 +51,14 @@ BEGIN_OBJECT_MAP(ObjectMap)
    OBJECT_ENTRY(CLSID_PGSuperDataExporter,    CPGSuperDataExporter)
    OBJECT_ENTRY(CLSID_PGSpliceProjectImporter, CPGSpliceProjectImporter)
 END_OBJECT_MAP()
+
+#include <EAF\ComponentModule.h>
+WBFL::EAF::ComponentModule _Module2;
+EAF_BEGIN_OBJECT_MAP(ObjectMap2)
+EAF_OBJECT_ENTRY(CLSID_PGSuperDataImporter, CPGSuperDataImporter2)
+EAF_OBJECT_ENTRY(CLSID_PGSuperDataExporter, CPGSuperDataExporter2)
+EAF_OBJECT_ENTRY(CLSID_PGSuperProjectImporter, CPGSuperProjectImporter2)
+EAF_END_OBJECT_MAP()
 
 class CIEPluginExampleApp : public CWinApp
 {
@@ -83,12 +91,14 @@ CIEPluginExampleApp theApp;
 BOOL CIEPluginExampleApp::InitInstance()
 {
     _Module.Init(ObjectMap, m_hInstance, &LIBID_PGSuperIEPluginExample);
+    _Module2.Init(ObjectMap2);
     return CWinApp::InitInstance();
 }
 
 int CIEPluginExampleApp::ExitInstance()
 {
     _Module.Term();
+    _Module2.Term();
     return CWinApp::ExitInstance();
 }
 

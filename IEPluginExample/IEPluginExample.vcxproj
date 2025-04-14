@@ -185,7 +185,7 @@
     <ClCompile Include="IEPluginExample.cpp" />
     <ClCompile Include="PGSpliceProjectImporter.cpp" />
     <ClCompile Include="PGSuperDataImporter.cpp" />
-    <ClCompile Include="PGSuperExporter.cpp" />
+    <ClCompile Include="PGSuperDataExporter.cpp" />
     <ClCompile Include="PGSuperProjectImporter.cpp" />
     <ClCompile Include="StdAfx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -209,7 +209,7 @@
     <ClInclude Include="IEPluginExample.h" />
     <ClInclude Include="PGSpliceProjectImporter.h" />
     <ClInclude Include="PGSuperDataImporter.h" />
-    <ClInclude Include="PGSuperExporter.h" />
+    <ClInclude Include="PGSuperDataExporter.h" />
     <ClInclude Include="PGSuperInterfaces.h" />
     <ClInclude Include="PGSuperProjectImporter.h" />
     <ClInclude Include="Resource.h" />

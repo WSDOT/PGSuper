@@ -66,3 +66,28 @@ private:
    void InitGirderData(IBroker* pBroker);
    void InitTimelineManager(IBroker* pBroker,CBridgeDescription2& bridge);
 };
+
+
+
+/////////////////////////////////////////////////////////////////////////////
+// CPGSuperProjectImporter2
+class ATL_NO_VTABLE CPGSuperProjectImporter2 : public IPGSProjectImporter2
+{
+public:
+   CPGSuperProjectImporter2();
+
+   // IPGSProjectImporter2
+public:
+   CString GetItemText() const override;
+   STDMETHOD(GetIcon)(/*[out]*/HICON* phIcon) const override;
+   STDMETHOD(Import)(/*[in]*/IBroker* pBroker) override;
+   CLSID GetCLSID() const override;
+
+private:
+   void BuildBridge(IBroker* pBroker);
+   void SetSpecification(IBroker* pBroker);
+   void InitGirderData(IBroker* pBroker);
+   void InitTimelineManager(IBroker* pBroker, CBridgeDescription2& bridge);
+
+   CBitmap m_Bitmap;
+};
