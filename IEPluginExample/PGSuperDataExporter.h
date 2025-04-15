@@ -62,9 +62,11 @@ public:
 };
 
 
+#include <EAF\ComponentObject.h>
 /////////////////////////////////////////////////////////////////////////////
 // CPGSuperDataExporter2
-class CPGSuperDataExporter2 : public IPGSDataExporter2
+class CPGSuperDataExporter2 : public WBFL::EAF::ComponentObject,
+   public IPGSDataExporter2
 {
 public:
    CPGSuperDataExporter2();

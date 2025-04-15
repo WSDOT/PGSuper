@@ -105,8 +105,7 @@ interface IPGSDocumentation : IUnknown
 };
 
 
-#include <EAF\ComponentObject.h>
-class IPGSDataImporter2 : public WBFL::EAF::ComponentObject
+class IPGSDataImporter2
 {
 public:
    virtual HRESULT Init(UINT nCmdID) = 0;
@@ -116,7 +115,7 @@ public:
    virtual HRESULT Import(IBroker* pBroker) = 0;
 };
 
-class IPGSDataExporter2 : public WBFL::EAF::ComponentObject
+class IPGSDataExporter2
 {
 public:
    virtual HRESULT Init(UINT nCmdID) = 0;
@@ -126,7 +125,7 @@ public:
    virtual HRESULT Export(IBroker* pBroker) = 0;
 };
 
-class IPGSProjectImporter2 : public WBFL::EAF::ComponentObject
+class IPGSProjectImporter2
 {
    virtual CString GetItemText() const = 0;
    virtual HRESULT Import(IBroker* pBroker) = 0;

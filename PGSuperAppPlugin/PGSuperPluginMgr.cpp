@@ -189,11 +189,10 @@ bool CPGSuperPluginMgrBase::LoadPlugins_New()
 
    CWaitCursor cursor;
 
-   auto components = WBFL::EAF::ComponentCategoryManager::GetInstance().GetComponents(GetImporterCATID());
-
    // Load Importers
 #pragma Reminder("WORKING HERE - Removing COM")
    //UINT cmdImporter = FIRST_DATA_IMPORTER_PLUGIN; This is what we really want, line below is a workaround during development
+   auto components = WBFL::EAF::ComponentCategoryManager::GetInstance().GetComponents(GetImporterCATID());
    UINT cmdImporter = LAST_DATA_IMPORTER_PLUGIN - components.size();
    for(const auto& component : components)
    {
@@ -209,11 +208,7 @@ bool CPGSuperPluginMgrBase::LoadPlugins_New()
 
       if (strState.CompareNoCase(_T("Enabled")) == 0)
       {
-         boost::dll::fs::path lib_path(component.dll);
-         auto factory = boost::dll::import_alias<factory_t>(lib_path, "create_class_object", boost::dll::load_mode::append_decorations);
-         m_factories.push_back(factory);
-
-         auto class_object = factory(component.clsid);
+         auto class_object = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent(component);
          if (class_object)
          {
             auto importer = std::dynamic_pointer_cast<IPGSDataImporter2>(class_object);
@@ -245,8 +240,8 @@ bool CPGSuperPluginMgrBase::LoadPlugins_New()
    // Load Exporters
 #pragma Reminder("WORKING HERE - Removing COM")
    //UINT cmdExporter = FIRST_DATA_EXPORTER_PLUGIN; This is what we really want, line below is a workaround during development
-   UINT cmdExporter = LAST_DATA_EXPORTER_PLUGIN - components.size();
    components = WBFL::EAF::ComponentCategoryManager::GetInstance().GetComponents(GetExporterCATID());
+   UINT cmdExporter = LAST_DATA_EXPORTER_PLUGIN - components.size();
    for(const auto& component : components)
    {
       if (LAST_DATA_EXPORTER_PLUGIN <= cmdExporter)
@@ -261,11 +256,7 @@ bool CPGSuperPluginMgrBase::LoadPlugins_New()
 
       if (strState.CompareNoCase(_T("Enabled")) == 0)
       {
-         boost::dll::fs::path lib_path(component.dll);
-         auto factory = boost::dll::import_alias<factory_t>(lib_path, "create_class_object", boost::dll::load_mode::append_decorations);
-         m_factories.push_back(factory);
-
-         auto class_object = factory(component.clsid);
+         auto class_object = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent(component);
          if (class_object)
          {
             auto exporter = std::dynamic_pointer_cast<IPGSDataExporter2>(class_object);

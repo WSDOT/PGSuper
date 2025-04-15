@@ -129,9 +129,6 @@ private:
 
    std::vector<ImporterRecord2> m_ImporterPlugins2;
    std::vector<ExporterRecord2> m_ExporterPlugins2;
-
-   using factory_t = std::shared_ptr<WBFL::EAF::ComponentObject>(CLSID);
-   std::vector<boost::dll::detail::library_function<factory_t>> m_factories; // this holds the DLL in memory
 };
 
 class CPGSuperPluginMgr : public CPGSuperPluginMgrBase

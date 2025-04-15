@@ -69,9 +69,11 @@ private:
 
 
 
+#include <EAF\ComponentObject.h>
 /////////////////////////////////////////////////////////////////////////////
 // CPGSuperProjectImporter2
-class ATL_NO_VTABLE CPGSuperProjectImporter2 : public IPGSProjectImporter2
+class CPGSuperProjectImporter2 : public WBFL::EAF::ComponentObject, 
+   public IPGSProjectImporter2
 {
 public:
    CPGSuperProjectImporter2();

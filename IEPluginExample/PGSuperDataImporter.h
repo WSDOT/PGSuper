@@ -58,10 +58,10 @@ public:
 };
 
 
-
+#include <EAF\ComponentObject.h>
 /////////////////////////////////////////////////////////////////////////////
 // CPGSuperDataImporter2
-class CPGSuperDataImporter2 :
+class CPGSuperDataImporter2 : public WBFL::EAF::ComponentObject,
    public IPGSDataImporter2
 {
 public:
