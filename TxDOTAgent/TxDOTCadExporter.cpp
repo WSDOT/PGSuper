@@ -48,13 +48,6 @@
 #include <Reporter\FormattedLengthUnitValue.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
 bool DoesFileExist(const CString& filename)
 {
    if (filename.IsEmpty())
@@ -72,7 +65,7 @@ bool DoesFileExist(const CString& filename)
 
 // CTxDOTCadExporter
 
-HRESULT CTxDOTCadExporter::FinalConstruct()
+CTxDOTCadExporter::CTxDOTCadExporter()
 {
    CEAFApp* pApp = EAFGetApp();
    CString str = pApp->GetAppLocation();
@@ -103,11 +96,9 @@ HRESULT CTxDOTCadExporter::FinalConstruct()
    {
       m_strTemplateLocation += _T("\\");
    }
-
-   return S_OK;
 }
 
-void CTxDOTCadExporter::FinalRelease()
+CTxDOTCadExporter::~CTxDOTCadExporter()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CWinApp* pApp = AfxGetApp();
@@ -122,22 +113,19 @@ STDMETHODIMP CTxDOTCadExporter::Init(UINT nCmdID)
    return S_OK;
 }
 
-STDMETHODIMP CTxDOTCadExporter::GetMenuText(BSTR*  bstrText) const
+CString CTxDOTCadExporter::GetMenuText() const
 {
-   *bstrText = CComBSTR("TxDOT &CAD Data...");
-   return S_OK;
+   return CString("TxDOT &CAD Data...");
 }
 
-STDMETHODIMP CTxDOTCadExporter::GetBitmapHandle(HBITMAP* phBmp) const
+HBITMAP CTxDOTCadExporter::GetBitmapHandle() const
 {
-   *phBmp = nullptr;
-   return S_OK;
+   return nullptr;
 }
 
-STDMETHODIMP CTxDOTCadExporter::GetCommandHintText(BSTR*  bstrText) const
+CString CTxDOTCadExporter::GetCommandHintText() const
 {
-   *bstrText = CComBSTR("Export TxDOT CAD Data\nExport TxDOT CAD Data");
-   return S_OK;
+   return CString("Export TxDOT CAD Data\nExport TxDOT CAD Data");
 }
 
 STDMETHODIMP CTxDOTCadExporter::Export(IBroker* pBroker)
@@ -694,19 +682,14 @@ HRESULT CTxDOTCadExporter::ExportHaunchDeflectionData(IBroker* pBroker, const st
 
 //////////////////////////////////////////////////
 // IPGSDocumentation
-STDMETHODIMP CTxDOTCadExporter::GetDocumentationSetName(BSTR* pbstrName) const
+CString CTxDOTCadExporter::GetDocumentationSetName() const
 {
-   CComBSTR bstrDocSetName(_T("TxCADExport"));
-   bstrDocSetName.CopyTo(pbstrName);
-   return S_OK;
+   return CString("TxCADExport");
 }
 
 STDMETHODIMP CTxDOTCadExporter::LoadDocumentationMap()
 {
-   CComBSTR bstrDocSetName;
-   GetDocumentationSetName(&bstrDocSetName);
-
-   CString strDocSetName(OLE2T(bstrDocSetName));
+   CString strDocSetName(GetDocumentationSetName());
 
    CEAFApp* pApp = EAFGetApp();
 
@@ -718,26 +701,23 @@ STDMETHODIMP CTxDOTCadExporter::LoadDocumentationMap()
    return S_OK;
 }
 
-STDMETHODIMP CTxDOTCadExporter::GetDocumentLocation(UINT nHID,BSTR* pbstrURL) const
+CString CTxDOTCadExporter::GetDocumentLocation(UINT nHID) const
 {
    auto found = m_HelpTopics.find(nHID);
    if ( found == m_HelpTopics.end() )
    {
-      return E_FAIL;
+      CHECK(false);
+      return CString("");
    }
 
    CString strURL;
    strURL.Format(_T("%s%s"),GetDocumentationURL(),found->second);
-   CComBSTR bstrURL(strURL);
-   bstrURL.CopyTo(pbstrURL);
-   return S_OK;
+   return strURL;
 }
 
 CString CTxDOTCadExporter::GetDocumentationURL() const
 {
-   CComBSTR bstrDocSetName;
-   GetDocumentationSetName(&bstrDocSetName);
-   CString strDocSetName(OLE2T(bstrDocSetName));
+   CString strDocSetName(GetDocumentationSetName());
 
    CEAFApp* pApp = EAFGetApp();
    CString strDocumentationRootLocation = pApp->GetDocumentationRootLocation();

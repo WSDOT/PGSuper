@@ -18,7 +18,6 @@
 #define IDR_GIRDER_VIEW_CTX             101
 #define IDS_SHEETNAME                   102
 #define IDR_TXDOTAGENTIMP               103
-#define IDR_TXDOTCADEXPORTER            104
 #define IDR_TXDOTCOMPONENTINFO          105
 #define IDR_TXDOTAPPPLUGIN              106
 #define IDR_TXDOTOPTIONALDESIGN         107

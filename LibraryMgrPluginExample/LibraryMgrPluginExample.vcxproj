@@ -173,14 +173,6 @@
     </ClCompile>
     <ClCompile Include="LibMgrDocPlugin.cpp" />
     <ClCompile Include="LibraryMgrPluginExample.cpp" />
-    <ClCompile Include="LibraryMgrPluginExample_i.c">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </PrecompiledHeader>
-      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      </PrecompiledHeader>
-      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
-    </ClCompile>
     <ClCompile Include="MyView.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -193,12 +185,8 @@
     <None Include="LibraryMgrPluginExample.rgs" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="LibraryMgrPluginExample.idl" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="dllmain.h" />
     <ClInclude Include="LibMgrDocPlugin.h" />
-    <ClInclude Include="LibraryMgrPluginExample_i.h" />
     <ClInclude Include="MyView.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />

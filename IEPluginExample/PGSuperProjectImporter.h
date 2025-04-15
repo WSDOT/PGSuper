@@ -73,7 +73,7 @@ private:
 /////////////////////////////////////////////////////////////////////////////
 // CPGSuperProjectImporter2
 class CPGSuperProjectImporter2 : public WBFL::EAF::ComponentObject, 
-   public IPGSProjectImporter2
+   public PGSuper::IProjectImporter
 {
 public:
    CPGSuperProjectImporter2();

@@ -4,7 +4,6 @@
 //
 #define IDS_PROJNAME                    100
 #define IDS_E_NOGIRDERS                 102
-#define IDR_PGSUPERDATAEXPORTER         105
 #define IDD_EXPORT_DLG                  201
 #define IDI_BSICON                      202
 #define IDI_CP_ICON                     203

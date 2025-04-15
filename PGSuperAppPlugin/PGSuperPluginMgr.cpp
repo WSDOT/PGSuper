@@ -211,15 +211,14 @@ bool CPGSuperPluginMgrBase::LoadPlugins_New()
          auto class_object = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent(component);
          if (class_object)
          {
-            auto importer = std::dynamic_pointer_cast<IPGSDataImporter2>(class_object);
+            auto importer = std::dynamic_pointer_cast<PGSuper::IDataImporter>(class_object);
             ImporterRecord2 record;
             record.commandID = cmdImporter++;
             record.Plugin = importer;
 
             importer->Init(record.commandID);
 
-            HBITMAP hBmp;
-            importer->GetBitmapHandle(&hBmp);
+            HBITMAP hBmp = importer->GetBitmapHandle();
             record.Bitmap.Attach(hBmp);
             m_ImporterPlugins2.push_back(record);
          }
@@ -259,15 +258,14 @@ bool CPGSuperPluginMgrBase::LoadPlugins_New()
          auto class_object = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent(component);
          if (class_object)
          {
-            auto exporter = std::dynamic_pointer_cast<IPGSDataExporter2>(class_object);
+            auto exporter = std::dynamic_pointer_cast<PGSuper::IDataExporter>(class_object);
             ExporterRecord2 record;
             record.commandID = cmdExporter++;
             record.Plugin = exporter;
 
             exporter->Init(record.commandID);
 
-            HBITMAP hBmp;
-            exporter->GetBitmapHandle(&hBmp);
+            HBITMAP hBmp = exporter->GetBitmapHandle();
             record.Bitmap.Attach(hBmp);
             m_ExporterPlugins2.push_back(record);
          }
@@ -339,7 +337,7 @@ void CPGSuperPluginMgrBase::GetImporter(IndexType key,bool bByIndex,IPGSDataImpo
    }
 }
 
-std::shared_ptr<IPGSDataImporter2> CPGSuperPluginMgrBase::GetImporter(IndexType key, bool bByIndex) const
+std::shared_ptr<PGSuper::IDataImporter> CPGSuperPluginMgrBase::GetImporter(IndexType key, bool bByIndex) const
 {
    if (bByIndex)
    {
@@ -382,7 +380,7 @@ void CPGSuperPluginMgrBase::GetExporter(IndexType key,bool bByIndex,IPGSDataExpo
 }
 
 
-std::shared_ptr<IPGSDataExporter2> CPGSuperPluginMgrBase::GetExporter(IndexType key, bool bByIndex) const
+std::shared_ptr<PGSuper::IDataExporter> CPGSuperPluginMgrBase::GetExporter(IndexType key, bool bByIndex) const
 {
    if (bByIndex)
    {

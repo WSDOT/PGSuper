@@ -59,12 +59,6 @@
     <None Include="PGSpliceProjectImporter.rgs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="PGSuperDataImporter.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="PGSuperExporter.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="PGSuperProjectImporter.rgs">
       <Filter>Resource Files</Filter>
     </None>

@@ -105,30 +105,40 @@ interface IPGSDocumentation : IUnknown
 };
 
 
-class IPGSDataImporter2
+namespace PGSuper
 {
-public:
-   virtual HRESULT Init(UINT nCmdID) = 0;
-   virtual CString GetMenuText() const = 0;
-   virtual HRESULT GetBitmapHandle(HBITMAP* phBmp) const = 0;
-   virtual CString GetCommandHintText() const = 0;
-   virtual HRESULT Import(IBroker* pBroker) = 0;
-};
+   class IDataImporter
+   {
+   public:
+      virtual HRESULT Init(UINT nCmdID) = 0;
+      virtual CString GetMenuText() const = 0;
+      virtual HBITMAP GetBitmapHandle() const = 0;
+      virtual CString GetCommandHintText() const = 0;
+      virtual HRESULT Import(IBroker* pBroker) = 0;
+   };
 
-class IPGSDataExporter2
-{
-public:
-   virtual HRESULT Init(UINT nCmdID) = 0;
-   virtual CString GetMenuText() const = 0;
-   virtual HRESULT GetBitmapHandle(HBITMAP* phBmp) const = 0;
-   virtual CString GetCommandHintText() const = 0;
-   virtual HRESULT Export(IBroker* pBroker) = 0;
-};
+   class IDataExporter
+   {
+   public:
+      virtual HRESULT Init(UINT nCmdID) = 0;
+      virtual CString GetMenuText() const = 0;
+      virtual HBITMAP GetBitmapHandle() const = 0;
+      virtual CString GetCommandHintText() const = 0;
+      virtual HRESULT Export(IBroker* pBroker) = 0;
+   };
 
-class IPGSProjectImporter2
-{
-   virtual CString GetItemText() const = 0;
-   virtual HRESULT Import(IBroker* pBroker) = 0;
-   virtual HRESULT GetIcon(HICON* phIcon) const = 0;
-   virtual CLSID GetCLSID() const = 0;
+   class IProjectImporter
+   {
+      virtual CString GetItemText() const = 0;
+      virtual HRESULT Import(IBroker* pBroker) = 0;
+      virtual HRESULT GetIcon(HICON* phIcon) const = 0;
+      virtual CLSID GetCLSID() const = 0;
+   };
+
+   class IPluginDocumentation
+   {
+      virtual CString GetDocumentationSetName() const = 0;
+      virtual HRESULT LoadDocumentationMap() = 0;
+      virtual CString GetDocumentLocation(UINT nHID) const = 0;
+   };
 };

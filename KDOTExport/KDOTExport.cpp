@@ -16,24 +16,23 @@
 #include <WBFLCogo.h>
 #include <WBFLCogo_i.c>
 
-#include "PGSuperDataExporter.h"
+#include "KDOTDataExporter.h"
 #include "KDOTComponentInfo.h"
 
 #include "PGSuperInterfaces.h"
 #include <IFace\DocumentType.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 CComModule _Module;
 
 BEGIN_OBJECT_MAP(ObjectMap)
-   OBJECT_ENTRY(CLSID_PGSuperDataExporter,    CPGSuperDataExporter)
    OBJECT_ENTRY(CLSID_KDOTComponentInfo, CKDOTComponentInfo)
 END_OBJECT_MAP()
+
+#include <EAF\ComponentModule.h>
+WBFL::EAF::ComponentModule Module_;
+EAF_BEGIN_OBJECT_MAP(ObjectMap2)
+   EAF_OBJECT_ENTRY(CLSID_KDOTDataExporter,CKDOTDataExporter)
+EAF_END_OBJECT_MAP()
 
 class CKDOTExportAppPlugin : public CWinApp
 {
@@ -79,6 +78,7 @@ BOOL CKDOTExportAppPlugin::InitInstance()
    GXInit();
 
    _Module.Init(ObjectMap, m_hInstance, &LIBID_KDOTExport);
+   Module_.Init(ObjectMap2);
 
    return CWinApp::InitInstance();
 }
@@ -87,6 +87,7 @@ int CKDOTExportAppPlugin::ExitInstance()
 {
    GXForceTerminate();
    _Module.Term();
+   Module_.Term();
    return CWinApp::ExitInstance();
 }
 
@@ -112,7 +113,7 @@ void RegisterPlugins(bool bRegister)
    // Importer/Exporter Plugins
 
    // PGSuper
-   WBFL::System::ComCatMgr::RegWithCategory(CLSID_PGSuperDataExporter,    CATID_PGSuperDataExporter,    bRegister);
+   //WBFL::System::ComCatMgr::RegWithCategory(CLSID_KDOTDataExporter,    CATID_PGSuperDataExporter,    bRegister);
    //WBFL::System::ComCatMgr::RegWithCategory(CLSID_PGSuperDataExporter,    CATID_PGSpliceDataExporter,   bRegister);
   // The KDOT component info objects provides information about this entire plug-in component
    // This information is used in the "About" dialog

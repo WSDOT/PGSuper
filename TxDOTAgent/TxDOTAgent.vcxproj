@@ -272,7 +272,6 @@ xcopy /y /d .\TogaTemplates\*.* $(ARPDIR)\BridgeLink\TogaTemplates\*.*</Command>
     <None Include="TxDOTAgentImp.rgs" />
     <None Include="TxDOTAppPlugin.rgs" />
     <None Include="TxDOTAppPluginComponentInfo.rgs" />
-    <None Include="TxDOTCadExporter.rgs" />
     <None Include="TxDOTComponentInfo.rgs" />
   </ItemGroup>
   <ItemGroup>

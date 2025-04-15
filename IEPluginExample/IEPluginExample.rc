@@ -91,8 +91,6 @@ END
 //
 
 IDR_PGSUPERPROJECTIMPORTER REGISTRY                "PGSuperProjectImporter.rgs"
-IDR_PGSUPERDATAIMPORTER REGISTRY                "PGSuperDataImporter.rgs"
-IDR_PGSUPEREXPORTER     REGISTRY                "PGSuperExporter.rgs"
 IDR_PGSPLICEPROJECTIMPORTER REGISTRY                "PGSpliceProjectImporter.rgs"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -111,15 +109,6 @@ IDI_IMPORTER            ICON                    "importer.ico"
 
 IDB_IEPLUGIN            BITMAP                  "IEPlugin.bmp"
 
-/////////////////////////////////////////////////////////////////////////////
-//
-// String Table
-//
-
-STRINGTABLE 
-BEGIN
-    IDS_PROJNAME            "IEPluginExample"
-END
 
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////

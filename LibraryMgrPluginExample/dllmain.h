@@ -21,12 +21,3 @@
 ///////////////////////////////////////////////////////////////////////
 
 // dllmain.h : Declaration of module class.
-
-class CLibraryMgrPluginExampleModule : public CAtlDllModuleT< CLibraryMgrPluginExampleModule >
-{
-public :
-	DECLARE_LIBID(LIBID_LibraryMgrPluginExampleLib)
-	DECLARE_REGISTRY_APPID_RESOURCEID(IDR_LIBRARYMGRPLUGINEXAMPLE, "{DD8F9CF6-AA47-4F1E-B01B-556908EF47A1}")
-};
-
-extern class CLibraryMgrPluginExampleModule _AtlModule;

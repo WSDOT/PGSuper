@@ -30,99 +30,27 @@
 #include <EAF\EAFAutoProgress.h>
 
 
-/////////////////////////////////////////////////////////////////////////////
-// CPGSuperDataImporter
 STDMETHODIMP CPGSuperDataImporter::Init(UINT nCmdID)
 {
    return S_OK;
 }
 
-STDMETHODIMP CPGSuperDataImporter::GetMenuText(BSTR*  bstrText) const
+CString CPGSuperDataImporter::GetMenuText() const
 {
-   *bstrText = CComBSTR("Project Data from External Data Source into this PGSuper project");
-   return S_OK;
+   return CString("Project Data from External Data Source into this PGSuper project");
 }
 
-STDMETHODIMP CPGSuperDataImporter::GetBitmapHandle(HBITMAP* phBmp) const
+HBITMAP CPGSuperDataImporter::GetBitmapHandle() const
 {
-   *phBmp = nullptr;
-   return S_OK;
+   return nullptr;
 }
 
-STDMETHODIMP CPGSuperDataImporter::GetCommandHintText(BSTR*  bstrText) const
-{
-   *bstrText = CComBSTR("Status line hint text\nTool tip text");
-   return S_OK;   
-}
-
-STDMETHODIMP CPGSuperDataImporter::Import(IBroker* pBroker)
-{
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   int st = AfxMessageBox(_T("Simulate importing data from an external source by changing the alignment. Click Yes to do it!"),MB_YESNO);
-
-   if (st==IDYES)
-   {
-      CompoundCurveData hcData;
-      hcData.PIStation = 15.;
-      hcData.FwdTangent = 2.25;
-      hcData.Radius = 600;
-      hcData.bFwdTangent = true;
-      hcData.EntrySpiral = 0;
-      hcData.ExitSpiral = 0;
-
-      AlignmentData2 alignmentData;
-
-      alignmentData.CompoundCurves.push_back(hcData);
-      alignmentData.Direction = 2;
-      alignmentData.RefStation = 150.0;
-      alignmentData.xRefPoint = 50;
-      alignmentData.yRefPoint = 50;
-
-      GET_IFACE2(pBroker,IEvents,pEvents);
-      pEvents->HoldEvents();
-
-      GET_IFACE2(pBroker,IRoadwayData,pRoadway);
-      pRoadway->SetAlignmentData2(alignmentData);
-
-      pEvents->FirePendingEvents();
-
-      return S_OK;
-   }
-   else
-   {
-      return E_FAIL;
-   }
-}
-
-
-
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CPGSuperDataImporter2
-STDMETHODIMP CPGSuperDataImporter2::Init(UINT nCmdID)
-{
-   return S_OK;
-}
-
-CString CPGSuperDataImporter2::GetMenuText() const
-{
-   return CString("Project Data from External Data Source into this PGSuper project (New)");
-}
-
-STDMETHODIMP CPGSuperDataImporter2::GetBitmapHandle(HBITMAP* phBmp) const
-{
-   *phBmp = nullptr;
-   return S_OK;
-}
-
-CString CPGSuperDataImporter2::GetCommandHintText() const
+CString CPGSuperDataImporter::GetCommandHintText() const
 {
    return CString("Status line hint text\nTool tip text");
 }
 
-STDMETHODIMP CPGSuperDataImporter2::Import(IBroker* pBroker)
+STDMETHODIMP CPGSuperDataImporter::Import(IBroker* pBroker)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 

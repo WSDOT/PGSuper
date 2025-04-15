@@ -42,8 +42,8 @@ public:
    IndexType GetExporterCount2() const;
    void GetImporter(IndexType key,bool bByIndex,IPGSDataImporter** ppImporter);
    void GetExporter(IndexType key,bool bByIndex,IPGSDataExporter** ppExporter);
-   std::shared_ptr<IPGSDataImporter2> GetImporter(IndexType key, bool bByIndex) const;
-   std::shared_ptr<IPGSDataExporter2> GetExporter(IndexType key, bool bByIndex) const;
+   std::shared_ptr<PGSuper::IDataImporter> GetImporter(IndexType key, bool bByIndex) const;
+   std::shared_ptr<PGSuper::IDataExporter> GetExporter(IndexType key, bool bByIndex) const;
    UINT GetImporterCommand(IndexType idx);
    UINT GetExporterCommand(IndexType idx);
    UINT GetImporterCommand2(IndexType idx) const;
@@ -124,8 +124,8 @@ private:
       }
    };
 
-   typedef Record2<IPGSDataImporter2> ImporterRecord2;
-   typedef Record2<IPGSDataExporter2> ExporterRecord2;
+   typedef Record2<PGSuper::IDataImporter> ImporterRecord2;
+   typedef Record2<PGSuper::IDataExporter> ExporterRecord2;
 
    std::vector<ImporterRecord2> m_ImporterPlugins2;
    std::vector<ExporterRecord2> m_ExporterPlugins2;

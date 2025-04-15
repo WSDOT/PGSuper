@@ -1,7 +1,7 @@
 // PGSuperExporter.cpp : Implementation of CPGSuperExporter
 #include "stdafx.h"
 #include "KDOTExport.h"
-#include "PGSuperDataExporter.h"
+#include "KDOTDataExporter.h"
 #include "ExportDlg.h"
 
 #include <MFCTools\Prompts.h>
@@ -16,12 +16,6 @@
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <pgsExt\DeckDescription.h>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 enum Type { A615  = 0x1000,  // ASTM A615
@@ -70,40 +64,36 @@ static std::_tstring GenerateReinfGradeName(WBFL::Materials::Rebar::Grade grade)
    }
 }
 
-HRESULT CPGSuperDataExporter::FinalConstruct()
+CKDOTDataExporter::CKDOTDataExporter()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   return S_OK;
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// CPGSuperDataExporter
+// CKDOTDataExporter
 
-STDMETHODIMP CPGSuperDataExporter::Init(UINT nCmdID)
+STDMETHODIMP CKDOTDataExporter::Init(UINT nCmdID)
 {
 
    return S_OK;
 }
 
-STDMETHODIMP CPGSuperDataExporter::GetMenuText(BSTR*  bstrText) const
+CString CKDOTDataExporter::GetMenuText() const
 {
-   *bstrText = CComBSTR("KDOT CAD Data...");
-   return S_OK;
+   return CString("KDOT CAD Data...");
 }
 
-STDMETHODIMP CPGSuperDataExporter::GetBitmapHandle(HBITMAP* phBmp) const
+HBITMAP CKDOTDataExporter::GetBitmapHandle() const
 {
-   *phBmp = m_bmpLogo;
-   return S_OK;
+   return m_bmpLogo;
 }
 
-STDMETHODIMP CPGSuperDataExporter::GetCommandHintText(BSTR*  bstrText) const
+CString CKDOTDataExporter::GetCommandHintText() const
 {
-   *bstrText = CComBSTR("Export PGSuper data to KDOT CAD XML format\nExport PGSuper data to KDOT CAD format");
-   return S_OK;   
+   return CString("Export PGSuper data to KDOT CAD XML format\nExport PGSuper data to KDOT CAD format");
 }
 
-STDMETHODIMP CPGSuperDataExporter::Export(IBroker* pBroker)
+STDMETHODIMP CKDOTDataExporter::Export(IBroker* pBroker)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -173,7 +163,7 @@ STDMETHODIMP CPGSuperDataExporter::Export(IBroker* pBroker)
    return S_OK;
 }
 
-HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, const std::vector<CGirderKey>& girderKeys)
+HRESULT CKDOTDataExporter::Export(IBroker* pBroker,CString& strFileName, const std::vector<CGirderKey>& girderKeys)
 {
    { // scope the progress window
    GET_IFACE2(pBroker,IProgress,pProgress);
@@ -1051,19 +1041,14 @@ HRESULT CPGSuperDataExporter::Export(IBroker* pBroker,CString& strFileName, cons
 
 //////////////////////////////////////////////////
 // IPGSDocumentation
-STDMETHODIMP CPGSuperDataExporter::GetDocumentationSetName(BSTR* pbstrName) const
+CString CKDOTDataExporter::GetDocumentationSetName() const
 {
-   CComBSTR bstrDocSetName(_T("KDOT"));
-   bstrDocSetName.CopyTo(pbstrName);
-   return S_OK;
+   return CString(_T("KDOT"));
 }
 
-STDMETHODIMP CPGSuperDataExporter::LoadDocumentationMap()
+STDMETHODIMP CKDOTDataExporter::LoadDocumentationMap()
 {
-   CComBSTR bstrDocSetName;
-   GetDocumentationSetName(&bstrDocSetName);
-
-   CString strDocSetName(OLE2T(bstrDocSetName));
+   CString strDocSetName = GetDocumentationSetName();
 
    CEAFApp* pApp = EAFGetApp();
 
@@ -1075,26 +1060,23 @@ STDMETHODIMP CPGSuperDataExporter::LoadDocumentationMap()
    return S_OK;
 }
 
-STDMETHODIMP CPGSuperDataExporter::GetDocumentLocation(UINT nHID,BSTR* pbstrURL) const
+CString CKDOTDataExporter::GetDocumentLocation(UINT nHID) const
 {
    auto found = m_HelpTopics.find(nHID);
    if ( found == m_HelpTopics.end() )
    {
-      return E_FAIL;
+      CHECK(false);
+      return CString("");
    }
 
    CString strURL;
    strURL.Format(_T("%s%s"),GetDocumentationURL(),found->second);
-   CComBSTR bstrURL(strURL);
-   bstrURL.CopyTo(pbstrURL);
-   return S_OK;
+   return strURL;
 }
 
-CString CPGSuperDataExporter::GetDocumentationURL() const
+CString CKDOTDataExporter::GetDocumentationURL() const
 {
-   CComBSTR bstrDocSetName;
-   GetDocumentationSetName(&bstrDocSetName);
-   CString strDocSetName(OLE2T(bstrDocSetName));
+   CString strDocSetName(GetDocumentationSetName());
 
    CEAFApp* pApp = EAFGetApp();
    CString strDocumentationRootLocation = pApp->GetDocumentationRootLocation();

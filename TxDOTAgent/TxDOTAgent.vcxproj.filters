@@ -443,9 +443,6 @@
     <None Include="TxDOTAppPlugin.rgs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="TxDOTCadExporter.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="TxDOTComponentInfo.rgs">
       <Filter>Resource Files</Filter>
     </None>
