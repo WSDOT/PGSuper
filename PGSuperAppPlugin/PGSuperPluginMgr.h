@@ -38,20 +38,12 @@ public:
    void UnloadPlugins();
    IndexType GetImporterCount();
    IndexType GetExporterCount();
-   IndexType GetImporterCount2() const;
-   IndexType GetExporterCount2() const;
-   void GetImporter(IndexType key,bool bByIndex,IPGSDataImporter** ppImporter);
-   void GetExporter(IndexType key,bool bByIndex,IPGSDataExporter** ppExporter);
    std::shared_ptr<PGSuper::IDataImporter> GetImporter(IndexType key, bool bByIndex) const;
    std::shared_ptr<PGSuper::IDataExporter> GetExporter(IndexType key, bool bByIndex) const;
    UINT GetImporterCommand(IndexType idx);
    UINT GetExporterCommand(IndexType idx);
-   UINT GetImporterCommand2(IndexType idx) const;
-   UINT GetExporterCommand2(IndexType idx) const;
    const CBitmap* GetImporterBitmap(IndexType idx);
    const CBitmap* GetExporterBitmap(IndexType idx);
-   const CBitmap* GetImporterBitmap2(IndexType idx) const;
-   const CBitmap* GetExporterBitmap2(IndexType idx) const;
    void LoadDocumentationMaps();
    eafTypes::HelpResult GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nHID,CString& strURL);
 
@@ -59,49 +51,13 @@ protected:
    virtual CATID GetImporterCATID() = 0;
    virtual CATID GetExporterCATID() = 0;
 
-   bool LoadPlugins_Old();
-   bool LoadPlugins_New();
-
 private:
-   template <class T> 
-   struct Record
-   { UINT commandID; CBitmap Bitmap; CComPtr<T> Plugin; 
-   Record() {}
-   Record(const Record& other) 
-   {
-      Bitmap.Detach();
-
-      CBitmap* pBmp = const_cast<CBitmap*>(&(other.Bitmap));
-      Bitmap.Attach(pBmp->Detach());
-
-      commandID = other.commandID;
-      Plugin = other.Plugin;
-   }
-   Record& operator=(const Record& other)
-   {
-      Bitmap.Detach();
-
-      CBitmap* pBmp = const_cast<CBitmap*>(&(other.Bitmap));
-      Bitmap.Attach(pBmp->Detach());
-
-      commandID = other.commandID;
-      Plugin = other.Plugin;
-      return *this;
-   }
-   };
-
-   typedef Record<IPGSDataImporter> ImporterRecord;
-   typedef Record<IPGSDataExporter> ExporterRecord;
-
-   std::vector<ImporterRecord> m_ImporterPlugins;
-   std::vector<ExporterRecord> m_ExporterPlugins;
-
    template <class T>
-   struct Record2
+   struct Record
    {
       UINT commandID; CBitmap Bitmap; std::shared_ptr<T> Plugin;
-      Record2() {}
-      Record2(const Record2& other)
+      Record() {}
+      Record(const Record& other)
       {
          Bitmap.Detach();
 
@@ -111,7 +67,7 @@ private:
          commandID = other.commandID;
          Plugin = other.Plugin;
       }
-      Record2& operator=(const Record2& other)
+      Record& operator=(const Record& other)
       {
          Bitmap.Detach();
 
@@ -124,11 +80,11 @@ private:
       }
    };
 
-   typedef Record2<PGSuper::IDataImporter> ImporterRecord2;
-   typedef Record2<PGSuper::IDataExporter> ExporterRecord2;
+   typedef Record<PGSuper::IDataImporter> ImporterRecord;
+   typedef Record<PGSuper::IDataExporter> ExporterRecord;
 
-   std::vector<ImporterRecord2> m_ImporterPlugins2;
-   std::vector<ExporterRecord2> m_ExporterPlugins2;
+   std::vector<ImporterRecord> m_ImporterPlugins;
+   std::vector<ExporterRecord> m_ExporterPlugins;
 };
 
 class CPGSuperPluginMgr : public CPGSuperPluginMgrBase

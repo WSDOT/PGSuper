@@ -25,175 +25,20 @@
 #include "PGSuperPluginMgr.h"
 #include <EAF\EAFApp.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 CPGSuperPluginMgrBase::CPGSuperPluginMgrBase()
 {
 }
 
 bool CPGSuperPluginMgrBase::LoadPlugins()
 {
-   return LoadPlugins_Old() && LoadPlugins_New();
-}
-
-bool CPGSuperPluginMgrBase::LoadPlugins_Old()
-{
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CWinApp* pApp = AfxGetApp();
 
-
-   USES_CONVERSION;
-
    CWaitCursor cursor;
-
-   CComPtr<ICatRegister> pICatReg;
-   HRESULT hr = pICatReg.CoCreateInstance(CLSID_StdComponentCategoriesMgr);
-   if ( FAILED(hr) )
-   {
-      AfxMessageBox(_T("Failed to create the component category manager"));
-      return false;
-   }
-
-   CComQIPtr<ICatInformation> pICatInfo(pICatReg);
-   CComPtr<IEnumCLSID> pIEnumCLSID;
-
-   const int nID = 1;
-   CATID ID[nID];
-
-   ID[0] = GetImporterCATID();
-   pICatInfo->EnumClassesOfCategories(nID,ID,0,nullptr,&pIEnumCLSID);
-
-   const int nPlugins = 5;
-   CLSID clsid[nPlugins]; 
-   ULONG nFetched = 0;
 
    // Load Importers
    UINT cmdImporter = FIRST_DATA_IMPORTER_PLUGIN;
-   while ( SUCCEEDED(pIEnumCLSID->Next(nPlugins,clsid,&nFetched)) && 0 < nFetched)
-   {
-      if ( LAST_DATA_IMPORTER_PLUGIN <= cmdImporter )
-      {
-         AfxMessageBox(_T("The maximum number of data importers has been exceeded."));
-         break; // get out of while loop
-      }
-
-      for ( ULONG i = 0; i < nFetched; i++ )
-      {
-         LPOLESTR pszCLSID;
-         ::StringFromCLSID(clsid[i],&pszCLSID);
-         CString strState = pApp->GetProfileString(_T("Plugins"),OLE2T(pszCLSID),_T("Enabled"));
-
-         if ( strState.CompareNoCase(_T("Enabled")) == 0 )
-         {
-            CComPtr<IPGSDataImporter> importer;
-            importer.CoCreateInstance(clsid[i]);
-
-            if ( !importer )
-            {
-               LPOLESTR pszUserType;
-               OleRegGetUserType(clsid[i],USERCLASSTYPE_SHORT,&pszUserType);
-               CString strMsg;
-               strMsg.Format(_T("Failed to load %s PGSuper Data Importer plug in.\n\nWould you like to disable this plug-in?"),OLE2T(pszUserType));
-               if ( AfxMessageBox(strMsg,MB_YESNO | MB_ICONQUESTION) == IDYES )
-               {
-                  pApp->WriteProfileString(_T("Plugins"),OLE2T(pszCLSID),_T("Disabled"));
-               }
-            }
-            else
-            {
-               ImporterRecord record;
-               record.commandID = cmdImporter++;
-               record.Plugin    = importer;
-
-               importer->Init(record.commandID);
-
-               HBITMAP hBmp;
-               importer->GetBitmapHandle(&hBmp);
-               record.Bitmap.Attach(hBmp);
-               m_ImporterPlugins.push_back( record );
-            }
-         }
-
-         ::CoTaskMemFree((void*)pszCLSID);
-      }
-   }
-
-   // Load Exporters
-   ID[0] = GetExporterCATID();
-   pIEnumCLSID.Release();
-   pICatInfo->EnumClassesOfCategories(nID,ID,0,nullptr,&pIEnumCLSID);
-   UINT cmdExporter = FIRST_DATA_EXPORTER_PLUGIN;
-   while ( SUCCEEDED(pIEnumCLSID->Next(nPlugins,clsid,&nFetched)) && 0 < nFetched)
-   {
-      if ( LAST_DATA_EXPORTER_PLUGIN <= cmdExporter )
-      {
-         AfxMessageBox(_T("The maximum number of data exporters has been exceeded."));
-         break; // get out of the while loop
-      }
-
-      for ( ULONG i = 0; i < nFetched; i++ )
-      {
-         LPOLESTR pszCLSID;
-         ::StringFromCLSID(clsid[i],&pszCLSID);
-         CString strState = pApp->GetProfileString(_T("Plugins"),OLE2T(pszCLSID),_T("Enabled"));
-
-         if ( strState.CompareNoCase(_T("Enabled")) == 0 )
-         {
-            CComPtr<IPGSDataExporter> exporter;
-            exporter.CoCreateInstance(clsid[i]);
-
-            if ( !exporter )
-            {
-               LPOLESTR pszUserType;
-               OleRegGetUserType(clsid[i],USERCLASSTYPE_SHORT,&pszUserType);
-               CString strMsg;
-               strMsg.Format(_T("Failed to load %s PGSuper Data Export plug in.\n\nWould you like to disable this plug-in?"),OLE2T(pszUserType));
-               if ( AfxMessageBox(strMsg,MB_YESNO | MB_ICONQUESTION) == IDYES )
-               {
-                  pApp->WriteProfileString(_T("Plugins"),OLE2T(pszCLSID),_T("Disabled"));
-               }
-            }
-            else
-            {
-               ExporterRecord record;
-               record.commandID = cmdExporter++;
-               record.Plugin    = exporter;
-
-               exporter->Init(record.commandID);
-
-               HBITMAP hBmp;
-               exporter->GetBitmapHandle(&hBmp);
-               record.Bitmap.Attach(hBmp);
-               m_ExporterPlugins.push_back( record );
-            }
-         }
-
-         ::CoTaskMemFree((void*)pszCLSID);
-      }
-   }
-
-   return true;
-}
-
-bool CPGSuperPluginMgrBase::LoadPlugins_New()
-{
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CWinApp* pApp = AfxGetApp();
-
-
-   USES_CONVERSION;
-
-   CWaitCursor cursor;
-
-   // Load Importers
-#pragma Reminder("WORKING HERE - Removing COM")
-   //UINT cmdImporter = FIRST_DATA_IMPORTER_PLUGIN; This is what we really want, line below is a workaround during development
    auto components = WBFL::EAF::ComponentCategoryManager::GetInstance().GetComponents(GetImporterCATID());
-   UINT cmdImporter = LAST_DATA_IMPORTER_PLUGIN - components.size();
    for(const auto& component : components)
    {
       if (LAST_DATA_IMPORTER_PLUGIN <= cmdImporter)
@@ -212,7 +57,7 @@ bool CPGSuperPluginMgrBase::LoadPlugins_New()
          if (class_object)
          {
             auto importer = std::dynamic_pointer_cast<PGSuper::IDataImporter>(class_object);
-            ImporterRecord2 record;
+            ImporterRecord record;
             record.commandID = cmdImporter++;
             record.Plugin = importer;
 
@@ -220,7 +65,7 @@ bool CPGSuperPluginMgrBase::LoadPlugins_New()
 
             HBITMAP hBmp = importer->GetBitmapHandle();
             record.Bitmap.Attach(hBmp);
-            m_ImporterPlugins2.push_back(record);
+            m_ImporterPlugins.push_back(record);
          }
          else
          {
@@ -237,10 +82,8 @@ bool CPGSuperPluginMgrBase::LoadPlugins_New()
    }
 
    // Load Exporters
-#pragma Reminder("WORKING HERE - Removing COM")
-   //UINT cmdExporter = FIRST_DATA_EXPORTER_PLUGIN; This is what we really want, line below is a workaround during development
+   UINT cmdExporter = FIRST_DATA_EXPORTER_PLUGIN;
    components = WBFL::EAF::ComponentCategoryManager::GetInstance().GetComponents(GetExporterCATID());
-   UINT cmdExporter = LAST_DATA_EXPORTER_PLUGIN - components.size();
    for(const auto& component : components)
    {
       if (LAST_DATA_EXPORTER_PLUGIN <= cmdExporter)
@@ -259,7 +102,7 @@ bool CPGSuperPluginMgrBase::LoadPlugins_New()
          if (class_object)
          {
             auto exporter = std::dynamic_pointer_cast<PGSuper::IDataExporter>(class_object);
-            ExporterRecord2 record;
+            ExporterRecord record;
             record.commandID = cmdExporter++;
             record.Plugin = exporter;
 
@@ -267,7 +110,7 @@ bool CPGSuperPluginMgrBase::LoadPlugins_New()
 
             HBITMAP hBmp = exporter->GetBitmapHandle();
             record.Bitmap.Attach(hBmp);
-            m_ExporterPlugins2.push_back(record);
+            m_ExporterPlugins.push_back(record);
          }
          else
          {
@@ -290,9 +133,6 @@ void CPGSuperPluginMgrBase::UnloadPlugins()
 {
    m_ImporterPlugins.clear();
    m_ExporterPlugins.clear();
-
-   m_ImporterPlugins2.clear();
-   m_ExporterPlugins2.clear();
 }
 
 IndexType CPGSuperPluginMgrBase::GetImporterCount()
@@ -305,47 +145,15 @@ IndexType CPGSuperPluginMgrBase::GetExporterCount()
    return m_ExporterPlugins.size();
 }
 
-IndexType CPGSuperPluginMgrBase::GetImporterCount2() const
-{
-   return m_ImporterPlugins2.size();
-}
-
-IndexType CPGSuperPluginMgrBase::GetExporterCount2() const
-{
-   return m_ExporterPlugins2.size();
-}
-
-void CPGSuperPluginMgrBase::GetImporter(IndexType key,bool bByIndex,IPGSDataImporter** ppImporter)
-{
-   if ( bByIndex )
-   {
-      (*ppImporter) = m_ImporterPlugins[key].Plugin;
-      (*ppImporter)->AddRef();
-   }
-   else
-   {
-      std::vector<ImporterRecord>::iterator iter;
-      for ( iter = m_ImporterPlugins.begin(); iter != m_ImporterPlugins.end(); iter++ )
-      {
-         if ( key == (*iter).commandID )
-         {
-            (*ppImporter) = (*iter).Plugin;
-            (*ppImporter)->AddRef();
-            return;
-         }
-      }
-   }
-}
-
 std::shared_ptr<PGSuper::IDataImporter> CPGSuperPluginMgrBase::GetImporter(IndexType key, bool bByIndex) const
 {
    if (bByIndex)
    {
-      return m_ImporterPlugins2[key].Plugin;
+      return m_ImporterPlugins[key].Plugin;
    }
    else
    {
-      for( const auto& record : m_ImporterPlugins2)
+      for( const auto& record : m_ImporterPlugins)
       {
          if (key == record.commandID)
          {
@@ -357,38 +165,15 @@ std::shared_ptr<PGSuper::IDataImporter> CPGSuperPluginMgrBase::GetImporter(Index
    return nullptr;
 }
 
-void CPGSuperPluginMgrBase::GetExporter(IndexType key,bool bByIndex,IPGSDataExporter** ppExporter)
-{
-   if ( bByIndex )
-   {
-      (*ppExporter) = m_ExporterPlugins[key].Plugin;
-      (*ppExporter)->AddRef();
-   }
-   else
-   {
-      std::vector<ExporterRecord>::iterator iter;
-      for ( iter = m_ExporterPlugins.begin(); iter != m_ExporterPlugins.end(); iter++ )
-      {
-         if ( key == (*iter).commandID )
-         {
-            (*ppExporter) = (*iter).Plugin;
-            (*ppExporter)->AddRef();
-            return;
-         }
-      }
-   }
-}
-
-
 std::shared_ptr<PGSuper::IDataExporter> CPGSuperPluginMgrBase::GetExporter(IndexType key, bool bByIndex) const
 {
    if (bByIndex)
    {
-      return m_ExporterPlugins2[key].Plugin;
+      return m_ExporterPlugins[key].Plugin;
    }
    else
    {
-      for(const auto& record : m_ExporterPlugins2)
+      for(const auto& record : m_ExporterPlugins)
       {
          if (key == record.commandID)
          {
@@ -410,16 +195,6 @@ UINT CPGSuperPluginMgrBase::GetExporterCommand(IndexType idx)
    return m_ExporterPlugins[idx].commandID;
 }
 
-UINT CPGSuperPluginMgrBase::GetImporterCommand2(IndexType idx) const
-{
-   return m_ImporterPlugins2[idx].commandID;
-}
-
-UINT CPGSuperPluginMgrBase::GetExporterCommand2(IndexType idx) const
-{
-   return m_ExporterPlugins2[idx].commandID;
-}
-
 const CBitmap* CPGSuperPluginMgrBase::GetImporterBitmap(IndexType idx)
 {
    return &m_ImporterPlugins[idx].Bitmap;
@@ -430,39 +205,9 @@ const CBitmap* CPGSuperPluginMgrBase::GetExporterBitmap(IndexType idx)
    return &m_ExporterPlugins[idx].Bitmap;
 }
 
-const CBitmap* CPGSuperPluginMgrBase::GetImporterBitmap2(IndexType idx) const
-{
-   return &m_ImporterPlugins2[idx].Bitmap;
-}
-
-const CBitmap* CPGSuperPluginMgrBase::GetExporterBitmap2(IndexType idx) const
-{
-   return &m_ExporterPlugins2[idx].Bitmap;
-}
-
 void CPGSuperPluginMgrBase::LoadDocumentationMaps()
 {
-#pragma Reminder("WORKING HERE - Removing COM")
-   // Once all plug-ins are converted, m_ImporterPlugins and m_ExporterPlugins go away and the "2" versions are renamed
-   for (const auto& record : m_ImporterPlugins )
-   {
-      CComQIPtr<IPGSDocumentation> pDocumentation(record.Plugin);
-      if ( pDocumentation )
-      {
-         pDocumentation->LoadDocumentationMap();
-      }
-   }
-
-   for (const auto& record : m_ExporterPlugins )
-   {
-      CComQIPtr<IPGSDocumentation> pDocumentation(record.Plugin);
-      if ( pDocumentation )
-      {
-         pDocumentation->LoadDocumentationMap();
-      }
-   }
-
-   for (const auto& record : m_ImporterPlugins2)
+   for (const auto& record : m_ImporterPlugins)
    {
       auto pDocumentation = std::dynamic_pointer_cast<PGSuper::IPluginDocumentation>(record.Plugin);
       if (pDocumentation)
@@ -471,7 +216,7 @@ void CPGSuperPluginMgrBase::LoadDocumentationMaps()
       }
    }
 
-   for (const auto& record : m_ExporterPlugins2)
+   for (const auto& record : m_ExporterPlugins)
    {
       auto pDocumentation = std::dynamic_pointer_cast<PGSuper::IPluginDocumentation>(record.Plugin);
       if (pDocumentation)
@@ -486,68 +231,16 @@ eafTypes::HelpResult CPGSuperPluginMgrBase::GetDocumentLocation(LPCTSTR lpszDocS
 #pragma Reminder("WORKING HERE - Removing COM")
    // Once all plug-ins are converted, m_ImporterPlugins and m_ExporterPlugins go away and the "2" versions are renamed
    USES_CONVERSION;
-   CComBSTR bstrTargetDocSetName(lpszDocSetName);
+   CString strTargetDocSetName(lpszDocSetName);
 
-   for (const auto& record : m_ImporterPlugins )
-   {
-      CComQIPtr<IPGSDocumentation> pDocumentation(record.Plugin);
-      if ( pDocumentation )
-      {
-         CComBSTR bstrDocSetName;
-         pDocumentation->GetDocumentationSetName(&bstrDocSetName);
-
-         if ( bstrDocSetName == bstrTargetDocSetName )
-         {
-            CComBSTR bstrURL;
-            HRESULT hr = pDocumentation->GetDocumentLocation(nHID,&bstrURL);
-            if ( SUCCEEDED(hr) )
-            {
-               strURL = OLE2T(bstrURL);
-               return eafTypes::hrOK;
-            }
-            else
-            {
-               return eafTypes::hrTopicNotFound;
-            }
-         }
-      }
-   }
-
-   for (const auto& record : m_ExporterPlugins )
-   {
-      CComQIPtr<IPGSDocumentation> pDocumentation(record.Plugin);
-      if ( pDocumentation )
-      {
-         CComBSTR bstrDocSetName;
-         pDocumentation->GetDocumentationSetName(&bstrDocSetName);
-
-         if ( bstrDocSetName == bstrTargetDocSetName )
-         {
-            CComBSTR bstrURL;
-            HRESULT hr = pDocumentation->GetDocumentLocation(nHID,&bstrURL);
-            if ( SUCCEEDED(hr) )
-            {
-               strURL = OLE2T(bstrURL);
-               return eafTypes::hrOK;
-            }
-            else
-            {
-               return eafTypes::hrTopicNotFound;
-            }
-         }
-      }
-   }
-
-
-
-   for (const auto& record : m_ImporterPlugins2)
+   for (const auto& record : m_ImporterPlugins)
    {
       auto pDocumentation = std::dynamic_pointer_cast<PGSuper::IPluginDocumentation>(record.Plugin);
       if (pDocumentation)
       {
          auto strDocSetName = pDocumentation->GetDocumentationSetName();
 
-         if (strDocSetName == CString(bstrTargetDocSetName))
+         if (strDocSetName == strTargetDocSetName)
          {
             bool bSuccess;
             std::tie(bSuccess,strURL) = pDocumentation->GetDocumentLocation(nHID);
@@ -556,14 +249,14 @@ eafTypes::HelpResult CPGSuperPluginMgrBase::GetDocumentLocation(LPCTSTR lpszDocS
       }
    }
 
-   for (const auto& record : m_ExporterPlugins2)
+   for (const auto& record : m_ExporterPlugins)
    {
       auto pDocumentation = std::dynamic_pointer_cast<PGSuper::IPluginDocumentation>(record.Plugin);
       if (pDocumentation)
       {
          auto strDocSetName = pDocumentation->GetDocumentationSetName();
 
-         if (strDocSetName == CString(bstrTargetDocSetName))
+         if (strDocSetName == strTargetDocSetName)
          {
             bool bSuccess;
             std::tie(bSuccess, strURL) = pDocumentation->GetDocumentLocation(nHID);

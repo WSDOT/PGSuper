@@ -34,9 +34,10 @@
 #include "PGSuperDocBase.h"
 #include "PGSuperPluginMgr.h"
 #include "PGSuperCatCom.h"
-
 #include "PGSComponentInfo.h"
-typedef CEAFPluginManagerBase<IPGSuperComponentInfo,CPGSuperDoc> CPGSuperComponentInfoManager;
+
+#include <EAF\EAFPluginManagerBase.h>
+typedef WBFL::EAF::PluginManagerT<IPGSuperComponentInfo,CPGSuperDoc> CPGSuperComponentInfoManager;
 
 /*--------------------------------------------------------------------*/
 class CPGSuperDoc : public CPGSDocBase

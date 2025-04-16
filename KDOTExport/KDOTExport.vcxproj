@@ -215,7 +215,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="KDOTComponentInfo.rgs" />
     <None Include="KDOTExport.def" />
   </ItemGroup>
   <ItemGroup>

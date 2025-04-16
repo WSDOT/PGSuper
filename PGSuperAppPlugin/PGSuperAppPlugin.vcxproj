@@ -555,10 +555,8 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <None Include="res\MatchCast_BrgAlongGdr.emf" />
     <None Include="res\MatchCast_BrgAlongNormal.emf" />
     <None Include="res\PGSpliceAppPluginImpl.rgs" />
-    <None Include="res\PGSpliceComponentInfo.rgs" />
     <None Include="res\PGSpliceProjectImporterAppPlugin.rgs" />
     <None Include="res\PGSuperAppPluginImpl.rgs" />
-    <None Include="res\PGSuperComponentInfo.rgs" />
     <None Include="res\PGSuperProjectImporterAppPlugin.rgs" />
     <None Include="res\PierClosure_BrgAlongGdr_EndAlongGdrFromBrg.emf" />
     <None Include="res\PierClosure_BrgAlongGdr_EndAlongGdrFromPier.emf" />
@@ -595,6 +593,7 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
   <ItemGroup>
     <ClInclude Include="..\Include\Hints.h" />
     <ClInclude Include="..\Include\PGSuperUIUtil.h" />
+    <ClInclude Include="..\Include\Plugins\PGSuperIEPlugin.h" />
     <ClInclude Include="AbutmentConnectionsPage.h" />
     <ClInclude Include="AlignmentDescriptionDlg.h" />
     <ClInclude Include="AlignmentDisplayObjectEvents.h" />
@@ -609,6 +608,7 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClInclude Include="BridgeDescFramingGrid.h" />
     <ClInclude Include="BridgeDescFramingPage.h" />
     <ClInclude Include="BridgeDescGeneralPage.h" />
+    <ClInclude Include="CLSID.h" />
     <ClInclude Include="CopyPierDlg.h" />
     <ClInclude Include="CopyPierPropertiesCallbacks.h" />
     <ClInclude Include="CopyTempSupportDlg.h" />

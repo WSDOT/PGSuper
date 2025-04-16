@@ -110,9 +110,9 @@ HRESULT Register(bool bRegister)
    if ( FAILED(hr) )
       return hr;
 
-   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_TxDOTAppPluginComponentInfo,CATID_BridgeLinkComponentInfo,bRegister);
-   if ( FAILED(hr) )
-      return hr;
+   //hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_TxDOTAppPluginComponentInfo,CATID_BridgeLinkComponentInfo,bRegister);
+   //if ( FAILED(hr) )
+   //   return hr;
 
    // The TxDOT Agent extends the functionality of PGSuper by adding custom reporting and
    // other features
@@ -126,16 +126,16 @@ HRESULT Register(bool bRegister)
    if ( FAILED(hr) )
       return hr;
 
-   // The TxDOT Cad Exporter provides custom export functionatlity
+   // The TxDOT Cad Exporter provides custom export functionality
    hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_TxDOTCadExporter,CATID_PGSuperDataExporter,bRegister);
    if ( FAILED(hr) )
       return hr;
 
-   // The TxDOT component info objects provides information about this entire plug-in component
-   // This information is used in the "About" dialog
-   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_TxDOTComponentInfo,CATID_PGSuperComponentInfo,bRegister);
-   if ( FAILED(hr) )
-      return hr;
+   //// The TxDOT component info objects provides information about this entire plug-in component
+   //// This information is used in the "About" dialog
+   //hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_TxDOTComponentInfo,CATID_PGSuperComponentInfo,bRegister);
+   //if ( FAILED(hr) )
+   //   return hr;
 
    return S_OK;
 }

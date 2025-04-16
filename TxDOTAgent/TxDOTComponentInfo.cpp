@@ -24,22 +24,6 @@
 #include "TxDOTComponentInfo.h"
 #include <MFCTools\VersionInfo.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-HRESULT CTxDOTComponentInfo::FinalConstruct()
-{
-   return S_OK;
-}
-
-void CTxDOTComponentInfo::FinalRelease()
-{
-}
-
 BOOL CTxDOTComponentInfo::Init(CPGSuperDoc* pDoc)
 {
    return TRUE;

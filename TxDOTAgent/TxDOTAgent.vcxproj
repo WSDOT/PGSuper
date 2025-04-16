@@ -271,8 +271,6 @@ xcopy /y /d .\TogaTemplates\*.* $(ARPDIR)\BridgeLink\TogaTemplates\*.*</Command>
     <None Include="TxDOTAgent.rgs" />
     <None Include="TxDOTAgentImp.rgs" />
     <None Include="TxDOTAppPlugin.rgs" />
-    <None Include="TxDOTAppPluginComponentInfo.rgs" />
-    <None Include="TxDOTComponentInfo.rgs" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\SharedCtrls\MultiGirderSelectGrid.h" />

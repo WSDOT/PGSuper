@@ -20,25 +20,14 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-
 #pragma once
 
-#include <EAF\ComponentObject.h>
-#include "PGSComponentInfo.h"
+#include <initguid.h>
 
-class CPGSpliceComponentInfo : public WBFL::EAF::ComponentObject,
-   public IPGSpliceComponentInfo
-{
-public:
-   CPGSpliceComponentInfo() = default;
+// {0A195E6C-8B5A-4A6C-A372-FA1321435D1C}
+DEFINE_GUID(CLSID_PGSuperComponentInfo,
+   0xa195e6c, 0x8b5a, 0x4a6c, 0xa3, 0x72, 0xfa, 0x13, 0x21, 0x43, 0x5d, 0x1c);
 
-// IPGSpliceComponentInfo
-public:
-   virtual BOOL Init(CPGSpliceDoc* pDoc) override;
-   virtual void Terminate() override;
-   virtual CString GetName() const override;
-   virtual CString GetDescription() const override;
-   virtual HICON GetIcon() const override;
-   virtual bool HasMoreInfo() const override;
-   virtual void OnMoreInfo() const override;
-};
+// {3A68191C-741C-47F2-81E1-97A296D4AC7E}
+DEFINE_GUID(CLSID_PGSpliceComponentInfo,
+   0x3a68191c, 0x741c, 0x47f2, 0x81, 0xe1, 0x97, 0xa2, 0x96, 0xd4, 0xac, 0x7e);

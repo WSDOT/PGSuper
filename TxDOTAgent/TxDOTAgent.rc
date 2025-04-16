@@ -102,10 +102,6 @@ IDR_TXDOTAGENTIMP       REGISTRY                "TxDOTAgentImp.rgs"
 
 IDR_TXDOTAPPPLUGIN      REGISTRY                "TxDOTAppPlugin.rgs"
 
-IDR_TXDOTCOMPONENTINFO  REGISTRY                "TxDOTComponentInfo.rgs"
-
-IDR_TXDOTAPPPLUGINCOMPONENTINFO REGISTRY                "TxDOTAppPluginComponentInfo.rgs"
-
 
 /////////////////////////////////////////////////////////////////////////////
 //

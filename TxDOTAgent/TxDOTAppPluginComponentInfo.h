@@ -21,34 +21,16 @@
 ///////////////////////////////////////////////////////////////////////
 
 #pragma once
+#include <EAF\ComponentObject.h>
 #include <EAF\EAFComponentInfo.h>
-#include "CLSID.h"
-#include "resource.h"
 
-class ATL_NO_VTABLE CTxDOTAppPluginComponentInfo : 
-   public CComObjectRootEx<CComSingleThreadModel>,
-   public CComCoClass<CTxDOTAppPluginComponentInfo, &CLSID_TxDOTAppPluginComponentInfo>,
-   public IEAFComponentInfo
+class CTxDOTAppPluginComponentInfo : public WBFL::EAF::ComponentObject,
+   public WBFL::EAF::IComponentInfo
 {
 public:
-   CTxDOTAppPluginComponentInfo()
-   {
-   }
+   CTxDOTAppPluginComponentInfo() = default;
 
-DECLARE_REGISTRY_RESOURCEID(IDR_TXDOTAPPPLUGINCOMPONENTINFO)
-DECLARE_CLASSFACTORY_SINGLETON(CTxDOTAppPluginComponentInfo)
-
-BEGIN_COM_MAP(CTxDOTAppPluginComponentInfo)
-   COM_INTERFACE_ENTRY(IEAFComponentInfo)
-END_COM_MAP()
-
-BEGIN_CONNECTION_POINT_MAP(CTxDOTAppPluginComponentInfo)
-END_CONNECTION_POINT_MAP()
-
-   HRESULT FinalConstruct();
-   void FinalRelease();
-
-// IEAFComponentInfo
+// IComponentInfo
 public:
    virtual BOOL Init(CEAFApp* pApp) override;
    virtual void Terminate() override;
@@ -58,5 +40,3 @@ public:
    virtual bool HasMoreInfo() override;
    virtual void OnMoreInfo() override;
 };
-
-OBJECT_ENTRY_AUTO(__uuidof(TxDOTAppPluginComponentInfo), CTxDOTAppPluginComponentInfo)

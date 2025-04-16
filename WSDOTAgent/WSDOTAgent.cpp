@@ -94,17 +94,17 @@ HRESULT RegisterAgent(bool bRegister)
       return hr;
    }
 
-   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_PGSuperComponentInfo,CATID_PGSuperComponentInfo,bRegister);
-   if ( FAILED(hr) )
-   {
-      return hr;
-   }
+   //hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_PGSuperComponentInfo,CATID_PGSuperComponentInfo,bRegister);
+   //if ( FAILED(hr) )
+   //{
+   //   return hr;
+   //}
 
-   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_PGSpliceComponentInfo,CATID_PGSpliceComponentInfo,bRegister);
-   if ( FAILED(hr) )
-   {
-      return hr;
-   }
+   //hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_PGSpliceComponentInfo,CATID_PGSpliceComponentInfo,bRegister);
+   //if ( FAILED(hr) )
+   //{
+   //   return hr;
+   //}
 
    return S_OK;
 }

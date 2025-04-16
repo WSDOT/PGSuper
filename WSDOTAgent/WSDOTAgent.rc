@@ -94,8 +94,6 @@ END
 
 IDR_WSDOTAGENT          REGISTRY                "WSDOTAgent.rgs"
 IDR_WSDOTAGENTIMP       REGISTRY                "WSDOTAgentImp.rgs"
-IDR_PGSUPERCOMPONENTINFO REGISTRY                "PGSuperComponentInfo.rgs"
-IDR_PGSPLICECOMPONENTINFO REGISTRY                "PGSpliceComponentInfo.rgs"
 
 /////////////////////////////////////////////////////////////////////////////
 //

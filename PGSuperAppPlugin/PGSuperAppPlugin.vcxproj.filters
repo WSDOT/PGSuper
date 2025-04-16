@@ -1818,6 +1818,12 @@
     <ClInclude Include="FillHaunchDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CLSID.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Plugins\PGSuperIEPlugin.h">
+      <Filter>IFace</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\bss.ico">
@@ -2098,9 +2104,6 @@
     <None Include="res\MatchCast_BrgAlongNormal.emf">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\PGSpliceComponentInfo.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\PGSpliceAppPluginImpl.rgs">
       <Filter>Resource Files</Filter>
     </None>
@@ -2111,9 +2114,6 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\PGSuperAppPluginImpl.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\PGSuperComponentInfo.rgs">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\PGSuperProjectImporterAppPlugin.rgs">

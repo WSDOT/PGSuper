@@ -28,9 +28,10 @@
 #include "PGSuperDocBase.h"
 #include "PGSuperPluginMgr.h"
 #include "PGSpliceCatCom.h"
-
 #include "PGSComponentInfo.h"
-typedef CEAFPluginManagerBase<IPGSpliceComponentInfo,CPGSpliceDoc> CPGSpliceComponentInfoManager;
+
+#include <EAF\EAFPluginManagerBase.h>
+typedef WBFL::EAF::PluginManagerT<IPGSpliceComponentInfo,CPGSpliceDoc> CPGSpliceComponentInfoManager;
 
 #define ETSD_GENERAL       0
 #define ETSD_CONNECTION    1

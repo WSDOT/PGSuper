@@ -3942,25 +3942,19 @@ BOOL CPGSDocBase::GetStatusBarMessageString(UINT nID,CString& rMessage) const
 
    CPGSDocBase* pThis = const_cast<CPGSDocBase*>(this);
    
-   CComPtr<IPGSDataExporter> exporter;
-   pThis->m_pPluginMgr->GetExporter(nID,false,&exporter);
+   auto exporter = pThis->m_pPluginMgr->GetExporter(nID,false);
    if ( exporter )
    {
-      CComBSTR bstr;
-      exporter->GetCommandHintText(&bstr);
-      rMessage = OLE2T(bstr);
+      rMessage = exporter->GetCommandHintText();
       rMessage.Replace('\n','\0');
 
       return TRUE;
    }
    
-   CComPtr<IPGSDataImporter> importer;
-   pThis->m_pPluginMgr->GetImporter(nID,false,&importer);
+   auto importer = pThis->m_pPluginMgr->GetImporter(nID,false);
    if ( importer )
    {
-      CComBSTR bstr;
-      importer->GetCommandHintText(&bstr);
-      rMessage = OLE2T(bstr);
+      rMessage = importer->GetCommandHintText();
       rMessage.Replace('\n','\0');
 
       return TRUE;
@@ -3982,13 +3976,10 @@ BOOL CPGSDocBase::GetToolTipMessageString(UINT nID, CString& rMessage) const
 
    CPGSDocBase* pThis = const_cast<CPGSDocBase*>(this);
    
-   CComPtr<IPGSDataExporter> exporter;
-   pThis->m_pPluginMgr->GetExporter(nID,false,&exporter);
+   auto exporter = pThis->m_pPluginMgr->GetExporter(nID,false);
    if ( exporter )
    {
-      CComBSTR bstr;
-      exporter->GetCommandHintText(&bstr);
-      CString string( OLE2T(bstr) );
+      auto string = exporter->GetCommandHintText();
       int pos = string.Find('\n');
       if ( 0 < pos )
       {
@@ -3998,13 +3989,10 @@ BOOL CPGSDocBase::GetToolTipMessageString(UINT nID, CString& rMessage) const
       return TRUE;
    }
    
-   CComPtr<IPGSDataImporter> importer;
-   pThis->m_pPluginMgr->GetImporter(nID,false,&importer);
+   auto importer = pThis->m_pPluginMgr->GetImporter(nID,false);
    if ( importer )
    {
-      CComBSTR bstr;
-      importer->GetCommandHintText(&bstr);
-      CString string( OLE2T(bstr) );
+      auto string = importer->GetCommandHintText();
       int pos = string.Find('\n');
       if ( 0 < pos )
       {
@@ -5073,58 +5061,17 @@ void CPGSDocBase::OnImportMenu(CCmdUI* pCmdUI)
       // populate the menu
       for ( idx = 0; idx < nImporters; idx++ )
       {
-         CComPtr<IPGSDataImporter> importer;
-         m_pPluginMgr->GetImporter(idx,true,&importer);
+         auto importer = m_pPluginMgr->GetImporter(idx,true);
 
          UINT cmdID = m_pPluginMgr->GetImporterCommand(idx);
 
-         CComBSTR bstrMenuText;
-         importer->GetMenuText(&bstrMenuText);
-         pMenu->InsertMenu(pCmdUI->m_nIndex,MF_BYPOSITION | MF_STRING,cmdID,OLE2T(bstrMenuText));
+         auto strMenuText = importer->GetMenuText();
+         pMenu->InsertMenu(pCmdUI->m_nIndex,MF_BYPOSITION | MF_STRING,cmdID,strMenuText);
 
          const CBitmap* pBmp = m_pPluginMgr->GetImporterBitmap(idx);
          pMenu->SetMenuItemBitmaps(cmdID,MF_BYCOMMAND,pBmp,nullptr);
 
    	   pCmdUI->m_nIndexMax = pMenu->GetMenuItemCount();
-
-         pCmdUI->m_nIndex++;
-      }
-   }
-
-
-   nImporters = m_pPluginMgr->GetImporterCount2();
-   if (nImporters == 0)
-   {
-      pCmdUI->SetText(_T("Custom importers not installed"));
-      pCmdUI->Enable(FALSE);
-      return;
-   }
-   else
-   {
-      IndexType idx;
-#pragma Reminder("WORKING HERE - Removing COM")
-      // Commented out during development - this deletes the old plugin's menu item
-      // This will be needed after transition to new code
-      // clean up the menu
-      //for (idx = 0; idx < nImporters; idx++)
-      //{
-      //   pMenu->DeleteMenu(pCmdUI->m_nID + (UINT)idx, MF_BYCOMMAND);
-      //}
-
-      // populate the menu
-      for (idx = 0; idx < nImporters; idx++)
-      {
-         auto importer = m_pPluginMgr->GetImporter(idx, true);
-
-         UINT cmdID = m_pPluginMgr->GetImporterCommand2(idx);
-
-         CString strMenuText = importer->GetMenuText();
-         pMenu->InsertMenu(pCmdUI->m_nIndex, MF_BYPOSITION | MF_STRING, cmdID, strMenuText);
-
-         const CBitmap* pBmp = m_pPluginMgr->GetImporterBitmap2(idx);
-         pMenu->SetMenuItemBitmaps(cmdID, MF_BYCOMMAND, pBmp, nullptr);
-
-         pCmdUI->m_nIndexMax = pMenu->GetMenuItemCount();
 
          pCmdUI->m_nIndex++;
       }
@@ -5167,56 +5114,16 @@ void CPGSDocBase::OnExportMenu(CCmdUI* pCmdUI)
 
       for ( idx = 0; idx < nExporters; idx++ )
       {
-         CComPtr<IPGSDataExporter> exporter;
-         m_pPluginMgr->GetExporter(idx,true,&exporter);
+         auto exporter = m_pPluginMgr->GetExporter(idx,true);
 
          UINT cmdID = m_pPluginMgr->GetExporterCommand(idx);
 
-         CComBSTR bstrMenuText;
-         exporter->GetMenuText(&bstrMenuText);
+         auto strMenuText = exporter->GetMenuText();
 
-         pMenu->InsertMenu(pCmdUI->m_nIndex,MF_BYPOSITION | MF_STRING,cmdID,OLE2T(bstrMenuText));
+         pMenu->InsertMenu(pCmdUI->m_nIndex,MF_BYPOSITION | MF_STRING,cmdID,strMenuText);
 
          const CBitmap* pBmp = m_pPluginMgr->GetExporterBitmap(idx);
          pMenu->SetMenuItemBitmaps(cmdID,MF_BYCOMMAND,pBmp,nullptr);
-
-         pCmdUI->m_nIndexMax = pMenu->GetMenuItemCount();
-         pCmdUI->m_nIndex++;
-      }
-   }
-
-
-   nExporters = m_pPluginMgr->GetExporterCount2();
-   if (nExporters == 0)
-   {
-      pCmdUI->SetText(_T("Custom exporters not installed"));
-      pCmdUI->Enable(FALSE);
-      return;
-   }
-   else
-   {
-      IndexType idx;
-#pragma Reminder("WORKING HERE - Removing COM")
-      // Commented out during development - this deletes the old plugin's menu item
-      // This will be needed after transition to new code
-      // clean up the menu
-      //for (idx = 0; idx < nExporters; idx++)
-      //{
-      //   pMenu->DeleteMenu(pCmdUI->m_nID + (UINT)idx, MF_BYCOMMAND);
-      //}
-
-      for (idx = 0; idx < nExporters; idx++)
-      {
-         auto exporter = m_pPluginMgr->GetExporter(idx, true);
-
-         UINT cmdID = m_pPluginMgr->GetExporterCommand2(idx);
-
-         auto strMenuText = exporter->GetMenuText();
-
-         pMenu->InsertMenu(pCmdUI->m_nIndex, MF_BYPOSITION | MF_STRING, cmdID, strMenuText);
-
-         const CBitmap* pBmp = m_pPluginMgr->GetExporterBitmap2(idx);
-         pMenu->SetMenuItemBitmaps(cmdID, MF_BYCOMMAND, pBmp, nullptr);
 
          pCmdUI->m_nIndexMax = pMenu->GetMenuItemCount();
          pCmdUI->m_nIndex++;
@@ -5229,35 +5136,21 @@ void CPGSDocBase::OnExportMenu(CCmdUI* pCmdUI)
 
 void CPGSDocBase::OnImport(UINT nID)
 {
-   CComPtr<IPGSDataImporter> importer;
-   m_pPluginMgr->GetImporter(nID,false,&importer);
+   auto importer = m_pPluginMgr->GetImporter(nID,false);
 
    if ( importer )
    {
       importer->Import(m_pBroker);
    }
-
-   auto importer2 = m_pPluginMgr->GetImporter(nID, false);
-   if (importer2)
-   {
-      importer2->Import(m_pBroker);
-   }
 }
 
 void CPGSDocBase::OnExport(UINT nID)
 {
-   CComPtr<IPGSDataExporter> exporter;
-   m_pPluginMgr->GetExporter(nID,false,&exporter);
+   auto exporter = m_pPluginMgr->GetExporter(nID,false);
 
    if ( exporter )
    {
       exporter->Export(m_pBroker);
-   }
-
-   auto exporter2 = m_pPluginMgr->GetExporter(nID, false);
-   if (exporter2)
-   {
-      exporter2->Export(m_pBroker);
    }
 }
 

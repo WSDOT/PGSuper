@@ -190,8 +190,6 @@
     <ClCompile Include="WSDOTAgentImp.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="PGSpliceComponentInfo.rgs" />
-    <None Include="PGSuperComponentInfo.rgs" />
     <None Include="WSDOTAgent.def" />
     <None Include="WSDOTAgent.rgs" />
     <None Include="WSDOTAgentImp.rgs" />

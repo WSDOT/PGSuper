@@ -443,12 +443,6 @@
     <None Include="TxDOTAppPlugin.rgs">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="TxDOTComponentInfo.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="TxDOTAppPluginComponentInfo.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\registry.bin">
       <Filter>Resource Files</Filter>
     </None>

@@ -20,35 +20,17 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-
 #pragma once
+#include <EAF\ComponentObject.h>
 #include <EAF\EAFComponentInfo.h>
-#include "resource.h"
 
-class ATL_NO_VTABLE CPGSpliceComponentInfo : 
-   public CComObjectRootEx<CComSingleThreadModel>,
-   public CComCoClass<CPGSpliceComponentInfo, &CLSID_PGSpliceComponentInfo>,
-   public IEAFComponentInfo
+class CPGSpliceComponentInfo : public WBFL::EAF::ComponentObject,
+   public WBFL::EAF::IComponentInfo
 {
 public:
-   CPGSpliceComponentInfo()
-   {
-   }
+   CPGSpliceComponentInfo() = default;
 
-DECLARE_REGISTRY_RESOURCEID(IDR_PGSPLICECOMPONENTINFO)
-DECLARE_CLASSFACTORY_SINGLETON(CPGSpliceComponentInfo)
-
-BEGIN_COM_MAP(CPGSpliceComponentInfo)
-   COM_INTERFACE_ENTRY(IEAFComponentInfo)
-END_COM_MAP()
-
-BEGIN_CONNECTION_POINT_MAP(CPGSpliceComponentInfo)
-END_CONNECTION_POINT_MAP()
-
-   HRESULT FinalConstruct();
-   void FinalRelease();
-
-// IEAFComponentInfo
+// IComponentInfo
 public:
    virtual BOOL Init(CEAFApp* pApp);
    virtual void Terminate();
@@ -58,5 +40,3 @@ public:
    virtual bool HasMoreInfo();
    virtual void OnMoreInfo();
 };
-
-OBJECT_ENTRY_AUTO(__uuidof(PGSpliceComponentInfo), CPGSpliceComponentInfo)

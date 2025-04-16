@@ -14,7 +14,8 @@
 #include <EAF\EAFResources.h>
 #if !defined _NOGRID
 #include "grid\gxresrc.h"
-#endif
+#endif
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
@@ -86,10 +87,6 @@ IDR_PGSUPERAPPPLUGIN    REGISTRY                "PGSuperAppPlugin.rgs"
 IDR_PGSUPERAPPPLUGINIMPL REGISTRY                "res\\PGSuperAppPluginImpl.rgs"
 
 IDR_PGSPLICEAPPPLUGINIMPL REGISTRY                "res\\PGSpliceAppPluginImpl.rgs"
-
-IDR_PGSUPERCOMPONENTINFO REGISTRY                "res\\PGSuperComponentInfo.rgs"
-
-IDR_PGSPLICECOMPONENTINFO REGISTRY                "res\\PGSpliceComponentInfo.rgs"
 
 IDR_PGSUPERPROJECTIMPORTERAPPPLUGIN REGISTRY                "res\\PGSuperProjectImporterAppPlugin.rgs"
 

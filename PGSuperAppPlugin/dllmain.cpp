@@ -45,15 +45,18 @@
 #include <EAF\EAFApp.h>
 #include <EAF\EAFUtilities.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-
 CPGSuperAppPluginModule _AtlModule;
+
+#include "CLSID.h"
+#include "PGSuperComponentInfo.h"
+#include "PGSpliceComponentInfo.h"
+#include <EAF\ComponentModule.h>
+WBFL::EAF::ComponentModule Module_;
+EAF_BEGIN_OBJECT_MAP(ObjectMap)
+EAF_OBJECT_ENTRY(CLSID_PGSuperComponentInfo,CPGSuperComponentInfo)
+EAF_OBJECT_ENTRY(CLSID_PGSpliceComponentInfo, CPGSpliceComponentInfo)
+EAF_END_OBJECT_MAP()
+
 CPGSuperAppPluginApp theApp;
 
 BEGIN_MESSAGE_MAP(CPGSuperAppPluginApp, CWinApp)
@@ -63,6 +66,8 @@ END_MESSAGE_MAP()
 
 BOOL CPGSuperAppPluginApp::InitInstance()
 {
+   Module_.Init(ObjectMap);
+
    GXInit();
 	GXSetNewGridLineMode(TRUE);	// use smarter grid lines (and dotted) 
 
@@ -93,6 +98,7 @@ BOOL CPGSuperAppPluginApp::InitInstance()
 
 int CPGSuperAppPluginApp::ExitInstance()
 {
+   Module_.Term();
    GXForceTerminate();
 	return CWinApp::ExitInstance();
 }

@@ -20,30 +20,16 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-
 #pragma once
-#include "PGSComponentInfo.h"
-#include "resource.h"
 
-class ATL_NO_VTABLE CKDOTComponentInfo : 
-   public CComObjectRootEx<CComSingleThreadModel>,
-   public CComCoClass<CKDOTComponentInfo, &CLSID_KDOTComponentInfo>,
+#include <EAF\ComponentObject.h>
+#include "PGSComponentInfo.h"
+
+class CKDOTComponentInfo : public WBFL::EAF::ComponentObject,
    public IPGSuperComponentInfo
 {
 public:
-   CKDOTComponentInfo()
-   {
-   }
-
-DECLARE_REGISTRY_RESOURCEID(IDR_KDOTCOMPONENTINFO)
-DECLARE_CLASSFACTORY_SINGLETON(CKDOTComponentInfo)
-
-BEGIN_COM_MAP(CKDOTComponentInfo)
-   COM_INTERFACE_ENTRY(IPGSuperComponentInfo)
-END_COM_MAP()
-
-   HRESULT FinalConstruct();
-   void FinalRelease();
+   CKDOTComponentInfo() = default;
 
 // IPGSuperComponentInfo
 public:
