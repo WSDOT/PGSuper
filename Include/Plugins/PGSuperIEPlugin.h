@@ -129,16 +129,18 @@ namespace PGSuper
 
    class IProjectImporter
    {
+   public:
       virtual CString GetItemText() const = 0;
       virtual HRESULT Import(IBroker* pBroker) = 0;
-      virtual HRESULT GetIcon(HICON* phIcon) const = 0;
+      virtual HICON GetIcon() const = 0;
       virtual CLSID GetCLSID() const = 0;
    };
 
    class IPluginDocumentation
    {
+   public:
       virtual CString GetDocumentationSetName() const = 0;
       virtual HRESULT LoadDocumentationMap() = 0;
-      virtual CString GetDocumentLocation(UINT nHID) const = 0;
+      virtual std::pair<bool,CString> GetDocumentLocation(UINT nHID) const = 0;
    };
 };

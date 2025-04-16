@@ -681,7 +681,7 @@ HRESULT CTxDOTCadExporter::ExportHaunchDeflectionData(IBroker* pBroker, const st
 }
 
 //////////////////////////////////////////////////
-// IPGSDocumentation
+// IPluginDocumentation
 CString CTxDOTCadExporter::GetDocumentationSetName() const
 {
    return CString("TxCADExport");
@@ -701,18 +701,18 @@ STDMETHODIMP CTxDOTCadExporter::LoadDocumentationMap()
    return S_OK;
 }
 
-CString CTxDOTCadExporter::GetDocumentLocation(UINT nHID) const
+std::pair<bool,CString> CTxDOTCadExporter::GetDocumentLocation(UINT nHID) const
 {
    auto found = m_HelpTopics.find(nHID);
    if ( found == m_HelpTopics.end() )
    {
       CHECK(false);
-      return CString("");
+      return { false,CString("") };
    }
 
    CString strURL;
    strURL.Format(_T("%s%s"),GetDocumentationURL(),found->second);
-   return strURL;
+   return { true,strURL };
 }
 
 CString CTxDOTCadExporter::GetDocumentationURL() const

@@ -75,7 +75,7 @@ BOOL CPGSuperAppPluginApp::InitInstance()
    WBFL::System::ComCatMgr::CreateCategory(L"PGSuper Agent",                   CATID_PGSuperAgent);
    WBFL::System::ComCatMgr::CreateCategory(L"PGSuper Extension Agent",         CATID_PGSuperExtensionAgent);
    WBFL::System::ComCatMgr::CreateCategory(L"PGSuper Beam Family",             CATID_PGSuperBeamFamily);
-   WBFL::System::ComCatMgr::CreateCategory(L"PGSuper Project Importer Plugin", CATID_PGSuperProjectImporter);
+   //WBFL::System::ComCatMgr::CreateCategory(L"PGSuper Project Importer Plugin", CATID_PGSuperProjectImporter);
    WBFL::System::ComCatMgr::CreateCategory(L"PGSuper Data Importer Plugin",    CATID_PGSuperDataImporter);
    WBFL::System::ComCatMgr::CreateCategory(L"PGSuper Data Exporter Plugin",    CATID_PGSuperDataExporter);
    WBFL::System::ComCatMgr::CreateCategory(L"PGSuper Component Information",   CATID_PGSuperComponentInfo);
@@ -83,7 +83,7 @@ BOOL CPGSuperAppPluginApp::InitInstance()
    WBFL::System::ComCatMgr::CreateCategory(L"PGSplice Agent",                   CATID_PGSpliceAgent);
    WBFL::System::ComCatMgr::CreateCategory(L"PGSplice Extension Agent",         CATID_PGSpliceExtensionAgent);
    WBFL::System::ComCatMgr::CreateCategory(L"PGSplice Beam Family",             CATID_PGSpliceBeamFamily);
-   WBFL::System::ComCatMgr::CreateCategory(L"PGSplice Project Importer Plugin", CATID_PGSpliceProjectImporter);
+   //WBFL::System::ComCatMgr::CreateCategory(L"PGSplice Project Importer Plugin", CATID_PGSpliceProjectImporter);
    WBFL::System::ComCatMgr::CreateCategory(L"PGSplice Data Importer Plugin",    CATID_PGSpliceDataImporter);
    WBFL::System::ComCatMgr::CreateCategory(L"PGSplice Data Exporter Plugin",    CATID_PGSpliceDataExporter);
    WBFL::System::ComCatMgr::CreateCategory(L"PGSplice Component Information",   CATID_PGSpliceComponentInfo);

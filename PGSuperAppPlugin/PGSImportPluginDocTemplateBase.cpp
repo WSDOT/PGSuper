@@ -36,7 +36,7 @@ static char THIS_FILE[] = __FILE__;
 class CMyTemplateItem : public CEAFTemplateItem
 {
 public:
-   CMyTemplateItem(CEAFDocTemplate* pDocTemplate,LPCTSTR name,LPCTSTR path,HICON hIcon,IPGSProjectImporter* pImporter) :
+   CMyTemplateItem(CEAFDocTemplate* pDocTemplate,LPCTSTR name,LPCTSTR path,HICON hIcon,std::shared_ptr<PGSuper::IProjectImporter> pImporter) :
       CEAFTemplateItem(pDocTemplate,name,path,hIcon)
       {
          m_Importer = pImporter;
@@ -48,7 +48,7 @@ public:
       return pClone;
    }
 
-   CComPtr<IPGSProjectImporter> m_Importer;
+   std::shared_ptr<PGSuper::IProjectImporter> m_Importer;
    DECLARE_DYNAMIC(CMyTemplateItem)
 };
 
@@ -184,15 +184,12 @@ CPGSProjectImporterMgrBase* CPGSImportPluginDocTemplateBase::GetProjectImporterM
       IndexType nImporters = m_pProjectImporterMgr->GetImporterCount();
       for ( IndexType idx = 0; idx < nImporters; idx++ )
       {
-         CComPtr<IPGSProjectImporter> importer;
-         m_pProjectImporterMgr->GetImporter(idx,&importer);
+         auto importer = m_pProjectImporterMgr->GetImporter(idx);
 
-         CComBSTR bstrText;
-         importer->GetItemText(&bstrText);
+         auto strText = importer->GetItemText();
+         HICON hIcon = importer->GetIcon();
 
-         HICON hIcon;
-         importer->GetIcon(&hIcon);
-         m_TemplateGroup.AddItem( new CMyTemplateItem((CEAFDocTemplate*)this,OLE2T(bstrText),nullptr,hIcon,importer) );
+         m_TemplateGroup.AddItem( new CMyTemplateItem((CEAFDocTemplate*)this,strText,nullptr,hIcon,importer) );
       }
    }
 
@@ -208,8 +205,7 @@ CEAFTemplateItem* CPGSImportPluginDocTemplateBase::GetTemplateItem(const CLSID& 
       if (pItem->IsKindOf(RUNTIME_CLASS(CMyTemplateItem)))
       {
          CMyTemplateItem* pMyItem = (CMyTemplateItem*)pItem;
-         CLSID itemCLSID;
-         pMyItem->m_Importer->GetCLSID(&itemCLSID);
+         CLSID itemCLSID = pMyItem->m_Importer->GetCLSID();
          if (clsid == itemCLSID)
          {
             return pItem;

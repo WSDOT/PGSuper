@@ -52,7 +52,7 @@ public:
 public:
    CString GetDocumentationSetName() const override;
    STDMETHOD(LoadDocumentationMap)() override;
-   CString GetDocumentLocation(UINT nHID) const override;
+   std::pair<bool,CString> GetDocumentLocation(UINT nHID) const override;
 
 private:
    HRESULT ExportGirderDesignData(IBroker* pBroker, const std::vector<CGirderKey>& girderKeys, exportCADData::cdtExportDataType fileDataType, exportCADData::ctxFileFormatType fileFormat);

@@ -34,7 +34,7 @@ public:
 public:
    CString GetDocumentationSetName() const override;
    STDMETHOD(LoadDocumentationMap)() override;
-   CString GetDocumentLocation(UINT nHID) const override;
+   std::pair<bool,CString> GetDocumentLocation(UINT nHID) const override;
 
 private:
    Float64 m_BearingHeight;

@@ -2,8 +2,6 @@
 // Microsoft Visual C++ generated include file.
 // Used by IEPluginExample.rc
 //
-#define IDR_PGSUPERPROJECTIMPORTER      103
-#define IDR_PGSPLICEPROJECTIMPORTER     106
 #define IDI_IMPORTER                    204
 #define IDB_IEPLUGIN                    205
 

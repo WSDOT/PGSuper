@@ -194,8 +194,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="IEPluginExample.def" />
-    <None Include="PGSpliceProjectImporter.rgs" />
-    <None Include="PGSuperProjectImporter.rgs" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="IEPluginExample.rc">

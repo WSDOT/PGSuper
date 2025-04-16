@@ -25,63 +25,20 @@
 #pragma once
 
 #include <Plugins\PGSuperIEPlugin.h>
-#include "resource.h"       // main symbols
+#include <EAF\ComponentObject.h>
 
 class CBridgeDescription2;
 
-/////////////////////////////////////////////////////////////////////////////
-// CPGSuperProjectImporter
-class ATL_NO_VTABLE CPGSuperProjectImporter : 
-	public CComObjectRootEx<CComSingleThreadModel>,
-	public CComCoClass<CPGSuperProjectImporter, &CLSID_PGSuperProjectImporter>,
-   public IPGSProjectImporter
-{
-public:
-	CPGSuperProjectImporter()
-	{
-	}
-
-   HRESULT FinalConstruct();
-
-   CBitmap m_Bitmap;
-
-DECLARE_REGISTRY_RESOURCEID(IDR_PGSUPERPROJECTIMPORTER)
-
-DECLARE_PROTECT_FINAL_CONSTRUCT()
-
-BEGIN_COM_MAP(CPGSuperProjectImporter)
-	COM_INTERFACE_ENTRY(IPGSProjectImporter)
-END_COM_MAP()
-
-// IPGSProjectImporter
-public:
-   STDMETHOD(GetItemText)(/*[out,retval]*/BSTR*  bstrText) const override;
-   STDMETHOD(GetIcon)(/*[out]*/HICON* phIcon) const override;
-   STDMETHOD(Import)(/*[in]*/IBroker* pBroker) override;
-   STDMETHOD(GetCLSID)(CLSID* pCLSID) const override;
-
-private:
-   void BuildBridge(IBroker* pBroker);
-   void SetSpecification(IBroker* pBroker);
-   void InitGirderData(IBroker* pBroker);
-   void InitTimelineManager(IBroker* pBroker,CBridgeDescription2& bridge);
-};
-
-
-
-#include <EAF\ComponentObject.h>
-/////////////////////////////////////////////////////////////////////////////
-// CPGSuperProjectImporter2
-class CPGSuperProjectImporter2 : public WBFL::EAF::ComponentObject, 
+class CPGSuperProjectImporter : public WBFL::EAF::ComponentObject, 
    public PGSuper::IProjectImporter
 {
 public:
-   CPGSuperProjectImporter2();
+   CPGSuperProjectImporter();
 
-   // IPGSProjectImporter2
+   // IProjectImporter
 public:
    CString GetItemText() const override;
-   STDMETHOD(GetIcon)(/*[out]*/HICON* phIcon) const override;
+   HICON GetIcon() const override;
    STDMETHOD(Import)(/*[in]*/IBroker* pBroker) override;
    CLSID GetCLSID() const override;
 

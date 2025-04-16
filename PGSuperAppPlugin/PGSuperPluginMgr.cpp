@@ -442,6 +442,8 @@ const CBitmap* CPGSuperPluginMgrBase::GetExporterBitmap2(IndexType idx) const
 
 void CPGSuperPluginMgrBase::LoadDocumentationMaps()
 {
+#pragma Reminder("WORKING HERE - Removing COM")
+   // Once all plug-ins are converted, m_ImporterPlugins and m_ExporterPlugins go away and the "2" versions are renamed
    for (const auto& record : m_ImporterPlugins )
    {
       CComQIPtr<IPGSDocumentation> pDocumentation(record.Plugin);
@@ -462,7 +464,7 @@ void CPGSuperPluginMgrBase::LoadDocumentationMaps()
 
    for (const auto& record : m_ImporterPlugins2)
    {
-      auto pDocumentation = std::dynamic_pointer_cast<IPGSDocumentation>(record.Plugin);
+      auto pDocumentation = std::dynamic_pointer_cast<PGSuper::IPluginDocumentation>(record.Plugin);
       if (pDocumentation)
       {
          pDocumentation->LoadDocumentationMap();
@@ -471,7 +473,7 @@ void CPGSuperPluginMgrBase::LoadDocumentationMaps()
 
    for (const auto& record : m_ExporterPlugins2)
    {
-      auto pDocumentation = std::dynamic_pointer_cast<IPGSDocumentation>(record.Plugin);
+      auto pDocumentation = std::dynamic_pointer_cast<PGSuper::IPluginDocumentation>(record.Plugin);
       if (pDocumentation)
       {
          pDocumentation->LoadDocumentationMap();
@@ -481,6 +483,8 @@ void CPGSuperPluginMgrBase::LoadDocumentationMaps()
 
 eafTypes::HelpResult CPGSuperPluginMgrBase::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nHID,CString& strURL)
 {
+#pragma Reminder("WORKING HERE - Removing COM")
+   // Once all plug-ins are converted, m_ImporterPlugins and m_ExporterPlugins go away and the "2" versions are renamed
    USES_CONVERSION;
    CComBSTR bstrTargetDocSetName(lpszDocSetName);
 
@@ -538,50 +542,32 @@ eafTypes::HelpResult CPGSuperPluginMgrBase::GetDocumentLocation(LPCTSTR lpszDocS
 
    for (const auto& record : m_ImporterPlugins2)
    {
-      auto pDocumentation = std::dynamic_pointer_cast<IPGSDocumentation>(record.Plugin);
+      auto pDocumentation = std::dynamic_pointer_cast<PGSuper::IPluginDocumentation>(record.Plugin);
       if (pDocumentation)
       {
-         CComBSTR bstrDocSetName;
-         pDocumentation->GetDocumentationSetName(&bstrDocSetName);
+         auto strDocSetName = pDocumentation->GetDocumentationSetName();
 
-         if (bstrDocSetName == bstrTargetDocSetName)
+         if (strDocSetName == CString(bstrTargetDocSetName))
          {
-            CComBSTR bstrURL;
-            HRESULT hr = pDocumentation->GetDocumentLocation(nHID, &bstrURL);
-            if (SUCCEEDED(hr))
-            {
-               strURL = OLE2T(bstrURL);
-               return eafTypes::hrOK;
-            }
-            else
-            {
-               return eafTypes::hrTopicNotFound;
-            }
+            bool bSuccess;
+            std::tie(bSuccess,strURL) = pDocumentation->GetDocumentLocation(nHID);
+            return bSuccess ? eafTypes::hrOK : eafTypes::hrTopicNotFound;
          }
       }
    }
 
    for (const auto& record : m_ExporterPlugins2)
    {
-      auto pDocumentation = std::dynamic_pointer_cast<IPGSDocumentation>(record.Plugin);
+      auto pDocumentation = std::dynamic_pointer_cast<PGSuper::IPluginDocumentation>(record.Plugin);
       if (pDocumentation)
       {
-         CComBSTR bstrDocSetName;
-         pDocumentation->GetDocumentationSetName(&bstrDocSetName);
+         auto strDocSetName = pDocumentation->GetDocumentationSetName();
 
-         if (bstrDocSetName == bstrTargetDocSetName)
+         if (strDocSetName == CString(bstrTargetDocSetName))
          {
-            CComBSTR bstrURL;
-            HRESULT hr = pDocumentation->GetDocumentLocation(nHID, &bstrURL);
-            if (SUCCEEDED(hr))
-            {
-               strURL = OLE2T(bstrURL);
-               return eafTypes::hrOK;
-            }
-            else
-            {
-               return eafTypes::hrTopicNotFound;
-            }
+            bool bSuccess;
+            std::tie(bSuccess, strURL) = pDocumentation->GetDocumentLocation(nHID);
+            return bSuccess ? eafTypes::hrOK : eafTypes::hrTopicNotFound;
          }
       }
    }

@@ -56,12 +56,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="IEPluginExample.def" />
-    <None Include="PGSpliceProjectImporter.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="PGSuperProjectImporter.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">

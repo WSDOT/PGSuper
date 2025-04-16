@@ -1040,7 +1040,7 @@ HRESULT CKDOTDataExporter::Export(IBroker* pBroker,CString& strFileName, const s
 }
 
 //////////////////////////////////////////////////
-// IPGSDocumentation
+// IPluginDocumentation
 CString CKDOTDataExporter::GetDocumentationSetName() const
 {
    return CString(_T("KDOT"));
@@ -1060,18 +1060,18 @@ STDMETHODIMP CKDOTDataExporter::LoadDocumentationMap()
    return S_OK;
 }
 
-CString CKDOTDataExporter::GetDocumentLocation(UINT nHID) const
+std::pair<bool,CString> CKDOTDataExporter::GetDocumentLocation(UINT nHID) const
 {
    auto found = m_HelpTopics.find(nHID);
    if ( found == m_HelpTopics.end() )
    {
       CHECK(false);
-      return CString("");
+      return { false,CString("") };
    }
 
    CString strURL;
    strURL.Format(_T("%s%s"),GetDocumentationURL(),found->second);
-   return strURL;
+   return { true,strURL };
 }
 
 CString CKDOTDataExporter::GetDocumentationURL() const
