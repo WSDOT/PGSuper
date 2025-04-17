@@ -39,7 +39,7 @@
 #include <WBFLCogo_i.c>
 #include "dllmain.h"
 
-#include <EAF\EAFAppPlugin.h>
+#include <EAF\PluginApp.h>
 #include <EAF\EAFComponentInfo.h>
 
 #include "BridgeLinkCATID.h"
@@ -106,9 +106,9 @@ HRESULT Register(bool bRegister)
 
    // The TxDOTAppPlugin plugs into the BridgeLink application executable and brings the
    // TxDOT Optional Design Document functionality
-   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_TxDOTAppPlugin,CATID_BridgeLinkAppPlugin,bRegister);
-   if ( FAILED(hr) )
-      return hr;
+   //hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_TxDOTAppPlugin,CATID_BridgeLinkAppPlugin,bRegister);
+   //if ( FAILED(hr) )
+   //   return hr;
 
    //hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_TxDOTAppPluginComponentInfo,CATID_BridgeLinkComponentInfo,bRegister);
    //if ( FAILED(hr) )

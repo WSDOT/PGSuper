@@ -20,54 +20,36 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// PGSuperAppPlugin.idl : IDL source for PGSuperAppPlugin
-//
+#pragma once
 
-// This file will be processed by the MIDL tool to
-// produce the type library (PGSuperAppPlugin.tlb) and marshalling code.
+#include "PGSProjectImporterPluginAppBase.h"
 
-import "oaidl.idl";
-import "ocidl.idl";
-
-[
-	uuid(D72410B0-3CD9-476C-87FD-A050E4F08B65),
-	version(1.0),
-	helpstring("PGSuperAppPlugin 1.0 Type Library")
-]
-library PGSuperAppPluginLib
+class CPGSuperProjectImporterPluginApp : 
+   public CPGSProjectImporterPluginAppBase
 {
-	importlib("stdole2.tlb");
-
-
-   [
-      uuid(22F091F9-B2BE-4313-BDA3-8F46A44681E9)
-   ]
-   coclass PGSuperAppPlugin
+public:
+   CPGSuperProjectImporterPluginApp()
    {
-      interface IUnknown;
+      m_MyCmdTarget.m_pMyAppPlugin = this;
    }
 
-   [
-      uuid(73B452CE-0955-4ff5-AB8C-EF54BD1DFB72)
-   ]
-   coclass PGSuperProjectImporterAppPlugin
-   {
-      interface IUnknown;
-   }
+   CString GetAppName() const override { return CString("PGSuper"); }
+   CString GetDefaultCatalogServerName() const override  { return CString("WSDOT"); }
+   CString GetDefaultCatalogName() const override  { return CString("WSDOT"); }
+   CString GetTemplateFileExtension() override;
+   const CRuntimeClass* GetDocTemplateRuntimeClass() override;
 
-   [
-      uuid(64EC8856-B47A-4cd3-A8F0-1270ADD7733D)
-   ]
-   coclass PGSpliceAppPlugin
-   {
-      interface IUnknown;
-   }
+   LPCTSTR GetCatalogServerKey() const override;
+   LPCTSTR GetPublisherKey() const override;
+   LPCTSTR GetMasterLibraryCacheKey() const override;
+   LPCTSTR GetMasterLibraryURLKey() const override;
+   LPCTSTR GetWorkgroupTemplatesCacheKey() const override;
+   CString GetCacheFolder() const override;
 
-   [
-      uuid(398F7443-AA27-442f-ADA4-866E38BE596D)
-   ]
-   coclass PGSpliceProjectImporterAppPlugin
-   {
-      interface IUnknown;
-   }
+   CATID GetProjectImporterCATID() override;
+   UINT GetMenuResourceID() override;
+   CPGSImportPluginDocTemplateBase* CreateDocTemplate() override;
+
+   CEAFCommandLineInfo* CreateCommandLineInfo() const override;
+   CString GetUsageMessage() override;
 };

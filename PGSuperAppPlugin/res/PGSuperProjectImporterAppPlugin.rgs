@@ -1,20 +1,20 @@
 HKCR
 {
-	PGSuper.PGSuperProjectImporterAppPlugin.1 = s 'PGSuper Project Importer'
+	PGSuper.PGSuperProjectImporterPluginApp.1 = s 'PGSuper Project Importer'
 	{
 		CLSID = s '{73B452CE-0955-4ff5-AB8C-EF54BD1DFB72}'
 	}
-	PGSuper.PGSuperProjectImporterAppPlugin = s 'PGSuper Project Importer'
+	PGSuper.PGSuperProjectImporterPluginApp = s 'PGSuper Project Importer'
 	{
 		CLSID = s '{73B452CE-0955-4ff5-AB8C-EF54BD1DFB72}'
-		CurVer = s 'PGSuper.PGSuperProjectImporterAppPlugin.1'
+		CurVer = s 'PGSuper.PGSuperProjectImporterPluginApp.1'
 	}
 	NoRemove CLSID
 	{
 		ForceRemove {73B452CE-0955-4ff5-AB8C-EF54BD1DFB72} = s 'PGSuper Project Importer'
 		{
-			ProgID = s 'PGSuper.PGSuperProjectImporterAppPlugin.1'
-			VersionIndependentProgID = s 'PGSuper.PGSuperProjectImporterAppPlugin'
+			ProgID = s 'PGSuper.PGSuperProjectImporterPluginApp.1'
+			VersionIndependentProgID = s 'PGSuper.PGSuperProjectImporterPluginApp'
 			ForceRemove 'Programmable'
 			InprocServer32 = s '%MODULE%'
 			{

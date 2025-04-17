@@ -24,7 +24,7 @@
 #include "resource.h"
 #include "PGSuperDocTemplate.h"
 #include "PGSuperDoc.h"
-#include "PGSuperBaseAppPlugin.h"
+#include "PGSPluginAppBase.h"
 
 #include "PGSuperCatCom.h"
 #include "Plugins\PGSuperIEPlugin.h"
@@ -40,7 +40,7 @@ static char THIS_FILE[] = __FILE__;
 IMPLEMENT_DYNAMIC(CPGSuperDocTemplate,CPGSuperDocTemplateBase)
 
 CPGSuperDocTemplate::CPGSuperDocTemplate(UINT nIDResource,
-                                         IEAFCommandCallback* pCallback,
+                                         std::shared_ptr<WBFL::EAF::ICommandCallback> pCallback,
                                          CRuntimeClass* pDocClass,
                                          CRuntimeClass* pFrameClass,
                                          CRuntimeClass* pViewClass,

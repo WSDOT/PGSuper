@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "PostTensioningPage.h"
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFUtilities.h>

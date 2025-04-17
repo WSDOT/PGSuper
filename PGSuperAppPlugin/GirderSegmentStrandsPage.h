@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #pragma once
-
+#include "resource.h"
 #include "DrawStrandControl.h"
 #include "StrandGrid.h"
 #include <MfcTools\WideDropDownComboBox.h>

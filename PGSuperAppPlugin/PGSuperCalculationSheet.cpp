@@ -61,10 +61,9 @@ WsdotCalculationSheet()
 
    CEAFDocument* pDoc = EAFGetDocument();
    CEAFDocTemplate* pDocTemplate = (CEAFDocTemplate*)pDoc->GetDocTemplate();
-   CComPtr<IEAFAppPlugin> appPlugin;
-   pDocTemplate->GetPlugin(&appPlugin);
+   auto pluginApp = pDocTemplate->GetPluginApp();
    CString strBottomTitle;
-   strBottomTitle.Format(_T("%s™ Version %s, Copyright © %4d, WSDOT, All rights reserved"),appPlugin->GetName(),pVerInfo->GetVersion(true),WBFL::System::Date().Year());
+   strBottomTitle.Format(_T("%s™ Version %s, Copyright © %4d, WSDOT, All rights reserved"),pluginApp->GetName(),pVerInfo->GetVersion(true),WBFL::System::Date().Year());
 
    SetTitle(strBottomTitle);
 

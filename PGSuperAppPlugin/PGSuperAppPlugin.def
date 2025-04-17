@@ -1,10 +1,5 @@
-; PGSuperAppPlugin.def : Declares the module parameters.
+; PGSuperPluginApp.def : Declares the module parameters.
 
 LIBRARY      "PGSuper.DLL"
 
 EXPORTS
-	DllCanUnloadNow		PRIVATE
-	DllGetClassObject	PRIVATE
-	DllRegisterServer	PRIVATE
-	DllUnregisterServer	PRIVATE
-	;DllInstall		PRIVATE

@@ -326,17 +326,17 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClCompile Include="DeckRegionGrid.cpp" />
     <ClCompile Include="PermitRatingPage.cpp" />
     <ClCompile Include="PGSImportPluginDocTemplateBase.cpp" />
-    <ClCompile Include="PGSpliceAppPlugin.cpp" />
+    <ClCompile Include="PGSplicePluginApp.cpp" />
     <ClCompile Include="PGSpliceCommandLineInfo.cpp" />
     <ClCompile Include="PGSpliceDoc.cpp" />
     <ClCompile Include="PGSpliceDocTemplate.cpp" />
     <ClCompile Include="PGSpliceImportPluginDocTemplate.cpp" />
-    <ClCompile Include="PGSpliceProjectImporterAppPlugin.cpp" />
+    <ClCompile Include="PGSpliceProjectImporterPluginApp.cpp" />
     <ClCompile Include="PGSpliceProjectImporterMgr.cpp" />
-    <ClCompile Include="PGSProjectImporterAppPluginBase.cpp" />
+    <ClCompile Include="PGSProjectImporterPluginAppBase.cpp" />
     <ClCompile Include="PGSProjectImporterMgrBase.cpp" />
-    <ClCompile Include="PGSuperAppPlugin.cpp" />
-    <ClCompile Include="PGSuperBaseAppPlugin.cpp" />
+    <ClCompile Include="PGSuperPluginApp.cpp" />
+    <ClCompile Include="PGSPluginAppBase.cpp" />
     <ClCompile Include="PGSuperCalculationSheet.cpp" />
     <ClCompile Include="PGSuperCommandLineInfo.cpp" />
     <ClCompile Include="PGSuperDoc.cpp" />
@@ -346,7 +346,7 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClCompile Include="PGSuperDocTemplateBase.cpp" />
     <ClCompile Include="PGSuperImportPluginDocTemplate.cpp" />
     <ClCompile Include="PGSuperPluginMgr.cpp" />
-    <ClCompile Include="PGSuperProjectImporterAppPlugin.cpp" />
+    <ClCompile Include="PGSuperProjectImporterPluginApp.cpp" />
     <ClCompile Include="PGSuperProjectImporterMgr.cpp" />
     <ClCompile Include="PGSuperStatusBar.cpp" />
     <ClCompile Include="PGSuperTemplateManager.cpp" />
@@ -479,14 +479,6 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
       </PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="PGSpliceComponentInfo.cpp" />
-    <ClCompile Include="PGSuperAppPlugin_i.c">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </PrecompiledHeader>
-      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      </PrecompiledHeader>
-      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
-    </ClCompile>
     <ClCompile Include="PGSuperComponentInfo.cpp" />
     <ClCompile Include="PostTensioningPage.cpp" />
     <ClCompile Include="PretensioningPage.cpp" />
@@ -586,9 +578,6 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <None Include="res\TempSupportClosure_BrgAlongNormal_EndAlongNormalFromBrg.emf" />
     <None Include="res\TempSupportClosure_BrgAlongNormal_EndAlongNormalFromPier.emf" />
     <None Include="res\TempSupportContinuousSegment.emf" />
-  </ItemGroup>
-  <ItemGroup>
-    <Midl Include="PGSuperAppPlugin.idl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\Hints.h" />
@@ -754,17 +743,17 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClInclude Include="DeckRegionGrid.h" />
     <ClInclude Include="PermitRatingPage.h" />
     <ClInclude Include="PGSImportPluginDocTemplateBase.h" />
-    <ClInclude Include="PGSpliceAppPlugin.h" />
+    <ClInclude Include="PGSplicePluginApp.h" />
     <ClInclude Include="PGSpliceCommandLineInfo.h" />
     <ClInclude Include="PGSpliceDoc.h" />
     <ClInclude Include="PGSpliceDocTemplate.h" />
     <ClInclude Include="PGSpliceImportPluginDocTemplate.h" />
-    <ClInclude Include="PGSpliceProjectImporterAppPlugin.h" />
+    <ClInclude Include="PGSpliceProjectImporterPluginApp.h" />
     <ClInclude Include="PGSpliceProjectImporterMgr.h" />
-    <ClInclude Include="PGSProjectImporterAppPluginBase.h" />
+    <ClInclude Include="PGSProjectImporterPluginAppBase.h" />
     <ClInclude Include="PGSProjectImporterMgrBase.h" />
-    <ClInclude Include="PGSuperAppPlugin.h" />
-    <ClInclude Include="PGSuperBaseAppPlugin.h" />
+    <ClInclude Include="PGSuperPluginApp.h" />
+    <ClInclude Include="PGSPluginAppBase.h" />
     <ClInclude Include="PGSuperCalculationSheet.h" />
     <ClInclude Include="PGSuperCommandLineInfo.h" />
     <ClInclude Include="PGSuperDoc.h" />
@@ -775,7 +764,7 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClInclude Include="..\Include\PGSuperException.h" />
     <ClInclude Include="PGSuperImportPluginDocTemplate.h" />
     <ClInclude Include="PGSuperPluginMgr.h" />
-    <ClInclude Include="PGSuperProjectImporterAppPlugin.h" />
+    <ClInclude Include="PGSuperProjectImporterPluginApp.h" />
     <ClInclude Include="PGSuperProjectImporterMgr.h" />
     <ClInclude Include="PGSuperStatusBar.h" />
     <ClInclude Include="PGSuperTemplateManager.h" />
@@ -892,7 +881,6 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     <ClInclude Include="ParabolicDuctGrid.h" />
     <ClInclude Include="PGSpliceComponentInfo.h" />
     <ClInclude Include="PGSuperApp.h" />
-    <ClInclude Include="PGSuperAppPlugin_i.h" />
     <ClInclude Include="PGSuperComponentInfo.h" />
     <ClInclude Include="PostTensioningPage.h" />
     <ClInclude Include="PretensioningPage.h" />

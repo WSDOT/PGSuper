@@ -23,6 +23,7 @@
 // ExampleExtensionAgent.h : Declaration of the CExampleExtensionAgent
 
 #pragma once
+#include <EAF\ComponentObject.h>
 #include "resource.h"       // main symbols
 #include "ExtensionAgentExample_i.h"
 #include <EAF\EAFInterfaceCache.h>
@@ -37,7 +38,8 @@
 
 class CExampleExtensionAgent;
 
-class CMyCmdTarget : public CCmdTarget
+class CMyCmdTarget : public CCmdTarget, public WBFL::EAF::ComponentObject,
+   public WBFL::EAF::ICommandCallback
 {
 public:
    CMyCmdTarget() {};
@@ -45,6 +47,12 @@ public:
    void OnCommand1();
 	void OnUpdateCommand1(CCmdUI* pCmdUI);
    void OnMyView();
+
+
+   // ICommandCallback
+   BOOL OnCommandMessage(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo) override;
+   BOOL GetStatusBarMessageString(UINT nID, CString& rMessage) const override;
+   BOOL GetToolTipMessageString(UINT nID, CString& rMessage) const override;
 
    CExampleExtensionAgent* m_pMyAgent;
 
@@ -57,7 +65,6 @@ public:
 class ATL_NO_VTABLE CExampleExtensionAgent :
 	public CComObjectRootEx<CComSingleThreadModel>,
 	public CComCoClass<CExampleExtensionAgent, &CLSID_ExampleExtensionAgent>,
-   public IEAFCommandCallback,
 	public IAgentEx,
    public IAgentPersist,
    public IAgentUIIntegration,
@@ -103,7 +110,7 @@ END_COM_MAP()
 	{
 	}
 
-   CMyCmdTarget m_MyCommandTarget;
+   std::shared_ptr<CMyCmdTarget> m_MyCommandTarget;
 
    DWORD m_dwExtendUICookie;
 
@@ -155,13 +162,6 @@ public:
 // IAgentGraphingIntegration
 public:
    STDMETHOD(IntegrateWithGraphing)(BOOL bIntegrate) override;
-
-
-// IEAFCommandCallback
-public:
-   virtual BOOL OnCommandMessage(UINT nID,int nCode,void* pExtra,AFX_CMDHANDLERINFO* pHandlerInfo) override;
-   virtual BOOL GetStatusBarMessageString(UINT nID, CString& rMessage) const override;
-   virtual BOOL GetToolTipMessageString(UINT nID, CString& rMessage) const override;
 
 
 // IEditBridgeCallback

@@ -59,9 +59,6 @@
 #include <grid\gxall.h>
 #endif
 
-#include <atlbase.h>
-#include <atlcom.h>
-
 #include <EAF\EAFResources.h> // so all files have EAF resource identifiers
 #include <MFCTools\MFCTools.h>
 

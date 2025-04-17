@@ -58,7 +58,7 @@ IMPLEMENT_DYNAMIC(CMyTemplateItem,CEAFTemplateItem)
 IMPLEMENT_DYNAMIC(CPGSImportPluginDocTemplateBase,CEAFDocTemplate)
 
 CPGSImportPluginDocTemplateBase::CPGSImportPluginDocTemplateBase(UINT nIDResource,
-                                                                 IEAFCommandCallback* pCallback,
+                                                                 std::shared_ptr<WBFL::EAF::ICommandCallback> pCallback,
   																                 CRuntimeClass* pDocClass,
   																                 CRuntimeClass* pFrameClass,
  																                 CRuntimeClass* pViewClass,

@@ -33,7 +33,7 @@ static char THIS_FILE[] = __FILE__;
 IMPLEMENT_DYNAMIC(CLibraryDocTemplate,CEAFDocTemplate)
 
 CLibraryDocTemplate::CLibraryDocTemplate(UINT nIDResource,
-                                         IEAFCommandCallback* pCallback,
+                                         std::shared_ptr<WBFL::EAF::ICommandCallback> pCallback,
                                          CRuntimeClass* pDocClass,
                                          CRuntimeClass* pFrameClass,
                                          CRuntimeClass* pViewClass,

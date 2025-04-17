@@ -25,6 +25,7 @@
 
 #include "stdafx.h"
 #include "MyView.h"
+#include "ExampleExtensionAgent.h"
 
 #include "resource.h"
 
@@ -39,7 +40,6 @@ IMPLEMENT_DYNCREATE(CMyView, CView)
 
 CMyView::CMyView()
 {
-   m_pAgentCallback = nullptr;
 }
 
 CMyView::~CMyView()
@@ -97,13 +97,13 @@ void CMyView::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
    CEAFMenu* pMenu = pUI->CreateContextMenu();
    
    // Load the context menu resource. By using nullptr as the command callback, all commands
-   // on the context menu (as defined by the menu resource) are routed dirctly back to this view
+   // on the context menu (as defined by the menu resource) are routed directly back to this view
    // because this view is the first stop on the MFC command routing (and that is true because
    // we are using "this" as the window handle in the call to TrackPopupMenu below)
    pMenu->LoadMenu(IDR_CONTEXT,nullptr);
 
    // we can add a command to the context menu that gets routed to the extension agent to handle
-   pMenu->AppendMenu(ID_COMMAND1,_T("Command"),m_pAgentCallback);
+   pMenu->AppendMenu(ID_COMMAND1,_T("Command"),m_pCallback);
 
    pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON,point.x,point.y,this);
 }
@@ -118,7 +118,8 @@ void CMyView::OnInitialUpdate()
    ASSERT( pDocTemplate->IsKindOf(RUNTIME_CLASS(CEAFDocTemplate)) );
 
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)pDocTemplate;
-   m_pAgentCallback = (IEAFCommandCallback*)pTemplate->GetViewCreationData();
+   CMyCmdTarget* target = (CMyCmdTarget*)pTemplate->GetViewCreationData();
+   m_pCallback = std::dynamic_pointer_cast<WBFL::EAF::ICommandCallback>(target->shared_from_this());
 }
 
 void CMyView::OnViewOnlyCommand()

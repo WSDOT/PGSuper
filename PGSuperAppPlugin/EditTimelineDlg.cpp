@@ -23,7 +23,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "EditTimelineDlg.h"
 #include "TimelineEventDlg.h"
 #include "TimelineReportDlg.h"

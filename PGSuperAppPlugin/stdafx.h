@@ -32,10 +32,6 @@
 
 #include <PGSuperAll.h>
 
-#include <atlbase.h>
-#include <atlcom.h>
-#include <atlctl.h>
-
 #include <IFace\Tools.h>
 
 #if defined _NOGRID
@@ -70,5 +66,3 @@
 #include "..\Documentation\PGSuper.hh"
 
 #include <MFCTools\MFCTools.h>
-
-using namespace ATL;

@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "LibraryAppPlugin.h"
+#include "LibraryPluginApp.h"
 
 #include "resource.h"
 
@@ -35,13 +35,6 @@
 
 #include "PGSuperLibraryMgrCATID.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
 BEGIN_MESSAGE_MAP(CMyCmdTarget,CCmdTarget)
    ON_COMMAND(ID_MANAGE_PLUGINS,OnManagePlugins)
 END_MESSAGE_MAP()
@@ -52,7 +45,7 @@ void CMyCmdTarget::OnManagePlugins()
 }
 
 ///////////////////////////////////////////////////////////////////
-void CLibraryAppPlugin::ManagePlugins()
+void CLibraryPluginApp::ManagePlugins()
 {
    std::vector<CEAFPluginState> pluginStates = EAFManageApplicationPlugins(_T("Manage PGSLibrary Editor Plugins"),_T("Select the PGSLibrary Editor plugins that you want to be available"),CATID_PGSuperLibraryManagerPlugin,EAFGetMainFrame());
 
@@ -85,18 +78,19 @@ void CLibraryAppPlugin::ManagePlugins()
    }
 }
 
-BOOL CLibraryAppPlugin::Init(CEAFApp* pParent)
+BOOL CLibraryPluginApp::Init(CEAFApp* pParent)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   m_DocumentationImpl.Init(this); // using PGSuper's documentation
+   auto plugin = std::dynamic_pointer_cast<WBFL::EAF::IPluginApp>(shared_from_this());
+   m_DocumentationImpl.Init(plugin); // using PGSuper's documentation
    return TRUE;
 }
 
-void CLibraryAppPlugin::Terminate()
+void CLibraryPluginApp::Terminate()
 {
 }
 
-void CLibraryAppPlugin::IntegrateWithUI(BOOL bIntegrate)
+void CLibraryPluginApp::IntegrateWithUI(BOOL bIntegrate)
 {
    CEAFMainFrame* pFrame = EAFGetMainFrame();
    CEAFMenu* pMainMenu = pFrame->GetMainMenu();
@@ -107,69 +101,73 @@ void CLibraryAppPlugin::IntegrateWithUI(BOOL bIntegrate)
    UINT managePos = pFileMenu->FindMenuItem(_T("Manage"));
    CEAFMenu* pManageMenu = pFileMenu->GetSubMenu(managePos);
 
+   auto callback = std::dynamic_pointer_cast<WBFL::EAF::ICommandCallback>(shared_from_this());
    if ( bIntegrate )
    {
-      pManageMenu->AppendMenu(ID_MANAGE_PLUGINS,_T("PGSLibrary Editor Plugins..."),this);
+      pManageMenu->AppendMenu(ID_MANAGE_PLUGINS,_T("PGSLibrary Editor Plugins..."),callback);
    }
    else
    {
-      pManageMenu->RemoveMenu(ID_MANAGE_PLUGINS,  MF_BYCOMMAND, this);
+      pManageMenu->RemoveMenu(ID_MANAGE_PLUGINS,  MF_BYCOMMAND, callback);
    }
 }
 
-std::vector<CEAFDocTemplate*> CLibraryAppPlugin::CreateDocTemplates()
+std::vector<CEAFDocTemplate*> CLibraryPluginApp::CreateDocTemplates()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    std::vector<CEAFDocTemplate*> vDocTemplates;
 
    // doc template for Library editor
-	CLibraryDocTemplate* pLibMgrDocTemplate = new CLibraryDocTemplate(
-		IDR_LIBRARYTYPE,this,
+   auto callback = std::dynamic_pointer_cast<WBFL::EAF::ICommandCallback>(shared_from_this());
+   CLibraryDocTemplate* pLibMgrDocTemplate = new CLibraryDocTemplate(
+		IDR_LIBRARYTYPE,
+	    callback,
 		RUNTIME_CLASS(CLibraryEditorDoc),
 		RUNTIME_CLASS(CLibChildFrame),
 		RUNTIME_CLASS(CLibraryEditorView));
 
-   pLibMgrDocTemplate->SetPlugin(this);
+   auto plugin = std::dynamic_pointer_cast<WBFL::EAF::IPluginApp>(shared_from_this());
+   pLibMgrDocTemplate->SetPluginApp(plugin);
 
    vDocTemplates.push_back(pLibMgrDocTemplate);
    return vDocTemplates;
 }
 
-HMENU CLibraryAppPlugin::GetSharedMenuHandle()
+HMENU CLibraryPluginApp::GetSharedMenuHandle()
 {
    return nullptr;
 }
 
-CString CLibraryAppPlugin::GetName()
+CString CLibraryPluginApp::GetName()
 {
    return CString(_T("PGSLibrary Editor"));
 }
 
-CString CLibraryAppPlugin::GetDocumentationSetName()
+CString CLibraryPluginApp::GetDocumentationSetName()
 {
    return CString(_T("PGSLibrary"));
 }
 
-CString CLibraryAppPlugin::GetDocumentationURL()
+CString CLibraryPluginApp::GetDocumentationURL()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    return m_DocumentationImpl.GetDocumentationURL();
 }
 
-CString CLibraryAppPlugin::GetDocumentationMapFile()
+CString CLibraryPluginApp::GetDocumentationMapFile()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    return m_DocumentationImpl.GetDocumentationMapFile();
 }
 
-void CLibraryAppPlugin::LoadDocumentationMap()
+void CLibraryPluginApp::LoadDocumentationMap()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    return m_DocumentationImpl.LoadDocumentationMap();
 }
 
-eafTypes::HelpResult CLibraryAppPlugin::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID,CString& strURL)
+eafTypes::HelpResult CLibraryPluginApp::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID,CString& strURL)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    return m_DocumentationImpl.GetDocumentLocation(lpszDocSetName,nID,strURL);
@@ -177,12 +175,12 @@ eafTypes::HelpResult CLibraryAppPlugin::GetDocumentLocation(LPCTSTR lpszDocSetNa
 
 //////////////////////////
 // IEAFCommandCallback
-BOOL CLibraryAppPlugin::OnCommandMessage(UINT nID,int nCode,void* pExtra,AFX_CMDHANDLERINFO* pHandlerInfo)
+BOOL CLibraryPluginApp::OnCommandMessage(UINT nID,int nCode,void* pExtra,AFX_CMDHANDLERINFO* pHandlerInfo)
 {
    return m_MyCmdTarget.OnCmdMsg(nID,nCode,pExtra,pHandlerInfo);
 }
 
-BOOL CLibraryAppPlugin::GetStatusBarMessageString(UINT nID, CString& rMessage) const
+BOOL CLibraryPluginApp::GetStatusBarMessageString(UINT nID, CString& rMessage) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -201,7 +199,7 @@ BOOL CLibraryAppPlugin::GetStatusBarMessageString(UINT nID, CString& rMessage) c
    return TRUE;
 }
 
-BOOL CLibraryAppPlugin::GetToolTipMessageString(UINT nID, CString& rMessage) const
+BOOL CLibraryPluginApp::GetToolTipMessageString(UINT nID, CString& rMessage) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CString string;

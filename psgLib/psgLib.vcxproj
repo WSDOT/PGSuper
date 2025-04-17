@@ -264,7 +264,7 @@
     <ClCompile Include="KdotHaulingDlg.cpp" />
     <ClCompile Include="LibChildFrm.cpp" />
     <ClCompile Include="LibEditorListView.cpp" />
-    <ClCompile Include="LibraryAppPlugin.cpp" />
+    <ClCompile Include="LibraryPluginApp.cpp" />
     <ClCompile Include="LibraryDocTemplate.cpp" />
     <ClCompile Include="LibraryEditorChildFrm.cpp" />
     <ClCompile Include="LibraryEditorDoc.cpp" />
@@ -326,7 +326,6 @@
     <ClCompile Include="WsdotHaulingDlg.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="LibraryAppPlugin.rgs" />
     <CustomBuild Include="psgLib.def" />
     <None Include="res\Connection.emf" />
     <None Include="res\ConnectionFromPier.emf" />
@@ -451,7 +450,7 @@
     <ClInclude Include="GirderStrandGrid.h" />
     <ClInclude Include="HaulTruckDlg.h" />
     <ClInclude Include="KdotHaulingDlg.h" />
-    <ClInclude Include="LibraryAppPlugin.h" />
+    <ClInclude Include="LibraryPluginApp.h" />
     <ClInclude Include="LibraryEditorStatusBar.h" />
     <ClInclude Include="LiveLoadAxleGrid.h" />
     <ClInclude Include="LiveLoadDlg.h" />

@@ -22,7 +22,7 @@
 
 #pragma once
 
-
+#include "resource.h"
 #include <EAF\EAFDisplayUnits.h>
 #include <PgsExt\BridgeDescription2.h>
 

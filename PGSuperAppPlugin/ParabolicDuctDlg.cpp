@@ -2,7 +2,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "ParabolicDuctDlg.h"
 
 #include <EAF\EAFDocument.h>

@@ -21,9 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 #pragma once
 
-
-// CTimelineEventDlg dialog
-//#include <afxmenubutton.h>
+#include "resource.h"
 #include <PgsExt\TimelineEvent.h>
 #include <PgsExt\TimelineManager.h>
 #include "ActivityGrid.h"

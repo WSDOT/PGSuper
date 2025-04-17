@@ -21,63 +21,46 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "PGSuperProjectImporterAppPlugin.h"
+#include "resource.h"
+#include "PGSuperProjectImporterPluginApp.h"
 #include "BridgeModelViewChildFrame.h"
 #include "BridgePlanView.h"
 #include "PGSuperImportPluginDocTemplate.h"
 #include <MFCTools\AutoRegistry.h>
 #include "PGSuperCommandLineInfo.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-
-HRESULT CPGSuperProjectImporterAppPlugin::FinalConstruct()
-{
-   m_MyCmdTarget.m_pMyAppPlugin = this;
-   return OnFinalConstruct(); // CPGSAppPluginBase
-}
-
-void CPGSuperProjectImporterAppPlugin::FinalRelease()
-{
-   OnFinalRelease(); // CPGSAppPluginBase
-}
-const CRuntimeClass* CPGSuperProjectImporterAppPlugin::GetDocTemplateRuntimeClass()
+const CRuntimeClass* CPGSuperProjectImporterPluginApp::GetDocTemplateRuntimeClass()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    return RUNTIME_CLASS(CPGSuperImportPluginDocTemplate);
 }
 
-LPCTSTR CPGSuperProjectImporterAppPlugin::GetCatalogServerKey() const
+LPCTSTR CPGSuperProjectImporterPluginApp::GetCatalogServerKey() const
 {
    return _T("CatalogServer2");
 }
 
-LPCTSTR CPGSuperProjectImporterAppPlugin::GetPublisherKey() const
+LPCTSTR CPGSuperProjectImporterPluginApp::GetPublisherKey() const
 {
    return _T("Publisher2");
 }
 
-LPCTSTR CPGSuperProjectImporterAppPlugin::GetMasterLibraryCacheKey() const
+LPCTSTR CPGSuperProjectImporterPluginApp::GetMasterLibraryCacheKey() const
 {
    return _T("MasterLibraryCache2");
 }
 
-LPCTSTR CPGSuperProjectImporterAppPlugin::GetMasterLibraryURLKey() const
+LPCTSTR CPGSuperProjectImporterPluginApp::GetMasterLibraryURLKey() const
 {
    return _T("MasterLibraryURL2");
 }
 
-LPCTSTR CPGSuperProjectImporterAppPlugin::GetWorkgroupTemplatesCacheKey() const
+LPCTSTR CPGSuperProjectImporterPluginApp::GetWorkgroupTemplatesCacheKey() const
 {
    return _T("WorkgroupTemplatesCache2");
 }
 
-CString CPGSuperProjectImporterAppPlugin::GetCacheFolder() const
+CString CPGSuperProjectImporterPluginApp::GetCacheFolder() const
 {
    CAutoRegistry autoReg(GetAppName());
 
@@ -98,7 +81,7 @@ CString CPGSuperProjectImporterAppPlugin::GetCacheFolder() const
    }
 }
 
-CString CPGSuperProjectImporterAppPlugin::GetTemplateFileExtension()
+CString CPGSuperProjectImporterPluginApp::GetTemplateFileExtension()
 { 
    CString strTemplateSuffix;
    VERIFY(strTemplateSuffix.LoadString(IDS_PGSUPER_TEMPLATE_FILE_SUFFIX));
@@ -106,21 +89,23 @@ CString CPGSuperProjectImporterAppPlugin::GetTemplateFileExtension()
    return strTemplateSuffix;
 }
 
-CATID CPGSuperProjectImporterAppPlugin::GetProjectImporterCATID()
+CATID CPGSuperProjectImporterPluginApp::GetProjectImporterCATID()
 {
    return CATID_PGSuperProjectImporter;
 }
 
-UINT CPGSuperProjectImporterAppPlugin::GetMenuResourceID()
+UINT CPGSuperProjectImporterPluginApp::GetMenuResourceID()
 {
    return IDR_PGSUPER;
 }
 
-CPGSImportPluginDocTemplateBase* CPGSuperProjectImporterAppPlugin::CreateDocTemplate()
+CPGSImportPluginDocTemplateBase* CPGSuperProjectImporterPluginApp::CreateDocTemplate()
 {
+   auto callback = std::dynamic_pointer_cast<WBFL::EAF::ICommandCallback>(shared_from_this());
+
    CPGSuperImportPluginDocTemplate* pDocTemplate = new CPGSuperImportPluginDocTemplate(
 		IDR_PGSUPERPROJECTIMPORTER,
-      this,
+        callback,
 		RUNTIME_CLASS(CPGSuperDoc),
 		RUNTIME_CLASS(CBridgeModelViewChildFrame),
 		RUNTIME_CLASS(CBridgePlanView),
@@ -129,12 +114,12 @@ CPGSImportPluginDocTemplateBase* CPGSuperProjectImporterAppPlugin::CreateDocTemp
    return pDocTemplate;
 }
 
-CEAFCommandLineInfo* CPGSuperProjectImporterAppPlugin::CreateCommandLineInfo() const
+CEAFCommandLineInfo* CPGSuperProjectImporterPluginApp::CreateCommandLineInfo() const
 {
    return new CPGSuperProjectImporterCommandLineInfo();
 }
 
-CString CPGSuperProjectImporterAppPlugin::GetUsageMessage()
+CString CPGSuperProjectImporterPluginApp::GetUsageMessage()
 {
    CPGSuperProjectImporterCommandLineInfo pgsCmdInfo;
    return pgsCmdInfo.GetUsageMessage();

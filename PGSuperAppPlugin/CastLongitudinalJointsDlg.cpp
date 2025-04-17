@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "CastLongitudinalJointsDlg.h"
 
 #include <EAF\EAFDisplayUnits.h>

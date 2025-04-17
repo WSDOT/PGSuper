@@ -22,37 +22,35 @@
 
 #pragma once
 
+#include <EAF\ComponentObject.h>
 #include <EAF\EAFApp.h>
 #include <EAF\EAFCustomReport.h>
-#include <EAF\EAFAppPluginDocumentationImpl.h>
+#include <EAF\PluginAppDocumentationImpl.h>
 #include "PgsExt\CatalogServers.h"
 #include "PgsExt\CatalogServerAppMixin.h"
 #include "pgsExt\BaseCommandLineInfo.h"
 
 // Base class for all PGS Document-type application plugins
 // Performs common initialization expected by the CPGSDocBase class
-class CPGSAppPluginBase : 
+class CPGSPluginAppBase : public WBFL::EAF::ComponentObject,
    public CEAFCustomReportMixin,
    public CCatalogServerAppMixin
 {
 public:
-   CPGSAppPluginBase();
-   virtual ~CPGSAppPluginBase();
-
-   virtual HRESULT OnFinalConstruct() override;
-   virtual void OnFinalRelease() override;
+   CPGSPluginAppBase();
+   virtual ~CPGSPluginAppBase();
 
    // call these from Init and Terminate
-   virtual void DefaultInit(IEAFAppPlugin* pAppPlugin) override;
-   virtual void DefaultTerminate() override;
+   void InitCatalogServer() override;
+   void TerminateCatalogServer() override;
 
    void GetAppUnitSystem(IAppUnitSystem** ppAppUnitSystem);
 
-   virtual void UpdateDocTemplates() override;
+   void UpdateDocTemplates() override;
 
    // CEAFCustomReportMixin
-   virtual void LoadCustomReportInformation() override;
-   virtual void SaveCustomReportInformation() override;
+   void LoadCustomReportInformation() override;
+   void SaveCustomReportInformation() override;
 
    virtual CString GetDocumentationURL();
    virtual CString GetDocumentationMapFile();
@@ -63,8 +61,8 @@ protected:
    CString m_strAppProfileName; // this is the original app profile name before we mess with it
    // need to hang on to it so we can put it back the way it was
 
-   virtual void LoadRegistryValues() override;
-   virtual void SaveRegistryValues() override;
+   void LoadRegistryValues() override;
+   void SaveRegistryValues() override;
 
    virtual CEAFCommandLineInfo* CreateCommandLineInfo() const = 0;
    virtual BOOL DoProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo);
@@ -72,5 +70,5 @@ protected:
 
 private:
    CComPtr<IAppUnitSystem> m_AppUnitSystem;
-   CEAFAppPluginDocumentationImpl m_DocumentationImpl;
+   WBFL::EAF::PluginAppDocumentationImpl m_DocumentationImpl;
 };

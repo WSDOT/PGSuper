@@ -21,7 +21,6 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin_i.h"
 #include "PGSpliceComponentInfo.h"
 #include "resource.h"
 #include <EAF\EAFApp.h>

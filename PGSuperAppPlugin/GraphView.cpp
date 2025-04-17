@@ -31,7 +31,7 @@
 #include "PGSuperCalculationSheet.h"
 #include <IFace\VersionInfo.h>
 
-#include <EAF\EAFAppPlugin.h>
+#include <EAF\PluginApp.h>
 
 #include "Hints.h"
 

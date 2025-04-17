@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "GirderSegmentStrandsPage.h"
 #include "GirderSegmentDlg.h"
 

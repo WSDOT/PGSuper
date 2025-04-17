@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "GirderSegmentStirrupsPage.h"
 #include "GirderSegmentDlg.h"
 #include <IFace\Project.h>

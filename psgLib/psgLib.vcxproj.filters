@@ -103,7 +103,7 @@
     <ClCompile Include="LibEditorListView.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LibraryAppPlugin.cpp">
+    <ClCompile Include="LibraryPluginApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="LibraryDocTemplate.cpp">
@@ -507,7 +507,7 @@
     <ClInclude Include="..\Include\psgLib\LibEditorListView.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="LibraryAppPlugin.h">
+    <ClInclude Include="LibraryPluginApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\psgLib\LibraryDocTemplate.h">
@@ -968,9 +968,6 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\GirderDim.emf">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="LibraryAppPlugin.rgs">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\psgLib.rc2">

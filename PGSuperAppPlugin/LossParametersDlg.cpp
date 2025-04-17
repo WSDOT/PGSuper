@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "LossParametersDlg.h"
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDocument.h>

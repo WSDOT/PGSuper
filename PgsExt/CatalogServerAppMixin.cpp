@@ -31,12 +31,6 @@
 
 #include <BridgeLink.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 CCatalogServerAppMixin::CCatalogServerAppMixin(void)
 {
    m_CacheUpdateFrequency = Daily;
@@ -47,19 +41,9 @@ CCatalogServerAppMixin::~CCatalogServerAppMixin(void)
 {
 }
 
-HRESULT CCatalogServerAppMixin::OnFinalConstruct()
+void CCatalogServerAppMixin::InitCatalogServer()
 {
    m_CatalogServers.SetAppName(GetAppName());
-
-   return S_OK;
-}
-
-void CCatalogServerAppMixin::OnFinalRelease()
-{
-}
-
-void CCatalogServerAppMixin::DefaultInit(IEAFAppPlugin* pAppPlugin)
-{
    m_CatalogServers.SetTemplateFileExtenstion(GetTemplateFileExtension());
 
    if ( UseConfigurationCallback() )
@@ -70,7 +54,7 @@ void CCatalogServerAppMixin::DefaultInit(IEAFAppPlugin* pAppPlugin)
    }
 }
 
-void CCatalogServerAppMixin::DefaultTerminate()
+void CCatalogServerAppMixin::TerminateCatalogServer()
 {
    if ( UseConfigurationCallback() )
    {

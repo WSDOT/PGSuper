@@ -21,12 +21,11 @@
 ///////////////////////////////////////////////////////////////////////
 
 #pragma once
-#include "PGSuperAppPlugin_i.h"
-#include <EAF\EAFAppPlugin.h>
-#include "PGSuperBaseAppPlugin.h"
+#include <EAF\PluginApp.h>
+#include "PGSPluginAppBase.h"
 #include "PGSImportPluginDocTemplateBase.h"
 
-class CPGSProjectImporterAppPluginBase;
+class CPGSProjectImporterPluginAppBase;
 
 class CProjectImportersCmdTarget : public CCmdTarget
 {
@@ -35,24 +34,21 @@ public:
 
    afx_msg void OnConfigureProjectImporters();
 
-   CPGSProjectImporterAppPluginBase* m_pMyAppPlugin;
+   CPGSProjectImporterPluginAppBase* m_pMyAppPlugin;
 
    DECLARE_MESSAGE_MAP()
 };
 
-class ATL_NO_VTABLE CPGSProjectImporterAppPluginBase : 
-   public CPGSAppPluginBase,
-   public IEAFAppPlugin,
-   public IEAFCommandCallback,
-   public IEAFAppCommandLine 
+class CPGSProjectImporterPluginAppBase : public CPGSPluginAppBase,
+   public WBFL::EAF::IPluginApp,
+   public WBFL::EAF::ICommandCallback,
+   public WBFL::EAF::IAppCommandLine 
 {
 public:
-   CPGSProjectImporterAppPluginBase()
+   CPGSProjectImporterPluginAppBase()
    {
+      m_MyCmdTarget.m_pMyAppPlugin = this;
    }
-
-   HRESULT FinalConstruct();
-   void FinalRelease();
 
    virtual CATID GetProjectImporterCATID() = 0;
    virtual UINT GetMenuResourceID() = 0;
@@ -72,29 +68,28 @@ public:
    void CreateNewProject(CPGSProjectImporterBaseCommandLineInfo& cmdInfo);
 
 
-// IEAFAppPlugin
+// IPluginApp
 public:
-   virtual BOOL Init(CEAFApp* pParent);
-   virtual void Terminate();
-   virtual void IntegrateWithUI(BOOL bIntegrate);
-   virtual std::vector<CEAFDocTemplate*> CreateDocTemplates();
-   virtual HMENU GetSharedMenuHandle();
-   virtual CString GetName();
-   virtual CString GetDocumentationSetName();
-   virtual CString GetDocumentationURL();
-   virtual CString GetDocumentationMapFile();
-   virtual void LoadDocumentationMap();
-   virtual eafTypes::HelpResult GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID,CString& strURL);
+   BOOL Init(CEAFApp* pParent) override;
+   void Terminate() override;
+   void IntegrateWithUI(BOOL bIntegrate) override;
+   std::vector<CEAFDocTemplate*> CreateDocTemplates() override;
+   HMENU GetSharedMenuHandle() override;
+   CString GetName() override;
+   CString GetDocumentationSetName() override;
+   CString GetDocumentationURL() override;
+   CString GetDocumentationMapFile() override;
+   void LoadDocumentationMap() override;
+   eafTypes::HelpResult GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID,CString& strURL) override;
 
-// IEAFCommandCallback
+// ICommandCallback
 public:
-   virtual BOOL OnCommandMessage(UINT nID,int nCode,void* pExtra,AFX_CMDHANDLERINFO* pHandlerInfo);
-   virtual BOOL GetStatusBarMessageString(UINT nID, CString& rMessage) const;
-   virtual BOOL GetToolTipMessageString(UINT nID, CString& rMessage) const;
+   BOOL OnCommandMessage(UINT nID,int nCode,void* pExtra,AFX_CMDHANDLERINFO* pHandlerInfo) override;
+   BOOL GetStatusBarMessageString(UINT nID, CString& rMessage) const override;
+   BOOL GetToolTipMessageString(UINT nID, CString& rMessage) const override;
 
-   // IEAFAppCommandLine
+   // IAppCommandLine
 public:
-   virtual CString GetCommandLineAppName() const override;
-   //virtual CString GetUsageMessage() override; // implement in subclass
-   virtual BOOL ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo) override;
+   CString GetCommandLineAppName() const override;
+   BOOL ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo) override;
 };

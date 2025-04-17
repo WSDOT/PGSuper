@@ -21,17 +21,9 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "PGSProjectImporterAppPluginBase.h"
 #include "resource.h"
+#include "PGSProjectImporterPluginAppBase.h"
 #include <EAF\EAFDocManager.h>
-
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 
 
 BEGIN_MESSAGE_MAP(CProjectImportersCmdTarget,CCmdTarget)
@@ -45,35 +37,24 @@ void CProjectImportersCmdTarget::OnConfigureProjectImporters()
 
 // NOTE
 // PGS Project Importer application plug-ins are basically the same thing as the
-// PGS application plug-ins. The only differece is this plug-in provides a 
+// PGS application plug-ins. The only difference is this plug-in provides a 
 // framework for creating new PGS projects from external data sources. When this
-// plug-in is loaded and unloaded it reads and writes from the registery. It reads
+// plug-in is loaded and unloaded it reads and writes from the registry. It reads
 // and writes to the same location as a PGS App Plug-in. This works fine for 
 // everything except the custom reporting and catalog server information. Whichever plug-in saves last
 // wins. Since we don't have any real project importers yet, it is just easier
 // to by-pass saving custom report information. This will have to be fixed later.
-void CPGSProjectImporterAppPluginBase::SaveReportOptions()
+void CPGSProjectImporterPluginAppBase::SaveReportOptions()
 {
    // do nothing
 }
 
-void CPGSProjectImporterAppPluginBase::SaveRegistryValues()
+void CPGSProjectImporterPluginAppBase::SaveRegistryValues()
 {
    // do nothing (See note above)
 }
 
-HRESULT CPGSProjectImporterAppPluginBase::FinalConstruct()
-{
-   m_MyCmdTarget.m_pMyAppPlugin = this;
-   return OnFinalConstruct(); // CPGSAppPluginBase
-}
-
-void CPGSProjectImporterAppPluginBase::FinalRelease()
-{
-   OnFinalRelease(); // CPGSAppPluginBase
-}
-
-void CPGSProjectImporterAppPluginBase::ConfigureProjectImporters()
+void CPGSProjectImporterPluginAppBase::ConfigureProjectImporters()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CEAFApp* pApp = (CEAFApp*)AfxGetApp(); // DLLs CEAFApp
@@ -162,7 +143,7 @@ void CPGSProjectImporterAppPluginBase::ConfigureProjectImporters()
    }
 }
 
-BOOL CPGSProjectImporterAppPluginBase::DoProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo)
+BOOL CPGSProjectImporterPluginAppBase::DoProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo)
 {
 //   AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -191,7 +172,7 @@ BOOL CPGSProjectImporterAppPluginBase::DoProcessCommandLineOptions(CEAFCommandLi
    return FALSE;
 }
 
-void CPGSProjectImporterAppPluginBase::CreateNewProject(CPGSProjectImporterBaseCommandLineInfo& cmdInfo)
+void CPGSProjectImporterPluginAppBase::CreateNewProject(CPGSProjectImporterBaseCommandLineInfo& cmdInfo)
 {
    ATLASSERT(cmdInfo.m_bNewProject);
 
@@ -202,10 +183,9 @@ void CPGSProjectImporterAppPluginBase::CreateNewProject(CPGSProjectImporterBaseC
    while (pos != nullptr)
    {
       CPGSImportPluginDocTemplateBase* pTemplate = (CPGSImportPluginDocTemplateBase*)pApp->m_pDocManager->GetNextDocTemplate(pos);
-      CComPtr<IEAFAppPlugin> pAppPlugin;
-      pTemplate->GetPlugin(&pAppPlugin);
-      CComPtr<IEAFAppPlugin> me(this);
-      if (pAppPlugin.IsEqualObject(me))
+      auto pluginApp = pTemplate->GetPluginApp();
+      auto me = std::dynamic_pointer_cast<WBFL::EAF::IPluginApp>(shared_from_this());
+      if (pluginApp == me)
       {
          CLSID clsid;
          HRESULT hr = ::CLSIDFromString(cmdInfo.m_strCLSID, &clsid);
@@ -228,11 +208,11 @@ void CPGSProjectImporterAppPluginBase::CreateNewProject(CPGSProjectImporterBaseC
    }
 }
 
-BOOL CPGSProjectImporterAppPluginBase::Init(CEAFApp* pParent)
+BOOL CPGSProjectImporterPluginAppBase::Init(CEAFApp* pParent)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   DefaultInit(this);
+   InitCatalogServer();
 
    // See MSKB Article ID: Q118435, "Sharing Menus Between MDI Child Windows"
    UINT nResource = GetMenuResourceID();
@@ -241,15 +221,15 @@ BOOL CPGSProjectImporterAppPluginBase::Init(CEAFApp* pParent)
    return (m_hMenuShared != nullptr);
 }
 
-void CPGSProjectImporterAppPluginBase::Terminate()
+void CPGSProjectImporterPluginAppBase::Terminate()
 {
-   DefaultTerminate();
+   TerminateCatalogServer();
 
    // release the shared menu
    ::DestroyMenu( m_hMenuShared );
 }
 
-void CPGSProjectImporterAppPluginBase::IntegrateWithUI(BOOL bIntegrate)
+void CPGSProjectImporterPluginAppBase::IntegrateWithUI(BOOL bIntegrate)
 {
    CEAFMainFrame* pFrame = EAFGetMainFrame();
    CEAFMenu* pMainMenu = pFrame->GetMainMenu();
@@ -260,20 +240,22 @@ void CPGSProjectImporterAppPluginBase::IntegrateWithUI(BOOL bIntegrate)
    UINT managePos = pFileMenu->FindMenuItem(_T("Manage"));
    CEAFMenu* pManageMenu = pFileMenu->GetSubMenu(managePos);
 
+   auto callback = std::dynamic_pointer_cast<WBFL::EAF::ICommandCallback>(shared_from_this());
+
    if ( bIntegrate )
    {
       // Append to the end of the Manage menu
       CString str;
       str.Format(_T("%s Project Importers..."),GetAppName());
-      pManageMenu->AppendMenu(ID_MANAGE_PLUGINS,str,this);
+      pManageMenu->AppendMenu(ID_MANAGE_PLUGINS,str,callback);
    }
    else
    {
-      pManageMenu->RemoveMenu(ID_MANAGE_PLUGINS,  MF_BYCOMMAND, this);
+      pManageMenu->RemoveMenu(ID_MANAGE_PLUGINS,  MF_BYCOMMAND, callback);
    }
 }
 
-std::vector<CEAFDocTemplate*> CPGSProjectImporterAppPluginBase::CreateDocTemplates()
+std::vector<CEAFDocTemplate*> CPGSProjectImporterPluginAppBase::CreateDocTemplates()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -300,52 +282,52 @@ std::vector<CEAFDocTemplate*> CPGSProjectImporterAppPluginBase::CreateDocTemplat
    return vDocTemplates;
 }
 
-HMENU CPGSProjectImporterAppPluginBase::GetSharedMenuHandle()
+HMENU CPGSProjectImporterPluginAppBase::GetSharedMenuHandle()
 {
    return m_hMenuShared;
 }
 
-CString CPGSProjectImporterAppPluginBase::GetName()
+CString CPGSProjectImporterPluginAppBase::GetName()
 {
    CString str;
    str.Format(_T("%s"),GetAppName());
    return str;
 }
 
-CString CPGSProjectImporterAppPluginBase::GetDocumentationSetName()
+CString CPGSProjectImporterPluginAppBase::GetDocumentationSetName()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    return AfxGetAppName();
 }
 
-CString CPGSProjectImporterAppPluginBase::GetDocumentationURL()
+CString CPGSProjectImporterPluginAppBase::GetDocumentationURL()
 {
-   return CPGSAppPluginBase::GetDocumentationURL();
+   return CPGSPluginAppBase::GetDocumentationURL();
 }
 
-CString CPGSProjectImporterAppPluginBase::GetDocumentationMapFile()
+CString CPGSProjectImporterPluginAppBase::GetDocumentationMapFile()
 {
-   return CPGSAppPluginBase::GetDocumentationMapFile();
+   return CPGSPluginAppBase::GetDocumentationMapFile();
 }
 
-void CPGSProjectImporterAppPluginBase::LoadDocumentationMap()
+void CPGSProjectImporterPluginAppBase::LoadDocumentationMap()
 {
-   return CPGSAppPluginBase::LoadDocumentationMap();
+   return CPGSPluginAppBase::LoadDocumentationMap();
 }
 
-eafTypes::HelpResult CPGSProjectImporterAppPluginBase::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID,CString& strURL)
+eafTypes::HelpResult CPGSProjectImporterPluginAppBase::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID,CString& strURL)
 {
-   return CPGSAppPluginBase::GetDocumentLocation(lpszDocSetName,nID,strURL);
+   return CPGSPluginAppBase::GetDocumentLocation(lpszDocSetName,nID,strURL);
 }
 
 //////////////////////////
 // IEAFCommandCallback
-BOOL CPGSProjectImporterAppPluginBase::OnCommandMessage(UINT nID,int nCode,void* pExtra,AFX_CMDHANDLERINFO* pHandlerInfo)
+BOOL CPGSProjectImporterPluginAppBase::OnCommandMessage(UINT nID,int nCode,void* pExtra,AFX_CMDHANDLERINFO* pHandlerInfo)
 {
    return m_MyCmdTarget.OnCmdMsg(nID,nCode,pExtra,pHandlerInfo);
 }
 
-BOOL CPGSProjectImporterAppPluginBase::GetStatusBarMessageString(UINT nID, CString& rMessage) const
+BOOL CPGSProjectImporterPluginAppBase::GetStatusBarMessageString(UINT nID, CString& rMessage) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -364,7 +346,7 @@ BOOL CPGSProjectImporterAppPluginBase::GetStatusBarMessageString(UINT nID, CStri
    return TRUE;
 }
 
-BOOL CPGSProjectImporterAppPluginBase::GetToolTipMessageString(UINT nID, CString& rMessage) const
+BOOL CPGSProjectImporterPluginAppBase::GetToolTipMessageString(UINT nID, CString& rMessage) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CString string;
@@ -387,12 +369,12 @@ BOOL CPGSProjectImporterAppPluginBase::GetToolTipMessageString(UINT nID, CString
    return TRUE;
 }
 
-CString CPGSProjectImporterAppPluginBase::GetCommandLineAppName() const
+CString CPGSProjectImporterPluginAppBase::GetCommandLineAppName() const
 {
    return GetAppName() + CString(_T("ProjectImporter"));
 }
 
-BOOL CPGSProjectImporterAppPluginBase::ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo)
+BOOL CPGSProjectImporterPluginAppBase::ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo)
 {
    return DoProcessCommandLineOptions(cmdInfo);
 }

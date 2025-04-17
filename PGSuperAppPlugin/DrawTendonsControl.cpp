@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "PGSuperColors.h"
 #include "DrawTendonsControl.h"
 #include <IFace\Alignment.h>

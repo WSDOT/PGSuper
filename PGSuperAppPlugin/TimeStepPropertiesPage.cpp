@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "TimeStepPropertiesPage.h"
 #include <EAF\EAFDocument.h>
 

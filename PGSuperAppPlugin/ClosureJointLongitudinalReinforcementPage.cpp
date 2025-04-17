@@ -3,7 +3,7 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "ClosureJointLongitudinalReinforcementPage.h"
 #include "ClosureJointDlg.h"
 #include <EAF\EAFDisplayUnits.h>

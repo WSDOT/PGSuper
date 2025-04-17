@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include "resource.h"
 #include <MfcTools\WideDropDownComboBox.h>
 
 // CTemporarySupportLayoutPage dialog

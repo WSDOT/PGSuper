@@ -2,7 +2,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "LinearDuctDlg.h"
 #include "SplicedGirderDescDlg.h"
 

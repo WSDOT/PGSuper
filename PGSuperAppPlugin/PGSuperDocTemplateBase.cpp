@@ -23,7 +23,7 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "PGSuperDocTemplateBase.h"
-#include "PGSuperBaseAppPlugin.h"
+#include "PGSPluginAppBase.h"
 
 #include "PGSuperCatCom.h"
 #include "Plugins\PGSuperIEPlugin.h"
@@ -39,7 +39,7 @@ static char THIS_FILE[] = __FILE__;
 IMPLEMENT_DYNAMIC(CPGSuperDocTemplateBase,CEAFDocTemplate)
 
 CPGSuperDocTemplateBase::CPGSuperDocTemplateBase(UINT nIDResource,
-                                         IEAFCommandCallback* pCallback,
+                                         std::shared_ptr<WBFL::EAF::ICommandCallback> pCallback,
                                          CRuntimeClass* pDocClass,
                                          CRuntimeClass* pFrameClass,
                                          CRuntimeClass* pViewClass,
@@ -49,9 +49,9 @@ CPGSuperDocTemplateBase::CPGSuperDocTemplateBase(UINT nIDResource,
 {
 }
 
-void CPGSuperDocTemplateBase::SetPlugin(IEAFAppPlugin* pPlugin)
+void CPGSuperDocTemplateBase::SetPluginApp(std::weak_ptr<WBFL::EAF::IPluginApp> plugin)
 {
-   CEAFDocTemplate::SetPlugin(pPlugin);
+   CEAFDocTemplate::SetPluginApp(plugin);
    LoadTemplateInformation();
 }
 
@@ -68,7 +68,9 @@ void CPGSuperDocTemplateBase::LoadTemplateInformation()
    CWinApp* pApp = AfxGetApp();
    HICON defaultIcon = pApp->LoadIcon(GetTemplateIconResourceID());
 
-   CPGSAppPluginBase* pAppPlugin = dynamic_cast<CPGSAppPluginBase*>(m_pPlugin);
+#pragma Reminder("WORKING HERE - Removing COM")
+   // This pointer casting seems problematic - review to see if there is a better way
+   CPGSPluginAppBase* pAppPlugin = dynamic_cast<CPGSPluginAppBase*>(m_pPlugin.lock().get());
    CString strWorkgroupFolderName;
    pAppPlugin->GetTemplateFolders(strWorkgroupFolderName);
 

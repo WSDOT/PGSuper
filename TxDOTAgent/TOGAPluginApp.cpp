@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "TxDOTAppPlugin.h"
+#include "TOGAPluginApp.h"
 #include "TxDOTOptionalDesignDocTemplate.h"
 #include "TxDOTOptionalDesignDoc.h"
 #include "TxDOTOptionalDesignView.h"
@@ -33,12 +33,6 @@
 #include <EAF\EAFBrokerDocument.h>
 #include <MFCTools\AutoRegistry.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 
 BEGIN_MESSAGE_MAP(CMyCmdTarget,CCmdTarget)
    ON_COMMAND(ID_UPDATE_TOGA_TEMPLATE,OnUpdateTemplates)
@@ -49,9 +43,9 @@ void CMyCmdTarget::OnUpdateTemplates()
    m_pMyAppPlugin->UpdateTemplates();
 }
 
-BOOL CTxDOTAppPlugin::Init(CEAFApp* pParent)
+BOOL CTOGAPluginApp::Init(CEAFApp* pParent)
 {
-   DefaultInit(this);
+   InitCatalogServer();
 
    {
       AFX_MANAGE_STATE(AfxGetStaticModuleState());
@@ -80,18 +74,18 @@ BOOL CTxDOTAppPlugin::Init(CEAFApp* pParent)
          }
       }
 
-
-      m_DocumentationImpl.Init(this);
+      auto plugin = std::dynamic_pointer_cast<WBFL::EAF::IPluginApp>(shared_from_this());
+      m_DocumentationImpl.Init(plugin);
    }
 
    return TRUE;
 }
 
-void CTxDOTAppPlugin::Terminate()
+void CTOGAPluginApp::Terminate()
 {
    SaveRegistryValues();
 
-   DefaultTerminate();
+   TerminateCatalogServer();
 
    {
       AFX_MANAGE_STATE(AfxGetAppModuleState());
@@ -100,18 +94,7 @@ void CTxDOTAppPlugin::Terminate()
    }
 }
 
-HRESULT CTxDOTAppPlugin::FinalConstruct()
-{
-   return OnFinalConstruct(); // CCatalogServerAppMixin
-}
-
-void CTxDOTAppPlugin::FinalRelease()
-{
-   OnFinalRelease(); // CCatalogServerAppMixin
-}
-
-
-void CTxDOTAppPlugin::IntegrateWithUI(BOOL bIntegrate)
+void CTOGAPluginApp::IntegrateWithUI(BOOL bIntegrate)
 {
    CEAFMainFrame* pFrame = EAFGetMainFrame();
    CEAFMenu* pMainMenu = pFrame->GetMainMenu();
@@ -122,92 +105,97 @@ void CTxDOTAppPlugin::IntegrateWithUI(BOOL bIntegrate)
    UINT managePos = pFileMenu->FindMenuItem(_T("Manage"));
    CEAFMenu* pManageMenu = pFileMenu->GetSubMenu(managePos);
 
+   auto callback = std::dynamic_pointer_cast<WBFL::EAF::ICommandCallback>(shared_from_this());
+
    if ( bIntegrate )
    {
       // Append to the end of the Manage menu
 //      pManageMenu->AppendMenu(ID_MANAGE_PLUGINS,_T("TOGA Plugins and Extensions..."),this);
 
       // Alt+Ctrl+T
-      pFrame->GetAcceleratorTable()->AddAccelKey(FALT | FCONTROL | FVIRTKEY, VK_T, ID_UPDATE_TOGA_TEMPLATE,this);
+      pFrame->GetAcceleratorTable()->AddAccelKey(FALT | FCONTROL | FVIRTKEY, VK_T, ID_UPDATE_TOGA_TEMPLATE,callback);
    }
    else
    {
 //      pManageMenu->RemoveMenu(ID_MANAGE_PLUGINS,  MF_BYCOMMAND, this);
 
-      pFrame->GetAcceleratorTable()->RemoveAccelKey(ID_UPDATE_TOGA_TEMPLATE,this);
+      pFrame->GetAcceleratorTable()->RemoveAccelKey(ID_UPDATE_TOGA_TEMPLATE,callback);
    }
 }
 
-std::vector<CEAFDocTemplate*> CTxDOTAppPlugin::CreateDocTemplates()
+std::vector<CEAFDocTemplate*> CTOGAPluginApp::CreateDocTemplates()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    std::vector<CEAFDocTemplate*> vDocTemplates;
 
-	CTxDOTOptionalDesignDocTemplate* pDocTemplate = new CTxDOTOptionalDesignDocTemplate(
+   auto callback = std::dynamic_pointer_cast<WBFL::EAF::ICommandCallback>(shared_from_this());
+	
+   CTxDOTOptionalDesignDocTemplate* pDocTemplate = new CTxDOTOptionalDesignDocTemplate(
 		IDR_TXDOTOPTIONALDESIGN,
-      this,
+        callback,
 		RUNTIME_CLASS(CTxDOTOptionalDesignDoc),
 		RUNTIME_CLASS(CTxDOTOptionalDesignChildFrame), // substitute your own child frame if needed
 		RUNTIME_CLASS(CTxDOTOptionalDesignView));
 
-   pDocTemplate->SetPlugin(this);
+   auto plugin = std::dynamic_pointer_cast<WBFL::EAF::IPluginApp>(shared_from_this());
+   pDocTemplate->SetPluginApp(plugin);
 
    vDocTemplates.push_back(pDocTemplate);
    return vDocTemplates;
 }
 
-HMENU CTxDOTAppPlugin::GetSharedMenuHandle()
+HMENU CTOGAPluginApp::GetSharedMenuHandle()
 {
    return nullptr;
 }
 
-CString CTxDOTAppPlugin::GetName()
+CString CTOGAPluginApp::GetName()
 {
    return CString("TOGA");
 }
 
-CString CTxDOTAppPlugin::GetDocumentationSetName()
+CString CTOGAPluginApp::GetDocumentationSetName()
 {
    return _T("TOGA");
 }
 
-CString CTxDOTAppPlugin::GetDocumentationURL()
+CString CTOGAPluginApp::GetDocumentationURL()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    return m_DocumentationImpl.GetDocumentationURL();
 }
 
-CString CTxDOTAppPlugin::GetDocumentationMapFile()
+CString CTOGAPluginApp::GetDocumentationMapFile()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    return m_DocumentationImpl.GetDocumentationMapFile();
 }
 
-void CTxDOTAppPlugin::LoadDocumentationMap()
+void CTOGAPluginApp::LoadDocumentationMap()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    return m_DocumentationImpl.LoadDocumentationMap();
 }
 
-eafTypes::HelpResult CTxDOTAppPlugin::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID,CString& strURL)
+eafTypes::HelpResult CTOGAPluginApp::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID,CString& strURL)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    return m_DocumentationImpl.GetDocumentLocation(lpszDocSetName,nID,strURL);
 }
 
-CString CTxDOTAppPlugin::GetCommandLineAppName() const
+CString CTOGAPluginApp::GetCommandLineAppName() const
 {
    return GetAppName();
 }
 
-CString CTxDOTAppPlugin::GetUsageMessage()
+CString CTOGAPluginApp::GetUsageMessage()
 {
    CTxDOTCommandLineInfo txCmdInfo;
    return txCmdInfo.GetUsageMessage();
 }
 
-BOOL CTxDOTAppPlugin::ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo)
+BOOL CTOGAPluginApp::ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo)
 {
    // cmdInfo is the command line information from the application. The application
    // doesn't know about this plug-in at the time the command line parameters are parsed
@@ -246,12 +234,12 @@ BOOL CTxDOTAppPlugin::ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo)
 
 //////////////////////////
 // IEAFCommandCallback
-BOOL CTxDOTAppPlugin::OnCommandMessage(UINT nID,int nCode,void* pExtra,AFX_CMDHANDLERINFO* pHandlerInfo)
+BOOL CTOGAPluginApp::OnCommandMessage(UINT nID,int nCode,void* pExtra,AFX_CMDHANDLERINFO* pHandlerInfo)
 {
    return m_MyCmdTarget.OnCmdMsg(nID,nCode,pExtra,pHandlerInfo);
 }
 
-BOOL CTxDOTAppPlugin::GetStatusBarMessageString(UINT nID, CString& rMessage) const
+BOOL CTOGAPluginApp::GetStatusBarMessageString(UINT nID, CString& rMessage) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -270,7 +258,7 @@ BOOL CTxDOTAppPlugin::GetStatusBarMessageString(UINT nID, CString& rMessage) con
    return TRUE;
 }
 
-BOOL CTxDOTAppPlugin::GetToolTipMessageString(UINT nID, CString& rMessage) const
+BOOL CTOGAPluginApp::GetToolTipMessageString(UINT nID, CString& rMessage) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CString string;
@@ -291,29 +279,29 @@ BOOL CTxDOTAppPlugin::GetToolTipMessageString(UINT nID, CString& rMessage) const
    return TRUE;
 }
 
-CString CTxDOTAppPlugin::GetTemplateFileExtension()
+CString CTOGAPluginApp::GetTemplateFileExtension()
 { 
    return CString(_T("togt"));
 }
 
-const CRuntimeClass* CTxDOTAppPlugin::GetDocTemplateRuntimeClass()
+const CRuntimeClass* CTOGAPluginApp::GetDocTemplateRuntimeClass()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    return RUNTIME_CLASS(CTxDOTOptionalDesignDocTemplate);
 }
 
-CPGSBaseCommandLineInfo* CTxDOTAppPlugin::CreateCommandLineInfo() const
+CPGSBaseCommandLineInfo* CTOGAPluginApp::CreateCommandLineInfo() const
 {
    return  new CTxDOTCommandLineInfo();
 }
 
-void CTxDOTAppPlugin::UpdateTemplates()
+void CTOGAPluginApp::UpdateTemplates()
 {
    ATLASSERT(0);
    AfxMessageBox(_T("Update Templates feature not supported (or applicable) to TOGA"));
 }
 
-void CTxDOTAppPlugin::UpdateDocTemplates()
+void CTOGAPluginApp::UpdateDocTemplates()
 {
    CEAFApp* pApp = EAFGetApp();
 
@@ -339,13 +327,13 @@ void CTxDOTAppPlugin::UpdateDocTemplates()
    }
 }
 
-CString CTxDOTAppPlugin::GetDefaultMasterLibraryFile() const
+CString CTOGAPluginApp::GetDefaultMasterLibraryFile() const
 {
    CString path = GetDefaultWorkgroupTemplateFolder();
    return path + (_T("\\TXDOT.LBR"));
 }
 
-CString CTxDOTAppPlugin::GetDefaultWorkgroupTemplateFolder() const
+CString CTOGAPluginApp::GetDefaultWorkgroupTemplateFolder() const
 {
    CEAFApp* pApp = EAFGetApp();
 

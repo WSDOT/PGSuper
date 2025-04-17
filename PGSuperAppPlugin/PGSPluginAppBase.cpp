@@ -20,7 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "PGSuperApp.h"
 #include <PGSuperUnits.h>
 #include "PGSuperDocTemplate.h"
@@ -32,40 +32,34 @@
 
 #include <MFCTools\AutoRegistry.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-
-CPGSAppPluginBase::CPGSAppPluginBase()
+CPGSPluginAppBase::CPGSPluginAppBase()
 {
 }
 
-CPGSAppPluginBase::~CPGSAppPluginBase()
+CPGSPluginAppBase::~CPGSPluginAppBase()
 {
 }
 
-HRESULT CPGSAppPluginBase::OnFinalConstruct()
+void CPGSPluginAppBase::InitCatalogServer()
 {
-   if (FAILED(CCatalogServerAppMixin::OnFinalConstruct()))
+   if (!CreateAppUnitSystem(&m_AppUnitSystem))
    {
-      ATLASSERT(0);
-      return E_FAIL;
+      CHECK(false);
+      return;
    }
 
-   if ( !CreateAppUnitSystem(&m_AppUnitSystem) )
-   {
-      return E_FAIL;
-   }
+   CCatalogServerAppMixin::InitCatalogServer();
 
-   return S_OK;
+   LoadRegistryValues();
+
+   auto pluginApp = std::dynamic_pointer_cast<WBFL::EAF::IPluginApp>(shared_from_this());
+   m_DocumentationImpl.Init(pluginApp);
 }
 
-void CPGSAppPluginBase::OnFinalRelease()
+void CPGSPluginAppBase::TerminateCatalogServer()
 {
-   if ( m_strAppProfileName != _T("") )
+   if (m_strAppProfileName != _T(""))
    {
       // this method is called from OnNewDocument... don't want to mess with the profile name
       // if it hasn't been changed
@@ -78,82 +72,70 @@ void CPGSAppPluginBase::OnFinalRelease()
    }
 
    m_AppUnitSystem.Release();
-}
 
-void CPGSAppPluginBase::DefaultInit(IEAFAppPlugin* pAppPlugin)
-{
-   CCatalogServerAppMixin::DefaultInit(pAppPlugin);
-
-   LoadRegistryValues();
-
-   m_DocumentationImpl.Init(pAppPlugin);
-}
-
-void CPGSAppPluginBase::DefaultTerminate()
-{
-   CCatalogServerAppMixin::DefaultTerminate();
+   CCatalogServerAppMixin::TerminateCatalogServer();
 
    SaveRegistryValues();
 }
 
-void CPGSAppPluginBase::GetAppUnitSystem(IAppUnitSystem** ppAppUnitSystem)
+void CPGSPluginAppBase::GetAppUnitSystem(IAppUnitSystem** ppAppUnitSystem)
 {
    m_AppUnitSystem.CopyTo(ppAppUnitSystem);
 }
 
-void CPGSAppPluginBase::LoadRegistryValues()
+void CPGSPluginAppBase::LoadRegistryValues()
 {
    CCatalogServerAppMixin::LoadRegistryValues();
 
    LoadCustomReportInformation();
 }
 
-void CPGSAppPluginBase::SaveRegistryValues()
+void CPGSPluginAppBase::SaveRegistryValues()
 {
    CCatalogServerAppMixin::SaveRegistryValues();
 
    SaveCustomReportInformation();
 }
 
-void CPGSAppPluginBase::LoadCustomReportInformation()
+void CPGSPluginAppBase::LoadCustomReportInformation()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CAutoRegistry autoReg(GetAppName());
    CEAFCustomReportMixin::LoadCustomReportInformation();
 }
 
-void CPGSAppPluginBase::SaveCustomReportInformation()
+void CPGSPluginAppBase::SaveCustomReportInformation()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CAutoRegistry autoReg(GetAppName());
    CEAFCustomReportMixin::SaveCustomReportInformation();
 }
 
-CString CPGSAppPluginBase::GetDocumentationURL()
+CString CPGSPluginAppBase::GetDocumentationURL()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    return m_DocumentationImpl.GetDocumentationURL();
 }
 
-CString CPGSAppPluginBase::GetDocumentationMapFile()
+CString CPGSPluginAppBase::GetDocumentationMapFile()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    return m_DocumentationImpl.GetDocumentationMapFile();
 }
 
-void CPGSAppPluginBase::LoadDocumentationMap()
+void CPGSPluginAppBase::LoadDocumentationMap()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    return m_DocumentationImpl.LoadDocumentationMap();
 }
 
-eafTypes::HelpResult CPGSAppPluginBase::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID,CString& strURL)
+eafTypes::HelpResult CPGSPluginAppBase::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID,CString& strURL)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    return m_DocumentationImpl.GetDocumentLocation(lpszDocSetName,nID,strURL);
 }
 
-void CPGSAppPluginBase::UpdateDocTemplates()
+void CPGSPluginAppBase::UpdateDocTemplates()
 {
    CEAFApp* pApp = EAFGetApp();
 
@@ -179,7 +161,7 @@ void CPGSAppPluginBase::UpdateDocTemplates()
    }
 }
 
-BOOL CPGSAppPluginBase::DoProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo)
+BOOL CPGSPluginAppBase::DoProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -228,7 +210,7 @@ BOOL CPGSAppPluginBase::DoProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo
    return bHandled;
 }
 
-void CPGSAppPluginBase::Process1250Testing(const CPGSBaseCommandLineInfo& rCmdInfo)
+void CPGSPluginAppBase::Process1250Testing(const CPGSBaseCommandLineInfo& rCmdInfo)
 {
    USES_CONVERSION;
    ASSERT(rCmdInfo.m_bDo1250Test);

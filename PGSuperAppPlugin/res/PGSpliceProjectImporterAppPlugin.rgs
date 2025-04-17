@@ -1,20 +1,20 @@
 HKCR
 {
-	PGSplice.PGSpliceProjectImporterAppPlugin.1 = s 'PGSplice Project Importer'
+	PGSplice.PGSpliceProjectImporterPluginApp.1 = s 'PGSplice Project Importer'
 	{
 		CLSID = s '{398F7443-AA27-442f-ADA4-866E38BE596D}'
 	}
-	PGSplice.PGSpliceProjectImporterAppPlugin = s 'PGSplice Project Importer'
+	PGSplice.PGSpliceProjectImporterPluginApp = s 'PGSplice Project Importer'
 	{
 		CLSID = s '{398F7443-AA27-442f-ADA4-866E38BE596D}'
-		CurVer = s 'PGSplice.PGSpliceProjectImporterAppPlugin.1'
+		CurVer = s 'PGSplice.PGSpliceProjectImporterPluginApp.1'
 	}
 	NoRemove CLSID
 	{
 		ForceRemove {398F7443-AA27-442f-ADA4-866E38BE596D} = s 'PGSplice Project Importer'
 		{
-			ProgID = s 'PGSplice.PGSpliceProjectImporterAppPlugin.1'
-			VersionIndependentProgID = s 'PGSplice.PGSpliceProjectImporterAppPlugin'
+			ProgID = s 'PGSplice.PGSpliceProjectImporterPluginApp.1'
+			VersionIndependentProgID = s 'PGSplice.PGSpliceProjectImporterPluginApp'
 			ForceRemove 'Programmable'
 			InprocServer32 = s '%MODULE%'
 			{

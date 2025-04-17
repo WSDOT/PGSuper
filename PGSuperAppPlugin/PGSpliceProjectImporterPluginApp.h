@@ -21,26 +21,29 @@
 ///////////////////////////////////////////////////////////////////////
 
 #pragma once
+#include "PGSPluginAppBase.h"
+#include "PGSProjectImporterPluginAppBase.h"
 
-#include "PGSImportPluginDocTemplateBase.h"
 
-class CPGSuperImportPluginDocTemplate : public CPGSImportPluginDocTemplateBase
+class CPGSpliceProjectImporterPluginApp : 
+   public CPGSProjectImporterPluginAppBase
 {
 public:
-   CPGSuperImportPluginDocTemplate(UINT nIDResource,
-                                   std::shared_ptr<WBFL::EAF::ICommandCallback> pCallback,
-                                   CRuntimeClass* pDocClass,
-                                   CRuntimeClass* pFrameClass,
-                                   CRuntimeClass* pViewClass,
-                                   HMENU hSharedMenu = nullptr,
-                                   int maxViewCount = -1);
-   
-   ~CPGSuperImportPluginDocTemplate();
+   CPGSpliceProjectImporterPluginApp()
+   {
+      m_MyCmdTarget.m_pMyAppPlugin = this;
+   }
 
-protected:
+   CString GetAppName() const override { return CString("PGSplice"); }
+   CString GetDefaultCatalogServerName() const override { return CString("WSDOT"); }
+   CString GetDefaultCatalogName() const override { return CString("WSDOT"); }
+   CString GetTemplateFileExtension() override;
+   const CRuntimeClass* GetDocTemplateRuntimeClass() override;
 
-   DECLARE_DYNAMIC(CPGSuperImportPluginDocTemplate)
+   CATID GetProjectImporterCATID() override;
+   UINT GetMenuResourceID() override;
+   CPGSImportPluginDocTemplateBase* CreateDocTemplate() override;
 
-   virtual CPGSProjectImporterMgrBase* CreateProjectImporterMgr() const override;
+   CEAFCommandLineInfo* CreateCommandLineInfo() const override;
+   CString GetUsageMessage() override;
 };
-

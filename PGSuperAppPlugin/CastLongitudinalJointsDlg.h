@@ -23,6 +23,7 @@
 
 #include <PgsExt\CastDeckActivity.h>
 #include <PgsExt\TimelineManager.h>
+#include "resource.h"
 
 // CCastLongitudinalJointsDlg dialog
 

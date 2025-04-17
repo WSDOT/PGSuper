@@ -23,6 +23,7 @@
 #pragma once
 
 #include <PgsExt\LoadFactors.h>
+#include "resource.h"
 
 // CLoadFactorsDlg dialog
 

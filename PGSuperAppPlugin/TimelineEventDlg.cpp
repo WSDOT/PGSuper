@@ -23,7 +23,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "TimelineEventDlg.h"
 #include "ErectPiersDlg.h"
 #include "ErectSegmentsDlg.h"

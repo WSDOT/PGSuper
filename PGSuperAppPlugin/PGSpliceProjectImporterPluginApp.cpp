@@ -21,38 +21,21 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "PGSpliceProjectImporterAppPlugin.h"
+#include "resource.h"
+#include "PGSpliceProjectImporterPluginApp.h"
 #include "PGSpliceDoc.h"
 #include "BridgeModelViewChildFrame.h"
 #include "BridgePlanView.h"
 #include "PGSpliceImportPluginDocTemplate.h"
 #include "PGSpliceCommandLineInfo.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-
-HRESULT CPGSpliceProjectImporterAppPlugin::FinalConstruct()
-{
-   m_MyCmdTarget.m_pMyAppPlugin = this;
-   return OnFinalConstruct(); // CPGSAppPluginBase
-}
-
-void CPGSpliceProjectImporterAppPlugin::FinalRelease()
-{
-   OnFinalRelease(); // CPGSAppPluginBase
-}
-const CRuntimeClass* CPGSpliceProjectImporterAppPlugin::GetDocTemplateRuntimeClass()
+const CRuntimeClass* CPGSpliceProjectImporterPluginApp::GetDocTemplateRuntimeClass()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    return RUNTIME_CLASS(CPGSpliceImportPluginDocTemplate);
 }
 
-CString CPGSpliceProjectImporterAppPlugin::GetTemplateFileExtension()
+CString CPGSpliceProjectImporterPluginApp::GetTemplateFileExtension()
 { 
    CString strTemplateSuffix;
    VERIFY(strTemplateSuffix.LoadString(IDS_PGSPLICE_TEMPLATE_FILE_SUFFIX));
@@ -60,21 +43,23 @@ CString CPGSpliceProjectImporterAppPlugin::GetTemplateFileExtension()
    return strTemplateSuffix;
 }
 
-CATID CPGSpliceProjectImporterAppPlugin::GetProjectImporterCATID()
+CATID CPGSpliceProjectImporterPluginApp::GetProjectImporterCATID()
 {
    return CATID_PGSpliceProjectImporter;
 }
 
-UINT CPGSpliceProjectImporterAppPlugin::GetMenuResourceID()
+UINT CPGSpliceProjectImporterPluginApp::GetMenuResourceID()
 {
    return IDR_PGSPLICE;
 }
 
-CPGSImportPluginDocTemplateBase* CPGSpliceProjectImporterAppPlugin::CreateDocTemplate()
+CPGSImportPluginDocTemplateBase* CPGSpliceProjectImporterPluginApp::CreateDocTemplate()
 {
+   auto callback = std::dynamic_pointer_cast<WBFL::EAF::ICommandCallback>(shared_from_this());
+
    CPGSpliceImportPluginDocTemplate* pDocTemplate = new CPGSpliceImportPluginDocTemplate(
 		IDR_PGSPLICEPROJECTIMPORTER,
-      this,
+        callback,
 		RUNTIME_CLASS(CPGSpliceDoc),
 		RUNTIME_CLASS(CBridgeModelViewChildFrame),
 		RUNTIME_CLASS(CBridgePlanView),
@@ -83,12 +68,12 @@ CPGSImportPluginDocTemplateBase* CPGSpliceProjectImporterAppPlugin::CreateDocTem
    return pDocTemplate;
 }
 
-CEAFCommandLineInfo* CPGSpliceProjectImporterAppPlugin::CreateCommandLineInfo() const
+CEAFCommandLineInfo* CPGSpliceProjectImporterPluginApp::CreateCommandLineInfo() const
 {
    return new CPGSpliceProjectImporterCommandLineInfo();
 }
 
-CString CPGSpliceProjectImporterAppPlugin::GetUsageMessage()
+CString CPGSpliceProjectImporterPluginApp::GetUsageMessage()
 {
    CPGSpliceProjectImporterCommandLineInfo pgsCmdInfo;
    return pgsCmdInfo.GetUsageMessage();

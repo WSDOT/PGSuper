@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include "resource.h"
 #include "DrawStrandControl.h"
 #include "SegmentTendonGrid.h"
 

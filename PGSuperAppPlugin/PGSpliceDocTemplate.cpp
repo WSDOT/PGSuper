@@ -24,7 +24,7 @@
 #include "resource.h"
 #include "PGSpliceDocTemplate.h"
 #include "PGSpliceDoc.h"
-#include "PGSuperBaseAppPlugin.h"
+#include "PGSPluginAppBase.h"
 
 #include "PGSpliceCatCom.h"
 #include "Plugins\PGSuperIEPlugin.h"
@@ -40,7 +40,7 @@ static char THIS_FILE[] = __FILE__;
 IMPLEMENT_DYNAMIC(CPGSpliceDocTemplate,CPGSuperDocTemplateBase)
 
 CPGSpliceDocTemplate::CPGSpliceDocTemplate(UINT nIDResource,
-                                         IEAFCommandCallback* pCallback,
+                                         std::shared_ptr<WBFL::EAF::ICommandCallback> pCallback,
                                          CRuntimeClass* pDocClass,
                                          CRuntimeClass* pFrameClass,
                                          CRuntimeClass* pViewClass,

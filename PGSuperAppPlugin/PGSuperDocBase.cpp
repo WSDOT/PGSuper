@@ -35,9 +35,9 @@
 
 #include "PGSuperDocBase.h"
 #include "PGSuperUnits.h"
-#include "PGSuperBaseAppPlugin.h"
-#include "PGSuperAppPlugin.h"
-#include "PGSuperProjectImporterAppPlugin.h"
+#include "PGSPluginAppBase.h"
+#include "PGSuperPluginApp.h"
+#include "PGSuperProjectImporterPluginApp.h"
 #include "PGSuperDocTemplateBase.h"
 
 #include "BridgeSectionView.h"
@@ -1528,9 +1528,10 @@ BOOL CPGSDocBase::UpdateTemplates(IProgress* pProgress,LPCTSTR lpszDir)
 BOOL CPGSDocBase::UpdateTemplates()
 {
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
-   CPGSAppPluginBase* pPGSuper = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+#pragma Reminder("WORKING HERE - Removing COM")
+   // This pointer casting seems problematic - review to see if there is a better way
+   auto pluginApp = pTemplate->GetPluginApp();
+   CPGSPluginAppBase* pPGSuper = dynamic_cast<CPGSPluginAppBase*>(pluginApp.get());
 
    CString workgroup_folder;
    pPGSuper->GetTemplateFolders(workgroup_folder);
@@ -2066,9 +2067,9 @@ void CPGSDocBase::OnCreateFinalize()
    //CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
    //CComPtr<IEAFAppPlugin> pAppPlugin;
    //pTemplate->GetPlugin(&pAppPlugin);
-   //CPGSAppPluginBase* pPGSuper = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+   //CPGSPluginAppBase* pPGSuper = dynamic_cast<CPGSPluginAppBase*>(pAppPlugin.p);
 
-   //// Transfer report favorites and custom reports data from CPGSAppPluginBase to CEAFBrokerDocument (this)
+   //// Transfer report favorites and custom reports data from CPGSPluginAppBase to CEAFBrokerDocument (this)
    //bool doDisplayFavorites = pPGSuper->GetDoDisplayFavoriteReports();
    //std::vector<std::_tstring> Favorites = pPGSuper->GetFavoriteReports();
 
@@ -2278,9 +2279,10 @@ HRESULT CPGSDocBase::ConvertTheDocument(LPCTSTR lpszPathName, CString* prealFile
 CString CPGSDocBase::GetRootNodeName()
 {
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
-   CPGSAppPluginBase* pPGSuper = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+#pragma Reminder("WORKING HERE - Removing COM")
+   // This pointer casting seems problematic - review to see if there is a better way
+   auto pluginApp = pTemplate->GetPluginApp();
+   CPGSPluginAppBase* pPGSuper = dynamic_cast<CPGSPluginAppBase*>(pluginApp.get());
    return pPGSuper->GetAppName();
 }
 
@@ -2294,7 +2296,7 @@ HRESULT CPGSDocBase::WriteTheDocument(IStructuredSave* pStrSave)
    // before the standard broker document persistence, write out the version
    // number of the application that created this document
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
+   CPGSuperPluginAppApp* pApp = (CPGSuperPluginAppApp*)AfxGetApp();
    CString strAppVersion = pApp->GetVersion(true);
 
    HRESULT hr = pStrSave->put_Property(_T("Version"),CComVariant(strAppVersion));
@@ -2388,11 +2390,12 @@ HRESULT CPGSDocBase::LoadTheDocument(IStructuredLoad* pStrLoad)
 
                   // Save the default option to the registry
                   CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
-                  CComPtr<IEAFAppPlugin> pAppPlugin;
-                  pTemplate->GetPlugin(&pAppPlugin);
-                  CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+#pragma Reminder("WORKING HERE - Removing COM")
+                  // This pointer casting seems problematic - review to see if there is a better way
+                  auto pluginApp = pTemplate->GetPluginApp();
+                  CPGSPluginAppBase* pPGSBase = dynamic_cast<CPGSPluginAppBase*>(pluginApp.get());
 
-                  CPGSuperAppPluginApp* pPluginApp = (CPGSuperAppPluginApp*)AfxGetApp();
+                  CPGSuperPluginAppApp* pPluginApp = (CPGSuperPluginAppApp*)AfxGetApp();
 
                   CAutoRegistry autoReg(pPGSBase->GetAppName(), pPluginApp);
                   pPluginApp->WriteProfileInt(_T("Options"), _T("DefaultCompatibilitySave"), dlg.m_DefaultCopyOption);
@@ -2412,9 +2415,10 @@ HRESULT CPGSDocBase::LoadTheDocument(IStructuredLoad* pStrLoad)
          // we aren't prompting because the "don't show me again" is enabled.... 
          // get the default action from the registry
          CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
-         CComPtr<IEAFAppPlugin> pAppPlugin;
-         pTemplate->GetPlugin(&pAppPlugin);
-         CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+#pragma Reminder("WORKING HERE - Removing COM")
+         // This pointer casting seems problematic - review to see if there is a better way
+         auto pluginApp = pTemplate->GetPluginApp();
+         CPGSPluginAppBase* pPGSBase = dynamic_cast<CPGSPluginAppBase*>(pluginApp.get());
          CAutoRegistry autoReg(pPGSBase->GetAppName());
          CWinApp* pApp = AfxGetApp();
          int value = pApp->GetProfileInt(_T("Options"), _T("DefaultCompatibilitySave"), FSW_COPY);
@@ -2501,9 +2505,10 @@ void CPGSDocBase::Dump(CDumpContext& dc) const
 BOOL CPGSDocBase::Init()
 {
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
-   CPGSAppPluginBase* pPGSuper = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+#pragma Reminder("WORKING HERE - Removing COM")
+   // This pointer casting seems problematic - review to see if there is a better way
+   auto pluginApp = pTemplate->GetPluginApp();
+   CPGSPluginAppBase* pPGSuper = dynamic_cast<CPGSPluginAppBase*>(pluginApp.get());
 
    // must happen before calling base class Init()
    m_pPluginMgr = CreatePluginManager();
@@ -3027,9 +3032,10 @@ void CPGSDocBase::OnUpdateAutoCalc(CCmdUI* pCmdUI)
 void CPGSDocBase::OnExportToTemplateFile() 
 {
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
-   CPGSAppPluginBase* pPGSuper = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+#pragma Reminder("WORKING HERE - Removing COM")
+   // This pointer casting seems problematic - review to see if there is a better way
+   auto pluginApp = pTemplate->GetPluginApp();
+   CPGSPluginAppBase* pPGSuper = dynamic_cast<CPGSPluginAppBase*>(pluginApp.get());
 
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -3214,9 +3220,10 @@ bool CPGSDocBase::LoadMasterLibrary()
 
    // Load the master library
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
-   CPGSAppPluginBase* pPGSuper = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+#pragma Reminder("WORKING HERE - Removing COM")
+   // This pointer casting seems problematic - review to see if there is a better way
+   auto pluginApp = pTemplate->GetPluginApp();
+   CPGSPluginAppBase* pPGSuper = dynamic_cast<CPGSPluginAppBase*>(pluginApp.get());
 
 
    const auto& strPublisher = pPGSuper->GetMasterLibraryPublisher();
@@ -3258,9 +3265,10 @@ bool CPGSDocBase::DoLoadMasterLibrary(const CString& strMasterLibraryFile)
          if ( AfxMessageBox(err_msg,MB_YESNO|MB_ICONSTOP) == IDYES )
          {
             CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
-            CComPtr<IEAFAppPlugin> pAppPlugin;
-            pTemplate->GetPlugin(&pAppPlugin);
-            CPGSAppPluginBase* pPGSuper = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+#pragma Reminder("WORKING HERE - Removing COM")
+            // This pointer casting seems problematic - review to see if there is a better way
+            auto pluginApp = pTemplate->GetPluginApp();
+            CPGSPluginAppBase* pPGSuper = dynamic_cast<CPGSPluginAppBase*>(pluginApp.get());
             if (pPGSuper->UpdateProgramSettings())
             {
                // the configuration was updated... need to start over
@@ -4729,9 +4737,10 @@ void CPGSDocBase::LoadDocumentSettings()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
-   CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+#pragma Reminder("WORKING HERE - Removing COM")
+   // This pointer casting seems problematic - review to see if there is a better way
+   auto pluginApp = pTemplate->GetPluginApp();
+   CPGSPluginAppBase* pPGSBase = dynamic_cast<CPGSPluginAppBase*>(pluginApp.get());
 
    {
       CWinApp* pApp = AfxGetApp();
@@ -4825,9 +4834,10 @@ void CPGSDocBase::SaveDocumentSettings()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
-   CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+#pragma Reminder("WORKING HERE - Removing COM")
+   // This pointer casting seems problematic - review to see if there is a better way
+   auto pluginApp = pTemplate->GetPluginApp();
+   CPGSPluginAppBase* pPGSBase = dynamic_cast<CPGSPluginAppBase*>(pluginApp.get());
 
    {
       CWinApp* pApp = AfxGetApp();
@@ -4894,7 +4904,7 @@ void CPGSDocBase::OnLogFileOpened()
    GET_IFACE(IEAFProjectLog,pLog);
    CString strMsg;
 
-   CPGSuperAppPluginApp* pApp = (CPGSuperAppPluginApp*)AfxGetApp();
+   CPGSuperPluginAppApp* pApp = (CPGSuperPluginAppApp*)AfxGetApp();
    strMsg.Format(_T("PGSuper version %s"),pApp->GetVersion(false).GetBuffer(100));
    pLog->LogMessage(strMsg);
 }
@@ -4932,9 +4942,10 @@ CString CPGSDocBase::GetToolbarSectionName()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
-   CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+#pragma Reminder("WORKING HERE - Removing COM")
+   // This pointer casting seems problematic - review to see if there is a better way
+   auto pluginApp = pTemplate->GetPluginApp();
+   CPGSPluginAppBase* pPGSBase = dynamic_cast<CPGSPluginAppBase*>(pluginApp.get());
    CAutoRegistry autoReg(pPGSBase->GetAppName());
 
    CString strToolbarSection;
@@ -5266,9 +5277,10 @@ BOOL CPGSDocBase::LoadAgents()
 {
    // set up the registry stuff so we read from the correct location
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
-   CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+#pragma Reminder("WORKING HERE - Removing COM")
+   // This pointer casting seems problematic - review to see if there is a better way
+   auto pluginApp = pTemplate->GetPluginApp();
+   CPGSPluginAppBase* pPGSBase = dynamic_cast<CPGSPluginAppBase*>(pluginApp.get());
 
    CEAFApp* pApp = EAFGetApp();
    CAutoRegistry autoReg(pPGSBase->GetAppName(),pApp);
@@ -5346,7 +5358,7 @@ bool CPGSDocBase::DoDesignHaunch(const CGirderKey& girderKey)
 CString CFileCompatibilityState::GetApplicationVersion() const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CPGSuperAppPluginApp* pPluginApp = (CPGSuperAppPluginApp*)AfxGetApp();
+   CPGSuperPluginAppApp* pPluginApp = (CPGSuperPluginAppApp*)AfxGetApp();
    CString strAppVersion = pPluginApp->GetVersion(true);
    return strAppVersion;
 }

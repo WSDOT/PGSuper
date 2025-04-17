@@ -33,7 +33,7 @@ static char THIS_FILE[] = __FILE__;
 IMPLEMENT_DYNAMIC(CPGSuperImportPluginDocTemplate,CPGSImportPluginDocTemplateBase)
 
 CPGSuperImportPluginDocTemplate::CPGSuperImportPluginDocTemplate(UINT nIDResource,
-                                                                 IEAFCommandCallback* pCallback,
+                                                                 std::shared_ptr<WBFL::EAF::ICommandCallback> pCallback,
   																                 CRuntimeClass* pDocClass,
   																                 CRuntimeClass* pFrameClass,
  																                 CRuntimeClass* pViewClass,

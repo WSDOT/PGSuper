@@ -4,7 +4,7 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "ClosureJointStirrupsPage.h"
 #include "ClosureJointDlg.h"
 

@@ -25,8 +25,8 @@
 #include "PGSuperDoc.h"
 #include "PGSpliceDoc.h"
 
-#include "PGSuperAppPlugin.h"
-#include "PGSpliceAppPlugin.h"
+#include "PGSuperPluginApp.h"
+#include "PGSplicePluginApp.h"
 
 #include "resource.h"
 
@@ -177,15 +177,14 @@ void CPGSuperDocProxyAgent::RegisterViews()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)(m_pMyDocument->GetDocTemplate());
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
+   auto pluginApp = pTemplate->GetPluginApp();
 
-   HMENU hMenu = pAppPlugin->GetSharedMenuHandle();
+   HMENU hMenu = pluginApp->GetSharedMenuHandle();
 
    // Register all secondary views that are associated with our document type
-   // TODO: After the menu and command extensions can be made, the agents that are responsble
+   // TODO: After the menu and command extensions can be made, the agents that are responsible
    // for the views below will register them. For example, the analysis results view is the
-   // responsiblity of the analysis results agent, so that view's implementation will move
+   // responsibility of the analysis results agent, so that view's implementation will move
    GET_IFACE(IEAFViewRegistrar,pViewReg);
    m_BridgeModelEditorViewKey = pViewReg->RegisterView(IDR_BRIDGEMODELEDITOR, nullptr, RUNTIME_CLASS(CBridgeModelViewChildFrame), RUNTIME_CLASS(CBridgePlanView),           hMenu, 1);
    m_GirderModelEditorViewKey = pViewReg->RegisterView(IDR_GIRDERMODELEDITOR, nullptr, RUNTIME_CLASS(CGirderModelChildFrame),     RUNTIME_CLASS(CGirderModelElevationView), hMenu, -1); // unlimited number of reports
@@ -1059,14 +1058,16 @@ Float64 CPGSuperDocProxyAgent::GetSectionCutStation()
 bool CPGSuperDocProxyAgent::UpdatingTemplates()
 {
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)(m_pMyDocument->GetDocTemplate());
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
+   auto pluginApp = pTemplate->GetPluginApp();
 
-   CPGSuperAppPlugin* pPGSuperPlugin = dynamic_cast<CPGSuperAppPlugin*>(pAppPlugin.p);
+#pragma Reminder("WORKING HERE - Removing COM")
+   // This pointer casting seems problematic - review to see if there is a better way
+
+   CPGSuperPluginApp* pPGSuperPlugin = dynamic_cast<CPGSuperPluginApp*>(pluginApp.get());
    if ( pPGSuperPlugin )
       return pPGSuperPlugin->UpdatingTemplates();
 
-   CPGSpliceAppPlugin* pPGSplicePlugin = dynamic_cast<CPGSpliceAppPlugin*>(pAppPlugin.p);
+   CPGSplicePluginApp* pPGSplicePlugin = dynamic_cast<CPGSplicePluginApp*>(pluginApp.get());
    if ( pPGSplicePlugin )
       return pPGSplicePlugin->UpdatingTemplates();
 
@@ -1596,9 +1597,10 @@ bool CPGSuperDocProxyAgent::IsPGSpliceDocument() const
 void CPGSuperDocProxyAgent::GetUnitServer(IUnitServer** ppUnitServer)
 {
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)(m_pMyDocument->GetDocTemplate());
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
-   CPGSAppPluginBase* pPGSuper = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+#pragma Reminder("WORKING HERE - Removing COM")
+   // This pointer casting seems problematic - review to see if there is a better way
+   auto pluginApp = pTemplate->GetPluginApp();
+   CPGSPluginAppBase* pPGSuper = dynamic_cast<CPGSPluginAppBase*>(pluginApp.get());
 
    CComPtr<IAppUnitSystem> appUnitSystem;
    pPGSuper->GetAppUnitSystem(&appUnitSystem);

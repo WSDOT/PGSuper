@@ -70,11 +70,59 @@ void CMyCmdTarget::OnMyView()
    m_pMyAgent->CreateMyView();
 }
 
+/////////////////////////////////////////////////////////////////////////////
+// IEAFCommandCallback
+BOOL CMyCmdTarget::OnCommandMessage(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo)
+{
+   return OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
+}
+
+BOOL CMyCmdTarget::GetStatusBarMessageString(UINT nID, CString& rMessage) const
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+   // load appropriate string
+   if (rMessage.LoadString(nID))
+   {
+      // first newline terminates actual string
+      rMessage.Replace('\n', '\0');
+   }
+   else
+   {
+      // not found
+      TRACE1("Warning (CExampleExtensionAgent): no message line prompt for ID 0x%04X.\n", nID);
+   }
+
+   return TRUE;
+}
+
+BOOL CMyCmdTarget::GetToolTipMessageString(UINT nID, CString& rMessage) const
+{
+   AFX_MANAGE_STATE(AfxGetStaticModuleState());
+   CString string;
+   // load appropriate string
+   if (string.LoadString(nID))
+   {
+      // tip is after first newline 
+      int pos = string.Find('\n');
+      if (0 < pos)
+         rMessage = string.Mid(pos + 1);
+   }
+   else
+   {
+      // not found
+      TRACE1("Warning (CExampleExtensionAgent): no tool tip for ID 0x%04X.\n", nID);
+   }
+
+   return TRUE;
+}
+
 // CExampleExtensionAgent
 
 HRESULT CExampleExtensionAgent::FinalConstruct()
 {
-   m_MyCommandTarget.m_pMyAgent = this;
+   m_MyCommandTarget = std::make_shared<CMyCmdTarget>();
+   m_MyCommandTarget->m_pMyAgent = this;
 
    m_bCheck = true;
 
@@ -85,7 +133,8 @@ void CExampleExtensionAgent::RegisterViews()
 {
    GET_IFACE(IEAFViewRegistrar,pViewRegistrar);
    int maxViewCount = 2; // only allow 2 instances of this view to be created at a time
-   m_MyViewKey = pViewRegistrar->RegisterView(IDR_MENU,this,RUNTIME_CLASS(CEAFOutputChildFrame),RUNTIME_CLASS(CMyView),nullptr,maxViewCount);
+   auto callback = std::dynamic_pointer_cast<WBFL::EAF::ICommandCallback>(m_MyCommandTarget);
+   m_MyViewKey = pViewRegistrar->RegisterView(IDR_MENU,callback,RUNTIME_CLASS(CEAFOutputChildFrame),RUNTIME_CLASS(CMyView),nullptr,maxViewCount);
 }
 
 void CExampleExtensionAgent::UnregisterViews()
@@ -97,7 +146,7 @@ void CExampleExtensionAgent::UnregisterViews()
 void CExampleExtensionAgent::CreateMyView()
 {
    GET_IFACE(IEAFViewRegistrar,pViewRegistrar);
-   pViewRegistrar->CreateView(m_MyViewKey,this);
+   pViewRegistrar->CreateView(m_MyViewKey,m_MyCommandTarget.get());
 }
 
 void CExampleExtensionAgent::RegisterGraphs()
@@ -129,7 +178,9 @@ void CExampleExtensionAgent::CreateMenus()
       return;
 
    m_pMyMenu = pMenu->CreatePopupMenu(nMenus-1,_T("MyExtension")); // put the menu before the last menu (Help)
-   m_pMyMenu->LoadMenu(IDR_MENU,this);
+
+   auto callback = std::dynamic_pointer_cast<WBFL::EAF::ICommandCallback>(m_MyCommandTarget);
+   m_pMyMenu->LoadMenu(IDR_MENU,callback);
 }
 
 void CExampleExtensionAgent::RemoveMenus()
@@ -145,7 +196,8 @@ void CExampleExtensionAgent::CreateToolBar()
    GET_IFACE(IEAFToolbars,pToolBars);
    m_ToolBarID = pToolBars->CreateToolBar(_T("Extension Agent Toolbar"));
    CEAFToolBar* pToolBar = pToolBars->GetToolBar(m_ToolBarID);
-   pToolBar->LoadToolBar(IDR_TOOLBAR,this);
+   auto callback = std::dynamic_pointer_cast<WBFL::EAF::ICommandCallback>(m_MyCommandTarget);
+   pToolBar->LoadToolBar(IDR_TOOLBAR,callback);
 
    //GET_IFACE(IEditByUI,pEditUI);
    //UINT stdID = pEditUI->GetStdToolBarID();
@@ -395,53 +447,6 @@ STDMETHODIMP CExampleExtensionAgent::IntegrateWithGraphing(BOOL bIntegrate)
    }
 
    return S_OK;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// IEAFCommandCallback
-BOOL CExampleExtensionAgent::OnCommandMessage(UINT nID,int nCode,void* pExtra,AFX_CMDHANDLERINFO* pHandlerInfo)
-{
-   return m_MyCommandTarget.OnCmdMsg(nID,nCode,pExtra,pHandlerInfo);
-}
-
-BOOL CExampleExtensionAgent::GetStatusBarMessageString(UINT nID, CString& rMessage) const
-{
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-
-   // load appropriate string
-	if ( rMessage.LoadString(nID) )
-	{
-		// first newline terminates actual string
-      rMessage.Replace('\n','\0');
-	}
-	else
-	{
-		// not found
-		TRACE1("Warning (CExampleExtensionAgent): no message line prompt for ID 0x%04X.\n", nID);
-	}
-
-   return TRUE;
-}
-
-BOOL CExampleExtensionAgent::GetToolTipMessageString(UINT nID, CString& rMessage) const
-{
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CString string;
-   // load appropriate string
-	if ( string.LoadString(nID) )
-	{
-		// tip is after first newline 
-      int pos = string.Find('\n');
-      if ( 0 < pos )
-         rMessage = string.Mid(pos+1);
-	}
-	else
-	{
-		// not found
-		TRACE1("Warning (CExampleExtensionAgent): no tool tip for ID 0x%04X.\n", nID);
-	}
-
-   return TRUE;
 }
 
 CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditBridgeData* pBridgeData)

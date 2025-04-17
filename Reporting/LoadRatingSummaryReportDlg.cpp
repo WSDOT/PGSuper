@@ -37,7 +37,7 @@
 #include <EAF\EAFDocument.h>
 
 #include <MFCTools\AutoRegistry.h>
-#include "..\PGSuperAppPlugin\PGSuperBaseAppPlugin.h"
+#include "..\PGSuperAppPlugin\PGSPluginAppBase.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -362,9 +362,10 @@ void CLoadRatingSummaryReportDlg::LoadSettings()
    // loads last settings from the registry
    CEAFDocument* pDoc = EAFGetDocument();
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)(pDoc->GetDocTemplate());
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
-   CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+#pragma Reminder("WORKING HERE - Removing COM")
+   // is there a better way to deal with this pointer cast?
+   auto pluginApp = pTemplate->GetPluginApp();
+   CPGSPluginAppBase* pPGSBase = dynamic_cast<CPGSPluginAppBase*>(pluginApp.get());
 
    CEAFApp* pApp = EAFGetApp();
    CAutoRegistry autoReg(pPGSBase->GetAppName(), pApp);
@@ -385,9 +386,10 @@ void CLoadRatingSummaryReportDlg::SaveSettings()
    // save settings to registry
    CEAFDocument* pDoc = EAFGetDocument();
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)(pDoc->GetDocTemplate());
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
-   CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+#pragma Reminder("WORKING HERE - Removing COM")
+   // is there a better way to deal with this pointer cast?
+   auto pluginApp = pTemplate->GetPluginApp();
+   CPGSPluginAppBase* pPGSBase = dynamic_cast<CPGSPluginAppBase*>(pluginApp.get());
 
    CEAFApp* pApp = EAFGetApp();
    CAutoRegistry autoReg(pPGSBase->GetAppName(), pApp);

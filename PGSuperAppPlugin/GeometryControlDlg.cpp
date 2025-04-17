@@ -23,7 +23,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "GeometryControlDlg.h"
 
 #include <EAF\EAFDisplayUnits.h>

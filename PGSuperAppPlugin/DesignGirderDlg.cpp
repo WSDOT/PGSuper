@@ -35,7 +35,7 @@
 #include <EAF\EAFDocument.h>
 
 #include <MFCTools\AutoRegistry.h>
-#include "PGSuperBaseAppPlugin.h"
+#include "PGSPluginAppBase.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -196,9 +196,10 @@ void CDesignGirderDlg::LoadSettings(arSlabOffsetDesignType haunchDesignRequest, 
    // loads last settings from the registry
    CEAFDocument* pDoc = EAFGetDocument();
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)(pDoc->GetDocTemplate());
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
-   CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+#pragma Reminder("WORKING HERE - Removing COM")
+   // This pointer casting seems problematic - review to see if there is a better way
+   auto pluginApp = pTemplate->GetPluginApp();
+   CPGSPluginAppBase* pPGSBase = dynamic_cast<CPGSPluginAppBase*>(pluginApp.get());
 
    CEAFApp* pApp = EAFGetApp();
    CAutoRegistry autoReg(pPGSBase->GetAppName(), pApp);
@@ -254,9 +255,10 @@ void CDesignGirderDlg::SaveSettings()
    // saves current settings to the registry
    CEAFDocument* pDoc = EAFGetDocument();
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)(pDoc->GetDocTemplate());
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
-   CPGSAppPluginBase* pPGSBase = dynamic_cast<CPGSAppPluginBase*>(pAppPlugin.p);
+#pragma Reminder("WORKING HERE - Removing COM")
+   // This pointer casting seems problematic - review to see if there is a better way
+   auto pluginApp = pTemplate->GetPluginApp();
+   CPGSPluginAppBase* pPGSBase = dynamic_cast<CPGSPluginAppBase*>(pluginApp.get());
 
    CEAFApp* pApp = EAFGetApp();
    CAutoRegistry autoReg(pPGSBase->GetAppName(), pApp);

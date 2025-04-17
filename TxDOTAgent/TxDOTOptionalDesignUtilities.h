@@ -41,7 +41,7 @@
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFApp.h>
 #include <EAF\EAFDocument.h>
-#include "TxDOTAppPlugin.h"
+#include "TOGAPluginApp.h"
 
 // LOCAL INCLUDES
 //
@@ -71,9 +71,10 @@ LOG
 inline CString GetTOGAFolder()
 {
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)EAFGetDocument()->GetDocTemplate();
-   CComPtr<IEAFAppPlugin> pAppPlugin;
-   pTemplate->GetPlugin(&pAppPlugin);
-   CTxDOTAppPlugin* pAppP = dynamic_cast<CTxDOTAppPlugin*>(pAppPlugin.p);
+#pragma Reminder("WORKING HERE - Removing COM")
+   // This pointer cast looks weird - see if there is a better way to do this
+   auto pluginApp = pTemplate->GetPluginApp();
+   auto* pAppP = dynamic_cast<CTOGAPluginApp*>(pluginApp.get());
 
    CString tfolder;
    pAppP->GetTemplateFolders(tfolder);

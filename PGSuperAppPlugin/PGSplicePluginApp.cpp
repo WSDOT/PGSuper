@@ -21,21 +21,21 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
-#include "PGSuperCatCom.h"
+#include "PGSplicePluginApp.h"
+#include "PGSpliceCatCom.h"
 #include "resource.h"
 
-#include "PGSuperDoc.h"
-#include "PGSuperDocTemplate.h"
+#include "PGSpliceDoc.h"
+#include "PGSpliceDocTemplate.h"
 #include "BridgeModelViewChildFrame.h"
 #include "BridgePlanView.h"
+#include <PsgLib\BeamFamilyManager.h>
 
-#include "PGSuperCommandLineInfo.h"
+#include "PGSpliceCommandLineInfo.h"
 
 #include "PluginManagerDlg.h"
 
 #include <EAF\EAFMainFrame.h>
-#include <EAF\EAFUtilities.h>
 
 #include <MFCTools\AutoRegistry.h>
 
@@ -46,78 +46,69 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 
-BEGIN_MESSAGE_MAP(CMyCmdTarget,CCmdTarget)
+
+BEGIN_MESSAGE_MAP(CPGSpliceAppCmdTarget,CCmdTarget)
    ON_COMMAND(ID_MANAGE_PLUGINS,OnConfigurePlugins)
-   ON_COMMAND(ID_UPDATE_TEMPLATE,OnUpdateTemplates) // need to map this into an accelerator table
+   ON_COMMAND(ID_UPDATE_TEMPLATE,OnUpdateTemplates)
 END_MESSAGE_MAP()
 
-void CMyCmdTarget::OnConfigurePlugins()
+void CPGSpliceAppCmdTarget::OnConfigurePlugins()
 {
    m_pMyAppPlugin->ConfigurePlugins();
 }
 
-void CMyCmdTarget::OnUpdateTemplates()
+void CPGSpliceAppCmdTarget::OnUpdateTemplates()
 {
    m_pMyAppPlugin->UpdateTemplates();
 }
 
-CString CPGSuperAppPlugin::GetTemplateFileExtension()
+
+//////////////////////////////////////////////////////////
+
+CString CPGSplicePluginApp::GetTemplateFileExtension()
 { 
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CString strTemplateSuffix;
-   VERIFY(strTemplateSuffix.LoadString(IDS_PGSUPER_TEMPLATE_FILE_SUFFIX));
+   VERIFY(strTemplateSuffix.LoadString(IDS_PGSPLICE_TEMPLATE_FILE_SUFFIX));
    ASSERT(!strTemplateSuffix.IsEmpty());
    return strTemplateSuffix;
 }
 
-const CRuntimeClass* CPGSuperAppPlugin::GetDocTemplateRuntimeClass()
+const CRuntimeClass* CPGSplicePluginApp::GetDocTemplateRuntimeClass()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   return RUNTIME_CLASS(CPGSuperDocTemplate);
+   return RUNTIME_CLASS(CPGSpliceDocTemplate);
 }
 
-HRESULT CPGSuperAppPlugin::FinalConstruct()
-{
-   return OnFinalConstruct(); // CPGSAppPluginBase
-}
-
-void CPGSuperAppPlugin::FinalRelease()
-{
-   OnFinalRelease(); // CPGSAppPluginBase
-}
-
-void CPGSuperAppPlugin::ConfigurePlugins()
+void CPGSplicePluginApp::ConfigurePlugins()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CAutoRegistry autoReg(GetAppName());
 
-   CPluginManagerDlg dlg(_T("Manage PGSuper Plugins and Extensions"),EAFGetMainFrame(),0,CATID_PGSuperDataImporter,CATID_PGSuperDataExporter,CATID_PGSuperExtensionAgent,GetAppName());
+   CPluginManagerDlg dlg(_T("Manage PGSplice Plugins and Extensions"),EAFGetMainFrame(),0,CATID_PGSpliceDataImporter,CATID_PGSpliceDataExporter,CATID_PGSpliceExtensionAgent,GetAppName());
    dlg.DoModal(); // this DoModal is correct... the dialog takes care of its own data
 }
 
-BOOL CPGSuperAppPlugin::Init(CEAFApp* pParent)
+BOOL CPGSplicePluginApp::Init(CEAFApp* pParent)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CWinApp* pMyApp = AfxGetApp();
 
-   DefaultInit(this);
+   InitCatalogServer();
 
-   // See MSKB Article ID: Q118435, "Sharing Menus Between MDI Child Windows"
-   m_hMenuShared = ::LoadMenu( pMyApp->m_hInstance, MAKEINTRESOURCE(IDR_PGSUPER) );
+   // See MSKB Article ID: Q118435, _T("Sharing Menus Between MDI Child Windows")
+   m_hMenuShared = ::LoadMenu( pMyApp->m_hInstance, MAKEINTRESOURCE(IDR_PGSPLICE) );
 
-   if (m_hMenuShared == nullptr)
-   {
+   if ( m_hMenuShared == nullptr )
       return FALSE;
-   }
 
    if (!EAFGetApp()->GetCommandLineInfo().m_bCommandLineMode && !EAFGetApp()->IsFirstRun())
    {
       // Don't update cache if there are other instances of bridgelink running. This avoids race condition on libraries and templates
       if (!EAFAreOtherProgramInstancesRunning())
       {
-         AFX_MANAGE_STATE(AfxGetStaticModuleState()); // need state of this dll
          UpdateCache(); // we don't want to do this if we are running in batch/command line mode or if this is the first run situation (because configuration will happen later)
       }
    }
@@ -125,14 +116,15 @@ BOOL CPGSuperAppPlugin::Init(CEAFApp* pParent)
    return TRUE;
 }
 
-void CPGSuperAppPlugin::Terminate()
+void CPGSplicePluginApp::Terminate()
 {
-   DefaultTerminate();
+   TerminateCatalogServer();
+
    // release the shared menu
    ::DestroyMenu( m_hMenuShared );
 }
 
-void CPGSuperAppPlugin::IntegrateWithUI(BOOL bIntegrate)
+void CPGSplicePluginApp::IntegrateWithUI(BOOL bIntegrate)
 {
    CEAFMainFrame* pFrame = EAFGetMainFrame();
    CEAFMenu* pMainMenu = pFrame->GetMainMenu();
@@ -143,99 +135,100 @@ void CPGSuperAppPlugin::IntegrateWithUI(BOOL bIntegrate)
    UINT managePos = pFileMenu->FindMenuItem(_T("Manage"));
    CEAFMenu* pManageMenu = pFileMenu->GetSubMenu(managePos);
 
+   auto callback = std::dynamic_pointer_cast<WBFL::EAF::ICommandCallback>(shared_from_this());
+
    if ( bIntegrate )
    {
       // Append to the end of the Manage menu
-      pManageMenu->AppendMenu(ID_MANAGE_PLUGINS,_T("PGSuper Plugins and Extensions..."),this);
+      pManageMenu->AppendMenu(ID_MANAGE_PLUGINS,_T("PGSplice Plugins and Extensions..."),callback);
 
-      // Alt+Ctrl+U
-      pFrame->GetAcceleratorTable()->AddAccelKey(FALT | FCONTROL | FVIRTKEY, VK_U, ID_UPDATE_TEMPLATE,this);
+      // Alt+Ctrl+I
+      pFrame->GetAcceleratorTable()->AddAccelKey(FALT | FCONTROL | FVIRTKEY, VK_I, ID_UPDATE_TEMPLATE,callback);
    }
    else
    {
-      pManageMenu->RemoveMenu(ID_MANAGE_PLUGINS,  MF_BYCOMMAND, this);
+      pManageMenu->RemoveMenu(ID_MANAGE_PLUGINS,  MF_BYCOMMAND, callback);
 
-      pFrame->GetAcceleratorTable()->RemoveAccelKey(ID_UPDATE_TEMPLATE,this);
+      pFrame->GetAcceleratorTable()->RemoveAccelKey(ID_UPDATE_TEMPLATE,callback);
    }
 }
 
-std::vector<CEAFDocTemplate*> CPGSuperAppPlugin::CreateDocTemplates()
+std::vector<CEAFDocTemplate*> CPGSplicePluginApp::CreateDocTemplates()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   std::vector<CEAFDocTemplate*> vDocTemplates;
-
-   std::unique_ptr<CPGSuperDocTemplate> pTemplate = std::make_unique<CPGSuperDocTemplate>(
-		IDR_PGSUPER,
+   CPGSpliceDocTemplate* pTemplate = new CPGSpliceDocTemplate(
+		IDR_PGSPLICE,
       nullptr,
-		RUNTIME_CLASS(CPGSuperDoc),
+		RUNTIME_CLASS(CPGSpliceDoc),
 		RUNTIME_CLASS(CBridgeModelViewChildFrame),
 		RUNTIME_CLASS(CBridgePlanView),
       m_hMenuShared,1);
 
-   vDocTemplates.push_back(pTemplate.release());
+   std::vector<CEAFDocTemplate*> vDocTemplates;
+   vDocTemplates.push_back(pTemplate);
    return vDocTemplates;
 }
 
-HMENU CPGSuperAppPlugin::GetSharedMenuHandle()
+HMENU CPGSplicePluginApp::GetSharedMenuHandle()
 {
    return m_hMenuShared;
 }
 
-CString CPGSuperAppPlugin::GetName()
+CString CPGSplicePluginApp::GetName()
 {
-   return CString(_T("PGSuper"));
+   return CString(_T("PGSplice"));
 }
 
-CString CPGSuperAppPlugin::GetDocumentationSetName()
+CString CPGSplicePluginApp::GetDocumentationSetName()
 {
    return GetName();
 }
 
-CString CPGSuperAppPlugin::GetDocumentationURL()
+CString CPGSplicePluginApp::GetDocumentationURL()
 {
-   return CPGSAppPluginBase::GetDocumentationURL();
+   return CPGSPluginAppBase::GetDocumentationURL();
 }
 
-CString CPGSuperAppPlugin::GetDocumentationMapFile()
+CString CPGSplicePluginApp::GetDocumentationMapFile()
 {
-   return CPGSAppPluginBase::GetDocumentationMapFile();
+   return CPGSPluginAppBase::GetDocumentationMapFile();
 }
 
-void CPGSuperAppPlugin::LoadDocumentationMap()
+void CPGSplicePluginApp::LoadDocumentationMap()
 {
-   return CPGSAppPluginBase::LoadDocumentationMap();
+   return CPGSPluginAppBase::LoadDocumentationMap();
 }
 
-eafTypes::HelpResult CPGSuperAppPlugin::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID,CString& strURL)
+eafTypes::HelpResult CPGSplicePluginApp::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID,CString& strURL)
 {
-   return CPGSAppPluginBase::GetDocumentLocation(lpszDocSetName,nID,strURL);
+   return CPGSPluginAppBase::GetDocumentLocation(lpszDocSetName,nID,strURL);
 }
 
-CString CPGSuperAppPlugin::GetCommandLineAppName() const
+CString CPGSplicePluginApp::GetCommandLineAppName() const
 {
    return GetAppName();
 }
 
-CString CPGSuperAppPlugin::GetUsageMessage()
+CString CPGSplicePluginApp::GetUsageMessage()
 {
-   CPGSuperCommandLineInfo pgsCmdInfo;
+   CPGSpliceCommandLineInfo pgsCmdInfo;
    return pgsCmdInfo.GetUsageMessage();
 }
 
-BOOL CPGSuperAppPlugin::ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo)
+BOOL CPGSplicePluginApp::ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo)
 {
    return DoProcessCommandLineOptions(cmdInfo);
 }
 
 //////////////////////////
 // IEAFCommandCallback
-BOOL CPGSuperAppPlugin::OnCommandMessage(UINT nID,int nCode,void* pExtra,AFX_CMDHANDLERINFO* pHandlerInfo)
+BOOL CPGSplicePluginApp::OnCommandMessage(UINT nID,int nCode,void* pExtra,AFX_CMDHANDLERINFO* pHandlerInfo)
 {
    return m_MyCmdTarget.OnCmdMsg(nID,nCode,pExtra,pHandlerInfo);
 }
 
-BOOL CPGSuperAppPlugin::GetStatusBarMessageString(UINT nID, CString& rMessage) const
+BOOL CPGSplicePluginApp::GetStatusBarMessageString(UINT nID, CString& rMessage) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -243,18 +236,18 @@ BOOL CPGSuperAppPlugin::GetStatusBarMessageString(UINT nID, CString& rMessage) c
 	if ( rMessage.LoadString(nID) )
 	{
 		// first newline terminates actual string
-      rMessage.Replace(_T('\n'),_T('\0'));
+      rMessage.Replace('\n','\0');
 	}
 	else
 	{
 		// not found
-		TRACE1("Warning (CPGSuperAppPlugin): no message line prompt for ID %d.\n", nID);
+		TRACE1("Warning (CPGSplicePluginApp): no message line prompt for ID %d.\n", nID);
 	}
 
    return TRUE;
 }
 
-BOOL CPGSuperAppPlugin::GetToolTipMessageString(UINT nID, CString& rMessage) const
+BOOL CPGSplicePluginApp::GetToolTipMessageString(UINT nID, CString& rMessage) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CString string;
@@ -269,18 +262,17 @@ BOOL CPGSuperAppPlugin::GetToolTipMessageString(UINT nID, CString& rMessage) con
 	else
 	{
 		// not found
-		TRACE1("Warning (CPGSuperAppPlugin): no tool tip for ID %d.\n", nID);
+		TRACE1("Warning (CPGSplicePluginApp): no tool tip for ID %d.\n", nID);
 	}
 
    return TRUE;
 }
 
-void CPGSuperAppPlugin::UpdateTemplates()
+void CPGSplicePluginApp::UpdateTemplates()
 {
    USES_CONVERSION;
 
    CAutoRegistry autoReg(GetAppName());
-
    CEAFApp* pApp = EAFGetApp();
 
    int result = AfxMessageBox(_T("All of the template library entries will be updated to match the Master Library.\n\nDo you want to proceed?"),MB_YESNO);
@@ -319,7 +311,7 @@ void CPGSuperAppPlugin::UpdateTemplates()
    const int nID = 1;
    CATID ID[nID];
 
-   ID[0] = CATID_PGSuperExtensionAgent;
+   ID[0] = CATID_PGSpliceExtensionAgent;
    pICatInfo->EnumClassesOfCategories(nID,ID,0,nullptr,&pIEnumCLSID);
 
    const int nPlugins = 5;
@@ -350,14 +342,14 @@ void CPGSuperAppPlugin::UpdateTemplates()
    CDocTemplate* pTemplate = pApp->GetNextDocTemplate(pos);
    while ( pTemplate )
    {
-      if ( pTemplate->IsKindOf(RUNTIME_CLASS(CPGSuperDocTemplate)) )
+      if ( pTemplate->IsKindOf(RUNTIME_CLASS(CPGSpliceDocTemplate)) )
       {
-         CPGSuperDoc* pPGSuperDoc = (CPGSuperDoc*)pTemplate->CreateNewDocument();
-         pPGSuperDoc->m_bAutoDelete = false;
+         CPGSpliceDoc* pPGSpliceDoc = (CPGSpliceDoc*)pTemplate->CreateNewDocument();
+         pPGSpliceDoc->m_bAutoDelete = false;
 
-         pPGSuperDoc->UpdateTemplates();
+         pPGSpliceDoc->UpdateTemplates();
 
-         delete pPGSuperDoc;
+         delete pPGSpliceDoc;
          break;
       }
 
@@ -374,58 +366,12 @@ void CPGSuperAppPlugin::UpdateTemplates()
    }
 }
 
-bool CPGSuperAppPlugin::UpdatingTemplates()
+bool CPGSplicePluginApp::UpdatingTemplates()
 {
    return m_bUpdatingTemplate;
 }
 
-CEAFCommandLineInfo* CPGSuperAppPlugin::CreateCommandLineInfo() const
+CEAFCommandLineInfo* CPGSplicePluginApp::CreateCommandLineInfo() const
 {
-   return new CPGSuperCommandLineInfo();
-}
-
-LPCTSTR CPGSuperAppPlugin::GetCatalogServerKey() const
-{
-   return _T("CatalogServer2");
-}
-
-LPCTSTR CPGSuperAppPlugin::GetPublisherKey() const
-{
-   return _T("Publisher2");
-}
-
-LPCTSTR CPGSuperAppPlugin::GetMasterLibraryCacheKey() const
-{
-   return _T("MasterLibraryCache2");
-}
-
-LPCTSTR CPGSuperAppPlugin::GetMasterLibraryURLKey() const
-{
-   return _T("MasterLibraryURL2");
-}
-
-LPCTSTR CPGSuperAppPlugin::GetWorkgroupTemplatesCacheKey() const
-{
-   return _T("WorkgroupTemplatesCache2");
-}
-
-CString CPGSuperAppPlugin::GetCacheFolder() const
-{
-   CAutoRegistry autoReg(GetAppName());
-
-   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   CWinApp* pMyApp     = AfxGetApp();
-   CEAFApp* pParentApp = EAFGetApp();
-
-   LPWSTR path;
-   HRESULT hr = ::SHGetKnownFolderPath(FOLDERID_RoamingAppData, KF_FLAG_DEFAULT, NULL, &path);
-
-   if ( SUCCEEDED(hr) )
-   {
-      return CString(path) + CString(_T("\\PGSuperV3\\"));
-   }
-   else
-   {
-      return pParentApp->GetAppLocation() + CString(_T("PGSuperV3\\"));
-   }
+   return new CPGSpliceCommandLineInfo();
 }

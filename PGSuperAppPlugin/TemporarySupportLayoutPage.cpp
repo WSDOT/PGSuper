@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "resource.h"
 #include "TemporarySupportDlg.h"
 #include "TemporarySupportLayoutPage.h"

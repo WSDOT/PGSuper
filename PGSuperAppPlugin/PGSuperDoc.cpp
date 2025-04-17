@@ -25,7 +25,7 @@
 #include "stdafx.h"
 #include "PGSuperDoc.h"
 #include "PGSuperApp.h"
-#include "PGSuperBaseAppPlugin.h"
+#include "PGSPluginAppBase.h"
 
 #include <PgsExt\BridgeDescription2.h>
 #include <EAF\EAFAutoProgress.h>

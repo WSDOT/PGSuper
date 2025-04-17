@@ -23,7 +23,7 @@
 #include "StdAfx.h"
 #include "TxDOTOptionalDesignDocProxyAgent.h"
 #include "TxDOTOptionalDesignDoc.h"
-#include "TxDOTAppPlugin.h"
+#include "TOGAPluginApp.h"
 #include "TxDOTOptionalDesignUtilities.h"
 
 #include "resource.h"

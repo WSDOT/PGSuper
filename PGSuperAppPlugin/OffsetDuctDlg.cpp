@@ -2,7 +2,7 @@
 //
 
 #include "stdafx.h"
-#include "PGSuperAppPlugin.h"
+#include "PGSuperPluginApp.h"
 #include "OffsetDuctDlg.h"
 
 #ifdef _DEBUG

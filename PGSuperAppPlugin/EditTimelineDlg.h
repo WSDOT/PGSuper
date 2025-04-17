@@ -23,6 +23,7 @@
 
 #include "TimelineGrid.h"
 #include <PgsExt\TimelineManager.h>
+#include "resource.h"
 
 // CEditTimelineDlg dialog
 
