@@ -29,20 +29,7 @@
 
 class CPGSuperPluginApp;
 
-class CMyCmdTarget : public CCmdTarget
-{
-public:
-   CMyCmdTarget() {};
-
-   afx_msg void OnConfigurePlugins();
-   afx_msg void OnUpdateTemplates();
-
-   CPGSuperPluginApp* m_pMyAppPlugin;
-
-   DECLARE_MESSAGE_MAP()
-};
-
-class CPGSuperPluginApp : public CPGSPluginAppBase,
+class CPGSuperPluginApp : public CCmdTarget, public CPGSPluginAppBase,
    public WBFL::EAF::IPluginApp,
    public WBFL::EAF::IAppCommandLine,
    public WBFL::EAF::ICommandCallback
@@ -50,8 +37,6 @@ class CPGSuperPluginApp : public CPGSPluginAppBase,
 public:
    CPGSuperPluginApp()
    {
-      m_MyCmdTarget.m_pMyAppPlugin = this;
-
       m_bUpdatingTemplate = false;
    }
 
@@ -63,8 +48,12 @@ public:
 
 private:
    HMENU m_hMenuShared;
-   CMyCmdTarget m_MyCmdTarget;
    bool m_bUpdatingTemplate;
+
+   afx_msg void OnConfigurePlugins();
+   afx_msg void OnUpdateTemplates();
+
+   DECLARE_MESSAGE_MAP()
 
 public:
    void ConfigurePlugins();

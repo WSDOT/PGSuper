@@ -39,26 +39,20 @@
 
 #include <MFCTools\AutoRegistry.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-
-BEGIN_MESSAGE_MAP(CMyCmdTarget,CCmdTarget)
+BEGIN_MESSAGE_MAP(CPGSuperPluginApp,CCmdTarget)
    ON_COMMAND(ID_MANAGE_PLUGINS,OnConfigurePlugins)
    ON_COMMAND(ID_UPDATE_TEMPLATE,OnUpdateTemplates) // need to map this into an accelerator table
 END_MESSAGE_MAP()
 
-void CMyCmdTarget::OnConfigurePlugins()
+void CPGSuperPluginApp::OnConfigurePlugins()
 {
-   m_pMyAppPlugin->ConfigurePlugins();
+   ConfigurePlugins();
 }
 
-void CMyCmdTarget::OnUpdateTemplates()
+void CPGSuperPluginApp::OnUpdateTemplates()
 {
-   m_pMyAppPlugin->UpdateTemplates();
+   UpdateTemplates();
 }
 
 CString CPGSuperPluginApp::GetTemplateFileExtension()
@@ -225,7 +219,7 @@ BOOL CPGSuperPluginApp::ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo)
 // IEAFCommandCallback
 BOOL CPGSuperPluginApp::OnCommandMessage(UINT nID,int nCode,void* pExtra,AFX_CMDHANDLERINFO* pHandlerInfo)
 {
-   return m_MyCmdTarget.OnCmdMsg(nID,nCode,pExtra,pHandlerInfo);
+   return OnCmdMsg(nID,nCode,pExtra,pHandlerInfo);
 }
 
 BOOL CPGSuperPluginApp::GetStatusBarMessageString(UINT nID, CString& rMessage) const
@@ -295,7 +289,7 @@ void CPGSuperPluginApp::UpdateTemplates()
 
    // take note of the state of all extension agents
    // disable all extension agents
-   // NOTE: This only changes the values in the registery... the actual extensions are not
+   // NOTE: This only changes the values in the registry... the actual extensions are not
    // unloaded and disabled... this is a bug
    std::vector<std::pair<CString,CString>> extension_states;
    CComPtr<ICatRegister> pICatReg;

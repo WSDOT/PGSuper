@@ -47,19 +47,19 @@ static char THIS_FILE[] = __FILE__;
 
 
 
-BEGIN_MESSAGE_MAP(CPGSpliceAppCmdTarget,CCmdTarget)
+BEGIN_MESSAGE_MAP(CPGSplicePluginApp,CCmdTarget)
    ON_COMMAND(ID_MANAGE_PLUGINS,OnConfigurePlugins)
    ON_COMMAND(ID_UPDATE_TEMPLATE,OnUpdateTemplates)
 END_MESSAGE_MAP()
 
-void CPGSpliceAppCmdTarget::OnConfigurePlugins()
+void CPGSplicePluginApp::OnConfigurePlugins()
 {
-   m_pMyAppPlugin->ConfigurePlugins();
+   ConfigurePlugins();
 }
 
-void CPGSpliceAppCmdTarget::OnUpdateTemplates()
+void CPGSplicePluginApp::OnUpdateTemplates()
 {
-   m_pMyAppPlugin->UpdateTemplates();
+   UpdateTemplates();
 }
 
 
@@ -225,7 +225,7 @@ BOOL CPGSplicePluginApp::ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo)
 // IEAFCommandCallback
 BOOL CPGSplicePluginApp::OnCommandMessage(UINT nID,int nCode,void* pExtra,AFX_CMDHANDLERINFO* pHandlerInfo)
 {
-   return m_MyCmdTarget.OnCmdMsg(nID,nCode,pExtra,pHandlerInfo);
+   return OnCmdMsg(nID,nCode,pExtra,pHandlerInfo);
 }
 
 BOOL CPGSplicePluginApp::GetStatusBarMessageString(UINT nID, CString& rMessage) const

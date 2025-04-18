@@ -28,20 +28,7 @@
 
 class CPGSplicePluginApp;
 
-class CPGSpliceAppCmdTarget : public CCmdTarget
-{
-public:
-   CPGSpliceAppCmdTarget() {};
-
-   afx_msg void OnConfigurePlugins();
-   afx_msg void OnUpdateTemplates();
-
-   CPGSplicePluginApp* m_pMyAppPlugin;
-
-   DECLARE_MESSAGE_MAP()
-};
-
-class CPGSplicePluginApp : public CPGSPluginAppBase,
+class CPGSplicePluginApp : public CCmdTarget, public CPGSPluginAppBase,
    public WBFL::EAF::IPluginApp,
    public WBFL::EAF::IAppCommandLine,
    public WBFL::EAF::ICommandCallback
@@ -49,8 +36,6 @@ class CPGSplicePluginApp : public CPGSPluginAppBase,
 public:
    CPGSplicePluginApp()
    {
-      m_MyCmdTarget.m_pMyAppPlugin = this;
-
       m_bUpdatingTemplate = false;
    }
 
@@ -62,8 +47,12 @@ public:
 
 private:
    HMENU m_hMenuShared;
-   CPGSpliceAppCmdTarget m_MyCmdTarget;
    bool m_bUpdatingTemplate;
+
+   afx_msg void OnConfigurePlugins();
+   afx_msg void OnUpdateTemplates();
+
+   DECLARE_MESSAGE_MAP()
 
 public:
    void ConfigurePlugins();
