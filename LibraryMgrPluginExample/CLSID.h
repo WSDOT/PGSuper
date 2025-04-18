@@ -20,46 +20,11 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// dllmain.cpp : Implementation of DllMain.
+#pragma once
 
-#include "stdafx.h"
-#include "resource.h"
-#include "CLSID.h"
-#include "dllmain.h"
+#include <initguid.h>
 
-#include "LibMgrDocPlugin.h"
-#include <EAF\ComponentModule.h>
+// {894AE5FD-E157-4935-A1C6-2E032CF014A6}
+DEFINE_GUID(CLSID_LibMgrDocPlugin,
+   0x894ae5fd, 0xe157, 0x4395, 0xa1, 0xc6, 0x2e, 0x03, 0x2c, 0xf0, 0x14, 0xa6);
 
-WBFL::EAF::ComponentModule Module_;
-
-EAF_BEGIN_OBJECT_MAP(ObjectMap)
-   EAF_OBJECT_ENTRY(CLSID_LibMgrDocPlugin, LibraryMgr::ExampleDocPlugin)
-EAF_END_OBJECT_MAP()
-
-class CLibraryMgrPluginExampleApp : public CWinApp
-{
-public:
-
-// Overrides
-	virtual BOOL InitInstance() override;
-	virtual int ExitInstance() override;
-
-	DECLARE_MESSAGE_MAP()
-};
-
-BEGIN_MESSAGE_MAP(CLibraryMgrPluginExampleApp, CWinApp)
-END_MESSAGE_MAP()
-
-CLibraryMgrPluginExampleApp theApp;
-
-BOOL CLibraryMgrPluginExampleApp::InitInstance()
-{
-   Module_.Init(ObjectMap);
-   return CWinApp::InitInstance();
-}
-
-int CLibraryMgrPluginExampleApp::ExitInstance()
-{
-   Module_.Term();
-	return CWinApp::ExitInstance();
-}

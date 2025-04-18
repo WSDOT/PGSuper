@@ -39,34 +39,34 @@
 interface IBridgePlanViewEventCallback
 {
    /// @brief called when a context menu is created in the background of the view
-   virtual void OnBackgroundContextMenu(CEAFMenu* pMenu) = 0;
+   virtual void OnBackgroundContextMenu(std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
    /// @brief called when a context menu is created for a pier
-   virtual void OnPierContextMenu(PierIndexType pierIdx,CEAFMenu* pMenu) = 0;
+   virtual void OnPierContextMenu(PierIndexType pierIdx, std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
    /// @brief called when a context menu is created for a span
-   virtual void OnSpanContextMenu(SpanIndexType spanIdx,CEAFMenu* pMenu) = 0;
+   virtual void OnSpanContextMenu(SpanIndexType spanIdx, std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
    /// @brief called when a context menu is created for a girder
-   virtual void OnGirderContextMenu(const CGirderKey& girderKey,CEAFMenu* pMenu) = 0;
+   virtual void OnGirderContextMenu(const CGirderKey& girderKey, std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
    /// @brief called when a context menu is created for the deck
-   virtual void OnDeckContextMenu(CEAFMenu* pMenu) = 0;
+   virtual void OnDeckContextMenu(std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
    /// @brief called when a context menu is created for the alignment
-   virtual void OnAlignmentContextMenu(CEAFMenu* pMenu) = 0;
+   virtual void OnAlignmentContextMenu(std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
    /// @brief called when a context menu is created for the section cut object
-   virtual void OnSectionCutContextMenu(CEAFMenu* pMenu) = 0;
+   virtual void OnSectionCutContextMenu(std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
    /// @brief called when a context menu is created for a temporary support
-   virtual void OnTemporarySupportContextMenu(SupportIDType tsID,CEAFMenu* pMenu) = 0;
+   virtual void OnTemporarySupportContextMenu(SupportIDType tsID, std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
    /// @brief called when a context menu is created for a girder segment
-   virtual void OnGirderSegmentContextMenu(const CSegmentKey& segmentKey,CEAFMenu* pMenu) = 0;
+   virtual void OnGirderSegmentContextMenu(const CSegmentKey& segmentKey, std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
    /// @brief called when a context menu is created for a closure joint
-   virtual void OnClosureJointContextMenu(const CSegmentKey& closureKey,CEAFMenu* pMenu) = 0;
+   virtual void OnClosureJointContextMenu(const CSegmentKey& closureKey, std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 };
 
 
@@ -74,39 +74,39 @@ interface IBridgePlanViewEventCallback
 interface IBridgeSectionViewEventCallback
 {
    /// @brief called when a context menu is created in the view background
-   virtual void OnBackgroundContextMenu(CEAFMenu* pMenu) = 0;
+   virtual void OnBackgroundContextMenu(std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
    /// @brief called when a context menu is created for a girder
-   virtual void OnGirderContextMenu(const CGirderKey& girderKey,CEAFMenu* pMenu) = 0;
+   virtual void OnGirderContextMenu(const CGirderKey& girderKey, std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
    /// @brief called when a context menu is created for the bridge deck
-   virtual void OnDeckContextMenu(CEAFMenu* pMenu) = 0;
+   virtual void OnDeckContextMenu(std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 };
 
 /// @brief callback interface for the Alignment Plan View
 interface IAlignmentPlanViewEventCallback
 {
    /// @brief called when a context menu is created in the view background
-   virtual void OnBackgroundContextMenu(CEAFMenu* pMenu) = 0;
+   virtual void OnBackgroundContextMenu(std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
    /// @brief called when a context menu is created for the alignment
-   virtual void OnAlignmentContextMenu(CEAFMenu* pMenu) = 0;
+   virtual void OnAlignmentContextMenu(std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
    /// @brief called when a context menu is created for the bridge
-   virtual void OnBridgeContextMenu(CEAFMenu* pMenu) = 0;
+   virtual void OnBridgeContextMenu(std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 };
 
 /// @brief callback interface for the Alignment Profile View
 interface IAlignmentProfileViewEventCallback
 {
    /// @brief called when a context menu is created in the view background
-   virtual void OnBackgroundContextMenu(CEAFMenu* pMenu) = 0;
+   virtual void OnBackgroundContextMenu(std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
    /// @brief called when a context menu is created for the profile
-   virtual void OnProfileContextMenu(CEAFMenu* pMenu) = 0;
+   virtual void OnProfileContextMenu(std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
    /// @brief called when a context menu is created for the bridge
-   virtual void OnBridgeContextMenu(CEAFMenu* pMenu) = 0;
+   virtual void OnBridgeContextMenu(std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 };
 
 
@@ -114,20 +114,20 @@ interface IAlignmentProfileViewEventCallback
 interface IGirderElevationViewEventCallback
 {
    /// @brief called when a context menu is created in the view background
-   virtual void OnBackgroundContextMenu(CEAFMenu* pMenu) = 0;
+   virtual void OnBackgroundContextMenu(std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
    /// @brief called when a context menu is created for a girder segment
-   virtual void OnGirderSegmentContextMenu(const CSegmentKey& segmentKey, CEAFMenu* pMenu) = 0;
+   virtual void OnGirderSegmentContextMenu(const CSegmentKey& segmentKey, std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 };
 
 /// @brief callback interface for the Girder Section View
 interface IGirderSectionViewEventCallback
 {
    /// @brief called when a context menu is created in the view background
-   virtual void OnBackgroundContextMenu(CEAFMenu* pMenu) = 0;
+   virtual void OnBackgroundContextMenu(std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
    /// @brief called when a context menu is created in the girder section
-   virtual void OnGirderSectionContextMenu(const pgsPointOfInterest& poi, CEAFMenu* pMenu) = 0;
+   virtual void OnGirderSectionContextMenu(const pgsPointOfInterest& poi, std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 };
 
 // {EB057BFE-3A37-48af-8F19-80465DBA2A14}

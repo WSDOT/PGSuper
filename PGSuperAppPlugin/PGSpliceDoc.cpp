@@ -162,7 +162,7 @@ void CPGSpliceDoc::DoIntegrateWithUI(BOOL bIntegrate)
       UINT nID = m_pPGSuperDocProxyAgent->GetStdToolBarID();
 
       GET_IFACE(IEAFToolbars,pToolBars);
-      CEAFToolBar* pToolBar = pToolBars->GetToolBar(nID);
+      auto pToolBar = pToolBars->GetToolBar(nID);
       pToolBar->CreateDropDownButton(ID_EDIT_SEGMENT,nullptr,BTNS_WHOLEDROPDOWN);
    }
 }
@@ -210,17 +210,17 @@ BOOL CPGSpliceDoc::OnEditGirderDropDown(NMHDR* pnmhdr,LRESULT* plr)
    VERIFY( menu.LoadMenu(IDR_EDIT_GIRDER) );
    CMenu* pMenu = menu.GetSubMenu(0);
 
-   CEAFMenu contextMenu(pMenu->Detach(),GetPluginCommandManager());
+   auto contextMenu = WBFL::EAF::Menu::CreateMenu(pMenu->Detach(),GetPluginCommandManager());
 
    GET_IFACE(IEAFToolbars,pToolBars);
-   CEAFToolBar* pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
+   auto pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
    int idx = pToolBar->CommandToIndex(ID_EDIT_SEGMENT,nullptr);
    CRect rect;
    pToolBar->GetItemRect(idx,&rect);
 
    CPoint point(rect.left,rect.bottom);
    pToolBar->ClientToScreen(&point);
-   contextMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, point.x,point.y, EAFGetMainFrame() );
+   contextMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, point.x,point.y, EAFGetMainFrame() );
 
    return TRUE;
 }
@@ -578,25 +578,25 @@ BOOL CPGSpliceDoc::OnCopyTempSupportPropsTb(NMHDR* pnmhdr,LRESULT* plr)
    CMenu* pMenu = menu.GetSubMenu(0);
    pMenu->RemoveMenu(0,MF_BYPOSITION); // remove the placeholder
 
-   CEAFMenu contextMenu(pMenu->Detach(),GetPluginCommandManager());
+   auto contextMenu = WBFL::EAF::Menu::CreateMenu(pMenu->Detach(),GetPluginCommandManager());
 
    int i = 0;
    for (const auto& ICallBack : m_CopyTempSupportPropertiesCallbacks)
    {
       UINT nCmd = i++ + FIRST_COPY_TEMP_SUP_PLUGIN;
       CString copyName = _T("Copy ") + CString(ICallBack.second->GetName());
-      contextMenu.AppendMenu(nCmd, copyName, nullptr);
+      contextMenu->AppendMenu(nCmd, copyName, nullptr);
    }
 
    GET_IFACE(IEAFToolbars,pToolBars);
-   CEAFToolBar* pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
+   auto pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
    int idx = pToolBar->CommandToIndex(ID_COPY_TEMPSUPPORT_PROPS,nullptr);
    CRect rect;
    pToolBar->GetItemRect(idx,&rect);
 
    CPoint point(rect.left,rect.bottom);
    pToolBar->ClientToScreen(&point);
-   contextMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, point.x,point.y, EAFGetMainFrame() );
+   contextMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, point.x,point.y, EAFGetMainFrame() );
 
    return TRUE;
 }
@@ -755,7 +755,7 @@ bool CPGSpliceDoc::EditTemporarySupportDescription(SupportIDType tsID,int nPage)
 {
    // NOTE: in the future, if we handle temporary shorting towers in PGSuper,
    // we will want to move this to the base document class so that one
-   // thoe takes care of all the editing needs
+   // function takes care of all the editing needs
 
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -806,9 +806,9 @@ BOOL CPGSpliceDoc::InitMainMenu()
 
    // PGSplice Documents don't use the concentrated moment load
    // Remove it from the Loads menu
-   CEAFMenu* pMainMenu = GetMainMenu();
+   auto pMainMenu = GetMainMenu();
    UINT position = pMainMenu->FindMenuItem(_T("L&oads"));
-   CEAFMenu* pLoadMenu = pMainMenu->GetSubMenu(position);
+   auto pLoadMenu = pMainMenu->GetSubMenu(position);
    pLoadMenu->RemoveMenu(ID_ADD_MOMENT_LOAD,MF_BYCOMMAND,nullptr);
 
    PopulateCopyTempSupportMenu();

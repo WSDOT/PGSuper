@@ -31,7 +31,7 @@
 
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDocTemplate.h>
-#include <EAF\EAFMenu.h>
+#include <EAF\Menu.h>
 
 
 // CMyView
@@ -94,7 +94,7 @@ void CMyView::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
    GET_IFACE2(pBroker,IEAFMainMenu,pUI);
-   CEAFMenu* pMenu = pUI->CreateContextMenu();
+   auto pMenu = pUI->CreateContextMenu();
    
    // Load the context menu resource. By using nullptr as the command callback, all commands
    // on the context menu (as defined by the menu resource) are routed directly back to this view

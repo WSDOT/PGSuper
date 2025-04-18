@@ -232,13 +232,13 @@ void CPGSProjectImporterPluginAppBase::Terminate()
 void CPGSProjectImporterPluginAppBase::IntegrateWithUI(BOOL bIntegrate)
 {
    CEAFMainFrame* pFrame = EAFGetMainFrame();
-   CEAFMenu* pMainMenu = pFrame->GetMainMenu();
+   auto pMainMenu = pFrame->GetMainMenu();
 
    UINT filePos = pMainMenu->FindMenuItem(_T("&File"));
-   CEAFMenu* pFileMenu = pMainMenu->GetSubMenu(filePos);
+   auto pFileMenu = pMainMenu->GetSubMenu(filePos);
 
    UINT managePos = pFileMenu->FindMenuItem(_T("Manage"));
-   CEAFMenu* pManageMenu = pFileMenu->GetSubMenu(managePos);
+   auto pManageMenu = pFileMenu->GetSubMenu(managePos);
 
    auto callback = std::dynamic_pointer_cast<WBFL::EAF::ICommandCallback>(shared_from_this());
 

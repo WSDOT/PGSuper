@@ -88,7 +88,6 @@ END_MESSAGE_MAP()
 CLibraryEditorDoc::CLibraryEditorDoc()
 {
    m_LibraryManager.SetName(_T("Master Libraries"));
-   m_pMyToolBar = nullptr;
 
    // library editor doesn't use the status center
    CEAFStatusCenter& status_center = GetStatusCenter();
@@ -172,9 +171,9 @@ void CLibraryEditorDoc::DoIntegrateWithUI(BOOL bIntegrate)
       {
          AFX_MANAGE_STATE(AfxGetStaticModuleState());
          UINT tbID = pFrame->CreateToolBar(_T("Library"), GetPluginCommandManager());
-         m_pMyToolBar = pFrame->GetToolBar(tbID);
-         m_pMyToolBar->LoadToolBar(IDR_LIBEDITORTOOLBAR, nullptr);
-         m_pMyToolBar->CreateDropDownButton(ID_FILE_OPEN, nullptr, BTNS_DROPDOWN);
+         m_MyToolBar = pFrame->GetToolBar(tbID);
+         m_MyToolBar->LoadToolBar(IDR_LIBEDITORTOOLBAR, nullptr);
+         m_MyToolBar->CreateDropDownButton(ID_FILE_OPEN, nullptr, BTNS_DROPDOWN);
       }
 
       // use our status bar
@@ -185,8 +184,8 @@ void CLibraryEditorDoc::DoIntegrateWithUI(BOOL bIntegrate)
    else
    {
       // remove toolbar here
-      pFrame->DestroyToolBar(m_pMyToolBar);
-      m_pMyToolBar = nullptr;
+      pFrame->DestroyToolBar(m_MyToolBar->GetToolBarID());
+      m_MyToolBar = nullptr;
 
       // reset the status bar
       pFrame->SetStatusBar(nullptr);

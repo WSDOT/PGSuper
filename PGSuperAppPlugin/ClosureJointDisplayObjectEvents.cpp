@@ -203,7 +203,7 @@ bool CClosureJointDisplayObjectEvents::OnContextMenu(std::shared_ptr<WBFL::DMani
       auto pView = pDO->GetDisplayList()->GetDisplayMgr()->GetView();
       CPGSpliceDoc* pDoc = (CPGSpliceDoc*)pView->GetDocument();
 
-      CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+      auto pMenu = WBFL::EAF::Menu::CreateContextMenu(pDoc->GetPluginCommandManager());
       pMenu->AppendMenu(ID_EDIT_CLOSURE,_T("Edit"),nullptr);
 
       std::map<IDType,IBridgePlanViewEventCallback*> callbacks = pDoc->GetBridgePlanViewCallbacks();
@@ -215,8 +215,6 @@ bool CClosureJointDisplayObjectEvents::OnContextMenu(std::shared_ptr<WBFL::DMani
       }
 
       pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,m_pFrame);
-
-      delete pMenu;
 
       return true;
    }

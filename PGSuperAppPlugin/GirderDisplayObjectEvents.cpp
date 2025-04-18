@@ -219,7 +219,7 @@ bool CBridgePlanViewGirderDisplayObjectEvents::OnContextMenu(std::shared_ptr<iDi
 
       CPGSDocBase* pPGSDoc = (CPGSDocBase*)pDoc;
 
-      CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pPGSDoc->GetPluginCommandManager());
+      auto pMenu = WBFL::EAF::Menu::CreateContextMenu(pPGSDoc->GetPluginCommandManager());
       pMenu->LoadMenu(IDR_SELECTED_GIRDER_CONTEXT,nullptr);
 
       if ( pPGSDoc->IsKindOf(RUNTIME_CLASS(CPGSpliceDoc)) )
@@ -245,8 +245,6 @@ bool CBridgePlanViewGirderDisplayObjectEvents::OnContextMenu(std::shared_ptr<iDi
       }
 
       pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,m_pFrame);
-
-      delete pMenu;
 
       return true;
    }
@@ -344,7 +342,7 @@ void CBridgePlanViewSegmentDisplayObjectEvents::SelectNextSegment()
 {
    if ( m_SegmentKey.segmentIndex == m_nSegments-1 )
    {
-      // this is the last segment, select the entire girderline
+      // this is the last segment, select the entire girder line
       CGirderKey girderKey(m_SegmentKey.groupIndex,m_SegmentKey.girderIndex);
       m_pFrame->SelectGirder(girderKey);
    }
@@ -360,7 +358,7 @@ void CBridgePlanViewSegmentDisplayObjectEvents::SelectAdjacentPrevSegment()
 {
    if ( m_SegmentKey.girderIndex == 0 )
    {
-      // this is the left-most girderline... 
+      // this is the left-most girder line... 
       if ( m_SegmentKey.segmentIndex == 0 )
       {
          //there are no more segments to select... select the alignment
@@ -368,7 +366,7 @@ void CBridgePlanViewSegmentDisplayObjectEvents::SelectAdjacentPrevSegment()
       }
       else
       {
-         // select the closure joint at the right end of the previous segment in the right-most girderline
+         // select the closure joint at the right end of the previous segment in the right-most girder line
          CSegmentKey closureKey(m_SegmentKey.groupIndex,m_nGirders-1,m_SegmentKey.segmentIndex-1);
          m_pFrame->SelectClosureJoint(closureKey);
       }
@@ -385,23 +383,23 @@ void CBridgePlanViewSegmentDisplayObjectEvents::SelectAdjacentNextSegment()
 {
    if ( m_SegmentKey.girderIndex == m_nGirders-1 )
    {
-      // this segment is in the right-most girderline... 
+      // this segment is in the right-most girder line... 
       if ( m_SegmentKey.segmentIndex == m_nSegments-1 )
       {
-         // there are no more segments to select... select the left-most girderline
+         // there are no more segments to select... select the left-most girder line
          CGirderKey girderKey(m_SegmentKey.groupIndex,0);
          m_pFrame->SelectGirder(girderKey);
       }
       else
       {
-         // select the closure joint at the end of the this segment in the left-most girderline
+         // select the closure joint at the end of the this segment in the left-most girder line
          CSegmentKey closureKey(m_SegmentKey.groupIndex,0,m_SegmentKey.segmentIndex);
          m_pFrame->SelectClosureJoint(closureKey);
       }
    }
    else
    {
-      // select corresponding segment in next girderline to the right
+      // select corresponding segment in next girder line to the right
       CSegmentKey segmentKey(m_SegmentKey.groupIndex,m_SegmentKey.girderIndex+1,m_SegmentKey.segmentIndex);
       m_pFrame->SelectSegment(segmentKey);
    }
@@ -509,7 +507,7 @@ bool CBridgePlanViewSegmentDisplayObjectEvents::OnContextMenu(std::shared_ptr<iD
 
       CPGSDocBase* pPGSuperDoc = (CPGSDocBase*)pDoc;
 
-      CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pPGSuperDoc->GetPluginCommandManager());
+      auto pMenu = WBFL::EAF::Menu::CreateContextMenu(pPGSuperDoc->GetPluginCommandManager());
       if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
       {
          pMenu->LoadMenu(IDR_SELECTED_GIRDER_CONTEXT,nullptr);
@@ -530,8 +528,6 @@ bool CBridgePlanViewSegmentDisplayObjectEvents::OnContextMenu(std::shared_ptr<iD
       }
 
       pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,m_pFrame);
-
-      delete pMenu;
 
       return true;
    }
@@ -712,7 +708,7 @@ bool CBridgeSectionViewGirderDisplayObjectEvents::OnContextMenu(std::shared_ptr<
    {
       CEAFDocument* pDoc = EAFGetDocument();
 
-      CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+      auto pMenu = WBFL::EAF::Menu::CreateContextMenu(pDoc->GetPluginCommandManager());
 
       if ( pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)) )
       {
@@ -722,7 +718,7 @@ bool CBridgeSectionViewGirderDisplayObjectEvents::OnContextMenu(std::shared_ptr<
       {
          pMenu->LoadMenu(IDR_SELECTED_GIRDERLINE_CONTEXT,nullptr);
 
-         CEAFMenu* pSegmentMenu = pMenu->CreatePopupMenu(0,_T("Edit Segment"));
+         auto pSegmentMenu = pMenu->CreatePopupMenu(0,_T("Edit Segment"));
          CComPtr<IBroker> pBroker;
          EAFGetBroker(&pBroker);
          GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
@@ -752,8 +748,6 @@ bool CBridgeSectionViewGirderDisplayObjectEvents::OnContextMenu(std::shared_ptr<
       }
 
       pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,m_pFrame);
-
-      delete pMenu;
 
       return true;
    }
@@ -872,7 +866,7 @@ bool CGirderElevationViewSegmentDisplayObjectEvents::OnContextMenu(std::shared_p
 
       CPGSDocBase* pPGSuperDoc = (CPGSDocBase*)pDoc;
 
-      CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pPGSuperDoc->GetPluginCommandManager());
+      auto pMenu = WBFL::EAF::Menu::CreateContextMenu(pPGSuperDoc->GetPluginCommandManager());
       if (pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)))
       {
          pMenu->LoadMenu(IDR_SELECTED_GIRDER_CONTEXT, nullptr);
@@ -893,8 +887,6 @@ bool CGirderElevationViewSegmentDisplayObjectEvents::OnContextMenu(std::shared_p
       }
 
       pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, m_pFrame);
-
-      delete pMenu;
 
       return true;
    }
@@ -1013,7 +1005,7 @@ bool CGirderSectionViewSegmentDisplayObjectEvents::OnContextMenu(std::shared_ptr
 
       CPGSDocBase* pPGSuperDoc = (CPGSDocBase*)pDoc;
 
-      CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pPGSuperDoc->GetPluginCommandManager());
+      auto pMenu = WBFL::EAF::Menu::CreateContextMenu(pPGSuperDoc->GetPluginCommandManager());
       if (pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc)))
       {
          pMenu->LoadMenu(IDR_SELECTED_GIRDER_CONTEXT, nullptr);
@@ -1034,8 +1026,6 @@ bool CGirderSectionViewSegmentDisplayObjectEvents::OnContextMenu(std::shared_ptr
       }
 
       pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, m_pFrame);
-
-      delete pMenu;
 
       return true;
    }

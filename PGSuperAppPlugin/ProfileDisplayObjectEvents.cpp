@@ -125,7 +125,7 @@ bool CProfileDisplayObjectEvents::OnContextMenu(std::shared_ptr<WBFL::DManip::iD
          return false;
       }
 
-      CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+      auto pMenu = WBFL::EAF::Menu::CreateContextMenu(pDoc->GetPluginCommandManager());
       std::map<IDType,IAlignmentProfileViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
       std::map<IDType,IAlignmentProfileViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
       for ( ; callbackIter != callbackIterEnd; callbackIter++ )
@@ -140,8 +140,6 @@ bool CProfileDisplayObjectEvents::OnContextMenu(std::shared_ptr<WBFL::DManip::iD
          pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,m_pFrame);
          bResult = true;
       }
-
-      delete pMenu;
 
       return bResult;
    }

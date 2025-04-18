@@ -157,7 +157,7 @@ bool CBridgePlanViewSlabDisplayObjectEvents::OnContextMenu(std::shared_ptr<WBFL:
       auto pView = pDO->GetDisplayList()->GetDisplayMgr()->GetView();
       CPGSuperDoc* pDoc = (CPGSuperDoc*)pView->GetDocument();
 
-      CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+      auto pMenu = WBFL::EAF::Menu::CreateContextMenu(pDoc->GetPluginCommandManager());
       pMenu->LoadMenu(IDR_SELECTED_DECK_CONTEXT,nullptr);
 
       const std::map<IDType,IBridgePlanViewEventCallback*>& callbacks = pDoc->GetBridgePlanViewCallbacks();
@@ -345,7 +345,7 @@ bool CBridgeSectionViewSlabDisplayObjectEvents::OnContextMenu(std::shared_ptr<WB
       auto pView = pDO->GetDisplayList()->GetDisplayMgr()->GetView();
       CPGSuperDoc* pDoc = (CPGSuperDoc*)pView->GetDocument();
 
-      CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+      auto pMenu = WBFL::EAF::Menu::CreateContextMenu(pDoc->GetPluginCommandManager());
       pMenu->LoadMenu(IDR_SELECTED_DECK_CONTEXT,nullptr);
 
       const std::map<IDType,IBridgeSectionViewEventCallback*>& callbacks = pDoc->GetBridgeSectionViewCallbacks();

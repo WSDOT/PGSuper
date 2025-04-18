@@ -169,7 +169,7 @@ public:
    CTxDOTOptionalDesignData m_ProjectData;
 
 private:
-   CEAFToolBar* m_pMyToolBar;
+   std::shared_ptr<WBFL::EAF::ToolBar> m_MyToolBar;
 
    // Has our data changed?
    int m_ChangeStatus;

@@ -461,7 +461,7 @@ void CBridgeSectionView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
-   CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+   auto pMenu = WBFL::EAF::Menu::CreateContextMenu(pDoc->GetPluginCommandManager());
    pMenu->LoadMenu(IDR_BRIDGE_XSECTION_CTX,nullptr);
 
    if ( logPoint.x < 0 || logPoint.y < 0 )
@@ -486,7 +486,6 @@ void CBridgeSectionView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
 
 
    pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, logPoint.x, logPoint.y, this);
-   delete pMenu;
 }
 
 void CBridgeSectionView::OnEditDeck() 

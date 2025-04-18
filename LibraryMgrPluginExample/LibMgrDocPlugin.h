@@ -20,42 +20,17 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// LibMgrDocPlugin.h : Declaration of the CLibMgrDocPlugin
-
 #pragma once
 
-#include <EAF\EAFDocumentPlugin.h>
+#include <EAF\DocumentPlugin.h>
 #include <EAF\EAFUIintegration.h>
 #include <EAF\EAFPluginPersist.h>
+#include <EAF/ComponentObject.h>
 
-#include <initguid.h>
-
-// {894AE5FD-E157-4935-A1C6-2E032CF014A6}
-DEFINE_GUID(CLSID_LibMgrDocPlugin,
-   0x894ae5fd, 0xe157, 0x4395, 0xa1, 0xc6, 0x2e, 0x03, 0x2c, 0xf0, 0x14, 0xa6);
 
 namespace LibraryMgr
 {
-   class ExampleDocPlugin;
-};
-
-class CMyCmdTarget : public CCmdTarget
-{
-public:
-   CMyCmdTarget() {};
-   
-   void OnMyCommand();
-   void OnUpdateMyCommand(CCmdUI* pCmdUI);
-   void OnCreateView();
-
-   LibraryMgr::ExampleDocPlugin* m_pMyDocPlugin = nullptr;
-
-   DECLARE_MESSAGE_MAP()
-};
-
-namespace LibraryMgr
-{
-   class ExampleDocPlugin : public WBFL::EAF::ComponentObject,
+   class ExampleDocPlugin : public CCmdTarget, public WBFL::EAF::ComponentObject,
 	  public WBFL::EAF::IDocumentPlugin,
 	  public WBFL::EAF::ICommandCallback,
 	  public WBFL::EAF::IPluginPersist
@@ -63,16 +38,14 @@ namespace LibraryMgr
    public:
 	  ExampleDocPlugin()
 	  {
-		 m_MyCommandTarget.m_pMyDocPlugin = this;
 	  }
 
 	  CEAFDocument* m_pDoc;
-	  CMyCmdTarget m_MyCommandTarget;
 	  CBitmap m_bmpMenuItem;
 
 	  void CreateMenus();
 	  void RemoveMenus();
-	  CEAFMenu* m_pPluginMenu;
+	  std::shared_ptr<WBFL::EAF::Menu> m_PluginMenu;
 
 	  void RegisterViews();
 	  void UnregisterViews();
@@ -98,5 +71,12 @@ namespace LibraryMgr
    public:
 	  HRESULT Save(IStructuredSave* pStrSave) override;
 	  HRESULT Load(IStructuredLoad* pStrLoad) override;
+
+   private:
+	  void OnMyCommand();
+	  void OnUpdateMyCommand(CCmdUI* pCmdUI);
+	  void OnCreateView();
+
+	  DECLARE_MESSAGE_MAP()
    };
 };

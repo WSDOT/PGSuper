@@ -28,7 +28,7 @@
 #include "PGSuperApp.h"
 
 #include <initguid.h>
-#include <EAF\EAFComponentInfo.h>
+#include <EAF\ComponentInfo.h>
 #include <EAF\EAFUIIntegration.h>
 #include <System\ComCatMgr.h>
 #include <BridgeLinkCATID.h>

@@ -167,7 +167,7 @@ bool CAlignmentDisplayObjectEvents::OnContextMenu(std::shared_ptr<iDisplayObject
 
       CPGSDocBase* pDoc = (CPGSDocBase*)pView->GetDocument();
 
-      CEAFMenu* pMenu;
+      std::shared_ptr<WBFL::EAF::Menu> pMenu;
 
       if ( m_ViewType == BridgePlan || m_ViewType == BridgeSection )
       {
@@ -180,7 +180,7 @@ bool CAlignmentDisplayObjectEvents::OnContextMenu(std::shared_ptr<iDisplayObject
             return false;
          }
 
-         pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+         pMenu = WBFL::EAF::Menu::CreateContextMenu(pDoc->GetPluginCommandManager());
          std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
          std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
          for ( ; callbackIter != callbackIterEnd; callbackIter++ )
@@ -200,7 +200,7 @@ bool CAlignmentDisplayObjectEvents::OnContextMenu(std::shared_ptr<iDisplayObject
             return false;
          }
 
-         pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+         pMenu = WBFL::EAF::Menu::CreateContextMenu(pDoc->GetPluginCommandManager());
          std::map<IDType,IAlignmentPlanViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
          std::map<IDType,IAlignmentPlanViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
          for ( ; callbackIter != callbackIterEnd; callbackIter++ )
@@ -216,8 +216,6 @@ bool CAlignmentDisplayObjectEvents::OnContextMenu(std::shared_ptr<iDisplayObject
          pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,m_pFrame);
          bResult = true;
       }
-
-      delete pMenu;
 
       return bResult;
    }

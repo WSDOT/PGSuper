@@ -204,7 +204,7 @@ bool CPierDisplayObjectEvents::OnContextMenu(std::shared_ptr<WBFL::DManip::iDisp
       auto pView = pDispMgr->GetView();
       CPGSDocBase* pDoc = (CPGSDocBase*)pView->GetDocument();
 
-      CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+      auto pMenu = WBFL::EAF::Menu::CreateContextMenu(pDoc->GetPluginCommandManager());
       pMenu->LoadMenu(IDR_SELECTED_PIER_CONTEXT,nullptr);
 
       CComPtr<IBroker> pBroker;
@@ -278,8 +278,6 @@ bool CPierDisplayObjectEvents::OnContextMenu(std::shared_ptr<WBFL::DManip::iDisp
       }
 
       pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,m_pFrame);
-
-      delete pMenu;
 
       return true;
    }

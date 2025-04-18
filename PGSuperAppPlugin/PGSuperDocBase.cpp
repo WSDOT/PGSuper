@@ -4547,25 +4547,25 @@ BOOL CPGSDocBase::OnCopyGirderPropsTb(NMHDR* pnmhdr,LRESULT* plr)
    CMenu* pMenu = menu.GetSubMenu(0);
    pMenu->RemoveMenu(0,MF_BYPOSITION); // remove the placeholder
 
-   CEAFMenu contextMenu(pMenu->Detach(),GetPluginCommandManager());
+   auto contextMenu = WBFL::EAF::Menu::CreateMenu(pMenu->Detach(),GetPluginCommandManager());
 
    int i = 0;
    for (const auto& iCallBack : m_CopyGirderPropertiesCallbacks)
    {
       UINT nCmd = i++ + FIRST_COPY_GIRDER_PLUGIN;
       CString copyName = _T("Copy ") + CString(iCallBack.second->GetName());
-      contextMenu.AppendMenu(nCmd, copyName, nullptr);
+      contextMenu->AppendMenu(nCmd, copyName, nullptr);
    }
 
    GET_IFACE(IEAFToolbars,pToolBars);
-   CEAFToolBar* pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
+   auto pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
    int idx = pToolBar->CommandToIndex(ID_COPY_GIRDER_PROPS,nullptr);
    CRect rect;
    pToolBar->GetItemRect(idx,&rect);
 
    CPoint point(rect.left,rect.bottom);
    pToolBar->ClientToScreen(&point);
-   contextMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, point.x,point.y, EAFGetMainFrame() );
+   contextMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, point.x,point.y, EAFGetMainFrame() );
 
    return TRUE;
 }
@@ -4592,26 +4592,26 @@ BOOL CPGSDocBase::OnCopyPierPropsTb(NMHDR* pnmhdr,LRESULT* plr)
    CMenu* pMenu = menu.GetSubMenu(0);
    pMenu->RemoveMenu(0,MF_BYPOSITION); // remove the placeholder
 
-   CEAFMenu contextMenu(pMenu->Detach(),GetPluginCommandManager());
+   auto contextMenu = WBFL::EAF::Menu::CreateMenu(pMenu->Detach(),GetPluginCommandManager());
 
    int i = 0;
    for (const auto& ICallBack : m_CopyPierPropertiesCallbacks)
    {
       UINT nCmd = i++ + FIRST_COPY_PIER_PLUGIN;
       CString copyName = _T("Copy ") + CString(ICallBack.second->GetName());
-      contextMenu.AppendMenu(nCmd, copyName, nullptr);
+      contextMenu->AppendMenu(nCmd, copyName, nullptr);
    }
 
 
    GET_IFACE(IEAFToolbars,pToolBars);
-   CEAFToolBar* pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
+   auto pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
    int idx = pToolBar->CommandToIndex(ID_COPY_PIER_PROPS,nullptr);
    CRect rect;
    pToolBar->GetItemRect(idx,&rect);
 
    CPoint point(rect.left,rect.bottom);
    pToolBar->ClientToScreen(&point);
-   contextMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, point.x,point.y, EAFGetMainFrame() );
+   contextMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, point.x,point.y, EAFGetMainFrame() );
 
    return TRUE;
 }
@@ -4655,20 +4655,20 @@ BOOL CPGSDocBase::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO
 
 void CPGSDocBase::PopulateReportMenu()
 {
-   CEAFMenu* pMainMenu = GetMainMenu();
+   auto pMainMenu = GetMainMenu();
    if (pMainMenu != nullptr)
    {
        UINT viewPos = pMainMenu->FindMenuItem(_T("&View"));
        ASSERT(0 <= viewPos);
 
-       CEAFMenu* pViewMenu = pMainMenu->GetSubMenu(viewPos);
+       auto pViewMenu = pMainMenu->GetSubMenu(viewPos);
        ASSERT(pViewMenu != nullptr);
 
        UINT reportsPos = pViewMenu->FindMenuItem(_T("&Reports"));
        ASSERT(0 <= reportsPos);
 
        // Get the reports menu
-       CEAFMenu* pReportsMenu = pViewMenu->GetSubMenu(reportsPos);
+       auto pReportsMenu = pViewMenu->GetSubMenu(reportsPos);
        ASSERT(pReportsMenu != nullptr);
 
        CEAFBrokerDocument::PopulateReportMenu(pReportsMenu);
@@ -4677,19 +4677,19 @@ void CPGSDocBase::PopulateReportMenu()
 
 void CPGSDocBase::PopulateGraphMenu()
 {
-   CEAFMenu* pMainMenu = GetMainMenu();
+   auto pMainMenu = GetMainMenu();
 
    UINT viewPos = pMainMenu->FindMenuItem(_T("&View"));
    ASSERT( 0 <= viewPos );
 
-   CEAFMenu* pViewMenu = pMainMenu->GetSubMenu(viewPos);
+   auto pViewMenu = pMainMenu->GetSubMenu(viewPos);
    ASSERT( pViewMenu != nullptr );
 
    UINT graphsPos = pViewMenu->FindMenuItem(_T("Gr&aphs"));
    ASSERT( 0 <= graphsPos );
 
    // Get the graphs menu
-   CEAFMenu* pGraphMenu = pViewMenu->GetSubMenu(graphsPos);
+   auto pGraphMenu = pViewMenu->GetSubMenu(graphsPos);
    ASSERT(pGraphMenu != nullptr);
 
    CEAFBrokerDocument::PopulateGraphMenu(pGraphMenu);
@@ -4977,20 +4977,20 @@ BOOL CPGSDocBase::OnViewGraphs(NMHDR* pnmhdr,LRESULT* plr)
    CMenu* pMenu = menu.GetSubMenu(0);
    pMenu->RemoveMenu(0,MF_BYPOSITION); // remove the placeholder
 
-   CEAFMenu contextMenu(pMenu->Detach(),GetPluginCommandManager());
+   auto contextMenu = WBFL::EAF::Menu::CreateMenu(pMenu->Detach(),GetPluginCommandManager());
 
 
-   BuildGraphMenu(&contextMenu);
+   BuildGraphMenu(contextMenu);
 
    GET_IFACE(IEAFToolbars,pToolBars);
-   CEAFToolBar* pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
+   auto pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
    int idx = pToolBar->CommandToIndex(ID_VIEW_GRAPHS,nullptr);
    CRect rect;
    pToolBar->GetItemRect(idx,&rect);
 
    CPoint point(rect.left,rect.bottom);
    pToolBar->ClientToScreen(&point);
-   contextMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, point.x,point.y, EAFGetMainFrame() );
+   contextMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, point.x,point.y, EAFGetMainFrame() );
 
    return TRUE;
 }
@@ -5018,19 +5018,19 @@ BOOL CPGSDocBase::OnViewReports(NMHDR* pnmhdr,LRESULT* plr)
    CMenu* pMenu = menu.GetSubMenu(0);
    pMenu->RemoveMenu(0,MF_BYPOSITION); // remove the placeholder
 
-   CEAFMenu contextMenu(pMenu->Detach(),GetPluginCommandManager());
+   auto contextMenu = WBFL::EAF::Menu::CreateMenu(pMenu->Detach(),GetPluginCommandManager());
 
-   CEAFBrokerDocument::PopulateReportMenu(&contextMenu);
+   CEAFBrokerDocument::PopulateReportMenu(contextMenu);
 
    GET_IFACE(IEAFToolbars,pToolBars);
-   CEAFToolBar* pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
+   auto pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
    int idx = pToolBar->CommandToIndex(ID_VIEW_REPORTS,nullptr);
    CRect rect;
    pToolBar->GetItemRect(idx,&rect);
 
    CPoint point(rect.left,rect.bottom);
    pToolBar->ClientToScreen(&point);
-   contextMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, point.x,point.y, EAFGetMainFrame() );
+   contextMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON, point.x,point.y, EAFGetMainFrame() );
 
    return TRUE;
 }

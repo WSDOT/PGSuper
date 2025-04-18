@@ -62,7 +62,7 @@
 
 #include <Materials/Materials.h>
 
-#include <EAF\EAFMenu.h>
+#include <EAF\Menu.h>
 
 #include <PgsExt\ClosureJointData.h>
 #include <PgsExt\Helpers.h>
@@ -967,7 +967,7 @@ void CBridgePlanView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
-   CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+   auto pMenu = WBFL::EAF::Menu::CreateContextMenu(pDoc->GetPluginCommandManager());
    pMenu->LoadMenu(IDR_BRIDGE_PLAN_CTX,nullptr);
 
    if ( logPoint.x < 0 || logPoint.y < 0 )
@@ -992,7 +992,6 @@ void CBridgePlanView::HandleContextMenu(CWnd* pWnd,CPoint logPoint)
 
 
    pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, logPoint.x, logPoint.y, this);
-   delete pMenu;
 }
 
 void CBridgePlanView::OnEditDeck() 

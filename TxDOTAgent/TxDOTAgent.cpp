@@ -40,7 +40,7 @@
 #include "dllmain.h"
 
 #include <EAF\PluginApp.h>
-#include <EAF\EAFComponentInfo.h>
+#include <EAF\ComponentInfo.h>
 
 #include "BridgeLinkCATID.h"
 #include "PGSuperCatCom.h"

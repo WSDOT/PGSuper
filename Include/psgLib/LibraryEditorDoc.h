@@ -92,7 +92,7 @@ public:
    void HandleSaveDocumentError( HRESULT hr, LPCTSTR lpszPathName );
 
 private:
-   CEAFToolBar* m_pMyToolBar;
+   std::shared_ptr<WBFL::EAF::ToolBar> m_MyToolBar;
    HRESULT m_hrOpenRootNode; // keeps track of the state of BeginUnit for the root node
 
 protected:

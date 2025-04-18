@@ -140,7 +140,7 @@ void CPGSuperDocProxyAgent::CreateToolBars()
    GET_IFACE(IEAFToolbars,pToolBars);
 
    m_StdToolBarID = pToolBars->CreateToolBar(_T("Standard"));
-   CEAFToolBar* pToolBar = pToolBars->GetToolBar(m_StdToolBarID);
+   auto pToolBar = pToolBars->GetToolBar(m_StdToolBarID);
    pToolBar->LoadToolBar(m_pMyDocument->GetStandardToolbarResourceID(),nullptr); // don't use a command callback because these commands are handled by 
                                                // the standard MFC message routing
 
@@ -433,7 +433,7 @@ void CPGSuperDocProxyAgent::CreateReportView(IndexType rptIdx,BOOL bPromptForSpe
    pViewReg->CreateView(m_ReportViewKey,(LPVOID)&data);
 }
 
-void CPGSuperDocProxyAgent::BuildReportMenu(CEAFMenu* pMenu,bool bQuickReport)
+void CPGSuperDocProxyAgent::BuildReportMenu(std::shared_ptr<WBFL::EAF::Menu> pMenu,bool bQuickReport)
 {
    m_pMyDocument->BuildReportMenu(pMenu,bQuickReport);
 }
@@ -483,7 +483,7 @@ void CPGSuperDocProxyAgent::CreateGraphView(LPCTSTR lpszGraph, IEAFViewControlle
    ATLASSERT(false); // graph name not found
 }
 
-void CPGSuperDocProxyAgent::BuildGraphMenu(CEAFMenu* pMenu)
+void CPGSuperDocProxyAgent::BuildGraphMenu(std::shared_ptr<WBFL::EAF::Menu> pMenu)
 {
    m_pMyDocument->BuildGraphMenu(pMenu);
 }
@@ -525,7 +525,7 @@ void CPGSuperDocProxyAgent::OnStatusChanged()
    if ( m_pBroker )
    {
       GET_IFACE(IEAFToolbars,pToolBars);
-      CEAFToolBar* pToolBar = pToolBars->GetToolBar(GetStdToolBarID());
+      auto pToolBar = pToolBars->GetToolBar(GetStdToolBarID());
 
       if ( pToolBar == nullptr )
          return;
@@ -869,7 +869,7 @@ HRESULT CPGSuperDocProxyAgent::OnRatingSpecificationChanged()
    return S_OK;
 }
 
-// ILoadModiferEventSink
+// ILoadModifierEventSink
 HRESULT CPGSuperDocProxyAgent::OnLoadModifiersChanged()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
@@ -1153,7 +1153,7 @@ void CPGSuperDocProxyAgent::FireEvent(CView* pSender,LPARAM lHint,std::shared_pt
       event.pHint = pHint;
 
       // skip all but one result hint - firing multiple result hints 
-      // causes the UI to unnecessarilly update multiple times
+      // causes the UI to unnecessarily update multiple times
       bool skip = false;
       if ( MIN_RESULTS_HINT <= lHint && lHint <= MAX_RESULTS_HINT )
       {

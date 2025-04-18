@@ -159,7 +159,7 @@ STDMETHODIMP_(bool) CTrafficBarrierDisplayObjectEvents::OnContextMenu(std::share
       auto pView = pDO->GetDisplayList()->GetDisplayMgr()->GetView();
       CPGSDocBase* pDoc = (CPGSDocBase*)pView->GetDocument();
 
-      CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+      auto pMenu = WBFL::EAF::Menu::CreateContextMenu(pDoc->GetPluginCommandManager());
       pMenu->AppendMenu(ID_PROJECT_BARRIER, _T("Edit Railing System"), nullptr);
 
       bool bResult = false;
@@ -168,8 +168,6 @@ STDMETHODIMP_(bool) CTrafficBarrierDisplayObjectEvents::OnContextMenu(std::share
          pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,m_pFrame);
          bResult = true;
       }
-
-      delete pMenu;
 
       return bResult;
    }

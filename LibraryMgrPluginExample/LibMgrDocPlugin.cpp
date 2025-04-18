@@ -37,41 +37,23 @@
 
 #define ID_MYCOMMAND EAF_FIRST_USER_COMMAND
 
-BEGIN_MESSAGE_MAP(CMyCmdTarget,CCmdTarget)
+using namespace LibraryMgr;
+
+BEGIN_MESSAGE_MAP(ExampleDocPlugin,CCmdTarget)
    ON_COMMAND(ID_MYCOMMAND,OnMyCommand)
 	//ON_UPDATE_COMMAND_UI(ID_MYCOMMAND, OnUpdateMyCommand)
    ON_COMMAND(IDM_PLUGIN_VIEW,OnCreateView)
 END_MESSAGE_MAP()
 
-using namespace LibraryMgr;
-
-void CMyCmdTarget::OnMyCommand()
-{
-   //AfxMessageBox(_T("This is a command implemented by a document plug in"));
-   CEAFHelpHandler helpHandler(m_pMyDocPlugin->GetName(), 5000);
-   int result = AfxChoose(_T("Question"),_T("What up?"),_T("Nothing\nSomething"),0,FALSE,&helpHandler);
-}
-
-void CMyCmdTarget::OnUpdateMyCommand(CCmdUI* pCmdUI)
-{
-//   pCmdUI->SetCheck();
-}
-
-void CMyCmdTarget::OnCreateView()
-{
-   if (m_pMyDocPlugin)
-	  m_pMyDocPlugin->CreateView();
-}
-
 void ExampleDocPlugin::CreateMenus()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CEAFMenu* pMenu = m_pDoc->GetMainMenu();
+   auto pMenu = m_pDoc->GetMainMenu();
 
    // add a command to the File menu
    UINT filePos = pMenu->FindMenuItem(_T("&File"));
-   CEAFMenu* pFileMenu = pMenu->GetSubMenu(filePos);
+   auto pFileMenu = pMenu->GetSubMenu(filePos);
    
    auto callback = std::dynamic_pointer_cast<WBFL::EAF::ICommandCallback>(shared_from_this());
 
@@ -80,24 +62,25 @@ void ExampleDocPlugin::CreateMenus()
 
    // add a new drop down menu from the main menu
    UINT nMenus = pMenu->GetMenuItemCount();
-   m_pPluginMenu = pMenu->CreatePopupMenu(nMenus - 1, _T("Plug in"));
-   m_pPluginMenu->LoadMenu(IDR_PLUGIN_MENU, callback);
+   m_PluginMenu = pMenu->CreatePopupMenu(nMenus - 1, _T("Plug in"));
+   m_PluginMenu->LoadMenu(IDR_PLUGIN_MENU, callback);
 }
 
 void ExampleDocPlugin::RemoveMenus()
 {
-   CEAFMenu* pMenu = m_pDoc->GetMainMenu();
+   auto pMenu = m_pDoc->GetMainMenu();
 
    // remove the command from the File menu
    UINT filePos = pMenu->FindMenuItem(_T("&File"));
-   CEAFMenu* pFileMenu = pMenu->GetSubMenu(filePos);
+   auto pFileMenu = pMenu->GetSubMenu(filePos);
 
    auto callback = std::dynamic_pointer_cast<WBFL::EAF::ICommandCallback>(shared_from_this());
 
    pFileMenu->RemoveMenu(ID_MYCOMMAND, MF_BYCOMMAND, callback);
 
    // remove the Plug in menu
-   pMenu->DestroyMenu(m_pPluginMenu);
+   pMenu->DestroyMenu(m_PluginMenu);
+   m_PluginMenu = nullptr;
 }
 
 void ExampleDocPlugin::RegisterViews()
@@ -177,7 +160,7 @@ eafTypes::HelpResult ExampleDocPlugin::GetDocumentLocation(LPCTSTR lpszDocSetNam
 // ICommandCallback
 BOOL ExampleDocPlugin::OnCommandMessage(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo)
 {
-   return m_MyCommandTarget.OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
+   return OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
 }
 
 BOOL ExampleDocPlugin::GetStatusBarMessageString(UINT nID, CString& rMessage) const
@@ -246,4 +229,21 @@ HRESULT ExampleDocPlugin::Load(IStructuredLoad* pStrLoad)
 	  return hr;
 
    return S_OK;
+}
+
+void ExampleDocPlugin::OnMyCommand()
+{
+   //AfxMessageBox(_T("This is a command implemented by a document plug in"));
+   CEAFHelpHandler helpHandler(GetName(), 5000);
+   int result = AfxChoose(_T("Question"), _T("What up?"), _T("Nothing\nSomething"), 0, FALSE, &helpHandler);
+}
+
+void ExampleDocPlugin::OnUpdateMyCommand(CCmdUI* pCmdUI)
+{
+   //   pCmdUI->SetCheck();
+}
+
+void ExampleDocPlugin::OnCreateView()
+{
+   CreateView();
 }

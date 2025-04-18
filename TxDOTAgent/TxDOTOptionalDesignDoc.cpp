@@ -424,9 +424,9 @@ void CTxDOTOptionalDesignDoc::DoIntegrateWithUI(BOOL bIntegrate)
 
          // set up the toolbar here
          UINT tbID = pFrame->CreateToolBar(_T("TxDOT Optional Girder Analysis"),GetPluginCommandManager());
-         m_pMyToolBar = pFrame->GetToolBar(tbID);
-         m_pMyToolBar->LoadToolBar(IDR_TXDOTOPTIONALDESIGNTOOLBAR,nullptr);
-         m_pMyToolBar->CreateDropDownButton(ID_FILE_OPEN,   nullptr,BTNS_DROPDOWN);
+         m_MyToolBar = pFrame->GetToolBar(tbID);
+         m_MyToolBar->LoadToolBar(IDR_TXDOTOPTIONALDESIGNTOOLBAR,nullptr);
+         m_MyToolBar->CreateDropDownButton(ID_FILE_OPEN,   nullptr,BTNS_DROPDOWN);
       }
 
       // use our status bar
@@ -437,8 +437,8 @@ void CTxDOTOptionalDesignDoc::DoIntegrateWithUI(BOOL bIntegrate)
    else
    {
       // remove toolbar here
-      pFrame->DestroyToolBar(m_pMyToolBar);
-      m_pMyToolBar = nullptr;
+      pFrame->DestroyToolBar(m_MyToolBar->GetToolBarID());
+      m_MyToolBar = nullptr;
 
       // put the status bar back the way it was
       pFrame->SetStatusBar(nullptr);

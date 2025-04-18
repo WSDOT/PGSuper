@@ -31,7 +31,7 @@
 #include <IFace\Tools.h>
 #include <IFace\EditByUI.h>
 #include <EAF\EAFStatusCenter.h>
-#include <EAF\EAFMenu.h>
+#include <EAF\Menu.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFTransaction.h>
 
@@ -171,23 +171,23 @@ void CExampleExtensionAgent::CreateMenus()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    GET_IFACE(IEAFMainMenu,pMainMenu);
-   CEAFMenu* pMenu = pMainMenu->GetMainMenu();
+   auto pMenu = pMainMenu->GetMainMenu();
 
    INT nMenus = pMenu->GetMenuItemCount();
    if ( nMenus == 0 )
       return;
 
-   m_pMyMenu = pMenu->CreatePopupMenu(nMenus-1,_T("MyExtension")); // put the menu before the last menu (Help)
+   m_MyMenu = pMenu->CreatePopupMenu(nMenus-1,_T("MyExtension")); // put the menu before the last menu (Help)
 
    auto callback = std::dynamic_pointer_cast<WBFL::EAF::ICommandCallback>(m_MyCommandTarget);
-   m_pMyMenu->LoadMenu(IDR_MENU,callback);
+   m_MyMenu->LoadMenu(IDR_MENU,callback);
 }
 
 void CExampleExtensionAgent::RemoveMenus()
 {
    GET_IFACE(IEAFMainMenu,pMainMenu);
-   CEAFMenu* pMenu = pMainMenu->GetMainMenu();
-   pMenu->DestroyMenu(m_pMyMenu);
+   auto pMenu = pMainMenu->GetMainMenu();
+   pMenu->DestroyMenu(m_MyMenu);
 }
 
 void CExampleExtensionAgent::CreateToolBar()
@@ -195,7 +195,7 @@ void CExampleExtensionAgent::CreateToolBar()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    GET_IFACE(IEAFToolbars,pToolBars);
    m_ToolBarID = pToolBars->CreateToolBar(_T("Extension Agent Toolbar"));
-   CEAFToolBar* pToolBar = pToolBars->GetToolBar(m_ToolBarID);
+   auto pToolBar = pToolBars->GetToolBar(m_ToolBarID);
    auto callback = std::dynamic_pointer_cast<WBFL::EAF::ICommandCallback>(m_MyCommandTarget);
    pToolBar->LoadToolBar(IDR_TOOLBAR,callback);
 

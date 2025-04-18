@@ -22,7 +22,7 @@
 
 #pragma once
 #include <EAF\ComponentObject.h>
-#include <EAF\EAFComponentInfo.h>
+#include <EAF\ComponentInfo.h>
 
 class CTxDOTAppPluginComponentInfo : public WBFL::EAF::ComponentObject,
    public WBFL::EAF::IComponentInfo

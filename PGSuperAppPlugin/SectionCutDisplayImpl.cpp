@@ -361,7 +361,7 @@ bool CSectionCutDisplayImpl::OnContextMenu(std::shared_ptr<WBFL::DManip::iDispla
       if ( callbacks.size() == 0 )
          return false;
 
-      CEAFMenu* pMenu = CEAFMenu::CreateContextMenu(pDoc->GetPluginCommandManager());
+      auto pMenu = WBFL::EAF::Menu::CreateContextMenu(pDoc->GetPluginCommandManager());
       std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIter(callbacks.begin());
       std::map<IDType,IBridgePlanViewEventCallback*>::const_iterator callbackIterEnd(callbacks.end());
       for ( ; callbackIter != callbackIterEnd; callbackIter++ )
@@ -376,8 +376,6 @@ bool CSectionCutDisplayImpl::OnContextMenu(std::shared_ptr<WBFL::DManip::iDispla
          pMenu->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y,pWnd);
          bResult = true;
       }
-
-      delete pMenu;
 
       return bResult;
    }

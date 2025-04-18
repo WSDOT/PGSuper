@@ -22,7 +22,7 @@
 
 #pragma once
 #include <EAF\ComponentObject.h>
-#include <EAF\EAFComponentInfo.h>
+#include <EAF\ComponentInfo.h>
 
 class CPGSpliceComponentInfo : public WBFL::EAF::ComponentObject,
    public WBFL::EAF::IComponentInfo
@@ -32,11 +32,11 @@ public:
 
 // IComponentInfo
 public:
-   virtual BOOL Init(CEAFApp* pApp);
-   virtual void Terminate();
-   virtual CString GetName();
-   virtual CString GetDescription();
-   virtual HICON GetIcon();
-   virtual bool HasMoreInfo();
-   virtual void OnMoreInfo();
+   BOOL Init(CEAFApp* pApp) override;
+   void Terminate() override;
+   CString GetName() override;
+   CString GetDescription() override;
+   HICON GetIcon() override;
+   bool HasMoreInfo() override;
+   void OnMoreInfo() override;
 };

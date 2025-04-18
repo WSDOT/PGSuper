@@ -22,7 +22,13 @@
 
 #pragma once
 
-class CEAFMenu;
+namespace WBFL
+{
+   namespace EAF
+   {
+      class Menu;
+   };
+};
 
 interface IEAFViewController;
 interface IBridgeModelViewController;
@@ -70,11 +76,11 @@ interface __declspec(uuid("{40E55658-360F-47d8-86DB-0AF21974BA30}")) IViews : pu
    /// @brief Fills pMenu with commands to create report views
    /// @param pMenu The menu to be filled
    /// @param bQuickReport If true, quick report (no prompt) commands are created otherwise commands that cause the report prompt to be displayed are created
-   virtual void BuildReportMenu(CEAFMenu* pMenu, bool bQuickReport) = 0;
+   virtual void BuildReportMenu(std::shared_ptr<WBFL::EAF::Menu> menu, bool bQuickReport) = 0;
 
    /// @brief Fills pMenu with commands to create graph views
    /// @param pMenu The menu to be filled
-   virtual void BuildGraphMenu(CEAFMenu* pMenu) = 0;
+   virtual void BuildGraphMenu(std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
    /// @brief Returns the Bridge Model Editor View key
    virtual long GetBridgeModelEditorViewKey() = 0;

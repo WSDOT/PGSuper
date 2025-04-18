@@ -23,7 +23,7 @@
 #pragma once
 
 #include <EAF/ComponentObject.h>
-#include <EAF\EAFComponentInfo.h>
+#include <EAF\ComponentInfo.h>
 
 class CPGSuperComponentInfo : public WBFL::EAF::ComponentObject,
    public WBFL::EAF::IComponentInfo
@@ -33,11 +33,11 @@ public:
 
 // IComponentInfo
 public:
-   virtual BOOL Init(CEAFApp* pApp) override;
-   virtual void Terminate() override;
-   virtual CString GetName() override;
-   virtual CString GetDescription() override;
-   virtual HICON GetIcon() override;
-   virtual bool HasMoreInfo() override;
-   virtual void OnMoreInfo() override;
+   BOOL Init(CEAFApp* pApp) override;
+   void Terminate() override;
+   CString GetName() override;
+   CString GetDescription() override;
+   HICON GetIcon() override;
+   bool HasMoreInfo() override;
+   void OnMoreInfo() override;
 };

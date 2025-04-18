@@ -116,7 +116,7 @@ END_COM_MAP()
 
    CBitmap m_bmpMenu;
 
-   CEAFMenu* m_pMyMenu;
+   std::shared_ptr<WBFL::EAF::Menu> m_MyMenu;
    void CreateMenus();
    void RemoveMenus();
 
