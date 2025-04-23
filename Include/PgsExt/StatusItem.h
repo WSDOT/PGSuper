@@ -42,12 +42,12 @@ public:
 class PGSEXTCLASS pgsRefinedAnalysisStatusCallback : public iStatusCallback
 {
 public:
-   pgsRefinedAnalysisStatusCallback(IBroker* pBroker);
+   pgsRefinedAnalysisStatusCallback(std::shared_ptr<WBFL::EAF::Broker> pBroker);
    virtual eafTypes::StatusSeverityType GetSeverity() const override;
    virtual void Execute(CEAFStatusItem* pStatusItem) override;
 
 private:
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
 };
 
 // status for install error
@@ -120,12 +120,12 @@ public:
 class PGSEXTCLASS pgsProjectCriteriaStatusCallback : public iStatusCallback
 {
 public:
-   pgsProjectCriteriaStatusCallback(IBroker* pBroker);
+   pgsProjectCriteriaStatusCallback(std::shared_ptr<WBFL::EAF::Broker> pBroker);
    virtual eafTypes::StatusSeverityType GetSeverity() const override;
    virtual void Execute(CEAFStatusItem* pStatusItem) override;
 
 private:
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    UINT m_HelpID;
 };
 

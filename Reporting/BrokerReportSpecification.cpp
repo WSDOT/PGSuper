@@ -29,7 +29,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CBrokerReportSpecification::CBrokerReportSpecification(const std::_tstring& strReportName,IBroker* pBroker) :
+CBrokerReportSpecification::CBrokerReportSpecification(const std::_tstring& strReportName,std::weak_ptr<WBFL::EAF::Broker> pBroker) :
 WBFL::Reporting::ReportSpecification(strReportName)
 {
    SetBroker(pBroker);
@@ -39,23 +39,19 @@ CBrokerReportSpecification::~CBrokerReportSpecification(void)
 {
 }
 
-void CBrokerReportSpecification::SetBroker(IBroker* pBroker)
+void CBrokerReportSpecification::SetBroker(std::weak_ptr<WBFL::EAF::Broker> pBroker)
 {
    m_pBroker = pBroker;
 }
 
-HRESULT CBrokerReportSpecification::GetBroker(IBroker** ppBroker) const
+std::shared_ptr<WBFL::EAF::Broker> CBrokerReportSpecification::GetBroker() const
 {
-   ATLASSERT( m_pBroker ); // did you forget to set the broker???
-   //return m_Broker.CopyTo(ppBroker);
-   (*ppBroker) = m_pBroker;
-   (*ppBroker)->AddRef();
-   return S_OK;
+   return m_pBroker.lock();
 }
 
 bool CBrokerReportSpecification::IsValid() const
 {
-   if ( !m_pBroker )
+   if ( !m_pBroker.lock() )
       return false;
 
    return WBFL::Reporting::ReportSpecification::IsValid();

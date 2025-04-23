@@ -193,10 +193,8 @@ void CSelectPOIDlg::UpdateGirderComboBox(GroupIndexType groupIdx)
 
 void CSelectPOIDlg::UpdateSliderLabel()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   auto broker = EAFGetBroker();
+   EAF_GET_IFACE2(broker, IEAFDisplayUnits, pDisplayUnits);
 
    CString strLabel;
    ASSERT((int)m_SliderPos < (int)m_vPOI.size());

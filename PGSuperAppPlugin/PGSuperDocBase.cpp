@@ -5279,6 +5279,7 @@ BOOL CPGSDocBase::LoadAgents()
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)GetDocTemplate();
 #pragma Reminder("WORKING HERE - Removing COM")
    // This pointer casting seems problematic - review to see if there is a better way
+   // Registery stuff isn't going to be needed with agent information in manifest files
    auto pluginApp = pTemplate->GetPluginApp();
    CPGSPluginAppBase* pPGSBase = dynamic_cast<CPGSPluginAppBase*>(pluginApp.get());
 

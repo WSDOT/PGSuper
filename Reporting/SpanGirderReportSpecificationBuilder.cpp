@@ -113,7 +113,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CSpanReportSpecificationBu
 ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////
 
-CGirderLineReportSpecificationBuilder::CGirderLineReportSpecificationBuilder(IBroker* pBroker) :
+CGirderLineReportSpecificationBuilder::CGirderLineReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker) :
 CBrokerReportSpecificationBuilder(pBroker)
 {
 }
@@ -182,7 +182,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CGirderLineReportSpecifica
 ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////
 
-CGirderReportSpecificationBuilder::CGirderReportSpecificationBuilder(IBroker* pBroker,const CGirderKey& girderKey) :
+CGirderReportSpecificationBuilder::CGirderReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey) :
 CBrokerReportSpecificationBuilder(pBroker)
 {
    m_GirderKey = girderKey;
@@ -294,7 +294,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CGirderReportSpecification
 ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////
 
-CSegmentReportSpecificationBuilder::CSegmentReportSpecificationBuilder(IBroker* pBroker, const CSegmentKey& segmentKey) :
+CSegmentReportSpecificationBuilder::CSegmentReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey) :
    CBrokerReportSpecificationBuilder(pBroker)
 {
    m_SegmentKey = segmentKey;
@@ -383,7 +383,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CSegmentReportSpecificatio
 ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////
 
-CMultiGirderReportSpecificationBuilder::CMultiGirderReportSpecificationBuilder(IBroker* pBroker) :
+CMultiGirderReportSpecificationBuilder::CMultiGirderReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker) :
 CBrokerReportSpecificationBuilder(pBroker)
 {
 }
@@ -544,7 +544,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiGirderReportSpecific
 ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////
 
-CMultiViewSpanGirderReportSpecificationBuilder::CMultiViewSpanGirderReportSpecificationBuilder(IBroker* pBroker) :
+CMultiViewSpanGirderReportSpecificationBuilder::CMultiViewSpanGirderReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker) :
 CSpanReportSpecificationBuilder(pBroker)
 {
 }
@@ -680,7 +680,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiViewSpanGirderReport
 ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////
 
-CPointOfInterestReportSpecificationBuilder::CPointOfInterestReportSpecificationBuilder(IBroker* pBroker) :
+CPointOfInterestReportSpecificationBuilder::CPointOfInterestReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker) :
 CBrokerReportSpecificationBuilder(pBroker)
 {
 }

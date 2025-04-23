@@ -23,61 +23,31 @@
 // WSDOTAgentImp.h : Declaration of the CWSDOTAgentImp
 
 #pragma once
-#include "resource.h"       // main symbols
+
 #include "CLSID.h"
-#include <EAF\EAFInterfaceCache.h>
+#include <EAF\Agent.h>
 
-
-#if defined(_WIN32_WCE) && !defined(_CE_DCOM) && !defined(_CE_ALLOW_SINGLE_THREADED_OBJECTS_IN_MTA)
-#error "Single-threaded COM objects are not properly supported on Windows CE platform, such as the Windows Mobile platforms that do not include full DCOM support. Define _CE_ALLOW_SINGLE_THREADED_OBJECTS_IN_MTA to force ATL to support creating single-thread COM object's and allow use of it's single-threaded COM object implementations. The threading model in your rgs file was set to 'Free' as that is the only threading model supported in non DCOM Windows CE platforms."
-#endif
-
-
-
-// CWSDOTAgentImp
-
-class ATL_NO_VTABLE CWSDOTAgentImp :
-	public CComObjectRootEx<CComSingleThreadModel>,
-	public CComCoClass<CWSDOTAgentImp, &CLSID_WSDOTAgent>,
-	public IAgentEx
+class CWSDOTAgentImp : public WBFL::EAF::Agent
 {
 public:
 	CWSDOTAgentImp()
 	{
 	}
 
-DECLARE_REGISTRY_RESOURCEID(IDR_WSDOTAGENTIMP)
-
-DECLARE_NOT_AGGREGATABLE(CWSDOTAgentImp)
-
-BEGIN_COM_MAP(CWSDOTAgentImp)
-	COM_INTERFACE_ENTRY(IAgentEx)
-END_COM_MAP()
-
-	DECLARE_PROTECT_FINAL_CONSTRUCT()
-
-	HRESULT FinalConstruct()
-	{
-		return S_OK;
-	}
-
-	void FinalRelease()
-	{
-	}
-
-// IAgentEx
+// Agent
 public:
-	STDMETHOD(SetBroker)(IBroker* pBroker) override;
-	STDMETHOD(RegInterfaces)() override;
-	STDMETHOD(Init)() override;
-	STDMETHOD(Reset)() override;
-	STDMETHOD(ShutDown)() override;
-   STDMETHOD(Init2)() override;
-   STDMETHOD(GetClassID)(CLSID* pCLSID) override;
+	bool RegInterfaces() override;
+	bool Init() override;
+	bool ShutDown() override;
+   CLSID GetCLSID() const override;
 
 private:
-   DECLARE_EAF_AGENT_DATA;
+#pragma Reminder("WORKING HERE - Removing COM")
+	// Consider using something like this interface cache
+	// Must be careful that the broker is a weak pointer
+	// so there isnt circular references between broker and agent
+	// This could probably be implemented on the Agent class an then
+	// inhertied by all sub-classes
+	//DECLARE_EAF_INTERFACE_CACHE;
    DECLARE_LOGFILE;
 };
-
-OBJECT_ENTRY_AUTO(__uuidof(WSDOTAgent), CWSDOTAgentImp)

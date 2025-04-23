@@ -47,7 +47,7 @@ public:
    CGirderSeedDataComparisonParagraph();
    virtual ~CGirderSeedDataComparisonParagraph();
 
-   virtual rptParagraph* Build(IBroker* pBroker, const CGirderKey& girderKey) const;
+   virtual rptParagraph* Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey) const;
 
 private:
    CGirderSeedDataComparisonParagraph(const CGirderSeedDataComparisonParagraph& rOther);

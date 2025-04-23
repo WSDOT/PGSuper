@@ -55,9 +55,8 @@ CCEBFIPParametersDlg::~CCEBFIPParametersDlg()
 
 void CCEBFIPParametersDlg::DoDataExchange(CDataExchange* pDX)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   auto broker = EAFGetBroker();
+   EAF_GET_IFACE2(broker, IEAFDisplayUnits, pDisplayUnits);
 
    CDialog::DoDataExchange(pDX);
    DDX_UnitValueAndTag( pDX, IDC_FCI, IDC_FCI_UNIT, m_fc1 , pDisplayUnits->GetStressUnit() );
@@ -75,9 +74,8 @@ BOOL CCEBFIPParametersDlg::OnInitDialog()
 {
    CDialog::OnInitDialog();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   auto broker = EAFGetBroker();
+   EAF_GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
 
    CString strLabel;
    strLabel.Format(_T("Concrete Strength at t = %s, Time of Initial Loading"),::FormatDimension(m_t1,pDisplayUnits->GetWholeDaysUnit()));

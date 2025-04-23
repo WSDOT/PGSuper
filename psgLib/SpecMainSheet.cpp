@@ -1009,12 +1009,10 @@ void CSpecMainSheet::ExchangeLossData(CDataExchange* pDX)
       ATLASSERT(0 <= rad_ord && rad_ord < map_size);
       m_Entry.m_pImpl->m_PrestressLossCriteria.LossMethod = map[rad_ord];
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      if ( pBroker )
+      auto broker = EAFGetBroker();
+      if ( broker )
       {
-         CComPtr<IDocumentType> pDocType;
-         pBroker->GetInterface(IID_IDocumentType,(IUnknown**)&pDocType);
+         auto pDocType = broker->GetInterface<IDocumentType>(IID_IDocumentType);
          if ( pDocType->IsPGSpliceDocument() && m_Entry.m_pImpl->m_PrestressLossCriteria.LossMethod != PrestressLossCriteria::LossMethodType::TIME_STEP && 0 <  m_Entry.GetRefCount() )
          {
             AfxMessageBox(_T("Time-step method must be selected for spliced girder bridges"));

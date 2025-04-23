@@ -153,9 +153,8 @@ CString CConcreteDetailsDlg::UpdateEc(pgsTypes::ConcreteType type, const CString
        0 <= density && 0 <= fc && 0 <= k1 && 0 <= k2
        )
    {
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
-         GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      auto broker = EAFGetBroker();
+      EAF_GET_IFACE2(broker, IEAFDisplayUnits, pDisplayUnits);
 
          const WBFL::Units::Pressure& stress_unit = pDisplayUnits->GetStressUnit().UnitOfMeasure;
          const WBFL::Units::Density& density_unit = pDisplayUnits->GetDensityUnit().UnitOfMeasure;

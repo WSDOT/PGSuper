@@ -41,6 +41,12 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+#pragma Reminder("WORKING HERE - Removing COM")
+// A few of these status items take a broker as a parameter.
+// Investigate of the broker should be a weak pointer (as it was in the original implementation)
+// or if many they should just use EAFGetBroker
+// We don't want to create circular references so nothing is freed from memory when a project closes
+
 pgsRefinedAnalysisStatusItem::pgsRefinedAnalysisStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
 CEAFStatusItem(statusGroupID,callbackID,strDescription)
 {
@@ -58,7 +64,7 @@ bool pgsRefinedAnalysisStatusItem::IsEqual(CEAFStatusItem* pOther)
 }
 
 //////////////////////////////////////////////////////////
-pgsRefinedAnalysisStatusCallback::pgsRefinedAnalysisStatusCallback(IBroker* pBroker):
+pgsRefinedAnalysisStatusCallback::pgsRefinedAnalysisStatusCallback(std::shared_ptr<WBFL::EAF::Broker> pBroker):
 m_pBroker(pBroker)
 {
 }
@@ -119,7 +125,7 @@ void pgsRefinedAnalysisStatusCallback::Execute(CEAFStatusItem* pStatusItem)
          ATLASSERT(false); // is there a new choice???
       }
 
-      GET_IFACE(IEditByUI,pEdit);
+      EAF_GET_IFACE(IEditByUI,pEdit);
       pEdit->EditLiveLoadDistributionFactors(method,roaAction);
    }
 }
@@ -282,7 +288,7 @@ bool pgsProjectCriteriaStatusItem::IsEqual(CEAFStatusItem* pOther)
 }
 
 //////////////////////////////////////////////////////////
-pgsProjectCriteriaStatusCallback::pgsProjectCriteriaStatusCallback(IBroker* pBroker):
+pgsProjectCriteriaStatusCallback::pgsProjectCriteriaStatusCallback(std::shared_ptr<WBFL::EAF::Broker> pBroker):
 m_pBroker(pBroker)
 {
    m_HelpID = 0;
@@ -302,9 +308,9 @@ void pgsProjectCriteriaStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
    std::_tstring msg = pStatusItem->GetDescription();
 
-   GET_IFACE(ISpecification,pSpec);
+   EAF_GET_IFACE(ISpecification,pSpec);
    std::_tstring strSpec(pSpec->GetSpecification());
-   GET_IFACE(ILibrary,pLib);
+   EAF_GET_IFACE(ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(strSpec.c_str());
    if ( pSpecEntry->IsEditingEnabled() )
    {
@@ -316,7 +322,7 @@ void pgsProjectCriteriaStatusCallback::Execute(CEAFStatusItem* pStatusItem)
       msg += _T("\r\n\r\nWould you like to select a different Project Criteria?");
       if ( AfxMessageBox(msg.c_str(),MB_YESNO | MB_ICONQUESTION) == IDYES )
       {
-         GET_IFACE(IEditByUI,pEdit);
+         EAF_GET_IFACE(IEditByUI,pEdit);
          pEdit->SelectProjectCriteria();
       }
    }
@@ -518,7 +524,7 @@ void pgsBridgeDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
             std::unique_ptr<txnEditBridge> pTxn(std::make_unique<txnEditBridge>(*pBridgeDesc->GetBridgeDescription(), bridge));
 
-            GET_IFACE(IEAFTransactions,pTransactions);
+            EAF_GET_IFACE(IEAFTransactions,pTransactions);
             pTransactions->Execute(std::move(pTxn));
          }
       }

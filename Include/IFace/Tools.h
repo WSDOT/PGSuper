@@ -73,11 +73,11 @@ mutable LogContext m_Log;
 
 
 #if defined ENABLE_LOGGING
-
+// the CLSID was CLSID_SysAgent, but it doesn't need to be... WBFLTools implments the log file object
 #define CREATE_LOGFILE(name) \
    ILogFile* __pLogFile__; \
    DWORD __dwCookie__; \
-   HRESULT _xxHRxx_ = ::CoCreateInstance( CLSID_SysAgent, 0, CLSCTX_INPROC_SERVER,IID_ILogFile,(void**)&__pLogFile__); \
+   HRESULT _xxHRxx_ = ::CoCreateInstance( CLSID_LogFile, 0, CLSCTX_INPROC_SERVER,IID_ILogFile,(void**)&__pLogFile__); \
    ATLASSERT(SUCCEEDED(_xxHRxx_)); \
    __pLogFile__->Open( std::_tstring(std::_tstring(_T(##name))+std::_tstring(_T(".log"))).c_str(), &__dwCookie__ ); \
    m_Log.SetLog( __pLogFile__, __dwCookie__ ); \

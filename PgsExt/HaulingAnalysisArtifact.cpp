@@ -98,10 +98,10 @@ pgsHaulingAnalysisArtifact* pgsWsdotHaulingAnalysisArtifact::Clone() const
    return clone.release();
 }
 
-void pgsWsdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& segmentKey,rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const
+void pgsWsdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& segmentKey,rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, IEAFDisplayUnits* pDisplayUnits) const
 {
    WBFL::Stability::HaulingStabilityReporter reporter;
-   GET_IFACE2(pBroker,IGirder,pGirder);
+   EAF_GET_IFACE2(pBroker,IGirder,pGirder);
    const WBFL::Stability::IGirder* pStabilityModel = pGirder->GetSegmentHaulingStabilityModel(segmentKey);
    const WBFL::Stability::IHaulingStabilityProblem* pStabilityProblem = pGirder->GetSegmentHaulingStabilityProblem(segmentKey);
    Float64 Ll, Lr;
@@ -111,10 +111,10 @@ void pgsWsdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey&
    reporter.BuildSpecCheckChapter(pStabilityModel,pStabilityProblem,&m_HaulingArtifact,pChapter,pApp->GetDisplayUnits(), _T("Location from<BR/>Left Bunk Point"), Ll);
 }
 
-void pgsWsdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const
+void pgsWsdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, IEAFDisplayUnits* pDisplayUnits) const
 {
    WBFL::Stability::HaulingStabilityReporter reporter;
-   GET_IFACE2(pBroker,IGirder,pGirder);
+   EAF_GET_IFACE2(pBroker,IGirder,pGirder);
    const WBFL::Stability::IGirder* pStabilityModel = pGirder->GetSegmentHaulingStabilityModel(segmentKey);
    const WBFL::Stability::IHaulingStabilityProblem* pStabilityProblem = pGirder->GetSegmentHaulingStabilityProblem(segmentKey);
    Float64 Ll, Lr;
@@ -124,10 +124,10 @@ void pgsWsdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKe
    reporter.BuildDetailsChapter(pStabilityModel,pStabilityProblem,&results,pChapter,pApp->GetDisplayUnits(), _T("Location from<BR/>Left Bunk Point"), Ll);
 }
 
-void pgsWsdotHaulingAnalysisArtifact::Write1250Data(const CSegmentKey& segmentKey,std::_tofstream& resultsFile, std::_tofstream& poiFile, IBroker* pBroker,
+void pgsWsdotHaulingAnalysisArtifact::Write1250Data(const CSegmentKey& segmentKey,std::_tofstream& resultsFile, std::_tofstream& poiFile, std::shared_ptr<WBFL::EAF::Broker> pBroker,
                                                     const std::_tstring& pid, const std::_tstring& bridgeId) const
 {
-   GET_IFACE2(pBroker,IGirder,pGirder);
+   EAF_GET_IFACE2(pBroker,IGirder,pGirder);
    const WBFL::Stability::HaulingStabilityProblem* pStabilityProblem = pGirder->GetSegmentHaulingStabilityProblem(segmentKey);
 
    GirderIndexType gdr = segmentKey.girderIndex;

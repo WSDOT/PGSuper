@@ -34,11 +34,11 @@ public:
 
 // IPGSpliceComponentInfo
 public:
-   virtual BOOL Init(CPGSpliceDoc* pDoc) override;
-   virtual void Terminate() override;
-   virtual CString GetName() const override;
-   virtual CString GetDescription() const override;
-   virtual HICON GetIcon() const override;
-   virtual bool HasMoreInfo() const override;
-   virtual void OnMoreInfo() const override;
+   BOOL Init(CPGSpliceDoc* pDoc) override;
+   void Terminate() override;
+   CString GetName() const override;
+   CString GetDescription() const override;
+   HICON GetIcon() const override;
+   bool HasMoreInfo() const override;
+   void OnMoreInfo() const override;
 };

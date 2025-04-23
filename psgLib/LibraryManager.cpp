@@ -29,6 +29,7 @@
 
 #include <IFace\DocumentType.h>
 
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -63,14 +64,12 @@ bool GirderLibrary::NewEntry(LPCTSTR key)
    {
       // doesn't exist - add a new one.
       GirderLibraryEntry::CreateType createType = GirderLibraryEntry::DEFAULT;
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      auto broker = EAFGetBroker();
       CEAFDocument* pEAFDoc = EAFGetDocument();
-      if ( pBroker )
+      if ( broker )
       {
-         CComPtr<IDocumentType> pDocType;
-         pBroker->GetInterface(IID_IDocumentType,(IUnknown**)&pDocType);
-         ATLASSERT(pDocType);
+         auto pDocType = broker->GetInterface<IDocumentType>(IID_IDocumentType);
+         ASSERT(pDocType);
          createType = (pDocType->IsPGSuperDocument() ? GirderLibraryEntry::PRECAST : GirderLibraryEntry::SPLICED);
       }
       else if ( pEAFDoc->IsKindOf(RUNTIME_CLASS(CLibraryEditorDoc)) )

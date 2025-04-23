@@ -471,7 +471,7 @@ pgsHaulingAnalysisArtifact* pgsKdotHaulingAnalysisArtifact::Clone() const
    return clone.release();
 }
 
-void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& segmentKey,rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const
+void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& segmentKey,rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, IEAFDisplayUnits* pDisplayUnits) const
 {
    rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
@@ -492,7 +492,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+   EAF_GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
    if (!pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
    {
       *p <<color(Red)<<_T("Hauling analysis disabled in Project Criteria. No analysis performed.")<<color(Black)<<rptNewLine;
@@ -552,8 +552,8 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
       ATLASSERT(false); // new outcome type?
    }
 
-   GET_IFACE2(pBroker, ISpecification, pSpec );
-   GET_IFACE2(pBroker, ILibrary,       pLib );
+   EAF_GET_IFACE2(pBroker, ISpecification, pSpec );
+   EAF_GET_IFACE2(pBroker, ILibrary,       pLib );
    std::_tstring specName = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( specName.c_str() );
    const auto& hauling_criteria = pSpecEntry->GetHaulingCriteria();
@@ -746,7 +746,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
    }
 }
 
-void pgsKdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const
+void pgsKdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, IEAFDisplayUnits* pDisplayUnits) const
 {
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,       pDisplayUnits->GetSpanLengthUnit(),    false );
@@ -772,7 +772,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKey
    *pChapter << p;
 
 
-   GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+   EAF_GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
    if (!pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
    {
       *p <<color(Red)<<_T("Hauling analysis disabled in Project Criteria. No analysis performed.")<<color(Black)<<rptNewLine;
@@ -790,7 +790,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKey
    *p << _T("w = average girder weight/length = ")<<wt_len.SetValue(this->GetAvgGirderWeightPerLength())<<_T(" ")<<_T(" ")<<wt_len.GetUnitTag()<<rptNewLine;
    *p << _T("W = girder weight = ")<<force.SetValue(this->GetGirderWeight())<<_T(" ")<<_T(" ")<<force.GetUnitTag()<<rptNewLine;
 
-   GET_IFACE2(pBroker,IKdotGirderHaulingSpecCriteria,pKdotCriteria);
+   EAF_GET_IFACE2(pBroker,IKdotGirderHaulingSpecCriteria,pKdotCriteria);
 
    Float64 overhangG, interiorG;
    pKdotCriteria->GetHaulingGFactors(&overhangG, &interiorG);
@@ -880,9 +880,9 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKey
 
 }
 
-void pgsKdotHaulingAnalysisArtifact::BuildRebarTable(IBroker* pBroker,rptChapter* pChapter, const CSegmentKey& segmentKey) const
+void pgsKdotHaulingAnalysisArtifact::BuildRebarTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter, const CSegmentKey& segmentKey) const
 {
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,       pDisplayUnits->GetSpanLengthUnit(), false );
 //   location.IncludeSpanAndGirder(span == ALL_SPANS);
@@ -978,17 +978,17 @@ void pgsKdotHaulingAnalysisArtifact::BuildRebarTable(IBroker* pBroker,rptChapter
    *p << _T("* Bars must be fully developed and lie within tension area of section before they are considered.");
 }
 
-void pgsKdotHaulingAnalysisArtifact::Write1250Data(const CSegmentKey& segmentKey,std::_tofstream& resultsFile, std::_tofstream& poiFile, IBroker* pBroker,
+void pgsKdotHaulingAnalysisArtifact::Write1250Data(const CSegmentKey& segmentKey,std::_tofstream& resultsFile, std::_tofstream& poiFile, std::shared_ptr<WBFL::EAF::Broker> pBroker,
                                                     const std::_tstring& pid, const std::_tstring& bridgeId) const
 {
-   GET_IFACE2(pBroker,ISegmentHaulingPointsOfInterest,pSegmentHaulingPointsOfInterest);
+   EAF_GET_IFACE2(pBroker,ISegmentHaulingPointsOfInterest,pSegmentHaulingPointsOfInterest);
 
    PoiList vPoi;
    pSegmentHaulingPointsOfInterest->GetHaulingPointsOfInterest(segmentKey, POI_HAUL_SEGMENT | POI_BUNKPOINT | POI_5L, &vPoi);
    PoiList vPoi2;
    pSegmentHaulingPointsOfInterest->GetHaulingPointsOfInterest(segmentKey, POI_HARPINGPOINT, &vPoi2);
 
-   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    pPoi->MergePoiLists(vPoi, vPoi2, &vPoi);
 
    for (const pgsPointOfInterest& poi : vPoi)

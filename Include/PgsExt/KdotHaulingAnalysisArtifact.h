@@ -213,12 +213,12 @@ public:
    Float64 GetLeadingOverhang() const;
    Float64 GetTrailingOverhang() const;
 
-   virtual void BuildHaulingCheckReport(const CSegmentKey& segmentKey,rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const override;
-   virtual void BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits) const override;
+   virtual void BuildHaulingCheckReport(const CSegmentKey& segmentKey,rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, IEAFDisplayUnits* pDisplayUnits) const override;
+   virtual void BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, IEAFDisplayUnits* pDisplayUnits) const override;
 
    virtual pgsHaulingAnalysisArtifact* Clone() const override;
 
-   virtual void Write1250Data(const CSegmentKey& segmentKey,std::_tofstream& resultsFile, std::_tofstream& poiFile,IBroker* pBroker, const std::_tstring& pid, const std::_tstring& bridgeId) const override;
+   virtual void Write1250Data(const CSegmentKey& segmentKey,std::_tofstream& resultsFile, std::_tofstream& poiFile, std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::_tstring& pid, const std::_tstring& bridgeId) const override;
 
    // GROUP: ACCESS
    Float64 GetGirderLength() const;
@@ -276,7 +276,7 @@ protected:
    //------------------------------------------------------------------------
    void MakeAssignment(const pgsKdotHaulingAnalysisArtifact& rOther);
 
-   void BuildRebarTable(IBroker* pBroker, rptChapter* pChapter, const CSegmentKey& segmentKey) const;
+   void BuildRebarTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter, const CSegmentKey& segmentKey) const;
 
 public:
    // GROUP: DEBUG

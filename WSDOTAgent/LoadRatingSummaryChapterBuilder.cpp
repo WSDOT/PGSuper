@@ -59,8 +59,7 @@ LPCTSTR CLoadRatingSummaryChapterBuilder::GetName() const
 rptChapter* CLoadRatingSummaryChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGdrRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGdrRptSpec->GetBroker();
    GirderIndexType gdrIdx = pGdrRptSpec->GetGirderIndex();
    CGirderKey girderKey(ALL_GROUPS,gdrIdx);
 
@@ -70,7 +69,7 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(const std::shared_ptr<const 
 
    std::vector<std::_tstring>::iterator found;
    bool bIsWSDOTRating = true;
-   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
+   EAF_GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    std::vector<std::_tstring> routine_legal_loads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltLegalRating_Routine);
    if ( routine_legal_loads.size() != 2 || (routine_legal_loads[0] != _T("AASHTO Legal Loads") && routine_legal_loads[1] != _T("WA-105")))
    {
@@ -95,7 +94,7 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(const std::shared_ptr<const 
       bIsWSDOTRating = false;
    }
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    bool bNegMoments = pBridge->ProcessNegativeMoments(ALL_SPANS);
    bool bOL1 = false;
    bool bOL2 = false;
@@ -140,7 +139,7 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(const std::shared_ptr<const 
       bIsWSDOTRating = false;
    }
 
-   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+   EAF_GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
    if ( pRatingSpec->GetRatingSpecification() != _T("WSDOT") )
    {
       bIsWSDOTRating = false;
@@ -368,11 +367,11 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(const std::shared_ptr<const 
    }
 
    // The rating settings are consistent with WSDOT policies... report the rating
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetSpanLengthUnit(),   true );
 
    WBFL::System::Date date;
-   GET_IFACE2(pBroker,IProjectProperties,pProjectProperties);
+   EAF_GET_IFACE2(pBroker,IProjectProperties,pProjectProperties);
 
    (*pPara) << _T("Bridge Name: ") << pProjectProperties->GetBridgeName() << rptNewLine;
    (*pPara) << _T("Bridge Number: ") << pProjectProperties->GetBridgeID() << rptNewLine;
@@ -404,11 +403,11 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(const std::shared_ptr<const 
    (*pTable)(0, col++) << Sub2(symbol(gamma),_T("LL"));
    (*pTable)(0, col++)  << COLHDR(_T("Controlling Point") << rptNewLine << RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
-   GET_IFACE2(pBroker,IArtifact,pIArtifact);
+   EAF_GET_IFACE2(pBroker,IArtifact,pIArtifact);
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
 
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
 
    pgsTypes::LiveLoadType llType = ::GetLiveLoadType(pgsTypes::lrLegal_Routine);
    VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
@@ -479,7 +478,7 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLoadRatingSummaryChapterBuilde
    return std::make_unique<CLoadRatingSummaryChapterBuilder>();
 }
 
-void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRcTable* pTable,RowIndexType& row,const pgsRatingArtifact* pRatingArtifact,IEAFDisplayUnits* pDisplayUnits,rptParagraph* pRemarks) const
+void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptRcTable* pTable,RowIndexType& row,const pgsRatingArtifact* pRatingArtifact,IEAFDisplayUnits* pDisplayUnits,rptParagraph* pRemarks) const
 {
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    location.IncludeSpanAndGirder(true);
@@ -666,7 +665,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(IBroker* pBroker,rptRc
    }
 }
 
-void CLoadRatingSummaryChapterBuilder::ReportRatingFactor2(IBroker* pBroker,rptRcTable* pTable,RowIndexType row,LPCTSTR strTruck,const pgsRatingArtifact* pRatingArtifact,IEAFDisplayUnits* pDisplayUnits,rptParagraph* pRemarks) const
+void CLoadRatingSummaryChapterBuilder::ReportRatingFactor2(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptRcTable* pTable,RowIndexType row,LPCTSTR strTruck,const pgsRatingArtifact* pRatingArtifact,IEAFDisplayUnits* pDisplayUnits,rptParagraph* pRemarks) const
 {
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    location.IncludeSpanAndGirder(true);

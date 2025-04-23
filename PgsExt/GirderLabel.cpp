@@ -391,6 +391,8 @@ CString ConcreteDescription(const CConcreteMaterial& concrete)
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
+   
+   auto broker = EAFGetBroker();
 
    GET_IFACE2(pBroker,ILossParameters,pLossParameters);
    PrestressLossCriteria::LossMethodType loss_method = pLossParameters->GetLossMethod();
@@ -403,7 +405,7 @@ CString ConcreteDescription(const CConcreteMaterial& concrete)
       {
          if ( concrete.bACIUserParameters )
          {
-            GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+            EAF_GET_IFACE2(broker, IEAFDisplayUnits, pDisplayUnits);
 
             strLabel.Format(_T("%s, ACI 209R-92, %s cured, a = %s, Beta = %4.2f"),
                WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)concrete.Type,true).c_str(),

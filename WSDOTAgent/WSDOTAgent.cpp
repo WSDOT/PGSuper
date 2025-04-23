@@ -64,6 +64,10 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+#pragma Reminder("WORKING HERE - Removing COM")
+// remove all of the COM stuff from this DLL
+// implement an EAF_OBJECT_ENTRY map for the agent.
+
 // Used to determine whether the DLL can be unloaded by OLE
 STDAPI DllCanUnloadNow(void)
 {

@@ -29,9 +29,10 @@
 // {BEA4D31A-3C91-4d6e-AB8B-F363106E3AB3}
 DEFINE_GUID(IID_IDocumentType,
    0xbea4d31a, 0x3c91, 0x4d6e, 0xab, 0x8b, 0xf3, 0x63, 0x10, 0x6e, 0x3a, 0xb3);
-struct __declspec(uuid("{BEA4D31A-3C91-4d6e-AB8B-F363106E3AB3}")) IDocumentType;
-interface IDocumentType : IUnknown
+//struct __declspec(uuid("{BEA4D31A-3C91-4d6e-AB8B-F363106E3AB3}")) IDocumentType;
+class IDocumentType
 {
+public:
    /// @brief Returns true if the current document is a PGSuper project
    virtual bool IsPGSuperDocument() const = 0;
 
