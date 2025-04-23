@@ -1051,9 +1051,8 @@ CDuctData::CDuctData()
 {
    m_pPTData = nullptr;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,ILibraryNames,pLibNames);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,ILibraryNames,pLibNames);
    std::vector<std::_tstring> vNames;
    pLibNames->EnumDuctNames(&vNames);
    Name = vNames.front();
@@ -1073,9 +1072,8 @@ CDuctData::CDuctData(const CSplicedGirderData* pGirder)
 {
    m_pPTData = nullptr;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,ILibraryNames,pLibNames);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,ILibraryNames,pLibNames);
    std::vector<std::_tstring> vNames;
    pLibNames->EnumDuctNames(&vNames);
    Name = vNames.front();
@@ -1231,9 +1229,8 @@ HRESULT CDuctData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
       var.vt = VT_UI4;
       pStrLoad->get_Property(_T("Size"),&var);
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,ILibraryNames,pLibNames);
+      auto pBroker = EAFGetBroker();
+      EAF_GET_IFACE2(pBroker,ILibraryNames,pLibNames);
       std::vector<std::_tstring> vNames;
       pLibNames->EnumDuctNames(&vNames);
       Name = vNames.front();

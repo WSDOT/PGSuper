@@ -172,9 +172,9 @@ BOOL CLiveLoadSelectDlg::OnInitDialog()
    FillEventList();
 
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,ILossParameters,pLossParams);
    if ( pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       GetDlgItem(IDC_EVENT)->EnableWindow(FALSE);
@@ -264,9 +264,9 @@ void CLiveLoadSelectDlg::SetPedestrianComboText(int iCombo, int iStatic)
 
 void CLiveLoadSelectDlg::FillEventList()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    CComboBox* pcbEvent = (CComboBox*)GetDlgItem(IDC_EVENT);
 
@@ -316,9 +316,9 @@ void CLiveLoadSelectDlg::OnEventChanged()
       EventIndexType eventIdx = CreateEvent();
       if (eventIdx != INVALID_INDEX)
       {
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
-         GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+         
+         auto pBroker = EAFGetBroker();
+         EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
          pIBridgeDesc->SetLiveLoadEventByIndex(eventIdx);
 
          FillEventList();
@@ -335,9 +335,9 @@ void CLiveLoadSelectDlg::OnEventChanged()
 
 EventIndexType CLiveLoadSelectDlg::CreateEvent()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
    CTimelineEventDlg dlg(*pTimelineMgr,INVALID_INDEX,FALSE);

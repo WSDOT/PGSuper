@@ -84,11 +84,11 @@ bool txnEditLiveLoad::IsRepeatable() const
 
 void txnEditLiveLoad::DoExecute(int i)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2( pBroker, ILiveLoads, pLiveLoad );
-   GET_IFACE2( pBroker, IEvents,    pEvents   );
+   EAF_GET_IFACE2( pBroker, ILiveLoads, pLiveLoad );
+   EAF_GET_IFACE2( pBroker, IEvents,    pEvents   );
    // Exception-safe holder to keep from fireing events until we are done
    CIEventsHolder event_holder(pEvents);
 
@@ -107,6 +107,6 @@ void txnEditLiveLoad::DoExecute(int i)
    pLiveLoad->SetLaneImpact(               pgsTypes::lltPermit,m_Permit[i].m_LaneImpact);
    pLiveLoad->SetPedestrianLoadApplication(pgsTypes::lltPermit,m_Permit[i].m_PedestrianLoadApplicationType);
 
-   GET_IFACE2( pBroker, IBridgeDescription, pIBridgeDesc );
+   EAF_GET_IFACE2( pBroker, IBridgeDescription, pIBridgeDesc );
    pIBridgeDesc->SetLiveLoadEventByIndex(m_EventIndex[i]);
 }

@@ -33,7 +33,7 @@
 
 #include <DManip/EditableStationTextBlock.h>
 
-CInplacePierStationEditEvents::CInplacePierStationEditEvents(IBroker* pBroker,PierIndexType pierIdx) :
+CInplacePierStationEditEvents::CInplacePierStationEditEvents(std::shared_ptr<WBFL::EAF::Broker> pBroker,PierIndexType pierIdx) :
 CInplaceEditDisplayObjectEvents(pBroker), m_PierIdx(pierIdx)
 {
 }
@@ -51,10 +51,10 @@ void CInplacePierStationEditEvents::Handle_OnChanged(std::shared_ptr<WBFL::DMani
    if ( IsEqual(old_station,new_station) )
       return;
 
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::StationFormat& station_format = pDisplayUnits->GetStationFormat();
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    SpanIndexType nSpans = pBridgeDesc->GetSpanCount();
 

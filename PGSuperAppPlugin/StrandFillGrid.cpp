@@ -132,9 +132,9 @@ void CStrandFillGrid::CustomInit(CGirderSelectStrandsPage* pParent, const Girder
    SetMergeCellsMode(gxnMergeDelayEval);
    SetFrozenCols(2,2); // column 2 is frozen and is a row header column (keeps Select column from scrolling)
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // Make string for max debond length
    m_strMaxDebondLength = FormatDimension(m_pParent->m_MaxDebondLength, pDisplayUnits->GetXSectionDimUnit(), false);
@@ -467,9 +467,9 @@ void CStrandFillGrid::FillGrid()
 
          if ( bIsDebonded )
          {
-            CComPtr<IBroker> pBroker;
-            EAFGetBroker(&pBroker);
-            GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+            
+            auto pBroker = EAFGetBroker();
+            EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
             // strand is debonded
             SetStyleRange(CGXRange(row,FIRST_DEBOND_COL), CGXStyle()
@@ -675,9 +675,9 @@ bool CStrandFillGrid::UpdateData(bool doCheckData)
 {
    // Strand fill information is kept up to date in OnClickedButtonRowCol
    // However, debonding and extended strand information must be taken care of here
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits); // may or may not be used, depends on input parameters
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits); // may or may not be used, depends on input parameters
 
    // clear out old debond data
    m_pParent->m_StraightDebond.clear();
@@ -975,9 +975,9 @@ void CStrandFillGrid::UpdateParent()
 
 void CStrandFillGrid::SymmetricDebond(BOOL bSymmetricDebond)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    m_pParent->m_bSymmetricDebond = bSymmetricDebond;
 

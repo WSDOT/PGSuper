@@ -100,25 +100,25 @@ interface IBeamFactory : IUnknown
    // Creates a new girder section using the supplied dimensions.
    // The overall height and top flange height parameters alter the dimensions of the section
    // Use -1 to use the actual dimensions. These parameters are typically used for spliced girders
-   virtual void CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const = 0;
+   virtual void CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const = 0;
 
    //---------------------------------------------------------------------------------
    // Lays out the girder along the given superstructure member. This function must
    // create the segments that describe the girder line... ConfigureSegment will then be called to do the actual configuration
-   virtual void CreateSegment(IBroker* pBroker, StatusGroupIDType statusGroupID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment** ppSSMbrSegment) const = 0;
+   virtual void CreateSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment** ppSSMbrSegment) const = 0;
 
    //---------------------------------------------------------------------------------
    // Creates the shape of a segment at the specified location Xs, using the parameters defined in pSegment
    // This method is useful to getting shapes for the UI associated with proposed changes to the segment data
-   virtual void CreateSegmentShape(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const = 0;
+   virtual void CreateSegmentShape(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const = 0;
 
    //---------------------------------------------------------------------------------
    // Returns the height of the segment at the specified location based on parameters defined in pSegment
-   virtual Float64 GetSegmentHeight(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const = 0;
+   virtual Float64 GetSegmentHeight(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const = 0;
 
    //---------------------------------------------------------------------------------
    // Configures the segment including cross section and material models... called after CreateSegment is called
-   virtual void ConfigureSegment(IBroker* pBroker, StatusGroupIDType statusGroupID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const = 0;
+   virtual void ConfigureSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const = 0;
 
    //---------------------------------------------------------------------------------
    // Adds Points of interest at all cross section changes.
@@ -129,7 +129,7 @@ interface IBeamFactory : IUnknown
    // For the casting yard POIs, put at least one poi at the start and end of the girder. 
    // For the bridge site POIs, put at least one poi at the stand and end bearings. DO NOT put bridge site POIs
    // before or after the girder bearings
-   virtual void LayoutSectionChangePointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const = 0;
+   virtual void LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const = 0;
 
    //---------------------------------------------------------------------------------
    // Creates an object that implements the IDistFactorEngineer interface. The returned
@@ -138,7 +138,7 @@ interface IBeamFactory : IUnknown
    // Implementation Note: You must call SetBroker on the newly create object and supply
    // it with the pointer to the broker object provided by the caller.
    // const pointers have valid values to be used if non-nullptr
-   virtual void CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType, const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng) const = 0;
+   virtual void CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType, const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng) const = 0;
 
    //---------------------------------------------------------------------------------
    // Creates an object that implements the IPsLossEngineer interface. The returned
@@ -146,7 +146,7 @@ interface IBeamFactory : IUnknown
    //
    // Implementation Note: You must call SetBroker on the newly create object and supply
    // it with the pointer to the broker object provided by the caller.
-   virtual void CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const = 0;
+   virtual void CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const = 0;
 
    //---------------------------------------------------------------------------------
    // The StrandMover object knows how to move harped strands within the section when
@@ -214,8 +214,8 @@ interface IBeamFactory : IUnknown
    virtual std::_tstring GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const = 0;
    virtual std::_tstring GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const = 0;
    virtual std::_tstring GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType) const = 0;
-   virtual std::_tstring GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const = 0;
-   virtual std::_tstring GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const = 0;
+   virtual std::_tstring GetInteriorGirderEffectiveFlangeWidthImage(pgsTypes::SupportedDeckType deckType) const = 0;
+   virtual std::_tstring GetExteriorGirderEffectiveFlangeWidthImage(pgsTypes::SupportedDeckType deckType) const = 0;
 
    //---------------------------------------------------------------------------------
    // Returns the class identifier for the beam factory
@@ -397,7 +397,7 @@ interface ISplicedBeamFactory : IBeamFactory
    // returns true if the section supports end blocks
    virtual bool SupportsEndBlocks() const = 0;
 
-   virtual Float64 GetBottomFlangeDepth(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const = 0;
+   virtual Float64 GetBottomFlangeDepth(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const = 0;
 };
 
 // From time to time, we move data out of a girder library entry, and thus out of the beam factory.

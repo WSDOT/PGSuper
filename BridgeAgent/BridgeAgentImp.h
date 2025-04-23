@@ -71,11 +71,7 @@ namespace WBFL
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeAgentImp
-class ATL_NO_VTABLE CBridgeAgentImp : 
-   public CComObjectRootEx<CComSingleThreadModel>,
-   public CComCoClass<CBridgeAgentImp, &CLSID_BridgeAgent>,
-   public IConnectionPointContainerImpl<CBridgeAgentImp>,
-   public IAgentEx,
+class CBridgeAgentImp : public WBFL::EAF::Agent,
    public IRoadway,
    public IGeometry,
    public IBridge,
@@ -105,7 +101,6 @@ public:
       m_LOTFSectionPropertiesKey(CSegmentKey(INVALID_INDEX,INVALID_INDEX,INVALID_INDEX),0.0,INVALID_INDEX)
 	{
       m_Level        = 0;
-      m_pBroker      = 0;
 
       m_bUserLoadsValidated  = false;
       m_bDeckParametersValidated = false;
@@ -113,43 +108,6 @@ public:
       m_DeltaX = 0;
       m_DeltaY = 0;
 	}
-
-   HRESULT FinalConstruct();
-   void FinalRelease();
-
-DECLARE_REGISTRY_RESOURCEID(IDR_BRIDGEAGENT)
-
-BEGIN_COM_MAP(CBridgeAgentImp)
-   COM_INTERFACE_ENTRY(IAgent)
-   COM_INTERFACE_ENTRY(IAgentEx)
-   COM_INTERFACE_ENTRY(IRoadway)
-   COM_INTERFACE_ENTRY(IGeometry)
-   COM_INTERFACE_ENTRY(IBridge)
-   COM_INTERFACE_ENTRY(IMaterials)
-   COM_INTERFACE_ENTRY(IStrandGeometry)
-   COM_INTERFACE_ENTRY(ILongRebarGeometry)
-   COM_INTERFACE_ENTRY(IStirrupGeometry)
-   COM_INTERFACE_ENTRY(IPointOfInterest)
-   COM_INTERFACE_ENTRY(ISectionProperties)
-   COM_INTERFACE_ENTRY(IShapes)
-   COM_INTERFACE_ENTRY(IBarriers)
-   COM_INTERFACE_ENTRY(ISegmentLiftingPointsOfInterest)
-   COM_INTERFACE_ENTRY(ISegmentHaulingPointsOfInterest)
-   COM_INTERFACE_ENTRY(IBridgeDescriptionEventSink)
-   COM_INTERFACE_ENTRY(ISpecificationEventSink)
-   COM_INTERFACE_ENTRY(ILossParametersEventSink)
-   COM_INTERFACE_ENTRY(IUserDefinedLoads)
-   COM_INTERFACE_ENTRY(ITempSupport)
-   COM_INTERFACE_ENTRY(IGirder)
-   COM_INTERFACE_ENTRY(IGirderTendonGeometry)
-   COM_INTERFACE_ENTRY(ISegmentTendonGeometry)
-   COM_INTERFACE_ENTRY(IIntervals)
-   COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
-END_COM_MAP()
-
-BEGIN_CONNECTION_POINT_MAP(CBridgeAgentImp)
-END_CONNECTION_POINT_MAP()
-
 
 #if defined _USE_MULTITHREADING
    CThreadManager m_ThreadManager;
@@ -173,13 +131,11 @@ END_CONNECTION_POINT_MAP()
 
 // IAgent
 public:
-   STDMETHOD(SetBroker)(/*[in]*/ IBroker* pBroker) override;
-	STDMETHOD(RegInterfaces)() override;
-	STDMETHOD(Init)() override;
-	STDMETHOD(Reset)() override;
-	STDMETHOD(ShutDown)() override;
-   STDMETHOD(Init2)() override;
-   STDMETHOD(GetClassID)(CLSID* pCLSID) override;
+	bool RegInterfaces() override;
+	bool Init() override;
+	bool Reset() override;
+	bool ShutDown() override;
+   CLSID GetCLSID() const override;
 
 // IRoadway
 public:
@@ -1306,7 +1262,7 @@ public:
 
 
 private:
-   DECLARE_EAF_AGENT_DATA;
+   //DECLARE_EAF_AGENT_DATA;
    DECLARE_LOGFILE;
 
    Uint16 m_Level;

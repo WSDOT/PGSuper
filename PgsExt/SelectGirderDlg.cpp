@@ -69,16 +69,15 @@ BOOL CSelectGirderDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 	
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
-	GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc ); 
+	EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc ); 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
 	CComboBox* pGroupBox   = (CComboBox*)GetDlgItem( IDC_GROUP );
    CComboBox* pGirderBox  = (CComboBox*)GetDlgItem( IDC_GIRDER );
 
-   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
    bool bPGSuper = pDocType->IsPGSuperDocument();
    GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
@@ -115,10 +114,9 @@ BOOL CSelectGirderDlg::OnInitDialog()
 
 void CSelectGirderDlg::OnGroupChanged() 
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
-	GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc ); 
+	EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc ); 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
 	CComboBox* pGroupBox   = (CComboBox*)GetDlgItem( IDC_GROUP );

@@ -37,7 +37,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-bool FlexureStressFailures(IBroker* pBroker,const CSegmentKey& segmentKey,const StressCheckTask& task,const pgsSegmentArtifact* pArtifact,bool bBeamStresses)
+bool FlexureStressFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,const StressCheckTask& task,const pgsSegmentArtifact* pArtifact,bool bBeamStresses)
 {
    IndexType nArtifacts = pArtifact->GetFlexuralStressArtifactCount(task);
    for ( IndexType idx = 0; idx < nArtifacts; idx++ )
@@ -63,23 +63,23 @@ bool FlexureStressFailures(IBroker* pBroker,const CSegmentKey& segmentKey,const 
 }
 
 
-void ListStressFailures(IBroker* pBroker, FailureList& rFailures, const pgsGirderArtifact* pGirderArtifact,bool referToDetailsReport)
+void ListStressFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker, FailureList& rFailures, const pgsGirderArtifact* pGirderArtifact,bool referToDetailsReport)
 {
-   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
    bool bPrestressedGirder = pDocType->IsPGSuperDocument();
 
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
-   GET_IFACE2_NOCHECK(pBroker,IProductLoads,pProductLoads); // only used if there are failues
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   GET_IFACE2(pBroker, IStressCheck, pStressCheck);
+   EAF_GET_IFACE2_NOCHECK(pBroker,IProductLoads,pProductLoads); // only used if there are failues
+   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker, IStressCheck, pStressCheck);
 
    IntervalIndexType noncompositeIntervalIdx = pIntervals->GetLastNoncompositeInterval();
    IntervalIndexType compositeIntervalIdx = pIntervals->GetLastCompositeInterval();
    IntervalIndexType lastIntervalIdx      = pIntervals->GetIntervalCount()-1;
 
-   GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
+   EAF_GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
@@ -92,7 +92,7 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures, const pgsGirde
       }
    }
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
@@ -221,7 +221,7 @@ void ListStressFailures(IBroker* pBroker, FailureList& rFailures, const pgsGirde
    } // next segment
 }
 
-bool MomentCapacityFailures(IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bPositiveMoment)
+bool MomentCapacityFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsGirderArtifact* pGirderArtifact,IntervalIndexType intervalIdx,pgsTypes::LimitState ls,bool bPositiveMoment)
 {
    IndexType nArtifacts = (bPositiveMoment ? pGirderArtifact->GetPositiveMomentFlexuralCapacityArtifactCount(intervalIdx,ls) : pGirderArtifact->GetNegativeMomentFlexuralCapacityArtifactCount(intervalIdx, ls));
    for ( IndexType artifactIdx = 0; artifactIdx < nArtifacts; artifactIdx++ )
@@ -239,10 +239,10 @@ bool MomentCapacityFailures(IBroker* pBroker,const pgsGirderArtifact* pGirderArt
    return false;
 }
 
-void ListMomentCapacityFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,pgsTypes::LimitState ls)
+void ListMomentCapacityFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,pgsTypes::LimitState ls)
 {
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   GET_IFACE2_NOCHECK(pBroker,IProductLoads,pProductLoads); // only used if there is a failure
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2_NOCHECK(pBroker,IProductLoads,pProductLoads); // only used if there is a failure
 
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 

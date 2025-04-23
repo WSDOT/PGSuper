@@ -163,9 +163,8 @@ BOOL CBridgeDescDeckPointGrid::OnValidateCell(ROWCOL nRow,ROWCOL nCol)
    if ( nCol == 1 )
    {
       // Validation station... 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      auto pBroker = EAFGetBroker();
+      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       Float64 station_value = -99999999;
       try
@@ -233,9 +232,8 @@ void CBridgeDescDeckPointGrid::CustomInit()
 
    SetMergeCellsMode(gxnMergeDelayEval);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
 	GetParam( )->EnableUndo(FALSE);
 
@@ -328,9 +326,8 @@ void CBridgeDescDeckPointGrid::SetPointRowData(ROWCOL row,const CDeckPoint& poin
       .SetValue(_T(""))
       );
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    CString strStation = FormatStation(pDisplayUnits->GetStationFormat(),point.Station);
 
    SetStyleRange(CGXRange(row,1), CGXStyle()
@@ -367,9 +364,8 @@ void CBridgeDescDeckPointGrid::SetPointRowData(ROWCOL row,const CDeckPoint& poin
 
 void CBridgeDescDeckPointGrid::GetPointRowData(ROWCOL row,CDeckPoint* pPoint)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // Station
    std::_tstring strStation(GetCellValue(row, 1));
@@ -642,9 +638,8 @@ void CBridgeDescDeckPointGrid::Enable(BOOL bEnable)
 
 BOOL CBridgeDescDeckPointGrid::Validate()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    UnitModeType unitMode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 

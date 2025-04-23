@@ -123,9 +123,9 @@ void CGirderSegmentSpacingPage::DoDataExchange(CDataExchange* pDX)
 
    DDV_SpacingGrid(pDX,IDC_SPACING_GRID,&m_SpacingGrid);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    DDX_CBItemData(pDX, IDC_REF_GIRDER, m_RefGirderIdx);
    DDX_OffsetAndTag(pDX, IDC_REF_GIRDER_OFFSET,IDC_REF_GIRDER_OFFSET_UNIT, m_RefGirderOffset, pDisplayUnits->GetXSectionDimUnit());
@@ -392,9 +392,8 @@ void CGirderSegmentSpacingPage::OnChangeSameGirderSpacing()
          {
             // there is more than one unique girder spacing... which one do we want to use
             // for the entire bridge???
-            CComPtr<IBroker> broker;
-            EAFGetBroker(&broker);
-            GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
+            auto broker = EAFGetBroker();
+            EAF_GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
 
             CSelectItemDlg dlg;
             dlg.m_strLabel = _T("Select the spacing to be used for the entire bridge");
@@ -562,9 +561,8 @@ LPCTSTR CGirderSegmentSpacingPage::GetOrientation()
 
 Float64 CGirderSegmentSpacingPage::GetSkewAngle()
 {
-   CComPtr<IBroker> broker;
-   EAFGetBroker(&broker);
-   GET_IFACE2(broker,IBridge,pBridge);
+   auto broker = EAFGetBroker();
+   EAF_GET_IFACE2(broker,IBridge,pBridge);
 
    Float64 skewAngle;
    pBridge->GetSkewAngle(GetStation(),GetOrientation(),&skewAngle);

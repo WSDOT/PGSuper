@@ -96,13 +96,11 @@ void CConcreteDetailsDlg::Init()
 
    AddPage( &m_General );
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   CComPtr<ILossParameters> pLossParameters;
-   HRESULT hr = pBroker->GetInterface(IID_ILossParameters,(IUnknown**)&pLossParameters);
+   auto pBroker = EAFGetBroker();
+   auto pLossParameters = pBroker->GetInterface<ILossParameters>(IID_ILossParameters);
    
    PrestressLossCriteria::LossMethodType loss_method = PrestressLossCriteria::LossMethodType::AASHTO_REFINED_2005;
-   if ( SUCCEEDED(hr) )
+   if (pLossParameters)
    {
       loss_method = pLossParameters->GetLossMethod();
    }

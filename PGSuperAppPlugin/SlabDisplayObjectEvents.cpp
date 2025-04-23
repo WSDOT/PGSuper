@@ -46,14 +46,14 @@
 /////////////////////////////////////////////////////////////////////////////
 // CBridgePlanViewSlabDisplayObjectEvents
 
-CBridgePlanViewSlabDisplayObjectEvents::CBridgePlanViewSlabDisplayObjectEvents(CPGSDocBase* pDoc,IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,bool bFillIfNotSelected)
+CBridgePlanViewSlabDisplayObjectEvents::CBridgePlanViewSlabDisplayObjectEvents(CPGSDocBase* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker, CBridgeModelViewChildFrame* pFrame,bool bFillIfNotSelected)
 {
    m_pDoc = pDoc;
    m_pBroker = pBroker;
    m_pFrame = pFrame;
    m_bFillIfNotSelected = bFillIfNotSelected;
 
-   GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE(IBridge,pBridge);
    m_nPiers = pBridge->GetPierCount();
 }
 
@@ -242,7 +242,7 @@ void CBridgePlanViewSlabDisplayObjectEvents::OnUnselect(std::shared_ptr<WBFL::DM
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeSectionViewSlabDisplayObjectEvents
 
-CBridgeSectionViewSlabDisplayObjectEvents::CBridgeSectionViewSlabDisplayObjectEvents(CPGSDocBase* pDoc,IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,bool bFillIfNotSelected)
+CBridgeSectionViewSlabDisplayObjectEvents::CBridgeSectionViewSlabDisplayObjectEvents(CPGSDocBase* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker, CBridgeModelViewChildFrame* pFrame,bool bFillIfNotSelected)
 {
    m_pDoc = pDoc;
    m_pBroker = pBroker;

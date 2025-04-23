@@ -104,9 +104,9 @@ void CGirderSelectStrandsPage::DoDataExchange(CDataExchange* pDX)
 {
    CPropertyPage::DoDataExchange(pDX);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    DDX_Check(pDX, IDC_CHECK_SYMM, m_bSymmetricDebond);
    DDX_Check(pDX, IDC_SHOW_NUMBERS, m_DrawNumbers);
@@ -387,9 +387,9 @@ void CGirderSelectStrandsPage::OnSize(UINT nType, int cx, int cy)
 
 void CGirderSelectStrandsPage::OnPaint() 
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    // Make sure we have up to date grid data
    m_Grid.UpdateData(false);
@@ -1023,9 +1023,9 @@ void CGirderSelectStrandsPage::OnCbnSelchangeComboViewloc()
 
 void CGirderSelectStrandsPage::UpdateStrandAdjustments()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    // adjustment of harped strands at ends
    Float64 end_incr = pStrandGeometry->GetHarpedEndOffsetIncrement(m_pGdrEntry->GetName().c_str(),m_AdjustableStrandType);
@@ -1043,9 +1043,9 @@ void CGirderSelectStrandsPage::UpdateStrandAdjustments()
       // We can vertically adjust harped strands
       ShowHarpedAdjustmentControls(TRUE, areHarpedStraight);
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      
+      auto pBroker = EAFGetBroker();
+      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
       const WBFL::Units::LengthData& measUnit = pDisplayUnits->GetComponentDimUnit();
 
       // Unit tag
@@ -1225,9 +1225,9 @@ void CGirderSelectStrandsPage::EnableHarpedEndAdjustmentControls(BOOL enable)
 
 void CGirderSelectStrandsPage::OnCbnSelchangeHarpEndCb()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::LengthData& measUnit = pDisplayUnits->GetComponentDimUnit();
 
    CComboBox* pcb = (CComboBox*)GetDlgItem(IDC_HARP_END_CB);
@@ -1249,9 +1249,9 @@ void CGirderSelectStrandsPage::OnCbnSelchangeHarpEndCb()
 
 void CGirderSelectStrandsPage::OnCbnSelchangeHarpHpCb()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::LengthData& measUnit = pDisplayUnits->GetComponentDimUnit();
 
    CComboBox* pcb = (CComboBox*)GetDlgItem(IDC_HARP_HP_CB);
@@ -1397,9 +1397,9 @@ void CGirderSelectStrandsPage::UpdatePjackEditEx(StrandIndexType nStrands, UINT 
    {
       // Compute pjack and fill in value
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      
+      auto pBroker = EAFGetBroker();
+      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       // Get the edit control value and save it as the last user input force
       CString val_as_text;
@@ -1428,9 +1428,9 @@ void CGirderSelectStrandsPage::UpdatePjackEditEx(StrandIndexType nStrands, UINT 
    else if (nStrands == 0)
    {
       // zero out pjack
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      
+      auto pBroker = EAFGetBroker();
+      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       Float64 jack=0.0;
       CDataExchange dx(this,FALSE);
@@ -1440,9 +1440,9 @@ void CGirderSelectStrandsPage::UpdatePjackEditEx(StrandIndexType nStrands, UINT 
 
 Float64 CGirderSelectStrandsPage::GetMaxPjack(StrandIndexType nStrands,pgsTypes::StrandType strandType)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2( pBroker, IPretensionForce, pPSForce );
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2( pBroker, IPretensionForce, pPSForce );
 
 
    // TRICK CODE
@@ -1454,10 +1454,10 @@ Float64 CGirderSelectStrandsPage::GetMaxPjack(StrandIndexType nStrands,pgsTypes:
    // This exception adversely impacts the behavior of this dialog. To prevent these problems, capture the current ROA setting, change ROA to
    // "Ignore", compute PjackMax, and then restore the ROA setting.
 
-   GET_IFACE2(pBroker,IEvents,pEvents);
+   EAF_GET_IFACE2(pBroker,IEvents,pEvents);
    pEvents->HoldEvents();
 
-   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
+   EAF_GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    WBFL::LRFD::RangeOfApplicabilityAction action = pLiveLoads->GetRangeOfApplicabilityAction();
    pLiveLoads->SetRangeOfApplicabilityAction(WBFL::LRFD::RangeOfApplicabilityAction::Ignore);
 

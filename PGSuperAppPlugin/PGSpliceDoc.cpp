@@ -161,7 +161,7 @@ void CPGSpliceDoc::DoIntegrateWithUI(BOOL bIntegrate)
    {
       UINT nID = m_pPGSuperDocProxyAgent->GetStdToolBarID();
 
-      GET_IFACE(IEAFToolbars,pToolBars);
+      EAF_GET_IFACE(IEAFToolbars,pToolBars);
       auto pToolBar = pToolBars->GetToolBar(nID);
       pToolBar->CreateDropDownButton(ID_EDIT_SEGMENT,nullptr,BTNS_WHOLEDROPDOWN);
    }
@@ -212,7 +212,7 @@ BOOL CPGSpliceDoc::OnEditGirderDropDown(NMHDR* pnmhdr,LRESULT* plr)
 
    auto contextMenu = WBFL::EAF::Menu::CreateMenu(pMenu->Detach(),GetPluginCommandManager());
 
-   GET_IFACE(IEAFToolbars,pToolBars);
+   EAF_GET_IFACE(IEAFToolbars,pToolBars);
    auto pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
    int idx = pToolBar->CommandToIndex(ID_EDIT_SEGMENT,nullptr);
    CRect rect;
@@ -278,7 +278,7 @@ void CPGSpliceDoc::OnEditClosureJoint()
 
    CSegmentKey closureKey;
    
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    if ( selection.Type == CSelection::ClosureJoint )
@@ -423,8 +423,8 @@ void CPGSpliceDoc::OnEditTemporarySupport()
    }
    else
    {
-      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-      GET_IFACE(IBridgeDescription,pIBridgeDesc);
+      EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+      EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
       CString strChoices;
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
       SupportIndexType nTS = pBridgeDesc->GetTemporarySupportCount();
@@ -460,7 +460,7 @@ void CPGSpliceDoc::OnEditTemporarySupport()
 
 void CPGSpliceDoc::OnUpdateEditTemporarySupport(CCmdUI* pCmdUI)
 {
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    SupportIndexType nTS = pBridgeDesc->GetTemporarySupportCount();
 
@@ -469,7 +469,7 @@ void CPGSpliceDoc::OnUpdateEditTemporarySupport(CCmdUI* pCmdUI)
 
 void CPGSpliceDoc::OnUpdateEditClosureJoint(CCmdUI* pCmdUI)
 {
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    IndexType nClosures = pBridgeDesc->GetClosureJointCount();
 
@@ -480,7 +480,7 @@ void CPGSpliceDoc::OnInsertTemporarySupport()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    CTemporarySupportDlg dlg(pBridgeDesc,INVALID_INDEX,EAFGetMainFrame());
@@ -498,7 +498,7 @@ void CPGSpliceDoc::OnInsertTemporarySupport()
          pTxn = std::move(pMacro);
       }
 
-      GET_IFACE(IEAFTransactions,pTransactions);
+      EAF_GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(std::move(pTxn));
    }
 }
@@ -553,7 +553,7 @@ void CPGSpliceDoc::OnProjectDesignHaunch()
 
 void CPGSpliceDoc::OnUpdateCopyTempSupportProps(CCmdUI * pCmdUI)
 {
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    // Can't copy from/to unless there is more than one temp support
@@ -588,7 +588,7 @@ BOOL CPGSpliceDoc::OnCopyTempSupportPropsTb(NMHDR* pnmhdr,LRESULT* plr)
       contextMenu->AppendMenu(nCmd, copyName, nullptr);
    }
 
-   GET_IFACE(IEAFToolbars,pToolBars);
+   EAF_GET_IFACE(IEAFToolbars,pToolBars);
    auto pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
    int idx = pToolBar->CommandToIndex(ID_COPY_TEMPSUPPORT_PROPS,nullptr);
    CRect rect;
@@ -610,7 +610,7 @@ bool CPGSpliceDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,in
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    CGirderSegmentDlg dlg(pBridgeDesc,segmentKey,EAFGetMainFrame(),nPage);
 
@@ -653,7 +653,7 @@ bool CPGSpliceDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,in
          pTxn = std::move(pMacro);
       }
 
-      GET_IFACE(IEAFTransactions,pTransactions);
+      EAF_GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(std::move(pTxn));
       bRetVal = true;
    }
@@ -665,7 +665,7 @@ bool CPGSpliceDoc::EditClosureJointDescription(const CClosureKey& closureKey,int
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    CClosureJointDlg dlg(pIBridgeDesc->GetBridgeDescription(),closureKey);
 
    if ( dlg.DoModal() == IDOK )
@@ -694,7 +694,7 @@ bool CPGSpliceDoc::EditClosureJointDescription(const CClosureKey& closureKey,int
          pTxn = std::move(pMacro);
       }
 
-      GET_IFACE(IEAFTransactions,pTransactions);
+      EAF_GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(std::move(pTxn));
    }
 
@@ -711,7 +711,7 @@ bool CPGSpliceDoc::EditGirderDescription(const CGirderKey& girderKey,int nPage)
 
    if ( dlg.DoModal() == IDOK )
    {
-      GET_IFACE(IBridgeDescription,pIBridgeDesc);
+      EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
       std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditGirderline>(girderKey,dlg.m_bApplyToAll,*pBridgeDesc,dlg.m_BridgeDescription));
@@ -726,7 +726,7 @@ bool CPGSpliceDoc::EditGirderDescription(const CGirderKey& girderKey,int nPage)
          pTxn = std::move(pMacro);
       }
 
-      GET_IFACE(IEAFTransactions,pTransactions);
+      EAF_GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(std::move(pTxn));
 
       bRetVal = true;
@@ -737,7 +737,7 @@ bool CPGSpliceDoc::EditGirderDescription(const CGirderKey& girderKey,int nPage)
 
 void CPGSpliceDoc::DeleteTemporarySupport(SupportIDType tsID)
 {
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    CBridgeDescription2 oldBridgeDesc = *pBridgeDesc;
    CBridgeDescription2 newBridgeDesc = *pBridgeDesc;
@@ -747,7 +747,7 @@ void CPGSpliceDoc::DeleteTemporarySupport(SupportIDType tsID)
    newBridgeDesc.RemoveTemporarySupportByIndex(tsIdx);
 
    std::unique_ptr<txnDeleteTemporarySupport> pTxn(std::make_unique<txnDeleteTemporarySupport>(tsIdx,oldBridgeDesc,newBridgeDesc));
-   GET_IFACE(IEAFTransactions,pTransactions);
+   EAF_GET_IFACE(IEAFTransactions,pTransactions);
    pTransactions->Execute(std::move(pTxn));
 }
 
@@ -759,7 +759,7 @@ bool CPGSpliceDoc::EditTemporarySupportDescription(SupportIDType tsID,int nPage)
 
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    const CTemporarySupportData* pTS = pBridgeDesc->FindTemporarySupport(tsID);
@@ -781,7 +781,7 @@ bool CPGSpliceDoc::EditTemporarySupportDescription(SupportIDType tsID,int nPage)
          pTxn = std::move(pMacro);
       }
 
-      GET_IFACE(IEAFTransactions,pTransactions);
+      EAF_GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(std::move(pTxn));
    }
    return true;

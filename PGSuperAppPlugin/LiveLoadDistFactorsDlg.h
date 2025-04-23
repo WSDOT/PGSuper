@@ -77,7 +77,7 @@ public:
 
    CBridgeDescription2 m_BridgeDesc;
    WBFL::LRFD::RangeOfApplicabilityAction m_RangeOfApplicabilityAction;
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
 
 // Overrides
 	// ClassWizard generated virtual function overrides

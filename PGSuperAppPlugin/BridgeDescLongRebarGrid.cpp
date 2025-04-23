@@ -190,9 +190,8 @@ void CGirderDescLongRebarGrid::OnUpdateEditRemoverows(CCmdUI* pCmdUI)
 
 void CGirderDescLongRebarGrid::CustomInit()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
 // Initialize the grid. For CWnd based grids this call is // 
 // essential. For view based grids this initialization is done 
@@ -674,9 +673,8 @@ void CGirderDescLongRebarGrid::FillGrid(const CLongitudinalRebarData& rebarData)
 	      Insertrow();
       }
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      auto pBroker = EAFGetBroker();
+      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       // fill grid
       ROWCOL nRow=1;
@@ -752,9 +750,8 @@ void CGirderDescLongRebarGrid::FillGrid(const CLongitudinalRebarData& rebarData)
 
 bool CGirderDescLongRebarGrid::GetRebarData(CLongitudinalRebarData* pRebarData)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits); // not used if grid is empty
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits); // not used if grid is empty
 
    pRebarData->RebarRows.clear();
    ROWCOL nRows = GetRowCount();

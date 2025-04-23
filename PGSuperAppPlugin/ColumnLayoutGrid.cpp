@@ -85,9 +85,9 @@ void CColumnLayoutGrid::CustomInit()
 		);
 
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
 // set text along top row
    int col = 0;
@@ -170,9 +170,9 @@ void CColumnLayoutGrid::CustomInit()
 
 void CColumnLayoutGrid::SetHeightMeasurementType(CColumnData::ColumnHeightMeasurementType measure)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CString cv;
    cv.Format(_T("%s\n(%s)"),(measure == CColumnData::chtHeight ? _T("Height") : _T("Bottom\nElev")),pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str());
@@ -309,9 +309,9 @@ void CColumnLayoutGrid::SetColumnData(const CPierData2& pier)
 
 void CColumnLayoutGrid::SetColumnData(ROWCOL row,const CColumnData& column,Float64 S)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    ROWCOL col = 1;
 
@@ -410,9 +410,9 @@ void CColumnLayoutGrid::AddColumn(const CColumnData& column,Float64 S)
 
 void CColumnLayoutGrid::GetColumnData(ROWCOL row,CColumnData* pColumn,Float64* pS)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    ROWCOL col = 1;
 

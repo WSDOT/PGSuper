@@ -40,12 +40,11 @@ public:
 class pgsAlignmentDescriptionStatusCallback : public iStatusCallback
 {
 public:
-   pgsAlignmentDescriptionStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity);
+   pgsAlignmentDescriptionStatusCallback(eafTypes::StatusSeverityType severity);
    virtual eafTypes::StatusSeverityType GetSeverity() const override;
    virtual void Execute(CEAFStatusItem* pStatusItem) override;
 
 private:
-   IBroker* m_pBroker;
    eafTypes::StatusSeverityType m_Severity;
 };
 
@@ -68,12 +67,11 @@ public:
 class pgsConcreteStrengthStatusCallback : public iStatusCallback
 {
 public:
-   pgsConcreteStrengthStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType statusLevel);
+   pgsConcreteStrengthStatusCallback(eafTypes::StatusSeverityType statusLevel);
    virtual eafTypes::StatusSeverityType GetSeverity() const override;
    virtual void Execute(CEAFStatusItem* pStatusItem) override;
 
 private:
-   IBroker* m_pBroker;
    eafTypes::StatusSeverityType m_Severity;
 };
 
@@ -91,12 +89,11 @@ public:
 class pgsPointLoadStatusCallback : public iStatusCallback
 {
 public:
-   pgsPointLoadStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity);
+   pgsPointLoadStatusCallback(eafTypes::StatusSeverityType severity);
    virtual eafTypes::StatusSeverityType GetSeverity() const override;
    virtual void Execute(CEAFStatusItem* pStatusItem) override;
 
 private:
-   IBroker* m_pBroker;
    eafTypes::StatusSeverityType m_Severity;
 };
 
@@ -115,12 +112,11 @@ public:
 class pgsDistributedLoadStatusCallback : public iStatusCallback
 {
 public:
-   pgsDistributedLoadStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity);
+   pgsDistributedLoadStatusCallback(eafTypes::StatusSeverityType severity);
    virtual eafTypes::StatusSeverityType GetSeverity() const override;
    virtual void Execute(CEAFStatusItem* pStatusItem) override;
 
 private:
-   IBroker* m_pBroker;
    eafTypes::StatusSeverityType m_Severity;
 };
 
@@ -139,11 +135,10 @@ public:
 class pgsMomentLoadStatusCallback : public iStatusCallback
 {
 public:
-   pgsMomentLoadStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity);
+   pgsMomentLoadStatusCallback(eafTypes::StatusSeverityType severity);
    virtual eafTypes::StatusSeverityType GetSeverity() const override;
    virtual void Execute(CEAFStatusItem* pStatusItem) override;
 
 private:
-   IBroker* m_pBroker;
    eafTypes::StatusSeverityType m_Severity;
 };

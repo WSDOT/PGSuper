@@ -179,7 +179,7 @@ void CEditLoadsView::OnInitialUpdate()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   EAFGetBroker(&m_pBroker);
+   m_pBroker = EAFGetBroker();
 
    m_IsInitialUpdate = true;  // have to play a game here to get onupdate to work right
 
@@ -250,21 +250,21 @@ void CEditLoadsView::OnAddPointload()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CPointLoadData load;
-   GET_IFACE(IEditByUI, pEditByUI);
+   EAF_GET_IFACE(IEditByUI, pEditByUI);
    pEditByUI->AddPointLoad(load);
 }
 
 void CEditLoadsView::OnAddDistributedLoad()
 {
    CDistributedLoadData load;
-   GET_IFACE(IEditByUI, pEditByUI);
+   EAF_GET_IFACE(IEditByUI, pEditByUI);
    pEditByUI->AddDistributedLoad(load);
 }
 
 void CEditLoadsView::OnAddMomentload() 
 {
    CMomentLoadData load;
-   GET_IFACE(IEditByUI, pEditByUI);
+   EAF_GET_IFACE(IEditByUI, pEditByUI);
    pEditByUI->AddMomentLoad(load);
 }
 
@@ -336,7 +336,7 @@ void CEditLoadsView::InsertData()
    int irow=0;
 
    // Add Point Loads
-   GET_IFACE(IUserDefinedLoadData, pUdl);
+   EAF_GET_IFACE(IUserDefinedLoadData, pUdl);
    IndexType pl_cnt = pUdl->GetPointLoadCount();
    IndexType ipl;
    for (ipl = 0; ipl < pl_cnt; ipl++)
@@ -392,7 +392,7 @@ void CEditLoadsView::InsertData()
 
 CString CEditLoadsView::GetEventName(EventIDType loadID)
 {
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
    EventIndexType eventIdx = pTimelineMgr->FindUserLoadEventIndex(loadID);
    CString str;
@@ -402,7 +402,7 @@ CString CEditLoadsView::GetEventName(EventIDType loadID)
 
 void CEditLoadsView::UpdatePointLoadItem(int irow, const CPointLoadData& ptLoad)
 {
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    m_LoadsListCtrl.SetItemText(irow, 1, GetEventName(ptLoad.m_ID));
    m_LoadsListCtrl.SetItemText(irow, 2, UserLoads::GetLoadCaseName(ptLoad.m_LoadCase).c_str());
@@ -462,7 +462,7 @@ void CEditLoadsView::UpdatePointLoadItem(int irow, const CPointLoadData& ptLoad)
 
 void CEditLoadsView::UpdateDistributedLoadItem(int irow, const CDistributedLoadData& load)
 {
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    if (load.m_Type == UserLoads::Uniform)
    {
@@ -534,7 +534,7 @@ void CEditLoadsView::UpdateDistributedLoadItem(int irow, const CDistributedLoadD
 
 void CEditLoadsView::UpdateMomentLoadItem(int irow, const CMomentLoadData& load)
 {
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    m_LoadsListCtrl.SetItemText(irow, 1, GetEventName(load.m_ID));
    m_LoadsListCtrl.SetItemText(irow, 2, UserLoads::GetLoadCaseName(load.m_LoadCase).c_str());
@@ -591,7 +591,7 @@ void CEditLoadsView::EditLoad(POSITION pos)
    WORD load_type = LOWORD(data);
    LoadIDType load_id = (LoadIDType)HIWORD(data);
 
-   GET_IFACE(IEditByUI,pEditByUI);
+   EAF_GET_IFACE(IEditByUI,pEditByUI);
    if (load_type == W_POINT_LOAD)
    {
       pEditByUI->EditPointLoadByID(load_id);
@@ -759,7 +759,7 @@ void CEditLoadsView::OnDestroy()
 class SortObject
 {
 public:
-   static CComPtr<IUserDefinedLoadData> m_pUdl;
+   static std::shared_ptr<IUserDefinedLoadData> m_pUdl;
    static bool m_bSortAscending;
    static const CTimelineManager* m_pTimelineMgr;
    static int CALLBACK SortFunc(LPARAM lParam1,LPARAM lParam2,LPARAM lParamSort);
@@ -772,7 +772,7 @@ public:
    static CString GetDescription(LPARAM lParam);
 };
 
-CComPtr<IUserDefinedLoadData> SortObject::m_pUdl;
+std::shared_ptr<IUserDefinedLoadData> SortObject::m_pUdl;
 const CTimelineManager* SortObject::m_pTimelineMgr = nullptr;
 bool SortObject::m_bSortAscending = true;
 
@@ -1004,10 +1004,14 @@ void CEditLoadsView::Sort(int columnIdx,bool bReverse)
       SortObject::m_bSortAscending = m_bSortAscending;
    }
 
-   GET_IFACE_NOCHECK(IUserDefinedLoadData, pUdl);
+   EAF_GET_IFACE_NOCHECK(IUserDefinedLoadData, pUdl);
+#pragma Reminder("WORKING HERE - Removing COM - possible circular reference issue")
+   // SortObject::m_pUdl is a static member, it is not going to release the pointer
+   // Maybe it needs to be a weak pointer.
+   // See call below for shared_ptr.reset() to manually release the pointer
    SortObject::m_pUdl = pUdl;
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    SortObject::m_pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
    m_LoadsListCtrl.SortItems(SortObject::SortFunc,columnIdx);
@@ -1027,7 +1031,7 @@ void CEditLoadsView::Sort(int columnIdx,bool bReverse)
    m_LoadsListCtrl.GetHeaderCtrl()->SetItem(columnIdx,&new_item);
 
 
-   SortObject::m_pUdl.Release();
+   SortObject::m_pUdl.reset();
 
    m_bSortAscending = SortObject::m_bSortAscending;
 

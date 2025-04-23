@@ -68,8 +68,8 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
    // longitudinal steel information from grid and store it
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    if (pDX->m_bSaveAndValidate)
    {
@@ -82,13 +82,13 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
 
 #pragma Reminder("UPDATE: need to validate at both ends because of tapered segments")
       // Validate geometry of the bars
-      GET_IFACE2(pBroker,IIntervals,pIntervals);
+      EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(pParent->m_SegmentKey);
-      GET_IFACE2(pBroker,IPointOfInterest,pPOI);
+      EAF_GET_IFACE2(pBroker,IPointOfInterest,pPOI);
       pgsPointOfInterest poi(pPOI->GetPointOfInterest(pParent->m_SegmentKey,0.0));
-      GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+      EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
       Float64 height = pSectProp->GetHg(releaseIntervalIdx,poi);
-      GET_IFACE2(pBroker,IShapes,pShapes);
+      EAF_GET_IFACE2(pBroker,IShapes,pShapes);
       CComPtr<IShape> shape;
       pShapes->GetSegmentShape(releaseIntervalIdx,poi,false,pgsTypes::scGirder,&shape);
 
@@ -152,9 +152,9 @@ END_MESSAGE_MAP()
 void CGirderDescLongitudinalRebar::RestoreToLibraryDefaults(CLongitudinalRebarData* pLongData)
 {
    // get shear information from library
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker, ILibrary, pLib );
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker, ILibrary, pLib );
    const GirderLibraryEntry* pGirderEntry = pLib->GetGirderEntry( m_CurGrdName.c_str());
    ASSERT(pGirderEntry != 0);
 

@@ -42,12 +42,12 @@ static char THIS_FILE[] = __FILE__;
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-PGSuperCalculationSheet::PGSuperCalculationSheet(IBroker* pBroker) :
+PGSuperCalculationSheet::PGSuperCalculationSheet(std::shared_ptr<WBFL::EAF::Broker> pBroker) :
 WsdotCalculationSheet()
 {
    ATLASSERT(pBroker!=0);
    m_pBroker=pBroker;
-   GET_IFACE(IProjectProperties,pProj);
+   EAF_GET_IFACE(IProjectProperties,pProj);
 
    // set pgsuper-specific properties
    SetBridgeName(pProj->GetBridgeName());
@@ -57,7 +57,7 @@ WsdotCalculationSheet()
    SetCompany(pProj->GetCompany());
 
    // set the bottom title
-   GET_IFACE(IVersionInfo,pVerInfo);
+   EAF_GET_IFACE(IVersionInfo,pVerInfo);
 
    CEAFDocument* pDoc = EAFGetDocument();
    CEAFDocTemplate* pDocTemplate = (CEAFDocTemplate*)pDoc->GetDocTemplate();

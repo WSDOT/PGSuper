@@ -121,10 +121,10 @@ void CGirderDescDebondGrid::CustomInit(bool bSymmetricDebond)
 // Initialize the grid. For CWnd based grids this call is // 
 // essential. For view based grids this initialization is done 
 // in OnInitialUpdate.
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
    IDebondGridParent* pParent = dynamic_cast<IDebondGridParent*>(GetParent());
 
@@ -294,10 +294,10 @@ void CGirderDescDebondGrid::FillGrid(const CPrecastSegmentData& segment)
 {
    IDebondGridParent* pParent = dynamic_cast<IDebondGridParent*>(GetParent());
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   EAF_GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
@@ -510,9 +510,9 @@ void CGirderDescDebondGrid::GetData(CPrecastSegmentData& segment)
 
    IDebondGridParent* pParent = dynamic_cast<IDebondGridParent*>(GetParent());
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
    StrandIndexType nStrands = segment.Strands.GetStrandCount(pgsTypes::Straight);
 
@@ -579,9 +579,9 @@ Float64 CGirderDescDebondGrid::GetRightDebondLength(ROWCOL row)
 
 Float64 CGirderDescDebondGrid::GetDebondLength(ROWCOL row,ROWCOL col)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    Float64 length;
    CString strDebondLength = GetCellValue(row,col);
@@ -776,9 +776,9 @@ void CGirderDescDebondGrid::CanDebond(bool bCanDebond,bool bSymmetricDebond)
       return;
    }
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CString strColHeading = CString(_T("Debond\nLength\n(")) + 
                            CString(pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str());

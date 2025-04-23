@@ -86,7 +86,7 @@ class REPORTINGCLASS CSpanReportSpecification :
    public CBrokerReportSpecification
 {
 public:
-   CSpanReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,SpanIndexType spanIdx);
+   CSpanReportSpecification(const std::_tstring& strReportName,std::shared_ptr<WBFL::EAF::Broker> pBroker,SpanIndexType spanIdx);
    CSpanReportSpecification(const CBrokerReportSpecification& other,SpanIndexType spanIdx);
    CSpanReportSpecification(const CSpanReportSpecification& other);
    ~CSpanReportSpecification(void);
@@ -108,7 +108,7 @@ class REPORTINGCLASS CGirderReportSpecification :
    public CBrokerReportSpecification
 {
 public:
-   CGirderReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,const CGirderKey& girderKey);
+   CGirderReportSpecification(const std::_tstring& strReportName,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey);
    CGirderReportSpecification(const CGirderReportSpecification& other);
    ~CGirderReportSpecification(void);
 

@@ -224,14 +224,14 @@ private:
    template <class T>
    void InitLoad(T& load) const
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
 
-      GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+      EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
 
       if (SyncWithBridgeModelView())
       {
-         GET_IFACE2(pBroker, ISelection, pSelection);
+         EAF_GET_IFACE2(pBroker, ISelection, pSelection);
          CSelection selection = pSelection->GetSelection();
          ATLASSERT(selection.Type == CSelection::Girder);
          ATLASSERT(selection.GroupIdx != ALL_GROUPS);

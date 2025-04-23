@@ -59,11 +59,11 @@ UINT CShearSteelPage2::GetHelpID()
 
 void CShearSteelPage2::DoRestoreDefaults() 
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    // get shear information from library
-   GET_IFACE2( pBroker, ILibrary, pLib );
+   EAF_GET_IFACE2( pBroker, ILibrary, pLib );
    const GirderLibraryEntry* pGirderEntry = pLib->GetGirderEntry( m_CurGrdName.c_str());
    ASSERT(pGirderEntry != nullptr);
 

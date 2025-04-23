@@ -52,7 +52,7 @@ public:
 
    CMomentLoadData m_Load;
    EventIDType m_EventID;
-   CComPtr<IBroker> m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
 
    bool                 m_WasLiveLoad;
 

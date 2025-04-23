@@ -77,9 +77,8 @@ bool txnInsertPointLoad::IsRepeatable() const
 
 bool txnInsertPointLoad::Execute()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEvents,pEvents);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);
 
@@ -89,12 +88,12 @@ bool txnInsertPointLoad::Execute()
       // timeline was changed as part of this load creation
       // update the timeline in the main bridge model before
       // updating the loading
-      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+      EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       m_OldTimelineMgr = *pIBridgeDesc->GetTimelineManager();
       pIBridgeDesc->SetTimelineManager(*m_pTimelineMgr);
    }
 
-   GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
+   EAF_GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    m_LoadIdx = pUdl->AddPointLoad(m_LoadingEventID,m_LoadData);
 
    return true;
@@ -102,14 +101,13 @@ bool txnInsertPointLoad::Execute()
 
 void txnInsertPointLoad::Undo()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IEvents,pEvents);
+   EAF_GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);
 
-   GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
+   EAF_GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    pUdl->DeletePointLoad(m_LoadIdx);
 
    if ( m_pTimelineMgr )
@@ -119,7 +117,7 @@ void txnInsertPointLoad::Undo()
       // the timeline was updated when we exectued the transaction
       // so now it needs to be put back the way it was because
       // we are undoing the transaction
-      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+      EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       pIBridgeDesc->SetTimelineManager(m_OldTimelineMgr);
    }
 }
@@ -153,20 +151,19 @@ bool txnDeletePointLoad::IsRepeatable() const
 
 bool txnDeletePointLoad::Execute()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEvents,pEvents);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);
 
    // keep copies of the loading and the event when it is applied
    // for undo
-   GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
+   EAF_GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    m_LoadData = *(pUdl->FindPointLoad(m_LoadID));
 
    ATLASSERT(m_LoadData.m_ID == m_LoadID);
 
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
    m_LoadingEventID = pTimelineMgr->FindUserLoadEventID(m_LoadData.m_ID);
 
@@ -177,14 +174,13 @@ bool txnDeletePointLoad::Execute()
 
 void txnDeletePointLoad::Undo()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IEvents,pEvents);
+   EAF_GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);
 
-   GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
+   EAF_GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    IndexType loadIdx = pUdl->AddPointLoad(m_LoadingEventID,m_LoadData);
    ATLASSERT(pUdl->GetPointLoad(loadIdx)->m_ID == m_LoadID);
 }
@@ -247,9 +243,8 @@ bool txnEditPointLoad::IsRepeatable() const
 
 void txnEditPointLoad::DoExecute(int i)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEvents,pEvents);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);
 
@@ -259,7 +254,7 @@ void txnEditPointLoad::DoExecute(int i)
       // timeline was changed as part of this load creation
       // update the timeline in the main bridge model before
       // updating the loading
-      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+      EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       if ( i == 1 )
       {
          m_OldTimelineMgr = *pIBridgeDesc->GetTimelineManager();
@@ -271,7 +266,7 @@ void txnEditPointLoad::DoExecute(int i)
       }
    }
 
-   GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
+   EAF_GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    pUdl->UpdatePointLoadByID(m_LoadID,m_LoadingEventID[i],m_LoadData[i]);
 }
 
@@ -322,9 +317,8 @@ bool txnInsertDistributedLoad::IsRepeatable() const
 
 bool txnInsertDistributedLoad::Execute()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEvents,pEvents);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);
 
@@ -334,12 +328,12 @@ bool txnInsertDistributedLoad::Execute()
       // timeline was changed as part of this load creation
       // update the timeline in the main bridge model before
       // updating the loading
-      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+      EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       m_OldTimelineMgr = *pIBridgeDesc->GetTimelineManager();
       pIBridgeDesc->SetTimelineManager(*m_pTimelineMgr);
    }
 
-   GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
+   EAF_GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    m_LoadIdx = pUdl->AddDistributedLoad(m_LoadingEventID,m_LoadData);
 
    return true;
@@ -347,14 +341,13 @@ bool txnInsertDistributedLoad::Execute()
 
 void txnInsertDistributedLoad::Undo()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IEvents,pEvents);
+   EAF_GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);
 
-   GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
+   EAF_GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    pUdl->DeleteDistributedLoad(m_LoadIdx);
 
    if ( m_pTimelineMgr )
@@ -364,7 +357,7 @@ void txnInsertDistributedLoad::Undo()
       // the timeline was updated when we exectued the transaction
       // so now it needs to be put back the way it was because
       // we are undoing the transaction
-      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+      EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       pIBridgeDesc->SetTimelineManager(m_OldTimelineMgr);
    }
 }
@@ -398,19 +391,18 @@ bool txnDeleteDistributedLoad::IsRepeatable() const
 
 bool txnDeleteDistributedLoad::Execute()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IEvents,pEvents);
+   EAF_GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);
 
-   GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
+   EAF_GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    m_LoadData = *(pUdl->FindDistributedLoad(m_LoadID));
 
    ATLASSERT(m_LoadData.m_ID == m_LoadID);
 
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
    m_LoadingEventID = pTimelineMgr->FindUserLoadEventID(m_LoadData.m_ID);
 
@@ -421,14 +413,13 @@ bool txnDeleteDistributedLoad::Execute()
 
 void txnDeleteDistributedLoad::Undo()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IEvents,pEvents);
+   EAF_GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);
 
-   GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
+   EAF_GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    IndexType loadIdx = pUdl->AddDistributedLoad(m_LoadingEventID,m_LoadData);
    ATLASSERT(pUdl->GetDistributedLoad(loadIdx)->m_ID == m_LoadID);
 }
@@ -491,9 +482,8 @@ bool txnEditDistributedLoad::IsRepeatable() const
 
 void txnEditDistributedLoad::DoExecute(int i)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEvents,pEvents);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);
 
@@ -503,7 +493,7 @@ void txnEditDistributedLoad::DoExecute(int i)
       // timeline was changed as part of this load creation
       // update the timeline in the main bridge model before
       // updating the loading
-      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+      EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       if ( i == 1 )
       {
          m_OldTimelineMgr = *pIBridgeDesc->GetTimelineManager();
@@ -515,7 +505,7 @@ void txnEditDistributedLoad::DoExecute(int i)
       }
    }
 
-   GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
+   EAF_GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    pUdl->UpdateDistributedLoadByID(m_LoadID,m_LoadingEventID[i],m_LoadData[i]);
 }
 
@@ -565,9 +555,8 @@ bool txnInsertMomentLoad::IsRepeatable() const
 
 bool txnInsertMomentLoad::Execute()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEvents,pEvents);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);
 
@@ -577,12 +566,12 @@ bool txnInsertMomentLoad::Execute()
       // timeline was changed as part of this load creation
       // update the timeline in the main bridge model before
       // updating the loading
-      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+      EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       m_OldTimelineMgr = *pIBridgeDesc->GetTimelineManager();
       pIBridgeDesc->SetTimelineManager(*m_pTimelineMgr);
    }
 
-   GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
+   EAF_GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    m_LoadIdx = pUdl->AddMomentLoad(m_LoadingEventID,m_LoadData);
 
    return true;
@@ -590,14 +579,13 @@ bool txnInsertMomentLoad::Execute()
 
 void txnInsertMomentLoad::Undo()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IEvents,pEvents);
+   EAF_GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);
 
-   GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
+   EAF_GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    pUdl->DeleteMomentLoad(m_LoadIdx);
 
    if ( m_pTimelineMgr )
@@ -607,7 +595,7 @@ void txnInsertMomentLoad::Undo()
       // the timeline was updated when we exectued the transaction
       // so now it needs to be put back the way it was because
       // we are undoing the transaction
-      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+      EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       pIBridgeDesc->SetTimelineManager(m_OldTimelineMgr);
    }
 }
@@ -641,18 +629,18 @@ bool txnDeleteMomentLoad::IsRepeatable() const
 
 bool txnDeleteMomentLoad::Execute()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEvents,pEvents);
+   auto pBroker = EAFGetBroker();
+
+   EAF_GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);
 
-   GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
+   EAF_GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    m_LoadData = *(pUdl->FindMomentLoad(m_LoadID));
 
    ATLASSERT(m_LoadData.m_ID == m_LoadID);
 
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
    m_LoadingEventID = pTimelineMgr->FindUserLoadEventID(m_LoadData.m_ID);
 
@@ -663,14 +651,13 @@ bool txnDeleteMomentLoad::Execute()
 
 void txnDeleteMomentLoad::Undo()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IEvents,pEvents);
+   EAF_GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);
 
-   GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
+   EAF_GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    IndexType loadIdx = pUdl->AddMomentLoad(m_LoadingEventID,m_LoadData);
    ATLASSERT(pUdl->GetMomentLoad(loadIdx)->m_ID == m_LoadID);
 }
@@ -733,9 +720,9 @@ bool txnEditMomentLoad::IsRepeatable() const
 
 void txnEditMomentLoad::DoExecute(int i)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEvents,pEvents);
+   auto pBroker = EAFGetBroker();
+
+   EAF_GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);
 
@@ -745,7 +732,7 @@ void txnEditMomentLoad::DoExecute(int i)
       // timeline was changed as part of this load creation
       // update the timeline in the main bridge model before
       // updating the loading
-      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+      EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       if ( i == 1 )
       {
          m_OldTimelineMgr = *pIBridgeDesc->GetTimelineManager();
@@ -757,7 +744,7 @@ void txnEditMomentLoad::DoExecute(int i)
       }
    }
 
-   GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
+   EAF_GET_IFACE2(pBroker,IUserDefinedLoadData, pUdl);
    pUdl->UpdateMomentLoadByID(m_LoadID,m_LoadingEventID[i],m_LoadData[i]);
 }
 

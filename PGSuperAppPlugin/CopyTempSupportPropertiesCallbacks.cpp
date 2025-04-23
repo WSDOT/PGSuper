@@ -84,10 +84,9 @@ static TempSupportConnectionData MakeTempSupportConnectionData(const CTemporaryS
 
 static bool CanCopyConnectionData(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    const CTemporarySupportData* pFromTempSupport = pBridgeDesc->GetTemporarySupport(fromTempSupportIdx);
@@ -111,7 +110,7 @@ static bool CanCopyConnectionData(PierIndexType fromTempSupportIdx,const std::ve
 }
 
 // Declaration of comparison reports
-static void TempSupportConnectionPropertiesComparison(rptParagraph* pPara, CComPtr<IBroker> pBroker, PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers);
+static void TempSupportConnectionPropertiesComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers);
 
 ////////////////////////////////////////////////////
 //////////////////// Transaction Classes ////////////
@@ -138,13 +137,12 @@ bool txnCopyTempSupportConnectionProperties::Execute()
    {
       m_DidDoCopy = true;
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      auto pBroker = EAFGetBroker();
 
-      GET_IFACE2(pBroker, IEvents, pEvents);
+      EAF_GET_IFACE2(pBroker, IEvents, pEvents);
       pEvents->HoldEvents(); // Large bridges can take a long time. Don't fire any changed events until all changes are done
 
-      GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+      EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
       m_TempSupportConnectionData.clear();
@@ -186,9 +184,8 @@ void txnCopyTempSupportConnectionProperties::Undo()
 {
    if (m_DidDoCopy)  
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+      auto pBroker = EAFGetBroker();
+      EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
 
       std::vector<TempSupportConnectionData>::iterator iterPCD = m_TempSupportConnectionData.begin();
       for (const auto toTempSupportIdx : m_ToTempSupports)
@@ -250,8 +247,7 @@ UINT CCopyTempSupportConnectionProperties::GetTempSupportEditorTabIndex()
 rptParagraph* CCopyTempSupportConnectionProperties::BuildComparisonReportParagraph(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports)
 {
    rptParagraph* pPara = new rptParagraph;
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    TempSupportConnectionPropertiesComparison(pPara, pBroker, fromTempSupportIdx, toTempSupports);
 
@@ -265,11 +261,11 @@ rptParagraph* CCopyTempSupportConnectionProperties::BuildComparisonReportParagra
 //////////////////// Reporting functions /////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
 
-void TempSupportConnectionPropertiesComparison(rptParagraph * pPara, CComPtr<IBroker> pBroker, PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports)
+void TempSupportConnectionPropertiesComparison(rptParagraph * pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports)
 {
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    INIT_UV_PROTOTYPE( rptLengthUnitValue, cmpdim, pDisplayUnits->GetComponentDimUnit(), false );
 
    ColumnIndexType nCols = 7;

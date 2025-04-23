@@ -100,8 +100,8 @@ bool CGraphView::DoResultsExist()
 
 void CGraphView::OnPrint(CDC* pDC, CPrintInfo* pInfo) 
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    // get paper size
    PGSuperCalculationSheet border(pBroker);

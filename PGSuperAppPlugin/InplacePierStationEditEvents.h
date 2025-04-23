@@ -27,7 +27,7 @@
 class CInplacePierStationEditEvents : public CInplaceEditDisplayObjectEvents
 {
 public:
-   CInplacePierStationEditEvents(IBroker* pBroker,PierIndexType pierIdx);
+   CInplacePierStationEditEvents(std::shared_ptr<WBFL::EAF::Broker> pBroker,PierIndexType pierIdx);
 
 protected:
    virtual void Handle_OnChanged(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO);

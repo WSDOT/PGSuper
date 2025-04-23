@@ -45,11 +45,6 @@ pgsLRFDSplittingCheckEngineer::pgsLRFDSplittingCheckEngineer()
 {
 }
 
-pgsLRFDSplittingCheckEngineer::pgsLRFDSplittingCheckEngineer(IBroker* pBroker) :
-   pgsSplittingCheckEngineer(pBroker)
-{
-}
-
 pgsLRFDSplittingCheckEngineer::~pgsLRFDSplittingCheckEngineer()
 {
 }
@@ -58,11 +53,12 @@ std::shared_ptr<pgsSplittingCheckArtifact> pgsLRFDSplittingCheckEngineer::Check(
 {
    std::shared_ptr<pgsSplittingCheckArtifact> pArtifact(std::make_shared<pgsSplittingCheckArtifact>(segmentKey));
 
-   GET_IFACE(IBridge, pBridge);
-   GET_IFACE(IMaterials, pMaterials);
-   GET_IFACE(IGirder, pGdr);
-   GET_IFACE(ILosses, pLosses);
-   GET_IFACE(IPretensionForce, pPrestressForce);
+   auto broker = EAFGetBroker();
+   EAF_GET_IFACE2(broker, IBridge, pBridge);
+   EAF_GET_IFACE2(broker, IMaterials, pMaterials);
+   EAF_GET_IFACE2(broker, IGirder, pGdr);
+   EAF_GET_IFACE2(broker, ILosses, pLosses);
+   EAF_GET_IFACE2(broker, IPretensionForce, pPrestressForce);
 
    // get POI at point of prestress transfer
    // this is where the prestress force is fully transfered
@@ -86,7 +82,7 @@ std::shared_ptr<pgsSplittingCheckArtifact> pgsLRFDSplittingCheckEngineer::Check(
    ATLASSERT(IsEqual(start_zl, GetSplittingZoneLength(segmentKey, pgsTypes::metStart)));
    ATLASSERT(IsEqual(end_zl, GetSplittingZoneLength(segmentKey, pgsTypes::metEnd)));
 
-   GET_IFACE(IIntervals, pIntervals);
+   EAF_GET_IFACE2(broker, IIntervals, pIntervals);
    IntervalIndexType jackingIntervalIdx = pIntervals->GetStressStrandInterval(segmentKey);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
@@ -109,7 +105,7 @@ std::shared_ptr<pgsSplittingCheckArtifact> pgsLRFDSplittingCheckEngineer::Check(
    std::array<std::array<StrandIndexType, 3>, 2> NdbStrands;
    if (pConfig == nullptr)
    {
-      GET_IFACE(IStrandGeometry, pStrandGeometry);
+      EAF_GET_IFACE2(broker, IStrandGeometry, pStrandGeometry);
       for (int i = 0; i < 2; i++)
       {
          pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
@@ -140,7 +136,7 @@ std::shared_ptr<pgsSplittingCheckArtifact> pgsLRFDSplittingCheckEngineer::Check(
    // when Splitting is checked!!!
    if (pConfig == nullptr)
    {
-      GET_IFACE(ISegmentData, pSegmentData);
+      EAF_GET_IFACE2(broker, ISegmentData, pSegmentData);
       const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
       if (pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned)
       {
@@ -194,7 +190,7 @@ std::shared_ptr<pgsSplittingCheckArtifact> pgsLRFDSplittingCheckEngineer::Check(
    std::array<Float64, 2> Avs;
    if (pConfig == nullptr)
    {
-      GET_IFACE(IStirrupGeometry, pStirrupGeometry);
+      EAF_GET_IFACE2(broker, IStirrupGeometry, pStirrupGeometry);
       Avs[pgsTypes::metStart] = pStirrupGeometry->GetSplittingAv(segmentKey, 0.0, start_zl);
       Avs[pgsTypes::metEnd] = pStirrupGeometry->GetSplittingAv(segmentKey, segment_length - end_zl, segment_length);
    }
@@ -238,11 +234,12 @@ Float64 pgsLRFDSplittingCheckEngineer::GetAsRequired(const pgsSplittingCheckArti
 
 void pgsLRFDSplittingCheckEngineer::ReportSpecCheck(rptChapter* pChapter, const pgsSplittingCheckArtifact* pArtifact) const
 {
-   GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
+   auto broker = EAFGetBroker();
+   EAF_GET_IFACE2(broker, IEAFDisplayUnits, pDisplayUnits);
    INIT_UV_PROTOTYPE(rptLengthUnitValue, length, pDisplayUnits->GetSpanLengthUnit(), true);
    INIT_UV_PROTOTYPE(rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), true);
 
-   GET_IFACE(IBridge, pBridge);
+   EAF_GET_IFACE2(broker, IBridge, pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(pArtifact->GetSegmentKey());
    std::_tstring strSegment(1 < nSegments ? _T("Segment") : _T("Girder"));
 
@@ -278,9 +275,10 @@ void pgsLRFDSplittingCheckEngineer::ReportSpecCheck(rptChapter* pChapter, const 
 
 void pgsLRFDSplittingCheckEngineer::ReportDetails(rptChapter* pChapter, const pgsSplittingCheckArtifact* pArtifact) const
 {
-   GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
+   auto broker = EAFGetBroker();
+   EAF_GET_IFACE2(broker, IEAFDisplayUnits, pDisplayUnits);
 
-   GET_IFACE(ILosses, pLosses);
+   EAF_GET_IFACE2(broker, ILosses, pLosses);
    bool bInitialRelaxation = pLosses->LossesIncludeInitialRelaxation();
 
    INIT_UV_PROTOTYPE(rptLengthUnitValue, length, pDisplayUnits->GetSpanLengthUnit(), true);
@@ -323,8 +321,9 @@ void pgsLRFDSplittingCheckEngineer::ReportDetails(rptChapter* pChapter, const pg
 
 Float64 pgsLRFDSplittingCheckEngineer::GetSplittingZoneLength(const CSegmentKey& segmentKey, pgsTypes::MemberEndType endType) const
 {
-   GET_IFACE(ILibrary, pLib);
-   GET_IFACE(ISpecification, pSpec);
+   auto broker = EAFGetBroker();
+   EAF_GET_IFACE2(broker, ILibrary, pLib);
+   EAF_GET_IFACE2(broker, ISpecification, pSpec);
 
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
    const auto& end_zone_criteria = pSpecEntry->GetEndZoneCriteria();
@@ -332,7 +331,7 @@ Float64 pgsLRFDSplittingCheckEngineer::GetSplittingZoneLength(const CSegmentKey&
 
    std::array<pgsPointOfInterest, 2> poi = GetPointsOfInterest(segmentKey);
 
-   GET_IFACE(IGirder, pGdr);
+   EAF_GET_IFACE2(broker, IGirder, pGdr);
    Float64 h = pGdr->GetSplittingZoneHeight(poi[endType]);
    return h / n;
 }
@@ -360,9 +359,10 @@ void pgsLRFDSplittingCheckEngineer::ReportDemand(rptParagraph* pPara, IEAFDispla
    INIT_UV_PROTOTYPE(rptAreaUnitValue, area, pDisplayUnits->GetAreaUnit(), true);
    INIT_UV_PROTOTYPE(rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), true);
 
-   GET_IFACE_NOCHECK(ISpecification, pSpecification); // not used if bInitialRelaxation is false
+   auto broker = EAFGetBroker();
+   EAF_GET_IFACE2_NOCHECK(broker, ISpecification, pSpecification); // not used if bInitialRelaxation is false
 
-   GET_IFACE(ILosses, pLosses);
+   EAF_GET_IFACE2(broker, ILosses, pLosses);
    bool bInitialRelaxation = pLosses->LossesIncludeInitialRelaxation();
 
    bool bTempStrands = IsZero(pArtifact->GetAps(endType, pgsTypes::Temporary)) ? false : true;
@@ -469,8 +469,9 @@ Float64 pgsLRFDSplittingCheckEngineer::GetMaxSplittingStress(Float64 fy) const
 
 Float64 pgsLRFDSplittingCheckEngineer::GetSplittingZoneLengthFactor() const
 {
-   GET_IFACE(ILibrary, pLib);
-   GET_IFACE(ISpecification, pSpec);
+   auto broker = EAFGetBroker();
+   EAF_GET_IFACE2(broker, ILibrary, pLib);
+   EAF_GET_IFACE2(broker, ISpecification, pSpec);
 
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
    return pSpecEntry->GetEndZoneCriteria().SplittingZoneLengthFactor;
@@ -478,7 +479,8 @@ Float64 pgsLRFDSplittingCheckEngineer::GetSplittingZoneLengthFactor() const
 
 std::array<pgsPointOfInterest, 2> pgsLRFDSplittingCheckEngineer::GetPointsOfInterest(const CSegmentKey& segmentKey) const
 {
-   GET_IFACE(IPointOfInterest, pPOI);
+   auto broker = EAFGetBroker();
+   EAF_GET_IFACE2(broker, IPointOfInterest, pPOI);
    PoiList vPOI;
    pPOI->GetPointsOfInterest(segmentKey, POI_PSXFER, &vPOI);
    ATLASSERT(vPOI.size() != 0);
@@ -495,11 +497,6 @@ pgsLRFDSplittingCheckEngineer()
 {
 }
 
-pgsPCIUHPCSplittingCheckEngineer::pgsPCIUHPCSplittingCheckEngineer(IBroker* pBroker) :
-   pgsLRFDSplittingCheckEngineer(pBroker)
-{
-}
-
 pgsPCIUHPCSplittingCheckEngineer::~pgsPCIUHPCSplittingCheckEngineer()
 {
 }
@@ -508,15 +505,16 @@ std::shared_ptr<pgsSplittingCheckArtifact> pgsPCIUHPCSplittingCheckEngineer::Che
 {
    std::shared_ptr<pgsSplittingCheckArtifact> pArtifact = pgsLRFDSplittingCheckEngineer::Check(segmentKey,pConfig);
 
-   GET_IFACE(IMaterials, pMaterials);
+   auto broker = EAFGetBroker();
+   EAF_GET_IFACE2(broker, IMaterials, pMaterials);
    ATLASSERT(pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC);
 
    const auto* pConcrete = dynamic_cast<const WBFL::LRFD::LRFDConcreteBase*>(pMaterials->GetSegmentConcrete(segmentKey).get());
    Float64 f_rr = pConcrete->GetPostCrackingTensileStrength();
    pArtifact->SetUHPCDesignTensileStrength(f_rr);
 
-   GET_IFACE(IGirder, pGdr);
-   GET_IFACE(IPretensionForce, pPrestress);
+   EAF_GET_IFACE2(broker, IGirder, pGdr);
+   EAF_GET_IFACE2(broker, IPretensionForce, pPrestress);
 
    for (int i = 0; i < 2; i++)
    {
@@ -624,11 +622,6 @@ pgsUHPCSplittingCheckEngineer::pgsUHPCSplittingCheckEngineer() :
 {
 }
 
-pgsUHPCSplittingCheckEngineer::pgsUHPCSplittingCheckEngineer(IBroker* pBroker) :
-   pgsLRFDSplittingCheckEngineer(pBroker)
-{
-}
-
 pgsUHPCSplittingCheckEngineer::~pgsUHPCSplittingCheckEngineer()
 {
 }
@@ -637,16 +630,17 @@ std::shared_ptr<pgsSplittingCheckArtifact> pgsUHPCSplittingCheckEngineer::Check(
 {
    std::shared_ptr<pgsSplittingCheckArtifact> pArtifact = pgsLRFDSplittingCheckEngineer::Check(segmentKey, pConfig);
 
-   GET_IFACE(IMaterials, pMaterials);
+   auto broker = EAFGetBroker();
+   EAF_GET_IFACE2(broker, IMaterials, pMaterials);
    ATLASSERT(pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC);
 
    Float64 ft_cri = pMaterials->GetSegmentConcreteInitialEffectiveCrackingStrength(segmentKey);
    pArtifact->SetUHPCDesignTensileStrength(ft_cri);
 
-   GET_IFACE(IConcreteStressLimits, pLimits);
+   EAF_GET_IFACE2(broker, IConcreteStressLimits, pLimits);
    Float64 gamma_u = pLimits->GetUHPCTensionStressLimitCoefficient(segmentKey);
 
-   GET_IFACE(IGirder, pGdr);
+   EAF_GET_IFACE2(broker, IGirder, pGdr);
    for (int i = 0; i < 2; i++)
    {
       pgsTypes::MemberEndType endType = (pgsTypes::MemberEndType)i;
@@ -699,7 +693,8 @@ void pgsUHPCSplittingCheckEngineer::ReportResistance(rptParagraph* pPara, IEAFDi
 
    const auto& segmentKey = pArtifact->GetSegmentKey();
 
-   GET_IFACE(IConcreteStressLimits, pLimits);
+   auto broker = EAFGetBroker();
+   EAF_GET_IFACE2(broker, IConcreteStressLimits, pLimits);
    Float64 gamma_u = pLimits->GetUHPCTensionStressLimitCoefficient(segmentKey);
 
    (*pPara) << strSplittingType << _T(" Resistance: ") << Sub2(_T("P"), _T("r")) << _T(" = ") << RPT_STRESS(_T("s")) << Sub2(_T("A"), _T("s")) << _T(" + ") << Sub2(symbol(gamma),_T("u")) << RPT_STRESS(_T("t,cri")) << Sub2(_T("b"),_T("v")) << _T("h/") << scalar.SetValue(pArtifact->GetSplittingZoneLengthFactor());

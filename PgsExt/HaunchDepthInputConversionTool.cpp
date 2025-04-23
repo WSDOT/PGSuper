@@ -97,7 +97,7 @@ inline std::vector<Float64> LayoutHaunches(Float64 startLoc,Float64 segmentLengt
    return haunchVector;
 }
 
-HaunchDepthInputConversionTool::HaunchDepthInputConversionTool(const CBridgeDescription2* pBridgeDescr,CComPtr<IBroker> pBroker, bool bIsAtLoadTime):
+HaunchDepthInputConversionTool::HaunchDepthInputConversionTool(const CBridgeDescription2* pBridgeDescr,std::shared_ptr<WBFL::EAF::Broker> pBroker, bool bIsAtLoadTime):
 m_pBridgeDescr(pBridgeDescr),
 m_pBroker(pBroker),
 m_bIsAtLoadTime(bIsAtLoadTime),
@@ -266,7 +266,7 @@ std::pair<bool,CBridgeDescription2> HaunchDepthInputConversionTool::ConvertToSla
          // Build haunch data for existing condition
          InitializeGeometrics(pgsTypes::sotBridge == newSlabOffsetType);
 
-         GET_IFACE(IBridge,pBridge);
+         EAF_GET_IFACE(IBridge,pBridge);
 
          if (pgsTypes::sotBridge == newSlabOffsetType)
          {
@@ -598,11 +598,11 @@ std::pair<bool,CBridgeDescription2> HaunchDepthInputConversionTool::DesignHaunch
 
 std::pair<bool, CBridgeDescription2> HaunchDepthInputConversionTool::DesignSegmentHaunches(const CGirderKey& rDesignGirderKey, GirderIndexType sourceGirderIdx, pgsTypes::HaunchInputDistributionType inputDistributionType, bool bApply2AllGdrs)
 {
-   GET_IFACE(IBridge, pBridge);
-   GET_IFACE(IPointOfInterest, pPoi);
-   GET_IFACE(IRoadway, pRoadway);
-   GET_IFACE_NOCHECK(IGirder, pGirder);
-   GET_IFACE(IDeformedGirderGeometry, pDeformedGirderGeometry);
+   EAF_GET_IFACE(IBridge, pBridge);
+   EAF_GET_IFACE(IPointOfInterest, pPoi);
+   EAF_GET_IFACE(IRoadway, pRoadway);
+   EAF_GET_IFACE_NOCHECK(IGirder, pGirder);
+   EAF_GET_IFACE(IDeformedGirderGeometry, pDeformedGirderGeometry);
 
    // First convert current haunch data in bridgdescr2 so we can operate on individual segments/girderlines. 
    // This will also serve as our initial design guess.
@@ -644,7 +644,7 @@ std::pair<bool, CBridgeDescription2> HaunchDepthInputConversionTool::DesignSegme
    }
 
    // We design for the GCE
-   GET_IFACE(IIntervals, pIntervals);
+   EAF_GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType gceIntervalIdx = pIntervals->GetGeometryControlInterval();
 
    // Use a buffer of 1/16" for a fillet tolerance. This will ensure that our design doesn't miss by a tiny amount
@@ -858,7 +858,7 @@ std::pair<bool, CBridgeDescription2> HaunchDepthInputConversionTool::DesignSegme
 
    // Just finished a design at points along segments. We may need to convert
    // to a different user-specified format. If so, we'll need another instance of ourself to do it.
-   GET_IFACE(IDocumentType, pDocType);
+   EAF_GET_IFACE(IDocumentType, pDocType);
    pgsTypes::HaunchLayoutType haunchLayoutType = pDocType->IsPGSuperDocument() ? pgsTypes::hltAlongSegments : m_pBridgeDescr->GetHaunchLayoutType();
    if (inputDistributionType != designHaunchDistribution || pgsTypes::hltAlongSegments != haunchLayoutType)
    {
@@ -874,11 +874,11 @@ std::pair<bool, CBridgeDescription2> HaunchDepthInputConversionTool::DesignSegme
 
 std::pair<bool, CBridgeDescription2> HaunchDepthInputConversionTool::DesignSpanHaunches(const CGirderKey& rDesignGirderKey, GirderIndexType sourceGirderIdx, pgsTypes::HaunchInputDistributionType inputDistributionType, bool bApply2AllGdrs)
 {
-   GET_IFACE(IBridge, pBridge);
-   GET_IFACE(IPointOfInterest, pPoi);
-   GET_IFACE(IRoadway, pRoadway);
-   GET_IFACE_NOCHECK(IGirder, pGirder);
-   GET_IFACE(IDeformedGirderGeometry, pDeformedGirderGeometry);
+   EAF_GET_IFACE(IBridge, pBridge);
+   EAF_GET_IFACE(IPointOfInterest, pPoi);
+   EAF_GET_IFACE(IRoadway, pRoadway);
+   EAF_GET_IFACE_NOCHECK(IGirder, pGirder);
+   EAF_GET_IFACE(IDeformedGirderGeometry, pDeformedGirderGeometry);
 
    // First convert current haunch data in bridgdescr2 so we can operate on individual spans/girderlines. 
    // This will also serve as our initial design guess.
@@ -908,7 +908,7 @@ std::pair<bool, CBridgeDescription2> HaunchDepthInputConversionTool::DesignSpanH
    const GirderlineHaunchLayout& rLayout = m_GirderlineHaunchLayouts[sourceGirderIdx];
 
    // We design for the GCE
-   GET_IFACE(IIntervals, pIntervals);
+   EAF_GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType gceIntervalIdx = pIntervals->GetGeometryControlInterval();
 
    // Use a buffer of 1/16" for a fillet tolerance. This will ensure that our design doesn't miss by a tiny amount
@@ -1112,7 +1112,7 @@ std::pair<bool, CBridgeDescription2> HaunchDepthInputConversionTool::DesignSpanH
 
    // Just finished a design at points along spans. We may need to convert
    // to a different user-specified format. If so, we'll need another instance of ourself to do it.
-   GET_IFACE(IDocumentType, pDocType);
+   EAF_GET_IFACE(IDocumentType, pDocType);
    pgsTypes::HaunchLayoutType haunchLayoutType = pDocType->IsPGSuperDocument() ? pgsTypes::hltAlongSpans : m_pBridgeDescr->GetHaunchLayoutType();
    if (inputDistributionType != designHaunchDistribution || pgsTypes::hltAlongSpans != haunchLayoutType)
    {
@@ -1130,8 +1130,8 @@ void HaunchDepthInputConversionTool::InitializeGeometrics(bool bSingleGirderLine
 {
    if (!m_WasGeometricsInitialized)
    {
-      GET_IFACE(IBridge,pBridge);
-      GET_IFACE_NOCHECK(IPointOfInterest,pPoi);
+      EAF_GET_IFACE(IBridge,pBridge);
+      EAF_GET_IFACE_NOCHECK(IPointOfInterest,pPoi);
 
       m_GirderlineHaunchLayouts.clear();
 
@@ -1199,7 +1199,7 @@ void HaunchDepthInputConversionTool::InitializeGeometrics(bool bSingleGirderLine
       // The conversion and design processes will use these to create our new layout
       if (m_pBridgeDescr->GetHaunchInputDepthType() == pgsTypes::hidACamber)
       {
-         GET_IFACE_NOCHECK(IGirder,pIGirder);
+         EAF_GET_IFACE_NOCHECK(IGirder,pIGirder);
 
          for (GirderIndexType gdrIdx = 0; gdrIdx < maxGirders; gdrIdx++)
          {

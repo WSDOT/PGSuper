@@ -37,9 +37,9 @@ CCastClosureJointDlg::CCastClosureJointDlg(const CTimelineManager& timelineMgr,E
 
    m_pBridgeDesc = m_TimelineMgr.GetBridgeDescription();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   pBroker->GetInterface(IID_IEAFDisplayUnits,(IUnknown**)&m_pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   m_pDisplayUnits = pBroker->GetInterface<IEAFDisplayUnits>(IID_IEAFDisplayUnits);
 }
 
 CCastClosureJointDlg::~CCastClosureJointDlg()
@@ -161,7 +161,7 @@ void CCastClosureJointDlg::FillLists()
             PierIDType pierID = pClosure->GetPier()->GetID();
             bool bHasClosure = m_TimelineMgr.IsClosureJointAtPier(pierID);
 
-            CString label(GetLabel(pClosure->GetPier(),m_pDisplayUnits));
+            CString label(GetLabel(pClosure->GetPier(),m_pDisplayUnits.get()));
 
             if ( castClosureJointEventIdx == m_EventIndex )
             {
@@ -181,7 +181,7 @@ void CCastClosureJointDlg::FillLists()
             SupportIDType tsID = pClosure->GetTemporarySupport()->GetID();
             bool bHasClosure = m_TimelineMgr.IsClosureJointAtTempSupport(tsID);
 
-            CString label( GetLabel(pClosure->GetTemporarySupport(),m_pDisplayUnits) );
+            CString label( GetLabel(pClosure->GetTemporarySupport(),m_pDisplayUnits.get()) );
 
             if ( castClosureJointEventIdx == m_EventIndex )
             {

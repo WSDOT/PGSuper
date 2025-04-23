@@ -232,9 +232,9 @@ BOOL CLoadFactorsDlg::OnInitDialog()
    GetDlgItem(IDC_FATIGUE_I_PS)->ShowWindow(swFatigueI);
    GetDlgItem(IDC_FATIGUE_I_PS_LABEL)->ShowWindow(swFatigueI);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       GetDlgItem(IDC_SERVICE_I_PLUS)->ShowWindow(SW_HIDE);

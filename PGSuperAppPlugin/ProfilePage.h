@@ -52,7 +52,7 @@ public:
 	//}}AFX_DATA
 
    ProfileData2 m_ProfileData;
-   IBroker* GetBroker();
+   std::shared_ptr<WBFL::EAF::Broker> GetBroker();
 
 // Overrides
 	// ClassWizard generate virtual function overrides

@@ -41,7 +41,7 @@ class CCopyPierDlg : public CDialog
 {
 // Construction
 public:
-	CCopyPierDlg(IBroker* pBroker, const std::map<IDType,ICopyPierPropertiesCallback*>&  pCopyPierPropertiesCallbacks, IDType selectedID, CWnd* pParent = nullptr);   // standard constructor
+	CCopyPierDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::map<IDType,ICopyPierPropertiesCallback*>&  pCopyPierPropertiesCallbacks, IDType selectedID, CWnd* pParent = nullptr);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CCopyPierDlg)
@@ -94,7 +94,7 @@ protected:
 
    void OnFromPierChangedNoUpdate();
 
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    const std::map<IDType, ICopyPierPropertiesCallback*> m_CopyPierPropertiesCallbacks;
    std::set<IDType> m_SelectedIDs; 
 

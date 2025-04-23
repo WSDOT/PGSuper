@@ -74,12 +74,11 @@ void txnEditBridge::Undo()
 
 void txnEditBridge::Execute(int i)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
-   GET_IFACE2(pBroker,IEnvironment, pEnvironment );
-   GET_IFACE2(pBroker,IEvents, pEvents);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IEnvironment, pEnvironment );
+   EAF_GET_IFACE2(pBroker,IEvents, pEvents);
 
    pEvents->HoldEvents(); // don't fire any changed events until all changes are done
 

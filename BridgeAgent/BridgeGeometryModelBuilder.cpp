@@ -52,12 +52,6 @@ inline void GetMidPoint(IPoint2d* P1, IPoint2d* P2, IPoint2d** pMid)
    midPt.CopyTo(pMid);
 }
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 CBridgeGeometryModelBuilder::CBridgeGeometryModelBuilder()
 {
 }
@@ -477,9 +471,8 @@ bool CBridgeGeometryModelBuilder::LayoutGirderLines(const CBridgeDescription2* p
 
 bool CBridgeGeometryModelBuilder::LayoutUniformGirderLines(const CBridgeDescription2* pBridgeDesc,IBridgeGeometry* pBridgeGeometry, GirderOrientationCollection& orientationCollection)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IRoadwayData, pIAlignment);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IRoadwayData, pIAlignment);
    bool bAnglePointInAlignment = false;
    const AlignmentData2& alignment_data = pIAlignment->GetAlignmentData2();
    for (const auto& hc : alignment_data.CompoundCurves)

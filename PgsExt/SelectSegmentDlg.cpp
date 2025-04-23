@@ -69,9 +69,8 @@ END_MESSAGE_MAP()
 
 BOOL CSelectSegmentDlg::OnInitDialog()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    CComboBox* pcbGroup = (CComboBox*)GetDlgItem(IDC_GROUP);
@@ -104,9 +103,8 @@ BOOL CSelectSegmentDlg::OnInitDialog()
 
 void CSelectSegmentDlg::OnGroupChanged()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    CComboBox* pcbGroup   = (CComboBox*)GetDlgItem(IDC_GROUP);

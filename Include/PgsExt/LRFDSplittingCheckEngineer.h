@@ -32,7 +32,6 @@ class PGSEXTCLASS pgsLRFDSplittingCheckEngineer : public pgsSplittingCheckEngine
 {
 public:
    pgsLRFDSplittingCheckEngineer();
-   pgsLRFDSplittingCheckEngineer(IBroker* pBroker);
    virtual ~pgsLRFDSplittingCheckEngineer();
 
    virtual std::shared_ptr<pgsSplittingCheckArtifact> Check(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig = nullptr) const override;

@@ -64,8 +64,7 @@ bool pgsRefinedAnalysisStatusItem::IsEqual(CEAFStatusItem* pOther)
 }
 
 //////////////////////////////////////////////////////////
-pgsRefinedAnalysisStatusCallback::pgsRefinedAnalysisStatusCallback(std::shared_ptr<WBFL::EAF::Broker> pBroker):
-m_pBroker(pBroker)
+pgsRefinedAnalysisStatusCallback::pgsRefinedAnalysisStatusCallback()
 {
 }
 
@@ -86,7 +85,8 @@ void pgsRefinedAnalysisStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
    if ( dlg.DoModal() == IDOK )
    {
-      GET_IFACE(IBridgeDescription,pIBridgeDesc);
+      auto broker = EAFGetBroker();
+      EAF_GET_IFACE2(broker,IBridgeDescription,pIBridgeDesc);
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
       pgsTypes::DistributionFactorMethod method;
@@ -115,7 +115,7 @@ void pgsRefinedAnalysisStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
       case CRefinedAnalysisOptionsDlg::lldfDefault:
          {
-         GET_IFACE(ILiveLoads,pLiveLoads);
+         EAF_GET_IFACE2(broker,ILiveLoads,pLiveLoads);
          method = pBridgeDesc->GetDistributionFactorMethod();
          roaAction = pLiveLoads->GetRangeOfApplicabilityAction();
          }
@@ -125,7 +125,7 @@ void pgsRefinedAnalysisStatusCallback::Execute(CEAFStatusItem* pStatusItem)
          ATLASSERT(false); // is there a new choice???
       }
 
-      EAF_GET_IFACE(IEditByUI,pEdit);
+      EAF_GET_IFACE2(broker,IEditByUI,pEdit);
       pEdit->EditLiveLoadDistributionFactors(method,roaAction);
    }
 }
@@ -362,8 +362,8 @@ bool pgsGirderDescriptionStatusItem::IsEqual(CEAFStatusItem* pOther)
 }
 
 //////////////////////////////////////////////////////////
-pgsGirderDescriptionStatusCallback::pgsGirderDescriptionStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity):
-m_pBroker(pBroker), m_Severity(severity)
+pgsGirderDescriptionStatusCallback::pgsGirderDescriptionStatusCallback(eafTypes::StatusSeverityType severity):
+m_Severity(severity)
 {
 }
 
@@ -383,13 +383,14 @@ void pgsGirderDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
    if ( result == IDYES )
    {
-      GET_IFACE(IEditByUI,pEdit);
+      auto broker = EAFGetBroker();
+      EAF_GET_IFACE2(broker,IEditByUI,pEdit);
 
       if (pItem->m_SegmentKey.segmentIndex == INVALID_INDEX ? pEdit->EditGirderDescription(pItem->m_SegmentKey, pItem->m_Page) : pEdit->EditSegmentDescription(pItem->m_SegmentKey, pItem->m_Page))
       {
          // assume that edit took care of status
          StatusItemIDType id = pItem->GetID();
-         GET_IFACE(IEAFStatusCenter, pStatusCenter);
+         EAF_GET_IFACE2(broker,IEAFStatusCenter, pStatusCenter);
          pStatusCenter->RemoveByID(id);
       }
    }
@@ -456,8 +457,8 @@ bool pgsBridgeDescriptionStatusItem::IsEqual(CEAFStatusItem* pOther)
 }
 
 //////////////////////////////////////////////////////////
-pgsBridgeDescriptionStatusCallback::pgsBridgeDescriptionStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity):
-m_pBroker(pBroker), m_Severity(severity)
+pgsBridgeDescriptionStatusCallback::pgsBridgeDescriptionStatusCallback(eafTypes::StatusSeverityType severity):
+m_Severity(severity)
 {
 }
 
@@ -494,9 +495,11 @@ void pgsBridgeDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
       dlgPage = -1;
    }
 
+   auto broker = EAFGetBroker();
+
    if (0 <= dlgPage)
    {
-      GET_IFACE(IEditByUI,pEdit);
+      EAF_GET_IFACE2(broker,IEditByUI,pEdit);
       pEdit->EditBridgeDescription(dlgPage);
    }
    else
@@ -507,7 +510,7 @@ void pgsBridgeDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
          dlg.m_PierIdx = 1;
          if ( dlg.DoModal() == IDOK )
          {
-            GET_IFACE(IBridgeDescription,pBridgeDesc);
+            EAF_GET_IFACE2(broker,IBridgeDescription,pBridgeDesc);
             CBridgeDescription2 bridge = *pBridgeDesc->GetBridgeDescription();
             CPierData2* pPier = bridge.GetPier(dlg.m_PierIdx);
 #pragma Reminder("REVIEW: is this only for boundary piers?") // should InteriorPiers be included too?
@@ -524,7 +527,7 @@ void pgsBridgeDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
             std::unique_ptr<txnEditBridge> pTxn(std::make_unique<txnEditBridge>(*pBridgeDesc->GetBridgeDescription(), bridge));
 
-            EAF_GET_IFACE(IEAFTransactions,pTransactions);
+            EAF_GET_IFACE2(broker,IEAFTransactions,pTransactions);
             pTransactions->Execute(std::move(pTxn));
          }
       }
@@ -537,7 +540,7 @@ void pgsBridgeDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
          bool didEdit(false);
          if (retval == eafTypes::eafsiEdit)
          {
-            GET_IFACE(IEditByUI, pEdit);
+            EAF_GET_IFACE2(broker,IEditByUI, pEdit);
             didEdit = pEdit->EditBearings();
          }
 
@@ -545,7 +548,7 @@ void pgsBridgeDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
          {
             // assume that edit took care of status
             StatusItemIDType id = pItem->GetID();
-            GET_IFACE(IEAFStatusCenter,pStatusCenter);
+            EAF_GET_IFACE2(broker,IEAFStatusCenter,pStatusCenter);
             pStatusCenter->RemoveByID(id);
          }
       }
@@ -557,7 +560,7 @@ void pgsBridgeDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
          bool didEdit(false);
          if (retval == eafTypes::eafsiEdit)
          {
-            GET_IFACE(IEditByUI, pEdit);
+            EAF_GET_IFACE2(broker,IEditByUI, pEdit);
             didEdit = pEdit->EditCastDeckActivity();
          }
 
@@ -565,7 +568,7 @@ void pgsBridgeDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
          {
             // assume that edit took care of status
             StatusItemIDType id = pItem->GetID();
-            GET_IFACE(IEAFStatusCenter, pStatusCenter);
+            EAF_GET_IFACE2(broker,IEAFStatusCenter, pStatusCenter);
             pStatusCenter->RemoveByID(id);
          }
       }
@@ -594,8 +597,7 @@ bool pgsLldfWarningStatusItem::IsEqual(CEAFStatusItem* pOther)
 }
 
 //////////////////////////////////////////////////////////
-pgsLldfWarningStatusCallback::pgsLldfWarningStatusCallback(IBroker* pBroker):
-m_pBroker(pBroker)
+pgsLldfWarningStatusCallback::pgsLldfWarningStatusCallback()
 {
 }
 
@@ -610,14 +612,15 @@ void pgsLldfWarningStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    ATLASSERT(pItem!=nullptr);
 
    // Just go straight to main lldf  editing dialog
-   GET_IFACE(ILiveLoads,pLiveLoads);
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   auto broker = EAFGetBroker();
+   EAF_GET_IFACE2(broker,ILiveLoads,pLiveLoads);
+   EAF_GET_IFACE2(broker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    pgsTypes::DistributionFactorMethod method = pBridgeDesc->GetDistributionFactorMethod();
    auto roaAction = pLiveLoads->GetRangeOfApplicabilityAction();
 
-   GET_IFACE(IEditByUI,pEdit);
+   EAF_GET_IFACE2(broker,IEditByUI,pEdit);
    pEdit->EditLiveLoadDistributionFactors(method,roaAction);
 }
 
@@ -640,8 +643,7 @@ bool pgsEffectiveFlangeWidthStatusItem::IsEqual(CEAFStatusItem* pOther)
 }
 
 //////////////////////////////////////////////////////////
-pgsEffectiveFlangeWidthStatusCallback::pgsEffectiveFlangeWidthStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity):
-m_pBroker(pBroker),
+pgsEffectiveFlangeWidthStatusCallback::pgsEffectiveFlangeWidthStatusCallback(eafTypes::StatusSeverityType severity):
 m_Severity(severity)
 {
 }
@@ -657,7 +659,8 @@ void pgsEffectiveFlangeWidthStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    ATLASSERT(pItem!=nullptr);
 
    // Just go straight to main editing dialog
-   GET_IFACE(IEditByUI,pEdit);
+   auto broker = EAFGetBroker();
+   EAF_GET_IFACE2(broker,IEditByUI,pEdit);
    pEdit->EditEffectiveFlangeWidth();
 }
 
@@ -684,8 +687,8 @@ bool pgsTimelineStatusItem::IsEqual(CEAFStatusItem* pOther)
 }
 
 //////////////////////////////////////////////////////////
-pgsTimelineStatusCallback::pgsTimelineStatusCallback(IBroker* pBroker, eafTypes::StatusSeverityType severity) :
-   m_pBroker(pBroker), m_Severity(severity)
+pgsTimelineStatusCallback::pgsTimelineStatusCallback(eafTypes::StatusSeverityType severity) :
+   m_Severity(severity)
 {
 }
 
@@ -702,13 +705,14 @@ void pgsTimelineStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    CString str(pItem->GetDescription());
    AfxMessageBox(str, MB_ICONEXCLAMATION);
 
-   GET_IFACE(IEditByUI, pEdit);
+   auto broker = EAFGetBroker();
+   EAF_GET_IFACE2(broker,IEditByUI, pEdit);
 
    if (pEdit->EditTimeline())
    {
       // assume that edit took care of status
       StatusItemIDType id = pItem->GetID();
-      GET_IFACE(IEAFStatusCenter, pStatusCenter);
+      EAF_GET_IFACE2(broker, IEAFStatusCenter, pStatusCenter);
       pStatusCenter->RemoveByID(id);
    }
 }
@@ -744,8 +748,8 @@ bool pgsConnectionGeometryStatusItem::IsEqual(CEAFStatusItem* pOther)
 }
 
 
-pgsConnectionGeometryStatusCallback::pgsConnectionGeometryStatusCallback(IBroker* pBroker, eafTypes::StatusSeverityType severity) :
-   m_pBroker(pBroker), m_Severity(severity)
+pgsConnectionGeometryStatusCallback::pgsConnectionGeometryStatusCallback(eafTypes::StatusSeverityType severity) :
+   m_Severity(severity)
 {
 }
 
@@ -763,13 +767,14 @@ void pgsConnectionGeometryStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    str.Format(_T("%s"),pItem->GetDescription());
    AfxMessageBox(str, MB_ICONEXCLAMATION);
 
-   GET_IFACE(IEditByUI, pEdit);
+   auto broker = EAFGetBroker();
+   EAF_GET_IFACE2(broker,IEditByUI, pEdit);
 
    if (pEdit->EditPierDescription(pItem->m_PierIdx,EPD_CONNECTION))
    {
       // assume that edit took care of status
       StatusItemIDType id = pItem->GetID();
-      GET_IFACE(IEAFStatusCenter, pStatusCenter);
+      EAF_GET_IFACE2(broker, IEAFStatusCenter, pStatusCenter);
       pStatusCenter->RemoveByID(id);
    }
 }

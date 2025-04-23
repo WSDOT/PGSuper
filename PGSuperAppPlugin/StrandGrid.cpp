@@ -89,13 +89,13 @@ int CStrandGrid::GetColWidth(ROWCOL nCol)
 
 void CStrandGrid::CustomInit(const CPrecastSegmentData* pSegment)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // we need the segment length for validating debond lengths (can't debond more
    // length than the segment)
-   GET_IFACE2(pBroker, IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge,pBridge);
    m_SegmentLength = pBridge->GetSegmentLength(pSegment->GetSegmentKey());
 
    // Initialize the grid. For CWnd based grids this call is essential. 
@@ -297,8 +297,8 @@ void CStrandGrid::CustomInit(const CPrecastSegmentData* pSegment)
 
 void CStrandGrid::SetRowStyle(ROWCOL nRow)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    ROWCOL col = 0;
 
@@ -405,9 +405,9 @@ CStrandRow CStrandGrid::GetStrandRow(ROWCOL nRow)
 {
    CStrandRow strandRow;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    ROWCOL col = 1;
 
@@ -455,9 +455,9 @@ void CStrandGrid::AppendRow(const CStrandRow& strandRow)
    // DOES NOT APPEND A STRAND ROW TO THE STRAND DATA OBJECT
    ROWCOL nRow = AppendRow();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    ROWCOL col = 1;
 

@@ -84,12 +84,12 @@ BOOL CTimelineReportDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 
-   CComPtr<IBroker> pBroker;
-   m_pRptSpec->GetBroker(&pBroker);
+   
+   auto pBroker = m_pRptSpec->GetBroker();
 
    std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = std::dynamic_pointer_cast<CBrokerReportSpecification, CTimelineManagerReportSpecification>(m_pRptSpec);
 
-   GET_IFACE2(pBroker,IReportManager,pRptMgr);
+   EAF_GET_IFACE2_(WBFL::Reporting,pBroker,IReportManager,pRptMgr);
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> nullSpecBuilder;
    CWnd* pWnd = GetDlgItem(IDC_BROWSER);
    m_pBrowser = pRptMgr->CreateReportBrowser(pWnd->GetSafeHwnd(),0,pRptSpec,nullSpecBuilder);

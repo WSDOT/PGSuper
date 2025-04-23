@@ -34,7 +34,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // CProfileDisplayObjectEvents
 
-CProfileDisplayObjectEvents::CProfileDisplayObjectEvents(IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,std::weak_ptr<WBFL::DManip::iDisplayObject> pDO)
+CProfileDisplayObjectEvents::CProfileDisplayObjectEvents(std::shared_ptr<WBFL::EAF::Broker> pBroker, CBridgeModelViewChildFrame* pFrame,std::weak_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
    m_pBroker = pBroker;
    m_pFrame = pFrame;

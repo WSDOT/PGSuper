@@ -3,7 +3,6 @@
 // Used by BridgeAgent.rc
 //
 #define IDS_PROJNAME                    100
-#define IDR_BRIDGEAGENT                 101
 #define IDD_DEAL_WITH_LOADS_DLG         210
 #define ID_DELETE                       12882
 #define ID_DELETE_LOAD                  12881

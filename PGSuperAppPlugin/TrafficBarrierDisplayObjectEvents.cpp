@@ -34,7 +34,7 @@
 
 #include <DManip/DisplayObject.h>
 
-CTrafficBarrierDisplayObjectEvents::CTrafficBarrierDisplayObjectEvents(IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,pgsTypes::TrafficBarrierOrientation orientation)
+CTrafficBarrierDisplayObjectEvents::CTrafficBarrierDisplayObjectEvents(std::shared_ptr<WBFL::EAF::Broker> pBroker, CBridgeModelViewChildFrame* pFrame,pgsTypes::TrafficBarrierOrientation orientation)
 {
    m_pBroker = pBroker;
    m_pFrame = pFrame;
@@ -55,7 +55,7 @@ void CTrafficBarrierDisplayObjectEvents::SelectPrev()
    if (m_TrafficBarrierOrientation == pgsTypes::tboLeft)
    {
       // select last girder
-      GET_IFACE(IBridgeDescription, pIBridgeDesc);
+      EAF_GET_IFACE(IBridgeDescription, pIBridgeDesc);
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
       GroupIndexType grpIdx = m_pFrame->GetBridgeSectionView()->GetGroupIndex();
       GirderIndexType nGirders = pBridgeDesc->GetGirderGroup(grpIdx)->GetGirderCount();

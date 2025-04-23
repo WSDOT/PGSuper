@@ -134,9 +134,8 @@ void CLegalRatingPage::DoDataExchange(CDataExchange* pDX)
    DDX_Check_Bool(pDX,IDC_RATE_FOR_SHEAR,  m_Data.bRateForShear);
    DDX_Check_Bool(pDX,IDC_EXCLUDE_LANELOAD,m_Data.bExcludeLaneLoad);
 
-   CComPtr<IBroker> broker;
-   EAFGetBroker(&broker);
-   GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
+   auto broker = EAFGetBroker();
+   EAF_GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
    DDX_UnitValueAndTag(pDX,IDC_ALLOWABLE_TENSION,IDC_ALLOWABLE_TENSION_UNIT,m_Data.AllowableTensionCoefficient,pDisplayUnits->GetTensionCoefficientUnit());
 
    CString tag;
@@ -338,9 +337,8 @@ BOOL CLegalRatingPage::OnSetActive()
    OnRateForStressChanged();
 
    CRatingOptionsDlg* pParent = (CRatingOptionsDlg*)GetParent();
-   CComPtr<IBroker> broker;
-   EAFGetBroker(&broker);
-   GET_IFACE2( broker, ILibrary, pLib );
+   auto broker = EAFGetBroker();
+   EAF_GET_IFACE2( broker, ILibrary, pLib );
    const RatingLibraryEntry* pRatingEntry = pLib->GetRatingEntry( pParent->m_GeneralPage.m_Data.CriteriaName.c_str() );
 
    CDataExchange dx(this,false);
@@ -420,7 +418,7 @@ BOOL CLegalRatingPage::OnSetActive()
       GetDlgItem(IDC_SERVICE_III_LL_EMERGENCY)->EnableWindow(FALSE);
    }
 
-   GET_IFACE2(broker, ILossParameters, pLossParams);
+   EAF_GET_IFACE2(broker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       GetDlgItem(IDC_STRENGTH_I_PLUS)->ShowWindow(SW_HIDE);

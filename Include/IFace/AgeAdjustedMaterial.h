@@ -25,7 +25,7 @@
 #include <WBFLGenericBridge.h>
 
 interface IStages;
-interface IMaterials;
+class IMaterials;
 
 /*****************************************************************************
 INTERFACE

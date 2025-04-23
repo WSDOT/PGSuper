@@ -85,7 +85,7 @@ CCrownSlopePage::~CCrownSlopePage()
 {
 }
 
-IBroker* CCrownSlopePage::GetBroker()
+std::shared_ptr<WBFL::EAF::Broker> CCrownSlopePage::GetBroker()
 {
    CAlignmentDescriptionDlg* pParent = (CAlignmentDescriptionDlg*)GetParent();
    return pParent->m_pBroker;

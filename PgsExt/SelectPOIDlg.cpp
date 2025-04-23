@@ -98,13 +98,12 @@ END_MESSAGE_MAP()
 
 BOOL CSelectPOIDlg::OnInitDialog()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker, IBridge, pBridge );
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge );
    m_GirderKey = m_InitialPOI.GetSegmentKey();
 
-   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
    bool isPGSuper = pDocType->IsPGSuperDocument();
 
    CComboBox* pGroupBox = (CComboBox*)GetDlgItem( IDC_GROUP );
@@ -168,10 +167,8 @@ void CSelectPOIDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 
 void CSelectPOIDlg::UpdateGirderComboBox(GroupIndexType groupIdx)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-
-   GET_IFACE2(pBroker, IBridge, pBridge );
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge );
 
    CComboBox* pcbGirder = (CComboBox*)GetDlgItem(IDC_GIRDER);
    Uint16 curSel = pcbGirder->GetCurSel();
@@ -231,10 +228,9 @@ void CSelectPOIDlg::FillIntervalCtrl()
 {
    CComboBox* pcbIntervals = (CComboBox*)GetDlgItem(IDC_INTERVAL);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType startIntervalIdx = pIntervals->GetPrestressReleaseInterval(CSegmentKey(m_GirderKey,0));
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    for ( IntervalIndexType intervalIdx = startIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
@@ -251,10 +247,9 @@ void CSelectPOIDlg::FillIntervalCtrl()
 
 void CSelectPOIDlg::UpdatePOI()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    m_vPOI.clear();
    pPoi->GetPointsOfInterest(CSegmentKey(m_GirderKey, ALL_SEGMENTS),&m_vPOI);
 

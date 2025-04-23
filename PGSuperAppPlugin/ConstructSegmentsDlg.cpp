@@ -131,9 +131,9 @@ BOOL CConstructSegmentsDlg::OnInitDialog()
    }
 
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
    if ( pDocType->IsPGSuperDocument() )
    {
       SetWindowText(_T("Construct Girders"));
@@ -165,9 +165,9 @@ void CConstructSegmentsDlg::OnMoveToSourceList()
 
 void CConstructSegmentsDlg::FillLists()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
 
    GroupIndexType nGroups = m_pBridgeDesc->GetGirderGroupCount();
    for( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )

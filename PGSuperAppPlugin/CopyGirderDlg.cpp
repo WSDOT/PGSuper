@@ -54,7 +54,7 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CCopyGirderDlg dialog
 
-CCopyGirderDlg::CCopyGirderDlg(IBroker* pBroker, const std::map<IDType,ICopyGirderPropertiesCallback*>&  rcopyGirderPropertiesCallbacks, IDType selectedID, CWnd* pParent)
+CCopyGirderDlg::CCopyGirderDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::map<IDType,ICopyGirderPropertiesCallback*>&  rcopyGirderPropertiesCallbacks, IDType selectedID, CWnd* pParent)
 	: CDialog(CCopyGirderDlg::IDD, pParent),
    m_pBroker(pBroker),
    m_CopyGirderPropertiesCallbacks(rcopyGirderPropertiesCallbacks)
@@ -63,7 +63,7 @@ CCopyGirderDlg::CCopyGirderDlg(IBroker* pBroker, const std::map<IDType,ICopyGird
 	//}}AFX_DATA_INIT
 
    // keep selection around
-   GET_IFACE(ISelection,pSelection);
+   EAF_GET_IFACE(ISelection,pSelection);
    m_FromSelection = pSelection->GetSelection();
    if (m_FromSelection.Type != CSelection::Girder && m_FromSelection.Type != CSelection::Segment)
    {
@@ -160,7 +160,7 @@ BOOL CCopyGirderDlg::OnInitDialog()
    m_cyMin = rect.Height();
 
    // set up report window
-   GET_IFACE(IReportManager, pReportMgr);
+   EAF_GET_IFACE_(WBFL::Reporting,IReportManager, pReportMgr);
    WBFL::Reporting::ReportDescription rptDesc = pReportMgr->GetReportDescription(_T("Copy Girder Properties Report"));
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
    std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
@@ -257,7 +257,7 @@ void CCopyGirderDlg::FillComboBoxes(CComboBox& cbGroup,CComboBox& cbGirder, bool
       cbGroup.SetItemData(idx,ALL_GROUPS);
    }
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
@@ -294,7 +294,7 @@ void CCopyGirderDlg::FillGirderComboBox(CComboBox& cbGirder,GroupIndexType grpId
       cbGirder.SetItemData(idx,ALL_GIRDERS);
    }
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    GirderIndexType nGirders = pBridgeDesc->GetGirderGroup(grpIdx == ALL_GROUPS ? 0 : grpIdx)->GetGirderCount();
    for (GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
@@ -315,7 +315,7 @@ void CCopyGirderDlg::FillGirderComboBox(CComboBox& cbGirder,GroupIndexType grpId
 
 void CCopyGirderDlg::UpdateReportData()
 {
-   GET_IFACE(IReportManager,pReportMgr);
+   EAF_GET_IFACE_(WBFL::Reporting,IReportManager,pReportMgr);
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
 
    CGirderKey gdrKey = GetFromGirder();
@@ -342,7 +342,7 @@ void CCopyGirderDlg::UpdateReport()
    {
       UpdateReportData();
 
-      GET_IFACE(IReportManager,pReportMgr);
+      EAF_GET_IFACE_(WBFL::Reporting,IReportManager,pReportMgr);
       std::shared_ptr<WBFL::Reporting::ReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
 
       std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = std::dynamic_pointer_cast<WBFL::Reporting::ReportSpecification,CCopyGirderPropertiesReportSpecification>(m_pRptSpec);
@@ -456,7 +456,7 @@ CGirderKey CCopyGirderDlg::GetFromGirder()
 
 std::vector<CGirderKey> CCopyGirderDlg::GetToGirders()
 {
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    std::vector<CGirderKey> vec;
@@ -603,7 +603,7 @@ void CCopyGirderDlg::OnOK()
 
    if (0 < pMacro->GetTxnCount())
    {
-      GET_IFACE(IEAFTransactions, pTransactions);
+      EAF_GET_IFACE(IEAFTransactions, pTransactions);
       pTransactions->Execute(std::move(pMacro));
    }
 
@@ -615,7 +615,7 @@ void CCopyGirderDlg::OnEdit()
 {
    CGirderKey fromKey = GetFromGirder();
 
-   GET_IFACE(IEditByUI, pEditByUI);
+   EAF_GET_IFACE(IEditByUI, pEditByUI);
    UINT tab = 0; // use if nothing is selected
    std::vector<ICopyGirderPropertiesCallback*> callbacks = GetSelectedCopyGirderPropertiesCallbacks();
    if (!callbacks.empty())

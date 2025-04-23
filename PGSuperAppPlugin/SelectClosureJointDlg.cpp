@@ -53,9 +53,9 @@ CSelectClosureJointDlg::CSelectClosureJointDlg(const CBridgeDescription2* pBridg
    m_PierIdx = INVALID_INDEX;
    m_TempSupportID = INVALID_ID;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
    m_pDisplayUnits = pDisplayUnits;
 }
 
@@ -159,7 +159,7 @@ void CSelectClosureJointDlg::FillSupportComboBox()
       const CPierData2* pPier = m_pBridgeDesc->GetPier(pierIdx);
       if ( pPier->IsInteriorPier() && pPier->GetClosureJoint(m_GirderIdx) )
       {
-         CString strLabel(GetLabel(pPier,m_pDisplayUnits));
+         CString strLabel(GetLabel(pPier,m_pDisplayUnits.get()));
          int idx = pCB->AddString(strLabel);
          pCB->SetItemData(idx,pierIdx);
       }
@@ -171,7 +171,7 @@ void CSelectClosureJointDlg::FillSupportComboBox()
       const CTemporarySupportData* pTS = m_pBridgeDesc->GetTemporarySupport(tsIdx);
       if ( pTS->GetClosureJoint(m_GirderIdx) )
       {
-         CString strLabel(GetLabel(pTS,m_pDisplayUnits));
+         CString strLabel(GetLabel(pTS,m_pDisplayUnits.get()));
          int idx = pCB->AddString(strLabel);
          pCB->SetItemData(idx,EncodeTSIndex(tsIdx));
       }

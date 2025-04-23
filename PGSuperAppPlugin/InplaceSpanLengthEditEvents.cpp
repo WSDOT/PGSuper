@@ -31,7 +31,7 @@
 #include <DManip/DisplayObject.h>
 #include <DManip/EditableUnitValueTextBlock.h>
 
-CInplaceSpanLengthEditEvents::CInplaceSpanLengthEditEvents(IBroker* pBroker,SpanIndexType spanIdx) :
+CInplaceSpanLengthEditEvents::CInplaceSpanLengthEditEvents(std::shared_ptr<WBFL::EAF::Broker> pBroker,SpanIndexType spanIdx) :
 CInplaceEditDisplayObjectEvents(pBroker), m_SpanIdx(spanIdx)
 {
 }
@@ -49,7 +49,7 @@ void CInplaceSpanLengthEditEvents::Handle_OnChanged(std::shared_ptr<WBFL::DManip
       return;
    }
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    Float64 old_span_length = pBridgeDesc->GetSpan(m_SpanIdx)->GetSpanLength();
 

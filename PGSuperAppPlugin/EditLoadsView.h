@@ -112,7 +112,7 @@ protected:
    afx_msg void OnHeaderClicked(NMHDR* pNMHDR, LRESULT* pResult);
 	DECLARE_MESSAGE_MAP()
 
-   CComPtr<IBroker>     m_pBroker;
+	std::shared_ptr<WBFL::EAF::Broker>  m_pBroker;
 
    bool                 m_IsInitialUpdate;
    bool                 m_FirstSizeEvent;

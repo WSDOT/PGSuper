@@ -69,9 +69,8 @@ BOOL CBoundaryConditionDlg::OnInitDialog()
 {
    CDialog::OnInitDialog();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    ATLASSERT(pIBridgeDesc->GetPier(m_PierIdx)->IsBoundaryPier());
 

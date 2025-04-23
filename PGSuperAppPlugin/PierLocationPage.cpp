@@ -70,9 +70,9 @@ CPierLocationPage::~CPierLocationPage()
 
 void CPierLocationPage::DoDataExchange(CDataExchange* pDX)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
 
@@ -96,7 +96,7 @@ void CPierLocationPage::DoDataExchange(CDataExchange* pDX)
 
    if ( pDX->m_bSaveAndValidate )
    {
-      GET_IFACE2(pBroker,IBridge,pBridge);
+      EAF_GET_IFACE2(pBroker,IBridge,pBridge);
       pDX->PrepareEditCtrl(IDC_ORIENTATION);
       Float64 skewAngle;
       bool bSuccess = pBridge->GetSkewAngle(m_Station,m_strOrientation.c_str(),&skewAngle);
@@ -143,9 +143,9 @@ BOOL CPierLocationPage::OnInitDialog()
 {
    FillEventList();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,ILossParameters,pLossParams);
    if ( pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       GetDlgItem(IDC_ERECTION_EVENT)->EnableWindow(FALSE);
@@ -177,7 +177,7 @@ BOOL CPierLocationPage::OnInitDialog()
    strStationLocation.Format(_T("Station and Orientation defines the %s Line"),strPierType);
    GetDlgItem(IDC_STATION_LOCATION_LABEL)->SetWindowText(strStationLocation);
 	
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    
    CString fmt;
    fmt.LoadString( IS_SI_UNITS(pDisplayUnits) ? IDS_DLG_STATIONFMT_SI : IDS_DLG_STATIONFMT_US );
@@ -231,9 +231,9 @@ void CPierLocationPage::OnChangeStation()
 BOOL CPierLocationPage::IsValidStation(Float64* pStation)
 {
    BOOL bResult = TRUE;
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CWnd* pWnd = GetDlgItem(IDC_STATION);
    CString strStation;
@@ -265,9 +265,9 @@ void CPierLocationPage::UpdateMoveOptionList()
       return;
    }
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // get the current selection
    CComboBox* pOptions = (CComboBox*)GetDlgItem(IDC_MOVE_PIER);
@@ -569,9 +569,9 @@ void CPierLocationPage::UpdateHaunchAndCamberControls()
 
          GetDlgItem(IDC_EDIT_HAUNCH_BUTTON)->EnableWindow(TRUE);
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-         GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      
+      auto pBroker = EAFGetBroker();
+         EAF_GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
          if (inputType == pgsTypes::hidACamber)
          {
@@ -798,9 +798,9 @@ void CPierLocationPage::UpdateHaunchAndCamberData(CDataExchange* pDX)
    pgsTypes::SlabOffsetType slabOffsetType = pParent->m_BridgeDesc.GetSlabOffsetType();
          if (slabOffsetType == pgsTypes::sotBearingLine)
          {
-            CComPtr<IBroker> pBroker;
-            EAFGetBroker(&pBroker);
-            GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+            
+            auto pBroker = EAFGetBroker();
+            EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
             Float64 minSlabOffset = pParent->m_BridgeDesc.GetMinSlabOffset();
             CString strMinValError;
@@ -861,9 +861,9 @@ void CPierLocationPage::UpdateHaunchAndCamberData(CDataExchange* pDX)
 
          if (haunchLayoutType == pgsTypes::hltAlongSpans && haunchInputLocationType == pgsTypes::hilSame4AllGirders && haunchInputDistributionType == pgsTypes::hidAtEnds)
          {
-            CComPtr<IBroker> pBroker;
-            EAFGetBroker(&pBroker);
-            GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+            
+            auto pBroker = EAFGetBroker();
+            EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
             const CDeckDescription2* pDeck = pParent->m_BridgeDesc.GetDeckDescription();
             Float64 Tdeck;

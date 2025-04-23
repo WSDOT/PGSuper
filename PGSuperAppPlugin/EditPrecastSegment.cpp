@@ -45,16 +45,16 @@ txnEditPrecastSegment::~txnEditPrecastSegment()
 
 bool txnEditPrecastSegment::Execute()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IEvents, pEvents);
+   EAF_GET_IFACE2(pBroker,IEvents, pEvents);
    // Exception-safe holder to keep from fireing events until we are done
    CIEventsHolder event_holder(pEvents);
 
    m_OldSegmentData.clear();
 
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(m_SegmentKey.groupIndex);
 
@@ -86,10 +86,10 @@ bool txnEditPrecastSegment::Execute()
 
 void txnEditPrecastSegment::Undo()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IEvents, pEvents);
+   EAF_GET_IFACE2(pBroker,IEvents, pEvents);
    // Exception-safe holder to keep from fireing events until we are done
    CIEventsHolder event_holder(pEvents);
 
@@ -126,10 +126,10 @@ bool txnEditPrecastSegment::IsRepeatable() const
 
 void txnEditPrecastSegment::SetSegmentData(const CSegmentKey& segmentKey,const txnEditPrecastSegmentData& data)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    pIBridgeDesc->SetPrecastSegmentData(segmentKey,data.m_SegmentData);
    pIBridgeDesc->SetTimelineManager(data.m_TimelineMgr);
 }

@@ -62,13 +62,13 @@ void CSpecDlg::DoDataExchange(CDataExchange* pDX)
 
    if ( pDX->m_bSaveAndValidate )
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
 
-      GET_IFACE2(pBroker, IDocumentType, pDocType);
+      EAF_GET_IFACE2(pBroker, IDocumentType, pDocType);
       bool bIsPGSplice = pDocType->IsPGSpliceDocument();
 
-      GET_IFACE2(pBroker, ILibrary, pLib);
+      EAF_GET_IFACE2(pBroker, ILibrary, pLib);
 
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpec.c_str() );
       const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
@@ -108,10 +108,10 @@ BOOL CSpecDlg::OnInitDialog()
    CComboBox* pBox = (CComboBox*)GetDlgItem( IDC_SPEC );
    ASSERT( pBox );
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker, ILibraryNames, pLibNames );
+   EAF_GET_IFACE2(pBroker, ILibraryNames, pLibNames );
 
    std::vector<std::_tstring> specs;
    pLibNames->EnumSpecNames( &specs );

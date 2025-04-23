@@ -41,7 +41,7 @@
 
 using namespace WBFL::DManip;
 
-CAlignmentDisplayObjectEvents::CAlignmentDisplayObjectEvents(IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,ViewType viewType,std::shared_ptr<iDisplayObject> pDO)
+CAlignmentDisplayObjectEvents::CAlignmentDisplayObjectEvents(std::shared_ptr<WBFL::EAF::Broker> pBroker, CBridgeModelViewChildFrame* pFrame,ViewType viewType,std::shared_ptr<iDisplayObject> pDO)
 {
    m_ViewType = viewType;
    m_pBroker = pBroker;
@@ -56,7 +56,7 @@ CAlignmentDisplayObjectEvents::~CAlignmentDisplayObjectEvents()
 
 void CAlignmentDisplayObjectEvents::EditAlignment()
 {
-   GET_IFACE(IEditByUI, pEditByUI);
+   EAF_GET_IFACE(IEditByUI, pEditByUI);
    int page = (m_ViewType == BridgePlan || m_ViewType == Alignment ? EAD_ROADWAY : EAD_SECTION);
    pEditByUI->EditAlignmentDescription(page);
 }
@@ -128,7 +128,7 @@ bool CAlignmentDisplayObjectEvents::OnKeyDown(std::shared_ptr<iDisplayObject> pD
       }
       else if ( nChar == VK_UP )
       {
-         GET_IFACE2(m_pBroker,IBridgeDescription,pIBridgeDesc);
+         EAF_GET_IFACE2(m_pBroker,IBridgeDescription,pIBridgeDesc);
          const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
          GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
          GirderIndexType nGirders = pBridgeDesc->GetGirderGroup(nGroups-1)->GetGirderCount();
@@ -139,14 +139,14 @@ bool CAlignmentDisplayObjectEvents::OnKeyDown(std::shared_ptr<iDisplayObject> pD
       }
       else if ( nChar == VK_LEFT )
       {
-         GET_IFACE2(m_pBroker,IBridgeDescription,pIBridgeDesc);
+         EAF_GET_IFACE2(m_pBroker,IBridgeDescription,pIBridgeDesc);
          const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
          m_pFrame->SelectPier(pBridgeDesc->GetPierCount()-1);
          return true;
       }
       else if ( nChar == VK_RIGHT )
       {
-         GET_IFACE2(m_pBroker,IBridgeDescription,pIBridgeDesc);
+         EAF_GET_IFACE2(m_pBroker,IBridgeDescription,pIBridgeDesc);
          const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
          m_pFrame->SelectPier(0);
          return true;

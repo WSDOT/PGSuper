@@ -157,16 +157,16 @@ BOOL CGirderSegmentTendonsPage::OnInitDialog()
 
 void CGirderSegmentTendonsPage::UpdateSectionDepth()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
-   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    PoiList vPoi;
    pPoi->GetPointsOfInterest(this->m_pSegment->GetSegmentKey(), POI_0L | POI_5L | POI_10L | POI_RELEASED_SEGMENT, &vPoi);
    ATLASSERT(vPoi.size() == 3);
 
-   GET_IFACE2(pBroker, IShapes, pShapes);
+   EAF_GET_IFACE2(pBroker, IShapes, pShapes);
    std::array<CComPtr<IShape>, 3> shape;
    std::array<CComPtr<IRect2d>, 3> bounding_box;
    std::array<UINT, 3> nIDC{ IDC_HG_START,IDC_HG_MIDDLE,IDC_HG_END };

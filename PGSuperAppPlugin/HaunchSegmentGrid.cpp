@@ -95,9 +95,9 @@ void CHaunchSegmentGrid::CustomInit(GroupIndexType grpIdx)
    m_GroupIdx = grpIdx;
 
    // initialize units
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    m_pUnit = &(pDisplayUnits->GetComponentDimUnit());
 
 // Initialize the grid. For CWnd based grids this call is // 
@@ -304,8 +304,8 @@ void CHaunchSegmentGrid::DoDataExchange(CDataExchange* pDX)
 
 void CHaunchSegmentGrid::FillGrid()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);

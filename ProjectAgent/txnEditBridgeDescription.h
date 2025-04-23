@@ -27,7 +27,7 @@ class txnEditBridgeDescription :
    public CEAFTransaction
 {
 public:
-   txnEditBridgeDescription(IBroker* pBroker,const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc);
+   txnEditBridgeDescription(const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc);
    ~txnEditBridgeDescription(void);
 
    virtual bool Execute() override;
@@ -40,6 +40,5 @@ public:
 private:
    void Execute(int i);
 
-   IBroker* m_pBroker;
 	CBridgeDescription2 m_BridgeDesc[2];
 };

@@ -39,8 +39,9 @@ static const Float64 SSIZE = 1440 * 3/8; // (twips)
 
 UINT CBridgeSectionCutDisplayImpl::ms_Format = ::RegisterClipboardFormat(_T("BridgeSectionCutData"));
 
-void CBridgeSectionCutDisplayImpl::Init(CBridgeModelViewChildFrame* pFrame,std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, IRoadway* pRoadway,IBridge* pBridge, iCutLocation* pCutLoc)
+void CBridgeSectionCutDisplayImpl::Init(CBridgeModelViewChildFrame* pFrame,std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, std::shared_ptr<IRoadway> pRoadway,std::shared_ptr<IBridge> pBridge, iCutLocation* pCutLoc)
 {
+#pragma Reminder("WORKING HERE - Removing COM - this could be a circular reference") // Roadway and Bridge pointers
    m_pFrame = pFrame;
    m_pRoadway = pRoadway;
    m_pBridge = pBridge;

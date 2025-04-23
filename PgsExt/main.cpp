@@ -24,6 +24,8 @@
 #include <System\dllTest.h>
 
 #include <initguid.h>
+#include <EAF\EAFDisplayUnits.h>
+#include <EAF\EAFStatusCenter.h>
 #include <IFace\Project.h>
 #include <IFace\VersionInfo.h>
 #include <IFace\StatusCenter.h>
@@ -42,7 +44,6 @@
 #include <IFace\SplittingChecks.h>
 #include <IFace/Alignment.h>
 
-#include <EAF\EAFDisplayUnits.h>
 
 #include <WBFLCogo.h>
 #include <WBFLCogo_i.c>

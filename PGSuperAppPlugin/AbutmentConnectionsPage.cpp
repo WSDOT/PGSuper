@@ -153,9 +153,9 @@ void CAbutmentConnectionsPage::Init(CPierData2* pPier)
 
 void CAbutmentConnectionsPage::DoDataExchange(CDataExchange* pDX)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    
    CPropertyPage::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CAbutmentConnectionsPage)
@@ -569,10 +569,10 @@ void CAbutmentConnectionsPage::OnDiaphragmLoadTypeChanged()
 
 void CAbutmentConnectionsPage::OnCopyFromLibrary()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2( pBroker, ILibraryNames, pLibNames);
+   EAF_GET_IFACE2( pBroker, ILibraryNames, pLibNames);
    std::vector<std::_tstring> names;
    pLibNames->EnumGdrConnectionNames(&names);
 
@@ -602,7 +602,7 @@ void CAbutmentConnectionsPage::OnCopyFromLibrary()
 	
 	      std::_tstring name = names[result];
 		
-	      GET_IFACE2(pBroker,ILibrary,pLib);
+	      EAF_GET_IFACE2(pBroker,ILibrary,pLib);
 	      const ConnectionLibraryEntry* pEntry = pLib->GetConnectionEntry(name.c_str());
 	
          m_BearingOffset = pEntry->GetGirderBearingOffset();

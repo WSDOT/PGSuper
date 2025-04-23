@@ -126,8 +126,9 @@ DESCRIPTION
 // {59D50425-265C-11D2-8EB0-006097DF3C68}
 DEFINE_GUID(IID_IProjectProperties,
 0x59D50425, 0x265C, 0x11D2, 0x8E, 0xB0, 0x00, 0x60, 0x97, 0xDF, 0x3C, 0x68);
-interface IProjectProperties : IUnknown
+class IProjectProperties
 {
+public:
    virtual LPCTSTR GetBridgeName() const = 0;
    virtual void SetBridgeName(LPCTSTR name) = 0;
    virtual LPCTSTR GetBridgeID() const = 0;
@@ -154,8 +155,9 @@ DESCRIPTION
 // {FD1DA96A-D57C-11d2-88F9-006097C68A9C}
 DEFINE_GUID(IID_IProjectPropertiesEventSink, 
 0xfd1da96a, 0xd57c, 0x11d2, 0x88, 0xf9, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
-interface __declspec(uuid("{FD1DA96A-D57C-11d2-88F9-006097C68A9C}")) IProjectPropertiesEventSink : IUnknown
+class __declspec(uuid("{FD1DA96A-D57C-11d2-88F9-006097C68A9C}")) IProjectPropertiesEventSink
 {
+public:
    virtual HRESULT OnProjectPropertiesChanged() = 0;
 };
 
@@ -171,8 +173,9 @@ DESCRIPTION
 // {880AE100-2F4C-11d2-8D11-94FA07C10000}
 DEFINE_GUID(IID_IEnvironment,
 0x880AE100, 0x2F4C, 0x11d2, 0x8D, 0x11, 0x94, 0xFA, 0x07, 0xC1, 0x00, 0x00);
-interface IEnvironment : IUnknown
+class IEnvironment
 {
+public:
    virtual pgsTypes::ExposureCondition GetExposureCondition() const = 0;
 	virtual void SetExposureCondition(pgsTypes::ExposureCondition newVal) = 0;
 
@@ -195,8 +198,9 @@ DESCRIPTION
 // {DBA24DC0-2F4D-11d2-8D11-94FA07C10000}
 DEFINE_GUID(IID_IEnvironmentEventSink,
 0xDBA24DC0, 0x2F4D, 0x11d2, 0x8D, 0x11, 0x94, 0xFA, 0x07, 0xC1, 0x00, 0x00);
-interface __declspec(uuid("{DBA24DC0-2F4D-11d2-8D11-94FA07C10000}")) IEnvironmentEventSink : IUnknown
+class __declspec(uuid("{DBA24DC0-2F4D-11d2-8D11-94FA07C10000}")) IEnvironmentEventSink
 {
+public:
    virtual HRESULT OnExposureConditionChanged() = 0;
    virtual HRESULT OnClimateConditionChanged() = 0;
    virtual HRESULT OnRelHumidityChanged() = 0;
@@ -420,8 +424,9 @@ struct RoadwaySectionData
 // {77D1CD00-2F90-11d2-8D11-94FA07C10000}
 DEFINE_GUID(IID_IRoadwayData,
 0x77D1CD00, 0x2F90, 0x11d2, 0x8D, 0x11, 0x94, 0xFA, 0x07, 0xC1, 0x00, 0x00);
-interface IRoadwayData : IUnknown
+class IRoadwayData
 {
+public:
    virtual void SetAlignmentData2(const AlignmentData2& data) = 0;
    virtual const AlignmentData2& GetAlignmentData2() const = 0;
 
@@ -444,8 +449,9 @@ DESCRIPTION
 // {D660F3C1-328E-4ef2-924B-DBB8B8D4DB6F}
 DEFINE_GUID(IID_ISegmentData, 
 0xd660f3c1, 0x328e, 0x4ef2, 0x92, 0x4b, 0xdb, 0xb8, 0xb8, 0xd4, 0xdb, 0x6f);
-interface ISegmentData : IUnknown
+class ISegmentData
 {
+public:
    virtual const WBFL::Materials::PsStrand* GetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType type) const = 0;
    virtual void SetStrandMaterial(const CSegmentKey& segmentKey,pgsTypes::StrandType type,const WBFL::Materials::PsStrand* pmat) = 0;
 
@@ -474,8 +480,9 @@ DESCRIPTION
 // {7A716040-8BD4-11d2-9D99-00609710E6CE}
 DEFINE_GUID(IID_IShear, 
 0x7a716040, 0x8bd4, 0x11d2, 0x9d, 0x99, 0x0, 0x60, 0x97, 0x10, 0xe6, 0xce);
-interface IShear : IUnknown
+class IShear
 {
+public:
    virtual std::_tstring GetSegmentStirrupMaterial(const CSegmentKey& segmentKey) const = 0;
    virtual void GetSegmentStirrupMaterial(const CSegmentKey& segmentKey,WBFL::Materials::Rebar::Type& type,WBFL::Materials::Rebar::Grade& grade) const = 0;
    virtual void SetSegmentStirrupMaterial(const CSegmentKey& segmentKey,WBFL::Materials::Rebar::Type type,WBFL::Materials::Rebar::Grade grade) = 0;
@@ -503,8 +510,9 @@ DESCRIPTION
 // {E87AC679-4753-4b18-81A1-3C6858226F87}
 DEFINE_GUID(IID_ILongitudinalRebar, 
 0xe87ac679, 0x4753, 0x4b18, 0x81, 0xa1, 0x3c, 0x68, 0x58, 0x22, 0x6f, 0x87);
-interface ILongitudinalRebar : IUnknown
+class ILongitudinalRebar
 {
+public:
    virtual std::_tstring GetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey) const = 0;
    virtual void GetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey,WBFL::Materials::Rebar::Type& type,WBFL::Materials::Rebar::Grade& grade) const = 0;
    virtual void SetSegmentLongitudinalRebarMaterial(const CSegmentKey& segmentKey,WBFL::Materials::Rebar::Type type,WBFL::Materials::Rebar::Grade grade) = 0;
@@ -531,8 +539,9 @@ DESCRIPTION
 // {B72842B0-5BB1-11d2-8ED7-006097DF3C68}
 DEFINE_GUID(IID_ISpecification, 
 0xb72842b0, 0x5bb1, 0x11d2, 0x8e, 0xd7, 0x0, 0x60, 0x97, 0xdf, 0x3c, 0x68);
-interface ISpecification : IUnknown
+class ISpecification
 {
+public:
    virtual std::_tstring GetSpecification() const = 0;
    virtual void SetSpecification(const std::_tstring& spec) = 0;
 
@@ -587,8 +596,9 @@ DESCRIPTION
 // {B72842B1-5BB1-11d2-8ED7-006097DF3C68}
 DEFINE_GUID(IID_ISpecificationEventSink, 
 0xb72842b1, 0x5bb1, 0x11d2, 0x8e, 0xd7, 0x0, 0x60, 0x97, 0xdf, 0x3c, 0x68);
-interface __declspec(uuid("{B72842B1-5BB1-11d2-8ED7-006097DF3C68}")) ISpecificationEventSink : IUnknown
+class __declspec(uuid("{B72842B1-5BB1-11d2-8ED7-006097DF3C68}")) ISpecificationEventSink
 {
+public:
    virtual HRESULT OnSpecificationChanged() = 0;
    virtual HRESULT OnAnalysisTypeChanged() = 0;
 };
@@ -605,8 +615,9 @@ DESCRIPTION
 // {5A3A28C0-480F-11d2-8EC7-006097DF3C68}
 DEFINE_GUID(IID_ILibraryNames,
 0x5A3A28C0, 0x480F, 0x11d2, 0x8E, 0xC7, 0x00, 0x60, 0x97, 0xDF, 0x3C, 0x68);
-interface ILibraryNames : IUnknown
+class ILibraryNames
 {
+public:
    virtual void EnumGdrConnectionNames( std::vector<std::_tstring>* pNames ) const = 0;
    virtual void EnumGirderNames( std::vector<std::_tstring>* pNames ) const = 0;
    virtual void EnumGirderNames( LPCTSTR strGirderFamily, std::vector<std::_tstring>* pNames ) const = 0;
@@ -636,8 +647,9 @@ DESCRIPTION
 // {34172AE0-3781-11d2-8EC1-006097DF3C68}
 DEFINE_GUID(IID_ILibrary,
 0x34172AE0, 0x3781, 0x11d2, 0x8E, 0xC1, 0x00, 0x60, 0x97, 0xDF, 0x3C, 0x68);
-interface ILibrary : IUnknown
+class ILibrary
 {
+public:
    virtual void SetLibraryManager(psgLibraryManager* pNewLibMgr) = 0; 
    virtual psgLibraryManager* GetLibraryManager() = 0;
    virtual const psgLibraryManager* GetLibraryManager() const = 0;
@@ -703,8 +715,9 @@ public:
 // {6132E890-719D-11d2-8EF1-006097DF3C68}
 DEFINE_GUID(IID_IBridgeDescriptionEventSink, 
 0x6132e890, 0x719d, 0x11d2, 0x8e, 0xf1, 0x0, 0x60, 0x97, 0xdf, 0x3c, 0x68);
-interface __declspec(uuid("{6132E890-719D-11d2-8EF1-006097DF3C68}")) IBridgeDescriptionEventSink : IUnknown
+class __declspec(uuid("{6132E890-719D-11d2-8EF1-006097DF3C68}")) IBridgeDescriptionEventSink
 {
+public:
    virtual HRESULT OnBridgeChanged(CBridgeChangedHint* pHint) = 0;
    virtual HRESULT OnGirderFamilyChanged() = 0;
    virtual HRESULT OnGirderChanged(const CGirderKey& girderKey,Uint32 lHint) = 0;
@@ -726,9 +739,10 @@ DESCRIPTION
 // {2C1A3E70-727E-11d2-8EF2-006097DF3C68}
 DEFINE_GUID(IID_ILoadModifiers, 
 0x2c1a3e70, 0x727e, 0x11d2, 0x8e, 0xf2, 0x0, 0x60, 0x97, 0xdf, 0x3c, 0x68);
-interface ILoadModifiers : IUnknown
+class ILoadModifiers
 {
-   enum Level { Low, Normal, High };
+public:
+   enum class Level { Low, Normal, High };
    virtual void SetDuctilityFactor(Level level,Float64 value)  = 0;
    virtual void SetImportanceFactor(Level level,Float64 value) = 0;
    virtual void SetRedundancyFactor(Level level,Float64 value) = 0;
@@ -754,8 +768,9 @@ DESCRIPTION
 // {2C1A3E71-727E-11d2-8EF2-006097DF3C68}
 DEFINE_GUID(IID_ILoadModifiersEventSink, 
 0x2c1a3e71, 0x727e, 0x11d2, 0x8e, 0xf2, 0x0, 0x60, 0x97, 0xdf, 0x3c, 0x68);
-interface __declspec(uuid("{2C1A3E71-727E-11d2-8EF2-006097DF3C68}")) ILoadModifiersEventSink : IUnknown
+class __declspec(uuid("{2C1A3E71-727E-11d2-8EF2-006097DF3C68}")) ILoadModifiersEventSink
 {
+public:
    virtual HRESULT OnLoadModifiersChanged() = 0;
 };
 
@@ -772,8 +787,9 @@ enum LibConflictResult {RenameEntry, ReplaceEntry};
 // {BCE5B018-2149-11d3-AD79-00105A9AF985}
 DEFINE_GUID(IID_ILibraryConflictEventSink, 
 0xbce5b018, 0x2149, 0x11d3, 0xad, 0x79, 0x0, 0x10, 0x5a, 0x9a, 0xf9, 0x85);
-interface __declspec(uuid("{BCE5B018-2149-11d3-AD79-00105A9AF985}")) ILibraryConflictEventSink : IUnknown
+class __declspec(uuid("{BCE5B018-2149-11d3-AD79-00105A9AF985}")) ILibraryConflictEventSink
 {
+public:
    virtual HRESULT OnLibraryConflictResolved() = 0;
 };
 
@@ -788,8 +804,9 @@ DESCRIPTION
 // {916B4250-3EFD-11d3-AD94-00105A9AF985}
 DEFINE_GUID(IID_IImportProjectLibrary, 
 0x916b4250, 0x3efd, 0x11d3, 0xad, 0x94, 0x0, 0x10, 0x5a, 0x9a, 0xf9, 0x85);
-interface IImportProjectLibrary : IUnknown
+class IImportProjectLibrary
 {
+public:
    virtual bool ImportProjectLibraries(IStructuredLoad* pLoad) = 0;
 };
 
@@ -803,8 +820,9 @@ DESCRIPTION
 // {24B25C88-1551-4025-ADAD-DF69CB18ADCA}
 DEFINE_GUID(IID_IUserDefinedLoadData, 
 0x24b25c88, 0x1551, 0x4025, 0xad, 0xad, 0xdf, 0x69, 0xcb, 0x18, 0xad, 0xca);
-interface IUserDefinedLoadData : IUnknown
+class IUserDefinedLoadData
 {
+public:
    virtual bool HasUserDC(const CGirderKey& girderKey) const = 0;
    virtual bool HasUserDW(const CGirderKey& girderKey) const = 0;
    virtual bool HasUserLLIM(const CGirderKey& girderKey) const = 0;
@@ -868,8 +886,9 @@ DESCRIPTION
 // {58B12CA6-A09D-4208-BE4A-30B5B4338513}
 DEFINE_GUID(IID_IEvents, 
 0x58b12ca6, 0xa09d, 0x4208, 0xbe, 0x4a, 0x30, 0xb5, 0xb4, 0x33, 0x85, 0x13);
-interface IEvents : IUnknown
+class IEvents
 {
+public:
    virtual void HoldEvents() = 0;
    virtual void FirePendingEvents() = 0;
    virtual void CancelPendingEvents() = 0;
@@ -895,7 +914,7 @@ public:
    }
 
 private:
-   CComPtr<T> m_pIEvents;
+   std::shared_ptr<T> m_pIEvents;
 };
 
 typedef CIEventsHolderT<IEvents> CIEventsHolder;
@@ -912,8 +931,9 @@ DESCRIPTION
 // {0538457E-9446-4a35-8B60-1263F4156763}
 DEFINE_GUID(IID_IEventsSink, 
 0x538457e, 0x9446, 0x4a35, 0x8b, 0x60, 0x12, 0x63, 0xf4, 0x15, 0x67, 0x63);
-interface IEventsSink : IUnknown
+class IEventsSink
 {
+public:
    virtual HRESULT OnHoldEvents() = 0;
    virtual HRESULT OnFirePendingEvents() = 0;
    virtual HRESULT OnCancelPendingEvents() = 0;
@@ -931,8 +951,9 @@ DESCRIPTION
 // {74A056FD-CCFD-496F-B312-D22E22E6B773}
 DEFINE_GUID(IID_IUIEvents, 
 0x74a056fd, 0xccfd, 0x496f, 0xb3, 0x12, 0xd2, 0x2e, 0x22, 0xe6, 0xb7, 0x73);
-interface __declspec(uuid("{74A056FD-CCFD-496F-B312-D22E22E6B773}")) IUIEvents : IUnknown
+class __declspec(uuid("{74A056FD-CCFD-496F-B312-D22E22E6B773}")) IUIEvents
 {
+public:
    virtual void HoldEvents(bool bHold=true) = 0;
    virtual void FirePendingEvents() = 0;
    virtual void CancelPendingEvents() = 0;
@@ -952,8 +973,9 @@ DESCRIPTION
 // {797998B4-FE8C-4ad1-AE9E-167A193CC296}
 DEFINE_GUID(IID_ILimits, 
 0x797998b4, 0xfe8c, 0x4ad1, 0xae, 0x9e, 0x16, 0x7a, 0x19, 0x3c, 0xc2, 0x96);
-interface ILimits : IUnknown
+class ILimits
 {
+public:
    virtual Float64 GetMaxSlabFc(pgsTypes::ConcreteType concType) const = 0;
    virtual Float64 GetMaxSegmentFci(pgsTypes::ConcreteType concType) const = 0;
    virtual Float64 GetMaxSegmentFc(pgsTypes::ConcreteType concType) const = 0;
@@ -975,8 +997,9 @@ DESCRIPTION
 // {769DC2AE-D6DE-45c3-A612-84F8A0534CBE}
 DEFINE_GUID(IID_ILoadFactors, 
 0x769dc2ae, 0xd6de, 0x45c3, 0xa6, 0x12, 0x84, 0xf8, 0xa0, 0x53, 0x4c, 0xbe);
-interface ILoadFactors : IUnknown
+class ILoadFactors
 {
+public:
    virtual const CLoadFactors* GetLoadFactors() const = 0;
    virtual void SetLoadFactors(const CLoadFactors& loadFactors) = 0;
 };
@@ -992,8 +1015,9 @@ DESCRIPTION
 // {D286FE13-3818-4805-B4B2-0CF4E056B37E}
 DEFINE_GUID(IID_ILiveLoads, 
 0xd286fe13, 0x3818, 0x4805, 0xb4, 0xb2, 0xc, 0xf4, 0xe0, 0x56, 0xb3, 0x7e);
-interface ILiveLoads : IUnknown
+class ILiveLoads
 {
+public:
    enum PedestrianLoadApplicationType {PedDontApply, PedConcurrentWithVehicular, PedEnvelopeWithVehicular};
 
    virtual bool IsLiveLoadDefined(pgsTypes::LiveLoadType llType) const = 0;
@@ -1014,8 +1038,9 @@ interface ILiveLoads : IUnknown
 // {483673C2-9F4E-40ec-9DC2-6B36B0D34498}
 DEFINE_GUID(IID_IBridgeDescription, 
 0x483673c2, 0x9f4e, 0x40ec, 0x9d, 0xc2, 0x6b, 0x36, 0xb0, 0xd3, 0x44, 0x98);
-interface IBridgeDescription : IUnknown
+class IBridgeDescription
 {
+public:
    virtual const CBridgeDescription2* GetBridgeDescription() const = 0;
    virtual void SetBridgeDescription(const CBridgeDescription2& desc) = 0;
 
@@ -1276,8 +1301,9 @@ DESCRIPTION
 // {B1728315-80C4-4174-A587-CE5EF80C5E15}
 DEFINE_GUID(IID_IEventMap, 
 0xb1728315, 0x80c4, 0x4174, 0xa5, 0x87, 0xce, 0x5e, 0xf8, 0xc, 0x5e, 0x15);
-interface IEventMap : IUnknown
+class IEventMap
 {
+public:
    virtual CComBSTR GetEventName(EventIndexType eventIdx) const = 0;  
    virtual EventIndexType GetEventIndex(CComBSTR bstrEvent) const = 0;
    virtual EventIndexType GetEventCount() const = 0;
@@ -1293,8 +1319,9 @@ DESCRIPTION
 // {1EAF4313-36A3-434d-801A-0458447A9B49}
 DEFINE_GUID(IID_IEffectiveFlangeWidth, 
 0x1eaf4313, 0x36a3, 0x434d, 0x80, 0x1a, 0x4, 0x58, 0x44, 0x7a, 0x9b, 0x49);
-interface IEffectiveFlangeWidth : IUnknown
+class IEffectiveFlangeWidth
 {
+public:
    virtual bool IgnoreEffectiveFlangeWidthLimits() const = 0;
    virtual void IgnoreEffectiveFlangeWidthLimits(bool bIgnore) = 0;
 };
@@ -1311,8 +1338,9 @@ DESCRIPTION
 // {AAF586AA-D06E-446b-9EB2-CA916427AD9E}
 DEFINE_GUID(IID_ILossParameters, 
 0xaaf586aa, 0xd06e, 0x446b, 0x9e, 0xb2, 0xca, 0x91, 0x64, 0x27, 0xad, 0x9e);
-interface ILossParameters : IUnknown
+class ILossParameters
 {
+public:
    // Returns a string that describes the method used to compute prestress losses
    // This string is intended to be used in reports
    virtual std::_tstring GetLossMethodDescription() const = 0;
@@ -1403,8 +1431,9 @@ DESCRIPTION
 // {E677C320-9E35-4ce2-9FA6-083E99F87742}
 DEFINE_GUID(IID_ILossParametersEventSink, 
 0xe677c320, 0x9e35, 0x4ce2, 0x9f, 0xa6, 0x8, 0x3e, 0x99, 0xf8, 0x77, 0x42);
-interface __declspec(uuid("{E677C320-9E35-4ce2-9FA6-083E99F87742}")) ILossParametersEventSink : IUnknown
+class __declspec(uuid("{E677C320-9E35-4ce2-9FA6-083E99F87742}")) ILossParametersEventSink
 {
+public:
    virtual HRESULT OnLossParametersChanged() = 0;
 };
 
@@ -1420,7 +1449,8 @@ INTERFACE
 // {C3D02F95-D861-483d-8A41-11FC3A16D77F}
 DEFINE_GUID(IID_IValidate, 
 0xc3d02f95, 0xd861, 0x483d, 0x8a, 0x41, 0x11, 0xfc, 0x3a, 0x16, 0xd7, 0x7f);
-interface IValidate: IUnknown
+class IValidate
 {
+public:
    virtual UINT Orientation(LPCTSTR lpszOrientation) = 0;
 };

@@ -108,7 +108,7 @@ protected:
    void BuildRoadwayCrossSectionDisplayObjects();
 
    void UpdateGirderTooltips();
-   CString GetBarrierToolTip(IBroker* pBroker, const CRailingSystem* pRailingSystem);
+   CString GetBarrierToolTip(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CRailingSystem* pRailingSystem);
 
    void TrimSurface(IPoint2dCollection* pPoints,Float64 Xleft,Float64 Xright);
 

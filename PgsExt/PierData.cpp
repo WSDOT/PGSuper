@@ -315,9 +315,8 @@ HRESULT CPierData::Load(Float64 version,IStructuredLoad* pStrLoad,IProgress* pPr
          }
       }
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,ILibrary, pLib );
+      auto pBroker = EAFGetBroker();
+      EAF_GET_IFACE2(pBroker,ILibrary, pLib );
       const ConnectionLibraryEntry* pConnEntry = pLib->GetConnectionEntry(strConnection[pgsTypes::Ahead].c_str());
       m_GirderEndDistance[pgsTypes::Ahead]            = pConnEntry->GetGirderEndDistance();
       m_EndDistanceMeasurementType[pgsTypes::Ahead]   = pConnEntry->GetEndDistanceMeasurementType();
@@ -696,9 +695,8 @@ HRESULT CPierData::Load(Float64 version,IStructuredLoad* pStrLoad,IProgress* pPr
       else
       {
          // look up connection details and set values
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
-         GET_IFACE2(pBroker,ILibrary, pLib );
+         auto pBroker = EAFGetBroker();
+         EAF_GET_IFACE2(pBroker,ILibrary, pLib );
 
          if ( m_pBridgeDesc == nullptr || m_pBridgeDesc && m_pPrevSpan )
          {

@@ -36,9 +36,8 @@ CSegmentDuctData::CSegmentDuctData()
    m_pPTData = nullptr;
    m_pSegment = nullptr;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker, ILibraryNames, pLibNames);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker, ILibraryNames, pLibNames);
    std::vector<std::_tstring> vNames;
    pLibNames->EnumDuctNames(&vNames);
    Name = vNames.front();
@@ -67,9 +66,8 @@ CSegmentDuctData::CSegmentDuctData(const CPrecastSegmentData* pSegment)
 {
    m_pPTData = nullptr;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker, ILibraryNames, pLibNames);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker, ILibraryNames, pLibNames);
    std::vector<std::_tstring> vNames;
    pLibNames->EnumDuctNames(&vNames);
    Name = vNames.front();

@@ -32,7 +32,7 @@ interface IBroker;
 class iPointLoadDrawStrategy
 {
 public:
-  virtual void Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, IBroker* pBroker, const CPointLoadData& load, IndexType loadIndex, Float64 spanLength, Float64 maxMagnitude, COLORREF color) = 0;
+  virtual void Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPointLoadData& load, IndexType loadIndex, Float64 spanLength, Float64 maxMagnitude, COLORREF color) = 0;
 };
 
 #endif // INCLUDED_POINTLOADDRAWSTRATEGY_H_

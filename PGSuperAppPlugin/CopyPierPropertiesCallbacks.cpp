@@ -217,12 +217,11 @@ enum CanCopyBoundaryConditionType { ccbOkCopy, ccbPGSplice, ccbIncompatiblePierT
 
 static CanCopyBoundaryConditionType CanCopyBoundaryConditionData(PierIndexType fromPierIdx, const std::vector<PierIndexType>& toPiers)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    // Multiple reasons why we cannot copy
    // First is that we won't even consider spliced girders (too complicated)
-   GET_IFACE2(pBroker, IDocumentType, pDocType);
+   EAF_GET_IFACE2(pBroker, IDocumentType, pDocType);
    bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
    if (bIsSplicedGirder)
    {
@@ -230,7 +229,7 @@ static CanCopyBoundaryConditionType CanCopyBoundaryConditionData(PierIndexType f
    }
 
    // Last, check if boundary conditions supported by selected piers are compatible
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    const CPierData2* pFromPier = pBridgeDesc->GetPier(fromPierIdx);
@@ -250,12 +249,11 @@ static CanCopyBoundaryConditionType CanCopyBoundaryConditionData(PierIndexType f
 
 static bool CanCopyConnectionData(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    // Multiple reasons why we cannot copy
    // In general, we cannot copy to or from when a segment spans a pier
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    const CPierData2* pFromPier = pBridgeDesc->GetPier(fromPierIdx);
@@ -278,12 +276,12 @@ static bool CanCopyConnectionData(PierIndexType fromPierIdx,const std::vector<Pi
 
 
 // Declaration of comparison reports
-static void PierAllPropertiesComparison(rptParagraph* pPara, CComPtr<IBroker> pBroker, PierIndexType fromPierIdx);
-static void PierConnectionPropertiesComparison(rptParagraph* pPara, CComPtr<IBroker> pBroker, PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers);
-static void PierDiaphragmPropertiesComparison(rptParagraph* pPara, CComPtr<IBroker> pBroker, PierIndexType fromPierIdx);
-static void PierModelPropertiesComparison(rptParagraph* pPara, CComPtr<IBroker> pBroker, PierIndexType fromPierIdx);
+static void PierAllPropertiesComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, PierIndexType fromPierIdx);
+static void PierConnectionPropertiesComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers);
+static void PierDiaphragmPropertiesComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, PierIndexType fromPierIdx);
+static void PierModelPropertiesComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, PierIndexType fromPierIdx);
 
-static void PierMaterialsComparison(rptParagraph* pPara, CComPtr<IBroker> pBroker, PierIndexType fromPierIdx);
+static void PierMaterialsComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, PierIndexType fromPierIdx);
 static void write_connection_abbrevation_footnotes(rptParagraph * pPara);
 
 ////////////////////////////////////////////////////
@@ -332,13 +330,12 @@ bool txnCopyPierConnectionProperties::Execute()
    {
       m_DidDoCopy = true;
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      auto pBroker = EAFGetBroker();
 
-      GET_IFACE2(pBroker, IEvents, pEvents);
+      EAF_GET_IFACE2(pBroker, IEvents, pEvents);
       pEvents->HoldEvents(); // Large bridges can take a long time. Don't fire any changed events until all changes are done
 
-      GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+      EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
       // We don't set boundary conditions for spliced girder. Too indeterminate
@@ -398,9 +395,8 @@ void txnCopyPierConnectionProperties::Undo()
 {
    if (m_DidDoCopy)  
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+      auto pBroker = EAFGetBroker();
+      EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
 
       CanCopyBoundaryConditionType canCopyBC = CanCopyBoundaryConditionData(m_FromPierIdx, m_ToPiers);
 
@@ -449,12 +445,11 @@ txnCopyPierDiaphragmProperties::~txnCopyPierDiaphragmProperties()
 
 bool txnCopyPierDiaphragmProperties::Execute()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEvents, pEvents);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEvents, pEvents);
    pEvents->HoldEvents(); // Large bridges can take a long time. Don't fire any changed events until all changes are done
 
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    m_PierDiaphragmData.clear();
@@ -510,9 +505,8 @@ bool txnCopyPierDiaphragmProperties::Execute()
 
 void txnCopyPierDiaphragmProperties::Undo()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    std::vector<PierDiaphragmData>::iterator iterPCD = m_PierDiaphragmData.begin();
@@ -554,12 +548,11 @@ txnCopyPierModelProperties::~txnCopyPierModelProperties()
 
 bool txnCopyPierModelProperties::Execute()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEvents, pEvents);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEvents, pEvents);
    pEvents->HoldEvents(); // Large bridges can take a long time. Don't fire any changed events until all changes are done
 
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    m_PierData.clear();
@@ -619,9 +612,8 @@ bool txnCopyPierModelProperties::Execute()
 
 void txnCopyPierModelProperties::Undo()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    std::vector<CPierData2>::iterator iterPCD = m_PierData.begin();
    for (const auto toPierIdx : m_ToPiers)
@@ -680,8 +672,7 @@ UINT CCopyPierAllProperties::GetPierEditorTabIndex()
 rptParagraph* CCopyPierAllProperties::BuildComparisonReportParagraph(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
 {
    rptParagraph* pPara = new rptParagraph;
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    PierAllPropertiesComparison(pPara, pBroker, fromPierIdx);
 
@@ -717,8 +708,7 @@ UINT CCopyPierConnectionProperties::GetPierEditorTabIndex()
 rptParagraph* CCopyPierConnectionProperties::BuildComparisonReportParagraph(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
 {
    rptParagraph* pPara = new rptParagraph;
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    PierConnectionPropertiesComparison(pPara, pBroker, fromPierIdx, toPiers);
 
@@ -754,8 +744,7 @@ UINT CCopyPierDiaphragmProperties::GetPierEditorTabIndex()
 rptParagraph* CCopyPierDiaphragmProperties::BuildComparisonReportParagraph(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
 {
    rptParagraph* pPara = new rptParagraph;
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    PierDiaphragmPropertiesComparison(pPara, pBroker, fromPierIdx);
 
@@ -792,8 +781,7 @@ UINT CCopyPierModelProperties::GetPierEditorTabIndex()
 rptParagraph* CCopyPierModelProperties::BuildComparisonReportParagraph(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
 {
    rptParagraph* pPara = new rptParagraph;
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    PierModelPropertiesComparison(pPara, pBroker, fromPierIdx);
 
@@ -807,9 +795,9 @@ rptParagraph* CCopyPierModelProperties::BuildComparisonReportParagraph(PierIndex
 //////////////////// Reporting functions /////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////
 
-void PierAllPropertiesComparison(rptParagraph * pPara, CComPtr<IBroker> pBroker, PierIndexType fromPierIdx)
+void PierAllPropertiesComparison(rptParagraph * pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, PierIndexType fromPierIdx)
 {
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    ColumnIndexType nCols = 3;
@@ -887,11 +875,11 @@ void PierAllPropertiesComparison(rptParagraph * pPara, CComPtr<IBroker> pBroker,
    }
 }
 
-void PierConnectionPropertiesComparison(rptParagraph * pPara, CComPtr<IBroker> pBroker, PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
+void PierConnectionPropertiesComparison(rptParagraph * pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
 {
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    INIT_UV_PROTOTYPE( rptLengthUnitValue, cmpdim, pDisplayUnits->GetComponentDimUnit(), false );
 
    ColumnIndexType nCols = 11;
@@ -1044,11 +1032,11 @@ void PierConnectionPropertiesComparison(rptParagraph * pPara, CComPtr<IBroker> p
    *pPara << rptNewLine;
 }
 
-void PierDiaphragmPropertiesComparison(rptParagraph * pPara, CComPtr<IBroker> pBroker, PierIndexType fromPierIdx)
+void PierDiaphragmPropertiesComparison(rptParagraph * pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, PierIndexType fromPierIdx)
 {
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, cmpdim, pDisplayUnits->GetComponentDimUnit(), false );
 
@@ -1221,15 +1209,15 @@ void PierDiaphragmPropertiesComparison(rptParagraph * pPara, CComPtr<IBroker> pB
    }
 }
 
-void PierBearingPropertiesComparison(rptParagraph * pPara, CComPtr<IBroker> pBroker, PierIndexType fromPierIdx)
+void PierBearingPropertiesComparison(rptParagraph * pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, PierIndexType fromPierIdx)
 {
 }
 
-void PierModelPropertiesComparison(rptParagraph * pPara, CComPtr<IBroker> pBroker, PierIndexType fromPierIdx)
+void PierModelPropertiesComparison(rptParagraph * pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, PierIndexType fromPierIdx)
 {
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    INIT_UV_PROTOTYPE(rptLengthUnitValue, spandim, pDisplayUnits->GetSpanLengthUnit(), false);
 
@@ -1517,10 +1505,10 @@ void PierModelPropertiesComparison(rptParagraph * pPara, CComPtr<IBroker> pBroke
    }
 }
 
-void PierMaterialsComparison(rptParagraph* pPara, CComPtr<IBroker> pBroker, PierIndexType fromPierIdx)
+void PierMaterialsComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, PierIndexType fromPierIdx)
 {
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,            pDisplayUnits->GetComponentDimUnit(),  false );
@@ -1541,8 +1529,8 @@ void PierMaterialsComparison(rptParagraph* pPara, CComPtr<IBroker> pBroker, Pier
    (*p_table)(0,iCol++) << COLHDR(_T("Density") << rptNewLine << _T("for") << rptNewLine << _T("Weight"),rptDensityUnitTag, pDisplayUnits->GetDensityUnit() );
    (*p_table)(0,iCol++) << COLHDR(_T("Max") << rptNewLine << _T("Aggregate") << rptNewLine << _T("Size"),rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
-   GET_IFACE2(pBroker,ILibrary, pLib );
-   GET_IFACE2(pBroker,ISpecification, pSpec );
+   EAF_GET_IFACE2(pBroker,ILibrary, pLib );
+   EAF_GET_IFACE2(pBroker,ISpecification, pSpec );
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
 

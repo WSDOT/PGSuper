@@ -54,7 +54,7 @@ class iSectionCutDrawStrategy
 {
 public:
    virtual void SetColor(COLORREF color) = 0;
-	virtual void Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, IBroker* pBroker,const CGirderKey& girderKey, iCutLocation* pCutLoc) = 0;
+	virtual void Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey, iCutLocation* pCutLoc) = 0;
 
    // Xgl is in the Girderline Coordinate System
    virtual pgsPointOfInterest GetCutPOI(Float64 Xgl) const = 0;
@@ -64,5 +64,5 @@ class iBridgeSectionCutDrawStrategy
 {
 public:
    virtual void SetColor(COLORREF color) = 0;
-	virtual void Init(CBridgeModelViewChildFrame* pFrame,std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, IRoadway* pRoadway, IBridge* pBridge, iCutLocation* pCutLoc) = 0;
+	virtual void Init(CBridgeModelViewChildFrame* pFrame,std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, std::shared_ptr<IRoadway> pRoadway, std::shared_ptr<IBridge> pBridge, iCutLocation* pCutLoc) = 0;
 };

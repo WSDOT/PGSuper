@@ -45,7 +45,7 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // CSectionCutDlgEx dialog
 
-CSectionCutDlgEx::CSectionCutDlgEx(IBroker* pBroker,const CGirderKey& girderKey,const pgsPointOfInterest& initialPoi,CWnd* pParent) 
+CSectionCutDlgEx::CSectionCutDlgEx(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,const pgsPointOfInterest& initialPoi,CWnd* pParent) 
 : CDialog(CSectionCutDlgEx::IDD, pParent),
 m_pBroker(pBroker),
 m_SliderPos(0)
@@ -118,7 +118,7 @@ pgsPointOfInterest CSectionCutDlgEx::GetPOI()
 
 void CSectionCutDlgEx::UpdatePOI()
 {
-   GET_IFACE(IPointOfInterest,pPoi);
+   EAF_GET_IFACE(IPointOfInterest,pPoi);
    m_vPOI.clear();
    pPoi->GetPointsOfInterest(CSegmentKey(m_GirderKey, ALL_SEGMENTS), &m_vPOI);
    if (m_Slider.GetSafeHwnd() != nullptr )
@@ -151,9 +151,9 @@ strLabel.Format(_T("%s"),rptPoi.AsString().c_str());
 strLabel.Replace(_T("<sub>"),_T(""));
 strLabel.Replace(_T("</sub>"),_T(""));
 */
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE(IPointOfInterest,pPoi);
-   GET_IFACE(IDocumentType,pDocType);
+   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE(IPointOfInterest,pPoi);
+   EAF_GET_IFACE(IDocumentType,pDocType);
 
    ASSERT((int)m_SliderPos < (int)m_vPOI.size());
    pgsPointOfInterest poi = m_vPOI[m_Slider.GetPos()];

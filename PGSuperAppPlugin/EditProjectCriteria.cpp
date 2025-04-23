@@ -60,18 +60,18 @@ void txnEditProjectCriteria::Undo()
 
 void txnEditProjectCriteria::Execute(int i)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IEvents, pEvents);
-   GET_IFACE2(pBroker, ISpecification, pSpec );
+   EAF_GET_IFACE2(pBroker,IEvents, pEvents);
+   EAF_GET_IFACE2(pBroker, ISpecification, pSpec );
    // Exception-safe holder to keep from fireing events until we are done
    CIEventsHolder event_holder(pEvents);
 
    pSpec->SetAnalysisType(m_AnalysisType[i]);
    pSpec->SetSpecification( m_strProjectCriteria[i] );
 
-   GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
    pBridgeDesc->SetWearingSurfaceType(m_WearingSurfaceType[i]);
 }
 

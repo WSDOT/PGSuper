@@ -181,9 +181,9 @@ void CGirderSpacingGrid::UpdateGrid()
 	GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    pgsTypes::SupportedBeamSpacing spacingType = m_pGirderGroup->GetBridgeDescription()->GetGirderSpacingType();
    bool bUseSameNumGirdersInAllGroups = m_pGirderGroup->GetBridgeDescription()->UseSameNumberOfGirdersInAllGroups();
@@ -543,9 +543,9 @@ BOOL CGirderSpacingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
       }
    }
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    if (IsJointSpacing(spacingType))
    {
@@ -577,10 +577,10 @@ BOOL CGirderSpacingGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
 {
    if ( nRow == 1 && 1 <= nCol )
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
 
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       CString strValue;
       GetCurrentCellControl()->GetCurrentText(strValue);

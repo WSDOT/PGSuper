@@ -39,10 +39,7 @@ public:
 class pgsVSRatioStatusCallback : public iStatusCallback
 {
 public:
-   pgsVSRatioStatusCallback(IBroker* pBroker);
+   pgsVSRatioStatusCallback();
    virtual eafTypes::StatusSeverityType GetSeverity() const override;
    virtual void Execute(CEAFStatusItem* pStatusItem) override;
-
-private:
-   IBroker* m_pBroker;
 };

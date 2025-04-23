@@ -235,13 +235,13 @@ void CGirderModelSectionView::UpdateDisplayObjects()
    }
 
    // Grab hold of the broker so we can pass it as a parameter
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    if (!pPoi->IsOnSegment(poi))
    {
-      GET_IFACE2(pBroker, IBridge, pBridge);
+      EAF_GET_IFACE2(pBroker, IBridge, pBridge);
       const CSegmentKey& segmentKey = poi.GetSegmentKey();
       Float64 Ls = pBridge->GetSegmentLength(segmentKey);
       Float64 Xs = poi.GetDistFromStart();
@@ -251,7 +251,7 @@ void CGirderModelSectionView::UpdateDisplayObjects()
    }
 
 
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    EventIndexType eventIdx = m_pFrame->GetEvent();
    EventIndexType erectionEventIdx = pIBridgeDesc->GetSegmentErectionEventIndex(poi.GetSegmentKey());
    if ( eventIdx < erectionEventIdx )
@@ -300,7 +300,7 @@ void CGirderModelSectionView::UpdateDisplayObjects()
    SetMappingMode(WBFL::DManip::MapMode::Isotropic);
 }
 
-void CGirderModelSectionView::BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi)
+void CGirderModelSectionView::BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& poi)
 {
    auto pDL = m_pDispMgr->FindDisplayList(PROPERTIES_LIST);
    ATLASSERT(pDL);
@@ -310,12 +310,12 @@ void CGirderModelSectionView::BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, I
    {
       EventIndexType eventIdx = m_pFrame->GetEvent();
 
-      GET_IFACE2(pBroker, IIntervals, pIntervals);
+      EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
       IntervalIndexType intervalIdx = pIntervals->GetInterval(eventIdx);
       IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
       IntervalIndexType compositeIntervalIdx = pIntervals->GetLastCompositeInterval();
 
-      GET_IFACE2(pBroker, ISectionProperties, pSectProps);
+      EAF_GET_IFACE2(pBroker, ISectionProperties, pSectProps);
       pgsTypes::SectionPropertyMode spMode = pSectProps->GetSectionPropertiesMode();
       Float64 A = pSectProps->GetAg(intervalIdx, poi);
       Float64 Ix = pSectProps->GetIxx(intervalIdx, poi);
@@ -328,7 +328,7 @@ void CGirderModelSectionView::BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, I
       Float64 St = -pSectProps->GetS(intervalIdx, poi, intervalIdx < compositeIntervalIdx ? pgsTypes::TopGirder : pgsTypes::TopDeck);
       Float64 Sb = pSectProps->GetS(intervalIdx, poi, pgsTypes::BottomGirder);
 
-      GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+      EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
       CString strSectPropMode(spMode == pgsTypes::spmGross ? _T("Gross") : _T("Transformed"));
       
@@ -347,10 +347,10 @@ void CGirderModelSectionView::BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, I
       }
       else
       {
-         GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
+         EAF_GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
          auto ecc = pStrandGeom->GetEccentricity(intervalIdx, poi, true /*include temp strands*/);
 
-         GET_IFACE2(pBroker, IBridge, pBridge);
+         EAF_GET_IFACE2(pBroker, IBridge, pBridge);
          if (pBridge->HasAsymmetricGirders())
          {
             strProps.Format(_T("%s Properties\nA = %s\nIx = %s\nIy = %s\nIxy = %s\nXleft = %s\nXright = %s\nYtop = %s\nYbottom = %s\nex = %s\ney = %s"),
@@ -388,7 +388,7 @@ void CGirderModelSectionView::BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, I
       }
 
 
-      GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+      EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
       IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
       if (deckCastingRegionIdx != INVALID_INDEX)
       {
@@ -410,7 +410,7 @@ void CGirderModelSectionView::BuildPropertiesDisplayObjects(CPGSDocBase* pDoc, I
    }
 }
 
-void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi)
+void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi)
 {
    auto pDL = m_pDispMgr->FindDisplayList(SECTION_LIST);
    ATLASSERT(pDL);
@@ -418,10 +418,10 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   GET_IFACE2(pBroker,IShapes,pShapes);
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   GET_IFACE2(pBroker,ISectionProperties,pSectProps);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IShapes,pShapes);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProps);
 
    EventIndexType eventIdx = m_pFrame->GetEvent();
    EventIndexType castDeckEventIdx = pIBridgeDesc->GetCastDeckEventIndex();
@@ -457,7 +457,7 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
    CComPtr<IRect2d> boxGirder;
    girderShape->get_BoundingBox(&boxGirder);
 
-   GET_IFACE2(pBroker, IGirder, pGirder);
+   EAF_GET_IFACE2(pBroker, IGirder, pGirder);
    // Get top and bottom girder flange widths. These are in nominal girder coordinates, they will need to be converted to girder coord's
    Float64 twLeft, twRight, bwLeft, bwRight;
    Float64 top_width    = pGirder->GetTopWidth(poi, &twLeft, &twRight);
@@ -621,16 +621,16 @@ void CGirderModelSectionView::BuildSectionDisplayObjects(CPGSDocBase* pDoc,IBrok
    CreateLineDisplayObject(pDL, pntTop, pntBottom, BLACK, WBFL::DManip::LineStyleType::Centerline);
 }
 
-void CGirderModelSectionView::BuildLongitudinalJointDisplayObject(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi)
+void CGirderModelSectionView::BuildLongitudinalJointDisplayObject(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& poi)
 {
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    if ( !pBridgeDesc->HasStructuralLongitudinalJoints() )
    {
       return;
    }
 
-   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
 
    EventIndexType eventIdx = m_pFrame->GetEvent();
    IntervalIndexType intervalIdx = pIntervals->GetInterval(eventIdx);
@@ -647,8 +647,8 @@ void CGirderModelSectionView::BuildLongitudinalJointDisplayObject(CPGSDocBase* p
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
-   GET_IFACE2(pBroker, IShapes, pShapes);
-   //GET_IFACE2(pBroker, IGirder, pGirder);
+   EAF_GET_IFACE2(pBroker, IShapes, pShapes);
+   //EAF_GET_IFACE2(pBroker, IGirder, pGirder);
 
    auto doPnt = WBFL::DManip::PointDisplayObject::Create(1);
    auto strategy = WBFL::DManip::ShapeDrawStrategy::Create();
@@ -722,14 +722,14 @@ void CGirderModelSectionView::BuildLongitudinalJointDisplayObject(CPGSDocBase* p
    pDL->AddDisplayObject(doPnt);
 }
 
-void CGirderModelSectionView::BuildStrandDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi)
+void CGirderModelSectionView::BuildStrandDisplayObjects(CPGSDocBase* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi)
 {
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
    // Strands are measured in Girder Section Coordinates
-   GET_IFACE2(pBroker,IMaterials,pMaterial);
+   EAF_GET_IFACE2(pBroker,IMaterials,pMaterial);
    const auto* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Straight);
    Float64 diameter = pStrand->GetNominalDiameter();
 
@@ -802,7 +802,7 @@ void CGirderModelSectionView::BuildStrandDisplayObjects(CPGSDocBase* pDoc,IBroke
 
    // Temporary Strands
    EventIndexType eventIdx = m_pFrame->GetEvent();
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType intervalIdx = pIntervals->GetInterval(eventIdx);
    IntervalIndexType tsrIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
    if ( tsrIntervalIdx != INVALID_INDEX && intervalIdx < tsrIntervalIdx )
@@ -868,7 +868,7 @@ std::shared_ptr<WBFL::DManip::iDisplayObject> CGirderModelSectionView::GetDuctDi
    return compDO;
 }
 
-void CGirderModelSectionView::BuildDuctDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi)
+void CGirderModelSectionView::BuildDuctDisplayObjects(CPGSDocBase* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi)
 {
    // The outlines of the ducts are drawn as part of the girder cross section
    // This method adds the text labels to the ducts
@@ -879,14 +879,14 @@ void CGirderModelSectionView::BuildDuctDisplayObjects(CPGSDocBase* pDoc,IBroker*
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
    const CGirderKey& girderKey(segmentKey);
 
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    Float64 Xg = pPoi->ConvertPoiToGirderCoordinate(poi);
 
-   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
    EventIndexType eventIdx = m_pFrame->GetEvent();
    IntervalIndexType intervalIdx = pIntervals->GetInterval(eventIdx);
 
-   GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   EAF_GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
    DuctIndexType nDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
    for (DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++)
    {
@@ -901,7 +901,7 @@ void CGirderModelSectionView::BuildDuctDisplayObjects(CPGSDocBase* pDoc,IBroker*
       pDisplayList->AddDisplayObject(doDuct);
    }
 
-   GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
+   EAF_GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
    nDucts = pTendonGeom->GetDuctCount(girderKey);
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
@@ -924,7 +924,7 @@ void CGirderModelSectionView::BuildDuctDisplayObjects(CPGSDocBase* pDoc,IBroker*
    }
 }
 
-void CGirderModelSectionView::BuildLongReinfDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi)
+void CGirderModelSectionView::BuildLongReinfDisplayObjects(CPGSDocBase* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi)
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -936,7 +936,7 @@ void CGirderModelSectionView::BuildLongReinfDisplayObjects(CPGSDocBase* pDoc,IBr
    strategy->SetColor(REBAR_COLOR);
    strategy->SetPointType(WBFL::DManip::PointType::Circle);
 
-   GET_IFACE2(pBroker,ILongRebarGeometry,pLongRebarGeom);
+   EAF_GET_IFACE2(pBroker,ILongRebarGeometry,pLongRebarGeom);
 
    CComPtr<IRebarSection> rebar_section;
    pLongRebarGeom->GetRebars(poi,&rebar_section);
@@ -964,7 +964,7 @@ void CGirderModelSectionView::BuildLongReinfDisplayObjects(CPGSDocBase* pDoc,IBr
    }
 }
 
-void CGirderModelSectionView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc,IBroker* pBroker,const pgsPointOfInterest& poi)
+void CGirderModelSectionView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi)
 {
    auto pDL = m_pDispMgr->FindDisplayList(STRAND_CG_LIST);
    ATLASSERT(pDL);
@@ -975,14 +975,14 @@ void CGirderModelSectionView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc,IBro
    // nothing to draw if poi is in a closure joint
    // (poi object won't necessarily have the POI_CLOSURE attribute so just check to see
    // if it is beyond the end of the segment)
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
    if ( segment_length < poi.GetDistFromStart() )
    {
       return;
    }
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    EventIndexType eventIdx = m_pFrame->GetEvent();
    IntervalIndexType intervalIdx = pIntervals->GetInterval(eventIdx);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
@@ -991,12 +991,12 @@ void CGirderModelSectionView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc,IBro
       intervalIdx = releaseIntervalIdx;
    }
 
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
    SegmentIDType segID = pSegment->GetID();
    EventIndexType erectSegmentEventIdx = pIBridgeDesc->GetTimelineManager()->GetSegmentErectionEventIndex(segID);
 
-   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry);
+   EAF_GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry);
    StrandIndexType nStrands = pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Straight);
    nStrands += pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Harped);
    nStrands += pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Temporary);
@@ -1007,7 +1007,7 @@ void CGirderModelSectionView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc,IBro
    }
 
 
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    auto cg = pStrandGeom->GetStrandCG(intervalIdx, poi, true);
 
    auto doPnt = WBFL::DManip::PointDisplayObject::Create(1);
@@ -1035,7 +1035,7 @@ void CGirderModelSectionView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc,IBro
    pDL->AddDisplayObject(doPnt);
 }
 
-void CGirderModelSectionView::BuildCGDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi)
+void CGirderModelSectionView::BuildCGDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& poi)
 {
    auto pDL = m_pDispMgr->FindDisplayList(CG_LIST);
    ATLASSERT(pDL);
@@ -1046,14 +1046,14 @@ void CGirderModelSectionView::BuildCGDisplayObjects(CPGSDocBase* pDoc, IBroker* 
    // nothing to draw if poi is in a closure joint
    // (poi object won't necessarily have the POI_CLOSURE attribute so just check to see
    // if it is beyond the end of the segment)
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
    if (segment_length < poi.GetDistFromStart())
    {
       return;
    }
 
-   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
    EventIndexType eventIdx = m_pFrame->GetEvent();
    IntervalIndexType intervalIdx = pIntervals->GetInterval(eventIdx);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
@@ -1062,7 +1062,7 @@ void CGirderModelSectionView::BuildCGDisplayObjects(CPGSDocBase* pDoc, IBroker* 
       intervalIdx = releaseIntervalIdx;
    }
 
-   GET_IFACE2(pBroker, ISectionProperties, pSectProp);
+   EAF_GET_IFACE2(pBroker, ISectionProperties, pSectProp);
    Float64 Yb = pSectProp->GetY(intervalIdx, poi, pgsTypes::BottomGirder);
    Float64 Hg = pSectProp->GetHg(releaseIntervalIdx, poi); 
    // NOTE: release interval is correct for Hg. We are using the girder section coordinates
@@ -1107,11 +1107,11 @@ void CGirderModelSectionView::BuildCGDisplayObjects(CPGSDocBase* pDoc, IBroker* 
    pDL->AddDisplayObject(doPnt);
 }
 
-void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IBroker* pBroker, const pgsPointOfInterest& poi)
+void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& poi)
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
 
    EventIndexType eventIdx = m_pFrame->GetEvent();
 
@@ -1125,9 +1125,9 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
 
    EventIndexType castLongitudinalJointEvnetIdx = pIBridgeDesc->GetCastLongitudinalJointEventIndex();
 
-   GET_IFACE2(pBroker, IGirder, pGirder);
-   GET_IFACE2(pBroker, ISectionProperties, pSectProp);
-   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   EAF_GET_IFACE2(pBroker, IGirder, pGirder);
+   EAF_GET_IFACE2(pBroker, ISectionProperties, pSectProp);
+   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
 
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType intervalIdx = Max(pIntervals->GetInterval(eventIdx), releaseIntervalIdx);
@@ -1483,7 +1483,7 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
    }
 
 
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
    const WBFL::Units::LengthData& length_unit = pDisplayUnits->GetComponentDimUnit();
 
    auto textBlock = WBFL::DManip::TextBlock::Create();
@@ -1571,7 +1571,7 @@ void CGirderModelSectionView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, IB
 
    if ( (settings & IDG_SV_SHOW_PS_CG) && socketCGPS )
    {
-      GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+      EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
       Float64 ecc = pStrandGeometry->GetEccentricity(intervalIdx, poi, true).Y();
       Float64 yps = pSectProp->GetY(intervalIdx,poi,pgsTypes::BottomGirder) - ecc;
@@ -1759,8 +1759,8 @@ void CGirderModelSectionView::OnSize(UINT nType, int cx, int cy)
       UINT settings = pDoc->GetGirderEditorSettings();
 
       // Grab hold of the broker so we can pass it as a parameter
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
 
       // build the dimension lines
       if ( settings & IDG_SV_SHOW_DIMENSIONS )

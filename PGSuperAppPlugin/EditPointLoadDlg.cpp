@@ -58,13 +58,13 @@ CEditPointLoadDlg::CEditPointLoadDlg(const CPointLoadData& load,const CTimelineM
 
 	//{{AFX_DATA_INIT(CEditPointLoadDlg)
 	//}}AFX_DATA_INIT
-   EAFGetBroker(&m_pBroker);
+   m_pBroker = EAFGetBroker();
 }
 
 
 void CEditPointLoadDlg::DoDataExchange(CDataExchange* pDX)
 {
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CEditPointLoadDlg)
@@ -167,7 +167,7 @@ void CEditPointLoadDlg::DoDataExchange(CDataExchange* pDX)
    }
    else
    {
-      GET_IFACE(IBridgeDescription,pIBridgeDesc);
+      EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
       SpanIndexType nSpans = pBridgeDesc->GetSpanCount();
       if ( nSpans <= m_Load.m_SpanKey.spanIndex && m_Load.m_SpanKey.spanIndex != ALL_SPANS )
@@ -289,7 +289,7 @@ BOOL CEditPointLoadDlg::OnInitDialog()
    }
    else
    {
-      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+      EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
       CString strLocation;
       strLocation.Format(_T("%s"),::FormatDimension(m_Load.m_Location,pDisplayUnits->GetSpanLengthUnit(),false));
       m_LocationCtrl.SetWindowText(strLocation);
@@ -320,7 +320,7 @@ void CEditPointLoadDlg::UpdateLocationUnit()
    }
    else
    {
-      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+      EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
       m_LocationUnitCtrl.SetWindowText(pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure.UnitTag().c_str());
    }
 }
@@ -449,8 +449,8 @@ void CEditPointLoadDlg::UpdateSpanLength()
    }
    else
    {
-      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-      GET_IFACE(IBridge, pBridge);
+      EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+      EAF_GET_IFACE(IBridge, pBridge);
       if ( m_Spans[idx].bStartCantilever || m_Spans[idx].bEndCantilever )
       {
          Float64 cantilever_length = pBridge->GetCantileverLength(spanIdx,gdrIdx,(m_Spans[idx].bStartCantilever ? pgsTypes::metStart : pgsTypes::metEnd));
@@ -476,7 +476,7 @@ void CEditPointLoadDlg::OnHelp()
 bool CEditPointLoadDlg::HasCantilever(pgsTypes::MemberEndType endType)
 {
    // endType means end of bridge
-   GET_IFACE(IBridge, pBridge);
+   EAF_GET_IFACE(IBridge, pBridge);
    if (endType == pgsTypes::metStart)
    {
       CSegmentKey segmentKey(0, 0, 0);
@@ -501,7 +501,7 @@ bool CEditPointLoadDlg::HasCantilever(pgsTypes::MemberEndType endType)
 void CEditPointLoadDlg::UpdateSpanList()
 {
    CComboBox* pcbSpans = (CComboBox*)GetDlgItem(IDC_SPANS);
-   GET_IFACE(IBridge, pBridge);
+   EAF_GET_IFACE(IBridge, pBridge);
    SpanIndexType nSpans = pBridge->GetSpanCount();
    for (SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++)
    {
@@ -558,7 +558,7 @@ void CEditPointLoadDlg::UpdateGirderList()
    CComboBox* pcbSpans = (CComboBox*)GetDlgItem(IDC_SPANS);
    CComboBox* pcbGirders = (CComboBox*)GetDlgItem(IDC_GIRDERS);
 
-   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    int idx = pcbSpans->GetCurSel();

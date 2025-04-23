@@ -88,9 +88,9 @@ void CTemporarySupportLayoutPage::DoDataExchange(CDataExchange* pDX)
    DDX_Control(pDX, IDC_BACK_SLAB_OFFSET, m_wndSlabOffset[pgsTypes::Back]);
    DDX_Control(pDX, IDC_AHEAD_SLAB_OFFSET, m_wndSlabOffset[pgsTypes::Ahead]);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CTemporarySupportDlg* pParent = (CTemporarySupportDlg*)GetParent();
 
@@ -107,7 +107,7 @@ void CTemporarySupportLayoutPage::DoDataExchange(CDataExchange* pDX)
    {
 #pragma Reminder("Validate temporary support orientation")
       //pDX->PrepareEditCtrl(IDC_ORIENTATION);
-      //GET_IFACE2(pBroker,IBridge,pBridge);
+      //EAF_GET_IFACE2(pBroker,IBridge,pBridge);
       //Float64 skewAngle;
       //bool bSuccess = pBridge->GetSkewAngle(m_Station,m_strOrientation.c_str(),&skewAngle);
       //if ( !bSuccess )
@@ -459,9 +459,9 @@ void CTemporarySupportLayoutPage::OnHelp()
 void CTemporarySupportLayoutPage::UpdateHaunchAndCamberControls()
 {
    // Function takes bridge data and puts into dialog controls
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CTemporarySupportDlg* pParent = (CTemporarySupportDlg*)GetParent();
 
@@ -637,9 +637,9 @@ void CTemporarySupportLayoutPage::UpdateHaunchAndCamberData(CDataExchange* pDX)
          haunchInputLocationType == pgsTypes::hilSame4AllGirders && 
          (haunchInputDistributionType == pgsTypes::hidUniform || haunchInputDistributionType == pgsTypes::hidAtEnds))
       {
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
-         GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+         
+         auto pBroker = EAFGetBroker();
+         EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
          const CDeckDescription2* pDeck = pParent->m_BridgeDesc.GetDeckDescription();
          Float64 Tdeck;

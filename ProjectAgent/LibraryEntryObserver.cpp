@@ -22,21 +22,15 @@
 
 #include "StdAfx.h"
 #include "LibraryEntryObserver.h"
+#include <IFace\StatusCenter.h>
 #include "ProjectAgent.h"
 #include "CLSID.h"
 #include "ProjectAgentImp.h"
-#include <IFace\StatusCenter.h>
 #include <EAF\EAFUIIntegration.h>
 #include <algorithm>
 
 #if defined _USE_MULTITHREADING
 #include <future>
-#endif
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
 #endif
 
 /****************************************************************************
@@ -62,7 +56,7 @@ pgsLibraryEntryObserver::~pgsLibraryEntryObserver()
 void pgsLibraryEntryObserver::Update(ConcreteLibraryEntry& subject, Int32 hint)
 {
    // no action required
-   GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
+   EAF_GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
    pDoc->SetModified();
 }
 
@@ -128,7 +122,7 @@ void pgsLibraryEntryObserver::Update(GirderLibraryEntry& subject, Int32 hint)
    }
    m_pAgent->FirePendingEvents();
 
-   GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
+   EAF_GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
    pDoc->SetModified();
 }
 
@@ -148,7 +142,7 @@ void pgsLibraryEntryObserver::Update(SpecLibraryEntry& subject, Int32 hint)
    }
    m_pAgent->FirePendingEvents();
 
-   GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
+   EAF_GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
    pDoc->SetModified();
 }
 
@@ -165,7 +159,7 @@ void pgsLibraryEntryObserver::Update(RatingLibraryEntry& subject, Int32 hint)
    }
    m_pAgent->FirePendingEvents();
 
-   GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
+   EAF_GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
    pDoc->SetModified();
 }
 
@@ -194,7 +188,7 @@ void pgsLibraryEntryObserver::Update(TrafficBarrierEntry& subject, Int32 hint)
    }
    m_pAgent->FirePendingEvents();
 
-   GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
+   EAF_GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
    pDoc->SetModified();
 }
 
@@ -246,7 +240,7 @@ void pgsLibraryEntryObserver::Update(LiveLoadLibraryEntry& subject, Int32 hint)
    }
    m_pAgent->FirePendingEvents();
 
-   GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
+   EAF_GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
    pDoc->SetModified();
 }
 
@@ -284,7 +278,7 @@ void pgsLibraryEntryObserver::Update(DuctLibraryEntry& subject,Int32 hint)
    }
    m_pAgent->FirePendingEvents();
 
-   GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
+   EAF_GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
    pDoc->SetModified();
 }
 
@@ -353,7 +347,7 @@ void pgsLibraryEntryObserver::Update(HaulTruckLibraryEntry& subject,Int32 hint)
    }
    m_pAgent->FirePendingEvents();
 
-   GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
+   EAF_GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
    pDoc->SetModified();
 }
 
@@ -365,24 +359,7 @@ void pgsLibraryEntryObserver::SetAgent(CProjectAgentImp* pAgent)
 
 void pgsLibraryEntryObserver::ClearStatusItems()
 {
-   GET_IFACE2(m_pAgent->m_pBroker,IEAFStatusCenter,pStatusCenter);
+   EAF_GET_IFACE2(m_pAgent->m_pBroker,IEAFStatusCenter,pStatusCenter);
    pStatusCenter->RemoveByStatusGroupID(m_pAgent->m_StatusGroupID);
 }
 
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

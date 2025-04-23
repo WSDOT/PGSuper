@@ -603,9 +603,8 @@ CString CBridgeDescFramingGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
 
 CPierData2* CBridgeDescFramingGrid::GetPierRowData(ROWCOL nRow)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CBridgeDescFramingPage* pParent = (CBridgeDescFramingPage*)GetParent();
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescFramingPage) ) );
@@ -643,9 +642,8 @@ CPierData2* CBridgeDescFramingGrid::GetPierRowData(ROWCOL nRow)
 
 CTemporarySupportData CBridgeDescFramingGrid::GetTemporarySupportRowData(ROWCOL nRow)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CBridgeDescFramingPage* pParent = (CBridgeDescFramingPage*)GetParent();
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescFramingPage) ) );
@@ -755,9 +753,8 @@ void CBridgeDescFramingGrid::FillPierRow(ROWCOL row,const CPierData2* pPierData)
 	GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CBridgeDescFramingPage* pParent = (CBridgeDescFramingPage*)GetParent();
 
@@ -829,9 +826,8 @@ void CBridgeDescFramingGrid::FillTemporarySupportRow(ROWCOL row,const CTemporary
       );
 
    // station
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CString strStation = FormatStation(pDisplayUnits->GetStationFormat(),pTSData->GetStation());
    SetStyleRange(CGXRange(row,col++), CGXStyle()
@@ -906,9 +902,8 @@ void CBridgeDescFramingGrid::FillSegmentColumn()
 	GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CBridgeDescFramingPage* pParent = (CBridgeDescFramingPage*)GetParent();
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescFramingPage) ) );
@@ -1040,9 +1035,8 @@ void CBridgeDescFramingGrid::FillSpanColumn()
 	GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CBridgeDescFramingPage* pParent = (CBridgeDescFramingPage*)GetParent();
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescFramingPage) ) );
@@ -1254,9 +1248,8 @@ BOOL CBridgeDescFramingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 	if (nCol==1)
 	{
       // station
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      auto pBroker = EAFGetBroker();
+      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       try
       {
@@ -1276,10 +1269,9 @@ BOOL CBridgeDescFramingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
    }
 	else if (nCol==2)
 	{
-         // orientation
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IValidate,pValidate);
+      // orientation
+      auto pBroker = EAFGetBroker();
+      EAF_GET_IFACE2(pBroker,IValidate,pValidate);
       UINT result = pValidate->Orientation(s);
 
       if (result == VALIDATE_INVALID)
@@ -1339,9 +1331,8 @@ BOOL CBridgeDescFramingGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
             if (tsData.GetStation() <= pDlg->m_BridgeDesc.GetPier(0)->GetStation() || pDlg->m_BridgeDesc.GetPier(pDlg->m_BridgeDesc.GetPierCount() - 1)->GetStation() <= tsData.GetStation())
             {
                // new station is not on the bridge
-               CComPtr<IBroker> pBroker;
-               EAFGetBroker(&pBroker);
-               GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+               auto pBroker = EAFGetBroker();
+               EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
                CString strStation = FormatStation(pDisplayUnits->GetStationFormat(), tsData.GetStation());
                m_sWarningText.Format(_T("Station %s is not on the bridge"), strStation);
                return FALSE;

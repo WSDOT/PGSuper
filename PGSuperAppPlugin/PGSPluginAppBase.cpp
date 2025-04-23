@@ -225,9 +225,9 @@ void CPGSPluginAppBase::Process1250Testing(const CPGSBaseCommandLineInfo& rCmdIn
    pTemplate->GetDocString(strExt,CDocTemplate::filterExt);
    strExt = strExt.Left(strExt.Find(_T(";")));
 
-   CComPtr<IBroker> pBroker;
-   pDoc->GetBroker(&pBroker);
-   GET_IFACE2( pBroker, ITest1250, ptst );
+   
+   auto pBroker = pDoc->GetBroker();
+   EAF_GET_IFACE2( pBroker, ITest1250, ptst );
 
    CString resultsfile, poifile, errfile;
    if (create_test_file_names(strExt,rCmdInfo.m_strFileName,&resultsfile,&poifile,&errfile))

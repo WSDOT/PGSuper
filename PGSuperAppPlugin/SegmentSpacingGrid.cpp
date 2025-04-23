@@ -169,10 +169,10 @@ void CSegmentSpacingGrid::UpdateGrid()
 	GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    pgsTypes::SupportedBeamSpacing spacingType = m_pSpacing->GetBridgeDescription()->GetGirderSpacingType();
    const WBFL::Units::LengthData& spacingUnit = IsGirderSpacing(spacingType) // if
                                         ? pDisplayUnits->GetXSectionDimUnit()     // then
@@ -554,10 +554,10 @@ BOOL CSegmentSpacingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
       }
    }
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    if ( IsGirderSpacing(spacingType) )
    {
       spacing = WBFL::Units::ConvertToSysUnits(spacing,pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
@@ -590,10 +590,10 @@ BOOL CSegmentSpacingGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
 
    if ( nRow == 1 && 1 <= nCol )
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
 
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       CString strValue;
       GetCurrentCellControl()->GetCurrentText(strValue);

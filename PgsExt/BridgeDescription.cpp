@@ -1463,7 +1463,7 @@ void CBridgeDescription::CopyDown(bool bGirderCount,bool bGirderType,bool bSpaci
    }
 }
 
-void CBridgeDescription::ReconcileEdits(IBroker* pBroker, const CBridgeDescription* pOriginal)
+void CBridgeDescription::ReconcileEdits(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CBridgeDescription* pOriginal)
 {
    // Note: that *this is the data that has been edited and pOriginal represents
    //       *this before editing.
@@ -1517,7 +1517,7 @@ void CBridgeDescription::ReconcileEdits(IBroker* pBroker, const CBridgeDescripti
    // Next step is to refill seed data for girder stirrups or long rebar
    // for any girders that have changed types
    // get shear information from library
-   GET_IFACE2( pBroker, ILibrary, pLib );
+   EAF_GET_IFACE2( pBroker, ILibrary, pLib );
 
    // NOTE: The logic here isn't, and probably can't be perfect. If spans or girder groups are added and 
    //       shuffled, it's impossible to compare with the original configuration. The default here

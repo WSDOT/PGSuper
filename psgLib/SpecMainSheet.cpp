@@ -31,6 +31,7 @@
 
 #include <Units\Convert.h>
 #include <EAF\EAFApp.h>
+#include <EAF\Agent.h>
 
 #include <IFace\DocumentType.h>
 

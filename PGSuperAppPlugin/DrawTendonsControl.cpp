@@ -165,9 +165,9 @@ void CDrawTendonsControl::OnPaint()
    rgn.CreateRectRgnIndirect(&rClient);
    dc.SelectClipRgn(&rgn);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IGirder,pIGirder);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IGirder,pIGirder);
 
    SegmentIndexType nSegments = m_pGirder->GetSegmentCount();
 
@@ -196,8 +196,8 @@ void CDrawTendonsControl::OnPaint()
 
    // Create a poly line for each tendon. 
    std::vector<std::pair<CComPtr<IPoint2dCollection>,bool>> ducts;
-   GET_IFACE2_NOCHECK(pBroker,IGirderTendonGeometry,pTendonGeometry); // only used if there are ducts/tendons
-   GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pIPoi); // only used if there are ducts/tendons
+   EAF_GET_IFACE2_NOCHECK(pBroker,IGirderTendonGeometry,pTendonGeometry); // only used if there are ducts/tendons
+   EAF_GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pIPoi); // only used if there are ducts/tendons
    DuctIndexType nDucts = m_pPTData->GetDuctCount();
    DuctIndexType startDuctIdx = (m_bDrawAllDucts || m_DuctIdx == ALL_DUCTS ? 0 : m_DuctIdx);
    DuctIndexType endDuctIdx = (m_bDrawAllDucts || m_DuctIdx == ALL_DUCTS ? nDucts : startDuctIdx + 1);

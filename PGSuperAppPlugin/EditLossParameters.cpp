@@ -76,14 +76,14 @@ bool txnEditLossParameters::IsRepeatable() const
 
 void txnEditLossParameters::DoExecute(int i)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IEvents, pEvents);
+   EAF_GET_IFACE2(pBroker,IEvents, pEvents);
    // Exception-safe holder to keep from fireing events until we are done
    CIEventsHolder event_holder(pEvents);
 
-   GET_IFACE2(pBroker,ILossParameters,pLossParameters);
+   EAF_GET_IFACE2(pBroker,ILossParameters,pLossParameters);
 
    pLossParameters->IgnoreTimeDependentEffects(m_LossParameters[i].bIgnoreCreepEffects,
                                                m_LossParameters[i].bIgnoreShrinkageEffects,

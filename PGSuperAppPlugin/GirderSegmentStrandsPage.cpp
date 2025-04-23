@@ -179,9 +179,9 @@ void CGirderSegmentStrandsPage::DoDataExchange(CDataExchange* pDX)
    }
 
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    if (pDX->m_bSaveAndValidate && m_pSegment->Strands.IsPjackCalculated(pgsTypes::Harped))
    {
@@ -327,11 +327,11 @@ BOOL CGirderSegmentStrandsPage::OnInitDialog()
    UpdateStrandList(IDC_HARPED_STRAND_SIZE);
    UpdateStrandList(IDC_TEMP_STRAND_SIZE);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
    Float64 L = pBridge->GetSegmentLength(m_pSegment->GetSegmentKey());
    CString strSegmentLengthLabel;
    strSegmentLengthLabel.Format(_T("%s Length: %s"),pDocType->IsPGSuperDocument() ? _T("Girder") : _T("Segment"),FormatDimension(L,pDisplayUnits->GetSpanLengthUnit()));
@@ -385,13 +385,13 @@ BOOL CGirderSegmentStrandsPage::OnInitDialog()
 
 void CGirderSegmentStrandsPage::UpdateSectionDepth()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker, IBridge, pBridge);
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
    Float64 L = pBridge->GetSegmentLength(m_pSegment->GetSegmentKey());
 
-   GET_IFACE2(pBroker, IShapes, pShapes);
+   EAF_GET_IFACE2(pBroker, IShapes, pShapes);
    std::array<Float64, 4> Xhp;
    GetHarpPointLocations(&Xhp[ZoneBreakType::Start], &Xhp[ZoneBreakType::LeftBreak], &Xhp[ZoneBreakType::RightBreak], &Xhp[ZoneBreakType::End]);
    std::array<CComPtr<IShape>, 4> shape;
@@ -413,9 +413,9 @@ void CGirderSegmentStrandsPage::UpdateSectionDepth()
 
 Float64 CGirderSegmentStrandsPage::GetMaxPjack(StrandIndexType nStrands,pgsTypes::StrandType strandType)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2( pBroker, IPretensionForce, pPrestress );
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2( pBroker, IPretensionForce, pPrestress );
 
    // TRICKY CODE
    // If strand stresses are limited immediate prior to transfer, prestress losses must be computed between jacking and prestress transfer in 
@@ -425,10 +425,10 @@ Float64 CGirderSegmentStrandsPage::GetMaxPjack(StrandIndexType nStrands,pgsTypes
    //
    // This exception adversely impacts the behavior of this dialog. To prevent these problems, capture the current ROA setting, change ROA to
    // "Ignore", compute PjackMax, and then restore the ROA setting.
-   GET_IFACE2(pBroker,IEvents,pEvents);
+   EAF_GET_IFACE2(pBroker,IEvents,pEvents);
    pEvents->HoldEvents();
 
-   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
+   EAF_GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    WBFL::LRFD::RangeOfApplicabilityAction action = pLiveLoads->GetRangeOfApplicabilityAction();
    pLiveLoads->SetRangeOfApplicabilityAction(WBFL::LRFD::RangeOfApplicabilityAction::Ignore);
 
@@ -481,9 +481,9 @@ void CGirderSegmentStrandsPage::OnUpdateStrandPjEdit(UINT nCheck,UINT nForceEdit
 
    StrandIndexType nStrands = m_Strands.GetStrandCount(strandType);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    BOOL bEnable = IsDlgButtonChecked( nCheck ) ? TRUE : FALSE; // user defined value if checked
    if (  nStrands == 0 )
@@ -503,7 +503,7 @@ void CGirderSegmentStrandsPage::OnUpdateStrandPjEdit(UINT nCheck,UINT nForceEdit
    }
    else if ( nStrands != 0 )
    {
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       // Get the edit control value and save it as the last user input force
       CString val_as_text;
@@ -669,9 +669,9 @@ void CGirderSegmentStrandsPage::InitPjackEdits(UINT nCalcPjack,UINT nPjackEdit,U
    // only update dialog values if they are auto-computed
    if (!bEnable)
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      
+      auto pBroker = EAFGetBroker();
+      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
       CDataExchange dx(this,FALSE);
 
       Float64 Pjack = 0;
@@ -791,9 +791,9 @@ void CGirderSegmentStrandsPage::ExchangeHarpPointLocations(CDataExchange* pDX,CS
    if (pDX->m_bSaveAndValidate && pStrands->GetStrandCount(pgsTypes::Harped) == 0)
       return;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    Float64 Xstart, Xlhp, Xrhp, Xend;
    if (!pDX->m_bSaveAndValidate)
@@ -806,7 +806,7 @@ void CGirderSegmentStrandsPage::ExchangeHarpPointLocations(CDataExchange* pDX,CS
    DDX_UnitValueChoice(pDX, IDC_X3, IDC_X3_MEASURE, Xrhp, pDisplayUnits->GetSpanLengthUnit());
    DDX_UnitValueChoice(pDX, IDC_X4, IDC_X4_MEASURE, Xend, pDisplayUnits->GetSpanLengthUnit());
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    Float64 Ls = pBridge->GetSegmentLength(m_pSegment->GetSegmentKey());
    DDV_UnitValueChoice(pDX, IDC_X1, Xstart, Ls, pDisplayUnits->GetSpanLengthUnit());
    DDV_UnitValueChoice(pDX, IDC_X2, Xlhp, Ls, pDisplayUnits->GetSpanLengthUnit());
@@ -828,9 +828,9 @@ void CGirderSegmentStrandsPage::GetHarpPointLocations(CStrandData* pStrands)
 
 void CGirderSegmentStrandsPage::GetHarpPointLocations(Float64* pXstart, Float64* pXlhp, Float64* pXrhp, Float64* pXend)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    CDataExchange dx(this, TRUE);
    DDX_UnitValueChoice(&dx, IDC_X1, IDC_X1_MEASURE, *pXstart, pDisplayUnits->GetSpanLengthUnit());

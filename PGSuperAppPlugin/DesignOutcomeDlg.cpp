@@ -242,10 +242,10 @@ BOOL CDesignOutcomeDlg::OnInitDialog()
       OnBnClickedCheckAdesign();
    }
 
-   CComPtr<IBroker> pBroker;
-   m_pRptSpec->GetBroker(&pBroker);
+   
+   auto pBroker = m_pRptSpec->GetBroker();
 
-   GET_IFACE2(pBroker,IReportManager,pRptMgr);
+   EAF_GET_IFACE2_(WBFL::Reporting,pBroker,IReportManager,pRptMgr);
    std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = std::dynamic_pointer_cast<WBFL::Reporting::ReportSpecification,CMultiGirderReportSpecification>(m_pRptSpec);
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> nullSpecBuilder;
    CWnd* pWnd = GetDlgItem(IDC_BROWSER);
@@ -269,7 +269,7 @@ BOOL CDesignOutcomeDlg::OnInitDialog()
    // If the design outcome is "Not Supported", the design artifact doesn't really have good information in it
    // We don't want the user to accept the design and updated the model with junk.
    // Make "reject" the only option
-   GET_IFACE2(pBroker, IArtifact, pIArtifact);
+   EAF_GET_IFACE2(pBroker, IArtifact, pIArtifact);
    for (const auto& girderKey : m_GirderKeys)
    {
       const pgsGirderDesignArtifact* pGdrArtifact = pIArtifact->GetDesignArtifact(girderKey);

@@ -105,8 +105,8 @@ void CGirderDescDlg::Init(const CBridgeDescription2* pBridgeDesc,const CSegmentK
    AddPage( &m_General );
    AddPage( &m_Prestress );
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    m_GirderSpacingType = pBridgeDesc->GetGirderSpacingType();
 
@@ -231,10 +231,10 @@ LRESULT CGirderDescDlg::OnKickIdle(WPARAM wp, LPARAM lp)
 
 void CGirderDescDlg::InitialzePages()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(m_SegmentKey.groupIndex);
@@ -255,7 +255,7 @@ void CGirderDescDlg::InitialzePages()
       m_General.m_SlabOffsetOrHaunch[pgsTypes::metStart] = pGirder->GetSegment(m_SegmentKey.segmentIndex)->GetSlabOffset(pgsTypes::metStart); // must use original girder, not our local copy
       m_General.m_SlabOffsetOrHaunch[pgsTypes::metEnd] = pGirder->GetSegment(m_SegmentKey.segmentIndex)->GetSlabOffset(pgsTypes::metEnd);
 
-      GET_IFACE2(pBroker,ISpecification,pSpec);
+      EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
       m_bCanAssumedExcessCamberInputBeEnabled = pSpec->IsAssumedExcessCamberInputEnabled();
       m_General.m_AssumedExcessCamber = m_bCanAssumedExcessCamberInputBeEnabled ? pIBridgeDesc->GetAssumedExcessCamber(m_SegmentKey.groupIndex,m_SegmentKey.girderIndex) : 0.0;
    }
@@ -352,14 +352,14 @@ void CGirderDescDlg::SetDebondTabName()
    if ( index < 0 )
       return; // not using the debond tab
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    CTabCtrl* pTab = GetTabControl();
    TC_ITEM ti;
    ti.mask = TCIF_TEXT;
 
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
    bool bCanDebond = pStrandGeometry->CanDebondStrands(m_strGirderName.c_str(),pgsTypes::Straight);
    if ( bCanDebond )
    {
@@ -413,9 +413,9 @@ Float64 CGirderDescDlg::GetConditionFactor()
 
 ConfigStrandFillVector CGirderDescDlg::ComputeStrandFillVector(pgsTypes::StrandType type)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    if (m_pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectSelection)
    {

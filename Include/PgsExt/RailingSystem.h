@@ -36,7 +36,7 @@
 #include <PgsExt\ConcreteMaterial.h>
 
 class TrafficBarrierEntry;
-interface ILibrary;
+class ILibrary;
 
 
 /*****************************************************************************

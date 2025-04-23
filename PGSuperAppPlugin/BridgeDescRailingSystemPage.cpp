@@ -54,7 +54,7 @@ CBridgeDescRailingSystemPage::CBridgeDescRailingSystemPage() : CPropertyPage(CBr
 	//{{AFX_DATA_INIT(CBridgeDescRailingSystemPage)
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
-   EAFGetBroker(&m_pBroker);
+   m_pBroker = EAFGetBroker();
 
    m_MinNWCDensity = WBFL::LRFD::ConcreteUtil::GetNWCDensityLimit();
    m_MaxLWCDensity = WBFL::LRFD::ConcreteUtil::GetLWCDensityLimit();
@@ -71,7 +71,7 @@ void CBridgeDescRailingSystemPage::DoDataExchange(CDataExchange* pDX)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
 	//}}AFX_DATA_MAP
 
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    
    DDX_CBStringExactCase(pDX, IDC_LEFT_EXTERIORBARRIER,  m_LeftRailingSystem.strExteriorRailing );
 	DDX_CBStringExactCase(pDX, IDC_RIGHT_EXTERIORBARRIER, m_RightRailingSystem.strExteriorRailing );
@@ -215,9 +215,9 @@ BOOL CBridgeDescRailingSystemPage::OnInitDialog()
    EnableToolTips(TRUE);
 
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,ILossParameters,pLossParams);
    if ( pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       GetDlgItem(IDC_EVENT)->EnableWindow(FALSE);
@@ -261,7 +261,7 @@ BOOL CBridgeDescRailingSystemPage::OnInitDialog()
    m_CacheInteriorBarrierCheck[1] = IsDlgButtonChecked(IDC_RIGHT_INTERIOR_BARRIER);
    m_CacheInteriorBarrierIdx[1] = pcbRight->GetCurSel();
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    if ( IS_SI_UNITS(pDisplayUnits) )
    {
       GetDlgItem(IDC_LEFT_DENSITY_LABEL)->SetWindowText(_T("Density"));
@@ -291,10 +291,10 @@ BOOL CBridgeDescRailingSystemPage::OnInitDialog()
 
 void CBridgeDescRailingSystemPage::FillTrafficBarrierComboBoxes()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2( pBroker, ILibraryNames, pLibNames );
+   EAF_GET_IFACE2( pBroker, ILibraryNames, pLibNames );
    std::vector<std::_tstring> names;
    std::vector<std::_tstring>::iterator iter;
 
@@ -566,9 +566,9 @@ void CBridgeDescRailingSystemPage::OnLeftExteriorBarrierChanged()
    CString strRailing;
    pCB->GetLBText(curSel,strRailing);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,ILibrary,pLibrary);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,ILibrary,pLibrary);
    const TrafficBarrierEntry* pEntry = pLibrary->GetTrafficBarrierEntry( strRailing );
    int nShowCmd = SW_SHOW;
    if ( pEntry->GetWeightMethod() == TrafficBarrierEntry::Input )
@@ -602,9 +602,9 @@ void CBridgeDescRailingSystemPage::OnRightExteriorBarrierChanged()
    CString strRailing;
    pCB->GetLBText(curSel,strRailing);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,ILibrary,pLibrary);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,ILibrary,pLibrary);
    const TrafficBarrierEntry* pEntry = pLibrary->GetTrafficBarrierEntry( strRailing );
    int nShowCmd = SW_SHOW;
    if ( pEntry->GetWeightMethod() == TrafficBarrierEntry::Input )
@@ -766,7 +766,7 @@ HBRUSH CBridgeDescRailingSystemPage::OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlCol
          }
          else
          {
-            GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+            EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
             CDataExchange dx(this,TRUE);
 
             Float64 value;
@@ -798,7 +798,7 @@ HBRUSH CBridgeDescRailingSystemPage::OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlCol
          }
          else
          {
-            GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+            EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
             CDataExchange dx(this,TRUE);
 
             Float64 value;
@@ -866,10 +866,10 @@ void CBridgeDescRailingSystemPage::UpdateRightConcreteParametersToolTip()
 
 CString CBridgeDescRailingSystemPage::UpdateConcreteParametersToolTip(CRailingSystem* pRailingSystem)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::DensityData& density = pDisplayUnits->GetDensityUnit();
    const WBFL::Units::LengthData&  aggsize = pDisplayUnits->GetComponentDimUnit();
    const WBFL::Units::StressData&  stress  = pDisplayUnits->GetStressUnit();

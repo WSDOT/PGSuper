@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <EAF\Agent.h>
 #include <EAF\EAFInterfaceCache.h>
 
 #include <IFace\Project.h>
@@ -69,12 +70,8 @@ LOG
    rab : 11.01.1998 : Created file
 *****************************************************************************/
 
-class CPGSuperDocProxyAgent :
-   public CComObjectRootEx<CComSingleThreadModel>,
-   public CComCoClass<CPGSuperDocProxyAgent,&CLSID_PGSuperDocProxyAgent>,
-	public IConnectionPointContainerImpl<CPGSuperDocProxyAgent>,
-   public CProxyIExtendUIEventSink<CPGSuperDocProxyAgent>,
-   public IAgentEx,
+class CPGSuperDocProxyAgent : public WBFL::EAF::Agent,
+   public CProxyIExtendUIEventSink<IExtendUIEventSink>,
    public IAgentUIIntegration,
    public IBridgeDescriptionEventSink,
    public IEnvironmentEventSink,
@@ -103,40 +100,6 @@ public:
    CPGSuperDocProxyAgent();
    ~CPGSuperDocProxyAgent();
 
-BEGIN_COM_MAP(CPGSuperDocProxyAgent)
-	COM_INTERFACE_ENTRY_IMPL(IConnectionPointContainer)
-   COM_INTERFACE_ENTRY(IAgent)
-   COM_INTERFACE_ENTRY(IAgentEx)
-   COM_INTERFACE_ENTRY(IAgentUIIntegration)
-   COM_INTERFACE_ENTRY(IBridgeDescriptionEventSink)
-   COM_INTERFACE_ENTRY(IEnvironmentEventSink)
-   COM_INTERFACE_ENTRY(IProjectPropertiesEventSink)
-   COM_INTERFACE_ENTRY(IEAFDisplayUnitsEventSink)
-   COM_INTERFACE_ENTRY(ISpecificationEventSink)
-   COM_INTERFACE_ENTRY(IRatingSpecificationEventSink)
-   COM_INTERFACE_ENTRY(ILoadModifiersEventSink)
-   COM_INTERFACE_ENTRY(ILossParametersEventSink)
-   COM_INTERFACE_ENTRY(ILibraryConflictEventSink)
-   COM_INTERFACE_ENTRY(IReporterEventSink)
-   COM_INTERFACE_ENTRY(IUIEvents)
-   COM_INTERFACE_ENTRY(IUpdateTemplates)
-   COM_INTERFACE_ENTRY(ISelection)
-   COM_INTERFACE_ENTRY(IEditByUI)
-   COM_INTERFACE_ENTRY(IDesign)
-   COM_INTERFACE_ENTRY(IViews)
-   COM_INTERFACE_ENTRY(IVersionInfo)
-   COM_INTERFACE_ENTRY(IRegisterViewEvents)
-   COM_INTERFACE_ENTRY(IExtendPGSuperUI)
-   COM_INTERFACE_ENTRY(IExtendPGSpliceUI)
-   COM_INTERFACE_ENTRY(IDocumentType)
-   COM_INTERFACE_ENTRY(IDocumentUnitSystem)
-END_COM_MAP()
-
-BEGIN_CONNECTION_POINT_MAP(CPGSuperDocProxyAgent)
-   CONNECTION_POINT_ENTRY( IID_IExtendUIEventSink )
-END_CONNECTION_POINT_MAP()
-
-public:
    void SetDocument(CPGSDocBase* pDoc);
    void OnStatusChanged();
 
@@ -144,13 +107,11 @@ public:
 
 // IAgentEx
 public:
-   STDMETHOD(SetBroker)(/*[in]*/ IBroker* pBroker);
-	STDMETHOD(RegInterfaces)();
-	STDMETHOD(Init)();
-	STDMETHOD(Init2)();
-	STDMETHOD(Reset)();
-	STDMETHOD(ShutDown)();
-   STDMETHOD(GetClassID)(CLSID* pCLSID);
+	bool RegInterfaces() override;
+   bool Init() override;
+   bool Reset() override;
+	bool ShutDown() override;
+   CLSID GetCLSID() const override;
 
 // IAgentUIIntegration
 public:
@@ -361,21 +322,23 @@ public:
    void GetUnitServer(IUnitServer** ppUnitServer) override;
 
 private:
-   DECLARE_EAF_AGENT_DATA;
+#pragma Reminder("WORKING HERE - Removing COM")
+   // Figure out what to do about EAF_AGENT_DATA
+   //DECLARE_EAF_AGENT_DATA;
 
    void AdviseEventSinks();
    void UnadviseEventSinks();
 
-   DWORD m_dwBridgeDescCookie;
-   DWORD m_dwEnvironmentCookie;
-   DWORD m_dwProjectPropertiesCookie;
-   DWORD m_dwDisplayUnitsCookie;
-   DWORD m_dwSpecificationCookie;
-   DWORD m_dwRatingSpecificationCookie;
-   DWORD m_dwLoadModiferCookie;
-   DWORD m_dwLibraryConflictGuiCookie;
-   DWORD m_dwLossParametersCookie;
-   DWORD m_dwReportCookie;
+   IDType m_BridgeDescCookie;
+   IDType m_EnvironmentCookie;
+   IDType m_ProjectPropertiesCookie;
+   IDType m_DisplayUnitsCookie;
+   IDType m_SpecificationCookie;
+   IDType m_RatingSpecificationCookie;
+   IDType m_LoadModiferCookie;
+   IDType m_LibraryConflictGuiCookie;
+   IDType m_LossParametersCookie;
+   IDType m_ReportCookie;
 
    int m_EventHoldCount;
    bool m_bFiringEvents;

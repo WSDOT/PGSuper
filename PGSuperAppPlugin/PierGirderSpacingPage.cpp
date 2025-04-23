@@ -142,9 +142,9 @@ void CPierGirderSpacingPage::DoDataExchange(CDataExchange* pDX)
    DDV_SpacingGrid(pDX,IDC_NEXT_SPAN_SPACING_GRID,&m_GirderSpacingGrid[pgsTypes::Ahead]);
    DDV_SpacingGrid(pDX,IDC_PREV_SPAN_SPACING_GRID,&m_GirderSpacingGrid[pgsTypes::Back]);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    DDX_CBItemData(pDX, IDC_PREV_REF_GIRDER, m_RefGirderIdx[pgsTypes::Back]);
    DDX_CBItemData(pDX, IDC_NEXT_REF_GIRDER, m_RefGirderIdx[pgsTypes::Ahead]);
 
@@ -273,9 +273,8 @@ BOOL CPierGirderSpacingPage::OnInitDialog()
    CPierDetailsDlg* pParent = (CPierDetailsDlg*)GetParent();
    CPierData2* pPier = pParent->m_pPier;
 
-   CComPtr<IBroker> broker;
-   EAFGetBroker(&broker);
-   GET_IFACE2(broker,IBridge,pBridge);
+   auto broker = EAFGetBroker();
+   EAF_GET_IFACE2(broker,IBridge,pBridge);
 
    Float64 skew_angle;
    pBridge->GetSkewAngle(pPier->GetStation(),pPier->GetOrientation(),&skew_angle);
@@ -883,9 +882,8 @@ void CPierGirderSpacingPage::OnChangeSameGirderSpacing()
          {
             // there is more than one unique girder spacing... which one do we want to use
             // for the entire bridge???
-            CComPtr<IBroker> broker;
-            EAFGetBroker(&broker);
-            GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
+            auto broker = EAFGetBroker();
+            EAF_GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
 
             CSelectItemDlg dlg;
             dlg.m_strLabel = _T("Select the spacing to be used for the entire bridge");

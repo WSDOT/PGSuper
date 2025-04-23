@@ -218,9 +218,9 @@ BOOL CCastDeckDlg::OnInitDialog()
    // data with IBridge and the broker. However we can't get what
    // we needed from m_TimelineManager.GetBridgeDescription(). The determination
    // of cantilevers is not part of the basic bridge description
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    SpanIndexType nSpans = pBridge->GetSpanCount();
    if (nSpans == 1)
    {

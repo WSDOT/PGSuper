@@ -39,7 +39,7 @@ public:
 
    // Creates a simple span FEM2d model for a precast segment.
    // intervalIdx is used to define the interval at which section properties and section transitions are used
-   virtual void CreateGirderModel(IBroker* pBroker,                            // broker to access PGSuper data
+   virtual void CreateGirderModel(std::shared_ptr<WBFL::EAF::Broker> pBroker,                            // broker to access PGSuper data
                                  IntervalIndexType intervalIdx,               // used for looking up section properties and section transition POIs
                                  const CSegmentKey& segmentKey,               // this is the segment that the modeling is build for
                                  Float64 leftSupportLoc,                      // distance from the left end of the model to the left support location
@@ -72,9 +72,9 @@ public:
 protected:
    // Use template methods to allow children to add functionality
    // BuildModel returns length of model
-   virtual void BuildModel(IBroker* pBroker,IntervalIndexType intervalIdx,const CSegmentKey& segmentKey,Float64 segmentLength,Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,const PoiList& vPoi,IFem2dModel** ppModel);
-   virtual void ApplyLoads(IBroker* pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,const PoiList& vPoi,IFem2dModel** ppModel);
-   virtual void ApplyPointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,const PoiList& vPoi,IFem2dModel** ppModel,pgsPoiPairMap* pPoiMap);
+   virtual void BuildModel(std::shared_ptr<WBFL::EAF::Broker> pBroker,IntervalIndexType intervalIdx,const CSegmentKey& segmentKey,Float64 segmentLength,Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,const PoiList& vPoi,IFem2dModel** ppModel);
+   virtual void ApplyLoads(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,const PoiList& vPoi,IFem2dModel** ppModel);
+   virtual void ApplyPointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,const PoiList& vPoi,IFem2dModel** ppModel,pgsPoiPairMap* pPoiMap);
 
    static PoiIDType ms_FemModelPoiID;
 };
@@ -93,7 +93,7 @@ public:
 
 protected:
    // Use template methods to allow children to add functionality
-   virtual void ApplyLoads(IBroker* pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,const PoiList& vPoi,IFem2dModel** ppModel) override;
+   virtual void ApplyLoads(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,const PoiList& vPoi,IFem2dModel** ppModel) override;
 
 private:
    Float64 m_OverhangFactor;
@@ -116,7 +116,7 @@ public:
 
 protected:
    // Use template methods to allow children to add functionality
-   virtual void ApplyLoads(IBroker* pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,const PoiList& vPoi,IFem2dModel** ppModel) override;
+   virtual void ApplyLoads(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,Float64 segmentLength,Float64 leftSupportLoc,Float64 rightSupportLoc,Float64 E,LoadCaseIDType lcidGirder,bool bModelLeftCantilever, bool bModelRightCantilever,const PoiList& vPoi,IFem2dModel** ppModel) override;
 
 private:
    pgsDesignHaunchLoadGirderModelFactory();

@@ -157,7 +157,7 @@ public:
    // It's pretty much impossible to take care of all data in this tree from the editing dialog
    // so the function below takes half-baked edits, compares what changed from the original
    // version, and finishes them.
-   void ReconcileEdits(IBroker* pBroker, const CBridgeDescription* pOriginalDesc);
+   void ReconcileEdits(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CBridgeDescription* pOriginalDesc);
 
    void Clear();
 

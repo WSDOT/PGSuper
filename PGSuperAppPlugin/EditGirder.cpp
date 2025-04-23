@@ -70,9 +70,9 @@ txnEditGirder::txnEditGirder(const CGirderKey& girderKey,const txnEditGirderData
    m_NewGirderData = newGirderData;
 
 #if defined _DEBUG
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker, IDocumentType, pDocType);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker, IDocumentType, pDocType);
    ATLASSERT(pDocType->IsPGSuperDocument());
 #endif
 }
@@ -83,16 +83,16 @@ txnEditGirder::~txnEditGirder()
 
 bool txnEditGirder::Execute()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IEvents, pEvents);
+   EAF_GET_IFACE2(pBroker,IEvents, pEvents);
    // Exception-safe holder to keep from fireing events until we are done
    CIEventsHolder event_holder(pEvents);
 
    m_OldGirderData.clear();
 
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(m_GirderKey.groupIndex);
 
@@ -165,10 +165,10 @@ bool txnEditGirder::Execute()
 
 void txnEditGirder::Undo()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IEvents, pEvents);
+   EAF_GET_IFACE2(pBroker,IEvents, pEvents);
    // Exception-safe holder to keep from fireing events until we are done
    CIEventsHolder event_holder(pEvents);
 
@@ -216,10 +216,10 @@ void txnEditGirder::SetGirderData(const CGirderKey& girderKey,const txnEditGirde
    /// this is a precast girder bridge (PGSuper) so there is only the one segment
    CSegmentKey segmentKey(girderKey.groupIndex,girderKey.girderIndex,0);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    pIBridgeDesc->UseSameGirderForEntireBridge( gdrData.m_bUseSameGirder );
 

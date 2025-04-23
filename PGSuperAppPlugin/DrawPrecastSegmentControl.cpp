@@ -145,9 +145,9 @@ void CDrawPrecastSegmentControl::OnPaint()
    CPen* pOldPen     = dc.GetCurrentPen();
    CBrush* pOldBrush = dc.GetCurrentBrush();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    if ( prevShape )
    {
       Float64 framing_length = pBridge->GetSegmentFramingLength(prevSegmentKey);
@@ -208,9 +208,9 @@ void CDrawPrecastSegmentControl::CreateSegmentShape(const CSegmentKey& segmentKe
 {
    const CSplicedGirderData* pSplicedGirder = m_pSource->GetGirder();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IGirder,pGirder);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IGirder,pGirder);
    pGirder->GetSegmentProfile(segmentKey,pSplicedGirder,true,ppShape);
    pGirder->GetSegmentBottomFlangeProfile(segmentKey,pSplicedGirder,true,ppPoints);
 }

@@ -113,9 +113,9 @@ BOOL CErectSegmentsDlg::OnInitDialog()
       SetDefID(IDCANCEL);
    }
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
    if ( pDocType->IsPGSuperDocument() )
    {
       SetWindowText(_T("Erect Girders"));
@@ -147,9 +147,9 @@ void CErectSegmentsDlg::OnMoveToSourceList()
 
 void CErectSegmentsDlg::FillLists()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
 
    GroupIndexType nGroups = m_pBridgeDesc->GetGirderGroupCount();
    for( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )

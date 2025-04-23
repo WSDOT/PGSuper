@@ -368,6 +368,6 @@ private:
 
    void Init();
 
-   void ModSegmentDataForFlexureDesign(IBroker* pBroker, CPrecastSegmentData* pSegmentData) const;
-   void ModSegmentDataForShearDesign(IBroker* pBroker, CPrecastSegmentData* pSegmentData) const;
+   void ModSegmentDataForFlexureDesign(std::shared_ptr<WBFL::EAF::Broker> pBroker, CPrecastSegmentData* pSegmentData) const;
+   void ModSegmentDataForShearDesign(std::shared_ptr<WBFL::EAF::Broker> pBroker, CPrecastSegmentData* pSegmentData) const;
 };

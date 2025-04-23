@@ -62,9 +62,9 @@ CSpanLayoutPage::~CSpanLayoutPage()
 
 void CSpanLayoutPage::DoDataExchange(CDataExchange* pDX)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
 	CPropertyPage::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CSpanLayoutPage)
@@ -153,10 +153,10 @@ void CSpanLayoutPage::UpdateHaunchAndCamberControls()
 {
    CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,ISpecification,pSpec);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
 
    pgsTypes::HaunchInputDepthType inputType = pParent->m_BridgeDesc.GetHaunchInputDepthType();
 
@@ -326,9 +326,9 @@ void CSpanLayoutPage::UpdateHaunchAndCamberData(CDataExchange* pDX)
 {
    CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType();
    if (deckType == pgsTypes::sdtNone)
@@ -383,7 +383,7 @@ void CSpanLayoutPage::UpdateHaunchAndCamberData(CDataExchange* pDX)
          }
       }
 
-      GET_IFACE2(pBroker,ISpecification,pSpec);
+      EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
       bool bCanAssumedExcessCamberInputBeEnabled = pSpec->IsAssumedExcessCamberInputEnabled();
       pgsTypes::AssumedExcessCamberType assumedExcessCamberType = pParent->GetBridgeDescription()->GetAssumedExcessCamberType();
 

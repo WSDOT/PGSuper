@@ -41,7 +41,7 @@ static char THIS_FILE[] = __FILE__;
 // CSelectGirderDlg dialog
 
 
-CSelectGirderDlg::CSelectGirderDlg(IBroker* pBroker, CWnd* pParent /*=nullptr*/)
+CSelectGirderDlg::CSelectGirderDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker, CWnd* pParent /*=nullptr*/)
 	: CDialog(CSelectGirderDlg::IDD, pParent),
    m_pBroker(pBroker)
 {
@@ -76,7 +76,7 @@ BOOL CSelectGirderDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 	
-	GET_IFACE( IBridgeDescription, pIBridgeDesc ); 
+	EAF_GET_IFACE( IBridgeDescription, pIBridgeDesc ); 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
 	CComboBox* pGroupBox   = (CComboBox*)GetDlgItem( IDC_GROUP );
@@ -115,7 +115,7 @@ BOOL CSelectGirderDlg::OnInitDialog()
 
 void CSelectGirderDlg::OnGroupChanged() 
 {
-	GET_IFACE( IBridgeDescription, pIBridgeDesc ); 
+	EAF_GET_IFACE( IBridgeDescription, pIBridgeDesc ); 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
 	CComboBox* pGroupBox   = (CComboBox*)GetDlgItem( IDC_GROUP );

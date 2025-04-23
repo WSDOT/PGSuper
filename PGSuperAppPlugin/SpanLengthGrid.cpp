@@ -126,9 +126,9 @@ void CSpanLengthGrid::CustomInit()
 			.SetValue(_T("Span"))
 		);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::Length& um = pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure;
    CString cv;
    cv.Format(_T("Length (%s)"), um.UnitTag().c_str());
@@ -186,9 +186,9 @@ void CSpanLengthGrid::FillGrid(const std::vector<Float64>& vSpanLengths)
 	GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // remove all but top row
    ROWCOL rows = GetRowCount();
@@ -234,9 +234,9 @@ void CSpanLengthGrid::GetSpanLengths(std::vector<Float64>& vSpanLengths)
 {
    vSpanLengths.clear();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    const WBFL::Units::Length& um = pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure;
 

@@ -221,9 +221,8 @@ BOOL CBridgeDescFramingPage::OnInitDialog()
 	// TODO: Add extra initialization here
    CString fmt;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    
    fmt.LoadString( IS_SI_UNITS(pDisplayUnits) ? IDS_DLG_STATIONFMT_SI : IDS_DLG_STATIONFMT_US );
    m_StationFormat.SetWindowText( fmt );
@@ -238,7 +237,7 @@ BOOL CBridgeDescFramingPage::OnInitDialog()
    // I don't like using this interface because we should be a generic as possible
    // I can't think of a different way to this this right now.
    // Also, in the future, PGSuper will support temporary supports in the form of shoring towers during erection
-   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
    if ( pDocType->IsPGSuperDocument() )
    {
       CWnd* pwndAddTempSupport = GetDlgItem(IDC_ADD_TEMP_SUPPORT);
@@ -338,9 +337,8 @@ void CBridgeDescFramingPage::OnOrientPiers()
    {
       if ( AfxQuestion(_T("Orient Piers"),_T("Enter orientation of all piers and temporary supports"),_T("NORMAL"),strResult) )
       {
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
-         GET_IFACE2(pBroker,IValidate,pValidate);
+         auto pBroker = EAFGetBroker();
+         EAF_GET_IFACE2(pBroker,IValidate,pValidate);
          UINT result = pValidate->Orientation(strResult);
          if ( result == VALIDATE_SUCCESS )
          {

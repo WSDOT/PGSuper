@@ -62,11 +62,11 @@ void txnEditAlignment::Undo()
 
 void txnEditAlignment::Execute(int i)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IRoadwayData,pAlignment);
-   GET_IFACE2(pBroker,IEvents, pEvents);
+   EAF_GET_IFACE2(pBroker,IRoadwayData,pAlignment);
+   EAF_GET_IFACE2(pBroker,IEvents, pEvents);
    // don't fire any changed events until all changes are done
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);

@@ -246,9 +246,9 @@ void CTimelineEventDlg::UpdateAddButton()
 {
    m_btnAdd.Clear();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
    CString strErectPiers;
    CString strConstructSegments;
    CString strErectSegments;
@@ -277,7 +277,7 @@ void CTimelineEventDlg::UpdateAddButton()
       m_btnAdd.AddMenuItem(ID_ACTIVITIES_REMOVE_TS,_T("Remove Temporary Supports"),MF_ENABLED);
    }
 
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    if (pIBridgeDesc->GetBridgeDescription()->HasStructuralLongitudinalJoints())
    {
       m_btnAdd.AddMenuItem(ID_ACTIVITIES_CASTLONGITUDINALJOINTS, _T("Cast Longitudinal Joints"), MF_ENABLED);
@@ -369,9 +369,9 @@ void CTimelineEventDlg::OnCastClosureJoints()
 void CTimelineEventDlg::OnCastDeck()
 {
    UpdateData();
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    pgsTypes::SupportedDeckType deckType = pIBridgeDesc->GetDeckDescription()->GetDeckType();
    CString strName(GetCastDeckEventName(deckType));
 

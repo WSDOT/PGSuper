@@ -55,7 +55,7 @@ CEditMomentLoadDlg::CEditMomentLoadDlg(const CMomentLoadData& load,const CTimeli
 {
 	//{{AFX_DATA_INIT(CEditMomentLoadDlg)
 	//}}AFX_DATA_INIT
-   EAFGetBroker(&m_pBroker);
+   m_pBroker = EAFGetBroker();
 
    m_EventID = m_TimelineMgr.FindUserLoadEventID(m_Load.m_ID);
 
@@ -65,7 +65,7 @@ CEditMomentLoadDlg::CEditMomentLoadDlg(const CMomentLoadData& load,const CTimeli
 
 void CEditMomentLoadDlg::DoDataExchange(CDataExchange* pDX)
 {
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    if ( !pDX->m_bSaveAndValidate )
    {
@@ -194,7 +194,7 @@ BOOL CEditMomentLoadDlg::OnInitDialog()
 //   UpdateEventLoadCase(true);
 
    // spans, girders
-   GET_IFACE(IBridge, pBridge);
+   EAF_GET_IFACE(IBridge, pBridge);
    SpanIndexType nSpans   = pBridge->GetSpanCount();
 
    for (SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
@@ -382,8 +382,8 @@ void CEditMomentLoadDlg::UpdateSpanLength()
    }
    else
    {
-      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-      GET_IFACE(IBridge, pBridge);
+      EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+      EAF_GET_IFACE(IBridge, pBridge);
       Float64 span_length = pBridge->GetFullSpanLength(CSpanKey(spn,gdr));
       CString strLabel;
       strLabel.Format(_T("Span Length = %s"),FormatDimension(span_length,pDisplayUnits->GetSpanLengthUnit(),false));
@@ -398,7 +398,7 @@ void CEditMomentLoadDlg::OnHelp()
 
 void CEditMomentLoadDlg::UpdateGirderList()
 {
-   GET_IFACE(IBridge, pBridge);
+   EAF_GET_IFACE(IBridge, pBridge);
    SpanIndexType spanIdx = m_SpanCB.GetCurSel();
    SpanIndexType nSpans = pBridge->GetSpanCount();
 

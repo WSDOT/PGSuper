@@ -90,9 +90,9 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
    DDX_Control(pDX, IDC_TOP_FLANGE_THICKENING, m_ctrlTopFlangeThickening);
    //}}AFX_DATA_MAP
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -110,7 +110,7 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
    DDX_Tag(pDX, IDC_END_SLAB_OFFSET_UNIT,   pDisplayUnits->GetComponentDimUnit() );
    DDX_Tag(pDX, IDC_ASSUMED_EXCESS_CAMBER_UNIT,   pDisplayUnits->GetComponentDimUnit() );
 
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridge);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridge);
    const CBridgeDescription2* pBridgeDesc = pIBridge->GetBridgeDescription();
 
    pgsTypes::TopWidthType topWidthType;
@@ -215,9 +215,9 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
 
 void CGirderDescGeneralPage::ExchangeConcreteData(CDataExchange* pDX)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
@@ -292,16 +292,16 @@ END_MESSAGE_MAP()
 
 BOOL CGirderDescGeneralPage::OnInitDialog() 
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
    ATLASSERT(pDocType->IsPGSuperDocument()); // Things will not go well if this fires
 
    FillGirderComboBox();
    FillEventList();
 
 
-   GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   EAF_GET_IFACE2(pBroker,ILossParameters,pLossParams);
    m_LossMethod = pLossParams->GetLossMethod();
    m_TimeDependentModel = pLossParams->GetTimeDependentModel();
 
@@ -447,7 +447,7 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
       SegmentIDType segmentID = pParent->m_pSegment->GetID();
       ATLASSERT(segmentID != INVALID_ID);
 
-      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+      EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
       EventIndexType eventIdx = pTimelineMgr->GetSegmentConstructionEventIndex(segmentID);
       m_AgeAtRelease = pTimelineMgr->GetEventByIndex(eventIdx)->GetConstructSegmentsActivity().GetTotalCuringDuration();
@@ -501,7 +501,7 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
 
    EnableToolTips(TRUE);
 
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    if (pIBridgeDesc->GetDeckDescription()->GetDeckType() == pgsTypes::sdtNone)
    {
       // disable slab offset input if there isn't a deck
@@ -648,9 +648,9 @@ void CGirderDescGeneralPage::UpdateEci()
    if ( method == 0 )
    {
       // Eci is based on the user input value of Ec and not f'ci
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      
+      auto pBroker = EAFGetBroker();
+      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       CString strEc;
       m_ctrlEc.GetWindowText(strEc);
@@ -709,9 +709,9 @@ void CGirderDescGeneralPage::UpdateEci()
       CString strFci, strDensity, strK1, strK2;
       m_ctrlFci.GetWindowText(strFci);
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      
+      auto pBroker = EAFGetBroker();
+      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -774,9 +774,9 @@ void CGirderDescGeneralPage::UpdateEc()
    if ( method == 0 )
    {
       // Ec is based on the user input value of Eci and not f'c
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      
+      auto pBroker = EAFGetBroker();
+      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       CString strEci;
       m_ctrlEci.GetWindowText(strEci);
@@ -811,9 +811,9 @@ void CGirderDescGeneralPage::UpdateEc()
       CString strFc, strDensity, strK1, strK2;
       m_ctrlFc.GetWindowText(strFc);
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      
+      auto pBroker = EAFGetBroker();
+      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -839,9 +839,9 @@ void CGirderDescGeneralPage::UpdateFc()
          CString strFci;
          m_ctrlFci.GetWindowText(strFci);
 
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
-         GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+         
+         auto pBroker = EAFGetBroker();
+         EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
          Float64 fci;
          WBFL::System::Tokenizer::ParseDouble(strFci, &fci);
@@ -884,9 +884,9 @@ void CGirderDescGeneralPage::UpdateFci()
          CString strFc;
          m_ctrlFc.GetWindowText(strFc);
 
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
-         GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+         
+         auto pBroker = EAFGetBroker();
+         EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
          Float64 fc;
          WBFL::System::Tokenizer::ParseDouble(strFc, &fc);
@@ -1138,10 +1138,10 @@ BOOL CGirderDescGeneralPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* pRe
 
 void CGirderDescGeneralPage::UpdateConcreteParametersToolTip()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -1178,16 +1178,16 @@ void CGirderDescGeneralPage::FillGirderComboBox()
 {
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    std::_tstring strGirderFamilyName = pBridgeDesc->GetGirderFamilyName();
 
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_GIRDER_NAME);
 
-   GET_IFACE2( pBroker, ILibraryNames, pLibNames );
+   EAF_GET_IFACE2( pBroker, ILibraryNames, pLibNames );
    std::vector<std::_tstring> names;
    std::vector<std::_tstring>::iterator iter;
    
@@ -1234,12 +1234,12 @@ void CGirderDescGeneralPage::OnChangeGirderName()
    // An alterative would be to not put girders in the drop down if they don't have compatible spacing. However
    // users will not like it if they can't see their girders. This approach shows the girders to the users and
    // provides and explaination as to why a particular girder can't be used.
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker, ILibrary, pLib);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker, ILibrary, pLib);
    const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(newName);
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
@@ -1487,9 +1487,9 @@ void CGirderDescGeneralPage::OnTopWidthTypeChanged()
    pGirderLibraryEntry->GetBeamFactory(&factory);
    factory->GetAllowableTopWidthRange(topWidthType, dimensions, &m_MinTopWidth[LEFT], &m_MaxTopWidth[LEFT], &m_MinTopWidth[RIGHT], &m_MaxTopWidth[RIGHT]);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    CString strLabel;
    if (topWidthType == pgsTypes::twtAsymmetric)
@@ -1530,11 +1530,11 @@ void CGirderDescGeneralPage::UpdateHaunchAndCamberControls()
 {
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,ISpecification,pSpec);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    const CBridgeDescription2* pBridgeDesc2 = pIBridgeDesc->GetBridgeDescription(); // We don't make top-level haunch-type changes in this dialog
 
@@ -1635,10 +1635,10 @@ void CGirderDescGeneralPage::UpdateHaunchAndCamberData(CDataExchange* pDX)
 {
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    const CBridgeDescription2* pBridgeDesc2 = pIBridgeDesc->GetBridgeDescription(); // We don't make top-level haunch-type changes in this dialog
 
@@ -1651,7 +1651,7 @@ void CGirderDescGeneralPage::UpdateHaunchAndCamberData(CDataExchange* pDX)
    pgsTypes::HaunchInputDepthType inputType = pBridgeDesc2->GetHaunchInputDepthType();
    if (inputType == pgsTypes::hidACamber)
    {
-      GET_IFACE2(pBroker,ISpecification,pSpec);
+      EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
       bool bCanAssumedExcessCamberInputBeEnabled = pSpec->IsAssumedExcessCamberInputEnabled();
       pgsTypes::SlabOffsetType slabOffsetType = pBridgeDesc2->GetSlabOffsetType();
       pgsTypes::AssumedExcessCamberType assumedExcessCamberType = pBridgeDesc2->GetAssumedExcessCamberType();

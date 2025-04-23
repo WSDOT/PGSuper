@@ -45,7 +45,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // CProxyIProjectPropertiesEventSink
 template <class T>
-class CProxyIProjectPropertiesEventSink : public IConnectionPointImpl<T, &IID_IProjectPropertiesEventSink, CComDynamicUnkArray>
+class CProxyIProjectPropertiesEventSink : public WBFL::EAF::EventCallbackManager<IProjectPropertiesEventSink>
 {
 public:
 
@@ -61,19 +61,13 @@ public:
          return S_OK;
       }
 
-		pT->Lock();
+		//pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for (auto& [id, callback] : this->m_Callbacks)
 		{
-			if (*pp != nullptr)
-			{
-				IProjectPropertiesEventSink* pIProjectPropertiesEventSink = reinterpret_cast<IProjectPropertiesEventSink*>(*pp);
-				ret = pIProjectPropertiesEventSink->OnProjectPropertiesChanged();
-			}
-			pp++;
+			callback->OnProjectPropertiesChanged();
 		}
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
 	}
 };
@@ -81,7 +75,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 // CProxyIEnvironmentEventSink
 template <class T>
-class CProxyIEnvironmentEventSink : public IConnectionPointImpl<T, &IID_IEnvironmentEventSink, CComDynamicUnkArray>
+class CProxyIEnvironmentEventSink : public WBFL::EAF::EventCallbackManager<IEnvironmentEventSink>
 {
 public:
 
@@ -97,19 +91,13 @@ public:
          return S_OK;
       }
 
-      pT->Lock();
+      //pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for(auto& [id,callback] : this->m_Callbacks)
 		{
-			if (*pp != nullptr)
-			{
-				IEnvironmentEventSink* pIEnvironmentEventSink = reinterpret_cast<IEnvironmentEventSink*>(*pp);
-				ret = pIEnvironmentEventSink->OnExposureConditionChanged();
-			}
-			pp++;
-		}
-		pT->Unlock();
+			ret = callback->OnExposureConditionChanged();
+      }
+		//pT->Unlock();
 		return ret;
 	}
 
@@ -123,19 +111,13 @@ public:
 			return S_OK;
 		}
 
-		pT->Lock();
+		//pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for(auto& [id,callback] : this->m_Callbacks)
 		{
-			if (*pp != nullptr)
-			{
-				IEnvironmentEventSink* pIEnvironmentEventSink = reinterpret_cast<IEnvironmentEventSink*>(*pp);
-				ret = pIEnvironmentEventSink->OnClimateConditionChanged();
-			}
-			pp++;
+		   callback->OnClimateConditionChanged();
 		}
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
 	}
 
@@ -149,19 +131,13 @@ public:
          return S_OK;
       }
 
-      pT->Lock();
+      //pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for(auto& [id,callback] : this->m_Callbacks)
 		{
-			if (*pp != nullptr)
-			{
-				IEnvironmentEventSink* pIEnvironmentEventSink = reinterpret_cast<IEnvironmentEventSink*>(*pp);
-				ret = pIEnvironmentEventSink->OnRelHumidityChanged();
-			}
-			pp++;
+			callback->OnRelHumidityChanged();
 		}
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
 	}
 };
@@ -170,7 +146,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 // CProxyIBridgeDescriptionEventSink
 template <class T>
-class CProxyIBridgeDescriptionEventSink : public IConnectionPointImpl<T, &IID_IBridgeDescriptionEventSink, CComDynamicUnkArray>
+class CProxyIBridgeDescriptionEventSink : public WBFL::EAF::EventCallbackManager<IBridgeDescriptionEventSink>
 {
 public:
 
@@ -193,17 +169,11 @@ public:
 
       pT->ValidateBridgeModel();
 
-      pT->Lock();
+      //pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for(auto& [id,callback] : this->m_Callbacks)
 		{
-			if (*pp != nullptr)
-			{
-				IBridgeDescriptionEventSink* pEventSink = reinterpret_cast<IBridgeDescriptionEventSink*>(*pp);
-				ret = pEventSink->OnBridgeChanged(pHint);
-			}
-			pp++;
+			callback->OnBridgeChanged(pHint);
 		}
       if ( pHint )
       {
@@ -211,7 +181,7 @@ public:
          pHint = nullptr;
       }
 
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
 	}
 
@@ -225,19 +195,13 @@ public:
          return S_OK;
       }
 
-      pT->Lock();
+      //pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for (auto& [id, callback] : this->m_Callbacks)
 		{
-			if (*pp != nullptr)
-			{
-				IBridgeDescriptionEventSink* pEventSink = reinterpret_cast<IBridgeDescriptionEventSink*>(*pp);
-				ret = pEventSink->OnGirderFamilyChanged();
-			}
-			pp++;
+			callback->OnGirderFamilyChanged();
 		}
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
 	}
 
@@ -263,19 +227,13 @@ public:
          return S_OK;
       }
 
-      pT->Lock();
+      //pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for (auto& [id, callback] : this->m_Callbacks)
 		{
-			if (*pp != nullptr)
-			{
-				IBridgeDescriptionEventSink* pEventSink = reinterpret_cast<IBridgeDescriptionEventSink*>(*pp);
-				ret = pEventSink->OnGirderChanged(girderKey,lHint);
-			}
-			pp++;
+			callback->OnGirderChanged(girderKey,lHint);
 		}
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
 	}
 
@@ -289,19 +247,13 @@ public:
          return S_OK;
       }
 
-      pT->Lock();
+      //pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for (auto& [id, callback] : this->m_Callbacks)
 		{
-			if (*pp != nullptr)
-			{
-				IBridgeDescriptionEventSink* pEventSink = reinterpret_cast<IBridgeDescriptionEventSink*>(*pp);
-				ret = pEventSink->OnConstructionLoadChanged();
-			}
-			pp++;
+			callback->OnConstructionLoadChanged();
 		}
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
    }
 
@@ -315,19 +267,13 @@ public:
          return S_OK;
       }
 
-      pT->Lock();
+      //pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for (auto& [id, callback] : this->m_Callbacks)
 		{
-			if (*pp != nullptr)
-			{
-				IBridgeDescriptionEventSink* pEventSink = reinterpret_cast<IBridgeDescriptionEventSink*>(*pp);
-				ret = pEventSink->OnLiveLoadChanged();
-			}
-			pp++;
+			callback->OnLiveLoadChanged();
 		}
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
 	}
 
@@ -342,19 +288,13 @@ public:
          return S_OK;
       }
 
-      pT->Lock();
+      //pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for (auto& [id, callback] : this->m_Callbacks)
 		{
-			if (*pp != nullptr)
-			{
-				IBridgeDescriptionEventSink* pEventSink = reinterpret_cast<IBridgeDescriptionEventSink*>(*pp);
-				ret = pEventSink->OnLiveLoadNameChanged(strOldName,strNewName);
-			}
-			pp++;
+			callback->OnLiveLoadNameChanged(strOldName,strNewName);
 		}
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
 	}
 };
@@ -363,7 +303,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 // CProxyISpecificationEventSink
 template <class T>
-class CProxyISpecificationEventSink : public IConnectionPointImpl<T, &IID_ISpecificationEventSink, CComDynamicUnkArray>
+class CProxyISpecificationEventSink : public WBFL::EAF::EventCallbackManager<ISpecificationEventSink>
 {
 public:
 
@@ -379,19 +319,13 @@ public:
          return S_OK;
       }
 
-		pT->Lock();
+		//pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for (auto& [id, callback] : this->m_Callbacks)
 		{
-			if (*pp != nullptr)
-			{
-				ISpecificationEventSink* pISpecificationEventSink = reinterpret_cast<ISpecificationEventSink*>(*pp);
-				ret = pISpecificationEventSink->OnSpecificationChanged();
-			}
-			pp++;
+			callback->OnSpecificationChanged();
 		}
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
 	}
 
@@ -405,19 +339,13 @@ public:
          return S_OK;
       }
 
-      pT->Lock();
+      //pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for (auto& [id, callback] : this->m_Callbacks)
 		{
-			if (*pp != nullptr)
-			{
-				ISpecificationEventSink* pISpecificationEventSink = reinterpret_cast<ISpecificationEventSink*>(*pp);
-				ret = pISpecificationEventSink->OnAnalysisTypeChanged();
-			}
-			pp++;
+			callback->OnAnalysisTypeChanged();
 		}
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
 	}
 };
@@ -426,7 +354,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 // CProxyIRatingSpecificationEventSink
 template <class T>
-class CProxyIRatingSpecificationEventSink : public IConnectionPointImpl<T, &IID_IRatingSpecificationEventSink, CComDynamicUnkArray>
+class CProxyIRatingSpecificationEventSink : public WBFL::EAF::EventCallbackManager<IRatingSpecificationEventSink>
 {
 public:
 
@@ -443,19 +371,13 @@ public:
          return S_OK;
       }
 
-		pT->Lock();
+		//pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for (auto& [id, callback] : this->m_Callbacks)
 		{
-			if (*pp != nullptr)
-			{
-				IRatingSpecificationEventSink* pEventSink = reinterpret_cast<IRatingSpecificationEventSink*>(*pp);
-				ret = pEventSink->OnRatingSpecificationChanged();
-			}
-			pp++;
+			callback->OnRatingSpecificationChanged();
 		}
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
 	}
 };
@@ -463,7 +385,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 // CProxyILibraryConflictEventSink
 template <class T>
-class CProxyILibraryConflictEventSink : public IConnectionPointImpl<T, &IID_ILibraryConflictEventSink, CComDynamicUnkArray>
+class CProxyILibraryConflictEventSink : public WBFL::EAF::EventCallbackManager<ILibraryConflictEventSink>
 {
 public:
 
@@ -479,19 +401,13 @@ public:
          return S_OK;
       }
 
-      pT->Lock();
+      //pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for (auto& [id, callback] : this->m_Callbacks)
 		{
-			if (*pp != nullptr)
-			{
-				ILibraryConflictEventSink* pILibraryConflictEventSink = reinterpret_cast<ILibraryConflictEventSink*>(*pp);
-				ret = pILibraryConflictEventSink->OnLibraryConflictResolved();
-			}
-			pp++;
+			callback->OnLibraryConflictResolved();
 		}
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
 	}
 };
@@ -499,7 +415,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 // CProxyILoadModifiersEventSink
 template <class T>
-class CProxyILoadModifiersEventSink : public IConnectionPointImpl<T, &IID_ILoadModifiersEventSink, CComDynamicUnkArray>
+class CProxyILoadModifiersEventSink : public WBFL::EAF::EventCallbackManager<ILoadModifiersEventSink>
 {
 public:
 
@@ -515,19 +431,13 @@ public:
          return S_OK;
       }
 
-      pT->Lock();
+      //pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for (auto& [id, callback] : this->m_Callbacks)
 		{
-			if (*pp != nullptr)
-			{
-				ILoadModifiersEventSink* pEventSink = reinterpret_cast<ILoadModifiersEventSink*>(*pp);
-				ret = pEventSink->OnLoadModifiersChanged();
-			}
-			pp++;
+			callback->OnLoadModifiersChanged();
 		}
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
 	}
 };
@@ -535,7 +445,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 // CProxyIEventsEventSink
 template <class T>
-class CProxyIEventsEventSink : public IConnectionPointImpl<T, &IID_IEventsSink, CComDynamicUnkArray>
+class CProxyIEventsEventSink : public WBFL::EAF::EventCallbackManager<IEventsSink>
 {
 public:
 
@@ -545,19 +455,13 @@ public:
 	{
 		T* pT = (T*)this;
 
-      pT->Lock();
+      //pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for (auto& [id, callback] : this->m_Callbacks)
 		{
-			if (*pp != nullptr)
-			{
-				IEventsSink* pEventSink = reinterpret_cast<IEventsSink*>(*pp);
-				ret = pEventSink->OnHoldEvents();
-			}
-			pp++;
+			callback->OnHoldEvents();
 		}
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
 	}
 
@@ -565,19 +469,13 @@ public:
 	{
 		T* pT = (T*)this;
 
-      pT->Lock();
+      //pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for (auto& [id, callback] : this->m_Callbacks)
 		{
-			if (*pp != nullptr)
-			{
-				IEventsSink* pEventSink = reinterpret_cast<IEventsSink*>(*pp);
-				ret = pEventSink->OnFirePendingEvents();
-			}
-			pp++;
+			callback->OnFirePendingEvents();
 		}
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
 	}
 
@@ -585,19 +483,13 @@ public:
 	{
 		T* pT = (T*)this;
 
-      pT->Lock();
+      //pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for (auto& [id, callback] : this->m_Callbacks)
 		{
-			if (*pp != nullptr)
-			{
-				IEventsSink* pEventSink = reinterpret_cast<IEventsSink*>(*pp);
-				ret = pEventSink->OnCancelPendingEvents();
-			}
-			pp++;
+			callback->OnCancelPendingEvents();
 		}
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
 	}
 };
@@ -606,7 +498,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 // CProxyILossParametersEventSink
 template <class T>
-class CProxyILossParametersEventSink : public IConnectionPointImpl<T, &IID_ILossParametersEventSink, CComDynamicUnkArray>
+class CProxyILossParametersEventSink : public WBFL::EAF::EventCallbackManager<ILossParametersEventSink>
 {
 public:
 
@@ -622,19 +514,13 @@ public:
          return S_OK;
       }
 
-      pT->Lock();
+      //pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for (auto& [id, callback] : this->m_Callbacks)
 		{
-			if (*pp != nullptr)
-			{
-				ILossParametersEventSink* pEventSink = reinterpret_cast<ILossParametersEventSink*>(*pp);
-				ret = pEventSink->OnLossParametersChanged();
-			}
-			pp++;
+			callback->OnLossParametersChanged();
 		}
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
 	}
 };

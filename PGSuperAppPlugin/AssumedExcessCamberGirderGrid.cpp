@@ -77,9 +77,8 @@ int CAssumedExcessCamberGirderGrid::GetColWidth(ROWCOL nCol)
 void CAssumedExcessCamberGirderGrid::CustomInit()
 {
    // initialize units
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    m_pUnit = &(pDisplayUnits->GetComponentDimUnit());
 
 // Initialize the grid. For CWnd based grids this call is // 

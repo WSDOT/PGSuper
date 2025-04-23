@@ -154,9 +154,8 @@ void CActivityGrid::CustomInit(BOOL bReadOnly)
 
 void CActivityGrid::Refresh()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2_NOCHECK(pBroker,IDocumentType,pDocType);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2_NOCHECK(pBroker,IDocumentType,pDocType);
 
    CTimelineEventDlg* pParent = (CTimelineEventDlg*)GetParent();
 
@@ -211,7 +210,7 @@ void CActivityGrid::Refresh()
 
    if (pParent->m_pTimelineEvent->GetCastDeckActivity().IsEnabled())
    {
-      GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+      EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
       pgsTypes::SupportedDeckType deckType = pIBridgeDesc->GetDeckDescription()->GetDeckType();
       CString strName(GetCastDeckEventName(deckType));
       AddActivity(strName, CAST_DECK);
@@ -329,9 +328,8 @@ void CActivityGrid::OnClickedButtonRowCol(ROWCOL nRow,ROWCOL nCol)
    }
    else if ( (ActivityKeyType)style.GetItemDataPtr() == CAST_DECK )
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+      auto pBroker = EAFGetBroker();
+      EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
       pgsTypes::SupportedDeckType deckType = pIBridgeDesc->GetDeckDescription()->GetDeckType();
 
       if (deckType == pgsTypes::sdtNonstructuralOverlay)

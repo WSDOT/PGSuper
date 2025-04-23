@@ -84,9 +84,8 @@ void CDrawDeckRegionControl::OnPaint()
    SpanIndexType nSpans = pBridgeDesc->GetSpanCount();
    PierIndexType nPiers = pBridgeDesc->GetPierCount();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
 
    CComPtr<IPoint2d> pntLeft, pntBridge, pntRight;
    CComPtr<IPoint2d> rotation_center, end_point;

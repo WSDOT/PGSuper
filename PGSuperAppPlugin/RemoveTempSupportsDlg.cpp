@@ -29,9 +29,9 @@ CRemoveTempSupportsDlg::CRemoveTempSupportsDlg(const CTimelineManager& timelineM
    m_TimelineMgr = timelineMgr;
    m_pBridgeDesc = m_TimelineMgr.GetBridgeDescription();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   pBroker->GetInterface(IID_IEAFDisplayUnits,(IUnknown**)&m_pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   m_pDisplayUnits = pBroker->GetInterface<IEAFDisplayUnits>(IID_IEAFDisplayUnits);
 
    m_EventIndex = eventIdx;
    m_bReadOnly = bReadOnly;
@@ -135,7 +135,7 @@ void CRemoveTempSupportsDlg::FillLists()
       EventIndexType erectEventIdx, removeEventIdx;
       m_TimelineMgr.GetTempSupportEvents(tsID,&erectEventIdx,&removeEventIdx);
 
-      CString label( GetLabel(pTS,m_pDisplayUnits) );
+      CString label( GetLabel(pTS,m_pDisplayUnits.get()) );
 
       if ( removeEventIdx == m_EventIndex )
       {

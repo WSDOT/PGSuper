@@ -163,11 +163,11 @@ void CMultiGirderSelectGrid::CustomInit(const GroupGirderOnCollection& groupGird
 
    GroupIndexType nGroups = groupGirderCollection.size();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
 #if defined _DEBUG
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    ATLASSERT(pBridge->GetGirderGroupCount() == nGroups);
 #endif
 
@@ -207,7 +207,7 @@ void CMultiGirderSelectGrid::CustomInit(const GroupGirderOnCollection& groupGird
 		);
 
    // top row labels
-   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
    bool bIsPGSuper = pDocType->IsPGSuperDocument();
 
    for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)

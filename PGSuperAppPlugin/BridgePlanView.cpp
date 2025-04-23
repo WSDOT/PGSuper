@@ -517,9 +517,9 @@ void CBridgePlanView::BuildDisplayLists()
    m_pDispMgr->CreateDisplayList(SPAN_DISPLAY_LIST);
    m_pDispMgr->CreateDisplayList(NORTH_ARROW_DISPLAY_LIST);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    m_EndGroupIdx = nGroups - 1;
 
@@ -561,9 +561,9 @@ void CBridgePlanView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
         (lHint == HINT_GIRDERCHANGED)
       )
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IBridge,pBridge);
+      
+      auto pBroker = EAFGetBroker();
+      EAF_GET_IFACE2(pBroker,IBridge,pBridge);
 
       if ( lHint == HINT_BRIDGECHANGED )
       {
@@ -640,15 +640,15 @@ void CBridgePlanView::UpdateSegmentTooltips()
       return;
    }
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IMaterials,pMaterial);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   GET_IFACE2(pBroker, IGirder, pIGirder);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IMaterials,pMaterial);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IGirder, pIGirder);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
@@ -849,14 +849,14 @@ void CBridgePlanView::UpdateSegmentTooltips()
 
 void CBridgePlanView::UpdateClosureJointTooltips()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    // only used if there is a closure joint
-   GET_IFACE2_NOCHECK(pBroker,IMaterials,pMaterial);
-   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2_NOCHECK(pBroker,IMaterials,pMaterial);
+   EAF_GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
@@ -944,10 +944,10 @@ void CBridgePlanView::UpdateSectionCut(std::shared_ptr<WBFL::DManip::iPointDispl
 {
    Float64 station = m_pFrame->GetCurrentCutLocation();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
    
-   GET_IFACE2(pBroker,IRoadway,pRoadway);
+   auto pBroker = EAFGetBroker();
+   
+   EAF_GET_IFACE2(pBroker,IRoadway,pRoadway);
    CComPtr<IDirection> bearing;
    pRoadway->GetBearing(station,&bearing);
 
@@ -1037,9 +1037,9 @@ void CBridgePlanView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
          // otherwise select a pier
          if ( selObjs.size() == 0 )
          {
-            CComPtr<IBroker> pBroker;
-            EAFGetBroker(&pBroker);
-            GET_IFACE2(pBroker,IBridge,pBridge);
+            
+            auto pBroker = EAFGetBroker();
+            EAF_GET_IFACE2(pBroker,IBridge,pBridge);
 
             PierIndexType nPiers = pBridge->GetPierCount();
 
@@ -1079,8 +1079,8 @@ void CBridgePlanView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 BOOL CBridgePlanView::OnMouseWheel(UINT nFlags,short zDelta,CPoint pt)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    auto selObjs = m_pDispMgr->GetSelectedObjects();
    bool bLeftRight = true;
@@ -1121,10 +1121,10 @@ BOOL CBridgePlanView::OnMouseWheel(UINT nFlags,short zDelta,CPoint pt)
 
 void CBridgePlanView::SetModelToWorldSpacingMapping()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker, IBridge, pBridge);
-   GET_IFACE2(pBroker, IRoadway, pAlignment);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IRoadway, pAlignment);
 
    PierIndexType startPierIdx = pBridge->GetGirderGroupStartPier(m_StartGroupIdx);
    PierIndexType endPierIdx = pBridge->GetGirderGroupEndPier(m_EndGroupIdx == ALL_GROUPS ? pBridge->GetPierCount() - 1 : m_EndGroupIdx);
@@ -1222,12 +1222,12 @@ void CBridgePlanView::BuildTitleDisplayObjects()
 
    auto title = WBFL::DManip::ViewTitle::Create();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
 
-   GET_IFACE2(pBroker, IDocumentType, pDocType);
+   EAF_GET_IFACE2(pBroker, IDocumentType, pDocType);
    bool isPGSuper = pDocType->IsPGSuperDocument();
 
    CString strTitle;
@@ -1268,12 +1268,12 @@ void CBridgePlanView::BuildAlignmentDisplayObjects()
 
    display_list->Clear();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
-   GET_IFACE2(pBroker, IRoadway, pRoadway);
-   GET_IFACE2(pBroker, IRoadwayData, pRoadwayData);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IRoadway, pRoadway);
+   EAF_GET_IFACE2(pBroker, IRoadwayData, pRoadwayData);
    bool bIsPGLOffsetFromAlignment = (pRoadwayData->GetRoadwaySectionData().AlignmentPointIdx != pRoadwayData->GetRoadwaySectionData().ProfileGradePointIdx) ? true : false;
 
    // show that part of the alignment from 1/n of the first span length before the start of the bridge
@@ -1458,8 +1458,8 @@ void CBridgePlanView::BuildSegmentDisplayObjects()
    CBridgeModelViewChildFrame* pFrame = GetFrame();
 
    CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
-   CComPtr<IBroker> pBroker;
-   pDoc->GetBroker(&pBroker);
+   
+   auto pBroker = pDoc->GetBroker();
 
    auto display_list = m_pDispMgr->FindDisplayList(SEGMENT_DISPLAY_LIST);
    display_list->Clear();
@@ -1496,10 +1496,10 @@ void CBridgePlanView::BuildSegmentDisplayObjects()
    strategy_girder->SetLineStyle(lsCenterline);
 #endif // _SHOW_CL_GIRDER
 
-   GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
-   GET_IFACE2_NOCHECK(pBroker,IGirder,pIGirder);
+   EAF_GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2_NOCHECK(pBroker,IGirder,pIGirder);
 
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
    GroupIndexType startGroupIdx = (m_StartGroupIdx == ALL_GROUPS ? 0 : m_StartGroupIdx);
@@ -1605,10 +1605,10 @@ void CBridgePlanView::BuildSegmentDisplayObjects()
 void CBridgePlanView::BuildLongitudinalJointDisplayObject()
 {
    CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
-   CComPtr<IBroker> pBroker;
-   pDoc->GetBroker(&pBroker);
+   
+   auto pBroker = pDoc->GetBroker();
 
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    if (!pBridgeDesc->HasLongitudinalJoints() || pBridgeDesc->GetDeckDescription()->TransverseConnectivity == pgsTypes::atcConnectedRelativeDisplacement )
    {
@@ -1618,7 +1618,7 @@ void CBridgePlanView::BuildLongitudinalJointDisplayObject()
    auto display_list = m_pDispMgr->FindDisplayList(JOINT_DISPLAY_LIST);
    display_list->Clear();
 
-   GET_IFACE2_NOCHECK(pBroker, IGirder, pIGirder);
+   EAF_GET_IFACE2_NOCHECK(pBroker, IGirder, pIGirder);
 
    GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
    GroupIndexType firstGroupIdx = (m_StartGroupIdx == ALL_GROUPS ? 0 : m_StartGroupIdx);
@@ -1687,12 +1687,12 @@ void CBridgePlanView::BuildGirderDisplayObjects()
    m_NextGirderID = 0;
    m_GirderIDs.clear();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
-   GET_IFACE2_NOCHECK(pBroker,IGirder,pIGirder);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2_NOCHECK(pBroker,IGirder,pIGirder);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
@@ -1790,8 +1790,8 @@ void CBridgePlanView::BuildPierDisplayObjects()
 {
    CBridgeModelViewChildFrame* pFrame = GetFrame();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    auto display_list = m_pDispMgr->FindDisplayList(PIER_DISPLAY_LIST);
    display_list->Clear();
@@ -1801,12 +1801,12 @@ void CBridgePlanView::BuildPierDisplayObjects()
    CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
    UINT settings = pDoc->GetBridgeEditorSettings();
 
-   GET_IFACE2(pBroker,IRoadway,pAlignment);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   GET_IFACE2(pBroker,IGirder,pGirder);
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(pBroker,IRoadway,pAlignment);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IGirder,pGirder);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
@@ -2253,9 +2253,9 @@ void CBridgePlanView::BuildPierDisplayObjects()
 
 void CBridgePlanView::BuildTemporarySupportDisplayObjects()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    SupportIndexType nTS = pBridgeDesc->GetTemporarySupportCount();
    if ( nTS == 0 )
@@ -2278,12 +2278,12 @@ void CBridgePlanView::BuildTemporarySupportDisplayObjects()
    CComPtr<IDocUnitSystem> docUnitSystem;
    pDoc->GetDocUnitSystem(&docUnitSystem);
 
-   GET_IFACE2_NOCHECK(pBroker,ITempSupport,pTemporarySupport); // only needed if there are temporary supports
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2_NOCHECK(pBroker,IGirder,pGirder);
-   GET_IFACE2_NOCHECK(pBroker,IRoadway,pAlignment);
-   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2_NOCHECK(pBroker,ITempSupport,pTemporarySupport); // only needed if there are temporary supports
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2_NOCHECK(pBroker,IGirder,pGirder);
+   EAF_GET_IFACE2_NOCHECK(pBroker,IRoadway,pAlignment);
+   EAF_GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    GroupIndexType firstGroupIdx = (m_StartGroupIdx == ALL_GROUPS ? 0 : m_StartGroupIdx);
@@ -2568,8 +2568,8 @@ void CBridgePlanView::BuildClosureJointDisplayObjects()
 {
    CBridgeModelViewChildFrame* pFrame = GetFrame();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    auto display_list = m_pDispMgr->FindDisplayList(CLOSURE_JOINT_DISPLAY_LIST);
    display_list->Clear();
@@ -2578,12 +2578,12 @@ void CBridgePlanView::BuildClosureJointDisplayObjects()
    m_ClosureJointIDs.clear();
    m_NextClosureJointID = 0;
 
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    // this are only used if there are closure joints
-   GET_IFACE2_NOCHECK(pBroker,IBridge,pIBridge);
-   GET_IFACE2_NOCHECK(pBroker,IGirder,pIGirder);
-   GET_IFACE2_NOCHECK(pBroker,ITempSupport,pITemporarySupport);
+   EAF_GET_IFACE2_NOCHECK(pBroker,IBridge,pIBridge);
+   EAF_GET_IFACE2_NOCHECK(pBroker,IGirder,pIGirder);
+   EAF_GET_IFACE2_NOCHECK(pBroker,ITempSupport,pITemporarySupport);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
@@ -2730,10 +2730,10 @@ void CBridgePlanView::BuildClosureJointDisplayObjects()
 
 void CBridgePlanView::BuildSpanDisplayObjects()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
    if ( deckType == pgsTypes::sdtNone )
    {
@@ -2800,18 +2800,18 @@ void CBridgePlanView::BuildSpanDisplayObjects()
 
 void CBridgePlanView::BuildSlabDisplayObjects()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    if (pBridge->GetDeckType() == pgsTypes::sdtNone)
    {
       return;
    }
 
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
 
@@ -2920,8 +2920,8 @@ void CBridgePlanView::BuildSlabDisplayObjects()
 
 void CBridgePlanView::BuildSectionCutDisplayObjects()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+  
+   auto pBroker = EAFGetBroker();
 
    auto display_list = m_pDispMgr->FindDisplayList(SECTION_CUT_DISPLAY_LIST);
 
@@ -2938,8 +2938,8 @@ void CBridgePlanView::BuildSectionCutDisplayObjects()
    point_disp->SetToolTipText(_T("Drag me along the alignment to move section cut.\nDouble click to enter the cut station\nPress CTRL + -> to move ahead\nPress CTRL + <- to move back"));
    point_disp->SetTipDisplayTime(TOOLTIP_DURATION);
 
-   GET_IFACE2_NOCHECK(pBroker,IRoadway,pRoadway); // this interface is simply stored in the section_cut_strategy object.. no usage here
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2_NOCHECK(pBroker,IRoadway,pRoadway); // this interface is simply stored in the section_cut_strategy object.. no usage here
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    auto section_cut_strategy = std::dynamic_pointer_cast<iBridgeSectionCutDrawStrategy>(sink);
    section_cut_strategy->Init(m_pFrame, point_disp, pRoadway, pBridge, m_pFrame);
    section_cut_strategy->SetColor(CUT_COLOR);
@@ -2972,8 +2972,8 @@ void CBridgePlanView::BuildSectionCutDisplayObjects()
 
 void CBridgePlanView::BuildNorthArrowDisplayObjects()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    auto display_list = m_pDispMgr->FindDisplayList(NORTH_ARROW_DISPLAY_LIST);
    display_list->Clear();
@@ -2996,18 +2996,18 @@ void CBridgePlanView::BuildDiaphragmDisplayObjects()
 #pragma Reminder("UPDATE: this method assumes diaphragms are between girders")
    // CIP diaphragms can be cast between girders or within a girder (eg, in a U-beam)
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    
    auto display_list = m_pDispMgr->FindDisplayList(DIAPHRAGM_DISPLAY_LIST);
    display_list->Clear();
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
 
    // only used if there are diaphragms
-   GET_IFACE2_NOCHECK(pBroker,IRoadway,pAlignment);
-   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2_NOCHECK(pBroker,IRoadway,pAlignment);
+   EAF_GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    GroupIndexType firstGroupIdx = (m_StartGroupIdx == ALL_GROUPS ? 0 : m_StartGroupIdx);

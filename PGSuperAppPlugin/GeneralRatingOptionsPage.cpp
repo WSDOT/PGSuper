@@ -96,9 +96,9 @@ END_MESSAGE_MAP()
 // CGeneralRatingOptionsPage message handlers
 BOOL CGeneralRatingOptionsPage::OnInitDialog()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,ILossParameters,pLossParams);
    BOOL bEnable = pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? TRUE : FALSE;
    GetDlgItem(IDC_LOAD_RATING_EVENT)->EnableWindow(bEnable);
 

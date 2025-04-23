@@ -112,11 +112,9 @@ BOOL CPGSImportPluginDocTemplateBase::DoOpenDocumentFile(LPCTSTR lpszPathName,BO
 	}
 
    // Hold the UI events (release in CPGSuperDoc::OnCreateFinalize)
-   CComPtr<IBroker> broker;
-   EAFGetBroker(&broker);
-   ATLASSERT(broker != nullptr);
-   GET_IFACE2(broker,IEvents,pEvents);
-   GET_IFACE2(broker,IUIEvents,pUIEvents);
+   auto broker = EAFGetBroker();
+   EAF_GET_IFACE2(broker,IEvents,pEvents);
+   EAF_GET_IFACE2(broker,IUIEvents,pUIEvents);
    pEvents->HoldEvents();
    pUIEvents->HoldEvents();
 
@@ -135,7 +133,7 @@ BOOL CPGSImportPluginDocTemplateBase::DoOpenDocumentFile(LPCTSTR lpszPathName,BO
    CPGSDocBase* pDoc = (CPGSDocBase*)pDocument;
    CComPtr<IDocUnitSystem> docUnitSystem;
    pDoc->GetDocUnitSystem(&docUnitSystem);
-   GET_IFACE2(broker,IEAFDisplayUnits, pDisplayUnits);
+   EAF_GET_IFACE2(broker,IEAFDisplayUnits, pDisplayUnits);
    docUnitSystem->put_UnitMode(IS_US_UNITS(pDisplayUnits) ? umUS : umSI);
 
    // it worked, now bump untitled count (for untitled documents... from MFC for multidoc applications)

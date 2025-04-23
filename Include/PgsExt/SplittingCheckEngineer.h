@@ -31,10 +31,7 @@ class PGSEXTCLASS pgsSplittingCheckEngineer
 {
 public:
    pgsSplittingCheckEngineer();
-   pgsSplittingCheckEngineer(IBroker* pBroker);
    virtual ~pgsSplittingCheckEngineer();
-
-   void SetBroker(IBroker* pBroker);
 
    static LPCTSTR GetCheckName();
 
@@ -43,7 +40,4 @@ public:
    virtual void ReportSpecCheck(rptChapter* pChapter, const pgsSplittingCheckArtifact* pArtifact) const = 0;
    virtual void ReportDetails(rptChapter* pChapter, const pgsSplittingCheckArtifact* pArtifact) const = 0;
    virtual Float64 GetSplittingZoneLength(const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType) const = 0;
-
-protected:
-   CComPtr<IBroker> m_pBroker;
 };

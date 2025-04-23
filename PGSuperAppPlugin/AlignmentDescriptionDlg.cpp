@@ -38,14 +38,14 @@ static char THIS_FILE[] = __FILE__;
 
 IMPLEMENT_DYNAMIC(CAlignmentDescriptionDlg, CPropertySheet)
 
-CAlignmentDescriptionDlg::CAlignmentDescriptionDlg(UINT nIDCaption,IBroker* pBroker, CWnd* pParentWnd, UINT iSelectPage)
+CAlignmentDescriptionDlg::CAlignmentDescriptionDlg(UINT nIDCaption,std::shared_ptr<WBFL::EAF::Broker> pBroker, CWnd* pParentWnd, UINT iSelectPage)
 	:CPropertySheet(nIDCaption, pParentWnd, iSelectPage)
 {
    m_pBroker = pBroker;
    Init();
 }
 
-CAlignmentDescriptionDlg::CAlignmentDescriptionDlg(LPCTSTR pszCaption, IBroker* pBroker,CWnd* pParentWnd, UINT iSelectPage)
+CAlignmentDescriptionDlg::CAlignmentDescriptionDlg(LPCTSTR pszCaption, std::shared_ptr<WBFL::EAF::Broker> pBroker,CWnd* pParentWnd, UINT iSelectPage)
 	:CPropertySheet(pszCaption, pParentWnd, iSelectPage)
 {
    m_pBroker = pBroker;

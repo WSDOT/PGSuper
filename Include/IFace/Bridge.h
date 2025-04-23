@@ -73,8 +73,8 @@ interface IRebarSection;
 interface IRebarSectionItem;
 interface IRebarLayout;
 
-interface ISegmentLiftingDesignPointsOfInterest;
-interface ISegmentHaulingDesignPointsOfInterest;
+class ISegmentLiftingDesignPointsOfInterest;
+class ISegmentHaulingDesignPointsOfInterest;
 
 namespace WBFL
 {
@@ -174,8 +174,9 @@ DESCRIPTION
 // {3BB24886-677B-11d2-883A-006097C68A9C}
 DEFINE_GUID(IID_IBridge, 
 0x3bb24886, 0x677b, 0x11d2, 0x88, 0x3a, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
-interface IBridge : IUnknown
+class IBridge
 {
+public:
    ///////////////////////////////////////////////////
    // General Bridge Information
    ///////////////////////////////////////////////////
@@ -724,8 +725,9 @@ DESCRIPTION
 // {B6904E95-0758-4fe3-A213-BFC0F3203F11}
 DEFINE_GUID(IID_IMaterials, 
 0xb6904e95, 0x758, 0x4fe3, 0xa2, 0x13, 0xbf, 0xc0, 0xf3, 0x20, 0x3f, 0x11);
-interface IMaterials : IUnknown
+class IMaterials
 {
+public:
    // Returns the concrete strength at an age of 28 days
    virtual Float64 GetSegmentFc28(const CSegmentKey& segmentKey) const = 0;
    virtual Float64 GetClosureJointFc28(const CSegmentKey& closureKey) const = 0;
@@ -990,8 +992,9 @@ DESCRIPTION
 // {C2EE02C6-1785-11d3-AD6C-00105A9AF985}
 DEFINE_GUID(IID_ILongRebarGeometry, 
 0xc2ee02c6, 0x1785, 0x11d3, 0xad, 0x6c, 0x0, 0x10, 0x5a, 0x9a, 0xf9, 0x85);
-interface ILongRebarGeometry : IUnknown
+class ILongRebarGeometry
 {
+public:
    virtual void GetRebars(const pgsPointOfInterest& poi,IRebarSection** rebarSection) const = 0;
    virtual Float64 GetAsBottomHalf(const pgsPointOfInterest& poi,bool bDevAdjust) const = 0; // Fig. 5.7.3.4.2-3 (pre2017: 5.8.3.4.2-3)
    virtual Float64 GetAsTopHalf(const pgsPointOfInterest& poi,bool bDevAdjust) const = 0; // Fig. 5.7.3.4.2-3
@@ -1049,8 +1052,9 @@ DESCRIPTION
 // {1FFE79BE-9545-11d2-AC7B-00105A9AF985}
 DEFINE_GUID(IID_IStirrupGeometry, 
 0x1ffe79be, 0x9545, 0x11d2, 0xac, 0x7b, 0x0, 0x10, 0x5a, 0x9a, 0xf9, 0x85);
-interface IStirrupGeometry : IUnknown
+class IStirrupGeometry
 {
+public:
    // Primary bar zones
    virtual bool AreStirrupZonesSymmetrical(const CSegmentKey& segmentKey) const = 0;
 
@@ -1120,8 +1124,9 @@ enum DevelopmentAdjustmentType {dlaNone, dlaApproximate, dlaAccurate};
 // {99B7A322-67A8-11d2-883A-006097C68A9C}
 DEFINE_GUID(IID_IStrandGeometry, 
 0x99b7a322, 0x67a8, 0x11d2, 0x88, 0x3a, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
-interface IStrandGeometry : IUnknown
+class IStrandGeometry
 {
+public:
    // Returns the centroid of the prestressing steel in Girder Section Coordinates (0,0 at top CL of girder)
    virtual WBFL::Geometry::Point2d GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bIncTemp, const GDRCONFIG* pConfig=nullptr) const = 0;
    virtual WBFL::Geometry::Point2d GetStrandCG(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, const GDRCONFIG* pConfig=nullptr) const = 0;
@@ -1347,8 +1352,9 @@ DESCRIPTION
 // {28D53414-E8FD-4b53-A9B7-B395EB1E11E7}
 DEFINE_GUID(IID_ISectionProperties, 
 0x28d53414, 0xe8fd, 0x4b53, 0xa9, 0xb7, 0xb3, 0x95, 0xeb, 0x1e, 0x11, 0xe7);
-interface ISectionProperties : IUnknown
+class ISectionProperties
 {
+public:
    // returns the current section properties mode
    virtual pgsTypes::SectionPropertyMode GetSectionPropertiesMode() const = 0;
 
@@ -1470,8 +1476,9 @@ DESCRIPTION
 // {B0BFEC24-7355-46d7-B552-5A177BB20EEE}
 DEFINE_GUID(IID_IShapes, 
 0xb0bfec24, 0x7355, 0x46d7, 0xb5, 0x52, 0x5a, 0x17, 0x7b, 0xb2, 0xe, 0xee);
-interface IShapes : public IUnknown
+class IShapes
 {
+public:
    // returns the raw shape of the segment. Indices are locations for main girder shape and slab in the composite shape
    virtual void GetSegmentShape(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,bool bOrient,pgsTypes::SectionCoordinateType coordinateType,IShape** ppShape, IndexType* pGirderIndex=nullptr, IndexType* pSlabIndex=nullptr) const = 0;
 
@@ -1504,8 +1511,9 @@ DESCRIPTION
 // {8EAC1B80-43B6-450b-B73C-4F55FC8681F6}
 DEFINE_GUID(IID_IBarriers, 
 0x8eac1b80, 0x43b6, 0x450b, 0xb7, 0x3c, 0x4f, 0x55, 0xfc, 0x86, 0x81, 0xf6);
-interface IBarriers : public IUnknown
+class IBarriers
 {
+public:
    // Traffic Barrier Properties
    virtual Float64 GetAtb(pgsTypes::TrafficBarrierOrientation orientation) const = 0;
    virtual Float64 GetItb(pgsTypes::TrafficBarrierOrientation orientation) const = 0;
@@ -1541,8 +1549,9 @@ DESCRIPTION
 // {B5BC8CBA-352D-4660-95AE-C8D43D5176A8}
 DEFINE_GUID(IID_IUserDefinedLoads, 
 0xb5bc8cba, 0x352d, 0x4660, 0x95, 0xae, 0xc8, 0xd4, 0x3d, 0x51, 0x76, 0xa8);
-interface IUserDefinedLoads : IUnknown 
+class IUserDefinedLoads
 {
+public:
    enum UserDefinedLoadCase {userDC, userDW, userLL_IM};
 
    // structs to define loads. locations are in system units (no fractional)
@@ -1610,8 +1619,9 @@ DESCRIPTION
 DEFINE_GUID(IID_ITempSupport, 
 0xa6722c82, 0x2796, 0x4a4b, 0x99, 0x9e, 0xe3, 0x4c, 0x6f, 0x1a, 0x2f, 0xee);
 
-interface ITempSupport : public IUnknown
+class ITempSupport
 {
+public:
    virtual void GetControlPoints(SupportIndexType tsIdx,pgsTypes::PlanCoordinateType pcType,IPoint2d** ppLeft,IPoint2d** ppAlignment_pt,IPoint2d** ppBridge_pt,IPoint2d** ppRight) const = 0;
    virtual void GetDirection(SupportIndexType tsIdx,IDirection** ppDirection) const = 0;
    virtual void GetSkew(SupportIndexType tsIdx,IAngle** ppAngle) const = 0;
@@ -1628,8 +1638,9 @@ DESCRIPTION
 // {7B03736C-E8AD-49b9-BF5C-D5F6E61B50D5}
 DEFINE_GUID(IID_IGirder, 
 0x7b03736c, 0xe8ad, 0x49b9, 0xbf, 0x5c, 0xd5, 0xf6, 0xe6, 0x1b, 0x50, 0xd5);
-interface IGirder : public IUnknown
+class IGirder
 {
+public:
    // Returns true if the segment is prismatic in the specified interval
    virtual bool    IsPrismatic(IntervalIndexType intervalIdx,const CSegmentKey& segmentKey) const = 0;
 
@@ -1883,8 +1894,9 @@ DESCRIPTION
 // {209DA239-91BD-464c-895F-D1398A48125C}
 DEFINE_GUID(IID_IGirderTendonGeometry, 
 0x209da239, 0x91bd, 0x464c, 0x89, 0x5f, 0xd1, 0x39, 0x8a, 0x48, 0x12, 0x5c);
-interface IGirderTendonGeometry : public IUnknown
+class IGirderTendonGeometry
 {
+public:
    // returns the number of ducts in a girder
    virtual DuctIndexType GetDuctCount(const CGirderKey& girderKey) const = 0;
 
@@ -1985,8 +1997,9 @@ Interface for obtaining information about precast segment ducts and tendons
 DEFINE_GUID(IID_ISegmentTendonGeometry,
    0xf0a93444, 0xf4d5, 0x402e, 0xa8, 0xe4, 0xe6, 0xa8, 0x20, 0x50, 0xb4, 0xb7);
 
-interface ISegmentTendonGeometry : public IUnknown
+class ISegmentTendonGeometry
 {
+public:
    // returns the number of ducts in a segment
    virtual DuctIndexType GetDuctCount(const CSegmentKey& segmentKey) const = 0;
 

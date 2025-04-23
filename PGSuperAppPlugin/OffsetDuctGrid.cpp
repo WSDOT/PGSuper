@@ -61,9 +61,9 @@ void COffsetDuctGrid::CustomInit(COffsetDuctGridCallback* pCallback)
 {
    m_pCallback = pCallback;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // Initialize the grid. For CWnd based grids this call is // 
    // essential. For view based grids this initialization is done 
@@ -134,9 +134,9 @@ void COffsetDuctGrid::CustomInit(COffsetDuctGridCallback* pCallback)
 
 COffsetDuctGeometry COffsetDuctGrid::GetData()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    COffsetDuctGeometry ductGeometry;
    ROWCOL nRows = GetRowCount();
@@ -197,9 +197,9 @@ void COffsetDuctGrid::AddPoint()
 
 void COffsetDuctGrid::FillRow(ROWCOL row,Float64 distance,Float64 offset)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CString strDist;
    strDist.Format(_T("%s"),FormatDimension(distance,pDisplayUnits->GetSpanLengthUnit(),false));

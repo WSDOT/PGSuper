@@ -37,7 +37,7 @@ class CSelectGirderDlg : public CDialog
 {
 // Construction
 public:
-	CSelectGirderDlg(	IBroker* pBroker, CWnd* pParent = nullptr);   // standard constructor
+	CSelectGirderDlg(	std::shared_ptr<WBFL::EAF::Broker> pBroker, CWnd* pParent = nullptr);   // standard constructor
 
 // Dialog Data
 	//{{AFX_DATA(CSelectGirderDlg)
@@ -66,7 +66,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
-	IBroker* m_pBroker;
+	std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
 };
 
 //{{AFX_INSERT_LOCATION}}

@@ -126,17 +126,17 @@ void CDrawStrandControl::CustomInit(const CPrecastSegmentData* pSegment,const CS
    // Get the end view cross section shapes of the segment
    const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    PoiList vPoi;
    pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE, &vPoi);
    ATLASSERT(vPoi.size() == 2);
    const pgsPointOfInterest& startPoi(vPoi.front());
    const pgsPointOfInterest& endPoi(vPoi.back());
 
-   GET_IFACE2(pBroker, IShapes, pShapes);
+   EAF_GET_IFACE2(pBroker, IShapes, pShapes);
    pShapes->GetSegmentShape(pSegment,startPoi.GetDistFromStart(), pgsTypes::sbRight, &m_Shape[pgsTypes::metStart]);
    pShapes->GetSegmentShape(pSegment,endPoi.GetDistFromStart(), pgsTypes::sbLeft, &m_Shape[pgsTypes::metEnd]);
 
@@ -157,7 +157,7 @@ void CDrawStrandControl::CustomInit(const CPrecastSegmentData* pSegment,const CS
    CreateSegmentProfiles(&m_Profile,&m_BottomFlangeProfile);
 
    // capture segment length for use later
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    m_SegmentLength = pBridge->GetSegmentLength(segmentKey);
 }
 
@@ -340,9 +340,9 @@ void CDrawStrandControl::CreateSegmentProfiles(IShape** ppShape,IPoint2dCollecti
    const CSplicedGirderData* pSplicedGirder = m_pSegment->GetGirder();
    CSegmentKey segmentKey(m_pSegment->GetSegmentKey());
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IGirder,pGirder);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IGirder,pGirder);
    pGirder->GetSegmentProfile(segmentKey,pSplicedGirder,false/*don't include closure joint*/,ppShape);
    pGirder->GetSegmentBottomFlangeProfile(segmentKey,pSplicedGirder,false/*don't include closure joint*/,ppPoints);
 }
@@ -396,11 +396,11 @@ void CDrawStrandControl::Draw(CDC* pDC, WBFL::Graphing::PointMapper& mapper,IPoi
 
 void CDrawStrandControl::DrawStrands(CDC* pDC, WBFL::Graphing::PointMapper& leftMapper, WBFL::Graphing::PointMapper& centerMapper, WBFL::Graphing::PointMapper& rightMapper)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2_NOCHECK(pBroker,IGirder,pGirder);
-   GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
-   GET_IFACE2_NOCHECK(pBroker, IStrandGeometry, pStrandGeom);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2_NOCHECK(pBroker,IGirder,pGirder);
+   EAF_GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2_NOCHECK(pBroker, IStrandGeometry, pStrandGeom);
 
    CPen strandPen(PS_SOLID,1,STRAND_BORDER_COLOR);
    CBrush strandBrush(STRAND_FILL_COLOR);
@@ -610,19 +610,19 @@ void CDrawStrandControl::DrawStrands(CDC* pDC, WBFL::Graphing::PointMapper& left
 
 void CDrawStrandControl::DrawTendons(CDC* pDC, WBFL::Graphing::PointMapper& leftMapper, WBFL::Graphing::PointMapper& centerMapper, WBFL::Graphing::PointMapper& rightMapper)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker, IGirder, pGirder);
-   GET_IFACE2_NOCHECK(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker, IGirder, pGirder);
+   EAF_GET_IFACE2_NOCHECK(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
 
    const CSegmentKey& segmentKey = m_pSegment->GetSegmentKey();
    
-   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    PoiList vPoi;
    pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_10L | POI_RELEASED_SEGMENT, &vPoi);
    ATLASSERT(vPoi.size() == 2);
 
-   GET_IFACE2(pBroker, ILibrary, pLibrary);
+   EAF_GET_IFACE2(pBroker, ILibrary, pLibrary);
    DuctLibrary* pDuctLibrary = pLibrary->GetDuctLibrary();
 
 

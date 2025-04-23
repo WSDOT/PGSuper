@@ -31,6 +31,6 @@ interface IBroker;
 class iMomentLoadDrawStrategy
 {
 public:
-  virtual void Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, IBroker* pBroker, CMomentLoadData load, IndexType loadIndex, 
+  virtual void Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, std::shared_ptr<WBFL::EAF::Broker> pBroker, CMomentLoadData load, IndexType loadIndex, 
                         Float64 spanLength, Float64 maxMagnitude, COLORREF color) = 0;
 };

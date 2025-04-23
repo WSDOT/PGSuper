@@ -229,8 +229,7 @@ void CHaunchDirectSegmentGrid::BuildGridAndHeader()
 
 void CHaunchDirectSegmentGrid::FillGrid()
 {
-   CComPtr<IBroker> pBroker;
-   ::EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    CEAFDocument* pDoc = EAFGetDocument();
    BOOL bIsPGSuper = pDoc->IsKindOf(RUNTIME_CLASS(CPGSuperDoc));

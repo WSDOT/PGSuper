@@ -181,7 +181,7 @@ BOOL CLiveLoadDistFactorsDlg::OnInitDialog()
 {
    m_LldfTabWnd.SubclassDlgItem(IDC_LLDF_TABW, this);
 
-   GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE(IBridge,pBridge);
 
    // Init Girder grids
    SpanIndexType nspans = m_BridgeDesc.GetSpanCount();
@@ -330,11 +330,11 @@ void CLiveLoadDistFactorsDlg::OnBnClickedLldfFillButton()
       else
       {
          // Computed either by lever rule or LRFD
-         GET_IFACE(IBridgeDescription,pIBridgeDesc);
-         GET_IFACE(ILiveLoadDistributionFactors,pLLDF);
-         GET_IFACE_NOCHECK(ILiveLoads,pLiveLoads);
-         GET_IFACE(IProgress,pProgress);
-         GET_IFACE(IEvents, pEvents);
+         EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+         EAF_GET_IFACE(ILiveLoadDistributionFactors,pLLDF);
+         EAF_GET_IFACE_NOCHECK(ILiveLoads,pLiveLoads);
+         EAF_GET_IFACE(IProgress,pProgress);
+         EAF_GET_IFACE(IEvents, pEvents);
 
          pEvents->HoldEvents(); // don't fire any changed events until all changes are done
 

@@ -207,9 +207,9 @@ bool CPierDisplayObjectEvents::OnContextMenu(std::shared_ptr<WBFL::DManip::iDisp
       auto pMenu = WBFL::EAF::Menu::CreateContextMenu(pDoc->GetPluginCommandManager());
       pMenu->LoadMenu(IDR_SELECTED_PIER_CONTEXT,nullptr);
 
-      CComPtr<IBroker> pBroker;
-      pDoc->GetBroker(&pBroker);
-      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+      
+      auto pBroker = pDoc->GetBroker();
+      EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
       const CPierData2* pPier = pBridgeDesc->GetPier(m_PierIdx);
 

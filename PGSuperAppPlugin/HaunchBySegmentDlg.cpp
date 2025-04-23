@@ -55,9 +55,9 @@ CHaunchBySegmentDlg::~CHaunchBySegmentDlg()
 void CHaunchBySegmentDlg::DoDataExchange(CDataExchange* pDX)
 {
    CDialog::DoDataExchange(pDX);
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker, IDocumentType, pDocType);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker, IDocumentType, pDocType);
    if (pDocType->IsPGSuperDocument())
    {
       if (FALSE == m_pGrid->UpdateData(pDX->m_bSaveAndValidate))
@@ -86,9 +86,9 @@ END_MESSAGE_MAP()
 
 BOOL CHaunchBySegmentDlg::OnInitDialog()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker, IDocumentType, pDocType);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker, IDocumentType, pDocType);
    if (pDocType->IsPGSuperDocument())
    {
       m_pGrid = new CHaunchSegmentGrid;

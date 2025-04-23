@@ -440,9 +440,8 @@ pgsTypes::TTSUsage pgsSegmentDesignArtifact::GetTemporaryStrandUsage() const
 
 GDRCONFIG pgsSegmentDesignArtifact::GetSegmentConfiguration() const
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    GDRCONFIG config;
    config.SegmentKey = m_SegmentKey;
@@ -518,9 +517,8 @@ GDRCONFIG pgsSegmentDesignArtifact::GetSegmentConfiguration() const
 
 CPrecastSegmentData pgsSegmentDesignArtifact::GetSegmentData() const
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    CPrecastSegmentData segmentData = *(pIBridgeDesc->GetPrecastSegmentData(m_SegmentKey));
 
    if (GetDesignOptions().doDesignForFlexure != dtNoDesign)
@@ -683,9 +681,8 @@ void pgsSegmentDesignArtifact::ConcreteStrengthDesignState::SetRequiredAdditiona
 bool pgsSegmentDesignArtifact::ConcreteStrengthDesignState::GetRequiredAdditionalRebar() const
 {
 #if defined _DEBUG
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    ATLASSERT(m_IntervalIdx <= pIntervals->GetHaulSegmentInterval(m_SegmentKey));
 #endif
    return m_RequiredAdditionalRebar;
@@ -693,9 +690,8 @@ bool pgsSegmentDesignArtifact::ConcreteStrengthDesignState::GetRequiredAdditiona
 
 std::_tstring pgsSegmentDesignArtifact::ConcreteStrengthDesignState::AsString() const
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    std::_tstring strDesc = pIntervals->GetDescription(m_IntervalIdx);
 
    if (m_MinimumControls)
@@ -884,16 +880,16 @@ void pgsSegmentDesignArtifact::Init()
 //======================== INQUERY    =======================================
 
 
-void pgsSegmentDesignArtifact::ModSegmentDataForFlexureDesign(IBroker* pBroker, CPrecastSegmentData* pSegmentData) const
+void pgsSegmentDesignArtifact::ModSegmentDataForFlexureDesign(std::shared_ptr<WBFL::EAF::Broker> pBroker, CPrecastSegmentData* pSegmentData) const
 {
-   GET_IFACE2(pBroker,IStrandGeometry, pStrandGeometry );
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IStrandGeometry, pStrandGeometry );
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(m_SegmentKey.groupIndex);
    const CSplicedGirderData* pGirder = pGroup->GetGirder(m_SegmentKey.girderIndex);
    std::_tstring gdrName = pGirder->GetGirderName();
 
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    Float64 HgStart, HgHp1, HgHp2, HgEnd;
    pStrandGeom->GetHarpedStrandControlHeights(m_SegmentKey,&HgStart,&HgHp1,&HgHp2,&HgEnd);
 
@@ -1117,7 +1113,7 @@ void pgsSegmentDesignArtifact::ModSegmentDataForFlexureDesign(IBroker* pBroker, 
    }
 }
 
-void pgsSegmentDesignArtifact::ModSegmentDataForShearDesign(IBroker* pBroker, CPrecastSegmentData* pSegmentData) const
+void pgsSegmentDesignArtifact::ModSegmentDataForShearDesign(std::shared_ptr<WBFL::EAF::Broker> pBroker, CPrecastSegmentData* pSegmentData) const
 {
    // get the design data
    pSegmentData->ShearData.ShearZones.clear();

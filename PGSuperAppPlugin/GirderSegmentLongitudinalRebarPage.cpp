@@ -110,8 +110,8 @@ void CGirderSegmentLongitudinalRebarPage::DoDataExchange(CDataExchange* pDX)
          }
 
          // make sure bars are inside of girder - use shape symmetry
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
+         
+         auto pBroker = EAFGetBroker();
          for ( int i = 0; i < 4; i++ )
          {
             pgsTypes::SegmentZoneType zone = (pgsTypes::SegmentZoneType)i;

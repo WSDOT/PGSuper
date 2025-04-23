@@ -74,9 +74,9 @@ void CSpanGirderLayoutPage::DoDataExchange(CDataExchange* pDX)
 
    CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    DDX_Control(pDX, IDC_NUMGDR_SPIN,         m_NumGdrSpinner);
    DDX_Control(pDX, IDC_GDR_SPC_TYPE_COMBO,  m_cbGirderSpacingType);
@@ -151,7 +151,7 @@ void CSpanGirderLayoutPage::DoDataExchange(CDataExchange* pDX)
             vGirderNames.push_back(pGirder->GetGirderName());
          }
 
-         GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+         EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
          if ( !pIBridgeDesc->AreGirdersCompatible(pParent->m_BridgeDesc,vGirderNames))
          {
             AfxMessageBox(_T("Girders do not have compatible dimensions."));
@@ -228,9 +228,8 @@ void CSpanGirderLayoutPage::GetPierSkewAngles(Float64& skew1,Float64& skew2)
    const CPierData2* pPrevPier = pParent->m_pSpanData->GetPrevPier();
    const CPierData2* pNextPier = pParent->m_pSpanData->GetNextPier();
 
-   CComPtr<IBroker> broker;
-   EAFGetBroker(&broker);
-   GET_IFACE2(broker,IBridge,pBridge);
+   auto broker = EAFGetBroker();
+   EAF_GET_IFACE2(broker,IBridge,pBridge);
 
    Float64 skew_angle_1;
    pBridge->GetSkewAngle(pPrevPier->GetStation(),pPrevPier->GetOrientation(),&skew_angle_1);
@@ -610,9 +609,8 @@ void CSpanGirderLayoutPage::OnChangeSameGirderSpacing()
       {
          // there is more than one unique girder spacing... which one do we want to use
          // for the entire bridge???
-         CComPtr<IBroker> broker;
-         EAFGetBroker(&broker);
-         GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
+         auto broker = EAFGetBroker();
+         EAF_GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
 
          CResolveGirderSpacingDlg dlg;
          CString strItems;
@@ -713,9 +711,8 @@ void CSpanGirderLayoutPage::OnChangeSameGirderSpacing()
       if (1 < topWidths.size())
       {
          // there is more than one top widths... which one do we want to use for the entire bridge?
-         CComPtr<IBroker> broker;
-         EAFGetBroker(&broker);
-         GET_IFACE2(broker, IEAFDisplayUnits, pDisplayUnits);
+         auto broker = EAFGetBroker();
+         EAF_GET_IFACE2(broker, IEAFDisplayUnits, pDisplayUnits);
 
          CComPtr<IBeamFactory> factory;
          GetBeamFactory(&factory);

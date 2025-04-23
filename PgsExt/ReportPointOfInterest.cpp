@@ -40,7 +40,7 @@ rptPointOfInterest::rptPointOfInterest(const WBFL::Units::Length* pUnitOfMeasure
                                        bool bShowUnitTag) :
 rptLengthUnitValue(pUnitOfMeasure,zeroTolerance,bShowUnitTag),m_bPrefixAttributes(true),m_bIncludeSpanAndGirder(false)
 {
-   EAFGetBroker(&m_pBroker);
+   m_pBroker = EAFGetBroker();
 }
 
 rptPointOfInterest::rptPointOfInterest(const rptPointOfInterest& rOther) :
@@ -95,30 +95,30 @@ rptReportContent& rptPointOfInterest::SetValue(PoiAttributeType reference, const
    }
    else if (m_Reference == POI_STORAGE_SEGMENT)
    {
-      GET_IFACE(IGirder, pGirder);
+      EAF_GET_IFACE(IGirder, pGirder);
       Float64 XsLeft, XsRight;
       pGirder->GetSegmentStorageSupportLocations(m_POI.GetSegmentKey(), &XsLeft, &XsRight);
       locationAdjustment = XsLeft;
    }
    else if (m_Reference == POI_LIFT_SEGMENT)
    {
-      GET_IFACE(ISegmentLifting, pSegmentLifting);
+      EAF_GET_IFACE(ISegmentLifting, pSegmentLifting);
       locationAdjustment = pSegmentLifting->GetLeftLiftingLoopLocation(m_POI.GetSegmentKey());
    }
    else if (m_Reference == POI_HAUL_SEGMENT)
    {
-      GET_IFACE(ISegmentHauling, pSegmentHauling);
+      EAF_GET_IFACE(ISegmentHauling, pSegmentHauling);
       locationAdjustment = pSegmentHauling->GetTrailingOverhang(m_POI.GetSegmentKey());
    }
    else if (m_Reference == POI_ERECTED_SEGMENT)
    {
-      GET_IFACE(IBridge, pBridge);
+      EAF_GET_IFACE(IBridge, pBridge);
       locationAdjustment = pBridge->GetSegmentStartEndDistance(m_POI.GetSegmentKey());
    }
 
    if (m_Reference == POI_SPAN)
    {
-      GET_IFACE(IPointOfInterest, pPoi);
+      EAF_GET_IFACE(IPointOfInterest, pPoi);
       pPoi->ConvertPoiToSpanPoint(m_POI, &m_SpanKey, &m_Xspan);
 
       return rptLengthUnitValue::SetValue(m_Xspan);
@@ -127,12 +127,12 @@ rptReportContent& rptPointOfInterest::SetValue(PoiAttributeType reference, const
    {
       if (m_bIncludeSpanAndGirder)
       {
-         GET_IFACE(IBridge, pBridge);
+         EAF_GET_IFACE(IBridge, pBridge);
          CSegmentKey segmentKey(m_POI.GetSegmentKey());
          segmentKey.segmentIndex = 0;
          locationAdjustment = pBridge->GetSegmentStartEndDistance(segmentKey);
 
-         GET_IFACE(IPointOfInterest, pPoi);
+         EAF_GET_IFACE(IPointOfInterest, pPoi);
          m_Xgl = pPoi->ConvertPoiToGirderlineCoordinate(m_POI);
          return rptLengthUnitValue::SetValue(m_Xgl - locationAdjustment);
       }

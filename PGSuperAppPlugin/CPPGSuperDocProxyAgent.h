@@ -24,7 +24,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // CProxyIProjectPropertiesEventSink
 template <class T>
-class CProxyIExtendUIEventSink : public IConnectionPointImpl<T, &IID_IExtendUIEventSink, CComDynamicUnkArray>
+class CProxyIExtendUIEventSink : public WBFL::EAF::EventCallbackManager<T>
 {
 public:
 
@@ -32,20 +32,17 @@ public:
 public:
 	HRESULT Fire_OnUIHintsReset()
 	{
-		T* pT = (T*)this;
-		pT->Lock();
+		//T* pT = (T*)this;
+		//pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for(auto& [id,callback] : this->m_Callbacks)
 		{
-			if (*pp != nullptr)
+			if (callback != nullptr)
 			{
-				IExtendUIEventSink* pIExtendUIEventSink = reinterpret_cast<IExtendUIEventSink*>(*pp);
-				ret = pIExtendUIEventSink->OnHintsReset();
+				ret = callback->OnHintsReset();
 			}
-			pp++;
 		}
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
 	}
 };

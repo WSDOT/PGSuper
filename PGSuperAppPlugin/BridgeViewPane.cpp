@@ -171,9 +171,9 @@ void CBridgeViewPane::UpdateDrawingArea()
    SetScrollSizes(MM_TEXT, size, CScrollView::sizeDefault, CScrollView::sizeDefault);
 }
 
-void CBridgeViewPane::GetUniformStationingData(IBroker* pBroker, Float64 startStation,Float64 endStation,Float64* pStart, Float64* pEnd, Float64* pStep)
+void CBridgeViewPane::GetUniformStationingData(std::shared_ptr<WBFL::EAF::Broker> pBroker, Float64 startStation,Float64 endStation,Float64* pStart, Float64* pEnd, Float64* pStep)
 {
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
    Float64 station_range = endStation - startStation;
    Float64 station_step = (pDisplayUnits->GetUnitMode() == eafTypes::umUS ? WBFL::Units::ConvertToSysUnits(100.00, WBFL::Units::Measure::Feet) : WBFL::Units::ConvertToSysUnits(100.00, WBFL::Units::Measure::Meter));
    Float64 num_stations = station_range / station_step;

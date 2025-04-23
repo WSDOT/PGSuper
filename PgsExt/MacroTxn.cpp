@@ -34,10 +34,8 @@ static char THIS_FILE[] = __FILE__;
 
 bool pgsMacroTxn::Execute()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-
-   GET_IFACE2(pBroker,IEvents, pEvents);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEvents, pEvents);
 
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);
@@ -49,10 +47,9 @@ bool pgsMacroTxn::Execute()
 
 void pgsMacroTxn::Undo()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IEvents, pEvents);
+   EAF_GET_IFACE2(pBroker,IEvents, pEvents);
 
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);

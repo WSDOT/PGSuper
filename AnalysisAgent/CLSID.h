@@ -22,5 +22,9 @@
 
 #pragma once
 
-DEFINE_GUID(CLSID_AnalysisAgent, 0xDD1ECB24, 0xF46E, 0x4933, 0x8E, 0xE4, 0x1D, 0xC0, 0xBC, 0x67, 0x41, 0x0D);
-struct __declspec(uuid("{DD1ECB24-F46E-4933-8EE4-1DC0BC67410D}")) AnalysisAgent;
+#include <guiddef.h>
+
+//{DD1ECB24-F46E-4933-8EE4-1DC0BC67410D}
+DEFINE_GUID(CLSID_AnalysisAgent, 
+   0xDD1ECB24, 0xF46E, 0x4933, 0x8E, 0xE4, 0x1D, 0xC0, 0xBC, 0x67, 0x41, 0x0D);
+//struct __declspec(uuid("{DD1ECB24-F46E-4933-8EE4-1DC0BC67410D}")) AnalysisAgent;

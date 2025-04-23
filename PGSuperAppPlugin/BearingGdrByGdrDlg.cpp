@@ -60,9 +60,8 @@ BOOL CBearingGdrByGdrDlg::OnInitDialog()
 {
    CDialog::OnInitDialog();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
 
    m_GirderTabWnd.SubclassDlgItem(IDC_BEARING_GRID, this);
 

@@ -40,7 +40,7 @@ CMomentLoadDrawStrategyImpl::CMomentLoadDrawStrategyImpl()
 {
 }
 
-void CMomentLoadDrawStrategyImpl::Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, IBroker* pBroker, CMomentLoadData load,
+void CMomentLoadDrawStrategyImpl::Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, std::shared_ptr<WBFL::EAF::Broker> pBroker, CMomentLoadData load,
                                                  IndexType loadIndex, Float64 spanLength, 
                                                  Float64 maxMagnitude, COLORREF color)
 {
@@ -294,13 +294,13 @@ void CMomentLoadDrawStrategyImpl::OnUnselect(std::shared_ptr<WBFL::DManip::iDisp
 
 void CMomentLoadDrawStrategyImpl::EditLoad()
 {
-   GET_IFACE(IEditByUI, pEditByUI);
+   EAF_GET_IFACE(IEditByUI, pEditByUI);
    pEditByUI->EditMomentLoad(m_LoadIndex);
 }
 
 void CMomentLoadDrawStrategyImpl::DeleteLoad()
 {
-   GET_IFACE(IEditByUI, pEditByUI);
+   EAF_GET_IFACE(IEditByUI, pEditByUI);
    pEditByUI->DeleteMomentLoad(m_LoadIndex);
 
 }

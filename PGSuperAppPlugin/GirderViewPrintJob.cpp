@@ -50,7 +50,7 @@ static char THIS_FILE[]=__FILE__;
 CGirderViewPrintJob::CGirderViewPrintJob(CGirderModelElevationView* pev,
    CGirderModelSectionView* psv,
    CGirderModelChildFrame* pframe,
-   IBroker* pBroker)
+   std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
    ATLASSERT(pev != 0);
    ATLASSERT(psv != 0);
@@ -98,8 +98,8 @@ void CGirderViewPrintJob::OnPrint(CDC* pDC, CPrintInfo* pInfo)
 
    CDocument* pDoc = (CDocument*)(m_pSectionView->GetDocument());
 
-   GET_IFACE(IVersionInfo,pVerInfo);
-   GET_IFACE(IDocumentType,pDocType);
+   EAF_GET_IFACE(IVersionInfo,pVerInfo);
+   EAF_GET_IFACE(IDocumentType,pDocType);
 
    const CGirderKey& girderKey = m_pFrame->GetSelection();
    if ( pDocType->IsPGSuperDocument() )
@@ -165,7 +165,7 @@ void CGirderViewPrintJob::OnPrint(CDC* pDC, CPrintInfo* pInfo)
    pvf.CreatePointFont(m_iFtPrint, m_csFtPrint, pDC);
    CFont* oldfont = pDC->SelectObject(&pvf);
    pDC->SetTextAlign(TA_LEFT|TA_TOP);
-   GET_IFACE(IEventMap,pEventMap);
+   EAF_GET_IFACE(IEventMap,pEventMap);
    CString tstr(pEventMap->GetEventName(m_pFrame->GetEvent()));
    CString topcap = _T("Elevation View (") + tstr + _T(")");
    CSize csiz = pDC->GetTextExtent( topcap );
@@ -191,7 +191,7 @@ void CGirderViewPrintJob::OnPrint(CDC* pDC, CPrintInfo* pInfo)
 
    // label
    // get length unit for labelling
-   GET_IFACE(IEAFDisplayUnits,pdisp_units);
+   EAF_GET_IFACE(IEAFDisplayUnits,pdisp_units);
    const WBFL::Units::LengthData& rlen = pdisp_units->GetSpanLengthUnit();
    WBFL::System::NumericFormatTool nf(rlen.Format, rlen.Width, rlen.Precision);
    Float64 dist = WBFL::Units::ConvertFromSysUnits(m_pFrame->GetCurrentCutLocation(), rlen.UnitOfMeasure);

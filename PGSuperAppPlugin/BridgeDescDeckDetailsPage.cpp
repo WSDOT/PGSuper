@@ -96,9 +96,9 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
    DDX_Control(pDX, IDC_PANEL_DEPTH, m_ctrlPanelDepth);
    DDX_Control(pDX, IDC_PANEL_SUPPORT, m_ctrlPanelSupportWidth);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 	
    CEAFDocument* pDoc = EAFGetDocument();
    
@@ -298,9 +298,9 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
          // AssumedExcessCamber
          if (pParent->m_BridgeDesc.GetHaunchInputDepthType() == pgsTypes::hidACamber && pParent->m_BridgeDesc.GetAssumedExcessCamberType() == pgsTypes::aecBridge)
          {
-            CComPtr<IBroker> pBroker;
-            EAFGetBroker(&pBroker);
-            GET_IFACE2(pBroker,ISpecification,pSpec);
+            
+            auto pBroker = EAFGetBroker();
+            EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
             if (pSpec->IsAssumedExcessCamberInputEnabled(false))
             {
                Float64 assumedExcessCamber;
@@ -368,9 +368,9 @@ void CBridgeDescDeckDetailsPage::DoDataExchange(CDataExchange* pDX)
 
 void CBridgeDescDeckDetailsPage::ExchangeConcreteData(CDataExchange* pDX)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
@@ -448,9 +448,9 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
 
    FillEventList();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,ILossParameters,pLossParams);
    PrestressLossCriteria::LossMethodType lossMethod = pLossParams->GetLossMethod();
    if (lossMethod != PrestressLossCriteria::LossMethodType::TIME_STEP)
    {
@@ -459,7 +459,7 @@ BOOL CBridgeDescDeckDetailsPage::OnInitDialog()
       GetDlgItem(IDC_OVERLAY_EVENT)->EnableWindow(FALSE);
    }
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    if ( pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone)
    {
@@ -690,9 +690,9 @@ void CBridgeDescDeckDetailsPage::UpdateEc()
       CString strFc, strDensity, strK1, strK2;
       m_ctrlFc.GetWindowText(strFc);
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      
+      auto pBroker = EAFGetBroker();
+      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       strDensity.Format(_T("%s"),FormatDimension(pParent->m_BridgeDesc.GetDeckDescription()->Concrete.StrengthDensity,pDisplayUnits->GetDensityUnit(),false));
       strK1.Format(_T("%f"),pParent->m_BridgeDesc.GetDeckDescription()->Concrete.EcK1);
@@ -721,9 +721,9 @@ void CBridgeDescDeckDetailsPage::OnWearingSurfaceTypeChanged()
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
    pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,ILossParameters,pLossParams);
    PrestressLossCriteria::LossMethodType lossMethod = pLossParams->GetLossMethod();
 
    CTimelineManager* pTimelineMgr = pParent->m_BridgeDesc.GetTimelineManager();
@@ -969,9 +969,9 @@ void CBridgeDescDeckDetailsPage::UpdateConcreteParametersToolTip()
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescDlg)) );
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    const WBFL::Units::DensityData& density = pDisplayUnits->GetDensityUnit();
    const WBFL::Units::LengthData&  aggsize = pDisplayUnits->GetComponentDimUnit();
@@ -1078,10 +1078,10 @@ void CBridgeDescDeckDetailsPage::UpdateHaunchAndCamberControls()
    }
    else
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2_NOCHECK(pBroker,ISpecification,pSpec);
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      
+      auto pBroker = EAFGetBroker();
+      EAF_GET_IFACE2_NOCHECK(pBroker,ISpecification,pSpec);
+      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       // Update fillet
       Float64 fillet = pParent->m_BridgeDesc.GetFillet();

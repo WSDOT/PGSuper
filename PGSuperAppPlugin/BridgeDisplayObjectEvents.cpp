@@ -34,7 +34,7 @@
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDisplayObjectEvents
 
-CBridgeDisplayObjectEvents::CBridgeDisplayObjectEvents(IBroker* pBroker, CBridgeModelViewChildFrame* pFrame,std::weak_ptr<WBFL::DManip::iDisplayObject> pDO,CBridgeDisplayObjectEvents::ViewType viewType)
+CBridgeDisplayObjectEvents::CBridgeDisplayObjectEvents(std::shared_ptr<WBFL::EAF::Broker> pBroker, CBridgeModelViewChildFrame* pFrame,std::weak_ptr<WBFL::DManip::iDisplayObject> pDO,CBridgeDisplayObjectEvents::ViewType viewType)
 {
    m_pBroker = pBroker;
    m_pFrame = pFrame;

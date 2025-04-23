@@ -184,9 +184,9 @@ BOOL CSpanGdrDetailsBearingsPage::OnInitDialog()
 
 void CSpanGdrDetailsBearingsPage::DoDataExchange(CDataExchange* pDX)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    DDX_MetaFileStatic(pDX, IDC_BEARING, m_Bearing, _T("BEARINGDIMENSIONS"), _T("Metafile"), EMF_FIT);
 

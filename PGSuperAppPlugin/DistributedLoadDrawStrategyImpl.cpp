@@ -47,7 +47,7 @@ CDistributedLoadDrawStrategyImpl::CDistributedLoadDrawStrategyImpl()
 }
 
 
-void CDistributedLoadDrawStrategyImpl::Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, IBroker* pBroker, CDistributedLoadData load, IndexType loadIndex, 
+void CDistributedLoadDrawStrategyImpl::Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, std::shared_ptr<WBFL::EAF::Broker> pBroker, CDistributedLoadData load, IndexType loadIndex, 
                                                        Float64 loadLength, Float64 spanLength, Float64 maxMagnitude, COLORREF color)
 {
    m_Load = load;
@@ -317,13 +317,13 @@ void CDistributedLoadDrawStrategyImpl::OnUnselect(std::shared_ptr<WBFL::DManip::
 
 void CDistributedLoadDrawStrategyImpl::EditLoad()
 {
-   GET_IFACE(IEditByUI, pEditByUI);
+   EAF_GET_IFACE(IEditByUI, pEditByUI);
    pEditByUI->EditDistributedLoad(m_LoadIndex);
 }
 
 void CDistributedLoadDrawStrategyImpl::DeleteLoad()
 {
-   GET_IFACE(IEditByUI, pEditByUI);
+   EAF_GET_IFACE(IEditByUI, pEditByUI);
    pEditByUI->DeleteDistributedLoad(m_LoadIndex);
 }
 

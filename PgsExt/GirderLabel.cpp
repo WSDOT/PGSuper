@@ -68,9 +68,8 @@ std::_tstring pgsGirderLabel::GetGirderLabel(GirderIndexType gdrIdx)
 
 std::_tstring pgsGirderLabel::GetGirderLabel(const CGirderKey& girderKey, bool forceSpan)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2_NOCHECK(pBroker,IDocumentType,pDocType);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2_NOCHECK(pBroker,IDocumentType,pDocType);
    if ( forceSpan || pDocType->IsPGSuperDocument() )
    {
       std::_tostringstream os;
@@ -103,9 +102,8 @@ std::_tstring pgsGirderLabel::GetGirderLabel(const CGirderKey& girderKey, bool f
 
 std::_tstring pgsGirderLabel::GetSegmentLabel(const CSegmentKey& segmentKey, bool forceSpan)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2_NOCHECK(pBroker,IDocumentType,pDocType);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2_NOCHECK(pBroker,IDocumentType,pDocType);
    if ( forceSpan || pDocType->IsPGSuperDocument() )
    {
       ATLASSERT(segmentKey.segmentIndex == 0);
@@ -123,9 +121,8 @@ std::_tstring pgsGirderLabel::GetSegmentLabel(const CSegmentKey& segmentKey, boo
 
 std::_tstring pgsGirderLabel::GetGroupLabel(GroupIndexType grpIdx, bool forceSpan)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2_NOCHECK(pBroker,IDocumentType,pDocType);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2_NOCHECK(pBroker,IDocumentType,pDocType);
    if ( forceSpan || pDocType->IsPGSuperDocument() )
    {
       std::_tostringstream os;
@@ -389,12 +386,9 @@ CString GetLoadDescription(const CMomentLoadData* pLoad)
 
 CString ConcreteDescription(const CConcreteMaterial& concrete)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   
-   auto broker = EAFGetBroker();
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,ILossParameters,pLossParameters);
+   EAF_GET_IFACE2(pBroker,ILossParameters,pLossParameters);
    PrestressLossCriteria::LossMethodType loss_method = pLossParameters->GetLossMethod();
 
    CString strLabel;
@@ -405,7 +399,7 @@ CString ConcreteDescription(const CConcreteMaterial& concrete)
       {
          if ( concrete.bACIUserParameters )
          {
-            EAF_GET_IFACE2(broker, IEAFDisplayUnits, pDisplayUnits);
+            EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
             strLabel.Format(_T("%s, ACI 209R-92, %s cured, a = %s, Beta = %4.2f"),
                WBFL::LRFD::ConcreteUtil::GetTypeName((WBFL::Materials::ConcreteType)concrete.Type,true).c_str(),

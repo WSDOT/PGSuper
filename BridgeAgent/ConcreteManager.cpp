@@ -38,12 +38,6 @@
 #include <psgLib/ShearCapacityCriteria.h>
 #include <psgLib/LimitStateConcreteStrengthCriteria.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 CConcreteManager::CConcreteManager()
 {
    m_bIsValidated              = false;
@@ -57,16 +51,18 @@ CConcreteManager::~CConcreteManager()
 {
 }
 
-void CConcreteManager::Init(IBroker* pBroker,StatusGroupIDType statusGroupID)
+void CConcreteManager::Init(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID)
 {
    m_pBroker = pBroker;
    m_StatusGroupID = statusGroupID;
 
-   GET_IFACE(IEAFStatusCenter,pStatusCenter);
-   m_scidConcreteStrengthWarning  = pStatusCenter->RegisterCallback(new pgsConcreteStrengthStatusCallback(m_pBroker,eafTypes::statusWarning));
-   m_scidConcreteStrengthError    = pStatusCenter->RegisterCallback(new pgsConcreteStrengthStatusCallback(m_pBroker,eafTypes::statusError));
+   EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
+#pragma Reminder("WORKING HERE - Removing COM")
+   // IEAFStatusCenter, need to refactor so that we aren't using new, but instead using shared_ptr
+   m_scidConcreteStrengthWarning  = pStatusCenter->RegisterCallback(new pgsConcreteStrengthStatusCallback(eafTypes::statusWarning));
+   m_scidConcreteStrengthError    = pStatusCenter->RegisterCallback(new pgsConcreteStrengthStatusCallback(eafTypes::statusError));
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    m_pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 }
 
@@ -84,6 +80,8 @@ void CConcreteManager::Reset()
    m_bIsRailingSystemValidated = false;
    m_bIsDeckValidated          = false;
    m_bIsLongitudinalJointValidated = false;
+
+   m_pBroker = nullptr; // must release broker to break circular reference with the agent
 }
 
 void CConcreteManager::ValidateConcrete() const
@@ -364,7 +362,7 @@ void CConcreteManager::ValidateConcrete() const
    //
    //////////////////////////////////////////////////////////////////////////////
 
-   GET_IFACE_NOCHECK(IEAFStatusCenter,pStatusCenter);
+   EAF_GET_IFACE_NOCHECK(IEAFStatusCenter,pStatusCenter);
 
    // per 5.4.2.1 f'c must exceed 28 MPa (4 ksi)
    bool bSI = WBFL::LRFD::BDSManager::GetUnits() == WBFL::LRFD::BDSManager::Units::SI ? true : false;
@@ -415,8 +413,8 @@ void CConcreteManager::ValidateConcrete() const
    // Check Deck concrete
    if ( pDeck->GetDeckType() != pgsTypes::sdtNone )
    {
-      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-      GET_IFACE(ILimits,pLimits);
+      EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+      EAF_GET_IFACE(ILimits,pLimits);
 
       IndexType regionIdx = 0;
       for (auto& pDeckConcrete : m_pvDeckConcrete)
@@ -543,8 +541,8 @@ void CConcreteManager::ValidateConcrete() const
    pgsTypes::ConcreteType jointConcreteType = m_pLongitudinalJointConcrete ? (pgsTypes::ConcreteType)m_pLongitudinalJointConcrete->GetType() : pgsTypes::Normal;
    if (m_pBridgeDesc->HasStructuralLongitudinalJoints() && !IsUHPC(jointConcreteType))
    {
-      GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
-      GET_IFACE(ILimits, pLimits);
+      EAF_GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
+      EAF_GET_IFACE(ILimits, pLimits);
 
       Float64 time = m_pLongitudinalJointConcrete->GetTimeAtCasting() + m_pLongitudinalJointConcrete->GetCureTime() + 28.0;
       Float64 fc28 = m_pLongitudinalJointConcrete->GetFc(time);
@@ -683,7 +681,7 @@ void CConcreteManager::ValidateSegmentConcrete() const
       return;
    }
 
-   GET_IFACE(ISectionProperties,pSectProp);
+   EAF_GET_IFACE(ISectionProperties,pSectProp);
    
    //////////////////////////////////////////////////////////////////////////////
    //
@@ -757,7 +755,7 @@ void CConcreteManager::ValidateDeckConcrete() const
    {
       if (pDeckConcrete.get() != nullptr)
       {
-         GET_IFACE(ISectionProperties, pSectProp);
+         EAF_GET_IFACE(ISectionProperties, pSectProp);
          Float64 V, S;
          pSectProp->GetDeckVolumeAndSurfaceArea(&V, &S);
          Float64 vsDeck = IsZero(S) ? DBL_MAX : V / S;
@@ -781,7 +779,7 @@ void CConcreteManager::ValidateLongitudinalJointConcrete() const
    if (m_pLongitudinalJointConcrete.get() != nullptr)
    {
 #pragma Reminder("validate longitudinal joint concrete") // how do we get V/S for a joint?
-      //GET_IFACE(ISectionProperties, pSectProp);
+      //EAF_GET_IFACE(ISectionProperties, pSectProp);
       //Float64 S = pSectProp->GetDeckSurfaceArea();
       //Float64 V = pSectProp->GetDeckVolume();
       //Float64 vsJoint = IsZero(S) ? DBL_MAX : V / S;
@@ -803,8 +801,8 @@ void CConcreteManager::ValidateConcreteParameters(std::unique_ptr<WBFL::Material
    ATLASSERT(elementType == pgsConcreteStrengthStatusItem::GirderSegment || elementType == pgsConcreteStrengthStatusItem::ClosureJoint);
 
    // these interfaces not used unless there is a problem
-   GET_IFACE_NOCHECK(IEAFDisplayUnits, pDisplayUnits);
-   GET_IFACE_NOCHECK(IEAFStatusCenter, pStatusCenter);
+   EAF_GET_IFACE_NOCHECK(IEAFDisplayUnits, pDisplayUnits);
+   EAF_GET_IFACE_NOCHECK(IEAFStatusCenter, pStatusCenter);
 
    pgsTypes::ConcreteType concreteType = (pgsTypes::ConcreteType)pConcrete->GetType();
 
@@ -952,7 +950,7 @@ void CConcreteManager::ValidateConcreteParameters(std::unique_ptr<WBFL::Material
    }
    else
    {
-      GET_IFACE(ILimits, pLimits);
+      EAF_GET_IFACE(ILimits, pLimits);
 
       Float64 fcMin, fcMax;
       // per 5.4.2.1 f'c must exceed 28 MPa (4 ksi)
@@ -1114,10 +1112,10 @@ bool CConcreteManager::IsConcreteDensityInRange(Float64 density,pgsTypes::Concre
 
 std::unique_ptr<WBFL::Materials::ConcreteBase> CConcreteManager::CreateConcreteModel(LPCTSTR strName,const CConcreteMaterial& concrete,Float64 timeAtCasting,Float64 cureTime,Float64 ageAtInitialLoading,Float64 stepTime) const
 {
-   GET_IFACE(ILossParameters,pLossParameters);
+   EAF_GET_IFACE(ILossParameters,pLossParameters);
    PrestressLossCriteria::LossMethodType loss_method = pLossParameters->GetLossMethod();
 
-   GET_IFACE(IEnvironment,pEnvironment);
+   EAF_GET_IFACE(IEnvironment,pEnvironment);
    Float64 rh = pEnvironment->GetRelHumidity();
 
    std::unique_ptr<WBFL::Materials::ConcreteBase> pConcrete;
@@ -1289,7 +1287,7 @@ Float64 CConcreteManager::GetSegmentEccK1(const CSegmentKey& segmentKey) const
    Float64 K1 = 1.0;
    if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
-      GET_IFACE(ISegmentData,pSegmentData);
+      EAF_GET_IFACE(ISegmentData,pSegmentData);
       const CGirderMaterial* pMaterial = pSegmentData->GetSegmentMaterial(segmentKey);
       K1 = pMaterial->Concrete.EcK1;
    }
@@ -1302,7 +1300,7 @@ Float64 CConcreteManager::GetSegmentEccK2(const CSegmentKey& segmentKey) const
    Float64 K2 = 1.0;
    if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
-      GET_IFACE(ISegmentData,pSegmentData);
+      EAF_GET_IFACE(ISegmentData,pSegmentData);
       const CGirderMaterial* pMaterial = pSegmentData->GetSegmentMaterial(segmentKey);
       K2 = pMaterial->Concrete.EcK2;
    }
@@ -1315,7 +1313,7 @@ Float64 CConcreteManager::GetSegmentCreepK1(const CSegmentKey& segmentKey) const
    Float64 K1 = 1.0;
    if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
-      GET_IFACE(ISegmentData,pSegmentData);
+      EAF_GET_IFACE(ISegmentData,pSegmentData);
       const CGirderMaterial* pMaterial = pSegmentData->GetSegmentMaterial(segmentKey);
       K1 = pMaterial->Concrete.CreepK1;
    }
@@ -1328,7 +1326,7 @@ Float64 CConcreteManager::GetSegmentCreepK2(const CSegmentKey& segmentKey) const
    Float64 K2 = 1.0;
    if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
-      GET_IFACE(ISegmentData,pSegmentData);
+      EAF_GET_IFACE(ISegmentData,pSegmentData);
       const CGirderMaterial* pMaterial = pSegmentData->GetSegmentMaterial(segmentKey);
       K2 = pMaterial->Concrete.CreepK2;
    }
@@ -1341,7 +1339,7 @@ Float64 CConcreteManager::GetSegmentShrinkageK1(const CSegmentKey& segmentKey) c
    Float64 K1 = 1.0;
    if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
-      GET_IFACE(ISegmentData,pSegmentData);
+      EAF_GET_IFACE(ISegmentData,pSegmentData);
       const CGirderMaterial* pMaterial = pSegmentData->GetSegmentMaterial(segmentKey);
       K1 = pMaterial->Concrete.ShrinkageK1;
    }
@@ -1354,7 +1352,7 @@ Float64 CConcreteManager::GetSegmentShrinkageK2(const CSegmentKey& segmentKey) c
    Float64 K2 = 1.0;
    if ( WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2005Interims <= WBFL::LRFD::BDSManager::GetEdition() )
    {
-      GET_IFACE(ISegmentData,pSegmentData);
+      EAF_GET_IFACE(ISegmentData,pSegmentData);
       const CGirderMaterial* pMaterial = pSegmentData->GetSegmentMaterial(segmentKey);
       K2 = pMaterial->Concrete.ShrinkageK2;
    }
@@ -1922,8 +1920,8 @@ Float64 CConcreteManager::GetFlexureFrCoefficient(pgsTypes::ConcreteType type) c
    if (IsUHPC(type))
       return 0;
 
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
+   EAF_GET_IFACE(ILibrary,pLib);
+   EAF_GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& moment_capacity_criteria = pSpecEntry->GetMomentCapacityCriteria();
    return moment_capacity_criteria.GetModulusOfRuptureCoefficient(type);
@@ -2015,8 +2013,8 @@ Float64 CConcreteManager::GetShearFrCoefficient(pgsTypes::ConcreteType type) con
    if (IsUHPC(type))
       return 0;
 
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
+   EAF_GET_IFACE(ILibrary,pLib);
+   EAF_GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
    return shear_capacity_criteria.ModulusOfRuptureCoefficient[type];
@@ -2667,8 +2665,8 @@ std::unique_ptr<WBFL::LRFD::LRFDConcrete> CConcreteManager::CreateLRFDConcreteMo
 
    if (concrete.Type == pgsTypes::Normal && (stepTime-startTime) < 90)
    {
-      GET_IFACE(ILibrary, pLib);
-      GET_IFACE(ISpecification, pSpec);
+      EAF_GET_IFACE(ILibrary, pLib);
+      EAF_GET_IFACE(ISpecification, pSpec);
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
       const auto& limit_state_concrete_strength_criteria = pSpecEntry->GetLimitStateConcreteStrengthCriteria();
       if (limit_state_concrete_strength_criteria.bUse90DayConcreteStrength && limit_state_concrete_strength_criteria.SlowCuringConcreteStrengthFactor != 1.0)

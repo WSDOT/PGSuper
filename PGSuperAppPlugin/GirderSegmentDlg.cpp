@@ -283,9 +283,9 @@ ConfigStrandFillVector CGirderSegmentDlg::ComputeStrandFillVector(pgsTypes::Stra
 #pragma Reminder("UPDATE: this method is a duplicate of CGirderDescDlg")
    // find a way to make it one function
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    CPrecastSegmentData* pSegment = m_Girder.GetSegment(m_SegmentKey.segmentIndex);
    if (pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectSelection)

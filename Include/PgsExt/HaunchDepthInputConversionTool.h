@@ -36,7 +36,7 @@ public:
    // Will change the bridgedescr passed in for the specified group. If you don't want it changed, pass in a copy
    // The caller owns the bridgedescr object and is responsible for its lifetime.
    // Note that the conversion can occur at project load time. We have to make special considerations here because the bridge model is not built yet
-   HaunchDepthInputConversionTool(const CBridgeDescription2* pBridgeDescr, CComPtr<IBroker> pBroker,bool bIsAtLoadTime);
+   HaunchDepthInputConversionTool(const CBridgeDescription2* pBridgeDescr, std::shared_ptr<WBFL::EAF::Broker> pBroker,bool bIsAtLoadTime);
 
    // Geometric functions to convert haunch data in the bridgedesc to the new format. If the bool returned is true, a conversion took place. If false, no change was required
    std::pair<bool, CBridgeDescription2> ConvertToSlabOffsetInput(pgsTypes::SlabOffsetType newSlabOffsetType);
@@ -64,7 +64,7 @@ private:
    std::pair<bool, CBridgeDescription2> DesignSpanHaunches(const CGirderKey& rDesignGirderKey, GirderIndexType sourceGirderIdx, pgsTypes::HaunchInputDistributionType inputDistributionType, bool bApply2AllGdrs);
 
    const CBridgeDescription2* m_pBridgeDescr;
-   CComPtr<IBroker> m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    bool m_bIsAtLoadTime;
 
    struct GirderlineHaunchLayout

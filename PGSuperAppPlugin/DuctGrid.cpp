@@ -115,9 +115,9 @@ void CDuctGrid::CustomInit(CSplicedGirderData* pGirder)
 {
    m_pPTData = pGirder->GetPostTensioning();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CSplicedGirderGeneralPage* pParentPage = (CSplicedGirderGeneralPage*)GetParent();
    CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)pParentPage->GetParent();
@@ -308,9 +308,9 @@ void CDuctGrid::DeleteDuct()
 
 void CDuctGrid::SetRowStyle(ROWCOL row)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,ILibraryNames,pLibNames);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,ILibraryNames,pLibNames);
 
    std::vector<std::_tstring> vNames;
    pLibNames->EnumDuctNames(&vNames);
@@ -547,10 +547,10 @@ void CDuctGrid::RefreshRowHeading(ROWCOL rFrom,ROWCOL rTo)
    CSplicedGirderDescDlg* pParent = (CSplicedGirderDescDlg*)(pParentPage->GetParent());
    std::_tstring strGirderName = pParent->m_pGirder->GetGirderName();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,ILibrary,pLibrary);
+   EAF_GET_IFACE2(pBroker,ILibrary,pLibrary);
    const GirderLibraryEntry* pGirderEntry = pLibrary->GetGirderEntry(strGirderName.c_str());
    CComPtr<IBeamFactory> factory;
    pGirderEntry->GetBeamFactory(&factory);
@@ -640,15 +640,15 @@ void CDuctGrid::UpdateNumStrandsList(ROWCOL nRow)
    StrandIndexType nStrands = (StrandIndexType)_tstol(GetCellValue(nRow,nNumStrandCol));
    CString ductName = GetCellValue(nRow,nDuctTypeCol);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,ILibrary,pLib);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
    const DuctLibraryEntry* pDuctEntry = pLib->GetDuctEntry(ductName);
    if ( pDuctEntry == nullptr )
    {
       // sometimes the duct name comes back as the index into the choice list
       // get the duct entry another way
-      GET_IFACE2(pBroker,ILibraryNames,pLibNames);
+      EAF_GET_IFACE2(pBroker,ILibraryNames,pLibNames);
       std::vector<std::_tstring> vNames;
       pLibNames->EnumDuctNames(&vNames);
       IndexType ductNameIdx = (IndexType)_tstol(ductName);
@@ -665,7 +665,7 @@ void CDuctGrid::UpdateNumStrandsList(ROWCOL nRow)
    Float64 aps = pStrand->GetNominalArea();
 
    // LRFD 5.4.6.2 Area of duct must be at least K times net area of prestressing steel
-   GET_IFACE2(pBroker,IDuctLimits,pDuctLimits);
+   EAF_GET_IFACE2(pBroker,IDuctLimits,pDuctLimits);
    Float64 K = pDuctLimits->GetTendonAreaLimit(pParent->GetInstallationType());
 
    StrandIndexType maxStrands = (StrandIndexType)fabs(A/(K*aps));
@@ -694,9 +694,9 @@ void CDuctGrid::UpdateMaxPjack(ROWCOL nRow)
 
    Float64 Pjack = WBFL::LRFD::PsStrand::GetPjackPT(*pStrand,nStrands);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    GetParam()->SetLockReadOnly(FALSE);
    SetValueRange(CGXRange(nRow,nPjackCol),FormatDimension(Pjack,pDisplayUnits->GetGeneralForceUnit(),false));
    GetParam()->SetLockReadOnly(TRUE);
@@ -730,11 +730,11 @@ void CDuctGrid::OnInstallationTypeChanged()
 
 void CDuctGrid::GetDuctData(ROWCOL row,CDuctData& duct,EventIndexType& stressingEvent)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   GET_IFACE2(pBroker,ILibraryNames,pLibNames);
+   EAF_GET_IFACE2(pBroker,ILibraryNames,pLibNames);
    std::vector<std::_tstring> vNames;
    pLibNames->EnumDuctNames(&vNames);
 
@@ -754,13 +754,13 @@ void CDuctGrid::GetDuctData(ROWCOL row,CDuctData& duct,EventIndexType& stressing
 
 void CDuctGrid::SetDuctData(ROWCOL row,const CDuctData& duct,EventIndexType stressingEvent)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    GetParam()->SetLockReadOnly(FALSE);
 
-   GET_IFACE2(pBroker,ILibraryNames,pLibNames);
+   EAF_GET_IFACE2(pBroker,ILibraryNames,pLibNames);
    std::vector<std::_tstring> vNames;
    pLibNames->EnumDuctNames(&vNames);
    std::vector<std::_tstring>::iterator iter(vNames.begin());

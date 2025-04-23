@@ -494,12 +494,12 @@ void txnEditRatingCriteria::Undo()
 
 void txnEditRatingCriteria::Execute(int i)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IEvents, pEvents);
-   GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec );
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IEvents, pEvents);
+   EAF_GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec );
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
 
    // Exception-safe holder to keep from fireing events until we are done
    CIEventsHolder event_holder(pEvents);
@@ -663,7 +663,7 @@ void txnEditRatingCriteria::Execute(int i)
    pRatingSpec->SetRelaxationFactor(pgsTypes::ServiceIII_LegalEmergency, m_Data[i].m_Legal.ServiceIII_CR); // RE
    pRatingSpec->SetSecondaryEffectsFactor(pgsTypes::ServiceIII_LegalEmergency, m_Data[i].m_Legal.ServiceIII_PS);
 
-   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
+   EAF_GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    pLiveLoads->SetLiveLoadNames(pgsTypes::lltLegalRating_Routine,m_Data[i].m_Legal.RoutineNames);
    pLiveLoads->SetLiveLoadNames(pgsTypes::lltLegalRating_Special, m_Data[i].m_Legal.SpecialNames);
    pLiveLoads->SetLiveLoadNames(pgsTypes::lltLegalRating_Emergency, m_Data[i].m_Legal.EmergencyNames);

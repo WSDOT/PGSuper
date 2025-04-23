@@ -107,14 +107,14 @@ BOOL CClosureJointGeneralPage::OnInitDialog()
 
    CPropertyPage::OnInitDialog();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
    std::_tstring strSpecName = pSpec->GetSpecification();
 
-   GET_IFACE2(pBroker,ILibrary,pLib);
+   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
    const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
    m_LossMethod = prestress_loss_criteria.LossMethod;
@@ -187,7 +187,7 @@ BOOL CClosureJointGeneralPage::OnInitDialog()
       GetDlgItem(IDC_NOTE)->SetWindowText(_T("NOTE: Changes to the Installation Event apply to all closure joints at this pier."));
    }
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 length = pBridge->GetClosureJointLength(pParent->m_ClosureKey);
    CString strLength;
    strLength.Format(_T("Length: %s"),FormatDimension(length,pDisplayUnits->GetXSectionDimUnit()));
@@ -199,9 +199,9 @@ BOOL CClosureJointGeneralPage::OnInitDialog()
 
 void CClosureJointGeneralPage::ExchangeConcreteData(CDataExchange* pDX)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
 
@@ -468,9 +468,9 @@ void CClosureJointGeneralPage::UpdateEci()
    if ( method == 0 )
    {
       // Eci is based on the user input value of Ec and not f'ci
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      
+      auto pBroker = EAFGetBroker();
+      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       CString strEc;
       m_ctrlEc.GetWindowText(strEc);
@@ -516,9 +516,9 @@ void CClosureJointGeneralPage::UpdateEci()
       CString strFci, strDensity, strK1, strK2;
       m_ctrlFci.GetWindowText(strFci);
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      
+      auto pBroker = EAFGetBroker();
+      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
 
@@ -567,9 +567,9 @@ void CClosureJointGeneralPage::UpdateEc()
    if ( method == 0 )
    {
       // Ec is based on the user input value of Eci and not f'c
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      
+      auto pBroker = EAFGetBroker();
+      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       CString strEci;
       m_ctrlEci.GetWindowText(strEci);
@@ -600,9 +600,9 @@ void CClosureJointGeneralPage::UpdateEc()
       CString strFc, strDensity, strK1, strK2;
       m_ctrlFc.GetWindowText(strFc);
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      
+      auto pBroker = EAFGetBroker();
+      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
 
@@ -625,9 +625,9 @@ void CClosureJointGeneralPage::UpdateFc()
       CString strFci;
       m_ctrlFci.GetWindowText(strFci);
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      
+      auto pBroker = EAFGetBroker();
+      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       Float64 fci;
       WBFL::System::Tokenizer::ParseDouble(strFci, &fci);
@@ -662,9 +662,9 @@ void CClosureJointGeneralPage::UpdateFci()
       CString strFc;
       m_ctrlFc.GetWindowText(strFc);
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      
+      auto pBroker = EAFGetBroker();
+      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       Float64 fc;
       WBFL::System::Tokenizer::ParseDouble(strFc, &fc);
@@ -771,10 +771,10 @@ BOOL CClosureJointGeneralPage::OnToolTipNotify(UINT id,NMHDR* pNMHDR, LRESULT* p
 
 void CClosureJointGeneralPage::UpdateConcreteParametersToolTip()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
 

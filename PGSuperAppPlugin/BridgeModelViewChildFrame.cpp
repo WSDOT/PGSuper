@@ -163,8 +163,8 @@ void CBridgeModelViewChildFrame::OnFilePrintDirect()
 
 void CBridgeModelViewChildFrame::DoFilePrint(bool direct)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
    
    // create a print job and do it
    CBridgeViewPrintJob pj(this,GetUpperView(), GetLowerView(), pBroker);
@@ -230,9 +230,9 @@ void CBridgeModelViewChildFrame::InitGroupRange()
    // Can't get to the broker, and thus the bridge information in OnCreate, so we need a method
    // that can be called later to initalize the span range for viewing
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker, IDocumentType, pDocType);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker, IDocumentType, pDocType);
    bool isPGSuper = pDocType->IsPGSuperDocument();
    CString strType;
    if (!isPGSuper)
@@ -249,7 +249,7 @@ void CBridgeModelViewChildFrame::InitGroupRange()
    CSpinButtonCtrl* pStartSpinner = (CSpinButtonCtrl*)m_SettingsBar.GetDlgItem(IDC_START_GROUP_SPIN);
    CSpinButtonCtrl* pEndSpinner   = (CSpinButtonCtrl*)m_SettingsBar.GetDlgItem(IDC_END_GROUP_SPIN);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
 
    CBridgePlanView* pPlanView = GetBridgePlanView();
@@ -262,7 +262,7 @@ void CBridgeModelViewChildFrame::InitGroupRange()
    endGroupIdx   = (endGroupIdx   == ALL_GROUPS ? nGroups-1 : endGroupIdx);
 
    // convert from starting display span #
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    GroupIndexType displayStartingGroupNum;
    if (isPGSuper)
@@ -518,9 +518,9 @@ void CBridgeModelViewChildFrame::CutAt(Float64 X)
 
 Float64 CBridgeModelViewChildFrame::GetNextCutStation(Float64 direction)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
 
    // if control key is down... move the section cut
 
@@ -556,13 +556,13 @@ void CBridgeModelViewChildFrame::ShowCutDlg()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    Float64 startStation, endStation;
    GetCutRange(&startStation, &endStation);
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
 
    CStationCutDlg dlg(m_CurrentCutLocation,startStation,endStation,bUnitsSI);
@@ -574,10 +574,10 @@ void CBridgeModelViewChildFrame::ShowCutDlg()
 
 void CBridgeModelViewChildFrame::GetCutRange(Float64* pMin, Float64* pMax)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
 
    GroupIndexType startGroupIdx, endGroupIdx;
    GetBridgePlanView()->GetGroupRange(&startGroupIdx,&endGroupIdx);
@@ -663,9 +663,9 @@ void CBridgeModelViewChildFrame::CreateViewController(IEAFViewController** ppCon
 
 void CBridgeModelViewChildFrame::OnViewGirder() 
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    CSegmentKey segmentKey;
@@ -830,10 +830,10 @@ void CBridgeModelViewChildFrame::OnDeletePier()
 
 void CBridgeModelViewChildFrame::OnUpdateDeletePier(CCmdUI* pCmdUI) 
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
@@ -865,10 +865,10 @@ void CBridgeModelViewChildFrame::OnDeleteSpan()
 
 void CBridgeModelViewChildFrame::OnUpdateDeleteSpan(CCmdUI* pCmdUI) 
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
@@ -891,9 +891,8 @@ void CBridgeModelViewChildFrame::OnInsertSpan()
    CBridgePlanView* pView = GetBridgePlanView();
 	if ( pView->GetSelectedSpan(&spanIdx) )
    {
-      CComPtr<IBroker> broker;
-      EAFGetBroker(&broker);
-      GET_IFACE2(broker,IBridgeDescription,pIBridgeDesc);
+      auto broker = EAFGetBroker();
+      EAF_GET_IFACE2(broker,IBridgeDescription,pIBridgeDesc);
       CInsertSpanDlg dlg(pIBridgeDesc->GetBridgeDescription());
       if ( dlg.DoModal() == IDOK )
       {
@@ -921,9 +920,8 @@ void CBridgeModelViewChildFrame::OnInsertPier()
    CBridgePlanView* pView = GetBridgePlanView();
 	if ( pView->GetSelectedPier(&pierIdx) )
    {
-      CComPtr<IBroker> broker;
-      EAFGetBroker(&broker);
-      GET_IFACE2(broker,IBridgeDescription,pIBridgeDesc);
+      auto broker = EAFGetBroker();
+      EAF_GET_IFACE2(broker,IBridgeDescription,pIBridgeDesc);
       CInsertSpanDlg dlg(pIBridgeDesc->GetBridgeDescription());
       if ( dlg.DoModal() == IDOK )
       {
@@ -1044,10 +1042,10 @@ void CBridgeModelViewChildFrame::OnBoundaryCondition(UINT nIDC)
          default: ATLASSERT(false); // is there a new connection type?
       }
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
 
-      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+      EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       std::unique_ptr<txnEditBoundaryConditions> pTxn;
 
       const CPierData2* pPier = pIBridgeDesc->GetPier(pierIdx);
@@ -1094,10 +1092,10 @@ void CBridgeModelViewChildFrame::OnBoundaryCondition(UINT nIDC)
       default: ATLASSERT(false); // is there a new connection type?
       }
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
 
-      GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+      EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
 
       const CTemporarySupportData* pTS = pIBridgeDesc->GetTemporarySupport(tsIdx);
       pgsTypes::TemporarySupportType supportType = pTS->GetSupportType();
@@ -1132,9 +1130,9 @@ void CBridgeModelViewChildFrame::OnUpdateBoundaryCondition(CCmdUI* pCmdUI)
    PierIndexType pierIdx;
    if ( pView->GetSelectedPier(&pierIdx) )
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+      
+      auto pBroker = EAFGetBroker();
+      EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       const CPierData2* pPier = pIBridgeDesc->GetPier(pierIdx);
       if ( pPier->IsBoundaryPier() )
       {
@@ -1171,9 +1169,9 @@ void CBridgeModelViewChildFrame::OnUpdateBoundaryCondition(CCmdUI* pCmdUI)
    SupportIndexType tsIdx;
    if (pView->GetSelectedTemporarySupport(&tsIdx))
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+      
+      auto pBroker = EAFGetBroker();
+      EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
       const CTemporarySupportData* pTS = pIBridgeDesc->GetTemporarySupport(tsIdx);
       pgsTypes::TempSupportSegmentConnectionType segmentConnectionType = pTS->GetConnectionType();
       switch (pCmdUI->m_nID)
@@ -1199,9 +1197,9 @@ void CBridgeModelViewChildFrame::OnTemporarySupportType(UINT nIDC)
       default: ATLASSERT(false); // is there a new connection type?
       }
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+      
+      auto pBroker = EAFGetBroker();
+      EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
       const CTemporarySupportData* pTS = pIBridgeDesc->GetTemporarySupport(tsIdx);
 
       std::unique_ptr<txnEditBoundaryConditions> pTxn;
@@ -1253,9 +1251,9 @@ void CBridgeModelViewChildFrame::OnUpdateTemporarySupportType(CCmdUI* pCmdUI)
    SupportIndexType tsIdx;
    if (pView->GetSelectedTemporarySupport(&tsIdx))
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+      
+      auto pBroker = EAFGetBroker();
+      EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
       const CTemporarySupportData* pTS = pIBridgeDesc->GetTemporarySupport(tsIdx);
       pgsTypes::TemporarySupportType type = pTS->GetSupportType();
       switch (pCmdUI->m_nID)
@@ -1273,9 +1271,9 @@ void CBridgeModelViewChildFrame::OnStartGroupChanged(NMHDR *pNMHDR, LRESULT *pRe
    *pResult = 0;
 
    // convert from starting display span #
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    PierIndexType displayStartingPierNum = pBridgeDesc->GetDisplayStartingPierNumber();
 
@@ -1316,9 +1314,9 @@ void CBridgeModelViewChildFrame::OnEndGroupChanged(NMHDR *pNMHDR, LRESULT *pResu
    *pResult = 0;
 
    // convert from starting display span #
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    PierIndexType displayStartingPierNum = pBridgeDesc->GetDisplayStartingPierNumber();
 

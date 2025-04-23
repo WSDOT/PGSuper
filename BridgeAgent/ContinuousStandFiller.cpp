@@ -27,12 +27,6 @@
 #include "stdafx.h"
 #include "ContinuousStandFiller.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 // some usefull Free functions
 static HRESULT GetNextNumStrands(StrandIndexType currNum, IIndexArray* array, StrandIndexType* nextNum)
 {

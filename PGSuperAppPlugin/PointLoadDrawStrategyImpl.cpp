@@ -41,7 +41,7 @@ CPointLoadDrawStrategyImpl::CPointLoadDrawStrategyImpl()
 {
 }
 
-void CPointLoadDrawStrategyImpl::Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, IBroker* pBroker, const CPointLoadData& load,
+void CPointLoadDrawStrategyImpl::Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPointLoadData& load,
                                                  IndexType loadIndex, Float64 spanLength, 
                                                  Float64 maxMagnitude, COLORREF color)
 {
@@ -291,13 +291,13 @@ void CPointLoadDrawStrategyImpl::OnUnselect(std::shared_ptr<WBFL::DManip::iDispl
 
 void CPointLoadDrawStrategyImpl::EditLoad()
 {
-   GET_IFACE(IEditByUI, pEditByUI);
+   EAF_GET_IFACE(IEditByUI, pEditByUI);
    pEditByUI->EditPointLoad(m_LoadIndex);
 }
 
 void CPointLoadDrawStrategyImpl::DeleteLoad()
 {
-   GET_IFACE(IEditByUI, pEditByUI);
+   EAF_GET_IFACE(IEditByUI, pEditByUI);
    pEditByUI->DeletePointLoad(m_LoadIndex);
 }
 

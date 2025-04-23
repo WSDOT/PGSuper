@@ -130,9 +130,8 @@ void CPermitRatingPage::DoDataExchange(CDataExchange* pDX)
    DDX_Text(pDX,IDC_FY_COEFFICIENT,m_Data.YieldStressCoefficient);
    DDV_Range(pDX,mfcDDV::LE,mfcDDV::GE,m_Data.YieldStressCoefficient,0.0,1.0);
 
-   CComPtr<IBroker> broker;
-   EAFGetBroker(&broker);
-   GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
+   auto broker = EAFGetBroker();
+   EAF_GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
    DDX_UnitValueAndTag(pDX,IDC_ALLOWABLE_TENSION,IDC_ALLOWABLE_TENSION_UNIT,m_Data.AllowableTensionCoefficient,pDisplayUnits->GetTensionCoefficientUnit());
 
    CString tag;
@@ -343,9 +342,8 @@ void CPermitRatingPage::OnPermitTypeChanged()
    pgsTypes::SpecialPermitType permitType = (pgsTypes::SpecialPermitType)pCB->GetItemData(curSel);
 
    CRatingOptionsDlg* pParent = (CRatingOptionsDlg*)GetParent();
-   CComPtr<IBroker> broker;
-   EAFGetBroker(&broker);
-   GET_IFACE2( broker, ILibrary, pLib );
+   auto broker = EAFGetBroker();
+   EAF_GET_IFACE2( broker, ILibrary, pLib );
    const RatingLibraryEntry* pRatingEntry = pLib->GetRatingEntry( pParent->m_GeneralPage.m_Data.CriteriaName.c_str() );
 
    bool bAllowUserOverride;
@@ -375,9 +373,8 @@ BOOL CPermitRatingPage::OnSetActive()
    OnRateForStressChanged();
 
    CRatingOptionsDlg* pParent = (CRatingOptionsDlg*)GetParent();
-   CComPtr<IBroker> broker;
-   EAFGetBroker(&broker);
-   GET_IFACE2( broker, ILibrary, pLib );
+   auto broker = EAFGetBroker();
+   EAF_GET_IFACE2( broker, ILibrary, pLib );
    const RatingLibraryEntry* pRatingEntry = pLib->GetRatingEntry( pParent->m_GeneralPage.m_Data.CriteriaName.c_str() );
 
    CDataExchange dx(this,false);
@@ -410,7 +407,7 @@ BOOL CPermitRatingPage::OnSetActive()
       GetDlgItem(IDC_SERVICE_III_LL_PERMIT)->EnableWindow(FALSE);
    }
 
-   GET_IFACE2(broker, ILossParameters, pLossParams);
+   EAF_GET_IFACE2(broker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       GetDlgItem(IDC_STRENGTH_II_PLUS)->ShowWindow(SW_HIDE);

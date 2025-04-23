@@ -140,9 +140,9 @@ bool txnDesignGirder::IsRepeatable() const
 
 void txnDesignGirder::Init()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    for (auto& rdata : m_DesignDataColl)
    {
@@ -167,7 +167,7 @@ void txnDesignGirder::Init()
             m_DesignSlabOffset[pgsTypes::metStart] = pSegmentDesignArtifact->GetSlabOffset(pgsTypes::metStart);
             m_DesignSlabOffset[pgsTypes::metEnd]   = pSegmentDesignArtifact->GetSlabOffset(pgsTypes::metEnd);
 
-            GET_IFACE2(pBroker,ISpecification,pSpec);
+            EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
             if ( pSegmentDesignArtifact->GetDesignOptions().doDesignSlabOffset == sodDesignHaunch &&
                  pSpec->IsAssumedExcessCamberForLoad())
             {
@@ -182,7 +182,7 @@ void txnDesignGirder::Init()
    // Store original slab offset data. Format depends on type
    if (m_DidSlabOffsetDesign)
    {
-      GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
+      EAF_GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
 
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
       m_OldSlabOffsetType = pIBridgeDesc->GetSlabOffsetType();
@@ -232,7 +232,7 @@ void txnDesignGirder::Init()
    // Store original AssumedExcessCamber data. Format depends on type
    if (m_DidAssumedExcessCamberDesign)
    {
-      GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
+      EAF_GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
 
       m_OldAssumedExcessCamberType = pIBridgeDesc->GetAssumedExcessCamberType();
       if (m_OldAssumedExcessCamberType==pgsTypes::aecBridge)
@@ -277,11 +277,11 @@ void txnDesignGirder::Init()
 
 void txnDesignGirder::DoExecute(int i)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
-   GET_IFACE2(pBroker,IEvents, pEvents);
+   EAF_GET_IFACE2(pBroker,IEvents, pEvents);
    // don't fire any changed events until all changes are done
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);

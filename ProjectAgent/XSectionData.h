@@ -44,7 +44,7 @@ class TrafficBarrierEntry;
 class GirderLibraryEntry;
 class ConcreteLibraryEntry;
 class DiaphragmLayoutEntry;
-struct ILibrary;
+class ILibrary;
 
 // MISCELLANEOUS
 //

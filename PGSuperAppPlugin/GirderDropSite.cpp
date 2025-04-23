@@ -96,9 +96,9 @@ void CGirderDropSite::OnDropped(COleDataObject* pDataObject,DROPEFFECT dropEffec
       source->SetDataObject(pDataObject);
       draggable->OnDrop(source); // Rebuild the tool object from the data object
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker, IEditByUI, pEditByUI);
+      
+      auto pBroker = EAFGetBroker();
+      EAF_GET_IFACE2(pBroker, IEditByUI, pEditByUI);
 
       // Was it the concentrated load tool?
       if ( tool->GetID() == IDC_POINT_LOAD_DRAG )
@@ -128,7 +128,7 @@ void CGirderDropSite::OnDropped(COleDataObject* pDataObject,DROPEFFECT dropEffec
          InitLoad(load);
 
          // estimate where we are at
-         GET_IFACE2(pBroker,IBridge,pBridge);
+         EAF_GET_IFACE2(pBroker,IBridge,pBridge);
          Float64 span_length = pBridge->GetSpanLength(load.m_SpanKey.spanIndex,load.m_SpanKey.girderIndex);
 
          // set length of load to 1/10 span length
@@ -166,7 +166,7 @@ void CGirderDropSite::OnDropped(COleDataObject* pDataObject,DROPEFFECT dropEffec
          InitLoad(load);
 
          // estimate where we are at
-         GET_IFACE2(pBroker,IBridge,pBridge);
+         EAF_GET_IFACE2(pBroker,IBridge,pBridge);
          Float64 span_length = pBridge->GetSpanLength(load.m_SpanKey.spanIndex,load.m_SpanKey.girderIndex);
 
          Float64 wx = point.X();

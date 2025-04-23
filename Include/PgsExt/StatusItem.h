@@ -42,12 +42,9 @@ public:
 class PGSEXTCLASS pgsRefinedAnalysisStatusCallback : public iStatusCallback
 {
 public:
-   pgsRefinedAnalysisStatusCallback(std::shared_ptr<WBFL::EAF::Broker> pBroker);
+   pgsRefinedAnalysisStatusCallback();
    virtual eafTypes::StatusSeverityType GetSeverity() const override;
    virtual void Execute(CEAFStatusItem* pStatusItem) override;
-
-private:
-   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
 };
 
 // status for install error
@@ -145,12 +142,11 @@ public:
 class PGSEXTCLASS pgsGirderDescriptionStatusCallback : public iStatusCallback
 {
 public:
-   pgsGirderDescriptionStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity);
+   pgsGirderDescriptionStatusCallback(eafTypes::StatusSeverityType severity);
    virtual eafTypes::StatusSeverityType GetSeverity() const override;
    virtual void Execute(CEAFStatusItem* pStatusItem) override;
 
 private:
-   IBroker* m_pBroker;
    eafTypes::StatusSeverityType m_Severity;
 };
 
@@ -185,12 +181,11 @@ public:
 class PGSEXTCLASS pgsBridgeDescriptionStatusCallback : public iStatusCallback
 {
 public:
-   pgsBridgeDescriptionStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity);
+   pgsBridgeDescriptionStatusCallback(eafTypes::StatusSeverityType severity);
    virtual eafTypes::StatusSeverityType GetSeverity() const override;
    virtual void Execute(CEAFStatusItem* pStatusItem) override;
 
 private:
-   IBroker* m_pBroker;
    eafTypes::StatusSeverityType m_Severity;
 };
 
@@ -206,12 +201,11 @@ public:
 class PGSEXTCLASS pgsLldfWarningStatusCallback : public iStatusCallback
 {
 public:
-   pgsLldfWarningStatusCallback(IBroker* pBroker);
+   pgsLldfWarningStatusCallback();
    virtual eafTypes::StatusSeverityType GetSeverity() const override;
    virtual void Execute(CEAFStatusItem* pStatusItem) override;
 
 private:
-   IBroker* m_pBroker;
 };
 
 // status for effective flange width warnings
@@ -226,12 +220,11 @@ public:
 class PGSEXTCLASS pgsEffectiveFlangeWidthStatusCallback : public iStatusCallback
 {
 public:
-   pgsEffectiveFlangeWidthStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity);
+   pgsEffectiveFlangeWidthStatusCallback(eafTypes::StatusSeverityType severity);
    virtual eafTypes::StatusSeverityType GetSeverity() const override;
    virtual void Execute(CEAFStatusItem* pStatusItem) override;
 
 private:
-   IBroker* m_pBroker;
    eafTypes::StatusSeverityType m_Severity;
 };
 
@@ -249,12 +242,11 @@ public:
 class PGSEXTCLASS pgsTimelineStatusCallback : public iStatusCallback
 {
 public:
-   pgsTimelineStatusCallback(IBroker* pBroker, eafTypes::StatusSeverityType severity);
+   pgsTimelineStatusCallback(eafTypes::StatusSeverityType severity);
    virtual eafTypes::StatusSeverityType GetSeverity() const override;
    virtual void Execute(CEAFStatusItem* pStatusItem) override;
 
 private:
-   IBroker* m_pBroker;
    eafTypes::StatusSeverityType m_Severity;
 };
 
@@ -274,11 +266,10 @@ public:
 class PGSEXTCLASS pgsConnectionGeometryStatusCallback : public iStatusCallback
 {
 public:
-   pgsConnectionGeometryStatusCallback(IBroker* pBroker, eafTypes::StatusSeverityType severity = eafTypes::statusWarning);
+   pgsConnectionGeometryStatusCallback(eafTypes::StatusSeverityType severity = eafTypes::statusWarning);
    virtual eafTypes::StatusSeverityType GetSeverity() const override;
    virtual void Execute(CEAFStatusItem* pStatusItem) override;
 
 private:
-   IBroker* m_pBroker;
    eafTypes::StatusSeverityType m_Severity;
 };

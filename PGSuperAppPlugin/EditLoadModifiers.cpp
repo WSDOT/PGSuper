@@ -74,14 +74,14 @@ bool txnEditLoadModifiers::IsRepeatable() const
 
 void txnEditLoadModifiers::DoExecute(int i)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IEvents, pEvents);
+   EAF_GET_IFACE2(pBroker,IEvents, pEvents);
    // Exception-safe holder to keep from fireing events until we are done
    CIEventsHolder event_holder(pEvents);
 
-   GET_IFACE2(pBroker,ILoadModifiers,pLoadModifiers);
+   EAF_GET_IFACE2(pBroker,ILoadModifiers,pLoadModifiers);
 
    pLoadModifiers->SetDuctilityFactor(  m_LoadModifiers[i].DuctilityLevel,  m_LoadModifiers[i].DuctilityFactor );
    pLoadModifiers->SetRedundancyFactor( m_LoadModifiers[i].RedundancyLevel, m_LoadModifiers[i].RedundancyFactor );

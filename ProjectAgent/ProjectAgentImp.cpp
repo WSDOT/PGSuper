@@ -91,12 +91,6 @@
 #include <psgLib/MomentCapacityCriteria.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 // set a tolerance for IsEqual's in this class. Main reason for having the 
 // IsEqual's is to prevent errant data changes from conversion round-off in dialogs.
 static const Float64 DLG_TOLER = 1.0e-06;
@@ -190,9 +184,9 @@ CProjectAgentImp::CProjectAgentImp()
    m_RoadwaySectionData.ProfileGradePointIdx = 1;
    m_RoadwaySectionData.RoadwaySectionTemplates.push_back(cd);
 
-   m_DuctilityLevel   = ILoadModifiers::Normal;
-   m_ImportanceLevel  = ILoadModifiers::Normal;
-   m_RedundancyLevel  = ILoadModifiers::Normal;
+   m_DuctilityLevel   = ILoadModifiers::Level::Normal;
+   m_ImportanceLevel  = ILoadModifiers::Level::Normal;
+   m_RedundancyLevel  = ILoadModifiers::Level::Normal;
    m_DuctilityFactor  = 1.0;
    m_ImportanceFactor = 1.0;
    m_RedundancyFactor = 1.0;
@@ -488,15 +482,6 @@ CProjectAgentImp::CProjectAgentImp()
 }
 
 CProjectAgentImp::~CProjectAgentImp()
-{
-}
-
-HRESULT CProjectAgentImp::FinalConstruct()
-{
-   return S_OK;
-}
-
-void CProjectAgentImp::FinalRelease()
 {
 }
 
@@ -1832,7 +1817,7 @@ HRESULT CProjectAgentImp::UnitModeProc(IStructuredSave* pSave,IStructuredLoad* p
    // The EAFDocProxy agent should be peristing this value since it is responsible for it
    // However, it would really mess up all of the existing PGSuper files.
    // It is just easier to persist it here.
-   GET_IFACE2(pObj->m_pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pObj->m_pBroker,IEAFDisplayUnits,pDisplayUnits);
    eafTypes::UnitMode unitMode;
 
    HRESULT hr = S_OK;
@@ -5092,47 +5077,40 @@ BEGIN_STRSTORAGEMAP(CProjectAgentImp,_T("ProjectData"),8.0)
 
 END_STRSTORAGEMAP
 
-STDMETHODIMP CProjectAgentImp::SetBroker(IBroker* pBroker)
+bool CProjectAgentImp::RegInterfaces()
 {
-   EAF_AGENT_SET_BROKER(pBroker);
-   return S_OK;
-}
+   m_pBroker->RegisterInterface( IID_IProjectProperties, std::dynamic_pointer_cast<Agent>(shared_from_this()));
+   m_pBroker->RegisterInterface(IID_IEnvironment, std::dynamic_pointer_cast<Agent>(shared_from_this()));
+   m_pBroker->RegisterInterface(IID_IRoadwayData, std::dynamic_pointer_cast<Agent>(shared_from_this()));
+   m_pBroker->RegisterInterface(IID_IBridgeDescription, std::dynamic_pointer_cast<Agent>(shared_from_this()));
+   m_pBroker->RegisterInterface(IID_ISegmentData, std::dynamic_pointer_cast<Agent>(shared_from_this()));
+   m_pBroker->RegisterInterface(IID_IShear, std::dynamic_pointer_cast<Agent>(shared_from_this()));
+   m_pBroker->RegisterInterface(IID_ILongitudinalRebar, std::dynamic_pointer_cast<Agent>(shared_from_this()));
+   m_pBroker->RegisterInterface(IID_ISpecification, std::dynamic_pointer_cast<Agent>(shared_from_this()));
+   m_pBroker->RegisterInterface(IID_IRatingSpecification, std::dynamic_pointer_cast<Agent>(shared_from_this()));
+   m_pBroker->RegisterInterface(IID_ILibraryNames, std::dynamic_pointer_cast<Agent>(shared_from_this()));
+   m_pBroker->RegisterInterface(IID_ILibrary, std::dynamic_pointer_cast<Agent>(shared_from_this()));
+   m_pBroker->RegisterInterface(IID_ILoadModifiers, std::dynamic_pointer_cast<Agent>(shared_from_this()));
+   m_pBroker->RegisterInterface(IID_ISegmentLifting, std::dynamic_pointer_cast<Agent>(shared_from_this()));
+   m_pBroker->RegisterInterface(IID_ISegmentHauling, std::dynamic_pointer_cast<Agent>(shared_from_this()));
+   m_pBroker->RegisterInterface(IID_IImportProjectLibrary, std::dynamic_pointer_cast<Agent>(shared_from_this()));
+   m_pBroker->RegisterInterface(IID_IUserDefinedLoadData, std::dynamic_pointer_cast<Agent>(shared_from_this()));
+   m_pBroker->RegisterInterface(IID_IEvents, std::dynamic_pointer_cast<Agent>(shared_from_this()));
+   m_pBroker->RegisterInterface(IID_ILimits, std::dynamic_pointer_cast<Agent>(shared_from_this()));
+   m_pBroker->RegisterInterface(IID_ILoadFactors, std::dynamic_pointer_cast<Agent>(shared_from_this()));
+   m_pBroker->RegisterInterface(IID_ILiveLoads, std::dynamic_pointer_cast<Agent>(shared_from_this()));
+   m_pBroker->RegisterInterface(IID_IEventMap, std::dynamic_pointer_cast<Agent>(shared_from_this()));
+   m_pBroker->RegisterInterface(IID_IEffectiveFlangeWidth, std::dynamic_pointer_cast<Agent>(shared_from_this()));
+   m_pBroker->RegisterInterface(IID_ILossParameters, std::dynamic_pointer_cast<Agent>(shared_from_this()));
+   m_pBroker->RegisterInterface(IID_IValidate, std::dynamic_pointer_cast<Agent>(shared_from_this()));
 
-STDMETHODIMP CProjectAgentImp::RegInterfaces()
-{
-   CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
-
-   pBrokerInit->RegInterface( IID_IProjectProperties,    this );
-   pBrokerInit->RegInterface( IID_IEnvironment,          this );
-   pBrokerInit->RegInterface( IID_IRoadwayData,          this );
-   pBrokerInit->RegInterface( IID_IBridgeDescription,    this );
-   pBrokerInit->RegInterface( IID_ISegmentData,          this );
-   pBrokerInit->RegInterface( IID_IShear,                this );
-   pBrokerInit->RegInterface( IID_ILongitudinalRebar,    this );
-   pBrokerInit->RegInterface( IID_ISpecification,        this );
-   pBrokerInit->RegInterface( IID_IRatingSpecification,  this );
-   pBrokerInit->RegInterface( IID_ILibraryNames,         this );
-   pBrokerInit->RegInterface( IID_ILibrary,              this );
-   pBrokerInit->RegInterface( IID_ILoadModifiers,        this );
-   pBrokerInit->RegInterface( IID_ISegmentLifting,        this );
-   pBrokerInit->RegInterface( IID_ISegmentHauling,        this );
-   pBrokerInit->RegInterface( IID_IImportProjectLibrary, this );
-   pBrokerInit->RegInterface( IID_IUserDefinedLoadData,  this );
-   pBrokerInit->RegInterface( IID_IEvents,               this );
-   pBrokerInit->RegInterface( IID_ILimits,               this );
-   pBrokerInit->RegInterface( IID_ILoadFactors,          this );
-   pBrokerInit->RegInterface( IID_ILiveLoads,            this );
-   pBrokerInit->RegInterface( IID_IEventMap,             this );
-   pBrokerInit->RegInterface( IID_IEffectiveFlangeWidth, this );
-   pBrokerInit->RegInterface( IID_ILossParameters,       this );
-   pBrokerInit->RegInterface( IID_IValidate,             this );
-
-   return S_OK;
+   return true;
 };
 
-STDMETHODIMP CProjectAgentImp::Init()
+bool CProjectAgentImp::Init()
 {
-   EAF_AGENT_INIT;
+   Agent::Init();
+   //EAF_AGENT_INIT;
 
    ////
    //// Attach to connection points for interfaces this agent depends on
@@ -5141,18 +5119,21 @@ STDMETHODIMP CProjectAgentImp::Init()
    //CComPtr<IConnectionPoint> pCP;
    //HRESULT hr = S_OK;
 
+   EAF_GET_IFACE(IEAFStatusCenter, pStatusCenter);
+#pragma Reminder("WORKING HERE - Removing COM")
+   // IEAFStatusCenter, need to refactor so that we aren't using new, but instead using shared_ptr
    m_scidBridgeDescriptionInfo    = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusInformation));
-   m_scidBridgeDescriptionWarning = pStatusCenter->RegisterCallback(new pgsBridgeDescriptionStatusCallback(m_pBroker, eafTypes::statusWarning));
-   m_scidBridgeDescriptionError   = pStatusCenter->RegisterCallback(new pgsBridgeDescriptionStatusCallback(m_pBroker, eafTypes::statusError));
-   m_scidGirderDescriptionWarning = pStatusCenter->RegisterCallback(new pgsGirderDescriptionStatusCallback(m_pBroker,eafTypes::statusWarning));
+   m_scidBridgeDescriptionWarning = pStatusCenter->RegisterCallback(new pgsBridgeDescriptionStatusCallback(eafTypes::statusWarning));
+   m_scidBridgeDescriptionError   = pStatusCenter->RegisterCallback(new pgsBridgeDescriptionStatusCallback(eafTypes::statusError));
+   m_scidGirderDescriptionWarning = pStatusCenter->RegisterCallback(new pgsGirderDescriptionStatusCallback(eafTypes::statusWarning));
    m_scidRebarStrengthWarning     = pStatusCenter->RegisterCallback(new pgsRebarStrengthStatusCallback());
    m_scidLoadDescriptionWarning   = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusWarning));
-   m_scidConnectionGeometryWarning = pStatusCenter->RegisterCallback(new pgsConnectionGeometryStatusCallback(m_pBroker, eafTypes::statusWarning));
+   m_scidConnectionGeometryWarning = pStatusCenter->RegisterCallback(new pgsConnectionGeometryStatusCallback(eafTypes::statusWarning));
 
-   return S_OK;
+   return true;
 }
 
-STDMETHODIMP CProjectAgentImp::Reset()
+bool CProjectAgentImp::Reset()
 {
    if ( m_pLibMgr )
    {
@@ -5198,21 +5179,15 @@ STDMETHODIMP CProjectAgentImp::Reset()
    return S_OK;
 }
 
-STDMETHODIMP CProjectAgentImp::Init2()
+CLSID CProjectAgentImp::GetCLSID() const
 {
-   return S_OK;
+   return CLSID_ProjectAgent;
 }
 
-STDMETHODIMP CProjectAgentImp::GetClassID(CLSID* pCLSID)
+bool CProjectAgentImp::ShutDown()
 {
-   *pCLSID = CLSID_ProjectAgent;
-   return S_OK;
-}
-
-STDMETHODIMP CProjectAgentImp::ShutDown()
-{
-   EAF_AGENT_CLEAR_INTERFACE_CACHE;
-   return S_OK;
+   //EAF_AGENT_CLEAR_INTERFACE_CACHE;
+   return true;
 }
 
 void CProjectAgentImp::UseBridgeLibraryEntries()
@@ -5784,7 +5759,7 @@ void CProjectAgentImp::UpdateStrandMaterial()
 
 void CProjectAgentImp::VerifyRebarGrade()
 {
-   GET_IFACE_NOCHECK(IEAFStatusCenter,pStatusCenter);
+   EAF_GET_IFACE_NOCHECK(IEAFStatusCenter,pStatusCenter);
 
    GroupIndexType nGroups = m_BridgeDescription.GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
@@ -5966,7 +5941,7 @@ void CProjectAgentImp::ValidateBridgeModel()
 {
    // Gets called from Fire_BridgeChanged so that every time the bridge gets changed we check the valid status
 
-   GET_IFACE_NOCHECK(IEAFStatusCenter,pStatusCenter);
+   EAF_GET_IFACE_NOCHECK(IEAFStatusCenter,pStatusCenter);
 
    if ( m_BridgeStabilityStatusItemID != INVALID_ID )
    {
@@ -5982,13 +5957,13 @@ void CProjectAgentImp::ValidateBridgeModel()
 
 }
 
-STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
+bool CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
 {
    HRESULT hr = S_OK;
 
    m_bUpdateUserDefinedLoads = false; // assume we are loading a newer file and user defined loads don't need tweaking
 
-//   GET_IFACE( IProgress, pProgress );
+//   EAF_GET_IFACE( IProgress, pProgress );
 //   CEAFAutoProgress ap(pProgress);
    IProgress* pProgress = 0; // progress window causes big trouble running in windowless mode
 
@@ -6000,17 +5975,17 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    hr = pgslibLoadLibrary(pStrLoad, &temp_manager, &unitMode, false/*not loading master library*/);
    if (FAILED(hr))
    {
-      return hr;
+      return false;
    }
 
    // merge project library into master library and deal with conflicts
-   GET_IFACE(IUpdateTemplates,pUpdateTemplates);
+   EAF_GET_IFACE(IUpdateTemplates,pUpdateTemplates);
    bool bForceUpdate = pUpdateTemplates->UpdatingTemplates();
 
    ConflictList the_conflict_list;
    if (!psglibDealWithLibraryConflicts(&the_conflict_list, m_pLibMgr, temp_manager, false, bForceUpdate))
    {
-      return E_FAIL;
+      return false;
    }
 
 
@@ -6018,7 +5993,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    STRSTG_LOAD( hr, pStrLoad, pProgress );
    if ( FAILED(hr) )
    {
-      return hr;
+      return false;
    }
 
    IndexType curveIdx = 0;
@@ -6028,7 +6003,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       {
          curve.Radius = 0;
 
-         GET_IFACE(IEAFStatusCenter, pStatusCenter);
+         EAF_GET_IFACE(IEAFStatusCenter, pStatusCenter);
          CString strMsg;
          strMsg.Format(_T("Horizontal curve %d: The curve radius is less than the minimum so it has been set to 0 to model an angle point in the alignment."), LABEL_INDEX(curveIdx));
 
@@ -6063,7 +6038,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    // resolve library name conflicts and update references
    if (!ResolveLibraryConflicts(the_conflict_list))
    {
-      return E_FAIL;
+      return false;
    }
 
    // check to see if the bridge girder spacing type is correct
@@ -6336,7 +6311,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       InitRatingSpecification(strSpecName);
    }
 
-   GET_IFACE(IDocumentType, pDocType);
+   EAF_GET_IFACE(IDocumentType, pDocType);
    if (pDocType->IsPGSpliceDocument())
    {
       DuctLibrary* pDuctLibrary = GetDuctLibrary();
@@ -6350,7 +6325,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
          }
 
 
-         GET_IFACE(IEAFStatusCenter, pStatusCenter);
+         EAF_GET_IFACE(IEAFStatusCenter, pStatusCenter);
          CString strMsg;
          strMsg.Format(_T("The %s library needs at least %d entries. Default entries have been created."), pDuctLibrary->GetDisplayName().c_str(), nMinEntries);
 
@@ -6397,7 +6372,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
          pHaulTruckLibrary->NewEntry(pHaulTruckLibrary->GetUniqueEntryName().c_str());
       }
 
-      GET_IFACE(IEAFStatusCenter, pStatusCenter);
+      EAF_GET_IFACE(IEAFStatusCenter, pStatusCenter);
       CString strMsg;
       strMsg.Format(_T("The %s library needs at least %d entries. Default entries have been created."), pHaulTruckLibrary->GetDisplayName().c_str(), nMinEntries);
 
@@ -6467,11 +6442,11 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       CString strMsg;
       strMsg.Format(_T("%s\r\n\r\nSee Status Center for Details"),strBadLoads);
       AfxMessageBox(strMsg,MB_OK | MB_ICONEXCLAMATION);
-      GET_IFACE(IEAFStatusCenter,pStatusCenter);
+      EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
       pgsInformationalStatusItem* pStatusItem =  new pgsInformationalStatusItem(m_StatusGroupID,m_scidLoadDescriptionWarning,strBadLoads);
       pStatusCenter->Add(pStatusItem);
 
-      GET_IFACE(IEAFDocument,pDoc);
+      EAF_GET_IFACE(IEAFDocument,pDoc);
       pDoc->SetModified();
    }
 
@@ -6495,11 +6470,11 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
                   LABEL_PIER_EX(pPier->IsAbutment(), pPier->GetIndex()),
                   CPierData2::AsString(newBC,true)
                   );
-               GET_IFACE(IEAFStatusCenter, pStatusCenter);
+               EAF_GET_IFACE(IEAFStatusCenter, pStatusCenter);
                pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID, m_scidBridgeDescriptionInfo, strMsg);
                pStatusCenter->Add(pStatusItem);
 
-               GET_IFACE(IEAFDocument, pDoc);
+               EAF_GET_IFACE(IEAFDocument, pDoc);
                pDoc->SetModified();
 
                bBCChanged = true;
@@ -6527,10 +6502,10 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    if (m_BridgeDescription.WasVersion3_1FilletRead() && m_BridgeDescription.GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone)
    {
       Float64 fillet = m_BridgeDescription.GetFillet();
-      GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
+      EAF_GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
       CString strMsg;
       strMsg.Format(_T("Multiple fillet values were input in this file and are no longer supported in this version of PGSuper. The max value will be used. A single fillet value of %s will be set for the entire bridge.\r\n\r\nSee Status Center for Details"), ::FormatDimension(fillet,pDisplayUnits->GetComponentDimUnit()));
-      GET_IFACE(IEAFStatusCenter, pStatusCenter);
+      EAF_GET_IFACE(IEAFStatusCenter, pStatusCenter);
       pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID, m_scidBridgeDescriptionInfo, strMsg);
       pStatusCenter->Add(pStatusItem);
    }
@@ -6550,7 +6525,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       m_BridgeDescription.CopyHaunchSettings(convPair.second, false);
 
       CString strMsg(_T("Definition of haunch depths using the slab offset method is no longer supported in PGSplice. Haunch input data has been converted to the direct input method. A Geometry Control Event has been added to the timeline at the Open to Traffic event. It is very likely that this has changed haunch loads slightly, and thus dead load responses. It is also likely that roadway elevation checks will be changed significantly. Please review haunch dead loads and finished elevation checks accordingly."));
-      GET_IFACE(IEAFStatusCenter,pStatusCenter);
+      EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
       pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidLoadDescriptionWarning,strMsg);
       pStatusCenter->Add(pStatusItem);
 
@@ -6594,7 +6569,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
             pPier->SetGirderEndDistance(pgsTypes::Back, brgOffset, endDistMeasure);
             CString strMsg;
             strMsg.Format(_T("End Distance was greater than Bearing Offset on the Back side of Pier %s. The End Distance was changed to match the Bearing Offset. Review Pier %s connection geometry."), LABEL_PIER(pierIdx), LABEL_PIER(pierIdx));
-            GET_IFACE(IEAFStatusCenter, pStatusCenter);
+            EAF_GET_IFACE(IEAFStatusCenter, pStatusCenter);
             std::unique_ptr<pgsConnectionGeometryStatusItem> pStatusItem = std::make_unique<pgsConnectionGeometryStatusItem>(m_StatusGroupID, m_scidConnectionGeometryWarning, pierIdx, strMsg);
             pStatusCenter->Add(pStatusItem.release());
          }
@@ -6609,7 +6584,7 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
             pPier->SetGirderEndDistance(pgsTypes::Ahead, brgOffset, endDistMeasure);
             CString strMsg;
             strMsg.Format(_T("End Distance was greater than Bearing Offset on the Ahead side of Pier %s. The End Distance was changed to match the Bearing Offset. Review Pier %s connection geometry."), LABEL_PIER(pierIdx), LABEL_PIER(pierIdx));
-            GET_IFACE(IEAFStatusCenter, pStatusCenter);
+            EAF_GET_IFACE(IEAFStatusCenter, pStatusCenter);
             std::unique_ptr<pgsConnectionGeometryStatusItem> pStatusItem = std::make_unique<pgsConnectionGeometryStatusItem>(m_StatusGroupID, m_scidConnectionGeometryWarning, pierIdx, strMsg);
             pStatusCenter->Add(pStatusItem.release());
          }
@@ -6631,11 +6606,11 @@ STDMETHODIMP CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    return (the_conflict_list.AreThereAnyConflicts() ? S_FALSE : S_OK);
 }
 
-STDMETHODIMP CProjectAgentImp::Save(IStructuredSave* pStrSave)
+bool CProjectAgentImp::Save(IStructuredSave* pStrSave)
 {
    HRESULT hr = S_OK;
 
-   GET_IFACE( IProgress, pProgress );
+   EAF_GET_IFACE( IProgress, pProgress );
    CEAFAutoProgress ap(pProgress);
 
    //
@@ -6655,14 +6630,14 @@ STDMETHODIMP CProjectAgentImp::Save(IStructuredSave* pStrSave)
    } 
    catch(...)
    {
-      return E_FAIL;
+      return false;
    }
 
    STRSTG_SAVE( hr, pStrSave, pProgress );
 
 
 
-   return hr;
+   return true;
 }
 
 void CProjectAgentImp::ValidateStrands(const CSegmentKey& segmentKey,CPrecastSegmentData* pSegment,bool fromLibrary)
@@ -9853,15 +9828,15 @@ Float64 CProjectAgentImp::GetReactionServiceLiveLoadFactor(PierIndexType pierIdx
    Float64 gLL = GetLiveLoadFactor(ls,true);
    if ( gLL < 0 )
    {
-      GET_IFACE(IIntervals,pIntervals);
+      EAF_GET_IFACE(IIntervals,pIntervals);
       IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
       pgsTypes::LiveLoadType llType = ::GetLiveLoadType(ratingType);
 
-      GET_IFACE(IProductForces,pProductForces);
+      EAF_GET_IFACE(IProductForces,pProductForces);
       pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
 
-      GET_IFACE(IReactions,pReactions);
+      EAF_GET_IFACE(IReactions,pReactions);
 
       GroupIndexType grpIdx;
       if ( pierIdx == 0 )
@@ -9942,7 +9917,7 @@ pgsTypes::OverlayLoadDistributionType CProjectAgentImp::GetOverlayLoadDistributi
 
 pgsTypes::HaunchLoadComputationType CProjectAgentImp::GetHaunchLoadComputationType() const
 {
-   GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE(IBridge,pBridge);
 
    if(pBridge->GetHaunchInputDepthType() == pgsTypes::hidACamber)
    {
@@ -9999,14 +9974,14 @@ bool CProjectAgentImp::IsAssumedExcessCamberInputEnabled(bool considerDeckType) 
 
 bool CProjectAgentImp::IsAssumedExcessCamberForLoad() const
 {
-   GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE(IBridge,pBridge);
    const auto& haunch_criteria = m_pSpecEntry->GetHaunchCriteria();
    return pBridge->GetHaunchInputDepthType()==pgsTypes::hidACamber && haunch_criteria.HaunchLoadComputationType == pgsTypes::hlcDetailedAnalysis;
 }
 
 bool CProjectAgentImp::IsAssumedExcessCamberForSectProps() const
 {
-   GET_IFACE(IDocumentType, pDocType);
+   EAF_GET_IFACE(IDocumentType, pDocType);
    bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
    const auto& haunch_criteria = m_pSpecEntry->GetHaunchCriteria();
    return !bIsSplicedGirder && haunch_criteria.HaunchAnalysisSectionPropertiesType == pgsTypes::hspDetailedDescription;
@@ -10030,7 +10005,7 @@ ISpecification::PrincipalWebStressCheckType CProjectAgentImp::GetPrincipalWebStr
    const auto& principal_tension_stress_criteria = m_pSpecEntry->GetPrincipalTensionStressCriteria();
 
    // spliced girder files always analyze principal web stress
-   GET_IFACE(IDocumentType, pDocType);
+   EAF_GET_IFACE(IDocumentType, pDocType);
    bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
    if (bIsSplicedGirder)
    {
@@ -10039,13 +10014,13 @@ ISpecification::PrincipalWebStressCheckType CProjectAgentImp::GetPrincipalWebStr
    else
    {
       // PGSuper models depend in concrete strength
-      GET_IFACE(IMaterials,pMaterials);
+      EAF_GET_IFACE(IMaterials,pMaterials);
       Float64 concStrength;
       if (segmentKey.groupIndex == INVALID_INDEX || segmentKey.girderIndex == INVALID_INDEX || segmentKey.segmentIndex == INVALID_INDEX)
       {
          // Get max f'c for entire bridge
          Float64 maxFc = 0;
-         GET_IFACE(IBridge,pBridge);
+         EAF_GET_IFACE(IBridge,pBridge);
          GroupIndexType nGroups = pBridge->GetGirderGroupCount();
          for (GroupIndexType iGroup = 0; iGroup < nGroups; iGroup++)
          {
@@ -10080,7 +10055,7 @@ ISpecification::PrincipalWebStressCheckType CProjectAgentImp::GetPrincipalWebStr
          }
          else
          {
-            GET_IFACE(ILossParameters, pLossParams);
+            EAF_GET_IFACE(ILossParameters, pLossParams);
             if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP)
             {
                return pwcNCHRPTimeStepMethod;
@@ -10139,7 +10114,7 @@ std::vector<arDesignOptions> CProjectAgentImp::GetDesignOptions(const CGirderKey
 
    std::vector<arDesignOptions> options;
 
-   GET_IFACE(ILibrary,pLib);
+   EAF_GET_IFACE(ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(m_Spec.c_str());
 
    const auto& lifting_criteria = pSpecEntry->GetLiftingCriteria();
@@ -10983,7 +10958,7 @@ void CProjectAgentImp::HoldEvents()
 
    Fire_OnHoldEvents();
 
-   GET_IFACE(IUIEvents,pUIEvents);
+   EAF_GET_IFACE(IUIEvents,pUIEvents);
    pUIEvents->HoldEvents(true);
 }
 
@@ -11111,7 +11086,7 @@ void CProjectAgentImp::FirePendingEvents()
 
       Fire_OnFirePendingEvents();
 
-      GET_IFACE(IUIEvents, pUIEvents);
+      EAF_GET_IFACE(IUIEvents, pUIEvents);
       pUIEvents->FirePendingEvents();
    }
    catch (...)
@@ -11136,7 +11111,7 @@ void CProjectAgentImp::CancelPendingEvents()
 
    Fire_OnCancelPendingEvents();
 
-   GET_IFACE(IUIEvents,pUIEvents);
+   EAF_GET_IFACE(IUIEvents,pUIEvents);
    pUIEvents->CancelPendingEvents();
 }
 
@@ -12109,7 +12084,7 @@ void CProjectAgentImp::DealWithGirderLibraryChanges(bool fromLibrary)
    // debond length exceeds 1/2 girder length
 #pragma Reminder("Need thorough check of library changes affect to project data")
 
-   GET_IFACE(IPretensionForce,pPrestress);
+   EAF_GET_IFACE(IPretensionForce,pPrestress);
 
    GroupIndexType nGroups = m_BridgeDescription.GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
@@ -12171,7 +12146,7 @@ void CProjectAgentImp::DealWithGirderLibraryChanges(bool fromLibrary)
             bool bMinDist;
             pGdrEntry->GetMinDistanceBetweenDebondSections(&ndb, &bMinDist, &minDist);
 
-            GET_IFACE(IMaterials, pMaterials);
+            EAF_GET_IFACE(IMaterials, pMaterials);
             Float64 ndb_max = pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC ? 24.0 : 60.0;
 
             bool bTooSmall = ndb < ndb_max ? true : false;
@@ -12216,7 +12191,7 @@ void CProjectAgentImp::DealWithGirderLibraryChanges(bool fromLibrary)
 void CProjectAgentImp::AddSegmentStatusItem(const CSegmentKey& segmentKey,const std::_tstring& message)
 {
    // first post message
-   GET_IFACE(IEAFStatusCenter,pStatusCenter);
+   EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
    pgsGirderDescriptionStatusItem* pStatusItem =  new pgsGirderDescriptionStatusItem(segmentKey,0,m_StatusGroupID,m_scidGirderDescriptionWarning,message.c_str());
    StatusItemIDType st_id = pStatusCenter->Add(pStatusItem);
 
@@ -12237,7 +12212,7 @@ void CProjectAgentImp::AddSegmentStatusItem(const CSegmentKey& segmentKey,const 
 
 void CProjectAgentImp::RemoveSegmentStatusItems(const CSegmentKey& segmentKey)
 {
-   GET_IFACE_NOCHECK(IEAFStatusCenter,pStatusCenter);
+   EAF_GET_IFACE_NOCHECK(IEAFStatusCenter,pStatusCenter);
 
    StatusIterator iter( m_CurrentGirderStatusItems.find(segmentKey) );
    if (iter != m_CurrentGirderStatusItems.end())
@@ -12452,13 +12427,13 @@ Float64 CProjectAgentImp::GetMaxPjack(const CSegmentKey& segmentKey,pgsTypes::St
       type = pgsTypes::Straight;
    }
 
-   GET_IFACE(IPretensionForce,pPrestress);
+   EAF_GET_IFACE(IPretensionForce,pPrestress);
    return pPrestress->GetPjackMax(segmentKey,*GetStrandMaterial(segmentKey,type),nStrands);
 }
 
 Float64 CProjectAgentImp::GetMaxPjack(const CSegmentKey& segmentKey,StrandIndexType nStrands,const WBFL::Materials::PsStrand* pStrand) const
 {
-   GET_IFACE(IPretensionForce,pPrestress);
+   EAF_GET_IFACE(IPretensionForce,pPrestress);
    return pPrestress->GetPjackMax(segmentKey,*pStrand,nStrands);
 }
 
@@ -12492,7 +12467,7 @@ HRESULT CProjectAgentImp::FireContinuityRelatedSpanChange(const CSpanKey& spanKe
       GirderIndexType continuityGirderIdx = (spanKey.girderIndex == ALL_GIRDERS) ? 0 : spanKey.girderIndex;
       CGirderKey girderKey(grpIdx,continuityGirderIdx);
       
-      GET_IFACE(IContinuity,pContinuity);
+      EAF_GET_IFACE(IContinuity,pContinuity);
       if (pContinuity->IsContinuityFullyEffective(girderKey))
       {
          grpIdx = ALL_GROUPS; // assume the entire girder line is affected...specify change affects all groups
@@ -13009,7 +12984,7 @@ void CProjectAgentImp::UpdateHaulTruck(const COldHaulTruck* pOldHaulTruck)
    {
       // truck roll stiffness is a function of the girder weight
       HaulTruckLibrary* pHaulTruckLibrary = GetHaulTruckLibrary();
-      GET_IFACE(ISectionProperties,pSectProps);
+      EAF_GET_IFACE(ISectionProperties,pSectProps);
       GroupIndexType nGroups = m_BridgeDescription.GetGirderGroupCount();
       for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
       {
@@ -13110,7 +13085,7 @@ void CProjectAgentImp::UpgradeBearingData()
                   CString strMsg(_T("New Bearing Data at Piers was added in this version of the program. The data was not available when this file was last saved. You may want to investigate the bearing information and make sure it is appropriate for this project."));
                   pgsBridgeDescriptionStatusItem* pStatusItem = 
                      new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionWarning,pgsBridgeDescriptionStatusItem::Bearings,strMsg);
-                  GET_IFACE(IEAFStatusCenter,pStatusCenter);
+                  EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
                   pStatusCenter->Add(pStatusItem);
 
                   postedMsg = true;

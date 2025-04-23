@@ -32,7 +32,7 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 
-   CComPtr<IEAFDisplayUnits> m_pDisplayUnits;
+   std::shared_ptr<IEAFDisplayUnits> m_pDisplayUnits;
    const CBridgeDescription2* m_pBridgeDesc;
 
    CTimelineItemListBox m_lbSource;

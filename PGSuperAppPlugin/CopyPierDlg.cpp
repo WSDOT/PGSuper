@@ -56,7 +56,7 @@ static char THIS_FILE[] = __FILE__;
 // CCopyPierDlg dialog
 
 
-CCopyPierDlg::CCopyPierDlg(IBroker* pBroker, const std::map<IDType,ICopyPierPropertiesCallback*>&  rCopyPierPropertiesCallbacks, IDType selectedID, CWnd* pParent /*=nullptr*/)
+CCopyPierDlg::CCopyPierDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::map<IDType,ICopyPierPropertiesCallback*>&  rCopyPierPropertiesCallbacks, IDType selectedID, CWnd* pParent /*=nullptr*/)
 	: CDialog(CCopyPierDlg::IDD, pParent),
    m_pBroker(pBroker),
    m_CopyPierPropertiesCallbacks(rCopyPierPropertiesCallbacks)
@@ -65,7 +65,7 @@ CCopyPierDlg::CCopyPierDlg(IBroker* pBroker, const std::map<IDType,ICopyPierProp
 	//}}AFX_DATA_INIT
 
    // keep selection around
-   GET_IFACE(ISelection,pSelection);
+   EAF_GET_IFACE(ISelection,pSelection);
    m_FromSelection = pSelection->GetSelection();
 
    // Special case here if selected ID is INVALID_ID
@@ -110,7 +110,7 @@ BOOL CCopyPierDlg::OnInitDialog()
    m_cyMin = rect.Height();
 
    // set up report window
-   GET_IFACE(IReportManager, pReportMgr);
+   EAF_GET_IFACE_(WBFL::Reporting,IReportManager, pReportMgr);
    WBFL::Reporting::ReportDescription rptDesc = pReportMgr->GetReportDescription(_T("Copy Pier Properties Report"));
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
    std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
@@ -131,7 +131,7 @@ BOOL CCopyPierDlg::OnInitDialog()
    // set up reporting window
    UpdateReportData();
 
-   GET_IFACE(IReportManager,pRptMgr);
+   EAF_GET_IFACE_(WBFL::Reporting,IReportManager,pRptMgr);
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> nullSpecBuilder;
    CWnd* pWnd = GetDlgItem(IDC_BROWSER);
    m_pBrowser = pRptMgr->CreateReportBrowser(pWnd->GetSafeHwnd(), WS_BORDER,pRptSpec,nullSpecBuilder);
@@ -241,7 +241,7 @@ std::vector<PierIndexType> CCopyPierDlg::GetToPiers()
       if (ALL_PIERS == PierIdx)
       {
          std::vector<PierIndexType> vec;
-         GET_IFACE(IBridgeDescription,pIBridgeDesc);
+         EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
          const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
          GroupIndexType nPiers = pBridgeDesc->GetPierCount();
@@ -285,7 +285,7 @@ void CCopyPierDlg::FillComboBoxes(CComboBox& cbPier, bool bIncludeAllPiers, Pier
       cbPier.SetItemData(idx,ALL_PIERS);
    }
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    GroupIndexType nPiers = pBridgeDesc->GetPierCount();
@@ -308,7 +308,7 @@ void CCopyPierDlg::FillComboBoxes(CComboBox& cbPier, bool bIncludeAllPiers, Pier
 
 void CCopyPierDlg::UpdateReportData()
 {
-   GET_IFACE(IReportManager,pReportMgr);
+   EAF_GET_IFACE_(WBFL::Reporting,IReportManager,pReportMgr);
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
 
    PierIndexType pierIdx = GetFromPier();
@@ -336,7 +336,7 @@ void CCopyPierDlg::UpdateReport()
    {
       UpdateReportData();
 
-      GET_IFACE(IReportManager,pReportMgr);
+      EAF_GET_IFACE_(WBFL::Reporting,IReportManager,pReportMgr);
       std::shared_ptr<WBFL::Reporting::ReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
 
       std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = std::dynamic_pointer_cast<WBFL::Reporting::ReportSpecification,CCopyPierPropertiesReportSpecification>(m_pRptSpec);
@@ -400,7 +400,7 @@ void CCopyPierDlg::OnOK()
 
    if (0 < pMacro->GetTxnCount())
    {
-      GET_IFACE(IEAFTransactions, pTransactions);
+      EAF_GET_IFACE(IEAFTransactions, pTransactions);
       pTransactions->Execute(std::move(pMacro));
    }
 
@@ -417,7 +417,7 @@ void CCopyPierDlg::OnEdit()
 {
    PierIndexType fromIdx = GetFromPier();
 
-   GET_IFACE(IEditByUI, pEditByUI);
+   EAF_GET_IFACE(IEditByUI, pEditByUI);
    UINT tab = 0; // use if nothing is selected
    std::vector<ICopyPierPropertiesCallback*> callbacks = GetSelectedCopyPierPropertiesCallbacks();
    if (!callbacks.empty())

@@ -71,9 +71,8 @@ BOOL CBearingSame4BridgeDlg::OnInitDialog()
 
 void CBearingSame4BridgeDlg::DoDataExchange(CDataExchange* pDX)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    DDX_CBIndex(pDX, IDC_BRG_SHAPE, (int&)m_BearingData.Shape);
    DDX_CBItemData(pDX, IDC_BRG_COUNT, m_BearingData.BearingCount);

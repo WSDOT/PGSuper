@@ -46,8 +46,7 @@ bool pgsVSRatioStatusItem::IsEqual(CEAFStatusItem* pOther)
 }
 
 //////////////////////////////////////////////////////////
-pgsVSRatioStatusCallback::pgsVSRatioStatusCallback(IBroker* pBroker):
-m_pBroker(pBroker)
+pgsVSRatioStatusCallback::pgsVSRatioStatusCallback()
 {
 }
 

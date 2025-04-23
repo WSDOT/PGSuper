@@ -211,7 +211,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="BridgeAgent.def" />
-    <None Include="BridgeAgent.rgs" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="BridgeAgent.rc" />

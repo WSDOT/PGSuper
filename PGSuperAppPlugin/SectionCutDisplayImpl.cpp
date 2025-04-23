@@ -53,7 +53,7 @@ CSectionCutDisplayImpl::~CSectionCutDisplayImpl()
 {
 }
 
-void CSectionCutDisplayImpl::Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, IBroker* pBroker, const CGirderKey& girderKey, iCutLocation* pCutLoc)
+void CSectionCutDisplayImpl::Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, iCutLocation* pCutLoc)
 {
    m_pBroker = pBroker;
 
@@ -76,7 +76,7 @@ void CSectionCutDisplayImpl::SetColor(COLORREF color)
 
 pgsPointOfInterest CSectionCutDisplayImpl::GetCutPOI(Float64 Xgl) const
 {
-   GET_IFACE(IPointOfInterest, pPoi);
+   EAF_GET_IFACE(IPointOfInterest, pPoi);
    if (m_GirderKey.groupIndex == ALL_GROUPS)
    {
       return pPoi->ConvertGirderlineCoordinateToPoi(m_GirderKey.girderIndex, Xgl);
@@ -153,11 +153,11 @@ void CSectionCutDisplayImpl::GetBoundingBox(std::shared_ptr<const WBFL::DManip::
 
    pgsPointOfInterest poi = GetCutPOI(Xgl);
 
-   GET_IFACE(IGirder, pGirder);
+   EAF_GET_IFACE(IGirder, pGirder);
    Float64 Hg = pGirder->GetHeight(poi);
    Float64 top_flange_thickening = pGirder->GetTopFlangeThickening(poi);
    
-   GET_IFACE(ICamber, pCamber);
+   EAF_GET_IFACE(ICamber, pCamber);
    Float64 precamber = pCamber->GetPrecamber(poi,pgsTypes::pddErected);
 
    *top = dy + top_flange_thickening + precamber;
@@ -412,7 +412,7 @@ bool CSectionCutDisplayImpl::PrepareForDrag(std::shared_ptr<WBFL::DManip::iDispl
 
    pSink->Write(ms_Format,&threadid,sizeof(DWORD));
    pSink->Write(ms_Format,&m_Color,sizeof(COLORREF));
-   pSink->Write(ms_Format,&m_pBroker,sizeof(IBroker*));
+   pSink->Write(ms_Format,&m_pBroker,sizeof(std::shared_ptr<WBFL::EAF::Broker>));
    pSink->Write(ms_Format,&m_GirderKey,sizeof(CGirderKey));
    pSink->Write(ms_Format,&m_MinCutLocation,sizeof(Float64));
    pSink->Write(ms_Format,&m_MaxCutLocation,sizeof(Float64));
@@ -435,7 +435,7 @@ void CSectionCutDisplayImpl::OnDrop(std::shared_ptr<WBFL::DManip::iDisplayObject
    ATLASSERT(threadid == threadl);
 
    pSource->Read(ms_Format,&m_Color,sizeof(COLORREF));
-   pSource->Read(ms_Format,&m_pBroker,sizeof(IBroker*));
+   pSource->Read(ms_Format,&m_pBroker,sizeof(std::shared_ptr<WBFL::EAF::Broker>));
    pSource->Read(ms_Format,&m_GirderKey,sizeof(CGirderKey));
    pSource->Read(ms_Format,&m_MinCutLocation,sizeof(Float64));
    pSource->Read(ms_Format,&m_MaxCutLocation,sizeof(Float64));

@@ -149,9 +149,9 @@ void CGirderTopWidthGrid::UpdateGrid()
 	GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    GroupIndexType nTopWidthGroups = m_pGirderGroup->GetGirderTopWidthGroupCount();
    GirderIndexType nGirders = m_pGirderGroup->GetGirderCount();
@@ -687,9 +687,9 @@ pgsTypes::TopWidthType CGirderTopWidthGrid::GetTopWidthTypeFromCell(ROWCOL col)
 
 BOOL CGirderTopWidthGrid::ValidateGirderTopWidth()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    ROWCOL nCols = GetColCount();
    for (int i = 0; i < 2; i++) // start/end
@@ -783,10 +783,10 @@ BOOL CGirderTopWidthGrid::OnEndEditing(ROWCOL nRow, ROWCOL nCol)
 {
    if ( (nRow == 2 || nRow == 4) && 2 <= nCol)
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
 
-      GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+      EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
       CString strValue = GetCellValue(nRow, nCol);
 
@@ -811,10 +811,10 @@ BOOL CGirderTopWidthGrid::OnEndEditing(ROWCOL nRow, ROWCOL nCol)
    }
    else if ( (nRow == 3 || nRow == 5) && 2 <= nCol)
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
 
-      GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+      EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
       CString strValue = GetCellValue(nRow, nCol);
 

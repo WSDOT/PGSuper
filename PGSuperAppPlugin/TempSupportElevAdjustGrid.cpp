@@ -104,9 +104,8 @@ int CTempSupportElevAdjustGrid::GetColWidth(ROWCOL nCol)
 
 void CTempSupportElevAdjustGrid::BuildGridAndHeader()
 {
-   CComPtr<IBroker> pBroker;
-   ::EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
@@ -202,9 +201,8 @@ void CTempSupportElevAdjustGrid::BuildGridAndHeader()
 
 void CTempSupportElevAdjustGrid::GetGridData(CDataExchange* pDX)
 {
-   CComPtr<IBroker> pBroker;
-   ::EAFGetBroker(&pBroker);
-   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CBridgeDescription2* pBridge = GetBridgeDesc();
    ROWCOL col = 1;

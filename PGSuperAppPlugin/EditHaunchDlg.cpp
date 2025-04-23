@@ -66,9 +66,9 @@ void CEditHaunchDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // fillet
    DDX_UnitValueAndTag( pDX, IDC_FILLET, IDC_FILLET_UNIT, m_Fillet, pDisplayUnits->GetComponentDimUnit() );
@@ -181,9 +181,9 @@ BOOL CEditHaunchDlg::OnInitDialog()
    m_pTempSupportElevAdjustGrid->SubclassDlgItem(IDC_TS_ELEVATION_ADJUST_GRID,this);
    m_pTempSupportElevAdjustGrid->CustomInit(0,this);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    const CDeckDescription2* pDeck = m_BridgeDesc.GetDeckDescription();
    Float64 Tdeck;

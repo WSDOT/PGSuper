@@ -69,10 +69,9 @@ void CCopyConcreteEntry::DoDataExchange(CDataExchange* pDX)
 
    if ( pDX->m_bSaveAndValidate )
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      auto pBroker = EAFGetBroker();
 
-      GET_IFACE2(pBroker,ILibrary,pLib);
+      EAF_GET_IFACE2(pBroker,ILibrary,pLib);
       m_ConcreteEntry = pLib->GetConcreteEntry(m_Concrete);
    }
 }
@@ -89,10 +88,9 @@ END_MESSAGE_MAP()
 
 BOOL CCopyConcreteEntry::OnInitDialog() 
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2( pBroker, ILibraryNames, pLibNames);
+   EAF_GET_IFACE2( pBroker, ILibraryNames, pLibNames);
    std::vector<std::_tstring> names;
    pLibNames->EnumConcreteNames(&names);
 

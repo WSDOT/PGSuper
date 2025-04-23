@@ -42,7 +42,7 @@ public:
    CConcreteManager();
    ~CConcreteManager();
 
-   void Init(IBroker* pBroker,StatusGroupIDType statusGroupID);
+   void Init(std::shared_ptr<WBFL::EAF::Broker>,StatusGroupIDType statusGroupID);
    void Reset();
 
    pgsTypes::ConcreteType GetSegmentConcreteType(const CSegmentKey& segmentKey) const;
@@ -196,7 +196,7 @@ public:
    Float64 GetLongitudinalJointLambda() const;
 
 private:
-   IBroker* m_pBroker; // weak reference
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    StatusGroupIDType m_StatusGroupID;
    mutable bool m_bIsValidated; // Level 1 concrete definition is valid
    mutable bool m_bIsSegmentValidated; // Level 2 concrete definition is valid for segments/closure joints

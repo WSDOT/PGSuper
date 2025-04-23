@@ -68,14 +68,14 @@ void CGirderDescDebondPage::DoDataExchange(CDataExchange* pDX)
    bool bSymmetricDebond = pParent->m_pSegment->Strands.IsSymmetricDebond();
 	DDX_Check_Bool(pDX, IDC_SYMMETRIC_DEBOND, bSymmetricDebond );
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    if ( pDX->m_bSaveAndValidate )
    {
       pParent->m_pSegment->Strands.IsSymmetricDebond(bSymmetricDebond);
 
-      GET_IFACE2(pBroker, IBridge,pBridge);
+      EAF_GET_IFACE2(pBroker, IBridge,pBridge);
       Float64 gdr_length2 = pBridge->GetSegmentLength(pParent->m_SegmentKey)/2.0;
 
       m_Grid.GetData(*(pParent->m_pSegment));
@@ -151,9 +151,9 @@ BOOL CGirderDescDebondPage::OnSetActive()
 {
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
    bool bSymmetricDebond = pParent->m_pSegment->Strands.IsSymmetricDebond();
    bool bCanDebond = pStrandGeometry->CanDebondStrands(pParent->m_strGirderName.c_str(),pgsTypes::Straight);
    m_Grid.CanDebond(bCanDebond,bSymmetricDebond);
@@ -245,13 +245,13 @@ void CGirderDescDebondPage::OnPaint()
    pWnd->Invalidate();
    pWnd->UpdateWindow();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker, IShapes, pShapes);
-   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker, IShapes, pShapes);
+   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    pgsPointOfInterest poi = pPoi->GetPointOfInterest(pParent->m_SegmentKey, 0.0);
 
-   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
    IntervalIndexType intervalIdx = pIntervals->GetPrestressReleaseInterval(pParent->m_SegmentKey);
 
    CComPtr<IShape> shape;
@@ -265,8 +265,8 @@ void CGirderDescDebondPage::OnPaint()
    position->put_LocatorPoint(lpBottomCenter,lp);
 
 
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
-   GET_IFACE2(pBroker, IGirder, pGirder);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IGirder, pGirder);
    Float64 top_width;
    if (IsTopWidthSpacing(pIBridgeDesc->GetGirderSpacingType()) )
    {
@@ -426,9 +426,9 @@ void CGirderDescDebondPage::DrawShape(CDC* pDC,IShape* shape, WBFL::Graphing::Po
 
 void CGirderDescDebondPage::DrawStrands(CDC* pDC, WBFL::Graphing::PointMapper& mapper,Float64 Xadjustment)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -524,7 +524,7 @@ void CGirderDescDebondPage::DrawStrands(CDC* pDC, WBFL::Graphing::PointMapper& m
    pDC->SelectObject(&debond_pen);
    pDC->SelectObject(&debond_brush);
 
-   GET_IFACE2( pBroker, ILibrary, pLib );
+   EAF_GET_IFACE2( pBroker, ILibrary, pLib );
    const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(pParent->m_strGirderName.c_str());
 
    CPrecastSegmentData segment = *(pParent->m_pSegment);

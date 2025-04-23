@@ -292,16 +292,16 @@ void CSplicedGirderGeneralPage::OnDeleteDuct()
 
 void CSplicedGirderGeneralPage::FillGirderComboBox()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    std::_tstring strGirderFamilyName = pBridgeDesc->GetGirderFamilyName();
 
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_GIRDER_NAME);
 
-   GET_IFACE2( pBroker, ILibraryNames, pLibNames );
+   EAF_GET_IFACE2( pBroker, ILibraryNames, pLibNames );
    std::vector<std::_tstring> names;
    std::vector<std::_tstring>::iterator iter;
    
@@ -390,9 +390,9 @@ void CSplicedGirderGeneralPage::FillStrandList(CComboBox* pList,WBFL::Materials:
 {
    const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    bool bUnitsUS = IS_US_UNITS(pDisplayUnits);
 
@@ -534,9 +534,9 @@ void CSplicedGirderGeneralPage::OnChangedGirderName()
       pParent->m_pGirder->SetGirderName(strName);
 
       // make sure the segment variation type is valid
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,ILibrary,pLib);
+      
+      auto pBroker = EAFGetBroker();
+      EAF_GET_IFACE2(pBroker,ILibrary,pLib);
       const GirderLibraryEntry* pGirderEntry = pLib->GetGirderEntry(strName);
       pParent->m_pGirder->SetGirderLibraryEntry(pGirderEntry);
 

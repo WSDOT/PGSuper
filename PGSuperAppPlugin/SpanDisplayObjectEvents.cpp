@@ -46,9 +46,9 @@ CBridgePlanViewSpanDisplayObjectEvents::CBridgePlanViewSpanDisplayObjectEvents(S
    m_SpanIdx = spanIdx;
    m_pFrame  = pFrame;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CSpanData2* pSpan = pIBridgeDesc->GetSpan(spanIdx);
    m_TempSupports         = pSpan->GetTemporarySupports();
 }

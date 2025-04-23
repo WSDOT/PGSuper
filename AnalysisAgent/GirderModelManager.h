@@ -27,9 +27,6 @@
 #include <IFace\Bridge.h>
 #include "ProductLoadMap.h"
 
-interface ILibrary;
-interface ILiveLoads;
-
 class CPierData2;
 class CTemporarySupportData;
 class CTimelineManager;
@@ -37,6 +34,9 @@ class CPrecastSegmentData;
 class CParabolicDuctGeometry;
 class CLinearDuctGeometry;
 class COffsetDuctGeometry;
+
+class ILibrary;
+class ILiveLoads;
 
 class COverhangLoadData
 {
@@ -62,7 +62,7 @@ public:
 class CGirderModelManager
 {
 public:
-   CGirderModelManager(SHARED_LOGFILE lf,IBroker* pBroker,StatusGroupIDType statusGroupID);
+   CGirderModelManager(SHARED_LOGFILE lf,std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID);
 
    void Clear();
    void DumpAnalysisModels(GirderIndexType gdrLineIdx) const;
@@ -289,7 +289,7 @@ public:
 
 private:
 	DECLARE_SHARED_LOGFILE;
-   IBroker* m_pBroker; // must be a weak reference (this is the agent's pointer and it is a weak refernece)
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker; // must be a weak reference (this is the agent's pointer and it is a weak refernece)
    StatusGroupIDType m_StatusGroupID;
    mutable CComPtr<IIDArray> m_LBAMPoi;   // array for LBAM poi (this will be a problem for concurrency)
    CComPtr<ILBAMLRFDFactory3> m_LBAMUtility;

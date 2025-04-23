@@ -1424,8 +1424,7 @@ Float64 CPrecastSegmentData::GetSegmentHeight(bool bSegmentHeight) const
    CComPtr<IBeamFactory> factory;
    pGdrEntry->GetBeamFactory(&factory);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    CComPtr<IGirderSection> gdrSection;
    factory->CreateGirderSection(pBroker,INVALID_ID,pGdrEntry->GetDimensions(),-1,-1,&gdrSection);
    Float64 height;

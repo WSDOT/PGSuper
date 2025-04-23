@@ -33,11 +33,12 @@
 
 // FORWARD DECLARATIONS
 //
+
 interface IBroker;
-interface IBridgeDescription;
-interface IBridge;
-interface IGirder;
-interface IBarriers;
+class IBridgeDescription;
+class IBridge;
+class IGirder;
+class IBarriers;
 
 // MISCELLANEOUS
 

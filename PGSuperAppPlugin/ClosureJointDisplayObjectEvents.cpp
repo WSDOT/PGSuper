@@ -74,9 +74,9 @@ void CClosureJointDisplayObjectEvents::SelectPrevAdjacent(std::shared_ptr<WBFL::
    if ( m_ClosureKey.girderIndex == 0 )
    {
       // if this is the first girder, wrap around to the previous segment of the last girder
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+      
+      auto pBroker = EAFGetBroker();
+      EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       const CGirderGroupData* pGroup = pIBridgeDesc->GetBridgeDescription()->GetGirderGroup(m_ClosureKey.groupIndex);
       m_pFrame->SelectSegment( CSegmentKey(m_ClosureKey.groupIndex,pGroup->GetGirderCount()-1,m_ClosureKey.segmentIndex) );
    }
@@ -91,9 +91,9 @@ void CClosureJointDisplayObjectEvents::SelectPrevAdjacent(std::shared_ptr<WBFL::
 
 void CClosureJointDisplayObjectEvents::SelectNextAdjacent(std::shared_ptr<WBFL::DManip::iDisplayObject> pDO)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CGirderGroupData* pGroup = pIBridgeDesc->GetBridgeDescription()->GetGirderGroup(m_ClosureKey.groupIndex);
    if ( m_ClosureKey.girderIndex == pGroup->GetGirderCount()-1 )
    {

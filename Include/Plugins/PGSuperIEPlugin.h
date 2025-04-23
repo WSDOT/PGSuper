@@ -64,7 +64,7 @@ namespace PGSuper
       virtual CString GetMenuText() const = 0;
       virtual HBITMAP GetBitmapHandle() const = 0;
       virtual CString GetCommandHintText() const = 0;
-      virtual HRESULT Import(IBroker* pBroker) = 0;
+      virtual HRESULT Import(std::shared_ptr<WBFL::EAF::Broker> pBroker) = 0;
    };
 
    class IDataExporter
@@ -74,14 +74,14 @@ namespace PGSuper
       virtual CString GetMenuText() const = 0;
       virtual HBITMAP GetBitmapHandle() const = 0;
       virtual CString GetCommandHintText() const = 0;
-      virtual HRESULT Export(IBroker* pBroker) = 0;
+      virtual HRESULT Export(std::shared_ptr<WBFL::EAF::Broker> pBroker) = 0;
    };
 
    class IProjectImporter
    {
    public:
       virtual CString GetItemText() const = 0;
-      virtual HRESULT Import(IBroker* pBroker) = 0;
+      virtual HRESULT Import(std::shared_ptr<WBFL::EAF::Broker> pBroker) = 0;
       virtual HICON GetIcon() const = 0;
       virtual CLSID GetCLSID() const = 0;
    };

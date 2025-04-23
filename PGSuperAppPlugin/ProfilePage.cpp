@@ -53,7 +53,7 @@ CProfilePage::~CProfilePage()
 {
 }
 
-IBroker* CProfilePage::GetBroker()
+std::shared_ptr<WBFL::EAF::Broker> CProfilePage::GetBroker()
 {
    CAlignmentDescriptionDlg* pParent = (CAlignmentDescriptionDlg*)GetParent();
    return pParent->m_pBroker;
@@ -66,7 +66,7 @@ void CProfilePage::DoDataExchange(CDataExchange* pDX)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
 	//}}AFX_DATA_MAP
 
-   GET_IFACE2(GetBroker(),IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(GetBroker(),IEAFDisplayUnits,pDisplayUnits);
 
    DDX_Station(pDX, IDC_STATION,  m_ProfileData.Station, pDisplayUnits->GetStationFormat() );
    DDX_UnitValueAndTag( pDX, IDC_ELEVATION, IDC_ELEVATION_UNIT, m_ProfileData.Elevation, pDisplayUnits->GetAlignmentLengthUnit() );

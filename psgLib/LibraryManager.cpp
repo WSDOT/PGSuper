@@ -25,6 +25,8 @@
 
 #include <EAF\EAFDocument.h>
 #include <EAF\EAFUtilities.h>
+#include <EAF\Agent.h>
+
 #include <psgLib\LibraryEditorDoc.h>
 
 #include <IFace\DocumentType.h>

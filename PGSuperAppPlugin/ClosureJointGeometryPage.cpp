@@ -249,10 +249,10 @@ void CClosureJointGeometryPage::DoDataExchange(CDataExchange* pDX)
    DDX_Control(pDX, IDC_BEARING_OFFSET_MEASURE, m_cbBearingOffsetMeasure);
    DDX_Control(pDX, IDC_END_DISTANCE_MEASURE, m_cbEndDistMeasure);
    
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CString strImageName;
    if ( m_bIsPier )

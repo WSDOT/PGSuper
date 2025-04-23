@@ -102,9 +102,8 @@ void CBearingGdrGrid::CustomInit(SpanIndexType ispan)
    m_SpanIdx = ispan;
 
    // initialize units
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    m_pCompUnit = &(pDisplayUnits->GetComponentDimUnit());
 
 // Initialize the grid. For CWnd based grids this call is // 

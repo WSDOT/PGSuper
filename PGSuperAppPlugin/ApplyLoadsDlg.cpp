@@ -243,10 +243,8 @@ void CApplyLoadsDlg::OnMoveToSourceList()
 
 void CApplyLoadsDlg::FillLists()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-
-   GET_IFACE2(pBroker,IUserDefinedLoadData, pUserDefinedLoads);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IUserDefinedLoadData, pUserDefinedLoads);
    IndexType nLoads = pUserDefinedLoads->GetPointLoadCount();
    for ( IndexType loadIdx = 0; loadIdx < nLoads; loadIdx++ )
    {

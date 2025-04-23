@@ -80,7 +80,7 @@ protected:
    void MakeAssignment(const rptPointOfInterest& rOther);
 
 private:
-   CComPtr<IBroker> m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    pgsPointOfInterest m_POI;
    CSpanKey m_SpanKey;
    Float64 m_Xspan;

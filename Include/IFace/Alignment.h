@@ -67,8 +67,9 @@ DESCRIPTION
 // {AB9CDAA6-022D-11d3-8926-006097C68A9C}
 DEFINE_GUID(IID_IRoadway, 
 0xab9cdaa6, 0x22d, 0x11d3, 0x89, 0x26, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
-interface IRoadway : IUnknown
+class IRoadway
 {
+public:
    // Gets the station, elevation, profile grade and coordinate of the start point of the alignment. The start point
    // is assumed to be at lessor station of the 1/n of the first span length before the first pier and
    // the least station of any alignment, profile, or cross section entry. The actual alignment has
@@ -139,8 +140,9 @@ INTERFACE
 // {F013DA5F-708F-461b-9905-8BA164A436FA}
 DEFINE_GUID(IID_IGeometry, 
 0xf013da5f, 0x708f, 0x461b, 0x99, 0x5, 0x8b, 0xa1, 0x64, 0xa4, 0x36, 0xfa);
-interface IGeometry : IUnknown
+class IGeometry
 {
+public:
    // Measure
    virtual HRESULT Angle(IPoint2d* from,IPoint2d* vertex,IPoint2d* to,IAngle** angle) const = 0;
    virtual HRESULT Area(IPoint2dCollection* points,Float64* area) const = 0;

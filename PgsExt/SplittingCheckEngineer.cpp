@@ -33,18 +33,8 @@ pgsSplittingCheckEngineer::pgsSplittingCheckEngineer()
 {
 }
 
-pgsSplittingCheckEngineer::pgsSplittingCheckEngineer(IBroker* pBroker) :
-   m_pBroker(pBroker)
-{
-}
-
 pgsSplittingCheckEngineer::~pgsSplittingCheckEngineer()
 {
-}
-
-void pgsSplittingCheckEngineer::SetBroker(IBroker* pBroker)
-{
-   m_pBroker = pBroker;
 }
 
 LPCTSTR pgsSplittingCheckEngineer::GetCheckName()

@@ -49,7 +49,7 @@ protected:
    void FillSupportComboBox();
    void FillGirderComboBox(GroupIndexType grpIdx);
 
-   CComPtr<IEAFDisplayUnits> m_pDisplayUnits;
+   std::shared_ptr<IEAFDisplayUnits> m_pDisplayUnits;
    const CBridgeDescription2* m_pBridgeDesc;
 
 	DECLARE_MESSAGE_MAP()

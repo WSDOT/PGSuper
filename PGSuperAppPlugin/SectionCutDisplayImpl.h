@@ -36,7 +36,7 @@ public:
    ~CSectionCutDisplayImpl();
 
    virtual void SetColor(COLORREF color) override;
-   virtual void Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, IBroker* pBroker, const CGirderKey& girderKey, iCutLocation* pCutLoc) override;
+   virtual void Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, iCutLocation* pCutLoc) override;
    virtual pgsPointOfInterest GetCutPOI(Float64 Xgl) const override;
 
    virtual void Draw(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC) const override;
@@ -76,7 +76,7 @@ private:
 
    COLORREF           m_Color;
    CGirderKey         m_GirderKey;
-   IBroker*           m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker>           m_pBroker;
    Float64            m_MinCutLocation;  // in girder coordinates when a single group is displayed, otherwise in girderline coordinate (for ALL_GROUPS)
    Float64            m_MaxCutLocation; // in girder coordinates when a single group is displayed, otherwise in girderline coordinate (for ALL_GROUPS)
    iCutLocation*      m_pCutLocation;

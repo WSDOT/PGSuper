@@ -54,9 +54,9 @@ CPostTensioningPage::~CPostTensioningPage()
 
 void CPostTensioningPage::DoDataExchange(CDataExchange* pDX)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CPropertyPage::DoDataExchange(pDX);
 
@@ -85,9 +85,9 @@ BOOL CPostTensioningPage::OnInitDialog()
 
    // TODO:  Add extra initialization here
    BOOL bShow;
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,ILossParameters,pLossParameters);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,ILossParameters,pLossParameters);
    if ( pLossParameters->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       m_ctrlDescription.SetWindowText(_T("These parameters are used for determining initial losses in post-tensioned tendons and temporary strands"));

@@ -131,9 +131,9 @@ void CGirderNameGrid::CustomInit(CGirderGroupData* pGirderGroup)
 
 void CGirderNameGrid::UpdateGrid()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,ILibrary,pLib);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
 
 	GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
@@ -275,9 +275,9 @@ void CGirderNameGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
    CString strNewName;
    GetCurrentCellControl()->GetCurrentText(strNewName);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker, ILibrary, pLib);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker, ILibrary, pLib);
    const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(strNewName);
 
    CComPtr<IBeamFactory> factory;
@@ -338,9 +338,9 @@ BOOL CGirderNameGrid::OnEndEditing(ROWCOL nRow, ROWCOL nCol)
    {
       m_pGirderGroup->SetGirderName(gdrTypeGroupIdx, strNewName);
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker, ILibrary, pLib);
+      
+      auto pBroker = EAFGetBroker();
+      EAF_GET_IFACE2(pBroker, ILibrary, pLib);
       const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(strNewName);
 
       m_pGirderGroup->SetGirderLibraryEntry(gdrTypeGroupIdx, pGdrEntry);
@@ -422,10 +422,10 @@ void CGirderNameGrid::OnJoin()
 void CGirderNameGrid::UpdateGirderFamilyList(LPCTSTR strGirderFamily)
 {
    // fill the girder list
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2( pBroker, ILibraryNames, pLibNames );
+   EAF_GET_IFACE2( pBroker, ILibraryNames, pLibNames );
    std::vector<std::_tstring> names;
    std::vector<std::_tstring>::iterator iter;
 

@@ -269,8 +269,9 @@ DESCRIPTION
 // {033FA7EE-DAEF-42e0-8F09-0197C7071810}
 DEFINE_GUID(IID_IProductLoads, 
 0x33fa7ee, 0xdaef, 0x42e0, 0x8f, 0x9, 0x1, 0x97, 0xc7, 0x7, 0x18, 0x10);
-interface IProductLoads : IUnknown
+class IProductLoads
 {
+public:
    virtual LPCTSTR GetProductLoadName(pgsTypes::ProductForceType pfType) const = 0;
    virtual LPCTSTR GetLoadCombinationName(LoadingCombinationType loadCombo) const = 0;
 
@@ -366,8 +367,9 @@ DESCRIPTION
 // {3BACF776-6A93-11d2-883E-006097C68A9C}
 DEFINE_GUID(IID_IProductForces, 
 0x3bacf776, 0x6a93, 0x11d2, 0x88, 0x3e, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
-interface IProductForces : IUnknown
+class IProductForces
 {
+public:
    virtual pgsTypes::BridgeAnalysisType GetBridgeAnalysisType(pgsTypes::AnalysisType analysisType,pgsTypes::OptimizationType optimization) const = 0;
    virtual pgsTypes::BridgeAnalysisType GetBridgeAnalysisType(pgsTypes::OptimizationType optimization) const = 0;
 
@@ -456,8 +458,9 @@ DESCRIPTION
 // {E51FF04B-B046-43b9-8696-62AB606D2F04}
 DEFINE_GUID(IID_IProductForces2, 
 0xe51ff04b, 0xb046, 0x43b9, 0x86, 0x96, 0x62, 0xab, 0x60, 0x6d, 0x2f, 0x4);
-interface IProductForces2 : IUnknown
+class IProductForces2
 {
+public:
    virtual std::vector<Float64> GetAxial(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const = 0;
    virtual std::vector<WBFL::System::SectionValue> GetShear(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const = 0;
    virtual std::vector<Float64> GetMoment(IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const = 0;
@@ -507,8 +510,9 @@ DESCRIPTION
 // {F32A1BFE-7727-11d2-8851-006097C68A9C}
 DEFINE_GUID(IID_ICombinedForces, 
 0xf32a1bfe, 0x7727, 0x11d2, 0x88, 0x51, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
-interface ICombinedForces : IUnknown
+class ICombinedForces
 {
+public:
    virtual Float64 GetAxial(IntervalIndexType intervalIdx,LoadingCombinationType combo,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const = 0;
    virtual WBFL::System::SectionValue GetShear(IntervalIndexType intervalIdx,LoadingCombinationType combo,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const = 0;
    virtual Float64 GetMoment(IntervalIndexType intervalIdx,LoadingCombinationType combo,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const = 0;
@@ -540,8 +544,9 @@ DESCRIPTION
 // {D8619CFF-B2DA-4f37-9D34-A3CDA17600A7}
 DEFINE_GUID(IID_ICombinedForces2, 
 0xd8619cff, 0xb2da, 0x4f37, 0x9d, 0x34, 0xa3, 0xcd, 0xa1, 0x76, 0x0, 0xa7);
-interface ICombinedForces2 : IUnknown
+class ICombinedForces2
 {
+public:
    virtual std::vector<Float64> GetAxial(IntervalIndexType intervalIdx,LoadingCombinationType combo,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const = 0;
    virtual std::vector<WBFL::System::SectionValue> GetShear(IntervalIndexType intervalIdx,LoadingCombinationType combo,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const = 0;
    virtual std::vector<Float64> GetMoment(IntervalIndexType intervalIdx,LoadingCombinationType combo,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType) const = 0;
@@ -570,8 +575,9 @@ DESCRIPTION
 // {D458BB7A-797C-11d2-8853-006097C68A9C}
 DEFINE_GUID(IID_ILimitStateForces, 
 0xd458bb7a, 0x797c, 0x11d2, 0x88, 0x53, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
-interface ILimitStateForces : IUnknown
+class ILimitStateForces
 {
+public:
    virtual void GetAxial(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,Float64* pMin,Float64* pMax) const = 0;
    virtual void GetShear(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,WBFL::System::SectionValue* pMin,WBFL::System::SectionValue* pMax) const = 0;
    virtual void GetMoment(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const pgsPointOfInterest& poi,pgsTypes::BridgeAnalysisType bat,Float64* pMin,Float64* pMax) const = 0;
@@ -606,8 +612,9 @@ DESCRIPTION
 // {DEEDBFFC-E236-4a24-A78A-D507B96573A3}
 DEFINE_GUID(IID_ILimitStateForces2, 
 0xdeedbffc, 0xe236, 0x4a24, 0xa7, 0x8a, 0xd5, 0x7, 0xb9, 0x65, 0x73, 0xa3);
-interface ILimitStateForces2 : IUnknown
+class ILimitStateForces2
 {
+public:
    virtual void GetAxial(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,std::vector<Float64>* pMin,std::vector<Float64>* pMax) const = 0;
    virtual void GetShear(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,std::vector<WBFL::System::SectionValue>* pMin,std::vector<WBFL::System::SectionValue>* pMax) const = 0;
    virtual void GetMoment(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,const PoiList& vPoi,pgsTypes::BridgeAnalysisType bat,std::vector<Float64>* pMin,std::vector<Float64>* pMax) const = 0;
@@ -637,8 +644,9 @@ DESCRIPTION
 // {88ECE0F2-6265-4467-B888-D830D293C712}
 DEFINE_GUID(IID_IExternalLoading, 
 0x88ece0f2, 0x6265, 0x4467, 0xb8, 0x88, 0xd8, 0x30, 0xd2, 0x93, 0xc7, 0x12);
-interface IExternalLoading : IUnknown
+class IExternalLoading
 {
+public:
    // creates a new loading. this is essentially creating a user defined product load
    // returns true if successful
    virtual bool CreateLoading(GirderIndexType girderLineIdx,LPCTSTR strLoadingName) = 0;
@@ -697,8 +705,9 @@ DESCRIPTION
 // {FDCC4ED6-7D9B-11d2-8857-006097C68A9C}
 DEFINE_GUID(IID_IPretensionStresses, 
 0xfdcc4ed6, 0x7d9b, 0x11d2, 0x88, 0x57, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
-interface IPretensionStresses : IUnknown
+class IPretensionStresses
 {
+public:
    virtual Float64 GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation loc,bool bIncludeLiveLoad,pgsTypes::LimitState limitState,VehicleIndexType vehicleIdx,const GDRCONFIG* pConfig=nullptr) const = 0;
    virtual std::pair<Float64,Float64> GetStress(IntervalIndexType intervalIdx,const pgsPointOfInterest& poi,pgsTypes::StressLocation topLoc,pgsTypes::StressLocation botLocation,bool bIncludeLiveLoad, pgsTypes::LimitState limitState,VehicleIndexType vehicleIdx, const GDRCONFIG* pConfig = nullptr) const = 0;
    virtual void GetStress(IntervalIndexType intervalIdx, const PoiList& vPoi, pgsTypes::StressLocation loc, bool bIncludeLiveLoad, pgsTypes::LimitState limitState, VehicleIndexType vehicleIdx, std::vector<Float64>* pStress) const = 0;
@@ -719,8 +728,9 @@ DESCRIPTION
 // {6D835B88-87BB-11d2-887F-006097C68A9C}
 DEFINE_GUID(IID_ICamber, 
 0x6d835b88, 0x87bb, 0x11d2, 0x88, 0x7f, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
-interface ICamber : IUnknown
+class ICamber
 {
+public:
    enum CreepPeriod
    {
       cpReleaseToDiaphragm, // load applied at release and creep evaluated immediately before time of diaphragam placement and temporary strand removal
@@ -864,8 +874,9 @@ DESCRIPTION
 // {A07DC9A0-1DFA-4a7c-B852-ABCAF719736D}
 DEFINE_GUID(IID_IContraflexurePoints, 
 0xa07dc9a0, 0x1dfa, 0x4a7c, 0xb8, 0x52, 0xab, 0xca, 0xf7, 0x19, 0x73, 0x6d);
-interface IContraflexurePoints : IUnknown
+class IContraflexurePoints
 {
+public:
    virtual void GetContraflexurePoints(const CSpanKey& spanKey,Float64* cfPoints,IndexType* nPoints) const = 0;
 };
 
@@ -881,8 +892,9 @@ DESCRIPTION
 // {02731714-537F-43d2-8024-B7024E8F5274}
 DEFINE_GUID(IID_IContinuity, 
 0x2731714, 0x537f, 0x43d2, 0x80, 0x24, 0xb7, 0x2, 0x4e, 0x8f, 0x52, 0x74);
-interface IContinuity : IUnknown
+class IContinuity
 {
+public:
    virtual bool IsContinuityFullyEffective(const CGirderKey& girderKey) const = 0;
    virtual Float64 GetContinuityStressLevel(PierIndexType pierIdx,const CGirderKey& girderKey) const = 0;
 };
@@ -899,8 +911,9 @@ DESCRIPTION
 // {DACEC889-2B86-46e9-8B47-0875BC9B19A5}
 DEFINE_GUID(IID_IBearingDesign, 
 0xdacec889, 0x2b86, 0x46e9, 0x8b, 0x47, 0x8, 0x75, 0xbc, 0x9b, 0x19, 0xa5);
-interface IBearingDesign : IUnknown
+class IBearingDesign
 {
+public:
    // Returns true if live load reactions on bearings include impact
    virtual bool BearingLiveLoadReactionsIncludeImpact() const = 0;
 
@@ -948,8 +961,9 @@ DESCRIPTION
 // {1A7DFED9-6DE6-4bd1-8A41-D603CFD53C14}
 DEFINE_GUID(IID_IPrecompressedTensileZone, 
 0x1a7dfed9, 0x6de6, 0x4bd1, 0x8a, 0x41, 0xd6, 0x3, 0xcf, 0xd5, 0x3c, 0x14);
-interface IPrecompressedTensileZone : IUnknown
+class IPrecompressedTensileZone
 {
+public:
    // Returns true of the specified location is in the precompressed tensile zone
    virtual void IsInPrecompressedTensileZone(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,pgsTypes::StressLocation topStressLocation,pgsTypes::StressLocation botStressLocation,bool* pbTopPTZ,bool* pbBotPTZ) const = 0;
 
@@ -973,8 +987,9 @@ DESCRIPTION
 // {B1EA30D1-527C-4a44-AEA7-BE3F06145AC9}
 DEFINE_GUID(IID_IReactions, 
 0xb1ea30d1, 0x527c, 0x4a44, 0xae, 0xa7, 0xbe, 0x3f, 0x6, 0x14, 0x5a, 0xc9);
-interface IReactions : IUnknown
+class IReactions
 {
+public:
    // Gets segment end reactions prior to the segment being erected. Reactions are taken to be zero after the segment
    // as been erected
    virtual void GetSegmentReactions(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::ProductForceType pfType,pgsTypes::BridgeAnalysisType bat,ResultsType resultsType,Float64* pRleft,Float64* pRright) const = 0;
@@ -1015,8 +1030,9 @@ DESCRIPTION
 // {CB6DDE05-1618-468E-AE8B-30031F938D71}
 DEFINE_GUID(IID_IDeformedGirderGeometry,
    0xcb6dde05,0x1618,0x468e,0xae,0x8b,0x30,0x3,0x1f,0x93,0x8d,0x71);
-interface IDeformedGirderGeometry : public IUnknown
+class IDeformedGirderGeometry
 {
+public:
    // Functions to get elevations of the deformed structure
    // 
    // Returns the top of girder elevation at the centerline girder FOR DESIGN FOR PGSUPER MODELS WITH ADIM INPUT ONLY. 

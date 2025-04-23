@@ -47,7 +47,7 @@ protected:
    DECLARE_MESSAGE_MAP()
 
    const CBridgeDescription2* m_pBridgeDesc;
-   CComPtr<IEAFDisplayUnits> m_pDisplayUnits;
+   std::shared_ptr<IEAFDisplayUnits> m_pDisplayUnits;
 
 public:
    virtual BOOL OnInitDialog();

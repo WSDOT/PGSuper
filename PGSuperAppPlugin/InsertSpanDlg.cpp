@@ -67,9 +67,9 @@ void CInsertSpanDlg::DoDataExchange(CDataExchange* pDX)
 
    DDX_Control(pDX, IDC_EVENT, m_cbEvents);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    DDX_UnitValueAndTag(pDX,IDC_SPAN_LENGTH,IDC_SPAN_LENGTH_UNIT,m_SpanLength,pDisplayUnits->GetSpanLengthUnit());
    DDV_UnitValueGreaterThanZero(pDX,IDC_SPAN_LENGTH,m_SpanLength,pDisplayUnits->GetSpanLengthUnit());
@@ -105,8 +105,8 @@ BOOL CInsertSpanDlg::OnInitDialog()
 
    CComboBox* pcbPiers = (CComboBox*)GetDlgItem(IDC_LOCATION);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   
+   auto pBroker = EAFGetBroker();
 
    PierIndexType nPiers = m_pBridgeDesc->GetPierCount();
    for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
@@ -124,7 +124,7 @@ BOOL CInsertSpanDlg::OnInitDialog()
    }
 
    // Use the current selection to guide the defaults
-   GET_IFACE2(pBroker,ISelection,pSelection);
+   EAF_GET_IFACE2(pBroker,ISelection,pSelection);
    PierIndexType selectedPierIdx = pSelection->GetSelectedPier();
    SpanIndexType selectedSpanIdx = pSelection->GetSelectedSpan();
 
@@ -212,8 +212,8 @@ void CInsertSpanDlg::OnPierChanged()
       PierIndexType pierIdx = m_Keys[location].first;
       pgsTypes::PierFaceType pierFace = m_Keys[location].second;
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
 
       const CPierData2* pPier = m_pBridgeDesc->GetPier(pierIdx);
 
@@ -280,9 +280,9 @@ void CInsertSpanDlg::FillEventList()
    pcbEvent->ResetContent();
 
 #pragma Reminder("UPDATE: this dialog needs to work on a local bridge model... and use the local timeline manager")
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
    EventIndexType nEvents = pTimelineMgr->GetEventCount();
@@ -311,9 +311,9 @@ void CInsertSpanDlg::FillEventList()
 
 EventIndexType CInsertSpanDlg::CreateEvent()
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
    CTimelineEventDlg dlg(*pTimelineMgr,INVALID_INDEX,FALSE);

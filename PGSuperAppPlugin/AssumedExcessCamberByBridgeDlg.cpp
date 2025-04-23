@@ -54,9 +54,8 @@ void CAssumedExcessCamberByBridgeDlg::DoDataExchange(CDataExchange* pDX)
 {
    CDialog::DoDataExchange(pDX);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    CEditHaunchACamberDlg* pParent = (CEditHaunchACamberDlg*)GetParent();
    CBridgeDescription2* pBridge = pParent->GetBridgeDesc();

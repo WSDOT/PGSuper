@@ -52,8 +52,8 @@ void CClosureJointLongitudinalReinforcementPage::DoDataExchange(CDataExchange* p
       m_Grid.GetRebarData(&rebarData);
 
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      
+      auto pBroker = EAFGetBroker();
 
       const CPrecastSegmentData* pLeftSegment = pParent->m_ClosureJoint.GetLeftSegment();
       const CPrecastSegmentData* pRightSegment = pParent->m_ClosureJoint.GetRightSegment();

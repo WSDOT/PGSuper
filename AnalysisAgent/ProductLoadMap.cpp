@@ -25,12 +25,6 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 CProductLoadMap::CProductLoadMap()
 {
    // These are the load names used in the LBAM model. Mapping the
@@ -115,11 +109,11 @@ void CProductLoadMap::AddLoadItem(pgsTypes::ProductForceType pfType,CComBSTR bst
    m_ProductForceTypeToLoadCaseID.insert(std::make_pair(pfType,lcid));
 }
 
-std::vector<pgsTypes::ProductForceType> CProductLoadMap::GetProductForces(IBroker* pBroker,LoadingCombinationType combo)
+std::vector<pgsTypes::ProductForceType> CProductLoadMap::GetProductForces(std::shared_ptr<WBFL::EAF::Broker> pBroker,LoadingCombinationType combo)
 {
    // This method defines in one location the individual product loads that make up
    // each load combination.
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    bool bFutureOverlay = pBridge->IsFutureOverlay();
 
    std::vector<pgsTypes::ProductForceType> pfTypes;
@@ -148,7 +142,7 @@ std::vector<pgsTypes::ProductForceType> CProductLoadMap::GetProductForces(IBroke
 
    case lcDWRating:
       {
-      GET_IFACE2(pBroker,ILossParameters,pLossParameters);
+      EAF_GET_IFACE2(pBroker,ILossParameters,pLossParameters);
       pfTypes.push_back(pgsTypes::pftUserDW);
       if ( pLossParameters->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
       {
@@ -166,7 +160,7 @@ std::vector<pgsTypes::ProductForceType> CProductLoadMap::GetProductForces(IBroke
 
    case lcDWp:
       {
-      GET_IFACE2(pBroker,ILossParameters,pLossParameters);
+      EAF_GET_IFACE2(pBroker,ILossParameters,pLossParameters);
       pfTypes.push_back(pgsTypes::pftUserDW);
       if ( pLossParameters->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
       {
@@ -184,7 +178,7 @@ std::vector<pgsTypes::ProductForceType> CProductLoadMap::GetProductForces(IBroke
 
    case lcDWf:
       {
-      GET_IFACE2(pBroker,ILossParameters,pLossParameters);
+      EAF_GET_IFACE2(pBroker,ILossParameters,pLossParameters);
       if ( pLossParameters->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP && bFutureOverlay)
       {
          pfTypes.push_back(pgsTypes::pftOverlay);
@@ -215,13 +209,13 @@ std::vector<pgsTypes::ProductForceType> CProductLoadMap::GetProductForces(IBroke
    return pfTypes;
 }
 
-std::vector<pgsTypes::ProductForceType> CProductLoadMap::GetProductForces(IBroker * pBroker, const CGirderKey & girderKey)
+std::vector<pgsTypes::ProductForceType> CProductLoadMap::GetProductForces(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey & girderKey)
 {
-std::vector<pgsTypes::ProductForceType> vProductForces;
+   std::vector<pgsTypes::ProductForceType> vProductForces;
 
-   GET_IFACE2(pBroker,IProductLoads,pLoads);
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IUserDefinedLoadData,pUserLoads);
+   EAF_GET_IFACE2(pBroker,IProductLoads,pLoads);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IUserDefinedLoadData,pUserLoads);
 
    vProductForces.push_back(pgsTypes::pftGirder);
 
@@ -275,7 +269,7 @@ std::vector<pgsTypes::ProductForceType> vProductForces;
       vProductForces.push_back(pgsTypes::pftUserDW);
    }
 
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
@@ -289,7 +283,7 @@ std::vector<pgsTypes::ProductForceType> vProductForces;
       }
    }
 
-   GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
+   EAF_GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
    if ( 0 < nDucts )
    {
@@ -298,7 +292,7 @@ std::vector<pgsTypes::ProductForceType> vProductForces;
    }
 
    // time-depending effects
-   GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( !pLossParams->IgnoreCreepEffects() )
    {
       vProductForces.push_back(pgsTypes::pftCreep);

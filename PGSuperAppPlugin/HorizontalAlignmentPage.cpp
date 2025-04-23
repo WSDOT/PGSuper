@@ -61,7 +61,7 @@ CHorizontalAlignmentPage::~CHorizontalAlignmentPage()
 {
 }
 
-IBroker* CHorizontalAlignmentPage::GetBroker()
+std::shared_ptr<WBFL::EAF::Broker> CHorizontalAlignmentPage::GetBroker()
 {
    CAlignmentDescriptionDlg* pParent = (CAlignmentDescriptionDlg*)GetParent();
    return pParent->m_pBroker;
@@ -74,7 +74,7 @@ void CHorizontalAlignmentPage::DoDataExchange(CDataExchange* pDX)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
 	//}}AFX_DATA_MAP
 
-   GET_IFACE2(GetBroker(), IEAFDisplayUnits, pDisplayUnits);
+   EAF_GET_IFACE2(GetBroker(), IEAFDisplayUnits, pDisplayUnits);
 
    CComPtr<IDirection> direction;
    direction.CoCreateInstance(CLSID_Direction);

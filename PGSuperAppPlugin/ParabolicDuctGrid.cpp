@@ -75,9 +75,9 @@ void CParabolicDuctGrid::CustomInit(CParabolicDuctGridCallback* pCallback)
 {
    m_pCallback = pCallback;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // Initialize the grid. For CWnd based grids this call is // 
    // essential. For view based grids this initialization is done 
@@ -281,9 +281,9 @@ void CParabolicDuctGrid::SetData(const CParabolicDuctGeometry& ductGeometry)
 
 void CParabolicDuctGrid::InsertFirstPoint(SpanIndexType spanIdx,Float64 distance,Float64 offset,CDuctGeometry::OffsetType offsetType)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    ROWCOL row = GetRowCount()+1;
    InsertRows(row,1);
@@ -346,9 +346,9 @@ void CParabolicDuctGrid::InsertFirstPoint(SpanIndexType spanIdx,Float64 distance
 
 void CParabolicDuctGrid::InsertLowPoint(SpanIndexType spanIdx,Float64 distance,Float64 offset,CDuctGeometry::OffsetType offsetType)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    ROWCOL row = GetRowCount()+1;
 
@@ -413,9 +413,9 @@ void CParabolicDuctGrid::InsertLowPoint(SpanIndexType spanIdx,Float64 distance,F
 
 void CParabolicDuctGrid::InsertInflectionPoint(SpanIndexType spanIdx,Float64 distance)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    ROWCOL row = GetRowCount()+1;
 
@@ -481,9 +481,9 @@ void CParabolicDuctGrid::InsertInflectionPoint(SpanIndexType spanIdx,Float64 dis
 
 void CParabolicDuctGrid::InsertHighPoint(PierIndexType pierIdx,Float64 offset,CDuctGeometry::OffsetType offsetType)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    ROWCOL row = GetRowCount()+1;
 
@@ -536,9 +536,9 @@ void CParabolicDuctGrid::InsertHighPoint(PierIndexType pierIdx,Float64 offset,CD
 
 void CParabolicDuctGrid::InsertLastPoint(SpanIndexType spanIdx,Float64 distance,Float64 offset,CDuctGeometry::OffsetType offsetType)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    ROWCOL row = GetRowCount()+1;
 
@@ -621,9 +621,9 @@ BOOL CParabolicDuctGrid::OnLButtonClickedRowCol(ROWCOL nRow, ROWCOL nCol, UINT n
 
 void CParabolicDuctGrid::GetRowValues(ROWCOL row,Float64* pDistance,Float64* pOffset,CDuctGeometry::OffsetType* pOffsetType)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    Float64 distance = _tstof(GetCellValue(row,2));
 

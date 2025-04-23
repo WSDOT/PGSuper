@@ -29,12 +29,6 @@
 
 #include <PgsExt\BridgeDescription2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 #define TEMPORARY_SUPPORT_ID_OFFSET 10000
 
 HRESULT GetSuperstructureMember(IGenericBridge* pBridge,const CGirderKey& girderKey,ISuperstructureMember* *ssmbr)
@@ -144,9 +138,8 @@ void GetAdjacentSuperstructureMemberIDs(const CGirderKey& girderKey,GirderIDType
 
    *pThisID = GetSuperstructureMemberID(grpIdx,gdrIdx);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
 
    GirderIndexType nGirders = pBridgeDesc->GetBridgeDescription()->GetGirderGroup(grpIdx)->GetGirderCount();
    *pRightID = (gdrIdx == nGirders-1 ? INVALID_ID : GetSuperstructureMemberID(grpIdx,gdrIdx+1));
@@ -169,9 +162,8 @@ void GetAdjacentSegmentKeys(const CSegmentKey& segmentKey,CSegmentKey* pLeftKey,
    }
    pLeftKey->segmentIndex = segmentKey.segmentIndex;;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
 
    GirderIndexType nGirders = pBridgeDesc->GetBridgeDescription()->GetGirderGroup(grpIdx)->GetGirderCount();
    if ( gdrIdx == nGirders-1 )

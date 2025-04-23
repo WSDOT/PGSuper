@@ -31,16 +31,7 @@
 #include <IFace\StatusCenter.h>
 
 #include <EAF\EAFTransactions.h>
-
-////////////////
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-////////////////
+#include <EAF\EAFUtilities.h>
 
 pgsAlignmentDescriptionStatusItem::pgsAlignmentDescriptionStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,long dlgPage,LPCTSTR strDescription) :
 CEAFStatusItem(statusGroupID,callbackID,strDescription), m_DlgPage(dlgPage)
@@ -69,8 +60,8 @@ bool pgsAlignmentDescriptionStatusItem::IsEqual(CEAFStatusItem* pOther)
 }
 
 //////////////////////////////////////////////////////////
-pgsAlignmentDescriptionStatusCallback::pgsAlignmentDescriptionStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity):
-m_pBroker(pBroker), m_Severity(severity)
+pgsAlignmentDescriptionStatusCallback::pgsAlignmentDescriptionStatusCallback(eafTypes::StatusSeverityType severity):
+m_Severity(severity)
 {
 }
 
@@ -86,7 +77,8 @@ void pgsAlignmentDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
    if ( AfxMessageBox( pStatusItem->GetDescription(), MB_OK ) == IDOK )
    {
-      GET_IFACE(IEditByUI,pEdit);
+      auto broker = EAFGetBroker();
+      EAF_GET_IFACE2(broker,IEditByUI,pEdit);
       pEdit->EditAlignmentDescription(pItem->m_DlgPage);
    }
 }
@@ -111,8 +103,7 @@ bool pgsConcreteStrengthStatusItem::IsEqual(CEAFStatusItem* pOther)
 }
 
 //////////////////////////////////////////////////////////
-pgsConcreteStrengthStatusCallback::pgsConcreteStrengthStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity):
-m_pBroker(pBroker),
+pgsConcreteStrengthStatusCallback::pgsConcreteStrengthStatusCallback(eafTypes::StatusSeverityType severity):
 m_Severity(severity)
 {
 }
@@ -127,7 +118,8 @@ void pgsConcreteStrengthStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    pgsConcreteStrengthStatusItem* pItem = dynamic_cast<pgsConcreteStrengthStatusItem*>(pStatusItem);
    ATLASSERT(pItem!=nullptr);
 
-   GET_IFACE(IEditByUI,pEdit);
+   auto broker = EAFGetBroker();
+   EAF_GET_IFACE2(broker,IEditByUI,pEdit);
 
    if ( pItem->m_ConcreteType == pgsConcreteStrengthStatusItem::Slab )
    {
@@ -168,8 +160,7 @@ bool pgsPointLoadStatusItem::IsEqual(CEAFStatusItem* pOther)
 
 ///////////////////////////////
 
-pgsPointLoadStatusCallback::pgsPointLoadStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity):
-m_pBroker(pBroker),
+pgsPointLoadStatusCallback::pgsPointLoadStatusCallback(eafTypes::StatusSeverityType severity):
 m_Severity(severity)
 {
 }
@@ -192,21 +183,23 @@ void pgsPointLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    INT_PTR result = dlg.DoModal();
    if ( result == CDealWithLoadDlg::IDDELETELOAD )
    {
-      GET_IFACE(IEAFTransactions,pTxn);
+      auto broker = EAFGetBroker();
+      EAF_GET_IFACE2(broker,IEAFTransactions,pTxn);
       txnDeletePointLoad txn(pItem->m_LoadIndex);
       pTxn->Execute(txn);
 
       StatusItemIDType id = pItem->GetID();
-      GET_IFACE(IEAFStatusCenter,pStatusCenter);
+      EAF_GET_IFACE2(broker,IEAFStatusCenter,pStatusCenter);
       pStatusCenter->RemoveByID(id);
    }
    else if (result == CDealWithLoadDlg::IDEDITLOAD)
    {
-      GET_IFACE(IEditByUI,pEdit);
+      auto broker = EAFGetBroker();
+      EAF_GET_IFACE2(broker,IEditByUI,pEdit);
       if ( pEdit->EditPointLoad(pItem->m_LoadIndex) )
       {
          StatusItemIDType id = pItem->GetID();
-         GET_IFACE(IEAFStatusCenter,pStatusCenter);
+         EAF_GET_IFACE2(broker,IEAFStatusCenter,pStatusCenter);
          pStatusCenter->RemoveByID(id);
       }
    }
@@ -237,8 +230,7 @@ bool pgsDistributedLoadStatusItem::IsEqual(CEAFStatusItem* pOther)
 
 //////////////////////////////////////////////////////////
 
-pgsDistributedLoadStatusCallback::pgsDistributedLoadStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity):
-m_pBroker(pBroker),
+pgsDistributedLoadStatusCallback::pgsDistributedLoadStatusCallback(eafTypes::StatusSeverityType severity):
 m_Severity(severity)
 {
 }
@@ -262,21 +254,23 @@ void pgsDistributedLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
    if ( result == CDealWithLoadDlg::IDDELETELOAD )
    {
-      GET_IFACE(IEAFTransactions,pTxn);
+      auto broker = EAFGetBroker();
+      EAF_GET_IFACE2(broker,IEAFTransactions,pTxn);
       txnDeleteDistributedLoad txn(pItem->m_LoadIndex);
       pTxn->Execute(txn);
 
       StatusItemIDType id = pItem->GetID();
-      GET_IFACE(IEAFStatusCenter,pStatusCenter);
+      EAF_GET_IFACE2(broker,IEAFStatusCenter,pStatusCenter);
       pStatusCenter->RemoveByID(id);
    }
    else if (result == CDealWithLoadDlg::IDEDITLOAD)
    {
-      GET_IFACE(IEditByUI,pEdit);
+      auto broker = EAFGetBroker();
+      EAF_GET_IFACE2(broker,IEditByUI,pEdit);
       if ( pEdit->EditDistributedLoad(pItem->m_LoadIndex) )
       {
          StatusItemIDType id = pItem->GetID();
-         GET_IFACE(IEAFStatusCenter,pStatusCenter);
+         EAF_GET_IFACE2(broker,IEAFStatusCenter,pStatusCenter);
          pStatusCenter->RemoveByID(id);
       }
    }
@@ -306,8 +300,7 @@ bool pgsMomentLoadStatusItem::IsEqual(CEAFStatusItem* pOther)
 }
 ///////////////////////////
 
-pgsMomentLoadStatusCallback::pgsMomentLoadStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity):
-m_pBroker(pBroker),
+pgsMomentLoadStatusCallback::pgsMomentLoadStatusCallback(eafTypes::StatusSeverityType severity):
 m_Severity(severity)
 {
 }
@@ -331,21 +324,23 @@ void pgsMomentLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
    if ( result == CDealWithLoadDlg::IDDELETELOAD )
    {
-      GET_IFACE(IEAFTransactions,pTxn);
+      auto broker = EAFGetBroker();
+      EAF_GET_IFACE2(broker,IEAFTransactions,pTxn);
       txnDeleteMomentLoad txn(pItem->m_LoadIndex);
       pTxn->Execute(txn);
 
       StatusItemIDType id = pItem->GetID();
-      GET_IFACE(IEAFStatusCenter,pStatusCenter);
+      EAF_GET_IFACE2(broker,IEAFStatusCenter,pStatusCenter);
       pStatusCenter->RemoveByID(id);
    }
    else if (result == CDealWithLoadDlg::IDEDITLOAD)
    {
-      GET_IFACE(IEditByUI,pEdit);
+      auto broker = EAFGetBroker();
+      EAF_GET_IFACE2(broker,IEditByUI,pEdit);
       if ( pEdit->EditMomentLoad(pItem->m_LoadIndex) )
       {
          StatusItemIDType id = pItem->GetID();
-         GET_IFACE(IEAFStatusCenter,pStatusCenter);
+         EAF_GET_IFACE2(broker,IEAFStatusCenter,pStatusCenter);
          pStatusCenter->RemoveByID(id);
       }
    }

@@ -267,8 +267,7 @@ void CHaunchDirectSameAsGrid::BuildGridAndHeader()
 
 void CHaunchDirectSameAsGrid::FillGrid()
 {
-   CComPtr<IBroker> pBroker;
-   ::EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    const CBridgeDescription2* pBridgeOrig = GetBridgeDesc();
 
