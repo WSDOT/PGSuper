@@ -20,29 +20,15 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// SYSTEM INCLUDES
-//
-// PROJECT INCLUDES
-//
-#if !defined INCLUDED_PGSEXTEXP_H_
-#include <PgsExt\PgsExtExp.h>
-#endif
+#pragma once
 
+#include <PgsExt\PgsExtExp.h>
 #include <PgsExt\LiftHaulConstants.h>
 #include <PgsExt\PointOfInterest.h>
-
 #include <PgsExt\HaulingAnalysisArtifact.h>
-
 #include <map>
 
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
-interface IEAFDisplayUnits;
-
-#pragma once
+class IEAFDisplayUnits;
 
 
 

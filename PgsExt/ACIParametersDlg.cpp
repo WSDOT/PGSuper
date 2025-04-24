@@ -30,13 +30,6 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <Materials/ACI209Concrete.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
 // CACIParametersDlg dialog
 
 IMPLEMENT_DYNAMIC(CACIParametersDlg, CDialog)

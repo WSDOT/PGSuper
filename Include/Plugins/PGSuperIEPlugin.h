@@ -36,6 +36,8 @@
 
 #pragma once
 
+#include <EAF\Broker.h>
+
 // {289D1CFF-D1A4-4b65-B673-867D7F41C7DB}
 DEFINE_GUID(CATID_PGSuperProjectImporter,
    0x289d1cff, 0xd1a4, 0x4b65, 0xb6, 0x73, 0x86, 0x7d, 0x7f, 0x41, 0xc7, 0xdb);

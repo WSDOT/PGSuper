@@ -27,13 +27,6 @@
 #include "resource.h"
 #include <PgsExt\ColumnFixityComboBox.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
 CColumnFixityComboBox::CColumnFixityComboBox(UINT fixity) :
 m_Fixity(fixity)
 {

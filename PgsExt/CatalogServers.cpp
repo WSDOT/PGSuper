@@ -23,12 +23,6 @@
 #include <PgsExt\CatalogServers.h>
 #include "intsafe.h" // for SHORT_MAX
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 CCatalogServers::CCatalogServers()
 {
 }

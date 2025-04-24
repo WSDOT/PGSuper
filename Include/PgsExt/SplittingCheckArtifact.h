@@ -27,7 +27,7 @@
 
 class pgsSplittingCheckEngineer;
 class rptChapter;
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 

@@ -25,12 +25,6 @@
 #include "..\MakePgz\UnzipPgz.h" 
 #include <EAF\EAFApp.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 // Functions to save and create our servers to/from a string
 CCatalogServer* CreateCatalogServer(LPCTSTR strAppName,const CString& createString,const CString& strExt)
 {

@@ -27,12 +27,6 @@
 #include <PgsExt\PierData2.h>
 #include <PgsExt\ClosureJointData.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 CSupportActivityBase::CSupportActivityBase()
 {
    m_bEnabled = false;

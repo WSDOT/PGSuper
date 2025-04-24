@@ -20,26 +20,11 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_PGSEXT_TXDOTDEBONDUTIL_H_
-#define INCLUDED_PGSEXT_TXDOTDEBONDUTIL_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
 #include <PgsExt\PgsExtExp.h>
-
-// PROJECT INCLUDES
-//
 #include <PGSuperTypes.h>
 #include <IFace\Bridge.h>
-
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
-
-// MISCELLANEOUS
-//
 
 // free function for checking if a set of numbers is divisible by a number
 typedef std::set<Float64> FloatSet;
@@ -391,10 +376,8 @@ public:
    typedef std::set<StrandRow> StrandRowSet;
    typedef StrandRowSet::iterator StrandRowIter;
 
-   static StrandRowSet GetStrandRowSet(IBroker* pBroker, const pgsPointOfInterest& midPoi);
+   static StrandRowSet GetStrandRowSet(std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& midPoi);
 
    // row set with all strand locations filled
-   static StrandRowUtil::StrandRowSet GetFullyPopulatedStrandRowSet(IBroker* pBroker, const pgsPointOfInterest& midPoi);
+   static StrandRowUtil::StrandRowSet GetFullyPopulatedStrandRowSet(std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& midPoi);
 };
-
-#endif // INCLUDED_PGSEXT_TXDOTDEBONDUTIL_H_

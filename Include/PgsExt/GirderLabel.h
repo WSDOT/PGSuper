@@ -31,7 +31,7 @@ class CBridgeDescription2;
 class CPointLoadData;
 class CDistributedLoadData;
 class CMomentLoadData;
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 #include <PsgLib\ConnectionLibraryEntry.h>
 #include <PgsExt\ConcreteMaterial.h>

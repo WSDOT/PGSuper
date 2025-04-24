@@ -24,11 +24,10 @@
 #include <PgsExt\DebondUtil.h>
 #include <IFace\Bridge.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#pragma Reminder("WORKING HERE - Removing COM")
+// There is a lot of implementation in the DebondUtil.h header file. This should be moved into this C++ file.
+// The header file also has several static methods (which should be exported methods) and multiple classes.
+// The classes should be broken out into multiple header/source files
 
 TxDOTDebondTool::TxDOTDebondTool(const CSegmentKey& segmentKey, Float64 girderLength, IStrandGeometry* pStrandGeometry) :
 m_SegmentKey(segmentKey), 
@@ -137,10 +136,10 @@ void CDebondSectionCalculator::GetRightSectionInfo(SectionIndexType idx, Float64
    *pLocation = sec.m_Location;
 }
 
-StrandRowUtil::StrandRowSet StrandRowUtil::GetStrandRowSet(IBroker* pBroker, const pgsPointOfInterest& midPoi)
+StrandRowUtil::StrandRowSet StrandRowUtil::GetStrandRowSet(std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& midPoi)
 {
-   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
-   GET_IFACE2(pBroker,IGirder,pGirder);
+   EAF_GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
+   EAF_GET_IFACE2(pBroker,IGirder,pGirder);
 
    // Need girder height - strands are measured from top downward
    Float64 hg = pGirder->GetHeight(midPoi);
@@ -213,11 +212,11 @@ StrandRowUtil::StrandRowSet StrandRowUtil::GetStrandRowSet(IBroker* pBroker, con
    return strandrows;
 }
 
-StrandRowUtil::StrandRowSet StrandRowUtil::GetFullyPopulatedStrandRowSet(IBroker* pBroker, const pgsPointOfInterest& midPoi)
+StrandRowUtil::StrandRowSet StrandRowUtil::GetFullyPopulatedStrandRowSet(std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& midPoi)
 {
-   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
-   GET_IFACE2(pBroker,IGirder,pGirder);
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
+   EAF_GET_IFACE2(pBroker,IGirder,pGirder);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    // Need girder height - strands are measured from top downward
    Float64 hg = pGirder->GetHeight(midPoi);
 

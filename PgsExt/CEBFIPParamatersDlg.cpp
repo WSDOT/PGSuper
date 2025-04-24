@@ -30,13 +30,6 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <Materials/CEBFIPConcrete.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
 // CCEBFIPParametersDlg dialog
 
 IMPLEMENT_DYNAMIC(CCEBFIPParametersDlg, CDialog)

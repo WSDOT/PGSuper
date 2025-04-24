@@ -25,12 +25,6 @@
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\Catalog.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 // Class to compare version numbers as numbers and not alpha value. This was a bug prior and in version 4.0.11
 class VersionComparator
 {

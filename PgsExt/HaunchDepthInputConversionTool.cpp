@@ -34,12 +34,6 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\DocumentType.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 // Pick up as many pois as available except for closure pois
 static PoiAttributeType attribDesign = POI_START_FACE | POI_END_FACE | POI_STIRRUP_ZONE | POI_CRITSECTSHEAR1 | POI_CRITSECTSHEAR2 | POI_HARPINGPOINT | POI_CONCLOAD |
 POI_DIAPHRAGM | POI_PSXFER | POI_PSDEV | POI_DEBOND | POI_DECKBARCUTOFF | POI_BARCUTOFF | POI_BARDEVELOP |

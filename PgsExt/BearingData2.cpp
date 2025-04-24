@@ -23,12 +23,6 @@
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\BearingData2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 CBearingData2::CBearingData2()
 { 
    Init();

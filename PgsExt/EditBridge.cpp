@@ -25,12 +25,6 @@
 #include <EAF\EAFUtilities.h>
 #include <PgsExt\GirderLabel.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 txnEditBridge::txnEditBridge(const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc,
    pgsTypes::ExposureCondition oldExposureCondition, pgsTypes::ExposureCondition newExposureCondition,
    pgsTypes::ClimateCondition oldClimateCondition, pgsTypes::ClimateCondition newClimateCondition,

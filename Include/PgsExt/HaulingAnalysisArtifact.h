@@ -20,14 +20,8 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_PGSEXT_HAULINGANALYSISARTIFACT_H_
-#define INCLUDED_PGSEXT_HAULINGANALYSISARTIFACT_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
-
-// PROJECT INCLUDES
-//
 #if !defined INCLUDED_PGSEXTEXP_H_
 #include <PgsExt\PgsExtExp.h>
 #endif
@@ -39,12 +33,7 @@
 
 #include <Stability\Stability.h>
 
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 class PGSEXTCLASS pgsHaulingAnalysisArtifact
 {
@@ -155,10 +144,3 @@ public:
    virtual void Dump(WBFL::Debug::LogContext& os) const override;
 #endif // _DEBUG
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-#endif // INCLUDED_PGSEXT_HAULINGANALYSISARTIFACT_H_

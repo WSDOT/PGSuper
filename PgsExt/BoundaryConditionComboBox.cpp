@@ -28,12 +28,6 @@
 #include <PgsExt\BoundaryConditionComboBox.h>
 #include <PgsExt\PierData2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 CBoundaryConditionComboBox::CBoundaryConditionComboBox()
 {
    m_PierType = PIERTYPE_INTERMEDIATE;
