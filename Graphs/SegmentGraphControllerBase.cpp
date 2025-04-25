@@ -38,11 +38,6 @@
 
 #include <PgsExt\BridgeDescription2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 IMPLEMENT_DYNAMIC(CSegmentGraphControllerBase,CEAFGraphControlWindow)
 
@@ -66,14 +61,14 @@ BOOL CSegmentGraphControllerBase::OnInitDialog()
 {
    CEAFGraphControlWindow::OnInitDialog();
 
-   EAFGetBroker(&m_pBroker);
+   m_pBroker = EAFGetBroker();
 
    // Fill group and girder combo boxes
    FillGroupCtrl();
    FillGirderCtrl();
    FillSegmentCtrl();
 
-   GET_IFACE(IDocumentType,pDocType);
+   EAF_GET_IFACE(IDocumentType,pDocType);
    bool isPGSuper = pDocType->IsPGSuperDocument();
 
    // Set initial value based on the current selection
@@ -110,7 +105,7 @@ BOOL CSegmentGraphControllerBase::OnInitDialog()
 
 CSegmentKey CSegmentGraphControllerBase::GetAppSelectedSegment()
 {
-   GET_IFACE(ISelection,pSelection);
+   EAF_GET_IFACE(ISelection,pSelection);
    CSelection selection = pSelection->GetSelection();
 
    // Default behavior is to select an individual segment
@@ -308,7 +303,7 @@ void CSegmentGraphControllerBase::FillGroupCtrl()
 
    pcbGroup->ResetContent();
 
-   GET_IFACE(IDocumentType,pDocType);
+   EAF_GET_IFACE(IDocumentType,pDocType);
    bool isPGSuper = pDocType->IsPGSuperDocument();
    CString strGroupLabel( isPGSuper ? _T("Span") : _T("Group"));
 
@@ -321,7 +316,7 @@ void CSegmentGraphControllerBase::FillGroupCtrl()
       pcbGroup->SetItemData(idx,ALL_GROUPS);
    }
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
@@ -355,7 +350,7 @@ void CSegmentGraphControllerBase::FillGirderCtrl()
 
    int curSel = pcbGirder->GetCurSel();
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    GirderIndexType nGirders = 0;
@@ -401,7 +396,7 @@ void CSegmentGraphControllerBase::FillSegmentCtrl()
       return; // not using a seg list
    }
 
-   GET_IFACE(IDocumentType,pDocType);
+   EAF_GET_IFACE(IDocumentType,pDocType);
    bool isPGSuper = pDocType->IsPGSuperDocument();
    if (isPGSuper)
    {
@@ -416,7 +411,7 @@ void CSegmentGraphControllerBase::FillSegmentCtrl()
    int curSel = pcbSegment->GetCurSel();
    pcbSegment->ResetContent();
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    SegmentIndexType nSegments = 0;
@@ -572,13 +567,13 @@ void CIntervalSegmentGraphControllerBase::OnIntervalChanged()
 
 IntervalIndexType CIntervalSegmentGraphControllerBase::GetFirstInterval()
 {
-   GET_IFACE(IIntervals, pIntervals);
+   EAF_GET_IFACE(IIntervals, pIntervals);
    return pIntervals->GetFirstPrestressReleaseInterval(GetSegmentKey());
 }
 
 IntervalIndexType CIntervalSegmentGraphControllerBase::GetLastInterval()
 {
-   GET_IFACE(IIntervals, pIntervals);
+   EAF_GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    return nIntervals - 1;
 }
@@ -601,7 +596,7 @@ void CIntervalSegmentGraphControllerBase::FillIntervalCtrl()
 
    pcbIntervals->ResetContent();
 
-   GET_IFACE(IIntervals, pIntervals);
+   EAF_GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType firstIntervalIdx = GetFirstInterval();
    IntervalIndexType lastIntervalIdx = GetLastInterval();
    for (IntervalIndexType intervalIdx = firstIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++)
@@ -761,7 +756,7 @@ void CMultiIntervalSegmentGraphControllerBase::FillIntervalCtrl()
 
    CSegmentKey segmentKey(GetSegmentKey());
 
-   GET_IFACE(IIntervals,pIntervals);
+   EAF_GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType firstIntervalIdx = GetFirstInterval();
    IntervalIndexType lastIntervalIdx  = GetLastInterval();
    for ( IntervalIndexType intervalIdx = firstIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++ )
@@ -786,13 +781,13 @@ void CMultiIntervalSegmentGraphControllerBase::FillIntervalCtrl()
 
 IntervalIndexType CMultiIntervalSegmentGraphControllerBase::GetFirstInterval()
 {
-   GET_IFACE(IIntervals, pIntervals);
+   EAF_GET_IFACE(IIntervals, pIntervals);
    return pIntervals->GetFirstPrestressReleaseInterval(GetSegmentKey());
 }
 
 IntervalIndexType CMultiIntervalSegmentGraphControllerBase::GetLastInterval()
 {
-   GET_IFACE(IIntervals,pIntervals);
+   EAF_GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    return nIntervals-1;
 }

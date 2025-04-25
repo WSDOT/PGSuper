@@ -37,11 +37,6 @@
 
 #include <psgLib/SpecificationCriteria.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -67,38 +62,38 @@ rptChapter* CCritSectionChapterBuilder::Build(const std::shared_ptr<const WBFL::
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
    CGirderKey girderKey;
 
    if ( pGdrRptSpec )
    {
-      pGdrRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrRptSpec->GetBroker();
       girderKey = pGdrRptSpec->GetGirderKey();
    }
    else
    {
-      pGdrLineRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrLineRptSpec->GetBroker();
       girderKey = pGdrLineRptSpec->GetGirderKey();
    }
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2_NOCHECK(pBroker,IRatingSpecification,pRatingSpec);
-   GET_IFACE2(pBroker, IDocumentType, pDocType);
+   EAF_GET_IFACE2_NOCHECK(pBroker,IRatingSpecification,pRatingSpec);
+   EAF_GET_IFACE2(pBroker, IDocumentType, pDocType);
    bool isPGSuper = pDocType->IsPGSuperDocument();
 
    bool bDesign = m_bDesign;
    bool bRating = m_bRating;
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    bool bAfterThirdEdition = ( pSpecEntry->GetSpecificationCriteria().GetEdition() >= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 ? true : false );
 
-   GET_IFACE2_NOCHECK(pBroker,ILimitStateForces,pLimitStateForces); // not used if bDesign = false
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2_NOCHECK(pBroker,ILimitStateForces,pLimitStateForces); // not used if bDesign = false
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(girderKey, &vGirderKeys);
    for(const auto& thisGirderKey : vGirderKeys)
@@ -181,7 +176,7 @@ rptChapter* CCritSectionChapterBuilder::Build(const std::shared_ptr<const WBFL::
    return pChapter;
 }
 
-void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState limitState,IBroker* pBroker,const CGirderKey& girderKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const
+void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState limitState,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level) const
 {
    USES_CONVERSION;
 
@@ -190,15 +185,15 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
    INIT_UV_PROTOTYPE( rptLengthSectionValue,      dim,       pDisplayUnits->GetComponentDimUnit(),  false );
    INIT_UV_PROTOTYPE( rptAngleSectionValue,       ang,       pDisplayUnits->GetAngleUnit(),  false );
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    locationp.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    bool bAfterThirdEdition = ( WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 <= pSpecEntry->GetSpecificationCriteria().GetEdition() ? true : false );
 
-   GET_IFACE2(pBroker,IShearCapacity,pShearCapacity);
+   EAF_GET_IFACE2(pBroker,IShearCapacity,pShearCapacity);
    const std::vector<CRITSECTDETAILS>& vcsDetails(pShearCapacity->GetCriticalSectionDetails(limitState,girderKey));
 
    rptParagraph* pPara = new rptParagraph;

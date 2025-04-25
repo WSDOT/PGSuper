@@ -26,11 +26,6 @@
 
 #include <iterator> // for std::back_inserter
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #if defined _DEBUG || defined _BETA_VERSION
 #define UPDATE_ATTRIBUTES UpdateAttributeString()

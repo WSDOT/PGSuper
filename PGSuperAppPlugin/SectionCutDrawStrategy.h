@@ -25,8 +25,8 @@
 #include <PgsExt\Keys.h>
 #include <PgsExt\PointOfInterest.h>
 
-interface IRoadway;
-interface IBridge;
+class IRoadway;
+class IBridge;
 class CBridgeModelViewChildFrame;
 
 namespace WBFL

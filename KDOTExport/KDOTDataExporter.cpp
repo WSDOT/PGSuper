@@ -97,13 +97,13 @@ STDMETHODIMP CKDOTDataExporter::Export(IBroker* pBroker)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   GET_IFACE2(pBroker,ISelection,pSelection);
+   EAF_GET_IFACE2(pBroker,ISelection,pSelection);
    CSelection selection = pSelection->GetSelection();
 
    CGirderKey girderKey;
    if ( selection.Type == CSelection::Span )
    {
-      GET_IFACE2(pBroker,IBridge,pBridge);
+      EAF_GET_IFACE2(pBroker,IBridge,pBridge);
       girderKey.groupIndex = pBridge->GetGirderGroupIndex(selection.SpanIdx);
       girderKey.girderIndex = 0;
    }
@@ -166,7 +166,7 @@ STDMETHODIMP CKDOTDataExporter::Export(IBroker* pBroker)
 HRESULT CKDOTDataExporter::Export(IBroker* pBroker,CString& strFileName, const std::vector<CGirderKey>& girderKeys)
 {
    { // scope the progress window
-   GET_IFACE2(pBroker,IProgress,pProgress);
+   EAF_GET_IFACE2(pBroker,IProgress,pProgress);
    CEAFAutoProgress autoProgress(pProgress,0);
    pProgress->UpdateMessage(_T("Exporting PGSuper data for KDOT CAD"));
 
@@ -174,10 +174,10 @@ HRESULT CKDOTDataExporter::Export(IBroker* pBroker,CString& strFileName, const s
    {
       KDOT::KDOTExport kdot_export;
 
-      GET_IFACE2(pBroker,IBridge,pBridge);
-      GET_IFACE2(pBroker,IBridgeDescription,pBridgeDescription);
-      GET_IFACE2(pBroker, IGirder,pGirder);
-      GET_IFACE2(pBroker, IRoadway,pAlignment);
+      EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+      EAF_GET_IFACE2(pBroker,IBridgeDescription,pBridgeDescription);
+      EAF_GET_IFACE2(pBroker, IGirder,pGirder);
+      EAF_GET_IFACE2(pBroker, IRoadway,pAlignment);
 
       const CBridgeDescription2* pBridgeDescr2 = pBridgeDescription->GetBridgeDescription();
 
@@ -190,8 +190,8 @@ HRESULT CKDOTDataExporter::Export(IBroker* pBroker,CString& strFileName, const s
       type = pBridgeDescr2->GetRightRailingSystem()->GetExteriorRailing()->GetName();
       brdata.RightRailingType(type);
 
-      GET_IFACE2(pBroker,IMaterials,pMaterials);
-      GET_IFACE2(pBroker,IIntervals,pIntervals);
+      EAF_GET_IFACE2(pBroker,IMaterials,pMaterials);
+      EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
       IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
       IntervalIndexType finalIntervalIdx = pIntervals->GetLiveLoadInterval();
 
@@ -279,16 +279,16 @@ HRESULT CKDOTDataExporter::Export(IBroker* pBroker,CString& strFileName, const s
 
       brdata.PierData(pds);
 
-      GET_IFACE2(pBroker,ICamber,pCamber);
-      GET_IFACE2(pBroker, ISegmentLifting, pSegmentLifting);
-      GET_IFACE2(pBroker, ISegmentHauling, pSegmentHauling);
-      GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-      GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-      GET_IFACE2(pBroker,ILongitudinalRebar,pLongRebar);
-      GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeometry);
-      GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-      GET_IFACE2(pBroker,IProductForces,pProduct);
-      GET_IFACE2(pBroker,IPretensionForce,pPretensionForce);
+      EAF_GET_IFACE2(pBroker,ICamber,pCamber);
+      EAF_GET_IFACE2(pBroker, ISegmentLifting, pSegmentLifting);
+      EAF_GET_IFACE2(pBroker, ISegmentHauling, pSegmentHauling);
+      EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+      EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+      EAF_GET_IFACE2(pBroker,ILongitudinalRebar,pLongRebar);
+      EAF_GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeometry);
+      EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+      EAF_GET_IFACE2(pBroker,IProductForces,pProduct);
+      EAF_GET_IFACE2(pBroker,IPretensionForce,pPretensionForce);
 
       pgsTypes::BridgeAnalysisType bat = pProduct->GetBridgeAnalysisType(pgsTypes::Minimize);
 

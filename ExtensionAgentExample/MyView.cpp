@@ -91,9 +91,8 @@ void CMyView::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
    // command callback
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFMainMenu,pUI);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFMainMenu,pUI);
    auto pMenu = pUI->CreateContextMenu();
    
    // Load the context menu resource. By using nullptr as the command callback, all commands
@@ -118,7 +117,7 @@ void CMyView::OnInitialUpdate()
    ASSERT( pDocTemplate->IsKindOf(RUNTIME_CLASS(CEAFDocTemplate)) );
 
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)pDocTemplate;
-   CMyCmdTarget* target = (CMyCmdTarget*)pTemplate->GetViewCreationData();
+   CExampleExtensionAgent* target = (CExampleExtensionAgent*)pTemplate->GetViewCreationData();
    m_pCallback = std::dynamic_pointer_cast<WBFL::EAF::ICommandCallback>(target->shared_from_this());
 }
 

@@ -20,23 +20,9 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_IFACE_ARTIFACT_H_
-#define INCLUDED_IFACE_ARTIFACT_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
-#if !defined INCLUDED_WBFLTYPES_H_
 #include <WbflTypes.h>
-#endif
-
-// PROJECT INCLUDES
-//
-
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
 
 class pgsGirderArtifact;
 class pgsSegmentArtifact;
@@ -54,8 +40,6 @@ namespace WBFL
    }
 }
 
-// MISCELLANEOUS
-//
 
 /*****************************************************************************
 INTERFACE
@@ -69,8 +53,9 @@ DESCRIPTION
 // {752DA970-6EA0-11d2-8EEB-006097DF3C68}
 DEFINE_GUID(IID_IArtifact, 
 0x752da970, 0x6ea0, 0x11d2, 0x8e, 0xeb, 0x0, 0x60, 0x97, 0xdf, 0x3c, 0x68);
-interface IArtifact : IUnknown
+class IArtifact
 {
+public:
    // Returns a GirderArtifact which captures the full specification check for a girder.
    virtual const pgsGirderArtifact* GetGirderArtifact(const CGirderKey& girderKey) const = 0;
 
@@ -103,6 +88,3 @@ interface IArtifact : IUnknown
    virtual std::shared_ptr<const pgsISummaryRatingArtifact> GetSummaryRatingArtifact(const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx) const = 0;
 
 };
-
-#endif // INCLUDED_IFACE_ARTIFACT_H_
-

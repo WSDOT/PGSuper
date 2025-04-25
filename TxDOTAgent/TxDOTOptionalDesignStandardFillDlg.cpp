@@ -30,11 +30,6 @@
 #include <EAF\EAFDisplayUnits.h>
 #include "EccentricityDlg.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CTxDOTOptionalDesignStandardFillDlg dialog
@@ -85,7 +80,7 @@ void CTxDOTOptionalDesignStandardFillDlg::DoDataExchange(CDataExchange* pDX)
       UpdateLibraryData();
    }
 
-   CComPtr<IBroker> pBroker = m_pBrokerRetriever->GetClassicBroker();
+   auto pBroker = m_pBrokerRetriever->GetClassicBroker();
    if (pBroker==nullptr)
       return;
 
@@ -105,7 +100,7 @@ void CTxDOTOptionalDesignStandardFillDlg::DoDataExchange(CDataExchange* pDX)
    {
       if (numHarped>0) 
       {
-         GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+         EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
          DDX_UnitValueAndTag(pDX,IDC_OPT_TO, IDC_OPT_TO_UNITS, m_To, pDisplayUnits->GetComponentDimUnit() );
 
          if (pDX->m_bSaveAndValidate)
@@ -225,8 +220,8 @@ void CTxDOTOptionalDesignStandardFillDlg::UpdateControls()
 
    if (benable)
    {
-      CComPtr<IBroker> pBroker = m_pBrokerRetriever->GetClassicBroker();
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      auto pBroker = m_pBrokerRetriever->GetClassicBroker();
+      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       Float64 toLower, toUpper;
       m_pGirderData->ComputeToRange(pLib, m_NumStrands, &toLower, &toUpper);

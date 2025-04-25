@@ -6595,9 +6595,9 @@ bool CBridgeAgentImp::Init()
    m_IntervalManager.Init(m_StatusGroupID);
 
    // Attach to connection points
-   m_dwBridgeDescCookie = m_pBroker->RegisterCallback<IBridgeDescriptionEventSink>(std::dynamic_pointer_cast<IBridgeDescriptionEventSink>(shared_from_this()));
-   m_dwSpecificationCookie = m_pBroker->RegisterCallback<ISpecificationEventSink>(std::dynamic_pointer_cast<ISpecificationEventSink>(shared_from_this()));
-   m_dwLossParametersCookie = m_pBroker->RegisterCallback<ILossParametersEventSink>(std::dynamic_pointer_cast<ILossParametersEventSink>(shared_from_this()));
+   m_dwBridgeDescCookie = REGISTER_CALLBACK(IBridgeDescriptionEventSink);
+   m_dwSpecificationCookie = REGISTER_CALLBACK(ISpecificationEventSink);
+   m_dwLossParametersCookie = REGISTER_CALLBACK(ILossParametersEventSink);
 
    HRESULT hr = m_SectCutTool.CoCreateInstance(CLSID_SectionCutTool);
    if ( FAILED(hr) || m_SectCutTool == nullptr )
@@ -6654,9 +6654,9 @@ bool CBridgeAgentImp::ShutDown()
    //
    // Detach to connection points
    //
-   m_pBroker->UnregisterCallback<IBridgeDescriptionEventSink>(std::dynamic_pointer_cast<IBridgeDescriptionEventSink>(shared_from_this()), m_dwBridgeDescCookie);
-   m_pBroker->UnregisterCallback<ISpecificationEventSink>(std::dynamic_pointer_cast<ISpecificationEventSink>(shared_from_this()), m_dwSpecificationCookie);
-   m_pBroker->UnregisterCallback<ILossParametersEventSink>(std::dynamic_pointer_cast<ILossParametersEventSink>(shared_from_this()), m_dwLossParametersCookie);
+   UNREGISTER_CALLBACK(IBridgeDescriptionEventSink, m_dwBridgeDescCookie);
+   UNREGISTER_CALLBACK(ISpecificationEventSink, m_dwSpecificationCookie);
+   UNREGISTER_CALLBACK(ILossParametersEventSink, m_dwLossParametersCookie);
 
    //EAF_AGENT_CLEAR_INTERFACE_CACHE;
    CLOSE_LOGFILE;

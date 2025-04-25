@@ -52,7 +52,7 @@ CTimeDependentLossesAtDeckPlacementTable* CTimeDependentLossesAtDeckPlacementTab
 {
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
 
 
    // Create and configure the table

@@ -72,7 +72,7 @@ class IProductReactionAdapter
 {
 public:
    virtual ~IProductReactionAdapter() {};
-   virtual ReactionLocationIter GetReactionLocations(IBridge* pBridge)=0;
+   virtual ReactionLocationIter GetReactionLocations(std::shared_ptr<IBridge> pBridge)=0;
    virtual bool DoReportAtPier(PierIndexType pier,const CGirderKey& girderKey)=0;
 
    virtual Float64 GetReaction(IntervalIndexType intervalIdx, const ReactionLocation& rLocation, pgsTypes::ProductForceType pfType, pgsTypes::BridgeAnalysisType bat) = 0;
@@ -89,10 +89,10 @@ public:
 class REPORTINGCLASS ProductForcesReactionAdapter: public IProductReactionAdapter
 {
 public:
-   ProductForcesReactionAdapter(IReactions* pReactions,const CGirderKey& girderKey);
+   ProductForcesReactionAdapter(std::shared_ptr<IReactions> pReactions,const CGirderKey& girderKey);
    virtual ~ProductForcesReactionAdapter();
 
-   virtual ReactionLocationIter GetReactionLocations(IBridge* pBridge);
+   virtual ReactionLocationIter GetReactionLocations(std::shared_ptr<IBridge> pBridge);
    virtual bool DoReportAtPier(PierIndexType pier,const CGirderKey& girderKey);
    virtual Float64 GetReaction(IntervalIndexType intervalIdx,const ReactionLocation& rLocation,pgsTypes::ProductForceType pfTy,pgsTypes::BridgeAnalysisType bat);
    virtual void GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType, const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,
@@ -100,7 +100,7 @@ public:
                                     VehicleIndexType* pMinConfig=nullptr, VehicleIndexType* pMaxConfig=nullptr);
 
 private:
-   IReactions* m_pReactions;
+   std::shared_ptr<IReactions> m_pReactions;
    CGirderKey m_GirderKey;
    ReactionLocationContainer m_Locations;
 };
@@ -113,17 +113,17 @@ private:
 class REPORTINGCLASS BearingDesignProductReactionAdapter: public IProductReactionAdapter
 {
 public:
-   BearingDesignProductReactionAdapter(IBearingDesign* pForces, IntervalIndexType intervalIdx, const CGirderKey& girderKey);
+   BearingDesignProductReactionAdapter(std::shared_ptr<IBearingDesign> pForces, IntervalIndexType intervalIdx, const CGirderKey& girderKey);
    virtual ~BearingDesignProductReactionAdapter();
 
-   virtual ReactionLocationIter GetReactionLocations(IBridge* pBridge);
+   ReactionLocationIter GetReactionLocations(std::shared_ptr<IBridge> pBridge) override;
    virtual bool DoReportAtPier(PierIndexType pier,const CGirderKey& girderKey);
    virtual Float64 GetReaction(IntervalIndexType intervalIdx,const ReactionLocation& rLocation,pgsTypes::ProductForceType pfTy,pgsTypes::BridgeAnalysisType bat);
    virtual void GetLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType, const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,
                                     bool bIncludeImpact,bool bIncludeLLDF,Float64* pRmin,Float64* pRmax,
                                     VehicleIndexType* pMinConfig=nullptr, VehicleIndexType* pMaxConfig=nullptr);
 private:
-   IBearingDesign* m_pBearingDesign;
+   std::shared_ptr<IBearingDesign> m_pBearingDesign;
    CGirderKey m_GirderKey;
    ReactionLocationContainer m_Locations;
    IntervalIndexType m_IntervalIdx;
@@ -146,7 +146,7 @@ class ICmbLsReactionAdapter
 {
 public:
    virtual ~ICmbLsReactionAdapter() {};
-   virtual ReactionLocationIter GetReactionLocations(IBridge* pBridge)=0;
+   virtual ReactionLocationIter GetReactionLocations(std::shared_ptr<IBridge> pBridge)=0;
    virtual bool DoReportAtPier(PierIndexType pier,const CGirderKey& girderKey)=0;
 
    // From ICombinedForces
@@ -157,17 +157,17 @@ public:
 class REPORTINGCLASS CombinedLsForcesReactionAdapter: public ICmbLsReactionAdapter
 {
 public:
-   CombinedLsForcesReactionAdapter(IReactions* pReactions, ILimitStateForces* pForces, const CGirderKey& girderKey);
+   CombinedLsForcesReactionAdapter(std::shared_ptr<IReactions> pReactions, std::shared_ptr<ILimitStateForces> pForces, const CGirderKey& girderKey);
    virtual ~CombinedLsForcesReactionAdapter();
 
-   virtual ReactionLocationIter GetReactionLocations(IBridge* pBridge);
+   virtual ReactionLocationIter GetReactionLocations(std::shared_ptr<IBridge> pBridge);
    virtual bool DoReportAtPier(PierIndexType pier,const CGirderKey& girderKey);
    virtual Float64 GetReaction(IntervalIndexType intervalIdx,LoadingCombinationType combo,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,ResultsType type);
    virtual void GetCombinedLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax);
 
 private:
-   IReactions* m_pReactions;
-   ILimitStateForces* m_LsPointer;
+   std::shared_ptr<IReactions> m_pReactions;
+   std::shared_ptr<ILimitStateForces> m_LsPointer;
    CGirderKey m_GirderKey;
    ReactionLocationContainer m_Locations;
 };
@@ -178,19 +178,19 @@ private:
 class REPORTINGCLASS CmbLsBearingDesignReactionAdapter: public ICmbLsReactionAdapter
 {
 public:
-   CmbLsBearingDesignReactionAdapter(IBearingDesign* pForces, IntervalIndexType intervalIdx, const CGirderKey& girderKey);
+   CmbLsBearingDesignReactionAdapter(std::shared_ptr<IBearingDesign> pForces, IntervalIndexType intervalIdx, const CGirderKey& girderKey);
    virtual ~CmbLsBearingDesignReactionAdapter();
 
-   virtual ReactionLocationIter GetReactionLocations(IBridge* pBridge);
+   ReactionLocationIter GetReactionLocations(std::shared_ptr<IBridge> pBridge) override;
    virtual bool DoReportAtPier(PierIndexType pier,const CGirderKey& girderKey);
 
    virtual Float64 GetReaction(IntervalIndexType intervalIdx,LoadingCombinationType combo,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,ResultsType type);
    virtual void GetCombinedLiveLoadReaction(IntervalIndexType intervalIdx,pgsTypes::LiveLoadType llType,const ReactionLocation& rLocation,pgsTypes::BridgeAnalysisType bat,bool bIncludeImpact,Float64* pRmin,Float64* pRmax);
 
-   static ReactionLocationContainer GetBearingReactionLocations(IntervalIndexType intervalIdx, const CGirderKey& girderKey, IBridge* pBridge, IBearingDesign* pBearing);
+   static ReactionLocationContainer GetBearingReactionLocations(IntervalIndexType intervalIdx, const CGirderKey& girderKey, std::shared_ptr<IBridge> pBridge, std::shared_ptr<IBearingDesign> pBearing);
 
 private:
-   IBearingDesign* m_pBearingDesign;
+   std::shared_ptr<IBearingDesign> m_pBearingDesign;
    CGirderKey m_GirderKey;
    ReactionLocationContainer m_Locations;
    IntervalIndexType m_IntervalIdx;

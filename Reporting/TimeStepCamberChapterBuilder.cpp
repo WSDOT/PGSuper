@@ -32,11 +32,6 @@
 #include <iterator>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CTimeStepCamberChapterBuilder::CTimeStepCamberChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
@@ -51,10 +46,9 @@ LPCTSTR CTimeStepCamberChapterBuilder::GetName() const
 rptChapter* CTimeStepCamberChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
 
-   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
@@ -67,7 +61,7 @@ rptChapter* CTimeStepCamberChapterBuilder::Build(const std::shared_ptr<const WBF
    *pPara << CreateHandlingDeflectionTable(pBroker, girderKey) << rptNewLine;
    *pPara << CreateAfterErectionDeflectionTable(pBroker,girderKey)     << rptNewLine;
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    if (pBridge->GetDeckType() != pgsTypes::sdtNone)
    {
       *pPara << CreateBeforeSlabCastingDeflectionTable(pBroker, girderKey) << rptNewLine;
@@ -108,10 +102,10 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTimeStepCamberChapterBuilder::
    return std::make_unique<CTimeStepCamberChapterBuilder>();
 }
 
-rptRcTable* CTimeStepCamberChapterBuilder::CreateStorageDeflectionTable(IBroker* pBroker,const CGirderKey& girderKey) const
+rptRcTable* CTimeStepCamberChapterBuilder::CreateStorageDeflectionTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey) const
 {
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
 
    ColumnIndexType nCols = 3;
    rptRcTable* pLayoutTable = rptStyleManager::CreateDefaultTable(nCols,_T("Deflections during Storage"));
@@ -167,10 +161,10 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateStorageDeflectionTable(IBroker*
    return pLayoutTable;
 }
 
-rptRcTable* CTimeStepCamberChapterBuilder::CreateHandlingDeflectionTable(IBroker* pBroker, const CGirderKey& girderKey) const
+rptRcTable* CTimeStepCamberChapterBuilder::CreateHandlingDeflectionTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey) const
 {
-   GET_IFACE2(pBroker, IIntervals, pIntervals);
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
 
    ColumnIndexType nCols = 2;
    rptRcTable* pLayoutTable = rptStyleManager::CreateDefaultTable(nCols, _T("Deflections during Handling"));
@@ -217,10 +211,10 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateHandlingDeflectionTable(IBroker
    return pLayoutTable;
 }
 
-rptRcTable* CTimeStepCamberChapterBuilder::CreateAfterErectionDeflectionTable(IBroker* pBroker,const CGirderKey& girderKey) const
+rptRcTable* CTimeStepCamberChapterBuilder::CreateAfterErectionDeflectionTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey) const
 {
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
 
    IntervalIndexType firstErectionIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(girderKey);
    IntervalIndexType lastErectionIntervalIdx  = pIntervals->GetLastSegmentErectionInterval(girderKey);
@@ -280,21 +274,21 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateAfterErectionDeflectionTable(IB
    return pLayoutTable;
 }
 
-rptRcTable* CTimeStepCamberChapterBuilder::CreateTable(IBroker* pBroker, const CSegmentKey& segmentKey, IntervalIndexType intervalIdx) const
+rptRcTable* CTimeStepCamberChapterBuilder::CreateTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey, IntervalIndexType intervalIdx) const
 {
    ASSERT_SEGMENT_KEY(segmentKey);
 
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-   GET_IFACE2(pBroker, IProductForces2, pForces);
-   GET_IFACE2_NOCHECK(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   EAF_GET_IFACE2(pBroker, IProductForces2, pForces);
+   EAF_GET_IFACE2_NOCHECK(pBroker, IBridge, pBridge);
 
-   GET_IFACE2(pBroker, IProductForces, pProduct);
+   EAF_GET_IFACE2(pBroker, IProductForces, pProduct);
    pgsTypes::BridgeAnalysisType bat = pProduct->GetBridgeAnalysisType(pgsTypes::Minimize);
 
-   GET_IFACE2(pBroker, ICamber, pCamber);
+   EAF_GET_IFACE2(pBroker, ICamber, pCamber);
    bool bHasPrecamber = pCamber->HasPrecamber(segmentKey);
    
-   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
    IntervalIndexType liftingIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
    IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
    IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
@@ -330,7 +324,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateTable(IBroker* pBroker, const C
    }
 
 
-   GET_IFACE2(pBroker, IPointOfInterest, pIPoi);
+   EAF_GET_IFACE2(pBroker, IPointOfInterest, pIPoi);
    PoiList vPoi;
    pIPoi->GetPointsOfInterest(segmentKey, poiReference, &vPoi);
 
@@ -342,7 +336,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateTable(IBroker* pBroker, const C
       pIPoi->MergePoiLists(vPoi, vPoiEnds, &vPoi);
    }
 
-   GET_IFACE2(pBroker, IUserDefinedLoads, pUserLoads);
+   EAF_GET_IFACE2(pBroker, IUserDefinedLoads, pUserLoads);
 
    std::vector<pgsTypes::ProductForceType> vProductForces;
    vProductForces.push_back(pgsTypes::pftGirder);
@@ -405,7 +399,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateTable(IBroker* pBroker, const C
 
    std::vector<Float64>* pResults = new std::vector<Float64>[vProductForces.size()];
 
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
 
    ColumnIndexType col = 0;
    (*pTable)(0,col++) << COLHDR(RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
@@ -477,42 +471,42 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateTable(IBroker* pBroker, const C
    return pTable;
 }
 
-rptRcTable* CTimeStepCamberChapterBuilder::CreateBeforeSlabCastingDeflectionTable(IBroker* pBroker,const CGirderKey& girderKey) const
+rptRcTable* CTimeStepCamberChapterBuilder::CreateBeforeSlabCastingDeflectionTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey) const
 {
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   GET_IFACE2(pBroker,IProductForces2,pForces);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   EAF_GET_IFACE2(pBroker,IProductForces2,pForces);
 
-   GET_IFACE2(pBroker,IProductForces,pProduct);
+   EAF_GET_IFACE2(pBroker,IProductForces,pProduct);
    pgsTypes::BridgeAnalysisType bat = pProduct->GetBridgeAnalysisType(pgsTypes::Minimize);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
 
 
-   GET_IFACE2(pBroker, ICamber, pCamber);
+   EAF_GET_IFACE2(pBroker, ICamber, pCamber);
    bool bHasPrecamber = pCamber->HasPrecamber(girderKey);
    pgsTypes::PrestressDeflectionDatum datum = pgsTypes::pddErected;
 
-   GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   EAF_GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
    DuctIndexType nMaxSegmentDucts = pSegmentTendonGeometry->GetMaxDuctCount(girderKey);
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetFirstCastDeckInterval();
    IntervalIndexType firstTendonStressingIntervalIdx = pIntervals->GetFirstGirderTendonStressingInterval(girderKey);
 
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    PoiList vPoi;
    pIPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), POI_ERECTED_SEGMENT, &vPoi);
  
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,     pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, deflection,   pDisplayUnits->GetDeflectionUnit(), false );
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
-   GET_IFACE2(pBroker,IUserDefinedLoads,pUserLoads);
-   GET_IFACE2(pBroker,IUserDefinedLoadData,pUserLoadData);
+   EAF_GET_IFACE2(pBroker,IUserDefinedLoads,pUserLoads);
+   EAF_GET_IFACE2(pBroker,IUserDefinedLoadData,pUserLoadData);
 
    std::vector<pgsTypes::ProductForceType> vProductForces;
    vProductForces.push_back(pgsTypes::pftGirder);
@@ -603,7 +597,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateBeforeSlabCastingDeflectionTabl
    RowIndexType row = pTable->GetNumberOfHeaderRows();
 
 #if defined _DEBUG
-   GET_IFACE2(pBroker,ILimitStateForces2,pLimitStateForces);
+   EAF_GET_IFACE2(pBroker,ILimitStateForces2,pLimitStateForces);
    std::vector<Float64> vDmin,vDmax;
    pLimitStateForces->GetDeflection(castDeckIntervalIdx-1,pgsTypes::ServiceI,vPoi,bat,true,false,true,true,true,&vDmin,&vDmax);
 #endif
@@ -639,7 +633,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateBeforeSlabCastingDeflectionTabl
 
 #if defined _DEBUG
       Float64 Dmin, Dmax;
-      GET_IFACE2(pBroker, ILimitStateForces, pLSF);
+      EAF_GET_IFACE2(pBroker, ILimitStateForces, pLSF);
       pLSF->GetDeflection(castDeckIntervalIdx - 1, pgsTypes::ServiceI, poi, bat, true, false, true, true, true, &Dmin, &Dmax);
       ATLASSERT(IsEqual(vDmin[i], Dmin));
       ATLASSERT(IsEqual(vDmax[i], Dmax));
@@ -661,19 +655,19 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateBeforeSlabCastingDeflectionTabl
    return pTable;
 }
 
-rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBroker* pBroker,const CGirderKey& girderKey) const
+rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey) const
 {
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   GET_IFACE2(pBroker,IProductForces2,pForces);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   EAF_GET_IFACE2(pBroker,IProductForces2,pForces);
 
-   GET_IFACE2(pBroker,IProductForces,pProduct);
+   EAF_GET_IFACE2(pBroker,IProductForces,pProduct);
    pgsTypes::BridgeAnalysisType bat = pProduct->GetBridgeAnalysisType(pgsTypes::Minimize);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType intervalIdx;
    auto castDeckIntervalIdx = pIntervals->GetFirstCastDeckInterval();
    if (pBridge->GetDeckType() == pgsTypes::sdtNone)
@@ -695,21 +689,21 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBr
    const int TWO_STAGE_PT = 3;
    int pt_to_deck = (castDeckIntervalIdx < firstPTIntervalIdx) ? CAST_DECK_BEFORE_PT : (lastPTIntervalIdx < castDeckIntervalIdx) ? CAST_DECK_AFTER_PT : TWO_STAGE_PT;
 
-   GET_IFACE2(pBroker, IGirderTendonGeometry, pTendonGeom);
+   EAF_GET_IFACE2(pBroker, IGirderTendonGeometry, pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
 
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    PoiList vPoi;
    pIPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), POI_ERECTED_SEGMENT, &vPoi);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,     pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, deflection,   pDisplayUnits->GetDeflectionUnit(), false );
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
-   GET_IFACE2(pBroker,IUserDefinedLoads,pUserLoads);
-   GET_IFACE2(pBroker,IUserDefinedLoadData,pUserLoadData);
+   EAF_GET_IFACE2(pBroker,IUserDefinedLoads,pUserLoads);
+   EAF_GET_IFACE2(pBroker,IUserDefinedLoadData,pUserLoadData);
 
    std::vector<pgsTypes::ProductForceType> vProductForces;
    vProductForces.push_back(pgsTypes::pftGirder);
@@ -809,7 +803,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBr
 
 
 #if defined _DEBUG
-   GET_IFACE2(pBroker,ILimitStateForces2,pLimitStateForces);
+   EAF_GET_IFACE2(pBroker,ILimitStateForces2,pLimitStateForces);
    std::vector<Float64> vDmin1,vDmax1;
    pLimitStateForces->GetDeflection(intervalIdx,pgsTypes::ServiceI,vPoi,bat,true,false,true,true,true,&vDmin1,&vDmax1);
    std::vector<Float64> vDmin2,vDmax2;
@@ -817,7 +811,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBr
    std::vector<Float64> vC;
    std::transform(vDmin2.cbegin(),vDmin2.cend(),vDmin1.cbegin(),std::back_inserter(vC),[](const auto& a, const auto& b) {return a - b;});
 
-   GET_IFACE2(pBroker, ICamber, pCamber);
+   EAF_GET_IFACE2(pBroker, ICamber, pCamber);
 #endif
 
 
@@ -860,17 +854,17 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateScreedCamberDeflectionTable(IBr
    return pTable;
 }
 
-rptRcTable* CTimeStepCamberChapterBuilder::CreateExcessCamberTable(IBroker* pBroker,const CGirderKey& girderKey) const
+rptRcTable* CTimeStepCamberChapterBuilder::CreateExcessCamberTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey) const
 {
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   GET_IFACE2(pBroker,IProductForces,pProduct);
+   EAF_GET_IFACE2(pBroker,IProductForces,pProduct);
    pgsTypes::BridgeAnalysisType bat = pProduct->GetBridgeAnalysisType(pgsTypes::Minimize);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType intervalIdx;
    if (pBridge->GetDeckType() == pgsTypes::sdtNone)
    {
@@ -883,14 +877,14 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateExcessCamberTable(IBroker* pBro
    }
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    PoiList vPoi;
    pIPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), POI_ERECTED_SEGMENT, &vPoi);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,     pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, deflection,   pDisplayUnits->GetDeflectionUnit(), false );
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(4,_T("Excess Camber"));
@@ -903,7 +897,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateExcessCamberTable(IBroker* pBro
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
 
-   GET_IFACE2(pBroker,ILimitStateForces2,pLimitStateForces);
+   EAF_GET_IFACE2(pBroker,ILimitStateForces2,pLimitStateForces);
    
    std::vector<Float64> vDmin,vDmax;
    pLimitStateForces->GetDeflection(intervalIdx,pgsTypes::ServiceI,vPoi,bat,true,false,true,true,true,&vDmin,&vDmax);
@@ -931,33 +925,33 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateExcessCamberTable(IBroker* pBro
    return pTable;
 }
 
-rptRcTable* CTimeStepCamberChapterBuilder::CreateFinalDeflectionTable(IBroker* pBroker,const CGirderKey& girderKey) const
+rptRcTable* CTimeStepCamberChapterBuilder::CreateFinalDeflectionTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey) const
 {
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   GET_IFACE2(pBroker,IProductForces2,pForces);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   EAF_GET_IFACE2(pBroker,IProductForces2,pForces);
 
-   GET_IFACE2(pBroker,IProductForces,pProduct);
+   EAF_GET_IFACE2(pBroker,IProductForces,pProduct);
    pgsTypes::BridgeAnalysisType bat = pProduct->GetBridgeAnalysisType(pgsTypes::Minimize);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
 
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    PoiList vPoi;
    pIPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), POI_ERECTED_SEGMENT, &vPoi);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,     pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, deflection,   pDisplayUnits->GetDeflectionUnit(), false );
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
-   GET_IFACE2(pBroker,IUserDefinedLoads,pUserLoads);
-   GET_IFACE2(pBroker,IUserDefinedLoadData,pUserLoadData);
-   GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
+   EAF_GET_IFACE2(pBroker,IUserDefinedLoads,pUserLoads);
+   EAF_GET_IFACE2(pBroker,IUserDefinedLoadData,pUserLoadData);
+   EAF_GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
 
-   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
    auto firstCastDeckIntervalIdx = pIntervals->GetFirstCastDeckInterval();
    auto lastCastDeckIntervalIdx = pIntervals->GetLastCastDeckInterval();
    auto firstPTIntervalIdx = pIntervals->GetFirstGirderTendonStressingInterval(girderKey);
@@ -973,7 +967,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateFinalDeflectionTable(IBroker* p
 
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
 
-   GET_IFACE2(pBroker, ICamber, pCamber);
+   EAF_GET_IFACE2(pBroker, ICamber, pCamber);
    bool bHasPrecamber = pCamber->HasPrecamber(girderKey);
    pgsTypes::PrestressDeflectionDatum datum = pgsTypes::pddErected;
 
@@ -1082,7 +1076,7 @@ rptRcTable* CTimeStepCamberChapterBuilder::CreateFinalDeflectionTable(IBroker* p
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
 
-   GET_IFACE2(pBroker,ILimitStateForces2,pLimitStateForces);
+   EAF_GET_IFACE2(pBroker,ILimitStateForces2,pLimitStateForces);
    std::vector<Float64> vDmin, vDmax; // deflection at time bridge is open to traffic
    pLimitStateForces->GetDeflection(liveLoadIntervalIdx, pgsTypes::ServiceI, vPoi, bat, true, false, true, true, true, &vDmin, &vDmax);
 

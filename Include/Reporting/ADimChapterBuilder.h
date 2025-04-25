@@ -20,8 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_ADIMCHAPTERBUILDER_H_
-#define INCLUDED_ADIMCHAPTERBUILDER_H_
+#pragma once
 
 #include <Reporting\ReportingExp.h>
 #include <Reporter\Chapter.h>
@@ -48,54 +47,16 @@ class SpecLibraryEntry;
 class REPORTINGCLASS CADimChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   // GROUP: LIFECYCLE
+   CADimChapterBuilder(const CADimChapterBuilder&) = delete;
    CADimChapterBuilder(bool bSelect = true);
 
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
-   virtual LPCTSTR GetName() const override;
+   CADimChapterBuilder& operator=(const CADimChapterBuilder&) = delete;
    
-
-   //------------------------------------------------------------------------
-   virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
+   LPCTSTR GetName() const override;
+   rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
+   std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 
 protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   void BuildAdimContent(rptChapter* pChapter,const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level, IBroker* pBroker,const CGirderKey& girderKey,const SpecLibraryEntry* pSpecEntry) const;
+   void BuildAdimContent(rptChapter* pChapter,const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level, std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,const SpecLibraryEntry* pSpecEntry) const;
    void BuildDirectHaunchElevationContent(rptChapter* pChapter,const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec, Uint16 level) const;
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-
-   // Prevent accidental copying and assignment
-   CADimChapterBuilder(const CADimChapterBuilder&) = delete;
-   CADimChapterBuilder& operator=(const CADimChapterBuilder&) = delete;
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_ADIMCHAPTERBUILDER_H_

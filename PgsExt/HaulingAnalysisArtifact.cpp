@@ -91,7 +91,7 @@ pgsHaulingAnalysisArtifact* pgsWsdotHaulingAnalysisArtifact::Clone() const
    return clone.release();
 }
 
-void pgsWsdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& segmentKey,rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, IEAFDisplayUnits* pDisplayUnits) const
+void pgsWsdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& segmentKey,rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    WBFL::Stability::HaulingStabilityReporter reporter;
    EAF_GET_IFACE2(pBroker,IGirder,pGirder);
@@ -104,7 +104,7 @@ void pgsWsdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey&
    reporter.BuildSpecCheckChapter(pStabilityModel,pStabilityProblem,&m_HaulingArtifact,pChapter,pApp->GetDisplayUnits(), _T("Location from<BR/>Left Bunk Point"), Ll);
 }
 
-void pgsWsdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, IEAFDisplayUnits* pDisplayUnits) const
+void pgsWsdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    WBFL::Stability::HaulingStabilityReporter reporter;
    EAF_GET_IFACE2(pBroker,IGirder,pGirder);

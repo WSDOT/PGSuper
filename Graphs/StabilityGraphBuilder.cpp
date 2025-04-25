@@ -45,11 +45,6 @@
 
 #include <MFCTools\Text.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 static const COLORREF CURVE1_COLOR      = RGB(0,0,200);
 static const COLORREF CURVE2_COLOR      = RGB(200,0,0);
@@ -142,7 +137,7 @@ int CStabilityGraphBuilder::InitializeGraphController(CWnd* pParent,UINT nID)
       return -1;
    }
 
-   EAFGetBroker(&m_pBroker);
+   m_pBroker = EAFGetBroker();
 
    // setup the graph
    m_Graph.SetClientAreaColor(GRAPH_BACKGROUND);
@@ -151,7 +146,7 @@ int CStabilityGraphBuilder::InitializeGraphController(CWnd* pParent,UINT nID)
    m_Graph.SetYAxisTitle(_T("Factor of Safety"));
 
    // x axis
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::LengthData& lengthUnit = pDisplayUnits->GetSpanLengthUnit();
    m_pXFormat = new WBFL::Units::LengthTool(lengthUnit);
    m_Graph.SetXAxisValueFormat(m_pXFormat);
@@ -192,7 +187,7 @@ void CStabilityGraphBuilder::UpdateXAxis()
       delete m_pXFormat;
    }
 
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::LengthData& lengthUnit = pDisplayUnits->GetSpanLengthUnit();
    m_pXFormat = new WBFL::Units::LengthTool(lengthUnit);
    m_Graph.SetXAxisValueFormat(m_pXFormat);
@@ -206,7 +201,7 @@ void CStabilityGraphBuilder::ShowGrid(bool bShowGrid)
 
 bool CStabilityGraphBuilder::UpdateNow()
 {
-   GET_IFACE(IProgress,pProgress);
+   EAF_GET_IFACE(IProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
 
    pProgress->UpdateMessage(_T("Building Graph"));
@@ -237,9 +232,9 @@ bool CStabilityGraphBuilder::UpdateNow()
       limitFS2 = m_Graph.CreateDataSeries(_T("Min FSf/FSro"), LIMIT_STYLE, CURVE_PEN_WEIGHT, CURVE2_COLOR);
    }
 
-   GET_IFACE_NOCHECK(IArtifact,pArtifact);
-   GET_IFACE(IStrandGeometry,pStrandGeom);
-   GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE_NOCHECK(IArtifact,pArtifact);
+   EAF_GET_IFACE(IStrandGeometry,pStrandGeom);
+   EAF_GET_IFACE(IBridge,pBridge);
 
    m_PrintSubtitle = SEGMENT_LABEL(segmentKey);
 
@@ -259,7 +254,7 @@ bool CStabilityGraphBuilder::UpdateNow()
 
    if ( graphType == GT_LIFTING )
    {
-      GET_IFACE(ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
+      EAF_GET_IFACE(ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
       if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled())
       {
          CString strTitle;
@@ -292,7 +287,7 @@ bool CStabilityGraphBuilder::UpdateNow()
    }
    else
    {
-      GET_IFACE(ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+      EAF_GET_IFACE(ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
       if (pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled() && pSegmentHaulingSpecCriteria->GetHaulingAnalysisMethod() == pgsTypes::HaulingAnalysisMethod::WSDOT)
       {
          CString strTitle;
@@ -360,7 +355,7 @@ void CStabilityGraphBuilder::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
 
    if ( graphType == GT_LIFTING )
    {
-      GET_IFACE(ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
+      EAF_GET_IFACE(ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
       if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled())
       {
          DrawTheGraph(pGraphWnd,pDC);
@@ -384,7 +379,7 @@ void CStabilityGraphBuilder::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
    }
    else
    {
-      GET_IFACE(ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+      EAF_GET_IFACE(ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
       if (pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
       {
          DrawTheGraph(pGraphWnd,pDC);
@@ -422,14 +417,14 @@ void CStabilityGraphBuilder::DrawTheGraph(CWnd* pGraphWnd,CDC* pDC)
    TCHAR buffer[45];
    if (  m_pGraphController->GetGraphType() == GT_LIFTING )
    {
-      GET_IFACE(ISegmentLiftingSpecCriteria,pCriteria);
+      EAF_GET_IFACE(ISegmentLiftingSpecCriteria,pCriteria);
       _stprintf_s(buffer,sizeof(buffer)/sizeof(TCHAR),_T("Min. FScr = %3.1f, Min. FSf = %3.1f"),
          pCriteria->GetLiftingCrackingFs(),
          pCriteria->GetLiftingFailureFs() );
    }
    else
    {
-      GET_IFACE(ISegmentHaulingSpecCriteria,pCriteria);
+      EAF_GET_IFACE(ISegmentHaulingSpecCriteria,pCriteria);
       _stprintf_s(buffer,sizeof(buffer)/sizeof(TCHAR),_T("Min. FScr = %3.1f, Min. FSf/FSro = %3.1f"),
          pCriteria->GetHaulingCrackingFs(),
          pCriteria->GetHaulingRolloverFs() );

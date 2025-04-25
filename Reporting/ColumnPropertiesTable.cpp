@@ -27,11 +27,6 @@
 #include <IFace\Bridge.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CColumnPropertiesTable::CColumnPropertiesTable()
 {
@@ -58,7 +53,7 @@ CColumnPropertiesTable& CColumnPropertiesTable::operator= (const CColumnProperti
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CColumnPropertiesTable::Build(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CColumnPropertiesTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue, l, pDisplayUnits->GetSpanLengthUnit(), false);
    INIT_UV_PROTOTYPE( rptAreaUnitValue, l2, pDisplayUnits->GetAreaUnit(), false );
@@ -67,7 +62,7 @@ rptRcTable* CColumnPropertiesTable::Build(IBroker* pBroker,IEAFDisplayUnits* pDi
    rptRcTable* pLayoutTable = rptStyleManager::CreateLayoutTable(1);
 
    RowIndexType layoutTableRow = 0;
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    PierIndexType nPiers = pBridge->GetPierCount();
    for ( PierIndexType pierIdx = 1; pierIdx < nPiers-1; pierIdx++, layoutTableRow++ )
    {

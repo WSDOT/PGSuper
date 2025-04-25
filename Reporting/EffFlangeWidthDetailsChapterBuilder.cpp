@@ -27,11 +27,6 @@
 #include <PgsExt\ReportPointOfInterest.h>
 #include <IFace\Bridge.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -60,27 +55,27 @@ rptChapter* CEffFlangeWidthDetailsChapterBuilder::Build(const std::shared_ptr<co
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
    CGirderKey girderKey;
 
    if ( pGdrRptSpec )
    {
-      pGdrRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrRptSpec->GetBroker();
       girderKey = pGdrRptSpec->GetGirderKey();
    }
    else
    {
-      pGdrLineRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrLineRptSpec->GetBroker();
       girderKey = pGdrLineRptSpec->GetGirderKey();
    }
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    if ( pBridge->IsCompositeDeck() )
    {
-      GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
       std::vector<CGirderKey> vGirderKeys;
       pBridge->GetGirderline(girderKey, &vGirderKeys);
       for(const auto& thisGirderKey : vGirderKeys)

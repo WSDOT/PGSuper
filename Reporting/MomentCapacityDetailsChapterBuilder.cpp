@@ -44,19 +44,14 @@
 #include <psgLib/MomentCapacityCriteria.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
    CMomentCapacityDetailsChapterBuilder
 ****************************************************************************/
 
-void write_moment_data_table(IBroker* pBroker,
-                             IEAFDisplayUnits* pDisplayUnits,
+void write_moment_data_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                             std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                              const CGirderKey& girderKey,
                              const PoiList& vPoi,
                              rptChapter* pChapter,
@@ -64,8 +59,8 @@ void write_moment_data_table(IBroker* pBroker,
                              const CString& strStageName,
                                  bool bPositiveMoment);
 
-void write_crack_moment_data_table(IBroker* pBroker,
-                                   IEAFDisplayUnits* pDisplayUnits,
+void write_crack_moment_data_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                                   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                              const CGirderKey& girderKey,
                                    const PoiList& vPoi,
                                    rptChapter* pChapter,
@@ -73,8 +68,8 @@ void write_crack_moment_data_table(IBroker* pBroker,
                                    const CString& strStageName,
                                  bool bPositiveMoment);
 
-void write_min_moment_data_table(IBroker* pBroker,
-                                 IEAFDisplayUnits* pDisplayUnits,
+void write_min_moment_data_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                                 std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                              const CGirderKey& girderKey,
                                  const PoiList& vPoi,
                                  rptChapter* pChapter,
@@ -82,8 +77,8 @@ void write_min_moment_data_table(IBroker* pBroker,
                                  const CString& strStageName,
                                  bool bPositiveMoment);
 
-void write_over_reinforced_moment_data_table(IBroker* pBroker,
-                                 IEAFDisplayUnits* pDisplayUnits,
+void write_over_reinforced_moment_data_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                                 std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                              const CGirderKey& girderKey,
                                  const PoiList& vPoi,
                                  rptChapter* pChapter,
@@ -112,27 +107,27 @@ rptChapter* CMomentCapacityDetailsChapterBuilder::Build(const std::shared_ptr<co
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
    CGirderKey girderKey;
 
    if ( pGdrRptSpec )
    {
-      pGdrRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrRptSpec->GetBroker();
       girderKey = pGdrRptSpec->GetGirderKey();
    }
    else
    {
-      pGdrLineRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrLineRptSpec->GetBroker();
       girderKey = pGdrLineRptSpec->GetGirderKey();
    }
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   GET_IFACE2_NOCHECK(pBroker, IDocumentType, pDocType);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2_NOCHECK(pBroker, IDocumentType, pDocType);
 
    IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
 
@@ -240,8 +235,8 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CMomentCapacityDetailsChapterBu
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
 
-void write_moment_data_table(IBroker* pBroker,
-                             IEAFDisplayUnits* pDisplayUnits,
+void write_moment_data_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                             std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                              const CGirderKey& girderKey,
                              const PoiList& vPoi,
                              rptChapter* pChapter,
@@ -254,16 +249,16 @@ void write_moment_data_table(IBroker* pBroker,
 
    ASSERT_GIRDER_KEY(girderKey);
 
-   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
-   GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
-   GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   EAF_GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   EAF_GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
    const GirderLibraryEntry* pGdrEntry = pGroup->GetGirder(girderKey.girderIndex)->GetGirderLibraryEntry();
 
-   GET_IFACE2(pBroker, ILibrary, pLib);
-   GET_IFACE2(pBroker, ISpecification, pSpec);
+   EAF_GET_IFACE2(pBroker, ILibrary, pLib);
+   EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
    const auto& moment_capacity_criteria = pSpecEntry->GetMomentCapacityCriteria();
    bool bConsiderReinforcementStrainLimits = moment_capacity_criteria.bConsiderReinforcementStrainLimit;
@@ -278,7 +273,7 @@ void write_moment_data_table(IBroker* pBroker,
    SegmentIndexType nSegments = pGroup->GetGirder(girderKey.girderIndex)->GetSegmentCount();
 
    bool bUHPC = false;
-   GET_IFACE2(pBroker, IMaterials, pMaterials);
+   EAF_GET_IFACE2(pBroker, IMaterials, pMaterials);
 
    DuctIndexType nMaxSegmentTendons = 0;
    for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
@@ -393,7 +388,7 @@ void write_moment_data_table(IBroker* pBroker,
 
    ColumnIndexType col = 0;
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
    if ( intervalIdx < lastCompositeDeckIntervalIdx)
    {
@@ -474,7 +469,7 @@ void write_moment_data_table(IBroker* pBroker,
    INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
    INIT_UV_PROTOTYPE(rptPerLengthUnitValue, curvature, pDisplayUnits->GetCurvatureUnit(), false);
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
@@ -489,7 +484,7 @@ void write_moment_data_table(IBroker* pBroker,
 
    std::array<std::_tstring, 4> strControlling{ _T("C"), _T("G"), _T("L"), _T("R")};
 
-   GET_IFACE2(pBroker,IMomentCapacity,pMomentCap);
+   EAF_GET_IFACE2(pBroker,IMomentCapacity,pMomentCap);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       const CSegmentKey& segmentKey(poi.GetSegmentKey());
@@ -618,7 +613,7 @@ void write_moment_data_table(IBroker* pBroker,
    if (bUHPC)
    {
       *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("UHPC_FlexureResistanceFactor.png")) << rptNewLine;
-      GET_IFACE2(pBroker, IResistanceFactors, pResistanceFactors);
+      EAF_GET_IFACE2(pBroker, IResistanceFactors, pResistanceFactors);
       *pPara << Sub2(symbol(mu), _T("l")) << _T(" = ") << pResistanceFactors->GetDuctilityCurvatureRatioLimit() << _T(" GS 1.6.2") << rptNewLine;
    }
    else if ( WBFL::LRFD::BDSManager::GetEdition() <= WBFL::LRFD::BDSManager::Edition::FifthEdition2010 )
@@ -653,8 +648,8 @@ void write_moment_data_table(IBroker* pBroker,
 
 }
 
-void write_crack_moment_data_table(IBroker* pBroker,
-                                   IEAFDisplayUnits* pDisplayUnits,
+void write_crack_moment_data_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                                   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                              const CGirderKey& girderKey,
                                    const PoiList& vPoi,
                                    rptChapter* pChapter,
@@ -694,7 +689,7 @@ void write_crack_moment_data_table(IBroker* pBroker,
 
    ColumnIndexType col = 0;
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
    if ( intervalIdx < lastCompositeDeckIntervalIdx)
    {
@@ -728,14 +723,14 @@ void write_crack_moment_data_table(IBroker* pBroker,
    scalar.SetPrecision(2);
    scalar.SetTolerance(1.0e-6);
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
 
    RowIndexType row = table->GetNumberOfHeaderRows();
-   GET_IFACE2(pBroker,IMomentCapacity,pMomentCapacity);
+   EAF_GET_IFACE2(pBroker,IMomentCapacity,pMomentCapacity);
 
    bool bFirstPoi = true;
    for (const pgsPointOfInterest& poi : vPoi)
@@ -793,7 +788,7 @@ void write_crack_moment_data_table(IBroker* pBroker,
       *pParagraph << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Mcr_2012.png")) << rptNewLine;
    }
 
-   GET_IFACE2(pBroker,IMaterials,pMaterial);
+   EAF_GET_IFACE2(pBroker,IMaterials,pMaterial);
    bool bLambda = (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false);
 
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
@@ -854,8 +849,8 @@ void write_crack_moment_data_table(IBroker* pBroker,
    *pParagraph << rptNewLine;
 }
 
-void write_min_moment_data_table(IBroker* pBroker,
-                                 IEAFDisplayUnits* pDisplayUnits,
+void write_min_moment_data_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                                 std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                              const CGirderKey& girderKey,
                                  const PoiList& vPoi,
                                  rptChapter* pChapter,
@@ -887,7 +882,7 @@ void write_min_moment_data_table(IBroker* pBroker,
    *pParagraph << table << rptNewLine;
 
    ColumnIndexType col = 0;
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
    if ( intervalIdx < lastCompositeDeckIntervalIdx)
    {
@@ -912,10 +907,10 @@ void write_min_moment_data_table(IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(), false );
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
    if ( intervalIdx < lastCompositeDeckIntervalIdx)
    {
@@ -924,7 +919,7 @@ void write_min_moment_data_table(IBroker* pBroker,
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
-   GET_IFACE2(pBroker,IMomentCapacity,pMomentCapacity);
+   EAF_GET_IFACE2(pBroker,IMomentCapacity,pMomentCapacity);
 
    for (const pgsPointOfInterest& poi : vPoi)
    {
@@ -957,8 +952,8 @@ void write_min_moment_data_table(IBroker* pBroker,
    }
 }
 
-void write_over_reinforced_moment_data_table(IBroker* pBroker,
-                                 IEAFDisplayUnits* pDisplayUnits,
+void write_over_reinforced_moment_data_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                                 std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                              const CGirderKey& girderKey,
                                  const PoiList& vPoi,
                                  rptChapter* pChapter,
@@ -969,7 +964,7 @@ void write_over_reinforced_moment_data_table(IBroker* pBroker,
    // Determine if this table is even needed...
    // It isn't needed if there aren't any over reinforced sections
    bool bTableNeeded = false;
-   GET_IFACE2(pBroker,IMomentCapacity,pMomentCap);
+   EAF_GET_IFACE2(pBroker,IMomentCapacity,pMomentCap);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       const MOMENTCAPACITYDETAILS* pmcd = pMomentCap->GetMomentCapacityDetails(intervalIdx,poi,bPositiveMoment);
@@ -1018,7 +1013,7 @@ void write_over_reinforced_moment_data_table(IBroker* pBroker,
    
    ColumnIndexType col = 0;
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
    if ( intervalIdx < lastCompositeDeckIntervalIdx)
    {
@@ -1044,12 +1039,12 @@ void write_over_reinforced_moment_data_table(IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,      pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
    if ( intervalIdx < lastCompositeDeckIntervalIdx)
    {

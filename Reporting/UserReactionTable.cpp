@@ -29,54 +29,19 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-/****************************************************************************
-CLASS
-   CUserReactionTable
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CUserReactionTable::CUserReactionTable()
 {
 }
 
-CUserReactionTable::CUserReactionTable(const CUserReactionTable& rOther)
-{
-   MakeCopy(rOther);
-}
-
-CUserReactionTable::~CUserReactionTable()
-{
-}
-
-//======================== OPERATORS  =======================================
-CUserReactionTable& CUserReactionTable::operator= (const CUserReactionTable& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
-//======================== OPERATIONS =======================================
-rptRcTable* CUserReactionTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
-                                      ReactionTableType tableType, IntervalIndexType intervalIdx,IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CUserReactionTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
+                                      ReactionTableType tableType, IntervalIndexType intervalIdx,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptForceSectionValue, reaction, pDisplayUnits->GetShearUnit(), false );
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetFirstCompositeDeckInterval();
 
    CString strTitle;
@@ -95,10 +60,10 @@ rptRcTable* CUserReactionTable::Build(IBroker* pBroker,const CGirderKey& girderK
    p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
    p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    PierIndexType nPiers = pBridge->GetPierCount();
 
-   GET_IFACE2(pBroker,IProductForces,pProductForces);
+   EAF_GET_IFACE2(pBroker,IProductForces,pProductForces);
    pgsTypes::BridgeAnalysisType maxBAT = pProductForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pProductForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 
@@ -108,12 +73,12 @@ rptRcTable* CUserReactionTable::Build(IBroker* pBroker,const CGirderKey& girderK
    std::unique_ptr<IProductReactionAdapter> pForces;
    if( tableType == PierReactionsTable )
    {
-      GET_IFACE2(pBroker,IReactions,pReactions);
+      EAF_GET_IFACE2(pBroker,IReactions,pReactions);
       pForces = std::make_unique<ProductForcesReactionAdapter>(pReactions,girderKey);
    }
    else
    {
-      GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
+      EAF_GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
       pForces = std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, compositeDeckIntervalIdx, girderKey);
    }
 
@@ -175,32 +140,3 @@ rptRcTable* CUserReactionTable::Build(IBroker* pBroker,const CGirderKey& girderK
 
    return p_table;
 }
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-void CUserReactionTable::MakeCopy(const CUserReactionTable& rOther)
-{
-   // Add copy code here...
-}
-
-void CUserReactionTable::MakeAssignment(const CUserReactionTable& rOther)
-{
-   MakeCopy( rOther );
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

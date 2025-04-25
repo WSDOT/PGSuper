@@ -26,7 +26,7 @@
 #include "psgLibLib.h"
 
 class rptParagraph;
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 struct PSGLIBCLASS TensionStressLimit
 {
@@ -38,7 +38,7 @@ struct PSGLIBCLASS TensionStressLimit
    bool operator==(const TensionStressLimit& other) const;
 
    enum class ConcreteSymbol {fci,fc};
-   void Report(rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits, ConcreteSymbol concrete) const;
+   void Report(rptParagraph* pPara, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, ConcreteSymbol concrete) const;
 
    void Save(LPCTSTR strUnitName,WBFL::System::IStructuredSave* pSave) const;
    void Load(LPCTSTR strUnitName, WBFL::System::IStructuredLoad* pLoad);

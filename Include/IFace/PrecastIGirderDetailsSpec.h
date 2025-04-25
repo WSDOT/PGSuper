@@ -20,28 +20,10 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_IFACE_PRECASTIGIRDERDETAILSSPEC_H_
-#define INCLUDED_IFACE_PRECASTIGIRDERDETAILSSPEC_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
-
-#if !defined INCLUDED_WBFLTYPES_H_
-#include <WbflTypes.h>
-#endif
 
 #include <PGSuperTypes.h>
-
-// PROJECT INCLUDES
-//
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
-
-// MISCELLANEOUS
-//
 
 /*****************************************************************************
 INTERFACE
@@ -55,20 +37,15 @@ DESCRIPTION
 // {F3DD6462-D707-11d2-AD2C-00105A9AF985}
 DEFINE_GUID(IID_IPrecastIGirderDetailsSpec, 
 0xf3dd6462, 0xd707, 0x11d2, 0xad, 0x2c, 0x0, 0x10, 0x5a, 0x9a, 0xf9, 0x85);
-interface IPrecastIGirderDetailsSpec : IUnknown
+class IPrecastIGirderDetailsSpec
 {
-   //------------------------------------------------------------------------
+public:
    // Minimum Top Flange thickness
    virtual Float64 GetMinTopFlangeThickness() const = 0;
 
-   //------------------------------------------------------------------------
    // Minimum web thickness
    virtual Float64 GetMinWebThickness() const = 0;
 
-   //------------------------------------------------------------------------
    // Minimum Bottom Flange thickness
    virtual Float64 GetMinBottomFlangeThickness() const = 0;
 };
-
-#endif // INCLUDED_IFACE_PRECASTIGIRDERDETAILSSPEC_H_
-

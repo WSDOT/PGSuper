@@ -31,12 +31,12 @@
 #include <IFace\Project.h>
 
 
-rptRcTable* CStrandEccTable::Build(IBroker* pBroker, const CSegmentKey& segmentKey, IntervalIndexType intervalIdx, IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CStrandEccTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey, IntervalIndexType intervalIdx, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    bool bAsymmetric = (pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing());
 
-   GET_IFACE2(pBroker, ISectionProperties, pSectProp);
+   EAF_GET_IFACE2(pBroker, ISectionProperties, pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
    pgsTypes::SectionPropertyType spType = (spMode == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed);
 
@@ -47,7 +47,7 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker, const CSegmentKey& segmentK
    bool bReportOnlyGrossOrTransformed = (spMode == pgsTypes::spmGross ? true : false);
    pgsTypes::SectionPropertyType spType2 = pgsTypes::sptGross;
 
-   GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP)
    {
       // need eccentricity based on complete transformed section for time-step analysis
@@ -55,10 +55,10 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker, const CSegmentKey& segmentK
       bReportOnlyGrossOrTransformed = true;
    }
 
-   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
    auto releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
-   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
+   EAF_GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
    bool bTempStrands = (0 < pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Temporary) ? true : false);
 
    // Setup table
@@ -300,7 +300,7 @@ rptRcTable* CStrandEccTable::Build(IBroker* pBroker, const CSegmentKey& segmentK
    INIT_UV_PROTOTYPE(rptPointOfInterest, rptErectedPoi, pDisplayUnits->GetSpanLengthUnit(), false);
    INIT_UV_PROTOTYPE(rptLengthSectionValue, ecc, pDisplayUnits->GetComponentDimUnit(), false);
 
-   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
 
    StrandIndexType Ns, Nh, Nt;
    Ns = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Straight);

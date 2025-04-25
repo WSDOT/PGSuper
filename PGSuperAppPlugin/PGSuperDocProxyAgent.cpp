@@ -469,6 +469,13 @@ bool CPGSuperDocProxyAgent::RegInterfaces()
 bool CPGSuperDocProxyAgent::Init()
 {
    //EAF_AGENT_INIT;
+#pragma Reminder("WORKING HERE - Removing COM")
+   // Need to take a fresh look at EAF_AGENT_INIT and the related macros
+   // All agents need to call the base-class Agent::Init() function
+   // This is easily hidden in that macro.
+   // Will also temporarly need a bool in Agent::Init() to
+   // check if (1) it's never called and (2) if it is called more than once.
+   // Agent::Init needs to be called exactly once between Init() and Shutdown()
    AdviseEventSinks();
    return true;
 }

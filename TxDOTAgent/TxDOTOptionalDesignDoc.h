@@ -96,7 +96,7 @@ public:
    virtual CATID GetAgentCategoryID() override;
    virtual CATID GetExtensionAgentCategoryID() override;
    virtual BOOL Init() override;
-   virtual BOOL LoadSpecialAgents(IBrokerInitEx2* pBrokerInit) override; 
+   virtual BOOL LoadSpecialAgents() override; 
    virtual CString GetToolbarSectionName() override;
 
    virtual void LoadToolbarState() override;
@@ -129,8 +129,8 @@ protected:
 
 public:
    // ITxDOTBrokerRetriever
-   virtual IBroker* GetUpdatedBroker() override;
-   virtual IBroker* GetClassicBroker() override;
+   virtual std::shared_ptr<WBFL::EAF::Broker> GetUpdatedBroker() override;
+   virtual std::shared_ptr<WBFL::EAF::Broker> GetClassicBroker() override;
    virtual GirderLibrary* GetGirderLibrary() override;
    virtual ConnectionLibrary* GetConnectionLibrary() override;
    virtual SpecLibrary* GetSpecLibrary() override;
@@ -150,6 +150,7 @@ public:
 // Implementation
 public:
 	virtual ~CTxDOTOptionalDesignDoc();
+
 #ifdef _DEBUG
 	virtual void AssertValid() const override;
 	virtual void Dump(CDumpContext& dc) const override;
@@ -161,8 +162,9 @@ protected:
    //}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
-   virtual BOOL CreateBroker() override;
-   virtual HINSTANCE GetResourceInstance() override;
+    void BrokerShutDown() override;
+    BOOL CreateBroker() override;
+    HINSTANCE GetResourceInstance() override;
 
    // our data
 public:
@@ -177,7 +179,7 @@ private:
    // Is first time for the broker
    bool m_VirginBroker;
 
-   CTxDOTOptionalDesignDocProxyAgent* m_pTxDOTOptionalDesignDocProxyAgent;
+   std::shared_ptr<CTxDOTOptionalDesignDocProxyAgent> m_pTxDOTOptionalDesignDocProxyAgent;
 
    // need a local library manager for master library
    psgLibraryManager m_LibMgr;

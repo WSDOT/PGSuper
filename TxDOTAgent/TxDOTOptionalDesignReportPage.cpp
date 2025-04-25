@@ -32,11 +32,6 @@
 #include <EAF\EAFCustSiteVars.h>
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 
@@ -113,9 +108,9 @@ BOOL CTxDOTOptionalDesignReportPage::OnSetActive()
 //         AFX_MANAGE_STATE(AfxGetAppModuleState()); // autoprogress complains if not in app state
 
          // Make sure our bridge data has been updated
-         CComPtr<IBroker> pBroker = m_pBrokerRetriever->GetUpdatedBroker();
+         auto pBroker = m_pBrokerRetriever->GetUpdatedBroker();
 
-         GET_IFACE2(pBroker,IProgress,pProgress);
+         EAF_GET_IFACE2(pBroker,IProgress,pProgress);
          CEAFAutoProgress ap(pProgress);
          pProgress->UpdateMessage(_T("Building Report"));
 
@@ -126,7 +121,7 @@ BOOL CTxDOTOptionalDesignReportPage::OnSetActive()
          }
          else
          {
-            GET_IFACE2(pBroker, IReportManager,pReportMgr);
+            EAF_GET_IFACE2_(WBFL::Reporting,pBroker, IReportManager,pReportMgr);
             // Create spec for currently selected report
             m_pRptSpec = CreateSelectedReportSpec(pReportMgr);
 
@@ -176,7 +171,7 @@ void CTxDOTOptionalDesignReportPage::DisplayErrorMode(TxDOTBrokerRetrieverExcept
    m_ErrorStatic.ShowWindow(SW_SHOW);
 }
 
-void CTxDOTOptionalDesignReportPage::CreateNewBrowser(IBroker* pBroker)
+void CTxDOTOptionalDesignReportPage::CreateNewBrowser(std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState())
 
@@ -184,7 +179,7 @@ void CTxDOTOptionalDesignReportPage::CreateNewBrowser(IBroker* pBroker)
    m_BrowserPlaceholder.ShowWindow(SW_SHOW);
    m_ErrorStatic.ShowWindow(SW_HIDE);
 
-   GET_IFACE2(pBroker, IReportManager,pReportMgr);
+   EAF_GET_IFACE2_(WBFL::Reporting,pBroker, IReportManager,pReportMgr);
 
    // Create spec for currently selected report
    m_pRptSpec = CreateSelectedReportSpec(pReportMgr);
@@ -193,7 +188,7 @@ void CTxDOTOptionalDesignReportPage::CreateNewBrowser(IBroker* pBroker)
    CRect rect;
    m_BrowserPlaceholder.GetClientRect(&rect);
 
-   GET_IFACE2(pBroker,IProgress,pProgress);
+   EAF_GET_IFACE2(pBroker,IProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
 
    m_pBrowser = pReportMgr->CreateReportBrowser(m_BrowserPlaceholder.GetSafeHwnd(),0,m_pRptSpec,std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder>());
@@ -203,7 +198,7 @@ void CTxDOTOptionalDesignReportPage::CreateNewBrowser(IBroker* pBroker)
    this->SendMessage(WM_SIZE);
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CTxDOTOptionalDesignReportPage::CreateSelectedReportSpec(IReportManager* pReportMgr)
+std::shared_ptr<WBFL::Reporting::ReportSpecification> CTxDOTOptionalDesignReportPage::CreateSelectedReportSpec(std::shared_ptr<WBFL::Reporting::IReportManager> pReportMgr)
 {
    int curidx = m_ReportCombo.GetCurSel();
    ASSERT(curidx==0 || curidx==1);
@@ -219,8 +214,8 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CTxDOTOptionalDesignReport
    pGirderRptSpec->SetGirderKey(CGirderKey(TOGA_SPAN,TOGA_FABR_GDR));
 
    // Set report header and footer for printing
-   CComPtr<IBroker> pBroker = m_pBrokerRetriever->GetUpdatedBroker();
-   GET_IFACE2(pBroker,IGetTogaData,pGetTogaData);
+   auto pBroker = m_pBrokerRetriever->GetUpdatedBroker();
+   EAF_GET_IFACE2(pBroker,IGetTogaData,pGetTogaData);
    const CTxDOTOptionalDesignData* pProjectData = pGetTogaData->GetTogaData();
 
    CString bridgeName = CString(_T("Bridge: ")) + pProjectData->GetBridge();
@@ -366,7 +361,7 @@ void CTxDOTOptionalDesignReportPage::OnCbnSelchangeReportCombo()
    try
    {
       // Report type changed - need to create a new browser
-      CComPtr<IBroker> pBroker = m_pBrokerRetriever->GetUpdatedBroker();
+      auto pBroker = m_pBrokerRetriever->GetUpdatedBroker();
 
       // Create a new browser
       CreateNewBrowser(pBroker);

@@ -39,23 +39,18 @@
 #include <psgLib/ShearCapacityCriteria.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirderKey& girderKey,
+void build_min_avs_paragraph(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,const CGirderKey& girderKey,
                                       IntervalIndexType intervalIdx, bool doIncludeSpanAndGirderForPois,
-                                      IEAFDisplayUnits* pDisplayUnits);
+                                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
-void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirderKey& girderKey,
+void build_max_spacing_paragraph(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,const CGirderKey& girderKey,
                                           IntervalIndexType intervalIdx, pgsTypes::LimitState ls,bool doIncludeSpanAndGirderForPois,
-                                          IEAFDisplayUnits* pDisplayUnits);
+                                          std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
-void build_max_spacing_paragraph_uhpc(IBroker* pBroker, rptChapter* pChapter, const CGirderKey& girderKey,
+void build_max_spacing_paragraph_uhpc(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter, const CGirderKey& girderKey,
    IntervalIndexType intervalIdx, pgsTypes::LimitState ls,bool doIncludeSpanAndGirderForPois,
-   IEAFDisplayUnits* pDisplayUnits);
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
 /****************************************************************************
 CLASS
@@ -75,25 +70,24 @@ LPCTSTR CStirrupDetailingCheckChapterBuilder::GetName() const
 rptChapter* CStirrupDetailingCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
    const CGirderKey& girderKey = pGirderRptSpec->GetGirderKey();
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
 
-   GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+   EAF_GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
    bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    bool bIncludeSpanAndGirderForPois = pReportOptions->IncludeSpanAndGirder4Pois(girderKey);
 
    build_min_avs_paragraph(pBroker,pChapter,girderKey,intervalIdx, bIncludeSpanAndGirderForPois, pDisplayUnits);
 
-   GET_IFACE2(pBroker, IMaterials, pMaterials);
+   EAF_GET_IFACE2(pBroker, IMaterials, pMaterials);
    if (pMaterials->GetSegmentConcreteType(CSegmentKey(girderKey, 0)) == pgsTypes::UHPC)
    {
       build_max_spacing_paragraph_uhpc(pBroker, pChapter, girderKey, intervalIdx, pgsTypes::StrengthI, bIncludeSpanAndGirderForPois, pDisplayUnits);
@@ -119,9 +113,9 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CStirrupDetailingCheckChapterBu
    return std::make_unique<CStirrupDetailingCheckChapterBuilder>();
 }
 
-void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirderKey& girderKey,
+void build_min_avs_paragraph(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,const CGirderKey& girderKey,
                                       IntervalIndexType intervalIdx,bool bIncludeSpanAndGirderForPois,
-                                      IEAFDisplayUnits* pDisplayUnits)
+                                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    rptParagraph* pParagraph;
 
@@ -132,15 +126,15 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
 
    location.IncludeSpanAndGirder(bIncludeSpanAndGirderForPois);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
-   GET_IFACE2(pBroker,IArtifact,pIArtifact);
+   EAF_GET_IFACE2(pBroker,IArtifact,pIArtifact);
    const pgsGirderArtifact* pGirderArtifact = pIArtifact->GetGirderArtifact(girderKey);
 
    bool bLambda = (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false);
 
-   GET_IFACE2(pBroker,IMaterials,pMaterial);
+   EAF_GET_IFACE2(pBroker,IMaterials,pMaterial);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       if ( 1 < nSegments )
@@ -370,9 +364,9 @@ void build_min_avs_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirder
    } // next segment
 }
 
-void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGirderKey& girderKey,
+void build_max_spacing_paragraph(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,const CGirderKey& girderKey,
                                     IntervalIndexType intervalIdx, pgsTypes::LimitState ls, bool bIncludeSpanAndGirderForPois,
-                                    IEAFDisplayUnits* pDisplayUnits)
+                                    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    // Spacing check 5.7.2.6 (pre2017: 5.8.2.7)
    rptParagraph* pParagraph;
@@ -402,8 +396,8 @@ void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGi
 
    location.IncludeSpanAndGirder(bIncludeSpanAndGirderForPois);
 
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
 
@@ -455,8 +449,8 @@ void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGi
    (*table)(0,5)  << COLHDR(Sub2(_T("S"),_T("max")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
    // Fill up the table
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IArtifact,pIArtifact);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IArtifact,pIArtifact);
 
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
@@ -466,7 +460,7 @@ void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGi
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
-   GET_IFACE2(pBroker, IMaterials, pMaterial);
+   EAF_GET_IFACE2(pBroker, IMaterials, pMaterial);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       CSegmentKey segmentKey(girderKey,segIdx);
@@ -527,9 +521,9 @@ void build_max_spacing_paragraph(IBroker* pBroker,rptChapter* pChapter,const CGi
 }
 
 
-void build_max_spacing_paragraph_uhpc(IBroker* pBroker, rptChapter* pChapter, const CGirderKey& girderKey,
+void build_max_spacing_paragraph_uhpc(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter, const CGirderKey& girderKey,
    IntervalIndexType intervalIdx, pgsTypes::LimitState ls, bool bIncludeSpanAndGirderForPois,
-   IEAFDisplayUnits* pDisplayUnits)
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    // Spacing check 5.7.2.6 (pre2017: 5.8.2.7)
    rptParagraph* pParagraph;
@@ -574,8 +568,8 @@ void build_max_spacing_paragraph_uhpc(IBroker* pBroker, rptChapter* pChapter, co
    (*table)(0, col++) << COLHDR(Sub2(_T("S"), _T("max")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
 
    // Fill up the table
-   GET_IFACE2(pBroker, IBridge, pBridge);
-   GET_IFACE2(pBroker, IArtifact, pIArtifact);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IArtifact, pIArtifact);
 
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 

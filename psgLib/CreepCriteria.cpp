@@ -51,7 +51,7 @@ bool CreepCriteria::Compare(const CreepCriteria& other, const SpecLibraryEntryIm
    return bSame;
 }
 
-void CreepCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void CreepCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;

@@ -64,11 +64,6 @@
 
 #include <algorithm>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // Utility class for managing map between principal web stress section elevations and graph data series
 struct WebSectionManager
@@ -220,7 +215,7 @@ BOOL CSegmentAnalysisResultsGraphBuilder::CreateGraphController(CWnd* pParent,UI
 {
    // we only graph single segments
    CSegmentKey segmentKey(0,0,0);
-   GET_IFACE(ISelection, pSelection);
+   EAF_GET_IFACE(ISelection, pSelection);
    CSelection selection = pSelection->GetSelection();
    if (selection.Type == CSelection::Girder || selection.Type == CSelection::Segment)
    {
@@ -272,13 +267,13 @@ void CSegmentAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CSegmentK
 
    IDType graphID = 0;
 
-   GET_IFACE(IProductLoads,pProductLoads);
-   GET_IFACE(IIntervals,pIntervals);
+   EAF_GET_IFACE(IProductLoads,pProductLoads);
+   EAF_GET_IFACE(IIntervals,pIntervals);
    CGirderKey girderKey(segmentKey.groupIndex,segmentKey.girderIndex);
 
    // Get intervals for reporting
    // spec check intervals
-   GET_IFACE(IStressCheck, pStressCheck);
+   EAF_GET_IFACE(IStressCheck, pStressCheck);
    std::vector<IntervalIndexType> vSpecCheckIntervals(pStressCheck->GetStressCheckIntervals(girderKey));
 
    // initial intervals
@@ -316,15 +311,15 @@ void CSegmentAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CSegmentK
    
    m_pGraphDefinitions->AddGraphDefinition(CSegmentAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftPretension), pgsTypes::pftPretension, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION));
 
-   GET_IFACE(IDocumentType,pDocType);
+   EAF_GET_IFACE(IDocumentType,pDocType);
    if ( pDocType->IsPGSpliceDocument() )
    {
       m_pGraphDefinitions->AddGraphDefinition(CSegmentAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftPostTensioning), pgsTypes::pftPostTensioning, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION) );
       m_pGraphDefinitions->AddGraphDefinition(CSegmentAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftSecondaryEffects),      pgsTypes::pftSecondaryEffects,      vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION) );
    }
 
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
+   EAF_GET_IFACE(ILibrary,pLib);
+   EAF_GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
    if ( prestress_loss_criteria.LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP )
@@ -377,7 +372,7 @@ CSegmentGraphControllerBase* CSegmentAnalysisResultsGraphBuilder::CreateGraphCon
 
 bool CSegmentAnalysisResultsGraphBuilder::UpdateNow()
 {
-   GET_IFACE(IProgress,pProgress);
+   EAF_GET_IFACE(IProgress,pProgress);
    CEAFAutoProgress ap(pProgress,0);
 
    pProgress->UpdateMessage(_T("Building Graph"));
@@ -412,7 +407,7 @@ void CSegmentAnalysisResultsGraphBuilder::UpdateYAxisUnits()
 
    ActionType actionType  = ((CSegmentAnalysisResultsGraphController*)m_pGraphController)->GetActionType();
 
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    switch(actionType)
    {
@@ -496,7 +491,7 @@ void CSegmentAnalysisResultsGraphBuilder::UpdateXAxisTitle()
       intervalIdx = vIntervals.back();
    }
 
-   GET_IFACE(IIntervals,pIntervals);
+   EAF_GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(CSegmentKey(0,0,0));
    if ( intervalIdx == releaseIntervalIdx )
    {
@@ -561,7 +556,7 @@ void CSegmentAnalysisResultsGraphBuilder::UpdateGraphTitle()
       // Plotting by loading
       IntervalIndexType intervalIdx = vIntervals.back();
 
-      GET_IFACE(IIntervals,pIntervals);
+      EAF_GET_IFACE(IIntervals,pIntervals);
       CString strInterval( pIntervals->GetDescription(intervalIdx).c_str() );
 
       CString strGraphTitle;
@@ -649,7 +644,7 @@ void CSegmentAnalysisResultsGraphBuilder::UpdateGraphData()
    }
 
    // Get the X locations for the graph
-   GET_IFACE(IPointOfInterest, pIPoi);
+   EAF_GET_IFACE(IPointOfInterest, pIPoi);
 
    IntervalIndexType firstPlottingIntervalIdx = vIntervals.front();
    IntervalIndexType lastPlottingIntervalIdx = vIntervals.back();
@@ -658,7 +653,7 @@ void CSegmentAnalysisResultsGraphBuilder::UpdateGraphData()
 
    IndexType nSelectedGraphs = ((CSegmentAnalysisResultsGraphController*)m_pGraphController)->GetSelectedGraphCount();
 
-   GET_IFACE(IIntervals,pIntervals);
+   EAF_GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType segmentErectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
    IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
@@ -752,7 +747,7 @@ void CSegmentAnalysisResultsGraphBuilder::UpdateGraphData()
 
 pgsTypes::AnalysisType CSegmentAnalysisResultsGraphBuilder::GetAnalysisType()
 {
-   GET_IFACE(ISpecification,pSpec);
+   EAF_GET_IFACE(ISpecification,pSpec);
    return pSpec->GetAnalysisType();
 }
 
@@ -772,7 +767,7 @@ void CSegmentAnalysisResultsGraphBuilder::InitializeGraph(IndexType graphIdx, co
 
    if (actionType == actionShear)
    {
-      GET_IFACE(IProductForces, pProductForces);
+      EAF_GET_IFACE(IProductForces, pProductForces);
       int penStyle = PS_SOLID;
 
       *pAnalysisTypeCount = 1;
@@ -787,7 +782,7 @@ void CSegmentAnalysisResultsGraphBuilder::InitializeGraph(IndexType graphIdx, co
       actionType == actionReaction)
    {
       // For moments and deflections
-      GET_IFACE(IProductForces, pProductForces);
+      EAF_GET_IFACE(IProductForces, pProductForces);
       *pAnalysisTypeCount = 1;
       (*pDataSeriesID)[0] = m_Graph.CreateDataSeries(strDataLabel, PS_SOLID, penWeight, c);
       (*pBat)[0] = pProductForces->GetBridgeAnalysisType(analysisType, pgsTypes::Maximize);
@@ -844,7 +839,7 @@ void CSegmentAnalysisResultsGraphBuilder::ProductLoadGraph(IndexType graphIdx,co
    ResultsType resultsType = ((CSegmentAnalysisResultsGraphController*)m_pGraphController)->GetResultsType();
 
    // Product forces
-   GET_IFACE_NOCHECK(IProductForces2, pForces);
+   EAF_GET_IFACE_NOCHECK(IProductForces2, pForces);
 
    std::array<IndexType, 4> data_series_id;
    std::array<pgsTypes::BridgeAnalysisType, 4> bat;
@@ -883,7 +878,7 @@ void CSegmentAnalysisResultsGraphBuilder::ProductLoadGraph(IndexType graphIdx,co
          std::vector<Float64> deflections;
          if (PL_UNRECOVERABLE == pfType && rtCumulative == resultsType)
          {
-            GET_IFACE(IIntervals,pIntervals);
+            EAF_GET_IFACE(IIntervals,pIntervals);
             IntervalIndexType haulInterval = pIntervals->GetHaulSegmentInterval(vPoi.front().get().GetSegmentKey());
 
             if (bIncludeUnrecoverableDefl && intervalIdx >= haulInterval) // modulus hardening doesn't happen until after storage
@@ -910,7 +905,7 @@ void CSegmentAnalysisResultsGraphBuilder::ProductLoadGraph(IndexType graphIdx,co
          std::vector<Float64> deflections;
          if (PL_UNRECOVERABLE == pfType && rtCumulative == resultsType)
          {
-            GET_IFACE(IIntervals,pIntervals);
+            EAF_GET_IFACE(IIntervals,pIntervals);
             IntervalIndexType haulInterval = pIntervals->GetHaulSegmentInterval(vPoi.front().get().GetSegmentKey());
 
             if (intervalIdx >= haulInterval) // modulus hardening doesn't happen until after storage
@@ -938,7 +933,7 @@ void CSegmentAnalysisResultsGraphBuilder::ProductLoadGraph(IndexType graphIdx,co
 
          if (PL_UNRECOVERABLE == pfType) 
          {
-            GET_IFACE(IIntervals,pIntervals);
+            EAF_GET_IFACE(IIntervals,pIntervals);
             const CSegmentKey& segmentKey = vPoi.front().get().GetSegmentKey();
             IntervalIndexType haulInterval = pIntervals->GetHaulSegmentInterval(segmentKey);
             IntervalIndexType erectInterval = pIntervals->GetErectSegmentInterval(segmentKey);
@@ -1011,7 +1006,7 @@ void CSegmentAnalysisResultsGraphBuilder::CombinedLoadGraph(IndexType graphIdx,c
    if (nAnalysisTypes == 0)
       return;
 
-   GET_IFACE(ICombinedForces2, pForces);
+   EAF_GET_IFACE(ICombinedForces2, pForces);
 
    for ( IndexType analysisIdx = 0; analysisIdx < nAnalysisTypes; analysisIdx++ )
    {
@@ -1126,7 +1121,7 @@ void CSegmentAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx
    {
    case actionAxial:
    {
-      GET_IFACE(ILimitStateForces2,pForces);
+      EAF_GET_IFACE(ILimitStateForces2,pForces);
       std::vector<Float64> mmax,mmin;
       pForces->GetAxial(intervalIdx,limitState,vPoi,bridgeAnalysisType,&mmin,&mmax);
       AddGraphPoints(max_data_series,xVals,mmax);
@@ -1141,7 +1136,7 @@ void CSegmentAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx
       }
       else
       {
-         GET_IFACE(ILimitStateForces2,pForces);
+         EAF_GET_IFACE(ILimitStateForces2,pForces);
          std::vector<WBFL::System::SectionValue> shearMin,shearMax;
          pForces->GetShear(intervalIdx,limitState,vPoi,bridgeAnalysisType,&shearMin,&shearMax);
          AddGraphPoints(min_data_series,xVals,shearMin);
@@ -1151,7 +1146,7 @@ void CSegmentAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx
    }
    case actionMoment:
    {
-      GET_IFACE(ILimitStateForces2,pForces);
+      EAF_GET_IFACE(ILimitStateForces2,pForces);
       std::vector<Float64> mmax,mmin;
       pForces->GetMoment(intervalIdx,limitState,vPoi,bridgeAnalysisType,&mmin,&mmax);
       AddGraphPoints(max_data_series,xVals,mmax);
@@ -1160,7 +1155,7 @@ void CSegmentAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx
    }
    case actionDeflection:
    {
-      GET_IFACE(ILimitStateForces2,pForces);
+      EAF_GET_IFACE(ILimitStateForces2,pForces);
       bool bIncPrestress = (graphType == graphDemand ? true : false);
       bool bIncludeLiveLoad = false;
       bool bIncludeElevationAdjustment = false;
@@ -1173,7 +1168,7 @@ void CSegmentAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx
    }
    case actionXDeflection:
    {
-      GET_IFACE(ILimitStateForces2,pForces);
+      EAF_GET_IFACE(ILimitStateForces2,pForces);
       bool bIncPrestress = (graphType == graphDemand ? true : false);
       std::vector<Float64> dispmn,dispmx;
       pForces->GetXDeflection(intervalIdx,limitState,vPoi,bridgeAnalysisType,bIncPrestress,&dispmn,&dispmx);
@@ -1183,7 +1178,7 @@ void CSegmentAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx
    break;
    case actionRotation:
    {
-      GET_IFACE(ILimitStateForces2,pForces);
+      EAF_GET_IFACE(ILimitStateForces2,pForces);
       bool bIncPrestress = (graphType == graphDemand ? true : false);
       bool bIncludeLiveLoad = false;
       bool bIncludeSlopeAdjustment = false;
@@ -1199,7 +1194,7 @@ void CSegmentAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx
    {
       if (graphType == graphAllowable)
       {
-         GET_IFACE(IConcreteStressLimits,pLimits);
+         EAF_GET_IFACE(IConcreteStressLimits,pLimits);
          const CSegmentKey& segmentKey(m_pGraphController->GetSegmentKey());
 
          if (((CSegmentAnalysisResultsGraphController*)m_pGraphController)->PlotStresses(pgsTypes::TopGirder) ||
@@ -1221,7 +1216,7 @@ void CSegmentAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx
       }
       else
       {
-         GET_IFACE(ILimitStateForces2,pForces);
+         EAF_GET_IFACE(ILimitStateForces2,pForces);
          bool bIncPrestress = (graphType == graphDemand ? true : false);
          std::vector<Float64> fTopMin,fTopMax,fBotMin,fBotMax;
 
@@ -1261,9 +1256,9 @@ void CSegmentAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx
 
 void CSegmentAnalysisResultsGraphBuilder::GetSegmentXValues(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,std::vector<Float64>* pLeftXVals,std::vector<Float64>* pRightXVals)
 {
-   GET_IFACE(IBridge,pBridge);
-   GET_IFACE(IIntervals,pIntervals);
-   GET_IFACE(IPointOfInterest,pIPoi);
+   EAF_GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE(IIntervals,pIntervals);
+   EAF_GET_IFACE(IPointOfInterest,pIPoi);
 
    // get the left and right support points
    PoiAttributeType poiReference;
@@ -1323,7 +1318,7 @@ void CSegmentAnalysisResultsGraphBuilder::ProductReactionGraph(IndexType graphId
       return; 
    }
 
-   GET_IFACE(IReactions,pReactions);
+   EAF_GET_IFACE(IReactions,pReactions);
    std::array<IndexType, 4> data_series_id;
    std::array<pgsTypes::BridgeAnalysisType, 4> bat;
    std::array<pgsTypes::StressLocation, 4> stressLocation;
@@ -1367,7 +1362,7 @@ void CSegmentAnalysisResultsGraphBuilder::CombinedReactionGraph(IndexType graphI
       return;
    }
 
-   GET_IFACE(IReactions,pReactions);
+   EAF_GET_IFACE(IReactions,pReactions);
    std::array<IndexType,4> data_series_id;
    std::array<pgsTypes::BridgeAnalysisType,4> bat;
    std::array<pgsTypes::StressLocation,4> stressLocation;
@@ -1408,7 +1403,7 @@ void CSegmentAnalysisResultsGraphBuilder::CyStressCapacityGraph(IndexType graphI
 
    // Allowable tension in cy is dependent on capacity - must get spec check results
    // First get pois using same request as spec check report
-   GET_IFACE(IArtifact,pIArtifact);
+   EAF_GET_IFACE(IArtifact,pIArtifact);
 
    Float64 cap_prev = 0;
    Float64 x_prev = xVals.front(); // tension capacity can jump at a location. we must capture this
@@ -1490,7 +1485,7 @@ void CSegmentAnalysisResultsGraphBuilder::GetBeamDrawIntervals(IntervalIndexType
    else
    {
       const CSegmentKey& segmentKey(m_pGraphController->GetSegmentKey());
-      GET_IFACE(IIntervals, pIntervals);
+      EAF_GET_IFACE(IIntervals, pIntervals);
       IntervalIndexType intervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
       *pFirstIntervalIdx = intervalIdx;
       *pLastIntervalIdx = *pFirstIntervalIdx;

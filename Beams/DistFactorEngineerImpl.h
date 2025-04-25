@@ -142,7 +142,7 @@ void CDistFactorEngineerImpl<T>::SetBroker(IBroker* pBroker,StatusGroupIDType st
 	m_pBroker = pBroker;
 	m_StatusGroupID = statusGroupID;
 
-   GET_IFACE(IEAFStatusCenter,pStatusCenter);
+   EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
    m_scidRefinedAnalysis = pStatusCenter->RegisterCallback( new pgsRefinedAnalysisStatusCallback(m_pBroker) );
 }
 
@@ -180,15 +180,15 @@ typename CDistFactorEngineerImpl<T>::PIERDETAILS CDistFactorEngineerImpl<T>::Get
    }
 
    // Need to compute. First determine if we need to deal with rule that forces exterior LLDF's never to be less than the adjacent interior beam
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CPierData2* pPier = pBridgeDesc->GetPier(pierIdx);
    const CGirderGroupData* pGroup = pPier->GetGirderGroup(pierFace);
    GirderIndexType nGirders = pGroup->GetGirderCount();
    bool bExteriorGirder = pGroup->IsExteriorGirder(gdrIdx);
 
-   GET_IFACE(ISpecification, pSpec);
-   GET_IFACE(ILibrary, pLib);
+   EAF_GET_IFACE(ISpecification, pSpec);
+   EAF_GET_IFACE(ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
 
@@ -228,14 +228,14 @@ typename CDistFactorEngineerImpl<T>::PIERDETAILS CDistFactorEngineerImpl<T>::Get
    std::unique_ptr<WBFL::LRFD::LiveLoadDistributionFactorBase> pLLDF( GetLLDFParameters(pierIdx,gdrIdx,dfParam,&lldf, pConfig) );
 
    // Get method used to compute factors
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    pgsTypes::DistributionFactorMethod df_method = pIBridgeDesc->GetLiveLoadDistributionFactorMethod();
 
    // See if Bridge-Wide range of applicability rule was breached. We might switch to lever rule for all computations.
    if (df_method == pgsTypes::Calculated && pLLDF->GetBridgeWideRangeOfApplicabilityIssue() != 0)
    {
-      GET_IFACE(ILiveLoads,pLiveLoads);
+      EAF_GET_IFACE(ILiveLoads,pLiveLoads);
       WBFL::LRFD::RangeOfApplicabilityAction action = pLiveLoads->GetRangeOfApplicabilityAction();
       if (action == WBFL::LRFD::RangeOfApplicabilityAction::IgnoreUseLeverRule)
       {
@@ -284,8 +284,8 @@ typename CDistFactorEngineerImpl<T>::PIERDETAILS CDistFactorEngineerImpl<T>::Get
       }
 
       // see if we need to compare with lanes/beams
-      GET_IFACE(ISpecification, pSpec);
-      GET_IFACE(ILibrary, pLib);
+      EAF_GET_IFACE(ISpecification, pSpec);
+      EAF_GET_IFACE(ILibrary, pLib);
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
       const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
       if (live_load_distribution_criteria.bLimitDistributionFactorsToLanesBeams)
@@ -352,15 +352,15 @@ typename CDistFactorEngineerImpl<T>::SPANDETAILS CDistFactorEngineerImpl<T>::Get
    }
 
    // Need to compute. First determine if we need to deal with rule that forces exterior LLDF's never to be less than the adjacent interior beam
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanKey.spanIndex);
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
    GirderIndexType nGirders = pGroup->GetGirderCount();
    bool bExteriorGirder = pGroup->IsExteriorGirder(spanKey.girderIndex);
 
-   GET_IFACE(ISpecification, pSpec);
-   GET_IFACE(ILibrary, pLib);
+   EAF_GET_IFACE(ISpecification, pSpec);
+   EAF_GET_IFACE(ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
 
@@ -412,14 +412,14 @@ typename CDistFactorEngineerImpl<T>::SPANDETAILS CDistFactorEngineerImpl<T>::Get
    std::unique_ptr<WBFL::LRFD::LiveLoadDistributionFactorBase> pLLDF(GetLLDFParameters(spanKey.spanIndex,spanKey.girderIndex,dfSpan,&lldf,pConfig));
 
    // Get method used to compute factors
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    pgsTypes::DistributionFactorMethod df_method = pIBridgeDesc->GetLiveLoadDistributionFactorMethod();
 
    // See if Bridge-Wide range of applicability rule was breached. We might switch to lever rule for all computations.
    if (df_method == pgsTypes::Calculated && pLLDF->GetBridgeWideRangeOfApplicabilityIssue() != 0)
    {
-      GET_IFACE(ILiveLoads,pLiveLoads);
+      EAF_GET_IFACE(ILiveLoads,pLiveLoads);
       WBFL::LRFD::RangeOfApplicabilityAction action = pLiveLoads->GetRangeOfApplicabilityAction();
       if (action == WBFL::LRFD::RangeOfApplicabilityAction::IgnoreUseLeverRule)
       {
@@ -490,8 +490,8 @@ typename CDistFactorEngineerImpl<T>::SPANDETAILS CDistFactorEngineerImpl<T>::Get
       }
 
       // see if we need to compare with lanes/beams
-      GET_IFACE(ISpecification, pSpec);
-      GET_IFACE(ILibrary, pLib);
+      EAF_GET_IFACE(ISpecification, pSpec);
+      EAF_GET_IFACE(ILibrary, pLib);
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
       const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
       if (live_load_distribution_criteria.bLimitDistributionFactorsToLanesBeams)
@@ -573,7 +573,7 @@ typename CDistFactorEngineerImpl<T>::SPANDETAILS CDistFactorEngineerImpl<T>::Get
 template <class T>
 void CDistFactorEngineerImpl<T>::HandleRangeOfApplicabilityError(const WBFL::LRFD::XRangeOfApplicability& e)
 {
-   GET_IFACE(IEAFStatusCenter,     pStatusCenter);
+   EAF_GET_IFACE(IEAFStatusCenter,     pStatusCenter);
 
    LPCTSTR msg = _T("Live Load Distribution Factors could not be calculated");
    pgsRefinedAnalysisStatusItem* pStatusItem = new pgsRefinedAnalysisStatusItem(m_StatusGroupID,m_scidRefinedAnalysis,msg);
@@ -612,7 +612,7 @@ int CDistFactorEngineerImpl<T>::LimitStateType(pgsTypes::LimitState ls)
 template <class T>
 void CDistFactorEngineerImpl<T>::GetIndicies(IndexType spanOrPierIdx,DFParam dfType,SpanIndexType& span,PierIndexType& pier,SpanIndexType& prev_span,SpanIndexType& next_span,PierIndexType& prev_pier,PierIndexType& next_pier)
 {
-   GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE(IBridge,pBridge);
 
    SpanIndexType nSpans = pBridge->GetSpanCount();
    PierIndexType nPiers = pBridge->GetPierCount();
@@ -641,14 +641,14 @@ void CDistFactorEngineerImpl<T>::GetIndicies(IndexType spanOrPierIdx,DFParam dfT
 template <class T>
 void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(const CSpanKey& spanKey,DFParam dfType,BASE_LLDFDETAILS* pDetails, pgsPointOfInterest* pControllingPoi)
 {
-   GET_IFACE(IBridge,                      pBridge);
-   GET_IFACE(ILibrary,                     pLib);
-   GET_IFACE(ISpecification,               pSpec);
-   GET_IFACE(IBarriers,                    pBarriers);
-   GET_IFACE(ILiveLoadDistributionFactors, pLLDF);
-   GET_IFACE(IPointOfInterest,             pPoi);
+   EAF_GET_IFACE(IBridge,                      pBridge);
+   EAF_GET_IFACE(ILibrary,                     pLib);
+   EAF_GET_IFACE(ISpecification,               pSpec);
+   EAF_GET_IFACE(IBarriers,                    pBarriers);
+   EAF_GET_IFACE(ILiveLoadDistributionFactors, pLLDF);
+   EAF_GET_IFACE(IPointOfInterest,             pPoi);
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanKey.spanIndex);
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
@@ -726,7 +726,7 @@ void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(const CSpanKey& spa
    if(IsOverlayDeck(pBridge->GetDeckType()))
    {
       // Use top width of beam as deck, for lack of better ideas
-      GET_IFACE(IGirder,pGirder);
+      EAF_GET_IFACE(IGirder,pGirder);
       Float64 wLeft, wRight;
       pGirder->GetTopWidth(pgsPointOfInterest(CSegmentKey(pGroup->GetIndex(), 0, segmentKey.segmentIndex),Xs),&wLeft,&wRight);
       pDetails->leftSlabOverhang = wLeft;
@@ -817,8 +817,8 @@ void CDistFactorEngineerImpl<T>::GetGirderSpacingAndOverhang(const CSpanKey& spa
 template <class T>
 Float64 CDistFactorEngineerImpl<T>::GetEffectiveSpanLength(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType)
 {
-   GET_IFACE(IBridge,pBridge);
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    // Determine span/pier index... This is the index of a pier and the next span.
@@ -929,7 +929,7 @@ Float64 CDistFactorEngineerImpl<T>::GetEffectiveSpanLength(IndexType spanOrPierI
 template <class T>
 bool CDistFactorEngineerImpl<T>::Run1250Tests(const CSpanKey& spanKey,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile)
 {
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
    {
@@ -1011,7 +1011,7 @@ bool CDistFactorEngineerImpl<T>::GetDFResultsEx(const CSpanKey& spanKey,pgsTypes
 {
    PierIndexType pierIdx = spanKey.spanIndex;
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
    {

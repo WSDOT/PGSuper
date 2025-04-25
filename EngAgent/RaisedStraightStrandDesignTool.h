@@ -20,14 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_RaisedStraightStrandDesignTool_H_
-#define INCLUDED_RaisedStraightStrandDesignTool_H_
-
-// SYSTEM INCLUDES
-//
-
-// PROJECT INCLUDES
-//
+#pragma once
 
 #include <IFace\Artifact.h>
 #include <PgsExt\PoiMgr.h>
@@ -39,15 +32,6 @@
 #include <algorithm>
 #include<list>
 #include<vector>
-
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
-interface IBroker;
-
-// MISCELLANEOUS
 
 /*****************************************************************************
 CLASS 
@@ -68,6 +52,7 @@ LOG
 class pgsStrandResequencer
 {
 public:
+   pgsStrandResequencer() = delete;
    pgsStrandResequencer(const GirderLibraryEntry* pGdrEntry);
 
    // Functions for resequencing and computing library locations from new sequence
@@ -100,8 +85,6 @@ public:
    StrandIndexType GetPermanentStrandCountFromPermGridIndex(GridIndexType gridIndex) const;
 
 private:
-   pgsStrandResequencer();
-
    const GirderLibraryEntry* m_pGdrEntry;
 
    // Data structure to hold resequenced strand data
@@ -139,20 +122,11 @@ private:
 class pgsRaisedStraightStrandDesignTool
 {
 public:
-   // GROUP: LIFECYCLE
-
-   //------------------------------------------------------------------------
-   // constructor
    pgsRaisedStraightStrandDesignTool(SHARED_LOGFILE lf, const GirderLibraryEntry* pGdrEntry);
 
-   ~pgsRaisedStraightStrandDesignTool()
-   {
-      ;
-   }
+   ~pgsRaisedStraightStrandDesignTool() = default;
    
-   void Initialize(IBroker* pBroker, StatusGroupIDType statusGroupID, pgsSegmentDesignArtifact* pArtif);
-
-   // GROUP: OPERATIONS
+   void Initialize(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, pgsSegmentDesignArtifact* pArtif);
 
    // Add raised straight strands at the top of the adjustable group. This changes the 
    // minimum required number of strands as well
@@ -176,31 +150,8 @@ public:
    // return a config fill vector for given permanent strand type
    ConfigStrandFillVector CreateStrandFill(GirderLibraryEntry::psStrandType type, StrandIndexType numStrands) const; 
 
-   // ACCESS
-   //////////
-
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-   // GROUP: DATA MEMBERS
-
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-
 private:
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    StatusGroupIDType m_StatusGroupID;
    const GirderLibraryEntry* m_pGdrEntry;
 
@@ -256,13 +207,4 @@ private:
 
 private:
 	DECLARE_SHARED_LOGFILE;
-
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_RaisedStraightStrandDesignTool_H_

@@ -143,7 +143,7 @@ void CSplicedNUBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType sta
    ATLASSERT(segment != nullptr);
 
    // Build up the beam shape
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData*    pGroup      = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const CSplicedGirderData*  pGirder     = pGroup->GetGirder(segmentKey.girderIndex);
@@ -201,7 +201,7 @@ void CSplicedNUBeamFactory::CreateSegmentShape(IBroker* pBroker, const CPrecastS
    DimensionAndPositionBeam(dimensions, Hg, Hbf, beam);
 
    // Adjust width of section for end blocks
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    Float64 Ls = pBridge->GetSegmentLength(pSegment->GetSegmentKey());
 
    Float64 Web;
@@ -213,7 +213,7 @@ void CSplicedNUBeamFactory::CreateSegmentShape(IBroker* pBroker, const CPrecastS
 
 Float64 CSplicedNUBeamFactory::GetSegmentHeight(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
 {
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    Float64 Ls = pBridge->GetSegmentLength(pSegment->GetSegmentKey());
 
    std::array<Float64, 4> X;
@@ -234,7 +234,7 @@ Float64 CSplicedNUBeamFactory::GetSegmentHeight(IBroker* pBroker, const CPrecast
 
 Float64 CSplicedNUBeamFactory::GetBottomFlangeDepth(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
 {
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    Float64 Ls = pBridge->GetSegmentLength(pSegment->GetSegmentKey());
 
    std::array<Float64, 4> X;
@@ -260,7 +260,7 @@ void CSplicedNUBeamFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType 
 
 void CSplicedNUBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
 {
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc  = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData*    pGroup       = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const CSplicedGirderData*  pGirder      = pGroup->GetGirder(segmentKey.girderIndex);
@@ -276,7 +276,7 @@ void CSplicedNUBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker
    ATLASSERT( strGirderName == pGirderEntry->GetName() );
 #endif
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
    Float64 start_brg_offset = pBridge->GetSegmentStartBearingOffset(segmentKey);
    Float64 end_brg_offset   = pBridge->GetSegmentEndBearingOffset(segmentKey);
@@ -764,8 +764,8 @@ std::_tstring CSplicedNUBeamFactory::GetShearDimensionsSchematicImage(pgsTypes::
 
 std::_tstring CSplicedNUBeamFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const
 {
-   GET_IFACE2(pBroker, ILibrary,       pLib);
-   GET_IFACE2(pBroker, ISpecification, pSpec);
+   EAF_GET_IFACE2(pBroker, ILibrary,       pLib);
+   EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
    const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();
@@ -782,8 +782,8 @@ std::_tstring CSplicedNUBeamFactory::GetInteriorGirderEffectiveFlangeWidthImage(
 
 std::_tstring CSplicedNUBeamFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const
 {
-   GET_IFACE2(pBroker, ILibrary,       pLib);
-   GET_IFACE2(pBroker, ISpecification, pSpec);
+   EAF_GET_IFACE2(pBroker, ILibrary,       pLib);
+   EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
    const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();

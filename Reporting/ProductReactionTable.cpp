@@ -32,44 +32,13 @@
 
 #include <PgsExt\PierData2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CProductReactionTable::CProductReactionTable()
 {
 }
 
-CProductReactionTable::CProductReactionTable(const CProductReactionTable& rOther)
-{
-   MakeCopy(rOther);
-}
-
-CProductReactionTable::~CProductReactionTable()
-{
-}
-
-//======================== OPERATORS  =======================================
-CProductReactionTable& CProductReactionTable::operator= (const CProductReactionTable& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
-//======================== OPERATIONS =======================================
-rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
+rptRcTable* CProductReactionTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
                                          ReactionTableType tableType, bool bIncludeImpact,bool bDesign,bool bRating,bool bIndicateControllingLoad,
-                                         IEAFDisplayUnits* pDisplayUnits) const
+                                         std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -78,15 +47,15 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
    // Tricky: the reaction tool below will dump out two lines per cell for bearing reactions with more than one bearing
    ReactionUnitValueTool reaction(tableType, reactu);
 
-   GET_IFACE2_NOCHECK(pBroker, IBridgeDescription, pIBridgeDesc);
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2_NOCHECK(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    bool bHasOverlay    = pBridge->HasOverlay();
    bool bFutureOverlay = pBridge->IsFutureOverlay();
    PierIndexType nPiers = pBridge->GetPierCount();
 
    bool bIncludeLLDF = false; // this table never distributes live load
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType diaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType ljIntervalIdx = pIntervals->GetCastLongitudinalJointInterval();
@@ -99,7 +68,7 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
    bool bContinuousBeforeDeckCasting;
    GroupIndexType startGroup, endGroup;
 
-   GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
+   EAF_GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
 
    ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,false,&bSegments,&bConstruction,&bDeck,&bDeckPanels,&bSidewalk,&bShearKey,&bLongitudinalJoint,&bPedLoading,&bPermit,&bContinuousBeforeDeckCasting,&startGroup,&endGroup);
    
@@ -110,7 +79,7 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
    p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_RIGHT));
    p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
 
-   GET_IFACE2(pBroker,IProductForces,pProdForces);
+   EAF_GET_IFACE2(pBroker,IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 
@@ -121,12 +90,12 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
    std::unique_ptr<IProductReactionAdapter> pForces;
    if( tableType == PierReactionsTable )
    {
-      GET_IFACE2(pBroker,IReactions,pReactions);
+      EAF_GET_IFACE2(pBroker,IReactions,pReactions);
       pForces =  std::make_unique<ProductForcesReactionAdapter>(pReactions,girderKey);
    }
    else
    {
-      GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
+      EAF_GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
       pForces =  std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, diaphragmIntervalIdx, girderKey);
    }
 
@@ -1072,32 +1041,3 @@ rptRcTable* CProductReactionTable::Build(IBroker* pBroker,const CGirderKey& gird
 
    return p_table;
 }
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-void CProductReactionTable::MakeCopy(const CProductReactionTable& rOther)
-{
-   // Add copy code here...
-}
-
-void CProductReactionTable::MakeAssignment(const CProductReactionTable& rOther)
-{
-   MakeCopy( rOther );
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

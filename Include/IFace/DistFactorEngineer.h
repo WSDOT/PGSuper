@@ -20,28 +20,13 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_IFACE_DISTFACTORENGINEER_H_
-#define INCLUDED_IFACE_DISTFACTORENGINEER_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
-
-// PROJECT INCLUDES
-//
-
-// LOCAL INCLUDES
-//
 #include <Reporter\Reporter.h>
 #include <PGSuperTypes.h>
 #include <PgsExt\Keys.h>
 
-// FORWARD DECLARATIONS
-//
-struct IBroker;
-struct IEAFDisplayUnits;
-
-// MISCELLANEOUS
-//
+class IEAFDisplayUnits;
 
 
 /*****************************************************************************
@@ -56,12 +41,13 @@ DESCRIPTION
 // {884D7805-63AF-4e75-BB3E-27EF68205626}
 DEFINE_GUID(IID_IDistFactorEngineer, 
 0x884d7805, 0x63af, 0x4e75, 0xbb, 0x3e, 0x27, 0xef, 0x68, 0x20, 0x56, 0x26);
-interface IDistFactorEngineer : IUnknown
+class IDistFactorEngineer
 {
+public:
    //---------------------------------------------------------------------
    // Associated a broker object with this object. Call only from
    // IBeamFactory at create time.
-   virtual void SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID) = 0;
+   virtual void SetBroker(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID) = 0;
 
    //---------------------------------------------------------------------
    // Returns the distribution factor for moment
@@ -101,8 +87,9 @@ interface IDistFactorEngineer : IUnknown
 // {6B0D91AD-A60F-4ce3-8E4A-766E7852E38C}
 DEFINE_GUID(IID_IMultiWebDistFactorEngineer, 
 0x6b0d91ad, 0xa60f, 0x4ce3, 0x8e, 0x4a, 0x76, 0x6e, 0x78, 0x52, 0xe3, 0x8c);
-interface IMultiWebDistFactorEngineer : IUnknown
+class IMultiWebDistFactorEngineer
 {
+public:
    enum BeamType  {btMultiWebTee, btDeckBulbTee, btDeckedSlabBeam};
 
    virtual void SetBeamType(BeamType bt) = 0;
@@ -112,18 +99,17 @@ interface IMultiWebDistFactorEngineer : IUnknown
 // {A2636B74-1593-4789-8A80-3C4FBC387F9C}
 DEFINE_GUID(IID_IUBeamDistFactorEngineer, 
 0xa2636b74, 0x1593, 0x4789, 0x8a, 0x80, 0x3c, 0x4f, 0xbc, 0x38, 0x7f, 0x9c);
-interface IUBeamDistFactorEngineer : IUnknown
+class IUBeamDistFactorEngineer
 {
+public:
    virtual void Init(bool bTypeB, bool bisSpreadSlab) = 0;
 };
 
 // {E77E6143-9E82-4644-AF40-7D073BD9FC2B}
 DEFINE_GUID(IID_IBulbTeeDistFactorEngineer,
    0xe77e6143, 0x9e82, 0x4644, 0xaf, 0x40, 0x7d, 0x7, 0x3b, 0xd9, 0xfc, 0x2b);
-interface IBulbTeeDistFactorEngineer : IUnknown
+class IBulbTeeDistFactorEngineer
 {
+public:
    virtual void Init() = 0;
 };
-
-#endif // INCLUDED_IFACE_DISTFACTORENGINEER_H_
-

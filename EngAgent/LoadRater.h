@@ -37,11 +37,11 @@ public:
    pgsLoadRater(void);
    virtual ~pgsLoadRater(void);
 
-   void SetBroker(IBroker* pBroker);
+   void SetBroker(std::shared_ptr<WBFL::EAF::Broker> pBroker);
    pgsRatingArtifact Rate(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx) const;
 
 protected:
-   IBroker* m_pBroker; // weak reference
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker; // weak reference
 
    struct Moments
    {
@@ -90,8 +90,8 @@ protected:
       pgsTypes::SupportedDeckType deckType;
 
       // interfaces used at each POI
-      CComPtr<IRatingSpecification> pRatingSpec;
-      CComPtr<IProductForces> pProductForces;
+      std::shared_ptr<IRatingSpecification> pRatingSpec;
+      std::shared_ptr<IProductForces> pProductForces;
    };
 
    // parameters for reinforcement yielding check
@@ -107,16 +107,16 @@ protected:
       pgsTypes::AnalysisType analysisType;
 
       // interfaces used at each POI
-      CComPtr<ISectionProperties> pSectProp;
-      CComPtr<IPointOfInterest> pPoi;
-      CComPtr<IBridge> pBridge;
-      CComPtr<IIntervals> pIntervals;
-      CComPtr<ILongRebarGeometry> pRebarGeom;
-      CComPtr<IMaterials> pMaterials;
-      CComPtr<ILiveLoadDistributionFactors> pLLDF;
-      CComPtr<IStrandGeometry> pStrandGeometry;
-      CComPtr<ISegmentTendonGeometry> pSegmentTendonGeometry;
-      CComPtr<IGirderTendonGeometry> pGirderTendonGeometry;
+      std::shared_ptr<ISectionProperties> pSectProp;
+      std::shared_ptr<IPointOfInterest> pPoi;
+      std::shared_ptr<IBridge> pBridge;
+      std::shared_ptr<IIntervals> pIntervals;
+      std::shared_ptr<ILongRebarGeometry> pRebarGeom;
+      std::shared_ptr<IMaterials> pMaterials;
+      std::shared_ptr<ILiveLoadDistributionFactors> pLLDF;
+      std::shared_ptr<IStrandGeometry> pStrandGeometry;
+      std::shared_ptr<ISegmentTendonGeometry> pSegmentTendonGeometry;
+      std::shared_ptr<IGirderTendonGeometry> pGirderTendonGeometry;
    };
 
    // parameters for flexural stress ratings
@@ -137,13 +137,13 @@ protected:
       std::vector<std::_tstring> strLLNames;
 
       // interfaces used at each POI
-      CComPtr<IPrecompressedTensileZone> pPTZ;
-      CComPtr<ICombinedForces> pCombinedForces;
-      CComPtr<IPretensionStresses> pPrestress;
-      CComPtr<IRatingSpecification> pRatingSpec;
-      CComPtr<IConcreteStressLimits> pLimits;
-      CComPtr<IProductForces> pProductForces;
-      CComPtr<IProductLoads> pProductLoads;
+      std::shared_ptr<IPrecompressedTensileZone> pPTZ;
+      std::shared_ptr<ICombinedForces> pCombinedForces;
+      std::shared_ptr<IPretensionStresses> pPrestress;
+      std::shared_ptr<IRatingSpecification> pRatingSpec;
+      std::shared_ptr<IConcreteStressLimits> pLimits;
+      std::shared_ptr<IProductForces> pProductForces;
+      std::shared_ptr<IProductLoads> pProductLoads;
    };
 
    void FlexureRating(const CGirderKey& girderKey, const PoiList& vPoi, pgsTypes::LoadRatingType ratingType, VehicleIndexType vehicleIdx, IntervalIndexType loadRatingIntervalIdx, bool bTimeStep,const Moments* pMaxMoments, const Moments* pMinMoments, pgsRatingArtifact& ratingArtifact) const;

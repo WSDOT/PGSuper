@@ -35,7 +35,7 @@ class CBearingTimeStepDetailsDlg : public CDialog
 	DECLARE_DYNAMIC(CBearingTimeStepDetailsDlg)
 
 public:
-	CBearingTimeStepDetailsDlg(IBroker* pBroker,std::shared_ptr<CBearingTimeStepDetailsReportSpecification>& pRptSpec,const ReactionLocation& initialReactionLocation,IntervalIndexType intervalIdx,CWnd* pParent = nullptr);   // standard constructor
+	CBearingTimeStepDetailsDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<CBearingTimeStepDetailsReportSpecification>& pRptSpec,const ReactionLocation& initialReactionLocation,IntervalIndexType intervalIdx,CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CBearingTimeStepDetailsDlg();
 
 // Dialog Data
@@ -51,7 +51,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    std::shared_ptr<CBearingTimeStepDetailsReportSpecification> m_pBTsRptSpec;
 
    ReactionLocation m_InitialReactionLocation;

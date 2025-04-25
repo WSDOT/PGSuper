@@ -24,7 +24,7 @@
 
 #include <Reporting\ReportingExp.h>
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 class REPORTINGCLASS CStrandEccTable
 {
@@ -34,5 +34,5 @@ public:
    ~CStrandEccTable() = default;
    CStrandEccTable& operator = (const CStrandEccTable& rOther) = default;
 
-   rptRcTable* Build(IBroker* pBroker,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx, IEAFDisplayUnits* pDisplayUnits) const;
+   rptRcTable* Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 };

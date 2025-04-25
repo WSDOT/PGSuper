@@ -29,11 +29,6 @@
 #include <PgsExt\GirderGroupData.h>
 #include <PgsExt\BridgeDescription2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CTemporarySupportElevationDetailsChapterBuilder::CTemporarySupportElevationDetailsChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
@@ -53,8 +48,7 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTemporarySupportElevationDetai
 rptChapter* CTemporarySupportElevationDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -80,7 +74,7 @@ rptChapter* CTemporarySupportElevationDetailsChapterBuilder::Build(const std::sh
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    SupportIndexType nTS = pBridge->GetTemporarySupportCount();
    if (nTS == 0)
    {
@@ -90,7 +84,7 @@ rptChapter* CTemporarySupportElevationDetailsChapterBuilder::Build(const std::sh
 
    *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("TemporarySupportElevation.png")) << rptNewLine;
 
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
    INIT_UV_PROTOTYPE(rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false);
    INIT_UV_PROTOTYPE(rptLengthUnitValue, elev, pDisplayUnits->GetSpanLengthUnit(), false);
    std::_tstring strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
@@ -103,11 +97,11 @@ rptChapter* CTemporarySupportElevationDetailsChapterBuilder::Build(const std::sh
 
    bool bHasElevationAdjustment = pBridge->HasTemporarySupportElevationAdjustments();
 
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    bool bIsDirectHaunchInput = pIBridgeDesc->GetHaunchInputDepthType() != pgsTypes::hidACamber;
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   GET_IFACE2_NOCHECK(pBroker, ITempSupport, pTempSupport);
+   EAF_GET_IFACE2_NOCHECK(pBroker, ITempSupport, pTempSupport);
 
    std::array<std::_tstring, 2> strMemberEnd{ _T("Start"),_T("End") };
 

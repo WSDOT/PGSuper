@@ -32,11 +32,6 @@
 #include <IFace/Limits.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CDebondCheckTable::CDebondCheckTable()
 {
@@ -46,11 +41,11 @@ CDebondCheckTable::~CDebondCheckTable()
 {
 }
 
-void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, IEAFDisplayUnits* pDisplayUnits) const
+void CDebondCheckTable::Build(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsGirderArtifact* pGirderArtifact, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   GET_IFACE2(pBroker, IBridge, pBridge);
-   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry);
-   GET_IFACE2_NOCHECK(pBroker, IMaterials, pMaterials); // not always used, but we don't want to get it everytime we go through a loop
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry);
+   EAF_GET_IFACE2_NOCHECK(pBroker, IMaterials, pMaterials); // not always used, but we don't want to get it everytime we go through a loop
 
    pgsTypes::StrandType strandType(pgsTypes::Straight); // we only debond straight strands
 
@@ -82,7 +77,7 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, const pgsG
    *pChapter << p;
    *p <<_T("Debonded Strands [5.9.4.3.3]");
 
-   GET_IFACE2(pBroker,IDebondLimits,pDebondLimits);
+   EAF_GET_IFACE2(pBroker,IDebondLimits,pDebondLimits);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
@@ -476,7 +471,7 @@ void CDebondCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, const pgsG
    } // next Segment
 }
 
-rptRcTable* CDebondCheckTable::Build1(const pgsDebondArtifact* pDebondArtifact, bool bAfter8thEdition, IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CDebondCheckTable::Build1(const pgsDebondArtifact* pDebondArtifact, bool bAfter8thEdition, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_SCALAR_PROTOTYPE(rptRcPercentage, percentage, pDisplayUnits->GetPercentageFormat());
 
@@ -583,7 +578,7 @@ rptRcTable* CDebondCheckTable::Build1(const pgsDebondArtifact* pDebondArtifact, 
    return table;
 }
 
-rptRcTable* CDebondCheckTable::Build2(const pgsDebondArtifact* pDebondArtifact, IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CDebondCheckTable::Build2(const pgsDebondArtifact* pDebondArtifact, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptRcTable* table = rptStyleManager::CreateDefaultTable(5, _T("Number of strands terminating debonding at each section"));
 

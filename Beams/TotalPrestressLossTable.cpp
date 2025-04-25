@@ -59,7 +59,7 @@ rptRcTable(NumColumns,0)
 
 CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
+   EAF_GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
    bool bIgnoreInitialRelaxation = pDetails->pLosses->IgnoreInitialRelaxation();
@@ -75,7 +75,7 @@ CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pCh
       numColumns++; // fpp
    }
 
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    StrandIndexType NtMax = pStrandGeom->GetMaxStrands(segmentKey,pgsTypes::Temporary);
    if ( 0 == NtMax  )
    {
@@ -201,10 +201,10 @@ void CTotalPrestressLossTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
    // NOTE: we could report fpe = fpj - dfpT but it wouldn't account for the prestress transfer adjustment
    // for that reason we report the actual effective prestress based on fpe = P/Aps 
    // where P accounts for the prestress transfer adjustment
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
 
-   GET_IFACE2(pBroker, IPretensionForce, pPrestressForce);
+   EAF_GET_IFACE2(pBroker, IPretensionForce, pPrestressForce);
    Float64 fpe = pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
 
    (*this)(row+rowOffset,col++) << stress.SetValue(fpe);

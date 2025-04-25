@@ -52,17 +52,12 @@
 #include <IFace\PrincipalWebStress.h>
 #include <IFace\BearingDesignParameters.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <EAF\ComponentModule.h>
+WBFL::EAF::ComponentModule _Module;
 
-CComModule _Module;
-
-BEGIN_OBJECT_MAP(ObjectMap)
-OBJECT_ENTRY(CLSID_TestAgent, CTestAgentImp)
-END_OBJECT_MAP()
+EAF_BEGIN_OBJECT_MAP(ObjectMap)
+   EAF_OBJECT_ENTRY(CLSID_TestAgent, CTestAgentImp)
+EAF_END_OBJECT_MAP()
 
 class CTestAgentApp : public CWinApp
 {
@@ -94,7 +89,7 @@ CTestAgentApp theApp;
 
 BOOL CTestAgentApp::InitInstance()
 {
-    _Module.Init(ObjectMap, m_hInstance); //, &LIBID_TESTAGENTLib);
+    _Module.Init(ObjectMap); //, &LIBID_TESTAGENTLib);
     return CWinApp::InitInstance();
 }
 
@@ -104,62 +99,22 @@ int CTestAgentApp::ExitInstance()
     return CWinApp::ExitInstance();
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// Used to determine whether the DLL can be unloaded by OLE
 
-STDAPI DllCanUnloadNow(void)
-{
-    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-    return (AfxDllCanUnloadNow()==S_OK && _Module.GetLockCount()==0) ? S_OK : S_FALSE;
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// Returns a class factory to create an object of the requested type
-
-STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
-{
-    return _Module.GetClassObject(rclsid, riid, ppv);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// DllRegisterServer - Adds entries to the system registry
-
-HRESULT RegisterAgent(bool bRegister)
-{
-   HRESULT hr = S_OK;
-   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_TestAgent,CATID_PGSuperAgent,bRegister);
-   if ( FAILED(hr) )
-   {
-      return hr;
-   }
-
-   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_TestAgent,CATID_PGSpliceAgent,bRegister);
-   if ( FAILED(hr) )
-   {
-      return hr;
-   }
-
-   return S_OK;
-}
-
-STDAPI DllRegisterServer(void)
-{
-	// registers object, typelib and all interfaces in typelib
-	HRESULT hr = _Module.RegisterServer(FALSE);
-   if ( FAILED(hr) )
-   {
-      return hr;
-   }
-
-   return RegisterAgent(true);
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// DllUnregisterServer - Removes entries from the system registry
-
-STDAPI DllUnregisterServer(void)
-{
-   RegisterAgent(false);
-	_Module.UnregisterServer();
-	return S_OK;
-}
+#pragma Reminder("WORKING HERE - Removing COM - register TestAgent with agent component categories")
+//HRESULT RegisterAgent(bool bRegister)
+//{
+//   HRESULT hr = S_OK;
+//   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_TestAgent,CATID_PGSuperAgent,bRegister);
+//   if ( FAILED(hr) )
+//   {
+//      return hr;
+//   }
+//
+//   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_TestAgent,CATID_PGSpliceAgent,bRegister);
+//   if ( FAILED(hr) )
+//   {
+//      return hr;
+//   }
+//
+//   return S_OK;
+//}

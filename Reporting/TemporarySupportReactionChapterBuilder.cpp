@@ -31,11 +31,6 @@
 #include <Reporting\ProductMomentsTable.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -62,14 +57,13 @@ rptChapter* CTemporarySupportReactionChapterBuilder::Build(const std::shared_ptr
 {
    auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
    CGirderKey girderKey;
 
-   pGdrLineRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGdrLineRptSpec->GetBroker();
    girderKey = pGdrLineRptSpec->GetGirderKey();
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    if ( pBridge->GetTemporarySupportCount() == 0 )
    {
       rptParagraph* pPara = new rptParagraph;
@@ -78,12 +72,12 @@ rptChapter* CTemporarySupportReactionChapterBuilder::Build(const std::shared_ptr
       return pChapter;
    }
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   GET_IFACE2(pBroker,IReactions,pReactions);
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IReactions,pReactions);
+   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
 
-   GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
    analysisType = (analysisType == pgsTypes::Envelope ? pgsTypes::Continuous : analysisType);
    pgsTypes::BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
@@ -153,7 +147,7 @@ rptChapter* CTemporarySupportReactionChapterBuilder::Build(const std::shared_ptr
       bPermit = false;
    }
 
-   GET_IFACE2(pBroker, IUserDefinedLoads, pUserDefinedLoads);
+   EAF_GET_IFACE2(pBroker, IUserDefinedLoads, pUserDefinedLoads);
    bool bUserLoads = pUserDefinedLoads->DoUserLoadsExist(girderKey);
    if (bUserLoads)
    {

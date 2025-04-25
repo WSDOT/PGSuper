@@ -35,11 +35,6 @@
 #include <EAF\EAFUIIntegration.h>
 #include <IFace\Bridge.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // inline functions to determine whether to print status center items
 bool DoPrintStatusItem(CEAFStatusItem* pItem, const CGirderKey& girderKey,SegmentIndexType nSegments)
@@ -83,7 +78,7 @@ bool DoPrintStatusCenter(IEAFStatusCenter* pStatusCenter, IndexType nItems, cons
    return false;
 }
 
-inline bool IsDifferentNumberOfGirdersPerSpan(IBridge* pBridge)
+inline bool IsDifferentNumberOfGirdersPerSpan(std::shared_ptr<IBridge> pBridge)
 {
    GroupIndexType ngrps = pBridge->GetGirderGroupCount();
    GirderIndexType ngdrs = pBridge->GetGirderCount(0);

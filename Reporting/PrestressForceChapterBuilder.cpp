@@ -35,11 +35,6 @@
 
 #include <PgsExt\StrandData.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CPrestressForceChapterBuilder::CPrestressForceChapterBuilder(bool bRating,bool bSelect) :
 CPGSuperChapterBuilder(bSelect), m_bRating(bRating)
@@ -56,34 +51,34 @@ rptChapter* CPrestressForceChapterBuilder::Build(const std::shared_ptr<const WBF
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
    CGirderKey girderKey;
 
    if ( pGdrRptSpec )
    {
-      pGdrRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrRptSpec->GetBroker();
       girderKey = pGdrRptSpec->GetGirderKey();
    }
    else
    {
-      pGdrLineRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrLineRptSpec->GetBroker();
       girderKey = pGdrLineRptSpec->GetGirderKey();
    }
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    // These are the interfaces we are going to be using
-   GET_IFACE2(pBroker,IStrandGeometry, pStrandGeom);
-   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IPointOfInterest, pPoi);
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IStrandGeometry, pStrandGeom);
+   EAF_GET_IFACE2(pBroker,ISegmentData,pSegmentData);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest, pPoi);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
 
-   GET_IFACE2(pBroker, ISectionProperties, pSectProps);
+   EAF_GET_IFACE2(pBroker, ISectionProperties, pSectProps);
    bool bIncludeElasticEffects = (pSectProps->GetSectionPropertiesMode() == pgsTypes::spmGross ? true : false);
 
-   GET_IFACE2(pBroker, IDocumentType, pDocType);
+   EAF_GET_IFACE2(pBroker, IDocumentType, pDocType);
    bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
 
    // Setup some unit-value prototypes

@@ -29,7 +29,7 @@ class REPORTINGCLASS CTimeStepDetailsReportSpecificationBuilder :
    public CBrokerReportSpecificationBuilder
 {
 public:
-   CTimeStepDetailsReportSpecificationBuilder(IBroker* pBroker);
+   CTimeStepDetailsReportSpecificationBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker);
    ~CTimeStepDetailsReportSpecificationBuilder(void);
 
    virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec) const override;

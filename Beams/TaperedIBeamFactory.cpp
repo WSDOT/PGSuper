@@ -187,7 +187,7 @@ void CTaperedIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType stat
 {
    CComPtr<ISuperstructureMemberSegment> segment;
 
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const CSplicedGirderData*  pGirder     = pGroup->GetGirder(segmentKey.girderIndex);
@@ -213,7 +213,7 @@ void CTaperedIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType stat
    // Build up the beam shape
 
    // Beam materials
-   GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   EAF_GET_IFACE2(pBroker,ILossParameters,pLossParams);
    CComPtr<IMaterial> material;
    if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
@@ -223,8 +223,8 @@ void CTaperedIBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType stat
    }
    else
    {
-      GET_IFACE2(pBroker,IIntervals,pIntervals);
-      GET_IFACE2(pBroker,IMaterials,pMaterial);
+      EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+      EAF_GET_IFACE2(pBroker,IMaterials,pMaterial);
       material.CoCreateInstance(CLSID_Material);
 
       IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
@@ -298,7 +298,7 @@ void CTaperedIBeamFactory::CreateSegmentShape(IBroker* pBroker, const CPrecastSe
    beam->put_D6(d6);
 
    const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    Float64 Ls = pBridge->GetSegmentLength(segmentKey);
 
    Float64 d7 = ::LinInterp(Xs, d7s, d7e, Ls);
@@ -333,7 +333,7 @@ Float64 CTaperedIBeamFactory::GetSegmentHeight(IBroker* pBroker, const CPrecastS
    GetDimensions(dimensions, d1, d2, d3, d4, d5, d6, d7s, d7e, w1, w2, w3, w4, t1, t2, c1);
 
    const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    Float64 Ls = pBridge->GetSegmentLength(segmentKey);
 
    Float64 d7 = ::LinInterp(Xs, d7s, d7e, Ls);
@@ -347,7 +347,7 @@ void CTaperedIBeamFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType s
 
 void CTaperedIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
 {
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const GirderLibraryEntry* pGdrEntry = pGroup->GetGirder(segmentKey.girderIndex)->GetGirderLibraryEntry();
@@ -357,7 +357,7 @@ void CTaperedIBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,
    ATLASSERT( strGirderName == pGdrEntry->GetName() );
 #endif
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 gdrLength = pBridge->GetSegmentLength(segmentKey);
 
    PoiAttributeType attrib = POI_SECTCHANGE_TRANSITION;
@@ -392,7 +392,7 @@ void CTaperedIBeamFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroup
 
 void CTaperedIBeamFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const
 {
-   GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       CComObject<CTimeStepLossEngineer>* pEngineer;
@@ -718,7 +718,7 @@ bool CTaperedIBeamFactory::IsPrismatic(const CSegmentKey& segmentKey) const
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const CSplicedGirderData*  pGirder = pGroup->GetGirder(segmentKey.girderIndex);
@@ -731,7 +731,7 @@ bool CTaperedIBeamFactory::IsSymmetric(const CSegmentKey& segmentKey) const
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const CSplicedGirderData*  pGirder = pGroup->GetGirder(segmentKey.girderIndex);
@@ -842,8 +842,8 @@ std::_tstring CTaperedIBeamFactory::GetShearDimensionsSchematicImage(pgsTypes::S
 
 std::_tstring CTaperedIBeamFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const
 {
-   GET_IFACE2(pBroker, ILibrary,       pLib);
-   GET_IFACE2(pBroker, ISpecification, pSpec);
+   EAF_GET_IFACE2(pBroker, ILibrary,       pLib);
+   EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
    const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();
@@ -860,8 +860,8 @@ std::_tstring CTaperedIBeamFactory::GetInteriorGirderEffectiveFlangeWidthImage(I
 
 std::_tstring CTaperedIBeamFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const
 {
-   GET_IFACE2(pBroker, ILibrary,       pLib);
-   GET_IFACE2(pBroker, ISpecification, pSpec);
+   EAF_GET_IFACE2(pBroker, ILibrary,       pLib);
+   EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
    const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();

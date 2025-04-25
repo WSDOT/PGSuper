@@ -218,7 +218,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="EngAgent.def" />
-    <None Include="EngAgent.rgs" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="EngAgent.rc" />

@@ -20,52 +20,51 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// ReporterBase.h : Declaration of the CReporterBase
-
 #pragma once
 
-class CReporterBase
+#include <EAF\Agent.h>
+#include <IReportManager.h>
+
+class CReporterBase : public WBFL::EAF::Agent
 {
 public:
-   void SetBroker(IBroker* pBroker);
-   HRESULT InitCommonReportBuilders();
+   HRESULT InitCommonReportBuilders(std::shared_ptr<WBFL::EAF::Broker> broker);
 
-   HRESULT OnSpecificationChanged();
+   HRESULT OnSpecificationChanged(std::shared_ptr<WBFL::EAF::Broker> broker);
 
 protected:
-   IBroker* m_pBroker; // weak reference
 
    virtual WBFL::Reporting::TitlePageBuilder* CreateTitlePageBuilder(LPCTSTR strReportName,bool bFullVersion=true) = 0;
-   void CreateBridgeGeometryReport();
-   void CreateDetailsReport();
-   void CreateLoadRatingReport();
-   void CreateLoadRatingSummaryReport();
-   void CreateBearingDesignReport();
-   void CreateBearingTimeStepDetailsReport();
+   void CreateBridgeGeometryReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
+   void CreateDetailsReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
+   void CreateLoadRatingReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
+   void CreateLoadRatingSummaryReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
+   void CreateBearingDesignReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
+   void CreateBearingTimeStepDetailsReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
 
-   void CreateBridgeAnalysisReport();
-   void CreateHaulingReport();
-   void CreateLiftingReport();
-   void CreateMultiGirderSpecCheckReport();
-   void CreateSpecChecReport();
-   void CreateDistributionFactorSummaryReport();
-   void CreateMultiHaunchGeometryReport();
+   void CreateBridgeAnalysisReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
+   void CreateHaulingReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
+   void CreateLiftingReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
+   void CreateMultiGirderSpecCheckReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
+   void CreateSpecChecReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
+   void CreateDistributionFactorSummaryReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
+   void CreateMultiHaunchGeometryReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
 
 #if defined _DEBUG || defined _BETA_VERSION
-   void CreateDistributionFactorsReport();
+   void CreateDistributionFactorsReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
 #endif
 
-   void CreateStageByStageDetailsReport();
-   void CreateTimeStepDetailsReport();
-   void CreatePrincipalWebStressDetailsReport();
-   void CreatePointOfInterestReport();
+   void CreateStageByStageDetailsReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
+   void CreateTimeStepDetailsReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
+   void CreatePrincipalWebStressDetailsReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
+   void CreatePointOfInterestReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
 
-   void CreatePierReactionsReport();
-   void CreateTimelineReport();
-   void CreateCopyGirderPropertiesReport();
-   void CreateCopyPierPropertiesReport();
-   void CreateCopyTempSupportPropertiesReport();
+   void CreatePierReactionsReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
+   void CreateTimelineReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
+   void CreateCopyGirderPropertiesReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
+   void CreateCopyPierPropertiesReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
+   void CreateCopyTempSupportPropertiesReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
 
-   void CreateMomentCapacityDetailsReport();
-   void CreateCrackedSectionDetailsReport();
+   void CreateMomentCapacityDetailsReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
+   void CreateCrackedSectionDetailsReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
 };

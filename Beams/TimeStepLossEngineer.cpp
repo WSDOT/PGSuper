@@ -88,20 +88,20 @@ void CTimeStepLossEngineer::SetBroker(IBroker* pBroker,StatusGroupIDType statusG
    m_pBroker = pBroker;
    m_StatusGroupID = statusGroupID;
 
-   GET_IFACE(IEAFStatusCenter,pStatusCenter);
+   EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
    m_scidProjectCriteria = pStatusCenter->RegisterCallback( new pgsProjectCriteriaStatusCallback(pBroker) );
 }
 
 const LOSSDETAILS* CTimeStepLossEngineer::GetLosses(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx)
 {
-   GET_IFACE(ILossParameters,pLossParameters);
+   EAF_GET_IFACE(ILossParameters,pLossParameters);
    if ( pLossParameters->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       std::_tstring msg(_T("Prestress losses cannot be computed. Use Project Criteria that specifies the time-step method for prestress loss calculations."));
       
       pgsProjectCriteriaStatusItem* pStatusItem = new pgsProjectCriteriaStatusItem(m_StatusGroupID,m_scidProjectCriteria,msg.c_str());
 
-      GET_IFACE(IEAFStatusCenter,pStatusCenter);
+      EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
       pStatusCenter->Add(pStatusItem);
 
       msg += std::_tstring(_T("\nSee Status Center for Details"));
@@ -113,7 +113,7 @@ const LOSSDETAILS* CTimeStepLossEngineer::GetLosses(const pgsPointOfInterest& po
    if ( intervalIdx == INVALID_INDEX )
    {
       // INVALID_INDEX means compute losses for all intervals
-      GET_IFACE(IIntervals,pIntervals);
+      EAF_GET_IFACE(IIntervals,pIntervals);
       IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
       intervalIdx = nIntervals-1;
    }
@@ -150,7 +150,7 @@ const LOSSDETAILS* CTimeStepLossEngineer::GetLosses(const pgsPointOfInterest& po
          // Losses have not been computed all the way up to and including the requested interval.
          
          // Get the loss objects for this girder line
-         GET_IFACE(IBridgeDescription,pIBridgeDesc);
+         EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
          std::vector<LOSSES*> vpLosses;
          GroupIndexType nGroups = pIBridgeDesc->GetGirderGroupCount();
          for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
@@ -276,8 +276,8 @@ Float64 CTimeStepLossEngineer::GetGirderTendonElongation(const CGirderKey& girde
 #if defined _DEBUG
    // Elongation calculations are kind of tricky... they are computed with friction losses
    // Re-compute them here using a more direct method and compare to what was computed before.
-   GET_IFACE(IBridgeDescription,pBridgeDesc);
-   GET_IFACE(IGirder,pIGirder);
+   EAF_GET_IFACE(IBridgeDescription,pBridgeDesc);
+   EAF_GET_IFACE(IGirder,pIGirder);
    const CSplicedGirderData* pGirder = pBridgeDesc->GetGirder(girderKey);
    const CPTData* pPTData = pGirder->GetPostTensioning();
    WebIndexType nWebs = pIGirder->GetWebCount(girderKey);
@@ -293,7 +293,7 @@ Float64 CTimeStepLossEngineer::GetGirderTendonElongation(const CGirderKey& girde
       Float64 Pj;
       if ( pDuct->bPjCalc )
       {
-         GET_IFACE(IPosttensionForce,pPTForce);
+         EAF_GET_IFACE(IPosttensionForce,pPTForce);
          Pj = pPTForce->GetGirderTendonPjackMax(girderKey,pDuct->nStrands);
       }
       else
@@ -305,11 +305,11 @@ Float64 CTimeStepLossEngineer::GetGirderTendonElongation(const CGirderKey& girde
       StrandIndexType nStrands = pDuct->nStrands;
       Float64 Apt = apt*nStrands;
 
-      GET_IFACE(IMaterials,pMaterials);
+      EAF_GET_IFACE(IMaterials,pMaterials);
       Float64 Ept = pMaterials->GetGirderTendonMaterial(girderKey)->GetE();
 
       // this is iterating by POI
-      GET_IFACE(IPointOfInterest,pPoi);
+      EAF_GET_IFACE(IPointOfInterest,pPoi);
       SectionLossContainer::const_iterator sectionLossIter(losses.SectionLosses.begin());
       while ( !pPoi->IsOnGirder(sectionLossIter->first) && sectionLossIter != losses.SectionLosses.end() )
       {
@@ -322,7 +322,7 @@ Float64 CTimeStepLossEngineer::GetGirderTendonElongation(const CGirderKey& girde
 
       sectionLossIter++;
 
-      GET_IFACE(IGirderTendonGeometry, pTendonGeom);
+      EAF_GET_IFACE(IGirderTendonGeometry, pTendonGeom);
       SectionLossContainer::const_iterator sectionLossIterEnd(losses.SectionLosses.end());
       for ( ; sectionLossIter != sectionLossIterEnd; sectionLossIter++ )
       {
@@ -384,8 +384,8 @@ Float64 CTimeStepLossEngineer::GetSegmentTendonElongation(const CSegmentKey& seg
 #if defined _DEBUG
    // Elongation calculations are kind of tricky... they are computed with friction losses
    // Re-compute them here using a more direct method and compare to what was computed before.
-   GET_IFACE(IBridgeDescription, pBridgeDesc);
-   GET_IFACE(IGirder, pIGirder);
+   EAF_GET_IFACE(IBridgeDescription, pBridgeDesc);
+   EAF_GET_IFACE(IGirder, pIGirder);
    const CPrecastSegmentData* pSegment = pBridgeDesc->GetPrecastSegmentData(segmentKey);
    const CSegmentPTData* pPTData = &(pSegment->Tendons);
    WebIndexType nWebs = pIGirder->GetWebCount(segmentKey);
@@ -401,7 +401,7 @@ Float64 CTimeStepLossEngineer::GetSegmentTendonElongation(const CSegmentKey& seg
       Float64 Pj;
       if (pDuct->bPjCalc)
       {
-         GET_IFACE(IPosttensionForce, pPTForce);
+         EAF_GET_IFACE(IPosttensionForce, pPTForce);
          Pj = pPTForce->GetSegmentTendonPjackMax(segmentKey, pDuct->nStrands);
       }
       else
@@ -413,11 +413,11 @@ Float64 CTimeStepLossEngineer::GetSegmentTendonElongation(const CSegmentKey& seg
       StrandIndexType nStrands = pDuct->nStrands;
       Float64 Apt = apt*nStrands;
 
-      GET_IFACE(IMaterials, pMaterials);
+      EAF_GET_IFACE(IMaterials, pMaterials);
       Float64 Ept = pMaterials->GetSegmentTendonMaterial(segmentKey)->GetE();
 
       // this is iterating by POI... advance the iterator until we get the first poi that is on the subject segment
-      GET_IFACE(IPointOfInterest, pPoi);
+      EAF_GET_IFACE(IPointOfInterest, pPoi);
       SectionLossContainer::const_iterator sectionLossIter(losses.SectionLosses.begin());
       while ( (!segmentKey.IsEqual(sectionLossIter->first.GetSegmentKey()) || !pPoi->IsOnSegment(sectionLossIter->first)) && sectionLossIter != losses.SectionLosses.end())
       {
@@ -430,7 +430,7 @@ Float64 CTimeStepLossEngineer::GetSegmentTendonElongation(const CSegmentKey& seg
 
       sectionLossIter++;
 
-      GET_IFACE(ISegmentTendonGeometry, pTendonGeom);
+      EAF_GET_IFACE(ISegmentTendonGeometry, pTendonGeom);
       SectionLossContainer::const_iterator sectionLossIterEnd(losses.SectionLosses.end());
       for (; sectionLossIter != sectionLossIterEnd; sectionLossIter++)
       {
@@ -529,7 +529,7 @@ void CTimeStepLossEngineer::ComputeLosses(const CGirderKey& girderKey,IntervalIn
       // create the loss objects for this girder line
       std::vector<LOSSES*> vpLosses;
 
-      GET_IFACE(IBridge, pBridge);
+      EAF_GET_IFACE(IBridge, pBridge);
       std::vector<CGirderKey> vGirderKeys;
       pBridge->GetGirderline(girderKey.girderIndex, &vGirderKeys); // must use girder line index version here (not the girder key version)
       for(const auto& thisGirderKey : vGirderKeys)
@@ -587,12 +587,12 @@ void CTimeStepLossEngineer::ComputeLosses(GirderIndexType girderLineIdx,Interval
       m_pProgress->UpdateMessage(_T("Computing prestress losses"));
 
       // Store principal web stress parameters
-      GET_IFACE(ISpecification, pSpec);
+      EAF_GET_IFACE(ISpecification, pSpec);
       m_PrincipalTensileStressCheckType = pSpec->GetPrincipalWebStressCheckType(CSegmentKey(INVALID_INDEX, girderLineIdx, 0));
 
       if (ISpecification::pwcNCHRPTimeStepMethod == m_PrincipalTensileStressCheckType)
       {
-         GET_IFACE(ILibrary, pLib);
+         EAF_GET_IFACE(ILibrary, pLib);
          std::_tstring specName = pSpec->GetSpecification();
          const auto* pSpecEntry = pLib->GetSpecEntry(specName.c_str());
          const auto& principal_tension_stress_criteria = pSpecEntry->GetPrincipalTensionStressCriteria();

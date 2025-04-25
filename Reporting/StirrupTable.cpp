@@ -29,11 +29,6 @@
 
 #include <LRFD\RebarPool.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -68,10 +63,10 @@ CStirrupTable& CStirrupTable::operator= (const CStirrupTable& rOther)
 }
 
 //======================== OPERATIONS =======================================
-void CStirrupTable::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,
-                                IEAFDisplayUnits* pDisplayUnits) const
+void CStirrupTable::Build(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,
+                                std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeometry);
+   EAF_GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeometry);
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(),  false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, loc, pDisplayUnits->GetSpanLengthUnit(), false );

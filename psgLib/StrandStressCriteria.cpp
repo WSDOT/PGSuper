@@ -96,7 +96,7 @@ bool StrandStressCriteria::Compare(const StrandStressCriteria& other, const Spec
    return bSame;
 }
 
-void StrandStressCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void StrandStressCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;

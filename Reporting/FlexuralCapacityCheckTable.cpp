@@ -39,11 +39,6 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\ReportOptions.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -79,8 +74,8 @@ CFlexuralCapacityCheckTable& CFlexuralCapacityCheckTable::operator= (const CFlex
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
-                                               IEAFDisplayUnits* pDisplayUnits,
+rptRcTable* CFlexuralCapacityCheckTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsGirderArtifact* pGirderArtifact,
+                                               std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                                IntervalIndexType intervalIdx,
                                                pgsTypes::LimitState ls,bool bPositiveMoment,bool* pbOverReinforced) const
 {
@@ -88,8 +83,8 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,const pgsGirderA
 
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    bool c_over_de = ( pSpec->GetMomentCapacityMethod() == LRFD_METHOD && pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2006Interims );
    Uint16 nCols = c_over_de ? 9 : 6;
@@ -147,7 +142,7 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,const pgsGirderA
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(), false );
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
@@ -234,7 +229,7 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(IBroker* pBroker,const pgsGirderA
 
             // Show limiting capacity of over reinforced section
          
-            GET_IFACE2(pBroker,IMomentCapacity,pMomentCap); 
+            EAF_GET_IFACE2(pBroker,IMomentCapacity,pMomentCap); 
             // it may seem wasteful to get this interface in this scope, inside a loop
             // however, the c_over_de method isn't used in the current LRFD so the reality is
             // that this interface wont be requested very often

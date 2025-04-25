@@ -35,17 +35,12 @@
 #include <EAF\EAFDocument.h>
 #include "..\Documentation\PGSuper.hh"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // CSpanGirderReportDlg dialog
 
 IMPLEMENT_DYNAMIC(CSpanGirderReportDlg, CDialog)
 
-CSpanGirderReportDlg::CSpanGirderReportDlg(IBroker* pBroker,const WBFL::Reporting::ReportDescription& rptDesc,Mode mode,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate,CWnd* pParent)
+CSpanGirderReportDlg::CSpanGirderReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::Reporting::ReportDescription& rptDesc,Mode mode,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate,CWnd* pParent)
 	: CDialog(nIDTemplate, pParent), m_RptDesc(rptDesc), m_pInitRptSpec(pRptSpec), m_Mode(mode)
 {
    m_pBroker = pBroker;
@@ -136,7 +131,7 @@ void CSpanGirderReportDlg::UpdateGirderComboBox()
       return;
    }
 
-   GET_IFACE( IBridge, pBridge );
+   EAF_GET_IFACE( IBridge, pBridge );
 
    CComboBox* pGdrBox = (CComboBox*)GetDlgItem(IDC_GIRDER);
    Uint16 curSel = pGdrBox->GetCurSel();
@@ -180,7 +175,7 @@ void CSpanGirderReportDlg::UpdateSegmentComboBox()
       return;
    }
 
-   GET_IFACE(IBridge, pBridge);
+   EAF_GET_IFACE(IBridge, pBridge);
 
    CComboBox* pcbGroup = (CComboBox*)GetDlgItem(IDC_SPAN);
    GroupIndexType grpIdx = (GroupIndexType)pcbGroup->GetCurSel();
@@ -239,12 +234,12 @@ BOOL CSpanGirderReportDlg::OnInitDialog()
    CWnd* pwndTitle = GetDlgItem(IDC_REPORT_TITLE);
    pwndTitle->SetWindowText(m_RptDesc.GetReportName().c_str());
 
-   GET_IFACE(IDocumentType,pDocType);
+   EAF_GET_IFACE(IDocumentType,pDocType);
    bool bIsPGSuper = pDocType->IsPGSuperDocument();
 
    // It is possible that a span was removed from the bridge, and if so, the report description for this report 
    // will have a higher group that that exists. Nip in the bud here so we don't crash
-   GET_IFACE(IBridge, pBridge);
+   EAF_GET_IFACE(IBridge, pBridge);
    GroupIndexType numGroups = pBridge->GetGirderGroupCount();
    if (m_SegmentKey.groupIndex != ALL_GROUPS && m_SegmentKey.groupIndex > numGroups - 1)
    {

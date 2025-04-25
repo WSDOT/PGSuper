@@ -23,11 +23,6 @@
 #include "stdafx.h"
 #include <Reporting\TimelineManagerReportSpecification.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CTimelineManagerReportSpecification::CTimelineManagerReportSpecification(LPCTSTR strReportName, IBroker* pBroker) :
    CBrokerReportSpecification(strReportName,pBroker)

@@ -30,11 +30,6 @@
 #include <IFace\PrestressForce.h>
 #include <IFace\ReportOptions.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CInternalForceChapterBuilder::CInternalForceChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
@@ -53,37 +48,37 @@ rptChapter* CInternalForceChapterBuilder::Build(const std::shared_ptr<const WBFL
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
    CGirderKey girderKey;
 
    if ( pGdrRptSpec )
    {
-      pGdrRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrRptSpec->GetBroker();
       girderKey = pGdrRptSpec->GetGirderKey();
    }
    else
    {
-      pGdrLineRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrLineRptSpec->GetBroker();
       girderKey = pGdrLineRptSpec->GetGirderKey();
    }
 
 #if defined _DEBUG
-   GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
    ATLASSERT( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP );
 #endif 
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   GET_IFACE2(pBroker,ILosses,pLosses);
+   EAF_GET_IFACE2(pBroker,ILosses,pLosses);
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    IntervalIndexType firstReleaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(girderKey);
 
    INIT_UV_PROTOTYPE( rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), false);
    INIT_UV_PROTOTYPE( rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(), false);
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);

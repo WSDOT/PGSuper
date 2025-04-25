@@ -55,9 +55,9 @@ HRESULT CIBeamDistFactorEngineer::FinalConstruct()
 void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
    // Grab the interfaces that are needed
-   GET_IFACE(IBridge,pBridge);
-   GET_IFACE(IPointOfInterest,pPoi);
-   GET_IFACE(ISectionProperties, pSectProps);
+   EAF_GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE(IPointOfInterest,pPoi);
+   EAF_GET_IFACE(ISectionProperties, pSectProps);
    pgsTypes::SectionPropertyMode spMode = pSectProps->GetSectionPropertiesMode();
 
    bool bSIUnits = IS_SI_UNITS(pDisplayUnits);
@@ -73,7 +73,7 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
 
@@ -189,8 +189,8 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
       (*pPara) << _T("Skew Angle at start: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs(span_lldf.skew1)) << rptNewLine;
       (*pPara) << _T("Skew Angle at end: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs(span_lldf.skew2)) << rptNewLine;
 
-      GET_IFACE(ISpecification, pSpec);
-      GET_IFACE(ILibrary, pLibrary);
+      EAF_GET_IFACE(ISpecification, pSpec);
+      EAF_GET_IFACE(ILibrary, pLibrary);
       const auto* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
       const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
       if (live_load_distribution_criteria.bIgnoreSkewReductionForMoment)
@@ -378,13 +378,13 @@ void CIBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
 
 WBFL::LRFD::LiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,IBEAM_LLDFDETAILS* plldf,const GDRCONFIG* pConfig)
 {
-   GET_IFACE(IMaterials,    pMaterials);
-   GET_IFACE(ISectionProperties,        pSectProp);
-   GET_IFACE(ILibrary,          pLib);
-   GET_IFACE(ISpecification,    pSpec);
-   GET_IFACE(IBridge,           pBridge);
-   GET_IFACE(ILiveLoads,        pLiveLoads);
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IMaterials,    pMaterials);
+   EAF_GET_IFACE(ISectionProperties,        pSectProp);
+   EAF_GET_IFACE(ILibrary,          pLib);
+   EAF_GET_IFACE(ISpecification,    pSpec);
+   EAF_GET_IFACE(IBridge,           pBridge);
+   EAF_GET_IFACE(ILiveLoads,        pLiveLoads);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    ATLASSERT( pBridgeDesc->GetDistributionFactorMethod() != pgsTypes::DirectlyInput );
@@ -419,10 +419,10 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFPar
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
    // Throws exception if fails requirement (no need to catch it)
-   GET_IFACE(ILiveLoadDistributionFactors, pDistFactors);
+   EAF_GET_IFACE(ILiveLoadDistributionFactors, pDistFactors);
    Int32 bridgeWideRoaFlag = pDistFactors->VerifyDistributionFactorRequirements(poi);
 
-   GET_IFACE(IIntervals,pIntervals);
+   EAF_GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType llIntervalIdx = pIntervals->GetLiveLoadInterval();
 
@@ -434,7 +434,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFPar
    if ( IsNonstructuralDeck(pBridge->GetDeckType()) )
    {
       // no deck so modular ratio is 1.0 (Eg/Eg)
-      GET_IFACE(IGirder,pGdr);
+      EAF_GET_IFACE(IGirder,pGdr);
       plldf->n = 1.0;
       plldf->ts = pGdr->GetMinTopFlangeThickness(poi);
       plldf->eg = plldf->Yt - plldf->ts/2; // measure eg to the center of the top flange
@@ -443,7 +443,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CIBeamDistFactorEngineer::GetLLDFPar
    {
       plldf->ts = pBridge->GetStructuralSlabDepth(poi);
 
-      GET_IFACE(IPointOfInterest, pPoi);
+      EAF_GET_IFACE(IPointOfInterest, pPoi);
       IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
       ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
 
@@ -591,8 +591,8 @@ void CIBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAIL
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-   GET_IFACE(ILibrary, pLib);
-   GET_IFACE(ISpecification, pSpec);
+   EAF_GET_IFACE(ILibrary, pLib);
+   EAF_GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
 
@@ -845,8 +845,8 @@ void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-   GET_IFACE(ILibrary, pLib);
-   GET_IFACE(ISpecification, pSpec);
+   EAF_GET_IFACE(ILibrary, pLib);
+   EAF_GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
 
@@ -1083,8 +1083,8 @@ void CIBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS
 
 std::_tstring CIBeamDistFactorEngineer::GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect)
 {
-   GET_IFACE(ILibrary, pLib);
-   GET_IFACE(ISpecification, pSpec);
+   EAF_GET_IFACE(ILibrary, pLib);
+   EAF_GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
 
@@ -1111,7 +1111,7 @@ std::_tstring CIBeamDistFactorEngineer::GetComputationDescription(const CGirderK
    }
 
    // Special text if ROA is ignored
-   GET_IFACE(ILiveLoads,pLiveLoads);
+   EAF_GET_IFACE(ILiveLoads,pLiveLoads);
    std::_tstring strAction( pLiveLoads->GetLLDFSpecialActionText() );
    if ( !strAction.empty() )
    {

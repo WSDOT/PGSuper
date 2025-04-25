@@ -78,7 +78,7 @@ CCreepAndShrinkageTable* CCreepAndShrinkageTable::PrepareTable(rptChapter* pChap
       *pParagraph << rptRcImage(strImagePath + _T("Delta_FpSR_2004_US.png")) << rptNewLine;
    }
 
-   GET_IFACE2(pBroker,IEnvironment,pEnv);
+   EAF_GET_IFACE2(pBroker,IEnvironment,pEnv);
    *pParagraph << _T("H = ") << pEnv->GetRelHumidity() << _T("%") << rptNewLine;
 
    *pParagraph << table << rptNewLine;

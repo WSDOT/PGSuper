@@ -42,9 +42,9 @@ public:
 
 protected:
    virtual std::_tstring GetSpecReference() const;
-   virtual void ReportDimensions(rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const;
-   virtual void ReportDemand(rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const;
-   virtual void ReportResistance(rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const;
+   virtual void ReportDimensions(rptParagraph* pPara, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const;
+   virtual void ReportDemand(rptParagraph* pPara, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const;
+   virtual void ReportResistance(rptParagraph* pPara, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const;
 
    virtual Float64 GetConcreteCapacity(pgsTypes::MemberEndType endType, const pgsSplittingCheckArtifact* pArtifact) const;
 
@@ -66,9 +66,9 @@ public:
 
 protected:
    virtual std::_tstring GetSpecReference() const override;
-   virtual void ReportDimensions(rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const override;
-   virtual void ReportDemand(rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const override;
-   virtual void ReportResistance(rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const override;
+   virtual void ReportDimensions(rptParagraph* pPara, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const override;
+   virtual void ReportDemand(rptParagraph* pPara, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const override;
+   virtual void ReportResistance(rptParagraph* pPara, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const override;
 
    virtual Float64 GetConcreteCapacity(pgsTypes::MemberEndType endType, const pgsSplittingCheckArtifact* pArtifact) const override;
 };
@@ -84,9 +84,9 @@ public:
 
 protected:
    virtual std::_tstring GetSpecReference() const override;
-   virtual void ReportDimensions(rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const override;
-   virtual void ReportDemand(rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const override;
-   virtual void ReportResistance(rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const override;
+   virtual void ReportDimensions(rptParagraph* pPara, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const override;
+   virtual void ReportDemand(rptParagraph* pPara, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const override;
+   virtual void ReportResistance(rptParagraph* pPara, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const override;
 
    virtual Float64 GetConcreteCapacity(pgsTypes::MemberEndType endType, const pgsSplittingCheckArtifact* pArtifact) const override;
 };

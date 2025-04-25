@@ -29,13 +29,8 @@
 #include <IFace\PointOfInterest.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-CInitialStrainAnalysisReportSpecificationBuilder::CInitialStrainAnalysisReportSpecificationBuilder(IBroker* pBroker) :
+CInitialStrainAnalysisReportSpecificationBuilder::CInitialStrainAnalysisReportSpecificationBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker) :
 CBrokerReportSpecificationBuilder(pBroker)
 {
 }
@@ -50,7 +45,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CInitialStrainAnalysisRepo
 
    // Prompt for span, girder, and chapter list
    // initialize dialog for the current cut location
-   GET_IFACE(ISelection,pSelection);
+   EAF_GET_IFACE(ISelection,pSelection);
    CSelection selection = pSelection->GetSelection();
    CGirderKey girderKey;
    if ( selection.Type == CSelection::Girder )

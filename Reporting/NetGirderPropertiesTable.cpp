@@ -34,11 +34,6 @@
 
 #include <sstream>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -53,13 +48,13 @@ CNetGirderPropertiesTable::~CNetGirderPropertiesTable()
 {
 }
 
-rptRcTable* CNetGirderPropertiesTable::Build(IBroker* pBroker,
+rptRcTable* CNetGirderPropertiesTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,
                                             const CSegmentKey& segmentKey,
                                             IntervalIndexType intervalIdx,
-                                            IEAFDisplayUnits* pDisplayUnits) const
+                                            std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    USES_CONVERSION;
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
 
@@ -103,8 +98,8 @@ rptRcTable* CNetGirderPropertiesTable::Build(IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptLength4UnitValue,       l4,       pDisplayUnits->GetMomentOfInertiaUnit(), false );
 
    // Get the interface pointers we need
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
 
    PoiAttributeType poiRefAttribute = (intervalIdx < erectionIntervalIdx ? POI_RELEASED_SEGMENT : POI_ERECTED_SEGMENT);
    PoiList vPoi;

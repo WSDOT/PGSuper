@@ -106,7 +106,7 @@ bool PrestressedElementCriteria::Compare(const PrestressedElementCriteria& other
    return bSame;
 }
 
-void PrestressedElementCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void PrestressedElementCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), true);
 

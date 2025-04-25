@@ -61,10 +61,10 @@ STDMETHODIMP CPGSuperProjectImporter::Import(IBroker* pBroker)
 {
    AfxMessageBox(_T("This project importer simulates importing data from an external source by creating a default bridge. A real project importer would connect to an external data source and programmatically create a PGSuper model."), MB_OK);
 
-   GET_IFACE2(pBroker, IProgress, pProgress);
+   EAF_GET_IFACE2(pBroker, IProgress, pProgress);
    CEAFAutoProgress ap(pProgress);
 
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
    pDisplayUnits->SetUnitMode(eafTypes::umUS);
 
    pProgress->UpdateMessage(_T("Building Bridge"));
@@ -81,7 +81,7 @@ STDMETHODIMP CPGSuperProjectImporter::Import(IBroker* pBroker)
 
 void CPGSuperProjectImporter::BuildBridge(IBroker* pBroker)
 {
-   GET_IFACE2(pBroker, ILibraryNames, pLibNames);
+   EAF_GET_IFACE2(pBroker, ILibraryNames, pLibNames);
 
    //
    // Build the bridge model
@@ -112,7 +112,7 @@ void CPGSuperProjectImporter::BuildBridge(IBroker* pBroker)
    bridge.SetGirderFamilyName(strGirderFamily.c_str());
 
    // get the beam factory so we can get important information about the beam
-   GET_IFACE2(pBroker, ILibrary, pLibrary);
+   EAF_GET_IFACE2(pBroker, ILibrary, pLibrary);
    const GirderLibraryEntry* pGirderEntry = pLibrary->GetGirderEntry(strGirderName.c_str());
 
    CComPtr<IBeamFactory> beamFactory;
@@ -267,18 +267,18 @@ void CPGSuperProjectImporter::BuildBridge(IBroker* pBroker)
    InitTimelineManager(pBroker, bridge);
 
    /// Assign the bridge model to PGSuper
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    pIBridgeDesc->SetBridgeDescription(bridge);
 }
 
 void CPGSuperProjectImporter::SetSpecification(IBroker* pBroker)
 {
-   GET_IFACE2(pBroker, ILibraryNames, pLibNames);
+   EAF_GET_IFACE2(pBroker, ILibraryNames, pLibNames);
 
    std::vector<std::_tstring> specs;
    pLibNames->EnumSpecNames(&specs);
 
-   GET_IFACE2(pBroker, ISpecification, pSpec);
+   EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
    pSpec->SetSpecification(specs[0]);
 }
 
@@ -291,8 +291,8 @@ void CPGSuperProjectImporter::InitGirderData(IBroker* pBroker)
       WBFL::Materials::PsStrand::Coating::None,
       WBFL::Materials::PsStrand::Size::D1524);
 
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
-   GET_IFACE2(pBroker, ISegmentData, pSegmentData);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, ISegmentData, pSegmentData);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
@@ -321,8 +321,8 @@ void CPGSuperProjectImporter::InitTimelineManager(IBroker* pBroker, CBridgeDescr
    // We will just use reasonable times so the sequence is correct
    CTimelineManager timelineMgr;
 
-   GET_IFACE2(pBroker, ILibrary, pLib);
-   GET_IFACE2(pBroker, ISpecification, pSpec);
+   EAF_GET_IFACE2(pBroker, ILibrary, pLib);
+   EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
    // get a list of all the segment IDs. it is needed in a couple locations below

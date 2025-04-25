@@ -29,11 +29,6 @@
 #include <IFace\DocumentType.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CCopyPierPropertiesChapterBuilder::CCopyPierPropertiesChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect),
@@ -53,8 +48,7 @@ rptChapter* CCopyPierPropertiesChapterBuilder::Build(const std::shared_ptr<const
    auto pBrokerRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
    auto pCopyPierPropertiesMgrRptSpec = std::dynamic_pointer_cast<const CCopyPierPropertiesReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
-   pBrokerRptSpec->GetBroker(&pBroker);
+   auto pBroker = pBrokerRptSpec->GetBroker();
 
    rptChapter* pChapter = new rptChapter(GetName());
    if (!m_CallBacks.empty())

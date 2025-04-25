@@ -20,8 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_PRODUCTMOMENTSTABLE_H_
-#define INCLUDED_PRODUCTMOMENTSTABLE_H_
+#pragma once
 
 #include <Reporting\ReportingExp.h>
 #include <IFace\AnalysisResults.h>
@@ -29,12 +28,12 @@
 #include <IFace\RatingSpecification.h>
 #include "ReportNotes.h"
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 std::_tstring REPORTINGFUNC LiveLoadPrefix(pgsTypes::LiveLoadType llType);
-void REPORTINGFUNC LiveLoadTableFooter(IBroker* pBroker,rptParagraph* pPara,const CGirderKey& girderKey,bool bDesign,bool bRating);
+void REPORTINGFUNC LiveLoadTableFooter(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptParagraph* pPara,const CGirderKey& girderKey,bool bDesign,bool bRating);
 
-ColumnIndexType REPORTINGFUNC GetProductLoadTableColumnCount(IBroker* pBroker,const CGirderKey& girderkKey,pgsTypes::AnalysisType analysisType,bool bDesign,bool bRating,bool bSlabShrinkage,
+ColumnIndexType REPORTINGFUNC GetProductLoadTableColumnCount(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderkKey,pgsTypes::AnalysisType analysisType,bool bDesign,bool bRating,bool bSlabShrinkage,
                                                              bool* pbSegments,bool* pbConstruction,bool* pbDeck,bool* pbDeckPanels,bool* pbSidewalk,bool* pbShearKey,bool* pbLongitudinalJoint,bool* pbPedLoading,bool* pbPermit,bool* pbContinuousBeforeDeckCasting,GroupIndexType* pStartGroup,GroupIndexType* pEndGroup);
 
 /*****************************************************************************
@@ -54,49 +53,19 @@ LOG
 class REPORTINGCLASS CProductMomentsTable
 {
 public:
-   // GROUP: LIFECYCLE
-
-   //------------------------------------------------------------------------
-   // Default constructor
    CProductMomentsTable();
 
-   //------------------------------------------------------------------------
-   // Copy constructor
-   CProductMomentsTable(const CProductMomentsTable& rOther);
-
-   //------------------------------------------------------------------------
-   // Destructor
-   virtual ~CProductMomentsTable();
-
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
-   CProductMomentsTable& operator = (const CProductMomentsTable& rOther);
-
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
-   // Builds the strand eccentricity table.
-   virtual rptRcTable* Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
-                             bool bDesign,bool bRating,bool bIndicateControllingLoad,IEAFDisplayUnits* pDisplayUnits) const;
-
-protected:
-
-   //------------------------------------------------------------------------
-   void MakeCopy(const CProductMomentsTable& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const CProductMomentsTable& rOther);
-
+   virtual rptRcTable* Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
+                             bool bDesign,bool bRating,bool bIndicateControllingLoad,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 };
 
 template <class M,class T>
-RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_table,bool bPierTable,bool bSlabShrinkage,bool bSegments,bool bConstruction,bool bDeck, bool bDeckPanels,bool bSidewalk,bool bShearKey,bool bLongitudinalJoints,bool bOverlay,bool bIsFutureOverlay,
-                                     bool bDesign,bool bPedLoading,bool bPermit,bool bRating,pgsTypes::AnalysisType analysisType,bool bContinuousBeforeDeckCasting,typename IRatingSpecification* pRatingSpec,IEAFDisplayUnits* pDisplayUnits,const T& unitT)
+RowIndexType ConfigureProductLoadTableHeading(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptRcTable* p_table,bool bPierTable,bool bSlabShrinkage,bool bSegments,bool bConstruction,bool bDeck, bool bDeckPanels,bool bSidewalk,bool bShearKey,bool bLongitudinalJoints,bool bOverlay,bool bIsFutureOverlay,
+                                     bool bDesign,bool bPedLoading,bool bPermit,bool bRating,pgsTypes::AnalysisType analysisType,bool bContinuousBeforeDeckCasting,std::shared_ptr<IRatingSpecification> pRatingSpec,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const T& unitT)
 {
    p_table->SetNumberOfHeaderRows(2);
 
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
 
    //
    // Set up table headings
@@ -360,5 +329,3 @@ RowIndexType ConfigureProductLoadTableHeading(IBroker* pBroker,rptRcTable* p_tab
 
    return p_table->GetNumberOfHeaderRows(); // index of first row to report data
 }
-
-#endif // INCLUDED_PRODUCTMOMENTSTABLE_H_

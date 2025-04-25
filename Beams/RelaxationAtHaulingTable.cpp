@@ -47,10 +47,10 @@ rptRcTable(NumColumns,0)
 
 CRelaxationAtHaulingTable* CRelaxationAtHaulingTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,bool bTemporaryStrands,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
    std::_tstring strSpecName = pSpec->GetSpecification();
 
-   GET_IFACE2(pBroker,ILibrary,pLib);
+   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
 
   // Typecast to our known type (eating own doggy food)

@@ -204,9 +204,7 @@ xcopy /y /d/s/e/i $(ARPDIR)\PGSuper\Images $(ARPDIR)\BridgeLink\Images
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="PGSpliceReporter.rgs" />
     <None Include="ReportAgent.def" />
-    <None Include="Reporter.rgs" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="ReportAgent.rc" />

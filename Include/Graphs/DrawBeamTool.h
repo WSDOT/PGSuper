@@ -27,9 +27,9 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <Units\UnitValueNumericalFormatTools.h>
 
-interface IGirder;
-interface IPointOfInterest;
-interface IIntervals;
+class IGirder;
+class IPointOfInterest;
+class IIntervals;
 
 #define DBS_ERECTED_SEGMENTS_ONLY 0x0001 // draw only erected segments
 #define DBS_HAULED_SEGMENTS_ONLY  0x0002 // in hauling intervals, draw only those segments that are being hauled
@@ -57,13 +57,13 @@ public:
    // girderKey is for the girder that is being drawn
    // beamShift tells how must left or right to shift the beam so that it lines up with the Y axis
    // To draw an individual span or segment, use the following code
-   // GET_IFACE(IPointOfInterest,pPoi);
+   // EAF_GET_IFACE(IPointOfInterest,pPoi);
    // Float64 beamShift = -1*pPoi->ConvertPoiToGirderlineCoordinate(pgsPointOfInterest(segmentKey,0.0));
 
-   void DrawBeam(IBroker* pBroker,CDC* pDC,const WBFL::Graphing::PointMapper& beamMapper, WBFL::Units::PhysicalConverter* pUnitConverter,IntervalIndexType firstPlottingIntervalIdx,IntervalIndexType lastPlottingIntervalIdx,const CGirderKey& girderKey,Float64 beamShift);
+   void DrawBeam(std::shared_ptr<WBFL::EAF::Broker> pBroker,CDC* pDC,const WBFL::Graphing::PointMapper& beamMapper, WBFL::Units::PhysicalConverter* pUnitConverter,IntervalIndexType firstPlottingIntervalIdx,IntervalIndexType lastPlottingIntervalIdx,const CGirderKey& girderKey,Float64 beamShift);
 
    // Just draw one segment
-   void DrawBeamSegment(IBroker* pBroker,CDC* pDC,const WBFL::Graphing::PointMapper& beamMapper, WBFL::Units::PhysicalConverter* pUnitConverter, IntervalIndexType firstPlottingIntervalIdx, IntervalIndexType lastPlottingIntervalIdx,const CSegmentKey& segmentKey,Float64 beamShift);
+   void DrawBeamSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker,CDC* pDC,const WBFL::Graphing::PointMapper& beamMapper, WBFL::Units::PhysicalConverter* pUnitConverter, IntervalIndexType firstPlottingIntervalIdx, IntervalIndexType lastPlottingIntervalIdx,const CSegmentKey& segmentKey,Float64 beamShift);
 
    // Support size in device coord's
    CSize GetSupportSize(CDC* pDC) const;
@@ -71,7 +71,7 @@ public:
    WBFL::Graphing::PointMapper CreatePointMapperAtGraphZero(const WBFL::Graphing::PointMapper& graphMapper) const;
 
 protected:
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    WBFL::Units::PhysicalConverter* m_pUnitConverter;
    
    CSize m_SupportSize;

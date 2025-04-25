@@ -1,25 +1,25 @@
-/////////////////////////////////////////////////////////////////////////
-//// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-//// Copyright © 1999-2025  Washington State Department of Transportation
-////                        Bridge and Structures Office
-////
-//// This program is free software; you can redistribute it and/or modify
-//// it under the terms of the Alternate Route Open Source License as 
-//// published by the Washington State Department of Transportation, 
-//// Bridge and Structures Office.
-////
-//// This program is distributed in the hope that it will be useful, but 
-//// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
-//// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
-//// the Alternate Route Open Source License for more details.
-////
-//// You should have received a copy of the Alternate Route Open Source 
-//// License along with this program; if not, write to the Washington 
-//// State Department of Transportation, Bridge and Structures Office, 
-//// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
-//// Bridge_Support@wsdot.wa.gov
-/////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright © 1999-2025  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+
 #include "StdAfx.h"
 #include <Reporting\BearingReactionTable.h>
 #include <Reporting\ProductMomentsTable.h>
@@ -34,52 +34,12 @@
 
 #include <PgsExt\PierData2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-///****************************************************************************
-//CLASS
-//   CBearingReactiontionTable
-//****************************************************************************/
-//
-//
-//////////////////////////// PUBLIC     ///////////////////////////////////////
-//
-////======================== LIFECYCLE  =======================================
 CBearingReactionTable::CBearingReactionTable()
 {
 }
 
-CBearingReactionTable::CBearingReactionTable(const CBearingReactionTable& rOther)
-{
-    MakeCopy(rOther);
-}
-
-CBearingReactionTable::~CBearingReactionTable()
-{
-}
-
-//======================== OPERATORS  =======================================
-CBearingReactionTable& CBearingReactionTable::operator= (const CBearingReactionTable& rOther)
-{
-    if (this != &rOther)
-    {
-        MakeAssignment(rOther);
-    }
-
-    return *this;
-}
-
-
-
-
-
-
-
-ColumnIndexType CBearingReactionTable::GetBearingTableColumnCount(IBroker* pBroker, const CGirderKey& girderKey,
+ColumnIndexType CBearingReactionTable::GetBearingTableColumnCount(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey,
     pgsTypes::AnalysisType analysisType, bool bDesign, bool bUserLoads, REACTIONDETAILS* details, bool bDetail) const
 {
 
@@ -242,11 +202,9 @@ ColumnIndexType CBearingReactionTable::GetBearingTableColumnCount(IBroker* pBrok
 }
 
 
-
-
 template <class M, class T>
-RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* p_table,
-    bool bDesign, bool bUserLoads, pgsTypes::AnalysisType analysisType, IEAFDisplayUnits* pDisplayUnits, const T& unitT, bool bDetail, REACTIONDETAILS* pDetails)
+RowIndexType ConfigureBearingReactionTableHeading(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptRcTable* p_table,
+    bool bDesign, bool bUserLoads, pgsTypes::AnalysisType analysisType, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const T& unitT, bool bDetail, REACTIONDETAILS* pDetails)
 {
    
 
@@ -273,7 +231,7 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
     if (bDetail)
     {
 
-        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+        EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
 
         p_table->SetRowSpan(0, col, 2);
@@ -287,7 +245,7 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
     if (pDetails->bShearKey && bDetail)
     {
 
-        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+        EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
 
         if (analysisType == pgsTypes::Envelope && pDetails->bContinuousBeforeDeckCasting)
@@ -307,7 +265,7 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
     if (pDetails->bLongitudinalJoint && bDetail)
     {
 
-        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+        EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
         if (analysisType == pgsTypes::Envelope && pDetails->bContinuousBeforeDeckCasting)
         {
@@ -326,7 +284,7 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
     if (pDetails->bConstruction && bDetail)
     {
 
-        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+        EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
         if (analysisType == pgsTypes::Envelope && pDetails->bContinuousBeforeDeckCasting)
         {
@@ -345,7 +303,7 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
     if (pDetails->bDeck && bDetail)
     {
 
-        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+        EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
         if (analysisType == pgsTypes::Envelope && pDetails->bContinuousBeforeDeckCasting)
         {
@@ -373,7 +331,7 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
     if (pDetails->bDeckPanels && bDetail)
     {
 
-        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+        EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
         if (analysisType == pgsTypes::Envelope && pDetails->bContinuousBeforeDeckCasting)
         {
@@ -397,7 +355,7 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
         if (pDetails->bSidewalk && bDetail)
         {
 
-            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
 
             p_table->SetColumnSpan(0, col, 2);
@@ -409,7 +367,7 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
         if (bDetail)
         {
 
-            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
             p_table->SetColumnSpan(0, col, 2);
             (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftTrafficBarrier);
@@ -421,7 +379,7 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
         if (pDetails->bHasOverlay && bDetail)
         {
 
-            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
             p_table->SetColumnSpan(0, col, 2);
             if (pDetails->bFutureOverlay)
@@ -439,7 +397,7 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
 
         if (bUserLoads && bDetail)
         {
-            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
             p_table->SetColumnSpan(0, col, 2);
             (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftUserDC);
             (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
@@ -456,7 +414,7 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
         if (pDetails->bSidewalk && bDetail)
         {
 
-            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
             p_table->SetRowSpan(0, col, 2);
             (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftSidewalk), M, unitT);
@@ -465,7 +423,7 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
         if (bDetail)
         {
 
-            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
             p_table->SetRowSpan(0, col, 2);
             (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftTrafficBarrier), M, unitT);
@@ -475,7 +433,7 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
         if (pDetails->bHasOverlay && bDetail)
         {
 
-            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
             p_table->SetRowSpan(0, col, 2);
             if (pDetails->bFutureOverlay)
@@ -492,7 +450,7 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
 
         if (bUserLoads && bDetail)
         {
-            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
             p_table->SetRowSpan(0, col, 2);
             (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftUserDC), M, unitT);
             p_table->SetRowSpan(0, col, 2);
@@ -519,7 +477,7 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
         if (bUserLoads && analysisType == pgsTypes::Envelope && bDetail)
         {
 
-            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
             p_table->SetColumnSpan(0, col, 2);
             (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftUserLLIM);
             (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
@@ -539,7 +497,7 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
         {
             if (bUserLoads && bDetail)
             {
-                GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+                EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
                 p_table->SetRowSpan(0, col, 2);
                 (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftUserLLIM), M, unitT);
             }
@@ -578,7 +536,7 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
     {
         p_table->SetRowSpan(0, col, 2);
 
-        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+        EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
 
         (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftPretension), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
@@ -593,7 +551,7 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
         if (0 < pDetails->nDucts)
         {
 
-            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
             (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftPostTensioning), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
         }
@@ -607,7 +565,7 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
         if (bDetail)
         {
 
-            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
 
             p_table->SetRowSpan(0, col, 2);
@@ -623,7 +581,7 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
         if (bDetail)
         {
 
-            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
 
             (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftCreep), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
@@ -637,15 +595,9 @@ RowIndexType ConfigureBearingReactionTableHeading(IBroker* pBroker, rptRcTable* 
 }
 
 
-
-
-
-//======================== OPERATIONS =======================================
-rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, const CGirderKey& girderKey, pgsTypes::AnalysisType analysisType,
-    bool bIncludeImpact, bool bIncludeLLDF, bool bDesign, bool bUserLoads, bool bIndicateControllingLoad, IEAFDisplayUnits* pDisplayUnits, bool bDetail) const
+rptRcTable* CBearingReactionTable::BuildBearingReactionTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, pgsTypes::AnalysisType analysisType,
+    bool bIncludeImpact, bool bIncludeLLDF, bool bDesign, bool bUserLoads, bool bIndicateControllingLoad, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, bool bDetail) const
 {
-
-
     // Build table
     INIT_UV_PROTOTYPE(rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false);
     INIT_UV_PROTOTYPE(rptForceUnitValue, reactu, pDisplayUnits->GetShearUnit(), false);
@@ -653,12 +605,12 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
     // Tricky: the reaction tool below will dump out two lines per cell for bearing reactions with more than one bearing
     ReactionUnitValueTool Reaction(BearingReactionsTable, reactu);
 
-    GET_IFACE2_NOCHECK(pBroker, IBridgeDescription, pIBridgeDesc);
-    GET_IFACE2(pBroker, IBridge, pBridge);
+    EAF_GET_IFACE2_NOCHECK(pBroker, IBridgeDescription, pIBridgeDesc);
+    EAF_GET_IFACE2(pBroker, IBridge, pBridge);
 
 
 
-    GET_IFACE2(pBroker, IIntervals, pIntervals);
+    EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
     IntervalIndexType diaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
     IntervalIndexType lastCastDeckIntervalIdx = pIntervals->GetLastCastDeckInterval(); // deck cast be cast in multiple stages, use interval after entire deck is cast
     IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
@@ -671,7 +623,7 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
 
 
 
-    GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
+    EAF_GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
     REACTIONDETAILS details;
     pBearingDesignParameters->GetBearingParameters(girderKey, &details);
 
@@ -689,7 +641,7 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
     // TRICKY: use adapter class to get correct reaction interfaces
     std::unique_ptr<IProductReactionAdapter> pForces;
 
-    GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
+    EAF_GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
     pForces = std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastIntervalIdx, girderKey);
 
     ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
@@ -898,7 +850,7 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
         }
 
         std::unique_ptr<ICmbLsReactionAdapter> pForces;
-        GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
+        EAF_GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
         pForces = std::make_unique<CmbLsBearingDesignReactionAdapter>(pBearingDesign, lastIntervalIdx, girderKey);
 
         if (!bDetail)
@@ -1156,37 +1108,3 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(IBroker* pBroker, c
     return p_table;
 
 }
-
-
-
-
-
-
-////======================== ACCESS     =======================================
-////======================== INQUIRY    =======================================
-//
-//////////////////////////// PROTECTED  ///////////////////////////////////////
-//
-////======================== LIFECYCLE  =======================================
-////======================== OPERATORS  =======================================
-////======================== OPERATIONS =======================================
-void CBearingReactionTable::MakeCopy(const CBearingReactionTable& rOther)
-{
-    // Add copy code here...
-}
-
-void CBearingReactionTable::MakeAssignment(const CBearingReactionTable& rOther)
-{
-    MakeCopy(rOther);
-}
-//
-////======================== ACCESS     =======================================
-////======================== INQUIRY    =======================================
-//
-//////////////////////////// PRIVATE    ///////////////////////////////////////
-//
-////======================== LIFECYCLE  =======================================
-////======================== OPERATORS  =======================================
-////======================== OPERATIONS =======================================
-////======================== ACCESS     =======================================
-////======================== INQUERY    =======================================

@@ -32,11 +32,6 @@
 
 #include <WBFLCogo.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -65,13 +60,12 @@ rptChapter* CAlignmentChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
 
    auto pBrokerSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
 
-   // This report does not use the passd span and girder parameters
+   // This report does not use the passed span and girder parameters
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   CComPtr<IBroker> pBroker;
-   pBrokerSpec->GetBroker(&pBroker);
+   auto pBroker = pBrokerSpec->GetBroker();
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    
    CBridgeDescChapterBuilder::WriteAlignmentData(pBroker,pDisplayUnits,pChapter,level);
    CBridgeDescChapterBuilder::WriteProfileData(pBroker,pDisplayUnits,pChapter,level);

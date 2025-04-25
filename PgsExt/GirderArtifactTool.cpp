@@ -31,6 +31,9 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\DocumentType.h>
 
+#pragma Reminder("WORKING HERE - Removing COM - do we need to be passing in the broker?")
+// Multiple functions in this file that are passed the broker. Could EAFGetBroker be a better way to go?
+
 bool FlexureStressFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,const StressCheckTask& task,const pgsSegmentArtifact* pArtifact,bool bBeamStresses)
 {
    IndexType nArtifacts = pArtifact->GetFlexuralStressArtifactCount(task);

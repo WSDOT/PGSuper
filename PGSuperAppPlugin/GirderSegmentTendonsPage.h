@@ -26,7 +26,7 @@
 #include "DrawStrandControl.h"
 #include "SegmentTendonGrid.h"
 
-struct IStrandGeometry;
+class IStrandGeometry;
 class CPrecastSegmentData;
 
 // CGirderSegmentTendonsPage dialog

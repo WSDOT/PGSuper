@@ -35,11 +35,6 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\EditBridge.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #pragma Reminder("WORKING HERE - Removing COM")
 // A few of these status items take a broker as a parameter.

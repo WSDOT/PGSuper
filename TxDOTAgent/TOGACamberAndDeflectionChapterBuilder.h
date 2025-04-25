@@ -23,7 +23,7 @@
 #ifndef INCLUDED_TOGACAMBERANDDEFLECTIONCHAPTERBUILDER_H_
 #define INCLUDED_TOGACAMBERANDDEFLECTIONCHAPTERBUILDER_H_
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 #include <ReportManager\ReportManager.h>
 #include <Reporting\PGSuperChapterBuilder.h>

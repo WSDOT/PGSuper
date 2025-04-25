@@ -69,11 +69,6 @@
 
 #include <limits>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define TOGA_PLUGIN_COMMAND_COUNT 256
 
@@ -220,10 +215,10 @@ void CTxDOTOptionalDesignDoc::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszP
    //CEAFBrokerDocument::HandleOpenDocumentError(hr,lpszPathName);
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   GET_IFACE( IEAFProjectLog, pLog );
+   EAF_GET_IFACE( IEAFProjectLog, pLog );
 
    CString log_msg_header;
-   log_msg_header.Format(_T("The following error occured while opening %s"),lpszPathName );
+   log_msg_header.Format(_T("The following error occurred while opening %s"),lpszPathName );
    pLog->LogMessage( log_msg_header );
 
    CString msg1;
@@ -328,27 +323,16 @@ void CTxDOTOptionalDesignDoc::Dump(CDumpContext& dc) const
 /////////////////////////////////////////////////////////////////////////////
 // CTxDOTOptionalDesignDoc commands
 
-BOOL CTxDOTOptionalDesignDoc::LoadSpecialAgents(IBrokerInitEx2* pBrokerInit)
+BOOL CTxDOTOptionalDesignDoc::LoadSpecialAgents()
 {
-   if ( !CEAFBrokerDocument::LoadSpecialAgents(pBrokerInit) )
+   if ( !CEAFBrokerDocument::LoadSpecialAgents() )
       return FALSE;
 
-   // NOTE: This could be a problem... the PGSuper doc proxy agent is local to the PGSuper.exe project
-   // If it is needed in this document, I recommend that we create a CPGSDocBase base class for
-   // CPGSuperDoc and CTxDOTOptionDesignDoc. This class would go into a new DLL (on that will ultimately
-   // have the PGSuper app plugin and all the associated files) and be exported. This class would implement
-   // this method so all PGSuper-doc objects have the proper agents loaded.
-
-   CComObject<CTxDOTOptionalDesignDocProxyAgent>* pDocProxyAgent;
-   CComObject<CTxDOTOptionalDesignDocProxyAgent>::CreateInstance(&pDocProxyAgent);
-   m_pTxDOTOptionalDesignDocProxyAgent = dynamic_cast<CTxDOTOptionalDesignDocProxyAgent*>(pDocProxyAgent);
+   m_pTxDOTOptionalDesignDocProxyAgent = std::make_shared<CTxDOTOptionalDesignDocProxyAgent>();
    m_pTxDOTOptionalDesignDocProxyAgent->SetDocument( this );
 
-   CComPtr<IAgentEx> pAgent(m_pTxDOTOptionalDesignDocProxyAgent);
-   
-   HRESULT hr = pBrokerInit->AddAgent( pAgent );
-   if ( FAILED(hr) )
-      return hr;
+   if (!m_pBroker->AddAgent(m_pTxDOTOptionalDesignDocProxyAgent))
+      return FALSE;
 
    return TRUE;
 }
@@ -708,7 +692,7 @@ void CTxDOTOptionalDesignDoc::OnFileExportPgsuperModel()
       return;
 
    // Need an updated broker with all input data set in it
-   IBroker* pBroker(nullptr);
+   std::shared_ptr<WBFL::EAF::Broker> pBroker(nullptr);
    try
    {
       pBroker = GetUpdatedBroker();
@@ -776,11 +760,10 @@ BOOL CTxDOTOptionalDesignDoc::UpdateCurrentViewInputData()
 
 // ITxDOTBrokerRetriever
 //
-IBroker* CTxDOTOptionalDesignDoc::GetUpdatedBroker()
+std::shared_ptr<WBFL::EAF::Broker> CTxDOTOptionalDesignDoc::GetUpdatedBroker()
 {
    // Get broker from parent class
-   CComPtr<IBroker> pBroker;
-   this->GetBroker(&pBroker);
+   auto pBroker = this->GetBroker();
 
    if (m_ChangeStatus != ITxDataObserver::ctNone)
    {
@@ -821,7 +804,7 @@ IBroker* CTxDOTOptionalDesignDoc::GetUpdatedBroker()
          try
          {
             // Intitialize broker with library
-            GET_IFACE2( pBroker, ILibrary, pLib );
+            EAF_GET_IFACE2( pBroker, ILibrary, pLib );
             pLib->SetLibraryManager( &m_LibMgr );
 
             // Need to load the pgsuper template file
@@ -855,6 +838,12 @@ IBroker* CTxDOTOptionalDesignDoc::GetUpdatedBroker()
    return pBroker;
 }
 
+void CTxDOTOptionalDesignDoc::BrokerShutDown()
+{
+   m_pTxDOTOptionalDesignDocProxyAgent = nullptr;
+   CEAFBrokerDocument::BrokerShutDown();
+}
+
 void CTxDOTOptionalDesignDoc::RecreateBroker()
 {
    m_VirginBroker = true;
@@ -877,15 +866,14 @@ BOOL CTxDOTOptionalDesignDoc::CreateBroker()
 
    // map old PGSuper (pre version 3.0) CLSID to current CLSID
    // CLSID's were changed so that pre version 3.0 installations could co-exist with 3.0 and later installations
-   CComQIPtr<ICLSIDMap> clsidMap(m_pBroker);
-   clsidMap->AddCLSID(CComBSTR("{BE55D0A2-68EC-11D2-883C-006097C68A9C}"),CComBSTR("{DD1ECB24-F46E-4933-8EE4-1DC0BC67410D}")); // Analysis Agent
-   clsidMap->AddCLSID(CComBSTR("{59753CA0-3B7B-11D2-8EC5-006097DF3C68}"),CComBSTR("{3FD393DD-8AF4-4CB2-A1C5-71E46C436BA0}")); // Bridge Agent
-   clsidMap->AddCLSID(CComBSTR("{B455A760-6DAF-11D2-8EE9-006097DF3C68}"),CComBSTR("{73922319-9243-4974-BA54-CF22593EC9C4}")); // Eng Agent
-   clsidMap->AddCLSID(CComBSTR("{3DA9045D-7C49-4591-AD14-D560E7D95581}"),CComBSTR("{B4639189-ED38-4A68-8A18-38026202E9DE}")); // Graph Agent
-   clsidMap->AddCLSID(CComBSTR("{59D50426-265C-11D2-8EB0-006097DF3C68}"),CComBSTR("{256B5B5B-762C-4693-8802-6B0351290FEA}")); // Project Agent
-   clsidMap->AddCLSID(CComBSTR("{3D5066F2-27BE-11D2-8EB2-006097DF3C68}"),CComBSTR("{1FFED5EC-7A32-4837-A1F1-99481AFF2825}")); // PGSuper Report Agent
-   clsidMap->AddCLSID(CComBSTR("{EC915470-6E76-11D2-8EEB-006097DF3C68}"),CComBSTR("{F510647E-1F4F-4FEF-8257-6914DE7B07C8}")); // Spec Agent
-   clsidMap->AddCLSID(CComBSTR("{433B5860-71BF-11D3-ADC5-00105A9AF985}"),CComBSTR("{7D692AAD-39D0-4E73-842C-854457EA0EE6}")); // Test Agent
+   m_pBroker->AddCLSID(CComBSTR("{BE55D0A2-68EC-11D2-883C-006097C68A9C}"),CComBSTR("{DD1ECB24-F46E-4933-8EE4-1DC0BC67410D}")); // Analysis Agent
+   m_pBroker->AddCLSID(CComBSTR("{59753CA0-3B7B-11D2-8EC5-006097DF3C68}"),CComBSTR("{3FD393DD-8AF4-4CB2-A1C5-71E46C436BA0}")); // Bridge Agent
+   m_pBroker->AddCLSID(CComBSTR("{B455A760-6DAF-11D2-8EE9-006097DF3C68}"),CComBSTR("{73922319-9243-4974-BA54-CF22593EC9C4}")); // Eng Agent
+   m_pBroker->AddCLSID(CComBSTR("{3DA9045D-7C49-4591-AD14-D560E7D95581}"),CComBSTR("{B4639189-ED38-4A68-8A18-38026202E9DE}")); // Graph Agent
+   m_pBroker->AddCLSID(CComBSTR("{59D50426-265C-11D2-8EB0-006097DF3C68}"),CComBSTR("{256B5B5B-762C-4693-8802-6B0351290FEA}")); // Project Agent
+   m_pBroker->AddCLSID(CComBSTR("{3D5066F2-27BE-11D2-8EB2-006097DF3C68}"),CComBSTR("{1FFED5EC-7A32-4837-A1F1-99481AFF2825}")); // PGSuper Report Agent
+   m_pBroker->AddCLSID(CComBSTR("{EC915470-6E76-11D2-8EEB-006097DF3C68}"),CComBSTR("{F510647E-1F4F-4FEF-8257-6914DE7B07C8}")); // Spec Agent
+   m_pBroker->AddCLSID(CComBSTR("{433B5860-71BF-11D3-ADC5-00105A9AF985}"),CComBSTR("{7D692AAD-39D0-4E73-842C-854457EA0EE6}")); // Test Agent
 
    return TRUE;
 }
@@ -896,12 +884,11 @@ HINSTANCE CTxDOTOptionalDesignDoc::GetResourceInstance()
    return AfxGetInstanceHandle();
 }
 
-IBroker* CTxDOTOptionalDesignDoc::GetClassicBroker()
+std::shared_ptr<WBFL::EAF::Broker> CTxDOTOptionalDesignDoc::GetClassicBroker()
 {
    // Get broker from parent class
    // Do not update with input data
-   CComPtr<IBroker> pBroker;
-   this->GetBroker(&pBroker);
+   auto pBroker = this->GetBroker();
 
    return pBroker;
 }
@@ -1087,7 +1074,7 @@ void CTxDOTOptionalDesignDoc::PreprocessTemplateData()
 {
    // At this point, we have loaded the pgsuper template file and have an active broker
    // Check that our template file meets our needs and save some information
-   GET_IFACE(IBridgeDescription,pBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pBridgeDesc);
 
    // Make sure our pgsuper template is what we expect
    CBridgeDescription2 bridgeDesc = *(pBridgeDesc->GetBridgeDescription());
@@ -1098,12 +1085,12 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
 {
    // At this point, we have loaded the pgsuper template file and have an active broker
    // Now we can use our input data to modify the pgsuper project.
-   GET_IFACE(IBridgeDescription,pBridgeDesc);
-   GET_IFACE(ILibrary, pLib );
-   GET_IFACE(IEnvironment, pEnvironment );
-   GET_IFACE(IUserDefinedLoadData, pUserDefinedLoadData);
-   GET_IFACE(IProjectProperties,pProps);
-   GET_IFACE(ISpecification,pSpec);
+   EAF_GET_IFACE(IBridgeDescription,pBridgeDesc);
+   EAF_GET_IFACE(ILibrary, pLib );
+   EAF_GET_IFACE(IEnvironment, pEnvironment );
+   EAF_GET_IFACE(IUserDefinedLoadData, pUserDefinedLoadData);
+   EAF_GET_IFACE(IProjectProperties,pProps);
+   EAF_GET_IFACE(ISpecification,pSpec);
 
    CBridgeDescription2 bridgeDesc = *(pBridgeDesc->GetBridgeDescription());
 
@@ -1597,7 +1584,7 @@ void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdG
       clone_entry.AllowVerticalAdjustmentHP(false);
 
       // We have our modified entry - now add it to the library and set our girder to reference it
-      GET_IFACE(ILibrary, pLib );
+      EAF_GET_IFACE(ILibrary, pLib );
       GirderLibrary& rLibrary =  pLib->GetGirderLibrary();
 
       std::_tstring original_name = pGdrEntry->GetName();
@@ -1632,7 +1619,7 @@ void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdG
          MakeHarpedCloneStraight(pGdrEntry, &clone_entry);
 
          // We have our modified entry - now add it to the library and set our girder to reference it
-         GET_IFACE(ILibrary, pLib );
+         EAF_GET_IFACE(ILibrary, pLib );
          GirderLibrary& rLibrary =  pLib->GetGirderLibrary();
 
          std::_tstring clone_name = MakeCloneName(girder_name, gdr);
@@ -1662,7 +1649,7 @@ void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdG
       ATLASSERT(false);
 
    // Get Jacking 
-   GET_IFACE(IPretensionForce, pPrestress );
+   EAF_GET_IFACE(IPretensionForce, pPrestress );
 
    strands.IsPjackCalculated(pgsTypes::Permanent, true);
    strands.IsPjackCalculated(pgsTypes::Straight,  true);

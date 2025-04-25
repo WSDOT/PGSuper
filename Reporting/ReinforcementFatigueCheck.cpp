@@ -29,11 +29,6 @@
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\ReinforcementFatigueArtifact.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CReinforcementFatigueCheck::CReinforcementFatigueCheck()
 {
@@ -43,13 +38,13 @@ CReinforcementFatigueCheck::~CReinforcementFatigueCheck()
 {
 }
 
-void CReinforcementFatigueCheck::Build(rptChapter* pChapter,IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
-                                       IEAFDisplayUnits* pDisplayUnits) const
+void CReinforcementFatigueCheck::Build(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsGirderArtifact* pGirderArtifact,
+                                       std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
    bool bIsApplicable = false;
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {

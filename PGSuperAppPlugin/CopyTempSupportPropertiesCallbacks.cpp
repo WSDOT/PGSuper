@@ -86,7 +86,7 @@ static bool CanCopyConnectionData(PierIndexType fromTempSupportIdx,const std::ve
 {
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    const CTemporarySupportData* pFromTempSupport = pBridgeDesc->GetTemporarySupport(fromTempSupportIdx);
@@ -139,10 +139,10 @@ bool txnCopyTempSupportConnectionProperties::Execute()
 
       auto pBroker = EAFGetBroker();
 
-      EAF_GET_IFACE2(pBroker, IEvents, pEvents);
+      EAF_EAF_GET_IFACE2(pBroker, IEvents, pEvents);
       pEvents->HoldEvents(); // Large bridges can take a long time. Don't fire any changed events until all changes are done
 
-      EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+      EAF_EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
       m_TempSupportConnectionData.clear();
@@ -185,7 +185,7 @@ void txnCopyTempSupportConnectionProperties::Undo()
    if (m_DidDoCopy)  
    {
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+      EAF_EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
 
       std::vector<TempSupportConnectionData>::iterator iterPCD = m_TempSupportConnectionData.begin();
       for (const auto toTempSupportIdx : m_ToTempSupports)
@@ -263,9 +263,9 @@ rptParagraph* CCopyTempSupportConnectionProperties::BuildComparisonReportParagra
 
 void TempSupportConnectionPropertiesComparison(rptParagraph * pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports)
 {
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    INIT_UV_PROTOTYPE( rptLengthUnitValue, cmpdim, pDisplayUnits->GetComponentDimUnit(), false );
 
    ColumnIndexType nCols = 7;

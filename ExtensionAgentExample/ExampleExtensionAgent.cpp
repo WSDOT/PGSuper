@@ -24,7 +24,7 @@
 
 #include "stdafx.h"
 #include "ExampleExtensionAgent.h"
-
+#include "resource.h"
 #include <EAF\EAFOutputChildFrame.h>
 #include "MyView.h"
 
@@ -48,36 +48,36 @@
 
 #include <MFCTools\Prompts.h>
 
-BEGIN_MESSAGE_MAP(CMyCmdTarget,CCmdTarget)
-   ON_COMMAND(ID_COMMAND1,OnCommand1)
+BEGIN_MESSAGE_MAP(CExampleExtensionAgent,CCmdTarget)
+   ON_COMMAND(ID_COMMAND1,&CExampleExtensionAgent::OnCommand1)
 	//ON_UPDATE_COMMAND_UI(ID_COMMAND1, OnUpdateCommand1)
-   ON_COMMAND(ID_PLUGINAGENT_MYVIEW,OnMyView)
+   ON_COMMAND(ID_PLUGINAGENT_MYVIEW, &CExampleExtensionAgent::OnMyView)
 END_MESSAGE_MAP()
 
-void CMyCmdTarget::OnCommand1()
+void CExampleExtensionAgent::OnCommand1()
 {
-   m_pMyAgent->SimulateUserInput();
+   SimulateUserInput();
 }
 
-void CMyCmdTarget::OnUpdateCommand1(CCmdUI* pCmdUI) 
+void CExampleExtensionAgent::OnUpdateCommand1(CCmdUI* pCmdUI)
 {
    // example of command ui processing
    //pCmdUI->SetCheck();
 }
 
-void CMyCmdTarget::OnMyView()
+void CExampleExtensionAgent::OnMyView()
 {
-   m_pMyAgent->CreateMyView();
+   CreateMyView();
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // IEAFCommandCallback
-BOOL CMyCmdTarget::OnCommandMessage(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo)
+BOOL CExampleExtensionAgent::OnCommandMessage(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo)
 {
    return OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
 }
 
-BOOL CMyCmdTarget::GetStatusBarMessageString(UINT nID, CString& rMessage) const
+BOOL CExampleExtensionAgent::GetStatusBarMessageString(UINT nID, CString& rMessage) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -96,7 +96,7 @@ BOOL CMyCmdTarget::GetStatusBarMessageString(UINT nID, CString& rMessage) const
    return TRUE;
 }
 
-BOOL CMyCmdTarget::GetToolTipMessageString(UINT nID, CString& rMessage) const
+BOOL CExampleExtensionAgent::GetToolTipMessageString(UINT nID, CString& rMessage) const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CString string;
@@ -117,41 +117,29 @@ BOOL CMyCmdTarget::GetToolTipMessageString(UINT nID, CString& rMessage) const
    return TRUE;
 }
 
-// CExampleExtensionAgent
-
-HRESULT CExampleExtensionAgent::FinalConstruct()
-{
-   m_MyCommandTarget = std::make_shared<CMyCmdTarget>();
-   m_MyCommandTarget->m_pMyAgent = this;
-
-   m_bCheck = true;
-
-	return S_OK;
-}
-
 void CExampleExtensionAgent::RegisterViews()
 {
-   GET_IFACE(IEAFViewRegistrar,pViewRegistrar);
+   EAF_GET_IFACE(IEAFViewRegistrar,pViewRegistrar);
    int maxViewCount = 2; // only allow 2 instances of this view to be created at a time
-   auto callback = std::dynamic_pointer_cast<WBFL::EAF::ICommandCallback>(m_MyCommandTarget);
+   auto callback = std::dynamic_pointer_cast<WBFL::EAF::ICommandCallback>(shared_from_this());
    m_MyViewKey = pViewRegistrar->RegisterView(IDR_MENU,callback,RUNTIME_CLASS(CEAFOutputChildFrame),RUNTIME_CLASS(CMyView),nullptr,maxViewCount);
 }
 
 void CExampleExtensionAgent::UnregisterViews()
 {
-   GET_IFACE(IEAFViewRegistrar,pViewRegistrar);
+   EAF_GET_IFACE(IEAFViewRegistrar,pViewRegistrar);
    pViewRegistrar->RemoveView(m_MyViewKey);
 }
 
 void CExampleExtensionAgent::CreateMyView()
 {
-   GET_IFACE(IEAFViewRegistrar,pViewRegistrar);
-   pViewRegistrar->CreateView(m_MyViewKey,m_MyCommandTarget.get());
+   EAF_GET_IFACE(IEAFViewRegistrar,pViewRegistrar);
+   pViewRegistrar->CreateView(m_MyViewKey,this);
 }
 
 void CExampleExtensionAgent::RegisterGraphs()
 {
-   GET_IFACE(IGraphManager,pGraphMgr);
+   EAF_GET_IFACE_(WBFL::Graphing,IGraphManager,pGraphMgr);
 
    std::unique_ptr<CTestGraphBuilder> pTestGraphBuilder = std::make_unique<CTestGraphBuilder>();
    pTestGraphBuilder->SetMenuBitmap(&m_bmpMenu);
@@ -170,7 +158,7 @@ void CExampleExtensionAgent::CreateMenus()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   GET_IFACE(IEAFMainMenu,pMainMenu);
+   EAF_GET_IFACE(IEAFMainMenu,pMainMenu);
    auto pMenu = pMainMenu->GetMainMenu();
 
    INT nMenus = pMenu->GetMenuItemCount();
@@ -179,13 +167,13 @@ void CExampleExtensionAgent::CreateMenus()
 
    m_MyMenu = pMenu->CreatePopupMenu(nMenus-1,_T("MyExtension")); // put the menu before the last menu (Help)
 
-   auto callback = std::dynamic_pointer_cast<WBFL::EAF::ICommandCallback>(m_MyCommandTarget);
+   auto callback = std::dynamic_pointer_cast<WBFL::EAF::ICommandCallback>(shared_from_this());
    m_MyMenu->LoadMenu(IDR_MENU,callback);
 }
 
 void CExampleExtensionAgent::RemoveMenus()
 {
-   GET_IFACE(IEAFMainMenu,pMainMenu);
+   EAF_GET_IFACE(IEAFMainMenu,pMainMenu);
    auto pMenu = pMainMenu->GetMainMenu();
    pMenu->DestroyMenu(m_MyMenu);
 }
@@ -193,13 +181,13 @@ void CExampleExtensionAgent::RemoveMenus()
 void CExampleExtensionAgent::CreateToolBar()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   GET_IFACE(IEAFToolbars,pToolBars);
+   EAF_GET_IFACE(IEAFToolbars,pToolBars);
    m_ToolBarID = pToolBars->CreateToolBar(_T("Extension Agent Toolbar"));
    auto pToolBar = pToolBars->GetToolBar(m_ToolBarID);
-   auto callback = std::dynamic_pointer_cast<WBFL::EAF::ICommandCallback>(m_MyCommandTarget);
+   auto callback = std::dynamic_pointer_cast<WBFL::EAF::ICommandCallback>(shared_from_this());
    pToolBar->LoadToolBar(IDR_TOOLBAR,callback);
 
-   //GET_IFACE(IEditByUI,pEditUI);
+   //EAF_GET_IFACE(IEditByUI,pEditUI);
    //UINT stdID = pEditUI->GetStdToolBarID();
    //CEAFToolBar* pStdToolBar = pToolBars->GetToolBar(stdID);
    //UINT cmdID = ID_COMMAND1;
@@ -208,10 +196,10 @@ void CExampleExtensionAgent::CreateToolBar()
 
 void CExampleExtensionAgent::RemoveToolBar()
 {
-   GET_IFACE(IEAFToolbars,pToolBars);
+   EAF_GET_IFACE(IEAFToolbars,pToolBars);
    pToolBars->DestroyToolBar(m_ToolBarID);
 
-   //GET_IFACE(IEditByUI,pEditUI);
+   //EAF_GET_IFACE(IEditByUI,pEditUI);
    //UINT stdID = pEditUI->GetStdToolBarID();
    //CEAFToolBar* pStdToolBar = pToolBars->GetToolBar(stdID);
    //pStdToolBar->RemoveButtons(this);
@@ -220,7 +208,7 @@ void CExampleExtensionAgent::RemoveToolBar()
 void CExampleExtensionAgent::RegisterReports()
 {
    // Register our reports
-   GET_IFACE(IReportManager,pRptMgr);
+   EAF_GET_IFACE_(WBFL::Reporting,IReportManager,pRptMgr);
 
    //
    // Create report spec builders
@@ -239,13 +227,13 @@ void CExampleExtensionAgent::RegisterReports()
 
 void CExampleExtensionAgent::RegisterUIExtensions()
 {
-   GET_IFACE(IExtendPGSuperUI,pExtendPGSuperUI);
+   EAF_GET_IFACE(IExtendPGSuperUI,pExtendPGSuperUI);
    m_EditBridgeCallbackID = pExtendPGSuperUI->RegisterEditBridgeCallback(this);
    m_EditPierCallbackID = pExtendPGSuperUI->RegisterEditPierCallback(this,nullptr);
    m_EditSpanCallbackID = pExtendPGSuperUI->RegisterEditSpanCallback(this);
    m_EditGirderCallbackID = pExtendPGSuperUI->RegisterEditGirderCallback(this);
 
-   GET_IFACE(IExtendPGSpliceUI,pExtendPGSpliceUI);
+   EAF_GET_IFACE(IExtendPGSpliceUI,pExtendPGSpliceUI);
    m_EditTemporarySupportCallbackID = pExtendPGSpliceUI->RegisterEditTemporarySupportCallback(this, nullptr);
    m_EditSplicedGirderCallbackID = pExtendPGSpliceUI->RegisterEditSplicedGirderCallback(this);
    m_EditSegmentCallbackID = pExtendPGSpliceUI->RegisterEditSegmentCallback(this);
@@ -254,13 +242,13 @@ void CExampleExtensionAgent::RegisterUIExtensions()
 
 void CExampleExtensionAgent::UnregisterUIExtensions()
 {
-   GET_IFACE(IExtendPGSuperUI,pExtendPGSuperUI);
+   EAF_GET_IFACE(IExtendPGSuperUI,pExtendPGSuperUI);
    pExtendPGSuperUI->UnregisterEditBridgeCallback(m_EditBridgeCallbackID);
    pExtendPGSuperUI->UnregisterEditPierCallback(m_EditPierCallbackID);
    pExtendPGSuperUI->UnregisterEditSpanCallback(m_EditSpanCallbackID);
    pExtendPGSuperUI->UnregisterEditGirderCallback(m_EditGirderCallbackID);
 
-   GET_IFACE(IExtendPGSpliceUI,pExtendPGSpliceUI);
+   EAF_GET_IFACE(IExtendPGSpliceUI,pExtendPGSpliceUI);
    pExtendPGSpliceUI->UnregisterEditTemporarySupportCallback(m_EditTemporarySupportCallbackID);
    pExtendPGSpliceUI->UnregisterEditSplicedGirderCallback(m_EditSplicedGirderCallbackID);
    pExtendPGSpliceUI->UnregisterEditSegmentCallback(m_EditSegmentCallbackID);
@@ -274,7 +262,7 @@ void CExampleExtensionAgent::SimulateUserInput()
    {
       m_Answer = answer;
 
-      GET_IFACE(IEAFDocument,pDoc);
+      EAF_GET_IFACE(IEAFDocument,pDoc);
       pDoc->SetModified(TRUE);
    }
 }
@@ -282,25 +270,16 @@ void CExampleExtensionAgent::SimulateUserInput()
 /////////////////////////////////////////////////////////////////////////
 // IAgentEx
 
-STDMETHODIMP CExampleExtensionAgent::SetBroker(IBroker *pBroker)
+bool CExampleExtensionAgent::RegInterfaces()
 {
-   EAF_AGENT_SET_BROKER(pBroker);
-   return S_OK;
+   return true;
 }
 
-STDMETHODIMP CExampleExtensionAgent::RegInterfaces()
+bool CExampleExtensionAgent::Init()
 {
-   CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
-   // Register interfaces here
-   // pBrokerInit->RegInterface( IID_ISomeInterfaceThisAgentImplements, this);
-
-   return S_OK;
-}
-
-STDMETHODIMP CExampleExtensionAgent::Init()
-{
+   Agent::Init();
    CREATE_LOGFILE(_T("ExtensionAgent"));
-   EAF_AGENT_INIT;
+   //EAF_AGENT_INIT;
 
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    VERIFY(m_bmpMenu.LoadBitmap(IDB_LOGO));
@@ -308,63 +287,36 @@ STDMETHODIMP CExampleExtensionAgent::Init()
    //
    // Attach to connection points
    //
-   CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
-   CComPtr<IConnectionPoint> pCP;
-   HRESULT hr = S_OK;
+   m_dwExtendUICookie = REGISTER_CALLBACK(IExtendUIEventSink);
 
-   // Connection point for the user interface extension events
-   hr = pBrokerInit->FindConnectionPoint( IID_IExtendUIEventSink, &pCP );
-   if ( SUCCEEDED(hr) )
-   {
-      hr = pCP->Advise( GetUnknown(), &m_dwExtendUICookie );
-      ATLASSERT( SUCCEEDED(hr) );
-      pCP.Release(); // Recycle the IConnectionPoint smart pointer so we can use it again.
-   }
-
-   return S_OK;
+   return true;
 }
 
-STDMETHODIMP CExampleExtensionAgent::Init2()
-{
-   return S_OK;
-}
-
-STDMETHODIMP CExampleExtensionAgent::Reset()
+bool CExampleExtensionAgent::Reset()
 {
    m_bmpMenu.DeleteObject();
-   return S_OK;
+   return true;
 }
 
-STDMETHODIMP CExampleExtensionAgent::ShutDown()
+bool CExampleExtensionAgent::ShutDown()
 {
    //
    // Detach to connection points
    //
-   CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
-   CComPtr<IConnectionPoint> pCP;
-   HRESULT hr = S_OK;
+   UNREGISTER_CALLBACK(IExtendUIEventSink, m_dwExtendUICookie);
 
-   hr = pBrokerInit->FindConnectionPoint(IID_IExtendUIEventSink, &pCP );
-   if ( SUCCEEDED(hr) )
-   {
-      hr = pCP->Unadvise( m_dwExtendUICookie );
-      ATLASSERT( SUCCEEDED(hr) );
-      pCP.Release(); // Recycle the connection point
-   }
-
-   return S_OK;
+   return true;
 }
 
-STDMETHODIMP CExampleExtensionAgent::GetClassID(CLSID* pCLSID)
+CLSID CExampleExtensionAgent::GetCLSID() const
 {
-   *pCLSID = CLSID_ExampleExtensionAgent;
-   return S_OK;
+   return CLSID_ExampleExtensionAgent;
 }
 
 
 ////////////////////////////////////////////////////////////////////
 // IAgentPersist
-STDMETHODIMP CExampleExtensionAgent::Load(IStructuredLoad* pStrLoad)
+bool CExampleExtensionAgent::Load(IStructuredLoad* pStrLoad)
 {
    USES_CONVERSION;
    CComVariant var;
@@ -372,34 +324,34 @@ STDMETHODIMP CExampleExtensionAgent::Load(IStructuredLoad* pStrLoad)
    
    HRESULT hr = pStrLoad->BeginUnit(_T("ExampleExtensionAgent"));
    if ( FAILED(hr) )
-      return hr;
+      return false;
 
    var.vt = VT_BSTR;
    hr = pStrLoad->get_Property(_T("SampleData"),&var);
    if ( FAILED(hr) )
-      return hr;
+      return false;
 
    m_Answer = OLE2T(var.bstrVal);
 
    hr = pStrLoad->EndUnit();
    if ( FAILED(hr) )
-      return hr;
+      return false;
 
-   return S_OK;
+   return true;
 }
 
-STDMETHODIMP CExampleExtensionAgent::Save(IStructuredSave* pStrSave)
+bool CExampleExtensionAgent::Save(IStructuredSave* pStrSave)
 {
    pStrSave->BeginUnit(_T("ExampleExtensionAgent"),1.0);
    pStrSave->put_Property(_T("SampleData"),CComVariant(m_Answer));
    pStrSave->EndUnit();
-   return S_OK;
+   return true;
 }
 
 
 ////////////////////////////////////////////////////////////////////
 // IAgentUIIntegration
-STDMETHODIMP CExampleExtensionAgent::IntegrateWithUI(BOOL bIntegrate)
+bool CExampleExtensionAgent::IntegrateWithUI(bool bIntegrate)
 {
    if ( bIntegrate )
    {
@@ -416,12 +368,12 @@ STDMETHODIMP CExampleExtensionAgent::IntegrateWithUI(BOOL bIntegrate)
       UnregisterUIExtensions();
    }
 
-   return S_OK;
+   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
 // IAgentReportingIntegration
-STDMETHODIMP CExampleExtensionAgent::IntegrateWithReporting(BOOL bIntegrate)
+bool CExampleExtensionAgent::IntegrateWithReporting(bool bIntegrate)
 {
    if ( bIntegrate )
    {
@@ -431,12 +383,12 @@ STDMETHODIMP CExampleExtensionAgent::IntegrateWithReporting(BOOL bIntegrate)
    {
    }
 
-   return S_OK;
+   return true;
 }
 
 ////////////////////////////////////////////////////////////////////
 // IAgentGraphingIntegration
-STDMETHODIMP CExampleExtensionAgent::IntegrateWithGraphing(BOOL bIntegrate)
+bool CExampleExtensionAgent::IntegrateWithGraphing(bool bIntegrate)
 {
    if ( bIntegrate )
    {
@@ -446,7 +398,7 @@ STDMETHODIMP CExampleExtensionAgent::IntegrateWithGraphing(BOOL bIntegrate)
    {
    }
 
-   return S_OK;
+   return true;
 }
 
 CPropertyPage* CExampleExtensionAgent::CreatePropertyPage(IEditBridgeData* pBridgeData)

@@ -56,11 +56,6 @@
 #include <EAF\EAFApp.h>
 #include <psgLib\LibraryEntryDifferenceItem.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define DUMMY_AGENT_ID INVALID_ID
 

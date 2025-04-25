@@ -20,8 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_IFACE_TRANSVERSEREINFORCEMENTSPEC_H_
-#define INCLUDED_IFACE_TRANSVERSEREINFORCEMENTSPEC_H_
+#pragma once
 
 #include <PGSuperTypes.h>
 
@@ -37,28 +36,21 @@ DESCRIPTION
 // {1AE10C6E-AC04-11d2-ACB7-00105A9AF985}
 DEFINE_GUID(IID_ITransverseReinforcementSpec, 
 0x1ae10c6e, 0xac04, 0x11d2, 0xac, 0xb7, 0x0, 0x10, 0x5a, 0x9a, 0xf9, 0x85);
-interface ITransverseReinforcementSpec : IUnknown
+class ITransverseReinforcementSpec
 {
-   //------------------------------------------------------------------------
+public:
    // Returns the minimum bar size in the Confinement zone per 5.9.4.4.2 (pre2017: 5.10.10.2)
    virtual WBFL::Materials::Rebar::Size GetMinConfinementBarSize() const = 0;
 
-   //------------------------------------------------------------------------
    // Returns the minimum bar area in the Confinement zone per 5.9.4.4.2 (pre2017: 5.10.10.2)
    virtual Float64 GetMaxConfinementBarSpacing() const = 0;
 
-   //------------------------------------------------------------------------
    // Returns the minimum Av/S in the Confinement zone per 5.9.4.4.2 (pre2017: 5.10.10.2)
    virtual Float64 GetMinConfinementAvS() const = 0;
 
-   //------------------------------------------------------------------------
    // Returns max bar spacing for vu over and under limits per 5.7.2.6 (pre2017: 5.8.2.7)
    virtual void GetMaxStirrupSpacing(Float64 dv,Float64* sUnderLimit, Float64* sOverLimit) const = 0;
 
-   //------------------------------------------------------------------------
-   // Returns min barspacing for stirrups
+   // Returns min bar spacing for stirrups
    virtual Float64 GetMinStirrupSpacing(Float64 maxAggregateSize, Float64 barDiameter) const = 0;
 };
-
-#endif // INCLUDED_IFACE_TRANSVERSEREINFORCEMENTSPEC_H_
-

@@ -46,21 +46,16 @@
 #include <PgsExt\GirderArtifactTool.h>
 #include <PgsExt\GirderLabel.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 //////// TOGA Report
-int TxDOT_WriteTOGAReportToFile (FILE *fp, IBroker* pBroker)
+int TxDOT_WriteTOGAReportToFile (FILE *fp, std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
    // Use our worker bee to write results
    CadWriterWorkerBee workerB(true);
 
-   GET_IFACE2(pBroker,IGetTogaResults,pGetTogaResults);
-   GET_IFACE2(pBroker,IGetTogaData,pGetTogaData);
+   EAF_GET_IFACE2(pBroker,IGetTogaResults,pGetTogaResults);
+   EAF_GET_IFACE2(pBroker,IGetTogaData,pGetTogaData);
    const CTxDOTOptionalDesignData* pProjectData = pGetTogaData->GetTogaData();
 
    // Compressive stress - top

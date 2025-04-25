@@ -38,11 +38,6 @@
 #include <IFace\DistributionFactors.h>
 #include <IFace\Intervals.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CMomentCapacityParagraphBuilder::CMomentCapacityParagraphBuilder()
 {
@@ -58,17 +53,16 @@ CMomentCapacityParagraphBuilder::CMomentCapacityParagraphBuilder()
 rptParagraph* CMomentCapacityParagraphBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
    const CGirderKey& girderKey = pGirderRptSpec->GetGirderKey();
 
    // Interfaces
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   //GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
-   GET_IFACE2(pBroker,IArtifact,pIArtifact);
-   //GET_IFACE2(pBroker,IMomentCapacity,pMomentCap);
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   //GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   //EAF_GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
+   EAF_GET_IFACE2(pBroker,IArtifact,pIArtifact);
+   //EAF_GET_IFACE2(pBroker,IMomentCapacity,pMomentCap);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   //EAF_GET_IFACE2(pBroker,IBridge,pBridge);
 
 
    // Setup up some unit value prototypes
@@ -128,7 +122,7 @@ rptParagraph* CMomentCapacityParagraphBuilder::Build(const std::shared_ptr<const
       // strength II if permit truck is defined
       bool str2_passed(true);
 
-      GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+      EAF_GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
       bool bPermit = pLimitStateForces->IsStrengthIIApplicable(segmentKey);
       if (bPermit)
       {
@@ -144,8 +138,8 @@ rptParagraph* CMomentCapacityParagraphBuilder::Build(const std::shared_ptr<const
       (*pTable)(row,0) << _T("Moment Capacity, ") << symbol(phi) << Sub2(_T("M"),_T("n"));
       (*pTable)(row,1) << moment.SetValue( Mr );
 
-      GET_IFACE2(pBroker,ISpecification, pSpec);
-      GET_IFACE2(pBroker,ILibrary,pLib);
+      EAF_GET_IFACE2(pBroker,ISpecification, pSpec);
+      EAF_GET_IFACE2(pBroker,ILibrary,pLib);
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
 
       MOMENTCAPACITYDETAILS mcd;

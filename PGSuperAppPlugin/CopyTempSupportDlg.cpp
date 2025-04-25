@@ -62,7 +62,7 @@ CCopyTempSupportDlg::CCopyTempSupportDlg(std::shared_ptr<WBFL::EAF::Broker> pBro
 	//}}AFX_DATA_INIT
 
    // keep selection around
-   EAF_GET_IFACE(ISelection,pSelection);
+   EAF_EAF_GET_IFACE(ISelection,pSelection);
    m_FromSelection = pSelection->GetSelection();
 
    // Special case here if selected ID is INVALID_ID
@@ -107,7 +107,7 @@ BOOL CCopyTempSupportDlg::OnInitDialog()
    m_cyMin = rect.Height();
 
    // set up report window
-   EAF_GET_IFACE_(WBFL::Reporting,IReportManager, pReportMgr);
+   EAF_EAF_GET_IFACE_(WBFL::Reporting,IReportManager, pReportMgr);
    WBFL::Reporting::ReportDescription rptDesc = pReportMgr->GetReportDescription(_T("Copy Temporary Support Properties Report"));
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
    std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
@@ -130,7 +130,7 @@ BOOL CCopyTempSupportDlg::OnInitDialog()
    // set up reporting window
    UpdateReportData();
 
-   EAF_GET_IFACE_(WBFL::Reporting,IReportManager,pRptMgr);
+   EAF_EAF_GET_IFACE_(WBFL::Reporting,IReportManager,pRptMgr);
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> nullSpecBuilder;
    CWnd* pWnd = GetDlgItem(IDC_BROWSER);
    m_pBrowser = pRptMgr->CreateReportBrowser(pWnd->GetSafeHwnd(), WS_BORDER,pRptSpec,nullSpecBuilder);
@@ -242,7 +242,7 @@ std::vector<PierIndexType> CCopyTempSupportDlg::GetToTempSupports()
       if (ALL_PIERS == TempSupportIdx)
       {
          std::vector<PierIndexType> vec;
-         EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+         EAF_EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
          const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
          GroupIndexType nTempSupports = pBridgeDesc->GetTemporarySupportCount();
@@ -286,7 +286,7 @@ void CCopyTempSupportDlg::FillComboBoxes(CComboBox& cbTempSupport, bool bInclude
       cbTempSupport.SetItemData(idx,ALL_PIERS);
    }
 
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    GroupIndexType nTempSupports = pBridgeDesc->GetTemporarySupportCount();
@@ -312,7 +312,7 @@ void CCopyTempSupportDlg::FillComboBoxes(CComboBox& cbTempSupport, bool bInclude
 
 void CCopyTempSupportDlg::UpdateReportData()
 {
-   EAF_GET_IFACE_(WBFL::Reporting,IReportManager,pReportMgr);
+   EAF_EAF_GET_IFACE_(WBFL::Reporting,IReportManager,pReportMgr);
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
 
    PierIndexType TempSupportIdx = GetFromTempSupport();
@@ -339,7 +339,7 @@ void CCopyTempSupportDlg::UpdateReport()
    {
       UpdateReportData();
 
-      EAF_GET_IFACE_(WBFL::Reporting, IReportManager,pReportMgr);
+      EAF_EAF_GET_IFACE_(WBFL::Reporting, IReportManager,pReportMgr);
       std::shared_ptr<WBFL::Reporting::ReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
 
       std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = std::dynamic_pointer_cast<WBFL::Reporting::ReportSpecification,CCopyTempSupportPropertiesReportSpecification>(m_pRptSpec);
@@ -403,7 +403,7 @@ void CCopyTempSupportDlg::OnOK()
 
    if (0 < pMacro->GetTxnCount())
    {
-      EAF_GET_IFACE(IEAFTransactions, pTransactions);
+      EAF_EAF_GET_IFACE(IEAFTransactions, pTransactions);
       pTransactions->Execute(std::move(pMacro));
    }
 
@@ -420,7 +420,7 @@ void CCopyTempSupportDlg::OnEdit()
 {
    PierIndexType fromIdx = GetFromTempSupport();
 
-   EAF_GET_IFACE(IEditByUI, pEditByUI);
+   EAF_EAF_GET_IFACE(IEditByUI, pEditByUI);
    UINT tab = 0; // use if nothing is selected
    std::vector<ICopyTemporarySupportPropertiesCallback*> callbacks = GetSelectedCopyTempSupportPropertiesCallbacks();
    if (!callbacks.empty())

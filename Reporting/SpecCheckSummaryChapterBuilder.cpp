@@ -47,11 +47,6 @@ CLASS
 
 #include <Lrfd/BDSManager.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 CSpecCheckSummaryChapterBuilder::CSpecCheckSummaryChapterBuilder(bool referToDetailsReport,bool bSelect):
@@ -75,11 +70,10 @@ rptChapter* CSpecCheckSummaryChapterBuilder::Build(const std::shared_ptr<const W
    {
       rptChapter* pChapter = CPGSuperChapterBuilder::Build(pGirderRptSpec,level);
 
-      CComPtr<IBroker> pBroker;
-      pGirderRptSpec->GetBroker(&pBroker);
+      auto pBroker = pGirderRptSpec->GetBroker();
       const CGirderKey& girderKey( pGirderRptSpec->GetGirderKey() );
 
-      GET_IFACE2(pBroker,IArtifact,pIArtifact);
+      EAF_GET_IFACE2(pBroker,IArtifact,pIArtifact);
       const pgsGirderArtifact* pGirderArtifact = pIArtifact->GetGirderArtifact(girderKey);
 
       //placeholder for bearing artifact to be included in spec check summary
@@ -98,10 +92,9 @@ rptChapter* CSpecCheckSummaryChapterBuilder::Build(const std::shared_ptr<const W
       // Give progress window a progress meter
       bool bMultiGirderReport = (1 < girderKeys.size() ? true : false);
 
-      CComPtr<IBroker> pBroker;
-      pMultiGirderRptSpec->GetBroker(&pBroker);
+      auto pBroker = pMultiGirderRptSpec->GetBroker();
 
-      GET_IFACE2(pBroker,IProgress,pProgress);
+      EAF_GET_IFACE2(pBroker,IProgress,pProgress);
       DWORD mask = bMultiGirderReport ? PW_ALL|PW_NOCANCEL : PW_ALL|PW_NOGAUGE|PW_NOCANCEL;
 
       CEAFAutoProgress ap(pProgress,0,mask); 
@@ -114,7 +107,7 @@ rptChapter* CSpecCheckSummaryChapterBuilder::Build(const std::shared_ptr<const W
       // Build chapter and fill it
       rptChapter* pChapter = CPGSuperChapterBuilder::Build(pMultiGirderRptSpec,level);
 
-      GET_IFACE2(pBroker,IArtifact,pIArtifact);
+      EAF_GET_IFACE2(pBroker,IArtifact,pIArtifact);
 
       for (std::vector<CGirderKey>::const_iterator it=girderKeys.begin(); it!=girderKeys.end(); it++)
       {
@@ -145,8 +138,7 @@ rptChapter* CSpecCheckSummaryChapterBuilder::Build(const std::shared_ptr<const W
 rptChapter* CSpecCheckSummaryChapterBuilder::BuildEx(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level, const pgsGirderArtifact* pGirderArtifact) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
@@ -155,7 +147,7 @@ rptChapter* CSpecCheckSummaryChapterBuilder::BuildEx(const std::shared_ptr<const
    return pChapter;
 }
 
-void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact) const
+void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsGirderArtifact* pGirderArtifact) const
 {
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
@@ -172,7 +164,7 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroke
 
       *pPara << color(Red) << _T("The Specification Check Was Not Successful") << color(Black) << rptNewLine;
      
-      GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+      EAF_GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
       bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
 
       // Build a list of our failures
@@ -231,13 +223,13 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroke
    }
 
    // Only report stirrup length/zone incompatibility if user requests it
-   GET_IFACE2(pBroker,ISpecification,pSpec);
-   GET_IFACE2(pBroker,ILibrary,pLib);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
    std::_tstring strSpecName = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
    const auto& limits_criteria = pSpecEntry->GetLimitsCriteria();
 
-   GET_IFACE2_NOCHECK(pBroker,IStirrupGeometry,pStirrupGeom);
+   EAF_GET_IFACE2_NOCHECK(pBroker,IStirrupGeometry,pStirrupGeom);
    if ( limits_criteria.bCheckStirrupSpacingCompatibility && !pStirrupGeom->AreStirrupZoneLengthsCombatible(girderKey) )
    {
       rptParagraph* pPara = new rptParagraph;
@@ -248,11 +240,11 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, IBroke
    if ( limits_criteria.bCheckSag )
    {
       // Negative camber is not technically a spec check, but a warning
-      GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
-      GET_IFACE2(pBroker, IBridge, pBridge);
+      EAF_GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
+      EAF_GET_IFACE2(pBroker, IBridge, pBridge);
       pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
    
-      GET_IFACE2(pBroker,ICamber,pCamber);
+      EAF_GET_IFACE2(pBroker,ICamber,pCamber);
       SpanIndexType startSpanIdx, endSpanIdx;
       pBridge->GetGirderGroupSpans(girderKey.groupIndex,&startSpanIdx,&endSpanIdx);
       for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )

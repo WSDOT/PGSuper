@@ -166,7 +166,7 @@ bool PrestressLossCriteria::Compare(const PrestressLossCriteria& other, const Sp
    return bSame;
 }
 
-void PrestressLossCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void PrestressLossCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;

@@ -48,7 +48,7 @@ class iTogaSectionCutDrawStrategy
 {
 public:
    virtual void SetColor(COLORREF color) = 0;
-   virtual void Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, IBroker* pBroker, const CSegmentKey& segmentKey, iCutLocation* pCutLoc) = 0;
+   virtual void Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey, iCutLocation* pCutLoc) = 0;
 };
 
 #endif // INCLUDED_TOGASECTIONCUTDRAWSTRATEGY_H_

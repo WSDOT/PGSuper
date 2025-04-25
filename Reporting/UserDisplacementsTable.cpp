@@ -33,11 +33,6 @@
 #include <IFace\Intervals.h>
 #include <IFace\ReportOptions.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -73,17 +68,17 @@ CUserDeflectionsTable& CUserDeflectionsTable::operator= (const CUserDeflectionsT
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CUserDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,IntervalIndexType intervalIdx,
-                                              IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CUserDeflectionsTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,IntervalIndexType intervalIdx,
+                                              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, deflection, pDisplayUnits->GetDeflectionUnit(), false );
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    CString strTitle;
    strTitle.Format(_T("Deflections due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx).c_str());
    rptRcTable* p_table = CreateUserLoadHeading<rptLengthUnitTag,WBFL::Units::LengthData>(strTitle.GetBuffer(),false,analysisType,intervalIdx,pDisplayUnits,pDisplayUnits->GetDeflectionUnit());
@@ -95,11 +90,11 @@ rptRcTable* CUserDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& gird
    }
 
    // Get the interface pointers we need
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   GET_IFACE2(pBroker,IProductForces2,pForces2);
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   EAF_GET_IFACE2(pBroker,IProductForces2,pForces2);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
 
-   GET_IFACE2(pBroker,IProductForces,pForces);
+   EAF_GET_IFACE2(pBroker,IProductForces,pForces);
    pgsTypes::BridgeAnalysisType maxBAT = pForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 

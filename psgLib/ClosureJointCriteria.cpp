@@ -78,7 +78,7 @@ bool ClosureJointCriteria::Compare(const ClosureJointCriteria& other, const Spec
    return bSame;
 }
 
-void ClosureJointCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void ClosureJointCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;

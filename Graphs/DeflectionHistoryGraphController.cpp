@@ -28,11 +28,6 @@
 #include <IFace\DocumentType.h>
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 IMPLEMENT_DYNCREATE(CDeflectionHistoryGraphController,CLocationGraphController)
 
@@ -55,7 +50,7 @@ BOOL CDeflectionHistoryGraphController::OnInitDialog()
 {
    CLocationGraphController::OnInitDialog();
 
-   GET_IFACE(IDocumentType, pDocType);
+   EAF_GET_IFACE(IDocumentType, pDocType);
    if (pDocType->IsPGSuperDocument())
    {
       // elevation adjustments don't apply to PGSuper

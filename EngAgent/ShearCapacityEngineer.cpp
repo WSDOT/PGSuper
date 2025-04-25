@@ -49,30 +49,15 @@
 #include <IFace\DocumentType.h>
 #endif
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-/****************************************************************************
-CLASS
-   pgsShearCapacityEngineer
-****************************************************************************/
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-pgsShearCapacityEngineer::pgsShearCapacityEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID)
+pgsShearCapacityEngineer::pgsShearCapacityEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID)
 {
    m_pBroker = pBroker;
    m_StatusGroupID = statusGroupID;
 }
 
-//======================== OPERATIONS =======================================
-void pgsShearCapacityEngineer::SetBroker(IBroker* pBroker)
+void pgsShearCapacityEngineer::SetBroker(std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
+#pragma Reminder("WORKING HERE - Removing COM - caching broker could lead to circular reference")
    m_pBroker = pBroker;
 }
 
@@ -80,8 +65,9 @@ void pgsShearCapacityEngineer::SetStatusGroupID(StatusGroupIDType statusGroupID)
 {
    m_StatusGroupID = statusGroupID;
 
-   GET_IFACE(IEAFStatusCenter,pStatusCenter);
-   m_scidGirderDescriptionError   = pStatusCenter->RegisterCallback(new pgsGirderDescriptionStatusCallback(m_pBroker,eafTypes::statusError) );
+   EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
+#pragma Reminder("WORKING HERE - Removing COM - dont use raw pointers")
+   m_scidGirderDescriptionError   = pStatusCenter->RegisterCallback(new pgsGirderDescriptionStatusCallback(eafTypes::statusError) );
 }
 
 void pgsShearCapacityEngineer::ComputeShearCapacity(IntervalIndexType intervalIdx, pgsTypes::LimitState limitState, const pgsPointOfInterest& poi, const GDRCONFIG* pConfig, SHEARCAPACITYDETAILS* pscd) const
@@ -105,19 +91,19 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
    //
    // since LRFD 9th Edition, bv, Vc, and Vs depend on if ducts are grouted or ungrouted and since
    // we assume the bridge is open to traffic are also assume ducts are grouted
-   GET_IFACE(IIntervals,pIntervals);
+   EAF_GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    ATLASSERT( liveLoadIntervalIdx <= intervalIdx );
 #endif
 
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
+   EAF_GET_IFACE(ILibrary,pLib);
+   EAF_GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
    bool bAfter1999 = ( WBFL::LRFD::BDSManager::Edition::SecondEditionWith2000Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false );
 
    // some lrfd-related values
-   GET_IFACE_NOCHECK(IMaterials,pMaterial);
+   EAF_GET_IFACE_NOCHECK(IMaterials,pMaterial);
 
    // Strands
    if ( bAfter1999 )
@@ -125,7 +111,7 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
       // ok to use Straight since we just want material properties
       const auto* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Straight);
 
-      //GET_IFACE(IPretensionForce,pPSForce);
+      //EAF_GET_IFACE(IPretensionForce,pPSForce);
       //Float64 xfer = pPSForce->GetTransferLengthAdjustment(poi);
       // Should we be using development length adjustment because this is an ultimate condition?
       // Logic says we should, but we never have and industry published examples don't seem to 
@@ -187,7 +173,7 @@ void pgsShearCapacityEngineer::ComputeShearCapacityDetails(IntervalIndexType int
    // concrete shear capacity
    if (!ComputeVc(poi,pscd))
    {
-      GET_IFACE(IEAFStatusCenter,pStatusCenter);
+      EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
 
       std::_tstring msg =  std::_tstring(SEGMENT_LABEL(segmentKey)) + _T(": An error occurred while computing shear capacity");
       pgsGirderDescriptionStatusItem* pStatusItem =
@@ -246,8 +232,8 @@ void pgsShearCapacityEngineer::EvaluateStirrupRequirements(SHEARCAPACITYDETAILS*
    }
    else
    {
-      GET_IFACE(ILibrary, pLib);
-      GET_IFACE(ISpecification, pSpec);
+      EAF_GET_IFACE(ILibrary, pLib);
+      EAF_GET_IFACE(ISpecification, pSpec);
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
       const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
 
@@ -286,17 +272,17 @@ void pgsShearCapacityEngineer::TweakShearCapacityOutboardOfCriticalSection(const
 
 void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig,FPCDETAILS* pd) const
 {
-   GET_IFACE(IPretensionForce,pPsForce);
-   GET_IFACE(ISectionProperties,pSectProp);
-   GET_IFACE(IStrandGeometry,pStrandGeometry);
-   GET_IFACE(IProductForces,pProdForces);
+   EAF_GET_IFACE(IPretensionForce,pPsForce);
+   EAF_GET_IFACE(ISectionProperties,pSectProp);
+   EAF_GET_IFACE(IStrandGeometry,pStrandGeometry);
+   EAF_GET_IFACE(IProductForces,pProdForces);
 
    pgsTypes::BridgeAnalysisType bat = pProdForces->GetBridgeAnalysisType(pgsTypes::Maximize);
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
    CGirderKey girderKey(segmentKey);
 
-   GET_IFACE(IIntervals,pIntervals);
+   EAF_GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType noncompsiteIntervalIdx = pIntervals->GetLastNoncompositeInterval();
    IntervalIndexType finalIntervalIdx = pIntervals->GetIntervalCount() - 1;
@@ -308,9 +294,9 @@ void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const G
    Pps = pPsForce->GetHorizHarpedStrandForce(poi, finalIntervalIdx, pgsTypes::End, pConfig)
       + pPsForce->GetPrestressForce(poi, pgsTypes::Straight, finalIntervalIdx, pgsTypes::End,pgsTypes::TransferLengthType::Maximum, pConfig);
 
-   GET_IFACE_NOCHECK(IPosttensionForce,pPTForce); // only used if there are tendons
+   EAF_GET_IFACE_NOCHECK(IPosttensionForce,pPTForce); // only used if there are tendons
 
-   GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
+   EAF_GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
    Float64 PeSegment = 0;
    Float64 PptSegment = 0;
    IntervalIndexType stressTendonIntervalIdx = pIntervals->GetStressSegmentTendonInterval(segmentKey);
@@ -331,7 +317,7 @@ void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const G
    }
    Float64 eptSegment = (IsZero(PptSegment) ? 0 : PeSegment / PptSegment);
 
-   GET_IFACE(IGirderTendonGeometry,pGirderTendonGeometry);
+   EAF_GET_IFACE(IGirderTendonGeometry,pGirderTendonGeometry);
    Float64 PeGirder  = 0;
    Float64 PptGirder = 0;
    DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
@@ -363,7 +349,7 @@ void pgsShearCapacityEngineer::ComputeFpc(const pgsPointOfInterest& poi, const G
    Float64 c   = Ybg - Min(Hg,Ybc);
 
 
-   GET_IFACE(ICombinedForces,pCombinedForces);
+   EAF_GET_IFACE(ICombinedForces,pCombinedForces);
    Float64 Mg = pCombinedForces->GetMoment(noncompsiteIntervalIdx, lcDC, poi, bat, rtCumulative);
    Mg        += pCombinedForces->GetMoment(noncompsiteIntervalIdx, lcDW, poi, bat, rtCumulative);
 
@@ -393,12 +379,12 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
    // general information to get started with
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   GET_IFACE(ILimitStateForces,pLsForces);
-   GET_IFACE(ICombinedForces,pCombinedForces);
-   GET_IFACE(IGirder,pGdr);
-   GET_IFACE(ISectionProperties,pSectProp);
+   EAF_GET_IFACE(ILimitStateForces,pLsForces);
+   EAF_GET_IFACE(ICombinedForces,pCombinedForces);
+   EAF_GET_IFACE(IGirder,pGdr);
+   EAF_GET_IFACE(ISectionProperties,pSectProp);
 
-   GET_IFACE(ISpecification,pSpec);
+   EAF_GET_IFACE(ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
    // Applied forces
@@ -487,9 +473,9 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
    }
 
    // phi factor for shear
-   GET_IFACE(IResistanceFactors, pResistanceFactors);
-   GET_IFACE(IMaterials,         pMaterial);
-   GET_IFACE(IPointOfInterest,   pPoi);
+   EAF_GET_IFACE(IResistanceFactors, pResistanceFactors);
+   EAF_GET_IFACE(IMaterials,         pMaterial);
+   EAF_GET_IFACE(IPointOfInterest,   pPoi);
 
    CClosureKey closureKey;
    bool bIsInClosureJoint = pPoi->IsInClosureJoint(poi,&closureKey);
@@ -510,8 +496,8 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
    // material props
    if ( pConfig == nullptr )
    {
-      GET_IFACE(ILibrary, pLib);
-      GET_IFACE(ISpecification, pSpec);
+      EAF_GET_IFACE(ILibrary, pLib);
+      EAF_GET_IFACE(ISpecification, pSpec);
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
       const auto& limit_state_concrete_strength_criteria = pSpecEntry->GetLimitStateConcreteStrengthCriteria();
 
@@ -558,7 +544,7 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
    pscd->EptGirder = pGirderTendon->GetE();
 
    // stirrup properties
-   GET_IFACE(IStirrupGeometry,pStirrups);
+   EAF_GET_IFACE(IStirrupGeometry,pStirrups);
    Float64 Es, fy, fu;
    if ( bIsInClosureJoint )
    {
@@ -580,7 +566,7 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
    }
    else
    {
-      GET_IFACE(IBridge, pBridge);
+      EAF_GET_IFACE(IBridge, pBridge);
       Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
       Float64 location       = poi.GetDistFromStart();
       Float64 lft_supp_loc   = pBridge->GetSegmentStartEndDistance(segmentKey);
@@ -596,7 +582,7 @@ bool pgsShearCapacityEngineer::GetGeneralInformation(IntervalIndexType intervalI
    pscd->Alpha = pStirrups->GetAlpha(poi);
 
    // long rebar
-   GET_IFACE(ILongRebarGeometry,pLongRebarGeometry);
+   EAF_GET_IFACE(ILongRebarGeometry,pLongRebarGeometry);
 
    if ( bTensionOnBottom )
    {
@@ -636,19 +622,19 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   GET_IFACE(IPointOfInterest,pPoi);
+   EAF_GET_IFACE(IPointOfInterest,pPoi);
    CClosureKey closureKey;
    bool bIsInClosureJoint = pPoi->IsInClosureJoint(poi,&closureKey);
 
-   GET_IFACE(IPretensionForce,pPsForce);
-   GET_IFACE_NOCHECK(IPosttensionForce,pPTForce); // not used when design
-   GET_IFACE(IMomentCapacity,pMomentCapacity);
-   GET_IFACE(IStrandGeometry,pStrandGeometry);
-   GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
-   GET_IFACE(IGirderTendonGeometry, pGirderTendonGeometry);
-   GET_IFACE(IBridge,pBridge);
-   GET_IFACE(IGirder,pGdr);
-   GET_IFACE(ISectionProperties,pSectProps);
+   EAF_GET_IFACE(IPretensionForce,pPsForce);
+   EAF_GET_IFACE_NOCHECK(IPosttensionForce,pPTForce); // not used when design
+   EAF_GET_IFACE(IMomentCapacity,pMomentCapacity);
+   EAF_GET_IFACE(IStrandGeometry,pStrandGeometry);
+   EAF_GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
+   EAF_GET_IFACE(IGirderTendonGeometry, pGirderTendonGeometry);
+   EAF_GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE(IGirder,pGdr);
+   EAF_GET_IFACE(ISectionProperties,pSectProps);
 
    // vertical component of prestress force
    pscd->Vps = pPsForce->GetVertHarpedStrandForce(poi, intervalIdx, pgsTypes::End, pConfig);
@@ -663,7 +649,7 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
       pscd->VptSegment = 0;
       pscd->VptGirder = 0;
 #if defined _DEBUG
-      GET_IFACE(IDocumentType, pDocType);
+      EAF_GET_IFACE(IDocumentType, pDocType);
       ATLASSERT(pDocType->IsPGSuperDocument());
 #endif
    }
@@ -675,8 +661,8 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
    pscd->MomentArm = pCapdet->MomentArm;
    pscd->PhiMu     = pCapdet->Phi;
 
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
+   EAF_GET_IFACE(ILibrary,pLib);
+   EAF_GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
    bool bAfter1999 = ( WBFL::LRFD::BDSManager::Edition::SecondEditionWith2000Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false );
@@ -715,7 +701,7 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
       }
    }
 
-   GET_IFACE(IShearCapacity,pShearCapacity);
+   EAF_GET_IFACE(IShearCapacity,pShearCapacity);
    pscd->fpc = pShearCapacity->GetFpc(poi, pConfig);
    pscd->fpeps = pPsForce->GetEffectivePrestress(poi, pgsTypes::Permanent, intervalIdx, pgsTypes::End, pConfig);
 
@@ -801,7 +787,7 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
    }
 #endif
 
-   GET_IFACE(IMaterials,pMat);
+   EAF_GET_IFACE(IMaterials,pMat);
    pscd->ag = pMat->GetSegmentMaxAggrSize(segmentKey);
    pscd->sx = pscd->dv; // We don't have input for this, so use dv. Assume area provided is > 0.003bvsx
 
@@ -816,7 +802,7 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
       pMomentCapacity->GetCrackingMomentDetails(intervalIdx,poi,*pConfig,(pscd->bTensionBottom ? true : false),&mcr_details);
    }
 
-   GET_IFACE(IMaterials,pMaterial);
+   EAF_GET_IFACE(IMaterials,pMaterial);
 
    pscd->McrDetails = mcr_details;
    if ( pscd->bTensionBottom )
@@ -977,7 +963,7 @@ bool pgsShearCapacityEngineer::GetInformation(IntervalIndexType intervalIdx,pgsT
 
 bool pgsShearCapacityEngineer::ComputeVc(const pgsPointOfInterest& poi, SHEARCAPACITYDETAILS* pscd) const
 {
-   GET_IFACE(IMaterials, pMaterials);
+   EAF_GET_IFACE(IMaterials, pMaterials);
    if (pMaterials->GetSegmentConcreteType(poi.GetSegmentKey()) == pgsTypes::UHPC)
       return ComputeVuhpc(poi, pscd);
    else
@@ -1024,12 +1010,12 @@ bool pgsShearCapacityEngineer::ComputeVcc(const pgsPointOfInterest& poi, SHEARCA
    data.bLimitNetTensionStrainToPositiveValues = pscd->bLimitNetTensionStrainToPositiveValues;
    data.bIgnoreMiniumStirrupRequirementForBeta = pscd->bIgnoreMiniumStirrupRequirementForBeta;
 
-   GET_IFACE(IMaterials,pMaterials);
+   EAF_GET_IFACE(IMaterials,pMaterials);
    data.lambda = pMaterials->GetSegmentLambda(segmentKey);
 
 
-   GET_IFACE(ISpecification, pSpec);
-   GET_IFACE(ILibrary, pLib);
+   EAF_GET_IFACE(ISpecification, pSpec);
+   EAF_GET_IFACE(ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    auto shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
 
@@ -1069,7 +1055,7 @@ bool pgsShearCapacityEngineer::ComputeVcc(const pgsPointOfInterest& poi, SHEARCA
       {
          ATLASSERT(shear_capacity_criteria.CapacityMethod == pgsTypes::scmWSDOT2001);
 
-         GET_IFACE(IPointOfInterest,pPOI);
+         EAF_GET_IFACE(IPointOfInterest,pPOI);
          PoiList vPOI;
          pPOI->GetPointsOfInterest(segmentKey, POI_15H, &vPOI);
          ATLASSERT(vPOI.size() == 2);
@@ -1089,7 +1075,7 @@ bool pgsShearCapacityEngineer::ComputeVcc(const pgsPointOfInterest& poi, SHEARCA
       }
       else if (rxs.GetReasonCode()==WBFL::LRFD::XShear::Reason::MaxIterExceeded)
       {
-         GET_IFACE(IEAFStatusCenter,pStatusCenter);
+         EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
 
          std::_tstring msg(std::_tstring(SEGMENT_LABEL(segmentKey)) + _T(": Error computing shear capacity - could not converge on a solution"));
          pgsGirderDescriptionStatusItem* pStatusItem =
@@ -1165,9 +1151,9 @@ bool pgsShearCapacityEngineer::ComputeVcc(const pgsPointOfInterest& poi, SHEARCA
          Float64 Vc = -99999;
          if (pscd->ConcreteType == pgsTypes::PCI_UHPC)
          {
-            GET_IFACE(IIntervals, pIntervals);
+            EAF_GET_IFACE(IIntervals, pIntervals);
             IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-            GET_IFACE(IConcreteStressLimits, pLimits);
+            EAF_GET_IFACE(IConcreteStressLimits, pLimits);
             Float64 ft = pLimits->GetConcreteTensionStressLimit(poi, pgsTypes::BottomGirder, StressCheckTask(liveLoadIntervalIdx,pgsTypes::ServiceIII,pgsTypes::Tension), false, true);
             pscd->FiberStress = ft;
 
@@ -1288,9 +1274,9 @@ bool pgsShearCapacityEngineer::ComputeVuhpc(const pgsPointOfInterest& poi, SHEAR
    data.AvS = IsZero(pscd->S) ? 0 : pscd->Av / pscd->S;
    data.alpha = pscd->Alpha;
 
-   GET_IFACE(IIntervals, pIntervals);
+   EAF_GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
-   GET_IFACE(IMaterials, pMaterial);
+   EAF_GET_IFACE(IMaterials, pMaterial);
    Float64 ft = pMaterial->GetSegmentConcreteCrackLocalizationStrength(segmentKey);
    pscd->FiberStress = ft;
 
@@ -1313,7 +1299,7 @@ bool pgsShearCapacityEngineer::ComputeVuhpc(const pgsPointOfInterest& poi, SHEAR
    if (WBFL::LRFD::UHPCShear::ComputeShearResistanceParameters(&data))
    {
       // compute nominal capacity
-      GET_IFACE(IConcreteStressLimits, pLimits);
+      EAF_GET_IFACE(IConcreteStressLimits, pLimits);
       Float64 gamma_u = pLimits->GetUHPCTensionStressLimitCoefficient(poi.GetSegmentKey());
       Float64 theta = WBFL::Units::ConvertFromSysUnits(data.Theta, WBFL::Units::Measure::Radian); // need angle in radians
       Float64 cot_theta = 1 / tan(theta);
@@ -1341,8 +1327,8 @@ bool pgsShearCapacityEngineer::ComputeVuhpc(const pgsPointOfInterest& poi, SHEAR
 
 bool pgsShearCapacityEngineer::ComputeVs(const pgsPointOfInterest& poi, SHEARCAPACITYDETAILS* pscd) const
 {
-   GET_IFACE(ISpecification, pSpec);
-   GET_IFACE(ILibrary, pLib);
+   EAF_GET_IFACE(ISpecification, pSpec);
+   EAF_GET_IFACE(ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
 
@@ -1376,7 +1362,7 @@ bool pgsShearCapacityEngineer::ComputeVs(const pgsPointOfInterest& poi, SHEARCAP
          Float64 sqrt_fc;
          if ( WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition() )
          {
-            GET_IFACE(IMaterials,pMaterials);
+            EAF_GET_IFACE(IMaterials,pMaterials);
             Float64 lambda = pMaterials->GetSegmentLambda(poi.GetSegmentKey());
             sqrt_fc = lambda * sqrt(fc);
          }
@@ -1435,13 +1421,13 @@ bool pgsShearCapacityEngineer::ComputeVs(const pgsPointOfInterest& poi, SHEARCAP
       // Find largest duct in section to use for the deduction factor
       Float64 duct_diameter = 0;
 
-      GET_IFACE(IPointOfInterest, pPoi);
+      EAF_GET_IFACE(IPointOfInterest, pPoi);
       // Check segment ducts
       if (pPoi->IsOnSegment(poi))
       {
          const CSegmentKey& segmentKey(poi.GetSegmentKey());
          // need to make sure poi is in segment (could be in closure)
-         GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
+         EAF_GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
          DuctIndexType nSegmentDucts = pSegmentTendonGeometry->GetDuctCount(segmentKey);
          if (pSegmentTendonGeometry->IsOnDuct(poi))
          {
@@ -1456,7 +1442,7 @@ bool pgsShearCapacityEngineer::ComputeVs(const pgsPointOfInterest& poi, SHEARCAP
       if (pPoi->IsOnGirder(poi))
       {
          const CGirderKey& girderKey(poi.GetSegmentKey());
-         GET_IFACE(IGirderTendonGeometry, pGirderTendonGeometry);
+         EAF_GET_IFACE(IGirderTendonGeometry, pGirderTendonGeometry);
          DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
          for (DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++)
          {
@@ -1491,8 +1477,8 @@ void pgsShearCapacityEngineer::ComputeVsReqd(const pgsPointOfInterest& poi, SHEA
 {
    Float64 AvOverS = 0;
 
-   GET_IFACE(ISpecification, pSpec);
-   GET_IFACE(ILibrary, pLib);
+   EAF_GET_IFACE(ISpecification, pSpec);
+   EAF_GET_IFACE(ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
    const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
 

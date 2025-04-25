@@ -429,6 +429,7 @@
     <ClInclude Include="..\Include\Reporting\CopyTempSupportPropertiesReportSpecificationBuilder.h" />
     <ClInclude Include="..\Include\Reporting\CrackedSectionChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\CrackedSectionDetailsChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\CrackedSectionReportSpecification.h" />
     <ClInclude Include="..\Include\Reporting\CrackedSectionReportSpecificationBuilder.h" />
     <ClInclude Include="..\Include\Reporting\CreepCoefficientChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\CritSectionChapterBuilder.h" />
@@ -571,7 +572,6 @@
     <ClInclude Include="..\Include\Reporting\VehicularLoadResultsTable.h" />
     <ClInclude Include="..\Include\SharedCtrls\MultiGirderSelectGrid.h" />
     <ClInclude Include="BearingTimeStepDetailsDlg.h" />
-    <ClInclude Include="CrackedSectionReportSpecification.h" />
     <ClInclude Include="EquilibriumCheckDlg.h" />
     <ClInclude Include="InitialStrainAnalysisDlg.h" />
     <ClInclude Include="MultiViewReportDlg.h" />

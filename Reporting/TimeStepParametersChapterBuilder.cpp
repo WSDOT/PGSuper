@@ -37,11 +37,6 @@
 #include <PgsExt\TimelineEvent.h>
 #include <PgsExt\CastDeckActivity.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // When defined, the computation details for initial strains are reported
 // This is the summation part of Tadros 1977 Eqns 3 and 4.
@@ -78,29 +73,28 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(const std::shared_ptr<const
 
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
 
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
-   GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       *pPara << color(Red) << _T("Time Step analysis results not available.") << color(Black) << rptNewLine;
       return pChapter;
    }
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
-   GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   GET_IFACE2(pBroker,ILosses,pLosses);
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   GET_IFACE2(pBroker,IMaterials,pMaterials);
-   GET_IFACE2(pBroker,ILongRebarGeometry,pRebarGeom);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   EAF_GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(pBroker,ILosses,pLosses);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IMaterials,pMaterials);
+   EAF_GET_IFACE2(pBroker,ILongRebarGeometry,pRebarGeom);
 
 #if !defined LUMP_STRANDS
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 #endif
 
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
@@ -119,7 +113,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(const std::shared_ptr<const
    INIT_UV_PROTOTYPE(rptLengthUnitValue,    length,     pDisplayUnits->GetSpanLengthUnit(),      false);
    INIT_UV_PROTOTYPE(rptLengthUnitValue,    deflection, pDisplayUnits->GetDeflectionUnit(),      false);
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    ///////////////////////////////////////////////////////////////////////////////////
@@ -127,7 +121,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(const std::shared_ptr<const
    ///////////////////////////////////////////////////////////////////////////////////
 
    // Report Concrete Parameters
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
@@ -287,7 +281,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(const std::shared_ptr<const
    (*pPara) << _T("Deck") << rptNewLine;
 
 
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    EventIndexType castDeckEventIdx = pIBridgeDesc->GetCastDeckEventIndex();
    const auto* pTimelineEvent = pIBridgeDesc->GetEventByIndex(castDeckEventIdx);
    const auto& castDeckActivity = pTimelineEvent->GetCastDeckActivity();
@@ -664,7 +658,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(const std::shared_ptr<const
 
          // summation of externally applied loads
 #if defined REPORT_PRODUCT_LOAD_DETAILS
-         GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+         EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
 #endif //REPORT_PRODUCT_LOAD_DETAILS
          Float64 dP = 0;
          Float64 dM = 0;

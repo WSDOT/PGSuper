@@ -30,63 +30,25 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CUserRotationTable
-****************************************************************************/
 
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-CUserRotationTable::CUserRotationTable()
-{
-}
-
-CUserRotationTable::CUserRotationTable(const CUserRotationTable& rOther)
-{
-   MakeCopy(rOther);
-}
-
-CUserRotationTable::~CUserRotationTable()
-{
-}
-
-//======================== OPERATORS  =======================================
-CUserRotationTable& CUserRotationTable::operator= (const CUserRotationTable& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
-//======================== OPERATIONS =======================================
-rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,IntervalIndexType intervalIdx,
-                                      IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CUserRotationTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,IntervalIndexType intervalIdx,
+                                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptAngleUnitValue, rotation, pDisplayUnits->GetRadAngleUnit(), false );
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetFirstCompositeDeckInterval();
 
    CString strTitle;
    strTitle.Format(_T("Rotations due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx).c_str());
    rptRcTable* p_table = CreateUserLoadHeading<rptAngleUnitTag,WBFL::Units::AngleData>(strTitle.GetBuffer(),true,analysisType,intervalIdx,pDisplayUnits,pDisplayUnits->GetRadAngleUnit());
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IProductForces,pProdForces);
-   GET_IFACE2(pBroker,IPointOfInterest,pPOI);
-   GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IProductForces,pProdForces);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPOI);
+   EAF_GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
@@ -201,32 +163,3 @@ rptRcTable* CUserRotationTable::Build(IBroker* pBroker,const CGirderKey& girderK
 
    return p_table;
 }
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-void CUserRotationTable::MakeCopy(const CUserRotationTable& rOther)
-{
-   // Add copy code here...
-}
-
-void CUserRotationTable::MakeAssignment(const CUserRotationTable& rOther)
-{
-   MakeCopy( rOther );
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

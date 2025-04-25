@@ -28,11 +28,6 @@
 
 #include <PgsExt\StrandData.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -62,11 +57,11 @@ CStrandLocations& CStrandLocations::operator= (const CStrandLocations& rOther)
    return *this;
 }
 
-void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,
-                                IEAFDisplayUnits* pDisplayUnits) const
+void CStrandLocations::Build(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,
+                                std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
 
    Float64 Lg = pBridge->GetSegmentLength(segmentKey);
 
@@ -155,7 +150,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
          (*p_table)(0, col++) << _T("Extended") << rptNewLine << _T("Right End");
       }
 
-      GET_IFACE2(pBroker,IPointOfInterest, pPoi);
+      EAF_GET_IFACE2(pBroker,IPointOfInterest, pPoi);
       PoiList vPoi;
       pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE, &vPoi);
       ATLASSERT(vPoi.size() == 2);
@@ -266,7 +261,7 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
          (*p_table)(0, col++) << COLHDR(_T("Debonded from") << rptNewLine << _T("Right End"), rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
       }
 
-      GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+      EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
       PoiList vPoi;
       pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE, &vPoi);
       ATLASSERT(vPoi.size() == 2);
@@ -318,10 +313,10 @@ void CStrandLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmen
    }
 
    // Harped strands
-   GET_IFACE2(pBroker,IGirder,pGirder);
+   EAF_GET_IFACE2(pBroker,IGirder,pGirder);
    bool bSymmetric = pGirder->IsSymmetricSegment(segmentKey);
 
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    PoiList vPoi;
 
    bool areHarpedStraight = pStrandGeometry->GetAreHarpedStrandsForcedStraight(segmentKey);

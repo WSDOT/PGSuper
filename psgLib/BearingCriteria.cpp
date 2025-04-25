@@ -71,7 +71,7 @@ bool BearingCriteria::Compare(const BearingCriteria& other, const SpecLibraryEnt
    return bSame;
 }
 
-void BearingCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void BearingCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;

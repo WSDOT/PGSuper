@@ -57,7 +57,7 @@ bool PrincipalTensionStressCriteria::Compare(const PrincipalTensionStressCriteri
    return bSame;
 }
 
-void PrincipalTensionStressCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void PrincipalTensionStressCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptSqrtPressureValue, tension_coeff, pDisplayUnits->GetTensionCoefficientUnit(), false);
    INIT_UV_PROTOTYPE(rptPressureSectionValue, stress, pDisplayUnits->GetStressUnit(), false);

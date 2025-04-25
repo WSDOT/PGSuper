@@ -26,15 +26,12 @@
 #include <IFace\Bridge.h>
 #include <sstream>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+
+#pragma Reminder("WORKING HERE - Removing COM - a lot of this is independent of report, and is used in EngAgent, so it needs to be moved to a more generic location such as PsgExt")
 
 // MISCELLANEOUS
 //
-bool DoDoReportAtPier(IntervalIndexType intervalIdx,PierIndexType pierIdx,const CGirderKey& girderKey, IBearingDesign* pointer)
+bool DoDoReportAtPier(IntervalIndexType intervalIdx,PierIndexType pierIdx,const CGirderKey& girderKey, std::shared_ptr<IBearingDesign> pointer)
 {
    std::vector<PierIndexType> vPiers = pointer->GetBearingReactionPiers(intervalIdx,girderKey);
    std::vector<PierIndexType>::iterator found = std::find(vPiers.begin(),vPiers.end(),pierIdx);
@@ -72,7 +69,7 @@ ReactionLocation MakeReactionLocation(PierIndexType pierIdx, PierIndexType nPier
 }
 
 ReactionLocationContainer CmbLsBearingDesignReactionAdapter::GetBearingReactionLocations(IntervalIndexType intervalIdx,const CGirderKey& girderKey, 
-                                                      IBridge* pBridge, IBearingDesign* pBearing)
+                                                      std::shared_ptr<IBridge> pBridge, std::shared_ptr<IBearingDesign> pBearing)
 {
    ReactionLocationContainer container;
 
@@ -110,7 +107,7 @@ ReactionLocationContainer CmbLsBearingDesignReactionAdapter::GetBearingReactionL
    return container;
 }
 
-ReactionLocationContainer GetPierReactionLocations(const CGirderKey& girderKey, IBridge* pBridge)
+ReactionLocationContainer GetPierReactionLocations(const CGirderKey& girderKey, std::shared_ptr<IBridge> pBridge)
 {
    ReactionLocationContainer container;
 
@@ -184,9 +181,10 @@ CLASS
    ProductForcesReactionAdapter
 ****************************************************************************/
 
-ProductForcesReactionAdapter::ProductForcesReactionAdapter(IReactions* pReactions,const CGirderKey& girderKey):
+ProductForcesReactionAdapter::ProductForcesReactionAdapter(std::shared_ptr<IReactions> pReactions,const CGirderKey& girderKey):
 m_pReactions(pReactions), m_GirderKey(girderKey)
 {
+#pragma Reminder("WORKING HERE - Removing COM - holding an interface creates cirucular references")
 }
 
 ProductForcesReactionAdapter::~ProductForcesReactionAdapter()
@@ -194,7 +192,7 @@ ProductForcesReactionAdapter::~ProductForcesReactionAdapter()
    m_Locations.clear();
 }
 
-ReactionLocationIter ProductForcesReactionAdapter::GetReactionLocations(IBridge* pBridge)
+ReactionLocationIter ProductForcesReactionAdapter::GetReactionLocations(std::shared_ptr<IBridge> pBridge)
 {
    if (m_Locations.empty())
    {
@@ -228,11 +226,12 @@ void ProductForcesReactionAdapter::GetLiveLoadReaction(IntervalIndexType interva
 CLASS
    BearingDesignProductReactionAdapter
 ****************************************************************************/
-BearingDesignProductReactionAdapter::BearingDesignProductReactionAdapter(IBearingDesign* pForces, IntervalIndexType intervalIdx, const CGirderKey& girderKey):
+BearingDesignProductReactionAdapter::BearingDesignProductReactionAdapter(std::shared_ptr<IBearingDesign> pForces, IntervalIndexType intervalIdx, const CGirderKey& girderKey):
    m_pBearingDesign(pForces),
    m_GirderKey(girderKey),
    m_IntervalIdx(intervalIdx)
 {
+#pragma Reminder("WORKING HERE - Removing COM - caching interface pointer leads to circular references")
 }
 
 BearingDesignProductReactionAdapter::~BearingDesignProductReactionAdapter()
@@ -240,7 +239,7 @@ BearingDesignProductReactionAdapter::~BearingDesignProductReactionAdapter()
    m_Locations.clear();
 }
 
-ReactionLocationIter BearingDesignProductReactionAdapter::GetReactionLocations(IBridge* pBridge)
+ReactionLocationIter BearingDesignProductReactionAdapter::GetReactionLocations(std::shared_ptr<IBridge> pBridge)
 {
    m_Locations = CmbLsBearingDesignReactionAdapter::GetBearingReactionLocations(m_IntervalIdx, m_GirderKey, pBridge, m_pBearingDesign);
 
@@ -269,7 +268,8 @@ void BearingDesignProductReactionAdapter::GetLiveLoadReaction(IntervalIndexType 
 // class CmbLsBearingDesignReactionAdapter
 /////////////////////////////////////////////
 
-CombinedLsForcesReactionAdapter::CombinedLsForcesReactionAdapter(IReactions* pReactions, ILimitStateForces* pForces, const CGirderKey& girderKey):
+#pragma Reminder("WORKING HERE - Removing COM - caching interface pointer creates circular references")
+CombinedLsForcesReactionAdapter::CombinedLsForcesReactionAdapter(std::shared_ptr<IReactions> pReactions, std::shared_ptr<ILimitStateForces> pForces, const CGirderKey& girderKey):
    m_pReactions(pReactions), m_LsPointer(pForces), m_GirderKey(girderKey)
 {;}
 
@@ -278,7 +278,7 @@ CombinedLsForcesReactionAdapter::~CombinedLsForcesReactionAdapter()
    m_Locations.clear();
 }
 
-ReactionLocationIter CombinedLsForcesReactionAdapter::GetReactionLocations(IBridge* pBridge)
+ReactionLocationIter CombinedLsForcesReactionAdapter::GetReactionLocations(std::shared_ptr<IBridge> pBridge)
 {
    if (m_Locations.empty())
    {
@@ -306,11 +306,12 @@ void CombinedLsForcesReactionAdapter::GetCombinedLiveLoadReaction(IntervalIndexT
 /////////////////////////////////////////////
 // class CmbLsBearingDesignReactionAdapter
 /////////////////////////////////////////////
-CmbLsBearingDesignReactionAdapter::CmbLsBearingDesignReactionAdapter(IBearingDesign* pForces, IntervalIndexType intervalIdx, const CGirderKey& girderKey):
+CmbLsBearingDesignReactionAdapter::CmbLsBearingDesignReactionAdapter(std::shared_ptr<IBearingDesign> pForces, IntervalIndexType intervalIdx, const CGirderKey& girderKey):
    m_pBearingDesign(pForces),
    m_IntervalIdx(intervalIdx),
    m_GirderKey(girderKey)
 {
+#pragma Reminder("WORKING HERE - Removing COM - caching interface pointer leads to circular references")
 }
 
 CmbLsBearingDesignReactionAdapter::~CmbLsBearingDesignReactionAdapter()
@@ -318,7 +319,7 @@ CmbLsBearingDesignReactionAdapter::~CmbLsBearingDesignReactionAdapter()
    m_Locations.clear();
 }
 
-ReactionLocationIter CmbLsBearingDesignReactionAdapter::GetReactionLocations(IBridge* pBridge)
+ReactionLocationIter CmbLsBearingDesignReactionAdapter::GetReactionLocations(std::shared_ptr<IBridge> pBridge)
 {
    m_Locations = GetBearingReactionLocations(m_IntervalIdx, m_GirderKey, pBridge, m_pBearingDesign);
 

@@ -26,13 +26,7 @@
 #include <Reporting\CrackedSectionReportSpecification.h>
 #include <IFace\PointOfInterest.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-CCrackedSectionReportSpecification::CCrackedSectionReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,const pgsPointOfInterest& poi,bool bPositiveMoment) :
+CCrackedSectionReportSpecification::CCrackedSectionReportSpecification(const std::_tstring& strReportName, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& poi, bool bPositiveMoment) :
    CPoiReportSpecification(strReportName,pBroker,poi)
 {
    m_bPositiveMoment = bPositiveMoment;
@@ -64,7 +58,7 @@ bool CCrackedSectionReportSpecification::IsValid() const
    {
       // next check if POI is in a valid range 
       // Note that this range needs to match the segments listed in CSelectCrackedSectionDlg::UpdatePOI
-      GET_IFACE(IPointOfInterest, pPoi);
+      EAF_GET_IFACE2(GetBroker(),IPointOfInterest, pPoi);
       const CSegmentKey& segmentKey = m_Poi.GetSegmentKey();
 
       PoiList vPoi = GetCrackedSectionPois(pPoi, segmentKey);

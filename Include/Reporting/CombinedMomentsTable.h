@@ -20,17 +20,15 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_COMBINEDMOMENTSTABLE_H_
-#define INCLUDED_COMBINEDMOMENTSTABLE_H_
+#pragma once
 
 #include <Reporting\ReportingExp.h>
 #include <Reporting\ReportNotes.h>
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
 
-interface IBroker;
 interface IProductLoads;
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 interface ILiveLoads;
 interface IIntervals;
 interface IPointOfInterest;
@@ -52,85 +50,41 @@ LOG
 class REPORTINGCLASS CCombinedMomentsTable
 {
 public:
-   // GROUP: LIFECYCLE
+   CCombinedMomentsTable() = default;
 
-   //------------------------------------------------------------------------
-   // Default constructor
-   CCombinedMomentsTable();
-
-   //------------------------------------------------------------------------
-   // Copy constructor
-   CCombinedMomentsTable(const CCombinedMomentsTable& rOther);
-
-   //------------------------------------------------------------------------
-   // Destructor
-   virtual ~CCombinedMomentsTable();
-
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
-   CCombinedMomentsTable& operator = (const CCombinedMomentsTable& rOther);
-
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
    // Builds the combined results table
    // bDesign and bRating are only considered for intervalIdx = live load interval index
-   virtual void Build(IBroker* pBroker, rptChapter* pChapter,
+   virtual void Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                       const CGirderKey& girderKey,
-                      IEAFDisplayUnits* pDisplayUnits,
+                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                       IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType,
                       bool bDesign,bool bRating) const;
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 
 protected:
-   void BuildCombinedDeadTable(IBroker* pBroker, rptChapter* pChapter,
+   void BuildCombinedDeadTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                       const CGirderKey& girderKey,
-                      IEAFDisplayUnits* pDisplayUnits,
+                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                       IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType,
                       bool bDesign,bool bRating) const;
 
-   void BuildCombinedLiveTable(IBroker* pBroker, rptChapter* pChapter,
+   void BuildCombinedLiveTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                       const CGirderKey& girderKey,
-                      IEAFDisplayUnits* pDisplayUnits,
+                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                       pgsTypes::AnalysisType analysisType,
                       bool bDesign,bool bRating) const;
 
-   void BuildLimitStateTable(IBroker* pBroker, rptChapter* pChapter,
+   void BuildLimitStateTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                       const CGirderKey& girderKey,
-                      IEAFDisplayUnits* pDisplayUnits,IntervalIndexType intervalIdx,
+                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,IntervalIndexType intervalIdx,
                       pgsTypes::AnalysisType analysisType,
                       bool bDesign,bool bRating) const;
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   //------------------------------------------------------------------------
-   void MakeCopy(const CCombinedMomentsTable& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const CCombinedMomentsTable& rOther);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
 
-void GetCombinedResultsPoi(IBroker* pBroker,const CGirderKey& girderKey,IntervalIndexType intervalIdx,bool bMoment,PoiList* pPoi,PoiAttributeType* pRefAttribute);
+void GetCombinedResultsPoi(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,IntervalIndexType intervalIdx,bool bMoment,PoiList* pPoi,PoiAttributeType* pRefAttribute);
 
 
-// INLINE METHODS
-//
 template <class M,class T>
-RowIndexType CreateLimitStateTableHeading(rptRcTable** ppTable,LPCTSTR strLabel,bool bPierTable,bool bDesign,bool bPermit,bool bRating,bool bMoment,pgsTypes::AnalysisType analysisType,IRatingSpecification* pRatingSpec,IEAFDisplayUnits* pDisplayUnits,const T& unitT)
+RowIndexType CreateLimitStateTableHeading(rptRcTable** ppTable,LPCTSTR strLabel,bool bPierTable,bool bDesign,bool bPermit,bool bRating,bool bMoment,pgsTypes::AnalysisType analysisType,IRatingSpecification* pRatingSpec,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const T& unitT)
 {
    // number of columns
    ColumnIndexType nDesignCols = 0;
@@ -622,12 +576,12 @@ RowIndexType CreateLimitStateTableHeading(rptRcTable** ppTable,LPCTSTR strLabel,
 }
 
 template <class M,class T>
-RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,IBroker* pBroker,LPCTSTR strLabel,bool bPierTable, bool bRating,bool doLimitState,
+RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,std::shared_ptr<WBFL::EAF::Broker> pBroker,LPCTSTR strLabel,bool bPierTable, bool bRating,bool doLimitState,
                                                pgsTypes::AnalysisType analysisType,
-                                               IEAFDisplayUnits* pDisplayUnits,const T& unitT)
+                                               std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const T& unitT)
 {
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
    bool bTimeStepMethod = prestress_loss_criteria.LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP;
@@ -811,7 +765,7 @@ template <class M,class T>
 RowIndexType CreateCombinedLiveLoadingTableHeading(rptRcTable** ppTable,LPCTSTR strLabel,bool bPierTable,bool bDesign,bool bPermit,
                                                    bool bPedLoading,bool bRating,bool is4Stress, bool includeImpact,
                                                    pgsTypes::AnalysisType analysisType,IRatingSpecification* pRatingSpec,
-                                                   IEAFDisplayUnits* pDisplayUnits,const T& unitT)
+                                                   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const T& unitT)
 {
    ATLASSERT( !(bDesign && bRating) ); // These are different tables - must create separately
 
@@ -1195,9 +1149,3 @@ inline void SumPedAndLiveLoad(ILiveLoads::PedestrianLoadApplicationType appType,
       }
    }
 }
-
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_COMBINEDMOMENTSTABLE_H_

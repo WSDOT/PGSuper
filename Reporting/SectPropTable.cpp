@@ -28,17 +28,12 @@
 #include <IFace\Intervals.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
-rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& segmentKey,bool bComposite,
-                                           IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CSectionPropertiesTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,bool bComposite,
+                                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType constructionIntervalIdx        = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
    IntervalIndexType lastTendonStressingIntervalIdx = pIntervals->GetLastGirderTendonStressingInterval(segmentKey);
@@ -47,8 +42,8 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
    // when requesting them, otherwise we get properties for the current properties type mode
    pgsTypes::SectionPropertyType spType = pgsTypes::sptGross;
 
-   GET_IFACE2(pBroker, ISectionProperties, pSectProp);
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, ISectionProperties, pSectProp);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
 
    bool bHasDeck = IsStructuralDeck(pBridge->GetDeckType());
    bool bAsymmetricGirders = pBridge->HasAsymmetricGirders();
@@ -90,7 +85,7 @@ rptRcTable* CSectionPropertiesTable::Build(IBroker* pBroker,const CSegmentKey& s
    INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, force_per_length, pDisplayUnits->GetForcePerLengthUnit(), false );
 
    // The section is prismatic so any poi will do
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    PoiList vPoi;
    pPoi->GetPointsOfInterest(segmentKey, POI_5L | POI_ERECTED_SEGMENT, &vPoi);
    ATLASSERT(vPoi.size() == 1);

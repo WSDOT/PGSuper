@@ -34,11 +34,6 @@
 #include <psgLib/CreepCriteria.h>
 #include <psgLib/SpecificationCriteria.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -64,13 +59,12 @@ LPCTSTR CLRFDCreepCoefficientChapterBuilder::GetName() const
 rptChapter* CLRFDCreepCoefficientChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,ISegmentData,pSegmentData);
 
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
 
@@ -134,21 +128,21 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLRFDCreepCoefficientChapterBui
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
 
-rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,
-                                                   IEAFDisplayUnits* pDisplayUnits,
+rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,
+                                                   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                                    Uint16 level) const
 {
    rptParagraph* pPara = new rptParagraph;
 
-   GET_IFACE2(pBroker,ICamber,pCamber);
+   EAF_GET_IFACE2(pBroker,ICamber,pCamber);
 
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
    const auto& creep_criteria = pSpecEntry->GetCreepCriteria();
 
-   GET_IFACE2(pBroker, ISegmentData, pSegmentData);
+   EAF_GET_IFACE2(pBroker, ISegmentData, pSegmentData);
 
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time, pDisplayUnits->GetWholeDaysUnit(), true );
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetWholeDaysUnit(), false );
@@ -334,21 +328,21 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(const s
    return pPara;
 }
 
-rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,
-                                                       IEAFDisplayUnits* pDisplayUnits,
+rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,
+                                                       std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                                        Uint16 level) const
 {
    rptParagraph* pPara = new rptParagraph;
 
-   GET_IFACE2(pBroker,ICamber,pCamber);
+   EAF_GET_IFACE2(pBroker,ICamber,pCamber);
 
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
    const auto& creep_criteria = pSpecEntry->GetCreepCriteria();
 
-   GET_IFACE2(pBroker, ISegmentData, pSegmentData);
+   EAF_GET_IFACE2(pBroker, ISegmentData, pSegmentData);
 
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time, pDisplayUnits->GetWholeDaysUnit(), true );
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetWholeDaysUnit(), false );
@@ -532,35 +526,35 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(const std::shared_p
    return pPara;
 }
 
-rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_SIP_TempStrands(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,
-                                                                   IEAFDisplayUnits* pDisplayUnits,
+rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_SIP_TempStrands(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,
+                                                                   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                                                    Uint16 level) const
 {
    return Build_CIP_TempStrands(pRptSpec, pBroker, segmentKey, pDisplayUnits, level);
 }
 
-rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_SIP(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,
-                                                       IEAFDisplayUnits* pDisplayUnits,
+rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_SIP(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,
+                                                       std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                                        Uint16 level) const
 {
    return Build_SIP_TempStrands(pRptSpec, pBroker, segmentKey, pDisplayUnits, level);
 }
 
-rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,
-                                                                      IEAFDisplayUnits* pDisplayUnits,
+rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,
+                                                                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                                                       Uint16 level) const
 {
    rptParagraph* pPara = new rptParagraph;
 
-   GET_IFACE2(pBroker,ICamber,pCamber);
+   EAF_GET_IFACE2(pBroker,ICamber,pCamber);
 
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
    const auto& creep_criteria = pSpecEntry->GetCreepCriteria();
 
-   GET_IFACE2(pBroker, ISegmentData, pSegmentData);
+   EAF_GET_IFACE2(pBroker, ISegmentData, pSegmentData);
 
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time, pDisplayUnits->GetWholeDaysUnit(), true );
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetWholeDaysUnit(), false );
@@ -930,8 +924,8 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(cons
    return pPara;
 }
 
-rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,IBroker* pBroker,const CSegmentKey& segmentKey,
-                                                          IEAFDisplayUnits* pDisplayUnits,
+rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,
+                                                          std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                                           Uint16 level) const
 {
    return Build_NoDeck_TempStrands(pRptSpec, pBroker, segmentKey, pDisplayUnits, level);

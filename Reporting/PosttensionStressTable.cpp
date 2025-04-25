@@ -34,8 +34,8 @@
 #include <IFace\Limits.h>
 #include <IFace\ReportOptions.h>
 
-rptRcTable* CPosttensionStressTable::Build(IBroker* pBroker,const CGirderKey& girderKey,
-                                            bool bDesign,IEAFDisplayUnits* pDisplayUnits,bool bGirderStresses) const
+rptRcTable* CPosttensionStressTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,
+                                            bool bDesign,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,bool bGirderStresses) const
 {
    pgsTypes::StressLocation topLocation = (bGirderStresses ? pgsTypes::TopGirder    : pgsTypes::TopDeck);
    pgsTypes::StressLocation botLocation = (bGirderStresses ? pgsTypes::BottomGirder : pgsTypes::BottomDeck);
@@ -43,13 +43,13 @@ rptRcTable* CPosttensionStressTable::Build(IBroker* pBroker,const CGirderKey& gi
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
-   GET_IFACE2(pBroker, IStressCheck, pStressCheck);
+   EAF_GET_IFACE2(pBroker, IStressCheck, pStressCheck);
    std::vector<IntervalIndexType> vIntervals(pStressCheck->GetStressCheckIntervals(girderKey));
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
    IntervalIndexType loadRatingIntervalIdx           = pIntervals->GetLoadRatingInterval();
    IntervalIndexType firstTendonStressingIntervalIdx = pIntervals->GetFirstGirderTendonStressingInterval(girderKey);
@@ -119,11 +119,11 @@ rptRcTable* CPosttensionStressTable::Build(IBroker* pBroker,const CGirderKey& gi
    }
 
    // Get the interface pointers we need
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    PoiList vPoi;
    pIPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), POI_SPAN, &vPoi);
 
-   GET_IFACE2(pBroker,IProductForces,pProductForces);
+   EAF_GET_IFACE2(pBroker,IProductForces,pProductForces);
    pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
 
    // Fill up the table

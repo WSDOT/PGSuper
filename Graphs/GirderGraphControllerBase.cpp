@@ -38,11 +38,6 @@
 
 #include <PgsExt\BridgeDescription2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 IMPLEMENT_DYNAMIC(CGirderGraphControllerBase,CEAFGraphControlWindow)
 
@@ -65,14 +60,14 @@ BOOL CGirderGraphControllerBase::OnInitDialog()
 {
    CEAFGraphControlWindow::OnInitDialog();
 
-   EAFGetBroker(&m_pBroker);
+   m_pBroker = EAFGetBroker();
 
    // Fill group and girder combo boxes
    FillGroupCtrl();
    FillGirderCtrl();
 
    // Set initial value based on the current selection
-   GET_IFACE(ISelection,pSelection);
+   EAF_GET_IFACE(ISelection,pSelection);
    CSelection selection = pSelection->GetSelection();
 
    CComboBox* pcbGroup  = (CComboBox*)GetDlgItem(IDC_GROUP);
@@ -254,7 +249,7 @@ void CGirderGraphControllerBase::FillGroupCtrl()
 
    pcbGroup->ResetContent();
 
-   GET_IFACE(IDocumentType,pDocType);
+   EAF_GET_IFACE(IDocumentType,pDocType);
    bool isPGSuper = pDocType->IsPGSuperDocument();
    CString strGroupLabel( isPGSuper ? _T("Span") : _T("Group"));
 
@@ -267,7 +262,7 @@ void CGirderGraphControllerBase::FillGroupCtrl()
       pcbGroup->SetItemData(idx,ALL_GROUPS);
    }
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
@@ -308,7 +303,7 @@ void CGirderGraphControllerBase::FillGirderCtrl()
 
    int curSel = pcbGirder->GetCurSel();
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    GirderIndexType nGirders = 0;
@@ -468,13 +463,13 @@ void CIntervalGirderGraphControllerBase::OnIntervalChanged()
 
 IntervalIndexType CIntervalGirderGraphControllerBase::GetFirstInterval()
 {
-   GET_IFACE(IIntervals, pIntervals);
+   EAF_GET_IFACE(IIntervals, pIntervals);
    return pIntervals->GetFirstPrestressReleaseInterval(GetGirderKey());
 }
 
 IntervalIndexType CIntervalGirderGraphControllerBase::GetLastInterval()
 {
-   GET_IFACE(IIntervals, pIntervals);
+   EAF_GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    return nIntervals - 1;
 }
@@ -497,7 +492,7 @@ void CIntervalGirderGraphControllerBase::FillIntervalCtrl()
 
    pcbIntervals->ResetContent();
 
-   GET_IFACE(IIntervals, pIntervals);
+   EAF_GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType firstIntervalIdx = GetFirstInterval();
    IntervalIndexType lastIntervalIdx = GetLastInterval();
    for (IntervalIndexType intervalIdx = firstIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++)
@@ -657,7 +652,7 @@ void CMultiIntervalGirderGraphControllerBase::FillIntervalCtrl()
 
    CGirderKey girderKey(GetGirderKey());
 
-   GET_IFACE(IIntervals,pIntervals);
+   EAF_GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType firstIntervalIdx = GetFirstInterval();
    IntervalIndexType lastIntervalIdx  = GetLastInterval();
    for ( IntervalIndexType intervalIdx = firstIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++ )
@@ -682,13 +677,13 @@ void CMultiIntervalGirderGraphControllerBase::FillIntervalCtrl()
 
 IntervalIndexType CMultiIntervalGirderGraphControllerBase::GetFirstInterval()
 {
-   GET_IFACE(IIntervals, pIntervals);
+   EAF_GET_IFACE(IIntervals, pIntervals);
    return pIntervals->GetFirstPrestressReleaseInterval(GetGirderKey());
 }
 
 IntervalIndexType CMultiIntervalGirderGraphControllerBase::GetLastInterval()
 {
-   GET_IFACE(IIntervals,pIntervals);
+   EAF_GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    return nIntervals-1;
 }

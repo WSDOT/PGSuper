@@ -32,11 +32,6 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CTogaSectionCutDlgEx dialog
@@ -81,9 +76,8 @@ void CTogaSectionCutDlgEx::SetBounds(Float64 lowerBound, Float64 upperBound)
 
 void CTogaSectionCutDlgEx::DoDataExchange(CDataExchange* pDX)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CTogaSectionCutDlgEx) 

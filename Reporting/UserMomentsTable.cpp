@@ -32,54 +32,19 @@
 #include <IFace\Intervals.h>
 #include <IFace\ReportOptions.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-/****************************************************************************
-CLASS
-   CUserMomentsTable
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CUserMomentsTable::CUserMomentsTable()
 {
 }
 
-CUserMomentsTable::CUserMomentsTable(const CUserMomentsTable& rOther)
-{
-   MakeCopy(rOther);
-}
-
-CUserMomentsTable::~CUserMomentsTable()
-{
-}
-
-//======================== OPERATORS  =======================================
-CUserMomentsTable& CUserMomentsTable::operator= (const CUserMomentsTable& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
-//======================== OPERATIONS =======================================
-rptRcTable* CUserMomentsTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,IntervalIndexType intervalIdx,
-                                      IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CUserMomentsTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,IntervalIndexType intervalIdx,
+                                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDisplayUnits->GetMomentUnit(), false );
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    CString strTitle;
    strTitle.Format(_T("Moment due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx).c_str());
    rptRcTable* p_table = CreateUserLoadHeading<rptMomentUnitTag,WBFL::Units::MomentData>(strTitle.GetBuffer(),false,analysisType,intervalIdx,pDisplayUnits,pDisplayUnits->GetMomentUnit());
@@ -90,17 +55,17 @@ rptRcTable* CUserMomentsTable::Build(IBroker* pBroker,const CGirderKey& girderKe
       p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    PoiAttributeType poiRefAttribute(girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : POI_ERECTED_SEGMENT);
 
    // Get the interface pointers we need
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   GET_IFACE2(pBroker,IProductForces2,pForces2);
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   EAF_GET_IFACE2(pBroker,IProductForces2,pForces2);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
 
-   GET_IFACE2(pBroker,IProductForces,pForces);
+   EAF_GET_IFACE2(pBroker,IProductForces,pForces);
    pgsTypes::BridgeAnalysisType maxBAT = pForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 
@@ -169,32 +134,3 @@ rptRcTable* CUserMomentsTable::Build(IBroker* pBroker,const CGirderKey& girderKe
 
    return p_table;
 }
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-void CUserMomentsTable::MakeCopy(const CUserMomentsTable& rOther)
-{
-   // Add copy code here...
-}
-
-void CUserMomentsTable::MakeAssignment(const CUserMomentsTable& rOther)
-{
-   MakeCopy( rOther );
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

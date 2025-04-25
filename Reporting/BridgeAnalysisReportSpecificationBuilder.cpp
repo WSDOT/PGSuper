@@ -28,13 +28,8 @@
 #include <IFace\Selection.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-CBridgeAnalysisReportSpecificationBuilder::CBridgeAnalysisReportSpecificationBuilder(IBroker* pBroker) :
+CBridgeAnalysisReportSpecificationBuilder::CBridgeAnalysisReportSpecificationBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker) :
 CGirderLineReportSpecificationBuilder(pBroker)
 {
 }
@@ -48,10 +43,10 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CBridgeAnalysisReportSpeci
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    // Prompt for girder and chapter list
-   GET_IFACE(ISelection,pSelection);
+   EAF_GET_IFACE(ISelection,pSelection);
    GirderIndexType girder = pSelection->GetSelectedGirder().girderIndex;
 
-   CBridgeAnalysisReportDlg dlg(m_pBroker,rptDesc,pOldRptSpec); // span only mode
+   CBridgeAnalysisReportDlg dlg(m_pBroker, rptDesc, pOldRptSpec); // span only mode
    dlg.m_SegmentKey.girderIndex = girder;
 
    if ( dlg.DoModal() == IDOK )

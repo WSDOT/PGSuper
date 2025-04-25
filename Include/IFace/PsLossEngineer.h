@@ -25,7 +25,7 @@
 #include <Reporter\Reporter.h>
 #include <Details.h>
 
-struct IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 /*****************************************************************************
 INTERFACE
@@ -39,12 +39,13 @@ DESCRIPTION
 // {69ABD84E-733A-4e1f-B64E-1EA888EA4935}
 DEFINE_GUID(IID_IPsLossEngineer, 
 0x69abd84e, 0x733a, 0x4e1f, 0xb6, 0x4e, 0x1e, 0xa8, 0x88, 0xea, 0x49, 0x35);
-interface IPsLossEngineer : IUnknown
+class IPsLossEngineer
 {
+public:
    //---------------------------------------------------------------------
    // Returns the details of the prestress loss calculation for losses computed upto and including
    // intervalIdx. Loses may be computed beyond this interval as well, however they are only
-   // guarenteed to be computed upto and including the specified interval. An intervalIdx of
+   // guaranteed to be computed upto and including the specified interval. An intervalIdx of
    // INVALID_INDEX means that losses are computed through all intervals
    virtual const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx = INVALID_INDEX) = 0;
    

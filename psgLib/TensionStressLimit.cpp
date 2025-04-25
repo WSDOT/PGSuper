@@ -37,7 +37,7 @@ bool TensionStressLimit::operator==(const TensionStressLimit& other) const
    return true;
 }
 
-void TensionStressLimit::Report(rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits,ConcreteSymbol concrete) const
+void TensionStressLimit::Report(rptParagraph* pPara, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,ConcreteSymbol concrete) const
 {
    INIT_UV_PROTOTYPE(rptSqrtPressureValue, tension_coefficient, pDisplayUnits->GetTensionCoefficientUnit(), false);
    INIT_UV_PROTOTYPE(rptStressUnitValue, tension, pDisplayUnits->GetStressUnit(), true);

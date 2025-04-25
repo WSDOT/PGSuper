@@ -47,7 +47,7 @@ bool PlantHandlingCriteria::Compare(const PlantHandlingCriteria& other, const Sp
    return bSame;
 }
 
-void PlantHandlingCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void PlantHandlingCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), true);
 

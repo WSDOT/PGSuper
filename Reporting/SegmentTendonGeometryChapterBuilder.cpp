@@ -29,11 +29,6 @@
 #include <IFace\Intervals.h>
 #include <IFace\ReportOptions.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -60,23 +55,22 @@ rptChapter* CSegmentTendonGeometryChapterBuilder::Build(const std::shared_ptr<co
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
 
    CGirderKey girderKey(pGirderRptSpec->GetGirderKey());
 
-   GET_IFACE2(pBroker,ISegmentTendonGeometry,pTendonGeom);
+   EAF_GET_IFACE2(pBroker,ISegmentTendonGeometry,pTendonGeom);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   GET_IFACE2_NOCHECK(pBroker,ILosses,pLosses); // only used if there are segment tendons
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2_NOCHECK(pBroker,ILosses,pLosses); // only used if there are segment tendons
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),  false);
@@ -84,7 +78,7 @@ rptChapter* CSegmentTendonGeometryChapterBuilder::Build(const std::shared_ptr<co
    INIT_UV_PROTOTYPE( rptLengthUnitValue,        ecc,      pDisplayUnits->GetComponentDimUnit(), false);
    INIT_UV_PROTOTYPE( rptStressUnitValue,        stress,   pDisplayUnits->GetStressUnit(), false);
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);

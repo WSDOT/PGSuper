@@ -28,11 +28,6 @@
 #include <psgLib/SpecificationCriteria.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -48,7 +43,7 @@ CLibraryUsageTable::~CLibraryUsageTable()
 {
 }
 
-rptRcTable* CLibraryUsageTable::Build(IBroker* pBroker) const
+rptRcTable* CLibraryUsageTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker) const
 {
    rptRcTable* table = rptStyleManager::CreateDefaultTable(3,_T(""));
    table->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT) );
@@ -63,7 +58,7 @@ rptRcTable* CLibraryUsageTable::Build(IBroker* pBroker) const
    (*table)(0,1) << _T("Entry");
    (*table)(0,2) << _T("Source");
 
-   GET_IFACE2(pBroker,ILibrary,pLibrary);
+   EAF_GET_IFACE2(pBroker,ILibrary,pLibrary);
    std::vector<WBFL::Library::EntryUsageRecord> records = pLibrary->GetLibraryUsageRecords();
 
    std::vector<WBFL::Library::EntryUsageRecord>::iterator iter;

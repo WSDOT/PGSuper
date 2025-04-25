@@ -24,7 +24,7 @@
 
 #include <PgsExt\Keys.h>
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 class CGirderScheduleChapterBuilder : public CPGSuperChapterBuilder
 {

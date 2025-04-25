@@ -43,11 +43,6 @@
 #include <psgLib\SpecLibraryEntry.h>
 #include <psgLib\GirderLibraryEntry.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS	CTexasIBNSChapterBuilder
@@ -76,11 +71,10 @@ rptChapter* CTexasIBNSChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
    auto pMultiGirderRptSpec = std::dynamic_pointer_cast<const CMultiGirderReportSpecification>(pRptSpec);
    if (pMultiGirderRptSpec != nullptr)
    {
-      CComPtr<IBroker> pBroker;
-      pMultiGirderRptSpec->GetBroker(&pBroker);
+      auto pBroker = pMultiGirderRptSpec->GetBroker();
 
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-      GET_IFACE2(pBroker,IArtifact,pIArtifact);
+      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      EAF_GET_IFACE2(pBroker,IArtifact,pIArtifact);
 
       rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
       bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
@@ -90,7 +84,7 @@ rptChapter* CTexasIBNSChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
       // Give progress window a progress meter if needed
       bool bMultiGirderReport = (1 < girderKeys.size() ? true : false);
 
-      GET_IFACE2(pBroker,IProgress,pProgress);
+      EAF_GET_IFACE2(pBroker,IProgress,pProgress);
       DWORD mask = bMultiGirderReport ? PW_ALL|PW_NOCANCEL : PW_ALL|PW_NOGAUGE|PW_NOCANCEL;
 
       CEAFAutoProgress ap(pProgress,0,mask); 

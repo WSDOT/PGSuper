@@ -24,7 +24,7 @@
 #include <Reporter\Chapter.h>
 #include <PgsExt\RatingArtifact.h>
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 class CLoadRatingSummaryChapterBuilder : public CPGSuperChapterBuilder
 {

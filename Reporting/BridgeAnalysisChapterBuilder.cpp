@@ -60,11 +60,6 @@
 #include <IFace/Limits.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -92,14 +87,13 @@ LPCTSTR CBridgeAnalysisChapterBuilder::GetName() const
 rptChapter* CBridgeAnalysisChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pBridgeAnalysisRptSpec = std::dynamic_pointer_cast<const CBridgeAnalysisReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pBridgeAnalysisRptSpec->GetBroker(&pBroker);
+   auto pBroker = pBridgeAnalysisRptSpec->GetBroker();
 
    CGirderKey girderKey(pBridgeAnalysisRptSpec->GetGirderKey());
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    // must use a specific girder key to get interval information
    IntervalIndexType lastCastDeckIntervalIdx = pIntervals->GetLastCastDeckInterval();
@@ -108,7 +102,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(const std::shared_ptr<const WBF
 
    //std::vector<IntervalIndexType> vIntervals(pIntervals->GetSpecCheckIntervals(girderKey));
 
-   GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    rptParagraph* p = 0;
@@ -126,13 +120,13 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(const std::shared_ptr<const WBF
       return pChapter;
    }
 
-   GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+   EAF_GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
    bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
 
    bool bDesign = pBridgeAnalysisRptSpec->ReportDesignResults();
    bool bRating = pBridgeAnalysisRptSpec->ReportRatingResults();
 
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    bool bPedestrian = pProductLoads->HasPedestrianLoad();
    bool bReportAxial = pProductLoads->ReportAxialResults();
 
@@ -143,7 +137,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(const std::shared_ptr<const WBF
    p->SetName(_T("Bridge Site Results"));
    *pChapter << p;
 
-   GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
+   EAF_GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
    std::vector<IntervalIndexType> vUserLoadIntervals = pUDL->GetUserDefinedLoadIntervals(girderKey);
 
    // Product Axial
@@ -218,7 +212,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(const std::shared_ptr<const WBF
    *p << rptNewLine;
    LiveLoadTableFooter(pBroker,p,girderKey,bDesign,bRating);
 
-   GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
+   EAF_GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
    std::vector<PierIndexType> vPiers = pBearingDesign->GetBearingReactionPiers(lastIntervalIdx,girderKey);
 
    if ( 0 < vPiers.size() )
@@ -290,7 +284,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(const std::shared_ptr<const WBF
         live_load_types.push_back(pgsTypes::lltFatigue);
       }
 
-      GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
+      EAF_GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
       bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
       if ( bPermit )
       {
@@ -300,7 +294,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(const std::shared_ptr<const WBF
 
    if ( bRating )
    {
-      GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+      EAF_GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
       // if lltDesign isn't included because we aren't reporting design and if we are doing Design Inventory or Operating rating
       // then add the lltDesign
       if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
@@ -339,7 +333,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(const std::shared_ptr<const WBF
    {
       pgsTypes::LiveLoadType llType = *iter;
 
-      GET_IFACE2( pBroker, IProductLoads, pProductLoads);
+      EAF_GET_IFACE2( pBroker, IProductLoads, pProductLoads);
       std::vector<std::_tstring> strLLNames = pProductLoads->GetVehicleNames(llType,girderKey);
 
       // nothing to report if there are no loads
@@ -428,7 +422,7 @@ rptChapter* CBridgeAnalysisChapterBuilder::Build(const std::shared_ptr<const WBF
    }
 
    // Load Combinations (DC, DW, etc) & Limit States
-   GET_IFACE2(pBroker, IStressCheck, pStressCheck);
+   EAF_GET_IFACE2(pBroker, IStressCheck, pStressCheck);
    std::vector<IntervalIndexType> vIntervals = pStressCheck->GetStressCheckIntervals(girderKey);
    std::vector<IntervalIndexType>::iterator intervalIter(vIntervals.begin());
    std::vector<IntervalIndexType>::iterator intervalIterEnd(vIntervals.end());

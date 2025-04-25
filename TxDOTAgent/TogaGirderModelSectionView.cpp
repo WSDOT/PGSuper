@@ -43,11 +43,6 @@
 #include <WBFLGeometry/GeomHelpers.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define SOCKET_HT   0
 #define SOCKET_HB   1
@@ -183,7 +178,7 @@ void CTogaGirderModelSectionView::UpdateDisplayObjects()
    // Grab hold of the broker so we can pass it as a parameter
    try
    {
-      CComPtr<IBroker> pBroker = pDoc->GetUpdatedBroker();
+      auto pBroker = pDoc->GetUpdatedBroker();
 
       UINT settings = pDoc->GetGirderEditorSettings();
 
@@ -209,7 +204,7 @@ void CTogaGirderModelSectionView::UpdateDisplayObjects()
    }
 }
 
-void CTogaGirderModelSectionView::BuildSectionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey)
+void CTogaGirderModelSectionView::BuildSectionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey)
 {
    auto pDL = m_pDispMgr->FindDisplayList(SECTION_LIST);
    ATLASSERT(pDL);
@@ -217,8 +212,8 @@ void CTogaGirderModelSectionView::BuildSectionDisplayObjects(CTxDOTOptionalDesig
 
    pgsPointOfInterest poi(segmentKey,m_pFrame->GetCurrentCutLocation());
 
-   GET_IFACE2(pBroker,IShapes,pShapes);
-   GET_IFACE2(pBroker,IGirder,pGirder);
+   EAF_GET_IFACE2(pBroker,IShapes,pShapes);
+   EAF_GET_IFACE2(pBroker,IGirder,pGirder);
 
    Float64 top_width = pGirder->GetTopWidth(poi);
    Float64 bottom_width = pGirder->GetBottomWidth(poi);
@@ -227,7 +222,7 @@ void CTogaGirderModelSectionView::BuildSectionDisplayObjects(CTxDOTOptionalDesig
    auto strategy = WBFL::DManip::ShapeDrawStrategy::Create();
    doPnt->SetDrawingStrategy(strategy);
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
    CComPtr<IShape> shape;
@@ -280,14 +275,14 @@ void CTogaGirderModelSectionView::BuildSectionDisplayObjects(CTxDOTOptionalDesig
    pDL->AddDisplayObject(doPnt);
 }
 
-void CTogaGirderModelSectionView::BuildStrandDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey)
+void CTogaGirderModelSectionView::BuildStrandDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey)
 {
    pgsPointOfInterest poi(segmentKey,m_pFrame->GetCurrentCutLocation());
 
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
 
-   GET_IFACE2(pBroker,IMaterials,pMaterial);
+   EAF_GET_IFACE2(pBroker,IMaterials,pMaterial);
    const auto* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Straight);
    Float64 diameter = pStrand->GetNominalDiameter();
 
@@ -376,7 +371,7 @@ void CTogaGirderModelSectionView::BuildStrandDisplayObjects(CTxDOTOptionalDesign
    }
 }
 
-void CTogaGirderModelSectionView::BuildLongReinfDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey)
+void CTogaGirderModelSectionView::BuildLongReinfDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey)
 {
    auto pDL = m_pDispMgr->FindDisplayList(LONG_REINF_LIST);
    ATLASSERT(pDL);
@@ -388,7 +383,7 @@ void CTogaGirderModelSectionView::BuildLongReinfDisplayObjects(CTxDOTOptionalDes
    strategy->SetColor(REBAR_COLOR);
    strategy->SetPointType(WBFL::DManip::PointType::Circle);
 
-   GET_IFACE2(pBroker,ILongRebarGeometry,pLongRebarGeom);
+   EAF_GET_IFACE2(pBroker,ILongRebarGeometry,pLongRebarGeom);
 
    CComPtr<IRebarSection> rebar_section;
    pLongRebarGeom->GetRebars(poi,&rebar_section);
@@ -420,7 +415,7 @@ void CTogaGirderModelSectionView::BuildLongReinfDisplayObjects(CTxDOTOptionalDes
    }
 }
 
-void CTogaGirderModelSectionView::BuildCGDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey)
+void CTogaGirderModelSectionView::BuildCGDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey)
 {
    auto pDL = m_pDispMgr->FindDisplayList(CG_LIST);
    ATLASSERT(pDL);
@@ -428,13 +423,13 @@ void CTogaGirderModelSectionView::BuildCGDisplayObjects(CTxDOTOptionalDesignDoc*
 
    pgsPointOfInterest poi(segmentKey,m_pFrame->GetCurrentCutLocation());
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    Float64 ecc = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi,true).Y();
 
-   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    Float64 Yb = pSectProp->GetY(releaseIntervalIdx,poi,pgsTypes::BottomGirder);
    Float64 Hg = pSectProp->GetHg(releaseIntervalIdx,poi);
 
@@ -459,7 +454,7 @@ void CTogaGirderModelSectionView::BuildCGDisplayObjects(CTxDOTOptionalDesignDoc*
    pDL->AddDisplayObject(doPnt);
 }
 
-void CTogaGirderModelSectionView::BuildDimensionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,IBroker* pBroker,const CSegmentKey& segmentKey)
+void CTogaGirderModelSectionView::BuildDimensionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey)
 {
    auto pDL = m_pDispMgr->FindDisplayList(DIMENSION_LIST);
    ATLASSERT(pDL);
@@ -538,11 +533,11 @@ void CTogaGirderModelSectionView::BuildDimensionDisplayObjects(CTxDOTOptionalDes
    // set the text labels on the dimension lines
    pgsPointOfInterest poi(segmentKey,m_pFrame->GetCurrentCutLocation());
    
-   GET_IFACE2(pBroker,IGirder,pGirder);
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
-   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   EAF_GET_IFACE2(pBroker,IGirder,pGirder);
+   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+   EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
    Float64 top_width = pGirder->GetTopWidth(poi);
@@ -553,7 +548,7 @@ void CTogaGirderModelSectionView::BuildDimensionDisplayObjects(CTxDOTOptionalDes
 
    CString strDim;
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::LengthData& length_unit = pDisplayUnits->GetComponentDimUnit();
 
    auto textBlock = WBFL::DManip::TextBlock::Create();

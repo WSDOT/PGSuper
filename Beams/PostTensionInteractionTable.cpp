@@ -55,21 +55,21 @@ CPostTensionInteractionTable* CPostTensionInteractionTable::PrepareTable(rptChap
 {
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
    
-   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
+   EAF_GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
    pgsTypes::TTSUsage tempStrandUsage = pStrands->GetTemporaryStrandUsage();
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType tsInstallIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    bool bIsAsymmetric = pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing() ? true : false;
 
-   GET_IFACE2(pBroker, IGirder, pGirder);
+   EAF_GET_IFACE2(pBroker, IGirder, pGirder);
    bool bIsPrismatic = pGirder->IsPrismatic(releaseIntervalIdx, segmentKey);
 
-   GET_IFACE2(pBroker, ISectionProperties, pSectProp);
+   EAF_GET_IFACE2(pBroker, ISectionProperties, pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
 
    // Create and configure table
@@ -157,17 +157,17 @@ CPostTensionInteractionTable* CPostTensionInteractionTable::PrepareTable(rptChap
    table->mom_inertia.ShowUnitTag(true);
    table->ecc.ShowUnitTag(true);
    
-   GET_IFACE2(pBroker, IMaterials, pMaterials);
+   EAF_GET_IFACE2(pBroker, IMaterials, pMaterials);
    Float64 Eci = pMaterials->GetSegmentEc(segmentKey, tsInstallIntervalIdx);
    Float64 Ep = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Temporary)->GetE();
 
-   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    PoiList vPoi;
    pPoi->GetPointsOfInterest(segmentKey, POI_5L | POI_RELEASED_SEGMENT, &vPoi);
    ATLASSERT(vPoi.size() == 1);
    const pgsPointOfInterest& poi(vPoi.front());
 
-   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
+   EAF_GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
    Float64 Apt = pStrandGeom->GetStrandArea(poi, tsInstallIntervalIdx, pgsTypes::Temporary);
 
    *pParagraph << Sub2(_T("E"),_T("p")) << _T(" = ") << table->mod_e.SetValue(Ep) << rptNewLine;

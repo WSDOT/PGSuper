@@ -23,13 +23,8 @@
 #include "StdAfx.h"
 #include <Reporting\EquilibriumCheckReportSpecification.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-CEquilibriumCheckReportSpecification::CEquilibriumCheckReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) :
+CEquilibriumCheckReportSpecification::CEquilibriumCheckReportSpecification(const std::_tstring& strReportName,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) :
 CBrokerReportSpecification(strReportName,pBroker)
 {
    m_Poi = poi;
@@ -67,8 +62,7 @@ std::_tstring CEquilibriumCheckReportSpecification::GetReportContextString() con
    CGirderKey girderKey = m_Poi.GetSegmentKey();
    if ( girderKey.groupIndex != ALL_SPANS && girderKey.girderIndex != ALL_GIRDERS )
    {
-      CComPtr<IBroker> pBroker;
-      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+      EAF_GET_IFACE2(GetBroker(),IEAFDisplayUnits,pDisplayUnits);
       rptPointOfInterest rptPoi(&pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
       rptPoi.SetValue(POI_SPAN,m_Poi);
       rptPoi.PrefixAttributes(false); // put the attributes after the location

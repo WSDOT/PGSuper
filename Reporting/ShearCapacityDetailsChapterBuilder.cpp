@@ -48,153 +48,148 @@
 
 #include <algorithm>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
    CShearCapacityDetailsChapterBuilder
 ****************************************************************************/
 
-void write_shear_dimensions_table(IBroker* pBroker,
-                                IEAFDisplayUnits* pDisplayUnits,
+void write_shear_dimensions_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                                std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                 const PoiList& vPoi,
                                 rptChapter* pChapter,
                                 IntervalIndexType intervalIdx,
                                 const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
-void write_shear_stress_table(  IBroker* pBroker,
-                                IEAFDisplayUnits* pDisplayUnits,
+void write_shear_stress_table(  std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                                std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                 const PoiList& vPoi,
                                 rptChapter* pChapter,
                                 IntervalIndexType intervalIdx,
                                 const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
-void write_fpo_table(IBroker* pBroker,
-                       IEAFDisplayUnits* pDisplayUnits,
+void write_fpo_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                       std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                        const PoiList& vPoi,
                        rptChapter* pChapter,
                        IntervalIndexType intervalIdx,
                        const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
-void write_fpc_table(IBroker* pBroker,
-                     IEAFDisplayUnits* pDisplayUnits,
+void write_fpc_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                     std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                      const PoiList& vPoi,
                      rptChapter* pChapter,
                      IntervalIndexType intervalIdx,
                      const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
-void write_fpce_table(IBroker* pBroker,
-                      IEAFDisplayUnits* pDisplayUnits,
+void write_fpce_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                       const PoiList& vPoi,
                       rptChapter* pChapter,
                       IntervalIndexType intervalIdx,
                       const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
-void write_Fe_table(IBroker* pBroker,
-                    IEAFDisplayUnits* pDisplayUnits,
+void write_Fe_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                     const PoiList& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
-void write_btsummary_table(IBroker* pBroker,
-                       IEAFDisplayUnits* pDisplayUnits,
+void write_btsummary_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                       std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                        const PoiList& vPoi,
                        rptChapter* pChapter,
                        IntervalIndexType intervalIdx,
                        const std::_tstring& strStageName,pgsTypes::LimitState ls,bool bUHPC);
 
-void write_theta_fv_table(IBroker* pBroker,
-   IEAFDisplayUnits* pDisplayUnits,
+void write_theta_fv_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
    const PoiList& vPoi,
    rptChapter* pChapter,
    IntervalIndexType intervalIdx,
    const std::_tstring& strStageName, pgsTypes::LimitState ls);
 
-void write_ex_table(IBroker* pBroker,
-                    IEAFDisplayUnits* pDisplayUnits,
+void write_ex_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                     const PoiList& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
-void write_es_table(IBroker* pBroker,
-   IEAFDisplayUnits* pDisplayUnits,
+void write_es_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
    const PoiList& vPoi,
    rptChapter* pChapter,
    IntervalIndexType intervalIdx,
    const std::_tstring& strStageName, pgsTypes::LimitState ls);
 
 
-void write_Vs_table(IBroker* pBroker,
-                    IEAFDisplayUnits* pDisplayUnits,
+void write_Vs_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                     const PoiList& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls,bool bDuctAdjustment,bool bUHPC);
 
-void write_theta_table(IBroker* pBroker,
-                       IEAFDisplayUnits* pDisplayUnits,
+void write_theta_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                       std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                        const PoiList& vPoi,
                        rptChapter* pChapter,
                        IntervalIndexType intervalIdx,
                        const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
-void write_Vc_table(IBroker* pBroker,
-                    IEAFDisplayUnits* pDisplayUnits,
+void write_Vc_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                     const PoiList& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
-void write_Vuhpc_table(IBroker* pBroker,
-   IEAFDisplayUnits* pDisplayUnits,
+void write_Vuhpc_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
    const PoiList& vPoi,
    rptChapter* pChapter,
    IntervalIndexType intervalIdx,
    const std::_tstring& strStageName, pgsTypes::LimitState ls);
 
-void write_Vcf_table(IBroker* pBroker,
-   IEAFDisplayUnits* pDisplayUnits,
+void write_Vcf_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
    const PoiList& vPoi,
    rptChapter* pChapter,
    IntervalIndexType intervalIdx,
    const std::_tstring& strStageName, pgsTypes::LimitState ls);
 
-void write_Vci_table(IBroker* pBroker,
-                     IEAFDisplayUnits* pDisplayUnits,
+void write_Vci_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                     std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                      const PoiList& vPoi,
                      rptChapter* pChapter,
                      IntervalIndexType intervalIdx,
                      const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
-void write_Vcw_table(IBroker* pBroker,
-                    IEAFDisplayUnits* pDisplayUnits,
+void write_Vcw_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                     const PoiList& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls);
 
-void write_Vn_table(IBroker* pBroker,
-                    IEAFDisplayUnits* pDisplayUnits,
+void write_Vn_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                     const PoiList& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls,pgsTypes::ConcreteType concreteType);
 
-void write_Avs_table(IBroker* pBroker,
-                     IEAFDisplayUnits* pDisplayUnits,
+void write_Avs_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                     std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                      const PoiList& vPoi,
                      rptChapter* pChapter,
                      IntervalIndexType intervalIdx,
                      const std::_tstring& strStageName,pgsTypes::LimitState ls, pgsTypes::ConcreteType concreteType);
 
-void write_bar_spacing_table(IBroker* pBroker,
-                     IEAFDisplayUnits* pDisplayUnits,
+void write_bar_spacing_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                     std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                      const PoiList& vPoi,
                      rptChapter* pChapter,
                      IntervalIndexType intervalIdx,
@@ -224,22 +219,22 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(const std::shared_ptr<con
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
    CGirderKey girderKey;
 
    if ( pGdrRptSpec )
    {
-      pGdrRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrRptSpec->GetBroker();
       girderKey = pGdrRptSpec->GetGirderKey();
    }
    else
    {
-      pGdrLineRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrLineRptSpec->GetBroker();
       girderKey = pGdrLineRptSpec->GetGirderKey();
    }
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
 
    bool bDesign = m_bDesign;
    bool bRating = m_bRating;
@@ -249,20 +244,20 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(const std::shared_ptr<con
    rptParagraph* pPara = new rptParagraph();
    *pChapter << pPara;
 
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
-   GET_IFACE2(pBroker, IMaterials, pMaterial);
+   EAF_GET_IFACE2(pBroker, IMaterials, pMaterial);
 
-   GET_IFACE2(pBroker,ISpecification, pSpec);
-   GET_IFACE2(pBroker,ILibrary, pLib);
+   EAF_GET_IFACE2(pBroker,ISpecification, pSpec);
+   EAF_GET_IFACE2(pBroker,ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount() - 1;
    std::_tstring stage_name(pIntervals->GetDescription(intervalIdx));
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(girderKey, &vGirderKeys);
    for(const auto& thisGirderKey : vGirderKeys)
@@ -276,7 +271,7 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(const std::shared_ptr<con
          *pPara << pgsGirderLabel::GetGirderLabel(thisGirderKey) << rptNewLine;
       }
 
-      GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+      EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
       m_IncludeSpanAndGirderForPois = pReportOptions->IncludeSpanAndGirder4Pois(thisGirderKey);
 
       bool bPermit = pLimitStateForces->IsStrengthIIApplicable(thisGirderKey);
@@ -298,7 +293,7 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(const std::shared_ptr<con
 
       if ( bRating )
       {
-         GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+         EAF_GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
          if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) && pRatingSpec->RateForShear(pgsTypes::lrDesign_Inventory) )
          {
             vLimitStates.push_back(pgsTypes::StrengthI_Inventory);
@@ -437,8 +432,8 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CShearCapacityDetailsChapterBui
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
 
-void write_shear_dimensions_table(IBroker* pBroker,
-   IEAFDisplayUnits* pDisplayUnits,
+void write_shear_dimensions_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
    const PoiList& vPoi,
    rptChapter* pChapter,
    IntervalIndexType intervalIdx,
@@ -454,7 +449,7 @@ void write_shear_dimensions_table(IBroker* pBroker,
 
    const CSegmentKey& segmentKey = vPoi.front().get().GetSegmentKey();
 
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
@@ -465,7 +460,7 @@ void write_shear_dimensions_table(IBroker* pBroker,
 
    pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->GetDeckType();
 
-   GET_IFACE2(pBroker, IMaterials, pMaterials);
+   EAF_GET_IFACE2(pBroker, IMaterials, pMaterials);
    bool bUHPC = pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC;
 
    std::_tstring strPicture = pFactory->GetShearDimensionsSchematicImage(deckType);
@@ -512,13 +507,13 @@ void write_shear_dimensions_table(IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,      pDisplayUnits->GetComponentDimUnit(), false );
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(segmentKey));
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   GET_IFACE2(pBroker,IShearCapacity,pShearCap);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(pBroker,IShearCapacity,pShearCap);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       // Don't print poi that are inside of a CSS zone
@@ -549,8 +544,8 @@ void write_shear_dimensions_table(IBroker* pBroker,
    }
 }
 
-void write_shear_stress_table(IBroker* pBroker,
-                              IEAFDisplayUnits* pDisplayUnits,
+void write_shear_stress_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                               const PoiList& vPoi,
                               rptChapter* pChapter,
                               IntervalIndexType intervalIdx,
@@ -607,10 +602,10 @@ void write_shear_stress_table(IBroker* pBroker,
 
    CGirderKey girderKey(vPoi.front().get().GetSegmentKey());
 
-   GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   EAF_GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
    DuctIndexType nMaxSegmentDucts = pSegmentTendonGeometry->GetMaxDuctCount(girderKey);
 
-   GET_IFACE2(pBroker,IGirderTendonGeometry,pGirderTendonGeometry);
+   EAF_GET_IFACE2(pBroker,IGirderTendonGeometry,pGirderTendonGeometry);
    DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
 
    ColumnIndexType nColumns = 7;
@@ -691,8 +686,8 @@ void write_shear_stress_table(IBroker* pBroker,
    location.IncludeSpanAndGirder(CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois);
 
    RowIndexType row = table->GetNumberOfHeaderRows();
-   GET_IFACE2(pBroker,IShearCapacity,pShearCap);
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(pBroker,IShearCapacity,pShearCap);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       col = 0;
@@ -734,15 +729,15 @@ void write_shear_stress_table(IBroker* pBroker,
    }
 }
 
-void write_fpc_table(IBroker* pBroker,
-                     IEAFDisplayUnits* pDisplayUnits,
+void write_fpc_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                     std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                      const PoiList& vPoi,
                      rptChapter* pChapter,
                      IntervalIndexType intervalIdx,
                      const std::_tstring& strStageName,pgsTypes::LimitState ls)
 {
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
    bool bAfter1999 = (WBFL::LRFD::BDSManager::Edition::SecondEditionWith2000Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false );
@@ -771,11 +766,11 @@ void write_fpc_table(IBroker* pBroker,
 
    *pParagraph << rptNewLine;
 
-   GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
-   GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
+   EAF_GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   EAF_GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    std::vector<CGirderKey> vGirderKeys;
    pPoi->GetGirderKeys(vPoi,&vGirderKeys);
    for (const auto& girderKey : vGirderKeys)
@@ -852,7 +847,7 @@ void write_fpc_table(IBroker* pBroker,
 
       RowIndexType row = table->GetNumberOfHeaderRows();
 
-      GET_IFACE2(pBroker,IShearCapacity,pShearCap);
+      EAF_GET_IFACE2(pBroker,IShearCapacity,pShearCap);
 
       for (const pgsPointOfInterest& poi : vPoi)
       {
@@ -909,8 +904,8 @@ void write_fpc_table(IBroker* pBroker,
    }
 }
 
-void write_fpce_table(IBroker* pBroker,
-                      IEAFDisplayUnits* pDisplayUnits,
+void write_fpce_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                       const PoiList& vPoi,
                       rptChapter* pChapter,
                       IntervalIndexType intervalIdx,
@@ -952,15 +947,15 @@ void write_fpce_table(IBroker* pBroker,
 
    location.IncludeSpanAndGirder(CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
    std::set<CSegmentKey> segmentKeys; // keep track of the segments that we reported on
 
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   GET_IFACE2(pBroker,IShearCapacity,pShearCap);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(pBroker,IShearCapacity,pShearCap);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       segmentKeys.insert(poi.GetSegmentKey());
@@ -988,7 +983,7 @@ void write_fpce_table(IBroker* pBroker,
    pParagraph = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << pParagraph;
 
-   GET_IFACE2(pBroker,IMaterials,pMaterial);
+   EAF_GET_IFACE2(pBroker,IMaterials,pMaterial);
    bool bLambda = (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false);
 
    std::set<CSegmentKey>::iterator iter(segmentKeys.begin());
@@ -1029,15 +1024,15 @@ void write_fpce_table(IBroker* pBroker,
    *pParagraph << Sub2(_T("M"),_T("dnc")) << _T(" = total unfactored dead load moment acting on the monolithic or noncomposite section") << rptNewLine;
 }
 
-void write_fpo_table(IBroker* pBroker,
-                     IEAFDisplayUnits* pDisplayUnits,
+void write_fpo_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                     std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                      const PoiList& vPoi,
                      rptChapter* pChapter,
                      IntervalIndexType intervalIdx,
                      const std::_tstring& strStageName,pgsTypes::LimitState ls)
 {
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    bool bAfter1999 = ( pSpecEntry->GetSpecificationCriteria().GetEdition() >= WBFL::LRFD::BDSManager::Edition::SecondEditionWith2000Interims ? true : false );
 
@@ -1057,9 +1052,9 @@ void write_fpo_table(IBroker* pBroker,
    pParagraph = new rptParagraph();
    *pChapter << pParagraph;
 
-   GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
-   GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   EAF_GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
    INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,   pDisplayUnits->GetStressUnit(),    true );
 
@@ -1070,7 +1065,7 @@ void write_fpo_table(IBroker* pBroker,
       // See PCI BDM 8.4.1.1.4
       Float64 Kps, Kpt;
 
-      GET_IFACE2(pBroker,IMaterials,pMaterial);
+      EAF_GET_IFACE2(pBroker,IMaterials,pMaterial);
       for (const auto& girderKey : vGirderKeys)
       {
          DuctIndexType nMaxSegmentDucts = pSegmentTendonGeometry->GetMaxDuctCount(girderKey);
@@ -1233,12 +1228,12 @@ void write_fpo_table(IBroker* pBroker,
 
          location.IncludeSpanAndGirder(CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois);
 
-         GET_IFACE2(pBroker,IBridge,pBridge);
+         EAF_GET_IFACE2(pBroker,IBridge,pBridge);
          Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
 
          RowIndexType row = table->GetNumberOfHeaderRows();
       
-         GET_IFACE2(pBroker,IShearCapacity,pShearCap);
+         EAF_GET_IFACE2(pBroker,IShearCapacity,pShearCap);
          for (const pgsPointOfInterest& poi : vPoi)
          {
             col = 0;
@@ -1302,15 +1297,15 @@ void write_fpo_table(IBroker* pBroker,
    } // end if
 }
 
-void write_Fe_table(IBroker* pBroker,
-                    IEAFDisplayUnits* pDisplayUnits,
+void write_Fe_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                     const PoiList& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls)
 {
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    if ( WBFL::LRFD::BDSManager::Edition::SecondEditionWith2000Interims <= pSpecEntry->GetSpecificationCriteria().GetEdition())
    {
@@ -1331,10 +1326,10 @@ void write_Fe_table(IBroker* pBroker,
    *pParagraph << _T("This calculation is applicable only when ") << symbol(epsilon) << Sub(_T("x")) << _T(" is negative.") << rptNewLine;
    *pParagraph << rptNewLine;
 
-   GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
-   GET_IFACE2(pBroker,IGirderTendonGeometry,pGirderTendonGeometry);
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   EAF_GET_IFACE2(pBroker,IGirderTendonGeometry,pGirderTendonGeometry);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
 
    std::vector<CGirderKey> vGirderKeys;
    pPoi->GetGirderKeys(vPoi,&vGirderKeys);
@@ -1397,8 +1392,8 @@ void write_Fe_table(IBroker* pBroker,
 
 
       RowIndexType row = table->GetNumberOfHeaderRows();
-      GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-      GET_IFACE2(pBroker,IShearCapacity,pShearCap);
+      EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+      EAF_GET_IFACE2(pBroker,IShearCapacity,pShearCap);
       for (const pgsPointOfInterest& poi : vPoi)
       {
          const CSegmentKey& segmentKey(poi.GetSegmentKey());
@@ -1474,15 +1469,15 @@ void write_Fe_table(IBroker* pBroker,
    }
 }
 
-void write_ex_table(IBroker* pBroker,
-                    IEAFDisplayUnits* pDisplayUnits,
+void write_ex_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                     const PoiList& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls)
 {
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
 
@@ -1497,10 +1492,10 @@ void write_ex_table(IBroker* pBroker,
 
    CGirderKey girderKey(vPoi.front().get().GetSegmentKey());
 
-   GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   EAF_GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
    DuctIndexType nMaxSegmentDucts = pSegmentTendonGeometry->GetMaxDuctCount(girderKey);
 
-   GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
+   EAF_GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
    DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
 
    rptParagraph* pParagraph;
@@ -1735,7 +1730,7 @@ void write_ex_table(IBroker* pBroker,
 
    location.IncludeSpanAndGirder(CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
 
    rptRcScalar scalar;
@@ -1747,8 +1742,8 @@ void write_ex_table(IBroker* pBroker,
    bool print_footnote2 = false;
 
    RowIndexType row = table->GetNumberOfHeaderRows();
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   GET_IFACE2(pBroker,IShearCapacity,pShearCap);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(pBroker,IShearCapacity,pShearCap);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       // Don't print poi that are inside of a CSS zone
@@ -1901,8 +1896,8 @@ void write_ex_table(IBroker* pBroker,
 
 }
 
-void write_es_table(IBroker* pBroker,
-   IEAFDisplayUnits* pDisplayUnits,
+void write_es_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
    const PoiList& vPoi,
    rptChapter* pChapter,
    IntervalIndexType intervalIdx,
@@ -1965,14 +1960,14 @@ void write_es_table(IBroker* pBroker,
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
 
    bool print_footnote1 = false;
 
    RowIndexType row = table->GetNumberOfHeaderRows();
-   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
-   GET_IFACE2(pBroker, IShearCapacity, pShearCap);
+   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   EAF_GET_IFACE2(pBroker, IShearCapacity, pShearCap);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       // Don't print poi that are inside of a CSS zone
@@ -2026,15 +2021,15 @@ void write_es_table(IBroker* pBroker,
    }
 }
 
-void write_btsummary_table(IBroker* pBroker,
-                       IEAFDisplayUnits* pDisplayUnits,
+void write_btsummary_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                       std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                        const PoiList& vPoi,
                        rptChapter* pChapter,
                        IntervalIndexType intervalIdx,
                        const std::_tstring& strStageName,pgsTypes::LimitState ls,bool bUHPC)
 {
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
 
@@ -2080,8 +2075,8 @@ void write_btsummary_table(IBroker* pBroker,
       }
 
       INIT_UV_PROTOTYPE( rptLengthUnitValue,  xdimu,    pDisplayUnits->GetComponentDimUnit(),    true );
-      GET_IFACE2(pBroker,IMaterials,pMat);
-      GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+      EAF_GET_IFACE2(pBroker,IMaterials,pMat);
+      EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
       std::vector<CGirderKey> vGirderKeys;
       pPoi->GetGirderKeys(vPoi,&vGirderKeys);
@@ -2172,13 +2167,13 @@ void write_btsummary_table(IBroker* pBroker,
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
 
    bool print_footnote=false;
    RowIndexType row = table->GetNumberOfHeaderRows();
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   GET_IFACE2(pBroker,IShearCapacity,pShearCap);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(pBroker,IShearCapacity,pShearCap);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       col = 0;
@@ -2282,8 +2277,8 @@ void write_btsummary_table(IBroker* pBroker,
    }
 }
 
-void write_theta_fv_table(IBroker* pBroker,
-   IEAFDisplayUnits* pDisplayUnits,
+void write_theta_fv_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
    const PoiList& vPoi,
    rptChapter* pChapter,
    IntervalIndexType intervalIdx,
@@ -2343,12 +2338,12 @@ void write_theta_fv_table(IBroker* pBroker,
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
 
    RowIndexType row = table->GetNumberOfHeaderRows();
-   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
-   GET_IFACE2(pBroker, IShearCapacity, pShearCap);
+   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   EAF_GET_IFACE2(pBroker, IShearCapacity, pShearCap);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       col = 0;
@@ -2377,8 +2372,8 @@ void write_theta_fv_table(IBroker* pBroker,
    }
 }
 
-void write_Vs_table(IBroker* pBroker,
-                    IEAFDisplayUnits* pDisplayUnits,
+void write_Vs_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                     const PoiList& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
@@ -2468,13 +2463,13 @@ void write_Vs_table(IBroker* pBroker,
 
    location.IncludeSpanAndGirder(CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
 
    bool print_footnote=false;
    RowIndexType row = table->GetNumberOfHeaderRows();
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   GET_IFACE2(pBroker,IShearCapacity,pShearCap);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(pBroker,IShearCapacity,pShearCap);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       // Don't print poi that are inside of a CSS zone
@@ -2546,8 +2541,8 @@ void write_Vs_table(IBroker* pBroker,
 
 }
 
-void write_Vc_table(IBroker* pBroker,
-                    IEAFDisplayUnits* pDisplayUnits,
+void write_Vc_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                     const PoiList& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
@@ -2565,8 +2560,8 @@ void write_Vc_table(IBroker* pBroker,
 
    bool bLambda = (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false);
 
-   GET_IFACE2(pBroker,IMaterials,pMaterial);
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(pBroker,IMaterials,pMaterial);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    std::vector<CGirderKey> vGirderKeys;
    pPoi->GetGirderKeys(vPoi, &vGirderKeys);
    for (const auto& girderKey : vGirderKeys)
@@ -2673,7 +2668,7 @@ void write_Vc_table(IBroker* pBroker,
 
    bool print_footnote=false;
    RowIndexType row = table->GetNumberOfHeaderRows();
-   GET_IFACE2(pBroker,IShearCapacity,pShearCap);
+   EAF_GET_IFACE2(pBroker,IShearCapacity,pShearCap);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       colIdx = 0;
@@ -2686,7 +2681,7 @@ void write_Vc_table(IBroker* pBroker,
 
       const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
-      GET_IFACE2(pBroker,IBridge,pBridge);
+      EAF_GET_IFACE2(pBroker,IBridge,pBridge);
       Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 
       pgsTypes::ConcreteType concType = pMaterial->GetSegmentConcreteType(segmentKey);
@@ -2742,8 +2737,8 @@ void write_Vc_table(IBroker* pBroker,
    }
 }
 
-void write_Vuhpc_table(IBroker* pBroker,
-   IEAFDisplayUnits* pDisplayUnits,
+void write_Vuhpc_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
    const PoiList& vPoi,
    rptChapter* pChapter,
    IntervalIndexType intervalIdx,
@@ -2766,9 +2761,9 @@ void write_Vuhpc_table(IBroker* pBroker,
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
-   GET_IFACE2(pBroker, IMaterials, pMaterials);
+   EAF_GET_IFACE2(pBroker, IMaterials, pMaterials);
 
-   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    std::vector<CGirderKey> vGirderKeys;
    pPoi->GetGirderKeys(vPoi, &vGirderKeys);
    for (const auto& girderKey : vGirderKeys)
@@ -2820,8 +2815,8 @@ void write_Vuhpc_table(IBroker* pBroker,
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
-   GET_IFACE2(pBroker, IShearCapacity, pShearCap);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IShearCapacity, pShearCap);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       colIdx = 0;
@@ -2850,8 +2845,8 @@ void write_Vuhpc_table(IBroker* pBroker,
    }
 }
 
-void write_Vcf_table(IBroker* pBroker,
-   IEAFDisplayUnits* pDisplayUnits,
+void write_Vcf_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
    const PoiList& vPoi,
    rptChapter* pChapter,
    IntervalIndexType intervalIdx,
@@ -2869,8 +2864,8 @@ void write_Vcf_table(IBroker* pBroker,
 
    bool bLambda = (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false);
 
-   GET_IFACE2(pBroker, IMaterials, pMaterial);
-   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   EAF_GET_IFACE2(pBroker, IMaterials, pMaterial);
+   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    std::vector<CGirderKey> vGirderKeys;
    pPoi->GetGirderKeys(vPoi, &vGirderKeys);
    for (const auto& girderKey : vGirderKeys)
@@ -2928,8 +2923,8 @@ void write_Vcf_table(IBroker* pBroker,
 
    bool print_footnote = false;
    RowIndexType row = table->GetNumberOfHeaderRows();
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker, IShearCapacity, pShearCap);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker, IShearCapacity, pShearCap);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       colIdx = 0;
@@ -2961,8 +2956,8 @@ void write_Vcf_table(IBroker* pBroker,
 }
 
 
-void write_Vci_table(IBroker* pBroker,
-                    IEAFDisplayUnits* pDisplayUnits,
+void write_Vci_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                     const PoiList& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
@@ -2978,8 +2973,8 @@ void write_Vci_table(IBroker* pBroker,
    bool bLambda = (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false);
 
    *pParagraph << _T("Shear Resistance Provided by Concrete when inclined cracking results from combined shear and moment") << rptNewLine;
-   GET_IFACE2(pBroker,IMaterials,pMaterial);
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(pBroker,IMaterials,pMaterial);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    std::vector<CGirderKey> vGirderKeys;
    pPoi->GetGirderKeys(vPoi, &vGirderKeys);
    for (const auto& girderKey : vGirderKeys)
@@ -3074,11 +3069,11 @@ void write_Vci_table(IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(), false );
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
 
    RowIndexType row = table->GetNumberOfHeaderRows();
-   GET_IFACE2(pBroker,IShearCapacity,pShearCap);
+   EAF_GET_IFACE2(pBroker,IShearCapacity,pShearCap);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       // Don't print poi that are inside of a CSS zone
@@ -3104,8 +3099,8 @@ void write_Vci_table(IBroker* pBroker,
    }
 }
 
-void write_Vcw_table(IBroker* pBroker,
-                    IEAFDisplayUnits* pDisplayUnits,
+void write_Vcw_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                     const PoiList& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
@@ -3122,8 +3117,8 @@ void write_Vcw_table(IBroker* pBroker,
 
    bool bLambda = (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false);
 
-   GET_IFACE2(pBroker,IMaterials,pMaterial);
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(pBroker,IMaterials,pMaterial);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    std::vector<CGirderKey> vGirderKeys;
    pPoi->GetGirderKeys(vPoi, &vGirderKeys);
    for (const auto& girderKey : vGirderKeys)
@@ -3218,11 +3213,11 @@ void write_Vcw_table(IBroker* pBroker,
 
    location.IncludeSpanAndGirder(CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
 
    RowIndexType row = table->GetNumberOfHeaderRows();
-   GET_IFACE2(pBroker,IShearCapacity,pShearCap);
+   EAF_GET_IFACE2(pBroker,IShearCapacity,pShearCap);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       // Don't print poi that are inside of a CSS zone
@@ -3245,8 +3240,8 @@ void write_Vcw_table(IBroker* pBroker,
    }
 }
 
-void write_theta_table(IBroker* pBroker,
-                       IEAFDisplayUnits* pDisplayUnits,
+void write_theta_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                       std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                        const PoiList& vPoi,
                        rptChapter* pChapter,
                        IntervalIndexType intervalIdx,
@@ -3263,8 +3258,8 @@ void write_theta_table(IBroker* pBroker,
 
    bool bLambda = (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false);
 
-   GET_IFACE2(pBroker,IMaterials,pMaterial);
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(pBroker,IMaterials,pMaterial);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    std::vector<CGirderKey> vGirderKeys;
    pPoi->GetGirderKeys(vPoi, &vGirderKeys);
    for (const auto& girderKey : vGirderKeys)
@@ -3363,11 +3358,11 @@ void write_theta_table(IBroker* pBroker,
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
 
    RowIndexType row = table->GetNumberOfHeaderRows();
-   GET_IFACE2(pBroker,IShearCapacity,pShearCap);
+   EAF_GET_IFACE2(pBroker,IShearCapacity,pShearCap);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       // Don't print poi that are inside of a CSS zone
@@ -3390,15 +3385,15 @@ void write_theta_table(IBroker* pBroker,
    }
 }
 
-void write_Vn_table(IBroker* pBroker,
-                    IEAFDisplayUnits* pDisplayUnits,
+void write_Vn_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                     const PoiList& vPoi,
                     rptChapter* pChapter,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls,pgsTypes::ConcreteType concreteType)
 {
-   GET_IFACE2(pBroker,ISpecification, pSpec);
-   GET_IFACE2(pBroker,ILibrary, pLib);
+   EAF_GET_IFACE2(pBroker,ISpecification, pSpec);
+   EAF_GET_IFACE2(pBroker,ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
 
@@ -3477,13 +3472,13 @@ void write_Vn_table(IBroker* pBroker,
    scalar.SetWidth(5);
    scalar.SetPrecision(2);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
 
    bool print_footnote=false;
    RowIndexType row = table->GetNumberOfHeaderRows();
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   GET_IFACE2(pBroker,IShearCapacity,pShearCap);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(pBroker,IShearCapacity,pShearCap);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       col = 0;
@@ -3613,15 +3608,15 @@ void write_Vn_table(IBroker* pBroker,
    }
 }
 
-void write_Avs_table(IBroker* pBroker,
-                     IEAFDisplayUnits* pDisplayUnits,
+void write_Avs_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                     std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                      const PoiList& vPoi,
                      rptChapter* pChapter,
                      IntervalIndexType intervalIdx,
                      const std::_tstring& strStageName,pgsTypes::LimitState ls,pgsTypes::ConcreteType concreteType)
 {
-   GET_IFACE2(pBroker,ISpecification, pSpec);
-   GET_IFACE2(pBroker,ILibrary, pLib);
+   EAF_GET_IFACE2(pBroker,ISpecification, pSpec);
+   EAF_GET_IFACE2(pBroker,ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
 
@@ -3722,12 +3717,12 @@ void write_Avs_table(IBroker* pBroker,
 
    location.IncludeSpanAndGirder(CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
 
    RowIndexType row = table->GetNumberOfHeaderRows();
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   GET_IFACE2(pBroker,IShearCapacity,pShearCap);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(pBroker,IShearCapacity,pShearCap);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       col = 0;
@@ -3790,8 +3785,8 @@ void write_Avs_table(IBroker* pBroker,
    }
 }
 
-void write_bar_spacing_table(IBroker* pBroker,
-                     IEAFDisplayUnits* pDisplayUnits,
+void write_bar_spacing_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                     std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                      const PoiList& vPoi,
                      rptChapter* pChapter,
                      IntervalIndexType intervalIdx,
@@ -3831,7 +3826,7 @@ void write_bar_spacing_table(IBroker* pBroker,
    // to determine the number of stirrup legs
    const CSegmentKey& segmentKey = vPoi.front().get().GetSegmentKey();
 
-   GET_IFACE2(pBroker,IShear,pShear);
+   EAF_GET_IFACE2(pBroker,IShear,pShear);
    const CShearData2* pShearData = pShear->GetSegmentShearData(segmentKey);
 
    if ( 0 < pShearData->ShearZones.size() )
@@ -3872,12 +3867,12 @@ void write_bar_spacing_table(IBroker* pBroker,
    Float64 Ab4 = pRebarPool->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,WBFL::Materials::Rebar::Size::bs4)->GetNominalArea();
    Float64 Ab5 = pRebarPool->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,WBFL::Materials::Rebar::Size::bs5)->GetNominalArea();
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
 
    RowIndexType row = table->GetNumberOfHeaderRows();
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   GET_IFACE2(pBroker,IShearCapacity,pShearCap);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(pBroker,IShearCapacity,pShearCap);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       col = 0;

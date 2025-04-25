@@ -26,11 +26,6 @@
 #include <IFace\Project.h>
 #include <PgsExt\BridgeDescription2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -45,11 +40,11 @@ CGirderSeedDataComparisonParagraph::~CGirderSeedDataComparisonParagraph()
 {
 } 
 
-rptParagraph* CGirderSeedDataComparisonParagraph::Build(IBroker* pBroker, const CGirderKey& girderKey) const
+rptParagraph* CGirderSeedDataComparisonParagraph::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey) const
 {
    rptParagraph* pParagraph = new rptParagraph;
 
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);

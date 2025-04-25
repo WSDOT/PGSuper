@@ -33,71 +33,13 @@
 #include <IFace\ReportOptions.h>
 
 #include <psgLib/CreepCriteria.h>
-
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-/****************************************************************************
-CLASS
-   CCamberTable
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CCamberTable::CCamberTable()
 {
 }
 
-CCamberTable::CCamberTable(const CCamberTable& rOther)
+void CCamberTable::GetPointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,PoiList* pvPoiRelease,PoiList* pvPoiStorage,PoiList* pvPoiErected) const
 {
-   MakeCopy(rOther);
-}
-
-CCamberTable::~CCamberTable()
-{
-}
-
-//======================== OPERATORS  =======================================
-CCamberTable& CCamberTable::operator= (const CCamberTable& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
-//======================== OPERATIONS =======================================
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-void CCamberTable::MakeCopy(const CCamberTable& rOther)
-{
-   // Add copy code here...
-}
-
-void CCamberTable::MakeAssignment(const CCamberTable& rOther)
-{
-   MakeCopy( rOther );
-}
-
-void CCamberTable::GetPointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,PoiList* pvPoiRelease,PoiList* pvPoiStorage,PoiList* pvPoiErected) const
-{
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    pPoi->GetPointsOfInterest( segmentKey,POI_RELEASED_SEGMENT | POI_TENTH_POINTS, pvPoiRelease);
    pPoi->GetPointsOfInterest( segmentKey,POI_STORAGE_SEGMENT  | POI_TENTH_POINTS, pvPoiStorage);
    pPoi->GetPointsOfInterest( segmentKey,POI_ERECTED_SEGMENT  | POI_TENTH_POINTS, pvPoiErected);
@@ -134,24 +76,12 @@ void CCamberTable::GetPointsOfInterest(IBroker* pBroker,const CSegmentKey& segme
    ATLASSERT(pvPoiRelease->size() == pvPoiStorage->size() && pvPoiStorage->size() == pvPoiErected->size());
 }
 
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================
-void CCamberTable::Build_Deck(IBroker* pBroker, const CSegmentKey& segmentKey,
+void CCamberTable::Build_Deck(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey,
    bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay, bool bDeckPanels,
-   IEAFDisplayUnits* pDisplayUnits, pgsTypes::CreepTime constructionRate, const CamberMultipliers& cm,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, pgsTypes::CreepTime constructionRate, const CamberMultipliers& cm,
    rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const
 {
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    if (pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing() || pBridge->HasTiltedGirders())
    {
       Build_Deck_XY(pBroker, segmentKey, bTempStrands, bSidewalk, bShearKey, bLongitudinalJoint, bConstruction, bOverlay, bDeckPanels, pDisplayUnits, constructionRate, cm, pTable1, pTable2, pTable3);
@@ -162,12 +92,12 @@ void CCamberTable::Build_Deck(IBroker* pBroker, const CSegmentKey& segmentKey,
    }
 }
 
-void CCamberTable::Build_NoDeck(IBroker* pBroker, const CSegmentKey& segmentKey,
+void CCamberTable::Build_NoDeck(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey,
    bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay,
-   IEAFDisplayUnits* pDisplayUnits, pgsTypes::CreepTime constructionRate, const CamberMultipliers& cm,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, pgsTypes::CreepTime constructionRate, const CamberMultipliers& cm,
    rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const
 {
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    if (pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing() || pBridge->HasTiltedGirders())
    {
       Build_NoDeck_XY(pBroker, segmentKey, bTempStrands, bSidewalk, bShearKey, bLongitudinalJoint, bConstruction, bOverlay, pDisplayUnits, constructionRate, cm, pTable1, pTable2, pTable3);
@@ -178,32 +108,32 @@ void CCamberTable::Build_NoDeck(IBroker* pBroker, const CSegmentKey& segmentKey,
    }
 }
 
-void CCamberTable::Build_Deck_Y(IBroker* pBroker, const CSegmentKey& segmentKey,
+void CCamberTable::Build_Deck_Y(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey,
    bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint,bool bConstruction, bool bOverlay, bool bDeckPanels,
-   IEAFDisplayUnits* pDisplayUnits, pgsTypes::CreepTime constructionRate, const CamberMultipliers& cm,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, pgsTypes::CreepTime constructionRate, const CamberMultipliers& cm,
    rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const
 {
    INIT_UV_PROTOTYPE(rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false);
    INIT_UV_PROTOTYPE(rptLengthUnitValue, deflection, pDisplayUnits->GetDeflectionUnit(), false);
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(segmentKey));
 
-   GET_IFACE2(pBroker, ILibrary, pLib);
-   GET_IFACE2(pBroker, ISpecification, pSpec);
+   EAF_GET_IFACE2(pBroker, ILibrary, pLib);
+   EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
    // Get the interface pointers we need
    PoiList vPoiRelease, vPoiStorage, vPoiErected;
    GetPointsOfInterest(pBroker, segmentKey, &vPoiRelease, &vPoiStorage, &vPoiErected);
 
-   GET_IFACE2(pBroker, ICamber, pCamber);
-   GET_IFACE2(pBroker, IExternalLoading, pExtLoading);
-   GET_IFACE2(pBroker, IProductForces, pProduct);
-   GET_IFACE2(pBroker, IBridge, pBridge);
-   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   EAF_GET_IFACE2(pBroker, ICamber, pCamber);
+   EAF_GET_IFACE2(pBroker, IExternalLoading, pExtLoading);
+   EAF_GET_IFACE2(pBroker, IProductForces, pProduct);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
 
-   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
    IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
@@ -576,32 +506,32 @@ void CCamberTable::Build_Deck_Y(IBroker* pBroker, const CSegmentKey& segmentKey,
    *pTable3 = table3;
 }
 
-void CCamberTable::Build_Deck_XY(IBroker* pBroker, const CSegmentKey& segmentKey,
+void CCamberTable::Build_Deck_XY(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey,
    bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay, bool bDeckPanels,
-   IEAFDisplayUnits* pDisplayUnits, pgsTypes::CreepTime constructionRate, const CamberMultipliers& cm,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, pgsTypes::CreepTime constructionRate, const CamberMultipliers& cm,
    rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const
 {
    INIT_UV_PROTOTYPE(rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false);
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(segmentKey));
 
    INIT_UV_PROTOTYPE(rptLengthUnitValue, deflection, pDisplayUnits->GetDeflectionUnit(), false);
 
-   GET_IFACE2(pBroker, ILibrary, pLib);
-   GET_IFACE2(pBroker, ISpecification, pSpec);
+   EAF_GET_IFACE2(pBroker, ILibrary, pLib);
+   EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
    // Get the interface pointers we need
    PoiList vPoiRelease, vPoiStorage, vPoiErected;
    GetPointsOfInterest(pBroker, segmentKey, &vPoiRelease, &vPoiStorage, &vPoiErected);
 
-   GET_IFACE2(pBroker, ICamber, pCamber);
-   GET_IFACE2(pBroker, IExternalLoading, pExtLoading);
-   GET_IFACE2(pBroker, IProductForces, pProduct);
-   GET_IFACE2(pBroker, IBridge, pBridge);
-   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   EAF_GET_IFACE2(pBroker, ICamber, pCamber);
+   EAF_GET_IFACE2(pBroker, IExternalLoading, pExtLoading);
+   EAF_GET_IFACE2(pBroker, IProductForces, pProduct);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
 
-   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
    IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
@@ -1098,32 +1028,32 @@ void CCamberTable::Build_Deck_XY(IBroker* pBroker, const CSegmentKey& segmentKey
    *pTable3 = table3;
 }
 
-void CCamberTable::Build_NoDeck_Y(IBroker* pBroker, const CSegmentKey& segmentKey,
+void CCamberTable::Build_NoDeck_Y(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey,
    bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay,
-   IEAFDisplayUnits* pDisplayUnits, pgsTypes::CreepTime constructionRate, const CamberMultipliers& cm,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, pgsTypes::CreepTime constructionRate, const CamberMultipliers& cm,
    rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const
 {
    INIT_UV_PROTOTYPE(rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false);
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(segmentKey));
 
    INIT_UV_PROTOTYPE(rptLengthUnitValue, deflection, pDisplayUnits->GetDeflectionUnit(), false);
 
-   GET_IFACE2(pBroker, ILibrary, pLib);
-   GET_IFACE2(pBroker, ISpecification, pSpec);
+   EAF_GET_IFACE2(pBroker, ILibrary, pLib);
+   EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
    // Get the interface pointers we need
    PoiList vPoiRelease, vPoiStorage, vPoiErected;
    GetPointsOfInterest(pBroker, segmentKey, &vPoiRelease, &vPoiStorage, &vPoiErected);
 
-   GET_IFACE2(pBroker, ICamber, pCamber);
-   GET_IFACE2(pBroker, IExternalLoading, pExtLoading);
-   GET_IFACE2(pBroker, IProductForces, pProduct);
-   GET_IFACE2(pBroker, IBridge, pBridge);
-   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   EAF_GET_IFACE2(pBroker, ICamber, pCamber);
+   EAF_GET_IFACE2(pBroker, IExternalLoading, pExtLoading);
+   EAF_GET_IFACE2(pBroker, IProductForces, pProduct);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
 
-   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
    IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
@@ -1512,32 +1442,32 @@ void CCamberTable::Build_NoDeck_Y(IBroker* pBroker, const CSegmentKey& segmentKe
    *pTable3 = table3;
 }
 
-void CCamberTable::Build_NoDeck_XY(IBroker* pBroker,const CSegmentKey& segmentKey,
+void CCamberTable::Build_NoDeck_XY(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,
                                             bool bTempStrands, bool bSidewalk, bool bShearKey,bool bLongitudinalJoint,bool bConstruction, bool bOverlay,
-                                            IEAFDisplayUnits* pDisplayUnits, pgsTypes::CreepTime constructionRate, const CamberMultipliers& cm,
+                                            std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, pgsTypes::CreepTime constructionRate, const CamberMultipliers& cm,
                                             rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const
 {
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(segmentKey));
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, deflection, pDisplayUnits->GetDeflectionUnit(), false );
 
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
    // Get the interface pointers we need
    PoiList vPoiRelease, vPoiStorage, vPoiErected;
    GetPointsOfInterest(pBroker,segmentKey,&vPoiRelease,&vPoiStorage,&vPoiErected);
 
-   GET_IFACE2(pBroker,ICamber,pCamber);
-   GET_IFACE2(pBroker,IExternalLoading,pExtLoading);
-   GET_IFACE2(pBroker,IProductForces,pProduct);
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   EAF_GET_IFACE2(pBroker,ICamber,pCamber);
+   EAF_GET_IFACE2(pBroker,IExternalLoading,pExtLoading);
+   EAF_GET_IFACE2(pBroker,IProductForces,pProduct);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx           = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType storageIntervalIdx           = pIntervals->GetStorageInterval(segmentKey);
    IntervalIndexType erectionIntervalIdx          = pIntervals->GetErectSegmentInterval(segmentKey);

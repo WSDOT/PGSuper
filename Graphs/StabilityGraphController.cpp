@@ -33,17 +33,12 @@
 #include <IFace\Bridge.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 IMPLEMENT_DYNCREATE(CStabilityGraphController,CEAFGraphControlWindow)
 
 CStabilityGraphController::CStabilityGraphController() : m_SegmentKey(0,0,0), m_GraphType(GT_LIFTING)
 {
-   EAFGetBroker(&m_pBroker);
+   m_pBroker = EAFGetBroker();
 }
 
 BEGIN_MESSAGE_MAP(CStabilityGraphController, CEAFGraphControlWindow)
@@ -62,7 +57,7 @@ int CStabilityGraphController::CreateControls(CWnd* pParent,UINT nID)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   GET_IFACE(IDocumentType,pDocType);
+   EAF_GET_IFACE(IDocumentType,pDocType);
    if ( pDocType->IsPGSuperDocument() )
    {
       return Create(pParent,IDD_PGSUPER_STABILITY_BAR, CBRS_TOP, nID);
@@ -82,7 +77,7 @@ BOOL CStabilityGraphController::OnInitDialog()
    pcbStage->AddString(_T("Hauling"));
    pcbStage->SetCurSel(0);
 
-   GET_IFACE(ISegmentHaulingSpecCriteria,pSpec);
+   EAF_GET_IFACE(ISegmentHaulingSpecCriteria,pSpec);
    if ( pSpec->GetHaulingAnalysisMethod() == pgsTypes::HaulingAnalysisMethod::KDOT )
    {
       // Transportation stability graph isn't applicable for KDOT mode
@@ -95,7 +90,7 @@ BOOL CStabilityGraphController::OnInitDialog()
    FillGroupCtrl();
 
    // Set initial value based on the current selection
-   GET_IFACE(ISelection,pSelection);
+   EAF_GET_IFACE(ISelection,pSelection);
    CSelection selection = pSelection->GetSelection();
 
    CComboBox* pcbGroup  = (CComboBox*)GetDlgItem(IDC_GROUP);
@@ -108,7 +103,7 @@ BOOL CStabilityGraphController::OnInitDialog()
    pcbGirder->SetCurSel(selection.GirderIdx == ALL_GIRDERS ? 0 : (int)selection.GirderIdx);
    m_SegmentKey.girderIndex = (GirderIndexType)(pcbGirder->GetCurSel());
 
-   GET_IFACE(IDocumentType,pDocType);
+   EAF_GET_IFACE(IDocumentType,pDocType);
    if ( pDocType->IsPGSuperDocument() )
    {
       m_SegmentKey.segmentIndex = 0;
@@ -128,10 +123,10 @@ void CStabilityGraphController::FillGroupCtrl()
 {
    CComboBox* pcbGroup = (CComboBox*)GetDlgItem(IDC_GROUP);
 
-   GET_IFACE(IDocumentType,pDocType);
+   EAF_GET_IFACE(IDocumentType,pDocType);
    bool isPGSuper = pDocType->IsPGSuperDocument();
 
-   GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE(IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
@@ -154,7 +149,7 @@ void CStabilityGraphController::FillGirderCtrl()
    CComboBox* pcbGirder = (CComboBox*)GetDlgItem(IDC_GIRDER);
    int curSel = pcbGirder->GetCurSel();
 
-   GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE(IBridge,pBridge);
    GirderIndexType nGirders = pBridge->GetGirderCount(m_SegmentKey.groupIndex);
    for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
    {
@@ -181,7 +176,7 @@ void CStabilityGraphController::FillSegmentCtrl()
    CComboBox* pcbSegment = (CComboBox*)GetDlgItem(IDC_SEGMENT);
    int curSel = pcbSegment->GetCurSel();
 
-   GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE(IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(m_SegmentKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
@@ -221,7 +216,7 @@ void CStabilityGraphController::OnGirderChanged()
    {
       m_SegmentKey.girderIndex = gdrIdx;
 
-      GET_IFACE(IDocumentType,pDocType);
+      EAF_GET_IFACE(IDocumentType,pDocType);
       if ( pDocType->IsPGSpliceDocument() )
       {
          FillSegmentCtrl();

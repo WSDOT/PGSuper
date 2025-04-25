@@ -31,13 +31,8 @@
 #include <IFace\Selection.h>
 #include <IFace\Bridge.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-CMomentCapacityReportSpecificationBuilder::CMomentCapacityReportSpecificationBuilder(IBroker* pBroker) :
+CMomentCapacityReportSpecificationBuilder::CMomentCapacityReportSpecificationBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker) :
 CBrokerReportSpecificationBuilder(pBroker)
 {
 }
@@ -60,7 +55,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CMomentCapacityReportSpeci
    {
       // Fist time through get CL of selected segement
       CSegmentKey segmentKey;
-      GET_IFACE(ISelection, pSelection);
+      EAF_GET_IFACE(ISelection, pSelection);
    CSelection selection = pSelection->GetSelection();
 
       if (selection.Type == CSelection::Girder)
@@ -97,12 +92,12 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CMomentCapacityReportSpeci
 
       if (selection.Type != CSelection::Segment)
    {
-         GET_IFACE(IBridge, pBridge);
+         EAF_GET_IFACE(IBridge, pBridge);
       SegmentIndexType nSegments = pBridge->GetSegmentCount(segmentKey);
          segmentKey.segmentIndex = (nSegments - 1) / 2;
    }
 
-      GET_IFACE(IPointOfInterest, pPOI);
+      EAF_GET_IFACE(IPointOfInterest, pPOI);
    PoiList vPoi;
    pPOI->GetPointsOfInterest(segmentKey, POI_5L | POI_ERECTED_SEGMENT, &vPoi);
       ATLASSERT(vPoi.size() == 1);
@@ -119,7 +114,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CMomentCapacityReportSpeci
       {
          // Not on the bridge. Default to something safe
          ::AfxMessageBox(_T("The selected location for this report no longer exists. The report has been moved to a valid location."), MB_OK | MB_ICONEXCLAMATION);
-         GET_IFACE(IPointOfInterest, pPOI);
+         EAF_GET_IFACE(IPointOfInterest, pPOI);
          PoiList vPoi;
          pPOI->GetPointsOfInterest(CSegmentKey(0,0,0), POI_5L | POI_ERECTED_SEGMENT, &vPoi);
          ATLASSERT(vPoi.size() == 1);

@@ -128,7 +128,7 @@ const LOSSDETAILS* CPsBeamLossEngineer::GetLosses(const pgsPointOfInterest& poi,
    ATLASSERT(intervalIdx == INVALID_INDEX); // this kind of loss calculation is for all intervals... always
 
 #if defined _DEBUG
-   GET_IFACE(ILossParameters,pLossParameters);
+   EAF_GET_IFACE(ILossParameters,pLossParameters);
    ATLASSERT( pLossParameters->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP );
    // this shouldn't ever happen because the beam factory should create the appropreate loss engineer
    // but just in case we create a new beam type and forget to do this in the factor, assert here

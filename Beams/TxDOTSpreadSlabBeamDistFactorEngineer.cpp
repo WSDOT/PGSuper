@@ -57,10 +57,10 @@ HRESULT CTxDOTSpreadSlabBeamDistFactorEngineer::FinalConstruct()
 void CTxDOTSpreadSlabBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
    // Grab the interfaces that are needed
-   GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE(IBridge,pBridge);
 
-   GET_IFACE(ILibrary, pLib);
-   GET_IFACE(ISpecification, pSpec);
+   EAF_GET_IFACE(ILibrary, pLib);
+   EAF_GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
    auto lldfMethod = live_load_distribution_criteria.LldfMethod;
@@ -79,7 +79,7 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::BuildReport(const CGirderKey& girde
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
 
@@ -334,9 +334,9 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::BuildReport(const CGirderKey& girde
 
 WBFL::LRFD::LiveLoadDistributionFactorBase* CTxDOTSpreadSlabBeamDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,TXSPREADSLABBEAM_LLDFDETAILS* plldf,const GDRCONFIG* pConfig)
 {
-   GET_IFACE(IGirder, pGdr);
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE(IGirder, pGdr);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridge,pBridge);
 
    // Determine span/pier index... This is the index of a pier and the next span.
    // If this is the last pier, span index is for the last span
@@ -369,7 +369,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CTxDOTSpreadSlabBeamDistFactorEngine
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
    // Throws exception if fails requirement (no need to catch it)
-   GET_IFACE(ILiveLoadDistributionFactors, pDistFactors);
+   EAF_GET_IFACE(ILiveLoadDistributionFactors, pDistFactors);
    Int32 roaVal = pDistFactors->VerifyDistributionFactorRequirements(poi);
 
    plldf->d = pGdr->GetHeight(poi);
@@ -390,7 +390,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CTxDOTSpreadSlabBeamDistFactorEngine
                               plldf->skew1, 
                               plldf->skew2);
 
-   GET_IFACE(ILiveLoads,pLiveLoads);
+   EAF_GET_IFACE(ILiveLoads,pLiveLoads);
    pLLDF->SetRangeOfApplicability( pLiveLoads->GetRangeOfApplicabilityAction(), roaVal );
 
    return pLLDF;
@@ -402,8 +402,8 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierId
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-   GET_IFACE(ILibrary, pLib);
-   GET_IFACE(ISpecification, pSpec);
+   EAF_GET_IFACE(ILibrary, pLib);
+   EAF_GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
 
@@ -580,8 +580,8 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::ReportShear(IndexType spanOrPierIdx
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-   GET_IFACE(ILibrary, pLib);
-   GET_IFACE(ISpecification, pSpec);
+   EAF_GET_IFACE(ILibrary, pLib);
+   EAF_GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
 

@@ -50,11 +50,6 @@
 
 #include <MFCTools\MFCTools.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // create a dummy unit conversion tool to pacify the graph constructor
 static WBFL::Units::LengthData DUMMY(WBFL::Units::Measure::Meter);
@@ -177,7 +172,7 @@ int CStressHistoryGraphBuilder::InitializeGraphController(CWnd* pParent,UINT nID
    // create the graph definitions before creating the graph controller.
    // our graph controller will call GetLoadCaseNames to populate the 
    // list of load cases
-   EAFGetBroker(&m_pBroker);
+   m_pBroker = EAFGetBroker();
 
    // setup the graph
    m_Graph.SetClientAreaColor(GRAPH_BACKGROUND);
@@ -195,7 +190,7 @@ int CStressHistoryGraphBuilder::InitializeGraphController(CWnd* pParent,UINT nID
    m_XAxisType = X_AXIS_TIME_LOG;
 
    // y axis
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::StressData& stressUnit = pDisplayUnits->GetStressUnit();
    m_pYFormat = new WBFL::Units::StressTool(stressUnit);
    m_Graph.SetYAxisValueFormat(m_pYFormat);
@@ -240,7 +235,7 @@ void CStressHistoryGraphBuilder::ShowGrid(bool bShowGrid)
 
 bool CStressHistoryGraphBuilder::UpdateNow()
 {
-   GET_IFACE(IProgress,pProgress);
+   EAF_GET_IFACE(IProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
 
    pProgress->UpdateMessage(_T("Building Graph"));
@@ -268,8 +263,8 @@ void CStressHistoryGraphBuilder::UpdateGraphTitle(const pgsPointOfInterest& poi)
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE(IPointOfInterest,pPoi);
+   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE(IPointOfInterest,pPoi);
 
    CSpanKey spanKey;
    Float64 Xspan;
@@ -310,18 +305,18 @@ void CStressHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& poi)
    dataSeries[pgsTypes::TopGirder]       = m_Graph.CreateDataSeries(_T("Top of Girder"),   PS_SOLID, penWeight, GREEN);
    dataSeries[pgsTypes::BottomGirder]    = m_Graph.CreateDataSeries(_T("Bottom of Girder"),PS_SOLID, penWeight, BLUE);
 
-   GET_IFACE(IIntervals,pIntervals);
-   GET_IFACE_NOCHECK(ILimitStateForces,pLimitStateForces); // only used if a stress location is checked
-   GET_IFACE_NOCHECK(ICombinedForces,pCombinedForces);
+   EAF_GET_IFACE(IIntervals,pIntervals);
+   EAF_GET_IFACE_NOCHECK(ILimitStateForces,pLimitStateForces); // only used if a stress location is checked
+   EAF_GET_IFACE_NOCHECK(ICombinedForces,pCombinedForces);
 
-   GET_IFACE(ILossParameters,pLossParams);
+   EAF_GET_IFACE(ILossParameters,pLossParams);
    bool bTimeStep = (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false);
 
    pgsTypes::LimitState limitState = GetLimitState();
-   GET_IFACE(ILoadFactors,pLoadFactors);
+   EAF_GET_IFACE(ILoadFactors,pLoadFactors);
    Float64 gLL = pLoadFactors->GetLoadFactors()->GetLLIMMin(limitState);
 
-   GET_IFACE(IProductForces,pProductForces);
+   EAF_GET_IFACE(IProductForces,pProductForces);
    pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
@@ -400,7 +395,7 @@ Float64 CStressHistoryGraphBuilder::GetX(const CSegmentKey& segmentKey,IntervalI
    return x;
 }
 
-void CStressHistoryGraphBuilder::PlotStressPoints(Float64 x,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType,IndexType dataSeries,pgsTypes::LimitState limitState,pgsTypes::BridgeAnalysisType bat,Float64 gLL,IntervalIndexType liveLoadIntervalIdx,ICombinedForces* pCombinedForces,ILimitStateForces* pLimitStateForces)
+void CStressHistoryGraphBuilder::PlotStressPoints(Float64 x,const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType,IndexType dataSeries,pgsTypes::LimitState limitState,pgsTypes::BridgeAnalysisType bat,Float64 gLL,IntervalIndexType liveLoadIntervalIdx,std::shared_ptr<ICombinedForces> pCombinedForces,std::shared_ptr<ILimitStateForces> pLimitStateForces)
 {
    bool bIncludePrestress = true;
 
@@ -489,7 +484,7 @@ void CStressHistoryGraphBuilder::UpdateYAxis()
       delete m_pYFormat;
    }
 
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::StressData& stressUnit = pDisplayUnits->GetStressUnit();
    m_pYFormat = new WBFL::Units::StressTool(stressUnit);
    m_Graph.SetYAxisValueFormat(m_pYFormat);

@@ -48,11 +48,6 @@
 
 #include <WBFLCogo.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -60,10 +55,10 @@ CLASS
 ****************************************************************************/
 
 
-static void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGirderKey>& girderList,
-                                  ColumnIndexType startIdx, ColumnIndexType endIdx, IEAFDisplayUnits* pDisplayUnits);
+static void haunch_summary(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList,
+                                  ColumnIndexType startIdx, ColumnIndexType endIdx, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
-static void haunch_minimum_note(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGirderKey>& girderList, IEAFDisplayUnits* pDisplayUnits);
+static void haunch_minimum_note(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
@@ -84,34 +79,34 @@ LPCTSTR CTexasHaunchChapterBuilder::GetName() const
 rptChapter* CTexasHaunchChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    // This can be called for multi or single girders
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
    std::vector<CGirderKey> girder_list;
 
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    if (pGirderRptSpec!=nullptr)
    {
-      pGirderRptSpec->GetBroker(&pBroker);
+      pBroker = pGirderRptSpec->GetBroker();
       girder_list.push_back( pGirderRptSpec->GetGirderKey() );
    }
    else
    {
       auto pReportSpec = std::dynamic_pointer_cast<const CMultiGirderReportSpecification>(pRptSpec);
-      pReportSpec->GetBroker(&pBroker);
+      pBroker = pReportSpec->GetBroker();
 
       girder_list = pReportSpec->GetGirderKeys();
    }
    ATLASSERT(!girder_list.empty());
 
    // don't report if no slab
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    if (pBridge->GetDeckType() == pgsTypes::sdtNone)
    {
       return nullptr;
    }
 
    // Do not generate output if haunch check is disabled
-   GET_IFACE2(pBroker,ILibrary, pLib );
-   GET_IFACE2(pBroker,ISpecification, pSpec );
+   EAF_GET_IFACE2(pBroker,ILibrary, pLib );
+   EAF_GET_IFACE2(pBroker,ISpecification, pSpec );
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
    const auto& slab_offset_criteria = pSpecEntry->GetSlabOffsetCriteria();
@@ -122,7 +117,7 @@ rptChapter* CTexasHaunchChapterBuilder::Build(const std::shared_ptr<const WBFL::
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
 
    // Compute a list of tables to be created. Each item in the list is the number of columns for
@@ -185,9 +180,9 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTexasHaunchChapterBuilder::Clo
 //======================== INQUIRY    =======================================
 
 ////////////////////////// PRIVATE    ///////////////////////////////////////
-void haunch_minimum_note(rptChapter* pChapter, IBroker* pBroker, const std::vector<CGirderKey>& girderList, IEAFDisplayUnits* pDisplayUnits)
+void haunch_minimum_note(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
-   GET_IFACE2(pBroker,IGirderHaunch,pGdrHaunch);
+   EAF_GET_IFACE2(pBroker,IGirderHaunch,pGdrHaunch);
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, disp,   pDisplayUnits->GetDeflectionUnit(), true );
 
@@ -234,9 +229,9 @@ void haunch_minimum_note(rptChapter* pChapter, IBroker* pBroker, const std::vect
    *p << _T("Refer to the Least Haunch Depth column in the Haunch Details chapter in the Details report for the location of the minimum haunch value.");
 }
 
-void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGirderKey>& girderList,
+void haunch_summary(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList,
                            ColumnIndexType startIdx, ColumnIndexType endIdx,
-                           IEAFDisplayUnits* pDisplayUnits)
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -268,13 +263,13 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
    Float64 xyzToler = WBFL::Units::ConvertToSysUnits(0.125, WBFL::Units::Measure::Inch); 
 
    // Get the interfaces we need
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IGirder,pGirder);
-   GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
-   GET_IFACE2(pBroker, ILibrary, pLib );
-   GET_IFACE2(pBroker, ISpecification, pSpec );
-   GET_IFACE2(pBroker,IGirderHaunch,pGdrHaunch);
-   GET_IFACE2(pBroker, IProductLoads,pProductLoads);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IGirder,pGirder);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
+   EAF_GET_IFACE2(pBroker, ILibrary, pLib );
+   EAF_GET_IFACE2(pBroker, ISpecification, pSpec );
+   EAF_GET_IFACE2(pBroker,IGirderHaunch,pGdrHaunch);
+   EAF_GET_IFACE2(pBroker, IProductLoads,pProductLoads);
 
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
@@ -282,7 +277,7 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
    pgsTypes::BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(0); // assume deck casting region 0
    IntervalIndexType shearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
 
@@ -314,7 +309,7 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
       Float64 delta_slab2(0), delta_slab3(0), delta_slab7(0), delta_slab8(0);
       if (castDeckIntervalIdx != INVALID_INDEX)
       {
-         GET_IFACE2(pBroker, IProductForces, pProductForces);
+         EAF_GET_IFACE2(pBroker, IProductForces, pProductForces);
          delta_slab2 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_2, bat, rtCumulative, false);
          delta_slab3 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_3, bat, rtCumulative, false);
          delta_slab7 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_7, bat, rtCumulative, false);
@@ -367,7 +362,7 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
       Float64 delta_slab2(0), delta_slab3(0), delta_slab5(0), delta_slab7(0), delta_slab8(0);
       if (castDeckIntervalIdx != INVALID_INDEX)
       {
-         GET_IFACE2(pBroker, IProductForces, pProductForces);
+         EAF_GET_IFACE2(pBroker, IProductForces, pProductForces);
          delta_slab2 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_2, bat, rtCumulative, false);
          delta_slab3 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_3, bat, rtCumulative, false);
          delta_slab5 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_5, bat, rtCumulative, false);
@@ -513,7 +508,7 @@ void haunch_summary(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGi
       if (reportShearKey)
       {
          // deflections from shear key loading, if it exists
-         GET_IFACE2(pBroker, IProductForces, pProductForces);
+         EAF_GET_IFACE2(pBroker, IProductForces, pProductForces);
          Float64 delta_shearkey2 = pProductForces->GetDeflection(shearKeyIntervalIdx, pgsTypes::pftShearKey, poi_2, bat, rtCumulative, false );
          Float64 delta_shearkey3 = pProductForces->GetDeflection(shearKeyIntervalIdx, pgsTypes::pftShearKey, poi_3, bat, rtCumulative, false );
          Float64 delta_shearkey5 = pProductForces->GetDeflection(shearKeyIntervalIdx, pgsTypes::pftShearKey, poi_5, bat, rtCumulative, false );

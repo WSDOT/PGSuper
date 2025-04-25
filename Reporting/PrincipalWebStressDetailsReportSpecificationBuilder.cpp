@@ -29,13 +29,8 @@
 #include <IFace\PointOfInterest.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-CPrincipalWebStressDetailsReportSpecificationBuilder::CPrincipalWebStressDetailsReportSpecificationBuilder(IBroker* pBroker) :
+CPrincipalWebStressDetailsReportSpecificationBuilder::CPrincipalWebStressDetailsReportSpecificationBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker) :
 CBrokerReportSpecificationBuilder(pBroker)
 {
 }
@@ -59,7 +54,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CPrincipalWebStressDetails
    }
    else
    {
-      GET_IFACE(ISelection,pSelection);
+      EAF_GET_IFACE(ISelection,pSelection);
       CSelection selection = pSelection->GetSelection();
       CGirderKey girderKey;
       if ( selection.Type == CSelection::Girder || selection.Type == CSelection::Segment )
@@ -73,7 +68,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CPrincipalWebStressDetails
          girderKey.girderIndex  = 0;
       }
 
-      GET_IFACE(IPointOfInterest,pPoi);
+      EAF_GET_IFACE(IPointOfInterest,pPoi);
       PoiList vPoi;
       pPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), POI_5L | POI_SPAN, &vPoi);
       ATLASSERT(0 < vPoi.size());

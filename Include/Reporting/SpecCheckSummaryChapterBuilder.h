@@ -62,7 +62,7 @@ public:
                                const pgsGirderArtifact* pGirderArtifact) const;
 
    //------------------------------------------------------------------------
-   void CreateContent(rptChapter* pChapter, IBroker* pBroker,
+   void CreateContent(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker,
                       const pgsGirderArtifact* pGirderArtifact) const;
 
 

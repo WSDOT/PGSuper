@@ -37,11 +37,6 @@
 
 #include <IFace\Intervals.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -78,14 +73,14 @@ CProductAxialTable& CProductAxialTable::operator= (const CProductAxialTable& rOt
 
 
 //======================== OPERATIONS =======================================
-rptRcTable* CProductAxialTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
-                                        bool bDesign,bool bRating,bool bIndicateControllingLoad,IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CProductAxialTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
+                                        bool bDesign,bool bRating,bool bIndicateControllingLoad,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptForceUnitValue,     axial,   pDisplayUnits->GetGeneralForceUnit(),     false );
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    bool bHasOverlay = pBridge->HasOverlay();
    bool bFutureOverlay = pBridge->IsFutureOverlay();
 
@@ -93,9 +88,9 @@ rptRcTable* CProductAxialTable::Build(IBroker* pBroker,const CGirderKey& girderK
    bool bContinuousBeforeDeckCasting;
    GroupIndexType startGroup, endGroup;
 
-   GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
+   EAF_GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
    IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount()-1;
 
@@ -109,7 +104,7 @@ rptRcTable* CProductAxialTable::Build(IBroker* pBroker,const CGirderKey& girderK
       p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
    PoiAttributeType poiRefAttribute(girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : POI_ERECTED_SEGMENT);
 
@@ -117,10 +112,10 @@ rptRcTable* CProductAxialTable::Build(IBroker* pBroker,const CGirderKey& girderK
                                                                                            bPermit,bRating,analysisType,bContinuousBeforeDeckCasting,
                                                                                            pRatingSpec,pDisplayUnits,pDisplayUnits->GetGeneralForceUnit());
    // Get the results
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   GET_IFACE2(pBroker,IProductForces2,pForces2);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   EAF_GET_IFACE2(pBroker,IProductForces2,pForces2);
 
-   GET_IFACE2(pBroker,IProductForces,pProdForces);
+   EAF_GET_IFACE2(pBroker,IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 

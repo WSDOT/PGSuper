@@ -197,8 +197,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="GraphingAgent.def" />
-    <None Include="PGSpliceGrapher.rgs" />
-    <None Include="PGSuperGrapher.rgs" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GraphingAgent.rc" />

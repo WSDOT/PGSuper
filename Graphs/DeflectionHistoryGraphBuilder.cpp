@@ -49,11 +49,6 @@
 
 #include <MFCTools\MFCTools.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // create a dummy unit conversion tool to pacify the graph constructor
 static WBFL::Units::LengthData DUMMY(WBFL::Units::Measure::Meter);
@@ -163,7 +158,7 @@ int CDeflectionHistoryGraphBuilder::InitializeGraphController(CWnd* pParent,UINT
       return -1;
    }
 
-   EAFGetBroker(&m_pBroker);
+   m_pBroker = EAFGetBroker();
 
    // setup the graph
    m_Graph.SetClientAreaColor(GRAPH_BACKGROUND);
@@ -201,7 +196,7 @@ void CDeflectionHistoryGraphBuilder::ShowGrid(bool bShowGrid)
 
 bool CDeflectionHistoryGraphBuilder::UpdateNow()
 {
-   GET_IFACE(IProgress,pProgress);
+   EAF_GET_IFACE(IProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
 
    pProgress->UpdateMessage(_T("Building Graph"));
@@ -229,8 +224,8 @@ void CDeflectionHistoryGraphBuilder::UpdateGraphTitle(const pgsPointOfInterest& 
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE(IPointOfInterest,pPoi);
+   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE(IPointOfInterest,pPoi);
    CSpanKey spanKey;
    Float64 Xspan;
    pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
@@ -270,10 +265,10 @@ void CDeflectionHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& p
 
    IndexType dataSeries = m_Graph.CreateDataSeries(_T(""), PS_SOLID, penWeight, color);
 
-   GET_IFACE(ILimitStateForces,pLimitStateForces);
-   GET_IFACE(IIntervals,pIntervals);
+   EAF_GET_IFACE(ILimitStateForces,pLimitStateForces);
+   EAF_GET_IFACE(IIntervals,pIntervals);
 
-   GET_IFACE(IProductForces,pProductForces);
+   EAF_GET_IFACE(IProductForces,pProductForces);
    pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
 
    bool include_unrec = ((CDeflectionHistoryGraphController*)m_pGraphController)->IncludeUnrecoverableDefl();
@@ -420,7 +415,7 @@ void CDeflectionHistoryGraphBuilder::UpdateYAxis()
       delete m_pYFormat;
    }
 
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::LengthData& deflectionUnit = pDisplayUnits->GetDeflectionUnit();
    m_pYFormat = new WBFL::Units::DeflectionTool(deflectionUnit);
    m_Graph.SetYAxisValueFormat(m_pYFormat);

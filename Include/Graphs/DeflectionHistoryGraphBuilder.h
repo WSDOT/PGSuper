@@ -58,7 +58,7 @@ protected:
 
    DECLARE_MESSAGE_MAP()
 
-   CComPtr<IBroker> m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
 
    WBFL::Units::ScalarData m_Time;
    WBFL::Units::ScalarData m_Interval;

@@ -111,7 +111,7 @@ bool LiftingCriteria::Compare(const LiftingCriteria& other, const SpecLibraryEnt
    return bSame;
 }
 
-void LiftingCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void LiftingCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;

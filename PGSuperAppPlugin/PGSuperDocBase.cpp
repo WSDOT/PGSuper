@@ -329,8 +329,6 @@ m_bAutoCalcEnabled(true)
 
    m_bShowProjectProperties = true;
 
-   m_pPGSuperDocProxyAgent = nullptr;
-
    m_pPluginMgr = nullptr;
 
    m_CallbackID = 0;
@@ -3137,11 +3135,11 @@ void CPGSDocBase::OnLoadsLoadModifiers()
    dlg.SetHelpData( &helpHandler, &helpHandler, &helpHandler );
 
    dlg.SetLoadModifiers( loadModifiers.DuctilityFactor,
-                         ((loadModifiers.DuctilityLevel == ILoadModifiers::High)  ? 0 : (loadModifiers.DuctilityLevel  == ILoadModifiers::Normal ? 1 : 2)),
+                         ((loadModifiers.DuctilityLevel == ILoadModifiers::Level::High)  ? 0 : (loadModifiers.DuctilityLevel  == ILoadModifiers::Level::Normal ? 1 : 2)),
                          loadModifiers.RedundancyFactor,
-                         ((loadModifiers.RedundancyLevel == ILoadModifiers::High) ? 0 : (loadModifiers.RedundancyLevel == ILoadModifiers::Normal ? 1 : 2)),
+                         ((loadModifiers.RedundancyLevel == ILoadModifiers::Level::High) ? 0 : (loadModifiers.RedundancyLevel == ILoadModifiers::Level::Normal ? 1 : 2)),
                          loadModifiers.ImportanceFactor,
-                         ((loadModifiers.ImportanceLevel == ILoadModifiers::High) ? 0 : (loadModifiers.ImportanceLevel == ILoadModifiers::Normal ? 1 : 2))
+                         ((loadModifiers.ImportanceLevel == ILoadModifiers::Level::High) ? 0 : (loadModifiers.ImportanceLevel == ILoadModifiers::Level::Normal ? 1 : 2))
                         );
 
    if ( dlg.DoModal() == IDOK )
@@ -3153,9 +3151,9 @@ void CPGSDocBase::OnLoadsLoadModifiers()
                            &newLoadModifiers.RedundancyFactor,&r,
                            &newLoadModifiers.ImportanceFactor,&i);
 
-      newLoadModifiers.DuctilityLevel  = (d == 0 ? ILoadModifiers::High : (d == 1 ? ILoadModifiers::Normal : ILoadModifiers::Low));
-      newLoadModifiers.RedundancyLevel = (r == 0 ? ILoadModifiers::High : (r == 1 ? ILoadModifiers::Normal : ILoadModifiers::Low));
-      newLoadModifiers.ImportanceLevel = (i == 0 ? ILoadModifiers::High : (i == 1 ? ILoadModifiers::Normal : ILoadModifiers::Low));
+      newLoadModifiers.DuctilityLevel  = (d == 0 ? ILoadModifiers::Level::High : (d == 1 ? ILoadModifiers::Level::Normal : ILoadModifiers::Level::Low));
+      newLoadModifiers.RedundancyLevel = (r == 0 ? ILoadModifiers::Level::High : (r == 1 ? ILoadModifiers::Level::Normal : ILoadModifiers::Level::Low));
+      newLoadModifiers.ImportanceLevel = (i == 0 ? ILoadModifiers::Level::High : (i == 1 ? ILoadModifiers::Level::Normal : ILoadModifiers::Level::Low));
 
       std::unique_ptr<txnEditLoadModifiers> pTxn(std::make_unique<txnEditLoadModifiers>(loadModifiers,newLoadModifiers));
       EAF_GET_IFACE(IEAFTransactions,pTransactions);
@@ -4899,9 +4897,8 @@ void CPGSDocBase::OnLogFileOpened()
 
 void CPGSDocBase::BrokerShutDown()
 {
+   m_pPGSuperDocProxyAgent = nullptr; // this must happen before base class BrokerShutDown()
    CEAFBrokerDocument::BrokerShutDown();
-
-   m_pPGSuperDocProxyAgent = nullptr;
 }
 
 void CPGSDocBase::OnStatusChanged()

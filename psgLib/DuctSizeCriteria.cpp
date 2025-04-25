@@ -49,7 +49,7 @@ bool DuctSizeCriteria::Compare(const DuctSizeCriteria& other, const SpecLibraryE
    return bSame;
 }
 
-void DuctSizeCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void DuctSizeCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;

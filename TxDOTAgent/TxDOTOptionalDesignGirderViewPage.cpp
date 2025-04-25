@@ -34,11 +34,6 @@
 #include "TxDOTOptionalDesignDoc.h"
 #include "TogaSectionCutDlgEx.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CTxDOTOptionalDesignGirderViewPage dialog
@@ -216,8 +211,8 @@ void CTxDOTOptionalDesignGirderViewPage::ShowCutDlg()
    Float64 val  = m_CurrentCutLocation;
    Float64 high = m_MaxCutLocation;
 
-   CComPtr<IBroker> pBroker = m_pBrokerRetriever->GetUpdatedBroker();
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   auto pBroker = m_pBrokerRetriever->GetUpdatedBroker();
+   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
    SpanIndexType span;
    GirderIndexType gdr;
@@ -320,8 +315,8 @@ void CTxDOTOptionalDesignGirderViewPage::UpdateBar()
 
    try
    {
-      CComPtr<IBroker> pBroker = m_pBrokerRetriever->GetUpdatedBroker();
-      GET_IFACE2(pBroker, IBridge, pBridge);
+      auto pBroker = m_pBrokerRetriever->GetUpdatedBroker();
+      EAF_GET_IFACE2(pBroker, IBridge, pBridge);
 
       // cut location
       Float64 gird_len = pBridge->GetSegmentLength(segmentKey);
@@ -347,7 +342,7 @@ void CTxDOTOptionalDesignGirderViewPage::UpdateBar()
       else
       {
          // cut was taken at a harping point, must enlist poi interface
-         GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+         EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
          PoiList vPoi;
          pPoi->GetPointsOfInterest(segmentKey, POI_HARPINGPOINT, &vPoi);
          IndexType nPoi = vPoi.size();
@@ -374,7 +369,7 @@ void CTxDOTOptionalDesignGirderViewPage::UpdateBar()
          }
       }
 
-      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
       CString msg;
       msg.Format(_T("Section Cut Offset: %s"),FormatDimension(m_CurrentCutLocation,pDisplayUnits->GetXSectionDimUnit()));
 

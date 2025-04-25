@@ -49,11 +49,6 @@
 #include <Reporting/BearingDesignPropertiesTable.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -79,23 +74,22 @@ LPCTSTR CBearingDesignDetailsChapterBuilder::GetName() const
 rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec, Uint16 level) const
 {
     auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-    CComPtr<IBroker> pBroker;
-    pGirderRptSpec->GetBroker(&pBroker);
+    auto pBroker = pGirderRptSpec->GetBroker();
     const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
     rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
 
-    GET_IFACE2(pBroker, IUserDefinedLoads, pUDL);
-    GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
-    GET_IFACE2(pBroker, ISpecification, pSpec);
-    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-    GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
-    GET_IFACE2(pBroker, IBridge, pBridge);
-    GET_IFACE2(pBroker, IProductLoads, pProductLoads);
-    GET_IFACE2(pBroker, ILiveLoadDistributionFactors, pLLDF);
-    GET_IFACE2(pBroker, IEnvironment, pEnvironment);
-    GET_IFACE2(pBroker, ILibrary, pLib);
-    GET_IFACE2(pBroker, ILossParameters, pLossParams);
-    GET_IFACE2(pBroker, IIntervals, pIntervals);
+    EAF_GET_IFACE2(pBroker, IUserDefinedLoads, pUDL);
+    EAF_GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
+    EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
+    EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+    EAF_GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
+    EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+    EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+    EAF_GET_IFACE2(pBroker, ILiveLoadDistributionFactors, pLLDF);
+    EAF_GET_IFACE2(pBroker, IEnvironment, pEnvironment);
+    EAF_GET_IFACE2(pBroker, ILibrary, pLib);
+    EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
+    EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
     
     
     INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true);
@@ -331,7 +325,7 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
         if (pierIdx == startPierIdx)
         {
             PoiList vPoi;
-            GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+            EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
             pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_ERECTED_SEGMENT, &vPoi);
             poi = vPoi.front();
 
@@ -340,27 +334,27 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
         else if (pierIdx == endPierIdx)
         {
             PoiList vPoi;
-            GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+            EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
             pPoi->GetPointsOfInterest(segmentKey, POI_10L | POI_ERECTED_SEGMENT, &vPoi);
             poi = vPoi.front();
         }
         else
         {
-            GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+            EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
             poi = pPoi->GetPierPointOfInterest(girderKey, pierIdx);
         }
 
-        GET_IFACE2(pBroker, ICamber, pCamber);
+        EAF_GET_IFACE2(pBroker, ICamber, pCamber);
         Float64 slope2 = pCamber->GetExcessCamberRotation(poi, pgsTypes::CreepTime::Max);
         (*pTable)(row, col++) << scalar.SetValue(slope2);
 
-        GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+        EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
         const CBearingData2* pbd = pIBridgeDesc->GetBearingData(pierIdx, pierFace, girderKey.girderIndex);
 
         Float64 slope3 = slope1 + slope2;
         (*pTable)(row, col++) << scalar.SetValue(slope3);
 
-        GET_IFACE2(pBroker, IGirder, pGirder);
+        EAF_GET_IFACE2(pBroker, IGirder, pGirder);
         Float64 transverse_slope = pGirder->GetOrientation(segmentKey);
         (*pTable)(row, col++) << scalar.SetValue(transverse_slope);
 

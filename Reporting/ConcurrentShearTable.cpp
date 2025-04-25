@@ -32,11 +32,6 @@
 #include <IFace\Intervals.h>
 #include <IFace\ReportOptions.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -72,19 +67,19 @@ CConcurrentShearTable& CConcurrentShearTable::operator= (const CConcurrentShearT
 }
 
 //======================== OPERATIONS =======================================
-void CConcurrentShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
+void CConcurrentShearTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,
                                        const CGirderKey& girderKey,
-                                       IEAFDisplayUnits* pDisplayUnits,
+                                       std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                        IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType) const
 {
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptForceUnitValue, shear, pDisplayUnits->GetGeneralForceUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDisplayUnits->GetMomentUnit(), false );
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -112,9 +107,9 @@ void CConcurrentShearTable::Build(IBroker* pBroker,rptChapter* pChapter,
    *p << p_table;
 
    // Get the interface pointers we need
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
-   GET_IFACE2(pBroker,ILimitStateForces,pLsForces);
+   EAF_GET_IFACE2(pBroker,ILimitStateForces,pLsForces);
 
    pgsTypes::BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
 

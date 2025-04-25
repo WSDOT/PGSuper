@@ -31,11 +31,6 @@
 #include <EAF\EAFApp.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -465,7 +460,7 @@ void SpecLibraryEntry::SetBearingCriteria(const BearingCriteria& criteria)
    m_pImpl->SetBearingCriteria(criteria);
 }
 
-void SpecLibraryEntry::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void SpecLibraryEntry::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;

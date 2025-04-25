@@ -45,11 +45,6 @@
 
 #include <WBFLCogo.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -57,7 +52,7 @@ CLASS
 ****************************************************************************/
 
 
-static void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits);
+static void deflection_and_camber(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
@@ -77,10 +72,9 @@ LPCTSTR CTogaCamberAndDeflectionChapterBuilder::GetName() const
 rptChapter* CTogaCamberAndDeflectionChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pSpec->GetBroker(&pBroker);
+   auto pBroker = pSpec->GetBroker();
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -106,7 +100,7 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTogaCamberAndDeflectionChapter
 //======================== INQUIRY    =======================================
 
 ////////////////////////// PRIVATE    ///////////////////////////////////////
-void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits)
+void deflection_and_camber(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -130,16 +124,16 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker,IEAFDisplayUnit
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dispft, pDisplayUnits->GetSpanLengthUnit(),   true );
 
    // Get the interfaces we need
-   GET_IFACE2(pBroker,ICamber,pCamber);
-   GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
-   GET_IFACE2(pBroker,IProductForces, pProductForces);
-   GET_IFACE2( pBroker, ILibrary, pLib );
-   GET_IFACE2( pBroker, ISpecification, pSpec );
+   EAF_GET_IFACE2(pBroker,ICamber,pCamber);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
+   EAF_GET_IFACE2(pBroker,IProductForces, pProductForces);
+   EAF_GET_IFACE2( pBroker, ILibrary, pLib );
+   EAF_GET_IFACE2( pBroker, ISpecification, pSpec );
 
    CSegmentKey origSegmentKey(TOGA_SPAN,TOGA_ORIG_GDR,0);
    CSegmentKey fabrSegmentKey(TOGA_SPAN,TOGA_FABR_GDR,0);
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetLastNoncompositeInterval();
    IntervalIndexType castDeckIntervalIdx      = pIntervals->GetLastNoncompositeInterval();
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetLastCompositeInterval();

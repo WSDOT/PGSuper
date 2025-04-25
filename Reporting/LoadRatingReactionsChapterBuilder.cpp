@@ -29,11 +29,6 @@
 #include <IFace\Project.h>
 #include <Reporting\VehicularLoadReactionTable.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -53,8 +48,7 @@ LPCTSTR CLoadRatingReactionsChapterBuilder::GetName() const
 rptChapter* CLoadRatingReactionsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
 
    auto pLrGirderRptSpec = std::dynamic_pointer_cast<const CLoadRatingReportSpecificationBase>(pRptSpec);
    if (!pLrGirderRptSpec)
@@ -67,10 +61,10 @@ rptChapter* CLoadRatingReactionsChapterBuilder::Build(const std::shared_ptr<cons
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // Responses from individual live load vehicules
-   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+   EAF_GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
    std::vector<pgsTypes::LiveLoadType> live_load_types;
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
    {
@@ -102,8 +96,8 @@ rptChapter* CLoadRatingReactionsChapterBuilder::Build(const std::shared_ptr<cons
       live_load_types.push_back(pgsTypes::lltPermitRating_Special);
    }
 
-   GET_IFACE2( pBroker, IProductLoads, pProductLoads);
-   GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2( pBroker, IProductLoads, pProductLoads);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
    std::vector<pgsTypes::LiveLoadType>::iterator llTypeIter(live_load_types.begin());

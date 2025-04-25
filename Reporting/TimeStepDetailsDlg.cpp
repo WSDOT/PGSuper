@@ -33,18 +33,13 @@
 #include <IFace\PointOfInterest.h>
 #include <IFace\Bridge.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CTimeStepDetailsDlg dialog
 
 IMPLEMENT_DYNAMIC(CTimeStepDetailsDlg, CDialog)
 
-CTimeStepDetailsDlg::CTimeStepDetailsDlg(IBroker* pBroker,std::shared_ptr<CTimeStepDetailsReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,IntervalIndexType intervalIdx,CWnd* pParent)
+CTimeStepDetailsDlg::CTimeStepDetailsDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<CTimeStepDetailsReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,IntervalIndexType intervalIdx,CWnd* pParent)
 	: CDialog(CTimeStepDetailsDlg::IDD, pParent)
    , m_SliderPos(0)
    , m_pTsRptSpec(pRptSpec)
@@ -82,7 +77,7 @@ BOOL CTimeStepDetailsDlg::OnInitDialog()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE(IBridge,pBridge);
    CComboBox* pcbGirders = (CComboBox*)GetDlgItem(IDC_GIRDERLINE);
    IndexType nGirderLines = pBridge->GetGirderlineCount();
    for ( IndexType gdrIdx = 0; gdrIdx < nGirderLines; gdrIdx++ )
@@ -92,7 +87,7 @@ BOOL CTimeStepDetailsDlg::OnInitDialog()
       pcbGirders->AddString(str);
    }
 
-   GET_IFACE( IIntervals, pIntervals);
+   EAF_GET_IFACE( IIntervals, pIntervals);
    CComboBox* pcbIntervals = (CComboBox*)GetDlgItem(IDC_INTERVAL);
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
@@ -155,7 +150,7 @@ IntervalIndexType CTimeStepDetailsDlg::GetInterval()
 
 void CTimeStepDetailsDlg::UpdatePOI()
 {
-   GET_IFACE(IPointOfInterest,pPOI);
+   EAF_GET_IFACE(IPointOfInterest,pPOI);
    m_vPOI.clear();
    pPOI->GetPointsOfInterest(CSegmentKey(ALL_GROUPS, m_GirderKey.girderIndex, ALL_SEGMENTS),&m_vPOI);
    if (m_Slider.GetSafeHwnd() != nullptr )
@@ -201,7 +196,7 @@ void CTimeStepDetailsDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScroll
 
 void CTimeStepDetailsDlg::UpdateSliderLabel()
 {
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    CString strLabel;
    ASSERT((int)m_SliderPos < (int)m_vPOI.size());

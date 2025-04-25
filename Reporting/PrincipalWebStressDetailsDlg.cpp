@@ -33,11 +33,6 @@
 #include <IFace\PrincipalWebStress.h>
 #include <IFace\Bridge.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CPrincipalWebStressDetailsDlg dialog
@@ -45,7 +40,7 @@ static char THIS_FILE[] = __FILE__;
 IMPLEMENT_DYNAMIC(CPrincipalWebStressDetailsDlg, CDialog)
 
 
-CPrincipalWebStressDetailsDlg::CPrincipalWebStressDetailsDlg(IBroker* pBroker,std::shared_ptr<CPrincipalWebStressDetailsReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,IntervalIndexType intervalIdx,bool bReportAxial, bool bReportShear,CWnd* pParent)
+CPrincipalWebStressDetailsDlg::CPrincipalWebStressDetailsDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<CPrincipalWebStressDetailsReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,IntervalIndexType intervalIdx,bool bReportAxial, bool bReportShear,CWnd* pParent)
 	: CDialog(CPrincipalWebStressDetailsDlg::IDD, pParent)
    , m_SliderPos(0)
    , m_pPwsRptSpec(pRptSpec)
@@ -88,7 +83,7 @@ BOOL CPrincipalWebStressDetailsDlg::OnInitDialog()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE(IBridge,pBridge);
    CComboBox* pcbGirders = (CComboBox*)GetDlgItem(IDC_GIRDERLINE);
    IndexType nGirderLines = pBridge->GetGirderlineCount();
    for ( IndexType gdrIdx = 0; gdrIdx < nGirderLines; gdrIdx++ )
@@ -98,7 +93,7 @@ BOOL CPrincipalWebStressDetailsDlg::OnInitDialog()
       pcbGirders->AddString(str);
    }
 
-   GET_IFACE( IIntervals, pIntervals);
+   EAF_GET_IFACE( IIntervals, pIntervals);
    CComboBox* pcbIntervals = (CComboBox*)GetDlgItem(IDC_INTERVAL);
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
@@ -172,7 +167,7 @@ bool CPrincipalWebStressDetailsDlg::GetReportAxial()
 void CPrincipalWebStressDetailsDlg::UpdatePOI()
 {
    // Would like to call GetPrincipalWebStressPointsOfInterest() here, but we have to analyze all time steps to get the data
-   GET_IFACE(IPointOfInterest,pPOI);
+   EAF_GET_IFACE(IPointOfInterest,pPOI);
    m_vPOI.clear();
    pPOI->GetPointsOfInterest(CSegmentKey(ALL_GROUPS, m_GirderKey.girderIndex, ALL_SEGMENTS),&m_vPOI);
 
@@ -221,7 +216,7 @@ void CPrincipalWebStressDetailsDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBa
 
 void CPrincipalWebStressDetailsDlg::UpdateSliderLabel()
 {
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    CString strLabel;
    ASSERT((int)m_SliderPos < (int)m_vPOI.size());

@@ -48,8 +48,8 @@ bool CWSDOTAgentImp::Init()
 {
    CREATE_LOGFILE("WSDOTAgent");
 
-
-   GetBroker()->AddCLSID(_T("{338AD645-BAF2-41DC-964E-A9DFC8123253}"), _T("{B1A19633-8880-40BC-A3C9-DDF47F7F1844}"));
+   // Maps old agent CLSID to new CLSID since version 3.0
+   m_pBroker->AddCLSID(_T("{338AD645-BAF2-41DC-964E-A9DFC8123253}"), _T("{B1A19633-8880-40BC-A3C9-DDF47F7F1844}"));
 
 
    // Register our reports
@@ -58,20 +58,20 @@ bool CWSDOTAgentImp::Init()
    //
    // Create report spec builders
    //
-   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pGirderRptSpecBuilder( std::make_shared<CGirderReportSpecificationBuilder>(GetBroker(), CGirderKey(0, 0)));
-   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pGirderLineRptSpecBuilder( std::make_shared<CGirderLineReportSpecificationBuilder>(GetBroker()) );
+   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pGirderRptSpecBuilder( std::make_shared<CGirderReportSpecificationBuilder>(m_pBroker, CGirderKey(0, 0)));
+   std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pGirderLineRptSpecBuilder( std::make_shared<CGirderLineReportSpecificationBuilder>(m_pBroker) );
 
    EAF_GET_IFACE(IDocumentType,pDocType);
    if ( pDocType->IsPGSuperDocument() )
    {
-      std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pMultiViewRptSpecBuilder( std::make_shared<CMultiViewSpanGirderReportSpecificationBuilder>(GetBroker()) );
+      std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pMultiViewRptSpecBuilder( std::make_shared<CMultiViewSpanGirderReportSpecificationBuilder>(m_pBroker) );
 
       // WSDOT Girder Schedule
       std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder(std::make_shared<WBFL::Reporting::ReportBuilder>(_T("WSDOT Girder Schedule")));
 #if defined _DEBUG || defined _BETA_VERSION
       pRptBuilder->IncludeTimingChapter();
 #endif
-      pRptBuilder->AddTitlePageBuilder( std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(std::make_shared<CPGSuperTitlePageBuilder>(GetBroker(), pRptBuilder->GetName())));
+      pRptBuilder->AddTitlePageBuilder( std::shared_ptr<WBFL::Reporting::TitlePageBuilder>(std::make_shared<CPGSuperTitlePageBuilder>(m_pBroker, pRptBuilder->GetName())));
       pRptBuilder->SetReportSpecificationBuilder( pMultiViewRptSpecBuilder );
       pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CGirderScheduleChapterBuilder>()) );
       pRptMgr->AddReportBuilder( pRptBuilder );

@@ -41,26 +41,21 @@
 #include <PgsExt\GirderLabel.h>
 #include <PgsExt\Helpers.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
    CDesignOutcomeChapterBuilder
 ****************************************************************************/
 
-void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact);
-void failed_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact);
-void successful_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact);
-void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,IArtifact* pIArtifact);
-void process_artifacts(IBroker* pBroker,ColumnIndexType startIdx, ColumnIndexType endIdx, const std::vector<CGirderKey>& girderKeys, IArtifact* pIArtifact,
+void write_artifact_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact);
+void failed_design(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact);
+void successful_design(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact);
+void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<CGirderKey>& girderKeys,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,IArtifact* pIArtifact);
+void process_artifacts(std::shared_ptr<WBFL::EAF::Broker> pBroker,ColumnIndexType startIdx, ColumnIndexType endIdx, const std::vector<CGirderKey>& girderKeys, IArtifact* pIArtifact,
                        const pgsGirderDesignArtifact** pArtifacts, bool& didFlexure, bool& didShear, bool& didLifting, bool& didHauling, bool& didSlabOffset, bool& didAssumedExcessCamber, bool& isHarped, bool& isTemporary);
-void write_primary_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits,Float64 girderLength, ZoneIndexType nz,const CShearData2* pShearData);
-void write_horiz_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits, Float64 girderLength, const CShearData2* pShearData);
-void write_additional_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits, Float64 girderLength, const CShearData2* pShearData);
+void write_primary_shear_data(rptParagraph* pParagraph, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Float64 girderLength, ZoneIndexType nz,const CShearData2* pShearData);
+void write_horiz_shear_data(rptParagraph* pParagraph, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, Float64 girderLength, const CShearData2* pShearData);
+void write_additional_shear_data(rptParagraph* pParagraph, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, Float64 girderLength, const CShearData2* pShearData);
 void write_design_notes(rptParagraph* pParagraph, const std::vector<pgsSegmentDesignArtifact::DesignNote>& notes);
 void write_design_failures(rptParagraph* pParagraph, const pgsSegmentDesignArtifact* pArtifact);
 
@@ -191,14 +186,13 @@ rptChapter* CDesignOutcomeChapterBuilder::Build(const std::shared_ptr<const WBFL
 
    std::vector<CGirderKey> girderKeys = pReportSpec->GetGirderKeys();
 
-   CComPtr<IBroker> pBroker;
-   pReportSpec->GetBroker(&pBroker);
+   auto pBroker = pReportSpec->GetBroker();
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2( pBroker, IEAFDisplayUnits, pDisplayUnits );
-   GET_IFACE2( pBroker, IArtifact, pIArtifact );
-   GET_IFACE2( pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2( pBroker, IEAFDisplayUnits, pDisplayUnits );
+   EAF_GET_IFACE2( pBroker, IArtifact, pIArtifact );
+   EAF_GET_IFACE2( pBroker, IBridge, pBridge);
 
    // Write multiple girder table only if we have more than one girder
    std::list<ColumnIndexType> table_cols = ComputeTableCols(girderKeys);
@@ -275,7 +269,7 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CDesignOutcomeChapterBuilder::C
    return std::make_unique<CDesignOutcomeChapterBuilder>();
 }
 
-void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact)
+void write_artifact_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact)
 {
    const CSegmentKey& segmentKey = pArtifact->GetSegmentKey();
 
@@ -284,7 +278,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
    INIT_UV_PROTOTYPE( rptLengthUnitValue, distance, pDisplayUnits->GetXSectionDimUnit(), true );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),       true );
 
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    PoiList vPoi;
    pPoi->GetPointsOfInterest(segmentKey, POI_5L | POI_SPAN, &vPoi);
    ATLASSERT(vPoi.size()==1);
@@ -313,7 +307,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
    {
       GDRCONFIG config = pArtifact->GetSegmentConfiguration();
 
-      GET_IFACE2(pBroker, ISegmentData,pSegmentData);
+      EAF_GET_IFACE2(pBroker, ISegmentData,pSegmentData);
       const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
       const CGirderMaterial* pMaterial = pSegmentData->GetSegmentMaterial(segmentKey);
 
@@ -336,7 +330,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
       {
          // we asked design to fill using grid, but this may be a non-standard design - let's check
          StrandIndexType num_permanent = pArtifact->GetNumHarpedStrands() + pArtifact->GetNumStraightStrands();
-         GET_IFACE2(pBroker,IStrandGeometry, pStrandGeometry );
+         EAF_GET_IFACE2(pBroker,IStrandGeometry, pStrandGeometry );
 
          StrandIndexType ns, nh;
          if (pStrandGeometry->ComputeNumPermanentStrands(num_permanent, segmentKey, &ns, &nh))
@@ -369,7 +363,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
 
       row++;
 
-      GET_IFACE2(pBroker,IStrandGeometry, pStrandGeometry );
+      EAF_GET_IFACE2(pBroker,IStrandGeometry, pStrandGeometry );
 
       // current offsets, measured in absolute
       Float64 abs_offset_end[2], abs_offset_hp[2];
@@ -431,7 +425,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
       {
          HarpedStrandOffsetType HsoEnd = pStrands->GetHarpStrandOffsetMeasurementAtEnd();
 
-         GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+         EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
          const CSplicedGirderData* pGirder = pIBridgeDesc->GetGirder(segmentKey);
          std::_tstring gdrName = pGirder->GetGirderName();
 
@@ -583,7 +577,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
          }
       }
 
-      GET_IFACE2(pBroker,IIntervals,pIntervals);
+      EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
       Float64 ecc_design  = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poiMS, false, &config).Y();
       Float64 ecc_current = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poiMS, false, nullptr).Y();
@@ -603,11 +597,11 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
       (*pTable)(row,2) << stress.SetValue(pMaterial->Concrete.Fc);
       row++;
 
-      GET_IFACE2(pBroker,IBridge,pBridge);
+      EAF_GET_IFACE2(pBroker,IBridge,pBridge);
       if ( (pBridge->GetDeckType()!=pgsTypes::sdtNone) && (options.doDesignSlabOffset != sodPreserveHaunch) )
       {
-         GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-         GET_IFACE2(pBroker,ISpecification,pSpec);
+         EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+         EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
          const CGirderGroupData* pGroup = pIBridgeDesc->GetBridgeDescription()->GetGirderGroup(segmentKey.groupIndex);
          const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
          const CPrecastSegmentData* pSegment = pGirder->GetSegment(segmentKey.segmentIndex);
@@ -645,7 +639,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
 
       if (options.doDesignLifting)
       {
-         GET_IFACE2(pBroker,ISegmentLifting,pSegmentLifting);
+         EAF_GET_IFACE2(pBroker,ISegmentLifting,pSegmentLifting);
 
          (*pTable)(row,0) << _T("Lifting Point Location (Left)");
          (*pTable)(row,1) << distance.SetValue( pArtifact->GetLeftLiftingLocation() );
@@ -660,7 +654,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
 
       if (options.doDesignHauling)
       {
-         GET_IFACE2(pBroker,ISegmentHauling,pSegmentHauling);
+         EAF_GET_IFACE2(pBroker,ISegmentHauling,pSegmentHauling);
 
          (*pTable)(row,0) << _T("Truck Support Location (Leading)");
          (*pTable)(row,1) << distance.SetValue( pArtifact->GetLeadingOverhang() );
@@ -672,7 +666,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
          (*pTable)(row,2) << distance.SetValue( pSegmentHauling->GetTrailingOverhang(segmentKey) );
          row++;
 
-         GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+         EAF_GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
          if ( pSegmentHaulingSpecCriteria->GetHaulingAnalysisMethod() == pgsTypes::HaulingAnalysisMethod::WSDOT )
          {
             (*pTable)(row,0) << _T("Haul Truck");
@@ -711,14 +705,14 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
          *pParagraph << Italic( _T("The current transverse reinforcement design is adequate. No changes are required. Current values are reported below for convenience.") ) <<rptNewLine<<rptNewLine;
       }
 
-      GET_IFACE2(pBroker, IBridge, pBridge);
+      EAF_GET_IFACE2(pBroker, IBridge, pBridge);
       Float64 girder_length = pBridge->GetSegmentLength(segmentKey);
 
       // Design shear data values
       const CShearData2* pShearData = pArtifact->GetShearData();
 
       // Current values
-      GET_IFACE2(pBroker, IShear, pShear);
+      EAF_GET_IFACE2(pBroker, IShear, pShear);
       const CShearData2* p_curr_shear_data = pShear->GetSegmentShearData(segmentKey);
 
       bool doWarnCompareLibrary;
@@ -822,8 +816,8 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
       if (pArtifact->GetDoDesignFlexure()!=dtNoDesign && design_success)
       {
          // Notes from a successful flexural design
-         GET_IFACE2(pBroker,IMaterials,pMaterial);
-         GET_IFACE2(pBroker,ILimits,pLimits);
+         EAF_GET_IFACE2(pBroker,IMaterials,pMaterial);
+         EAF_GET_IFACE2(pBroker,ILimits,pLimits);
          pgsTypes::ConcreteType concType = pMaterial->GetSegmentConcreteType(segmentKey);
          Float64 max_girder_fci = pLimits->GetMaxSegmentFci(concType);
          Float64 max_girder_fc = pLimits->GetMaxSegmentFc(concType);
@@ -841,11 +835,11 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
          GDRCONFIG config = pArtifact->GetSegmentConfiguration();
 
          // Create progress window hear to avoid flashing screen at design conclusion (Mantis 1516) 
-         GET_IFACE2(pBroker, IProgress, pProgress);
+         EAF_GET_IFACE2(pBroker, IProgress, pProgress);
          CEAFAutoProgress ap(pProgress);
          pProgress->UpdateMessage(_T("Excess Camber"));
 
-         GET_IFACE2(pBroker,ICamber,pCamber);
+         EAF_GET_IFACE2(pBroker,ICamber,pCamber);
          Float64 excess_camber = pCamber->GetExcessCamber(poiMS,pgsTypes::CreepTime::Max,&config);
          if ( excess_camber < 0 )
          {
@@ -860,7 +854,7 @@ void write_artifact_data(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits*
    }
 }
 
-void successful_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact)
+void successful_design(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact)
 {
    const CSegmentKey& segmentKey = pArtifact->GetSegmentKey();
    ATLASSERT(segmentKey.segmentIndex == 0); // design is only for precast girders which only have one segment
@@ -918,7 +912,7 @@ void successful_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* p
    write_artifact_data(pBroker,pChapter,pDisplayUnits,pArtifact);
 }
 
-void failed_design(IBroker* pBroker,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact)
+void failed_design(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact)
 {
    const CSegmentKey& segmentKey = pArtifact->GetSegmentKey();
 
@@ -1157,17 +1151,17 @@ void write_design_failures(rptParagraph* pParagraph, const pgsSegmentDesignArtif
 }
 
 void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
-                     IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,rptChapter* pChapter,
-                     IEAFDisplayUnits* pDisplayUnits,IArtifact* pIArtifact)
+                     std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<CGirderKey>& girderKeys,rptChapter* pChapter,
+                     std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,IArtifact* pIArtifact)
 {
    INIT_UV_PROTOTYPE( rptForceUnitValue,  force,  pDisplayUnits->GetGeneralForceUnit(), true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, distance, pDisplayUnits->GetXSectionDimUnit(), true );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(),       true );
 
-   GET_IFACE2(pBroker,IStrandGeometry, pStrandGeometry );
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IStrandGeometry, pStrandGeometry );
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    // Since girder types, design info, etc can be different for each girder, process information for all
    // artifacts to get control data
@@ -1341,7 +1335,7 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
             (*pTable)(row++,col) << force.SetValue(config.PrestressConfig.Pjack[pgsTypes::Temporary]);
          }
 
-         GET_IFACE2(pBroker,IIntervals,pIntervals);
+         EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
          IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
          Float64 ecc_design  = pStrandGeometry->GetEccentricity(releaseIntervalIdx, poiMS, false, &config).Y();
          (*pTable)(row++,col) << length.SetValue(ecc_design);
@@ -1407,7 +1401,7 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
    }
 }
 
-void process_artifacts(IBroker* pBroker,ColumnIndexType startIdx, ColumnIndexType endIdx, const std::vector<CGirderKey>& girderKeys, IArtifact* pIArtifact,
+void process_artifacts(std::shared_ptr<WBFL::EAF::Broker> pBroker,ColumnIndexType startIdx, ColumnIndexType endIdx, const std::vector<CGirderKey>& girderKeys, IArtifact* pIArtifact,
                        const pgsGirderDesignArtifact** pArtifacts, bool& didFlexure, bool& didShear, bool& didLifting, bool& didHauling, 
                        bool& didSlabOffset, bool& didAssumedExcessCamber, bool& isHarped, bool& isTemporary)
 {
@@ -1458,7 +1452,7 @@ void process_artifacts(IBroker* pBroker,ColumnIndexType startIdx, ColumnIndexTyp
       {
          didSlabOffset = true;
 
-         GET_IFACE2(pBroker,ISpecification,pSpec);
+         EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
 
          if (options.doDesignSlabOffset == sodDesignHaunch && pSpec->IsAssumedExcessCamberInputEnabled())
          {
@@ -1481,7 +1475,7 @@ void process_artifacts(IBroker* pBroker,ColumnIndexType startIdx, ColumnIndexTyp
    }
 }
 
-void write_primary_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits, Float64 girderLength, ZoneIndexType nz, const CShearData2* pShearData)
+void write_primary_shear_data(rptParagraph* pParagraph, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, Float64 girderLength, ZoneIndexType nz, const CShearData2* pShearData)
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -1589,7 +1583,7 @@ void write_primary_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDispl
    }
 }
 
-void write_horiz_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits, Float64 girderLength,const CShearData2* pShearData)
+void write_horiz_shear_data(rptParagraph* pParagraph, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, Float64 girderLength,const CShearData2* pShearData)
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), true );
@@ -1689,7 +1683,7 @@ void write_horiz_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplay
    }
 }
 
-void write_additional_shear_data(rptParagraph* pParagraph, IEAFDisplayUnits* pDisplayUnits, Float64 girderLength, const CShearData2* pShearData)
+void write_additional_shear_data(rptParagraph* pParagraph, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, Float64 girderLength, const CShearData2* pShearData)
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), true );

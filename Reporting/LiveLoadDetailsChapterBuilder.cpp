@@ -34,11 +34,6 @@
 #include <psgLib/LiveLoadLibraryEntry.h>
 #include <psgLib/LiveLoadCriteria.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 void ReportPedestrian(ILiveLoads::PedestrianLoadApplicationType pedType, rptParagraph* pPara)
 {
@@ -80,19 +75,18 @@ LPCTSTR CLiveLoadDetailsChapterBuilder::GetName() const
 rptChapter* CLiveLoadDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pBrokerRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pBrokerRptSpec->GetBroker(&pBroker);
+   auto pBroker = pBrokerRptSpec->GetBroker();
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
+   EAF_GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
 
    bool bDesign = m_bDesign;
    bool bRating = m_bRating;
 
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    bool bPedestrian = pProductLoads->HasPedestrianLoad();
 
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -209,7 +203,7 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(const std::shared_ptr<const WB
 
    if ( bRating )
    {
-      GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
+      EAF_GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
       bool rate_pedestrian = pRatingSpec->IncludePedestrianLiveLoad();
 
       if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
@@ -408,7 +402,7 @@ rptChapter* CLiveLoadDetailsChapterBuilder::Build(const std::shared_ptr<const WB
    return pChapter;
 }
 
-void CLiveLoadDetailsChapterBuilder::ReportLiveLoad(IBroker* pBroker, std::_tstring& load_name, rptParagraph* pPara,IEAFDisplayUnits* pDisplayUnits)
+void CLiveLoadDetailsChapterBuilder::ReportLiveLoad(std::shared_ptr<WBFL::EAF::Broker> pBroker, std::_tstring& load_name, rptParagraph* pPara,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue,         dim,         pDisplayUnits->GetSpanLengthUnit(),       false );
    INIT_UV_PROTOTYPE( rptForceUnitValue,          force,       pDisplayUnits->GetGeneralForceUnit(),     false );
@@ -417,7 +411,7 @@ void CLiveLoadDetailsChapterBuilder::ReportLiveLoad(IBroker* pBroker, std::_tstr
    INIT_UV_PROTOTYPE( rptPressureUnitValue,       pressure,    pDisplayUnits->GetSidewalkPressureUnit(), true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue,         sw,          pDisplayUnits->GetSpanLengthUnit(),       true );
 
-   GET_IFACE2(pBroker,ILibrary,pLibrary);
+   EAF_GET_IFACE2(pBroker,ILibrary,pLibrary);
    const LiveLoadLibraryEntry* ll_entry = pLibrary->GetLiveLoadEntry( load_name.c_str());
 
    // if the entry is nullptr, the name better be HL-93
@@ -435,7 +429,7 @@ void CLiveLoadDetailsChapterBuilder::ReportLiveLoad(IBroker* pBroker, std::_tstr
       {
          *pPara << Bold(_T("AASHTO LRFD 3.6.1.6: ")) << _T("Pedestrian Live Load") << rptNewLine;
 
-         GET_IFACE2(pBroker,ISpecification,pSpec);
+         EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
          const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
          const auto& live_load_criteria = pSpecEntry->GetLiveLoadCriteria();
          *pPara << _T("A pedestrian load of ") << pressure.SetValue(live_load_criteria.PedestrianLoad) << _T(" is applied to sidewalks wider than ") << sw.SetValue(live_load_criteria.MinSidewalkWidth) << _T(" and considered simultaneously with the vehicular design live load.") << rptNewLine;

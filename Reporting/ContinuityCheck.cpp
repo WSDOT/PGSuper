@@ -27,11 +27,6 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -68,11 +63,11 @@ CContinuityCheck& CContinuityCheck::operator= (const CContinuityCheck& rOther)
 
 //======================== OPERATIONS =======================================
 void CContinuityCheck::Build(rptChapter* pChapter,
-                              IBroker* pBroker,const CGirderKey& girderKey,
-                              IEAFDisplayUnits* pDisplayUnits) const
+                              std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,
+                              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
 
    SpanIndexType nSpans = pBridge->GetSpanCount();
 
@@ -102,7 +97,7 @@ void CContinuityCheck::Build(rptChapter* pChapter,
    (*pTable)(0,2) << _T("Boundary Condition");
    (*pTable)(0,3) << _T("Is Compressive?");
 
-   GET_IFACE2(pBroker,IContinuity,pContinuity);
+   EAF_GET_IFACE2(pBroker,IContinuity,pContinuity);
 
    PierIndexType nPiers = pBridge->GetPierCount();
    RowIndexType row = 1;

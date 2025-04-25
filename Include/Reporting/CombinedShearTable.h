@@ -25,7 +25,7 @@
 
 #include <Reporting\ReportingExp.h>
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 
@@ -68,9 +68,9 @@ public:
    //------------------------------------------------------------------------
    // Builds the combined results table
    // bDesign and bRating are only considered from stage = pgsTypes::BridgeSite3
-   virtual void Build(IBroker* pBroker, rptChapter* pChapter,
+   virtual void Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                       const CGirderKey& girderKey,
-                      IEAFDisplayUnits* pDisplayUnits,
+                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                       IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType,
                       bool bDesign,bool bRating) const;
 
@@ -83,21 +83,21 @@ protected:
    // GROUP: OPERATORS
    // GROUP: OPERATIONS
 
-   void BuildCombinedDeadTable(IBroker* pBroker, rptChapter* pChapter,
+   void BuildCombinedDeadTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                       const CGirderKey& girderKey,
-                      IEAFDisplayUnits* pDisplayUnits,
+                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                       IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType,
                       bool bDesign=true,bool bRating=true) const;
 
-   void BuildCombinedLiveTable(IBroker* pBroker, rptChapter* pChapter,
+   void BuildCombinedLiveTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                       const CGirderKey& girderKey,
-                      IEAFDisplayUnits* pDisplayUnits,
+                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                       pgsTypes::AnalysisType analysisType,
                       bool bDesign=true,bool bRating=true) const;
 
-   void BuildLimitStateTable(IBroker* pBroker, rptChapter* pChapter,
+   void BuildLimitStateTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                       const CGirderKey& girderKey,
-                      IEAFDisplayUnits* pDisplayUnits,
+                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                       IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType,
                       bool bDesign=true,bool bRating=true) const;
    //------------------------------------------------------------------------

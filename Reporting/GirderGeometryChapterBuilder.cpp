@@ -34,17 +34,12 @@
 
 #include <PgsExt\PrecastSegmentData.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-void girder_points(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter);
-void girder_offsets(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter);
-void girder_spacing(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter);
-void girder_ends(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter);
-void girder_lengths(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter);
+void girder_points(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptChapter* pChapter);
+void girder_offsets(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptChapter* pChapter);
+void girder_spacing(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptChapter* pChapter);
+void girder_ends(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptChapter* pChapter);
+void girder_lengths(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptChapter* pChapter);
 
 /****************************************************************************
 CLASS
@@ -73,10 +68,9 @@ rptChapter* CGirderGeometryChapterBuilder::Build(const std::shared_ptr<const WBF
 
    auto pSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
-   pSpec->GetBroker(&pBroker);
+   auto pBroker = pSpec->GetBroker();
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -114,7 +108,7 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CGirderGeometryChapterBuilder::
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
 
-void girder_points(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter)
+void girder_points(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptChapter* pChapter)
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pPara << _T("Girder Points");
@@ -126,9 +120,9 @@ void girder_points(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, cogoPoint, pDisplayUnits->GetAlignmentLengthUnit(), false );
 
-   GET_IFACE2(pBroker, IBridge,pBridge);
-   GET_IFACE2(pBroker, IGirder,pGdr);
-   GET_IFACE2(pBroker, IRoadway,pAlignment);
+   EAF_GET_IFACE2(pBroker, IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker, IGirder,pGdr);
+   EAF_GET_IFACE2(pBroker, IRoadway,pAlignment);
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
@@ -337,7 +331,7 @@ void girder_points(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
    }// next group
 }
 
-void girder_offsets(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter)
+void girder_offsets(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptChapter* pChapter)
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pPara << _T("Girder Offsets");
@@ -349,9 +343,9 @@ void girder_offsets(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, cogoPoint, pDisplayUnits->GetAlignmentLengthUnit(), false );
 
-   GET_IFACE2(pBroker, IBridge,pBridge);
-   GET_IFACE2(pBroker, IGirder,pGdr);
-   GET_IFACE2(pBroker, IRoadway,pAlignment);
+   EAF_GET_IFACE2(pBroker, IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker, IGirder,pGdr);
+   EAF_GET_IFACE2(pBroker, IRoadway,pAlignment);
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
@@ -558,13 +552,13 @@ void girder_offsets(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
    } // next group
 }
 
-void girder_lengths(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter)
+void girder_lengths(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptChapter* pChapter)
 {
    USES_CONVERSION;
 
-   GET_IFACE2(pBroker, IDocumentType, pDocType);
+   EAF_GET_IFACE2(pBroker, IDocumentType, pDocType);
 
-   GET_IFACE2(pBroker, IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    SpanIndexType nSpans = pBridge->GetSpanCount();
 
@@ -734,7 +728,7 @@ void girder_lengths(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter*
    } // next group
 }
 
-void girder_spacing(IBroker*pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter)
+void girder_spacing(std::shared_ptr<WBFL::EAF::Broker>pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptChapter* pChapter)
 {
    USES_CONVERSION;
 
@@ -752,8 +746,8 @@ void girder_spacing(IBroker*pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
    angle_formatter.CoCreateInstance(CLSID_AngleDisplayUnitFormatter);
    angle_formatter->put_Signed(VARIANT_TRUE);
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
-   GET_IFACE2(pBroker, IBridgeDescription, pBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pBridgeDesc);
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    SpanIndexType nSpans = pBridge->GetSpanCount();
@@ -933,14 +927,14 @@ void girder_spacing(IBroker*pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* 
 }
 
 
-void girder_ends(IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits,rptChapter* pChapter)
+void girder_ends(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptChapter* pChapter)
 {
    USES_CONVERSION;
 
-   GET_IFACE2(pBroker, IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
 
-   GET_IFACE2(pBroker, IDocumentType, pDocType);
+   EAF_GET_IFACE2(pBroker, IDocumentType, pDocType);
 
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    if ( pDocType->IsPGSuperDocument() )

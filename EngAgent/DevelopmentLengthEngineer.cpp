@@ -45,7 +45,7 @@ pgsDevelopmentLengthEngineer::~pgsDevelopmentLengthEngineer()
 {
 }
 
-void pgsDevelopmentLengthEngineer::SetBroker(IBroker* pBroker)
+void pgsDevelopmentLengthEngineer::SetBroker(std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
    m_pBroker = pBroker;
 }
@@ -70,23 +70,23 @@ const std::shared_ptr<pgsDevelopmentLength> pgsDevelopmentLengthEngineer::GetDev
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   GET_IFACE(IIntervals, pIntervals);
+   EAF_GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    IntervalIndexType intervalIdx = nIntervals - 1;
 
    // NOTE: The fpe we want must account for transfer length effects
    // The fpe returned from the IPretensionForce interface is the basic value so we compute it here as P/A
    // since P is adjusted for transfer effects
-   GET_IFACE(IPretensionForce, pPrestressForce);
+   EAF_GET_IFACE(IPretensionForce, pPrestressForce);
    Float64 Ppe = pPrestressForce->GetPrestressForce(poi, strandType, intervalIdx, pgsTypes::End, pgsTypes::TransferLengthType::Maximum, pConfig);
    // NOTE: development length is related to strength limit states so we want to use the maximum transfer length.
 
-   GET_IFACE(IStrandGeometry, pStrandGeom);
+   EAF_GET_IFACE(IStrandGeometry, pStrandGeom);
    Float64 Aps = pStrandGeom->GetStrandArea(poi, intervalIdx, strandType, pConfig);
 
    Float64 fpe = IsZero(Aps) ? 0 : Ppe / Aps;
 
-   GET_IFACE(IMomentCapacity, pMomCap);
+   EAF_GET_IFACE(IMomentCapacity, pMomCap);
    const MOMENTCAPACITYDETAILS* pmcd = pMomCap->GetMomentCapacityDetails(intervalIdx, poi, true/*positive moment*/, pConfig);
    Float64 fps = IsZero(Aps) ? 0 : pmcd->fps_avg; // fps_avg is for permanent strands... if either Straight or Harped is zero, then this should be zero for that strand type
 
@@ -105,7 +105,7 @@ const std::shared_ptr<pgsDevelopmentLength> pgsDevelopmentLengthEngineer::GetDev
 {
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   GET_IFACE(IMaterials, pMaterials);
+   EAF_GET_IFACE(IMaterials, pMaterials);
    const auto* pStrand = pMaterials->GetStrandMaterial(segmentKey, strandType);
 
    std::shared_ptr<pgsDevelopmentLength> details;
@@ -117,13 +117,13 @@ const std::shared_ptr<pgsDevelopmentLength> pgsDevelopmentLengthEngineer::GetDev
    }
    else if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
    {
-      GET_IFACE(IPretensionForce, pPrestress);
+      EAF_GET_IFACE(IPretensionForce, pPrestress);
       Float64 lt = pPrestress->GetTransferLength(segmentKey, strandType, pgsTypes::TransferLengthType::Maximum, pConfig);
       details = std::make_shared<pgsUHPCDevelopmentLength>(lt, db, fpe, fps);
    }
    else
    {
-      GET_IFACE(IGirder, pGirder);
+      EAF_GET_IFACE(IGirder, pGirder);
       Float64 mbrDepth = pGirder->GetHeight(poi);
       details = std::make_shared<pgsLRFDDevelopmentLength>(db, fpe, fps, mbrDepth, bDebonded);
    }
@@ -154,7 +154,7 @@ Float64 pgsDevelopmentLengthEngineer::GetDevelopmentLengthAdjustment(const pgsPo
 
    Float64 Xpoi = poi.GetDistFromStart();
 
-   GET_IFACE(IStrandGeometry, pStrandGeom);
+   EAF_GET_IFACE(IStrandGeometry, pStrandGeom);
    Float64 bond_start, bond_end;
    bool bDebonded = pStrandGeom->IsStrandDebonded(segmentKey, strandIdx, strandType, pConfig, &bond_start, &bond_end);
    bool bExtendedStrand = pStrandGeom->IsExtendedStrand(poi, strandIdx, strandType, pConfig);
@@ -175,7 +175,7 @@ Float64 pgsDevelopmentLengthEngineer::GetDevelopmentLengthAdjustment(const pgsPo
    else
    {
       // no debonding, bond length is to ends of girder
-      GET_IFACE(IBridge, pBridge);
+      EAF_GET_IFACE(IBridge, pBridge);
       Float64 gdr_length = pBridge->GetSegmentLength(segmentKey);
 
       left_bonded_length = Xpoi;
@@ -191,7 +191,7 @@ Float64 pgsDevelopmentLengthEngineer::GetDevelopmentLengthAdjustment(const pgsPo
    }
    else
    {
-      GET_IFACE(IPretensionForce, pPrestressForce);
+      EAF_GET_IFACE(IPretensionForce, pPrestressForce);
       const std::shared_ptr<pgsTransferLength> pXferLength = pPrestressForce->GetTransferLengthDetails(poi.GetSegmentKey(), strandType, pgsTypes::TransferLengthType::Maximum,pConfig);
       const std::shared_ptr<pgsDevelopmentLength> pDevLength = GetDevelopmentLengthDetails(poi, strandType, bDebonded, fps, fpe, pConfig);
       Float64 xfer_length = pXferLength->GetTransferLength();
@@ -220,7 +220,7 @@ Float64 pgsDevelopmentLengthEngineer::GetDevelopmentLengthAdjustment(const pgsPo
 
 void pgsDevelopmentLengthEngineer::ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const
 {
-   GET_IFACE(IMaterials, pMaterials);
+   EAF_GET_IFACE(IMaterials, pMaterials);
    if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC)
    {
       pgsPCIUHPCDevelopmentLengthReporter reporter(m_pBroker, this);
@@ -320,7 +320,7 @@ Float64 pgsUHPCDevelopmentLength::GetDevelopmentLength() const
 ////////////////////////
 ////////////////////////
 
-pgsDevelopmentLengthReporterBase::pgsDevelopmentLengthReporterBase(IBroker* pBroker,const pgsDevelopmentLengthEngineer* pEngineer) :
+pgsDevelopmentLengthReporterBase::pgsDevelopmentLengthReporterBase(std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsDevelopmentLengthEngineer* pEngineer) :
    m_pBroker(pBroker),m_pEngineer(pEngineer)
 {
 }
@@ -332,16 +332,16 @@ void pgsDevelopmentLengthReporterBase::ReportDevelopmentLengthDetails(const CSeg
 
    (*pPara) << _T("Development Length") << rptNewLine;
 
-   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
    pgsTypes::AdjustableStrandType adj_type = pSegment->Strands.GetAdjustableStrandType();
    m_AdjustableStrandName = pgsTypes::asHarped == adj_type ? _T("Harped") : _T("Adj. Straight");
 
-   GET_IFACE(IDocumentType, pDocType);
+   EAF_GET_IFACE(IDocumentType, pDocType);
    bool bIsPGSplice = pDocType->IsPGSpliceDocument();
    m_PoiType = (bIsPGSplice ? POI_ERECTED_SEGMENT : POI_SPAN);
 
-   GET_IFACE(IPointOfInterest, pPoi);
+   EAF_GET_IFACE(IPointOfInterest, pPoi);
    pPoi->GetPointsOfInterest(segmentKey, &m_vPoi);
 }
 
@@ -364,7 +364,7 @@ const PoiList& pgsDevelopmentLengthReporterBase::GetPoiList() const
 ////////////////////////
 ////////////////////////
 
-pgsLRFDDevelopmentLengthReporter::pgsLRFDDevelopmentLengthReporter(IBroker* pBroker,const pgsDevelopmentLengthEngineer* pEngineer) :
+pgsLRFDDevelopmentLengthReporter::pgsLRFDDevelopmentLengthReporter(std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsDevelopmentLengthEngineer* pEngineer) :
    pgsDevelopmentLengthReporterBase(pBroker,pEngineer)
 {
 }
@@ -373,7 +373,7 @@ void pgsLRFDDevelopmentLengthReporter::ReportDevelopmentLengthDetails(const CSeg
 {
    __super::ReportDevelopmentLengthDetails(segmentKey, pChapter);
 
-   GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
+   EAF_GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
    INIT_UV_PROTOTYPE(rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), false);
    INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
    INIT_UV_PROTOTYPE(rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false);
@@ -471,7 +471,7 @@ void pgsLRFDDevelopmentLengthReporter::ReportDevelopmentLengthDetails(const CSeg
 ////////////////////////
 ////////////////////////
 
-pgsPCIUHPCDevelopmentLengthReporter::pgsPCIUHPCDevelopmentLengthReporter(IBroker* pBroker,const pgsDevelopmentLengthEngineer* pEngineer) :
+pgsPCIUHPCDevelopmentLengthReporter::pgsPCIUHPCDevelopmentLengthReporter(std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsDevelopmentLengthEngineer* pEngineer) :
    pgsDevelopmentLengthReporterBase(pBroker,pEngineer)
 {
 }
@@ -480,7 +480,7 @@ void pgsPCIUHPCDevelopmentLengthReporter::ReportDevelopmentLengthDetails(const C
 {
    __super::ReportDevelopmentLengthDetails(segmentKey, pChapter);
 
-   GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
+   EAF_GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
    INIT_UV_PROTOTYPE(rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), false);
    INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
    INIT_UV_PROTOTYPE(rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false);
@@ -548,7 +548,7 @@ void pgsPCIUHPCDevelopmentLengthReporter::ReportDevelopmentLengthDetails(const C
 ////////////////////////
 ////////////////////////
 
-pgsUHPCDevelopmentLengthReporter::pgsUHPCDevelopmentLengthReporter(IBroker* pBroker,const pgsDevelopmentLengthEngineer* pEngineer) :
+pgsUHPCDevelopmentLengthReporter::pgsUHPCDevelopmentLengthReporter(std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsDevelopmentLengthEngineer* pEngineer) :
    pgsDevelopmentLengthReporterBase(pBroker,pEngineer)
 {
 }
@@ -557,7 +557,7 @@ void pgsUHPCDevelopmentLengthReporter::ReportDevelopmentLengthDetails(const CSeg
 {
    __super::ReportDevelopmentLengthDetails(segmentKey, pChapter);
 
-   GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
+   EAF_GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
    INIT_UV_PROTOTYPE(rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), false);
    INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
    INIT_UV_PROTOTYPE(rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false);

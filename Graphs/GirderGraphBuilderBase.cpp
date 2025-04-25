@@ -47,11 +47,6 @@
 
 #include <MFCTools\MFCTools.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // create a dummy unit conversion tool to pacify the graph constructor
@@ -115,7 +110,7 @@ CEAFGraphControlWindow* CGirderGraphBuilderBase::GetGraphControlWindow()
 
 bool CGirderGraphBuilderBase::HandleDoubleClick(UINT nFlags,CPoint point)
 {
-   GET_IFACE(IEditByUI, pEditByUI);
+   EAF_GET_IFACE(IEditByUI, pEditByUI);
    CGirderKey girderKey(m_pGraphController->GetGirderKey());
    if (girderKey.groupIndex == ALL_GROUPS)
    {
@@ -135,7 +130,7 @@ bool CGirderGraphBuilderBase::HandleDoubleClick(UINT nFlags,CPoint point)
 
 int CGirderGraphBuilderBase::InitializeGraphController(CWnd* pParent,UINT nID)
 {
-   EAFGetBroker(&m_pBroker);
+   m_pBroker = EAFGetBroker();
 
    m_pGraphController = CreateGraphController();
 
@@ -172,7 +167,7 @@ void CGirderGraphBuilderBase::UpdateXAxis()
       m_pXFormat = nullptr;
    }
 
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::LengthData& lengthUnit = pDisplayUnits->GetSpanLengthUnit();
    m_pXFormat = new WBFL::Units::LengthTool(lengthUnit);
    m_Graph.SetXAxisValueFormat(m_pXFormat);
@@ -189,7 +184,7 @@ void CGirderGraphBuilderBase::UpdateYAxis()
       m_pYFormat = nullptr;
    }
 
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::StressData& stressUnit = pDisplayUnits->GetStressUnit();
    m_pYFormat = new WBFL::Units::StressTool(stressUnit);
    m_Graph.SetYAxisValueFormat(m_pYFormat);
@@ -229,7 +224,7 @@ Float64 CGirderGraphBuilderBase::ComputeShift(const CGirderKey& girderKey)
       return 0;
    }
 
-   GET_IFACE(IPointOfInterest,pPoi);
+   EAF_GET_IFACE(IPointOfInterest,pPoi);
    pgsPointOfInterest poi(CSegmentKey(girderKey,0),0.0);
    Float64 Xgl = pPoi->ConvertPoiToGirderlineCoordinate(poi);
 
@@ -242,7 +237,7 @@ Float64 CGirderGraphBuilderBase::ComputeShift(const CGirderKey& girderKey)
 
 void CGirderGraphBuilderBase::GetXValues(const PoiList& vPoi,std::vector<Float64>* pXVals)
 {
-   GET_IFACE(IPointOfInterest,pPoi);
+   EAF_GET_IFACE(IPointOfInterest,pPoi);
 
    pXVals->clear();
    pXVals->reserve(vPoi.size());
@@ -338,11 +333,11 @@ void CGirderGraphBuilderBase::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
 
       // make the minimum size of the graph include the size of the girder. this makes the girder display
       // properly when there aren't any points to graph
-      GET_IFACE(IBridge, pBridge);
+      EAF_GET_IFACE(IBridge, pBridge);
       std::vector<CGirderKey> vGirderKeys;
       pBridge->GetGirderline(girderKey, &vGirderKeys);
 
-      GET_IFACE(IPointOfInterest,pPoi);
+      EAF_GET_IFACE(IPointOfInterest,pPoi);
       pgsPointOfInterest startPoi(CSegmentKey(vGirderKeys.front(),0),0.0);
       Float64 Xstart = pPoi->ConvertPoiToGirderlineCoordinate(startPoi);
 

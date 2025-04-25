@@ -25,13 +25,9 @@
 #include <Reporting\BrokerReportSpecification.h>
 #include <Reporting\SpanGirderReportDlg.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-CBrokerReportSpecificationBuilder::CBrokerReportSpecificationBuilder(IBroker* pBroker)
+#pragma Reminder("WORKING HERE - Removing COM - caching the broker can lead to circular reference and memory leaks")
+// its ok if this is shared if the report specification builds are deleted before the agent/broker shutdowns (like in Agent::Reset())
+CBrokerReportSpecificationBuilder::CBrokerReportSpecificationBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
    m_pBroker = pBroker;
 }
@@ -44,7 +40,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CBrokerReportSpecification
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   CSpanGirderReportDlg dlg(m_pBroker,rptDesc,CSpanGirderReportDlg::Mode::ChaptersOnly,pOldRptSpec);
+   CSpanGirderReportDlg dlg(m_pBroker, rptDesc, CSpanGirderReportDlg::Mode::ChaptersOnly, pOldRptSpec);
 
    if ( dlg.DoModal() == IDOK )
    {

@@ -25,11 +25,6 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -414,9 +409,8 @@ void pgsAlternativeTensileStressCalculator::ComputeReqdFcTens(const CSegmentKey&
 {
    if ( 0 < ft )
    {
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2(pBroker,IMaterials,pMaterials);
+      auto broker = EAFGetBroker();
+      EAF_GET_IFACE2(broker,IMaterials,pMaterials);
       Float64 lambda = pMaterials->GetSegmentLambda(segmentKey);
 
       // Without rebar

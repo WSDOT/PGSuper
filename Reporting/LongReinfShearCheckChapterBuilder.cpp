@@ -41,11 +41,6 @@
 #include <IFace\Intervals.h>
 #include <IFace\ReportOptions.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 /****************************************************************************
@@ -53,52 +48,52 @@ CLASS
    CLongReinfShearCheckChapterBuilder
 ****************************************************************************/
 
-   void  create_table1_design(rptChapter* pChapter,IBroker* pBroker,
+   void  create_table1_design(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,
                               IntervalIndexType intervalIdx,
                               pgsTypes::LimitState ls,
                               bool bUHPC,
                               const pgsGirderArtifact* pGirderArtifact,
-                              IEAFDisplayUnits* pDisplayUnits,
+                              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                               Uint16 level);
 
-   void create_table2_design(rptChapter* pChapter,IBroker* pBroker,
+   void create_table2_design(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,
                               IntervalIndexType intervalIdx,
                               pgsTypes::LimitState ls,
                               bool bUHPC,
                               const pgsGirderArtifact* pGirderArtifact,
-                              IEAFDisplayUnits* pDisplayUnits,
+                              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                               Uint16 level);
 
-   void create_table3_design(rptChapter* pChapter, IBroker* pBroker,
+   void create_table3_design(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker,
                               IntervalIndexType intervalIdx,
                               pgsTypes::LimitState ls,
                               bool bUHPC,
                               const pgsGirderArtifact* pGirderArtifact,
-                              IEAFDisplayUnits* pDisplayUnits,
+                              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                               Uint16 level);
 
-   void create_table1_rating(rptChapter* pChapter,IBroker* pBroker,
+   void create_table1_rating(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,
                               IntervalIndexType intervalIdx,
                               pgsTypes::LimitState ls,
                               bool bUHPC,
                               const pgsRatingArtifact::LongitudinalReinforcementForShear& longReinfShear,
-                              IEAFDisplayUnits* pDisplayUnits,
+                              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                               Uint16 level);
 
-   void create_table2_rating(rptChapter* pChapter,IBroker* pBroker,
+   void create_table2_rating(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,
                               IntervalIndexType intervalIdx,
                               pgsTypes::LimitState ls,
                               bool bUHPC,
                               const pgsRatingArtifact::LongitudinalReinforcementForShear& longReinfShear,
-                              IEAFDisplayUnits* pDisplayUnits,
+                              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                               Uint16 level);
 
-   void create_table3_rating(rptChapter* pChapter,IBroker* pBroker,
+   void create_table3_rating(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,
                               IntervalIndexType intervalIdx,
                               pgsTypes::LimitState ls,
                               bool bUHPC,
                               const pgsRatingArtifact::LongitudinalReinforcementForShear& longReinfShear,
-                              IEAFDisplayUnits* pDisplayUnits,
+                              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                               Uint16 level);
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
@@ -120,8 +115,7 @@ LPCTSTR CLongReinfShearCheckChapterBuilder::GetName() const
 rptChapter* CLongReinfShearCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pBrokerRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pBrokerRptSpec->GetBroker(&pBroker);
+   auto pBroker = pBrokerRptSpec->GetBroker();
 
    bool bDesign = m_bDesign;
    bool bRating = m_bRating;
@@ -145,8 +139,8 @@ rptChapter* CLongReinfShearCheckChapterBuilder::Build(const std::shared_ptr<cons
    }
 
    bool bUHPC = false;
-   GET_IFACE2(pBroker, IMaterials, pMaterials);
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IMaterials, pMaterials);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
 
    GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    GroupIndexType lastGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? pBridge->GetGirderGroupCount() - 1 : firstGroupIdx);
@@ -181,19 +175,18 @@ rptChapter* CLongReinfShearCheckChapterBuilder::Build(const std::shared_ptr<cons
 void CLongReinfShearCheckChapterBuilder::BuildForDesign(rptChapter* pChapter,const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,bool bUHPC, Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
 
    bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
    pgsTypes::LimitState ls = pgsTypes::StrengthI;
 
-   GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
+   EAF_GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
    
    rptParagraph* pParagraph;
@@ -241,7 +234,7 @@ void CLongReinfShearCheckChapterBuilder::BuildForDesign(rptChapter* pChapter,con
    pParagraph = new rptParagraph();
    *pChapter << pParagraph;
 
-   GET_IFACE2(pBroker,IArtifact,pIArtifact);
+   EAF_GET_IFACE2(pBroker,IArtifact,pIArtifact);
    const pgsGirderArtifact* pGirderArtifact = pIArtifact->GetGirderArtifact(girderKey);
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -274,28 +267,28 @@ void CLongReinfShearCheckChapterBuilder::BuildForRating(rptChapter* pChapter, co
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
    CGirderKey girderKey;
 
    if ( pGdrRptSpec )
    {
-      pGdrRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrRptSpec->GetBroker();
       girderKey = pGdrRptSpec->GetGirderKey();
    }
    else
    {
-      pGdrLineRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrLineRptSpec->GetBroker();
       girderKey = pGdrLineRptSpec->GetGirderKey();
    }
 
-   GET_IFACE2(pBroker, IGirderTendonGeometry, pTendonGeom);
-   GET_IFACE2(pBroker, IArtifact, pIArtifact);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker, IGirderTendonGeometry, pTendonGeom);
+   EAF_GET_IFACE2(pBroker, IArtifact, pIArtifact);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType intervalIdx = pIntervals->GetLiveLoadInterval();
 
-   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+   EAF_GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
    std::vector<pgsTypes::LimitState> limitStates;
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) && pRatingSpec->RateForShear(pgsTypes::lrDesign_Inventory) )
    {
@@ -332,7 +325,7 @@ void CLongReinfShearCheckChapterBuilder::BuildForRating(rptChapter* pChapter, co
       limitStates.push_back(pgsTypes::StrengthII_PermitSpecial);
    }
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(girderKey,&vGirderKeys);
    for(const auto& thisGirderKey : vGirderKeys)
@@ -395,7 +388,7 @@ void CLongReinfShearCheckChapterBuilder::BuildForRating(rptChapter* pChapter, co
          INIT_UV_PROTOTYPE( rptAreaPerLengthValue, avs,      pDisplayUnits->GetAvOverSUnit(),         false );
          INIT_UV_PROTOTYPE( rptLengthUnitValue,    dim,      pDisplayUnits->GetComponentDimUnit(),    false );
 
-         GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+         EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
          location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
          const pgsRatingArtifact* pRatingArtifact = pIArtifact->GetRatingArtifact(thisGirderKey,ratingType,INVALID_INDEX/*all vehicles*/);
@@ -438,12 +431,12 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLongReinfShearCheckChapterBuil
 //======================== ACCESS     =======================================
 //======================== INQUERY    =======================================
 
-void create_table1_design(rptChapter* pChapter,IBroker* pBroker,
+void create_table1_design(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,
                            IntervalIndexType intervalIdx,
                            pgsTypes::LimitState ls,
                            bool bUHPC,
                            const pgsGirderArtifact* pGirderArtifact,
-                           IEAFDisplayUnits* pDisplayUnits,
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                            Uint16 level)
 {
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
@@ -461,13 +454,13 @@ void create_table1_design(rptChapter* pChapter,IBroker* pBroker,
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
-   GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   EAF_GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
    DuctIndexType nMaxSegmentDucts = pSegmentTendonGeometry->GetMaxDuctCount(girderKey);
 
-   GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
+   EAF_GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
    DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
 
    ColumnIndexType nColumns = 5;
@@ -544,7 +537,7 @@ void create_table1_design(rptChapter* pChapter,IBroker* pBroker,
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
-   GET_IFACE2(pBroker, IReportOptions, pReportOptions);
+   EAF_GET_IFACE2(pBroker, IReportOptions, pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -626,12 +619,12 @@ void create_table1_design(rptChapter* pChapter,IBroker* pBroker,
    } // next segment
 }
 
-void create_table2_design(rptChapter* pChapter,IBroker* pBroker,
+void create_table2_design(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,
                            IntervalIndexType intervalIdx,
                            pgsTypes::LimitState ls,
                            bool bUHPC,
                            const pgsGirderArtifact* pGirderArtifact,
-                           IEAFDisplayUnits* pDisplayUnits,
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                            Uint16 level)
 {
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
@@ -688,10 +681,10 @@ void create_table2_design(rptChapter* pChapter,IBroker* pBroker,
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -732,12 +725,12 @@ void create_table2_design(rptChapter* pChapter,IBroker* pBroker,
 }
 
 
-void create_table3_design(rptChapter* pChapter, IBroker* pBroker,
+void create_table3_design(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker,
                            IntervalIndexType intervalIdx,
                            pgsTypes::LimitState ls,
                            bool bUHPC,
                            const pgsGirderArtifact* pGirderArtifact,
-                           IEAFDisplayUnits* pDisplayUnits,
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                            Uint16 level)
 {
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
@@ -760,10 +753,10 @@ void create_table3_design(rptChapter* pChapter, IBroker* pBroker,
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -804,18 +797,18 @@ void create_table3_design(rptChapter* pChapter, IBroker* pBroker,
 }
 
 //////////////////////////////////////////////////////////////////////////
-void create_table1_rating(rptChapter* pChapter,IBroker* pBroker,
+void create_table1_rating(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,
                            IntervalIndexType intervalIdx,
                            pgsTypes::LimitState ls,
                            bool bUHPC,
                            const pgsRatingArtifact::LongitudinalReinforcementForShear& longReinfShear,
-                           IEAFDisplayUnits* pDisplayUnits,
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                            Uint16 level)
 {
    const CSegmentKey& segmentKey = longReinfShear.front().first.GetSegmentKey();
    CGirderKey girderKey(segmentKey);
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest,    location, pDisplayUnits->GetSpanLengthUnit(),   false );
@@ -831,14 +824,14 @@ void create_table1_rating(rptChapter* pChapter,IBroker* pBroker,
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
-   GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
    DuctIndexType nMaxSegmentDucts = pSegmentTendonGeometry->GetMaxDuctCount(girderKey);;
 
-   GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
+   EAF_GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
    DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
 
    ColumnIndexType nColumns = 5;
@@ -988,15 +981,15 @@ void create_table1_rating(rptChapter* pChapter,IBroker* pBroker,
    }
 }
 
-void create_table2_rating(rptChapter* pChapter,IBroker* pBroker,
+void create_table2_rating(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,
                            IntervalIndexType intervalIdx,
                            pgsTypes::LimitState ls,
                            bool bUHPC,
                            const pgsRatingArtifact::LongitudinalReinforcementForShear& longReinfShear,
-                           IEAFDisplayUnits* pDisplayUnits,
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                            Uint16 level)
 {
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(longReinfShear.front().first.GetSegmentKey());
 
    INIT_UV_PROTOTYPE( rptPointOfInterest,    location, pDisplayUnits->GetSpanLengthUnit(),   false );
@@ -1007,7 +1000,7 @@ void create_table2_rating(rptChapter* pChapter,IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptMomentSectionValue, moment,   pDisplayUnits->GetMomentUnit(),       false );
    INIT_UV_PROTOTYPE( rptAngleUnitValue,     angle,    pDisplayUnits->GetAngleUnit(),        false );
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(longReinfShear.front().first.GetSegmentKey()));
 
    rptRcScalar scalar;
@@ -1064,7 +1057,7 @@ void create_table2_rating(rptChapter* pChapter,IBroker* pBroker,
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
 
    pgsRatingArtifact::LongitudinalReinforcementForShear::const_iterator i(longReinfShear.begin());
    pgsRatingArtifact::LongitudinalReinforcementForShear::const_iterator end(longReinfShear.end());
@@ -1098,21 +1091,21 @@ void create_table2_rating(rptChapter* pChapter,IBroker* pBroker,
 }
 
 
-void create_table3_rating(rptChapter* pChapter,IBroker* pBroker,
+void create_table3_rating(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,
                            IntervalIndexType intervalIdx,
                            pgsTypes::LimitState ls,
                            bool bUHPC,
                            const pgsRatingArtifact::LongitudinalReinforcementForShear& longReinfShear,
-                           IEAFDisplayUnits* pDisplayUnits,
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                            Uint16 level)
 {
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(longReinfShear.front().first.GetSegmentKey());
 
    INIT_UV_PROTOTYPE( rptPointOfInterest,    location, pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptForceSectionValue,  shear,    pDisplayUnits->GetShearUnit(),        false );
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(longReinfShear.front().first.GetSegmentKey()));
 
    rptRcTable* table = rptStyleManager::CreateDefaultTable(4,_T("Longitudinal Reinforcement Shear Check Details - Table 3 of 3"));
@@ -1139,7 +1132,7 @@ void create_table3_rating(rptChapter* pChapter,IBroker* pBroker,
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
 
    pgsRatingArtifact::LongitudinalReinforcementForShear::const_iterator i(longReinfShear.begin());
    pgsRatingArtifact::LongitudinalReinforcementForShear::const_iterator end(longReinfShear.end());

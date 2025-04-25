@@ -26,7 +26,7 @@
 #include <Reporting\ReportingExp.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 
@@ -61,19 +61,19 @@ public:
    //------------------------------------------------------------------------
    virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 
-   static rptParagraph* CreatePointLoadTable(IBroker* pBroker,
+   static rptParagraph* CreatePointLoadTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,
                            const CSpanKey& spanKey,
-                           IEAFDisplayUnits* pDisplayUnits,
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                            Uint16 level, bool bSimplifiedVersion);
 
-   static rptParagraph* CreateDistributedLoadTable(IBroker* pBroker,
+   static rptParagraph* CreateDistributedLoadTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,
                            const CSpanKey& spanKey,
-                           IEAFDisplayUnits* pDisplayUnits,
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                            Uint16 level, bool bSimplifiedVersion);
 
-   static rptParagraph* CreateMomentLoadTable(IBroker* pBroker,
+   static rptParagraph* CreateMomentLoadTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,
                            const CSpanKey& spanKey,
-                           IEAFDisplayUnits* pDisplayUnits,
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                            Uint16 level, bool bSimplifiedVersion);
 
    // GROUP: ACCESS

@@ -5079,30 +5079,30 @@ END_STRSTORAGEMAP
 
 bool CProjectAgentImp::RegInterfaces()
 {
-   m_pBroker->RegisterInterface( IID_IProjectProperties, std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_IEnvironment, std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_IRoadwayData, std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_IBridgeDescription, std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_ISegmentData, std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_IShear, std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_ILongitudinalRebar, std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_ISpecification, std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_IRatingSpecification, std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_ILibraryNames, std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_ILibrary, std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_ILoadModifiers, std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_ISegmentLifting, std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_ISegmentHauling, std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_IImportProjectLibrary, std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_IUserDefinedLoadData, std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_IEvents, std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_ILimits, std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_ILoadFactors, std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_ILiveLoads, std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_IEventMap, std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_IEffectiveFlangeWidth, std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_ILossParameters, std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_IValidate, std::dynamic_pointer_cast<Agent>(shared_from_this()));
+   REGISTER_INTERFACE(IProjectProperties);
+   REGISTER_INTERFACE(IEnvironment);
+   REGISTER_INTERFACE(IRoadwayData);
+   REGISTER_INTERFACE(IBridgeDescription);
+   REGISTER_INTERFACE(ISegmentData);
+   REGISTER_INTERFACE(IShear);
+   REGISTER_INTERFACE(ILongitudinalRebar);
+   REGISTER_INTERFACE(ISpecification);
+   REGISTER_INTERFACE(IRatingSpecification);
+   REGISTER_INTERFACE(ILibraryNames);
+   REGISTER_INTERFACE(ILibrary);
+   REGISTER_INTERFACE(ILoadModifiers);
+   REGISTER_INTERFACE(ISegmentLifting);
+   REGISTER_INTERFACE(ISegmentHauling);
+   REGISTER_INTERFACE(IImportProjectLibrary);
+   REGISTER_INTERFACE(IUserDefinedLoadData);
+   REGISTER_INTERFACE(IEvents);
+   REGISTER_INTERFACE(ILimits);
+   REGISTER_INTERFACE(ILoadFactors);
+   REGISTER_INTERFACE(ILiveLoads);
+   REGISTER_INTERFACE(IEventMap);
+   REGISTER_INTERFACE(IEffectiveFlangeWidth);
+   REGISTER_INTERFACE(ILossParameters);
+   REGISTER_INTERFACE(IValidate);
 
    return true;
 };

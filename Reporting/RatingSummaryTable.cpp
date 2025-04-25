@@ -33,11 +33,11 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\RatingSpecification.h>
 
-rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,CRatingSummaryTable::RatingTableType ratingTableType)
+rptRcTable* CRatingSummaryTable::BuildByLimitState(std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<CGirderKey>& girderKeys,CRatingSummaryTable::RatingTableType ratingTableType)
 {
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
 
    bool bNegMoments = pBridge->ProcessNegativeMoments(ALL_SPANS);
 
@@ -180,7 +180,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const std::v
       }
    }
 
-   GET_IFACE2(pBroker,IArtifact,pArtifact);
+   EAF_GET_IFACE2(pBroker,IArtifact,pArtifact);
    std::shared_ptr<const pgsISummaryRatingArtifact> pRoutineRatingArtifact = pArtifact->GetSummaryRatingArtifact(girderKeys,routine_rating_type,INVALID_INDEX);
    std::shared_ptr<const pgsISummaryRatingArtifact> pSpecialRatingArtifact = pArtifact->GetSummaryRatingArtifact(girderKeys,special_rating_type,INVALID_INDEX);
 
@@ -629,9 +629,9 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(IBroker* pBroker,const std::v
    return table;
 }
 
-rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker, const std::vector<CGirderKey>& girderKeys, pgsTypes::LoadRatingType ratingType)
+rptRcTable* CRatingSummaryTable::BuildByVehicle(std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderKeys, pgsTypes::LoadRatingType ratingType)
 {
-   GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+   EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
    pgsTypes::LiveLoadType llType = ::GetLiveLoadType(ratingType);
 
@@ -641,9 +641,9 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker, const std::vec
       return nullptr;
    }
 
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-   GET_IFACE2(pBroker, IArtifact, pArtifact);
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   EAF_GET_IFACE2(pBroker, IArtifact, pArtifact);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
 
    rptCapacityToDemand rating_factor;
 
@@ -742,11 +742,11 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(IBroker* pBroker, const std::vec
    return pTable;
 }
 
-rptRcTable* CRatingSummaryTable::BuildLoadPosting(IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType,bool* pbMustCloseBridge)
+rptRcTable* CRatingSummaryTable::BuildLoadPosting(std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType,bool* pbMustCloseBridge)
 {
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IArtifact,pArtifact);
+   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IArtifact,pArtifact);
 
    rptCapacityToDemand rating_factor;
    INIT_UV_PROTOTYPE( rptForceUnitValue, tonnage, pDisplayUnits->GetTonnageUnit(), false );
@@ -841,9 +841,9 @@ rptRcTable* CRatingSummaryTable::BuildLoadPosting(IBroker* pBroker,const std::ve
    return table;
 }
 
-rptRcTable* CRatingSummaryTable::BuildEmergencyVehicleLoadPosting(IBroker* pBroker, const std::vector<CGirderKey>& girderKeys)
+rptRcTable* CRatingSummaryTable::BuildEmergencyVehicleLoadPosting(std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderKeys)
 {
-   GET_IFACE2(pBroker, IArtifact, pArtifact);
+   EAF_GET_IFACE2(pBroker, IArtifact, pArtifact);
 
    std::shared_ptr<const pgsISummaryRatingArtifact> pEV2Artifact = pArtifact->GetSummaryRatingArtifact(girderKeys, pgsTypes::lrLegal_Emergency, 0);
    std::shared_ptr<const pgsISummaryRatingArtifact> pEV3Artifact = pArtifact->GetSummaryRatingArtifact(girderKeys, pgsTypes::lrLegal_Emergency, 1);
@@ -881,7 +881,7 @@ rptRcTable* CRatingSummaryTable::BuildEmergencyVehicleLoadPosting(IBroker* pBrok
    }
 
 
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    INIT_UV_PROTOTYPE(rptForceUnitValue, tonnage, pDisplayUnits->GetTonnageUnit(), false);
    rptCapacityToDemand rating_factor;
@@ -946,11 +946,11 @@ rptRcTable* CRatingSummaryTable::BuildEmergencyVehicleLoadPosting(IBroker* pBrok
    return table;
 }
 
-rptRcTable* CRatingSummaryTable::BuildYieldStressRatio(IBroker* pBroker, const std::vector<CGirderKey>& girderKeys, pgsTypes::LoadRatingType ratingType)
+rptRcTable* CRatingSummaryTable::BuildYieldStressRatio(std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderKeys, pgsTypes::LoadRatingType ratingType)
 {
    PRECONDITION(::IsPermitRatingType(ratingType));
 
-   GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+   EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
    pgsTypes::LiveLoadType llType = ::GetLiveLoadType(ratingType);
 
@@ -960,8 +960,8 @@ rptRcTable* CRatingSummaryTable::BuildYieldStressRatio(IBroker* pBroker, const s
       return nullptr;
    }
 
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-   GET_IFACE2(pBroker, IArtifact, pArtifact);
+   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   EAF_GET_IFACE2(pBroker, IArtifact, pArtifact);
 
    rptCapacityToDemand rating_factor;
 

@@ -234,7 +234,7 @@ void BuildAgeAdjustedGirderMaterialModel(IBroker* pBroker,const CPrecastSegmentD
    // recusion and validation errors. Using the age adjusted material object we can
    // delay the calls to GetAgeAdjustedEc until well after the time the bridge model
    // is validated.
-   GET_IFACE2(pBroker,IMaterials,pMaterials);
+   EAF_GET_IFACE2(pBroker,IMaterials,pMaterials);
 
    CComObject<CAgeAdjustedMaterial>* pSegmentMaterial;
    CComObject<CAgeAdjustedMaterial>::CreateInstance(&pSegmentMaterial);
@@ -336,7 +336,7 @@ void BuildAgeAdjustedJointMaterialModel(IBroker* pBroker, const CPrecastSegmentD
    // recusion and validation errors. Using the age adjusted material object we can
    // delay the calls to GetAgeAdjustedEc until well after the time the bridge model
    // is validated.
-   GET_IFACE2(pBroker, IMaterials, pMaterials);
+   EAF_GET_IFACE2(pBroker, IMaterials, pMaterials);
 
    CComObject<CAgeAdjustedMaterial>* pJointMaterial;
    CComObject<CAgeAdjustedMaterial>::CreateInstance(&pJointMaterial);

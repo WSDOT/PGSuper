@@ -22,26 +22,10 @@
 
 #pragma once
 
-
-// SYSTEM INCLUDES
-//
-
-// PROJECT INCLUDES
-//
 #include <PgsExt\PgsExtExp.h>
 #include <PgsExt\HaulingAnalysisArtifact.h>
 #include <PgsExt\PoiMap.h>
-
 #include <IFace\PointOfInterest.h>
-
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
-
-// MISCELLANEOUS
-//
 
 /*****************************************************************************
 CLASS 
@@ -59,52 +43,24 @@ LOG
 class pgsWsdotGirderHaulingChecker: public pgsGirderHaulingChecker
 {
 public:
-   // GROUP: LIFECYCLE
-
-   //------------------------------------------------------------------------
-   // Constructor
-   pgsWsdotGirderHaulingChecker(IBroker* pBroker,StatusGroupIDType statusGroupID);
-
-   //------------------------------------------------------------------------
-   // Destructor
+   pgsWsdotGirderHaulingChecker() = delete;
+   pgsWsdotGirderHaulingChecker(const pgsWsdotGirderHaulingChecker&) = delete;
+   pgsWsdotGirderHaulingChecker& operator=(const pgsWsdotGirderHaulingChecker&) = delete;
+   pgsWsdotGirderHaulingChecker(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID);
    virtual ~pgsWsdotGirderHaulingChecker();
 
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   virtual pgsHaulingAnalysisArtifact* CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE) override;
-   virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey) override;
-   virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang) override;
-   virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey,const HANDLINGCONFIG& config,ISegmentHaulingDesignPointsOfInterest* pPOId) override;
-   virtual pgsHaulingAnalysisArtifact* DesignHauling(const CSegmentKey& segmentKey,HANDLINGCONFIG& config,bool bIgnoreConfigurationLimits,ISegmentHaulingDesignPointsOfInterest* pPOId,bool* bSuccess, SHARED_LOGFILE LOGFILE) override;
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
+   pgsHaulingAnalysisArtifact* CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE) override;
+   pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey) override;
+   pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang) override;
+   pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey,const HANDLINGCONFIG& config,ISegmentHaulingDesignPointsOfInterest* pPOId) override;
+   pgsHaulingAnalysisArtifact* DesignHauling(const CSegmentKey& segmentKey,HANDLINGCONFIG& config,bool bIgnoreConfigurationLimits,ISegmentHaulingDesignPointsOfInterest* pPOId,bool* bSuccess, SHARED_LOGFILE LOGFILE) override;
 
 private:
-   // GROUP: DATA MEMBERS
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    StatusGroupIDType m_StatusGroupID;
    StatusCallbackIDType m_scidBunkPointLocation;
    StatusCallbackIDType m_scidHaulTruck;
 
-   // GROUP: LIFECYCLE
-   // can't construct without a broker
-   pgsWsdotGirderHaulingChecker() = delete;
-
-   // Prevent accidental copying and assignment
-   pgsWsdotGirderHaulingChecker(const pgsWsdotGirderHaulingChecker&) = delete;
-   pgsWsdotGirderHaulingChecker& operator=(const pgsWsdotGirderHaulingChecker&) = delete;
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
 #if defined _DEBUG
    void AnalyzeHauling(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& config,ISegmentHaulingDesignPointsOfInterest* pPOId,WBFL::Stability::HaulingCheckArtifact* pArtifact,const WBFL::Stability::HaulingStabilityProblem** ppStabilityProblem);
 #else
@@ -112,14 +68,4 @@ private:
 #endif
 
    void AnalyzeHauling(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& config,ISegmentHaulingDesignPointsOfInterest* pPOId,pgsWsdotHaulingAnalysisArtifact* pArtifact);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-

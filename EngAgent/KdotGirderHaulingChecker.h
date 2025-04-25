@@ -22,26 +22,10 @@
 
 #pragma once
 
-
-// SYSTEM INCLUDES
-//
-
-// PROJECT INCLUDES
-//
 #include <PgsExt\PgsExtExp.h>
 #include <PgsExt\KdotHaulingAnalysisArtifact.h>
 #include <PgsExt\PoiMap.h>
-
 #include <IFace\PointOfInterest.h>
-
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
-
-// MISCELLANEOUS
-//
 
 /*****************************************************************************
 CLASS 
@@ -59,51 +43,23 @@ LOG
 class pgsKdotGirderHaulingChecker: public pgsGirderHaulingChecker
 {
 public:
-   // GROUP: LIFECYCLE
-
-   //------------------------------------------------------------------------
-   // Constructor
-   pgsKdotGirderHaulingChecker(IBroker* pBroker,StatusGroupIDType statusGroupID);
-
-   //------------------------------------------------------------------------
-   // Destructor
+   pgsKdotGirderHaulingChecker(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID);
+   pgsKdotGirderHaulingChecker() = delete;
+   pgsKdotGirderHaulingChecker(const pgsKdotGirderHaulingChecker&) = delete;
+   pgsKdotGirderHaulingChecker& operator=(const pgsKdotGirderHaulingChecker&) = delete;
    virtual ~pgsKdotGirderHaulingChecker();
 
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   virtual pgsHaulingAnalysisArtifact* CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE) override;
-   virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey) override;
-   virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang) override;
-   virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey,const HANDLINGCONFIG& config,ISegmentHaulingDesignPointsOfInterest* pPOId) override;
-   virtual pgsHaulingAnalysisArtifact* DesignHauling(const CSegmentKey& segmentKey,HANDLINGCONFIG& config,bool bIgnoreConfigurationLimits,ISegmentHaulingDesignPointsOfInterest* pPOId,bool* bSuccess, SHARED_LOGFILE LOGFILE) override;
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
+   pgsHaulingAnalysisArtifact* CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE) override;
+   pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey) override;
+   pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang) override;
+   pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey,const HANDLINGCONFIG& config,ISegmentHaulingDesignPointsOfInterest* pPOId) override;
+   pgsHaulingAnalysisArtifact* DesignHauling(const CSegmentKey& segmentKey,HANDLINGCONFIG& config,bool bIgnoreConfigurationLimits,ISegmentHaulingDesignPointsOfInterest* pPOId,bool* bSuccess, SHARED_LOGFILE LOGFILE) override;
 
 private:
-   // GROUP: DATA MEMBERS
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    StatusGroupIDType m_StatusGroupID;
    StatusCallbackIDType m_scidBunkPointLocation;
 
-   // GROUP: LIFECYCLE
-   // can't construct without a broker
-   pgsKdotGirderHaulingChecker() = delete;
-
-   // Prevent accidental copying and assignment
-   pgsKdotGirderHaulingChecker(const pgsKdotGirderHaulingChecker&) = delete;
-   pgsKdotGirderHaulingChecker& operator=(const pgsKdotGirderHaulingChecker&) = delete;
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
    void AnalyzeHauling(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& config,ISegmentHaulingDesignPointsOfInterest* pPOId,pgsKdotHaulingAnalysisArtifact* pArtifact);
    void PrepareHaulingAnalysisArtifact(const CSegmentKey& segmentKey,Float64 Loh,Float64 Roh,Float64 Fc,Float64 Ec,pgsTypes::ConcreteType concType,pgsKdotHaulingAnalysisArtifact* pArtifact);
 
@@ -117,13 +73,4 @@ private:
                                const PoiList& vPoi,
                                const std::vector<Float64>& vMoment,
                                pgsKdotHaulingAnalysisArtifact* pArtifact);
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-

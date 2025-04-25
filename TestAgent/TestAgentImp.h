@@ -20,12 +20,8 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// TestAgentImp.h : Declaration of the CTestAgentImp
+#pragma once
 
-#ifndef __TESTAGENT_H_
-#define __TESTAGENT_H_
-
-#include "resource.h"       // main symbols
 #include "CLSID.h"
 
 #include <IFace\Project.h>
@@ -35,18 +31,13 @@
 
 #include <EAF\EAFInterfaceCache.h>
 #include <EAF\EAFUIIntegration.h>
+#include <EAF\Agent.h>
 
 #include "TestCommandLineInfo.h"
 
 class pgsSegmentDesignArtifact;
 
-/////////////////////////////////////////////////////////////////////////////
-// CTestAgentImp
-class ATL_NO_VTABLE CTestAgentImp : 
-	public CComObjectRootEx<CComSingleThreadModel>,
-	public CComCoClass<CTestAgentImp, &CLSID_TestAgent>,
-	public IConnectionPointContainerImpl<CTestAgentImp>,
-	public IAgentEx,
+class CTestAgentImp : public WBFL::EAF::Agent,
    public IEAFProcessCommandLine,
    public ITest1250,
    public ITestFileExport
@@ -57,53 +48,34 @@ public:
       m_bIsTesting = false;
 	}
 
-DECLARE_REGISTRY_RESOURCEID(IDR_TESTAGENT)
-DECLARE_NOT_AGGREGATABLE(CTestAgentImp)
-
-DECLARE_PROTECT_FINAL_CONSTRUCT()
-
-BEGIN_COM_MAP(CTestAgentImp)
-	COM_INTERFACE_ENTRY(IAgent)
-   COM_INTERFACE_ENTRY(IAgentEx)
-	COM_INTERFACE_ENTRY(ITest1250)
-	COM_INTERFACE_ENTRY(IConnectionPointContainer)
-   COM_INTERFACE_ENTRY(IEAFProcessCommandLine)
-   COM_INTERFACE_ENTRY(ITestFileExport)
-END_COM_MAP()
-BEGIN_CONNECTION_POINT_MAP(CTestAgentImp)
-END_CONNECTION_POINT_MAP()
-
-
-// IAgentEx
+// Agent
 public:
-	STDMETHOD(SetBroker)(IBroker* pBroker) override;
-   STDMETHOD(RegInterfaces)() override;
-	STDMETHOD(Init)() override;
-	STDMETHOD(Reset)() override;
-	STDMETHOD(ShutDown)() override;
-   STDMETHOD(Init2)() override;
-   STDMETHOD(GetClassID)(CLSID* pCLSID) override;
+   bool RegInterfaces() override;
+   bool Init() override;
+   bool Reset() override;
+   bool ShutDown() override;
+   CLSID GetCLSID() const override;
 
 // ITest1250
-   virtual bool RunTest(long  type,
+   bool RunTest(long  type,
                         const std::_tstring& outputFileName,
                         const std::_tstring& poiFileName) override;
 
-   virtual bool RunTestEx(long  type,const std::vector<SpanGirderHashType>& girderList,
+   bool RunTestEx(long  type,const std::vector<SpanGirderHashType>& girderList,
                           const std::_tstring& outputFileName,
                           const std::_tstring& poiFileName) override;
 
-   virtual bool IsTesting() const override;
+   bool IsTesting() const override;
 
 // ITestFileExport
-   virtual int WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CSegmentKey& segmentKey, bool designSucceeded) override;
-   virtual int WriteDistributionFactorsToFile (FILE *fp, IBroker* pBroker, const CSegmentKey& segmentKey) override;
+   int WriteCADDataToFile (FILE *fp, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey, bool designSucceeded) override;
+   int WriteDistributionFactorsToFile (FILE *fp, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey) override;
 
 // IEAFProcessCommandLine
-   virtual BOOL ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo) override;
+   BOOL ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo) override;
 
 private:
-   DECLARE_EAF_AGENT_DATA;
+   //DECLARE_EAF_AGENT_DATA;
 
    bool m_bIsTesting;
 
@@ -132,5 +104,3 @@ private:
    bool DoTestReport(const CString& outputFileName, const CString& errorFileName, const CTestCommandLineInfo& txInfo);
    void SaveFlexureDesign(const CSegmentKey& segmentKey,const pgsSegmentDesignArtifact* pArtifact);
 };
-
-#endif //__TESTAGENT_H_

@@ -29,11 +29,6 @@
 #include <IFace\Bridge.h>
 #include <IFace/Limits.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 /****************************************************************************
@@ -65,14 +60,14 @@ CDuctSizeCheckTable& CDuctSizeCheckTable::operator= (const CDuctSizeCheckTable& 
 }
 
 //======================== OPERATIONS =======================================
-void CDuctSizeCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,IEAFDisplayUnits* pDisplayUnits) const
+void CDuctSizeCheckTable::Build(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsGirderArtifact* pGirderArtifact,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    const CGirderKey& girderKey = pGirderArtifact->GetGirderKey();
 
-   GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   EAF_GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
    DuctIndexType nMaxSegmentDucts = pSegmentTendonGeometry->GetMaxDuctCount(girderKey);
 
-   GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
+   EAF_GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
    DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
 
    if (nMaxSegmentDucts + nGirderDucts == 0)
@@ -81,7 +76,7 @@ void CDuctSizeCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const pgsG
       return;
    }
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
    INIT_UV_PROTOTYPE( rptAreaUnitValue, area, pDisplayUnits->GetAreaUnit(), false );
@@ -97,7 +92,7 @@ void CDuctSizeCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const pgsG
    *pChapter << pPara;
 
    // The permissible ratios, Kmax and Tmax
-   GET_IFACE2(pBroker, IDuctLimits, pDuctLimits);
+   EAF_GET_IFACE2(pBroker, IDuctLimits, pDuctLimits);
    for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
    {
       CSegmentKey segmentKey(girderKey, segIdx);

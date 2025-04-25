@@ -33,18 +33,13 @@
 #include <IFace\PointOfInterest.h>
 #include <IFace\Bridge.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CInitialStrainAnalysisDlg dialog
 
 IMPLEMENT_DYNAMIC(CInitialStrainAnalysisDlg, CDialog)
 
-CInitialStrainAnalysisDlg::CInitialStrainAnalysisDlg(IBroker* pBroker,std::shared_ptr<CInitialStrainAnalysisReportSpecification>& pRptSpec,const CGirderKey& initialGirderKey,IntervalIndexType intervalIdx,CWnd* pParent)
+CInitialStrainAnalysisDlg::CInitialStrainAnalysisDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<CInitialStrainAnalysisReportSpecification>& pRptSpec,const CGirderKey& initialGirderKey,IntervalIndexType intervalIdx,CWnd* pParent)
 	: CDialog(CInitialStrainAnalysisDlg::IDD, pParent)
    , m_pRptSpec(pRptSpec)
 {
@@ -73,7 +68,7 @@ BOOL CInitialStrainAnalysisDlg::OnInitDialog()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   GET_IFACE( IIntervals, pIntervals);
+   EAF_GET_IFACE( IIntervals, pIntervals);
    CComboBox* pcbIntervals = (CComboBox*)GetDlgItem(IDC_INTERVAL);
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )

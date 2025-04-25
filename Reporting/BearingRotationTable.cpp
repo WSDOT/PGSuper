@@ -1,25 +1,25 @@
-/////////////////////////////////////////////////////////////////////////
-//// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
-//// Copyright © 1999-2025  Washington State Department of Transportation
-////                        Bridge and Structures Office
-////
-//// This program is free software; you can redistribute it and/or modify
-//// it under the terms of the Alternate Route Open Source License as 
-//// published by the Washington State Department of Transportation, 
-//// Bridge and Structures Office.
-////
-//// This program is distributed in the hope that it will be useful, but 
-//// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
-//// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
-//// the Alternate Route Open Source License for more details.
-////
-//// You should have received a copy of the Alternate Route Open Source 
-//// License along with this program; if not, write to the Washington 
-//// State Department of Transportation, Bridge and Structures Office, 
-//// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
-//// Bridge_Support@wsdot.wa.gov
-/////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////
+// PGSuper - Prestressed Girder SUPERstructure Design and Analysis
+// Copyright © 1999-2025  Washington State Department of Transportation
+//                        Bridge and Structures Office
 //
+// This program is free software; you can redistribute it and/or modify
+// it under the terms of the Alternate Route Open Source License as 
+// published by the Washington State Department of Transportation, 
+// Bridge and Structures Office.
+//
+// This program is distributed in the hope that it will be useful, but 
+// distribution is AS IS, WITHOUT ANY WARRANTY; without even the implied 
+// warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See 
+// the Alternate Route Open Source License for more details.
+//
+// You should have received a copy of the Alternate Route Open Source 
+// License along with this program; if not, write to the Washington 
+// State Department of Transportation, Bridge and Structures Office, 
+// P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
+// Bridge_Support@wsdot.wa.gov
+///////////////////////////////////////////////////////////////////////
+
 #include "StdAfx.h"
 #include <Reporting\BearingRotationTable.h>
 #include <Reporting\ProductMomentsTable.h>
@@ -32,52 +32,8 @@
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-//
-///****************************************************************************
-//CLASS
-//   CProductRotationTable
-//****************************************************************************/
-//
-//
-//////////////////////////// PUBLIC     ///////////////////////////////////////
-//
-////======================== LIFECYCLE  =======================================
-CBearingRotationTable::CBearingRotationTable()
-{
-}
 
-CBearingRotationTable::CBearingRotationTable(const CBearingRotationTable& rOther)
-{
-    MakeCopy(rOther);
-}
-
-CBearingRotationTable::~CBearingRotationTable()
-{
-}
-
-//======================== OPERATORS  =======================================
-CBearingRotationTable& CBearingRotationTable::operator= (const CBearingRotationTable& rOther)
-{
-    if (this != &rOther)
-    {
-        MakeAssignment(rOther);
-    }
-
-    return *this;
-}
-
-
-
-
-
-
-
-ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBroker, const CGirderKey& girderKey, 
+ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, 
     pgsTypes::AnalysisType analysisType, bool bDesign, bool bUserLoads, ROTATIONDETAILS* pDetails, bool bDetail) const
 {
 
@@ -104,8 +60,8 @@ ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBrok
     }
 
 
-    GET_IFACE2(pBroker, IBridge, pBridge);
-    GET_IFACE2(pBroker, IUserDefinedLoadData, pUserLoads);
+    EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+    EAF_GET_IFACE2(pBroker, IUserDefinedLoadData, pUserLoads);
 
     if (pDetails->bDeck && bDetail)
     {
@@ -129,7 +85,7 @@ ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBrok
     }
 
     // determine continuity stage
-    GET_IFACE2(pBroker, IIntervals, pIntervals);
+    EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
     IntervalIndexType continuityIntervalIdx = MAX_INDEX;
     PierIndexType firstPierIdx = pBridge->GetGirderGroupStartPier(pDetails->startGroup);
     PierIndexType lastPierIdx = pBridge->GetGirderGroupEndPier(pDetails->endGroup);
@@ -278,8 +234,8 @@ ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(IBroker* pBrok
 
 
 template <class M, class T>
-RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* p_table,
-    bool bDesign, bool bUserLoads, pgsTypes::AnalysisType analysisType, IEAFDisplayUnits* pDisplayUnits, 
+RowIndexType ConfigureBearingRotationTableHeading(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptRcTable* p_table,
+    bool bDesign, bool bUserLoads, pgsTypes::AnalysisType analysisType, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, 
     const T& unitT, bool bDetail, ROTATIONDETAILS* pDetails)
 {
     if (bDetail)
@@ -309,7 +265,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
     if (bDetail)
     {
 
-        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+        EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
 
         p_table->SetRowSpan(0, col, 2);
@@ -323,7 +279,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
     if (pDetails->bShearKey && bDetail)
     {
 
-        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+        EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
 
         if (analysisType == pgsTypes::Envelope && pDetails->bContinuousBeforeDeckCasting)
@@ -343,7 +299,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
     if (pDetails->bLongitudinalJoint && bDetail)
     {
 
-        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+        EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
         if (analysisType == pgsTypes::Envelope && pDetails->bContinuousBeforeDeckCasting)
         {
@@ -362,7 +318,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
     if (pDetails->bConstruction && bDetail)
     {
 
-        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+        EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
         if (analysisType == pgsTypes::Envelope && pDetails->bContinuousBeforeDeckCasting)
         {
@@ -381,7 +337,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
     if (pDetails->bDeck && bDetail)
     {
 
-        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+        EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
         if (analysisType == pgsTypes::Envelope && pDetails->bContinuousBeforeDeckCasting)
         {
@@ -409,7 +365,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
     if (pDetails->bDeckPanels && bDetail)
     {
 
-        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+        EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
         if (analysisType == pgsTypes::Envelope && pDetails->bContinuousBeforeDeckCasting)
         {
@@ -433,7 +389,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
         if (pDetails->bSidewalk && bDetail)
         {
 
-            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
 
             p_table->SetColumnSpan(0, col, 2);
@@ -445,7 +401,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
         if (bDetail)
         {
 
-            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
             p_table->SetColumnSpan(0, col, 2);
             (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftTrafficBarrier);
@@ -457,7 +413,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
         if (pDetails->bHasOverlay && bDetail)
         {
 
-            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
             p_table->SetColumnSpan(0, col, 2);
             if (pDetails->bFutureOverlay)
@@ -475,7 +431,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
 
         if (bUserLoads && bDetail)
         {
-            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
             p_table->SetColumnSpan(0, col, 2);
             (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftUserDC);
@@ -487,7 +443,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
             (*p_table)(1, col++) << COLHDR(_T("Min"), M, unitT);
             if (bDesign)
             {
-                GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+                EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
                 p_table->SetColumnSpan(0, col, 2);
                 (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftUserLLIM);
                 (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
@@ -502,7 +458,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
         if (pDetails->bSidewalk && bDetail)
         {
 
-            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
             p_table->SetRowSpan(0, col, 2);
             (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftSidewalk), M, unitT);
@@ -511,7 +467,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
         if (bDetail)
         {
 
-            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
             p_table->SetRowSpan(0, col, 2);
             (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftTrafficBarrier), M, unitT);
@@ -521,7 +477,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
         if (pDetails->bHasOverlay && bDetail)
         {
 
-            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
             p_table->SetRowSpan(0, col, 2);
             if (pDetails->bFutureOverlay)
@@ -536,7 +492,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
 
         if (bUserLoads && bDetail)
         {
-            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
             p_table->SetRowSpan(0, col, 2);
             (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftUserDC), M, unitT);
             p_table->SetRowSpan(0, col, 2);
@@ -597,7 +553,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
     {
         p_table->SetRowSpan(0, col, 2);
 
-        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+        EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
 
         (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftPretension), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
@@ -608,7 +564,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
         if (0 < pDetails->nDucts)
         {
 
-            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
             (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftPostTensioning), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
         }
@@ -622,7 +578,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
         if (bDetail)
         {
 
-            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
 
             p_table->SetRowSpan(0, col, 2);
@@ -639,7 +595,7 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
         if (bDetail)
         {
 
-            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
 
             (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftCreep), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
@@ -653,23 +609,22 @@ RowIndexType ConfigureBearingRotationTableHeading(IBroker* pBroker, rptRcTable* 
 
 
 
-//======================== OPERATIONS =======================================
-rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, const CGirderKey& girderKey, pgsTypes::AnalysisType analysisType,
-    bool bIncludeImpact, bool bIncludeLLDF, bool bDesign, bool bUserLoads, bool bIndicateControllingLoad, IEAFDisplayUnits* pDisplayUnits, bool bDetail, bool isFlexural) const
+rptRcTable* CBearingRotationTable::BuildBearingRotationTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, pgsTypes::AnalysisType analysisType,
+    bool bIncludeImpact, bool bIncludeLLDF, bool bDesign, bool bUserLoads, bool bIndicateControllingLoad, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, bool bDetail, bool isFlexural) const
 {
 
     // Build table
     INIT_UV_PROTOTYPE(rptAngleUnitValue, rotation, pDisplayUnits->GetRadAngleUnit(), false);
 
-    GET_IFACE2(pBroker, IBridge, pBridge);
+    EAF_GET_IFACE2(pBroker, IBridge, pBridge);
 
-    GET_IFACE2(pBroker, IIntervals, pIntervals);
+    EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
     IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
     IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
 
-    GET_IFACE2(pBroker, IPointOfInterest, pPOI);
+    EAF_GET_IFACE2(pBroker, IPointOfInterest, pPOI);
 
-    GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
+    EAF_GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
     ROTATIONDETAILS details;
 
     pBearingDesignParameters->GetBearingParameters(girderKey, &details);
@@ -737,7 +692,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
     }
     
 
-    GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
+    EAF_GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
     IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
     std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, girderKey));
 
@@ -778,7 +733,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
         const pgsPointOfInterest& poi = vPoi[reactionLocation.PierIdx - startPierIdx];
 
         const CSegmentKey& segmentKey(poi.GetSegmentKey());
-        GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+        EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
         const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
         IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
@@ -964,7 +919,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
         }
 
         std::unique_ptr<ICmbLsReactionAdapter> pForces;
-        GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
+        EAF_GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
         pForces = std::make_unique<CmbLsBearingDesignReactionAdapter>(pBearingDesign, lastIntervalIdx, girderKey);
 
 
@@ -1210,37 +1165,3 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(IBroker* pBroker, c
     return p_table;
 
 }
-
-
-
-
-
-
-////======================== ACCESS     =======================================
-////======================== INQUIRY    =======================================
-//
-//////////////////////////// PROTECTED  ///////////////////////////////////////
-//
-////======================== LIFECYCLE  =======================================
-////======================== OPERATORS  =======================================
-////======================== OPERATIONS =======================================
-void CBearingRotationTable::MakeCopy(const CBearingRotationTable& rOther)
-{
-    // Add copy code here...
-}
-
-void CBearingRotationTable::MakeAssignment(const CBearingRotationTable& rOther)
-{
-    MakeCopy(rOther);
-}
-//
-////======================== ACCESS     =======================================
-////======================== INQUIRY    =======================================
-//
-//////////////////////////// PRIVATE    ///////////////////////////////////////
-//
-////======================== LIFECYCLE  =======================================
-////======================== OPERATORS  =======================================
-////======================== OPERATIONS =======================================
-////======================== ACCESS     =======================================
-////======================== INQUERY    =======================================

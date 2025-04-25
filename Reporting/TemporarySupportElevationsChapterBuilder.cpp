@@ -29,11 +29,6 @@
 #include <PgsExt\GirderGroupData.h>
 #include <PgsExt\BridgeDescription2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CTemporarySupportElevationsChapterBuilder::CTemporarySupportElevationsChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
@@ -53,8 +48,7 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTemporarySupportElevationsChap
 rptChapter* CTemporarySupportElevationsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -80,19 +74,19 @@ rptChapter* CTemporarySupportElevationsChapterBuilder::Build(const std::shared_p
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
    INIT_UV_PROTOTYPE(rptLengthUnitValue, dim, pDisplayUnits->GetSpanLengthUnit(), false);
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    SupportIndexType nTS = pBridge->GetTemporarySupportCount();
    if (nTS == 0)
    {
       *pPara << _T("No temporary supports modeled") << rptNewLine;
    }
 
-   GET_IFACE2_NOCHECK(pBroker, ITempSupport, pTempSupport); // not used if no temp supports
+   EAF_GET_IFACE2_NOCHECK(pBroker, ITempSupport, pTempSupport); // not used if no temp supports
 
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    std::array<std::_tstring, 2> strMemberEnd{ _T("Start"),_T("End") };

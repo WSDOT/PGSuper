@@ -27,11 +27,6 @@
 
 #include <IFace\Project.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CCamberChapterBuilder::CCamberChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
@@ -46,11 +41,10 @@ LPCTSTR CCamberChapterBuilder::GetName() const
 rptChapter* CCamberChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
 
    rptChapter* pChapter;
-   GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       pChapter = CTimeStepCamberChapterBuilder().Build(pRptSpec,level);

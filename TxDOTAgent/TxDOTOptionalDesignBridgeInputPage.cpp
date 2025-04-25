@@ -36,11 +36,6 @@
 #include <psgLib/PrestressedElementCriteria.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CTxDOTOptionalDesignBridgeInputPage dialog
@@ -71,11 +66,11 @@ void CTxDOTOptionalDesignBridgeInputPage::DoDataExchange(CDataExchange* pDX)
 {
    CPropertyPage::DoDataExchange(pDX);
 
-   CComPtr<IBroker> pBroker = m_pBrokerRetriever->GetClassicBroker();
+   auto pBroker = m_pBrokerRetriever->GetClassicBroker();
    if (pBroker==nullptr)
       return;
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    DDX_Text(pDX, IDC_BRIDGE, m_Bridge);
    DDX_Text(pDX, IDC_BRIDGE_ID, m_BridgeID);

@@ -24,7 +24,7 @@
 
 #include <Reporting\ReportingExp.h>
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 
@@ -44,18 +44,18 @@ public:
    ~CRatingSummaryTable() = delete;
 
    /// @brief Builds the rating summary table with results listed by limit state and structural action
-   static rptRcTable* BuildByLimitState(IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,RatingTableType ratingTableType);
+   static rptRcTable* BuildByLimitState(std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<CGirderKey>& girderKeys,RatingTableType ratingTableType);
 
    /// @brief Builds the rating summary table with results listed by rating vehicle
-   static rptRcTable* BuildByVehicle(IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType);
+   static rptRcTable* BuildByVehicle(std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType);
 
    /// @brief Builds the load posting table for a a legal load rating (but not emergency vehicles)
-   static rptRcTable* BuildLoadPosting(IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType,bool* pbMustCloseBridge);
+   static rptRcTable* BuildLoadPosting(std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType,bool* pbMustCloseBridge);
 
    /// @brief Builds the load posting table for emergency vehicles
-   static rptRcTable* BuildEmergencyVehicleLoadPosting(IBroker* pBroker, const std::vector<CGirderKey>& girderKeys);
+   static rptRcTable* BuildEmergencyVehicleLoadPosting(std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderKeys);
 
    /// @brief Builds the yield stress ratio table for permit load rating types
-   static rptRcTable* BuildYieldStressRatio(IBroker* pBroker, const std::vector<CGirderKey>& girderKeys, pgsTypes::LoadRatingType ratingType);
+   static rptRcTable* BuildYieldStressRatio(std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderKeys, pgsTypes::LoadRatingType ratingType);
 };
 

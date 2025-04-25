@@ -24,7 +24,7 @@
 
 #include <Reporting\ReportingExp.h>
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 class REPORTINGCLASS CStrandEccentricities
 {
@@ -34,5 +34,5 @@ public:
    ~CStrandEccentricities() = default;
    CStrandEccentricities& operator = (const CStrandEccentricities&) = default;
 
-   void Build(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey, IEAFDisplayUnits* pDisplayUnits) const;
+   void Build(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 };

@@ -21,12 +21,3 @@
 ///////////////////////////////////////////////////////////////////////
 
 // dllmain.h : Declaration of module class.
-
-class CExtensionAgentExampleModule : public CAtlDllModuleT< CExtensionAgentExampleModule >
-{
-public :
-	DECLARE_LIBID(LIBID_ExtensionAgentExampleLib)
-	DECLARE_REGISTRY_APPID_RESOURCEID(IDR_EXTENSIONAGENTEXAMPLE, "{9AF59E4A-E471-479E-B6AF-888921EFDEAE}")
-};
-
-extern class CExtensionAgentExampleModule _AtlModule;

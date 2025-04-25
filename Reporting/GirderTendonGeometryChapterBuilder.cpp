@@ -29,11 +29,6 @@
 #include <IFace\Intervals.h>
 #include <IFace\ReportOptions.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -60,12 +55,11 @@ rptChapter* CGirderTendonGeometryChapterBuilder::Build(const std::shared_ptr<con
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
 
    CGirderKey girderKey(pGirderRptSpec->GetGirderKey());
 
-   GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
+   EAF_GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    rptParagraph* pPara = new rptParagraph;
@@ -77,10 +71,10 @@ rptChapter* CGirderTendonGeometryChapterBuilder::Build(const std::shared_ptr<con
       return pChapter;
    }
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   GET_IFACE2(pBroker,ILosses,pLosses);
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(pBroker,ILosses,pLosses);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),  false);
@@ -88,7 +82,7 @@ rptChapter* CGirderTendonGeometryChapterBuilder::Build(const std::shared_ptr<con
    INIT_UV_PROTOTYPE( rptLengthUnitValue,        ecc,      pDisplayUnits->GetComponentDimUnit(), false);
    INIT_UV_PROTOTYPE( rptStressUnitValue,        stress,   pDisplayUnits->GetStressUnit(), false);
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
    
    PoiList vPoi;

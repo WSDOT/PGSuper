@@ -36,11 +36,6 @@
 #include <IFace\RatingSpecification.h>
 #include <IFace\PrestressForce.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -76,8 +71,8 @@ CProductStressTable& CProductStressTable::operator= (const CProductStressTable& 
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
-                                       bool bDesign,bool bRating,IEAFDisplayUnits* pDisplayUnits,bool bGirderStresses) const
+rptRcTable* CProductStressTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
+                                       bool bDesign,bool bRating,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,bool bGirderStresses) const
 {
    pgsTypes::StressLocation topLocation = (bGirderStresses ? pgsTypes::TopGirder    : pgsTypes::TopDeck);
    pgsTypes::StressLocation botLocation = (bGirderStresses ? pgsTypes::BottomGirder : pgsTypes::BottomDeck);
@@ -85,10 +80,10 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    bool bHasOverlay    = pBridge->HasOverlay();
    bool bFutureOverlay = pBridge->IsFutureOverlay();
 
@@ -96,17 +91,17 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
    GroupIndexType startGroup = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    GroupIndexType endGroup   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroup);
 
-   GET_IFACE2(pBroker,IProductForces,pForces);
-   GET_IFACE2(pBroker,IProductForces2,pForces2);
+   EAF_GET_IFACE2(pBroker,IProductForces,pForces);
+   EAF_GET_IFACE2(pBroker,IProductForces2,pForces2);
 
    pgsTypes::BridgeAnalysisType maxBAT = pForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
    IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount()-1;
 
-   GET_IFACE2(pBroker,ILosses, pLosses);
+   EAF_GET_IFACE2(pBroker,ILosses, pLosses);
    bool bSlabShrinkage = pLosses->IsDeckShrinkageApplicable();
    if ( !bGirderStresses )
    {
@@ -114,7 +109,7 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
       bSlabShrinkage = false;
    }
 
-   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+   EAF_GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
    IntervalIndexType continuityIntervalIdx = MAX_INDEX;
    PierIndexType firstPierIdx = pBridge->GetGirderGroupStartPier(startGroup);
@@ -147,7 +142,7 @@ rptRcTable* CProductStressTable::Build(IBroker* pBroker,const CGirderKey& girder
 
 
    // Get the interface pointers we need
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
 
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(girderKey.girderIndex, startGroup, endGroup, &vGirderKeys);

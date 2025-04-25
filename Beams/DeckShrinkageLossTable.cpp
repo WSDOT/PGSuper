@@ -65,26 +65,26 @@ rptRcTable(NumColumns,0)
 
 CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    if (IsNonstructuralDeck(pBridge->GetDeckType()))
    {
       // no deck, no deck shrinkage
       return nullptr;
    }
 
-   GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
    std::_tstring strSpecName = pSpec->GetSpecification();
 
-   GET_IFACE2(pBroker,ILibrary,pLib);
+   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
    const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
 
    ATLASSERT(prestress_loss_criteria.IsDeckShrinkageApplicable(WBFL::LRFD::BDSManager::GetEdition())); // Should be vetted by caller
 
-   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
 
-   GET_IFACE2(pBroker,IMaterials, pMaterials);
+   EAF_GET_IFACE2(pBroker,IMaterials, pMaterials);
    bool bIsUHPC = pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC ? true : false;
 
    // Create and configure the table
@@ -385,7 +385,7 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
    table->m_bIsUHPC = bIsUHPC;
    table->m_Sign =  ( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEdition2007 ) ? 1 : -1;
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    table->compositeIntervalIdx = pIntervals->GetFirstCompositeDeckInterval();
 
    return table;
@@ -400,9 +400,9 @@ void CElasticGainDueToDeckShrinkageTable::AddRow(rptChapter* pChapter,IBroker* p
       return;
    }
 
-   GET_IFACE2(pBroker,IProductForces,pProductForces);
+   EAF_GET_IFACE2(pBroker,IProductForces,pProductForces);
 
-   GET_IFACE2(pBroker,ISectionProperties,pProps);
+   EAF_GET_IFACE2(pBroker,ISectionProperties,pProps);
    Float64 St = pProps->GetS(compositeIntervalIdx, poi, pgsTypes::TopGirder);
    Float64 Sb = pProps->GetS(compositeIntervalIdx, poi, pgsTypes::BottomGirder);
    Float64 Std = pProps->GetS(compositeIntervalIdx, poi, pgsTypes::TopDeck);

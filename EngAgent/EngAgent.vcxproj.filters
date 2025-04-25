@@ -171,9 +171,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="EngAgent.def" />
-    <None Include="EngAgent.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="IFace">

@@ -26,11 +26,6 @@
 #include <IFace\PrestressForce.h>
 #include <IFace\Bridge.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -55,15 +50,14 @@ LPCTSTR CLossesChapterBuilder::GetName() const
 rptChapter* CLossesChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGdrRptSpec  = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGdrRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGdrRptSpec->GetBroker();
    const CGirderKey& girderKey(pGdrRptSpec->GetGirderKey());
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-   GET_IFACE2(pBroker, ILosses,          pILosses     );
-   GET_IFACE2(pBroker, IBridge,          pBridge      );
+   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   EAF_GET_IFACE2(pBroker, ILosses,          pILosses     );
+   EAF_GET_IFACE2(pBroker, IBridge,          pBridge      );
 
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(girderKey, &vGirderKeys);

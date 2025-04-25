@@ -30,11 +30,6 @@
 #include <IFace\Project.h>
 #include <IFace\ReportOptions.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CPrincipalTensionStressCheckTable::CPrincipalTensionStressCheckTable()
 {
@@ -59,7 +54,7 @@ CPrincipalTensionStressCheckTable& CPrincipalTensionStressCheckTable::operator= 
    return *this;
 }
 
-void CPrincipalTensionStressCheckTable::Build(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, IEAFDisplayUnits* pDisplayUnits) const
+void CPrincipalTensionStressCheckTable::Build(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsGirderArtifact* pGirderArtifact, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    pPara->SetName(_T("Principal Tensile Stresses in Webs"));
@@ -72,7 +67,7 @@ void CPrincipalTensionStressCheckTable::Build(rptChapter* pChapter, IBroker* pBr
    INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true);
 
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
    // check applicability
@@ -127,7 +122,7 @@ void CPrincipalTensionStressCheckTable::Build(rptChapter* pChapter, IBroker* pBr
    BuildTable(pChapter, pBroker, pGirderArtifact, pDisplayUnits);
 }
 
-void CPrincipalTensionStressCheckTable::BuildTable(rptChapter* pChapter, IBroker* pBroker, const pgsGirderArtifact* pGirderArtifact, IEAFDisplayUnits* pDisplayUnits) const
+void CPrincipalTensionStressCheckTable::BuildTable(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsGirderArtifact* pGirderArtifact, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    std::_tstring strImagePath = rptStyleManager::GetImagePath();
 
@@ -140,24 +135,24 @@ void CPrincipalTensionStressCheckTable::BuildTable(rptChapter* pChapter, IBroker
    rptCapacityToDemand cap_demand;
 
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
-   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount() - 1;
 
-   GET_IFACE2(pBroker, IMaterials, pMaterials);
+   EAF_GET_IFACE2(pBroker, IMaterials, pMaterials);
 
-   GET_IFACE2(pBroker, ISpecification, pSpec);
-   GET_IFACE2(pBroker, ILibrary, pLib);
+   EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
+   EAF_GET_IFACE2(pBroker, ILibrary, pLib);
    std::_tstring specName = pSpec->GetSpecification();
    const auto* pSpecEntry = pLib->GetSpecEntry(specName.c_str());
    const auto& principal_tension_stress_criteria = pSpecEntry->GetPrincipalTensionStressCriteria();
 
-   GET_IFACE2(pBroker, IConcreteStressLimits, pLimits);
+   EAF_GET_IFACE2(pBroker, IConcreteStressLimits, pLimits);
 
    IntervalIndexType liveLoadInterval = pIntervals->GetLiveLoadInterval();
 
@@ -220,8 +215,8 @@ void CPrincipalTensionStressCheckTable::BuildTable(rptChapter* pChapter, IBroker
 
       Float64 fc_reqd = pArtifact->GetRequiredSegmentConcreteStrength();
       
-      GET_IFACE2(pBroker, IMaterials, pMaterials);
-      GET_IFACE2(pBroker, IConcreteStressLimits, pLimits);
+      EAF_GET_IFACE2(pBroker, IMaterials, pMaterials);
+      EAF_GET_IFACE2(pBroker, IConcreteStressLimits, pLimits);
       auto name = pLimits->GetConcreteStressLimitParameterName(pgsTypes::Tension, pMaterials->GetSegmentConcreteType(segmentKey));
 
       if (0 < fc_reqd)

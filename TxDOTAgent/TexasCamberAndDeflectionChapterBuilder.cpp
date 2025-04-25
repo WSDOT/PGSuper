@@ -47,11 +47,6 @@
 
 #include <WBFLCogo.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -59,8 +54,8 @@ CLASS
 ****************************************************************************/
 
 
-static void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGirderKey>& girderList,
-                                  ColumnIndexType startIdx, ColumnIndexType endIdx, bool isSingleGirder, IEAFDisplayUnits* pDisplayUnits);
+static void deflection_and_camber(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList,
+                                  ColumnIndexType startIdx, ColumnIndexType endIdx, bool isSingleGirder, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
@@ -84,24 +79,24 @@ rptChapter* CTexasCamberAndDeflectionChapterBuilder::Build(const std::shared_ptr
    // This can be called for multi or single girders
    std::vector<CGirderKey> girder_list;
 
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
 
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    if (pGirderRptSpec!=nullptr)
    {
-      pGirderRptSpec->GetBroker(&pBroker);
+      pBroker = pGirderRptSpec->GetBroker();
       girder_list.push_back( pGirderRptSpec->GetGirderKey() );
    }
    else
    {
       auto pReportSpec = std::dynamic_pointer_cast<const CMultiGirderReportSpecification>(pRptSpec);
-      pReportSpec->GetBroker(&pBroker);
+      pBroker = pReportSpec->GetBroker();
 
       girder_list = pReportSpec->GetGirderKeys();
    }
    ATLASSERT(!girder_list.empty());
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    bool isSingleGirder = girder_list.size()==1;
 
@@ -150,9 +145,9 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTexasCamberAndDeflectionChapte
 //======================== INQUIRY    =======================================
 
 ////////////////////////// PRIVATE    ///////////////////////////////////////
-void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vector<CGirderKey>& girderList,
+void deflection_and_camber(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList,
                            ColumnIndexType startIdx, ColumnIndexType endIdx, bool isSingleGirder, 
-                           IEAFDisplayUnits* pDisplayUnits)
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -185,13 +180,13 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dispft, pDisplayUnits->GetSpanLengthUnit(),   true );
 
    // Get the interfaces we need
-   GET_IFACE2(pBroker,ICamber,pCamber);
-   GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
-   GET_IFACE2(pBroker,IProductForces, pProductForces);
-   GET_IFACE2(pBroker,IProductLoads, pProductLoads);
-   GET_IFACE2( pBroker, ILibrary, pLib );
-   GET_IFACE2( pBroker, ISpecification, pSpec );
-   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
+   EAF_GET_IFACE2(pBroker,ICamber,pCamber);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
+   EAF_GET_IFACE2(pBroker,IProductForces, pProductForces);
+   EAF_GET_IFACE2(pBroker,IProductLoads, pProductLoads);
+   EAF_GET_IFACE2( pBroker, ILibrary, pLib );
+   EAF_GET_IFACE2( pBroker, ISpecification, pSpec );
+   EAF_GET_IFACE2(pBroker,ISegmentData,pSegmentData);
 
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
@@ -211,7 +206,7 @@ void deflection_and_camber(rptChapter* pChapter,IBroker* pBroker, const std::vec
       is_any_shearkey |= pProductLoads->HasShearKeyLoad(girderKey);
    }
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(0); // assume deck casting region 0
    IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
    IntervalIndexType castShearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();

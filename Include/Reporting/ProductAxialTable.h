@@ -67,8 +67,8 @@ public:
 
    //------------------------------------------------------------------------
    // Builds the strand eccentricity table.
-   virtual rptRcTable* Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
-                             bool bDesign,bool bRating,bool bIndicateControllingLoad,IEAFDisplayUnits* pDisplayUnits) const;
+   virtual rptRcTable* Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
+                             bool bDesign,bool bRating,bool bIndicateControllingLoad,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 
 protected:
 

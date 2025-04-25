@@ -25,13 +25,8 @@
 #include "MyReportSpecification.h"
 #include <MFCTools\Prompts.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-CMyReportSpecificationBuilder::CMyReportSpecificationBuilder(IBroker* pBroker) :
+CMyReportSpecificationBuilder::CMyReportSpecificationBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker) :
 CBrokerReportSpecificationBuilder(pBroker)
 {
 }

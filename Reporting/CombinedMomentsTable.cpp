@@ -38,53 +38,15 @@
 #include <IFace\Intervals.h>
 #include <IFace\ReportOptions.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CCombinedMomentsTable
-****************************************************************************/
 
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-CCombinedMomentsTable::CCombinedMomentsTable()
-{
-}
-
-CCombinedMomentsTable::CCombinedMomentsTable(const CCombinedMomentsTable& rOther)
-{
-   MakeCopy(rOther);
-}
-
-CCombinedMomentsTable::~CCombinedMomentsTable()
-{
-}
-
-//======================== OPERATORS  =======================================
-CCombinedMomentsTable& CCombinedMomentsTable::operator= (const CCombinedMomentsTable& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
-//======================== OPERATIONS =======================================
-void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
+void CCombinedMomentsTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                                          const CGirderKey& girderKey,
-                                         IEAFDisplayUnits* pDisplayUnits,
+                                         std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                          IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType,
                                          bool bDesign,bool bRating) const
 {
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    BuildCombinedDeadTable(pBroker, pChapter, girderKey, pDisplayUnits, intervalIdx, analysisType, bDesign, bRating);
@@ -114,9 +76,9 @@ void CCombinedMomentsTable::Build(IBroker* pBroker, rptChapter* pChapter,
 }
 
 
-void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* pChapter,
+void CCombinedMomentsTable::BuildCombinedDeadTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                                          const CGirderKey& girderKey,
-                                         IEAFDisplayUnits* pDisplayUnits,
+                                         std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                          IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType,
                                          bool bDesign,bool bRating) const
 {
@@ -124,7 +86,7 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDisplayUnits->GetMomentUnit(), false );
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    rptParagraph* p = new rptParagraph;
@@ -132,15 +94,15 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
 
    rptRcTable* p_table;
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(girderKey, &vGirderKeys);
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& moment_capacity_criteria = pSpecEntry->GetMomentCapacityCriteria();
    bool bExcludeNoncompositeMoments = !moment_capacity_criteria.bIncludeNoncompositeMomentsForNegMomentDesign;
@@ -160,10 +122,10 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
    RowIndexType row2 = 1;
 
    // Get the interface pointers we need
-   GET_IFACE2(pBroker,ICombinedForces2,  pForces2);
-   GET_IFACE2_NOCHECK(pBroker,ILimitStateForces2,pLsForces2); // only used if interval is after live load interval
+   EAF_GET_IFACE2(pBroker,ICombinedForces2,  pForces2);
+   EAF_GET_IFACE2_NOCHECK(pBroker,ILimitStateForces2,pLsForces2); // only used if interval is after live load interval
 
-   GET_IFACE2(pBroker,IProductForces,pProdForces);
+   EAF_GET_IFACE2(pBroker,IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
 
@@ -348,41 +310,41 @@ void CCombinedMomentsTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter*
    }
 }
 
-void CCombinedMomentsTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* pChapter,
+void CCombinedMomentsTable::BuildCombinedLiveTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                                                   const CGirderKey& girderKey,
-                                                  IEAFDisplayUnits* pDisplayUnits,
+                                                  std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                                   pgsTypes::AnalysisType analysisType,
                                                   bool bDesign,bool bRating) const
 {
    ATLASSERT(!(bDesign&&bRating)); // these are separate tables, can't do both
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDisplayUnits->GetMomentUnit(), false );
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& moment_capacity_criteria = pSpecEntry->GetMomentCapacityCriteria();
    bool bExcludeNoncompositeMoments = !moment_capacity_criteria.bIncludeNoncompositeMomentsForNegMomentDesign;
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(girderKey, &vGirderKeys);
  
-   GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+   EAF_GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
    bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
 
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    bool bPedLoading = pProductLoads->HasPedestrianLoad(girderKey);
 
-   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+   EAF_GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
    LPCTSTR strLabel = bDesign ? _T("Moment - Design Vehicles") : _T("Moment - Rating Vehicles");
 
@@ -408,8 +370,8 @@ void CCombinedMomentsTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter*
    *pNote << LIVELOAD_PER_GIRDER << rptNewLine;
 
    // Get the interface pointers we need
-   GET_IFACE2(pBroker,ICombinedForces2,  pForces2);
-   GET_IFACE2(pBroker,IProductForces,pProdForces);
+   EAF_GET_IFACE2(pBroker,ICombinedForces2,  pForces2);
+   EAF_GET_IFACE2(pBroker,IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
 
@@ -591,7 +553,7 @@ void CCombinedMomentsTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter*
       {
          // Sum or envelope pedestrian values with live loads to give final LL
 
-         GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
+         EAF_GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
          ILiveLoads::PedestrianLoadApplicationType DesignPedLoad = pLiveLoads->GetPedestrianLoadApplication(pgsTypes::lltDesign);
          ILiveLoads::PedestrianLoadApplicationType FatiguePedLoad = pLiveLoads->GetPedestrianLoadApplication(pgsTypes::lltFatigue);
          ILiveLoads::PedestrianLoadApplicationType PermitPedLoad = pLiveLoads->GetPedestrianLoadApplication(pgsTypes::lltPermit);
@@ -659,40 +621,40 @@ void CCombinedMomentsTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter*
    }
 }
 
-void CCombinedMomentsTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pChapter,
+void CCombinedMomentsTable::BuildLimitStateTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                                                const CGirderKey& girderKey,
-                                               IEAFDisplayUnits* pDisplayUnits,IntervalIndexType intervalIdx,
+                                               std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,IntervalIndexType intervalIdx,
                                                pgsTypes::AnalysisType analysisType,
                                                bool bDesign,bool bRating) const
 {
    ATLASSERT(!(bDesign&&bRating)); // these are separate tables, can't do both
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDisplayUnits->GetMomentUnit(), false );
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(girderKey, &vGirderKeys);
 
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& moment_capacity_criteria = pSpecEntry->GetMomentCapacityCriteria();
    bool bExcludeNoncompositeMoments = !moment_capacity_criteria.bIncludeNoncompositeMomentsForNegMomentDesign;
 
-   GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+   EAF_GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
    bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
 
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   EAF_GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
    bool bPedLoading = pProductLoads->HasPedestrianLoad(girderKey);
 
@@ -707,8 +669,8 @@ void CCombinedMomentsTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* p
    }
 
    // Get the interface pointers we need
-   GET_IFACE2(pBroker,ILimitStateForces2,pLsForces2);
-   GET_IFACE2(pBroker,IProductForces,pProdForces);
+   EAF_GET_IFACE2(pBroker,ILimitStateForces2,pLsForces2);
+   EAF_GET_IFACE2(pBroker,IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
 
@@ -1125,38 +1087,9 @@ void CCombinedMomentsTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* p
 }
 
 
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-void CCombinedMomentsTable::MakeCopy(const CCombinedMomentsTable& rOther)
+void GetCombinedResultsPoi(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,IntervalIndexType intervalIdx, bool bMoment,PoiList* pPoi,PoiAttributeType* pRefAttribute)
 {
-   // Add copy code here...
-}
-
-void CCombinedMomentsTable::MakeAssignment(const CCombinedMomentsTable& rOther)
-{
-   MakeCopy( rOther );
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
-
-void GetCombinedResultsPoi(IBroker* pBroker,const CGirderKey& girderKey,IntervalIndexType intervalIdx, bool bMoment,PoiList* pPoi,PoiAttributeType* pRefAttribute)
-{
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetFirstPrestressReleaseInterval(girderKey);
    IntervalIndexType storageIntervalIdx = pIntervals->GetFirstStorageInterval(girderKey);
    IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
@@ -1188,7 +1121,7 @@ void GetCombinedResultsPoi(IBroker* pBroker,const CGirderKey& girderKey,Interval
 
    *pRefAttribute = poiRefAttribute;
 
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    pIPoi->GetPointsOfInterest(CSegmentKey(girderKey,ALL_SEGMENTS),poiRefAttribute,pPoi);
    PoiList vPoi2;
    pIPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), POI_SPECIAL | POI_SECTCHANGE, &vPoi2, POIFIND_OR);

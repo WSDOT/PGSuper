@@ -35,11 +35,6 @@
 
 #include <PgsExt\CapacityToDemand.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -62,8 +57,8 @@ CShearCheckTable::~CShearCheckTable()
 //======================== OPERATORS  =======================================
 
 //======================== OPERATIONS =======================================
-rptRcTable* CShearCheckTable::Build(IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
-                                               IEAFDisplayUnits* pDisplayUnits,
+rptRcTable* CShearCheckTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsGirderArtifact* pGirderArtifact,
+                                               std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                                IntervalIndexType intervalIdx,
                                                pgsTypes::LimitState ls,bool& bStrutAndTieRequired) const
 {
@@ -97,7 +92,7 @@ rptRcTable* CShearCheckTable::Build(IBroker* pBroker,const pgsGirderArtifact* pG
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,  pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptForceSectionValue,  shear,  pDisplayUnits->GetShearUnit(),        false );
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    rptCapacityToDemand cap_demand;
@@ -106,7 +101,7 @@ rptRcTable* CShearCheckTable::Build(IBroker* pBroker,const pgsGirderArtifact* pG
    RowIndexType row = table->GetNumberOfHeaderRows();
 
    bool bIsStrutAndTieRequired = false;
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
@@ -178,8 +173,8 @@ rptRcTable* CShearCheckTable::Build(IBroker* pBroker,const pgsGirderArtifact* pG
 }
 
 void CShearCheckTable::BuildNotes(rptChapter* pChapter, 
-                           IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
-                           IEAFDisplayUnits* pDisplayUnits,
+                           std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsGirderArtifact* pGirderArtifact,
+                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                            IntervalIndexType intervalIdx, pgsTypes::LimitState ls, bool bStrutAndTieRequired) const
 {
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
@@ -195,7 +190,7 @@ void CShearCheckTable::BuildNotes(rptChapter* pChapter,
       rptParagraph* p = new rptParagraph();
       *pChapter << p;
 
-      GET_IFACE2(pBroker,IBridge,pBridge);
+      EAF_GET_IFACE2(pBroker,IBridge,pBridge);
 
       Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
       INIT_UV_PROTOTYPE( rptPointOfInterest, location,  pDisplayUnits->GetSpanLengthUnit(),   true );

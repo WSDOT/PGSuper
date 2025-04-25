@@ -26,7 +26,7 @@
 #include <PgsExt\TransferLength.h>
 
 class rptChapter;
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 class pgsDevelopmentLengthEngineer
 {
@@ -34,7 +34,7 @@ public:
    pgsDevelopmentLengthEngineer();
    ~pgsDevelopmentLengthEngineer();
 
-   void SetBroker(IBroker* pBroker);
+   void SetBroker(std::shared_ptr<WBFL::EAF::Broker> pBroker);
 
    void Invalidate();
 
@@ -52,7 +52,7 @@ private:
    typedef std::array<std::map<const pgsPointOfInterest, std::shared_ptr<pgsDevelopmentLength>>, 3> Cache;
    mutable Cache m_BondedCache;
    mutable Cache m_DebondCache;
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
 };
 
 /// Base class for computing development length. This class manages common parameters
@@ -113,12 +113,12 @@ class pgsDevelopmentLengthReporterBase : public pgsDevelopmentLengthReporter
 {
 public:
    pgsDevelopmentLengthReporterBase() = delete;
-   pgsDevelopmentLengthReporterBase(IBroker* pBroker,const pgsDevelopmentLengthEngineer* pEngineer);
+   pgsDevelopmentLengthReporterBase(std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsDevelopmentLengthEngineer* pEngineer);
    virtual void ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const override;
 
 protected:
    const pgsDevelopmentLengthEngineer* m_pEngineer;
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
 
    const std::_tstring& GetAdjustableStrandName() const;
    PoiAttributeType GetLocationPoiAttribute() const;
@@ -135,7 +135,7 @@ class pgsLRFDDevelopmentLengthReporter : public pgsDevelopmentLengthReporterBase
 {
 public:
    pgsLRFDDevelopmentLengthReporter() = delete;
-   pgsLRFDDevelopmentLengthReporter(IBroker* pBroker,const pgsDevelopmentLengthEngineer* pEngineer);
+   pgsLRFDDevelopmentLengthReporter(std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsDevelopmentLengthEngineer* pEngineer);
    virtual void ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const override;
 };
 
@@ -144,7 +144,7 @@ class pgsPCIUHPCDevelopmentLengthReporter : public pgsDevelopmentLengthReporterB
 {
 public:
    pgsPCIUHPCDevelopmentLengthReporter() = delete;
-   pgsPCIUHPCDevelopmentLengthReporter(IBroker* pBroker,const pgsDevelopmentLengthEngineer* pEngineer);
+   pgsPCIUHPCDevelopmentLengthReporter(std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsDevelopmentLengthEngineer* pEngineer);
    virtual void ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const override;
 };
 
@@ -153,6 +153,6 @@ class pgsUHPCDevelopmentLengthReporter : public pgsDevelopmentLengthReporterBase
 {
 public:
    pgsUHPCDevelopmentLengthReporter() = delete;
-   pgsUHPCDevelopmentLengthReporter(IBroker* pBroker, const pgsDevelopmentLengthEngineer* pEngineer);
+   pgsUHPCDevelopmentLengthReporter(std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsDevelopmentLengthEngineer* pEngineer);
    virtual void ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const override;
 };

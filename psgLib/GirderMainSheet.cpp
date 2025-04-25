@@ -38,11 +38,6 @@
 
 #include <Plugins\BeamFamilyCLSID.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 inline bool B2b(BOOL val) { return val!=0; }
 

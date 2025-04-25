@@ -41,11 +41,6 @@
 
 #include <EAF/EAFApp.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -71,18 +66,17 @@ LPCTSTR CLiftingCheckDetailsChapterBuilder::GetName() const
 
 rptChapter* CLiftingCheckDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CComPtr<IBroker> pBroker;
    auto pBrokerRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
-   pBrokerRptSpec->GetBroker(&pBroker);
+   auto pBroker = pBrokerRptSpec->GetBroker();
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    
-   GET_IFACE2(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
+   EAF_GET_IFACE2(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
    if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled())
    {
-      GET_IFACE2(pBroker, IArtifact, pArtifacts);
-      GET_IFACE2(pBroker, IGirder, pGirder);
-      GET_IFACE2_NOCHECK(pBroker, IBridge, pBridge);
+      EAF_GET_IFACE2(pBroker, IArtifact, pArtifacts);
+      EAF_GET_IFACE2(pBroker, IGirder, pGirder);
+      EAF_GET_IFACE2_NOCHECK(pBroker, IBridge, pBridge);
 
       std::vector<CGirderKey> vGirderKeys;
 

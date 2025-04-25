@@ -39,17 +39,12 @@
 #include <MFCTools\AutoRegistry.h>
 #include "..\PGSuperAppPlugin\PGSPluginAppBase.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // CLoadRatingReportDlg dialog
 
 IMPLEMENT_DYNAMIC(CLoadRatingReportDlg, CDialog)
 
-CLoadRatingReportDlg::CLoadRatingReportDlg(IBroker* pBroker,const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate,CWnd* pParent)
+CLoadRatingReportDlg::CLoadRatingReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate,CWnd* pParent)
 	: CDialog(nIDTemplate, pParent), m_RptDesc(rptDesc), m_pInitRptSpec(pRptSpec)
 {
    m_GirderLine = 0;
@@ -163,7 +158,7 @@ void CLoadRatingReportDlg::UpdateGirderLineComboBox()
    Uint16 curSel = pGdrBox->GetCurSel();
    pGdrBox->ResetContent();
 
-   GET_IFACE( IBridge, pBridge );
+   EAF_GET_IFACE( IBridge, pBridge );
    GirderIndexType cGirders = 0;
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    for ( GroupIndexType i = 0; i < nGroups; i++ )
@@ -193,7 +188,7 @@ void CLoadRatingReportDlg::UpdateSpanComboBox()
    Uint16 curSel = pBox->GetCurSel();
    pBox->ResetContent();
 
-   GET_IFACE( IBridge, pBridge );
+   EAF_GET_IFACE( IBridge, pBridge );
    GirderIndexType cGirders = 0;
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    for ( GroupIndexType i = 0; i < nGroups; i++ )
@@ -222,7 +217,7 @@ void CLoadRatingReportDlg::UpdateGirderComboBox()
       curSpanSel = 0;
    }
 
-   GET_IFACE( IBridge, pBridge );
+   EAF_GET_IFACE( IBridge, pBridge );
    GirderIndexType nGirders = pBridge->GetGirderCount( GroupIndexType(curSpanSel) );
 
    Uint16 curGdrSel = pGdrBox->GetCurSel();

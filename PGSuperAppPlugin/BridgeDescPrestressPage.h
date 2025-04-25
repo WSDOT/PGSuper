@@ -20,33 +20,21 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_BRIDGEDESCPRESTRESSPAGE_H__8118E252_586C_11D2_8ED3_006097DF3C68__INCLUDED_)
-#define AFX_BRIDGEDESCPRESTRESSPAGE_H__8118E252_586C_11D2_8ED3_006097DF3C68__INCLUDED_
-
-#if _MSC_VER >= 1000
 #pragma once
-#endif // _MSC_VER >= 1000
-// BridgeDescPrestressPage.h : header file
-//
 
 #include "resource.h"
 #include <PgsExt\GirderData.h>
 
-#if !defined INCLUDED_MATERIAL_PSSTRAND_H_
 #include <Materials/PsStrand.h>
-#endif
-
-#if !defined INCLUDED_PSGLIB_GIRDERLIBRARYENTRY_H_
 #include <PsgLib\GirderLibraryEntry.h>
-#endif
-
 #include <WBFLGenericBridgeTools.h>
 
 #include <MfcTools\WideDropDownComboBox.h>
 
+class IStrandGeometry;
+class IEAFDisplayUnits;
+
 class CGirderDescDlg;
-struct IStrandGeometry;
-struct IEAFDisplayUnits;
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescPrestressPage dialog
@@ -174,8 +162,3 @@ public:
    afx_msg void OnCbnSelchangeAdjustableCombo();
    afx_msg void OnEpoxyChanged();
 };
-
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Developer Studio will insert additional declarations immediately before the previous line.
-
-#endif // !defined(AFX_BRIDGEDESCPRESTRESSPAGE_H__8118E252_586C_11D2_8ED3_006097DF3C68__INCLUDED_)

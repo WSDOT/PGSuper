@@ -53,11 +53,6 @@
 
 #include "PGSuperUnits.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 bool CompareHaulTrucks(const HaulTruckLibraryEntry* pA,const HaulTruckLibraryEntry* pB)
 {
@@ -104,35 +99,24 @@ bool CompareHaulTrucks(const HaulTruckLibraryEntry* pA,const HaulTruckLibraryEnt
    return true;
 }
 
-/****************************************************************************
-CLASS
-   pgsWsdotGirderHaulingChecker
-****************************************************************************/
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-
-//======================== LIFECYCLE  =======================================
-pgsWsdotGirderHaulingChecker::pgsWsdotGirderHaulingChecker(IBroker* pBroker,StatusGroupIDType statusGroupID)
+pgsWsdotGirderHaulingChecker::pgsWsdotGirderHaulingChecker(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID)
 {
    m_pBroker = pBroker;
    m_StatusGroupID = statusGroupID;
 
-   GET_IFACE(IEAFStatusCenter,pStatusCenter);
-   m_scidBunkPointLocation = pStatusCenter->RegisterCallback( new pgsBunkPointLocationStatusCallback(m_pBroker) );
-   m_scidHaulTruck         = pStatusCenter->RegisterCallback( new pgsHaulTruckStatusCallback(m_pBroker) );
+   EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
+#pragma Reminder("WORKING HERE - Removing COM - dont use raw pointers")
+   m_scidBunkPointLocation = pStatusCenter->RegisterCallback( new pgsBunkPointLocationStatusCallback() );
+   m_scidHaulTruck         = pStatusCenter->RegisterCallback( new pgsHaulTruckStatusCallback() );
 }
 
 pgsWsdotGirderHaulingChecker::~pgsWsdotGirderHaulingChecker()
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-
 pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE)
 {
-   GET_IFACE(ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+   EAF_GET_IFACE(ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
 
    if (pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
    {
@@ -151,7 +135,7 @@ pgsHaulingAnalysisArtifact*  pgsWsdotGirderHaulingChecker::AnalyzeHauling(const 
    std::unique_ptr<pgsWsdotHaulingAnalysisArtifact> pArtifact(std::make_unique<pgsWsdotHaulingAnalysisArtifact>());
 
    HANDLINGCONFIG dummy_config;
-   GET_IFACE(ISegmentHaulingPointsOfInterest,pSegmentHaulingPointsOfInterest); // poi's from global pool
+   EAF_GET_IFACE(ISegmentHaulingPointsOfInterest,pSegmentHaulingPointsOfInterest); // poi's from global pool
    AnalyzeHauling(segmentKey,false,dummy_config,pSegmentHaulingPointsOfInterest,pArtifact.get());
 
    return pArtifact.release();
@@ -166,7 +150,7 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::AnalyzeHauling(const C
    dummy_config.LeftOverhang = leftOverhang;
    dummy_config.RightOverhang = rightOverhang;
 
-   GET_IFACE(ISegmentHaulingPointsOfInterest,pSegmentHaulingPointsOfInterest); // poi's from global pool
+   EAF_GET_IFACE(ISegmentHaulingPointsOfInterest,pSegmentHaulingPointsOfInterest); // poi's from global pool
 
    AnalyzeHauling(segmentKey,true,dummy_config,pSegmentHaulingPointsOfInterest,pArtifact.get());
    return pArtifact.release();
@@ -197,15 +181,15 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
    std::unique_ptr<pgsWsdotHaulingAnalysisArtifact> artifact(std::make_unique<pgsWsdotHaulingAnalysisArtifact>());
 
    // Get all of the haul trucks that have sufficient capacity to carry the girder
-   GET_IFACE(ISectionProperties,pSectProps);
+   EAF_GET_IFACE(ISectionProperties,pSectProps);
    Float64 Wgt = pSectProps->GetSegmentWeight(segmentKey);
-   GET_IFACE(ILibraryNames,pLibNames);
+   EAF_GET_IFACE(ILibraryNames,pLibNames);
    std::vector<std::_tstring> names;
    pLibNames->EnumHaulTruckNames( &names );
    if (names.size() == 0)
    {
       // the haul truck library is empty... this is a problem.
-      GET_IFACE(IEAFStatusCenter, pStatusCenter);
+      EAF_GET_IFACE(IEAFStatusCenter, pStatusCenter);
 
       CString strMsg = _T("The haul truck library is empty. Please define haul trucks in the Haul Truck library.");
       pgsHaulTruckStatusItem* pStatusItem = new pgsHaulTruckStatusItem(m_StatusGroupID, m_scidHaulTruck, strMsg);
@@ -215,7 +199,7 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
       THROW_UNWIND(strMsg, -1);
    }
    std::vector<const HaulTruckLibraryEntry*> vHaulTrucks;
-   GET_IFACE(ILibrary,pLib);
+   EAF_GET_IFACE(ILibrary,pLib);
    const HaulTruckLibraryEntry* pMaxCapacityTruck = pLib->GetHaulTruckEntry(names.front().c_str()); // keep track of the truck with the max capacity
    for (const auto& strHaulTruckName : names)
    {
@@ -242,10 +226,10 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
 
 
    // Get range of values for truck support locations
-   GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE(IBridge,pBridge);
    Float64 Lg = pBridge->GetSegmentLength(segmentKey);
 
-   GET_IFACE(ISegmentHaulingSpecCriteria,pCriteria);
+   EAF_GET_IFACE(ISegmentHaulingSpecCriteria,pCriteria);
    Float64 FSrMin = pCriteria->GetHaulingRolloverFs();
    LOG(_T("Allowable FS rollover FSrMin = ")<<FSrMin);
 
@@ -408,18 +392,13 @@ pgsHaulingAnalysisArtifact* pgsWsdotGirderHaulingChecker::DesignHauling(const CS
    return artifact.release();
 }
 
-
-
-////////////////////////////////////////////////////////
-// hauling
-////////////////////////////////////////////////////////
 #if defined _DEBUG
 void pgsWsdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& config,ISegmentHaulingDesignPointsOfInterest* pPOId,WBFL::Stability::HaulingCheckArtifact* pArtifact,const WBFL::Stability::HaulingStabilityProblem** ppStabilityProblem)
 #else
 void pgsWsdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& config,ISegmentHaulingDesignPointsOfInterest* pPOId,WBFL::Stability::HaulingCheckArtifact* pArtifact)
 #endif
 {
-   GET_IFACE(IGirder,pGirder);
+   EAF_GET_IFACE(IGirder,pGirder);
    const WBFL::Stability::Girder* pStabilityModel = pGirder->GetSegmentHaulingStabilityModel(segmentKey);
    const WBFL::Stability::HaulingStabilityProblem* pStabilityProblem = (bUseConfig ? pGirder->GetSegmentHaulingStabilityProblem(segmentKey,config,pPOId) : pGirder->GetSegmentHaulingStabilityProblem(segmentKey));
 
@@ -427,7 +406,7 @@ void pgsWsdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,
    *ppStabilityProblem = pStabilityProblem;
 #endif
 
-   GET_IFACE(ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+   EAF_GET_IFACE(ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
    WBFL::Stability::HaulingCriteria criteria = pSegmentHaulingSpecCriteria->GetHaulingStabilityCriteria(segmentKey, bUseConfig ? &config : nullptr);
 
    WBFL::Stability::StabilityEngineer engineer;

@@ -28,7 +28,7 @@
 class pgsLibraryEntryDifferenceItem;
 
 class rptChapter;
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 class SpecLibraryEntryImpl;
 
 struct PSGLIBCLASS StrandSlopeCriteria
@@ -45,7 +45,7 @@ struct PSGLIBCLASS StrandSlopeCriteria
 
    Float64 GetStrandSlopeLimit(WBFL::Materials::PsStrand::Size strandSize) const;
 
-   void Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const;
+   void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 
    void Save(WBFL::System::IStructuredSave* pSave) const;
    void Load(WBFL::System::IStructuredLoad* pLoad);

@@ -48,15 +48,10 @@
 #include <PgsExt\GirderArtifactTool.h>
 #include <PgsExt\GirderLabel.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
-static void write_spec_check_results(FILE *fp, IBroker* pBroker, const CGirderKey& girderKey, bool designSucceeded);
-static std::_tstring MakeNonStandardStrandString(IBroker* pBroker, const pgsPointOfInterest& midPoi);
+static void write_spec_check_results(FILE *fp, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, bool designSucceeded);
+static std::_tstring MakeNonStandardStrandString(std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& midPoi);
 
 // Return fractional string for strand size
 static int txdString_ftofrac	/* <=  Completion value                   */
@@ -144,9 +139,9 @@ inline StrandIndexType GetNumRaisedStraightStrands(IStrandGeometry * pStrandGeom
 }
 
 // Legacy TxDOT algo for determining strand fill type. Not really useful for our purposes, but this is how it's always been done...
-static bool IsTxStandardStrands(bool isHarpedDesign, pgsTypes::StrandDefinitionType sdtType, const CSegmentKey& segmentKey, IBroker* pBroker)
+static bool IsTxStandardStrands(bool isHarpedDesign, pgsTypes::StrandDefinitionType sdtType, const CSegmentKey& segmentKey, std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
-   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
+   EAF_GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
 
    StrandIndexType ns = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Straight);
    StrandIndexType nh = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
@@ -183,7 +178,7 @@ static bool IsTxStandardStrands(bool isHarpedDesign, pgsTypes::StrandDefinitionT
    {
       // This is the hard one. We have a straight design, possibly with raised strands. In order to be standard;
       // the bottom half of the girder must be filled filling each row completely from the bottom up.
-   	GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
+   	EAF_GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
       PoiList vPoi;
       pPointOfInterest->GetPointsOfInterest(segmentKey, POI_5L | POI_SPAN, &vPoi);
 	   ATLASSERT(vPoi.size() == 1);
@@ -196,7 +191,7 @@ static bool IsTxStandardStrands(bool isHarpedDesign, pgsTypes::StrandDefinitionT
       StrandRowUtil::StrandRowSet popstrandrows = StrandRowUtil::GetFullyPopulatedStrandRowSet(pBroker, pmid);
 
       // Only consider strands in the bottom half of the girder (raised strands are standard)
-      GET_IFACE2(pBroker,IGirder,pGirder);
+      EAF_GET_IFACE2(pBroker,IGirder,pGirder);
       Float64 hg2 = pGirder->GetHeight(pmid) / 2.0;
 
       bool isStandard(true);
@@ -253,10 +248,10 @@ static bool IsTxStandardStrands(bool isHarpedDesign, pgsTypes::StrandDefinitionT
 }
 
 
-int Test_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& girderKey, bool designSucceeded)
+int Test_WriteCADDataToFile (FILE *fp, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, bool designSucceeded)
 {
 #if defined _DEBUG
-   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
    ATLASSERT(pDocType->IsPGSuperDocument());
 #endif
    CSegmentKey segmentKey(girderKey,0);
@@ -271,7 +266,7 @@ int Test_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& girde
 
 
 	/* Regenerate bridge data */
-	GET_IFACE2(pBroker, IArtifact, pIArtifact);
+	EAF_GET_IFACE2(pBroker, IArtifact, pIArtifact);
  	const pgsSegmentArtifact* pGdrArtifact = pIArtifact->GetSegmentArtifact(segmentKey);
    if(!(pGdrArtifact->Passed()))
 	{
@@ -279,16 +274,16 @@ int Test_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& girde
 	}
 
 	/* Interfaces to all relevant agents */
-   GET_IFACE2(pBroker, IBridge,pBridge);
-   GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
-   GET_IFACE2(pBroker, ISegmentData,pSegmentData);
-   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
-	GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
-   GET_IFACE2(pBroker, IMomentCapacity, pMomentCapacity);
-   GET_IFACE2(pBroker, ILiveLoadDistributionFactors, pDistFact);
-   GET_IFACE2(pBroker, IMaterials, pMaterial);
-   GET_IFACE2(pBroker, IIntervals, pIntervals);
-   GET_IFACE2(pBroker,IProjectProperties,pProjectProperties);
+   EAF_GET_IFACE2(pBroker, IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, ISegmentData,pSegmentData);
+   EAF_GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
+	EAF_GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
+   EAF_GET_IFACE2(pBroker, IMomentCapacity, pMomentCapacity);
+   EAF_GET_IFACE2(pBroker, ILiveLoadDistributionFactors, pDistFact);
+   EAF_GET_IFACE2(pBroker, IMaterials, pMaterial);
+   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
+   EAF_GET_IFACE2(pBroker,IProjectProperties,pProjectProperties);
 
    IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType lastIntervalIdx          = pIntervals->GetIntervalCount()-1;
@@ -340,7 +335,7 @@ int Test_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& girde
    bool isExtendedVersion = true; // (format == tcxExtended || format == tcxTest);
 
    // Determine if a straight-raised design
-   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    Float64 kt = pSectProp->GetKt(releaseIntervalIdx, pois);
 
    StrandIndexType numRaisedStraightStrands = GetNumRaisedStraightStrands(pStrandGeometry, segmentKey, pois, kt);
@@ -565,7 +560,7 @@ int Test_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& girde
 
       extraSpacesForSlabOffset = 14; // width of two data fields above = 7+7
 
-      GET_IFACE2(pBroker,ISpecification,pSpec);
+      EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
       if (pSpec->IsAssumedExcessCamberInputEnabled())
       {
          value = pIBridgeDesc->GetAssumedExcessCamber(segmentKey.groupIndex, segmentKey.girderIndex);
@@ -694,9 +689,9 @@ int Test_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& girde
    // EXTENDED INFORMATION, IF REQUESTED // 
    if (isExtendedVersion)
    {
-      GET_IFACE2(pBroker,ICamber,pCamber);
-      GET_IFACE2(pBroker,IProductForces, pProductForces);
-      GET_IFACE2(pBroker,ILosses,pLosses);
+      EAF_GET_IFACE2(pBroker,ICamber,pCamber);
+      EAF_GET_IFACE2(pBroker,IProductForces, pProductForces);
+      EAF_GET_IFACE2(pBroker,ILosses,pLosses);
 
       pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
 
@@ -750,11 +745,11 @@ int Test_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& girde
       Float64 finalLoss = WBFL::Units::ConvertFromSysUnits( value, WBFL::Units::Measure::Kip );
 
    	/* 25. Lifting location  */
-      GET_IFACE2(pBroker,ISegmentLifting,pLifting);
+      EAF_GET_IFACE2(pBroker,ISegmentLifting,pLifting);
       Float64 liftLoc = WBFL::Units::ConvertFromSysUnits( pLifting->GetLeftLiftingLoopLocation(segmentKey), WBFL::Units::Measure::Feet );
 
    	/* 26. Forward handling location  */
-      GET_IFACE2(pBroker,ISegmentHauling,pHauling);
+      EAF_GET_IFACE2(pBroker,ISegmentHauling,pHauling);
       Float64 fwdLoc = WBFL::Units::ConvertFromSysUnits( pHauling->GetLeadingOverhang(segmentKey), WBFL::Units::Measure::Feet );
 
    	/* 27. Trailing handling location  */
@@ -784,7 +779,7 @@ int Test_WriteCADDataToFile (FILE *fp, IBroker* pBroker, const CGirderKey& girde
       workerB.WriteFloat64(trlLoc,_T("trHaul"),8,6,_T("%6.2f"));
 
       // rating factors, if enabled
-      GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+      EAF_GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
       if (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) && pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating))
       {
          std::vector<CGirderKey> girderKeys{ girderKey };
@@ -1068,13 +1063,12 @@ void TestFileWriter::WriteInitialData(CadWriterWorkerBee& workerB)
          RowIndexType nrs = m_pStrandGeometry->GetNumRowsWithStrand(poi,pgsTypes::Straight);
          ATLASSERT((RowIndexType)m_Rows.size() == nrs); // could have more rows than rows with debonded strands
 
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
+         auto pBroker = EAFGetBroker();
       
-         GET_IFACE2(pBroker, IIntervals, pIntervals);
+         EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
          IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
 
-         GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+         EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
          Float64 Hg = pSectProp->GetHg(releaseIntervalIdx, poi);
 
          // Where the rubber hits the road - Write first row
@@ -1096,13 +1090,12 @@ void TestFileWriter::WriteFinalData(FILE *fp, bool isExtended, bool isIBeam, Int
    {
       pgsPointOfInterest poi(m_SegmentKey, m_GirderLength/2.0);
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
+      auto pBroker = EAFGetBroker();
    
-      GET_IFACE2(pBroker, IIntervals, pIntervals);
+      EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
 
-      GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+      EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
       Float64 Hg = pSectProp->GetHg(releaseIntervalIdx, poi);
 
       Int16 nLeadingSpaces;
@@ -1214,10 +1207,10 @@ void TestFileWriter::WriteRowData(CadWriterWorkerBee& workerB, const RowData& ro
 }
 
 
-void write_spec_check_results(FILE *fp, IBroker* pBroker, const CGirderKey& girderKey, bool designSucceeded)
+void write_spec_check_results(FILE *fp, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, bool designSucceeded)
 {
 #if defined _DEBUG
-   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
    ATLASSERT(pDocType->IsPGSuperDocument());
 #endif
 
@@ -1228,7 +1221,7 @@ void write_spec_check_results(FILE *fp, IBroker* pBroker, const CGirderKey& gird
       _ftprintf(fp, _T("%s\n"), _T("Girder design was Not Successful"));
    }
 
-   GET_IFACE2(pBroker,IArtifact,pIArtifact);
+   EAF_GET_IFACE2(pBroker,IArtifact,pIArtifact);
    const pgsGirderArtifact* pGirderArtifact = pIArtifact->GetGirderArtifact(girderKey);
 
    if( pGirderArtifact->Passed() )
@@ -1239,7 +1232,7 @@ void write_spec_check_results(FILE *fp, IBroker* pBroker, const CGirderKey& gird
    {
       _ftprintf(fp, _T("%s\n"), _T("The Specification Check was Not Successful"));
      
-      GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+      EAF_GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
       bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
 
       // Build a list of our failures
@@ -1280,10 +1273,10 @@ void write_spec_check_results(FILE *fp, IBroker* pBroker, const CGirderKey& gird
 }
 
 
-int Test_WriteDistributionFactorsToFile (FILE *fp, IBroker* pBroker, const CGirderKey& girderKey)
+int Test_WriteDistributionFactorsToFile (FILE *fp, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey)
 {
 #if defined _DEBUG
-   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
    ATLASSERT(pDocType->IsPGSuperDocument());
 #endif
 
@@ -1291,7 +1284,7 @@ int Test_WriteDistributionFactorsToFile (FILE *fp, IBroker* pBroker, const CGird
    GirderIndexType gdrIdx = girderKey.girderIndex;
    CSpanKey spanKey(spanIdx,gdrIdx);
 
-   GET_IFACE2(pBroker, ILiveLoadDistributionFactors, pDfEng);
+   EAF_GET_IFACE2(pBroker, ILiveLoadDistributionFactors, pDfEng);
 
    Float64 gpM, gpM1, gpM2;  // pos moment
    Float64 gnM, gnM1, gnM2;  // neg moment, ahead face
@@ -1333,7 +1326,7 @@ int Test_WriteDistributionFactorsToFile (FILE *fp, IBroker* pBroker, const CGird
    return CAD_SUCCESS;
 }
 
-std::_tstring MakeNonStandardStrandString(IBroker* pBroker, const pgsPointOfInterest& midPoi)
+std::_tstring MakeNonStandardStrandString(std::shared_ptr<WBFL::EAF::Broker>pBroker, const pgsPointOfInterest& midPoi)
 {
    StrandRowUtil::StrandRowSet strandrows = StrandRowUtil::GetStrandRowSet(pBroker, midPoi);
 

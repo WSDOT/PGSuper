@@ -57,7 +57,7 @@ rptRcTable(NumColumns,0)
 
 CCreepAtDeckPlacementTable* CCreepAtDeckPlacementTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey, const LOSSDETAILS* pDetails, IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
+   EAF_GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());

@@ -34,18 +34,13 @@
 #include <IFace\Bridge.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CBearingTimeStepDetailsDlg dialog
 
 IMPLEMENT_DYNAMIC(CBearingTimeStepDetailsDlg, CDialog)
 
-CBearingTimeStepDetailsDlg::CBearingTimeStepDetailsDlg(IBroker* pBroker,std::shared_ptr<CBearingTimeStepDetailsReportSpecification>& pRptSpec,
+CBearingTimeStepDetailsDlg::CBearingTimeStepDetailsDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<CBearingTimeStepDetailsReportSpecification>& pRptSpec,
     const ReactionLocation& initialReactionLocation,IntervalIndexType intervalIdx,CWnd* pParent)
 	: CDialog(CBearingTimeStepDetailsDlg::IDD, pParent)
    , m_SliderPos(0)
@@ -84,7 +79,7 @@ BOOL CBearingTimeStepDetailsDlg::OnInitDialog()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE(IBridge,pBridge);
    CComboBox* pcbGirders = (CComboBox*)GetDlgItem(IDC_GIRDERLINE_SHEAR_DEF);
    IndexType nGirderLines = pBridge->GetGirderlineCount();
    for ( IndexType gdrIdx = 0; gdrIdx < nGirderLines; gdrIdx++ )
@@ -94,7 +89,7 @@ BOOL CBearingTimeStepDetailsDlg::OnInitDialog()
       pcbGirders->AddString(str);
    }
 
-   GET_IFACE( IIntervals, pIntervals);
+   EAF_GET_IFACE( IIntervals, pIntervals);
    CComboBox* pcbIntervals = (CComboBox*)GetDlgItem(IDC_INTERVAL_SHEAR_DEF);
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
 
@@ -168,9 +163,9 @@ void CBearingTimeStepDetailsDlg::UpdateReactionLocation()
 {
    m_vReactionLocations.clear();
 
-   GET_IFACE(IBearingDesign, pBearingDesign);
-   GET_IFACE(IIntervals, pIntervals);
-   GET_IFACE(IBridge, pBridge);
+   EAF_GET_IFACE(IBearingDesign, pBearingDesign);
+   EAF_GET_IFACE(IIntervals, pIntervals);
+   EAF_GET_IFACE(IBridge, pBridge);
 
    IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
    std::unique_ptr<CmbLsBearingDesignReactionAdapter> pForces(std::make_unique<CmbLsBearingDesignReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, m_GirderKey));

@@ -51,11 +51,6 @@
 
 #include <algorithm>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 static const int PenWeight = GRAPH_PEN_WEIGHT;
 static const int PglWeight = GRAPH_PEN_WEIGHT + 1; // heavier weight for PGL
@@ -133,7 +128,7 @@ void CFinishedElevationGraphBuilder::UpdateYAxis()
    m_Graph.SetYAxisNumberOfMajorTics(21);
    m_Graph.PinYAxisAtZero(false);
 
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    if (gtElevationDifferential == m_GraphType)
    {
@@ -155,14 +150,14 @@ void CFinishedElevationGraphBuilder::UpdateYAxis()
 
 bool CFinishedElevationGraphBuilder::HandleDoubleClick(UINT nFlags,CPoint point)
 {
-   GET_IFACE_NOCHECK(IBridge,pBridge);
+   EAF_GET_IFACE_NOCHECK(IBridge,pBridge);
    if (pgsTypes::sdtNone == pBridge->GetDeckType())
    {
       return true;
    }
    else
    {
-      GET_IFACE(IEditByUI,pEditByUI);
+      EAF_GET_IFACE(IEditByUI,pEditByUI);
       return pEditByUI->EditHaunch();
    }
 }
@@ -175,7 +170,7 @@ CGirderGraphControllerBase* CFinishedElevationGraphBuilder::CreateGraphControlle
 
 bool CFinishedElevationGraphBuilder::UpdateNow()
 {
-   GET_IFACE(IProgress,pProgress);
+   EAF_GET_IFACE(IProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
 
    pProgress->UpdateMessage(_T("Building Graph"));
@@ -240,10 +235,10 @@ public:
 
 void CFinishedElevationGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,GirderIndexType gdrIdx)
 {
-   GET_IFACE_NOCHECK(IBridge,pBridge);
-   GET_IFACE_NOCHECK(IGirder,pGirder);
-   GET_IFACE(IIntervals,pIntervals);
-   GET_IFACE_NOCHECK(ISectionProperties,pSectProps);
+   EAF_GET_IFACE_NOCHECK(IBridge,pBridge);
+   EAF_GET_IFACE_NOCHECK(IGirder,pGirder);
+   EAF_GET_IFACE(IIntervals,pIntervals);
+   EAF_GET_IFACE_NOCHECK(ISectionProperties,pSectProps);
 
    IntervalIndexType geomCtrlInterval = pIntervals->GetGeometryControlInterval();
 
@@ -251,7 +246,7 @@ void CFinishedElevationGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,Girde
    m_Graph.ClearData();
 
    // Get the points of interest we need.
-   GET_IFACE(IPointOfInterest,pPoi);
+   EAF_GET_IFACE(IPointOfInterest,pPoi);
 
    PoiList vPoi;
 
@@ -302,7 +297,7 @@ void CFinishedElevationGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,Girde
 
    // Tackle simpler stuff first
    // Most graphs will want the PGL, so just store it
-   GET_IFACE(IRoadway,pRoadway);
+   EAF_GET_IFACE(IRoadway,pRoadway);
    std::vector<Float64> PglElevations;
    PglElevations.reserve(vPoi.size());
    for (auto poi : vPoi)
@@ -371,8 +366,8 @@ void CFinishedElevationGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,Girde
       IndexType dataGcSeriesPos = m_Graph.CreateDataSeries(strGCLabel,PS_DASH,PglWeight,BLUE);
       IndexType dataGcSeriesNeg = m_Graph.CreateDataSeries(_T(""),PS_DASH,PglWeight,BLUE);
 
-      GET_IFACE(ILibrary,pLib);
-      GET_IFACE(ISpecification,pSpec);
+      EAF_GET_IFACE(ILibrary,pLib);
+      EAF_GET_IFACE(ISpecification,pSpec);
       std::_tstring spec_name = pSpec->GetSpecification();
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(spec_name.c_str());
       const auto& slab_offset_criteria = pSpecEntry->GetSlabOffsetCriteria();
@@ -409,7 +404,7 @@ void CFinishedElevationGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,Girde
       IntervalIndexType deckCastInterval = pIntervals->GetLastCastDeckInterval();
 
 
-      GET_IFACE_NOCHECK(IDeformedGirderGeometry,pDeformedGirderGeometry);
+      EAF_GET_IFACE_NOCHECK(IDeformedGirderGeometry,pDeformedGirderGeometry);
       if (deckType == pgsTypes::sdtNone)
       {
          // No deck
@@ -882,7 +877,7 @@ void CFinishedElevationGraphBuilder::GetBeamDrawIntervals(IntervalIndexType* pFi
    }
    else
    {
-      GET_IFACE(IIntervals, pIntervals);
+      EAF_GET_IFACE(IIntervals, pIntervals);
       IntervalIndexType intervalIdx = pIntervals->GetLastCastDeckInterval();
       *pFirstIntervalIdx = intervalIdx;
       *pLastIntervalIdx = *pFirstIntervalIdx;

@@ -40,10 +40,9 @@
 #include <PGSuperTypes.h>
 #include <PgsExt\PoiMgr.h>
 
-struct IDistFactorEngineer;
-struct IEffFlangeEngineer;
-struct IPsLossEngineer;
-struct IBroker;
+class IDistFactorEngineer;
+class IEffFlangeEngineer;
+class IPsLossEngineer;
 
 interface IShape;
 interface ISuperstructureMemberSegment;
@@ -138,7 +137,7 @@ interface IBeamFactory : IUnknown
    // Implementation Note: You must call SetBroker on the newly create object and supply
    // it with the pointer to the broker object provided by the caller.
    // const pointers have valid values to be used if non-nullptr
-   virtual void CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType, const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng) const = 0;
+   virtual std::shared_ptr<IDistFactorEngineer> CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType, const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const = 0;
 
    //---------------------------------------------------------------------------------
    // Creates an object that implements the IPsLossEngineer interface. The returned

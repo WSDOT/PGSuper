@@ -46,28 +46,11 @@
 #include <PgsExt\PierData2.h>
 #include <Reporting/BearingShearDeformationTable.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CBearingDesignParametersChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CBearingDesignSummaryChapterBuilder::CBearingDesignSummaryChapterBuilder(bool bSelect) :
     CPGSuperChapterBuilder(bSelect)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CBearingDesignSummaryChapterBuilder::GetName() const
 {
     return TEXT("Bearing Design Summary");
@@ -76,18 +59,17 @@ LPCTSTR CBearingDesignSummaryChapterBuilder::GetName() const
 rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec, Uint16 level) const
 {
     auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-    CComPtr<IBroker> pBroker;
-    pGirderRptSpec->GetBroker(&pBroker);
+    auto pBroker = pGirderRptSpec->GetBroker();
     const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
 
     rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
 
-    GET_IFACE2(pBroker, IUserDefinedLoads, pUDL);
+    EAF_GET_IFACE2(pBroker, IUserDefinedLoads, pUDL);
     bool are_user_loads = pUDL->DoUserLoadsExist(girderKey);
 
 
-    GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
+    EAF_GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
 
     bool bIncludeImpact = pBearingDesign->BearingLiveLoadReactionsIncludeImpact();
 
@@ -96,14 +78,14 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
 
     *p << _T("-Live loads do not include impact") << rptNewLine << rptNewLine;
 
-    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+    EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
     *p << CBearingDesignPropertiesTable().BuildBearingDesignPropertiesTable(pBroker, pDisplayUnits) << rptNewLine;
 
     *p << Sub2(_T("F"), _T("y")) << _T(" = Steel reinforcement yield strength") << rptNewLine;
     *p << Sub2(_T("F"), _T("th")) << _T(" = Steel reinforcement constant-amplitude fatigue threshold for Detail Category A") << rptNewLine;
 
-    GET_IFACE2(pBroker, ISpecification, pSpec);
+    EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
 
     *p << CBearingReactionTable().BuildBearingReactionTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, are_user_loads, true, pDisplayUnits, false) << rptNewLine;
@@ -112,7 +94,7 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
 
     *p << Sub2(_T("P"), _T("L")) << _T(" = Vertical Live Load") << rptNewLine;
 
-    GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
+    EAF_GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
     SHEARDEFORMATIONDETAILS sfDetails;
     pBearingDesignParameters->GetBearingParameters(girderKey, &sfDetails);
 
@@ -134,7 +116,7 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
 
 
     bool bCold;
-    GET_IFACE2(pBroker, IEnvironment, pEnvironment);
+    EAF_GET_IFACE2(pBroker, IEnvironment, pEnvironment);
     if (pEnvironment->GetClimateCondition() == pgsTypes::ClimateCondition::Cold)
     {
         bCold = true;

@@ -42,10 +42,10 @@
 #include <psgLib\SpecLibraryEntry.h>
 
 
-std::_tstring GetImage(IBroker* pBroker)
+std::_tstring GetImage(std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
-   GET_IFACE2(pBroker, ISectionProperties, pSectProps);
-   GET_IFACE2(pBroker, ILossParameters, pLosses);
+   EAF_GET_IFACE2(pBroker, ISectionProperties, pSectProps);
+   EAF_GET_IFACE2(pBroker, ILossParameters, pLosses);
    auto loss_method = pLosses->GetLossMethod();
    bool bApproximate = (
       loss_method == PrestressLossCriteria::LossMethodType::AASHTO_LUMPSUM_2005 ||
@@ -113,35 +113,35 @@ rptChapter* CStressChapterBuilder::Build(const std::shared_ptr<const WBFL::Repor
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
    CGirderKey girderKey;
 
    if ( pGdrRptSpec )
    {
-      pGdrRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrRptSpec->GetBroker();
       girderKey = pGdrRptSpec->GetGirderKey();
    }
    else
    {
-      pGdrLineRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrLineRptSpec->GetBroker();
       girderKey = pGdrLineRptSpec->GetGirderKey();
    }
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
 
-   GET_IFACE2(pBroker, IDocumentType, pDocType);
+   EAF_GET_IFACE2(pBroker, IDocumentType, pDocType);
    bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
 
    rptParagraph* p = 0;
 
-   GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
-   GET_IFACE2( pBroker, ILibrary, pLib );
+   EAF_GET_IFACE2( pBroker, ILibrary, pLib );
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
@@ -150,7 +150,7 @@ rptChapter* CStressChapterBuilder::Build(const std::shared_ptr<const WBFL::Repor
    
    if ( m_bRating )
    {
-      GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+      EAF_GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
       if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) ||
          //pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) || // operating does not apply
            pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) ||
@@ -167,7 +167,7 @@ rptChapter* CStressChapterBuilder::Build(const std::shared_ptr<const WBFL::Repor
       }
    }
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(girderKey, &vGirderKeys);
 
@@ -250,7 +250,7 @@ rptChapter* CStressChapterBuilder::Build(const std::shared_ptr<const WBFL::Repor
       }
 
       // stresses in girder
-      GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
+      EAF_GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
       std::vector<IntervalIndexType> vUserLoadIntervals = pUDL->GetUserDefinedLoadIntervals(girderKey);
       for (auto intervalIdx : vUserLoadIntervals)
       {
@@ -262,7 +262,7 @@ rptChapter* CStressChapterBuilder::Build(const std::shared_ptr<const WBFL::Repor
       }
 
       // Load Combinations (DC, DW, etc) & Limit States
-      GET_IFACE2(pBroker, IStressCheck, pStressCheck);
+      EAF_GET_IFACE2(pBroker, IStressCheck, pStressCheck);
       std::vector<IntervalIndexType> vIntervals(pStressCheck->GetStressCheckIntervals(thisGirderKey));
       // if we are doing a time-step analysis, we need to report for all intervals from
       // the first prestress release to the end to report all time-dependent effects
@@ -365,7 +365,7 @@ rptChapter* CStressChapterBuilder::Build(const std::shared_ptr<const WBFL::Repor
 
    if ( bIsSplicedGirder )
    {
-      GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
+      EAF_GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
       p = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *pChapter << p;
       p->SetName(_T("Stresses due to Post-tensioning"));

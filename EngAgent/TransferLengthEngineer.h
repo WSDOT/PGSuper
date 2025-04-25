@@ -21,11 +21,12 @@
 ///////////////////////////////////////////////////////////////////////
 
 #pragma once
+
 #include <PgsExt\TransferLength.h>
 
 class pgsPointOfInterest;
 class rptChapter;
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 class pgsTransferLengthEngineer
 {
@@ -33,19 +34,17 @@ public:
    pgsTransferLengthEngineer();
    ~pgsTransferLengthEngineer();
 
-   void SetBroker(IBroker* pBroker);
+   void SetBroker(std::shared_ptr<WBFL::EAF::Broker> pBroker);
 
    void Invalidate();
 
    std::shared_ptr<pgsTransferLength> GetTransferLengthDetails(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, pgsTypes::TransferLengthType xferType,const GDRCONFIG* pConfig = nullptr) const;
    Float64 GetTransferLength(const CSegmentKey& segmentKey, pgsTypes::StrandType strandType, pgsTypes::TransferLengthType xferType, const GDRCONFIG* pConfig = nullptr) const;
 
-   //------------------------------------------------------------------------
    // Returns the transfer length adjustment factor. The factor is 0 at the
    // point where bond begins and 1.0 at the end of the transfer length
    Float64 GetTransferLengthAdjustment(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, pgsTypes::TransferLengthType xferType, const GDRCONFIG* pConfig = nullptr) const;
 
-   //------------------------------------------------------------------------
    // Returns the transfer length adjustment factor. The factor is 0 at the
    // point where bond begins and 1.0 at the end of the transfer length
    Float64 GetTransferLengthAdjustment(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, pgsTypes::TransferLengthType xferType, StrandIndexType strandIdx, const GDRCONFIG* pConfig = nullptr) const;
@@ -55,7 +54,7 @@ public:
 private:
    mutable std::array<std::map<const CSegmentKey, std::shared_ptr<pgsTransferLength>>, 3> m_MinCache;
    mutable std::array<std::map<const CSegmentKey, std::shared_ptr<pgsTransferLength>>, 3> m_MaxCache;
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
 };
 
 class pgsTransferLengthBase : public pgsTransferLength

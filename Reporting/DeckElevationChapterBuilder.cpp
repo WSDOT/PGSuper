@@ -36,11 +36,6 @@
 
 #include <WBFLCogo.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -66,10 +61,9 @@ LPCTSTR CDeckElevationChapterBuilder::GetName() const
 rptChapter* CDeckElevationChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pSpec->GetBroker(&pBroker);
+   auto pBroker = pSpec->GetBroker();
 
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridge = pIBridgeDesc->GetBridgeDescription();
    if (pBridge->GetDeckDescription()->GetDeckType() == pgsTypes::sdtNone)
    {
@@ -91,10 +85,9 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CDeckElevationChapterBuilder::C
 rptChapter* CDeckElevationChapterBuilder::BuildDeckOnGirder(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec, Uint16 level) const
 {
    auto pSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pSpec->GetBroker(&pBroker);
+   auto pBroker = pSpec->GetBroker();
 
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
 
@@ -123,10 +116,10 @@ rptChapter* CDeckElevationChapterBuilder::BuildDeckOnGirder(const std::shared_pt
    INIT_UV_PROTOTYPE(rptLengthSectionValue, dist, pDisplayUnits->GetSpanLengthUnit(), false);
    INIT_UV_PROTOTYPE(rptLengthSectionValue, cogoPoint, pDisplayUnits->GetAlignmentLengthUnit(), true);
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
-   GET_IFACE2(pBroker, IRoadway, pAlignment);
-   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
-   GET_IFACE2(pBroker, IGirder, pGirder);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IRoadway, pAlignment);
+   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   EAF_GET_IFACE2(pBroker, IGirder, pGirder);
 
    RowIndexType row_step = 4; // number of rows reported for each web
 
@@ -247,9 +240,8 @@ rptChapter* CDeckElevationChapterBuilder::BuildNoDeck(const std::shared_ptr<cons
 void CDeckElevationChapterBuilder::BuildNoDeckElevationContent(rptChapter * pChapter,const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pSpec->GetBroker(&pBroker);
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   auto pBroker = pSpec->GetBroker();
+   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    auto pSGRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
 
@@ -269,8 +261,8 @@ void CDeckElevationChapterBuilder::BuildNoDeckElevationContent(rptChapter * pCha
    *pPara << _T("Design elevations are the deck surface elevations along CL girder defined by the alignment, profile, and superelevations.") << rptNewLine;
    *pPara << _T("Finished elevations are the top CL of the finished girder, or overlay if applicable, including the effects of camber.") << rptNewLine;
 
-   GET_IFACE2(pBroker,ILibrary, pLib);
-   GET_IFACE2(pBroker, ISpecification, pISpec);
+   EAF_GET_IFACE2(pBroker,ILibrary, pLib);
+   EAF_GET_IFACE2(pBroker, ISpecification, pISpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pISpec->GetSpecification().c_str());
    const auto& slab_offset_criteria = pSpecEntry->GetSlabOffsetCriteria();
    Float64 tolerance = slab_offset_criteria.FinishedElevationTolerance;
@@ -279,13 +271,13 @@ void CDeckElevationChapterBuilder::BuildNoDeckElevationContent(rptChapter * pCha
    INIT_UV_PROTOTYPE(rptLengthSectionValue, dim2, pDisplayUnits->GetComponentDimUnit(), true);
    *pPara << _T("Finished elevations in red text differ from the design elevation by more than ") << symbol(PLUS_MINUS) << dim1.SetValue(tolerance) << _T(" (") << symbol(PLUS_MINUS) << dim2.SetValue(tolerance) << _T(")") << rptNewLine;
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
-   GET_IFACE2(pBroker,IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription, pIBridgeDesc);
    const CDeckDescription2* pDeck = pIBridgeDesc->GetDeckDescription();
    Float64 overlay = 0;
    if (pDeck->WearingSurface == pgsTypes::wstOverlay)
    {
-      GET_IFACE2(pBroker,IIntervals,pIntervals);
+      EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
       IntervalIndexType geomCtrlInterval = pIntervals->GetGeometryControlInterval();
 
       overlay = pBridge->GetOverlayDepth(geomCtrlInterval);
@@ -305,11 +297,11 @@ void CDeckElevationChapterBuilder::BuildNoDeckElevationContent(rptChapter * pCha
    INIT_UV_PROTOTYPE(rptLengthSectionValue, dist, pDisplayUnits->GetSpanLengthUnit(), false);
    INIT_UV_PROTOTYPE(rptLengthSectionValue, cogoPoint, pDisplayUnits->GetAlignmentLengthUnit(), true);
 
-   GET_IFACE2(pBroker, IRoadway, pAlignment);
-   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
-   GET_IFACE2(pBroker, IGirder, pGirder);
-   GET_IFACE2(pBroker, IGeometry, pGeometry);
-   GET_IFACE2(pBroker, IDeformedGirderGeometry, pDeformedGirderGeometry);
+   EAF_GET_IFACE2(pBroker, IRoadway, pAlignment);
+   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   EAF_GET_IFACE2(pBroker, IGirder, pGirder);
+   EAF_GET_IFACE2(pBroker, IGeometry, pGeometry);
+   EAF_GET_IFACE2(pBroker, IDeformedGirderGeometry, pDeformedGirderGeometry);
 
    RowIndexType row_step = 4; // number of rows used for each location (left,center,right)
 

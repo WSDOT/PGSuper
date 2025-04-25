@@ -46,11 +46,6 @@
 
 #include <WBFLCogo.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 /****************************************************************************
@@ -77,23 +72,22 @@ LPCTSTR CTexasShearChapterBuilder::GetName() const
 rptChapter* CTexasShearChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pSpec->GetBroker(&pBroker);
+   auto pBroker = pSpec->GetBroker();
    const CGirderKey& girderKey(pSpec->GetGirderKey());
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+   EAF_GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
    bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IArtifact,pArtifacts);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IArtifact,pArtifacts);
    const pgsGirderArtifact* pGirderArtifact = pArtifacts->GetGirderArtifact(girderKey);
 
    // Vertical Shear check
@@ -132,7 +126,7 @@ rptChapter* CTexasShearChapterBuilder::Build(const std::shared_ptr<const WBFL::R
    CGirderDetailingCheck(true).Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits);
 
    // Debonding check if applicable
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
    if ( pStrandGeometry->GetNumDebondedStrands(CSegmentKey(girderKey,0),pgsTypes::Straight,pgsTypes::dbetEither) )
    {
       CDebondCheckTable().Build(pChapter, pBroker, pGirderArtifact, pDisplayUnits);

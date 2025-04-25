@@ -70,7 +70,7 @@ Float64 StrandSlopeCriteria::GetStrandSlopeLimit(WBFL::Materials::PsStrand::Size
    return strand_slope_limit;
 }
 
-void StrandSlopeCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void StrandSlopeCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;

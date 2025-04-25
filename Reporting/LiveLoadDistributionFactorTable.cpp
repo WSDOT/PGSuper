@@ -32,11 +32,6 @@
 
 #include <PsgLib\SpecLibraryEntry.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -67,13 +62,13 @@ CLiveLoadDistributionFactorTable& CLiveLoadDistributionFactorTable::operator= (c
 }
 
 void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
-                                             IBroker* pBroker,const CGirderKey& girderKey,
-                                             IEAFDisplayUnits* pDisplayUnits) const
+                                             std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,
+                                             std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_SCALAR_PROTOTYPE(rptRcScalar, df, pDisplayUnits->GetScalarFormat());
 
-   GET_IFACE2(pBroker,ILiveLoadDistributionFactors,pDistFact);
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,ILiveLoadDistributionFactors,pDistFact);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
 
    SpanIndexType startSpanIdx, endSpanIdx;
    pBridge->GetGirderGroupSpans(girderKey.groupIndex,&startSpanIdx,&endSpanIdx);
@@ -134,14 +129,14 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
       (*pTable)(1, col++) << _T("V");
    }
 
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
 
    PoiList vPoi;
    pIPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), POI_SPAN, &vPoi);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
@@ -191,7 +186,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
       nCols++;
    }
 
-   GET_IFACE2(pBroker,ILiveLoads, pLiveLoads);
+   EAF_GET_IFACE2(pBroker,ILiveLoads, pLiveLoads);
    std::_tstring strSpecialAction = pLiveLoads->GetLLDFSpecialActionText();
    if ( !strSpecialAction.empty() )
    {

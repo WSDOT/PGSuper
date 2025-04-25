@@ -35,11 +35,6 @@
 
 #include "StrandGenerationDlg.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 static COLORREF DISABLED_COLOR = RGB(200,200,200);
 static COLORREF SYS_COLOR = GetSysColor(COLOR_WINDOW);

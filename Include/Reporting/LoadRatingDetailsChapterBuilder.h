@@ -63,13 +63,13 @@ private:
    mutable bool m_bReportAtAllPoi;
    mutable bool m_bIsSingleGirderLine;
 
-   void ReportRatingDetails(rptChapter* pChapter,IBroker* pBroker,const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType,bool bSplicedGirder) const;
+   void ReportRatingDetails(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType,bool bSplicedGirder) const;
 
-   void MomentRatingDetails(rptChapter* pChapter,IBroker* pBroker,bool bPositiveMoment,const std::vector<const pgsRatingArtifact*>& pRatingArtifacts,bool bSplicedGirder) const;
-   void ShearRatingDetails(rptChapter* pChapter,IBroker* pBroker,const std::vector<const pgsRatingArtifact*>& pRatingArtifacts,bool bSplicedGirder) const;
-   void StressRatingDetails(rptChapter* pChapter,IBroker* pBroker,const std::vector<const pgsRatingArtifact*>& pRatingArtifacts,bool bSplicedGirder) const;
-   void ReinforcementYieldingDetails(rptChapter* pChapter,IBroker* pBroker,bool bPositiveMoment,const std::vector<const pgsRatingArtifact*>& pRatingArtifacts,bool bSplicedGirder) const;
-   void LoadPostingDetails(rptChapter* pChapter,IBroker* pBroker,const std::vector<const pgsRatingArtifact*>& pRatingArtifacts,const std::vector<CGirderKey>& girderKeys) const;
+   void MomentRatingDetails(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,bool bPositiveMoment,const std::vector<const pgsRatingArtifact*>& pRatingArtifacts,bool bSplicedGirder) const;
+   void ShearRatingDetails(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<const pgsRatingArtifact*>& pRatingArtifacts,bool bSplicedGirder) const;
+   void StressRatingDetails(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<const pgsRatingArtifact*>& pRatingArtifacts,bool bSplicedGirder) const;
+   void ReinforcementYieldingDetails(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,bool bPositiveMoment,const std::vector<const pgsRatingArtifact*>& pRatingArtifacts,bool bSplicedGirder) const;
+   void LoadPostingDetails(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<const pgsRatingArtifact*>& pRatingArtifacts,const std::vector<CGirderKey>& girderKeys) const;
 
    bool ReportAtThisPoi(const pgsPointOfInterest& poi,const pgsPointOfInterest& controllingPoi) const;
 };

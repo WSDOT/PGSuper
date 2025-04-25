@@ -38,11 +38,6 @@
 #include <algorithm>
 //#include "Helpers.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 static const COLORREF BACKGROUND_COLOR  = WHITE;
 static const COLORREF VOID_COLOR        = WHITE;
@@ -78,15 +73,14 @@ rptChapter* CCrackedSectionChapterBuilder::Build(const std::shared_ptr<const WBF
    pgsPointOfInterest poi = pSpec->GetPOI();
    bool bPositiveMoment = pSpec->IsPositiveMoment();
 
-   CComPtr<IBroker> pBroker;
-   pSpec->GetBroker(&pBroker);
+   auto pBroker = pSpec->GetBroker();
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    rptParagraph* pPara = new rptParagraph;
    (*pChapter) << pPara;
 
-   GET_IFACE2(pBroker,ICrackedSection,pCrackedSection);
+   EAF_GET_IFACE2(pBroker,ICrackedSection,pCrackedSection);
    const CRACKEDSECTIONDETAILS* pCSD = pCrackedSection->GetCrackedSectionDetails(poi,bPositiveMoment);
 
    /////////////////////////////////////
@@ -101,7 +95,7 @@ rptChapter* CCrackedSectionChapterBuilder::Build(const std::shared_ptr<const WBF
 
 #pragma Reminder("UPDATE: assuming precast girder bridge")
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
-   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    CSpanKey spanKey;
    Float64 Xspan;
    pPoi->ConvertPoiToSpanPoint(poi, &spanKey, &Xspan);

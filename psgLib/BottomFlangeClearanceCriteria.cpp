@@ -47,7 +47,7 @@ bool BottomFlangeClearanceCriteria::Compare(const BottomFlangeClearanceCriteria&
    return bSame;
 }
 
-void BottomFlangeClearanceCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void BottomFlangeClearanceCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), true);
 

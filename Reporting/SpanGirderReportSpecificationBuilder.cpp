@@ -34,13 +34,8 @@
 
 #include <PgsExt\BridgeDescription2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-CSpanReportSpecificationBuilder::CSpanReportSpecificationBuilder(IBroker* pBroker) :
+CSpanReportSpecificationBuilder::CSpanReportSpecificationBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker) :
 CBrokerReportSpecificationBuilder(pBroker)
 {
 }
@@ -54,11 +49,11 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CSpanReportSpecificationBu
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    // Prompt for span and chapter list
-   GET_IFACE(ISelection,pSelection);
+   EAF_GET_IFACE(ISelection,pSelection);
    SpanIndexType spanIdx = pSelection->GetSelectedSpan();
    spanIdx = (spanIdx == INVALID_INDEX ? 0 : spanIdx );
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CSpanData2* pSpan = pBridgeDesc->GetSpan(spanIdx);
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(pSpan);
@@ -98,7 +93,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CSpanReportSpecificationBu
 std::shared_ptr<WBFL::Reporting::ReportSpecification> CSpanReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const
 {
    // Get the selected span and girder
-   GET_IFACE(ISelection,pSelection);
+   EAF_GET_IFACE(ISelection,pSelection);
    SpanIndexType spanIdx = pSelection->GetSelectedSpan();
 
    spanIdx = (spanIdx == INVALID_INDEX ? 0 : spanIdx );
@@ -113,7 +108,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CSpanReportSpecificationBu
 ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////
 
-CGirderLineReportSpecificationBuilder::CGirderLineReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker) :
+CGirderLineReportSpecificationBuilder::CGirderLineReportSpecificationBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker) :
 CBrokerReportSpecificationBuilder(pBroker)
 {
 }
@@ -127,7 +122,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CGirderLineReportSpecifica
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    // Prompt for span and chapter list
-   GET_IFACE(ISelection,pSelection);
+   EAF_GET_IFACE(ISelection,pSelection);
    CGirderKey girderKey = pSelection->GetSelectedGirder();
    girderKey.groupIndex  = (girderKey.groupIndex  == INVALID_INDEX ? 0 : girderKey.groupIndex);
    girderKey.girderIndex = (girderKey.girderIndex == INVALID_INDEX ? 0 : girderKey.girderIndex);
@@ -166,7 +161,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CGirderLineReportSpecifica
 std::shared_ptr<WBFL::Reporting::ReportSpecification> CGirderLineReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const
 {
    // Get the selected span and girder
-   GET_IFACE(ISelection,pSelection);
+   EAF_GET_IFACE(ISelection,pSelection);
    CGirderKey girderKey = pSelection->GetSelectedGirder();
    girderKey.groupIndex  = (girderKey.groupIndex  == INVALID_INDEX ? 0 : girderKey.groupIndex);
    girderKey.girderIndex = (girderKey.girderIndex == INVALID_INDEX ? 0 : girderKey.girderIndex);
@@ -182,7 +177,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CGirderLineReportSpecifica
 ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////
 
-CGirderReportSpecificationBuilder::CGirderReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey) :
+CGirderReportSpecificationBuilder::CGirderReportSpecificationBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey) :
 CBrokerReportSpecificationBuilder(pBroker)
 {
    m_GirderKey = girderKey;
@@ -197,7 +192,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CGirderReportSpecification
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    // Prompt for group, girder, and chapter list
-   GET_IFACE(ISelection,pSelection);
+   EAF_GET_IFACE(ISelection,pSelection);
    CSelection selection = pSelection->GetSelection();
    CGirderKey girderKey(m_GirderKey);
    if ( selection.Type == CSelection::Segment || selection.Type == CSelection::Girder )
@@ -241,12 +236,12 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CGirderReportSpecification
 std::shared_ptr<WBFL::Reporting::ReportSpecification> CGirderReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const
 {
    // Get the selected group and girder
-   GET_IFACE(ISelection,pSelection);
+   EAF_GET_IFACE(ISelection,pSelection);
    CSelection selection = pSelection->GetSelection();
    CGirderKey girderKey(m_GirderKey);
    if ( selection.Type == CSelection::Girder || selection.Type == CSelection::Segment )
    {
-      GET_IFACE(IBridge,pBridge);
+      EAF_GET_IFACE(IBridge,pBridge);
       GroupIndexType nGroups = pBridge->GetGirderGroupCount();
       if ( selection.GroupIdx == ALL_GROUPS && selection.GirderIdx != ALL_GIRDERS && nGroups == 1 )
       {
@@ -294,7 +289,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CGirderReportSpecification
 ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////
 
-CSegmentReportSpecificationBuilder::CSegmentReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey) :
+CSegmentReportSpecificationBuilder::CSegmentReportSpecificationBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey) :
    CBrokerReportSpecificationBuilder(pBroker)
 {
    m_SegmentKey = segmentKey;
@@ -309,7 +304,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CSegmentReportSpecificatio
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    // Prompt for group, girder, and chapter list
-   GET_IFACE(ISelection, pSelection);
+   EAF_GET_IFACE(ISelection, pSelection);
    CSelection selection = pSelection->GetSelection();
    CSegmentKey segmentKey(m_SegmentKey);
    if (selection.Type == CSelection::Segment || selection.Type == CSelection::Girder)
@@ -354,7 +349,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CSegmentReportSpecificatio
 std::shared_ptr<WBFL::Reporting::ReportSpecification> CSegmentReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const
 {
    // Get the selected group and girder
-   GET_IFACE(ISelection, pSelection);
+   EAF_GET_IFACE(ISelection, pSelection);
    CSelection selection = pSelection->GetSelection();
 
    CSegmentKey segmentKey(m_SegmentKey);
@@ -383,7 +378,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CSegmentReportSpecificatio
 ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////
 
-CMultiGirderReportSpecificationBuilder::CMultiGirderReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker) :
+CMultiGirderReportSpecificationBuilder::CMultiGirderReportSpecificationBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker) :
 CBrokerReportSpecificationBuilder(pBroker)
 {
 }
@@ -406,13 +401,13 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiGirderReportSpecific
    }
    else
    {
-      GET_IFACE(ISelection,pSelection);
+      EAF_GET_IFACE(ISelection,pSelection);
       CSelection selection = pSelection->GetSelection();
 
       CGirderKey girderKey;
       if ( selection.Type == CSelection::Span )
       {
-         GET_IFACE(IBridge,pBridge);
+         EAF_GET_IFACE(IBridge,pBridge);
          girderKey.groupIndex = pBridge->GetGirderGroupIndex(selection.SpanIdx);
          girderKey.girderIndex = 0;
       }
@@ -435,7 +430,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiGirderReportSpecific
       // multiple girders are selected... fill up the girder key vector
       CGirderKey girderKey = girderKeys.front();
       girderKeys.clear();
-      GET_IFACE(IBridge, pBridge);
+      EAF_GET_IFACE(IBridge, pBridge);
       GroupIndexType nGroups = pBridge->GetGirderGroupCount();
       GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
       GroupIndexType lastGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? nGroups - 1 : firstGroupIdx);
@@ -483,13 +478,13 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiGirderReportSpecific
 
 std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiGirderReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const
 {
-   GET_IFACE(ISelection,pSelection);
+   EAF_GET_IFACE(ISelection,pSelection);
    CSelection selection = pSelection->GetSelection();
 
    CGirderKey girderKey;
    if ( selection.Type == CSelection::Span )
    {
-      GET_IFACE(IBridge,pBridge);
+      EAF_GET_IFACE(IBridge,pBridge);
       girderKey.groupIndex = pBridge->GetGirderGroupIndex(selection.SpanIdx);
       girderKey.girderIndex = 0;
    }
@@ -504,7 +499,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiGirderReportSpecific
       girderKey.girderIndex = 0;
    }
 
-   GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE(IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    if ( girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex != ALL_GIRDERS && nGroups == 1 )
    {
@@ -544,7 +539,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiGirderReportSpecific
 ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////
 
-CMultiViewSpanGirderReportSpecificationBuilder::CMultiViewSpanGirderReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker) :
+CMultiViewSpanGirderReportSpecificationBuilder::CMultiViewSpanGirderReportSpecificationBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker) :
 CSpanReportSpecificationBuilder(pBroker)
 {
 }
@@ -566,13 +561,13 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiViewSpanGirderReport
    {
       AFX_MANAGE_STATE(AfxGetStaticModuleState());
       // Prompt for span, girder, and chapter list
-      GET_IFACE(ISelection,pSelection);
+      EAF_GET_IFACE(ISelection,pSelection);
       CSelection selection = pSelection->GetSelection();
 
       CGirderKey girderKey;
       if ( selection.Type == CSelection::Span )
       {
-         GET_IFACE(IBridge,pBridge);
+         EAF_GET_IFACE(IBridge,pBridge);
          girderKey.groupIndex = pBridge->GetGirderGroupIndex(selection.SpanIdx);
          girderKey.girderIndex = 0;
       }
@@ -622,13 +617,13 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiViewSpanGirderReport
 
 std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiViewSpanGirderReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const
 {
-   GET_IFACE(ISelection,pSelection);
+   EAF_GET_IFACE(ISelection,pSelection);
    CSelection selection = pSelection->GetSelection();
 
    CGirderKey girderKey;
    if ( selection.Type == CSelection::Span )
    {
-      GET_IFACE(IBridge,pBridge);
+      EAF_GET_IFACE(IBridge,pBridge);
       girderKey.groupIndex = pBridge->GetGirderGroupIndex(selection.SpanIdx);
       girderKey.girderIndex = 0;
    }
@@ -643,7 +638,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiViewSpanGirderReport
       girderKey.girderIndex = 0;
    }
 
-   GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE(IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    if ( girderKey.groupIndex == ALL_GROUPS && girderKey.girderIndex != ALL_GIRDERS && nGroups == 1 )
    {
@@ -680,7 +675,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CMultiViewSpanGirderReport
 ////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////
 
-CPointOfInterestReportSpecificationBuilder::CPointOfInterestReportSpecificationBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker) :
+CPointOfInterestReportSpecificationBuilder::CPointOfInterestReportSpecificationBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker) :
 CBrokerReportSpecificationBuilder(pBroker)
 {
 }
@@ -695,7 +690,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CPointOfInterestReportSpec
 
    // Prompt for span, girder, and chapter list
    // initialize dialog for the current cut location
-   GET_IFACE(ISelection,pSelection);
+   EAF_GET_IFACE(ISelection,pSelection);
    CSelection selection = pSelection->GetSelection();
    CSegmentKey segmentKey;
    if ( selection.Type == CSelection::Girder )
@@ -717,7 +712,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CPointOfInterestReportSpec
       segmentKey.segmentIndex = 0;
    }
 
-   GET_IFACE(IPointOfInterest,pPOI);
+   EAF_GET_IFACE(IPointOfInterest,pPOI);
    PoiList vPoi;
    pPOI->GetPointsOfInterest(CSegmentKey(segmentKey.groupIndex, segmentKey.girderIndex, ALL_SEGMENTS), POI_5L | POI_SPAN, &vPoi);
    const pgsPointOfInterest& initial_poi = vPoi.front();

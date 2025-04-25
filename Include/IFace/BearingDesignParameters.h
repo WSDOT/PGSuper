@@ -22,22 +22,6 @@
 #pragma once
 #include "AnalysisResults.h"
 
-
-
-
-/*****************************************************************************
-INTERFACE
-   IBearingDesignParameters
-
-   <<Summary here>>
-
-DESCRIPTION
-   <<Detailed description here>>
-*****************************************************************************/
-
-
-
-
 struct BEARINGPARAMETERS
 {
 	bool bSegments;
@@ -237,8 +221,9 @@ struct SHEARDEFORMATIONDETAILS : public BEARINGPARAMETERS  // results per girder
 // {D88670F0-3B83-11d2-8EC5-006097DF3C68}
 DEFINE_GUID(IID_IBearingDesignParameters,
 	0xD88670F0, 0x3B83, 0x11d2, 0x8E, 0xC5, 0x00, 0x60, 0x97, 0xDF, 0x3C, 0x68);
-interface IBearingDesignParameters : IUnknown
+class IBearingDesignParameters
 {
+public:
 	virtual void GetBearingParameters(CGirderKey girderKey, BEARINGPARAMETERS* pDetails) const = 0;
 
 	virtual void GetBearingRotationDetails(pgsTypes::AnalysisType analysisType, const pgsPointOfInterest& poi, 

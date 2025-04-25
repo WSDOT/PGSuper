@@ -29,11 +29,6 @@
 #include <IFace\Bridge.h>
 #include <IFace\GirderHandling.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 rptPointOfInterest::rptPointOfInterest(const WBFL::Units::Length* pUnitOfMeasure,
                                        Float64 zeroTolerance,

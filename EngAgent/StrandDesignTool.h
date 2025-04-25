@@ -20,14 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_STRANDDESIGNTOOL_H_
-#define INCLUDED_STRANDDESIGNTOOL_H_
-
-// SYSTEM INCLUDES
-//
-
-// PROJECT INCLUDES
-//
+#pragma once
 
 #include <IFace\Artifact.h>
 #include <IFace\Bridge.h>
@@ -39,9 +32,6 @@
 #include <algorithm>
 #include<list>
 #include<vector>
-
-// LOCAL INCLUDES
-//
 
 struct InitialDesignParameters
 {
@@ -76,12 +66,8 @@ static std::_tstring DumpIntVector(const std::vector<DebondLevelType>& rvec)
    return os.str();
 }
 
-// FORWARD DECLARATIONS
-//
-interface IBroker;
-interface IPretensionForce;
+class IPretensionForce;
 
-// MISCELLANEOUS
 // Strand adjustment outcomes
 #define STRAND_ADJUST_UNCHANGED               2
 #define STRAND_ADJUST_SUCCESS                 1
@@ -121,20 +107,15 @@ public:
       TensBotBtwnHp
    };
 
-   // GROUP: LIFECYCLE
-
-   //------------------------------------------------------------------------
-   // Default constructor
    pgsStrandDesignTool(SHARED_LOGFILE lf);
    
-   void Initialize(IBroker* pBroker, StatusGroupIDType statusGroupID, pgsSegmentDesignArtifact* pArtifact);
+   void Initialize(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, pgsSegmentDesignArtifact* pArtifact);
 
    void InitReleaseStrength(Float64 fci,IntervalIndexType intervalIdx);
    void InitFinalStrength(Float64 fc,IntervalIndexType intervalIdx);
 
    void RestoreDefaults(bool retainProportioning, bool justAddedRaisedStrands);
 
-   // GROUP: OPERATIONS
    void FillArtifactWithFlexureValues();
 
    Float64 GetSegmentLength() const; // a little utility function to return a commonly used value
@@ -269,8 +250,6 @@ public:
    bool LayoutDebonding(const std::vector<DebondLevelType>& rDebondLevelsAtSections);
 
 
-   // ACCESS
-   //////////
    const GDRCONFIG& GetSegmentConfiguration() const;
 
    bool IsDesignDebonding() const;
@@ -302,8 +281,6 @@ public:
    virtual void GetHaulingDesignPointsOfInterest(const CSegmentKey& segmentKey, Uint16 nPnts, Float64 leftOverhang, Float64 rightOverhang, PoiAttributeType attrib, std::vector<pgsPointOfInterest>* pvPoi,Uint32 mode = POIFIND_OR) const override;
 
    // Concrete
-   ////////////
-   // 
 
    Float64 GetConcreteStrength() const;
    Float64 GetReleaseStrength() const;
@@ -356,26 +333,7 @@ public:
    pgsSegmentDesignArtifact::ConcreteStrengthDesignState GetReleaseConcreteDesignState() const;
    pgsSegmentDesignArtifact::ConcreteStrengthDesignState GetFinalConcreteDesignState() const;
 
-   // GROUP: INQUIRY
    void DumpDesignParameters() const;
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-   // GROUP: DATA MEMBERS
-
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
 
 private:
    // updates jacking forces with current design information
@@ -391,7 +349,7 @@ private:
    void ComputeMinStrands();
 
 
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    StatusGroupIDType m_StatusGroupID;
 
    Float64 m_ConcreteAccuracy; // 100 PSI
@@ -761,13 +719,4 @@ private:
 
 private:
 	DECLARE_SHARED_LOGFILE;
-
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_STRANDDESIGNTOOL_H_

@@ -34,11 +34,6 @@
 
 #include <EAF/EAFDisplayUnits.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define CURRENT_VERSION 4.0
 
@@ -2981,9 +2976,9 @@ const CLiveLoadFactorModel2& RatingLibraryEntry::GetLiveLoadFactorModel2(pgsType
    return m_SpecialPermitLiveLoadFactorModels2[permitType];
 }
 
-void write_load_factors(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits, LPCTSTR lpszName, const CLiveLoadFactorModel& model);
+void write_load_factors(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, LPCTSTR lpszName, const CLiveLoadFactorModel& model);
 
-void RatingLibraryEntry::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void RatingLibraryEntry::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
@@ -3012,7 +3007,7 @@ void RatingLibraryEntry::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplay
    write_load_factors(pChapter, pDisplayUnits, _T("Permit - Special - Multiple Trip, mixed with traffic"), GetLiveLoadFactorModel(pgsTypes::ptMultipleTripWithTraffic));
 }
 
-void write_load_factors(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits, LPCTSTR lpszName, const CLiveLoadFactorModel& model)
+void write_load_factors(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, LPCTSTR lpszName, const CLiveLoadFactorModel& model)
 {
    INIT_UV_PROTOTYPE(rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), true);
 

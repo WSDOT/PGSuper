@@ -26,13 +26,8 @@
 #include <Reporting\MomentCapacityReportSpecification.h>
 #include <IFace\PointOfInterest.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-CMomentCapacityReportSpecification::CMomentCapacityReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,const pgsPointOfInterest& poi,bool bPositiveMoment) :
+CMomentCapacityReportSpecification::CMomentCapacityReportSpecification(const std::_tstring& strReportName,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,bool bPositiveMoment) :
    CPoiReportSpecification(strReportName,pBroker,poi)
 {
    m_bPositiveMoment = bPositiveMoment;
@@ -64,7 +59,7 @@ bool CMomentCapacityReportSpecification::IsValid() const
    {
       // next check if POI is in a valid range 
       // Note that moments range from start to end of span, not just on segment
-      GET_IFACE(IPointOfInterest, pPoi);
+      EAF_GET_IFACE2(GetBroker(),IPointOfInterest, pPoi);
       const CSegmentKey& segmentKey = m_Poi.GetSegmentKey();
 
       PoiList vPoi = GetMomentCapacityDetailsPois(pPoi, segmentKey);

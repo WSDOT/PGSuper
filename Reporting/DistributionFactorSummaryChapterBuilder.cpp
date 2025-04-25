@@ -27,11 +27,6 @@
 #include <IFace\DistributionFactors.h>
 #include <IFace\Bridge.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -63,8 +58,8 @@ GirderIndexType GetPierGirderCount(PierIndexType pierIdx, IBridge* pBridge)
 }
 
 
-void WriteSpanTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType span,IEAFDisplayUnits* pDisplayUnits);
-void WritePierTable(rptChapter* pChapter,IBroker* pBroker,PierIndexType pier,IEAFDisplayUnits* pDisplayUnits);
+void WriteSpanTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,SpanIndexType span,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+void WritePierTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,PierIndexType pier,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
@@ -87,14 +82,13 @@ rptChapter* CDistributionFactorSummaryChapterBuilder::Build(const std::shared_pt
 
    auto pBrokerSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
 
-   // This report does not use the passd span and girder parameters
+   // This report does not use the passed span and girder parameters
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   CComPtr<IBroker> pBroker;
-   pBrokerSpec->GetBroker(&pBroker);
+   auto pBroker = pBrokerSpec->GetBroker();
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
 
    PierIndexType nPiers = pBridge->GetPierCount();
    for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
@@ -117,14 +111,14 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CDistributionFactorSummaryChapt
    return std::make_unique<CDistributionFactorSummaryChapterBuilder>();
 }
 
-void WriteSpanTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,IEAFDisplayUnits* pDisplayUnits)
+void WriteSpanTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,SpanIndexType spanIdx,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    INIT_SCALAR_PROTOTYPE(rptRcScalar, df, pDisplayUnits->GetScalarFormat());
    INIT_SCALAR_PROTOTYPE(rptRcSectionScalar, dfM, pDisplayUnits->GetScalarFormat());
    INIT_SCALAR_PROTOTYPE(rptRcSectionScalar, dfV, pDisplayUnits->GetScalarFormat());
 
-   GET_IFACE2(pBroker,ILiveLoadDistributionFactors,pDistFact);
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,ILiveLoadDistributionFactors,pDistFact);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
 
    bool bNegMoments = pBridge->ProcessNegativeMoments(spanIdx);
 
@@ -256,13 +250,13 @@ void WriteSpanTable(rptChapter* pChapter,IBroker* pBroker,SpanIndexType spanIdx,
    }
 }
 
-void WritePierTable(rptChapter* pChapter,IBroker* pBroker,PierIndexType pierIdx,IEAFDisplayUnits* pDisplayUnits)
+void WritePierTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,PierIndexType pierIdx,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    INIT_SCALAR_PROTOTYPE(rptRcSectionScalar, dfM, pDisplayUnits->GetScalarFormat());
    INIT_SCALAR_PROTOTYPE(rptRcSectionScalar, dfV, pDisplayUnits->GetScalarFormat());
 
-   GET_IFACE2_NOCHECK(pBroker,ILiveLoadDistributionFactors,pDistFact);
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2_NOCHECK(pBroker,ILiveLoadDistributionFactors,pDistFact);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
 
    bool bContinuousLeft,bContinuousRight;
    pBridge->IsContinuousAtPier(pierIdx,&bContinuousLeft,&bContinuousRight);

@@ -30,7 +30,7 @@ class REPORTINGCLASS CPGSpliceTitlePageBuilder :
    public WBFL::Reporting::TitlePageBuilder
 {
 public:
-   CPGSpliceTitlePageBuilder(IBroker* pBroker,LPCTSTR strTitle,bool bFullVersion=true);
+   CPGSpliceTitlePageBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker,LPCTSTR strTitle,bool bFullVersion=true);
    CPGSpliceTitlePageBuilder(const CPGSpliceTitlePageBuilder& other);
    ~CPGSpliceTitlePageBuilder(void);
 
@@ -40,6 +40,6 @@ public:
    std::unique_ptr<WBFL::Reporting::TitlePageBuilder> Clone() const;
 
 protected:
-   CComPtr<IBroker> m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    bool m_bFullVersion;
 };

@@ -49,8 +49,8 @@ public:
    virtual bool PassedStressCheck(WBFL::Stability::HaulingSlope slope) const = 0;
    virtual void GetRequiredConcreteStrength(WBFL::Stability::HaulingSlope slope,Float64 *pfcCompression,Float64 *pfcTension,Float64* pfcTensionWithRebar) const = 0;
 
-   virtual void BuildHaulingCheckReport(const CSegmentKey& segmentKey, rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, IEAFDisplayUnits* pDisplayUnits) const = 0;
-   virtual void BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, IEAFDisplayUnits* pDisplayUnits) const = 0;
+   virtual void BuildHaulingCheckReport(const CSegmentKey& segmentKey, rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const = 0;
+   virtual void BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const = 0;
 
    virtual pgsHaulingAnalysisArtifact* Clone() const = 0;
 
@@ -105,8 +105,8 @@ public:
    virtual bool PassedStressCheck(WBFL::Stability::HaulingSlope slope) const override;
    virtual void GetRequiredConcreteStrength(WBFL::Stability::HaulingSlope slope,Float64 *pfcCompression,Float64 *pfcTension, Float64* pfcTensionWithRebar) const override;
 
-   virtual void BuildHaulingCheckReport(const CSegmentKey& segmentKey,rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, IEAFDisplayUnits* pDisplayUnits) const override;
-   virtual void BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, IEAFDisplayUnits* pDisplayUnits) const override;
+   virtual void BuildHaulingCheckReport(const CSegmentKey& segmentKey,rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const override;
+   virtual void BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const override;
 
    virtual pgsHaulingAnalysisArtifact* Clone() const override;
 

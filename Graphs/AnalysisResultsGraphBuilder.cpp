@@ -64,11 +64,6 @@
 
 #include <algorithm>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // Utility class for managing map between principal web stress section elevations and graph data series
 struct WebSectionManager
@@ -219,7 +214,7 @@ void CAnalysisResultsGraphBuilder::Init()
 BOOL CAnalysisResultsGraphBuilder::CreateGraphController(CWnd* pParent,UINT nID)
 {
    CGirderKey girderKey(ALL_GROUPS,0);
-   GET_IFACE(ISelection, pSelection);
+   EAF_GET_IFACE(ISelection, pSelection);
    CSelection selection = pSelection->GetSelection();
    if (selection.Type == CSelection::Girder || selection.Type == CSelection::Segment)
    {
@@ -257,11 +252,11 @@ void CAnalysisResultsGraphBuilder::CreateViewController(IEAFViewController** ppC
 
 void CAnalysisResultsGraphBuilder::DumpLBAM()
 {
-   GET_IFACE(IProgress,pProgress);
+   EAF_GET_IFACE(IProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
    pProgress->UpdateMessage(_T("Dumping Analysis Models"));
 
-   GET_IFACE(IProductForces,pProductForces);
+   EAF_GET_IFACE(IProductForces,pProductForces);
    pProductForces->DumpAnalysisModels( m_pGraphController->GetGirder() );
 
    AfxMessageBox(_T("Analysis Model Dump Complete"),MB_OK);
@@ -309,12 +304,12 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CGirderKey& gird
 
    IDType graphID = 0;
 
-   GET_IFACE(IProductLoads,pProductLoads);
+   EAF_GET_IFACE(IProductLoads,pProductLoads);
 
    // determine if there are temporary strands or pedestrian load for any of the girders
    // for this group
-   GET_IFACE(IBridge,pBridge);
-   GET_IFACE(IStrandGeometry,pStrandGeom);
+   EAF_GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE(IStrandGeometry,pStrandGeom);
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(girderKey, &vGirderKeys);
    bool bTempStrand = false;
@@ -338,15 +333,15 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CGirderKey& gird
       } // next segIdx
    } // next groupIdx
 
-   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    bool bLongitudinalJoint = pBridgeDesc->HasStructuralLongitudinalJoints();
 
    // Get intervals for reporting
-   GET_IFACE(IIntervals,pIntervals);
+   EAF_GET_IFACE(IIntervals,pIntervals);
 
    // spec check intervals
-   GET_IFACE(IStressCheck, pStressCheck);
+   EAF_GET_IFACE(IStressCheck, pStressCheck);
    std::vector<IntervalIndexType> vSpecCheckIntervals(pStressCheck->GetStressCheckIntervals(girderKey));
 
    // initial intervals
@@ -431,7 +426,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CGirderKey& gird
 
    intervals.clear();
    intervals = AddTSRemovalIntervals(firstCastDeckIntervalIdx,vDeckAndDiaphragmIntervals,vTempSupportRemovalIntervals);
-   GET_IFACE(IUserDefinedLoadData,pUserLoads);
+   EAF_GET_IFACE(IUserDefinedLoadData,pUserLoads);
    if ( !IsZero(pUserLoads->GetConstructionLoad()) )
    {
       m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftConstruction), pgsTypes::pftConstruction,  vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION) );
@@ -475,13 +470,13 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CGirderKey& gird
    }
 
    // Deck shrinkage is different animal
-   GET_IFACE(ILosses, pLosses);
+   EAF_GET_IFACE(ILosses, pLosses);
    if( pLosses->IsDeckShrinkageApplicable() )
    {
       m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Deck Shrinkage"),   graphDeckShrinkageStress ,   vRailingSystemIntervals) );
    }
 
-   GET_IFACE(IDocumentType,pDocType);
+   EAF_GET_IFACE(IDocumentType,pDocType);
    if ( pDocType->IsPGSpliceDocument() )
    {
       m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftPostTensioning), pgsTypes::pftPostTensioning, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION) );
@@ -499,8 +494,8 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CGirderKey& gird
    m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, pProductLoads->GetProductLoadName(pgsTypes::pftOverlay), pgsTypes::pftOverlay, vAllIntervals, ACTIONS_ALL | ACTIONS_X_DEFLECTION) );
 
 
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
+   EAF_GET_IFACE(ILibrary,pLib);
+   EAF_GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
    if ( prestress_loss_criteria.LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP )
@@ -521,7 +516,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CGirderKey& gird
    ////////////////////////////////////////////////////////
 
    // Individual Truck Responses
-   GET_IFACE(ILiveLoads,pLiveLoads);
+   EAF_GET_IFACE(ILiveLoads,pLiveLoads);
    bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
 
    std::vector<pgsTypes::LiveLoadType> vLiveLoadTypes;
@@ -630,7 +625,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CGirderKey& gird
    }
 
    std::vector<pgsTypes::LoadRatingType> vLoadRatingTypes;
-   GET_IFACE(IRatingSpecification,pRatingSpec);
+   EAF_GET_IFACE(IRatingSpecification,pRatingSpec);
    if (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory))
    {
       vLoadRatingTypes.push_back(pgsTypes::lrDesign_Inventory);
@@ -875,7 +870,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CGirderKey& gird
       m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, _T("Fatigue I"), pgsTypes::FatigueI, vLiveLoadIntervals, ACTIONS_STRESS) );
    }
 
-   GET_IFACE(ILimitStateForces,pLimitStateForces);
+   EAF_GET_IFACE(ILimitStateForces,pLimitStateForces);
    bool bStrII = pLimitStateForces->IsStrengthIIApplicable(CSegmentKey(girderKey.groupIndex,girderKey.girderIndex,0));
 
    if ( bStrII )
@@ -968,7 +963,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphDefinitions(const CGirderKey& gird
             m_pGraphDefinitions->AddGraphDefinition(haunchGraphDef);
          }
 
-         GET_IFACE(IDocumentType, pDocType);
+         EAF_GET_IFACE(IDocumentType, pDocType);
          if (pDocType->IsPGSpliceDocument())
          {
             m_pGraphDefinitions->AddGraphDefinition(CAnalysisResultsGraphDefinition(graphID++, Shear_Stress_String(pProductLoads->GetProductLoadName(pgsTypes::pftPostTensioning)), pgsTypes::pftPostTensioning, vAllIntervals, ACTIONS_WEB_STRESS));
@@ -1095,7 +1090,7 @@ CGirderGraphControllerBase* CAnalysisResultsGraphBuilder::CreateGraphController(
 
 bool CAnalysisResultsGraphBuilder::UpdateNow()
 {
-   GET_IFACE(IProgress,pProgress);
+   EAF_GET_IFACE(IProgress,pProgress);
    CEAFAutoProgress ap(pProgress,0);
 
    pProgress->UpdateMessage(_T("Building Graph"));
@@ -1130,7 +1125,7 @@ void CAnalysisResultsGraphBuilder::UpdateYAxisUnits()
 
    ActionType actionType  = ((CAnalysisResultsGraphController*)m_pGraphController)->GetActionType();
 
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    switch(actionType)
    {
@@ -1222,7 +1217,7 @@ void CAnalysisResultsGraphBuilder::UpdateXAxisTitle()
       intervalIdx = vIntervals.back();
    }
 
-   GET_IFACE(IIntervals,pIntervals);
+   EAF_GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(CSegmentKey(0,0,0));
    if ( intervalIdx == releaseIntervalIdx )
    {
@@ -1290,7 +1285,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphTitle()
       // Plotting by loading
       IntervalIndexType intervalIdx = vIntervals.back();
 
-      GET_IFACE(IIntervals,pIntervals);
+      EAF_GET_IFACE(IIntervals,pIntervals);
       CString strInterval( pIntervals->GetDescription(intervalIdx).c_str() );
 
       CString strGraphTitle;
@@ -1338,7 +1333,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphTitle()
       m_Graph.SetTitle(strGraphTitle);
    }
 
-   GET_IFACE(IDocumentType,pDocType);
+   EAF_GET_IFACE(IDocumentType,pDocType);
    if ( pDocType->IsPGSuperDocument() )
    {
       CString strSubtitle;
@@ -1426,8 +1421,8 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
       bSimpleSpanSegments = false; // reactions are returned along entire girder
    }
 
-   GET_IFACE(IIntervals, pIntervals);
-   GET_IFACE(IBridge, pBridge);
+   EAF_GET_IFACE(IIntervals, pIntervals);
+   EAF_GET_IFACE(IBridge, pBridge);
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(girderKey, &vGirderKeys);
 
@@ -1466,12 +1461,12 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
             // Pois for principal web stress are unique. 
             if (actionPrincipalWebStress == actionType)
             {
-               GET_IFACE(IPrincipalWebStress, pPrincipalWebStress);
+               EAF_GET_IFACE(IPrincipalWebStress, pPrincipalWebStress);
                pPrincipalWebStress->GetPrincipalWebStressPointsOfInterest(segmentKey, lastPlottingIntervalIdx, &vPoi);
             }
             else
             {
-               GET_IFACE(IPointOfInterest, pIPoi);
+               EAF_GET_IFACE(IPointOfInterest, pIPoi);
                pIPoi->GetPointsOfInterest(segmentKey, &vPoi);
 
                // There are some blips (bugs likely) in computing deflections within closure joints. Clean out off-segment POIs to make graphs look pretty
@@ -1617,7 +1612,7 @@ void CAnalysisResultsGraphBuilder::UpdateGraphData()
             case graphPrincipalWebStressLimit:
             {
                ATLASSERT(actionType == actionPrincipalWebStress);
-               GET_IFACE(ISpecification,pSpec);
+               EAF_GET_IFACE(ISpecification,pSpec);
                if (ISpecification::pwcNCHRPTimeStepMethod == pSpec->GetPrincipalWebStressCheckType(vPoi.front().get().GetSegmentKey()))
                {
                   TimeStepPrincipalWebStressGraph(selectedGraphIdx, graphDef, intervalIdx, vPoi, xVals);
@@ -1654,8 +1649,8 @@ void CAnalysisResultsGraphBuilder::InitializeGraph(IndexType graphIdx, const CAn
 
    if (actionType == actionShear)
    {
-      GET_IFACE(IProductForces, pProductForces);
-      GET_IFACE(IIntervals, pIntervals);
+      EAF_GET_IFACE(IProductForces, pProductForces);
+      EAF_GET_IFACE(IIntervals, pIntervals);
       IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
       int penStyle = (/*liveLoadIntervalIdx <= intervalIdx && actionType == actionShear && !bIsFinalShear ? PS_DOT :*/ PS_SOLID);
@@ -1688,7 +1683,7 @@ void CAnalysisResultsGraphBuilder::InitializeGraph(IndexType graphIdx, const CAn
       actionType == actionReaction)
    {
       // For moments and deflections
-      GET_IFACE(IProductForces, pProductForces);
+      EAF_GET_IFACE(IProductForces, pProductForces);
       if (analysisType == pgsTypes::Envelope)
       {
          *pAnalysisTypeCount = 2;
@@ -1753,7 +1748,7 @@ void CAnalysisResultsGraphBuilder::InitializeGraph(IndexType graphIdx, const CAn
       *pAnalysisTypeCount = 1;
       (*pDataSeriesID)[0] = m_Graph.CreateDataSeries(strDataLabel, PS_SOLID, penWeight, c);
 
-      GET_IFACE(IProductForces, pProductForces);
+      EAF_GET_IFACE(IProductForces, pProductForces);
       (*pBat)[0] = pProductForces->GetBridgeAnalysisType(analysisType, pgsTypes::Maximize);
       ATLASSERT((*pBat)[0] == (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan));
    }
@@ -1773,7 +1768,7 @@ void CAnalysisResultsGraphBuilder::ProductLoadGraph(IndexType graphIdx,const CAn
    if (actionPrincipalWebStress != actionType)
    {
       // Product forces
-      GET_IFACE(IProductForces2, pForces);
+      EAF_GET_IFACE(IProductForces2, pForces);
 
       std::array<IndexType, 4> data_series_id;
       std::array<pgsTypes::BridgeAnalysisType, 4> bat;
@@ -1878,7 +1873,7 @@ void CAnalysisResultsGraphBuilder::CombinedLoadGraph(IndexType graphIdx,const CA
    if (nAnalysisTypes == 0)
       return;
 
-   GET_IFACE(ICombinedForces2, pForces);
+   EAF_GET_IFACE(ICombinedForces2, pForces);
 
    for ( IndexType analysisIdx = 0; analysisIdx < nAnalysisTypes; analysisIdx++ )
    {
@@ -1976,7 +1971,7 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx,const 
    bool bProcessNegativeMoments = false;
    if ( graphDef.m_GraphType == graphCapacity || graphDef.m_GraphType == graphMinCapacity )
    {
-      GET_IFACE(IBridge,pBridge);
+      EAF_GET_IFACE(IBridge,pBridge);
       SpanIndexType startSpanIdx, endSpanIdx;
       pBridge->GetGirderGroupSpans(girderKey.groupIndex,&startSpanIdx,&endSpanIdx);
       for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
@@ -1993,7 +1988,7 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx,const 
    COLORREF c(GetGraphColor(graphIdx,intervalIdx));
    int penWeight = (graphType == graphAllowable || graphType == graphCapacity ? 3 : 2);
 
-   GET_IFACE(IIntervals,pIntervals);
+   EAF_GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
    CString strDataLabel(GetDataLabel(graphIdx,graphDef,intervalIdx));
@@ -2024,7 +2019,7 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx,const 
    {
    case actionAxial:
       {
-         GET_IFACE(ILimitStateForces2,pForces);
+         EAF_GET_IFACE(ILimitStateForces2,pForces);
          if ( analysisType == pgsTypes::Envelope )
          {
             std::vector<Float64> mmax, mmin;
@@ -2047,7 +2042,7 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx,const 
       {
          if ( graphType == graphCapacity )
          {
-            GET_IFACE(IShearCapacity,pCapacity);
+            EAF_GET_IFACE(IShearCapacity,pCapacity);
             std::vector<Float64> pVn = pCapacity->GetShearCapacity(limitState, intervalIdx, vPoi);
             AddGraphPoints(max_girder_capacity_series, xVals,  pVn);
 
@@ -2061,7 +2056,7 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx,const 
          }
          else
          {
-            GET_IFACE(ILimitStateForces2,pForces);
+            EAF_GET_IFACE(ILimitStateForces2,pForces);
             if ( analysisType == pgsTypes::Envelope )
             {
                std::vector<WBFL::System::SectionValue> shearMin, shearMax;
@@ -2085,7 +2080,7 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx,const 
       {
          if ( graphType == graphCapacity )
          {
-            GET_IFACE(IMomentCapacity,pCapacity);
+            EAF_GET_IFACE(IMomentCapacity,pCapacity);
             std::vector<Float64> pMn = pCapacity->GetMomentCapacity(intervalIdx,vPoi,true);
             AddGraphPoints(max_girder_capacity_series, xVals, pMn);
 
@@ -2097,7 +2092,7 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx,const 
          }
          else if ( graphType == graphMinCapacity )
          {
-            GET_IFACE(IMomentCapacity,pCapacity);
+            EAF_GET_IFACE(IMomentCapacity,pCapacity);
             std::vector<Float64> pMrMin = pCapacity->GetMinMomentCapacity(intervalIdx,vPoi,true);
             AddGraphPoints(max_girder_capacity_series, xVals, pMrMin);
 
@@ -2109,7 +2104,7 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx,const 
          }
          else
          {
-            GET_IFACE(ILimitStateForces2,pForces);
+            EAF_GET_IFACE(ILimitStateForces2,pForces);
             if ( analysisType == pgsTypes::Envelope )
             {
                std::vector<Float64> mmax, mmin;
@@ -2145,7 +2140,7 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx,const 
       }
    case actionDeflection:
       {
-        GET_IFACE(ILimitStateForces2,pForces);
+        EAF_GET_IFACE(ILimitStateForces2,pForces);
          bool bIncPrestress = (graphType == graphDemand ? true : false);
          bool bIncludeLiveLoad = false;
          bool bIncludeElevationAdjustment = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludeElevationAdjustment();
@@ -2170,7 +2165,7 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx,const 
       }
    case actionXDeflection:
       {
-      GET_IFACE(ILimitStateForces2, pForces);
+      EAF_GET_IFACE(ILimitStateForces2, pForces);
       bool bIncPrestress = (graphType == graphDemand ? true : false);
       if (analysisType == pgsTypes::Envelope)
       {
@@ -2192,7 +2187,7 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx,const 
    }
    case actionRotation:
       {
-         GET_IFACE(ILimitStateForces2,pForces);
+         EAF_GET_IFACE(ILimitStateForces2,pForces);
          bool bIncPrestress = (graphType == graphDemand ? true : false);
          bool bIncludeLiveLoad = false;
          bool bIncludeSlopeAdjustment = ((CAnalysisResultsGraphController*)m_pGraphController)->IncludeElevationAdjustment();
@@ -2219,7 +2214,7 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx,const 
       {
          if ( graphType == graphAllowable )
          {
-            GET_IFACE(IConcreteStressLimits,pLimits);
+            EAF_GET_IFACE(IConcreteStressLimits,pLimits);
 
             if ( ((CAnalysisResultsGraphController*)m_pGraphController)->PlotStresses(pgsTypes::TopGirder) ||
                  ((CAnalysisResultsGraphController*)m_pGraphController)->PlotStresses(pgsTypes::BottomGirder) )
@@ -2257,7 +2252,7 @@ void CAnalysisResultsGraphBuilder::LimitStateLoadGraph(IndexType graphIdx,const 
          }
          else
          {
-            GET_IFACE(ILimitStateForces2,pForces);
+            EAF_GET_IFACE(ILimitStateForces2,pForces);
             bool bIncPrestress = (graphType == graphDemand ? true : false);
             std::vector<Float64> fTopMin, fTopMax, fBotMin, fBotMax;
 
@@ -2328,7 +2323,7 @@ void CAnalysisResultsGraphBuilder::LiveLoadGraph(IndexType graphIdx,const CAnaly
    VehicleIndexType vehicleIdx(graphDef.m_VehicleIndex);
    ATLASSERT(vehicleIdx == INVALID_INDEX);
 
-   GET_IFACE(IIntervals,pIntervals);
+   EAF_GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    if ( intervalIdx < liveLoadIntervalIdx )
@@ -2336,7 +2331,7 @@ void CAnalysisResultsGraphBuilder::LiveLoadGraph(IndexType graphIdx,const CAnaly
       return;
    }
 
-   GET_IFACE_NOCHECK(ICombinedForces2,pForces);
+   EAF_GET_IFACE_NOCHECK(ICombinedForces2,pForces);
 
    CString strDataLabel(GetDataLabel(graphIdx,graphDef,intervalIdx));
    if ( ((CAnalysisResultsGraphController*)m_pGraphController)->GetGraphMode() == CAnalysisResultsGraphController::Loading && !strDataLabel.IsEmpty() )
@@ -2557,7 +2552,7 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(IndexType graphIdx,con
    pgsTypes::LiveLoadType llType(graphDef.m_LoadType.LiveLoadType);
    VehicleIndexType vehicleIdx(graphDef.m_VehicleIndex);
 
-   GET_IFACE(IIntervals,pIntervals);
+   EAF_GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    if ( intervalIdx < liveLoadIntervalIdx )
@@ -2565,7 +2560,7 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(IndexType graphIdx,con
       return;
    }
 
-   GET_IFACE_NOCHECK(IProductForces2,pForces);
+   EAF_GET_IFACE_NOCHECK(IProductForces2,pForces);
 
    CString strDataLabel(GetDataLabel(graphIdx,graphDef,intervalIdx));
    if ( ((CAnalysisResultsGraphController*)m_pGraphController)->GetGraphMode() == CAnalysisResultsGraphController::Loading && !strDataLabel.IsEmpty() )
@@ -2896,9 +2891,9 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadGraph(IndexType graphIdx,con
 
 void CAnalysisResultsGraphBuilder::GetSegmentXValues(const CGirderKey& girderKey,SegmentIndexType segIdx,IntervalIndexType intervalIdx,std::vector<CSegmentKey>* pSegments,std::vector<Float64>* pLeftXVals,std::vector<Float64>* pRightXVals)
 {
-   GET_IFACE(IBridge,pBridge);
-   GET_IFACE(IIntervals,pIntervals);
-   GET_IFACE(IPointOfInterest,pIPoi);
+   EAF_GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE(IIntervals,pIntervals);
+   EAF_GET_IFACE(IPointOfInterest,pIPoi);
 
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
@@ -2965,8 +2960,8 @@ void CAnalysisResultsGraphBuilder::GetSegmentXValues(const CGirderKey& girderKey
 
 void CAnalysisResultsGraphBuilder::GetSupportXValues(const CGirderKey& girderKey,bool bIncludeTemporarySupports,std::vector<Float64>* pXVals,std::vector<std::pair<SupportIndexType,pgsTypes::SupportType>>* pSupports)
 {
-   GET_IFACE(IBridge,pBridge);
-   GET_IFACE(IPointOfInterest,pIPoi);
+   EAF_GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE(IPointOfInterest,pIPoi);
    std::map<Float64,std::pair<SupportIndexType,pgsTypes::SupportType>> supportMap;
    
    pXVals->push_back(0.0); // want to start the graph at the left end of the girder
@@ -3044,10 +3039,10 @@ void CAnalysisResultsGraphBuilder::ProductReactionGraph(IndexType graphIdx,const
    ResultsType resultsType = ((CAnalysisResultsGraphController*)m_pGraphController)->GetResultsType();
    ATLASSERT(actionType == actionReaction);
 
-   GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE(IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
-   GET_IFACE(IIntervals,pIntervals);
+   EAF_GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType firstSegmentErectionIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(girderKey);
    
    // get global X values of the reactions
@@ -3074,7 +3069,7 @@ void CAnalysisResultsGraphBuilder::ProductReactionGraph(IndexType graphIdx,const
       std::transform(leftXVals.cbegin(),leftXVals.cend(),leftXVals.begin(),[&](const auto& value) {return value + m_GroupOffset;});
    }
 
-   GET_IFACE(IReactions,pReactions);
+   EAF_GET_IFACE(IReactions,pReactions);
 
    std::array<IndexType, 4> data_series_id;
    std::array<pgsTypes::BridgeAnalysisType, 4> bat;
@@ -3143,10 +3138,10 @@ void CAnalysisResultsGraphBuilder::CombinedReactionGraph(IndexType graphIdx,cons
    ResultsType resultsType = ((CAnalysisResultsGraphController*)m_pGraphController)->GetResultsType();
    ATLASSERT(actionType == actionReaction);
 
-   GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE(IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
-   GET_IFACE(IIntervals,pIntervals);
+   EAF_GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType firstSegmentErectionIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(girderKey);
    
    // get global X values of the reactions
@@ -3173,7 +3168,7 @@ void CAnalysisResultsGraphBuilder::CombinedReactionGraph(IndexType graphIdx,cons
       std::transform(leftXVals.cbegin(),leftXVals.cend(),leftXVals.begin(),[&](const auto& value) {return value + m_GroupOffset;});
    }
 
-   GET_IFACE(IReactions,pReactions);
+   EAF_GET_IFACE(IReactions,pReactions);
 
    std::array<IndexType, 4> data_series_id;
    std::array<pgsTypes::BridgeAnalysisType, 4> bat;
@@ -3265,7 +3260,7 @@ void CAnalysisResultsGraphBuilder::LiveLoadReactionGraph(IndexType graphIdx,cons
    pgsTypes::LiveLoadType llType(graphDef.m_LoadType.LiveLoadType);
    VehicleIndexType vehicleIdx(graphDef.m_VehicleIndex);
 
-   GET_IFACE(IIntervals,pIntervals);
+   EAF_GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    if ( intervalIdx < liveLoadIntervalIdx )
@@ -3283,7 +3278,7 @@ void CAnalysisResultsGraphBuilder::LiveLoadReactionGraph(IndexType graphIdx,cons
    IndexType min_data_series = m_Graph.CreateDataSeries(strDataLabel,PS_SOLID,penWeight,c);
    IndexType max_data_series = m_Graph.CreateDataSeries(_T(""),PS_SOLID,penWeight,c);
 
-   GET_IFACE(IReactions,pReactions);
+   EAF_GET_IFACE(IReactions,pReactions);
 
    std::vector<Float64> Rmin, Rmax, Rdummy;
 
@@ -3355,7 +3350,7 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadReactionGraph(IndexType grap
    pgsTypes::LiveLoadType llType(graphDef.m_LoadType.LiveLoadType);
    VehicleIndexType vehicleIdx(graphDef.m_VehicleIndex);
 
-   GET_IFACE(IIntervals,pIntervals);
+   EAF_GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    if ( intervalIdx < liveLoadIntervalIdx )
@@ -3375,7 +3370,7 @@ void CAnalysisResultsGraphBuilder::VehicularLiveLoadReactionGraph(IndexType grap
    IndexType max_data_series = m_Graph.CreateDataSeries(_T(""),PS_SOLID,penWeight,c);
 
    std::vector<REACTION> Rmin, Rmax, Rdummy;
-   GET_IFACE(IReactions,pReactions);
+   EAF_GET_IFACE(IReactions,pReactions);
 
    if ( analysisType == pgsTypes::Envelope )
    {
@@ -3451,7 +3446,7 @@ void CAnalysisResultsGraphBuilder::CyStressCapacityGraph(IndexType graphIdx,cons
 
    // Allowable tension in cy is dependent on capacity - must get spec check results
    // First get pois using same request as spec check report
-   GET_IFACE(IArtifact,pIArtifact);
+   EAF_GET_IFACE(IArtifact,pIArtifact);
 
    Float64 cap_prev = 0;
    Float64 x_prev = xVals.front(); // tension capacity can jump at a location. we must capture this
@@ -3534,7 +3529,7 @@ void CAnalysisResultsGraphBuilder::DeckShrinkageStressGraph(IndexType graphIdx,c
    bool bPlotBot = ((CAnalysisResultsGraphController*)m_pGraphController)->PlotStresses(pgsTypes::BottomGirder);
 
    // Deck shrinkage call is not stage dependent - assume deck shrinks after railing in installed
-   GET_IFACE(IIntervals,pIntervals);
+   EAF_GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType dsIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
 
    // data series top/bot
@@ -3552,7 +3547,7 @@ void CAnalysisResultsGraphBuilder::DeckShrinkageStressGraph(IndexType graphIdx,c
       bot_data_series = m_Graph.CreateDataSeries(dl, PS_STRESS_BOTTOM_GIRDER,penWeight,c);
    }
 
-   GET_IFACE_NOCHECK(IProductForces,pProductForces);
+   EAF_GET_IFACE_NOCHECK(IProductForces,pProductForces);
 
    auto i(vPoi.begin());
    auto end(vPoi.end());
@@ -3594,7 +3589,7 @@ void CAnalysisResultsGraphBuilder::RatingFactorGraph(IndexType graphIdx, const C
 
    pgsTypes::LoadRatingType ratingType = ::RatingTypeFromLimitState(graphDef.m_LoadType.LimitStateType);
 
-   GET_IFACE(IArtifact, pArtifact);
+   EAF_GET_IFACE(IArtifact, pArtifact);
    CGirderKey girderKey;
 
 
@@ -3680,8 +3675,8 @@ void CAnalysisResultsGraphBuilder::PrincipalWebStressGraph(IndexType graphIdx, c
    ATLASSERT(limitState == pgsTypes::ServiceIII);
 
 
-   GET_IFACE(IArtifact, pArtifact);
-   GET_IFACE_NOCHECK(IPrincipalWebStress, pPrincipalWebStress);
+   EAF_GET_IFACE(IArtifact, pArtifact);
+   EAF_GET_IFACE_NOCHECK(IPrincipalWebStress, pPrincipalWebStress);
    CSegmentKey segmentKey;
 
    const pgsPrincipalTensionStressArtifact* pPrincipalStressArtifact = nullptr;
@@ -3768,8 +3763,8 @@ void CAnalysisResultsGraphBuilder::TimeStepPrincipalWebStressGraph(IndexType gra
 
    ATLASSERT(limitState == pgsTypes::ServiceIII);
 
-   GET_IFACE(IArtifact, pArtifact);
-   GET_IFACE_NOCHECK(IPrincipalWebStress, pPrincipalWebStress);
+   EAF_GET_IFACE(IArtifact, pArtifact);
+   EAF_GET_IFACE_NOCHECK(IPrincipalWebStress, pPrincipalWebStress);
    CSegmentKey segmentKey;
 
    const pgsPrincipalTensionStressArtifact* pPrincipalStressArtifact = nullptr;
@@ -3888,8 +3883,8 @@ void CAnalysisResultsGraphBuilder::TimeStepPrincipalWebStressLiveLoadGraph(Index
    // Kind of a hack here, but we are eating our own dog food. Search for the word "Shear" in graphdef to determine whether to plot shear or axial stress
    bool bIsShear = std::wstring::npos != graphDef.m_Name.find(_T("Shear"));
 
-   GET_IFACE(IArtifact, pArtifact);
-   GET_IFACE_NOCHECK(IPrincipalWebStress, pPrincipalWebStress);
+   EAF_GET_IFACE(IArtifact, pArtifact);
+   EAF_GET_IFACE_NOCHECK(IPrincipalWebStress, pPrincipalWebStress);
    CSegmentKey segmentKey;
 
    const pgsPrincipalTensionStressArtifact* pPrincipalStressArtifact = nullptr;
@@ -3961,7 +3956,7 @@ void CAnalysisResultsGraphBuilder::TimeStepProductLoadPrincipalWebStressGraph(In
    // Kind of a hack here, but we are eating our own dog food. Search for the word "Shear" in graphdef to determine whether to plot shear or axial stress
    bool bIsShear = std::wstring::npos != graphDef.m_Name.find(_T("Shear"));
 
-   GET_IFACE(ILosses,pLosses);
+   EAF_GET_IFACE(ILosses,pLosses);
    // TRICKY: Number of web sections (elevations) can vary per POI depending on whether ducts are located within the web region, If the location
    //         is not there, the Y value should be set to zero.
    //         Need to cycle through pois to find all web locations and create a data series for each elevation name. 
@@ -4041,7 +4036,7 @@ void CAnalysisResultsGraphBuilder::GetBeamDrawIntervals(IntervalIndexType* pFirs
    else
    {
       CGirderKey girderKey = pMyGraphController->GetGirderKey();
-      GET_IFACE(IIntervals, pIntervals);
+      EAF_GET_IFACE(IIntervals, pIntervals);
       IntervalIndexType intervalIdx = pIntervals->GetFirstPrestressReleaseInterval(girderKey);
       *pFirstIntervalIdx = intervalIdx;
       *pLastIntervalIdx = *pFirstIntervalIdx;
@@ -4057,8 +4052,8 @@ void CAnalysisResultsGraphBuilder::GetSecondaryXValues(const PoiList& vPoi,const
 {
    *pXvalues = xVals;
 
-   GET_IFACE(IShearCapacity,pShearCapacity);
-   GET_IFACE(IPointOfInterest,pPoi);
+   EAF_GET_IFACE(IShearCapacity,pShearCapacity);
+   EAF_GET_IFACE(IPointOfInterest,pPoi);
    const std::vector<CRITSECTDETAILS>& vCSDetails = pShearCapacity->GetCriticalSectionDetails(pgsTypes::StrengthI,vPoi.front().get().GetSegmentKey());
 
    for (const pgsPointOfInterest& poi : vPoi)

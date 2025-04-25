@@ -32,13 +32,8 @@
 #include <IFace/BearingDesignParameters.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-CBearingTimeStepDetailsReportSpecificationBuilder::CBearingTimeStepDetailsReportSpecificationBuilder(IBroker* pBroker) :
+CBearingTimeStepDetailsReportSpecificationBuilder::CBearingTimeStepDetailsReportSpecificationBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker) :
 CBrokerReportSpecificationBuilder(pBroker)
 {
 }
@@ -55,10 +50,10 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CBearingTimeStepDetailsRep
    // initialize dialog for the current cut location
    std::shared_ptr<CBearingTimeStepDetailsReportSpecification> pInitRptSpec( std::dynamic_pointer_cast<CBearingTimeStepDetailsReportSpecification>(pOldRptSpec) );
 
-   GET_IFACE(IBridge, pBridge);
-   GET_IFACE(IPointOfInterest, pPOI);
-   GET_IFACE(IIntervals, pIntervals);
-   GET_IFACE(IBearingDesignParameters, pBearingDesignParameters);
+   EAF_GET_IFACE(IBridge, pBridge);
+   EAF_GET_IFACE(IPointOfInterest, pPOI);
+   EAF_GET_IFACE(IIntervals, pIntervals);
+   EAF_GET_IFACE(IBearingDesignParameters, pBearingDesignParameters);
    SHEARDEFORMATIONDETAILS details;
    CGirderKey girderKey;
 
@@ -69,7 +64,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CBearingTimeStepDetailsRep
    }
    else
    {
-       GET_IFACE(ISelection, pSelection);
+       EAF_GET_IFACE(ISelection, pSelection);
        CSelection selection = pSelection->GetSelection();
        if (selection.Type == CSelection::Girder || selection.Type == CSelection::Segment)
        {
@@ -82,7 +77,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CBearingTimeStepDetailsRep
            girderKey.girderIndex = 0;
        }
 
-       GET_IFACE(IBearingDesign, pBearingDesign);
+       EAF_GET_IFACE(IBearingDesign, pBearingDesign);
 
        IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
        std::unique_ptr<CmbLsBearingDesignReactionAdapter> pForces(std::make_unique<CmbLsBearingDesignReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, girderKey));

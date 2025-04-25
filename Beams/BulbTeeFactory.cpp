@@ -68,7 +68,7 @@ HRESULT CBulbTeeFactory::FinalConstruct()
    // It's possible for the library editor to call this code. In that case there is no broker
    if (pBroker)
    {
-      GET_IFACE2(pBroker, IEAFStatusCenter, pStatusCenter);
+      EAF_GET_IFACE2(pBroker, IEAFStatusCenter, pStatusCenter);
       m_scidInformationalWarning     = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusWarning)); 
    }
    else
@@ -187,7 +187,7 @@ void CBulbTeeFactory::CreateGirderSection(IBroker* pBroker,StatusItemIDType stat
 
       // use raw input here because requesting it from the bridge will cause an infinite loop.
       // bridge agent calls this during validation
-      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+      EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
       Float64 topWidth = pBridgeDesc->GetGirderTopWidth(); // we don't have a girder key so best we can do is get the top level value (which may not be valid)
          
@@ -296,7 +296,7 @@ Float64 CBulbTeeFactory::GetSegmentHeight(IBroker* pBroker, const CPrecastSegmen
 
 void CBulbTeeFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
 {
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const CSplicedGirderData*  pGirder = pGroup->GetGirder(segmentKey.girderIndex);
@@ -308,7 +308,7 @@ void CBulbTeeFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType status
 
    // Build up the beam shape
    // Beam materials
-   GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
    CComPtr<IMaterial> material;
    CComPtr<IMaterial> jointMaterial;
    if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP)
@@ -326,8 +326,8 @@ void CBulbTeeFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType status
    }
    else
    {
-      GET_IFACE2(pBroker, IIntervals, pIntervals);
-      GET_IFACE2(pBroker, IMaterials, pMaterial);
+      EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
+      EAF_GET_IFACE2(pBroker, IMaterials, pMaterial);
       material.CoCreateInstance(CLSID_Material);
       jointMaterial.CoCreateInstance(CLSID_Material);
 
@@ -389,7 +389,7 @@ void CBulbTeeFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType status
 
 void CBulbTeeFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
 {
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 gdrLength = pBridge->GetSegmentLength(segmentKey);
 
    pgsPointOfInterest poiStart(segmentKey,0.00,   POI_SECTCHANGE_RIGHTFACE );
@@ -425,7 +425,7 @@ void CBulbTeeFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusItemIDType
 
 void CBulbTeeFactory::CreatePsLossEngineer(IBroker* pBroker,StatusItemIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const
 {
-   GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       CComObject<CTimeStepLossEngineer>* pEngineer;
@@ -807,7 +807,7 @@ bool CBulbTeeFactory::IsPrismatic(const CSegmentKey& segmentKey) const
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const CSplicedGirderData*  pGirder = pGroup->GetGirder(segmentKey.girderIndex);
@@ -928,8 +928,8 @@ std::_tstring CBulbTeeFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroke
 
 std::_tstring CBulbTeeFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const
 {
-   GET_IFACE2(pBroker, ILibrary,       pLib);
-   GET_IFACE2(pBroker, ISpecification, pSpec);
+   EAF_GET_IFACE2(pBroker, ILibrary,       pLib);
+   EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
    const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();
@@ -1374,7 +1374,7 @@ void CBulbTeeFactory::GetTopWidth(IBroker* pBroker, const CPrecastSegmentData* p
       ATLASSERT(false);
    }
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    const auto& segmentKey(pSegment->GetSegmentKey());
    Float64 Ls = pBridge->GetSegmentLength(segmentKey);
 
@@ -1409,7 +1409,7 @@ void CBulbTeeFactory::GetTopFlangeParameters(IBroker* pBroker, const CPrecastSeg
    Float64 n1(0), n2(0), c2(0); // c2 is the distance from the left flange tip to where the top flange slope changes from n1 to n2
    Float64 left(leftStart), right(rightStart);
 
-   GET_IFACE2(pBroker,IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->GetDeckType();
    if ((deckType == pgsTypes::sdtNone || deckType == pgsTypes::sdtCompositeOverlay || deckType == pgsTypes::sdtNonstructuralOverlay) && pBridgeDesc->GetGirderOrientation() == pgsTypes::Plumb)
@@ -1419,14 +1419,14 @@ void CBulbTeeFactory::GetTopFlangeParameters(IBroker* pBroker, const CPrecastSeg
 
       const auto& segmentKey(pSegment->GetSegmentKey());
 
-      GET_IFACE2(pBroker, IBridge, pBridge);
+      EAF_GET_IFACE2(pBroker, IBridge, pBridge);
       Float64 station, offset;
       pBridge->GetStationAndOffset(segmentKey, 0.0, &station, &offset);
 
       Float64 left_edge_offset = offset - leftStart;
       Float64 right_edge_offset = offset + rightStart;
 
-      GET_IFACE2(pBroker, IRoadway, pAlignment);
+      EAF_GET_IFACE2(pBroker, IRoadway, pAlignment);
       // Loop over crown points to see if one lies within the flange width
       IndexType numCPs = pAlignment->GetCrownPointIndexCount(station);
       IndexType numCPsfound(0);
@@ -1459,7 +1459,7 @@ void CBulbTeeFactory::GetTopFlangeParameters(IBroker* pBroker, const CPrecastSeg
       }
       else if (numCPsfound > 1)
       {
-         GET_IFACE2(pBroker,IEAFStatusCenter,pStatusCenter);
+         EAF_GET_IFACE2(pBroker,IEAFStatusCenter,pStatusCenter);
          std::_tstring str(_T("The decked girder at ") + std::_tstring(SEGMENT_LABEL(segmentKey)) + _T("\'s top flange has more than one crown point above it. Only one crown point will be used to model the top of the girder."));
          pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidInformationalWarning,str.c_str());
          pStatusCenter->Add(pStatusItem);
@@ -1538,7 +1538,7 @@ Float64 CBulbTeeFactory::GetFlangeThickening(IBroker* pBroker, const CPrecastSeg
       // parabolic interpolation of the depth of the top flange thickening
       const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
       
-      GET_IFACE2(pBroker, IBridge, pBridge);
+      EAF_GET_IFACE2(pBroker, IBridge, pBridge);
       Float64 Ls = pBridge->GetSegmentLength(segmentKey);
 
       Float64 thickening = pSegment->TopFlangeThickening;

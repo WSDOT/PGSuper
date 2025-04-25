@@ -24,13 +24,8 @@
 #include <Reporting\PrincipalWebStressDetailsReportSpecification.h>
 #include <IFace\PointOfInterest.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-CPrincipalWebStressDetailsReportSpecification::CPrincipalWebStressDetailsReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,bool bReportAtAllLocations,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx, bool bReportAxial, bool bReportShear) :
+CPrincipalWebStressDetailsReportSpecification::CPrincipalWebStressDetailsReportSpecification(const std::_tstring& strReportName,std::shared_ptr<WBFL::EAF::Broker> pBroker,bool bReportAtAllLocations,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx, bool bReportAxial, bool bReportShear) :
 CBrokerReportSpecification(strReportName,pBroker)
 {
    SetOptions(bReportAtAllLocations,poi,intervalIdx, bReportAxial, bReportShear);
@@ -63,8 +58,7 @@ std::_tstring CPrincipalWebStressDetailsReportSpecification::GetReportContextStr
    CGirderKey girderKey = m_Poi.GetSegmentKey();
    if ( girderKey.groupIndex != ALL_SPANS && girderKey.girderIndex != ALL_GIRDERS )
    {
-      CComPtr<IBroker> pBroker;
-      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+      EAF_GET_IFACE2(GetBroker(),IEAFDisplayUnits,pDisplayUnits);
       rptPointOfInterest rptPoi(&pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
       rptPoi.SetValue(POI_SPAN,m_Poi);
       rptPoi.PrefixAttributes(false); // put the attributes after the location

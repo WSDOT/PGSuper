@@ -45,9 +45,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="TestAgent.def" />
-    <None Include="TestAgent.rgs">
-      <Filter>Resource Files</Filter>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">

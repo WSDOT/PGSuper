@@ -26,11 +26,6 @@
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\PointLoadData.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 IDType UserLoads::ms_NextDistributedLoadID = 0;
 IDType UserLoads::ms_NextPointLoadID = 10000;

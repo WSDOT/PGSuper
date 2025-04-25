@@ -36,11 +36,6 @@
 
 #include <IFace\Project.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // maybe not here, but somewhere... these parameters are needed so compute the column
 // height if it is input by bottom elevation

@@ -41,29 +41,11 @@
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\CapacityToDemand.h>
 
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CTogaStressChecksChapterBuilder
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CTogaStressChecksChapterBuilder::CTogaStressChecksChapterBuilder():
 CPGSuperChapterBuilder(true)
 {
 }
 
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
 LPCTSTR CTogaStressChecksChapterBuilder::GetName() const
 {
    return TEXT("Stress Checks");
@@ -72,21 +54,20 @@ LPCTSTR CTogaStressChecksChapterBuilder::GetName() const
 rptChapter* CTogaStressChecksChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
    // This is a single segment report
    CSegmentKey segmentKey(girderKey,0);
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
    *pPara << _T("Specification = ") << pSpec->GetSpecification() << rptNewLine;
 
    *pPara << Bold(_T("Notes: "))<< rptNewLine;
@@ -97,7 +78,7 @@ rptChapter* CTogaStressChecksChapterBuilder::Build(const std::shared_ptr<const W
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   GET_IFACE2(pBroker,IStressCheck, pStressCheck);
+   EAF_GET_IFACE2(pBroker,IStressCheck, pStressCheck);
    std::vector<StressCheckTask> vStressCheckTasks(pStressCheck->GetStressCheckTasks(segmentKey));
    for (const auto& task : vStressCheckTasks)
    {
@@ -107,11 +88,11 @@ rptChapter* CTogaStressChecksChapterBuilder::Build(const std::shared_ptr<const W
    return pChapter;
 }
 
-void CTogaStressChecksChapterBuilder::BuildTableAndNotes(rptChapter* pChapter, IBroker* pBroker,
-                      IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task) const
+void CTogaStressChecksChapterBuilder::BuildTableAndNotes(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const StressCheckTask& task) const
 {
    // We need the artifact that we've doctored for txdot reasons
-   GET_IFACE2(pBroker,IGetTogaResults,pGetTogaResults);
+   EAF_GET_IFACE2(pBroker,IGetTogaResults,pGetTogaResults);
    const pgsGirderArtifact* pFactoredGdrArtifact = pGetTogaResults->GetFabricatorDesignArtifact();
    const pgsSegmentArtifact* pSegmentArtifact = pFactoredGdrArtifact->GetSegmentArtifact(0);
 
@@ -120,7 +101,7 @@ void CTogaStressChecksChapterBuilder::BuildTableAndNotes(rptChapter* pChapter, I
 
    CSegmentKey fabrSegmentKey(TOGA_SPAN,TOGA_FABR_GDR,0);
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(fabrSegmentKey);
 
    if ( task.intervalIdx != releaseIntervalIdx)

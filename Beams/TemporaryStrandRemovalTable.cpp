@@ -52,24 +52,24 @@ rptRcTable(NumColumns,0)
 
 CTemporaryStrandRemovalTable* CTemporaryStrandRemovalTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType tsInstallIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
    IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
 
-   GET_IFACE2(pBroker,IMaterials,pMaterials);
+   EAF_GET_IFACE2(pBroker,IMaterials,pMaterials);
    Float64 Ec  = pMaterials->GetSegmentEc(segmentKey,tsRemovalIntervalIdx);
    Float64 Ep  = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Temporary)->GetE();
 
-   GET_IFACE2(pBroker,IPointOfInterest, pPoi);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest, pPoi);
    PoiList vPoi;
    pPoi->GetPointsOfInterest(segmentKey, POI_5L | POI_RELEASED_SEGMENT, &vPoi);
    ATLASSERT(vPoi.size() == 1);
    const pgsPointOfInterest& poiMiddle(vPoi.front());
 
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    Float64 Apt = pStrandGeom->GetStrandArea(poiMiddle,tsInstallIntervalIdx,pgsTypes::Temporary);
 
-   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
+   EAF_GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
@@ -84,15 +84,15 @@ CTemporaryStrandRemovalTable* CTemporaryStrandRemovalTable::PrepareTable(rptChap
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
-   GET_IFACE2(pBroker, ISectionProperties, pSectProp);
+   EAF_GET_IFACE2(pBroker, ISectionProperties, pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
 
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
-   GET_IFACE2(pBroker, IGirder, pGirder);
+   EAF_GET_IFACE2(pBroker, IGirder, pGirder);
    bool bIsPrismatic = pGirder->IsPrismatic(releaseIntervalIdx, segmentKey);
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    bool bIsAsymmetric = pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing() ? true : false;
 
    // Create and configure the table
@@ -168,7 +168,7 @@ CTemporaryStrandRemovalTable* CTemporaryStrandRemovalTable::PrepareTable(rptChap
 
    if (bIsPrismatic)
    {
-      GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+      EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
       PoiList vPoi;
       pPoi->GetPointsOfInterest(segmentKey, POI_5L | POI_RELEASED_SEGMENT, &vPoi);
       ATLASSERT(vPoi.size() == 1);

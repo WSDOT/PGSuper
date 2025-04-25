@@ -28,12 +28,7 @@
 #include <IFace\StatusCenter.h>
 #include <IFace\DocumentType.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
+#include <EAF\EAFUtilities.h>
 
 
 pgsHaulTruckStatusItem::pgsHaulTruckStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription, const CSegmentKey& segmentKey) :
@@ -53,8 +48,7 @@ bool pgsHaulTruckStatusItem::IsEqual(CEAFStatusItem* pOther)
 }
 
 //////////////////////////////////////////////////////////
-pgsHaulTruckStatusCallback::pgsHaulTruckStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity):
-m_pBroker(pBroker),
+pgsHaulTruckStatusCallback::pgsHaulTruckStatusCallback(eafTypes::StatusSeverityType severity):
 m_Severity(severity)
 {
 }
@@ -69,8 +63,9 @@ void pgsHaulTruckStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    pgsHaulTruckStatusItem* pItem = dynamic_cast<pgsHaulTruckStatusItem*>(pStatusItem);
    ATLASSERT(pItem!=nullptr);
 
-   GET_IFACE(IDocumentType, pDocType);
-   GET_IFACE(IEditByUI,pEdit);
+   auto broker = EAFGetBroker();
+   EAF_GET_IFACE2(broker,IDocumentType, pDocType);
+   EAF_GET_IFACE2(broker,IEditByUI,pEdit);
    if (pDocType->IsPGSuperDocument())
    {
       pEdit->EditGirderDescription(pItem->m_SegmentKey, EGD_TRANSPORTATION);

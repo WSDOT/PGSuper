@@ -101,7 +101,7 @@ BOOL CExportDlg::OnInitDialog()
 	CDialog::OnInitDialog();
 
 	/* Get interface pointer to Bridge Agent */
-	GET_IFACE( IBridge, pBridge ); 
+	EAF_GET_IFACE( IBridge, pBridge ); 
 
    GroupGirderOnCollection coll;
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();

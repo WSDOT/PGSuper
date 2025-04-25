@@ -20,13 +20,12 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_PRODUCTROTATIONTABLE_H_
-#define INCLUDED_PRODUCTROTATIONTABLE_H_
+#pragma once
 
 #include <Reporting\ReportingExp.h>
 #include <IFace\AnalysisResults.h>
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 
@@ -45,61 +44,9 @@ LOG
 class REPORTINGCLASS CProductRotationTable
 {
 public:
-   // GROUP: LIFECYCLE
+   CProductRotationTable() = default;
 
-   //------------------------------------------------------------------------
-   // Default constructor
-   CProductRotationTable();
-
-   //------------------------------------------------------------------------
-   // Copy constructor
-   CProductRotationTable(const CProductRotationTable& rOther);
-
-   //------------------------------------------------------------------------
-   // Destructor
-   virtual ~CProductRotationTable();
-
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
-   CProductRotationTable& operator = (const CProductRotationTable& rOther);
-
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
    // Builds the strand eccentricity table.
-   virtual rptRcTable* Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
-                             bool bIncludeImpact,bool bIncludeLLDF,bool bDesign,bool bRating,bool bIndicateControllingLoad,IEAFDisplayUnits* pDisplayUnits) const;
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   //------------------------------------------------------------------------
-   void MakeCopy(const CProductRotationTable& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const CProductRotationTable& rOther);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
+   virtual rptRcTable* Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
+                             bool bIncludeImpact,bool bIncludeLLDF,bool bDesign,bool bRating,bool bIndicateControllingLoad,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_PRODUCTROTATIONTABLE_H_

@@ -23,13 +23,9 @@
 #include "stdafx.h"
 #include <Reporting\BrokerReportSpecification.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-CBrokerReportSpecification::CBrokerReportSpecification(const std::_tstring& strReportName,std::weak_ptr<WBFL::EAF::Broker> pBroker) :
+#pragma Reminder("WORKING HERE - Removing COM - holding pointer to broker can create circular reference")
+// These specification needs to be deleted in Agent::Reset() to break the circular reference
+CBrokerReportSpecification::CBrokerReportSpecification(const std::_tstring& strReportName,std::shared_ptr<WBFL::EAF::Broker> pBroker) :
 WBFL::Reporting::ReportSpecification(strReportName)
 {
    SetBroker(pBroker);
@@ -39,19 +35,19 @@ CBrokerReportSpecification::~CBrokerReportSpecification(void)
 {
 }
 
-void CBrokerReportSpecification::SetBroker(std::weak_ptr<WBFL::EAF::Broker> pBroker)
+void CBrokerReportSpecification::SetBroker(std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
    m_pBroker = pBroker;
 }
 
 std::shared_ptr<WBFL::EAF::Broker> CBrokerReportSpecification::GetBroker() const
 {
-   return m_pBroker.lock();
+   return m_pBroker;
 }
 
 bool CBrokerReportSpecification::IsValid() const
 {
-   if ( !m_pBroker.lock() )
+   if ( !m_pBroker )
       return false;
 
    return WBFL::Reporting::ReportSpecification::IsValid();

@@ -63,10 +63,10 @@ HRESULT CUBeamDistFactorEngineer::FinalConstruct()
 void CUBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
    // Grab the interfaces that are needed
-   GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE(IBridge,pBridge);
 
-   GET_IFACE(ILibrary, pLib);
-   GET_IFACE(ISpecification, pSpec);
+   EAF_GET_IFACE(ILibrary, pLib);
+   EAF_GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
    auto lldfMethod = live_load_distribution_criteria.LldfMethod;
@@ -85,7 +85,7 @@ void CUBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
 
@@ -357,9 +357,9 @@ void CUBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapte
 
 WBFL::LRFD::LiveLoadDistributionFactorBase* CUBeamDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,UBEAM_LLDFDETAILS* plldf,const GDRCONFIG* pConfig)
 {
-   GET_IFACE(IGirder, pGdr);
-   GET_IFACE(IBarriers,pBarriers);
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IGirder, pGdr);
+   EAF_GET_IFACE(IBarriers,pBarriers);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
 
    // Determine span/pier index... This is the index of a pier and the next span.
    // If this is the last pier, span index is for the last span
@@ -392,7 +392,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CUBeamDistFactorEngineer::GetLLDFPar
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
    // Throws exception if fails requirement (no need to catch it)
-   GET_IFACE(ILiveLoadDistributionFactors, pDistFactors);
+   EAF_GET_IFACE(ILiveLoadDistributionFactors, pDistFactors);
    Int32 roaVal = pDistFactors->VerifyDistributionFactorRequirements(poi);
 
    pgsTypes::TrafficBarrierOrientation side = pBarriers->GetNearestBarrier(segmentKey);
@@ -408,8 +408,8 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CUBeamDistFactorEngineer::GetLLDFPar
    plldf->d = pGdr->GetHeight(poi);
    plldf->L = GetEffectiveSpanLength(spanOrPierIdx,gdrIdx,dfType);
 
-   GET_IFACE(ISpecification, pSpec);
-   GET_IFACE(ILibrary, pLibrary);
+   EAF_GET_IFACE(ISpecification, pSpec);
+   EAF_GET_IFACE(ILibrary, pLibrary);
    const auto* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
    const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
    bool bSkew = !(IsZero(plldf->skew1) && IsZero(plldf->skew2));
@@ -422,7 +422,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CUBeamDistFactorEngineer::GetLLDFPar
       // the obtuse corner to mid-span of exterior and first interior girders.
       // Use the IsObtuseCorner method to determine if there is an obtuse corner for
       // this girder. If so, apply the skew correction
-      GET_IFACE(IBridge,pBridge);
+      EAF_GET_IFACE(IBridge,pBridge);
       if ( dfType == dfReaction )
       {
          bool bObtuseLeft = false;
@@ -520,7 +520,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CUBeamDistFactorEngineer::GetLLDFPar
       ATLASSERT(false); // big problemo
    }
 
-   GET_IFACE(ILiveLoads,pLiveLoads);
+   EAF_GET_IFACE(ILiveLoads,pLiveLoads);
    pLLDF->SetRangeOfApplicability( pLiveLoads->GetRangeOfApplicabilityAction(), roaVal );
 
    return pLLDF;
@@ -532,8 +532,8 @@ void CUBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierIdx, rptParagrap
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-   GET_IFACE(ILibrary, pLib);
-   GET_IFACE(ISpecification, pSpec);
+   EAF_GET_IFACE(ILibrary, pLib);
+   EAF_GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
 
@@ -775,8 +775,8 @@ void CUBeamDistFactorEngineer::ReportShear(IndexType spanOrPierIdx,rptParagraph*
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-   GET_IFACE(ILibrary, pLib);
-   GET_IFACE(ISpecification, pSpec);
+   EAF_GET_IFACE(ILibrary, pLib);
+   EAF_GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
 
@@ -1005,8 +1005,8 @@ void CUBeamDistFactorEngineer::ReportShear(IndexType spanOrPierIdx,rptParagraph*
 
 std::_tstring CUBeamDistFactorEngineer::GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect)
 {
-   GET_IFACE(ILibrary, pLib);
-   GET_IFACE(ISpecification, pSpec);
+   EAF_GET_IFACE(ILibrary, pLib);
+   EAF_GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
 
@@ -1038,7 +1038,7 @@ std::_tstring CUBeamDistFactorEngineer::GetComputationDescription(const CGirderK
    }
 
    // Special text if ROA is ignored
-   GET_IFACE(ILiveLoads,pLiveLoads);
+   EAF_GET_IFACE(ILiveLoads,pLiveLoads);
    std::_tstring strAction( pLiveLoads->GetLLDFSpecialActionText() );
    if ( !strAction.empty() )
    {

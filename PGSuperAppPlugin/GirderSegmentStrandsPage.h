@@ -26,7 +26,7 @@
 #include "StrandGrid.h"
 #include <MfcTools\WideDropDownComboBox.h>
 
-struct IStrandGeometry;
+class IStrandGeometry;
 class CPrecastSegmentData;
 
 // CGirderSegmentStrandsPage dialog

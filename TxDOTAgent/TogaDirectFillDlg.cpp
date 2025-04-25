@@ -32,11 +32,6 @@
 
 #include <PgsExt\BridgeDescription2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CTogaDirectFillDlg dialog
@@ -70,8 +65,8 @@ END_MESSAGE_MAP()
 
 void CTogaDirectFillDlg::OnBnClickedSelectStrands()
 {
-   CComPtr<IBroker> pBroker = m_pBrokerRetriever->GetClassicBroker();
-   GET_IFACE2( pBroker, ISpecification, pSpec );
+   auto pBroker = m_pBrokerRetriever->GetClassicBroker();
+   EAF_GET_IFACE2( pBroker, ISpecification, pSpec );
 
    // Max debond length is ~1/2 girder length
    Float64 maxDebondLength = m_SpanLength/2.0;

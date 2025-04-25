@@ -51,7 +51,7 @@ bool HoldDownCriteria::Compare(const HoldDownCriteria& other, const SpecLibraryE
    return bSame;
 }
 
-void HoldDownCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void HoldDownCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), true);
    INIT_SCALAR_PROTOTYPE(rptRcPercentage, percentage, pDisplayUnits->GetPercentageFormat());

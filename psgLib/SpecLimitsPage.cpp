@@ -30,11 +30,6 @@
 #include <EAF\EAFDocument.h>
 #include <psgLib/PrestressLossCriteria.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpecLimitsPage property page

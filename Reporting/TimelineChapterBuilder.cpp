@@ -32,11 +32,6 @@
 #include <PgsExt\TimelineManager.h>
 #include <PgsExt\ClosureJointData.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CTimelineChapterBuilder::CTimelineChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
@@ -56,8 +51,7 @@ rptChapter* CTimelineChapterBuilder::Build(const std::shared_ptr<const WBFL::Rep
    auto pTimelineMgrRptSpec = std::dynamic_pointer_cast<const CTimelineManagerReportSpecification>(pRptSpec);
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
-   pBrokerRptSpec->GetBroker(&pBroker);
+   auto pBroker = pBrokerRptSpec->GetBroker();
 
    CGirderKey girderKey;
    if (pGirderRptSpec)
@@ -65,10 +59,10 @@ rptChapter* CTimelineChapterBuilder::Build(const std::shared_ptr<const WBFL::Rep
       girderKey = pGirderRptSpec->GetGirderKey();
    }
 
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
-   GET_IFACE2_NOCHECK(pBroker, IUserDefinedLoadData, pUserDefinedLoads);
-   GET_IFACE2_NOCHECK(pBroker, IDocumentType, pDocType);
+   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2_NOCHECK(pBroker, IUserDefinedLoadData, pUserDefinedLoads);
+   EAF_GET_IFACE2_NOCHECK(pBroker, IDocumentType, pDocType);
 
    const auto* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 

@@ -36,11 +36,6 @@
 
 #include <PGSuperUnits.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 inline void GetStartEndGirderIndex(GirderIndexType girderIdx,IBridge* pBridge,GroupIndexType groupIdx,GirderIndexType* pStartIndex,GirderIndexType* pEndIndex)
 {
@@ -62,7 +57,7 @@ inline Float64 GetNetBearingHeight(const BearingElevationDetails& det)
    return det.BrgHeight + det.SolePlateHeight - det.BrgRecess;
 }
 
-inline rptRcTable* MakeTable(const CString& strLabel, IEAFDisplayUnits* pDisplayUnits, bool bHasOverlay, bool bHasPrecamber, bool bIsGirderEdges,bool bIsDirectHaunchInput)
+inline rptRcTable* MakeTable(const CString& strLabel, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, bool bHasOverlay, bool bHasPrecamber, bool bIsGirderEdges,bool bIsDirectHaunchInput)
 {
    ColumnIndexType nCols = 15 + (bHasOverlay ? 1 : 0) + (bHasPrecamber ? 2 : 0) + (bIsDirectHaunchInput ? 2 : 0);
 
@@ -127,7 +122,7 @@ inline rptRcTable* MakeTable(const CString& strLabel, IEAFDisplayUnits* pDisplay
 
 #define ADD_TABLE_NOTE  *pPara << _T("* Note that reported bearing locations are physical 3D locations of bearings adjusted for girder depth, slope and orientation. \'CL\' is location of bearing seat at intersection of CL girder and bearing line. Roadway elevations at bearing line - work line intersections can be found in other tables in the Bridge Geometry report.")<< rptNewLine;
 
-inline void FillTable(rptRcTable* pTable, IEAFDisplayUnits* pDisplayUnits, 
+inline void FillTable(rptRcTable* pTable, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, 
                       rptLengthSectionValue& elev, rptLengthSectionValue& dim, rptLengthSectionValue& dist, 
                       bool bHasOverlay, bool bHasPrecamber, bool bIsDirectHaunchInput, const std::vector<BearingElevationDetails>& vElevDetails)
 {
@@ -306,8 +301,7 @@ LPCTSTR CBearingSeatElevationsDetailsChapterBuilder2::GetName() const
 
 rptChapter* CBearingSeatElevationsDetailsChapterBuilder2::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec, Uint16 level) const
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
 
@@ -332,7 +326,7 @@ rptChapter* CBearingSeatElevationsDetailsChapterBuilder2::Build(const std::share
 
    // Use setting for span 1, girder 1 to determine whether girder edge table is to be printed.
    // Could get more sophisticated here, but all girders in the same DOT family should have the same setting.
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(GroupIndexType(0));
    const CSplicedGirderData* pGirder = pGroup->GetGirder(0);
@@ -346,23 +340,23 @@ rptChapter* CBearingSeatElevationsDetailsChapterBuilder2::Build(const std::share
    return pChapter;
 }
 
-void CBearingSeatElevationsDetailsChapterBuilder2::BuildBearingsTables(CComPtr<IBroker> pBroker, rptChapter* pChapter, GirderIndexType girderIndex) const
+void CBearingSeatElevationsDetailsChapterBuilder2::BuildBearingsTables(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter, GirderIndexType girderIndex) const
 {
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    INIT_UV_PROTOTYPE( rptLengthSectionValue, elev, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthSectionValue, dist, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthSectionValue, dim,  pDisplayUnits->GetComponentDimUnit(), false );
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
    if ( pDeck->WearingSurface == pgsTypes::wstOverlay && !pDeck->bInputAsDepthAndDensity )
    {
-      GET_IFACE2(pBroker,IIntervals,pIntervals);
+      EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
       IntervalIndexType gcInterval = pIntervals->GetGeometryControlInterval();
 
       Float64 density = WBFL::Units::ConvertToSysUnits(140.0,WBFL::Units::Measure::LbfPerFeet3);
@@ -380,7 +374,7 @@ void CBearingSeatElevationsDetailsChapterBuilder2::BuildBearingsTables(CComPtr<I
 
    bool bIsDirectHaunchInput = pBridgeDesc->GetHaunchInputDepthType() != pgsTypes::hidACamber;
 
-   GET_IFACE2_NOCHECK(pBroker, ICamber, pCamber);
+   EAF_GET_IFACE2_NOCHECK(pBroker, ICamber, pCamber);
 
    PierIndexType nPiers = pBridge->GetPierCount();
    for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
@@ -477,7 +471,7 @@ void CBearingSeatElevationsDetailsChapterBuilder2::BuildBearingsTables(CComPtr<I
    }
 }
 
-inline void FillGirderEdgesTable(rptRcTable* pTable, IEAFDisplayUnits* pDisplayUnits, 
+inline void FillGirderEdgesTable(rptRcTable* pTable, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, 
                       rptLengthSectionValue& elev, rptLengthSectionValue& dim, rptLengthSectionValue& dist, 
                       bool bHasOverlay, bool bHasPrecamber,bool bIsDirectHaunchInput, const std::vector<BearingElevationDetails>& vElevDetails)
 {
@@ -626,7 +620,7 @@ inline void FillGirderEdgesTable(rptRcTable* pTable, IEAFDisplayUnits* pDisplayU
    }
 }
 
-void CBearingSeatElevationsDetailsChapterBuilder2::BuildGirderEdgesTables(CComPtr<IBroker> pBroker, rptChapter * pChapter,GirderIndexType girderIndex) const
+void CBearingSeatElevationsDetailsChapterBuilder2::BuildGirderEdgesTables(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter * pChapter,GirderIndexType girderIndex) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
@@ -636,19 +630,19 @@ void CBearingSeatElevationsDetailsChapterBuilder2::BuildGirderEdgesTables(CComPt
    *pChapter << pPara;
    *pPara << _T("The tables below show bearing elevations at the outermost edges of girder bottom flanges.");
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    INIT_UV_PROTOTYPE( rptLengthSectionValue, elev, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthSectionValue, dist, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthSectionValue, dim,  pDisplayUnits->GetComponentDimUnit(), false );
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
    bool bHasOverlay = ( pBridge->HasOverlay() && !pBridge->IsFutureOverlay() ? true : false );
    bool bIsDirectHaunchInput = pBridgeDesc->GetHaunchInputDepthType() != pgsTypes::hidACamber;
 
-   GET_IFACE2_NOCHECK(pBroker, ICamber, pCamber);
+   EAF_GET_IFACE2_NOCHECK(pBroker, ICamber, pCamber);
 
    PierIndexType nPiers = pBridge->GetPierCount();
    for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)

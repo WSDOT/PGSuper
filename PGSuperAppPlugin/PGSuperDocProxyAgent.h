@@ -47,7 +47,6 @@
 
 class CPGSDocBase;
 class CBridgeModelViewChildFrame;
-struct IBroker;
 
 // {71D5ABEE-23D6-4593-BB8D-20B092CB2E9A}
 DEFINE_GUID(CLSID_PGSuperDocProxyAgent, 
@@ -72,7 +71,7 @@ LOG
 
 class CPGSuperDocProxyAgent : public WBFL::EAF::Agent,
    public CProxyIExtendUIEventSink<IExtendUIEventSink>,
-   public IAgentUIIntegration,
+   public WBFL::EAF::IAgentUIIntegration,
    public IBridgeDescriptionEventSink,
    public IEnvironmentEventSink,
    public IProjectPropertiesEventSink,

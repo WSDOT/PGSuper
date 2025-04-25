@@ -35,11 +35,6 @@
 #include <IFace\Intervals.h>
 #include <IFace\ReportOptions.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -74,13 +69,13 @@ CCombinedStressTable& CCombinedStressTable::operator= (const CCombinedStressTabl
 }
 
 //======================== OPERATIONS =======================================
-void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
+void CCombinedStressTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                                          const CGirderKey& girderKey,
-                                         IEAFDisplayUnits* pDisplayUnits,
+                                         std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                          IntervalIndexType intervalIdx,pgsTypes::AnalysisType analysisType,
                                          bool bDesign,bool bRating,bool bGirderStresses) const
 {
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx  = pIntervals->GetLiveLoadInterval();
 
 #if defined _DEBUG
@@ -118,9 +113,9 @@ void CCombinedStressTable::Build(IBroker* pBroker, rptChapter* pChapter,
    }
 }
 
-void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* pChapter,
+void CCombinedStressTable::BuildCombinedDeadTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                                          const CGirderKey& girderKey,
-                                         IEAFDisplayUnits* pDisplayUnits,
+                                         std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                          IntervalIndexType intervalIdx,
                                          pgsTypes::AnalysisType analysisType,
                                          bool bDesign,bool bRating,bool bGirderStresses) const
@@ -131,17 +126,17 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress,   pDisplayUnits->GetStressUnit(),     false );
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
 
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    bool bTimeStepMethod = pSpecEntry->GetPrestressLossCriteria().LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP;
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -215,8 +210,8 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
    *p << pTable << rptNewLine;
 
    // Get the interface pointers we need
-   GET_IFACE2(pBroker,ICombinedForces2,pForces2);
-   GET_IFACE2(pBroker,IProductForces,pProdForces);
+   EAF_GET_IFACE2(pBroker,ICombinedForces2,pForces2);
+   EAF_GET_IFACE2(pBroker,IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType bat = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
 
    for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
@@ -341,9 +336,9 @@ void CCombinedStressTable::BuildCombinedDeadTable(IBroker* pBroker, rptChapter* 
    } // next group
 }
 
-void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* pChapter,
+void CCombinedStressTable::BuildCombinedLiveTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                                          const CGirderKey& girderKey,
-                                         IEAFDisplayUnits* pDisplayUnits,
+                                         std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                          IntervalIndexType intervalIdx,
                                          pgsTypes::AnalysisType analysisType,
                                          bool bDesign,bool bRating,bool bGirderStresses) const
@@ -351,23 +346,23 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
    pgsTypes::StressLocation topLocation = (bGirderStresses ? pgsTypes::TopGirder    : pgsTypes::TopDeck);
    pgsTypes::StressLocation botLocation = (bGirderStresses ? pgsTypes::BottomGirder : pgsTypes::BottomDeck);
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress,   pDisplayUnits->GetStressUnit(),     false );
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
  
-   GET_IFACE2_NOCHECK(pBroker,IProductLoads,pProductLoads); // not used if bRating = true and bDesign = false
+   EAF_GET_IFACE2_NOCHECK(pBroker,IProductLoads,pProductLoads); // not used if bRating = true and bDesign = false
    bool bPedLoading = bDesign && pProductLoads->HasPedestrianLoad(girderKey) || 
                       bRating && pRatingSpec->IncludePedestrianLiveLoad();
 
@@ -406,8 +401,8 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
    *pNote << LIVELOAD_PER_GIRDER << rptNewLine;
 
    // Get the interface pointers we need
-   GET_IFACE2(pBroker,ICombinedForces2,pForces2);
-   GET_IFACE2(pBroker,IProductForces,pProdForces);
+   EAF_GET_IFACE2(pBroker,ICombinedForces2,pForces2);
+   EAF_GET_IFACE2(pBroker,IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType bat = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
 
    for ( GroupIndexType grpIdx = firstGroupIdx; grpIdx <= lastGroupIdx; grpIdx++ )
@@ -561,7 +556,7 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
       {
          // Sum or envelope pedestrian values with live loads to give final LL
 
-         GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
+         EAF_GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
          ILiveLoads::PedestrianLoadApplicationType DesignPedLoad = pLiveLoads->GetPedestrianLoadApplication(pgsTypes::lltDesign);
          ILiveLoads::PedestrianLoadApplicationType FatiguePedLoad = pLiveLoads->GetPedestrianLoadApplication(pgsTypes::lltFatigue);
          ILiveLoads::PedestrianLoadApplicationType PermitPedLoad = pLiveLoads->GetPedestrianLoadApplication(pgsTypes::lltPermit);
@@ -619,16 +614,16 @@ void CCombinedStressTable::BuildCombinedLiveTable(IBroker* pBroker, rptChapter* 
    }
 }
 
-void CCombinedStressTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pChapter,
+void CCombinedStressTable::BuildLimitStateTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,
                                          const CGirderKey& girderKey,
-                                         IEAFDisplayUnits* pDisplayUnits,IntervalIndexType intervalIdx,
+                                         std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,IntervalIndexType intervalIdx,
                                          pgsTypes::AnalysisType analysisType,
                                          bool bDesign,bool bRating,bool bGirderStresses) const
 {
    pgsTypes::StressLocation topLocation = (bGirderStresses ? pgsTypes::TopGirder    : pgsTypes::TopDeck);
    pgsTypes::StressLocation botLocation = (bGirderStresses ? pgsTypes::BottomGirder : pgsTypes::BottomDeck);
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    // NOTE - Strength II stresses not reported because they aren't used for anything
 
@@ -636,13 +631,13 @@ void CCombinedStressTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pC
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress,   pDisplayUnits->GetStressUnit(),     false );
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,ILimitStateForces2,pLsForces2);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,ILimitStateForces2,pLsForces2);
 
-   GET_IFACE2_NOCHECK(pBroker,IRatingSpecification,pRatingSpec); // only used if bRating is true
+   EAF_GET_IFACE2_NOCHECK(pBroker,IRatingSpecification,pRatingSpec); // only used if bRating is true
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -653,11 +648,11 @@ void CCombinedStressTable::BuildLimitStateTable(IBroker* pBroker, rptChapter* pC
    GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
  
-   GET_IFACE2_NOCHECK(pBroker,IProductLoads,pProductLoads); // not used if bRating = true and bDesign = false
+   EAF_GET_IFACE2_NOCHECK(pBroker,IProductLoads,pProductLoads); // not used if bRating = true and bDesign = false
    bool bPedLoading = bDesign && pProductLoads->HasPedestrianLoad(girderKey) || 
                       bRating && pRatingSpec->IncludePedestrianLiveLoad();
 
-   GET_IFACE2(pBroker,IProductForces,pProdForces);
+   EAF_GET_IFACE2(pBroker,IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType bat = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
 
    // create second table for BSS3 Limit states

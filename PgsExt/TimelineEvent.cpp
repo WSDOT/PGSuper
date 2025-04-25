@@ -24,11 +24,6 @@
 #include <PgsExt\TimelineEvent.h>
 #include <PgsExt\TimelineManager.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define AS_APPLY_LOADS                  0x0000
 #define AS_ERECT_PIERS                  0x0001

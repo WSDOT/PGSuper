@@ -353,7 +353,7 @@ public:
    // GROUP: OPERATIONS
 
    //------------------------------------------------------------------------
-   void SetBroker(IBroker* pBroker);
+   void SetBroker(std::shared_ptr<WBFL::EAF::Broker> pBroker);
    void SetStatusGroupID(StatusGroupIDType statusGroupID);
 
    // Creates a girder check artifact.
@@ -402,7 +402,7 @@ private:
    void ConfigureStressCheckTasks(const CSegmentKey& segmentKey) const;
 
    // GROUP: DATA MEMBERS
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    StatusGroupIDType m_StatusGroupID;
 
    // ID of the status callbacks we have registered

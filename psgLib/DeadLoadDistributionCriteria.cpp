@@ -44,7 +44,7 @@ bool DeadLoadDistributionCriteria::Compare(const DeadLoadDistributionCriteria& o
    return bSame;
 }
 
-void DeadLoadDistributionCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void DeadLoadDistributionCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;

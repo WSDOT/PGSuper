@@ -32,11 +32,6 @@
 
 #include <IFace\BeamFactory.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // NOTE: One of the original ideas for this class was to have adjacent segments be merged together
 // when a temporary support or pier was removed from the model. The hope was to retain the girder

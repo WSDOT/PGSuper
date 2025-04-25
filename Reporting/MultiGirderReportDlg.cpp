@@ -34,17 +34,12 @@
 #include <PgsExt\GirderLabel.h>
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // CMultiGirderReportDlg dialog
 
 IMPLEMENT_DYNAMIC(CMultiGirderReportDlg, CDialog)
 
-CMultiGirderReportDlg::CMultiGirderReportDlg(IBroker* pBroker,const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate,CWnd* pParent)
+CMultiGirderReportDlg::CMultiGirderReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate,CWnd* pParent)
 	: CDialog(nIDTemplate, pParent), m_RptDesc(rptDesc), m_pInitRptSpec(pRptSpec)
 {
    m_pBroker = pBroker;
@@ -154,7 +149,7 @@ BOOL CMultiGirderReportDlg::OnInitDialog()
    CDialog::OnInitDialog();
 
    // need list of groups/girders
-   GET_IFACE( IBridge, pBridge );
+   EAF_GET_IFACE( IBridge, pBridge );
    GroupGirderOnCollection coll;
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )

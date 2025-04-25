@@ -38,15 +38,10 @@
 
 // CSelectMomentCapacitySectionDlg dialog
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 IMPLEMENT_DYNAMIC(CSelectMomentCapacitySectionDlg, CDialog)
 
-CSelectMomentCapacitySectionDlg::CSelectMomentCapacitySectionDlg(IBroker* pBroker,std::shared_ptr<CMomentCapacityReportSpecification>& pRptSpec,CWnd* pParent /*=nullptr*/)
+CSelectMomentCapacitySectionDlg::CSelectMomentCapacitySectionDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<CMomentCapacityReportSpecification>& pRptSpec,CWnd* pParent /*=nullptr*/)
 	: CDialog(CSelectMomentCapacitySectionDlg::IDD, pParent)
    , m_SliderPos(0)
    , m_pRptSpec(pRptSpec)
@@ -99,7 +94,7 @@ END_MESSAGE_MAP()
 
 BOOL CSelectMomentCapacitySectionDlg::OnInitDialog()
 {
-   GET_IFACE( IBridge, pBridge );
+   EAF_GET_IFACE( IBridge, pBridge );
    m_GirderKey = m_InitialPOI.GetSegmentKey();
 
    CDialog::OnInitDialog();
@@ -156,7 +151,7 @@ void CSelectMomentCapacitySectionDlg::OnHScroll(UINT nSBCode, UINT nPos, CScroll
 
 void CSelectMomentCapacitySectionDlg::UpdateGirderComboBox()
 {
-   GET_IFACE(IBridge, pBridge);
+   EAF_GET_IFACE(IBridge, pBridge);
 
    int curSel = m_cbGirder.GetCurSel();
    if (curSel == CB_ERR) 
@@ -180,7 +175,7 @@ void CSelectMomentCapacitySectionDlg::UpdateGirderComboBox()
 
 void CSelectMomentCapacitySectionDlg::UpdateSliderLabel()
 {
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    CString strLabel;
    pgsPointOfInterest poi = m_vPOI[m_Slider.GetPos()];
@@ -217,7 +212,7 @@ void CSelectMomentCapacitySectionDlg::OnGirderChanged()
 
 void CSelectMomentCapacitySectionDlg::UpdatePOI()
 {
-   GET_IFACE(IPointOfInterest,pPOI);
+   EAF_GET_IFACE(IPointOfInterest,pPOI);
    // Get available pois from report spec so both classes are in synch
    CSegmentKey segmentKey(m_GirderKey, ALL_SEGMENTS);
    m_vPOI = CMomentCapacityReportSpecification::GetMomentCapacityDetailsPois(pPOI, segmentKey);

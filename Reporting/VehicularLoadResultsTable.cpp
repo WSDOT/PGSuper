@@ -32,11 +32,6 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\ReportOptions.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -72,8 +67,8 @@ CVehicularLoadResultsTable& CVehicularLoadResultsTable::operator= (const CVehicu
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::LiveLoadType llType,const std::_tstring& strLLName,VehicleIndexType vehicleIdx, pgsTypes::AnalysisType analysisType,
-                                              bool bReportTruckConfig,IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CVehicularLoadResultsTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,pgsTypes::LiveLoadType llType,const std::_tstring& strLLName,VehicleIndexType vehicleIdx, pgsTypes::AnalysisType analysisType,
+                                              bool bReportTruckConfig,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -83,13 +78,13 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,const CGirderKey&
    INIT_UV_PROTOTYPE( rptLengthUnitValue, deflection, pDisplayUnits->GetDeflectionUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, span_location, pDisplayUnits->GetSpanLengthUnit(), false );
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType intervalIdx = (IsRatingLiveLoad(llType) ? pIntervals->GetLoadRatingInterval() : pIntervals->GetLiveLoadInterval() );
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroupIdx);
@@ -99,7 +94,7 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,const CGirderKey&
 
    Float64 end_distance = pBridge->GetSegmentStartEndDistance(CSegmentKey(vGirderKeys.front(),0));
  
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    bool bReportAxial = pProductLoads->ReportAxialResults();
 
    ColumnIndexType nCols = 7;
@@ -195,8 +190,8 @@ rptRcTable* CVehicularLoadResultsTable::Build(IBroker* pBroker,const CGirderKey&
    }
 
    // Get the interface pointers we need
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   GET_IFACE2(pBroker,IProductForces2,pForces2);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   EAF_GET_IFACE2(pBroker,IProductForces2,pForces2);
 
    RowIndexType row = p_table->GetNumberOfHeaderRows();
    for(const auto& thisGirderKey : vGirderKeys)
@@ -372,7 +367,7 @@ void CVehicularLoadResultsTable::MakeAssignment(const CVehicularLoadResultsTable
    MakeCopy( rOther );
 }
 
-void CVehicularLoadResultsTable::ReportTruckConfiguration(const AxleConfiguration& config,rptRcTable* pTable,RowIndexType row,ColumnIndexType col,IEAFDisplayUnits* pDisplayUnits)
+void CVehicularLoadResultsTable::ReportTruckConfiguration(const AxleConfiguration& config,rptRcTable* pTable,RowIndexType row,ColumnIndexType col,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    if ( config.size() == 0 )
    {

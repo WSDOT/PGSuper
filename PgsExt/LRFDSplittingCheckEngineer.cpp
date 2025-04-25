@@ -35,11 +35,6 @@
 #include <IFace/Limits.h>
 #include <EAF\EAFDisplayUnits.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 pgsLRFDSplittingCheckEngineer::pgsLRFDSplittingCheckEngineer()
 {
@@ -343,7 +338,7 @@ std::_tstring pgsLRFDSplittingCheckEngineer::GetSpecReference() const
    return os.str();
 }
 
-void pgsLRFDSplittingCheckEngineer::ReportDimensions(rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact,pgsTypes::MemberEndType endType) const
+void pgsLRFDSplittingCheckEngineer::ReportDimensions(rptParagraph* pPara, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact,pgsTypes::MemberEndType endType) const
 {
    INIT_UV_PROTOTYPE(rptLengthUnitValue, length, pDisplayUnits->GetSpanLengthUnit(), true);
    INIT_UV_PROTOTYPE(rptLengthUnitValue, short_length, pDisplayUnits->GetComponentDimUnit(), true);
@@ -353,7 +348,7 @@ void pgsLRFDSplittingCheckEngineer::ReportDimensions(rptParagraph* pPara, IEAFDi
    (*pPara) << strSplittingType << _T(" Length: h/") << scalar.SetValue(pArtifact->GetSplittingZoneLengthFactor()) << _T(" = ") << length.SetValue(pArtifact->GetSplittingZoneLength(endType)) << _T(" = ") << short_length.SetValue(pArtifact->GetSplittingZoneLength(endType)) << rptNewLine;
 }
 
-void pgsLRFDSplittingCheckEngineer::ReportDemand(rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const
+void pgsLRFDSplittingCheckEngineer::ReportDemand(rptParagraph* pPara, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const
 {
    INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true);
    INIT_UV_PROTOTYPE(rptAreaUnitValue, area, pDisplayUnits->GetAreaUnit(), true);
@@ -445,7 +440,7 @@ void pgsLRFDSplittingCheckEngineer::ReportDemand(rptParagraph* pPara, IEAFDispla
    }
 }
 
-void pgsLRFDSplittingCheckEngineer::ReportResistance(rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const
+void pgsLRFDSplittingCheckEngineer::ReportResistance(rptParagraph* pPara, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const
 {
    INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true);
    INIT_UV_PROTOTYPE(rptAreaUnitValue, area, pDisplayUnits->GetAreaUnit(), true);
@@ -555,7 +550,7 @@ std::_tstring pgsPCIUHPCSplittingCheckEngineer::GetSpecReference() const
    return os.str();
 }
 
-void pgsPCIUHPCSplittingCheckEngineer::ReportDimensions(rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const
+void pgsPCIUHPCSplittingCheckEngineer::ReportDimensions(rptParagraph* pPara, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const
 {
    INIT_UV_PROTOTYPE(rptLengthUnitValue, length, pDisplayUnits->GetSpanLengthUnit(), true);
    INIT_UV_PROTOTYPE(rptLengthUnitValue, short_length, pDisplayUnits->GetComponentDimUnit(), true);
@@ -566,7 +561,7 @@ void pgsPCIUHPCSplittingCheckEngineer::ReportDimensions(rptParagraph* pPara, IEA
    (*pPara) << _T("Transfer Length: ") << Sub2(_T("l"), _T("t")) << _T(" = ") << short_length.SetValue(pArtifact->GetTransferLength(endType)) << rptNewLine;
 }
 
-void pgsPCIUHPCSplittingCheckEngineer::ReportDemand(rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const
+void pgsPCIUHPCSplittingCheckEngineer::ReportDemand(rptParagraph* pPara, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const
 {
    INIT_UV_PROTOTYPE(rptLengthUnitValue, short_length, pDisplayUnits->GetComponentDimUnit(), true);
    INIT_UV_PROTOTYPE(rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), true);
@@ -586,7 +581,7 @@ void pgsPCIUHPCSplittingCheckEngineer::ReportDemand(rptParagraph* pPara, IEAFDis
    (*pPara) << strSplittingType << _T(" Demand: Lessor of ") << Sub2(_T("P"), _T("s")) << _T(" and ") << Sub2(_T("P"), _T("b")) << _T(" = ") << force.SetValue(pArtifact->GetSplittingForce(endType)) << rptNewLine;
 }
 
-void pgsPCIUHPCSplittingCheckEngineer::ReportResistance(rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const
+void pgsPCIUHPCSplittingCheckEngineer::ReportResistance(rptParagraph* pPara, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const
 {
    // NOTE: This method does not call it's superclass method
    INIT_UV_PROTOTYPE(rptLengthUnitValue, short_length, pDisplayUnits->GetComponentDimUnit(), true);
@@ -668,7 +663,7 @@ std::_tstring pgsUHPCSplittingCheckEngineer::GetSpecReference() const
    return os.str();
 }
 
-void pgsUHPCSplittingCheckEngineer::ReportDimensions(rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const
+void pgsUHPCSplittingCheckEngineer::ReportDimensions(rptParagraph* pPara, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const
 {
    INIT_UV_PROTOTYPE(rptLengthUnitValue, short_length, pDisplayUnits->GetComponentDimUnit(), true);
 
@@ -677,12 +672,12 @@ void pgsUHPCSplittingCheckEngineer::ReportDimensions(rptParagraph* pPara, IEAFDi
    (*pPara) << strSplittingType << _T(" Shear Width: ") << Sub2(_T("b"), _T("v")) << _T(" = ") << short_length.SetValue(pArtifact->GetShearWidth(endType)) << rptNewLine;
 }
 
-void pgsUHPCSplittingCheckEngineer::ReportDemand(rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const
+void pgsUHPCSplittingCheckEngineer::ReportDemand(rptParagraph* pPara, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const
 {
    __super::ReportDemand(pPara, pDisplayUnits, strSplittingType, pArtifact, endType);
 }
 
-void pgsUHPCSplittingCheckEngineer::ReportResistance(rptParagraph* pPara, IEAFDisplayUnits* pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const
+void pgsUHPCSplittingCheckEngineer::ReportResistance(rptParagraph* pPara, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const std::_tstring& strSplittingType, const pgsSplittingCheckArtifact* pArtifact, pgsTypes::MemberEndType endType) const
 {
    // NOTE: This method does not call it's superclass method - that's by design.
    INIT_UV_PROTOTYPE(rptLengthUnitValue, short_length, pDisplayUnits->GetComponentDimUnit(), true);

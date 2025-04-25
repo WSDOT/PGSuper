@@ -180,11 +180,11 @@ END_MESSAGE_MAP()
 BOOL CEditHaunchByHaunchDlg::OnInitDialog()
 {
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
+   EAF_EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
    bool bIsPGSuper = pDocType->IsPGSuperDocument();
 
    // initialize units
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    m_pUnit = &(pDisplayUnits->GetComponentDimUnit());
 
    CBridgeDescription2* pBridge = GetBridgeDesc();
@@ -308,7 +308,7 @@ BOOL CEditHaunchByHaunchDlg::OnInitDialog()
 void CEditHaunchByHaunchDlg::UpdateGroupBox()
 {
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    CString unitag = pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str();
 
    pgsTypes::HaunchInputDistributionType disttype = GetHaunchInputDistributionType();
@@ -526,7 +526,7 @@ void CEditHaunchByHaunchDlg::OnHaunchInputDistributionTypeChanged()
    UpdateActiveControls();
 
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
+   EAF_EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
    bool bIsPGSuper = pDocType->IsPGSuperDocument();
    UpdateLocationTypeControl(bIsPGSuper);
 }
@@ -540,7 +540,7 @@ void CEditHaunchByHaunchDlg::OnHaunchLayoutTypeChanged()
    UpdateActiveControls();
 
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IDocumentType, pDocType);
+   EAF_EAF_GET_IFACE2(pBroker, IDocumentType, pDocType);
    bool bIsPGSuper = pDocType->IsPGSuperDocument();
    UpdateLocationTypeControl(bIsPGSuper);
 }

@@ -20,12 +20,11 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_CAMBERTABLE_H_
-#define INCLUDED_CAMBERTABLE_H_
+#pragma once
 
 #include <Reporting\ReportingExp.h>
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 struct CamberMultipliers;
 
 /*****************************************************************************
@@ -45,89 +44,38 @@ LOG
 class REPORTINGCLASS CCamberTable
 {
 public:
-   // GROUP: LIFECYCLE
-
-   //------------------------------------------------------------------------
-   // Default constructor
    CCamberTable();
 
-   //------------------------------------------------------------------------
-   // Copy constructor
-   CCamberTable(const CCamberTable& rOther);
-
-   //------------------------------------------------------------------------
-   // Destructor
-   virtual ~CCamberTable();
-
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
-   CCamberTable& operator = (const CCamberTable& rOther);
-
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
    // Build the strand eccentricity tables
-   void Build_Deck(IBroker* pBroker,const CSegmentKey& segmentKey, 
+   void Build_Deck(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey, 
                   bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay, bool bDeckPanels,
-                  IEAFDisplayUnits* pDisplayUnits, pgsTypes::CreepTime time, const CamberMultipliers& cm,
+                  std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, pgsTypes::CreepTime time, const CamberMultipliers& cm,
                   rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const;
 
-   void Build_NoDeck(IBroker* pBroker,const CSegmentKey& segmentKey,
+   void Build_NoDeck(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,
                      bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay,
-                     IEAFDisplayUnits* pDisplayUnits, pgsTypes::CreepTime time, const CamberMultipliers& cm,
+                     std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, pgsTypes::CreepTime time, const CamberMultipliers& cm,
                      rptRcTable** pTable1,rptRcTable** pTable2,rptRcTable** pTable3) const;
 
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   //------------------------------------------------------------------------
-   void MakeCopy(const CCamberTable& rOther);
-
-   //------------------------------------------------------------------------
-   void MakeAssignment(const CCamberTable& rOther);
-
-   void GetPointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,PoiList* pvPoiRelease,PoiList* pvPoiStorage,PoiList* pvPoiErected) const;
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-   void Build_Deck_Y(IBroker* pBroker, const CSegmentKey& segmentKey,
-      bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay, bool bDeckPanels,
-      IEAFDisplayUnits* pDisplayUnits, pgsTypes::CreepTime time, const CamberMultipliers& cm,
-      rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const;
-
-   void Build_Deck_XY(IBroker* pBroker, const CSegmentKey& segmentKey,
-      bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay, bool bDeckPanels,
-      IEAFDisplayUnits* pDisplayUnits, pgsTypes::CreepTime time, const CamberMultipliers& cm,
-      rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const;
-
-   void Build_NoDeck_Y(IBroker* pBroker, const CSegmentKey& segmentKey,
-      bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay,
-      IEAFDisplayUnits* pDisplayUnits, pgsTypes::CreepTime time, const CamberMultipliers& cm,
-      rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const;
-
-   void Build_NoDeck_XY(IBroker* pBroker, const CSegmentKey& segmentKey,
-      bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay,
-      IEAFDisplayUnits* pDisplayUnits, pgsTypes::CreepTime time, const CamberMultipliers& cm,
-      rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const;
-
 private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
+   void GetPointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,PoiList* pvPoiRelease,PoiList* pvPoiStorage,PoiList* pvPoiErected) const;
+   void Build_Deck_Y(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey,
+      bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay, bool bDeckPanels,
+      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, pgsTypes::CreepTime time, const CamberMultipliers& cm,
+      rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const;
+
+   void Build_Deck_XY(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey,
+      bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay, bool bDeckPanels,
+      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, pgsTypes::CreepTime time, const CamberMultipliers& cm,
+      rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const;
+
+   void Build_NoDeck_Y(std::shared_ptr<WBFL::EAF::Broker>pBroker, const CSegmentKey& segmentKey,
+      bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay,
+      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, pgsTypes::CreepTime time, const CamberMultipliers& cm,
+      rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const;
+
+   void Build_NoDeck_XY(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey,
+      bool bTempStrands, bool bSidewalk, bool bShearKey, bool bLongitudinalJoint, bool bConstruction, bool bOverlay,
+      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, pgsTypes::CreepTime time, const CamberMultipliers& cm,
+      rptRcTable** pTable1, rptRcTable** pTable2, rptRcTable** pTable3) const;
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_CAMBERTABLE_H_

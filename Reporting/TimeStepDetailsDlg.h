@@ -33,7 +33,7 @@ class CTimeStepDetailsDlg : public CDialog
 	DECLARE_DYNAMIC(CTimeStepDetailsDlg)
 
 public:
-	CTimeStepDetailsDlg(IBroker* pBroker,std::shared_ptr<CTimeStepDetailsReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,IntervalIndexType intervalIdx,CWnd* pParent = nullptr);   // standard constructor
+	CTimeStepDetailsDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<CTimeStepDetailsReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,IntervalIndexType intervalIdx,CWnd* pParent = nullptr);   // standard constructor
 	virtual ~CTimeStepDetailsDlg();
 
 // Dialog Data
@@ -49,7 +49,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 
 private:
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    std::shared_ptr<CTimeStepDetailsReportSpecification> m_pTsRptSpec;
 
    pgsPointOfInterest m_InitialPOI;

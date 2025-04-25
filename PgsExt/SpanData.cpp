@@ -25,11 +25,6 @@
 
 #include <WbflAtlExt.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define PIER_FACE_TO_SPAN_END(_face_) _face_ == pgsTypes::Ahead ? pgsTypes::metStart : pgsTypes::metEnd
 

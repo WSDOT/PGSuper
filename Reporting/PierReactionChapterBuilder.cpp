@@ -32,13 +32,8 @@
 #include <Reporting\UserReactionTable.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-inline bool IsDifferentNumberOfGirdersPerSpan(IBridge* pBridge)
+inline bool IsDifferentNumberOfGirdersPerSpan(std::shared_ptr<IBridge> pBridge)
 {
    GroupIndexType ngrps = pBridge->GetGirderGroupCount();
    GirderIndexType ngdrs = pBridge->GetGirderCount(0);
@@ -76,23 +71,22 @@ rptChapter* CPierReactionChapterBuilder::Build(const std::shared_ptr<const WBFL:
 {
    auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
    CGirderKey girderKey;
 
-   pGdrLineRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGdrLineRptSpec->GetBroker();
    girderKey = pGdrLineRptSpec->GetGirderKey();
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-   GET_IFACE2(pBroker, IIntervals, pIntervals);
-   GET_IFACE2(pBroker, IReactions, pReactions);
-   GET_IFACE2(pBroker, IProductLoads, pProductLoads);
-   GET_IFACE2(pBroker, ISpecification, pSpec);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
+   EAF_GET_IFACE2(pBroker, IReactions, pReactions);
+   EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+   EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
-   GET_IFACE2(pBroker, IProductForces, pProdForces);
+   EAF_GET_IFACE2(pBroker, IProductForces, pProdForces);
    pgsTypes::BridgeAnalysisType batMax = pProdForces->GetBridgeAnalysisType(analysisType, pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType batMin = pProdForces->GetBridgeAnalysisType(analysisType, pgsTypes::Minimize);
 
@@ -425,7 +419,7 @@ rptChapter* CPierReactionChapterBuilder::Build(const std::shared_ptr<const WBFL:
    LiveLoadTableFooter(pBroker, pPara, girderKey, true, false);
 
 
-   GET_IFACE2(pBroker, IUserDefinedLoads, pUDL);
+   EAF_GET_IFACE2(pBroker, IUserDefinedLoads, pUDL);
    bool bAreThereUserLoads = pUDL->DoUserLoadsExist(girderKey);
    if (bAreThereUserLoads)
    {

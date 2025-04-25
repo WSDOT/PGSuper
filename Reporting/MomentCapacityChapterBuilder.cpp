@@ -43,11 +43,6 @@
 
 #include <algorithm>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 static const COLORREF BACKGROUND_COLOR  = WHITE;
 static const COLORREF VOID_COLOR        = WHITE;
@@ -86,34 +81,33 @@ rptChapter* CMomentCapacityChapterBuilder::Build(const std::shared_ptr<const WBF
 
    const CSegmentKey& segmentKey( poi.GetSegmentKey() );
 
-   CComPtr<IBroker> pBroker;
-   pSpec->GetBroker(&pBroker);
+   auto pBroker = pSpec->GetBroker();
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    rptParagraph* pPara = new rptParagraph;
    (*pChapter) << pPara;
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
 
-   GET_IFACE2(pBroker, ILibrary, pLib);
-   GET_IFACE2(pBroker, ISpecification, pSpecification);
+   EAF_GET_IFACE2(pBroker, ILibrary, pLib);
+   EAF_GET_IFACE2(pBroker, ISpecification, pSpecification);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpecification->GetSpecification().c_str());
    const auto& moment_capacity_criteria = pSpecEntry->GetMomentCapacityCriteria();
    bool bConsiderReinforcementStrainLimits = moment_capacity_criteria.bConsiderReinforcementStrainLimit;
 
-   GET_IFACE2(pBroker, IMomentCapacity, pMomentCapacity);
+   EAF_GET_IFACE2(pBroker, IMomentCapacity, pMomentCapacity);
    const MOMENTCAPACITYDETAILS* pmcd = pMomentCapacity->GetMomentCapacityDetails(intervalIdx,poi,bPositiveMoment);
 
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    CSpanKey spanKey;
    Float64 Xspan;
    pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
 
 
-   GET_IFACE2(pBroker, IMaterials, pMaterials);
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IMaterials, pMaterials);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    bool bPCIUHPC = pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC || (pBridgeDesc->HasStructuralLongitudinalJoints() ? pMaterials->GetLongitudinalJointConcreteType() == pgsTypes::PCI_UHPC : false);
@@ -230,7 +224,7 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CMomentCapacityChapterBuilder::
    return std::make_unique<CMomentCapacityChapterBuilder>();
 }
 
-rptRcImage* CMomentCapacityChapterBuilder::CreateImage(IndexType girderShapeIndex, IndexType deckShapeIndex, CComPtr<IGeneralSection> section, CComPtr<IMomentCapacitySolution> solution,bool bPositiveMoment, IEAFDisplayUnits* pDisplayUnits) const
+rptRcImage* CMomentCapacityChapterBuilder::CreateImage(IndexType girderShapeIndex, IndexType deckShapeIndex, CComPtr<IGeneralSection> section, CComPtr<IMomentCapacitySolution> solution,bool bPositiveMoment, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    CImage image;
    DrawSection(image,girderShapeIndex,deckShapeIndex,section,solution,bPositiveMoment,pDisplayUnits);
@@ -296,7 +290,7 @@ rptRcImage* CMomentCapacityChapterBuilder::CreateImage(IndexType girderShapeInde
 
 }
 
-void CMomentCapacityChapterBuilder::DrawSection(CImage& image, IndexType girderShapeIndex,IndexType deckShapeIndex,CComPtr<IGeneralSection> section, CComPtr<IMomentCapacitySolution> solution,bool bPositiveMoment,IEAFDisplayUnits* pDisplayUnits) const
+void CMomentCapacityChapterBuilder::DrawSection(CImage& image, IndexType girderShapeIndex,IndexType deckShapeIndex,CComPtr<IGeneralSection> section, CComPtr<IMomentCapacitySolution> solution,bool bPositiveMoment,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    CComPtr<IGeneralSectionSolution> general_solution;
    solution->get_GeneralSectionSolution(&general_solution);
@@ -737,7 +731,7 @@ void CMomentCapacityChapterBuilder::DrawSlice(IShape* pShape,CDC* pDC, WBFL::Gra
    }
 }
 
-void CMomentCapacityChapterBuilder::ReportSolution(IBroker* pBroker,const TCHAR* strTitle,rptChapter* pChapter, IndexType girderShapeIndex, IndexType deckShapeIndex, CComPtr<IGeneralSection> section,CComPtr<IMomentCapacitySolution> solution,bool bPositiveMoment,IEAFDisplayUnits* pDisplayUnits) const
+void CMomentCapacityChapterBuilder::ReportSolution(std::shared_ptr<WBFL::EAF::Broker> pBroker,const TCHAR* strTitle,rptChapter* pChapter, IndexType girderShapeIndex, IndexType deckShapeIndex, CComPtr<IGeneralSection> section,CComPtr<IMomentCapacitySolution> solution,bool bPositiveMoment,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptAreaUnitValue, area, pDisplayUnits->GetAreaUnit(), false);
    INIT_UV_PROTOTYPE(rptLengthUnitValue, cg, pDisplayUnits->GetComponentDimUnit(), false);

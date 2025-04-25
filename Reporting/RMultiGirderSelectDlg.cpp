@@ -28,11 +28,6 @@
 #include <IFace\Bridge.h>
 #include <EAF\EAFUtilities.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CRMultiGirderSelectDlg dialog
@@ -73,9 +68,8 @@ BOOL CRMultiGirderSelectDlg::OnInitDialog()
 
  	m_pGrid->SubclassDlgItem(IDC_SELECT_GRID, this);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker, IBridge,pBridge);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker, IBridge,pBridge);
 
    // need list of groups/girders
    GroupGirderOnCollection coll;

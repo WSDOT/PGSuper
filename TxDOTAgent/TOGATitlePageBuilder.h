@@ -30,7 +30,7 @@ class CTOGATitlePageBuilder :
    public WBFL::Reporting::TitlePageBuilder
 {
 public:
-   CTOGATitlePageBuilder(IBroker* pBroker,LPCTSTR strTitle,bool bFullVersion=true);
+   CTOGATitlePageBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker,LPCTSTR strTitle,bool bFullVersion=true);
    CTOGATitlePageBuilder(const CTOGATitlePageBuilder& other);
    ~CTOGATitlePageBuilder(void);
 
@@ -40,6 +40,6 @@ public:
    virtual std::unique_ptr<WBFL::Reporting::TitlePageBuilder> Clone() const override;
 
 protected:
-   CComPtr<IBroker> m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    bool m_bFullVersion;
 };

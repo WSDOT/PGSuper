@@ -36,8 +36,9 @@
 //
 
 /// @brief Callback interface for Bridge Plan View
-interface IBridgePlanViewEventCallback
+class IBridgePlanViewEventCallback
 {
+public:
    /// @brief called when a context menu is created in the background of the view
    virtual void OnBackgroundContextMenu(std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
@@ -71,8 +72,9 @@ interface IBridgePlanViewEventCallback
 
 
 /// @brief Callback interface for the Bridge Section View
-interface IBridgeSectionViewEventCallback
+class IBridgeSectionViewEventCallback
 {
+public:
    /// @brief called when a context menu is created in the view background
    virtual void OnBackgroundContextMenu(std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
@@ -84,8 +86,9 @@ interface IBridgeSectionViewEventCallback
 };
 
 /// @brief callback interface for the Alignment Plan View
-interface IAlignmentPlanViewEventCallback
+class IAlignmentPlanViewEventCallback
 {
+public:
    /// @brief called when a context menu is created in the view background
    virtual void OnBackgroundContextMenu(std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
@@ -97,8 +100,9 @@ interface IAlignmentPlanViewEventCallback
 };
 
 /// @brief callback interface for the Alignment Profile View
-interface IAlignmentProfileViewEventCallback
+class IAlignmentProfileViewEventCallback
 {
+public:
    /// @brief called when a context menu is created in the view background
    virtual void OnBackgroundContextMenu(std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
@@ -111,8 +115,9 @@ interface IAlignmentProfileViewEventCallback
 
 
 /// @brief callback interface for the Girder Elevation View
-interface IGirderElevationViewEventCallback
+class IGirderElevationViewEventCallback
 {
+public:
    /// @brief called when a context menu is created in the view background
    virtual void OnBackgroundContextMenu(std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
@@ -121,8 +126,9 @@ interface IGirderElevationViewEventCallback
 };
 
 /// @brief callback interface for the Girder Section View
-interface IGirderSectionViewEventCallback
+class IGirderSectionViewEventCallback
 {
+public:
    /// @brief called when a context menu is created in the view background
    virtual void OnBackgroundContextMenu(std::shared_ptr<WBFL::EAF::Menu> menu) = 0;
 
@@ -133,10 +139,10 @@ interface IGirderSectionViewEventCallback
 // {EB057BFE-3A37-48af-8F19-80465DBA2A14}
 DEFINE_GUID(IID_IRegisterViewEvents, 
 0xeb057bfe, 0x3a37, 0x48af, 0x8f, 0x19, 0x80, 0x46, 0x5d, 0xba, 0x2a, 0x14);
-struct __declspec(uuid("{EB057BFE-3A37-48af-8F19-80465DBA2A14}")) IRegisterViewEvents;
 /// @brief Interface used to register view event callbacks
-interface IRegisterViewEvents : IUnknown
+class __declspec(uuid("{EB057BFE-3A37-48af-8F19-80465DBA2A14}")) IRegisterViewEvents
 {
+public:
    /// @brief Registers a Bridge Plan View callback
    /// @param pCallback The callback object
    /// @return ID of the callback

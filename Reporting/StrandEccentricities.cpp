@@ -29,8 +29,8 @@
 #include <IFace\Intervals.h>
 #include <IFace\Limits.h>
 
-void CStrandEccentricities::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,
-                                IEAFDisplayUnits* pDisplayUnits) const
+void CStrandEccentricities::Build(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,
+                                std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetSpanLengthUnit(), true );
 
@@ -40,15 +40,15 @@ void CStrandEccentricities::Build(rptChapter* pChapter,IBroker* pBroker,const CS
 
    *p << _T("Strand Eccentricity") << rptNewLine;
 
-   GET_IFACE2( pBroker, ILossParameters, pLossParams);
+   EAF_GET_IFACE2( pBroker, ILossParameters, pLossParams);
    PrestressLossCriteria::LossMethodType lossMethod = pLossParams->GetLossMethod();
 
-   GET_IFACE2(pBroker, ISectionProperties, pSectProp);
+   EAF_GET_IFACE2(pBroker, ISectionProperties, pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker, IStressCheck, pStressCheck);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker, IStressCheck, pStressCheck);
 
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(segmentKey, &vGirderKeys);

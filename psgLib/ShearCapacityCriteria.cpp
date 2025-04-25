@@ -135,7 +135,7 @@ bool ShearCapacityCriteria::Compare(const ShearCapacityCriteria& other, const Sp
    return bSame;
 }
 
-void ShearCapacityCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void ShearCapacityCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), true);
 

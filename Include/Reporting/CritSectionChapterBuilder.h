@@ -27,7 +27,7 @@
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 
 /*****************************************************************************
@@ -81,7 +81,7 @@ private:
    bool m_bRating;
 
    // GROUP: LIFECYCLE
-   void Build(rptChapter* pChapter,pgsTypes::LimitState limitState,IBroker* pBroker,const CGirderKey& girderKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level) const;
+   void Build(rptChapter* pChapter,pgsTypes::LimitState limitState,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level) const;
 
    // Prevent accidental copying and assignment
    CCritSectionChapterBuilder(const CCritSectionChapterBuilder&) = delete;

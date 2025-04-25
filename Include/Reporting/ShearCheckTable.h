@@ -26,7 +26,7 @@
 #include <Reporting\ReportingExp.h>
 #include <IFace\AnalysisResults.h>
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 class pgsGirderArtifact;
 
 /*****************************************************************************
@@ -62,16 +62,16 @@ public:
 
    //------------------------------------------------------------------------
    // Builds the  table.
-   virtual rptRcTable* Build(IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
-                             IEAFDisplayUnits* pDisplayUnits,
+   virtual rptRcTable* Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsGirderArtifact* pGirderArtifact,
+                             std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                              IntervalIndexType intervalIdx,
                              pgsTypes::LimitState ls,
                              bool& bStrutAndTieRequired) const;
    //------------------------------------------------------------------------
    // Builds the notes after the  table.
    void BuildNotes(rptChapter* pChapter, 
-                   IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
-                   IEAFDisplayUnits* pDisplayUnits,
+                   std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsGirderArtifact* pGirderArtifact,
+                   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                    IntervalIndexType intervalIdx,
                    pgsTypes::LimitState ls, bool bStrutAndTieRequired) const;
 

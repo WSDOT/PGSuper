@@ -35,11 +35,6 @@
 #include <PgsExt\RatingArtifact.h>
 #include <PgsExt\CapacityToDemand.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 /****************************************************************************
@@ -69,12 +64,11 @@ rptChapter* CTexasLoadRatingSummaryChapterBuilder::Build(const std::shared_ptr<c
    {
       rptChapter* pChapter = CPGSuperChapterBuilder::Build(pGirderRptSpec, level);
 
-      CComPtr<IBroker> pBroker;
-      pGirderRptSpec->GetBroker(&pBroker);
+      auto pBroker = pGirderRptSpec->GetBroker();
       const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
       std::vector<CGirderKey> girderKeys{ girderKey };
 
-      GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
+      EAF_GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
 
       if (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating))
       {

@@ -35,13 +35,8 @@
 #include <IFace\StatusCenter.h>
 #include <EAF\EAFUIIntegration.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-CTOGATitlePageBuilder::CTOGATitlePageBuilder(IBroker* pBroker,LPCTSTR strTitle,bool bFullVersion) :
+#pragma Reminder("WORKING HERE - Removing COM - storing a pointer to the broker can cause circular references")
+CTOGATitlePageBuilder::CTOGATitlePageBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker,LPCTSTR strTitle,bool bFullVersion) :
 WBFL::Reporting::TitlePageBuilder(strTitle),
 m_pBroker(pBroker),
 m_bFullVersion(bFullVersion)
@@ -78,7 +73,7 @@ rptChapter* CTOGATitlePageBuilder::Build(const std::shared_ptr<const WBFL::Repor
 
    // A bit tricky here, but status center and other results won't be rebuilt until the toga model is built.
    // Let's ask for some results to get the ball rolling
-   GET_IFACE(IGetTogaResults,pGetTogaResults);
+   EAF_GET_IFACE(IGetTogaResults,pGetTogaResults);
    pGetTogaResults->GetRequiredFc();
 
    rptParagraph* pPara = new rptParagraph;
@@ -97,7 +92,7 @@ rptChapter* CTOGATitlePageBuilder::Build(const std::shared_ptr<const WBFL::Repor
    pPara = new rptParagraph;
    pPara->SetStyleName(rptStyleManager::GetReportSubtitleStyle());
    *pTitlePage << pPara;
-   GET_IFACE(IVersionInfo,pVerInfo);
+   EAF_GET_IFACE(IVersionInfo,pVerInfo);
    *pPara << pVerInfo->GetVersionString() << rptNewLine;
 
    const std::_tstring& strImage = std::_tstring(rptStyleManager::GetImagePath()) + std::_tstring(_T("TxDOT_Logo.gif"));
@@ -109,8 +104,8 @@ rptChapter* CTOGATitlePageBuilder::Build(const std::shared_ptr<const WBFL::Repor
       *pPara << rptRcImage(strImage) << rptNewLine;
    }
 
-   GET_IFACE(IProjectProperties,pProps);
-   GET_IFACE(IEAFDocument,pDocument);
+   EAF_GET_IFACE(IProjectProperties,pProps);
+   EAF_GET_IFACE(IEAFDocument,pDocument);
 
    rptParagraph* pPara3 = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pTitlePage << pPara3;
@@ -163,7 +158,7 @@ rptChapter* CTOGATitlePageBuilder::Build(const std::shared_ptr<const WBFL::Repor
    int row = 0;
 
    // Status Center Items
-   GET_IFACE(IEAFStatusCenter,pStatusCenter);
+   EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
    IndexType nItems = pStatusCenter->Count();
 
    if ( nItems != 0 )

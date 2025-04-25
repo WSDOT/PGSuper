@@ -35,8 +35,8 @@
 #include <IFace\RatingSpecification.h>
 #include <IFace/Limits.h>
 
-rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& segmentKey,
-                                            bool bDesign,IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CPretensionStressTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,
+                                            bool bDesign,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, rptReleasePoi, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -45,22 +45,22 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
    INIT_UV_PROTOTYPE( rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), true );
    INIT_UV_PROTOTYPE(rptLengthUnitValue, ecc, pDisplayUnits->GetComponentDimUnit(), true);
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    bool bIsAsymmetric = (pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing() ? true : false);
 
-   GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   EAF_GET_IFACE2(pBroker,ILossParameters,pLossParams);
    bool bTimeStepAnalysis = pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false;
 
    // for transformed section analysis, stresses are computed with prestress force P at the start of the interval because elastic effects are intrinsic to the stress analysis
    // for gross section analysis, stresses are computed with prestress force P at the end of the interval because the elastic effects during the interval must be included in the prestress force
-   GET_IFACE2(pBroker,ISectionProperties,pSectProps);
+   EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProps);
    pgsTypes::IntervalTimeType intervalTime = (pSectProps->GetSectionPropertiesMode() == pgsTypes::spmTransformed ? pgsTypes::Start : pgsTypes::End);
    bool bIncludeElasticEffects = (pSectProps->GetSectionPropertiesMode() == pgsTypes::spmGross ? true : false);
 
-   GET_IFACE2(pBroker, IStressCheck, pStressCheck);
+   EAF_GET_IFACE2(pBroker, IStressCheck, pStressCheck);
    std::vector<IntervalIndexType> vIntervals(pStressCheck->GetStressCheckIntervals(segmentKey));
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType nIntervals = vIntervals.size();
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval();
@@ -74,8 +74,8 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
       loadRatingIntervalIdx = releaseIntervalIdx;
    }
 
-   GET_IFACE2_NOCHECK(pBroker, IProductLoads, pProductLoads);
-   GET_IFACE2_NOCHECK(pBroker, IRatingSpecification, pRatingSpec);
+   EAF_GET_IFACE2_NOCHECK(pBroker, IProductLoads, pProductLoads);
+   EAF_GET_IFACE2_NOCHECK(pBroker, IRatingSpecification, pRatingSpec);
 
    int nRatingTypes = (int)pgsTypes::lrLoadRatingTypeCount;
 
@@ -208,7 +208,7 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
       }
    }
 
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    PoiList vPoi;
    pPoi->GetPointsOfInterest(segmentKey, POI_RELEASED_SEGMENT, &vPoi);
    pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT, &vPoi);
@@ -218,7 +218,7 @@ rptRcTable* CPretensionStressTable::Build(IBroker* pBroker,const CSegmentKey& se
    pPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);
    pPoi->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER);
 
-   GET_IFACE2(pBroker,IPretensionStresses,pPrestress);
+   EAF_GET_IFACE2(pBroker,IPretensionStresses,pPrestress);
 
    // Fill up the table
    RowIndexType row = p_table->GetNumberOfHeaderRows();

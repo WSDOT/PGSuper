@@ -29,11 +29,6 @@
 #include <IFace\PrestressForce.h>
 #include <IFace\Intervals.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CInitialStrainAnalysisChapterBuilder::CInitialStrainAnalysisChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
@@ -50,8 +45,7 @@ LPCTSTR CInitialStrainAnalysisChapterBuilder::GetName() const
 rptChapter* CInitialStrainAnalysisChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CInitialStrainAnalysisReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGdrRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGdrRptSpec->GetBroker();
 
    const CGirderKey& girderKey(pGdrRptSpec->GetGirderKey());
    IntervalIndexType intervalIdx = pGdrRptSpec->GetInterval();
@@ -61,13 +55,13 @@ rptChapter* CInitialStrainAnalysisChapterBuilder::Build(const std::shared_ptr<co
    *pChapter << pPara;
    *pPara << _T("Interval ") << LABEL_INTERVAL(intervalIdx) << rptNewLine;
 
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    PoiList vPoi;
    pPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), &vPoi);
 
-   GET_IFACE2(pBroker,ILosses,pLosses);
+   EAF_GET_IFACE2(pBroker,ILosses,pLosses);
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    INIT_UV_PROTOTYPE(rptForceUnitValue,     force,      pDisplayUnits->GetGeneralForceUnit(),    false);
    INIT_UV_PROTOTYPE(rptMomentUnitValue,    moment,     pDisplayUnits->GetSmallMomentUnit(),     false);
    INIT_UV_PROTOTYPE(rptLengthUnitValue,    dist,       pDisplayUnits->GetSpanLengthUnit(),      false);

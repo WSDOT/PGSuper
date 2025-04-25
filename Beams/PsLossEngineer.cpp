@@ -129,7 +129,7 @@ void CPsLossEngineer::Init(IBroker* pBroker,StatusGroupIDType statusGroupID)
    m_pBroker = pBroker;
    m_StatusGroupID = statusGroupID;
 
-   GET_IFACE(IEAFStatusCenter,pStatusCenter);
+   EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
    m_scidUnknown = pStatusCenter->RegisterCallback( new pgsUnknownErrorStatusCallback() );
    m_scidGirderDescriptionError = pStatusCenter->RegisterCallback( new pgsGirderDescriptionStatusCallback(m_pBroker,eafTypes::statusError) );
    m_scidGirderDescriptionWarning = pStatusCenter->RegisterCallback( new pgsGirderDescriptionStatusCallback(m_pBroker,eafTypes::statusWarning) );
@@ -147,17 +147,17 @@ LOSSDETAILS CPsLossEngineer::ComputeLosses(BeamType beamType,const pgsPointOfInt
    LOSSDETAILS details;
 
 #if defined _DEBUG
-   GET_IFACE(IPointOfInterest,pPoi);
+   EAF_GET_IFACE(IPointOfInterest,pPoi);
    ATLASSERT(pPoi->IsOnSegment(poi));
 #endif
 
-   GET_IFACE(ILossParameters,pLossParameters);
+   EAF_GET_IFACE(ILossParameters,pLossParameters);
    PrestressLossCriteria::LossMethodType loss_method = pLossParameters->GetLossMethod();
 
    // if the girder is UHPC the loss method must be AASHTO_REFINED, WSDOT_REFINED, or GENERAL_LUMPSUM
    // and the base LRFD specification must beo 9th Edition 2020 or later
    // If it isn't, post to status center and throw and unwind exception
-   GET_IFACE(IMaterials, pMaterials);
+   EAF_GET_IFACE(IMaterials, pMaterials);
    auto concrete_type = pMaterials->GetSegmentConcreteType(poi.GetSegmentKey());
    if (IsUHPC(concrete_type))
    {
@@ -167,7 +167,7 @@ LOSSDETAILS CPsLossEngineer::ComputeLosses(BeamType beamType,const pgsPointOfInt
          (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::NinthEdition2020)
          )
       {
-         GET_IFACE(IEAFStatusCenter, pStatusCenter);
+         EAF_GET_IFACE(IEAFStatusCenter, pStatusCenter);
          std::_tstring msg(_T("The project criteria must be based on AASHTO LRFD 9th Edition 2020 or later and the prestress loss method must be set to Refined Estimate per LRFD 5.9.3.4 or Refined Estimate per WSDOT Bridge Design Manual in the Project Criteria for compatibility with PCI-UHPC Structural Design Guidance"));
          pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID, m_scidConcreteTypeError, msg.c_str());
          pStatusCenter->Add(pStatusItem);
@@ -227,7 +227,7 @@ LOSSDETAILS CPsLossEngineer::ComputeLossesForDesign(BeamType beamType,const pgsP
 
 void CPsLossEngineer::BuildReport(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
-   GET_IFACE(ILossParameters,pLossParameters);
+   EAF_GET_IFACE(ILossParameters,pLossParameters);
    PrestressLossCriteria::LossMethodType loss_method = pLossParameters->GetLossMethod();
 
    Uint16 level = 0;
@@ -268,8 +268,8 @@ void CPsLossEngineer::BuildReport(BeamType beamType,const CGirderKey& girderKey,
 
 void CPsLossEngineer::ReportRefinedMethod(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,Uint16 level,LossAgency lossAgency)
 {
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
+   EAF_GET_IFACE(ILibrary,pLib);
+   EAF_GET_IFACE(ISpecification,pSpec);
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
@@ -286,8 +286,8 @@ void CPsLossEngineer::ReportRefinedMethod(BeamType beamType,const CGirderKey& gi
 
 void CPsLossEngineer::ReportApproxLumpSumMethod(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,Uint16 level,bool isWsdot)
 {
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
+   EAF_GET_IFACE(ILibrary,pLib);
+   EAF_GET_IFACE(ISpecification,pSpec);
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
@@ -307,7 +307,7 @@ void CPsLossEngineer::ReportGeneralLumpSumMethod(BeamType beamType,const CGirder
 
 #if defined _DEBUG
    // this method is only applicable to PGSuper
-   GET_IFACE(IBridge, pIBridge);
+   EAF_GET_IFACE(IBridge, pIBridge);
    ATLASSERT(pIBridge->GetSegmentCount(girderKey) == 1);
 #endif
    CSegmentKey segmentKey(girderKey, 0);
@@ -331,8 +331,8 @@ void CPsLossEngineer::LossesByRefinedEstimate(BeamType beamType,const pgsPointOf
 {
    PRECONDITION(pLosses != 0 );
 
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
+   EAF_GET_IFACE(ILibrary,pLib);
+   EAF_GET_IFACE(ISpecification,pSpec);
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
@@ -420,8 +420,8 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
 
 
    // get time to prestress transfer
-   GET_IFACE( ISpecification,   pSpec);
-   GET_IFACE(ILibrary,pLib);
+   EAF_GET_IFACE( ISpecification,   pSpec);
+   EAF_GET_IFACE(ILibrary,pLib);
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
    const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
@@ -526,7 +526,7 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
          pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID,m_scidUnknown,_T(__FILE__),__LINE__,msg.c_str());
       }
 
-      GET_IFACE(IEAFStatusCenter,pStatusCenter);
+      EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
       ATLASSERT(pStatusItem != nullptr);
       pStatusCenter->Add(pStatusItem);
 
@@ -606,8 +606,8 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
 
 
    // get time to prestress transfer
-   GET_IFACE( ISpecification,   pSpec);
-   GET_IFACE( ILibrary,         pLib);
+   EAF_GET_IFACE( ISpecification,   pSpec);
+   EAF_GET_IFACE( ILibrary,         pLib);
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
    const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
@@ -624,15 +624,15 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
 
    std::shared_ptr<WBFL::LRFD::RefinedLosses2005> pLoss;
 
-   GET_IFACE(ICamber, pCamber);
+   EAF_GET_IFACE(ICamber, pCamber);
    std::shared_ptr<const WBFL::LRFD::CreepCoefficient> pGirderCreep = pCamber->GetGirderCreepModel(segmentKey, pConfig);
    std::shared_ptr<const WBFL::LRFD::CreepCoefficient2005> pDeckCreep = pCamber->GetDeckCreepModel(0);
 
-   GET_IFACE(IMaterials, pMaterials);
+   EAF_GET_IFACE(IMaterials, pMaterials);
    auto concrete_type = pMaterials->GetSegmentConcreteType(segmentKey);
    if (concrete_type == pgsTypes::PCI_UHPC)
    {
-      GET_IFACE(ISegmentData, pSegment);
+      EAF_GET_IFACE(ISegmentData, pSegment);
       bool bPCTTGirder = pSegment->GetSegmentMaterial(segmentKey)->Concrete.bPCTT;
       Float64 GdrAutogenousShrinkage = pMaterials->GetSegmentAutogenousShrinkage(segmentKey);
 
@@ -870,7 +870,7 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
          pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID,m_scidUnknown,_T(__FILE__),__LINE__,msg.c_str());
       }
 
-      GET_IFACE(IEAFStatusCenter,pStatusCenter);
+      EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
       ATLASSERT(pStatusItem != nullptr);
       pStatusCenter->Add(pStatusItem);
 
@@ -890,7 +890,7 @@ void CPsLossEngineer::LossesByRefinedEstimateTxDOT2013(BeamType beamType,const p
    if(method == WBFL::LRFD::ElasticShortening::FcgpComputationMethod::AssumedFpe)
    {
       // Elastic shortening uses the 0.7Fpu method. We only need to compute at mid-girder and then cache results for other locations
-      GET_IFACE( IPointOfInterest, pPoi);
+      EAF_GET_IFACE( IPointOfInterest, pPoi);
       PoiList vPoi;
       pPoi->GetPointsOfInterest(poi.GetSegmentKey(), POI_5L | POI_RELEASED_SEGMENT, &vPoi);
       ATLASSERT(vPoi.size() == 1);
@@ -971,8 +971,8 @@ WBFL::LRFD::ElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRe
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   GET_IFACE( ISpecification,   pSpec);
-   GET_IFACE(ILibrary,pLib);
+   EAF_GET_IFACE( ISpecification,   pSpec);
+   EAF_GET_IFACE(ILibrary,pLib);
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
    const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
@@ -1004,8 +1004,8 @@ WBFL::LRFD::ElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRe
 
          if (ApsPerm==0.0 || IsEqual(Fpu*0.75, fpjPerm, 1000.0)) // Pa's are very small
          {
-            GET_IFACE(IGirder,pGirder);
-            GET_IFACE(IIntervals,pIntervals);
+            EAF_GET_IFACE(IGirder,pGirder);
+            EAF_GET_IFACE(IIntervals,pIntervals);
             IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
             if ( pGirder->IsPrismatic(releaseIntervalIdx,segmentKey) )
             {
@@ -1018,7 +1018,7 @@ WBFL::LRFD::ElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRe
                }
                else
                {
-                  GET_IFACE(IStrandGeometry, pStrandGeom);
+                  EAF_GET_IFACE(IStrandGeometry, pStrandGeom);
                   if (!pStrandGeom->HasDebonding(segmentKey))
                   {
                      method = WBFL::LRFD::ElasticShortening::FcgpComputationMethod::AssumedFpe;
@@ -1094,7 +1094,7 @@ WBFL::LRFD::ElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRe
       {
          // Elastic shortening loss method switches to iterative solution if jacking stress is not
          // equal to 0.75Fpu. Let user know if this happened.
-         GET_IFACE(IEAFStatusCenter,pStatusCenter);
+         EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
          std::_tstring msg = std::_tstring(SEGMENT_LABEL(segmentKey)) + _T(": ");
          msg += _T("Either the Jacking stress is not equal to 0.75Fpu, or Debonded strands are present, or Temporary strands are present, or the girder is Not Prismatic. Therefore, for the calculation of elastic shortening; an iterative solution was used to find Fcgp after release rather than assuming 0.7*Fpu per the TxDOT design manual.");
          CEAFStatusItem* pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,1,m_StatusGroupID,m_scidGirderDescriptionWarning,msg.c_str());
@@ -1134,7 +1134,7 @@ WBFL::LRFD::ElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRe
          pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID,m_scidUnknown,_T(__FILE__),__LINE__,msg.c_str());
       }
 
-      GET_IFACE(IEAFStatusCenter,pStatusCenter);
+      EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
       ATLASSERT(pStatusItem != nullptr);
       pStatusCenter->Add(pStatusItem);
 
@@ -1202,13 +1202,13 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
 
    Float64 anchorSet,wobble,coeffFriction,angleChange;
 
-   GET_IFACE(IMaterials,pMaterial);
+   EAF_GET_IFACE(IMaterials,pMaterial);
    pgsTypes::ConcreteType girderConcreteType = pMaterial->GetSegmentConcreteType(poi.GetSegmentKey());
    pgsTypes::ConcreteType slabConcreteType   = pMaterial->GetDeckConcreteType();
 
    if ( girderConcreteType != pgsTypes::Normal || slabConcreteType != pgsTypes::Normal )
    {
-      GET_IFACE(IEAFStatusCenter,pStatusCenter);
+      EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
       std::_tstring msg(_T("The approximate estimate of time-dependent losses given in LRFD ") +  std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.5.3"),_T("5.9.3.3"))) + _T(" is for members made from normal-weight concrete"));
       pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidConcreteTypeError,msg.c_str());
       pStatusCenter->Add(pStatusItem);
@@ -1232,8 +1232,8 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
 
 
    // get time to prestress transfer
-   GET_IFACE( ISpecification,   pSpec);
-   GET_IFACE( ILibrary,         pLib);
+   EAF_GET_IFACE( ISpecification,   pSpec);
+   EAF_GET_IFACE( ILibrary,         pLib);
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
    const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
@@ -1250,14 +1250,14 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
          }
          else
          {
-            GET_IFACE(ILongRebarGeometry,pLongRebarGeom);
+            EAF_GET_IFACE(ILongRebarGeometry,pLongRebarGeom);
             ppr = pLongRebarGeom->GetPPRBottomHalf(poi);
             pLosses->LossMethod = PrestressLossCriteria::LossMethodType::AASHTO_LUMPSUM;
          }
 
          Float64 shipping_loss = prestress_loss_criteria.ShippingLosses;
 
-         GET_IFACE_NOCHECK(IMaterials, pMaterial);
+         EAF_GET_IFACE_NOCHECK(IMaterials, pMaterial);
          pgsTypes::ConcreteType concreteType = (pConfig ? pConfig->ConcType : pMaterial->GetSegmentConcreteType(segmentKey));
 
          std::shared_ptr<WBFL::LRFD::ApproximateLosses> pLoss(std::make_shared<WBFL::LRFD::ApproximateLosses>(
@@ -1332,10 +1332,10 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
 
          // LRFD 5th Edition, 2010, C5.9.5.3 ( or >= 2017, C5.9.3.3)
          // The approximate estimates of time-dependent prestress losses given in Eq 5.9.3.3-1 are intended for sections with composite decks only
-         GET_IFACE_NOCHECK(IBridge,pBridge);
+         EAF_GET_IFACE_NOCHECK(IBridge,pBridge);
          if ( WBFL::LRFD::BDSManager::Edition::FifthEdition2010 <= WBFL::LRFD::BDSManager::GetEdition() && !pBridge->IsCompositeDeck() )
          {
-            GET_IFACE(IEAFStatusCenter,pStatusCenter);
+            EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
             std::_tstring msg(_T("The approximate estimates of time-dependent prestress losses given in Eq ") + std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.5.3-1"),_T("5.9.3.3-1"))) + _T(" are intended for sections with composite decks only."));
             pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidLRFDVersionError,msg.c_str());
             pStatusCenter->Add(pStatusItem);
@@ -1451,7 +1451,7 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
          pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID,m_scidUnknown,_T(__FILE__),__LINE__,msg.c_str());
       }
 
-      GET_IFACE(IEAFStatusCenter,pStatusCenter);
+      EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
       ATLASSERT(pStatusItem != nullptr);
       pStatusCenter->Add(pStatusItem);
 
@@ -1533,7 +1533,7 @@ void CPsLossEngineer::LossesByGeneralLumpSum(BeamType beamType,const pgsPointOfI
 
    pLosses->LossMethod = PrestressLossCriteria::LossMethodType::GENERAL_LUMPSUM;
 
-   GET_IFACE(ILossParameters,pLossParameters);
+   EAF_GET_IFACE(ILossParameters,pLossParameters);
 
    // the lump sum loss object can deal with no area of prestress (no strand) cases.
    std::shared_ptr<const WBFL::LRFD::LumpSumLosses> pLoss(std::make_shared<WBFL::LRFD::LumpSumLosses>(ApsPerm,ApsTTS,fpjPerm,fpjTTS,usage,
@@ -1556,7 +1556,7 @@ void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLoss
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
-   GET_IFACE(IBridge,pIBridge);
+   EAF_GET_IFACE(IBridge,pIBridge);
    ATLASSERT(pIBridge->GetSegmentCount(girderKey) == 1);
 #endif
    CSegmentKey segmentKey(girderKey,0);
@@ -1565,10 +1565,10 @@ void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLoss
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   GET_IFACE(ISegmentData,pSegmentData);
+   EAF_GET_IFACE(ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
-   GET_IFACE(IStrandGeometry,pStrandGeom);
+   EAF_GET_IFACE(IStrandGeometry,pStrandGeom);
    StrandIndexType Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -1578,7 +1578,7 @@ void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLoss
    PoiList vPoi;
    GetPointsOfInterest(girderKey, &vPoi);
 
-   GET_IFACE(ILosses,pILosses);
+   EAF_GET_IFACE(ILosses,pILosses);
    const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi.front() );
 
    // Do some preliminary setup for the tables.
@@ -1611,7 +1611,7 @@ void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLoss
    CTimeDependentLossesAtShippingTable*            pPSH = nullptr;
    CPostTensionTimeDependentLossesAtShippingTable* pPTH = nullptr;
 
-   GET_IFACE(ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+   EAF_GET_IFACE(ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
    if ( pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled() )
    {
       pPSH = CTimeDependentLossesAtShippingTable::PrepareTable(pChapter,m_pBroker,segmentKey,bTemporaryStrands,pDisplayUnits,level);
@@ -1698,7 +1698,7 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
-   GET_IFACE(IBridge,pIBridge);
+   EAF_GET_IFACE(IBridge,pIBridge);
    ATLASSERT(pIBridge->GetSegmentCount(girderKey) == 1);
 #endif
    CSegmentKey segmentKey(girderKey,0);
@@ -1707,13 +1707,13 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE(IBridge,pBridge);
 
-   GET_IFACE(IStrandGeometry,pStrandGeom);
+   EAF_GET_IFACE(IStrandGeometry,pStrandGeom);
    StrandIndexType Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
 
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
+   EAF_GET_IFACE(ILibrary,pLib);
+   EAF_GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -1723,10 +1723,10 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    PoiList vPoi;
    GetPointsOfInterest(girderKey, &vPoi);
 
-   GET_IFACE(ILosses,pILosses);
+   EAF_GET_IFACE(ILosses,pILosses);
    const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi.front() );
 
-   GET_IFACE(ISegmentData,pSegmentData);
+   EAF_GET_IFACE(ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
    bool bTemporaryStrands = ( 0 < Nt && pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPretensioned ? true : false);
@@ -1744,7 +1744,7 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    CPostTensionInteractionTable*                pPTT = nullptr;
    CEffectOfPostTensionedTemporaryStrandsTable* pPTP = nullptr;
 
-   GET_IFACE(IMaterials, pMaterials);
+   EAF_GET_IFACE(IMaterials, pMaterials);
    if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC)
    {
       pAS = CAutogenousShrinkageTable::PrepareTable(pChapter,m_pBroker,segmentKey,bTemporaryStrands,pDetails, pDisplayUnits,level);
@@ -1946,7 +1946,7 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
-   GET_IFACE(IBridge,pIBridge);
+   EAF_GET_IFACE(IBridge,pIBridge);
    ATLASSERT(pIBridge->GetSegmentCount(girderKey) == 1);
 #endif
    CSegmentKey segmentKey(girderKey,0);
@@ -1955,7 +1955,7 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   GET_IFACE(IStrandGeometry,pStrandGeom);
+   EAF_GET_IFACE(IStrandGeometry,pStrandGeom);
    StrandIndexType Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -1965,7 +1965,7 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
    PoiList vPoi;
    GetPointsOfInterest(girderKey, &vPoi);
 
-   GET_IFACE(ILosses,pILosses);
+   EAF_GET_IFACE(ILosses,pILosses);
    const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi.front() );
 
    // Do some preliminary setup for the tables.
@@ -1978,7 +1978,7 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
    INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,      pDisplayUnits->GetStressUnit(),          false );
    INIT_UV_PROTOTYPE( rptStressUnitValue,  mod_e,       pDisplayUnits->GetModEUnit(),            false );
 
-   GET_IFACE(ISegmentData,pSegmentData);
+   EAF_GET_IFACE(ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
    bool bTemporaryStrands = ( 0 < Nt && pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPretensioned ? true : false);
 
@@ -2002,7 +2002,7 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
    CTimeDependentLossesAtShippingTable*            pPSH = nullptr;
    CPostTensionTimeDependentLossesAtShippingTable* pPTH = nullptr;
 
-   GET_IFACE(ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+   EAF_GET_IFACE(ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
    if ( pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled() )
    {
       pPSH = CTimeDependentLossesAtShippingTable::PrepareTable(pChapter,m_pBroker,segmentKey,bTemporaryStrands,pDisplayUnits,level);
@@ -2093,7 +2093,7 @@ void CPsLossEngineer::ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::B
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
-   GET_IFACE(IBridge,pIBridge);
+   EAF_GET_IFACE(IBridge,pIBridge);
    ATLASSERT(pIBridge->GetSegmentCount(girderKey) == 1);
 #endif
    CSegmentKey segmentKey(girderKey,0);
@@ -2102,16 +2102,16 @@ void CPsLossEngineer::ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::B
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   GET_IFACE(IStrandGeometry,pStrandGeom);
+   EAF_GET_IFACE(IStrandGeometry,pStrandGeom);
    StrandIndexType Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
 
-   GET_IFACE(ISegmentData,pSegmentData);
+   EAF_GET_IFACE(ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
    PoiList vPoi;
    GetPointsOfInterest(girderKey, &vPoi);
 
-   GET_IFACE(ILosses,pILosses);
+   EAF_GET_IFACE(ILosses,pILosses);
    const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi.front() );
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -2218,7 +2218,7 @@ void CPsLossEngineer::ReportApproxMethod2005(rptChapter* pChapter,CPsLossEnginee
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
-   GET_IFACE(IBridge,pIBridge);
+   EAF_GET_IFACE(IBridge,pIBridge);
    ATLASSERT(pIBridge->GetSegmentCount(girderKey) == 1);
 #endif
    CSegmentKey segmentKey(girderKey,0);
@@ -2227,16 +2227,16 @@ void CPsLossEngineer::ReportApproxMethod2005(rptChapter* pChapter,CPsLossEnginee
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   GET_IFACE(ISegmentData,pSegmentData);
+   EAF_GET_IFACE(ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
-   GET_IFACE(IStrandGeometry,pStrandGeom);
+   EAF_GET_IFACE(IStrandGeometry,pStrandGeom);
    StrandIndexType Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
 
    PoiList vPoi;
    GetPointsOfInterest(girderKey, &vPoi);
 
-   GET_IFACE(ILosses,pILosses);
+   EAF_GET_IFACE(ILosses,pILosses);
    const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi.front() );
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -2354,7 +2354,7 @@ void CPsLossEngineer::ReportLumpSumMethod(rptChapter* pChapter,CPsLossEngineer::
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
-   GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE(IBridge,pBridge);
    ATLASSERT(pBridge->GetSegmentCount(girderKey) == 1);
 #endif
    CSegmentKey segmentKey(girderKey,0);
@@ -2363,7 +2363,7 @@ void CPsLossEngineer::ReportLumpSumMethod(rptChapter* pChapter,CPsLossEngineer::
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   GET_IFACE(IStrandGeometry,pStrandGeom);
+   EAF_GET_IFACE(IStrandGeometry,pStrandGeom);
    StrandIndexType NtMax = pStrandGeom->GetMaxStrands(segmentKey,pgsTypes::Temporary);
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -2387,7 +2387,7 @@ void CPsLossEngineer::ReportLumpSumMethod(rptChapter* pChapter,CPsLossEngineer::
    PoiList vPoi;
    GetPointsOfInterest(girderKey, &vPoi);
 
-   GET_IFACE(ILosses,pILosses);
+   EAF_GET_IFACE(ILosses,pILosses);
    const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi.front() );
 
    // Typecast to our known type (eating own doggy food)
@@ -2554,8 +2554,8 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pCh
    if ( pDetails->LossMethod == PrestressLossCriteria::LossMethodType::AASHTO_LUMPSUM || pDetails->LossMethod == PrestressLossCriteria::LossMethodType::WSDOT_LUMPSUM )
    {
       // Approximate methods before 2005
-      GET_IFACE( ISpecification,   pSpec);
-      GET_IFACE( ILibrary,         pLib);
+      EAF_GET_IFACE( ISpecification,   pSpec);
+      EAF_GET_IFACE( ILibrary,         pLib);
       std::_tstring spec_name = pSpec->GetSpecification();
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
       const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
@@ -2848,19 +2848,19 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
    Float64* pAngleChange
 )
 {
-   GET_IFACE(IBridge, pBridge);
-   GET_IFACE(IStrandGeometry, pStrandGeom);
-   GET_IFACE(ISegmentData, pSegmentData);
-   GET_IFACE(ISectionProperties, pSectProp);
-   GET_IFACE(IProductForces, pProdForces);
-   GET_IFACE(IEnvironment, pEnv);
-   GET_IFACE(IMaterials, pMaterial);
-   GET_IFACE(ISpecification, pSpec);
-   GET_IFACE(IBridgeDescription, pIBridgeDesc);
-   GET_IFACE(ILibrary, pLibrary);
-   GET_IFACE(IIntervals, pIntervals);
-   GET_IFACE(IGirder, pGirder);
-   GET_IFACE(IPointOfInterest, pPoi);
+   EAF_GET_IFACE(IBridge, pBridge);
+   EAF_GET_IFACE(IStrandGeometry, pStrandGeom);
+   EAF_GET_IFACE(ISegmentData, pSegmentData);
+   EAF_GET_IFACE(ISectionProperties, pSectProp);
+   EAF_GET_IFACE(IProductForces, pProdForces);
+   EAF_GET_IFACE(IEnvironment, pEnv);
+   EAF_GET_IFACE(IMaterials, pMaterial);
+   EAF_GET_IFACE(ISpecification, pSpec);
+   EAF_GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE(ILibrary, pLibrary);
+   EAF_GET_IFACE(IIntervals, pIntervals);
+   EAF_GET_IFACE(IGirder, pGirder);
+   EAF_GET_IFACE(IPointOfInterest, pPoi);
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -3153,7 +3153,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
          }
       }
 
-      GET_IFACE(IPointOfInterest,pPoi);
+      EAF_GET_IFACE(IPointOfInterest,pPoi);
       CSpanKey spanKey;
       Float64 Xspan;
       pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
@@ -3278,7 +3278,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
       break;
    }
 
-   GET_IFACE(ILossParameters,pLossParameters);
+   EAF_GET_IFACE(ILossParameters,pLossParameters);
    pLossParameters->GetTemporaryStrandPostTensionParameters(pAnchorSet,pWobble,pCoeffFriction);
 
    Float64 precamber = pGirder->GetPrecamber(segmentKey);
@@ -3288,7 +3288,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
 
 void CPsLossEngineer::ReportFinalLosses(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
-   GET_IFACE(ILossParameters,pLossParameters);
+   EAF_GET_IFACE(ILossParameters,pLossParameters);
    PrestressLossCriteria::LossMethodType loss_method = pLossParameters->GetLossMethod();
 
    Uint16 level = 0;
@@ -3321,8 +3321,8 @@ void CPsLossEngineer::ReportFinalLosses(BeamType beamType,const CGirderKey& gird
 
 void CPsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamType beamType,const CGirderKey& girderKey,IEAFDisplayUnits* pDisplayUnits,LossAgency lossAgency)
 {
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
+   EAF_GET_IFACE(ILibrary,pLib);
+   EAF_GET_IFACE(ISpecification,pSpec);
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
@@ -3341,7 +3341,7 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamTy
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
-   GET_IFACE(IBridge,pIBridge);
+   EAF_GET_IFACE(IBridge,pIBridge);
    ATLASSERT(pIBridge->GetSegmentCount(girderKey) == 1);
 #endif
    CSegmentKey segmentKey(girderKey,0);
@@ -3350,8 +3350,8 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamTy
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
+   EAF_GET_IFACE(ILibrary,pLib);
+   EAF_GET_IFACE(ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -3361,7 +3361,7 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamTy
    PoiList vPoi;
    GetPointsOfInterest(girderKey, &vPoi);
 
-   GET_IFACE(ILosses,pILosses);
+   EAF_GET_IFACE(ILosses,pILosses);
    const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi.front() );
 
    CTotalPrestressLossTable* pT = CTotalPrestressLossTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,0);
@@ -3388,7 +3388,7 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethodBefore2005(rptChapter* pChap
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
-   GET_IFACE(IBridge,pIBridge);
+   EAF_GET_IFACE(IBridge,pIBridge);
    ATLASSERT(pIBridge->GetSegmentCount(girderKey) == 1);
 #endif
    CSegmentKey segmentKey(girderKey,0);
@@ -3402,7 +3402,7 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethodBefore2005(rptChapter* pChap
    PoiList vPoi;
    GetPointsOfInterest(girderKey, &vPoi);
 
-   GET_IFACE(ILosses,pILosses);
+   EAF_GET_IFACE(ILosses,pILosses);
 
    CFinalPrestressLossTable* pT = CFinalPrestressLossTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,0);
    CEffectivePrestressForceTable* pP = CEffectivePrestressForceTable::PrepareTable(pChapter, m_pBroker, segmentKey, pDisplayUnits, 0);
@@ -3426,12 +3426,12 @@ void CPsLossEngineer::GetPointsOfInterest(const CGirderKey& girderKey,PoiList* p
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
-   GET_IFACE(IBridge,pIBridge);
+   EAF_GET_IFACE(IBridge,pIBridge);
    ATLASSERT(pIBridge->GetSegmentCount(girderKey) == 1);
 #endif
    CSegmentKey segmentKey(girderKey,0);
 
-   GET_IFACE(IPointOfInterest,pPoi);
+   EAF_GET_IFACE(IPointOfInterest,pPoi);
    PoiList vPoi;
    pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT, pPoiList);
    PoiList vPoi2;

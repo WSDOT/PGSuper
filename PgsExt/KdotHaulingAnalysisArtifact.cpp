@@ -464,7 +464,7 @@ pgsHaulingAnalysisArtifact* pgsKdotHaulingAnalysisArtifact::Clone() const
    return clone.release();
 }
 
-void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& segmentKey,rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, IEAFDisplayUnits* pDisplayUnits) const
+void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& segmentKey,rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pChapter << pTitle;
@@ -739,7 +739,7 @@ void pgsKdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& 
    }
 }
 
-void pgsKdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, IEAFDisplayUnits* pDisplayUnits) const
+void pgsKdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,       pDisplayUnits->GetSpanLengthUnit(),    false );

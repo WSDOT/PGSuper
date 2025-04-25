@@ -138,7 +138,7 @@ void CUBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroup
    segment.CoCreateInstance(CLSID_PrismaticSuperstructureMemberSegment);
 
    // Build up the beam shape
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const CSplicedGirderData*  pGirder     = pGroup->GetGirder(segmentKey.girderIndex);
@@ -151,7 +151,7 @@ void CUBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroup
    CreateGirderSection(pBroker,statusGroupID,dimensions,-1,-1,&gdrSection);
 
    // Beam materials
-   GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   EAF_GET_IFACE2(pBroker,ILossParameters,pLossParams);
    CComPtr<IMaterial> material;
    if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
@@ -161,8 +161,8 @@ void CUBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroup
    }
    else
    {
-      GET_IFACE2(pBroker,IIntervals,pIntervals);
-      GET_IFACE2(pBroker,IMaterials,pMaterial);
+      EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+      EAF_GET_IFACE2(pBroker,IMaterials,pMaterial);
       material.CoCreateInstance(CLSID_Material);
 
       IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
@@ -215,7 +215,7 @@ void CUBeamFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType statusID
 void CUBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
 {
    // This is a prismatic beam so only add section change POI at the start and end of the beam
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 gdrLength = pBridge->GetSegmentLength(segmentKey);
 
    pgsPointOfInterest poiStart(segmentKey,0.00,POI_SECTCHANGE_RIGHTFACE   );
@@ -236,7 +236,7 @@ void CUBeamFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType 
 
 void CUBeamFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const
 {
-   GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       CComObject<CTimeStepLossEngineer>* pEngineer;
@@ -699,8 +699,8 @@ std::_tstring CUBeamFactory::GetShearDimensionsSchematicImage(pgsTypes::Supporte
 
 std::_tstring CUBeamFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const
 {
-   GET_IFACE2(pBroker, ILibrary,       pLib);
-   GET_IFACE2(pBroker, ISpecification, pSpec);
+   EAF_GET_IFACE2(pBroker, ILibrary,       pLib);
+   EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
    const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();
@@ -717,8 +717,8 @@ std::_tstring CUBeamFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker*
 
 std::_tstring CUBeamFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const
 {
-   GET_IFACE2(pBroker, ILibrary,       pLib);
-   GET_IFACE2(pBroker, ISpecification, pSpec);
+   EAF_GET_IFACE2(pBroker, ILibrary,       pLib);
+   EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
    const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();

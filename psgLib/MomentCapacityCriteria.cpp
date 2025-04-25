@@ -128,7 +128,7 @@ bool MomentCapacityCriteria::Compare(const MomentCapacityCriteria& other, const 
    return bSame;
 }
 
-void MomentCapacityCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void MomentCapacityCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptSqrtPressureValue, tension_coefficient, pDisplayUnits->GetTensionCoefficientUnit(), false);
 

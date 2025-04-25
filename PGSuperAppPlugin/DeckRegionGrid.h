@@ -24,8 +24,8 @@
 
 #include <PgsExt\CastDeckActivity.h>
 
-interface IBridge;
-interface IEAFDisplayUnits;
+class IBridge;
+class IEAFDisplayUnits;
 
 // DeckRegionGrid.h : header file
 //

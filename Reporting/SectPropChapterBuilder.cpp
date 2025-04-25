@@ -37,11 +37,6 @@
 #include <IFace/Limits.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -72,24 +67,24 @@ rptChapter* CSectPropChapterBuilder::Build(const std::shared_ptr<const WBFL::Rep
    auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
    auto pMultiGirderRptSpec = std::dynamic_pointer_cast<const CMultiGirderReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
    std::vector<CGirderKey> girderKeys;
    if ( pGdrRptSpec )
    {
-      pGdrRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrRptSpec->GetBroker();
       girderKeys.push_back(pGdrRptSpec->GetGirderKey());
    }
    else if ( pGdrLineRptSpec)
    {
-      pGdrLineRptSpec->GetBroker(&pBroker);
-      GET_IFACE2(pBroker,IBridge,pBridge);
+      pBroker = pGdrLineRptSpec->GetBroker();
+      EAF_GET_IFACE2(pBroker,IBridge,pBridge);
 
       CGirderKey girderKey = pGdrLineRptSpec->GetGirderKey();
       pBridge->GetGirderline(girderKey, &girderKeys);
    }
    else if ( pMultiGirderRptSpec)
    {
-      pMultiGirderRptSpec->GetBroker(&pBroker);
+      pBroker = pMultiGirderRptSpec->GetBroker();
       girderKeys = pMultiGirderRptSpec->GetGirderKeys();
    }
    else
@@ -102,11 +97,11 @@ rptChapter* CSectPropChapterBuilder::Build(const std::shared_ptr<const WBFL::Rep
    rptParagraph* pPara = new rptParagraph();
    *pChapter << pPara;
 
-   GET_IFACE2(pBroker, IEAFDisplayUnits,   pDisplayUnits);
-   GET_IFACE2(pBroker, IGirder,            pGirder);
-   GET_IFACE2(pBroker, IBridge,            pBridge);
-   GET_IFACE2_NOCHECK(pBroker, IDocumentType,      pDocType);
-   GET_IFACE2_NOCHECK(pBroker, IIntervals,         pIntervals); // not always used... depends on if the segment is prismatic
+   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits,   pDisplayUnits);
+   EAF_GET_IFACE2(pBroker, IGirder,            pGirder);
+   EAF_GET_IFACE2(pBroker, IBridge,            pBridge);
+   EAF_GET_IFACE2_NOCHECK(pBroker, IDocumentType,      pDocType);
+   EAF_GET_IFACE2_NOCHECK(pBroker, IIntervals,         pIntervals); // not always used... depends on if the segment is prismatic
 
    INIT_UV_PROTOTYPE( rptAreaUnitValue,           l2,   pDisplayUnits->GetAreaUnit(),            false );
    INIT_UV_PROTOTYPE( rptLength4UnitValue,        ui,   pDisplayUnits->GetMomentOfInertiaUnit(), true );
@@ -125,13 +120,13 @@ rptChapter* CSectPropChapterBuilder::Build(const std::shared_ptr<const WBFL::Rep
    }
 
 
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    if (!m_SimplifiedVersion)
    {
       // Write out traffic barrier properties
-      GET_IFACE2(pBroker, IBarriers,          pBarriers);
+      EAF_GET_IFACE2(pBroker, IBarriers,          pBarriers);
 
       pPara = new rptParagraph();
       *pChapter << pPara;
@@ -235,14 +230,14 @@ rptChapter* CSectPropChapterBuilder::Build(const std::shared_ptr<const WBFL::Rep
 
       if ( IsStructuralDeck(pBridge->GetDeckType()) )
       {
-         GET_IFACE2(pBroker, IMaterials,         pMaterial);
+         EAF_GET_IFACE2(pBroker, IMaterials,         pMaterial);
         (*pPara) << _T("Deck   ") << RPT_EC << _T(" = ") << modE.SetValue( pMaterial->GetDeckEc28() ) << rptNewLine;
         (*pPara) << rptNewLine;
       }
 
       if (pGirder->HasStructuralLongitudinalJoints())
       {
-         GET_IFACE2(pBroker, IMaterials, pMaterial);
+         EAF_GET_IFACE2(pBroker, IMaterials, pMaterial);
          (*pPara) << _T("Longitudinal Joint ") << RPT_EC << _T(" = ") << modE.SetValue(pMaterial->GetLongitudinalJointEc28()) << rptNewLine;
          (*pPara) << rptNewLine;
       }
@@ -251,8 +246,8 @@ rptChapter* CSectPropChapterBuilder::Build(const std::shared_ptr<const WBFL::Rep
 
    if ( !m_SimplifiedVersion )
    {
-      GET_IFACE2(pBroker, IPointOfInterest,   pPoi);
-      GET_IFACE2(pBroker, ISectionProperties, pSectProp);
+      EAF_GET_IFACE2(pBroker, IPointOfInterest,   pPoi);
+      EAF_GET_IFACE2(pBroker, ISectionProperties, pSectProp);
       for (const auto& thisGirderKey : girderKeys)
       {
          const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(thisGirderKey.groupIndex);
@@ -340,10 +335,10 @@ rptChapter* CSectPropChapterBuilder::Build(const std::shared_ptr<const WBFL::Rep
          }
          else if ( !bIsPrismatic_CastingYard && !bIsPrismatic_Final )
          {
-            GET_IFACE2(pBroker, ISectionProperties, pSectProp);
+            EAF_GET_IFACE2(pBroker, ISectionProperties, pSectProp);
             pgsTypes::SectionPropertyType spType = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed);
-            GET_IFACE2(pBroker,ILossParameters,pLossParams);
-            GET_IFACE2(pBroker, IStressCheck, pStressCheck);
+            EAF_GET_IFACE2(pBroker,ILossParameters,pLossParams);
+            EAF_GET_IFACE2(pBroker, IStressCheck, pStressCheck);
             std::vector<IntervalIndexType> vIntervals = pStressCheck->GetStressCheckIntervals(thisSegmentKey);
             vIntervals.push_back(pIntervals->GetLiveLoadInterval());
             std::sort(vIntervals.begin(),vIntervals.end());
@@ -369,7 +364,7 @@ rptChapter* CSectPropChapterBuilder::Build(const std::shared_ptr<const WBFL::Rep
                pPara = new rptParagraph;
                *pChapter << pPara;
 
-               GET_IFACE2(pBroker, IStressCheck, pStressCheck);
+               EAF_GET_IFACE2(pBroker, IStressCheck, pStressCheck);
                std::vector<IntervalIndexType> vIntervals = pStressCheck->GetStressCheckIntervals(thisSegmentKey);
                vIntervals.push_back(pIntervals->GetLiveLoadInterval());
                std::sort(vIntervals.begin(),vIntervals.end());

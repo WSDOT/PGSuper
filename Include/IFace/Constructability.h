@@ -20,8 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_IFACE_CONSTRUCTABILITY_H_
-#define INCLUDED_IFACE_CONSTRUCTABILITY_H_
+#pragma once
 
 /*****************************************************************************
    This group of interfaces provides access to constructability information.
@@ -30,28 +29,8 @@
    dimensions, tolerances, etc.
 *****************************************************************************/
 
-// SYSTEM INCLUDES
-//
-#if !defined INCLUDED_WBFLTYPES_H_
-#include <WbflTypes.h>
-#endif
-
-#if !defined INCLUDED_PGSUPERTYPES_H_
 #include <PGSuperTypes.h>
-#endif
-
-// PROJECT INCLUDES
-//
 #include <Details.h>
-
-// LOCAL INCLUDES
-//
-
-// FORWARD DECLARATIONS
-//
-
-// MISCELLANEOUS
-//
 
 /*****************************************************************************
 INTERFACE
@@ -63,8 +42,9 @@ DESCRIPTION
 // {4F3FEB86-88B1-11d2-8882-006097C68A9C}
 DEFINE_GUID(IID_IGirderHaunch, 
 0x4f3feb86, 0x88b1, 0x11d2, 0x88, 0x82, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
-interface IGirderHaunch : IUnknown
+class IGirderHaunch
 {
+public:
    virtual Float64 GetRequiredSlabOffset(const CSegmentKey& segmentKey) const = 0;
    virtual const SLABOFFSETDETAILS& GetSlabOffsetDetails(const CSegmentKey& segmentKey) const = 0;
    virtual Float64 GetSectionGirderOrientationEffect(const pgsPointOfInterest& poi) const = 0;
@@ -81,12 +61,10 @@ DESCRIPTION
 // {459F156F-A371-4cfa-B325-9EEA2FA90F61}
 DEFINE_GUID(IID_IFabricationOptimization, 
 0x459f156f, 0xa371, 0x4cfa, 0xb3, 0x25, 0x9e, 0xea, 0x2f, 0xa9, 0xf, 0x61);
-interface IFabricationOptimization : IUnknown
+class IFabricationOptimization
 {
+public:
    /// Returns true if successful. There are a number of different input types and settings that prevent fabrication optimization analysis
    /// to occur. When these conditions are true, the analysis cannot be performed and this function returns false
    virtual bool GetFabricationOptimizationDetails(const CSegmentKey& segmentKey,FABRICATIONOPTIMIZATIONDETAILS* pDetails) const = 0;
 };
-
-#endif // INCLUDED_IFACE_CONSTRUCTABILITY_H_
-

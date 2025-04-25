@@ -56,14 +56,14 @@ rptRcTable(NumColumns,0)
 
 CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,bool bTemporaryStrands,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   GET_IFACE2(pBroker,ILossParameters,pLossParameters);
+   EAF_GET_IFACE2(pBroker,ILossParameters,pLossParameters);
    PrestressLossCriteria::LossMethodType loss_method = pLossParameters->GetLossMethod();
 
-   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
+   EAF_GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
    bool bPCIUHPC = pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC ? true : false;
 
-   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());

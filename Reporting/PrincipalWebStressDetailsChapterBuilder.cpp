@@ -37,11 +37,6 @@
 
 #include <psgLib/PrincipalTensionStressCriteria.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define IFNFIRSTNEWLINE(bFirst, pTable, RowIdx, ColIdx) if (!bFirst) { (*pTable)(RowIdx, ColIdx) << rptNewLine; }
 
@@ -77,11 +72,10 @@ rptChapter* CPrincipalWebStressDetailsChapterBuilder::Build(const std::shared_pt
    m_bReportShear = pTSDRptSpec->ReportShear();
    m_bReportAxial = pTSDRptSpec->ReportAxial();
 
-   CComPtr<IBroker> pBroker;
-   pTSDRptSpec->GetBroker(&pBroker);
+   auto pBroker = pTSDRptSpec->GetBroker();
 
    // check if method is correct. Either bail out here should have been checked before this, but...
-   GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       *pPara << color(Red) << _T("Time Step Principal Web Stress analysis results not available when time step losses not used.") << color(Black) << rptNewLine;
@@ -89,8 +83,8 @@ rptChapter* CPrincipalWebStressDetailsChapterBuilder::Build(const std::shared_pt
    }
    else
    {
-      GET_IFACE2(pBroker,ILibrary, pLib);
-      GET_IFACE2(pBroker,ISpecification, pSpec);
+      EAF_GET_IFACE2(pBroker,ILibrary, pLib);
+      EAF_GET_IFACE2(pBroker,ISpecification, pSpec);
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
       const auto& principal_tension_stress_criteria = pSpecEntry->GetPrincipalTensionStressCriteria();
       if (principal_tension_stress_criteria.Method != pgsTypes::ptsmNCHRP)
@@ -109,7 +103,7 @@ rptChapter* CPrincipalWebStressDetailsChapterBuilder::Build(const std::shared_pt
    {
       segmentKey.segmentIndex = ALL_SEGMENTS;
 
-      GET_IFACE2(pBroker, IPrincipalWebStress, pPrincipalWebStress);
+      EAF_GET_IFACE2(pBroker, IPrincipalWebStress, pPrincipalWebStress);
       pPrincipalWebStress->GetPrincipalWebStressPointsOfInterest(segmentKey, rptIntervalIdx, &vPoi);
    }
    else
@@ -117,11 +111,11 @@ rptChapter* CPrincipalWebStressDetailsChapterBuilder::Build(const std::shared_pt
       vPoi.push_back(rptPoi);
    }
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    INIT_UV_PROTOTYPE(rptPointOfInterest,    location,   pDisplayUnits->GetSpanLengthUnit(),      true);
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(segmentKey));
 
    // reporting for a specific poi... list poi at top of report
@@ -157,7 +151,7 @@ rptChapter* CPrincipalWebStressDetailsChapterBuilder::Build(const std::shared_pt
       //pPara->SetName(str);
    }
 
-   GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+   EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
    // Incremental stresses
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
@@ -217,15 +211,15 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CPrincipalWebStressDetailsChapt
    return std::make_unique<CPrincipalWebStressDetailsChapterBuilder>();
 }
 
-void CPrincipalWebStressDetailsChapterBuilder::BuildIncrementalStressTables(rptChapter* pChapter, IBroker* pBroker, IntervalIndexType intervalIdx, PoiList vPoi, const std::vector<pgsTypes::ProductForceType>& vLoads, IEAFDisplayUnits* pDisplayUnits) const
+void CPrincipalWebStressDetailsChapterBuilder::BuildIncrementalStressTables(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, IntervalIndexType intervalIdx, PoiList vPoi, const std::vector<pgsTypes::ProductForceType>& vLoads, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    if (!m_bReportShear && !m_bReportAxial)
    {
       return;
    }
 
-   GET_IFACE2(pBroker,ILosses,pLosses);
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   EAF_GET_IFACE2(pBroker,ILosses,pLosses);
+   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    
    INIT_UV_PROTOTYPE(rptStressUnitValue,    stress,     pDisplayUnits->GetStressUnit(),          false);
    INIT_UV_PROTOTYPE(rptForceUnitValue,     force,      pDisplayUnits->GetGeneralForceUnit(),    false);
@@ -234,7 +228,7 @@ void CPrincipalWebStressDetailsChapterBuilder::BuildIncrementalStressTables(rptC
    INIT_UV_PROTOTYPE(rptLength3UnitValue,   l3,         pDisplayUnits->GetSectModulusUnit(),      false);
    INIT_UV_PROTOTYPE(rptLengthUnitValue,    ecc,        pDisplayUnits->GetComponentDimUnit(),    false );
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(CGirderKey()));
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
@@ -511,7 +505,7 @@ void CPrincipalWebStressDetailsChapterBuilder::BuildIncrementalStressTables(rptC
    }
 }
 
-void CPrincipalWebStressDetailsChapterBuilder::BuildLiveLoadStressTable(rptChapter * pChapter, IBroker * pBroker, IntervalIndexType intervalIdx, PoiList vPoi, IEAFDisplayUnits * pDisplayUnits) const
+void CPrincipalWebStressDetailsChapterBuilder::BuildLiveLoadStressTable(rptChapter * pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, IntervalIndexType intervalIdx, PoiList vPoi, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    
    INIT_UV_PROTOTYPE(rptStressUnitValue,    stress,     pDisplayUnits->GetStressUnit(),          false);
@@ -541,7 +535,7 @@ void CPrincipalWebStressDetailsChapterBuilder::BuildLiveLoadStressTable(rptChapt
    RowIndexType RowIdx = 1;
    IndexType startColIdx = 1;
 
-   GET_IFACE2(pBroker,IPrincipalWebStress,pPrincipalWebStress);
+   EAF_GET_IFACE2(pBroker,IPrincipalWebStress,pPrincipalWebStress);
 
    // Fill tables
    for (const auto& poi : vPoi)
@@ -576,12 +570,12 @@ void CPrincipalWebStressDetailsChapterBuilder::BuildLiveLoadStressTable(rptChapt
 }
 
 
-void CPrincipalWebStressDetailsChapterBuilder::BuildCombinedStressTables(rptChapter * pChapter, IBroker * pBroker, IntervalIndexType intervalIdx, PoiList vPoi, IEAFDisplayUnits * pDisplayUnits) const
+void CPrincipalWebStressDetailsChapterBuilder::BuildCombinedStressTables(rptChapter * pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, IntervalIndexType intervalIdx, PoiList vPoi, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    
    INIT_UV_PROTOTYPE(rptStressUnitValue,    stress,     pDisplayUnits->GetStressUnit(),          false);
    INIT_UV_PROTOTYPE(rptPointOfInterest,    location,   pDisplayUnits->GetSpanLengthUnit(),      false);
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(CGirderKey()));
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
@@ -608,7 +602,7 @@ void CPrincipalWebStressDetailsChapterBuilder::BuildCombinedStressTables(rptChap
    pTable->SetRowSpan(RowIdx, ColIdx, 2);
    (*pTable)(RowIdx, ColIdx++) << _T("Web Location");
 
-   GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+   EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
    pTable->SetColumnSpan(0, ColIdx, 2);
    (*pTable)(0, ColIdx) << pProductLoads->GetLoadCombinationName(lcDC);
@@ -655,7 +649,7 @@ void CPrincipalWebStressDetailsChapterBuilder::BuildCombinedStressTables(rptChap
    RowIdx = 2;
    IndexType startColIdx = 1;
 
-   GET_IFACE2(pBroker,IPrincipalWebStress,pPrincipalWebStress);
+   EAF_GET_IFACE2(pBroker,IPrincipalWebStress,pPrincipalWebStress);
 
    // Fill tables
    for (const auto& poi : vPoi)

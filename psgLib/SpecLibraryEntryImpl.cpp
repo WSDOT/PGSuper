@@ -687,7 +687,7 @@ void SpecLibraryEntryImpl::SetBearingCriteria(const BearingCriteria& criteria)
    m_BearingCriteria = criteria;
 }
 
-void SpecLibraryEntryImpl::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void SpecLibraryEntryImpl::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    m_SpecificationCriteria.Report(pChapter,pDisplayUnits);
    m_SectionPropertiesCriteria.Report(pChapter,pDisplayUnits);

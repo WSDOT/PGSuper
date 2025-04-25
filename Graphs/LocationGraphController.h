@@ -69,7 +69,7 @@ protected:
    void FillGirderCtrl(bool bInit=false);
    void FillLocationCtrl();
 
-   CComPtr<IBroker> m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
 
    CGirderKey m_GirderKey;
    pgsPointOfInterest m_Poi;

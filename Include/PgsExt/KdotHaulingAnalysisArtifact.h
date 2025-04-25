@@ -199,8 +199,8 @@ public:
    Float64 GetLeadingOverhang() const;
    Float64 GetTrailingOverhang() const;
 
-   virtual void BuildHaulingCheckReport(const CSegmentKey& segmentKey,rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, IEAFDisplayUnits* pDisplayUnits) const override;
-   virtual void BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, IEAFDisplayUnits* pDisplayUnits) const override;
+   virtual void BuildHaulingCheckReport(const CSegmentKey& segmentKey,rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const override;
+   virtual void BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const override;
 
    virtual pgsHaulingAnalysisArtifact* Clone() const override;
 

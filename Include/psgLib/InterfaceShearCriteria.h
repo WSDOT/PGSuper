@@ -26,7 +26,7 @@
 #include "psgLibLib.h"
 
 class rptChapter;
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 class pgsLibraryEntryDifferenceItem;
 class SpecLibraryEntryImpl;
 
@@ -38,7 +38,7 @@ struct PSGLIBCLASS InterfaceShearCriteria
 
    bool Compare(const InterfaceShearCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
 
-   void Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const;
+   void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 
    void Save(WBFL::System::IStructuredSave* pSave) const;
    void Load(WBFL::System::IStructuredLoad* pLoad);

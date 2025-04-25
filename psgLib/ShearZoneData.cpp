@@ -27,11 +27,6 @@
 #include <StrData.cpp>
 #include <comdef.h> // for _variant_t
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 CShearZoneData2::CShearZoneData2():

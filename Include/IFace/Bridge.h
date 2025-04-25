@@ -63,7 +63,7 @@ class CSegmentPTData;
 class CSegmentDuctData;
 
 interface IRCBeam2Ex;
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 interface IDirection;
 interface IAngle;
@@ -1485,7 +1485,7 @@ public:
    // returns the raw segment shape based on the provided segment data. the shape will be in the girder section coordinate system
    virtual void GetSegmentShape(const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const = 0;
 
-   // returns the shape of the segment with any section removal (such as clipping for sacrifical depth)
+   // returns the shape of the segment with any section removal (such as clipping for sacrificial depth)
    virtual void GetSegmentSectionShape(IntervalIndexType intervalIdx, const pgsPointOfInterest& poi, bool bOrient, pgsTypes::SectionCoordinateType csType, IShape** ppShape, IndexType* pGirderIndex=nullptr, IndexType* pSlabIndex=nullptr) const = 0;
 
    virtual void GetSlabShape(Float64 station,IDirection* pDirection,bool bIncludeHaunch,IShape** ppShape) const = 0;

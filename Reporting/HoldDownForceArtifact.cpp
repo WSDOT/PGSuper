@@ -33,11 +33,6 @@
 #include <psgLib/HoldDownCriteria.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -73,13 +68,13 @@ CHoldDownForceCheck& CHoldDownForceCheck::operator= (const CHoldDownForceCheck& 
 }
 
 //======================== OPERATIONS =======================================
-void CHoldDownForceCheck::Build(rptChapter* pChapter,IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
-                                       IEAFDisplayUnits* pDisplayUnits) const
+void CHoldDownForceCheck::Build(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsGirderArtifact* pGirderArtifact,
+                                       std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
    bool bIsApplicable = false;
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
@@ -98,8 +93,8 @@ void CHoldDownForceCheck::Build(rptChapter* pChapter,IBroker* pBroker,const pgsG
       return;
    }
 
-   GET_IFACE2(pBroker,ISpecification, pSpec);
-   GET_IFACE2(pBroker,ILibrary, pLib);
+   EAF_GET_IFACE2(pBroker,ISpecification, pSpec);
+   EAF_GET_IFACE2(pBroker,ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
    const auto& hold_down_criteria = pSpecEntry->GetHoldDownCriteria();
 

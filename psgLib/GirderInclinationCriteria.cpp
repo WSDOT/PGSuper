@@ -46,7 +46,7 @@ bool GirderInclinationCriteria::Compare(const GirderInclinationCriteria& other, 
    return bSame;
 }
 
-void GirderInclinationCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void GirderInclinationCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;

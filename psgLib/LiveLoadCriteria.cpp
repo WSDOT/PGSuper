@@ -46,7 +46,7 @@ bool LiveLoadCriteria::Compare(const LiveLoadCriteria& other, const SpecLibraryE
    return bSame;
 }
 
-void LiveLoadCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void LiveLoadCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetSidewalkPressureUnit(), true);
    INIT_UV_PROTOTYPE(rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), true);

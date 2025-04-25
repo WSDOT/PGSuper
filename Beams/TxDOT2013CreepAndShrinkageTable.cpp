@@ -72,7 +72,7 @@ CTxDOT2013CreepAndShrinkageTable* CTxDOT2013CreepAndShrinkageTable::PrepareTable
    INIT_UV_PROTOTYPE( rptStressUnitValue,  stress, pDisplayUnits->GetStressUnit(), true );
    INIT_UV_PROTOTYPE(rptStressUnitValue, mod_e, pDisplayUnits->GetModEUnit(), true);
 
-   GET_IFACE2(pBroker,IEnvironment,pEnv);
+   EAF_GET_IFACE2(pBroker,IEnvironment,pEnv);
    *pParagraph << _T("H = ") << pEnv->GetRelHumidity() << _T("%") << rptNewLine;
    *pParagraph << RPT_FCI << _T(" = ") << stress.SetValue( pDetails->pLosses->GetFci() ) << rptNewLine;
    *pParagraph << RPT_ECI << _T(" = ") << mod_e.SetValue( pDetails->pLosses->GetEci() ) << rptNewLine;

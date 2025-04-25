@@ -33,8 +33,6 @@ class CTxDOTOptionalDesignDoc;
 #include <DManip/DManip.h>
 #include "TxDOTOptionalDesignGirderViewPage.h"
 
-interface IBroker;
-
 /////////////////////////////////////////////////////////////////////////////
 // CTogaGirderModelElevationView view
 
@@ -102,14 +100,14 @@ private:
 
    bool m_DoBlockUpdate;
 
-   void BuildGirderDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, IBroker* pBroker, const CSegmentKey& segmentKey);
-   void BuildSupportDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, IBroker* pBroker, const CSegmentKey& segmentKey);
-   void BuildStrandDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, IBroker* pBroker,const CSegmentKey& segmentKey);
-   void BuildStrandCGDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, IBroker* pBroker, const CSegmentKey& segmentKey);
-   void BuildRebarDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, IBroker* pBroker, const CSegmentKey& segmentKey);
-   void BuildDimensionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, IBroker* pBroker, const CSegmentKey& segmentKey);
-   void BuildSectionCutDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, IBroker* pBroker, const CSegmentKey& segmentKey);
-   void BuildStirrupDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, IBroker* pBroker,const CSegmentKey& segmentKey);
+   void BuildGirderDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey);
+   void BuildSupportDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey);
+   void BuildStrandDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey);
+   void BuildStrandCGDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey);
+   void BuildRebarDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey);
+   void BuildDimensionDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey);
+   void BuildSectionCutDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey);
+   void BuildStirrupDisplayObjects(CTxDOTOptionalDesignDoc* pDoc, std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey);
    
 	std::shared_ptr<WBFL::DManip::DimensionLine> BuildDimensionLine(std::shared_ptr<WBFL::DManip::iDisplayList> pDL, const WBFL::Geometry::Point2d& fromPoint, const WBFL::Geometry::Point2d& toPoint, Float64 dimension);
 	void BuildLine(std::shared_ptr<WBFL::DManip::iDisplayList> pDL, Float64 offset, WBFL::Geometry::Point2d fromPoint, WBFL::Geometry::Point2d toPoint, COLORREF color);

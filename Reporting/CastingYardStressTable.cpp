@@ -33,11 +33,6 @@
 #include <IFace\Intervals.h>
 #include <IFace\ReportOptions.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -73,19 +68,19 @@ CCastingYardStressTable& CCastingYardStressTable::operator= (const CCastingYardS
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CCastingYardStressTable::Build(IBroker* pBroker,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,PoiAttributeType poiRefAttribute,LPCTSTR strTableTitle,
-                                            IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CCastingYardStressTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,PoiAttributeType poiRefAttribute,LPCTSTR strTableTitle,
+                                            std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
    ATLASSERT( intervalIdx == releaseIntervalIdx || intervalIdx == storageIntervalIdx );
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(segmentKey));
 
    rptRcTable* p_table = rptStyleManager::CreateDefaultTable(3,strTableTitle);
@@ -102,7 +97,7 @@ rptRcTable* CCastingYardStressTable::Build(IBroker* pBroker,const CSegmentKey& s
    (*p_table)(0,2) << COLHDR(RPT_FBOT << rptNewLine << _T("Girder"),    rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    // Get the interface pointers we need
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    PoiList vPoi;
    pIPoi->GetPointsOfInterest(segmentKey, poiRefAttribute, &vPoi);
    PoiList vPoi2;
@@ -111,7 +106,7 @@ rptRcTable* CCastingYardStressTable::Build(IBroker* pBroker,const CSegmentKey& s
    pIPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);
    pIPoi->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER);
 
-   GET_IFACE2(pBroker,IProductForces,pProductForces);
+   EAF_GET_IFACE2(pBroker,IProductForces,pProductForces);
 
    pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
 

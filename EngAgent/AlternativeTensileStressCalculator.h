@@ -23,13 +23,13 @@
 #pragma once
 #include <PgsExt\PgsExt.h>
 
-interface IBridge;
-interface IGirder;
-interface IShapes;
-interface ISectionProperties;
-interface ILongRebarGeometry;
-interface IMaterials;
-interface IPointOfInterest;
+class IBridge;
+class IGirder;
+class IShapes;
+class ISectionProperties;
+class ILongRebarGeometry;
+class IMaterials;
+class IPointOfInterest;
 
 /*****************************************************************************
 CLASS 

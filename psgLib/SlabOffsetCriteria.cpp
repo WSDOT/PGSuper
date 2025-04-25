@@ -45,7 +45,7 @@ bool SlabOffsetCriteria::Compare(const SlabOffsetCriteria& other, const SpecLibr
    return bSame;
 }
 
-void SlabOffsetCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void SlabOffsetCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), true);
 

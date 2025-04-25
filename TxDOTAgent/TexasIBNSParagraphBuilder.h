@@ -28,7 +28,7 @@
 
 #include <PgsExt\Keys.h>
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 
@@ -50,8 +50,8 @@ class CTexasIBNSParagraphBuilder
 public:
    CTexasIBNSParagraphBuilder();
 
-   rptParagraph* Build(IBroker* pBroker,const std::vector<CSegmentKey>& segmentKeys,
-                       IEAFDisplayUnits* pDisplayUnits,
+   rptParagraph* Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<CSegmentKey>& segmentKeys,
+                       std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                        Uint16 level, bool& rbEjectPage) const;
 
 protected:
@@ -61,7 +61,7 @@ private:
    CTexasIBNSParagraphBuilder(const CTexasIBNSParagraphBuilder&) = delete;
    CTexasIBNSParagraphBuilder& operator=(const CTexasIBNSParagraphBuilder&) = delete;
 
-   void WriteDebondTable(rptParagraph* pPara, IBroker* pBroker, const CSegmentKey& segmentKey, IEAFDisplayUnits* pDisplayUnits) const;
+   void WriteDebondTable(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 };
 
 /****************************************************************************
@@ -76,7 +76,7 @@ public:
    TxDOTDebondTool(segmentKey, girderLength, pStrandGeometry)
    {;}
 
-   void WriteDebondData(rptParagraph* pPara,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits, const std::_tstring& optionalName);
+   void WriteDebondData(rptParagraph* pPara,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const std::_tstring& optionalName);
 };
 
 #endif // INCLUDED_TEXASIBNSParagraphBUILDER_H_

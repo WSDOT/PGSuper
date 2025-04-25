@@ -33,11 +33,6 @@
 
 #include <PgsExt\LongitudinalRebarData.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -72,12 +67,12 @@ CLongRebarLocations& CLongRebarLocations::operator= (const CLongRebarLocations& 
 }
 
 //======================== OPERATIONS =======================================
-void CLongRebarLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,
-                                IEAFDisplayUnits* pDisplayUnits) const
+void CLongRebarLocations::Build(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,
+                                std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    USES_CONVERSION;
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
 
    Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
 
@@ -91,7 +86,7 @@ void CLongRebarLocations::Build(rptChapter* pChapter,IBroker* pBroker,const CSeg
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   GET_IFACE2(pBroker,ILongitudinalRebar,pLongRebar);
+   EAF_GET_IFACE2(pBroker,ILongitudinalRebar,pLongRebar);
    const CLongitudinalRebarData* pRebarData = pLongRebar->GetSegmentLongitudinalRebarData(segmentKey);
 
    const std::vector<CLongitudinalRebarData::RebarRow>& rebar_rows = pRebarData->RebarRows;

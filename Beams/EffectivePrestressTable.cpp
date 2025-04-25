@@ -66,18 +66,18 @@ rptRcTable(NumColumns,0)
 
 CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pChapter, IBroker* pBroker, const CSegmentKey& segmentKey, const LOSSDETAILS* pDetails, IEAFDisplayUnits* pDisplayUnits, Uint16 level)
 {
-   GET_IFACE2(pBroker, ILossParameters, pLossParameters);
+   EAF_GET_IFACE2(pBroker, ILossParameters, pLossParameters);
 
    PrestressLossCriteria::LossMethodType loss_method = pLossParameters->GetLossMethod();
 
-   GET_IFACE2(pBroker, ISegmentData, pSegmentData);
+   EAF_GET_IFACE2(pBroker, ISegmentData, pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
    bool bPTTempStrand = pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned ? true : false;
    bool bPCI_UHPC = pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC ? true : false;
 
    bool bIgnoreInitialRelaxation = pDetails->pLosses->IgnoreInitialRelaxation();
 
-   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
+   EAF_GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
    StrandIndexType NtMax = pStrandGeom->GetMaxStrands(segmentKey, pgsTypes::Temporary);
    bool bTempStrands = (0 < NtMax ? true : false);
 
@@ -126,7 +126,7 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
    *pParagraph << pParagraph->GetName() << rptNewLine;
 
 
-   GET_IFACE2(pBroker,ILoadFactors,pLoadFactors);
+   EAF_GET_IFACE2(pBroker,ILoadFactors,pLoadFactors);
    table->m_gLL_Fatigue = pLoadFactors->GetLoadFactors()->GetLLIMMax(WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI);
    table->m_gLL_ServiceI   = pLoadFactors->GetLoadFactors()->GetLLIMMax(pgsTypes::ServiceI);
    table->m_gLL_ServiceIII = pLoadFactors->GetLoadFactors()->GetLLIMMax(pgsTypes::ServiceIII);
@@ -276,10 +276,10 @@ void CEffectivePrestressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
    Float64 fpED   = pDetails->pLosses->ElasticGainDueToDeckPlacement(true/*apply elastic gains reduction*/); // ED
    Float64 fpSIDL = pDetails->pLosses->ElasticGainDueToSIDL(true/*apply elastic gains reduction*/); // SIDL
 
-   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
-   GET_IFACE2(pBroker, IProductForces, pProductForces);
+   EAF_GET_IFACE2(pBroker, IProductForces, pProductForces);
    pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
    Float64 Mmin, MmaxDesign;
    pProductForces->GetLiveLoadMoment(liveLoadIntervalIdx, pgsTypes::lltDesign, poi, bat, true/*include impact*/, true/*include LLDF*/, &Mmin, &MmaxDesign);
@@ -294,8 +294,8 @@ void CEffectivePrestressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
       pProductForces->GetLiveLoadMoment(liveLoadIntervalIdx, pgsTypes::lltFatigue, poi, bat, true/*include impact*/, true/*include LLDF*/, &Mmin, &MmaxFatigue);
    }
 
-   GET_IFACE2(pBroker, ISpecification, pSpec);
-   GET_IFACE2(pBroker, ILibrary, pLibrary);
+   EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
+   EAF_GET_IFACE2(pBroker, ILibrary, pLibrary);
    const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
    const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
    Float64 K_liveload = prestress_loss_criteria.LiveLoadElasticGain;
@@ -334,7 +334,7 @@ void CEffectivePrestressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,cons
    Float64 fpe = fpj - fpT;
 
 #if defined _DEBUG
-   GET_IFACE2(pBroker, IPretensionForce, pPrestressForce);
+   EAF_GET_IFACE2(pBroker, IPretensionForce, pPrestressForce);
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
    Float64 _fpe_ = pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
    ATLASSERT(IsEqual(fpe,_fpe_));

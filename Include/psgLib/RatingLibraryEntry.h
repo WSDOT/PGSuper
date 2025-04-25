@@ -37,7 +37,7 @@ class RatingLibraryEntryObserver;
 PSGLIBTPL WBFL::System::SubjectT<RatingLibraryEntryObserver, RatingLibraryEntry>;
 
 class rptChapter;
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 // Live Load, Load Factor Model before LRFR2013
 class PSGLIBCLASS CLiveLoadFactorModel
@@ -273,7 +273,7 @@ public:
    const CLiveLoadFactorModel2& GetLiveLoadFactorModel2(pgsTypes::SpecialPermitType permitType) const;
 
 
-   void Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const;
+   void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 
 protected:
    //------------------------------------------------------------------------

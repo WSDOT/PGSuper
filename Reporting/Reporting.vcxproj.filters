@@ -1185,9 +1185,6 @@
     <ClInclude Include="..\Include\Reporting\MomentCapacityChapterBuilder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CrackedSectionReportSpecification.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="PoiReportSpecification.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1234,6 +1231,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Reporting\BearingTimeStepShearDeformationTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\CrackedSectionReportSpecification.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

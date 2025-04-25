@@ -37,11 +37,6 @@
 
 #include <Graphing/GraphXY.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 BEGIN_MESSAGE_MAP(CTestGraphBuilder, CEAFGraphBuilderBase)
    ON_BN_CLICKED(IDC_SINE, &CTestGraphBuilder::OnGraphTypeChanged)
@@ -98,9 +93,9 @@ void CTestGraphBuilder::OnGraphTypeChanged()
 
 void CTestGraphBuilder::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   auto pBroker = EAFGetBroker();
+
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    int graphType = m_GraphControls.GetGraphType();
 
@@ -188,9 +183,9 @@ void CTestGraphBuilder2::OnGraphTypeChanged()
 
 void CTestGraphBuilder2::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   auto pBroker = EAFGetBroker();
+
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    int graphType = m_GraphControls.GetGraphType();
 
@@ -263,9 +258,9 @@ BOOL CTestGraphBuilder3::CreateGraphController(CWnd* pParent,UINT nID)
 
 void CTestGraphBuilder3::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   auto pBroker = EAFGetBroker();
+
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // first x axis
    const WBFL::Units::ScalarData& scalar = pDisplayUnits->GetScalarFormat();

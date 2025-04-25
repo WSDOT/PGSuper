@@ -55,7 +55,7 @@ CPostTensionTimeDependentLossesAtShippingTable* CPostTensionTimeDependentLossesA
 
    CPostTensionTimeDependentLossesAtShippingTable* table = nullptr;
 
-   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
+   EAF_GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
    if ( pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTBeforeLifting ||

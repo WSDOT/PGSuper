@@ -194,7 +194,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="SpecAgent.def" />
-    <None Include="SpecAgent.rgs" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SpecAgent.rc" />

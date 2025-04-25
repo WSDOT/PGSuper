@@ -39,11 +39,6 @@
 #include <psgLib/CreepCriteria.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -69,19 +64,18 @@ LPCTSTR CADimChapterBuilder::GetName() const
 rptChapter* CADimChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(spec_name.c_str());
    const auto& slab_offset_criteria = pSpecEntry->GetSlabOffsetCriteria();
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    pgsTypes::HaunchInputDepthType haunchInputType = pBridge->GetHaunchInputDepthType();
 
    if (!slab_offset_criteria.bCheck)
@@ -112,18 +106,18 @@ rptChapter* CADimChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporti
       return pChapter;
 }
 
-void CADimChapterBuilder::BuildAdimContent(rptChapter * pChapter,const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level,IBroker* pBroker,const CGirderKey& girderKey,const SpecLibraryEntry* pSpecEntry) const
+void CADimChapterBuilder::BuildAdimContent(rptChapter * pChapter,const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level, std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,const SpecLibraryEntry* pSpecEntry) const
 {
-   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
    bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
 
-   GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   EAF_GET_IFACE2(pBroker,ILossParameters,pLossParams);
    bool bTimeStepAnalysis = (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    bool bHasElevAdj = pBridge->HasTemporarySupportElevationAdjustments();
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -131,9 +125,9 @@ void CADimChapterBuilder::BuildAdimContent(rptChapter * pChapter,const std::shar
    INIT_UV_PROTOTYPE( rptLengthUnitValue, compdim, pDisplayUnits->GetComponentDimUnit(), true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, defl, pDisplayUnits->GetDeflectionUnit(), false );
 
-   GET_IFACE2(pBroker,IGirderHaunch,pGdrHaunch);
-   GET_IFACE2(pBroker, IProductLoads, pProductLoads);
-   GET_IFACE2(pBroker, IGirder, pGdr);
+   EAF_GET_IFACE2(pBroker,IGirderHaunch,pGdrHaunch);
+   EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+   EAF_GET_IFACE2(pBroker, IGirder, pGdr);
 
    bool bTopFlangeShapeEffect = false;
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
@@ -182,7 +176,7 @@ void CADimChapterBuilder::BuildAdimContent(rptChapter * pChapter,const std::shar
    Float64 days;
    if (bTimeStepAnalysis)
    {
-      GET_IFACE2(pBroker, IIntervals, pIntervals);
+      EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
       IntervalIndexType castDeckIntervalIdx = pIntervals->GetFirstCastDeckInterval();
       Float64 start_time = pIntervals->GetTime(0, pgsTypes::Start);
       Float64 deck_casting = pIntervals->GetTime(castDeckIntervalIdx, pgsTypes::Start);
@@ -225,7 +219,7 @@ void CADimChapterBuilder::BuildAdimContent(rptChapter * pChapter,const std::shar
    vRequiredSlabOffset.resize(nSegments, 0.0);
    vMaxHaunchDiff.resize(nSegments, 0.0);
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
@@ -327,7 +321,7 @@ void CADimChapterBuilder::BuildAdimContent(rptChapter * pChapter,const std::shar
    comp.ShowUnitTag(true);
 
    // table footnotes
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    pgsTypes::SlabOffsetType slabOffsetType = pBridgeDesc->GetSlabOffsetType();
 
@@ -440,10 +434,9 @@ public:
 void CADimChapterBuilder::BuildDirectHaunchElevationContent(rptChapter* pChapter,const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    const CBrokerReportSpecification* pSpec = dynamic_cast<const CBrokerReportSpecification*>(pRptSpec.get());
-   CComPtr<IBroker> pBroker;
-   pSpec->GetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   auto pBroker = pSpec->GetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
    bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
 
    const CGirderReportSpecification* pSGRptSpec = dynamic_cast<const CGirderReportSpecification*>(pRptSpec.get());
@@ -464,8 +457,8 @@ void CADimChapterBuilder::BuildDirectHaunchElevationContent(rptChapter* pChapter
    *pPara << _T("Design elevations are the roadway deck surface elevations defined by the alignment, profile, and superelevation geometry.") << rptNewLine;
    *pPara << _T("Finished elevations are the top of the finished deck, or overlay if applicable, including deflection effects.") << rptNewLine;
 
-   GET_IFACE2(pBroker,ILibrary,pLib);
-   GET_IFACE2(pBroker,ISpecification,pISpec);
+   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
+   EAF_GET_IFACE2(pBroker,ISpecification,pISpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pISpec->GetSpecification().c_str());
    const auto& slab_offset_criteria = pSpecEntry->GetSlabOffsetCriteria();
    Float64 tolerance = slab_offset_criteria.FinishedElevationTolerance;
@@ -475,14 +468,14 @@ void CADimChapterBuilder::BuildDirectHaunchElevationContent(rptChapter* pChapter
    INIT_UV_PROTOTYPE(rptLengthSectionValue,dimH,pDisplayUnits->GetComponentDimUnit(),false);
    *pPara << _T("Finished elevations in red text differ from the design elevation by more than ") << symbol(PLUS_MINUS) << dim1.SetValue(tolerance) << _T(" (") << symbol(PLUS_MINUS) << dim2.SetValue(tolerance) << _T(")") << rptNewLine;
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 fillet = pBridge->GetFillet();
    *pPara << _T("Haunch dimensions in red text are less than the fillet value of ") << dim2.SetValue(fillet) << rptNewLine;
 
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CDeckDescription2* pDeck = pIBridgeDesc->GetDeckDescription();
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType gce_interval = pIntervals->GetGeometryControlInterval();
    IntervalIndexType overlay_interval = pIntervals->GetOverlayInterval();
 
@@ -503,10 +496,10 @@ void CADimChapterBuilder::BuildDirectHaunchElevationContent(rptChapter* pChapter
    INIT_UV_PROTOTYPE(rptLengthSectionValue,dist,pDisplayUnits->GetSpanLengthUnit(),false);
    INIT_UV_PROTOTYPE(rptLengthSectionValue,cogoPoint,pDisplayUnits->GetAlignmentLengthUnit(),true);
 
-   GET_IFACE2(pBroker,IRoadway,pAlignment);
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   GET_IFACE2(pBroker,IDeformedGirderGeometry,pDeformedGirderGeometry);
-   GET_IFACE2(pBroker,IGirder,pGirder);
+   EAF_GET_IFACE2(pBroker,IRoadway,pAlignment);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(pBroker,IDeformedGirderGeometry,pDeformedGirderGeometry);
+   EAF_GET_IFACE2(pBroker,IGirder,pGirder);
    std::vector<IntervalIndexType> vSpecIntervals = pIntervals->GetSpecCheckGeometryControlIntervals();
    std::vector<IntervalIndexType>::iterator iti = vSpecIntervals.begin();
    *pPara << _T("The Geometry Control Event interval is interval ") << LABEL_INTERVAL(gce_interval) << _T(". Finished Roadway Spec checks are performed for interval(s): ") <<  LABEL_INTERVAL(*iti++);

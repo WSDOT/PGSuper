@@ -34,19 +34,14 @@
 #include <IFace\Intervals.h>
 #include <IFace\ReportOptions.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
    CCrackedSectionDetailsChapterBuilder
 ****************************************************************************/
 
-void write_cracked_section_table(IBroker* pBroker,
-                             IEAFDisplayUnits* pDisplayUnits,
+void write_cracked_section_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                             std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                              const CGirderKey& girderKey,
                              const PoiList& vPoi,
                              rptChapter* pChapter,
@@ -67,23 +62,23 @@ rptChapter* CCrackedSectionDetailsChapterBuilder::Build(const std::shared_ptr<co
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
    CGirderKey girderKey;
 
    if ( pGdrRptSpec )
    {
-      pGdrRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrRptSpec->GetBroker();
       girderKey = pGdrRptSpec->GetGirderKey();
    }
    else
    {
-      pGdrLineRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrLineRptSpec->GetBroker();
       girderKey = pGdrLineRptSpec->GetGirderKey();
    }
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+   EAF_GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
    bool bRateRoutine = pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine);
    bool bRateSpecial = pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special);
 
@@ -111,9 +106,9 @@ rptChapter* CCrackedSectionDetailsChapterBuilder::Build(const std::shared_ptr<co
    *pPara << Sub2(_T("Y"),_T("b")) << _T(" = Distance from bottom of section to neutral axis") << rptNewLine;
    *pPara << Sub2(_T("I"),_T("cr")) << _T(" = Moment of inertia of cracked section about neutral axis") << rptNewLine;
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(girderKey, &vGirderKeys);
@@ -144,8 +139,8 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CCrackedSectionDetailsChapterBu
    return std::make_unique<CCrackedSectionDetailsChapterBuilder>();
 }
 
-void write_cracked_section_table(IBroker* pBroker,
-                             IEAFDisplayUnits* pDisplayUnits,
+void write_cracked_section_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
+                             std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                              const CGirderKey& girderKey,
                              const PoiList& vPoi,
                              rptChapter* pChapter,
@@ -154,7 +149,7 @@ void write_cracked_section_table(IBroker* pBroker,
    rptParagraph* pPara = new rptParagraph();
    *pChapter << pPara;
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    // Setup the table
@@ -197,13 +192,13 @@ void write_cracked_section_table(IBroker* pBroker,
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  dim,      pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptLength4UnitValue, mom_i,    pDisplayUnits->GetMomentOfInertiaUnit(),       false );
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
-   GET_IFACE2(pBroker,ICrackedSection,pCrackedSection);
-   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   EAF_GET_IFACE2(pBroker,ICrackedSection,pCrackedSection);
+   EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       const CRACKEDSECTIONDETAILS* pCSD = pCrackedSection->GetCrackedSectionDetails(poi,true);

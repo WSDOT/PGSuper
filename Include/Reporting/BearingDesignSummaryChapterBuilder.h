@@ -44,51 +44,13 @@ LOG
 class REPORTINGCLASS CBearingDesignSummaryChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-	// GROUP: LIFECYCLE
-	CBearingDesignSummaryChapterBuilder(bool bSelect = true);
+   CBearingDesignSummaryChapterBuilder(bool bSelect = true);
+   CBearingDesignSummaryChapterBuilder(const CBearingDesignSummaryChapterBuilder&) = delete;
 
-	// GROUP: OPERATORS
-	// GROUP: OPERATIONS
+   CBearingDesignSummaryChapterBuilder& operator=(const CBearingDesignSummaryChapterBuilder&) = delete;
 
-	//------------------------------------------------------------------------
 	virtual LPCTSTR GetName() const override;
-
-
-	//------------------------------------------------------------------------
 	virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec, Uint16 level) const override;
 
-	//------------------------------------------------------------------------
 	virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-	// GROUP: ACCESS
-	// GROUP: INQUIRY
-
-protected:
-	// GROUP: DATA MEMBERS
-	// GROUP: LIFECYCLE
-	// GROUP: OPERATORS
-	// GROUP: OPERATIONS
-	// GROUP: ACCESS
-	// GROUP: INQUIRY
-
-private:
-	// GROUP: DATA MEMBERS
-	// GROUP: LIFECYCLE
-
-	// Prevent accidental copying and assignment
-	CBearingDesignSummaryChapterBuilder(const CBearingDesignSummaryChapterBuilder&) = delete;
-	CBearingDesignSummaryChapterBuilder& operator=(const CBearingDesignSummaryChapterBuilder&) = delete;
-
-	// GROUP: OPERATORS
-	// GROUP: OPERATIONS
-	// GROUP: ACCESS
-	// GROUP: INQUIRY
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-

@@ -55,10 +55,10 @@ HRESULT CMultiWebDistFactorEngineer::FinalConstruct()
 void CMultiWebDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
 {
    // Grab the interfaces that are needed
-   GET_IFACE(IBridge,pBridge);
-   GET_IFACE(IPointOfInterest,pPoi);
+   EAF_GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE(IPointOfInterest,pPoi);
 
-   GET_IFACE(ISectionProperties, pSectProps);
+   EAF_GET_IFACE(ISectionProperties, pSectProps);
    pgsTypes::SectionPropertyMode spMode = pSectProps->GetSectionPropertiesMode();
 
    bool bSIUnits = IS_SI_UNITS(pDisplayUnits);
@@ -74,7 +74,7 @@ void CMultiWebDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptCha
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
 
@@ -159,8 +159,8 @@ void CMultiWebDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptCha
       (*pPara) << _T("Skew Angle at start: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs(span_lldf.skew1)) << rptNewLine;
       (*pPara) << _T("Skew Angle at end: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs(span_lldf.skew2)) << rptNewLine;
       
-      GET_IFACE(ISpecification, pSpec);
-      GET_IFACE(ILibrary, pLibrary);
+      EAF_GET_IFACE(ISpecification, pSpec);
+      EAF_GET_IFACE(ILibrary, pLibrary);
       const auto* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
       const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
       if (live_load_distribution_criteria.bIgnoreSkewReductionForMoment)
@@ -409,11 +409,11 @@ void CMultiWebDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptCha
 
 WBFL::LRFD::LiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,MULTIWEB_LLDFDETAILS* plldf,const GDRCONFIG* pConfig)
 {
-   GET_IFACE(ISectionProperties, pSectProp);
-   GET_IFACE(IGirder,            pGirder);
-   GET_IFACE(IBridge,            pBridge);
-   GET_IFACE(IBarriers,          pBarriers);
-   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE(ISectionProperties, pSectProp);
+   EAF_GET_IFACE(IGirder,            pGirder);
+   EAF_GET_IFACE(IBridge,            pBridge);
+   EAF_GET_IFACE(IBarriers,          pBarriers);
+   EAF_GET_IFACE(IBridgeDescription, pIBridgeDesc);
 
    // Determine span/pier index... This is the index of a pier and the next span.
    // If this is the last pier, span index is for the last span
@@ -448,7 +448,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDF
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
    // Throws exception if fails requirement (no need to catch it)
-   GET_IFACE(ILiveLoadDistributionFactors, pDistFactors);
+   EAF_GET_IFACE(ILiveLoadDistributionFactors, pDistFactors);
    Int32 roaVal = pDistFactors->VerifyDistributionFactorRequirements(poi);
 
    pgsPointOfInterest spPoi(poi); // section properties poi
@@ -460,7 +460,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDF
       Float64 tft = pGirder->GetTopFlangeThickening(segmentKey);
       if (topFlangeThickeningType == pgsTypes::tftEnds && !IsZero(tft))
       {
-         GET_IFACE(IPointOfInterest, pPoi);
+         EAF_GET_IFACE(IPointOfInterest, pPoi);
          PoiList vPoi;
          pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT | POI_5L, &vPoi);
          ATLASSERT(vPoi.size() == 1);
@@ -468,7 +468,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDF
       }
       else if (topFlangeThickeningType == pgsTypes::tftMiddle && !IsZero(tft))
       {
-         GET_IFACE(IPointOfInterest, pPoi);
+         EAF_GET_IFACE(IPointOfInterest, pPoi);
          PoiList vPoi;
          pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT | POI_0L, &vPoi);
          ATLASSERT(vPoi.size() == 1);
@@ -478,7 +478,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDF
 
    plldf->b = pGirder->GetTopFlangeWidth(spPoi); // for LRFD C4.6.2.2.1-1
 
-   GET_IFACE(IIntervals,pIntervals);
+   EAF_GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType llIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
@@ -502,9 +502,9 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDF
    }
    else
    {
-      GET_IFACE(IMaterials, pMaterials);
+      EAF_GET_IFACE(IMaterials, pMaterials);
 
-      GET_IFACE(IPointOfInterest, pPoi);
+      EAF_GET_IFACE(IPointOfInterest, pPoi);
       IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(spPoi);
       ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
 
@@ -541,7 +541,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDF
       {
          // Ag and Ig is just the stem
          // Get the top flange shape and subtract it from the total girder shape to get the stem by itself
-         GET_IFACE(IShapes, pShapes);
+         EAF_GET_IFACE(IShapes, pShapes);
          CComPtr<IShape> segment_shape;
          pShapes->GetSegmentShape(releaseIntervalIdx, spPoi, false, pgsTypes::scGirder, &segment_shape);
 
@@ -745,7 +745,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDF
       }
    }
 
-   GET_IFACE(ILiveLoads,pLiveLoads);
+   EAF_GET_IFACE(ILiveLoads,pLiveLoads);
    pLLDF->SetRangeOfApplicability( pLiveLoads->GetRangeOfApplicabilityAction(), roaVal );
    plldf->bExteriorGirder = pBridge->IsExteriorGirder(segmentKey);
 
@@ -758,8 +758,8 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-   GET_IFACE(ILibrary, pLib);
-   GET_IFACE(ISpecification, pSpec);
+   EAF_GET_IFACE(ILibrary, pLib);
+   EAF_GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    location, pDisplayUnits->GetSpanLengthUnit(),      true );
@@ -1079,8 +1079,8 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-   GET_IFACE(ILibrary, pLib);
-   GET_IFACE(ISpecification, pSpec);
+   EAF_GET_IFACE(ILibrary, pLib);
+   EAF_GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
 
@@ -1314,8 +1314,8 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
 
 std::_tstring CMultiWebDistFactorEngineer::GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect)
 {
-   GET_IFACE(ILibrary, pLib);
-   GET_IFACE(ISpecification, pSpec);
+   EAF_GET_IFACE(ILibrary, pLib);
+   EAF_GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
 
@@ -1353,7 +1353,7 @@ std::_tstring CMultiWebDistFactorEngineer::GetComputationDescription(const CGird
    }
 
    // Special text if ROA is ignored
-   GET_IFACE(ILiveLoads,pLiveLoads);
+   EAF_GET_IFACE(ILiveLoads,pLiveLoads);
    std::_tstring strAction( pLiveLoads->GetLLDFSpecialActionText() );
    if ( !strAction.empty() )
    {

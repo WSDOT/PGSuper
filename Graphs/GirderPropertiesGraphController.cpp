@@ -39,11 +39,6 @@
 
 #include <PgsExt\BridgeDescription2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 IMPLEMENT_DYNCREATE(CGirderPropertiesGraphController,CIntervalGirderGraphControllerBase)
 
@@ -83,7 +78,7 @@ BOOL CGirderPropertiesGraphController::OnInitDialog()
    pcbProperties->SetCurSel(0);
    m_PropertyType = (CGirderPropertiesGraphBuilder::PropertyType)(pcbProperties->GetItemData(0));
 
-   GET_IFACE(ISectionProperties,pSectProp);
+   EAF_GET_IFACE(ISectionProperties,pSectProp);
    m_SectionPropertyType = (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed );
 
    CheckRadioButton(IDC_TRANSFORMED,IDC_NET_DECK,(m_SectionPropertyType == pgsTypes::sptGross ? 1 : 0) + IDC_TRANSFORMED);
@@ -96,7 +91,7 @@ BOOL CGirderPropertiesGraphController::OnInitDialog()
 
 bool CGirderPropertiesGraphController::SetPropertyType(CGirderPropertiesGraphBuilder::PropertyType propertyType)
 {
-   GET_IFACE(IDocumentType, pDocType);
+   EAF_GET_IFACE(IDocumentType, pDocType);
    bool bPGSuperDoc = pDocType->IsPGSuperDocument();
 
    if (bPGSuperDoc && (propertyType == CGirderPropertiesGraphBuilder::TendonEccentricity || propertyType == CGirderPropertiesGraphBuilder::TendonProfile))
@@ -267,7 +262,7 @@ void CGirderPropertiesGraphController::FillPropertyCtrl()
 
    CGirderPropertiesGraphBuilder* pGraphBuilder = (CGirderPropertiesGraphBuilder*)GetGraphBuilder();
 
-   GET_IFACE(IDocumentType,pDocType);
+   EAF_GET_IFACE(IDocumentType,pDocType);
    bool bPGSuperDoc = pDocType->IsPGSuperDocument();
 
    int idx;
@@ -314,7 +309,7 @@ void CGirderPropertiesGraphController::UpdateSectionPropertyTypeControls()
    GetDlgItem(IDC_NET_GIRDER)->EnableWindow(bEnable);
    GetDlgItem(IDC_NET_DECK)->EnableWindow(bEnable);
 
-   GET_IFACE(IBridge, pBridge);
+   EAF_GET_IFACE(IBridge, pBridge);
    if (IsNonstructuralDeck(pBridge->GetDeckType()))
    {
       GetDlgItem(IDC_NET_DECK)->EnableWindow(FALSE);

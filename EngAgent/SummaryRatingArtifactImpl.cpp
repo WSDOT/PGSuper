@@ -25,32 +25,17 @@
 #include "SummaryRatingArtifactImpl.h"
 #include "EngAgentImp.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
-/****************************************************************************
-CLASS
-   pgsSummaryRatingArtifactImpl
-****************************************************************************/
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-pgsSummaryRatingArtifactImpl::pgsSummaryRatingArtifactImpl(const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx, IBroker* pBroker, const CEngAgentImp* pEngAgentImp):
+pgsSummaryRatingArtifactImpl::pgsSummaryRatingArtifactImpl(const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CEngAgentImp* pEngAgentImp):
    m_pBroker(pBroker),
    m_pEngAgentImp(pEngAgentImp),
    m_GirderKeys(girderKeys),
    m_RatingType(ratingType),
    m_VehicleIdx(vehicleIdx)
 {
+#pragma Reminder("WORKING HERE - Removing COM - caching the broker leads to circular reference")
 }
-
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
    
 Float64 pgsSummaryRatingArtifactImpl::GetMomentRatingFactor(bool bPositiveMoment) const
 {
@@ -279,24 +264,3 @@ void pgsSummaryRatingArtifactImpl::GetSafePostingLoad(Float64* pPostingLoad,Floa
    const pgsRatingArtifact* pArtifact = m_pEngAgentImp->GetRatingArtifact(m_GirderKeys[icontrol], m_RatingType, m_VehicleIdx);
    pArtifact->GetSafePostingLoad(pPostingLoad, pWeight, pRF, pVehicle);
 }
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================

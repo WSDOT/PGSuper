@@ -20,14 +20,13 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_TogaStressChecksChapterBuilder_H_
-#define INCLUDED_TogaStressChecksChapterBuilder_H_
+#pragma once
 
 #include <Reporter\Chapter.h>
 #include <ReportManager\ReportManager.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 class pgsSegmentArtifact;
 struct StressCheckTask;
 
@@ -39,7 +38,7 @@ CLASS
 
 
 DESCRIPTION
-   Chapter builder TxDOT stress cheks
+   Chapter builder TxDOT stress checks
 
 LOG
    rdp : 06.15.2006 : Created file
@@ -48,54 +47,17 @@ LOG
 class CTogaStressChecksChapterBuilder : public CPGSuperChapterBuilder
 {
 public:
-   // GROUP: LIFECYCLE
    CTogaStressChecksChapterBuilder();
-
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-
-   //------------------------------------------------------------------------
-   virtual LPCTSTR GetName() const override;
-
-   //------------------------------------------------------------------------
-   virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
-
-   //------------------------------------------------------------------------
-   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-protected:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
-   //------------------------------------------------------------------------
-   void BuildTableAndNotes(rptChapter* pChapter, IBroker* pBroker,
-      IEAFDisplayUnits* pDisplayUnits, const StressCheckTask& task) const;
-
-private:
-   // GROUP: DATA MEMBERS
-   // GROUP: LIFECYCLE
-
-   // Prevent accidental copying and assignment
    CTogaStressChecksChapterBuilder(const CTogaStressChecksChapterBuilder&) = delete;
    CTogaStressChecksChapterBuilder& operator=(const CTogaStressChecksChapterBuilder&) = delete;
 
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
+   virtual LPCTSTR GetName() const override;
+
+   virtual rptChapter* Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const override;
+
+   virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
+
+protected:
+   void BuildTableAndNotes(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker,
+      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const StressCheckTask& task) const;
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_SPECCHECKCHAPTERBUILDER_H_

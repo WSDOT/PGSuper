@@ -33,18 +33,13 @@
 #include <IFace\PointOfInterest.h>
 #include <IFace\Bridge.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CEquilibriumCheckDlg dialog
 
 IMPLEMENT_DYNAMIC(CEquilibriumCheckDlg, CDialog)
 
-CEquilibriumCheckDlg::CEquilibriumCheckDlg(IBroker* pBroker,std::shared_ptr<CEquilibriumCheckReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,IntervalIndexType intervalIdx,CWnd* pParent)
+CEquilibriumCheckDlg::CEquilibriumCheckDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<CEquilibriumCheckReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,IntervalIndexType intervalIdx,CWnd* pParent)
 	: CDialog(CEquilibriumCheckDlg::IDD, pParent)
    , m_SliderPos(0)
    , m_pRptSpec(pRptSpec)
@@ -77,7 +72,7 @@ BOOL CEquilibriumCheckDlg::OnInitDialog()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   GET_IFACE( IIntervals, pIntervals);
+   EAF_GET_IFACE( IIntervals, pIntervals);
    CComboBox* pcbIntervals = (CComboBox*)GetDlgItem(IDC_INTERVAL);
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
@@ -133,7 +128,7 @@ IntervalIndexType CEquilibriumCheckDlg::GetInterval()
 
 void CEquilibriumCheckDlg::UpdatePOI()
 {
-   GET_IFACE(IPointOfInterest,pPoi);
+   EAF_GET_IFACE(IPointOfInterest,pPoi);
    m_vPOI.clear();
    pPoi->GetPointsOfInterest(CSegmentKey(ALL_GROUPS,m_GirderKey.girderIndex,ALL_SEGMENTS),&m_vPOI);
    if (m_Slider.GetSafeHwnd() != nullptr )
@@ -173,7 +168,7 @@ void CEquilibriumCheckDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrol
 
 void CEquilibriumCheckDlg::UpdateSliderLabel()
 {
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    CString strLabel;
    ASSERT((int)m_SliderPos < (int)m_vPOI.size());

@@ -80,7 +80,7 @@ void KDOTHaulingCriteria::Load(WBFL::System::IStructuredLoad* pLoad)
    if (!pLoad->EndUnit()) THROW_LOAD(InvalidFileFormat, pLoad);
 }
 
-void KDOTHaulingCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void KDOTHaulingCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
@@ -192,7 +192,7 @@ void WSDOTHaulingCriteria::Load(WBFL::System::IStructuredLoad* pLoad)
    if (!pLoad->EndUnit()) THROW_LOAD(InvalidFileFormat, pLoad);
 }
 
-void WSDOTHaulingCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void WSDOTHaulingCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
@@ -372,7 +372,7 @@ bool HaulingCriteria::Compare(const HaulingCriteria& other, const SpecLibraryEnt
    return bSame;
 }
 
-void HaulingCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void HaulingCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptLengthUnitValue, dim2, pDisplayUnits->GetSpanLengthUnit(), true);
 

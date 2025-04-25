@@ -33,14 +33,9 @@
 
 #include <PgsExt\BridgeDescription2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // Some utility functions
-rptRcTable* CreateDevelopmentTable(IEAFDisplayUnits* pDisplayUnits)
+rptRcTable* CreateDevelopmentTable(std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    bool is_2015 = WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2015Interims == WBFL::LRFD::BDSManager::GetEdition();
    bool is_2016 = WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition();
@@ -125,23 +120,23 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(const std::shared_ptr<const W
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
    CGirderKey girderKey;
 
    if ( pGdrRptSpec )
    {
-      pGdrRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrRptSpec->GetBroker();
       girderKey = pGdrRptSpec->GetGirderKey();
    }
    else
    {
-      pGdrLineRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrLineRptSpec->GetBroker();
       girderKey = pGdrLineRptSpec->GetGirderKey();
    }
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
    INIT_UV_PROTOTYPE(rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), false);
    INIT_UV_PROTOTYPE(rptLength2UnitValue, area, pDisplayUnits->GetAreaUnit(), false);
    INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
@@ -152,15 +147,15 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(const std::shared_ptr<const W
    scalar.SetPrecision(3);
    scalar.SetTolerance(1.0e-6);
 
-   GET_IFACE2(pBroker, ILongRebarGeometry, pLongRebarGeometry);
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, ILongRebarGeometry, pLongRebarGeometry);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
 
-   GET_IFACE2_NOCHECK(pBroker, IIntervals, pIntervals); // only used if there are rebar in the girder
-   GET_IFACE2(pBroker, IMaterials, pMaterials);
+   EAF_GET_IFACE2_NOCHECK(pBroker, IIntervals, pIntervals); // only used if there are rebar in the girder
+   EAF_GET_IFACE2(pBroker, IMaterials, pMaterials);
 
-   GET_IFACE2(pBroker, IPretensionForce, pPSForce);
+   EAF_GET_IFACE2(pBroker, IPretensionForce, pPSForce);
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(girderKey, &vGirderKeys);
    for (const auto& thisGirderKey : vGirderKeys)

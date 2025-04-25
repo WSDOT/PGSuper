@@ -27,7 +27,7 @@ class CMyReportSpecificationBuilder :
    public CBrokerReportSpecificationBuilder
 {
 public:
-   CMyReportSpecificationBuilder(IBroker* pBroker);
+   CMyReportSpecificationBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker);
    ~CMyReportSpecificationBuilder(void);
 
    virtual std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec) const override;

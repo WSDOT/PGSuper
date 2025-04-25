@@ -38,7 +38,7 @@ bool HarpedStrandDesignCriteria::Compare(const HarpedStrandDesignCriteria& other
    return bSame;
 }
 
-void HarpedStrandDesignCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void HarpedStrandDesignCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;

@@ -55,10 +55,10 @@ rptRcTable(NumColumns,0)
 
 CTxDOT2013TimeDependentLossesTable* CTxDOT2013TimeDependentLossesTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
    std::_tstring strSpecName = pSpec->GetSpecification();
 
-   GET_IFACE2(pBroker,ILibrary,pLib);
+   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
 
    // Create and configure the table

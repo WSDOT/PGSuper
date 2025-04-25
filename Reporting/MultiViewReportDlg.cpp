@@ -37,18 +37,13 @@
 #include "RMultiGirderSelectDlg.h"
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CMultiViewReportDlg dialog
 
 IMPLEMENT_DYNAMIC(CMultiViewReportDlg, CDialog)
 
-CMultiViewReportDlg::CMultiViewReportDlg(IBroker* pBroker,const WBFL::Reporting::ReportDescription& rptDesc, std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,
+CMultiViewReportDlg::CMultiViewReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::Reporting::ReportDescription& rptDesc, std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,
                                          const CGirderKey& girderKey,
                                          UINT nIDTemplate,CWnd* pParent)
 	: CDialog(nIDTemplate, pParent), m_RptDesc(rptDesc), m_pInitRptSpec(pRptSpec)
@@ -130,7 +125,7 @@ BOOL CMultiViewReportDlg::OnInitDialog()
    CWnd* pwndTitle = GetDlgItem(IDC_REPORT_TITLE);
    pwndTitle->SetWindowText(m_RptDesc.GetReportName().c_str());
 
-   GET_IFACE(IBridge, pBridge);
+   EAF_GET_IFACE(IBridge, pBridge);
    bool bMultiSelect = false;
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    if (m_GirderKey.groupIndex == ALL_GROUPS || m_GirderKey.girderIndex == ALL_GIRDERS)
@@ -158,7 +153,7 @@ BOOL CMultiViewReportDlg::OnInitDialog()
 
    // Fill up the span and girder combo boxes
 
-   GET_IFACE(IDocumentType,pDocType);
+   EAF_GET_IFACE(IDocumentType,pDocType);
    bool bIsPGSuper = pDocType->IsPGSuperDocument();
 
    // fill up the span box
@@ -199,7 +194,7 @@ void CMultiViewReportDlg::UpdateGirderComboBox(SpanIndexType spanIdx)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   GET_IFACE( IBridge, pBridge );
+   EAF_GET_IFACE( IBridge, pBridge );
 
    CComboBox* pGdrBox = (CComboBox*)GetDlgItem(IDC_GIRDER);
    Uint16 curSel = pGdrBox->GetCurSel();

@@ -43,16 +43,11 @@ CLASS
 #include <PsgLib\SpecLibraryEntry.h>
 #include <PgsExt\PrecastSegmentData.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
-void write_load_modifiers(rptParagraph* pPara,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits);
-void write_environmental_conditions(rptParagraph* pPara,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits);
-void write_structural_analysis(rptParagraph* pPara,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits);
+void write_load_modifiers(rptParagraph* pPara,std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+void write_environmental_conditions(rptParagraph* pPara,std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+void write_structural_analysis(rptParagraph* pPara,std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
 CProjectCriteriaChapterBuilder::CProjectCriteriaChapterBuilder(bool bRating,bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
@@ -70,21 +65,21 @@ rptChapter* CProjectCriteriaChapterBuilder::Build(const std::shared_ptr<const WB
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
    CGirderKey girderKey;
 
    if ( pGdrRptSpec )
    {
-      pGdrRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrRptSpec->GetBroker();
       girderKey = pGdrRptSpec->GetGirderKey();
    }
    else
    {
-      pGdrLineRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrLineRptSpec->GetBroker();
       girderKey = pGdrLineRptSpec->GetGirderKey();
    }
 
-   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    rptParagraph* pPara = new rptParagraph;
@@ -97,13 +92,13 @@ rptChapter* CProjectCriteriaChapterBuilder::Build(const std::shared_ptr<const WB
    write_environmental_conditions(&(*pLayoutTable)(0, 1), pBroker, pDisplayUnits);
    write_structural_analysis(&(*pLayoutTable)(0, 2), pBroker, pDisplayUnits);
 
-   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+   EAF_GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
-   GET_IFACE2( pBroker, ISpecification, pSpec );
+   EAF_GET_IFACE2( pBroker, ISpecification, pSpec );
    std::_tstring spec_name = pSpec->GetSpecification();
    std::_tstring rating_name = pRatingSpec->GetRatingSpecification();
 
-   GET_IFACE2( pBroker, ILibrary, pLib );
+   EAF_GET_IFACE2( pBroker, ILibrary, pLib );
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
    const RatingLibraryEntry* pRatingEntry = pLib->GetRatingEntry( rating_name.c_str() );
 
@@ -126,12 +121,12 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CProjectCriteriaChapterBuilder:
    return std::make_unique<CProjectCriteriaChapterBuilder>(m_bRating);
 }
 
-void write_load_modifiers(rptParagraph* pPara,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits)
+void write_load_modifiers(rptParagraph* pPara,std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    rptRcTable* p_table = rptStyleManager::CreateTableNoHeading(2,_T("Load Modifiers"));
    *pPara << p_table;
 
-   GET_IFACE2(pBroker,ILoadModifiers,pLoadModifiers);
+   EAF_GET_IFACE2(pBroker,ILoadModifiers,pLoadModifiers);
 
    (*p_table)(0,0) << _T("Ductility  - ")<< Sub2(symbol(eta),_T("D"));
    (*p_table)(0,1) <<  pLoadModifiers->GetDuctilityFactor();
@@ -143,12 +138,12 @@ void write_load_modifiers(rptParagraph* pPara,IBroker* pBroker, IEAFDisplayUnits
    (*p_table)(2,1) <<  pLoadModifiers->GetRedundancyFactor();
 }
 
-void write_environmental_conditions(rptParagraph* pPara,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits)
+void write_environmental_conditions(rptParagraph* pPara,std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    rptRcTable* p_table = rptStyleManager::CreateTableNoHeading(2,_T("Environmental"));
    *pPara << p_table;
 
-   GET_IFACE2(pBroker,IEnvironment,pEnvironment);
+   EAF_GET_IFACE2(pBroker,IEnvironment,pEnvironment);
 
    (*p_table)(0,0) << _T("Exposure Condition");
    if (pEnvironment->GetExposureCondition() == pgsTypes::ExposureCondition::Normal)
@@ -174,12 +169,12 @@ void write_environmental_conditions(rptParagraph* pPara,IBroker* pBroker, IEAFDi
    (*p_table)(2,1) <<  pEnvironment->GetRelHumidity()<<_T("%");
 }
 
-void write_structural_analysis(rptParagraph* pPara,IBroker* pBroker, IEAFDisplayUnits* pDisplayUnits)
+void write_structural_analysis(rptParagraph* pPara,std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    rptRcTable* p_table = rptStyleManager::CreateTableNoHeading(1,_T("Structural Analysis"));
    *pPara << p_table;
 
-   GET_IFACE2( pBroker, ISpecification, pSpec );
+   EAF_GET_IFACE2( pBroker, ISpecification, pSpec );
 
    switch( pSpec->GetAnalysisType() )
    {

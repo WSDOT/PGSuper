@@ -58,9 +58,9 @@ public:
    virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 
 protected:
-   void BuildIncrementalStressTables(rptChapter* pChapter, IBroker* pBroker, IntervalIndexType intervalIdx, PoiList vPoi, const std::vector<pgsTypes::ProductForceType>& vLoads, IEAFDisplayUnits* pDisplayUnits) const;
-   void BuildLiveLoadStressTable(rptChapter* pChapter, IBroker* pBroker, IntervalIndexType intervalIdx, PoiList vPoi, IEAFDisplayUnits* pDisplayUnits) const;
-   void BuildCombinedStressTables(rptChapter* pChapter, IBroker* pBroker, IntervalIndexType intervalIdx, PoiList vPoi, IEAFDisplayUnits* pDisplayUnits) const;
+   void BuildIncrementalStressTables(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, IntervalIndexType intervalIdx, PoiList vPoi, const std::vector<pgsTypes::ProductForceType>& vLoads, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   void BuildLiveLoadStressTable(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, IntervalIndexType intervalIdx, PoiList vPoi, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   void BuildCombinedStressTables(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, IntervalIndexType intervalIdx, PoiList vPoi, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 
 
    // Prevent accidental copying and assignment

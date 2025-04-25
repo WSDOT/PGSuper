@@ -33,17 +33,12 @@
 #include <IFace\Bridge.h>
 #include <MfcTools\CustomDDX.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // exportCADData dialog
 
 /*--------------------------------------------------------------------*/
-exportCADData::exportCADData(IBroker* pBroker,CWnd* pParent /*=nullptr*/)
+exportCADData::exportCADData(std::shared_ptr<WBFL::EAF::Broker> pBroker,CWnd* pParent /*=nullptr*/)
 	: CDialog(exportCADData::IDD, pParent)
 {
    m_pBroker  = pBroker;
@@ -107,7 +102,7 @@ BOOL exportCADData::OnInitDialog()
 	CDialog::OnInitDialog();
 
 	/* Get interface pointer to Bridge Agent */
-	GET_IFACE( IBridge, pBridge ); 
+	EAF_GET_IFACE( IBridge, pBridge ); 
 
    GroupGirderOnCollection coll;
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
@@ -157,7 +152,7 @@ void exportCADData::OnHelp()
 
 void exportCADData::OnSelchangeSpan() 
 {
-	GET_IFACE( IBridge, pBridge ); 
+	EAF_GET_IFACE( IBridge, pBridge ); 
 	CComboBox* pSpanBox = (CComboBox*)GetDlgItem( IDC_SPAN );
    CComboBox* pGdrBox  = (CComboBox*)GetDlgItem( IDC_GIRDER );
 

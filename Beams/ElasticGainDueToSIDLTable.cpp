@@ -52,16 +52,16 @@ rptRcTable(NumColumns,0)
 CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
    // Create and configure the table
-   GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
+   EAF_GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
    bool bHasUserLoads = pUDL->DoUserLoadsExist(segmentKey);
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    bool bHasOverlay = pBridge->HasOverlay();
 
-   GET_IFACE2(pBroker,IProductLoads,pLoad);
+   EAF_GET_IFACE2(pBroker,IProductLoads,pLoad);
    bool bHasSidewalk = pLoad->HasSidewalkLoad(segmentKey);
 
-   GET_IFACE2(pBroker, IGirder, pGirder);
+   EAF_GET_IFACE2(pBroker, IGirder, pGirder);
    bool bHasDeckLoads = pGirder->HasStructuralLongitudinalJoints() && pBridge->GetDeckType() != pgsTypes::sdtNone ? true : false; // if longitudinal joints are structural and there is a deck, the deck dead loads go on the composite section
    bool bIs2StageComposite = pGirder->HasStructuralLongitudinalJoints() && ::IsStructuralDeck(pBridge->GetDeckType()) ? true : false; 
 
@@ -107,15 +107,15 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+   EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
 
-   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
 
-   GET_IFACE2(pBroker,IMaterials,pMaterials);
+   EAF_GET_IFACE2(pBroker,IMaterials,pMaterials);
    Float64 Ec = pMaterials->GetSegmentEc(segmentKey,railingSystemIntervalIdx);
    Float64 Ep = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Straight)->GetE(); // Ok to use straight since we just want E
 
@@ -190,8 +190,8 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
    *pParagraph << Sub2(_T("E"),_T("c")) << _T(" = ") << table->mod_e.SetValue( Ec ) << rptNewLine;
    table->mod_e.ShowUnitTag(false);
 
-   GET_IFACE2(pBroker,ISpecification,pSpec);
-   GET_IFACE2(pBroker,ILibrary,pLibrary);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2(pBroker,ILibrary,pLibrary);
    const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
    const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
 
@@ -303,7 +303,7 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
 
 void CElasticGainDueToSIDLTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   GET_IFACE2(pBroker,IProductForces,pProdForces);
+   EAF_GET_IFACE2(pBroker,IProductForces,pProdForces);
    ColumnIndexType col = 1;
    RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;
 
@@ -312,12 +312,12 @@ void CElasticGainDueToSIDLTable::AddRow(rptChapter* pChapter,IBroker* pBroker,co
    IndexType deckCastingRegionIdx = INVALID_INDEX;
    if (m_bHasDeckLoads)
    {
-      GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+      EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
       deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
       ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
    }
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();

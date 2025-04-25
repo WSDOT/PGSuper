@@ -47,7 +47,7 @@ bool TransferLengthCriteria::Compare(const TransferLengthCriteria& other, const 
    return bSame;
 }
 
-void TransferLengthCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void TransferLengthCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    if (CalculationMethod == pgsTypes::TransferLengthCalculationMethod::MinuteValue)
    {

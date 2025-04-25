@@ -24,13 +24,8 @@
 #include <Reporting\BearingTimeStepDetailsReportSpecification.h>
 #include <PgsExt\GirderLabel.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-CBearingTimeStepDetailsReportSpecification::CBearingTimeStepDetailsReportSpecification(const std::_tstring& strReportName,IBroker* pBroker,
+CBearingTimeStepDetailsReportSpecification::CBearingTimeStepDetailsReportSpecification(const std::_tstring& strReportName,std::shared_ptr<WBFL::EAF::Broker> pBroker,
     bool bReportAtAllLocations,const ReactionLocation& location,IntervalIndexType intervalIdx) :
 CBrokerReportSpecification(strReportName,pBroker)
 {

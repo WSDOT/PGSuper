@@ -88,7 +88,7 @@ private:
    StatusCallbackIDType m_scidProjectCriteria;
 
    // This are interfaces that are used over and over and over
-   // Get them once so we don't have to call GET_IFACE so many times
+   // Get them once so we don't have to call EAF_GET_IFACE so many times
    CComPtr<IProgress>          m_pProgress;
    CComPtr<IBridgeDescription> m_pBridgeDesc;
    CComPtr<IBridge>            m_pBridge;

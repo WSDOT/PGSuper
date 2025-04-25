@@ -54,7 +54,7 @@ bool LiveLoadDistributionCriteria::Compare(const LiveLoadDistributionCriteria& o
    return bSame;
 }
 
-void LiveLoadDistributionCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void LiveLoadDistributionCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;

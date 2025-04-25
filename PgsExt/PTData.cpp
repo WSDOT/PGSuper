@@ -38,11 +38,6 @@ CLASS
 
 #include <IFace\Project.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 Float64 gs_DefaultOffset2 = WBFL::Units::ConvertToSysUnits(6.0,WBFL::Units::Measure::Inch);
 

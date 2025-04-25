@@ -65,8 +65,8 @@ STDMETHODIMP CPGSuperDataExporter::Export(IBroker* pBroker)
 
       std::_tofstream ofile(file_path);
 
-      GET_IFACE2(pBroker, IBridge, pBridge);
-      GET_IFACE2(pBroker, IProgress, pProgress);
+      EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+      EAF_GET_IFACE2(pBroker, IProgress, pProgress);
 
       ofile << _T("Pier 1: Station ") << pBridge->GetPierStation(0) << std::endl;
 

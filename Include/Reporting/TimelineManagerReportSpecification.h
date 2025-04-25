@@ -29,7 +29,7 @@ class REPORTINGCLASS CTimelineManagerReportSpecification :
    public CBrokerReportSpecification
 {
 public:
-   CTimelineManagerReportSpecification(const std::_tstring& strReportName, IBroker* pBroker);
+   CTimelineManagerReportSpecification(const std::_tstring& strReportName, std::shared_ptr<WBFL::EAF::Broker> pBroker);
    ~CTimelineManagerReportSpecification(void);
 
    void SetTimelineManager(const CTimelineManager* pTimelineMgr);

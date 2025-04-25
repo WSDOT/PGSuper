@@ -28,7 +28,7 @@ class CMultiViewReportDlg : public CDialog
 	DECLARE_DYNAMIC(CMultiViewReportDlg)
 
 public:
-	CMultiViewReportDlg(IBroker* pBroker,const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,
+	CMultiViewReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,
                        const CGirderKey& girderKey,
                        UINT nIDTemplate = IDD_MULTIVIEWREPORT,CWnd* pParent = nullptr);
 	virtual ~CMultiViewReportDlg();
@@ -48,7 +48,7 @@ protected:
    const WBFL::Reporting::ReportDescription& m_RptDesc;
    std::shared_ptr<WBFL::Reporting::ReportSpecification> m_pInitRptSpec; // report spec for initializing the dialog
 
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
 
    CCheckListBox	m_ChList;
 

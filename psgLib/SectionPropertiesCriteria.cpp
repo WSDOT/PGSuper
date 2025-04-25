@@ -37,7 +37,7 @@ bool SectionPropertiesCriteria::Compare(const SectionPropertiesCriteria& other, 
    return bSame;
 }
 
-void SectionPropertiesCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void SectionPropertiesCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;

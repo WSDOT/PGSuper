@@ -24,14 +24,7 @@
 #include "StatusItems.h"
 #include <IFace\EditByUI.h>
 #include <IFace\Views.h>
-
-////////////////
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <EAF/EAFUtilities.h>
 
 pgsLiveLoadStatusItem::pgsLiveLoadStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
 CEAFStatusItem(statusGroupID,callbackID,strDescription)
@@ -47,9 +40,7 @@ bool pgsLiveLoadStatusItem::IsEqual(CEAFStatusItem* pOther)
    return true;
 }
 
-//////////////////////////////////////////////////////////
-pgsLiveLoadStatusCallback::pgsLiveLoadStatusCallback(IBroker* pBroker):
-m_pBroker(pBroker)
+pgsLiveLoadStatusCallback::pgsLiveLoadStatusCallback()
 {
 }
 
@@ -60,11 +51,10 @@ eafTypes::StatusSeverityType pgsLiveLoadStatusCallback::GetSeverity() const
 
 void pgsLiveLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 {
-   GET_IFACE(IEditByUI,pEdit);
+   auto broker = EAFGetBroker();
+   EAF_GET_IFACE2(broker,IEditByUI,pEdit);
    pEdit->EditLiveLoads();
 }
-
-////////////////
 
 pgsLiftingSupportLocationStatusItem::pgsLiftingSupportLocationStatusItem(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
 CEAFStatusItem(statusGroupID,callbackID,strDescription), m_SegmentKey(segmentKey), m_End(end)
@@ -81,8 +71,7 @@ bool pgsLiftingSupportLocationStatusItem::IsEqual(CEAFStatusItem* pOther)
 }
 
 //////////////////////////////////////////////////////////
-pgsLiftingSupportLocationStatusCallback::pgsLiftingSupportLocationStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType severity):
-m_pBroker(pBroker),
+pgsLiftingSupportLocationStatusCallback::pgsLiftingSupportLocationStatusCallback(eafTypes::StatusSeverityType severity):
 m_Severity(severity)
 {
 }
@@ -97,12 +86,12 @@ void pgsLiftingSupportLocationStatusCallback::Execute(CEAFStatusItem* pStatusIte
    pgsLiftingSupportLocationStatusItem* pItem = dynamic_cast<pgsLiftingSupportLocationStatusItem*>(pStatusItem);
    ATLASSERT(pItem!=nullptr);
 
-   GET_IFACE(IEditByUI,pEdit);
+   auto broker = EAFGetBroker();
+   EAF_GET_IFACE2(broker, IEditByUI, pEdit);
 
    pEdit->EditSegmentDescription(pItem->m_SegmentKey,EGD_TRANSPORTATION);
 }
 
-////////////////
 
 pgsHaulTruckStatusItem::pgsHaulTruckStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
 CEAFStatusItem(statusGroupID,callbackID,strDescription)
@@ -118,9 +107,7 @@ bool pgsHaulTruckStatusItem::IsEqual(CEAFStatusItem* pOther)
    return true;
 }
 
-//////////////////////////////////////////////////////////
-pgsHaulTruckStatusCallback::pgsHaulTruckStatusCallback(IBroker* pBroker):
-m_pBroker(pBroker)
+pgsHaulTruckStatusCallback::pgsHaulTruckStatusCallback()
 {
 }
 
@@ -134,11 +121,10 @@ void pgsHaulTruckStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    //pgsHaulTruckStatusItem* pItem = dynamic_cast<pgsHaulTruckStatusItem*>(pStatusItem);
    //ATLASSERT(pItem!=nullptr);
 
-   GET_IFACE(IViews, pViews);
+   auto broker = EAFGetBroker();
+   EAF_GET_IFACE2(broker, IViews, pViews);
    pViews->CreateLibraryEditorView();
 }
-
-////////////////
 
 pgsBunkPointLocationStatusItem::pgsBunkPointLocationStatusItem(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
 CEAFStatusItem(statusGroupID,callbackID,strDescription), m_SegmentKey(segmentKey), m_End(end)
@@ -154,9 +140,7 @@ bool pgsBunkPointLocationStatusItem::IsEqual(CEAFStatusItem* pOther)
    return (m_SegmentKey == other->m_SegmentKey) && (m_End == other->m_End);
 }
 
-//////////////////////////////////////////////////////////
-pgsBunkPointLocationStatusCallback::pgsBunkPointLocationStatusCallback(IBroker* pBroker):
-m_pBroker(pBroker)
+pgsBunkPointLocationStatusCallback::pgsBunkPointLocationStatusCallback()
 {
 }
 
@@ -170,7 +154,8 @@ void pgsBunkPointLocationStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    pgsBunkPointLocationStatusItem* pItem = dynamic_cast<pgsBunkPointLocationStatusItem*>(pStatusItem);
    ATLASSERT(pItem!=nullptr);
 
-   GET_IFACE(IEditByUI,pEdit);
+   auto broker = EAFGetBroker();
+   EAF_GET_IFACE2(broker, IEditByUI, pEdit);
    pEdit->EditSegmentDescription(pItem->m_SegmentKey,EGD_TRANSPORTATION);
 }
 

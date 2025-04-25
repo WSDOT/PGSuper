@@ -51,11 +51,6 @@
 
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // cause the resource control values to be defined
 #define APSTUDIO_INVOKED

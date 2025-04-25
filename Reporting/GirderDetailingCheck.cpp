@@ -34,11 +34,6 @@
 
 #include <psgLib/LimitsCriteria.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -81,8 +76,8 @@ CGirderDetailingCheck& CGirderDetailingCheck::operator= (const CGirderDetailingC
 
 //======================== OPERATIONS =======================================
 void CGirderDetailingCheck::Build(rptChapter* pChapter,
-                              IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
-                              IEAFDisplayUnits* pDisplayUnits) const
+                              std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsGirderArtifact* pGirderArtifact,
+                              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
 #pragma Reminder("UPDATE: Use chapter levels instead of m_BasicVersion")
    if (!m_BasicVersion)
@@ -93,8 +88,8 @@ void CGirderDetailingCheck::Build(rptChapter* pChapter,
 
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
-   GET_IFACE2(pBroker, IMaterials, pMaterials);
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IMaterials, pMaterials);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
    // neither of the UHPC Specs, PCI or AASHTO UHPC GS, requirement minimum stirrups
@@ -120,7 +115,7 @@ void CGirderDetailingCheck::Build(rptChapter* pChapter,
       }
    }
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
 
    // Stirrup detailing check
@@ -135,7 +130,7 @@ void CGirderDetailingCheck::Build(rptChapter* pChapter,
       *p  << _T(" + ") << Sub2(_T("V"),_T("p")) << _T(") [Eqn ") << WBFL::LRFD::LrfdCw8th(_T("5.8.2.4-1"),_T("5.7.2.3-1")) << _T("]")<< rptNewLine;
    }
 
-   GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+   EAF_GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
    if(pLimitStateForces->IsStrengthIIApplicable(girderKey))
    {
       rptParagraph* p = new rptParagraph;
@@ -155,8 +150,8 @@ void CGirderDetailingCheck::Build(rptChapter* pChapter,
    if ( !m_BasicVersion )
    {
       // Only report stirrup length/zone incompatibility if user requests it
-      GET_IFACE2(pBroker,ISpecification,pSpec);
-      GET_IFACE2(pBroker,ILibrary,pLib);
+      EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+      EAF_GET_IFACE2(pBroker,ILibrary,pLib);
       std::_tstring strSpecName = pSpec->GetSpecification();
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
       const auto& limits_criteria = pSpecEntry->GetLimitsCriteria();
@@ -196,14 +191,14 @@ void CGirderDetailingCheck::MakeAssignment(const CGirderDetailingCheck& rOther)
 //======================== OPERATORS  =======================================
 //======================== OPERATIONS =======================================
 void CGirderDetailingCheck::BuildDimensionCheck(rptChapter* pChapter,
-                              IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
-                              IEAFDisplayUnits* pDisplayUnits) const
+                              std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsGirderArtifact* pGirderArtifact,
+                              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
    *pPara << _T("Girder Dimensions Detailing Check [") << WBFL::LRFD::LrfdCw8th(_T("5.14.1.2.2"),_T("5.12.3.2.2")) << _T("]") << rptNewLine;
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(pGirderArtifact->GetGirderKey());
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
@@ -304,10 +299,10 @@ void CGirderDetailingCheck::BuildDimensionCheck(rptChapter* pChapter,
 
 
 void CGirderDetailingCheck::BuildStirrupLayoutCheck(rptChapter* pChapter,
-                              IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
-                              IEAFDisplayUnits* pDisplayUnits) const
+                              std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsGirderArtifact* pGirderArtifact,
+                              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   GET_IFACE2_NOCHECK(pBroker,IStirrupGeometry,pStirrupGeometry); // not always used
+   EAF_GET_IFACE2_NOCHECK(pBroker,IStirrupGeometry,pStirrupGeometry); // not always used
 
 #pragma Reminder("UPDATE: need to report stirrup layout check for closure joints")
 
@@ -318,7 +313,7 @@ void CGirderDetailingCheck::BuildStirrupLayoutCheck(rptChapter* pChapter,
    INIT_FRACTIONAL_LENGTH_PROTOTYPE( gdim,  IS_US_UNITS(pDisplayUnits), 8, RoundOff, pDisplayUnits->GetComponentDimUnit(), true, true );
    rptRcScalar scalar;
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(pGirderArtifact->GetGirderKey());
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
@@ -334,7 +329,7 @@ void CGirderDetailingCheck::BuildStirrupLayoutCheck(rptChapter* pChapter,
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;
 
-      GET_IFACE2(pBroker, IShear, pShear);
+      EAF_GET_IFACE2(pBroker, IShear, pShear);
       const CShearData2* pShearData = pShear->GetSegmentShearData(segmentKey);
       if (0 < pShearData->ShearZones.size())
       {

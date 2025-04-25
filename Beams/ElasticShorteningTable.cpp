@@ -52,12 +52,12 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
 {
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
    WBFL::LRFD::ElasticShortening::FcgpComputationMethod fcgpMethod = pDetails->pLosses->GetElasticShortening().GetFcgpComputationMethod();
 
-   GET_IFACE2(pBroker,IMaterials,pMaterials);
+   EAF_GET_IFACE2(pBroker,IMaterials,pMaterials);
    Float64 Eci = pMaterials->GetSegmentEc(segmentKey,releaseIntervalIdx);
    Float64 Epp = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Straight)->GetE(); // OK to use Straight since we just want E
    Float64 Ept = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Temporary)->GetE();
@@ -81,7 +81,7 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
-   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
 
    if (fcgpMethod == WBFL::LRFD::ElasticShortening::FcgpComputationMethod::AssumedFpe)
@@ -125,10 +125,10 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
    else
    {
       // create and configure the table
-      GET_IFACE2(pBroker, IGirder, pGirder);
+      EAF_GET_IFACE2(pBroker, IGirder, pGirder);
       bool bIsPrismatic = pGirder->IsPrismatic(releaseIntervalIdx, segmentKey);
 
-      GET_IFACE2(pBroker, IBridge, pBridge);
+      EAF_GET_IFACE2(pBroker, IBridge, pBridge);
       bool bIsAsymmetric = pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing() ? true : false;
 
       ColumnIndexType numColumns = 5; // location, location, P, M, Aps_Perm
@@ -219,7 +219,7 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
       table->force.ShowUnitTag(true);
       if ( bIsPrismatic )
       {
-         GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+         EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
          PoiList vPoi;
          pPoi->GetPointsOfInterest(segmentKey, POI_5L | POI_RELEASED_SEGMENT, &vPoi);
          ATLASSERT(vPoi.size() == 1);
@@ -468,7 +468,7 @@ CElasticShorteningTable* CElasticShorteningTable::PrepareTable(rptChapter* pChap
          (*table)(0,col++) << COLHDR(symbol(DELTA) << RPT_STRESS(_T("pES")), rptStressUnitTag, pDisplayUnits->GetStressUnit() );
       }
    
-      GET_IFACE2(pBroker,ILossParameters,pLossParameters);
+      EAF_GET_IFACE2(pBroker,ILossParameters,pLossParameters);
       PrestressLossCriteria::LossMethodType loss_method = pLossParameters->GetLossMethod();
    
       if ( loss_method == PrestressLossCriteria::LossMethodType::WSDOT_REFINED || loss_method == PrestressLossCriteria::LossMethodType::WSDOT_LUMPSUM )

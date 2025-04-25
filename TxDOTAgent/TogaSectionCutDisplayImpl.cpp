@@ -49,13 +49,13 @@ CTogaSectionCutDisplayImpl::~CTogaSectionCutDisplayImpl()
 {
 }
 
-void CTogaSectionCutDisplayImpl::Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, IBroker* pBroker, const CSegmentKey& segmentKey, iCutLocation* pCutLoc)
+void CTogaSectionCutDisplayImpl::Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey, iCutLocation* pCutLoc)
 {
    m_pBroker = pBroker;
 
    m_SegmentKey = segmentKey;
    
-   GET_IFACE(IBridge, pBridge);
+   EAF_GET_IFACE(IBridge, pBridge);
    m_gdrLength = pBridge->GetSegmentLength(segmentKey);
 
    m_pCutLocation = pCutLoc;
@@ -199,8 +199,8 @@ void CTogaSectionCutDisplayImpl::Draw(std::shared_ptr<const WBFL::DManip::iPoint
 
 Float64 CTogaSectionCutDisplayImpl::GetGirderHeight(Float64 distFromStartOfGirder) const
 {
-   GET_IFACE(IGirder,pGirder);
-   GET_IFACE(IPointOfInterest,pPOI);
+   EAF_GET_IFACE(IGirder,pGirder);
+   EAF_GET_IFACE(IPointOfInterest,pPOI);
 
    pgsPointOfInterest poi( pPOI->GetPointOfInterest(m_SegmentKey,distFromStartOfGirder) );
    if ( poi.GetID() < 0 )
@@ -374,7 +374,7 @@ bool CTogaSectionCutDisplayImpl::PrepareForDrag(std::shared_ptr<WBFL::DManip::iD
 
    pSink->Write(ms_Format,&threadid,sizeof(DWORD));
    pSink->Write(ms_Format,&m_Color,sizeof(COLORREF));
-   pSink->Write(ms_Format,&m_pBroker,sizeof(IBroker*));
+   pSink->Write(ms_Format,&m_pBroker,sizeof(std::shared_ptr<WBFL::EAF::Broker>));
    pSink->Write(ms_Format,&m_SegmentKey,sizeof(CSegmentKey));
    pSink->Write(ms_Format,&m_gdrLength,sizeof(Float64));
    pSink->Write(ms_Format,&m_pCutLocation,sizeof(iCutLocation*));
@@ -396,7 +396,7 @@ void CTogaSectionCutDisplayImpl::OnDrop(std::shared_ptr<WBFL::DManip::iDisplayOb
    ATLASSERT(threadid == threadl);
 
    pSource->Read(ms_Format,&m_Color,sizeof(COLORREF));
-   pSource->Read(ms_Format,&m_pBroker,sizeof(IBroker*));
+   pSource->Read(ms_Format,&m_pBroker,sizeof(std::shared_ptr<WBFL::EAF::Broker>));
    pSource->Read(ms_Format,&m_SegmentKey,sizeof(CSegmentKey));
    pSource->Read(ms_Format,&m_gdrLength,sizeof(Float64));
    pSource->Read(ms_Format,&m_pCutLocation,sizeof(iCutLocation*));

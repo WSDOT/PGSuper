@@ -32,11 +32,6 @@
 #include <IFace\Intervals.h>
 #include <IFace\ReportOptions.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -72,8 +67,8 @@ CUserStressTable& CUserStressTable::operator= (const CUserStressTable& rOther)
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CUserStressTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,IntervalIndexType intervalIdx,
-                                      IEAFDisplayUnits* pDisplayUnits,bool bGirderStresses) const
+rptRcTable* CUserStressTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,IntervalIndexType intervalIdx,
+                                      std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,bool bGirderStresses) const
 {
    pgsTypes::StressLocation topLocation = (bGirderStresses ? pgsTypes::TopGirder    : pgsTypes::TopDeck);
    pgsTypes::StressLocation botLocation = (bGirderStresses ? pgsTypes::BottomGirder : pgsTypes::BottomDeck);
@@ -81,10 +76,10 @@ rptRcTable* CUserStressTable::Build(IBroker* pBroker,const CGirderKey& girderKey
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    CString strTitle;
    strTitle.Format(_T("%s Stresses due to User Defined Loads in Interval %d: %s"),(bGirderStresses ? _T("Girder") : _T("Deck")),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx).c_str());
    rptRcTable* p_table = CreateUserLoadHeading<rptStressUnitTag,WBFL::Units::StressData>(strTitle.GetBuffer(),false,analysisType,intervalIdx,pDisplayUnits,pDisplayUnits->GetStressUnit());
@@ -96,11 +91,11 @@ rptRcTable* CUserStressTable::Build(IBroker* pBroker,const CGirderKey& girderKey
    }
 
    // Get the interface pointers we need
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   GET_IFACE2(pBroker,IProductForces2,pForces2);
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   EAF_GET_IFACE2(pBroker,IProductForces2,pForces2);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
 
-   GET_IFACE2(pBroker,IProductForces,pForces);
+   EAF_GET_IFACE2(pBroker,IProductForces,pForces);
    pgsTypes::BridgeAnalysisType maxBAT = pForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 

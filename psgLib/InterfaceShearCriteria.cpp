@@ -39,7 +39,7 @@ bool InterfaceShearCriteria::Compare(const InterfaceShearCriteria& other, const 
    return bSame;
 }
 
-void InterfaceShearCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void InterfaceShearCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), true);
 

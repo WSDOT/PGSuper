@@ -65,11 +65,6 @@
 
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 /****************************************************************************
@@ -80,13 +75,13 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 //======================== LIFECYCLE  =======================================
-pgsBearingDesignEngineer::pgsBearingDesignEngineer(IBroker* pBroker)
+pgsBearingDesignEngineer::pgsBearingDesignEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
    m_pBroker = pBroker;
 }
 
 //======================== OPERATIONS =======================================
-void pgsBearingDesignEngineer::SetBroker(IBroker* pBroker)
+void pgsBearingDesignEngineer::SetBroker(std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
    m_pBroker = pBroker;
 }
@@ -99,7 +94,7 @@ void pgsBearingDesignEngineer::GetBearingDesignProperties(DESIGNPROPERTIES* pDet
 
 Float64 pgsBearingDesignEngineer::BearingSkewFactor(const ReactionLocation& reactionLocation, bool isFlexural) const
 {
-    GET_IFACE(IBridge, pBridge);
+    EAF_GET_IFACE(IBridge, pBridge);
 
     //skew factor
     CComPtr<IAngle> pSkew;
@@ -124,9 +119,9 @@ Float64 pgsBearingDesignEngineer::BearingSkewFactor(const ReactionLocation& reac
 
 void pgsBearingDesignEngineer::GetLongitudinalPointOfFixity(const CGirderKey& girderKey, BEARINGPARAMETERS* pDetails) const
 {
-    GET_IFACE(IBridge, pBridge);
-    GET_IFACE(IBridgeDescription, pBridgeDesc);
-    GET_IFACE(IPointOfInterest, pPoi);
+    EAF_GET_IFACE(IBridge, pBridge);
+    EAF_GET_IFACE(IBridgeDescription, pBridgeDesc);
+    EAF_GET_IFACE(IPointOfInterest, pPoi);
 
     PierIndexType centermostPier;
     SpanIndexType nSpans = pBridge->GetSpanCount();
@@ -251,8 +246,8 @@ void pgsBearingDesignEngineer::GetLongitudinalPointOfFixity(const CGirderKey& gi
 
 void pgsBearingDesignEngineer::GetBearingParameters(const CGirderKey& girderKey, BEARINGPARAMETERS* pDetails) const
 {
-    GET_IFACE(IBridge, pBridge);
-    GET_IFACE(IUserDefinedLoadData, pUserLoads);
+    EAF_GET_IFACE(IBridge, pBridge);
+    EAF_GET_IFACE(IUserDefinedLoadData, pUserLoads);
 
     pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
 
@@ -271,7 +266,7 @@ void pgsBearingDesignEngineer::GetBearingParameters(const CGirderKey& girderKey,
     pDetails->endGroup = (girderKey.groupIndex == ALL_GROUPS ? pBridge->GetGirderGroupCount() - 1 : pDetails->startGroup);
 
     CGirderKey key(pDetails->startGroup, girderKey.girderIndex);
-    GET_IFACE(IProductLoads, pLoads);
+    EAF_GET_IFACE(IProductLoads, pLoads);
     pDetails->bSegments = (1 < pBridge->GetSegmentCount(key) ? true : false);
     pDetails->bPedLoading = pLoads->HasPedestrianLoad(key);
     pDetails->bSidewalk = pLoads->HasSidewalkLoad(key);
@@ -279,15 +274,15 @@ void pgsBearingDesignEngineer::GetBearingParameters(const CGirderKey& girderKey,
     pDetails->bLongitudinalJoint = pLoads->HasLongitudinalJointLoad();
     pDetails->bConstruction = !IsZero(pUserLoads->GetConstructionLoad());
 
-    GET_IFACE(IGirderTendonGeometry, pTendonGeom);
+    EAF_GET_IFACE(IGirderTendonGeometry, pTendonGeom);
     pDetails->nDucts = pTendonGeom->GetDuctCount(girderKey);
 
-    GET_IFACE(ILossParameters, pLossParams);
+    EAF_GET_IFACE(ILossParameters, pLossParams);
     pDetails->bTimeStep = (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false);
 
 
     // determine continuity stage
-    GET_IFACE(IIntervals, pIntervals);
+    EAF_GET_IFACE(IIntervals, pIntervals);
     IntervalIndexType continuityIntervalIdx = MAX_INDEX;
     PierIndexType firstPierIdx = pBridge->GetGirderGroupStartPier(pDetails->startGroup);
     PierIndexType lastPierIdx = pBridge->GetGirderGroupEndPier(pDetails->endGroup);
@@ -322,14 +317,14 @@ Float64 pgsBearingDesignEngineer::GetDistanceToPointOfFixity(const pgsPointOfInt
     SHEARDEFORMATIONDETAILS* pDetails) const
 {
 
-    GET_IFACE(IBridge, pBridge);
-    GET_IFACE(IPointOfInterest, pPoi);
+    EAF_GET_IFACE(IBridge, pBridge);
+    EAF_GET_IFACE(IPointOfInterest, pPoi);
 
     Float64 L = 0;
 
     const CGirderKey& girderKey(poi_brg.GetSegmentKey());
 
-    GET_IFACE(IBearingDesignParameters, pBearingDesignParameters);
+    EAF_GET_IFACE(IBearingDesignParameters, pBearingDesignParameters);
 
     pBearingDesignParameters->GetBearingParameters(girderKey, pDetails);
 
@@ -362,9 +357,9 @@ std::array<Float64, 2> pgsBearingDesignEngineer::GetTimeDependentComponentShearD
 {
 
 
-    GET_IFACE(IMaterials, pMaterials);
-    GET_IFACE(IIntervals, pIntervals);
-    GET_IFACE(IBridgeDescription, pIBridgeDesc);
+    EAF_GET_IFACE(IMaterials, pMaterials);
+    EAF_GET_IFACE(IIntervals, pIntervals);
+    EAF_GET_IFACE(IBridgeDescription, pIBridgeDesc);
 
     
 
@@ -392,7 +387,7 @@ std::array<Float64, 2> pgsBearingDesignEngineer::GetTimeDependentComponentShearD
 Float64 pgsBearingDesignEngineer::GetBearingTimeDependentLosses(const pgsPointOfInterest& poi, pgsTypes::StrandType strandType, 
     IntervalIndexType intervalIdx, pgsTypes::IntervalTimeType intervalTime, const GDRCONFIG* pConfig, const LOSSDETAILS* pDetails, TDCOMPONENTS* tdComponents) const
 {
-    GET_IFACE(IPointOfInterest, pPoi);
+    EAF_GET_IFACE(IPointOfInterest, pPoi);
     if (pPoi->IsOffSegment(poi))
     {
         return 0;
@@ -431,7 +426,7 @@ Float64 pgsBearingDesignEngineer::GetBearingTimeDependentLosses(const pgsPointOf
         if (strandType == pgsTypes::Permanent)
         {
 #if defined LUMP_STRANDS
-            GET_IFACE(IStrandGeometry, pStrandGeom);
+            EAF_GET_IFACE(IStrandGeometry, pStrandGeom);
             std::array<Float64, 2> Aps{ pStrandGeom->GetStrandArea(poi, theIntervalIdx, pgsTypes::Straight, pConfig), pStrandGeom->GetStrandArea(poi, theIntervalIdx, pgsTypes::Harped, pConfig) };
             Float64 A = std::accumulate(Aps.begin(), Aps.end(), 0.0);
             if (IsZero(A))
@@ -520,14 +515,14 @@ Float64 pgsBearingDesignEngineer::GetBearingTimeDependentLosses(const pgsPointOf
 void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girderKey, SHEARDEFORMATIONDETAILS* pDetails) const
 {
 
-    GET_IFACE(IIntervals, pIntervals);
-    GET_IFACE(IBridgeDescription, pBridgeDesc);
+    EAF_GET_IFACE(IIntervals, pIntervals);
+    EAF_GET_IFACE(IBridgeDescription, pBridgeDesc);
     
     
-    GET_IFACE(IBridge, pBridge);
-    GET_IFACE(IPointOfInterest, pPOI);
-    GET_IFACE(IBearingDesign, pBearingDesign);
-    GET_IFACE(IBearingDesignParameters, pBearingDesignParameters);
+    EAF_GET_IFACE(IBridge, pBridge);
+    EAF_GET_IFACE(IPointOfInterest, pPOI);
+    EAF_GET_IFACE(IBearingDesign, pBearingDesign);
+    EAF_GET_IFACE(IBearingDesignParameters, pBearingDesignParameters);
 
     pBearingDesignParameters->GetBearingParameters(girderKey, pDetails);
 
@@ -554,8 +549,8 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
         GroupIndexType endGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? nGroups - 1 : startGroupIdx);
 
 
-        GET_IFACE(IProductForces, pProdForces);
-        GET_IFACE(ISpecification, pSpec);
+        EAF_GET_IFACE(IProductForces, pProdForces);
+        EAF_GET_IFACE(ISpecification, pSpec);
 
         pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
@@ -605,8 +600,8 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
 
         brg_details.rPoi = poi;
 
-        GET_IFACE(IStrandGeometry, pStrandGeom);
-        GET_IFACE(ISectionProperties, pSection);
+        EAF_GET_IFACE(IStrandGeometry, pStrandGeom);
+        EAF_GET_IFACE(ISectionProperties, pSection);
 
         IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(poi.GetSegmentKey());
 
@@ -627,14 +622,14 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
         if (!brg_details.bXconstraint)
         {
 
-            GET_IFACE(ILibrary, pLib);
-            GET_IFACE(ISpecification, pSpec);
+            EAF_GET_IFACE(ILibrary, pLib);
+            EAF_GET_IFACE(ISpecification, pSpec);
             pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
             const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
             PrestressLossCriteria::LossMethodType lossMethod = pSpecEntry->GetPrestressLossCriteria().LossMethod;
             bool bTimeStepMethod = lossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP;
 
-            GET_IFACE(IBearingDesignParameters, pBearing);
+            EAF_GET_IFACE(IBearingDesignParameters, pBearing);
             brg_details.length_pf = pBearing->GetDistanceToPointOfFixity(poi, pDetails);
 
             const CSegmentKey& segmentKey(poi.GetSegmentKey());
@@ -644,7 +639,7 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
             IntervalIndexType castDeckIntervalIdx = pIntervals->GetLastCastDeckInterval();
             auto lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
 
-            GET_IFACE(ILosses, pLosses);
+            EAF_GET_IFACE(ILosses, pLosses);
             auto details = pLosses->GetLossDetails(poi, erectSegmentIntervalIdx);
 
 
@@ -660,7 +655,7 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
             if (bTimeStepMethod)
             {
 
-                GET_IFACE(IBridge, pBridge);
+                EAF_GET_IFACE(IBridge, pBridge);
 
 
 
@@ -678,7 +673,7 @@ void pgsBearingDesignEngineer::GetTimeDependentShearDeformation(CGirderKey girde
                     {
 
                         PoiList vPoi;
-                        GET_IFACE(IPointOfInterest, pIPoi);
+                        EAF_GET_IFACE(IPointOfInterest, pIPoi);
 
                         if (pIPoi->ConvertPoiToGirderlineCoordinate(poi) < pIPoi->ConvertPoiToGirderlineCoordinate(pDetails->poi_fixity))
                         {
@@ -888,16 +883,16 @@ void pgsBearingDesignEngineer::GetBearingRotationDetails(pgsTypes::AnalysisType 
     const ReactionLocation& reactionLocation, CGirderKey girderKey, bool bIncludeImpact, bool bIncludeLLDF, bool isFlexural, ROTATIONDETAILS* pDetails) const
 {
 
-    GET_IFACE(IBridge, pBridge);
-    GET_IFACE(IProductForces, pProductForces);
-    GET_IFACE(IProductLoads, pProductLoads);
-    GET_IFACE(IIntervals, pIntervals);
-    GET_IFACE(ILoadFactors, pLF);
-    GET_IFACE_NOCHECK(ICamber, pCamber);
-    GET_IFACE(ILossParameters, pLossParams);
-    GET_IFACE(IPointOfInterest, pPoi);
+    EAF_GET_IFACE(IBridge, pBridge);
+    EAF_GET_IFACE(IProductForces, pProductForces);
+    EAF_GET_IFACE(IProductLoads, pProductLoads);
+    EAF_GET_IFACE(IIntervals, pIntervals);
+    EAF_GET_IFACE(ILoadFactors, pLF);
+    EAF_GET_IFACE_NOCHECK(ICamber, pCamber);
+    EAF_GET_IFACE(ILossParameters, pLossParams);
+    EAF_GET_IFACE(IPointOfInterest, pPoi);
 
-    GET_IFACE(IBearingDesignParameters, pBearingDesignParameters);
+    EAF_GET_IFACE(IBearingDesignParameters, pBearingDesignParameters);
     pBearingDesignParameters->GetBearingParameters(girderKey, pDetails);
 
     Float64 min, max, DcreepErect, RcreepErect, DcreepFinal, RcreepFinal;
@@ -1088,22 +1083,22 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
 
 
 {
-    GET_IFACE(IBearingDesignParameters, pBearingDesignParameters);
+    EAF_GET_IFACE(IBearingDesignParameters, pBearingDesignParameters);
     pBearingDesignParameters->GetBearingParameters(girderKey, pDetails);
 
-    GET_IFACE(IProductForces, pProdForces);
+    EAF_GET_IFACE(IProductForces, pProdForces);
     pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType, pgsTypes::Maximize);
     pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType, pgsTypes::Minimize);
 
     pgsTypes::BridgeAnalysisType batSS = pgsTypes::SimpleSpan;
     pgsTypes::BridgeAnalysisType batCS = pgsTypes::ContinuousSpan;
 
-    GET_IFACE(IBridge, pBridge);
+    EAF_GET_IFACE(IBridge, pBridge);
 
     
 
 
-    GET_IFACE(IIntervals, pIntervals);
+    EAF_GET_IFACE(IIntervals, pIntervals);
     IntervalIndexType diaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
     IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
     IntervalIndexType ljIntervalIdx = pIntervals->GetCastLongitudinalJointInterval();
@@ -1122,7 +1117,7 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
 
     
 
-    GET_IFACE(IReactions, pReactions);
+    EAF_GET_IFACE(IReactions, pReactions);
     std::unique_ptr<IProductReactionAdapter> pForces = std::make_unique<ProductForcesReactionAdapter>(pReactions, girderKey);
 
     const CGirderKey& thisGirderKey(reactionLocation.GirderKey);
@@ -1189,7 +1184,7 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
     // Use the adapter class to get the reaction response functions we need and to iterate piers
     std::unique_ptr<ICmbLsReactionAdapter> pComboForces;
 
-    GET_IFACE(IBearingDesign, pBearingDesign);
+    EAF_GET_IFACE(IBearingDesign, pBearingDesign);
     pComboForces = std::make_unique<CmbLsBearingDesignReactionAdapter>(pBearingDesign, lastIntervalIdx, girderKey);
 
 
@@ -1221,7 +1216,7 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
     pForces->GetLiveLoadReaction(lastIntervalIdx, pgsTypes::lltDesign, reactionLocation, maxBAT, false, true, &R1min, &R1max, &minConfig1, &maxConfig1);
     pForces->GetLiveLoadReaction(lastIntervalIdx, pgsTypes::lltDesign, reactionLocation, minBAT, false, true, &R2min, &R2max, &minConfig2, &maxConfig2);
 
-    GET_IFACE(ILiveLoadDistributionFactors, pLLDF);
+    EAF_GET_IFACE(ILiveLoadDistributionFactors, pLLDF);
     SpanIndexType spanIdx = pBridge->GetGirderGroupEndSpan(girderKey.groupIndex);
     CSpanKey spanKey(spanIdx, girderKey.girderIndex);
     Float64 lldf = pLLDF->GetDeflectionDistFactor(spanKey);
@@ -1245,7 +1240,7 @@ void pgsBearingDesignEngineer::GetBearingReactionDetails(const ReactionLocation&
     auto dwReaction = pComboForces->GetReaction(lastIntervalIdx, lcDW, reactionLocation, maxBAT, rtCumulative);
 
     // LRFD Limit States
-    GET_IFACE(ILoadFactors, pLF);
+    EAF_GET_IFACE(ILoadFactors, pLF);
     const CLoadFactors* pLoadFactors = pLF->GetLoadFactors();
     auto dcLF = pLoadFactors->GetDCMax(pgsTypes::ServiceI);
     auto dwLF = pLoadFactors->GetDWMax(pgsTypes::ServiceI);
@@ -1267,7 +1262,7 @@ void pgsBearingDesignEngineer::GetThermalExpansionDetails(CGirderKey girderKey, 
 {
 
 
-    GET_IFACE(IMaterials, pMaterials);
+    EAF_GET_IFACE(IMaterials, pMaterials);
     const CSegmentKey& segmentKey(bearing->rPoi.GetSegmentKey());
     auto concreteType = pMaterials->GetSegmentConcreteType(segmentKey);
 
@@ -1289,8 +1284,8 @@ void pgsBearingDesignEngineer::GetThermalExpansionDetails(CGirderKey girderKey, 
     bearing->max_design_temperature_moderate = WBFL::Units::ConvertToSysUnits(80.0, WBFL::Units::Measure::Fahrenheit);
     bearing->min_design_temperature_moderate = WBFL::Units::ConvertToSysUnits(10.0, WBFL::Units::Measure::Fahrenheit);
 
-    GET_IFACE(ILibrary, pLib);
-    GET_IFACE(ISpecification, pSpec);
+    EAF_GET_IFACE(ILibrary, pLib);
+    EAF_GET_IFACE(ISpecification, pSpec);
     pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
     const auto pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
     const auto& thermalFactor = pSpecEntry->GetThermalMovementCriteria();

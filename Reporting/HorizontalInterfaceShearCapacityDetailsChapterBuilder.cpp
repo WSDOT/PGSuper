@@ -45,11 +45,6 @@
 
 #include <algorithm>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -78,29 +73,29 @@ rptChapter* CHorizontalInterfaceShearCapacityDetailsChapterBuilder::Build(const 
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
    auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
    CGirderKey girderKey;
 
    if ( pGdrRptSpec )
    {
-      pGdrRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrRptSpec->GetBroker();
       girderKey = pGdrRptSpec->GetGirderKey();
    }
    else
    {
-      pGdrLineRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrLineRptSpec->GetBroker();
       girderKey = pGdrLineRptSpec->GetGirderKey();
    }
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    if (!pBridge->IsCompositeDeck())
    {
       return nullptr;
    }
 
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
 
    bool bDesign = m_bDesign;
    bool bRating = m_bRating;
@@ -110,9 +105,9 @@ rptChapter* CHorizontalInterfaceShearCapacityDetailsChapterBuilder::Build(const 
    rptParagraph* pPara = new rptParagraph();
    *pChapter << pPara;
 
-   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount() - 1;
    std::_tstring stage_name(pIntervals->GetDescription(intervalIdx));
 
@@ -142,7 +137,7 @@ rptChapter* CHorizontalInterfaceShearCapacityDetailsChapterBuilder::Build(const 
 
       if ( bRating )
       {
-         GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+         EAF_GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
          if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) && pRatingSpec->RateForShear(pgsTypes::lrDesign_Inventory) )
          {
             vLimitStates.push_back(pgsTypes::StrengthI_Inventory);

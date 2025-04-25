@@ -36,11 +36,6 @@
 #include <PgsExt\RatingArtifact.h>
 #include <PgsExt\CapacityToDemand.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 /****************************************************************************
@@ -61,8 +56,7 @@ LPCTSTR CLoadRatingChapterBuilder::GetName() const
 rptChapter* CLoadRatingChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
 
    auto pLrGirderRptSpec = std::dynamic_pointer_cast<const CLoadRatingReportSpecificationBase>(pRptSpec);
    if (!pLrGirderRptSpec)
@@ -73,7 +67,7 @@ rptChapter* CLoadRatingChapterBuilder::Build(const std::shared_ptr<const WBFL::R
 
    std::vector<CGirderKey> girderKeys = pLrGirderRptSpec->GetGirderKeys();
 
-   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+   EAF_GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -83,7 +77,7 @@ rptChapter* CLoadRatingChapterBuilder::Build(const std::shared_ptr<const WBFL::R
 
    (*pPara) << _T("Controlling Rating Factors for Selected Girders: ") << pGirderRptSpec->GetReportContextString() << rptNewLine;
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval();
    CString str;
    str.Format(_T("Load rating occurs in Interval %d: %s"),LABEL_INTERVAL(loadRatingIntervalIdx),pIntervals->GetDescription(loadRatingIntervalIdx).c_str());

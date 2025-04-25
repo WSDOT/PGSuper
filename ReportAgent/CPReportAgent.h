@@ -26,7 +26,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // CProxyIReporterEventSink
 template <class T>
-class CProxyIReporterEventSink : public IConnectionPointImpl<T, &IID_IReporterEventSink, CComDynamicUnkArray>
+class CProxyIReporterEventSink : public WBFL::EAF::EventCallbackManager<IReporterEventSink>
 {
 //IReporterEventSink : IUnknown
 public:
@@ -34,19 +34,13 @@ public:
 	{
 		T* pT = (T*)this;
 
-		pT->Lock();
+		//pT->Lock();
 		HRESULT ret = S_OK;
-		IUnknown** pp = this->m_vec.begin();
-		while (pp < this->m_vec.end())
+		for(auto& [id,callback] : this->m_Callbacks)
 		{
-			if (*pp != nullptr)
-			{
-				IReporterEventSink* pIReporterEventSink = reinterpret_cast<IReporterEventSink*>(*pp);
-				ret = pIReporterEventSink->OnReportsChanged();
-			}
-			pp++;
+			callback->OnReportsChanged();
 		}
-		pT->Unlock();
+		//pT->Unlock();
 		return ret;
 	}
 };

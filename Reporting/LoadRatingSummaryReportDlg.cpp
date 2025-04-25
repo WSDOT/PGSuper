@@ -39,17 +39,12 @@
 #include <MFCTools\AutoRegistry.h>
 #include "..\PGSuperAppPlugin\PGSPluginAppBase.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // CLoadRatingSummaryReportDlg dialog
 
 IMPLEMENT_DYNAMIC(CLoadRatingSummaryReportDlg, CDialog)
 
-CLoadRatingSummaryReportDlg::CLoadRatingSummaryReportDlg(IBroker* pBroker,const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate,CWnd* pParent)
+CLoadRatingSummaryReportDlg::CLoadRatingSummaryReportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec,UINT nIDTemplate,CWnd* pParent)
 	: CDialog(nIDTemplate, pParent), m_RptDesc(rptDesc), m_pInitRptSpec(pRptSpec)
 {
    m_Girder = 0;
@@ -111,9 +106,8 @@ void CLoadRatingSummaryReportDlg::DoDataExchange(CDataExchange* pDX)
       if (m_RadioNum == 0)
       {
          // make list of all girders along girder line
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
-         GET_IFACE2(pBroker, IBridge, pBridge);
+         auto pBroker = EAFGetBroker();
+         EAF_GET_IFACE2(pBroker, IBridge, pBridge);
          GroupIndexType ngrps = pBridge->GetGirderGroupCount();
          for (GroupIndexType igrp = 0; igrp < ngrps; igrp++)
          {
@@ -150,7 +144,7 @@ END_MESSAGE_MAP()
 void CLoadRatingSummaryReportDlg::UpdateGirderComboBox()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   GET_IFACE( IBridge, pBridge );
+   EAF_GET_IFACE( IBridge, pBridge );
 
    CComboBox* pGdrBox = (CComboBox*)GetDlgItem(IDC_GIRDER);
    Uint16 curSel = pGdrBox->GetCurSel();
@@ -240,7 +234,7 @@ BOOL CLoadRatingSummaryReportDlg::OnInitDialog()
    }
 
    // need list of groups/girders
-   GET_IFACE( IBridge, pBridge );
+   EAF_GET_IFACE( IBridge, pBridge );
    GroupGirderOnCollection coll;
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )

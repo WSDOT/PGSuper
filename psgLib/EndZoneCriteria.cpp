@@ -51,7 +51,7 @@ bool EndZoneCriteria::Compare(const EndZoneCriteria& other, const SpecLibraryEnt
    return bSame;
 }
 
-void EndZoneCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void EndZoneCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), true);
 

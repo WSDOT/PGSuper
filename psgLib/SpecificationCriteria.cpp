@@ -56,7 +56,7 @@ bool SpecificationCriteria::Compare(const SpecificationCriteria& other, const Sp
 
 
 
-void SpecificationCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void SpecificationCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;

@@ -31,11 +31,6 @@
 #include <EAF\EAFDocument.h>
 #include <LRFD\StrandPool.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 
@@ -167,11 +162,11 @@ void CTxDOTOptionalDesignGirderInputPage::DoDataExchange(CDataExchange* pDX)
 {
    CPropertyPage::DoDataExchange(pDX);
 
-   CComPtr<IBroker> pBroker = m_pBrokerRetriever->GetClassicBroker();
+   auto pBroker = m_pBrokerRetriever->GetClassicBroker();
    if (pBroker==nullptr)
       return;
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    Float64 min_fc  = WBFL::Units::ConvertToSysUnits( 4.0,  WBFL::Units::Measure::KSI); 
    Float64 max_fci = WBFL::Units::ConvertToSysUnits(10.0,  WBFL::Units::Measure::KSI); 

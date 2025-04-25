@@ -28,11 +28,6 @@
 #include <IFace\Intervals.h>
 #include <PgsExt\TimelineManager.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CProductForcesChapterBuilder::CProductForcesChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
@@ -70,10 +65,10 @@ rptChapter* CProductForcesChapterBuilder::Build(const std::shared_ptr<const WBFL
    else
       pSegmentRptSpec->GetBroker(&pBroker);
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits, pDisplayUnits );
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   GET_IFACE2(pBroker,IPointOfInterest,pSegmentPOI);
-   GET_IFACE2(pBroker,IEventMap,pEventMap);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits, pDisplayUnits );
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pSegmentPOI);
+   EAF_GET_IFACE2(pBroker,IEventMap,pEventMap);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),  false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, loc,   pDisplayUnits->GetAlignmentLengthUnit(),  false );
@@ -85,7 +80,7 @@ rptChapter* CProductForcesChapterBuilder::Build(const std::shared_ptr<const WBFL
 
    pgsTypes::ProductForceType forceType = pgsTypes::pftGirder;
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    IntervalIndexType startIntervalIdx = pIntervals->GetFirstSegmentErectionInterval();
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
@@ -138,8 +133,8 @@ rptChapter* CProductForcesChapterBuilder::Build(const std::shared_ptr<const WBFL
       searchKey.segmentIndex = ALL_SEGMENTS;
       std::vector<pgsPointOfInterest> vPOI(pSegmentPOI->GetPointsOfInterest(searchKey));
 
-      GET_IFACE2(pBroker,IProductForces2,pProductForces);
-      GET_IFACE2(pBroker,ISpecification,pSpec);
+      EAF_GET_IFACE2(pBroker,IProductForces2,pProductForces);
+      EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
       pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
       ATLASSERT(analysisType == pgsTypes::Continuous);
       pgsTypes::BridgeAnalysisType bat = pgsTypes::ContinuousSpan;

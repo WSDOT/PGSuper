@@ -41,11 +41,6 @@
 #include <Reporting/BearingTimeStepShearDeformationTable.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define DELTA_P    symbol(DELTA) << _T("P")
 #define DELTA_M    symbol(DELTA) << _T("M")
@@ -98,11 +93,10 @@ rptChapter* CBearingTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<c
 
    auto pBTSDRptSpec = std::dynamic_pointer_cast<const CBearingTimeStepDetailsReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
-   pBTSDRptSpec->GetBroker(&pBroker);
+   auto pBroker = pBTSDRptSpec->GetBroker();
    const ReactionLocation& rptLocation(pBTSDRptSpec->GetReactionLocation());
    const CGirderKey& girderKey(rptLocation.GirderKey);
-   GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
 
 
 
@@ -113,7 +107,7 @@ rptChapter* CBearingTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<c
    }
 
    SHEARDEFORMATIONDETAILS details;
-   GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
+   EAF_GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
    pBearingDesignParameters->GetBearingParameters(girderKey, &details);
 
 
@@ -124,8 +118,8 @@ rptChapter* CBearingTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<c
    }
 
    pBearingDesignParameters->GetTimeDependentShearDeformation(girderKey, &details);
-   GET_IFACE2(pBroker, IIntervals, pIntervals);
-   GET_IFACE2(pBroker, IPointOfInterest, pPOI);
+   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
+   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPOI);
 
    *pPara << rptNewLine;
    *pPara << _T("Incremental ") << symbol(epsilon) << _T(" = longitudinal shear strain from time-dependent effects occuring during this interval.") << rptNewLine;

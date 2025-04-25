@@ -25,11 +25,6 @@
 #include "MyChapterBuilder.h"
 #include "MyReportSpecification.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CMyChapterBuilder::CMyChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)

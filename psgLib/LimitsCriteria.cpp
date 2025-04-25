@@ -118,7 +118,7 @@ bool LimitsCriteria::Compare(const LimitsCriteria& other, const SpecLibraryEntry
    return bSame;
 }
 
-void LimitsCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void LimitsCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
 }
 

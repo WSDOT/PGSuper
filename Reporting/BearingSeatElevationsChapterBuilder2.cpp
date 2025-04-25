@@ -32,11 +32,6 @@
 
 #include <PGSuperUnits.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CBearingSeatElevationsChapterBuilderBase::CBearingSeatElevationsChapterBuilderBase(TableType type, bool bSelect) :
 CPGSuperChapterBuilder(bSelect),
@@ -50,11 +45,10 @@ CBearingSeatElevationsChapterBuilderBase::~CBearingSeatElevationsChapterBuilderB
 
 rptChapter* CBearingSeatElevationsChapterBuilderBase::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   auto pBroker = EAFGetBroker();
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -224,7 +218,7 @@ rptChapter* CBearingSeatElevationsChapterBuilderBase::Build(const std::shared_pt
 
 
 rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildTable(const CString& strLabel,PierIndexType pierIdx,  pgsTypes::PierFaceType face, 
-                                                                 IEAFDisplayUnits* pDisplayUnits, IBridge* pBridge, IBridgeDescription* pIBridgeDesc,GirderIndexType girderIndex) const
+                                                                 std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, IBridge* pBridge, IBridgeDescription* pIBridgeDesc,GirderIndexType girderIndex) const
 {
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
@@ -307,7 +301,7 @@ rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildTable(const CString& 
 }
 
 rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildGirderEdgeTable(const CString& strLabel,PierIndexType pierIdx,  pgsTypes::PierFaceType face, 
-                                                                 IEAFDisplayUnits* pDisplayUnits, IBridge* pBridge, IBridgeDescription* pIBridgeDesc,GirderIndexType girderIndex) const
+                                                                 std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, IBridge* pBridge, IBridgeDescription* pIBridgeDesc,GirderIndexType girderIndex) const
 {
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();

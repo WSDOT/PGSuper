@@ -53,11 +53,6 @@
 
 #include <algorithm>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // create a dummy unit conversion tool to pacify the graph constructor
@@ -179,7 +174,7 @@ int CConcretePropertyGraphBuilder::InitializeGraphController(CWnd* pParent,UINT 
    // create the graph definitions before creating the graph controller.
    // our graph controller will call GetLoadCaseNames to populate the 
    // list of load cases
-   EAFGetBroker(&m_pBroker);
+   m_pBroker = EAFGetBroker();
 
    // setup the graph
    m_Graph.SetClientAreaColor(GRAPH_BACKGROUND);
@@ -187,7 +182,7 @@ int CConcretePropertyGraphBuilder::InitializeGraphController(CWnd* pParent,UINT 
 
    m_Graph.SetTitle(_T("Concrete Properties"));
 
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    // x axis
    m_pTimeFormat = new WBFL::Units::ScalarTool(m_Time);
@@ -243,7 +238,7 @@ void CConcretePropertyGraphBuilder::ShowGrid(bool bShowGrid)
 
 bool CConcretePropertyGraphBuilder::UpdateNow()
 {
-   GET_IFACE(IProgress,pProgress);
+   EAF_GET_IFACE(IProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
 
    pProgress->UpdateMessage(_T("Building Graph"));
@@ -317,7 +312,7 @@ void CConcretePropertyGraphBuilder::UpdateYAxis()
    {
    case GRAPH_TYPE_FC:
       {
-      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+      EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
       const WBFL::Units::StressData& stressUnit = pDisplayUnits->GetStressUnit();
       m_pYFormat = new WBFL::Units::StressTool(stressUnit);
       m_Graph.SetYAxisValueFormat(m_pYFormat);
@@ -327,7 +322,7 @@ void CConcretePropertyGraphBuilder::UpdateYAxis()
       }
    case GRAPH_TYPE_EC:
       {
-      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+      EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
       const WBFL::Units::StressData& stressUnit = pDisplayUnits->GetModEUnit();
       m_pYFormat = new WBFL::Units::StressTool(stressUnit);
       m_Graph.SetYAxisValueFormat(m_pYFormat);
@@ -383,8 +378,8 @@ void CConcretePropertyGraphBuilder::UpdateGraphTitle()
    }
    else if ( m_GraphElement == GRAPH_ELEMENT_CLOSURE )
    {
-      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-      GET_IFACE(IBridgeDescription,pIBridgeDesc);
+      EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+      EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
       const CClosureJointData* pClosure = pIBridgeDesc->GetClosureJointData(m_ClosureKey);
       CString strLabel;
       if ( pClosure->GetTemporarySupport() )
@@ -436,12 +431,12 @@ void CConcretePropertyGraphBuilder::UpdateGraphData()
       strLabel = _T("Y");
    }
 
-   GET_IFACE(IMaterials,pMaterials);
-   GET_IFACE(IIntervals,pIntervals);
+   EAF_GET_IFACE(IMaterials,pMaterials);
+   EAF_GET_IFACE(IIntervals,pIntervals);
 
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
    Float64 releaseTime = pIntervals->GetTime(releaseIntervalIdx,pgsTypes::Start);
-   GET_IFACE(ILossParameters,pLossParams);
+   EAF_GET_IFACE(ILossParameters,pLossParams);
    bool bIsTimeStep = pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false;
 
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();

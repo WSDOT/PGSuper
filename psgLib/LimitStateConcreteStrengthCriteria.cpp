@@ -40,7 +40,7 @@ bool LimitStateConcreteStrengthCriteria::Compare(const LimitStateConcreteStrengt
    return bSame;
 }
 
-void LimitStateConcreteStrengthCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void LimitStateConcreteStrengthCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_SCALAR_PROTOTYPE(rptRcPercentage, percentage, pDisplayUnits->GetPercentageFormat());
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());

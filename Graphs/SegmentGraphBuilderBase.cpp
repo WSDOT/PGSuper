@@ -47,11 +47,6 @@
 
 #include <MFCTools\MFCTools.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // create a dummy unit conversion tool to pacify the graph constructor
@@ -117,7 +112,7 @@ bool CSegmentGraphBuilderBase::HandleDoubleClick(UINT nFlags,CPoint point)
 {
    const CSegmentKey segmentKey(m_pGraphController->GetSegmentKey());
 
-   GET_IFACE(IEditByUI,pEditByUI);
+   EAF_GET_IFACE(IEditByUI,pEditByUI);
    pEditByUI->EditSegmentDescription(segmentKey,EGS_GENERAL);
 
    return true;
@@ -125,7 +120,7 @@ bool CSegmentGraphBuilderBase::HandleDoubleClick(UINT nFlags,CPoint point)
 
 int CSegmentGraphBuilderBase::InitializeGraphController(CWnd* pParent,UINT nID)
 {
-   EAFGetBroker(&m_pBroker);
+   m_pBroker = EAFGetBroker();
 
    m_pGraphController = CreateGraphController();
 
@@ -162,7 +157,7 @@ void CSegmentGraphBuilderBase::UpdateXAxis()
       m_pXFormat = nullptr;
    }
 
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::LengthData& lengthUnit = pDisplayUnits->GetSpanLengthUnit();
    m_pXFormat = new WBFL::Units::LengthTool(lengthUnit);
    m_Graph.SetXAxisValueFormat(m_pXFormat);
@@ -179,7 +174,7 @@ void CSegmentGraphBuilderBase::UpdateYAxis()
       m_pYFormat = nullptr;
    }
 
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::StressData& stressUnit = pDisplayUnits->GetStressUnit();
    m_pYFormat = new WBFL::Units::StressTool(stressUnit);
    m_Graph.SetYAxisValueFormat(m_pYFormat);
@@ -219,7 +214,7 @@ Float64 CSegmentGraphBuilderBase::ComputeShift(const CSegmentKey& segmentKey)
       return 0;
    }
 
-   GET_IFACE(IPointOfInterest,pPoi);
+   EAF_GET_IFACE(IPointOfInterest,pPoi);
    pgsPointOfInterest poi(segmentKey,0.0); // start of our segment
    Float64 Xgl = pPoi->ConvertPoiToGirderlineCoordinate(poi);
 
@@ -232,7 +227,7 @@ Float64 CSegmentGraphBuilderBase::ComputeShift(const CSegmentKey& segmentKey)
 
 void CSegmentGraphBuilderBase::GetXValues(const PoiList& vPoi,std::vector<Float64>* pXVals)
 {
-   GET_IFACE(IPointOfInterest,pPoi);
+   EAF_GET_IFACE(IPointOfInterest,pPoi);
 
    pXVals->clear();
    pXVals->reserve(vPoi.size());
@@ -327,8 +322,8 @@ void CSegmentGraphBuilderBase::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
 
       // make the minimum size of the graph include the size of the girder. this makes the girder display
       // properly when there aren't any points to graph
-      GET_IFACE(IBridge,pBridge);
-      GET_IFACE(IPointOfInterest,pPoi);
+      EAF_GET_IFACE(IBridge,pBridge);
+      EAF_GET_IFACE(IPointOfInterest,pPoi);
       pgsPointOfInterest startPoi(segmentKey, 0.0);
       Float64 Xstart = pPoi->ConvertPoiToGirderlineCoordinate(startPoi);
 

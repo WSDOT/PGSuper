@@ -32,53 +32,20 @@
 
 #include <PgsExt\PrecastSegmentData.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-//======================== LIFECYCLE  =======================================
-CPrestressRotationTable::CPrestressRotationTable()
-{
-}
-
-CPrestressRotationTable::CPrestressRotationTable(const CPrestressRotationTable& rOther)
-{
-   MakeCopy(rOther);
-}
-
-CPrestressRotationTable::~CPrestressRotationTable()
-{
-}
-
-//======================== OPERATORS  =======================================
-CPrestressRotationTable& CPrestressRotationTable::operator= (const CPrestressRotationTable& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
-//======================== OPERATIONS =======================================
-rptRcTable* CPrestressRotationTable::Build(IBroker* pBroker,const CGirderKey& girderKey, pgsTypes::AnalysisType analysisType, IntervalIndexType intervalIdx, IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CPrestressRotationTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, pgsTypes::AnalysisType analysisType, IntervalIndexType intervalIdx, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptAngleUnitValue, rotation, pDisplayUnits->GetRadAngleUnit(), false );
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
-   GET_IFACE2(pBroker, IProductLoads, pProductLoads);
-   GET_IFACE2(pBroker, IPointOfInterest, pPOI);
-   GET_IFACE2(pBroker, IProductForces, pProdForces);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPOI);
+   EAF_GET_IFACE2(pBroker, IProductForces, pProdForces);
 
-   GET_IFACE2_NOCHECK(pBroker, ICamber, pCamber);
+   EAF_GET_IFACE2_NOCHECK(pBroker, ICamber, pCamber);
 
-   GET_IFACE2(pBroker, IGirderTendonGeometry, pTendonGeom);
+   EAF_GET_IFACE2(pBroker, IGirderTendonGeometry, pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
    ColumnIndexType nCols = 2;
    if (0 < nDucts)
@@ -86,7 +53,7 @@ rptRcTable* CPrestressRotationTable::Build(IBroker* pBroker,const CGirderKey& gi
       nCols++;
    }
 
-   GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
    bool bTimeStep = (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false);
    if (bTimeStep)
    {
@@ -153,10 +120,10 @@ rptRcTable* CPrestressRotationTable::Build(IBroker* pBroker,const CGirderKey& gi
       vPoi.insert(vPoi.end(), vSegPoi.begin(), vSegPoi.end());
    }
 
-   GET_IFACE2(pBroker,IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription, pIBridgeDesc);
    PierIndexType nPiers = pBridge->GetPierCount();
 
-   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
    RowIndexType row = pTable->GetNumberOfHeaderRows();
    for(const pgsPointOfInterest& poi : vPoi)
    {
@@ -204,32 +171,3 @@ rptRcTable* CPrestressRotationTable::Build(IBroker* pBroker,const CGirderKey& gi
 
    return pTable;
 }
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-void CPrestressRotationTable::MakeCopy(const CPrestressRotationTable& rOther)
-{
-   // Add copy code here...
-}
-
-void CPrestressRotationTable::MakeAssignment(const CPrestressRotationTable& rOther)
-{
-   MakeCopy( rOther );
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

@@ -27,7 +27,7 @@
 #include <Reporting\PGSuperChapterBuilder.h>
 
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 
@@ -60,5 +60,5 @@ private:
    CLiveLoadDetailsChapterBuilder(const CLiveLoadDetailsChapterBuilder&) = delete;
    CLiveLoadDetailsChapterBuilder& operator=(const CLiveLoadDetailsChapterBuilder&) = delete;
 
-   static void ReportLiveLoad(IBroker* pBroker, std::_tstring& load_name, rptParagraph* pPara,IEAFDisplayUnits* pDisplayUnits);
+   static void ReportLiveLoad(std::shared_ptr<WBFL::EAF::Broker> pBroker, std::_tstring& load_name, rptParagraph* pPara,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 };

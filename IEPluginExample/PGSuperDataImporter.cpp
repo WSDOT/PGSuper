@@ -74,10 +74,10 @@ STDMETHODIMP CPGSuperDataImporter::Import(IBroker* pBroker)
       alignmentData.xRefPoint = 50;
       alignmentData.yRefPoint = 50;
 
-      GET_IFACE2(pBroker, IEvents, pEvents);
+      EAF_GET_IFACE2(pBroker, IEvents, pEvents);
       pEvents->HoldEvents();
 
-      GET_IFACE2(pBroker, IRoadwayData, pRoadway);
+      EAF_GET_IFACE2(pBroker, IRoadwayData, pRoadway);
       pRoadway->SetAlignmentData2(alignmentData);
 
       pEvents->FirePendingEvents();

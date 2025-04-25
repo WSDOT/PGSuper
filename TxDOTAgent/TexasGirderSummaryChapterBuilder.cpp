@@ -48,13 +48,8 @@
 
 #include <WBFLCogo.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-static void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits);
+static void girder_line_geometry(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
 /****************************************************************************
 CLASS
@@ -80,14 +75,13 @@ LPCTSTR CTexasGirderSummaryChapterBuilder::GetName() const
 rptChapter* CTexasGirderSummaryChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
    // This is a single segment report
    CSegmentKey segmentKey(girderKey,0);
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -135,7 +129,7 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTexasGirderSummaryChapterBuild
 //======================== INQUIRY    =======================================
 
 ////////////////////////// PRIVATE    ///////////////////////////////////////
-void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits)
+void girder_line_geometry(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -150,7 +144,7 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    INIT_UV_PROTOTYPE( rptPressureUnitValue, olay,      pDisplayUnits->GetOverlayWeightUnit(), true );
 
    // Get the interfaces we need
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
@@ -163,8 +157,8 @@ void girder_line_geometry(rptChapter* pChapter,IBroker* pBroker,const CSegmentKe
    rptLengthUnitValue* pUnitValue = (IsGirderSpacing(pBridgeDesc->GetGirderSpacingType()) ? &length : &component);
 
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    std::_tstring strGirderSpacingMeasureAtStartOfSpan, strGirderSpacingMeasureAtEndOfSpan;
    std::_tstring* pStr;
    for ( int i = 0; i < 2; i++ )

@@ -37,11 +37,6 @@
 #include <LRFD\Rebar.h>
 #include <LRFD\RebarPool.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -63,8 +58,8 @@ CStirrupDetailingCheckTable::~CStirrupDetailingCheckTable()
 //======================== OPERATORS  =======================================
 
 //======================== OPERATIONS =======================================
-rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,
-                                               IEAFDisplayUnits* pDisplayUnits,
+rptRcTable* CStirrupDetailingCheckTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsGirderArtifact* pGirderArtifact,
+                                               std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,
                                                IntervalIndexType intervalIdx,
                                                pgsTypes::LimitState ls,
                                                bool* pWriteNote) const
@@ -73,11 +68,11 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,const pgsGirderA
 
    *pWriteNote = false;
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
    bool IsUHPC = false;
-   GET_IFACE2(pBroker, IMaterials, pMaterials);
+   EAF_GET_IFACE2(pBroker, IMaterials, pMaterials);
    for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
    {
       if (pMaterials->GetSegmentConcreteType(CSegmentKey(girderKey, segIdx)) == pgsTypes::UHPC)
@@ -117,7 +112,7 @@ rptRcTable* CStirrupDetailingCheckTable::Build(IBroker* pBroker,const pgsGirderA
    INIT_UV_PROTOTYPE( rptAreaPerLengthValue, AvS,      pDisplayUnits->GetAvOverSUnit(),      false );
    INIT_UV_PROTOTYPE( rptLengthSectionValue, dim,      pDisplayUnits->GetComponentDimUnit(), false );
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    // Fill up the table

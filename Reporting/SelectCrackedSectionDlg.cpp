@@ -37,15 +37,10 @@
 
 // CSelectCrackedSectionDlg dialog
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 IMPLEMENT_DYNAMIC(CSelectCrackedSectionDlg, CDialog)
 
-CSelectCrackedSectionDlg::CSelectCrackedSectionDlg(IBroker* pBroker,std::shared_ptr<CCrackedSectionReportSpecification>& pRptSpec,CWnd* pParent /*=nullptr*/)
+CSelectCrackedSectionDlg::CSelectCrackedSectionDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<CCrackedSectionReportSpecification>& pRptSpec,CWnd* pParent /*=nullptr*/)
 	: CDialog(CSelectCrackedSectionDlg::IDD, pParent)
    , m_SliderPos(0)
    , m_pRptSpec(pRptSpec)
@@ -101,7 +96,7 @@ END_MESSAGE_MAP()
 
 BOOL CSelectCrackedSectionDlg::OnInitDialog()
 {
-   GET_IFACE( IBridge, pBridge );
+   EAF_GET_IFACE( IBridge, pBridge );
    m_GirderKey = m_InitialPOI.GetSegmentKey();
 
    CDialog::OnInitDialog();
@@ -160,7 +155,7 @@ void CSelectCrackedSectionDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pS
 
 void CSelectCrackedSectionDlg::UpdateGirderComboBox()
 {
-   GET_IFACE(IBridge, pBridge);
+   EAF_GET_IFACE(IBridge, pBridge);
 
    int curSel = m_cbGirder.GetCurSel();
    if (curSel == CB_ERR)
@@ -184,7 +179,7 @@ void CSelectCrackedSectionDlg::UpdateGirderComboBox()
 
 void CSelectCrackedSectionDlg::UpdateSliderLabel()
 {
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    CString strLabel;
    int sliderPos = m_Slider.GetPos();
@@ -228,7 +223,7 @@ void CSelectCrackedSectionDlg::OnGirderChanged()
 
 void CSelectCrackedSectionDlg::UpdatePOI()
 {
-   GET_IFACE(IPointOfInterest,pPOI);
+   EAF_GET_IFACE(IPointOfInterest,pPOI);
 
    // Get available pois from report spec so both classes are in synch
    CSegmentKey segmentKey(m_GirderKey, ALL_SEGMENTS);

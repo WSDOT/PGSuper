@@ -53,7 +53,7 @@ bool HaunchCriteria::Compare(const HaunchCriteria& other, std::vector<std::uniqu
    return bSame;
 }
 
-void HaunchCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void HaunchCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), true);
 

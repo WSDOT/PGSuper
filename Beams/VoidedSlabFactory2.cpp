@@ -145,7 +145,7 @@ void CVoidedSlab2Factory::CreateSegment(IBroker* pBroker,StatusGroupIDType statu
    segment.CoCreateInstance(CLSID_VoidedSlabEndBlockSegment);
 
    // Build up the beam shape
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const CSplicedGirderData*  pGirder     = pGroup->GetGirder(segmentKey.girderIndex);
@@ -182,7 +182,7 @@ void CVoidedSlab2Factory::CreateSegment(IBroker* pBroker,StatusGroupIDType statu
    }
 
    // Beam materials
-   GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   EAF_GET_IFACE2(pBroker,ILossParameters,pLossParams);
    CComPtr<IMaterial> material;
    if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
@@ -192,8 +192,8 @@ void CVoidedSlab2Factory::CreateSegment(IBroker* pBroker,StatusGroupIDType statu
    }
    else
    {
-      GET_IFACE2(pBroker,IIntervals,pIntervals);
-      GET_IFACE2(pBroker,IMaterials,pMaterial);
+      EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+      EAF_GET_IFACE2(pBroker,IMaterials,pMaterial);
       material.CoCreateInstance(CLSID_Material);
 
       IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
@@ -231,7 +231,7 @@ void CVoidedSlab2Factory::CreateSegmentShape(IBroker* pBroker, const CPrecastSeg
 
    DimensionAndPositionBeam(dimensions, beam);
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    Float64 Lg = pBridge->GetSegmentLength(pSegment->GetSegmentKey());
    Float64 endBlockLength = GetDimension(dimensions, _T("EndBlockLength"));
    if (IsInEndBlock(Xs, sectionBias, endBlockLength, Lg))
@@ -253,7 +253,7 @@ Float64 CVoidedSlab2Factory::GetSegmentHeight(IBroker* pBroker, const CPrecastSe
 
 void CVoidedSlab2Factory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
 {
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 gdrLength = pBridge->GetSegmentLength(segmentKey);
 
    pgsPointOfInterest poiStart(segmentKey,0.00,   POI_SECTCHANGE_RIGHTFACE );
@@ -263,7 +263,7 @@ void CVoidedSlab2Factory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,c
    VERIFY(pPoiMgr->AddPointOfInterest(poiEnd) != INVALID_ID);
 
    // put section breaks just on either side of the end blocks/void interface
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const GirderLibraryEntry* pGdrEntry = pGroup->GetGirder(segmentKey.girderIndex)->GetGirderLibraryEntry();
@@ -294,7 +294,7 @@ void CVoidedSlab2Factory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,c
 
 void CVoidedSlab2Factory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng) const
 {
-   GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
 
@@ -326,7 +326,7 @@ void CVoidedSlab2Factory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupI
 
 void CVoidedSlab2Factory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const
 {
-   GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       CComObject<CTimeStepLossEngineer>* pEngineer;
@@ -341,7 +341,7 @@ void CVoidedSlab2Factory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDTyp
       CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
        
       // depends on # of voids
-      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+      EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
       const GirderLibraryEntry* pGdrEntry = pGroup->GetGirder(girderKey.girderIndex)->GetGirderLibraryEntry();
@@ -791,7 +791,7 @@ bool CVoidedSlab2Factory::IsPrismatic(const CSegmentKey& segmentKey) const
 {
    CComPtr<IBroker> pBroker;
    EAFGetBroker(&pBroker);
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const CSplicedGirderData*  pGirder = pGroup->GetGirder(segmentKey.girderIndex);
@@ -900,8 +900,8 @@ std::_tstring CVoidedSlab2Factory::GetShearDimensionsSchematicImage(pgsTypes::Su
 
 std::_tstring CVoidedSlab2Factory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const
 {
-   GET_IFACE2(pBroker, ILibrary,       pLib);
-   GET_IFACE2(pBroker, ISpecification, pSpec);
+   EAF_GET_IFACE2(pBroker, ILibrary,       pLib);
+   EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
    const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();
@@ -918,8 +918,8 @@ std::_tstring CVoidedSlab2Factory::GetInteriorGirderEffectiveFlangeWidthImage(IB
 
 std::_tstring CVoidedSlab2Factory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const
 {
-   GET_IFACE2(pBroker, ILibrary,       pLib);
-   GET_IFACE2(pBroker, ISpecification, pSpec);
+   EAF_GET_IFACE2(pBroker, ILibrary,       pLib);
+   EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
    const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();

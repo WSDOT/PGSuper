@@ -52,11 +52,6 @@
 #include <PgsExt\GirderArtifact.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -82,14 +77,13 @@ LPCTSTR CTexasStressChecksChapterBuilder::GetName() const
 rptChapter* CTexasStressChecksChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
    // This is a single segment report
    CSegmentKey segmentKey(girderKey,0);
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
@@ -97,17 +91,17 @@ rptChapter* CTexasStressChecksChapterBuilder::Build(const std::shared_ptr<const 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
    *pPara << _T("Specification = ") << pSpec->GetSpecification() << rptNewLine;
 
 
-   GET_IFACE2(pBroker,IArtifact,pArtifacts);
+   EAF_GET_IFACE2(pBroker,IArtifact,pArtifacts);
    const pgsGirderArtifact* pGirderArtifact = pArtifacts->GetGirderArtifact(girderKey);
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
    // report for the actual stress checks that were done
-   GET_IFACE2(pBroker, IStressCheck, pStressCheck);
+   EAF_GET_IFACE2(pBroker, IStressCheck, pStressCheck);
    std::vector<StressCheckTask> vStressCheckTasks = pStressCheck->GetStressCheckTasks(girderKey);
    for (const auto& task : vStressCheckTasks)
    {

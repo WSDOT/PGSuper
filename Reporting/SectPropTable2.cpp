@@ -34,22 +34,17 @@
 
 #include <sstream>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
+rptRcTable* CSectionPropertiesTable2::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,
                                             pgsTypes::SectionPropertyType spType,
                                             const CSegmentKey& segmentKey,
                                             IntervalIndexType intervalIdx,
-                                            IEAFDisplayUnits* pDisplayUnits) const
+                                            std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    USES_CONVERSION;
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
 
    IntervalIndexType erectionIntervalIdx            = pIntervals->GetErectSegmentInterval(segmentKey);
    IntervalIndexType firstCompositeDeckIntervalIdx  = pIntervals->GetFirstCompositeDeckInterval();
@@ -243,7 +238,7 @@ rptRcTable* CSectionPropertiesTable2::Build(IBroker* pBroker,
    location.IncludeSpanAndGirder(segmentKey.groupIndex == ALL_GROUPS || segmentKey.segmentIndex == ALL_SEGMENTS);
 
    // Get the interface pointers we need
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
 
    // Get all the tabular poi's for flexure and shear
    // Merge the two vectors to form one vector to report on.

@@ -28,7 +28,7 @@
 #include <Reporting\PGSuperChapterBuilder.h>
 
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 

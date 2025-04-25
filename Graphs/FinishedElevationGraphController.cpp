@@ -44,11 +44,6 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <PgsExt\EditBridge.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 IMPLEMENT_DYNCREATE(CFinishedElevationGraphController,CMultiIntervalGirderGraphControllerBase)
 
@@ -204,7 +199,7 @@ void CFinishedElevationGraphController::OnShowElevationTolerance()
 
 void CFinishedElevationGraphController::OnEditHaunch()
 {
-   GET_IFACE(IEditByUI,pEdit);
+   EAF_GET_IFACE(IEditByUI,pEdit);
    pEdit->EditHaunch();
 
    UpdateControlStatus(false);
@@ -212,7 +207,7 @@ void CFinishedElevationGraphController::OnEditHaunch()
 
 void CFinishedElevationGraphController::OnFillHaunchData()
 {
-   GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE(IBridge,pBridge);
 
    // See if we can even do this
    if (pBridge->GetHaunchInputDepthType() == pgsTypes::hidACamber)
@@ -224,7 +219,7 @@ void CFinishedElevationGraphController::OnFillHaunchData()
    {
       const CGirderKey& girderKey = GetGirderKey();
 
-      GET_IFACE(IDesign,pDesign);
+      EAF_GET_IFACE(IDesign,pDesign);
       pDesign->DesignHaunch(girderKey);
    }
 }
@@ -260,7 +255,7 @@ void CFinishedElevationGraphController::OnGraphTypeChanged()
       pBoxLoc->EnableWindow(TRUE);
    }
 
-   GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE(IBridge,pBridge);
    pgsTypes::HaunchInputDepthType haunchInputType = pBridge->GetHaunchInputDepthType();
 
    // Elevation tolerance only available for differential view of direct haunch
@@ -340,9 +335,9 @@ void CFinishedElevationGraphController::OnCommandUIGraphExport(CCmdUI* pCmdUI)
 
 IntervalIndexType CFinishedElevationGraphController::GetFirstInterval()
 {
-   GET_IFACE_NOCHECK(IBridge,pBridge);
-   GET_IFACE(IIntervals,pIntervals);
-   GET_IFACE(ILossParameters,pLossParams);
+   EAF_GET_IFACE_NOCHECK(IBridge,pBridge);
+   EAF_GET_IFACE(IIntervals,pIntervals);
+   EAF_GET_IFACE(ILossParameters,pLossParams);
    if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP || pBridge->GetHaunchInputDepthType() == pgsTypes::hidACamber)
    {
       // We can only compute camber at the GCE.
@@ -356,9 +351,9 @@ IntervalIndexType CFinishedElevationGraphController::GetFirstInterval()
 
 IntervalIndexType CFinishedElevationGraphController::GetLastInterval()
 {
-   GET_IFACE_NOCHECK(IBridge,pBridge);
-   GET_IFACE(IIntervals,pIntervals);
-   GET_IFACE(ILossParameters,pLossParams);
+   EAF_GET_IFACE_NOCHECK(IBridge,pBridge);
+   EAF_GET_IFACE(IIntervals,pIntervals);
+   EAF_GET_IFACE(ILossParameters,pLossParams);
    if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP || pBridge->GetHaunchInputDepthType() == pgsTypes::hidACamber)
    {
       // We can only compute camber at the GCE.
@@ -372,7 +367,7 @@ IntervalIndexType CFinishedElevationGraphController::GetLastInterval()
 
 void CFinishedElevationGraphController::UpdateControlStatus(bool bInit)
 {
-   GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE(IBridge,pBridge);
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
 
    CButton* pBut = (CButton*)GetDlgItem(IDC_FINISHED_DECK_BOTTOM);

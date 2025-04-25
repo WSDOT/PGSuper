@@ -37,11 +37,6 @@
 
 #include <algorithm>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // free functions
 static bool IsSlabLoadUniform(const std::vector<SlabLoad>& slabLoads, pgsTypes::SupportedDeckType deckType);
@@ -92,24 +87,24 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(const std::shared_ptr<const WBF
    auto pGdrLineRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
    auto pMultiGirderRptSpec = std::dynamic_pointer_cast<const CMultiGirderReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> pBroker;
    std::vector<CGirderKey> girderKeys;
    if ( pGdrRptSpec )
    {
-      pGdrRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrRptSpec->GetBroker();
       girderKeys.push_back(pGdrRptSpec->GetGirderKey());
    }
    else if ( pGdrLineRptSpec)
    {
-      pGdrLineRptSpec->GetBroker(&pBroker);
+      pBroker = pGdrLineRptSpec->GetBroker();
       CGirderKey girderKey = pGdrLineRptSpec->GetGirderKey();
 
-      GET_IFACE2(pBroker,IBridge,pBridge);
+      EAF_GET_IFACE2(pBroker,IBridge,pBridge);
       pBridge->GetGirderline(girderKey, &girderKeys);
    }
    else if ( pMultiGirderRptSpec)
    {
-      pMultiGirderRptSpec->GetBroker(&pBroker);
+      pBroker = pMultiGirderRptSpec->GetBroker();
       girderKeys = pMultiGirderRptSpec->GetGirderKeys();
    }
    else
@@ -117,13 +112,13 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(const std::shared_ptr<const WBF
       ATLASSERT(false); // not expecting a different kind of report spec
    }
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
    bool bDesign = m_bDesign;
    bool bRating = m_bRating;
 
-   GET_IFACE2(pBroker,IDocumentType, pDocType);
+   EAF_GET_IFACE2(pBroker,IDocumentType, pDocType);
    bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
@@ -137,7 +132,7 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(const std::shared_ptr<const WBF
    rptRcTable* p_table;
 
    // See if any user defined loads
-   GET_IFACE2(pBroker,IUserDefinedLoadData,pUserDefinedLoads);
+   EAF_GET_IFACE2(pBroker,IUserDefinedLoadData,pUserDefinedLoads);
    IndexType nPointLoads  = pUserDefinedLoads->GetPointLoadCount();
    IndexType nDistLoads   = pUserDefinedLoads->GetDistributedLoadCount();
    IndexType nMomentLoads = pUserDefinedLoads->GetMomentLoadCount();
@@ -145,8 +140,8 @@ rptChapter* CLoadingDetailsChapterBuilder::Build(const std::shared_ptr<const WBF
 
    bool one_girder_has_shear_key = false;
             
-   GET_IFACE2(pBroker,IProductLoads,pProdLoads);
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IProductLoads,pProdLoads);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    for (const auto& girderKey : girderKeys)
    {
       pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -337,9 +332,9 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLoadingDetailsChapterBuilder::
 }
 
 
-void CLoadingDetailsChapterBuilder::ReportPedestrianLoad(rptChapter* pChapter,IBroker* pBroker,IBridge* pBridge,IProductLoads* pProdLoads,IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& thisSegmentKey) const
+void CLoadingDetailsChapterBuilder::ReportPedestrianLoad(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,IBridge* pBridge,IProductLoads* pProdLoads,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const CSegmentKey& thisSegmentKey) const
 {
-   GET_IFACE2(pBroker,IBarriers,pBarriers);
+   EAF_GET_IFACE2(pBroker,IBarriers,pBarriers);
    rptParagraph* pPara = nullptr;
 
    INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, fpl,    pDisplayUnits->GetForcePerLengthUnit(), false );
@@ -449,7 +444,7 @@ void CLoadingDetailsChapterBuilder::ReportPedestrianLoad(rptChapter* pChapter,IB
    }
 }
 
-void CLoadingDetailsChapterBuilder::ReportSlabLoad(IBroker* pBroker, rptChapter* pChapter,IBridge* pBridge,IProductLoads* pProdLoads,IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& thisSegmentKey) const
+void CLoadingDetailsChapterBuilder::ReportSlabLoad(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,IBridge* pBridge,IProductLoads* pProdLoads,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const CSegmentKey& thisSegmentKey) const
 {
    // slab loads between supports
    rptParagraph* pPara = nullptr;
@@ -466,8 +461,8 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(IBroker* pBroker, rptChapter*
    
    if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
    {
-      GET_IFACE2_NOCHECK(pBroker,IIntervals,pIntervals);
-      GET_IFACE2_NOCHECK(pBroker,IMaterials,pMaterial);
+      EAF_GET_IFACE2_NOCHECK(pBroker,IIntervals,pIntervals);
+      EAF_GET_IFACE2_NOCHECK(pBroker,IMaterials,pMaterial);
 
       bool isSlabOffsetInput = pBridge->GetHaunchInputDepthType() == pgsTypes::hidACamber;
 
@@ -643,7 +638,7 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(IBroker* pBroker, rptChapter*
 
       if(do_report_haunch)  
       {
-         GET_IFACE2_NOCHECK(pBroker,ISpecification,pSpec);
+         EAF_GET_IFACE2_NOCHECK(pBroker,ISpecification,pSpec);
          pgsTypes::HaunchLoadComputationType HaunchLoadComputationType = pSpec->GetHaunchLoadComputationType();
          
          if (pgsTypes::hlcZeroCamber == HaunchLoadComputationType)
@@ -715,9 +710,7 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(IBroker* pBroker, rptChapter*
          p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
       }
 
-      CComPtr<IBroker> pBroker;
-      EAFGetBroker(&pBroker);
-      GET_IFACE2_NOCHECK(pBroker,ISpecification,pSpec);
+      EAF_GET_IFACE2_NOCHECK(pBroker,ISpecification,pSpec);
 
       // detailed input not useful for direct haunch input with detailed analysis
       bool dont_report_dirdet = !isSlabOffsetInput && pSpec->GetHaunchLoadComputationType() == pgsTypes::hlcDetailedAnalysis;
@@ -786,7 +779,7 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(IBroker* pBroker, rptChapter*
    } // end if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
 }
 
-void CLoadingDetailsChapterBuilder::ReportOverlayLoad(rptChapter* pChapter,IBridge* pBridge,IProductLoads* pProdLoads,IEAFDisplayUnits* pDisplayUnits,bool bRating,const CSegmentKey& thisSegmentKey) const
+void CLoadingDetailsChapterBuilder::ReportOverlayLoad(rptChapter* pChapter,IBridge* pBridge,IProductLoads* pProdLoads,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,bool bRating,const CSegmentKey& thisSegmentKey) const
 {
    // slab loads between supports
    rptParagraph* pPara = nullptr;
@@ -797,10 +790,9 @@ void CLoadingDetailsChapterBuilder::ReportOverlayLoad(rptChapter* pChapter,IBrid
 
    Float64 end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
-   // overlay laod
+   // overlay load
    bool bReportOverlay = pBridge->HasOverlay();
    if ( bRating && pBridge->IsFutureOverlay() ) // don't report future overlay load for ratings
    {
@@ -815,7 +807,7 @@ void CLoadingDetailsChapterBuilder::ReportOverlayLoad(rptChapter* pChapter,IBrid
       pPara = new rptParagraph;
       *pChapter << pPara;
 
-      GET_IFACE2(pBroker, ISpecification, pSpec );
+      EAF_GET_IFACE2(pBroker, ISpecification, pSpec );
       pgsTypes::OverlayLoadDistributionType olayd = pSpec->GetOverlayLoadDistributionType();
 
       std::vector<OverlayLoad> overlay_loads;
@@ -907,7 +899,7 @@ void CLoadingDetailsChapterBuilder::ReportOverlayLoad(rptChapter* pChapter,IBrid
    } // end if overlay
 }
 
-void CLoadingDetailsChapterBuilder::ReportConstructionLoad(rptChapter* pChapter,IBridge* pBridge,IProductLoads* pProdLoads,IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& thisSegmentKey) const
+void CLoadingDetailsChapterBuilder::ReportConstructionLoad(rptChapter* pChapter,IBridge* pBridge,IProductLoads* pProdLoads,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const CSegmentKey& thisSegmentKey) const
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue,         loc,    pDisplayUnits->GetSpanLengthUnit(),     false );
    INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, fpl,    pDisplayUnits->GetForcePerLengthUnit(), false );
@@ -916,11 +908,10 @@ void CLoadingDetailsChapterBuilder::ReportConstructionLoad(rptChapter* pChapter,
 
    rptParagraph* pPara = nullptr;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    // construction load
-   GET_IFACE2(pBroker,IUserDefinedLoadData,pUserLoads);
+   EAF_GET_IFACE2(pBroker,IUserDefinedLoadData,pUserLoads);
    if ( !IsZero(pUserLoads->GetConstructionLoad()) )
    {
       pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -990,7 +981,7 @@ void CLoadingDetailsChapterBuilder::ReportConstructionLoad(rptChapter* pChapter,
    }
 }
 
-void CLoadingDetailsChapterBuilder::ReportLongitudinalJointLoad(rptChapter* pChapter, IBridge* pBridge, IProductLoads* pProdLoads, IEAFDisplayUnits* pDisplayUnits, const CSegmentKey& thisSegmentKey) const
+void CLoadingDetailsChapterBuilder::ReportLongitudinalJointLoad(rptChapter* pChapter, IBridge* pBridge, IProductLoads* pProdLoads, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CSegmentKey& thisSegmentKey) const
 {
    INIT_UV_PROTOTYPE(rptLengthUnitValue, loc, pDisplayUnits->GetSpanLengthUnit(), false);
    INIT_UV_PROTOTYPE(rptForcePerLengthUnitValue, fpl, pDisplayUnits->GetForcePerLengthUnit(), false);
@@ -999,10 +990,9 @@ void CLoadingDetailsChapterBuilder::ReportLongitudinalJointLoad(rptChapter* pCha
 
    rptParagraph* pPara = nullptr;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    if (pBridgeDesc->HasStructuralLongitudinalJoints())
    {
@@ -1064,21 +1054,20 @@ void CLoadingDetailsChapterBuilder::ReportLongitudinalJointLoad(rptChapter* pCha
    }
 }
 
-void CLoadingDetailsChapterBuilder::ReportShearKeyLoad(rptChapter* pChapter,IBridge* pBridge,IProductLoads* pProdLoads,IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& thisSegmentKey,bool& one_girder_has_shear_key) const
+void CLoadingDetailsChapterBuilder::ReportShearKeyLoad(rptChapter* pChapter,IBridge* pBridge,IProductLoads* pProdLoads,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const CSegmentKey& thisSegmentKey,bool& one_girder_has_shear_key) const
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue,         loc,    pDisplayUnits->GetSpanLengthUnit(),     false );
    INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, fpl,    pDisplayUnits->GetForcePerLengthUnit(), false );
 
    Float64 end_size = pBridge->GetSegmentStartEndDistance(thisSegmentKey);
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    rptParagraph* pPara = nullptr;
 
    // Shear key loads
-   GET_IFACE2(pBroker,IGirder,pGirder);
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IGirder,pGirder);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    pgsTypes::SupportedBeamSpacing spacingType = pBridgeDesc->GetGirderSpacingType();
 
@@ -1166,7 +1155,7 @@ void CLoadingDetailsChapterBuilder::ReportShearKeyLoad(rptChapter* pChapter,IBri
    }
 }
 
-void CLoadingDetailsChapterBuilder::ReportPrecastDiaphragmLoad(rptChapter* pChapter,IBridge* pBridge,IProductLoads* pProdLoads,IEAFDisplayUnits* pDisplayUnits,const CSegmentKey& thisSegmentKey) const
+void CLoadingDetailsChapterBuilder::ReportPrecastDiaphragmLoad(rptChapter* pChapter,IBridge* pBridge,IProductLoads* pProdLoads,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const CSegmentKey& thisSegmentKey) const
 {
    if ( m_bSimplifiedVersion )
    {
@@ -1233,7 +1222,7 @@ void CLoadingDetailsChapterBuilder::ReportPrecastDiaphragmLoad(rptChapter* pChap
    }
 }
 
-void CLoadingDetailsChapterBuilder::ReportCastInPlaceDiaphragmLoad(rptChapter* pChapter,IBridge* pBridge,IProductLoads* pProdLoads,IEAFDisplayUnits* pDisplayUnits,const CSpanKey& spanKey) const
+void CLoadingDetailsChapterBuilder::ReportCastInPlaceDiaphragmLoad(rptChapter* pChapter,IBridge* pBridge,IProductLoads* pProdLoads,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const CSpanKey& spanKey) const
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue, loc,    pDisplayUnits->GetSpanLengthUnit(),   false);
    INIT_UV_PROTOTYPE( rptForceUnitValue,  force,  pDisplayUnits->GetGeneralForceUnit(), false);
@@ -1388,10 +1377,9 @@ void CLoadingDetailsChapterBuilder::ReportLiveLoad(rptChapter* pChapter,bool bDe
    }
 
    // live loads
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
    
-   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
+   EAF_GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
 
    bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
 
@@ -1603,8 +1591,7 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
       return;
    }
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
    rptRcScalar scalar;
    scalar.SetFormat( WBFL::System::NumericFormatTool::Format::Fixed );
@@ -1613,10 +1600,10 @@ void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool 
    scalar.SetTolerance(1.0e-6);
 
    // LRFD Limit States
-   GET_IFACE2(pBroker,ILoadFactors,pLF);
+   EAF_GET_IFACE2(pBroker,ILoadFactors,pLF);
    const CLoadFactors* pLoadFactors = pLF->GetLoadFactors();
 
-   GET_IFACE2(pBroker,ILossParameters,pLossParameters);
+   EAF_GET_IFACE2(pBroker,ILossParameters,pLossParameters);
    PrestressLossCriteria::LossMethodType loss_method = pLossParameters->GetLossMethod();
 
    // LRFD Limit States Load Factors
@@ -2169,19 +2156,18 @@ std::_tstring GetImageName(LPCTSTR lpszBase, bool bAsymmetric, bool bPrecamber, 
    return strName;
 }
 
-void CLoadingDetailsChapterBuilder::ReportEquivPretensionLoads(rptChapter* pChapter,bool bRating,IBridge* pBridge,IEAFDisplayUnits* pDisplayUnits,const CGirderKey& girderKey) const
+void CLoadingDetailsChapterBuilder::ReportEquivPretensionLoads(rptChapter* pChapter,bool bRating,IBridge* pBridge,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const CGirderKey& girderKey) const
 {
    if ( m_bSimplifiedVersion || bRating )
    {
       return;
    }
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2_NOCHECK(pBroker,IProductLoads,pProductLoads);
-   GET_IFACE2_NOCHECK(pBroker, IBridgeDescription, pIBridgeDesc);
-   GET_IFACE2_NOCHECK(pBroker,IStrandGeometry, pStrandGeom);
+   EAF_GET_IFACE2_NOCHECK(pBroker,IProductLoads,pProductLoads);
+   EAF_GET_IFACE2_NOCHECK(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2_NOCHECK(pBroker,IStrandGeometry, pStrandGeom);
 
    bool bHasAsymmetricGirders = pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing();
 
@@ -2406,19 +2392,18 @@ void CLoadingDetailsChapterBuilder::ReportEquivPretensionLoads(rptChapter* pChap
    } // groupIdx
 }
 
-void CLoadingDetailsChapterBuilder::ReportEquivSegmentPostTensioningLoads(rptChapter* pChapter, bool bRating, IBridge* pBridge, IEAFDisplayUnits* pDisplayUnits, const CGirderKey& girderKey) const
+void CLoadingDetailsChapterBuilder::ReportEquivSegmentPostTensioningLoads(rptChapter* pChapter, bool bRating, IBridge* pBridge, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& girderKey) const
 {
    if (m_bSimplifiedVersion || bRating)
    {
       return;
    }
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
 
-   GET_IFACE2_NOCHECK(pBroker, IProductLoads, pProductLoads);
-   GET_IFACE2_NOCHECK(pBroker, IBridgeDescription, pIBridgeDesc);
-   GET_IFACE2_NOCHECK(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   EAF_GET_IFACE2_NOCHECK(pBroker, IProductLoads, pProductLoads);
+   EAF_GET_IFACE2_NOCHECK(pBroker, IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2_NOCHECK(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
 
    INIT_UV_PROTOTYPE(rptLengthUnitValue, loc, pDisplayUnits->GetSpanLengthUnit(), true);
    INIT_UV_PROTOTYPE(rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(), true);
@@ -2528,7 +2513,7 @@ void CLoadingDetailsChapterBuilder::ReportEquivSegmentPostTensioningLoads(rptCha
    } // groupIdx
 }
 
-rptParagraph* CLoadingDetailsChapterBuilder::CreatePointLoadTable(IBroker* pBroker, const CSpanKey& spanKey, IEAFDisplayUnits* pDisplayUnits, Uint16 level) const
+rptParagraph* CLoadingDetailsChapterBuilder::CreatePointLoadTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSpanKey& spanKey, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, Uint16 level) const
 {
    USES_CONVERSION;
    rptParagraph* pParagraph = new rptParagraph();
@@ -2537,12 +2522,12 @@ rptParagraph* CLoadingDetailsChapterBuilder::CreatePointLoadTable(IBroker* pBrok
    INIT_UV_PROTOTYPE(rptForceUnitValue, shear, pDisplayUnits->GetShearUnit(), false);
 
    ASSERT_SPAN_KEY(spanKey);
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanKey.spanIndex);
    CGirderKey girderKey(grpIdx, spanKey.girderIndex);
    ASSERT_GIRDER_KEY(girderKey);
 
-   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
 
    rptRcTable* table = rptStyleManager::CreateDefaultTable(5, _T("Point Loads"));
 
@@ -2560,7 +2545,7 @@ rptParagraph* CLoadingDetailsChapterBuilder::CreatePointLoadTable(IBroker* pBrok
    (*table)(0, col++) << COLHDR(_T("Magnitude"), rptForceUnitTag, pDisplayUnits->GetShearUnit());
    (*table)(0, col++) << _T("Description");
 
-   GET_IFACE2(pBroker, IUserDefinedLoads, pUdl);
+   EAF_GET_IFACE2(pBroker, IUserDefinedLoads, pUdl);
 
    bool loads_exist = false;
    RowIndexType row = table->GetNumberOfHeaderRows();
@@ -2610,7 +2595,7 @@ rptParagraph* CLoadingDetailsChapterBuilder::CreatePointLoadTable(IBroker* pBrok
    return pParagraph;
 }
 
-rptParagraph* CLoadingDetailsChapterBuilder::CreateDistributedLoadTable(IBroker* pBroker, const CSpanKey& spanKey, IEAFDisplayUnits* pDisplayUnits, Uint16 level) const
+rptParagraph* CLoadingDetailsChapterBuilder::CreateDistributedLoadTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSpanKey& spanKey, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, Uint16 level) const
 {
    rptParagraph* pParagraph = new rptParagraph();
 
@@ -2618,12 +2603,12 @@ rptParagraph* CLoadingDetailsChapterBuilder::CreateDistributedLoadTable(IBroker*
    INIT_UV_PROTOTYPE(rptForcePerLengthUnitValue, fplu, pDisplayUnits->GetForcePerLengthUnit(), false);
 
    ASSERT_SPAN_KEY(spanKey);
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanKey.spanIndex);
    CGirderKey girderKey(grpIdx, spanKey.girderIndex);
    ASSERT_GIRDER_KEY(girderKey);
 
-   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
 
    rptRcTable* table = rptStyleManager::CreateDefaultTable(7, _T("Distributed Loads"));
 
@@ -2643,7 +2628,7 @@ rptParagraph* CLoadingDetailsChapterBuilder::CreateDistributedLoadTable(IBroker*
    (*table)(0, col++) << COLHDR(_T("End") << rptNewLine << _T("Magnitude"), rptForcePerLengthUnitTag, pDisplayUnits->GetForcePerLengthUnit());
    (*table)(0, col++) << _T("Description");
 
-   GET_IFACE2(pBroker, IUserDefinedLoads, pUdl);
+   EAF_GET_IFACE2(pBroker, IUserDefinedLoads, pUdl);
 
    bool loads_exist = false;
    RowIndexType row = table->GetNumberOfHeaderRows();
@@ -2694,7 +2679,7 @@ rptParagraph* CLoadingDetailsChapterBuilder::CreateDistributedLoadTable(IBroker*
    return pParagraph;
 }
 
-rptParagraph* CLoadingDetailsChapterBuilder::CreateMomentLoadTable(IBroker* pBroker, const CSpanKey& spanKey, IEAFDisplayUnits* pDisplayUnits, Uint16 level) const
+rptParagraph* CLoadingDetailsChapterBuilder::CreateMomentLoadTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSpanKey& spanKey, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, Uint16 level) const
 {
    rptParagraph* pParagraph = new rptParagraph();
 
@@ -2702,12 +2687,12 @@ rptParagraph* CLoadingDetailsChapterBuilder::CreateMomentLoadTable(IBroker* pBro
    INIT_UV_PROTOTYPE(rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(), false);
 
    ASSERT_SPAN_KEY(spanKey);
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanKey.spanIndex);
    CGirderKey girderKey(grpIdx, spanKey.girderIndex);
    ASSERT_GIRDER_KEY(girderKey);
 
-   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
 
    rptRcTable* table = rptStyleManager::CreateDefaultTable(5, _T("End Moments"));
 
@@ -2725,7 +2710,7 @@ rptParagraph* CLoadingDetailsChapterBuilder::CreateMomentLoadTable(IBroker* pBro
    (*table)(0, col++) << COLHDR(_T("Magnitude"), rptMomentUnitTag, pDisplayUnits->GetMomentUnit());
    (*table)(0, col++) << _T("Description");
 
-   GET_IFACE2(pBroker, IUserDefinedLoads, pUdl);
+   EAF_GET_IFACE2(pBroker, IUserDefinedLoads, pUdl);
 
    bool loads_exist = false;
    RowIndexType row = table->GetNumberOfHeaderRows();

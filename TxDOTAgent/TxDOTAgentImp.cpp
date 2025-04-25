@@ -90,50 +90,24 @@ static bool CreateTxDOTFileNames(const CString& output, CString* pErrFileName)
 }
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
-// CTxDOTAgentImp
-
-/////////////////////////////////////////////////////////////////////////////
-// IAgentEx
-//
-STDMETHODIMP CTxDOTAgentImp::SetBroker(IBroker* pBroker)
+bool CTxDOTAgentImp::RegInterfaces()
 {
-   EAF_AGENT_SET_BROKER(pBroker);
-
-   CComQIPtr<ICLSIDMap> clsidMap(pBroker);
-   clsidMap->AddCLSID(CComBSTR("{360F7694-BE5B-4E97-864F-EF3575689C6E}"),CComBSTR("{3700B253-8489-457C-8A6D-D174F95C457C}"));
-
-   return S_OK;
+   return true;
 }
 
-STDMETHODIMP CTxDOTAgentImp::RegInterfaces()
+bool CTxDOTAgentImp::Init()
 {
-   return S_OK;
-}
+   Agent::Init();
+   m_pBroker->AddCLSID(CComBSTR("{360F7694-BE5B-4E97-864F-EF3575689C6E}"), CComBSTR("{3700B253-8489-457C-8A6D-D174F95C457C}"));
 
-STDMETHODIMP CTxDOTAgentImp::Init()
-{
    CREATE_LOGFILE("TxDOTAgent");
 
-   EAF_AGENT_INIT;
+   //EAF_AGENT_INIT;
 
-   // We are going to add new reports to PGSuper. In order to do this, the agent that implements
-   // IReportManager must be loaded. We have no way of knowing if that agent is loaded before
-   // or after us. Request the broker call our Init2 function after all registered agents
-   // are loaded
-   return AGENT_S_SECONDPASSINIT;
-}
-
-STDMETHODIMP CTxDOTAgentImp::Init2()
-{
    // Register our reports
-   GET_IFACE(IReportManager,pRptMgr);
+   EAF_GET_IFACE_(WBFL::Reporting,IReportManager,pRptMgr);
 
    //
    // Create report spec builders
@@ -229,25 +203,24 @@ STDMETHODIMP CTxDOTAgentImp::Init2()
    pRptBuilder->AddChapterBuilder( std::shared_ptr<WBFL::Reporting::ChapterBuilder>(std::make_shared<CTxDOTOptionalDesignSummaryChapterBuilder>()) );
    pRptMgr->AddReportBuilder( pRptBuilder );
 
-   return S_OK;
+   return true;
 }
 
-STDMETHODIMP CTxDOTAgentImp::GetClassID(CLSID* pCLSID)
+CLSID CTxDOTAgentImp::GetCLSID() const
 {
-   *pCLSID = CLSID_TxDOTAgent;
-   return S_OK;
+   return CLSID_TxDOTAgent;
 }
 
-STDMETHODIMP CTxDOTAgentImp::Reset()
+bool CTxDOTAgentImp::Reset()
 {
-   return S_OK;
+   return true;
 }
 
-STDMETHODIMP CTxDOTAgentImp::ShutDown()
+bool CTxDOTAgentImp::ShutDown()
 {
-   EAF_AGENT_CLEAR_INTERFACE_CACHE;
+   //EAF_AGENT_CLEAR_INTERFACE_CACHE;
    CLOSE_LOGFILE;
-   return S_OK;
+   return true;
 }
 
 
@@ -335,7 +308,7 @@ void CTxDOTAgentImp::ProcessTOGAReport(const CTxDOTCommandLineInfo& rCmdInfo)
    {
       std::_tofstream os;
       os.open(errfile);
-      os <<_T("Unknown Error running TOGAreport for input file: ")<<rCmdInfo.m_strFileName;
+      os <<_T("Unknown Error running TOGA report for input file: ")<<rCmdInfo.m_strFileName;
    }
 }
 
@@ -364,7 +337,7 @@ bool CTxDOTAgentImp::DoTOGAReport(const CString& outputFileName, const CTxDOTCom
 	   return false;
    }
 
-   GET_IFACE(IProgress,pProgress);
+   EAF_GET_IFACE(IProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
 
    // Write data to file
@@ -373,7 +346,7 @@ bool CTxDOTAgentImp::DoTOGAReport(const CString& outputFileName, const CTxDOTCom
       CString errfile;
       CreateTxDOTFileNames(rCmdInfo.m_TxOutputFile, &errfile);
       std::_tofstream err_file(errfile);
-      err_file <<_T("Warning: An error occured while writing to File")<<std::endl;
+      err_file <<_T("Warning: An error occurred while writing to File")<<std::endl;
       return false;
    }
 

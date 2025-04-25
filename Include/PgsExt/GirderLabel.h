@@ -146,8 +146,8 @@ LPCTSTR PGSEXTFUNC GetBearingOffsetMeasureString(ConnectionLibraryEntry::Bearing
 LPCTSTR PGSEXTFUNC GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType type,bool bAbbreviation);
 LPCTSTR PGSEXTFUNC GetTempSupportBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasurementType type,bool bAbbreviation);
 
-CString PGSEXTFUNC GetLabel(const CPierData2* pPier,IEAFDisplayUnits* pDisplayUnits);
-CString PGSEXTFUNC GetLabel(const CTemporarySupportData* pTS,IEAFDisplayUnits* pDisplayUnits);
+CString PGSEXTFUNC GetLabel(const CPierData2* pPier,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+CString PGSEXTFUNC GetLabel(const CTemporarySupportData* pTS,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
 CString PGSEXTFUNC GetLoadDescription(const CPointLoadData* pLoad);
 CString PGSEXTFUNC GetLoadDescription(const CDistributedLoadData* pLoad);

@@ -33,11 +33,6 @@
 #include <PgsExt\PierData2.h>
 #include <PgsExt\GirderGroupData.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -73,14 +68,14 @@ CVehicularLoadReactionTable& CVehicularLoadReactionTable::operator= (const CVehi
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,const CGirderKey& girderKey,
+rptRcTable* CVehicularLoadReactionTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,
                                                pgsTypes::LiveLoadType llType,
                                                const std::_tstring& strLLName,
                                                VehicleIndexType vehicleIdx, 
                                                pgsTypes::AnalysisType analysisType,
                                                bool bReportTruckConfig,
                                                bool bIncludeRotations,
-                                               IEAFDisplayUnits* pDisplayUnits) const
+                                               std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 
 {
    // Build table
@@ -88,8 +83,8 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,const CGirderKey
    INIT_UV_PROTOTYPE( rptForceUnitValue,  reaction, pDisplayUnits->GetShearUnit(), false );
    INIT_UV_PROTOTYPE( rptAngleUnitValue,  rotation, pDisplayUnits->GetRadAngleUnit(), false );
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    bool bPermit = false;
 
@@ -171,7 +166,7 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,const CGirderKey
    pBridge->GetGirderline(girderKey, &vGirderKeys);
 
    // Get POI at start and end of the span
-   GET_IFACE2(pBroker,IPointOfInterest,pPOI);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPOI);
    PoiList vPoi;
    for(const auto& thisGirderKey : vGirderKeys)
    {
@@ -186,8 +181,8 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,const CGirderKey
       }
    }
 
-   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   GET_IFACE2(pBroker,IReactions,pReactions);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IReactions,pReactions);
 
    RowIndexType row = p_table->GetNumberOfHeaderRows();
    for ( PierIndexType pier = startPierIdx; pier <= endPierIdx; pier++ )
@@ -235,7 +230,7 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,const CGirderKey
 
          if ( bIncludeRotations )
          {
-            GET_IFACE2(pBroker,IProductForces,pForces);
+            EAF_GET_IFACE2(pBroker,IProductForces,pForces);
    
             Float64 RotMax, RotMin;
             pForces->GetVehicularLiveLoadRotation( intervalIdx, llType, vehicleIdx, poi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &RotMin, &RotMax, &minConfig, &maxConfig );
@@ -276,7 +271,7 @@ rptRcTable* CVehicularLoadReactionTable::Build(IBroker* pBroker,const CGirderKey
 
          if ( bIncludeRotations )
          {
-            GET_IFACE2(pBroker,IProductForces,pForces);
+            EAF_GET_IFACE2(pBroker,IProductForces,pForces);
 
             Float64 RotMin, RotMax;
 

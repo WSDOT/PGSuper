@@ -35,16 +35,6 @@
 #include <IFace/Limits.h>
 #include <IFace\Intervals.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-/****************************************************************************
-CLASS
-   CTxDOTOptionalDesignDocProxyAgent
-****************************************************************************/
 
 CTxDOTOptionalDesignDocProxyAgent::CTxDOTOptionalDesignDocProxyAgent():
 m_NeedValidate(true),
@@ -64,55 +54,41 @@ void CTxDOTOptionalDesignDocProxyAgent::SetDocument(CTxDOTOptionalDesignDoc* pDo
    pDoc->m_ProjectData.Attach(this);
 }
 
-//////////////////////////////////////////////////////////
-// IAgentEx
-STDMETHODIMP CTxDOTOptionalDesignDocProxyAgent::SetBroker(IBroker* pBroker)
+
+bool CTxDOTOptionalDesignDocProxyAgent::RegInterfaces()
 {
-   EAF_AGENT_SET_BROKER(pBroker);
-   return S_OK;
+   REGISTER_INTERFACE(IUpdateTemplates);
+   REGISTER_INTERFACE(ISelection);
+   REGISTER_INTERFACE(IDocumentType);
+   REGISTER_INTERFACE(IVersionInfo);
+   REGISTER_INTERFACE(IGetTogaData);
+   REGISTER_INTERFACE(IGetTogaResults);
+   return true;
 }
 
-STDMETHODIMP CTxDOTOptionalDesignDocProxyAgent::RegInterfaces()
-{
-   CComQIPtr<IBrokerInitEx2> pBrokerInit(m_pBroker);
-   pBrokerInit->RegInterface( IID_IUpdateTemplates, this );
-   pBrokerInit->RegInterface( IID_ISelection,       this );
-   pBrokerInit->RegInterface( IID_IDocumentType,    this );
-   pBrokerInit->RegInterface( IID_IVersionInfo,     this );
-   pBrokerInit->RegInterface( IID_IGetTogaData,     this );
-   pBrokerInit->RegInterface( IID_IGetTogaResults,  this );
-   return S_OK;
-}
-
-STDMETHODIMP CTxDOTOptionalDesignDocProxyAgent::Init()
+bool CTxDOTOptionalDesignDocProxyAgent::Init()
 {
 //   EAF_AGENT_INIT;
-
-   return S_OK;
+   Agent::Init();
+   return true;
 }
 
-STDMETHODIMP CTxDOTOptionalDesignDocProxyAgent::Init2()
+bool CTxDOTOptionalDesignDocProxyAgent::Reset()
 {
-   return S_OK;
+   return true;
 }
 
-STDMETHODIMP CTxDOTOptionalDesignDocProxyAgent::Reset()
+bool CTxDOTOptionalDesignDocProxyAgent::ShutDown()
 {
-   return S_OK;
-}
-
-STDMETHODIMP CTxDOTOptionalDesignDocProxyAgent::ShutDown()
-{
-   EAF_AGENT_CLEAR_INTERFACE_CACHE;
+   //EAF_AGENT_CLEAR_INTERFACE_CACHE;
 //   CLOSE_LOGFILE;
 
-   return S_OK;
+   return true;
 }
 
-STDMETHODIMP CTxDOTOptionalDesignDocProxyAgent::GetClassID(CLSID* pCLSID)
+CLSID CTxDOTOptionalDesignDocProxyAgent::GetCLSID() const
 {
-   *pCLSID = CLSID_TxDOTOptionalDesignDocProxyAgent;
-   return S_OK;
+   return CLSID_TxDOTOptionalDesignDocProxyAgent;
 }
 
 /////////////////////////////////////////////////////////////////////////
@@ -386,25 +362,25 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
       CSegmentKey fabrSegmentKey(TOGA_SPAN,TOGA_FABR_GDR,0);
 
       // build model
-      IBroker* pBroker = this->m_pTxDOTOptionalDesignDoc->GetUpdatedBroker();
+      std::shared_ptr<WBFL::EAF::Broker> pBroker = this->m_pTxDOTOptionalDesignDoc->GetUpdatedBroker();
 
-      GET_IFACE2(pBroker,IConcreteStressLimits, pLimits );
+      EAF_GET_IFACE2(pBroker,IConcreteStressLimits, pLimits );
 
-      GET_IFACE2(pBroker,IIntervals,pIntervals);
+      EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
       IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(origSegmentKey);
       IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(0); // assume deck casting region 0
       IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(0); // assume deck casting region 0
       IntervalIndexType liveLoadIntervalIdx      = pIntervals->GetLiveLoadInterval();
     
       // Get responses from design based on original data
-      GET_IFACE2(pBroker,IArtifact,pIArtifact);
+      EAF_GET_IFACE2(pBroker,IArtifact,pIArtifact);
       const pgsGirderArtifact* pOriginalGdrArtifact = pIArtifact->GetGirderArtifact(origSegmentKey);
       const pgsSegmentArtifact* pOriginalSegmentArtifact = pOriginalGdrArtifact->GetSegmentArtifact(0);
 
       const CTxDOTOptionalDesignData* pDesignData = GetTogaData();
 
       // Our model is always prismatic - max's will occur at mid-span poi
-      GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+      EAF_GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
       PoiList vPOI;
       pIPoi->GetPointsOfInterest(origSegmentKey, POI_5L | POI_SPAN, &vPOI);
       ATLASSERT( vPOI.size() == 1 );
@@ -443,7 +419,7 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
       m_CtrlTensileStressFactor = fb_des/m_CtrlTensileStress;
 
       // Camber from original model
-      GET_IFACE2(pBroker,ICamber,pCamber);
+      EAF_GET_IFACE2(pBroker,ICamber,pCamber);
       m_MaximumCamber = pCamber->GetDCamberForGirderScheduleUnfactored(orig_ms_poi,pgsTypes::CreepTime::Max);
 
       // Now we need results from fabricator model
@@ -597,14 +573,14 @@ void CTxDOTOptionalDesignDocProxyAgent::Validate()
    }
 }
 
-void CTxDOTOptionalDesignDocProxyAgent::CheckShear(IPointOfInterest* pIPoi)
+void CTxDOTOptionalDesignDocProxyAgent::CheckShear(std::shared_ptr<IPointOfInterest> pIPoi)
 {
-   IBroker* pBroker = this->m_pTxDOTOptionalDesignDoc->GetUpdatedBroker();
+   std::shared_ptr<WBFL::EAF::Broker> pBroker = this->m_pTxDOTOptionalDesignDoc->GetUpdatedBroker();
 
    CSegmentKey origSegmentKey(TOGA_SPAN,TOGA_ORIG_GDR,0);
    CSegmentKey fabrSegmentKey(TOGA_SPAN,TOGA_FABR_GDR,0);
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    m_ShearPassed = true; // until otherwise

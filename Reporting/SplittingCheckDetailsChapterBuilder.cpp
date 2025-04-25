@@ -31,11 +31,6 @@
 #include <IFace\Artifact.h>
 #include <IFace\SplittingChecks.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -73,18 +68,17 @@ LPCTSTR CSplittingCheckDetailsChapterBuilder::GetName() const
 rptChapter* CSplittingCheckDetailsChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGirderRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGirderRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGirderRptSpec->GetBroker();
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
-   GET_IFACE2(pBroker, IArtifact, pIArtifact);
+   EAF_GET_IFACE2(pBroker, IArtifact, pIArtifact);
 
    const pgsGirderArtifact* pGirderArtifact = pIArtifact->GetGirderArtifact(girderKey);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
 
-   GET_IFACE2(pBroker, ISplittingChecks, pSplittingChecks);
-   pSplittingChecks->ReportSplittingCheckDetails(pBroker, pGirderArtifact, pChapter);
+   EAF_GET_IFACE2(pBroker, ISplittingChecks, pSplittingChecks);
+   pSplittingChecks->ReportSplittingCheckDetails(pGirderArtifact, pChapter);
 
    return pChapter;
 }

@@ -33,18 +33,13 @@
 #include <IFace\PointOfInterest.h>
 #include <IFace\Bridge.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CSelectPointOfInterestDlg dialog
 
 IMPLEMENT_DYNAMIC(CSelectPointOfInterestDlg, CDialog)
 
-CSelectPointOfInterestDlg::CSelectPointOfInterestDlg(IBroker* pBroker,std::shared_ptr<CPointOfInterestReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,PoiAttributeType poiReferenceAttribute,CWnd* pParent)
+CSelectPointOfInterestDlg::CSelectPointOfInterestDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<CPointOfInterestReportSpecification>& pRptSpec,const pgsPointOfInterest& initialPoi,PoiAttributeType poiReferenceAttribute,CWnd* pParent)
 	: CDialog(CSelectPointOfInterestDlg::IDD, pParent)
    , m_SliderPos(0)
    , m_pRptSpec(pRptSpec)
@@ -114,7 +109,7 @@ pgsPointOfInterest CSelectPointOfInterestDlg::GetPointOfInterest()
 
 void CSelectPointOfInterestDlg::UpdatePOI()
 {
-   GET_IFACE(IPointOfInterest,pPOI);
+   EAF_GET_IFACE(IPointOfInterest,pPOI);
    m_vPOI.clear();
    pPOI->GetPointsOfInterest(CSegmentKey(ALL_GROUPS, m_GirderKey.girderIndex, ALL_SEGMENTS),&m_vPOI);
    if (m_Slider.GetSafeHwnd() != nullptr )
@@ -152,7 +147,7 @@ void CSelectPointOfInterestDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* p
 
 void CSelectPointOfInterestDlg::UpdateSliderLabel()
 {
-   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    CString strLabel;
    ASSERT((int)m_SliderPos < (int)m_vPOI.size());

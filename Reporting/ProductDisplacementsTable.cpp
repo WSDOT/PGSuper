@@ -35,11 +35,6 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\RatingSpecification.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -75,14 +70,14 @@ CProductDeflectionsTable& CProductDeflectionsTable::operator= (const CProductDef
 }
 
 //======================== OPERATIONS =======================================
-rptRcTable* CProductDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
-                                              bool bDesign,bool bRating,bool bIndicateControllingLoad,IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CProductDeflectionsTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,pgsTypes::AnalysisType analysisType,
+                                              bool bDesign,bool bRating,bool bIndicateControllingLoad,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, deflection, pDisplayUnits->GetDeflectionUnit(), false );
 
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    bool bHasOverlay    = pBridge->HasOverlay();
    bool bFutureOverlay = pBridge->IsFutureOverlay();
 
@@ -90,13 +85,13 @@ rptRcTable* CProductDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& g
    bool bContinuousBeforeDeckCasting;
    GroupIndexType startGroup, endGroup;
 
-   GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
+   EAF_GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
 
-   GET_IFACE2(pBroker, IProductForces, pProdForces);
+   EAF_GET_IFACE2(pBroker, IProductForces, pProdForces);
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
    IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount()-1;
 
@@ -110,15 +105,15 @@ rptRcTable* CProductDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& g
       p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
    PoiAttributeType poiRefAttribute(girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : POI_ERECTED_SEGMENT);
 
    RowIndexType row = ConfigureProductLoadTableHeading<rptLengthUnitTag,WBFL::Units::LengthData>(pBroker,p_table,false,false,bSegments,bConstruction,bDeck,bDeckPanels,bSidewalk,bShearKey,bLongitudinalJoint,bHasOverlay,bFutureOverlay,bDesign,bPedLoading,bPermit,bRating,analysisType,bContinuousBeforeDeckCasting,pRatingSpec,pDisplayUnits,pDisplayUnits->GetDeflectionUnit());
 
    // Get the interface pointers we need
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   GET_IFACE2(pBroker,IProductForces2,pForces2);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   EAF_GET_IFACE2(pBroker,IProductForces2,pForces2);
 
 
    std::vector<CGirderKey> vGirderKeys;
@@ -619,14 +614,14 @@ rptRcTable* CProductDeflectionsTable::Build(IBroker* pBroker,const CGirderKey& g
    return p_table;
 }
 
-rptRcTable* CProductDeflectionsTable::BuildLiveLoadTable(IBroker* pBroker,const CGirderKey& girderKey,
-                                                           IEAFDisplayUnits* pDisplayUnits) const
+rptRcTable* CProductDeflectionsTable::BuildLiveLoadTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,
+                                                           std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, deflection, pDisplayUnits->GetDeflectionUnit(), false );
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    rptRcTable* p_table = rptStyleManager::CreateDefaultTable(4,_T("Deflections For The LRFD Optional Deflection Live Load (LRFD 3.6.1.3.2)"));
@@ -644,13 +639,13 @@ rptRcTable* CProductDeflectionsTable::BuildLiveLoadTable(IBroker* pBroker,const 
    (*p_table)(0,3) << COLHDR(_T("D") << rptNewLine << _T("Controlling"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
 
    // Get the interface pointers we need
-   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   EAF_GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    PoiList vPoi;
    pIPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), POI_ERECTED_SEGMENT, &vPoi);
 
-   GET_IFACE2(pBroker,IProductForces,pForces);
+   EAF_GET_IFACE2(pBroker,IProductForces,pForces);
 
-   GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
    pgsTypes::BridgeAnalysisType bat = (pSpec->GetAnalysisType() == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
 
    // Fill up the table

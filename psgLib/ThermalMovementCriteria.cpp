@@ -37,7 +37,7 @@ bool ThermalMovementCriteria::Compare(const ThermalMovementCriteria& other, cons
     return bSame;
 }
 
-void ThermalMovementCriteria::Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void ThermalMovementCriteria::Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
     rptParagraph* pPara = new rptParagraph;
     *pChapter << pPara;

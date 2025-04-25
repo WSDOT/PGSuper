@@ -37,11 +37,6 @@
 
 #include <PsgLib\SpecLibraryEntry.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -78,13 +73,13 @@ CHaulingCheck& CHaulingCheck::operator= (const CHaulingCheck& rOther)
 
 //======================== OPERATIONS =======================================
 void CHaulingCheck::Build(rptChapter* pChapter,
-                              IBroker* pBroker,const CGirderKey& girderKey,
-                              IEAFDisplayUnits* pDisplayUnits) const
+                              std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,
+                              std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+   EAF_GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
    if (pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
    {
-      GET_IFACE2(pBroker,IBridge,pBridge);
+      EAF_GET_IFACE2(pBroker,IBridge,pBridge);
       SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
@@ -111,14 +106,14 @@ void CHaulingCheck::Build(rptChapter* pChapter,
 
 
 void CHaulingCheck::Build(rptChapter* pChapter,
-   IBroker* pBroker, const CSegmentKey& segmentKey,
-   IEAFDisplayUnits* pDisplayUnits) const
+   std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   GET_IFACE2(pBroker, ISegmentHaulingSpecCriteria, pSegmentHaulingSpecCriteria);
+   EAF_GET_IFACE2(pBroker, ISegmentHaulingSpecCriteria, pSegmentHaulingSpecCriteria);
    if (pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
    {
-      GET_IFACE2(pBroker, IBridge, pBridge);
-      GET_IFACE2(pBroker, IArtifact, pArtifacts);
+      EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+      EAF_GET_IFACE2(pBroker, IArtifact, pArtifacts);
       SegmentIndexType nSegments = pBridge->GetSegmentCount(segmentKey);
       if (1 < nSegments)
       {

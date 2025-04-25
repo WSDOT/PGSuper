@@ -26,7 +26,7 @@
 #include "psgLibLib.h"
 
 class rptChapter;
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 class pgsLibraryEntryDifferenceItem;
 class SpecLibraryEntryImpl;
 
@@ -43,7 +43,7 @@ struct PSGLIBCLASS PrincipalTensionStressCriteria
    bool operator!=(const PrincipalTensionStressCriteria& other) const;
    bool Compare(const PrincipalTensionStressCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const;
 
-   void Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const;
+   void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 
    void Save(WBFL::System::IStructuredSave* pSave) const;
    void Load(WBFL::System::IStructuredLoad* pLoad);

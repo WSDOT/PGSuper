@@ -24,7 +24,6 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "ExtensionAgentExample_i.h"
 #include "dllmain.h"
 
 #include <initguid.h>
@@ -40,7 +39,14 @@
 #include <IFace\ExtendUI.h>
 #include <IGraphManager.h>
 
-CExtensionAgentExampleModule _AtlModule;
+#include "ExampleExtensionAgent.h"
+#include <EAF\ComponentModule.h>
+
+WBFL::EAF::ComponentModule Module_;
+
+EAF_BEGIN_OBJECT_MAP(ObjectMap)
+   EAF_OBJECT_ENTRY(CLSID_ExampleExtensionAgent, CExampleExtensionAgent)
+EAF_END_OBJECT_MAP()
 
 class CExtensionAgentExampleApp : public CWinApp
 {
@@ -60,10 +66,12 @@ CExtensionAgentExampleApp theApp;
 
 BOOL CExtensionAgentExampleApp::InitInstance()
 {
+   Module_.Init(ObjectMap);
 	return CWinApp::InitInstance();
 }
 
 int CExtensionAgentExampleApp::ExitInstance()
 {
+   Module_.Term();
 	return CWinApp::ExitInstance();
 }

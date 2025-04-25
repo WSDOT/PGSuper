@@ -33,11 +33,6 @@
 
 #include <PGSuperColors.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 CDrawBeamTool::CDrawBeamTool()
@@ -70,19 +65,19 @@ Float64 CDrawBeamTool::GetMinAspectRatio() const
    return m_MinAspectRatio;
 }
 
-void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC, const WBFL::Graphing::PointMapper& mapper,WBFL::Units::PhysicalConverter* pUnitConverter,IntervalIndexType firstPlottingIntervalIdx,IntervalIndexType lastPlottingIntervalIdx,const CGirderKey& girderKey,Float64 beamShift)
+void CDrawBeamTool::DrawBeam(std::shared_ptr<WBFL::EAF::Broker> pBroker,CDC* pDC, const WBFL::Graphing::PointMapper& mapper,WBFL::Units::PhysicalConverter* pUnitConverter,IntervalIndexType firstPlottingIntervalIdx,IntervalIndexType lastPlottingIntervalIdx,const CGirderKey& girderKey,Float64 beamShift)
 {
    m_pBroker = pBroker;
    m_pUnitConverter = pUnitConverter;
 
-   GET_IFACE(IIntervals,pIntervals);
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   GET_IFACE(IGirder,pIGirder);
-   GET_IFACE(IPointOfInterest,pPoi);
+   EAF_GET_IFACE(IIntervals,pIntervals);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IGirder,pIGirder);
+   EAF_GET_IFACE(IPointOfInterest,pPoi);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   GET_IFACE(IBridge, pBridge);
+   EAF_GET_IFACE(IBridge, pBridge);
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(girderKey, &vGirderKeys);
 
@@ -101,7 +96,7 @@ void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC, const WBFL::Graphing::Po
    }
 
    // Get maximum beam depth along girder. Assume max height occurs at a pier
-   GET_IFACE(ISectionProperties, pSectProp);
+   EAF_GET_IFACE(ISectionProperties, pSectProp);
    Float64 beamDepth = 0.0;
    Float64 beamLength = 0.0;
    for (const auto& thisGirderKey : vGirderKeys)
@@ -194,7 +189,7 @@ void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC, const WBFL::Graphing::Po
             DrawPier(beamShift, intervalIdx, girderKey, pierIdx, mapper, pDC);
          }
 
-         GET_IFACE(ITempSupport, pTempSupport);
+         EAF_GET_IFACE(ITempSupport, pTempSupport);
          std::vector<SupportIndexType> vTS = pTempSupport->GetTemporarySupports(girderKey.groupIndex);
          for (auto tsIdx : vTS)
          {
@@ -211,17 +206,17 @@ void CDrawBeamTool::DrawBeam(IBroker* pBroker,CDC* pDC, const WBFL::Graphing::Po
    } // end of group loop
 }
 
-void CDrawBeamTool::DrawBeamSegment(IBroker* pBroker,CDC* pDC,const WBFL::Graphing::PointMapper& mapper,WBFL::Units::PhysicalConverter* pUnitConverter,IntervalIndexType firstPlottingIntervalIdx,IntervalIndexType lastPlottingIntervalIdx,const CSegmentKey& segmentKey,Float64 beamShift)
+void CDrawBeamTool::DrawBeamSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker,CDC* pDC,const WBFL::Graphing::PointMapper& mapper,WBFL::Units::PhysicalConverter* pUnitConverter,IntervalIndexType firstPlottingIntervalIdx,IntervalIndexType lastPlottingIntervalIdx,const CSegmentKey& segmentKey,Float64 beamShift)
 {
    m_pBroker = pBroker;
    m_pUnitConverter = pUnitConverter;
 
-   GET_IFACE(IIntervals,pIntervals);
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   GET_IFACE(IBridge,pBridge);
-   GET_IFACE(IGirder,pIGirder);
-   GET_IFACE(IPointOfInterest,pPoi);
-   GET_IFACE_NOCHECK(ISectionProperties,pSectProp);
+   EAF_GET_IFACE(IIntervals,pIntervals);
+   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE(IGirder,pIGirder);
+   EAF_GET_IFACE(IPointOfInterest,pPoi);
+   EAF_GET_IFACE_NOCHECK(ISectionProperties,pSectProp);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
@@ -363,7 +358,7 @@ Float64 CDrawBeamTool::ComputeGirderShift(const CGirderKey& girderKey)
       return 0;
    }
 
-   GET_IFACE(IPointOfInterest,pPoi);
+   EAF_GET_IFACE(IPointOfInterest,pPoi);
    pgsPointOfInterest poi(CSegmentKey(girderKey,0),0.0);
    Float64 Xgl = pPoi->ConvertPoiToGirderlineCoordinate(poi);
 
@@ -376,7 +371,7 @@ Float64 CDrawBeamTool::ComputeGirderShift(const CGirderKey& girderKey)
 
 Float64 CDrawBeamTool::ComputeSegmentShift(const CSegmentKey& segmentKey)
 {
-   GET_IFACE(IPointOfInterest, pPoi);
+   EAF_GET_IFACE(IPointOfInterest, pPoi);
    pgsPointOfInterest poi(segmentKey, 0.0); // poi at start of segment
    Float64 Xgl = pPoi->ConvertPoiToGirderlineCoordinate(poi);
 
@@ -549,7 +544,7 @@ void CDrawBeamTool::DrawSegmentEndSupport(Float64 beamShift, IntervalIndexType i
    Float64 Xg = pPoi->ConvertPoiToGirderlineCoordinate(poiCLBrg);
    Float64 X = m_pUnitConverter->Convert(Xg+beamShift);
 
-   GET_IFACE(ISectionProperties,pSectProp);
+   EAF_GET_IFACE(ISectionProperties,pSectProp);
    Float64 sectionHeight = pSectProp->GetHg(pIntervals->GetPrestressReleaseInterval(segmentKey),poiCLBrg);
    Float64 H = m_pUnitConverter->Convert(sectionHeight);
    H *= m_YScaleFac;
@@ -580,7 +575,7 @@ void CDrawBeamTool::DrawPier(Float64 beamShift,IntervalIndexType intervalIdx,con
 {
    CPoint p = GetPierPoint(beamShift, intervalIdx, girderKey, pierIdx, mapper);
 
-   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CPierData2* pPier = pBridgeDesc->GetPier(pierIdx);
 
@@ -592,7 +587,7 @@ void CDrawBeamTool::DrawPier(Float64 beamShift,IntervalIndexType intervalIdx,con
 
    if ( pPier->IsBoundaryPier() )
    {
-      GET_IFACE(IIntervals,pIntervals);
+      EAF_GET_IFACE(IIntervals,pIntervals);
 
       pgsTypes::BoundaryConditionType boundaryConditionType = pPier->GetBoundaryConditionType();
       PierIndexType pierIdx = pPier->GetIndex();
@@ -726,7 +721,7 @@ void CDrawBeamTool::DrawPier(Float64 beamShift,IntervalIndexType intervalIdx,con
          ATLASSERT(pClosureJoint);
          CClosureKey closureKey(pClosureJoint->GetClosureKey());
       
-         GET_IFACE(IIntervals,pIntervals);
+         EAF_GET_IFACE(IIntervals,pIntervals);
 
          IntervalIndexType castClosureJointIntervalIdx = pIntervals->GetCastClosureJointInterval(closureKey);
 
@@ -758,7 +753,7 @@ void CDrawBeamTool::DrawPier(Float64 beamShift,IntervalIndexType intervalIdx,con
 
 CPoint CDrawBeamTool::GetPierPoint(Float64 beamShift, IntervalIndexType intervalIdx, const CGirderKey& girderKey, PierIndexType pierIdx, const WBFL::Graphing::PointMapper& mapper)
 {
-   GET_IFACE(IBridge, pBridge);
+   EAF_GET_IFACE(IBridge, pBridge);
    CSegmentKey backSegmentKey, aheadSegmentKey;
    pBridge->GetSegmentsAtPier(pierIdx, girderKey.girderIndex, &backSegmentKey, &aheadSegmentKey);
 
@@ -781,10 +776,10 @@ CPoint CDrawBeamTool::GetPierPoint(Float64 beamShift, IntervalIndexType interval
 
    ASSERT_SEGMENT_KEY(aheadSegmentKey);
 
-   GET_IFACE(ISectionProperties, pSectProp);
+   EAF_GET_IFACE(ISectionProperties, pSectProp);
    Float64 sectionHeight = pSectProp->GetSegmentHeightAtPier(aheadSegmentKey, pierIdx);
 
-   GET_IFACE(IPointOfInterest, pPoi);
+   EAF_GET_IFACE(IPointOfInterest, pPoi);
    Float64 Xs; // location of pier in segment coordinates
    if (pBridge->IsAbutment(pierIdx))
    {
@@ -815,10 +810,10 @@ void CDrawBeamTool::DrawTemporarySupport(Float64 beamShift, IntervalIndexType in
 {
    CPoint p = GetTemporarySupportPoint(beamShift, intervalIdx, girderKey, tsIdx, mapper);
 
-   GET_IFACE(IIntervals,pIntervals);
+   EAF_GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType erectionIntervalIdx = pIntervals->GetTemporarySupportErectionInterval(tsIdx);
 
-   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CTemporarySupportData* pTS = pBridgeDesc->GetTemporarySupport(tsIdx);
 
@@ -850,7 +845,7 @@ void CDrawBeamTool::DrawTemporarySupport(Float64 beamShift, IntervalIndexType in
 
 CPoint CDrawBeamTool::GetTemporarySupportPoint(Float64 beamShift, IntervalIndexType intervalIdx, const CGirderKey& girderKey, SupportIndexType tsIdx, const WBFL::Graphing::PointMapper& mapper)
 {
-   GET_IFACE(IBridge, pBridge);
+   EAF_GET_IFACE(IBridge, pBridge);
    CSegmentKey backSegmentKey, aheadSegmentKey;
    pBridge->GetSegmentsAtTemporarySupport(girderKey.girderIndex, tsIdx, &backSegmentKey, &aheadSegmentKey);
    ATLASSERT(backSegmentKey.segmentIndex != INVALID_INDEX && aheadSegmentKey.segmentIndex != INVALID_INDEX);
@@ -858,10 +853,10 @@ CPoint CDrawBeamTool::GetTemporarySupportPoint(Float64 beamShift, IntervalIndexT
    CSegmentKey segmentKey;
    segmentKey = (backSegmentKey.segmentIndex == INVALID_INDEX) ? aheadSegmentKey : backSegmentKey;
 
-   GET_IFACE(ISectionProperties, pSectProp);
+   EAF_GET_IFACE(ISectionProperties, pSectProp);
    Float64 sectionHeight = pSectProp->GetSegmentHeightAtTemporarySupport(segmentKey, tsIdx);
 
-   GET_IFACE(IPointOfInterest, pPoi);
+   EAF_GET_IFACE(IPointOfInterest, pPoi);
    Float64 Xgp = pBridge->GetTemporarySupportLocation(tsIdx, segmentKey.girderIndex);
    Float64 Xgl = pPoi->ConvertGirderPathCoordinateToGirderlineCoordinate(segmentKey, Xgp);
 
@@ -886,11 +881,11 @@ void CDrawBeamTool::DrawStrongBack(const CGirderKey& girderKey,const CTemporaryS
    const CSegmentKey& leftSegmentKey(pLeftSegment->GetSegmentKey());
    const CSegmentKey& rightSegmentKey(pRightSegment->GetSegmentKey());
 
-   GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE(IBridge,pBridge);
    Float64 left_brg_offset  = pBridge->GetSegmentEndBearingOffset(leftSegmentKey);
    Float64 right_brg_offset = pBridge->GetSegmentStartBearingOffset(rightSegmentKey);
 
-   GET_IFACE(ISectionProperties,pSectProp);
+   EAF_GET_IFACE(ISectionProperties,pSectProp);
    Float64 sectionHeight = pSectProp->GetSegmentHeightAtTemporarySupport(leftSegmentKey,pTS->GetIndex());
    Float64 H = m_pUnitConverter->Convert(sectionHeight);
    H *= m_YScaleFac;
@@ -967,9 +962,9 @@ void CDrawBeamTool::DrawIntegralHingeAhead(CPoint p,CDC* pDC)
 
 void CDrawBeamTool::DrawTendons(Float64 beamShift,IntervalIndexType intervalIdx, const CSegmentKey& rSegmentKey, const WBFL::Graphing::PointMapper& mapper,CDC* pDC)
 {
-   GET_IFACE_NOCHECK(ISegmentTendonGeometry, pSegmentTendonGeometry);
-   GET_IFACE(IGirderTendonGeometry,pGirderTendonGeometry);
-   GET_IFACE_NOCHECK(IIntervals,pIntervals); // only gets used if there are tendons
+   EAF_GET_IFACE_NOCHECK(ISegmentTendonGeometry, pSegmentTendonGeometry);
+   EAF_GET_IFACE(IGirderTendonGeometry,pGirderTendonGeometry);
+   EAF_GET_IFACE_NOCHECK(IIntervals,pIntervals); // only gets used if there are tendons
 
    CGirderKey girderKey(rSegmentKey.groupIndex,rSegmentKey.girderIndex);
    Float64 tendonShift = ComputeGirderShift(girderKey);
@@ -977,7 +972,7 @@ void CDrawBeamTool::DrawTendons(Float64 beamShift,IntervalIndexType intervalIdx,
    SegmentIndexType nSegments;
    if (rSegmentKey.segmentIndex == ALL_SEGMENTS)
    {
-      GET_IFACE(IBridge,pBridge);
+      EAF_GET_IFACE(IBridge,pBridge);
       nSegments = pBridge->GetSegmentCount(girderKey);
    }
    else

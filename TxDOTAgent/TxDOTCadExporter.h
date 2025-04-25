@@ -46,7 +46,7 @@ public:
    CString GetMenuText() const override;
    HBITMAP GetBitmapHandle() const override;
    CString GetCommandHintText() const override;
-   STDMETHOD(Export)(/*[in]*/IBroker* pBroker) override;
+   STDMETHOD(Export)(/*[in]*/std::shared_ptr<WBFL::EAF::Broker> pBroker) override;
 
 // IPluginDocumentation
 public:
@@ -55,8 +55,8 @@ public:
    std::pair<bool,CString> GetDocumentLocation(UINT nHID) const override;
 
 private:
-   HRESULT ExportGirderDesignData(IBroker* pBroker, const std::vector<CGirderKey>& girderKeys, exportCADData::cdtExportDataType fileDataType, exportCADData::ctxFileFormatType fileFormat);
-   HRESULT ExportHaunchDeflectionData(IBroker * pBroker, const std::vector<CGirderKey>& girderKeys, exportCADData::cdtExportDataType fileDataType, exportCADData::ctxFileFormatType fileFormat);
+   HRESULT ExportGirderDesignData(std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderKeys, exportCADData::cdtExportDataType fileDataType, exportCADData::ctxFileFormatType fileFormat);
+   HRESULT ExportHaunchDeflectionData(std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderKeys, exportCADData::cdtExportDataType fileDataType, exportCADData::ctxFileFormatType fileFormat);
 
    std::map<UINT,CString> m_HelpTopics;
    CString GetDocumentationURL() const;

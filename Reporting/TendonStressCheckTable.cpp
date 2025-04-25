@@ -30,11 +30,6 @@
 #include <IFace\Bridge.h>
 #include <IFace/Limits.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 /****************************************************************************
@@ -66,14 +61,14 @@ CTendonStressCheckTable& CTendonStressCheckTable::operator= (const CTendonStress
 }
 
 //======================== OPERATIONS =======================================
-void CTendonStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const pgsGirderArtifact* pGirderArtifact,IEAFDisplayUnits* pDisplayUnits) const
+void CTendonStressCheckTable::Build(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsGirderArtifact* pGirderArtifact,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    const CGirderKey& girderKey = pGirderArtifact->GetGirderKey();
 
-   GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   EAF_GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
    DuctIndexType nMaxSegmentDucts = pSegmentTendonGeometry->GetMaxDuctCount(girderKey);
 
-   GET_IFACE2(pBroker,IGirderTendonGeometry,pGirderTendonGeometry);
+   EAF_GET_IFACE2(pBroker,IGirderTendonGeometry,pGirderTendonGeometry);
    DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
    if (nMaxSegmentDucts+nGirderDucts == 0 )
    {
@@ -82,7 +77,7 @@ void CTendonStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
 
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
 
-   GET_IFACE2(pBroker,ITendonStressLimit,pLimits);
+   EAF_GET_IFACE2(pBroker,ITendonStressLimit,pLimits);
    
    rptCapacityToDemand cap_demand;
 
@@ -91,7 +86,7 @@ void CTendonStressCheckTable::Build(rptChapter* pChapter,IBroker* pBroker,const 
    pPara->SetName(_T("Tendon Stresses"));
    *pChapter << pPara;
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
    {

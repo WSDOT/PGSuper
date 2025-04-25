@@ -39,11 +39,10 @@ public:
 class pgsHaulTruckStatusCallback : public iStatusCallback
 {
 public:
-   pgsHaulTruckStatusCallback(IBroker* pBroker,eafTypes::StatusSeverityType statusLevel);
+   pgsHaulTruckStatusCallback(eafTypes::StatusSeverityType statusLevel);
    virtual eafTypes::StatusSeverityType GetSeverity() const override;
    virtual void Execute(CEAFStatusItem* pStatusItem) override;
 
 private:
-   IBroker* m_pBroker;
    eafTypes::StatusSeverityType m_Severity;
 };

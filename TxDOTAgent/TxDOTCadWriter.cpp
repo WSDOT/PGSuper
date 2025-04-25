@@ -50,16 +50,11 @@
 #include <PgsExt\GirderArtifactTool.h>
 #include <PgsExt\GirderLabel.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 //
 // Utility functions
 //
-static std::_tstring MakeNonStandardStrandString(IBroker* pBroker, const pgsPointOfInterest& midPoi, bool isIBeam, const pgsPointOfInterest& pmid);
+static std::_tstring MakeNonStandardStrandString(std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& midPoi, bool isIBeam, const pgsPointOfInterest& pmid);
 static std::_tstring FractionalStrandSize(Float64 realSize); // Return fractional string for strand size
 
 //
@@ -86,23 +81,23 @@ private:
    void WriteRowData(CTxDataExporter& rDataExporter, const RowData& row,Float64 Hg, Uint32 currRowNum);
 };
 
-int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, IBroker* pBroker, const CGirderKey& girderKey, txcwStrandLayoutType strandLayout, txcwNsTableLayout tableLayout, bool isIBeam)
+int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, txcwStrandLayoutType strandLayout, txcwNsTableLayout tableLayout, bool isIBeam)
 {
 #if defined _DEBUG
-   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
    ATLASSERT(pDocType->IsPGSuperDocument());
 #endif
 
-   GET_IFACE2(pBroker, IBridge,pBridge);
-   GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
-   GET_IFACE2(pBroker, ISegmentData,pSegmentData);
-   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
-	GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
-   GET_IFACE2(pBroker, IMomentCapacity, pMomentCapacity);
-   GET_IFACE2(pBroker, ILiveLoadDistributionFactors, pDistFact);
-   GET_IFACE2(pBroker, IMaterials, pMaterial);
-   GET_IFACE2(pBroker, IIntervals, pIntervals);
-	GET_IFACE2(pBroker, IArtifact, pIArtifact);
+   EAF_GET_IFACE2(pBroker, IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker, ISegmentData,pSegmentData);
+   EAF_GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
+	EAF_GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
+   EAF_GET_IFACE2(pBroker, IMomentCapacity, pMomentCapacity);
+   EAF_GET_IFACE2(pBroker, ILiveLoadDistributionFactors, pDistFact);
+   EAF_GET_IFACE2(pBroker, IMaterials, pMaterial);
+   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
+	EAF_GET_IFACE2(pBroker, IArtifact, pIArtifact);
 
    CSegmentKey segmentKey(girderKey,0);
    SpanIndexType spanIdx = girderKey.groupIndex;
@@ -145,7 +140,7 @@ int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, IBroker*
    // STRUCTURE NAME
    if (m_RowNum==0)
    {
-      GET_IFACE2(pBroker,IProjectProperties,pProjectProperties);
+      EAF_GET_IFACE2(pBroker,IProjectProperties,pProjectProperties);
       std::_tstring bridgeName = pProjectProperties->GetBridgeName();
       rDataExporter.WriteStringToCell(1, _T("StructureName"), m_RowNum, bridgeName.c_str());
    }
@@ -264,7 +259,7 @@ int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, IBroker*
    rDataExporter.WriteFloatToCell(1, _T("gShear"), m_RowNum, shearDistFactor);
 
    // Design Load rating
-   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+   EAF_GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
    std::vector<CGirderKey> girderKeys{ girderKey };
    std::shared_ptr<const pgsISummaryRatingArtifact> pInventoryRatingArtifact = pIArtifact->GetSummaryRatingArtifact(girderKeys,pgsTypes::lrDesign_Inventory,INVALID_INDEX);
    std::shared_ptr<const pgsISummaryRatingArtifact> pOperatingRatingArtifact = pIArtifact->GetSummaryRatingArtifact(girderKeys,pgsTypes::lrDesign_Operating,INVALID_INDEX);
@@ -298,7 +293,7 @@ int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, IBroker*
    // Done with values that are common to both strand layouts. Now write to specific layouts
    Float64 girder_length = pBridge->GetSegmentLength(segmentKey);
 
-   GET_IFACE2(pBroker, ISectionProperties,pSectProp);
+   EAF_GET_IFACE2(pBroker, ISectionProperties,pSectProp);
    Float64 Hg = pSectProp->GetHg(releaseIntervalIdx, pois);
 
    // use utility class for writing debond information
@@ -393,7 +388,7 @@ Uint32 TxDOTDebondWriter::WriteDebondDataData(CTxDataExporter& rDataExporter, Ui
       }
       else if (m_Rows.empty())
       {
-         // row height, srands in row, and debonds in row are zero. Just write zeros to all fields
+         // row height, strands in row, and debonds in row are zero. Just write zeros to all fields
          WriteZeroDebondInfo(rDataExporter, currRow);
       }
       else
@@ -403,13 +398,12 @@ Uint32 TxDOTDebondWriter::WriteDebondDataData(CTxDataExporter& rDataExporter, Ui
          RowIndexType nrs = m_pStrandGeometry->GetNumRowsWithStrand(poi,pgsTypes::Straight);
          ATLASSERT((RowIndexType)m_Rows.size() == nrs); // could have more rows than rows with debonded strands
 
-         CComPtr<IBroker> pBroker;
-         EAFGetBroker(&pBroker);
+         auto pBroker = EAFGetBroker();
       
-         GET_IFACE2(pBroker, IIntervals, pIntervals);
+         EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
          IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
 
-         GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+         EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
          Float64 Hg = pSectProp->GetHg(releaseIntervalIdx, poi);
 
          // Where the rubber hits the road - Write rows
@@ -531,7 +525,7 @@ void  TxDOTDebondWriter::WriteZeroDebondInfo(CTxDataExporter& rDataExporter, Uin
    rDataExporter.WriteIntToCell(1, _T("DB_15"), currRow, 0);
 }
 
-std::_tstring MakeNonStandardStrandString(IBroker* pBroker, const pgsPointOfInterest& midPoi, bool isIBeam, const pgsPointOfInterest& pmid)
+std::_tstring MakeNonStandardStrandString(std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& midPoi, bool isIBeam, const pgsPointOfInterest& pmid)
 {
    std::_tostringstream os;
 

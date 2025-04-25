@@ -29,19 +29,6 @@
 
 #include "RaisedStraightStrandDesignTool.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-////// local functions
-//////////////////////
-
-/****************************************************************************
-CLASS
-   pgsRaisedStraightStrandDesignTool
-   - Generic class for managing resequencing of strand fill
-****************************************************************************/
 pgsStrandResequencer::pgsStrandResequencer(const GirderLibraryEntry* pGdrEntry)
 {
    ATLASSERT(pGdrEntry);
@@ -360,13 +347,6 @@ StrandIndexType pgsStrandResequencer::GetPermanentStrandCountFromPermGridIndex(G
 }
 
 
-
-/****************************************************************************
-CLASS
-   pgsRaisedStraightStrandDesignTool
-****************************************************************************/
-
-
 pgsRaisedStraightStrandDesignTool::pgsRaisedStraightStrandDesignTool(SHARED_LOGFILE lf, const GirderLibraryEntry* pGdrEntry):
 LOGFILE(lf),
 m_pBroker(nullptr),
@@ -376,11 +356,12 @@ m_StrandResequencer(pGdrEntry)
 {
 }
 
-void pgsRaisedStraightStrandDesignTool::Initialize(IBroker* pBroker, StatusGroupIDType statusGroupID, pgsSegmentDesignArtifact* pArtif)
+void pgsRaisedStraightStrandDesignTool::Initialize(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, pgsSegmentDesignArtifact* pArtif)
 {
    ATLASSERT(pBroker);
 
    // cache some needed data
+#pragma Reminder("WORKING HERE - Removing COM - caching the broker could lead to circular references")
    m_pBroker = pBroker;
    m_StatusGroupID = statusGroupID;
 
@@ -388,16 +369,16 @@ void pgsRaisedStraightStrandDesignTool::Initialize(IBroker* pBroker, StatusGroup
    m_SegmentKey = m_pArtifact->GetSegmentKey();
 
    // Get kern elevations
-   GET_IFACE(IPointOfInterest, pPoi);
+   EAF_GET_IFACE(IPointOfInterest, pPoi);
    PoiList vPoi;
    pPoi->GetPointsOfInterest(m_SegmentKey, POI_5L | POI_RELEASED_SEGMENT, &vPoi);
    ATLASSERT(vPoi.size() == 1);
    const pgsPointOfInterest& poi = vPoi.front();
 
-   GET_IFACE(IIntervals,pIntervals);
+   EAF_GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
 
-   GET_IFACE(ISectionProperties,pSectProp);
+   EAF_GET_IFACE(ISectionProperties,pSectProp);
    // Strands must be above NA in order to be considered for raising
    m_Yb        = pSectProp->GetY(releaseIntervalIdx, poi, pgsTypes::BottomGirder); //pSectProp->GetKt(poi) + pSectProp->GetHg();
    m_LowerKern = pSectProp->GetKb(releaseIntervalIdx,poi);

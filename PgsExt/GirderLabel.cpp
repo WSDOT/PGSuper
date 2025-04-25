@@ -320,7 +320,7 @@ LPCTSTR PGSEXTFUNC GetTempSupportBearingOffsetMeasureString(ConnectionLibraryEnt
    }
 }
 
-CString GetLabel(const CPierData2* pPier,IEAFDisplayUnits* pDisplayUnits)
+CString GetLabel(const CPierData2* pPier,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    CString strLabel;
    strLabel.Format(_T("%s, %s"),LABEL_PIER_EX(pPier->IsAbutment(),pPier->GetIndex()), FormatStation(pDisplayUnits->GetStationFormat(),pPier->GetStation()));
@@ -328,7 +328,7 @@ CString GetLabel(const CPierData2* pPier,IEAFDisplayUnits* pDisplayUnits)
    return strLabel;
 }
 
-CString GetLabel(const CTemporarySupportData* pTS,IEAFDisplayUnits* pDisplayUnits)
+CString GetLabel(const CTemporarySupportData* pTS,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    CString strLabel;
    strLabel.Format(_T("TS %d, %s, %s"),LABEL_TEMPORARY_SUPPORT(pTS->GetIndex()),

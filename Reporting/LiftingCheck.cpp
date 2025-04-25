@@ -43,11 +43,6 @@
 
 #include <EAF/EAFApp.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -77,13 +72,13 @@ CLiftingCheck& CLiftingCheck::operator= (const CLiftingCheck& rOther)
 }
 
 void CLiftingCheck::Build(rptChapter* pChapter,
-                          IBroker* pBroker,const CGirderKey& girderKey,
-                          IEAFDisplayUnits* pDisplayUnits) const
+                          std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,
+                          std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   GET_IFACE2(pBroker, ISegmentLiftingSpecCriteria, pSegmentLiftingSpecCriteria);
+   EAF_GET_IFACE2(pBroker, ISegmentLiftingSpecCriteria, pSegmentLiftingSpecCriteria);
    if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled())
    {
-      GET_IFACE2(pBroker, IBridge, pBridge);
+      EAF_GET_IFACE2(pBroker, IBridge, pBridge);
       SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
       for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
       {
@@ -109,15 +104,15 @@ void CLiftingCheck::Build(rptChapter* pChapter,
 }
 
 void CLiftingCheck::Build(rptChapter* pChapter,
-   IBroker* pBroker, const CSegmentKey& segmentKey,
-   IEAFDisplayUnits* pDisplayUnits) const
+   std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey,
+   std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   GET_IFACE2(pBroker, ISegmentLiftingSpecCriteria, pSegmentLiftingSpecCriteria);
+   EAF_GET_IFACE2(pBroker, ISegmentLiftingSpecCriteria, pSegmentLiftingSpecCriteria);
    if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled())
    {
-      GET_IFACE2(pBroker, IArtifact, pArtifacts);
-      GET_IFACE2(pBroker, IBridge, pBridge);
-      GET_IFACE2(pBroker, IGirder, pGirder);
+      EAF_GET_IFACE2(pBroker, IArtifact, pArtifacts);
+      EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+      EAF_GET_IFACE2(pBroker, IGirder, pGirder);
       SegmentIndexType nSegments = pBridge->GetSegmentCount(segmentKey);
       if (1 < nSegments)
       {

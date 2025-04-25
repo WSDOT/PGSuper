@@ -26,11 +26,6 @@
 #include <IFace\Bridge.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -57,17 +52,16 @@ rptChapter* CSpanDataChapterBuilder::Build(const std::shared_ptr<const WBFL::Rep
 {
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderReportSpecification>(pRptSpec);
 
-   CComPtr<IBroker> pBroker;
-   pGdrRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGdrRptSpec->GetBroker();
    const CGirderKey& girderKey(pGdrRptSpec->GetGirderKey());
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    USES_CONVERSION;
 
-   GET_IFACE2(pBroker, IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    SpanIndexType nSpans = pBridge->GetSpanCount();
 

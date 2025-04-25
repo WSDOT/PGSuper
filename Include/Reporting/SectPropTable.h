@@ -25,7 +25,7 @@
 
 #include <Reporting\ReportingExp.h>
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 /*****************************************************************************
 CLASS 
@@ -60,7 +60,7 @@ public:
    /// <param name="bComposite">If true, lists properties for both the composite and non-composite section, otherwise just the non-composite section properties are listed</param>
    /// <param name="pDisplayUnits"></param>
    /// <returns></returns>
-   rptRcTable* Build(IBroker* pBroker,const CSegmentKey& segmentKey,bool bComposite, IEAFDisplayUnits* pDisplayUnits) const;
+   rptRcTable* Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,bool bComposite, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 };
 
 #endif // INCLUDED_SECTPROPTABLE_H_

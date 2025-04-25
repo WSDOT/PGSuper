@@ -56,10 +56,10 @@ rptRcTable(NumColumns,0)
 
 CTimeDependentLossFinalTable* CTimeDependentLossFinalTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
 {
-   GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
    std::_tstring strSpecName = pSpec->GetSpecification();
 
-   GET_IFACE2(pBroker,ILibrary,pLib);
+   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
 
    // Create and configure the table
@@ -73,7 +73,7 @@ CTimeDependentLossFinalTable* CTimeDependentLossFinalTable::PrepareTable(rptChap
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
 
-   GET_IFACE2(pBroker, IBridge, pBridge);
+   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    CString strTitle;
    if (pBridge->GetDeckType() == pgsTypes::sdtNonstructuralOverlay)
    {

@@ -66,13 +66,13 @@ CElasticGainDueToLiveLoadTable* CElasticGainDueToLiveLoadTable::PrepareTable(rpt
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    table->m_LiveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
-   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
 
-   GET_IFACE2(pBroker,IMaterials,pMaterials);
+   EAF_GET_IFACE2(pBroker,IMaterials,pMaterials);
    Float64 Ec = pMaterials->GetSegmentEc(segmentKey, table->m_LiveLoadIntervalIdx);
    Float64 Ep = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Straight)->GetE(); // Ok to use straight since we just want E
 
@@ -102,8 +102,8 @@ CElasticGainDueToLiveLoadTable* CElasticGainDueToLiveLoadTable::PrepareTable(rpt
    *pParagraph << Sub2(_T("E"),_T("c")) << _T(" = ") << table->mod_e.SetValue( Ec ) << rptNewLine;
    table->mod_e.ShowUnitTag(false);
 
-   GET_IFACE2(pBroker,ISpecification,pSpec);
-   GET_IFACE2(pBroker,ILibrary,pLibrary);
+   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   EAF_GET_IFACE2(pBroker,ILibrary,pLibrary);
    const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
    const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
 
@@ -113,7 +113,7 @@ CElasticGainDueToLiveLoadTable* CElasticGainDueToLiveLoadTable::PrepareTable(rpt
       *pParagraph << Sub2(_T("K"), _T("llim")) << _T(" = ") << table->scalar.SetValue(table->m_Kliveload) << rptNewLine;
    }
 
-   GET_IFACE2(pBroker, IProductForces, pProductForces);
+   EAF_GET_IFACE2(pBroker, IProductForces, pProductForces);
    table->m_BAT = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
 
    *pParagraph << table << rptNewLine;
@@ -170,7 +170,7 @@ void CElasticGainDueToLiveLoadTable::AddRow(rptChapter* pChapter, IBroker* pBrok
    Float64 MmaxDesign(0), MmaxFatigue(0);
    if (!IsZero(m_Kliveload))
    {
-      GET_IFACE2(pBroker, IProductForces, pProductForces);
+      EAF_GET_IFACE2(pBroker, IProductForces, pProductForces);
       Float64 Mmin;
       pProductForces->GetLiveLoadMoment(m_LiveLoadIntervalIdx, pgsTypes::lltDesign, poi, m_BAT, true/*include impact*/, true/*include LLDF*/, &Mmin, &MmaxDesign);
 

@@ -39,7 +39,7 @@
 
 // forward declarations
 class SpecLibraryEntryImpl;
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 class RefactoredSpecLibraryParameters;
 class rptChapter;
 
@@ -360,7 +360,7 @@ public:
    const BearingCriteria& GetBearingCriteria() const;
    void SetBearingCriteria(const BearingCriteria& criteria);
 
-   void Report(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const;
+   void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 
    ////////////////////////////////////////
    //

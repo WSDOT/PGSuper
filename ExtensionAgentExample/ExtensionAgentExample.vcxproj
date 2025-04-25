@@ -176,14 +176,6 @@
     <ClCompile Include="EditPierPage.cpp" />
     <ClCompile Include="ExampleExtensionAgent.cpp" />
     <ClCompile Include="ExtensionAgentExample.cpp" />
-    <ClCompile Include="ExtensionAgentExample_i.c">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-      </PrecompiledHeader>
-      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</CompileAsManaged>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-      </PrecompiledHeader>
-      <CompileAsManaged Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</CompileAsManaged>
-    </ClCompile>
     <ClCompile Include="MyChapterBuilder.cpp" />
     <ClCompile Include="MyReportSpecification.cpp" />
     <ClCompile Include="MyReportSpecificationBuilder.cpp" />
@@ -196,18 +188,12 @@
     <ClCompile Include="TestGraphBuilder.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="ExampleExtensionAgent.rgs" />
     <None Include="ExtensionAgentExample.def" />
-    <None Include="ExtensionAgentExample.rgs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Midl Include="ExtensionAgentExample.idl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="dllmain.h" />
     <ClInclude Include="EditPierPage.h" />
     <ClInclude Include="ExampleExtensionAgent.h" />
-    <ClInclude Include="ExtensionAgentExample_i.h" />
     <ClInclude Include="MyChapterBuilder.h" />
     <ClInclude Include="MyReportSpecification.h" />
     <ClInclude Include="MyReportSpecificationBuilder.h" />
@@ -226,9 +212,6 @@
   <ItemGroup>
     <Image Include="logo.bmp" />
     <Image Include="toolbar.bmp" />
-  </ItemGroup>
-  <ItemGroup>
-    <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\PgsExt\PgsExt.vcxproj">

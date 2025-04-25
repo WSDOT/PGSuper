@@ -31,11 +31,6 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\ReportOptions.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CEquilibriumCheckChapterBuilder::CEquilibriumCheckChapterBuilder(bool bSelect) :
 CPGSuperChapterBuilder(bSelect)
@@ -52,8 +47,7 @@ LPCTSTR CEquilibriumCheckChapterBuilder::GetName() const
 rptChapter* CEquilibriumCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CEquilibriumCheckReportSpecification>(pRptSpec);
-   CComPtr<IBroker> pBroker;
-   pGdrRptSpec->GetBroker(&pBroker);
+   auto pBroker = pGdrRptSpec->GetBroker();
 
    pgsPointOfInterest poi(pGdrRptSpec->GetPOI());
    IntervalIndexType intervalIdx = pGdrRptSpec->GetInterval();
@@ -62,7 +56,7 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(const std::shared_ptr<const W
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       *pPara << color(Red) << _T("Time Step analysis results not available.") << color(Black) << rptNewLine;
@@ -78,10 +72,10 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(const std::shared_ptr<const W
    *pPara << rptNewLine << rptNewLine;
 
    CGirderKey girderKey(poi.GetSegmentKey());
-   GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeometry);
+   EAF_GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeometry);
    DuctIndexType nDucts = pTendonGeometry->GetDuctCount(girderKey);
 
-   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    INIT_UV_PROTOTYPE(rptForceUnitValue,     force,      pDisplayUnits->GetGeneralForceUnit(),    true);
    INIT_UV_PROTOTYPE(rptMomentUnitValue,    moment,     pDisplayUnits->GetSmallMomentUnit(),     true);
    INIT_UV_PROTOTYPE(rptLengthUnitValue,    dist,       pDisplayUnits->GetComponentDimUnit(),    true);
@@ -90,15 +84,15 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(const std::shared_ptr<const W
    INIT_UV_PROTOTYPE(rptStressUnitValue,    modE,       pDisplayUnits->GetModEUnit(),            true);
    INIT_UV_PROTOTYPE(rptPointOfInterest,    location,   pDisplayUnits->GetSpanLengthUnit(),      true);
 
-   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
-   GET_IFACE2(pBroker,ILosses,pLosses);
+   EAF_GET_IFACE2(pBroker,ILosses,pLosses);
    const LOSSDETAILS* pDetails = pLosses->GetLossDetails(poi,intervalIdx);
 
    const TIME_STEP_DETAILS& tsDetails(pDetails->TimeStepDetails[intervalIdx]);
 
-   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    *pPara << _T("ID = ") << poi.GetID() << _T(" ") << location.SetValue(POI_ERECTED_SEGMENT,poi) << rptNewLine;
    *pPara << _T("Interval ") << LABEL_INTERVAL(intervalIdx) << _T(" : ") << pIntervals->GetDescription(intervalIdx) << rptNewLine;
 
@@ -205,7 +199,7 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(const std::shared_ptr<const W
    }
 
    int N = sizeof(tsDetails.dPi)/sizeof(tsDetails.dPi[0]);
-   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
 
    *pPara << rptNewLine;
    *pPara << rptNewLine;
@@ -282,7 +276,7 @@ rptChapter* CEquilibriumCheckChapterBuilder::Build(const std::shared_ptr<const W
    *pPara << rptNewLine;
    *pPara << _T("Response to restraining force") << rptNewLine;
    *pPara << rptNewLine;
-   GET_IFACE2(pBroker,IProductForces,pProductForces);
+   EAF_GET_IFACE2(pBroker,IProductForces,pProductForces);
    *pPara << _T("Pre Creep = ") << force.SetValue(pProductForces->GetAxial(intervalIdx,pgsTypes::pftCreep,poi,pgsTypes::ContinuousSpan,rtIncremental)) << rptNewLine;
    *pPara << _T("Pre Shrinkage = ") << force.SetValue(pProductForces->GetAxial(intervalIdx,pgsTypes::pftShrinkage,poi,pgsTypes::ContinuousSpan,rtIncremental)) << rptNewLine;
    *pPara << _T("Pre Relaxation = ") << force.SetValue(pProductForces->GetAxial(intervalIdx,pgsTypes::pftRelaxation,poi,pgsTypes::ContinuousSpan,rtIncremental)) << rptNewLine;

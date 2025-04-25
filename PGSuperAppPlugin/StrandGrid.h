@@ -27,7 +27,7 @@
 #include <PsgLib\GirderLibraryEntry.h>
 
 class CUserData;
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 /////////////////////////////////////////////////////////////////////////////
 // CStrandGrid window

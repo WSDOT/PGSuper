@@ -33,13 +33,8 @@
 #include <IFace\Bridge.h>
 #include <EAF\EAFUIIntegration.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-CPGSpliceTitlePageBuilder::CPGSpliceTitlePageBuilder(IBroker* pBroker,LPCTSTR strTitle,bool bFullVersion) :
+#pragma Reminder("WORKING HERE - Removing COM - caching the broker can lead to circular references")
+CPGSpliceTitlePageBuilder::CPGSpliceTitlePageBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker,LPCTSTR strTitle,bool bFullVersion) :
 WBFL::Reporting::TitlePageBuilder(strTitle),
 m_pBroker(pBroker),
 m_bFullVersion(bFullVersion)
@@ -116,7 +111,7 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(const std::shared_ptr<const WBFL::R
    pPara = new rptParagraph;
    pPara->SetStyleName(rptStyleManager::GetReportSubtitleStyle());
    *pTitlePage << pPara;
-   GET_IFACE(IVersionInfo,pVerInfo);
+   EAF_GET_IFACE(IVersionInfo,pVerInfo);
    *pPara << pVerInfo->GetVersionString() << rptNewLine;
 
    const std::_tstring& strImage = rptStyleManager::GetReportCoverImage();
@@ -133,8 +128,8 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(const std::shared_ptr<const WBFL::R
       *pPara << rptNewLine << rptNewLine;
    }
 
-   GET_IFACE(IProjectProperties,pProps);
-   GET_IFACE(IEAFDocument,pDocument);
+   EAF_GET_IFACE(IProjectProperties,pProps);
+   EAF_GET_IFACE(IEAFDocument,pDocument);
 
    rptParagraph* pPara3 = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pTitlePage << pPara3;
@@ -202,7 +197,7 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(const std::shared_ptr<const WBFL::R
    //   }
    //   else
    //   {
-   //      GET_IFACE(IBridge,pBridge);
+   //      EAF_GET_IFACE(IBridge,pBridge);
    //      girderKey.groupIndex = pBridge->GetGirderGroupIndex(pSpanRptSpec->GetSpan());
    //      girderKey.girderIndex = ALL_GIRDERS;
    //   }
@@ -224,7 +219,7 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(const std::shared_ptr<const WBFL::R
    p = new rptParagraph();
    *pTitlePage << p;
 
-   GET_IFACE(ILossParameters, pLossParams);
+   EAF_GET_IFACE(ILossParameters, pLossParams);
    *p << _T("Losses: ") << pLossParams->GetLossMethodDescription() << rptNewLine;
 
    rptRcTable* pTable;
@@ -348,7 +343,7 @@ rptChapter* CPGSpliceTitlePageBuilder::Build(const std::shared_ptr<const WBFL::R
    }
 
    // Status Center Items
-   GET_IFACE(IEAFStatusCenter,pStatusCenter);
+   EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
    IndexType nItems = pStatusCenter->Count();
 
    if ( nItems != 0 )

@@ -27,7 +27,7 @@
 #include <Reporting\PGSuperChapterBuilder.h>
 
 
-interface IEAFDisplayUnits;
+class IEAFDisplayUnits;
 
 class REPORTINGCLASS CPrincipalTensionStressDetailsChapterBuilder : public CPGSuperChapterBuilder
 {
