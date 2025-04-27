@@ -26,7 +26,8 @@
 #include <Plugins\BeamFamilyCLSID.h>
 #include "PCIDeckedBulbTeeFactory.h"
 #include "BulbTeeDistFactorEngineer.h"
-#include <IFace\PsLossEngineer.h>
+#include "TimeStepLossEngineer.h"
+#include "PsBeamLossEngineer.h"
 #include <GeomModel\PrecastBeam.h>
 #include <MathEx.h>
 #include <sstream>
@@ -452,30 +453,16 @@ std::shared_ptr<CDistFactorEngineerBase> CPCIDeckedBulbTeeFactory::CreateDistFac
    return std::make_shared<CBulbTeeDistFactorEngineer>(pBroker, statusGroupID);
 }
 
-void CPCIDeckedBulbTeeFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusItemIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const
+std::shared_ptr<CPsLossEngineerBase> CPCIDeckedBulbTeeFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusItemIDType statusGroupID,const CGirderKey& girderKey) const
 {
    EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP)
    {
-      CComPtr<IPsLossEngineer> engineer;
-      HRESULT hr = ::CoCreateInstance(CLSID_TimeStepLossEngineer, nullptr, CLSCTX_ALL, IID_IPsLossEngineer, (void**)&engineer);
-      CComQIPtr<IInitialize, &IID_IInitialize> initEngineer(engineer);
-      initEngineer->SetBroker(pBroker, statusGroupID);
-      (*ppEng) = engineer;
-      (*ppEng)->AddRef();
+      return std::make_shared<CTimeStepLossEngineer>(pBroker, statusGroupID);
    }
    else
    {
-      CComPtr<IPsBeamLossEngineer> engineer;
-      HRESULT hr = ::CoCreateInstance(CLSID_PsBeamLossEngineer, nullptr, CLSCTX_ALL, IID_IPsLossEngineer, (void**)&engineer);
-      ATLASSERT(SUCCEEDED(hr));
-      engineer->Init(IBeam);
-
-      CComQIPtr<IInitialize, &IID_IInitialize> initEngineer(engineer);
-      initEngineer->SetBroker(pBroker, statusGroupID);
-
-      (*ppEng) = engineer;
-      (*ppEng)->AddRef();
+      return std::make_shared<CPsBeamLossEngineer>(CPsBeamLossEngineer::BeamType::IBeam, pBroker, statusGroupID);
    }
 }
 

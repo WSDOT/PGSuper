@@ -227,25 +227,16 @@ std::shared_ptr<CDistFactorEngineerBase> CBoxBeamFactoryImpl::CreateDistFactorEn
    return nullptr;
 }
 
-void CBoxBeamFactoryImpl::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusItemIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const
+std::shared_ptr<CPsLossEngineerBase> CBoxBeamFactoryImpl::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusItemIDType statusGroupID,const CGirderKey& girderKey) const
 {
    EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
-      CComObject<CTimeStepLossEngineer>* pEngineer;
-      CComObject<CTimeStepLossEngineer>::CreateInstance(&pEngineer);
-      pEngineer->SetBroker(pBroker,statusGroupID);
-      (*ppEng) = pEngineer;
-      (*ppEng)->AddRef();
+      return std::make_shared<CTimeStepLossEngineer>(pBroker,statusGroupID);
    }
    else
    {
-       CComObject<CPsBeamLossEngineer>* pEngineer;
-       CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
-       pEngineer->Init(BoxBeam);
-       pEngineer->SetBroker(pBroker,statusGroupID);
-       (*ppEng) = pEngineer;
-       (*ppEng)->AddRef();
+      return std::make_shared<CPsBeamLossEngineer>(CPsBeamLossEngineer::BeamType::BoxBeam,pBroker,statusGroupID);
    }
 }
 

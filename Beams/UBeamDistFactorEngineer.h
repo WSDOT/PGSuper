@@ -40,7 +40,7 @@ struct UBEAM_LLDFDETAILS : public BASE_LLDFDETAILS
 class CUBeamDistFactorEngineer : public CDistFactorEngineerImpl<UBEAM_LLDFDETAILS>
 {
 public:
-   CUBeamDistFactorEngineer(bool bTypeB, bool bisSpreadSlab, std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID);
+   CUBeamDistFactorEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, bool bTypeB=false, bool bisSpreadSlab=false);
 
    // IDistFactorEngineer
    void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) override;

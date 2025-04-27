@@ -238,25 +238,16 @@ std::shared_ptr<CDistFactorEngineerBase> CTxDotDoubleTFactory::CreateDistFactorE
    return std::make_shared<CMultiWebDistFactorEngineer>(CMultiWebDistFactorEngineer::BeamType::MultiWebTee,pBroker,statusGroupID);
 }
 
-void CTxDotDoubleTFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const
+std::shared_ptr<CPsLossEngineerBase> CTxDotDoubleTFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey) const
 {
    EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
-      CComObject<CTimeStepLossEngineer>* pEngineer;
-      CComObject<CTimeStepLossEngineer>::CreateInstance(&pEngineer);
-      pEngineer->SetBroker(pBroker,statusGroupID);
-      (*ppEng) = pEngineer;
-      (*ppEng)->AddRef();
+      return std::make_shared<CTimeStepLossEngineer>(pBroker,statusGroupID);
    }
    else
    {
-       CComObject<CPsBeamLossEngineer>* pEngineer;
-       CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
-       pEngineer->Init(SingleT);
-       pEngineer->SetBroker(pBroker,statusGroupID);
-       (*ppEng) = pEngineer;
-       (*ppEng)->AddRef();
+      return std::make_shared<CPsBeamLossEngineer>(CPsBeamLossEngineer::BeamType::SingleT,pBroker,statusGroupID);
    }
 }
 

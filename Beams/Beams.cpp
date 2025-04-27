@@ -204,6 +204,7 @@ BEGIN_OBJECT_MAP(ObjectMap)
 
    OBJECT_ENTRY(CLSID_StrandMoverImpl, CStrandMoverImpl)
 
+   // no longer COM objects
    //OBJECT_ENTRY(CLSID_BoxBeamDistFactorEngineer, CBoxBeamDistFactorEngineer)
    //OBJECT_ENTRY(CLSID_BulbTeeDistFactorEngineer, CBulbTeeDistFactorEngineer)
    //OBJECT_ENTRY(CLSID_MultiWebDistFactorEngineer, CMultiWebDistFactorEngineer)
@@ -212,8 +213,9 @@ BEGIN_OBJECT_MAP(ObjectMap)
    //OBJECT_ENTRY(CLSID_VoidedSlabDistFactorEngineer, CVoidedSlabDistFactorEngineer)
    //OBJECT_ENTRY(CLSID_VoidedSlab2DistFactorEngineer, CVoidedSlab2DistFactorEngineer)
 
-   OBJECT_ENTRY(CLSID_PsBeamLossEngineer, CPsBeamLossEngineer)
-   OBJECT_ENTRY(CLSID_TimeStepLossEngineer, CTimeStepLossEngineer)
+   // no longer COM objects
+   //OBJECT_ENTRY(CLSID_PsBeamLossEngineer, CPsBeamLossEngineer)
+   //OBJECT_ENTRY(CLSID_TimeStepLossEngineer, CTimeStepLossEngineer)
 
    OBJECT_ENTRY(CLSID_AgeAdjustedMaterial, CAgeAdjustedMaterial)
 

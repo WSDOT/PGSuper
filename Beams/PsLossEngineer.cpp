@@ -124,9 +124,9 @@ void ReportRow(T* pTable, rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broke
 
 /////////////////////////////////////////////////////////////////////////////
 // CPsLossEngineer
-void CPsLossEngineer::Init(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID)
+CPsLossEngineer::CPsLossEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID)
 {
-   GetBroker() = pBroker;
+   m_pBroker = pBroker;
    m_StatusGroupID = statusGroupID;
 
    EAF_GET_IFACE2(GetBroker(), IEAFStatusCenter,pStatusCenter);

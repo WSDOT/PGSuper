@@ -414,28 +414,19 @@ void CBulbTeeFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::
 
 std::shared_ptr<CDistFactorEngineerBase> CBulbTeeFactory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
 {
-   return std::make_shared<CBulbTeeDistFactorEngineer>(pBroker, statusID);
+   return std::make_shared<CBulbTeeDistFactorEngineer>(pBroker, statusGroupID);
 }
 
-void CBulbTeeFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusItemIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const
+std::shared_ptr<CPsLossEngineerBase> CBulbTeeFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusItemIDType statusGroupID,const CGirderKey& girderKey) const
 {
    EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
-   if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
+   if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP)
    {
-      CComObject<CTimeStepLossEngineer>* pEngineer;
-      CComObject<CTimeStepLossEngineer>::CreateInstance(&pEngineer);
-      pEngineer->SetBroker(pBroker,statusGroupID);
-      (*ppEng) = pEngineer;
-      (*ppEng)->AddRef();
+      return std::make_shared<CTimeStepLossEngineer>(pBroker, statusGroupID);
    }
    else
    {
-       CComObject<CPsBeamLossEngineer>* pEngineer;
-       CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
-       pEngineer->Init(IBeam);
-       pEngineer->SetBroker(pBroker,statusGroupID);
-       (*ppEng) = pEngineer;
-       (*ppEng)->AddRef();
+      return std::make_shared<CPsBeamLossEngineer>(CPsBeamLossEngineer::BeamType::IBeam, pBroker, statusGroupID);
    }
 }
 

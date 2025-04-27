@@ -30,13 +30,13 @@
 //{
 //   virtual void SetBroker(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID) = 0;
 //};
-
-typedef enum BeamTypes { IBeam, UBeam, SolidSlab, BoxBeam, SingleT } BeamTypes;
-
-// {95C7A3E2-854E-41e2-BA49-96C611B335F3}
-DEFINE_GUID(IID_IPsBeamLossEngineer, 
-0x95c7a3e2, 0x854e, 0x41e2, 0xba, 0x49, 0x96, 0xc6, 0x11, 0xb3, 0x35, 0xf3);
-interface IPsBeamLossEngineer : IPsLossEngineer
-{
-   virtual void Init(BeamTypes beamType) = 0;
-};
+//
+//typedef enum BeamTypes { IBeam, UBeam, SolidSlab, BoxBeam, SingleT } BeamTypes;
+//
+//// {95C7A3E2-854E-41e2-BA49-96C611B335F3}
+//DEFINE_GUID(IID_IPsBeamLossEngineer, 
+//0x95c7a3e2, 0x854e, 0x41e2, 0xba, 0x49, 0x96, 0xc6, 0x11, 0xb3, 0x35, 0xf3);
+//interface IPsBeamLossEngineer : IPsLossEngineer
+//{
+//   virtual void Init(BeamTypes beamType) = 0;
+//};

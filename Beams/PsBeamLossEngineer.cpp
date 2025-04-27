@@ -90,17 +90,9 @@ void CDesignLosses::SaveToCache(const pgsPointOfInterest& poi, const GDRCONFIG& 
 
 /////////////////////////////////////////////////////////////////////////////
 // CUBeamPsLossEngineer
-HRESULT CPsBeamLossEngineer::FinalConstruct()
+CPsBeamLossEngineer::CPsBeamLossEngineer(CPsBeamLossEngineer::BeamType beamType, std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID) :
+   CPsLossEngineerBase(pBroker, statusGroupID), m_BeamType(beamType), m_Engineer(pBroker, statusGroupID)
 {
-   return S_OK;
-}
-
-void CPsBeamLossEngineer::SetBroker(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID)
-{
-   GetBroker() = pBroker;
-   m_StatusGroupID = statusGroupID;
-
-   m_Engineer.Init(GetBroker(),m_StatusGroupID);
 }
 
 const LOSSDETAILS* CPsBeamLossEngineer::GetLosses(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx)

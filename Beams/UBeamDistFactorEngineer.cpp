@@ -47,7 +47,7 @@ static char THIS_FILE[] = __FILE__;
 // pre-convert constant values for performance
 static const Float64 D_18 = WBFL::Units::ConvertToSysUnits(18., WBFL::Units::Measure::Inch);
 
-CUBeamDistFactorEngineer::CUBeamDistFactorEngineer(bool bTypeB, bool bIsSpreadSlab, std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID) :
+CUBeamDistFactorEngineer::CUBeamDistFactorEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, bool bTypeB, bool bIsSpreadSlab) :
    CDistFactorEngineerImpl<UBEAM_LLDFDETAILS>(pBroker, statusGroupID),
    m_bTypeB(bTypeB), m_bIsSpreadSlab(bIsSpreadSlab)
 {

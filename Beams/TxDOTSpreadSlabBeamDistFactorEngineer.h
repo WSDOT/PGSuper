@@ -38,7 +38,10 @@ struct TXSPREADSLABBEAM_LLDFDETAILS : public BASE_LLDFDETAILS
 class BEAMSCLASS CTxDOTSpreadSlabBeamDistFactorEngineer : public CDistFactorEngineerImpl<TXSPREADSLABBEAM_LLDFDETAILS>
 {
 public:
-   CTxDOTSpreadSlabBeamDistFactorEngineer() = default;
+   CTxDOTSpreadSlabBeamDistFactorEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID) :
+      CDistFactorEngineerImpl<TXSPREADSLABBEAM_LLDFDETAILS>(pBroker, statusGroupID)
+   {
+   }
 
 public:
    // CDistFactorEngineerBase

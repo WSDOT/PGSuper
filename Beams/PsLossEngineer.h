@@ -37,12 +37,12 @@ class CPsLossEngineer
 {
    enum LossAgency{laWSDOT, laTxDOT, laAASHTO};
 public:
- 	CPsLossEngineer()
-	{
-      m_bComputingLossesForDesign = false;
-	}
+   CPsLossEngineer() = delete;
+   CPsLossEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID);
+   CPsLossEngineer(const CPsLossEngineer&) = delete;
+   ~CPsLossEngineer() = default;
 
-   void Init(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID);
+   CPsLossEngineer& operator=(const CPsLossEngineer&) = delete;
 
 public:
    enum BeamType { IBeam, UBeam, SolidSlab, BoxBeam, SingleT };
@@ -53,7 +53,8 @@ public:
    virtual void ReportFinalLosses(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
 private:
-   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> GetBroker() { return m_pBroker.lock(); }
+   std::weak_ptr<WBFL::EAF::Broker> m_pBroker;
    StatusGroupIDType m_StatusGroupID;
    StatusCallbackIDType m_scidUnknown;
    StatusCallbackIDType m_scidGirderDescriptionError;
@@ -165,7 +166,7 @@ private:
 
    void GetPointsOfInterest(const CGirderKey& girderKey,PoiList* pPoiList);
 
-   bool m_bComputingLossesForDesign; 
+   bool m_bComputingLossesForDesign = false;
 };
 
 #endif //__PSLOSSENGINEER_H_

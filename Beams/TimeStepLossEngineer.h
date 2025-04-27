@@ -43,44 +43,24 @@ typedef std::map<pgsPointOfInterest,LOSSDETAILS> SectionLossContainer;
 
 /////////////////////////////////////////////////////////////////////////////
 // CTimeStepLossEngineer
-class ATL_NO_VTABLE CTimeStepLossEngineer : 
-   public CComObjectRootEx<CComSingleThreadModel>,
-   public CComCoClass<CTimeStepLossEngineer, &CLSID_TimeStepLossEngineer>,
-   public IPsLossEngineer,
-   public IInitialize
+class CTimeStepLossEngineer : public CPsLossEngineerBase
 {
 public:
-	CTimeStepLossEngineer()
-	{
-	}
+   CTimeStepLossEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID);
 
-   HRESULT FinalConstruct();
-   void FinalRelease();
-
-DECLARE_REGISTRY_RESOURCEID(IDR_TIMESTEPLOSSENGINEER)
-
-BEGIN_COM_MAP(CTimeStepLossEngineer)
-   COM_INTERFACE_ENTRY(IPsLossEngineer)
-   COM_INTERFACE_ENTRY(IInitialize)
-END_COM_MAP()
-
-   // IInitialize
+// CPsLossEngineerBase
 public:
-   virtual void SetBroker(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID) override;
-
-// IPsLossEngineer
-public:
-   virtual const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) override;
-   virtual const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config,IntervalIndexType intervalIdx) override;
-   virtual void ClearDesignLosses() override;
-   virtual void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) override;
-   virtual void ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) override;
-   virtual const ANCHORSETDETAILS* GetGirderTendonAnchorSetDetails(const CGirderKey& girderKey,DuctIndexType ductIdx) override;
-   virtual Float64 GetGirderTendonElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) override;
-   virtual void GetGirderTendonAverageFrictionAndAnchorSetLoss(const CGirderKey& girderKey,DuctIndexType ductIdx,Float64* pfpF,Float64* pfpA) override;
-   virtual const ANCHORSETDETAILS* GetSegmentTendonAnchorSetDetails(const CSegmentKey& segmentKey, DuctIndexType ductIdx) override;
-   virtual Float64 GetSegmentTendonElongation(const CSegmentKey& segmentKey, DuctIndexType ductIdx, pgsTypes::MemberEndType endType) override;
-   virtual void GetSegmentTendonAverageFrictionAndAnchorSetLoss(const CSegmentKey& segmentKey, DuctIndexType ductIdx, Float64* pfpF, Float64* pfpA) override;
+   const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) override;
+   const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config,IntervalIndexType intervalIdx) override;
+   void ClearDesignLosses() override;
+   void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) override;
+   void ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) override;
+   const ANCHORSETDETAILS* GetGirderTendonAnchorSetDetails(const CGirderKey& girderKey,DuctIndexType ductIdx) override;
+   Float64 GetGirderTendonElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) override;
+   void GetGirderTendonAverageFrictionAndAnchorSetLoss(const CGirderKey& girderKey,DuctIndexType ductIdx,Float64* pfpF,Float64* pfpA) override;
+   const ANCHORSETDETAILS* GetSegmentTendonAnchorSetDetails(const CSegmentKey& segmentKey, DuctIndexType ductIdx) override;
+   Float64 GetSegmentTendonElongation(const CSegmentKey& segmentKey, DuctIndexType ductIdx, pgsTypes::MemberEndType endType) override;
+   void GetSegmentTendonAverageFrictionAndAnchorSetLoss(const CSegmentKey& segmentKey, DuctIndexType ductIdx, Float64* pfpF, Float64* pfpA) override;
 
 private:
    pgsTypes::BridgeAnalysisType m_Bat;

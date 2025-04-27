@@ -55,53 +55,29 @@ public:
 
 /////////////////////////////////////////////////////////////////////////////
 // CPsBeamLossEngineer
-class ATL_NO_VTABLE CPsBeamLossEngineer : 
-   public CComObjectRootEx<CComSingleThreadModel>,
-   public CComCoClass<CPsBeamLossEngineer, &CLSID_PsBeamLossEngineer>,
-   public IPsBeamLossEngineer,
-   public IInitialize
+class BEAMSCLASS CPsBeamLossEngineer : public CPsLossEngineerBase
 {
 public:
-	CPsBeamLossEngineer()
-	{
-	}
+   enum class BeamType { IBeam, UBeam, SolidSlab, BoxBeam, SingleT };
 
-   HRESULT FinalConstruct();
-
-DECLARE_REGISTRY_RESOURCEID(IDR_PSBEAMLOSSENGINEER)
-
-BEGIN_COM_MAP(CPsBeamLossEngineer)
-   COM_INTERFACE_ENTRY(IPsBeamLossEngineer)
-   COM_INTERFACE_ENTRY(IPsLossEngineer)
-   COM_INTERFACE_ENTRY(IInitialize)
-END_COM_MAP()
-
-// IInitialize
-public:
-   virtual void SetBroker(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID) override;
-
-// IPsBeamLossEngineer
-public:
-   virtual void Init(BeamTypes beamType)  override { m_BeamType = beamType; }
+   CPsBeamLossEngineer(CPsBeamLossEngineer::BeamType beamType, std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID);
 
 // IPsLossEngineer
 public:
-   virtual const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) override;
-   virtual const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config,IntervalIndexType intervalIdx) override;
-   virtual void ClearDesignLosses() override;
-   virtual void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) override;
-   virtual void ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) override;
-   virtual const ANCHORSETDETAILS* GetGirderTendonAnchorSetDetails(const CGirderKey& girderKey,DuctIndexType ductIdx) override;
-   virtual Float64 GetGirderTendonElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) override;
-   virtual void GetGirderTendonAverageFrictionAndAnchorSetLoss(const CGirderKey& girderKey,DuctIndexType ductIdx,Float64* pfpF,Float64* pfpA) override;
-   virtual const ANCHORSETDETAILS* GetSegmentTendonAnchorSetDetails(const CSegmentKey& segmentKey, DuctIndexType ductIdx) override;
-   virtual Float64 GetSegmentTendonElongation(const CSegmentKey& segmentKey, DuctIndexType ductIdx, pgsTypes::MemberEndType endType) override;
-   virtual void GetSegmentTendonAverageFrictionAndAnchorSetLoss(const CSegmentKey& segmentKey, DuctIndexType ductIdx, Float64* pfpF, Float64* pfpA) override;
+   const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) override;
+   const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config,IntervalIndexType intervalIdx) override;
+   void ClearDesignLosses() override;
+   void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) override;
+   void ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) override;
+   const ANCHORSETDETAILS* GetGirderTendonAnchorSetDetails(const CGirderKey& girderKey,DuctIndexType ductIdx) override;
+   Float64 GetGirderTendonElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) override;
+   void GetGirderTendonAverageFrictionAndAnchorSetLoss(const CGirderKey& girderKey,DuctIndexType ductIdx,Float64* pfpF,Float64* pfpA) override;
+   const ANCHORSETDETAILS* GetSegmentTendonAnchorSetDetails(const CSegmentKey& segmentKey, DuctIndexType ductIdx) override;
+   Float64 GetSegmentTendonElongation(const CSegmentKey& segmentKey, DuctIndexType ductIdx, pgsTypes::MemberEndType endType) override;
+   void GetSegmentTendonAverageFrictionAndAnchorSetLoss(const CSegmentKey& segmentKey, DuctIndexType ductIdx, Float64* pfpF, Float64* pfpA) override;
 
 private:
-   std::shared_ptr<WBFL::EAF::Broker> GetBroker();
-   StatusGroupIDType m_StatusGroupID;
-   BeamTypes m_BeamType;
+   BeamType m_BeamType;
    CPsLossEngineer m_Engineer;
 
 

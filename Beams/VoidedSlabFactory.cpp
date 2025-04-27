@@ -232,7 +232,7 @@ std::shared_ptr<CDistFactorEngineerBase> CVoidedSlabFactory::CreateDistFactorEng
          // this is a type b section... type b's are the same as type c's which are U-beams
          ATLASSERT(deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP);
 
-         return std::make_shared<CUBeamDistFactorEngineer>(true, true, pBroker, statusGroupID);
+         return std::make_shared<CUBeamDistFactorEngineer>(pBroker, statusGroupID, true, true);
       }
    }
 
@@ -240,42 +240,24 @@ std::shared_ptr<CDistFactorEngineerBase> CVoidedSlabFactory::CreateDistFactorEng
    return nullptr;
 }
 
-void CVoidedSlabFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const
+std::shared_ptr<CPsLossEngineerBase> CVoidedSlabFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey) const
 {
    EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
-      CComObject<CTimeStepLossEngineer>* pEngineer;
-      CComObject<CTimeStepLossEngineer>::CreateInstance(&pEngineer);
-      pEngineer->SetBroker(pBroker,statusGroupID);
-      (*ppEng) = pEngineer;
-      (*ppEng)->AddRef();
+      return std::make_shared<CTimeStepLossEngineer>(pBroker,statusGroupID);
    }
    else
    {
-      CComObject<CPsBeamLossEngineer>* pEngineer;
-      CComObject<CPsBeamLossEngineer>::CreateInstance(&pEngineer);
-       
       // depends on # of voids
-      EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+      EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
       const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
       const GirderLibraryEntry* pGdrEntry = pGroup->GetGirder(girderKey.girderIndex)->GetGirderLibraryEntry();
 
       Float64 nVoids = pGdrEntry->GetDimension(_T("Number_of_Voids"));
 
-      if ( nVoids == 0 )
-      {
-         pEngineer->Init(SolidSlab);
-      }
-      else
-      {
-         pEngineer->Init(SingleT);
-      }
-
-      pEngineer->SetBroker(pBroker,statusGroupID);
-      (*ppEng) = pEngineer;
-      (*ppEng)->AddRef();
+      return std::make_shared<CPsBeamLossEngineer>(nVoids == 0 ? CPsBeamLossEngineer::BeamType::SolidSlab : CPsBeamLossEngineer::BeamType::SingleT, pBroker, statusGroupID);
    }
 }
 

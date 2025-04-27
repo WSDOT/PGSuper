@@ -57,7 +57,10 @@ struct BEAMSCLASS BOXBEAM_LLDFDETAILS : public BASE_LLDFDETAILS
 class BEAMSCLASS CBoxBeamDistFactorEngineer : public CDistFactorEngineerImpl<BOXBEAM_LLDFDETAILS>
 {
 public:
-   CBoxBeamDistFactorEngineer() = default;
+   CBoxBeamDistFactorEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID) :
+      CDistFactorEngineerImpl<BOXBEAM_LLDFDETAILS>(pBroker, statusGroupID)
+   {
+   }
 
 public:
    // CDistFactorEngineerBase

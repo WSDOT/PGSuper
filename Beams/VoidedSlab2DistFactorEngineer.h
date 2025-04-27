@@ -33,7 +33,10 @@
 class BEAMSCLASS CVoidedSlab2DistFactorEngineer : public CDistFactorEngineerImpl<VOIDEDSLAB_LLDFDETAILS>
 {
 public:
-   CVoidedSlab2DistFactorEngineer() = default;
+   CVoidedSlab2DistFactorEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID) :
+      CDistFactorEngineerImpl<VOIDEDSLAB_LLDFDETAILS>(pBroker, statusGroupID)
+   {
+   }
 
 public:
    // CDistFactorEngineerBase

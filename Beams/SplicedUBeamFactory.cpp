@@ -235,13 +235,9 @@ std::shared_ptr<CDistFactorEngineerBase> CSplicedUBeamFactory::CreateDistFactorE
    return std::make_shared<CUBeamDistFactorEngineer>(pBroker, statusGroupID);
 }
 
-void CSplicedUBeamFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const
+std::shared_ptr<CPsLossEngineerBase> CSplicedUBeamFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey) const
 {
-   CComObject<CTimeStepLossEngineer>* pEngineer;
-   CComObject<CTimeStepLossEngineer>::CreateInstance(&pEngineer);
-   pEngineer->SetBroker(pBroker,statusGroupID);
-   (*ppEng) = pEngineer;
-   (*ppEng)->AddRef();
+   return std::make_shared<CTimeStepLossEngineer>(pBroker,statusGroupID);
 }
 
 void CSplicedUBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,

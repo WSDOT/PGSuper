@@ -72,24 +72,13 @@ inline Float64 GetVertShearFromSlope(Float64 ss)
 
 /////////////////////////////////////////////////////////////////////////////
 // CTimeStepLossEngineer
-HRESULT CTimeStepLossEngineer::FinalConstruct()
+CTimeStepLossEngineer::CTimeStepLossEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID) :
+CPsLossEngineerBase(pBroker,statusGroupID)
 {
    m_Bat = pgsTypes::ContinuousSpan;
 
-   return S_OK;
-}
-
-void CTimeStepLossEngineer::FinalRelease()
-{
-}
-
-void CTimeStepLossEngineer::SetBroker(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID)
-{
-   GetBroker() = pBroker;
-   m_StatusGroupID = statusGroupID;
-
    EAF_GET_IFACE2(GetBroker(), IEAFStatusCenter,pStatusCenter);
-   m_scidProjectCriteria = pStatusCenter->RegisterCallback( new pgsProjectCriteriaStatusCallback(pBroker) );
+   m_scidProjectCriteria = pStatusCenter->RegisterCallback( new pgsProjectCriteriaStatusCallback(GetBroker()) );
 }
 
 const LOSSDETAILS* CTimeStepLossEngineer::GetLosses(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx)
