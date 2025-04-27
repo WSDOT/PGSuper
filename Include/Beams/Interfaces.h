@@ -23,13 +23,13 @@
 
 #include <IFace\PsLossEngineer.h>
 
-// {3A9CAD2E-2CD2-433d-BDE5-F8C9566148DE}
-DEFINE_GUID(IID_IInitialize, 
-0x3a9cad2e, 0x2cd2, 0x433d, 0xbd, 0xe5, 0xf8, 0xc9, 0x56, 0x61, 0x48, 0xde);
-interface IInitialize : IUnknown
-{
-   virtual void SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID) = 0;
-};
+//// {3A9CAD2E-2CD2-433d-BDE5-F8C9566148DE}
+//DEFINE_GUID(IID_IInitialize, 
+//0x3a9cad2e, 0x2cd2, 0x433d, 0xbd, 0xe5, 0xf8, 0xc9, 0x56, 0x61, 0x48, 0xde);
+//interface IInitialize : IUnknown
+//{
+//   virtual void SetBroker(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID) = 0;
+//};
 
 typedef enum BeamTypes { IBeam, UBeam, SolidSlab, BoxBeam, SingleT } BeamTypes;
 

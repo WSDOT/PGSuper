@@ -34,28 +34,11 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-/////////////////////////////////////////////////////////////////////////////
-// 
-void CBulbTeeDistFactorEngineer::Init()
+CBulbTeeDistFactorEngineer::CBulbTeeDistFactorEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID) :
+   CDistFactorEngineerBase(pBroker, statusGroupID)
 {
-   ATLASSERT(!m_pImpl);
-   CComObject<CMultiWebDistFactorEngineer>* pEngineer;
-   CComObject<CMultiWebDistFactorEngineer>::CreateInstance(&pEngineer);
-
-   pEngineer->SetBeamType(CMultiWebDistFactorEngineer::btDeckBulbTee);
-
-   m_pImpl = pEngineer;
-
-   ATLASSERT(m_pImpl);
+   m_pImpl = std::make_unique<CMultiWebDistFactorEngineer>(CMultiWebDistFactorEngineer::BeamType::DeckBulbTee, pBroker, statusGroupID);
 }
-
-void CBulbTeeDistFactorEngineer::SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID)
-{
-   m_pBroker = pBroker;
-
-   m_pImpl->SetBroker(pBroker, statusGroupID);
-}
-
 
 Float64 CBulbTeeDistFactorEngineer::GetMomentDF(const CSpanKey& spanKey,pgsTypes::LimitState ls, const GDRCONFIG* pConfig)
 {
@@ -72,7 +55,7 @@ Float64 CBulbTeeDistFactorEngineer::GetShearDF(const CSpanKey& spanKey,pgsTypes:
    return m_pImpl->GetShearDF(spanKey,ls, pConfig);
 }
 
-void CBulbTeeDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
+void CBulbTeeDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    m_pImpl->BuildReport(girderKey,pChapter,pDisplayUnits);
 }

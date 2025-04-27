@@ -137,7 +137,7 @@ END_MESSAGE_MAP()
 BOOL CEditHaunchACamberDlg::OnInitDialog()
 {
    auto pBroker = EAFGetBroker();
-   EAF_EAF_GET_IFACE2(pBroker,ISpecification, pSpec );
+   EAF_GET_IFACE2(pBroker,ISpecification, pSpec );
    m_bCanAssumedExcessCamberInputBeEnabled = pSpec->IsAssumedExcessCamberInputEnabled();
 
    // Initialize our data structure for current data

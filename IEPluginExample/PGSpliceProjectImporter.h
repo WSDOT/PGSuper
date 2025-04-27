@@ -37,6 +37,6 @@ public:
 public:
    CString GetItemText() const override;
    HICON GetIcon() const override;
-   STDMETHOD(Import)(/*[in]*/IBroker* pBroker) override;
+   HRESULT Import(std::shared_ptr<WBFL::EAF::Broker> pBroker) override;
    CLSID GetCLSID() const override;
 };

@@ -50,7 +50,7 @@ CString CPGSuperDataImporter::GetCommandHintText() const
    return CString("Status line hint text\nTool tip text");
 }
 
-STDMETHODIMP CPGSuperDataImporter::Import(IBroker* pBroker)
+HRESULT CPGSuperDataImporter::Import(std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 

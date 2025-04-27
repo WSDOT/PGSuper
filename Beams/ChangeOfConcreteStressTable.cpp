@@ -33,7 +33,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CChangeOfConcreteStressTable::CChangeOfConcreteStressTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits) :
+CChangeOfConcreteStressTable::CChangeOfConcreteStressTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) :
 rptRcTable(NumColumns,0)
 {
    DEFINE_UV_PROTOTYPE( spanloc,     pDisplayUnits->GetSpanLengthUnit(),      false );
@@ -44,7 +44,7 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
 }
 
-CChangeOfConcreteStressTable* CChangeOfConcreteStressTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CChangeOfConcreteStressTable* CChangeOfConcreteStressTable::PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    EAF_GET_IFACE2_NOCHECK(pBroker, IBridge, pBridge);
    EAF_GET_IFACE2(pBroker, IGirder, pGirder);
@@ -139,7 +139,7 @@ CChangeOfConcreteStressTable* CChangeOfConcreteStressTable::PrepareTable(rptChap
    return table;
 }
 
-void CChangeOfConcreteStressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CChangeOfConcreteStressTable::AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    ColumnIndexType col = 1;
    RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;

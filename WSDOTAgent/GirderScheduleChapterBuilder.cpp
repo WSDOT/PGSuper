@@ -82,7 +82,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
 #if defined _DEBUG
-   EAF_EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
+   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
    ATLASSERT(pDocType->IsPGSuperDocument());
    // This chapter builder assumes a precast girder bridge
    // it must be updated for use with PGSplice.
@@ -90,7 +90,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(
    SpanIndexType span = girderKey.groupIndex;
    GirderIndexType girder = girderKey.girderIndex;
 
-   EAF_EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
    const CSplicedGirderData* pGirder = pGroup->GetGirder(girderKey.girderIndex);
@@ -98,9 +98,9 @@ rptChapter* CGirderScheduleChapterBuilder::Build(
 
    CSegmentKey segmentKey(pSegment->GetSegmentKey());
 
-   EAF_EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-   EAF_EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   EAF_EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType finalIntervalIdx   = pIntervals->GetIntervalCount()-1;
 
@@ -124,7 +124,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(
       return pChapter;
    }
 
-   EAF_EAF_GET_IFACE2( pBroker, IStrandGeometry, pStrandGeometry );
+   EAF_GET_IFACE2( pBroker, IStrandGeometry, pStrandGeometry );
    StrandIndexType Nh = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
    if ( CLSID_SlabBeamFamily == familyCLSID && 0 < Nh )
    {
@@ -135,7 +135,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(
    }
 
 
-   EAF_EAF_GET_IFACE2(pBroker,IArtifact,pIArtifact);
+   EAF_GET_IFACE2(pBroker,IArtifact,pIArtifact);
    const pgsGirderArtifact* pArtifact = pIArtifact->GetGirderArtifact(girderKey);
    const pgsSegmentArtifact* pSegmentArtifact = pIArtifact->GetSegmentArtifact(segmentKey);
 
@@ -175,13 +175,13 @@ rptChapter* CGirderScheduleChapterBuilder::Build(
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   EAF_EAF_GET_IFACE2(pBroker,ICamber,pCamber);
+   EAF_GET_IFACE2(pBroker,ICamber,pCamber);
 
    // create pois at the start of girder and mid-span
    pgsPointOfInterest poiStart(segmentKey,0.0);
 
-   EAF_EAF_GET_IFACE2( pBroker, ILibrary, pLib );
-   EAF_EAF_GET_IFACE2( pBroker, ISpecification, pSpec );
+   EAF_GET_IFACE2( pBroker, ILibrary, pLib );
+   EAF_GET_IFACE2( pBroker, ISpecification, pSpec );
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
    const auto& creep_criteria = pSpecEntry->GetCreepCriteria();
@@ -190,14 +190,14 @@ rptChapter* CGirderScheduleChapterBuilder::Build(
    Float64 min_days =  WBFL::Units::ConvertFromSysUnits(creep_criteria.CreepDuration2Min, WBFL::Units::Measure::Day);
    Float64 max_days =  WBFL::Units::ConvertFromSysUnits(creep_criteria.CreepDuration2Max, WBFL::Units::Measure::Day);
 
-   EAF_EAF_GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
+   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
    PoiList pmid;
    pPointOfInterest->GetPointsOfInterest(segmentKey, POI_5L | POI_ERECTED_SEGMENT, &pmid);
    ATLASSERT(pmid.size()==1);
    const pgsPointOfInterest& poiMidSpan(pmid.front());
 
-   EAF_EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_EAF_GET_IFACE2(pBroker,IGirder,pIGirder);
+   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   EAF_GET_IFACE2(pBroker,IGirder,pIGirder);
 
    rptRcTable* pTable = rptStyleManager::CreateTableNoHeading(2);
    *p << pTable;
@@ -227,7 +227,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(
 
    if (familyCLSID == CLSID_DeckBulbTeeBeamFamily)
    {
-      EAF_EAF_GET_IFACE2(pBroker, IGirder, pIGirder);
+      EAF_GET_IFACE2(pBroker, IGirder, pIGirder);
       Float64 W = pIGirder->GetTopWidth(poiMidSpan);
       (*pTable)(++row, 0) << _T("W");
       (*pTable)(row, 1) << glength.SetValue(W);
@@ -311,7 +311,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(
       }
    }
 
-   EAF_EAF_GET_IFACE2(pBroker, IMaterials, pMaterial);
+   EAF_GET_IFACE2(pBroker, IMaterials, pMaterial);
    (*pTable)(++row,0) << RPT_FC << _T(" (at 28 days)");
    (*pTable)(row  ,1) << stress.SetValue(pMaterial->GetSegmentDesignFc(segmentKey,finalIntervalIdx));
 
@@ -637,7 +637,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(
    const WBFL::Stability::LiftingCheckArtifact* pLiftArtifact = pSegmentArtifact->GetLiftingCheckArtifact();
    if (pLiftArtifact!=nullptr)
    {
-      EAF_EAF_GET_IFACE2(pBroker,ISegmentLifting,pSegmentLifting);
+      EAF_GET_IFACE2(pBroker,ISegmentLifting,pSegmentLifting);
       Float64 L = pSegmentLifting->GetLeftLiftingLoopLocation(segmentKey);
       (*pTable)(++row,0) << _T("Location of Lifting Loops, L");
       (*pTable)(row  ,1) << glength.SetValue(L);
@@ -645,14 +645,14 @@ rptChapter* CGirderScheduleChapterBuilder::Build(
 
    if ( pHaulingArtifact != nullptr )
    {
-      EAF_EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+      EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
       IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
 
-      EAF_EAF_GET_IFACE2(pBroker,IProductForces,pProduct);
+      EAF_GET_IFACE2(pBroker,IProductForces,pProduct);
       pgsTypes::BridgeAnalysisType bat = pProduct->GetBridgeAnalysisType(pgsTypes::Minimize);
 
-      EAF_EAF_GET_IFACE2(pBroker,ISegmentHauling, pSegmentHauling);
+      EAF_GET_IFACE2(pBroker,ISegmentHauling, pSegmentHauling);
       Float64 trailingOverhang = pSegmentHauling->GetTrailingOverhang(segmentKey);
       Float64 leadingOverhang = pSegmentHauling->GetLeadingOverhang(segmentKey);
 
@@ -806,7 +806,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(
    Float64 tft = pIGirder->GetTopFlangeThickening(segmentKey);
    if (pIGirder->CanTopFlangeBeLongitudinallyThickened(segmentKey) && !IsZero(tft))
    {
-       EAF_EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+       EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
        INIT_UV_PROTOTYPE(rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), true);
        INIT_UV_PROTOTYPE(rptLengthUnitValue, thickness, pDisplayUnits->GetComponentDimUnit(), true);
 
@@ -863,7 +863,7 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CGirderScheduleChapterBuilder::
 
 int CGirderScheduleChapterBuilder::GetReinforcementDetails(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,CLSID& familyCLSID,Float64* pz1Spacing,Float64 *pz1Length,Float64 *pz2Spacing,Float64* pz2Length,Float64 *pz3Spacing,Float64* pz3Length) const
 {
-   EAF_EAF_GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeometry);
+   EAF_GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeometry);
    if ( !pStirrupGeometry->AreStirrupZonesSymmetrical(segmentKey) )
    {
       return STIRRUP_ERROR_SYMMETRIC;
@@ -1018,10 +1018,10 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(std::shared_ptr<WBFL:
    }
    else if (familyCLSID == CLSID_SlabBeamFamily)
    {
-      EAF_EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+      EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
       pgsPointOfInterest poi = pPoi->GetPointOfInterest(segmentKey, 0.0);
 
-      EAF_EAF_GET_IFACE2(pBroker,IGirder, pGirder);
+      EAF_GET_IFACE2(pBroker,IGirder, pGirder);
       Float64 H = pGirder->GetHeight(poi);
 
       Float64 lastZoneSpacing = Min(H - WBFL::Units::ConvertToSysUnits(3.0, WBFL::Units::Measure::Inch), WBFL::Units::ConvertToSysUnits(18.0, WBFL::Units::Measure::Inch));
@@ -1059,7 +1059,7 @@ int CGirderScheduleChapterBuilder::GetReinforcementDetails(std::shared_ptr<WBFL:
 
 int CGirderScheduleChapterBuilder::GetDebondDetails(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,std::vector<DebondInformation>& debondInfo) const
 {
-   EAF_EAF_GET_IFACE2( pBroker, IStrandGeometry, pStrandGeometry );
+   EAF_GET_IFACE2( pBroker, IStrandGeometry, pStrandGeometry );
    if ( !pStrandGeometry->IsDebondingSymmetric(segmentKey) )
    {
       return DEBOND_ERROR_SYMMETRIC;

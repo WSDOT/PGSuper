@@ -51,7 +51,6 @@
 
 #include "PGSComponentInfo.h"
 #include <Plugins\PGSuperIEPlugin.h>
-#include <WBFLReportManagerAgent_i.c>
 #include "TxDOTOptionalDesignDocProxyAgent.h"
 
 #include <IReportManager.h>

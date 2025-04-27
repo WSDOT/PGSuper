@@ -42,8 +42,6 @@
 
 #include "PGSuperCatCom.h"
 #include "TogaCatCom.h"
-#include <WBFLReportManagerAgent_i.c>
-#include <WBFLGraphManagerAgent_i.c>
 
 #include <EAF\EAFMainFrame.h>
 #include <EAF\EAFAutoProgress.h>

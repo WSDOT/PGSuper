@@ -42,7 +42,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CEffectivePrestressForceTable::CEffectivePrestressForceTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits) :
+CEffectivePrestressForceTable::CEffectivePrestressForceTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) :
 rptRcTable(NumColumns,0)
 {
    DEFINE_UV_PROTOTYPE( force,       pDisplayUnits->GetGeneralForceUnit(),    false );
@@ -55,7 +55,7 @@ rptRcTable(NumColumns,0)
    scalar.SetTolerance(1.0e-6);
 }
 
-CEffectivePrestressForceTable* CEffectivePrestressForceTable::PrepareTable(rptChapter* pChapter, IBroker* pBroker, const CSegmentKey& segmentKey, IEAFDisplayUnits* pDisplayUnits, Uint16 level)
+CEffectivePrestressForceTable* CEffectivePrestressForceTable::PrepareTable(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, Uint16 level)
 {
    // Create and configure the table
    ColumnIndexType numColumns = 13; // location, (xfer, Aps)*2, fpe, Ppe, fpe_ServiceI, Ppe_ServiceI, fpe_ServiceIII, Ppe_ServiceIII, fpe_FatigueI, Ppe_FatigueI
@@ -131,7 +131,7 @@ CEffectivePrestressForceTable* CEffectivePrestressForceTable::PrepareTable(rptCh
    return table;
 }
 
-void CEffectivePrestressForceTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CEffectivePrestressForceTable::AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    ColumnIndexType col = 1;
    RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;

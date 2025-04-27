@@ -34,7 +34,6 @@
 // FORWARD DECLARATIONS
 //
 
-interface IBroker;
 class IBridgeDescription;
 class IBridge;
 class IGirder;

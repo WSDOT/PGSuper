@@ -34,7 +34,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CElasticGainDueToSIDLTable::CElasticGainDueToSIDLTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits) :
+CElasticGainDueToSIDLTable::CElasticGainDueToSIDLTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) :
 rptRcTable(NumColumns,0)
 {
    DEFINE_UV_PROTOTYPE( spanloc,     pDisplayUnits->GetSpanLengthUnit(),      false );
@@ -49,7 +49,7 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
 }
 
-CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    // Create and configure the table
    EAF_GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
@@ -301,7 +301,7 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
    return table;
 }
 
-void CElasticGainDueToSIDLTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CElasticGainDueToSIDLTable::AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    EAF_GET_IFACE2(pBroker,IProductForces,pProdForces);
    ColumnIndexType col = 1;

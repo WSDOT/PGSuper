@@ -451,18 +451,18 @@ void CPGSuperDocProxyAgent::OnUIHintsReset()
 // IAgent
 bool CPGSuperDocProxyAgent::RegInterfaces()
 {
-   m_pBroker->RegisterInterface( IID_IEditByUI,           std::dynamic_pointer_cast<Agent>(shared_from_this()) );
-   m_pBroker->RegisterInterface( IID_IDesign,             std::dynamic_pointer_cast<Agent>(shared_from_this()) );
-   m_pBroker->RegisterInterface( IID_IViews,              std::dynamic_pointer_cast<Agent>(shared_from_this()) );
-   m_pBroker->RegisterInterface( IID_ISelection,          std::dynamic_pointer_cast<Agent>(shared_from_this()) );
-   m_pBroker->RegisterInterface( IID_IUIEvents,           std::dynamic_pointer_cast<Agent>(shared_from_this()) );
-   m_pBroker->RegisterInterface( IID_IUpdateTemplates,    std::dynamic_pointer_cast<Agent>(shared_from_this()) );
-   m_pBroker->RegisterInterface( IID_IVersionInfo,        std::dynamic_pointer_cast<Agent>(shared_from_this()) );
-   m_pBroker->RegisterInterface( IID_IRegisterViewEvents, std::dynamic_pointer_cast<Agent>(shared_from_this()) );
-   m_pBroker->RegisterInterface( IID_IExtendPGSuperUI,    std::dynamic_pointer_cast<Agent>(shared_from_this()) );
-   m_pBroker->RegisterInterface( IID_IExtendPGSpliceUI,   std::dynamic_pointer_cast<Agent>(shared_from_this()) );
-   m_pBroker->RegisterInterface( IID_IDocumentType,       std::dynamic_pointer_cast<Agent>(shared_from_this()) );
-   m_pBroker->RegisterInterface( IID_IDocumentUnitSystem, std::dynamic_pointer_cast<Agent>(shared_from_this()) );
+   REGISTER_INTERFACE(IEditByUI);
+   REGISTER_INTERFACE(IDesign);
+   REGISTER_INTERFACE(IViews);
+   REGISTER_INTERFACE(ISelection);
+   REGISTER_INTERFACE(IUIEvents);
+   REGISTER_INTERFACE(IUpdateTemplates);
+   REGISTER_INTERFACE(IVersionInfo);
+   REGISTER_INTERFACE(IRegisterViewEvents);
+   REGISTER_INTERFACE(IExtendPGSuperUI);
+   REGISTER_INTERFACE(IExtendPGSpliceUI);
+   REGISTER_INTERFACE(IDocumentType);
+   REGISTER_INTERFACE(IDocumentUnitSystem);
    return true;
 }
 

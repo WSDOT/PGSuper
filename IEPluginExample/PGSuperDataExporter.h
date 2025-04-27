@@ -38,7 +38,7 @@ public:
    CString GetMenuText() const override;
    HBITMAP GetBitmapHandle() const override;
    CString GetCommandHintText() const override;
-   STDMETHOD(Export)(/*[in]*/IBroker* pBroker) override;
+   HRESULT Export(std::shared_ptr<WBFL::EAF::Broker> pBroker) override;
 
 private:
    CBitmap m_Bitmap;

@@ -6541,25 +6541,25 @@ void CBridgeAgentImp::LayoutHandlingPoi(const CSegmentKey& segmentKey,
 //
 bool CBridgeAgentImp::RegInterfaces()
 {
-   m_pBroker->RegisterInterface( IID_IRoadway,                       std::dynamic_pointer_cast<Agent>(shared_from_this()) );
-   m_pBroker->RegisterInterface( IID_IGeometry,                      std::dynamic_pointer_cast<Agent>(shared_from_this()) );
-   m_pBroker->RegisterInterface( IID_IBridge,                        std::dynamic_pointer_cast<Agent>(shared_from_this()) );
-   m_pBroker->RegisterInterface( IID_IMaterials,                     std::dynamic_pointer_cast<Agent>(shared_from_this()) );
-   m_pBroker->RegisterInterface( IID_IStrandGeometry,                std::dynamic_pointer_cast<Agent>(shared_from_this()) );
-   m_pBroker->RegisterInterface( IID_ILongRebarGeometry,             std::dynamic_pointer_cast<Agent>(shared_from_this()) );
-   m_pBroker->RegisterInterface( IID_IStirrupGeometry,               std::dynamic_pointer_cast<Agent>(shared_from_this()) );
-   m_pBroker->RegisterInterface( IID_IPointOfInterest,               std::dynamic_pointer_cast<Agent>(shared_from_this()) );
-   m_pBroker->RegisterInterface( IID_ISectionProperties,             std::dynamic_pointer_cast<Agent>(shared_from_this()) );
-   m_pBroker->RegisterInterface( IID_IShapes,                        std::dynamic_pointer_cast<Agent>(shared_from_this()) );
-   m_pBroker->RegisterInterface( IID_IBarriers,                      std::dynamic_pointer_cast<Agent>(shared_from_this()) );
-   m_pBroker->RegisterInterface( IID_ISegmentLiftingPointsOfInterest, std::dynamic_pointer_cast<Agent>(shared_from_this()) );
-   m_pBroker->RegisterInterface( IID_ISegmentHaulingPointsOfInterest, std::dynamic_pointer_cast<Agent>(shared_from_this()) );
-   m_pBroker->RegisterInterface( IID_IUserDefinedLoads,              std::dynamic_pointer_cast<Agent>(shared_from_this()) );
-   m_pBroker->RegisterInterface( IID_ITempSupport,                   std::dynamic_pointer_cast<Agent>(shared_from_this()) );
-   m_pBroker->RegisterInterface( IID_IGirder,                        std::dynamic_pointer_cast<Agent>(shared_from_this()) );
-   m_pBroker->RegisterInterface(IID_IGirderTendonGeometry,          std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_ISegmentTendonGeometry,          std::dynamic_pointer_cast<Agent>(shared_from_this()) );
-   m_pBroker->RegisterInterface( IID_IIntervals,                     std::dynamic_pointer_cast<Agent>(shared_from_this()) );
+   REGISTER_INTERFACE(IRoadway);
+   REGISTER_INTERFACE(IGeometry);
+   REGISTER_INTERFACE(IBridge);
+   REGISTER_INTERFACE(IMaterials);
+   REGISTER_INTERFACE(IStrandGeometry);
+   REGISTER_INTERFACE(ILongRebarGeometry);
+   REGISTER_INTERFACE(IStirrupGeometry);
+   REGISTER_INTERFACE(IPointOfInterest);
+   REGISTER_INTERFACE(ISectionProperties);
+   REGISTER_INTERFACE(IShapes);
+   REGISTER_INTERFACE(IBarriers);
+   REGISTER_INTERFACE(ISegmentLiftingPointsOfInterest);
+   REGISTER_INTERFACE(ISegmentHaulingPointsOfInterest);
+   REGISTER_INTERFACE(IUserDefinedLoads);
+   REGISTER_INTERFACE(ITempSupport);
+   REGISTER_INTERFACE(IGirder);
+   REGISTER_INTERFACE(IGirderTendonGeometry);
+   REGISTER_INTERFACE(ISegmentTendonGeometry);
+   REGISTER_INTERFACE(IIntervals);
 
    return true;
 }

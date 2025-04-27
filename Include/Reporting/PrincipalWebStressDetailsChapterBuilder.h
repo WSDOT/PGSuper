@@ -29,8 +29,8 @@
 #include <IFace\AnalysisResults.h>
 
 struct TIME_STEP_DETAILS;
-interface IIntervals;
-interface IMaterials;
+class IIntervals;
+class IMaterials;
 
 
 /*****************************************************************************

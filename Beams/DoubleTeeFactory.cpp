@@ -100,7 +100,7 @@ HRESULT CDoubleTeeFactory::FinalConstruct()
    return S_OK;
 }
 
-void CDoubleTeeFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
+void CDoubleTeeFactory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
 {
    CComPtr<IMultiWebSection> gdrSection;
    gdrSection.CoCreateInstance(CLSID_MultiWebSection);
@@ -151,7 +151,7 @@ void CDoubleTeeFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType s
    gdrSection.QueryInterface(ppSection);
 }
 
-void CDoubleTeeFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
+void CDoubleTeeFactory::CreateSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
 {
    CComPtr<IPrismaticSuperstructureMemberSegment> segment;
    segment.CoCreateInstance(CLSID_PrismaticSuperstructureMemberSegment);
@@ -203,7 +203,7 @@ void CDoubleTeeFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusG
    ssmbrSegment.CopyTo(ppSegment);
 }
 
-void CDoubleTeeFactory::CreateSegmentShape(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
+void CDoubleTeeFactory::CreateSegmentShape(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
 {
    const CSplicedGirderData* pGirder = pSegment->GetGirder();
    const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
@@ -248,7 +248,7 @@ void CDoubleTeeFactory::CreateSegmentShape(IBroker* pBroker, const CPrecastSegme
    beam.QueryInterface(ppShape);
 }
 
-Float64 CDoubleTeeFactory::GetSegmentHeight(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
+Float64 CDoubleTeeFactory::GetSegmentHeight(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
 {
    const CSplicedGirderData* pGirder = pSegment->GetGirder();
    const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
@@ -258,12 +258,12 @@ Float64 CDoubleTeeFactory::GetSegmentHeight(IBroker* pBroker, const CPrecastSegm
    return D1 + D2;
 }
 
-void CDoubleTeeFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
+void CDoubleTeeFactory::ConfigureSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
 {
    // do nothing... all the configuration was done in CreateSegment
 }
 
-void CDoubleTeeFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
+void CDoubleTeeFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
 {
    // This is a prismatic beam so only add section change POI at the start and end of the beam
    EAF_GET_IFACE2(pBroker,IBridge,pBridge);
@@ -276,19 +276,12 @@ void CDoubleTeeFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,con
    VERIFY(pPoiMgr->AddPointOfInterest(poiEnd) != INVALID_ID);
 }
 
-void CDoubleTeeFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng) const
+std::shared_ptr<CDistFactorEngineerBase> CDoubleTeeFactory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
 {
-   CComObject<CMultiWebDistFactorEngineer>* pEngineer;
-   CComObject<CMultiWebDistFactorEngineer>::CreateInstance(&pEngineer);
-   pEngineer->SetBroker(pBroker,statusGroupID);
-
-   pEngineer->SetBeamType(IMultiWebDistFactorEngineer::btMultiWebTee);
-
-   (*ppEng) = pEngineer;
-   (*ppEng)->AddRef();
+   return std::make_shared<CMultiWebDistFactorEngineer>(CMultiWebDistFactorEngineer::BeamType::MultiWebTee,pBroker,statusGroupID);
 }
 
-void CDoubleTeeFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const
+void CDoubleTeeFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const
 {
    EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
@@ -604,7 +597,7 @@ std::_tstring CDoubleTeeFactory::GetShearDimensionsSchematicImage(pgsTypes::Supp
    return strImage;
 }
 
-std::_tstring CDoubleTeeFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const
+std::_tstring CDoubleTeeFactory::GetInteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
 {
    EAF_GET_IFACE2(pBroker, ILibrary,       pLib);
    EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
@@ -622,7 +615,7 @@ std::_tstring CDoubleTeeFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBro
    }
 }
 
-std::_tstring CDoubleTeeFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const
+std::_tstring CDoubleTeeFactory::GetExteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
 {
    EAF_GET_IFACE2(pBroker, ILibrary,       pLib);
    EAF_GET_IFACE2(pBroker, ISpecification, pSpec);

@@ -40,9 +40,9 @@
 #include <PGSuperTypes.h>
 #include <PgsExt\PoiMgr.h>
 
-class IDistFactorEngineer;
+class CDistFactorEngineerBase;
 class IEffFlangeEngineer;
-class IPsLossEngineer;
+class CPsLossEngineerBase;
 
 interface IShape;
 interface ISuperstructureMemberSegment;
@@ -52,6 +52,8 @@ interface IStrandMover;
 class CBridgeDescription2;
 class GirderLibraryEntry;
 class CPrecastSegmentData;
+
+#include <EAF\Broker.h>
 
 // In order for PGSuper 2.x to work on the same computer as PGSuper 3.x we
 // had to change all the Class IDs of the beam factories. Files saved with
@@ -131,13 +133,8 @@ interface IBeamFactory : IUnknown
    virtual void LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const = 0;
 
    //---------------------------------------------------------------------------------
-   // Creates an object that implements the IDistFactorEngineer interface. The returned
-   // object is a COM object an must be managed through its reference count.
-   //
-   // Implementation Note: You must call SetBroker on the newly create object and supply
-   // it with the pointer to the broker object provided by the caller.
-   // const pointers have valid values to be used if non-nullptr
-   virtual std::shared_ptr<IDistFactorEngineer> CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType, const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const = 0;
+   // Creates an object that implements the CDistFactorEngineerBase interface.
+   virtual std::shared_ptr<CDistFactorEngineerBase> CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType, const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const = 0;
 
    //---------------------------------------------------------------------------------
    // Creates an object that implements the IPsLossEngineer interface. The returned
@@ -145,7 +142,7 @@ interface IBeamFactory : IUnknown
    //
    // Implementation Note: You must call SetBroker on the newly create object and supply
    // it with the pointer to the broker object provided by the caller.
-   virtual void CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const = 0;
+   virtual std::shared_ptr<CPsLossEngineerBase> CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey) const = 0;
 
    //---------------------------------------------------------------------------------
    // The StrandMover object knows how to move harped strands within the section when
@@ -213,8 +210,8 @@ interface IBeamFactory : IUnknown
    virtual std::_tstring GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const = 0;
    virtual std::_tstring GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const = 0;
    virtual std::_tstring GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType) const = 0;
-   virtual std::_tstring GetInteriorGirderEffectiveFlangeWidthImage(pgsTypes::SupportedDeckType deckType) const = 0;
-   virtual std::_tstring GetExteriorGirderEffectiveFlangeWidthImage(pgsTypes::SupportedDeckType deckType) const = 0;
+   virtual std::_tstring GetInteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const = 0;
+   virtual std::_tstring GetExteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker, pgsTypes::SupportedDeckType deckType) const = 0;
 
    //---------------------------------------------------------------------------------
    // Returns the class identifier for the beam factory

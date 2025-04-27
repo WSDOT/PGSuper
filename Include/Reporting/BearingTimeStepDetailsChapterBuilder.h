@@ -30,8 +30,8 @@
 
 struct SHEARDEFORMATIONDETAILS;
 struct TIMEDEPENDENTSHEARDEFORMATIONPARAMETERS;
-interface IIntervals;
-interface IMaterials;
+class IIntervals;
+class IMaterials;
 
 
 /*****************************************************************************

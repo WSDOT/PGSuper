@@ -33,7 +33,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CTxDOT2013CreepAndShrinkageTable::CTxDOT2013CreepAndShrinkageTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits) :
+CTxDOT2013CreepAndShrinkageTable::CTxDOT2013CreepAndShrinkageTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) :
 rptRcTable(NumColumns,0)
 {
    DEFINE_UV_PROTOTYPE( spanloc,     pDisplayUnits->GetSpanLengthUnit(),      false );
@@ -48,8 +48,8 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
 }
 
-CTxDOT2013CreepAndShrinkageTable* CTxDOT2013CreepAndShrinkageTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,
-                                                                                 const LOSSDETAILS* pDetails, IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CTxDOT2013CreepAndShrinkageTable* CTxDOT2013CreepAndShrinkageTable::PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,
+                                                                                 const LOSSDETAILS* pDetails, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    // Create and configure the table
    ColumnIndexType numColumns = 5;
@@ -89,7 +89,7 @@ CTxDOT2013CreepAndShrinkageTable* CTxDOT2013CreepAndShrinkageTable::PrepareTable
    return table;
 }
 
-void CTxDOT2013CreepAndShrinkageTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CTxDOT2013CreepAndShrinkageTable::AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    // Typecast to our known type (eating own doggy food)
    std::shared_ptr<const WBFL::LRFD::RefinedLossesTxDOT2013> ptl = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLossesTxDOT2013>(pDetails->pLosses);

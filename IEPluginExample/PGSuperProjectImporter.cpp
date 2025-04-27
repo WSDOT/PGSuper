@@ -57,7 +57,7 @@ HICON CPGSuperProjectImporter::GetIcon() const
    return AfxGetApp()->LoadIcon(IDI_IMPORTER);
 }
 
-STDMETHODIMP CPGSuperProjectImporter::Import(IBroker* pBroker)
+HRESULT CPGSuperProjectImporter::Import(std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
    AfxMessageBox(_T("This project importer simulates importing data from an external source by creating a default bridge. A real project importer would connect to an external data source and programmatically create a PGSuper model."), MB_OK);
 
@@ -79,7 +79,7 @@ STDMETHODIMP CPGSuperProjectImporter::Import(IBroker* pBroker)
    return S_OK;
 }
 
-void CPGSuperProjectImporter::BuildBridge(IBroker* pBroker)
+void CPGSuperProjectImporter::BuildBridge(std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
    EAF_GET_IFACE2(pBroker, ILibraryNames, pLibNames);
 
@@ -271,7 +271,7 @@ void CPGSuperProjectImporter::BuildBridge(IBroker* pBroker)
    pIBridgeDesc->SetBridgeDescription(bridge);
 }
 
-void CPGSuperProjectImporter::SetSpecification(IBroker* pBroker)
+void CPGSuperProjectImporter::SetSpecification(std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
    EAF_GET_IFACE2(pBroker, ILibraryNames, pLibNames);
 
@@ -282,7 +282,7 @@ void CPGSuperProjectImporter::SetSpecification(IBroker* pBroker)
    pSpec->SetSpecification(specs[0]);
 }
 
-void CPGSuperProjectImporter::InitGirderData(IBroker* pBroker)
+void CPGSuperProjectImporter::InitGirderData(std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
    const auto* pPool = WBFL::LRFD::StrandPool::GetInstance();
    const auto* pStrand = pPool->GetStrand(
@@ -315,7 +315,7 @@ void CPGSuperProjectImporter::InitGirderData(IBroker* pBroker)
    }
 }
 
-void CPGSuperProjectImporter::InitTimelineManager(IBroker* pBroker, CBridgeDescription2& bridge)
+void CPGSuperProjectImporter::InitTimelineManager(std::shared_ptr<WBFL::EAF::Broker> pBroker, CBridgeDescription2& bridge)
 {
    // NOTE: The actual timing doesn't matter since we aren't doing a true time-step analysis
    // We will just use reasonable times so the sequence is correct

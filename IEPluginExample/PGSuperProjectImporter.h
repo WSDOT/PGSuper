@@ -39,14 +39,14 @@ public:
 public:
    CString GetItemText() const override;
    HICON GetIcon() const override;
-   STDMETHOD(Import)(/*[in]*/IBroker* pBroker) override;
+   HRESULT Import(std::shared_ptr<WBFL::EAF::Broker> pBroker) override;
    CLSID GetCLSID() const override;
 
 private:
-   void BuildBridge(IBroker* pBroker);
-   void SetSpecification(IBroker* pBroker);
-   void InitGirderData(IBroker* pBroker);
-   void InitTimelineManager(IBroker* pBroker, CBridgeDescription2& bridge);
+   void BuildBridge(std::shared_ptr<WBFL::EAF::Broker> pBroker);
+   void SetSpecification(std::shared_ptr<WBFL::EAF::Broker> pBroker);
+   void InitGirderData(std::shared_ptr<WBFL::EAF::Broker> pBroker);
+   void InitTimelineManager(std::shared_ptr<WBFL::EAF::Broker> pBroker, CBridgeDescription2& bridge);
 
    CBitmap m_Bitmap;
 };

@@ -120,7 +120,7 @@ HRESULT CNUBeamFactory::FinalConstruct()
    return S_OK;
 }
 
-void CNUBeamFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
+void CNUBeamFactory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
 {
    CComPtr<INUGirderSection> gdrSection;
    gdrSection.CoCreateInstance(CLSID_NUGirderSection);
@@ -132,7 +132,7 @@ void CNUBeamFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType stat
    gdrSection.QueryInterface(ppSection);
 }
 
-void CNUBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
+void CNUBeamFactory::CreateSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
 {
    CComPtr<IPrismaticSuperstructureMemberSegment> segment;
    segment.CoCreateInstance(CLSID_PrismaticSuperstructureMemberSegment);
@@ -184,7 +184,7 @@ void CNUBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGrou
    ssmbrSegment.CopyTo(ppSegment);
 }
 
-void CNUBeamFactory::CreateSegmentShape(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
+void CNUBeamFactory::CreateSegmentShape(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
 {
    CComPtr<INUBeam> beam;
    beam.CoCreateInstance(CLSID_NUBeam);
@@ -198,7 +198,7 @@ void CNUBeamFactory::CreateSegmentShape(IBroker* pBroker, const CPrecastSegmentD
    beam.QueryInterface(ppShape);
 }
 
-Float64 CNUBeamFactory::GetSegmentHeight(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
+Float64 CNUBeamFactory::GetSegmentHeight(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
 {
    const CSplicedGirderData* pGirder = pSegment->GetGirder();
    const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
@@ -215,12 +215,12 @@ Float64 CNUBeamFactory::GetSegmentHeight(IBroker* pBroker, const CPrecastSegment
    return d1 + d2 + d3 + d4 + d5;
 }
 
-void CNUBeamFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
+void CNUBeamFactory::ConfigureSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
 {
    // do nothing... all the configuration was done in CreateSegment
 }
 
-void CNUBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
+void CNUBeamFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
 {
    // This is a prismatic beam so only add section change POI at the start and end of the beam
    EAF_GET_IFACE2(pBroker,IBridge,pBridge);
@@ -233,16 +233,12 @@ void CNUBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const 
    VERIFY(pPoiMgr->AddPointOfInterest(poiEnd) != INVALID_ID);
 }
 
-void CNUBeamFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng) const
+std::shared_ptr<CDistFactorEngineerBase> CNUBeamFactory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
 {
-   CComObject<CIBeamDistFactorEngineer>* pEngineer;
-   CComObject<CIBeamDistFactorEngineer>::CreateInstance(&pEngineer);
-   pEngineer->SetBroker(pBroker,statusGroupID);
-   (*ppEng) = pEngineer;
-   (*ppEng)->AddRef();
+   return std::make_shared<CIBeamDistFactorEngineer>(pBroker, statusGroupID);
 }
 
-void CNUBeamFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const
+void CNUBeamFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const
 {
    EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
@@ -633,7 +629,7 @@ std::_tstring CNUBeamFactory::GetShearDimensionsSchematicImage(pgsTypes::Support
    return strImage;
 }
 
-std::_tstring CNUBeamFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const
+std::_tstring CNUBeamFactory::GetInteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
 {
    EAF_GET_IFACE2(pBroker, ILibrary,       pLib);
    EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
@@ -651,7 +647,7 @@ std::_tstring CNUBeamFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker
    }
 }
 
-std::_tstring CNUBeamFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const
+std::_tstring CNUBeamFactory::GetExteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
 {
    EAF_GET_IFACE2(pBroker, ILibrary,       pLib);
    EAF_GET_IFACE2(pBroker, ISpecification, pSpec);

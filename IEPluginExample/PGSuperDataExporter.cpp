@@ -55,7 +55,7 @@ CString CPGSuperDataExporter::GetCommandHintText() const
    return CString("Status line hint text\nTool tip text");
 }
 
-STDMETHODIMP CPGSuperDataExporter::Export(IBroker* pBroker)
+HRESULT CPGSuperDataExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
    // write some bridge data to a text file
    CFileDialog  fildlg(FALSE, _T("txt"), _T("PGSuperExport.txt"), OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, _T("PGSuper Export File (*.txt)|*.txt||"));

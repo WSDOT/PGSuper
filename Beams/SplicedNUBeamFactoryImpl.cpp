@@ -123,7 +123,7 @@ HRESULT CSplicedNUBeamFactory::FinalConstruct()
    return S_OK;
 }
 
-void CSplicedNUBeamFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
+void CSplicedNUBeamFactory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
 {
    CComPtr<INUGirderSection> gdrSection;
    gdrSection.CoCreateInstance(CLSID_NUGirderSection);
@@ -135,7 +135,7 @@ void CSplicedNUBeamFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDTy
    gdrSection.QueryInterface(ppSection);
 }
 
-void CSplicedNUBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
+void CSplicedNUBeamFactory::CreateSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
 {
    CComPtr<ISplicedGirderSegment> segment;
    segment.CoCreateInstance(CLSID_NUSplicedGirderSegment);
@@ -186,7 +186,7 @@ void CSplicedNUBeamFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType sta
    ssmbrSegment.CopyTo(ppSegment);
 }
 
-void CSplicedNUBeamFactory::CreateSegmentShape(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
+void CSplicedNUBeamFactory::CreateSegmentShape(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
 {
    const CSplicedGirderData*  pGirder = pSegment->GetGirder();
    const GirderLibraryEntry* pGdrEntry = pGirder->GetGirderLibraryEntry();
@@ -211,7 +211,7 @@ void CSplicedNUBeamFactory::CreateSegmentShape(IBroker* pBroker, const CPrecastS
    beam.QueryInterface(ppShape);
 }
 
-Float64 CSplicedNUBeamFactory::GetSegmentHeight(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
+Float64 CSplicedNUBeamFactory::GetSegmentHeight(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
 {
    EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    Float64 Ls = pBridge->GetSegmentLength(pSegment->GetSegmentKey());
@@ -232,7 +232,7 @@ Float64 CSplicedNUBeamFactory::GetSegmentHeight(IBroker* pBroker, const CPrecast
    return ::GetSectionDepth(Xs, Xl, Yl, Xr, Yr, TransitionTypeFromZone(zone, Yl, Yr, bParabolas));
 }
 
-Float64 CSplicedNUBeamFactory::GetBottomFlangeDepth(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
+Float64 CSplicedNUBeamFactory::GetBottomFlangeDepth(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
 {
    EAF_GET_IFACE2(pBroker, IBridge, pBridge);
    Float64 Ls = pBridge->GetSegmentLength(pSegment->GetSegmentKey());
@@ -253,12 +253,12 @@ Float64 CSplicedNUBeamFactory::GetBottomFlangeDepth(IBroker* pBroker, const CPre
    return ::GetSectionDepth(Xs, Xl, Yl, Xr, Yr, TransitionTypeFromZone(zone, Yl, Yr, bParabolas));
 }
 
-void CSplicedNUBeamFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
+void CSplicedNUBeamFactory::ConfigureSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
 {
    // do nothing... all the configuration was done in CreateSegment
 }
 
-void CSplicedNUBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
+void CSplicedNUBeamFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
 {
    EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc  = pIBridgeDesc->GetBridgeDescription();
@@ -365,16 +365,12 @@ void CSplicedNUBeamFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker
    }
 }
 
-void CSplicedNUBeamFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng) const
+std::shared_ptr<CDistFactorEngineerBase> CSplicedNUBeamFactory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
 {
-   CComObject<CIBeamDistFactorEngineer>* pEngineer;
-   CComObject<CIBeamDistFactorEngineer>::CreateInstance(&pEngineer);
-   pEngineer->SetBroker(pBroker,statusGroupID);
-   (*ppEng) = pEngineer;
-   (*ppEng)->AddRef();
+   return std::make_shared<CIBeamDistFactorEngineer>(pBroker, statusGroupID);
 }
 
-void CSplicedNUBeamFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const
+void CSplicedNUBeamFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const
 {
    CComObject<CTimeStepLossEngineer>* pEngineer;
    CComObject<CTimeStepLossEngineer>::CreateInstance(&pEngineer);
@@ -762,7 +758,7 @@ std::_tstring CSplicedNUBeamFactory::GetShearDimensionsSchematicImage(pgsTypes::
    return strImage;
 }
 
-std::_tstring CSplicedNUBeamFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const
+std::_tstring CSplicedNUBeamFactory::GetInteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
 {
    EAF_GET_IFACE2(pBroker, ILibrary,       pLib);
    EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
@@ -780,7 +776,7 @@ std::_tstring CSplicedNUBeamFactory::GetInteriorGirderEffectiveFlangeWidthImage(
    }
 }
 
-std::_tstring CSplicedNUBeamFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const
+std::_tstring CSplicedNUBeamFactory::GetExteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
 {
    EAF_GET_IFACE2(pBroker, ILibrary,       pLib);
    EAF_GET_IFACE2(pBroker, ISpecification, pSpec);

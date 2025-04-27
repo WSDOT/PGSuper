@@ -20,17 +20,9 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_DESIGNER2_H_
-#define INCLUDED_DESIGNER2_H_
+#pragma once
 
-// SYSTEM INCLUDES
-//
-
-// PROJECT INCLUDES
-//
-#if !defined INCLUDED_DETAILS_H_
 #include <Details.h>
-#endif
 
 #include <IFace\Artifact.h>
 #include <IFace\AnalysisResults.h>
@@ -43,15 +35,8 @@
 #include "DesignCodes.h"
 #include "LoadRater.h" // friend so it can access some private functions
 
-// LOCAL INCLUDES
-//
+class IConcreteStressLimits;
 
-// FORWARD DECLARATIONS
-//
-interface IBroker;
-interface IConcreteStressLimits;
-
-// MISCELLANEOUS
 //
 // utilty struct for shear design
 struct ShearDesignAvs
@@ -331,28 +316,15 @@ LOG
 class pgsDesigner2 : LongReinfShearChecker
 {
 public:
-   // GROUP: LIFECYCLE
-
-   //------------------------------------------------------------------------
-   // Default constructor
    pgsDesigner2();
 
-   //------------------------------------------------------------------------
-   // Copy constructor
    pgsDesigner2(const pgsDesigner2& rOther);
 
-   //------------------------------------------------------------------------
-   // Destructor
    virtual ~pgsDesigner2();
 
-   // GROUP: OPERATORS
-   //------------------------------------------------------------------------
-   // Assignment operator
    pgsDesigner2& operator = (const pgsDesigner2& rOther);
 
-   // GROUP: OPERATIONS
 
-   //------------------------------------------------------------------------
    void SetBroker(std::shared_ptr<WBFL::EAF::Broker> pBroker);
    void SetStatusGroupID(StatusGroupIDType statusGroupID);
 
@@ -401,7 +373,6 @@ private:
    mutable std::vector<StressCheckTask> m_StressCheckTasks;
    void ConfigureStressCheckTasks(const CSegmentKey& segmentKey) const;
 
-   // GROUP: DATA MEMBERS
    std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    StatusGroupIDType m_StatusGroupID;
 
@@ -436,10 +407,6 @@ private:
    ZoneIndexType GetSupportZoneIndex(const pgsPointOfInterest& poi) const;
 
    mutable bool m_bShippingDesignIgnoreConfigurationLimits; // ignores unequal cantilevers and clear span requires
-
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
 
    void CheckTendonDetailing(const CGirderKey& girderKey,pgsGirderArtifact* pGirderArtifact) const;
    void CheckTendonStresses(const CGirderKey& girderKey,pgsGirderArtifact* pGirderArtifact) const;
@@ -537,9 +504,6 @@ private:
 
    void CheckConfinement(const CSegmentKey& segmentKey, const GDRCONFIG* pConfig, pgsConfinementCheckArtifact* pArtifact) const;
 
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
-
    DECLARE_LOGFILE;
 
    bool CollapseZoneData(CShearZoneData zoneData[MAX_ZONES], ZoneIndexType numZones) const;
@@ -555,11 +519,3 @@ private:
 
    void DumpLiftingArtifact(const WBFL::Stability::LiftingStabilityProblem* pStabilityProblem,const WBFL::Stability::LiftingCheckArtifact& artifact,WBFL::Debug::LogContext& os) const;
 };
-
-// INLINE METHODS
-//
-
-// EXTERNAL REFERENCES
-//
-
-#endif // INCLUDED_DESIGNER2_H_

@@ -959,18 +959,18 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
 
 bool CEngAgentImp::RegInterfaces()
 {
-   m_pBroker->RegisterInterface(IID_ILosses,                      std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_IPretensionForce,             std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_IPosttensionForce,            std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_ILiveLoadDistributionFactors, std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_IMomentCapacity,              std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_IShearCapacity,               std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_IPrincipalWebStress,          std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_IGirderHaunch,                std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_IFabricationOptimization,     std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_IArtifact,                    std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_ICrackedSection,              std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_IBearingDesignParameters,     std::dynamic_pointer_cast<Agent>(shared_from_this()));
+   REGISTER_INTERFACE(ILosses);
+   REGISTER_INTERFACE(IPretensionForce);
+   REGISTER_INTERFACE(IPosttensionForce);
+   REGISTER_INTERFACE(ILiveLoadDistributionFactors);
+   REGISTER_INTERFACE(IMomentCapacity);
+   REGISTER_INTERFACE(IShearCapacity);
+   REGISTER_INTERFACE(IPrincipalWebStress);
+   REGISTER_INTERFACE(IGirderHaunch);
+   REGISTER_INTERFACE(IFabricationOptimization);
+   REGISTER_INTERFACE(IArtifact);
+   REGISTER_INTERFACE(ICrackedSection);
+   REGISTER_INTERFACE(IBearingDesignParameters);
 
    return true;
 }

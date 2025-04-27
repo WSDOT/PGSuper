@@ -43,7 +43,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CEffectivePrestressTable::CEffectivePrestressTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits) :
+CEffectivePrestressTable::CEffectivePrestressTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) :
 rptRcTable(NumColumns,0)
 {
    DEFINE_UV_PROTOTYPE( spanloc,     pDisplayUnits->GetSpanLengthUnit(),      false );
@@ -64,7 +64,7 @@ rptRcTable(NumColumns,0)
    scalar.SetTolerance(1.0e-6);
 }
 
-CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pChapter, IBroker* pBroker, const CSegmentKey& segmentKey, const LOSSDETAILS* pDetails, IEAFDisplayUnits* pDisplayUnits, Uint16 level)
+CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey, const LOSSDETAILS* pDetails, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, Uint16 level)
 {
    EAF_GET_IFACE2(pBroker, ILossParameters, pLossParameters);
 
@@ -257,7 +257,7 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
    return table;
 }
 
-void CEffectivePrestressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CEffectivePrestressTable::AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    ColumnIndexType col = 1;
    RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;

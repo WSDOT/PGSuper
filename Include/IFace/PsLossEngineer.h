@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <Beams/BeamsExp.h>
 #include <Reporter\Reporter.h>
 #include <Details.h>
 
@@ -36,12 +37,19 @@ INTERFACE
 DESCRIPTION
    Interface for computing and report prestress losses
 *****************************************************************************/
-// {69ABD84E-733A-4e1f-B64E-1EA888EA4935}
-DEFINE_GUID(IID_IPsLossEngineer, 
-0x69abd84e, 0x733a, 0x4e1f, 0xb6, 0x4e, 0x1e, 0xa8, 0x88, 0xea, 0x49, 0x35);
-class IPsLossEngineer
+class BEAMSCLASS CPsLossEngineerBase
 {
 public:
+   CPsLossEngineerBase() = delete;
+   CPsLossEngineerBase(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID) :
+      m_pBroker(pBroker), m_StatusGroupID(statusGroupID)
+   {
+   }
+   CPsLossEngineerBase(const CPsLossEngineerBase&) = delete;
+   virtual ~CPsLossEngineerBase() = default;
+
+   CPsLossEngineerBase& operator=(const CPsLossEngineerBase&) = delete;
+
    //---------------------------------------------------------------------
    // Returns the details of the prestress loss calculation for losses computed upto and including
    // intervalIdx. Loses may be computed beyond this interval as well, however they are only
@@ -59,11 +67,11 @@ public:
 
    //---------------------------------------------------------------------
    // Reports loss calculations details
-   virtual void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) = 0;
+   virtual void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) = 0;
 
    //---------------------------------------------------------------------
    // Reports summary of final losses
-   virtual void ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) = 0;
+   virtual void ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) = 0;
 
    //---------------------------------------------------------------------
    // Returns the anchor set details for a particular tendon (this is basically the seating wedge parameters)
@@ -81,5 +89,12 @@ public:
    // is used for equivalent post-tensioning force analysis
    virtual void GetGirderTendonAverageFrictionAndAnchorSetLoss(const CGirderKey& girderKey, DuctIndexType ductIdx, Float64* pfpF, Float64* pfpA) = 0;
    virtual void GetSegmentTendonAverageFrictionAndAnchorSetLoss(const CSegmentKey& segmentKey, DuctIndexType ductIdx, Float64* pfpF, Float64* pfpA) = 0;
+
+protected:
+   StatusGroupIDType m_StatusGroupID;
+   std::shared_ptr<WBFL::EAF::Broker> GetBroker() { return m_pBroker.lock(); }
+
+private:
+   std::weak_ptr<WBFL::EAF::Broker> m_pBroker;
 };
 

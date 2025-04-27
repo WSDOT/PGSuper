@@ -62,8 +62,8 @@ HRESULT CBulbTeeFactory::FinalConstruct()
 {
    StatusGroupIDType m_StatusGroupID = INVALID_ID;
 
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
+
 
    // It's possible for the library editor to call this code. In that case there is no broker
    if (pBroker)
@@ -154,7 +154,7 @@ HRESULT CBulbTeeFactory::FinalConstruct()
    return S_OK;
 }
 
-void CBulbTeeFactory::CreateGirderSection(IBroker* pBroker,StatusItemIDType statusID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
+void CBulbTeeFactory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusItemIDType statusID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
 {
    m_StatusGroupID = statusID; // catch status group id here so we can use it later
 
@@ -214,7 +214,7 @@ void CBulbTeeFactory::CreateGirderSection(IBroker* pBroker,StatusItemIDType stat
    gdrSection.QueryInterface(ppSection);
 }
 
-void CBulbTeeFactory::CreateSegment(IBroker* pBroker,StatusItemIDType statusID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
+void CBulbTeeFactory::CreateSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusItemIDType statusID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
 {
    CComPtr<ISuperstructureMemberSegment> segment;
    segment.CoCreateInstance(CLSID_ThickenedFlangeBulbTeeSegment);
@@ -224,7 +224,7 @@ void CBulbTeeFactory::CreateSegment(IBroker* pBroker,StatusItemIDType statusID,c
    segment.CopyTo(ppSegment);
 }
 
-void CBulbTeeFactory::CreateSegmentShape(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
+void CBulbTeeFactory::CreateSegmentShape(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
 {
    // Create basic beam shape from dimensions in girder library
    const CSplicedGirderData* pGirder = pSegment->GetGirder();
@@ -272,7 +272,7 @@ void CBulbTeeFactory::CreateSegmentShape(IBroker* pBroker, const CPrecastSegment
    beam.QueryInterface(ppShape);
 }
 
-Float64 CBulbTeeFactory::GetSegmentHeight(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
+Float64 CBulbTeeFactory::GetSegmentHeight(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
 {
    const CSplicedGirderData* pGirder = pSegment->GetGirder();
    const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
@@ -294,7 +294,7 @@ Float64 CBulbTeeFactory::GetSegmentHeight(IBroker* pBroker, const CPrecastSegmen
    return H;
 }
 
-void CBulbTeeFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
+void CBulbTeeFactory::ConfigureSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
 {
    EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -387,7 +387,7 @@ void CBulbTeeFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType status
    //lj->put_JointThickness(tj);
 }
 
-void CBulbTeeFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
+void CBulbTeeFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
 {
    EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 gdrLength = pBridge->GetSegmentLength(segmentKey);
@@ -412,18 +412,12 @@ void CBulbTeeFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const
    }
 }
 
-void CBulbTeeFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusItemIDType statusID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng) const
+std::shared_ptr<CDistFactorEngineerBase> CBulbTeeFactory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
 {
-   CComObject<CBulbTeeDistFactorEngineer>* pEngineer;
-   CComObject<CBulbTeeDistFactorEngineer>::CreateInstance(&pEngineer);
-
-   pEngineer->Init();
-   pEngineer->SetBroker(pBroker,statusID);
-   (*ppEng) = pEngineer;
-   (*ppEng)->AddRef();
+   return std::make_shared<CBulbTeeDistFactorEngineer>(pBroker, statusID);
 }
 
-void CBulbTeeFactory::CreatePsLossEngineer(IBroker* pBroker,StatusItemIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const
+void CBulbTeeFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusItemIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const
 {
    EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
@@ -805,8 +799,8 @@ bool CBulbTeeFactory::IsPrismatic(const IBeamFactory::Dimensions& dimensions) co
 
 bool CBulbTeeFactory::IsPrismatic(const CSegmentKey& segmentKey) const
 {
-   CComPtr<IBroker> pBroker;
-   EAFGetBroker(&pBroker);
+   auto pBroker = EAFGetBroker();
+
    EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
@@ -921,12 +915,12 @@ std::_tstring CBulbTeeFactory::GetShearDimensionsSchematicImage(pgsTypes::Suppor
    return strImage;
 }
 
-std::_tstring CBulbTeeFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const
+std::_tstring CBulbTeeFactory::GetInteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
 {
    return _T("BulbTee_Effective_Flange_Width_Interior_Girder.gif");
 }
 
-std::_tstring CBulbTeeFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const
+std::_tstring CBulbTeeFactory::GetExteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
 {
    EAF_GET_IFACE2(pBroker, ILibrary,       pLib);
    EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
@@ -1335,7 +1329,7 @@ bool CBulbTeeFactory::IsPrismatic(const CPrecastSegmentData* pSegment) const
 
    return false;
 }
-void CBulbTeeFactory::ConfigureBeamShape(IBroker* pBroker, const CPrecastSegmentData* pSegment, IBulbTee2* pBeam) const
+void CBulbTeeFactory::ConfigureBeamShape(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, IBulbTee2* pBeam) const
 {
    // pBeam is the basic section... figure out actual top width parameters
    Float64 c2, n1, n2, left, right;
@@ -1347,7 +1341,7 @@ void CBulbTeeFactory::ConfigureBeamShape(IBroker* pBroker, const CPrecastSegment
    pBeam->put_W6(right);
 }
 
-void CBulbTeeFactory::GetTopWidth(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs,Float64* pLeft, Float64* pRight) const
+void CBulbTeeFactory::GetTopWidth(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs,Float64* pLeft, Float64* pRight) const
 {
    const CSplicedGirderData* pGirder = pSegment->GetGirder();
 
@@ -1382,7 +1376,7 @@ void CBulbTeeFactory::GetTopWidth(IBroker* pBroker, const CPrecastSegmentData* p
    *pRight = ::LinInterp(Xs, rightStart, rightEnd, Ls);
 }
 
-void CBulbTeeFactory::GetTopFlangeParameters(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64* pC, Float64* pN1, Float64* pN2,Float64* pLeft,Float64* pRight) const
+void CBulbTeeFactory::GetTopFlangeParameters(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64* pC, Float64* pN1, Float64* pN2,Float64* pLeft,Float64* pRight) const
 {
    const CSplicedGirderData* pGirder = pSegment->GetGirder();
 
@@ -1530,7 +1524,7 @@ void CBulbTeeFactory::GetTopFlangeParameters(IBroker* pBroker, const CPrecastSeg
    *pRight = right;
 }
 
-Float64 CBulbTeeFactory::GetFlangeThickening(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
+Float64 CBulbTeeFactory::GetFlangeThickening(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
 {
    Float64 tft = 0;
    if (pSegment->TopFlangeThickeningType != pgsTypes::tftNone)

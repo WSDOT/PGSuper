@@ -37,11 +37,11 @@ class CGirderData;
 class CEffectivePrestressForceTable : public rptRcTable
 {
 public:
-	static CEffectivePrestressForceTable* PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
-	void AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
+	static CEffectivePrestressForceTable* PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level);
+	void AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level);
 
 private:
-   CEffectivePrestressForceTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits);
+   CEffectivePrestressForceTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
    DECLARE_UV_PROTOTYPE( rptForceUnitValue,   force );
    DECLARE_UV_PROTOTYPE( rptAreaUnitValue,    area );

@@ -35,13 +35,13 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CTxDOT2013RelaxationAfterTransferTable::CTxDOT2013RelaxationAfterTransferTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits) :
+CTxDOT2013RelaxationAfterTransferTable::CTxDOT2013RelaxationAfterTransferTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) :
 rptRcTable(NumColumns,0)
 {
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
 }
 
-CTxDOT2013RelaxationAfterTransferTable* CTxDOT2013RelaxationAfterTransferTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CTxDOT2013RelaxationAfterTransferTable* CTxDOT2013RelaxationAfterTransferTable::PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
@@ -105,7 +105,7 @@ CTxDOT2013RelaxationAfterTransferTable* CTxDOT2013RelaxationAfterTransferTable::
    }
 }
 
-void CTxDOT2013RelaxationAfterTransferTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CTxDOT2013RelaxationAfterTransferTable::AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    const WBFL::LRFD::RefinedLossesTxDOT2013* pLosses = dynamic_cast<const WBFL::LRFD::RefinedLossesTxDOT2013*>(pDetails->pLosses.get());
 

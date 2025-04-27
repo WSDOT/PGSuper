@@ -1194,22 +1194,22 @@ void CAnalysisAgentImp::BuildSlabOffsetDesignModel(const CSegmentKey& segmentKey
 //
 bool CAnalysisAgentImp::RegInterfaces()
 {
-   m_pBroker->RegisterInterface( IID_IProductLoads,             std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface( IID_IProductForces,            std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface( IID_IProductForces2,           std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface( IID_ICombinedForces,           std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface( IID_ICombinedForces2,          std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface( IID_ILimitStateForces,         std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface( IID_ILimitStateForces2,        std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface( IID_IExternalLoading,          std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface( IID_IPretensionStresses,       std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface( IID_ICamber,                   std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_IContraflexurePoints,       std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface( IID_IContinuity,               std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface( IID_IBearingDesign,            std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface( IID_IPrecompressedTensileZone, std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface( IID_IReactions,                std::dynamic_pointer_cast<Agent>(shared_from_this()));
-   m_pBroker->RegisterInterface(IID_IDeformedGirderGeometry,    std::dynamic_pointer_cast<Agent>(shared_from_this()));
+   REGISTER_INTERFACE(IProductLoads);
+   REGISTER_INTERFACE(IProductForces);
+   REGISTER_INTERFACE(IProductForces2);
+   REGISTER_INTERFACE(ICombinedForces);
+   REGISTER_INTERFACE(ICombinedForces2);
+   REGISTER_INTERFACE(ILimitStateForces);
+   REGISTER_INTERFACE(ILimitStateForces2);
+   REGISTER_INTERFACE(IExternalLoading);
+   REGISTER_INTERFACE(IPretensionStresses);
+   REGISTER_INTERFACE(ICamber);
+   REGISTER_INTERFACE(IContraflexurePoints);
+   REGISTER_INTERFACE(IContinuity);
+   REGISTER_INTERFACE(IBearingDesign);
+   REGISTER_INTERFACE(IPrecompressedTensileZone);
+   REGISTER_INTERFACE(IReactions);
+   REGISTER_INTERFACE(IDeformedGirderGeometry);
 
    return S_OK;
 };
@@ -1234,11 +1234,11 @@ bool CAnalysisAgentImp::Init()
    //
    // Attach to connection points
    //
-   m_BridgeDescCookie = m_pBroker->RegisterCallback<IBridgeDescriptionEventSink>(std::dynamic_pointer_cast<IBridgeDescriptionEventSink>(shared_from_this()));
-   m_SpecCookie = m_pBroker->RegisterCallback<ISpecificationEventSink>(std::dynamic_pointer_cast<ISpecificationEventSink>(shared_from_this()));
-   m_RatingSpecCookie = m_pBroker->RegisterCallback<IRatingSpecificationEventSink>(std::dynamic_pointer_cast<IRatingSpecificationEventSink>(shared_from_this()));
-   m_LoadModifierCookie = m_pBroker->RegisterCallback<ILoadModifiersEventSink>(std::dynamic_pointer_cast<ILoadModifiersEventSink>(shared_from_this()));
-   m_LossParametersCookie = m_pBroker->RegisterCallback<ILossParametersEventSink>(std::dynamic_pointer_cast<ILossParametersEventSink>(shared_from_this()));
+   m_BridgeDescCookie = REGISTER_CALLBACK(IBridgeDescriptionEventSink);
+   m_SpecCookie = REGISTER_CALLBACK(ISpecificationEventSink);
+   m_RatingSpecCookie = REGISTER_CALLBACK(IRatingSpecificationEventSink);
+   m_LoadModifierCookie = REGISTER_CALLBACK(ILoadModifiersEventSink);
+   m_LossParametersCookie = REGISTER_CALLBACK(ILossParametersEventSink);
 
    return true;
 }
@@ -1262,11 +1262,11 @@ bool CAnalysisAgentImp::ShutDown()
    //
    // Detach to connection points
    //
-   m_pBroker->UnregisterCallback<IBridgeDescriptionEventSink>(std::dynamic_pointer_cast<IBridgeDescriptionEventSink>(shared_from_this()), m_BridgeDescCookie);
-   m_pBroker->UnregisterCallback<ISpecificationEventSink>(std::dynamic_pointer_cast<ISpecificationEventSink>(shared_from_this()), m_SpecCookie);
-   m_pBroker->UnregisterCallback<IRatingSpecificationEventSink>(std::dynamic_pointer_cast<IRatingSpecificationEventSink>(shared_from_this()), m_RatingSpecCookie);
-   m_pBroker->UnregisterCallback<ILoadModifiersEventSink>(std::dynamic_pointer_cast<ILoadModifiersEventSink>(shared_from_this()), m_LoadModifierCookie);
-   m_pBroker->UnregisterCallback<ILossParametersEventSink>(std::dynamic_pointer_cast<ILossParametersEventSink>(shared_from_this()), m_LossParametersCookie);
+   UNREGISTER_CALLBACK(IBridgeDescriptionEventSink, m_BridgeDescCookie);
+   UNREGISTER_CALLBACK(ISpecificationEventSink, m_SpecCookie);
+   UNREGISTER_CALLBACK(IRatingSpecificationEventSink, m_RatingSpecCookie);
+   UNREGISTER_CALLBACK(ILoadModifiersEventSink, m_LoadModifierCookie);
+   UNREGISTER_CALLBACK(ILossParametersEventSink, m_LossParametersCookie);
 
    //EAF_AGENT_CLEAR_INTERFACE_CACHE;
    CLOSE_LOGFILE;

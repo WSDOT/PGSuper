@@ -36,7 +36,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CEffectOfPostTensionedTemporaryStrandsTable::CEffectOfPostTensionedTemporaryStrandsTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits) :
+CEffectOfPostTensionedTemporaryStrandsTable::CEffectOfPostTensionedTemporaryStrandsTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) :
 rptRcTable(NumColumns,0)
 {
    DEFINE_UV_PROTOTYPE( spanloc,     pDisplayUnits->GetSpanLengthUnit(),      false );
@@ -51,7 +51,7 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
 }
 
-CEffectOfPostTensionedTemporaryStrandsTable* CEffectOfPostTensionedTemporaryStrandsTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CEffectOfPostTensionedTemporaryStrandsTable* CEffectOfPostTensionedTemporaryStrandsTable::PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
@@ -341,7 +341,7 @@ CEffectOfPostTensionedTemporaryStrandsTable* CEffectOfPostTensionedTemporaryStra
    return table;
 }
 
-void CEffectOfPostTensionedTemporaryStrandsTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CEffectOfPostTensionedTemporaryStrandsTable::AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    Float64 Ag, Ybg, Ixx, Iyy, Ixy;
    pDetails->pLosses->GetNoncompositeProperties(&Ag, &Ybg, &Ixx, &Iyy, &Ixy);

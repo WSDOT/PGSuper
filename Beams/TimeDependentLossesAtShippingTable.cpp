@@ -35,7 +35,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CTimeDependentLossesAtShippingTable::CTimeDependentLossesAtShippingTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits) :
+CTimeDependentLossesAtShippingTable::CTimeDependentLossesAtShippingTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) :
 rptRcTable(NumColumns,0)
 {
    DEFINE_UV_PROTOTYPE( spanloc,     pDisplayUnits->GetSpanLengthUnit(),      false );
@@ -54,7 +54,7 @@ rptRcTable(NumColumns,0)
    scalar.SetPrecision(2);
 }
 
-CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,bool bTemporaryStrands,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,bool bTemporaryStrands,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    EAF_GET_IFACE2(pBroker,ILossParameters,pLossParameters);
    PrestressLossCriteria::LossMethodType loss_method = pLossParameters->GetLossMethod();
@@ -240,7 +240,7 @@ CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::Prepar
    return table;
 }
 
-void CTimeDependentLossesAtShippingTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CTimeDependentLossesAtShippingTable::AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    ColumnIndexType col = 2;
    RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;

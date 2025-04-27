@@ -20,12 +20,9 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// UBeamDistFactorEngineer.h : Declaration of the CUBeamFactorEngineer
+#pragma once
 
-#ifndef __UBEAMDISTFACTORENGINEER_H_
-#define __UBEAMDISTFACTORENGINEER_H_
-
-#include "resource.h"       // main symbols
+#include <EAF\ComponentObject.h>
 #include "DistFactorEngineerImpl.h"
 #include <Plugins\Beams.h>
 
@@ -40,49 +37,21 @@ struct UBEAM_LLDFDETAILS : public BASE_LLDFDETAILS
 
 /////////////////////////////////////////////////////////////////////////////
 // CUBeamDistFactorEngineer
-class ATL_NO_VTABLE CUBeamDistFactorEngineer : 
-   public IUBeamDistFactorEngineer,
-   public CComObjectRootEx<CComSingleThreadModel>,
-   public CComCoClass<CUBeamDistFactorEngineer, &CLSID_UBeamDistFactorEngineer>,
-   public CDistFactorEngineerImpl<UBEAM_LLDFDETAILS>
+class CUBeamDistFactorEngineer : public CDistFactorEngineerImpl<UBEAM_LLDFDETAILS>
 {
 public:
-	CUBeamDistFactorEngineer()
-	{
-      m_bTypeB = false;
-      m_bIsSpreadSlab = false;
-	}
-
-   HRESULT FinalConstruct();
-
-DECLARE_REGISTRY_RESOURCEID(IDR_UBEAMDISTFACTORENGINEER)
-
-BEGIN_COM_MAP(CUBeamDistFactorEngineer)
-   COM_INTERFACE_ENTRY(IDistFactorEngineer)
-   COM_INTERFACE_ENTRY(IUBeamDistFactorEngineer)
-END_COM_MAP()
-
-public:
-   // IUBeamDistFactorEngineer
-   virtual void Init(bool bTypeB, bool bisSpreadSlab) override;
+   CUBeamDistFactorEngineer(bool bTypeB, bool bisSpreadSlab, std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID);
 
    // IDistFactorEngineer
-//   virtual void SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID) override;
-//   virtual Float64 GetMomentDF(SpanIndexType span,GirderIndexType gdr) override;
-//   virtual Float64 GetNegMomentDF(PierIndexType pier,GirderIndexType gdr) override;
-//   virtual Float64 GetShearDF(SpanIndexType span,GirderIndexType gdr) override;
-//   virtual Float64 GetReactionDF(PierIndexType pier,GirderIndexType gdr) override;
-   virtual void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) override;
-   virtual std::_tstring GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect) override;
+   void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) override;
+   std::_tstring GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect) override;
 
 private:
    WBFL::LRFD::LiveLoadDistributionFactorBase* GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,UBEAM_LLDFDETAILS* plldf,const GDRCONFIG* pConfig = nullptr);
 
-   void ReportMoment(IndexType spanOrPierIdx,rptParagraph* pPara,UBEAM_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM2,Float64 gM,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits);
-   void ReportShear(IndexType spanOrPierIdx,rptParagraph* pPara,UBEAM_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV2,Float64 gV,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits);
+   void ReportMoment(IndexType spanOrPierIdx,rptParagraph* pPara,UBEAM_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM2,Float64 gM,bool bSIUnits,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+   void ReportShear(IndexType spanOrPierIdx,rptParagraph* pPara,UBEAM_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV2,Float64 gV,bool bSIUnits,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
    bool m_bTypeB; // true if type b, otherwise type c section
    bool m_bIsSpreadSlab; // We need to model spread slabs, and aashto has no guidance
 };
-
-#endif //__UBEAMDISTFACTORENGINEER_H_

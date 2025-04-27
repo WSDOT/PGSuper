@@ -46,16 +46,16 @@
 class rptParagraph;
 class pgsPoiMgr;
 
-void BEAMSFUNC ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, WBFL::LRFD::ILiveLoadDistributionFactor::LeverRuleMethod& lrd,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits);
-void BEAMSFUNC ReportRigidMethod(rptParagraph* pPara,WBFL::LRFD::ILiveLoadDistributionFactor::RigidMethod& rd,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits);
-void BEAMSFUNC ReportLanesBeamsMethod(rptParagraph* pPara,WBFL::LRFD::ILiveLoadDistributionFactor::LanesBeamsMethod& rd,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits);
+void BEAMSFUNC ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, WBFL::LRFD::ILiveLoadDistributionFactor::LeverRuleMethod& lrd,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+void BEAMSFUNC ReportRigidMethod(rptParagraph* pPara,WBFL::LRFD::ILiveLoadDistributionFactor::RigidMethod& rd,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+void BEAMSFUNC ReportLanesBeamsMethod(rptParagraph* pPara,WBFL::LRFD::ILiveLoadDistributionFactor::LanesBeamsMethod& rd,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
 IndexType BEAMSFUNC GetBeamTypeCount();
 CLSID BEAMSFUNC GetBeamCLSID(IndexType idx);
 CATID BEAMSFUNC GetBeamCATID(IndexType idx);
 
-void BEAMSFUNC BuildAgeAdjustedGirderMaterialModel(IBroker* pBroker,const CPrecastSegmentData* pSegment,ISuperstructureMemberSegment* segment,IAgeAdjustedMaterial** ppMaterial);
-void BEAMSFUNC BuildAgeAdjustedJointMaterialModel(IBroker* pBroker, const CPrecastSegmentData* pSegment, ISuperstructureMemberSegment* segment, IAgeAdjustedMaterial** ppMaterial);
+void BEAMSFUNC BuildAgeAdjustedGirderMaterialModel(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CPrecastSegmentData* pSegment,ISuperstructureMemberSegment* segment,IAgeAdjustedMaterial** ppMaterial);
+void BEAMSFUNC BuildAgeAdjustedJointMaterialModel(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, ISuperstructureMemberSegment* segment, IAgeAdjustedMaterial** ppMaterial);
 
 void BEAMSFUNC MakeRectangle(Float64 width, Float64 depth, Float64 xOffset, Float64 yOffset,IShape** ppShape);
 

@@ -95,12 +95,12 @@ HRESULT CPsBeamLossEngineer::FinalConstruct()
    return S_OK;
 }
 
-void CPsBeamLossEngineer::SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID)
+void CPsBeamLossEngineer::SetBroker(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID)
 {
-   m_pBroker = pBroker;
+   GetBroker() = pBroker;
    m_StatusGroupID = statusGroupID;
 
-   m_Engineer.Init(m_pBroker,m_StatusGroupID);
+   m_Engineer.Init(GetBroker(),m_StatusGroupID);
 }
 
 const LOSSDETAILS* CPsBeamLossEngineer::GetLosses(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx)
@@ -128,7 +128,7 @@ const LOSSDETAILS* CPsBeamLossEngineer::GetLosses(const pgsPointOfInterest& poi,
    ATLASSERT(intervalIdx == INVALID_INDEX); // this kind of loss calculation is for all intervals... always
 
 #if defined _DEBUG
-   EAF_GET_IFACE(ILossParameters,pLossParameters);
+   EAF_GET_IFACE2(GetBroker(), ILossParameters,pLossParameters);
    ATLASSERT( pLossParameters->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP );
    // this shouldn't ever happen because the beam factory should create the appropreate loss engineer
    // but just in case we create a new beam type and forget to do this in the factor, assert here
@@ -151,12 +151,12 @@ void CPsBeamLossEngineer::ClearDesignLosses()
    m_DesignLosses.Invalidate();
 }
 
-void CPsBeamLossEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
+void CPsBeamLossEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    m_Engineer.BuildReport((CPsLossEngineer::BeamType)m_BeamType,girderKey,pChapter,pDisplayUnits);
 }
 
-void CPsBeamLossEngineer::ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
+void CPsBeamLossEngineer::ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    m_Engineer.ReportFinalLosses((CPsLossEngineer::BeamType)m_BeamType,girderKey,pChapter,pDisplayUnits);
 }

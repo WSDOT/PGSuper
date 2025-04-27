@@ -33,7 +33,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-void ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, WBFL::LRFD::ILiveLoadDistributionFactor::LeverRuleMethod& lrd,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits)
+void ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, WBFL::LRFD::ILiveLoadDistributionFactor::LeverRuleMethod& lrd,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    if (lrd.Nb>1)
    {
@@ -165,7 +165,7 @@ void ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, W
    }
 }
 
-void ReportRigidMethod(rptParagraph* pPara,WBFL::LRFD::ILiveLoadDistributionFactor::RigidMethod& rd,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits)
+void ReportRigidMethod(rptParagraph* pPara,WBFL::LRFD::ILiveLoadDistributionFactor::RigidMethod& rd,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim,    pDisplayUnits->GetSpanLengthUnit(),    true );
 
@@ -197,7 +197,7 @@ void ReportRigidMethod(rptParagraph* pPara,WBFL::LRFD::ILiveLoadDistributionFact
    (*pPara) << _T("mg") << Super(_T("ME")) << Sub((rd.e.size() > 1 ? _T("2+") : _T("1"))) << _T(" = ") << scalar.SetValue(rd.mg) << rptNewLine;
 }
 
-void ReportLanesBeamsMethod(rptParagraph* pPara,WBFL::LRFD::ILiveLoadDistributionFactor::LanesBeamsMethod& rd,IBroker* pBroker,IEAFDisplayUnits* pDisplayUnits)
+void ReportLanesBeamsMethod(rptParagraph* pPara,WBFL::LRFD::ILiveLoadDistributionFactor::LanesBeamsMethod& rd,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
@@ -206,7 +206,7 @@ void ReportLanesBeamsMethod(rptParagraph* pPara,WBFL::LRFD::ILiveLoadDistributio
 }
 
 
-void BuildAgeAdjustedGirderMaterialModel(IBroker* pBroker,const CPrecastSegmentData* pSegment,ISuperstructureMemberSegment* segment,IAgeAdjustedMaterial** ppMaterial)
+void BuildAgeAdjustedGirderMaterialModel(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CPrecastSegmentData* pSegment,ISuperstructureMemberSegment* segment,IAgeAdjustedMaterial** ppMaterial)
 {
    const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
    const CSplicedGirderData* pGirder = pSegment->GetGirder();
@@ -322,7 +322,7 @@ void BuildAgeAdjustedGirderMaterialModel(IBroker* pBroker,const CPrecastSegmentD
    }
 }
 
-void BuildAgeAdjustedJointMaterialModel(IBroker* pBroker, const CPrecastSegmentData* pSegment, ISuperstructureMemberSegment* segment, IAgeAdjustedMaterial** ppMaterial)
+void BuildAgeAdjustedJointMaterialModel(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, ISuperstructureMemberSegment* segment, IAgeAdjustedMaterial** ppMaterial)
 {
    const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
    const CSplicedGirderData* pGirder = pSegment->GetGirder();

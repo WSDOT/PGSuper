@@ -33,7 +33,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CTxDOT2013ChangeOfConcreteStressTable::CTxDOT2013ChangeOfConcreteStressTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits) :
+CTxDOT2013ChangeOfConcreteStressTable::CTxDOT2013ChangeOfConcreteStressTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) :
 rptRcTable(NumColumns,0)
 {
    DEFINE_UV_PROTOTYPE( spanloc,     pDisplayUnits->GetSpanLengthUnit(),      false );
@@ -44,7 +44,7 @@ rptRcTable(NumColumns,0)
    DEFINE_UV_PROTOTYPE( stress,      pDisplayUnits->GetStressUnit(),          false );
 }
 
-CTxDOT2013ChangeOfConcreteStressTable* CTxDOT2013ChangeOfConcreteStressTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CTxDOT2013ChangeOfConcreteStressTable* CTxDOT2013ChangeOfConcreteStressTable::PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    // If the 0.7fpu method is used for elastic shortening, we only need to compute mid-span values so no table is needed.
    WBFL::LRFD::ElasticShortening::FcgpComputationMethod fcgpMethod = pDetails->pLosses->GetElasticShortening().GetFcgpComputationMethod();
@@ -116,7 +116,7 @@ CTxDOT2013ChangeOfConcreteStressTable* CTxDOT2013ChangeOfConcreteStressTable::Pr
    }
 }
 
-void CTxDOT2013ChangeOfConcreteStressTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CTxDOT2013ChangeOfConcreteStressTable::AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
     std::shared_ptr<const WBFL::LRFD::RefinedLossesTxDOT2013> ptl = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLossesTxDOT2013>(pDetails->pLosses);
    if (!ptl)

@@ -20,16 +20,13 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// IBeamDistFactorEngineer.h : Declaration of the CIBeamFactorEngineer
+#pragma once
 
-#ifndef __IBEAMDISTFACTORENGINEER_H_
-#define __IBEAMDISTFACTORENGINEER_H_
-
-#include "resource.h"       // main symbols
+#include <Beams/BeamsExp.h>
 #include "DistFactorEngineerImpl.h"
 #include <Plugins\Beams.h>
 
-struct IBEAM_LLDFDETAILS : public BASE_LLDFDETAILS
+struct BEAMSCLASS IBEAM_LLDFDETAILS : public BASE_LLDFDETAILS
 {
    Float64 L;
    Float64 ts;
@@ -43,41 +40,19 @@ struct IBEAM_LLDFDETAILS : public BASE_LLDFDETAILS
 
 /////////////////////////////////////////////////////////////////////////////
 // CIBeamFactory
-class ATL_NO_VTABLE CIBeamDistFactorEngineer : 
-   public CComObjectRootEx<CComSingleThreadModel>,
-//   public CComRefCountTracer<CIBeamDistFactorEngineer,CComObjectRootEx<CComSingleThreadModel> >,
-   public CComCoClass<CIBeamDistFactorEngineer, &CLSID_IBeamDistFactorEngineer>,
-   public CDistFactorEngineerImpl<IBEAM_LLDFDETAILS>
+class BEAMSCLASS CIBeamDistFactorEngineer : public CDistFactorEngineerImpl<IBEAM_LLDFDETAILS>
 {
 public:
-	CIBeamDistFactorEngineer()
-	{
-	}
-
-   HRESULT FinalConstruct();
-
-
-DECLARE_REGISTRY_RESOURCEID(IDR_IBEAMDISTFACTORENGINEER)
-
-BEGIN_COM_MAP(CIBeamDistFactorEngineer)
-   COM_INTERFACE_ENTRY(IDistFactorEngineer)
-END_COM_MAP()
+   CIBeamDistFactorEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID);
 
 public:
-   // IDistFactorEngineer
-//   virtual void SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID) override;
-//   virtual Float64 GetMomentDF(SpanIndexType span,GirderIndexType gdr) override;
-//   virtual Float64 GetNegMomentDF(PierIndexType pier,GirderIndexType gdr) override;
-//   virtual Float64 GetShearDF(SpanIndexType span,GirderIndexType gdr) override;
-//   virtual Float64 GetReactionDF(PierIndexType pier,GirderIndexType gdr) override;
-   virtual void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) override;
-   virtual std::_tstring GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect) override;
+   // CDistFactorEngineerBase
+   void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) override;
+   std::_tstring GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect) override;
 
 private:
    WBFL::LRFD::LiveLoadDistributionFactorBase* GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,IBEAM_LLDFDETAILS* plldf,const GDRCONFIG* pConfig = nullptr);
 
-   void ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM2,Float64 gM,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits);
-   void ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV2,Float64 gV,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits);
+   void ReportMoment(rptParagraph* pPara,IBEAM_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM2,Float64 gM,bool bSIUnits,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+   void ReportShear(rptParagraph* pPara,IBEAM_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV2,Float64 gV,bool bSIUnits,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 };
-
-#endif //__IBEAMDISTFACTORENGINEER_H_

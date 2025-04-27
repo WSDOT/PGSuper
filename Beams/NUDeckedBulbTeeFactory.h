@@ -55,70 +55,70 @@ END_COM_MAP()
 
 public:
    // IBeamFactory
-   virtual void CreateGirderSection(IBroker* pBroker,StatusItemIDType statusID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const override;
-   virtual void CreateSegment(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment** ppSegment) const override;
-   virtual void CreateSegmentShape(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const override;
-   virtual Float64 GetSegmentHeight(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const override;
-   virtual void ConfigureSegment(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const override;
-   virtual void LayoutSectionChangePointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const override;
-   virtual void CreateDistFactorEngineer(IBroker* pBroker,StatusItemIDType statusID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng) const override;
-   virtual void CreatePsLossEngineer(IBroker* pBroker,StatusItemIDType statusID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const override;
-   virtual void CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
-                                  IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
-                                  IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
-                                  Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover) const override;
-   virtual const std::vector<std::_tstring>& GetDimensionNames() const override;
-   virtual const std::vector<Float64>& GetDefaultDimensions() const override;
-   virtual const std::vector<const WBFL::Units::Length*>& GetDimensionUnits(bool bSIUnits) const override;
-   virtual bool ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg) const override;
-   virtual void SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const override;
-   virtual IBeamFactory::Dimensions LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const override;
-   virtual bool IsPrismatic(const IBeamFactory::Dimensions& dimensions) const override;
-   virtual bool IsPrismatic(const CSegmentKey& segmentKey) const override;
-   virtual bool IsSymmetric(const CSegmentKey& segmentKey) const override;
-   virtual std::_tstring GetImage() const override;
-   virtual std::_tstring GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType) const override;
-   virtual std::_tstring GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const override;
-   virtual std::_tstring GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const override;
-   virtual std::_tstring GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType) const override;
-   virtual std::_tstring GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const override;
-   virtual std::_tstring GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const override;
-   virtual CLSID GetCLSID() const override;
-   virtual std::_tstring GetName() const override;
-   virtual CLSID GetFamilyCLSID() const override;
-   virtual std::_tstring GetGirderFamilyName() const override;
-   virtual std::_tstring GetPublisher() const override;
-   virtual std::_tstring GetPublisherContactInformation() const override;
-   virtual HINSTANCE GetResourceInstance() const override;
-   virtual LPCTSTR GetImageResourceName() const override;
-   virtual HICON GetIcon() const override;
-   virtual pgsTypes::SupportedDeckTypes GetSupportedDeckTypes(pgsTypes::SupportedBeamSpacing sbs) const override;
-   virtual bool IsSupportedDeckType(pgsTypes::SupportedDeckType deckType, pgsTypes::SupportedBeamSpacing sbs) const override { return ::IsSupportedDeckType(deckType, this, sbs); }
-   virtual pgsTypes::SupportedBeamSpacings GetSupportedBeamSpacings() const override;
-   virtual bool IsSupportedBeamSpacing(pgsTypes::SupportedBeamSpacing spacingType) const override;
-   virtual bool ConvertBeamSpacing(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const override;
-   virtual pgsTypes::WorkPointLocations GetSupportedWorkPointLocations(pgsTypes::SupportedBeamSpacing spacingType) const override;
-   virtual bool IsSupportedWorkPointLocation(pgsTypes::SupportedBeamSpacing spacingType, pgsTypes::WorkPointLocation workPointType) const override;
-   virtual std::vector<pgsTypes::GirderOrientationType> GetSupportedGirderOrientation() const override;
-   virtual bool IsSupportedGirderOrientation(pgsTypes::GirderOrientationType orientation) const override;
-   virtual pgsTypes::GirderOrientationType ConvertGirderOrientation(pgsTypes::GirderOrientationType orientation) const override;
-   virtual pgsTypes::SupportedDiaphragmTypes GetSupportedDiaphragms() const override;
-   virtual pgsTypes::SupportedDiaphragmLocationTypes GetSupportedDiaphragmLocations(pgsTypes::DiaphragmType type) const override;
-   virtual void GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const override;
-   virtual std::vector<pgsTypes::TopWidthType> GetSupportedTopWidthTypes() const override;
-   virtual void GetAllowableTopWidthRange(pgsTypes::TopWidthType topWidthType, const IBeamFactory::Dimensions& dimensions, Float64* pWleftMin, Float64* pWleftMax, Float64* pWrightMin, Float64* pWrightMax) const override;
-   virtual bool CanTopWidthVary() const override { return false; }
-   virtual WebIndexType GetWebCount(const IBeamFactory::Dimensions& dimensions) const override;
-   virtual Float64 GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const override;
-   virtual Float64 GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const override;
-   virtual void GetBeamTopWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const override;
-   virtual bool IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const override;
-   virtual void GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const override;
-   virtual bool HasLongitudinalJoints() const override;
-   virtual bool IsLongitudinalJointStructural(pgsTypes::SupportedDeckType deckType,pgsTypes::AdjacentTransverseConnectivity connectivity) const override;
-   virtual bool HasTopFlangeThickening() const override;
-   virtual bool CanPrecamber() const override;
-   virtual GirderIndexType GetMinimumBeamCount() const override;
+   void CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusItemIDType statusID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const override;
+   void CreateSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment** ppSegment) const override;
+   void CreateSegmentShape(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const override;
+   Float64 GetSegmentHeight(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const override;
+   void ConfigureSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const override;
+   void LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const override;
+   std::shared_ptr<CDistFactorEngineerBase> CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const pgsTypes::SupportedBeamSpacing* pSpacingType, const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const override;
+   std::shared_ptr<CPsLossEngineerBase> CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, const CGirderKey& girderKey) const override;
+   void CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
+                          IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
+                          IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
+                          Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover) const override;
+   const std::vector<std::_tstring>& GetDimensionNames() const override;
+   const std::vector<Float64>& GetDefaultDimensions() const override;
+   const std::vector<const WBFL::Units::Length*>& GetDimensionUnits(bool bSIUnits) const override;
+   bool ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg) const override;
+   void SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const override;
+   IBeamFactory::Dimensions LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const override;
+   bool IsPrismatic(const IBeamFactory::Dimensions& dimensions) const override;
+   bool IsPrismatic(const CSegmentKey& segmentKey) const override;
+   bool IsSymmetric(const CSegmentKey& segmentKey) const override;
+   std::_tstring GetImage() const override;
+   std::_tstring GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType) const override;
+   std::_tstring GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const override;
+   std::_tstring GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const override;
+   std::_tstring GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType) const override;
+   std::_tstring GetInteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker, pgsTypes::SupportedDeckType deckType) const override;
+   std::_tstring GetExteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker, pgsTypes::SupportedDeckType deckType) const override;
+   CLSID GetCLSID() const override;
+   std::_tstring GetName() const override;
+   CLSID GetFamilyCLSID() const override;
+   std::_tstring GetGirderFamilyName() const override;
+   std::_tstring GetPublisher() const override;
+   std::_tstring GetPublisherContactInformation() const override;
+   HINSTANCE GetResourceInstance() const override;
+   LPCTSTR GetImageResourceName() const override;
+   HICON GetIcon() const override;
+   pgsTypes::SupportedDeckTypes GetSupportedDeckTypes(pgsTypes::SupportedBeamSpacing sbs) const override;
+   bool IsSupportedDeckType(pgsTypes::SupportedDeckType deckType, pgsTypes::SupportedBeamSpacing sbs) const override { return ::IsSupportedDeckType(deckType, this, sbs); }
+   pgsTypes::SupportedBeamSpacings GetSupportedBeamSpacings() const override;
+   bool IsSupportedBeamSpacing(pgsTypes::SupportedBeamSpacing spacingType) const override;
+   bool ConvertBeamSpacing(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const override;
+   pgsTypes::WorkPointLocations GetSupportedWorkPointLocations(pgsTypes::SupportedBeamSpacing spacingType) const override;
+   bool IsSupportedWorkPointLocation(pgsTypes::SupportedBeamSpacing spacingType, pgsTypes::WorkPointLocation workPointType) const override;
+   std::vector<pgsTypes::GirderOrientationType> GetSupportedGirderOrientation() const override;
+   bool IsSupportedGirderOrientation(pgsTypes::GirderOrientationType orientation) const override;
+   pgsTypes::GirderOrientationType ConvertGirderOrientation(pgsTypes::GirderOrientationType orientation) const override;
+   pgsTypes::SupportedDiaphragmTypes GetSupportedDiaphragms() const override;
+   pgsTypes::SupportedDiaphragmLocationTypes GetSupportedDiaphragmLocations(pgsTypes::DiaphragmType type) const override;
+   void GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const override;
+   std::vector<pgsTypes::TopWidthType> GetSupportedTopWidthTypes() const override;
+   void GetAllowableTopWidthRange(pgsTypes::TopWidthType topWidthType, const IBeamFactory::Dimensions& dimensions, Float64* pWleftMin, Float64* pWleftMax, Float64* pWrightMin, Float64* pWrightMax) const override;
+   bool CanTopWidthVary() const override { return false; }
+   WebIndexType GetWebCount(const IBeamFactory::Dimensions& dimensions) const override;
+   Float64 GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const override;
+   Float64 GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const override;
+   void GetBeamTopWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const override;
+   bool IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const override;
+   void GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const override;
+   bool HasLongitudinalJoints() const override;
+   bool IsLongitudinalJointStructural(pgsTypes::SupportedDeckType deckType,pgsTypes::AdjacentTransverseConnectivity connectivity) const override;
+   bool HasTopFlangeThickening() const override;
+   bool CanPrecamber() const override;
+   GirderIndexType GetMinimumBeamCount() const override;
 
 private:
    std::vector<std::_tstring> m_DimNames;
@@ -136,10 +136,10 @@ private:
 
    bool IsPrismatic(const CPrecastSegmentData* pSegment) const;
 
-   void ConfigureBeamShape(IBroker* pBroker, const CPrecastSegmentData* pSegment, INUDeckedIBeam* pBeam) const;
-   //void GetTopFlangeParameters(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64* pC, Float64* pN1, Float64* pN2,Float64* pLeft,Float64* pRight) const;
-   void GetTopWidth(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, Float64* pLeft, Float64* pRight) const;
-   //Float64 GetFlangeThickening(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const;
+   void ConfigureBeamShape(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, INUDeckedIBeam* pBeam) const;
+   //void GetTopFlangeParameters(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64* pC, Float64* pN1, Float64* pN2,Float64* pLeft,Float64* pRight) const;
+   void GetTopWidth(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, Float64* pLeft, Float64* pRight) const;
+   //Float64 GetFlangeThickening(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const;
    void PositionBeamShape(INUDeckedIBeam* pBeam) const;
 };
 

@@ -42,18 +42,18 @@ public:
       m_bComputingLossesForDesign = false;
 	}
 
-   void Init(IBroker* pBroker,StatusGroupIDType statusGroupID);
+   void Init(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID);
 
 public:
    enum BeamType { IBeam, UBeam, SolidSlab, BoxBeam, SingleT };
 
    virtual LOSSDETAILS ComputeLosses(BeamType beamType,const pgsPointOfInterest& poi);
    virtual LOSSDETAILS ComputeLossesForDesign(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config);
-   virtual void BuildReport(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
-   virtual void ReportFinalLosses(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits);
+   virtual void BuildReport(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+   virtual void ReportFinalLosses(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
 private:
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    StatusGroupIDType m_StatusGroupID;
    StatusCallbackIDType m_scidUnknown;
    StatusCallbackIDType m_scidGirderDescriptionError;
@@ -71,23 +71,23 @@ private:
    void LossesByRefinedEstimateTxDOT2013(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,LOSSDETAILS* pLosses);
    WBFL::LRFD::ElasticShortening::FcgpComputationMethod LossesByRefinedEstimateTxDOT2013_Compute(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,LOSSDETAILS* pLosses);
 
-   void ReportRefinedMethod(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,Uint16 level,LossAgency lossAgency);
-   void ReportApproxLumpSumMethod(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,Uint16 level,bool isWsdot);
-   void ReportGeneralLumpSumMethod(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,bool bDesign,Uint16 level);
-   void ReportLumpSumMethod(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,const CGirderKey& girderKey,IEAFDisplayUnits* pDisplayUnits,bool bDesign,Uint16 level);
+   void ReportRefinedMethod(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level,LossAgency lossAgency);
+   void ReportApproxLumpSumMethod(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level,bool isWsdot);
+   void ReportGeneralLumpSumMethod(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,bool bDesign,Uint16 level);
+   void ReportLumpSumMethod(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,bool bDesign,Uint16 level);
 
-   void ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,const CGirderKey& girderKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
-   void ReportRefinedMethod2005(rptChapter* pChapter,BeamType beamType,const CGirderKey& girderKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
-   void ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,const CGirderKey& girderKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level,bool isWsdot);
-   void ReportApproxMethod2005(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,const CGirderKey& girderKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
-   void ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,const CGirderKey& girderKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
+   void ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level);
+   void ReportRefinedMethod2005(rptChapter* pChapter,BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level);
+   void ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level,bool isWsdot);
+   void ReportApproxMethod2005(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level);
+   void ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level);
 
-   void ReportLocation( rptRcTable* pTable,RowIndexType row,const pgsPointOfInterest& poi,IEAFDisplayUnits* pDisplayUnits);
-   void ReportLocation2(rptRcTable* pTable,RowIndexType row,const pgsPointOfInterest& poi,IEAFDisplayUnits* pDisplayUnits);
+   void ReportLocation( rptRcTable* pTable,RowIndexType row,const pgsPointOfInterest& poi,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+   void ReportLocation2(rptRcTable* pTable,RowIndexType row,const pgsPointOfInterest& poi,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
-   void ReportInitialRelaxation(rptChapter* pChapter,bool bTemporaryStrands,const WBFL::LRFD::Losses* pLosses,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
-   void ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pChapter,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
-   void ReportLumpSumTimeDependentLosses(rptChapter* pChapter,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level);
+   void ReportInitialRelaxation(rptChapter* pChapter,bool bTemporaryStrands,const WBFL::LRFD::Losses* pLosses,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level);
+   void ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pChapter,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level);
+   void ReportLumpSumTimeDependentLosses(rptChapter* pChapter,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level);
 
    void GetLossParameters(const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,
                            WBFL::LRFD::Losses::SectionPropertiesType* pSectionProperties,
@@ -159,9 +159,9 @@ private:
                            Float64* pAngleChange
                            );
 
-   void ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamType beamType,const CGirderKey& girderKey,IEAFDisplayUnits* pDisplayUnits,LossAgency lossAgency);
-   void ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamType beamType,const CGirderKey& girderKey,IEAFDisplayUnits* pDisplayUnits);
-   void ReportFinalLossesRefinedMethodBefore2005(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,const CGirderKey& girderKey,IEAFDisplayUnits* pDisplayUnits);
+   void ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,LossAgency lossAgency);
+   void ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+   void ReportFinalLossesRefinedMethodBefore2005(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
    void GetPointsOfInterest(const CGirderKey& girderKey,PoiList* pPoiList);
 

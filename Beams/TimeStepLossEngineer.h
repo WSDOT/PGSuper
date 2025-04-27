@@ -66,15 +66,15 @@ END_COM_MAP()
 
    // IInitialize
 public:
-   virtual void SetBroker(IBroker* pBroker, StatusGroupIDType statusGroupID) override;
+   virtual void SetBroker(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID) override;
 
 // IPsLossEngineer
 public:
    virtual const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) override;
    virtual const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config,IntervalIndexType intervalIdx) override;
    virtual void ClearDesignLosses() override;
-   virtual void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) override;
-   virtual void ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) override;
+   virtual void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) override;
+   virtual void ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) override;
    virtual const ANCHORSETDETAILS* GetGirderTendonAnchorSetDetails(const CGirderKey& girderKey,DuctIndexType ductIdx) override;
    virtual Float64 GetGirderTendonElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) override;
    virtual void GetGirderTendonAverageFrictionAndAnchorSetLoss(const CGirderKey& girderKey,DuctIndexType ductIdx,Float64* pfpF,Float64* pfpA) override;
@@ -89,28 +89,28 @@ private:
 
    // This are interfaces that are used over and over and over
    // Get them once so we don't have to call EAF_GET_IFACE so many times
-   CComPtr<IProgress>          m_pProgress;
-   CComPtr<IBridgeDescription> m_pBridgeDesc;
-   CComPtr<IBridge>            m_pBridge;
-   CComPtr<IStrandGeometry>    m_pStrandGeom;
-   CComPtr<IGirderTendonGeometry>    m_pGirderTendonGeometry;
-   CComPtr<ISegmentTendonGeometry>   m_pSegmentTendonGeometry;
-   CComPtr<IIntervals>         m_pIntervals;
-   CComPtr<ISectionProperties> m_pSectProp;
-   CComPtr<IGirder>            m_pGirder;
-   CComPtr<IMaterials>         m_pMaterials;
-   CComPtr<IPretensionForce>   m_pPSForce;
-   CComPtr<IPosttensionForce>  m_pPTForce;
-   CComPtr<ILossParameters>    m_pLossParams;
-   CComPtr<IPointOfInterest>   m_pPoi;
-   CComPtr<ILongRebarGeometry> m_pRebarGeom;
-   CComPtr<IProductLoads>      m_pProductLoads;
-   CComPtr<IProductForces>     m_pProductForces;
-   CComPtr<ICombinedForces>    m_pCombinedForces;
-   CComPtr<IExternalLoading>   m_pExternalLoading;
-   CComPtr<IEAFDisplayUnits>   m_pDisplayUnits;
-   CComPtr<ILosses>            m_pLosses;
-   CComPtr<IDuctLimits>        m_pDuctLimits;
+   std::shared_ptr<IProgress>          m_pProgress;
+   std::shared_ptr<IBridgeDescription> m_pBridgeDesc;
+   std::shared_ptr<IBridge>            m_pBridge;
+   std::shared_ptr<IStrandGeometry>    m_pStrandGeom;
+   std::shared_ptr<IGirderTendonGeometry>    m_pGirderTendonGeometry;
+   std::shared_ptr<ISegmentTendonGeometry>   m_pSegmentTendonGeometry;
+   std::shared_ptr<IIntervals>         m_pIntervals;
+   std::shared_ptr<ISectionProperties> m_pSectProp;
+   std::shared_ptr<IGirder>            m_pGirder;
+   std::shared_ptr<IMaterials>         m_pMaterials;
+   std::shared_ptr<IPretensionForce>   m_pPSForce;
+   std::shared_ptr<IPosttensionForce>  m_pPTForce;
+   std::shared_ptr<ILossParameters>    m_pLossParams;
+   std::shared_ptr<IPointOfInterest>   m_pPoi;
+   std::shared_ptr<ILongRebarGeometry> m_pRebarGeom;
+   std::shared_ptr<IProductLoads>      m_pProductLoads;
+   std::shared_ptr<IProductForces>     m_pProductForces;
+   std::shared_ptr<ICombinedForces>    m_pCombinedForces;
+   std::shared_ptr<IExternalLoading>   m_pExternalLoading;
+   std::shared_ptr<IEAFDisplayUnits>   m_pDisplayUnits;
+   std::shared_ptr<ILosses>            m_pLosses;
+   std::shared_ptr<IDuctLimits>        m_pDuctLimits;
 
 
 
@@ -120,7 +120,7 @@ private:
    void InitializeStrandTypes(const CSegmentKey& segmentKey);
    const std::vector<pgsTypes::StrandType>& GetStrandTypes(const CSegmentKey& segmentKey);
 
-   IBroker* m_pBroker; // must be a weak reference
+   std::shared_ptr<WBFL::EAF::Broker> GetBroker(); // must be a weak reference
    StatusGroupIDType m_StatusGroupID;
 
    struct LOSSES

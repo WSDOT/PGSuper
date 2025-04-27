@@ -27,11 +27,11 @@
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
 
-interface IProductLoads;
+class IProductLoads;
 class IEAFDisplayUnits;
-interface ILiveLoads;
-interface IIntervals;
-interface IPointOfInterest;
+class ILiveLoads;
+class IIntervals;
+class IPointOfInterest;
 
 /*****************************************************************************
 CLASS 

@@ -20,64 +20,36 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// BulbTeeDistFactorEngineer.h : Declaration of the CBulbTeeFactorEngineer
+#pragma once
 
-#ifndef __BULBTEEDISTFACTORENGINEER_H_
-#define __BULBTEEDISTFACTORENGINEER_H_
-
+#include <Beams/BeamsExp.h>
 #include "resource.h"       // main symbols
 #include <IFace\DistFactorEngineer.h>
 #include <Plugins\Beams.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CBulbTeeDistFactorEngineer
-class ATL_NO_VTABLE CBulbTeeDistFactorEngineer : 
-   public CComObjectRootEx<CComSingleThreadModel>,
-//   public CComRefCountTracer<CBulbTeeDistFactorEngineer,CComObjectRootEx<CComSingleThreadModel> >,
-   public CComCoClass<CBulbTeeDistFactorEngineer, &CLSID_BulbTeeDistFactorEngineer>,
-   public IBulbTeeDistFactorEngineer,
-   public IDistFactorEngineer
+class BEAMSCLASS CBulbTeeDistFactorEngineer : public CDistFactorEngineerBase
 {
 public:
-   CBulbTeeDistFactorEngineer():
-   m_pBroker(nullptr)
-	{
-	}
-
-DECLARE_REGISTRY_RESOURCEID(IDR_BULBTEEDISTFACTORENGINEER)
-
-BEGIN_COM_MAP(CBulbTeeDistFactorEngineer)
-   COM_INTERFACE_ENTRY(IBulbTeeDistFactorEngineer)
-   COM_INTERFACE_ENTRY(IDistFactorEngineer)
-END_COM_MAP()
+   CBulbTeeDistFactorEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID);
 
 public:
-   // IBulbTeeDistFactorEngineer
-   void Init(/*bool treatAsWsDotI*/);
-
-public:
-   // IDistFactorEngineer
-   virtual void SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID) override;
-   virtual Float64 GetMomentDF(const CSpanKey& spanKey,pgsTypes::LimitState ls, const GDRCONFIG* pConfig = nullptr) override;
-   virtual Float64 GetNegMomentDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace, const GDRCONFIG* pConfig = nullptr) override;
-   virtual Float64 GetShearDF(const CSpanKey& spanKey,pgsTypes::LimitState ls, const GDRCONFIG* pConfig = nullptr) override;
-   virtual void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) override;
-   virtual std::_tstring GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect) override;
-   virtual bool Run1250Tests(const CSpanKey& spanKey,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile) override;
-   virtual bool GetDFResultsEx(const CSpanKey& spanKey,pgsTypes::LimitState ls,
-                               Float64* gpM, Float64* gpM1, Float64* gpM2,  // pos moment
-                               Float64* gnM, Float64* gnM1, Float64* gnM2,  // neg moment, ahead face
-                               Float64* gV,  Float64* gV1,  Float64* gV2 ) override;   // shear
-   virtual Float64 GetSkewCorrectionFactorForMoment(const CSpanKey& spanKey,pgsTypes::LimitState ls) override;
-   virtual Float64 GetSkewCorrectionFactorForShear(const CSpanKey& spanKey,pgsTypes::LimitState ls) override;
+   // CDistFactorEngineerBase
+   Float64 GetMomentDF(const CSpanKey& spanKey,pgsTypes::LimitState ls, const GDRCONFIG* pConfig = nullptr) override;
+   Float64 GetNegMomentDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace, const GDRCONFIG* pConfig = nullptr) override;
+   Float64 GetShearDF(const CSpanKey& spanKey,pgsTypes::LimitState ls, const GDRCONFIG* pConfig = nullptr) override;
+   void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) override;
+   std::_tstring GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect) override;
+   bool Run1250Tests(const CSpanKey& spanKey,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile) override;
+   bool GetDFResultsEx(const CSpanKey& spanKey,pgsTypes::LimitState ls,
+                       Float64* gpM, Float64* gpM1, Float64* gpM2,  // pos moment
+                       Float64* gnM, Float64* gnM1, Float64* gnM2,  // neg moment, ahead face
+                       Float64* gV,  Float64* gV1,  Float64* gV2 ) override;   // shear
+   Float64 GetSkewCorrectionFactorForMoment(const CSpanKey& spanKey,pgsTypes::LimitState ls) override;
+   Float64 GetSkewCorrectionFactorForShear(const CSpanKey& spanKey,pgsTypes::LimitState ls) override;
 
 private:
-
    // Farm most of the hard work out to other classes
-   CComPtr<IDistFactorEngineer> m_pImpl;
-
-   IBroker* m_pBroker;
-
+   std::unique_ptr<CDistFactorEngineerBase> m_pImpl;
 };
-
-#endif //__BULBTEEDISTFACTORENGINEER_H_

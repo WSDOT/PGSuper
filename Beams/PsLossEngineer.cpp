@@ -101,7 +101,7 @@ static char THIS_FILE[] = __FILE__;
 inline constexpr auto operator+(WBFL::LRFD::ApproximateLosses::BeamType t) noexcept { return std::underlying_type<WBFL::LRFD::ApproximateLosses::BeamType>::type(t); }
 
 template <class T>
-void ReportRow(T* pTable,rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void ReportRow(T* pTable,rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    if ( pTable == nullptr )
    {
@@ -112,7 +112,7 @@ void ReportRow(T* pTable,rptChapter* pChapter,IBroker* pBroker,const pgsPointOfI
 }
 
 template <class T>
-void ReportRow(T* pTable, rptChapter* pChapter, IBroker* pBroker, const pgsPointOfInterest& poi, RowIndexType row, IEAFDisplayUnits* pDisplayUnits, Uint16 level)
+void ReportRow(T* pTable, rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& poi, RowIndexType row, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, Uint16 level)
 {
    if (pTable == nullptr)
    {
@@ -124,15 +124,15 @@ void ReportRow(T* pTable, rptChapter* pChapter, IBroker* pBroker, const pgsPoint
 
 /////////////////////////////////////////////////////////////////////////////
 // CPsLossEngineer
-void CPsLossEngineer::Init(IBroker* pBroker,StatusGroupIDType statusGroupID)
+void CPsLossEngineer::Init(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID)
 {
-   m_pBroker = pBroker;
+   GetBroker() = pBroker;
    m_StatusGroupID = statusGroupID;
 
-   EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
+   EAF_GET_IFACE2(GetBroker(), IEAFStatusCenter,pStatusCenter);
    m_scidUnknown = pStatusCenter->RegisterCallback( new pgsUnknownErrorStatusCallback() );
-   m_scidGirderDescriptionError = pStatusCenter->RegisterCallback( new pgsGirderDescriptionStatusCallback(m_pBroker,eafTypes::statusError) );
-   m_scidGirderDescriptionWarning = pStatusCenter->RegisterCallback( new pgsGirderDescriptionStatusCallback(m_pBroker,eafTypes::statusWarning) );
+   m_scidGirderDescriptionError = pStatusCenter->RegisterCallback( new pgsGirderDescriptionStatusCallback(eafTypes::statusError) );
+   m_scidGirderDescriptionWarning = pStatusCenter->RegisterCallback( new pgsGirderDescriptionStatusCallback(eafTypes::statusWarning) );
    m_scidLRFDVersionError = pStatusCenter->RegisterCallback( new pgsInformationalStatusCallback(eafTypes::statusError) );
    m_scidConcreteTypeError = pStatusCenter->RegisterCallback( new pgsInformationalStatusCallback(eafTypes::statusError) );
 }
@@ -147,17 +147,17 @@ LOSSDETAILS CPsLossEngineer::ComputeLosses(BeamType beamType,const pgsPointOfInt
    LOSSDETAILS details;
 
 #if defined _DEBUG
-   EAF_GET_IFACE(IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(GetBroker(), IPointOfInterest,pPoi);
    ATLASSERT(pPoi->IsOnSegment(poi));
 #endif
 
-   EAF_GET_IFACE(ILossParameters,pLossParameters);
+   EAF_GET_IFACE2(GetBroker(), ILossParameters,pLossParameters);
    PrestressLossCriteria::LossMethodType loss_method = pLossParameters->GetLossMethod();
 
    // if the girder is UHPC the loss method must be AASHTO_REFINED, WSDOT_REFINED, or GENERAL_LUMPSUM
    // and the base LRFD specification must beo 9th Edition 2020 or later
    // If it isn't, post to status center and throw and unwind exception
-   EAF_GET_IFACE(IMaterials, pMaterials);
+   EAF_GET_IFACE2(GetBroker(), IMaterials, pMaterials);
    auto concrete_type = pMaterials->GetSegmentConcreteType(poi.GetSegmentKey());
    if (IsUHPC(concrete_type))
    {
@@ -167,7 +167,7 @@ LOSSDETAILS CPsLossEngineer::ComputeLosses(BeamType beamType,const pgsPointOfInt
          (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::NinthEdition2020)
          )
       {
-         EAF_GET_IFACE(IEAFStatusCenter, pStatusCenter);
+         EAF_GET_IFACE2(GetBroker(), IEAFStatusCenter, pStatusCenter);
          std::_tstring msg(_T("The project criteria must be based on AASHTO LRFD 9th Edition 2020 or later and the prestress loss method must be set to Refined Estimate per LRFD 5.9.3.4 or Refined Estimate per WSDOT Bridge Design Manual in the Project Criteria for compatibility with PCI-UHPC Structural Design Guidance"));
          pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID, m_scidConcreteTypeError, msg.c_str());
          pStatusCenter->Add(pStatusItem);
@@ -225,9 +225,9 @@ LOSSDETAILS CPsLossEngineer::ComputeLossesForDesign(BeamType beamType,const pgsP
    return details;
 }
 
-void CPsLossEngineer::BuildReport(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
+void CPsLossEngineer::BuildReport(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
-   EAF_GET_IFACE(ILossParameters,pLossParameters);
+   EAF_GET_IFACE2(GetBroker(), ILossParameters,pLossParameters);
    PrestressLossCriteria::LossMethodType loss_method = pLossParameters->GetLossMethod();
 
    Uint16 level = 0;
@@ -266,10 +266,10 @@ void CPsLossEngineer::BuildReport(BeamType beamType,const CGirderKey& girderKey,
    }
 }
 
-void CPsLossEngineer::ReportRefinedMethod(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,Uint16 level,LossAgency lossAgency)
+void CPsLossEngineer::ReportRefinedMethod(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level,LossAgency lossAgency)
 {
-   EAF_GET_IFACE(ILibrary,pLib);
-   EAF_GET_IFACE(ISpecification,pSpec);
+   EAF_GET_IFACE2(GetBroker(), ILibrary,pLib);
+   EAF_GET_IFACE2(GetBroker(), ISpecification,pSpec);
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
@@ -284,10 +284,10 @@ void CPsLossEngineer::ReportRefinedMethod(BeamType beamType,const CGirderKey& gi
    }
 }
 
-void CPsLossEngineer::ReportApproxLumpSumMethod(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,Uint16 level,bool isWsdot)
+void CPsLossEngineer::ReportApproxLumpSumMethod(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level,bool isWsdot)
 {
-   EAF_GET_IFACE(ILibrary,pLib);
-   EAF_GET_IFACE(ISpecification,pSpec);
+   EAF_GET_IFACE2(GetBroker(), ILibrary,pLib);
+   EAF_GET_IFACE2(GetBroker(), ISpecification,pSpec);
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
@@ -301,27 +301,27 @@ void CPsLossEngineer::ReportApproxLumpSumMethod(BeamType beamType,const CGirderK
    }
 }
 
-void CPsLossEngineer::ReportGeneralLumpSumMethod(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits,bool bDesign,Uint16 level)
+void CPsLossEngineer::ReportGeneralLumpSumMethod(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,bool bDesign,Uint16 level)
 {
    ReportLumpSumMethod(pChapter,beamType,girderKey,pDisplayUnits,bDesign,level);
 
 #if defined _DEBUG
    // this method is only applicable to PGSuper
-   EAF_GET_IFACE(IBridge, pIBridge);
+   EAF_GET_IFACE2(GetBroker(), IBridge, pIBridge);
    ATLASSERT(pIBridge->GetSegmentCount(girderKey) == 1);
 #endif
    CSegmentKey segmentKey(girderKey, 0);
 
    PoiList vPoi;
    GetPointsOfInterest(girderKey, &vPoi);
-   CEffectivePrestressForceTable* pP = CEffectivePrestressForceTable::PrepareTable(pChapter, m_pBroker, segmentKey, pDisplayUnits, level);
+   CEffectivePrestressForceTable* pP = CEffectivePrestressForceTable::PrepareTable(pChapter, GetBroker(), segmentKey, pDisplayUnits, level);
 
    pgsPointOfInterest prev_poi(CSegmentKey(0, 0, 0), 0.0);
    RowIndexType row = 1;
    for (const pgsPointOfInterest& poi : vPoi)
    {
       ReportLocation(pP, row, poi, pDisplayUnits);
-      ReportRow(pP, pChapter, m_pBroker, poi, row, pDisplayUnits, level);
+      ReportRow(pP, pChapter, GetBroker(), poi, row, pDisplayUnits, level);
       row++;
       prev_poi = poi;
    }
@@ -331,8 +331,8 @@ void CPsLossEngineer::LossesByRefinedEstimate(BeamType beamType,const pgsPointOf
 {
    PRECONDITION(pLosses != 0 );
 
-   EAF_GET_IFACE(ILibrary,pLib);
-   EAF_GET_IFACE(ISpecification,pSpec);
+   EAF_GET_IFACE2(GetBroker(), ILibrary,pLib);
+   EAF_GET_IFACE2(GetBroker(), ISpecification,pSpec);
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
@@ -420,8 +420,8 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
 
 
    // get time to prestress transfer
-   EAF_GET_IFACE( ISpecification,   pSpec);
-   EAF_GET_IFACE(ILibrary,pLib);
+   EAF_GET_IFACE2(GetBroker(),  ISpecification,   pSpec);
+   EAF_GET_IFACE2(GetBroker(), ILibrary,pLib);
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
    const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
@@ -526,7 +526,7 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
          pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID,m_scidUnknown,_T(__FILE__),__LINE__,msg.c_str());
       }
 
-      EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
+      EAF_GET_IFACE2(GetBroker(), IEAFStatusCenter,pStatusCenter);
       ATLASSERT(pStatusItem != nullptr);
       pStatusCenter->Add(pStatusItem);
 
@@ -606,8 +606,8 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
 
 
    // get time to prestress transfer
-   EAF_GET_IFACE( ISpecification,   pSpec);
-   EAF_GET_IFACE( ILibrary,         pLib);
+   EAF_GET_IFACE2(GetBroker(),  ISpecification,   pSpec);
+   EAF_GET_IFACE2(GetBroker(),  ILibrary,         pLib);
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
    const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
@@ -624,15 +624,15 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
 
    std::shared_ptr<WBFL::LRFD::RefinedLosses2005> pLoss;
 
-   EAF_GET_IFACE(ICamber, pCamber);
+   EAF_GET_IFACE2(GetBroker(), ICamber, pCamber);
    std::shared_ptr<const WBFL::LRFD::CreepCoefficient> pGirderCreep = pCamber->GetGirderCreepModel(segmentKey, pConfig);
    std::shared_ptr<const WBFL::LRFD::CreepCoefficient2005> pDeckCreep = pCamber->GetDeckCreepModel(0);
 
-   EAF_GET_IFACE(IMaterials, pMaterials);
+   EAF_GET_IFACE2(GetBroker(), IMaterials, pMaterials);
    auto concrete_type = pMaterials->GetSegmentConcreteType(segmentKey);
    if (concrete_type == pgsTypes::PCI_UHPC)
    {
-      EAF_GET_IFACE(ISegmentData, pSegment);
+      EAF_GET_IFACE2(GetBroker(), ISegmentData, pSegment);
       bool bPCTTGirder = pSegment->GetSegmentMaterial(segmentKey)->Concrete.bPCTT;
       Float64 GdrAutogenousShrinkage = pMaterials->GetSegmentAutogenousShrinkage(segmentKey);
 
@@ -870,7 +870,7 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
          pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID,m_scidUnknown,_T(__FILE__),__LINE__,msg.c_str());
       }
 
-      EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
+      EAF_GET_IFACE2(GetBroker(), IEAFStatusCenter,pStatusCenter);
       ATLASSERT(pStatusItem != nullptr);
       pStatusCenter->Add(pStatusItem);
 
@@ -890,7 +890,7 @@ void CPsLossEngineer::LossesByRefinedEstimateTxDOT2013(BeamType beamType,const p
    if(method == WBFL::LRFD::ElasticShortening::FcgpComputationMethod::AssumedFpe)
    {
       // Elastic shortening uses the 0.7Fpu method. We only need to compute at mid-girder and then cache results for other locations
-      EAF_GET_IFACE( IPointOfInterest, pPoi);
+      EAF_GET_IFACE2(GetBroker(),  IPointOfInterest, pPoi);
       PoiList vPoi;
       pPoi->GetPointsOfInterest(poi.GetSegmentKey(), POI_5L | POI_RELEASED_SEGMENT, &vPoi);
       ATLASSERT(vPoi.size() == 1);
@@ -971,8 +971,8 @@ WBFL::LRFD::ElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRe
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   EAF_GET_IFACE( ISpecification,   pSpec);
-   EAF_GET_IFACE(ILibrary,pLib);
+   EAF_GET_IFACE2(GetBroker(),  ISpecification,   pSpec);
+   EAF_GET_IFACE2(GetBroker(), ILibrary,pLib);
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
    const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
@@ -1004,8 +1004,8 @@ WBFL::LRFD::ElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRe
 
          if (ApsPerm==0.0 || IsEqual(Fpu*0.75, fpjPerm, 1000.0)) // Pa's are very small
          {
-            EAF_GET_IFACE(IGirder,pGirder);
-            EAF_GET_IFACE(IIntervals,pIntervals);
+            EAF_GET_IFACE2(GetBroker(), IGirder,pGirder);
+            EAF_GET_IFACE2(GetBroker(), IIntervals,pIntervals);
             IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
             if ( pGirder->IsPrismatic(releaseIntervalIdx,segmentKey) )
             {
@@ -1018,7 +1018,7 @@ WBFL::LRFD::ElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRe
                }
                else
                {
-                  EAF_GET_IFACE(IStrandGeometry, pStrandGeom);
+                  EAF_GET_IFACE2(GetBroker(), IStrandGeometry, pStrandGeom);
                   if (!pStrandGeom->HasDebonding(segmentKey))
                   {
                      method = WBFL::LRFD::ElasticShortening::FcgpComputationMethod::AssumedFpe;
@@ -1094,7 +1094,7 @@ WBFL::LRFD::ElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRe
       {
          // Elastic shortening loss method switches to iterative solution if jacking stress is not
          // equal to 0.75Fpu. Let user know if this happened.
-         EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
+         EAF_GET_IFACE2(GetBroker(), IEAFStatusCenter,pStatusCenter);
          std::_tstring msg = std::_tstring(SEGMENT_LABEL(segmentKey)) + _T(": ");
          msg += _T("Either the Jacking stress is not equal to 0.75Fpu, or Debonded strands are present, or Temporary strands are present, or the girder is Not Prismatic. Therefore, for the calculation of elastic shortening; an iterative solution was used to find Fcgp after release rather than assuming 0.7*Fpu per the TxDOT design manual.");
          CEAFStatusItem* pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,1,m_StatusGroupID,m_scidGirderDescriptionWarning,msg.c_str());
@@ -1134,7 +1134,7 @@ WBFL::LRFD::ElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRe
          pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID,m_scidUnknown,_T(__FILE__),__LINE__,msg.c_str());
       }
 
-      EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
+      EAF_GET_IFACE2(GetBroker(), IEAFStatusCenter,pStatusCenter);
       ATLASSERT(pStatusItem != nullptr);
       pStatusCenter->Add(pStatusItem);
 
@@ -1202,13 +1202,13 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
 
    Float64 anchorSet,wobble,coeffFriction,angleChange;
 
-   EAF_GET_IFACE(IMaterials,pMaterial);
+   EAF_GET_IFACE2(GetBroker(), IMaterials,pMaterial);
    pgsTypes::ConcreteType girderConcreteType = pMaterial->GetSegmentConcreteType(poi.GetSegmentKey());
    pgsTypes::ConcreteType slabConcreteType   = pMaterial->GetDeckConcreteType();
 
    if ( girderConcreteType != pgsTypes::Normal || slabConcreteType != pgsTypes::Normal )
    {
-      EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
+      EAF_GET_IFACE2(GetBroker(), IEAFStatusCenter,pStatusCenter);
       std::_tstring msg(_T("The approximate estimate of time-dependent losses given in LRFD ") +  std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.5.3"),_T("5.9.3.3"))) + _T(" is for members made from normal-weight concrete"));
       pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidConcreteTypeError,msg.c_str());
       pStatusCenter->Add(pStatusItem);
@@ -1232,8 +1232,8 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
 
 
    // get time to prestress transfer
-   EAF_GET_IFACE( ISpecification,   pSpec);
-   EAF_GET_IFACE( ILibrary,         pLib);
+   EAF_GET_IFACE2(GetBroker(),  ISpecification,   pSpec);
+   EAF_GET_IFACE2(GetBroker(),  ILibrary,         pLib);
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
    const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
@@ -1250,14 +1250,14 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
          }
          else
          {
-            EAF_GET_IFACE(ILongRebarGeometry,pLongRebarGeom);
+            EAF_GET_IFACE2(GetBroker(), ILongRebarGeometry,pLongRebarGeom);
             ppr = pLongRebarGeom->GetPPRBottomHalf(poi);
             pLosses->LossMethod = PrestressLossCriteria::LossMethodType::AASHTO_LUMPSUM;
          }
 
          Float64 shipping_loss = prestress_loss_criteria.ShippingLosses;
 
-         EAF_GET_IFACE_NOCHECK(IMaterials, pMaterial);
+         EAF_GET_IFACE2_NOCHECK(GetBroker(), IMaterials, pMaterial);
          pgsTypes::ConcreteType concreteType = (pConfig ? pConfig->ConcType : pMaterial->GetSegmentConcreteType(segmentKey));
 
          std::shared_ptr<WBFL::LRFD::ApproximateLosses> pLoss(std::make_shared<WBFL::LRFD::ApproximateLosses>(
@@ -1332,10 +1332,10 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
 
          // LRFD 5th Edition, 2010, C5.9.5.3 ( or >= 2017, C5.9.3.3)
          // The approximate estimates of time-dependent prestress losses given in Eq 5.9.3.3-1 are intended for sections with composite decks only
-         EAF_GET_IFACE_NOCHECK(IBridge,pBridge);
+         EAF_GET_IFACE2_NOCHECK(GetBroker(),IBridge,pBridge);
          if ( WBFL::LRFD::BDSManager::Edition::FifthEdition2010 <= WBFL::LRFD::BDSManager::GetEdition() && !pBridge->IsCompositeDeck() )
          {
-            EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
+            EAF_GET_IFACE2(GetBroker(), IEAFStatusCenter,pStatusCenter);
             std::_tstring msg(_T("The approximate estimates of time-dependent prestress losses given in Eq ") + std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.5.3-1"),_T("5.9.3.3-1"))) + _T(" are intended for sections with composite decks only."));
             pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidLRFDVersionError,msg.c_str());
             pStatusCenter->Add(pStatusItem);
@@ -1451,7 +1451,7 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
          pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID,m_scidUnknown,_T(__FILE__),__LINE__,msg.c_str());
       }
 
-      EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
+      EAF_GET_IFACE2(GetBroker(), IEAFStatusCenter,pStatusCenter);
       ATLASSERT(pStatusItem != nullptr);
       pStatusCenter->Add(pStatusItem);
 
@@ -1533,7 +1533,7 @@ void CPsLossEngineer::LossesByGeneralLumpSum(BeamType beamType,const pgsPointOfI
 
    pLosses->LossMethod = PrestressLossCriteria::LossMethodType::GENERAL_LUMPSUM;
 
-   EAF_GET_IFACE(ILossParameters,pLossParameters);
+   EAF_GET_IFACE2(GetBroker(), ILossParameters,pLossParameters);
 
    // the lump sum loss object can deal with no area of prestress (no strand) cases.
    std::shared_ptr<const WBFL::LRFD::LumpSumLosses> pLoss(std::make_shared<WBFL::LRFD::LumpSumLosses>(ApsPerm,ApsTTS,fpjPerm,fpjTTS,usage,
@@ -1552,11 +1552,11 @@ void CPsLossEngineer::LossesByGeneralLumpSum(BeamType beamType,const pgsPointOfI
 }
 
 
-void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,const CGirderKey& girderKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
-   EAF_GET_IFACE(IBridge,pIBridge);
+   EAF_GET_IFACE2(GetBroker(), IBridge,pIBridge);
    ATLASSERT(pIBridge->GetSegmentCount(girderKey) == 1);
 #endif
    CSegmentKey segmentKey(girderKey,0);
@@ -1565,10 +1565,10 @@ void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLoss
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   EAF_GET_IFACE(ISegmentData,pSegmentData);
+   EAF_GET_IFACE2(GetBroker(), ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
-   EAF_GET_IFACE(IStrandGeometry,pStrandGeom);
+   EAF_GET_IFACE2(GetBroker(), IStrandGeometry,pStrandGeom);
    StrandIndexType Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -1578,7 +1578,7 @@ void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLoss
    PoiList vPoi;
    GetPointsOfInterest(girderKey, &vPoi);
 
-   EAF_GET_IFACE(ILosses,pILosses);
+   EAF_GET_IFACE2(GetBroker(), ILosses,pILosses);
    const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi.front() );
 
    // Do some preliminary setup for the tables.
@@ -1596,47 +1596,47 @@ void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLoss
    // Relaxation At Prestress Transfer
    ReportInitialRelaxation(pChapter,bTemporaryStrands,pDetails->pLosses.get(),pDisplayUnits,level);
 
-   CElasticShorteningTable*                     pES  = CElasticShorteningTable::PrepareTable(pChapter,m_pBroker,segmentKey,bTemporaryStrands,pDetails,pDisplayUnits,level);
+   CElasticShorteningTable*                     pES  = CElasticShorteningTable::PrepareTable(pChapter,GetBroker(),segmentKey,bTemporaryStrands,pDetails,pDisplayUnits,level);
    CFrictionLossTable*                          pFR  = nullptr;
    CPostTensionInteractionTable*                pPTT = nullptr;
    CEffectOfPostTensionedTemporaryStrandsTable* pPTP = nullptr;
    
    if ( 0 < Nt && pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned )
    {
-      pFR  = CFrictionLossTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
-      pPTT = CPostTensionInteractionTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
-      pPTP = CEffectOfPostTensionedTemporaryStrandsTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
+      pFR  = CFrictionLossTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDetails,pDisplayUnits,level);
+      pPTT = CPostTensionInteractionTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,level);
+      pPTP = CEffectOfPostTensionedTemporaryStrandsTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,level);
    }
 
    CTimeDependentLossesAtShippingTable*            pPSH = nullptr;
    CPostTensionTimeDependentLossesAtShippingTable* pPTH = nullptr;
 
-   EAF_GET_IFACE(ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+   EAF_GET_IFACE2(GetBroker(), ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
    if ( pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled() )
    {
-      pPSH = CTimeDependentLossesAtShippingTable::PrepareTable(pChapter,m_pBroker,segmentKey,bTemporaryStrands,pDisplayUnits,level);
+      pPSH = CTimeDependentLossesAtShippingTable::PrepareTable(pChapter,GetBroker(),segmentKey,bTemporaryStrands,pDisplayUnits,level);
 
       if ( 0 < Nt ) 
       {
-         pPTH = CPostTensionTimeDependentLossesAtShippingTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
+         pPTH = CPostTensionTimeDependentLossesAtShippingTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,level);
       }
    }
 
    CTemporaryStrandRemovalTable*        pPTR = nullptr;
    if (0 < Nt )
    {
-      pPTR = CTemporaryStrandRemovalTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
+      pPTR = CTemporaryStrandRemovalTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,level);
    }
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pParagraph;
    *pParagraph << _T("Time dependent losses") << rptNewLine;
 
-   CChangeOfConcreteStressTable*   pDeltaFcdp = CChangeOfConcreteStressTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
-   CCreepAndShrinkageTable*        pCR        = CCreepAndShrinkageTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
-   CRelaxationAfterTransferTable*  pR2        = CRelaxationAfterTransferTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
-   CFinalPrestressLossTable*       pT         = CFinalPrestressLossTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
-   CEffectivePrestressForceTable* pP = CEffectivePrestressForceTable::PrepareTable(pChapter, m_pBroker, segmentKey, pDisplayUnits, level);
+   CChangeOfConcreteStressTable*   pDeltaFcdp = CChangeOfConcreteStressTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,level);
+   CCreepAndShrinkageTable*        pCR        = CCreepAndShrinkageTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,level);
+   CRelaxationAfterTransferTable*  pR2        = CRelaxationAfterTransferTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,level);
+   CFinalPrestressLossTable*       pT         = CFinalPrestressLossTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,level);
+   CEffectivePrestressForceTable* pP = CEffectivePrestressForceTable::PrepareTable(pChapter, GetBroker(), segmentKey, pDisplayUnits, level);
 
    pgsPointOfInterest prev_poi(CSegmentKey(0,0,0),0.0);
    bool bSkipToNextRow = false;
@@ -1672,20 +1672,20 @@ void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLoss
       {
          pDetails = pILosses->GetLossDetails( poi );
 
-         ReportRow(pES, pChapter,m_pBroker,poi,row1,pDetails,pDisplayUnits,level);
-         ReportRow(pFR, pChapter,m_pBroker,poi,row1,pDetails,pDisplayUnits,level);
-         ReportRow(pPTT,pChapter,m_pBroker,poi,row1,pDetails,pDisplayUnits,level);
-         ReportRow(pPTP,pChapter,m_pBroker,poi,row1,pDetails,pDisplayUnits,level);
-         ReportRow(pPSH,pChapter,m_pBroker,poi,row1,pDetails,pDisplayUnits,level);
-         ReportRow(pPTH,pChapter,m_pBroker,poi,row1,pDetails,pDisplayUnits,level);
+         ReportRow(pES, pChapter,GetBroker(),poi,row1,pDetails,pDisplayUnits,level);
+         ReportRow(pFR, pChapter,GetBroker(),poi,row1,pDetails,pDisplayUnits,level);
+         ReportRow(pPTT,pChapter,GetBroker(),poi,row1,pDetails,pDisplayUnits,level);
+         ReportRow(pPTP,pChapter,GetBroker(),poi,row1,pDetails,pDisplayUnits,level);
+         ReportRow(pPSH,pChapter,GetBroker(),poi,row1,pDetails,pDisplayUnits,level);
+         ReportRow(pPTH,pChapter,GetBroker(),poi,row1,pDetails,pDisplayUnits,level);
       }
 
-      ReportRow(pPTR,      pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
-      ReportRow(pDeltaFcdp,pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
-      ReportRow(pCR,       pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
-      ReportRow(pR2,       pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
-      ReportRow(pT,        pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
-      ReportRow(pP, pChapter, m_pBroker, poi, row2, pDisplayUnits, level);
+      ReportRow(pPTR,      pChapter,GetBroker(),poi,row2,pDetails,pDisplayUnits,level);
+      ReportRow(pDeltaFcdp,pChapter,GetBroker(),poi,row2,pDetails,pDisplayUnits,level);
+      ReportRow(pCR,       pChapter,GetBroker(),poi,row2,pDetails,pDisplayUnits,level);
+      ReportRow(pR2,       pChapter,GetBroker(),poi,row2,pDetails,pDisplayUnits,level);
+      ReportRow(pT,        pChapter,GetBroker(),poi,row2,pDetails,pDisplayUnits,level);
+      ReportRow(pP, pChapter, GetBroker(), poi, row2, pDisplayUnits, level);
 
       row2++;
       
@@ -1694,11 +1694,11 @@ void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLoss
    }
 }
 
-void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beamType,const CGirderKey& girderKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
-   EAF_GET_IFACE(IBridge,pIBridge);
+   EAF_GET_IFACE2(GetBroker(), IBridge,pIBridge);
    ATLASSERT(pIBridge->GetSegmentCount(girderKey) == 1);
 #endif
    CSegmentKey segmentKey(girderKey,0);
@@ -1707,13 +1707,13 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   EAF_GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE2(GetBroker(), IBridge,pBridge);
 
-   EAF_GET_IFACE(IStrandGeometry,pStrandGeom);
+   EAF_GET_IFACE2(GetBroker(), IStrandGeometry,pStrandGeom);
    StrandIndexType Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
 
-   EAF_GET_IFACE(ILibrary,pLib);
-   EAF_GET_IFACE(ISpecification,pSpec);
+   EAF_GET_IFACE2(GetBroker(), ILibrary,pLib);
+   EAF_GET_IFACE2(GetBroker(), ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -1723,10 +1723,10 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    PoiList vPoi;
    GetPointsOfInterest(girderKey, &vPoi);
 
-   EAF_GET_IFACE(ILosses,pILosses);
+   EAF_GET_IFACE2(GetBroker(), ILosses,pILosses);
    const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi.front() );
 
-   EAF_GET_IFACE(ISegmentData,pSegmentData);
+   EAF_GET_IFACE2(GetBroker(), ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
    bool bTemporaryStrands = ( 0 < Nt && pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPretensioned ? true : false);
@@ -1738,24 +1738,24 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    ////////////////////////////////////////////////////////////////////////////////////////
    // Create the tables for losses - order is important here... The factory methods
    // put content into the chapter and return a table that needs to be filled up
-   CElasticShorteningTable*                     pES  = CElasticShorteningTable::PrepareTable(pChapter,m_pBroker,segmentKey,bTemporaryStrands,pDetails,pDisplayUnits,level);
+   CElasticShorteningTable*                     pES  = CElasticShorteningTable::PrepareTable(pChapter,GetBroker(),segmentKey,bTemporaryStrands,pDetails,pDisplayUnits,level);
    CAutogenousShrinkageTable*                   pAS  = nullptr;
    CFrictionLossTable*                          pFR  = nullptr;
    CPostTensionInteractionTable*                pPTT = nullptr;
    CEffectOfPostTensionedTemporaryStrandsTable* pPTP = nullptr;
 
-   EAF_GET_IFACE(IMaterials, pMaterials);
+   EAF_GET_IFACE2(GetBroker(), IMaterials, pMaterials);
    if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC)
    {
-      pAS = CAutogenousShrinkageTable::PrepareTable(pChapter,m_pBroker,segmentKey,bTemporaryStrands,pDetails, pDisplayUnits,level);
+      pAS = CAutogenousShrinkageTable::PrepareTable(pChapter,GetBroker(),segmentKey,bTemporaryStrands,pDetails, pDisplayUnits,level);
    }
    
 
    if ( 0 < Nt && pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned )
    {
-      pFR  = CFrictionLossTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
-      pPTT = CPostTensionInteractionTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
-      pPTP = CEffectOfPostTensionedTemporaryStrandsTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
+      pFR  = CFrictionLossTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDetails,pDisplayUnits,level);
+      pPTT = CPostTensionInteractionTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,level);
+      pPTP = CEffectOfPostTensionedTemporaryStrandsTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,level);
    }
 
    CShrinkageAtHaulingTable*                       pSRH = nullptr;
@@ -1772,11 +1772,11 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    pParagraph->SetName(_T("Time dependent losses between transfer and hauling"));
 	*pParagraph << pParagraph->GetName() << _T(" [") << WBFL::LRFD::LrfdCw8th(_T("5.9.5.4.2"),_T("5.9.3.4.2")) << _T("]") << rptNewLine << rptNewLine;
 	
-	pSRH = CShrinkageAtHaulingTable::PrepareTable(pChapter,m_pBroker,segmentKey,bTemporaryStrands,pDetails,pDisplayUnits,level);
-	pCRH = CCreepAtHaulingTable::PrepareTable(pChapter,m_pBroker,segmentKey,bTemporaryStrands,pDetails,pDisplayUnits,level);
-	pR1H = CRelaxationAtHaulingTable::PrepareTable(pChapter,m_pBroker,segmentKey,bTemporaryStrands,pDetails,pDisplayUnits,level);
-	pPSH = CTimeDependentLossesAtShippingTable::PrepareTable(pChapter,m_pBroker,segmentKey,bTemporaryStrands,pDisplayUnits,level);
-	pPTH = CPostTensionTimeDependentLossesAtShippingTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
+	pSRH = CShrinkageAtHaulingTable::PrepareTable(pChapter,GetBroker(),segmentKey,bTemporaryStrands,pDetails,pDisplayUnits,level);
+	pCRH = CCreepAtHaulingTable::PrepareTable(pChapter,GetBroker(),segmentKey,bTemporaryStrands,pDetails,pDisplayUnits,level);
+	pR1H = CRelaxationAtHaulingTable::PrepareTable(pChapter,GetBroker(),segmentKey,bTemporaryStrands,pDetails,pDisplayUnits,level);
+	pPSH = CTimeDependentLossesAtShippingTable::PrepareTable(pChapter,GetBroker(),segmentKey,bTemporaryStrands,pDisplayUnits,level);
+	pPTH = CPostTensionTimeDependentLossesAtShippingTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,level);
 
 
    ///////////////////////////////////////////////////////////////////////////////////////////
@@ -1796,15 +1796,15 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
       *pParagraph << pParagraph->GetName() << _T(" [") << WBFL::LRFD::LrfdCw8th(_T("5.9.5.4.2, "), _T("5.9.3.4.2, ")) << WBFL::LRFD::LrfdCw8th(_T("5.9.5.4.4"), _T("5.9.3.4.4")) << _T("]") << rptNewLine;
    }
 
-   CShrinkageAtDeckPlacementTable*      pSR = CShrinkageAtDeckPlacementTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
-   CCreepAtDeckPlacementTable*          pCR = CCreepAtDeckPlacementTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
-   CRelaxationAtDeckPlacementTable*     pR1 = CRelaxationAtDeckPlacementTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
-   CTimeDependentLossesAtDeckPlacementTable* pLTid = CTimeDependentLossesAtDeckPlacementTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
+   CShrinkageAtDeckPlacementTable*      pSR = CShrinkageAtDeckPlacementTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDetails,pDisplayUnits,level);
+   CCreepAtDeckPlacementTable*          pCR = CCreepAtDeckPlacementTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDetails,pDisplayUnits,level);
+   CRelaxationAtDeckPlacementTable*     pR1 = CRelaxationAtDeckPlacementTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDetails,pDisplayUnits,level);
+   CTimeDependentLossesAtDeckPlacementTable* pLTid = CTimeDependentLossesAtDeckPlacementTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,level);
    CTemporaryStrandRemovalTable*        pPTR = nullptr;
    
    if ( 0 < Nt )
    {
-      pPTR = CTemporaryStrandRemovalTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
+      pPTR = CTemporaryStrandRemovalTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,level);
    }
 
    ///////////////////////////////////////////////////////////////////////////////////////////
@@ -1824,25 +1824,25 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
       *pParagraph << pParagraph->GetName() << _T(" [") << WBFL::LRFD::LrfdCw8th(_T("5.9.5.4.3, "),_T("5.9.3.4.3, ")) << WBFL::LRFD::LrfdCw8th(_T("5.9.5.4.4"),_T("5.9.3.4.4")) << _T("]") << rptNewLine;
    }
    
-   CShrinkageAtFinalTable*      pSD = CShrinkageAtFinalTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
-   CCreepAtFinalTable*          pCD = CCreepAtFinalTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
-   CRelaxationAtFinalTable*     pR2 = CRelaxationAtFinalTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
+   CShrinkageAtFinalTable*      pSD = CShrinkageAtFinalTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDetails,pDisplayUnits,level);
+   CCreepAtFinalTable*          pCD = CCreepAtFinalTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDetails,pDisplayUnits,level);
+   CRelaxationAtFinalTable*     pR2 = CRelaxationAtFinalTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,level);
    CElasticGainDueToDeckShrinkageTable*   pSS = nullptr;
    if (bDeckShrinkage)
    {
-      pSS = CElasticGainDueToDeckShrinkageTable::PrepareTable(pChapter, m_pBroker, segmentKey, pDetails, pDisplayUnits, level);
+      pSS = CElasticGainDueToDeckShrinkageTable::PrepareTable(pChapter, GetBroker(), segmentKey, pDetails, pDisplayUnits, level);
    }
 
-   CTimeDependentLossFinalTable* pLTdf = CTimeDependentLossFinalTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
-   CTimeDependentLossesTable*    pLT   = CTimeDependentLossesTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
+   CTimeDependentLossFinalTable* pLTdf = CTimeDependentLossFinalTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,level);
+   CTimeDependentLossesTable*    pLT   = CTimeDependentLossesTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,level);
 
-   CElasticGainDueToDeckPlacementTable*   pED   = CElasticGainDueToDeckPlacementTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
-   CElasticGainDueToSIDLTable*            pSIDL = CElasticGainDueToSIDLTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
-   CElasticGainDueToLiveLoadTable*        pLLIM = CElasticGainDueToLiveLoadTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
+   CElasticGainDueToDeckPlacementTable*   pED   = CElasticGainDueToDeckPlacementTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,level);
+   CElasticGainDueToSIDLTable*            pSIDL = CElasticGainDueToSIDLTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,level);
+   CElasticGainDueToLiveLoadTable*        pLLIM = CElasticGainDueToLiveLoadTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,level);
 
-   CEffectivePrestressTable*     pPE   = CEffectivePrestressTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
-   CTotalPrestressLossTable*     pT    = CTotalPrestressLossTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
-   CEffectivePrestressForceTable* pP = CEffectivePrestressForceTable::PrepareTable(pChapter, m_pBroker, segmentKey, pDisplayUnits, level);
+   CEffectivePrestressTable*     pPE   = CEffectivePrestressTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDetails,pDisplayUnits,level);
+   CTotalPrestressLossTable*     pT    = CTotalPrestressLossTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDetails,pDisplayUnits,level);
+   CEffectivePrestressForceTable* pP = CEffectivePrestressForceTable::PrepareTable(pChapter, GetBroker(), segmentKey, pDisplayUnits, level);
 
    ///////////////////////////////////////////////////////////////////////
    // Loop over all the POIs and populate the tables with loss information
@@ -1899,41 +1899,41 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
       {
          pDetails = pILosses->GetLossDetails( poi );
 
-         ReportRow(pES, pChapter,m_pBroker,poi,row1,pDetails,pDisplayUnits,level);
-         ReportRow(pAS, pChapter,m_pBroker,poi,row1,pDetails,pDisplayUnits, level);
-         ReportRow(pFR, pChapter,m_pBroker,poi,row1,pDetails,pDisplayUnits,level);
-         ReportRow(pPTT,pChapter,m_pBroker,poi,row1,pDetails,pDisplayUnits,level);
-         ReportRow(pPTP,pChapter,m_pBroker,poi,row1,pDetails,pDisplayUnits,level);
+         ReportRow(pES, pChapter,GetBroker(),poi,row1,pDetails,pDisplayUnits,level);
+         ReportRow(pAS, pChapter,GetBroker(),poi,row1,pDetails,pDisplayUnits, level);
+         ReportRow(pFR, pChapter,GetBroker(),poi,row1,pDetails,pDisplayUnits,level);
+         ReportRow(pPTT,pChapter,GetBroker(),poi,row1,pDetails,pDisplayUnits,level);
+         ReportRow(pPTP,pChapter,GetBroker(),poi,row1,pDetails,pDisplayUnits,level);
 
-         ReportRow(pSRH, pChapter,m_pBroker,poi,row1,pDetails,pDisplayUnits,level);
-         ReportRow(pCRH, pChapter,m_pBroker,poi,row1,pDetails,pDisplayUnits,level);
-         ReportRow(pR1H, pChapter,m_pBroker,poi,row1,pDetails,pDisplayUnits,level);
-         ReportRow(pPSH, pChapter,m_pBroker,poi,row1,pDetails,pDisplayUnits,level);
-         ReportRow(pPTH, pChapter,m_pBroker,poi,row1,pDetails,pDisplayUnits,level);
+         ReportRow(pSRH, pChapter,GetBroker(),poi,row1,pDetails,pDisplayUnits,level);
+         ReportRow(pCRH, pChapter,GetBroker(),poi,row1,pDetails,pDisplayUnits,level);
+         ReportRow(pR1H, pChapter,GetBroker(),poi,row1,pDetails,pDisplayUnits,level);
+         ReportRow(pPSH, pChapter,GetBroker(),poi,row1,pDetails,pDisplayUnits,level);
+         ReportRow(pPTH, pChapter,GetBroker(),poi,row1,pDetails,pDisplayUnits,level);
       }
 
-      ReportRow(pSR,  pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
-      ReportRow(pCR,  pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
-      ReportRow(pR1,  pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
-      ReportRow(pLTid,pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
-      ReportRow(pPTR, pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
-      ReportRow(pSD,  pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
-      ReportRow(pCD,  pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
-      ReportRow(pR2,  pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
+      ReportRow(pSR,  pChapter,GetBroker(),poi,row2,pDetails,pDisplayUnits,level);
+      ReportRow(pCR,  pChapter,GetBroker(),poi,row2,pDetails,pDisplayUnits,level);
+      ReportRow(pR1,  pChapter,GetBroker(),poi,row2,pDetails,pDisplayUnits,level);
+      ReportRow(pLTid,pChapter,GetBroker(),poi,row2,pDetails,pDisplayUnits,level);
+      ReportRow(pPTR, pChapter,GetBroker(),poi,row2,pDetails,pDisplayUnits,level);
+      ReportRow(pSD,  pChapter,GetBroker(),poi,row2,pDetails,pDisplayUnits,level);
+      ReportRow(pCD,  pChapter,GetBroker(),poi,row2,pDetails,pDisplayUnits,level);
+      ReportRow(pR2,  pChapter,GetBroker(),poi,row2,pDetails,pDisplayUnits,level);
       if (bDeckShrinkage)
       {
-         ReportRow(pSS, pChapter, m_pBroker, poi, row2, pDetails, pDisplayUnits, level);
+         ReportRow(pSS, pChapter, GetBroker(), poi, row2, pDetails, pDisplayUnits, level);
       }
-      ReportRow(pED,  pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
-      ReportRow(pSIDL,pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
-      ReportRow(pLLIM,pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
+      ReportRow(pED,  pChapter,GetBroker(),poi,row2,pDetails,pDisplayUnits,level);
+      ReportRow(pSIDL,pChapter,GetBroker(),poi,row2,pDetails,pDisplayUnits,level);
+      ReportRow(pLLIM,pChapter,GetBroker(),poi,row2,pDetails,pDisplayUnits,level);
 
-      ReportRow(pLTdf,pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
-      ReportRow(pLT,  pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
-      ReportRow(pT,   pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
+      ReportRow(pLTdf,pChapter,GetBroker(),poi,row2,pDetails,pDisplayUnits,level);
+      ReportRow(pLT,  pChapter,GetBroker(),poi,row2,pDetails,pDisplayUnits,level);
+      ReportRow(pT,   pChapter,GetBroker(),poi,row2,pDetails,pDisplayUnits,level);
 
-      ReportRow(pPE,  pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
-      ReportRow(pP, pChapter, m_pBroker, poi, row2, pDisplayUnits, level);
+      ReportRow(pPE,  pChapter,GetBroker(),poi,row2,pDetails,pDisplayUnits,level);
+      ReportRow(pP, pChapter, GetBroker(), poi, row2, pDisplayUnits, level);
 
       row2++;
       
@@ -1942,11 +1942,11 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    }
 }
 
-void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,const CGirderKey& girderKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
-   EAF_GET_IFACE(IBridge,pIBridge);
+   EAF_GET_IFACE2(GetBroker(), IBridge,pIBridge);
    ATLASSERT(pIBridge->GetSegmentCount(girderKey) == 1);
 #endif
    CSegmentKey segmentKey(girderKey,0);
@@ -1955,7 +1955,7 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   EAF_GET_IFACE(IStrandGeometry,pStrandGeom);
+   EAF_GET_IFACE2(GetBroker(), IStrandGeometry,pStrandGeom);
    StrandIndexType Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -1965,7 +1965,7 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
    PoiList vPoi;
    GetPointsOfInterest(girderKey, &vPoi);
 
-   EAF_GET_IFACE(ILosses,pILosses);
+   EAF_GET_IFACE2(GetBroker(), ILosses,pILosses);
    const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi.front() );
 
    // Do some preliminary setup for the tables.
@@ -1978,7 +1978,7 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
    INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,      pDisplayUnits->GetStressUnit(),          false );
    INIT_UV_PROTOTYPE( rptStressUnitValue,  mod_e,       pDisplayUnits->GetModEUnit(),            false );
 
-   EAF_GET_IFACE(ISegmentData,pSegmentData);
+   EAF_GET_IFACE2(GetBroker(), ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
    bool bTemporaryStrands = ( 0 < Nt && pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPretensioned ? true : false);
 
@@ -1986,7 +1986,7 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
    // It is the order in which things are put into the report
    ReportInitialRelaxation(pChapter,bTemporaryStrands,pDetails->pLosses.get(),pDisplayUnits,level);
 
-   CElasticShorteningTable*                     pES  = CElasticShorteningTable::PrepareTable(pChapter,m_pBroker,segmentKey,bTemporaryStrands,
+   CElasticShorteningTable*                     pES  = CElasticShorteningTable::PrepareTable(pChapter,GetBroker(),segmentKey,bTemporaryStrands,
                                                                                              pDetails,pDisplayUnits,level);
    CFrictionLossTable*                          pFR  = nullptr;
    CPostTensionInteractionTable*                pPTT = nullptr;
@@ -1994,29 +1994,29 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
    
    if ( 0 < Nt && pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned )
    {
-      pFR  = CFrictionLossTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
-      pPTT = CPostTensionInteractionTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
-      pPTP = CEffectOfPostTensionedTemporaryStrandsTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
+      pFR  = CFrictionLossTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDetails,pDisplayUnits,level);
+      pPTT = CPostTensionInteractionTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,level);
+      pPTP = CEffectOfPostTensionedTemporaryStrandsTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,level);
    }
 
    CTimeDependentLossesAtShippingTable*            pPSH = nullptr;
    CPostTensionTimeDependentLossesAtShippingTable* pPTH = nullptr;
 
-   EAF_GET_IFACE(ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+   EAF_GET_IFACE2(GetBroker(), ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
    if ( pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled() )
    {
-      pPSH = CTimeDependentLossesAtShippingTable::PrepareTable(pChapter,m_pBroker,segmentKey,bTemporaryStrands,pDisplayUnits,level);
+      pPSH = CTimeDependentLossesAtShippingTable::PrepareTable(pChapter,GetBroker(),segmentKey,bTemporaryStrands,pDisplayUnits,level);
 
       if ( 0 < Nt ) 
       {
-         pPTH = CPostTensionTimeDependentLossesAtShippingTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
+         pPTH = CPostTensionTimeDependentLossesAtShippingTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,level);
       }
    }
 
    CTemporaryStrandRemovalTable* pPTR = nullptr;
    if (0 < Nt )
    {
-      pPTR = CTemporaryStrandRemovalTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
+      pPTR = CTemporaryStrandRemovalTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,level);
    }
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -2024,12 +2024,12 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
    pParagraph->SetName(_T("Time dependent losses"));
    *pParagraph << pParagraph->GetName() << rptNewLine;
 
-   CTxDOT2013ChangeOfConcreteStressTable*   pDeltaFcdp = CTxDOT2013ChangeOfConcreteStressTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
-   CTxDOT2013CreepAndShrinkageTable*        pCR        = CTxDOT2013CreepAndShrinkageTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
-   CTxDOT2013RelaxationAfterTransferTable*  pR2        = CTxDOT2013RelaxationAfterTransferTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
-   CTxDOT2013TimeDependentLossesTable*      pLT        = CTxDOT2013TimeDependentLossesTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
-   CTotalPrestressLossTable*                pT         = CTotalPrestressLossTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
-   CEffectivePrestressForceTable* pP = CEffectivePrestressForceTable::PrepareTable(pChapter, m_pBroker, segmentKey, pDisplayUnits, level);
+   CTxDOT2013ChangeOfConcreteStressTable*   pDeltaFcdp = CTxDOT2013ChangeOfConcreteStressTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDetails,pDisplayUnits,level);
+   CTxDOT2013CreepAndShrinkageTable*        pCR        = CTxDOT2013CreepAndShrinkageTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDetails,pDisplayUnits,level);
+   CTxDOT2013RelaxationAfterTransferTable*  pR2        = CTxDOT2013RelaxationAfterTransferTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDetails,pDisplayUnits,level);
+   CTxDOT2013TimeDependentLossesTable*      pLT        = CTxDOT2013TimeDependentLossesTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,level);
+   CTotalPrestressLossTable*                pT         = CTotalPrestressLossTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDetails,pDisplayUnits,level);
+   CEffectivePrestressForceTable* pP = CEffectivePrestressForceTable::PrepareTable(pChapter, GetBroker(), segmentKey, pDisplayUnits, level);
 
    pgsPointOfInterest prev_poi(CSegmentKey(0,0,0),0.00);
    bool bSkipToNextRow = false;
@@ -2066,21 +2066,21 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
       {
          pDetails = pILosses->GetLossDetails( poi );
 
-         ReportRow(pES, pChapter,m_pBroker,poi,row1,pDetails,pDisplayUnits,level);
-         ReportRow(pFR, pChapter,m_pBroker,poi,row1,pDetails,pDisplayUnits,level);
-         ReportRow(pPTT,pChapter,m_pBroker,poi,row1,pDetails,pDisplayUnits,level);
-         ReportRow(pPTP,pChapter,m_pBroker,poi,row1,pDetails,pDisplayUnits,level);
-         ReportRow(pPSH,pChapter,m_pBroker,poi,row1,pDetails,pDisplayUnits,level);
-         ReportRow(pPTH,pChapter,m_pBroker,poi,row1,pDetails,pDisplayUnits,level);
+         ReportRow(pES, pChapter,GetBroker(),poi,row1,pDetails,pDisplayUnits,level);
+         ReportRow(pFR, pChapter,GetBroker(),poi,row1,pDetails,pDisplayUnits,level);
+         ReportRow(pPTT,pChapter,GetBroker(),poi,row1,pDetails,pDisplayUnits,level);
+         ReportRow(pPTP,pChapter,GetBroker(),poi,row1,pDetails,pDisplayUnits,level);
+         ReportRow(pPSH,pChapter,GetBroker(),poi,row1,pDetails,pDisplayUnits,level);
+         ReportRow(pPTH,pChapter,GetBroker(),poi,row1,pDetails,pDisplayUnits,level);
       }
 
-      ReportRow(pPTR,      pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
-      ReportRow(pDeltaFcdp,pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
-      ReportRow(pCR,       pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
-      ReportRow(pR2,       pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
-      ReportRow(pLT,       pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
-      ReportRow(pT,        pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
-      ReportRow(pP,        pChapter, m_pBroker, poi, row2, pDisplayUnits, level);
+      ReportRow(pPTR,      pChapter,GetBroker(),poi,row2,pDetails,pDisplayUnits,level);
+      ReportRow(pDeltaFcdp,pChapter,GetBroker(),poi,row2,pDetails,pDisplayUnits,level);
+      ReportRow(pCR,       pChapter,GetBroker(),poi,row2,pDetails,pDisplayUnits,level);
+      ReportRow(pR2,       pChapter,GetBroker(),poi,row2,pDetails,pDisplayUnits,level);
+      ReportRow(pLT,       pChapter,GetBroker(),poi,row2,pDetails,pDisplayUnits,level);
+      ReportRow(pT,        pChapter,GetBroker(),poi,row2,pDetails,pDisplayUnits,level);
+      ReportRow(pP,        pChapter, GetBroker(), poi, row2, pDisplayUnits, level);
 
       row2++;
       
@@ -2089,11 +2089,11 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
    }
 }
 
-void CPsLossEngineer::ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,const CGirderKey& girderKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level,bool isWsdot)
+void CPsLossEngineer::ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level,bool isWsdot)
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
-   EAF_GET_IFACE(IBridge,pIBridge);
+   EAF_GET_IFACE2(GetBroker(), IBridge,pIBridge);
    ATLASSERT(pIBridge->GetSegmentCount(girderKey) == 1);
 #endif
    CSegmentKey segmentKey(girderKey,0);
@@ -2102,16 +2102,16 @@ void CPsLossEngineer::ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::B
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   EAF_GET_IFACE(IStrandGeometry,pStrandGeom);
+   EAF_GET_IFACE2(GetBroker(), IStrandGeometry,pStrandGeom);
    StrandIndexType Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
 
-   EAF_GET_IFACE(ISegmentData,pSegmentData);
+   EAF_GET_IFACE2(GetBroker(), ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
    PoiList vPoi;
    GetPointsOfInterest(girderKey, &vPoi);
 
-   EAF_GET_IFACE(ILosses,pILosses);
+   EAF_GET_IFACE2(GetBroker(), ILosses,pILosses);
    const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi.front() );
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -2132,7 +2132,7 @@ void CPsLossEngineer::ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::B
    // It is the order in which things are put into the report
    ReportInitialRelaxation(pChapter,bTemporaryStrands,pDetails->pLosses.get(),pDisplayUnits,level);
 
-   CElasticShorteningTable*                        pES  = CElasticShorteningTable::PrepareTable(pChapter,m_pBroker,segmentKey,bTemporaryStrands,pDetails,pDisplayUnits,level);
+   CElasticShorteningTable*                        pES  = CElasticShorteningTable::PrepareTable(pChapter,GetBroker(),segmentKey,bTemporaryStrands,pDetails,pDisplayUnits,level);
 
    ReportLumpSumTimeDependentLossesAtShipping(pChapter,pDetails,pDisplayUnits,level);
 
@@ -2142,29 +2142,29 @@ void CPsLossEngineer::ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::B
 
    if ( 0 < Nt && pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned )
    {
-      pFR  = CFrictionLossTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
-      pPTT = CPostTensionInteractionTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
-      pPTP = CEffectOfPostTensionedTemporaryStrandsTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
+      pFR  = CFrictionLossTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDetails,pDisplayUnits,level);
+      pPTT = CPostTensionInteractionTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,level);
+      pPTP = CEffectOfPostTensionedTemporaryStrandsTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,level);
    }
 
-   CTimeDependentLossesAtShippingTable*            pPSH = CTimeDependentLossesAtShippingTable::PrepareTable(pChapter,m_pBroker,segmentKey,bTemporaryStrands,pDisplayUnits,level);
+   CTimeDependentLossesAtShippingTable*            pPSH = CTimeDependentLossesAtShippingTable::PrepareTable(pChapter,GetBroker(),segmentKey,bTemporaryStrands,pDisplayUnits,level);
    CPostTensionTimeDependentLossesAtShippingTable* pPTH  = nullptr;
    
    if ( 0 < Nt )
    {
-      pPTH = CPostTensionTimeDependentLossesAtShippingTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
+      pPTH = CPostTensionTimeDependentLossesAtShippingTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,level);
    }
 
    CTemporaryStrandRemovalTable*                   pPTR = nullptr;
    if ( 0 < Nt )
    {
-      pPTR = CTemporaryStrandRemovalTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
+      pPTR = CTemporaryStrandRemovalTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,level);
    }
 
    ReportLumpSumTimeDependentLosses(pChapter,pDetails,pDisplayUnits,level);
 
-   CTotalPrestressLossTable* pT = CTotalPrestressLossTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
-   CEffectivePrestressForceTable* pP = CEffectivePrestressForceTable::PrepareTable(pChapter, m_pBroker, segmentKey, pDisplayUnits, level);
+   CTotalPrestressLossTable* pT = CTotalPrestressLossTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDetails,pDisplayUnits,level);
+   CEffectivePrestressForceTable* pP = CEffectivePrestressForceTable::PrepareTable(pChapter, GetBroker(), segmentKey, pDisplayUnits, level);
 
    pgsPointOfInterest prev_poi(CSegmentKey(0,0,0),0.0);
    bool bSkipToNextRow = false;
@@ -2196,17 +2196,17 @@ void CPsLossEngineer::ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::B
       {
          pDetails = pILosses->GetLossDetails( poi );
 
-         ReportRow(pES, pChapter,m_pBroker,poi,row1,pDetails,pDisplayUnits,level);
-         ReportRow(pFR, pChapter,m_pBroker,poi,row1,pDetails,pDisplayUnits,level);
-         ReportRow(pPTT,pChapter,m_pBroker,poi,row1,pDetails,pDisplayUnits,level);
-         ReportRow(pPTP,pChapter,m_pBroker,poi,row1,pDetails,pDisplayUnits,level);
-         ReportRow(pPSH,pChapter,m_pBroker,poi,row1,pDetails,pDisplayUnits,level);
-         ReportRow(pPTH,pChapter,m_pBroker,poi,row1,pDetails,pDisplayUnits,level);
+         ReportRow(pES, pChapter,GetBroker(),poi,row1,pDetails,pDisplayUnits,level);
+         ReportRow(pFR, pChapter,GetBroker(),poi,row1,pDetails,pDisplayUnits,level);
+         ReportRow(pPTT,pChapter,GetBroker(),poi,row1,pDetails,pDisplayUnits,level);
+         ReportRow(pPTP,pChapter,GetBroker(),poi,row1,pDetails,pDisplayUnits,level);
+         ReportRow(pPSH,pChapter,GetBroker(),poi,row1,pDetails,pDisplayUnits,level);
+         ReportRow(pPTH,pChapter,GetBroker(),poi,row1,pDetails,pDisplayUnits,level);
       }
 
-         ReportRow(pPTR,pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
-         ReportRow(pT,  pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
-      ReportRow(pP, pChapter, m_pBroker, poi, row2, pDisplayUnits, level);
+         ReportRow(pPTR,pChapter,GetBroker(),poi,row2,pDetails,pDisplayUnits,level);
+         ReportRow(pT,  pChapter,GetBroker(),poi,row2,pDetails,pDisplayUnits,level);
+      ReportRow(pP, pChapter, GetBroker(), poi, row2, pDisplayUnits, level);
 
          row2++;
       row1++;
@@ -2214,11 +2214,11 @@ void CPsLossEngineer::ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::B
    }
 }
 
-void CPsLossEngineer::ReportApproxMethod2005(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,const CGirderKey& girderKey,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CPsLossEngineer::ReportApproxMethod2005(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
-   EAF_GET_IFACE(IBridge,pIBridge);
+   EAF_GET_IFACE2(GetBroker(), IBridge,pIBridge);
    ATLASSERT(pIBridge->GetSegmentCount(girderKey) == 1);
 #endif
    CSegmentKey segmentKey(girderKey,0);
@@ -2227,16 +2227,16 @@ void CPsLossEngineer::ReportApproxMethod2005(rptChapter* pChapter,CPsLossEnginee
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   EAF_GET_IFACE(ISegmentData,pSegmentData);
+   EAF_GET_IFACE2(GetBroker(), ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
-   EAF_GET_IFACE(IStrandGeometry,pStrandGeom);
+   EAF_GET_IFACE2(GetBroker(), IStrandGeometry,pStrandGeom);
    StrandIndexType Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
 
    PoiList vPoi;
    GetPointsOfInterest(girderKey, &vPoi);
 
-   EAF_GET_IFACE(ILosses,pILosses);
+   EAF_GET_IFACE2(GetBroker(), ILosses,pILosses);
    const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi.front() );
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -2250,7 +2250,7 @@ void CPsLossEngineer::ReportApproxMethod2005(rptChapter* pChapter,CPsLossEnginee
    // It is the order in which things are put into the report
    ReportInitialRelaxation(pChapter,bTemporaryStrands,pDetails->pLosses.get(),pDisplayUnits,level);
 
-   CElasticShorteningTable*                        pES  = CElasticShorteningTable::PrepareTable(pChapter,m_pBroker,segmentKey,bTemporaryStrands,pDetails,pDisplayUnits,level);
+   CElasticShorteningTable*                        pES  = CElasticShorteningTable::PrepareTable(pChapter,GetBroker(),segmentKey,bTemporaryStrands,pDetails,pDisplayUnits,level);
 
    ReportLumpSumTimeDependentLossesAtShipping(pChapter,pDetails,pDisplayUnits,level);
 
@@ -2260,34 +2260,34 @@ void CPsLossEngineer::ReportApproxMethod2005(rptChapter* pChapter,CPsLossEnginee
 
    if ( 0 < Nt && pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned )
    {
-      pFR  = CFrictionLossTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
-      pPTT = CPostTensionInteractionTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
-      pPTP = CEffectOfPostTensionedTemporaryStrandsTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
+      pFR  = CFrictionLossTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDetails,pDisplayUnits,level);
+      pPTT = CPostTensionInteractionTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,level);
+      pPTP = CEffectOfPostTensionedTemporaryStrandsTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,level);
    }
 
-   CTimeDependentLossesAtShippingTable*            pPSH = CTimeDependentLossesAtShippingTable::PrepareTable(pChapter,m_pBroker,segmentKey,bTemporaryStrands,pDisplayUnits,level);
+   CTimeDependentLossesAtShippingTable*            pPSH = CTimeDependentLossesAtShippingTable::PrepareTable(pChapter,GetBroker(),segmentKey,bTemporaryStrands,pDisplayUnits,level);
    CPostTensionTimeDependentLossesAtShippingTable* pPTH = nullptr;
 
    if ( 0 < Nt )
    {
-      pPTH = CPostTensionTimeDependentLossesAtShippingTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
+      pPTH = CPostTensionTimeDependentLossesAtShippingTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,level);
    }
 
    CTemporaryStrandRemovalTable*                   pPTR = nullptr;
    if ( 0 < Nt )
    {
-      pPTR = CTemporaryStrandRemovalTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
+      pPTR = CTemporaryStrandRemovalTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,level);
    }
 
    ReportLumpSumTimeDependentLosses(pChapter,pDetails,pDisplayUnits,level);
 
-   CElasticGainDueToDeckPlacementTable*   pED   = CElasticGainDueToDeckPlacementTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
-   CElasticGainDueToSIDLTable*            pSIDL = CElasticGainDueToSIDLTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
-   CElasticGainDueToLiveLoadTable*        pLLIM = CElasticGainDueToLiveLoadTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,level);
-   CEffectivePrestressTable*              pPE   = CEffectivePrestressTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
+   CElasticGainDueToDeckPlacementTable*   pED   = CElasticGainDueToDeckPlacementTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,level);
+   CElasticGainDueToSIDLTable*            pSIDL = CElasticGainDueToSIDLTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,level);
+   CElasticGainDueToLiveLoadTable*        pLLIM = CElasticGainDueToLiveLoadTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,level);
+   CEffectivePrestressTable*              pPE   = CEffectivePrestressTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDetails,pDisplayUnits,level);
 
-   CTotalPrestressLossTable* pT = CTotalPrestressLossTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,level);
-   CEffectivePrestressForceTable* pP = CEffectivePrestressForceTable::PrepareTable(pChapter, m_pBroker, segmentKey, pDisplayUnits, level);
+   CTotalPrestressLossTable* pT = CTotalPrestressLossTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDetails,pDisplayUnits,level);
+   CEffectivePrestressForceTable* pP = CEffectivePrestressForceTable::PrepareTable(pChapter, GetBroker(), segmentKey, pDisplayUnits, level);
 
    pgsPointOfInterest prev_poi(CSegmentKey(0,0,0),0.0);
    bool bSkipToNextRow = false;
@@ -2323,23 +2323,23 @@ void CPsLossEngineer::ReportApproxMethod2005(rptChapter* pChapter,CPsLossEnginee
       {
          pDetails = pILosses->GetLossDetails( poi );
 
-         ReportRow(pES, pChapter,m_pBroker,poi,row1,pDetails,pDisplayUnits,level);
-         ReportRow(pFR, pChapter,m_pBroker,poi,row1,pDetails,pDisplayUnits,level);
-         ReportRow(pPTT,pChapter,m_pBroker,poi,row1,pDetails,pDisplayUnits,level);
-         ReportRow(pPTP,pChapter,m_pBroker,poi,row1,pDetails,pDisplayUnits,level);
-         ReportRow(pPSH,pChapter,m_pBroker,poi,row1,pDetails,pDisplayUnits,level);
-         ReportRow(pPTH,pChapter,m_pBroker,poi,row1,pDetails,pDisplayUnits,level);
+         ReportRow(pES, pChapter,GetBroker(),poi,row1,pDetails,pDisplayUnits,level);
+         ReportRow(pFR, pChapter,GetBroker(),poi,row1,pDetails,pDisplayUnits,level);
+         ReportRow(pPTT,pChapter,GetBroker(),poi,row1,pDetails,pDisplayUnits,level);
+         ReportRow(pPTP,pChapter,GetBroker(),poi,row1,pDetails,pDisplayUnits,level);
+         ReportRow(pPSH,pChapter,GetBroker(),poi,row1,pDetails,pDisplayUnits,level);
+         ReportRow(pPTH,pChapter,GetBroker(),poi,row1,pDetails,pDisplayUnits,level);
       }
 
       //if ( intervalIdx == liveLoadIntervalIdx )
       {
-         ReportRow(pPTR,  pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
-         ReportRow(pED,   pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
-         ReportRow(pSIDL, pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
-         ReportRow(pLLIM, pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
-         ReportRow(pPE,   pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
-         ReportRow(pT,    pChapter,m_pBroker,poi,row2,pDetails,pDisplayUnits,level);
-         ReportRow(pP,    pChapter,m_pBroker,poi,row2,pDisplayUnits,level);
+         ReportRow(pPTR,  pChapter,GetBroker(),poi,row2,pDetails,pDisplayUnits,level);
+         ReportRow(pED,   pChapter,GetBroker(),poi,row2,pDetails,pDisplayUnits,level);
+         ReportRow(pSIDL, pChapter,GetBroker(),poi,row2,pDetails,pDisplayUnits,level);
+         ReportRow(pLLIM, pChapter,GetBroker(),poi,row2,pDetails,pDisplayUnits,level);
+         ReportRow(pPE,   pChapter,GetBroker(),poi,row2,pDetails,pDisplayUnits,level);
+         ReportRow(pT,    pChapter,GetBroker(),poi,row2,pDetails,pDisplayUnits,level);
+         ReportRow(pP,    pChapter,GetBroker(),poi,row2,pDisplayUnits,level);
 
          row2++;
       }
@@ -2350,11 +2350,11 @@ void CPsLossEngineer::ReportApproxMethod2005(rptChapter* pChapter,CPsLossEnginee
 }
 
 
-void CPsLossEngineer::ReportLumpSumMethod(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,const CGirderKey& girderKey,IEAFDisplayUnits* pDisplayUnits,bool bDesign,Uint16 level)
+void CPsLossEngineer::ReportLumpSumMethod(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,bool bDesign,Uint16 level)
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
-   EAF_GET_IFACE(IBridge,pBridge);
+   EAF_GET_IFACE2(GetBroker(), IBridge,pBridge);
    ATLASSERT(pBridge->GetSegmentCount(girderKey) == 1);
 #endif
    CSegmentKey segmentKey(girderKey,0);
@@ -2363,7 +2363,7 @@ void CPsLossEngineer::ReportLumpSumMethod(rptChapter* pChapter,CPsLossEngineer::
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   EAF_GET_IFACE(IStrandGeometry,pStrandGeom);
+   EAF_GET_IFACE2(GetBroker(), IStrandGeometry,pStrandGeom);
    StrandIndexType NtMax = pStrandGeom->GetMaxStrands(segmentKey,pgsTypes::Temporary);
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -2387,7 +2387,7 @@ void CPsLossEngineer::ReportLumpSumMethod(rptChapter* pChapter,CPsLossEngineer::
    PoiList vPoi;
    GetPointsOfInterest(girderKey, &vPoi);
 
-   EAF_GET_IFACE(ILosses,pILosses);
+   EAF_GET_IFACE2(GetBroker(), ILosses,pILosses);
    const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi.front() );
 
    // Typecast to our known type (eating own doggy food)
@@ -2423,7 +2423,7 @@ void CPsLossEngineer::ReportLumpSumMethod(rptChapter* pChapter,CPsLossEngineer::
 
 //////////////////////////////////////////////////
 // Utility functions for reporting
-void CPsLossEngineer::ReportInitialRelaxation(rptChapter* pChapter,bool bTemporaryStrands,const WBFL::LRFD::Losses* pLosses,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CPsLossEngineer::ReportInitialRelaxation(rptChapter* pChapter,bool bTemporaryStrands,const WBFL::LRFD::Losses* pLosses,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    if ( pLosses->IgnoreInitialRelaxation() )
    {
@@ -2512,7 +2512,7 @@ void CPsLossEngineer::ReportInitialRelaxation(rptChapter* pChapter,bool bTempora
    }
 }
 
-void CPsLossEngineer::ReportLocation2(rptRcTable* pTable,RowIndexType row,const pgsPointOfInterest& poi,IEAFDisplayUnits* pDisplayUnits)
+void CPsLossEngineer::ReportLocation2(rptRcTable* pTable,RowIndexType row,const pgsPointOfInterest& poi,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    if ( pTable == nullptr )
    {
@@ -2528,7 +2528,7 @@ void CPsLossEngineer::ReportLocation2(rptRcTable* pTable,RowIndexType row,const 
    (*pTable)(row+rowOffset,1) << spanloc.SetValue( POI_ERECTED_SEGMENT, poi );
 }
 
-void CPsLossEngineer::ReportLocation(rptRcTable* pTable,RowIndexType row,const pgsPointOfInterest& poi,IEAFDisplayUnits* pDisplayUnits)
+void CPsLossEngineer::ReportLocation(rptRcTable* pTable,RowIndexType row,const pgsPointOfInterest& poi,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    if ( pTable == nullptr )
    {
@@ -2541,7 +2541,7 @@ void CPsLossEngineer::ReportLocation(rptRcTable* pTable,RowIndexType row,const p
    (*pTable)(row+rowOffset,0) << spanloc.SetValue( POI_ERECTED_SEGMENT, poi );
 }
 
-void CPsLossEngineer::ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pChapter,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CPsLossEngineer::ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pChapter,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
@@ -2554,8 +2554,8 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pCh
    if ( pDetails->LossMethod == PrestressLossCriteria::LossMethodType::AASHTO_LUMPSUM || pDetails->LossMethod == PrestressLossCriteria::LossMethodType::WSDOT_LUMPSUM )
    {
       // Approximate methods before 2005
-      EAF_GET_IFACE( ISpecification,   pSpec);
-      EAF_GET_IFACE( ILibrary,         pLib);
+      EAF_GET_IFACE2(GetBroker(),  ISpecification,   pSpec);
+      EAF_GET_IFACE2(GetBroker(),  ILibrary,         pLib);
       std::_tstring spec_name = pSpec->GetSpecification();
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
       const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
@@ -2633,7 +2633,7 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pCh
    }
 }
 
-void CPsLossEngineer::ReportLumpSumTimeDependentLosses(rptChapter* pChapter,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CPsLossEngineer::ReportLumpSumTimeDependentLosses(rptChapter* pChapter,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
@@ -2848,19 +2848,19 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
    Float64* pAngleChange
 )
 {
-   EAF_GET_IFACE(IBridge, pBridge);
-   EAF_GET_IFACE(IStrandGeometry, pStrandGeom);
-   EAF_GET_IFACE(ISegmentData, pSegmentData);
-   EAF_GET_IFACE(ISectionProperties, pSectProp);
-   EAF_GET_IFACE(IProductForces, pProdForces);
-   EAF_GET_IFACE(IEnvironment, pEnv);
-   EAF_GET_IFACE(IMaterials, pMaterial);
-   EAF_GET_IFACE(ISpecification, pSpec);
-   EAF_GET_IFACE(IBridgeDescription, pIBridgeDesc);
-   EAF_GET_IFACE(ILibrary, pLibrary);
-   EAF_GET_IFACE(IIntervals, pIntervals);
-   EAF_GET_IFACE(IGirder, pGirder);
-   EAF_GET_IFACE(IPointOfInterest, pPoi);
+   EAF_GET_IFACE2(GetBroker(), IBridge, pBridge);
+   EAF_GET_IFACE2(GetBroker(), IStrandGeometry, pStrandGeom);
+   EAF_GET_IFACE2(GetBroker(), ISegmentData, pSegmentData);
+   EAF_GET_IFACE2(GetBroker(), ISectionProperties, pSectProp);
+   EAF_GET_IFACE2(GetBroker(), IProductForces, pProdForces);
+   EAF_GET_IFACE2(GetBroker(), IEnvironment, pEnv);
+   EAF_GET_IFACE2(GetBroker(), IMaterials, pMaterial);
+   EAF_GET_IFACE2(GetBroker(), ISpecification, pSpec);
+   EAF_GET_IFACE2(GetBroker(), IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(GetBroker(), ILibrary, pLibrary);
+   EAF_GET_IFACE2(GetBroker(), IIntervals, pIntervals);
+   EAF_GET_IFACE2(GetBroker(), IGirder, pGirder);
+   EAF_GET_IFACE2(GetBroker(), IPointOfInterest, pPoi);
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -3153,7 +3153,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
          }
       }
 
-      EAF_GET_IFACE(IPointOfInterest,pPoi);
+      EAF_GET_IFACE2(GetBroker(), IPointOfInterest,pPoi);
       CSpanKey spanKey;
       Float64 Xspan;
       pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
@@ -3278,7 +3278,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
       break;
    }
 
-   EAF_GET_IFACE(ILossParameters,pLossParameters);
+   EAF_GET_IFACE2(GetBroker(), ILossParameters,pLossParameters);
    pLossParameters->GetTemporaryStrandPostTensionParameters(pAnchorSet,pWobble,pCoeffFriction);
 
    Float64 precamber = pGirder->GetPrecamber(segmentKey);
@@ -3286,9 +3286,9 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
    *pAngleChange = fabs(8*precamber/L);
 }
 
-void CPsLossEngineer::ReportFinalLosses(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
+void CPsLossEngineer::ReportFinalLosses(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
-   EAF_GET_IFACE(ILossParameters,pLossParameters);
+   EAF_GET_IFACE2(GetBroker(), ILossParameters,pLossParameters);
    PrestressLossCriteria::LossMethodType loss_method = pLossParameters->GetLossMethod();
 
    Uint16 level = 0;
@@ -3319,10 +3319,10 @@ void CPsLossEngineer::ReportFinalLosses(BeamType beamType,const CGirderKey& gird
 }
 
 
-void CPsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamType beamType,const CGirderKey& girderKey,IEAFDisplayUnits* pDisplayUnits,LossAgency lossAgency)
+void CPsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,LossAgency lossAgency)
 {
-   EAF_GET_IFACE(ILibrary,pLib);
-   EAF_GET_IFACE(ISpecification,pSpec);
+   EAF_GET_IFACE2(GetBroker(), ILibrary,pLib);
+   EAF_GET_IFACE2(GetBroker(), ISpecification,pSpec);
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
@@ -3337,11 +3337,11 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamTy
    }
 }
 
-void CPsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamType beamType,const CGirderKey& girderKey,IEAFDisplayUnits* pDisplayUnits)
+void CPsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
-   EAF_GET_IFACE(IBridge,pIBridge);
+   EAF_GET_IFACE2(GetBroker(), IBridge,pIBridge);
    ATLASSERT(pIBridge->GetSegmentCount(girderKey) == 1);
 #endif
    CSegmentKey segmentKey(girderKey,0);
@@ -3350,8 +3350,8 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamTy
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   EAF_GET_IFACE(ILibrary,pLib);
-   EAF_GET_IFACE(ISpecification,pSpec);
+   EAF_GET_IFACE2(GetBroker(), ILibrary,pLib);
+   EAF_GET_IFACE2(GetBroker(), ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -3361,11 +3361,11 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamTy
    PoiList vPoi;
    GetPointsOfInterest(girderKey, &vPoi);
 
-   EAF_GET_IFACE(ILosses,pILosses);
+   EAF_GET_IFACE2(GetBroker(), ILosses,pILosses);
    const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi.front() );
 
-   CTotalPrestressLossTable* pT = CTotalPrestressLossTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDetails,pDisplayUnits,0);
-   CEffectivePrestressForceTable* pP = CEffectivePrestressForceTable::PrepareTable(pChapter, m_pBroker, segmentKey, pDisplayUnits, 0);
+   CTotalPrestressLossTable* pT = CTotalPrestressLossTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDetails,pDisplayUnits,0);
+   CEffectivePrestressForceTable* pP = CEffectivePrestressForceTable::PrepareTable(pChapter, GetBroker(), segmentKey, pDisplayUnits, 0);
 
    ///////////////////////////////////////////////////////////////////////
    // Loop over all the POIs and populate the tables with loss information
@@ -3378,17 +3378,17 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamTy
       ReportLocation(pP, row, poi, pDisplayUnits);
 
       // fill each row1 with data
-      ReportRow(pT,pChapter,m_pBroker,poi,row,pDetails,pDisplayUnits,0);
-      ReportRow(pP, pChapter, m_pBroker, poi, row, pDisplayUnits, 0);
+      ReportRow(pT,pChapter,GetBroker(),poi,row,pDetails,pDisplayUnits,0);
+      ReportRow(pP, pChapter, GetBroker(), poi, row, pDisplayUnits, 0);
       row++;
    }
 }
 
-void CPsLossEngineer::ReportFinalLossesRefinedMethodBefore2005(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,const CGirderKey& girderKey,IEAFDisplayUnits* pDisplayUnits)
+void CPsLossEngineer::ReportFinalLossesRefinedMethodBefore2005(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
-   EAF_GET_IFACE(IBridge,pIBridge);
+   EAF_GET_IFACE2(GetBroker(), IBridge,pIBridge);
    ATLASSERT(pIBridge->GetSegmentCount(girderKey) == 1);
 #endif
    CSegmentKey segmentKey(girderKey,0);
@@ -3402,10 +3402,10 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethodBefore2005(rptChapter* pChap
    PoiList vPoi;
    GetPointsOfInterest(girderKey, &vPoi);
 
-   EAF_GET_IFACE(ILosses,pILosses);
+   EAF_GET_IFACE2(GetBroker(), ILosses,pILosses);
 
-   CFinalPrestressLossTable* pT = CFinalPrestressLossTable::PrepareTable(pChapter,m_pBroker,segmentKey,pDisplayUnits,0);
-   CEffectivePrestressForceTable* pP = CEffectivePrestressForceTable::PrepareTable(pChapter, m_pBroker, segmentKey, pDisplayUnits, 0);
+   CFinalPrestressLossTable* pT = CFinalPrestressLossTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,0);
+   CEffectivePrestressForceTable* pP = CEffectivePrestressForceTable::PrepareTable(pChapter, GetBroker(), segmentKey, pDisplayUnits, 0);
 
    RowIndexType row = 1;
    for ( const pgsPointOfInterest& poi : vPoi)
@@ -3415,8 +3415,8 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethodBefore2005(rptChapter* pChap
 
       const LOSSDETAILS* pDetails = pILosses->GetLossDetails( poi );
 
-      ReportRow(pT, pChapter, m_pBroker, poi, row, pDetails, pDisplayUnits, 0);
-      ReportRow(pP, pChapter, m_pBroker, poi, row, pDisplayUnits, 0);
+      ReportRow(pT, pChapter, GetBroker(), poi, row, pDetails, pDisplayUnits, 0);
+      ReportRow(pP, pChapter, GetBroker(), poi, row, pDisplayUnits, 0);
 
       row++;
    }
@@ -3426,12 +3426,12 @@ void CPsLossEngineer::GetPointsOfInterest(const CGirderKey& girderKey,PoiList* p
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
-   EAF_GET_IFACE(IBridge,pIBridge);
+   EAF_GET_IFACE2(GetBroker(), IBridge,pIBridge);
    ATLASSERT(pIBridge->GetSegmentCount(girderKey) == 1);
 #endif
    CSegmentKey segmentKey(girderKey,0);
 
-   EAF_GET_IFACE(IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(GetBroker(), IPointOfInterest,pPoi);
    PoiList vPoi;
    pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT, pPoiList);
    PoiList vPoi2;

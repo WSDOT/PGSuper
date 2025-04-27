@@ -78,7 +78,7 @@ END_COM_MAP()
 
 // IInitialize
 public:
-   virtual void SetBroker(IBroker* pBroker,StatusGroupIDType statusGroupID) override;
+   virtual void SetBroker(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID) override;
 
 // IPsBeamLossEngineer
 public:
@@ -89,8 +89,8 @@ public:
    virtual const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) override;
    virtual const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config,IntervalIndexType intervalIdx) override;
    virtual void ClearDesignLosses() override;
-   virtual void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) override;
-   virtual void ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) override;
+   virtual void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) override;
+   virtual void ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) override;
    virtual const ANCHORSETDETAILS* GetGirderTendonAnchorSetDetails(const CGirderKey& girderKey,DuctIndexType ductIdx) override;
    virtual Float64 GetGirderTendonElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) override;
    virtual void GetGirderTendonAverageFrictionAndAnchorSetLoss(const CGirderKey& girderKey,DuctIndexType ductIdx,Float64* pfpF,Float64* pfpA) override;
@@ -99,7 +99,7 @@ public:
    virtual void GetSegmentTendonAverageFrictionAndAnchorSetLoss(const CSegmentKey& segmentKey, DuctIndexType ductIdx, Float64* pfpF, Float64* pfpA) override;
 
 private:
-   IBroker* m_pBroker;
+   std::shared_ptr<WBFL::EAF::Broker> GetBroker();
    StatusGroupIDType m_StatusGroupID;
    BeamTypes m_BeamType;
    CPsLossEngineer m_Engineer;

@@ -43,7 +43,7 @@ static char THIS_FILE[] = __FILE__;
 // CExportDlg dialog
 
 /*--------------------------------------------------------------------*/
-CExportDlg::CExportDlg(IBroker* pBroker,CWnd* pParent /*=nullptr*/)
+CExportDlg::CExportDlg(std::shared_ptr<WBFL::EAF::Broker> pBroker,CWnd* pParent /*=nullptr*/)
 	: CDialog(CExportDlg::IDD, pParent)
 {
    m_pBroker  = pBroker;

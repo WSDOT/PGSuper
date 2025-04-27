@@ -47,7 +47,7 @@ HICON CPGSpliceProjectImporter::GetIcon() const
    return AfxGetApp()->LoadIcon(IDI_IMPORTER);
 }
 
-STDMETHODIMP CPGSpliceProjectImporter::Import(IBroker* pBroker)
+HRESULT CPGSpliceProjectImporter::Import(std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
 //   AFX_MANAGE_STATE(AfxGetStaticModuleState());
 

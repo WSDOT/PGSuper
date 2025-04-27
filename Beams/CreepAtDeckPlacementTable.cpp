@@ -35,7 +35,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-CCreepAtDeckPlacementTable::CCreepAtDeckPlacementTable(ColumnIndexType NumColumns, IEAFDisplayUnits* pDisplayUnits) :
+CCreepAtDeckPlacementTable::CCreepAtDeckPlacementTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) :
 rptRcTable(NumColumns,0)
 {
    DEFINE_UV_PROTOTYPE( spanloc,     pDisplayUnits->GetSpanLengthUnit(),      false );
@@ -55,7 +55,7 @@ rptRcTable(NumColumns,0)
    scalar.SetPrecision(3);
 }
 
-CCreepAtDeckPlacementTable* CCreepAtDeckPlacementTable::PrepareTable(rptChapter* pChapter,IBroker* pBroker,const CSegmentKey& segmentKey, const LOSSDETAILS* pDetails, IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+CCreepAtDeckPlacementTable* CCreepAtDeckPlacementTable::PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey, const LOSSDETAILS* pDetails, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    EAF_GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
@@ -145,7 +145,7 @@ CCreepAtDeckPlacementTable* CCreepAtDeckPlacementTable::PrepareTable(rptChapter*
    return table;
 }
 
-void CCreepAtDeckPlacementTable::AddRow(rptChapter* pChapter,IBroker* pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,IEAFDisplayUnits* pDisplayUnits,Uint16 level)
+void CCreepAtDeckPlacementTable::AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
   // Typecast to our known type (eating own doggy food)
    std::shared_ptr<const WBFL::LRFD::RefinedLosses2005> ptl = std::dynamic_pointer_cast<const WBFL::LRFD::RefinedLosses2005>(pDetails->pLosses);

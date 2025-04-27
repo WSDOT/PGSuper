@@ -30,8 +30,8 @@
 
 class CDeflectionHistoryGraphController;
 class WBFL::Units::PhysicalConverter;
-interface IIntervals;
-interface ILimitStateForces;
+class IIntervals;
+class ILimitStateForces;
 
 class GRAPHCLASS CDeflectionHistoryGraphBuilder : public CEAFAutoCalcGraphBuilder
 {

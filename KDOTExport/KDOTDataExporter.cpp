@@ -72,9 +72,8 @@ CKDOTDataExporter::CKDOTDataExporter()
 /////////////////////////////////////////////////////////////////////////////
 // CKDOTDataExporter
 
-STDMETHODIMP CKDOTDataExporter::Init(UINT nCmdID)
+HRESULT CKDOTDataExporter::Init(UINT nCmdID)
 {
-
    return S_OK;
 }
 
@@ -93,7 +92,7 @@ CString CKDOTDataExporter::GetCommandHintText() const
    return CString("Export PGSuper data to KDOT CAD XML format\nExport PGSuper data to KDOT CAD format");
 }
 
-STDMETHODIMP CKDOTDataExporter::Export(IBroker* pBroker)
+HRESULT CKDOTDataExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -163,7 +162,7 @@ STDMETHODIMP CKDOTDataExporter::Export(IBroker* pBroker)
    return S_OK;
 }
 
-HRESULT CKDOTDataExporter::Export(IBroker* pBroker,CString& strFileName, const std::vector<CGirderKey>& girderKeys)
+HRESULT CKDOTDataExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBroker,CString& strFileName, const std::vector<CGirderKey>& girderKeys)
 {
    { // scope the progress window
    EAF_GET_IFACE2(pBroker,IProgress,pProgress);

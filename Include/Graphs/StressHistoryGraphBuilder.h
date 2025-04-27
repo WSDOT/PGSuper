@@ -30,9 +30,9 @@
 
 class CStressHistoryGraphController;
 class WBFL::Units::PhysicalConverter;
-interface ILimitStateForces;
-interface ICombinedForces;
-interface IIntervals;
+class ILimitStateForces;
+class ICombinedForces;
+class IIntervals;
 
 class GRAPHCLASS CStressHistoryGraphBuilder : public CEAFAutoCalcGraphBuilder
 {

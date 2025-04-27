@@ -105,7 +105,7 @@ HRESULT CMultiWebFactory::FinalConstruct()
    return S_OK;
 }
 
-void CMultiWebFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
+void CMultiWebFactory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
 {
    CComPtr<IMultiWebSection> gdrSection;
    gdrSection.CoCreateInstance(CLSID_MultiWebSection);
@@ -117,7 +117,7 @@ void CMultiWebFactory::CreateGirderSection(IBroker* pBroker,StatusGroupIDType st
    gdrSection.QueryInterface(ppSection);
 }
 
-void CMultiWebFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
+void CMultiWebFactory::CreateSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
 {
    CComPtr<IPrismaticSuperstructureMemberSegment> segment;
    segment.CoCreateInstance(CLSID_PrismaticSuperstructureMemberSegment);
@@ -169,7 +169,7 @@ void CMultiWebFactory::CreateSegment(IBroker* pBroker,StatusGroupIDType statusGr
    ssmbrSegment.CopyTo(ppSegment);
 }
 
-void CMultiWebFactory::CreateSegmentShape(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
+void CMultiWebFactory::CreateSegmentShape(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
 {
    const CSplicedGirderData* pGirder = pSegment->GetGirder();
    const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
@@ -184,7 +184,7 @@ void CMultiWebFactory::CreateSegmentShape(IBroker* pBroker, const CPrecastSegmen
    beam.QueryInterface(ppShape);
 }
 
-Float64 CMultiWebFactory::GetSegmentHeight(IBroker* pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
+Float64 CMultiWebFactory::GetSegmentHeight(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
 {
    const CSplicedGirderData* pGirder = pSegment->GetGirder();
    const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
@@ -194,12 +194,12 @@ Float64 CMultiWebFactory::GetSegmentHeight(IBroker* pBroker, const CPrecastSegme
    return D1 + D2;
 }
 
-void CMultiWebFactory::ConfigureSegment(IBroker* pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
+void CMultiWebFactory::ConfigureSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
 {
    // do nothing... all the configuration was done in CreateSegment
 }
 
-void CMultiWebFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
+void CMultiWebFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
 {
    // This is a prismatic beam so only add section change POI at the start and end of the beam
    EAF_GET_IFACE2(pBroker,IBridge,pBridge);
@@ -212,19 +212,12 @@ void CMultiWebFactory::LayoutSectionChangePointsOfInterest(IBroker* pBroker,cons
    pPoiMgr->AddPointOfInterest(poiEnd);
 }
 
-void CMultiWebFactory::CreateDistFactorEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect,IDistFactorEngineer** ppEng) const
+std::shared_ptr<CDistFactorEngineerBase> CMultiWebFactory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
 {
-   CComObject<CMultiWebDistFactorEngineer>* pEngineer;
-   CComObject<CMultiWebDistFactorEngineer>::CreateInstance(&pEngineer);
-   pEngineer->SetBroker(pBroker,statusGroupID);
-
-   pEngineer->SetBeamType(CMultiWebDistFactorEngineer::btMultiWebTee);
-
-   (*ppEng) = pEngineer;
-   (*ppEng)->AddRef();
+   return std::make_shared<CMultiWebDistFactorEngineer>(CMultiWebDistFactorEngineer::BeamType::MultiWebTee, pBroker, statusGroupID);
 }
 
-void CMultiWebFactory::CreatePsLossEngineer(IBroker* pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const
+void CMultiWebFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey,IPsLossEngineer** ppEng) const
 {
    EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
@@ -576,7 +569,7 @@ std::_tstring CMultiWebFactory::GetShearDimensionsSchematicImage(pgsTypes::Suppo
    return strImage;
 }
 
-std::_tstring CMultiWebFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const
+std::_tstring CMultiWebFactory::GetInteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
 {
    EAF_GET_IFACE2(pBroker, ILibrary,       pLib);
    EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
@@ -595,7 +588,7 @@ std::_tstring CMultiWebFactory::GetInteriorGirderEffectiveFlangeWidthImage(IBrok
    }
 }
 
-std::_tstring CMultiWebFactory::GetExteriorGirderEffectiveFlangeWidthImage(IBroker* pBroker,pgsTypes::SupportedDeckType deckType) const
+std::_tstring CMultiWebFactory::GetExteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
 {
    EAF_GET_IFACE2(pBroker, ILibrary,       pLib);
    EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
@@ -889,7 +882,7 @@ GirderIndexType CMultiWebFactory::GetMinimumBeamCount() const
    return 1;
 }
 
-void CMultiWebFactory::DimensionAndPositionBeam(IBroker* pBroker, const IBeamFactory::Dimensions& dimensions, IMultiWeb* pBeam) const
+void CMultiWebFactory::DimensionAndPositionBeam(std::shared_ptr<WBFL::EAF::Broker> pBroker, const IBeamFactory::Dimensions& dimensions, IMultiWeb* pBeam) const
 {
    Float64 d1, d2;
    Float64 w, wmin, wmax;

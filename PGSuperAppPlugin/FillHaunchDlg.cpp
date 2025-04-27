@@ -62,7 +62,7 @@ CFillHaunchDlg::~CFillHaunchDlg()
 
 BOOL CFillHaunchDlg::OnInitDialog()
 {
-	EAF_EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+	EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
 	bool bBySpan = pgsTypes::hltAlongSpans == pIBridgeDesc->GetHaunchLayoutType();
 
 	CString str;
@@ -121,7 +121,7 @@ BOOL CFillHaunchDlg::OnInitDialog()
 	}
 	else
 	{
-		EAF_EAF_GET_IFACE(IBridge,pBridge);
+		EAF_GET_IFACE(IBridge,pBridge);
 
 		if (bBySpan)
 		{
@@ -147,7 +147,7 @@ BOOL CFillHaunchDlg::OnInitDialog()
 
 void CFillHaunchDlg::DoDataExchange(CDataExchange* pDX)
 {
-	EAF_EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+	EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
 	//{{AFX_DATA_MAP(CFillHaunchDlg)
 	//}}AFX_DATA_MAP
@@ -215,7 +215,7 @@ bool CFillHaunchDlg::ModifyCompute(CBridgeDescription2& rBridgeDescription2)
 	// Segments to be designed
 	CSegmentKey designSegmentKey(m_GirderKey.groupIndex,m_GirderKey.girderIndex, ALL_SEGMENTS);
 
-	EAF_EAF_GET_IFACE(IProgress,pProgress);
+	EAF_GET_IFACE(IProgress,pProgress);
 	CEAFAutoProgress ap(pProgress);
 	pProgress->UpdateMessage(_T("Computing Haunch Design"));
 

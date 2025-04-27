@@ -45,20 +45,18 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-/////////////////////////////////////////////////////////////////////////////
-// CMultiWebFactory
-HRESULT CMultiWebDistFactorEngineer::FinalConstruct()
+CMultiWebDistFactorEngineer::CMultiWebDistFactorEngineer(CMultiWebDistFactorEngineer::BeamType beamType, std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID) :
+   CDistFactorEngineerImpl<MULTIWEB_LLDFDETAILS>(pBroker, statusGroupID), m_BeamType(beamType)
 {
-   return S_OK;
 }
 
-void CMultiWebDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits)
+void CMultiWebDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    // Grab the interfaces that are needed
-   EAF_GET_IFACE(IBridge,pBridge);
-   EAF_GET_IFACE(IPointOfInterest,pPoi);
+   EAF_GET_IFACE2(GetBroker(),IBridge,pBridge);
+   EAF_GET_IFACE2(GetBroker(),IPointOfInterest,pPoi);
 
-   EAF_GET_IFACE(ISectionProperties, pSectProps);
+   EAF_GET_IFACE2(GetBroker(),ISectionProperties, pSectProps);
    pgsTypes::SectionPropertyMode spMode = pSectProps->GetSectionPropertiesMode();
 
    bool bSIUnits = IS_SI_UNITS(pDisplayUnits);
@@ -74,7 +72,7 @@ void CMultiWebDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptCha
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   EAF_GET_IFACE2(GetBroker(),IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
 
@@ -159,8 +157,8 @@ void CMultiWebDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptCha
       (*pPara) << _T("Skew Angle at start: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs(span_lldf.skew1)) << rptNewLine;
       (*pPara) << _T("Skew Angle at end: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs(span_lldf.skew2)) << rptNewLine;
       
-      EAF_GET_IFACE(ISpecification, pSpec);
-      EAF_GET_IFACE(ILibrary, pLibrary);
+      EAF_GET_IFACE2(GetBroker(), ISpecification, pSpec);
+      EAF_GET_IFACE2(GetBroker(), ILibrary, pLibrary);
       const auto* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
       const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
       if (live_load_distribution_criteria.bIgnoreSkewReductionForMoment)
@@ -194,7 +192,7 @@ void CMultiWebDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptCha
                (*pPara) << _T("Gross, non-composite section properties") << rptNewLine;
             }
 
-            if (IsNonstructuralDeck(pBridge->GetDeckType()) && (m_BeamType == IMultiWebDistFactorEngineer::btDeckBulbTee || m_BeamType == IMultiWebDistFactorEngineer::btMultiWebTee))
+            if (IsNonstructuralDeck(pBridge->GetDeckType()) && (m_BeamType == BeamType::DeckBulbTee || m_BeamType == BeamType::MultiWebTee))
             {
                (*pPara) << _T("Girder Stem Properties") << rptNewLine;
             }
@@ -409,11 +407,11 @@ void CMultiWebDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptCha
 
 WBFL::LRFD::LiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,MULTIWEB_LLDFDETAILS* plldf,const GDRCONFIG* pConfig)
 {
-   EAF_GET_IFACE(ISectionProperties, pSectProp);
-   EAF_GET_IFACE(IGirder,            pGirder);
-   EAF_GET_IFACE(IBridge,            pBridge);
-   EAF_GET_IFACE(IBarriers,          pBarriers);
-   EAF_GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   EAF_GET_IFACE2(GetBroker(), ISectionProperties, pSectProp);
+   EAF_GET_IFACE2(GetBroker(), IGirder,            pGirder);
+   EAF_GET_IFACE2(GetBroker(), IBridge,            pBridge);
+   EAF_GET_IFACE2(GetBroker(), IBarriers,          pBarriers);
+   EAF_GET_IFACE2(GetBroker(), IBridgeDescription, pIBridgeDesc);
 
    // Determine span/pier index... This is the index of a pier and the next span.
    // If this is the last pier, span index is for the last span
@@ -448,7 +446,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDF
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
    // Throws exception if fails requirement (no need to catch it)
-   EAF_GET_IFACE(ILiveLoadDistributionFactors, pDistFactors);
+   EAF_GET_IFACE2(GetBroker(), ILiveLoadDistributionFactors, pDistFactors);
    Int32 roaVal = pDistFactors->VerifyDistributionFactorRequirements(poi);
 
    pgsPointOfInterest spPoi(poi); // section properties poi
@@ -460,7 +458,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDF
       Float64 tft = pGirder->GetTopFlangeThickening(segmentKey);
       if (topFlangeThickeningType == pgsTypes::tftEnds && !IsZero(tft))
       {
-         EAF_GET_IFACE(IPointOfInterest, pPoi);
+         EAF_GET_IFACE2(GetBroker(), IPointOfInterest, pPoi);
          PoiList vPoi;
          pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT | POI_5L, &vPoi);
          ATLASSERT(vPoi.size() == 1);
@@ -468,7 +466,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDF
       }
       else if (topFlangeThickeningType == pgsTypes::tftMiddle && !IsZero(tft))
       {
-         EAF_GET_IFACE(IPointOfInterest, pPoi);
+         EAF_GET_IFACE2(GetBroker(), IPointOfInterest, pPoi);
          PoiList vPoi;
          pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT | POI_0L, &vPoi);
          ATLASSERT(vPoi.size() == 1);
@@ -478,7 +476,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDF
 
    plldf->b = pGirder->GetTopFlangeWidth(spPoi); // for LRFD C4.6.2.2.1-1
 
-   EAF_GET_IFACE(IIntervals,pIntervals);
+   EAF_GET_IFACE2(GetBroker(), IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType llIntervalIdx      = pIntervals->GetLiveLoadInterval();
 
@@ -502,9 +500,9 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDF
    }
    else
    {
-      EAF_GET_IFACE(IMaterials, pMaterials);
+      EAF_GET_IFACE2(GetBroker(),IMaterials, pMaterials);
 
-      EAF_GET_IFACE(IPointOfInterest, pPoi);
+      EAF_GET_IFACE2(GetBroker(), IPointOfInterest, pPoi);
       IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(spPoi);
       ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
 
@@ -537,11 +535,11 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDF
       plldf->ts = pGirder->GetMinTopFlangeThickness(spPoi);
       plldf->eg = plldf->Yt - plldf->ts/2;
 
-      if (m_BeamType == IMultiWebDistFactorEngineer::btDeckBulbTee || m_BeamType == IMultiWebDistFactorEngineer::btMultiWebTee)
+      if (m_BeamType == BeamType::DeckBulbTee || m_BeamType == BeamType::MultiWebTee)
       {
          // Ag and Ig is just the stem
          // Get the top flange shape and subtract it from the total girder shape to get the stem by itself
-         EAF_GET_IFACE(IShapes, pShapes);
+         EAF_GET_IFACE2(GetBroker(), IShapes, pShapes);
          CComPtr<IShape> segment_shape;
          pShapes->GetSegmentShape(releaseIntervalIdx, spPoi, false, pgsTypes::scGirder, &segment_shape);
 
@@ -745,21 +743,21 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDF
       }
    }
 
-   EAF_GET_IFACE(ILiveLoads,pLiveLoads);
+   EAF_GET_IFACE2(GetBroker(), ILiveLoads,pLiveLoads);
    pLLDF->SetRangeOfApplicability( pLiveLoads->GetRangeOfApplicabilityAction(), roaVal );
    plldf->bExteriorGirder = pBridge->IsExteriorGirder(segmentKey);
 
    return pLLDF;
 }
 
-void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM2,Float64 gM,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
+void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM2,Float64 gM,bool bSIUnits,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-   EAF_GET_IFACE(ILibrary, pLib);
-   EAF_GET_IFACE(ISpecification, pSpec);
+   EAF_GET_IFACE2(GetBroker(), ILibrary, pLib);
+   EAF_GET_IFACE2(GetBroker(), ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    location, pDisplayUnits->GetSpanLengthUnit(),      true );
@@ -809,14 +807,14 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
          {
             (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
             REPORT_LLDF_INTOVERRIDE(gM1);
-            ReportLeverRule(pPara,true,1.0,gM1.LeverRuleData,m_pBroker,pDisplayUnits);
+            ReportLeverRule(pPara,true,1.0,gM1.LeverRuleData, GetBroker(), pDisplayUnits);
          }
 
          if ( gM1.LanesBeamsData.bWasUsed )
          {
             (*pPara) << Bold(_T("1 Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
             (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
-            ReportLanesBeamsMethod(pPara,gM1.LanesBeamsData,m_pBroker,pDisplayUnits);
+            ReportLanesBeamsMethod(pPara,gM1.LanesBeamsData, GetBroker(), pDisplayUnits);
          }
 
          (*pPara) << rptNewLine;
@@ -840,14 +838,14 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
             {
                (*pPara) << Bold(_T("2+ Loaded Lanes: Lever Rule")) << rptNewLine;
                REPORT_LLDF_INTOVERRIDE(gM2);
-               ReportLeverRule(pPara,true,1.0,gM2.LeverRuleData,m_pBroker,pDisplayUnits);
+               ReportLeverRule(pPara,true,1.0,gM2.LeverRuleData, GetBroker(), pDisplayUnits);
             }
 
             if ( gM2.RigidData.bWasUsed )
             {
                (*pPara) << Bold(_T("2+ Loaded Lanes: Rigid Method")) << rptNewLine;
                REPORT_LLDF_INTOVERRIDE(gM2);
-               ReportRigidMethod(pPara,gM2.RigidData,m_pBroker,pDisplayUnits);
+               ReportRigidMethod(pPara,gM2.RigidData, GetBroker(), pDisplayUnits);
             }
 
             if ( gM2.LeverRuleData.bWasUsed && gM2.EqnData.bWasUsed )
@@ -860,7 +858,7 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
             {
                (*pPara) << Bold(_T("2+ Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
                (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
-               ReportLanesBeamsMethod(pPara,gM2.LanesBeamsData,m_pBroker,pDisplayUnits);
+               ReportLanesBeamsMethod(pPara,gM2.LanesBeamsData, GetBroker(), pDisplayUnits);
             }
          }
 
@@ -945,7 +943,7 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
             if ( gM1.LeverRuleData.bWasUsed )
             {
                (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
-               ReportLeverRule(pPara,true,1.0,gM1.LeverRuleData,m_pBroker,pDisplayUnits);
+               ReportLeverRule(pPara,true,1.0,gM1.LeverRuleData, GetBroker(), pDisplayUnits);
             }
 
             if ( gM1.EqnData.bWasUsed && gM1.LeverRuleData.bWasUsed )
@@ -958,7 +956,7 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
             {
                (*pPara) << Bold(_T("1 Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
                (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
-               ReportLanesBeamsMethod(pPara,gM1.LanesBeamsData,m_pBroker,pDisplayUnits);
+               ReportLanesBeamsMethod(pPara,gM1.LanesBeamsData, GetBroker(), pDisplayUnits);
             }
 
             (*pPara) << rptNewLine;
@@ -975,7 +973,7 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
                if ( gM2.LeverRuleData.bWasUsed )
                {
                   (*pPara) << Bold(_T("2+ Loaded Lanes: Lever Rule")) << rptNewLine;
-                  ReportLeverRule(pPara,true,1.0,gM2.LeverRuleData,m_pBroker,pDisplayUnits);
+                  ReportLeverRule(pPara,true,1.0,gM2.LeverRuleData, GetBroker(), pDisplayUnits);
                }
 
                if (gM2.EqnData.bWasUsed && gM2.LeverRuleData.bWasUsed )
@@ -988,7 +986,7 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
                {
                   (*pPara) << Bold(_T("2+ Loaded Lanes: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
                   (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
-                  ReportLanesBeamsMethod(pPara,gM2.LanesBeamsData,m_pBroker,pDisplayUnits);
+                  ReportLanesBeamsMethod(pPara,gM2.LanesBeamsData, GetBroker(), pDisplayUnits);
                }
 
                (*pPara) << rptNewLine;
@@ -999,7 +997,7 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
             if (gM1.LeverRuleData.bWasUsed)
             {
                (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
-               ReportLeverRule(pPara,true,1.0,gM1.LeverRuleData,m_pBroker,pDisplayUnits);
+               ReportLeverRule(pPara,true,1.0,gM1.LeverRuleData, GetBroker(), pDisplayUnits);
             }
 
             if (gM1.EqnData.bWasUsed)
@@ -1028,14 +1026,14 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
             {
                (*pPara) << Bold(_T("1 Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
                (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
-               ReportLanesBeamsMethod(pPara,gM1.LanesBeamsData,m_pBroker,pDisplayUnits);
+               ReportLanesBeamsMethod(pPara,gM1.LanesBeamsData, GetBroker(), pDisplayUnits);
             }
 
             if ( 2 <= lldf.Nl && gM2.LanesBeamsData.bWasUsed )
             {
                (*pPara) << Bold(_T("2+ Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
                (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
-               ReportLanesBeamsMethod(pPara,gM2.LanesBeamsData,m_pBroker,pDisplayUnits);
+               ReportLanesBeamsMethod(pPara,gM2.LanesBeamsData, GetBroker(), pDisplayUnits);
             }
          }
 
@@ -1073,14 +1071,14 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
    }
 }
 
-void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV2,Float64 gV,bool bSIUnits,IEAFDisplayUnits* pDisplayUnits)
+void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV2,Float64 gV,bool bSIUnits,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-   EAF_GET_IFACE(ILibrary, pLib);
-   EAF_GET_IFACE(ISpecification, pSpec);
+   EAF_GET_IFACE2(GetBroker(), ILibrary, pLib);
+   EAF_GET_IFACE2(GetBroker(), ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
 
@@ -1128,7 +1126,7 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
          {
             (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
             REPORT_LLDF_INTOVERRIDE(gV1);
-            ReportLeverRule(pPara,false,1.0,gV1.LeverRuleData,m_pBroker,pDisplayUnits);
+            ReportLeverRule(pPara,false,1.0,gV1.LeverRuleData, GetBroker(), pDisplayUnits);
          }
 
          if ( gV1.RigidData.bWasUsed )
@@ -1143,7 +1141,7 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
          {
             (*pPara) << Bold(_T("1 Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
             (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
-            ReportLanesBeamsMethod(pPara,gV1.LanesBeamsData,m_pBroker,pDisplayUnits);
+            ReportLanesBeamsMethod(pPara,gV1.LanesBeamsData, GetBroker(), pDisplayUnits);
          }
 
          (*pPara) << rptNewLine;
@@ -1166,7 +1164,7 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
             {
                (*pPara) << Bold(_T("2+ Loaded Lanes: Lever Rule")) << rptNewLine;
                REPORT_LLDF_INTOVERRIDE(gV2);
-               ReportLeverRule(pPara,false,1.0,gV2.LeverRuleData,m_pBroker,pDisplayUnits);
+               ReportLeverRule(pPara,false,1.0,gV2.LeverRuleData, GetBroker(), pDisplayUnits);
             }
 
             if ( gV2.RigidData.bWasUsed )
@@ -1181,7 +1179,7 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
             {
                (*pPara) << Bold(_T("2+ Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
                (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
-               ReportLanesBeamsMethod(pPara,gV2.LanesBeamsData,m_pBroker,pDisplayUnits);
+               ReportLanesBeamsMethod(pPara,gV2.LanesBeamsData, GetBroker(), pDisplayUnits);
             }
          }
 
@@ -1250,14 +1248,14 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
          if ( gV1.LeverRuleData.bWasUsed )
          {
             (*pPara) << Bold(_T("1 Loaded Lane: Lever Rule")) << rptNewLine;
-            ReportLeverRule(pPara,false,1.0,gV1.LeverRuleData,m_pBroker,pDisplayUnits);
+            ReportLeverRule(pPara,false,1.0,gV1.LeverRuleData, GetBroker(), pDisplayUnits);
          }
 
          if ( gV1.LanesBeamsData.bWasUsed )
          {
             (*pPara) << Bold(_T("1 Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
             (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
-            ReportLanesBeamsMethod(pPara,gV1.LanesBeamsData,m_pBroker,pDisplayUnits);
+            ReportLanesBeamsMethod(pPara,gV1.LanesBeamsData, GetBroker(), pDisplayUnits);
          }
 
          (*pPara) << rptNewLine;
@@ -1274,14 +1272,14 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
             if ( gV2.LeverRuleData.bWasUsed )
             {
                (*pPara) << Bold(_T("2+ Loaded Lanes: Lever Rule")) << rptNewLine;
-               ReportLeverRule(pPara,false,1.0,gV2.LeverRuleData,m_pBroker,pDisplayUnits);
+               ReportLeverRule(pPara,false,1.0,gV2.LeverRuleData, GetBroker(), pDisplayUnits);
             }
 
             if ( gV2.LanesBeamsData.bWasUsed )
             {
                (*pPara) << Bold(_T("2+ Loaded Lane: Number of Lanes over Number of Beams - Factor cannot be less than this")) << rptNewLine;
                (*pPara) << _T("Skew correction is not applied to Lanes/Beams method")<< rptNewLine;
-               ReportLanesBeamsMethod(pPara,gV2.LanesBeamsData,m_pBroker,pDisplayUnits);
+               ReportLanesBeamsMethod(pPara,gV2.LanesBeamsData, GetBroker(), pDisplayUnits);
             }
 
             (*pPara) << rptNewLine;
@@ -1314,8 +1312,8 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
 
 std::_tstring CMultiWebDistFactorEngineer::GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect)
 {
-   EAF_GET_IFACE(ILibrary, pLib);
-   EAF_GET_IFACE(ISpecification, pSpec);
+   EAF_GET_IFACE2(GetBroker(), ILibrary, pLib);
+   EAF_GET_IFACE2(GetBroker(), ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
 
@@ -1353,7 +1351,7 @@ std::_tstring CMultiWebDistFactorEngineer::GetComputationDescription(const CGird
    }
 
    // Special text if ROA is ignored
-   EAF_GET_IFACE(ILiveLoads,pLiveLoads);
+   EAF_GET_IFACE2(GetBroker(), ILiveLoads,pLiveLoads);
    std::_tstring strAction( pLiveLoads->GetLLDFSpecialActionText() );
    if ( !strAction.empty() )
    {
@@ -1361,14 +1359,4 @@ std::_tstring CMultiWebDistFactorEngineer::GetComputationDescription(const CGird
    }
 
    return osdescr.str();
-}
-
-IMultiWebDistFactorEngineer::BeamType CMultiWebDistFactorEngineer::GetBeamType()
-{
-   return m_BeamType;
-}
-
-void CMultiWebDistFactorEngineer::SetBeamType(IMultiWebDistFactorEngineer::BeamType bt)
-{
-   m_BeamType = bt;
 }

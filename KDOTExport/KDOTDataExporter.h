@@ -24,11 +24,11 @@ public:
 
 // IDataExporter
 public:
-   STDMETHOD(Init)(UINT nCmdID) override;
+   HRESULT Init(UINT nCmdID) override;
    CString GetMenuText() const override;
    HBITMAP GetBitmapHandle() const override;
    CString GetCommandHintText() const override;
-   STDMETHOD(Export)(/*[in]*/IBroker* pBroker) override;
+   HRESULT Export(std::shared_ptr<WBFL::EAF::Broker> pBroker) override;
 
 // IPGSuperDocumentation
 public:
@@ -38,7 +38,7 @@ public:
 
 private:
    Float64 m_BearingHeight;
-   HRESULT Export(IBroker* pBroker,CString& strFileName, const std::vector<CGirderKey>& girderKeys);
+   HRESULT Export(std::shared_ptr<WBFL::EAF::Broker> pBroker,CString& strFileName, const std::vector<CGirderKey>& girderKeys);
 
    std::map<UINT,CString> m_HelpTopics;
    CString GetDocumentationURL() const;
