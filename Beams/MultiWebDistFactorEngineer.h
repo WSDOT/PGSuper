@@ -22,7 +22,7 @@
 
 #pragma once
 #include <Beams/BeamsExp.h>
-#include "DistFactorEngineerImpl.h"
+#include <Beams/DistFactorEngineerImpl.h>
 #include <Plugins\Beams.h>
 
 struct BEAMSCLASS MULTIWEB_LLDFDETAILS : public BASE_LLDFDETAILS

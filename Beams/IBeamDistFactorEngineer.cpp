@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "IBeamDistFactorEngineer.h"
+#include <Beams/IBeamDistFactorEngineer.h>
 #include <PGSuperException.h>
 #include <Units\Convert.h>
 #include <PsgLib\TrafficBarrierEntry.h>
@@ -38,11 +38,6 @@
 #include <IFace\Intervals.h>
 #include <Beams\Helper.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CIBeamDistFactorEngineer::CIBeamDistFactorEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID) :
    CDistFactorEngineerImpl<IBEAM_LLDFDETAILS>(pBroker,statusGroupID)

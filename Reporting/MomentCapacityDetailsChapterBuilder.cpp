@@ -265,8 +265,7 @@ void write_moment_data_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
 
    bool bAfter2005 = (WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2006Interims <= pSpecEntry->GetSpecificationCriteria().GetEdition() ? true : false);
 
-   CComPtr<IBeamFactory> pFactory;
-   pGdrEntry->GetBeamFactory(&pFactory);
+   auto pFactory = pGdrEntry->GetBeamFactory();
 
    pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->GetDeckType();
 

@@ -72,8 +72,7 @@ CSectionViewDialog::CSectionViewDialog(const GirderLibraryEntry* pEntry,bool isE
    m_Radius = WBFL::Units::ConvertToSysUnits(0.3,WBFL::Units::Measure::Inch);
 
    // first get outer shape
-   CComPtr<IBeamFactory> pFactory;
-   m_pGirderEntry->GetBeamFactory(&pFactory);
+   auto pFactory = m_pGirderEntry->GetBeamFactory();
    GirderLibraryEntry::Dimensions dimensions = m_pGirderEntry->GetDimensions();
 
    CComPtr<IGirderSection> gdrSection;
@@ -83,11 +82,11 @@ CSectionViewDialog::CSectionViewDialog(const GirderLibraryEntry* pEntry,bool isE
    ATLASSERT(m_pShape != nullptr);
 
 #ifdef _DEBUG
-   // only use strandmover view for debugging
+   // only use strand mover view for debugging
    CComPtr<IStrandMover> strand_mover;
    pFactory->CreateStrandMover(dimensions, -1,
-                               IBeamFactory::BeamTop, 0.0, IBeamFactory::BeamBottom, 0.0,
-                               IBeamFactory::BeamTop, 0.0, IBeamFactory::BeamBottom, 0.0, 
+                               IBeamFactory::BeamFace::Top, 0.0, IBeamFactory::BeamFace::Bottom, 0.0,
+                               IBeamFactory::BeamFace::Top, 0.0, IBeamFactory::BeamFace::Bottom, 0.0, 
                                0.0, 0.0, &strand_mover);
 
    CComQIPtr<IConfigureStrandMover> config(strand_mover);

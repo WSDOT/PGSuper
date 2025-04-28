@@ -25,7 +25,7 @@
 #include <Beams/BeamsExp.h>
 
 #include <EAF/ComponentObject.h>
-#include "DistFactorEngineerImpl.h"
+#include <Beams/DistFactorEngineerImpl.h>
 #include <Plugins\Beams.h>
 
 

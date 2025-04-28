@@ -491,7 +491,7 @@ public:
    void EnumDuctNames( std::vector<std::_tstring>* pNames ) const override;
    void EnumHaulTruckNames( std::vector<std::_tstring>* pNames) const override;
    void EnumGirderFamilyNames( std::vector<std::_tstring>* pNames ) const override;
-   void GetBeamFactory(const std::_tstring& strBeamFamily,const std::_tstring& strBeamName,IBeamFactory** ppFactory) override;
+   std::shared_ptr<IBeamFactory> GetBeamFactory(const std::_tstring& strBeamFamily,const std::_tstring& strBeamName) override;
 
 // ILibrary
 public:

@@ -108,8 +108,8 @@ void CClosureJointLongitudinalReinforcementPage::DoDataExchange(CDataExchange* p
             point->Move(testpnt.X(), testpnt.Y());
 
             const GirderLibraryEntry* pGdrEntry = pSegment->GetGirder()->GetGirderLibraryEntry();
-            CComPtr<IBeamFactory> factory;
-            pGdrEntry->GetBeamFactory(&factory);
+            auto factory = pGdrEntry->GetBeamFactory();
+
 
             CComPtr<IGirderSection> gdrSection;
             factory->CreateGirderSection(pBroker, INVALID_ID, pGdrEntry->GetDimensions(), height, tbf, &gdrSection);

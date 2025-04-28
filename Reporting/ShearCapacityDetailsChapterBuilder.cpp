@@ -455,8 +455,7 @@ void write_shear_dimensions_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
    const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
    const GirderLibraryEntry* pGdrEntry = pGirder->GetGirderLibraryEntry();
 
-   CComPtr<IBeamFactory> pFactory;
-   pGdrEntry->GetBeamFactory(&pFactory);
+   auto pFactory = pGdrEntry->GetBeamFactory();
 
    pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->GetDeckType();
 

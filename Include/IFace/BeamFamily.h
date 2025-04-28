@@ -37,7 +37,7 @@
 #pragma once
 
 // forward declaration
-interface IBeamFactory;
+class IBeamFactory;
 
 /*****************************************************************************
 INTERFACE
@@ -49,30 +49,27 @@ DESCRIPTION
    A beam family is a general classification of a type of precast beam.
    Examples of beam families are I-Beam, U-Beam, and Slab
 *****************************************************************************/
-// {5F21B512-6AA0-4884-8ACC-86704ED51506}
-DEFINE_GUID(IID_IBeamFamily, 
-0x5f21b512, 0x6aa0, 0x4884, 0x8a, 0xcc, 0x86, 0x70, 0x4e, 0xd5, 0x15, 0x6);
-interface IBeamFamily : IUnknown
+//// {5F21B512-6AA0-4884-8ACC-86704ED51506}
+//DEFINE_GUID(IID_IBeamFamily, 
+//0x5f21b512, 0x6aa0, 0x4884, 0x8a, 0xcc, 0x86, 0x70, 0x4e, 0xd5, 0x15, 0x6);
+class IBeamFamily
 {
-   //---------------------------------------------------------------------------------
-   // Return the family name
-   virtual CString GetName() = 0;
+public:
 
-   //---------------------------------------------------------------------------------
+   // Return the family name
+   virtual CString GetName() const = 0;
+
    // Causes the list of factory names to be read from the registry
    virtual void RefreshFactoryList() = 0;
 
-   //---------------------------------------------------------------------------------
    // Returns a vector of beam factory names
-   virtual const std::vector<CString>& GetFactoryNames() = 0;
+   virtual const std::vector<CString>& GetFactoryNames() const = 0;
 
-   //---------------------------------------------------------------------------------
    // Returns the factory CLSID
-   virtual CLSID GetFactoryCLSID(LPCTSTR strName) = 0;
+   virtual CLSID GetFactoryCLSID(LPCTSTR strName) const = 0;
 
-   //---------------------------------------------------------------------------------
    // Creates a beam factory
-   virtual HRESULT CreateFactory(LPCTSTR strName,IBeamFactory** ppFactory) = 0;
+   virtual std::shared_ptr<IBeamFactory> CreateFactory(LPCTSTR strName) const = 0;
 };
 
 

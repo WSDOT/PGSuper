@@ -41,7 +41,7 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <EAF\EAFCustSiteVars.h>
 
-#include <IReportManager.h>
+#include <EAF/EAFReportManager.h>
 #include <Reporting\CopyPierPropertiesReportSpecification.h>
 #include <Reporting\CopyPierPropertiesChapterBuilder.h>
 
@@ -110,7 +110,7 @@ BOOL CCopyPierDlg::OnInitDialog()
    m_cyMin = rect.Height();
 
    // set up report window
-   EAF_GET_IFACE_(WBFL::Reporting,IReportManager, pReportMgr);
+   EAF_GET_IFACE(IEAFReportManager, pReportMgr);
    WBFL::Reporting::ReportDescription rptDesc = pReportMgr->GetReportDescription(_T("Copy Pier Properties Report"));
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
    std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
@@ -131,7 +131,7 @@ BOOL CCopyPierDlg::OnInitDialog()
    // set up reporting window
    UpdateReportData();
 
-   EAF_GET_IFACE_(WBFL::Reporting,IReportManager,pRptMgr);
+   EAF_GET_IFACE(IEAFReportManager,pRptMgr);
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> nullSpecBuilder;
    CWnd* pWnd = GetDlgItem(IDC_BROWSER);
    m_pBrowser = pRptMgr->CreateReportBrowser(pWnd->GetSafeHwnd(), WS_BORDER,pRptSpec,nullSpecBuilder);
@@ -308,7 +308,7 @@ void CCopyPierDlg::FillComboBoxes(CComboBox& cbPier, bool bIncludeAllPiers, Pier
 
 void CCopyPierDlg::UpdateReportData()
 {
-   EAF_GET_IFACE_(WBFL::Reporting,IReportManager,pReportMgr);
+   EAF_GET_IFACE(IEAFReportManager,pReportMgr);
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
 
    PierIndexType pierIdx = GetFromPier();
@@ -336,7 +336,7 @@ void CCopyPierDlg::UpdateReport()
    {
       UpdateReportData();
 
-      EAF_GET_IFACE_(WBFL::Reporting,IReportManager,pReportMgr);
+      EAF_GET_IFACE(IEAFReportManager,pReportMgr);
       std::shared_ptr<WBFL::Reporting::ReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
 
       std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = std::dynamic_pointer_cast<WBFL::Reporting::ReportSpecification,CCopyPierPropertiesReportSpecification>(m_pRptSpec);

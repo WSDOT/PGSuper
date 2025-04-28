@@ -26,7 +26,7 @@
 #include <Reporting\BrokerReportSpecification.h>
 #include "PoiReportSpecification.h"
 
-interface IPointOfInterest;
+class IPointOfInterest;
 
 class REPORTINGCLASS CMomentCapacityReportSpecification :
    public CPoiReportSpecification

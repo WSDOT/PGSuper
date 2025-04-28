@@ -20,37 +20,18 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// SplicedNUBeamFactoryImpl.h : Declaration of the CSplicedNUBeamFactory
 #pragma once
 
-#include "resource.h"       // main symbols
 #include "IFace\BeamFactory.h"
 #include "IBeamFactory.h" // CLSID
 #include <Beams\Helper.h>
 
 #include <vector>
 
-/////////////////////////////////////////////////////////////////////////////
-// CSplicedNUBeamFactory
-class ATL_NO_VTABLE CSplicedNUBeamFactory : 
-   public CComObjectRootEx<CComSingleThreadModel>,
-   public CComCoClass<CSplicedNUBeamFactory, &CLSID_SplicedNUBeamFactory>,
-   public ISplicedBeamFactory
+class CSplicedNUBeamFactory : public ISplicedBeamFactory
 {
 public:
-	CSplicedNUBeamFactory()
-	{
-	}
-
-   HRESULT FinalConstruct();
-
-DECLARE_REGISTRY_RESOURCEID(IDR_SPLICEDNUBEAMFACTORY)
-DECLARE_CLASSFACTORY_SINGLETON(CSplicedNUBeamFactory)
-
-BEGIN_COM_MAP(CSplicedNUBeamFactory)
-   COM_INTERFACE_ENTRY(ISplicedBeamFactory)
-   COM_INTERFACE_ENTRY(IBeamFactory)
-END_COM_MAP()
+   CSplicedNUBeamFactory();
 
 public:
    // IBeamFactory
@@ -61,7 +42,7 @@ public:
    void ConfigureSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const override;
    void LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const override;
    std::shared_ptr<CDistFactorEngineerBase> CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const pgsTypes::SupportedBeamSpacing* pSpacingType, const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const override;
-   std::shared_ptr<CPsLossEngineerBase> CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, const CGirderKey& girderKey) const override;
+   std::unique_ptr<CPsLossEngineerBase> CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, const CGirderKey& girderKey) const override;
    void CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
                           IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                           IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 

@@ -23,29 +23,33 @@
 #pragma once
 
 #include <Beams/BeamsExp.h>
-#include <EAF\ComponentObject.h>
-#include "DistFactorEngineerImpl.h"
-#include "VoidedSlabDistFactorEngineerTypes.h"
+#include <Beams/DistFactorEngineerImpl.h>
 #include <Plugins\Beams.h>
 
-/////////////////////////////////////////////////////////////////////////////
-// CVoidedSlab2DistFactorEngineer
-class BEAMSCLASS CVoidedSlab2DistFactorEngineer : public CDistFactorEngineerImpl<VOIDEDSLAB_LLDFDETAILS>
+struct UBEAM_LLDFDETAILS : public BASE_LLDFDETAILS
+{
+   Float64 L;
+   Float64 d;
+
+   Float64 leftDe;
+   Float64 rightDe;
+};
+
+class BEAMSCLASS CUBeamDistFactorEngineer : public CDistFactorEngineerImpl<UBEAM_LLDFDETAILS>
 {
 public:
-   CVoidedSlab2DistFactorEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID) :
-      CDistFactorEngineerImpl<VOIDEDSLAB_LLDFDETAILS>(pBroker, statusGroupID)
-   {
-   }
+   CUBeamDistFactorEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, bool bTypeB=false, bool bisSpreadSlab=false);
 
-public:
-   // CDistFactorEngineerBase
+   // IDistFactorEngineer
    void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) override;
    std::_tstring GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect) override;
 
 private:
-   WBFL::LRFD::LiveLoadDistributionFactorBase* GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,VOIDEDSLAB_LLDFDETAILS* plldf, const GDRCONFIG* pConfig = nullptr);
+   WBFL::LRFD::LiveLoadDistributionFactorBase* GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,UBEAM_LLDFDETAILS* plldf,const GDRCONFIG* pConfig = nullptr);
 
-   void ReportMoment(rptParagraph* pPara,VOIDEDSLAB_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM2,Float64 gM,bool bSIUnits,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
-   void ReportShear(rptParagraph* pPara,VOIDEDSLAB_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV2,Float64 gV,bool bSIUnits,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+   void ReportMoment(IndexType spanOrPierIdx,rptParagraph* pPara,UBEAM_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM2,Float64 gM,bool bSIUnits,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+   void ReportShear(IndexType spanOrPierIdx,rptParagraph* pPara,UBEAM_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV2,Float64 gV,bool bSIUnits,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+
+   bool m_bTypeB; // true if type b, otherwise type c section
+   bool m_bIsSpreadSlab; // We need to model spread slabs, and aashto has no guidance
 };

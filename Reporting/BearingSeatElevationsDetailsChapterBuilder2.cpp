@@ -22,8 +22,8 @@
 #include "StdAfx.h"
 #include <Reporting\BearingSeatElevationsDetailsChapterBuilder2.h>
 
-#include <IReportManager.h>
-#include <EAF\EAFDisplayUnits.h>
+#include <EAF/EAFReportManager.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\AnalysisResults.h>

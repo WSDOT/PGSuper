@@ -32,7 +32,7 @@
 #include "PGSpliceDoc.h"
 #include <IFace\Bridge.h>
 #include <IFace\EditByUI.h>
-#include <IReportManager.h>
+#include <EAF/EAFReportManager.h>
 
 #include "BridgePlanView.h"
 

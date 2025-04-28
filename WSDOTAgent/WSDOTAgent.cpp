@@ -40,7 +40,7 @@
 #include <WBFLCore_i.c>
 #include <WBFLTools_i.c>
 #include <WBFLUnitServer_i.c>
-#include <IReportManager.h>
+#include <EAF/EAFReportManager.h>
 #include <IFace\StatusCenter.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>

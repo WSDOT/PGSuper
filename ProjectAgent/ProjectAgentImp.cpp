@@ -3297,8 +3297,7 @@ HRESULT CProjectAgentImp::XSectionDataProc2(IStructuredSave* pSave,IStructuredLo
       pObj->m_BridgeDescription.SetGirderName(xSectionData.Girder.c_str());
 
       const GirderLibraryEntry* pGdrEntry = pObj->GetGirderEntry(xSectionData.Girder.c_str());
-      CComPtr<IBeamFactory> factory;
-      pGdrEntry->GetBeamFactory(&factory);
+      auto factory = pGdrEntry->GetBeamFactory();
       pObj->m_BridgeDescription.SetGirderFamilyName( factory->GetGirderFamilyName().c_str() );
 
       if (factory->IsSupportedBeamSpacing(pgsTypes::sbsUniform) && xSectionData.DeckType != pgsTypes::sdtNone)
@@ -6051,8 +6050,7 @@ bool CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(GroupIndexType(0));
    CSplicedGirderData* pGirder = pGroup->GetGirder(0);
    const GirderLibraryEntry* pEntry = pGirder->GetGirderLibraryEntry();
-   CComPtr<IBeamFactory> beamFactory;
-   pEntry->GetBeamFactory(&beamFactory);
+   auto beamFactory = pEntry->GetBeamFactory();
    pgsTypes::SupportedBeamSpacings sbs = beamFactory->GetSupportedBeamSpacings();
 
    pgsTypes::SupportedBeamSpacing spacingType = m_BridgeDescription.GetGirderSpacingType();
@@ -6421,10 +6419,9 @@ bool CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       if (0 < pGirderEntry->GetRefCount())
       {
          // this girder type is in use
-         CComPtr<IBeamFactory> beamFactory;
-         pGirderEntry->GetBeamFactory(&beamFactory);
+         auto beamFactory = pGirderEntry->GetBeamFactory();
 
-         CComQIPtr<IBeamFactoryCompatibility> compatibility(beamFactory);
+         auto compatibility = std::dynamic_pointer_cast<IBeamFactoryCompatibility>(beamFactory);
          if (compatibility)
          {
             // the beam factory wants to do compatibility updates
@@ -8443,8 +8440,7 @@ bool CProjectAgentImp::AreGirdersCompatible(const CBridgeDescription2& bridgeDes
    }
 
    const GirderLibraryEntry* pGirderEntry = GetGirderEntry(vGirderNames.front().c_str());
-   CComPtr<IBeamFactory> factory;
-   pGirderEntry->GetBeamFactory(&factory);
+   auto factory = pGirderEntry->GetBeamFactory();
    const auto& dimensions = pGirderEntry->GetDimensions();
    Float64 Smin, Smax;
    factory->GetAllowableSpacingRange(dimensions, deckType, spacingType, &Smin, &Smax);
@@ -8456,8 +8452,7 @@ bool CProjectAgentImp::AreGirdersCompatible(const CBridgeDescription2& bridgeDes
    {
       const auto& strGirderName(*iter);
       pGirderEntry = GetGirderEntry(strGirderName.c_str());
-      factory.Release();
-      pGirderEntry->GetBeamFactory(&factory);
+      factory = pGirderEntry->GetBeamFactory();
       const auto& dimensions = pGirderEntry->GetDimensions();
       Float64 smin, smax;
       factory->GetAllowableSpacingRange(dimensions, deckType, spacingType, &smin, &smax);
@@ -10289,7 +10284,7 @@ void CProjectAgentImp::EnumGirderFamilyNames( std::vector<std::_tstring>* pNames
    pNames->insert(pNames->begin(),m_GirderFamilyNames.begin(),m_GirderFamilyNames.end());
 }
 
-void CProjectAgentImp::GetBeamFactory(const std::_tstring& strBeamFamily,const std::_tstring& strBeamName,IBeamFactory** ppFactory)
+std::shared_ptr<IBeamFactory> CProjectAgentImp::GetBeamFactory(const std::_tstring& strBeamFamily,const std::_tstring& strBeamName)
 {
    std::vector<std::_tstring> strBeamNames;
    EnumGirderNames(strBeamFamily.c_str(),&strBeamNames);
@@ -10300,12 +10295,12 @@ void CProjectAgentImp::GetBeamFactory(const std::_tstring& strBeamFamily,const s
    if ( found == strBeamNames.end() )
    {
       ATLASSERT(false); // beam not found
-      return;
+      return nullptr;
    }
 
    const GirderLibraryEntry* pGdrEntry = GetGirderEntry( (*found).c_str() );
 
-   pGdrEntry->GetBeamFactory(ppFactory);
+   return pGdrEntry->GetBeamFactory();
 }
 
 ////////////////////////////////////////////////////////////////////////
@@ -12098,9 +12093,8 @@ void CProjectAgentImp::DealWithGirderLibraryChanges(bool fromLibrary)
 
          const GirderLibraryEntry* pGdrEntry = pGirder->GetGirderLibraryEntry();
 
-         CComPtr<IBeamFactory> beamFactory;
-         pGdrEntry->GetBeamFactory(&beamFactory);
-         CComQIPtr<ISplicedBeamFactory> splicedBeamFactory(beamFactory);
+         auto beamFactory = pGdrEntry->GetBeamFactory();
+         auto splicedBeamFactory = std::dynamic_pointer_cast<ISplicedBeamFactory>(beamFactory);
 
          std::vector<pgsTypes::SegmentVariationType> variations;
          if (splicedBeamFactory)

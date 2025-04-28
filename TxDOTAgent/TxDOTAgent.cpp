@@ -53,7 +53,7 @@
 #include <Plugins\PGSuperIEPlugin.h>
 #include "TxDOTOptionalDesignDocProxyAgent.h"
 
-#include <IReportManager.h>
+#include <EAF/EAFReportManager.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Selection.h>
 #include <IFace\TestFileExport.h>

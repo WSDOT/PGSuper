@@ -96,7 +96,7 @@ private:
    CString GetCellValue(ROWCOL nRow, ROWCOL nCol);
 
    void SelectRow(ROWCOL nRow);
-   BOOL ValidatePoint(CDeckPoint& point,IEAFDisplayUnits* pDisplayUnits);
+   BOOL ValidatePoint(CDeckPoint& point,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 };
 
 

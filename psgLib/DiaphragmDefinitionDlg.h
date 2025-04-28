@@ -49,7 +49,7 @@ public:
 	//}}AFX_DATA
 
    const GirderLibraryEntry& m_Entry;
-   CComPtr<IBeamFactory> m_pBeamFactory;
+   std::shared_ptr<IBeamFactory> m_pBeamFactory;
    bool m_bSplicedGirder;
    GirderLibraryEntry::DiaphragmLayoutRule m_Rule;
 

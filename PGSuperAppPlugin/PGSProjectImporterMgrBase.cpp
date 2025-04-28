@@ -54,10 +54,9 @@ bool CPGSProjectImporterMgrBase::LoadImporters()
 
       if (strState.CompareNoCase(_T("Enabled")) == 0)
       {
-         auto class_object = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent(component);
-         if (class_object)
+         auto importer = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<PGSuper::IProjectImporter>(component);
+         if (importer)
          {
-            auto importer = std::dynamic_pointer_cast<PGSuper::IProjectImporter>(class_object);
             Record record;
             record.clsid = component.clsid;
             record.importer = importer;

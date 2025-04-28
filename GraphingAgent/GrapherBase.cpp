@@ -24,7 +24,7 @@
 #include "GrapherBase.h"
 
 // Interfaces
-#include <IGraphManager.h>
+#include <EAF/EAFGraphManager.h>
 #include <IFace\Project.h>
 
 // Graph Builders
@@ -41,7 +41,7 @@
 
 void CGrapherBase::InitCommonGraphBuilders(std::shared_ptr<WBFL::EAF::Broker> broker)
 {
-   EAF_GET_IFACE2_(WBFL::Graphing,broker,IGraphManager,pGraphMgr);
+   EAF_GET_IFACE2(broker,IEAFGraphManager,pGraphMgr);
 
    pGraphMgr->SortByName(false); // don't sort alphabetically
 

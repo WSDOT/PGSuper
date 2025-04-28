@@ -8,7 +8,7 @@
 #include "KDOTExporter.hxx"
 #include <EAF\ComponentObject.h>
 
-interface IShapes;
+class IShapes;
 class LiveLoadLibraryEntry;
 
 /////////////////////////////////////////////////////////////////////////////

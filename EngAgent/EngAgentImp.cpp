@@ -306,8 +306,7 @@ void CEngAgentImp::ValidateLiveLoadDistributionFactors(const CGirderKey& girderK
          const CGirderGroupData* pGroup      = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
          const GirderLibraryEntry* pGdrEntry = pGroup->GetGirderLibraryEntry(girderKey.girderIndex);
 
-         CComPtr<IBeamFactory> pFactory;
-         pGdrEntry->GetBeamFactory(&pFactory);
+         auto pFactory = pGdrEntry->GetBeamFactory();
          m_pDistFactorEngineer = pFactory->CreateDistFactorEngineer(m_pBroker,m_StatusGroupID,nullptr,nullptr,nullptr);
       }
 
@@ -1122,12 +1121,12 @@ CString CEngAgentImp::GetRestrainingLoadName(IntervalIndexType intervalIdx,int l
    return strLoadName;
 }
 
-void CEngAgentImp::ReportLosses(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) const
+void CEngAgentImp::ReportLosses(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    m_PsForceEngineer.ReportLosses(girderKey,pChapter,pDisplayUnits);
 }
 
-void CEngAgentImp::ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) const
+void CEngAgentImp::ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    m_PsForceEngineer.ReportFinalLosses(girderKey,pChapter,pDisplayUnits);
 }
@@ -2813,7 +2812,7 @@ void CEngAgentImp::GetNegMomentDistFactorPoints(const CSpanKey& spanKey,Float64*
    pCP->GetContraflexurePoints(spanKey,dfPoints,nPoints);
 }
 
-void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) const
+void CEngAgentImp::ReportDistributionFactors(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();

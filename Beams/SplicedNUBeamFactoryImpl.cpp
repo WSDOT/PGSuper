@@ -25,8 +25,8 @@
 #include <Plugins\Beams.h>
 #include <Plugins\BeamFamilyCLSID.h>
 #include "SplicedNUBeamFactoryImpl.h"
-#include "IBeamDistFactorEngineer.h"
-#include "TimeStepLossEngineer.h"
+#include <Beams/IBeamDistFactorEngineer.h>
+#include <Beams/TimeStepLossEngineer.h>
 #include "StrandMoverImpl.h"
 #include <GeomModel\PrecastBeam.h>
 #include <GenericBridge\Helpers.h>
@@ -48,17 +48,7 @@
 #include <psgLib/SectionPropertiesCriteria.h>
 #include <psgLib/SpecificationCriteria.h>
 
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CSplicedNUBeamFactory
-HRESULT CSplicedNUBeamFactory::FinalConstruct()
+CSplicedNUBeamFactory::CSplicedNUBeamFactory() : ISplicedBeamFactory()
 {
    // Initialize with default values... This are not necessarily valid dimensions
    m_DimNames.emplace_back(_T("D1"));
@@ -119,8 +109,6 @@ HRESULT CSplicedNUBeamFactory::FinalConstruct()
    m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W1
    m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W2
    m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // C1
-
-   return S_OK;
 }
 
 void CSplicedNUBeamFactory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
@@ -370,9 +358,9 @@ std::shared_ptr<CDistFactorEngineerBase> CSplicedNUBeamFactory::CreateDistFactor
    return std::make_shared<CIBeamDistFactorEngineer>(pBroker, statusGroupID);
 }
 
-std::shared_ptr<CPsLossEngineerBase> CSplicedNUBeamFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey) const
+std::unique_ptr<CPsLossEngineerBase> CSplicedNUBeamFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey) const
 {
-   return std::make_shared<CTimeStepLossEngineer>(pBroker,statusGroupID);
+   return std::make_unique<CTimeStepLossEngineer>(pBroker,statusGroupID);
 }
 
 void CSplicedNUBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
@@ -387,7 +375,7 @@ void CSplicedNUBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& di
 
    CComPtr<IStrandMover> sm = pStrandMover;
 
-   // set the shape for harped strand bounds - only in the thinest part of the web
+   // set the shape for harped strand bounds - only in the thinnest part of the web
    CComPtr<IRectangle> harp_rect;
    hr = harp_rect.CoCreateInstance(CLSID_Rect);
    ATLASSERT (SUCCEEDED(hr));
@@ -419,10 +407,10 @@ void CSplicedNUBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& di
    ATLASSERT (SUCCEEDED(hr));
 
    // set vertical offset bounds and increments
-   Float64 hptb  = hpTopFace     == IBeamFactory::BeamBottom ? hpTopLimit     - depth : -hpTopLimit;
-   Float64 hpbb  = hpBottomFace  == IBeamFactory::BeamBottom ? hpBottomLimit  - depth : -hpBottomLimit;
-   Float64 endtb = endTopFace    == IBeamFactory::BeamBottom ? endTopLimit    - depth : -endTopLimit;
-   Float64 endbb = endBottomFace == IBeamFactory::BeamBottom ? endBottomLimit - depth : -endBottomLimit;
+   Float64 hptb  = hpTopFace     == IBeamFactory::BeamFace::Bottom ? hpTopLimit     - depth : -hpTopLimit;
+   Float64 hpbb  = hpBottomFace  == IBeamFactory::BeamFace::Bottom ? hpBottomLimit  - depth : -hpBottomLimit;
+   Float64 endtb = endTopFace    == IBeamFactory::BeamFace::Bottom ? endTopLimit    - depth : -endTopLimit;
+   Float64 endbb = endBottomFace == IBeamFactory::BeamFace::Bottom ? endBottomLimit - depth : -endBottomLimit;
 
    hr = configurer->SetHarpedStrandOffsetBounds(0, depth, endtb, endbb, hptb, hpbb, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));

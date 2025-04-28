@@ -56,7 +56,7 @@ class GirderLibraryEntryObserver;
 PSGLIBTPL WBFL::System::SubjectT<GirderLibraryEntryObserver, GirderLibraryEntry>;
 
 interface IStrandGrid;
-interface IBeamFactory;
+class IBeamFactory;
 
 
 /*****************************************************************************
@@ -75,69 +75,15 @@ LOG
 class PSGLIBCLASS GirderLibraryEntryObserver
 {
 public:
-
-   // GROUP: LIFECYCLE
-   //------------------------------------------------------------------------
-   // called by our subject to let us now he's changed, along with an optional
-   // hint
-   virtual void Update(GirderLibraryEntry& subject, Int32 hint)=0;
-};
-
-/*****************************************************************************
-CLASS 
-   GirderLibraryEntry
-
-   A library entry class for girder templates
-
-
-DESCRIPTION
-   This class may be used to describe girder templates
-
-LOG
-   rdp : 07.20.1998 : Created file
-*****************************************************************************/
-
-class CClassFactoryHolder
-{
-public:
-   CClassFactoryHolder(IClassFactory* factory)
-   {
-      m_ClassFactory = factory;
-      m_ClassFactory->LockServer(TRUE);
-   }
-
-   CClassFactoryHolder(const CClassFactoryHolder& rother) 
-   {
-      CComPtr<IClassFactory> pholder(m_ClassFactory);
-
-      m_ClassFactory = rother.m_ClassFactory;
-      m_ClassFactory->LockServer(TRUE);
-
-      if (pholder)
-         pholder->LockServer(FALSE);
-   }
-
-
-   ~CClassFactoryHolder()
-   {
-   }
-
-   HRESULT CreateInstance(IUnknown* pUnkOuter,REFIID riid,void** ppvObject)
-   {
-      return m_ClassFactory->CreateInstance(pUnkOuter,riid,ppvObject);
-   }
-
-private:
-   CComPtr<IClassFactory> m_ClassFactory;
+   // called by our subject to let us now he's changed, along with an optional hint
+   virtual void Update(GirderLibraryEntry& subject, Int32 hint) = 0;
 };
 
 class PSGLIBCLASS GirderLibraryEntry : public WBFL::Library::LibraryEntry, public ISupportIcon,
        public WBFL::System::SubjectT<GirderLibraryEntryObserver, GirderLibraryEntry>
 {
 public:
-   typedef std::map<std::_tstring,CClassFactoryHolder> ClassFactoryCollection;
-   static ClassFactoryCollection ms_ClassFactories;
-   static std::vector<CComPtr<IBeamFactoryCLSIDTranslator>> ms_ExternalCLSIDTranslators; // maps PGSuper v2.x CLSIDs to PGSuper v3.x CLSIDs for external beam publishers
+   static std::vector<std::shared_ptr<IBeamFactoryCLSIDTranslator>> ms_ExternalCLSIDTranslators; // maps PGSuper v2.x CLSIDs to PGSuper v3.x CLSIDs for external beam publishers
 
    static CString GetAdjustableStrandType(pgsTypes::AdjustableStrandType strandType);
 
@@ -367,8 +313,8 @@ public:
 
     // GROUP: ACCESS
    //------------------------------------------------------------------------
-   void SetBeamFactory(IBeamFactory* pFactory);
-   void GetBeamFactory(IBeamFactory** ppFactory) const;
+   void SetBeamFactory(std::shared_ptr<IBeamFactory> pFactory);
+   std::shared_ptr<IBeamFactory> GetBeamFactory() const;
 
    std::_tstring GetGirderName() const;
    std::_tstring GetGirderFamilyName() const;
@@ -728,15 +674,15 @@ public:
    bool GetDoReportBearingElevationsAtGirderEdges() const;
 
 
-   pgsCompatibilityData* GetCompatibilityData() const;
+   std::shared_ptr<pgsCompatibilityData> GetCompatibilityData() const;
 
 protected:
    void CopyValuesAndAttributes(const GirderLibraryEntry& rOther);
 
 private:
    // GROUP: DATA MEMBERS
-   pgsCompatibilityData* m_pCompatibilityData;
-   CComPtr<IBeamFactory> m_pBeamFactory;
+   std::shared_ptr<pgsCompatibilityData> m_pCompatibilityData;
+   std::shared_ptr<IBeamFactory> m_pBeamFactory;
    Dimensions m_Dimensions;
    bool m_bSupportsVariableDepthSection;
    bool m_bIsVariableDepthSectionEnabled;
@@ -1055,7 +1001,7 @@ private:
 
    void AddDimension(const std::_tstring& name,Float64 value);
 
-   HRESULT CreateBeamFactory(const std::_tstring& strCLSID);
+   bool CreateBeamFactory(const std::_tstring& strCLSID);
    void LoadIBeamDimensions(WBFL::System::IStructuredLoad* pLoad);
 
    // GROUP: ACCESS

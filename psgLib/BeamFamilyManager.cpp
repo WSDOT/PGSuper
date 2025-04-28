@@ -27,6 +27,7 @@
 #include <PsgLib\BeamFamilyManager.h>
 
 #include <EAF\EAFUtilities.h>
+#include <EAF\ComponentCategoryManager.h>
 
 
 
@@ -122,7 +123,7 @@ std::vector<CString> CBeamFamilyManager::GetBeamFamilyNames(CATID catid)
    return vNames;
 }
 
-HRESULT CBeamFamilyManager::GetBeamFamily(LPCTSTR strName,IBeamFamily** ppFamily)
+std::shared_ptr<IBeamFamily> CBeamFamilyManager::GetBeamFamily(LPCTSTR strName)
 {
    FamilyContainer::iterator familyIter(m_Families.begin());
    FamilyContainer::iterator familyIterEnd(m_Families.end());
@@ -134,18 +135,13 @@ HRESULT CBeamFamilyManager::GetBeamFamily(LPCTSTR strName,IBeamFamily** ppFamily
       if ( found != beams.end() )
       {
          CLSID clsid = found->second;
-         IBeamFamily* pFamily;
-         HRESULT hr = ::CoCreateInstance(clsid,nullptr,CLSCTX_ALL,IID_IBeamFamily,(void**)&pFamily);
-         if ( FAILED(hr) )
-            return hr;
-
-         (*ppFamily) = pFamily;
-         return S_OK;
+         auto family = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<IBeamFamily>(clsid);
+         return family;
       }
    }
 
    // if we got this far, the name wasn't found
-   return E_FAIL;
+   return nullptr;
 }
 
 CLSID CBeamFamilyManager::GetBeamFamilyCLSID(LPCTSTR strName)
@@ -180,8 +176,7 @@ void CBeamFamilyManager::UpdateFactories()
    for ( ; iter != end; iter++ )
    {
       CString& strName(*iter);
-      CComPtr<IBeamFamily> family;
-      GetBeamFamily(strName,&family);
+      auto family = GetBeamFamily(strName);
       family->RefreshFactoryList();
    }
 }

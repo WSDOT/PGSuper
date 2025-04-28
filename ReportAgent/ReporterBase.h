@@ -23,7 +23,7 @@
 #pragma once
 
 #include <EAF\Agent.h>
-#include <IReportManager.h>
+#include <EAF/EAFReportManager.h>
 
 class CReporterBase : public WBFL::EAF::Agent
 {
@@ -35,36 +35,36 @@ public:
 protected:
 
    virtual WBFL::Reporting::TitlePageBuilder* CreateTitlePageBuilder(LPCTSTR strReportName,bool bFullVersion=true) = 0;
-   void CreateBridgeGeometryReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
-   void CreateDetailsReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
-   void CreateLoadRatingReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
-   void CreateLoadRatingSummaryReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
-   void CreateBearingDesignReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
-   void CreateBearingTimeStepDetailsReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
+   void CreateBridgeGeometryReport(std::shared_ptr<IEAFReportManager> pRptMgr);
+   void CreateDetailsReport(std::shared_ptr<IEAFReportManager> pRptMgr);
+   void CreateLoadRatingReport(std::shared_ptr<IEAFReportManager> pRptMgr);
+   void CreateLoadRatingSummaryReport(std::shared_ptr<IEAFReportManager> pRptMgr);
+   void CreateBearingDesignReport(std::shared_ptr<IEAFReportManager> pRptMgr);
+   void CreateBearingTimeStepDetailsReport(std::shared_ptr<IEAFReportManager> pRptMgr);
 
-   void CreateBridgeAnalysisReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
-   void CreateHaulingReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
-   void CreateLiftingReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
-   void CreateMultiGirderSpecCheckReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
-   void CreateSpecChecReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
-   void CreateDistributionFactorSummaryReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
-   void CreateMultiHaunchGeometryReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
+   void CreateBridgeAnalysisReport(std::shared_ptr<IEAFReportManager> pRptMgr);
+   void CreateHaulingReport(std::shared_ptr<IEAFReportManager> pRptMgr);
+   void CreateLiftingReport(std::shared_ptr<IEAFReportManager> pRptMgr);
+   void CreateMultiGirderSpecCheckReport(std::shared_ptr<IEAFReportManager> pRptMgr);
+   void CreateSpecChecReport(std::shared_ptr<IEAFReportManager> pRptMgr);
+   void CreateDistributionFactorSummaryReport(std::shared_ptr<IEAFReportManager> pRptMgr);
+   void CreateMultiHaunchGeometryReport(std::shared_ptr<IEAFReportManager> pRptMgr);
 
 #if defined _DEBUG || defined _BETA_VERSION
-   void CreateDistributionFactorsReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
+   void CreateDistributionFactorsReport(std::shared_ptr<IEAFReportManager> pRptMgr);
 #endif
 
-   void CreateStageByStageDetailsReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
-   void CreateTimeStepDetailsReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
-   void CreatePrincipalWebStressDetailsReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
-   void CreatePointOfInterestReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
+   void CreateStageByStageDetailsReport(std::shared_ptr<IEAFReportManager> pRptMgr);
+   void CreateTimeStepDetailsReport(std::shared_ptr<IEAFReportManager> pRptMgr);
+   void CreatePrincipalWebStressDetailsReport(std::shared_ptr<IEAFReportManager> pRptMgr);
+   void CreatePointOfInterestReport(std::shared_ptr<IEAFReportManager> pRptMgr);
 
-   void CreatePierReactionsReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
-   void CreateTimelineReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
-   void CreateCopyGirderPropertiesReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
-   void CreateCopyPierPropertiesReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
-   void CreateCopyTempSupportPropertiesReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
+   void CreatePierReactionsReport(std::shared_ptr<IEAFReportManager> pRptMgr);
+   void CreateTimelineReport(std::shared_ptr<IEAFReportManager> pRptMgr);
+   void CreateCopyGirderPropertiesReport(std::shared_ptr<IEAFReportManager> pRptMgr);
+   void CreateCopyPierPropertiesReport(std::shared_ptr<IEAFReportManager> pRptMgr);
+   void CreateCopyTempSupportPropertiesReport(std::shared_ptr<IEAFReportManager> pRptMgr);
 
-   void CreateMomentCapacityDetailsReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
-   void CreateCrackedSectionDetailsReport(std::shared_ptr<WBFL::Reporting::IReportManager> pRptMgr);
+   void CreateMomentCapacityDetailsReport(std::shared_ptr<IEAFReportManager> pRptMgr);
+   void CreateCrackedSectionDetailsReport(std::shared_ptr<IEAFReportManager> pRptMgr);
 };

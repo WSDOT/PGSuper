@@ -23,8 +23,8 @@
 #include "Reporting\BearingSeatElevationsChapterBuilder2.h"
 
 
-#include <IReportManager.h>
-#include <EAF\EAFDisplayUnits.h>
+#include <EAF/EAFReportManager.h>
+#include <EAF/EAFDisplayUnits.h>
 
 #include <PgsExt\GirderLabel.h>
 #include <PgsExt\BridgeDescription2.h>

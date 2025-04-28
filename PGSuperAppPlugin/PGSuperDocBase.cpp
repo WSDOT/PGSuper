@@ -3306,8 +3306,7 @@ bool CPGSDocBase::DoLoadMasterLibrary(const CString& strMasterLibraryFile)
       std::_tstring strName = keyList[i];
       const WBFL::Library::LibraryEntry* pEntry = gdrLib.GetEntry(strName.c_str());
       const GirderLibraryEntry* pGdrEntry = dynamic_cast<const GirderLibraryEntry*>(pEntry);
-      CComPtr<IBeamFactory> beamFactory;
-      pGdrEntry->GetBeamFactory(&beamFactory);
+      auto beamFactory = pGdrEntry->GetBeamFactory();
       CLSID clsid = beamFactory->GetFamilyCLSID();
 
       HRESULT result = pICatInfo->IsClassOfCategories(clsid,1,&catid,0,nullptr);
@@ -4941,7 +4940,7 @@ CString CPGSDocBase::GetToolbarSectionName()
 
 void CPGSDocBase::OnUpdateViewGraphs(CCmdUI* pCmdUI)
 {
-   EAF_GET_IFACE_(WBFL::Graphing,IGraphManager,pGraphMgr);
+   EAF_GET_IFACE(IEAFGraphManager,pGraphMgr);
    pCmdUI->Enable( 0 < pGraphMgr->GetGraphBuilderCount() );
 }
 
@@ -4982,7 +4981,7 @@ BOOL CPGSDocBase::OnViewGraphs(NMHDR* pnmhdr,LRESULT* plr)
 
 void CPGSDocBase::OnUpdateViewReports(CCmdUI* pCmdUI)
 {
-   EAF_GET_IFACE_(WBFL::Reporting,IReportManager,pReportMgr);
+   EAF_GET_IFACE(IEAFReportManager,pReportMgr);
    pCmdUI->Enable( 0 < pReportMgr->GetReportBuilderCount() );
 }
 

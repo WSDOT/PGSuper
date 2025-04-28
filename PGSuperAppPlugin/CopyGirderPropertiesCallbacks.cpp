@@ -186,14 +186,14 @@ inline LPCTSTR GetRebarLayoutTypeStr(pgsTypes::RebarLayoutType layoutType)
 // Declaration of girder comparison reports
 void GirderAllPropertiesComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& fromGirderKey);
 void GirderMaterialsComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& fromGirderKey);
-bool GirderPrestressingComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, IEAFDisplayUnits* pDisplayUnits, const CGirderKey& fromGirderKey);
-void debonding(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, IEAFDisplayUnits* pDisplayUnits, const CGirderKey& fromGirderKey);
-void GirderSegmentPostensioningComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, IEAFDisplayUnits* pDisplayUnits, const CGirderKey& fromGirderKey);
-void GirderGroupPostensioningComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, IEAFDisplayUnits* pDisplayUnits, const CGirderKey& fromGirderKey);
-void GirderLongRebarComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, IEAFDisplayUnits* pDisplayUnits, const CGirderKey& fromGirderKey);
-void GirderPrimaryStirrupComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, IEAFDisplayUnits* pDisplayUnits, const CGirderKey& fromGirderKey);
-void GirderSecondaryStirrupComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, IEAFDisplayUnits* pDisplayUnits, const CGirderKey& fromGirderKey);
-void GirderHandlingComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, IEAFDisplayUnits* pDisplayUnits, const CGirderKey& fromGirderKey);
+bool GirderPrestressingComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& fromGirderKey);
+void debonding(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& fromGirderKey);
+void GirderSegmentPostensioningComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& fromGirderKey);
+void GirderGroupPostensioningComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& fromGirderKey);
+void GirderLongRebarComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& fromGirderKey);
+void GirderPrimaryStirrupComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& fromGirderKey);
+void GirderSecondaryStirrupComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& fromGirderKey);
+void GirderHandlingComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& fromGirderKey);
 
 ////////////////////////////////////////////////////
 //////////////////// Transaction Classes ////////////
@@ -1063,7 +1063,7 @@ void GirderAllPropertiesComparison(rptParagraph * pPara, std::shared_ptr<WBFL::E
    }
 }
 
-void GirderPrimaryStirrupComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker,IEAFDisplayUnits* pDisplayUnits, const CGirderKey& fromGirderKey)
+void GirderPrimaryStirrupComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& fromGirderKey)
 {
    EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    EAF_GET_IFACE2(pBroker,IShear,pShear);
@@ -1170,7 +1170,7 @@ void GirderPrimaryStirrupComparison(rptParagraph* pPara, std::shared_ptr<WBFL::E
    }
 }
 
-void GirderSecondaryStirrupComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker,IEAFDisplayUnits* pDisplayUnits, const CGirderKey& fromGirderKey)
+void GirderSecondaryStirrupComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& fromGirderKey)
 {
    EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    EAF_GET_IFACE2(pBroker,IShear,pShear);
@@ -1255,7 +1255,7 @@ void GirderSecondaryStirrupComparison(rptParagraph* pPara, std::shared_ptr<WBFL:
    }
 }
 
-void GirderHandlingComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker,IEAFDisplayUnits* pDisplayUnits, const CGirderKey& fromGirderKey)
+void GirderHandlingComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& fromGirderKey)
 {
    EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    EAF_GET_IFACE2(pBroker,ISegmentData,pSegmentData);
@@ -1511,7 +1511,7 @@ void GirderMaterialsComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::B
 
 
 // return true if debonding exists
-bool GirderPrestressingComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker,IEAFDisplayUnits* pDisplayUnits, const CGirderKey& fromGirderKey)
+bool GirderPrestressingComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& fromGirderKey)
 {
    bool was_debonding = false;
 
@@ -1853,7 +1853,7 @@ DebondComparison::DebondStatus DebondComparison::Init(IBridge* pBridge, IStrandG
       return IsDebonding;
 }
 
-void debonding(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker,IEAFDisplayUnits* pDisplayUnits, const CGirderKey& fromGirderKey)
+void debonding(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& fromGirderKey)
 {
    EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
@@ -2242,7 +2242,7 @@ void GirderSegmentPostensioningComparison(rptParagraph * pPara, std::shared_ptr<
    }
 }
 
-void GirderLongRebarComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker,IEAFDisplayUnits* pDisplayUnits, const CGirderKey& fromGirderKey)
+void GirderLongRebarComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& fromGirderKey)
 {
    EAF_GET_IFACE2(pBroker,IBridge,pBridge);
    EAF_GET_IFACE2(pBroker,ILongitudinalRebar,pLongitudinalRebar);

@@ -20,38 +20,18 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// NUDeckedBulbTeeFactory.h : Declaration of the CNUDeckedBulbTeeFactory
+#pragma once
 
-#ifndef __NUDeckedBulbTeeFactory_H_
-#define __NUDeckedBulbTeeFactory_H_
-
-#include "resource.h"       // main symbols
 #include <IFace\BeamFactory.h>
 #include <Plugins\Beams.h>
 #include <Beams\Helper.h>
 
 #include <vector>
 
-/////////////////////////////////////////////////////////////////////////////
-// CNUDeckedBulbTeeFactory
-class ATL_NO_VTABLE CNUDeckedBulbTeeFactory : 
-   public CComObjectRootEx<CComSingleThreadModel>,
-   public CComCoClass<CNUDeckedBulbTeeFactory, &CLSID_NUDeckedBulbTeeFactory>,
-   public IBeamFactory
+class CNUDeckedBulbTeeFactory : public IBeamFactory
 {
 public:
-	CNUDeckedBulbTeeFactory()
-	{
-	}
-
-   HRESULT FinalConstruct();
-
-DECLARE_REGISTRY_RESOURCEID(IDR_NUDECKEDBULBTEEFACTORY)
-DECLARE_CLASSFACTORY_SINGLETON(CNUDeckedBulbTeeFactory)
-
-BEGIN_COM_MAP(CNUDeckedBulbTeeFactory)
-   COM_INTERFACE_ENTRY(IBeamFactory)
-END_COM_MAP()
+   CNUDeckedBulbTeeFactory();
 
 public:
    // IBeamFactory
@@ -62,7 +42,7 @@ public:
    void ConfigureSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const override;
    void LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const override;
    std::shared_ptr<CDistFactorEngineerBase> CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const pgsTypes::SupportedBeamSpacing* pSpacingType, const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const override;
-   std::shared_ptr<CPsLossEngineerBase> CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, const CGirderKey& girderKey) const override;
+   std::unique_ptr<CPsLossEngineerBase> CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, const CGirderKey& girderKey) const override;
    void CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
                           IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                           IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
@@ -142,5 +122,3 @@ private:
    //Float64 GetFlangeThickening(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const;
    void PositionBeamShape(INUDeckedIBeam* pBeam) const;
 };
-
-#endif //__NUDeckedBulbTeeFactory_H_

@@ -26,8 +26,8 @@
 #include <Plugins\BeamFamilyCLSID.h>
 #include "MultiWeb2Factory.h"
 #include "MultiWebDistFactorEngineer.h"
-#include "PsBeamLossEngineer.h"
-#include "TimeStepLossEngineer.h"
+#include <Beams/PsBeamLossEngineer.h>
+#include <Beams/TimeStepLossEngineer.h>
 #include "StrandMoverImpl.h"
 #include <GeomModel\PrecastBeam.h>
 #include <MathEx.h>
@@ -49,17 +49,7 @@
 #include <psgLib/SectionPropertiesCriteria.h>
 #include <psgLib/SpecificationCriteria.h>
 
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CMultiWeb2Factory
-HRESULT CMultiWeb2Factory::FinalConstruct()
+CMultiWeb2Factory::CMultiWeb2Factory() : IBeamFactory()
 {
    // Initialize with default values... This are not necessarily valid dimensions
    m_DimNames.emplace_back(_T("C1"));
@@ -116,9 +106,6 @@ HRESULT CMultiWeb2Factory::FinalConstruct()
    m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W2
    m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Feet); // Wmin
    m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Feet); // Wmax
-   
-
-   return S_OK;
 }
 
 void CMultiWeb2Factory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
@@ -233,16 +220,16 @@ std::shared_ptr<CDistFactorEngineerBase> CMultiWeb2Factory::CreateDistFactorEngi
    return std::make_shared<CMultiWebDistFactorEngineer>(CMultiWebDistFactorEngineer::BeamType::MultiWebTee, pBroker, statusGroupID);
 }
 
-std::shared_ptr<CPsLossEngineerBase> CMultiWeb2Factory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey) const
+std::unique_ptr<CPsLossEngineerBase> CMultiWeb2Factory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey) const
 {
    EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
-      return std::make_shared<CTimeStepLossEngineer>(pBroker,statusGroupID);
+      return std::make_unique<CTimeStepLossEngineer>(pBroker,statusGroupID);
    }
    else
    {
-      return std::make_shared<CPsBeamLossEngineer>(CPsBeamLossEngineer::BeamType::IBeam,pBroker,statusGroupID);
+      return std::make_unique<CPsBeamLossEngineer>(CPsBeamLossEngineer::BeamType::IBeam,pBroker,statusGroupID);
    }
 }
 
@@ -302,10 +289,10 @@ void CMultiWeb2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dimens
    ATLASSERT (SUCCEEDED(hr));
 
    // set vertical offset bounds and increments
-   Float64 hptb  = hpTopFace     == IBeamFactory::BeamBottom ? hpTopLimit     - depth : -hpTopLimit;
-   Float64 hpbb  = hpBottomFace  == IBeamFactory::BeamBottom ? hpBottomLimit  - depth : -hpBottomLimit;
-   Float64 endtb = endTopFace    == IBeamFactory::BeamBottom ? endTopLimit    - depth : -endTopLimit;
-   Float64 endbb = endBottomFace == IBeamFactory::BeamBottom ? endBottomLimit - depth : -endBottomLimit;
+   Float64 hptb  = hpTopFace     == IBeamFactory::BeamFace::Bottom ? hpTopLimit     - depth : -hpTopLimit;
+   Float64 hpbb  = hpBottomFace  == IBeamFactory::BeamFace::Bottom ? hpBottomLimit  - depth : -hpBottomLimit;
+   Float64 endtb = endTopFace    == IBeamFactory::BeamFace::Bottom ? endTopLimit    - depth : -endTopLimit;
+   Float64 endbb = endBottomFace == IBeamFactory::BeamFace::Bottom ? endBottomLimit - depth : -endBottomLimit;
 
    hr = configurer->SetHarpedStrandOffsetBounds(0, depth, endtb, endbb, hptb, hpbb, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));

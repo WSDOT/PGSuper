@@ -260,8 +260,7 @@ void write_segment_details(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::share
 
    bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
 
-   CComPtr<IBeamFactory> factory;
-   pGdrEntry->GetBeamFactory(&factory);
+   auto factory = pGdrEntry->GetBeamFactory();
 
    (*pTable)(0,0) << rptRcImage( std::_tstring(rptStyleManager::GetImagePath()) + factory->GetImage());
 

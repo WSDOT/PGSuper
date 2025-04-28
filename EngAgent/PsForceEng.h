@@ -62,10 +62,10 @@ public:
    void ClearDesignLosses();
 
    // Reports the details of the prestress loss calculations
-   void ReportLosses(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) const;
+   void ReportLosses(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 
    // Reports a summary of the final prestress losses
-   void ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) const;
+   void ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 
    // Computes the basic anchor set loss details (basically the anchor set length and
    // anchor set loss a seating end)
@@ -122,7 +122,7 @@ public:
 private:
    std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    StatusGroupIDType m_StatusGroupID;
-   mutable CComPtr<IPsLossEngineer> m_LossEngineer;
+   mutable std::unique_ptr<CPsLossEngineerBase> m_LossEngineer;
 
    void CreateLossEngineer(const CGirderKey& girderKey) const;
 

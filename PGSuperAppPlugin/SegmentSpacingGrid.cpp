@@ -252,8 +252,8 @@ void CSegmentSpacingGrid::UpdateGrid()
       {
          const GirderLibraryEntry* pGdrEntry = pBridgeDesc->GetGirderGroup(grpIdx)->GetGirder(gdrIdx)->GetGirderLibraryEntry();
          const IBeamFactory::Dimensions& dimensions = pGdrEntry->GetDimensions();
-         CComPtr<IBeamFactory> factory;
-         pGdrEntry->GetBeamFactory(&factory);
+         auto factory = pGdrEntry->GetBeamFactory();
+
 
          // save spacing range to local class data
          Float64 minGS, maxGS;

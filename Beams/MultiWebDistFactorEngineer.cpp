@@ -39,11 +39,6 @@
 #include <IFace\Intervals.h>
 #include <Beams\Helper.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CMultiWebDistFactorEngineer::CMultiWebDistFactorEngineer(CMultiWebDistFactorEngineer::BeamType beamType, std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID) :
    CDistFactorEngineerImpl<MULTIWEB_LLDFDETAILS>(pBroker, statusGroupID), m_BeamType(beamType)

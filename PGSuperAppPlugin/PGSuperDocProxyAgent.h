@@ -114,7 +114,7 @@ public:
 
 // IAgentUIIntegration
 public:
-   STDMETHOD(IntegrateWithUI)(BOOL bIntegrate);
+   bool IntegrateWithUI(bool bIntegrate) override;
 
 
 // IBridgeDescriptionEventSink

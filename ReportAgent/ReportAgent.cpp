@@ -35,7 +35,7 @@
 #include <WBFLCore_i.c>
 #include <WBFLCogo_i.c>
 
-#include <IReportManager.h>
+#include <EAF/EAFReportManager.h>
 #include <IFace\StatusCenter.h>
 
 #include "PGSuperReporterImp.h"

@@ -22,17 +22,12 @@
 
 // BulbTeeDistFactorEngineer.cpp : Implementation of CBulbTeeDistFactorEngineer
 #include "stdafx.h"
-#include "BulbTeeDistFactorEngineer.h"
+#include <Beams\BulbTeeDistFactorEngineer.h>
 #include <IFace\Project.h>
 
-#include "IBeamDistFactorEngineer.h"
+#include <Beams/IBeamDistFactorEngineer.h>
 #include "MultiWebDistFactorEngineer.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CBulbTeeDistFactorEngineer::CBulbTeeDistFactorEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID) :
    CDistFactorEngineerBase(pBroker, statusGroupID)

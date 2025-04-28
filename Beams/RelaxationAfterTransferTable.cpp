@@ -28,11 +28,6 @@
 #include <PsgLib\SpecLibraryEntry.h>
 #include <Reporting\ReportNotes.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CRelaxationAfterTransferTable::CRelaxationAfterTransferTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) :
 rptRcTable(NumColumns,0)

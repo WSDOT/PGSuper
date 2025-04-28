@@ -2770,8 +2770,7 @@ bool CBridgeAgentImp::LayoutGirders(const CBridgeDescription2* pBridgeDesc)
          // get the girder library entry
          const GirderLibraryEntry* pGirderEntry = GetGirderLibraryEntry(girderKey);
 
-         CComPtr<IBeamFactory> beamFactory;
-         pGirderEntry->GetBeamFactory(&beamFactory);
+         auto beamFactory = pGirderEntry->GetBeamFactory();
 
          // create a superstructure member
          CComPtr<ISuperstructureMember> ssmbr;
@@ -6131,8 +6130,7 @@ void CBridgeAgentImp::LayoutPoiForHandling(const CSegmentKey& segmentKey)
 void CBridgeAgentImp::LayoutPoiForSectionChanges(const CSegmentKey& segmentKey)
 {
    const GirderLibraryEntry* pGirderEntry = GetGirderLibraryEntry(segmentKey);
-   CComPtr<IBeamFactory> beamFactory;
-   pGirderEntry->GetBeamFactory(&beamFactory);
+   auto beamFactory = pGirderEntry->GetBeamFactory();
 
    beamFactory->LayoutSectionChangePointsOfInterest(m_pBroker,segmentKey,m_pPoiMgr.get());
 }
@@ -19347,8 +19345,7 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetEnd(LPCTSTR strGirderName,pg
       }
       else if (measurementType==hsoECCENTRICITY)
       {
-         CComPtr<IBeamFactory> factory;
-         pGdrEntry->GetBeamFactory(&factory);
+         auto factory = pGdrEntry->GetBeamFactory();
 
          CComPtr<IGirderSection> gdrSection;
          factory->CreateGirderSection(m_pBroker,INVALID_ID,pGdrEntry->GetDimensions(),-1,-1,&gdrSection);
@@ -19655,8 +19652,7 @@ Float64 CBridgeAgentImp::ComputeAbsoluteHarpedOffsetHp(LPCTSTR strGirderName,pgs
       }
       else if (measurementType==hsoECCENTRICITY)
       {
-         CComPtr<IBeamFactory> factory;
-         pGdrEntry->GetBeamFactory(&factory);
+         auto factory = pGdrEntry->GetBeamFactory();
 
          CComPtr<IGirderSection> gdrSection;
          factory->CreateGirderSection(m_pBroker,INVALID_ID,pGdrEntry->GetDimensions(),-1,-1,&gdrSection);
@@ -23173,7 +23169,7 @@ void CBridgeAgentImp::GetDeckCastingRegionPerimeter(IndexType regionIdx, SpanInd
    GetSlabPerimeter(startPierIdx, Xstart, endPierIdx, Xend, nPoints, pcType, pActivity, ppPoints);
 }
 
-void CBridgeAgentImp::ReportEffectiveFlangeWidth(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) const
+void CBridgeAgentImp::ReportEffectiveFlangeWidth(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    VALIDATE(BRIDGE);
 
@@ -23358,8 +23354,7 @@ Float64 CBridgeAgentImp::GetSegmentHeight(const CPrecastSegmentData* pSegment, F
    const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
    const GirderLibraryEntry* pGirderEntry = GetGirderLibraryEntry(segmentKey);
 
-   CComPtr<IBeamFactory> beamFactory;
-   pGirderEntry->GetBeamFactory(&beamFactory);
+   auto beamFactory = pGirderEntry->GetBeamFactory();
 
    return beamFactory->GetSegmentHeight(m_pBroker, pSegment, Xs);
 }
@@ -23548,8 +23543,8 @@ void CBridgeAgentImp::GetSegmentShape(const CPrecastSegmentData* pSegment, Float
    const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
    const GirderLibraryEntry* pGirderEntry = GetGirderLibraryEntry(segmentKey);
 
-   CComPtr<IBeamFactory> beamFactory;
-   pGirderEntry->GetBeamFactory(&beamFactory);
+   auto beamFactory = pGirderEntry->GetBeamFactory();
+
 
    beamFactory->CreateSegmentShape(m_pBroker, pSegment, Xs, sectionBias, ppShape);
 }
@@ -25023,8 +25018,8 @@ bool CBridgeAgentImp::IsPrismatic(IntervalIndexType intervalIdx,const CSegmentKe
 
    const GirderLibraryEntry* pGirderEntry = GetGirderLibraryEntry(segmentKey);
 
-   CComPtr<IBeamFactory> beamFactory;
-   pGirderEntry->GetBeamFactory(&beamFactory);
+   auto beamFactory = pGirderEntry->GetBeamFactory();
+
 
    bool bPrismaticGirder = beamFactory->IsPrismatic(segmentKey);
    if ( !bPrismaticGirder )
@@ -25182,8 +25177,8 @@ bool CBridgeAgentImp::IsSymmetricSegment(const CSegmentKey& segmentKey) const
 
    const GirderLibraryEntry* pGirderEntry = GetGirderLibraryEntry(segmentKey);
 
-   CComPtr<IBeamFactory> beamFactory;
-   pGirderEntry->GetBeamFactory(&beamFactory);
+   auto beamFactory = pGirderEntry->GetBeamFactory();
+
 
    return beamFactory->IsSymmetric(segmentKey);
 }
@@ -25410,8 +25405,8 @@ bool CBridgeAgentImp::CanTopFlangeBeLongitudinallyThickened(const CSegmentKey& s
 {
    const GirderLibraryEntry* pGirderEntry = GetGirderLibraryEntry(segmentKey);
 
-   CComPtr<IBeamFactory> beamFactory;
-   pGirderEntry->GetBeamFactory(&beamFactory);
+   auto beamFactory = pGirderEntry->GetBeamFactory();
+
 
    return beamFactory->HasTopFlangeThickening();
 }
@@ -26260,8 +26255,8 @@ bool CBridgeAgentImp::CanPrecamber(const CSegmentKey& segmentKey) const
 {
    const GirderLibraryEntry* pGirderEntry = GetGirderLibraryEntry(segmentKey);
 
-   CComPtr<IBeamFactory> beamFactory;
-   pGirderEntry->GetBeamFactory(&beamFactory);
+   auto beamFactory = pGirderEntry->GetBeamFactory();
+
 
    return beamFactory->CanPrecamber();
 }
@@ -26349,8 +26344,8 @@ Float64 CBridgeAgentImp::GetPrecamberSlope(const pgsPointOfInterest& poi) const
 bool CBridgeAgentImp::HasShearKey(const CGirderKey& girderKey,pgsTypes::SupportedBeamSpacing spacingType) const
 {
    const GirderLibraryEntry* pGirderEntry = GetGirderLibraryEntry(girderKey);
-   CComPtr<IBeamFactory> beamFactory;
-   pGirderEntry->GetBeamFactory(&beamFactory);
+   auto beamFactory = pGirderEntry->GetBeamFactory();
+
 
    return beamFactory->IsShearKey(pGirderEntry->GetDimensions(), spacingType);
 }
@@ -26358,8 +26353,8 @@ bool CBridgeAgentImp::HasShearKey(const CGirderKey& girderKey,pgsTypes::Supporte
 void CBridgeAgentImp::GetShearKeyAreas(const CGirderKey& girderKey,pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const
 {
    const GirderLibraryEntry* pGirderEntry = GetGirderLibraryEntry(girderKey);
-   CComPtr<IBeamFactory> beamFactory;
-   pGirderEntry->GetBeamFactory(&beamFactory);
+   auto beamFactory = pGirderEntry->GetBeamFactory();
+
 
    beamFactory->GetShearKeyAreas(pGirderEntry->GetDimensions(), spacingType, uniformArea, areaPerJoint);
 }
@@ -29756,8 +29751,8 @@ void CBridgeAgentImp::GetSegmentDuctPoint(const pgsPointOfInterest& poi, const C
       EAF_GET_IFACE(ILibrary, pLib);
       const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(pSegment->GetGirder()->GetGirderName());
 
-      CComPtr<IBeamFactory> factory;
-      pGdrEntry->GetBeamFactory(&factory);
+      auto factory = pGdrEntry->GetBeamFactory();
+
 
       Float64 height = factory->GetSegmentHeight(m_pBroker, pSegment, z); // this takes into account things like section trasitions
 
@@ -35824,13 +35819,13 @@ void CBridgeAgentImp::CreateStrandMover(LPCTSTR strGirderName,Float64 Hg,pgsType
    {
       pGirderEntry->GetEndAdjustmentLimits(&endTopFace, &endTopLimit, &endBottomFace, &endBottomLimit);
 
-      etf = endTopFace    == pgsTypes::BottomFace ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
-      ebf = endBottomFace == pgsTypes::BottomFace ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
+      etf = endTopFace    == pgsTypes::BottomFace ? IBeamFactory::BeamFace::Bottom : IBeamFactory::BeamFace::Top;
+      ebf = endBottomFace == pgsTypes::BottomFace ? IBeamFactory::BeamFace::Bottom : IBeamFactory::BeamFace::Top;
 
       pGirderEntry->GetHPAdjustmentLimits(&hpTopFace, &hpTopLimit, &hpBottomFace, &hpBottomLimit);
 
-      htf = hpTopFace    == pgsTypes::BottomFace ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
-      hbf = hpBottomFace == pgsTypes::BottomFace ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
+      htf = hpTopFace    == pgsTypes::BottomFace ? IBeamFactory::BeamFace::Bottom : IBeamFactory::BeamFace::Top;
+      hbf = hpBottomFace == pgsTypes::BottomFace ? IBeamFactory::BeamFace::Bottom : IBeamFactory::BeamFace::Top;
 
       // only allow end adjustents if increment is non-negative
       end_increment = pGirderEntry->IsVerticalAdjustmentAllowedEnd() ?  pGirderEntry->GetEndStrandIncrement() : -1.0;
@@ -35846,8 +35841,8 @@ void CBridgeAgentImp::CreateStrandMover(LPCTSTR strGirderName,Float64 Hg,pgsType
       hpTopLimit = endTopLimit;
       hpBottomLimit = endBottomLimit;
 
-      etf = endTopFace    == pgsTypes::BottomFace ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
-      ebf = endBottomFace == pgsTypes::BottomFace ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
+      etf = endTopFace    == pgsTypes::BottomFace ? IBeamFactory::BeamFace::Bottom : IBeamFactory::BeamFace::Top;
+      ebf = endBottomFace == pgsTypes::BottomFace ? IBeamFactory::BeamFace::Bottom : IBeamFactory::BeamFace::Top;
 
       htf = etf;
       hbf = ebf;
@@ -35858,8 +35853,7 @@ void CBridgeAgentImp::CreateStrandMover(LPCTSTR strGirderName,Float64 Hg,pgsType
    }
 
    // create the strand mover
-   CComPtr<IBeamFactory> beamFactory;
-   pGirderEntry->GetBeamFactory(&beamFactory);
+   auto beamFactory = pGirderEntry->GetBeamFactory();
    beamFactory->CreateStrandMover(pGirderEntry->GetDimensions(), Hg, 
                                   etf, endTopLimit, ebf, endBottomLimit, 
                                   htf, hpTopLimit,  hbf, hpBottomLimit, 

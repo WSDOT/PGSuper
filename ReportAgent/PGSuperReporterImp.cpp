@@ -43,7 +43,7 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\StatusCenter.h>
 
-#include <IReportManager.h>
+#include <EAF/EAFReportManager.h>
 
 #include <psgLib/PrincipalTensionStressCriteria.h>
 
@@ -67,7 +67,7 @@ HRESULT CPGSuperReporterImp::InitReportBuilders()
       return hr;
    }
 
-   EAF_GET_IFACE_(WBFL::Reporting,IReportManager,pRptMgr);
+   EAF_GET_IFACE(IEAFReportManager,pRptMgr);
 
    //
    // Create report spec builders
@@ -176,8 +176,8 @@ HRESULT CPGSuperReporterImp::OnSpecificationChanged()
    strReportNames.push_back(_T("(DEBUG) Interval by Interval Details Report"));
 #endif // _DEBUG || _BETA_VERSION
 
-   EAF_GET_IFACE_(WBFL::Reporting,IReportManager,pRptMgr);
-   EAF_GET_IFACE( ILossParameters, pLossParams);
+   EAF_GET_IFACE(IEAFReportManager,pRptMgr);
+   EAF_GET_IFACE(ILossParameters, pLossParams);
 
    bool bTimeStep = pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP;
    bool bHidden = true;

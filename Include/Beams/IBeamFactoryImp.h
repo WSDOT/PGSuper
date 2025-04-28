@@ -20,37 +20,17 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// SplicedIBeamFactoryImpl.h : Declaration of the CSplicedIBeamFactory
 #pragma once
 
-#include "resource.h"       // main symbols
 #include "IFace\BeamFactory.h"
-#include "IBeamFactory.h" // CLSID
 #include <Beams\Helper.h>
 
 #include <vector>
 
-/////////////////////////////////////////////////////////////////////////////
-// CSplicedIBeamFactory
-class ATL_NO_VTABLE CSplicedIBeamFactory : 
-   public CComObjectRootEx<CComSingleThreadModel>,
-   public CComCoClass<CSplicedIBeamFactory, &CLSID_SplicedIBeamFactory>,
-   public ISplicedBeamFactory
+class CIBeamFactory : public IBeamFactory
 {
 public:
-	CSplicedIBeamFactory()
-	{
-	}
-
-   HRESULT FinalConstruct();
-
-DECLARE_REGISTRY_RESOURCEID(IDR_SPLICEDIBEAMFACTORY)
-DECLARE_CLASSFACTORY_SINGLETON(CSplicedIBeamFactory)
-
-BEGIN_COM_MAP(CSplicedIBeamFactory)
-   COM_INTERFACE_ENTRY(ISplicedBeamFactory)
-   COM_INTERFACE_ENTRY(IBeamFactory)
-END_COM_MAP()
+   CIBeamFactory();
 
 public:
    // IBeamFactory
@@ -61,7 +41,7 @@ public:
    void ConfigureSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const override;
    void LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const override;
    std::shared_ptr<CDistFactorEngineerBase> CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const pgsTypes::SupportedBeamSpacing* pSpacingType, const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const override;
-   std::shared_ptr<CPsLossEngineerBase> CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey) const override;
+   std::unique_ptr<CPsLossEngineerBase> CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, const CGirderKey& girderKey) const override;
    void CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
                           IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                           IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
@@ -80,8 +60,8 @@ public:
    std::_tstring GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const override;
    std::_tstring GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const override;
    std::_tstring GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType) const override;
-   std::_tstring GetInteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const override;
-   std::_tstring GetExteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const override;
+   std::_tstring GetInteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker, pgsTypes::SupportedDeckType deckType) const override;
+   std::_tstring GetExteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker, pgsTypes::SupportedDeckType deckType) const override;
    CLSID GetCLSID() const override;
    std::_tstring GetName() const override;
    CLSID GetFamilyCLSID() const override;
@@ -119,26 +99,18 @@ public:
    bool CanPrecamber() const override;
    GirderIndexType GetMinimumBeamCount() const override;
 
-// ISplicedBeamFactory
-   bool SupportsVariableDepthSection() const override;
-   LPCTSTR GetVariableDepthDimension() const override;
-   std::vector<pgsTypes::SegmentVariationType> GetSupportedSegmentVariations(bool bIsVariableDepthSection) const override;
-   bool CanBottomFlangeDepthVary() const override;
-   LPCTSTR GetBottomFlangeDepthDimension() const override;
-   bool SupportsEndBlocks() const override;
-   Float64 GetBottomFlangeDepth(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const override;
-
 private:
    std::vector<std::_tstring> m_DimNames;
    std::vector<Float64> m_DefaultDims;
-   std::vector<const WBFL::Units::Length*> m_DimUnits[2];
+   std::array<std::vector<const WBFL::Units::Length*>,2> m_DimUnits;
 
    void GetDimensions(const IBeamFactory::Dimensions& dimensions,
-                      Float64& d1,Float64& d2,Float64& d3,Float64& d4,Float64& d5,Float64& d6,Float64& d7,
-                      Float64& w1,Float64& w2,Float64& w3,Float64& w4,
-                      Float64& t1,Float64& t2, Float64& c1) const;
+                      Float64& d1,Float64& d2,Float64& d3,Float64& d4,Float64& d5,Float64& d6,Float64& h,
+                      Float64& w1,Float64& w2,Float64& w3,Float64& w4,Float64& w5,
+                      Float64& t1,Float64& t2, Float64& c1,
+                      Float64& ebWidth,Float64& ebLength,Float64& ebTransition) const;
 
    Float64 GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name) const;
 
-   void DimensionAndPositionBeam(const IBeamFactory::Dimensions& dimensions, Float64 Hg,Float64 Hbf,IPrecastBeam* pBeam) const;
+   void DimensionAndPositionBeam(const IBeamFactory::Dimensions& dimensions, IPrecastBeam2* pBeam) const;
 };

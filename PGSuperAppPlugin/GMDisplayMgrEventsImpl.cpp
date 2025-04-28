@@ -28,7 +28,7 @@
 #include "PGSuperApp.h"
 #include "GMDisplayMgrEventsImpl.h"
 #include "GirderModelChildFrame.h"
-#include <IReportManager.h>
+#include <EAF/EAFReportManager.h>
 #include <IFace\EditByUI.h>
 #include "PGSpliceDoc.h"
 

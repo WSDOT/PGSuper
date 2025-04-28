@@ -266,8 +266,7 @@ void CGirderSpacingGrid::UpdateGrid()
          {
             const GirderLibraryEntry* pGdrEntry = m_pGirderGroup->GetGirderLibraryEntry(gdrIdx+i);
             const IBeamFactory::Dimensions& dimensions = pGdrEntry->GetDimensions();
-            CComPtr<IBeamFactory> factory;
-            pGdrEntry->GetBeamFactory(&factory);
+            auto factory = pGdrEntry->GetBeamFactory();
 
             factory->GetAllowableSpacingRange(dimensions, m_DeckType, spacingType, &minSpacing[i], &maxSpacing[i]);
             minSpacing[i] *= skewCorrection;

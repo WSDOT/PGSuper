@@ -20,12 +20,8 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// BulbTeeFactory.h : Declaration of the CBulbTeeFactory
+#pragma once
 
-#ifndef __BULBTEEFACTORY_H_
-#define __BULBTEEFACTORY_H_
-
-#include "resource.h"       // main symbols
 #include "IFace\BeamFactory.h"
 #include "IBeamFactory.h" // CLSID
 #include <Beams\Helper.h>
@@ -34,26 +30,11 @@
 
 /////////////////////////////////////////////////////////////////////////////
 // CBulbTeeFactory
-class ATL_NO_VTABLE CBulbTeeFactory : 
-   public CComObjectRootEx<CComSingleThreadModel>,
-   public CComCoClass<CBulbTeeFactory, &CLSID_BulbTeeFactory>,
-   public IBeamFactory,
+class CBulbTeeFactory : public IBeamFactory,
    public IBeamFactoryCompatibility
 {
 public:
-	CBulbTeeFactory()
-	{
-	}
-
-   HRESULT FinalConstruct();
-
-DECLARE_REGISTRY_RESOURCEID(IDR_BULBTEEFACTORY)
-DECLARE_CLASSFACTORY_SINGLETON(CBulbTeeFactory)
-
-BEGIN_COM_MAP(CBulbTeeFactory)
-   COM_INTERFACE_ENTRY(IBeamFactory)
-   COM_INTERFACE_ENTRY(IBeamFactoryCompatibility)
-END_COM_MAP()
+   CBulbTeeFactory();
 
 public:
    // IBeamFactory
@@ -64,7 +45,7 @@ public:
    void ConfigureSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const override;
    void LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const override;
    std::shared_ptr<CDistFactorEngineerBase> CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const pgsTypes::SupportedBeamSpacing* pSpacingType, const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const override;
-   std::shared_ptr<CPsLossEngineerBase> CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, const CGirderKey& girderKey) const override;
+   std::unique_ptr<CPsLossEngineerBase> CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, const CGirderKey& girderKey) const override;
    void CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
                           IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                           IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
@@ -124,7 +105,7 @@ public:
 
 // IBeamFactoryCompatibility
 public:
-   pgsCompatibilityData* GetCompatibilityData() const override;
+   std::shared_ptr<pgsCompatibilityData> GetCompatibilityData() const override;
    void UpdateBridgeModel(CBridgeDescription2* pBridgeDesc, const GirderLibraryEntry* pGirderEntry) const override;
 
 private:
@@ -132,8 +113,8 @@ private:
    std::vector<Float64> m_DefaultDims;
    std::vector<const WBFL::Units::Length*> m_DimUnits[2];
 
-   mutable bool m_bHaveOldTopFlangeThickening; // set to true if we have an old D8 value that hasn't been retreived yet (this is just for debugging... we don't want to override a value and lose it)
-   mutable Float64 m_OldTopFlangeThickening; /// this is the obsolete D8 value we justed loaded
+   mutable bool m_bHaveOldTopFlangeThickening; // set to true if we have an old D8 value that hasn't been retrieved yet (this is just for debugging... we don't want to override a value and lose it)
+   mutable Float64 m_OldTopFlangeThickening; /// this is the obsolete D8 value we just loaded
 
    StatusCallbackIDType m_scidInformationalWarning;
    mutable StatusGroupIDType m_StatusGroupID;
@@ -153,5 +134,3 @@ private:
    Float64 GetFlangeThickening(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const;
    void PositionBeamShape(IBulbTee2* pBeam) const;
 };
-
-#endif //__BULBTEEFACTORY_H_

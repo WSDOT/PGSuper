@@ -159,7 +159,7 @@ void CSelectClosureJointDlg::FillSupportComboBox()
       const CPierData2* pPier = m_pBridgeDesc->GetPier(pierIdx);
       if ( pPier->IsInteriorPier() && pPier->GetClosureJoint(m_GirderIdx) )
       {
-         CString strLabel(GetLabel(pPier,m_pDisplayUnits.get()));
+         CString strLabel(GetLabel(pPier,m_pDisplayUnits));
          int idx = pCB->AddString(strLabel);
          pCB->SetItemData(idx,pierIdx);
       }
@@ -171,7 +171,7 @@ void CSelectClosureJointDlg::FillSupportComboBox()
       const CTemporarySupportData* pTS = m_pBridgeDesc->GetTemporarySupport(tsIdx);
       if ( pTS->GetClosureJoint(m_GirderIdx) )
       {
-         CString strLabel(GetLabel(pTS,m_pDisplayUnits.get()));
+         CString strLabel(GetLabel(pTS,m_pDisplayUnits));
          int idx = pCB->AddString(strLabel);
          pCB->SetItemData(idx,EncodeTSIndex(tsIdx));
       }

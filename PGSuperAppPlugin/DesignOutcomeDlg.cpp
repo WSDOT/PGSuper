@@ -30,7 +30,7 @@
 #include <EAF\EAFAutoProgress.h>
 
 #include <IFace\Artifact.h>
-#include <IReportManager.h>
+#include <EAF/EAFReportManager.h>
 
 #include <EAF\EAFApp.h>
 #include <EAF\EAFDocument.h>
@@ -245,7 +245,7 @@ BOOL CDesignOutcomeDlg::OnInitDialog()
    
    auto pBroker = m_pRptSpec->GetBroker();
 
-   EAF_GET_IFACE2_(WBFL::Reporting,pBroker,IReportManager,pRptMgr);
+   EAF_GET_IFACE2(pBroker,IEAFReportManager,pRptMgr);
    std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = std::dynamic_pointer_cast<WBFL::Reporting::ReportSpecification,CMultiGirderReportSpecification>(m_pRptSpec);
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> nullSpecBuilder;
    CWnd* pWnd = GetDlgItem(IDC_BROWSER);

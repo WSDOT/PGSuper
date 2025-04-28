@@ -201,8 +201,7 @@ void CBeamDimensionGrid::ResetGrid()
    if ( GetRowCount() > 0 )
       RemoveRows(1,GetRowCount());
 
-   CComPtr<IBeamFactory> pFactory;
-   pDad->m_Entry.GetBeamFactory(&pFactory);
+   auto pFactory = pDad->m_Entry.GetBeamFactory();
    const auto& names = pFactory->GetDimensionNames();
 
    const ROWCOL num_rows = (ROWCOL)names.size();

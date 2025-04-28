@@ -879,7 +879,7 @@ void CStrandGrid::ShowValidationError(ROWCOL nRow,UINT iError)
 
 /////////////////////////////////////////////////////////////////////////////
 // CRowStrandGrid
-ROWCOL CRowStrandGrid::InitSpecializedColumns(ROWCOL col,IEAFDisplayUnits* pDisplayUnits)
+ROWCOL CRowStrandGrid::InitSpecializedColumns(ROWCOL col,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    SetStyleRange(CGXRange(0, col, 0, col + 1), CGXStyle()
       .SetHorizontalAlignment(DT_CENTER)
@@ -934,7 +934,7 @@ ROWCOL CRowStrandGrid::SetSpecializedColumnStyles(ROWCOL nRow, ROWCOL col)
    return col;
 }
 
-ROWCOL CRowStrandGrid::GetSpecializedColumnValues(ROWCOL nRow, ROWCOL col, CStrandRow& strandRow, IEAFDisplayUnits* pDisplayUnits)
+ROWCOL CRowStrandGrid::GetSpecializedColumnValues(ROWCOL nRow, ROWCOL col, CStrandRow& strandRow, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    Float64 value = _tstof(GetCellValue(nRow, col++));
    strandRow.m_Z = WBFL::Units::ConvertToSysUnits(value, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
@@ -947,7 +947,7 @@ ROWCOL CRowStrandGrid::GetSpecializedColumnValues(ROWCOL nRow, ROWCOL col, CStra
    return col;
 }
 
-ROWCOL CRowStrandGrid::AppendSpecializedColumnValues(ROWCOL nRow, ROWCOL col, const CStrandRow& strandRow, IEAFDisplayUnits* pDisplayUnits)
+ROWCOL CRowStrandGrid::AppendSpecializedColumnValues(ROWCOL nRow, ROWCOL col, const CStrandRow& strandRow, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    CString strValue;
    strValue.Format(_T("%s"), ::FormatDimension(strandRow.m_Z, pDisplayUnits->GetComponentDimUnit(), false));
@@ -1022,7 +1022,7 @@ void CRowStrandGrid::ShowValidationError(ROWCOL nRow, UINT iError)
 
 /////////////////////////////////////////////////////////////////////////////
 // CPointStrandGrid
-ROWCOL CPointStrandGrid::InitSpecializedColumns(ROWCOL col, IEAFDisplayUnits* pDisplayUnits)
+ROWCOL CPointStrandGrid::InitSpecializedColumns(ROWCOL col, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    CString strLabel;
    strLabel.Format(_T("Z (%s)"), pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str());
@@ -1045,7 +1045,7 @@ ROWCOL CPointStrandGrid::SetSpecializedColumnStyles(ROWCOL nRow, ROWCOL col)
    return col;
 }
 
-ROWCOL CPointStrandGrid::GetSpecializedColumnValues(ROWCOL nRow, ROWCOL col, CStrandRow& strandRow, IEAFDisplayUnits* pDisplayUnits)
+ROWCOL CPointStrandGrid::GetSpecializedColumnValues(ROWCOL nRow, ROWCOL col, CStrandRow& strandRow, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    Float64 value = _tstof(GetCellValue(nRow, col++));
    strandRow.m_Z = WBFL::Units::ConvertToSysUnits(value, pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
@@ -1055,7 +1055,7 @@ ROWCOL CPointStrandGrid::GetSpecializedColumnValues(ROWCOL nRow, ROWCOL col, CSt
    return col;
 }
 
-ROWCOL CPointStrandGrid::AppendSpecializedColumnValues(ROWCOL nRow, ROWCOL col, const CStrandRow& strandRow, IEAFDisplayUnits* pDisplayUnits)
+ROWCOL CPointStrandGrid::AppendSpecializedColumnValues(ROWCOL nRow, ROWCOL col, const CStrandRow& strandRow, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    CString strValue;
    strValue.Format(_T("%s"), ::FormatDimension(strandRow.m_Z, pDisplayUnits->GetComponentDimUnit(), false));

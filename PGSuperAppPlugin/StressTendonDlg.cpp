@@ -138,8 +138,8 @@ void CStressTendonDlg::FillLists()
          CGirderKey girderKey(pGirder->GetGirderKey());
 
          const auto* pGirderEntry = pGirder->GetGirderLibraryEntry();
-         CComPtr<IBeamFactory> factory;
-         pGirderEntry->GetBeamFactory(&factory);
+         auto factory = pGirderEntry->GetBeamFactory();
+
          WebIndexType nWebs = factory->GetWebCount(pGirderEntry->GetDimensions());
 
          DuctIndexType nDucts = pPTData->GetDuctCount();

@@ -51,7 +51,7 @@
 
 #include <IFace\Project.h>
 #include <IFace\PrestressForce.h>
-#include <IReportManager.h>
+#include <EAF/EAFReportManager.h>
 #include <IFace\BeamFactory.h>
 
 #include <PgsExt\BridgeDescription2.h>
@@ -1120,8 +1120,7 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
       throw exc;
    }
 
-   CComPtr<IBeamFactory> factory;
-   pGdrEntry->GetBeamFactory(&factory);
+   auto factory = pGdrEntry->GetBeamFactory();
    bridgeDesc.SetGirderFamilyName( factory->GetGirderFamilyName().c_str() );
 
    bridgeDesc.SetGirderName(gdr_name);

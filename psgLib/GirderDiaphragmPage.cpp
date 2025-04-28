@@ -72,8 +72,7 @@ BOOL CGirderDiaphragmPage::OnInitDialog()
    }
 
    CGirderMainSheet* pParent = (CGirderMainSheet*)GetParent();
-   CComPtr<IBeamFactory> beamFactory;
-   pParent->m_Entry.GetBeamFactory(&beamFactory);
+   auto beamFactory = pParent->m_Entry.GetBeamFactory();
 
    pgsTypes::SupportedDiaphragmTypes diaphragmTypes = beamFactory->GetSupportedDiaphragms();
    if ( diaphragmTypes.size() == 0 )

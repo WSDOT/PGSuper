@@ -20,15 +20,11 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// PsBeamLossEngineer.h : Declaration of the CPsBeamLossEngineer
+#pragma once
 
-#ifndef __PSBEAMLOSSENGINEER_H_
-#define __PSBEAMLOSSENGINEER_H_
-
-#include "resource.h"       // main symbols
-#include "IFace\PsLossEngineer.h"
-#include "Beams\Interfaces.h"
-#include "PsLossEngineer.h"
+#include <IFace\PsLossEngineer.h>
+#include <Beams\Interfaces.h>
+#include <Beams\PsLossEngineer.h>
 #include <Plugins\CLSID.h>
 
 #include <PgsExt\PoiKey.h>
@@ -89,5 +85,3 @@ private:
    //    computed losses
    CDesignLosses m_DesignLosses;
 };
-
-#endif //__PSBEAMLOSSENGINEER_H_

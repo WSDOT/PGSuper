@@ -193,8 +193,8 @@ void CGirderTopWidthGrid::UpdateGrid()
 
       const CSplicedGirderData* pGirder = m_pGirderGroup->GetGirder(firstGdrIdx);
       const GirderLibraryEntry* pGdrEntry = pGirder->GetGirderLibraryEntry();
-      CComPtr<IBeamFactory> factory;
-      pGdrEntry->GetBeamFactory(&factory);
+      auto factory = pGdrEntry->GetBeamFactory();
+
 
       CString strTopWidthTypes;
       auto supportedTypes = factory->GetSupportedTopWidthTypes();
@@ -411,8 +411,7 @@ void CGirderTopWidthGrid::UpdateGrid()
       );
 
    CSpanGirderLayoutPage* pParent = (CSpanGirderLayoutPage*)GetParent();
-   CComPtr<IBeamFactory> factory;
-   pParent->GetBeamFactory(&factory);
+   auto factory = pParent->GetBeamFactory();
    if (!factory->CanTopWidthVary())
    {
       HideRows(4, 5);

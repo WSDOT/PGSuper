@@ -30,7 +30,7 @@
 #include <EAF\EAFDocument.h>
 #include <IFace\Project.h>
 
-#include <IReportManager.h>
+#include <EAF/EAFReportManager.h>
 #include <Reporting\TimelineManagerReportSpecification.h>
 
 
@@ -162,7 +162,7 @@ void CEditTimelineDlg::OnBnClickedViewTimelineSummary()
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2_(WBFL::Reporting, pBroker, IReportManager, pReportMgr);
+   EAF_GET_IFACE2(pBroker, IEAFReportManager, pReportMgr);
    WBFL::Reporting::ReportDescription rptDesc = pReportMgr->GetReportDescription(_T("Timeline Manager Report"));
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
    std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);

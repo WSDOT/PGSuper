@@ -1106,8 +1106,7 @@ void CIntervalManager::ProcessStep2(EventIndexType eventIdx,const CTimelineEvent
          // Here is an alternative method that works
          const CSplicedGirderData* pGirder = pBridgeDesc->GetGirderGroup(tendonKey.girderKey.groupIndex)->GetGirder(tendonKey.girderKey.girderIndex);
          const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
-         CComPtr<IBeamFactory> factory;
-         pGirderEntry->GetBeamFactory(&factory);
+         auto factory = pGirderEntry->GetBeamFactory();
          WebIndexType nWebs = factory->GetWebCount(pGirderEntry->GetDimensions());
 
          for ( WebIndexType webIdx = 0; webIdx < nWebs; webIdx++ )

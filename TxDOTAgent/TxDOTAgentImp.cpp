@@ -26,7 +26,7 @@
 #include "TxDOTAgentImp.h"
 
 #include <IFace\StatusCenter.h>
-#include <IReportManager.h>
+#include <EAF/EAFReportManager.h>
 #include <IFace\Project.h>
 #include <IFace\Artifact.h>
 #include <IFace\Test1250.h>
@@ -107,7 +107,7 @@ bool CTxDOTAgentImp::Init()
    //EAF_AGENT_INIT;
 
    // Register our reports
-   EAF_GET_IFACE_(WBFL::Reporting,IReportManager,pRptMgr);
+   EAF_GET_IFACE(IEAFReportManager,pRptMgr);
 
    //
    // Create report spec builders

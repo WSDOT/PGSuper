@@ -257,7 +257,7 @@ bool CPGSuperReportView::CreateReport(IndexType rptIdx,BOOL bPromptForSpec)
    // Learn if this is a multi-span/girder report
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2_(WBFL::Reporting,pBroker,IReportManager,pRptMgr);
+   EAF_GET_IFACE2(pBroker,IEAFReportManager,pRptMgr);
    std::vector<std::_tstring> names = pRptMgr->GetReportNames();
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder = pRptMgr->GetReportBuilder(names[rptIdx]);
    WBFL::Reporting::ReportDescription rptDesc = pRptBuilder->GetReportDescription();

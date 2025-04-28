@@ -36,14 +36,14 @@
 #include <EAF\EAFTransaction.h>
 
 // Includes for reporting
-#include <IReportManager.h>
+#include <EAF/EAFReportManager.h>
 #include "MyReportSpecification.h"
 #include "MyReportSpecificationBuilder.h"
 #include "MyChapterBuilder.h"
 #include <Reporting\PGSuperTitlePageBuilder.h>
 
 // Includes for graphing
-#include <IGraphManager.h>
+#include <EAF/EAFGraphManager.h>
 #include "TestGraphBuilder.h"
 
 #include <MFCTools\Prompts.h>
@@ -139,7 +139,7 @@ void CExampleExtensionAgent::CreateMyView()
 
 void CExampleExtensionAgent::RegisterGraphs()
 {
-   EAF_GET_IFACE_(WBFL::Graphing,IGraphManager,pGraphMgr);
+   EAF_GET_IFACE(IEAFGraphManager,pGraphMgr);
 
    std::unique_ptr<CTestGraphBuilder> pTestGraphBuilder = std::make_unique<CTestGraphBuilder>();
    pTestGraphBuilder->SetMenuBitmap(&m_bmpMenu);
@@ -208,7 +208,7 @@ void CExampleExtensionAgent::RemoveToolBar()
 void CExampleExtensionAgent::RegisterReports()
 {
    // Register our reports
-   EAF_GET_IFACE_(WBFL::Reporting,IReportManager,pRptMgr);
+   EAF_GET_IFACE(IEAFReportManager,pRptMgr);
 
    //
    // Create report spec builders

@@ -161,7 +161,7 @@ void CCastClosureJointDlg::FillLists()
             PierIDType pierID = pClosure->GetPier()->GetID();
             bool bHasClosure = m_TimelineMgr.IsClosureJointAtPier(pierID);
 
-            CString label(GetLabel(pClosure->GetPier(),m_pDisplayUnits.get()));
+            CString label(GetLabel(pClosure->GetPier(),m_pDisplayUnits));
 
             if ( castClosureJointEventIdx == m_EventIndex )
             {
@@ -181,7 +181,7 @@ void CCastClosureJointDlg::FillLists()
             SupportIDType tsID = pClosure->GetTemporarySupport()->GetID();
             bool bHasClosure = m_TimelineMgr.IsClosureJointAtTempSupport(tsID);
 
-            CString label( GetLabel(pClosure->GetTemporarySupport(),m_pDisplayUnits.get()) );
+            CString label( GetLabel(pClosure->GetTemporarySupport(),m_pDisplayUnits) );
 
             if ( castClosureJointEventIdx == m_EventIndex )
             {

@@ -258,9 +258,6 @@
     <ClInclude Include="BoxBeamFactoryImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="BulbTeeDistFactorEngineer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="BulbTeeFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -286,9 +283,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DeckShrinkageLossTable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DistFactorEngineerImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DoubleTeeFactory.h">
@@ -321,12 +315,6 @@
     <ClInclude Include="..\Include\Beams\Helper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="IBeamDistFactorEngineer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="IBeamFactoryImp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="MultiWeb2Factory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -340,9 +328,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PostTensionInteractionTable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PsBeamLossEngineer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RelaxationAftertransferTable.h">
@@ -367,9 +352,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ShrinkageAtHaulingTable.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SplicedIBeamFactoryImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SplicedNUBeamFactoryImpl.h">
@@ -399,9 +381,6 @@
     <ClInclude Include="TimeDependentLossFinalTable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TimeStepLossEngineer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="TotalPrestressLossTable.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -420,22 +399,10 @@
     <ClInclude Include="UBeam2Factory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="UBeamDistFactorEngineer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="UBeamFactory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="UBeamHelpers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VoidedSlab2DistFactorEngineer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VoidedSlabDistFactorEngineer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="VoidedSlabDistFactorEngineerTypes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="VoidedSlabFactory.h">
@@ -465,9 +432,6 @@
     <ClInclude Include="..\Include\IFace\PsLossEngineer.h">
       <Filter>IFace</Filter>
     </ClInclude>
-    <ClInclude Include="PsLossEngineer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="StdAfx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -493,6 +457,42 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PCIDeckedBulbTeeFactory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Beams\IBeamDistFactorEngineer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Beams\DistFactorEngineerImpl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Beams\TimeStepLossEngineer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Beams\PsBeamLossEngineer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Beams\BulbTeeDistFactorEngineer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Beams\PsLossEngineer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Beams\UBeamDistFactorEngineer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Beams\VoidedSlab2DistFactorEngineer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Beams\VoidedSlabDistFactorEngineer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Beams\VoidedSlabDistFactorEngineerTypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Beams\IBeamFactoryImp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Beams\SplicedIBeamFactoryImpl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -31,8 +31,8 @@
 
 #include <PsgLib\ISupportLibraryManager.h>
 #include <PsgLib\LibraryManager.h>
-#include <IReportManager.h>
-#include <IGraphManager.h>
+#include <EAF/EAFReportManager.h>
+#include <EAF/EAFGraphManager.h>
 
 #include <PgsExt\TxnManager.h>
 

@@ -35,7 +35,7 @@
 #include <WBFLCore_i.c>
 #include <WBFLCogo_i.c>
 
-#include <IGraphManager.h>
+#include <EAF/EAFGraphManager.h>
 #include <IFace\StatusCenter.h>
 
 #include "PGSuperGrapherImp.h"

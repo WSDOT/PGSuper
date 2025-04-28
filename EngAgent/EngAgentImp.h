@@ -166,8 +166,8 @@ public:
    const LOSSDETAILS* GetLossDetails(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) const override;
    CString GetRestrainingLoadName(IntervalIndexType intervalIdx,int loadType) const override;
    Float64 GetElasticShortening(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType) const override;
-   void ReportLosses(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) const override;
-   void ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) const override;
+   void ReportLosses(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const override;
+   void ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const override;
 
    Float64 GetElasticShortening(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,const GDRCONFIG& config) const override;
    const LOSSDETAILS* GetLossDetails(const pgsPointOfInterest& poi,const GDRCONFIG& config,IntervalIndexType intervalIdx) const override;
@@ -279,7 +279,7 @@ public:
    Float64 GetSkewCorrectionFactorForShear(const CSpanKey& spanKey,pgsTypes::LimitState ls) const override;
    void GetNegMomentDistFactorPoints(const CSpanKey& spanKey,Float64* dfPoints,IndexType* nPoints) const override;
    void GetDistributionFactors(const pgsPointOfInterest& poi,pgsTypes::LimitState limitState,Float64* pM,Float64* nM,Float64* V,const GDRCONFIG* pConfig = nullptr) const override;
-   void ReportDistributionFactors(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) const override;
+   void ReportDistributionFactors(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const override;
    void ReportReactionDistributionFactors(const CGirderKey& girderKey, rptChapter* pChapter, bool bSubHeading) const override;
    bool Run1250Tests(const CSpanKey& spanKey,pgsTypes::LimitState limitState,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile) const override;
    Uint32 GetNumberOfDesignLanes(SpanIndexType spanIdx) const override;
@@ -464,7 +464,8 @@ private:
    pgsBearingDesignEngineer  m_BearingEngineer;
    
    mutable bool m_bAreDistFactorEngineersValidated;
-   mutable std::shared_ptr<IDistFactorEngineer> m_pDistFactorEngineer; // assigned a polymorphic object during validation (must be mutable for delayed assignment)
+#pragma Reminder("WORKING HERE - Removing COM - should this be a unique_ptr?")
+   mutable std::shared_ptr<CDistFactorEngineerBase> m_pDistFactorEngineer; // assigned a polymorphic object during validation (must be mutable for delayed assignment)
 
    static UINT DeleteMomentCapacityEngineer(LPVOID pParam);
    std::unique_ptr<pgsMomentCapacityEngineer> m_pMomentCapacityEngineer;

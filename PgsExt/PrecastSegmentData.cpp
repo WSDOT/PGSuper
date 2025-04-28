@@ -1416,8 +1416,7 @@ Float64 CPrecastSegmentData::GetSegmentHeight(bool bSegmentHeight) const
 
    // Gets the segment height based on the data in the girder library entry
    const GirderLibraryEntry* pGdrEntry = GetGirder()->GetGirderLibraryEntry();
-   CComPtr<IBeamFactory> factory;
-   pGdrEntry->GetBeamFactory(&factory);
+   auto factory = pGdrEntry->GetBeamFactory();
 
    auto pBroker = EAFGetBroker();
    CComPtr<IGirderSection> gdrSection;

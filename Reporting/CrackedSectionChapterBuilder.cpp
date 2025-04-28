@@ -26,8 +26,8 @@
 #include <Reporting\CrackedSectionChapterBuilder.h>
 #include <Reporting\CrackedSectionReportSpecification.h>
 
-#include <IReportManager.h>
-#include <EAF\EAFDisplayUnits.h>
+#include <EAF/EAFReportManager.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\CrackedSection.h>
 

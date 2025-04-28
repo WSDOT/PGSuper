@@ -22,7 +22,7 @@
 
 // IPsLossEngineer.cpp : Implementation of CPsLossEngineer
 #include "stdafx.h"
-#include "PsLossEngineer.h"
+#include <Beams/PsLossEngineer.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\PrestressForce.h>
@@ -91,11 +91,6 @@
 
 #include <psgLib/SpecificationCriteria.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // utility function so we can use the WBFL::LRFD::ApproximateLosses::BeanType enum as an array index
 inline constexpr auto operator+(WBFL::LRFD::ApproximateLosses::BeamType t) noexcept { return std::underlying_type<WBFL::LRFD::ApproximateLosses::BeamType>::type(t); }

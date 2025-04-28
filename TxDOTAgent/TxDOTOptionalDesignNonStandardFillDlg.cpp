@@ -63,8 +63,7 @@ void CTxDOTOptionalDesignNonStandardFillDlg::Init(CTxDOTOptionalDesignGirderData
    const GirderLibraryEntry* pGdrEntry = dynamic_cast<const GirderLibraryEntry*>(pLib->GetEntry(girder_name));
 
    // first need cg location of outer shape - this requires some work
-   CComPtr<IBeamFactory> pFactory;
-   pGdrEntry->GetBeamFactory(&pFactory);
+   auto pFactory = pGdrEntry->GetBeamFactory();
    GirderLibraryEntry::Dimensions dimensions = pGdrEntry->GetDimensions();
 
    long DUMMY_AGENT_ID = -1;

@@ -20,38 +20,18 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// UBeam2Factory.h : Declaration of the CUBeam2Factory
+#pragma once
 
-#ifndef __UBEAM2FACTORY_H_
-#define __UBEAM2FACTORY_H_
-
-#include "resource.h"       // main symbols
 #include "IFace\BeamFactory.h"
 #include "IBeamFactory.h" // CLSID
 #include <Beams\Helper.h>
 
 #include <vector>
 
-/////////////////////////////////////////////////////////////////////////////
-// CUBeam2Factory
-class ATL_NO_VTABLE CUBeam2Factory : 
-   public CComObjectRootEx<CComSingleThreadModel>,
-   public CComCoClass<CUBeam2Factory, &CLSID_UBeam2Factory>,
-   public IBeamFactory
+class CUBeam2Factory : public IBeamFactory
 {
 public:
-	CUBeam2Factory()
-	{
-	}
-
-   HRESULT FinalConstruct();
-
-DECLARE_REGISTRY_RESOURCEID(IDR_UBEAM2FACTORY)
-DECLARE_CLASSFACTORY_SINGLETON(CUBeam2Factory)
-
-BEGIN_COM_MAP(CUBeam2Factory)
-   COM_INTERFACE_ENTRY(IBeamFactory)
-END_COM_MAP()
+   CUBeam2Factory();
 
 public:
    // IBeamFactory
@@ -62,7 +42,7 @@ public:
    void ConfigureSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const override;
    void LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const override;
    std::shared_ptr<CDistFactorEngineerBase> CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const pgsTypes::SupportedBeamSpacing* pSpacingType, const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const override;
-   std::shared_ptr<CPsLossEngineerBase> CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, const CGirderKey& girderKey) const override;
+   std::unique_ptr<CPsLossEngineerBase> CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, const CGirderKey& girderKey) const override;
    void CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
                           IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                           IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
@@ -135,5 +115,3 @@ public:
 private:
    void DimensionAndPositionBeam(const IBeamFactory::Dimensions& dimensions, IUBeam2* pBeam) const;
 };
-
-#endif //__UBEAM2FACTORY_H_

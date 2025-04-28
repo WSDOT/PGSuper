@@ -28,9 +28,9 @@
 
 #include "BoxBeamFactoryImpl.h"
 #include "BoxBeamDistFactorEngineer.h"
-#include "UBeamDistFactorEngineer.h"
-#include "PsBeamLossEngineer.h"
-#include "TimeStepLossEngineer.h"
+#include <Beams/UBeamDistFactorEngineer.h>
+#include <Beams/PsBeamLossEngineer.h>
+#include <Beams/TimeStepLossEngineer.h>
 #include "StrandMoverImpl.h"
 #include <GeomModel\PrecastBeam.h>
 #include <MathEx.h>
@@ -51,11 +51,6 @@
 #include <psgLib/SpecificationCriteria.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -227,16 +222,16 @@ std::shared_ptr<CDistFactorEngineerBase> CBoxBeamFactoryImpl::CreateDistFactorEn
    return nullptr;
 }
 
-std::shared_ptr<CPsLossEngineerBase> CBoxBeamFactoryImpl::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusItemIDType statusGroupID,const CGirderKey& girderKey) const
+std::unique_ptr<CPsLossEngineerBase> CBoxBeamFactoryImpl::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusItemIDType statusGroupID,const CGirderKey& girderKey) const
 {
    EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
-      return std::make_shared<CTimeStepLossEngineer>(pBroker,statusGroupID);
+      return std::make_unique<CTimeStepLossEngineer>(pBroker,statusGroupID);
    }
    else
    {
-      return std::make_shared<CPsBeamLossEngineer>(CPsBeamLossEngineer::BeamType::BoxBeam,pBroker,statusGroupID);
+      return std::make_unique<CPsBeamLossEngineer>(CPsBeamLossEngineer::BeamType::BoxBeam,pBroker,statusGroupID);
    }
 }
 

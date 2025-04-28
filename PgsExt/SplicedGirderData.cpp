@@ -810,9 +810,8 @@ std::vector<pgsTypes::SegmentVariationType> CSplicedGirderData::GetSupportedSegm
 std::vector<pgsTypes::SegmentVariationType> CSplicedGirderData::GetSupportedSegmentVariations(const GirderLibraryEntry* pGirderLibEntry) const
 {
    std::vector<pgsTypes::SegmentVariationType> variations;
-   CComPtr<IBeamFactory> factory;
-   pGirderLibEntry->GetBeamFactory(&factory);
-   CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedFactory(factory);
+   auto factory = pGirderLibEntry->GetBeamFactory();
+   auto splicedFactory = std::dynamic_pointer_cast<ISplicedBeamFactory>(factory);
    if ( splicedFactory )
    {
       variations = splicedFactory->GetSupportedSegmentVariations(pGirderLibEntry->IsVariableDepthSectionEnabled());
@@ -896,10 +895,9 @@ void CSplicedGirderData::SetGirderLibraryEntry(const GirderLibraryEntry* pEntry)
 
       if ( m_pGirderLibraryEntry != nullptr )
       {
-         CComPtr<IBeamFactory> beamFactory;
-         m_pGirderLibraryEntry->GetBeamFactory(&beamFactory);
+         auto beamFactory = m_pGirderLibraryEntry->GetBeamFactory();
 
-         CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedBeamFactory(beamFactory);
+         auto splicedBeamFactory = std::dynamic_pointer_cast<ISplicedBeamFactory>(beamFactory);
          if ( splicedBeamFactory )
          {
             std::vector<pgsTypes::SegmentVariationType> variations = splicedBeamFactory->GetSupportedSegmentVariations(m_pGirderLibraryEntry->IsVariableDepthSectionEnabled());
@@ -960,8 +958,7 @@ void CSplicedGirderData::GetTopWidth(pgsTypes::TopWidthType* pType,Float64* pLef
 
       if (m_pGirderLibraryEntry)
       {
-         CComPtr<IBeamFactory> beamFactory;
-         m_pGirderLibraryEntry->GetBeamFactory(&beamFactory);
+         auto beamFactory = m_pGirderLibraryEntry->GetBeamFactory();
 
          if (beamFactory->CanTopWidthVary())
          {

@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 #pragma once
 
+#include <Beams/BeamsExp.h>
 #include <IFace\PsLossEngineer.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Bridge.h>
@@ -43,7 +44,7 @@ typedef std::map<pgsPointOfInterest,LOSSDETAILS> SectionLossContainer;
 
 /////////////////////////////////////////////////////////////////////////////
 // CTimeStepLossEngineer
-class CTimeStepLossEngineer : public CPsLossEngineerBase
+class BEAMSCLASS CTimeStepLossEngineer : public CPsLossEngineerBase
 {
 public:
    CTimeStepLossEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID);

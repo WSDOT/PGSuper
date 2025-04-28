@@ -117,12 +117,11 @@ public:
 class PGSEXTCLASS pgsProjectCriteriaStatusCallback : public iStatusCallback
 {
 public:
-   pgsProjectCriteriaStatusCallback(std::shared_ptr<WBFL::EAF::Broker> pBroker);
+   pgsProjectCriteriaStatusCallback();
    virtual eafTypes::StatusSeverityType GetSeverity() const override;
    virtual void Execute(CEAFStatusItem* pStatusItem) override;
 
 private:
-   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    UINT m_HelpID;
 };
 

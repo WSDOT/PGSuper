@@ -1433,7 +1433,7 @@ public:
    virtual Float64 GetStructuralHaunchDepth(const pgsPointOfInterest& poi,pgsTypes::HaunchAnalysisSectionPropertiesType haunchAType) const = 0;
 
    // Reporting
-   virtual void ReportEffectiveFlangeWidth(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) const = 0;
+   virtual void ReportEffectiveFlangeWidth(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const = 0;
 
    // Volume and surface area
    virtual Float64 GetPerimeter(const pgsPointOfInterest& poi) const = 0;
@@ -1469,7 +1469,7 @@ INTERFACE
 
 DESCRIPTION
    The method on this interface return a geometric shape object for
-   the gross (outline) shape of a bridge component. These shapes are ususally
+   the gross (outline) shape of a bridge component. These shapes are usually
    used for making images and graphical displays. Shapes are located
    in the Bridge Section Coordinate system.
 *****************************************************************************/

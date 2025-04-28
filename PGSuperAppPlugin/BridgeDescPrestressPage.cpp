@@ -2698,7 +2698,7 @@ void CGirderDescPrestressPage::UpdateStrandTypes()
    }
 }
 
-void CGirderDescPrestressPage::ConvertPJackFromNumPerm(StrandIndexType numStraight, StrandIndexType numHarped, IEAFDisplayUnits* pDisplayUnits) 
+void CGirderDescPrestressPage::ConvertPJackFromNumPerm(StrandIndexType numStraight, StrandIndexType numHarped, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) 
 {
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -2743,7 +2743,7 @@ void CGirderDescPrestressPage::ConvertPJackFromNumPerm(StrandIndexType numStraig
    }
 }
 
-void CGirderDescPrestressPage::ConvertPJackToNumPerm(StrandIndexType numStraight, StrandIndexType numHarped, IEAFDisplayUnits* pDisplayUnits) 
+void CGirderDescPrestressPage::ConvertPJackToNumPerm(StrandIndexType numStraight, StrandIndexType numHarped, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) 
 {
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 

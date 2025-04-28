@@ -23,7 +23,7 @@
 #pragma once
 
 #include <Beams/BeamsExp.h>
-#include "DistFactorEngineerImpl.h"
+#include <Beams/DistFactorEngineerImpl.h>
 #include "VoidedSlabDistFactorEngineerTypes.h"
 #include <Plugins\Beams.h>
 

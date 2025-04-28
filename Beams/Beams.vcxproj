@@ -181,8 +181,20 @@
   <ItemGroup>
     <ClInclude Include="..\Include\Beams\AutoLib.h" />
     <ClInclude Include="..\Include\Beams\BeamsExp.h" />
+    <ClInclude Include="..\Include\Beams\BulbTeeDistFactorEngineer.h" />
+    <ClInclude Include="..\Include\Beams\DistFactorEngineerImpl.h" />
     <ClInclude Include="..\Include\Beams\Helper.h" />
+    <ClInclude Include="..\Include\Beams\IBeamDistFactorEngineer.h" />
+    <ClInclude Include="..\Include\Beams\IBeamFactoryImp.h" />
     <ClInclude Include="..\Include\Beams\Interfaces.h" />
+    <ClInclude Include="..\Include\Beams\PsBeamLossEngineer.h" />
+    <ClInclude Include="..\Include\Beams\PsLossEngineer.h" />
+    <ClInclude Include="..\Include\Beams\SplicedIBeamFactoryImpl.h" />
+    <ClInclude Include="..\Include\Beams\TimeStepLossEngineer.h" />
+    <ClInclude Include="..\Include\Beams\UBeamDistFactorEngineer.h" />
+    <ClInclude Include="..\Include\Beams\VoidedSlab2DistFactorEngineer.h" />
+    <ClInclude Include="..\Include\Beams\VoidedSlabDistFactorEngineer.h" />
+    <ClInclude Include="..\Include\Beams\VoidedSlabDistFactorEngineerTypes.h" />
     <ClInclude Include="..\Include\IFace\AgeAdjustedMaterial.h" />
     <ClInclude Include="..\Include\IFace\BeamFactory.h" />
     <ClInclude Include="..\Include\IFace\BeamFamily.h" />
@@ -200,7 +212,6 @@
     <ClInclude Include="BoxBeamFactory.h" />
     <ClInclude Include="BoxBeamFactory2.h" />
     <ClInclude Include="BoxBeamFactoryImpl.h" />
-    <ClInclude Include="BulbTeeDistFactorEngineer.h" />
     <ClInclude Include="BulbTeeFactory.h" />
     <ClInclude Include="ChangeOfConcreteStressTable.h" />
     <ClInclude Include="CreepAndShrinkageTable.h" />
@@ -209,7 +220,6 @@
     <ClInclude Include="CreepAtHaulingTable.h" />
     <ClInclude Include="DeckedSlabBeamFactory.h" />
     <ClInclude Include="DeckShrinkageLossTable.h" />
-    <ClInclude Include="DistFactorEngineerImpl.h" />
     <ClInclude Include="DoubleTeeFactory.h" />
     <ClInclude Include="EffectivePrestressForceTable.h" />
     <ClInclude Include="EffectivePrestressTable.h" />
@@ -220,9 +230,7 @@
     <ClInclude Include="ElasticShorteningTable.h" />
     <ClInclude Include="FinalPrestressLossTable.h" />
     <ClInclude Include="FrictionLossTable.h" />
-    <ClInclude Include="IBeamDistFactorEngineer.h" />
     <ClInclude Include="IBeamFactory.h" />
-    <ClInclude Include="IBeamFactoryImp.h" />
     <ClInclude Include="MultiWeb2Factory.h" />
     <ClInclude Include="MultiWebDistFactorEngineer.h" />
     <ClInclude Include="MultiWebFactory.h" />
@@ -231,8 +239,6 @@
     <ClInclude Include="PCIDeckedBulbTeeFactory.h" />
     <ClInclude Include="PostTensionInteractionTable.h" />
     <ClInclude Include="PostTensionTimeDependentLossesAtShippingTable.h" />
-    <ClInclude Include="PsBeamLossEngineer.h" />
-    <ClInclude Include="PsLossEngineer.h" />
     <ClInclude Include="RelaxationAftertransferTable.h" />
     <ClInclude Include="RelaxationAtDeckPlacementTable.h" />
     <ClInclude Include="RelaxationAtFinalTable.h" />
@@ -241,7 +247,6 @@
     <ClInclude Include="ShrinkageAtDeckPlacementTable.h" />
     <ClInclude Include="ShrinkageAtFinalTable.h" />
     <ClInclude Include="ShrinkageAtHaulingTable.h" />
-    <ClInclude Include="SplicedIBeamFactoryImpl.h" />
     <ClInclude Include="SplicedNUBeamFactoryImpl.h" />
     <ClInclude Include="SplicedUBeamFactory.h" />
     <ClInclude Include="StdAfx.h" />
@@ -252,7 +257,6 @@
     <ClInclude Include="TimeDependentLossesAtShippingTable.h" />
     <ClInclude Include="TimeDependentLossesTable.h" />
     <ClInclude Include="TimeDependentLossFinalTable.h" />
-    <ClInclude Include="TimeStepLossEngineer.h" />
     <ClInclude Include="TotalPrestressLossTable.h" />
     <ClInclude Include="TxDOT2013ChangeOfConcreteStressTable.h" />
     <ClInclude Include="TxDOT2013CreepAndShrinkageTable.h" />
@@ -261,12 +265,8 @@
     <ClInclude Include="TxDotDoubleTFactory.h" />
     <ClInclude Include="TxDOTSpreadSlabBeamDistFactorEngineer.h" />
     <ClInclude Include="UBeam2Factory.h" />
-    <ClInclude Include="UBeamDistFactorEngineer.h" />
     <ClInclude Include="UBeamFactory.h" />
     <ClInclude Include="UBeamHelpers.h" />
-    <ClInclude Include="VoidedSlab2DistFactorEngineer.h" />
-    <ClInclude Include="VoidedSlabDistFactorEngineer.h" />
-    <ClInclude Include="VoidedSlabDistFactorEngineerTypes.h" />
     <ClInclude Include="VoidedSlabFactory.h" />
     <ClInclude Include="VoidedSlabFactory2.h" />
   </ItemGroup>

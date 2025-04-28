@@ -707,8 +707,8 @@ GirderIndexType CPierGirderSpacingPage::GetMinGirderCount(pgsTypes::PierFaceType
    // same factory
    const GirderLibraryEntry* pGdrEntry = pGirderGroup->GetGirderLibraryEntry(0);
 
-   CComPtr<IBeamFactory> factory;
-   pGdrEntry->GetBeamFactory(&factory);
+   auto factory = pGdrEntry->GetBeamFactory();
+
 
    return factory->GetMinimumBeamCount();
 }

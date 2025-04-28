@@ -117,10 +117,9 @@ void CPGSProjectImporterPluginAppBase::ConfigureProjectImporters()
          else
          {
             // importer was not initially enabled, but now it is
-            auto class_object = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent(state.GetCLSID());
-            if (class_object)
+            auto importer = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<PGSuper::IProjectImporter>(state.GetCLSID());
+            if (importer)
             {
-               auto importer = std::dynamic_pointer_cast<PGSuper::IProjectImporter>(class_object);
                pImporterMgr->AddImporter(state.GetCLSID(), importer);
                pApp->WriteProfileString(_T("Plugins"), state.GetCLSIDString(), _T("Enabled"));
             }

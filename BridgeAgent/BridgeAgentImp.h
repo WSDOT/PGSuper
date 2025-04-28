@@ -932,7 +932,7 @@ public:
    virtual Float64 GetTributaryDeckArea(const pgsPointOfInterest& poi) const override;
    virtual Float64 GetGrossDeckArea(const pgsPointOfInterest& poi) const override;
    virtual Float64 GetStructuralHaunchDepth(const pgsPointOfInterest& poi,pgsTypes::HaunchAnalysisSectionPropertiesType haunchAType) const override;
-   virtual void ReportEffectiveFlangeWidth(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) const override;
+   virtual void ReportEffectiveFlangeWidth(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const override;
    virtual Float64 GetPerimeter(const pgsPointOfInterest& poi) const override;
    virtual void GetSegmentVolumeAndSurfaceArea(const CSegmentKey& segmentKey, Float64* pVolume, Float64* pSurfaceArea, int surfaceAreaType = INCLUDE_HALF_INTERIOR_SURFACE_AREA) const override;
    virtual void GetClosureJointVolumeAndSurfaceArea(const CClosureKey& closureKey, Float64* pVolume, Float64* pSurfaceArea) const override;
@@ -1266,9 +1266,9 @@ private:
    DECLARE_LOGFILE;
 
    Uint16 m_Level;
-   DWORD m_dwBridgeDescCookie;
-   DWORD m_dwSpecificationCookie;
-   DWORD m_dwLossParametersCookie;
+   IDType m_dwBridgeDescCookie;
+   IDType m_dwSpecificationCookie;
+   IDType m_dwLossParametersCookie;
 
    StatusGroupIDType m_LoadStatusGroupID; // ID used to identify user load-related status items created by this agent
    StatusGroupIDType m_HandlingParametersGroupID; // ID used to identify handling parameter related status items created by this agent

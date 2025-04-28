@@ -122,8 +122,7 @@ void CGirderDescGeneralPage::DoDataExchange(CDataExchange* pDX)
    DDX_UnitValueAndTag(pDX, IDC_LEFT_TOP_WIDTH_END, IDC_LEFT_TOP_WIDTH_END_UNIT, leftEnd, pDisplayUnits->GetXSectionDimUnit());
    DDX_UnitValueAndTag(pDX, IDC_RIGHT_TOP_WIDTH_END, IDC_RIGHT_TOP_WIDTH_END_UNIT, rightEnd, pDisplayUnits->GetXSectionDimUnit());
 
-   CComPtr<IBeamFactory> factory;
-   pParent->m_Girder.GetGirderLibraryEntry()->GetBeamFactory(&factory);
+   auto factory = pParent->m_Girder.GetGirderLibraryEntry()->GetBeamFactory();
 
    if (pDX->m_bSaveAndValidate && IsTopWidthSpacing(pParent->m_GirderSpacingType))
    {
@@ -331,8 +330,7 @@ BOOL CGirderDescGeneralPage::OnInitDialog()
    pcbTopFlangeThickening->SetItemData(idx, (DWORD_PTR)pgsTypes::tftMiddle);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
-   CComPtr<IBeamFactory> factory;
-   pParent->m_Girder.GetGirderLibraryEntry()->GetBeamFactory(&factory);
+   auto factory = pParent->m_Girder.GetGirderLibraryEntry()->GetBeamFactory();
 
    // fill top width combo box
    CComboBox* pcbTopWidthTypes = (CComboBox*)GetDlgItem(IDC_TOP_WIDTH_TYPE);
@@ -1244,8 +1242,7 @@ void CGirderDescGeneralPage::OnChangeGirderName()
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
-   CComPtr<IBeamFactory> factory;
-   pGdrEntry->GetBeamFactory(&factory);
+   auto factory = pGdrEntry->GetBeamFactory();
 
    if (!factory->IsSupportedBeamSpacing(pParent->m_GirderSpacingType))
    {
@@ -1483,8 +1480,7 @@ void CGirderDescGeneralPage::OnTopWidthTypeChanged()
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
    const auto* pGirderLibraryEntry = pParent->m_Girder.GetGirderLibraryEntry();
    const GirderLibraryEntry::Dimensions& dimensions = pGirderLibraryEntry->GetDimensions();
-   CComPtr<IBeamFactory> factory;
-   pGirderLibraryEntry->GetBeamFactory(&factory);
+   auto factory = pGirderLibraryEntry->GetBeamFactory();
    factory->GetAllowableTopWidthRange(topWidthType, dimensions, &m_MinTopWidth[LEFT], &m_MaxTopWidth[LEFT], &m_MinTopWidth[RIGHT], &m_MaxTopWidth[RIGHT]);
 
    

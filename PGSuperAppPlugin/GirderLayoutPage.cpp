@@ -549,8 +549,7 @@ void CSpanGirderLayoutPage::GirderTypeChanged()
 
 GirderIndexType CSpanGirderLayoutPage::GetMinGirderCount()
 {
-   CComPtr<IBeamFactory> factory;
-   GetBeamFactory(&factory);
+   auto factory = GetBeamFactory();
    return factory->GetMinimumBeamCount();
 }
 
@@ -714,8 +713,7 @@ void CSpanGirderLayoutPage::OnChangeSameGirderSpacing()
          auto broker = EAFGetBroker();
          EAF_GET_IFACE2(broker, IEAFDisplayUnits, pDisplayUnits);
 
-         CComPtr<IBeamFactory> factory;
-         GetBeamFactory(&factory);
+         auto factory = GetBeamFactory();
 
          CResolveGirderSpacingDlg dlg;
          CString strItems;
@@ -1112,7 +1110,7 @@ void CSpanGirderLayoutPage::OnCbnSelchangeNgdrsCombo()
    UpdateChildWindowState();
 }
 
-void CSpanGirderLayoutPage::GetBeamFactory(IBeamFactory** ppFactory)
+std::shared_ptr<IBeamFactory> CSpanGirderLayoutPage::GetBeamFactory()
 {
    CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
    const CGirderGroupData* pGroup = pParent->m_pGirderGroup;
@@ -1122,5 +1120,5 @@ void CSpanGirderLayoutPage::GetBeamFactory(IBeamFactory** ppFactory)
    // same factory
    const GirderLibraryEntry* pGdrEntry = pGroup->GetGirderLibraryEntry(0);
 
-   pGdrEntry->GetBeamFactory(ppFactory);
+   return pGdrEntry->GetBeamFactory();
 }

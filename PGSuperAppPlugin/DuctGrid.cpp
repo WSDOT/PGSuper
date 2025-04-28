@@ -552,8 +552,8 @@ void CDuctGrid::RefreshRowHeading(ROWCOL rFrom,ROWCOL rTo)
 
    EAF_GET_IFACE2(pBroker,ILibrary,pLibrary);
    const GirderLibraryEntry* pGirderEntry = pLibrary->GetGirderEntry(strGirderName.c_str());
-   CComPtr<IBeamFactory> factory;
-   pGirderEntry->GetBeamFactory(&factory);
+   auto factory = pGirderEntry->GetBeamFactory();
+
    WebIndexType nWebs = factory->GetWebCount(pGirderEntry->GetDimensions());
 
    for ( ROWCOL row = rFrom; row <= rTo; row++ )

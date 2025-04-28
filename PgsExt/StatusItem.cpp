@@ -283,8 +283,7 @@ bool pgsProjectCriteriaStatusItem::IsEqual(CEAFStatusItem* pOther)
 }
 
 //////////////////////////////////////////////////////////
-pgsProjectCriteriaStatusCallback::pgsProjectCriteriaStatusCallback(std::shared_ptr<WBFL::EAF::Broker> pBroker):
-m_pBroker(pBroker)
+pgsProjectCriteriaStatusCallback::pgsProjectCriteriaStatusCallback()
 {
    m_HelpID = 0;
 }
@@ -303,9 +302,10 @@ void pgsProjectCriteriaStatusCallback::Execute(CEAFStatusItem* pStatusItem)
 
    std::_tstring msg = pStatusItem->GetDescription();
 
-   EAF_GET_IFACE(ISpecification,pSpec);
+   auto broker = EAFGetBroker();
+   EAF_GET_IFACE2(broker,ISpecification,pSpec);
    std::_tstring strSpec(pSpec->GetSpecification());
-   EAF_GET_IFACE(ILibrary,pLib);
+   EAF_GET_IFACE2(broker,ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(strSpec.c_str());
    if ( pSpecEntry->IsEditingEnabled() )
    {
@@ -317,7 +317,7 @@ void pgsProjectCriteriaStatusCallback::Execute(CEAFStatusItem* pStatusItem)
       msg += _T("\r\n\r\nWould you like to select a different Project Criteria?");
       if ( AfxMessageBox(msg.c_str(),MB_YESNO | MB_ICONQUESTION) == IDYES )
       {
-         EAF_GET_IFACE(IEditByUI,pEdit);
+         EAF_GET_IFACE2(broker,IEditByUI,pEdit);
          pEdit->SelectProjectCriteria();
       }
    }

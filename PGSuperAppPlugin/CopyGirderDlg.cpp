@@ -41,7 +41,7 @@
 #include <PgsExt\BridgeDescription2.h>
 #include <EAF\EAFCustSiteVars.h>
 
-#include <IReportManager.h>
+#include <EAF/EAFReportManager.h>
 #include <Reporting\CopyGirderPropertiesReportSpecification.h>
 #include <Reporting\CopyGirderPropertiesChapterBuilder.h>
 
@@ -160,7 +160,7 @@ BOOL CCopyGirderDlg::OnInitDialog()
    m_cyMin = rect.Height();
 
    // set up report window
-   EAF_GET_IFACE_(WBFL::Reporting,IReportManager, pReportMgr);
+   EAF_GET_IFACE(IEAFReportManager, pReportMgr);
    WBFL::Reporting::ReportDescription rptDesc = pReportMgr->GetReportDescription(_T("Copy Girder Properties Report"));
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
    std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
@@ -315,7 +315,7 @@ void CCopyGirderDlg::FillGirderComboBox(CComboBox& cbGirder,GroupIndexType grpId
 
 void CCopyGirderDlg::UpdateReportData()
 {
-   EAF_GET_IFACE_(WBFL::Reporting,IReportManager,pReportMgr);
+   EAF_GET_IFACE(IEAFReportManager,pReportMgr);
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
 
    CGirderKey gdrKey = GetFromGirder();
@@ -342,7 +342,7 @@ void CCopyGirderDlg::UpdateReport()
    {
       UpdateReportData();
 
-      EAF_GET_IFACE_(WBFL::Reporting,IReportManager,pReportMgr);
+      EAF_GET_IFACE(IEAFReportManager,pReportMgr);
       std::shared_ptr<WBFL::Reporting::ReportBuilder> pBuilder = pReportMgr->GetReportBuilder( m_pRptSpec->GetReportName() );
 
       std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = std::dynamic_pointer_cast<WBFL::Reporting::ReportSpecification,CCopyGirderPropertiesReportSpecification>(m_pRptSpec);

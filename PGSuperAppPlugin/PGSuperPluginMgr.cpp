@@ -53,10 +53,9 @@ bool CPGSuperPluginMgrBase::LoadPlugins()
 
       if (strState.CompareNoCase(_T("Enabled")) == 0)
       {
-         auto class_object = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent(component);
-         if (class_object)
+         auto importer = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<PGSuper::IDataImporter>(component);
+         if (importer)
          {
-            auto importer = std::dynamic_pointer_cast<PGSuper::IDataImporter>(class_object);
             ImporterRecord record;
             record.commandID = cmdImporter++;
             record.Plugin = importer;
@@ -98,10 +97,9 @@ bool CPGSuperPluginMgrBase::LoadPlugins()
 
       if (strState.CompareNoCase(_T("Enabled")) == 0)
       {
-         auto class_object = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent(component);
-         if (class_object)
+         auto exporter = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<PGSuper::IDataExporter>(component);
+         if (exporter)
          {
-            auto exporter = std::dynamic_pointer_cast<PGSuper::IDataExporter>(class_object);
             ExporterRecord record;
             record.commandID = cmdExporter++;
             record.Plugin = exporter;

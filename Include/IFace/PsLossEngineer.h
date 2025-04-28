@@ -50,40 +50,32 @@ public:
 
    CPsLossEngineerBase& operator=(const CPsLossEngineerBase&) = delete;
 
-   //---------------------------------------------------------------------
    // Returns the details of the prestress loss calculation for losses computed upto and including
    // intervalIdx. Loses may be computed beyond this interval as well, however they are only
    // guaranteed to be computed upto and including the specified interval. An intervalIdx of
    // INVALID_INDEX means that losses are computed through all intervals
    virtual const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx = INVALID_INDEX) = 0;
    
-   //---------------------------------------------------------------------
    // Returns prestress losses at a point of interest, but uses the input slab offset (the current design value)
    virtual const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config,IntervalIndexType intervalIdx = INVALID_INDEX) = 0;
 
-   //---------------------------------------------------------------------
    // Clears all losses that were computed as a result of calling GetLosses(poi,config)
    virtual void ClearDesignLosses() = 0;
 
-   //---------------------------------------------------------------------
    // Reports loss calculations details
    virtual void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) = 0;
 
-   //---------------------------------------------------------------------
    // Reports summary of final losses
    virtual void ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) = 0;
 
-   //---------------------------------------------------------------------
    // Returns the anchor set details for a particular tendon (this is basically the seating wedge parameters)
    virtual const ANCHORSETDETAILS* GetGirderTendonAnchorSetDetails(const CGirderKey& girderKey, DuctIndexType ductIdx) = 0;
    virtual const ANCHORSETDETAILS* GetSegmentTendonAnchorSetDetails(const CSegmentKey& segmentKey, DuctIndexType ductIdx) = 0;
 
-   //---------------------------------------------------------------------
    // Returns the tendon elongation duration jacking at the specified end of the girder.
    virtual Float64 GetGirderTendonElongation(const CGirderKey& girderKey, DuctIndexType ductIdx, pgsTypes::MemberEndType endType) = 0;
    virtual Float64 GetSegmentTendonElongation(const CSegmentKey& segmentKey, DuctIndexType ductIdx, pgsTypes::MemberEndType endType) = 0;
 
-   //---------------------------------------------------------------------
    // Returns the average friction and anchor set losses. The average values are
    // typically used to adjust Pjack so that a constant uniform post-tension force
    // is used for equivalent post-tensioning force analysis

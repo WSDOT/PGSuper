@@ -27,11 +27,6 @@
 #include "AgeAdjustedMaterial.h"
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 void ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, WBFL::LRFD::ILiveLoadDistributionFactor::LeverRuleMethod& lrd,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
@@ -231,7 +226,7 @@ void BuildAgeAdjustedGirderMaterialModel(std::shared_ptr<WBFL::EAF::Broker> pBro
    // we need the Volume and Surface Area of the segment (for the V/S ratio). This method
    // gets called during the creation of the bridge model. The bridge model is not
    // ready to compute V or S. Calling IMaterial::GetSegmentAgeAdjustedEc() will cause
-   // recusion and validation errors. Using the age adjusted material object we can
+   // recursion and validation errors. Using the age adjusted material object we can
    // delay the calls to GetAgeAdjustedEc until well after the time the bridge model
    // is validated.
    EAF_GET_IFACE2(pBroker,IMaterials,pMaterials);
@@ -333,7 +328,7 @@ void BuildAgeAdjustedJointMaterialModel(std::shared_ptr<WBFL::EAF::Broker> pBrok
    // we need the Volume and Surface Area of the segment (for the V/S ratio). This method
    // gets called during the creation of the bridge model. The bridge model is not
    // ready to compute V or S. Calling IMaterial::GetSegmentAgeAdjustedEc() will cause
-   // recusion and validation errors. Using the age adjusted material object we can
+   // recursion and validation errors. Using the age adjusted material object we can
    // delay the calls to GetAgeAdjustedEc until well after the time the bridge model
    // is validated.
    EAF_GET_IFACE2(pBroker, IMaterials, pMaterials);

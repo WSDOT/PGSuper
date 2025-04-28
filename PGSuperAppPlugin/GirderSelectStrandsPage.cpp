@@ -407,8 +407,7 @@ void CGirderSelectStrandsPage::OnPaint()
    pWnd->UpdateWindow();
 
    // Get girder shape
-   CComPtr<IBeamFactory> factory;
-   m_pGdrEntry->GetBeamFactory(&factory);
+   auto factory = m_pGdrEntry->GetBeamFactory();
 
    GirderLibraryEntry::Dimensions dimensions = m_pGdrEntry->GetDimensions();
 
@@ -471,8 +470,8 @@ void CGirderSelectStrandsPage::OnPaint()
 
    CComPtr<IStrandMover> strand_mover;
    factory->CreateStrandMover(dimensions, -1,
-                              IBeamFactory::BeamTop, 0.0, IBeamFactory::BeamBottom, 0.0,
-                              IBeamFactory::BeamTop, 0.0, IBeamFactory::BeamBottom, 0.0, 
+                              IBeamFactory::BeamFace::Top, 0.0, IBeamFactory::BeamFace::Bottom, 0.0,
+                              IBeamFactory::BeamFace::Top, 0.0, IBeamFactory::BeamFace::Bottom, 0.0, 
                               end_incr, hp_incr, &strand_mover);
 
    auto strand_bounds = ComputeStrandBounds(strand_mover, absol_end_offset, absol_hp_offset);

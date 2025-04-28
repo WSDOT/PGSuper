@@ -74,17 +74,17 @@ class BEAMSCLASS IBeamFamilyImpl :
 {
 public:
    // IBeamFamily
-   virtual CString GetName() override;
-   virtual void RefreshFactoryList() override;
-   virtual const std::vector<CString>& GetFactoryNames() override;
-   virtual CLSID GetFactoryCLSID(LPCTSTR strName) override;
-   virtual HRESULT CreateFactory(LPCTSTR strName, IBeamFactory** ppFactory) override;
+   CString GetName() const override;
+   void RefreshFactoryList() override;
+   const std::vector<CString>& GetFactoryNames() const override;
+   CLSID GetFactoryCLSID(LPCTSTR strName) const override;
+   std::shared_ptr<IBeamFactory> CreateFactory(LPCTSTR strName) const override;
 
 protected:
-   HRESULT Init();
+   void Init();
 
-   virtual const CLSID& GetCLSID() = 0;
-   virtual const CATID& GetCATID() = 0;
+   virtual const CLSID& GetCLSID() const = 0;
+   virtual const CATID& GetCATID() const = 0;
 
    typedef std::map<CString, CLSID> FactoryContainer;
    FactoryContainer m_Factories;

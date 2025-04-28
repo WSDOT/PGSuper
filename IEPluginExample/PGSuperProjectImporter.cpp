@@ -115,8 +115,7 @@ void CPGSuperProjectImporter::BuildBridge(std::shared_ptr<WBFL::EAF::Broker> pBr
    EAF_GET_IFACE2(pBroker, ILibrary, pLibrary);
    const GirderLibraryEntry* pGirderEntry = pLibrary->GetGirderEntry(strGirderName.c_str());
 
-   CComPtr<IBeamFactory> beamFactory;
-   pGirderEntry->GetBeamFactory(&beamFactory);
+   auto beamFactory = pGirderEntry->GetBeamFactory();
 
    // use the same girder for the entire bridge
    bridge.UseSameGirderForEntireBridge(true);

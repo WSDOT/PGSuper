@@ -22,7 +22,7 @@
 
 // PsBeamLossEngineer.cpp : Implementation of CPsBeamLossEngineer
 #include "stdafx.h"
-#include "PsBeamLossEngineer.h"
+#include <Beams/PsBeamLossEngineer.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 
@@ -30,11 +30,9 @@
 #include <IFace\Project.h>
 #endif
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#pragma Reminder("WORKING HERE - Removing COM - move CDesignLosses declaration inside the CPP file")
+// The header file is now global, and CDesignLosses is an implementation detail. It sould be forward declared
+// in the header and completely defined within the C++ file so external users don't see it and can't use it
 
 CDesignLosses::CDesignLosses()
 {

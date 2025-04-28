@@ -70,18 +70,18 @@ protected:
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 
-   CCastingRegion GetCastingRegion(ROWCOL row, IEAFDisplayUnits* pDisplayUnits);
+   CCastingRegion GetCastingRegion(ROWCOL row, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
    CCastingRegion::RegionType GetRegionType(ROWCOL row);
    CCastingRegion GetSpanData(ROWCOL row);
-   CCastingRegion GetPierData(ROWCOL row, IEAFDisplayUnits* pDisplayUnits);
+   CCastingRegion GetPierData(ROWCOL row, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
    ROWCOL GetPierRow(PierIndexType pierIdx);
    ROWCOL GetSpanRow(SpanIndexType spanIdx);
 
-   void SetRegionData(const CCastingRegion& region, IBridge* pBridge, IEAFDisplayUnits* pDisplayUnits);
-   void SetPierData(const CCastingRegion& region, IBridge* pBridge, IEAFDisplayUnits* pDisplayUnits);
-   void SetPierData(PierIndexType pierIdx, BOOL bUseBack, Float64 Xback, BOOL bUseAhead, Float64 Xahead, IndexType sequenceIdx, IEAFDisplayUnits* pDisplayUnits);
-   void SetSpanData(const CCastingRegion& region, IBridge* pBridge, IEAFDisplayUnits* pDisplayUnits);
-   void SetSpanData(SpanIndexType spanIdx,Float64 L,IndexType sequenceIdx,IEAFDisplayUnits* pDisplayUnits);
+   void SetRegionData(const CCastingRegion& region, IBridge* pBridge, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+   void SetPierData(const CCastingRegion& region, IBridge* pBridge, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+   void SetPierData(PierIndexType pierIdx, BOOL bUseBack, Float64 Xback, BOOL bUseAhead, Float64 Xahead, IndexType sequenceIdx, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+   void SetSpanData(const CCastingRegion& region, IBridge* pBridge, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+   void SetSpanData(SpanIndexType spanIdx,Float64 L,IndexType sequenceIdx,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
    CString GetCellValue(ROWCOL nRow, ROWCOL nCol);
 };

@@ -3860,8 +3860,7 @@ void write_slab_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<
    pgsTypes::SupportedDeckType deckType = pDeck->GetDeckType();
 
    const GirderLibraryEntry* pGdrEntry = pBridgeDesc->GetGirderGroup((GroupIndexType)0)->GetGirder(0)->GetGirderLibraryEntry();
-   CComPtr<IBeamFactory> pFactory;
-   pGdrEntry->GetBeamFactory(&pFactory);
+   auto pFactory = pGdrEntry->GetBeamFactory();
    std::_tstring strPicture = pFactory->GetSlabDimensionsImage(deckType);
 
    // Slab Types

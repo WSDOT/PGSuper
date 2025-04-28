@@ -29,7 +29,7 @@
 #include <memory>
 #include "afxwin.h"
 
-#include <IReportManager.h>
+#include <EAF/EAFReportManager.h>
 
 // CTxDOTOptionalDesignReportPage dialog
 
@@ -59,7 +59,7 @@ public:
    virtual void OnTxDotDataChanged(int change) override;
 
    // create spec for currently selected report
-   std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateSelectedReportSpec(std::shared_ptr<WBFL::Reporting::IReportManager> pReportMgr);
+   std::shared_ptr<WBFL::Reporting::ReportSpecification> CreateSelectedReportSpec(std::shared_ptr<IEAFReportManager> pReportMgr);
    void CreateNewBrowser(std::shared_ptr<WBFL::EAF::Broker> pBroker);
    void DisplayErrorMode(TxDOTBrokerRetrieverException& exc);
 

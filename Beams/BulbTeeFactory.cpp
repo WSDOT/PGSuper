@@ -25,9 +25,9 @@
 #include <Plugins\Beams.h>
 #include <Plugins\BeamFamilyCLSID.h>
 #include "BulbTeeFactory.h"
-#include "BulbTeeDistFactorEngineer.h"
-#include "PsBeamLossEngineer.h"
-#include "TimeStepLossEngineer.h"
+#include <Beams\BulbTeeDistFactorEngineer.h>
+#include <Beams/PsBeamLossEngineer.h>
+#include <Beams/TimeStepLossEngineer.h>
 #include "StrandMoverImpl.h"
 #include <GeomModel\PrecastBeam.h>
 #include <MathEx.h>
@@ -50,15 +50,11 @@
 #include <IFace\StatusCenter.h>
 #include <PgsExt\StatusItem.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CBulbTeeFactory
-HRESULT CBulbTeeFactory::FinalConstruct()
+CBulbTeeFactory::CBulbTeeFactory() :
+   IBeamFactory()
 {
    StatusGroupIDType m_StatusGroupID = INVALID_ID;
 
@@ -150,8 +146,6 @@ HRESULT CBulbTeeFactory::FinalConstruct()
    m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W4
    m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Feet); // Wmax
    m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Feet); // Wmin
-
-   return S_OK;
 }
 
 void CBulbTeeFactory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusItemIDType statusID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
@@ -417,16 +411,16 @@ std::shared_ptr<CDistFactorEngineerBase> CBulbTeeFactory::CreateDistFactorEngine
    return std::make_shared<CBulbTeeDistFactorEngineer>(pBroker, statusGroupID);
 }
 
-std::shared_ptr<CPsLossEngineerBase> CBulbTeeFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusItemIDType statusGroupID,const CGirderKey& girderKey) const
+std::unique_ptr<CPsLossEngineerBase> CBulbTeeFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusItemIDType statusGroupID,const CGirderKey& girderKey) const
 {
    EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP)
    {
-      return std::make_shared<CTimeStepLossEngineer>(pBroker, statusGroupID);
+      return std::make_unique<CTimeStepLossEngineer>(pBroker, statusGroupID);
    }
    else
    {
-      return std::make_shared<CPsBeamLossEngineer>(CPsBeamLossEngineer::BeamType::IBeam, pBroker, statusGroupID);
+      return std::make_unique<CPsBeamLossEngineer>(CPsBeamLossEngineer::BeamType::IBeam, pBroker, statusGroupID);
    }
 }
 
@@ -443,7 +437,7 @@ void CBulbTeeFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensio
    CComPtr<IStrandMover> sm = pStrandMover;
 
 
-   // set the shape for harped strand bounds - only in the thinest part of the web
+   // set the shape for harped strand bounds - only in the thinnest part of the web
    CComPtr<IRectangle> harp_rect;
    hr = harp_rect.CoCreateInstance(CLSID_Rect);
    ATLASSERT (SUCCEEDED(hr));
@@ -474,10 +468,10 @@ void CBulbTeeFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensio
    ATLASSERT (SUCCEEDED(hr));
 
    // set vertical offset bounds and increments
-   Float64 hptb  = hpTopFace     == IBeamFactory::BeamBottom ? hpTopLimit     - depth : -hpTopLimit;
-   Float64 hpbb  = hpBottomFace  == IBeamFactory::BeamBottom ? hpBottomLimit  - depth : -hpBottomLimit;
-   Float64 endtb = endTopFace    == IBeamFactory::BeamBottom ? endTopLimit    - depth : -endTopLimit;
-   Float64 endbb = endBottomFace == IBeamFactory::BeamBottom ? endBottomLimit - depth : -endBottomLimit;
+   Float64 hptb  = hpTopFace     == IBeamFactory::BeamFace::Bottom ? hpTopLimit     - depth : -hpTopLimit;
+   Float64 hpbb  = hpBottomFace  == IBeamFactory::BeamFace::Bottom ? hpBottomLimit  - depth : -hpBottomLimit;
+   Float64 endtb = endTopFace    == IBeamFactory::BeamFace::Bottom ? endTopLimit    - depth : -endTopLimit;
+   Float64 endbb = endBottomFace == IBeamFactory::BeamFace::Bottom ? endBottomLimit - depth : -endBottomLimit;
 
    hr = configurer->SetHarpedStrandOffsetBounds(0, depth, endtb, endbb, hptb, hpbb, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
@@ -1048,7 +1042,7 @@ bool CBulbTeeFactory::ConvertBeamSpacing(const IBeamFactory::Dimensions& dimensi
    else
    {
       ATLASSERT(false); // how did this happen?
-      return false; // non-convertable spacing type
+      return false; // non-convertible spacing type
    }
 
    Float64 Jmin, Jmax;
@@ -1251,11 +1245,11 @@ GirderIndexType CBulbTeeFactory::GetMinimumBeamCount() const
 
 //////////////////////////////////////////////
 // IBeamFactoryCompatibility
-pgsCompatibilityData* CBulbTeeFactory::GetCompatibilityData() const
+std::shared_ptr<pgsCompatibilityData> CBulbTeeFactory::GetCompatibilityData() const
 {
    if (m_bHaveOldTopFlangeThickening)
    {
-      pgsCompatibilityData* pData = new pgsCompatibilityData;
+      auto pData = std::make_shared<pgsCompatibilityData>();
       pData->AddValue(_T("D8"), m_OldTopFlangeThickening);
       m_bHaveOldTopFlangeThickening = false; // the old data has been moved to the owning library entry
       return pData;
@@ -1269,7 +1263,7 @@ pgsCompatibilityData* CBulbTeeFactory::GetCompatibilityData() const
 
 void CBulbTeeFactory::UpdateBridgeModel(CBridgeDescription2* pBridgeDesc, const GirderLibraryEntry* pGirderEntry) const
 {
-   pgsCompatibilityData* pData = pGirderEntry->GetCompatibilityData();
+   auto pData = pGirderEntry->GetCompatibilityData();
    if (pData == nullptr)
    {
       // no compatiblity data, so we aren't making any updates
@@ -1454,7 +1448,7 @@ void CBulbTeeFactory::GetTopFlangeParameters(std::shared_ptr<WBFL::EAF::Broker> 
       {
          // forget about input top width for left and right... compute it so the CG is centered on the CL Web
          
-         // the equations below are for contant width girder
+         // the equations below are for constant width girder
          Float64 Wtf = leftStart + rightStart;
 
          const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();

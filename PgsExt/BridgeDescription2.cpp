@@ -3208,10 +3208,9 @@ void CBridgeDescription2::SetGirderLibraryEntry(const GirderLibraryEntry* pEntry
 
       if ( m_pGirderLibraryEntry != nullptr )
       {
-         CComPtr<IBeamFactory> beamFactory;
-         m_pGirderLibraryEntry->GetBeamFactory(&beamFactory);
+         auto beamFactory = m_pGirderLibraryEntry->GetBeamFactory();
 
-         CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedBeamFactory(beamFactory);
+         auto splicedBeamFactory = std::dynamic_pointer_cast<ISplicedBeamFactory>(beamFactory);
          if ( splicedBeamFactory )
          {
             std::vector<pgsTypes::SegmentVariationType> variations = splicedBeamFactory->GetSupportedSegmentVariations(m_pGirderLibraryEntry->IsVariableDepthSectionEnabled());
@@ -4384,8 +4383,7 @@ Float64 CBridgeDescription2::GetBridgeWidth() const
                   // beams are adjacent so spacing is actually a joint spacing...
 
                   // get the width of the girder
-                  CComPtr<IBeamFactory> factory;
-                  m_pGirderLibraryEntry->GetBeamFactory(&factory);
+                  auto factory = m_pGirderLibraryEntry->GetBeamFactory();
                   
                   CComPtr<IGirderSection> gdrSection;
                   factory->CreateGirderSection(nullptr,INVALID_ID,m_pGirderLibraryEntry->GetDimensions(),-1,-1,&gdrSection);
@@ -4434,8 +4432,7 @@ Float64 CBridgeDescription2::GetBridgeWidth() const
                      {
                         // get the width of the girder
                         const GirderLibraryEntry* pGdrLibEntry = pGroup->GetGirderLibraryEntry(gdrIdx);
-                        CComPtr<IBeamFactory> factory;
-                        pGdrLibEntry->GetBeamFactory(&factory);
+                        auto factory = pGdrLibEntry->GetBeamFactory();
                         
                         CComPtr<IGirderSection> gdrSection;
                         factory->CreateGirderSection(nullptr,INVALID_ID,pGdrLibEntry->GetDimensions(),-1,-1,&gdrSection);
@@ -4484,8 +4481,7 @@ Float64 CBridgeDescription2::GetBridgeWidth() const
                      const GirderLibraryEntry* pGdrLibEntry = pGroup->GetGirderLibraryEntry(gdrIdx);
 
                      // get the width of the girder
-                     CComPtr<IBeamFactory> factory;
-                     pGdrLibEntry->GetBeamFactory(&factory);
+                     auto factory = pGdrLibEntry->GetBeamFactory();
                      
                      CComPtr<IGirderSection> gdrSection;
                      factory->CreateGirderSection(nullptr,INVALID_ID,pGdrLibEntry->GetDimensions(),-1,-1,&gdrSection);
@@ -4961,8 +4957,7 @@ bool CBridgeDescription2::HasLongitudinalJoints() const
          pGirderLibraryEntry = pGirder->GetGirderLibraryEntry();
       }
 
-      CComPtr<IBeamFactory> beamFactory;
-      pGirderLibraryEntry->GetBeamFactory(&beamFactory);
+      auto beamFactory = pGirderLibraryEntry->GetBeamFactory();
       return beamFactory->HasLongitudinalJoints();
    }
    else
@@ -4989,8 +4984,7 @@ bool CBridgeDescription2::HasStructuralLongitudinalJoints() const
          pGirderLibraryEntry = pGirder->GetGirderLibraryEntry();
       }
       
-      CComPtr<IBeamFactory> beamFactory;
-      pGirderLibraryEntry->GetBeamFactory(&beamFactory);
+      auto beamFactory = pGirderLibraryEntry->GetBeamFactory();
       if (beamFactory->HasLongitudinalJoints() && beamFactory->IsLongitudinalJointStructural(m_Deck.GetDeckType(), m_Deck.TransverseConnectivity))
       {
          // the bridge has longitudinal joints and the joints are structural

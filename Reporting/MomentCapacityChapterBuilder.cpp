@@ -26,7 +26,7 @@
 #include <Reporting\MomentCapacityChapterBuilder.h>
 #include <Reporting\MomentCapacityReportSpecification.h>
 
-#include <IReportManager.h>
+#include <EAF/EAFReportManager.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\MomentCapacity.h>

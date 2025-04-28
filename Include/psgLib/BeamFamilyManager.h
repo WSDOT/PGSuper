@@ -38,7 +38,7 @@ public:
 
    static std::vector<CString> GetBeamFamilyNames();
    static std::vector<CString> GetBeamFamilyNames(CATID catid);
-   static HRESULT GetBeamFamily(LPCTSTR strName,IBeamFamily** ppFamily);
+   static std::shared_ptr<IBeamFamily> GetBeamFamily(LPCTSTR strName);
    static CLSID GetBeamFamilyCLSID(LPCTSTR strName);
    static void Reset();
    static void UpdateFactories();

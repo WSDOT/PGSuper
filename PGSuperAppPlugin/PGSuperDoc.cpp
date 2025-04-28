@@ -511,7 +511,7 @@ void CPGSuperDoc::DoDesignGirder(const std::vector<CGirderKey>& girderKeys, bool
 
    if (0 < myGirderKeys.size())
    {
-      EAF_GET_IFACE_(WBFL::Reporting,IReportManager, pReportMgr);
+      EAF_GET_IFACE(IEAFReportManager, pReportMgr);
       auto rptDesc = pReportMgr->GetReportDescription(_T("Design Outcome Report"));
       auto pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
       auto pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);

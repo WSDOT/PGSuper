@@ -685,7 +685,7 @@ BOOL CBridgeDescDeckPointGrid::Validate()
    return TRUE;
 }
 
-BOOL CBridgeDescDeckPointGrid::ValidatePoint(CDeckPoint& point,IEAFDisplayUnits* pDisplayUnits)
+BOOL CBridgeDescDeckPointGrid::ValidatePoint(CDeckPoint& point,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    Float64 left = -1*point.LeftEdge; // make left value a real offset
    Float64 right = point.RightEdge;

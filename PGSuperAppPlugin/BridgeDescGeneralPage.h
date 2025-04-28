@@ -132,7 +132,7 @@ protected:
    void UpdateConcreteTypeLabel();
    void UpdateEc();
 
-   CComPtr<IBeamFactory> m_Factory;
+   std::shared_ptr<IBeamFactory> m_Factory;
    GirderIndexType m_MinGirderCount;
 
    bool m_bSameNumberOfGirders;

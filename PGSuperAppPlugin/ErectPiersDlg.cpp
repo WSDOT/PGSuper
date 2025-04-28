@@ -162,7 +162,7 @@ void CErectPiersDlg::FillLists()
       bool bIsPierErected = m_TimelineMgr.IsPierErected(pierID);
       EventIndexType erectionEventIdx = m_TimelineMgr.GetPierErectionEventIndex(pierID);
 
-      CString label( GetLabel(pPier,m_pDisplayUnits.get()) );
+      CString label( GetLabel(pPier,m_pDisplayUnits) );
 
       if ( erectionEventIdx == m_EventIndex )
       {
@@ -188,7 +188,7 @@ void CErectPiersDlg::FillLists()
       EventIndexType erectEventIdx, removeEventIdx;
       m_TimelineMgr.GetTempSupportEvents(tsID,&erectEventIdx,&removeEventIdx);
       
-      CString label(GetLabel(pTS,m_pDisplayUnits.get()));
+      CString label(GetLabel(pTS,m_pDisplayUnits));
 
       if ( erectEventIdx == m_EventIndex )
       {

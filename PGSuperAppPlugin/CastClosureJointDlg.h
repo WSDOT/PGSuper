@@ -15,8 +15,8 @@
 bool IsTSIndex(SupportIndexType tsIdx);
 SupportIndexType EncodeTSIndex(SupportIndexType tsIdx);
 SupportIndexType DecodeTSIndex(SupportIndexType tsIdx);
-CString GetLabel(const CPierData2* pPier,IEAFDisplayUnits* pDisplayUnits);
-CString GetLabel(const CTemporarySupportData* pTS,IEAFDisplayUnits* pDisplayUnits);
+CString GetLabel(const CPierData2* pPier,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+CString GetLabel(const CTemporarySupportData* pTS,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
 // CCastClosureJointDlg dialog
 

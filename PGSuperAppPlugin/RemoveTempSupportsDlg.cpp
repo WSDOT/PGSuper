@@ -135,7 +135,7 @@ void CRemoveTempSupportsDlg::FillLists()
       EventIndexType erectEventIdx, removeEventIdx;
       m_TimelineMgr.GetTempSupportEvents(tsID,&erectEventIdx,&removeEventIdx);
 
-      CString label( GetLabel(pTS,m_pDisplayUnits.get()) );
+      CString label( GetLabel(pTS,m_pDisplayUnits) );
 
       if ( removeEventIdx == m_EventIndex )
       {

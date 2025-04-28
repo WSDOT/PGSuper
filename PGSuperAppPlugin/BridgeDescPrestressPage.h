@@ -109,8 +109,8 @@ protected:
    void UpdatePjackEdits();
    void UpdatePjackEdit( UINT nCheckBox  );
    void UpdatePjackEditEx(StrandIndexType nStrands, UINT nCheckBox  );
-   void ConvertPJackFromNumPerm(StrandIndexType numStraight, StrandIndexType numHarped, IEAFDisplayUnits* pDisplayUnits);
-   void ConvertPJackToNumPerm(StrandIndexType numStraight, StrandIndexType numHarped, IEAFDisplayUnits* pDisplayUnits);
+   void ConvertPJackFromNumPerm(StrandIndexType numStraight, StrandIndexType numHarped, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+   void ConvertPJackToNumPerm(StrandIndexType numStraight, StrandIndexType numHarped, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
    void UpdateEndRangeLength(HarpedStrandOffsetType measureType, StrandIndexType Nh);
    void UpdateHpRangeLength(HarpedStrandOffsetType measureType, StrandIndexType Nh);

@@ -3972,8 +3972,7 @@ bool CSpecAgentImp::IsExteriorStrandBondingRequiredInRow(const CSegmentKey& segm
       // this is a single web flanged girder
 #if defined _DEBUG
       const GirderLibraryEntry* pGirderEntry = GetGirderEntry(segmentKey);
-      CComPtr<IBeamFactory> factory;
-      pGirderEntry->GetBeamFactory(&factory);
+      auto factory = pGirderEntry->GetBeamFactory();
 
       auto clsid = factory->GetFamilyCLSID();
       ATLASSERT(clsid == CLSID_WFBeamFamily || clsid == CLSID_DeckBulbTeeBeamFamily || clsid == CLSID_SplicedIBeamFamily);

@@ -630,7 +630,7 @@ public:
    virtual void EnumHaulTruckNames( std::vector<std::_tstring>* pNames) const = 0;
 
    virtual void EnumGirderFamilyNames( std::vector<std::_tstring>* pNames ) const = 0;
-   virtual void GetBeamFactory(const std::_tstring& strBeamFamily,const std::_tstring& strBeamName,IBeamFactory** ppFactory) = 0;
+   virtual std::shared_ptr<IBeamFactory> GetBeamFactory(const std::_tstring& strBeamFamily,const std::_tstring& strBeamName) = 0;
 
    virtual void EnumRatingCriteriaNames( std::vector<std::_tstring>* pNames) const = 0;
 };

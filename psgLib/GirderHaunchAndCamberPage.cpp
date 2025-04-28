@@ -63,8 +63,7 @@ BOOL CGirderHaunchAndCamberPage::OnInitDialog()
       ic++;
    }
 
-   CComPtr<IBeamFactory> factory;
-   pDad->m_Entry.GetBeamFactory(&factory);
+   auto factory = pDad->m_Entry.GetBeamFactory();
    if (factory->CanPrecamber())
    {
       GetDlgItem(IDC_PRECAMBER_LIMIT_NOTE)->SetWindowText(_T("Precamber limit"));

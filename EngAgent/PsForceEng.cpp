@@ -45,6 +45,7 @@ pgsPsForceEng::~pgsPsForceEng()
 
 void pgsPsForceEng::SetBroker(std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
+#pragma Reminder("WORKING HERE - Removing COM - circular reference with broker and agent")
    m_pBroker = pBroker;
 }
 
@@ -66,15 +67,14 @@ void pgsPsForceEng::CreateLossEngineer(const CGirderKey& girderKey) const
    const CSplicedGirderData* pGirder = pGroup->GetGirder(girderKey.girderIndex);
    const GirderLibraryEntry* pGdr = pGirder->GetGirderLibraryEntry();
 
-   CComPtr<IBeamFactory> beamFactory;
-   pGdr->GetBeamFactory(&beamFactory);
+   auto beamFactory = pGdr->GetBeamFactory();
 
-   beamFactory->CreatePsLossEngineer(m_pBroker,m_StatusGroupID,girderKey,&m_LossEngineer);
+   m_LossEngineer = beamFactory->CreatePsLossEngineer(m_pBroker, m_StatusGroupID, girderKey);
 }
 
 void pgsPsForceEng::Invalidate()
 {
-   m_LossEngineer.Release();
+   m_LossEngineer = nullptr;
 }     
 
 void pgsPsForceEng::ClearDesignLosses()
@@ -85,13 +85,13 @@ void pgsPsForceEng::ClearDesignLosses()
    }
 }
 
-void pgsPsForceEng::ReportLosses(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) const
+void pgsPsForceEng::ReportLosses(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    CreateLossEngineer(girderKey);
    m_LossEngineer->BuildReport(girderKey,pChapter,pDisplayUnits);
 }
 
-void pgsPsForceEng::ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) const
+void pgsPsForceEng::ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    CreateLossEngineer(girderKey);
    m_LossEngineer->ReportFinalLosses(girderKey,pChapter,pDisplayUnits);

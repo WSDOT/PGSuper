@@ -39,6 +39,6 @@ private:
    CLoadRatingSummaryChapterBuilder(const CLoadRatingSummaryChapterBuilder&) = delete;
    CLoadRatingSummaryChapterBuilder& operator=(const CLoadRatingSummaryChapterBuilder&) = delete;
 
-   void ReportRatingFactor(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptRcTable* pTable,RowIndexType& row,const pgsRatingArtifact* pRatingArtifact,IEAFDisplayUnits* pDisplayUnits,rptParagraph* pRemarks) const;
-   void ReportRatingFactor2(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptRcTable* pTable,RowIndexType row,LPCTSTR strTruck,const pgsRatingArtifact* pRatingArtifact,IEAFDisplayUnits* pDisplayUnits,rptParagraph* pRemarks) const;
+   void ReportRatingFactor(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptRcTable* pTable,RowIndexType& row,const pgsRatingArtifact* pRatingArtifact,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptParagraph* pRemarks) const;
+   void ReportRatingFactor2(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptRcTable* pTable,RowIndexType row,LPCTSTR strTruck,const pgsRatingArtifact* pRatingArtifact,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptParagraph* pRemarks) const;
 };

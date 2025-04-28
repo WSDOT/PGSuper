@@ -31,13 +31,13 @@
 #include "PGSpliceCatCom.h"
 #include <IFace\Tools.h>
 #include <IFace\EditByUI.h>
-#include <EAF\EAFUIIntegration.h>
-#include <EAF\EAFStatusCenter.h>
-#include <EAF\EAFDisplayUnits.h>
+#include <EAF/EAFUIIntegration.h>
+#include <EAF/EAFStatusCenter.h>
+#include <EAF/EAFDisplayUnits.h>
+#include <EAF/EAFReportManager.h>
+#include <EAF/EAFGraphManager.h>
 #include <WBFLCore_i.c>
-#include <IReportManager.h>
 #include <IFace\ExtendUI.h>
-#include <IGraphManager.h>
 
 #include "ExampleExtensionAgent.h"
 #include <EAF\ComponentModule.h>

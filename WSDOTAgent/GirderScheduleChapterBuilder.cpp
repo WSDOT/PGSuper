@@ -105,8 +105,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(
    IntervalIndexType finalIntervalIdx   = pIntervals->GetIntervalCount()-1;
 
    const GirderLibraryEntry* pGdrLibEntry = pGirder->GetGirderLibraryEntry();
-   CComPtr<IBeamFactory> factory;
-   pGdrLibEntry->GetBeamFactory(&factory);
+   auto factory = pGdrLibEntry->GetBeamFactory();
    CLSID familyCLSID = factory->GetFamilyCLSID();
    if ( CLSID_WFBeamFamily != familyCLSID && CLSID_UBeamFamily != familyCLSID && CLSID_DeckBulbTeeBeamFamily != familyCLSID && CLSID_SlabBeamFamily != familyCLSID )
    {

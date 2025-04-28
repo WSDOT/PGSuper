@@ -32,7 +32,7 @@
 
 #include <IFace\StatusCenter.h>
 #include <IFace\DocumentType.h>
-#include <IReportManager.h>
+#include <EAF/EAFReportManager.h>
 
 #include "GirderScheduleChapterBuilder.h"
 #include "LoadRatingSummaryChapterBuilder.h"
@@ -53,7 +53,7 @@ bool CWSDOTAgentImp::Init()
 
 
    // Register our reports
-   EAF_GET_IFACE_(WBFL::Reporting,IReportManager,pRptMgr);
+   EAF_GET_IFACE(IEAFReportManager,pRptMgr);
 
    //
    // Create report spec builders

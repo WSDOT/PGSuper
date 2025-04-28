@@ -478,7 +478,7 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLoadRatingSummaryChapterBuilde
    return std::make_unique<CLoadRatingSummaryChapterBuilder>();
 }
 
-void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptRcTable* pTable,RowIndexType& row,const pgsRatingArtifact* pRatingArtifact,IEAFDisplayUnits* pDisplayUnits,rptParagraph* pRemarks) const
+void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptRcTable* pTable,RowIndexType& row,const pgsRatingArtifact* pRatingArtifact,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptParagraph* pRemarks) const
 {
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    location.IncludeSpanAndGirder(true);
@@ -665,7 +665,7 @@ void CLoadRatingSummaryChapterBuilder::ReportRatingFactor(std::shared_ptr<WBFL::
    }
 }
 
-void CLoadRatingSummaryChapterBuilder::ReportRatingFactor2(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptRcTable* pTable,RowIndexType row,LPCTSTR strTruck,const pgsRatingArtifact* pRatingArtifact,IEAFDisplayUnits* pDisplayUnits,rptParagraph* pRemarks) const
+void CLoadRatingSummaryChapterBuilder::ReportRatingFactor2(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptRcTable* pTable,RowIndexType row,LPCTSTR strTruck,const pgsRatingArtifact* pRatingArtifact,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptParagraph* pRemarks) const
 {
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    location.IncludeSpanAndGirder(true);

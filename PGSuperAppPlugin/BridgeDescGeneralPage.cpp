@@ -1248,8 +1248,7 @@ void CBridgeDescGeneralPage::UpdateGirderFactory()
    auto pBroker = EAFGetBroker();
 
    EAF_GET_IFACE2( pBroker, ILibraryNames, pLibNames );
-   m_Factory.Release();
-   pLibNames->GetBeamFactory(std::_tstring(m_GirderFamilyName),std::_tstring(m_GirderName),&m_Factory);
+   m_Factory = pLibNames->GetBeamFactory(std::_tstring(m_GirderFamilyName),std::_tstring(m_GirderName));
 }
 
 void CBridgeDescGeneralPage::OnGirderFamilyChanged() 
@@ -1804,8 +1803,8 @@ void CBridgeDescGeneralPage::UpdateGirderTopWidthSpacingLimits()
          // don't use m_Factory because if we have a cross section with mixed beam types
          // (i.e., I-beams and NU beams) the dimensions list and the factory wont match up
          // and GetAllowableTopWidthRange will be all messed up.
-         CComPtr<IBeamFactory> factory;
-         pGdrEntry->GetBeamFactory(&factory);
+         auto factory = pGdrEntry->GetBeamFactory();
+
 
          Float64 Wmin[2], Wmax[2];
          factory->GetAllowableTopWidthRange(topWidthType, dimensions, &Wmin[LEFT], &Wmax[LEFT], &Wmin[RIGHT], &Wmax[RIGHT]);
@@ -1916,8 +1915,8 @@ BOOL CBridgeDescGeneralPage::UpdateGirderSpacingLimits()
          // don't use m_Factory because if we have a cross section with mixed beam types
          // (i.e. , I-beams and NU beams) the dimensions list and the factory wont match up
          // and GetAllowableSpacingRange will be all messed up.
-         CComPtr<IBeamFactory> factory;
-         pGdrEntry->GetBeamFactory(&factory);
+         auto factory = pGdrEntry->GetBeamFactory();
+
 
          Float64 min, max;
          factory->GetAllowableSpacingRange(dimensions, deckType,m_GirderSpacingType,&min,&max);
@@ -2114,8 +2113,7 @@ void CBridgeDescGeneralPage::UpdateSuperstructureDescription()
       // correct distribution factor engineer.
       std::_tstring entry_name = pGdrEntry->GetName();
 
-      CComPtr<IDistFactorEngineer> dfEngineer;
-      m_Factory->CreateDistFactorEngineer(pBroker, -1, &m_GirderSpacingType, &deckType, &connect, &dfEngineer);
+      auto dfEngineer = m_Factory->CreateDistFactorEngineer(pBroker, -1, &m_GirderSpacingType, &deckType, &connect);
       std::_tstring dfmethod = dfEngineer->GetComputationDescription(CGirderKey(0,0), entry_name, deckType, connect );
 
       description += _T("\r\n\r\nDistribution factors computed using ");

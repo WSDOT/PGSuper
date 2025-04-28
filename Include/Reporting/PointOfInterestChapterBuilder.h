@@ -25,7 +25,7 @@
 #include <Reporter\Chapter.h>
 #include <Reporting\PGSuperChapterBuilder.h>
 
-interface IPointOfInterest;
+class IPointOfInterest;
 class IEAFDisplayUnits;
 
 /*****************************************************************************

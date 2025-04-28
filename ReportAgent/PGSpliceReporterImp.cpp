@@ -49,7 +49,7 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\StatusCenter.h>
 
-#include <IReportManager.h>
+#include <EAF/EAFReportManager.h>
 
 
 
@@ -73,7 +73,7 @@ HRESULT CPGSpliceReporterImp::InitReportBuilders()
       return hr;
    }
 
-   EAF_GET_IFACE_(WBFL::Reporting,IReportManager,pRptMgr);
+   EAF_GET_IFACE(IEAFReportManager,pRptMgr);
 
    // Update details report to contain a couple of extra chapters
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder = pRptMgr->GetReportBuilder(_T("Details Report"));
@@ -178,7 +178,7 @@ HRESULT CPGSpliceReporterImp::OnSpecificationChanged()
       return hr;
 
    // Available reports and chapters for principal web stresses are dependent on settings
-   EAF_GET_IFACE_(WBFL::Reporting,IReportManager,pRptMgr);
+   EAF_GET_IFACE(IEAFReportManager,pRptMgr);
    EAF_GET_IFACE(ISpecification, pSpec);
 
    CSegmentKey key(0, 0, 0); // any key should work for splice

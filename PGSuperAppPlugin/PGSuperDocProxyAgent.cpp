@@ -314,7 +314,7 @@ void CPGSuperDocProxyAgent::CreateReportView(IndexType rptIdx,BOOL bPromptForSpe
    data.m_RptIdx = rptIdx;
    data.m_bPromptForSpec = bPromptForSpec;
 
-   EAF_GET_IFACE_(WBFL::Reporting,IReportManager,pRptMgr);
+   EAF_GET_IFACE(IEAFReportManager,pRptMgr);
    data.m_pRptMgr = pRptMgr;
 
    EAF_GET_IFACE(IEAFViewRegistrar,pViewReg);
@@ -329,7 +329,7 @@ void CPGSuperDocProxyAgent::BuildReportMenu(std::shared_ptr<WBFL::EAF::Menu> pMe
 void CPGSuperDocProxyAgent::CreateGraphView(IndexType graphIdx, IEAFViewController** ppViewController)
 {
    CEAFGraphViewCreationData data;
-   EAF_GET_IFACE_(WBFL::Graphing,IGraphManager,pGraphMgr);
+   EAF_GET_IFACE(IEAFGraphManager,pGraphMgr);
    data.m_pIGraphMgr = pGraphMgr;
    data.m_GraphIndex = graphIdx;
 
@@ -356,7 +356,7 @@ void CPGSuperDocProxyAgent::CreateGraphView(IndexType graphIdx, IEAFViewControll
 
 void CPGSuperDocProxyAgent::CreateGraphView(LPCTSTR lpszGraph, IEAFViewController** ppViewController)
 {
-   EAF_GET_IFACE_(WBFL::Graphing,IGraphManager, pGraphMgr);
+   EAF_GET_IFACE(IEAFGraphManager, pGraphMgr);
    IndexType nGraphs = pGraphMgr->GetGraphBuilderCount();
    for (IndexType graphIdx = 0; graphIdx < nGraphs; graphIdx++)
    {

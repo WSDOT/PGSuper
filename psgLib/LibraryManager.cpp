@@ -93,9 +93,6 @@ bool GirderLibrary::NewEntry(LPCTSTR key)
 }
 
 
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 psgLibraryManager::psgLibraryManager() :
 WBFL::Library::LibraryManager()
 {
@@ -141,13 +138,8 @@ WBFL::Library::LibraryManager()
 psgLibraryManager::~psgLibraryManager()
 {
    // Release all the class factories before the DLL unloads
-   GirderLibraryEntry::ms_ClassFactories.clear();
    GirderLibraryEntry::ms_ExternalCLSIDTranslators.clear();
 }
-
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
 
 ConcreteLibrary&        psgLibraryManager::GetConcreteLibrary()
 {
@@ -342,21 +334,3 @@ void psgLibraryManager::GetMasterLibraryInfo(std::_tstring& strServer, std::_tst
    strConfiguration = m_strConfiguration;
    strLibFile = m_strLibFile;
 }
-
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================

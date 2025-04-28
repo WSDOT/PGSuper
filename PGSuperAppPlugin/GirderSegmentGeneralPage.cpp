@@ -1482,9 +1482,8 @@ void CGirderSegmentGeneralPage::InitBottomFlangeDepthControls()
 {
    CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
    const GirderLibraryEntry* pLibEntry = pParent->m_Girder.GetGirderLibraryEntry();
-   CComPtr<IBeamFactory> factory;
-   pLibEntry->GetBeamFactory(&factory);
-   CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedBeamFactory(factory);
+   auto factory = pLibEntry->GetBeamFactory();
+   auto splicedBeamFactory = std::dynamic_pointer_cast<ISplicedBeamFactory>(factory);
    ATLASSERT(splicedBeamFactory != nullptr); // spliced girders must support the ISplicedBeamFactory interface
    if ( !splicedBeamFactory || !splicedBeamFactory->CanBottomFlangeDepthVary() )
    {
@@ -1507,9 +1506,8 @@ void CGirderSegmentGeneralPage::InitEndBlockControls()
    CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
 
    const GirderLibraryEntry* pLibEntry = pParent->m_Girder.GetGirderLibraryEntry();
-   CComPtr<IBeamFactory> factory;
-   pLibEntry->GetBeamFactory(&factory);
-   CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedBeamFactory(factory);
+   auto factory = pLibEntry->GetBeamFactory();
+   auto splicedBeamFactory = std::dynamic_pointer_cast<ISplicedBeamFactory>(factory);
 
    bool bSupportsEndBlocks = splicedBeamFactory->SupportsEndBlocks();
 

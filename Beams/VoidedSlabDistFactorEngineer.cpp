@@ -22,7 +22,7 @@
 
 // VoidedSlabDistFactorEngineer.cpp : Implementation of CVoidedSlabDistFactorEngineer
 #include "stdafx.h"
-#include "VoidedSlabDistFactorEngineer.h"
+#include <Beams/VoidedSlabDistFactorEngineer.h>
 #include <PGSuperException.h>
 #include <Units\Convert.h>
 #include <PsgLib\TrafficBarrierEntry.h>
@@ -38,11 +38,6 @@
 #include <IFace\Intervals.h>
 #include <Beams\Helper.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 void CVoidedSlabDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {

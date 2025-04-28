@@ -42,10 +42,9 @@ CDiaphragmDefinitionDlg::CDiaphragmDefinitionDlg(const GirderLibraryEntry& entry
 		// NOTE: the ClassWizard will add member initialization here
 	//}}AFX_DATA_INIT
 
-   m_Entry.GetBeamFactory(&m_pBeamFactory);
-
-   CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedFactory(m_pBeamFactory);
-   m_bSplicedGirder = (splicedFactory == nullptr ? false : true);
+   m_pBeamFactory = m_Entry.GetBeamFactory();
+   auto splicedBeamFactory = std::dynamic_pointer_cast<ISplicedBeamFactory>(m_pBeamFactory);
+   m_bSplicedGirder = (splicedBeamFactory == nullptr ? false : true);
 }
 
 

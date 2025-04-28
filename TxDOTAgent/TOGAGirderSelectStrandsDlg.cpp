@@ -228,8 +228,7 @@ void CTOGAGirderSelectStrandsDlg::OnPaint()
    pWnd->UpdateWindow();
 
    // Get girder shape
-   CComPtr<IBeamFactory> factory;
-   m_pGdrEntry->GetBeamFactory(&factory);
+   auto factory = m_pGdrEntry->GetBeamFactory();
 
    GirderLibraryEntry::Dimensions dimensions = m_pGdrEntry->GetDimensions();
 

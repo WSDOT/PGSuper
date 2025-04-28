@@ -20,37 +20,16 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// BoxBeamFactory.h : Declaration of the CBoxBeamFactory
+#pragma once
 
-#ifndef __BOXBEAMFACTORY_H_
-#define __BOXBEAMFACTORY_H_
-
-#include "resource.h"       // main symbols
 #include "IFace\BeamFactory.h"
 #include "IBeamFactory.h" // CLSID
 #include "BoxBeamFactoryImpl.h"
 
-
-/////////////////////////////////////////////////////////////////////////////
-// CBoxBeamFactory
-class ATL_NO_VTABLE CBoxBeamFactory : 
-   public CBoxBeamFactoryImpl,
-   public CComObjectRootEx<CComSingleThreadModel>,
-   public CComCoClass<CBoxBeamFactory, &CLSID_BoxBeamFactory>
+class CBoxBeamFactory : public CBoxBeamFactoryImpl
 {
 public:
-	CBoxBeamFactory()
-	{
-	}
-
-   HRESULT FinalConstruct();
-
-DECLARE_REGISTRY_RESOURCEID(IDR_BOXBEAMFACTORY)
-DECLARE_CLASSFACTORY_SINGLETON(CBoxBeamFactory)
-
-BEGIN_COM_MAP(CBoxBeamFactory)
-   COM_INTERFACE_ENTRY(IBeamFactory)
-END_COM_MAP()
+   CBoxBeamFactory();
 
 public:
    // IBeamFactory
@@ -100,5 +79,3 @@ private:
                                     Float64& endBlockLength,
                                     bool& bFlushExteriorFace) const;
 };
-
-#endif //__BOXBEAMFACTORY_H_

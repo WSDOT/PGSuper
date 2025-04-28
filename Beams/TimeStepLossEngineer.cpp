@@ -22,7 +22,7 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "TimeStepLossEngineer.h"
+#include <Beams/TimeStepLossEngineer.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFAutoProgress.h>
 
@@ -53,11 +53,6 @@
 //#undef USE_ALL_POI
 //#endif
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 inline Float64 GetVertShearFromSlope(Float64 ss)
 {
@@ -77,8 +72,8 @@ CPsLossEngineerBase(pBroker,statusGroupID)
 {
    m_Bat = pgsTypes::ContinuousSpan;
 
-   EAF_GET_IFACE2(GetBroker(), IEAFStatusCenter,pStatusCenter);
-   m_scidProjectCriteria = pStatusCenter->RegisterCallback( new pgsProjectCriteriaStatusCallback(GetBroker()) );
+   EAF_GET_IFACE2(pBroker.lock(), IEAFStatusCenter, pStatusCenter);
+   m_scidProjectCriteria = pStatusCenter->RegisterCallback( new pgsProjectCriteriaStatusCallback() );
 }
 
 const LOSSDETAILS* CTimeStepLossEngineer::GetLosses(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx)

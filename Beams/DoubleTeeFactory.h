@@ -20,38 +20,18 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// DoubleTeeFactory.h : Declaration of the CDoubleTeeFactory
+#pragma once
 
-#ifndef __DOUBLETEEFACTORY_H_
-#define __DOUBLETEEFACTORY_H_
-
-#include "resource.h"       // main symbols
 #include "IFace\BeamFactory.h"
 #include "IBeamFactory.h" // CLSID
 #include <Beams\Helper.h>
 
 #include <vector>
 
-/////////////////////////////////////////////////////////////////////////////
-// CDoubleTeeFactory
-class ATL_NO_VTABLE CDoubleTeeFactory : 
-   public CComObjectRootEx<CComSingleThreadModel>,
-   public CComCoClass<CDoubleTeeFactory, &CLSID_DoubleTeeFactory>,
-   public IBeamFactory
+class CDoubleTeeFactory : public IBeamFactory
 {
 public:
-	CDoubleTeeFactory()
-	{
-	}
-
-   HRESULT FinalConstruct();
-
-DECLARE_REGISTRY_RESOURCEID(IDR_DOUBLETEEFACTORY)
-DECLARE_CLASSFACTORY_SINGLETON(CDoubleTeeFactory)
-
-BEGIN_COM_MAP(CDoubleTeeFactory)
-   COM_INTERFACE_ENTRY(IBeamFactory)
-END_COM_MAP()
+   CDoubleTeeFactory();
 
 public:
    // IBeamFactory
@@ -66,7 +46,7 @@ public:
                           IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                           IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
                           Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover) const override;
-   std::shared_ptr<CPsLossEngineerBase> CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, const CGirderKey& girderKey) const override;
+   std::unique_ptr<CPsLossEngineerBase> CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, const CGirderKey& girderKey) const override;
    const std::vector<std::_tstring>& GetDimensionNames() const override;
    const std::vector<const WBFL::Units::Length*>& GetDimensionUnits(bool bSIUnits) const override;
    const std::vector<Float64>& GetDefaultDimensions() const override;
@@ -133,5 +113,3 @@ private:
 
    Float64 GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name) const;
 };
-
-#endif //__DOUBLETEEFACTORY_H_

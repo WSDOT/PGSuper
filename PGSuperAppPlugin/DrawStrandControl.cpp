@@ -82,8 +82,8 @@ void CDrawStrandControl::CustomInit(const CPrecastSegmentData* pSegment,const CS
 
    // Gets the segment height based on the data in the girder library entry
    const GirderLibraryEntry* pGdrEntry = m_pSegment->GetGirder()->GetGirderLibraryEntry();
-   CComPtr<IBeamFactory> factory;
-   pGdrEntry->GetBeamFactory(&factory);
+   auto factory = pGdrEntry->GetBeamFactory();
+
 
    switch (m_pSegment->GetVariationType() )
    {

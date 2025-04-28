@@ -29,6 +29,9 @@
 
 #include <IFace\BeamFactory.h>
 
+#include <Beams/IBeamFactoryImp.h>
+#include <Beams/SplicedIBeamFactoryImpl.h>
+
 #include <psgLib\BeamFamilyManager.h>
 #include <PgsExt\GirderLabel.h>
 
@@ -94,7 +97,7 @@
 // Initialize static class members
 bool GirderLibraryEntry::m_bsInitCLSIDMap = true;
 std::map<std::_tstring, std::_tstring> GirderLibraryEntry::m_CLSIDMap;
-std::vector<CComPtr<IBeamFactoryCLSIDTranslator>> GirderLibraryEntry::ms_ExternalCLSIDTranslators;
+std::vector<std::shared_ptr<IBeamFactoryCLSIDTranslator>> GirderLibraryEntry::ms_ExternalCLSIDTranslators;
 
 // predicate function for comparing doubles
 inline bool EqualDoublePred(Float64 i, Float64 j) 
@@ -109,14 +112,6 @@ inline bool CompareDimensions(const GirderLibraryEntry::Dimension& d1,const Gird
 
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
-
-// NOTE: This collection must be emptied before the DLL is unloaded. In order to
-// do this we have to purposely call gs_ClassFactores.clear(). Since an individual
-// GirderLibraryEntry has no way of knowing it is the last one to be released,
-// we turn to the library manager. If the library manager is going out of scope, then
-// there shouldn't be any library entires left. ms_ClassFactories is cleared
-// in psgLibraryManager's destructor.
-GirderLibraryEntry::ClassFactoryCollection GirderLibraryEntry::ms_ClassFactories;
 
 CString GirderLibraryEntry::GetAdjustableStrandType(pgsTypes::AdjustableStrandType strandType)
 {
@@ -194,14 +189,14 @@ m_bWarnLongReinfLibraryEquality(true)
    // is defined by the beam factory this object holds. Therefore we need to create a
    // beam factory. Since we don't what kind of beam the user wants, use the first 
    // one registered as a default
-   CComPtr<IBeamFactory> beam_factory;
+   std::shared_ptr<IBeamFactory> beam_factory;
    if ( createType == DEFAULT || createType == PRECAST )
    {
-      beam_factory.CoCreateInstance(CLSID_WFBeamFactory);
+      beam_factory = std::make_shared<CIBeamFactory>();
    }
    else if ( createType == SPLICED )
    {
-      beam_factory.CoCreateInstance(CLSID_SplicedIBeamFactory);
+      beam_factory = std::make_shared<CSplicedIBeamFactory>();
    }
    else
    {
@@ -228,16 +223,15 @@ m_bWarnLongReinfLibraryEquality(true)
 	      ATLASSERT(false); // is there a new create type?
 	   }
 	   ATLASSERT(0 < familyNames.size());
-	   CComPtr<IBeamFamily> beamFamily;
-	   HRESULT hr = CBeamFamilyManager::GetBeamFamily(familyNames.front(),&beamFamily);
-	   if ( FAILED(hr) )
+	   auto beamFamily = CBeamFamilyManager::GetBeamFamily(familyNames.front());
+	   if ( beamFamily == nullptr )
 	   {
 	      return;
 	   }
 	
 	   std::vector<CString> factoryNames = beamFamily->GetFactoryNames();
 	   ATLASSERT(0 < factoryNames.size());
-	   beamFamily->CreateFactory(factoryNames.front(),&beam_factory);
+	   beam_factory = beamFamily->CreateFactory(factoryNames.front());
    }
 
    SetBeamFactory(beam_factory);
@@ -284,7 +278,7 @@ WBFL::Library::LibraryEntry(rOther)
    m_pCompatibilityData = nullptr;
    if (rOther.m_pCompatibilityData != nullptr)
    {
-      m_pCompatibilityData = new pgsCompatibilityData(rOther.m_pCompatibilityData);
+      m_pCompatibilityData = std::make_shared<pgsCompatibilityData>(*rOther.m_pCompatibilityData);
    }
    InitCLSIDMap();
    CopyValuesAndAttributes(rOther);
@@ -292,11 +286,6 @@ WBFL::Library::LibraryEntry(rOther)
 
 GirderLibraryEntry::~GirderLibraryEntry()
 {
-   if (m_pCompatibilityData)
-   {
-      delete m_pCompatibilityData;
-      m_pCompatibilityData = nullptr;
-   }
 }
 
 void GirderLibraryEntry::InitCLSIDMap()
@@ -324,38 +313,12 @@ void GirderLibraryEntry::InitCLSIDMap()
       m_CLSIDMap.emplace_hint(m_CLSIDMap.end(),_T("{9C219793-A1F1-402A-B865-0AA6BD22B0A6}"), _T("{DEFA27AD-3D22-481B-9006-627C65D2648F}"));
 
       // Create external beam factory publisher CLSID translators
-      CComPtr<ICatRegister> pICatReg = 0;
-      HRESULT hr;
-      hr = ::CoCreateInstance(CLSID_StdComponentCategoriesMgr,
-         nullptr,
-         CLSCTX_INPROC_SERVER,
-         IID_ICatRegister,
-         (void**)&pICatReg);
-      if (FAILED(hr))
+      auto components = WBFL::EAF::ComponentCategoryManager::GetInstance().GetComponents(CATID_BeamFactoryCLSIDTranslator);
+      for (auto& component : components)
       {
-         CString msg;
-         msg.Format(_T("Failed to create Component Category Manager. hr = %d\nIs the correct version of Internet Explorer installed"), hr);
-         AfxMessageBox(msg, MB_OK | MB_ICONWARNING);
-         return;
-      }
-
-      CComPtr<ICatInformation> pICatInfo;
-      pICatReg->QueryInterface(IID_ICatInformation, (void**)&pICatInfo);
-      CComPtr<IEnumCLSID> pIEnumCLSID;
-
-      const CATID catid[1]{ (CATID)CATID_BeamFactoryCLSIDTranslator };
-      hr = pICatInfo->EnumClassesOfCategories(1, catid, 0, nullptr, &pIEnumCLSID);
-
-      CLSID clsid;
-      ULONG nFetched;
-      while (pIEnumCLSID->Next(1, &clsid, &nFetched) != S_FALSE)
-      {
-         CComPtr<IBeamFactoryCLSIDTranslator> translator;
-         hr = ::CoCreateInstance(clsid, nullptr, CLSCTX_ALL, IID_IBeamFactoryCLSIDTranslator, (void**)&translator);
-         if (SUCCEEDED(hr))
-         {
+         auto translator = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<IBeamFactoryCLSIDTranslator>(component);
+         if(translator)
             ms_ExternalCLSIDTranslators.push_back(translator);
-         }
       }
 
       m_bsInitCLSIDMap = false; // false = it is initialized
@@ -818,9 +781,12 @@ bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 
          std::_tstring strNewCLSID = TranslateCLSID(strCLSID);
 
-         HRESULT hr = CreateBeamFactory(strNewCLSID);
-         if ( FAILED(hr))
+         if (!CreateBeamFactory(strNewCLSID))
          {
+            // NOTE: When COM/Component Categories was removed, we lost the error code from CoCreateInstance
+            // We now have the default E_FAIL.
+            HRESULT hr = E_FAIL;
+
             LPTSTR errorMsgBuffer = nullptr;
             size_t size = FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
                                           NULL, hr, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPTSTR)&errorMsgBuffer, 0, NULL);
@@ -839,7 +805,7 @@ bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
          ATLASSERT(m_pBeamFactory != nullptr);
 
 
-         CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedBeamFactory(m_pBeamFactory);
+         auto splicedBeamFactory = std::dynamic_pointer_cast<ISplicedBeamFactory>(m_pBeamFactory);
          if ( splicedBeamFactory )
          {
             m_bSupportsVariableDepthSection = splicedBeamFactory->SupportsVariableDepthSection();
@@ -2927,7 +2893,7 @@ bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
    }
 
    ATLASSERT(m_pBeamFactory != nullptr);
-   CComQIPtr<IBeamFactoryCompatibility> compatibility(m_pBeamFactory);
+   auto compatibility = std::dynamic_pointer_cast<IBeamFactoryCompatibility>(m_pBeamFactory);
    if (compatibility)
    {
       // Beam Factories are singletons, so we must capture the compatibility data here, otherwise the current
@@ -2939,52 +2905,28 @@ bool GirderLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
    return true;
 }
 
-HRESULT GirderLibraryEntry::CreateBeamFactory(const std::_tstring& strCLSID)
+bool GirderLibraryEntry::CreateBeamFactory(const std::_tstring& strCLSID)
 {
    USES_CONVERSION;
 
-   m_pBeamFactory.Release();
+   m_pBeamFactory = nullptr;
    
-   // Get the class factory for this type
-   CClassFactoryHolder* pClassFactory;
-   ClassFactoryCollection::iterator found = ms_ClassFactories.find(strCLSID);
-   if ( found != ms_ClassFactories.end() )
-   {
-      pClassFactory = &(*found).second;
-   }
-   else
-   {
-      // Class factory was not found... create it
-      CLSID clsid;
-      ::CLSIDFromString(CT2OLE(strCLSID.c_str()),&clsid);
+   CLSID clsid;
+   ::CLSIDFromString(CT2OLE(strCLSID.c_str()), &clsid);
 
-      CComPtr<IClassFactory> classFactory;
-      HRESULT hr = ::CoGetClassObject(clsid,CLSCTX_ALL,nullptr,IID_IClassFactory,(void**)&classFactory);
-      if ( FAILED(hr) )
-      {
-         return hr;
-      }
+#pragma Reminder("WORKING HERE - Removing COM - need to make Beam Factory objects be singletons")
+   // This probably needs to happen on IBeamFactory and CreateComponent
+   m_pBeamFactory = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<IBeamFactory>(clsid);
 
-      CClassFactoryHolder cfh(classFactory);
-
-      // Save it for next time
-      std::pair<ClassFactoryCollection::iterator,bool> result;
-      result = ms_ClassFactories.insert(std::make_pair(strCLSID,cfh));
-      ClassFactoryCollection::iterator iter = result.first;
-      pClassFactory = &(*iter).second;
-   }
-
-   // Using the class factory, create the beam factory
-   HRESULT hr = pClassFactory->CreateInstance(nullptr,IID_IBeamFactory,(void**)&m_pBeamFactory);
-   return hr;
+   return m_pBeamFactory != nullptr;
 }
 
 void GirderLibraryEntry::LoadIBeamDimensions(WBFL::System::IStructuredLoad* pLoad)
 {
    CLSID clsid;
    ::CLSIDFromString(_T("{EF144A97-4C75-4234-AF3C-71DC89B1C8F8}"),&clsid);
-   m_pBeamFactory.Release();
-   HRESULT hr = ::CoCreateInstance(clsid,nullptr,CLSCTX_ALL,IID_IBeamFactory,(void**)&m_pBeamFactory);
+   m_pBeamFactory = nullptr;
+   m_pBeamFactory = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<IBeamFactory>(clsid);
 
    m_Dimensions.clear();
 
@@ -3124,12 +3066,12 @@ bool GirderLibraryEntry::Compare(const GirderLibraryEntry& rOther, std::vector<s
    CEAFApp* pApp = EAFGetApp();
    const WBFL::Units::IndirectMeasure* pDisplayUnits = pApp->GetDisplayUnits();
 
-   CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedBeamFactory(m_pBeamFactory);
+   auto splicedBeamFactory = std::dynamic_pointer_cast<ISplicedBeamFactory>(m_pBeamFactory);
    bool bSplicedGirder = (splicedBeamFactory == nullptr ? false : true);
 
    bMustRename = false;
 
-   if (!const_cast<CComPtr<IBeamFactory>*>(&m_pBeamFactory)->IsEqualObject(rOther.m_pBeamFactory))
+   if (m_pBeamFactory != rOther.m_pBeamFactory)
    {
       RETURN_ON_DIFFERENCE;
       vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Girder are different type."), _T(""), _T("")));
@@ -3389,7 +3331,7 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
 {
    pvec->clear();
 
-  CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedBeamFactory(m_pBeamFactory);
+   auto splicedBeamFactory = std::dynamic_pointer_cast<ISplicedBeamFactory>(m_pBeamFactory);
 
   if ( splicedBeamFactory )
   {
@@ -3408,15 +3350,15 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
    Float64 endTopLimit, endBottomLimit;
    this->GetEndAdjustmentLimits(&endTopFace, &endTopLimit, &endBottomFace, &endBottomLimit);
 
-   IBeamFactory::BeamFace etf = endTopFace==pgsTypes::BottomFace ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
-   IBeamFactory::BeamFace ebf = endBottomFace==pgsTypes::BottomFace ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
+   IBeamFactory::BeamFace etf = endTopFace==pgsTypes::BottomFace ? IBeamFactory::BeamFace::Bottom : IBeamFactory::BeamFace::Top;
+   IBeamFactory::BeamFace ebf = endBottomFace==pgsTypes::BottomFace ? IBeamFactory::BeamFace::Bottom : IBeamFactory::BeamFace::Top;
 
    pgsTypes::FaceType hpTopFace, hpBottomFace;
    Float64 hpTopLimit, hpBottomLimit;
    this->GetHPAdjustmentLimits(&hpTopFace, &hpTopLimit, &hpBottomFace, &hpBottomLimit);
  
-   IBeamFactory::BeamFace htf = hpTopFace==pgsTypes::BottomFace ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
-   IBeamFactory::BeamFace hbf = hpBottomFace==pgsTypes::BottomFace ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
+   IBeamFactory::BeamFace htf = hpTopFace==pgsTypes::BottomFace ? IBeamFactory::BeamFace::Bottom : IBeamFactory::BeamFace::Top;
+   IBeamFactory::BeamFace hbf = hpBottomFace==pgsTypes::BottomFace ? IBeamFactory::BeamFace::Bottom : IBeamFactory::BeamFace::Top;
 
    CComPtr<IStrandMover> strand_mover;
    m_pBeamFactory->CreateStrandMover(m_Dimensions, -1,
@@ -3436,8 +3378,8 @@ void GirderLibraryEntry::ValidateData(GirderLibraryEntry::GirderEntryDataErrorVe
       Float64 straightTopLimit, straightBottomLimit;
       this->GetStraightAdjustmentLimits(&straightTopFace, &straightTopLimit, &straightBottomFace, &straightBottomLimit);
 
-      IBeamFactory::BeamFace strtf = straightTopFace==pgsTypes::BottomFace ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
-      IBeamFactory::BeamFace strbf = straightBottomFace==pgsTypes::BottomFace ? IBeamFactory::BeamBottom : IBeamFactory::BeamTop;
+      IBeamFactory::BeamFace strtf = straightTopFace==pgsTypes::BottomFace ? IBeamFactory::BeamFace::Bottom : IBeamFactory::BeamFace::Top;
+      IBeamFactory::BeamFace strbf = straightBottomFace==pgsTypes::BottomFace ? IBeamFactory::BeamFace::Bottom : IBeamFactory::BeamFace::Top;
 
       m_pBeamFactory->CreateStrandMover(m_Dimensions, -1,
                                         strtf, straightTopLimit, strbf, straightBottomLimit,
@@ -3937,7 +3879,7 @@ void GirderLibraryEntry::SetAdjustableStrandType(pgsTypes::AdjustableStrandType 
 }
 
 //======================== ACCESS     =======================================
-void GirderLibraryEntry::SetBeamFactory(IBeamFactory* pFactory)
+void GirderLibraryEntry::SetBeamFactory(std::shared_ptr<IBeamFactory> pFactory)
 {
    if ( pFactory == nullptr )
    {
@@ -3967,7 +3909,7 @@ void GirderLibraryEntry::SetBeamFactory(IBeamFactory* pFactory)
       AddDimension(name,value);
    }
 
-   CComQIPtr<ISplicedBeamFactory,&IID_ISplicedBeamFactory> splicedBeamFactory(m_pBeamFactory);
+   auto splicedBeamFactory = std::dynamic_pointer_cast<ISplicedBeamFactory>(m_pBeamFactory);
    if ( splicedBeamFactory && splicedBeamFactory->SupportsVariableDepthSection() )
    {
       m_bSupportsVariableDepthSection = true;
@@ -3978,10 +3920,9 @@ void GirderLibraryEntry::SetBeamFactory(IBeamFactory* pFactory)
    }
 }
 
-void GirderLibraryEntry::GetBeamFactory(IBeamFactory** ppFactory) const
+std::shared_ptr<IBeamFactory> GirderLibraryEntry::GetBeamFactory() const
 {
-   (*ppFactory) = m_pBeamFactory;
-   (*ppFactory)->AddRef();
+   return m_pBeamFactory;
 }
 
 std::_tstring GirderLibraryEntry::GetGirderName() const
@@ -4880,7 +4821,6 @@ void GirderLibraryEntry::CopyValuesAndAttributes(const GirderLibraryEntry& rOthe
    m_bSupportsVariableDepthSection = rOther.m_bSupportsVariableDepthSection;
    m_bIsVariableDepthSectionEnabled = rOther.m_bIsVariableDepthSectionEnabled;
 
-   m_pBeamFactory.Release();
    m_pBeamFactory = rOther.m_pBeamFactory;
 
    m_bOddNumberOfHarpedStrands     = rOther.m_bOddNumberOfHarpedStrands;
@@ -5567,13 +5507,10 @@ bool GirderLibraryEntry::GetDoReportBearingElevationsAtGirderEdges() const
    return m_DoReportBearingElevationsAtGirderEdges;
 }
 
-pgsCompatibilityData* GirderLibraryEntry::GetCompatibilityData() const
+std::shared_ptr<pgsCompatibilityData> GirderLibraryEntry::GetCompatibilityData() const
 {
    return m_pCompatibilityData;
 }
-
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
 
 static const Float64 TwoInches = WBFL::Units::ConvertToSysUnits(2.0,WBFL::Units::Measure::Inch);
 

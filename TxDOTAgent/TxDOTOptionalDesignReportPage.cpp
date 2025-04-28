@@ -27,7 +27,7 @@
 #include "TxDOTOptionalDesignReportPage.h"
 #include "TxDOTOptionalDesignUtilities.h"
 
-#include <IReportManager.h>
+#include <EAF/EAFReportManager.h>
 #include <EAF\EAFAutoProgress.h>
 #include <EAF\EAFCustSiteVars.h>
 #include <EAF\EAFDocument.h>
@@ -121,7 +121,7 @@ BOOL CTxDOTOptionalDesignReportPage::OnSetActive()
          }
          else
          {
-            EAF_GET_IFACE2_(WBFL::Reporting,pBroker, IReportManager,pReportMgr);
+            EAF_GET_IFACE2(pBroker, IEAFReportManager,pReportMgr);
             // Create spec for currently selected report
             m_pRptSpec = CreateSelectedReportSpec(pReportMgr);
 
@@ -179,7 +179,7 @@ void CTxDOTOptionalDesignReportPage::CreateNewBrowser(std::shared_ptr<WBFL::EAF:
    m_BrowserPlaceholder.ShowWindow(SW_SHOW);
    m_ErrorStatic.ShowWindow(SW_HIDE);
 
-   EAF_GET_IFACE2_(WBFL::Reporting,pBroker, IReportManager,pReportMgr);
+   EAF_GET_IFACE2(pBroker,IEAFReportManager,pReportMgr);
 
    // Create spec for currently selected report
    m_pRptSpec = CreateSelectedReportSpec(pReportMgr);
@@ -198,7 +198,7 @@ void CTxDOTOptionalDesignReportPage::CreateNewBrowser(std::shared_ptr<WBFL::EAF:
    this->SendMessage(WM_SIZE);
 }
 
-std::shared_ptr<WBFL::Reporting::ReportSpecification> CTxDOTOptionalDesignReportPage::CreateSelectedReportSpec(std::shared_ptr<WBFL::Reporting::IReportManager> pReportMgr)
+std::shared_ptr<WBFL::Reporting::ReportSpecification> CTxDOTOptionalDesignReportPage::CreateSelectedReportSpec(std::shared_ptr<IEAFReportManager> pReportMgr)
 {
    int curidx = m_ReportCombo.GetCurSel();
    ASSERT(curidx==0 || curidx==1);

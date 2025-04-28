@@ -25,9 +25,9 @@
 #include <Plugins\Beams.h>
 #include <Plugins\BeamFamilyCLSID.h>
 #include "NUDeckedBulbTeeFactory.h"
-#include "BulbTeeDistFactorEngineer.h"
-#include "TimeStepLossEngineer.h"
-#include "PsBeamLossEngineer.h"
+#include <Beams\BulbTeeDistFactorEngineer.h>
+#include <Beams/TimeStepLossEngineer.h>
+#include <Beams/PsBeamLossEngineer.h>
 #include <GeomModel\PrecastBeam.h>
 #include <MathEx.h>
 #include <sstream>
@@ -54,15 +54,8 @@
 #include <psgLib/SectionPropertiesCriteria.h>
 #include <psgLib/SpecificationCriteria.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
-/////////////////////////////////////////////////////////////////////////////
-// CNUDeckedBulbTeeFactory
-HRESULT CNUDeckedBulbTeeFactory::FinalConstruct()
+CNUDeckedBulbTeeFactory::CNUDeckedBulbTeeFactory() : IBeamFactory()
 {
    StatusGroupIDType m_StatusGroupID = INVALID_ID;
 
@@ -150,8 +143,6 @@ HRESULT CNUDeckedBulbTeeFactory::FinalConstruct()
    m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // C1
    m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Feet); // Wmax
    m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Feet); // Wmin
-
-   return S_OK;
 }
 
 void CNUDeckedBulbTeeFactory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusItemIDType statusID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
@@ -415,16 +406,16 @@ std::shared_ptr<CDistFactorEngineerBase> CNUDeckedBulbTeeFactory::CreateDistFact
    return std::make_shared<CBulbTeeDistFactorEngineer>(pBroker, statusGroupID);
 }
 
-std::shared_ptr<CPsLossEngineerBase> CNUDeckedBulbTeeFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusItemIDType statusGroupID,const CGirderKey& girderKey) const
+std::unique_ptr<CPsLossEngineerBase> CNUDeckedBulbTeeFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusItemIDType statusGroupID,const CGirderKey& girderKey) const
 {
    EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP)
    {
-      return std::make_shared<CTimeStepLossEngineer>(pBroker, statusGroupID);
+      return std::make_unique<CTimeStepLossEngineer>(pBroker, statusGroupID);
    }
    else
    {
-      return std::make_shared<CPsBeamLossEngineer>(CPsBeamLossEngineer::BeamType::IBeam, pBroker, statusGroupID);
+      return std::make_unique<CPsBeamLossEngineer>(CPsBeamLossEngineer::BeamType::IBeam, pBroker, statusGroupID);
    }
 }
 
@@ -435,7 +426,7 @@ void CNUDeckedBulbTeeFactory::CreateStrandMover(const IBeamFactory::Dimensions& 
 {
    HRESULT hr = S_OK;
 
-   // set the shape for harped strand bounds - only in the thinest part of the web
+   // set the shape for harped strand bounds - only in the thinnest part of the web
    CComPtr<IRectangle> harp_rect;
    hr = harp_rect.CoCreateInstance(CLSID_Rect);
    ATLASSERT (SUCCEEDED(hr));
@@ -467,10 +458,10 @@ void CNUDeckedBulbTeeFactory::CreateStrandMover(const IBeamFactory::Dimensions& 
    ATLASSERT (SUCCEEDED(hr));
 
    // set vertical offset bounds and increments
-   Float64 hptb  = hpTopFace     == IBeamFactory::BeamBottom ? hpTopLimit     - h : -hpTopLimit;
-   Float64 hpbb  = hpBottomFace  == IBeamFactory::BeamBottom ? hpBottomLimit  - h : -hpBottomLimit;
-   Float64 endtb = endTopFace    == IBeamFactory::BeamBottom ? endTopLimit    - h : -endTopLimit;
-   Float64 endbb = endBottomFace == IBeamFactory::BeamBottom ? endBottomLimit - h : -endBottomLimit;
+   Float64 hptb  = hpTopFace     == IBeamFactory::BeamFace::Bottom ? hpTopLimit     - h : -hpTopLimit;
+   Float64 hpbb  = hpBottomFace  == IBeamFactory::BeamFace::Bottom ? hpBottomLimit  - h : -hpBottomLimit;
+   Float64 endtb = endTopFace    == IBeamFactory::BeamFace::Bottom ? endTopLimit    - h : -endTopLimit;
+   Float64 endbb = endBottomFace == IBeamFactory::BeamFace::Bottom ? endBottomLimit - h : -endBottomLimit;
 
    hr = configurer->SetHarpedStrandOffsetBounds(0, h, endtb, endbb, hptb, hpbb, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));

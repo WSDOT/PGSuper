@@ -30,13 +30,10 @@
 
 /////////////////////////////////////////////////////////////////////////////
 // CBoxBeamFactoryImpl
-class ATL_NO_VTABLE CBoxBeamFactoryImpl :
-   public IBeamFactory
+class CBoxBeamFactoryImpl : public IBeamFactory
 {
 public:
-   CBoxBeamFactoryImpl()
-   {
-   }
+   CBoxBeamFactoryImpl() = default;
 
 public:
    // IBeamFactory
@@ -47,7 +44,7 @@ public:
    Float64 GetSegmentHeight(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const override;
    void LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey, pgsPoiMgr* pPoiMgr) const override;
    std::shared_ptr<CDistFactorEngineerBase> CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const pgsTypes::SupportedBeamSpacing* pSpacingType, const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const override;
-   std::shared_ptr<CPsLossEngineerBase> CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, const CGirderKey& girderKey) const override;
+   std::unique_ptr<CPsLossEngineerBase> CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, const CGirderKey& girderKey) const override;
    const std::vector<std::_tstring>& GetDimensionNames() const override;
    const std::vector<const WBFL::Units::Length*>& GetDimensionUnits(bool bSIUnits) const override;
    const std::vector<Float64>& GetDefaultDimensions() const override;

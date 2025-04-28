@@ -710,8 +710,7 @@ bool CTxDOTOptionalDesignGirderData::ComputeEccentricities(GirderLibrary* pLib, 
    else
    {
       // first need cg location of outer shape - this requires some work
-      CComPtr<IBeamFactory> pFactory;
-      pGdrEntry->GetBeamFactory(&pFactory);
+      auto pFactory = pGdrEntry->GetBeamFactory();
       GirderLibraryEntry::Dimensions dimensions = pGdrEntry->GetDimensions();
 
       CComPtr<IGirderSection> gdrSection;
@@ -831,8 +830,7 @@ bool CTxDOTOptionalDesignGirderData::ComputeDirectFillEccentricity(const GirderL
    else
    {
       // first need cg location of outer shape - this requires some work
-      CComPtr<IBeamFactory> pFactory;
-      pGdrEntry->GetBeamFactory(&pFactory);
+      auto pFactory = pGdrEntry->GetBeamFactory();
       GirderLibraryEntry::Dimensions dimensions = pGdrEntry->GetDimensions();
 
       CComPtr<IGirderSection> gdrSection;

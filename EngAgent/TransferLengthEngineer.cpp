@@ -486,7 +486,7 @@ Float64 pgsMinuteTransferLength::GetTransferLength() const
    return WBFL::Units::ConvertToSysUnits(0.1, WBFL::Units::Measure::Inch);
 }
 
-void pgsMinuteTransferLength::ReportDetails(rptChapter* pChapter,IEAFDisplayUnits* pDisplayUnits) const
+void pgsMinuteTransferLength::ReportDetails(rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    INIT_UV_PROTOTYPE(rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), true);
    rptParagraph* pPara = new rptParagraph;
@@ -531,7 +531,7 @@ Float64 pgsLRFDTransferLength::GetTransferLength() const
    return (m_Coating == WBFL::Materials::PsStrand::Coating::None ? 60 : 50) * m_db;
 }
 
-void pgsLRFDTransferLength::ReportDetails(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void pgsLRFDTransferLength::ReportDetails(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph;
    (*pChapter) << pPara;
@@ -577,7 +577,7 @@ Float64 pgsPCIUHPCTransferLength::GetTransferLength() const
    return 20.0 * m_db;
 }
 
-void pgsPCIUHPCTransferLength::ReportDetails(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void pgsPCIUHPCTransferLength::ReportDetails(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph;
    (*pChapter) << pPara;
@@ -633,7 +633,7 @@ Float64 pgsUHPCTransferLength::GetTransferLength() const
    return lt;
 }
 
-void pgsUHPCTransferLength::ReportDetails(rptChapter* pChapter, IEAFDisplayUnits* pDisplayUnits) const
+void pgsUHPCTransferLength::ReportDetails(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptParagraph* pPara = new rptParagraph;
    (*pChapter) << pPara;

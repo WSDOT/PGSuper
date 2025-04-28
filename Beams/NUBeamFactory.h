@@ -20,38 +20,18 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// NUBeamFactory.h : Declaration of the CNUBeamFactory
+#pragma once
 
-#ifndef __NUBeamFactory_H_
-#define __NUBeamFactory_H_
-
-#include "resource.h"       // main symbols
 #include "IFace\BeamFactory.h"
 #include "IBeamFactory.h" // CLSID
 #include <Beams\Helper.h>
 
 #include <vector>
 
-/////////////////////////////////////////////////////////////////////////////
-// CNUBeamFactory
-class ATL_NO_VTABLE CNUBeamFactory : 
-   public CComObjectRootEx<CComSingleThreadModel>,
-   public CComCoClass<CNUBeamFactory, &CLSID_NUBeamFactory>,
-   public IBeamFactory
+class CNUBeamFactory : public IBeamFactory
 {
 public:
-	CNUBeamFactory()
-	{
-	}
-
-   HRESULT FinalConstruct();
-
-DECLARE_REGISTRY_RESOURCEID(IDR_NUBEAMFACTORY)
-DECLARE_CLASSFACTORY_SINGLETON(CNUBeamFactory)
-
-BEGIN_COM_MAP(CNUBeamFactory)
-   COM_INTERFACE_ENTRY(IBeamFactory)
-END_COM_MAP()
+   CNUBeamFactory();
 
 public:
    // NUBeamFactory
@@ -66,7 +46,7 @@ public:
                           IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                           IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
                           Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover) const override;
-   std::shared_ptr<CPsLossEngineerBase> CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, const CGirderKey& girderKey) const override;
+   std::unique_ptr<CPsLossEngineerBase> CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, const CGirderKey& girderKey) const override;
    const std::vector<std::_tstring>& GetDimensionNames() const override;
    const std::vector<const WBFL::Units::Length*>& GetDimensionUnits(bool bSIUnits) const override;
    const std::vector<Float64>& GetDefaultDimensions() const override;
@@ -134,5 +114,3 @@ private:
    Float64 GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name) const;
    void DimensionAndPositionBeam(const IBeamFactory::Dimensions& dimensions, INUBeam* pBeam) const;
 };
-
-#endif //__NUBEAMFACTORY_H_
