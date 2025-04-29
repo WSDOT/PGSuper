@@ -235,6 +235,7 @@
     <ClCompile Include="DeckDescription2.cpp" />
     <ClCompile Include="DeckPoint.cpp" />
     <ClCompile Include="DeckRebarData.cpp" />
+    <ClCompile Include="DeckReinforcementArtifact.cpp" />
     <ClCompile Include="DeflectionCheckArtifact.cpp" />
     <ClCompile Include="DesignConfigUtil.cpp" />
     <ClCompile Include="DistributedLoadData.cpp" />
@@ -376,6 +377,7 @@
     <ClInclude Include="..\Include\PgsExt\DeckDescription2.h" />
     <ClInclude Include="..\Include\PgsExt\DeckPoint.h" />
     <ClInclude Include="..\Include\PgsExt\DeckRebarData.h" />
+    <ClInclude Include="..\Include\PgsExt\DeckReinforcementArtifact.h" />
     <ClInclude Include="..\Include\PgsExt\DeflectionCheckArtifact.h" />
     <ClInclude Include="..\Include\PgsExt\DesignConfigUtil.h" />
     <ClInclude Include="..\Include\PgsExt\DevelopmentLength.h" />

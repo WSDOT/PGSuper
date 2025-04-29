@@ -42,6 +42,7 @@
 #include <PgsExt\DuctSizeArtifact.h>
 #include <PgsExt\PrincipalTensionStressArtifact.h>
 #include <PgsExt\ReinforcementFatigueArtifact.h>
+#include <PgsExt\DeckReinforcementArtifact.h>
 
 #include <Stability\Stability.h>
 
@@ -163,6 +164,9 @@ public:
 
    pgsDebondArtifact* GetDebondArtifact();
    const pgsDebondArtifact* GetDebondArtifact() const;
+
+   pgsDeckReinforcementCheckArtifact* GetDeckReinforcementCheckArtifact();
+   const pgsDeckReinforcementCheckArtifact* GetDeckReinforcementCheckArtifact() const;
    
    bool Passed() const;
 
@@ -225,4 +229,6 @@ private:
 
    mutable pgsPrincipalTensionStressArtifact m_PrincipalTensionStressArtifact;
    bool DidPrincipalTensionStressPass() const;
+
+   pgsDeckReinforcementCheckArtifact m_DeckReinforcementCheckArtifact;
 };

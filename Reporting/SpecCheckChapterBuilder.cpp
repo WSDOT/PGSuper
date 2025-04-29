@@ -46,6 +46,7 @@
 #include <Reporting\PrincipalTensionStressCheckTable.h>
 #include <Reporting\RatingSummaryTable.h>
 #include <Reporting\ReinforcementFatigueCheck.h>
+#include <Reporting\MinDeckReinforcementCheck.h>
 
 #include <MathEx.h>
 
@@ -409,6 +410,9 @@ rptChapter* CSpecCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
 
    // Optional live load deflection
    COptionalDeflectionCheck().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits);
+
+   // Minimum Deck Reinforcement in Negative Moment Region
+   CMinDeckReinforcementCheck().Build(pChapter, pBroker, pGirderArtifact, pDisplayUnits);
 
    // Lifting
    GET_IFACE2(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);

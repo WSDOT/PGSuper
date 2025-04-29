@@ -188,6 +188,7 @@
     <ClCompile Include="BridgeDescDetailsChapterBuilder.cpp" />
     <ClCompile Include="BrokerReportSpecification.cpp" />
     <ClCompile Include="BrokerReportSpecificationBuilder.cpp" />
+    <ClCompile Include="MinDeckReinforcementCheck.cpp" />
     <ClCompile Include="ReinforcementFatigueCheck.cpp" />
     <ClCompile Include="ReportNotes.cpp" />
     <ClCompile Include="SplittingCheckDetailsChapterBuilder.cpp" />
@@ -482,6 +483,7 @@
     <ClInclude Include="..\Include\Reporting\LongReinfShearCheckChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\LossesChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\LRFDCreepCoefficientChapterBuilder.h" />
+    <ClInclude Include="..\Include\Reporting\MinDeckReinforcementCheck.h" />
     <ClInclude Include="..\Include\Reporting\MomentCapacityChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\MomentCapacityDetailsChapterBuilder.h" />
     <ClInclude Include="..\Include\Reporting\MomentCapacityParagraphBuilder.h" />

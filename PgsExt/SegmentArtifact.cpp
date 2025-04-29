@@ -540,6 +540,16 @@ const pgsDebondArtifact* pgsSegmentArtifact::GetDebondArtifact() const
    return &m_DebondArtifact;
 }
 
+pgsDeckReinforcementCheckArtifact* pgsSegmentArtifact::GetDeckReinforcementCheckArtifact()
+{
+   return &m_DeckReinforcementCheckArtifact;
+}
+
+const pgsDeckReinforcementCheckArtifact* pgsSegmentArtifact::GetDeckReinforcementCheckArtifact() const
+{
+   return &m_DeckReinforcementCheckArtifact;
+}
+
 bool pgsSegmentArtifact::Passed() const
 {
    // if any one fails, then the whole things fails. Return false on first failure or true if we get to the end
@@ -622,6 +632,11 @@ bool pgsSegmentArtifact::Passed() const
       {
          return false;
       }
+   }
+
+   if (!m_DeckReinforcementCheckArtifact.Passed())
+   {
+      return false;
    }
 
    return true;
@@ -1057,6 +1072,8 @@ void pgsSegmentArtifact::MakeCopy(const pgsSegmentArtifact& rOther)
    m_pHaulingAnalysisArtifact = rOther.m_pHaulingAnalysisArtifact;
 
    m_DebondArtifact = rOther.m_DebondArtifact;
+
+   m_DeckReinforcementCheckArtifact = rOther.m_DeckReinforcementCheckArtifact;
 
    m_TendonStressArtifacts = rOther.m_TendonStressArtifacts;
    m_DuctSizeArtifacts = rOther.m_DuctSizeArtifacts;

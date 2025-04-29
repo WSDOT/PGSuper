@@ -430,6 +430,9 @@
     <ClCompile Include="HaunchDepthInputConversionTool.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DeckReinforcementArtifact.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\PgsExt\AASHTOConcretePage.h">
@@ -883,6 +886,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\PgsExt\CatalogServers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\PgsExt\DeckReinforcementArtifact.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

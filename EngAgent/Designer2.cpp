@@ -970,6 +970,9 @@ const pgsGirderArtifact* pgsDesigner2::Check(const CGirderKey& girderKey) const
    CheckTendonStresses(girderKey,pGdrArtifact.get());
    CheckTendonDetailing(girderKey,pGdrArtifact.get());
 
+   pProgress->UpdateMessage(_T("Checking minimum deck reinforcement for tensile stress"));
+   CheckMinimumDeckReinforcement(girderKey, pGdrArtifact.get());
+
    // add the artifact to the cache
    m_CheckArtifacts.insert( std::make_pair(girderKey,pGdrArtifact) );
 
@@ -6415,6 +6418,92 @@ void pgsDesigner2::CheckReinforcementFatigue(const CSegmentKey& segmentKey, pgsR
    else
    {
       pArtifact->IsApplicable(false);
+   }
+}
+
+void pgsDesigner2::CheckMinimumDeckReinforcement(const CGirderKey& girderKey, pgsGirderArtifact* pGirderArtifact) const
+{
+   ASSERT_GIRDER_KEY(girderKey);
+
+   // Check LRFD 9.7.1.6—Minimum Deck Reinforcement in Negative Moment Region. 
+   GET_IFACE(ISpecification, pSpec);
+   GET_IFACE_NOCHECK(IBridge, pBridge);
+   GET_IFACE(IIntervals, pIntervals);
+   GET_IFACE_NOCHECK( ILimitStateForces2, pLsForces2);
+   GET_IFACE_NOCHECK(IPointOfInterest, pPoi);
+   GET_IFACE_NOCHECK(IMaterials, pMaterials);
+   GET_IFACE_NOCHECK(ISectionProperties, pSectionProperties);
+   GET_IFACE_NOCHECK(ILongRebarGeometry, pRebarGeom);
+   GET_IFACE(IProductForces, pProdForces);
+
+   // Article first appeared in 10th edition
+   bool doCheck = pSpec->GetSpecificationType() >= WBFL::LRFD::BDSManager::Edition::TenthEdition2024 && pBridge->IsCompositeDeck();
+   IntervalIndexType intervalIdx = pIntervals->GetLiveLoadInterval();
+
+   pgsTypes::BridgeAnalysisType bat = pProdForces->GetBridgeAnalysisType(pgsTypes::Minimize);
+
+   // Check deck reinforcement along segments
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
+   {
+      auto* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
+      auto* pDeckReinfArtifact = pSegmentArtifact->GetDeckReinforcementCheckArtifact();
+
+      pDeckReinfArtifact->IsApplicable(doCheck);
+      if (!doCheck)
+      {
+         break;
+      }
+      else
+      {
+         Float64 phi = 0.9;
+         pDeckReinfArtifact->SetPhiFactor(phi);
+
+         GET_IFACE_NOCHECK(IGirder, pGirder);
+
+         CSegmentKey segmentKey(girderKey, segIdx);
+         PoiList vPois;
+         pPoi->GetPointsOfInterest(segmentKey, POI_SPAN, &vPois);
+         pPoi->SortPoiList(&vPois);
+         // No need to capture jumps here so remove any coincident pois
+         vPois.erase(std::unique(std::begin(vPois), std::end(vPois), [](const pgsPointOfInterest& a, const pgsPointOfInterest& b) {return a.AtSamePlace(b);}), std::end(vPois));
+
+         std::vector<Float64> fTopMinServiceI, fTopMaxServiceI;
+         pLsForces2->GetStress(intervalIdx, pgsTypes::ServiceI, vPois, bat, false, pgsTypes::TopDeck, &fTopMinServiceI, &fTopMaxServiceI);
+
+         std::size_t poiIdx = 0;
+         for (const auto& poi : vPois)
+         {
+            Float64 deckTensileStress = fTopMaxServiceI[poiIdx];
+
+            IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
+            Float64 modRupture = pMaterials->GetDeckFlexureFr(deckCastingRegionIdx, intervalIdx);
+
+            Float64 tribAreaDeck = pSectionProperties->GetTributaryDeckArea(poi);
+            Float64 effAreaDeck = pSectionProperties->GetEffectiveDeckArea(poi);
+            Float64 areaCIPDeck = max(tribAreaDeck, effAreaDeck);
+
+            Float64 areaReinforcement = pRebarGeom->GetAsTopMat(poi, pgsTypes::drbAll, pgsTypes::drcAll);
+            areaReinforcement        += pRebarGeom->GetAsBottomMat(poi, pgsTypes::drbAll, pgsTypes::drcAll);
+
+            bool Passed(true);
+            bool isApplicable(false);
+
+            Float64 limit = phi * modRupture; ;
+            if (deckTensileStress > limit)
+            {
+               isApplicable = true;
+
+               Float64 percentRebar = 100.0 * areaReinforcement / areaCIPDeck;
+               Passed = percentRebar > 1.0;
+            }
+
+            pgsDeckReinforcementCheckAtPoisArtifact poiArtifact(poi.get(), deckTensileStress, areaCIPDeck, areaReinforcement, modRupture, Passed, isApplicable);
+            pDeckReinfArtifact->AddDeckReinforcementCheckAtPoisArtifact(poiArtifact);
+
+            poiIdx++;
+         }
+      }
    }
 }
 

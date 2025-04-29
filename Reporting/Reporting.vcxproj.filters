@@ -613,6 +613,9 @@
     <ClCompile Include="ReportNotes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MinDeckReinforcementCheck.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\Reporting\ADimChapterBuilder.h">
@@ -1234,6 +1237,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\Include\Reporting\BearingTimeStepShearDeformationTable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Include\Reporting\MinDeckReinforcementCheck.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
