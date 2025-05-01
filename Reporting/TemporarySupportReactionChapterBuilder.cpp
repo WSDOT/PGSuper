@@ -147,12 +147,6 @@ rptChapter* CTemporarySupportReactionChapterBuilder::Build(const std::shared_ptr
       bPedLoading = false;
    }
 
-   if ( bPermit )
-   {
-      nCols -= 2;
-      bPermit = false;
-   }
-
    GET_IFACE2(pBroker, IUserDefinedLoads, pUserDefinedLoads);
    bool bUserLoads = pUserDefinedLoads->DoUserLoadsExist(girderKey);
    if (bUserLoads)
