@@ -1269,6 +1269,7 @@ void write_spec_check_results(FILE *fp, IBroker* pBroker, const CGirderKey& gird
       ListDebondingFailures(pBroker,failures,pGirderArtifact);
       ListSplittingZoneFailures(pBroker,failures,pGirderArtifact);
       ListConfinementZoneFailures(pBroker,failures,pGirderArtifact);
+      ListMinimumDeckReinforcementFailures(pBroker, failures, pGirderArtifact);
       ListVariousFailures(pBroker,failures,pGirderArtifact,false);
 
       // Put failures into report

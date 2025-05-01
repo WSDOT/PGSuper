@@ -6438,7 +6438,9 @@ void pgsDesigner2::CheckMinimumDeckReinforcement(const CGirderKey& girderKey, pg
 
    // Article first appeared in 10th edition
    bool doCheck = pSpec->GetSpecificationType() >= WBFL::LRFD::BDSManager::Edition::TenthEdition2024 && pBridge->IsCompositeDeck();
-   IntervalIndexType intervalIdx = pIntervals->GetLiveLoadInterval();
+
+   // The code below to get the check interval can be found throughout BridgeLink. We might want to consolodate this into a function call.
+   auto checkIntervalIdx = pIntervals->GetIntervalCount() - 1;
 
    pgsTypes::BridgeAnalysisType bat = pProdForces->GetBridgeAnalysisType(pgsTypes::Minimize);
 
@@ -6469,7 +6471,7 @@ void pgsDesigner2::CheckMinimumDeckReinforcement(const CGirderKey& girderKey, pg
          vPois.erase(std::unique(std::begin(vPois), std::end(vPois), [](const pgsPointOfInterest& a, const pgsPointOfInterest& b) {return a.AtSamePlace(b);}), std::end(vPois));
 
          std::vector<Float64> fTopMinServiceI, fTopMaxServiceI;
-         pLsForces2->GetStress(intervalIdx, pgsTypes::ServiceI, vPois, bat, false, pgsTypes::TopDeck, &fTopMinServiceI, &fTopMaxServiceI);
+         pLsForces2->GetStress(checkIntervalIdx, pgsTypes::ServiceI, vPois, bat, false, pgsTypes::TopDeck, &fTopMinServiceI, &fTopMaxServiceI);
 
          std::size_t poiIdx = 0;
          for (const auto& poi : vPois)
@@ -6477,7 +6479,7 @@ void pgsDesigner2::CheckMinimumDeckReinforcement(const CGirderKey& girderKey, pg
             Float64 deckTensileStress = fTopMaxServiceI[poiIdx];
 
             IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
-            Float64 modRupture = pMaterials->GetDeckFlexureFr(deckCastingRegionIdx, intervalIdx);
+            Float64 modRupture = pMaterials->GetDeckFlexureFr(deckCastingRegionIdx, checkIntervalIdx);
 
             Float64 tribAreaDeck = pSectionProperties->GetTributaryDeckArea(poi);
             Float64 effAreaDeck = pSectionProperties->GetEffectiveDeckArea(poi);

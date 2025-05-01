@@ -15,6 +15,7 @@ Horizontal Interface Shear check failed for Strength I Limit State.
 Debond arrangement checks failed.
 Splitting check failed.
 Confinement zone check failed.
+Minimum deck reinforcement in negative moment region failed.
 Lifting checks failed
 Slab Offset ("A" Dimension) check failed
 
@@ -76,6 +77,7 @@ Horizontal Interface Shear check failed for Strength I Limit State.
 Debond arrangement checks failed.
 Splitting check failed.
 Confinement zone check failed.
+Minimum deck reinforcement in negative moment region failed.
 Lifting checks failed
 Slab Offset ("A" Dimension) check failed
 

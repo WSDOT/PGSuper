@@ -38,6 +38,7 @@ Debond arrangement checks failed for Segment 1.
 Splitting check failed for Segment 1.
 Confinement zone check failed for Segment 1.
 Confinement zone check failed for Segment 2.
+Minimum deck reinforcement in negative moment region failed.
 Lifting checks failed for Segment 1.
 Hauling checks failed for Segment 1.
 Lifting checks failed for Segment 2.
@@ -82,6 +83,7 @@ Horizontal Interface Shear check failed for Strength I Limit State.
 Stirrup detailing checks failed for the Strength I Limit State.
 Confinement zone check failed for Segment 1.
 Confinement zone check failed for Segment 2.
+Minimum deck reinforcement in negative moment region failed.
 Lifting checks failed for Segment 1.
 Hauling checks failed for Segment 1.
 Lifting checks failed for Segment 2.

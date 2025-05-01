@@ -421,6 +421,30 @@ void ListDebondingFailures(IBroker* pBroker,FailureList& rFailures,const pgsGird
    } // next segment
 }
 
+void PGSEXTFUNC ListMinimumDeckReinforcementFailures(IBroker* pBroker, FailureList& rFailures, const pgsGirderArtifact* pGirderArtifact)
+{
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
+   SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
+   bool bFail = false;
+   for (SegmentIndexType segIdx = 0; segIdx < nSegments && !bFail; segIdx++)
+   {
+      auto* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);
+      auto* pDeckReinfArtifact = pSegmentArtifact->GetDeckReinforcementCheckArtifact();
+
+      IndexType nArtifacts = pDeckReinfArtifact->GetDeckReinforcementCheckAtPoisArtifactCount();
+      for (IndexType Idx = 0; Idx < nArtifacts && !bFail; Idx++)
+      {
+         const auto* pArtifact = pDeckReinfArtifact->GetDeckReinforcementCheckAtPoisArtifact(Idx);
+         if (!pArtifact->Passed())
+         {
+            rFailures.emplace_back(_T("Minimum deck reinforcement in negative moment region failed."));
+            bFail = true;
+         }
+      } // next artifact
+   } // next segment
+}
+
 void ListSplittingZoneFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);

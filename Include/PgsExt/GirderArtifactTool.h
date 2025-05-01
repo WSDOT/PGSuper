@@ -53,7 +53,8 @@ void PGSEXTFUNC ListMomentCapacityFailures(IBroker* pBroker,FailureList& rFailur
 void PGSEXTFUNC ListVerticalShearFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,pgsTypes::LimitState ls);
 void PGSEXTFUNC ListHorizontalShearFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,pgsTypes::LimitState ls);
 void PGSEXTFUNC ListStirrupDetailingFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,pgsTypes::LimitState ls);
-void PGSEXTFUNC ListDebondingFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact);
+void PGSEXTFUNC ListDebondingFailures(IBroker* pBroker, FailureList& rFailures, const pgsGirderArtifact* pGirderArtifact);
+void PGSEXTFUNC ListMinimumDeckReinforcementFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact);
 void PGSEXTFUNC ListSplittingZoneFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact);
 void PGSEXTFUNC ListConfinementZoneFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact);
 void PGSEXTFUNC ListVariousFailures(IBroker* pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,bool referToDetails);
