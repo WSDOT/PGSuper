@@ -33,15 +33,10 @@
 
 #include <PgsExt\CustomDDX.h>
 
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\ClosureJointData.h>
 #include <IFace\Project.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CSplicedGirderGeneralPage dialog
@@ -295,13 +290,13 @@ void CSplicedGirderGeneralPage::FillGirderComboBox()
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    std::_tstring strGirderFamilyName = pBridgeDesc->GetGirderFamilyName();
 
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_GIRDER_NAME);
 
-   EAF_GET_IFACE2( pBroker, ILibraryNames, pLibNames );
+   GET_IFACE2( pBroker, ILibraryNames, pLibNames );
    std::vector<std::_tstring> names;
    std::vector<std::_tstring>::iterator iter;
    
@@ -392,7 +387,7 @@ void CSplicedGirderGeneralPage::FillStrandList(CComboBox* pList,WBFL::Materials:
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    bool bUnitsUS = IS_US_UNITS(pDisplayUnits);
 
@@ -536,7 +531,7 @@ void CSplicedGirderGeneralPage::OnChangedGirderName()
       // make sure the segment variation type is valid
       
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker,ILibrary,pLib);
+      GET_IFACE2(pBroker,ILibrary,pLib);
       const GirderLibraryEntry* pGirderEntry = pLib->GetGirderEntry(strName);
       pParent->m_pGirder->SetGirderLibraryEntry(pGirderEntry);
 

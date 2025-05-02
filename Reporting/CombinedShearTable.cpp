@@ -26,7 +26,7 @@
 #include <Reporting\MVRChapterBuilder.h>
 #include <Reporting\ReportNotes.h>
 
-#include <PgsExt\PointOfInterest.h>
+#include <PsgLib\PointOfInterest.h>
 
 #include <IFace\DocumentType.h>
 #include <IFace\Project.h>
@@ -80,7 +80,7 @@ void CCombinedShearTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptCh
 {
    BuildCombinedDeadTable(pBroker, pChapter, girderKey, pDisplayUnits, intervalIdx, analysisType, bDesign, bRating);
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    if ( liveLoadIntervalIdx <= intervalIdx )
@@ -119,23 +119,23 @@ void CCombinedShearTable::BuildCombinedDeadTable(std::shared_ptr<WBFL::EAF::Brok
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDisplayUnits->GetShearUnit(), false );
 
-   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
-   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    bool bTimeStepMethod = pSpecEntry->GetPrestressLossCriteria().LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP;
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    rptRcTable* p_table = 0;
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(girderKey, &vGirderKeys);
    
@@ -152,10 +152,10 @@ void CCombinedShearTable::BuildCombinedDeadTable(std::shared_ptr<WBFL::EAF::Brok
    RowIndexType row2 = 1;
 
    // Get the interface pointers we need
-   EAF_GET_IFACE2(pBroker,ICombinedForces2,pForces2);
-   EAF_GET_IFACE2_NOCHECK(pBroker,ILimitStateForces2,pLsForces2); // only used if liveLoadIntervalIdx <= intervalIdx
+   GET_IFACE2(pBroker,ICombinedForces2,pForces2);
+   GET_IFACE2_NOCHECK(pBroker,ILimitStateForces2,pLsForces2); // only used if liveLoadIntervalIdx <= intervalIdx
 
-   EAF_GET_IFACE2(pBroker,IProductForces,pProdForces);
+   GET_IFACE2(pBroker,IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
 
@@ -414,26 +414,26 @@ void CCombinedShearTable::BuildCombinedLiveTable(std::shared_ptr<WBFL::EAF::Brok
 {
    ATLASSERT(!(bDesign&&bRating)); // these are separate tables, can't do both
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liveLoadInteravlIdx = pIntervals->GetLiveLoadInterval();
 
    // Build table
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDisplayUnits->GetShearUnit(), false );
 
-   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
-   EAF_GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(girderKey, &vGirderKeys);
  
-   EAF_GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+   GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
    bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
 
-   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    bool bPedLoading = pProductLoads->HasPedestrianLoad(girderKey);
 
    LPCTSTR strLabel = bDesign ? _T("Shear - Design Vehicles") : _T("Shear - Rating Vehicles");
@@ -460,8 +460,8 @@ void CCombinedShearTable::BuildCombinedLiveTable(std::shared_ptr<WBFL::EAF::Brok
    *pNote << LIVELOAD_PER_GIRDER << rptNewLine;
 
    // Get the interface pointers we need
-   EAF_GET_IFACE2(pBroker,ICombinedForces2,pForces2);
-   EAF_GET_IFACE2(pBroker,IProductForces,pProdForces);
+   GET_IFACE2(pBroker,ICombinedForces2,pForces2);
+   GET_IFACE2(pBroker,IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
 
@@ -637,7 +637,7 @@ void CCombinedShearTable::BuildCombinedLiveTable(std::shared_ptr<WBFL::EAF::Brok
       {
          // Sum or envelope pedestrian values with live loads to give final LL
 
-         EAF_GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
+         GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
          ILiveLoads::PedestrianLoadApplicationType DesignPedLoad = pLiveLoads->GetPedestrianLoadApplication(pgsTypes::lltDesign);
          ILiveLoads::PedestrianLoadApplicationType FatiguePedLoad = pLiveLoads->GetPedestrianLoadApplication(pgsTypes::lltFatigue);
          ILiveLoads::PedestrianLoadApplicationType PermitPedLoad = pLiveLoads->GetPedestrianLoadApplication(pgsTypes::lltPermit);
@@ -713,24 +713,24 @@ void CCombinedShearTable::BuildLimitStateTable(std::shared_ptr<WBFL::EAF::Broker
 {
    ATLASSERT(!(bDesign&&bRating)); // these are separate tables, can't do both
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptForceSectionValue, shear, pDisplayUnits->GetShearUnit(), false );
 
-   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(girderKey, &vGirderKeys);
  
-   EAF_GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
-   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   EAF_GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+   GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
    bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
    bool bPedLoading = pProductLoads->HasPedestrianLoad(girderKey);
@@ -746,8 +746,8 @@ void CCombinedShearTable::BuildLimitStateTable(std::shared_ptr<WBFL::EAF::Broker
    }
 
    // Get the interface pointers we need
-   EAF_GET_IFACE2(pBroker,ILimitStateForces2,pLsForces2);
-   EAF_GET_IFACE2(pBroker,IProductForces,pProdForces);
+   GET_IFACE2(pBroker,ILimitStateForces2,pLsForces2);
+   GET_IFACE2(pBroker,IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
 

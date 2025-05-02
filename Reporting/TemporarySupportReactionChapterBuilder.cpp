@@ -63,7 +63,7 @@ rptChapter* CTemporarySupportReactionChapterBuilder::Build(const std::shared_ptr
    girderKey = pGdrLineRptSpec->GetGirderKey();
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    if ( pBridge->GetTemporarySupportCount() == 0 )
    {
       rptParagraph* pPara = new rptParagraph;
@@ -72,12 +72,12 @@ rptChapter* CTemporarySupportReactionChapterBuilder::Build(const std::shared_ptr
       return pChapter;
    }
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
-   EAF_GET_IFACE2(pBroker,IReactions,pReactions);
-   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IReactions,pReactions);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
 
-   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
    analysisType = (analysisType == pgsTypes::Envelope ? pgsTypes::Continuous : analysisType);
    pgsTypes::BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
@@ -147,7 +147,7 @@ rptChapter* CTemporarySupportReactionChapterBuilder::Build(const std::shared_ptr
       bPermit = false;
    }
 
-   EAF_GET_IFACE2(pBroker, IUserDefinedLoads, pUserDefinedLoads);
+   GET_IFACE2(pBroker, IUserDefinedLoads, pUserDefinedLoads);
    bool bUserLoads = pUserDefinedLoads->DoUserLoadsExist(girderKey);
    if (bUserLoads)
    {

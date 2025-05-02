@@ -61,10 +61,10 @@ rptChapter* CLoadRatingReactionsChapterBuilder::Build(const std::shared_ptr<cons
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // Responses from individual live load vehicules
-   EAF_GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
    std::vector<pgsTypes::LiveLoadType> live_load_types;
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) )
    {
@@ -96,8 +96,8 @@ rptChapter* CLoadRatingReactionsChapterBuilder::Build(const std::shared_ptr<cons
       live_load_types.push_back(pgsTypes::lltPermitRating_Special);
    }
 
-   EAF_GET_IFACE2( pBroker, IProductLoads, pProductLoads);
-   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2( pBroker, IProductLoads, pProductLoads);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
    std::vector<pgsTypes::LiveLoadType>::iterator llTypeIter(live_load_types.begin());

@@ -30,9 +30,9 @@ pgsSegmentRelatedStatusItem(statusGroupID,callbackID,strDescription,segmentKey),
 {
 }
 
-bool pgsRebarStrengthStatusItem::IsEqual(CEAFStatusItem* pOther)
+bool pgsRebarStrengthStatusItem::IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const
 {
-   pgsRebarStrengthStatusItem* other = dynamic_cast<pgsRebarStrengthStatusItem*>(pOther);
+   auto other = std::dynamic_pointer_cast<const pgsRebarStrengthStatusItem>(pOther);
    if ( !other )
       return false;
 
@@ -43,12 +43,12 @@ pgsRebarStrengthStatusCallback::pgsRebarStrengthStatusCallback()
 {
 }
 
-eafTypes::StatusSeverityType pgsRebarStrengthStatusCallback::GetSeverity() const
+WBFL::EAF::StatusSeverityType pgsRebarStrengthStatusCallback::GetSeverity() const
 {
-   return eafTypes::statusWarning;
+   return WBFL::EAF::StatusSeverityType::Warning;
 }
 
-void pgsRebarStrengthStatusCallback::Execute(CEAFStatusItem* pStatusItem)
+void pgsRebarStrengthStatusCallback::Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem)
 {
    AfxMessageBox(pStatusItem->GetDescription());
 }

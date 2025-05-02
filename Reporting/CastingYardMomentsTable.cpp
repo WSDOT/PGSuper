@@ -25,12 +25,13 @@
 #include <Reporting\ReportNotes.h>
 
 #include <PgsExt\ReportPointOfInterest.h>
-#include <PgsExt\TimelineEvent.h>
+#include <PsgLib\TimelineEvent.h>
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
+#include <IFace/PointOfInterest.h>
 
 
 /****************************************************************************
@@ -78,7 +79,7 @@ rptRcTable* CCastingYardMomentsTable::Build(std::shared_ptr<WBFL::EAF::Broker> p
 
    location.IncludeSpanAndGirder(segmentKey.groupIndex == ALL_GROUPS ? true : false);
 
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    bool bReportXDeflection = pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing();
 
    ColumnIndexType nColumns = 4;
@@ -111,7 +112,7 @@ rptRcTable* CCastingYardMomentsTable::Build(std::shared_ptr<WBFL::EAF::Broker> p
    }
 
    // Get the interface pointers we need
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    PoiList vPoi;
    pIPoi->GetPointsOfInterest(segmentKey, poiRefAttribute, &vPoi);
    PoiList vPoi2;
@@ -120,7 +121,7 @@ rptRcTable* CCastingYardMomentsTable::Build(std::shared_ptr<WBFL::EAF::Broker> p
    pIPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);
    pIPoi->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER);
 
-   EAF_GET_IFACE2(pBroker,IProductForces,pProductForces);
+   GET_IFACE2(pBroker,IProductForces,pProductForces);
 
    pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
 

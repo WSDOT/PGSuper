@@ -26,7 +26,7 @@
 #include <PgsExt\RatingArtifact.h>
 #include <PgsExt\ISummaryRatingArtifact.h>
 #include <PgsExt\CapacityToDemand.h>
-#include <PgsExt\Helpers.h>
+#include <PsgLib\Helpers.h>
 
 #include <IFace\Bridge.h>
 #include <IFace\Artifact.h>
@@ -35,9 +35,9 @@
 
 rptRcTable* CRatingSummaryTable::BuildByLimitState(std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<CGirderKey>& girderKeys,CRatingSummaryTable::RatingTableType ratingTableType)
 {
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   EAF_GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
    bool bNegMoments = pBridge->ProcessNegativeMoments(ALL_SPANS);
 
@@ -180,7 +180,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(std::shared_ptr<WBFL::EAF::Br
       }
    }
 
-   EAF_GET_IFACE2(pBroker,IArtifact,pArtifact);
+   GET_IFACE2(pBroker,IArtifact,pArtifact);
    std::shared_ptr<const pgsISummaryRatingArtifact> pRoutineRatingArtifact = pArtifact->GetSummaryRatingArtifact(girderKeys,routine_rating_type,INVALID_INDEX);
    std::shared_ptr<const pgsISummaryRatingArtifact> pSpecialRatingArtifact = pArtifact->GetSummaryRatingArtifact(girderKeys,special_rating_type,INVALID_INDEX);
 
@@ -631,7 +631,7 @@ rptRcTable* CRatingSummaryTable::BuildByLimitState(std::shared_ptr<WBFL::EAF::Br
 
 rptRcTable* CRatingSummaryTable::BuildByVehicle(std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderKeys, pgsTypes::LoadRatingType ratingType)
 {
-   EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+   GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
    pgsTypes::LiveLoadType llType = ::GetLiveLoadType(ratingType);
 
@@ -641,9 +641,9 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(std::shared_ptr<WBFL::EAF::Broke
       return nullptr;
    }
 
-   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-   EAF_GET_IFACE2(pBroker, IArtifact, pArtifact);
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2(pBroker, IArtifact, pArtifact);
+   GET_IFACE2(pBroker, IBridge, pBridge);
 
    rptCapacityToDemand rating_factor;
 
@@ -744,9 +744,9 @@ rptRcTable* CRatingSummaryTable::BuildByVehicle(std::shared_ptr<WBFL::EAF::Broke
 
 rptRcTable* CRatingSummaryTable::BuildLoadPosting(std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType,bool* pbMustCloseBridge)
 {
-   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   EAF_GET_IFACE2(pBroker,IArtifact,pArtifact);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IArtifact,pArtifact);
 
    rptCapacityToDemand rating_factor;
    INIT_UV_PROTOTYPE( rptForceUnitValue, tonnage, pDisplayUnits->GetTonnageUnit(), false );
@@ -843,7 +843,7 @@ rptRcTable* CRatingSummaryTable::BuildLoadPosting(std::shared_ptr<WBFL::EAF::Bro
 
 rptRcTable* CRatingSummaryTable::BuildEmergencyVehicleLoadPosting(std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderKeys)
 {
-   EAF_GET_IFACE2(pBroker, IArtifact, pArtifact);
+   GET_IFACE2(pBroker, IArtifact, pArtifact);
 
    std::shared_ptr<const pgsISummaryRatingArtifact> pEV2Artifact = pArtifact->GetSummaryRatingArtifact(girderKeys, pgsTypes::lrLegal_Emergency, 0);
    std::shared_ptr<const pgsISummaryRatingArtifact> pEV3Artifact = pArtifact->GetSummaryRatingArtifact(girderKeys, pgsTypes::lrLegal_Emergency, 1);
@@ -881,7 +881,7 @@ rptRcTable* CRatingSummaryTable::BuildEmergencyVehicleLoadPosting(std::shared_pt
    }
 
 
-   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    INIT_UV_PROTOTYPE(rptForceUnitValue, tonnage, pDisplayUnits->GetTonnageUnit(), false);
    rptCapacityToDemand rating_factor;
@@ -950,7 +950,7 @@ rptRcTable* CRatingSummaryTable::BuildYieldStressRatio(std::shared_ptr<WBFL::EAF
 {
    PRECONDITION(::IsPermitRatingType(ratingType));
 
-   EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+   GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
    pgsTypes::LiveLoadType llType = ::GetLiveLoadType(ratingType);
 
@@ -960,8 +960,8 @@ rptRcTable* CRatingSummaryTable::BuildYieldStressRatio(std::shared_ptr<WBFL::EAF
       return nullptr;
    }
 
-   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-   EAF_GET_IFACE2(pBroker, IArtifact, pArtifact);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2(pBroker, IArtifact, pArtifact);
 
    rptCapacityToDemand rating_factor;
 

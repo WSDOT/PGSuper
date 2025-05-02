@@ -30,7 +30,7 @@
 class CBridgeDescription2;
 
 class CPGSuperProjectImporter : public WBFL::EAF::ComponentObject, 
-   public PGSuper::IProjectImporter
+   public PGS::IProjectImporter
 {
 public:
    CPGSuperProjectImporter();

@@ -22,7 +22,7 @@
 
 #pragma once
 #include <PgsExt\DevelopmentLength.h>
-#include <PgsExt\PointOfInterest.h>
+#include <PsgLib\PointOfInterest.h>
 #include <PgsExt\TransferLength.h>
 
 class rptChapter;

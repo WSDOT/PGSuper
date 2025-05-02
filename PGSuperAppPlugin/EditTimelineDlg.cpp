@@ -34,11 +34,6 @@
 #include <Reporting\TimelineManagerReportSpecification.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CEditTimelineDlg dialog
@@ -88,7 +83,7 @@ BOOL CEditTimelineDlg::OnInitDialog()
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   GET_IFACE2(pBroker,ILossParameters,pLossParams);
    BOOL bReadOnly = (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? FALSE : TRUE);
 
    m_Grid.SubclassDlgItem(IDC_GRID, this);
@@ -162,7 +157,7 @@ void CEditTimelineDlg::OnBnClickedViewTimelineSummary()
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IEAFReportManager, pReportMgr);
+   GET_IFACE2(pBroker, IEAFReportManager, pReportMgr);
    WBFL::Reporting::ReportDescription rptDesc = pReportMgr->GetReportDescription(_T("Timeline Manager Report"));
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
    std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);

@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 #pragma once
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 // Local data structures for Bearing Data at pier
 typedef struct BearingPierData

@@ -29,11 +29,6 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 GRID_IMPLEMENT_REGISTER(CDeckRegionGrid, CS_DBLCLKS, 0, 0, 0);
 
@@ -95,7 +90,7 @@ void CDeckRegionGrid::CustomInit()
    auto pBroker = EAFGetBroker();
 
    // get all the piers that have continuity
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    SpanIndexType nSpans = pBridge->GetSpanCount();
    PierIndexType nPiers = pBridge->GetPierCount();
 
@@ -182,7 +177,7 @@ void CDeckRegionGrid::CustomInit()
    // when SetData is called, the grid will be filled with the actual data, if it exists
    // this code creates placeholders and defaults for those values
    IndexType sequenceIdx = 0;
-   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
    for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
    {
       BOOL bUseBack, bUseAhead;
@@ -288,7 +283,7 @@ void CDeckRegionGrid::GetData(CCastDeckActivity& activity)
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    std::vector<CCastingRegion> vRegions;
    ROWCOL nRows = GetRowCount();
@@ -371,8 +366,8 @@ void CDeckRegionGrid::SetData(const CCastDeckActivity& activity)
 
       
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-      EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+      GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+      GET_IFACE2(pBroker, IBridge, pBridge);
 
       const auto& vRegions = activity.GetCastingRegions();
       for (const auto& region : vRegions)

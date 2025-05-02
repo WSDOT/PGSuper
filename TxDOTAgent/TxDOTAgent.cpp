@@ -33,7 +33,7 @@
 
 // interfaces used in this DLL.... resolves symbols for the linker
 
-#include <WBFLCore_i.c>
+
 #include <WBFLTools_i.c>
 #include <WBFLGeometry_i.c>
 #include <WBFLCogo_i.c>

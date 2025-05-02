@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include "psglib\psglib.h"
+#include "PsgLib\PsgLib.h"
 #include "SpecBearingsPage.h"
 #include "SpecMainSheet.h"
 #include <EAF\EAFDocument.h>

@@ -23,18 +23,18 @@
 #pragma once
 
 
-#include "psgLibLib.h"
+#include "PsgLibLib.h"
 
 class rptChapter;
 class IEAFDisplayUnits;
-class pgsLibraryEntryDifferenceItem;
 class SpecLibraryEntryImpl;
+class DifferenceItem;
 
 struct PSGLIBCLASS HarpedStrandDesignCriteria
 {
    arDesignStrandFillType StrandFillType = ftMinimizeHarping;
 
-   bool Compare(const HarpedStrandDesignCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
+   bool Compare(const HarpedStrandDesignCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
 
    void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 

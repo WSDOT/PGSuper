@@ -42,16 +42,9 @@ HRESULT CPGSpliceGrapherImp::InitGraphBuilders()
    return S_OK;
 }
 
-bool CPGSpliceGrapherImp::RegInterfaces()
-{
-   // this agent doesn't implement any interfaces... it just provides graphs
-   return true;
-}
-
 bool CPGSpliceGrapherImp::Init()
 {
-   /* Gets done at project load time */
-   //EAF_AGENT_INIT;
+   EAF_AGENT_INIT;
 
    return InitGraphBuilders();
 }
@@ -59,16 +52,4 @@ bool CPGSpliceGrapherImp::Init()
 CLSID CPGSpliceGrapherImp::GetCLSID() const
 {
    return CLSID_PGSpliceGraphingAgent;
-}
-
-bool CPGSpliceGrapherImp::Reset()
-{
-   return true;
-}
-
-bool CPGSpliceGrapherImp::ShutDown()
-{
-   // EAF_AGENT_CLEAR_INTERFACE_CACHE;
-
-   return true;
 }

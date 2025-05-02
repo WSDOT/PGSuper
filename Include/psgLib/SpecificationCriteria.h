@@ -23,14 +23,15 @@
 #pragma once
 
 
-#include "psgLibLib.h"
+#include "PsgLibLib.h"
 #include <Lrfd/BDSManager.h>
 
 
 class rptChapter;
 class IEAFDisplayUnits;
-class pgsLibraryEntryDifferenceItem;
 class SpecLibraryEntryImpl;
+class DifferenceItem;
+
 
 struct PSGLIBCLASS SpecificationCriteria
 {
@@ -39,7 +40,7 @@ struct PSGLIBCLASS SpecificationCriteria
    WBFL::LRFD::BDSManager::Units Units = WBFL::LRFD::BDSManager::Units::US;
    std::_tstring Description;
 
-   bool Compare(const SpecificationCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
+   bool Compare(const SpecificationCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
 
    void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 

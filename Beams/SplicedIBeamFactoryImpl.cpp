@@ -37,16 +37,16 @@
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
-
 #include <IFace\AgeAdjustedMaterial.h>
-#include <Beams\Helper.h>
 
+#include <Beams\Helper.h>
+#include <PgsExt/PoiMgr.h>
 #include <PgsExt\StatusItem.h>
 
-#include <PgsExt\BridgeDescription2.h>
-
+#include <PsgLib\BridgeDescription2.h>
 #include <psgLib/SectionPropertiesCriteria.h>
 #include <psgLib/SpecificationCriteria.h>
+#include <psgLib/GirderLibraryEntry.h>
 
 
 CSplicedIBeamFactory::CSplicedIBeamFactory() : ISplicedBeamFactory()
@@ -137,7 +137,7 @@ void CSplicedIBeamFactory::CreateSegment(std::shared_ptr<WBFL::EAF::Broker> pBro
    ATLASSERT(segment != nullptr);
 
    // Build up the beam shape
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData*    pGroup      = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const CSplicedGirderData*  pGirder     = pGroup->GetGirder(segmentKey.girderIndex);
@@ -195,7 +195,7 @@ void CSplicedIBeamFactory::CreateSegmentShape(std::shared_ptr<WBFL::EAF::Broker>
    DimensionAndPositionBeam(dimensions, Hg, Hbf, beam);
 
    // Adjust width of section for end blocks
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    Float64 Ls = pBridge->GetSegmentLength(pSegment->GetSegmentKey());
 
    Float64 Wb, Wt;
@@ -207,7 +207,7 @@ void CSplicedIBeamFactory::CreateSegmentShape(std::shared_ptr<WBFL::EAF::Broker>
 
 Float64 CSplicedIBeamFactory::GetSegmentHeight(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
 {
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    Float64 Ls = pBridge->GetSegmentLength(pSegment->GetSegmentKey());
 
    std::array<Float64, 4> X;
@@ -228,7 +228,7 @@ Float64 CSplicedIBeamFactory::GetSegmentHeight(std::shared_ptr<WBFL::EAF::Broker
 
 Float64 CSplicedIBeamFactory::GetBottomFlangeDepth(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
 {
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    Float64 Ls = pBridge->GetSegmentLength(pSegment->GetSegmentKey());
 
    std::array<Float64, 4> X;
@@ -254,7 +254,7 @@ void CSplicedIBeamFactory::ConfigureSegment(std::shared_ptr<WBFL::EAF::Broker> p
 
 void CSplicedIBeamFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
 {
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc  = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData*    pGroup       = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const CSplicedGirderData*  pGirder      = pGroup->GetGirder(segmentKey.girderIndex);
@@ -270,7 +270,7 @@ void CSplicedIBeamFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr<W
    ATLASSERT( strGirderName == pGirderEntry->GetName() );
 #endif
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
    Float64 start_brg_offset = pBridge->GetSegmentStartBearingOffset(segmentKey);
    Float64 end_brg_offset   = pBridge->GetSegmentEndBearingOffset(segmentKey);
@@ -764,8 +764,8 @@ std::_tstring CSplicedIBeamFactory::GetShearDimensionsSchematicImage(pgsTypes::S
 
 std::_tstring CSplicedIBeamFactory::GetInteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
 {
-   EAF_GET_IFACE2(pBroker, ILibrary,       pLib);
-   EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
+   GET_IFACE2(pBroker, ILibrary,       pLib);
+   GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
    const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();
@@ -782,8 +782,8 @@ std::_tstring CSplicedIBeamFactory::GetInteriorGirderEffectiveFlangeWidthImage(s
 
 std::_tstring CSplicedIBeamFactory::GetExteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
 {
-   EAF_GET_IFACE2(pBroker, ILibrary,       pLib);
-   EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
+   GET_IFACE2(pBroker, ILibrary,       pLib);
+   GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
    const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();

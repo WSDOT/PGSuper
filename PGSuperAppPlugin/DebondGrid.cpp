@@ -36,11 +36,6 @@
 #include <PgsExt\DesignConfigUtil.h>
 #include "PGSuperUnits.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 GRID_IMPLEMENT_REGISTER(CGirderDescDebondGrid, CS_DBLCLKS, 0, 0, 0);
 
@@ -123,8 +118,8 @@ void CGirderDescDebondGrid::CustomInit(bool bSymmetricDebond)
 // in OnInitialUpdate.
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
    IDebondGridParent* pParent = dynamic_cast<IDebondGridParent*>(GetParent());
 
@@ -296,8 +291,8 @@ void CGirderDescDebondGrid::FillGrid(const CPrecastSegmentData& segment)
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   EAF_GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
@@ -512,7 +507,7 @@ void CGirderDescDebondGrid::GetData(CPrecastSegmentData& segment)
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
    StrandIndexType nStrands = segment.Strands.GetStrandCount(pgsTypes::Straight);
 
@@ -581,7 +576,7 @@ Float64 CGirderDescDebondGrid::GetDebondLength(ROWCOL row,ROWCOL col)
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    Float64 length;
    CString strDebondLength = GetCellValue(row,col);
@@ -778,7 +773,7 @@ void CGirderDescDebondGrid::CanDebond(bool bCanDebond,bool bSymmetricDebond)
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CString strColHeading = CString(_T("Debond\nLength\n(")) + 
                            CString(pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str());

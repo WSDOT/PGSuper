@@ -23,7 +23,7 @@
 #include "StdAfx.h"
 #include <Reporting\TimeStepDetailsReportSpecification.h>
 #include <IFace\PointOfInterest.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 
 
 CTimeStepDetailsReportSpecification::CTimeStepDetailsReportSpecification(const std::_tstring& strReportName,std::shared_ptr<WBFL::EAF::Broker> pBroker,bool bReportAtAllLocations,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) :
@@ -62,7 +62,7 @@ std::_tstring CTimeStepDetailsReportSpecification::GetReportContextString() cons
    }
    else if ( girderKey.groupIndex != ALL_GROUPS && girderKey.girderIndex != ALL_GIRDERS )
    {
-      EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
       rptPointOfInterest rptPoi(&pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
       rptPoi.SetValue(POI_SPAN,m_Poi);
       rptPoi.PrefixAttributes(false); // put the attributes after the location

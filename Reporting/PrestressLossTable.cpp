@@ -25,7 +25,7 @@
 #include <Reporting\ReportNotes.h>
 
 #include <PgsExt\ReportPointOfInterest.h>
-#include <PgsExt\StrandData.h>
+#include <PsgLib\StrandData.h>
 
 #include <IFace\Project.h>
 #include <IFace\PrestressForce.h>
@@ -33,6 +33,7 @@
 #include <IFace\Intervals.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\RatingSpecification.h>
+#include <IFace/PointOfInterest.h>
 
 
 /****************************************************************************
@@ -72,12 +73,12 @@ CPrestressLossTable& CPrestressLossTable::operator= (const CPrestressLossTable& 
 //======================== OPERATIONS =======================================
 rptRcTable* CPrestressLossTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey, bool bIncludeElasticEffects, bool bRating, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   EAF_GET_IFACE2(pBroker, IPretensionForce, pPrestressForce);
-   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
-   EAF_GET_IFACE2(pBroker, ILosses, pLosses);
-   EAF_GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
-   EAF_GET_IFACE2(pBroker, IGirder, pGirder);
+   GET_IFACE2(pBroker, IPretensionForce, pPrestressForce);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   GET_IFACE2(pBroker, ILosses, pLosses);
+   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IGirder, pGirder);
 
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
    bool bHasDeck = deckType == pgsTypes::sdtNone ? false : true;
@@ -90,7 +91,7 @@ rptRcTable* CPrestressLossTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroke
 
    IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
 
-   EAF_GET_IFACE2(pBroker, ISegmentData, pSegmentData);
+   GET_IFACE2(pBroker, ISegmentData, pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
    // Setup some unit-value prototypes
@@ -201,8 +202,8 @@ rptRcTable* CPrestressLossTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroke
    (*p_table)(row++, 0) << _T("After Superimposed Dead Loads");
    (*p_table)(row++, 0) << _T("Final (permanent loads only)");
 
-   EAF_GET_IFACE2_NOCHECK(pBroker, IProductLoads, pProductLoads); // only used if we are load rating, but don't want to get them in every "if(bRating)" code block
-   EAF_GET_IFACE2_NOCHECK(pBroker, IRatingSpecification, pRatingSpec);
+   GET_IFACE2_NOCHECK(pBroker, IProductLoads, pProductLoads); // only used if we are load rating, but don't want to get them in every "if(bRating)" code block
+   GET_IFACE2_NOCHECK(pBroker, IRatingSpecification, pRatingSpec);
    if (bRating)
    {
       for (int i = 0; i < (int)(pgsTypes::lrLoadRatingTypeCount); i++)
@@ -271,7 +272,7 @@ rptRcTable* CPrestressLossTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroke
    force.ShowUnitTag(false);
    stress.ShowUnitTag(false);
 
-   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
    IntervalIndexType stressStrandsIntervalIdx = pIntervals->GetStressStrandInterval(segmentKey);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType liftSegmentIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);

@@ -20,21 +20,15 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// RelaxationAtFinalTable.h : Declaration of the CRelaxationAtFinalTable
+#pragma once
 
-#ifndef __RELAXATIONATFINALTABLE_H_
-#define __RELAXATIONATFINALTABLE_H_
-
-#include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
-
+#include <PgsExt/ReportPointOfInterest.h>
 
 class WBFL::LRFD::Losses;
 class CGirderData;
 
-/////////////////////////////////////////////////////////////////////////////
-// CRelaxationAtFinalTable
 class CRelaxationAtFinalTable : public rptRcTable
 {
 public:
@@ -59,5 +53,3 @@ private:
 
    const CGirderData* m_pGD;
 };
-
-#endif //__RELAXATIONATFINALTABLE_H_

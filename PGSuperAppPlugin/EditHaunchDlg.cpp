@@ -35,17 +35,12 @@
 #include "PGSuperDoc.h"
 #include "Utilities.h"
 
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\TemporarySupportData.h>
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\TemporarySupportData.h>
+#include <PsgLib\ClosureJointData.h>
 
 #include <IFace\Project.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 IMPLEMENT_DYNAMIC(CEditHaunchDlg, CDialog)
@@ -68,7 +63,7 @@ void CEditHaunchDlg::DoDataExchange(CDataExchange* pDX)
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // fillet
    DDX_UnitValueAndTag( pDX, IDC_FILLET, IDC_FILLET_UNIT, m_Fillet, pDisplayUnits->GetComponentDimUnit() );
@@ -183,7 +178,7 @@ BOOL CEditHaunchDlg::OnInitDialog()
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    const CDeckDescription2* pDeck = m_BridgeDesc.GetDeckDescription();
    Float64 Tdeck;

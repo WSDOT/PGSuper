@@ -1,9 +1,9 @@
 #pragma once
 
-#include <PgsExt\ErectPiersActivity.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\TemporarySupportData.h>
-#include <PgsExt\TimelineManager.h>
+#include <PsgLib\ErectPiersActivity.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\TemporarySupportData.h>
+#include <PsgLib\TimelineManager.h>
 #include <PgsExt\TimelineItemListBox.h>
 
 #include <EAF\EAFDisplayUnits.h>

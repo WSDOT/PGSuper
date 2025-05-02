@@ -35,8 +35,8 @@
 #include "PGSuperUnits.h"
 #include "PGSuperColors.h"
 
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\Helpers.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\Helpers.h>
 
 #include <IFace\DrawBridgeSettings.h>
 #include <IFace\Project.h>
@@ -45,6 +45,7 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\EditByUI.h>
 #include <IFace\Intervals.h>
+#include <IFace/PointOfInterest.h>
 
 #include "GirderDisplayObjectEvents.h"
 #include "TrafficBarrierDisplayObjectEvents.h"
@@ -364,7 +365,7 @@ void CBridgeSectionView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint)
    {
       
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+      GET_IFACE2(pBroker,IBridge,pBridge);
       Float64 first_station = pBridge->GetPierStation(0);
       Float64 last_station  = pBridge->GetPierStation(pBridge->GetPierCount()-1);
       Float64 cut_station = m_pFrame->GetCurrentCutLocation();
@@ -504,14 +505,14 @@ void CBridgeSectionView::UpdateGirderTooltips()
    
    auto pBroker = pDoc->GetBroker();
 
-   EAF_GET_IFACE2_NOCHECK(pBroker, IEAFDisplayUnits, pDisplayUnits);
-   EAF_GET_IFACE2_NOCHECK(pBroker, IStrandGeometry, pStrandGeom);
-   EAF_GET_IFACE2_NOCHECK(pBroker, IMaterials, pMaterial);
-   EAF_GET_IFACE2_NOCHECK(pBroker, IBridge, pBridge);
-   EAF_GET_IFACE2_NOCHECK(pBroker, IPointOfInterest, pPoi);
-   EAF_GET_IFACE2_NOCHECK(pBroker, IGirder, pGirder);
+   GET_IFACE2_NOCHECK(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2_NOCHECK(pBroker, IStrandGeometry, pStrandGeom);
+   GET_IFACE2_NOCHECK(pBroker, IMaterials, pMaterial);
+   GET_IFACE2_NOCHECK(pBroker, IBridge, pBridge);
+   GET_IFACE2_NOCHECK(pBroker, IPointOfInterest, pPoi);
+   GET_IFACE2_NOCHECK(pBroker, IGirder, pGirder);
 
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    auto girder_list = m_pDispMgr->FindDisplayList(GIRDER_DISPLAY_LIST);
@@ -677,7 +678,7 @@ CString CBridgeSectionView::GetBarrierToolTip(std::shared_ptr<WBFL::EAF::Broker>
    {
       if (pRailingSystem->bUseSidewalk)
       {
-         EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+         GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
          strTip.Format(_T("Exterior Barrier: %s\nInterior Barrier: %s\nSidewalk Width: %s\nLeft Depth: %s\nRight Depth: %s"),
             pRailingSystem->strExteriorRailing.c_str(),
             pRailingSystem->strInteriorRailing.c_str(),
@@ -695,7 +696,7 @@ CString CBridgeSectionView::GetBarrierToolTip(std::shared_ptr<WBFL::EAF::Broker>
    {
       if (pRailingSystem->bUseSidewalk)
       {
-         EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+         GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
          strTip.Format(_T("Barrier: %s\nSidewalk Width: %s\nLeft Depth: %s\nRight Depth: %s"),
             pRailingSystem->strExteriorRailing.c_str(),
             FormatDimension(pRailingSystem->Width, pDisplayUnits->GetXSectionDimUnit()),
@@ -760,7 +761,7 @@ void CBridgeSectionView::BuildTitleDisplayObjects()
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pdisp_units);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pdisp_units);
    const WBFL::Units::StationFormat& station_format = pdisp_units->GetStationFormat();
    CString strTitle;
    CString strStation = FormatStation(station_format,m_pFrame->GetCurrentCutLocation());
@@ -775,9 +776,9 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
-   EAF_GET_IFACE2(pBroker,IShapes,pShapes);
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IShapes,pShapes);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    
    CPGSDocBase* pDoc = (CPGSDocBase*)GetDocument();
@@ -798,10 +799,10 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
    m_GirderIDs.clear();
    m_NextGirderID = 0;
 
-   EAF_GET_IFACE2(pBroker, IRoadway, pAlignment);
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
-   EAF_GET_IFACE2_NOCHECK(pBroker, IGirder, pGirder);
-   EAF_GET_IFACE2(pBroker, ISegmentTendonGeometry, pTendonGeom);
+   GET_IFACE2(pBroker, IRoadway, pAlignment);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2_NOCHECK(pBroker, IGirder, pGirder);
+   GET_IFACE2(pBroker, ISegmentTendonGeometry, pTendonGeom);
 
    std::vector<pgsPointOfInterest> vPoi = GetPointsOfInterest();
 
@@ -1021,7 +1022,7 @@ void CBridgeSectionView::BuildGirderDisplayObjects()
          //doText2.CoCreateInstance(CLSID_TextBlock);
          //doText2->SetPosition(topCenter);
 
-         //EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pdisp_units);
+         //GET_IFACE2(pBroker,IEAFDisplayUnits,pdisp_units);
          //Float64 x,y;
          //topCenter->get_X(&x);
          //topCenter->get_Y(&y);
@@ -1049,7 +1050,7 @@ void CBridgeSectionView::BuildLongitudinalJointDisplayObject()
    
    auto pBroker = pDoc->GetBroker();
 
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    if (!pBridgeDesc->HasLongitudinalJoints())
    {
@@ -1061,14 +1062,14 @@ void CBridgeSectionView::BuildLongitudinalJointDisplayObject()
 
    IDType jointID = 0;
 
-   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
    IntervalIndexType intervalIdx = pIntervals->GetCompositeLongitudinalJointInterval();
    if (intervalIdx == INVALID_INDEX)
    {
       return; // the longitudinal joints aren't structural (they are just a gap)
    }
 
-   EAF_GET_IFACE2(pBroker, IShapes, pShapes);
+   GET_IFACE2(pBroker, IShapes, pShapes);
 
    GroupIndexType grpIdx = GetGroupIndex();
 
@@ -1144,7 +1145,7 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
    
    auto pBroker = pDoc->GetBroker();
 
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
 
@@ -1154,9 +1155,9 @@ void CBridgeSectionView::BuildDeckDisplayObjects()
       return; // if there is no deck, don't create a display object
    }
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,IShapes,pShapes);
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IShapes,pShapes);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    auto display_list = m_pDispMgr->FindDisplayList(SLAB_DISPLAY_LIST);
 
@@ -1250,7 +1251,7 @@ void CBridgeSectionView::BuildOverlayDisplayObjects()
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
    // no overlay = nothing to draw
    if ( !pBridge->HasOverlay() )
@@ -1258,7 +1259,7 @@ void CBridgeSectionView::BuildOverlayDisplayObjects()
       return;
    }
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType geomCtrlInterval = pIntervals->GetGeometryControlInterval();
 
    Float64 overlay_weight = pBridge->GetOverlayWeight();
@@ -1273,13 +1274,13 @@ void CBridgeSectionView::BuildOverlayDisplayObjects()
 
    Float64 station = m_pFrame->GetCurrentCutLocation();
 
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    Float64 Xb = pPoi->ConvertRouteToBridgeLineCoordinate(station);
    Float64 left_offset, right_offset;
    left_offset  = pBridge->GetLeftOverlayToeOffset(Xb);
    right_offset = pBridge->GetRightOverlayToeOffset(Xb);
 
-   EAF_GET_IFACE2(pBroker,IRoadway,pRoadway);
+   GET_IFACE2(pBroker,IRoadway,pRoadway);
    CComPtr<IPoint2dCollection> surfacePoints;
    pRoadway->GetRoadwaySurface(station,nullptr,&surfacePoints);
 
@@ -1352,12 +1353,12 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IRoadway,pAlignment);
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,IShapes,pShapes);
-   EAF_GET_IFACE2(pBroker,IBarriers,pBarriers);
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker,IRoadway,pAlignment);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IShapes,pShapes);
+   GET_IFACE2(pBroker,IBarriers,pBarriers);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
 
    auto display_list = m_pDispMgr->FindDisplayList(TRAFFIC_BARRIER_DISPLAY_LIST);
 
@@ -1440,7 +1441,7 @@ void CBridgeSectionView::BuildTrafficBarrierDisplayObjects()
    left_offset  = pBridge->GetLeftCurbOffset(Xb);
    right_offset = pBridge->GetRightCurbOffset(Xb);
 
-   EAF_GET_IFACE2(pBroker,IRoadway,pRoadway);
+   GET_IFACE2(pBroker,IRoadway,pRoadway);
    Float64 left_elev  = pRoadway->GetElevation(m_pFrame->GetCurrentCutLocation(),left_offset);
    Float64 right_elev = pRoadway->GetElevation(m_pFrame->GetCurrentCutLocation(),right_offset);
 
@@ -1546,9 +1547,9 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
 
    GroupIndexType grpIdx = GetGroupIndex();
 
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
    GirderIndexType nGirders = pGroup->GetGirderCount();
@@ -1562,7 +1563,7 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
    Float64 Xb = pPoi->ConvertRouteToBridgeLineCoordinate(cut_station);
 
    // get length unit so section can be labelled
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pdisp_units);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pdisp_units);
    const WBFL::Units::LengthData& rlen = pdisp_units->GetXSectionDimUnit();
 
    //
@@ -1942,7 +1943,7 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
    pgsTypes::WorkPointLocation wploc = pBridgeDesc->GetWorkPointLocation();
    if (nGirders != 1 && wploc == pgsTypes::wplBottomGirder)
    {
-      EAF_GET_IFACE2(pBroker, IGirder, pGirder);
+      GET_IFACE2(pBroker, IGirder, pGirder);
 
       std::vector<SpaceBetweenGirder> vSpacing(pBridge->GetGirderSpacingAtBottomClGirder(cut_station));
       for (auto& spacingData : vSpacing)
@@ -2186,7 +2187,7 @@ void CBridgeSectionView::BuildDimensionLineDisplayObjects()
    //
    // Barrier Width dimension line
    //
-   EAF_GET_IFACE2(pBroker,IBarriers,pBarriers);
+   GET_IFACE2(pBroker,IBarriers,pBarriers);
    if ( doLeftTB )
    {
       Float64 width = pBarriers->GetInterfaceWidth(pgsTypes::tboLeft);
@@ -2396,8 +2397,8 @@ void CBridgeSectionView::BuildAlignmentDisplayObjects()
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker, IRoadway, pAlignment);
-   EAF_GET_IFACE2(pBroker, IRoadwayData, pRoadwayData);
+   GET_IFACE2(pBroker, IRoadway, pAlignment);
+   GET_IFACE2(pBroker, IRoadwayData, pRoadwayData);
 
    Float64 cut_station = m_pFrame->GetCurrentCutLocation();
 
@@ -2440,7 +2441,7 @@ void CBridgeSectionView::BuildAlignmentDisplayObjects()
    displayList->AddDisplayObject(doText);
 
    // draw bridge line if different then the alignment
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 BLO = pBridge->GetAlignmentOffset();
    if ( !IsZero(BLO) )
    {
@@ -2521,11 +2522,11 @@ void CBridgeSectionView::BuildRoadwayCrossSectionDisplayObjects()
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IRoadway, pRoadway);
-   EAF_GET_IFACE2(pBroker, IRoadwayData, pRoadwayData);
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
-   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
-   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2(pBroker, IRoadway, pRoadway);
+   GET_IFACE2(pBroker, IRoadwayData, pRoadwayData);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    CString strDimTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag().c_str();
    CString strSlopeTag = strDimTag + _T("/") + strDimTag;
@@ -2722,7 +2723,7 @@ GroupIndexType CBridgeSectionView::GetGroupIndex()
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    
    Float64 cut_station = m_pFrame->GetCurrentCutLocation();
@@ -2793,7 +2794,7 @@ void CBridgeSectionView::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
          GroupIndexType grpIdx = GetGroupIndex();
          
          auto pBroker = EAFGetBroker();
-         EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+         GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
          const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
          const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(grpIdx);
          m_pFrame->SelectGirder(CSegmentKey(grpIdx,pGroup->GetGirderCount()-1,INVALID_INDEX));
@@ -2874,12 +2875,12 @@ std::vector<pgsPointOfInterest> CBridgeSectionView::GetPointsOfInterest()
    // returns the POI we need for the girder cross sections
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IRoadway, pAlignment);
-   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   GET_IFACE2(pBroker, IRoadway, pAlignment);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
 
    GroupIndexType grpIdx = GetGroupIndex();
 
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();

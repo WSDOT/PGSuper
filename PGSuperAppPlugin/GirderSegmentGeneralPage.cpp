@@ -35,6 +35,8 @@
 
 #include <PgsExt\ConcreteDetailsDlg.h>
 
+#include <psgLib/SpecLibraryEntry.h>
+
 #include <System\Tokenizer.h>
 #include <System\AutoVariable.h>
 
@@ -42,11 +44,6 @@
 
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // CGirderSegmentGeneralPage dialog
 
@@ -96,7 +93,7 @@ void CGirderSegmentGeneralPage::DoDataExchange(CDataExchange* pDX)
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
    CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
@@ -251,11 +248,11 @@ BOOL CGirderSegmentGeneralPage::OnInitDialog()
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2_NOCHECK(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2_NOCHECK(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
-   EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
+   GET_IFACE2(pBroker, ISpecification, pSpec);
    std::_tstring strSpecName = pSpec->GetSpecification();
-   EAF_GET_IFACE2(pBroker, ILibrary, pLib);
+   GET_IFACE2(pBroker, ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(strSpecName.c_str());
    const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
    m_LossMethod = prestress_loss_criteria.LossMethod;
@@ -315,7 +312,7 @@ void CGirderSegmentGeneralPage::ExchangeConcreteData(CDataExchange* pDX)
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
    CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
@@ -367,7 +364,7 @@ void CGirderSegmentGeneralPage::FillVariationTypeComboBox()
    // the girder library entry held by pParent->m_Girder may not be consistent with the selected girder name.
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ILibrary,pLib);
    const GirderLibraryEntry* pGirderLibEntry = pLib->GetGirderEntry(pParent->m_Girder.GetGirderName());
    std::vector<pgsTypes::SegmentVariationType> segmentVariations(pParent->m_Girder.GetSupportedSegmentVariations(pGirderLibEntry));
 
@@ -514,7 +511,7 @@ void CGirderSegmentGeneralPage::UpdateEci()
       // Eci is based on the user input value of Ec and not f'ci
       
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       CString strEc;
       m_ctrlEc.GetWindowText(strEc);
@@ -563,7 +560,7 @@ void CGirderSegmentGeneralPage::UpdateEci()
 
       
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
       CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
@@ -615,7 +612,7 @@ void CGirderSegmentGeneralPage::UpdateEc()
       // Ec is based on the user input value of Eci and not f'c
       
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       CString strEci;
       m_ctrlEci.GetWindowText(strEci);
@@ -649,7 +646,7 @@ void CGirderSegmentGeneralPage::UpdateEc()
 
       
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
       CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
@@ -675,7 +672,7 @@ void CGirderSegmentGeneralPage::UpdateFc()
 
       
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       Float64 fci;
       WBFL::System::Tokenizer::ParseDouble(strFci, &fci);
@@ -713,7 +710,7 @@ void CGirderSegmentGeneralPage::UpdateFci()
 
       
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       Float64 fc;
       WBFL::System::Tokenizer::ParseDouble(strFc, &fc);
@@ -962,7 +959,7 @@ void CGirderSegmentGeneralPage::UpdateConcreteParametersToolTip()
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
    CPrecastSegmentData* pSegment = pParent->m_Girder.GetSegment(pParent->m_SegmentKey.segmentIndex);
@@ -1011,7 +1008,7 @@ void CGirderSegmentGeneralPage::OnVariationTypeChanged()
    {
       
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
       Float64 value = pSegment->GetBasicSegmentHeight();
       Float64 height = WBFL::Units::ConvertFromSysUnits(value,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
       CString strHeight = ::FormatDimension(value,pDisplayUnits->GetComponentDimUnit(),false);
@@ -1166,7 +1163,7 @@ Float64 CGirderSegmentGeneralPage::GetBottomFlangeDepth(pgsTypes::SegmentZoneTyp
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    pgsTypes::SegmentVariationType variationType = GetSegmentVariation();
 
@@ -1202,7 +1199,7 @@ Float64 CGirderSegmentGeneralPage::GetHeight(pgsTypes::SegmentZoneType segZone)
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    Float64 height = 0;
    switch( segZone )
@@ -1235,7 +1232,7 @@ Float64 CGirderSegmentGeneralPage::GetLength(pgsTypes::SegmentZoneType segZone)
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    Float64 length = 0;
    switch( segZone )
@@ -1284,7 +1281,7 @@ Float64 CGirderSegmentGeneralPage::GetSegmentLength()
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
    return pBridge->GetSegmentFramingLength(pParent->m_SegmentKey);
 }
@@ -1603,8 +1600,8 @@ void CGirderSegmentGeneralPage::UpdateHaunchAndCamberControls()
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pBridgeDescr);
+   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IBridgeDescription,pBridgeDescr);
    // We can pull haunch data high level information from here since we know that none of the pages in the dialog will change them
    const CBridgeDescription2* pBridge = pBridgeDescr->GetBridgeDescription();
 
@@ -1709,8 +1706,8 @@ void CGirderSegmentGeneralPage::UpdateHaunchAndCamberData(CDataExchange* pDX)
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pBridgeDescr);
+   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IBridgeDescription,pBridgeDescr);
    // We can pull haunch data high level information from here since we know that none of the pages in the dialog will change them
    const CBridgeDescription2* pBridgeDesc = pBridgeDescr->GetBridgeDescription();
 

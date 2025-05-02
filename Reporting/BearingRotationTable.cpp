@@ -31,6 +31,7 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
+#include <IFace/PointOfInterest.h>
 
 
 ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, 
@@ -60,8 +61,8 @@ ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(std::shared_pt
     }
 
 
-    EAF_GET_IFACE2(pBroker, IBridge, pBridge);
-    EAF_GET_IFACE2(pBroker, IUserDefinedLoadData, pUserLoads);
+    GET_IFACE2(pBroker, IBridge, pBridge);
+    GET_IFACE2(pBroker, IUserDefinedLoadData, pUserLoads);
 
     if (pDetails->bDeck && bDetail)
     {
@@ -85,7 +86,7 @@ ColumnIndexType CBearingRotationTable::GetBearingTableColumnCount(std::shared_pt
     }
 
     // determine continuity stage
-    EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
+    GET_IFACE2(pBroker, IIntervals, pIntervals);
     IntervalIndexType continuityIntervalIdx = MAX_INDEX;
     PierIndexType firstPierIdx = pBridge->GetGirderGroupStartPier(pDetails->startGroup);
     PierIndexType lastPierIdx = pBridge->GetGirderGroupEndPier(pDetails->endGroup);
@@ -265,7 +266,7 @@ RowIndexType ConfigureBearingRotationTableHeading(std::shared_ptr<WBFL::EAF::Bro
     if (bDetail)
     {
 
-        EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
 
         p_table->SetRowSpan(0, col, 2);
@@ -279,7 +280,7 @@ RowIndexType ConfigureBearingRotationTableHeading(std::shared_ptr<WBFL::EAF::Bro
     if (pDetails->bShearKey && bDetail)
     {
 
-        EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
 
         if (analysisType == pgsTypes::Envelope && pDetails->bContinuousBeforeDeckCasting)
@@ -299,7 +300,7 @@ RowIndexType ConfigureBearingRotationTableHeading(std::shared_ptr<WBFL::EAF::Bro
     if (pDetails->bLongitudinalJoint && bDetail)
     {
 
-        EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
         if (analysisType == pgsTypes::Envelope && pDetails->bContinuousBeforeDeckCasting)
         {
@@ -318,7 +319,7 @@ RowIndexType ConfigureBearingRotationTableHeading(std::shared_ptr<WBFL::EAF::Bro
     if (pDetails->bConstruction && bDetail)
     {
 
-        EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
         if (analysisType == pgsTypes::Envelope && pDetails->bContinuousBeforeDeckCasting)
         {
@@ -337,7 +338,7 @@ RowIndexType ConfigureBearingRotationTableHeading(std::shared_ptr<WBFL::EAF::Bro
     if (pDetails->bDeck && bDetail)
     {
 
-        EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
         if (analysisType == pgsTypes::Envelope && pDetails->bContinuousBeforeDeckCasting)
         {
@@ -365,7 +366,7 @@ RowIndexType ConfigureBearingRotationTableHeading(std::shared_ptr<WBFL::EAF::Bro
     if (pDetails->bDeckPanels && bDetail)
     {
 
-        EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
         if (analysisType == pgsTypes::Envelope && pDetails->bContinuousBeforeDeckCasting)
         {
@@ -389,7 +390,7 @@ RowIndexType ConfigureBearingRotationTableHeading(std::shared_ptr<WBFL::EAF::Bro
         if (pDetails->bSidewalk && bDetail)
         {
 
-            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
 
             p_table->SetColumnSpan(0, col, 2);
@@ -401,7 +402,7 @@ RowIndexType ConfigureBearingRotationTableHeading(std::shared_ptr<WBFL::EAF::Bro
         if (bDetail)
         {
 
-            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
             p_table->SetColumnSpan(0, col, 2);
             (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftTrafficBarrier);
@@ -413,7 +414,7 @@ RowIndexType ConfigureBearingRotationTableHeading(std::shared_ptr<WBFL::EAF::Bro
         if (pDetails->bHasOverlay && bDetail)
         {
 
-            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
             p_table->SetColumnSpan(0, col, 2);
             if (pDetails->bFutureOverlay)
@@ -431,7 +432,7 @@ RowIndexType ConfigureBearingRotationTableHeading(std::shared_ptr<WBFL::EAF::Bro
 
         if (bUserLoads && bDetail)
         {
-            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
             p_table->SetColumnSpan(0, col, 2);
             (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftUserDC);
@@ -443,7 +444,7 @@ RowIndexType ConfigureBearingRotationTableHeading(std::shared_ptr<WBFL::EAF::Bro
             (*p_table)(1, col++) << COLHDR(_T("Min"), M, unitT);
             if (bDesign)
             {
-                EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+                GET_IFACE2(pBroker, IProductLoads, pProductLoads);
                 p_table->SetColumnSpan(0, col, 2);
                 (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftUserLLIM);
                 (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
@@ -458,7 +459,7 @@ RowIndexType ConfigureBearingRotationTableHeading(std::shared_ptr<WBFL::EAF::Bro
         if (pDetails->bSidewalk && bDetail)
         {
 
-            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
             p_table->SetRowSpan(0, col, 2);
             (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftSidewalk), M, unitT);
@@ -467,7 +468,7 @@ RowIndexType ConfigureBearingRotationTableHeading(std::shared_ptr<WBFL::EAF::Bro
         if (bDetail)
         {
 
-            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
             p_table->SetRowSpan(0, col, 2);
             (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftTrafficBarrier), M, unitT);
@@ -477,7 +478,7 @@ RowIndexType ConfigureBearingRotationTableHeading(std::shared_ptr<WBFL::EAF::Bro
         if (pDetails->bHasOverlay && bDetail)
         {
 
-            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
             p_table->SetRowSpan(0, col, 2);
             if (pDetails->bFutureOverlay)
@@ -492,7 +493,7 @@ RowIndexType ConfigureBearingRotationTableHeading(std::shared_ptr<WBFL::EAF::Bro
 
         if (bUserLoads && bDetail)
         {
-            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
             p_table->SetRowSpan(0, col, 2);
             (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftUserDC), M, unitT);
             p_table->SetRowSpan(0, col, 2);
@@ -553,7 +554,7 @@ RowIndexType ConfigureBearingRotationTableHeading(std::shared_ptr<WBFL::EAF::Bro
     {
         p_table->SetRowSpan(0, col, 2);
 
-        EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
 
         (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftPretension), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
@@ -564,7 +565,7 @@ RowIndexType ConfigureBearingRotationTableHeading(std::shared_ptr<WBFL::EAF::Bro
         if (0 < pDetails->nDucts)
         {
 
-            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
             (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftPostTensioning), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
         }
@@ -578,7 +579,7 @@ RowIndexType ConfigureBearingRotationTableHeading(std::shared_ptr<WBFL::EAF::Bro
         if (bDetail)
         {
 
-            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
 
             p_table->SetRowSpan(0, col, 2);
@@ -595,7 +596,7 @@ RowIndexType ConfigureBearingRotationTableHeading(std::shared_ptr<WBFL::EAF::Bro
         if (bDetail)
         {
 
-            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
 
             (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftCreep), rptAngleUnitTag, pDisplayUnits->GetRadAngleUnit());
@@ -616,15 +617,15 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(std::shared_ptr<WBF
     // Build table
     INIT_UV_PROTOTYPE(rptAngleUnitValue, rotation, pDisplayUnits->GetRadAngleUnit(), false);
 
-    EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+    GET_IFACE2(pBroker, IBridge, pBridge);
 
-    EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
+    GET_IFACE2(pBroker, IIntervals, pIntervals);
     IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
     IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
 
-    EAF_GET_IFACE2(pBroker, IPointOfInterest, pPOI);
+    GET_IFACE2(pBroker, IPointOfInterest, pPOI);
 
-    EAF_GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
+    GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
     ROTATIONDETAILS details;
 
     pBearingDesignParameters->GetBearingParameters(girderKey, &details);
@@ -692,7 +693,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(std::shared_ptr<WBF
     }
     
 
-    EAF_GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
+    GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
     IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
     std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, girderKey));
 
@@ -733,7 +734,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(std::shared_ptr<WBF
         const pgsPointOfInterest& poi = vPoi[reactionLocation.PierIdx - startPierIdx];
 
         const CSegmentKey& segmentKey(poi.GetSegmentKey());
-        EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+        GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
         const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
         IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
@@ -919,7 +920,7 @@ rptRcTable* CBearingRotationTable::BuildBearingRotationTable(std::shared_ptr<WBF
         }
 
         std::unique_ptr<ICmbLsReactionAdapter> pForces;
-        EAF_GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
+        GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
         pForces = std::make_unique<CmbLsBearingDesignReactionAdapter>(pBearingDesign, lastIntervalIdx, girderKey);
 
 

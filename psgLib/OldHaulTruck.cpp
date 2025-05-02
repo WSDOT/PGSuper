@@ -21,8 +21,8 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-#include <psgLib\OldHaulTruck.h>
-#include <psgLib\HaulTruckLibraryEntry.h>
+#include <PsgLib\OldHaulTruck.h>
+#include <PsgLib\HaulTruckLibraryEntry.h>
 
 
 

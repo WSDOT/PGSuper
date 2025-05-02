@@ -40,6 +40,7 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Constructability.h>
 #include <IFace\Project.h>
+#include <IFace/PointOfInterest.h>
 
 #include <MfcTools\XUnwind.h>
 #include <MFCTools\VersionInfo.h>
@@ -130,13 +131,13 @@ CString CTxDOTCadExporter::GetCommandHintText() const
 
 STDMETHODIMP CTxDOTCadExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
-   EAF_GET_IFACE2(pBroker, ISelection, pSelection);
+   GET_IFACE2(pBroker, ISelection, pSelection);
    CSelection selection = pSelection->GetSelection();
 
    CGirderKey girderKey;
    if (selection.Type == CSelection::Span)
    {
-      EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+      GET_IFACE2(pBroker, IBridge, pBridge);
       girderKey.groupIndex = pBridge->GetGirderGroupIndex(selection.SpanIdx);
       girderKey.girderIndex = 0;
    }
@@ -360,7 +361,7 @@ HRESULT CTxDOTCadExporter::ExportGirderDesignData(std::shared_ptr<WBFL::EAF::Bro
          // Create progress window in own scope
          try
          {
-            EAF_GET_IFACE2(pBroker, IProgress, pProgress);
+            GET_IFACE2(pBroker, IEAFProgress, pProgress);
 
             bool multi = girderKeys.size() > 1;
             DWORD mask = multi ? PW_ALL : PW_ALL | PW_NOGAUGE; // Progress window has a cancel button,
@@ -516,7 +517,7 @@ HRESULT CTxDOTCadExporter::ExportHaunchDeflectionData(std::shared_ptr<WBFL::EAF:
    // Get down to dumping data
    try
    {
-      EAF_GET_IFACE2(pBroker, IProgress, pProgress);
+      GET_IFACE2(pBroker, IEAFProgress, pProgress);
 
       bool multi = girderKeys.size() > 1;
       DWORD mask = multi ? PW_ALL : PW_ALL | PW_NOGAUGE; // Progress window has a cancel button,
@@ -525,12 +526,12 @@ HRESULT CTxDOTCadExporter::ExportHaunchDeflectionData(std::shared_ptr<WBFL::EAF:
       if (multi)
          pProgress->Init(0, (short)girderKeys.size(), 1);  // and for multi-girders, a gauge.
 
-      EAF_GET_IFACE2(pBroker, IPointOfInterest, pIPOI);
-      EAF_GET_IFACE2(pBroker, IBridge, pBridge);
-      EAF_GET_IFACE2(pBroker, IGirder, pGirder);
-      EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
-      EAF_GET_IFACE2(pBroker, IGirderHaunch, pGdrHaunch);
-      EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
+      GET_IFACE2(pBroker, IPointOfInterest, pIPOI);
+      GET_IFACE2(pBroker, IBridge, pBridge);
+      GET_IFACE2(pBroker, IGirder, pGirder);
+      GET_IFACE2(pBroker, ISpecification, pSpec);
+      GET_IFACE2(pBroker, IGirderHaunch, pGdrHaunch);
+      GET_IFACE2(pBroker, IIntervals, pIntervals);
       IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(0); // assume deck casting region 0
 
       pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
@@ -614,7 +615,7 @@ HRESULT CTxDOTCadExporter::ExportHaunchDeflectionData(std::shared_ptr<WBFL::EAF:
          Float64 delta_slab2(0), delta_slab3(0), delta_slab5(0), delta_slab7(0), delta_slab8(0);
          if (castDeckIntervalIdx != INVALID_INDEX)
          {
-            EAF_GET_IFACE2(pBroker, IProductForces, pProductForces);
+            GET_IFACE2(pBroker, IProductForces, pProductForces);
             delta_slab2 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_2, bat, rtCumulative, false);
             delta_slab3 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_3, bat, rtCumulative, false);
             delta_slab5 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_5, bat, rtCumulative, false);
@@ -635,7 +636,7 @@ HRESULT CTxDOTCadExporter::ExportHaunchDeflectionData(std::shared_ptr<WBFL::EAF:
          Float64 delta_ShearKey2(0),delta_ShearKey3(0),delta_ShearKey5(0),delta_ShearKey7(0),delta_ShearKey8(0);
          if (castDeckIntervalIdx != INVALID_INDEX)
          {
-            EAF_GET_IFACE2(pBroker,IProductForces,pProductForces);
+            GET_IFACE2(pBroker,IProductForces,pProductForces);
             delta_ShearKey2 = pProductForces->GetDeflection(castDeckIntervalIdx,pgsTypes::pftShearKey,poi_2,bat,rtCumulative,false);
             delta_ShearKey3 = pProductForces->GetDeflection(castDeckIntervalIdx,pgsTypes::pftShearKey,poi_3,bat,rtCumulative,false);
             delta_ShearKey5 = pProductForces->GetDeflection(castDeckIntervalIdx,pgsTypes::pftShearKey,poi_5,bat,rtCumulative,false);
@@ -701,18 +702,18 @@ STDMETHODIMP CTxDOTCadExporter::LoadDocumentationMap()
    return S_OK;
 }
 
-std::pair<bool,CString> CTxDOTCadExporter::GetDocumentLocation(UINT nHID) const
+std::pair<WBFL::EAF::HelpResult,CString> CTxDOTCadExporter::GetDocumentLocation(UINT nHID) const
 {
    auto found = m_HelpTopics.find(nHID);
    if ( found == m_HelpTopics.end() )
    {
       CHECK(false);
-      return { false,CString("") };
+      return { WBFL::EAF::HelpResult::TopicNotFound,CString("") };
    }
 
    CString strURL;
    strURL.Format(_T("%s%s"),GetDocumentationURL(),found->second);
-   return { true,strURL };
+   return { WBFL::EAF::HelpResult::OK,strURL };
 }
 
 CString CTxDOTCadExporter::GetDocumentationURL() const
@@ -757,15 +758,15 @@ CString CTxDOTCadExporter::GetExcelTemplateFolderLocation() const
 
 /*
 #include <IFace\Project.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <IFace\Artifact.h>
 #include <PgsExt\GirderArtifact.h>
 
 void raised_strand_research(std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderKeys)
 {
-   EAF_GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry);
-   EAF_GET_IFACE2(pBroker, IPointOfInterest, pIPOI);
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry);
+   GET_IFACE2(pBroker, IPointOfInterest, pIPOI);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
 
    WBFL::Debug::LogDumpContext m_Log;
    ILogFile* __pLogFile__;
@@ -803,7 +804,7 @@ void raised_strand_research(std::shared_ptr<WBFL::EAF::Broker> pBroker, const st
 
       m_Log << _T(",") << pGirderEntry->GetName();
 
-      EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+      GET_IFACE2(pBroker, IBridge, pBridge);
       Float64 span_length = pBridge->GetSpanLength(segmentKey.groupIndex);
 
       span_length = ConvertFromSysUnits(span_length, WBFL::Units::Measure::Feet);
@@ -813,7 +814,7 @@ void raised_strand_research(std::shared_ptr<WBFL::EAF::Broker> pBroker, const st
       gdr_hght = ConvertFromSysUnits(gdr_hght, WBFL::Units::Measure::Inch);
       m_Log << _T(",") << gdr_hght;
 
-      EAF_GET_IFACE2(pBroker, IArtifact, pIArtifact);
+      GET_IFACE2(pBroker, IArtifact, pIArtifact);
       const pgsGirderArtifact* pGirderArtifact = pIArtifact->GetGirderArtifact(girderKey);
 
       bool passed = pGirderArtifact->Passed();

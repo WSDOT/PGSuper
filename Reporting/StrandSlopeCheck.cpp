@@ -72,7 +72,7 @@ void CStrandSlopeCheck::Build(rptChapter* pChapter,
 
    // scan all the segments to see if there is an applicable strand slope check
    bool bCheck = false;
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {

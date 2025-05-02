@@ -22,11 +22,18 @@
 
 #pragma once
 
-
-#include "psgLibLib.h"
+#include "PsgLibLib.h"
 
 class rptParagraph;
 class IEAFDisplayUnits;
+namespace WBFL
+{
+   namespace System
+   {
+      class IStructuredSave;
+      class IStructuredLoad;
+   };
+};
 
 struct PSGLIBCLASS TensionStressLimit
 {
@@ -45,4 +52,3 @@ struct PSGLIBCLASS TensionStressLimit
 
    Float64 GetStressLimit(Float64 lambda, Float64 fc) const;
 };
-

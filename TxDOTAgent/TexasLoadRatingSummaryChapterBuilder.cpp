@@ -68,7 +68,7 @@ rptChapter* CTexasLoadRatingSummaryChapterBuilder::Build(const std::shared_ptr<c
       const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
       std::vector<CGirderKey> girderKeys{ girderKey };
 
-      EAF_GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
+      GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
 
       if (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating))
       {

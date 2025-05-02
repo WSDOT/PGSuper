@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include <psglib\LibraryEditorView.h>
+#include <PsgLib\LibraryEditorView.h>
 #include <PsgLib\ISupportLibraryManager.h>
 #include <LibraryFw\LibraryManager.h>
 

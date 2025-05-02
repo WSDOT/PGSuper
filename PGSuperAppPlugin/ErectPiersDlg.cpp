@@ -17,11 +17,6 @@
 // the Temporary Support indices are encoded/decoded with the following methods
 #include "CastClosureJointDlg.h" // use Encode/Decode methods from CastClosureJointDlg
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 IMPLEMENT_DYNAMIC(CErectPiersDlg, CDialog)

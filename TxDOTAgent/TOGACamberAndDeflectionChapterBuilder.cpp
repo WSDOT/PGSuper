@@ -34,11 +34,13 @@
 #include <IFace\Artifact.h>
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
+#include <IFace/PointOfInterest.h>
 
 #include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
-#include <PgsExt\PierData2.h>
 
+#include <PsgLib\PierData2.h>
+#include <psgLib/SpecLibraryEntry.h>
 #include <psgLib\ConnectionLibraryEntry.h>
 #include <psgLib/LiveLoadDeflectionCriteria.h>
 #include <psgLib/CreepCriteria.h>
@@ -74,7 +76,7 @@ rptChapter* CTogaCamberAndDeflectionChapterBuilder::Build(const std::shared_ptr<
    auto pSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
    auto pBroker = pSpec->GetBroker();
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -124,16 +126,16 @@ void deflection_and_camber(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broke
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dispft, pDisplayUnits->GetSpanLengthUnit(),   true );
 
    // Get the interfaces we need
-   EAF_GET_IFACE2(pBroker,ICamber,pCamber);
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
-   EAF_GET_IFACE2(pBroker,IProductForces, pProductForces);
-   EAF_GET_IFACE2( pBroker, ILibrary, pLib );
-   EAF_GET_IFACE2( pBroker, ISpecification, pSpec );
+   GET_IFACE2(pBroker,ICamber,pCamber);
+   GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
+   GET_IFACE2(pBroker,IProductForces, pProductForces);
+   GET_IFACE2( pBroker, ILibrary, pLib );
+   GET_IFACE2( pBroker, ISpecification, pSpec );
 
    CSegmentKey origSegmentKey(TOGA_SPAN,TOGA_ORIG_GDR,0);
    CSegmentKey fabrSegmentKey(TOGA_SPAN,TOGA_FABR_GDR,0);
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetLastNoncompositeInterval();
    IntervalIndexType castDeckIntervalIdx      = pIntervals->GetLastNoncompositeInterval();
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetLastCompositeInterval();

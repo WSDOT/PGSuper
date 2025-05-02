@@ -20,15 +20,11 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// ElasticGainDueToLiveLoadTable.h : Declaration of the CElasticGainDueToLiveLoadTable
-
 #pragma once
 
-#include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
-
-#include <IFace\AnalysisResults.h>
+#include <PgsExt/ReportPointOfInterest.h>
 
 class WBFL::LRFD::Losses;
 

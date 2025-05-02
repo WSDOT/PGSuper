@@ -53,7 +53,7 @@ bool CPGSuperPluginMgrBase::LoadPlugins()
 
       if (strState.CompareNoCase(_T("Enabled")) == 0)
       {
-         auto importer = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<PGSuper::IDataImporter>(component);
+         auto importer = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<PGS::IDataImporter>(component);
          if (importer)
          {
             ImporterRecord record;
@@ -97,7 +97,7 @@ bool CPGSuperPluginMgrBase::LoadPlugins()
 
       if (strState.CompareNoCase(_T("Enabled")) == 0)
       {
-         auto exporter = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<PGSuper::IDataExporter>(component);
+         auto exporter = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<PGS::IDataExporter>(component);
          if (exporter)
          {
             ExporterRecord record;
@@ -143,7 +143,7 @@ IndexType CPGSuperPluginMgrBase::GetExporterCount()
    return m_ExporterPlugins.size();
 }
 
-std::shared_ptr<PGSuper::IDataImporter> CPGSuperPluginMgrBase::GetImporter(IndexType key, bool bByIndex) const
+std::shared_ptr<PGS::IDataImporter> CPGSuperPluginMgrBase::GetImporter(IndexType key, bool bByIndex) const
 {
    if (bByIndex)
    {
@@ -163,7 +163,7 @@ std::shared_ptr<PGSuper::IDataImporter> CPGSuperPluginMgrBase::GetImporter(Index
    return nullptr;
 }
 
-std::shared_ptr<PGSuper::IDataExporter> CPGSuperPluginMgrBase::GetExporter(IndexType key, bool bByIndex) const
+std::shared_ptr<PGS::IDataExporter> CPGSuperPluginMgrBase::GetExporter(IndexType key, bool bByIndex) const
 {
    if (bByIndex)
    {
@@ -207,7 +207,7 @@ void CPGSuperPluginMgrBase::LoadDocumentationMaps()
 {
    for (const auto& record : m_ImporterPlugins)
    {
-      auto pDocumentation = std::dynamic_pointer_cast<PGSuper::IPluginDocumentation>(record.Plugin);
+      auto pDocumentation = std::dynamic_pointer_cast<PGS::IPluginDocumentation>(record.Plugin);
       if (pDocumentation)
       {
          pDocumentation->LoadDocumentationMap();
@@ -216,7 +216,7 @@ void CPGSuperPluginMgrBase::LoadDocumentationMaps()
 
    for (const auto& record : m_ExporterPlugins)
    {
-      auto pDocumentation = std::dynamic_pointer_cast<PGSuper::IPluginDocumentation>(record.Plugin);
+      auto pDocumentation = std::dynamic_pointer_cast<PGS::IPluginDocumentation>(record.Plugin);
       if (pDocumentation)
       {
          pDocumentation->LoadDocumentationMap();
@@ -224,7 +224,7 @@ void CPGSuperPluginMgrBase::LoadDocumentationMaps()
    }
 }
 
-eafTypes::HelpResult CPGSuperPluginMgrBase::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nHID,CString& strURL)
+std::pair<WBFL::EAF::HelpResult,CString> CPGSuperPluginMgrBase::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nHID)
 {
 #pragma Reminder("WORKING HERE - Removing COM")
    // Once all plug-ins are converted, m_ImporterPlugins and m_ExporterPlugins go away and the "2" versions are renamed
@@ -233,35 +233,31 @@ eafTypes::HelpResult CPGSuperPluginMgrBase::GetDocumentLocation(LPCTSTR lpszDocS
 
    for (const auto& record : m_ImporterPlugins)
    {
-      auto pDocumentation = std::dynamic_pointer_cast<PGSuper::IPluginDocumentation>(record.Plugin);
+      auto pDocumentation = std::dynamic_pointer_cast<PGS::IPluginDocumentation>(record.Plugin);
       if (pDocumentation)
       {
          auto strDocSetName = pDocumentation->GetDocumentationSetName();
 
          if (strDocSetName == strTargetDocSetName)
          {
-            bool bSuccess;
-            std::tie(bSuccess,strURL) = pDocumentation->GetDocumentLocation(nHID);
-            return bSuccess ? eafTypes::hrOK : eafTypes::hrTopicNotFound;
+            return pDocumentation->GetDocumentLocation(nHID);
          }
       }
    }
 
    for (const auto& record : m_ExporterPlugins)
    {
-      auto pDocumentation = std::dynamic_pointer_cast<PGSuper::IPluginDocumentation>(record.Plugin);
+      auto pDocumentation = std::dynamic_pointer_cast<PGS::IPluginDocumentation>(record.Plugin);
       if (pDocumentation)
       {
          auto strDocSetName = pDocumentation->GetDocumentationSetName();
 
          if (strDocSetName == strTargetDocSetName)
          {
-            bool bSuccess;
-            std::tie(bSuccess, strURL) = pDocumentation->GetDocumentLocation(nHID);
-            return bSuccess ? eafTypes::hrOK : eafTypes::hrTopicNotFound;
+            return pDocumentation->GetDocumentLocation(nHID);
          }
       }
    }
 
-   return eafTypes::hrDocSetNotFound;
+   return { WBFL::EAF::HelpResult::DocSetNotFound,CString() };
 }

@@ -22,6 +22,9 @@
     <ClCompile Include="XSectionData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="HaunchDepthInputConversionTool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Include\IFace\RatingSpecification.h">
@@ -61,6 +64,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="CLSID.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="HaunchDepthInputConversionTool.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -33,11 +33,6 @@
 
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CExportDlg dialog
@@ -101,7 +96,7 @@ BOOL CExportDlg::OnInitDialog()
 	CDialog::OnInitDialog();
 
 	/* Get interface pointer to Bridge Agent */
-	EAF_GET_IFACE( IBridge, pBridge ); 
+	GET_IFACE( IBridge, pBridge ); 
 
    GroupGirderOnCollection coll;
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();

@@ -60,7 +60,7 @@ void CInterfaceShearTable::Build( std::shared_ptr<WBFL::EAF::Broker> pBroker, rp
 {
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest,         location, pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, shear,    pDisplayUnits->GetForcePerLengthUnit(),        false );
@@ -70,7 +70,7 @@ void CInterfaceShearTable::Build( std::shared_ptr<WBFL::EAF::Broker> pBroker, rp
    INIT_UV_PROTOTYPE( rptAreaUnitValue,           area,     pDisplayUnits->GetAreaUnit(),            false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue,         dimu,      pDisplayUnits->GetComponentDimUnit(),  true);
 
-   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    rptCapacityToDemand cap_demand;
@@ -89,7 +89,7 @@ void CInterfaceShearTable::Build( std::shared_ptr<WBFL::EAF::Broker> pBroker, rp
    std::_tstring strAvfMinArticle = WBFL::LRFD::LrfdCw8th(_T("5.8.4.4"), _T("5.7.4.2"));;
    std::_tstring strVniArticle = WBFL::LRFD::LrfdCw8th(_T("5.8.4.1"), _T("5.7.4.1"));
 
-   EAF_GET_IFACE2(pBroker, IMaterials, pMaterials);
+   GET_IFACE2(pBroker, IMaterials, pMaterials);
    if (pMaterials->GetSegmentConcreteType(CSegmentKey(girderKey, 0)) == pgsTypes::PCI_UHPC)
    {
       (*pPara) << _T("PCI UHPC SDG E.7.4") << rptNewLine;

@@ -23,14 +23,15 @@
 #pragma once
 
 
-#include "psgLibLib.h"
-#include <psgLib/TensionStressLimit.h>
+#include "PsgLibLib.h"
+#include <PsgLib/TensionStressLimit.h>
 #include <Stability/StabilityTypes.h>
 
 class rptChapter;
 class IEAFDisplayUnits;
-class pgsLibraryEntryDifferenceItem;
 class SpecLibraryEntryImpl;
+class DifferenceItem;
+
 
 struct PSGLIBCLASS LiftingCriteria
 {
@@ -60,7 +61,7 @@ struct PSGLIBCLASS LiftingCriteria
 
    LiftingCriteria();
 
-   bool Compare(const LiftingCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
+   bool Compare(const LiftingCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
 
    void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 

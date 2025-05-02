@@ -92,7 +92,7 @@ void CMyView::OnContextMenu(CWnd* /*pWnd*/, CPoint point)
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFMainMenu,pUI);
+   GET_IFACE2(pBroker,IEAFMainMenu,pUI);
    auto pMenu = pUI->CreateContextMenu();
    
    // Load the context menu resource. By using nullptr as the command callback, all commands

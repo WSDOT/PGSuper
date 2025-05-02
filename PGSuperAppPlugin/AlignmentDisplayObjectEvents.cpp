@@ -32,7 +32,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\EditByUI.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include <DManip/DisplayObject.h>
 #include <DManip/DisplayList.h>
@@ -56,7 +56,7 @@ CAlignmentDisplayObjectEvents::~CAlignmentDisplayObjectEvents()
 
 void CAlignmentDisplayObjectEvents::EditAlignment()
 {
-   EAF_GET_IFACE(IEditByUI, pEditByUI);
+   GET_IFACE(IEditByUI, pEditByUI);
    int page = (m_ViewType == BridgePlan || m_ViewType == Alignment ? EAD_ROADWAY : EAD_SECTION);
    pEditByUI->EditAlignmentDescription(page);
 }
@@ -128,7 +128,7 @@ bool CAlignmentDisplayObjectEvents::OnKeyDown(std::shared_ptr<iDisplayObject> pD
       }
       else if ( nChar == VK_UP )
       {
-         EAF_GET_IFACE2(m_pBroker,IBridgeDescription,pIBridgeDesc);
+         GET_IFACE2(m_pBroker,IBridgeDescription,pIBridgeDesc);
          const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
          GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
          GirderIndexType nGirders = pBridgeDesc->GetGirderGroup(nGroups-1)->GetGirderCount();
@@ -139,14 +139,14 @@ bool CAlignmentDisplayObjectEvents::OnKeyDown(std::shared_ptr<iDisplayObject> pD
       }
       else if ( nChar == VK_LEFT )
       {
-         EAF_GET_IFACE2(m_pBroker,IBridgeDescription,pIBridgeDesc);
+         GET_IFACE2(m_pBroker,IBridgeDescription,pIBridgeDesc);
          const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
          m_pFrame->SelectPier(pBridgeDesc->GetPierCount()-1);
          return true;
       }
       else if ( nChar == VK_RIGHT )
       {
-         EAF_GET_IFACE2(m_pBroker,IBridgeDescription,pIBridgeDesc);
+         GET_IFACE2(m_pBroker,IBridgeDescription,pIBridgeDesc);
          const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
          m_pFrame->SelectPier(0);
          return true;

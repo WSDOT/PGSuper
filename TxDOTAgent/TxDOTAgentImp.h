@@ -27,7 +27,7 @@
 
 #include "CLSID.h"
 
-#include <EAF\EAFInterfaceCache.h>
+
 #include <EAF\EAFUIIntegration.h>
 
 #include <IFace\TestFileExport.h>
@@ -48,6 +48,7 @@ public:
 
 // Agent
 public:
+   std::_tstring GetName() const override { return _T("TxDOTAgent"); }
    bool RegInterfaces() override;
    bool Init() override;
    bool Reset() override;
@@ -64,6 +65,6 @@ protected:
    bool DoTOGAReport(const CString& outputFileName, const CTxDOTCommandLineInfo& txInfo);
 
 private:
-   //DECLARE_EAF_AGENT_DATA;
+   EAF_DECLARE_AGENT_DATA;
    DECLARE_LOGFILE;
 };

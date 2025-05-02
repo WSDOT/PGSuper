@@ -19,8 +19,9 @@
 // P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
+
 #include "StdAfx.h"
-#include <psgLib\TensionStressLimit.h>
+#include <PsgLib/TensionStressLimit.h>
 #include <EAF/EAFDisplayUnits.h>
 
 bool TensionStressLimit::operator==(const TensionStressLimit& other) const

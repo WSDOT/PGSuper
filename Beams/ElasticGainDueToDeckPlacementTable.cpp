@@ -27,8 +27,9 @@
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
 #include <IFace\AnalysisResults.h>
-#include <PsgLib\SpecLibraryEntry.h>
+#include <IFace/PointOfInterest.h>
 
+#include <PsgLib\SpecLibraryEntry.h>
 
 CElasticGainDueToDeckPlacementTable::CElasticGainDueToDeckPlacementTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) :
 rptRcTable(NumColumns,0)
@@ -48,18 +49,18 @@ rptRcTable(NumColumns,0)
 CElasticGainDueToDeckPlacementTable* CElasticGainDueToDeckPlacementTable::PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    // Create and configure the table
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
 
-   EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
-   EAF_GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
-   EAF_GET_IFACE2(pBroker, IGirder, pGirder);
+   GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+   GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
+   GET_IFACE2(pBroker, IGirder, pGirder);
    bool bHasUserLoads = pUDL->DoUserLoadsExist(segmentKey);
    bool bHasDeckPanel = (deckType == pgsTypes::sdtCompositeSIP ? true : false);
    bool bHasLongitudinalJoints = pProductLoads->HasLongitudinalJointLoad();
    bool bHasDeckLoads = pGirder->HasStructuralLongitudinalJoints() || deckType == pgsTypes::sdtNone ? false : true; // if longitudinal joints are structural the deck dead loads go on the composite section
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetFirstCastDeckInterval();
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
@@ -128,11 +129,11 @@ CElasticGainDueToDeckPlacementTable* CElasticGainDueToDeckPlacementTable::Prepar
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   EAF_GET_IFACE2(pBroker,IMaterials,pMaterials);
+   GET_IFACE2(pBroker,IMaterials,pMaterials);
    Float64 Ec = pMaterials->GetSegmentEc(segmentKey,castDeckIntervalIdx);
    Float64 Ep = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Straight)->GetE(); // Ok to use straight since we just want E
 
-   EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
 
    rptParagraph* pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -212,7 +213,7 @@ CElasticGainDueToDeckPlacementTable* CElasticGainDueToDeckPlacementTable::Prepar
 
    if (bIsPrismatic)
    {
-      EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+      GET_IFACE2(pBroker, IPointOfInterest, pPoi);
       PoiList vPoi;
       pPoi->GetPointsOfInterest(segmentKey, POI_5L | POI_RELEASED_SEGMENT, &vPoi);
       ATLASSERT(vPoi.size() == 1);
@@ -235,8 +236,8 @@ CElasticGainDueToDeckPlacementTable* CElasticGainDueToDeckPlacementTable::Prepar
    table->mod_e.ShowUnitTag(false);
    table->mom_inertia.ShowUnitTag(false);
 
-   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
-   EAF_GET_IFACE2(pBroker,ILibrary,pLibrary);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker,ILibrary,pLibrary);
    const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
    const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
 
@@ -379,19 +380,19 @@ void CElasticGainDueToDeckPlacementTable::AddRow(rptChapter* pChapter,std::share
    IndexType deckCastingRegionIdx = INVALID_INDEX;
    if (m_bHasDeckLoads)
    {
-      EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+      GET_IFACE2(pBroker, IPointOfInterest, pPoi);
       deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
       ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
    }
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
    IntervalIndexType castShearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
    IntervalIndexType castLongitudinalJointIntervalIdx = pIntervals->GetCastLongitudinalJointInterval();
    IntervalIndexType noncompositeUserLoadIntervalIdx = pIntervals->GetNoncompositeUserLoadInterval();
 
-   EAF_GET_IFACE2(pBroker,IProductForces,pProdForces);
+   GET_IFACE2(pBroker,IProductForces,pProdForces);
    ColumnIndexType col = 1;
    RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;
 

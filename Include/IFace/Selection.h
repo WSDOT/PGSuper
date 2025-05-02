@@ -23,7 +23,7 @@
 #pragma once
 
 #include <WbflTypes.h>
-#include <PgsExt\Keys.h>
+#include <PsgLib\Keys.h>
 #include <PgsExt\Selection.h>
 
 // {A37216C6-E800-4ac9-899D-2518407E081C}

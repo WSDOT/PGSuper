@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <WBFLCore.h>
+
 #include <StrData.h>
 #include "TxDOTOptionalDesignGirderData.h"
 
@@ -215,8 +215,8 @@ public:
    // Resets all number of strand input to zero
    void ResetStrandNoData();
 
-	HRESULT Load(IStructuredLoad* pStrLoad,IProgress* pProgress);
-	HRESULT Save(IStructuredSave* pStrSave,IProgress* pProgress);
+	HRESULT Load(IStructuredLoad* pStrLoad,std::shared_ptr<IEAFProgress> pProgress);
+	HRESULT Save(IStructuredSave* pStrSave,std::shared_ptr<IEAFProgress> pProgress);
 
 private:
    CString m_GirderEntryName;

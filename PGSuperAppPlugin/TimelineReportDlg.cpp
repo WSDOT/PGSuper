@@ -29,11 +29,6 @@
 #include <EAF\EAFDocument.h>
 #include <EAF\EAFCustSiteVars.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CTimelineReportDlg dialog
@@ -89,7 +84,7 @@ BOOL CTimelineReportDlg::OnInitDialog()
 
    std::shared_ptr<WBFL::Reporting::ReportSpecification> pRptSpec = std::dynamic_pointer_cast<CBrokerReportSpecification, CTimelineManagerReportSpecification>(m_pRptSpec);
 
-   EAF_GET_IFACE2(pBroker,IEAFReportManager,pRptMgr);
+   GET_IFACE2(pBroker,IEAFReportManager,pRptMgr);
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> nullSpecBuilder;
    CWnd* pWnd = GetDlgItem(IDC_BROWSER);
    m_pBrowser = pRptMgr->CreateReportBrowser(pWnd->GetSafeHwnd(),0,pRptSpec,nullSpecBuilder);

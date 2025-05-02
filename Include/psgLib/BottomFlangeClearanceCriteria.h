@@ -23,12 +23,12 @@
 #pragma once
 
 
-#include "psgLibLib.h"
+#include "PsgLibLib.h"
 
 class rptChapter;
 class IEAFDisplayUnits;
-class pgsLibraryEntryDifferenceItem;
 class SpecLibraryEntryImpl;
+class DifferenceItem;
 
 struct PSGLIBCLASS BottomFlangeClearanceCriteria
 {
@@ -38,7 +38,7 @@ struct PSGLIBCLASS BottomFlangeClearanceCriteria
 
    bool operator==(const BottomFlangeClearanceCriteria& other) const;
    bool operator!=(const BottomFlangeClearanceCriteria& other) const;
-   bool Compare(const BottomFlangeClearanceCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const;
+   bool Compare(const BottomFlangeClearanceCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const;
 
    void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 

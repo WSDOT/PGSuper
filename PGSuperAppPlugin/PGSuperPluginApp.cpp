@@ -194,9 +194,9 @@ void CPGSuperPluginApp::LoadDocumentationMap()
    return CPGSPluginAppBase::LoadDocumentationMap();
 }
 
-eafTypes::HelpResult CPGSuperPluginApp::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID,CString& strURL)
+std::pair<WBFL::EAF::HelpResult,CString> CPGSuperPluginApp::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID)
 {
-   return CPGSPluginAppBase::GetDocumentLocation(lpszDocSetName,nID,strURL);
+   return CPGSPluginAppBase::GetDocumentLocation(lpszDocSetName,nID);
 }
 
 CString CPGSuperPluginApp::GetCommandLineAppName() const

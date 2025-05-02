@@ -1,8 +1,8 @@
 #pragma once
 
-#include <PgsExt\RemoveTemporarySupportsActivity.h>
-#include <PgsExt\TimelineManager.h>
-#include <PgsExt\TemporarySupportData.h>
+#include <PsgLib\RemoveTemporarySupportsActivity.h>
+#include <PsgLib\TimelineManager.h>
+#include <PsgLib\TemporarySupportData.h>
 #include <PgsExt\TimelineItemListBox.h>
 #include <EAF\EAFDisplayUnits.h>
 

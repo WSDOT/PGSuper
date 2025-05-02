@@ -23,7 +23,7 @@
 #pragma once
 
 #include "resource.h"
-#include <PgsExt\GirderData.h>
+#include <PsgLib\GirderData.h>
 
 #include <Materials/PsStrand.h>
 #include <PsgLib\GirderLibraryEntry.h>

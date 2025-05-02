@@ -34,7 +34,7 @@
 
 #include "CLSID.h"
 
-#include <WBFLCore_i.c>
+
 #include <WBFLGenericBridge_i.c>
 
 #include <WBFLCogo_i.c>

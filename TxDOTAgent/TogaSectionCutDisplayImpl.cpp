@@ -26,6 +26,8 @@
 #include <MfcTools\MfcTools.h> 
 #include <PGSuperColors.h>
 #include <IFace\Bridge.h>
+#include <IFace/PointOfInterest.h>
+
 #include "TxDOTOptionalDesignDoc.h"
 
 #include <DManip/PointDisplayObject.h>
@@ -55,7 +57,7 @@ void CTogaSectionCutDisplayImpl::Init(std::shared_ptr<WBFL::DManip::iPointDispla
 
    m_SegmentKey = segmentKey;
    
-   EAF_GET_IFACE(IBridge, pBridge);
+   GET_IFACE(IBridge, pBridge);
    m_gdrLength = pBridge->GetSegmentLength(segmentKey);
 
    m_pCutLocation = pCutLoc;
@@ -199,8 +201,8 @@ void CTogaSectionCutDisplayImpl::Draw(std::shared_ptr<const WBFL::DManip::iPoint
 
 Float64 CTogaSectionCutDisplayImpl::GetGirderHeight(Float64 distFromStartOfGirder) const
 {
-   EAF_GET_IFACE(IGirder,pGirder);
-   EAF_GET_IFACE(IPointOfInterest,pPOI);
+   GET_IFACE(IGirder,pGirder);
+   GET_IFACE(IPointOfInterest,pPOI);
 
    pgsPointOfInterest poi( pPOI->GetPointOfInterest(m_SegmentKey,distFromStartOfGirder) );
    if ( poi.GetID() < 0 )

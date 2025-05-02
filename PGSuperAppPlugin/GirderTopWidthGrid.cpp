@@ -31,15 +31,10 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\BeamFactory.h>
 //
-#include <PgsExt\GirderGroupData.h>
+#include <PsgLib\GirderGroupData.h>
 #include <PsgLib\GirderLibraryEntry.h>
-#include <PgsExt\Helpers.h>
+#include <PsgLib\Helpers.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define LEFT 0
 #define RIGHT 1
@@ -151,7 +146,7 @@ void CGirderTopWidthGrid::UpdateGrid()
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    GroupIndexType nTopWidthGroups = m_pGirderGroup->GetGirderTopWidthGroupCount();
    GirderIndexType nGirders = m_pGirderGroup->GetGirderCount();
@@ -688,7 +683,7 @@ BOOL CGirderTopWidthGrid::ValidateGirderTopWidth()
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    ROWCOL nCols = GetColCount();
    for (int i = 0; i < 2; i++) // start/end
@@ -785,7 +780,7 @@ BOOL CGirderTopWidthGrid::OnEndEditing(ROWCOL nRow, ROWCOL nCol)
       
       auto pBroker = EAFGetBroker();
 
-      EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+      GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
       CString strValue = GetCellValue(nRow, nCol);
 
@@ -813,7 +808,7 @@ BOOL CGirderTopWidthGrid::OnEndEditing(ROWCOL nRow, ROWCOL nCol)
       
       auto pBroker = EAFGetBroker();
 
-      EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+      GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
       CString strValue = GetCellValue(nRow, nCol);
 

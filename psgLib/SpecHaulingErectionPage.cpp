@@ -24,12 +24,10 @@
 //
 
 #include "stdafx.h"
-#include "psgLib\psglib.h"
 #include "SpecHaulingErectionPage.h"
 #include "SpecMainSheet.h"
+#include <PsgLib/HaulingCriteria.h>
 #include <EAF\EAFDocument.h>
-#include <psgLib/HaulingCriteria.h>
-
 #include <MFCTools\MFCTools.h>
 
 

@@ -23,12 +23,14 @@
 #pragma once
 
 #include <EAF\Agent.h>
-#include <EAF\EAFInterfaceCache.h>
+
 
 #include <IFace\UpdateTemplates.h>
 #include <IFace\Selection.h>
 #include <IFace\VersionInfo.h>
 #include <IFace\DocumentType.h>
+#include <IFace/PointOfInterest.h>
+
 #include "TxDOTOptionalDesignData.h"
 
 #include <pgsExt\GirderArtifact.h>
@@ -76,6 +78,7 @@ public:
 
 // Agent
 public:
+   std::_tstring GetName() const override { return _T("TOGO DocProxy Agent"); }
    bool RegInterfaces() override;
    bool Init() override;
    bool Reset() override;
@@ -144,7 +147,7 @@ public:
 
 
 private:
-   //DECLARE_EAF_AGENT_DATA;
+   EAF_DECLARE_AGENT_DATA;
 
    CTxDOTOptionalDesignDoc* m_pTxDOTOptionalDesignDoc;
 

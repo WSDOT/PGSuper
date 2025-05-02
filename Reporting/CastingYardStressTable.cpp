@@ -25,14 +25,14 @@
 #include <Reporting\ReportNotes.h>
 
 #include <PgsExt\ReportPointOfInterest.h>
-#include <PgsExt\TimelineEvent.h>
+#include <PsgLib\TimelineEvent.h>
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
 #include <IFace\ReportOptions.h>
-
+#include <IFace/PointOfInterest.h>
 
 /****************************************************************************
 CLASS
@@ -75,12 +75,12 @@ rptRcTable* CCastingYardStressTable::Build(std::shared_ptr<WBFL::EAF::Broker> pB
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
    ATLASSERT( intervalIdx == releaseIntervalIdx || intervalIdx == storageIntervalIdx );
 
-   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(segmentKey));
 
    rptRcTable* p_table = rptStyleManager::CreateDefaultTable(3,strTableTitle);
@@ -97,7 +97,7 @@ rptRcTable* CCastingYardStressTable::Build(std::shared_ptr<WBFL::EAF::Broker> pB
    (*p_table)(0,2) << COLHDR(RPT_FBOT << rptNewLine << _T("Girder"),    rptStressUnitTag, pDisplayUnits->GetStressUnit() );
 
    // Get the interface pointers we need
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    PoiList vPoi;
    pIPoi->GetPointsOfInterest(segmentKey, poiRefAttribute, &vPoi);
    PoiList vPoi2;
@@ -106,7 +106,7 @@ rptRcTable* CCastingYardStressTable::Build(std::shared_ptr<WBFL::EAF::Broker> pB
    pIPoi->RemovePointsOfInterest(vPoi,POI_CLOSURE);
    pIPoi->RemovePointsOfInterest(vPoi,POI_BOUNDARY_PIER);
 
-   EAF_GET_IFACE2(pBroker,IProductForces,pProductForces);
+   GET_IFACE2(pBroker,IProductForces,pProductForces);
 
    pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
 

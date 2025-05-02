@@ -22,8 +22,6 @@
 
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\SplittingCheckArtifact.h>
-#include <PgsExt\SplittingCheckEngineer.h>
-
 
 /****************************************************************************
 CLASS

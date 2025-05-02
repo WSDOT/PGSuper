@@ -21,8 +21,8 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include <psgLib\psgLib.h>
-#include <psgLib\LibraryDocTemplate.h>
+#include <PsgLib\PsgLib.h>
+#include <PsgLib\LibraryDocTemplate.h>
 
 
 IMPLEMENT_DYNAMIC(CLibraryDocTemplate,CEAFDocTemplate)

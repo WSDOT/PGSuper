@@ -34,13 +34,13 @@
 #include <EAF\EAFUtilities.h>
 
 pgsAlignmentDescriptionStatusItem::pgsAlignmentDescriptionStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,long dlgPage,LPCTSTR strDescription) :
-CEAFStatusItem(statusGroupID,callbackID,strDescription), m_DlgPage(dlgPage)
+WBFL::EAF::StatusItem(statusGroupID,callbackID,strDescription), m_DlgPage(dlgPage)
 {
 }
 
-bool pgsAlignmentDescriptionStatusItem::IsEqual(CEAFStatusItem* pOther)
+bool pgsAlignmentDescriptionStatusItem::IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const
 {
-   pgsAlignmentDescriptionStatusItem* other = dynamic_cast<pgsAlignmentDescriptionStatusItem*>(pOther);
+   auto other = std::dynamic_pointer_cast<const pgsAlignmentDescriptionStatusItem>(pOther);
    if ( !other )
    {
       return false;
@@ -60,25 +60,25 @@ bool pgsAlignmentDescriptionStatusItem::IsEqual(CEAFStatusItem* pOther)
 }
 
 //////////////////////////////////////////////////////////
-pgsAlignmentDescriptionStatusCallback::pgsAlignmentDescriptionStatusCallback(eafTypes::StatusSeverityType severity):
+pgsAlignmentDescriptionStatusCallback::pgsAlignmentDescriptionStatusCallback(WBFL::EAF::StatusSeverityType severity):
 m_Severity(severity)
 {
 }
 
-eafTypes::StatusSeverityType pgsAlignmentDescriptionStatusCallback::GetSeverity() const
+WBFL::EAF::StatusSeverityType pgsAlignmentDescriptionStatusCallback::GetSeverity() const
 {
    return m_Severity;
 }
 
-void pgsAlignmentDescriptionStatusCallback::Execute(CEAFStatusItem* pStatusItem)
+void pgsAlignmentDescriptionStatusCallback::Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem)
 {
-   pgsAlignmentDescriptionStatusItem* pItem = dynamic_cast<pgsAlignmentDescriptionStatusItem*>(pStatusItem);
+   auto pItem = std::dynamic_pointer_cast<pgsAlignmentDescriptionStatusItem>(pStatusItem);
    ATLASSERT(pItem!=nullptr);
 
    if ( AfxMessageBox( pStatusItem->GetDescription(), MB_OK ) == IDOK )
    {
       auto broker = EAFGetBroker();
-      EAF_GET_IFACE2(broker,IEditByUI,pEdit);
+      GET_IFACE2(broker,IEditByUI,pEdit);
       pEdit->EditAlignmentDescription(pItem->m_DlgPage);
    }
 }
@@ -91,9 +91,9 @@ pgsSegmentRelatedStatusItem(statusGroupID,callbackID,strDescription,segmentKey),
 {
 }
 
-bool pgsConcreteStrengthStatusItem::IsEqual(CEAFStatusItem* pOther)
+bool pgsConcreteStrengthStatusItem::IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const
 {
-   pgsConcreteStrengthStatusItem* other = dynamic_cast<pgsConcreteStrengthStatusItem*>(pOther);
+   auto other = std::dynamic_pointer_cast<const pgsConcreteStrengthStatusItem>(pOther);
    if ( !other )
    {
       return false;
@@ -103,23 +103,23 @@ bool pgsConcreteStrengthStatusItem::IsEqual(CEAFStatusItem* pOther)
 }
 
 //////////////////////////////////////////////////////////
-pgsConcreteStrengthStatusCallback::pgsConcreteStrengthStatusCallback(eafTypes::StatusSeverityType severity):
+pgsConcreteStrengthStatusCallback::pgsConcreteStrengthStatusCallback(WBFL::EAF::StatusSeverityType severity):
 m_Severity(severity)
 {
 }
 
-eafTypes::StatusSeverityType pgsConcreteStrengthStatusCallback::GetSeverity() const
+WBFL::EAF::StatusSeverityType pgsConcreteStrengthStatusCallback::GetSeverity() const
 {
    return m_Severity;
 }
 
-void pgsConcreteStrengthStatusCallback::Execute(CEAFStatusItem* pStatusItem)
+void pgsConcreteStrengthStatusCallback::Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem)
 {
-   pgsConcreteStrengthStatusItem* pItem = dynamic_cast<pgsConcreteStrengthStatusItem*>(pStatusItem);
+   auto pItem = std::dynamic_pointer_cast<pgsConcreteStrengthStatusItem>(pStatusItem);
    ATLASSERT(pItem!=nullptr);
 
    auto broker = EAFGetBroker();
-   EAF_GET_IFACE2(broker,IEditByUI,pEdit);
+   GET_IFACE2(broker,IEditByUI,pEdit);
 
    if ( pItem->m_ConcreteType == pgsConcreteStrengthStatusItem::Slab )
    {
@@ -147,9 +147,9 @@ m_LoadIndex(value), m_SpanKey(spanKey)
 {
 }
 
-bool pgsPointLoadStatusItem::IsEqual(CEAFStatusItem* pOther)
+bool pgsPointLoadStatusItem::IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const
 {
-   pgsPointLoadStatusItem* other = dynamic_cast<pgsPointLoadStatusItem*>(pOther);
+   auto other = std::dynamic_pointer_cast<const pgsPointLoadStatusItem>(pOther);
    if ( !other )
    {
       return false;
@@ -160,21 +160,21 @@ bool pgsPointLoadStatusItem::IsEqual(CEAFStatusItem* pOther)
 
 ///////////////////////////////
 
-pgsPointLoadStatusCallback::pgsPointLoadStatusCallback(eafTypes::StatusSeverityType severity):
+pgsPointLoadStatusCallback::pgsPointLoadStatusCallback(WBFL::EAF::StatusSeverityType severity):
 m_Severity(severity)
 {
 }
 
-eafTypes::StatusSeverityType pgsPointLoadStatusCallback::GetSeverity() const
+WBFL::EAF::StatusSeverityType pgsPointLoadStatusCallback::GetSeverity() const
 {
    return m_Severity;
 }
 
-void pgsPointLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
+void pgsPointLoadStatusCallback::Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   pgsPointLoadStatusItem* pItem = dynamic_cast<pgsPointLoadStatusItem*>(pStatusItem);
+   auto pItem = std::dynamic_pointer_cast<pgsPointLoadStatusItem>(pStatusItem);
    ATLASSERT(pItem!=nullptr);
 
    CDealWithLoadDlg dlg;
@@ -184,22 +184,22 @@ void pgsPointLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    if ( result == CDealWithLoadDlg::IDDELETELOAD )
    {
       auto broker = EAFGetBroker();
-      EAF_GET_IFACE2(broker,IEAFTransactions,pTxn);
+      GET_IFACE2(broker,IEAFTransactions,pTxn);
       txnDeletePointLoad txn(pItem->m_LoadIndex);
       pTxn->Execute(txn);
 
       StatusItemIDType id = pItem->GetID();
-      EAF_GET_IFACE2(broker,IEAFStatusCenter,pStatusCenter);
+      GET_IFACE2(broker,IEAFStatusCenter,pStatusCenter);
       pStatusCenter->RemoveByID(id);
    }
    else if (result == CDealWithLoadDlg::IDEDITLOAD)
    {
       auto broker = EAFGetBroker();
-      EAF_GET_IFACE2(broker,IEditByUI,pEdit);
+      GET_IFACE2(broker,IEditByUI,pEdit);
       if ( pEdit->EditPointLoad(pItem->m_LoadIndex) )
       {
          StatusItemIDType id = pItem->GetID();
-         EAF_GET_IFACE2(broker,IEAFStatusCenter,pStatusCenter);
+         GET_IFACE2(broker,IEAFStatusCenter,pStatusCenter);
          pStatusCenter->RemoveByID(id);
       }
    }
@@ -217,9 +217,9 @@ m_LoadIndex(value), m_SpanKey(spanKey)
 {
 }
 
-bool pgsDistributedLoadStatusItem::IsEqual(CEAFStatusItem* pOther)
+bool pgsDistributedLoadStatusItem::IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const
 {
-   pgsDistributedLoadStatusItem* other = dynamic_cast<pgsDistributedLoadStatusItem*>(pOther);
+   auto other = std::dynamic_pointer_cast<const pgsDistributedLoadStatusItem>(pOther);
    if ( !other )
    {
       return false;
@@ -230,21 +230,21 @@ bool pgsDistributedLoadStatusItem::IsEqual(CEAFStatusItem* pOther)
 
 //////////////////////////////////////////////////////////
 
-pgsDistributedLoadStatusCallback::pgsDistributedLoadStatusCallback(eafTypes::StatusSeverityType severity):
+pgsDistributedLoadStatusCallback::pgsDistributedLoadStatusCallback(WBFL::EAF::StatusSeverityType severity):
 m_Severity(severity)
 {
 }
 
-eafTypes::StatusSeverityType pgsDistributedLoadStatusCallback::GetSeverity() const
+WBFL::EAF::StatusSeverityType pgsDistributedLoadStatusCallback::GetSeverity() const
 {
    return m_Severity;
 }
 
-void pgsDistributedLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
+void pgsDistributedLoadStatusCallback::Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   pgsDistributedLoadStatusItem* pItem = dynamic_cast<pgsDistributedLoadStatusItem*>(pStatusItem);
+   auto pItem = std::dynamic_pointer_cast<pgsDistributedLoadStatusItem>(pStatusItem);
    ATLASSERT(pItem!=nullptr);
 
    CDealWithLoadDlg dlg;
@@ -255,22 +255,22 @@ void pgsDistributedLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    if ( result == CDealWithLoadDlg::IDDELETELOAD )
    {
       auto broker = EAFGetBroker();
-      EAF_GET_IFACE2(broker,IEAFTransactions,pTxn);
+      GET_IFACE2(broker,IEAFTransactions,pTxn);
       txnDeleteDistributedLoad txn(pItem->m_LoadIndex);
       pTxn->Execute(txn);
 
       StatusItemIDType id = pItem->GetID();
-      EAF_GET_IFACE2(broker,IEAFStatusCenter,pStatusCenter);
+      GET_IFACE2(broker,IEAFStatusCenter,pStatusCenter);
       pStatusCenter->RemoveByID(id);
    }
    else if (result == CDealWithLoadDlg::IDEDITLOAD)
    {
       auto broker = EAFGetBroker();
-      EAF_GET_IFACE2(broker,IEditByUI,pEdit);
+      GET_IFACE2(broker,IEditByUI,pEdit);
       if ( pEdit->EditDistributedLoad(pItem->m_LoadIndex) )
       {
          StatusItemIDType id = pItem->GetID();
-         EAF_GET_IFACE2(broker,IEAFStatusCenter,pStatusCenter);
+         GET_IFACE2(broker,IEAFStatusCenter,pStatusCenter);
          pStatusCenter->RemoveByID(id);
       }
    }
@@ -288,9 +288,9 @@ m_LoadIndex(value), m_SpanKey(spanKey)
 {
 }
 
-bool pgsMomentLoadStatusItem::IsEqual(CEAFStatusItem* pOther)
+bool pgsMomentLoadStatusItem::IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const
 {
-   pgsMomentLoadStatusItem* other = dynamic_cast<pgsMomentLoadStatusItem*>(pOther);
+   auto other = std::dynamic_pointer_cast<const pgsMomentLoadStatusItem>(pOther);
    if ( !other )
    {
       return false;
@@ -300,21 +300,21 @@ bool pgsMomentLoadStatusItem::IsEqual(CEAFStatusItem* pOther)
 }
 ///////////////////////////
 
-pgsMomentLoadStatusCallback::pgsMomentLoadStatusCallback(eafTypes::StatusSeverityType severity):
+pgsMomentLoadStatusCallback::pgsMomentLoadStatusCallback(WBFL::EAF::StatusSeverityType severity):
 m_Severity(severity)
 {
 }
 
-eafTypes::StatusSeverityType pgsMomentLoadStatusCallback::GetSeverity() const
+WBFL::EAF::StatusSeverityType pgsMomentLoadStatusCallback::GetSeverity() const
 {
    return m_Severity;
 }
 
-void pgsMomentLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
+void pgsMomentLoadStatusCallback::Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   pgsMomentLoadStatusItem* pItem = dynamic_cast<pgsMomentLoadStatusItem*>(pStatusItem);
+   auto pItem = std::dynamic_pointer_cast<pgsMomentLoadStatusItem>(pStatusItem);
    ATLASSERT(pItem!=nullptr);
 
    CDealWithLoadDlg dlg;
@@ -325,22 +325,22 @@ void pgsMomentLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
    if ( result == CDealWithLoadDlg::IDDELETELOAD )
    {
       auto broker = EAFGetBroker();
-      EAF_GET_IFACE2(broker,IEAFTransactions,pTxn);
+      GET_IFACE2(broker,IEAFTransactions,pTxn);
       txnDeleteMomentLoad txn(pItem->m_LoadIndex);
       pTxn->Execute(txn);
 
       StatusItemIDType id = pItem->GetID();
-      EAF_GET_IFACE2(broker,IEAFStatusCenter,pStatusCenter);
+      GET_IFACE2(broker,IEAFStatusCenter,pStatusCenter);
       pStatusCenter->RemoveByID(id);
    }
    else if (result == CDealWithLoadDlg::IDEDITLOAD)
    {
       auto broker = EAFGetBroker();
-      EAF_GET_IFACE2(broker,IEditByUI,pEdit);
+      GET_IFACE2(broker,IEditByUI,pEdit);
       if ( pEdit->EditMomentLoad(pItem->m_LoadIndex) )
       {
          StatusItemIDType id = pItem->GetID();
-         EAF_GET_IFACE2(broker,IEAFStatusCenter,pStatusCenter);
+         GET_IFACE2(broker,IEAFStatusCenter,pStatusCenter);
          pStatusCenter->RemoveByID(id);
       }
    }

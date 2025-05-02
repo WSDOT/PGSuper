@@ -26,7 +26,7 @@
 #include <Reporting\SpanGirderReportSpecificationBuilder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <ReportManager\ReportManager.h>
-#include <WBFLCore.h>
+
 
 /////////////////// Full load rating report ///////////////////
 

@@ -33,8 +33,8 @@
 // CTxDOTCadExporter
 
 class CTxDOTCadExporter : public WBFL::EAF::ComponentObject,
-   public PGSuper::IDataExporter,
-   public PGSuper::IPluginDocumentation
+   public PGS::IDataExporter,
+   public PGS::IPluginDocumentation
 {
 public:
    CTxDOTCadExporter();
@@ -52,7 +52,7 @@ public:
 public:
    CString GetDocumentationSetName() const override;
    STDMETHOD(LoadDocumentationMap)() override;
-   std::pair<bool,CString> GetDocumentLocation(UINT nHID) const override;
+   std::pair<WBFL::EAF::HelpResult,CString> GetDocumentLocation(UINT nHID) const override;
 
 private:
    HRESULT ExportGirderDesignData(std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderKeys, exportCADData::cdtExportDataType fileDataType, exportCADData::ctxFileFormatType fileFormat);

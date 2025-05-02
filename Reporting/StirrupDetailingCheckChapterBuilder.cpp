@@ -37,6 +37,7 @@
 #include <IFace\ReportOptions.h>
 
 #include <psgLib/ShearCapacityCriteria.h>
+#include <psgLib/SpecLibraryEntry.h>
 
 
 
@@ -75,19 +76,19 @@ rptChapter* CStirrupDetailingCheckChapterBuilder::Build(const std::shared_ptr<co
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
 
-   EAF_GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+   GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
    bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
 
-   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    bool bIncludeSpanAndGirderForPois = pReportOptions->IncludeSpanAndGirder4Pois(girderKey);
 
    build_min_avs_paragraph(pBroker,pChapter,girderKey,intervalIdx, bIncludeSpanAndGirderForPois, pDisplayUnits);
 
-   EAF_GET_IFACE2(pBroker, IMaterials, pMaterials);
+   GET_IFACE2(pBroker, IMaterials, pMaterials);
    if (pMaterials->GetSegmentConcreteType(CSegmentKey(girderKey, 0)) == pgsTypes::UHPC)
    {
       build_max_spacing_paragraph_uhpc(pBroker, pChapter, girderKey, intervalIdx, pgsTypes::StrengthI, bIncludeSpanAndGirderForPois, pDisplayUnits);
@@ -126,15 +127,15 @@ void build_min_avs_paragraph(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapt
 
    location.IncludeSpanAndGirder(bIncludeSpanAndGirderForPois);
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
-   EAF_GET_IFACE2(pBroker,IArtifact,pIArtifact);
+   GET_IFACE2(pBroker,IArtifact,pIArtifact);
    const pgsGirderArtifact* pGirderArtifact = pIArtifact->GetGirderArtifact(girderKey);
 
    bool bLambda = (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false);
 
-   EAF_GET_IFACE2(pBroker,IMaterials,pMaterial);
+   GET_IFACE2(pBroker,IMaterials,pMaterial);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       if ( 1 < nSegments )
@@ -396,8 +397,8 @@ void build_max_spacing_paragraph(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptC
 
    location.IncludeSpanAndGirder(bIncludeSpanAndGirderForPois);
 
-   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
-   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
 
@@ -449,8 +450,8 @@ void build_max_spacing_paragraph(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptC
    (*table)(0,5)  << COLHDR(Sub2(_T("S"),_T("max")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit() );
 
    // Fill up the table
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,IArtifact,pIArtifact);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IArtifact,pIArtifact);
 
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
@@ -460,7 +461,7 @@ void build_max_spacing_paragraph(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptC
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
-   EAF_GET_IFACE2(pBroker, IMaterials, pMaterial);
+   GET_IFACE2(pBroker, IMaterials, pMaterial);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       CSegmentKey segmentKey(girderKey,segIdx);
@@ -568,8 +569,8 @@ void build_max_spacing_paragraph_uhpc(std::shared_ptr<WBFL::EAF::Broker> pBroker
    (*table)(0, col++) << COLHDR(Sub2(_T("S"), _T("max")), rptLengthUnitTag, pDisplayUnits->GetComponentDimUnit());
 
    // Fill up the table
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
-   EAF_GET_IFACE2(pBroker, IArtifact, pIArtifact);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IArtifact, pIArtifact);
 
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 

@@ -38,11 +38,11 @@
 
 #include <Units\Units.h>
 #include <PGSuperTypes.h>
-#include <PgsExt\PoiMgr.h>
 
 class CDistFactorEngineerBase;
 class IEffFlangeEngineer;
 class CPsLossEngineerBase;
+class pgsPoiMgr;
 
 interface IShape;
 interface ISuperstructureMemberSegment;

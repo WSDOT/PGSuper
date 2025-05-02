@@ -43,7 +43,7 @@
 #include <IFace\Intervals.h>
 #include <IFace\DistributionFactors.h>
 
-#include <PgsExt\PierData2.h>
+#include <PsgLib\PierData2.h>
 #include <Reporting/BearingShearDeformationTable.h>
 
 CBearingDesignSummaryChapterBuilder::CBearingDesignSummaryChapterBuilder(bool bSelect) :
@@ -65,11 +65,11 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
 
     rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
 
-    EAF_GET_IFACE2(pBroker, IUserDefinedLoads, pUDL);
+    GET_IFACE2(pBroker, IUserDefinedLoads, pUDL);
     bool are_user_loads = pUDL->DoUserLoadsExist(girderKey);
 
 
-    EAF_GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
+    GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
 
     bool bIncludeImpact = pBearingDesign->BearingLiveLoadReactionsIncludeImpact();
 
@@ -78,14 +78,14 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
 
     *p << _T("-Live loads do not include impact") << rptNewLine << rptNewLine;
 
-    EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
     *p << CBearingDesignPropertiesTable().BuildBearingDesignPropertiesTable(pBroker, pDisplayUnits) << rptNewLine;
 
     *p << Sub2(_T("F"), _T("y")) << _T(" = Steel reinforcement yield strength") << rptNewLine;
     *p << Sub2(_T("F"), _T("th")) << _T(" = Steel reinforcement constant-amplitude fatigue threshold for Detail Category A") << rptNewLine;
 
-    EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
+    GET_IFACE2(pBroker, ISpecification, pSpec);
 
     *p << CBearingReactionTable().BuildBearingReactionTable(pBroker, girderKey, pSpec->GetAnalysisType(), bIncludeImpact,
         true, true, are_user_loads, true, pDisplayUnits, false) << rptNewLine;
@@ -94,7 +94,7 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
 
     *p << Sub2(_T("P"), _T("L")) << _T(" = Vertical Live Load") << rptNewLine;
 
-    EAF_GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
+    GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
     SHEARDEFORMATIONDETAILS sfDetails;
     pBearingDesignParameters->GetBearingParameters(girderKey, &sfDetails);
 
@@ -116,7 +116,7 @@ rptChapter* CBearingDesignSummaryChapterBuilder::Build(const std::shared_ptr<con
 
 
     bool bCold;
-    EAF_GET_IFACE2(pBroker, IEnvironment, pEnvironment);
+    GET_IFACE2(pBroker, IEnvironment, pEnvironment);
     if (pEnvironment->GetClimateCondition() == pgsTypes::ClimateCondition::Cold)
     {
         bCold = true;

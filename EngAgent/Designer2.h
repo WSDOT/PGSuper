@@ -432,33 +432,33 @@ private:
    void CheckLiveLoadDeflection(const CGirderKey& girderKey,pgsGirderArtifact* pGdrArtifact) const;
 
    // Initialize the design artifact with a first guess of the design variables
-   void DesignMidZone(bool bUseCurrentStrands, const arDesignOptions& options,IProgress* pProgress) const;
-   void DesignMidZoneInitialStrands(bool bUseCurrentStrands,IProgress* pProgress) const;
-   void DesignSlabOffset(IProgress* pProgress) const;
-   void DesignMidZoneFinalConcrete(IProgress* pProgress) const;
-   void DesignMidZoneAtRelease(const arDesignOptions& options, IProgress* pProgress) const;
-   void DesignEndZone(bool firstTime, const arDesignOptions& options, pgsSegmentDesignArtifact& artifact,IProgress* pProgress) const;
-   void DesignForShipping(IProgress* pProgress) const;
+   void DesignMidZone(bool bUseCurrentStrands, const arDesignOptions& options,std::shared_ptr<IEAFProgress> pProgress) const;
+   void DesignMidZoneInitialStrands(bool bUseCurrentStrands,std::shared_ptr<IEAFProgress> pProgress) const;
+   void DesignSlabOffset(std::shared_ptr<IEAFProgress> pProgress) const;
+   void DesignMidZoneFinalConcrete(std::shared_ptr<IEAFProgress> pProgress) const;
+   void DesignMidZoneAtRelease(const arDesignOptions& options, std::shared_ptr<IEAFProgress> pProgress) const;
+   void DesignEndZone(bool firstTime, const arDesignOptions& options, pgsSegmentDesignArtifact& artifact,std::shared_ptr<IEAFProgress> pProgress) const;
+   void DesignForShipping(std::shared_ptr<IEAFProgress> pProgress) const;
    bool CheckShippingStressDesign(const CSegmentKey& segmentKey,const GDRCONFIG& config) const;
 
-   void DesignEndZoneHarping(arDesignOptions options, pgsSegmentDesignArtifact& artifact,IProgress* pProgress) const;
-   void DesignForLiftingHarping(const arDesignOptions& options, bool bAdjustingAfterShipping,IProgress* pProgress) const;
-   void DesignEndZoneHarpingAdjustment(const arDesignOptions& options, IProgress* pProgress) const;
+   void DesignEndZoneHarping(arDesignOptions options, pgsSegmentDesignArtifact& artifact,std::shared_ptr<IEAFProgress> pProgress) const;
+   void DesignForLiftingHarping(const arDesignOptions& options, bool bAdjustingAfterShipping,std::shared_ptr<IEAFProgress> pProgress) const;
+   void DesignEndZoneHarpingAdjustment(const arDesignOptions& options, std::shared_ptr<IEAFProgress> pProgress) const;
    void GetControllingHarpedEccentricity(IntervalIndexType interval, const GDRCONFIG& config, pgsPointOfInterest* pTopPoi, pgsPointOfInterest* pBotPoi,
-                                         Float64* pEccTens, Float64* pEccComp, Float64* pFeTop, Float64* pFeBot, IProgress* pProgress) const;
+                                         Float64* pEccTens, Float64* pEccComp, Float64* pFeTop, Float64* pFeBot, std::shared_ptr<IEAFProgress> pProgress) const;
    bool CheckLiftingStressDesign(const CSegmentKey& segmentKey,const GDRCONFIG& config) const;
 
-   void DesignEndZoneDebonding(bool firstPass, const arDesignOptions& options, pgsSegmentDesignArtifact& artifact, IProgress* pProgress) const;
-   std::vector<DebondLevelType> DesignForLiftingDebonding(bool designConcrete, IProgress* pProgress) const;
-   std::vector<DebondLevelType> DesignDebondingForLifting(HANDLINGCONFIG& liftConfig, IProgress* pProgress) const;
-   std::vector<DebondLevelType> DesignEndZoneReleaseDebonding(IProgress* pProgress,bool bAbortOnFail = true) const;
+   void DesignEndZoneDebonding(bool firstPass, const arDesignOptions& options, pgsSegmentDesignArtifact& artifact, std::shared_ptr<IEAFProgress> pProgress) const;
+   std::vector<DebondLevelType> DesignForLiftingDebonding(bool designConcrete, std::shared_ptr<IEAFProgress> pProgress) const;
+   std::vector<DebondLevelType> DesignDebondingForLifting(HANDLINGCONFIG& liftConfig, std::shared_ptr<IEAFProgress> pProgress) const;
+   std::vector<DebondLevelType> DesignEndZoneReleaseDebonding(std::shared_ptr<IEAFProgress> pProgress,bool bAbortOnFail = true) const;
 
-   void DesignEndZoneReleaseStrength(IProgress* pProgress) const;
+   void DesignEndZoneReleaseStrength(std::shared_ptr<IEAFProgress> pProgress) const;
    void DesignConcreteRelease(Float64 topStress, Float64 botStress) const;
 
-   void RefineDesignForAllowableStress(IProgress* pProgress) const;
-   void RefineDesignForAllowableStress(const StressCheckTask& task,IProgress* pProgress) const;
-   void RefineDesignForUltimateMoment(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,IProgress* pProgress) const;
+   void RefineDesignForAllowableStress(std::shared_ptr<IEAFProgress> pProgress) const;
+   void RefineDesignForAllowableStress(const StressCheckTask& task,std::shared_ptr<IEAFProgress> pProgress) const;
+   void RefineDesignForUltimateMoment(IntervalIndexType intervalIdx,pgsTypes::LimitState limitState,std::shared_ptr<IEAFProgress> pProgress) const;
    pgsPointOfInterest GetControllingFinalMidZonePoi(const CSegmentKey& segmentKey) const;
 
    // Shear design

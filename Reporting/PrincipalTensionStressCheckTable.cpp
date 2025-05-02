@@ -30,6 +30,7 @@
 #include <IFace\Project.h>
 #include <IFace\ReportOptions.h>
 
+#include <psgLib/SpecLibraryEntry.h>
 
 CPrincipalTensionStressCheckTable::CPrincipalTensionStressCheckTable()
 {
@@ -67,7 +68,7 @@ void CPrincipalTensionStressCheckTable::Build(rptChapter* pChapter, std::shared_
    INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true);
 
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
    // check applicability
@@ -135,24 +136,24 @@ void CPrincipalTensionStressCheckTable::BuildTable(rptChapter* pChapter, std::sh
    rptCapacityToDemand cap_demand;
 
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
-   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
-   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount() - 1;
 
-   EAF_GET_IFACE2(pBroker, IMaterials, pMaterials);
+   GET_IFACE2(pBroker, IMaterials, pMaterials);
 
-   EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
-   EAF_GET_IFACE2(pBroker, ILibrary, pLib);
+   GET_IFACE2(pBroker, ISpecification, pSpec);
+   GET_IFACE2(pBroker, ILibrary, pLib);
    std::_tstring specName = pSpec->GetSpecification();
    const auto* pSpecEntry = pLib->GetSpecEntry(specName.c_str());
    const auto& principal_tension_stress_criteria = pSpecEntry->GetPrincipalTensionStressCriteria();
 
-   EAF_GET_IFACE2(pBroker, IConcreteStressLimits, pLimits);
+   GET_IFACE2(pBroker, IConcreteStressLimits, pLimits);
 
    IntervalIndexType liveLoadInterval = pIntervals->GetLiveLoadInterval();
 
@@ -215,8 +216,8 @@ void CPrincipalTensionStressCheckTable::BuildTable(rptChapter* pChapter, std::sh
 
       Float64 fc_reqd = pArtifact->GetRequiredSegmentConcreteStrength();
       
-      EAF_GET_IFACE2(pBroker, IMaterials, pMaterials);
-      EAF_GET_IFACE2(pBroker, IConcreteStressLimits, pLimits);
+      GET_IFACE2(pBroker, IMaterials, pMaterials);
+      GET_IFACE2(pBroker, IConcreteStressLimits, pLimits);
       auto name = pLimits->GetConcreteStressLimitParameterName(pgsTypes::Tension, pMaterials->GetSegmentConcreteType(segmentKey));
 
       if (0 < fc_reqd)

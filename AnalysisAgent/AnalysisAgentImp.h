@@ -25,7 +25,7 @@
 #include "SegmentModelManager.h"
 #include "GirderModelManager.h"
 
-#include <EAF\EAFInterfaceCache.h>
+
 #include <Math/LinearFunction.h>
 
 
@@ -80,6 +80,7 @@ public:
 
 // Agent
 public:
+   std::_tstring GetName() const override { return _T("AnalysisAgent"); }
    bool RegInterfaces() override;
    bool Init() override;
    bool Reset() override;
@@ -439,7 +440,7 @@ public:
    HRESULT OnLossParametersChanged() override;
 
 private:
-   //DECLARE_EAF_AGENT_DATA;
+   EAF_DECLARE_AGENT_DATA;
    DECLARE_LOGFILE;
 
    Uint16 m_Level;

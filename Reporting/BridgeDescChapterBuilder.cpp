@@ -30,19 +30,21 @@
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>
 #include <IFace\BeamFactory.h>
+#include <IFace/PointOfInterest.h>
 
 #include <PsgLib\ConnectionLibraryEntry.h>
 #include <PsgLib\ConcreteLibraryEntry.h>
 #include <PsgLib\GirderLibraryEntry.h>
 #include <PsgLib\TrafficBarrierEntry.h>
+#include <psgLib/SpecLibraryEntry.h>
 
 #include <psgLib/LimitStateConcreteStrengthCriteria.h>
 
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\PierData2.h>
-#include <PgsExt\ClosureJointData.h>
-#include <PgsExt\GirderLabel.h>
-#include <PgsExt\Helpers.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\PierData2.h>
+#include <PsgLib\ClosureJointData.h>
+#include <PsgLib\GirderLabel.h>
+#include <PsgLib\Helpers.h>
 
 #include <Materials/Materials.h>
 #include <LRFD\LRFD.h>
@@ -70,6 +72,7 @@ inline CString GetHaunchIncrementString(IndexType inc,IndexType numVals)
 }
 
 #pragma Reminder("WORKING HERE - Removing COM - why are these static functions? since they are file scope, they could be regular functions")
+// what is a static function?
 static void write_alignment_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptChapter* pChapter,Uint16 level);
 static void write_profile_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptChapter* pChapter,Uint16 level);
 static void write_crown_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptChapter* pChapter,Uint16 level);
@@ -131,7 +134,7 @@ rptChapter* CBridgeDescChapterBuilder::Build(const std::shared_ptr<const WBFL::R
    else if ( pGdrLineRptSpec)
    {
       pBroker = pGdrLineRptSpec->GetBroker();
-      EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+      GET_IFACE2(pBroker,IBridge,pBridge);
 
       CGirderKey girderKey = pGdrLineRptSpec->GetGirderKey();
       pBridge->GetGirderline(girderKey, &girderKeys);
@@ -148,10 +151,10 @@ rptChapter* CBridgeDescChapterBuilder::Build(const std::shared_ptr<const WBFL::R
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    SupportIndexType nTS = pBridge->GetTemporarySupportCount();
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    //write_alignment_data( pBroker, pDisplayUnits, pChapter, level); // now written as its own chapter
    //write_profile_data( pBroker, pDisplayUnits, pChapter, level); // now written as its own chapter
    //write_crown_data( pBroker, pDisplayUnits, pChapter, level); // now written as its own chapter
@@ -210,7 +213,7 @@ void write_alignment_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared
 {
    USES_CONVERSION;
 
-   EAF_GET_IFACE2(pBroker, IRoadwayData, pAlignment);
+   GET_IFACE2(pBroker, IRoadwayData, pAlignment);
    rptParagraph* pPara;
 
    INIT_UV_PROTOTYPE(rptLengthUnitValue, length, pDisplayUnits->GetAlignmentLengthUnit(), false);
@@ -269,7 +272,7 @@ void write_alignment_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared
       }
    }
 
-   EAF_GET_IFACE2(pBroker, IRoadway, pRoadway);
+   GET_IFACE2(pBroker, IRoadway, pRoadway);
 
    pPara = new rptParagraph;
    *pChapter << pPara;
@@ -987,7 +990,7 @@ void write_alignment_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared
 
 void write_profile_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptChapter* pChapter,Uint16 level)
 {
-   EAF_GET_IFACE2(pBroker, IRoadwayData, pRoadwayData ); 
+   GET_IFACE2(pBroker, IRoadwayData, pRoadwayData ); 
    rptParagraph* pPara;
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetAlignmentLengthUnit(), true );
@@ -1009,7 +1012,7 @@ void write_profile_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_p
       return;
    }
 
-   EAF_GET_IFACE2(pBroker, IRoadway, pRoadway);
+   GET_IFACE2(pBroker, IRoadway, pRoadway);
 
    // Setup the table
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(profile.VertCurves.size()+1,_T("Vertical Curve Data"));
@@ -1188,7 +1191,7 @@ void write_profile_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_p
 
 void write_crown_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptChapter* pChapter,Uint16 level)
 {
-   EAF_GET_IFACE2(pBroker, IRoadwayData, pAlignment ); 
+   GET_IFACE2(pBroker, IRoadwayData, pAlignment ); 
    rptParagraph* pPara;
    pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;
@@ -1278,7 +1281,7 @@ void write_bridge_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_pt
    rptRcTable* pTable = rptStyleManager::CreateTableNoHeading(2,_T("General Bridge Information"));
    *pPara << pTable << rptNewLine;
 
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    SpanIndexType nSpans = pBridgeDesc->GetSpanCount();
 
@@ -1325,8 +1328,8 @@ void write_bridge_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_pt
 
 void write_concrete_details(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptChapter* pChapter,const std::vector<CGirderKey>& girderKeys,Uint16 level)
 {
-   EAF_GET_IFACE2(pBroker,ILibrary, pLib );
-   EAF_GET_IFACE2(pBroker,ISpecification, pSpec );
+   GET_IFACE2(pBroker,ILibrary, pLib );
+   GET_IFACE2(pBroker,ISpecification, pSpec );
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
    if (prestress_loss_criteria.LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP )
@@ -1371,8 +1374,8 @@ void write_lrfd_concrete_details(std::shared_ptr<WBFL::EAF::Broker> pBroker,std:
       nColumns++;
    }
 
-   EAF_GET_IFACE2(pBroker,ILibrary, pLib);
-   EAF_GET_IFACE2(pBroker,ISpecification, pSpec);
+   GET_IFACE2(pBroker,ILibrary, pLib);
+   GET_IFACE2(pBroker,ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
    const auto& limit_state_concrete_strength_criteria = pSpecEntry->GetLimitStateConcreteStrengthCriteria();
 
@@ -1419,7 +1422,7 @@ void write_lrfd_concrete_details(std::shared_ptr<WBFL::EAF::Broker> pBroker,std:
       *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Ec_2016.png")) << rptNewLine;
    }
 
-   EAF_GET_IFACE2(pBroker, IMaterials, pMaterials);
+   GET_IFACE2(pBroker, IMaterials, pMaterials);
    if (pMaterials->HasUHPC())
    {
       *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("Ec_PCI_UHPC.png")) << _T(" for PCI-UHPC and AASHTO UHPC GS") << rptNewLine;
@@ -1483,9 +1486,9 @@ void write_lrfd_concrete_details(std::shared_ptr<WBFL::EAF::Broker> pBroker,std:
 
    row = pTable->GetNumberOfHeaderRows();
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
 
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
 
@@ -1789,9 +1792,9 @@ void write_aci209_concrete_details(std::shared_ptr<WBFL::EAF::Broker> pBroker,st
 
    row = pTable->GetNumberOfHeaderRows();
 
-   EAF_GET_IFACE2(pBroker,IMaterials,pMaterials);
+   GET_IFACE2(pBroker,IMaterials,pMaterials);
 
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    for(const auto& thisGirderKey : girderKeys)
@@ -1931,9 +1934,9 @@ void write_cebfip_concrete_details(std::shared_ptr<WBFL::EAF::Broker> pBroker,st
 
    row = pTable->GetNumberOfHeaderRows();
 
-   EAF_GET_IFACE2(pBroker,IMaterials,pMaterials);
+   GET_IFACE2(pBroker,IMaterials,pMaterials);
 
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    for(const auto& thisGirderKey : girderKeys)
@@ -2026,7 +2029,7 @@ void write_cebfip_concrete_row(std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,r
 void write_friction_loss_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptChapter* pChapter,Uint16 level)
 {
    // Only write for spliced girders
-   EAF_GET_IFACE2(pBroker, IDocumentType, pDocType);
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
    if (!pDocType->IsPGSpliceDocument())
    {
       return;
@@ -2052,7 +2055,7 @@ void write_friction_loss_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::sh
    (*pTable)(1, 0) << _T("Temporary Strands");
    (*pTable)(2, 0) << _T("Tendons");
 
-   EAF_GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   GET_IFACE2(pBroker,ILossParameters,pLossParams);
    Float64 Dset, wobble, friction;
    pLossParams->GetTemporaryStrandPostTensionParameters(&Dset,&wobble,&friction);
    (*pTable)(1, 1) << cmpdim.SetValue(Dset);
@@ -2082,20 +2085,20 @@ void write_connection_abbrevation_footnotes(rptChapter* pChapter)
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << pPara;
    *pPara << _T("Bearing Offset Measure") << rptNewLine;
-   *pPara << GetBearingOffsetMeasureString(ConnectionLibraryEntry::AlongGirder, true, true) << _T(" = ") << GetBearingOffsetMeasureString(ConnectionLibraryEntry::AlongGirder, true, false) << rptNewLine;
-   *pPara << GetBearingOffsetMeasureString(ConnectionLibraryEntry::AlongGirder, false, true) << _T(" = ") << GetBearingOffsetMeasureString(ConnectionLibraryEntry::AlongGirder, false, false) << rptNewLine;
-   *pPara << GetBearingOffsetMeasureString(ConnectionLibraryEntry::NormalToPier, true, true) << _T(" = ") << GetBearingOffsetMeasureString(ConnectionLibraryEntry::NormalToPier, true, false) << rptNewLine;
-   *pPara << GetBearingOffsetMeasureString(ConnectionLibraryEntry::NormalToPier, false, true) << _T(" = ") << GetBearingOffsetMeasureString(ConnectionLibraryEntry::NormalToPier, false, false) << rptNewLine;
+   *pPara << GetBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder, true, true) << _T(" = ") << GetBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder, true, false) << rptNewLine;
+   *pPara << GetBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder, false, true) << _T(" = ") << GetBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder, false, false) << rptNewLine;
+   *pPara << GetBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasurementType::NormalToPier, true, true) << _T(" = ") << GetBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasurementType::NormalToPier, true, false) << rptNewLine;
+   *pPara << GetBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasurementType::NormalToPier, false, true) << _T(" = ") << GetBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasurementType::NormalToPier, false, false) << rptNewLine;
    *pPara << rptNewLine;
    *pPara << _T("End Distance Measure") << rptNewLine;
-   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingAlongGirder, true, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingAlongGirder, true, false) << rptNewLine;
-   //*pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingAlongGirder,  false, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingAlongGirder,  false, false) << rptNewLine; // produces the same result at the line above
-   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingNormalToPier, true, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingNormalToPier, true, false) << rptNewLine;
-   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingNormalToPier, false, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingNormalToPier, false, false) << rptNewLine;
-   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierAlongGirder, true, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierAlongGirder, true, false) << rptNewLine;
-   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierAlongGirder, false, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierAlongGirder, false, false) << rptNewLine;
-   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier, true, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier, true, false) << rptNewLine;
-   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier, false, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier, false, false) << rptNewLine;
+   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingAlongGirder, true, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingAlongGirder, true, false) << rptNewLine;
+   //*pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingAlongGirder,  false, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingAlongGirder,  false, false) << rptNewLine; // produces the same result at the line above
+   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingNormalToPier, true, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingNormalToPier, true, false) << rptNewLine;
+   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingNormalToPier, false, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingNormalToPier, false, false) << rptNewLine;
+   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder, true, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder, true, false) << rptNewLine;
+   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder, false, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder, false, false) << rptNewLine;
+   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier, true, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier, true, false) << rptNewLine;
+   *pPara << GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier, false, true) << _T(" = ") << GetEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier, false, false) << rptNewLine;
 }
 
 void write_tempsupport_connection_abbrevation_footnotes(rptChapter* pChapter)
@@ -2103,22 +2106,22 @@ void write_tempsupport_connection_abbrevation_footnotes(rptChapter* pChapter)
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << pPara;
    *pPara << _T("Bearing Offset Measure") << rptNewLine;
-   *pPara << GetTempSupportBearingOffsetMeasureString(ConnectionLibraryEntry::AlongGirder, true) << _T(" = ") << GetTempSupportBearingOffsetMeasureString(ConnectionLibraryEntry::AlongGirder, false) << rptNewLine;
-   *pPara << GetTempSupportBearingOffsetMeasureString(ConnectionLibraryEntry::NormalToPier, true) << _T(" = ") << GetTempSupportBearingOffsetMeasureString(ConnectionLibraryEntry::NormalToPier, false) << rptNewLine;
+   *pPara << GetTempSupportBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder, true) << _T(" = ") << GetTempSupportBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder, false) << rptNewLine;
+   *pPara << GetTempSupportBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasurementType::NormalToPier, true) << _T(" = ") << GetTempSupportBearingOffsetMeasureString(ConnectionLibraryEntry::BearingOffsetMeasurementType::NormalToPier, false) << rptNewLine;
    *pPara << rptNewLine;
    *pPara << _T("End Distance Measure") << rptNewLine;
-   *pPara << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingNormalToPier, true) << _T(" = ") << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::FromBearingNormalToPier, false) << rptNewLine;
-   *pPara << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::FromPierAlongGirder, true) << _T(" = ") << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::FromPierAlongGirder, false) << rptNewLine;
-   *pPara << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier, true) << _T(" = ") << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::FromPierNormalToPier, false) << rptNewLine;
+   *pPara << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingNormalToPier, true) << _T(" = ") << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromBearingNormalToPier, false) << rptNewLine;
+   *pPara << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder, true) << _T(" = ") << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierAlongGirder, false) << rptNewLine;
+   *pPara << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier, true) << _T(" = ") << GetTempSupportEndDistanceMeasureString(ConnectionLibraryEntry::EndDistanceMeasurementType::FromPierNormalToPier, false) << rptNewLine;
 }
 
 void write_pier_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptChapter* pChapter,Uint16 level)
 {
    USES_CONVERSION;
 
-   EAF_GET_IFACE2(pBroker, IBridge,      pBridge ); 
+   GET_IFACE2(pBroker, IBridge,      pBridge ); 
 
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, cmpdim, pDisplayUnits->GetComponentDimUnit(), false );
@@ -2291,15 +2294,15 @@ void write_pier_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<
          }
          switch( pPier->GetDiaphragmLoadType(pgsTypes::Back) )
          {
-         case ConnectionLibraryEntry::ApplyAtBearingCenterline:
+         case ConnectionLibraryEntry::DiaphragmLoadType::ApplyAtBearingCenterline:
             (*pDiaphragmTable)(row2,3) << _T("Apply load at centerline bearing");
             (*pDiaphragmTable)(row2,4) << RPT_NA;
             break;
-         case ConnectionLibraryEntry::ApplyAtSpecifiedLocation:
+         case ConnectionLibraryEntry::DiaphragmLoadType::ApplyAtSpecifiedLocation:
             (*pDiaphragmTable)(row2,3) << _T("Apply load to girder");
             (*pDiaphragmTable)(row2,4) << cmpdim.SetValue(pPier->GetDiaphragmLoadLocation(pgsTypes::Back));
             break;
-         case ConnectionLibraryEntry::DontApply:
+         case ConnectionLibraryEntry::DiaphragmLoadType::DontApply:
             (*pDiaphragmTable)(row2,3) << _T("Ignore weight");
             (*pDiaphragmTable)(row2,4) << RPT_NA;
             break;
@@ -2337,15 +2340,15 @@ void write_pier_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<
 
          switch( pPier->GetDiaphragmLoadType(pgsTypes::Ahead) )
          {
-         case ConnectionLibraryEntry::ApplyAtBearingCenterline:
+         case ConnectionLibraryEntry::DiaphragmLoadType::ApplyAtBearingCenterline:
             (*pDiaphragmTable)(row2,7) << _T("Apply load at centerline bearing");
             (*pDiaphragmTable)(row2,8) << RPT_NA;
             break;
-         case ConnectionLibraryEntry::ApplyAtSpecifiedLocation:
+         case ConnectionLibraryEntry::DiaphragmLoadType::ApplyAtSpecifiedLocation:
             (*pDiaphragmTable)(row2,7) << _T("Apply load to girder");
             (*pDiaphragmTable)(row2,8) << cmpdim.SetValue(pPier->GetDiaphragmLoadLocation(pgsTypes::Ahead));
             break;
-         case ConnectionLibraryEntry::DontApply:
+         case ConnectionLibraryEntry::DiaphragmLoadType::DontApply:
             (*pDiaphragmTable)(row2,7) << _T("Ignore weight");
             (*pDiaphragmTable)(row2,8) << RPT_NA;
             break;
@@ -2435,13 +2438,13 @@ void write_bearing_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_p
 
    *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("BearingDetails.png")) << rptNewLine;
 
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
-   EAF_GET_IFACE2_NOCHECK(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2_NOCHECK(pBroker, IBridgeDescription, pIBridgeDesc);
 
    PierIndexType nPiers = pBridge->GetPierCount();
 
    // don't want temp supports so use last interval
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount()-1;
 
    rptRcTable* ptable = rptStyleManager::CreateDefaultTable(10, _T(""));
@@ -2553,9 +2556,9 @@ void write_ts_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IE
 {
    USES_CONVERSION;
 
-   EAF_GET_IFACE2(pBroker, ITempSupport,  pTemporarySupport ); 
+   GET_IFACE2(pBroker, ITempSupport,  pTemporarySupport ); 
 
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
 
@@ -2702,7 +2705,7 @@ void write_ts_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IE
 
 void write_framing_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptChapter* pChapter,Uint16 level)
 {
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    if (pBridgeDesc->GetGirderCount() == 1)
@@ -2825,7 +2828,7 @@ void write_span_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    // Setup the table
@@ -2920,7 +2923,7 @@ void write_span_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<
    pgsTypes::WorkPointLocation wploc = pBridgeDesc->GetWorkPointLocation();
    *pPara << _T("Girder spacing is measured at the work point elevation, which is at ") << (wploc == pgsTypes::wplBottomGirder ? _T("bottom centerline of girder.") : _T("top centerline of girder.")) << rptNewLine;
 
-   EAF_GET_IFACE2(pBroker, IDocumentType, pDocType);
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
    bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
    CString strGrp = (bIsSplicedGirder ? _T("Group") : _T("Span"));
 
@@ -2954,7 +2957,7 @@ void write_span_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<
 
 void write_girder_spacing(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptRcTable* pTable,const CGirderSpacing2* pGirderSpacing,RowIndexType row,ColumnIndexType col)
 {
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    bool bIsGirderSpacing = IsGirderSpacing( pBridgeDesc->GetGirderSpacingType() );
@@ -3014,13 +3017,13 @@ void write_ps_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IE
    pPara = new rptParagraph;
    *pChapter << pPara;
 
-   EAF_GET_IFACE2(pBroker, ISegmentData,      pSegmentData);
-   EAF_GET_IFACE2_NOCHECK(pBroker, IBridge,   pBridge ); 
-   EAF_GET_IFACE2(pBroker, IStrandGeometry,   pStrandGeom);
-   EAF_GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
-   EAF_GET_IFACE2(pBroker, ISpecification,    pSpec );
-   EAF_GET_IFACE2(pBroker, IGirder, pIGirder);
-   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   GET_IFACE2(pBroker, ISegmentData,      pSegmentData);
+   GET_IFACE2_NOCHECK(pBroker, IBridge,   pBridge ); 
+   GET_IFACE2(pBroker, IStrandGeometry,   pStrandGeom);
+   GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker, ISpecification,    pSpec );
+   GET_IFACE2(pBroker, IGirder, pIGirder);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
@@ -3605,8 +3608,8 @@ void write_segment_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_p
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  cmpdim,  pDisplayUnits->GetComponentDimUnit(), true );
    INIT_UV_PROTOTYPE( rptForceUnitValue,   force,   pDisplayUnits->GetGeneralForceUnit(), true );
 
-   EAF_GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
-   EAF_GET_IFACE2(pBroker, IBridge,           pBridge);
+   GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker, IBridge,           pBridge);
 
    rptParagraph* pPara;
    pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -3853,7 +3856,7 @@ void write_slab_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<
    table->EnableRowStriping(false);
    *pPara2 << table;
 
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
    
@@ -4030,7 +4033,7 @@ void write_slab_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<
 
 void write_haunch_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptChapter* pChapter,const std::vector<CGirderKey>& girderKeys,Uint16 level)
 {
-   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
    bool isPGSuper = pDocType->IsPGSuperDocument();
 
    rptParagraph* pPara1 = new rptParagraph;
@@ -4041,7 +4044,7 @@ void write_haunch_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_pt
    rptParagraph* pPara2 = new rptParagraph;
    *pChapter << pPara2;
 
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    pgsTypes::HaunchLayoutType haunchLayoutType = pBridgeDesc->GetHaunchLayoutType();
@@ -4249,7 +4252,7 @@ void write_haunch_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_pt
 
 void write_pt_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, rptChapter* pChapter, Uint16 level, const std::vector<CGirderKey>& girderKeys)
 {
-   EAF_GET_IFACE2(pBroker, IGirderTendonGeometry, pTendonGeom);
+   GET_IFACE2(pBroker, IGirderTendonGeometry, pTendonGeom);
 
    bool bHasDucts = false;
    for (const auto& thisGirderKey : girderKeys)
@@ -4265,8 +4268,8 @@ void write_pt_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IE
    if (!bHasDucts)
       return;
 
-   EAF_GET_IFACE2(pBroker, IGirder, pIGirder);
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker, IGirder, pIGirder);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
@@ -4359,7 +4362,7 @@ void write_pt_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IE
 
 void write_deck_reinforcing_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,rptChapter* pChapter,Uint16 level)
 {
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
 

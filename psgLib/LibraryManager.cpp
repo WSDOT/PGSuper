@@ -21,13 +21,13 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-#include <psgLib\LibraryManager.h>
+#include <PsgLib\LibraryManager.h>
 
 #include <EAF\EAFDocument.h>
 #include <EAF\EAFUtilities.h>
 #include <EAF\Agent.h>
 
-#include <psgLib\LibraryEditorDoc.h>
+#include <PsgLib\LibraryEditorDoc.h>
 
 #include <IFace\DocumentType.h>
 

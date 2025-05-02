@@ -36,11 +36,6 @@
 
 #include <algorithm>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 void DDV_DeckPointGrid(CDataExchange* pDX,int nIDC,CBridgeDescDeckPointGrid* pGrid)
 {
@@ -164,7 +159,7 @@ BOOL CBridgeDescDeckPointGrid::OnValidateCell(ROWCOL nRow,ROWCOL nCol)
    {
       // Validation station... 
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       Float64 station_value = -99999999;
       try
@@ -233,7 +228,7 @@ void CBridgeDescDeckPointGrid::CustomInit()
    SetMergeCellsMode(gxnMergeDelayEval);
 
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
 	GetParam( )->EnableUndo(FALSE);
 
@@ -327,7 +322,7 @@ void CBridgeDescDeckPointGrid::SetPointRowData(ROWCOL row,const CDeckPoint& poin
       );
 
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    CString strStation = FormatStation(pDisplayUnits->GetStationFormat(),point.Station);
 
    SetStyleRange(CGXRange(row,1), CGXStyle()
@@ -365,7 +360,7 @@ void CBridgeDescDeckPointGrid::SetPointRowData(ROWCOL row,const CDeckPoint& poin
 void CBridgeDescDeckPointGrid::GetPointRowData(ROWCOL row,CDeckPoint* pPoint)
 {
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // Station
    std::_tstring strStation(GetCellValue(row, 1));
@@ -639,7 +634,7 @@ void CBridgeDescDeckPointGrid::Enable(BOOL bEnable)
 BOOL CBridgeDescDeckPointGrid::Validate()
 {
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    UnitModeType unitMode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 

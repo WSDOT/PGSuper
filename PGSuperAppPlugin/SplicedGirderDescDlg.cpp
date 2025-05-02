@@ -28,11 +28,6 @@
 #include "PGSuperDocBase.h"
 #include "SplicedGirderDescDlg.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define IDC_CHECKBOX 100
 
@@ -46,7 +41,7 @@ CSplicedGirderDescDlg::CSplicedGirderDescDlg(const CGirderKey& girderKey,CWnd* p
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    m_BridgeDescription = *pBridgeDesc;
@@ -209,12 +204,12 @@ LRESULT CSplicedGirderDescDlg::OnKickIdle(WPARAM wp, LPARAM lp)
 //   
 //   auto pBroker = EAFGetBroker();
 //
-//   EAF_GET_IFACE2(pBroker,IShear,pShear);
-//   EAF_GET_IFACE2(pBroker,ILongitudinalRebar,pLongitudinaRebar);
-//   EAF_GET_IFACE2(pBroker,ISegmentLifting,pSegmentLifting);
-//   EAF_GET_IFACE2(pBroker,ISegmentHauling,pSegmentHauling);
-//   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-//   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+//   GET_IFACE2(pBroker,IShear,pShear);
+//   GET_IFACE2(pBroker,ILongitudinalRebar,pLongitudinaRebar);
+//   GET_IFACE2(pBroker,ISegmentLifting,pSegmentLifting);
+//   GET_IFACE2(pBroker,ISegmentHauling,pSegmentHauling);
+//   GET_IFACE2(pBroker,IBridge,pBridge);
+//   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 //
 //   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 //   const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(m_SegmentKey.groupIndex);

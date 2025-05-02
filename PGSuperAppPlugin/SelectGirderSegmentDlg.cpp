@@ -30,13 +30,8 @@
 
 
 #include <IFace\Project.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CSelectGirderSegmentDlg dialog
@@ -75,7 +70,7 @@ BOOL CSelectGirderSegmentDlg::OnInitDialog()
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    CComboBox* pcbGroup = (CComboBox*)GetDlgItem(IDC_GROUP);
@@ -110,7 +105,7 @@ void CSelectGirderSegmentDlg::OnGroupChanged()
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    CComboBox* pcbGroup   = (CComboBox*)GetDlgItem(IDC_GROUP);

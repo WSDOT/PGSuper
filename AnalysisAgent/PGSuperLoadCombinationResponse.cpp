@@ -470,8 +470,8 @@ void CPGSuperLoadCombinationResponse::GetNewLiveLoadFactors(BSTR bstrLoadCombina
 
    // compute the new load factor
    auto broker = EAFGetBroker();
-   EAF_GET_IFACE2(broker, ILibrary, pLibrary);
-   EAF_GET_IFACE2(broker, IRatingSpecification, pRatingSpec);
+   GET_IFACE2(broker, ILibrary, pLibrary);
+   GET_IFACE2(broker, IRatingSpecification, pRatingSpec);
    const RatingLibraryEntry* pRatingEntry = pLibrary->GetRatingEntry( pRatingSpec->GetRatingSpecification().c_str() );
    const CLiveLoadFactorModel* pLFModel;
 

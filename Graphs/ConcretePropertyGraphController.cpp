@@ -38,9 +38,9 @@
 #include <EAF\EAFGraphBuilderBase.h>
 #include <EAF\EAFGraphView.h>
 
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\TemporarySupportData.h>
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\TemporarySupportData.h>
+#include <PsgLib\ClosureJointData.h>
 
 #include <PGSuperUnits.h>
 
@@ -102,7 +102,7 @@ BOOL CConcretePropertyGraphController::OnInitDialog()
 
    UpdateElementControls();
 
-   EAF_GET_IFACE(ISelection,pSelection);
+   GET_IFACE(ISelection,pSelection);
    CSelection selection = pSelection->GetSelection();
 
    if ( selection.Type == CSelection::Girder || selection.Type == CSelection::Segment )
@@ -114,14 +114,14 @@ BOOL CConcretePropertyGraphController::OnInitDialog()
       pcbGirder->SetCurSel((int)selection.GirderIdx);
    }
 
-   EAF_GET_IFACE(ILossParameters,pLossParams);
+   GET_IFACE(ILossParameters,pLossParams);
    if ( pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       GetDlgItem(IDC_SH)->ShowWindow(SW_HIDE);
       GetDlgItem(IDC_CR)->ShowWindow(SW_HIDE);
    }
 
-   EAF_GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    if ( IsNonstructuralDeck(pBridgeDesc->GetDeckDescription()->GetDeckType()) )
    {
@@ -369,11 +369,11 @@ void CConcretePropertyGraphController::FillGroupControl()
    int curSel = pcbGroup->GetCurSel();
    pcbGroup->ResetContent();
 
-   EAF_GET_IFACE(IDocumentType,pDocType);
+   GET_IFACE(IDocumentType,pDocType);
    bool isPGSuper = pDocType->IsPGSuperDocument();
    CString strGroupLabel( isPGSuper ? _T("Span") : _T("Group"));
 
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridge = pIBridgeDesc->GetBridgeDescription();
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
@@ -403,7 +403,7 @@ void CConcretePropertyGraphController::FillGirderControl()
    int curSel = pcbGirder->GetCurSel();
    pcbGirder->ResetContent();
 
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CGirderGroupData* pGroup = pIBridgeDesc->GetGirderGroup(m_SegmentKey.groupIndex);
    GirderIndexType nGirders = pGroup->GetGirderCount();
    for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
@@ -432,7 +432,7 @@ void CConcretePropertyGraphController::FillSegmentControl()
    int curSel = pcbSegment->GetCurSel();
    pcbSegment->ResetContent();
 
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CGirderGroupData* pGroup = pIBridgeDesc->GetGirderGroup(m_SegmentKey.groupIndex);
    const CSplicedGirderData* pGirder = pGroup->GetGirder(m_SegmentKey.girderIndex);
    SegmentIndexType nSegments = pGirder->GetSegmentCount();
@@ -455,7 +455,7 @@ void CConcretePropertyGraphController::FillSegmentControl()
       pcbSegment->SetCurSel(curSel);
    }
 
-   EAF_GET_IFACE(IDocumentType,pDocType);
+   GET_IFACE(IDocumentType,pDocType);
    if ( pDocType->IsPGSuperDocument() )
    {
       pcbSegment->ShowWindow(SW_HIDE);
@@ -466,7 +466,7 @@ void CConcretePropertyGraphController::FillClosureControl()
 {
    CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_CLOSURE);
    
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CSplicedGirderData* pGirder = pBridgeDesc->GetGirderGroup(GroupIndexType(0))->GetGirder(0);
    const CPrecastSegmentData* pSegment = pGirder->GetSegment(0);
@@ -480,7 +480,7 @@ void CConcretePropertyGraphController::FillClosureControl()
    }
    else
    {
-      EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
       while ( pClosure )
       {
@@ -516,7 +516,7 @@ void CConcretePropertyGraphController::FillClosureControl()
 
 void CConcretePropertyGraphController::FillDeckCastingRegionControl()
 {
-   EAF_GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
    if (pIBridgeDesc->GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone)
    {
       CComboBox* pCB = (CComboBox*)GetDlgItem(IDC_DECK_CASTING_REGION);
@@ -569,7 +569,7 @@ void CConcretePropertyGraphController::OnClosureChanged()
    int curSel = pCB->GetCurSel();
    
    IndexType idx = (IndexType)pCB->GetItemData(curSel);
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    if ( IsTSIndex(idx) )
    {

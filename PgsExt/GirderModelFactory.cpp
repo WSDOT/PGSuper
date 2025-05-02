@@ -53,7 +53,7 @@ void pgsGirderModelFactory::CreateGirderModel(std::shared_ptr<WBFL::EAF::Broker>
                                  )
 {
 #if defined _DEBUG
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 _SegmentLength = pBridge->GetSegmentLength(segmentKey);
    ATLASSERT(IsEqual(segmentLength, _SegmentLength));
 #endif
@@ -83,7 +83,7 @@ void pgsGirderModelFactory::BuildModel(std::shared_ptr<WBFL::EAF::Broker> pBroke
    }
 
    // get all the cross section changes
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    PoiList xsPOI;
    pPoi->GetPointsOfInterest(segmentKey, POI_SECTCHANGE,&xsPOI);
    pPoi->RemovePointsOfInterest(xsPOI,POI_ERECTED_SEGMENT,POI_CANTILEVER);
@@ -249,7 +249,7 @@ void pgsGirderModelFactory::BuildModel(std::shared_ptr<WBFL::EAF::Broker> pBroke
    ATLASSERT(bFoundLeftSupport && bFoundRightSupport); // model will be unstable
 
    // create members
-   EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
 
    // for consistancy with all structural analysis models, sections properties are based on the mid-span location of segments
    PoiList vMyPoi;
@@ -303,7 +303,7 @@ void pgsGirderModelFactory::ApplyLoads(std::shared_ptr<WBFL::EAF::Broker> pBroke
                                        IFem2dModel** ppModel)
 {
    // apply loads
-   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    CComPtr<IFem2dLoadingCollection> loadings;
    CComPtr<IFem2dLoading> loading;
    (*ppModel)->get_Loadings(&loadings);
@@ -701,7 +701,7 @@ void pgsKdotHaulingGirderModelFactory::ApplyLoads(std::shared_ptr<WBFL::EAF::Bro
    ATLASSERT(bModelLeftCantilever && bModelRightCantilever); // kdot method should always include cantilevers
 
    // apply  loads
-   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    CComPtr<IFem2dLoadingCollection> loadings;
    CComPtr<IFem2dLoading> loading;
    (*ppModel)->get_Loadings(&loadings);

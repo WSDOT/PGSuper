@@ -55,7 +55,7 @@ public:
    virtual CString GetDocumentationURL();
    virtual CString GetDocumentationMapFile();
    virtual void LoadDocumentationMap();
-   virtual eafTypes::HelpResult GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID,CString& strURL);
+   virtual std::pair<WBFL::EAF::HelpResult,CString> GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID);
 
 protected:
    CString m_strAppProfileName; // this is the original app profile name before we mess with it

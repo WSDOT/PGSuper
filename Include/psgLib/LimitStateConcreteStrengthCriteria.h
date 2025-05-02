@@ -23,12 +23,13 @@
 #pragma once
 
 
-#include "psgLibLib.h"
+#include "PsgLibLib.h"
 
 class rptChapter;
 class IEAFDisplayUnits;
-class pgsLibraryEntryDifferenceItem;
 class SpecLibraryEntryImpl;
+class DifferenceItem;
+
 
 struct PSGLIBCLASS LimitStateConcreteStrengthCriteria
 {
@@ -36,7 +37,7 @@ struct PSGLIBCLASS LimitStateConcreteStrengthCriteria
    bool bUse90DayConcreteStrength = false;
    Float64 SlowCuringConcreteStrengthFactor = 1.15;
 
-   bool Compare(const LimitStateConcreteStrengthCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
+   bool Compare(const LimitStateConcreteStrengthCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
 
    void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 

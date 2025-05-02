@@ -29,9 +29,9 @@
 // GirderSpacingGrid.h : header file
 //
 
-#include <PgsExt\GirderSpacing2.h>
-#include <PgsExt\SpanData2.h>
-#include <PgsExt\GirderGroupData.h>
+#include <PsgLib\GirderSpacing2.h>
+#include <PsgLib\SpanData2.h>
+#include <PsgLib\GirderGroupData.h>
 
 class CGirderSpacingGrid;
 

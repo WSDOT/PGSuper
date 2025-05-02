@@ -42,7 +42,7 @@ CAnalysisResultsGraphController::CAnalysisResultsGraphController():
 CGirderGraphControllerBase(true/*false*//*exclude ALL_GROUPS*/)
 {
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
    m_LiveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 }
 
@@ -104,7 +104,7 @@ BOOL CAnalysisResultsGraphController::OnInitDialog()
 {
    CGirderGraphControllerBase::OnInitDialog();
 
-   EAF_GET_IFACE(IBridge, pBridge);
+   GET_IFACE(IBridge, pBridge);
    m_bHasStructuralDeck = IsStructuralDeck(pBridge->GetDeckType());
 
    FillModeCtrl();
@@ -549,7 +549,7 @@ void CAnalysisResultsGraphController::OnUpdate(CView* pSender, LPARAM lHint, COb
 {
    CGirderGraphControllerBase::OnUpdate(pSender,lHint,pHint);
 
-   EAF_GET_IFACE(IIntervals, pIntervals);
+   GET_IFACE(IIntervals, pIntervals);
    m_LiveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    m_LoadRatingIntervalIdx = pIntervals->GetLoadRatingInterval();
 
@@ -595,7 +595,7 @@ std::vector<ActionType> CAnalysisResultsGraphController::GetActionTypes() const
    std::vector<ActionType> vActions;
 
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+   GET_IFACE2(pBroker, IProductLoads, pProductLoads);
    if (pProductLoads->ReportAxialResults())
    {
       vActions.push_back(actionAxial);
@@ -604,7 +604,7 @@ std::vector<ActionType> CAnalysisResultsGraphController::GetActionTypes() const
    vActions.push_back(actionShear);
    vActions.push_back(actionMoment);
 
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    if (pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing() || pBridge->HasTiltedGirders())
    {
       vActions.push_back(actionXDeflection);
@@ -619,7 +619,7 @@ std::vector<ActionType> CAnalysisResultsGraphController::GetActionTypes() const
    vActions.push_back(actionStress);
    vActions.push_back(actionReaction);
 
-   EAF_GET_IFACE(ISpecification,pSpec);
+   GET_IFACE(ISpecification,pSpec);
    ISpecification::PrincipalWebStressCheckType pwscType = pSpec->GetPrincipalWebStressCheckType(CSegmentKey(INVALID_INDEX, INVALID_INDEX, INVALID_INDEX));
 
    IntervalIndexType interval = GetInterval();
@@ -642,7 +642,7 @@ LPCTSTR CAnalysisResultsGraphController::GetActionName(ActionType action) const
    if (action == actionDeflection)
    {
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+      GET_IFACE2(pBroker, IBridge, pBridge);
       if (pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing() || pBridge->HasTiltedGirders())
       {
          return _T("Deflection Y");
@@ -737,7 +737,7 @@ void CAnalysisResultsGraphController::FillDropListCtrl_Intervals(bool bRetainSel
       girderKey.groupIndex = 0;
    }
 
-   EAF_GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType firstIntervalIdx = GetFirstInterval();
    IntervalIndexType lastIntervalIdx  = GetLastInterval();
    for ( IntervalIndexType intervalIdx = firstIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++ )
@@ -852,7 +852,7 @@ void CAnalysisResultsGraphController::FillSelectListCtrl_Intervals(bool bRetainS
    // clear the control
    plbIntervals->ResetContent();
 
-   EAF_GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType firstIntervalIdx = GetFirstInterval();
    IntervalIndexType lastIntervalIdx  = GetLastInterval();
    for (IntervalIndexType intervalIdx = firstIntervalIdx; intervalIdx <= lastIntervalIdx; intervalIdx++)
@@ -1023,7 +1023,7 @@ void CAnalysisResultsGraphController::UpdateResultsType()
 void CAnalysisResultsGraphController::UpdateElevAdjustment()
 {
    CWnd* pWnd = GetDlgItem(IDC_ELEV_ADJUSTMENT);
-   EAF_GET_IFACE(IDocumentType, pDocType);
+   GET_IFACE(IDocumentType, pDocType);
    if (pDocType->IsPGSuperDocument())
    {
       // elevation adjustment doesn't apply to PGSuper
@@ -1062,7 +1062,7 @@ void CAnalysisResultsGraphController::UpdateUnrecoverableDeflAdjustment()
       pWnd->ShowWindow(SW_SHOW);
 
       // This is not an option if a pre-erection interval is selected
-      EAF_GET_IFACE(IIntervals,pIntervals);
+      GET_IFACE(IIntervals,pIntervals);
       IntervalIndexType erectInterval = pIntervals->GetFirstSegmentErectionInterval(GetGirderKey());
 
       bool hasPreErection(false);
@@ -1094,10 +1094,10 @@ void CAnalysisResultsGraphController::UpdateUnrecoverableDeflAdjustment()
 
 void CAnalysisResultsGraphController::UpdateAnalysisType()
 {
-   EAF_GET_IFACE(ISpecification,pSpec);
+   GET_IFACE(ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
-   EAF_GET_IFACE(IDocumentType,pDocType);
+   GET_IFACE(IDocumentType,pDocType);
    if ( pDocType->IsPGSpliceDocument() )
    {
       GetDlgItem(IDC_ANALYSISTYPE)->ShowWindow(SW_HIDE);
@@ -1144,7 +1144,7 @@ void CAnalysisResultsGraphController::UpdateAnalysisType()
 
 IntervalIndexType CAnalysisResultsGraphController::GetFirstInterval() const
 {
-   EAF_GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IIntervals,pIntervals);
    CGirderKey girderKey(GetGirderKey());
    if ( girderKey.groupIndex == ALL_GROUPS )
    {
@@ -1157,7 +1157,7 @@ IntervalIndexType CAnalysisResultsGraphController::GetFirstInterval() const
 
 IntervalIndexType CAnalysisResultsGraphController::GetLastInterval() const
 {
-   EAF_GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IIntervals,pIntervals);
    return pIntervals->GetIntervalCount() - 1;
 }
 

@@ -29,16 +29,11 @@
 #include "GirderNameGrid.h"
 #include "GirderLayoutPage.h"
 
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\Helpers.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\Helpers.h>
 #include <IFace\Project.h>
 #include <IFace\BeamFactory.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 class CNameGroupData : public CGXAbstractUserAttribute
@@ -133,7 +128,7 @@ void CGirderNameGrid::UpdateGrid()
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ILibrary,pLib);
 
 	GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
@@ -277,7 +272,7 @@ void CGirderNameGrid::OnModifyCell(ROWCOL nRow,ROWCOL nCol)
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, ILibrary, pLib);
+   GET_IFACE2(pBroker, ILibrary, pLib);
    const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(strNewName);
 
    auto factory = pGdrEntry->GetBeamFactory();
@@ -340,7 +335,7 @@ BOOL CGirderNameGrid::OnEndEditing(ROWCOL nRow, ROWCOL nCol)
 
       
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker, ILibrary, pLib);
+      GET_IFACE2(pBroker, ILibrary, pLib);
       const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(strNewName);
 
       m_pGirderGroup->SetGirderLibraryEntry(gdrTypeGroupIdx, pGdrEntry);
@@ -425,7 +420,7 @@ void CGirderNameGrid::UpdateGirderFamilyList(LPCTSTR strGirderFamily)
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2( pBroker, ILibraryNames, pLibNames );
+   GET_IFACE2( pBroker, ILibraryNames, pLibNames );
    std::vector<std::_tstring> names;
    std::vector<std::_tstring>::iterator iter;
 

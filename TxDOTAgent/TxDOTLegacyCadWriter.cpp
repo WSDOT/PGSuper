@@ -39,15 +39,16 @@
 #include <IFace\DistFactorEngineer.h>
 #include <IFace\GirderHandling.h>
 #include <IFace\Intervals.h>
+#include <IFace/PointOfInterest.h>
 
 #if defined _DEBUG
 #include <IFace\DocumentType.h>
 #endif
 
 #include <PgsExt\GirderArtifact.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <PgsExt\GirderArtifactTool.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 #include <EAF\EAFAutoProgress.h>
 
 
@@ -145,7 +146,7 @@ int TxDOT_WriteLegacyCADDataToFile(CString& filePath, std::shared_ptr<WBFL::EAF:
    {
 	   /* Create progress bar (before needing one) to remain alive during this task */
 	   /* (otherwise, progress bars will be repeatedly created & destroyed on the fly) */
-      EAF_GET_IFACE2(pBroker,IProgress,pProgress);
+      GET_IFACE2(pBroker,IEAFProgress,pProgress);
 
       bool multi = girderKeys.size()>1;
       DWORD mask = multi ? PW_ALL : PW_ALL|PW_NOGAUGE; // Progress window has a cancel button,
@@ -198,7 +199,7 @@ int TxDOT_WriteLegacyCADDataToFile(CString& filePath, std::shared_ptr<WBFL::EAF:
 int TxDOT_WriteCADDataForGirder(FILE *fp, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey)
 {
 #if defined _DEBUG
-   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
    ATLASSERT(pDocType->IsPGSuperDocument());
 #endif
    CSegmentKey segmentKey(girderKey,0);
@@ -213,7 +214,7 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, std::shared_ptr<WBFL::EAF::Broker> pBr
 
 
 	/* Regenerate bridge data */
-	EAF_GET_IFACE2(pBroker, IArtifact, pIArtifact);
+	GET_IFACE2(pBroker, IArtifact, pIArtifact);
  	const pgsSegmentArtifact* pGdrArtifact = pIArtifact->GetSegmentArtifact(segmentKey);
    if(!(pGdrArtifact->Passed()))
 	{
@@ -221,16 +222,16 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, std::shared_ptr<WBFL::EAF::Broker> pBr
 	}
 
 	/* Interfaces to all relevant agents */
-   EAF_GET_IFACE2(pBroker, IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
-   EAF_GET_IFACE2(pBroker, ISegmentData,pSegmentData);
-   EAF_GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
-	EAF_GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
-   EAF_GET_IFACE2(pBroker, IMomentCapacity, pMomentCapacity);
-   EAF_GET_IFACE2(pBroker, ILiveLoadDistributionFactors, pDistFact);
-   EAF_GET_IFACE2(pBroker, IMaterials, pMaterial);
-   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
-   EAF_GET_IFACE2(pBroker,IProjectProperties,pProjectProperties);
+   GET_IFACE2(pBroker, IBridge,pBridge);
+   GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker, ISegmentData,pSegmentData);
+   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
+	GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
+   GET_IFACE2(pBroker, IMomentCapacity, pMomentCapacity);
+   GET_IFACE2(pBroker, ILiveLoadDistributionFactors, pDistFact);
+   GET_IFACE2(pBroker, IMaterials, pMaterial);
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   GET_IFACE2(pBroker,IProjectProperties,pProjectProperties);
 
    IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType lastIntervalIdx          = pIntervals->GetIntervalCount()-1;
@@ -277,7 +278,7 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, std::shared_ptr<WBFL::EAF::Broker> pBr
    bool isExtendedVersion = true; // All we do now
 
    // Determine if a straight-raised design
-   EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    Float64 kt = pSectProp->GetKt(releaseIntervalIdx, pois);
 
    StrandIndexType numRaisedStraightStrands = GetNumRaisedStraightStrands(pBroker, segmentKey);
@@ -498,7 +499,7 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, std::shared_ptr<WBFL::EAF::Broker> pBr
 
       extraSpacesForSlabOffset = 14; // width of two data fields above = 7+7
 
-      EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+      GET_IFACE2(pBroker,ISpecification,pSpec);
       if (pSpec->IsAssumedExcessCamberInputEnabled())
       {
          value = pIBridgeDesc->GetAssumedExcessCamber(segmentKey.groupIndex, segmentKey.girderIndex);
@@ -627,9 +628,9 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, std::shared_ptr<WBFL::EAF::Broker> pBr
    // EXTENDED INFORMATION, IF REQUESTED // 
    if (isExtendedVersion)
    {
-      EAF_GET_IFACE2(pBroker,ICamber,pCamber);
-      EAF_GET_IFACE2(pBroker,IProductForces, pProductForces);
-      EAF_GET_IFACE2(pBroker,ILosses,pLosses);
+      GET_IFACE2(pBroker,ICamber,pCamber);
+      GET_IFACE2(pBroker,IProductForces, pProductForces);
+      GET_IFACE2(pBroker,ILosses,pLosses);
 
       pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
 
@@ -682,11 +683,11 @@ int TxDOT_WriteCADDataForGirder(FILE *fp, std::shared_ptr<WBFL::EAF::Broker> pBr
       Float64 finalLoss = WBFL::Units::ConvertFromSysUnits( value, WBFL::Units::Measure::Kip );
 
    	/* 25. Lifting location  */
-      EAF_GET_IFACE2(pBroker,ISegmentLifting,pLifting);
+      GET_IFACE2(pBroker,ISegmentLifting,pLifting);
       Float64 liftLoc = WBFL::Units::ConvertFromSysUnits( pLifting->GetLeftLiftingLoopLocation(segmentKey), WBFL::Units::Measure::Feet );
 
    	/* 26. Forward handling location  */
-      EAF_GET_IFACE2(pBroker,ISegmentHauling,pHauling);
+      GET_IFACE2(pBroker,ISegmentHauling,pHauling);
       Float64 fwdLoc = WBFL::Units::ConvertFromSysUnits( pHauling->GetLeadingOverhang(segmentKey), WBFL::Units::Measure::Feet );
 
    	/* 27. Trailing handling location  */
@@ -773,10 +774,10 @@ void TxDOTCadWriter::WriteInitialData(CadWriterWorkerBee& workerB)
 
          auto pBroker = EAFGetBroker();
       
-         EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
+         GET_IFACE2(pBroker, IIntervals, pIntervals);
          IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
 
-         EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+         GET_IFACE2(pBroker,ISectionProperties,pSectProp);
          Float64 Hg = pSectProp->GetHg(releaseIntervalIdx, poi);
 
          // Where the rubber hits the road - Write first row
@@ -800,10 +801,10 @@ void TxDOTCadWriter::WriteFinalData(FILE *fp, bool isExtended, bool isIBeam, Int
 
       auto pBroker = EAFGetBroker();
    
-      EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
+      GET_IFACE2(pBroker, IIntervals, pIntervals);
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
 
-      EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+      GET_IFACE2(pBroker,ISectionProperties,pSectProp);
       Float64 Hg = pSectProp->GetHg(releaseIntervalIdx, poi);
 
       Int16 nLeadingSpaces;

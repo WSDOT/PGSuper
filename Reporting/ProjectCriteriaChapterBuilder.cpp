@@ -41,7 +41,7 @@ CLASS
 #include <Lrfd/BDSManager.h>
 
 #include <PsgLib\SpecLibraryEntry.h>
-#include <PgsExt\PrecastSegmentData.h>
+#include <PsgLib\PrecastSegmentData.h>
 
 
 
@@ -79,7 +79,7 @@ rptChapter* CProjectCriteriaChapterBuilder::Build(const std::shared_ptr<const WB
       girderKey = pGdrLineRptSpec->GetGirderKey();
    }
 
-   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    rptParagraph* pPara = new rptParagraph;
@@ -92,13 +92,13 @@ rptChapter* CProjectCriteriaChapterBuilder::Build(const std::shared_ptr<const WB
    write_environmental_conditions(&(*pLayoutTable)(0, 1), pBroker, pDisplayUnits);
    write_structural_analysis(&(*pLayoutTable)(0, 2), pBroker, pDisplayUnits);
 
-   EAF_GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
-   EAF_GET_IFACE2( pBroker, ISpecification, pSpec );
+   GET_IFACE2( pBroker, ISpecification, pSpec );
    std::_tstring spec_name = pSpec->GetSpecification();
    std::_tstring rating_name = pRatingSpec->GetRatingSpecification();
 
-   EAF_GET_IFACE2( pBroker, ILibrary, pLib );
+   GET_IFACE2( pBroker, ILibrary, pLib );
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
    const RatingLibraryEntry* pRatingEntry = pLib->GetRatingEntry( rating_name.c_str() );
 
@@ -126,7 +126,7 @@ void write_load_modifiers(rptParagraph* pPara,std::shared_ptr<WBFL::EAF::Broker>
    rptRcTable* p_table = rptStyleManager::CreateTableNoHeading(2,_T("Load Modifiers"));
    *pPara << p_table;
 
-   EAF_GET_IFACE2(pBroker,ILoadModifiers,pLoadModifiers);
+   GET_IFACE2(pBroker,ILoadModifiers,pLoadModifiers);
 
    (*p_table)(0,0) << _T("Ductility  - ")<< Sub2(symbol(eta),_T("D"));
    (*p_table)(0,1) <<  pLoadModifiers->GetDuctilityFactor();
@@ -143,7 +143,7 @@ void write_environmental_conditions(rptParagraph* pPara,std::shared_ptr<WBFL::EA
    rptRcTable* p_table = rptStyleManager::CreateTableNoHeading(2,_T("Environmental"));
    *pPara << p_table;
 
-   EAF_GET_IFACE2(pBroker,IEnvironment,pEnvironment);
+   GET_IFACE2(pBroker,IEnvironment,pEnvironment);
 
    (*p_table)(0,0) << _T("Exposure Condition");
    if (pEnvironment->GetExposureCondition() == pgsTypes::ExposureCondition::Normal)
@@ -174,7 +174,7 @@ void write_structural_analysis(rptParagraph* pPara,std::shared_ptr<WBFL::EAF::Br
    rptRcTable* p_table = rptStyleManager::CreateTableNoHeading(1,_T("Structural Analysis"));
    *pPara << p_table;
 
-   EAF_GET_IFACE2( pBroker, ISpecification, pSpec );
+   GET_IFACE2( pBroker, ISpecification, pSpec );
 
    switch( pSpec->GetAnalysisType() )
    {

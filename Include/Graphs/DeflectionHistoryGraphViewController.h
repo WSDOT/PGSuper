@@ -23,7 +23,7 @@
 #pragma once
 
 #include <EAF\EAFViewController.h>
-#include <PgsExt\PointOfInterest.h>
+#include <PsgLib\PointOfInterest.h>
 
 // {4E1200E1-41A1-47D5-9A58-9837CC9D20AD}
 DEFINE_GUID(IID_IDeflectionHistoryGraphViewController,

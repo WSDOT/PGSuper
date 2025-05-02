@@ -33,6 +33,7 @@
 #include <IFace\RatingSpecification.h>
 #include <IFace\Intervals.h>
 #include <IFace\ReportOptions.h>
+#include <IFace/PointOfInterest.h>
 
 
 /****************************************************************************
@@ -78,7 +79,7 @@ rptChapter* CCrackedSectionDetailsChapterBuilder::Build(const std::shared_ptr<co
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   EAF_GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
    bool bRateRoutine = pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Routine);
    bool bRateSpecial = pRatingSpec->IsRatingEnabled(pgsTypes::lrPermit_Special);
 
@@ -106,9 +107,9 @@ rptChapter* CCrackedSectionDetailsChapterBuilder::Build(const std::shared_ptr<co
    *pPara << Sub2(_T("Y"),_T("b")) << _T(" = Distance from bottom of section to neutral axis") << rptNewLine;
    *pPara << Sub2(_T("I"),_T("cr")) << _T(" = Moment of inertia of cracked section about neutral axis") << rptNewLine;
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(girderKey, &vGirderKeys);
@@ -149,7 +150,7 @@ void write_cracked_section_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
    rptParagraph* pPara = new rptParagraph();
    *pChapter << pPara;
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    // Setup the table
@@ -192,13 +193,13 @@ void write_cracked_section_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
    INIT_UV_PROTOTYPE( rptLengthUnitValue,  dim,      pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptLength4UnitValue, mom_i,    pDisplayUnits->GetMomentOfInertiaUnit(),       false );
 
-   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
-   EAF_GET_IFACE2(pBroker,ICrackedSection,pCrackedSection);
-   EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   GET_IFACE2(pBroker,ICrackedSection,pCrackedSection);
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       const CRACKEDSECTIONDETAILS* pCSD = pCrackedSection->GetCrackedSectionDetails(poi,true);

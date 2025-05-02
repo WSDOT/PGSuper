@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psgLib.h>
+#include <PsgLib\PsgLib.h>
 #include "DiaphragmGrid.h"
 #include "GirderDiaphragmPage.h"
 #include <system\tokenizer.h>

@@ -31,7 +31,7 @@
 
 #include "resource.h"
 #include "BridgeDescDeckRebarGrid.h"
-#include <PgsExt\DeckRebarData.h>
+#include <PsgLib\DeckRebarData.h>
 
 class CBridgeDescDlg;
 

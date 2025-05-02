@@ -34,7 +34,7 @@
 #include <EAF\EAFDocument.h>
 
 #include <psgLib/PrestressedElementCriteria.h>
-
+#include <psgLib/LibraryManager.h>
 
 
 
@@ -70,7 +70,7 @@ void CTxDOTOptionalDesignBridgeInputPage::DoDataExchange(CDataExchange* pDX)
    if (pBroker==nullptr)
       return;
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    DDX_Text(pDX, IDC_BRIDGE, m_Bridge);
    DDX_Text(pDX, IDC_BRIDGE_ID, m_BridgeID);

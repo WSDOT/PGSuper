@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psgLib.h>
+#include <PsgLib\PsgLib.h>
 #include "DuctEntryDlg.h"
 #include <EAF\EAFApp.h>
 #include <EAF\EAFDocument.h>

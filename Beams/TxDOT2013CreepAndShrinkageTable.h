@@ -20,15 +20,11 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// TxDOT2013CreepAndShrinkageTable.h : Declaration of the CTxDOT2013CreepAndShrinkageTable
+#pragma once
 
-#ifndef __TxDOT2013CreepAndShrinkageTable_H_
-#define __TxDOT2013CreepAndShrinkageTable_H_
-
-#include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
-
+#include <PgsExt/ReportPointOfInterest.h>
 
 class WBFL::LRFD::Losses;
 
@@ -54,5 +50,3 @@ private:
    DECLARE_UV_PROTOTYPE( rptMomentUnitValue,  moment );
    DECLARE_UV_PROTOTYPE( rptStressUnitValue,  stress );
 };
-
-#endif //__TxDOT2013CreepAndShrinkageTable_H_

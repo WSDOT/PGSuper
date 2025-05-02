@@ -54,7 +54,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CTimeStepDetailsReportSpec
    }
    else
    {
-      EAF_GET_IFACE(ISelection,pSelection);
+      GET_IFACE(ISelection,pSelection);
       CSelection selection = pSelection->GetSelection();
       CGirderKey girderKey;
       if ( selection.Type == CSelection::Girder || selection.Type == CSelection::Segment )
@@ -68,7 +68,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CTimeStepDetailsReportSpec
          girderKey.girderIndex  = 0;
       }
 
-      EAF_GET_IFACE(IPointOfInterest,pPoi);
+      GET_IFACE(IPointOfInterest,pPoi);
       PoiList vPoi;
       pPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), POI_5L | POI_SPAN, &vPoi);
       ATLASSERT(0 < vPoi.size());

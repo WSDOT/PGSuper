@@ -25,7 +25,7 @@
 #include <Reporting\ReportingExp.h>
 #include <Reporting\SpanGirderReportSpecificationBuilder.h>
 #include <ReportManager\ReportManager.h>
-#include <WBFLCore.h>
+
 
 class REPORTINGCLASS CBridgeAnalysisReportSpecificationBuilder :
    public CGirderLineReportSpecificationBuilder

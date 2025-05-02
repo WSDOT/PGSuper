@@ -27,8 +27,8 @@
 #include "SelectSegmentDlg.h"
 #include <IFace\Project.h>
 #include <IFace\DocumentType.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\GirderLabel.h>
 
 
 
@@ -65,7 +65,7 @@ END_MESSAGE_MAP()
 BOOL CSelectSegmentDlg::OnInitDialog()
 {
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    CComboBox* pcbGroup = (CComboBox*)GetDlgItem(IDC_GROUP);
@@ -99,7 +99,7 @@ BOOL CSelectSegmentDlg::OnInitDialog()
 void CSelectSegmentDlg::OnGroupChanged()
 {
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    CComboBox* pcbGroup   = (CComboBox*)GetDlgItem(IDC_GROUP);

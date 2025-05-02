@@ -25,9 +25,9 @@
 #include <Reporting\BrokerReportSpecification.h>
 #include <ReportManager\ReportManager.h>
 #include <ReportManager\ReportHint.h>
-#include <WBFLCore.h>
-#include <PgsExt\Keys.h>
-#include <PgsExt\PointOfInterest.h>
+
+#include <PsgLib\Keys.h>
+#include <PsgLib\PointOfInterest.h>
 
 class REPORTINGCLASS CSpanReportHint : public WBFL::Reporting::ReportHint
 {

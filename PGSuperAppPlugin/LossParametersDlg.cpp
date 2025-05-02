@@ -30,11 +30,6 @@
 #include <EAF\EAFDocument.h>
 #include "PGSuperDoc.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CLossParametersDlg
@@ -67,7 +62,7 @@ void CLossParametersDlg::Init()
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,ILossParameters,pLossParameters);
+   GET_IFACE2(pBroker,ILossParameters,pLossParameters);
    if ( pLossParameters->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       // General lump sum is only available if we aren't doing a time-step analysis

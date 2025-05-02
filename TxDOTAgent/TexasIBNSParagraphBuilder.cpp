@@ -26,10 +26,10 @@
 
 #include "TexasIBNSParagraphBuilder.h"
 
-#include <PgsExt\PointOfInterest.h>
+#include <PsgLib\PointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
-#include <PgsExt\GirderData.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\GirderData.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include <psgLib\SpecLibraryEntry.h>
 #include <psgLib\GirderLibraryEntry.h>
@@ -42,6 +42,7 @@
 #include <IFace\Project.h>
 #include <IFace\DistributionFactors.h>
 #include <IFace\Intervals.h>
+#include <IFace/PointOfInterest.h>
 
 
 /// Inline functions
@@ -161,8 +162,8 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,std::shared_ptr<
          CComPtr<IPoint2dCollection> coords;
          m_pStrandGeometry->GetStrandPositions(poi, pgsTypes::Straight, &coords);
 
-         EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-         EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+         GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+         GET_IFACE2(pBroker,IIntervals,pIntervals);
          IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
          Float64 Hg = pSectProp->GetHg(releaseIntervalIdx,poi);
 
@@ -196,8 +197,8 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,std::shared_ptr<
             {
                pgsPointOfInterest poi(m_SegmentKey, m_GirderLength/2.0);
 
-               EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-               EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+               GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+               GET_IFACE2(pBroker,IIntervals,pIntervals);
                IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
                Float64 Hg = pSectProp->GetHg(releaseIntervalIdx,poi);
 
@@ -273,17 +274,17 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(std::shared_ptr<WBFL::EAF::Broke
 
    bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
 
-   EAF_GET_IFACE2_NOCHECK(pBroker, ISegmentData, pSegmentData);
-   EAF_GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
-   EAF_GET_IFACE2_NOCHECK(pBroker, IMaterials, pMaterial);
-   EAF_GET_IFACE2_NOCHECK(pBroker,IMomentCapacity,pMomentCapacity);
-   EAF_GET_IFACE2_NOCHECK(pBroker, IPointOfInterest, pPointOfInterest );
-   EAF_GET_IFACE2_NOCHECK(pBroker,ILiveLoadDistributionFactors,pDistFact);
-   EAF_GET_IFACE2_NOCHECK(pBroker,IArtifact,pIArtifact);
-   EAF_GET_IFACE2_NOCHECK(pBroker,IIntervals,pIntervals);
-   EAF_GET_IFACE2_NOCHECK(pBroker,ISectionProperties,pSectProp);
+   GET_IFACE2_NOCHECK(pBroker, ISegmentData, pSegmentData);
+   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
+   GET_IFACE2_NOCHECK(pBroker, IMaterials, pMaterial);
+   GET_IFACE2_NOCHECK(pBroker,IMomentCapacity,pMomentCapacity);
+   GET_IFACE2_NOCHECK(pBroker, IPointOfInterest, pPointOfInterest );
+   GET_IFACE2_NOCHECK(pBroker,ILiveLoadDistributionFactors,pDistFact);
+   GET_IFACE2_NOCHECK(pBroker,IArtifact,pIArtifact);
+   GET_IFACE2_NOCHECK(pBroker,IIntervals,pIntervals);
+   GET_IFACE2_NOCHECK(pBroker,ISectionProperties,pSectProp);
 
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    // Round up data common to all tables
@@ -467,7 +468,7 @@ rptParagraph* CTexasIBNSParagraphBuilder::Build(std::shared_ptr<WBFL::EAF::Broke
 
 void CTexasIBNSParagraphBuilder::WriteDebondTable(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   EAF_GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
+   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
 
    bool bCanDebond = pStrandGeometry->CanDebondStrands(segmentKey,pgsTypes::Straight);
    bCanDebond     |= pStrandGeometry->CanDebondStrands(segmentKey,pgsTypes::Harped);
@@ -476,7 +477,7 @@ void CTexasIBNSParagraphBuilder::WriteDebondTable(rptParagraph* pPara, std::shar
    if ( !bCanDebond )
       return;
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
 
    // Need compute tool to decipher debond data
@@ -494,11 +495,11 @@ void WriteGirderScheduleTable(rptParagraph* p, std::shared_ptr<WBFL::EAF::Broker
                               bool bUnitsSI, bool areAnyTempStrandsInTable, 
                               bool areAnyHarpedStrandsInTable, bool areAnyDebondingInTable)
 {
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
-   EAF_GET_IFACE2_NOCHECK(pBroker,ISectionProperties,pSectProp);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2_NOCHECK(pBroker,ISectionProperties,pSectProp);
 
 #if defined _DEBUG
-   EAF_GET_IFACE2(pBroker,IGirder,pGirder);
+   GET_IFACE2(pBroker,IGirder,pGirder);
 #endif
 
    IndexType ng = endIdx-startIdx+1;

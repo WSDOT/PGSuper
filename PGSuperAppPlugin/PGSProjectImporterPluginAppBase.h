@@ -64,7 +64,7 @@ public:
 
    void ConfigureProjectImporters();
 
-   virtual BOOL DoProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo) override;
+   BOOL DoProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo) override;
    void CreateNewProject(CPGSProjectImporterBaseCommandLineInfo& cmdInfo);
 
 
@@ -80,7 +80,7 @@ public:
    CString GetDocumentationURL() override;
    CString GetDocumentationMapFile() override;
    void LoadDocumentationMap() override;
-   eafTypes::HelpResult GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID,CString& strURL) override;
+   std::pair<WBFL::EAF::HelpResult,CString> GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID) override;
 
 // ICommandCallback
 public:

@@ -43,7 +43,7 @@
 #include <Units\Units.h>
 
 #include <WBFLTools.h>
-#include <WBFLCore.h>
+
 #include <WBFLGenericBridge.h>
 
 

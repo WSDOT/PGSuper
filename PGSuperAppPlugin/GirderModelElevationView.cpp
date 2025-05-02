@@ -33,6 +33,7 @@
 #include "PGSuperColors.h"
 #include "GirderModelElevationView.h"
 #include "GirderModelChildFrame.h"
+
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\DrawBridgeSettings.h>
@@ -41,9 +42,10 @@
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace/PointOfInterest.h>
 
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\ClosureJointData.h>
 
 #include "SupportDrawStrategyImpl.h"
 #include "TemporarySupportDrawStrategyImpl.h"
@@ -618,7 +620,7 @@ void CGirderModelElevationView::CreateSegmentEndSupportDisplayObject(Float64 gro
       pbIsPier = new bool;
       *pbIsPier = true;
 
-      EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+      GET_IFACE2(pBroker,IBridge,pBridge);
       VERIFY(pBridge->GetPierLocation(segmentKey,pierIdx,&pierLocation)); // pier location is in girder path coordinates
       ID = (IDType)pierIdx;
 
@@ -670,20 +672,20 @@ void CGirderModelElevationView::CreateSegmentEndSupportDisplayObject(Float64 gro
          }
       }
 
-      EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+      GET_IFACE2(pBroker,ISectionProperties,pSectProp);
       sectionHeight = pSectProp->GetSegmentHeightAtPier(segmentKey,pierIdx);
 
-      EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
+      GET_IFACE2(pBroker, IIntervals, pIntervals);
       IntervalIndexType intervalIdx = pIntervals->GetInterval(eventIdx);
 
-      EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+      GET_IFACE2(pBroker, IPointOfInterest, pPoi);
       PoiAttributeType attribute = (endType == pgsTypes::metStart ? POI_0L : POI_10L);
       PoiList vPoi;
       pPoi->GetPointsOfInterest(segmentKey, POI_ERECTED_SEGMENT | attribute, &vPoi);
       ATLASSERT(vPoi.size() == 1);
       const pgsPointOfInterest& poiCLBrg(vPoi.front());
 
-      EAF_GET_IFACE2(pBroker, IGirder, pGirder);
+      GET_IFACE2(pBroker, IGirder, pGirder);
       Float64 precamber = pGirder->GetPrecamber(poiCLBrg);
       sectionHeight -= precamber;
    }
@@ -704,11 +706,11 @@ void CGirderModelElevationView::CreateSegmentEndSupportDisplayObject(Float64 gro
       pbIsPier = new bool;
       *pbIsPier = false;
 
-      EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+      GET_IFACE2(pBroker,IBridge,pBridge);
       pierLocation = pBridge->GetTemporarySupportLocation(tsIdx,segmentKey.girderIndex);
 
-      EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-      EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+      GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+      GET_IFACE2(pBroker,IIntervals,pIntervals);
       IntervalIndexType intervalIdx = pIntervals->GetInterval(eventIdx);
       PoiAttributeType poiReference = (pIntervals->GetErectSegmentInterval(segmentKey) <= intervalIdx ? POI_ERECTED_SEGMENT : POI_RELEASED_SEGMENT);
       PoiAttributeType attribute = (endType == pgsTypes::metStart ? POI_0L : POI_10L);
@@ -717,10 +719,10 @@ void CGirderModelElevationView::CreateSegmentEndSupportDisplayObject(Float64 gro
       ATLASSERT(vPoi.size() == 1);
       const pgsPointOfInterest& poiCLBrg(vPoi.front());
 
-      EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+      GET_IFACE2(pBroker,ISectionProperties,pSectProp);
       sectionHeight = pSectProp->GetHg(pIntervals->GetPrestressReleaseInterval(segmentKey),poiCLBrg);
 
-      EAF_GET_IFACE2(pBroker, IGirder, pGirder);
+      GET_IFACE2(pBroker, IGirder, pGirder);
       Float64 precamber = pGirder->GetPrecamber(poiCLBrg);
       sectionHeight -= precamber;
    }
@@ -739,7 +741,7 @@ void CGirderModelElevationView::CreateSegmentEndSupportDisplayObject(Float64 gro
    }
    else
    {
-      EAF_GET_IFACE2(pBroker,IGirder,pIGirder);
+      GET_IFACE2(pBroker,IGirder,pIGirder);
       Float64 temp, leftBrgOffset, rightBrgOffset;
       pIGirder->GetSegmentBearingOffset(segmentKey,&temp,&leftBrgOffset);
       pIGirder->GetSegmentBearingOffset(CSegmentKey(segmentKey.groupIndex,segmentKey.girderIndex,segmentKey.segmentIndex+1),&rightBrgOffset,&temp);
@@ -766,8 +768,8 @@ void CGirderModelElevationView::CreateIntermediatePierDisplayObject(Float64 grou
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
    const CSpanData2* pSpan = pStartSpan;
    bool bDone = false;
@@ -860,8 +862,8 @@ void CGirderModelElevationView::CreateIntermediateTemporarySupportDisplayObject(
 
          
          auto pBroker = EAFGetBroker();
-         EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-         EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+         GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+         GET_IFACE2(pBroker,IBridge,pBridge);
 
          CSegmentKey segmentKey(pStartSpan->GetBridgeDescription()->GetGirderGroup(pStartSpan)->GetIndex(),
                                 pSegment->GetGirder()->GetIndex(),
@@ -893,10 +895,10 @@ void CGirderModelElevationView::BuildSupportDisplayObjects(CPGSDocBase* pDoc, st
    ATLASSERT(pDL);
    pDL->Clear();
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
 
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
 
@@ -1007,15 +1009,15 @@ void CGirderModelElevationView::BuildSegmentDisplayObjects(CPGSDocBase* pDoc,std
    ATLASSERT(pDL);
    pDL->Clear();
 
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
 
    GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? pBridgeDesc->GetGirderGroupCount()-1 : startGroupIdx);
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2_NOCHECK(pBroker,IGirder,pIGirder); // doesn't always get used
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2_NOCHECK(pBroker,IGirder,pIGirder); // doesn't always get used
    Float64 group_offset = 0;
   
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
@@ -1102,15 +1104,15 @@ void CGirderModelElevationView::BuildClosureJointDisplayObjects(CPGSDocBase* pDo
    ATLASSERT(pDL);
    pDL->Clear();
 
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
 
    GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? pBridgeDesc->GetGirderGroupCount()-1 : startGroupIdx);
 
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
-   EAF_GET_IFACE2_NOCHECK(pBroker, IGirder, pIGirder);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2_NOCHECK(pBroker, IGirder, pIGirder);
 
    Float64 group_offset = 0;
 
@@ -1194,9 +1196,9 @@ void CGirderModelElevationView::BuildStrandDisplayObjects(CPGSDocBase* pDoc, std
    ATLASSERT(pDebondDL);
    pDebondDL->Clear();
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
@@ -1206,7 +1208,7 @@ void CGirderModelElevationView::BuildStrandDisplayObjects(CPGSDocBase* pDoc, std
 
    Float64 group_offset = 0;
 
-   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
    IntervalIndexType intervalIdx = pIntervals->GetInterval(eventIdx);
 
    for (GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
@@ -1341,12 +1343,12 @@ void CGirderModelElevationView::BuildStrandCGDisplayObjects(CPGSDocBase* pDoc, s
    ATLASSERT(pDL);
    pDL->Clear();
 
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    // this interfaces are need in the loop, and there are cases where they don't get used
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
@@ -1433,15 +1435,15 @@ void CGirderModelElevationView::BuildSegmentCGDisplayObjects(CPGSDocBase* pDoc, 
    ATLASSERT(pDL);
    pDL->Clear();
 
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
 
    // this interfaces are need in the loop, and there are cases where they don't get used
-   EAF_GET_IFACE2_NOCHECK(pBroker, IBridge, pBridge);
-   EAF_GET_IFACE2_NOCHECK(pBroker, IIntervals, pIntervals);
-   EAF_GET_IFACE2_NOCHECK(pBroker, ISectionProperties, pSectProp);
-   EAF_GET_IFACE2_NOCHECK(pBroker, IPointOfInterest, pPoi);
-   EAF_GET_IFACE2_NOCHECK(pBroker, ICamber, pCamber);
-   EAF_GET_IFACE2_NOCHECK(pBroker, IGirder, pGirder);
+   GET_IFACE2_NOCHECK(pBroker, IBridge, pBridge);
+   GET_IFACE2_NOCHECK(pBroker, IIntervals, pIntervals);
+   GET_IFACE2_NOCHECK(pBroker, ISectionProperties, pSectProp);
+   GET_IFACE2_NOCHECK(pBroker, IPointOfInterest, pPoi);
+   GET_IFACE2_NOCHECK(pBroker, ICamber, pCamber);
+   GET_IFACE2_NOCHECK(pBroker, IGirder, pGirder);
 
    Float64 group_offset = 0;
 
@@ -1542,14 +1544,14 @@ void CGirderModelElevationView::BuildTendonDisplayObjects(CPGSDocBase* pDoc, std
    ATLASSERT(pDL);
    pDL->Clear();
 
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   EAF_GET_IFACE2_NOCHECK(pBroker, IBridge, pBridge);
-   EAF_GET_IFACE2_NOCHECK(pBroker, IPointOfInterest, pPoi);
-   EAF_GET_IFACE2_NOCHECK(pBroker, IGirderTendonGeometry, pGirderTendonGeometry); // not always used (this is because of the continue statement below)
-   EAF_GET_IFACE2_NOCHECK(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry); // not always used (this is because of the continue statement below)
-   EAF_GET_IFACE2_NOCHECK(pBroker, IGirder, pGirder); // not always used (this is because of the continue statement below)
+   GET_IFACE2_NOCHECK(pBroker, IBridge, pBridge);
+   GET_IFACE2_NOCHECK(pBroker, IPointOfInterest, pPoi);
+   GET_IFACE2_NOCHECK(pBroker, IGirderTendonGeometry, pGirderTendonGeometry); // not always used (this is because of the continue statement below)
+   GET_IFACE2_NOCHECK(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry); // not always used (this is because of the continue statement below)
+   GET_IFACE2_NOCHECK(pBroker, IGirder, pGirder); // not always used (this is because of the continue statement below)
 
    const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
 
@@ -1573,7 +1575,7 @@ void CGirderModelElevationView::BuildTendonDisplayObjects(CPGSDocBase* pDoc, std
       // this next block of code is a cop-out. it would be better to 
       // draw the duct in the segment if it is erected.
       //
-      // IF THIS GETS FIXED, RE-EVALUATE THE USE OF EAF_GET_IFACE2_NOCHECK above
+      // IF THIS GETS FIXED, RE-EVALUATE THE USE OF GET_IFACE2_NOCHECK above
       if ( !pTimelineMgr->AreAllSegmentsErected(thisGirderID,eventIdx) )
       {
          continue; // if all segments are not erected, there is nothing to draw
@@ -1679,10 +1681,10 @@ void CGirderModelElevationView::BuildRebarDisplayObjects(CPGSDocBase* pDoc, std:
    ATLASSERT(pDL);
    pDL->Clear();
 
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,ILongRebarGeometry,pLongRebarGeometry);
-   EAF_GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi); // not used if there aren't any rebar
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,ILongRebarGeometry,pLongRebarGeometry);
+   GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi); // not used if there aren't any rebar
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
@@ -1794,7 +1796,7 @@ void CGirderModelElevationView::BuildRebarDisplayObjects(CPGSDocBase* pDoc, std:
 
 template <class T> bool IsLoadApplicable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const T* pLoad,EventIndexType eventIdx,const CGirderKey& girderKey)
 {
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
    const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();
    EventIndexType loadingEventIdx = pTimelineMgr->FindUserLoadEventIndex(pLoad->m_ID);
    if ( loadingEventIdx != eventIdx )
@@ -1802,7 +1804,7 @@ template <class T> bool IsLoadApplicable(std::shared_ptr<WBFL::EAF::Broker> pBro
       return false;
    }
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    PierIndexType startPierIdx, endPierIdx;
    if ( girderKey.groupIndex == ALL_GROUPS )
    {
@@ -1828,9 +1830,9 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSDocBase* pDoc, 
    auto pDL = m_pDispMgr->FindDisplayList(LOAD_LIST);
    ATLASSERT(pDL);
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,IUserDefinedLoadData,pUserDefinedLoadData);
-   EAF_GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IUserDefinedLoadData,pUserDefinedLoadData);
+   GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
 
    IndexType nLoads =  pUserDefinedLoadData->GetPointLoadCount();
    SpanIndexType nSpans = pBridge->GetSpanCount();
@@ -1934,7 +1936,7 @@ void CGirderModelElevationView::BuildPointLoadDisplayObjects(CPGSDocBase* pDoc, 
             // tool tip
             
             auto pBroker = EAFGetBroker();
-            EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+            GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
             CString strMagnitude = FormatDimension(pLoad->m_Magnitude,pDisplayUnits->GetGeneralForceUnit(),true);
             CString strLocation  = FormatDimension(Xspan,pDisplayUnits->GetSpanLengthUnit(),true);
 
@@ -1963,9 +1965,9 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSDocBase* 
    auto pDL = m_pDispMgr->FindDisplayList(LOAD_LIST);
    ATLASSERT(pDL);
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,IUserDefinedLoadData,pUserDefinedLoadData);
-   EAF_GET_IFACE2_NOCHECK(pBroker, IPointOfInterest, pPoi);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IUserDefinedLoadData,pUserDefinedLoadData);
+   GET_IFACE2_NOCHECK(pBroker, IPointOfInterest, pPoi);
 
    IndexType nLoads =  pUserDefinedLoadData->GetDistributedLoadCount();
    SpanIndexType nSpans = pBridge->GetSpanCount();
@@ -2068,7 +2070,7 @@ void CGirderModelElevationView::BuildDistributedLoadDisplayObjects(CPGSDocBase* 
             // tool tip
             
             auto pBroker = EAFGetBroker();
-            EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+            GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
             CString strStartMagnitude = FormatDimension(pLoad->m_WStart,pDisplayUnits->GetForcePerLengthUnit(),true);
             CString strEndMagnitude   = FormatDimension(pLoad->m_WEnd,pDisplayUnits->GetForcePerLengthUnit(),true);
             CString strStartLocation  = FormatDimension(Xspan_start,pDisplayUnits->GetSpanLengthUnit(),true);
@@ -2100,8 +2102,8 @@ void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSDocBase* pDoc,
    auto pDL = m_pDispMgr->FindDisplayList(LOAD_LIST);
    ATLASSERT(pDL);
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,IUserDefinedLoadData,pUserDefinedLoadData);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IUserDefinedLoadData,pUserDefinedLoadData);
 
    IndexType nLoads =  pUserDefinedLoadData->GetMomentLoadCount();
    SpanIndexType nSpans = pBridge->GetSpanCount();
@@ -2119,8 +2121,8 @@ void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSDocBase* pDoc,
       return;
    }
 
-   EAF_GET_IFACE2_NOCHECK(pBroker,IGirder,pGirder);
-   EAF_GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2_NOCHECK(pBroker,IGirder,pGirder);
+   GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
 
    SpanIndexType displayStartSpanIdx, displayEndSpanIdx;
    GetSpanRange(pBroker,girderKey,&displayStartSpanIdx,&displayEndSpanIdx);
@@ -2208,7 +2210,7 @@ void CGirderModelElevationView::BuildMomentLoadDisplayObjects(CPGSDocBase* pDoc,
             // tool tip
             
             auto pBroker = EAFGetBroker();
-            EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+            GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
             CString strMagnitude = FormatDimension(pLoad->m_Magnitude,pDisplayUnits->GetMomentUnit(),true);
             CString strLocation  = FormatDimension(Xspan,pDisplayUnits->GetSpanLengthUnit(),true);
 
@@ -2289,11 +2291,11 @@ void CGirderModelElevationView::BuildDimensionDisplayObjects(CPGSDocBase* pDoc, 
    ATLASSERT(pDL);
    pDL->Clear();
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   EAF_GET_IFACE2(pBroker,IGirder,pIGirder);
-   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IGirder,pIGirder);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
    // need to layout dimension line witness lines in twips
    const long twip_offset = 1440/2;
@@ -2772,13 +2774,13 @@ void CGirderModelElevationView::BuildStirrupDisplayObjects(CPGSDocBase* pDoc, st
    ATLASSERT(pDL);
    pDL->Clear();
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   EAF_GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeom);
-   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
-   EAF_GET_IFACE2_NOCHECK(pBroker,IGirder,pIGirder);
-   EAF_GET_IFACE2_NOCHECK(pBroker, ICamber, pCamber);
-   EAF_GET_IFACE2_NOCHECK(pBroker, ISectionProperties,pSectProps);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeom);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   GET_IFACE2_NOCHECK(pBroker,IGirder,pIGirder);
+   GET_IFACE2_NOCHECK(pBroker, ICamber, pCamber);
+   GET_IFACE2_NOCHECK(pBroker, ISectionProperties,pSectProps);
 
    // assume a typical cover
    Float64 top_cover = WBFL::Units::ConvertToSysUnits(1.0,WBFL::Units::Measure::Inch);
@@ -3161,7 +3163,7 @@ std::shared_ptr<WBFL::DManip::DimensionLine> CGirderModelElevationView::BuildDim
    // Format the dimension text
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    CString strDimension = FormatDimension(dimension,pDisplayUnits->GetSpanLengthUnit());
 
    textBlock->SetText(strDimension);
@@ -3342,8 +3344,8 @@ Float64 CGirderModelElevationView::GetSegmentStartLocation(const CSegmentKey& se
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   EAF_GET_IFACE2(pBroker,IBridge,           pBridge);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridge,           pBridge);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    GroupIndexType startGroupIdx = 0;
@@ -3375,8 +3377,8 @@ Float64 CGirderModelElevationView::GetSpanStartLocation(const CSpanKey& spanKey)
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   EAF_GET_IFACE2_NOCHECK(pBroker,IBridge,           pBridge);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2_NOCHECK(pBroker,IBridge,           pBridge);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    SpanIndexType startSpanIdx = 0;
@@ -3412,11 +3414,11 @@ Float64 CGirderModelElevationView::GetSpanStartLocation(const CSpanKey& spanKey)
 
 CString CGirderModelElevationView::GetSegmentTooltip(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey)
 {
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    IntervalIndexType intervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
@@ -3453,7 +3455,7 @@ CString CGirderModelElevationView::GetSegmentTooltip(std::shared_ptr<WBFL::EAF::
                      FormatDimension(end_conn_length,pDisplayUnits->GetComponentDimUnit())
                      );
 
-   EAF_GET_IFACE2(pBroker,IMaterials,pMaterials);
+   GET_IFACE2(pBroker,IMaterials,pMaterials);
    Float64 fci = pMaterials->GetSegmentFc(segmentKey,intervalIdx);
    Float64 fc  = pMaterials->GetSegmentFc28(segmentKey);
 
@@ -3463,7 +3465,7 @@ CString CGirderModelElevationView::GetSegmentTooltip(std::shared_ptr<WBFL::EAF::
                   FormatDimension(fc, pDisplayUnits->GetStressUnit())
                   );
 
-   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    const auto* pStraightStrand = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Straight);
    const auto* pHarpedStrand = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Harped);
    const auto* pTempStrand = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Temporary);
@@ -3503,9 +3505,9 @@ CString CGirderModelElevationView::GetSegmentTooltip(std::shared_ptr<WBFL::EAF::
 
 CString CGirderModelElevationView::GetClosureTooltip(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CClosureKey& closureKey)
 {
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    IntervalIndexType intervalIdx = pIntervals->GetCompositeClosureJointInterval(closureKey);
 
@@ -3515,7 +3517,7 @@ CString CGirderModelElevationView::GetClosureTooltip(std::shared_ptr<WBFL::EAF::
                   FormatDimension(length,pDisplayUnits->GetSpanLengthUnit())
                   );
 
-   EAF_GET_IFACE2(pBroker,IMaterials,pMaterials);
+   GET_IFACE2(pBroker,IMaterials,pMaterials);
    Float64 fci = pMaterials->GetClosureJointFc(closureKey,intervalIdx);
    Float64 fc  = pMaterials->GetClosureJointFc28(closureKey);
 
@@ -3532,7 +3534,7 @@ CString CGirderModelElevationView::GetClosureTooltip(std::shared_ptr<WBFL::EAF::
 
 void CGirderModelElevationView::GetSpanRange(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,SpanIndexType* pStartSpanIdx,SpanIndexType* pEndSpanIdx)
 {
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    PierIndexType startPierIdx, endPierIdx;
    if ( girderKey.groupIndex == ALL_GROUPS )
    {

@@ -30,7 +30,7 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
-
+#include <IFace/PointOfInterest.h>
 
 rptRcTable* CProductRotationTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, pgsTypes::AnalysisType analysisType,
    bool bIncludeImpact, bool bIncludeLLDF, bool bDesign, bool bRating, bool bIndicateControllingLoad, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
@@ -38,12 +38,12 @@ rptRcTable* CProductRotationTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBro
    // Build table
    INIT_UV_PROTOTYPE(rptAngleUnitValue, rotation, pDisplayUnits->GetRadAngleUnit(), false);
 
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    bool bHasOverlay = pBridge->HasOverlay();
    bool bFutureOverlay = pBridge->IsFutureOverlay();
    PierIndexType nPiers = pBridge->GetPierCount();
 
-   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
    IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
    IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
 
@@ -51,8 +51,8 @@ rptRcTable* CProductRotationTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBro
    bool bContinuousBeforeDeckCasting;
    GroupIndexType startGroup, endGroup;
 
-   EAF_GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
-   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPOI);
+   GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
+   GET_IFACE2(pBroker, IPointOfInterest, pPOI);
 
    ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker, girderKey, analysisType, bDesign, bRating, false, &bSegments, &bConstruction, &bDeck, &bDeckPanels, &bSidewalk, &bShearKey, &bLongitudinalJoint, &bPedLoading, &bPermit, &bContinuousBeforeDeckCasting, &startGroup, &endGroup);
 
@@ -97,12 +97,12 @@ rptRcTable* CProductRotationTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBro
       }
    }
 
-   EAF_GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
+   GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
    IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
    std::unique_ptr<IProductReactionAdapter> pForces(std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastCompositeDeckIntervalIdx, girderKey));
 
    // Fill up the table
-   EAF_GET_IFACE2(pBroker, IProductForces, pProductForces);
+   GET_IFACE2(pBroker, IProductForces, pProductForces);
    pgsTypes::BridgeAnalysisType maxBAT = pProductForces->GetBridgeAnalysisType(analysisType, pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pProductForces->GetBridgeAnalysisType(analysisType, pgsTypes::Minimize);
 

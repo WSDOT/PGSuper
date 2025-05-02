@@ -28,7 +28,7 @@
 #endif // _MSC_VER >= 1000
 // LongSteelGrid.h : header file
 //
-#include <PgsExt\LongitudinalRebarData.h>
+#include <PsgLib\LongitudinalRebarData.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescLongRebarGrid window

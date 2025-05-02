@@ -102,7 +102,7 @@ BOOL exportCADData::OnInitDialog()
 	CDialog::OnInitDialog();
 
 	/* Get interface pointer to Bridge Agent */
-	EAF_GET_IFACE( IBridge, pBridge ); 
+	GET_IFACE( IBridge, pBridge ); 
 
    GroupGirderOnCollection coll;
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
@@ -152,7 +152,7 @@ void exportCADData::OnHelp()
 
 void exportCADData::OnSelchangeSpan() 
 {
-	EAF_GET_IFACE( IBridge, pBridge ); 
+	GET_IFACE( IBridge, pBridge ); 
 	CComboBox* pSpanBox = (CComboBox*)GetDlgItem( IDC_SPAN );
    CComboBox* pGdrBox  = (CComboBox*)GetDlgItem( IDC_GIRDER );
 

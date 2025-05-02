@@ -37,11 +37,6 @@
 #include <IFace\Bridge.h>
 #include <IFace\DocumentType.h>
 
-#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
-#endif
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -98,8 +93,8 @@ void CGirderViewPrintJob::OnPrint(CDC* pDC, CPrintInfo* pInfo)
 
    CDocument* pDoc = (CDocument*)(m_pSectionView->GetDocument());
 
-   EAF_GET_IFACE(IVersionInfo,pVerInfo);
-   EAF_GET_IFACE(IDocumentType,pDocType);
+   GET_IFACE(IVersionInfo,pVerInfo);
+   GET_IFACE(IDocumentType,pDocType);
 
    const CGirderKey& girderKey = m_pFrame->GetSelection();
    if ( pDocType->IsPGSuperDocument() )
@@ -165,7 +160,7 @@ void CGirderViewPrintJob::OnPrint(CDC* pDC, CPrintInfo* pInfo)
    pvf.CreatePointFont(m_iFtPrint, m_csFtPrint, pDC);
    CFont* oldfont = pDC->SelectObject(&pvf);
    pDC->SetTextAlign(TA_LEFT|TA_TOP);
-   EAF_GET_IFACE(IEventMap,pEventMap);
+   GET_IFACE(IEventMap,pEventMap);
    CString tstr(pEventMap->GetEventName(m_pFrame->GetEvent()));
    CString topcap = _T("Elevation View (") + tstr + _T(")");
    CSize csiz = pDC->GetTextExtent( topcap );
@@ -191,7 +186,7 @@ void CGirderViewPrintJob::OnPrint(CDC* pDC, CPrintInfo* pInfo)
 
    // label
    // get length unit for labelling
-   EAF_GET_IFACE(IEAFDisplayUnits,pdisp_units);
+   GET_IFACE(IEAFDisplayUnits,pdisp_units);
    const WBFL::Units::LengthData& rlen = pdisp_units->GetSpanLengthUnit();
    WBFL::System::NumericFormatTool nf(rlen.Format, rlen.Width, rlen.Precision);
    Float64 dist = WBFL::Units::ConvertFromSysUnits(m_pFrame->GetCurrentCutLocation(), rlen.UnitOfMeasure);

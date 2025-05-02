@@ -83,7 +83,7 @@ rptChapter* CTexasStressChecksChapterBuilder::Build(const std::shared_ptr<const 
    // This is a single segment report
    CSegmentKey segmentKey(girderKey,0);
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
@@ -91,17 +91,17 @@ rptChapter* CTexasStressChecksChapterBuilder::Build(const std::shared_ptr<const 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
    *pPara << _T("Specification = ") << pSpec->GetSpecification() << rptNewLine;
 
 
-   EAF_GET_IFACE2(pBroker,IArtifact,pArtifacts);
+   GET_IFACE2(pBroker,IArtifact,pArtifacts);
    const pgsGirderArtifact* pGirderArtifact = pArtifacts->GetGirderArtifact(girderKey);
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
    // report for the actual stress checks that were done
-   EAF_GET_IFACE2(pBroker, IStressCheck, pStressCheck);
+   GET_IFACE2(pBroker, IStressCheck, pStressCheck);
    std::vector<StressCheckTask> vStressCheckTasks = pStressCheck->GetStressCheckTasks(girderKey);
    for (const auto& task : vStressCheckTasks)
    {

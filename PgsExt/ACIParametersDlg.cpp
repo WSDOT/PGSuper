@@ -49,7 +49,7 @@ CACIParametersDlg::~CACIParametersDlg()
 void CACIParametersDlg::DoDataExchange(CDataExchange* pDX)
 {
    auto broker = EAFGetBroker();
-   EAF_GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
 
    CDialog::DoDataExchange(pDX);
    DDX_UnitValueAndTag( pDX, IDC_FCI, IDC_FCI_UNIT, m_fc1 , pDisplayUnits->GetStressUnit() );
@@ -68,7 +68,7 @@ BOOL CACIParametersDlg::OnInitDialog()
    CDialog::OnInitDialog();
 
    auto broker = EAFGetBroker();
-   EAF_GET_IFACE2(broker, IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2(broker, IEAFDisplayUnits, pDisplayUnits);
 
    CString strLabel;
    strLabel.Format(_T("Concrete Strength at t = %s, Time of Initial Loading"),::FormatDimension(m_t1,pDisplayUnits->GetWholeDaysUnit()));
@@ -91,7 +91,7 @@ void CACIParametersDlg::UpdateParameters()
    m_A = WBFL::Units::ConvertToSysUnits(m_A,WBFL::Units::Measure::Day);
 
    auto broker = EAFGetBroker();
-   EAF_GET_IFACE2(broker, IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2(broker, IEAFDisplayUnits, pDisplayUnits);
 
    CString strResult;
    strResult.Format(_T("a = %s, Beta = %4.2f\r\nFor use in Eq'n. 2-1"),::FormatDimension(m_A,pDisplayUnits->GetFractionalDaysUnit()),m_B);

@@ -240,7 +240,7 @@ SpanIndexType CSpanReportSpecification::GetSpan() const
 
 bool CSpanReportSpecification::IsValid() const
 {
-   EAF_GET_IFACE2(GetBroker(),IBridge,pBridge);
+   GET_IFACE2(GetBroker(),IBridge,pBridge);
    SpanIndexType nSpans = pBridge->GetSpanCount();
    if ( nSpans <= m_Span )
    {
@@ -280,7 +280,7 @@ std::_tstring CGirderReportSpecification::GetReportContextString() const
    GroupIndexType grpIdx  = m_GirderKey.groupIndex;
    GirderIndexType gdrIdx = m_GirderKey.girderIndex;
 
-   EAF_GET_IFACE2(GetBroker(),IDocumentType,pDocType);
+   GET_IFACE2(GetBroker(),IDocumentType,pDocType);
    bool bIsPGSuper = pDocType->IsPGSuperDocument();
 
    CString msg;
@@ -350,7 +350,7 @@ const CGirderKey& CGirderReportSpecification::GetGirderKey() const
 
 bool CGirderReportSpecification::IsValid() const
 {
-   EAF_GET_IFACE2(GetBroker(),IBridge,pBridge);
+   GET_IFACE2(GetBroker(),IBridge,pBridge);
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    if (nGroups <= m_GirderKey.groupIndex && m_GirderKey.groupIndex != ALL_GROUPS)
@@ -407,7 +407,7 @@ std::_tstring CSegmentReportSpecification::GetReportTitle() const
 
 std::_tstring CSegmentReportSpecification::GetReportContextString() const
 {
-   EAF_GET_IFACE2(GetBroker(),IDocumentType, pDocType);
+   GET_IFACE2(GetBroker(),IDocumentType, pDocType);
    bool bIsPGSuper = pDocType->IsPGSuperDocument();
    CString strGroupLabel(bIsPGSuper ? _T("Span") : _T("Group"));
    ATLASSERT(bIsPGSuper ? m_SegmentKey.segmentIndex == 0 : true);
@@ -467,7 +467,7 @@ const CSegmentKey& CSegmentReportSpecification::GetSegmentKey() const
 
 bool CSegmentReportSpecification::IsValid() const
 {
-   EAF_GET_IFACE2(GetBroker(),IBridge, pBridge);
+   GET_IFACE2(GetBroker(),IBridge, pBridge);
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    if (nGroups <= m_SegmentKey.groupIndex)
@@ -536,7 +536,7 @@ CGirderKey CGirderLineReportSpecification::GetGirderKey() const
 
 bool CGirderLineReportSpecification::IsValid() const
 {
-   EAF_GET_IFACE2(GetBroker(),IBridge,pBridge);
+   GET_IFACE2(GetBroker(),IBridge,pBridge);
    GirderIndexType nGirders = 0;
 
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
@@ -595,7 +595,7 @@ struct gkeyComparer
 
 std::_tstring CMultiGirderReportSpecification::GetReportContextString() const
 {
-   EAF_GET_IFACE2(GetBroker(),IDocumentType,pDocType);
+   GET_IFACE2(GetBroker(),IDocumentType,pDocType);
    bool bIsPGSuper = pDocType->IsPGSuperDocument();
 
    // sort so that keys are grouped by span
@@ -658,7 +658,7 @@ bool CMultiGirderReportSpecification::IsMyGirder(const CGirderKey& girderKey) co
 
 bool CMultiGirderReportSpecification::IsValid() const
 {
-   EAF_GET_IFACE2(GetBroker(),IBridge,pBridge);
+   GET_IFACE2(GetBroker(),IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    std::vector<CGirderKey>::const_iterator iter(m_GirderKeys.begin());
    std::vector<CGirderKey>::const_iterator end(m_GirderKeys.end());
@@ -729,7 +729,7 @@ int CMultiViewSpanGirderReportSpecification::IsMyGirder(const CGirderKey& girder
 
 bool CMultiViewSpanGirderReportSpecification::IsValid() const
 {
-   EAF_GET_IFACE2(GetBroker(),IBridge,pBridge);
+   GET_IFACE2(GetBroker(),IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
 
    std::vector<CGirderKey>::const_iterator iter(m_GirderKeys.begin());
@@ -781,7 +781,7 @@ std::_tstring CPointOfInterestReportSpecification::GetReportTitle() const
 
 std::_tstring CPointOfInterestReportSpecification::GetReportContextString() const
 {
-   EAF_GET_IFACE2(GetBroker(),IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(GetBroker(),IEAFDisplayUnits,pDisplayUnits);
 
    INIT_UV_PROTOTYPE(rptPointOfInterest, rptPOI, pDisplayUnits->GetSpanLengthUnit(), true);
    rptPOI.SetValue(POI_SPAN,m_POI);

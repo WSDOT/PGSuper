@@ -26,7 +26,7 @@
 #include "resource.h"
 #include "afxwin.h"
 #include "afxcmn.h"
-#include <WBFLCore.h>
+
 #include <PgsExt\ReportPointOfInterest.h>
 
 #include <Reporting\MomentCapacityReportSpecification.h>

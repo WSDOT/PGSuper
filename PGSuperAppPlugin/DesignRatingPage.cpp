@@ -35,11 +35,6 @@
 
 // CDesignRatingPage dialog
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 IMPLEMENT_DYNAMIC(CDesignRatingPage, CPropertyPage)
 
 CDesignRatingPage::CDesignRatingPage()
@@ -71,16 +66,16 @@ void CDesignRatingPage::DoDataExchange(CDataExchange* pDX)
    DDX_Text(pDX,IDC_SERVICE_III_PS,m_Data.ServiceIII_PS);
 
    auto broker = EAFGetBroker();
-   EAF_GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
    DDX_UnitValueAndTag(pDX,IDC_ALLOWABLE_TENSION,IDC_ALLOWABLE_TENSION_UNIT,m_Data.AllowableTensionCoefficient,pDisplayUnits->GetTensionCoefficientUnit());
    CString tag;
    if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims )
    {
-      tag = pDisplayUnits->GetUnitMode() == eafTypes::umSI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))");
+      tag = pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::SI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))");
    }
    else
    {
-      tag = pDisplayUnits->GetUnitMode() == eafTypes::umSI ? _T("(lambda)sqrt(f'c (MPa))") : _T("(lambda)sqrt(f'c (KSI))");
+      tag = pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::SI ? _T("(lambda)sqrt(f'c (MPa))") : _T("(lambda)sqrt(f'c (KSI))");
    }
    DDX_Text(pDX,IDC_ALLOWABLE_TENSION_UNIT,tag);
 
@@ -182,7 +177,7 @@ BOOL CDesignRatingPage::OnSetActive()
 
    CRatingOptionsDlg* pParent = (CRatingOptionsDlg*)GetParent();
    auto broker = EAFGetBroker();
-   EAF_GET_IFACE2( broker, ILibrary, pLib );
+   GET_IFACE2( broker, ILibrary, pLib );
    const RatingLibraryEntry* pRatingEntry = pLib->GetRatingEntry( pParent->m_GeneralPage.m_Data.CriteriaName.c_str() );
 
    bool bAllowUserOverride;
@@ -234,7 +229,7 @@ BOOL CDesignRatingPage::OnSetActive()
       GetDlgItem(IDC_STRENGTH_I_LL_OPERATING)->EnableWindow(FALSE);
    }
 
-   EAF_GET_IFACE2(broker, ILossParameters, pLossParams);
+   GET_IFACE2(broker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       GetDlgItem(IDC_STRENGTH_I_PLUS)->ShowWindow(SW_HIDE);

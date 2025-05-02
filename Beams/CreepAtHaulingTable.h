@@ -20,16 +20,14 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// CreepAtHaulingTable.h : Declaration of the CCreepAtHaulingTable
+#pragma once
 
-#ifndef __CREEPATHAULINGTABLE_H_
-#define __CREEPATHAULINGTABLE_H_
-
-#include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <Reporting\CreepCoefficientChapterBuilder.h>
-#include <PgsExt\StrandData.h>
+#include <PgsExt\ReportCreepCoefficient.h>
+#include <PgsExt/ReportPointOfInterest.h>
+#include <PsgLib\StrandData.h>
+
 
 class WBFL::LRFD::Losses;
 
@@ -63,5 +61,3 @@ private:
 
    const CStrandData* m_pStrands;
 };
-
-#endif //__CREEPATHAULINGTABLE_H_

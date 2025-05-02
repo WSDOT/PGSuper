@@ -29,7 +29,7 @@
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\TestFileExport.h>
 
-#include <EAF\EAFInterfaceCache.h>
+
 #include <EAF\EAFUIIntegration.h>
 #include <EAF\Agent.h>
 
@@ -50,6 +50,7 @@ public:
 
 // Agent
 public:
+   std::_tstring GetName() const override { return _T("TestAgent"); }
    bool RegInterfaces() override;
    bool Init() override;
    bool Reset() override;
@@ -75,7 +76,7 @@ public:
    BOOL ProcessCommandLineOptions(CEAFCommandLineInfo& cmdInfo) override;
 
 private:
-   //DECLARE_EAF_AGENT_DATA;
+   EAF_DECLARE_AGENT_DATA;
 
    bool m_bIsTesting;
 

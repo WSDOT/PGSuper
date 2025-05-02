@@ -29,14 +29,15 @@
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
 #include <IFace\Project.h>
+#include <IFace/PointOfInterest.h>
 
 
 rptRcTable* CStrandEccTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey, IntervalIndexType intervalIdx, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    bool bAsymmetric = (pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing());
 
-   EAF_GET_IFACE2(pBroker, ISectionProperties, pSectProp);
+   GET_IFACE2(pBroker, ISectionProperties, pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
    pgsTypes::SectionPropertyType spType = (spMode == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed);
 
@@ -47,7 +48,7 @@ rptRcTable* CStrandEccTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, c
    bool bReportOnlyGrossOrTransformed = (spMode == pgsTypes::spmGross ? true : false);
    pgsTypes::SectionPropertyType spType2 = pgsTypes::sptGross;
 
-   EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP)
    {
       // need eccentricity based on complete transformed section for time-step analysis
@@ -55,10 +56,10 @@ rptRcTable* CStrandEccTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, c
       bReportOnlyGrossOrTransformed = true;
    }
 
-   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
    auto releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
-   EAF_GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
+   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
    bool bTempStrands = (0 < pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Temporary) ? true : false);
 
    // Setup table
@@ -300,7 +301,7 @@ rptRcTable* CStrandEccTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, c
    INIT_UV_PROTOTYPE(rptPointOfInterest, rptErectedPoi, pDisplayUnits->GetSpanLengthUnit(), false);
    INIT_UV_PROTOTYPE(rptLengthSectionValue, ecc, pDisplayUnits->GetComponentDimUnit(), false);
 
-   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
 
    StrandIndexType Ns, Nh, Nt;
    Ns = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Straight);

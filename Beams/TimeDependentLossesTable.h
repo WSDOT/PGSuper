@@ -20,21 +20,15 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// TimeDependentLossesTable.h : Declaration of the CTimeDependentLossesTable
+#pragma once
 
-#ifndef __TIMEDEPENDENTLOSSESTABLE_H_
-#define __TIMEDEPENDENTLOSSESTABLE_H_
-
-#include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
-
+#include <PgsExt/ReportPointOfInterest.h>
 
 class WBFL::LRFD::Losses;
 class CGirderData;
 
-/////////////////////////////////////////////////////////////////////////////
-// CTimeDependentLossesTable
 class CTimeDependentLossesTable : public rptRcTable
 {
 public:
@@ -57,7 +51,5 @@ private:
    DECLARE_UV_PROTOTYPE( rptTimeUnitValue,    time);
    rptRcScalar scalar;
 
-   const CGirderData* m_pGD;
+   const CGirderData* m_pGD = nullptr;
 };
-
-#endif //__TIMEDEPENDENTLOSSESTABLE_H_

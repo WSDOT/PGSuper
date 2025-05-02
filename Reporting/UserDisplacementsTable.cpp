@@ -32,6 +32,7 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
 #include <IFace\ReportOptions.h>
+#include <IFace/PointOfInterest.h>
 
 
 /****************************************************************************
@@ -75,10 +76,10 @@ rptRcTable* CUserDeflectionsTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBro
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, deflection, pDisplayUnits->GetDeflectionUnit(), false );
 
-   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    CString strTitle;
    strTitle.Format(_T("Deflections due to User Defined Loads in Interval %d: %s"),LABEL_INTERVAL(intervalIdx),pIntervals->GetDescription(intervalIdx).c_str());
    rptRcTable* p_table = CreateUserLoadHeading<rptLengthUnitTag,WBFL::Units::LengthData>(strTitle.GetBuffer(),false,analysisType,intervalIdx,pDisplayUnits,pDisplayUnits->GetDeflectionUnit());
@@ -90,11 +91,11 @@ rptRcTable* CUserDeflectionsTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBro
    }
 
    // Get the interface pointers we need
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   EAF_GET_IFACE2(pBroker,IProductForces2,pForces2);
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   GET_IFACE2(pBroker,IProductForces2,pForces2);
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
-   EAF_GET_IFACE2(pBroker,IProductForces,pForces);
+   GET_IFACE2(pBroker,IProductForces,pForces);
    pgsTypes::BridgeAnalysisType maxBAT = pForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 

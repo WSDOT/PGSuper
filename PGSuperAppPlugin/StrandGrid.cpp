@@ -38,11 +38,6 @@
 #include <EAF\EAFDisplayUnits.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define ERROR_SUCCESS                                 0
 #define ERROR_Y_MUST_BE_POSITIVE                      1
@@ -91,11 +86,11 @@ void CStrandGrid::CustomInit(const CPrecastSegmentData* pSegment)
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // we need the segment length for validating debond lengths (can't debond more
    // length than the segment)
-   EAF_GET_IFACE2(pBroker, IBridge,pBridge);
+   GET_IFACE2(pBroker, IBridge,pBridge);
    m_SegmentLength = pBridge->GetSegmentLength(pSegment->GetSegmentKey());
 
    // Initialize the grid. For CWnd based grids this call is essential. 
@@ -407,7 +402,7 @@ CStrandRow CStrandGrid::GetStrandRow(ROWCOL nRow)
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    ROWCOL col = 1;
 
@@ -457,7 +452,7 @@ void CStrandGrid::AppendRow(const CStrandRow& strandRow)
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    ROWCOL col = 1;
 

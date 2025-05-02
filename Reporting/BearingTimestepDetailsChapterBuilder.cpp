@@ -34,7 +34,7 @@
 
 #include <WBFLGenericBridgeTools.h>
 
-#include <PgsExt\TimelineEvent.h>
+#include <PsgLib\TimelineEvent.h>
 #include <IFace/BearingDesignParameters.h>
 
 #include <string>
@@ -96,7 +96,7 @@ rptChapter* CBearingTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<c
    auto pBroker = pBTSDRptSpec->GetBroker();
    const ReactionLocation& rptLocation(pBTSDRptSpec->GetReactionLocation());
    const CGirderKey& girderKey(rptLocation.GirderKey);
-   EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   GET_IFACE2(pBroker, ILossParameters, pLossParams);
 
 
 
@@ -107,7 +107,7 @@ rptChapter* CBearingTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<c
    }
 
    SHEARDEFORMATIONDETAILS details;
-   EAF_GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
+   GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
    pBearingDesignParameters->GetBearingParameters(girderKey, &details);
 
 
@@ -118,8 +118,8 @@ rptChapter* CBearingTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<c
    }
 
    pBearingDesignParameters->GetTimeDependentShearDeformation(girderKey, &details);
-   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
-   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPOI);
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   GET_IFACE2(pBroker, IPointOfInterest, pPOI);
 
    *pPara << rptNewLine;
    *pPara << _T("Incremental ") << symbol(epsilon) << _T(" = longitudinal shear strain from time-dependent effects occuring during this interval.") << rptNewLine;

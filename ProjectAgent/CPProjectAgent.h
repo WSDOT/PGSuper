@@ -20,7 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#include <PgsExt\Keys.h>
+#include <PsgLib\Keys.h>
 
 #define EVT_PROJECTPROPERTIES    0x0001
 //#define EVT_UNITS                0x0002

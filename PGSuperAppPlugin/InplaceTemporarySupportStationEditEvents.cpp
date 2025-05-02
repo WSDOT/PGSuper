@@ -51,13 +51,13 @@ void CInplaceTemporarySupportStationEditEvents::Handle_OnChanged(std::shared_ptr
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    PierIndexType nPiers = pBridge->GetPierCount();
    Float64 startStation = pBridge->GetPierStation(0);
    Float64 endStation = pBridge->GetPierStation(nPiers - 1);
    if (new_station <= startStation || endStation <= new_station)
    {
-      EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+      GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
       CString strMsg;
       strMsg.Format(_T("Station %s is not on the bridge"), ::FormatStation(pDisplayUnits->GetStationFormat(), new_station));
       AfxMessageBox(strMsg, MB_OK | MB_ICONEXCLAMATION);
@@ -69,7 +69,7 @@ void CInplaceTemporarySupportStationEditEvents::Handle_OnChanged(std::shared_ptr
       Float64 station = pBridge->GetPierStation(pierIdx);
       if (IsEqual(new_station, station))
       {
-         EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+         GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
          CString strMsg;
          strMsg.Format(_T("Cannot move temporary support to station %s. %s is at that location."), ::FormatStation(pDisplayUnits->GetStationFormat(), new_station),LABEL_PIER_EX(pBridge->IsAbutment(pierIdx),pierIdx));
          AfxMessageBox(strMsg, MB_OK | MB_ICONEXCLAMATION);
@@ -83,7 +83,7 @@ void CInplaceTemporarySupportStationEditEvents::Handle_OnChanged(std::shared_ptr
       Float64 station = pBridge->GetTemporarySupportStation(tsIdx);
       if (IsEqual(new_station, station))
       {
-         EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+         GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
          CString strMsg;
          strMsg.Format(_T("Cannot move temporary support to station %s. Temporary Support %d is at that location."), ::FormatStation(pDisplayUnits->GetStationFormat(), new_station), LABEL_TEMPORARY_SUPPORT(tsIdx));
          AfxMessageBox(strMsg, MB_OK | MB_ICONEXCLAMATION);

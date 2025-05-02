@@ -27,10 +27,10 @@
 #include <IFace\Project.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\InterfaceShearRequirements.h>
-#include <PsgLib\SpecLibraryEntry.h>
 #include <IFace\Intervals.h>
-#include <IFace\PrestressForce.h>
 
+#include <PsgLib\SpecLibraryEntry.h>
+#include <psgLib/StrandData.h>
 
 CTotalPrestressLossTable::CTotalPrestressLossTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) :
 rptRcTable(NumColumns,0)
@@ -54,7 +54,7 @@ rptRcTable(NumColumns,0)
 
 CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
-   EAF_GET_IFACE2(pBroker,ISegmentData,pSegmentData);
+   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
    bool bIgnoreInitialRelaxation = pDetails->pLosses->IgnoreInitialRelaxation();
@@ -70,7 +70,7 @@ CTotalPrestressLossTable* CTotalPrestressLossTable::PrepareTable(rptChapter* pCh
       numColumns++; // fpp
    }
 
-   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    StrandIndexType NtMax = pStrandGeom->GetMaxStrands(segmentKey,pgsTypes::Temporary);
    if ( 0 == NtMax  )
    {
@@ -196,10 +196,10 @@ void CTotalPrestressLossTable::AddRow(rptChapter* pChapter,std::shared_ptr<WBFL:
    // NOTE: we could report fpe = fpj - dfpT but it wouldn't account for the prestress transfer adjustment
    // for that reason we report the actual effective prestress based on fpe = P/Aps 
    // where P accounts for the prestress transfer adjustment
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
 
-   EAF_GET_IFACE2(pBroker, IPretensionForce, pPrestressForce);
+   GET_IFACE2(pBroker, IPretensionForce, pPrestressForce);
    Float64 fpe = pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
 
    (*this)(row+rowOffset,col++) << stress.SetValue(fpe);

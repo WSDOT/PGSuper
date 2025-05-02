@@ -22,7 +22,7 @@
 #pragma once
 
 #include "TimelineGrid.h"
-#include <PgsExt\TimelineManager.h>
+#include <PsgLib\TimelineManager.h>
 #include "resource.h"
 
 // CEditTimelineDlg dialog

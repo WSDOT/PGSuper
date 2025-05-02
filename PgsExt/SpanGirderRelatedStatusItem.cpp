@@ -26,7 +26,7 @@
 
 pgsSpanGirderRelatedStatusItem::pgsSpanGirderRelatedStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription,
                                                                const CSpanKey& spanKey):
-CEAFStatusItem(statusGroupID,callbackID,strDescription),
+WBFL::EAF::StatusItem(statusGroupID,callbackID,strDescription),
 m_EntireBridge(false)
 {
    AddRelationshipTo(spanKey.spanIndex,spanKey.girderIndex);

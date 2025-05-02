@@ -32,14 +32,15 @@
 #include <IFace\Alignment.h>
 #include <IFace\Intervals.h>
 
-#include <EAF\EAFInterfaceCache.h>
+
 
 #include <PgsExt\PoiMgr.h>
 #include <PgsExt\PoiKey.h>
-#include <PgsExt\DeckRebarData.h>
-#include <PgsExt\RailingSystem.h>
-#include <PgsExt\ConcreteMaterial.h>
-#include <PgsExt\PTData.h>
+
+#include <PsgLib\DeckRebarData.h>
+#include <PsgLib\RailingSystem.h>
+#include <PsgLib\ConcreteMaterial.h>
+#include <PsgLib\PTData.h>
 
 #include "EffectiveFlangeWidthTool.h"
 #include "ContinuousStandFiller.h"
@@ -131,7 +132,8 @@ public:
 
 // IAgent
 public:
-	bool RegInterfaces() override;
+   std::_tstring GetName() const override { return _T("BridgeAgent"); }
+   bool RegInterfaces() override;
 	bool Init() override;
 	bool Reset() override;
 	bool ShutDown() override;
@@ -1262,7 +1264,7 @@ public:
 
 
 private:
-   //DECLARE_EAF_AGENT_DATA;
+   EAF_DECLARE_AGENT_DATA;
    DECLARE_LOGFILE;
 
    Uint16 m_Level;

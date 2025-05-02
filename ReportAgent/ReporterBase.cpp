@@ -127,7 +127,7 @@
 
 HRESULT CReporterBase::InitCommonReportBuilders(std::shared_ptr<WBFL::EAF::Broker> broker)
 {
-   EAF_GET_IFACE2(broker, IEAFReportManager, pRptMgr);
+   GET_IFACE2(broker, IEAFReportManager, pRptMgr);
 
    CreateBridgeGeometryReport(pRptMgr);
    CreateDetailsReport(pRptMgr);
@@ -587,11 +587,11 @@ void CReporterBase::CreateCrackedSectionDetailsReport(std::shared_ptr<IEAFReport
 
 HRESULT CReporterBase::OnSpecificationChanged(std::shared_ptr<WBFL::EAF::Broker> broker)
 {
-   EAF_GET_IFACE2(broker,IEAFReportManager,pRptMgr);
+   GET_IFACE2(broker,IEAFReportManager,pRptMgr);
    std::shared_ptr<WBFL::Reporting::ReportBuilder> detailsRptBuilder  = pRptMgr->GetReportBuilder(_T("Details Report"));
    std::shared_ptr<WBFL::Reporting::ReportBuilder> loadRatingRptBuilder = pRptMgr->GetReportBuilder(_T("Load Rating Report"));
 
-   EAF_GET_IFACE2(broker, ILossParameters, pLossParams);
+   GET_IFACE2(broker, ILossParameters, pLossParams);
    bool is_timestep = pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP;
    if ( is_timestep )
    {

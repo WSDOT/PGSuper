@@ -29,9 +29,11 @@
 #include "SelectMomentCapacitySectionDlg.h"
 #include <IFace\Bridge.h>
 #include <IFace\DocumentType.h>
+#include <IFace/PointOfInterest.h>
+
 #include <EAF\EAFDisplayUnits.h>
 #include <MFCTools\CustomDDX.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 #include <PGSuperUnits.h>
 #include <EAF\EAFDocument.h>
 #include "..\Documentation\PGSuper.hh"
@@ -94,7 +96,7 @@ END_MESSAGE_MAP()
 
 BOOL CSelectMomentCapacitySectionDlg::OnInitDialog()
 {
-   EAF_GET_IFACE( IBridge, pBridge );
+   GET_IFACE( IBridge, pBridge );
    m_GirderKey = m_InitialPOI.GetSegmentKey();
 
    CDialog::OnInitDialog();
@@ -151,7 +153,7 @@ void CSelectMomentCapacitySectionDlg::OnHScroll(UINT nSBCode, UINT nPos, CScroll
 
 void CSelectMomentCapacitySectionDlg::UpdateGirderComboBox()
 {
-   EAF_GET_IFACE(IBridge, pBridge);
+   GET_IFACE(IBridge, pBridge);
 
    int curSel = m_cbGirder.GetCurSel();
    if (curSel == CB_ERR) 
@@ -175,7 +177,7 @@ void CSelectMomentCapacitySectionDlg::UpdateGirderComboBox()
 
 void CSelectMomentCapacitySectionDlg::UpdateSliderLabel()
 {
-   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    CString strLabel;
    pgsPointOfInterest poi = m_vPOI[m_Slider.GetPos()];
@@ -212,7 +214,7 @@ void CSelectMomentCapacitySectionDlg::OnGirderChanged()
 
 void CSelectMomentCapacitySectionDlg::UpdatePOI()
 {
-   EAF_GET_IFACE(IPointOfInterest,pPOI);
+   GET_IFACE(IPointOfInterest,pPOI);
    // Get available pois from report spec so both classes are in synch
    CSegmentKey segmentKey(m_GirderKey, ALL_SEGMENTS);
    m_vPOI = CMomentCapacityReportSpecification::GetMomentCapacityDetailsPois(pPOI, segmentKey);

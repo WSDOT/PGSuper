@@ -31,7 +31,7 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
 #include <IFace\ReportOptions.h>
-
+#include <IFace/PointOfInterest.h>
 
 /****************************************************************************
 CLASS
@@ -76,10 +76,10 @@ void CConcurrentShearTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,rpt
    INIT_UV_PROTOTYPE( rptForceUnitValue, shear, pDisplayUnits->GetGeneralForceUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentSectionValue, moment, pDisplayUnits->GetMomentUnit(), false );
 
-   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -107,9 +107,9 @@ void CConcurrentShearTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,rpt
    *p << p_table;
 
    // Get the interface pointers we need
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
-   EAF_GET_IFACE2(pBroker,ILimitStateForces,pLsForces);
+   GET_IFACE2(pBroker,ILimitStateForces,pLsForces);
 
    pgsTypes::BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
 

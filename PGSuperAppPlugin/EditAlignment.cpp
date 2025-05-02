@@ -24,11 +24,6 @@
 #include "EditAlignment.h"
 #include "PGSuperDoc.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 txnEditAlignment::txnEditAlignment(const AlignmentData2& oldAlignmentData,   const AlignmentData2& newAlignmentData,
                                    const ProfileData2& oldProfileData,       const ProfileData2& newProfileData,
@@ -65,8 +60,8 @@ void txnEditAlignment::Execute(int i)
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IRoadwayData,pAlignment);
-   EAF_GET_IFACE2(pBroker,IEvents, pEvents);
+   GET_IFACE2(pBroker,IRoadwayData,pAlignment);
+   GET_IFACE2(pBroker,IEvents, pEvents);
    // don't fire any changed events until all changes are done
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);

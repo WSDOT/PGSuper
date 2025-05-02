@@ -34,8 +34,8 @@
 
 #include <WBFLGenericBridgeTools.h>
 
-#include <PgsExt\TimelineEvent.h>
-#include <PgsExt\CastDeckActivity.h>
+#include <PsgLib\TimelineEvent.h>
+#include <PsgLib\CastDeckActivity.h>
 
 
 // When defined, the computation details for initial strains are reported
@@ -77,24 +77,24 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(const std::shared_ptr<const
 
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
-   EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       *pPara << color(Red) << _T("Time Step analysis results not available.") << color(Black) << rptNewLine;
       return pChapter;
    }
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   EAF_GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
-   EAF_GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   EAF_GET_IFACE2(pBroker,ILosses,pLosses);
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
-   EAF_GET_IFACE2(pBroker,IMaterials,pMaterials);
-   EAF_GET_IFACE2(pBroker,ILongRebarGeometry,pRebarGeom);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,ILosses,pLosses);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IMaterials,pMaterials);
+   GET_IFACE2(pBroker,ILongRebarGeometry,pRebarGeom);
 
 #if !defined LUMP_STRANDS
-   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 #endif
 
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
@@ -113,7 +113,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(const std::shared_ptr<const
    INIT_UV_PROTOTYPE(rptLengthUnitValue,    length,     pDisplayUnits->GetSpanLengthUnit(),      false);
    INIT_UV_PROTOTYPE(rptLengthUnitValue,    deflection, pDisplayUnits->GetDeflectionUnit(),      false);
 
-   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    ///////////////////////////////////////////////////////////////////////////////////
@@ -121,7 +121,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(const std::shared_ptr<const
    ///////////////////////////////////////////////////////////////////////////////////
 
    // Report Concrete Parameters
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
@@ -281,7 +281,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(const std::shared_ptr<const
    (*pPara) << _T("Deck") << rptNewLine;
 
 
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    EventIndexType castDeckEventIdx = pIBridgeDesc->GetCastDeckEventIndex();
    const auto* pTimelineEvent = pIBridgeDesc->GetEventByIndex(castDeckEventIdx);
    const auto& castDeckActivity = pTimelineEvent->GetCastDeckActivity();
@@ -658,7 +658,7 @@ rptChapter* CTimeStepParametersChapterBuilder::Build(const std::shared_ptr<const
 
          // summation of externally applied loads
 #if defined REPORT_PRODUCT_LOAD_DETAILS
-         EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+         GET_IFACE2(pBroker,IProductLoads,pProductLoads);
 #endif //REPORT_PRODUCT_LOAD_DETAILS
          Float64 dP = 0;
          Float64 dM = 0;

@@ -66,7 +66,7 @@ CStirrupTable& CStirrupTable::operator= (const CStirrupTable& rOther)
 void CStirrupTable::Build(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,
                                 std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   EAF_GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeometry);
+   GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeometry);
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(),  false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, loc, pDisplayUnits->GetSpanLengthUnit(), false );

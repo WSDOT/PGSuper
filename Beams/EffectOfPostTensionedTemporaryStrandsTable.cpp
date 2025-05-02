@@ -26,9 +26,10 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
+#include <IFace/PointOfInterest.h>
 
 #include <PsgLib\SpecLibraryEntry.h>
-#include <PgsExt\StrandData.h>
+#include <PsgLib\StrandData.h>
 
 
 CEffectOfPostTensionedTemporaryStrandsTable::CEffectOfPostTensionedTemporaryStrandsTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) :
@@ -50,21 +51,21 @@ CEffectOfPostTensionedTemporaryStrandsTable* CEffectOfPostTensionedTemporaryStra
 {
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   EAF_GET_IFACE2(pBroker,ISegmentData,pSegmentData);
+   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
    pgsTypes::TTSUsage tempStrandUsage = pStrands->GetTemporaryStrandUsage();
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType tsInstallIntervalIdx = pIntervals->GetTemporaryStrandInstallationInterval(segmentKey);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    bool bIsAsymmetric = pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing() ? true : false;
 
-   EAF_GET_IFACE2(pBroker, IGirder, pGirder);
+   GET_IFACE2(pBroker, IGirder, pGirder);
    bool bIsPrismatic = pGirder->IsPrismatic(releaseIntervalIdx, segmentKey);
 
-   EAF_GET_IFACE2(pBroker, ISectionProperties, pSectProp);
+   GET_IFACE2(pBroker, ISectionProperties, pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
 
    // create and configure the table object
@@ -165,17 +166,17 @@ CEffectOfPostTensionedTemporaryStrandsTable* CEffectOfPostTensionedTemporaryStra
    table->mom_inertia.ShowUnitTag(true);
 
    // gather some data
-   EAF_GET_IFACE2(pBroker, IMaterials, pMaterials);
+   GET_IFACE2(pBroker, IMaterials, pMaterials);
    Float64 Eci = pMaterials->GetSegmentEc(segmentKey, tsInstallIntervalIdx);
    Float64 Ep = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Temporary)->GetE();
 
-   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    PoiList vPoi;
    pPoi->GetPointsOfInterest(segmentKey, POI_5L | POI_RELEASED_SEGMENT, &vPoi);
    ATLASSERT(vPoi.size() == 1);
    const pgsPointOfInterest& poi(vPoi.front());
 
-   EAF_GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
+   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
    Float64 Apt = pStrandGeom->GetStrandArea(poi, tsInstallIntervalIdx, pgsTypes::Temporary);
    StrandIndexType Npt = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Temporary);
 

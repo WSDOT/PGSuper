@@ -54,7 +54,7 @@
 #include <grid\gxall.h>
 #endif
 
-#include <WBFLCore.h>
+
 #include <WBFLTools.h>
 #include <IFace\Tools.h>
 
@@ -64,7 +64,7 @@
 #include "Documentation\TOGA\Toga.hh"
 #include "Documentation\TxCADExport\TxCADExport.hh"
 
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 #include <afxdlgs.h>
 #include <afxcmn.h>
 

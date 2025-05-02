@@ -29,10 +29,13 @@
 #include <IFace\Bridge.h>
 #include <IFace\DocumentType.h>
 #include <IFace\Intervals.h>
+#include <IFace/PointOfInterest.h>
 
 #include <EAF\EAFDisplayUnits.h>
 
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
+
+#include <PgsExt/ReportPointOfInterest.h>
 
 
 
@@ -95,10 +98,10 @@ BOOL CSelectPOIDlg::OnInitDialog()
 {
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge );
+   GET_IFACE2(pBroker, IBridge, pBridge );
    m_GirderKey = m_InitialPOI.GetSegmentKey();
 
-   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
    bool isPGSuper = pDocType->IsPGSuperDocument();
 
    CComboBox* pGroupBox = (CComboBox*)GetDlgItem( IDC_GROUP );
@@ -163,7 +166,7 @@ void CSelectPOIDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 void CSelectPOIDlg::UpdateGirderComboBox(GroupIndexType groupIdx)
 {
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge );
+   GET_IFACE2(pBroker, IBridge, pBridge );
 
    CComboBox* pcbGirder = (CComboBox*)GetDlgItem(IDC_GIRDER);
    Uint16 curSel = pcbGirder->GetCurSel();
@@ -186,7 +189,7 @@ void CSelectPOIDlg::UpdateGirderComboBox(GroupIndexType groupIdx)
 void CSelectPOIDlg::UpdateSliderLabel()
 {
    auto broker = EAFGetBroker();
-   EAF_GET_IFACE2(broker, IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2(broker, IEAFDisplayUnits, pDisplayUnits);
 
    CString strLabel;
    ASSERT((int)m_SliderPos < (int)m_vPOI.size());
@@ -225,7 +228,7 @@ void CSelectPOIDlg::FillIntervalCtrl()
 
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType startIntervalIdx = pIntervals->GetPrestressReleaseInterval(CSegmentKey(m_GirderKey,0));
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    for ( IntervalIndexType intervalIdx = startIntervalIdx; intervalIdx < nIntervals; intervalIdx++ )
@@ -244,7 +247,7 @@ void CSelectPOIDlg::UpdatePOI()
 {
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    m_vPOI.clear();
    pPoi->GetPointsOfInterest(CSegmentKey(m_GirderKey, ALL_SEGMENTS),&m_vPOI);
 

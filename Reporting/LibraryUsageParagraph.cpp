@@ -44,7 +44,7 @@ rptParagraph* CLibraryUsageParagraph::Build(std::shared_ptr<WBFL::EAF::Broker> p
 {
    rptParagraph* pParagraph = new rptParagraph;
 
-   EAF_GET_IFACE2(pBroker,ILibrary,pLibrary);
+   GET_IFACE2(pBroker,ILibrary,pLibrary);
    WBFL::System::Time time;
    bool bPrintDate = WBFL::System::Time::PrintDate(true);
    

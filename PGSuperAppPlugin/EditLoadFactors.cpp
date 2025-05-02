@@ -24,11 +24,6 @@
 #include "EditLoadFactors.h"
 #include <IFace\Project.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 txnEditLoadFactors::txnEditLoadFactors(const CLoadFactors& oldLoadFactors,const CLoadFactors& newLoadFactors)
 {
    m_LoadFactors[0] = oldLoadFactors;
@@ -77,11 +72,11 @@ void txnEditLoadFactors::DoExecute(int i)
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IEvents, pEvents);
+   GET_IFACE2(pBroker,IEvents, pEvents);
    // Exception-safe holder to keep from fireing events until we are done
    CIEventsHolder event_holder(pEvents);
 
-   EAF_GET_IFACE2(pBroker,ILoadFactors,pLoadFactors);
+   GET_IFACE2(pBroker,ILoadFactors,pLoadFactors);
 
    pLoadFactors->SetLoadFactors(m_LoadFactors[i]);
 }

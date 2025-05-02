@@ -23,13 +23,14 @@
 #pragma once
 
 
-#include "psgLibLib.h"
+#include "PsgLibLib.h"
 #include <Materials/PsStrand.h>
-class pgsLibraryEntryDifferenceItem;
 
 class rptChapter;
 class IEAFDisplayUnits;
 class SpecLibraryEntryImpl;
+class DifferenceItem;
+
 
 struct PSGLIBCLASS StrandSlopeCriteria
 {
@@ -41,7 +42,7 @@ struct PSGLIBCLASS StrandSlopeCriteria
 
    bool operator==(const StrandSlopeCriteria& other) const;
    bool operator!=(const StrandSlopeCriteria& other) const;
-   bool Compare(const StrandSlopeCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const;
+   bool Compare(const StrandSlopeCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const;
 
    Float64 GetStrandSlopeLimit(WBFL::Materials::PsStrand::Size strandSize) const;
 

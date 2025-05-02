@@ -36,11 +36,6 @@
 #include <IFace\Bridge.h>
 #include <IFace\DocumentType.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CSectionCutDlgEx dialog
@@ -118,7 +113,7 @@ pgsPointOfInterest CSectionCutDlgEx::GetPOI()
 
 void CSectionCutDlgEx::UpdatePOI()
 {
-   EAF_GET_IFACE(IPointOfInterest,pPoi);
+   GET_IFACE(IPointOfInterest,pPoi);
    m_vPOI.clear();
    pPoi->GetPointsOfInterest(CSegmentKey(m_GirderKey, ALL_SEGMENTS), &m_vPOI);
    if (m_Slider.GetSafeHwnd() != nullptr )
@@ -151,9 +146,9 @@ strLabel.Format(_T("%s"),rptPoi.AsString().c_str());
 strLabel.Replace(_T("<sub>"),_T(""));
 strLabel.Replace(_T("</sub>"),_T(""));
 */
-   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-   EAF_GET_IFACE(IPointOfInterest,pPoi);
-   EAF_GET_IFACE(IDocumentType,pDocType);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE(IPointOfInterest,pPoi);
+   GET_IFACE(IDocumentType,pDocType);
 
    ASSERT((int)m_SliderPos < (int)m_vPOI.size());
    pgsPointOfInterest poi = m_vPOI[m_Slider.GetPos()];

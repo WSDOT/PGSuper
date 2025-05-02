@@ -36,6 +36,7 @@
 #include <IFace\DistFactorEngineer.h>
 #include <IFace\GirderHandling.h>
 #include <IFace\Intervals.h>
+#include <IFace/PointOfInterest.h>
 
 #include <IFace\RatingSpecification.h>
 #include <PgsExt\RatingArtifact.h>
@@ -46,9 +47,9 @@
 #endif
 
 #include <PgsExt\GirderArtifact.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <PgsExt\GirderArtifactTool.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 
 
 //
@@ -84,20 +85,20 @@ private:
 int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, txcwStrandLayoutType strandLayout, txcwNsTableLayout tableLayout, bool isIBeam)
 {
 #if defined _DEBUG
-   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
    ATLASSERT(pDocType->IsPGSuperDocument());
 #endif
 
-   EAF_GET_IFACE2(pBroker, IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
-   EAF_GET_IFACE2(pBroker, ISegmentData,pSegmentData);
-   EAF_GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
-	EAF_GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
-   EAF_GET_IFACE2(pBroker, IMomentCapacity, pMomentCapacity);
-   EAF_GET_IFACE2(pBroker, ILiveLoadDistributionFactors, pDistFact);
-   EAF_GET_IFACE2(pBroker, IMaterials, pMaterial);
-   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
-	EAF_GET_IFACE2(pBroker, IArtifact, pIArtifact);
+   GET_IFACE2(pBroker, IBridge,pBridge);
+   GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker, ISegmentData,pSegmentData);
+   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
+	GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
+   GET_IFACE2(pBroker, IMomentCapacity, pMomentCapacity);
+   GET_IFACE2(pBroker, ILiveLoadDistributionFactors, pDistFact);
+   GET_IFACE2(pBroker, IMaterials, pMaterial);
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
+	GET_IFACE2(pBroker, IArtifact, pIArtifact);
 
    CSegmentKey segmentKey(girderKey,0);
    SpanIndexType spanIdx = girderKey.groupIndex;
@@ -140,7 +141,7 @@ int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, std::sha
    // STRUCTURE NAME
    if (m_RowNum==0)
    {
-      EAF_GET_IFACE2(pBroker,IProjectProperties,pProjectProperties);
+      GET_IFACE2(pBroker,IProjectProperties,pProjectProperties);
       std::_tstring bridgeName = pProjectProperties->GetBridgeName();
       rDataExporter.WriteStringToCell(1, _T("StructureName"), m_RowNum, bridgeName.c_str());
    }
@@ -259,7 +260,7 @@ int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, std::sha
    rDataExporter.WriteFloatToCell(1, _T("gShear"), m_RowNum, shearDistFactor);
 
    // Design Load rating
-   EAF_GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
    std::vector<CGirderKey> girderKeys{ girderKey };
    std::shared_ptr<const pgsISummaryRatingArtifact> pInventoryRatingArtifact = pIArtifact->GetSummaryRatingArtifact(girderKeys,pgsTypes::lrDesign_Inventory,INVALID_INDEX);
    std::shared_ptr<const pgsISummaryRatingArtifact> pOperatingRatingArtifact = pIArtifact->GetSummaryRatingArtifact(girderKeys,pgsTypes::lrDesign_Operating,INVALID_INDEX);
@@ -293,7 +294,7 @@ int TxDOTCadWriter::WriteCADDataToFile (CTxDataExporter& rDataExporter, std::sha
    // Done with values that are common to both strand layouts. Now write to specific layouts
    Float64 girder_length = pBridge->GetSegmentLength(segmentKey);
 
-   EAF_GET_IFACE2(pBroker, ISectionProperties,pSectProp);
+   GET_IFACE2(pBroker, ISectionProperties,pSectProp);
    Float64 Hg = pSectProp->GetHg(releaseIntervalIdx, pois);
 
    // use utility class for writing debond information
@@ -400,10 +401,10 @@ Uint32 TxDOTDebondWriter::WriteDebondDataData(CTxDataExporter& rDataExporter, Ui
 
          auto pBroker = EAFGetBroker();
       
-         EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
+         GET_IFACE2(pBroker, IIntervals, pIntervals);
          IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
 
-         EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+         GET_IFACE2(pBroker,ISectionProperties,pSectProp);
          Float64 Hg = pSectProp->GetHg(releaseIntervalIdx, poi);
 
          // Where the rubber hits the road - Write rows

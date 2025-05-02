@@ -71,11 +71,11 @@ rptChapter* CEffFlangeWidthDetailsChapterBuilder::Build(const std::shared_ptr<co
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    if ( pBridge->IsCompositeDeck() )
    {
-      EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
       std::vector<CGirderKey> vGirderKeys;
       pBridge->GetGirderline(girderKey, &vGirderKeys);
       for(const auto& thisGirderKey : vGirderKeys)

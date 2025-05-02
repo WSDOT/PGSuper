@@ -23,7 +23,7 @@
 #pragma once
 
 #include <EAF\EAFTransaction.h>
-#include <PgsExt\LoadFactors.h>
+#include <PsgLib\LoadFactors.h>
 
 class txnEditLoadFactors : public CEAFTransaction
 {

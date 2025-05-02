@@ -32,12 +32,13 @@
 #include <IFace\MomentCapacity.h>
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
-#include <IFace\Project.h>
+#include <IFace/PointOfInterest.h>
 
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\GirderLabel.h>
 
 #include <psgLib/MomentCapacityCriteria.h>
+#include <psgLib/SpecLibraryEntry.h>
 
 #include <PGSuperColors.h>
 
@@ -83,31 +84,31 @@ rptChapter* CMomentCapacityChapterBuilder::Build(const std::shared_ptr<const WBF
 
    auto pBroker = pSpec->GetBroker();
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    rptParagraph* pPara = new rptParagraph;
    (*pChapter) << pPara;
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
 
-   EAF_GET_IFACE2(pBroker, ILibrary, pLib);
-   EAF_GET_IFACE2(pBroker, ISpecification, pSpecification);
+   GET_IFACE2(pBroker, ILibrary, pLib);
+   GET_IFACE2(pBroker, ISpecification, pSpecification);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpecification->GetSpecification().c_str());
    const auto& moment_capacity_criteria = pSpecEntry->GetMomentCapacityCriteria();
    bool bConsiderReinforcementStrainLimits = moment_capacity_criteria.bConsiderReinforcementStrainLimit;
 
-   EAF_GET_IFACE2(pBroker, IMomentCapacity, pMomentCapacity);
+   GET_IFACE2(pBroker, IMomentCapacity, pMomentCapacity);
    const MOMENTCAPACITYDETAILS* pmcd = pMomentCapacity->GetMomentCapacityDetails(intervalIdx,poi,bPositiveMoment);
 
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    CSpanKey spanKey;
    Float64 Xspan;
    pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
 
 
-   EAF_GET_IFACE2(pBroker, IMaterials, pMaterials);
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker, IMaterials, pMaterials);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    bool bPCIUHPC = pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC || (pBridgeDesc->HasStructuralLongitudinalJoints() ? pMaterials->GetLongitudinalJointConcreteType() == pgsTypes::PCI_UHPC : false);

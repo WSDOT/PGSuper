@@ -28,9 +28,9 @@
 #include <IFace\Project.h>
 #include <IFace\DocumentType.h>
 
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\TimelineManager.h>
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\TimelineManager.h>
+#include <PsgLib\ClosureJointData.h>
 
 
 CTimelineChapterBuilder::CTimelineChapterBuilder(bool bSelect) :
@@ -59,10 +59,10 @@ rptChapter* CTimelineChapterBuilder::Build(const std::shared_ptr<const WBFL::Rep
       girderKey = pGirderRptSpec->GetGirderKey();
    }
 
-   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
-   EAF_GET_IFACE2_NOCHECK(pBroker, IUserDefinedLoadData, pUserDefinedLoads);
-   EAF_GET_IFACE2_NOCHECK(pBroker, IDocumentType, pDocType);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2_NOCHECK(pBroker, IUserDefinedLoadData, pUserDefinedLoads);
+   GET_IFACE2_NOCHECK(pBroker, IDocumentType, pDocType);
 
    const auto* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 

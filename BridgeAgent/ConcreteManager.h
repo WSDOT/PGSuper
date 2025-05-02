@@ -22,9 +22,9 @@
 
 #pragma once
 
-#include <PgsExt\ConcreteMaterial.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\Keys.h>
+#include <PsgLib\ConcreteMaterial.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\Keys.h>
 #include <Materials/Materials.h>
 #include <LRFD\LRFD.h>
 #include "StatusItems.h"

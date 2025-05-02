@@ -23,14 +23,16 @@
 #pragma once
 
 
-#include "psgLibLib.h"
+#include "PsgLibLib.h"
+#include <PGSuperTypes.h>
 #include <LRFD/RefinedLosses2005.h>
 #include <LRFD/BDSManager.h>
 
 class rptChapter;
 class IEAFDisplayUnits;
-class pgsLibraryEntryDifferenceItem;
 class SpecLibraryEntryImpl;
+class DifferenceItem;
+
 
 struct PSGLIBCLASS PrestressLossCriteria
 {
@@ -88,7 +90,7 @@ struct PSGLIBCLASS PrestressLossCriteria
    Float64 LiveLoadElasticGain = 0.0;
 
 
-   bool Compare(const PrestressLossCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
+   bool Compare(const PrestressLossCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
 
    void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 
@@ -101,5 +103,5 @@ struct PSGLIBCLASS PrestressLossCriteria
 
 
 inline constexpr auto operator+(PrestressLossCriteria::LossMethodType a) noexcept { return std::underlying_type<PrestressLossCriteria::LossMethodType>::type(a); }
-inline constexpr auto operator+(PrestressLossCriteria::TimeDependentConcreteModelType a) noexcept { return std::underlying_type<PrestressLossCriteria::TimeDependentConcreteModelType>::type(a); }
 inline constexpr auto operator+(PrestressLossCriteria::FcgpMethodType a) noexcept { return std::underlying_type<PrestressLossCriteria::FcgpMethodType>::type(a); }
+inline constexpr auto operator+(PrestressLossCriteria::TimeDependentConcreteModelType a) noexcept { return std::underlying_type<PrestressLossCriteria::TimeDependentConcreteModelType>::type(a); }

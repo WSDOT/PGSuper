@@ -23,7 +23,7 @@
 #pragma once
 
 #include <PgsExt\PgsExtExp.h>
-#include <PgsExt\PointOfInterest.h>
+#include <PsgLib\PointOfInterest.h>
 
 class pgsSplittingCheckEngineer;
 class rptChapter;

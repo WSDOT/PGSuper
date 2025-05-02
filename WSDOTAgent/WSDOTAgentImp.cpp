@@ -53,7 +53,7 @@ bool CWSDOTAgentImp::Init()
 
 
    // Register our reports
-   EAF_GET_IFACE(IEAFReportManager,pRptMgr);
+   GET_IFACE(IEAFReportManager,pRptMgr);
 
    //
    // Create report spec builders
@@ -61,7 +61,7 @@ bool CWSDOTAgentImp::Init()
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pGirderRptSpecBuilder( std::make_shared<CGirderReportSpecificationBuilder>(m_pBroker, CGirderKey(0, 0)));
    std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pGirderLineRptSpecBuilder( std::make_shared<CGirderLineReportSpecificationBuilder>(m_pBroker) );
 
-   EAF_GET_IFACE(IDocumentType,pDocType);
+   GET_IFACE(IDocumentType,pDocType);
    if ( pDocType->IsPGSuperDocument() )
    {
       std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder> pMultiViewRptSpecBuilder( std::make_shared<CMultiViewSpanGirderReportSpecificationBuilder>(m_pBroker) );

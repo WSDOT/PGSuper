@@ -23,7 +23,7 @@
 #pragma once
 #include <Reporting\ReportingExp.h>
 #include <Reporting\BrokerReportSpecification.h>
-#include <PgsExt\TimelineManager.h>
+#include <PsgLib\TimelineManager.h>
 
 class REPORTINGCLASS CTimelineManagerReportSpecification :
    public CBrokerReportSpecification

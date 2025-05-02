@@ -30,4 +30,4 @@
 #include <AgentTools.h>
 #include <afxdlgs.h>
 
-#include <PgsExt\Keys.h>
+#include <PsgLib\Keys.h>

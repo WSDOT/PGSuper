@@ -135,7 +135,7 @@ protected:
    BOOL Init() override;
    BOOL LoadSpecialAgents() override; 
    void OnChangedFavoriteReports(BOOL bIsFavorites, BOOL bFromMenu) override;
-   void ShowCustomReportHelp(eafTypes::CustomReportHelp helpType) override;
+   void ShowCustomReportHelp(WBFL::EAF::CustomReportHelp helpType) override;
    void ShowCustomReportDefinitionHelp() override;
 
 // CEAFAutoCalcDocMixin over-rides
@@ -448,7 +448,7 @@ protected:
 
    void LoadDocumentationMap() override;
    CString GetDocumentationRootLocation() override;
-   eafTypes::HelpResult GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nHID,CString& strURL) override;
+   std::pair<WBFL::EAF::HelpResult,CString> GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nHID) override;
 
    void OnLogFileOpened() override; // called when the log file is first opened
 
@@ -458,7 +458,7 @@ protected:
    BOOL CreateBroker() override;
    HINSTANCE GetResourceInstance() override;
 
-   BOOL UpdateTemplates(IProgress* pProgress,LPCTSTR lpszDir);
+   BOOL UpdateTemplates(std::shared_ptr<IEAFProgress> pProgress,LPCTSTR lpszDir);
    virtual void ModifyTemplate(LPCTSTR strTemplate); 
 
    CString GetToolbarSectionName() override;

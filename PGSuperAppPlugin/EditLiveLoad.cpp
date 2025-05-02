@@ -26,11 +26,6 @@
 
 #include <IFace\Project.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 txnEditLiveLoad::txnEditLiveLoad(const txnEditLiveLoadData& oldDesign,const txnEditLiveLoadData& newDesign,
                                  const txnEditLiveLoadData& oldFatigue,const txnEditLiveLoadData& newFatigue,
@@ -87,8 +82,8 @@ void txnEditLiveLoad::DoExecute(int i)
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2( pBroker, ILiveLoads, pLiveLoad );
-   EAF_GET_IFACE2( pBroker, IEvents,    pEvents   );
+   GET_IFACE2( pBroker, ILiveLoads, pLiveLoad );
+   GET_IFACE2( pBroker, IEvents,    pEvents   );
    // Exception-safe holder to keep from fireing events until we are done
    CIEventsHolder event_holder(pEvents);
 
@@ -107,6 +102,6 @@ void txnEditLiveLoad::DoExecute(int i)
    pLiveLoad->SetLaneImpact(               pgsTypes::lltPermit,m_Permit[i].m_LaneImpact);
    pLiveLoad->SetPedestrianLoadApplication(pgsTypes::lltPermit,m_Permit[i].m_PedestrianLoadApplicationType);
 
-   EAF_GET_IFACE2( pBroker, IBridgeDescription, pIBridgeDesc );
+   GET_IFACE2( pBroker, IBridgeDescription, pIBridgeDesc );
    pIBridgeDesc->SetLiveLoadEventByIndex(m_EventIndex[i]);
 }

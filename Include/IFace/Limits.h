@@ -23,9 +23,9 @@
 #pragma once
 
 #include <PGSuperTypes.h>
-#include <PgsExt\Keys.h>
-#include <PgsExt\PointOfInterest.h>
-#include <psgLib/TensionStressLimit.h>
+#include <PsgLib/Keys.h>
+#include <PsgLib/PointOfInterest.h>
+#include <PsgLib/TensionStressLimit.h>
 
 class IEAFDisplayUnits;
 class pgsSegmentArtifact;
@@ -253,7 +253,7 @@ public:
    /// @return The compression stress limit coefficient
    virtual Float64 GetConcreteCompressionStressLimitCoefficient(const pgsPointOfInterest& poi,pgsTypes::StressLocation stressLocation, const StressCheckTask& task) const = 0;
 
-   /// @brief Returns the parameters for determining the concrete tension sterss limit
+   /// @brief Returns the parameters for determining the concrete tension stress limit
    /// @param poi Location where stress limit is requested. This method determine if poi is in a precast segment or closure joint
    /// @param stressLocation location in the girder section
    /// @param task stress checking task

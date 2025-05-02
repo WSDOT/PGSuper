@@ -22,7 +22,7 @@
 
 #include "StdAfx.h"
 #include <Reporting\BearingTimeStepDetailsReportSpecification.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 
 
 CBearingTimeStepDetailsReportSpecification::CBearingTimeStepDetailsReportSpecification(const std::_tstring& strReportName,std::shared_ptr<WBFL::EAF::Broker> pBroker,

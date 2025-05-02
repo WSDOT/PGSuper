@@ -20,14 +20,11 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// ElasticShorteningTable.h : Declaration of the CElasticShorteningTable
+#pragma once
 
-#ifndef __ELASTICSHORTENINGTABLE_H_
-#define __ELASTICSHORTENINGTABLE_H_
-
-#include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <PgsExt/ReportPointOfInterest.h>
 
 
 class WBFL::LRFD::Losses;
@@ -57,5 +54,3 @@ private:
    DECLARE_UV_PROTOTYPE( rptMomentUnitValue,  moment );
    DECLARE_UV_PROTOTYPE( rptStressUnitValue,  stress );
 };
-
-#endif //__ELASTICSHORTENINGTABLE_H_

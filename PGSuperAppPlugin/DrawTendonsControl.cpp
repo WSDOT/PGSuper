@@ -29,17 +29,13 @@
 #include "DrawTendonsControl.h"
 #include <IFace\Alignment.h>
 #include <IFace\Bridge.h>
-
+#include <IFace/PointOfInterest.h>
 #include <IFace\Project.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\SplicedGirderData.h>
-#include <PgsExt\PrecastSegmentData.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\SplicedGirderData.h>
+#include <PsgLib\PrecastSegmentData.h>
+
 
 
 // CDrawTendonsControl
@@ -167,7 +163,7 @@ void CDrawTendonsControl::OnPaint()
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IGirder,pIGirder);
+   GET_IFACE2(pBroker,IGirder,pIGirder);
 
    SegmentIndexType nSegments = m_pGirder->GetSegmentCount();
 
@@ -196,8 +192,8 @@ void CDrawTendonsControl::OnPaint()
 
    // Create a poly line for each tendon. 
    std::vector<std::pair<CComPtr<IPoint2dCollection>,bool>> ducts;
-   EAF_GET_IFACE2_NOCHECK(pBroker,IGirderTendonGeometry,pTendonGeometry); // only used if there are ducts/tendons
-   EAF_GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pIPoi); // only used if there are ducts/tendons
+   GET_IFACE2_NOCHECK(pBroker,IGirderTendonGeometry,pTendonGeometry); // only used if there are ducts/tendons
+   GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pIPoi); // only used if there are ducts/tendons
    DuctIndexType nDucts = m_pPTData->GetDuctCount();
    DuctIndexType startDuctIdx = (m_bDrawAllDucts || m_DuctIdx == ALL_DUCTS ? 0 : m_DuctIdx);
    DuctIndexType endDuctIdx = (m_bDrawAllDucts || m_DuctIdx == ALL_DUCTS ? nDucts : startDuctIdx + 1);

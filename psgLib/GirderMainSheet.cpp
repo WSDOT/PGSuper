@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psglib.h>
+#include <PsgLib\PsgLib.h>
 #include "GirderMainSheet.h"
 #include <MfcTools\CustomDDX.h>
 
@@ -179,7 +179,7 @@ void CGirderMainSheet::ExchangeDimensionData(CDataExchange* pDX)
       m_Entry.SetDragCoefficient(Cd);
    }
 
-   bool bUnitsSI = (pApp->GetUnitsMode() == eafTypes::umSI);
+   bool bUnitsSI = (pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI);
 
    auto splicedBeamFactory = std::dynamic_pointer_cast<ISplicedBeamFactory>(m_Entry.GetBeamFactory());
 
@@ -828,7 +828,7 @@ void CGirderMainSheet::ExchangeFlexuralDesignStrategyCriteriaData(CDataExchange*
    else
    {
       // Hard coded min design values. 
-      bool is_si = eafTypes::umSI == pApp->GetUnitsMode();
+      bool is_si = WBFL::EAF::UnitMode::SI == pApp->GetUnitsMode();
 
       Float64 minfci = is_si ? WBFL::Units::ConvertToSysUnits(28.0,WBFL::Units::Measure::MPa) :
                                WBFL::Units::ConvertToSysUnits( 4.0,WBFL::Units::Measure::KSI); // minimum per LRFD 5.4.2.1

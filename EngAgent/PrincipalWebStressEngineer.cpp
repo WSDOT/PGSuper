@@ -33,10 +33,10 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\PrestressForce.h>
 #include <IFace/Limits.h>
-
 #include <IFace\Project.h>
-#include <PgsExt\LoadFactors.h>
 
+#include <psgLib/SpecLibraryEntry.h>
+#include <PsgLib\LoadFactors.h>
 #include <psgLib/PrincipalTensionStressCriteria.h>
 
 /////////// Misc
@@ -112,9 +112,9 @@ std::vector<TimeStepCombinedPrincipalWebStressDetailsAtWebSection> pgsPrincipalW
 {
    std::vector<TimeStepCombinedPrincipalWebStressDetailsAtWebSection> details;
 
-   EAF_GET_IFACE(ILosses,pLosses);
-   EAF_GET_IFACE(IProductLoads,pProductLoads);
-   EAF_GET_IFACE(IIntervals, pIntervals);
+   GET_IFACE(ILosses,pLosses);
+   GET_IFACE(IProductLoads,pProductLoads);
+   GET_IFACE(IIntervals, pIntervals);
 
    IntervalIndexType liveLoadInterval = pIntervals->GetLiveLoadInterval();
    
@@ -172,7 +172,7 @@ std::vector<TimeStepCombinedPrincipalWebStressDetailsAtWebSection> pgsPrincipalW
    if (interval >= liveLoadInterval)
    {
       // shear responses
-      EAF_GET_IFACE(IProductForces, pProductForces);
+      GET_IFACE(IProductForces, pProductForces);
       pgsTypes::BridgeAnalysisType maxBat = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
       pgsTypes::BridgeAnalysisType minBat = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
 
@@ -245,7 +245,7 @@ std::vector<TimeStepCombinedPrincipalWebStressDetailsAtWebSection> pgsPrincipalW
    }
 
    // Build Service III results from loading combos
-   EAF_GET_IFACE(ILoadFactors, pILoadFactors);
+   GET_IFACE(ILoadFactors, pILoadFactors);
    const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
    pgsTypes::LimitState limitState = pgsTypes::ServiceIII;
    Float64 gDC = pLoadFactors->GetDCMax(limitState);
@@ -298,7 +298,7 @@ std::vector<TimeStepCombinedPrincipalWebStressDetailsAtWebSection> pgsPrincipalW
 
 void pgsPrincipalWebStressEngineer::Check(const PoiList& vPois, pgsPrincipalTensionStressArtifact* pArtifact) const
 {
-   EAF_GET_IFACE(ISpecification, pSpec);
+   GET_IFACE(ISpecification, pSpec);
 
    // Assume that if the first poi needs checked a certain way, they all do
    const pgsPointOfInterest& rpoi(vPois.front());
@@ -317,10 +317,10 @@ void pgsPrincipalWebStressEngineer::Check(const PoiList& vPois, pgsPrincipalTens
 
 void pgsPrincipalWebStressEngineer::CheckTimeStep(const PoiList& vPois, pgsPrincipalTensionStressArtifact * pArtifact) const
 {
-   EAF_GET_IFACE(IIntervals, pIntervals);
+   GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType liveLoadInterval = pIntervals->GetLiveLoadInterval();
 
-   EAF_GET_IFACE(IConcreteStressLimits, pLimits);
+   GET_IFACE(IConcreteStressLimits, pLimits);
    Float64 coefficient = pLimits->GetConcreteWebPrincipalTensionStressLimitCoefficient();
 
    Float64 fcReqd = -Float64_Max;
@@ -357,7 +357,7 @@ void pgsPrincipalWebStressEngineer::CheckTimeStep(const PoiList& vPois, pgsPrinc
 
 void pgsPrincipalWebStressEngineer::CheckSimpleLosses(const PoiList & vPois, pgsPrincipalTensionStressArtifact * pArtifact) const
 {
-   EAF_GET_IFACE(IConcreteStressLimits, pLimits);
+   GET_IFACE(IConcreteStressLimits, pLimits);
    Float64 coefficient = pLimits->GetConcreteWebPrincipalTensionStressLimitCoefficient();
 
    Float64 fcReqd = -Float64_Max;
@@ -396,17 +396,17 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
    PRINCIPALSTRESSINWEBDETAILS details;
    pgsTypes::LimitState limitState = pgsTypes::ServiceIII;
 
-   EAF_GET_IFACE(ISectionProperties, pSectProps);
-   EAF_GET_IFACE(ILimitStateForces, pLSForces);
-   EAF_GET_IFACE(IIntervals, pIntervals);
-   EAF_GET_IFACE(IProductForces, pProductForces);
-   EAF_GET_IFACE(IConcreteStressLimits, pLimits);
-   EAF_GET_IFACE(IGirder, pGirder);
-   EAF_GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
-   EAF_GET_IFACE(IGirderTendonGeometry, pGirderTendonGeometry);
-   EAF_GET_IFACE(IDuctLimits, pDuctLimits);
-   EAF_GET_IFACE(ISpecification, pSpec);
-   EAF_GET_IFACE(ILibrary, pLib);
+   GET_IFACE(ISectionProperties, pSectProps);
+   GET_IFACE(ILimitStateForces, pLSForces);
+   GET_IFACE(IIntervals, pIntervals);
+   GET_IFACE(IProductForces, pProductForces);
+   GET_IFACE(IConcreteStressLimits, pLimits);
+   GET_IFACE(IGirder, pGirder);
+   GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
+   GET_IFACE(IGirderTendonGeometry, pGirderTendonGeometry);
+   GET_IFACE(IDuctLimits, pDuctLimits);
+   GET_IFACE(ISpecification, pSpec);
+   GET_IFACE(ILibrary, pLib);
    std::_tstring specName = pSpec->GetSpecification();
    const auto* pSpecEntry = pLib->GetSpecEntry(specName.c_str());
    const auto& principal_tension_stress_criteria = pSpecEntry->GetPrincipalTensionStressCriteria();
@@ -423,7 +423,7 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
 
    pgsTypes::SectionPropertyType spType = pSectProps->GetSectionPropertiesMode() == pgsTypes::spmGross ? pgsTypes::sptGross : pgsTypes::sptTransformed;
 
-   EAF_GET_IFACE(IPointOfInterest, pPoi);
+   GET_IFACE(IPointOfInterest, pPoi);
    bool bInClosureJoint = false;
    CClosureKey closureKey;
    if (pPoi->IsInClosureJoint(poi, &closureKey))
@@ -447,8 +447,8 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
 
    details.Ic = pSectProps->GetIxx(spType, intervalIdx, poi);
 
-   EAF_GET_IFACE(IPretensionForce, pPretensionForce);
-   EAF_GET_IFACE(IPosttensionForce, pPTForce);
+   GET_IFACE(IPretensionForce, pPretensionForce);
+   GET_IFACE(IPosttensionForce, pPTForce);
    details.Vp = pPretensionForce->GetVertHarpedStrandForce(poi, intervalIdx, pgsTypes::End, nullptr);
    details.Vp += pPTForce->GetSegmentTendonVerticalForce(poi, intervalIdx, pgsTypes::End, ALL_DUCTS);
    details.Vp += pPTForce->GetGirderTendonVerticalForce(poi, intervalIdx, pgsTypes::End, ALL_DUCTS);
@@ -644,7 +644,7 @@ PRINCIPALSTRESSINWEBDETAILS pgsPrincipalWebStressEngineer::ComputePrincipalStres
 
 WBFL::System::SectionValue pgsPrincipalWebStressEngineer::GetNonCompositeShear(pgsTypes::BridgeAnalysisType bat,IntervalIndexType intervalIdx, pgsTypes::LimitState limitState, const pgsPointOfInterest& poi) const
 {
-   EAF_GET_IFACE(ILoadFactors, pILoadFactors);
+   GET_IFACE(ILoadFactors, pILoadFactors);
    const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
    Float64 gDC = pLoadFactors->GetDCMax(limitState);
    Float64 gDW = pLoadFactors->GetDWMax(limitState);
@@ -659,7 +659,7 @@ WBFL::System::SectionValue pgsPrincipalWebStressEngineer::GetNonCompositeShear(p
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   EAF_GET_IFACE(ICombinedForces, pCombinedForces);
+   GET_IFACE(ICombinedForces, pCombinedForces);
    WBFL::System::SectionValue Vdc = pCombinedForces->GetShear(intervalIdx, lcDC, poi, bat, rtCumulative);
    WBFL::System::SectionValue Vdw = pCombinedForces->GetShear(intervalIdx, lcDW, poi, bat, rtCumulative);
    WBFL::System::SectionValue Vnc = gDC*Vdc + gDW*Vdw;
@@ -669,11 +669,11 @@ WBFL::System::SectionValue pgsPrincipalWebStressEngineer::GetNonCompositeShear(p
 
 void pgsPrincipalWebStressEngineer::GetCompositeShear(pgsTypes::BridgeAnalysisType bat, IntervalIndexType intervalIdx, pgsTypes::LimitState limitState, const pgsPointOfInterest& poi, WBFL::System::SectionValue* pVmin, WBFL::System::SectionValue* pVmax) const
 {
-   EAF_GET_IFACE(ILimitStateForces, pLimitStateForces);
+   GET_IFACE(ILimitStateForces, pLimitStateForces);
    WBFL::System::SectionValue Vu_min, Vu_max;
    pLimitStateForces->GetShear(intervalIdx, limitState, poi, bat, &Vu_min, &Vu_max);
 
-   EAF_GET_IFACE(IIntervals, pIntervals);
+   GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType noncompositeIntervalIdx = pIntervals->GetLastNoncompositeInterval();
    WBFL::System::SectionValue Vnc = GetNonCompositeShear(bat, noncompositeIntervalIdx, limitState, poi);
 

@@ -36,17 +36,12 @@
 #include "PGSuperDoc.h"
 #include "Utilities.h"
 
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\TemporarySupportData.h>
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\TemporarySupportData.h>
+#include <PsgLib\ClosureJointData.h>
 
 #include <IFace\Project.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 IMPLEMENT_DYNAMIC(CEditHaunchACamberDlg, CDialog)
@@ -137,7 +132,7 @@ END_MESSAGE_MAP()
 BOOL CEditHaunchACamberDlg::OnInitDialog()
 {
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,ISpecification, pSpec );
+   GET_IFACE2(pBroker,ISpecification, pSpec );
    m_bCanAssumedExcessCamberInputBeEnabled = pSpec->IsAssumedExcessCamberInputEnabled();
 
    // Initialize our data structure for current data

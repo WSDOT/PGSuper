@@ -25,10 +25,10 @@
 
 #include <EAF\EAFTransaction.h>
 #include <PgsExt\GirderDesignArtifact.h>
-#include <PgsExt\StrandData.h>
-#include <PgsExt\GirderMaterial.h>
+#include <PsgLib\StrandData.h>
+#include <PsgLib\GirderMaterial.h>
 #include <PsgLib\ShearData.h>
-#include <PgsExt\HandlingData.h>
+#include <PsgLib\HandlingData.h>
 
 typedef enum SlabOffsetDesignSelectionType
 {

@@ -27,7 +27,7 @@
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFTxnManager.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include "MovePierDlg.h"
 #include "EditPierStation.h"
 
@@ -51,10 +51,10 @@ void CInplacePierStationEditEvents::Handle_OnChanged(std::shared_ptr<WBFL::DMani
    if ( IsEqual(old_station,new_station) )
       return;
 
-   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::StationFormat& station_format = pDisplayUnits->GetStationFormat();
 
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    SpanIndexType nSpans = pBridgeDesc->GetSpanCount();
 

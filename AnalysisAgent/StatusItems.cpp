@@ -23,22 +23,17 @@
 #include "stdafx.h"
 #include "StatusItems.h"
 
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 pgsVSRatioStatusItem::pgsVSRatioStatusItem(const CSegmentKey& segmentKey,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
 pgsSegmentRelatedStatusItem(statusGroupID,callbackID,strDescription,segmentKey), m_SegmentKey(segmentKey)
 {
 }
 
-bool pgsVSRatioStatusItem::IsEqual(CEAFStatusItem* pOther)
+bool pgsVSRatioStatusItem::IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const
 {
-   pgsVSRatioStatusItem* other = dynamic_cast<pgsVSRatioStatusItem*>(pOther);
+   auto other = std::dynamic_pointer_cast<const pgsVSRatioStatusItem>(pOther);
    if ( !other )
       return false;
 
@@ -50,16 +45,16 @@ pgsVSRatioStatusCallback::pgsVSRatioStatusCallback()
 {
 }
 
-eafTypes::StatusSeverityType pgsVSRatioStatusCallback::GetSeverity() const
+WBFL::EAF::StatusSeverityType pgsVSRatioStatusCallback::GetSeverity() const
 {
-   return eafTypes::statusError;
+   return WBFL::EAF::StatusSeverityType::Error;
 }
 
-void pgsVSRatioStatusCallback::Execute(CEAFStatusItem* pStatusItem)
+void pgsVSRatioStatusCallback::Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   pgsVSRatioStatusItem* pItem = dynamic_cast<pgsVSRatioStatusItem*>(pStatusItem);
+   auto pItem = std::dynamic_pointer_cast<pgsVSRatioStatusItem>(pStatusItem);
    ATLASSERT(pItem!=nullptr);
 
    CString strMsg;

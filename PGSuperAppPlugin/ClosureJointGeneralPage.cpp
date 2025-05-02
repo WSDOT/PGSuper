@@ -10,7 +10,8 @@
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <psgLib/SpecLibraryEntry.h>
 
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -20,11 +21,7 @@
 
 #include <PgsExt\ConcreteDetailsDlg.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+
 
 // CClosureJointGeneralPage dialog
 
@@ -109,12 +106,12 @@ BOOL CClosureJointGeneralPage::OnInitDialog()
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
    std::_tstring strSpecName = pSpec->GetSpecification();
 
-   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
    const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
    m_LossMethod = prestress_loss_criteria.LossMethod;
@@ -187,7 +184,7 @@ BOOL CClosureJointGeneralPage::OnInitDialog()
       GetDlgItem(IDC_NOTE)->SetWindowText(_T("NOTE: Changes to the Installation Event apply to all closure joints at this pier."));
    }
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 length = pBridge->GetClosureJointLength(pParent->m_ClosureKey);
    CString strLength;
    strLength.Format(_T("Length: %s"),FormatDimension(length,pDisplayUnits->GetXSectionDimUnit()));
@@ -201,7 +198,7 @@ void CClosureJointGeneralPage::ExchangeConcreteData(CDataExchange* pDX)
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
 
@@ -470,7 +467,7 @@ void CClosureJointGeneralPage::UpdateEci()
       // Eci is based on the user input value of Ec and not f'ci
       
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       CString strEc;
       m_ctrlEc.GetWindowText(strEc);
@@ -518,7 +515,7 @@ void CClosureJointGeneralPage::UpdateEci()
 
       
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
 
@@ -569,7 +566,7 @@ void CClosureJointGeneralPage::UpdateEc()
       // Ec is based on the user input value of Eci and not f'c
       
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       CString strEci;
       m_ctrlEci.GetWindowText(strEci);
@@ -602,7 +599,7 @@ void CClosureJointGeneralPage::UpdateEc()
 
       
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
 
@@ -627,7 +624,7 @@ void CClosureJointGeneralPage::UpdateFc()
 
       
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       Float64 fci;
       WBFL::System::Tokenizer::ParseDouble(strFci, &fci);
@@ -664,7 +661,7 @@ void CClosureJointGeneralPage::UpdateFci()
 
       
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       Float64 fc;
       WBFL::System::Tokenizer::ParseDouble(strFc, &fc);
@@ -774,7 +771,7 @@ void CClosureJointGeneralPage::UpdateConcreteParametersToolTip()
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CClosureJointDlg* pParent = (CClosureJointDlg*)GetParent();
 

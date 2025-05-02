@@ -29,11 +29,6 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // CConstructionLoadDlg dialog
 
@@ -55,7 +50,7 @@ void CConstructionLoadDlg::DoDataExchange(CDataExchange* pDX)
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    DDX_UnitValueAndTag(pDX,IDC_LOAD,IDC_LOAD_UNIT,m_Load,pDisplayUnits->GetOverlayWeightUnit());
 }

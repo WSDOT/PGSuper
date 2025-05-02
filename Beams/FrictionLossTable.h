@@ -20,15 +20,11 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// FrictionLossTable.h : Declaration of the CFrictionLossTable
+#pragma once
 
-#ifndef __FRICTIONLOSSTABLE_H_
-#define __FRICTIONLOSSTABLE_H_
-
-#include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
-
+#include <PgsExt/ReportPointOfInterest.h>
 
 class WBFL::LRFD::Losses;
 
@@ -56,5 +52,3 @@ private:
    DECLARE_UV_PROTOTYPE( rptPerLengthUnitValue, wobble);
    DECLARE_UV_PROTOTYPE( rptAngleUnitValue, angle);
 };
-
-#endif //__FRICTIONLOSSTABLE_H_

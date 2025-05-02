@@ -33,11 +33,6 @@
 #include <CoordGeom/Station.h>
 #include <algorithm>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // simple, exception-safe class for blocking events
 class SimpleMutex
@@ -215,7 +210,7 @@ void CCrownSlopeGrid::CustomInit()
 void CCrownSlopeGrid::UpdateGridSizeAndHeaders(const RoadwaySectionData& data)
 {
    CCrownSlopePage* pParent = (CCrownSlopePage*)GetParent();
-   EAF_GET_IFACE2(pParent->GetBroker(), IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pParent->GetBroker(), IEAFDisplayUnits,pDisplayUnits);
 
 	this->GetParam( )->EnableUndo(FALSE);
 
@@ -391,7 +386,7 @@ void CCrownSlopeGrid::SetRowData(ROWCOL nRow, const RoadwaySectionTemplate& data
 	GetParam()->EnableUndo(FALSE);
 
    CCrownSlopePage* pParent = (CCrownSlopePage*)GetParent();
-   EAF_GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
    UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
    Float64 station = data.Station;
@@ -429,7 +424,7 @@ bool CCrownSlopeGrid::GetRowData(ROWCOL nRow,RoadwaySectionTemplate& data)
    data.SegmentDataVec.clear();
 
    CCrownSlopePage* pParent = (CCrownSlopePage*)GetParent();
-   EAF_GET_IFACE2(pParent->GetBroker(), IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2(pParent->GetBroker(), IEAFDisplayUnits, pDisplayUnits);
 
    try
    {
@@ -588,7 +583,7 @@ BOOL CCrownSlopeGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
       try
       {
          std::_tstring strStation(GetCellValue(nRow, 1));
-         EAF_GET_IFACE2(pParent->GetBroker(), IEAFDisplayUnits, pDisplayUnits);
+         GET_IFACE2(pParent->GetBroker(), IEAFDisplayUnits, pDisplayUnits);
          WBFL::COGO::Station station(strStation, pDisplayUnits->GetStationFormat());
       }
       catch(...)

@@ -60,14 +60,14 @@ rptChapter* CTogaStressChecksChapterBuilder::Build(const std::shared_ptr<const W
    // This is a single segment report
    CSegmentKey segmentKey(girderKey,0);
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
    *pPara << _T("Specification = ") << pSpec->GetSpecification() << rptNewLine;
 
    *pPara << Bold(_T("Notes: "))<< rptNewLine;
@@ -78,7 +78,7 @@ rptChapter* CTogaStressChecksChapterBuilder::Build(const std::shared_ptr<const W
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   EAF_GET_IFACE2(pBroker,IStressCheck, pStressCheck);
+   GET_IFACE2(pBroker,IStressCheck, pStressCheck);
    std::vector<StressCheckTask> vStressCheckTasks(pStressCheck->GetStressCheckTasks(segmentKey));
    for (const auto& task : vStressCheckTasks)
    {
@@ -92,7 +92,7 @@ void CTogaStressChecksChapterBuilder::BuildTableAndNotes(rptChapter* pChapter, s
                       std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const StressCheckTask& task) const
 {
    // We need the artifact that we've doctored for txdot reasons
-   EAF_GET_IFACE2(pBroker,IGetTogaResults,pGetTogaResults);
+   GET_IFACE2(pBroker,IGetTogaResults,pGetTogaResults);
    const pgsGirderArtifact* pFactoredGdrArtifact = pGetTogaResults->GetFabricatorDesignArtifact();
    const pgsSegmentArtifact* pSegmentArtifact = pFactoredGdrArtifact->GetSegmentArtifact(0);
 
@@ -101,7 +101,7 @@ void CTogaStressChecksChapterBuilder::BuildTableAndNotes(rptChapter* pChapter, s
 
    CSegmentKey fabrSegmentKey(TOGA_SPAN,TOGA_FABR_GDR,0);
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(fabrSegmentKey);
 
    if ( task.intervalIdx != releaseIntervalIdx)

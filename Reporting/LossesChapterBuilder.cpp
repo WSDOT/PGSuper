@@ -55,9 +55,9 @@ rptChapter* CLossesChapterBuilder::Build(const std::shared_ptr<const WBFL::Repor
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-   EAF_GET_IFACE2(pBroker, ILosses,          pILosses     );
-   EAF_GET_IFACE2(pBroker, IBridge,          pBridge      );
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2(pBroker, ILosses,          pILosses     );
+   GET_IFACE2(pBroker, IBridge,          pBridge      );
 
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(girderKey, &vGirderKeys);

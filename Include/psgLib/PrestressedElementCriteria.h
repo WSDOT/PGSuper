@@ -23,13 +23,14 @@
 #pragma once
 
 
-#include "psgLibLib.h"
-#include "TensionStressLimit.h"
+#include "PsgLibLib.h"
+#include <PsgLib/TensionStressLimit.h>
 
 class rptChapter;
 class IEAFDisplayUnits;
-class pgsLibraryEntryDifferenceItem;
 class SpecLibraryEntryImpl;
+class DifferenceItem;
+
 
 struct PSGLIBCLASS PrestressedElementCriteria
 {
@@ -61,7 +62,7 @@ struct PSGLIBCLASS PrestressedElementCriteria
    Float64 CompressionStressCoefficient_AfterDeckPlacement = 0.6;
    TensionStressLimit TensionStressLimit_AfterDeckPlacement{0.0,false,WBFL::Units::ConvertToSysUnits(0.2, WBFL::Units::Measure::KSI) };
 
-   bool Compare(const PrestressedElementCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
+   bool Compare(const PrestressedElementCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
 
    void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 

@@ -45,6 +45,7 @@
 
 #include <EAF/EAFReportManager.h>
 
+#include <psgLib/SpecLibraryEntry.h>
 #include <psgLib/PrincipalTensionStressCriteria.h>
 
 
@@ -67,7 +68,7 @@ HRESULT CPGSuperReporterImp::InitReportBuilders()
       return hr;
    }
 
-   EAF_GET_IFACE(IEAFReportManager,pRptMgr);
+   GET_IFACE(IEAFReportManager,pRptMgr);
 
    //
    // Create report spec builders
@@ -112,6 +113,7 @@ HRESULT CPGSuperReporterImp::InitReportBuilders()
 
 bool CPGSuperReporterImp::RegInterfaces()
 {
+   EAF_AGENT_REGINTERFACES;
    REGISTER_INTERFACE(IReportOptions);
 
    return true;
@@ -119,8 +121,7 @@ bool CPGSuperReporterImp::RegInterfaces()
 
 bool CPGSuperReporterImp::Init()
 {
-   /* Gets done at project load time */
-   //EAF_AGENT_INIT;
+   EAF_AGENT_INIT;
 
    HRESULT hr = InitReportBuilders();
    ATLASSERT(SUCCEEDED(hr));
@@ -144,17 +145,18 @@ CLSID CPGSuperReporterImp::GetCLSID() const
 
 bool CPGSuperReporterImp::Reset()
 {
+   EAF_AGENT_RESET;
    return true;
 }
 
 bool CPGSuperReporterImp::ShutDown()
 {
+   EAF_AGENT_SHUTDOWN;
    //
    // Detach to connection points
    //
    UNREGISTER_CALLBACK(ISpecificationEventSink, m_dwSpecCookie);
 
-   //EAF_AGENT_CLEAR_INTERFACE_CACHE;
    return true;
 }
 
@@ -176,8 +178,8 @@ HRESULT CPGSuperReporterImp::OnSpecificationChanged()
    strReportNames.push_back(_T("(DEBUG) Interval by Interval Details Report"));
 #endif // _DEBUG || _BETA_VERSION
 
-   EAF_GET_IFACE(IEAFReportManager,pRptMgr);
-   EAF_GET_IFACE(ILossParameters, pLossParams);
+   GET_IFACE(IEAFReportManager,pRptMgr);
+   GET_IFACE(ILossParameters, pLossParams);
 
    bool bTimeStep = pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP;
    bool bHidden = true;
@@ -204,8 +206,8 @@ HRESULT CPGSuperReporterImp::OnSpecificationChanged()
    bool bIsTimeStepPrincStress = false;
    if (bTimeStep)
    {
-      EAF_GET_IFACE(ILibrary, pLib);
-      EAF_GET_IFACE(ISpecification, pSpec);
+      GET_IFACE(ILibrary, pLib);
+      GET_IFACE(ISpecification, pSpec);
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
       const auto& principal_tension_stress_criteria = pSpecEntry->GetPrincipalTensionStressCriteria();
       if (principal_tension_stress_criteria.Method == pgsTypes::ptsmNCHRP)

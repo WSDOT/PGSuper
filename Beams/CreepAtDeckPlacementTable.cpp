@@ -27,7 +27,7 @@
 #include <IFace\Project.h>
 #include <PsgLib\SpecLibraryEntry.h>
 
-#include <PgsExt\GirderMaterial.h>
+#include <PsgLib\GirderMaterial.h>
 
 
 CCreepAtDeckPlacementTable::CCreepAtDeckPlacementTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) :
@@ -52,7 +52,7 @@ rptRcTable(NumColumns,0)
 
 CCreepAtDeckPlacementTable* CCreepAtDeckPlacementTable::PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey, const LOSSDETAILS* pDetails, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
-   EAF_GET_IFACE2(pBroker,ISegmentData,pSegmentData);
+   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());

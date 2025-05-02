@@ -23,11 +23,12 @@
 #pragma once
 
 
-#include "psgLibLib.h"
+#include "PsgLibLib.h"
 
 class rptChapter;
 class IEAFDisplayUnits;
-class pgsLibraryEntryDifferenceItem;
+class DifferenceItem;
+
 
 struct PSGLIBCLASS HaunchCriteria
 {
@@ -40,7 +41,7 @@ struct PSGLIBCLASS HaunchCriteria
 
    pgsTypes::HaunchAnalysisSectionPropertiesType HaunchAnalysisSectionPropertiesType = pgsTypes::hspZeroHaunch;
 
-   bool Compare(const HaunchCriteria& other, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
+   bool Compare(const HaunchCriteria& other, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
 
    void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 

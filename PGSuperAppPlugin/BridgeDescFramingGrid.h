@@ -25,7 +25,7 @@
 // BridgeDescFramingGrid.h : header file
 //
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <EAF\EAFMacroTxn.h>
 
 /////////////////////////////////////////////////////////////////////////////

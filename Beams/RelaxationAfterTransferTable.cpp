@@ -55,7 +55,7 @@ CRelaxationAfterTransferTable* CRelaxationAfterTransferTable::PrepareTable(rptCh
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
 
-   EAF_GET_IFACE2(pBroker, ISegmentData, pSegmentData );
+   GET_IFACE2(pBroker, ISegmentData, pSegmentData );
    // strand is used for general type and coating, not size, so it's ok to use either Straight or Harped since they are the same
    const auto* pStrand = pSegmentData->GetStrandMaterial(segmentKey,pgsTypes::Straight);
    ATLASSERT(pStrand);

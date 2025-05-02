@@ -24,11 +24,6 @@
 #include "EditEffectiveFlangeWidth.h"
 #include <IFace\Project.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 txnEditEffectiveFlangeWidth::txnEditEffectiveFlangeWidth(bool bOldSetting,bool bNewSetting)
 {
@@ -56,8 +51,8 @@ void txnEditEffectiveFlangeWidth::Execute(int i)
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IEffectiveFlangeWidth, pEFW );
-   EAF_GET_IFACE2(pBroker,IEvents, pEvents);
+   GET_IFACE2(pBroker,IEffectiveFlangeWidth, pEFW );
+   GET_IFACE2(pBroker,IEvents, pEvents);
 
    // Exception-safe holder to keep from fireing events until we are done
    CIEventsHolder event_holder(pEvents);

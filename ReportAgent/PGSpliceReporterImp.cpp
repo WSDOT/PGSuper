@@ -73,7 +73,7 @@ HRESULT CPGSpliceReporterImp::InitReportBuilders()
       return hr;
    }
 
-   EAF_GET_IFACE(IEAFReportManager,pRptMgr);
+   GET_IFACE(IEAFReportManager,pRptMgr);
 
    // Update details report to contain a couple of extra chapters
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder = pRptMgr->GetReportBuilder(_T("Details Report"));
@@ -122,15 +122,14 @@ HRESULT CPGSpliceReporterImp::InitReportBuilders()
 
 bool CPGSpliceReporterImp::RegInterfaces()
 {
+   EAF_AGENT_REGINTERFACES;
    REGISTER_INTERFACE(IReportOptions);
-
    return true;
 }
 
 bool CPGSpliceReporterImp::Init()
 {
-   /* Gets done at project load time */
-   //EAF_AGENT_INIT;
+   EAF_AGENT_INIT;
 
    HRESULT hr = InitReportBuilders();
    ATLASSERT(SUCCEEDED(hr));
@@ -154,17 +153,18 @@ CLSID CPGSpliceReporterImp::GetCLSID() const
 
 bool CPGSpliceReporterImp::Reset()
 {
+   EAF_AGENT_RESET;
    return true;
 }
 
 bool CPGSpliceReporterImp::ShutDown()
 {
+   EAF_AGENT_SHUTDOWN;
    //
    // Detach to connection points
    //
    UNREGISTER_CALLBACK(ISpecificationEventSink,m_dwSpecCookie);
 
-   //EAF_AGENT_CLEAR_INTERFACE_CACHE;
    return true;
 }
 
@@ -178,8 +178,8 @@ HRESULT CPGSpliceReporterImp::OnSpecificationChanged()
       return hr;
 
    // Available reports and chapters for principal web stresses are dependent on settings
-   EAF_GET_IFACE(IEAFReportManager,pRptMgr);
-   EAF_GET_IFACE(ISpecification, pSpec);
+   GET_IFACE(IEAFReportManager,pRptMgr);
+   GET_IFACE(ISpecification, pSpec);
 
    CSegmentKey key(0, 0, 0); // any key should work for splice
    ISpecification::PrincipalWebStressCheckType  checkType = pSpec->GetPrincipalWebStressCheckType(key);

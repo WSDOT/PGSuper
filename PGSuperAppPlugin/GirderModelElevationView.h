@@ -27,8 +27,6 @@ class CPGSDocBase;
 
 #include <DManip/DManip.h>
 
-interface IBroker;
-
 class CGirderModelElevationView : public CDisplayView
 {
    friend CGirderModelChildFrame;

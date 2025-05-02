@@ -71,12 +71,12 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(const std::shared_ptr<cons
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    
-   EAF_GET_IFACE2(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
+   GET_IFACE2(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
    if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled())
    {
-      EAF_GET_IFACE2(pBroker, IArtifact, pArtifacts);
-      EAF_GET_IFACE2(pBroker, IGirder, pGirder);
-      EAF_GET_IFACE2_NOCHECK(pBroker, IBridge, pBridge);
+      GET_IFACE2(pBroker, IArtifact, pArtifacts);
+      GET_IFACE2(pBroker, IGirder, pGirder);
+      GET_IFACE2_NOCHECK(pBroker, IBridge, pBridge);
 
       std::vector<CGirderKey> vGirderKeys;
 

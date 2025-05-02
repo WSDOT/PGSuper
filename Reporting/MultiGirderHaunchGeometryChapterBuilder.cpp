@@ -71,7 +71,7 @@ rptChapter* CMultiGirderHaunchGeometryChapterBuilder::Build(const std::shared_pt
    }
    ATLASSERT(!girder_list.empty());
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // Constructability check
    CConstructabilityCheckTable().BuildSlabOffsetTable(pChapter,pBroker,girder_list,pDisplayUnits);

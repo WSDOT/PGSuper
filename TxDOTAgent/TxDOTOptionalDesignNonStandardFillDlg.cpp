@@ -30,6 +30,7 @@
 
 #include <IFace\BeamFactory.h>
 
+#include <psgLib/LibraryManager.h>
 
 
 

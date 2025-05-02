@@ -24,8 +24,8 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psgLib.h>
-#include <psgLib\LibChildFrm.h>
+#include <PsgLib\PsgLib.h>
+#include <PsgLib\LibChildFrm.h>
 #include <EAF\EAFDocument.h>
 
 

@@ -70,8 +70,8 @@ rptChapter* CLongitudinalReinforcementForShearLoadRatingChapterBuilder::Build(co
       girderKey = pGdrLineRptSpec->GetGirderKey();
    }
 
-   EAF_GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 

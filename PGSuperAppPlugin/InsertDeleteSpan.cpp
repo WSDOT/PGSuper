@@ -28,11 +28,6 @@
 #include <IFace\Views.h>
 #include <BridgeModelViewController.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 txnInsertSpan::txnInsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pierFace,Float64 spanLength,bool bCreateNewGroup,IndexType pierErectionEventIdx)
 {
@@ -68,11 +63,11 @@ bool txnInsertSpan::Execute()
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IEvents,pEvents);
+   GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder to keep from fireing events until we are done
    CIEventsHolder event_holder(pEvents);
 
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    // sometimes the connection information gets altered when adding a span... capture it here
    // so it can be reset on Undo
@@ -94,11 +89,11 @@ void txnInsertSpan::Undo()
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IEvents,pEvents);
+   GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder to keep from fireing events until we are done
    CIEventsHolder event_holder(pEvents);
 
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    PierIndexType pierIdx = m_RefPierIdx + (m_PierFace == pgsTypes::Ahead ? 1 : 0);
    pgsTypes::PierFaceType pierFace = (m_PierFace == pgsTypes::Ahead ? pgsTypes::Back : pgsTypes::Ahead);
@@ -179,12 +174,12 @@ bool txnDeleteSpan::Execute()
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   EAF_GET_IFACE2(pBroker,IEvents,pEvents);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder to keep from fireing events until we are done
    CIEventsHolder event_holder(pEvents);
 
-   EAF_GET_IFACE2(pBroker,IViews,pViews);
+   GET_IFACE2(pBroker,IViews,pViews);
    CComPtr<IBridgeModelViewController> pViewController;
    pViews->CreateBridgeModelView(&pViewController);
    pViewController->GetGroupRange(&m_StartGroupIdx,&m_EndGroupIdx);
@@ -196,7 +191,7 @@ bool txnDeleteSpan::Execute()
    // The geometry of linear ducts get messed up when we delete spans
    // Alter the duct geometry by removing all points beyond the end of the new girder length
    // Capture the original linear duct geomety for undo
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    const CPierData2* pPier = pBridgeDesc->GetPier(m_RefPierIdx);
    const CSpanData2* pSpan = (m_PierFace == pgsTypes::Back ? pPier->GetPrevSpan() : pPier->GetNextSpan());
    SpanIndexType spanIdx = pSpan->GetIndex();
@@ -262,11 +257,11 @@ void txnDeleteSpan::Undo()
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IEvents,pEvents);
+   GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder to keep from fireing events until we are done
    CIEventsHolder event_holder(pEvents);
 
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    pIBridgeDesc->SetBridgeDescription(m_BridgeDescription);
 
    // if we alterated PT data, restore it
@@ -281,7 +276,7 @@ void txnDeleteSpan::Undo()
    }
 
 
-   EAF_GET_IFACE2(pBroker, IViews, pViews);
+   GET_IFACE2(pBroker, IViews, pViews);
    CComPtr<IBridgeModelViewController> pViewController;
    pViews->CreateBridgeModelView(&pViewController);
    pViewController->SetGroupRange(m_StartGroupIdx,m_EndGroupIdx);

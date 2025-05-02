@@ -24,8 +24,8 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psgLib.h>
-#include <psgLib\ShearSteelPage.h>
+#include <PsgLib\PsgLib.h>
+#include <PsgLib\ShearSteelPage.h>
 #include "LongSteelGrid.h"
 #include "LongSteelPage.h"
 #include <system\tokenizer.h>

@@ -22,10 +22,10 @@
 
 #pragma once
 
-#include <PgsExt\Keys.h>
-#include <PgsExt\ClosureJointData.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\TimelineManager.h>
+#include <PsgLib\Keys.h>
+#include <PsgLib\ClosureJointData.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\TimelineManager.h>
 #include "ClosureJointGeneralPage.h"
 #include "ClosureJointLongitudinalReinforcementPage.h"
 #include "ClosureJointStirrupsPage.h"

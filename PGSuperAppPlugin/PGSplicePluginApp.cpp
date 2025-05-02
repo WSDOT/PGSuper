@@ -39,11 +39,6 @@
 
 #include <MFCTools\AutoRegistry.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 
@@ -200,9 +195,9 @@ void CPGSplicePluginApp::LoadDocumentationMap()
    return CPGSPluginAppBase::LoadDocumentationMap();
 }
 
-eafTypes::HelpResult CPGSplicePluginApp::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID,CString& strURL)
+std::pair<WBFL::EAF::HelpResult,CString> CPGSplicePluginApp::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID)
 {
-   return CPGSPluginAppBase::GetDocumentLocation(lpszDocSetName,nID,strURL);
+   return CPGSPluginAppBase::GetDocumentLocation(lpszDocSetName,nID);
 }
 
 CString CPGSplicePluginApp::GetCommandLineAppName() const

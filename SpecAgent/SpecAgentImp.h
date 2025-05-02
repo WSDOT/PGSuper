@@ -25,12 +25,12 @@
 #include <EAF\Agent.h>
 #include "CLSID.h"
 
-#include <EAF\EAFInterfaceCache.h>
+
 #include <IFace\ResistanceFactors.h>
 #include <IFace\InterfaceShearRequirements.h>
 #include <IFace\SplittingChecks.h>
 
-#include <PgsExt\LRFDSplittingCheckEngineer.h>
+#include "LRFDSplittingCheckEngineer.h"
 
 class GirderLibraryEntry;
 class SpecLibraryEntry;
@@ -60,6 +60,7 @@ public:
 
 // IAgent
 public:
+   std::_tstring GetName() const override { return _T("SpecAgent"); }
    bool RegInterfaces() override;
    bool Init() override;
    bool Reset() override;
@@ -199,6 +200,7 @@ public:
    Float64 GetAsRequired(const pgsSplittingCheckArtifact* pArtifact) const override;
    void ReportSplittingChecks(const pgsGirderArtifact* pGirderArtifact, rptChapter* pChapter) const override;
    void ReportSplittingCheckDetails(const pgsGirderArtifact* pGirderArtifact, rptChapter* pChapter) const override;
+   std::_tstring GetSplittingCheckName() const override;
 
 // IPrecastIGirderDetailsSpec
 public:
@@ -342,7 +344,7 @@ public:
    Float64 GetGirderDuctDeductionFactor(const CGirderKey& girderKey, DuctIndexType ductIdx, IntervalIndexType intervalIdx) const override;
 
 private:
-   //DECLARE_EAF_AGENT_DATA;
+   EAF_DECLARE_AGENT_DATA;
    DECLARE_LOGFILE;
 
    IDType m_dwBridgeDescCookie;

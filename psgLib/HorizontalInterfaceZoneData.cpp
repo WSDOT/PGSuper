@@ -19,6 +19,7 @@
 // P.O. Box  47340, Olympia, WA 98503, USA or e-mail 
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
+
 #include "StdAfx.h"
 #include <PsgLib\HorizontalInterfaceZoneData.h>
 #include <Units\Convert.h>
@@ -27,16 +28,6 @@
 #include <StrData.cpp>
 #include <comdef.h> // for _variant_t
 
-
-/****************************************************************************
-CLASS
-   CHorizontalInterfaceZoneData
-****************************************************************************/
-
-
-////////////////////////// PUBLIC     ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
 CHorizontalInterfaceZoneData::CHorizontalInterfaceZoneData():
 ZoneNum(0),
 BarSpacing(0),
@@ -46,24 +37,8 @@ nBars()
 {
 }
 
-CHorizontalInterfaceZoneData::CHorizontalInterfaceZoneData(const CHorizontalInterfaceZoneData& rOther)
-{
-   MakeCopy(rOther);
-}
-
 CHorizontalInterfaceZoneData::~CHorizontalInterfaceZoneData()
 {
-}
-
-//======================== OPERATORS  =======================================
-CHorizontalInterfaceZoneData& CHorizontalInterfaceZoneData::operator= (const CHorizontalInterfaceZoneData& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
 }
 
 bool CHorizontalInterfaceZoneData::operator == (const CHorizontalInterfaceZoneData& rOther) const
@@ -91,7 +66,6 @@ bool CHorizontalInterfaceZoneData::operator != (const CHorizontalInterfaceZoneDa
    return !operator==( rOther );
 }
 
-//======================== OPERATIONS =======================================
 HRESULT CHorizontalInterfaceZoneData::Load(WBFL::System::IStructuredLoad* pStrLoad)
 {
    HRESULT hr = S_OK;
@@ -145,37 +119,3 @@ HRESULT CHorizontalInterfaceZoneData::Save(WBFL::System::IStructuredSave* pStrSa
 
    return hr;
 }
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-void CHorizontalInterfaceZoneData::MakeCopy(const CHorizontalInterfaceZoneData& rOther)
-{
-   ZoneNum       = rOther.ZoneNum;
-   BarSpacing    = rOther.BarSpacing;
-   ZoneLength    = rOther.ZoneLength;
-   BarSize       = rOther.BarSize;
-   nBars         = rOther.nBars;
-}
-
-void CHorizontalInterfaceZoneData::MakeAssignment(const CHorizontalInterfaceZoneData& rOther)
-{
-   MakeCopy( rOther );
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
-
-//======================== DEBUG      =======================================

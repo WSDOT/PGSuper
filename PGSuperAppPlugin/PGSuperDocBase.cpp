@@ -43,7 +43,7 @@
 #include "BridgeSectionView.h"
 #include "BridgePlanView.h"
 
-#include <WBFLCore_i.c>
+
 #include <WBFLTools_i.c>
 #include <WBFLUnitServer_i.c>
 #include <WBFLGeometry_i.c>
@@ -93,7 +93,7 @@
 
 #include "Hints.h"
 
-#include <PgsExt\Helpers.h>
+#include <PsgLib\Helpers.h>
 
 #include "PGSuperException.h"
 #include <System\FileStream.h>
@@ -148,10 +148,10 @@
 #include <EAF\EAFAutoProgress.h>
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\GirderDesignArtifact.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <PgsExt\StatusItem.h>
 #include <PgsExt\DesignConfigUtil.h>
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\ClosureJointData.h>
 
 
 
@@ -186,11 +186,6 @@
 #include <PgsExt\StatusItem.h>
 #include <PgsExt\MacroTxn.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // cause the resource control values to be defined
 #define APSTUDIO_INVOKED
@@ -333,8 +328,8 @@ m_bAutoCalcEnabled(true)
 
    m_CallbackID = 0;
 
-   SetCustomReportHelpID(eafTypes::crhCustomReport,IDH_CUSTOM_REPORT);
-   SetCustomReportHelpID(eafTypes::crhFavoriteReport,IDH_FAVORITE_REPORT);
+   SetCustomReportHelpID(WBFL::EAF::CustomReportHelp::CustomReport,IDH_CUSTOM_REPORT);
+   SetCustomReportHelpID(WBFL::EAF::CustomReportHelp::FavoriteReport,IDH_FAVORITE_REPORT);
    SetCustomReportDefinitionHelpID(IDH_CUSTOM_REPORT_DEFINITION);
 
 
@@ -402,7 +397,7 @@ void CPGSDocBase::OnViewStatusCenter(UINT nID)
 
 void CPGSDocBase::OnLibMgrChanged(psgLibraryManager* pNewLibMgr)
 {
-   EAF_GET_IFACE( ILibrary, pLib );
+   GET_IFACE( ILibrary, pLib );
    pLib->SetLibraryManager( pNewLibMgr );
 }
 
@@ -433,7 +428,7 @@ bool CPGSDocBase::EditAlignmentDescription(int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   EAF_GET_IFACE(IRoadwayData,pAlignment);
+   GET_IFACE(IRoadwayData,pAlignment);
    CAlignmentDescriptionDlg dlg(_T("Alignment Description"),m_pBroker);
 
    dlg.m_AlignmentPage.m_AlignmentData = pAlignment->GetAlignmentData2();
@@ -448,7 +443,7 @@ bool CPGSDocBase::EditAlignmentDescription(int nPage)
                                                     pAlignment->GetProfileData2(),       dlg.m_ProfilePage.m_ProfileData,
                                                     pAlignment->GetRoadwaySectionData(), dlg.m_CrownSlopePage.m_RoadwaySectionData ));
 
-      EAF_GET_IFACE(IEAFTransactions,pTransactions);
+      GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(std::move(pTxn));
 
       return true;
@@ -463,8 +458,8 @@ bool CPGSDocBase::EditBridgeDescription(int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   EAF_GET_IFACE(IEnvironment, pEnvironment );
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IEnvironment, pEnvironment );
 
    const CBridgeDescription2* pOldBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    auto oldExposureCondition = pEnvironment->GetExposureCondition();
@@ -498,7 +493,7 @@ bool CPGSDocBase::EditBridgeDescription(int nPage)
          pTxn = std::move(pMacro);
       }
 
-      EAF_GET_IFACE(IEAFTransactions,pTransactions);
+      GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(std::move(pTxn));
 
       return true;
@@ -513,7 +508,7 @@ bool CPGSDocBase::EditPierDescription(PierIndexType pierIdx, int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    // This dialog makes a copy of the bridge model because it changes it.
@@ -535,7 +530,7 @@ bool CPGSDocBase::EditPierDescription(PierIndexType pierIdx, int nPage)
          pTxn = std::move(pMacro);
       }
 
-      EAF_GET_IFACE(IEAFTransactions,pTransactions);
+      GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(std::move(pTxn));
    }
 
@@ -551,7 +546,7 @@ bool CPGSDocBase::EditSpanDescription(SpanIndexType spanIdx, int nPage)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    // This dialog makes a copy of the bridge model because it changes it.
@@ -573,7 +568,7 @@ bool CPGSDocBase::EditSpanDescription(SpanIndexType spanIdx, int nPage)
          pMacro->AddTransaction(std::move(pExtensionTxn));
          pTxn = std::move(pMacro);
       }
-      EAF_GET_IFACE(IEAFTransactions,pTransactions);
+      GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(std::move(pTxn));
    }
 
@@ -587,7 +582,7 @@ void CPGSDocBase::OnEditHaunch()
 
 void CPGSDocBase::OnUpdateEditHaunch(CCmdUI* pCmdUI)
 {
-   EAF_GET_IFACE_NOCHECK(IBridge,pBridge);
+   GET_IFACE_NOCHECK(IBridge,pBridge);
    pCmdUI->Enable( pBridge->GetDeckType()==pgsTypes::sdtNone ? FALSE : TRUE );
 }
 
@@ -600,14 +595,14 @@ bool CPGSDocBase::DoEditBearing()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
 
    const CBridgeDescription2* pOldBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    CEditBearingDlg dlg(pOldBridgeDesc);
    if ( dlg.DoModal() == IDOK )
    {
-      EAF_GET_IFACE(IEnvironment, pEnvironment );
+      GET_IFACE(IEnvironment, pEnvironment );
       auto oldExposureCondition = pEnvironment->GetExposureCondition();
       auto oldClimateCondition = pEnvironment->GetClimateCondition();
       Float64 oldRelHumidity = pEnvironment->GetRelHumidity();
@@ -622,7 +617,7 @@ bool CPGSDocBase::DoEditBearing()
                                               oldRelHumidity,       oldRelHumidity));
 
 
-      EAF_GET_IFACE(IEAFTransactions,pTransactions);
+      GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(std::move(pTxn));
 
       return true;
@@ -636,7 +631,7 @@ bool CPGSDocBase::DoEditBearing()
 bool CPGSDocBase::DoEditHaunch()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   EAF_GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IBridge,pBridge);
    if (pgsTypes::sdtNone == pBridge->GetDeckType())
    {
       ATLASSERT(0); // probably shouldn't be calling if no deck
@@ -644,13 +639,13 @@ bool CPGSDocBase::DoEditHaunch()
    }
    else
    {
-      EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+      GET_IFACE(IBridgeDescription,pIBridgeDesc);
       const CBridgeDescription2* pOldBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
       CEditHaunchDlg dlg(pOldBridgeDesc);
       if (dlg.DoModal() == IDOK)
       {
-         EAF_GET_IFACE(IEnvironment,pEnvironment);
+         GET_IFACE(IEnvironment,pEnvironment);
          auto oldExposureCondition = pEnvironment->GetExposureCondition();
          auto oldClimateCondition = pEnvironment->GetClimateCondition();
          Float64 oldRelHumidity = pEnvironment->GetRelHumidity();
@@ -661,7 +656,7 @@ bool CPGSDocBase::DoEditHaunch()
             oldRelHumidity,oldRelHumidity));
 
 
-         EAF_GET_IFACE(IEAFTransactions,pTransactions);
+         GET_IFACE(IEAFTransactions,pTransactions);
          pTransactions->Execute(std::move(pTxn));
          return true;
       }
@@ -686,10 +681,10 @@ bool CPGSDocBase::EditDirectSelectionPrestressing(const CSegmentKey& segmentKey)
 
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   EAF_GET_IFACE(IBridge,pBridge);
-   EAF_GET_IFACE(ILibrary, pLib);
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   EAF_GET_IFACE(IStrandGeometry,pStrandGeometry);
+   GET_IFACE(IBridge,pBridge);
+   GET_IFACE(ILibrary, pLib);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IStrandGeometry,pStrandGeometry);
 
    const CBridgeDescription2* pBridgeDesc  = pIBridgeDesc->GetBridgeDescription();
    const CTimelineManager*    pTimelineMgr = pBridgeDesc->GetTimelineManager();
@@ -710,7 +705,7 @@ bool CPGSDocBase::EditDirectSelectionPrestressing(const CSegmentKey& segmentKey)
    std::_tstring strGirderName = pSegment->GetGirder()->GetGirderName();
    const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(strGirderName.c_str());
 
-   EAF_GET_IFACE(ISpecification, pSpec);
+   GET_IFACE(ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
    bool allowEndAdjustment = 0.0 <= pStrandGeometry->GetHarpedEndOffsetIncrement(segmentKey);
@@ -736,14 +731,14 @@ bool CPGSDocBase::EditDirectSelectionPrestressing(const CSegmentKey& segmentKey)
    Float64 hpOffsetAtHp2   = pSegment->Strands.GetHarpStrandOffsetAtHarpPoint(pgsTypes::metEnd);
    Float64 hpOffsetAtEnd   = pSegment->Strands.GetHarpStrandOffsetAtEnd(pgsTypes::metEnd);
 
-   EAF_GET_IFACE(IPointOfInterest,pPoi);
+   GET_IFACE(IPointOfInterest,pPoi);
    PoiList vPoi;
    pPoi->GetPointsOfInterest(segmentKey, POI_START_FACE | POI_END_FACE, &vPoi);
    ATLASSERT(vPoi.size() == 2);
    const pgsPointOfInterest& startPoi(vPoi.front());
    const pgsPointOfInterest& endPoi(vPoi.back());
 
-   EAF_GET_IFACE(IGirder,pGdr);
+   GET_IFACE(IGirder,pGdr);
    Float64 HgStart = pGdr->GetHeight(startPoi);
    Float64 HgEnd   = pGdr->GetHeight(endPoi);
 
@@ -782,7 +777,7 @@ bool CPGSDocBase::EditDirectSelectionPrestressing(const CSegmentKey& segmentKey)
    {
       // The dialog does not deal with Pjack. Update pjack here
 #pragma Reminder("UPDATE: dialog should deal with Pjack")
-      EAF_GET_IFACE(IPretensionForce, pPrestress );
+      GET_IFACE(IPretensionForce, pPrestress );
 
       UpdatePrestressForce(segmentKey, pgsTypes::Straight,  newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
       UpdatePrestressForce(segmentKey, pgsTypes::Harped,    newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
@@ -791,7 +786,7 @@ bool CPGSDocBase::EditDirectSelectionPrestressing(const CSegmentKey& segmentKey)
       // Fire our transaction
       std::unique_ptr<txnEditPrecastSegment> pTxn(std::make_unique<txnEditPrecastSegment>(segmentKey,newSegmentData));
 
-      EAF_GET_IFACE(IEAFTransactions,pTransactions);
+      GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(std::move(pTxn));
 
       return true;
@@ -806,7 +801,7 @@ bool CPGSDocBase::EditDirectRowInputPrestressing(const CSegmentKey& segmentKey)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
 
    const CBridgeDescription2* pBridgeDesc  = pIBridgeDesc->GetBridgeDescription();
    const CTimelineManager*    pTimelineMgr = pBridgeDesc->GetTimelineManager();
@@ -845,7 +840,7 @@ bool CPGSDocBase::EditDirectRowInputPrestressing(const CSegmentKey& segmentKey)
 
       // The dialog does not deal with Pjack. Update pjack here
 #pragma Reminder("UPDATE: dialog should deal with Pjack")
-      EAF_GET_IFACE(IPretensionForce, pPrestress );
+      GET_IFACE(IPretensionForce, pPrestress );
 
       UpdatePrestressForce(segmentKey, pgsTypes::Straight,  newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
       UpdatePrestressForce(segmentKey, pgsTypes::Harped,    newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
@@ -854,7 +849,7 @@ bool CPGSDocBase::EditDirectRowInputPrestressing(const CSegmentKey& segmentKey)
       // Fire our transaction
       std::unique_ptr<txnEditPrecastSegment> pTxn(std::make_unique<txnEditPrecastSegment>(segmentKey,newSegmentData));
 
-      EAF_GET_IFACE(IEAFTransactions,pTransactions);
+      GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(std::move(pTxn));
 
       return true;
@@ -881,7 +876,7 @@ bool CPGSDocBase::EditDirectStrandInputPrestressing(const CSegmentKey& segmentKe
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   EAF_GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CTimelineManager*    pTimelineMgr = pBridgeDesc->GetTimelineManager();
@@ -920,7 +915,7 @@ bool CPGSDocBase::EditDirectStrandInputPrestressing(const CSegmentKey& segmentKe
 
       // The dialog does not deal with Pjack. Update pjack here
 #pragma Reminder("UPDATE: dialog should deal with Pjack")
-      EAF_GET_IFACE(IPretensionForce, pPrestress);
+      GET_IFACE(IPretensionForce, pPrestress);
 
       UpdatePrestressForce(segmentKey, pgsTypes::Straight, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
       UpdatePrestressForce(segmentKey, pgsTypes::Harped, newSegmentData.m_SegmentData, oldSegmentData.m_SegmentData, pPrestress);
@@ -929,7 +924,7 @@ bool CPGSDocBase::EditDirectStrandInputPrestressing(const CSegmentKey& segmentKe
       // Fire our transaction
       std::unique_ptr<txnEditPrecastSegment> pTxn(std::make_unique<txnEditPrecastSegment>(segmentKey, newSegmentData));
 
-      EAF_GET_IFACE(IEAFTransactions, pTransactions);
+      GET_IFACE(IEAFTransactions, pTransactions);
       pTransactions->Execute(std::move(pTxn));
 
       return true;
@@ -943,21 +938,21 @@ bool CPGSDocBase::EditDirectStrandInputPrestressing(const CSegmentKey& segmentKe
 void CPGSDocBase::AddPointLoad(const CPointLoadData& loadData)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
    CEditPointLoadDlg dlg(loadData,pTimelineMgr);
    if ( dlg.DoModal() == IDOK )
    {
       std::unique_ptr<txnInsertPointLoad> pTxn(std::make_unique<txnInsertPointLoad>(dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : nullptr));
-      EAF_GET_IFACE(IEAFTransactions,pTransactions);
+      GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(std::move(pTxn));
    }
 }
 
 bool CPGSDocBase::EditPointLoad(IndexType loadIdx)
 {
-   EAF_GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
+   GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
    const CPointLoadData* pLoadData = pUserDefinedLoads->GetPointLoad(loadIdx);
 
    return EditPointLoadByID(pLoadData->m_ID);
@@ -967,11 +962,11 @@ bool CPGSDocBase::EditPointLoadByID(LoadIDType loadID)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   EAF_GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
+   GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
    const CPointLoadData* pLoadData = pUserDefinedLoads->FindPointLoad(loadID);
    ATLASSERT(pLoadData->m_ID == loadID);
 
-   EAF_GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
    EventIDType eventID = pTimelineMgr->FindUserLoadEventID(pLoadData->m_ID);
@@ -983,7 +978,7 @@ bool CPGSDocBase::EditPointLoadByID(LoadIDType loadID)
       if (*pLoadData != dlg.m_Load || eventID != dlg.m_EventID)
       {
          std::unique_ptr<txnEditPointLoad> pTxn(std::make_unique<txnEditPointLoad>(loadID, *pLoadData, eventID, dlg.m_Load, dlg.m_EventID, dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : nullptr));
-         EAF_GET_IFACE(IEAFTransactions, pTransactions);
+         GET_IFACE(IEAFTransactions, pTransactions);
          pTransactions->Execute(std::move(pTxn));
          return true;
       }
@@ -994,7 +989,7 @@ bool CPGSDocBase::EditPointLoadByID(LoadIDType loadID)
 
 void CPGSDocBase::DeletePointLoad(IndexType loadIdx)
 {
-   EAF_GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
+   GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
    const CPointLoadData* pLoadData = pUserDefinedLoads->GetPointLoad(loadIdx);
    DeletePointLoadByID(pLoadData->m_ID);
 }
@@ -1002,7 +997,7 @@ void CPGSDocBase::DeletePointLoad(IndexType loadIdx)
 void CPGSDocBase::DeletePointLoadByID(LoadIDType loadID)
 {
    std::unique_ptr<txnDeletePointLoad> pTxn(std::make_unique<txnDeletePointLoad>(loadID));
-   EAF_GET_IFACE(IEAFTransactions,pTransactions);
+   GET_IFACE(IEAFTransactions,pTransactions);
    pTransactions->Execute(std::move(pTxn));
 }
 
@@ -1010,21 +1005,21 @@ void CPGSDocBase::AddDistributedLoad(const CDistributedLoadData& loadData)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
    CEditDistributedLoadDlg dlg(loadData,pTimelineMgr);
    if ( dlg.DoModal() == IDOK )
    {
       std::unique_ptr<txnInsertDistributedLoad> pTxn(std::make_unique<txnInsertDistributedLoad>(dlg.m_Load,dlg.m_EventID,&dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : nullptr));
-      EAF_GET_IFACE(IEAFTransactions,pTransactions);
+      GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(std::move(pTxn));
    }
 }
 
 bool CPGSDocBase::EditDistributedLoad(IndexType loadIdx)
 {
-   EAF_GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
+   GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
    const CDistributedLoadData* pLoadData = pUserDefinedLoads->GetDistributedLoad(loadIdx);
    return EditDistributedLoadByID(pLoadData->m_ID);
 }
@@ -1033,10 +1028,10 @@ bool CPGSDocBase::EditDistributedLoadByID(LoadIDType loadID)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   EAF_GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
+   GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
    const CDistributedLoadData* pLoadData = pUserDefinedLoads->FindDistributedLoad(loadID);
 
-   EAF_GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
    EventIDType eventID = pTimelineMgr->FindUserLoadEventID(pLoadData->m_ID);
@@ -1048,7 +1043,7 @@ bool CPGSDocBase::EditDistributedLoadByID(LoadIDType loadID)
       if (*pLoadData != dlg.m_Load || eventID != dlg.m_EventID)
       {
          std::unique_ptr<txnEditDistributedLoad> pTxn(std::make_unique<txnEditDistributedLoad>(loadID, *pLoadData, eventID, dlg.m_Load, dlg.m_EventID, dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : nullptr));
-         EAF_GET_IFACE(IEAFTransactions, pTransactions);
+         GET_IFACE(IEAFTransactions, pTransactions);
          pTransactions->Execute(std::move(pTxn));
          return true;
       }
@@ -1059,7 +1054,7 @@ bool CPGSDocBase::EditDistributedLoadByID(LoadIDType loadID)
 
 void CPGSDocBase::DeleteDistributedLoad(IndexType loadIdx)
 {
-   EAF_GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
+   GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
    const CDistributedLoadData* pLoadData = pUserDefinedLoads->GetDistributedLoad(loadIdx);
    DeleteDistributedLoadByID(pLoadData->m_ID);
 }
@@ -1067,7 +1062,7 @@ void CPGSDocBase::DeleteDistributedLoad(IndexType loadIdx)
 void CPGSDocBase::DeleteDistributedLoadByID(LoadIDType loadID)
 {
    std::unique_ptr<txnDeleteDistributedLoad> pTxn(std::make_unique<txnDeleteDistributedLoad>(loadID));
-   EAF_GET_IFACE(IEAFTransactions, pTransactions);
+   GET_IFACE(IEAFTransactions, pTransactions);
    pTransactions->Execute(std::move(pTxn));
 }
 
@@ -1075,21 +1070,21 @@ void CPGSDocBase::AddMomentLoad(const CMomentLoadData& loadData)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
    CEditMomentLoadDlg dlg(loadData,pTimelineMgr);
    if ( dlg.DoModal() == IDOK )
    {
       std::unique_ptr<txnInsertMomentLoad> pTxn(std::make_unique<txnInsertMomentLoad>(dlg.m_Load,dlg.m_EventID,dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : nullptr));
-      EAF_GET_IFACE(IEAFTransactions,pTransactions);
+      GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(std::move(pTxn));
    }
 }
 
 bool CPGSDocBase::EditMomentLoad(IndexType loadIdx)
 {
-   EAF_GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
+   GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
    const CMomentLoadData* pLoadData = pUserDefinedLoads->GetMomentLoad(loadIdx);
    return EditMomentLoadByID(pLoadData->m_ID);
 }
@@ -1098,10 +1093,10 @@ bool CPGSDocBase::EditMomentLoadByID(LoadIDType loadID)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   EAF_GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
+   GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
    const CMomentLoadData* pLoadData = pUserDefinedLoads->FindMomentLoad(loadID);
 
-   EAF_GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
    EventIDType eventID = pTimelineMgr->FindUserLoadEventID(pLoadData->m_ID);
@@ -1113,7 +1108,7 @@ bool CPGSDocBase::EditMomentLoadByID(LoadIDType loadID)
       if (*pLoadData != dlg.m_Load || eventID != dlg.m_EventID)
       {
          std::unique_ptr<txnEditMomentLoad> pTxn(std::make_unique<txnEditMomentLoad>(loadID, *pLoadData, eventID, dlg.m_Load, dlg.m_EventID, dlg.m_bWasNewEventCreated ? &dlg.m_TimelineMgr : nullptr));
-         EAF_GET_IFACE(IEAFTransactions, pTransactions);
+         GET_IFACE(IEAFTransactions, pTransactions);
          pTransactions->Execute(std::move(pTxn));
          return true;
       }
@@ -1124,7 +1119,7 @@ bool CPGSDocBase::EditMomentLoadByID(LoadIDType loadID)
 
 void CPGSDocBase::DeleteMomentLoad(IndexType loadIdx)
 {
-   EAF_GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
+   GET_IFACE(IUserDefinedLoadData, pUserDefinedLoads);
    const CMomentLoadData* pLoadData = pUserDefinedLoads->GetMomentLoad(loadIdx);
    DeleteMomentLoadByID(pLoadData->m_ID);
 }
@@ -1132,7 +1127,7 @@ void CPGSDocBase::DeleteMomentLoad(IndexType loadIdx)
 void CPGSDocBase::DeleteMomentLoadByID(LoadIDType loadID)
 {
    std::unique_ptr<txnDeleteMomentLoad> pTxn(std::make_unique<txnDeleteMomentLoad>(loadID));
-   EAF_GET_IFACE(IEAFTransactions, pTransactions);
+   GET_IFACE(IEAFTransactions, pTransactions);
    pTransactions->Execute(std::move(pTxn));
 }
 
@@ -1150,14 +1145,14 @@ bool CPGSDocBase::EditTimeline()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   EAF_GET_IFACE(ILossParameters, pLossParams);
+   GET_IFACE(ILossParameters, pLossParams);
    if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
    {
       CString strText(_T("The construction sequence timeline is automatically generated using the parameters in the Project Criteria found in the Creep and Camber tab."));
       UIHint(strText, UIHINT_TIMELINE_IS_READONLY);
    }
 
-   EAF_GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    CEditTimelineDlg dlg;
@@ -1166,7 +1161,7 @@ bool CPGSDocBase::EditTimeline()
    if (dlg.DoModal() == IDOK)
    {
       std::unique_ptr<txnEditTimeline> pTxn(std::make_unique<txnEditTimeline>(*pBridgeDesc->GetTimelineManager(), dlg.m_TimelineManager));
-      EAF_GET_IFACE(IEAFTransactions, pTransactions);
+      GET_IFACE(IEAFTransactions, pTransactions);
       pTransactions->Execute(std::move(pTxn));
       return true;
    }
@@ -1178,7 +1173,7 @@ bool CPGSDocBase::EditCastDeckActivity()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   EAF_GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
    pgsTypes::SupportedDeckType deckType = pIBridgeDesc->GetDeckDescription()->GetDeckType();
    CString strName(GetCastDeckEventName(deckType));
 
@@ -1188,7 +1183,7 @@ bool CPGSDocBase::EditCastDeckActivity()
    if (dlg.DoModal() == IDOK)
    {
       std::unique_ptr<txnEditTimeline> pTxn(std::make_unique<txnEditTimeline>(*pTimelineMgr, dlg.m_TimelineMgr));
-      EAF_GET_IFACE(IEAFTransactions, pTransactions);
+      GET_IFACE(IEAFTransactions, pTransactions);
       pTransactions->Execute(std::move(pTxn));
       return true;
    }
@@ -1198,7 +1193,7 @@ bool CPGSDocBase::EditCastDeckActivity()
 
 bool CPGSDocBase::EditEffectiveFlangeWidth()
 {
-   EAF_GET_IFACE(IEffectiveFlangeWidth, pEFW);
+   GET_IFACE(IEffectiveFlangeWidth, pEFW);
    CString strQuestion(_T("The LRFD General Effective Flange Width provisions (4.6.2.6.1) are considered applicable for skew angles less than 75 degress, L/S greater than or equal to 2.0 and overhang widths less than or equal to 0.5S."));
    strQuestion += _T(" In unusual cases where these limits are violated, a refined analysis should be used.");
    strQuestion += _T("\r\n\r\nWhen the setting below is set to \"Stop analysis...\" and the overhang width exceeds 0.5S, the analysis will not stop. The overhang width will be taken equal to 0.5S and contribution of structurally continuous barriers will be ignored for purposes of computing the effective flange width.");
@@ -1212,7 +1207,7 @@ bool CPGSDocBase::EditEffectiveFlangeWidth()
    if (choice != new_choice && 0 <= new_choice)
    {
       std::unique_ptr<txnEditEffectiveFlangeWidth> pTxn(std::make_unique<txnEditEffectiveFlangeWidth>(pEFW->IgnoreEffectiveFlangeWidthLimits(), new_choice == 0 ? false : true));
-      EAF_GET_IFACE(IEAFTransactions, pTransactions);
+      GET_IFACE(IEAFTransactions, pTransactions);
       pTransactions->Execute(std::move(pTxn));
       return true;
    }
@@ -1226,16 +1221,16 @@ bool CPGSDocBase::SelectProjectCriteria()
 
    CSpecDlg dlg;
 
-   EAF_GET_IFACE(ISpecification, pSpec);
+   GET_IFACE(ISpecification, pSpec);
    std::_tstring cur_spec = pSpec->GetSpecification();
    dlg.m_Spec = cur_spec;
-   EAF_GET_IFACE(ILibrary, pLib);
+   GET_IFACE(ILibrary, pLib);
    const SpecLibraryEntry* pCurrentSpecEntry = pLib->GetSpecEntry(cur_spec.c_str());
    if (dlg.DoModal())
    {
       if (dlg.m_Spec != cur_spec)
       {
-         EAF_GET_IFACE(IBridge, pBridge);
+         GET_IFACE(IBridge, pBridge);
          const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(dlg.m_Spec.c_str());
 
          pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
@@ -1272,7 +1267,7 @@ bool CPGSDocBase::SelectProjectCriteria()
          {
             // switching from time-step to regular loss method... the timeline will be reset
 #if defined _DEBUG
-            EAF_GET_IFACE(IDocumentType, pDocType);
+            GET_IFACE(IDocumentType, pDocType);
             ATLASSERT(pDocType->IsPGSuperDocument()); // this will only happen in a PGSuper project
 #endif
             CString strMsg(_T("The Construction Sequence Timeline will be reset. Would you like to continue?"));
@@ -1283,7 +1278,7 @@ bool CPGSDocBase::SelectProjectCriteria()
          }
 
          std::unique_ptr<txnEditProjectCriteria> pTxn(std::make_unique<txnEditProjectCriteria>(cur_spec.c_str(), dlg.m_Spec.c_str(), analysisType, newAnalysisType, wearingSurfaceType, newWearingSurfaceType));
-         EAF_GET_IFACE(IEAFTransactions, pTransactions);
+         GET_IFACE(IEAFTransactions, pTransactions);
          pTransactions->Execute(std::move(pTxn));
          return true;
       }
@@ -1354,7 +1349,7 @@ void CPGSDocBase::ModifyTemplate(LPCTSTR strTemplate)
    // is a specific value, you can code that here.
 
    // Set future wearing surface to 35 psf per Design Memo 06-2017 (9/12/2017)
-   //EAF_GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   //GET_IFACE(IBridgeDescription, pIBridgeDesc);
    //CDeckDescription2 deck = *(pIBridgeDesc->GetDeckDescription());
    //deck.bInputAsDepthAndDensity = false;
    //deck.OverlayDepth = WBFL::Units::ConvertToSysUnits(3.0, WBFL::Units::Measure::Inch);
@@ -1363,11 +1358,11 @@ void CPGSDocBase::ModifyTemplate(LPCTSTR strTemplate)
    //pIBridgeDesc->SetDeckDescription(deck);
 
    //// Update seed values to match library
-   //EAF_GET_IFACE(IDocumentType, pDocType);
+   //GET_IFACE(IDocumentType, pDocType);
    //if (pDocType->IsPGSuperDocument())
    //{
    //   // only PGSuper documents have seed values
-   //   EAF_GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   //   GET_IFACE(IBridgeDescription, pIBridgeDesc);
    //   CBridgeDescription2 bridgeDesc = *(pIBridgeDesc->GetBridgeDescription());
    //   GroupIndexType nGroups = bridgeDesc.GetGirderGroupCount();
    //   for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)
@@ -1391,10 +1386,10 @@ void CPGSDocBase::ModifyTemplate(LPCTSTR strTemplate)
    //}
 
    //// WF-DG girders should have a 3" future overlay
-   //EAF_GET_IFACE(IDocumentType, pDocType);
+   //GET_IFACE(IDocumentType, pDocType);
    //if (pDocType->IsPGSuperDocument())
    //{
-   //   EAF_GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   //   GET_IFACE(IBridgeDescription, pIBridgeDesc);
    //   CBridgeDescription2 bridgeDesc = *(pIBridgeDesc->GetBridgeDescription());
    //   CString strGirder = bridgeDesc.GetGirderName();
    //   if (strGirder.Left(2) == _T("WF") && strGirder.Right(2) == _T("DG"))
@@ -1408,7 +1403,7 @@ void CPGSDocBase::ModifyTemplate(LPCTSTR strTemplate)
    //}
 
    //// Remove all unused, project library entries
-   //EAF_GET_IFACE(ILibrary, pLibrary);
+   //GET_IFACE(ILibrary, pLibrary);
    //psgLibraryManager* pLibMgr = pLibrary->GetLibraryManager();
    //IndexType nLibraries = pLibMgr->GetLibraryCount();
    //for (IndexType i = 0; i < nLibraries; i++)
@@ -1429,14 +1424,14 @@ void CPGSDocBase::ModifyTemplate(LPCTSTR strTemplate)
 
 
    //// Update friction coefficient to match BDM 5.1.4.A3
-   //EAF_GET_IFACE(ILossParameters, pLossParameters);
+   //GET_IFACE(ILossParameters, pLossParameters);
    //Float64 Dset, WobbleFriction, FrictionCoefficient;
    //pLossParameters->GetTendonPostTensionParameters(&Dset, &WobbleFriction, &FrictionCoefficient);
    //FrictionCoefficient = 0.2;
    //pLossParameters->SetTendonPostTensionParameters(Dset, WobbleFriction, FrictionCoefficient);
 
    // Updates all load rating specs to include max tensile stress limit
-   //EAF_GET_IFACE(IRatingSpecification, pRatingSpec);
+   //GET_IFACE(IRatingSpecification, pRatingSpec);
    //for (int i = 0; i < pgsTypes::lrLoadRatingTypeCount; i++)
    //{
    //   pgsTypes::LoadRatingType ratingType = (pgsTypes::LoadRatingType)(i);
@@ -1447,7 +1442,7 @@ void CPGSDocBase::ModifyTemplate(LPCTSTR strTemplate)
    //}
 
    // Adds the WA-105 truck to all the templates
-   //EAF_GET_IFACE(ILiveLoads, pLiveLoads);
+   //GET_IFACE(ILiveLoads, pLiveLoads);
    //auto names = pLiveLoads->GetLiveLoadNames(pgsTypes::lltLegalRating_Routine);
    //names.push_back(_T("WA-105"));
    //pLiveLoads->SetLiveLoadNames(pgsTypes::lltLegalRating_Routine, names);
@@ -1473,7 +1468,7 @@ void CPGSDocBase::ModifyTemplate(LPCTSTR strTemplate)
    //CEAFBrokerDocument::SaveTheDocument(templateFileName);
 }
 
-BOOL CPGSDocBase::UpdateTemplates(IProgress* pProgress,LPCTSTR lpszDir)
+BOOL CPGSDocBase::UpdateTemplates(std::shared_ptr<IEAFProgress> pProgress,LPCTSTR lpszDir)
 {
    CFileFind dir_finder;
    BOOL bMoreDir = dir_finder.FindFile(CString(lpszDir)+_T("\\*"));
@@ -1538,7 +1533,7 @@ BOOL CPGSDocBase::UpdateTemplates()
       return FALSE;
    }
 
-   EAF_GET_IFACE(IProgress,pProgress);
+   GET_IFACE(IEAFProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
 
    // we want the template files to be "clean" with only PGSuper data in them
@@ -2024,7 +2019,7 @@ void CPGSDocBase::InitProjectProperties()
    CString engineer_name, company;
    pBL->GetUserInfo(&engineer_name,&company);
 
-   EAF_GET_IFACE( IProjectProperties, pProjProp );
+   GET_IFACE( IProjectProperties, pProjProp );
 
    pProjProp->SetEngineer(engineer_name);
    pProjProp->SetCompany(company);
@@ -2050,8 +2045,8 @@ void CPGSDocBase::OnCreateFinalize()
    CEAFBrokerDocument::OnCreateFinalize();
 
    // Register callbacks for status items
-   EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
-   m_scidInformationalError  = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusWarning)); 
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
+   m_scidInformationalError  = pStatusCenter->RegisterCallback(std::make_shared<pgsInformationalStatusCallback>(WBFL::EAF::StatusSeverityType::Warning)); 
    m_StatusGroupID = pStatusCenter->CreateStatusGroupID();
 
 
@@ -2127,8 +2122,8 @@ void CPGSDocBase::OnCreateFinalize()
    pStatusBar->AutoSaveEnabled(EAFGetApp()->IsAutoSaveEnabled());
 
    // views have been initialized so fire any pending events
-   EAF_GET_IFACE(IEvents,pEvents);
-   EAF_GET_IFACE(IUIEvents,pUIEvents);
+   GET_IFACE(IEvents,pEvents);
+   GET_IFACE(IUIEvents,pUIEvents);
    pEvents->FirePendingEvents(); 
    pUIEvents->HoldEvents(false);
 }
@@ -2344,7 +2339,7 @@ HRESULT CPGSDocBase::LoadTheDocument(IStructuredLoad* pStrLoad)
    } // closes the bracket for if ( 1.0 < version )
 
      // setup the document unit systems (must be done after the file is opened)
-   EAF_GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
    m_DocUnitSystem->put_UnitMode(IS_US_UNITS(pDisplayUnits) ? umUS : umSI);
 
    // Deal with making a backup copy of an old format file.
@@ -2435,7 +2430,7 @@ void CPGSDocBase::OnErrorDeletingBadSave(LPCTSTR lpszPathName,LPCTSTR lpszBackup
 {
    CString msg;
 
-   EAF_GET_IFACE(IEAFProjectLog,pLog);
+   GET_IFACE(IEAFProjectLog,pLog);
 
    pLog->LogMessage(_T(""));
    pLog->LogMessage(_T("An error occurred while recovering your last successful save."));
@@ -2458,7 +2453,7 @@ void CPGSDocBase::OnErrorRenamingSaveBackup(LPCTSTR lpszPathName,LPCTSTR lpszBac
 {
    CString msg;
 
-   EAF_GET_IFACE(IEAFProjectLog,pLog);
+   GET_IFACE(IEAFProjectLog,pLog);
 
    pLog->LogMessage(_T(""));
    pLog->LogMessage(_T("An error occurred while recovering your last successful save."));
@@ -2580,7 +2575,7 @@ void CPGSDocBase::OnFileProjectProperties()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   EAF_GET_IFACE( IProjectProperties, pProjProp );
+   GET_IFACE( IProjectProperties, pProjProp );
 
    CProjectPropertiesDlg dlg;
 
@@ -2605,7 +2600,7 @@ void CPGSDocBase::OnFileProjectProperties()
          
       ShowProjectPropertiesOnNewProject(dlg.m_bShowProjectProperties);
 
-      EAF_GET_IFACE(IEAFTransactions,pTransactions);
+      GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(std::move(pTxn));
    }
 }
@@ -2617,7 +2612,7 @@ void CPGSDocBase::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszPathName )
    // Skipping the default functionality and replacing it with something better
    //CEAFBrokerDocument::HandleOpenDocumentError(hr,lpszPathName);
 
-   EAF_GET_IFACE( IEAFProjectLog, pLog );
+   GET_IFACE( IEAFProjectLog, pLog );
 
    CString log_msg_header;
    log_msg_header.Format(_T("The following error occurred while opening %s"),lpszPathName );
@@ -2689,7 +2684,7 @@ void CPGSDocBase::HandleSaveDocumentError( HRESULT hr, LPCTSTR lpszPathName )
    // Skipping the default functionality and replacing it with something better
    //CEAFBrokerDocument::HandleSaveDocumentError(hr,lpszPathName);
 
-   EAF_GET_IFACE( IEAFProjectLog, pLog );
+   GET_IFACE( IEAFProjectLog, pLog );
 
    CString log_msg_header;
    log_msg_header.Format(_T("The following error occurred while saving %s"),lpszPathName );
@@ -2740,7 +2735,7 @@ void CPGSDocBase::HandleConvertDocumentError( HRESULT hr, LPCTSTR lpszPathName )
    // Skipping the default functionality and replacing it with something better
    //CEAFBrokerDocument::HandleConvertDocumentError(hr,lpszPathName);
 
-   EAF_GET_IFACE( IEAFProjectLog, pLog );
+   GET_IFACE( IEAFProjectLog, pLog );
 
    CPGSuperDocTemplateBase* pTemplate = (CPGSuperDocTemplateBase*)GetDocTemplate();
 
@@ -2783,7 +2778,7 @@ void CPGSDocBase::OnProjectEnvironment()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   EAF_GET_IFACE( IEnvironment, pEnvironment );
+   GET_IFACE( IEnvironment, pEnvironment );
 
    auto ec = pEnvironment->GetExposureCondition();
    int expCond = ( ec == pgsTypes::ExposureCondition::Normal ? 0 : 1 );
@@ -2806,7 +2801,7 @@ void CPGSDocBase::OnProjectEnvironment()
              ec, dlg.m_Exposure == 0 ? pgsTypes::ExposureCondition::Normal : pgsTypes::ExposureCondition::Severe,
              cc, dlg.m_Climate == 0 ? pgsTypes::ClimateCondition::Cold : pgsTypes::ClimateCondition::Moderate,
              relHumidity,dlg.m_RelHumidity));
-         EAF_GET_IFACE(IEAFTransactions,pTransactions);
+         GET_IFACE(IEAFTransactions,pTransactions);
          pTransactions->Execute(std::move(pTxn));
       }
    }
@@ -2827,9 +2822,9 @@ void CPGSDocBase::OnRatingSpec()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   EAF_GET_IFACE( ILibraryNames, pLibNames );
+   GET_IFACE( ILibraryNames, pLibNames );
 
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
    CRatingOptionsDlg dlg;
@@ -2844,7 +2839,7 @@ void CPGSDocBase::OnRatingSpec()
    dlg.m_LegalPage.m_AllNames  = all_names;
    dlg.m_PermitPage.m_AllNames = all_names;
 
-   EAF_GET_IFACE( IRatingSpecification, pSpec );
+   GET_IFACE( IRatingSpecification, pSpec );
    std::_tstring cur_spec = pSpec->GetRatingSpecification();
    oldData.m_General.CriteriaName  = cur_spec;
    oldData.m_General.bIncludePedestrianLiveLoad = pSpec->IncludePedestrianLiveLoad();
@@ -2877,7 +2872,7 @@ void CPGSDocBase::OnRatingSpec()
    oldData.m_Design.AllowableTensionCoefficient = pSpec->GetAllowableTensionCoefficient(pgsTypes::lrDesign_Inventory,&oldData.m_Design.bLimitTensileStress,&oldData.m_Design.MaxTensileStress);
    oldData.m_Design.bRateForShear = pSpec->RateForShear(pgsTypes::lrDesign_Inventory);
 
-   EAF_GET_IFACE(ILiveLoads,pLiveLoads);
+   GET_IFACE(ILiveLoads,pLiveLoads);
    oldData.m_Legal.IM_Truck_Routine = pLiveLoads->GetTruckImpact(pgsTypes::lltLegalRating_Routine);
    oldData.m_Legal.IM_Lane_Routine  = pLiveLoads->GetLaneImpact( pgsTypes::lltLegalRating_Routine);
    oldData.m_Legal.IM_Truck_Special = pLiveLoads->GetTruckImpact(pgsTypes::lltLegalRating_Special);
@@ -2998,7 +2993,7 @@ void CPGSDocBase::OnRatingSpec()
             pTxn = std::move(pMacro);
          }
 
-         EAF_GET_IFACE(IEAFTransactions,pTransactions);
+         GET_IFACE(IEAFTransactions,pTransactions);
          pTransactions->Execute(std::move(pTxn));
       }
    }
@@ -3120,7 +3115,7 @@ void CPGSDocBase::OnViewsettingsGirderEditor()
 
 void CPGSDocBase::OnLoadsLoadModifiers() 
 {
-   EAF_GET_IFACE(ILoadModifiers,pLoadModifiers);
+   GET_IFACE(ILoadModifiers,pLoadModifiers);
 
    txnEditLoadModifiers::LoadModifiers loadModifiers;
    loadModifiers.DuctilityLevel    = pLoadModifiers->GetDuctilityLevel();
@@ -3156,7 +3151,7 @@ void CPGSDocBase::OnLoadsLoadModifiers()
       newLoadModifiers.ImportanceLevel = (i == 0 ? ILoadModifiers::Level::High : (i == 1 ? ILoadModifiers::Level::Normal : ILoadModifiers::Level::Low));
 
       std::unique_ptr<txnEditLoadModifiers> pTxn(std::make_unique<txnEditLoadModifiers>(loadModifiers,newLoadModifiers));
-      EAF_GET_IFACE(IEAFTransactions,pTransactions);
+      GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(std::move(pTxn));
    }
 }
@@ -3165,7 +3160,7 @@ void CPGSDocBase::OnLoadsLoadFactors()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   EAF_GET_IFACE(ILoadFactors,pLoadFactors);
+   GET_IFACE(ILoadFactors,pLoadFactors);
 
    CLoadFactors loadFactors = *pLoadFactors->GetLoadFactors();
    CLoadFactorsDlg dlg;
@@ -3173,7 +3168,7 @@ void CPGSDocBase::OnLoadsLoadFactors()
    if ( dlg.DoModal() == IDOK )
    {
       std::unique_ptr<txnEditLoadFactors> pTxn(std::make_unique<txnEditLoadFactors>(loadFactors,dlg.m_LoadFactors));
-      EAF_GET_IFACE(IEAFTransactions,pTransactions);
+      GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(std::move(pTxn));
    }
 }
@@ -3184,7 +3179,7 @@ void CPGSDocBase::UpdateAnalysisTypeStatusIndicator()
    CPGSuperStatusBar* pPGSStatusBar = dynamic_cast<CPGSuperStatusBar*>(pStatusBar);
    if (pPGSStatusBar)
    {
-      EAF_GET_IFACE(ISpecification, pSpec);
+      GET_IFACE(ISpecification, pSpec);
       pPGSStatusBar->SetAnalysisTypeStatusIndicator(pSpec->GetAnalysisType());
    }
 }
@@ -3195,7 +3190,7 @@ void CPGSDocBase::UpdateProjectCriteriaIndicator()
    CPGSuperStatusBar* pPGSStatusBar = dynamic_cast<CPGSuperStatusBar*>(pStatusBar);
    if(pPGSStatusBar)
    {
-      EAF_GET_IFACE(ISpecification, pSpec);
+      GET_IFACE(ISpecification, pSpec);
       pPGSStatusBar->SetProjectCriteria(pSpec->GetSpecification().c_str());
    }
 }
@@ -3238,7 +3233,7 @@ bool CPGSDocBase::DoLoadMasterLibrary(const CString& strMasterLibraryFile)
    bool bSuccess = false;
    while(!bSuccess)
    {
-      eafTypes::UnitMode unitMode;
+      WBFL::EAF::UnitMode unitMode;
       HRESULT hr = pgslibLoadLibrary(strFile,&m_LibMgr,&unitMode);
       if ( FAILED(hr) )
       {
@@ -3687,7 +3682,7 @@ void CPGSDocBase::OnImportProjectLibrary()
       CString rPath;
       rPath = fileDlg.GetPathName();
 
-      EAF_GET_IFACE( IImportProjectLibrary, pImport );
+      GET_IFACE( IImportProjectLibrary, pImport );
 
       CString real_file_name; // name of actual file to be read may be different than lpszPathName
       HRESULT convert_status = ConvertTheDocument(rPath, &real_file_name);
@@ -3762,8 +3757,8 @@ void CPGSDocBase::OnImportProjectLibrary()
 
 void CPGSDocBase::OnLoadsLldf() 
 {
-   EAF_GET_IFACE(ILiveLoads,pLiveLoads);
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(ILiveLoads,pLiveLoads);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    pgsTypes::DistributionFactorMethod method = pBridgeDesc->GetDistributionFactorMethod();
@@ -3776,7 +3771,7 @@ void CPGSDocBase::OnLoadsLldf(pgsTypes::DistributionFactorMethod method,WBFL::LR
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pOldBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    CLiveLoadDistFactorsDlg dlg;
@@ -3787,11 +3782,11 @@ void CPGSDocBase::OnLoadsLldf(pgsTypes::DistributionFactorMethod method,WBFL::LR
 
    if ( dlg.DoModal() == IDOK )
    {
-      EAF_GET_IFACE(ILiveLoads,pLiveLoads);
+      GET_IFACE(ILiveLoads,pLiveLoads);
 
       std::unique_ptr<txnEditLLDF> pTxn(std::make_unique<txnEditLLDF>(*pOldBridgeDesc,dlg.m_BridgeDesc,
                                           pLiveLoads->GetRangeOfApplicabilityAction(),dlg.m_RangeOfApplicabilityAction));
-      EAF_GET_IFACE(IEAFTransactions,pTransactions);
+      GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(std::move(pTxn));
    }
 }
@@ -3819,14 +3814,14 @@ void CPGSDocBase::OnConstructionLoads()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CConstructionLoadDlg dlg;
-   EAF_GET_IFACE(IUserDefinedLoadData,pLoads);
+   GET_IFACE(IUserDefinedLoadData,pLoads);
    Float64 load = pLoads->GetConstructionLoad();
    dlg.m_Load = load;
 
    if ( dlg.DoModal() == IDOK )
    {
       std::unique_ptr<txnEditConstructionLoad> pTxn(std::make_unique<txnEditConstructionLoad>(load,dlg.m_Load));
-      EAF_GET_IFACE(IEAFTransactions,pTransactions);
+      GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(std::move(pTxn));
    }
 }
@@ -3850,10 +3845,10 @@ void CPGSDocBase::OnLiveLoads()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   EAF_GET_IFACE( ILibraryNames, pLibNames );
-   EAF_GET_IFACE( ILiveLoads, pLiveLoad );
-   EAF_GET_IFACE( IProductLoads,pProductLoads);
-   EAF_GET_IFACE( IBridgeDescription,pIBridgeDesc);
+   GET_IFACE( ILibraryNames, pLibNames );
+   GET_IFACE( ILiveLoads, pLiveLoad );
+   GET_IFACE( IProductLoads,pProductLoads);
+   GET_IFACE( IBridgeDescription,pIBridgeDesc);
 
    std::vector<std::_tstring> all_names;
    pLibNames->EnumLiveLoadNames( &all_names );
@@ -3917,7 +3912,7 @@ void CPGSDocBase::OnLiveLoads()
       newPermit.m_PedestrianLoadApplicationType = dlg.m_PermitPedesType;
 
       std::unique_ptr<txnEditLiveLoad> pTxn(std::make_unique<txnEditLiveLoad>(oldDesign,newDesign,oldFatigue,newFatigue,oldPermit,newPermit,oldLiveLoadEvent,dlg.m_LiveLoadEvent));
-      EAF_GET_IFACE(IEAFTransactions,pTransactions);
+      GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(std::move(pTxn));
    }
 }
@@ -4049,12 +4044,12 @@ void CPGSDocBase::OnEditPier()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   EAF_GET_IFACE(ISelection, pSelection);
+   GET_IFACE(ISelection, pSelection);
    PierIndexType editPierIdx = pSelection->GetSelectedPier();
 
    if (editPierIdx == INVALID_INDEX)
    {
-      EAF_GET_IFACE(IBridgeDescription, pIBridgeDesc);
+      GET_IFACE(IBridgeDescription, pIBridgeDesc);
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
       PierIndexType nPiers = pBridgeDesc->GetPierCount();
 
@@ -4090,10 +4085,10 @@ void CPGSDocBase::OnEditSpan()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   EAF_GET_IFACE(ISelection, pSelection);
+   GET_IFACE(ISelection, pSelection);
    SpanIndexType editSpanIdx = pSelection->GetSelectedSpan();
    
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    SpanIndexType nSpans = pBridgeDesc->GetSpanCount();
 
@@ -4141,7 +4136,7 @@ void CPGSDocBase::DeletePier(PierIndexType pierIdx)
 
    // deleting a pier
 
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    CSelectItemDlg dlg;
@@ -4194,7 +4189,7 @@ void CPGSDocBase::DeleteSpan(SpanIndexType spanIdx)
 
    // deleting a span
 
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    CSelectItemDlg dlg;
@@ -4254,7 +4249,7 @@ void CPGSDocBase::OnUpdateDeleteSelection(CCmdUI* pCmdUI)
       return;
    }
 
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    SpanIndexType nSpans = pBridgeDesc->GetSpanCount();
@@ -4296,7 +4291,7 @@ void CPGSDocBase::DeletePier(PierIndexType deletePierIdx,pgsTypes::PierFaceType 
    // make sure it's boundary condition remains valid. The pier that remains will end up in the position of the pier that is being deleted
    PierIndexType pierIdx = (deleteSpanOnPierFace == pgsTypes::Back ? deletePierIdx-1 : deletePierIdx+1); // index of the pier that is not deleted
 
-   EAF_GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CPierData2* pPier = pBridgeDesc->GetPier(pierIdx);
 
@@ -4354,7 +4349,7 @@ void CPGSDocBase::DeletePier(PierIndexType deletePierIdx,pgsTypes::PierFaceType 
          }
       }
       std::unique_ptr<txnDeleteSpan> pTxn(std::make_unique<txnDeleteSpan>(deletePierIdx, deleteSpanOnPierFace, bc));
-      EAF_GET_IFACE(IEAFTransactions, pTransactions);
+      GET_IFACE(IEAFTransactions, pTransactions);
       pTransactions->Execute(std::move(pTxn));
    }
    else
@@ -4367,7 +4362,7 @@ void CPGSDocBase::DeletePier(PierIndexType deletePierIdx,pgsTypes::PierFaceType 
          castClosureJointEventIdx = pBridgeDesc->GetTimelineManager()->GetCastClosureJointEventIndex(closureID);
       }
       std::unique_ptr<txnDeleteSpan> pTxn(std::make_unique<txnDeleteSpan>(deletePierIdx, deleteSpanOnPierFace, connection, castClosureJointEventIdx));
-      EAF_GET_IFACE(IEAFTransactions, pTransactions);
+      GET_IFACE(IEAFTransactions, pTransactions);
       pTransactions->Execute(std::move(pTxn));
    }
 
@@ -4384,7 +4379,7 @@ void CPGSDocBase::OnInsert()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    CInsertSpanDlg dlg(pBridgeDesc);
@@ -4402,7 +4397,7 @@ void CPGSDocBase::OnInsert()
 void CPGSDocBase::InsertSpan(PierIndexType refPierIdx,pgsTypes::PierFaceType pierFace,Float64 spanLength,bool bCreateNewGroup,EventIndexType eventIdx)
 {
    std::unique_ptr<txnInsertSpan> pTxn(std::make_unique<txnInsertSpan>(refPierIdx, pierFace, spanLength, bCreateNewGroup, eventIdx));
-   EAF_GET_IFACE(IEAFTransactions,pTransactions);
+   GET_IFACE(IEAFTransactions,pTransactions);
    pTransactions->Execute(std::move(pTxn));
 }
 
@@ -4430,7 +4425,7 @@ void CPGSDocBase::OnLosses()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CLossParametersDlg dlg;
-   EAF_GET_IFACE(ILossParameters,pLossParameters);
+   GET_IFACE(ILossParameters,pLossParameters);
    txnEditLossParametersData oldData;
    pLossParameters->GetTendonPostTensionParameters(&oldData.Dset_PT,&oldData.WobbleFriction_PT,&oldData.FrictionCoefficient_PT);
    pLossParameters->GetTemporaryStrandPostTensionParameters(&oldData.Dset_TTS,&oldData.WobbleFriction_TTS,&oldData.FrictionCoefficient_TTS);
@@ -4500,7 +4495,7 @@ void CPGSDocBase::OnLosses()
       newData.FinalLosses                   = dlg.m_Pretensioning.FinalLosses;
 
       std::unique_ptr<txnEditLossParameters> pTxn(std::make_unique<txnEditLossParameters>(oldData, newData));
-      EAF_GET_IFACE(IEAFTransactions,pTransactions);
+      GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(std::move(pTxn));
    }
 }
@@ -4542,7 +4537,7 @@ BOOL CPGSDocBase::OnCopyGirderPropsTb(NMHDR* pnmhdr,LRESULT* plr)
       contextMenu->AppendMenu(nCmd, copyName, nullptr);
    }
 
-   EAF_GET_IFACE(IEAFToolbars,pToolBars);
+   GET_IFACE(IEAFToolbars,pToolBars);
    auto pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
    int idx = pToolBar->CommandToIndex(ID_COPY_GIRDER_PROPS,nullptr);
    CRect rect;
@@ -4588,7 +4583,7 @@ BOOL CPGSDocBase::OnCopyPierPropsTb(NMHDR* pnmhdr,LRESULT* plr)
    }
 
 
-   EAF_GET_IFACE(IEAFToolbars,pToolBars);
+   GET_IFACE(IEAFToolbars,pToolBars);
    auto pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
    int idx = pToolBar->CommandToIndex(ID_COPY_PIER_PROPS,nullptr);
    CRect rect;
@@ -4864,12 +4859,12 @@ CString CPGSDocBase::GetDocumentationRootLocation()
    return pApp->GetDocumentationRootLocation();
 }
 
-eafTypes::HelpResult CPGSDocBase::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nHID,CString& strURL)
+std::pair<WBFL::EAF::HelpResult,CString> CPGSDocBase::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nHID)
 {
    // do the normal work first
-   eafTypes::HelpResult helpResult = CEAFBrokerDocument::GetDocumentLocation(lpszDocSetName,nHID,strURL);
+   auto helpResult = CEAFBrokerDocument::GetDocumentLocation(lpszDocSetName,nHID);
 
-   if ( helpResult == eafTypes::hrOK || helpResult== eafTypes::hrTopicNotFound )
+   if ( helpResult.first == WBFL::EAF::HelpResult::OK || helpResult.first == WBFL::EAF::HelpResult::TopicNotFound )
    {
       // if we have a good help document location or if the doc set was found but the HID was bad,
       // we are done... return the result
@@ -4877,7 +4872,7 @@ eafTypes::HelpResult CPGSDocBase::GetDocumentLocation(LPCTSTR lpszDocSetName,UIN
    }
 
    // Check our plugins
-   return m_pPluginMgr->GetDocumentLocation(lpszDocSetName,nHID,strURL);
+   return m_pPluginMgr->GetDocumentLocation(lpszDocSetName,nHID);
 }
 
 void CPGSDocBase::OnLogFileOpened()
@@ -4886,7 +4881,7 @@ void CPGSDocBase::OnLogFileOpened()
 
    CEAFBrokerDocument::OnLogFileOpened();
 
-   EAF_GET_IFACE(IEAFProjectLog,pLog);
+   GET_IFACE(IEAFProjectLog,pLog);
    CString strMsg;
 
    CPGSuperPluginAppApp* pApp = (CPGSuperPluginAppApp*)AfxGetApp();
@@ -4940,7 +4935,7 @@ CString CPGSDocBase::GetToolbarSectionName()
 
 void CPGSDocBase::OnUpdateViewGraphs(CCmdUI* pCmdUI)
 {
-   EAF_GET_IFACE(IEAFGraphManager,pGraphMgr);
+   GET_IFACE(IEAFGraphManager,pGraphMgr);
    pCmdUI->Enable( 0 < pGraphMgr->GetGraphBuilderCount() );
 }
 
@@ -4966,7 +4961,7 @@ BOOL CPGSDocBase::OnViewGraphs(NMHDR* pnmhdr,LRESULT* plr)
 
    BuildGraphMenu(contextMenu);
 
-   EAF_GET_IFACE(IEAFToolbars,pToolBars);
+   GET_IFACE(IEAFToolbars,pToolBars);
    auto pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
    int idx = pToolBar->CommandToIndex(ID_VIEW_GRAPHS,nullptr);
    CRect rect;
@@ -4981,7 +4976,7 @@ BOOL CPGSDocBase::OnViewGraphs(NMHDR* pnmhdr,LRESULT* plr)
 
 void CPGSDocBase::OnUpdateViewReports(CCmdUI* pCmdUI)
 {
-   EAF_GET_IFACE(IEAFReportManager,pReportMgr);
+   GET_IFACE(IEAFReportManager,pReportMgr);
    pCmdUI->Enable( 0 < pReportMgr->GetReportBuilderCount() );
 }
 
@@ -5006,7 +5001,7 @@ BOOL CPGSDocBase::OnViewReports(NMHDR* pnmhdr,LRESULT* plr)
 
    CEAFBrokerDocument::PopulateReportMenu(contextMenu);
 
-   EAF_GET_IFACE(IEAFToolbars,pToolBars);
+   GET_IFACE(IEAFToolbars,pToolBars);
    auto pToolBar = pToolBars->GetToolBar( m_pPGSuperDocProxyAgent->GetStdToolBarID() );
    int idx = pToolBar->CommandToIndex(ID_VIEW_REPORTS,nullptr);
    CRect rect;
@@ -5286,7 +5281,7 @@ void CPGSDocBase::OnChangedFavoriteReports(BOOL bIsFavorites,BOOL bFromMenu)
    PopulateReportMenu();
 }
 
-void CPGSDocBase::ShowCustomReportHelp(eafTypes::CustomReportHelp helpType)
+void CPGSDocBase::ShowCustomReportHelp(WBFL::EAF::CustomReportHelp helpType)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    __super::ShowCustomReportHelp(helpType);
@@ -5305,14 +5300,14 @@ bool CPGSDocBase::DoDesignHaunch(const CGirderKey& girderKey)
    CFillHaunchDlg dlg(girderKey, m_pBroker);
    if (IDOK == dlg.DoModal())
    {
-      EAF_GET_IFACE(IBridgeDescription, pIBridgeDesc);
+      GET_IFACE(IBridgeDescription, pIBridgeDesc);
       const CBridgeDescription2* pOldBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
       CBridgeDescription2 newBridgeDescr(*pOldBridgeDesc);
 
       if (dlg.ModifyBridgeDescription(newBridgeDescr))
       {
-         EAF_GET_IFACE(IEnvironment, pEnvironment);
+         GET_IFACE(IEnvironment, pEnvironment);
          auto oldExposureCondition = pEnvironment->GetExposureCondition();
          auto oldClimateCondition = pEnvironment->GetClimateCondition();
          Float64 oldRelHumidity = pEnvironment->GetRelHumidity();
@@ -5320,7 +5315,7 @@ bool CPGSDocBase::DoDesignHaunch(const CGirderKey& girderKey)
          std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditBridge>(*pOldBridgeDesc, newBridgeDescr,
             oldExposureCondition, oldExposureCondition, oldClimateCondition, oldClimateCondition, oldRelHumidity, oldRelHumidity));
 
-         EAF_GET_IFACE(IEAFTransactions, pTransactions);
+         GET_IFACE(IEAFTransactions, pTransactions);
          pTransactions->Execute(std::move(pTxn));
 
          // Give user some confirmation that values where changed. A report of some kind might be better, but not sure it's worth the effort.

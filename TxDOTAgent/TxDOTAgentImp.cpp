@@ -32,7 +32,7 @@
 #include <IFace\Test1250.h>
 #include <IFace\GirderHandling.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <PgsExt\DesignConfigUtil.h>
 
 #include <EAF\EAFAutoProgress.h>
@@ -94,20 +94,18 @@ static bool CreateTxDOTFileNames(const CString& output, CString* pErrFileName)
 
 bool CTxDOTAgentImp::RegInterfaces()
 {
+   EAF_AGENT_REGINTERFACES;
    return true;
 }
 
 bool CTxDOTAgentImp::Init()
 {
-   Agent::Init();
+   EAF_AGENT_INIT;
+   CREATE_LOGFILE("TxDOTAgent");
    m_pBroker->AddCLSID(CComBSTR("{360F7694-BE5B-4E97-864F-EF3575689C6E}"), CComBSTR("{3700B253-8489-457C-8A6D-D174F95C457C}"));
 
-   CREATE_LOGFILE("TxDOTAgent");
-
-   //EAF_AGENT_INIT;
-
    // Register our reports
-   EAF_GET_IFACE(IEAFReportManager,pRptMgr);
+   GET_IFACE(IEAFReportManager,pRptMgr);
 
    //
    // Create report spec builders
@@ -213,12 +211,13 @@ CLSID CTxDOTAgentImp::GetCLSID() const
 
 bool CTxDOTAgentImp::Reset()
 {
+   EAF_AGENT_RESET;
    return true;
 }
 
 bool CTxDOTAgentImp::ShutDown()
 {
-   //EAF_AGENT_CLEAR_INTERFACE_CACHE;
+   EAF_AGENT_SHUTDOWN;
    CLOSE_LOGFILE;
    return true;
 }
@@ -337,7 +336,7 @@ bool CTxDOTAgentImp::DoTOGAReport(const CString& outputFileName, const CTxDOTCom
 	   return false;
    }
 
-   EAF_GET_IFACE(IProgress,pProgress);
+   GET_IFACE(IEAFProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
 
    // Write data to file

@@ -1,15 +1,15 @@
 #pragma once
 
-#include <PgsExt\ErectPiersActivity.h>
-#include <PgsExt\TimelineManager.h>
+#include <PsgLib\ErectPiersActivity.h>
+#include <PsgLib\TimelineManager.h>
 #include <EAF\EAFDisplayUnits.h>
 
 // Pier and Temporary Support indicies are stored in the ItemData member of the
 // list box controls. To differentiate between a Pier index and a Temporary Support index
 // the Temporary Support indices are encoded/decoded with the following methods
 #include <WBFLTypes.h>
-#include <PgsExt\PierData2.h>
-#include <PgsExt\TemporarySupportData.h>
+#include <PsgLib\PierData2.h>
+#include <PsgLib\TemporarySupportData.h>
 #include <PgsExt\TimelineItemListBox.h>
 
 bool IsTSIndex(SupportIndexType tsIdx);

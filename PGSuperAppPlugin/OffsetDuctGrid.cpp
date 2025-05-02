@@ -29,11 +29,6 @@
 #include <EAF\EAFDisplayUnits.h>
 #include "PGSuperUnits.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 GRID_IMPLEMENT_REGISTER(COffsetDuctGrid, CS_DBLCLKS, 0, 0, 0);
 
@@ -63,7 +58,7 @@ void COffsetDuctGrid::CustomInit(COffsetDuctGridCallback* pCallback)
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // Initialize the grid. For CWnd based grids this call is // 
    // essential. For view based grids this initialization is done 
@@ -136,7 +131,7 @@ COffsetDuctGeometry COffsetDuctGrid::GetData()
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    COffsetDuctGeometry ductGeometry;
    ROWCOL nRows = GetRowCount();
@@ -199,7 +194,7 @@ void COffsetDuctGrid::FillRow(ROWCOL row,Float64 distance,Float64 offset)
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CString strDist;
    strDist.Format(_T("%s"),FormatDimension(distance,pDisplayUnits->GetSpanLengthUnit(),false));

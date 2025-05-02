@@ -59,7 +59,7 @@ bool CMomentCapacityReportSpecification::IsValid() const
    {
       // next check if POI is in a valid range 
       // Note that moments range from start to end of span, not just on segment
-      EAF_GET_IFACE2(GetBroker(),IPointOfInterest, pPoi);
+      GET_IFACE2(GetBroker(),IPointOfInterest, pPoi);
       const CSegmentKey& segmentKey = m_Poi.GetSegmentKey();
 
       PoiList vPoi = GetMomentCapacityDetailsPois(pPoi, segmentKey);

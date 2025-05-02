@@ -25,7 +25,7 @@
 
 #include "CLSID.h"
 
-#include <EAF\EAFInterfaceCache.h>
+
 
 #include <IFace\Project.h>
 #include <IFace\ReportOptions.h>
@@ -76,7 +76,7 @@ protected:
    WBFL::Reporting::TitlePageBuilder* CreateTitlePageBuilder(LPCTSTR strName,bool bFullVersion=true) override;
 
 private:
-   //DECLARE_EAF_AGENT_DATA;
+   EAF_DECLARE_AGENT_DATA;
 
    IDType m_dwSpecCookie;
 

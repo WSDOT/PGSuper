@@ -23,8 +23,8 @@
 #pragma once
 
 #include <EAF\EAFTransaction.h>
-#include <PgsExt\ClosureJointData.h>
-#include <PgsExt\TimelineManager.h>
+#include <PsgLib\ClosureJointData.h>
+#include <PsgLib\TimelineManager.h>
 
 struct txnEditClosureJointData
 {

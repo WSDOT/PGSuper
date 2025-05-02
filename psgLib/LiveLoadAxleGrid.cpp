@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psgLib.h>
+#include <PsgLib\PsgLib.h>
 #include "LiveLoadAxleGrid.h"
 #include "LiveLoadDlg.h"
 #include <system\tokenizer.h>

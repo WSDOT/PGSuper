@@ -38,6 +38,7 @@
 #include <IFace\Project.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\DocumentType.h>
+#include <IFace/PointOfInterest.h>
 
 #include <EAF\EAFGraphView.h>
 #include <EAF\EAFDocument.h>
@@ -122,7 +123,7 @@ CGirderGraphControllerBase* CGirderPropertiesGraphBuilder::CreateGraphController
 
 bool CGirderPropertiesGraphBuilder::UpdateNow()
 {
-   EAF_GET_IFACE(IProgress,pProgress);
+   GET_IFACE(IEAFProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
 
    pProgress->UpdateMessage(_T("Building Graph"));
@@ -151,7 +152,7 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
    delete m_pYFormat;
    m_pYFormat = nullptr;
 
-   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    switch(propertyType)
    {
@@ -283,7 +284,7 @@ void CGirderPropertiesGraphBuilder::UpdateYAxisUnits(PropertyType propertyType)
 
 void CGirderPropertiesGraphBuilder::UpdateGraphTitle(const CGirderKey& girderKey,IntervalIndexType intervalIdx,PropertyType propertyType)
 {
-   EAF_GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IIntervals,pIntervals);
    CString strInterval( pIntervals->GetDescription(intervalIdx).c_str() );
 
    CString strGraphTitle;
@@ -293,7 +294,7 @@ void CGirderPropertiesGraphBuilder::UpdateGraphTitle(const CGirderKey& girderKey
    }
    else
    {
-      EAF_GET_IFACE(IDocumentType,pDocType);
+      GET_IFACE(IDocumentType,pDocType);
       if (pDocType->IsPGSuperDocument())
       {
          strGraphTitle.Format(_T("Span %s Girder %s - %s - Interval %d: %s"), LABEL_SPAN(girderKey.groupIndex), LABEL_GIRDER(girderKey.girderIndex), GetPropertyLabel(propertyType), LABEL_INTERVAL(intervalIdx), strInterval);
@@ -313,10 +314,10 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
    m_Graph.ClearData();
 
    // Get the points of interest we need.
-   EAF_GET_IFACE(IPointOfInterest,pPoi);
+   GET_IFACE(IPointOfInterest,pPoi);
    PoiList vPoi;
-   EAF_GET_IFACE(IBridge,pBridge);
-   EAF_GET_IFACE(IIntervals, pIntervals);
+   GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IIntervals, pIntervals);
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(girderKey, &vGirderKeys);
    std::vector<pgsPointOfInterest> vTemporaryPoi;
@@ -369,16 +370,16 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
       return;
    }
 
-   EAF_GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->GetDeckType();
 
    IndexType dataSeries1, dataSeries2, dataSeries3, dataSeries4;
    InitializeGraph(propertyType,girderKey,intervalIdx,&dataSeries1,&dataSeries2, &dataSeries3, &dataSeries4);
 
-   EAF_GET_IFACE_NOCHECK(ISectionProperties, pSectProps);
-   EAF_GET_IFACE_NOCHECK(IStrandGeometry, pStrandGeom);
-   EAF_GET_IFACE_NOCHECK(IPretensionForce, pPretensionForce);
+   GET_IFACE_NOCHECK(ISectionProperties, pSectProps);
+   GET_IFACE_NOCHECK(IStrandGeometry, pStrandGeom);
+   GET_IFACE_NOCHECK(IPretensionForce, pPretensionForce);
 
    bool bIsAsymmetric = pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing();
 
@@ -494,7 +495,7 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
          }
          else
          {
-            EAF_GET_IFACE(ISectionProperties,pSectProps);
+            GET_IFACE(ISectionProperties,pSectProps);
             value1 = pSectProps->GetEffectiveFlangeWidth(poi);
          }
          break;
@@ -502,8 +503,8 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
 
       case Fc:
          {
-         EAF_GET_IFACE(IMaterials,pMaterials);
-         EAF_GET_IFACE(IPointOfInterest,pPoi);
+         GET_IFACE(IMaterials,pMaterials);
+         GET_IFACE(IPointOfInterest,pPoi);
          CClosureKey closureKey;
          if ( pPoi->IsInClosureJoint(poi,&closureKey) )
          {
@@ -530,8 +531,8 @@ void CGirderPropertiesGraphBuilder::UpdateGraphData(const CGirderKey& girderKey,
 
       case Ec:
          {
-         EAF_GET_IFACE(IMaterials,pMaterials);
-         EAF_GET_IFACE(IPointOfInterest,pPoi);
+         GET_IFACE(IMaterials,pMaterials);
+         GET_IFACE(IPointOfInterest,pPoi);
          CClosureKey closureKey;
          if ( pPoi->IsInClosureJoint(poi,&closureKey) )
          {
@@ -589,15 +590,15 @@ void CGirderPropertiesGraphBuilder::UpdateTendonGraph(PropertyType propertyType,
 {
    ATLASSERT(propertyType == TendonEccentricity || propertyType == TendonProfile);
 
-   EAF_GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroupIdx);
 
    // Get max number of ducts per girder for the color range
    DuctIndexType nMaxDucts = 0;
-   EAF_GET_IFACE(IGirderTendonGeometry, pGirderTendonGeometry);
-   EAF_GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
+   GET_IFACE(IGirderTendonGeometry, pGirderTendonGeometry);
+   GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
    for ( GroupIndexType grpIdx = startGroupIdx; grpIdx <= endGroupIdx; grpIdx++ )
    {
       CGirderKey thisGirderKey(grpIdx,girderKey.girderIndex);
@@ -762,13 +763,13 @@ void CGirderPropertiesGraphBuilder::InitializeGraph(PropertyType propertyType,co
    *pGraph3 = INVALID_INDEX;
    *pGraph4 = INVALID_INDEX;
 
-   EAF_GET_IFACE_NOCHECK(IIntervals,pIntervals); // not always used
+   GET_IFACE_NOCHECK(IIntervals,pIntervals); // not always used
 
-   EAF_GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->GetDeckType();
 
-   EAF_GET_IFACE(IBridge, pBridge);
+   GET_IFACE(IBridge, pBridge);
    bool bIsAsymmetric = pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing();
 
    std::_tstring strPropertyLabel1( GetPropertyLabel(propertyType) );

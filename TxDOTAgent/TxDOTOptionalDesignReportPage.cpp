@@ -110,7 +110,7 @@ BOOL CTxDOTOptionalDesignReportPage::OnSetActive()
          // Make sure our bridge data has been updated
          auto pBroker = m_pBrokerRetriever->GetUpdatedBroker();
 
-         EAF_GET_IFACE2(pBroker,IProgress,pProgress);
+         GET_IFACE2(pBroker,IEAFProgress,pProgress);
          CEAFAutoProgress ap(pProgress);
          pProgress->UpdateMessage(_T("Building Report"));
 
@@ -121,7 +121,7 @@ BOOL CTxDOTOptionalDesignReportPage::OnSetActive()
          }
          else
          {
-            EAF_GET_IFACE2(pBroker, IEAFReportManager,pReportMgr);
+            GET_IFACE2(pBroker, IEAFReportManager,pReportMgr);
             // Create spec for currently selected report
             m_pRptSpec = CreateSelectedReportSpec(pReportMgr);
 
@@ -179,7 +179,7 @@ void CTxDOTOptionalDesignReportPage::CreateNewBrowser(std::shared_ptr<WBFL::EAF:
    m_BrowserPlaceholder.ShowWindow(SW_SHOW);
    m_ErrorStatic.ShowWindow(SW_HIDE);
 
-   EAF_GET_IFACE2(pBroker,IEAFReportManager,pReportMgr);
+   GET_IFACE2(pBroker,IEAFReportManager,pReportMgr);
 
    // Create spec for currently selected report
    m_pRptSpec = CreateSelectedReportSpec(pReportMgr);
@@ -188,7 +188,7 @@ void CTxDOTOptionalDesignReportPage::CreateNewBrowser(std::shared_ptr<WBFL::EAF:
    CRect rect;
    m_BrowserPlaceholder.GetClientRect(&rect);
 
-   EAF_GET_IFACE2(pBroker,IProgress,pProgress);
+   GET_IFACE2(pBroker,IEAFProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
 
    m_pBrowser = pReportMgr->CreateReportBrowser(m_BrowserPlaceholder.GetSafeHwnd(),0,m_pRptSpec,std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder>());
@@ -215,7 +215,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CTxDOTOptionalDesignReport
 
    // Set report header and footer for printing
    auto pBroker = m_pBrokerRetriever->GetUpdatedBroker();
-   EAF_GET_IFACE2(pBroker,IGetTogaData,pGetTogaData);
+   GET_IFACE2(pBroker,IGetTogaData,pGetTogaData);
    const CTxDOTOptionalDesignData* pProjectData = pGetTogaData->GetTogaData();
 
    CString bridgeName = CString(_T("Bridge: ")) + pProjectData->GetBridge();

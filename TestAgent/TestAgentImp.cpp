@@ -48,19 +48,19 @@
 #include <psgLib\SpecLibraryEntry.h>
 #include <PsgLib\GirderLibraryEntry.h>
 
-#include <PgsExt\DeckDescription2.h>
-#include <PgsExt\GirderGroupData.h>
-#include <PgsExt\SplicedGirderData.h>
-#include <PgsExt\PrecastSegmentData.h>
-#include <PgsExt\PierData2.h>
+#include <PsgLib\DeckDescription2.h>
+#include <PsgLib\GirderGroupData.h>
+#include <PsgLib\SplicedGirderData.h>
+#include <PsgLib\PrecastSegmentData.h>
+#include <PsgLib\PierData2.h>
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\GirderDesignArtifact.h>
 #include <PgsExt\HaulingAnalysisArtifact.h>
 #include <PgsExt\RatingArtifact.h>
 #include <EAF\EAFAutoProgress.h>
 #include <EAF\EAFApp.h>
-#include <PgsExt\GirderLabel.h>
-#include <PgsExt\Helpers.h>
+#include <PsgLib\GirderLabel.h>
+#include <PsgLib\Helpers.h>
 
 #include <psgLib/CreepCriteria.h>
 #include <psgLib/SlabOffsetCriteria.h>
@@ -106,6 +106,8 @@ int GetBarSize(WBFL::Materials::Rebar::Size size)
 
 bool CTestAgentImp::RegInterfaces()
 {
+   EAF_AGENT_REGINTERFACES;
+
    REGISTER_INTERFACE(ITest1250);
    REGISTER_INTERFACE(ITestFileExport);
 
@@ -114,7 +116,7 @@ bool CTestAgentImp::RegInterfaces()
 
 bool CTestAgentImp::Init()
 {
-   //EAF_AGENT_INIT;
+   EAF_AGENT_INIT;
    return true;
 }
 
@@ -123,14 +125,15 @@ CLSID CTestAgentImp::GetCLSID() const
    return CLSID_TestAgent;
 }
 
-bool  CTestAgentImp::Reset()
+bool CTestAgentImp::Reset()
 {
+   EAF_AGENT_RESET;
    return true;
 }
 
 bool CTestAgentImp::ShutDown()
 {
-   //EAF_AGENT_CLEAR_INTERFACE_CACHE;
+   EAF_AGENT_SHUTDOWN;
    return true;
 }
 
@@ -160,7 +163,7 @@ bool CTestAgentImp::RunTest(long type,
    }
 
    // create progress window
-   EAF_GET_IFACE(IProgress,pProgress);
+   GET_IFACE(IEAFProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
 
    if (type == RUN_REGRESSION)
@@ -168,8 +171,8 @@ bool CTestAgentImp::RunTest(long type,
       RunAlignmentTest(resf);
    }
 
-   EAF_GET_IFACE(IDocumentType, pDocType);
-   EAF_GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IDocumentType, pDocType);
+   GET_IFACE(IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
@@ -349,7 +352,7 @@ bool CTestAgentImp::RunTest(long type,
 			      return S_OK;
 		      }
 
-            EAF_GET_IFACE(ITestFileExport,pTxDOTExport);
+            GET_IFACE(ITestFileExport,pTxDOTExport);
             if ( pTxDOTExport )
             {
                pTxDOTExport->WriteCADDataToFile(fp, m_pBroker, extSegmentKey, true);
@@ -389,7 +392,7 @@ bool CTestAgentImp::RunTestEx(long type, const std::vector<SpanGirderHashType>& 
    }
 
    // create progress window
-   EAF_GET_IFACE(IProgress,pProgress);
+   GET_IFACE(IEAFProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
 
    if (type == RUN_REGRESSION || type == RUN_CADTEST)
@@ -397,7 +400,7 @@ bool CTestAgentImp::RunTestEx(long type, const std::vector<SpanGirderHashType>& 
       RunAlignmentTest(resf);
    }
 
-   EAF_GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IBridge,pBridge);
    SpanIndexType nspans = pBridge->GetSpanCount();
 
    for(std::vector<SpanGirderHashType>::const_iterator it=girderList.begin(); it!=girderList.end(); it++)
@@ -628,7 +631,7 @@ std::_tstring CTestAgentImp::GetBridgeID()
    }
    else
    {
-      EAF_GET_IFACE(IEAFDocument,pDocument);
+      GET_IFACE(IEAFDocument,pDocument);
       std::_tstring strPath = (LPCTSTR)pDocument->GetFilePath();
 
       // Filename is in the form Regxxx.pgs
@@ -653,7 +656,7 @@ std::_tstring CTestAgentImp::GetBridgeID()
 std::_tstring CTestAgentImp::GetProcessID()
 {
    //// the process ID is going to be the PGSuper version number
-   //EAF_GET_IFACE(IVersionInfo,pVI);
+   //GET_IFACE(IVersionInfo,pVI);
    //std::_tstring strVersion = pVI->GetVersion(true);
    //return strVersion;
 
@@ -676,7 +679,7 @@ bool CTestAgentImp::RunBearingTest(std::_tofstream& resultsFile, std::_tofstream
     std::_tstring pid = GetProcessID();
     std::_tstring bridgeId = GetBridgeID();
 
-    EAF_GET_IFACE(IBearingDesignParameters, pBearingDesignParameters);
+    GET_IFACE(IBearingDesignParameters, pBearingDesignParameters);
 
     SHEARDEFORMATIONDETAILS sfDetails;
     pBearingDesignParameters->GetTimeDependentShearDeformation(segmentKey, &sfDetails);
@@ -717,13 +720,13 @@ bool CTestAgentImp::RunBearingTest(std::_tofstream& resultsFile, std::_tofstream
 
 bool CTestAgentImp::RunHaunchTest(std::_tofstream& resultsFile, std::_tofstream& poiFile,const CSegmentKey& segmentKey)
 {
-   EAF_GET_IFACE(ILibrary, pLib );
-   EAF_GET_IFACE(ISpecification, pSpec );
+   GET_IFACE(ILibrary, pLib );
+   GET_IFACE(ISpecification, pSpec );
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
    const auto& slab_offset_criteria = pSpecEntry->GetSlabOffsetCriteria();
 
-   EAF_GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IBridge,pBridge);
    if ( pBridge->GetDeckType() == pgsTypes::sdtNone || !slab_offset_criteria.bCheck )
    {
       // No data
@@ -734,7 +737,7 @@ bool CTestAgentImp::RunHaunchTest(std::_tofstream& resultsFile, std::_tofstream&
    std::_tstring pid      = GetProcessID();
    std::_tstring bridgeId = GetBridgeID();
 
-   EAF_GET_IFACE(IGirderHaunch,pGdrHaunch);
+   GET_IFACE(IGirderHaunch,pGdrHaunch);
   
 #pragma Reminder("REVIEW: A DIMENSIONS REGRESSION TESTS")
    // haunch data is by girder. for PGSuper there is only one segment per girder
@@ -765,7 +768,7 @@ bool CTestAgentImp::RunHaunchTest(std::_tofstream& resultsFile, std::_tofstream&
 
 bool CTestAgentImp::RunGeometryTest(std::_tofstream& resultsFile, std::_tofstream& poiFile,const CSegmentKey& segmentKey)
 {
-   EAF_GET_IFACE(IGirder,pGirder);
+   GET_IFACE(IGirder,pGirder);
 
    std::_tstring pid      = GetProcessID();
    std::_tstring bridgeId = GetBridgeID();
@@ -799,7 +802,7 @@ bool CTestAgentImp::RunGeometryTest(std::_tofstream& resultsFile, std::_tofstrea
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 88010, ")<<_T("-1")<<_T(", ")<< QUIET(x) <<_T(", 55, ")<< SEGMENT(segmentKey) <<std::endl;
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 88011, ")<<_T("-1")<<_T(", ")<< QUIET(y) <<_T(", 55, ")<< SEGMENT(segmentKey) <<std::endl;
 
-   EAF_GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IBridge,pBridge);
    Float64 L = pBridge->GetSegmentLength(segmentKey);
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 88100, ")<<_T("-1")<<_T(", ")<< QUIET(L) <<_T(", 55, ")<< SEGMENT(segmentKey) <<std::endl;
 
@@ -810,7 +813,7 @@ bool CTestAgentImp::RunGeometryTest(std::_tofstream& resultsFile, std::_tofstrea
    resultsFile<<bridgeId<<_T(", ")<<pid<<_T(", 88102, ")<<_T("-1")<<_T(", ")<< QUIET(L) <<_T(", 55, ")<< SEGMENT(segmentKey) <<std::endl;
 
    // Bearing seat elevations
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
    PierIndexType startPierIdx = (SpanIndexType)(pSegment->GetGirder()->GetGirderGroup()->GetPierIndex(pgsTypes::metStart));
    PierIndexType endPierIdx = startPierIdx + 1;
@@ -846,7 +849,7 @@ bool CTestAgentImp::RunGeometryTest(std::_tofstream& resultsFile, std::_tofstrea
 
    // temporary support elevations
    SupportIndexType nTS = pBridge->GetTemporarySupportCount();
-   EAF_GET_IFACE_NOCHECK(ITempSupport, pTempSupport);
+   GET_IFACE_NOCHECK(ITempSupport, pTempSupport);
    for (SupportIndexType tsIdx = 0; tsIdx < nTS; tsIdx++)
    {
       std::vector<TEMPORARYSUPPORTELEVATIONDETAILS> vElevDetails = pTempSupport->GetElevationDetails(tsIdx, ALL_GIRDERS);
@@ -864,14 +867,14 @@ bool CTestAgentImp::RunDistFactorTest(std::_tofstream& resultsFile, std::_tofstr
    // get results for the span where the segment starts
    // this may cause duplicates but it allows use to just do test results by segment
    // rather than have a new class of tests that are by span
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
    SpanIndexType spanIdx = (SpanIndexType)(pSegment->GetGirder()->GetGirderGroup()->GetPierIndex(pgsTypes::metStart));
    GirderIndexType gdrIdx = segmentKey.girderIndex;
 
    CSpanKey spanKey(spanIdx,gdrIdx);
 
-   EAF_GET_IFACE( ILiveLoadDistributionFactors, pDf );
+   GET_IFACE( ILiveLoadDistributionFactors, pDf );
 
    std::_tstring pid      = GetProcessID();
    std::_tstring bridgeId = GetBridgeID();
@@ -891,10 +894,10 @@ bool CTestAgentImp::RunDistFactorTest(std::_tofstream& resultsFile, std::_tofstr
 
 bool CTestAgentImp::RunHL93Test(std::_tofstream& resultsFile, std::_tofstream& poiFile, const CSegmentKey& segmentKey)
 {
-   EAF_GET_IFACE(IPointOfInterest,pIPoi);
-   EAF_GET_IFACE( IProductForces, pForce);
-   EAF_GET_IFACE( ISpecification,     pSpec);
-   EAF_GET_IFACE( IIntervals, pIntervals);
+   GET_IFACE(IPointOfInterest,pIPoi);
+   GET_IFACE( IProductForces, pForce);
+   GET_IFACE( ISpecification,     pSpec);
+   GET_IFACE( IIntervals, pIntervals);
 
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
@@ -985,9 +988,9 @@ bool CTestAgentImp::RunHL93Test(std::_tofstream& resultsFile, std::_tofstream& p
 
 bool CTestAgentImp::RunCrossSectionTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, const CSegmentKey& segmentKey)
 {
-   EAF_GET_IFACE( ISectionProperties, pSp2 );
-   EAF_GET_IFACE( IGirder, pGdr);
-   EAF_GET_IFACE( IIntervals, pIntervals);
+   GET_IFACE( ISectionProperties, pSp2 );
+   GET_IFACE( IGirder, pGdr);
+   GET_IFACE( IIntervals, pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType compositeIntervalIdx = pIntervals->GetLastCompositeInterval();
 
@@ -1027,12 +1030,12 @@ bool CTestAgentImp::RunCrossSectionTest(std::_tofstream& resultsFile, std::_tofs
 
 bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, const CSegmentKey& segmentKey)
 {
-   EAF_GET_IFACE( IPointOfInterest,   pIPoi);
-   EAF_GET_IFACE( IProductForces,     pForce);
-   EAF_GET_IFACE( IReactions,         pReactions);
-   EAF_GET_IFACE( ICombinedForces,    pForces);
-   EAF_GET_IFACE( ISpecification,     pSpec);
-   EAF_GET_IFACE( IIntervals,         pIntervals);
+   GET_IFACE( IPointOfInterest,   pIPoi);
+   GET_IFACE( IProductForces,     pForce);
+   GET_IFACE( IReactions,         pReactions);
+   GET_IFACE( ICombinedForces,    pForces);
+   GET_IFACE( ISpecification,     pSpec);
+   GET_IFACE( IIntervals,         pIntervals);
 
    IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
@@ -1373,12 +1376,12 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
    }
 
    // Girder bearing reactions
-   EAF_GET_IFACE(IBearingDesign,pBearingDesign);
+   GET_IFACE(IBearingDesign,pBearingDesign);
    IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
 
    // NOTE: These regression test results will not align with those from versions of PGSuper prior to 3.0
    // The concept of reactions has been generalized and the old method of dumping results no longer worked
-   EAF_GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IBridge,pBridge);
    PierIndexType startPierIdx, endPierIdx;
    pBridge->GetGirderGroupPiers(segmentKey.groupIndex,&startPierIdx,&endPierIdx);
    std::vector<PierIndexType> vPiers = pBearingDesign->GetBearingReactionPiers(liveLoadIntervalIdx,segmentKey);
@@ -1453,11 +1456,11 @@ bool CTestAgentImp::RunDeadLoadActionTest(std::_tofstream& resultsFile, std::_to
 
 bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, const CSegmentKey& segmentKey)
 {
-   EAF_GET_IFACE( IPointOfInterest,   pIPoi);
-   EAF_GET_IFACE( ILimitStateForces,  pLsForces);
-   EAF_GET_IFACE( ISpecification,     pSpec);
-   EAF_GET_IFACE( IBearingDesign,     pBearingDesign);
-   EAF_GET_IFACE( IIntervals,         pIntervals);
+   GET_IFACE( IPointOfInterest,   pIPoi);
+   GET_IFACE( ILimitStateForces,  pLsForces);
+   GET_IFACE( ISpecification,     pSpec);
+   GET_IFACE( IBearingDesign,     pBearingDesign);
+   GET_IFACE( IIntervals,         pIntervals);
 
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
@@ -1643,13 +1646,13 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
    Float64 lftloc = WBFL::Units::ConvertFromSysUnits(vPoi.front().get().GetDistFromStart(), WBFL::Units::Measure::Millimeter);
    Float64 rgtloc = WBFL::Units::ConvertFromSysUnits(vPoi.back().get().GetDistFromStart(), WBFL::Units::Measure::Millimeter);
 
-   EAF_GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IBridge,pBridge);
    PierIndexType startPierIdx, endPierIdx;
    pBridge->GetGirderGroupPiers(segmentKey.groupIndex,&startPierIdx,&endPierIdx);
 
    if ( analysisType == pgsTypes::Envelope )
    {
-      EAF_GET_IFACE( IReactions, pReactions);
+      GET_IFACE( IReactions, pReactions);
 
       // left end
       pLsForces->GetLSReaction(liveLoadIntervalIdx, pgsTypes::StrengthI, startPierIdx, segmentKey, pgsTypes::MaxSimpleContinuousEnvelope, true, &dummy, &max );
@@ -1777,17 +1780,17 @@ bool CTestAgentImp::RunCombinedLoadActionTest(std::_tofstream& resultsFile, std:
 
 bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std::_tofstream& poiFile, const CSegmentKey& segmentKey)
 {
-   EAF_GET_IFACE( IPointOfInterest,    pIPoi);
-   EAF_GET_IFACE( ISectionProperties,  pSp2               );
-   EAF_GET_IFACE( IPretensionForce,    pPrestressForce    );
-   EAF_GET_IFACE( IPretensionStresses, pPrestressStresses );
-   EAF_GET_IFACE( ILosses, pLosses );
-   EAF_GET_IFACE( ILimitStateForces,pLsForces);
-   EAF_GET_IFACE( IMomentCapacity,pMomentCapacity);
-   EAF_GET_IFACE( IShearCapacity,pShearCapacity);
-   EAF_GET_IFACE( IArtifact,pIArtifact);
-   EAF_GET_IFACE( IProductForces, pProdForce);
-   EAF_GET_IFACE( IIntervals, pIntervals);
+   GET_IFACE( IPointOfInterest,    pIPoi);
+   GET_IFACE( ISectionProperties,  pSp2               );
+   GET_IFACE( IPretensionForce,    pPrestressForce    );
+   GET_IFACE( IPretensionStresses, pPrestressStresses );
+   GET_IFACE( ILosses, pLosses );
+   GET_IFACE( ILimitStateForces,pLsForces);
+   GET_IFACE( IMomentCapacity,pMomentCapacity);
+   GET_IFACE( IShearCapacity,pShearCapacity);
+   GET_IFACE( IArtifact,pIArtifact);
+   GET_IFACE( IProductForces, pProdForce);
+   GET_IFACE( IIntervals, pIntervals);
 
    IntervalIndexType stressStrandsIntervalIdx = pIntervals->GetStressStrandInterval(segmentKey);
    IntervalIndexType releaseIntervalIdx       = pIntervals->GetPrestressReleaseInterval(segmentKey);
@@ -2270,7 +2273,7 @@ bool CTestAgentImp::RunPrestressedISectionTest(std::_tofstream& resultsFile, std
    const pgsPrincipalTensionStressArtifact* pWebStressArtifact = pGdrArtifact->GetSegmentArtifact(segmentKey.segmentIndex)->GetPrincipalTensionStressArtifact();
    if (pWebStressArtifact && pWebStressArtifact->IsApplicable())
    {
-      EAF_GET_IFACE(IPrincipalWebStress, pPrincipalWebStress);
+      GET_IFACE(IPrincipalWebStress, pPrincipalWebStress);
       const std::vector<pgsPrincipalTensionSectionArtifact>* pvWebStressSections = pWebStressArtifact->GetPrincipalTensionStressArtifacts();
       int i = 0;
       for (const auto& artifact : *pvWebStressSections)
@@ -2310,7 +2313,7 @@ bool CTestAgentImp::RunHandlingTest(std::_tofstream& resultsFile, std::_tofstrea
    // write to poi file
    poiFile<<" 1, "<< bridgeId<< ", 3, 1, 0.0000, 2, -1, -1, -1,  0,  0,  0, -1,  0,  0,  0,  0,  0,  0,  0"<<std::endl;
 
-   EAF_GET_IFACE(IArtifact,pArtifacts);
+   GET_IFACE(IArtifact,pArtifacts);
    const pgsSegmentArtifact* pArtifact = pArtifacts->GetSegmentArtifact(segmentKey);
 
    // lifting
@@ -2373,14 +2376,14 @@ bool CTestAgentImp::RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std
    std::_tstring pid      = GetProcessID();
    std::_tstring bridgeId = GetBridgeID();
 
-   EAF_GET_IFACE(IArtifact,pIArtifact);
+   GET_IFACE(IArtifact,pIArtifact);
    const pgsSegmentArtifact* pArtifact = pIArtifact->GetSegmentArtifact(segmentKey);
 
-   EAF_GET_IFACE(ICamber,pCamber);
+   GET_IFACE(ICamber,pCamber);
    // create pois at the start of girder and mid-span
    pgsPointOfInterest pois(segmentKey,0.0);
 
-   EAF_GET_IFACE(IPointOfInterest, pPointOfInterest );
+   GET_IFACE(IPointOfInterest, pPointOfInterest );
    PoiList vPoi;
    pPointOfInterest->GetPointsOfInterest(segmentKey, POI_5L | POI_ERECTED_SEGMENT, &vPoi);
    ATLASSERT(vPoi.size()==1);
@@ -2388,7 +2391,7 @@ bool CTestAgentImp::RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std
 
    Float64 loc = pmid.GetDistFromStart();
 
-   EAF_GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
@@ -2396,7 +2399,7 @@ bool CTestAgentImp::RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std
    Float64 Xspan;
    pPointOfInterest->ConvertPoiToSpanPoint(pmid,&spanKey,&Xspan);
 
-   EAF_GET_IFACE(IBridge, pBridge );
+   GET_IFACE(IBridge, pBridge );
    CComPtr<IAngle> as1;
    pBridge->GetPierSkew(spanKey.spanIndex,&as1);
    Float64 s1;
@@ -2412,7 +2415,7 @@ bool CTestAgentImp::RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std
 
    resultsFile<<bridgeId<<", "<<pid<<", 123002, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(t2 , WBFL::Units::Measure::Degree)) <<", 101, "<<SEGMENT(segmentKey)<<std::endl;
 
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
 
    auto[endDist,mtEndDist] = pIBridgeDesc->GetPier(spanKey.spanIndex)->GetGirderEndDistance(pgsTypes::Ahead);
 
@@ -2433,11 +2436,11 @@ bool CTestAgentImp::RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std
 
    resultsFile<<bridgeId<<", "<<pid<<", 123007, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(pBridge->GetSegmentLength(segmentKey), WBFL::Units::Measure::Millimeter)) <<   ", 101, "<<SEGMENT(segmentKey)<<std::endl;
 
-   EAF_GET_IFACE(IMaterials, pMaterial);
+   GET_IFACE(IMaterials, pMaterial);
    resultsFile<<bridgeId<<", "<<pid<<", 123008, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(pMaterial->GetSegmentFc(segmentKey,liveLoadIntervalIdx), WBFL::Units::Measure::MPa)) <<   ", 101, "<<SEGMENT(segmentKey)<<std::endl;
    resultsFile<<bridgeId<<", "<<pid<<", 123009, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(pMaterial->GetSegmentFc(segmentKey,releaseIntervalIdx), WBFL::Units::Measure::MPa)) <<   ", 101, "<<SEGMENT(segmentKey)<<std::endl;
 
-   EAF_GET_IFACE(IStrandGeometry, pStrandGeometry );
+   GET_IFACE(IStrandGeometry, pStrandGeometry );
    
    StrandIndexType nh = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
    resultsFile<<bridgeId<<", "<<pid<<", 123010, "<<loc<<", "<<nh<<   ", 101, "<<SEGMENT(segmentKey)<<std::endl;
@@ -2457,7 +2460,7 @@ bool CTestAgentImp::RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std
    Float64 tj = pStrandGeometry->GetPjack(segmentKey,pgsTypes::Temporary);
    resultsFile<<bridgeId<<", "<<pid<<", 123015, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(tj, WBFL::Units::Measure::Newton)) <<   ", 101, "<<SEGMENT(segmentKey)<<std::endl;
 
-   EAF_GET_IFACE(ISectionProperties, pSectProp );
+   GET_IFACE(ISectionProperties, pSectProp );
    Float64 ybg = pSectProp->GetY(releaseIntervalIdx,pois,pgsTypes::BottomGirder);
    Float64 sse = pStrandGeometry->GetEccentricity(releaseIntervalIdx,pois, pgsTypes::Straight).Y();
    if (0 < ns)
@@ -2499,8 +2502,8 @@ bool CTestAgentImp::RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std
    resultsFile<<bridgeId<<", "<<pid<<", 123020, "<<loc<<", "<< QUIET(WBFL::Units::ConvertFromSysUnits(pCamber->GetScreedCamber( pmid, pgsTypes::CreepTime::Max ), WBFL::Units::Measure::Millimeter)) <<   ", 101, "<<SEGMENT(segmentKey)<<std::endl;
 
    // get # of days for creep
-   EAF_GET_IFACE(ISpecification, pSpec );
-   EAF_GET_IFACE(ILibrary, pLib);
+   GET_IFACE(ISpecification, pSpec );
+   GET_IFACE(ILibrary, pLib);
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
    const auto& creep_criteria = pSpecEntry->GetCreepCriteria();
@@ -2526,7 +2529,7 @@ bool CTestAgentImp::RunWsdotGirderScheduleTest(std::_tofstream& resultsFile, std
    }
 
    // Stirrup data
-   EAF_GET_IFACE(IStirrupGeometry,pStirrupGeometry);
+   GET_IFACE(IStirrupGeometry,pStirrupGeometry);
 
    // Primary zones
    Int32 id = 123100;
@@ -2581,7 +2584,7 @@ bool CTestAgentImp::RunDesignTest(std::_tofstream& resultsFile, std::_tofstream&
 
    Float64 loc = 0.0;
 
-   EAF_GET_IFACE(IArtifact,pIArtifact);
+   GET_IFACE(IArtifact,pIArtifact);
    const pgsGirderDesignArtifact* pGirderDesignArtifact = nullptr;
    const pgsSegmentDesignArtifact* pArtifact = nullptr;
 
@@ -2678,13 +2681,13 @@ bool CTestAgentImp::RunCamberTest(std::_tofstream& resultsFile, std::_tofstream&
    std::_tstring pid      = GetProcessID();
    std::_tstring bridgeId = GetBridgeID();
 
-   EAF_GET_IFACE(IPointOfInterest,pPointsOfInterest);
+   GET_IFACE(IPointOfInterest,pPointsOfInterest);
    PoiList vPoi;
    pPointsOfInterest->GetPointsOfInterest(segmentKey, POI_5L | POI_ERECTED_SEGMENT, &vPoi);
    ATLASSERT(vPoi.size()==1);
    const pgsPointOfInterest& poi_midspan = vPoi.front();
 
-   EAF_GET_IFACE( ICamber, pCamber );
+   GET_IFACE( ICamber, pCamber );
    Float64 D40  = pCamber->GetDCamberForGirderSchedule(poi_midspan,pgsTypes::CreepTime::Min);
    Float64 D120 = pCamber->GetDCamberForGirderSchedule(poi_midspan,pgsTypes::CreepTime::Max);
 
@@ -2700,11 +2703,11 @@ bool CTestAgentImp::RunFabOptimizationTest(std::_tofstream& resultsFile, std::_t
    std::_tstring pid      = GetProcessID();
    std::_tstring bridgeId = GetBridgeID();
 
-   EAF_GET_IFACE(ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
-   EAF_GET_IFACE_NOCHECK(ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+   GET_IFACE(ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
+   GET_IFACE_NOCHECK(ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
    if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled() && pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled() && pSegmentHaulingSpecCriteria->GetHaulingAnalysisMethod() == pgsTypes::HaulingAnalysisMethod::WSDOT)
    {
-	   EAF_GET_IFACE(IFabricationOptimization,pFabOp);
+	   GET_IFACE(IFabricationOptimization,pFabOp);
 
 	   FABRICATIONOPTIMIZATIONDETAILS details;
       if (pFabOp->GetFabricationOptimizationDetails(segmentKey, &details) == false)
@@ -2740,13 +2743,13 @@ bool CTestAgentImp::RunLoadRatingTest(std::_tofstream& resultsFile, std::_tofstr
    std::_tstring pid      = GetProcessID();
    std::_tstring bridgeId = GetBridgeID();
 
-   EAF_GET_IFACE(IProductLoads,pProductLoads);
-   EAF_GET_IFACE(IArtifact,pArtifacts);
+   GET_IFACE(IProductLoads,pProductLoads);
+   GET_IFACE(IArtifact,pArtifacts);
 
-   EAF_GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IBridge,pBridge);
    bool bNegMoments = pBridge->ProcessNegativeMoments(ALL_SPANS);
    
-   EAF_GET_IFACE(IRatingSpecification,pRatingSpec);
+   GET_IFACE(IRatingSpecification,pRatingSpec);
    int n = (int)pgsTypes::lrLoadRatingTypeCount;
    for ( int i = 0; i < n; i++ )
    {
@@ -2832,8 +2835,8 @@ bool CTestAgentImp::RunLoadRatingTest(std::_tofstream& resultsFile, std::_tofstr
 
 bool CTestAgentImp::RunAlignmentTest(std::_tofstream& resultsFile)
 {
-   EAF_GET_IFACE(IRoadwayData, pAlignment);
-   EAF_GET_IFACE_NOCHECK(IRoadway, pRoadway);
+   GET_IFACE(IRoadwayData, pAlignment);
+   GET_IFACE_NOCHECK(IRoadway, pRoadway);
 
    resultsFile << _T("Alignment Data") << std::endl;
    const AlignmentData2& alignment = pAlignment->GetAlignmentData2();
@@ -3186,7 +3189,7 @@ bool CTestAgentImp::DoTestReport(const CString& outputFileName, const CString& e
    }
 
    // Get starting and ending spans
-   EAF_GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IBridge,pBridge);
    SpanIndexType nSpans = pBridge->GetSpanCount();
 
    SpanIndexType start_span, end_span;
@@ -3260,7 +3263,7 @@ bool CTestAgentImp::DoTestReport(const CString& outputFileName, const CString& e
       }
    }
 
-   EAF_GET_IFACE(IProgress,pProgress);
+   GET_IFACE(IEAFProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
 
    if (txInfo.m_TxRunType == CTestCommandLineInfo::txrGeometry)
@@ -3273,7 +3276,7 @@ bool CTestAgentImp::DoTestReport(const CString& outputFileName, const CString& e
       CString strExt(_T(".pgs"));
       if (create_test_file_names(strExt, txInfo.m_strFileName, &resultsfile, &poifile, &errfile))
       {
-         EAF_GET_IFACE(ITest1250, ptst);
+         GET_IFACE(ITest1250, ptst);
 
          try
          {
@@ -3322,7 +3325,7 @@ bool CTestAgentImp::DoTestReport(const CString& outputFileName, const CString& e
             arShearDesignType shearDesignType;
             if (txInfo.m_TxRunType == CTestCommandLineInfo::txrDesignShear)
             {
-               EAF_GET_IFACE(IStirrupGeometry, pStirrupGeom);
+               GET_IFACE(IStirrupGeometry, pStirrupGeom);
                shearDesignType = pStirrupGeom->AreStirrupZonesSymmetrical(segmentKey) ? sdtLayoutStirrups : sdtRetainExistingLayout;
             }
             else
@@ -3330,7 +3333,7 @@ bool CTestAgentImp::DoTestReport(const CString& outputFileName, const CString& e
                shearDesignType = sdtNoDesign;
             }
 
-            EAF_GET_IFACE(IArtifact, pIArtifact);
+            GET_IFACE(IArtifact, pIArtifact);
             const pgsGirderDesignArtifact* pGirderDesignArtifact;
             const pgsSegmentDesignArtifact* pArtifact;
             try
@@ -3356,7 +3359,7 @@ bool CTestAgentImp::DoTestReport(const CString& outputFileName, const CString& e
             }
          }
 
-         EAF_GET_IFACE(ITestFileExport, pTxDOTCadExport);
+         GET_IFACE(ITestFileExport, pTxDOTCadExport);
          if (!pTxDOTCadExport)
          {
             AfxMessageBox(_T("The Test File Exporter is not currently installed"));
@@ -3408,7 +3411,7 @@ bool CTestAgentImp::DoTestReport(const CString& outputFileName, const CString& e
       CString strExt(_T(".pgs"));
       if (create_test_file_names(strExt,txInfo.m_strFileName,&resultsfile,&poifile,&errfile))
       {
-         EAF_GET_IFACE(ITest1250, ptst );
+         GET_IFACE(ITest1250, ptst );
 
          try
          {
@@ -3441,8 +3444,8 @@ void CTestAgentImp::SaveFlexureDesign(const CSegmentKey& segmentKey,const pgsSeg
 {
    // Artifact does hard work of converting to girder data
    CPrecastSegmentData segmentData = pArtifact->GetSegmentData();
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
-   EAF_GET_IFACE_NOCHECK(ISpecification,pSpec);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE_NOCHECK(ISpecification,pSpec);
    pIBridgeDesc->SetPrecastSegmentData(segmentKey,segmentData);
 
    const arDesignOptions& design_options = pArtifact->GetDesignOptions();

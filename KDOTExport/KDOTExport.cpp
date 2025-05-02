@@ -12,7 +12,6 @@
 #include <Plugins\PGSuperIEPlugin.h>
 #include "PGSuperCatCom.h"
 #include <BridgeLinkCATID.h>
-#include <WBFLCore_i.c>
 #include <WBFLCogo.h>
 #include <WBFLCogo_i.c>
 

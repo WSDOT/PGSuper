@@ -29,11 +29,6 @@
 #include <EAF\EAFDisplayUnits.h>
 #include "PGSuperUnits.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CBearingSame4BridgeDlg dialog
@@ -72,7 +67,7 @@ BOOL CBearingSame4BridgeDlg::OnInitDialog()
 void CBearingSame4BridgeDlg::DoDataExchange(CDataExchange* pDX)
 {
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    DDX_CBIndex(pDX, IDC_BRG_SHAPE, (int&)m_BearingData.Shape);
    DDX_CBItemData(pDX, IDC_BRG_COUNT, m_BearingData.BearingCount);

@@ -25,7 +25,7 @@
 
 #include <EAF\EAFTransaction.h>
 #include <PGSuperTypes.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 class txnEditBoundaryConditions : public CEAFTransaction
 {

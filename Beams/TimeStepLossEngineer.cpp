@@ -26,19 +26,20 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFAutoProgress.h>
 
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\ClosureJointData.h>
-#include <PgsExt\LoadFactors.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\ClosureJointData.h>
+#include <PsgLib\LoadFactors.h>
 
 
 #include <Reporting\ReportNotes.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 
 #include <EAF\EAFStatusCenter.h>
 #include <PgsExt\StatusItem.h>
 #include <PGSuperException.h>
 
 #include <psgLib/PrincipalTensionStressCriteria.h>
+#include <psgLib/SpecLibraryEntry.h>
 
 
 #include <WBFLGenericBridgeTools.h>
@@ -71,22 +72,19 @@ CTimeStepLossEngineer::CTimeStepLossEngineer(std::weak_ptr<WBFL::EAF::Broker> pB
 CPsLossEngineerBase(pBroker,statusGroupID)
 {
    m_Bat = pgsTypes::ContinuousSpan;
-
-   EAF_GET_IFACE2(pBroker.lock(), IEAFStatusCenter, pStatusCenter);
-   m_scidProjectCriteria = pStatusCenter->RegisterCallback( new pgsProjectCriteriaStatusCallback() );
+   GET_IFACE2(pBroker.lock(), IEAFStatusCenter, pStatusCenter);
+   m_scidProjectCriteria = pStatusCenter->RegisterCallback( std::make_shared<pgsProjectCriteriaStatusCallback>() );
 }
 
 const LOSSDETAILS* CTimeStepLossEngineer::GetLosses(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx)
 {
-   EAF_GET_IFACE2(GetBroker(), ILossParameters,pLossParameters);
+   GET_IFACE2(GetBroker(), ILossParameters,pLossParameters);
    if ( pLossParameters->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       std::_tstring msg(_T("Prestress losses cannot be computed. Use Project Criteria that specifies the time-step method for prestress loss calculations."));
       
-      pgsProjectCriteriaStatusItem* pStatusItem = new pgsProjectCriteriaStatusItem(m_StatusGroupID,m_scidProjectCriteria,msg.c_str());
-
-      EAF_GET_IFACE2(GetBroker(), IEAFStatusCenter,pStatusCenter);
-      pStatusCenter->Add(pStatusItem);
+      GET_IFACE2(GetBroker(), IEAFStatusCenter,pStatusCenter);
+      pStatusCenter->Add(std::make_shared<pgsProjectCriteriaStatusItem>(m_StatusGroupID, m_scidProjectCriteria, msg.c_str()));
 
       msg += std::_tstring(_T("\nSee Status Center for Details"));
       THROW_UNWIND(msg.c_str(),XREASON_PROJECT_CRITERIA);
@@ -97,7 +95,7 @@ const LOSSDETAILS* CTimeStepLossEngineer::GetLosses(const pgsPointOfInterest& po
    if ( intervalIdx == INVALID_INDEX )
    {
       // INVALID_INDEX means compute losses for all intervals
-      EAF_GET_IFACE2(GetBroker(), IIntervals,pIntervals);
+      GET_IFACE2(GetBroker(), IIntervals,pIntervals);
       IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
       intervalIdx = nIntervals-1;
    }
@@ -134,7 +132,7 @@ const LOSSDETAILS* CTimeStepLossEngineer::GetLosses(const pgsPointOfInterest& po
          // Losses have not been computed all the way up to and including the requested interval.
          
          // Get the loss objects for this girder line
-         EAF_GET_IFACE2(GetBroker(), IBridgeDescription,pIBridgeDesc);
+         GET_IFACE2(GetBroker(), IBridgeDescription,pIBridgeDesc);
          std::vector<LOSSES*> vpLosses;
          GroupIndexType nGroups = pIBridgeDesc->GetGirderGroupCount();
          for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
@@ -260,8 +258,8 @@ Float64 CTimeStepLossEngineer::GetGirderTendonElongation(const CGirderKey& girde
 #if defined _DEBUG
    // Elongation calculations are kind of tricky... they are computed with friction losses
    // Re-compute them here using a more direct method and compare to what was computed before.
-   EAF_GET_IFACE2(GetBroker(), IBridgeDescription,pBridgeDesc);
-   EAF_GET_IFACE2(GetBroker(), IGirder,pIGirder);
+   GET_IFACE2(GetBroker(), IBridgeDescription,pBridgeDesc);
+   GET_IFACE2(GetBroker(), IGirder,pIGirder);
    const CSplicedGirderData* pGirder = pBridgeDesc->GetGirder(girderKey);
    const CPTData* pPTData = pGirder->GetPostTensioning();
    WebIndexType nWebs = pIGirder->GetWebCount(girderKey);
@@ -277,7 +275,7 @@ Float64 CTimeStepLossEngineer::GetGirderTendonElongation(const CGirderKey& girde
       Float64 Pj;
       if ( pDuct->bPjCalc )
       {
-         EAF_GET_IFACE2(GetBroker(), IPosttensionForce,pPTForce);
+         GET_IFACE2(GetBroker(), IPosttensionForce,pPTForce);
          Pj = pPTForce->GetGirderTendonPjackMax(girderKey,pDuct->nStrands);
       }
       else
@@ -289,11 +287,11 @@ Float64 CTimeStepLossEngineer::GetGirderTendonElongation(const CGirderKey& girde
       StrandIndexType nStrands = pDuct->nStrands;
       Float64 Apt = apt*nStrands;
 
-      EAF_GET_IFACE2(GetBroker(), IMaterials,pMaterials);
+      GET_IFACE2(GetBroker(), IMaterials,pMaterials);
       Float64 Ept = pMaterials->GetGirderTendonMaterial(girderKey)->GetE();
 
       // this is iterating by POI
-      EAF_GET_IFACE2(GetBroker(), IPointOfInterest,pPoi);
+      GET_IFACE2(GetBroker(), IPointOfInterest,pPoi);
       SectionLossContainer::const_iterator sectionLossIter(losses.SectionLosses.begin());
       while ( !pPoi->IsOnGirder(sectionLossIter->first) && sectionLossIter != losses.SectionLosses.end() )
       {
@@ -306,7 +304,7 @@ Float64 CTimeStepLossEngineer::GetGirderTendonElongation(const CGirderKey& girde
 
       sectionLossIter++;
 
-      EAF_GET_IFACE2(GetBroker(), IGirderTendonGeometry, pTendonGeom);
+      GET_IFACE2(GetBroker(), IGirderTendonGeometry, pTendonGeom);
       SectionLossContainer::const_iterator sectionLossIterEnd(losses.SectionLosses.end());
       for ( ; sectionLossIter != sectionLossIterEnd; sectionLossIter++ )
       {
@@ -368,8 +366,8 @@ Float64 CTimeStepLossEngineer::GetSegmentTendonElongation(const CSegmentKey& seg
 #if defined _DEBUG
    // Elongation calculations are kind of tricky... they are computed with friction losses
    // Re-compute them here using a more direct method and compare to what was computed before.
-   EAF_GET_IFACE2(GetBroker(), IBridgeDescription, pBridgeDesc);
-   EAF_GET_IFACE2(GetBroker(), IGirder, pIGirder);
+   GET_IFACE2(GetBroker(), IBridgeDescription, pBridgeDesc);
+   GET_IFACE2(GetBroker(), IGirder, pIGirder);
    const CPrecastSegmentData* pSegment = pBridgeDesc->GetPrecastSegmentData(segmentKey);
    const CSegmentPTData* pPTData = &(pSegment->Tendons);
    WebIndexType nWebs = pIGirder->GetWebCount(segmentKey);
@@ -385,7 +383,7 @@ Float64 CTimeStepLossEngineer::GetSegmentTendonElongation(const CSegmentKey& seg
       Float64 Pj;
       if (pDuct->bPjCalc)
       {
-         EAF_GET_IFACE2(GetBroker(), IPosttensionForce, pPTForce);
+         GET_IFACE2(GetBroker(), IPosttensionForce, pPTForce);
          Pj = pPTForce->GetSegmentTendonPjackMax(segmentKey, pDuct->nStrands);
       }
       else
@@ -397,11 +395,11 @@ Float64 CTimeStepLossEngineer::GetSegmentTendonElongation(const CSegmentKey& seg
       StrandIndexType nStrands = pDuct->nStrands;
       Float64 Apt = apt*nStrands;
 
-      EAF_GET_IFACE2(GetBroker(), IMaterials, pMaterials);
+      GET_IFACE2(GetBroker(), IMaterials, pMaterials);
       Float64 Ept = pMaterials->GetSegmentTendonMaterial(segmentKey)->GetE();
 
       // this is iterating by POI... advance the iterator until we get the first poi that is on the subject segment
-      EAF_GET_IFACE2(GetBroker(), IPointOfInterest, pPoi);
+      GET_IFACE2(GetBroker(), IPointOfInterest, pPoi);
       SectionLossContainer::const_iterator sectionLossIter(losses.SectionLosses.begin());
       while ( (!segmentKey.IsEqual(sectionLossIter->first.GetSegmentKey()) || !pPoi->IsOnSegment(sectionLossIter->first)) && sectionLossIter != losses.SectionLosses.end())
       {
@@ -414,7 +412,7 @@ Float64 CTimeStepLossEngineer::GetSegmentTendonElongation(const CSegmentKey& seg
 
       sectionLossIter++;
 
-      EAF_GET_IFACE2(GetBroker(), ISegmentTendonGeometry, pTendonGeom);
+      GET_IFACE2(GetBroker(), ISegmentTendonGeometry, pTendonGeom);
       SectionLossContainer::const_iterator sectionLossIterEnd(losses.SectionLosses.end());
       for (; sectionLossIter != sectionLossIterEnd; sectionLossIter++)
       {
@@ -513,7 +511,7 @@ void CTimeStepLossEngineer::ComputeLosses(const CGirderKey& girderKey,IntervalIn
       // create the loss objects for this girder line
       std::vector<LOSSES*> vpLosses;
 
-      EAF_GET_IFACE2(GetBroker(), IBridge, pBridge);
+      GET_IFACE2(GetBroker(), IBridge, pBridge);
       std::vector<CGirderKey> vGirderKeys;
       pBridge->GetGirderline(girderKey.girderIndex, &vGirderKeys); // must use girder line index version here (not the girder key version)
       for(const auto& thisGirderKey : vGirderKeys)
@@ -543,7 +541,7 @@ void CTimeStepLossEngineer::ComputeLosses(GirderIndexType girderLineIdx,Interval
    // Get them here, do the full timestep analysis, then release them.
 #pragma Reminder("WORKING HERE - Removing COM - it's bad to store interface pointers, causes circular references")
    // look at this carefully, make sure this isn't causing a problem. if it is, fix it (see below... this might not be a problem)
-   m_pProgress = GetBroker()->GetInterface<IProgress>(IID_IProgress);
+   m_pProgress = GetBroker()->GetInterface<IEAFProgress>(IID_IEAFProgress);
    m_pBridgeDesc = GetBroker()->GetInterface<IBridgeDescription>(IID_IBridgeDescription);
    m_pBridge = GetBroker()->GetInterface<IBridge>(IID_IBridge);
    m_pStrandGeom = GetBroker()->GetInterface<IStrandGeometry>(IID_IStrandGeometry);
@@ -573,12 +571,12 @@ void CTimeStepLossEngineer::ComputeLosses(GirderIndexType girderLineIdx,Interval
       m_pProgress->UpdateMessage(_T("Computing prestress losses"));
 
       // Store principal web stress parameters
-      EAF_GET_IFACE2(GetBroker(), ISpecification, pSpec);
+      GET_IFACE2(GetBroker(), ISpecification, pSpec);
       m_PrincipalTensileStressCheckType = pSpec->GetPrincipalWebStressCheckType(CSegmentKey(INVALID_INDEX, girderLineIdx, 0));
 
       if (ISpecification::pwcNCHRPTimeStepMethod == m_PrincipalTensileStressCheckType)
       {
-         EAF_GET_IFACE2(GetBroker(), ILibrary, pLib);
+         GET_IFACE2(GetBroker(), ILibrary, pLib);
          std::_tstring specName = pSpec->GetSpecification();
          const auto* pSpecEntry = pLib->GetSpecEntry(specName.c_str());
          const auto& principal_tension_stress_criteria = pSpecEntry->GetPrincipalTensionStressCriteria();

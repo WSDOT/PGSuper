@@ -25,8 +25,8 @@
 // EditPointLoadDlg.h : header file
 //
 #include "resource.h"
-#include <PgsExt\PointLoadData.h>
-#include <PgsExt\TimelineManager.h>
+#include <PsgLib\PointLoadData.h>
+#include <PsgLib\TimelineManager.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CEditPointLoadDlg dialog

@@ -44,7 +44,7 @@ void CReinforcementFatigueCheck::Build(rptChapter* pChapter,std::shared_ptr<WBFL
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
    bool bIsApplicable = false;
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {

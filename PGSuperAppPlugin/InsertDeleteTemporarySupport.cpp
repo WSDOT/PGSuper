@@ -26,11 +26,6 @@
 
 #include <EAF\EAFDisplayUnits.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 txnInsertTemporarySupport::txnInsertTemporarySupport(SupportIndexType tsIdx,const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc) :
 txnEditBridgeDescription(oldBridgeDesc,newBridgeDesc),

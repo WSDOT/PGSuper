@@ -23,7 +23,7 @@
 #pragma once
 
 #include <IFace\Bridge.h>
-#include <PgsExt\DistributedLoadData.h>
+#include <PsgLib\DistributedLoadData.h>
 
 class iDistributedLoadDrawStrategy
 {

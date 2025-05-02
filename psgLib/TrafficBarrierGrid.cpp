@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psgLib.h>
+#include <PsgLib\PsgLib.h>
 #include "TrafficBarrierGrid.h"
 #include "TrafficBarrierDlg.h"
 #include <system\tokenizer.h>

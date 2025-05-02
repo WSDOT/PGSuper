@@ -26,7 +26,7 @@
 #include "Reporting.h"
 #include "EquilibriumCheckDlg.h"
 
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 #include <MFCTools\CustomDDX.h>
 
 #include <IFace\Intervals.h>
@@ -72,7 +72,7 @@ BOOL CEquilibriumCheckDlg::OnInitDialog()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   EAF_GET_IFACE( IIntervals, pIntervals);
+   GET_IFACE( IIntervals, pIntervals);
    CComboBox* pcbIntervals = (CComboBox*)GetDlgItem(IDC_INTERVAL);
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
@@ -128,7 +128,7 @@ IntervalIndexType CEquilibriumCheckDlg::GetInterval()
 
 void CEquilibriumCheckDlg::UpdatePOI()
 {
-   EAF_GET_IFACE(IPointOfInterest,pPoi);
+   GET_IFACE(IPointOfInterest,pPoi);
    m_vPOI.clear();
    pPoi->GetPointsOfInterest(CSegmentKey(ALL_GROUPS,m_GirderKey.girderIndex,ALL_SEGMENTS),&m_vPOI);
    if (m_Slider.GetSafeHwnd() != nullptr )
@@ -168,7 +168,7 @@ void CEquilibriumCheckDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrol
 
 void CEquilibriumCheckDlg::UpdateSliderLabel()
 {
-   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    CString strLabel;
    ASSERT((int)m_SliderPos < (int)m_vPOI.size());

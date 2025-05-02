@@ -20,21 +20,15 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// TimeDependentLossesAtDeckPlacementTable.h : Declaration of the CTimeDependentLossesAtDeckPlacementTable
+#pragma once
 
-#ifndef __TIMEDEPENDENTLOSSESATDECKPLACEMENTTABLE_H_
-#define __TIMEDEPENDENTLOSSESATDECKPLACEMENTTABLE_H_
-
-#include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
-
+#include <PgsExt/ReportPointOfInterest.h>
 
 class WBFL::LRFD::Losses;
 class CGirderData;
 
-/////////////////////////////////////////////////////////////////////////////
-// CTimeDependentLossesAtDeckPlacementTable
 class CTimeDependentLossesAtDeckPlacementTable : public rptRcTable
 {
 public:
@@ -55,7 +49,5 @@ private:
    DECLARE_UV_PROTOTYPE( rptMomentUnitValue,  moment );
    DECLARE_UV_PROTOTYPE( rptStressUnitValue,  stress );
 
-   const CGirderData* m_pGD;
+   const CGirderData* m_pGD = nullptr;
 };
-
-#endif //__TIMEDEPENDENTLOSSESATDECKPLACEMENTTABLE_H_

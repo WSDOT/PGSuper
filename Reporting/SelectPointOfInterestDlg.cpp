@@ -26,7 +26,7 @@
 #include "Reporting.h"
 #include "SelectPointOfInterestDlg.h"
 
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 #include <MFCTools\CustomDDX.h>
 
 #include <IFace\Intervals.h>
@@ -109,7 +109,7 @@ pgsPointOfInterest CSelectPointOfInterestDlg::GetPointOfInterest()
 
 void CSelectPointOfInterestDlg::UpdatePOI()
 {
-   EAF_GET_IFACE(IPointOfInterest,pPOI);
+   GET_IFACE(IPointOfInterest,pPOI);
    m_vPOI.clear();
    pPOI->GetPointsOfInterest(CSegmentKey(ALL_GROUPS, m_GirderKey.girderIndex, ALL_SEGMENTS),&m_vPOI);
    if (m_Slider.GetSafeHwnd() != nullptr )
@@ -147,7 +147,7 @@ void CSelectPointOfInterestDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* p
 
 void CSelectPointOfInterestDlg::UpdateSliderLabel()
 {
-   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    CString strLabel;
    ASSERT((int)m_SliderPos < (int)m_vPOI.size());

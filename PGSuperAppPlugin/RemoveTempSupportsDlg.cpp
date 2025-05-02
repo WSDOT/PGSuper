@@ -6,17 +6,12 @@
 #include "RemoveTempSupportsDlg.h"
 
 #include <IFace\Project.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include "CastClosureJointDlg.h"// for label methods
 
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CRemoveTempSupportsDlg dialog

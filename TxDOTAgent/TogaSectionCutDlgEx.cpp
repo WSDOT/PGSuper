@@ -77,7 +77,7 @@ void CTogaSectionCutDlgEx::SetBounds(Float64 lowerBound, Float64 upperBound)
 void CTogaSectionCutDlgEx::DoDataExchange(CDataExchange* pDX)
 {
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CTogaSectionCutDlgEx) 

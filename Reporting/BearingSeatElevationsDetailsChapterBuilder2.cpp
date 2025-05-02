@@ -30,10 +30,10 @@
 #include <IFace\Intervals.h>
 
 
-#include <PgsExt\GirderLabel.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\DeckDescription2.h>
-
+#include <PsgLib\GirderLabel.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\DeckDescription2.h>
+#include <psgLib/GirderLibraryEntry.h>
 #include <PGSuperUnits.h>
 
 
@@ -326,7 +326,7 @@ rptChapter* CBearingSeatElevationsDetailsChapterBuilder2::Build(const std::share
 
    // Use setting for span 1, girder 1 to determine whether girder edge table is to be printed.
    // Could get more sophisticated here, but all girders in the same DOT family should have the same setting.
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(GroupIndexType(0));
    const CSplicedGirderData* pGirder = pGroup->GetGirder(0);
@@ -345,18 +345,18 @@ void CBearingSeatElevationsDetailsChapterBuilder2::BuildBearingsTables(std::shar
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    INIT_UV_PROTOTYPE( rptLengthSectionValue, elev, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthSectionValue, dist, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthSectionValue, dim,  pDisplayUnits->GetComponentDimUnit(), false );
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
    if ( pDeck->WearingSurface == pgsTypes::wstOverlay && !pDeck->bInputAsDepthAndDensity )
    {
-      EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+      GET_IFACE2(pBroker,IIntervals,pIntervals);
       IntervalIndexType gcInterval = pIntervals->GetGeometryControlInterval();
 
       Float64 density = WBFL::Units::ConvertToSysUnits(140.0,WBFL::Units::Measure::LbfPerFeet3);
@@ -374,7 +374,7 @@ void CBearingSeatElevationsDetailsChapterBuilder2::BuildBearingsTables(std::shar
 
    bool bIsDirectHaunchInput = pBridgeDesc->GetHaunchInputDepthType() != pgsTypes::hidACamber;
 
-   EAF_GET_IFACE2_NOCHECK(pBroker, ICamber, pCamber);
+   GET_IFACE2_NOCHECK(pBroker, ICamber, pCamber);
 
    PierIndexType nPiers = pBridge->GetPierCount();
    for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)
@@ -630,19 +630,19 @@ void CBearingSeatElevationsDetailsChapterBuilder2::BuildGirderEdgesTables(std::s
    *pChapter << pPara;
    *pPara << _T("The tables below show bearing elevations at the outermost edges of girder bottom flanges.");
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    INIT_UV_PROTOTYPE( rptLengthSectionValue, elev, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthSectionValue, dist, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthSectionValue, dim,  pDisplayUnits->GetComponentDimUnit(), false );
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
    bool bHasOverlay = ( pBridge->HasOverlay() && !pBridge->IsFutureOverlay() ? true : false );
    bool bIsDirectHaunchInput = pBridgeDesc->GetHaunchInputDepthType() != pgsTypes::hidACamber;
 
-   EAF_GET_IFACE2_NOCHECK(pBroker, ICamber, pCamber);
+   GET_IFACE2_NOCHECK(pBroker, ICamber, pCamber);
 
    PierIndexType nPiers = pBridge->GetPierCount();
    for (PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++)

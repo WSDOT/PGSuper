@@ -7,15 +7,10 @@
 
 #include <IFace\Project.h>
 #include <IFace\DocumentType.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CErectSegmentsDlg dialog
@@ -115,7 +110,7 @@ BOOL CErectSegmentsDlg::OnInitDialog()
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
    if ( pDocType->IsPGSuperDocument() )
    {
       SetWindowText(_T("Erect Girders"));
@@ -149,7 +144,7 @@ void CErectSegmentsDlg::FillLists()
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
 
    GroupIndexType nGroups = m_pBridgeDesc->GetGirderGroupCount();
    for( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )

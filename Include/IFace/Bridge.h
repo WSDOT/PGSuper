@@ -20,22 +20,19 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_IFACE_BRIDGE_H_
-#define INCLUDED_IFACE_BRIDGE_H_
-
+#pragma once
 #include <vector>
 #include <functional>
 
 #include <PGSuperTypes.h>
 #include <Details.h>
 
-#include <WBFLCore.h>
 #include <WBFLTools.h>
 #include <WBFLGeometry.h>
 
-#include <PgsExt\LongRebarInstance.h>
-#include <PgsExt\CastDeckActivity.h>
-#include <IFace\PointOfInterest.h>
+#include <PsgLib\LongRebarInstance.h>
+#include <PsgLib\CastDeckActivity.h>
+//#include <IFace\PointOfInterest.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 // NOTES:
@@ -2092,6 +2089,3 @@ public:
    // returns the area of tendon on the bottom half of the girder. See Figure C5.7.3.4.2-3
    virtual Float64 GetSegmentAptBottomHalf(const pgsPointOfInterest& poi) const = 0;
 };
-
-#endif // INCLUDED_IFACE_BRIDGE_H_
-

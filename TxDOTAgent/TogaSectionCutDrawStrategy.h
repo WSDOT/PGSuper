@@ -23,7 +23,7 @@
 #ifndef INCLUDED_TOGASECTIONCUTDRAWSTRATEGY_H_
 #define INCLUDED_TOGASECTIONCUTDRAWSTRATEGY_H_
 
-#include <PgsExt\Keys.h>
+#include <PsgLib\Keys.h>
 
 namespace WBFL
 {

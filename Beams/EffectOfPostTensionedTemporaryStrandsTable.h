@@ -20,14 +20,11 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// EffectOfPostTensionedTemporaryStrandsTable.h : Declaration of the CEffectOfPostTensionedTemporaryStrandsTable
+#pragma once
 
-#ifndef __EFFECTOFPTSTRANDSTABLE_H_
-#define __EFFECTOFPTSTRANDSTABLE_H_
-
-#include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <PgsExt/ReportPointOfInterest.h>
 
 
 class WBFL::LRFD::Losses;
@@ -57,5 +54,3 @@ private:
    bool m_bIsPrismatic;
    bool m_bIsAsymmetric;
 };
-
-#endif //__EFFECTOFPTSTRANDSTABLE_H_

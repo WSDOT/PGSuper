@@ -22,14 +22,14 @@
 
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\GirderArtifactTool.h>
-#include <PgsExt\GirderLabel.h>
-#include <PgsExt\SplittingCheckEngineer.h>
+#include <PsgLib\GirderLabel.h>
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
 #include <IFace\Bridge.h>
 #include <IFace/Limits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\DocumentType.h>
+#include <IFace/SplittingChecks.h>
 
 #pragma Reminder("WORKING HERE - Removing COM - do we need to be passing in the broker?")
 // Multiple functions in this file that are passed the broker. Could EAFGetBroker be a better way to go?
@@ -62,21 +62,21 @@ bool FlexureStressFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSeg
 
 void ListStressFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker, FailureList& rFailures, const pgsGirderArtifact* pGirderArtifact,bool referToDetailsReport)
 {
-   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
    bool bPrestressedGirder = pDocType->IsPGSuperDocument();
 
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
-   EAF_GET_IFACE2_NOCHECK(pBroker,IProductLoads,pProductLoads); // only used if there are failues
-   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
-   EAF_GET_IFACE2(pBroker, IStressCheck, pStressCheck);
+   GET_IFACE2_NOCHECK(pBroker,IProductLoads,pProductLoads); // only used if there are failues
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker, IStressCheck, pStressCheck);
 
    IntervalIndexType noncompositeIntervalIdx = pIntervals->GetLastNoncompositeInterval();
    IntervalIndexType compositeIntervalIdx = pIntervals->GetLastCompositeInterval();
    IntervalIndexType lastIntervalIdx      = pIntervals->GetIntervalCount()-1;
 
-   EAF_GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
+   GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {
@@ -89,7 +89,7 @@ void ListStressFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker, FailureList&
       }
    }
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
@@ -238,8 +238,8 @@ bool MomentCapacityFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgs
 
 void ListMomentCapacityFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,pgsTypes::LimitState ls)
 {
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
-   EAF_GET_IFACE2_NOCHECK(pBroker,IProductLoads,pProductLoads); // only used if there is a failure
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2_NOCHECK(pBroker,IProductLoads,pProductLoads); // only used if there is a failure
 
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
@@ -263,7 +263,7 @@ void ListMomentCapacityFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,Failu
 
 void ListVerticalShearFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,pgsTypes::LimitState ls)
 {
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
@@ -274,7 +274,7 @@ void ListVerticalShearFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,Failur
    bool bContinue1 = true; // prevents duplicate failure messages
    bool bContinue2 = true;
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
@@ -320,7 +320,7 @@ void ListVerticalShearFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,Failur
 
 void ListHorizontalShearFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,pgsTypes::LimitState ls)
 {
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
@@ -328,7 +328,7 @@ void ListHorizontalShearFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,Fail
    std::_tstring strDescription(pIntervals->GetDescription(intervalIdx));
    std::_tstring strLimitState(GetLimitStateString(ls));
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
@@ -357,14 +357,14 @@ void ListHorizontalShearFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,Fail
 
 void ListStirrupDetailingFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,pgsTypes::LimitState ls)
 {
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
    std::_tstring strLimitState(GetLimitStateString(ls));
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
@@ -392,7 +392,7 @@ void ListStirrupDetailingFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,Fai
 
 void ListDebondingFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact)
 {
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -420,7 +420,9 @@ void ListDebondingFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,FailureLis
 
 void ListSplittingZoneFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact)
 {
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker, ISplittingChecks, pSplittingChecks);
+
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -430,7 +432,7 @@ void ListSplittingZoneFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,Failur
       const std::shared_ptr<pgsSplittingCheckArtifact> pSplittingCheckArtifact = pArtifact->GetStirrupCheckArtifact()->GetSplittingCheckArtifact();
       if (pSplittingCheckArtifact && !pSplittingCheckArtifact->Passed() )
       {
-         std::_tstring strZone(pgsSplittingCheckEngineer::GetCheckName());
+         std::_tstring strZone(pSplittingChecks->GetSplittingCheckName());
          std::_tostringstream os;
          if ( 1 < nSegments )
          {
@@ -448,7 +450,7 @@ void ListSplittingZoneFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,Failur
 
 void ListConfinementZoneFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact)
 {
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -476,7 +478,7 @@ void ListConfinementZoneFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,Fail
 
 void ListVariousFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact,bool referToDetails)
 {
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -617,7 +619,7 @@ void ListVariousFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,FailureList&
       }
    }
 
-   EAF_GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
+   GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
    {

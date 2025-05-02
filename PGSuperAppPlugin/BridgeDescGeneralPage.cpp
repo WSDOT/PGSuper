@@ -40,15 +40,10 @@
 #include <EAF\EAFMainFrame.h>
 
 #include <PgsExt\ConcreteDetailsDlg.h>
-#include <PgsExt\Helpers.h>
+#include <PsgLib\Helpers.h>
 
 #include <algorithm>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define LEFT 0
 #define RIGHT 1
@@ -81,7 +76,7 @@ CBridgeDescGeneralPage::CBridgeDescGeneralPage() : CPropertyPage(CBridgeDescGene
    m_CacheWorkPointTypeIdx = CB_ERR;
 
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    m_GirderSpacingTolerance = pow(10.0,-pDisplayUnits->GetXSectionDimUnit().Precision);
 
    m_bSetActive = false;
@@ -109,7 +104,7 @@ void CBridgeDescGeneralPage::DoDataExchange(CDataExchange* pDX)
    //}}AFX_DATA_MAP
 
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
 
    ////////////////////////////////////////////////
@@ -255,7 +250,7 @@ void CBridgeDescGeneralPage::DoDataExchange(CDataExchange* pDX)
    else
    {
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+      GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
       m_strUserEc.Format(_T("%s"), FormatDimension(m_JointConcrete.Ec, pDisplayUnits->GetModEUnit(), false));
    }
 
@@ -379,7 +374,7 @@ void CBridgeDescGeneralPage::Init()
    CBridgeDescDlg* pParent = (CBridgeDescDlg*)GetParent();
 
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    m_bSameNumberOfGirders = pParent->m_BridgeDesc.UseSameNumberOfGirdersInAllGroups();
    m_bSameGirderName      = pParent->m_BridgeDesc.UseSameGirderForEntireBridge();
@@ -492,7 +487,7 @@ void CBridgeDescGeneralPage::UpdateBridgeDescription()
 
    if ( m_bSameGirderName || bNewGirderFamily )
    {
-      EAF_GET_IFACE2( pBroker, ILibrary, pLib );
+      GET_IFACE2( pBroker, ILibrary, pLib );
    
       const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(m_GirderName);
       pParent->m_BridgeDesc.SetGirderLibraryEntry(pGdrEntry); // must do this before SetGirderName
@@ -516,7 +511,7 @@ void CBridgeDescGeneralPage::UpdateBridgeDescription()
       m_LeftTopWidth = topWidth;
       m_RightTopWidth = 0.0;
 
-      EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+      GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
       if (IsGirderSpacing(m_GirderSpacingType))
       {
          m_strCacheGirderSpacing.Format(_T("%s"), FormatDimension(m_GirderSpacing, pDisplayUnits->GetXSectionDimUnit(), false));
@@ -781,7 +776,7 @@ void CBridgeDescGeneralPage::OnNumGirdersChanged(NMHDR* pNMHDR, LRESULT* pResult
 void CBridgeDescGeneralPage::FillGirderFamilyComboBox()
 {
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2( pBroker, ILibraryNames, pLibNames );
+   GET_IFACE2( pBroker, ILibraryNames, pLibNames );
    std::vector<std::_tstring> names;
    std::vector<std::_tstring>::iterator iter;
 
@@ -810,7 +805,7 @@ void CBridgeDescGeneralPage::FillGirderNameComboBox()
 {
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2( pBroker, ILibraryNames, pLibNames );
+   GET_IFACE2( pBroker, ILibraryNames, pLibNames );
    std::vector<std::_tstring> names;
    
    CComboBox* pcbGirders = (CComboBox*)GetDlgItem( IDC_GDR_TYPE );
@@ -839,7 +834,7 @@ void CBridgeDescGeneralPage::FillGirderNameComboBox()
 void CBridgeDescGeneralPage::FillGirderOrientationComboBox()
 {
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IDocumentType, pDocType);
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
    bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
 
    CString strGrp = (bIsSplicedGirder ? _T("Group") : _T("Span"));
@@ -982,7 +977,7 @@ void CBridgeDescGeneralPage::FillGirderSpacingTypeComboBox()
    // update the unit tag that goes with the spacing input box
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    CDataExchange dx(this,FALSE);
    if ( IsGirderSpacing(m_GirderSpacingType) )
    {
@@ -1128,7 +1123,7 @@ bool CBridgeDescGeneralPage::AreAnyBearingsMeasuredAlongGirder()
       std::tie(offset,mbs) = pPrevPier->GetBearingOffset(pgsTypes::Ahead,true);
       std::tie(offset,mbe) = pNextPier->GetBearingOffset(pgsTypes::Back, true);
 
-      if (mbs == ConnectionLibraryEntry::AlongGirder || mbe == ConnectionLibraryEntry::AlongGirder )
+      if (mbs == ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder || mbe == ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder )
       {
          test = true;
          break;
@@ -1247,7 +1242,7 @@ void CBridgeDescGeneralPage::UpdateGirderFactory()
 {
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2( pBroker, ILibraryNames, pLibNames );
+   GET_IFACE2( pBroker, ILibraryNames, pLibNames );
    m_Factory = pLibNames->GetBeamFactory(std::_tstring(m_GirderFamilyName),std::_tstring(m_GirderName));
 }
 
@@ -1586,7 +1581,7 @@ void CBridgeDescGeneralPage::OnGirderSpacingTypeChanged()
    // update the unit of measure
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    CWnd* pWnd = GetDlgItem(IDC_SPACING_UNIT);
    if ( IsGirderSpacing(m_GirderSpacingType) )
@@ -1838,7 +1833,7 @@ void CBridgeDescGeneralPage::UpdateGirderTopWidthSpacingLimits()
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    CString strLabel;
    if (topWidthType == pgsTypes::twtAsymmetric)
@@ -1865,7 +1860,7 @@ BOOL CBridgeDescGeneralPage::UpdateGirderSpacingLimits()
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IBridge,       pBridge);
+   GET_IFACE2(pBroker, IBridge,       pBridge);
 
    pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType();
 
@@ -1964,7 +1959,7 @@ BOOL CBridgeDescGeneralPage::UpdateGirderSpacingLimits()
    CString label;
    if (specify_spacing)
    {
-      EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+      GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
       if (m_MaxGirderSpacing < MAX_GIRDER_SPACING)
       {
@@ -2000,7 +1995,7 @@ BOOL CBridgeDescGeneralPage::UpdateGirderSpacingLimits()
    // if spacing is out of range fix it
    if (m_GirderSpacing < m_MinGirderSpacing || m_MaxGirderSpacing < m_GirderSpacing )
    {
-      EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+      GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
       m_GirderSpacing = m_MinGirderSpacing;
 
@@ -2032,7 +2027,7 @@ void CBridgeDescGeneralPage::UpdateSuperstructureDescription()
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2( pBroker, ILibrary, pLib );
+   GET_IFACE2( pBroker, ILibrary, pLib );
 
    CComboBox* pCBGirders = (CComboBox*)GetDlgItem(IDC_GDR_TYPE);
    int sel = pCBGirders->GetCurSel();
@@ -2096,7 +2091,7 @@ void CBridgeDescGeneralPage::UpdateSuperstructureDescription()
    }
 
 
-   EAF_GET_IFACE2( pBroker, IBridgeDescription, pIBridgeDesc );
+   GET_IFACE2( pBroker, IBridgeDescription, pIBridgeDesc );
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    if ( pBridgeDesc->GetDistributionFactorMethod() == pgsTypes::DirectlyInput )
    {
@@ -2258,7 +2253,7 @@ void CBridgeDescGeneralPage::InitGirderName()
    // Gets the first girder name for the current girder family
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2( pBroker, ILibraryNames, pLibNames );
+   GET_IFACE2( pBroker, ILibraryNames, pLibNames );
    std::vector<std::_tstring> names;
    pLibNames->EnumGirderNames(m_GirderFamilyName, &names );
    m_GirderName = names.front().c_str();
@@ -2385,7 +2380,7 @@ void CBridgeDescGeneralPage::OnChangeSpacing()
    {
       
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+      GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
       CDataExchange dx(this, TRUE);
       DDX_UnitValueAndTag(&dx, IDC_SPACING, IDC_SPACING_UNIT, m_GirderSpacing, pDisplayUnits->GetComponentDimUnit());
       UpdateBridgeDescription();
@@ -2413,7 +2408,7 @@ void CBridgeDescGeneralPage::UpdateEc()
 
       
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+      GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
       strDensity.Format(_T("%s"), FormatDimension(m_JointConcrete.StrengthDensity, pDisplayUnits->GetDensityUnit(), false));
       strK1.Format(_T("%f"), m_JointConcrete.EcK1);

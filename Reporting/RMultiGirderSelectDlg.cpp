@@ -69,7 +69,7 @@ BOOL CRMultiGirderSelectDlg::OnInitDialog()
  	m_pGrid->SubclassDlgItem(IDC_SELECT_GRID, this);
 
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IBridge,pBridge);
+   GET_IFACE2(pBroker, IBridge,pBridge);
 
    // need list of groups/girders
    GroupGirderOnCollection coll;

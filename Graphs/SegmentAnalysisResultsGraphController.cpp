@@ -537,7 +537,7 @@ std::vector<ActionType> CSegmentAnalysisResultsGraphController::GetActionTypes()
    std::vector<ActionType> vActions;
 
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+   GET_IFACE2(pBroker, IProductLoads, pProductLoads);
    if (pProductLoads->ReportAxialResults())
    {
       vActions.push_back(actionAxial);
@@ -546,7 +546,7 @@ std::vector<ActionType> CSegmentAnalysisResultsGraphController::GetActionTypes()
    vActions.push_back(actionShear);
    vActions.push_back(actionMoment);
 
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    if (pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing() || pBridge->HasTiltedGirders())
    {
       vActions.push_back(actionXDeflection);
@@ -561,7 +561,7 @@ std::vector<ActionType> CSegmentAnalysisResultsGraphController::GetActionTypes()
    vActions.push_back(actionStress);
    vActions.push_back(actionReaction);
 
-   EAF_GET_IFACE(ISpecification,pSpec);
+   GET_IFACE(ISpecification,pSpec);
    ISpecification::PrincipalWebStressCheckType pwscType = pSpec->GetPrincipalWebStressCheckType(CSegmentKey(INVALID_INDEX, INVALID_INDEX, INVALID_INDEX));
 
    return vActions;
@@ -572,7 +572,7 @@ LPCTSTR CSegmentAnalysisResultsGraphController::GetActionName(ActionType action)
    if (action == actionDeflection)
    {
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+      GET_IFACE2(pBroker, IBridge, pBridge);
       if (pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing() || pBridge->HasTiltedGirders())
       {
          return _T("Deflection Y");
@@ -663,7 +663,7 @@ void CSegmentAnalysisResultsGraphController::FillDropListCtrl_Intervals(bool bRe
       segmentKey.groupIndex = 0;
    }
 
-   EAF_GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
    IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
    IntervalIndexType firstSegmentErectionIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(segmentKey);
@@ -785,7 +785,7 @@ void CSegmentAnalysisResultsGraphController::FillSelectListCtrl_Intervals(bool b
 
    CSegmentKey segmentKey(GetSegmentKey());
 
-   EAF_GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
    IntervalIndexType erectSegmentIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
    IntervalIndexType firstSegmentErectionIntervalIdx = pIntervals->GetFirstSegmentErectionInterval(segmentKey);
@@ -916,7 +916,7 @@ static bool IsCumulativeOnlyGraphType(GraphType graphType)
 
 bool CSegmentAnalysisResultsGraphController::IncludeUnrecoverableDefl(IntervalIndexType interval) const
 {
-   EAF_GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType erectInterval = pIntervals->GetErectSegmentInterval(GetSegmentKey());
    IntervalIndexType haulInterval = pIntervals->GetHaulSegmentInterval(GetSegmentKey());
 
@@ -941,7 +941,7 @@ void CSegmentAnalysisResultsGraphController::UpdateUnrecoverableDeflAdjustment()
    ActionType actionType = GetActionType();
    if (actionType == actionDeflection || actionType == actionRotation)
    {
-      EAF_GET_IFACE(IIntervals,pIntervals);
+      GET_IFACE(IIntervals,pIntervals);
       IntervalIndexType erectInterval = pIntervals->GetErectSegmentInterval(GetSegmentKey());
       IntervalIndexType haulInterval = pIntervals->GetHaulSegmentInterval(GetSegmentKey());
 
@@ -1002,7 +1002,7 @@ void CSegmentAnalysisResultsGraphController::UpdateResultsType()
 
 IntervalIndexType CSegmentAnalysisResultsGraphController::GetFirstInterval() const
 {
-   EAF_GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IIntervals,pIntervals);
    CSegmentKey segmentKey(GetSegmentKey());
    if ( segmentKey.groupIndex == ALL_GROUPS )
    {
@@ -1014,7 +1014,7 @@ IntervalIndexType CSegmentAnalysisResultsGraphController::GetFirstInterval() con
 
 IntervalIndexType CSegmentAnalysisResultsGraphController::GetLastInterval() const
 {
-   EAF_GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IIntervals,pIntervals);
    CSegmentKey segmentKey(GetSegmentKey());
    if (segmentKey.groupIndex == ALL_GROUPS)
    {

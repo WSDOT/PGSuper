@@ -26,6 +26,9 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
+#include <IFace/AnalysisResults.h>
+#include <IFace/PointOfInterest.h>
+
 #include <PsgLib\SpecLibraryEntry.h>
 
 
@@ -47,16 +50,16 @@ rptRcTable(NumColumns,0)
 CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    // Create and configure the table
-   EAF_GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
+   GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
    bool bHasUserLoads = pUDL->DoUserLoadsExist(segmentKey);
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    bool bHasOverlay = pBridge->HasOverlay();
 
-   EAF_GET_IFACE2(pBroker,IProductLoads,pLoad);
+   GET_IFACE2(pBroker,IProductLoads,pLoad);
    bool bHasSidewalk = pLoad->HasSidewalkLoad(segmentKey);
 
-   EAF_GET_IFACE2(pBroker, IGirder, pGirder);
+   GET_IFACE2(pBroker, IGirder, pGirder);
    bool bHasDeckLoads = pGirder->HasStructuralLongitudinalJoints() && pBridge->GetDeckType() != pgsTypes::sdtNone ? true : false; // if longitudinal joints are structural and there is a deck, the deck dead loads go on the composite section
    bool bIs2StageComposite = pGirder->HasStructuralLongitudinalJoints() && ::IsStructuralDeck(pBridge->GetDeckType()) ? true : false; 
 
@@ -102,15 +105,15 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+   GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
 
-   EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
 
-   EAF_GET_IFACE2(pBroker,IMaterials,pMaterials);
+   GET_IFACE2(pBroker,IMaterials,pMaterials);
    Float64 Ec = pMaterials->GetSegmentEc(segmentKey,railingSystemIntervalIdx);
    Float64 Ep = pMaterials->GetStrandMaterial(segmentKey, pgsTypes::Straight)->GetE(); // Ok to use straight since we just want E
 
@@ -185,8 +188,8 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
    *pParagraph << Sub2(_T("E"),_T("c")) << _T(" = ") << table->mod_e.SetValue( Ec ) << rptNewLine;
    table->mod_e.ShowUnitTag(false);
 
-   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
-   EAF_GET_IFACE2(pBroker,ILibrary,pLibrary);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker,ILibrary,pLibrary);
    const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
    const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
 
@@ -298,7 +301,7 @@ CElasticGainDueToSIDLTable* CElasticGainDueToSIDLTable::PrepareTable(rptChapter*
 
 void CElasticGainDueToSIDLTable::AddRow(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,RowIndexType row,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
-   EAF_GET_IFACE2(pBroker,IProductForces,pProdForces);
+   GET_IFACE2(pBroker,IProductForces,pProdForces);
    ColumnIndexType col = 1;
    RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;
 
@@ -307,12 +310,12 @@ void CElasticGainDueToSIDLTable::AddRow(rptChapter* pChapter,std::shared_ptr<WBF
    IndexType deckCastingRegionIdx = INVALID_INDEX;
    if (m_bHasDeckLoads)
    {
-      EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+      GET_IFACE2(pBroker, IPointOfInterest, pPoi);
       deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
       ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
    }
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetCastDeckInterval(deckCastingRegionIdx);
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType overlayIntervalIdx       = pIntervals->GetOverlayInterval();

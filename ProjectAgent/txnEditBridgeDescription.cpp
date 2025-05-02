@@ -50,11 +50,11 @@ void txnEditBridgeDescription::Undo()
 void txnEditBridgeDescription::Execute(int i)
 {
    auto broker = EAFGetBroker();
-   EAF_GET_IFACE2(broker,IEvents, pEvents);
+   GET_IFACE2(broker,IEvents, pEvents);
    // Exception-safe holder to keep from fireing events until we are done
    CIEventsHolder event_holder(pEvents);
 
-   EAF_GET_IFACE2(broker,IBridgeDescription,pBridgeDesc);
+   GET_IFACE2(broker,IBridgeDescription,pBridgeDesc);
    pBridgeDesc->SetBridgeDescription( m_BridgeDesc[i] );
 }
 

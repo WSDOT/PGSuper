@@ -65,7 +65,7 @@ RowIndexType ConfigureProductLoadTableHeading(std::shared_ptr<WBFL::EAF::Broker>
 {
    p_table->SetNumberOfHeaderRows(2);
 
-   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
 
    //
    // Set up table headings

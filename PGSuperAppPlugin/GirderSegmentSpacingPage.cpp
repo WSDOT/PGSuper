@@ -33,7 +33,7 @@
 
 #include <PGSuperUnits.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
@@ -42,11 +42,6 @@
 
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderSegmentSpacingPage property page
@@ -125,7 +120,7 @@ void CGirderSegmentSpacingPage::DoDataExchange(CDataExchange* pDX)
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    DDX_CBItemData(pDX, IDC_REF_GIRDER, m_RefGirderIdx);
    DDX_OffsetAndTag(pDX, IDC_REF_GIRDER_OFFSET,IDC_REF_GIRDER_OFFSET_UNIT, m_RefGirderOffset, pDisplayUnits->GetXSectionDimUnit());
@@ -393,7 +388,7 @@ void CGirderSegmentSpacingPage::OnChangeSameGirderSpacing()
             // there is more than one unique girder spacing... which one do we want to use
             // for the entire bridge???
             auto broker = EAFGetBroker();
-            EAF_GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
+            GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
 
             CSelectItemDlg dlg;
             dlg.m_strLabel = _T("Select the spacing to be used for the entire bridge");
@@ -562,7 +557,7 @@ LPCTSTR CGirderSegmentSpacingPage::GetOrientation()
 Float64 CGirderSegmentSpacingPage::GetSkewAngle()
 {
    auto broker = EAFGetBroker();
-   EAF_GET_IFACE2(broker,IBridge,pBridge);
+   GET_IFACE2(broker,IBridge,pBridge);
 
    Float64 skewAngle;
    pBridge->GetSkewAngle(GetStation(),GetOrientation(),&skewAngle);

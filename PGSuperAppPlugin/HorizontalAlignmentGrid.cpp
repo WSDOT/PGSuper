@@ -33,11 +33,6 @@
 #include <CoordGeom/Direction.h>
 #include <algorithm>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 GRID_IMPLEMENT_REGISTER(CHorizontalAlignmentGrid, CS_DBLCLKS, 0, 0, 0);
 
@@ -120,7 +115,7 @@ void CHorizontalAlignmentGrid::InitRowData(ROWCOL row)
 	GetParam()->EnableUndo(FALSE);
 
    CHorizontalAlignmentPage* pParent = (CHorizontalAlignmentPage*)GetParent();
-   EAF_GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
    UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
    SetValueRange(CGXRange(row,1),unit_mode == umUS ? _T("0+00") : _T("0+000"));
@@ -136,7 +131,7 @@ void CHorizontalAlignmentGrid::CustomInit()
 {
    CHorizontalAlignmentPage* pParent = (CHorizontalAlignmentPage*)GetParent();
 
-   EAF_GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::LengthData& alignment_unit = pDisplayUnits->GetAlignmentLengthUnit();
    std::_tstring strUnitTag = alignment_unit.UnitOfMeasure.UnitTag();
 
@@ -274,7 +269,7 @@ void CHorizontalAlignmentGrid::SetRowData(ROWCOL nRow,CompoundCurveData& data)
 
    CHorizontalAlignmentPage* pParent = (CHorizontalAlignmentPage*)GetParent();
 
-   EAF_GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
    UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
    Float64 station = data.PIStation;
@@ -317,7 +312,7 @@ bool CHorizontalAlignmentGrid::GetRowData(ROWCOL nRow,Float64* pStation,Float64*
 {
    CHorizontalAlignmentPage* pParent = (CHorizontalAlignmentPage*)GetParent();
 
-   EAF_GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
 
    try
    {

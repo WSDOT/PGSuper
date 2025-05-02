@@ -20,21 +20,16 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// ShrinkageAtHaulingTable.h : Declaration of the CShrinkageAtHaulingTable
+#pragma once
 
-#ifndef __SHRINKAGEATHAULINGTABLE_H_
-#define __SHRINKAGEATHAULINGTABLE_H_
-
-#include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <Reporting\CreepCoefficientChapterBuilder.h>
+#include <PgsExt\ReportCreepCoefficient.h>
+#include <PgsExt/ReportPointOfInterest.h>
 
 
 class WBFL::LRFD::Losses;
 
-/////////////////////////////////////////////////////////////////////////////
-// CShrinkageAtHaulingTable
 class CShrinkageAtHaulingTable : public rptRcTable
 {
 public:
@@ -63,5 +58,3 @@ private:
    bool m_bIsPrismatic;
    bool m_bIsAsymmetric;
 };
-
-#endif //__SHRINKAGEATHAULINGTABLE_H_

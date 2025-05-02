@@ -33,11 +33,6 @@ CLASS
 
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
@@ -47,7 +42,7 @@ WsdotCalculationSheet()
 {
    ATLASSERT(pBroker!=0);
    m_pBroker=pBroker;
-   EAF_GET_IFACE(IProjectProperties,pProj);
+   GET_IFACE(IProjectProperties,pProj);
 
    // set pgsuper-specific properties
    SetBridgeName(pProj->GetBridgeName());
@@ -57,7 +52,7 @@ WsdotCalculationSheet()
    SetCompany(pProj->GetCompany());
 
    // set the bottom title
-   EAF_GET_IFACE(IVersionInfo,pVerInfo);
+   GET_IFACE(IVersionInfo,pVerInfo);
 
    CEAFDocument* pDoc = EAFGetDocument();
    CEAFDocTemplate* pDocTemplate = (CEAFDocTemplate*)pDoc->GetDocTemplate();

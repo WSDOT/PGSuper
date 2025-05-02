@@ -21,14 +21,14 @@
 ///////////////////////////////////////////////////////////////////////
 
 #pragma once
-#include "psgLibLib.h"
+#include "PsgLibLib.h"
 
 #include <IFace\BeamFamily.h>
 
 /////////////////////////////////////////////////////////////////////////
 // CBeamFamilyManager
 //
-// This class encapulates the discovery and creation of Beam Family objects
+// This class encapsulates the discovery and creation of Beam Family objects
 //
 
 class PSGLIBCLASS CBeamFamilyManager

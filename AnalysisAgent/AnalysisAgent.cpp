@@ -45,7 +45,7 @@
 
 #include <WBFLTools_i.c>
 #include <WBFLUnitServer_i.c>
-#include <WBFLCore_i.c>
+
 
 #include "AnalysisAgentImp.h"
 

@@ -22,9 +22,9 @@
 
 #pragma once
 
-#include <WbflTypes.h>
+#include <PGSuperTypes.h>
 #include <Details.h>
-#include <PsgLib/HoldDownCriteria.h>
+#include <psgLib/HoldDownCriteria.h>
 
 class pgsPointOfInterest;
 class pgsTransferLength;

@@ -25,8 +25,8 @@
 #include <Graphs\GraphsExp.h>
 #include <EAF\EAFAutoCalcGraphBuilder.h>
 #include <Graphing\GraphXY.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\PointOfInterest.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\PointOfInterest.h>
 
 class CSegmentGraphControllerBase;
 class CEAFGraphControlWindow;

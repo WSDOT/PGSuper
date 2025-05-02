@@ -27,7 +27,7 @@
 #include "PGSuperApp.h"
 #include "PGSPluginAppBase.h"
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <EAF\EAFAutoProgress.h>
 
 #include <MFCTools\AutoRegistry.h>
@@ -56,11 +56,6 @@
 #include <PgsExt\EditBridge.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CPGSuperDoc
@@ -178,7 +173,7 @@ bool CPGSuperDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,int
    ATLASSERT(segmentKey.segmentIndex == 0);
 
    // collect current values for later undo
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData*    pGroup      = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const CSplicedGirderData*  pGirder     = pGroup->GetGirder(segmentKey.girderIndex);
@@ -277,7 +272,7 @@ bool CPGSuperDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,int
          pTxn = std::move(pMacro);
       }
 
-      EAF_GET_IFACE(IEAFTransactions,pTransactions);
+      GET_IFACE(IEAFTransactions,pTransactions);
       pTransactions->Execute(std::move(pTxn));
 
       return true;
@@ -297,7 +292,7 @@ bool CPGSuperDoc::EditClosureJointDescription(const CClosureKey& closureKey,int 
 
 void CPGSuperDoc::OnUpdateProjectDesignGirderDirectPreserveHaunch(CCmdUI* pCmdUI)
 {
-   EAF_GET_IFACE(ISpecification,pSpecification);
+   GET_IFACE(ISpecification,pSpecification);
    bool bDesignSlabOffset = pSpecification->DesignSlabHaunch();
    pCmdUI->Enable( bDesignSlabOffset );
 }
@@ -312,7 +307,7 @@ void CPGSuperDoc::OnProjectDesignHaunch()
 
 void CPGSuperDoc::OnUpdateProjectDesignHaunch(CCmdUI* pCmdUI)
 {
-   EAF_GET_IFACE_NOCHECK(IBridge,pBridge); // short circuit evaluation may cause this interface to be unused
+   GET_IFACE_NOCHECK(IBridge,pBridge); // short circuit evaluation may cause this interface to be unused
    bool bDesign = pBridge->GetDeckType() != pgsTypes::sdtNone && pBridge->GetHaunchInputDepthType() != pgsTypes::hidACamber;
    pCmdUI->Enable(bDesign);
 }
@@ -322,7 +317,7 @@ void CPGSuperDoc::OnProjectAnalysis()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CStructuralAnalysisMethodDlg dlg;
-   EAF_GET_IFACE(ISpecification,pSpec);
+   GET_IFACE(ISpecification,pSpec);
    pgsTypes::AnalysisType currAnalysisType = pSpec->GetAnalysisType();
    dlg.m_AnalysisType = currAnalysisType;
    if ( dlg.DoModal() == IDOK )
@@ -330,7 +325,7 @@ void CPGSuperDoc::OnProjectAnalysis()
       if ( currAnalysisType != dlg.m_AnalysisType )
       {
          std::unique_ptr<txnEditAnalysisType> pTxn(std::make_unique<txnEditAnalysisType>(currAnalysisType,dlg.m_AnalysisType));
-         EAF_GET_IFACE(IEAFTransactions,pTransactions);
+         GET_IFACE(IEAFTransactions,pTransactions);
          pTransactions->Execute(std::move(pTxn));
       }
    }
@@ -358,16 +353,16 @@ void CPGSuperDoc::DesignGirder(bool bPrompt, arSlabOffsetDesignType haunchDesign
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   EAF_GET_IFACE_NOCHECK(IBridge, pBridge);
-   EAF_GET_IFACE(ILossParameters, pLossParams);
+   GET_IFACE_NOCHECK(IBridge, pBridge);
+   GET_IFACE(ILossParameters, pLossParams);
    if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP)
    {
       AfxMessageBox(_T("Prestress losses are computed by the time-step method. Girder design is not available for this prestress loss method."), MB_OK);
       return;
    }
 
-   EAF_GET_IFACE(IEAFStatusCenter, pStatusCenter);
-   if (pStatusCenter->GetSeverity() == eafTypes::statusError)
+   GET_IFACE(IEAFStatusCenter, pStatusCenter);
+   if (pStatusCenter->GetSeverity() == WBFL::EAF::StatusSeverityType::Error)
    {
       AfxMessageBox(_T("There are errors that must be corrected before you can design a girder\r\n\r\nSee the Status Center for details."), MB_OK);
       return;
@@ -380,7 +375,7 @@ void CPGSuperDoc::DesignGirder(bool bPrompt, arSlabOffsetDesignType haunchDesign
    }
    else
    {
-      EAF_GET_IFACE(ISectionProperties,pSectProp);
+      GET_IFACE(ISectionProperties,pSectProp);
       // We cannot design directly if transformed sections or non-prismatic haunch section properties are specified. Inform user if this is the case.
       CString noDesignMsg;
       if (pSectProp->GetSectionPropertiesMode() == pgsTypes::spmTransformed)
@@ -452,10 +447,10 @@ void CPGSuperDoc::DesignGirder(bool bPrompt, arSlabOffsetDesignType haunchDesign
 void CPGSuperDoc::DoDesignGirder(const std::vector<CGirderKey>& girderKeys, bool bDesignFlexure, arSlabOffsetDesignType haunchDesignType, arConcreteDesignType concreteDesignType, arShearDesignType shearDesignType)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   EAF_GET_IFACE(IArtifact,pIArtifact);
+   GET_IFACE(IArtifact,pIArtifact);
 
    // Make sure we don't fire up any report or view redraws while we are designing
-   EAF_GET_IFACE(IUIEvents,pIUIEvents);
+   GET_IFACE(IUIEvents,pIUIEvents);
    CUIEventsHolder eventholder(pIUIEvents);
 
    std::vector<const pgsGirderDesignArtifact*> pArtifacts;
@@ -467,7 +462,7 @@ void CPGSuperDoc::DoDesignGirder(const std::vector<CGirderKey>& girderKeys, bool
    {
       bool bMultiGirderDesign = 1 < myGirderKeys.size() ? true : false;
 
-      EAF_GET_IFACE(IProgress,pProgress);
+      GET_IFACE(IEAFProgress,pProgress);
       DWORD mask = bMultiGirderDesign ? PW_ALL : PW_ALL|PW_NOGAUGE; // Progress window has a cancel button,
       CEAFAutoProgress ap(pProgress,0,mask); 
 
@@ -511,7 +506,7 @@ void CPGSuperDoc::DoDesignGirder(const std::vector<CGirderKey>& girderKeys, bool
 
    if (0 < myGirderKeys.size())
    {
-      EAF_GET_IFACE(IEAFReportManager, pReportMgr);
+      GET_IFACE(IEAFReportManager, pReportMgr);
       auto rptDesc = pReportMgr->GetReportDescription(_T("Design Outcome Report"));
       auto pRptSpecBuilder = pReportMgr->GetReportSpecificationBuilder(rptDesc);
       auto pRptSpec = pRptSpecBuilder->CreateDefaultReportSpec(rptDesc);
@@ -530,7 +525,7 @@ void CPGSuperDoc::DoDesignGirder(const std::vector<CGirderKey>& girderKeys, bool
 
          // Create our transaction and execute
          std::unique_ptr<txnDesignGirder> pTxn(std::make_unique<txnDesignGirder>(pArtifacts, slabOffsetDType, fromSpan, fromGirder));
-         EAF_GET_IFACE(IEAFTransactions, pTransactions);
+         GET_IFACE(IEAFTransactions, pTransactions);
          pTransactions->Execute(std::move(pTxn));
       }
    }

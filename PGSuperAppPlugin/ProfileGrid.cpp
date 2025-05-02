@@ -31,11 +31,6 @@
 #include <CoordGeom/Station.h>
 #include <algorithm>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 GRID_IMPLEMENT_REGISTER(CProfileGrid, CS_DBLCLKS, 0, 0, 0);
 
@@ -100,7 +95,7 @@ void CProfileGrid::CustomInit()
 {
    CProfilePage* pParent = (CProfilePage*)GetParent();
 
-   EAF_GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::LengthData& alignment_unit = pDisplayUnits->GetAlignmentLengthUnit();
    std::_tstring strUnitTag = alignment_unit.UnitOfMeasure.UnitTag();
 
@@ -221,7 +216,7 @@ void CProfileGrid::SetRowData(ROWCOL nRow,VertCurveData& data)
 
    CProfilePage* pParent = (CProfilePage*)GetParent();
 
-   EAF_GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pParent->GetBroker(),IEAFDisplayUnits,pDisplayUnits);
    UnitModeType unit_mode = (UnitModeType)(pDisplayUnits->GetUnitMode());
 
    CComPtr<IStation> objStation;
@@ -247,7 +242,7 @@ bool CProfileGrid::GetRowData(ROWCOL nRow, Float64* pStation, Float64* pGrade, F
 {
    CProfilePage* pParent = (CProfilePage*)GetParent();
 
-   EAF_GET_IFACE2(pParent->GetBroker(), IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2(pParent->GetBroker(), IEAFDisplayUnits, pDisplayUnits);
 
    std::_tstring strStation(GetCellValue(nRow, 1));
    try

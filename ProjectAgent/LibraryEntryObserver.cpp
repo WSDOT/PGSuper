@@ -56,7 +56,7 @@ pgsLibraryEntryObserver::~pgsLibraryEntryObserver()
 void pgsLibraryEntryObserver::Update(ConcreteLibraryEntry& subject, Int32 hint)
 {
    // no action required
-   EAF_GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
+   GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
    pDoc->SetModified();
 }
 
@@ -122,7 +122,7 @@ void pgsLibraryEntryObserver::Update(GirderLibraryEntry& subject, Int32 hint)
    }
    m_pAgent->FirePendingEvents();
 
-   EAF_GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
+   GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
    pDoc->SetModified();
 }
 
@@ -142,7 +142,7 @@ void pgsLibraryEntryObserver::Update(SpecLibraryEntry& subject, Int32 hint)
    }
    m_pAgent->FirePendingEvents();
 
-   EAF_GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
+   GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
    pDoc->SetModified();
 }
 
@@ -159,7 +159,7 @@ void pgsLibraryEntryObserver::Update(RatingLibraryEntry& subject, Int32 hint)
    }
    m_pAgent->FirePendingEvents();
 
-   EAF_GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
+   GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
    pDoc->SetModified();
 }
 
@@ -188,7 +188,7 @@ void pgsLibraryEntryObserver::Update(TrafficBarrierEntry& subject, Int32 hint)
    }
    m_pAgent->FirePendingEvents();
 
-   EAF_GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
+   GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
    pDoc->SetModified();
 }
 
@@ -240,7 +240,7 @@ void pgsLibraryEntryObserver::Update(LiveLoadLibraryEntry& subject, Int32 hint)
    }
    m_pAgent->FirePendingEvents();
 
-   EAF_GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
+   GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
    pDoc->SetModified();
 }
 
@@ -278,7 +278,7 @@ void pgsLibraryEntryObserver::Update(DuctLibraryEntry& subject,Int32 hint)
    }
    m_pAgent->FirePendingEvents();
 
-   EAF_GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
+   GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
    pDoc->SetModified();
 }
 
@@ -347,7 +347,7 @@ void pgsLibraryEntryObserver::Update(HaulTruckLibraryEntry& subject,Int32 hint)
    }
    m_pAgent->FirePendingEvents();
 
-   EAF_GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
+   GET_IFACE2(m_pAgent->m_pBroker,IEAFDocument,pDoc);
    pDoc->SetModified();
 }
 
@@ -359,7 +359,7 @@ void pgsLibraryEntryObserver::SetAgent(CProjectAgentImp* pAgent)
 
 void pgsLibraryEntryObserver::ClearStatusItems()
 {
-   EAF_GET_IFACE2(m_pAgent->m_pBroker,IEAFStatusCenter,pStatusCenter);
+   GET_IFACE2(m_pAgent->m_pBroker,IEAFStatusCenter,pStatusCenter);
    pStatusCenter->RemoveByStatusGroupID(m_pAgent->m_StatusGroupID);
 }
 

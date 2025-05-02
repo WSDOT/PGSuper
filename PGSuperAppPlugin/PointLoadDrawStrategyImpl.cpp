@@ -291,13 +291,13 @@ void CPointLoadDrawStrategyImpl::OnUnselect(std::shared_ptr<WBFL::DManip::iDispl
 
 void CPointLoadDrawStrategyImpl::EditLoad()
 {
-   EAF_GET_IFACE(IEditByUI, pEditByUI);
+   GET_IFACE(IEditByUI, pEditByUI);
    pEditByUI->EditPointLoad(m_LoadIndex);
 }
 
 void CPointLoadDrawStrategyImpl::DeleteLoad()
 {
-   EAF_GET_IFACE(IEditByUI, pEditByUI);
+   GET_IFACE(IEditByUI, pEditByUI);
    pEditByUI->DeletePointLoad(m_LoadIndex);
 }
 

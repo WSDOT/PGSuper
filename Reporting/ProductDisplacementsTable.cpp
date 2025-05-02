@@ -31,9 +31,9 @@
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\ReportOptions.h>
-
 #include <IFace\AnalysisResults.h>
 #include <IFace\RatingSpecification.h>
+#include <IFace/PointOfInterest.h>
 
 
 /****************************************************************************
@@ -77,7 +77,7 @@ rptRcTable* CProductDeflectionsTable::Build(std::shared_ptr<WBFL::EAF::Broker> p
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, deflection, pDisplayUnits->GetDeflectionUnit(), false );
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    bool bHasOverlay    = pBridge->HasOverlay();
    bool bFutureOverlay = pBridge->IsFutureOverlay();
 
@@ -85,13 +85,13 @@ rptRcTable* CProductDeflectionsTable::Build(std::shared_ptr<WBFL::EAF::Broker> p
    bool bContinuousBeforeDeckCasting;
    GroupIndexType startGroup, endGroup;
 
-   EAF_GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
+   GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
 
-   EAF_GET_IFACE2(pBroker, IProductForces, pProdForces);
+   GET_IFACE2(pBroker, IProductForces, pProdForces);
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
    IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount()-1;
 
@@ -105,15 +105,15 @@ rptRcTable* CProductDeflectionsTable::Build(std::shared_ptr<WBFL::EAF::Broker> p
       p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
-   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
    PoiAttributeType poiRefAttribute(girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : POI_ERECTED_SEGMENT);
 
    RowIndexType row = ConfigureProductLoadTableHeading<rptLengthUnitTag,WBFL::Units::LengthData>(pBroker,p_table,false,false,bSegments,bConstruction,bDeck,bDeckPanels,bSidewalk,bShearKey,bLongitudinalJoint,bHasOverlay,bFutureOverlay,bDesign,bPedLoading,bPermit,bRating,analysisType,bContinuousBeforeDeckCasting,pRatingSpec,pDisplayUnits,pDisplayUnits->GetDeflectionUnit());
 
    // Get the interface pointers we need
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   EAF_GET_IFACE2(pBroker,IProductForces2,pForces2);
+   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   GET_IFACE2(pBroker,IProductForces2,pForces2);
 
 
    std::vector<CGirderKey> vGirderKeys;
@@ -621,7 +621,7 @@ rptRcTable* CProductDeflectionsTable::BuildLiveLoadTable(std::shared_ptr<WBFL::E
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, deflection, pDisplayUnits->GetDeflectionUnit(), false );
 
-   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    rptRcTable* p_table = rptStyleManager::CreateDefaultTable(4,_T("Deflections For The LRFD Optional Deflection Live Load (LRFD 3.6.1.3.2)"));
@@ -639,13 +639,13 @@ rptRcTable* CProductDeflectionsTable::BuildLiveLoadTable(std::shared_ptr<WBFL::E
    (*p_table)(0,3) << COLHDR(_T("D") << rptNewLine << _T("Controlling"), rptLengthUnitTag, pDisplayUnits->GetDeflectionUnit() );
 
    // Get the interface pointers we need
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
    PoiList vPoi;
    pIPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), POI_ERECTED_SEGMENT, &vPoi);
 
-   EAF_GET_IFACE2(pBroker,IProductForces,pForces);
+   GET_IFACE2(pBroker,IProductForces,pForces);
 
-   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
    pgsTypes::BridgeAnalysisType bat = (pSpec->GetAnalysisType() == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
 
    // Fill up the table

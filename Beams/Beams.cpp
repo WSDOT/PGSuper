@@ -97,7 +97,7 @@
 
 #include <Beams\Helper.h>
 
-#include <WBFLCore_i.c>
+
 #include <WBFLGeometry_i.c>
 #include <WBFLGenericBridge_i.c>
 #include <WBFLGenericBridgeTools_i.c>

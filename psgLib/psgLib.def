@@ -1,4 +1,4 @@
-; psgLib.def : Declares the module parameters for the DLL.
+; PsgLib.def : Declares the module parameters for the DLL.
 
 LIBRARY      "PGSuperLibrary.dll"
 

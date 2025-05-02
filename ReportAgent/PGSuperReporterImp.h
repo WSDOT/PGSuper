@@ -31,7 +31,7 @@
 #include <IFace\Project.h>
 #include <IFace\ReportOptions.h>
 
-#include <EAF\EAFInterfaceCache.h>
+
 
 #include <memory>
 
@@ -79,7 +79,7 @@ public:
    bool IncludeSpanAndGirder4Pois(const CGirderKey& rKey) override;
 
 private:
-   //DECLARE_EAF_AGENT_DATA;
+   EAF_DECLARE_AGENT_DATA;
 
    IDType m_dwSpecCookie;
 

@@ -25,7 +25,7 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psgLib.h>
+#include <PsgLib\PsgLib.h>
 #include "TrafficBarrierViewDialog.h"
 #include <Graphing/PointMapper.h>
 

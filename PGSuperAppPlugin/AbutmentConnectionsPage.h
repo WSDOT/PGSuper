@@ -30,7 +30,7 @@
 //
 
 #include "resource.h"
-#include <PgsExt\PierData2.h>
+#include <PsgLib\PierData2.h>
 #include <PgsExt\BoundaryConditionComboBox.h>
 
 
@@ -99,7 +99,7 @@ protected:
    void FillEndDistanceComboBox();
    void FillDiaphragmLoadComboBox();
    void FillBoundaryConditionComboBox();
-   CString GetImageName(pgsTypes::BoundaryConditionType connectionType,ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType,ConnectionLibraryEntry::EndDistanceMeasurementType endType);
+   CString GetImageName(pgsTypes::BoundaryConditionType connectionType, ConnectionLibraryEntry::BearingOffsetMeasurementType brgOffsetType, ConnectionLibraryEntry::EndDistanceMeasurementType endType);
 
 
    CPierData2* m_pPier;

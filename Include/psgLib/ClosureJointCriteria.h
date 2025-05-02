@@ -23,13 +23,13 @@
 #pragma once
 
 
-#include "psgLibLib.h"
-#include "TensionStressLimit.h"
+#include "PsgLibLib.h"
+#include <PsgLib/TensionStressLimit.h>
 
 class rptChapter;
 class IEAFDisplayUnits;
-class pgsLibraryEntryDifferenceItem;
 class SpecLibraryEntryImpl;
+class DifferenceItem;
 
 struct PSGLIBCLASS ClosureJointCriteria
 {
@@ -55,7 +55,7 @@ struct PSGLIBCLASS ClosureJointCriteria
 
    Float64 CompressionStressCoefficient_Fatigue = 0.40;
 
-   bool Compare(const ClosureJointCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
+   bool Compare(const ClosureJointCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
 
    void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 

@@ -23,9 +23,9 @@
 #pragma once
 
 #include <PgsExt\PgsExtExp.h>
-#include <PgsExt\StrandData.h>
-#include <PgsExt\ShearData.h>
-#include <PgsExt\PrecastSegmentData.h>
+#include <PsgLib/StrandData.h>
+#include <PsgLib/ShearData.h>
+#include <PsgLib/PrecastSegmentData.h>
 #include <IFace\Bridge.h>
 
 // Various utility functions that operate on CONFIG objects in PGSuperTypes.h

@@ -34,7 +34,7 @@
 
 #include <PgsExt\RatingArtifact.h>
 #include <PgsExt\CapacityToDemand.h>
-#include <PgsExt\Helpers.h>
+#include <PsgLib\Helpers.h>
 
 
 inline pgsTypes::LimitState GetLimitState(pgsTypes::LoadRatingType ratingType) { return (ratingType == pgsTypes::lrPermit_Special ? pgsTypes::FatigueI : pgsTypes::StrengthI); }
@@ -74,7 +74,7 @@ rptChapter* CLoadRatingDetailsChapterBuilder::Build(const std::shared_ptr<const 
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
    bool bSplicedGirder = pDocType->IsPGSpliceDocument();
 
    ReportRatingDetails(pChapter, pBroker, girderKeys, pgsTypes::lrDesign_Inventory, bSplicedGirder);
@@ -95,15 +95,15 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLoadRatingDetailsChapterBuilde
 
 void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType,bool bSplicedGirder) const
 {
-   EAF_GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
    if ( !pRatingSpec->IsRatingEnabled(ratingType) )
    {
       return;
    }
 
-   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
    pgsTypes::LiveLoadType llType = ::GetLiveLoadType(ratingType);
 
@@ -124,7 +124,7 @@ void CLoadRatingDetailsChapterBuilder::ReportRatingDetails(rptChapter* pChapter,
       return;
    }
 
-   EAF_GET_IFACE2(pBroker,IArtifact,pArtifact);
+   GET_IFACE2(pBroker,IArtifact,pArtifact);
 
    VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);
    VehicleIndexType firstVehicleIdx = 0;
@@ -229,8 +229,8 @@ void CLoadRatingDetailsChapterBuilder::MomentRatingDetails(rptChapter* pChapter,
       *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("MomentRating_K_Equation.png")) << rptNewLine;
    }
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   EAF_GET_IFACE2(pBroker,ILiveLoadDistributionFactors,pDistFact);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,ILiveLoadDistributionFactors,pDistFact);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    location.IncludeSpanAndGirder(true);
@@ -384,8 +384,8 @@ void CLoadRatingDetailsChapterBuilder::ShearRatingDetails(rptChapter* pChapter,s
       nColumns += 8;
    }
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   EAF_GET_IFACE2(pBroker,ILiveLoadDistributionFactors,pDistFact);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,ILiveLoadDistributionFactors,pDistFact);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    location.IncludeSpanAndGirder(true);
@@ -522,8 +522,8 @@ void CLoadRatingDetailsChapterBuilder::StressRatingDetails(rptChapter* pChapter,
       *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("StressRatingEquation.png")) << rptNewLine;
    }
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   EAF_GET_IFACE2(pBroker,ILiveLoadDistributionFactors,pDistFact);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,ILiveLoadDistributionFactors,pDistFact);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    location.IncludeSpanAndGirder(true);
@@ -705,7 +705,7 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
    }
    *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("ReinforcementYieldingParameters.png")) << rptNewLine;
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest,  location, pDisplayUnits->GetSpanLengthUnit(),      false );
    location.IncludeSpanAndGirder(true);
@@ -919,7 +919,7 @@ void CLoadRatingDetailsChapterBuilder::ReinforcementYieldingDetails(rptChapter* 
 
 void CLoadRatingDetailsChapterBuilder::LoadPostingDetails(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<const pgsRatingArtifact*>& RatingArtifacts,const std::vector<CGirderKey>& girderKeys) const
 {
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    rptParagraph* pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << pPara;

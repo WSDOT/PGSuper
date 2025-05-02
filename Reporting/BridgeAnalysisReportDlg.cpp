@@ -82,7 +82,7 @@ BOOL CBridgeAnalysisReportDlg::OnInitDialog()
 
    // if there aren't any load rating types selected, don't report for rating and disable the UI element
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
+   GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
    if (!pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) && 
        !pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) &&
        !pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) &&
@@ -112,7 +112,7 @@ void CBridgeAnalysisReportDlg::UpdateChapterList()
 
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
    // Clear out the list box

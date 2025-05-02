@@ -23,7 +23,7 @@
 
 #pragma once
 
-#include <PgsExt\SegmentPTData.h>
+#include <PsgLib\SegmentPTData.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CSegmentTendonGrid window

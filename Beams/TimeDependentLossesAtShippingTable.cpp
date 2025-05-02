@@ -25,9 +25,10 @@
 #include "TimeDependentLossesAtShippingTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
-#include <PsgLib\SpecLibraryEntry.h>
 
-#include <PgsExt\GirderMaterial.h>
+#include <PsgLib\SpecLibraryEntry.h>
+#include <PsgLib\GirderMaterial.h>
+#include <psgLib/StrandData.h>
 
 
 CTimeDependentLossesAtShippingTable::CTimeDependentLossesAtShippingTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) :
@@ -51,14 +52,14 @@ rptRcTable(NumColumns,0)
 
 CTimeDependentLossesAtShippingTable* CTimeDependentLossesAtShippingTable::PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,bool bTemporaryStrands,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
-   EAF_GET_IFACE2(pBroker,ILossParameters,pLossParameters);
+   GET_IFACE2(pBroker,ILossParameters,pLossParameters);
    PrestressLossCriteria::LossMethodType loss_method = pLossParameters->GetLossMethod();
 
-   EAF_GET_IFACE2(pBroker,ISegmentData,pSegmentData);
+   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
    bool bPCIUHPC = pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC ? true : false;
 
-   EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());

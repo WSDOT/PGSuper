@@ -36,11 +36,6 @@
 #include <IFace\DistributionFactors.h>
 #include <IFace\Bridge.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // functions for ordering distribution factor method
 inline int GetIntForDfMethod(pgsTypes::DistributionFactorMethod method)
@@ -181,7 +176,7 @@ BOOL CLiveLoadDistFactorsDlg::OnInitDialog()
 {
    m_LldfTabWnd.SubclassDlgItem(IDC_LLDF_TABW, this);
 
-   EAF_GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IBridge,pBridge);
 
    // Init Girder grids
    SpanIndexType nspans = m_BridgeDesc.GetSpanCount();
@@ -330,11 +325,11 @@ void CLiveLoadDistFactorsDlg::OnBnClickedLldfFillButton()
       else
       {
          // Computed either by lever rule or LRFD
-         EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
-         EAF_GET_IFACE(ILiveLoadDistributionFactors,pLLDF);
-         EAF_GET_IFACE_NOCHECK(ILiveLoads,pLiveLoads);
-         EAF_GET_IFACE(IProgress,pProgress);
-         EAF_GET_IFACE(IEvents, pEvents);
+         GET_IFACE(IBridgeDescription,pIBridgeDesc);
+         GET_IFACE(ILiveLoadDistributionFactors,pLLDF);
+         GET_IFACE_NOCHECK(ILiveLoads,pLiveLoads);
+         GET_IFACE(IEAFProgress,pProgress);
+         GET_IFACE(IEvents, pEvents);
 
          pEvents->HoldEvents(); // don't fire any changed events until all changes are done
 

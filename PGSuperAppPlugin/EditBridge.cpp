@@ -25,11 +25,6 @@
 
 #include <IFace\Project.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 txnEditBridgeDescription::txnEditBridgeDescription(const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc)
@@ -78,11 +73,11 @@ void txnEditBridgeDescription::DoExecute(int i)
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IEvents, pEvents);
+   GET_IFACE2(pBroker,IEvents, pEvents);
    // Exception-safe holder to keep from fireing events until we are done
    CIEventsHolder event_holder(pEvents);
 
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
 
    pBridgeDesc->SetBridgeDescription(m_BridgeDescription[i]);
 }

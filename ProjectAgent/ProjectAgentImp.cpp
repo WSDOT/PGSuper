@@ -36,8 +36,8 @@
 #include <GeomModel\GeomModel.h>
 
 #include <psglib\psglib.h>
-#include <psgLib\StructuredLoad.h>
-#include <psgLib\StructuredSave.h>
+#include <PsgLib\StructuredLoad.h>
+#include <PsgLib\StructuredSave.h>
 #include <psgLib\BeamFamilyManager.h>
 
 #include <LRFD\StrandPool.h>
@@ -61,11 +61,16 @@
 
 #include <EAF\EAFAutoProgress.h>
 #include <PgsExt\StatusItem.h>
-#include <PgsExt\GirderLabel.h>
-#include <PgsExt\StatusItem.h>
-#include <PgsExt\Helpers.h>
-#include <PgsExt\GirderData.h>
-#include <PgsExt\HaunchDepthInputConversionTool.h>
+#include <PsgLib\GirderLabel.h>
+#include <PsgLib\Helpers.h>
+#include <PsgLib\GirderData.h>
+
+#include <PsgLib/SlabOffsetCriteria.h>
+#include <PsgLib/HaulingCriteria.h>
+#include <PsgLib/SpecLibraryEntry.h>
+#include <psgLib/DuctLibraryEntry.h>
+
+#include "HaunchDepthInputConversionTool.h"
 
 #include <checks.h>
 #include <comdef.h>
@@ -79,8 +84,6 @@
 #include <psgLib/SpecificationCriteria.h>
 #include <psgLib/CreepCriteria.h>
 #include <psgLib/LimitsCriteria.h>
-#include <psgLib/SlabOffsetCriteria.h>
-#include <psgLib/HaulingCriteria.h>
 #include <psgLib/LiftingCriteria.h>
 #include <psgLib/StrandSlopeCriteria.h>
 #include <psgLib/HarpedStrandDesignCriteria.h>
@@ -485,7 +488,7 @@ CProjectAgentImp::~CProjectAgentImp()
 {
 }
 
-HRESULT CProjectAgentImp::SpecificationProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj)
+HRESULT CProjectAgentImp::SpecificationProc(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj)
 {
    USES_CONVERSION;
 
@@ -548,7 +551,7 @@ HRESULT CProjectAgentImp::SpecificationProc(IStructuredSave* pSave,IStructuredLo
    return S_OK;
 }
 
-HRESULT CProjectAgentImp::EffectiveFlangeWidthProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj)
+HRESULT CProjectAgentImp::EffectiveFlangeWidthProc(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj)
 {
    HRESULT hr = S_OK;
    if ( pSave )
@@ -605,7 +608,7 @@ HRESULT CProjectAgentImp::EffectiveFlangeWidthProc(IStructuredSave* pSave,IStruc
    return S_OK;
 }
 
-HRESULT CProjectAgentImp::EnvironmentProc(IStructuredSave* pSave, IStructuredLoad* pLoad, IProgress* pProgress, CProjectAgentImp* pObj)
+HRESULT CProjectAgentImp::EnvironmentProc(IStructuredSave* pSave, IStructuredLoad* pLoad, std::shared_ptr<IEAFProgress> pProgress, CProjectAgentImp* pObj)
 {
     HRESULT hr = S_OK;
     if (pSave)
@@ -663,7 +666,7 @@ HRESULT CProjectAgentImp::EnvironmentProc(IStructuredSave* pSave, IStructuredLoa
 }
 
 
-HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj)
+HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj)
 {
    USES_CONVERSION;
 
@@ -1812,19 +1815,19 @@ HRESULT CProjectAgentImp::RatingSpecificationProc(IStructuredSave* pSave,IStruct
    return S_OK;
 }
 
-HRESULT CProjectAgentImp::UnitModeProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj)
+HRESULT CProjectAgentImp::UnitModeProc(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj)
 {
-   // The EAFDocProxy agent should be peristing this value since it is responsible for it
+   // The EAFDocProxy agent should be persisting this value since it is responsible for it
    // However, it would really mess up all of the existing PGSuper files.
    // It is just easier to persist it here.
-   EAF_GET_IFACE2(pObj->m_pBroker,IEAFDisplayUnits,pDisplayUnits);
-   eafTypes::UnitMode unitMode;
+   GET_IFACE2(pObj->m_pBroker,IEAFDisplayUnits,pDisplayUnits);
+   WBFL::EAF::UnitMode unitMode;
 
    HRESULT hr = S_OK;
    if ( pSave )
    {
       unitMode = pDisplayUnits->GetUnitMode();
-      hr = pSave->put_Property(_T("Units"),CComVariant(unitMode));
+      hr = pSave->put_Property(_T("Units"),CComVariant(+unitMode));
       if ( FAILED(hr) )
       {
          return hr;
@@ -1832,7 +1835,7 @@ HRESULT CProjectAgentImp::UnitModeProc(IStructuredSave* pSave,IStructuredLoad* p
    }
    else
    {
-      eafTypes::UnitMode unitMode;
+      WBFL::EAF::UnitMode unitMode;
       CComVariant var;
       var.vt = VT_I4;
       hr = pLoad->get_Property(_T("Units"),&var);
@@ -1841,14 +1844,14 @@ HRESULT CProjectAgentImp::UnitModeProc(IStructuredSave* pSave,IStructuredLoad* p
          return hr;
       }
 
-      unitMode = (eafTypes::UnitMode)(var.iVal);
+      unitMode = (WBFL::EAF::UnitMode)(var.iVal);
       pDisplayUnits->SetUnitMode(unitMode);
    }
 
    return hr;
 }
 
-HRESULT CProjectAgentImp::AlignmentProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj)
+HRESULT CProjectAgentImp::AlignmentProc(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj)
 {
    HRESULT hr = S_OK;
 
@@ -2264,7 +2267,7 @@ HRESULT CProjectAgentImp::AlignmentProc(IStructuredSave* pSave,IStructuredLoad* 
    return S_OK;
 }
 
-HRESULT CProjectAgentImp::ProfileProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress*,CProjectAgentImp* pObj)
+HRESULT CProjectAgentImp::ProfileProc(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress>,CProjectAgentImp* pObj)
 {
    HRESULT hr = S_OK;
 
@@ -2555,7 +2558,7 @@ HRESULT CProjectAgentImp::ProfileProc(IStructuredSave* pSave,IStructuredLoad* pL
    return S_OK;
 }
 
-HRESULT CProjectAgentImp::SuperelevationProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj)
+HRESULT CProjectAgentImp::SuperelevationProc(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj)
 {
    HRESULT hr = S_OK;
 
@@ -3134,7 +3137,7 @@ HRESULT CProjectAgentImp::LoadOldSuperelevationData(bool bNewerFormat, IStructur
    return S_OK;
 }
 
-HRESULT CProjectAgentImp::PierDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj)
+HRESULT CProjectAgentImp::PierDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj)
 {
    HRESULT hr = S_OK;
    if ( pSave )
@@ -3156,7 +3159,7 @@ HRESULT CProjectAgentImp::PierDataProc(IStructuredSave* pSave,IStructuredLoad* p
    return hr;
 }
 
-HRESULT CProjectAgentImp::PierDataProc2(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj)
+HRESULT CProjectAgentImp::PierDataProc2(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj)
 {
    HRESULT hr = S_OK;
    if ( pSave )
@@ -3250,7 +3253,7 @@ HRESULT CProjectAgentImp::PierDataProc2(IStructuredSave* pSave,IStructuredLoad* 
    return S_OK;
 }
 
-HRESULT CProjectAgentImp::XSectionDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj)
+HRESULT CProjectAgentImp::XSectionDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj)
 {
    HRESULT hr = S_OK;
    if ( pSave )
@@ -3272,7 +3275,7 @@ HRESULT CProjectAgentImp::XSectionDataProc(IStructuredSave* pSave,IStructuredLoa
    return hr;
 }
 
-HRESULT CProjectAgentImp::XSectionDataProc2(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj)
+HRESULT CProjectAgentImp::XSectionDataProc2(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj)
 {
    if ( pSave )
    {
@@ -3391,7 +3394,7 @@ HRESULT CProjectAgentImp::XSectionDataProc2(IStructuredSave* pSave,IStructuredLo
    return S_OK;
 }
 
-HRESULT CProjectAgentImp::BridgeDescriptionProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj)
+HRESULT CProjectAgentImp::BridgeDescriptionProc(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj)
 {
    if ( pSave )
    {
@@ -3449,7 +3452,7 @@ HRESULT CProjectAgentImp::BridgeDescriptionProc(IStructuredSave* pSave,IStructur
    return S_OK;
 }
 
-HRESULT CProjectAgentImp::PrestressingDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj)
+HRESULT CProjectAgentImp::PrestressingDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj)
 {
    HRESULT hr = S_OK;
    if ( pSave )
@@ -3471,7 +3474,7 @@ HRESULT CProjectAgentImp::PrestressingDataProc(IStructuredSave* pSave,IStructure
    return S_OK;
 }
 
-HRESULT CProjectAgentImp::PrestressingDataProc2(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj)
+HRESULT CProjectAgentImp::PrestressingDataProc2(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj)
 {
    if ( pSave )
    {
@@ -3637,7 +3640,6 @@ HRESULT CProjectAgentImp::PrestressingDataProc2(IStructuredSave* pSave,IStructur
          pGirder->SetConditionFactor(gdrData.ConditionFactor);
          pGirder->SetConditionFactorType(gdrData.Condition);
          pGirder->SetGirderName(gdrData.m_GirderName.c_str());
-         pGirder->SetGirderLibraryEntry(gdrData.m_pLibraryEntry);
 
          SegmentIDType segID = pSegment->GetID();
          pTimelineMgr->SetSegmentErectionEventByIndex(segID,gpEventIdx);
@@ -3647,7 +3649,7 @@ HRESULT CProjectAgentImp::PrestressingDataProc2(IStructuredSave* pSave,IStructur
    return S_OK;
 }
 
-HRESULT CProjectAgentImp::ShearDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj)
+HRESULT CProjectAgentImp::ShearDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj)
 {
    HRESULT hr = S_OK;
    if ( pSave )
@@ -3669,7 +3671,7 @@ HRESULT CProjectAgentImp::ShearDataProc(IStructuredSave* pSave,IStructuredLoad* 
    return S_OK;
 }
 
-HRESULT CProjectAgentImp::ShearDataProc2(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj)
+HRESULT CProjectAgentImp::ShearDataProc2(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj)
 {
    if ( pSave )
    {
@@ -3781,7 +3783,7 @@ HRESULT CProjectAgentImp::ShearDataProc2(IStructuredSave* pSave,IStructuredLoad*
    return S_OK;
 }
 
-HRESULT CProjectAgentImp::LongitudinalRebarDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj)
+HRESULT CProjectAgentImp::LongitudinalRebarDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj)
 {
    HRESULT hr = S_OK;
    if ( pSave )
@@ -3801,7 +3803,7 @@ HRESULT CProjectAgentImp::LongitudinalRebarDataProc(IStructuredSave* pSave,IStru
    return S_OK;
 }
 
-HRESULT CProjectAgentImp::LongitudinalRebarDataProc2(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj)
+HRESULT CProjectAgentImp::LongitudinalRebarDataProc2(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj)
 {
    if ( pSave )
    {
@@ -3940,7 +3942,7 @@ HRESULT CProjectAgentImp::LongitudinalRebarDataProc2(IStructuredSave* pSave,IStr
    return S_OK;
 }
 
-HRESULT CProjectAgentImp::LoadFactorsProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj)
+HRESULT CProjectAgentImp::LoadFactorsProc(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj)
 {
    HRESULT hr = S_OK;
    if ( pSave )
@@ -3961,7 +3963,7 @@ HRESULT CProjectAgentImp::LoadFactorsProc(IStructuredSave* pSave,IStructuredLoad
    return S_OK;
 }
 
-HRESULT CProjectAgentImp::LossesProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj)
+HRESULT CProjectAgentImp::LossesProc(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj)
 {
    if ( pSave )
    {
@@ -4120,7 +4122,7 @@ HRESULT CProjectAgentImp::LossesProc(IStructuredSave* pSave,IStructuredLoad* pLo
    return S_OK;
 }
 
-HRESULT CProjectAgentImp::LiftingAndHaulingDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj)
+HRESULT CProjectAgentImp::LiftingAndHaulingDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj)
 {
    HRESULT hr = S_OK;
    if ( pSave )
@@ -4187,7 +4189,7 @@ HRESULT CProjectAgentImp::LiftingAndHaulingDataProc(IStructuredSave* pSave,IStru
    return S_OK;
 }
 
-HRESULT CProjectAgentImp::LiftingAndHaulingLoadDataProc(IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj)
+HRESULT CProjectAgentImp::LiftingAndHaulingLoadDataProc(IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj)
 {
    HRESULT hr = pLoad->BeginUnit(_T("LiftingAndHaulingData"));
    if ( FAILED(hr) )
@@ -4300,7 +4302,7 @@ HRESULT CProjectAgentImp::LiftingAndHaulingLoadDataProc(IStructuredLoad* pLoad,I
    return S_OK;
 }
 
-HRESULT CProjectAgentImp::DistFactorMethodDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj)
+HRESULT CProjectAgentImp::DistFactorMethodDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj)
 {
    HRESULT hr = S_OK;
    if ( pSave )
@@ -4324,7 +4326,7 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc(IStructuredSave* pSave,IStruc
    return S_OK;
 }
 
-HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj)
+HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj)
 {
    HRESULT hr = S_OK;
    if ( pSave )
@@ -4628,7 +4630,7 @@ HRESULT CProjectAgentImp::DistFactorMethodDataProc2(IStructuredSave* pSave,IStru
    return hr;
 }
 
-HRESULT CProjectAgentImp::UserLoadsDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj)
+HRESULT CProjectAgentImp::UserLoadsDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj)
 {
    HRESULT hr = S_OK;
    if ( pSave )
@@ -4686,7 +4688,7 @@ HRESULT CProjectAgentImp::UserLoadsDataProc(IStructuredSave* pSave,IStructuredLo
    return hr;
 }
 
-HRESULT CProjectAgentImp::LiveLoadsDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj)
+HRESULT CProjectAgentImp::LiveLoadsDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj)
 {
    HRESULT hr = S_OK;
    if ( pSave )
@@ -4812,7 +4814,7 @@ HRESULT CProjectAgentImp::LiveLoadsDataProc(IStructuredSave* pSave,IStructuredLo
    return hr;
 }
 
-HRESULT CProjectAgentImp::SaveLiveLoad(IStructuredSave* pSave,IProgress* pProgress,CProjectAgentImp* pObj,LPCTSTR lpszUnitName,pgsTypes::LiveLoadType llType)
+HRESULT CProjectAgentImp::SaveLiveLoad(IStructuredSave* pSave,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj,LPCTSTR lpszUnitName,pgsTypes::LiveLoadType llType)
 {
    // version 2 added m_PedestrianLoadApplicationType
    pSave->BeginUnit(lpszUnitName,2.0);
@@ -4844,7 +4846,7 @@ HRESULT CProjectAgentImp::SaveLiveLoad(IStructuredSave* pSave,IProgress* pProgre
    return S_OK;
 }
 
-HRESULT CProjectAgentImp::LoadLiveLoad(IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj,LPCTSTR lpszUnitName,pgsTypes::LiveLoadType llType)
+HRESULT CProjectAgentImp::LoadLiveLoad(IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj,LPCTSTR lpszUnitName,pgsTypes::LiveLoadType llType)
 {
    const LiveLoadLibrary* pLiveLoadLibrary = pObj->m_pLibMgr->GetLiveLoadLibrary();
 
@@ -5078,6 +5080,8 @@ END_STRSTORAGEMAP
 
 bool CProjectAgentImp::RegInterfaces()
 {
+   EAF_AGENT_REGINTERFACES;
+
    REGISTER_INTERFACE(IProjectProperties);
    REGISTER_INTERFACE(IEnvironment);
    REGISTER_INTERFACE(IRoadwayData);
@@ -5108,32 +5112,24 @@ bool CProjectAgentImp::RegInterfaces()
 
 bool CProjectAgentImp::Init()
 {
-   Agent::Init();
-   //EAF_AGENT_INIT;
+   EAF_AGENT_INIT;
 
-   ////
-   //// Attach to connection points for interfaces this agent depends on
-   ////
-   //CComQIPtr<IBrokerInitEx2,&IID_IBrokerInitEx2> pBrokerInit(m_pBroker);
-   //CComPtr<IConnectionPoint> pCP;
-   //HRESULT hr = S_OK;
-
-   EAF_GET_IFACE(IEAFStatusCenter, pStatusCenter);
-#pragma Reminder("WORKING HERE - Removing COM")
-   // IEAFStatusCenter, need to refactor so that we aren't using new, but instead using shared_ptr
-   m_scidBridgeDescriptionInfo    = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusInformation));
-   m_scidBridgeDescriptionWarning = pStatusCenter->RegisterCallback(new pgsBridgeDescriptionStatusCallback(eafTypes::statusWarning));
-   m_scidBridgeDescriptionError   = pStatusCenter->RegisterCallback(new pgsBridgeDescriptionStatusCallback(eafTypes::statusError));
-   m_scidGirderDescriptionWarning = pStatusCenter->RegisterCallback(new pgsGirderDescriptionStatusCallback(eafTypes::statusWarning));
-   m_scidRebarStrengthWarning     = pStatusCenter->RegisterCallback(new pgsRebarStrengthStatusCallback());
-   m_scidLoadDescriptionWarning   = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusWarning));
-   m_scidConnectionGeometryWarning = pStatusCenter->RegisterCallback(new pgsConnectionGeometryStatusCallback(eafTypes::statusWarning));
+   GET_IFACE(IEAFStatusCenter, pStatusCenter);
+   m_scidBridgeDescriptionInfo    = pStatusCenter->RegisterCallback(std::make_shared<pgsInformationalStatusCallback>(WBFL::EAF::StatusSeverityType::Information));
+   m_scidBridgeDescriptionWarning = pStatusCenter->RegisterCallback(std::make_shared<pgsBridgeDescriptionStatusCallback>(WBFL::EAF::StatusSeverityType::Warning));
+   m_scidBridgeDescriptionError   = pStatusCenter->RegisterCallback(std::make_shared<pgsBridgeDescriptionStatusCallback>(WBFL::EAF::StatusSeverityType::Error));
+   m_scidGirderDescriptionWarning = pStatusCenter->RegisterCallback(std::make_shared<pgsGirderDescriptionStatusCallback>(WBFL::EAF::StatusSeverityType::Warning));
+   m_scidRebarStrengthWarning     = pStatusCenter->RegisterCallback(std::make_shared<pgsRebarStrengthStatusCallback>());
+   m_scidLoadDescriptionWarning   = pStatusCenter->RegisterCallback(std::make_shared<pgsInformationalStatusCallback>(WBFL::EAF::StatusSeverityType::Warning));
+   m_scidConnectionGeometryWarning = pStatusCenter->RegisterCallback(std::make_shared<pgsConnectionGeometryStatusCallback>(WBFL::EAF::StatusSeverityType::Warning));
 
    return true;
 }
 
 bool CProjectAgentImp::Reset()
 {
+   EAF_AGENT_RESET;
+
    if ( m_pLibMgr )
    {
       ReleaseBridgeLibraryEntries();
@@ -5185,7 +5181,8 @@ CLSID CProjectAgentImp::GetCLSID() const
 
 bool CProjectAgentImp::ShutDown()
 {
-   //EAF_AGENT_CLEAR_INTERFACE_CACHE;
+   EAF_AGENT_SHUTDOWN;
+
    return true;
 }
 
@@ -5758,7 +5755,7 @@ void CProjectAgentImp::UpdateStrandMaterial()
 
 void CProjectAgentImp::VerifyRebarGrade()
 {
-   EAF_GET_IFACE_NOCHECK(IEAFStatusCenter,pStatusCenter);
+   GET_IFACE_NOCHECK(IEAFStatusCenter,pStatusCenter);
 
    GroupIndexType nGroups = m_BridgeDescription.GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
@@ -5784,9 +5781,8 @@ void CProjectAgentImp::VerifyRebarGrade()
                   WBFL::LRFD::BDSManager::GetEditionAsString(WBFL::LRFD::BDSManager::Edition::ThirdEdition2004),
                   LABEL_GROUP(grpIdx), LABEL_GIRDER(gdrIdx), LABEL_SEGMENT(segIdx),
                   WBFL::LRFD::RebarPool::GetMaterialName(pSegment->LongitudinalRebarData.BarType, pSegment->LongitudinalRebarData.BarGrade).c_str());
-               pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pSegment->GetSegmentKey(), pgsRebarStrengthStatusItem::Transverse, m_StatusGroupID, m_scidRebarStrengthWarning, strMsg);
 
-               pStatusCenter->Add(pStatusItem);
+               pStatusCenter->Add(std::make_shared<pgsRebarStrengthStatusItem>(pSegment->GetSegmentKey(), pgsRebarStrengthStatusItem::Transverse, m_StatusGroupID, m_scidRebarStrengthWarning, strMsg));
             }
             else if (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims && (pSegment->LongitudinalRebarData.BarGrade == WBFL::Materials::Rebar::Grade100 || pSegment->LongitudinalRebarData.BarGrade == WBFL::Materials::Rebar::Grade120))
             {
@@ -5799,9 +5795,8 @@ void CProjectAgentImp::VerifyRebarGrade()
                               WBFL::LRFD::BDSManager::GetEditionAsString(WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims),
                               LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx),
                               WBFL::LRFD::RebarPool::GetMaterialName(pSegment->LongitudinalRebarData.BarType, pSegment->LongitudinalRebarData.BarGrade).c_str());
-               pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pSegment->GetSegmentKey(),pgsRebarStrengthStatusItem::Longitudinal,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
 
-               pStatusCenter->Add(pStatusItem);
+               pStatusCenter->Add(std::make_shared<pgsRebarStrengthStatusItem>(pSegment->GetSegmentKey(), pgsRebarStrengthStatusItem::Longitudinal, m_StatusGroupID, m_scidRebarStrengthWarning, strMsg));
             }
 
             if (WBFL::LRFD::BDSManager::GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 && (pSegment->ShearData.ShearBarGrade == WBFL::Materials::Rebar::Grade75 || pSegment->ShearData.ShearBarGrade == WBFL::Materials::Rebar::Grade80 || pSegment->ShearData.ShearBarGrade == WBFL::Materials::Rebar::Grade100 || pSegment->ShearData.ShearBarGrade == WBFL::Materials::Rebar::Grade120))
@@ -5815,9 +5810,8 @@ void CProjectAgentImp::VerifyRebarGrade()
                   WBFL::LRFD::BDSManager::GetEditionAsString(WBFL::LRFD::BDSManager::Edition::ThirdEdition2004),
                   LABEL_GROUP(grpIdx), LABEL_GIRDER(gdrIdx), LABEL_SEGMENT(segIdx),
                   WBFL::LRFD::RebarPool::GetMaterialName(pSegment->ShearData.ShearBarType, pSegment->ShearData.ShearBarGrade).c_str());
-               pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pSegment->GetSegmentKey(), pgsRebarStrengthStatusItem::Transverse, m_StatusGroupID, m_scidRebarStrengthWarning, strMsg);
 
-               pStatusCenter->Add(pStatusItem);
+               pStatusCenter->Add(std::make_shared<pgsRebarStrengthStatusItem>(pSegment->GetSegmentKey(), pgsRebarStrengthStatusItem::Transverse, m_StatusGroupID, m_scidRebarStrengthWarning, strMsg));
             }
             else if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims && (pSegment->ShearData.ShearBarGrade == WBFL::Materials::Rebar::Grade100 || pSegment->ShearData.ShearBarGrade == WBFL::Materials::Rebar::Grade120))
             {
@@ -5830,9 +5824,8 @@ void CProjectAgentImp::VerifyRebarGrade()
                               WBFL::LRFD::BDSManager::GetEditionAsString(WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims),
                               LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx),
                               WBFL::LRFD::RebarPool::GetMaterialName(pSegment->ShearData.ShearBarType, pSegment->ShearData.ShearBarGrade).c_str());
-               pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pSegment->GetSegmentKey(),pgsRebarStrengthStatusItem::Transverse,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
 
-               pStatusCenter->Add(pStatusItem);
+               pStatusCenter->Add(std::make_shared<pgsRebarStrengthStatusItem>(pSegment->GetSegmentKey(), pgsRebarStrengthStatusItem::Transverse, m_StatusGroupID, m_scidRebarStrengthWarning, strMsg));
             }
 
             CClosureJointData* pClosure = pSegment->GetClosureJoint(pgsTypes::metEnd);
@@ -5849,8 +5842,7 @@ void CProjectAgentImp::VerifyRebarGrade()
                      WBFL::LRFD::BDSManager::GetEditionAsString(WBFL::LRFD::BDSManager::Edition::ThirdEdition2004),
                      LABEL_GROUP(grpIdx), LABEL_GIRDER(gdrIdx), LABEL_SEGMENT(segIdx),
                      WBFL::LRFD::RebarPool::GetMaterialName(pClosure->GetRebar().BarType, pClosure->GetRebar().BarGrade).c_str());
-                  pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pClosure->GetClosureKey(), pgsRebarStrengthStatusItem::Transverse, m_StatusGroupID, m_scidRebarStrengthWarning, strMsg);
-                  pStatusCenter->Add(pStatusItem);
+                  pStatusCenter->Add(std::make_shared<pgsRebarStrengthStatusItem>(pClosure->GetClosureKey(), pgsRebarStrengthStatusItem::Transverse, m_StatusGroupID, m_scidRebarStrengthWarning, strMsg));
                }
                else if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims && (pClosure->GetRebar().BarGrade == WBFL::Materials::Rebar::Grade100 || pClosure->GetRebar().BarGrade == WBFL::Materials::Rebar::Grade120))
                {
@@ -5863,9 +5855,8 @@ void CProjectAgentImp::VerifyRebarGrade()
                                  WBFL::LRFD::BDSManager::GetEditionAsString(WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims),
                                  LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx),
                                  WBFL::LRFD::RebarPool::GetMaterialName(pClosure->GetRebar().BarType, pClosure->GetRebar().BarGrade).c_str());
-                  pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pClosure->GetClosureKey(),pgsRebarStrengthStatusItem::Longitudinal,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
 
-                  pStatusCenter->Add(pStatusItem);
+                  pStatusCenter->Add(std::make_shared<pgsRebarStrengthStatusItem>(pClosure->GetClosureKey(), pgsRebarStrengthStatusItem::Longitudinal, m_StatusGroupID, m_scidRebarStrengthWarning, strMsg));
                }
 
                if (WBFL::LRFD::BDSManager::GetEdition() <= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 && (pClosure->GetStirrups().ShearBarGrade == WBFL::Materials::Rebar::Grade75 || pClosure->GetStirrups().ShearBarGrade == WBFL::Materials::Rebar::Grade80 || pClosure->GetStirrups().ShearBarGrade == WBFL::Materials::Rebar::Grade100 || pClosure->GetStirrups().ShearBarGrade == WBFL::Materials::Rebar::Grade120))
@@ -5879,8 +5870,7 @@ void CProjectAgentImp::VerifyRebarGrade()
                      WBFL::LRFD::BDSManager::GetEditionAsString(WBFL::LRFD::BDSManager::Edition::ThirdEdition2004),
                      LABEL_GROUP(grpIdx), LABEL_GIRDER(gdrIdx), LABEL_SEGMENT(segIdx),
                      WBFL::LRFD::RebarPool::GetMaterialName(pClosure->GetStirrups().ShearBarType, pClosure->GetStirrups().ShearBarGrade).c_str());
-                  pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pClosure->GetClosureKey(), pgsRebarStrengthStatusItem::Transverse, m_StatusGroupID, m_scidRebarStrengthWarning, strMsg);
-                  pStatusCenter->Add(pStatusItem);
+                  pStatusCenter->Add(std::make_shared<pgsRebarStrengthStatusItem>(pClosure->GetClosureKey(), pgsRebarStrengthStatusItem::Transverse, m_StatusGroupID, m_scidRebarStrengthWarning, strMsg));
                }
                else if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims && (pClosure->GetStirrups().ShearBarGrade == WBFL::Materials::Rebar::Grade100 || pClosure->GetStirrups().ShearBarGrade == WBFL::Materials::Rebar::Grade120))
                {
@@ -5893,8 +5883,7 @@ void CProjectAgentImp::VerifyRebarGrade()
                                  WBFL::LRFD::BDSManager::GetEditionAsString(WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims),
                                  LABEL_GROUP(grpIdx),LABEL_GIRDER(gdrIdx),LABEL_SEGMENT(segIdx),
                                  WBFL::LRFD::RebarPool::GetMaterialName(pClosure->GetStirrups().ShearBarType, pClosure->GetStirrups().ShearBarGrade).c_str());
-                  pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(pClosure->GetClosureKey(),pgsRebarStrengthStatusItem::Transverse,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
-                  pStatusCenter->Add(pStatusItem);
+                  pStatusCenter->Add(std::make_shared<pgsRebarStrengthStatusItem>(pClosure->GetClosureKey(), pgsRebarStrengthStatusItem::Transverse, m_StatusGroupID, m_scidRebarStrengthWarning, strMsg));
                }
             }
          } // next segment
@@ -5914,9 +5903,8 @@ void CProjectAgentImp::VerifyRebarGrade()
          WBFL::LRFD::BDSManager::GetSpecificationName(),
          WBFL::LRFD::BDSManager::GetEditionAsString(WBFL::LRFD::BDSManager::Edition::ThirdEdition2004, false),
          WBFL::LRFD::RebarPool::GetMaterialName(pDeck->DeckRebarData.TopRebarType, pDeck->DeckRebarData.TopRebarGrade).c_str());
-      pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(CSegmentKey(), pgsRebarStrengthStatusItem::Deck, m_StatusGroupID, m_scidRebarStrengthWarning, strMsg);
 
-      pStatusCenter->Add(pStatusItem);
+      pStatusCenter->Add(std::make_shared<pgsRebarStrengthStatusItem>(CSegmentKey(), pgsRebarStrengthStatusItem::Deck, m_StatusGroupID, m_scidRebarStrengthWarning, strMsg));
    }
    else if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims && (pDeck->DeckRebarData.TopRebarGrade == WBFL::Materials::Rebar::Grade100 || pDeck->DeckRebarData.TopRebarGrade == WBFL::Materials::Rebar::Grade120))
    {
@@ -5930,9 +5918,8 @@ void CProjectAgentImp::VerifyRebarGrade()
                      WBFL::LRFD::BDSManager::GetSpecificationName(),
                      WBFL::LRFD::BDSManager::GetEditionAsString(WBFL::LRFD::BDSManager::Edition::SixthEditionWith2013Interims,false),
                      WBFL::LRFD::RebarPool::GetMaterialName(pDeck->DeckRebarData.TopRebarType, pDeck->DeckRebarData.TopRebarGrade).c_str());
-      pgsRebarStrengthStatusItem* pStatusItem = new pgsRebarStrengthStatusItem(CSegmentKey(),pgsRebarStrengthStatusItem::Deck,m_StatusGroupID,m_scidRebarStrengthWarning,strMsg);
 
-      pStatusCenter->Add(pStatusItem);
+      pStatusCenter->Add(std::make_shared<pgsRebarStrengthStatusItem>(CSegmentKey(), pgsRebarStrengthStatusItem::Deck, m_StatusGroupID, m_scidRebarStrengthWarning, strMsg));
    }
 }
 
@@ -5940,7 +5927,7 @@ void CProjectAgentImp::ValidateBridgeModel()
 {
    // Gets called from Fire_BridgeChanged so that every time the bridge gets changed we check the valid status
 
-   EAF_GET_IFACE_NOCHECK(IEAFStatusCenter,pStatusCenter);
+   GET_IFACE_NOCHECK(IEAFStatusCenter,pStatusCenter);
 
    if ( m_BridgeStabilityStatusItemID != INVALID_ID )
    {
@@ -5950,8 +5937,7 @@ void CProjectAgentImp::ValidateBridgeModel()
 
    if ( !m_BridgeDescription.IsStable() )
    {
-      pgsBridgeDescriptionStatusItem* pStatusItem = new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionError,pgsBridgeDescriptionStatusItem::General,_T("Bridge model is unstable. Modify the boundary conditions."));
-      m_BridgeStabilityStatusItemID = pStatusCenter->Add(pStatusItem);
+      m_BridgeStabilityStatusItemID = pStatusCenter->Add(std::make_shared<pgsBridgeDescriptionStatusItem>(m_StatusGroupID, m_scidBridgeDescriptionError, pgsBridgeDescriptionStatusItem::General, _T("Bridge model is unstable. Modify the boundary conditions.")));
    }
 
 }
@@ -5962,14 +5948,14 @@ bool CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
 
    m_bUpdateUserDefinedLoads = false; // assume we are loading a newer file and user defined loads don't need tweaking
 
-//   EAF_GET_IFACE( IProgress, pProgress );
+//   GET_IFACE( IEAFProgress, pProgress );
 //   CEAFAutoProgress ap(pProgress);
-   IProgress* pProgress = 0; // progress window causes big trouble running in windowless mode
+   std::shared_ptr<IEAFProgress> pProgress = 0; // progress window causes big trouble running in windowless mode
 
    // Load the library data first into a temporary library. Then deal with entry
    // conflict resolution.
    // This library manager contains data that has been removed from some library entries
-   eafTypes::UnitMode unitMode;
+   WBFL::EAF::UnitMode unitMode;
    psgLibraryManager temp_manager;
    hr = pgslibLoadLibrary(pStrLoad, &temp_manager, &unitMode, false/*not loading master library*/);
    if (FAILED(hr))
@@ -5978,7 +5964,7 @@ bool CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    }
 
    // merge project library into master library and deal with conflicts
-   EAF_GET_IFACE(IUpdateTemplates,pUpdateTemplates);
+   GET_IFACE(IUpdateTemplates,pUpdateTemplates);
    bool bForceUpdate = pUpdateTemplates->UpdatingTemplates();
 
    ConflictList the_conflict_list;
@@ -6002,12 +5988,11 @@ bool CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       {
          curve.Radius = 0;
 
-         EAF_GET_IFACE(IEAFStatusCenter, pStatusCenter);
+         GET_IFACE(IEAFStatusCenter, pStatusCenter);
          CString strMsg;
          strMsg.Format(_T("Horizontal curve %d: The curve radius is less than the minimum so it has been set to 0 to model an angle point in the alignment."), LABEL_INDEX(curveIdx));
 
-         pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID, m_scidBridgeDescriptionInfo, strMsg);
-         pStatusCenter->Add(pStatusItem);
+         pStatusCenter->Add(std::make_shared<pgsInformationalStatusItem>(m_StatusGroupID, m_scidBridgeDescriptionInfo, strMsg));
       }
       curveIdx++;
    }
@@ -6309,7 +6294,7 @@ bool CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       InitRatingSpecification(strSpecName);
    }
 
-   EAF_GET_IFACE(IDocumentType, pDocType);
+   GET_IFACE(IDocumentType, pDocType);
    if (pDocType->IsPGSpliceDocument())
    {
       DuctLibrary* pDuctLibrary = GetDuctLibrary();
@@ -6323,12 +6308,11 @@ bool CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
          }
 
 
-         EAF_GET_IFACE(IEAFStatusCenter, pStatusCenter);
+         GET_IFACE(IEAFStatusCenter, pStatusCenter);
          CString strMsg;
          strMsg.Format(_T("The %s library needs at least %d entries. Default entries have been created."), pDuctLibrary->GetDisplayName().c_str(), nMinEntries);
 
-         pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID, m_scidBridgeDescriptionInfo, strMsg);
-         pStatusCenter->Add(pStatusItem);
+         pStatusCenter->Add(std::make_shared<pgsInformationalStatusItem>(m_StatusGroupID, m_scidBridgeDescriptionInfo, strMsg));
 
          bUpdateLibraryUsage = true;
 
@@ -6370,12 +6354,11 @@ bool CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
          pHaulTruckLibrary->NewEntry(pHaulTruckLibrary->GetUniqueEntryName().c_str());
       }
 
-      EAF_GET_IFACE(IEAFStatusCenter, pStatusCenter);
+      GET_IFACE(IEAFStatusCenter, pStatusCenter);
       CString strMsg;
       strMsg.Format(_T("The %s library needs at least %d entries. Default entries have been created."), pHaulTruckLibrary->GetDisplayName().c_str(), nMinEntries);
 
-      pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID, m_scidBridgeDescriptionInfo, strMsg);
-      pStatusCenter->Add(pStatusItem);
+      pStatusCenter->Add(std::make_shared<pgsInformationalStatusItem>(m_StatusGroupID, m_scidBridgeDescriptionInfo, strMsg));
 
       bUpdateLibraryUsage = true;
 
@@ -6439,11 +6422,10 @@ bool CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       CString strMsg;
       strMsg.Format(_T("%s\r\n\r\nSee Status Center for Details"),strBadLoads);
       AfxMessageBox(strMsg,MB_OK | MB_ICONEXCLAMATION);
-      EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
-      pgsInformationalStatusItem* pStatusItem =  new pgsInformationalStatusItem(m_StatusGroupID,m_scidLoadDescriptionWarning,strBadLoads);
-      pStatusCenter->Add(pStatusItem);
+      GET_IFACE(IEAFStatusCenter,pStatusCenter);
+      pStatusCenter->Add(std::make_shared<pgsInformationalStatusItem>(m_StatusGroupID, m_scidLoadDescriptionWarning, strBadLoads));
 
-      EAF_GET_IFACE(IEAFDocument,pDoc);
+      GET_IFACE(IEAFDocument,pDoc);
       pDoc->SetModified();
    }
 
@@ -6467,11 +6449,10 @@ bool CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
                   LABEL_PIER_EX(pPier->IsAbutment(), pPier->GetIndex()),
                   CPierData2::AsString(newBC,true)
                   );
-               EAF_GET_IFACE(IEAFStatusCenter, pStatusCenter);
-               pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID, m_scidBridgeDescriptionInfo, strMsg);
-               pStatusCenter->Add(pStatusItem);
+               GET_IFACE(IEAFStatusCenter, pStatusCenter);
+               pStatusCenter->Add(std::make_shared<pgsInformationalStatusItem>(m_StatusGroupID, m_scidBridgeDescriptionInfo, strMsg));
 
-               EAF_GET_IFACE(IEAFDocument, pDoc);
+               GET_IFACE(IEAFDocument, pDoc);
                pDoc->SetModified();
 
                bBCChanged = true;
@@ -6499,12 +6480,11 @@ bool CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    if (m_BridgeDescription.WasVersion3_1FilletRead() && m_BridgeDescription.GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone)
    {
       Float64 fillet = m_BridgeDescription.GetFillet();
-      EAF_GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
+      GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
       CString strMsg;
       strMsg.Format(_T("Multiple fillet values were input in this file and are no longer supported in this version of PGSuper. The max value will be used. A single fillet value of %s will be set for the entire bridge.\r\n\r\nSee Status Center for Details"), ::FormatDimension(fillet,pDisplayUnits->GetComponentDimUnit()));
-      EAF_GET_IFACE(IEAFStatusCenter, pStatusCenter);
-      pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID, m_scidBridgeDescriptionInfo, strMsg);
-      pStatusCenter->Add(pStatusItem);
+      GET_IFACE(IEAFStatusCenter, pStatusCenter);
+      pStatusCenter->Add(std::make_shared<pgsInformationalStatusItem>(m_StatusGroupID, m_scidBridgeDescriptionInfo, strMsg));
    }
 
    if (pDocType->IsPGSpliceDocument() && m_BridgeDescription.GetHaunchInputDepthType() == pgsTypes::hidACamber && m_BridgeDescription.GetDeckDescription()->GetDeckType() != pgsTypes::sdtNone)
@@ -6522,11 +6502,10 @@ bool CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
       m_BridgeDescription.CopyHaunchSettings(convPair.second, false);
 
       CString strMsg(_T("Definition of haunch depths using the slab offset method is no longer supported in PGSplice. Haunch input data has been converted to the direct input method. A Geometry Control Event has been added to the timeline at the Open to Traffic event. It is very likely that this has changed haunch loads slightly, and thus dead load responses. It is also likely that roadway elevation checks will be changed significantly. Please review haunch dead loads and finished elevation checks accordingly."));
-      EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
-      pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidLoadDescriptionWarning,strMsg);
-      pStatusCenter->Add(pStatusItem);
+      GET_IFACE(IEAFStatusCenter,pStatusCenter);
+      pStatusCenter->Add(std::make_shared<pgsInformationalStatusItem>(m_StatusGroupID, m_scidLoadDescriptionWarning, strMsg));
 
-      // Another change made in version 8 was to have the option to use hanch depths when computing composite section properties. This was
+      // Another change made in version 8 was to have the option to use haunch depths when computing composite section properties. This was
       // only allowed in PGSuper prior to this. Look at the setting in the spec entry and alert the user if haunch is now used in section props.
       const auto& haunch_criteria = m_pSpecEntry->GetHaunchCriteria();
       if (haunch_criteria.HaunchAnalysisSectionPropertiesType != pgsTypes::hspZeroHaunch)
@@ -6545,8 +6524,7 @@ bool CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
          strMsg += msg;
          strMsg += CString(_T("This will likely change analysis results compared to the prior version.  Please review composite section properties and responses accordingly. "));
          strMsg += CString(_T("\nIf desired, you can change back to the original setting by editing the Project Criteria and selecting the Ignore Haunch option."));
-         pgsInformationalStatusItem* pPcStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidLoadDescriptionWarning,strMsg);
-         pStatusCenter->Add(pPcStatusItem);
+         pStatusCenter->Add(std::make_shared<pgsInformationalStatusItem>(m_StatusGroupID, m_scidLoadDescriptionWarning, strMsg));
       }
    }
 
@@ -6566,9 +6544,8 @@ bool CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
             pPier->SetGirderEndDistance(pgsTypes::Back, brgOffset, endDistMeasure);
             CString strMsg;
             strMsg.Format(_T("End Distance was greater than Bearing Offset on the Back side of Pier %s. The End Distance was changed to match the Bearing Offset. Review Pier %s connection geometry."), LABEL_PIER(pierIdx), LABEL_PIER(pierIdx));
-            EAF_GET_IFACE(IEAFStatusCenter, pStatusCenter);
-            std::unique_ptr<pgsConnectionGeometryStatusItem> pStatusItem = std::make_unique<pgsConnectionGeometryStatusItem>(m_StatusGroupID, m_scidConnectionGeometryWarning, pierIdx, strMsg);
-            pStatusCenter->Add(pStatusItem.release());
+            GET_IFACE(IEAFStatusCenter, pStatusCenter);
+            pStatusCenter->Add(std::make_shared<pgsConnectionGeometryStatusItem>(m_StatusGroupID, m_scidConnectionGeometryWarning, pierIdx, strMsg));
          }
       }
 
@@ -6581,9 +6558,8 @@ bool CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
             pPier->SetGirderEndDistance(pgsTypes::Ahead, brgOffset, endDistMeasure);
             CString strMsg;
             strMsg.Format(_T("End Distance was greater than Bearing Offset on the Ahead side of Pier %s. The End Distance was changed to match the Bearing Offset. Review Pier %s connection geometry."), LABEL_PIER(pierIdx), LABEL_PIER(pierIdx));
-            EAF_GET_IFACE(IEAFStatusCenter, pStatusCenter);
-            std::unique_ptr<pgsConnectionGeometryStatusItem> pStatusItem = std::make_unique<pgsConnectionGeometryStatusItem>(m_StatusGroupID, m_scidConnectionGeometryWarning, pierIdx, strMsg);
-            pStatusCenter->Add(pStatusItem.release());
+            GET_IFACE(IEAFStatusCenter, pStatusCenter);
+            pStatusCenter->Add(std::make_shared<pgsConnectionGeometryStatusItem>(m_StatusGroupID, m_scidConnectionGeometryWarning, pierIdx, strMsg));
          }
       }
    }
@@ -6607,7 +6583,7 @@ bool CProjectAgentImp::Save(IStructuredSave* pStrSave)
 {
    HRESULT hr = S_OK;
 
-   EAF_GET_IFACE( IProgress, pProgress );
+   GET_IFACE( IEAFProgress, pProgress );
    CEAFAutoProgress ap(pProgress);
 
    //
@@ -7730,6 +7706,24 @@ std::vector<Float64> CProjectAgentImp::GetDirectHaunchDepthsPerSegment(GroupInde
       CGirderGroupData* pGroup = m_BridgeDescription.GetGirderGroup(group);
       return pGroup->GetGirder(gdrIdx)->GetSegment(segmentIdx)->GetDirectHaunchDepths();
    }
+}
+
+std::pair<bool,CBridgeDescription2> CProjectAgentImp::ConvertHaunchToSlabOffsetInput(const CBridgeDescription2& bridgeDesc, pgsTypes::SlabOffsetType newSlabOffsetType) const
+{
+   HaunchDepthInputConversionTool tool(&bridgeDesc, m_pBroker, false);
+   return tool.ConvertToSlabOffsetInput(newSlabOffsetType);
+}
+
+std::pair<bool,CBridgeDescription2> CProjectAgentImp::ConvertHaunchToDirectHaunchInput(const CBridgeDescription2& bridgeDesc, pgsTypes::HaunchInputLocationType newHaunchInputLocationType, pgsTypes::HaunchLayoutType newHaunchLayoutType, pgsTypes::HaunchInputDistributionType newHaunchInputDistributionType, bool forceInit) const
+{
+   HaunchDepthInputConversionTool tool(&bridgeDesc, m_pBroker, false);
+   return tool.ConvertToDirectHaunchInput(newHaunchInputLocationType, newHaunchLayoutType, newHaunchInputDistributionType, forceInit);
+}
+
+std::pair<bool,CBridgeDescription2> CProjectAgentImp::DesignHaunches(const CBridgeDescription2& bridgeDesc, const CGirderKey& rDesignGirderKey, GirderIndexType sourceGirderIdx, pgsTypes::HaunchInputDistributionType inputDistributionType, bool bApply2AllGdrs) const
+{
+   HaunchDepthInputConversionTool tool(&bridgeDesc, m_pBroker, false);
+   return tool.DesignHaunches(rDesignGirderKey, sourceGirderIdx, inputDistributionType, bApply2AllGdrs);
 }
 
 std::vector<pgsTypes::BoundaryConditionType> CProjectAgentImp::GetBoundaryConditionTypes(PierIndexType pierIdx) const
@@ -9823,15 +9817,15 @@ Float64 CProjectAgentImp::GetReactionServiceLiveLoadFactor(PierIndexType pierIdx
    Float64 gLL = GetLiveLoadFactor(ls,true);
    if ( gLL < 0 )
    {
-      EAF_GET_IFACE(IIntervals,pIntervals);
+      GET_IFACE(IIntervals,pIntervals);
       IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
       pgsTypes::LiveLoadType llType = ::GetLiveLoadType(ratingType);
 
-      EAF_GET_IFACE(IProductForces,pProductForces);
+      GET_IFACE(IProductForces,pProductForces);
       pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
 
-      EAF_GET_IFACE(IReactions,pReactions);
+      GET_IFACE(IReactions,pReactions);
 
       GroupIndexType grpIdx;
       if ( pierIdx == 0 )
@@ -9912,7 +9906,7 @@ pgsTypes::OverlayLoadDistributionType CProjectAgentImp::GetOverlayLoadDistributi
 
 pgsTypes::HaunchLoadComputationType CProjectAgentImp::GetHaunchLoadComputationType() const
 {
-   EAF_GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IBridge,pBridge);
 
    if(pBridge->GetHaunchInputDepthType() == pgsTypes::hidACamber)
    {
@@ -9969,14 +9963,14 @@ bool CProjectAgentImp::IsAssumedExcessCamberInputEnabled(bool considerDeckType) 
 
 bool CProjectAgentImp::IsAssumedExcessCamberForLoad() const
 {
-   EAF_GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IBridge,pBridge);
    const auto& haunch_criteria = m_pSpecEntry->GetHaunchCriteria();
    return pBridge->GetHaunchInputDepthType()==pgsTypes::hidACamber && haunch_criteria.HaunchLoadComputationType == pgsTypes::hlcDetailedAnalysis;
 }
 
 bool CProjectAgentImp::IsAssumedExcessCamberForSectProps() const
 {
-   EAF_GET_IFACE(IDocumentType, pDocType);
+   GET_IFACE(IDocumentType, pDocType);
    bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
    const auto& haunch_criteria = m_pSpecEntry->GetHaunchCriteria();
    return !bIsSplicedGirder && haunch_criteria.HaunchAnalysisSectionPropertiesType == pgsTypes::hspDetailedDescription;
@@ -10000,7 +9994,7 @@ ISpecification::PrincipalWebStressCheckType CProjectAgentImp::GetPrincipalWebStr
    const auto& principal_tension_stress_criteria = m_pSpecEntry->GetPrincipalTensionStressCriteria();
 
    // spliced girder files always analyze principal web stress
-   EAF_GET_IFACE(IDocumentType, pDocType);
+   GET_IFACE(IDocumentType, pDocType);
    bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
    if (bIsSplicedGirder)
    {
@@ -10009,13 +10003,13 @@ ISpecification::PrincipalWebStressCheckType CProjectAgentImp::GetPrincipalWebStr
    else
    {
       // PGSuper models depend in concrete strength
-      EAF_GET_IFACE(IMaterials,pMaterials);
+      GET_IFACE(IMaterials,pMaterials);
       Float64 concStrength;
       if (segmentKey.groupIndex == INVALID_INDEX || segmentKey.girderIndex == INVALID_INDEX || segmentKey.segmentIndex == INVALID_INDEX)
       {
          // Get max f'c for entire bridge
          Float64 maxFc = 0;
-         EAF_GET_IFACE(IBridge,pBridge);
+         GET_IFACE(IBridge,pBridge);
          GroupIndexType nGroups = pBridge->GetGirderGroupCount();
          for (GroupIndexType iGroup = 0; iGroup < nGroups; iGroup++)
          {
@@ -10050,7 +10044,7 @@ ISpecification::PrincipalWebStressCheckType CProjectAgentImp::GetPrincipalWebStr
          }
          else
          {
-            EAF_GET_IFACE(ILossParameters, pLossParams);
+            GET_IFACE(ILossParameters, pLossParams);
             if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP)
             {
                return pwcNCHRPTimeStepMethod;
@@ -10102,6 +10096,12 @@ bool CProjectAgentImp::DesignSlabHaunch() const
    return bDesign;
 }
 
+const HaulingCriteria& CProjectAgentImp::GetHaulingCriteria() const
+{
+   GET_IFACE(ILibrary, pLibrary);
+   return pLibrary->GetSpecEntry(GetSpecification().c_str())->GetHaulingCriteria();
+}
+
 std::vector<arDesignOptions> CProjectAgentImp::GetDesignOptions(const CGirderKey& girderKey) const
 {
    const CSplicedGirderData* pGirder = GetGirder(girderKey);
@@ -10109,7 +10109,7 @@ std::vector<arDesignOptions> CProjectAgentImp::GetDesignOptions(const CGirderKey
 
    std::vector<arDesignOptions> options;
 
-   EAF_GET_IFACE(ILibrary,pLib);
+   GET_IFACE(ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(m_Spec.c_str());
 
    const auto& lifting_criteria = pSpecEntry->GetLiftingCriteria();
@@ -10953,7 +10953,7 @@ void CProjectAgentImp::HoldEvents()
 
    Fire_OnHoldEvents();
 
-   EAF_GET_IFACE(IUIEvents,pUIEvents);
+   GET_IFACE(IUIEvents,pUIEvents);
    pUIEvents->HoldEvents(true);
 }
 
@@ -11081,7 +11081,7 @@ void CProjectAgentImp::FirePendingEvents()
 
       Fire_OnFirePendingEvents();
 
-      EAF_GET_IFACE(IUIEvents, pUIEvents);
+      GET_IFACE(IUIEvents, pUIEvents);
       pUIEvents->FirePendingEvents();
    }
    catch (...)
@@ -11106,7 +11106,7 @@ void CProjectAgentImp::CancelPendingEvents()
 
    Fire_OnCancelPendingEvents();
 
-   EAF_GET_IFACE(IUIEvents,pUIEvents);
+   GET_IFACE(IUIEvents,pUIEvents);
    pUIEvents->CancelPendingEvents();
 }
 
@@ -12079,7 +12079,7 @@ void CProjectAgentImp::DealWithGirderLibraryChanges(bool fromLibrary)
    // debond length exceeds 1/2 girder length
 #pragma Reminder("Need thorough check of library changes affect to project data")
 
-   EAF_GET_IFACE(IPretensionForce,pPrestress);
+   GET_IFACE(IPretensionForce,pPrestress);
 
    GroupIndexType nGroups = m_BridgeDescription.GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
@@ -12140,7 +12140,7 @@ void CProjectAgentImp::DealWithGirderLibraryChanges(bool fromLibrary)
             bool bMinDist;
             pGdrEntry->GetMinDistanceBetweenDebondSections(&ndb, &bMinDist, &minDist);
 
-            EAF_GET_IFACE(IMaterials, pMaterials);
+            GET_IFACE(IMaterials, pMaterials);
             Float64 ndb_max = pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC ? 24.0 : 60.0;
 
             bool bTooSmall = ndb < ndb_max ? true : false;
@@ -12185,9 +12185,8 @@ void CProjectAgentImp::DealWithGirderLibraryChanges(bool fromLibrary)
 void CProjectAgentImp::AddSegmentStatusItem(const CSegmentKey& segmentKey,const std::_tstring& message)
 {
    // first post message
-   EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
-   pgsGirderDescriptionStatusItem* pStatusItem =  new pgsGirderDescriptionStatusItem(segmentKey,0,m_StatusGroupID,m_scidGirderDescriptionWarning,message.c_str());
-   StatusItemIDType st_id = pStatusCenter->Add(pStatusItem);
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
+   StatusItemIDType st_id = pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, 0, m_StatusGroupID, m_scidGirderDescriptionWarning, message.c_str()));
 
    // then store message id's for a segment
    StatusIterator iter = m_CurrentGirderStatusItems.find(segmentKey);
@@ -12206,7 +12205,7 @@ void CProjectAgentImp::AddSegmentStatusItem(const CSegmentKey& segmentKey,const 
 
 void CProjectAgentImp::RemoveSegmentStatusItems(const CSegmentKey& segmentKey)
 {
-   EAF_GET_IFACE_NOCHECK(IEAFStatusCenter,pStatusCenter);
+   GET_IFACE_NOCHECK(IEAFStatusCenter,pStatusCenter);
 
    StatusIterator iter( m_CurrentGirderStatusItems.find(segmentKey) );
    if (iter != m_CurrentGirderStatusItems.end())
@@ -12421,13 +12420,13 @@ Float64 CProjectAgentImp::GetMaxPjack(const CSegmentKey& segmentKey,pgsTypes::St
       type = pgsTypes::Straight;
    }
 
-   EAF_GET_IFACE(IPretensionForce,pPrestress);
+   GET_IFACE(IPretensionForce,pPrestress);
    return pPrestress->GetPjackMax(segmentKey,*GetStrandMaterial(segmentKey,type),nStrands);
 }
 
 Float64 CProjectAgentImp::GetMaxPjack(const CSegmentKey& segmentKey,StrandIndexType nStrands,const WBFL::Materials::PsStrand* pStrand) const
 {
-   EAF_GET_IFACE(IPretensionForce,pPrestress);
+   GET_IFACE(IPretensionForce,pPrestress);
    return pPrestress->GetPjackMax(segmentKey,*pStrand,nStrands);
 }
 
@@ -12461,7 +12460,7 @@ HRESULT CProjectAgentImp::FireContinuityRelatedSpanChange(const CSpanKey& spanKe
       GirderIndexType continuityGirderIdx = (spanKey.girderIndex == ALL_GIRDERS) ? 0 : spanKey.girderIndex;
       CGirderKey girderKey(grpIdx,continuityGirderIdx);
       
-      EAF_GET_IFACE(IContinuity,pContinuity);
+      GET_IFACE(IContinuity,pContinuity);
       if (pContinuity->IsContinuityFullyEffective(girderKey))
       {
          grpIdx = ALL_GROUPS; // assume the entire girder line is affected...specify change affects all groups
@@ -12978,7 +12977,7 @@ void CProjectAgentImp::UpdateHaulTruck(const COldHaulTruck* pOldHaulTruck)
    {
       // truck roll stiffness is a function of the girder weight
       HaulTruckLibrary* pHaulTruckLibrary = GetHaulTruckLibrary();
-      EAF_GET_IFACE(ISectionProperties,pSectProps);
+      GET_IFACE(ISectionProperties,pSectProps);
       GroupIndexType nGroups = m_BridgeDescription.GetGirderGroupCount();
       for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
       {
@@ -13077,10 +13076,8 @@ void CProjectAgentImp::UpgradeBearingData()
                {
                   // Bearing data was not loaded at start up. Need to tell user that data should be initialized
                   CString strMsg(_T("New Bearing Data at Piers was added in this version of the program. The data was not available when this file was last saved. You may want to investigate the bearing information and make sure it is appropriate for this project."));
-                  pgsBridgeDescriptionStatusItem* pStatusItem = 
-                     new pgsBridgeDescriptionStatusItem(m_StatusGroupID,m_scidBridgeDescriptionWarning,pgsBridgeDescriptionStatusItem::Bearings,strMsg);
-                  EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
-                  pStatusCenter->Add(pStatusItem);
+                  GET_IFACE(IEAFStatusCenter,pStatusCenter);
+                  pStatusCenter->Add(std::make_shared<pgsBridgeDescriptionStatusItem>(m_StatusGroupID, m_scidBridgeDescriptionWarning, pgsBridgeDescriptionStatusItem::Bearings, strMsg));
 
                   postedMsg = true;
                   break;

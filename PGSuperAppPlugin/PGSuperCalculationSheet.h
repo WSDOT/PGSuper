@@ -37,7 +37,6 @@
 
 // FORWARD DECLARATIONS
 //
-struct IBroker;
 
 // MISCELLANEOUS
 //

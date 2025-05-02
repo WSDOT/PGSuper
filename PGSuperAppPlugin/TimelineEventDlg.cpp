@@ -40,14 +40,9 @@
 #include <IFace\DocumentType.h>
 #include <IFace\Project.h>
 
-#include <PgsExt\Helpers.h>
+#include <PsgLib\Helpers.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 
@@ -248,7 +243,7 @@ void CTimelineEventDlg::UpdateAddButton()
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
    CString strErectPiers;
    CString strConstructSegments;
    CString strErectSegments;
@@ -277,7 +272,7 @@ void CTimelineEventDlg::UpdateAddButton()
       m_btnAdd.AddMenuItem(ID_ACTIVITIES_REMOVE_TS,_T("Remove Temporary Supports"),MF_ENABLED);
    }
 
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    if (pIBridgeDesc->GetBridgeDescription()->HasStructuralLongitudinalJoints())
    {
       m_btnAdd.AddMenuItem(ID_ACTIVITIES_CASTLONGITUDINALJOINTS, _T("Cast Longitudinal Joints"), MF_ENABLED);
@@ -371,7 +366,7 @@ void CTimelineEventDlg::OnCastDeck()
    UpdateData();
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    pgsTypes::SupportedDeckType deckType = pIBridgeDesc->GetDeckDescription()->GetDeckType();
    CString strName(GetCastDeckEventName(deckType));
 

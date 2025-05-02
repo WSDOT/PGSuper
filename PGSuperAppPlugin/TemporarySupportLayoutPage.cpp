@@ -35,19 +35,14 @@
 
 #include <EAF\EAFDisplayUnits.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include <IFace\Project.h>
 
 #include <EAF\EAFDocument.h>
 
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\ClosureJointData.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // free fuction to determine if a temp support can possibly have haunch input
 static bool CanHaveHaunchInput(CTemporarySupportData* pTS)
@@ -90,7 +85,7 @@ void CTemporarySupportLayoutPage::DoDataExchange(CDataExchange* pDX)
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CTemporarySupportDlg* pParent = (CTemporarySupportDlg*)GetParent();
 
@@ -107,7 +102,7 @@ void CTemporarySupportLayoutPage::DoDataExchange(CDataExchange* pDX)
    {
 #pragma Reminder("Validate temporary support orientation")
       //pDX->PrepareEditCtrl(IDC_ORIENTATION);
-      //EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+      //GET_IFACE2(pBroker,IBridge,pBridge);
       //Float64 skewAngle;
       //bool bSuccess = pBridge->GetSkewAngle(m_Station,m_strOrientation.c_str(),&skewAngle);
       //if ( !bSuccess )
@@ -461,7 +456,7 @@ void CTemporarySupportLayoutPage::UpdateHaunchAndCamberControls()
    // Function takes bridge data and puts into dialog controls
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CTemporarySupportDlg* pParent = (CTemporarySupportDlg*)GetParent();
 
@@ -639,7 +634,7 @@ void CTemporarySupportLayoutPage::UpdateHaunchAndCamberData(CDataExchange* pDX)
       {
          
          auto pBroker = EAFGetBroker();
-         EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+         GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
          const CDeckDescription2* pDeck = pParent->m_BridgeDesc.GetDeckDescription();
          Float64 Tdeck;

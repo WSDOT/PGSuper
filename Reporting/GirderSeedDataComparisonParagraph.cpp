@@ -24,7 +24,9 @@
 #include <Reporting\GirderSeedDataComparisonParagraph.h>
 
 #include <IFace\Project.h>
-#include <PgsExt\BridgeDescription2.h>
+
+#include <psglib/GirderLibraryEntry.h>
+#include <PsgLib\BridgeDescription2.h>
 
 
 /****************************************************************************
@@ -44,7 +46,7 @@ rptParagraph* CGirderSeedDataComparisonParagraph::Build(std::shared_ptr<WBFL::EA
 {
    rptParagraph* pParagraph = new rptParagraph;
 
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);

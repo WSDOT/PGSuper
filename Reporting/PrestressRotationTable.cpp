@@ -29,8 +29,9 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
 #include <IFace\Project.h>
+#include <IFace/PointOfInterest.h>
 
-#include <PgsExt\PrecastSegmentData.h>
+#include <PsgLib\PrecastSegmentData.h>
 
 rptRcTable* CPrestressRotationTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, pgsTypes::AnalysisType analysisType, IntervalIndexType intervalIdx, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
@@ -38,14 +39,14 @@ rptRcTable* CPrestressRotationTable::Build(std::shared_ptr<WBFL::EAF::Broker> pB
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptAngleUnitValue, rotation, pDisplayUnits->GetRadAngleUnit(), false );
 
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
-   EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
-   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPOI);
-   EAF_GET_IFACE2(pBroker, IProductForces, pProdForces);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+   GET_IFACE2(pBroker, IPointOfInterest, pPOI);
+   GET_IFACE2(pBroker, IProductForces, pProdForces);
 
-   EAF_GET_IFACE2_NOCHECK(pBroker, ICamber, pCamber);
+   GET_IFACE2_NOCHECK(pBroker, ICamber, pCamber);
 
-   EAF_GET_IFACE2(pBroker, IGirderTendonGeometry, pTendonGeom);
+   GET_IFACE2(pBroker, IGirderTendonGeometry, pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
    ColumnIndexType nCols = 2;
    if (0 < nDucts)
@@ -53,7 +54,7 @@ rptRcTable* CPrestressRotationTable::Build(std::shared_ptr<WBFL::EAF::Broker> pB
       nCols++;
    }
 
-   EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   GET_IFACE2(pBroker, ILossParameters, pLossParams);
    bool bTimeStep = (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false);
    if (bTimeStep)
    {
@@ -120,10 +121,10 @@ rptRcTable* CPrestressRotationTable::Build(std::shared_ptr<WBFL::EAF::Broker> pB
       vPoi.insert(vPoi.end(), vSegPoi.begin(), vSegPoi.end());
    }
 
-   EAF_GET_IFACE2(pBroker,IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription, pIBridgeDesc);
    PierIndexType nPiers = pBridge->GetPierCount();
 
-   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
    RowIndexType row = pTable->GetNumberOfHeaderRows();
    for(const pgsPointOfInterest& poi : vPoi)
    {

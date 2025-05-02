@@ -28,11 +28,13 @@
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 
-#include <PgsExt\StrandData.h>
-#include <PgsExt\GirderMaterial.h>
+#include <PgsExt\ReportCreepCoefficient.h>
 
+#include <PsgLib\StrandData.h>
+#include <PsgLib\GirderMaterial.h>
 #include <psgLib/CreepCriteria.h>
 #include <psgLib/SpecificationCriteria.h>
+#include <PsgLib/SpecLibraryEntry.h>
 
 
 /****************************************************************************
@@ -62,9 +64,9 @@ rptChapter* CLRFDCreepCoefficientChapterBuilder::Build(const std::shared_ptr<con
    auto pBroker = pGirderRptSpec->GetBroker();
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,ISegmentData,pSegmentData);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
 
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
 
@@ -134,15 +136,15 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP_TempStrands(const s
 {
    rptParagraph* pPara = new rptParagraph;
 
-   EAF_GET_IFACE2(pBroker,ICamber,pCamber);
+   GET_IFACE2(pBroker,ICamber,pCamber);
 
-   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
-   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
    const auto& creep_criteria = pSpecEntry->GetCreepCriteria();
 
-   EAF_GET_IFACE2(pBroker, ISegmentData, pSegmentData);
+   GET_IFACE2(pBroker, ISegmentData, pSegmentData);
 
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time, pDisplayUnits->GetWholeDaysUnit(), true );
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetWholeDaysUnit(), false );
@@ -334,15 +336,15 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_CIP(const std::shared_p
 {
    rptParagraph* pPara = new rptParagraph;
 
-   EAF_GET_IFACE2(pBroker,ICamber,pCamber);
+   GET_IFACE2(pBroker,ICamber,pCamber);
 
-   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
-   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
    const auto& creep_criteria = pSpecEntry->GetCreepCriteria();
 
-   EAF_GET_IFACE2(pBroker, ISegmentData, pSegmentData);
+   GET_IFACE2(pBroker, ISegmentData, pSegmentData);
 
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time, pDisplayUnits->GetWholeDaysUnit(), true );
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetWholeDaysUnit(), false );
@@ -546,15 +548,15 @@ rptParagraph* CLRFDCreepCoefficientChapterBuilder::Build_NoDeck_TempStrands(cons
 {
    rptParagraph* pPara = new rptParagraph;
 
-   EAF_GET_IFACE2(pBroker,ICamber,pCamber);
+   GET_IFACE2(pBroker,ICamber,pCamber);
 
-   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
-   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
    const auto& creep_criteria = pSpecEntry->GetCreepCriteria();
 
-   EAF_GET_IFACE2(pBroker, ISegmentData, pSegmentData);
+   GET_IFACE2(pBroker, ISegmentData, pSegmentData);
 
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time, pDisplayUnits->GetWholeDaysUnit(), true );
    INIT_UV_PROTOTYPE( rptTimeUnitValue, time2, pDisplayUnits->GetWholeDaysUnit(), false );

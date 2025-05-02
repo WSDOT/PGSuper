@@ -34,11 +34,6 @@
 #include <IFace\Project.h>
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 IMPLEMENT_DYNAMIC(CGeneralRatingOptionsPage, CPropertyPage)
 
@@ -98,7 +93,7 @@ BOOL CGeneralRatingOptionsPage::OnInitDialog()
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   GET_IFACE2(pBroker,ILossParameters,pLossParams);
    BOOL bEnable = pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? TRUE : FALSE;
    GetDlgItem(IDC_LOAD_RATING_EVENT)->EnableWindow(bEnable);
 

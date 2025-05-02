@@ -95,7 +95,7 @@ void CTestGraphBuilder::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
 {
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    int graphType = m_GraphControls.GetGraphType();
 
@@ -185,7 +185,7 @@ void CTestGraphBuilder2::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
 {
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    int graphType = m_GraphControls.GetGraphType();
 
@@ -260,7 +260,7 @@ void CTestGraphBuilder3::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
 {
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // first x axis
    const WBFL::Units::ScalarData& scalar = pDisplayUnits->GetScalarFormat();

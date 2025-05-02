@@ -23,9 +23,10 @@
 #include "stdafx.h"
 #include "TransferLengthEngineer.h"
 
-#include <PgsExt\GirderMaterial.h>
-#include <PgsExt\StrandData.h>
-#include <PgsExt\PrecastSegmentData.h>
+#include <psgLib/SpecLibraryEntry.h>
+#include <PsgLib\GirderMaterial.h>
+#include <PsgLib\StrandData.h>
+#include <PsgLib\PrecastSegmentData.h>
 
 #include <psgLib/TransferLengthCriteria.h>
 
@@ -67,9 +68,9 @@ std::shared_ptr<pgsTransferLength> pgsTransferLengthEngineer::GetTransferLengthD
       if (found != (xferType == pgsTypes::TransferLengthType::Minimum ? m_MinCache[strandType].end() : m_MaxCache[strandType].end())) return found->second;
    }
 
-   EAF_GET_IFACE(ISpecification, pSpec);
+   GET_IFACE(ISpecification, pSpec);
    std::_tstring spec_name = pSpec->GetSpecification();
-   EAF_GET_IFACE(ILibrary, pLib);
+   GET_IFACE(ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(spec_name.c_str());
    const auto& transfer_length_criteria = pSpecEntry->GetTransferLengthCriteria();
 
@@ -87,7 +88,7 @@ std::shared_ptr<pgsTransferLength> pgsTransferLengthEngineer::GetTransferLengthD
    {
       ATLASSERT(transfer_length_criteria.CalculationMethod == pgsTypes::TransferLengthCalculationMethod::Specification);
 
-      EAF_GET_IFACE(ISegmentData, pSegmentData);
+      GET_IFACE(ISegmentData, pSegmentData);
       const auto* pStrand = pSegmentData->GetStrandMaterial(segmentKey, strandType);
       ATLASSERT(pStrand != nullptr);
 
@@ -125,11 +126,11 @@ Float64 pgsTransferLengthEngineer::GetTransferLengthAdjustment(const pgsPointOfI
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
-   EAF_GET_IFACE(IIntervals, pIntervals);
+   GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
    // Quick check to make sure there is even an adjustment to be made. If there are no strands, just leave
-   EAF_GET_IFACE(IStrandGeometry, pStrandGeom);
+   GET_IFACE(IStrandGeometry, pStrandGeom);
    auto strand_count = pStrandGeom->GetStrandCount(poi, releaseIntervalIdx, strandType, pConfig);
    if (strand_count.first == 0)
    {
@@ -140,7 +141,7 @@ Float64 pgsTransferLengthEngineer::GetTransferLengthAdjustment(const pgsPointOfI
    // Compute a scaling factor to apply to the basic prestress force to adjust for transfer length/ and debonded strands
    Float64 xfer_length = GetTransferLength(segmentKey, strandType, xferType);
 
-   EAF_GET_IFACE(IBridge, pBridge);
+   GET_IFACE(IBridge, pBridge);
    Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
    Float64 Xpoi_from_left_end = poi.GetDistFromStart();
    Float64 Xpoi_from_right_end = segment_length - Xpoi_from_left_end;
@@ -183,7 +184,7 @@ Float64 pgsTransferLengthEngineer::GetTransferLengthAdjustment(const pgsPointOfI
    }
    else
    {
-      EAF_GET_IFACE(ISegmentData, pSegmentData);
+      GET_IFACE(ISegmentData, pSegmentData);
       const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
       if (pStrands->GetStrandDefinitionType() == pgsTypes::sdtDirectStrandInput)
@@ -307,14 +308,14 @@ Float64 pgsTransferLengthEngineer::GetTransferLengthAdjustment(const pgsPointOfI
 
    Float64 xfer_length = GetTransferLength(segmentKey, strandType, xferType);
 
-   EAF_GET_IFACE(IBridge, pBridge);
+   GET_IFACE(IBridge, pBridge);
    Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
    Float64 Xpoi_from_left_end = Max(poi.GetDistFromStart(), 0.0); // can be negative if POI is before start of segment (like in a closure joint or pier diaphragm)
    Float64 Xpoi_from_right_end = Max(segment_length - Xpoi_from_left_end, 0.0); // can be negative if POI is beyond end of segment (like in a closure joint or pier diaphragm)
 
    Float64 adjust = 1.0;
 
-   EAF_GET_IFACE(ISegmentData, pSegmentData);
+   GET_IFACE(ISegmentData, pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
    if (pStrands->GetStrandDefinitionType() == pgsTypes::sdtDirectStrandInput)
@@ -391,7 +392,7 @@ Float64 pgsTransferLengthEngineer::GetTransferLengthAdjustment(const pgsPointOfI
    }
    else
    {
-      EAF_GET_IFACE(IStrandGeometry, pStrandGeom);
+      GET_IFACE(IStrandGeometry, pStrandGeom);
       Float64 debond_left, debond_right;
       if (pStrandGeom->IsStrandDebonded(segmentKey, strandIdx, strandType, pConfig, &debond_left, &debond_right))
       {
@@ -448,8 +449,8 @@ Float64 pgsTransferLengthEngineer::GetTransferLengthAdjustment(const pgsPointOfI
 
 void pgsTransferLengthEngineer::ReportTransferLengthDetails(const CSegmentKey& segmentKey, pgsTypes::TransferLengthType xferType, rptChapter* pChapter) const
 {
-   EAF_GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
-   EAF_GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
    pgsTypes::AdjustableStrandType adj_type = pSegment->Strands.GetAdjustableStrandType();
    std::_tstring strAdj(pgsTypes::asHarped == adj_type ? _T("Harped") : _T("Adj. Straight"));

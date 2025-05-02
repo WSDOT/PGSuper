@@ -30,11 +30,13 @@
 #include <IFace\PrestressForce.h>
 #include <IFace/Limits.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <IFace/PointOfInterest.h>
 
 #include <Beams/Interfaces.h>
 
 #include <PgsExt\PoiKey.h>
-#include <PgsExt\PTData.h>
+
+#include <PsgLib\PTData.h>
 
 #include <Math\LinearFunction.h>
 
@@ -69,8 +71,8 @@ private:
    StatusCallbackIDType m_scidProjectCriteria;
 
    // This are interfaces that are used over and over and over
-   // Get them once so we don't have to call EAF_GET_IFACE so many times
-   std::shared_ptr<IProgress>          m_pProgress;
+   // Get them once so we don't have to call GET_IFACE so many times
+   std::shared_ptr<IEAFProgress>          m_pProgress;
    std::shared_ptr<IBridgeDescription> m_pBridgeDesc;
    std::shared_ptr<IBridge>            m_pBridge;
    std::shared_ptr<IStrandGeometry>    m_pStrandGeom;
@@ -101,7 +103,6 @@ private:
    void InitializeStrandTypes(const CSegmentKey& segmentKey);
    const std::vector<pgsTypes::StrandType>& GetStrandTypes(const CSegmentKey& segmentKey);
 
-   std::shared_ptr<WBFL::EAF::Broker> GetBroker(); // must be a weak reference
    StatusGroupIDType m_StatusGroupID;
 
    struct LOSSES

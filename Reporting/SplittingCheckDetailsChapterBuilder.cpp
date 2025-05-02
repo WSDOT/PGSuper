@@ -71,13 +71,13 @@ rptChapter* CSplittingCheckDetailsChapterBuilder::Build(const std::shared_ptr<co
    auto pBroker = pGirderRptSpec->GetBroker();
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
-   EAF_GET_IFACE2(pBroker, IArtifact, pIArtifact);
+   GET_IFACE2(pBroker, IArtifact, pIArtifact);
 
    const pgsGirderArtifact* pGirderArtifact = pIArtifact->GetGirderArtifact(girderKey);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
 
-   EAF_GET_IFACE2(pBroker, ISplittingChecks, pSplittingChecks);
+   GET_IFACE2(pBroker, ISplittingChecks, pSplittingChecks);
    pSplittingChecks->ReportSplittingCheckDetails(pGirderArtifact, pChapter);
 
    return pChapter;

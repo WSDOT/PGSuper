@@ -33,11 +33,6 @@
 #include <EAF\EAFDisplayUnits.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 GRID_IMPLEMENT_REGISTER(CAssumedExcessCamberSpanGrid, CS_DBLCLKS, 0, 0, 0);
 
@@ -86,7 +81,7 @@ void CAssumedExcessCamberSpanGrid::CustomInit()
 {
    // initialize units
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    m_pUnit = &(pDisplayUnits->GetComponentDimUnit());
 
 // Initialize the grid. For CWnd based grids this call is // 
@@ -228,7 +223,7 @@ void CAssumedExcessCamberSpanGrid::GetGridData(CDataExchange* pDX)
    CBridgeDescription2* pBridge = pParent->GetBridgeDesc();
 
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2_NOCHECK(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2_NOCHECK(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    ROWCOL nRows = GetRowCount();
    for (ROWCOL row = 1; row <= nRows; row++)

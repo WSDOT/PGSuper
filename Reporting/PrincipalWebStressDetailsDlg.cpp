@@ -26,13 +26,13 @@
 #include "Reporting.h"
 #include "PrincipalWebStressDetailsDlg.h"
 
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 #include <MFCTools\CustomDDX.h>
 
 #include <IFace\Intervals.h>
 #include <IFace\PrincipalWebStress.h>
 #include <IFace\Bridge.h>
-
+#include <IFace/PointOfInterest.h>
 
 
 // CPrincipalWebStressDetailsDlg dialog
@@ -83,7 +83,7 @@ BOOL CPrincipalWebStressDetailsDlg::OnInitDialog()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   EAF_GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IBridge,pBridge);
    CComboBox* pcbGirders = (CComboBox*)GetDlgItem(IDC_GIRDERLINE);
    IndexType nGirderLines = pBridge->GetGirderlineCount();
    for ( IndexType gdrIdx = 0; gdrIdx < nGirderLines; gdrIdx++ )
@@ -93,7 +93,7 @@ BOOL CPrincipalWebStressDetailsDlg::OnInitDialog()
       pcbGirders->AddString(str);
    }
 
-   EAF_GET_IFACE( IIntervals, pIntervals);
+   GET_IFACE( IIntervals, pIntervals);
    CComboBox* pcbIntervals = (CComboBox*)GetDlgItem(IDC_INTERVAL);
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
@@ -167,7 +167,7 @@ bool CPrincipalWebStressDetailsDlg::GetReportAxial()
 void CPrincipalWebStressDetailsDlg::UpdatePOI()
 {
    // Would like to call GetPrincipalWebStressPointsOfInterest() here, but we have to analyze all time steps to get the data
-   EAF_GET_IFACE(IPointOfInterest,pPOI);
+   GET_IFACE(IPointOfInterest,pPOI);
    m_vPOI.clear();
    pPOI->GetPointsOfInterest(CSegmentKey(ALL_GROUPS, m_GirderKey.girderIndex, ALL_SEGMENTS),&m_vPOI);
 
@@ -216,7 +216,7 @@ void CPrincipalWebStressDetailsDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBa
 
 void CPrincipalWebStressDetailsDlg::UpdateSliderLabel()
 {
-   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    CString strLabel;
    ASSERT((int)m_SliderPos < (int)m_vPOI.size());

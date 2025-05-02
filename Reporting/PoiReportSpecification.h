@@ -1,6 +1,6 @@
 #pragma once
 #include <Reporting\BrokerReportSpecification.h>
-#include <PgsExt\PointOfInterest.h>
+#include <PsgLib\PointOfInterest.h>
 
 class CPoiReportSpecification :
    public CBrokerReportSpecification

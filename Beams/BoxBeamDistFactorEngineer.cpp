@@ -23,13 +23,12 @@
 // BoxBeamDistFactorEngineer.cpp : Implementation of CBoxBeamDistFactorEngineer
 #include "stdafx.h"
 #include "BoxBeamDistFactorEngineer.h"
-#include <WBFLCore.h>
 #include <Units\Convert.h>
 #include <PsgLib\TrafficBarrierEntry.h>
 #include <PsgLib\SpecLibraryEntry.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <PgsExt\StatusItem.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\DistributionFactors.h>
@@ -43,7 +42,7 @@
 void CBoxBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    // Grab the interfaces that are needed
-   EAF_GET_IFACE2(GetBroker(), IBridge,pBridge);
+   GET_IFACE2(GetBroker(), IBridge,pBridge);
 
    // Do some initial se
    bool bSIUnits = IS_SI_UNITS(pDisplayUnits);
@@ -58,7 +57,7 @@ void CBoxBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChap
    INIT_UV_PROTOTYPE( rptAngleUnitValue,     angle,    pDisplayUnits->GetAngleUnit(),           true );
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-   EAF_GET_IFACE2(GetBroker(), IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(GetBroker(), IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
 
@@ -138,8 +137,8 @@ void CBoxBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChap
       (*pPara) << _T("Skew Angle at start: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs(span_lldf.skew1)) << rptNewLine;
       (*pPara) << _T("Skew Angle at end: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs(span_lldf.skew2)) << rptNewLine;
 
-      EAF_GET_IFACE2(GetBroker(), ISpecification, pSpec);
-      EAF_GET_IFACE2(GetBroker(), ILibrary, pLibrary);
+      GET_IFACE2(GetBroker(), ISpecification, pSpec);
+      GET_IFACE2(GetBroker(), ILibrary, pLibrary);
       const auto* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
       const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
       if (live_load_distribution_criteria.bIgnoreSkewReductionForMoment)
@@ -357,8 +356,8 @@ void CBoxBeamDistFactorEngineer::ReportMoment(rptParagraph* pPara,BOXBEAM_LLDFDE
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim,     pDisplayUnits->GetSpanLengthUnit(),      true );
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-   EAF_GET_IFACE2(GetBroker(), ILibrary, pLib);
-   EAF_GET_IFACE2(GetBroker(), ISpecification, pSpec);
+   GET_IFACE2(GetBroker(), ILibrary, pLib);
+   GET_IFACE2(GetBroker(), ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
 
    if ( lldf.bExteriorGirder )
@@ -598,8 +597,8 @@ void CBoxBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDET
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-   EAF_GET_IFACE2(GetBroker(), ILibrary, pLib);
-   EAF_GET_IFACE2(GetBroker(), ISpecification, pSpec);
+   GET_IFACE2(GetBroker(), ILibrary, pLib);
+   GET_IFACE2(GetBroker(), ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    
    if ( lldf.bExteriorGirder ) 
@@ -794,12 +793,12 @@ void CBoxBeamDistFactorEngineer::ReportShear(rptParagraph* pPara,BOXBEAM_LLDFDET
 
 WBFL::LRFD::LiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,BOXBEAM_LLDFDETAILS* plldf,const GDRCONFIG* pConfig)
 {
-   EAF_GET_IFACE2(GetBroker(), ISectionProperties, pSectProp);
-   EAF_GET_IFACE2(GetBroker(), IBridge,pBridge);
-   EAF_GET_IFACE2(GetBroker(), IGirder,pGirder);
-   EAF_GET_IFACE2(GetBroker(), ILiveLoads,pLiveLoads);
+   GET_IFACE2(GetBroker(), ISectionProperties, pSectProp);
+   GET_IFACE2(GetBroker(), IBridge,pBridge);
+   GET_IFACE2(GetBroker(), IGirder,pGirder);
+   GET_IFACE2(GetBroker(), ILiveLoads,pLiveLoads);
 
-   EAF_GET_IFACE2(GetBroker(), IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(GetBroker(), IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
 
@@ -836,7 +835,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFP
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
    // Throws exception if fails requirement (no need to catch it)
-   EAF_GET_IFACE2(GetBroker(), ILiveLoadDistributionFactors, pDistFactors);
+   GET_IFACE2(GetBroker(), ILiveLoadDistributionFactors, pDistFactors);
    Int32 roaVal = pDistFactors->VerifyDistributionFactorRequirements(poi);
 
    // Get some controlling dimensions
@@ -886,7 +885,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFP
    // thickness of exterior vertical elements
    Float64 t_ext = web_thk;
 
-   EAF_GET_IFACE2(GetBroker(), IIntervals,pIntervals);
+   GET_IFACE2(GetBroker(), IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount()-1;
    if (is_composite)
@@ -998,8 +997,8 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFP
    }
    else
    {
-      EAF_GET_IFACE2(GetBroker(), ISpecification, pSpec);
-      EAF_GET_IFACE2(GetBroker(), ILibrary, pLibrary);
+      GET_IFACE2(GetBroker(), ISpecification, pSpec);
+      GET_IFACE2(GetBroker(), ILibrary, pLibrary);
       const auto* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
       const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
       bool bSkew = !( IsZero(plldf->skew1) && IsZero(plldf->skew2) );
@@ -1097,8 +1096,8 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CBoxBeamDistFactorEngineer::GetLLDFP
 
 std::_tstring CBoxBeamDistFactorEngineer::GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect)
 {
-   EAF_GET_IFACE2(GetBroker(), ILibrary, pLib);
-   EAF_GET_IFACE2(GetBroker(), ISpecification, pSpec);
+   GET_IFACE2(GetBroker(), ILibrary, pLib);
+   GET_IFACE2(GetBroker(), ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
 

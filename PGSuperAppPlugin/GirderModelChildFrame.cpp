@@ -41,9 +41,10 @@
 #include <IFace\DocumentType.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\EditByUI.h>
+#include <IFace/PointOfInterest.h>
 
 #include <PgsExt\ReportPointOfInterest.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include "PGSuperTypes.h"
 #include "SectionCutDlg.h"
@@ -57,11 +58,6 @@
 
 //#include <WBFLDManip.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // NOTES:
 // The girder model elevation view uses one of two coordinate systems depending on what is being displayed.
@@ -677,7 +673,7 @@ void CGirderModelChildFrame::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHi
          // If the bridge changed, make sure the girder key is still valid
          if (m_GirderKey.groupIndex != ALL_GROUPS)
          {
-            EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+            GET_IFACE2(pBroker, IBridge, pBridge);
             GroupIndexType nGroups = pBridge->GetGirderGroupCount();
             if (nGroups <= m_GirderKey.groupIndex)
             {
@@ -693,7 +689,7 @@ void CGirderModelChildFrame::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHi
       }
 
       UpdateCutRange();
-      EAF_GET_IFACE2(pBroker,IPointOfInterest, pPoi);
+      GET_IFACE2(pBroker,IPointOfInterest, pPoi);
       Float64 Xgp;
       if (m_GirderKey.groupIndex == ALL_GROUPS)
          Xgp = pPoi->ConvertPoiToGirderlineCoordinate(m_cutPoi);
@@ -749,7 +745,7 @@ Float64 CGirderModelChildFrame::ConvertFromGirderlineCoordinate(Float64 Xgl) con
    // this method makes the conversion
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    GirderIndexType nGirders = pBridge->GetGirderCount(0);
    CSegmentKey segmentKey(0, Min(m_GirderKey.girderIndex, nGirders - 1), 0);
    Float64 brgOffset = pBridge->GetSegmentStartBearingOffset(segmentKey);
@@ -766,7 +762,7 @@ Float64 CGirderModelChildFrame::ConvertToGirderlineCoordinate(Float64 Xgl) const
    // this method makes the conversion
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    GirderIndexType nGirders = pBridge->GetGirderCount(0);
    CSegmentKey segmentKey(0, Min(m_GirderKey.girderIndex, nGirders - 1), 0);
    Float64 brgOffset = pBridge->GetSegmentStartBearingOffset(segmentKey);
@@ -780,7 +776,7 @@ void CGirderModelChildFrame::UpdateCutRange()
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    PoiList vPoi;
    pPoi->GetPointsOfInterest(CSegmentKey(m_GirderKey, ALL_SEGMENTS), &vPoi);
 
@@ -790,7 +786,7 @@ void CGirderModelChildFrame::UpdateCutRange()
    if (m_bFirstCut)
    {
       // default cut is at the middle of the first segment
-      EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+      GET_IFACE2(pBroker, IBridge, pBridge);
       std::vector<CGirderKey> vGirderKeys;
       pBridge->GetGirderline(CGirderKey(m_GirderKey.groupIndex == ALL_GROUPS ? 0 : m_GirderKey.groupIndex, m_GirderKey.girderIndex), &vGirderKeys);
       PoiList vPoi2;
@@ -850,7 +846,7 @@ void CGirderModelChildFrame::UpdateBar()
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    // make sure controls are in sync with actual data groups
@@ -926,8 +922,8 @@ void CGirderModelChildFrame::UpdateBar()
       m_GirderKey.girderIndex = 0;
    }
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
 
    Float64 cut;
    if (m_GirderKey.groupIndex == ALL_GROUPS)
@@ -975,7 +971,7 @@ void CGirderModelChildFrame::OnGroupChanged()
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    GroupIndexType startGroupIdx = (m_GirderKey.groupIndex == INVALID_INDEX ? 0 : m_GirderKey.groupIndex);
@@ -1033,7 +1029,7 @@ void CGirderModelChildFrame::GetCutRange(Float64* pMin, Float64* pMax)
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
 
    if (m_GirderKey.groupIndex == ALL_GROUPS)
    {
@@ -1054,7 +1050,7 @@ Float64 CGirderModelChildFrame::GetCurrentCutLocation()
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
 
    Float64 cut;
    if (m_GirderKey.groupIndex == ALL_GROUPS)
@@ -1074,7 +1070,7 @@ pgsPointOfInterest CGirderModelChildFrame::GetCutPointOfInterest(Float64 X)
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    pgsPointOfInterest poi;
    if (m_GirderKey.groupIndex == ALL_GROUPS)
    {
@@ -1109,7 +1105,7 @@ void CGirderModelChildFrame::CutAtNext()
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    pgsPointOfInterest currentPoi = GetCutLocation();
    pgsPointOfInterest poi = pPoi->GetNextPointOfInterest(currentPoi.GetID(),POI_ERECTED_SEGMENT);
    if ( poi.GetID() != INVALID_ID )
@@ -1122,7 +1118,7 @@ void CGirderModelChildFrame::CutAtPrev()
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    pgsPointOfInterest currentPoi = GetCutLocation();
    pgsPointOfInterest poi = pPoi->GetPrevPointOfInterest(currentPoi.GetID(),POI_ERECTED_SEGMENT);
    if ( poi.GetID() != INVALID_ID )
@@ -1198,7 +1194,7 @@ void CGirderModelChildFrame::OnAddPointload()
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IEditByUI, pEdit);
+   GET_IFACE2(pBroker, IEditByUI, pEdit);
    pEdit->AddPointLoad(load);
 }
 
@@ -1209,7 +1205,7 @@ void CGirderModelChildFrame::OnAddDistributedLoad()
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IEditByUI, pEdit);
+   GET_IFACE2(pBroker, IEditByUI, pEdit);
    pEdit->AddDistributedLoad(load);
 }
 
@@ -1220,7 +1216,7 @@ void CGirderModelChildFrame::OnAddMoment()
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IEditByUI, pEdit);
+   GET_IFACE2(pBroker, IEditByUI, pEdit);
    pEdit->AddMomentLoad(load);
 }
 
@@ -1245,7 +1241,7 @@ void CGirderModelChildFrame::OnUpdateDesignGirderDirectHoldSlabOffset(CCmdUI* pC
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,ISpecification,pSpecification);
+   GET_IFACE2(pBroker,ISpecification,pSpecification);
    bool bDesignSlabOffset = pSpecification->DesignSlabHaunch();
    pCmdUI->Enable( m_GirderKey.groupIndex != ALL_GROUPS && m_GirderKey.girderIndex != ALL_GIRDERS && bDesignSlabOffset );
 }
@@ -1284,7 +1280,7 @@ void CGirderModelChildFrame::FillEventComboBox()
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    const CTimelineManager* pTimelineMgr = pBridgeDesc->GetTimelineManager();

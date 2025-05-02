@@ -57,7 +57,7 @@ DEFINE_GUID(CATID_PGSpliceDataImporter,
 DEFINE_GUID(CATID_PGSpliceDataExporter,
    0xd889af1d, 0xca1, 0x4f01, 0xaa, 0x2d, 0x84, 0xf8, 0xf9, 0xf3, 0xa2, 0xdd);
 
-namespace PGSuper
+namespace PGS
 {
    class IDataImporter
    {
@@ -93,6 +93,6 @@ namespace PGSuper
    public:
       virtual CString GetDocumentationSetName() const = 0;
       virtual HRESULT LoadDocumentationMap() = 0;
-      virtual std::pair<bool,CString> GetDocumentLocation(UINT nHID) const = 0;
+      virtual std::pair<WBFL::EAF::HelpResult,CString> GetDocumentLocation(UINT nHID) const = 0;
    };
 };

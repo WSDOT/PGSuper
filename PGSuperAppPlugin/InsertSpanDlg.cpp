@@ -29,18 +29,13 @@
 #include "TimelineEventDlg.h"
 #include <EAF\EAFDisplayUnits.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include <EAF\EAFDocument.h>
 #include "PGSuperDoc.h"
 #include "PGSpliceDoc.h"
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CInsertSpanDlg dialog
@@ -69,7 +64,7 @@ void CInsertSpanDlg::DoDataExchange(CDataExchange* pDX)
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    DDX_UnitValueAndTag(pDX,IDC_SPAN_LENGTH,IDC_SPAN_LENGTH_UNIT,m_SpanLength,pDisplayUnits->GetSpanLengthUnit());
    DDV_UnitValueGreaterThanZero(pDX,IDC_SPAN_LENGTH,m_SpanLength,pDisplayUnits->GetSpanLengthUnit());
@@ -124,7 +119,7 @@ BOOL CInsertSpanDlg::OnInitDialog()
    }
 
    // Use the current selection to guide the defaults
-   EAF_GET_IFACE2(pBroker,ISelection,pSelection);
+   GET_IFACE2(pBroker,ISelection,pSelection);
    PierIndexType selectedPierIdx = pSelection->GetSelectedPier();
    SpanIndexType selectedSpanIdx = pSelection->GetSelectedSpan();
 
@@ -282,7 +277,7 @@ void CInsertSpanDlg::FillEventList()
 #pragma Reminder("UPDATE: this dialog needs to work on a local bridge model... and use the local timeline manager")
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
    EventIndexType nEvents = pTimelineMgr->GetEventCount();
@@ -313,7 +308,7 @@ EventIndexType CInsertSpanDlg::CreateEvent()
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
    CTimelineEventDlg dlg(*pTimelineMgr,INVALID_INDEX,FALSE);

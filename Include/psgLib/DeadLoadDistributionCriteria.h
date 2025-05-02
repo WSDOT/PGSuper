@@ -23,12 +23,12 @@
 #pragma once
 
 
-#include "psgLibLib.h"
+#include "PsgLibLib.h"
 
 class rptChapter;
 class IEAFDisplayUnits;
-class pgsLibraryEntryDifferenceItem;
 class SpecLibraryEntryImpl;
+class DifferenceItem;
 
 struct PSGLIBCLASS DeadLoadDistributionCriteria
 {
@@ -36,7 +36,7 @@ struct PSGLIBCLASS DeadLoadDistributionCriteria
    GirderIndexType  MaxGirdersTrafficBarrier = 4;
    pgsTypes::OverlayLoadDistributionType OverlayDistribution = pgsTypes::olDistributeEvenly;
 
-   bool Compare(const DeadLoadDistributionCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
+   bool Compare(const DeadLoadDistributionCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
 
    void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 

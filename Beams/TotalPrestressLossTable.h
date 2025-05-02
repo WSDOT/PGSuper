@@ -20,21 +20,15 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// TotalPrestressLossTable.h : Declaration of the CTotalPrestressLossTable
+#pragma once
 
-#ifndef __TOTALPRESTRESSLOSSTABLE_H_
-#define __TOTALPRESTRESSLOSSTABLE_H_
-
-#include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
-
-#include <PgsExt\StrandData.h>
+#include <PgsExt/ReportPointOfInterest.h>
 
 class WBFL::LRFD::Losses;
+class CStrandData;
 
-/////////////////////////////////////////////////////////////////////////////
-// CTotalPrestressLossTable
 class CTotalPrestressLossTable : public rptRcTable
 {
 public:
@@ -57,9 +51,7 @@ private:
 
    rptRcScalar scalar;
 
-   const CStrandData* m_pStrands;
+   const CStrandData* m_pStrands = nullptr;
    StrandIndexType m_NtMax;
    bool m_bIgnoreInitialRelaxation;
 };
-
-#endif //__TOTALPRESTRESSLOSSTABLE_H_

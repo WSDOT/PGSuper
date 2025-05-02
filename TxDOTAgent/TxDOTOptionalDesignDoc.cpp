@@ -54,9 +54,9 @@
 #include <EAF/EAFReportManager.h>
 #include <IFace\BeamFactory.h>
 
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\GirderGroupData.h>
-#include <PgsExt\DistributedLoadData.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\GirderGroupData.h>
+#include <PsgLib\DistributedLoadData.h>
 #include <LRFD\StrandPool.h>
 
 #include <PsgLib\BeamFamilyManager.h>
@@ -213,7 +213,7 @@ void CTxDOTOptionalDesignDoc::HandleOpenDocumentError( HRESULT hr, LPCTSTR lpszP
    //CEAFBrokerDocument::HandleOpenDocumentError(hr,lpszPathName);
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   EAF_GET_IFACE( IEAFProjectLog, pLog );
+   GET_IFACE( IEAFProjectLog, pLog );
 
    CString log_msg_header;
    log_msg_header.Format(_T("The following error occurred while opening %s"),lpszPathName );
@@ -802,7 +802,7 @@ std::shared_ptr<WBFL::EAF::Broker> CTxDOTOptionalDesignDoc::GetUpdatedBroker()
          try
          {
             // Intitialize broker with library
-            EAF_GET_IFACE2( pBroker, ILibrary, pLib );
+            GET_IFACE2( pBroker, ILibrary, pLib );
             pLib->SetLibraryManager( &m_LibMgr );
 
             // Need to load the pgsuper template file
@@ -1072,7 +1072,7 @@ void CTxDOTOptionalDesignDoc::PreprocessTemplateData()
 {
    // At this point, we have loaded the pgsuper template file and have an active broker
    // Check that our template file meets our needs and save some information
-   EAF_GET_IFACE(IBridgeDescription,pBridgeDesc);
+   GET_IFACE(IBridgeDescription,pBridgeDesc);
 
    // Make sure our pgsuper template is what we expect
    CBridgeDescription2 bridgeDesc = *(pBridgeDesc->GetBridgeDescription());
@@ -1083,12 +1083,12 @@ void CTxDOTOptionalDesignDoc::UpdatePgsuperModelWithData()
 {
    // At this point, we have loaded the pgsuper template file and have an active broker
    // Now we can use our input data to modify the pgsuper project.
-   EAF_GET_IFACE(IBridgeDescription,pBridgeDesc);
-   EAF_GET_IFACE(ILibrary, pLib );
-   EAF_GET_IFACE(IEnvironment, pEnvironment );
-   EAF_GET_IFACE(IUserDefinedLoadData, pUserDefinedLoadData);
-   EAF_GET_IFACE(IProjectProperties,pProps);
-   EAF_GET_IFACE(ISpecification,pSpec);
+   GET_IFACE(IBridgeDescription,pBridgeDesc);
+   GET_IFACE(ILibrary, pLib );
+   GET_IFACE(IEnvironment, pEnvironment );
+   GET_IFACE(IUserDefinedLoadData, pUserDefinedLoadData);
+   GET_IFACE(IProjectProperties,pProps);
+   GET_IFACE(ISpecification,pSpec);
 
    CBridgeDescription2 bridgeDesc = *(pBridgeDesc->GetBridgeDescription());
 
@@ -1581,7 +1581,7 @@ void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdG
       clone_entry.AllowVerticalAdjustmentHP(false);
 
       // We have our modified entry - now add it to the library and set our girder to reference it
-      EAF_GET_IFACE(ILibrary, pLib );
+      GET_IFACE(ILibrary, pLib );
       GirderLibrary& rLibrary =  pLib->GetGirderLibrary();
 
       std::_tstring original_name = pGdrEntry->GetName();
@@ -1616,7 +1616,7 @@ void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdG
          MakeHarpedCloneStraight(pGdrEntry, &clone_entry);
 
          // We have our modified entry - now add it to the library and set our girder to reference it
-         EAF_GET_IFACE(ILibrary, pLib );
+         GET_IFACE(ILibrary, pLib );
          GirderLibrary& rLibrary =  pLib->GetGirderLibrary();
 
          std::_tstring clone_name = MakeCloneName(girder_name, gdr);
@@ -1646,7 +1646,7 @@ void CTxDOTOptionalDesignDoc::SetGirderData(CTxDOTOptionalDesignGirderData* pOdG
       ATLASSERT(false);
 
    // Get Jacking 
-   EAF_GET_IFACE(IPretensionForce, pPrestress );
+   GET_IFACE(IPretensionForce, pPrestress );
 
    strands.IsPjackCalculated(pgsTypes::Permanent, true);
    strands.IsPjackCalculated(pgsTypes::Straight,  true);
@@ -1743,7 +1743,7 @@ void CTxDOTOptionalDesignDoc::OnStatuscenterView()
    CEAFBrokerDocument::OnViewStatusCenter();
 }
 
-void CTxDOTOptionalDesignDoc::ShowCustomReportHelp(eafTypes::CustomReportHelp helpType)
+void CTxDOTOptionalDesignDoc::ShowCustomReportHelp(WBFL::EAF::CustomReportHelp helpType)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    CEAFBrokerDocument::ShowCustomReportHelp(helpType);

@@ -29,7 +29,7 @@
 #include "ClosureJointDisplayObjectEvents.h"
 #include "PGSpliceDoc.h"
 #include <IFace\Project.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include <DManip/DisplayObject.h>
 #include <DManip/DisplayList.h>
@@ -76,7 +76,7 @@ void CClosureJointDisplayObjectEvents::SelectPrevAdjacent(std::shared_ptr<WBFL::
       // if this is the first girder, wrap around to the previous segment of the last girder
       
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       const CGirderGroupData* pGroup = pIBridgeDesc->GetBridgeDescription()->GetGirderGroup(m_ClosureKey.groupIndex);
       m_pFrame->SelectSegment( CSegmentKey(m_ClosureKey.groupIndex,pGroup->GetGirderCount()-1,m_ClosureKey.segmentIndex) );
    }
@@ -93,7 +93,7 @@ void CClosureJointDisplayObjectEvents::SelectNextAdjacent(std::shared_ptr<WBFL::
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CGirderGroupData* pGroup = pIBridgeDesc->GetBridgeDescription()->GetGirderGroup(m_ClosureKey.groupIndex);
    if ( m_ClosureKey.girderIndex == pGroup->GetGirderCount()-1 )
    {

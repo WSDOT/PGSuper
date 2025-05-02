@@ -65,7 +65,7 @@ rptChapter* CAlignmentChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
 
    auto pBroker = pBrokerSpec->GetBroker();
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    
    CBridgeDescChapterBuilder::WriteAlignmentData(pBroker,pDisplayUnits,pChapter,level);
    CBridgeDescChapterBuilder::WriteProfileData(pBroker,pDisplayUnits,pChapter,level);

@@ -40,15 +40,10 @@
 #include <IFace\Bridge.h>
 #include <IFace\EditByUI.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include "PGSpliceDoc.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // define word values for point load and distributed loads. 
 // these are put in loword of itemdata in the list control
@@ -250,21 +245,21 @@ void CEditLoadsView::OnAddPointload()
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    CPointLoadData load;
-   EAF_GET_IFACE(IEditByUI, pEditByUI);
+   GET_IFACE(IEditByUI, pEditByUI);
    pEditByUI->AddPointLoad(load);
 }
 
 void CEditLoadsView::OnAddDistributedLoad()
 {
    CDistributedLoadData load;
-   EAF_GET_IFACE(IEditByUI, pEditByUI);
+   GET_IFACE(IEditByUI, pEditByUI);
    pEditByUI->AddDistributedLoad(load);
 }
 
 void CEditLoadsView::OnAddMomentload() 
 {
    CMomentLoadData load;
-   EAF_GET_IFACE(IEditByUI, pEditByUI);
+   GET_IFACE(IEditByUI, pEditByUI);
    pEditByUI->AddMomentLoad(load);
 }
 
@@ -336,7 +331,7 @@ void CEditLoadsView::InsertData()
    int irow=0;
 
    // Add Point Loads
-   EAF_GET_IFACE(IUserDefinedLoadData, pUdl);
+   GET_IFACE(IUserDefinedLoadData, pUdl);
    IndexType pl_cnt = pUdl->GetPointLoadCount();
    IndexType ipl;
    for (ipl = 0; ipl < pl_cnt; ipl++)
@@ -392,7 +387,7 @@ void CEditLoadsView::InsertData()
 
 CString CEditLoadsView::GetEventName(EventIDType loadID)
 {
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CTimelineManager* pTimelineMgr = pIBridgeDesc->GetTimelineManager();
    EventIndexType eventIdx = pTimelineMgr->FindUserLoadEventIndex(loadID);
    CString str;
@@ -402,7 +397,7 @@ CString CEditLoadsView::GetEventName(EventIDType loadID)
 
 void CEditLoadsView::UpdatePointLoadItem(int irow, const CPointLoadData& ptLoad)
 {
-   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    m_LoadsListCtrl.SetItemText(irow, 1, GetEventName(ptLoad.m_ID));
    m_LoadsListCtrl.SetItemText(irow, 2, UserLoads::GetLoadCaseName(ptLoad.m_LoadCase).c_str());
@@ -462,7 +457,7 @@ void CEditLoadsView::UpdatePointLoadItem(int irow, const CPointLoadData& ptLoad)
 
 void CEditLoadsView::UpdateDistributedLoadItem(int irow, const CDistributedLoadData& load)
 {
-   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    if (load.m_Type == UserLoads::Uniform)
    {
@@ -534,7 +529,7 @@ void CEditLoadsView::UpdateDistributedLoadItem(int irow, const CDistributedLoadD
 
 void CEditLoadsView::UpdateMomentLoadItem(int irow, const CMomentLoadData& load)
 {
-   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    m_LoadsListCtrl.SetItemText(irow, 1, GetEventName(load.m_ID));
    m_LoadsListCtrl.SetItemText(irow, 2, UserLoads::GetLoadCaseName(load.m_LoadCase).c_str());
@@ -591,7 +586,7 @@ void CEditLoadsView::EditLoad(POSITION pos)
    WORD load_type = LOWORD(data);
    LoadIDType load_id = (LoadIDType)HIWORD(data);
 
-   EAF_GET_IFACE(IEditByUI,pEditByUI);
+   GET_IFACE(IEditByUI,pEditByUI);
    if (load_type == W_POINT_LOAD)
    {
       pEditByUI->EditPointLoadByID(load_id);
@@ -1004,14 +999,14 @@ void CEditLoadsView::Sort(int columnIdx,bool bReverse)
       SortObject::m_bSortAscending = m_bSortAscending;
    }
 
-   EAF_GET_IFACE_NOCHECK(IUserDefinedLoadData, pUdl);
+   GET_IFACE_NOCHECK(IUserDefinedLoadData, pUdl);
 #pragma Reminder("WORKING HERE - Removing COM - possible circular reference issue")
    // SortObject::m_pUdl is a static member, it is not going to release the pointer
    // Maybe it needs to be a weak pointer.
    // See call below for shared_ptr.reset() to manually release the pointer
    SortObject::m_pUdl = pUdl;
 
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
    SortObject::m_pTimelineMgr = pIBridgeDesc->GetTimelineManager();
 
    m_LoadsListCtrl.SortItems(SortObject::SortFunc,columnIdx);

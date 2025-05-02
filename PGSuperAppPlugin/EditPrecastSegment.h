@@ -23,8 +23,8 @@
 #pragma once
 
 #include <EAF\EAFTransaction.h>
-#include <PgsExt\PrecastSegmentData.h>
-#include <PgsExt\TimelineManager.h>
+#include <PsgLib\PrecastSegmentData.h>
+#include <PsgLib\TimelineManager.h>
 #include <IFace\Project.h>
 
 struct txnEditPrecastSegmentData

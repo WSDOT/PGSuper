@@ -23,7 +23,8 @@
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\EditBridge.h>
 #include <EAF\EAFUtilities.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
+#include <IFace\Project.h>
 
 txnEditBridge::txnEditBridge(const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc,
    pgsTypes::ExposureCondition oldExposureCondition, pgsTypes::ExposureCondition newExposureCondition,
@@ -70,9 +71,9 @@ void txnEditBridge::Execute(int i)
 {
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
-   EAF_GET_IFACE2(pBroker,IEnvironment, pEnvironment );
-   EAF_GET_IFACE2(pBroker,IEvents, pEvents);
+   GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
+   GET_IFACE2(pBroker,IEnvironment, pEnvironment );
+   GET_IFACE2(pBroker,IEvents, pEvents);
 
    pEvents->HoldEvents(); // don't fire any changed events until all changes are done
 

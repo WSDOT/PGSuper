@@ -36,8 +36,8 @@
 #include <IFace\DocumentType.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
-
 #include <IFace\Intervals.h>
+#include <IFace/PointOfInterest.h>
 
 #include <Materials/PsStrand.h>
 #include <LRFD\StrandPool.h>
@@ -49,11 +49,6 @@
 
 #include "GirderDescDlg.h" // for ReconcileDebonding
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CGirderSegmentTendonsPage dialog
@@ -159,14 +154,14 @@ void CGirderSegmentTendonsPage::UpdateSectionDepth()
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
-   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    PoiList vPoi;
    pPoi->GetPointsOfInterest(this->m_pSegment->GetSegmentKey(), POI_0L | POI_5L | POI_10L | POI_RELEASED_SEGMENT, &vPoi);
    ATLASSERT(vPoi.size() == 3);
 
-   EAF_GET_IFACE2(pBroker, IShapes, pShapes);
+   GET_IFACE2(pBroker, IShapes, pShapes);
    std::array<CComPtr<IShape>, 3> shape;
    std::array<CComPtr<IRect2d>, 3> bounding_box;
    std::array<UINT, 3> nIDC{ IDC_HG_START,IDC_HG_MIDDLE,IDC_HG_END };

@@ -22,8 +22,8 @@
 #pragma once
 
 #include "resource.h"
-#include <PgsExt\GeometryControlActivity.h>
-#include <PgsExt\TimelineManager.h>
+#include <PsgLib\GeometryControlActivity.h>
+#include <PsgLib\TimelineManager.h>
 
 // CGeometryControlDlg dialog
 

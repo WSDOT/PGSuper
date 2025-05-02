@@ -30,6 +30,7 @@
 
 #include <IFace\Selection.h>
 #include <IFace\Bridge.h>
+#include <IFace/PointOfInterest.h>
 
 
 CCrackedSectionReportSpecificationBuilder::CCrackedSectionReportSpecificationBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker) :
@@ -54,7 +55,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CCrackedSectionReportSpeci
    {
       // Fist time through get CL of selected segement
       CSegmentKey segmentKey;
-      EAF_GET_IFACE(ISelection, pSelection);
+      GET_IFACE(ISelection, pSelection);
    CSelection selection = pSelection->GetSelection();
 
       if (selection.Type == CSelection::Girder)
@@ -91,12 +92,12 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CCrackedSectionReportSpeci
 
       if (selection.Type != CSelection::Segment)
       {
-         EAF_GET_IFACE(IBridge, pBridge);
+         GET_IFACE(IBridge, pBridge);
          SegmentIndexType nSegments = pBridge->GetSegmentCount(segmentKey);
          segmentKey.segmentIndex = (nSegments - 1) / 2;
       }
 
-      EAF_GET_IFACE(IPointOfInterest, pPOI);
+      GET_IFACE(IPointOfInterest, pPOI);
    PoiList vPoi;
    pPOI->GetPointsOfInterest(segmentKey, POI_5L | POI_ERECTED_SEGMENT, &vPoi);
       ATLASSERT(vPoi.size() == 1);
@@ -113,7 +114,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CCrackedSectionReportSpeci
       {
          // Not on the bridge. Default to something safe
          ::AfxMessageBox(_T("The selected location for this report no longer exists. The report has been moved to a valid location."), MB_OK | MB_ICONEXCLAMATION);
-         EAF_GET_IFACE(IPointOfInterest, pPOI);
+         GET_IFACE(IPointOfInterest, pPOI);
          PoiList vPoi;
          pPOI->GetPointsOfInterest(CSegmentKey(0, 0, 0), POI_5L | POI_ERECTED_SEGMENT, &vPoi);
          ATLASSERT(vPoi.size() == 1);

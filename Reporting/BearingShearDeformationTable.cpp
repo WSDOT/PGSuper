@@ -44,14 +44,14 @@ ColumnIndexType CBearingShearDeformationTable::GetBearingTableColumnCount(std::s
         nCols += 6; // thermal expansion parameters
 
 
-        EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
+        GET_IFACE2(pBroker, ILossParameters, pLossParams);
         if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::GENERAL_LUMPSUM)
         {
             nCols += 7; // lump sum time-dependent
         }
         else
         {
-            EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
+            GET_IFACE2(pBroker, ILossParameters, pLossParams);
             if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP)
             {
                 nCols += 3;
@@ -75,7 +75,7 @@ RowIndexType ConfigureBearingShearDeformationTableHeading(std::shared_ptr<WBFL::
 
 {
     RowIndexType rowSpan = 3;
-    EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
+    GET_IFACE2(pBroker, ILossParameters, pLossParams);
     if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::GENERAL_LUMPSUM)
     {
         rowSpan = 2;
@@ -179,11 +179,11 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(std
     std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, bool bDetail, bool bCold, SHEARDEFORMATIONDETAILS* details) const
 {
     
-    EAF_GET_IFACE2(pBroker, IBearingDesignParameters, pBearing);
+    GET_IFACE2(pBroker, IBearingDesignParameters, pBearing);
     
     pBearing->GetTimeDependentShearDeformation(girderKey, details);
 
-    EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
+    GET_IFACE2(pBroker, IIntervals, pIntervals);
     IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
 
 
@@ -242,7 +242,7 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(std
         if (bDetail)
         {
             (*p_table)(row, col++) << bearing.percentExpansion;
-            if (pDisplayUnits->GetUnitMode() == eafTypes::UnitMode::umUS)
+            if (pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US)
             {
                 (*p_table)(row, col++) << 1.0 / ((1.0 / bearing.thermal_expansion_coefficient) * 9.0 / 5.0 + 32.0);
             }
@@ -265,7 +265,7 @@ rptRcTable* CBearingShearDeformationTable::BuildBearingShearDeformationTable(std
             }
 
 
-            EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
+            GET_IFACE2(pBroker, ILossParameters, pLossParams);
             if (pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP)
             {
                 (*p_table)(row, col++) << Deflection.SetValue(bearing.yb);

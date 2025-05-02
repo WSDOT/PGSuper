@@ -24,9 +24,9 @@
 
 #include <WbflTypes.h>
 #include <LRFD\LiveLoadDistributionFactorBase.h>
-#include <PgsExt\PointLoadData.h>
-#include <PgsExt\DistributedLoadData.h>
-#include <PgsExt\MomentLoadData.h>
+#include <PsgLib\PointLoadData.h>
+#include <PsgLib\DistributedLoadData.h>
+#include <PsgLib\MomentLoadData.h>
 
 #define EAD_ROADWAY        0
 #define EAD_PROFILE        1

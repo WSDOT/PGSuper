@@ -42,17 +42,9 @@ HRESULT CPGSuperGrapherImp::InitGraphBuilders()
    return S_OK;
 }
 
-bool CPGSuperGrapherImp::RegInterfaces()
-{
-   // this agent doesn't implement any interfaces... it just provides graphs
-
-   return true;
-}
-
 bool CPGSuperGrapherImp::Init()
 {
-   /* Gets done at project load time */
-   //EAF_AGENT_INIT;
+   EAF_AGENT_INIT;
 
    return InitGraphBuilders();
 }
@@ -60,16 +52,4 @@ bool CPGSuperGrapherImp::Init()
 CLSID CPGSuperGrapherImp::GetCLSID() const
 {
    return CLSID_PGSuperGraphingAgent;
-}
-
-bool CPGSuperGrapherImp::Reset()
-{
-   return true;
-}
-
-bool CPGSuperGrapherImp::ShutDown()
-{
-   // EAF_AGENT_CLEAR_INTERFACE_CACHE;
-
-   return true;
 }

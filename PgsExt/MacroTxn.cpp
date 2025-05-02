@@ -30,7 +30,7 @@
 bool pgsMacroTxn::Execute()
 {
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEvents, pEvents);
+   GET_IFACE2(pBroker,IEvents, pEvents);
 
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);
@@ -44,7 +44,7 @@ void pgsMacroTxn::Undo()
 {
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IEvents, pEvents);
+   GET_IFACE2(pBroker,IEvents, pEvents);
 
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);

@@ -32,7 +32,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\DocumentType.h>
 
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 
 #include "RMultiGirderSelectDlg.h"
 #include <EAF\EAFDocument.h>
@@ -125,7 +125,7 @@ BOOL CMultiViewReportDlg::OnInitDialog()
    CWnd* pwndTitle = GetDlgItem(IDC_REPORT_TITLE);
    pwndTitle->SetWindowText(m_RptDesc.GetReportName().c_str());
 
-   EAF_GET_IFACE(IBridge, pBridge);
+   GET_IFACE(IBridge, pBridge);
    bool bMultiSelect = false;
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    if (m_GirderKey.groupIndex == ALL_GROUPS || m_GirderKey.girderIndex == ALL_GIRDERS)
@@ -153,7 +153,7 @@ BOOL CMultiViewReportDlg::OnInitDialog()
 
    // Fill up the span and girder combo boxes
 
-   EAF_GET_IFACE(IDocumentType,pDocType);
+   GET_IFACE(IDocumentType,pDocType);
    bool bIsPGSuper = pDocType->IsPGSuperDocument();
 
    // fill up the span box
@@ -194,7 +194,7 @@ void CMultiViewReportDlg::UpdateGirderComboBox(SpanIndexType spanIdx)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   EAF_GET_IFACE( IBridge, pBridge );
+   GET_IFACE( IBridge, pBridge );
 
    CComboBox* pGdrBox = (CComboBox*)GetDlgItem(IDC_GIRDER);
    Uint16 curSel = pGdrBox->GetCurSel();

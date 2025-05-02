@@ -37,7 +37,7 @@
 #include "PGSComponentInfo.h"
 
 // interfaces used in this DLL.... resolves symbols for the linker
-#include <WBFLCore_i.c>
+
 #include <WBFLTools_i.c>
 #include <WBFLUnitServer_i.c>
 #include <EAF/EAFReportManager.h>
@@ -58,11 +58,6 @@
 
 #include <Plugins\BeamFamilyCLSID.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #pragma Reminder("WORKING HERE - Removing COM")
 // remove all of the COM stuff from this DLL

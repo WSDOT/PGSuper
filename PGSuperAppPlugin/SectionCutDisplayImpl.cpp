@@ -27,9 +27,11 @@
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
 #include <IFace\AnalysisResults.h>
+#include <IFace/PointOfInterest.h>
+
 #include "PGSuperDocBase.h"
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include "PGSuperDoc.h"
 
 #include <DManip/PointDisplayObject.h>
@@ -76,7 +78,7 @@ void CSectionCutDisplayImpl::SetColor(COLORREF color)
 
 pgsPointOfInterest CSectionCutDisplayImpl::GetCutPOI(Float64 Xgl) const
 {
-   EAF_GET_IFACE(IPointOfInterest, pPoi);
+   GET_IFACE(IPointOfInterest, pPoi);
    if (m_GirderKey.groupIndex == ALL_GROUPS)
    {
       return pPoi->ConvertGirderlineCoordinateToPoi(m_GirderKey.girderIndex, Xgl);
@@ -153,11 +155,11 @@ void CSectionCutDisplayImpl::GetBoundingBox(std::shared_ptr<const WBFL::DManip::
 
    pgsPointOfInterest poi = GetCutPOI(Xgl);
 
-   EAF_GET_IFACE(IGirder, pGirder);
+   GET_IFACE(IGirder, pGirder);
    Float64 Hg = pGirder->GetHeight(poi);
    Float64 top_flange_thickening = pGirder->GetTopFlangeThickening(poi);
    
-   EAF_GET_IFACE(ICamber, pCamber);
+   GET_IFACE(ICamber, pCamber);
    Float64 precamber = pCamber->GetPrecamber(poi,pgsTypes::pddErected);
 
    *top = dy + top_flange_thickening + precamber;

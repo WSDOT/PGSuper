@@ -35,6 +35,7 @@
 
 #include <IFace\BeamFactory.h>
 
+#include <psgLib/LibraryManager.h>
 
 /****************************************************************************/
 // free functions
@@ -130,7 +131,7 @@ CTxDOTOptionalDesignGirderData& CTxDOTOptionalDesignGirderData::operator= (const
 //}
 
 //======================== OPERATIONS =======================================
-HRESULT CTxDOTOptionalDesignGirderData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
+HRESULT CTxDOTOptionalDesignGirderData::Save(IStructuredSave* pStrSave,std::shared_ptr<IEAFProgress> pProgress)
 {
    HRESULT hr = S_OK;
 
@@ -228,7 +229,7 @@ HRESULT CTxDOTOptionalDesignGirderData::Save(IStructuredSave* pStrSave,IProgress
    return hr;
 }
 
-HRESULT CTxDOTOptionalDesignGirderData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
+HRESULT CTxDOTOptionalDesignGirderData::Load(IStructuredLoad* pStrLoad,std::shared_ptr<IEAFProgress> pProgress)
 {
    USES_CONVERSION;
 

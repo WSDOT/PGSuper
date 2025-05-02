@@ -36,7 +36,6 @@
 #include <IFace\Tools.h>
 #include <System\System.h>
 
-#include <WBFLCore.h>
 #include <WBFLTools.h>
 #include <WBFLGeometry.h>
 #include <WBFLCogo.h>

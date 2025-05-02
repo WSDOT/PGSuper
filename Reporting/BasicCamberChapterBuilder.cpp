@@ -33,7 +33,7 @@
 
 #include <PsgLib\SpecLibraryEntry.h>
 
-#include <PgsExt\StrandData.h>
+#include <PsgLib\StrandData.h>
 
 
 
@@ -58,9 +58,9 @@ rptChapter* CBasicCamberChapterBuilder::Build(const std::shared_ptr<const WBFL::
    auto pBroker = pGirderRptSpec->GetBroker();
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   EAF_GET_IFACE2(pBroker,ISegmentData,pSegmentData);
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
@@ -103,13 +103,13 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CBasicCamberChapterBuilder::Clo
 
 void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey, bool bTempStrands, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level) const
 {
-   EAF_GET_IFACE2(pBroker,ICamber,pCamber);
+   GET_IFACE2(pBroker,ICamber,pCamber);
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
    bool bDeckPanels = (deckType == pgsTypes::sdtCompositeSIP ? true : false);
 
-   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    bool bSidewalk = pProductLoads->HasSidewalkLoad(segmentKey);
    bool bShearKey = pProductLoads->HasShearKeyLoad(segmentKey);
    bool bLongitudinalJoint = pProductLoads->HasLongitudinalJointLoad();
@@ -218,7 +218,7 @@ void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter, const std::sha
          (*pTable1)(0, 1) << DEFL(_T("es")) << _T(" = ") << DEFL(_T("girder")) << _T(" + ") << DEFL(_T("ps")) << _T(" + ") << DEFL(_T("precamber"))  << _T(" + ") << DEFL(_T("creep1")) << _T(" = Camber at end of storage = Camber at shipping") << rptNewLine;
       }
       (*pTable1)(0,1) << _T("Rows with ") << Bold(_T("bold text")) << _T(" are at the support locations after erection") << rptNewLine;
-      EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
+      GET_IFACE2(pBroker, IIntervals, pIntervals);
       IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
       Float64 start = pIntervals->GetTime(storageIntervalIdx, pgsTypes::Start);
       Float64 duration = WBFL::Units::ConvertFromSysUnits(details[0].t, WBFL::Units::Measure::Day);
@@ -333,12 +333,12 @@ void CBasicCamberChapterBuilder::Build_Deck(rptChapter* pChapter, const std::sha
 
 void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter, const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,bool bTempStrands,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level) const
 {
-   EAF_GET_IFACE2(pBroker,ICamber,pCamber);
+   GET_IFACE2(pBroker,ICamber,pCamber);
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
 
-   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    bool bSidewalk = pProductLoads->HasSidewalkLoad(segmentKey);
    bool bShearKey = pProductLoads->HasShearKeyLoad(segmentKey);
    bool bLongitudinalJoint = pProductLoads->HasLongitudinalJointLoad();
@@ -421,7 +421,7 @@ void CBasicCamberChapterBuilder::Build_NoDeck(rptChapter* pChapter, const std::s
          (*pTable1)(0, 1) << DEFL(_T("es")) << _T(" = ") << DEFL(_T("girder")) << _T(" + ") << DEFL(_T("ps")) << _T(" + ") << DEFL(_T("precamber")) << _T(" + ") << DEFL(_T("creep1")) << _T(" = Camber at end of storage = Camber at shipping") << rptNewLine;
       }
       (*pTable1)(0, 1) << _T("Rows with ") << Bold(_T("bold text")) << _T(" are at the support locations after erection") << rptNewLine;
-      EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
+      GET_IFACE2(pBroker, IIntervals, pIntervals);
       IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
       Float64 start = pIntervals->GetTime(storageIntervalIdx, pgsTypes::Start);
       Float64 duration = WBFL::Units::ConvertFromSysUnits(details[0].t, WBFL::Units::Measure::Day);

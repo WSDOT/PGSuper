@@ -74,10 +74,10 @@ HRESULT CPGSuperDataImporter::Import(std::shared_ptr<WBFL::EAF::Broker> pBroker)
       alignmentData.xRefPoint = 50;
       alignmentData.yRefPoint = 50;
 
-      EAF_GET_IFACE2(pBroker, IEvents, pEvents);
+      GET_IFACE2(pBroker, IEvents, pEvents);
       pEvents->HoldEvents();
 
-      EAF_GET_IFACE2(pBroker, IRoadwayData, pRoadway);
+      GET_IFACE2(pBroker, IRoadwayData, pRoadway);
       pRoadway->SetAlignmentData2(alignmentData);
 
       pEvents->FirePendingEvents();

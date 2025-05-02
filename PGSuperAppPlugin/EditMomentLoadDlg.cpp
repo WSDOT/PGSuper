@@ -32,17 +32,12 @@
 
 #include <System\Tokenizer.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include "TimelineEventDlg.h"
 
 #include "PGSuperDoc.h"
 #include "PGSpliceDoc.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CEditMomentLoadDlg dialog
@@ -65,7 +60,7 @@ CEditMomentLoadDlg::CEditMomentLoadDlg(const CMomentLoadData& load,const CTimeli
 
 void CEditMomentLoadDlg::DoDataExchange(CDataExchange* pDX)
 {
-   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    if ( !pDX->m_bSaveAndValidate )
    {
@@ -194,7 +189,7 @@ BOOL CEditMomentLoadDlg::OnInitDialog()
 //   UpdateEventLoadCase(true);
 
    // spans, girders
-   EAF_GET_IFACE(IBridge, pBridge);
+   GET_IFACE(IBridge, pBridge);
    SpanIndexType nSpans   = pBridge->GetSpanCount();
 
    for (SpanIndexType spanIdx = 0; spanIdx < nSpans; spanIdx++ )
@@ -382,8 +377,8 @@ void CEditMomentLoadDlg::UpdateSpanLength()
    }
    else
    {
-      EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-      EAF_GET_IFACE(IBridge, pBridge);
+      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE(IBridge, pBridge);
       Float64 span_length = pBridge->GetFullSpanLength(CSpanKey(spn,gdr));
       CString strLabel;
       strLabel.Format(_T("Span Length = %s"),FormatDimension(span_length,pDisplayUnits->GetSpanLengthUnit(),false));
@@ -398,7 +393,7 @@ void CEditMomentLoadDlg::OnHelp()
 
 void CEditMomentLoadDlg::UpdateGirderList()
 {
-   EAF_GET_IFACE(IBridge, pBridge);
+   GET_IFACE(IBridge, pBridge);
    SpanIndexType spanIdx = m_SpanCB.GetCurSel();
    SpanIndexType nSpans = pBridge->GetSpanCount();
 

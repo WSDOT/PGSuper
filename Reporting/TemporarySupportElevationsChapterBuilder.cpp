@@ -25,9 +25,10 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
-#include <PgsExt\TemporarySupportData.h>
-#include <PgsExt\GirderGroupData.h>
-#include <PgsExt\BridgeDescription2.h>
+
+#include <PsgLib\TemporarySupportData.h>
+#include <PsgLib\GirderGroupData.h>
+#include <PsgLib\BridgeDescription2.h>
 
 
 CTemporarySupportElevationsChapterBuilder::CTemporarySupportElevationsChapterBuilder(bool bSelect) :
@@ -74,19 +75,19 @@ rptChapter* CTemporarySupportElevationsChapterBuilder::Build(const std::shared_p
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
    INIT_UV_PROTOTYPE(rptLengthUnitValue, dim, pDisplayUnits->GetSpanLengthUnit(), false);
 
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    SupportIndexType nTS = pBridge->GetTemporarySupportCount();
    if (nTS == 0)
    {
       *pPara << _T("No temporary supports modeled") << rptNewLine;
    }
 
-   EAF_GET_IFACE2_NOCHECK(pBroker, ITempSupport, pTempSupport); // not used if no temp supports
+   GET_IFACE2_NOCHECK(pBroker, ITempSupport, pTempSupport); // not used if no temp supports
 
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    std::array<std::_tstring, 2> strMemberEnd{ _T("Start"),_T("End") };

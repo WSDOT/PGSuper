@@ -42,15 +42,15 @@
 
 #include <WBFLAtlExt.h>
 
-#include <WBFLCore.h>
+
 #include <WBFLTools.h>
 #include <WBFLGeometry.h>
 #include <WBFLCogo.h>
 #include <WBFLGenericBridge.h>
 #include <WBFLSTL.h>
 
-#include <PgsExt\PointOfInterest.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\PointOfInterest.h>
+#include <PsgLib\GirderLabel.h>
 #include <afxwin.h>
 
 #include <EAF\EAFUtilities.h> // so all files have EAFGetBroker

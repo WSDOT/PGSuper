@@ -37,7 +37,7 @@
 #include "ClosureJointGeometryPage.h"
 #include "GirderSegmentSpacingPage.h"
 #include "PierDetailsBearingsPage.h"
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include "EditPier.h"
 #include <IFace\ExtendUI.h>
 #include <EAF\EAFMacroTxn.h>

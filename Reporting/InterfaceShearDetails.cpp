@@ -73,8 +73,8 @@ void CInterfaceShearDetails::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, r
    IntervalIndexType intervalIdx,
    pgsTypes::LimitState ls)
 {
-   EAF_GET_IFACE2(pBroker, ILibrary, pLib);
-   EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
+   GET_IFACE2(pBroker, ILibrary, pLib);
+   GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
    const auto& interface_shear_criteria = pSpecEntry->GetInterfaceShearCriteria();
    m_bIsSpec2007orNewer = WBFL::LRFD::BDSManager::Edition::FourthEdition2007 <= pSpecEntry->GetSpecificationCriteria().GetEdition();
@@ -90,7 +90,7 @@ void CInterfaceShearDetails::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, r
    *pChapter << pPara;
    (*pPara) << _T("AASHTO LRFD BDS ") << WBFL::LRFD::LrfdCw8th(_T("5.8.4.1"), _T("5.7.4.1")) << rptNewLine;
 
-   EAF_GET_IFACE2(pBroker, IMaterials, pMaterials);
+   GET_IFACE2(pBroker, IMaterials, pMaterials);
    if (pMaterials->GetSegmentConcreteType(CSegmentKey(girderKey, 0)) == pgsTypes::PCI_UHPC)
    {
       (*pPara) << _T("PCI UHPC SDG E.7.4.1") << rptNewLine;
@@ -101,7 +101,7 @@ void CInterfaceShearDetails::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, r
       (*pPara) << _T("UHPC GS 1.7.4.1") << rptNewLine;
    }
 
-   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    if (IsDesignLimitState(ls))
@@ -116,8 +116,8 @@ void CInterfaceShearDetails::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, r
 
 void CInterfaceShearDetails::BuildDesign( std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter, const CGirderKey& girderKey, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, IntervalIndexType intervalIdx, pgsTypes::LimitState ls)
 {
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,IArtifact,pIArtifact);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IArtifact,pIArtifact);
 
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
@@ -153,7 +153,7 @@ void CInterfaceShearDetails::BuildDesign( std::shared_ptr<WBFL::EAF::Broker> pBr
 
    // PCI UHPC has the same interface shear model as AASHTO LRFD
    // UHPC is different, so we need to keep track if we have UHPC
-   EAF_GET_IFACE2(pBroker, IMaterials, pMaterials);
+   GET_IFACE2(pBroker, IMaterials, pMaterials);
    bool bIsUHPC = pMaterials->GetSegmentConcreteType(CSegmentKey(girderKey, 0)) == pgsTypes::UHPC ? true : false;
    ATLASSERT(bIsUHPC ? nSegments == 1 : true); // UHPC is not available for spliced girders so there can only be one segment per girder
 
@@ -251,8 +251,8 @@ void CInterfaceShearDetails::BuildDesign( std::shared_ptr<WBFL::EAF::Broker> pBr
 
 void CInterfaceShearDetails::BuildRating(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter, const CGirderKey& girderKey, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, IntervalIndexType intervalIdx, pgsTypes::LimitState ls)
 {
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
-   EAF_GET_IFACE2(pBroker, IArtifact, pIArtifact);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IArtifact, pIArtifact);
 
    pgsTypes::LoadRatingType ratingType = RatingTypeFromLimitState(ls);
    const pgsRatingArtifact* pArtifact = pIArtifact->GetRatingArtifact(girderKey, ratingType, INVALID_INDEX);
@@ -280,7 +280,7 @@ void CInterfaceShearDetails::BuildRating(std::shared_ptr<WBFL::EAF::Broker> pBro
       }
    }
 
-   EAF_GET_IFACE2(pBroker, IMaterials, pMaterials);
+   GET_IFACE2(pBroker, IMaterials, pMaterials);
    bool bIsUHPC = pMaterials->GetSegmentConcreteType(ratings.front().first.GetSegmentKey()) == pgsTypes::UHPC ? true : false;
    rptRcTable* vni_table = CreateVniTable(pBroker, pChapter, pDisplayUnits, ratings.front().first.GetSegmentKey(), bIsUHPC, vSegmentArtifacts, vClosureArtifacts);
 
@@ -344,12 +344,12 @@ void CInterfaceShearDetails::BuildRating(std::shared_ptr<WBFL::EAF::Broker> pBro
 
 rptRcTable* CInterfaceShearDetails::CreateVuiTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    m_bDeckPanels = false;
    if (pBridge->GetDeckType() == pgsTypes::sdtCompositeSIP)
       m_bDeckPanels = true;
 
-   EAF_GET_IFACE2(pBroker, IGirder, pGirder);
+   GET_IFACE2(pBroker, IGirder, pGirder);
    auto nMatingSurfaces = pGirder->GetMatingSurfaceCount(girderKey);
 
    rptParagraph* pPara = new rptParagraph();
@@ -533,7 +533,7 @@ rptRcTable* CInterfaceShearDetails::CreateVniTable(std::shared_ptr<WBFL::EAF::Br
       if (bIsUHPC)
       {
          *pPara << _T("GS 1.7.4.3") << _T(" ");
-         EAF_GET_IFACE2(pBroker, IMaterials, pMaterials);
+         GET_IFACE2(pBroker, IMaterials, pMaterials);
          CSegmentKey segmentKey(girderKey, segIter->first);
          pgsTypes::ConcreteType girderConcType = pMaterials->GetSegmentConcreteType(segmentKey);
          pgsTypes::ConcreteType slabConcType = pMaterials->GetDeckConcreteType();

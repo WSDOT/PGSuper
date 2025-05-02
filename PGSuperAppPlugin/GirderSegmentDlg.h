@@ -30,8 +30,8 @@
 #include "BridgeDescLiftingPage.h"
 
 #include <IFace\ExtendUI.h>
-#include <PgsExt\SplicedGirderData.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\SplicedGirderData.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <EAF\EAFMacroTxn.h>
 
 // CGirderSegmentDlg

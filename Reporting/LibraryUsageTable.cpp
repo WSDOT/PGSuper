@@ -27,6 +27,25 @@
 #include <IFace\Project.h>
 #include <psgLib/SpecificationCriteria.h>
 
+#include <Lrfd/BDSManager.h>
+#include <LRFD/MBEManager.h>
+
+#include <psgLib/PrestressLossCriteria.h>
+#include <psgLib/RatingLibraryEntry.h>
+
+void GetSpecificationCompleteInfo(rptParagraph* pPara)
+{
+   auto pBroker = EAFGetBroker();
+   GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   bool bTimeStep = (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false);
+   bool bTenthEdition = (WBFL::LRFD::BDSManager::GetEdition() > WBFL::LRFD::BDSManager::Edition::NinthEdition2020);
+   *pPara << WBFL::LRFD::BDSManager::GetSpecificationName() << _T(", ") << WBFL::LRFD::BDSManager::GetEditionAsString();
+   if (bTimeStep && bTenthEdition)
+   {
+      *pPara << rptNewLine;
+      *pPara << PT_SPEC_REQUIRED;
+   }
+}
 
 
 /****************************************************************************
@@ -58,7 +77,7 @@ rptRcTable* CLibraryUsageTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker
    (*table)(0,1) << _T("Entry");
    (*table)(0,2) << _T("Source");
 
-   EAF_GET_IFACE2(pBroker,ILibrary,pLibrary);
+   GET_IFACE2(pBroker,ILibrary,pLibrary);
    std::vector<WBFL::Library::EntryUsageRecord> records = pLibrary->GetLibraryUsageRecords();
 
    std::vector<WBFL::Library::EntryUsageRecord>::iterator iter;
@@ -73,7 +92,7 @@ rptRcTable* CLibraryUsageTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker
       if (record.LibName == _T("Project Criteria"))
       {       
          (*table)(row, 1) << _T(" based on") << rptNewLine;
-         ReportNotes::GetSpecificationCompleteInfo(&(*table)(row, 1));
+         GetSpecificationCompleteInfo(&(*table)(row, 1));
       }
       else if (record.LibName == _T("Load Rating Criteria"))
       {

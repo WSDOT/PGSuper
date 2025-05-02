@@ -101,7 +101,7 @@ void CTxDOTOptionalDesignData::ResetStrandNoData()
    m_PrecasterDesignGirderData.ResetStrandNoData();
 }
 
-HRESULT CTxDOTOptionalDesignData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
+HRESULT CTxDOTOptionalDesignData::Save(IStructuredSave* pStrSave,std::shared_ptr<IEAFProgress> pProgress)
 {
    HRESULT hr = S_OK;
 
@@ -164,7 +164,7 @@ HRESULT CTxDOTOptionalDesignData::Save(IStructuredSave* pStrSave,IProgress* pPro
    return hr;
 }
 
-HRESULT CTxDOTOptionalDesignData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress)
+HRESULT CTxDOTOptionalDesignData::Load(IStructuredLoad* pStrLoad,std::shared_ptr<IEAFProgress> pProgress)
 {
    USES_CONVERSION;
 

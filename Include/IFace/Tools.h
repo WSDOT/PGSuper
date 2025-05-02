@@ -20,10 +20,8 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_IFACE_TOOLS_H_
-#define INCLUDED_IFACE_TOOLS_H_
+#pragma once
 
-#include <WBFLCore.h>
 #include <AgentTools.h>
 #include <string>
 
@@ -128,5 +126,3 @@ mutable LogContext m_Log;
 #else
 #define LOGGER nullptr
 #endif
-
-#endif // INCLUDED_IFACE_TOOLS_H_

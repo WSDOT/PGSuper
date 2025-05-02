@@ -24,13 +24,8 @@
 #include "EditTemporarySupport.h"
 #include "PGSpliceDoc.h"
 
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\ClosureJointData.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 txnEditTemporarySupport::txnEditTemporarySupport(SupportIndexType tsIndex,const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc) :
 txnEditBridgeDescription(oldBridgeDesc,newBridgeDesc),

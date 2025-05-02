@@ -31,11 +31,6 @@
 #include <Units\Measure.h>
 #include <EAF\EAFDisplayUnits.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 GRID_IMPLEMENT_REGISTER(CTempSupportElevAdjustGrid, CS_DBLCLKS, 0, 0, 0);
 
@@ -105,7 +100,7 @@ int CTempSupportElevAdjustGrid::GetColWidth(ROWCOL nCol)
 void CTempSupportElevAdjustGrid::BuildGridAndHeader()
 {
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);
@@ -202,7 +197,7 @@ void CTempSupportElevAdjustGrid::BuildGridAndHeader()
 void CTempSupportElevAdjustGrid::GetGridData(CDataExchange* pDX)
 {
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CBridgeDescription2* pBridge = GetBridgeDesc();
    ROWCOL col = 1;

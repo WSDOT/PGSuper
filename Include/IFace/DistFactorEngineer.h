@@ -24,7 +24,7 @@
 #include <Beams/BeamsExp.h>
 #include <Reporter\Reporter.h>
 #include <PGSuperTypes.h>
-#include <PgsExt\Keys.h>
+#include <PsgLib\Keys.h>
 
 class IEAFDisplayUnits;
 

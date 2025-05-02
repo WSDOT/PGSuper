@@ -37,17 +37,18 @@
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
-
+#include <IFace\StatusCenter.h>
 #include <IFace\AgeAdjustedMaterial.h>
+
 #include <Beams\Helper.h>
 
-#include <PgsExt\BridgeDescription2.h>
-
-#include <IFace\StatusCenter.h>
 #include <PgsExt\StatusItem.h>
+#include <PgsExt/PoiMgr.h>
 
+#include <PsgLib\BridgeDescription2.h>
 #include <psgLib/SectionPropertiesCriteria.h>
 #include <psgLib/SpecificationCriteria.h>
+#include <psgLib/GirderLibraryEntry.h>
 
 
 CTxDotDoubleTFactory::CTxDotDoubleTFactory() : IBeamFactory()
@@ -126,7 +127,7 @@ void CTxDotDoubleTFactory::CreateSegment(std::shared_ptr<WBFL::EAF::Broker> pBro
    segment.CoCreateInstance(CLSID_PrismaticSuperstructureMemberSegment);
 
    // Build up the beam shape
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const CSplicedGirderData*  pGirder     = pGroup->GetGirder(segmentKey.girderIndex);
@@ -145,7 +146,7 @@ void CTxDotDoubleTFactory::CreateSegment(std::shared_ptr<WBFL::EAF::Broker> pBro
    DimensionAndPositionBeam(pSegment, dimensions, beam);
 
    // Beam materials
-   EAF_GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   GET_IFACE2(pBroker,ILossParameters,pLossParams);
    CComPtr<IMaterial> material;
    if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
@@ -155,8 +156,8 @@ void CTxDotDoubleTFactory::CreateSegment(std::shared_ptr<WBFL::EAF::Broker> pBro
    }
    else
    {
-      EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
-      EAF_GET_IFACE2(pBroker,IMaterials,pMaterial);
+      GET_IFACE2(pBroker,IIntervals,pIntervals);
+      GET_IFACE2(pBroker,IMaterials,pMaterial);
       material.CoCreateInstance(CLSID_Material);
 
       IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
@@ -211,7 +212,7 @@ void CTxDotDoubleTFactory::ConfigureSegment(std::shared_ptr<WBFL::EAF::Broker> p
 void CTxDotDoubleTFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
 {
    // This is a prismatic beam so only add section change POI at the start and end of the beam
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 gdrLength = pBridge->GetSegmentLength(segmentKey);
 
    pgsPointOfInterest poiStart(segmentKey,0.00,POI_SECTCHANGE_RIGHTFACE );
@@ -228,7 +229,7 @@ std::shared_ptr<CDistFactorEngineerBase> CTxDotDoubleTFactory::CreateDistFactorE
 
 std::unique_ptr<CPsLossEngineerBase> CTxDotDoubleTFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey) const
 {
-   EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       return std::make_unique<CTimeStepLossEngineer>(pBroker,statusGroupID);
@@ -646,8 +647,8 @@ std::_tstring CTxDotDoubleTFactory::GetShearDimensionsSchematicImage(pgsTypes::S
 
 std::_tstring CTxDotDoubleTFactory::GetInteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
 {
-   EAF_GET_IFACE2(pBroker, ILibrary,       pLib);
-   EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
+   GET_IFACE2(pBroker, ILibrary,       pLib);
+   GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
    const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();
@@ -664,8 +665,8 @@ std::_tstring CTxDotDoubleTFactory::GetInteriorGirderEffectiveFlangeWidthImage(s
 
 std::_tstring CTxDotDoubleTFactory::GetExteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
 {
-   EAF_GET_IFACE2(pBroker, ILibrary,       pLib);
-   EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
+   GET_IFACE2(pBroker, ILibrary,       pLib);
+   GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
    const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();

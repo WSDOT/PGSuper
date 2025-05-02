@@ -23,12 +23,12 @@
 #pragma once
 
 
-#include "psgLibLib.h"
+#include "PsgLibLib.h"
 
 class rptChapter;
 class IEAFDisplayUnits;
-class pgsLibraryEntryDifferenceItem;
 class SpecLibraryEntryImpl;
+class DifferenceItem;
 
 struct PSGLIBCLASS CreepCriteria
 {
@@ -45,7 +45,7 @@ struct PSGLIBCLASS CreepCriteria
    pgsTypes::CuringMethod CuringMethod = pgsTypes::CuringMethod::Accelerated;
    Float64 CuringMethodTimeAdjustmentFactor = 7.0; ///< From LRFD, 1 day of steam curing = 7 days of moist curing
 
-   bool Compare(const CreepCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
+   bool Compare(const CreepCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences,bool bReturnOnFirstDifference) const;
 
    void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 

@@ -22,8 +22,8 @@
 #pragma once
 
 #include "resource.h"
-#include <PgsExt\CastDeckActivity.h>
-#include <PgsExt\TimelineManager.h>
+#include <PsgLib\CastDeckActivity.h>
+#include <PsgLib\TimelineManager.h>
 #include "DrawDeckRegionControl.h"
 #include "DeckRegionGrid.h"
 

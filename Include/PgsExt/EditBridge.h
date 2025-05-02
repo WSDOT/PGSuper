@@ -23,8 +23,7 @@
 #pragma once
 #include <PgsExt\PgsExtExp.h>
 #include <EAF\EAFTransaction.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <IFace\Project.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <array>
 
 class PGSEXTCLASS txnEditBridge : public CEAFTransaction

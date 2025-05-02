@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psglib.h>
+#include <PsgLib\PsgLib.h>
 #include "StrandGridLocation.h"
 #include <MfcTools\CustomDDX.h>
 #include <EAF\EAFDocument.h>

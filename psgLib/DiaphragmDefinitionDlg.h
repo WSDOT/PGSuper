@@ -30,7 +30,7 @@
 //
 
 #include "resource.h"
-#include <psgLib\GirderLibraryEntry.h>
+#include <PsgLib\GirderLibraryEntry.h>
 #include <IFace\BeamFactory.h>
 
 /////////////////////////////////////////////////////////////////////////////

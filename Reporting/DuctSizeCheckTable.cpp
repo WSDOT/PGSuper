@@ -64,10 +64,10 @@ void CDuctSizeCheckTable::Build(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::
 {
    const CGirderKey& girderKey = pGirderArtifact->GetGirderKey();
 
-   EAF_GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
    DuctIndexType nMaxSegmentDucts = pSegmentTendonGeometry->GetMaxDuctCount(girderKey);
 
-   EAF_GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
+   GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
    DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
 
    if (nMaxSegmentDucts + nGirderDucts == 0)
@@ -76,7 +76,7 @@ void CDuctSizeCheckTable::Build(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::
       return;
    }
 
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
    INIT_UV_PROTOTYPE( rptAreaUnitValue, area, pDisplayUnits->GetAreaUnit(), false );
@@ -92,7 +92,7 @@ void CDuctSizeCheckTable::Build(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::
    *pChapter << pPara;
 
    // The permissible ratios, Kmax and Tmax
-   EAF_GET_IFACE2(pBroker, IDuctLimits, pDuctLimits);
+   GET_IFACE2(pBroker, IDuctLimits, pDuctLimits);
    for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
    {
       CSegmentKey segmentKey(girderKey, segIdx);

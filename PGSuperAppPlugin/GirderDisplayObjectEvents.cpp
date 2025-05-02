@@ -41,7 +41,7 @@
 #include <DManip/DisplayMgr.h>
 #include <DManip/DisplayView.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 using namespace WBFL::DManip;
 
@@ -84,7 +84,7 @@ void CBridgePlanViewGirderDisplayObjectEvents::SelectPrevGirder()
 
          
          auto pBroker = EAFGetBroker();
-         EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+         GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
          GirderIndexType nGirders = pIBridgeDesc->GetBridgeDescription()->GetGirderGroup(girderKey.groupIndex)->GetGirderCount();
          girderKey.girderIndex = nGirders-1;
          m_pFrame->SelectGirder(girderKey);
@@ -296,7 +296,7 @@ CBridgePlanViewSegmentDisplayObjectEvents::CBridgePlanViewSegmentDisplayObjectEv
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(m_SegmentKey.groupIndex);
    const CSplicedGirderData* pGirder = pGroup->GetGirder(m_SegmentKey.girderIndex);
@@ -721,7 +721,7 @@ bool CBridgeSectionViewGirderDisplayObjectEvents::OnContextMenu(std::shared_ptr<
          auto pSegmentMenu = pMenu->CreatePopupMenu(0,_T("Edit Segment"));
          
          auto pBroker = EAFGetBroker();
-         EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+         GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
          SegmentIndexType nSegments = pIBridgeDesc->GetBridgeDescription()->GetGirderGroup(m_GirderKey.groupIndex)->GetGirder(m_GirderKey.girderIndex)->GetSegmentCount();
          for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
          {
@@ -801,7 +801,7 @@ void CGirderElevationViewSegmentDisplayObjectEvents::EditSegment(std::shared_ptr
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IEditByUI, pEdit);
+   GET_IFACE2(pBroker, IEditByUI, pEdit);
    pEdit->EditSegmentDescription(m_SegmentKey, EGD_GENERAL);
 }
 
@@ -939,7 +939,7 @@ void CGirderSectionViewSegmentDisplayObjectEvents::EditSegment(std::shared_ptr<i
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IEditByUI, pEdit);
+   GET_IFACE2(pBroker, IEditByUI, pEdit);
    pEdit->EditGirderDescription(m_POI.GetSegmentKey(), EGD_GENERAL);
 }
 

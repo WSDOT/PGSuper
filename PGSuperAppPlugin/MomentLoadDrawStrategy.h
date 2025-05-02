@@ -22,11 +22,11 @@
 
 #pragma once
 
-#include "IFace\Bridge.h"
-#include "pgsExt\MomentLoadData.h"
+#include <IFace\Bridge.h>
+#include <psgLib\MomentLoadData.h>
 #include <DManip/PointDisplayObject.h>
 
-interface IBroker;
+
 
 class iMomentLoadDrawStrategy
 {

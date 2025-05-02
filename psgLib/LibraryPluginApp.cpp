@@ -167,10 +167,10 @@ void CLibraryPluginApp::LoadDocumentationMap()
    return m_DocumentationImpl.LoadDocumentationMap();
 }
 
-eafTypes::HelpResult CLibraryPluginApp::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID,CString& strURL)
+std::pair<WBFL::EAF::HelpResult,CString> CLibraryPluginApp::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   return m_DocumentationImpl.GetDocumentLocation(lpszDocSetName,nID,strURL);
+   return m_DocumentationImpl.GetDocumentLocation(lpszDocSetName,nID);
 }
 
 //////////////////////////

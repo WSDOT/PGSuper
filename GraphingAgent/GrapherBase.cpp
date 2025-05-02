@@ -41,7 +41,7 @@
 
 void CGrapherBase::InitCommonGraphBuilders(std::shared_ptr<WBFL::EAF::Broker> broker)
 {
-   EAF_GET_IFACE2(broker,IEAFGraphManager,pGraphMgr);
+   GET_IFACE2(broker,IEAFGraphManager,pGraphMgr);
 
    pGraphMgr->SortByName(false); // don't sort alphabetically
 

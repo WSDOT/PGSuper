@@ -26,10 +26,10 @@
 #include <EAF/EAFReportManager.h>
 #include <EAF/EAFDisplayUnits.h>
 
-#include <PgsExt\GirderLabel.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\DeckDescription2.h>
-
+#include <PsgLib\GirderLabel.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\DeckDescription2.h>
+#include <psgLib/GirderLibraryEntry.h>
 #include <PGSuperUnits.h>
 
 
@@ -46,9 +46,9 @@ CBearingSeatElevationsChapterBuilderBase::~CBearingSeatElevationsChapterBuilderB
 rptChapter* CBearingSeatElevationsChapterBuilderBase::Build(const std::shared_ptr<const WBFL::Reporting::ReportSpecification>& pRptSpec,Uint16 level) const
 {
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 

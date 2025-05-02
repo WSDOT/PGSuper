@@ -59,9 +59,9 @@ rptChapter* CTexasPrestressSummaryChapterBuilder::Build(const std::shared_ptr<co
    // This is a single segment report
    CSegmentKey segmentKey(girderKey,0);
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   EAF_GET_IFACE2(pBroker, ISectionProperties, pSectProps);
+   GET_IFACE2(pBroker, ISectionProperties, pSectProps);
    bool bIncludeElasticEffects = (pSectProps->GetSectionPropertiesMode() == pgsTypes::spmGross ? true : false);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);

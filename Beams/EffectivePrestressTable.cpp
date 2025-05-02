@@ -29,9 +29,9 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
 #include <PsgLib\SpecLibraryEntry.h>
-#include <PgsExt\GirderData.h>
-#include <PgsExt\GirderLabel.h>
-#include <PgsExt\LoadFactors.h>
+#include <PsgLib\GirderData.h>
+#include <PsgLib\GirderLabel.h>
+#include <PsgLib\LoadFactors.h>
 
 #if defined _DEBUG
 #include <IFace\PrestressForce.h>
@@ -61,18 +61,18 @@ rptRcTable(NumColumns,0)
 
 CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey, const LOSSDETAILS* pDetails, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, Uint16 level)
 {
-   EAF_GET_IFACE2(pBroker, ILossParameters, pLossParameters);
+   GET_IFACE2(pBroker, ILossParameters, pLossParameters);
 
    PrestressLossCriteria::LossMethodType loss_method = pLossParameters->GetLossMethod();
 
-   EAF_GET_IFACE2(pBroker, ISegmentData, pSegmentData);
+   GET_IFACE2(pBroker, ISegmentData, pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
    bool bPTTempStrand = pStrands->GetTemporaryStrandUsage() != pgsTypes::ttsPretensioned ? true : false;
    bool bPCI_UHPC = pSegmentData->GetSegmentMaterial(segmentKey)->Concrete.Type == pgsTypes::PCI_UHPC ? true : false;
 
    bool bIgnoreInitialRelaxation = pDetails->pLosses->IgnoreInitialRelaxation();
 
-   EAF_GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
+   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
    StrandIndexType NtMax = pStrandGeom->GetMaxStrands(segmentKey, pgsTypes::Temporary);
    bool bTempStrands = (0 < NtMax ? true : false);
 
@@ -121,7 +121,7 @@ CEffectivePrestressTable* CEffectivePrestressTable::PrepareTable(rptChapter* pCh
    *pParagraph << pParagraph->GetName() << rptNewLine;
 
 
-   EAF_GET_IFACE2(pBroker,ILoadFactors,pLoadFactors);
+   GET_IFACE2(pBroker,ILoadFactors,pLoadFactors);
    table->m_gLL_Fatigue = pLoadFactors->GetLoadFactors()->GetLLIMMax(WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEditionWith2009Interims ? pgsTypes::ServiceIA : pgsTypes::FatigueI);
    table->m_gLL_ServiceI   = pLoadFactors->GetLoadFactors()->GetLLIMMax(pgsTypes::ServiceI);
    table->m_gLL_ServiceIII = pLoadFactors->GetLoadFactors()->GetLLIMMax(pgsTypes::ServiceIII);
@@ -271,10 +271,10 @@ void CEffectivePrestressTable::AddRow(rptChapter* pChapter,std::shared_ptr<WBFL:
    Float64 fpED   = pDetails->pLosses->ElasticGainDueToDeckPlacement(true/*apply elastic gains reduction*/); // ED
    Float64 fpSIDL = pDetails->pLosses->ElasticGainDueToSIDL(true/*apply elastic gains reduction*/); // SIDL
 
-   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
-   EAF_GET_IFACE2(pBroker, IProductForces, pProductForces);
+   GET_IFACE2(pBroker, IProductForces, pProductForces);
    pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Maximize);
    Float64 Mmin, MmaxDesign;
    pProductForces->GetLiveLoadMoment(liveLoadIntervalIdx, pgsTypes::lltDesign, poi, bat, true/*include impact*/, true/*include LLDF*/, &Mmin, &MmaxDesign);
@@ -289,8 +289,8 @@ void CEffectivePrestressTable::AddRow(rptChapter* pChapter,std::shared_ptr<WBFL:
       pProductForces->GetLiveLoadMoment(liveLoadIntervalIdx, pgsTypes::lltFatigue, poi, bat, true/*include impact*/, true/*include LLDF*/, &Mmin, &MmaxFatigue);
    }
 
-   EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
-   EAF_GET_IFACE2(pBroker, ILibrary, pLibrary);
+   GET_IFACE2(pBroker, ISpecification, pSpec);
+   GET_IFACE2(pBroker, ILibrary, pLibrary);
    const SpecLibraryEntry* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
    const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
    Float64 K_liveload = prestress_loss_criteria.LiveLoadElasticGain;
@@ -329,7 +329,7 @@ void CEffectivePrestressTable::AddRow(rptChapter* pChapter,std::shared_ptr<WBFL:
    Float64 fpe = fpj - fpT;
 
 #if defined _DEBUG
-   EAF_GET_IFACE2(pBroker, IPretensionForce, pPrestressForce);
+   GET_IFACE2(pBroker, IPretensionForce, pPrestressForce);
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
    Float64 _fpe_ = pPrestressForce->GetEffectivePrestress(poi,pgsTypes::Permanent,intervalIdx,pgsTypes::End);
    ATLASSERT(IsEqual(fpe,_fpe_));

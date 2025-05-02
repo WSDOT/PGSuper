@@ -53,7 +53,7 @@ CBridgePlanViewSlabDisplayObjectEvents::CBridgePlanViewSlabDisplayObjectEvents(C
    m_pFrame = pFrame;
    m_bFillIfNotSelected = bFillIfNotSelected;
 
-   EAF_GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IBridge,pBridge);
    m_nPiers = pBridge->GetPierCount();
 }
 

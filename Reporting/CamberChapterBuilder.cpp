@@ -44,7 +44,7 @@ rptChapter* CCamberChapterBuilder::Build(const std::shared_ptr<const WBFL::Repor
    auto pBroker = pGirderRptSpec->GetBroker();
 
    rptChapter* pChapter;
-   EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       pChapter = CTimeStepCamberChapterBuilder().Build(pRptSpec,level);

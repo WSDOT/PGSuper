@@ -29,7 +29,7 @@
 // BridgeDescRailingSystemPage.h : header file
 //
 
-#include <PgsExt\RailingSystem.h>
+#include <PsgLib\RailingSystem.h>
 #include <MfcTools\WideDropDownComboBox.h>
 
 /////////////////////////////////////////////////////////////////////////////

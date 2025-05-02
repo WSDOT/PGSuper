@@ -36,15 +36,16 @@
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
 #include <IFace\Constructability.h>
+#include <IFace/PointOfInterest.h>
 
 #include <PgsExt\ReportPointOfInterest.h>
-#include <PgsExt\StrandData.h>
+#include <PsgLib\StrandData.h>
 #include <PgsExt\GirderArtifact.h>
-#include <PgsExt\PierData2.h>
 
+#include <PsgLib\PierData2.h>
 #include <psgLib\ConnectionLibraryEntry.h>
-
 #include <psgLib/SlabOffsetCriteria.h>
+#include <psgLib/SpecLibraryEntry.h>
 
 #include <WBFLCogo.h>
 
@@ -98,15 +99,15 @@ rptChapter* CTexasHaunchChapterBuilder::Build(const std::shared_ptr<const WBFL::
    ATLASSERT(!girder_list.empty());
 
    // don't report if no slab
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    if (pBridge->GetDeckType() == pgsTypes::sdtNone)
    {
       return nullptr;
    }
 
    // Do not generate output if haunch check is disabled
-   EAF_GET_IFACE2(pBroker,ILibrary, pLib );
-   EAF_GET_IFACE2(pBroker,ISpecification, pSpec );
+   GET_IFACE2(pBroker,ILibrary, pLib );
+   GET_IFACE2(pBroker,ISpecification, pSpec );
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
    const auto& slab_offset_criteria = pSpecEntry->GetSlabOffsetCriteria();
@@ -117,7 +118,7 @@ rptChapter* CTexasHaunchChapterBuilder::Build(const std::shared_ptr<const WBFL::
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
 
    // Compute a list of tables to be created. Each item in the list is the number of columns for
@@ -182,7 +183,7 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTexasHaunchChapterBuilder::Clo
 ////////////////////////// PRIVATE    ///////////////////////////////////////
 void haunch_minimum_note(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
-   EAF_GET_IFACE2(pBroker,IGirderHaunch,pGdrHaunch);
+   GET_IFACE2(pBroker,IGirderHaunch,pGdrHaunch);
 
    INIT_UV_PROTOTYPE( rptLengthUnitValue, disp,   pDisplayUnits->GetDeflectionUnit(), true );
 
@@ -250,7 +251,7 @@ void haunch_summary(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBro
 
    // Setup up some unit value prototypes
    static WBFL::Units::Length3Data large_volume_unit(WBFL::Units::Measure::Feet3);
-   if ( pDisplayUnits->GetUnitMode() == eafTypes::umUS )
+   if ( pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::US )
       large_volume_unit.Update(WBFL::Units::Measure::Yard3,0.001,12,2,WBFL::System::NumericFormatTool::Format::Fixed);
    else
       large_volume_unit.Update(WBFL::Units::Measure::Meter3,0.001,12,2,WBFL::System::NumericFormatTool::Format::Fixed);
@@ -263,13 +264,13 @@ void haunch_summary(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBro
    Float64 xyzToler = WBFL::Units::ConvertToSysUnits(0.125, WBFL::Units::Measure::Inch); 
 
    // Get the interfaces we need
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,IGirder,pGirder);
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
-   EAF_GET_IFACE2(pBroker, ILibrary, pLib );
-   EAF_GET_IFACE2(pBroker, ISpecification, pSpec );
-   EAF_GET_IFACE2(pBroker,IGirderHaunch,pGdrHaunch);
-   EAF_GET_IFACE2(pBroker, IProductLoads,pProductLoads);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IGirder,pGirder);
+   GET_IFACE2(pBroker,IPointOfInterest,pIPOI);
+   GET_IFACE2(pBroker, ILibrary, pLib );
+   GET_IFACE2(pBroker, ISpecification, pSpec );
+   GET_IFACE2(pBroker,IGirderHaunch,pGdrHaunch);
+   GET_IFACE2(pBroker, IProductLoads,pProductLoads);
 
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
@@ -277,7 +278,7 @@ void haunch_summary(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBro
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
    pgsTypes::BridgeAnalysisType bat = (analysisType == pgsTypes::Simple ? pgsTypes::SimpleSpan : pgsTypes::ContinuousSpan);
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType castDeckIntervalIdx      = pIntervals->GetCastDeckInterval(0); // assume deck casting region 0
    IntervalIndexType shearKeyIntervalIdx = pIntervals->GetCastShearKeyInterval();
 
@@ -309,7 +310,7 @@ void haunch_summary(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBro
       Float64 delta_slab2(0), delta_slab3(0), delta_slab7(0), delta_slab8(0);
       if (castDeckIntervalIdx != INVALID_INDEX)
       {
-         EAF_GET_IFACE2(pBroker, IProductForces, pProductForces);
+         GET_IFACE2(pBroker, IProductForces, pProductForces);
          delta_slab2 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_2, bat, rtCumulative, false);
          delta_slab3 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_3, bat, rtCumulative, false);
          delta_slab7 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_7, bat, rtCumulative, false);
@@ -362,7 +363,7 @@ void haunch_summary(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBro
       Float64 delta_slab2(0), delta_slab3(0), delta_slab5(0), delta_slab7(0), delta_slab8(0);
       if (castDeckIntervalIdx != INVALID_INDEX)
       {
-         EAF_GET_IFACE2(pBroker, IProductForces, pProductForces);
+         GET_IFACE2(pBroker, IProductForces, pProductForces);
          delta_slab2 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_2, bat, rtCumulative, false);
          delta_slab3 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_3, bat, rtCumulative, false);
          delta_slab5 = pProductForces->GetDeflection(castDeckIntervalIdx, pgsTypes::pftSlab, poi_5, bat, rtCumulative, false);
@@ -508,7 +509,7 @@ void haunch_summary(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBro
       if (reportShearKey)
       {
          // deflections from shear key loading, if it exists
-         EAF_GET_IFACE2(pBroker, IProductForces, pProductForces);
+         GET_IFACE2(pBroker, IProductForces, pProductForces);
          Float64 delta_shearkey2 = pProductForces->GetDeflection(shearKeyIntervalIdx, pgsTypes::pftShearKey, poi_2, bat, rtCumulative, false );
          Float64 delta_shearkey3 = pProductForces->GetDeflection(shearKeyIntervalIdx, pgsTypes::pftShearKey, poi_3, bat, rtCumulative, false );
          Float64 delta_shearkey5 = pProductForces->GetDeflection(shearKeyIntervalIdx, pgsTypes::pftShearKey, poi_5, bat, rtCumulative, false );

@@ -7,13 +7,8 @@
 #include "DrawPrecastSegmentControl.h"
 
 #include <IFace\Bridge.h>
-#include <PgsExt\SplicedGirderData.h>
+#include <PsgLib\SplicedGirderData.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CDrawPrecastSegmentControl
@@ -147,7 +142,7 @@ void CDrawPrecastSegmentControl::OnPaint()
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    if ( prevShape )
    {
       Float64 framing_length = pBridge->GetSegmentFramingLength(prevSegmentKey);
@@ -210,7 +205,7 @@ void CDrawPrecastSegmentControl::CreateSegmentShape(const CSegmentKey& segmentKe
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IGirder,pGirder);
+   GET_IFACE2(pBroker,IGirder,pGirder);
    pGirder->GetSegmentProfile(segmentKey,pSplicedGirder,true,ppShape);
    pGirder->GetSegmentBottomFlangeProfile(segmentKey,pSplicedGirder,true,ppPoints);
 }

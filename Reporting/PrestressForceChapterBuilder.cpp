@@ -30,10 +30,11 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>
+#include <IFace/PointOfInterest.h>
 
 #include <Materials/PsStrand.h>
 
-#include <PgsExt\StrandData.h>
+#include <PsgLib\StrandData.h>
 
 
 CPrestressForceChapterBuilder::CPrestressForceChapterBuilder(bool bRating,bool bSelect) :
@@ -67,18 +68,18 @@ rptChapter* CPrestressForceChapterBuilder::Build(const std::shared_ptr<const WBF
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    // These are the interfaces we are going to be using
-   EAF_GET_IFACE2(pBroker,IStrandGeometry, pStrandGeom);
-   EAF_GET_IFACE2(pBroker,ISegmentData,pSegmentData);
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,IPointOfInterest, pPoi);
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IStrandGeometry, pStrandGeom);
+   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IPointOfInterest, pPoi);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
 
-   EAF_GET_IFACE2(pBroker, ISectionProperties, pSectProps);
+   GET_IFACE2(pBroker, ISectionProperties, pSectProps);
    bool bIncludeElasticEffects = (pSectProps->GetSectionPropertiesMode() == pgsTypes::spmGross ? true : false);
 
-   EAF_GET_IFACE2(pBroker, IDocumentType, pDocType);
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
    bool bIsSplicedGirder = (pDocType->IsPGSpliceDocument() ? true : false);
 
    // Setup some unit-value prototypes

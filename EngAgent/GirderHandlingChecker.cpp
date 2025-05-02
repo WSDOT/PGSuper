@@ -58,7 +58,7 @@ pgsGirderHandlingChecker::~pgsGirderHandlingChecker()
 
 pgsGirderHaulingChecker* pgsGirderHandlingChecker::CreateGirderHaulingChecker()
 {
-   EAF_GET_IFACE(ISegmentHaulingSpecCriteria,pSpec);
+   GET_IFACE(ISegmentHaulingSpecCriteria,pSpec);
 
    pgsTypes::HaulingAnalysisMethod method = pSpec->GetHaulingAnalysisMethod();
 
@@ -132,11 +132,11 @@ void pgsGirderHandlingChecker::ComputeMoments(std::shared_ptr<WBFL::EAF::Broker>
 /*
 void pgsGirderHandlingChecker::GetRequirementsForAlternativeTensileStress(const pgsPointOfInterest& poi,Float64 ftu,Float64 ftd,Float64 fbu,Float64 fbd,Float64* pY,Float64* pA,Float64* pT,Float64* pAs)
 {
-    EAF_GET_IFACE(IGirder,pGirder);
-    EAF_GET_IFACE(ISectProp2,pSectProps);
-    EAF_GET_IFACE(IBridgeMaterial,pMaterial);
+    GET_IFACE(IGirder,pGirder);
+    GET_IFACE(ISectProp2,pSectProps);
+    GET_IFACE(IBridgeMaterial,pMaterial);
 
-    EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
     bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
 
    SpanIndexType span  = poi.GetSpan();

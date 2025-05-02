@@ -55,13 +55,13 @@ rptChapter* CSpanDataChapterBuilder::Build(const std::shared_ptr<const WBFL::Rep
    auto pBroker = pGdrRptSpec->GetBroker();
    const CGirderKey& girderKey(pGdrRptSpec->GetGirderKey());
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
    USES_CONVERSION;
 
-   EAF_GET_IFACE2(pBroker, IBridge,pBridge);
+   GET_IFACE2(pBroker, IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    SpanIndexType nSpans = pBridge->GetSpanCount();
 

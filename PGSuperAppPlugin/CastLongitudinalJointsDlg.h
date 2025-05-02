@@ -21,8 +21,8 @@
 ///////////////////////////////////////////////////////////////////////
 #pragma once
 
-#include <PgsExt\CastDeckActivity.h>
-#include <PgsExt\TimelineManager.h>
+#include <PsgLib\CastDeckActivity.h>
+#include <PsgLib\TimelineManager.h>
 #include "resource.h"
 
 // CCastLongitudinalJointsDlg dialog

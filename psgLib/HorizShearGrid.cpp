@@ -24,8 +24,8 @@
 //
 #include "stdafx.h"
 #include "resource.h"
-#include <psgLib\HorizShearGrid.h>
-#include <psgLib\ShearSteelPage.h>
+#include <PsgLib\HorizShearGrid.h>
+#include <PsgLib\ShearSteelPage.h>
 #include "AdditionalInterfaceShearBarDlg.h"
 #include <Units\Measure.h>
 #include <EAF\EAFApp.h>

@@ -32,12 +32,9 @@
 #include <EAF\EAFDocument.h>
 
 #include <psgLib/HaunchCriteria.h>
+#include <psglib/PrestressLossCriteria.h>
+#include <psgLib/SpecLibraryEntry.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpecDlg dialog
@@ -65,10 +62,10 @@ void CSpecDlg::DoDataExchange(CDataExchange* pDX)
       
       auto pBroker = EAFGetBroker();
 
-      EAF_GET_IFACE2(pBroker, IDocumentType, pDocType);
+      GET_IFACE2(pBroker, IDocumentType, pDocType);
       bool bIsPGSplice = pDocType->IsPGSpliceDocument();
 
-      EAF_GET_IFACE2(pBroker, ILibrary, pLib);
+      GET_IFACE2(pBroker, ILibrary, pLib);
 
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpec.c_str() );
       const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
@@ -111,7 +108,7 @@ BOOL CSpecDlg::OnInitDialog()
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker, ILibraryNames, pLibNames );
+   GET_IFACE2(pBroker, ILibraryNames, pLibNames );
 
    std::vector<std::_tstring> specs;
    pLibNames->EnumSpecNames( &specs );

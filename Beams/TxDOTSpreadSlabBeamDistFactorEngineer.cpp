@@ -27,9 +27,9 @@
 #include <Units\Convert.h>
 #include <PsgLib\TrafficBarrierEntry.h>
 #include <PsgLib\SpecLibraryEntry.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <PgsExt\StatusItem.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
@@ -46,10 +46,10 @@ static const Float64 D_18 = WBFL::Units::ConvertToSysUnits(18., WBFL::Units::Mea
 void CTxDOTSpreadSlabBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    // Grab the interfaces that are needed
-   EAF_GET_IFACE2(GetBroker(), IBridge,pBridge);
+   GET_IFACE2(GetBroker(), IBridge,pBridge);
 
-   EAF_GET_IFACE2(GetBroker(), ILibrary, pLib);
-   EAF_GET_IFACE2(GetBroker(), ISpecification, pSpec);
+   GET_IFACE2(GetBroker(), ILibrary, pLib);
+   GET_IFACE2(GetBroker(), ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
    auto lldfMethod = live_load_distribution_criteria.LldfMethod;
@@ -68,7 +68,7 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::BuildReport(const CGirderKey& girde
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-   EAF_GET_IFACE2(GetBroker(), IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(GetBroker(), IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
 
@@ -323,9 +323,9 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::BuildReport(const CGirderKey& girde
 
 WBFL::LRFD::LiveLoadDistributionFactorBase* CTxDOTSpreadSlabBeamDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,TXSPREADSLABBEAM_LLDFDETAILS* plldf,const GDRCONFIG* pConfig)
 {
-   EAF_GET_IFACE2(GetBroker(), IGirder, pGdr);
-   EAF_GET_IFACE2(GetBroker(), IBridgeDescription,pIBridgeDesc);
-   EAF_GET_IFACE2(GetBroker(), IBridge,pBridge);
+   GET_IFACE2(GetBroker(), IGirder, pGdr);
+   GET_IFACE2(GetBroker(), IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(GetBroker(), IBridge,pBridge);
 
    // Determine span/pier index... This is the index of a pier and the next span.
    // If this is the last pier, span index is for the last span
@@ -358,7 +358,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CTxDOTSpreadSlabBeamDistFactorEngine
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
    // Throws exception if fails requirement (no need to catch it)
-   EAF_GET_IFACE2(GetBroker(), ILiveLoadDistributionFactors, pDistFactors);
+   GET_IFACE2(GetBroker(), ILiveLoadDistributionFactors, pDistFactors);
    Int32 roaVal = pDistFactors->VerifyDistributionFactorRequirements(poi);
 
    plldf->d = pGdr->GetHeight(poi);
@@ -379,7 +379,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CTxDOTSpreadSlabBeamDistFactorEngine
                               plldf->skew1, 
                               plldf->skew2);
 
-   EAF_GET_IFACE2(GetBroker(), ILiveLoads,pLiveLoads);
+   GET_IFACE2(GetBroker(), ILiveLoads,pLiveLoads);
    pLLDF->SetRangeOfApplicability( pLiveLoads->GetRangeOfApplicabilityAction(), roaVal );
 
    return pLLDF;
@@ -391,8 +391,8 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierId
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-   EAF_GET_IFACE2(GetBroker(), ILibrary, pLib);
-   EAF_GET_IFACE2(GetBroker(), ISpecification, pSpec);
+   GET_IFACE2(GetBroker(), ILibrary, pLib);
+   GET_IFACE2(GetBroker(), ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
 
@@ -569,8 +569,8 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::ReportShear(IndexType spanOrPierIdx
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-   EAF_GET_IFACE2(GetBroker(), ILibrary, pLib);
-   EAF_GET_IFACE2(GetBroker(), ISpecification, pSpec);
+   GET_IFACE2(GetBroker(), ILibrary, pLib);
+   GET_IFACE2(GetBroker(), ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
 

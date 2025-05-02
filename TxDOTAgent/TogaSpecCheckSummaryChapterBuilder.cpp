@@ -70,7 +70,7 @@ rptChapter* CTogaSpecCheckSummaryChapterBuilder::Build(const std::shared_ptr<con
    auto pBroker = pBrokerRptSpec->GetBroker();
 
    // We need the artifact that we've doctored for txdot reasons
-   EAF_GET_IFACE2(pBroker,IGetTogaResults,pGetTogaResults);
+   GET_IFACE2(pBroker,IGetTogaResults,pGetTogaResults);
    const pgsGirderArtifact* pArtifact = pGetTogaResults->GetFabricatorDesignArtifact();
 
    // Use original summary report chapter builder

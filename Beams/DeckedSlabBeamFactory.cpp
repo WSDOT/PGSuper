@@ -43,11 +43,13 @@
 #include <IFace\AgeAdjustedMaterial.h>
 #include <Beams\Helper.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <PgsExt\StatusItem.h>
+#include <PgsExt/PoiMgr.h>
 
 #include <psgLib/SectionPropertiesCriteria.h>
 #include <psgLib/SpecificationCriteria.h>
+#include <psgLib/GirderLibraryEntry.h>
 
 CDeckedSlabBeamFactory::CDeckedSlabBeamFactory() :
    IBeamFactory()
@@ -125,7 +127,7 @@ void CDeckedSlabBeamFactory::CreateSegment(std::shared_ptr<WBFL::EAF::Broker> pB
    segment.CoCreateInstance(CLSID_DeckedSlabBeamEndBlockSegment);
 
    // Build up the beam shape
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const CSplicedGirderData*  pGirder     = pGroup->GetGirder(segmentKey.girderIndex);
@@ -156,7 +158,7 @@ void CDeckedSlabBeamFactory::CreateSegment(std::shared_ptr<WBFL::EAF::Broker> pB
    }
 
    // Beam materials
-   EAF_GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   GET_IFACE2(pBroker,ILossParameters,pLossParams);
    CComPtr<IMaterial> material;
    if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
@@ -166,8 +168,8 @@ void CDeckedSlabBeamFactory::CreateSegment(std::shared_ptr<WBFL::EAF::Broker> pB
    }
    else
    {
-      EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
-      EAF_GET_IFACE2(pBroker,IMaterials,pMaterial);
+      GET_IFACE2(pBroker,IIntervals,pIntervals);
+      GET_IFACE2(pBroker,IMaterials,pMaterial);
       material.CoCreateInstance(CLSID_Material);
 
       IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
@@ -221,7 +223,7 @@ void CDeckedSlabBeamFactory::CreateSegmentShape(std::shared_ptr<WBFL::EAF::Broke
       beam->put_RightBlockOut(VARIANT_FALSE);
    }
 
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    Float64 Lg = pBridge->GetSegmentLength(segmentKey);
    if (IsInEndBlock(Xs, sectionBias, endBlockLength, Lg))
    {
@@ -251,7 +253,7 @@ void CDeckedSlabBeamFactory::ConfigureSegment(std::shared_ptr<WBFL::EAF::Broker>
 
 void CDeckedSlabBeamFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
 {
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 gdrLength = pBridge->GetSegmentLength(segmentKey);
 
    pgsPointOfInterest poiStart(segmentKey,0.00,   POI_SECTCHANGE_RIGHTFACE );
@@ -261,7 +263,7 @@ void CDeckedSlabBeamFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr
    VERIFY(pPoiMgr->AddPointOfInterest(poiEnd) != INVALID_ID);
 
    // put section breaks just on either side of the end blocks/void interface
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const GirderLibraryEntry* pGdrEntry = pGroup->GetGirder(segmentKey.girderIndex)->GetGirderLibraryEntry();
@@ -294,7 +296,7 @@ std::shared_ptr<CDistFactorEngineerBase> CDeckedSlabBeamFactory::CreateDistFacto
 
 std::unique_ptr<CPsLossEngineerBase> CDeckedSlabBeamFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey) const
 {
-   EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       return std::make_unique<CTimeStepLossEngineer>(pBroker,statusGroupID);
@@ -525,7 +527,7 @@ bool CDeckedSlabBeamFactory::IsPrismatic(const CSegmentKey& segmentKey) const
 {
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const CSplicedGirderData*  pGirder = pGroup->GetGirder(segmentKey.girderIndex);
@@ -637,8 +639,8 @@ std::_tstring CDeckedSlabBeamFactory::GetShearDimensionsSchematicImage(pgsTypes:
 
 std::_tstring CDeckedSlabBeamFactory::GetInteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
 {
-   EAF_GET_IFACE2(pBroker, ILibrary,       pLib);
-   EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
+   GET_IFACE2(pBroker, ILibrary,       pLib);
+   GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
    const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();
@@ -655,8 +657,8 @@ std::_tstring CDeckedSlabBeamFactory::GetInteriorGirderEffectiveFlangeWidthImage
 
 std::_tstring CDeckedSlabBeamFactory::GetExteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
 {
-   EAF_GET_IFACE2(pBroker, ILibrary,       pLib);
-   EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
+   GET_IFACE2(pBroker, ILibrary,       pLib);
+   GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
    const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();

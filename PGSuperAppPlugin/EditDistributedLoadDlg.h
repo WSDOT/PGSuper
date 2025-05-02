@@ -28,8 +28,8 @@
 // EditDistributedLoadDlg.h : header file
 //
 #include "resource.h"
-#include <PgsExt\DistributedLoadData.h>
-#include <PgsExt\TimelineManager.h>
+#include <PsgLib\DistributedLoadData.h>
+#include <PsgLib\TimelineManager.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CEditDistributedLoadDlg dialog

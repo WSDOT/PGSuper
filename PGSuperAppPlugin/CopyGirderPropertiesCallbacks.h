@@ -26,12 +26,12 @@
 #include <EAF\EAFTransaction.h>
 #include <PgsExt\MacroTxn.h>
 #include <PsgLib\ShearData.h>
-#include <PgsExt\LongitudinalRebarData.h>
-#include <PgsExt\StrandData.h>
-#include <PgsExt\HandlingData.h>
-#include <PgsExt\GirderMaterial.h>
-#include <PgsExt\PTData.h>
-#include <PgsExt\SegmentPTData.h>
+#include <PsgLib\LongitudinalRebarData.h>
+#include <PsgLib\StrandData.h>
+#include <PsgLib\HandlingData.h>
+#include <PsgLib\GirderMaterial.h>
+#include <PsgLib\PTData.h>
+#include <PsgLib\SegmentPTData.h>
 
 class rptParagraph;
 

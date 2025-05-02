@@ -24,14 +24,12 @@
 
 #include <PgsExt\PgsExtExp.h>
 #include <map>
-#include <PsgLib\ShearZoneData.h>
-#include <PgsExt\Keys.h>
-#include <PgsExt\PrecastSegmentData.h>
+#include <PsgLib/ShearZoneData2.h>
+#include <PsgLib/Keys.h>
+#include <PsgLib/PrecastSegmentData.h>
 
 #include <Materials/SimpleConcrete.h>
 #include <PGSuperTypes.h>
-
-interface IBroker;
 
 /*****************************************************************************
 CLASS 

@@ -27,13 +27,13 @@
 #include <EAF/EAFUtilities.h>
 
 pgsLiveLoadStatusItem::pgsLiveLoadStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
-CEAFStatusItem(statusGroupID,callbackID,strDescription)
+WBFL::EAF::StatusItem(statusGroupID,callbackID,strDescription)
 {
 }
 
-bool pgsLiveLoadStatusItem::IsEqual(CEAFStatusItem* pOther)
+bool pgsLiveLoadStatusItem::IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const
 {
-   pgsLiveLoadStatusItem* other = dynamic_cast<pgsLiveLoadStatusItem*>(pOther);
+   auto other = std::dynamic_pointer_cast<const pgsLiveLoadStatusItem>(pOther);
    if ( !other )
       return false;
 
@@ -44,26 +44,26 @@ pgsLiveLoadStatusCallback::pgsLiveLoadStatusCallback()
 {
 }
 
-eafTypes::StatusSeverityType pgsLiveLoadStatusCallback::GetSeverity() const
+WBFL::EAF::StatusSeverityType pgsLiveLoadStatusCallback::GetSeverity() const
 {
-   return eafTypes::statusWarning;
+   return WBFL::EAF::StatusSeverityType::Warning;
 }
 
-void pgsLiveLoadStatusCallback::Execute(CEAFStatusItem* pStatusItem)
+void pgsLiveLoadStatusCallback::Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem)
 {
    auto broker = EAFGetBroker();
-   EAF_GET_IFACE2(broker,IEditByUI,pEdit);
+   GET_IFACE2(broker,IEditByUI,pEdit);
    pEdit->EditLiveLoads();
 }
 
 pgsLiftingSupportLocationStatusItem::pgsLiftingSupportLocationStatusItem(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
-CEAFStatusItem(statusGroupID,callbackID,strDescription), m_SegmentKey(segmentKey), m_End(end)
+WBFL::EAF::StatusItem(statusGroupID,callbackID,strDescription), m_SegmentKey(segmentKey), m_End(end)
 {
 }
 
-bool pgsLiftingSupportLocationStatusItem::IsEqual(CEAFStatusItem* pOther)
+bool pgsLiftingSupportLocationStatusItem::IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const
 {
-   pgsLiftingSupportLocationStatusItem* other = dynamic_cast<pgsLiftingSupportLocationStatusItem*>(pOther);
+   auto other = std::dynamic_pointer_cast<const pgsLiftingSupportLocationStatusItem>(pOther);
    if ( !other )
       return false;
 
@@ -71,36 +71,36 @@ bool pgsLiftingSupportLocationStatusItem::IsEqual(CEAFStatusItem* pOther)
 }
 
 //////////////////////////////////////////////////////////
-pgsLiftingSupportLocationStatusCallback::pgsLiftingSupportLocationStatusCallback(eafTypes::StatusSeverityType severity):
+pgsLiftingSupportLocationStatusCallback::pgsLiftingSupportLocationStatusCallback(WBFL::EAF::StatusSeverityType severity):
 m_Severity(severity)
 {
 }
 
-eafTypes::StatusSeverityType pgsLiftingSupportLocationStatusCallback::GetSeverity() const
+WBFL::EAF::StatusSeverityType pgsLiftingSupportLocationStatusCallback::GetSeverity() const
 {
    return m_Severity;
 }
 
-void pgsLiftingSupportLocationStatusCallback::Execute(CEAFStatusItem* pStatusItem)
+void pgsLiftingSupportLocationStatusCallback::Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem)
 {
-   pgsLiftingSupportLocationStatusItem* pItem = dynamic_cast<pgsLiftingSupportLocationStatusItem*>(pStatusItem);
+   auto pItem = std::dynamic_pointer_cast<pgsLiftingSupportLocationStatusItem>(pStatusItem);
    ATLASSERT(pItem!=nullptr);
 
    auto broker = EAFGetBroker();
-   EAF_GET_IFACE2(broker, IEditByUI, pEdit);
+   GET_IFACE2(broker, IEditByUI, pEdit);
 
    pEdit->EditSegmentDescription(pItem->m_SegmentKey,EGD_TRANSPORTATION);
 }
 
 
 pgsHaulTruckStatusItem::pgsHaulTruckStatusItem(StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
-CEAFStatusItem(statusGroupID,callbackID,strDescription)
+WBFL::EAF::StatusItem(statusGroupID,callbackID,strDescription)
 {
 }
 
-bool pgsHaulTruckStatusItem::IsEqual(CEAFStatusItem* pOther)
+bool pgsHaulTruckStatusItem::IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const
 {
-   pgsHaulTruckStatusItem* other = dynamic_cast<pgsHaulTruckStatusItem*>(pOther);
+   auto other = std::dynamic_pointer_cast<const pgsHaulTruckStatusItem>(pOther);
    if ( !other )
       return false;
 
@@ -111,29 +111,29 @@ pgsHaulTruckStatusCallback::pgsHaulTruckStatusCallback()
 {
 }
 
-eafTypes::StatusSeverityType pgsHaulTruckStatusCallback::GetSeverity() const
+WBFL::EAF::StatusSeverityType pgsHaulTruckStatusCallback::GetSeverity() const
 {
-   return eafTypes::statusError;
+   return WBFL::EAF::StatusSeverityType::Error;
 }
 
-void pgsHaulTruckStatusCallback::Execute(CEAFStatusItem* pStatusItem)
+void pgsHaulTruckStatusCallback::Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem)
 {
    //pgsHaulTruckStatusItem* pItem = dynamic_cast<pgsHaulTruckStatusItem*>(pStatusItem);
    //ATLASSERT(pItem!=nullptr);
 
    auto broker = EAFGetBroker();
-   EAF_GET_IFACE2(broker, IViews, pViews);
+   GET_IFACE2(broker, IViews, pViews);
    pViews->CreateLibraryEditorView();
 }
 
 pgsBunkPointLocationStatusItem::pgsBunkPointLocationStatusItem(const CSegmentKey& segmentKey,pgsTypes::MemberEndType end,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription) :
-CEAFStatusItem(statusGroupID,callbackID,strDescription), m_SegmentKey(segmentKey), m_End(end)
+WBFL::EAF::StatusItem(statusGroupID,callbackID,strDescription), m_SegmentKey(segmentKey), m_End(end)
 {
 }
 
-bool pgsBunkPointLocationStatusItem::IsEqual(CEAFStatusItem* pOther)
+bool pgsBunkPointLocationStatusItem::IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const
 {
-   pgsBunkPointLocationStatusItem* other = dynamic_cast<pgsBunkPointLocationStatusItem*>(pOther);
+   auto other = std::dynamic_pointer_cast<const pgsBunkPointLocationStatusItem>(pOther);
    if ( !other )
       return false;
 
@@ -144,18 +144,18 @@ pgsBunkPointLocationStatusCallback::pgsBunkPointLocationStatusCallback()
 {
 }
 
-eafTypes::StatusSeverityType pgsBunkPointLocationStatusCallback::GetSeverity() const
+WBFL::EAF::StatusSeverityType pgsBunkPointLocationStatusCallback::GetSeverity() const
 {
-   return eafTypes::statusWarning;
+   return WBFL::EAF::StatusSeverityType::Warning;
 }
 
-void pgsBunkPointLocationStatusCallback::Execute(CEAFStatusItem* pStatusItem)
+void pgsBunkPointLocationStatusCallback::Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem)
 {
-   pgsBunkPointLocationStatusItem* pItem = dynamic_cast<pgsBunkPointLocationStatusItem*>(pStatusItem);
+   auto pItem = std::dynamic_pointer_cast<pgsBunkPointLocationStatusItem>(pStatusItem);
    ATLASSERT(pItem!=nullptr);
 
    auto broker = EAFGetBroker();
-   EAF_GET_IFACE2(broker, IEditByUI, pEdit);
+   GET_IFACE2(broker, IEditByUI, pEdit);
    pEdit->EditSegmentDescription(pItem->m_SegmentKey,EGD_TRANSPORTATION);
 }
 

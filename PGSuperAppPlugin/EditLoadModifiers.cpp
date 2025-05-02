@@ -24,11 +24,6 @@
 #include "EditLoadModifiers.h"
 #include <IFace\Project.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 txnEditLoadModifiers::txnEditLoadModifiers(const txnEditLoadModifiers::LoadModifiers& oldLoadModifiers,const txnEditLoadModifiers::LoadModifiers& newLoadFactors)
 {
    m_LoadModifiers[0] = oldLoadModifiers;
@@ -77,11 +72,11 @@ void txnEditLoadModifiers::DoExecute(int i)
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IEvents, pEvents);
+   GET_IFACE2(pBroker,IEvents, pEvents);
    // Exception-safe holder to keep from fireing events until we are done
    CIEventsHolder event_holder(pEvents);
 
-   EAF_GET_IFACE2(pBroker,ILoadModifiers,pLoadModifiers);
+   GET_IFACE2(pBroker,ILoadModifiers,pLoadModifiers);
 
    pLoadModifiers->SetDuctilityFactor(  m_LoadModifiers[i].DuctilityLevel,  m_LoadModifiers[i].DuctilityFactor );
    pLoadModifiers->SetRedundancyFactor( m_LoadModifiers[i].RedundancyLevel, m_LoadModifiers[i].RedundancyFactor );

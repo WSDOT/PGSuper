@@ -29,9 +29,10 @@
 #include <IFace\Intervals.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
+#include <IFace/PointOfInterest.h>
 
-#include <PgsExt\PierData2.h>
-#include <PgsExt\GirderGroupData.h>
+#include <PsgLib\PierData2.h>
+#include <PsgLib\GirderGroupData.h>
 
 
 /****************************************************************************
@@ -83,8 +84,8 @@ rptRcTable* CVehicularLoadReactionTable::Build(std::shared_ptr<WBFL::EAF::Broker
    INIT_UV_PROTOTYPE( rptForceUnitValue,  reaction, pDisplayUnits->GetShearUnit(), false );
    INIT_UV_PROTOTYPE( rptAngleUnitValue,  rotation, pDisplayUnits->GetRadAngleUnit(), false );
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    bool bPermit = false;
 
@@ -166,7 +167,7 @@ rptRcTable* CVehicularLoadReactionTable::Build(std::shared_ptr<WBFL::EAF::Broker
    pBridge->GetGirderline(girderKey, &vGirderKeys);
 
    // Get POI at start and end of the span
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPOI);
+   GET_IFACE2(pBroker,IPointOfInterest,pPOI);
    PoiList vPoi;
    for(const auto& thisGirderKey : vGirderKeys)
    {
@@ -181,8 +182,8 @@ rptRcTable* CVehicularLoadReactionTable::Build(std::shared_ptr<WBFL::EAF::Broker
       }
    }
 
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   EAF_GET_IFACE2(pBroker,IReactions,pReactions);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IReactions,pReactions);
 
    RowIndexType row = p_table->GetNumberOfHeaderRows();
    for ( PierIndexType pier = startPierIdx; pier <= endPierIdx; pier++ )
@@ -230,7 +231,7 @@ rptRcTable* CVehicularLoadReactionTable::Build(std::shared_ptr<WBFL::EAF::Broker
 
          if ( bIncludeRotations )
          {
-            EAF_GET_IFACE2(pBroker,IProductForces,pForces);
+            GET_IFACE2(pBroker,IProductForces,pForces);
    
             Float64 RotMax, RotMin;
             pForces->GetVehicularLiveLoadRotation( intervalIdx, llType, vehicleIdx, poi, pgsTypes::MaxSimpleContinuousEnvelope, true, false, &RotMin, &RotMax, &minConfig, &maxConfig );
@@ -271,7 +272,7 @@ rptRcTable* CVehicularLoadReactionTable::Build(std::shared_ptr<WBFL::EAF::Broker
 
          if ( bIncludeRotations )
          {
-            EAF_GET_IFACE2(pBroker,IProductForces,pForces);
+            GET_IFACE2(pBroker,IProductForces,pForces);
 
             Float64 RotMin, RotMax;
 

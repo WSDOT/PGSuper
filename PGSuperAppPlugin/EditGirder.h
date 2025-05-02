@@ -24,11 +24,11 @@
 #define INCLUDED_EDITGIRDER_H_
 
 #include <EAF\EAFTransaction.h>
-#include <PgsExt\SplicedGirderData.h>
+#include <PsgLib\SplicedGirderData.h>
 #include <PsgLib\ShearData.h>
-#include <PgsExt\LongitudinalRebarData.h>
-#include <PgsExt\TimelineManager.h>
-#include <PgsExt\Keys.h>
+#include <PsgLib\LongitudinalRebarData.h>
+#include <PsgLib\TimelineManager.h>
+#include <PsgLib\Keys.h>
 #include <IFace\Project.h>
 
 struct txnEditGirderData

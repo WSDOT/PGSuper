@@ -22,8 +22,8 @@
 
 #pragma once
 
-#include <PgsExt\TimelineManager.h>
-#include <PgsExt\PointLoadData.h> // for UserLoads
+#include <PsgLib\TimelineManager.h>
+#include <PsgLib\PointLoadData.h> // for UserLoads
 
 #include <IFace\BeamFactory.h>
 

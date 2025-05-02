@@ -30,10 +30,10 @@
 
 
 #include <initguid.h>
+
 // Put an include statement here for every interface used in this agent.
 // The #include "initguid.h" statement above will cause the IID's to be
 // resolved in this DLL
-#include <WBFLCore_i.c>
 
 //
 //TODO: If this DLL is dynamically linked against the MFC DLLs,

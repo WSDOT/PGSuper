@@ -31,14 +31,9 @@
 #include "PGSuperUnits.h"
 #include <Units\Measure.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 GRID_IMPLEMENT_REGISTER(CAssumedExcessCamberGirderGrid, CS_DBLCLKS, 0, 0, 0);
 
@@ -78,7 +73,7 @@ void CAssumedExcessCamberGirderGrid::CustomInit()
 {
    // initialize units
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    m_pUnit = &(pDisplayUnits->GetComponentDimUnit());
 
 // Initialize the grid. For CWnd based grids this call is // 

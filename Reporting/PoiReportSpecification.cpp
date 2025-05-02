@@ -15,7 +15,7 @@ CPoiReportSpecification::~CPoiReportSpecification(void)
 
 bool CPoiReportSpecification::IsValid() const
 {
-   EAF_GET_IFACE2(GetBroker(),IBridge, pBridge);
+   GET_IFACE2(GetBroker(),IBridge, pBridge);
 
    const CSegmentKey& segmentKey = m_Poi.GetSegmentKey();
 

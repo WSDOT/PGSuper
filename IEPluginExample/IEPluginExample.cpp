@@ -33,7 +33,6 @@
 #include <Plugins\PGSuperIEPlugin.h>
 #include "IEPluginExample.h"
 #include "PGSuperCatCom.h"
-#include <WBFLCore_i.c>
 
 #include "PGSuperProjectImporter.h"
 #include "PGSuperDataImporter.h"

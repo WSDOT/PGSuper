@@ -33,10 +33,10 @@
 #include <Reporting\PGSuperChapterBuilder.h>
 
 #include <PgsExt\ReportPointOfInterest.h>
-#include <PgsExt\StrandData.h>
+#include <PsgLib\StrandData.h>
 #include <PgsExt\GirderArtifact.h>
-#include <PgsExt\PierData2.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\PierData2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
@@ -81,7 +81,7 @@ rptChapter* CTexasGirderSummaryChapterBuilder::Build(const std::shared_ptr<const
    // This is a single segment report
    CSegmentKey segmentKey(girderKey,0);
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -144,7 +144,7 @@ void girder_line_geometry(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker
    INIT_UV_PROTOTYPE( rptPressureUnitValue, olay,      pDisplayUnits->GetOverlayWeightUnit(), true );
 
    // Get the interfaces we need
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
@@ -157,8 +157,8 @@ void girder_line_geometry(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker
    rptLengthUnitValue* pUnitValue = (IsGirderSpacing(pBridgeDesc->GetGirderSpacingType()) ? &length : &component);
 
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    std::_tstring strGirderSpacingMeasureAtStartOfSpan, strGirderSpacingMeasureAtEndOfSpan;
    std::_tstring* pStr;
    for ( int i = 0; i < 2; i++ )

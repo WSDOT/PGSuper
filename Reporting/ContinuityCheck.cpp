@@ -66,8 +66,8 @@ void CContinuityCheck::Build(rptChapter* pChapter,
                               std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,
                               std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
 
    SpanIndexType nSpans = pBridge->GetSpanCount();
 
@@ -97,7 +97,7 @@ void CContinuityCheck::Build(rptChapter* pChapter,
    (*pTable)(0,2) << _T("Boundary Condition");
    (*pTable)(0,3) << _T("Is Compressive?");
 
-   EAF_GET_IFACE2(pBroker,IContinuity,pContinuity);
+   GET_IFACE2(pBroker,IContinuity,pContinuity);
 
    PierIndexType nPiers = pBridge->GetPierCount();
    RowIndexType row = 1;

@@ -28,13 +28,13 @@
 #endif // _MSC_VER >= 1000
 // ShearSteelPage.h : header file
 //
-#include "psgLibLib.h"
+#include "PsgLibLib.h"
 #include "resource.h"
 #include <Units\Measure.h>
 #include <PsgLib\GirderLibraryEntry.h>
-#include <psgLib\ShearData.h>
+#include <PsgLib\ShearData.h>
 
-#include <psgLib\ShearSteelGrid.h>
+#include <PsgLib\ShearSteelGrid.h>
 
 class PSGLIBCLASS CShearSteelPageParent
 {

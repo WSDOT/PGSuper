@@ -34,11 +34,6 @@
 
 // CRatingOptionsDlg
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 IMPLEMENT_DYNAMIC(CRatingOptionsDlg, CPropertySheet)
@@ -90,8 +85,8 @@ void CRatingOptionsDlg::GetLoadFactorToolTip(CString& strTip,pgsTypes::LimitStat
 void CRatingOptionsDlg::GetLoadFactorToolTip(CString& strTip,pgsTypes::LimitState ls,pgsTypes::SpecialPermitType specialPermitType)
 {
    auto broker = EAFGetBroker();
-   EAF_GET_IFACE2(broker,IRatingSpecification,pRatingSpec);
-   EAF_GET_IFACE2(broker,ILibrary,pLibrary);
+   GET_IFACE2(broker,IRatingSpecification,pRatingSpec);
+   GET_IFACE2(broker,ILibrary,pLibrary);
    const RatingLibraryEntry* pRatingEntry = pLibrary->GetRatingEntry(m_GeneralPage.m_Data.CriteriaName.c_str());
    Float64 gLL = pRatingSpec->GetLiveLoadFactor(ls,specialPermitType,m_GeneralPage.m_Data.ADTT,pRatingEntry,true);
    if ( gLL < 0 )

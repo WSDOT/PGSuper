@@ -92,7 +92,7 @@ rptRcTable* CShearCheckTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,c
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,  pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptForceSectionValue,  shear,  pDisplayUnits->GetShearUnit(),        false );
 
-   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    rptCapacityToDemand cap_demand;
@@ -101,7 +101,7 @@ rptRcTable* CShearCheckTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,c
    RowIndexType row = table->GetNumberOfHeaderRows();
 
    bool bIsStrutAndTieRequired = false;
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
@@ -190,7 +190,7 @@ void CShearCheckTable::BuildNotes(rptChapter* pChapter,
       rptParagraph* p = new rptParagraph();
       *pChapter << p;
 
-      EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+      GET_IFACE2(pBroker,IBridge,pBridge);
 
       Float64 end_size = pBridge->GetSegmentStartEndDistance(CSegmentKey(girderKey,0));
       INIT_UV_PROTOTYPE( rptPointOfInterest, location,  pDisplayUnits->GetSpanLengthUnit(),   true );

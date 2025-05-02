@@ -28,9 +28,10 @@
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\FlexuralStressArtifact.h>
 #include <PgsExt\CapacityToDemand.h>
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\ClosureJointData.h>
 
 #include <psgLib/SpecificationCriteria.h>
+#include <psgLib/SpecLibraryEntry.h>
 
 #include <IFace\DocumentType.h>
 #include <IFace\Bridge.h>
@@ -83,8 +84,8 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(std::shared_ptr<WBFL::EAF::Broker
 
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 
-   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
-   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    bool c_over_de = ( pSpec->GetMomentCapacityMethod() == LRFD_METHOD && pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::ThirdEditionWith2006Interims );
    Uint16 nCols = c_over_de ? 9 : 6;
@@ -142,7 +143,7 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(std::shared_ptr<WBFL::EAF::Broker
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(), false );
 
-   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
@@ -229,7 +230,7 @@ rptRcTable* CFlexuralCapacityCheckTable::Build(std::shared_ptr<WBFL::EAF::Broker
 
             // Show limiting capacity of over reinforced section
          
-            EAF_GET_IFACE2(pBroker,IMomentCapacity,pMomentCap); 
+            GET_IFACE2(pBroker,IMomentCapacity,pMomentCap); 
             // it may seem wasteful to get this interface in this scope, inside a loop
             // however, the c_over_de method isn't used in the current LRFD so the reality is
             // that this interface wont be requested very often

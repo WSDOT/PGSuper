@@ -29,7 +29,7 @@
 #include <EAF\EAFUtilities.h>
 #include <IFace\Project.h>
 
-#include <PgsExt\PierData2.h>
+#include <PsgLIb\PierData2.h>
 
 // CBoundaryConditionDlg dialog
 
@@ -64,7 +64,7 @@ BOOL CBoundaryConditionDlg::OnInitDialog()
    CDialog::OnInitDialog();
 
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    ATLASSERT(pIBridgeDesc->GetPier(m_PierIdx)->IsBoundaryPier());
 

@@ -30,10 +30,9 @@
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\ReportOptions.h>
-
+#include <IFace/PointOfInterest.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\RatingSpecification.h>
-
 #include <IFace\Intervals.h>
 
 
@@ -87,14 +86,14 @@ std::_tstring LiveLoadPrefix(pgsTypes::LiveLoadType llType)
 
 void LiveLoadTableFooter(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptParagraph* pPara,const CGirderKey& girderKey,bool bDesign,bool bRating)
 {
-   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    std::vector<std::_tstring> strLLNames;
    std::vector<std::_tstring>::iterator iter;
    IndexType j = 0;
 
    if ( bDesign )
    {
-      EAF_GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
+      GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
 
       j = 0;
       strLLNames = pProductLoads->GetVehicleNames(pgsTypes::lltDesign,girderKey);
@@ -136,7 +135,7 @@ void LiveLoadTableFooter(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptParagraph
 
    if ( bRating )
    {
-      EAF_GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+      GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
       if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating)) )
       {
@@ -205,10 +204,10 @@ ColumnIndexType GetProductLoadTableColumnCount(std::shared_ptr<WBFL::EAF::Broker
 {
    ColumnIndexType nCols = 4; // location, girder, diaphragm, and traffic barrier
 
-   EAF_GET_IFACE2(pBroker,IProductLoads,pLoads);
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
-   EAF_GET_IFACE2(pBroker,IUserDefinedLoadData,pUserLoads);
+   GET_IFACE2(pBroker,IProductLoads,pLoads);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
+   GET_IFACE2(pBroker,IUserDefinedLoadData,pUserLoads);
 
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
 
@@ -252,7 +251,7 @@ ColumnIndexType GetProductLoadTableColumnCount(std::shared_ptr<WBFL::EAF::Broker
    }
 
    // determine continuity stage
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType continuityIntervalIdx = MAX_INDEX;
    PierIndexType firstPierIdx = pBridge->GetGirderGroupStartPier(*pStartGroup);
    PierIndexType lastPierIdx  = pBridge->GetGirderGroupEndPier(*pEndGroup);
@@ -368,7 +367,7 @@ ColumnIndexType GetProductLoadTableColumnCount(std::shared_ptr<WBFL::EAF::Broker
 
    if ( bRating )
    {
-      EAF_GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+      GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
       if ( !bDesign && (pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) || pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory)) )
       {
@@ -417,7 +416,7 @@ rptRcTable* CProductMomentsTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBrok
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentSectionValue,     moment,   pDisplayUnits->GetMomentUnit(),     false );
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    bool bHasOverlay = pBridge->HasOverlay();
    bool bFutureOverlay = pBridge->IsFutureOverlay();
 
@@ -425,9 +424,9 @@ rptRcTable* CProductMomentsTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBrok
    bool bContinuousBeforeDeckCasting;
    GroupIndexType startGroup, endGroup;
 
-   EAF_GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
+   GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
    IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount()-1;
 
@@ -441,7 +440,7 @@ rptRcTable* CProductMomentsTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBrok
       p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
    }
 
-   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
    PoiAttributeType poiRefAttribute(girderKey.groupIndex == ALL_GROUPS ? POI_SPAN : POI_ERECTED_SEGMENT);
 
@@ -449,10 +448,10 @@ rptRcTable* CProductMomentsTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBrok
                                                                                            bPermit,bRating,analysisType,bContinuousBeforeDeckCasting,
                                                                                            pRatingSpec,pDisplayUnits,pDisplayUnits->GetMomentUnit());
    // Get the results
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   EAF_GET_IFACE2(pBroker,IProductForces2,pForces2);
+   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   GET_IFACE2(pBroker,IProductForces2,pForces2);
 
-   EAF_GET_IFACE2(pBroker,IProductForces,pProdForces);
+   GET_IFACE2(pBroker,IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 

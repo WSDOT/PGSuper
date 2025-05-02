@@ -24,13 +24,13 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psglib.h>
+#include <PsgLib\PsgLib.h>
 #include "SpecClosurePage.h"
 #include "SpecMainSheet.h"
 #include <EAF\EAFDocument.h>
-#include <psgLib/SpecificationCriteria.h>
-#include <psgLib/ClosureJointCriteria.h>
-#include <psgLib/PrestressedElementCriteria.h>
+#include <PsgLib/SpecificationCriteria.h>
+#include <PsgLib/ClosureJointCriteria.h>
+#include <PsgLib/PrestressedElementCriteria.h>
 
 
 

@@ -24,7 +24,7 @@
 
 #include <Reporting\ReportingExp.h>
 #include <ReportManager\TitlePageBuilder.h>
-#include <WBFLCore.h>
+
 /// @brief 
 class REPORTINGCLASS CPGSuperTitlePageBuilder :
    public WBFL::Reporting::TitlePageBuilder

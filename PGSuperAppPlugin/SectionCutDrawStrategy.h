@@ -22,8 +22,8 @@
 
 #pragma once
 
-#include <PgsExt\Keys.h>
-#include <PgsExt\PointOfInterest.h>
+#include <PsgLib\Keys.h>
+#include <PsgLib\PointOfInterest.h>
 
 class IRoadway;
 class IBridge;

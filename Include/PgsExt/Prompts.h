@@ -22,8 +22,8 @@
 #pragma once
 
 #include <PgsExt\PgsExtExp.h>
-#include <PgsExt\Keys.h>
-#include <PgsExt\PointOfInterest.h>
+#include <PsgLib/Keys.h>
+#include <PsgLib/PointOfInterest.h>
 
 UINT_PTR PGSEXTFUNC pgsSelectGirder(CGirderKey& girderKey);
 UINT_PTR PGSEXTFUNC pgsSelectSegment(CSegmentKey& segmentKey);

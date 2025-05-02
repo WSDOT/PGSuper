@@ -58,7 +58,7 @@ rptChapter* CHaulingCheckChapterBuilder::Build(const std::shared_ptr<const WBFL:
    if (pGirderRptSpec)
    {
       pBroker = pGirderRptSpec->GetBroker();
-      EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+      GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
       const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
       pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
       CHaulingCheck().Build(pChapter, pBroker, girderKey, pDisplayUnits);
@@ -66,7 +66,7 @@ rptChapter* CHaulingCheckChapterBuilder::Build(const std::shared_ptr<const WBFL:
    else
    {
       pBroker = pSegmentRptSpec->GetBroker();
-      EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+      GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
       const CSegmentKey& segmentKey(pSegmentRptSpec->GetSegmentKey());
       pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
       CHaulingCheck().Build(pChapter, pBroker, segmentKey, pDisplayUnits);

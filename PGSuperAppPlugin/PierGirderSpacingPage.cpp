@@ -34,7 +34,7 @@
 
 #include <PGSuperUnits.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
@@ -43,11 +43,6 @@
 
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 UINT AheadControls[] =
 {
@@ -144,7 +139,7 @@ void CPierGirderSpacingPage::DoDataExchange(CDataExchange* pDX)
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    DDX_CBItemData(pDX, IDC_PREV_REF_GIRDER, m_RefGirderIdx[pgsTypes::Back]);
    DDX_CBItemData(pDX, IDC_NEXT_REF_GIRDER, m_RefGirderIdx[pgsTypes::Ahead]);
 
@@ -274,7 +269,7 @@ BOOL CPierGirderSpacingPage::OnInitDialog()
    CPierData2* pPier = pParent->m_pPier;
 
    auto broker = EAFGetBroker();
-   EAF_GET_IFACE2(broker,IBridge,pBridge);
+   GET_IFACE2(broker,IBridge,pBridge);
 
    Float64 skew_angle;
    pBridge->GetSkewAngle(pPier->GetStation(),pPier->GetOrientation(),&skew_angle);
@@ -501,7 +496,7 @@ void CPierGirderSpacingPage::FillGirderSpacingMeasurementComboBox(int nIDC, Conn
 
    // if the bearing offset is measured along the CL girder, the girder spacing cannot be measured at the CL bearing
    // this is because there would not be a unique CL bearing line common to all girders if the girders are not parallel to one another
-   if (bearingMeasure!=ConnectionLibraryEntry::AlongGirder)
+   if (bearingMeasure!=ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder)
    {
       idx = pSpacingType->AddString(_T("Measured at and along the CL bearing"));
       item_data = HashGirderSpacing(pgsTypes::AtCenterlineBearing,pgsTypes::AlongItem);
@@ -883,7 +878,7 @@ void CPierGirderSpacingPage::OnChangeSameGirderSpacing()
             // there is more than one unique girder spacing... which one do we want to use
             // for the entire bridge???
             auto broker = EAFGetBroker();
-            EAF_GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
+            GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
 
             CSelectItemDlg dlg;
             dlg.m_strLabel = _T("Select the spacing to be used for the entire bridge");

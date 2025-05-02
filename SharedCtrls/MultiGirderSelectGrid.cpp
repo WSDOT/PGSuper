@@ -30,8 +30,8 @@
 #endif // _AFX_NO_OLE_SUPPORT
 
 #include "SharedCTrls\MultiGirderSelectGrid.h" 
-#include <PgsExt\GirderLabel.h>
-#include <PgsExt\Keys.h>
+#include <PsgLib\GirderLabel.h>
+#include <PsgLib\Keys.h>
 
 #include <EAF\EAFUtilities.h>
 #include <IFace\Tools.h>
@@ -40,14 +40,6 @@
 #if defined _DEBUG
 #include <IFace\Bridge.h>
 #endif
-
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 
 
 GRID_IMPLEMENT_REGISTER(CMultiGirderSelectGrid, CS_DBLCLKS, 0, 0, 0);
@@ -167,7 +159,7 @@ void CMultiGirderSelectGrid::CustomInit(const GroupGirderOnCollection& groupGird
    auto pBroker = EAFGetBroker();
 
 #if defined _DEBUG
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    ATLASSERT(pBridge->GetGirderGroupCount() == nGroups);
 #endif
 
@@ -207,7 +199,7 @@ void CMultiGirderSelectGrid::CustomInit(const GroupGirderOnCollection& groupGird
 		);
 
    // top row labels
-   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
    bool bIsPGSuper = pDocType->IsPGSuperDocument();
 
    for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++)

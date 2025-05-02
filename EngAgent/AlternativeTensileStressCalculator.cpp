@@ -24,6 +24,7 @@
 #include "AlternativeTensileStressCalculator.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
+#include <IFace/PointOfInterest.h>
 
 
 /****************************************************************************
@@ -410,7 +411,7 @@ void pgsAlternativeTensileStressCalculator::ComputeReqdFcTens(const CSegmentKey&
    if ( 0 < ft )
    {
       auto broker = EAFGetBroker();
-      EAF_GET_IFACE2(broker,IMaterials,pMaterials);
+      GET_IFACE2(broker,IMaterials,pMaterials);
       Float64 lambda = pMaterials->GetSegmentLambda(segmentKey);
 
       // Without rebar

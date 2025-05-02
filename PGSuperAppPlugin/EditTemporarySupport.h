@@ -23,8 +23,8 @@
 #pragma once
 
 #include <EAF\EAFTransaction.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\TemporarySupportData.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\TemporarySupportData.h>
 #include "EditBridge.h"
 #include <IFace\Project.h>
 

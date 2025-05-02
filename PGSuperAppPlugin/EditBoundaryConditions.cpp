@@ -25,11 +25,6 @@
 #include "PGSuperApp.h"
 #include <IFace\Project.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 txnEditBoundaryConditions::txnEditBoundaryConditions(PierIndexType pierIdx,pgsTypes::BoundaryConditionType oldBC,pgsTypes::BoundaryConditionType newBC)
 {
@@ -121,11 +116,11 @@ bool txnEditBoundaryConditions::DoExecute(int i)
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IEvents,pEvents);
+   GET_IFACE2(pBroker,IEvents,pEvents);
    // Exception-safe holder to keep from fireing events until we are done
    CIEventsHolder event_holder(pEvents);
 
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
    if (m_bIsPier)
    {
       if (m_bIsBoundaryPier)

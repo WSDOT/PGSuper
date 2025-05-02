@@ -45,7 +45,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CInitialStrainAnalysisRepo
 
    // Prompt for span, girder, and chapter list
    // initialize dialog for the current cut location
-   EAF_GET_IFACE(ISelection,pSelection);
+   GET_IFACE(ISelection,pSelection);
    CSelection selection = pSelection->GetSelection();
    CGirderKey girderKey;
    if ( selection.Type == CSelection::Girder )

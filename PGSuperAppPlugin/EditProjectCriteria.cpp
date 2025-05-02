@@ -25,11 +25,6 @@
 #include <IFace\Project.h> // for IEvents and ISpecification
 #include "PGSuperDoc.h" // for EAFGetBroker
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 txnEditProjectCriteria::txnEditProjectCriteria(LPCTSTR strOldCriteria,LPCTSTR strNewCriteria,pgsTypes::AnalysisType oldAnalysisType,pgsTypes::AnalysisType newAnalysisType,pgsTypes::WearingSurfaceType oldWearingSurfaceType,pgsTypes::WearingSurfaceType newWearingSurfaceType)
 {
@@ -63,15 +58,15 @@ void txnEditProjectCriteria::Execute(int i)
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IEvents, pEvents);
-   EAF_GET_IFACE2(pBroker, ISpecification, pSpec );
+   GET_IFACE2(pBroker,IEvents, pEvents);
+   GET_IFACE2(pBroker, ISpecification, pSpec );
    // Exception-safe holder to keep from fireing events until we are done
    CIEventsHolder event_holder(pEvents);
 
    pSpec->SetAnalysisType(m_AnalysisType[i]);
    pSpec->SetSpecification( m_strProjectCriteria[i] );
 
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pBridgeDesc);
    pBridgeDesc->SetWearingSurfaceType(m_WearingSurfaceType[i]);
 }
 

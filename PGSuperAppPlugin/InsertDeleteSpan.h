@@ -24,9 +24,9 @@
 #define INCLUDED_INSERTDELETESPAN_H_
 
 #include <EAF\EAFTransaction.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\PierData2.h>
-#include <PgsExt\GirderSpacing2.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\PierData2.h>
+#include <PsgLib\GirderSpacing2.h>
 #include <IFace\Project.h>
 
 class txnInsertSpan : public CEAFTransaction

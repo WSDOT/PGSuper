@@ -29,7 +29,7 @@
 #include <WBFLDebug.h>
 #include <WBFLTools.h>
 
-#include <IFace\Tools.h> // for EAF_GET_IFACE
+#include <IFace\Tools.h> // for GET_IFACE
 #include <IFace\Alignment.h>
 #include <IFace/Limits.h>
 #include <IFace\AnalysisResults.h>

@@ -27,15 +27,10 @@
 #include "PGSuperApp.h"
 #include "resource.h"
 #include "BridgeDescDlg.h"
-#include <PgsExt\DeckRebarData.h>
+#include <PsgLib\DeckRebarData.h>
 
 #include "PGSuperDocBase.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescDlg

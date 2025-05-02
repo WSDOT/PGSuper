@@ -41,7 +41,7 @@ rptRcTable* CUserReactionTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
    INIT_UV_PROTOTYPE( rptForceSectionValue, reaction, pDisplayUnits->GetShearUnit(), false );
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetFirstCompositeDeckInterval();
 
    CString strTitle;
@@ -60,10 +60,10 @@ rptRcTable* CUserReactionTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker
    p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_LEFT));
    p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_LEFT));
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    PierIndexType nPiers = pBridge->GetPierCount();
 
-   EAF_GET_IFACE2(pBroker,IProductForces,pProductForces);
+   GET_IFACE2(pBroker,IProductForces,pProductForces);
    pgsTypes::BridgeAnalysisType maxBAT = pProductForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pProductForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 
@@ -73,12 +73,12 @@ rptRcTable* CUserReactionTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker
    std::unique_ptr<IProductReactionAdapter> pForces;
    if( tableType == PierReactionsTable )
    {
-      EAF_GET_IFACE2(pBroker,IReactions,pReactions);
+      GET_IFACE2(pBroker,IReactions,pReactions);
       pForces = std::make_unique<ProductForcesReactionAdapter>(pReactions,girderKey);
    }
    else
    {
-      EAF_GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
+      GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
       pForces = std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, compositeDeckIntervalIdx, girderKey);
    }
 

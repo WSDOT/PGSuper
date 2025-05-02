@@ -25,11 +25,6 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <PGSuperUIUtil.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 GRID_IMPLEMENT_REGISTER(CColumnLayoutGrid, CS_DBLCLKS, 0, 0, 0);
 
@@ -87,7 +82,7 @@ void CColumnLayoutGrid::CustomInit()
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
 // set text along top row
    int col = 0;
@@ -172,7 +167,7 @@ void CColumnLayoutGrid::SetHeightMeasurementType(CColumnData::ColumnHeightMeasur
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CString cv;
    cv.Format(_T("%s\n(%s)"),(measure == CColumnData::chtHeight ? _T("Height") : _T("Bottom\nElev")),pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure.UnitTag().c_str());
@@ -311,7 +306,7 @@ void CColumnLayoutGrid::SetColumnData(ROWCOL row,const CColumnData& column,Float
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    ROWCOL col = 1;
 
@@ -412,7 +407,7 @@ void CColumnLayoutGrid::GetColumnData(ROWCOL row,CColumnData* pColumn,Float64* p
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    ROWCOL col = 1;
 

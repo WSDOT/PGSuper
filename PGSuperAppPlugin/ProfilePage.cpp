@@ -31,11 +31,6 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CProfilePage property page
@@ -66,7 +61,7 @@ void CProfilePage::DoDataExchange(CDataExchange* pDX)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
 	//}}AFX_DATA_MAP
 
-   EAF_GET_IFACE2(GetBroker(),IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(GetBroker(),IEAFDisplayUnits,pDisplayUnits);
 
    DDX_Station(pDX, IDC_STATION,  m_ProfileData.Station, pDisplayUnits->GetStationFormat() );
    DDX_UnitValueAndTag( pDX, IDC_ELEVATION, IDC_ELEVATION_UNIT, m_ProfileData.Elevation, pDisplayUnits->GetAlignmentLengthUnit() );

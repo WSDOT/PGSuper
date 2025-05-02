@@ -30,7 +30,7 @@
 #include "pgsuperdoc.h"
 #include <IFace\Project.h>
 #include <IFace\EditByUI.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include <DManip/DisplayObject.h>
 #include <DManip/DisplayList.h>
@@ -209,7 +209,7 @@ bool CPierDisplayObjectEvents::OnContextMenu(std::shared_ptr<WBFL::DManip::iDisp
 
       
       auto pBroker = pDoc->GetBroker();
-      EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
       const CPierData2* pPier = pBridgeDesc->GetPier(m_PierIdx);
 

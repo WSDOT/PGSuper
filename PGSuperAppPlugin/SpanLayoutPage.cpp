@@ -37,11 +37,6 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <MFCTools\CustomDDX.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpanLayoutPage property page
@@ -64,7 +59,7 @@ void CSpanLayoutPage::DoDataExchange(CDataExchange* pDX)
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
 	CPropertyPage::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CSpanLayoutPage)
@@ -155,8 +150,8 @@ void CSpanLayoutPage::UpdateHaunchAndCamberControls()
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
 
    pgsTypes::HaunchInputDepthType inputType = pParent->m_BridgeDesc.GetHaunchInputDepthType();
 
@@ -328,7 +323,7 @@ void CSpanLayoutPage::UpdateHaunchAndCamberData(CDataExchange* pDX)
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    pgsTypes::SupportedDeckType deckType = pParent->m_BridgeDesc.GetDeckDescription()->GetDeckType();
    if (deckType == pgsTypes::sdtNone)
@@ -383,7 +378,7 @@ void CSpanLayoutPage::UpdateHaunchAndCamberData(CDataExchange* pDX)
          }
       }
 
-      EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+      GET_IFACE2(pBroker,ISpecification,pSpec);
       bool bCanAssumedExcessCamberInputBeEnabled = pSpec->IsAssumedExcessCamberInputEnabled();
       pgsTypes::AssumedExcessCamberType assumedExcessCamberType = pParent->GetBridgeDescription()->GetAssumedExcessCamberType();
 

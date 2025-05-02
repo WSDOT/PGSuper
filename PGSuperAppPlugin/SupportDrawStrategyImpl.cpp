@@ -25,7 +25,7 @@
 #include "PGSuperColors.h"
 #include "SupportDrawStrategyImpl.h"
 
-#include <PgsExt\PierData2.h>
+#include <PsgLib\PierData2.h>
 
 #include <DManip/PointDisplayObject.h>
 #include <DManip/DisplayMgr.h>

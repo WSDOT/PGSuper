@@ -20,16 +20,16 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_INSERTDELETELOAD_H_
-#define INCLUDED_INSERTDELETELOAD_H_
+#pragma once
+
 #include <PgsExt\PgsExtExp.h>
 
 #include <EAF\EAFTransaction.h>
 #include <IFace\Project.h>
-#include <PgsExt\PointLoadData.h>
-#include <PgsExt\DistributedLoadData.h>
-#include <PgsExt\MomentLoadData.h>
-#include <PgsExt\TimelineManager.h>
+#include <PsgLib/PointLoadData.h>
+#include <PsgLib/DistributedLoadData.h>
+#include <PsgLib/MomentLoadData.h>
+#include <PsgLib/TimelineManager.h>
 
 class PGSEXTCLASS txnInsertPointLoad : public CEAFTransaction
 {
@@ -204,5 +204,3 @@ private:
    CTimelineManager* m_pTimelineMgr;
    CTimelineManager m_OldTimelineMgr;
 };
-
-#endif // INCLUDED_INSERTDELETELOAD_H_

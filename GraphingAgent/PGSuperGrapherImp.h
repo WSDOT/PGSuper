@@ -28,7 +28,7 @@
 
 #include "GrapherBase.h"
 
-#include <EAF\EAFInterfaceCache.h>
+
 #include <IFace\Project.h>
 
 #include <memory>
@@ -47,16 +47,13 @@ public:
     }
 
 
-// IAgent
+// Agent
 public:
-   bool RegInterfaces() override;
    bool Init() override;
-   bool Reset() override;
-   bool ShutDown() override;
    CLSID GetCLSID() const override;
 
 private:
-   //DECLARE_EAF_AGENT_DATA;
+   EAF_DECLARE_AGENT_DATA;
 
    HRESULT InitGraphBuilders();
 };

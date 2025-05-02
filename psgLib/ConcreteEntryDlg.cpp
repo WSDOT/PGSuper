@@ -38,7 +38,7 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psgLib.h>
+#include <PsgLib\PsgLib.h>
 #include "ConcreteEntryDlg.h"
 #include <MfcTools\CustomDDX.h>
 #include <Colors.h>

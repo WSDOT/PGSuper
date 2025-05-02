@@ -32,7 +32,7 @@
 #include <initguid.h>
 
 #include "CLSID.h"
-#include <WBFLCore_i.c>
+
 
 #include "TestAgent.h"
 #include "TestAgentImp.h"
@@ -51,6 +51,9 @@
 #include <IFace\DocumentType.h>
 #include <IFace\PrincipalWebStress.h>
 #include <IFace\BearingDesignParameters.h>
+
+#include <EAF\EAFStatusCenter.h>
+#include <EAF\EAFProgress.h>
 
 #include <EAF\ComponentModule.h>
 WBFL::EAF::ComponentModule _Module;

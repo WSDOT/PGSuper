@@ -23,7 +23,7 @@
 #pragma once
 #include <PgsExt\PgsExtExp.h>
 #include <Stability\AnalysisPoint.h>
-#include <PgsExt\PointOfInterest.h>
+#include <PsgLib\PointOfInterest.h>
 
 class PGSEXTCLASS pgsStabilityAnalysisPoint : public WBFL::Stability::IAnalysisPoint
 {

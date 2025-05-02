@@ -23,7 +23,10 @@
 #include "stdafx.h"
 #include <Beams\Helper.h>
 #include <IFace\Bridge.h>
-#include <PgsExt\BridgeDescription2.h>
+
+#include <PsgLib\BridgeDescription2.h>
+#include <PgsExt/PoiMgr.h>
+
 #include "AgeAdjustedMaterial.h"
 
 
@@ -229,7 +232,7 @@ void BuildAgeAdjustedGirderMaterialModel(std::shared_ptr<WBFL::EAF::Broker> pBro
    // recursion and validation errors. Using the age adjusted material object we can
    // delay the calls to GetAgeAdjustedEc until well after the time the bridge model
    // is validated.
-   EAF_GET_IFACE2(pBroker,IMaterials,pMaterials);
+   GET_IFACE2(pBroker,IMaterials,pMaterials);
 
    CComObject<CAgeAdjustedMaterial>* pSegmentMaterial;
    CComObject<CAgeAdjustedMaterial>::CreateInstance(&pSegmentMaterial);
@@ -331,7 +334,7 @@ void BuildAgeAdjustedJointMaterialModel(std::shared_ptr<WBFL::EAF::Broker> pBrok
    // recursion and validation errors. Using the age adjusted material object we can
    // delay the calls to GetAgeAdjustedEc until well after the time the bridge model
    // is validated.
-   EAF_GET_IFACE2(pBroker, IMaterials, pMaterials);
+   GET_IFACE2(pBroker, IMaterials, pMaterials);
 
    CComObject<CAgeAdjustedMaterial>* pJointMaterial;
    CComObject<CAgeAdjustedMaterial>::CreateInstance(&pJointMaterial);

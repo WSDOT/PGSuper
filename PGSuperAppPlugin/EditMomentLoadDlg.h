@@ -29,8 +29,8 @@
 // EditMomentLoadDlg.h : header file
 //
 #include "resource.h"
-#include <PgsExt\MomentLoadData.h>
-#include <PgsExt\TimelineManager.h>
+#include <PsgLib\MomentLoadData.h>
+#include <PsgLib\TimelineManager.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CEditMomentLoadDlg dialog

@@ -75,19 +75,19 @@ rptChapter* CTexasShearChapterBuilder::Build(const std::shared_ptr<const WBFL::R
    auto pBroker = pSpec->GetBroker();
    const CGirderKey& girderKey(pSpec->GetGirderKey());
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   EAF_GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+   GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
    bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,IArtifact,pArtifacts);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IArtifact,pArtifacts);
    const pgsGirderArtifact* pGirderArtifact = pArtifacts->GetGirderArtifact(girderKey);
 
    // Vertical Shear check
@@ -126,7 +126,7 @@ rptChapter* CTexasShearChapterBuilder::Build(const std::shared_ptr<const WBFL::R
    CGirderDetailingCheck(true).Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits);
 
    // Debonding check if applicable
-   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
    if ( pStrandGeometry->GetNumDebondedStrands(CSegmentKey(girderKey,0),pgsTypes::Straight,pgsTypes::dbetEither) )
    {
       CDebondCheckTable().Build(pChapter, pBroker, pGirderArtifact, pDisplayUnits);

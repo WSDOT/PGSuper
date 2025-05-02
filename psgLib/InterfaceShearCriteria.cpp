@@ -20,11 +20,11 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 #include "StdAfx.h"
-#include <psgLib/InterfaceShearCriteria.h>
-#include <psgLib/LibraryEntryDifferenceItem.h>
+#include <PsgLib/InterfaceShearCriteria.h>
+#include <PsgLib/DifferenceItem.h>
 #include <EAF/EAFDisplayUnits.h>
 
-bool InterfaceShearCriteria::Compare(const InterfaceShearCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool InterfaceShearCriteria::Compare(const InterfaceShearCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
    if (ShearFlowMethod != other.ShearFlowMethod ||
@@ -32,7 +32,7 @@ bool InterfaceShearCriteria::Compare(const InterfaceShearCriteria& other, const 
       bUseDeckWeightForPc != other.bUseDeckWeightForPc)
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Horizontal Interface Shear requirements are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Horizontal Interface Shear requirements are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 

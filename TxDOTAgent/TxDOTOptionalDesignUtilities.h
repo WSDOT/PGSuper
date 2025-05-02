@@ -35,7 +35,7 @@
 #include <System\FileStream.h>
 
 #include <PGSuperTypes.h>
-#include <pgsExt\StrandData.h>
+#include <PsgLib\StrandData.h>
 
 #include <IFace\Bridge.h>
 #include <EAF\EAFUtilities.h>

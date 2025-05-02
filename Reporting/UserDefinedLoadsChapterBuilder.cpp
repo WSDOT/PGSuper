@@ -27,9 +27,9 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 
-#include <PgsExt\PointLoadData.h>
-#include <PgsExt\DistributedLoadData.h>
-#include <PgsExt\MomentLoadData.h>
+#include <PsgLib\PointLoadData.h>
+#include <PsgLib\DistributedLoadData.h>
+#include <PsgLib\MomentLoadData.h>
 
 
 
@@ -77,11 +77,11 @@ rptChapter* CUserDefinedLoadsChapterBuilder::Build(const std::shared_ptr<const W
       girderKey = pGdrLineRptSpec->GetGirderKey();
    }
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    GroupIndexType firstGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    GroupIndexType lastGroupIdx  = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : firstGroupIdx);
@@ -171,16 +171,16 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreatePointLoadTable(std::shared_
    INIT_SCALAR_PROTOTYPE(rptRcPercentage, percentage, pDisplayUnits->GetPercentageFormat());
 
    ASSERT_SPAN_KEY(spanKey);
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanKey.spanIndex);
    CGirderKey girderKey(grpIdx,spanKey.girderIndex);
    ASSERT_GIRDER_KEY(girderKey);
 
-   EAF_GET_IFACE2(pBroker, IUserDefinedLoadData, pUdl);
+   GET_IFACE2(pBroker, IUserDefinedLoadData, pUdl);
    std::vector<CPointLoadData> vLoads = pUdl->GetPointLoads(spanKey);
    if (0 < vLoads.size())
    {
-      EAF_GET_IFACE2(pBroker, IEventMap, pEventMap);
+      GET_IFACE2(pBroker, IEventMap, pEventMap);
 
       rptRcTable* table = rptStyleManager::CreateDefaultTable(5, _T("Point Loads"));
 
@@ -249,7 +249,7 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(std::s
    INIT_UV_PROTOTYPE(rptForcePerLengthUnitValue, force, pDisplayUnits->GetForcePerLengthUnit(), false);
    INIT_SCALAR_PROTOTYPE(rptRcPercentage, percentage, pDisplayUnits->GetPercentageFormat());
 
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    Float64 span_length = pBridge->GetSpanLength(spanKey.spanIndex, spanKey.girderIndex);
 
    ASSERT_SPAN_KEY(spanKey);
@@ -257,11 +257,11 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateDistributedLoadTable(std::s
    CGirderKey girderKey(grpIdx,spanKey.girderIndex);
    ASSERT_GIRDER_KEY(girderKey);
 
-   EAF_GET_IFACE2(pBroker, IUserDefinedLoadData, pUdl);
+   GET_IFACE2(pBroker, IUserDefinedLoadData, pUdl);
    std::vector<CDistributedLoadData> vLoads = pUdl->GetDistributedLoads(spanKey);
    if (0 < vLoads.size() )
    {
-      EAF_GET_IFACE2(pBroker, IEventMap, pEventMap);
+      GET_IFACE2(pBroker, IEventMap, pEventMap);
 
       rptRcTable* table = rptStyleManager::CreateDefaultTable(7, _T("Distributed Loads"));
 
@@ -362,16 +362,16 @@ rptParagraph* CUserDefinedLoadsChapterBuilder::CreateMomentLoadTable(std::shared
    INIT_SCALAR_PROTOTYPE(rptRcPercentage, percentage, pDisplayUnits->GetPercentageFormat());
 
    ASSERT_SPAN_KEY(spanKey);
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    GroupIndexType grpIdx = pBridge->GetGirderGroupIndex(spanKey.spanIndex);
    CGirderKey girderKey(grpIdx,spanKey.girderIndex);
    ASSERT_GIRDER_KEY(girderKey);
 
-   EAF_GET_IFACE2(pBroker, IUserDefinedLoadData, pUdl);
+   GET_IFACE2(pBroker, IUserDefinedLoadData, pUdl);
    std::vector<CMomentLoadData> vLoads = pUdl->GetMomentLoads(spanKey);
    if (0 < vLoads.size())
    {
-      EAF_GET_IFACE2(pBroker, IEventMap, pEventMap);
+      GET_IFACE2(pBroker, IEventMap, pEventMap);
 
       rptRcTable* table = rptStyleManager::CreateDefaultTable(5, _T("End Moments"));
 

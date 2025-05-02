@@ -35,11 +35,6 @@
 
 // CPermitRatingPage dialog
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 IMPLEMENT_DYNAMIC(CPermitRatingPage, CPropertyPage)
@@ -131,17 +126,17 @@ void CPermitRatingPage::DoDataExchange(CDataExchange* pDX)
    DDV_Range(pDX,mfcDDV::LE,mfcDDV::GE,m_Data.YieldStressCoefficient,0.0,1.0);
 
    auto broker = EAFGetBroker();
-   EAF_GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
    DDX_UnitValueAndTag(pDX,IDC_ALLOWABLE_TENSION,IDC_ALLOWABLE_TENSION_UNIT,m_Data.AllowableTensionCoefficient,pDisplayUnits->GetTensionCoefficientUnit());
 
    CString tag;
    if ( WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims )
    {
-      tag = pDisplayUnits->GetUnitMode() == eafTypes::umSI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))");
+      tag = pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::SI ? _T("sqrt(f'c (MPa))") : _T("sqrt(f'c (KSI))");
    }
    else
    {
-      tag = pDisplayUnits->GetUnitMode() == eafTypes::umSI ? _T("(lambda)sqrt(f'c (MPa))") : _T("(lambda)sqrt(f'c (KSI))");
+      tag = pDisplayUnits->GetUnitMode() == WBFL::EAF::UnitMode::SI ? _T("(lambda)sqrt(f'c (MPa))") : _T("(lambda)sqrt(f'c (KSI))");
    }
    DDX_Text(pDX,IDC_ALLOWABLE_TENSION_UNIT,tag);
 
@@ -343,7 +338,7 @@ void CPermitRatingPage::OnPermitTypeChanged()
 
    CRatingOptionsDlg* pParent = (CRatingOptionsDlg*)GetParent();
    auto broker = EAFGetBroker();
-   EAF_GET_IFACE2( broker, ILibrary, pLib );
+   GET_IFACE2( broker, ILibrary, pLib );
    const RatingLibraryEntry* pRatingEntry = pLib->GetRatingEntry( pParent->m_GeneralPage.m_Data.CriteriaName.c_str() );
 
    bool bAllowUserOverride;
@@ -374,7 +369,7 @@ BOOL CPermitRatingPage::OnSetActive()
 
    CRatingOptionsDlg* pParent = (CRatingOptionsDlg*)GetParent();
    auto broker = EAFGetBroker();
-   EAF_GET_IFACE2( broker, ILibrary, pLib );
+   GET_IFACE2( broker, ILibrary, pLib );
    const RatingLibraryEntry* pRatingEntry = pLib->GetRatingEntry( pParent->m_GeneralPage.m_Data.CriteriaName.c_str() );
 
    CDataExchange dx(this,false);
@@ -407,7 +402,7 @@ BOOL CPermitRatingPage::OnSetActive()
       GetDlgItem(IDC_SERVICE_III_LL_PERMIT)->EnableWindow(FALSE);
    }
 
-   EAF_GET_IFACE2(broker, ILossParameters, pLossParams);
+   GET_IFACE2(broker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       GetDlgItem(IDC_STRENGTH_II_PLUS)->ShowWindow(SW_HIDE);

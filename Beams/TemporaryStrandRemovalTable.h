@@ -20,20 +20,14 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// TemporaryStrandRemovalTable.h : Declaration of the CTemporaryStrandRemovalTable
+#pragma once
 
-#ifndef __TEMPORARYSTRANDREMOVALTABLE_H_
-#define __TEMPORARYSTRANDREMOVALTABLE_H_
-
-#include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
-
+#include <PgsExt/ReportPointOfInterest.h>
 
 class WBFL::LRFD::Losses;
 
-/////////////////////////////////////////////////////////////////////////////
-// CTemporaryStrandRemovalTable
 class CTemporaryStrandRemovalTable : public rptRcTable
 {
 public:
@@ -57,5 +51,3 @@ private:
    bool m_bIsPrismatic;
    bool m_bIsAsymmetric;
 };
-
-#endif //__TEMPORARYSTRANDREMOVALTABLE_H_

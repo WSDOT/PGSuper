@@ -26,14 +26,14 @@
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
-
+#include <IFace/PointOfInterest.h>
 
 
 
 rptRcTable* CSectionPropertiesTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,bool bComposite,
                                            std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType constructionIntervalIdx        = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
    IntervalIndexType lastTendonStressingIntervalIdx = pIntervals->GetLastGirderTendonStressingInterval(segmentKey);
@@ -42,8 +42,8 @@ rptRcTable* CSectionPropertiesTable::Build(std::shared_ptr<WBFL::EAF::Broker> pB
    // when requesting them, otherwise we get properties for the current properties type mode
    pgsTypes::SectionPropertyType spType = pgsTypes::sptGross;
 
-   EAF_GET_IFACE2(pBroker, ISectionProperties, pSectProp);
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, ISectionProperties, pSectProp);
+   GET_IFACE2(pBroker, IBridge, pBridge);
 
    bool bHasDeck = IsStructuralDeck(pBridge->GetDeckType());
    bool bAsymmetricGirders = pBridge->HasAsymmetricGirders();
@@ -85,7 +85,7 @@ rptRcTable* CSectionPropertiesTable::Build(std::shared_ptr<WBFL::EAF::Broker> pB
    INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, force_per_length, pDisplayUnits->GetForcePerLengthUnit(), false );
 
    // The section is prismatic so any poi will do
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    PoiList vPoi;
    pPoi->GetPointsOfInterest(segmentKey, POI_5L | POI_ERECTED_SEGMENT, &vPoi);
    ATLASSERT(vPoi.size() == 1);

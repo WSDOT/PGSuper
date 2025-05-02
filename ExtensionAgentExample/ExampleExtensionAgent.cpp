@@ -119,7 +119,7 @@ BOOL CExampleExtensionAgent::GetToolTipMessageString(UINT nID, CString& rMessage
 
 void CExampleExtensionAgent::RegisterViews()
 {
-   EAF_GET_IFACE(IEAFViewRegistrar,pViewRegistrar);
+   GET_IFACE(IEAFViewRegistrar,pViewRegistrar);
    int maxViewCount = 2; // only allow 2 instances of this view to be created at a time
    auto callback = std::dynamic_pointer_cast<WBFL::EAF::ICommandCallback>(shared_from_this());
    m_MyViewKey = pViewRegistrar->RegisterView(IDR_MENU,callback,RUNTIME_CLASS(CEAFOutputChildFrame),RUNTIME_CLASS(CMyView),nullptr,maxViewCount);
@@ -127,19 +127,19 @@ void CExampleExtensionAgent::RegisterViews()
 
 void CExampleExtensionAgent::UnregisterViews()
 {
-   EAF_GET_IFACE(IEAFViewRegistrar,pViewRegistrar);
+   GET_IFACE(IEAFViewRegistrar,pViewRegistrar);
    pViewRegistrar->RemoveView(m_MyViewKey);
 }
 
 void CExampleExtensionAgent::CreateMyView()
 {
-   EAF_GET_IFACE(IEAFViewRegistrar,pViewRegistrar);
+   GET_IFACE(IEAFViewRegistrar,pViewRegistrar);
    pViewRegistrar->CreateView(m_MyViewKey,this);
 }
 
 void CExampleExtensionAgent::RegisterGraphs()
 {
-   EAF_GET_IFACE(IEAFGraphManager,pGraphMgr);
+   GET_IFACE(IEAFGraphManager,pGraphMgr);
 
    std::unique_ptr<CTestGraphBuilder> pTestGraphBuilder = std::make_unique<CTestGraphBuilder>();
    pTestGraphBuilder->SetMenuBitmap(&m_bmpMenu);
@@ -158,7 +158,7 @@ void CExampleExtensionAgent::CreateMenus()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   EAF_GET_IFACE(IEAFMainMenu,pMainMenu);
+   GET_IFACE(IEAFMainMenu,pMainMenu);
    auto pMenu = pMainMenu->GetMainMenu();
 
    INT nMenus = pMenu->GetMenuItemCount();
@@ -173,7 +173,7 @@ void CExampleExtensionAgent::CreateMenus()
 
 void CExampleExtensionAgent::RemoveMenus()
 {
-   EAF_GET_IFACE(IEAFMainMenu,pMainMenu);
+   GET_IFACE(IEAFMainMenu,pMainMenu);
    auto pMenu = pMainMenu->GetMainMenu();
    pMenu->DestroyMenu(m_MyMenu);
 }
@@ -181,13 +181,13 @@ void CExampleExtensionAgent::RemoveMenus()
 void CExampleExtensionAgent::CreateToolBar()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   EAF_GET_IFACE(IEAFToolbars,pToolBars);
+   GET_IFACE(IEAFToolbars,pToolBars);
    m_ToolBarID = pToolBars->CreateToolBar(_T("Extension Agent Toolbar"));
    auto pToolBar = pToolBars->GetToolBar(m_ToolBarID);
    auto callback = std::dynamic_pointer_cast<WBFL::EAF::ICommandCallback>(shared_from_this());
    pToolBar->LoadToolBar(IDR_TOOLBAR,callback);
 
-   //EAF_GET_IFACE(IEditByUI,pEditUI);
+   //GET_IFACE(IEditByUI,pEditUI);
    //UINT stdID = pEditUI->GetStdToolBarID();
    //CEAFToolBar* pStdToolBar = pToolBars->GetToolBar(stdID);
    //UINT cmdID = ID_COMMAND1;
@@ -196,10 +196,10 @@ void CExampleExtensionAgent::CreateToolBar()
 
 void CExampleExtensionAgent::RemoveToolBar()
 {
-   EAF_GET_IFACE(IEAFToolbars,pToolBars);
+   GET_IFACE(IEAFToolbars,pToolBars);
    pToolBars->DestroyToolBar(m_ToolBarID);
 
-   //EAF_GET_IFACE(IEditByUI,pEditUI);
+   //GET_IFACE(IEditByUI,pEditUI);
    //UINT stdID = pEditUI->GetStdToolBarID();
    //CEAFToolBar* pStdToolBar = pToolBars->GetToolBar(stdID);
    //pStdToolBar->RemoveButtons(this);
@@ -208,7 +208,7 @@ void CExampleExtensionAgent::RemoveToolBar()
 void CExampleExtensionAgent::RegisterReports()
 {
    // Register our reports
-   EAF_GET_IFACE(IEAFReportManager,pRptMgr);
+   GET_IFACE(IEAFReportManager,pRptMgr);
 
    //
    // Create report spec builders
@@ -227,13 +227,13 @@ void CExampleExtensionAgent::RegisterReports()
 
 void CExampleExtensionAgent::RegisterUIExtensions()
 {
-   EAF_GET_IFACE(IExtendPGSuperUI,pExtendPGSuperUI);
+   GET_IFACE(IExtendPGSuperUI,pExtendPGSuperUI);
    m_EditBridgeCallbackID = pExtendPGSuperUI->RegisterEditBridgeCallback(this);
    m_EditPierCallbackID = pExtendPGSuperUI->RegisterEditPierCallback(this,nullptr);
    m_EditSpanCallbackID = pExtendPGSuperUI->RegisterEditSpanCallback(this);
    m_EditGirderCallbackID = pExtendPGSuperUI->RegisterEditGirderCallback(this);
 
-   EAF_GET_IFACE(IExtendPGSpliceUI,pExtendPGSpliceUI);
+   GET_IFACE(IExtendPGSpliceUI,pExtendPGSpliceUI);
    m_EditTemporarySupportCallbackID = pExtendPGSpliceUI->RegisterEditTemporarySupportCallback(this, nullptr);
    m_EditSplicedGirderCallbackID = pExtendPGSpliceUI->RegisterEditSplicedGirderCallback(this);
    m_EditSegmentCallbackID = pExtendPGSpliceUI->RegisterEditSegmentCallback(this);
@@ -242,13 +242,13 @@ void CExampleExtensionAgent::RegisterUIExtensions()
 
 void CExampleExtensionAgent::UnregisterUIExtensions()
 {
-   EAF_GET_IFACE(IExtendPGSuperUI,pExtendPGSuperUI);
+   GET_IFACE(IExtendPGSuperUI,pExtendPGSuperUI);
    pExtendPGSuperUI->UnregisterEditBridgeCallback(m_EditBridgeCallbackID);
    pExtendPGSuperUI->UnregisterEditPierCallback(m_EditPierCallbackID);
    pExtendPGSuperUI->UnregisterEditSpanCallback(m_EditSpanCallbackID);
    pExtendPGSuperUI->UnregisterEditGirderCallback(m_EditGirderCallbackID);
 
-   EAF_GET_IFACE(IExtendPGSpliceUI,pExtendPGSpliceUI);
+   GET_IFACE(IExtendPGSpliceUI,pExtendPGSpliceUI);
    pExtendPGSpliceUI->UnregisterEditTemporarySupportCallback(m_EditTemporarySupportCallbackID);
    pExtendPGSpliceUI->UnregisterEditSplicedGirderCallback(m_EditSplicedGirderCallbackID);
    pExtendPGSpliceUI->UnregisterEditSegmentCallback(m_EditSegmentCallbackID);
@@ -262,7 +262,7 @@ void CExampleExtensionAgent::SimulateUserInput()
    {
       m_Answer = answer;
 
-      EAF_GET_IFACE(IEAFDocument,pDoc);
+      GET_IFACE(IEAFDocument,pDoc);
       pDoc->SetModified(TRUE);
    }
 }
@@ -277,9 +277,8 @@ bool CExampleExtensionAgent::RegInterfaces()
 
 bool CExampleExtensionAgent::Init()
 {
-   Agent::Init();
+   EAF_AGENT_INIT;
    CREATE_LOGFILE(_T("ExtensionAgent"));
-   //EAF_AGENT_INIT;
 
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
    VERIFY(m_bmpMenu.LoadBitmap(IDB_LOGO));

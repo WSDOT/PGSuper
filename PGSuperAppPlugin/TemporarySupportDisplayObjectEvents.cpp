@@ -29,7 +29,7 @@
 #include "TemporarySupportDisplayObjectEvents.h"
 #include "PGSpliceDoc.h"
 #include <IFace\Project.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include <DManip/DisplayObject.h>
 #include <DManip/DisplayList.h>

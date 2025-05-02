@@ -25,7 +25,7 @@
 #include "resource.h"
 #include "GirderGrid.h"
 #include "DuctGrid.h"
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <Materials/PsStrand.h>
 
 #include "DrawTendonsControl.h"

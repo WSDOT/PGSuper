@@ -35,7 +35,7 @@
 #include "GirderSegmentStrandsPage.h" // replace with real dialog header when we have it
 
 #include <PgsExt\DesignConfigUtil.h>
-#include <PgsExt\Helpers.h>
+#include <PsgLib\Helpers.h>
 
 #include <GenericBridge\Helpers.h>
 
@@ -48,14 +48,10 @@
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Intervals.h>
+#include <IFace/PointOfInterest.h>
 
 #include <PsgLib\GirderLibraryEntry.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescPrestressPage property page
@@ -78,8 +74,8 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    DDX_Control(pDX, IDC_STRAIGHT_STRAND_SIZE, m_cbStraight);
    DDX_Control(pDX, IDC_HARPED_STRAND_SIZE, m_cbHarped);
@@ -369,7 +365,7 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
 
       if ( pDX->m_bSaveAndValidate )
       {
-         EAF_GET_IFACE2(pBroker,IGirder,pGirder);
+         GET_IFACE2(pBroker,IGirder,pGirder);
          if ( pGirder->IsSymmetricSegment(pParent->m_pSegment->GetSegmentKey()) )
          {
             // if the segment is symmetric, the UI is only for the start half
@@ -453,7 +449,7 @@ void CGirderDescPrestressPage::DoDataExchange(CDataExchange* pDX)
 
       if ( pDX->m_bSaveAndValidate )
       {
-         EAF_GET_IFACE2(pBroker,IGirder,pGirder);
+         GET_IFACE2(pBroker,IGirder,pGirder);
          if ( pGirder->IsSymmetricSegment(pParent->m_pSegment->GetSegmentKey()) )
          {
             // if the segment is symmetric, the UI is only for the start half
@@ -670,9 +666,9 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
 
    // Get key segment dimensions
    IntervalIndexType intervalIdx = pIntervals->GetPrestressReleaseInterval(pParent->m_SegmentKey);
@@ -705,7 +701,7 @@ BOOL CGirderDescPrestressPage::OnInitDialog()
 
 
    // Deal with adjustable strands 
-   EAF_GET_IFACE2( pBroker, ILibrary, pLib );
+   GET_IFACE2( pBroker, ILibrary, pLib );
    const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(pParent->m_strGirderName.c_str());
    m_LibraryAdjustableStrandType = pGdrEntry->GetAdjustableStrandType();
 
@@ -909,7 +905,7 @@ void CGirderDescPrestressPage::OnNumStraightStrandsChanged(NMHDR* pNMHDR, LRESUL
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -930,7 +926,7 @@ void CGirderDescPrestressPage::OnNumHarpedStrandsChanged(NMHDR* pNMHDR, LRESULT*
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -1004,7 +1000,7 @@ void CGirderDescPrestressPage::OnNumTempStrandsChanged(NMHDR* pNMHDR, LRESULT* p
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -1100,7 +1096,7 @@ void CGirderDescPrestressPage::UpdatePjackEditEx(StrandIndexType nStrands, UINT 
       // Compute pjack and fill in value
       
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       // Get the edit control value and save it as the last user input force
       CString val_as_text;
@@ -1118,7 +1114,7 @@ void CGirderDescPrestressPage::UpdatePjackEditEx(StrandIndexType nStrands, UINT 
             {
                
                auto pBroker = EAFGetBroker();
-               EAF_GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry);
+               GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry);
 
                StrandIndexType nStraight, nHarped;
                pStrandGeometry->ComputeNumPermanentStrands(nStrands, pParent->m_strGirderName.c_str(), &nStraight, &nHarped);
@@ -1155,7 +1151,7 @@ void CGirderDescPrestressPage::UpdatePjackEditEx(StrandIndexType nStrands, UINT 
       // zero out pjack
       
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       Float64 jack=0.0;
       CDataExchange dx(this,FALSE);
@@ -1180,7 +1176,7 @@ Float64 CGirderDescPrestressPage::GetMaxPjack(StrandIndexType nStrands,pgsTypes:
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2( pBroker, IPretensionForce, pPSForce );
+   GET_IFACE2( pBroker, IPretensionForce, pPSForce );
 
    // TRICK CODE
    // If strand stresses are limited immediate prior to transfer, prestress losses must be computed between jacking and prestress transfer in 
@@ -1191,10 +1187,10 @@ Float64 CGirderDescPrestressPage::GetMaxPjack(StrandIndexType nStrands,pgsTypes:
    // This exception adversely impacts the behavior of this dialog. To prevent these problems, capture the current ROA setting, change ROA to
    // "Ignore", compute PjackMax, and then restore the ROA setting.
 
-   EAF_GET_IFACE2(pBroker,IEvents,pEvents);
+   GET_IFACE2(pBroker,IEvents,pEvents);
    pEvents->HoldEvents();
 
-   EAF_GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
+   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    WBFL::LRFD::RangeOfApplicabilityAction action = pLiveLoads->GetRangeOfApplicabilityAction();
    pLiveLoads->SetRangeOfApplicabilityAction(WBFL::LRFD::RangeOfApplicabilityAction::Ignore);
 
@@ -1254,7 +1250,7 @@ void CGirderDescPrestressPage::UpdateStrandControls()
    // number of strands to the max number of strands and recompute the jacking forces.
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -1350,7 +1346,7 @@ void CGirderDescPrestressPage::HideControls(int key, pgsTypes::StrandDefinitionT
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
    int nTitle;
    int nNumStrand;  // control id for #of strands edit box
@@ -1453,7 +1449,7 @@ void CGirderDescPrestressPage::DisableEndOffsetControls(BOOL hide)
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IGirder,pGirder);
+   GET_IFACE2(pBroker,IGirder,pGirder);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
    bool bSymmetric = pGirder->IsSymmetricSegment(pParent->m_pSegment->GetSegmentKey());
@@ -1499,7 +1495,7 @@ void CGirderDescPrestressPage::ShowEndOffsetControls(BOOL shw)
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IGirder,pGirder);
+   GET_IFACE2(pBroker,IGirder,pGirder);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
    bool bSymmetric = pGirder->IsSymmetricSegment(pParent->m_pSegment->GetSegmentKey());
@@ -1544,7 +1540,7 @@ void CGirderDescPrestressPage::DisableHpOffsetControls(BOOL hide)
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IGirder,pGirder);
+   GET_IFACE2(pBroker,IGirder,pGirder);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
    bool bSymmetric = pGirder->IsSymmetricSegment(pParent->m_pSegment->GetSegmentKey());
@@ -1590,7 +1586,7 @@ void CGirderDescPrestressPage::ShowHpOffsetControls(BOOL show)
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IGirder,pGirder);
+   GET_IFACE2(pBroker,IGirder,pGirder);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
    bool bSymmetric = pGirder->IsSymmetricSegment(pParent->m_pSegment->GetSegmentKey());
@@ -1650,7 +1646,7 @@ StrandIndexType CGirderDescPrestressPage::GetStraightStrandCount()
          
          
          auto pBroker = EAFGetBroker();
-         EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+         GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
          StrandIndexType numStraight, numHarped;
          pStrandGeometry->ComputeNumPermanentStrands( total_strands, pParent->m_strGirderName.c_str(), &numStraight, &numHarped);
@@ -1696,7 +1692,7 @@ StrandIndexType CGirderDescPrestressPage::GetHarpedStrandCount()
 
          
          auto pBroker = EAFGetBroker();
-         EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+         GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
          StrandIndexType numStraight, numHarped;
          pStrandGeometry->ComputeNumPermanentStrands( total_strands, pParent->m_strGirderName.c_str(), &numStraight, &numHarped);
@@ -1735,8 +1731,8 @@ void CGirderDescPrestressPage::UpdateEndRangeLength(HarpedStrandOffsetType measu
    {
       
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       // use passed nh value if continuous fill (control might not have data yet)
       ConfigStrandFillVector harpFill = m_CurrStrandDefinitionType == pgsTypes::sdtDirectSelection ? 
@@ -1773,7 +1769,7 @@ void CGirderDescPrestressPage::UpdateEndRangeLength(HarpedStrandOffsetType measu
       }
 
       // Update message
-      EAF_GET_IFACE2(pBroker,IGirder,pGirder);
+      GET_IFACE2(pBroker,IGirder,pGirder);
       if ( pGirder->IsSymmetricSegment(pParent->m_pSegment->GetSegmentKey()) )
       {
          str.Format(_T("Valid Range %s to %s"),
@@ -1803,8 +1799,8 @@ void CGirderDescPrestressPage::UpdateHpRangeLength(HarpedStrandOffsetType measur
    {
       
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       // use passed nh value if continuous fill (control might not have data yet)
       ConfigStrandFillVector harpFill = m_CurrStrandDefinitionType == pgsTypes::sdtDirectSelection ? 
@@ -1840,7 +1836,7 @@ void CGirderDescPrestressPage::UpdateHpRangeLength(HarpedStrandOffsetType measur
       }
 
       // Update message
-      EAF_GET_IFACE2(pBroker,IGirder,pGirder);
+      GET_IFACE2(pBroker,IGirder,pGirder);
       if ( pGirder->IsSymmetricSegment(pParent->m_pSegment->GetSegmentKey()) )
       {
          str.Format(_T("Valid Range %s to %s"),
@@ -1892,8 +1888,8 @@ void CGirderDescPrestressPage::OnSelchangeHpComboHp()
    {
       
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       for ( int i = 0; i < 2; i++ )
       {
@@ -1941,8 +1937,8 @@ void CGirderDescPrestressPage::OnSelchangeHpComboEnd()
       {
          
          auto pBroker = EAFGetBroker();
-         EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-         EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+         GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+         GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
          for ( int i = 0; i < 2; i++ )
          {
@@ -1985,7 +1981,7 @@ void CGirderDescPrestressPage::ShowHideNumStrandControls(pgsTypes::StrandDefinit
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    // Temporary strands
    StrandIndexType Nt = pStrandGeometry->GetMaxStrands(pParent->m_strGirderName.c_str(),pgsTypes::Temporary);
@@ -2118,7 +2114,7 @@ void CGirderDescPrestressPage::OnStrandInputTypeChanged()
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2( pBroker, ILibrary, pLib );
+   GET_IFACE2( pBroker, ILibrary, pLib );
    const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(pParent->m_strGirderName.c_str());
 
    CComboBox* box = (CComboBox*)GetDlgItem(IDC_STRAND_INPUT_TYPE);
@@ -2155,7 +2151,7 @@ void CGirderDescPrestressPage::OnStrandInputTypeChanged()
          pParent->m_pSegment->Strands.ClearExtendedStrands();
       }
 
-      EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+      GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
       ConfigStrandFillVector straight_fill = pStrandGeometry->ComputeStrandFill(pParent->m_strGirderName.c_str(), pgsTypes::Straight, num_straight);
       ConfigStrandFillVector harped_fill   = pStrandGeometry->ComputeStrandFill(pParent->m_strGirderName.c_str(), pgsTypes::Harped, num_harped);
       ConfigStrandFillVector temp_fill     = pStrandGeometry->ComputeStrandFill(pParent->m_strGirderName.c_str(), pgsTypes::Temporary, num_temp);
@@ -2202,7 +2198,7 @@ void CGirderDescPrestressPage::OnStrandInputTypeChanged()
       // See if we are coming from direct selection - if so, we need to convert strand data
       if(m_CurrStrandDefinitionType == pgsTypes::sdtDirectSelection)
       {
-         EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+         GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
          if (0 < num_temp)
          {
@@ -2246,7 +2242,7 @@ void CGirderDescPrestressPage::OnStrandInputTypeChanged()
       // Deal with permanent strands
       if (newStrandDefinitionType == pgsTypes::sdtTotal)
       {
-         EAF_GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry);
+         GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry);
 
          StrandIndexType newNumStraight, newNumHarped;
          bool bSuccess = pStrandGeometry->ComputeNumPermanentStrands(num_perm, pParent->m_strGirderName.c_str(), &newNumStraight, &newNumHarped);
@@ -2341,7 +2337,7 @@ void CGirderDescPrestressPage::OnStrandInputTypeChanged()
       }
       else if  (newStrandDefinitionType == pgsTypes::sdtStraightHarped)
       {
-         EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+         GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
          bool success = pStrandGeometry->IsValidNumStrands(pParent->m_strGirderName.c_str(), pgsTypes::Harped, num_harped);
          if (!success)
          {
@@ -2465,14 +2461,14 @@ void CGirderDescPrestressPage::OnStrandInputTypeChanged()
          }
          else
          {
-            EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+            GET_IFACE2(pBroker,IPointOfInterest,pPoi);
             PoiList vPoi;
             pPoi->GetPointsOfInterest(pParent->m_SegmentKey, POI_START_FACE | POI_END_FACE, &vPoi);
             ATLASSERT(vPoi.size() == 2);
             const pgsPointOfInterest& startPoi = vPoi.front();
             const pgsPointOfInterest& endPoi   = vPoi.back();
 
-            EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+            GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
             LPCTSTR lpszGirderName = pParent->m_Girder.GetGirderName();
 
@@ -2632,12 +2628,12 @@ void CGirderDescPrestressPage::OnStrandInputTypeChanged()
    // convert user-input pjack if coming from or going to total strands
    if  (m_CurrStrandDefinitionType == pgsTypes::sdtTotal)
    {
-      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
       ConvertPJackFromNumPerm(num_straight, num_harped, pDisplayUnits);
    }
    else if  (newStrandDefinitionType == pgsTypes::sdtTotal)
    {
-      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
       ConvertPJackToNumPerm(num_straight, num_harped, pDisplayUnits);
    }
 
@@ -2991,15 +2987,15 @@ void CGirderDescPrestressPage::EditDirectSelect()
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2( pBroker, ILibrary, pLib );
+   GET_IFACE2( pBroker, ILibrary, pLib );
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
    const GirderLibraryEntry* pGdrEntry = pLib->GetGirderEntry(pParent->m_strGirderName.c_str());
 
-   EAF_GET_IFACE2( pBroker, ISpecification, pSpec);
+   GET_IFACE2( pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
-   EAF_GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
    // Get current offset input values - dialog will force in bounds if needed
    Float64 hpOffsetAtStart(0.0), hpOffsetAtHp1(0.0), hpOffsetAtHp2(0.0), hpOffsetAtEnd(0.0);
@@ -3010,7 +3006,7 @@ void CGirderDescPrestressPage::EditDirectSelect()
       DDX_UnitValueAndTag( &DXf, IDC_HPOFFSET_START, IDC_HPOFFSET_START_UNIT, hpOffsetAtStart, pDisplayUnits->GetComponentDimUnit() );
       DDX_UnitValueAndTag( &DXf, IDC_HPOFFSET_END,   IDC_HPOFFSET_END_UNIT,   hpOffsetAtEnd,   pDisplayUnits->GetComponentDimUnit() );
 
-      EAF_GET_IFACE2(pBroker,IGirder,pGirder);
+      GET_IFACE2(pBroker,IGirder,pGirder);
       if ( pGirder->IsSymmetricSegment(pParent->m_pSegment->GetSegmentKey()) )
       {
          hpOffsetAtEnd = hpOffsetAtStart;
@@ -3026,7 +3022,7 @@ void CGirderDescPrestressPage::EditDirectSelect()
       DDX_UnitValueAndTag( &DXf, IDC_HPOFFSET_HP1, IDC_HPOFFSET_HP1_UNIT, hpOffsetAtHp1, pDisplayUnits->GetComponentDimUnit() );
       DDX_UnitValueAndTag( &DXf, IDC_HPOFFSET_HP2, IDC_HPOFFSET_HP2_UNIT, hpOffsetAtHp2, pDisplayUnits->GetComponentDimUnit() );
 
-      EAF_GET_IFACE2(pBroker,IGirder,pGirder);
+      GET_IFACE2(pBroker,IGirder,pGirder);
       if ( pGirder->IsSymmetricSegment(pParent->m_pSegment->GetSegmentKey()) )
       {
          hpOffsetAtHp2 = hpOffsetAtHp1;
@@ -3134,7 +3130,7 @@ ConfigStrandFillVector CGirderDescPrestressPage::ComputeStraightStrandFillVector
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -3159,7 +3155,7 @@ ConfigStrandFillVector CGirderDescPrestressPage::ComputeHarpedStrandFillVector()
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -3194,7 +3190,7 @@ void CGirderDescPrestressPage::UpdateAdjustableStrandControls()
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
    pgsTypes::AdjustableStrandType adjType = pParent->m_pSegment->Strands.GetAdjustableStrandType();
@@ -3255,7 +3251,7 @@ BOOL CGirderDescPrestressPage::OnSetActive()
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IGirder,pGirder);
+   GET_IFACE2(pBroker,IGirder,pGirder);
 
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -3289,7 +3285,7 @@ void CGirderDescPrestressPage::GetStrandCount(StrandIndexType* pNs, StrandIndexT
       CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
       
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry);
+      GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry);
       *pNp = GetDlgItemInt(IDC_NUM_HS);
       pStrandGeometry->ComputeNumPermanentStrands(*pNp, pParent->m_strGirderName.c_str(), pNs, pNh);
       *pNt = GetDlgItemInt(IDC_NUM_TEMP);

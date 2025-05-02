@@ -24,20 +24,20 @@
 //
 
 #include "stdafx.h"
-#include <psglib\psglib.h>
+#include <PsgLib\PsgLib.h>
 #include <fstream>
 
 #include <PsgLib\StructuredLoad.h>
 #include <PsgLib\StructuredSave.h>
-#include <psglib\LibraryEditorDoc.h>
-#include <psgLib\BeamFamilyManager.h>
+#include <PsgLib\LibraryEditorDoc.h>
+#include <PsgLib\BeamFamilyManager.h>
 
 #include <System\FileStream.h>
 #include <System\StructuredLoadXml.h>
 #include <System\StructuredSaveXml.h>
 
 
-#include <WBFLCore.h>
+
 
 #include <EAF\EAFApp.h>
 #include <EAF\EAFMainFrame.h>
@@ -85,7 +85,7 @@ CLibraryEditorDoc::CLibraryEditorDoc()
    m_LibraryManager.SetName(_T("Master Libraries"));
 
    // library editor doesn't use the status center
-   CEAFStatusCenter& status_center = GetStatusCenter();
+   auto& status_center = GetStatusCenter();
    status_center.Enable(false);
 
    // Reserve command IDs for document plug ins
@@ -196,7 +196,7 @@ HRESULT CLibraryEditorDoc::WriteTheDocument(IStructuredSave* pStrSave)
       // save editor-specific information
       CEAFApp* pApp = EAFGetApp();
       mysave.BeginUnit(_T("LIBRARY_EDITOR"), 1.0);
-      if (pApp->GetUnitsMode() == eafTypes::umUS)
+      if (pApp->GetUnitsMode() == WBFL::EAF::UnitMode::US)
       {
          mysave.Property(_T("EDIT_UNITS"), _T("US"));
       }
@@ -225,7 +225,7 @@ HRESULT CLibraryEditorDoc::WriteTheDocument(IStructuredSave* pStrSave)
 
 HRESULT CLibraryEditorDoc::LoadTheDocument(IStructuredLoad* pStrLoad)
 {
-   eafTypes::UnitMode unitMode;
+   WBFL::EAF::UnitMode unitMode;
    HRESULT hr = pgslibLoadLibrary(pStrLoad,&m_LibraryManager,&unitMode);
    if ( FAILED(hr) )
    {

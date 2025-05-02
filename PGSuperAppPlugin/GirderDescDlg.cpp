@@ -31,14 +31,9 @@
 #include <IFace\Project.h>
 #include <IFace\GirderHandling.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\Helpers.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\Helpers.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define IDC_CHECKBOX 100
 
@@ -234,7 +229,7 @@ void CGirderDescDlg::InitialzePages()
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(m_SegmentKey.groupIndex);
@@ -255,7 +250,7 @@ void CGirderDescDlg::InitialzePages()
       m_General.m_SlabOffsetOrHaunch[pgsTypes::metStart] = pGirder->GetSegment(m_SegmentKey.segmentIndex)->GetSlabOffset(pgsTypes::metStart); // must use original girder, not our local copy
       m_General.m_SlabOffsetOrHaunch[pgsTypes::metEnd] = pGirder->GetSegment(m_SegmentKey.segmentIndex)->GetSlabOffset(pgsTypes::metEnd);
 
-      EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+      GET_IFACE2(pBroker,ISpecification,pSpec);
       m_bCanAssumedExcessCamberInputBeEnabled = pSpec->IsAssumedExcessCamberInputEnabled();
       m_General.m_AssumedExcessCamber = m_bCanAssumedExcessCamberInputBeEnabled ? pIBridgeDesc->GetAssumedExcessCamber(m_SegmentKey.groupIndex,m_SegmentKey.girderIndex) : 0.0;
    }
@@ -359,7 +354,7 @@ void CGirderDescDlg::SetDebondTabName()
    TC_ITEM ti;
    ti.mask = TCIF_TEXT;
 
-   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
    bool bCanDebond = pStrandGeometry->CanDebondStrands(m_strGirderName.c_str(),pgsTypes::Straight);
    if ( bCanDebond )
    {
@@ -415,7 +410,7 @@ ConfigStrandFillVector CGirderDescDlg::ComputeStrandFillVector(pgsTypes::StrandT
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    if (m_pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectSelection)
    {

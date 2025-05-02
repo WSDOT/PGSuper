@@ -27,17 +27,17 @@
 
 #include <PgsExt\ReportPointOfInterest.h>
 #include <PsgLib\ShearData.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\ShearCapacity.h>
 #include <IFace\Project.h>
-#include <IFace\Bridge.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
 #include <IFace\BeamFactory.h>
+#include <IFace/PointOfInterest.h>
 
 #include <Reporter\ReportingUtils.h>
 
@@ -87,15 +87,15 @@ rptChapter* CHorizontalInterfaceShearCapacityDetailsChapterBuilder::Build(const 
       girderKey = pGdrLineRptSpec->GetGirderKey();
    }
 
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    if (!pBridge->IsCompositeDeck())
    {
       return nullptr;
    }
 
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   EAF_GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
 
    bool bDesign = m_bDesign;
    bool bRating = m_bRating;
@@ -105,9 +105,9 @@ rptChapter* CHorizontalInterfaceShearCapacityDetailsChapterBuilder::Build(const 
    rptParagraph* pPara = new rptParagraph();
    *pChapter << pPara;
 
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount() - 1;
    std::_tstring stage_name(pIntervals->GetDescription(intervalIdx));
 
@@ -137,7 +137,7 @@ rptChapter* CHorizontalInterfaceShearCapacityDetailsChapterBuilder::Build(const 
 
       if ( bRating )
       {
-         EAF_GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+         GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
          if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) && pRatingSpec->RateForShear(pgsTypes::lrDesign_Inventory) )
          {
             vLimitStates.push_back(pgsTypes::StrengthI_Inventory);

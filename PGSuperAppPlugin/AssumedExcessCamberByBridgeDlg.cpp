@@ -30,11 +30,6 @@
 #include <EAF\EAFDisplayUnits.h>
 #include "PGSuperUnits.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CAssumedExcessCamberByBridgeDlg dialog
@@ -55,7 +50,7 @@ void CAssumedExcessCamberByBridgeDlg::DoDataExchange(CDataExchange* pDX)
    CDialog::DoDataExchange(pDX);
 
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    CEditHaunchACamberDlg* pParent = (CEditHaunchACamberDlg*)GetParent();
    CBridgeDescription2* pBridge = pParent->GetBridgeDesc();

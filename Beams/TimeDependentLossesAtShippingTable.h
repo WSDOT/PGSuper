@@ -20,21 +20,15 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// TimeDependentLossesAtShippingTable.h : Declaration of the CTimeDependentLossesAtShippingTable
+#pragma once
 
-#ifndef __TIMEDEPENDENTLOSSESATSHIPPINGTABLE_H_
-#define __TIMEDEPENDENTLOSSESATSHIPPINGTABLE_H_
-
-#include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
-
-#include <PgsExt\StrandData.h>
+#include <PgsExt/ReportPointOfInterest.h>
 
 class WBFL::LRFD::Losses;
+class CStrandData;
 
-/////////////////////////////////////////////////////////////////////////////
-// CTimeDependentLossesAtShippingTable
 class CTimeDependentLossesAtShippingTable : public rptRcTable
 {
 public:
@@ -56,9 +50,7 @@ private:
    DECLARE_UV_PROTOTYPE( rptStressUnitValue,  stress );
    rptRcScalar scalar;
 
-   const CStrandData* m_pStrands;
+   const CStrandData* m_pStrands = nullptr;
    bool m_bTemporaryStrands;
    bool m_bPCIUHPC;
 };
-
-#endif //__TIMEDEPENDENTLOSSESATSHIPPINGTABLE_H_

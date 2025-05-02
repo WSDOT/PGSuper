@@ -35,11 +35,6 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescLiftingPage property page
@@ -88,9 +83,9 @@ void CGirderDescLiftingPage::DoDataExchange(CDataExchange* pDX)
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 segmentLength = pBridge->GetSegmentLength(segmentKey);
    DDX_UnitValueAndTag( pDX, IDC_GIRDERLENGTH, IDC_GIRDERLENGTH_UNIT, segmentLength, pDisplayUnits->GetSpanLengthUnit() );
 
@@ -149,7 +144,7 @@ BOOL CGirderDescLiftingPage::OnInitDialog()
    CComboBox* pcbHaulTrucks = (CComboBox*)GetDlgItem(IDC_HAUL_TRUCKS);
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2( pBroker, ILibraryNames, pLibNames );
+   GET_IFACE2( pBroker, ILibraryNames, pLibNames );
    std::vector<std::_tstring> names;
    pLibNames->EnumHaulTruckNames( &names );
    for (const auto& name : names)
@@ -167,8 +162,8 @@ BOOL CGirderDescLiftingPage::OnSetActive()
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
-   EAF_GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+   GET_IFACE2(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
+   GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
 
    if(!pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled())
    {

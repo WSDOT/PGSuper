@@ -580,8 +580,8 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,std::sha
                                                pgsTypes::AnalysisType analysisType,
                                                std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const T& unitT)
 {
-   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
-   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
    bool bTimeStepMethod = prestress_loss_criteria.LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP;

@@ -30,7 +30,7 @@
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 
-#include <PgsExt\PointOfInterest.h>
+#include <PsgLib\PointOfInterest.h>
 #include <PgsExt\HaulingAnalysisArtifact.h>
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\CapacityToDemand.h>
@@ -76,10 +76,10 @@ void CHaulingCheck::Build(rptChapter* pChapter,
                               std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey,
                               std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   EAF_GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+   GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
    if (pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
    {
-      EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+      GET_IFACE2(pBroker,IBridge,pBridge);
       SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
       for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
       {
@@ -109,11 +109,11 @@ void CHaulingCheck::Build(rptChapter* pChapter,
    std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey,
    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   EAF_GET_IFACE2(pBroker, ISegmentHaulingSpecCriteria, pSegmentHaulingSpecCriteria);
+   GET_IFACE2(pBroker, ISegmentHaulingSpecCriteria, pSegmentHaulingSpecCriteria);
    if (pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
    {
-      EAF_GET_IFACE2(pBroker, IBridge, pBridge);
-      EAF_GET_IFACE2(pBroker, IArtifact, pArtifacts);
+      GET_IFACE2(pBroker, IBridge, pBridge);
+      GET_IFACE2(pBroker, IArtifact, pArtifacts);
       SegmentIndexType nSegments = pBridge->GetSegmentCount(segmentKey);
       if (1 < nSegments)
       {

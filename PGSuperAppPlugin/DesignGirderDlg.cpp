@@ -37,11 +37,6 @@
 #include <MFCTools\AutoRegistry.h>
 #include "PGSPluginAppBase.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CDesignGirderDlg dialog
@@ -119,7 +114,7 @@ BOOL CDesignGirderDlg::OnInitDialog()
 {
    // set up design options
    // Haunch design not possible for some cases. Put preserve haunch option in disabled control for this case
-   EAF_GET_IFACE(ISpecification,pSpec);
+   GET_IFACE(ISpecification,pSpec);
    m_bCanEnableHaunchDesign = pSpec->DesignSlabHaunch();
 
    // Load design options from registery from previous runs. We may disable design if it's not possible.
@@ -133,7 +128,7 @@ BOOL CDesignGirderDlg::OnInitDialog()
    CComboBox* pSpanBox = (CComboBox*)GetDlgItem( IDC_SPAN );
    CComboBox* pGdrBox  = (CComboBox*)GetDlgItem( IDC_GIRDER );
 
-   EAF_GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IBridge,pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
@@ -218,8 +213,8 @@ void CDesignGirderDlg::LoadSettings(arSlabOffsetDesignType haunchDesignRequest, 
    // We can't do haunch design if library disallows, or we have no deck. Nip this in the bud
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
    if (!pSpec->DesignSlabHaunch())
    {
       haunchDesignType = sodPreserveHaunch;
@@ -319,7 +314,7 @@ void CDesignGirderDlg::OnSpanChanged()
 
 void CDesignGirderDlg::UpdateGirderComboBox(SpanIndexType spanIdx)
 {
-   EAF_GET_IFACE( IBridge, pBridge );
+   GET_IFACE( IBridge, pBridge );
 
    CComboBox* pGdrBox = (CComboBox*)GetDlgItem(IDC_GIRDER);
    Uint16 curSel = pGdrBox->GetCurSel();

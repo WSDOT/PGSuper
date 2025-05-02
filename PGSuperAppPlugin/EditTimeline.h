@@ -22,7 +22,7 @@
 #pragma once
 
 #include <EAF\EAFTransaction.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <IFace\Project.h>
 
 class txnEditTimeline : public CEAFTransaction

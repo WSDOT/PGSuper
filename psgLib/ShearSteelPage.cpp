@@ -25,7 +25,7 @@
 #include "stdafx.h"
 #include <PsgLib\ShearData.h>
 #include <PsgLib\ShearSteelPage.h>
-#include <psglib\LibraryEditorDoc.h>
+#include <PsgLib\LibraryEditorDoc.h>
 #include "AdditionalInterfaceShearBarDlg.h"
 
 #include <IFace\Project.h>

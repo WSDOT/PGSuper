@@ -38,21 +38,24 @@
 #include <IFace\Intervals.h>
 #include <IFace\Alignment.h>
 #include <IFace\AgeAdjustedMaterial.h>
+#include <IFace\StatusCenter.h>
+#include <Beams\Interfaces.h>
 
 #include <Beams\Helper.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\GirderLabel.h>
+#include <psgLib/SectionPropertiesCriteria.h>
+#include <psgLib/SpecificationCriteria.h>
+#include <psgLib/GirderLibraryEntry.h>
+#include <psgLib/SpecLibraryEntry.h>
 
-#include <IFace\StatusCenter.h>
 #include <PgsExt\StatusItem.h>
+#include <PgsExt/PoiMgr.h>
 
-#include <Beams\Interfaces.h>
 #include <Plugins\CLSID.h>
 #include <Plugins\ConfigureStrandMover.h>
 #include <WBFLGenericBridgeTools.h>
 
-#include <psgLib/SectionPropertiesCriteria.h>
-#include <psgLib/SpecificationCriteria.h>
 
 
 CNUDeckedBulbTeeFactory::CNUDeckedBulbTeeFactory() : IBeamFactory()
@@ -64,8 +67,8 @@ CNUDeckedBulbTeeFactory::CNUDeckedBulbTeeFactory() : IBeamFactory()
    // It's possible for the library editor to call this code. In that case there is no broker
    if (pBroker)
    {
-      EAF_GET_IFACE2(pBroker, IEAFStatusCenter, pStatusCenter);
-      m_scidInformationalWarning     = pStatusCenter->RegisterCallback(new pgsInformationalStatusCallback(eafTypes::statusWarning)); 
+      GET_IFACE2(pBroker, IEAFStatusCenter, pStatusCenter);
+      m_scidInformationalWarning = pStatusCenter->RegisterCallback(std::make_shared<pgsInformationalStatusCallback>(WBFL::EAF::StatusSeverityType::Warning)); 
    }
    else
    {
@@ -179,7 +182,7 @@ void CNUDeckedBulbTeeFactory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Bro
 
       // use raw input here because requesting it from the bridge will cause an infinite loop.
       // bridge agent calls this during validation
-      EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+      GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
       Float64 topWidth = pBridgeDesc->GetGirderTopWidth(); // we don't have a girder key so best we can do is get the top level value (which may not be valid)
       beam->put_W2(topWidth / 2 - w1 / 2 - w3);
@@ -285,7 +288,7 @@ Float64 CNUDeckedBulbTeeFactory::GetSegmentHeight(std::shared_ptr<WBFL::EAF::Bro
 
 void CNUDeckedBulbTeeFactory::ConfigureSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
 {
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const CSplicedGirderData*  pGirder = pGroup->GetGirder(segmentKey.girderIndex);
@@ -297,7 +300,7 @@ void CNUDeckedBulbTeeFactory::ConfigureSegment(std::shared_ptr<WBFL::EAF::Broker
 
    // Build up the beam shape
    // Beam materials
-   EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   GET_IFACE2(pBroker, ILossParameters, pLossParams);
    CComPtr<IMaterial> material;
    CComPtr<IMaterial> jointMaterial;
    if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP)
@@ -315,8 +318,8 @@ void CNUDeckedBulbTeeFactory::ConfigureSegment(std::shared_ptr<WBFL::EAF::Broker
    }
    else
    {
-      EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
-      EAF_GET_IFACE2(pBroker, IMaterials, pMaterial);
+      GET_IFACE2(pBroker, IIntervals, pIntervals);
+      GET_IFACE2(pBroker, IMaterials, pMaterial);
       material.CoCreateInstance(CLSID_Material);
       jointMaterial.CoCreateInstance(CLSID_Material);
 
@@ -378,7 +381,7 @@ void CNUDeckedBulbTeeFactory::ConfigureSegment(std::shared_ptr<WBFL::EAF::Broker
 
 void CNUDeckedBulbTeeFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
 {
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 gdrLength = pBridge->GetSegmentLength(segmentKey);
 
    pgsPointOfInterest poiStart(segmentKey,0.00,   POI_SECTCHANGE_RIGHTFACE );
@@ -408,7 +411,7 @@ std::shared_ptr<CDistFactorEngineerBase> CNUDeckedBulbTeeFactory::CreateDistFact
 
 std::unique_ptr<CPsLossEngineerBase> CNUDeckedBulbTeeFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusItemIDType statusGroupID,const CGirderKey& girderKey) const
 {
-   EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP)
    {
       return std::make_unique<CTimeStepLossEngineer>(pBroker, statusGroupID);
@@ -736,7 +739,7 @@ bool CNUDeckedBulbTeeFactory::IsPrismatic(const CSegmentKey& segmentKey) const
 {
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const CSplicedGirderData*  pGirder = pGroup->GetGirder(segmentKey.girderIndex);
@@ -853,8 +856,8 @@ std::_tstring CNUDeckedBulbTeeFactory::GetInteriorGirderEffectiveFlangeWidthImag
 
 std::_tstring CNUDeckedBulbTeeFactory::GetExteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
 {
-   EAF_GET_IFACE2(pBroker, ILibrary,       pLib);
-   EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
+   GET_IFACE2(pBroker, ILibrary,       pLib);
+   GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
    const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();
@@ -1233,7 +1236,7 @@ void CNUDeckedBulbTeeFactory::GetTopWidth(std::shared_ptr<WBFL::EAF::Broker> pBr
       ATLASSERT(false);
    }
 
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    const auto& segmentKey(pSegment->GetSegmentKey());
    Float64 Ls = pBridge->GetSegmentLength(segmentKey);
 
@@ -1268,7 +1271,7 @@ void CNUDeckedBulbTeeFactory::GetTopWidth(std::shared_ptr<WBFL::EAF::Broker> pBr
 //   Float64 n1(0), n2(0), c2(0); // c2 is the distance from the left flange tip to where the top flange slope changes from n1 to n2
 //   Float64 left(leftStart), right(rightStart);
 //
-//   EAF_GET_IFACE2(pBroker,IBridgeDescription, pIBridgeDesc);
+//   GET_IFACE2(pBroker,IBridgeDescription, pIBridgeDesc);
 //   const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 //   pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->GetDeckType();
 //   if ((deckType == pgsTypes::sdtNone || deckType == pgsTypes::sdtCompositeOverlay || deckType == pgsTypes::sdtNonstructuralOverlay) && pBridgeDesc->GetGirderOrientation() == pgsTypes::Plumb)
@@ -1278,14 +1281,14 @@ void CNUDeckedBulbTeeFactory::GetTopWidth(std::shared_ptr<WBFL::EAF::Broker> pBr
 //
 //      const auto& segmentKey(pSegment->GetSegmentKey());
 //
-//      EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+//      GET_IFACE2(pBroker, IBridge, pBridge);
 //      Float64 station, offset;
 //      pBridge->GetStationAndOffset(segmentKey, 0.0, &station, &offset);
 //
 //      Float64 left_edge_offset = offset - leftStart;
 //      Float64 right_edge_offset = offset + rightStart;
 //
-//      EAF_GET_IFACE2(pBroker, IRoadway, pAlignment);
+//      GET_IFACE2(pBroker, IRoadway, pAlignment);
 //      // Loop over crown points to see if one lies within the flange width
 //      IndexType numCPs = pAlignment->GetCrownPointIndexCount(station);
 //      IndexType numCPsfound(0);
@@ -1318,7 +1321,7 @@ void CNUDeckedBulbTeeFactory::GetTopWidth(std::shared_ptr<WBFL::EAF::Broker> pBr
 //      }
 //      else if (numCPsfound > 1)
 //      {
-//         EAF_GET_IFACE2(pBroker,IEAFStatusCenter,pStatusCenter);
+//         GET_IFACE2(pBroker,IEAFStatusCenter,pStatusCenter);
 //         std::_tstring str(_T("The decked girder at ") + std::_tstring(SEGMENT_LABEL(segmentKey)) + _T("\'s top flange has more than one crown point above it. Only one crown point will be used to model the top of the girder."));
 //         pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidInformationalWarning,str.c_str());
 //         pStatusCenter->Add(pStatusItem);
@@ -1397,7 +1400,7 @@ void CNUDeckedBulbTeeFactory::GetTopWidth(std::shared_ptr<WBFL::EAF::Broker> pBr
 //      // parabolic interpolation of the depth of the top flange thickening
 //      const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
 //      
-//      EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+//      GET_IFACE2(pBroker, IBridge, pBridge);
 //      Float64 Ls = pBridge->GetSegmentLength(segmentKey);
 //
 //      Float64 thickening = pSegment->TopFlangeThickening;

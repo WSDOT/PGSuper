@@ -24,7 +24,7 @@
 
 #include "resource.h"
 #include <EAF\EAFDisplayUnits.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 // CSelectClosureJointDlg dialog
 

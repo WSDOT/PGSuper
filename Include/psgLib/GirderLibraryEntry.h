@@ -28,9 +28,9 @@
 
 #include <PGSuperTypes.h>
 
-#include "psgLibLib.h"
+#include "PsgLibLib.h"
 
-#include <psgLib\ISupportIcon.h>
+#include <PsgLib\ISupportIcon.h>
 #include <libraryFw\LibraryEntry.h>
 
 #include <IFace\BeamFactory.h>
@@ -44,14 +44,14 @@
 
 #include <Materials/Rebar.h>
 
-#include <psgLib\ShearData.h>
+#include <PsgLib\ShearData.h>
 #include <pgsExt\CamberMultipliers.h>
 
-class pgsLibraryEntryDifferenceItem;
 class pgsCompatibilityData;
 class CGirderMainSheet;
 class GirderLibraryEntry;
 class GirderLibraryEntryObserver;
+class DifferenceItem;
 
 PSGLIBTPL WBFL::System::SubjectT<GirderLibraryEntryObserver, GirderLibraryEntry>;
 
@@ -590,7 +590,7 @@ public:
 
    // Compares this library entry with rOther. Returns true if the entries are the same.
    // vDifferences contains a listing of the differences. The caller is responsible for deleting the difference items
-   bool Compare(const GirderLibraryEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool& bMustRename,bool bReturnOnFirstDifference=false,bool considerName=false,bool bCompareSeedValues=false) const;
+   bool Compare(const GirderLibraryEntry& rOther, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences, bool& bMustRename,bool bReturnOnFirstDifference=false,bool considerName=false,bool bCompareSeedValues=false) const;
 
    bool IsEqual(const GirderLibraryEntry& rOther,bool bConsiderName=false) const;
 

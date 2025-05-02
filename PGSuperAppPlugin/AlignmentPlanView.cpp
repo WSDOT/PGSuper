@@ -41,11 +41,6 @@
 #include <DManip/PolyLineDisplayObjectImpl.h>
 #include <WBFLGeometry/GeomHelpers.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define TITLE_DISPLAY_LIST       0
 #define ALIGNMENT_DISPLAY_LIST   1
@@ -217,8 +212,8 @@ void CAlignmentPlanView::BuildAlignmentDisplayObjects()
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IRoadway,pRoadway);
-   EAF_GET_IFACE2(pBroker, IRoadwayData, pRoadwayData);
+   GET_IFACE2(pBroker,IRoadway,pRoadway);
+   GET_IFACE2(pBroker, IRoadwayData, pRoadwayData);
 
    Float64 n = 10;
    Float64 start_station, start_elevation, start_grade;
@@ -383,11 +378,11 @@ void CAlignmentPlanView::BuildBridgeDisplayObjects()
    CComPtr<IPoint2d> pntShape;
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
    if (deckType == pgsTypes::sdtNone)
    {
-      EAF_GET_IFACE2(pBroker, IGirder, pGirder);
+      GET_IFACE2(pBroker, IGirder, pGirder);
 
       CComPtr<ICompositeShape> compShape;
       compShape.CoCreateInstance(CLSID_CompositeShape);
@@ -472,7 +467,7 @@ void CAlignmentPlanView::BuildBridgeDisplayObjects()
    Float64 alignment_offset = pBridge->GetAlignmentOffset();
 
    // model the alignment as a series of individual points
-   EAF_GET_IFACE2(pBroker, IRoadway, pRoadway);
+   GET_IFACE2(pBroker, IRoadway, pRoadway);
    long nPoints = 20;
    Float64 station_inc = (end_station - start_station)/(nPoints-1);
    Float64 station = start_station;
@@ -508,7 +503,7 @@ void CAlignmentPlanView::BuildLabelDisplayObjects()
    UINT settings = pDoc->GetAlignmentEditorSettings();
    if ( (settings & IDA_AP_DRAW_BRIDGE) != 0 )
    {
-      EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+      GET_IFACE2(pBroker,IBridge,pBridge);
       Float64 start_station = pBridge->GetPierStation(0);
       Float64 end_station = pBridge->GetPierStation(pBridge->GetPierCount()-1);
       CreateStationLabel(label_display_list,start_station,_T("Start"),LABEL_NORMAL_TO_ALIGNMENT, TA_BASELINE | TA_RIGHT);
@@ -516,7 +511,7 @@ void CAlignmentPlanView::BuildLabelDisplayObjects()
    }
 
    // Start/End of station range labels
-   EAF_GET_IFACE2(pBroker, IRoadway, pRoadway);
+   GET_IFACE2(pBroker, IRoadway, pRoadway);
    Float64 n = 10;
    Float64 start_station, start_elevation, start_grade;
    Float64 end_station, end_elevation, end_grade;
@@ -609,8 +604,8 @@ void CAlignmentPlanView::CreateStationLabel(std::shared_ptr<WBFL::DManip::iDispl
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   EAF_GET_IFACE2(pBroker,IRoadway,pRoadway);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IRoadway,pRoadway);
 
 
    CComPtr<IPoint2d> p;

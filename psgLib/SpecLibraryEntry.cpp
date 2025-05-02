@@ -22,8 +22,8 @@
 
 #include "StdAfx.h"
 #include "resource.h"
-#include <psgLib\SpecLibraryEntry.h>
-#include <psgLib\LibraryEntryDifferenceItem.h>
+#include <PsgLib\SpecLibraryEntry.h>
+#include <PsgLib\DifferenceItem.h>
 
 #include "SpecLibraryEntryImpl.h"
 #include "SpecMainSheet.h"
@@ -112,18 +112,18 @@ bool SpecLibraryEntry::LoadMe(WBFL::System::IStructuredLoad* pLoad)
 
 bool SpecLibraryEntry::IsEqual(const SpecLibraryEntry& rOther,bool bConsiderName) const
 {
-   std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>> vDifferences;
+   std::vector<std::unique_ptr<DifferenceItem>> vDifferences;
    bool bMustRename;
    return Compare(rOther,vDifferences,bMustRename,true,bConsiderName);
 }
 
-bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
+bool SpecLibraryEntry::Compare(const SpecLibraryEntry& rOther, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences, bool& bMustRename, bool bReturnOnFirstDifference, bool considerName) const
 {
    bMustRename = false;
    if (considerName && GetName() != rOther.GetName())
    {
       if (bReturnOnFirstDifference) { ATLASSERT(vDifferences.size() == 0); return false; }
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Name"), GetName().c_str(), rOther.GetName().c_str()));
+      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Name"), GetName().c_str(), rOther.GetName().c_str()));
    }
 
    return m_pImpl->Compare(rOther.m_pImpl.get(), vDifferences, bReturnOnFirstDifference);

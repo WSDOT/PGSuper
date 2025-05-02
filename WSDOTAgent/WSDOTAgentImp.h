@@ -36,7 +36,8 @@ public:
 
 // Agent
 public:
-	bool RegInterfaces() override;
+   std::_tstring GetName() const override { return _T("WSDOTAgent"); }
+   bool RegInterfaces() override;
 	bool Init() override;
 	bool ShutDown() override;
    CLSID GetCLSID() const override;

@@ -27,7 +27,7 @@
 // DebondGrid.h : header file
 //
 
-#include <PgsExt\GirderData.h>
+#include <PsgLib\GirderData.h>
 #include <PsgLib\GirderLibraryEntry.h>
 
 class CGirderSelectStrandsPage;

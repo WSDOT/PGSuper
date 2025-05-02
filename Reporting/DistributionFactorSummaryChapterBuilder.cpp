@@ -87,8 +87,8 @@ rptChapter* CDistributionFactorSummaryChapterBuilder::Build(const std::shared_pt
 
    auto pBroker = pBrokerSpec->GetBroker();
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
    PierIndexType nPiers = pBridge->GetPierCount();
    for ( PierIndexType pierIdx = 0; pierIdx < nPiers; pierIdx++ )
@@ -117,8 +117,8 @@ void WriteSpanTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBro
    INIT_SCALAR_PROTOTYPE(rptRcSectionScalar, dfM, pDisplayUnits->GetScalarFormat());
    INIT_SCALAR_PROTOTYPE(rptRcSectionScalar, dfV, pDisplayUnits->GetScalarFormat());
 
-   EAF_GET_IFACE2(pBroker,ILiveLoadDistributionFactors,pDistFact);
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,ILiveLoadDistributionFactors,pDistFact);
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
    bool bNegMoments = pBridge->ProcessNegativeMoments(spanIdx);
 
@@ -255,8 +255,8 @@ void WritePierTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBro
    INIT_SCALAR_PROTOTYPE(rptRcSectionScalar, dfM, pDisplayUnits->GetScalarFormat());
    INIT_SCALAR_PROTOTYPE(rptRcSectionScalar, dfV, pDisplayUnits->GetScalarFormat());
 
-   EAF_GET_IFACE2_NOCHECK(pBroker,ILiveLoadDistributionFactors,pDistFact);
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2_NOCHECK(pBroker,ILiveLoadDistributionFactors,pDistFact);
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
    bool bContinuousLeft,bContinuousRight;
    pBridge->IsContinuousAtPier(pierIdx,&bContinuousLeft,&bContinuousRight);

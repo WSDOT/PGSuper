@@ -24,11 +24,11 @@
 //
 
 #include "stdafx.h"
-#include "psglib\psglib.h"
+#include "PsgLib\PsgLib.h"
 #include "SpecShearPage.h"
 #include "SpecMainSheet.h"
 #include <EAF\EAFDocument.h>
-#include <psgLib/SpecificationCriteria.h>
+#include <PsgLib/SpecificationCriteria.h>
 
 
 /////////////////////////////////////////////////////////////////////////////

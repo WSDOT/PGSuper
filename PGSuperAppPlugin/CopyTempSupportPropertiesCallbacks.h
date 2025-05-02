@@ -25,14 +25,14 @@
 #include <IFace\ExtendUI.h>
 #include <EAF\EAFTransaction.h>
 #include <PgsExt\MacroTxn.h>
-#include <PsgLib\ShearData.h>
-#include <PgsExt\LongitudinalRebarData.h>
-#include <PgsExt\StrandData.h>
-#include <PgsExt\HandlingData.h>
-#include <PgsExt\GirderMaterial.h>
-#include <PgsExt\PTData.h>
-#include <PgsExt\SegmentPTData.h>
-#include <PgsExt\ColumnData.h>
+#include <psgLib\ShearData.h>
+#include <psgLib\LongitudinalRebarData.h>
+#include <psgLib\StrandData.h>
+#include <psgLib\HandlingData.h>
+#include <psgLib\GirderMaterial.h>
+#include <psgLib\PTData.h>
+#include <psgLib\SegmentPTData.h>
+#include <psgLib\ColumnData.h>
 
 class rptParagraph;
 

@@ -31,14 +31,9 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
 
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\DeckDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\DeckDescription2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CApplyLoadsDlg dialog
@@ -244,7 +239,7 @@ void CApplyLoadsDlg::OnMoveToSourceList()
 void CApplyLoadsDlg::FillLists()
 {
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IUserDefinedLoadData, pUserDefinedLoads);
+   GET_IFACE2(pBroker,IUserDefinedLoadData, pUserDefinedLoads);
    IndexType nLoads = pUserDefinedLoads->GetPointLoadCount();
    for ( IndexType loadIdx = 0; loadIdx < nLoads; loadIdx++ )
    {

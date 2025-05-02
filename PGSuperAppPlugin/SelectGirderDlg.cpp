@@ -28,14 +28,9 @@
 #include "SelectGirderDlg.h"
 
 #include <IFace\Project.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include "PGSuperDoc.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CSelectGirderDlg dialog
@@ -76,7 +71,7 @@ BOOL CSelectGirderDlg::OnInitDialog()
 {
 	CDialog::OnInitDialog();
 	
-	EAF_GET_IFACE( IBridgeDescription, pIBridgeDesc ); 
+	GET_IFACE( IBridgeDescription, pIBridgeDesc ); 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
 	CComboBox* pGroupBox   = (CComboBox*)GetDlgItem( IDC_GROUP );
@@ -115,7 +110,7 @@ BOOL CSelectGirderDlg::OnInitDialog()
 
 void CSelectGirderDlg::OnGroupChanged() 
 {
-	EAF_GET_IFACE( IBridgeDescription, pIBridgeDesc ); 
+	GET_IFACE( IBridgeDescription, pIBridgeDesc ); 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
 	CComboBox* pGroupBox   = (CComboBox*)GetDlgItem( IDC_GROUP );

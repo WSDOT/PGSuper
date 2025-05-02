@@ -29,8 +29,8 @@
 // BridgeDescDeckPointGrid.h : header file
 //
 
-#include <PgsExt\DeckDescription2.h>
-#include <PgsExt\DeckPoint.h>
+#include <PsgLib\DeckDescription2.h>
+#include <PsgLib\DeckPoint.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescDeckPointGrid window

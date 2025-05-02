@@ -29,6 +29,7 @@
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\ReportOptions.h>
+#include <IFace/PointOfInterest.h>
 
 #include <PsgLib\SpecLibraryEntry.h>
 
@@ -67,8 +68,8 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
 {
    INIT_SCALAR_PROTOTYPE(rptRcScalar, df, pDisplayUnits->GetScalarFormat());
 
-   EAF_GET_IFACE2(pBroker,ILiveLoadDistributionFactors,pDistFact);
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,ILiveLoadDistributionFactors,pDistFact);
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
    SpanIndexType startSpanIdx, endSpanIdx;
    pBridge->GetGirderGroupSpans(girderKey.groupIndex,&startSpanIdx,&endSpanIdx);
@@ -129,14 +130,14 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
       (*pTable)(1, col++) << _T("V");
    }
 
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
 
    PoiList vPoi;
    pIPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), POI_SPAN, &vPoi);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(), false );
 
-   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
@@ -186,7 +187,7 @@ void CLiveLoadDistributionFactorTable::Build(rptChapter* pChapter,
       nCols++;
    }
 
-   EAF_GET_IFACE2(pBroker,ILiveLoads, pLiveLoads);
+   GET_IFACE2(pBroker,ILiveLoads, pLiveLoads);
    std::_tstring strSpecialAction = pLiveLoads->GetLLDFSpecialActionText();
    if ( !strSpecialAction.empty() )
    {

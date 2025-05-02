@@ -22,7 +22,7 @@
 
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\ReportPointOfInterest.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 
 #include <EAF\EAFUtilities.h>
 #include <IFace\PointOfInterest.h>
@@ -35,23 +35,6 @@ rptPointOfInterest::rptPointOfInterest(const WBFL::Units::Length* pUnitOfMeasure
                                        bool bShowUnitTag) :
 rptLengthUnitValue(pUnitOfMeasure,zeroTolerance,bShowUnitTag),m_bPrefixAttributes(true),m_bIncludeSpanAndGirder(false)
 {
-   m_pBroker = EAFGetBroker();
-}
-
-rptPointOfInterest::rptPointOfInterest(const rptPointOfInterest& rOther) :
-rptLengthUnitValue( rOther )
-{
-   MakeCopy( rOther );
-}
-
-rptPointOfInterest& rptPointOfInterest::operator = (const rptPointOfInterest& rOther)
-{
-   if ( this != &rOther )
-   {
-      MakeAssignment( rOther );
-   }
-
-   return *this;
 }
 
 rptReportContent* rptPointOfInterest::CreateClone() const
@@ -71,6 +54,8 @@ bool rptPointOfInterest::IncludeSpanAndGirder() const
 
 rptReportContent& rptPointOfInterest::SetValue(PoiAttributeType reference, const pgsPointOfInterest& poi)
 {
+   auto broker = EAFGetBroker();
+
    ATLASSERT(WBFL::System::Flags<PoiAttributeType>::IsSet(reference, POI_RELEASED_SEGMENT) ||
       WBFL::System::Flags<PoiAttributeType>::IsSet(reference, POI_STORAGE_SEGMENT) ||
       WBFL::System::Flags<PoiAttributeType>::IsSet(reference, POI_LIFT_SEGMENT) ||
@@ -90,30 +75,30 @@ rptReportContent& rptPointOfInterest::SetValue(PoiAttributeType reference, const
    }
    else if (m_Reference == POI_STORAGE_SEGMENT)
    {
-      EAF_GET_IFACE(IGirder, pGirder);
+      GET_IFACE2(broker, IGirder, pGirder);
       Float64 XsLeft, XsRight;
       pGirder->GetSegmentStorageSupportLocations(m_POI.GetSegmentKey(), &XsLeft, &XsRight);
       locationAdjustment = XsLeft;
    }
    else if (m_Reference == POI_LIFT_SEGMENT)
    {
-      EAF_GET_IFACE(ISegmentLifting, pSegmentLifting);
+      GET_IFACE2(broker, ISegmentLifting, pSegmentLifting);
       locationAdjustment = pSegmentLifting->GetLeftLiftingLoopLocation(m_POI.GetSegmentKey());
    }
    else if (m_Reference == POI_HAUL_SEGMENT)
    {
-      EAF_GET_IFACE(ISegmentHauling, pSegmentHauling);
+      GET_IFACE2(broker, ISegmentHauling, pSegmentHauling);
       locationAdjustment = pSegmentHauling->GetTrailingOverhang(m_POI.GetSegmentKey());
    }
    else if (m_Reference == POI_ERECTED_SEGMENT)
    {
-      EAF_GET_IFACE(IBridge, pBridge);
+      GET_IFACE2(broker, IBridge, pBridge);
       locationAdjustment = pBridge->GetSegmentStartEndDistance(m_POI.GetSegmentKey());
    }
 
    if (m_Reference == POI_SPAN)
    {
-      EAF_GET_IFACE(IPointOfInterest, pPoi);
+      GET_IFACE2(broker, IPointOfInterest, pPoi);
       pPoi->ConvertPoiToSpanPoint(m_POI, &m_SpanKey, &m_Xspan);
 
       return rptLengthUnitValue::SetValue(m_Xspan);
@@ -122,12 +107,12 @@ rptReportContent& rptPointOfInterest::SetValue(PoiAttributeType reference, const
    {
       if (m_bIncludeSpanAndGirder)
       {
-         EAF_GET_IFACE(IBridge, pBridge);
+         GET_IFACE2(broker, IBridge, pBridge);
          CSegmentKey segmentKey(m_POI.GetSegmentKey());
          segmentKey.segmentIndex = 0;
          locationAdjustment = pBridge->GetSegmentStartEndDistance(segmentKey);
 
-         EAF_GET_IFACE(IPointOfInterest, pPoi);
+         GET_IFACE2(broker, IPointOfInterest, pPoi);
          m_Xgl = pPoi->ConvertPoiToGirderlineCoordinate(m_POI);
          return rptLengthUnitValue::SetValue(m_Xgl - locationAdjustment);
       }
@@ -189,24 +174,6 @@ std::_tstring rptPointOfInterest::AsString() const
 //#endif
 
    return str;
-}
-
-void rptPointOfInterest::MakeCopy(const rptPointOfInterest& rOther)
-{
-   m_pBroker = rOther.m_pBroker;
-   m_POI                   = rOther.m_POI;
-   m_SpanKey               = rOther.m_SpanKey;
-   m_Xspan                 = rOther.m_Xspan;
-   m_Xgl                   = rOther.m_Xgl;
-   m_Reference             = rOther.m_Reference;
-   m_bPrefixAttributes     = rOther.m_bPrefixAttributes;
-   m_bIncludeSpanAndGirder = rOther.m_bIncludeSpanAndGirder;
-}
-
-void rptPointOfInterest::MakeAssignment(const rptPointOfInterest& rOther)
-{
-   rptLengthUnitValue::MakeAssignment( rOther );
-   MakeCopy( rOther );
 }
 
 void rptPointOfInterest::PrefixAttributes(bool bPrefixAttributes)

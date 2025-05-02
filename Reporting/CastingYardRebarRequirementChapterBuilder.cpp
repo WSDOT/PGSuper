@@ -34,8 +34,7 @@
 #include <IFace/Limits.h>
 #include <IFace\DocumentType.h>
 #include <IFace\ReportOptions.h>
-
-
+#include <IFace/PointOfInterest.h>
 
 /****************************************************************************
 CLASS
@@ -64,7 +63,7 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(const std::shared_
    auto pBroker = pGirderRptSpec->GetBroker();
    const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
@@ -73,9 +72,9 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(const std::shared_
    *pChapter << pPara;
    *pPara << _T("Minimum amount of bonded reinforcement sufficient to resist the tensile force in the concrete ") << WBFL::LRFD::LrfdCw8th(_T("[5.9.4][C5.9.4.1.2]"),_T("[5.9.2.3][C5.9.2.3.1b]")) << rptNewLine;
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
-   EAF_GET_IFACE2(pBroker,IConcreteStressLimits,pAllowStress);
+   GET_IFACE2(pBroker,IConcreteStressLimits,pAllowStress);
 
    bool bSimpleTable = true;
    if (pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing())
@@ -104,7 +103,7 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(const std::shared_
 
       if ( pAllowStress->CheckTemporaryStresses() )
       {
-         EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+         GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
          if ( 0 < pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary) )
          {
             IntervalIndexType tsRemovalIntervalIdx = pIntervals->GetTemporaryStrandRemovalInterval(segmentKey);
@@ -118,9 +117,9 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(const std::shared_
    // Report for Closure Joints
    // need to report for all spec-check intervals after a closure joint
    // is composite with the girder
-   EAF_GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pIPoi); // only used if there is more than one segment in the girder
+   GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pIPoi); // only used if there is more than one segment in the girder
 
-   EAF_GET_IFACE2(pBroker, IStressCheck, pStressCheck);
+   GET_IFACE2(pBroker, IStressCheck, pStressCheck);
    std::vector<IntervalIndexType> vSpecCheckIntervals = pStressCheck->GetStressCheckIntervals(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments-1; segIdx++ )
    {
@@ -169,7 +168,7 @@ rptChapter* CCastingYardRebarRequirementChapterBuilder::Build(const std::shared_
    // need to report for all intervals when post-tensioning occurs after the
    // deck is composite
    IntervalIndexType lastCompositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
-   EAF_GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
+   GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
    std::set<IntervalIndexType> vIntervals;
    for ( DuctIndexType ductIdx = 0; ductIdx < nDucts; ductIdx++ )
@@ -218,7 +217,7 @@ void CCastingYardRebarRequirementChapterBuilder::BuildTable(std::shared_ptr<WBFL
    pgsTypes::StressLocation botLocation = pgsTypes::BottomGirder;
    pgsTypes::StressLocation topLocation = pgsTypes::TopGirder;
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    rptRcTable* pTable = CreateTable(pBroker,segmentKey,bSimpleTable,topLocation,botLocation,intervalIdx,pDisplayUnits);
    *pPara << pTable << rptNewLine;
@@ -244,7 +243,7 @@ void CCastingYardRebarRequirementChapterBuilder::BuildTable(std::shared_ptr<WBFL
    pgsTypes::StressLocation botLocation = pgsTypes::BottomGirder;
    pgsTypes::StressLocation topLocation = pgsTypes::TopGirder;
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    rptRcTable* pTable = CreateTable(pBroker, poi.GetSegmentKey(), bSimpleTable, topLocation,botLocation,intervalIdx,pDisplayUnits);
    *pPara << pTable << rptNewLine;
@@ -268,7 +267,7 @@ void CCastingYardRebarRequirementChapterBuilder::BuildTable(std::shared_ptr<WBFL
    pgsTypes::StressLocation botLocation = pgsTypes::BottomDeck;
    pgsTypes::StressLocation topLocation = pgsTypes::TopDeck;
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    rptRcTable* pTable = CreateTable(pBroker, girderKey, bSimpleTable,topLocation,botLocation,intervalIdx,pDisplayUnits);
    *pPara << pTable << rptNewLine;
@@ -293,7 +292,7 @@ void CCastingYardRebarRequirementChapterBuilder::BuildTable(std::shared_ptr<WBFL
 
 rptRcTable* CCastingYardRebarRequirementChapterBuilder::CreateTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, bool bSimpleTable, pgsTypes::StressLocation topLocation, pgsTypes::StressLocation botLocation, IntervalIndexType intervalIdx, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
    CString strTitle;
    strTitle.Format(_T("Reinforcement required for tension stress limit, Interval %d - %s, [%s]"), LABEL_INTERVAL(intervalIdx), pIntervals->GetDescription(intervalIdx).c_str(), WBFL::LRFD::LrfdCw8th(_T("C5.9.4.1.2"), _T("C5.9.2.3.1b")));
 
@@ -377,11 +376,11 @@ rptRcTable* CCastingYardRebarRequirementChapterBuilder::CreateTable(std::shared_
 
 void CCastingYardRebarRequirementChapterBuilder::FillTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptRcTable* pTable,bool bSimpleTable,pgsTypes::StressLocation topLocation,pgsTypes::StressLocation botLocation,IntervalIndexType intervalIdx,const pgsPointOfInterest& poi) const
 {
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    IntervalIndexType overlayIntervalIdx = pIntervals->GetOverlayInterval();
 
@@ -390,7 +389,7 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(std::shared_ptr<WBFL:
    pgsTypes::LimitState limitState = (liveLoadIntervalIdx <= intervalIdx ? pgsTypes::ServiceIII : pgsTypes::ServiceI);
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location,       pDisplayUnits->GetSpanLengthUnit(), false );
-   EAF_GET_IFACE2_NOCHECK(pBroker,IReportOptions,pReportOptions);
+   GET_IFACE2_NOCHECK(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(segmentKey.segmentIndex == ALL_SEGMENTS && (pReportOptions->IncludeSpanAndGirder4Pois(segmentKey) || poi.GetID() != INVALID_ID));
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
@@ -401,14 +400,14 @@ void CCastingYardRebarRequirementChapterBuilder::FillTable(std::shared_ptr<WBFL:
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(segmentKey);
    SegmentIndexType firstSegIdx = (segmentKey.segmentIndex == ALL_SEGMENTS ? 0 : segmentKey.segmentIndex);
    SegmentIndexType lastSegIdx  = (segmentKey.segmentIndex == ALL_SEGMENTS ? nSegments-1 : firstSegIdx );
 
    StressCheckTask task(intervalIdx, limitState, pgsTypes::Tension);
 
-   EAF_GET_IFACE2(pBroker,IArtifact,pIArtifact);
+   GET_IFACE2(pBroker,IArtifact,pIArtifact);
    for ( SegmentIndexType segIdx = firstSegIdx; segIdx <= lastSegIdx; segIdx++ )
    {
       CSegmentKey thisSegmentKey(segmentKey.groupIndex,segmentKey.girderIndex,segIdx);

@@ -78,15 +78,15 @@ rptChapter* CPierReactionChapterBuilder::Build(const std::shared_ptr<const WBFL:
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
 
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
-   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
-   EAF_GET_IFACE2(pBroker, IReactions, pReactions);
-   EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
-   EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
+   GET_IFACE2(pBroker, IReactions, pReactions);
+   GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+   GET_IFACE2(pBroker, ISpecification, pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
-   EAF_GET_IFACE2(pBroker, IProductForces, pProdForces);
+   GET_IFACE2(pBroker, IProductForces, pProdForces);
    pgsTypes::BridgeAnalysisType batMax = pProdForces->GetBridgeAnalysisType(analysisType, pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType batMin = pProdForces->GetBridgeAnalysisType(analysisType, pgsTypes::Minimize);
 
@@ -419,7 +419,7 @@ rptChapter* CPierReactionChapterBuilder::Build(const std::shared_ptr<const WBFL:
    LiveLoadTableFooter(pBroker, pPara, girderKey, true, false);
 
 
-   EAF_GET_IFACE2(pBroker, IUserDefinedLoads, pUDL);
+   GET_IFACE2(pBroker, IUserDefinedLoads, pUDL);
    bool bAreThereUserLoads = pUDL->DoUserLoadsExist(girderKey);
    if (bAreThereUserLoads)
    {

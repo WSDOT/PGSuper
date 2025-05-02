@@ -27,7 +27,7 @@
 
 #include <DManip/DisplayObjectEvents.h>
 
-interface IBroker;
+
 class CBridgeModelViewChildFrame;
 
 

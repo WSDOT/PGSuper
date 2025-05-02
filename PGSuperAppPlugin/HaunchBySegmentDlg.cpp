@@ -30,11 +30,6 @@
 
 #include <IFace\DocumentType.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 
@@ -57,7 +52,7 @@ void CHaunchBySegmentDlg::DoDataExchange(CDataExchange* pDX)
    CDialog::DoDataExchange(pDX);
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IDocumentType, pDocType);
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
    if (pDocType->IsPGSuperDocument())
    {
       if (FALSE == m_pGrid->UpdateData(pDX->m_bSaveAndValidate))
@@ -88,7 +83,7 @@ BOOL CHaunchBySegmentDlg::OnInitDialog()
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IDocumentType, pDocType);
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
    if (pDocType->IsPGSuperDocument())
    {
       m_pGrid = new CHaunchSegmentGrid;

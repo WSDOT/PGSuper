@@ -294,13 +294,13 @@ void CMomentLoadDrawStrategyImpl::OnUnselect(std::shared_ptr<WBFL::DManip::iDisp
 
 void CMomentLoadDrawStrategyImpl::EditLoad()
 {
-   EAF_GET_IFACE(IEditByUI, pEditByUI);
+   GET_IFACE(IEditByUI, pEditByUI);
    pEditByUI->EditMomentLoad(m_LoadIndex);
 }
 
 void CMomentLoadDrawStrategyImpl::DeleteLoad()
 {
-   EAF_GET_IFACE(IEditByUI, pEditByUI);
+   GET_IFACE(IEditByUI, pEditByUI);
    pEditByUI->DeleteMomentLoad(m_LoadIndex);
 
 }

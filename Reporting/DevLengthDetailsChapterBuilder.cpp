@@ -31,7 +31,7 @@
 #include <IFace\Intervals.h>
 #include <WBFLGenericBridgeTools.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 
 // Some utility functions
@@ -136,7 +136,7 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(const std::shared_ptr<const W
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
    INIT_UV_PROTOTYPE(rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), false);
    INIT_UV_PROTOTYPE(rptLength2UnitValue, area, pDisplayUnits->GetAreaUnit(), false);
    INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
@@ -147,15 +147,15 @@ rptChapter* CDevLengthDetailsChapterBuilder::Build(const std::shared_ptr<const W
    scalar.SetPrecision(3);
    scalar.SetTolerance(1.0e-6);
 
-   EAF_GET_IFACE2(pBroker, ILongRebarGeometry, pLongRebarGeometry);
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker, ILongRebarGeometry, pLongRebarGeometry);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
 
-   EAF_GET_IFACE2_NOCHECK(pBroker, IIntervals, pIntervals); // only used if there are rebar in the girder
-   EAF_GET_IFACE2(pBroker, IMaterials, pMaterials);
+   GET_IFACE2_NOCHECK(pBroker, IIntervals, pIntervals); // only used if there are rebar in the girder
+   GET_IFACE2(pBroker, IMaterials, pMaterials);
 
-   EAF_GET_IFACE2(pBroker, IPretensionForce, pPSForce);
+   GET_IFACE2(pBroker, IPretensionForce, pPSForce);
 
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(girderKey, &vGirderKeys);
    for (const auto& thisGirderKey : vGirderKeys)

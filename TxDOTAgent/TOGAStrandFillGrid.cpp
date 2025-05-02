@@ -123,7 +123,7 @@ void CTOGAStrandFillGrid::CustomInit(CTOGAGirderSelectStrandsDlg* pParent, const
    SetFrozenCols(2,2); // column 2 is frozen and is a row header column (keeps Select column from scrolling)
 
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // Make string for max debond length
    m_strMaxDebondLength = FormatDimension(m_pParent->m_MaxDebondLength, pDisplayUnits->GetXSectionDimUnit(), false);
@@ -388,7 +388,7 @@ void CTOGAStrandFillGrid::FillGrid()
          {
             // strand is debonded
             auto pBroker = EAFGetBroker();
-            EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+            GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
             SetStyleRange(CGXRange(row,DEBOND_VAL_COL), CGXStyle()
                .SetValue(FormatDimension(leftDebond, pDisplayUnits->GetXSectionDimUnit(), false))
@@ -524,7 +524,7 @@ bool CTOGAStrandFillGrid::UpdateData(bool doCheckData)
             }
 
             auto pBroker = EAFGetBroker();
-            EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+            GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
             leftDebond  = WBFL::Units::ConvertToSysUnits(leftDebond,  pDisplayUnits->GetXSectionDimUnit().UnitOfMeasure);
          }

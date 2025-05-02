@@ -23,8 +23,6 @@
 #pragma once
 
 #include <DManip/DisplayObjectEvents.h>
-interface IBroker;
-
 
 /////////////////////////////////////////////////////////////////////////////
 // CInplaceEditDisplayObjectEvents command target

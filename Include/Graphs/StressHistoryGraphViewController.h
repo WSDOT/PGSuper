@@ -23,7 +23,7 @@
 #pragma once
 
 #include <EAF\EAFViewController.h>
-#include <PgsExt\PointOfInterest.h>
+#include <PsgLib\PointOfInterest.h>
 
 // {D6566A01-9DF9-4136-8008-18D246C0BE8C}
 DEFINE_GUID(IID_IDstressHistoryGraphViewController,

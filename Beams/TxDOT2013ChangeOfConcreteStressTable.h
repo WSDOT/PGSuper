@@ -20,20 +20,14 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// TxDOT2013ChangeOfConcreteStressTable.h : Declaration of the CTxDOT2013ChangeOfConcreteStressTable
+#pragma once
 
-#ifndef __TxDOT2013ChangeOfConcreteStressTable_H_
-#define __TxDOT2013ChangeOfConcreteStressTable_H_
-
-#include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
-
+#include <PgsExt/ReportPointOfInterest.h>
 
 class WBFL::LRFD::Losses;
 
-/////////////////////////////////////////////////////////////////////////////
-// CTxDOT2013ChangeOfConcreteStressTable
 class CTxDOT2013ChangeOfConcreteStressTable : public rptRcTable
 {
 public:
@@ -50,5 +44,3 @@ private:
    DECLARE_UV_PROTOTYPE( rptMomentUnitValue,  moment );
    DECLARE_UV_PROTOTYPE( rptStressUnitValue,  stress );
 };
-
-#endif //__TxDOT2013ChangeOfConcreteStressTable_H_

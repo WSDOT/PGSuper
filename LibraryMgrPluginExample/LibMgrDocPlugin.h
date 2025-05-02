@@ -59,7 +59,7 @@ namespace LibraryMgr
 	  void Terminate() override;
 	  CString GetName() override;
 	  CString GetDocumentationSetName() override;
-	  eafTypes::HelpResult GetDocumentLocation(LPCTSTR lpszDocSetName, UINT nHID, CString& strURL) override;
+	  std::pair<WBFL::EAF::HelpResult,CString> GetDocumentLocation(LPCTSTR lpszDocSetName, UINT nHID) override;
 
 	  // ICommandCallback
    public:
@@ -69,8 +69,8 @@ namespace LibraryMgr
 
 	  // IPluginPersist
    public:
-	  HRESULT Save(IStructuredSave* pStrSave) override;
-	  HRESULT Load(IStructuredLoad* pStrLoad) override;
+	  bool Save(IStructuredSave* pStrSave) override;
+	  bool Load(IStructuredLoad* pStrLoad) override;
 
    private:
 	  void OnMyCommand();

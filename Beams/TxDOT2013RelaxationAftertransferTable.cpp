@@ -26,7 +26,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <PsgLib\SpecLibraryEntry.h>
-#include <PgsExt\GirderData.h>
+#include <PsgLib\GirderData.h>
 #include <Reporting\ReportNotes.h>
 
 

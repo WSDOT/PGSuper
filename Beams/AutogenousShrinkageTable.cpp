@@ -24,6 +24,7 @@
 #include "AutogenousShrinkageTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
+#include <IFace/PointOfInterest.h>
 
 #include <LRFD\PCIUHPCLosses.h>
 
@@ -44,10 +45,10 @@ CAutogenousShrinkageTable* CAutogenousShrinkageTable::PrepareTable(rptChapter* p
 {
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
-   EAF_GET_IFACE2(pBroker,IMaterials,pMaterials);
+   GET_IFACE2(pBroker,IMaterials,pMaterials);
    Float64 Epp = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Straight)->GetE(); // OK to use Straight since we just want E
    Float64 Ept = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Temporary)->GetE();
 
@@ -61,14 +62,14 @@ CAutogenousShrinkageTable* CAutogenousShrinkageTable::PrepareTable(rptChapter* p
 
    *pParagraph << _T("PCI UHPC SDG E.9.2.2.2") << rptNewLine;
 
-   EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
 
    // create and configure the table
-   EAF_GET_IFACE2(pBroker, IGirder, pGirder);
+   GET_IFACE2(pBroker, IGirder, pGirder);
    bool bIsPrismatic = pGirder->IsPrismatic(releaseIntervalIdx, segmentKey);
 
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    bool bIsAsymmetric = pBridge->HasAsymmetricGirders() || pBridge->HasAsymmetricPrestressing() ? true : false;
 
    ColumnIndexType numColumns = 3; // location, location, Aps_Perm
@@ -160,7 +161,7 @@ CAutogenousShrinkageTable* CAutogenousShrinkageTable::PrepareTable(rptChapter* p
    table->stress.ShowUnitTag(true);
    if ( bIsPrismatic )
    {
-      EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+      GET_IFACE2(pBroker, IPointOfInterest, pPoi);
       PoiList vPoi;
       pPoi->GetPointsOfInterest(segmentKey, POI_5L | POI_RELEASED_SEGMENT, &vPoi);
       ATLASSERT(vPoi.size() == 1);

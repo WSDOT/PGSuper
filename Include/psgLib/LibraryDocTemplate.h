@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #pragma once
-#include "psgLibLib.h"
+#include "PsgLibLib.h"
 
 #include <EAF\EAFDocTemplate.h>
 

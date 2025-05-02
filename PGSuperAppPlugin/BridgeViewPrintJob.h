@@ -33,7 +33,6 @@
 #include "BridgeModelViewChildFrame.h"
 #include "BridgeViewPane.h"
 
-struct IBroker;
 
 class CBridgeViewPrintJob : public CPrinterJob  
 {

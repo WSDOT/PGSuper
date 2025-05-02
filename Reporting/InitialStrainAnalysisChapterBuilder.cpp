@@ -55,13 +55,13 @@ rptChapter* CInitialStrainAnalysisChapterBuilder::Build(const std::shared_ptr<co
    *pChapter << pPara;
    *pPara << _T("Interval ") << LABEL_INTERVAL(intervalIdx) << rptNewLine;
 
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    PoiList vPoi;
    pPoi->GetPointsOfInterest(CSegmentKey(girderKey, ALL_SEGMENTS), &vPoi);
 
-   EAF_GET_IFACE2(pBroker,ILosses,pLosses);
+   GET_IFACE2(pBroker,ILosses,pLosses);
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    INIT_UV_PROTOTYPE(rptForceUnitValue,     force,      pDisplayUnits->GetGeneralForceUnit(),    false);
    INIT_UV_PROTOTYPE(rptMomentUnitValue,    moment,     pDisplayUnits->GetSmallMomentUnit(),     false);
    INIT_UV_PROTOTYPE(rptLengthUnitValue,    dist,       pDisplayUnits->GetSpanLengthUnit(),      false);

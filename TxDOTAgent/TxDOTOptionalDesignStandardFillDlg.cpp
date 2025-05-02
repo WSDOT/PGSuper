@@ -30,7 +30,7 @@
 #include <EAF\EAFDisplayUnits.h>
 #include "EccentricityDlg.h"
 
-
+#include <psgLib/LibraryManager.h>
 
 // CTxDOTOptionalDesignStandardFillDlg dialog
 
@@ -100,7 +100,7 @@ void CTxDOTOptionalDesignStandardFillDlg::DoDataExchange(CDataExchange* pDX)
    {
       if (numHarped>0) 
       {
-         EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+         GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
          DDX_UnitValueAndTag(pDX,IDC_OPT_TO, IDC_OPT_TO_UNITS, m_To, pDisplayUnits->GetComponentDimUnit() );
 
          if (pDX->m_bSaveAndValidate)
@@ -221,7 +221,7 @@ void CTxDOTOptionalDesignStandardFillDlg::UpdateControls()
    if (benable)
    {
       auto pBroker = m_pBrokerRetriever->GetClassicBroker();
-      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       Float64 toLower, toUpper;
       m_pGirderData->ComputeToRange(pLib, m_NumStrands, &toLower, &toUpper);

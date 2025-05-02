@@ -34,8 +34,9 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\EditByUI.h>
 #include <IFace\Intervals.h>
+#include <IFace/PointOfInterest.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include "TogaDisplayObjectFactory.h"
 #include "TogaSupportDrawStrategyImpl.h"
@@ -415,18 +416,18 @@ void CTogaGirderModelElevationView::BuildGirderDisplayObjects(CTxDOTOptionalDesi
    ATLASSERT(pDL);
    pDL->Clear();
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    // the origin of the coordinate system is at the left end of the girder
    // at the CG
-   EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    pgsPointOfInterest poi(segmentKey,0.00); // start of girder
    Float64 Yb = pSectProp->GetY(releaseIntervalIdx,poi,pgsTypes::BottomGirder);
 
    // get the shape of the girder in profile
-   EAF_GET_IFACE2(pBroker,IGirder,pGirder);
+   GET_IFACE2(pBroker,IGirder,pGirder);
    CComPtr<IShape> shape;
    pGirder->GetSegmentProfile(segmentKey,false,&shape);
 
@@ -446,11 +447,11 @@ void CTogaGirderModelElevationView::BuildGirderDisplayObjects(CTxDOTOptionalDesi
    strategy->Fill(true);
 
    // set the tool tip text
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 gdr_length, span_length;
    gdr_length  = pBridge->GetSegmentLength(segmentKey);
    span_length = pBridge->GetSegmentSpanLength(segmentKey);
@@ -461,7 +462,7 @@ void CTogaGirderModelElevationView::BuildGirderDisplayObjects(CTxDOTOptionalDesi
                   FormatDimension(span_length,pDisplayUnits->GetSpanLengthUnit())
                   );
 
-   EAF_GET_IFACE2(pBroker,IMaterials,pMaterials);
+   GET_IFACE2(pBroker,IMaterials,pMaterials);
    Float64 fci = pMaterials->GetSegmentFc(segmentKey,releaseIntervalIdx);
    Float64 fc  = pMaterials->GetSegmentFc(segmentKey,liveLoadIntervalIdx);
 
@@ -471,7 +472,7 @@ void CTogaGirderModelElevationView::BuildGirderDisplayObjects(CTxDOTOptionalDesi
                   FormatDimension(fc, pDisplayUnits->GetStressUnit())
                   );
 
-   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    const auto* pStrand     = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Straight);
    const auto* pTempStrand = pMaterials->GetStrandMaterial(segmentKey,pgsTypes::Temporary);
 
@@ -574,7 +575,7 @@ void CTogaGirderModelElevationView::BuildSupportDisplayObjects(CTxDOTOptionalDes
    pDL->Clear();
 
    // Get location to display the connection symbols
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 gdr_length = pBridge->GetSegmentLength(segmentKey);
    Float64 start_lgth = pBridge->GetSegmentStartEndDistance(segmentKey);
    Float64 end_lgth   = pBridge->GetSegmentEndEndDistance(segmentKey);
@@ -584,7 +585,7 @@ void CTogaGirderModelElevationView::BuildSupportDisplayObjects(CTxDOTOptionalDes
    pgsPointOfInterest poiEndBrg(segmentKey,gdr_length - end_lgth);
 
    // Display at bottom of girder.
-   EAF_GET_IFACE2(pBroker,IGirder,pGirder);
+   GET_IFACE2(pBroker,IGirder,pGirder);
    Float64 Hg_start = pGirder->GetHeight(poiStartBrg);
    Float64 Hg_end   = pGirder->GetHeight(poiEndBrg);
 
@@ -627,9 +628,9 @@ void CTogaGirderModelElevationView::BuildStrandDisplayObjects(CTxDOTOptionalDesi
    ATLASSERT(pDebondDL);
    pDebondDL->Clear();
 
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
-   EAF_GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
@@ -720,19 +721,19 @@ void CTogaGirderModelElevationView::BuildStrandCGDisplayObjects(CTxDOTOptionalDe
    ATLASSERT(pDL);
    pDL->Clear();
 
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    Float64 start_brg_offset = pBridge->GetSegmentStartBearingOffset(segmentKey);
    Float64 start_end_distance = pBridge->GetSegmentStartEndDistance(segmentKey);
    Float64 start_offset = start_brg_offset - start_end_distance;
 
-   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
    StrandIndexType ns = pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Straight);
    ns += pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Harped);
    ns += pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Temporary);
    if (0 < ns)
    {
-      EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-      EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+      GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+      GET_IFACE2(pBroker,IIntervals,pIntervals);
 
       CComPtr<IPoint2d> from_point, to_point;
       from_point.CoCreateInstance(__uuidof(Point2d));
@@ -740,7 +741,7 @@ void CTogaGirderModelElevationView::BuildStrandCGDisplayObjects(CTxDOTOptionalDe
 
       bool red = false;
 
-      EAF_GET_IFACE2(pBroker,IPointOfInterest,pPOI);
+      GET_IFACE2(pBroker,IPointOfInterest,pPOI);
       PoiList vPOI;
       pPOI->GetPointsOfInterest(segmentKey, &vPOI);
 
@@ -790,10 +791,10 @@ void CTogaGirderModelElevationView::BuildRebarDisplayObjects(CTxDOTOptionalDesig
    ATLASSERT(pDL);
    pDL->Clear();
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,ILongRebarGeometry,pLongRebarGeometry);
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPOI);
-   EAF_GET_IFACE2(pBroker,IGirder,pGirder);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,ILongRebarGeometry,pLongRebarGeometry);
+   GET_IFACE2(pBroker,IPointOfInterest,pPOI);
+   GET_IFACE2(pBroker,IGirder,pGirder);
 
    Float64 gdr_length = pBridge->GetSegmentLength(segmentKey);
 
@@ -850,9 +851,9 @@ void CTogaGirderModelElevationView::BuildDimensionDisplayObjects(CTxDOTOptionalD
    ATLASSERT(pDL);
    pDL->Clear();
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,IGirder,pGirder);
-   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IGirder,pGirder);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    Float64 gdr_length  = pBridge->GetSegmentLength(segmentKey);
    Float64 start_lgth  = pBridge->GetSegmentStartEndDistance(segmentKey);
@@ -944,8 +945,8 @@ void CTogaGirderModelElevationView::BuildStirrupDisplayObjects(CTxDOTOptionalDes
    ATLASSERT(pDL);
    pDL->Clear();
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeom);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeom);
 
    Float64 start_brg_offset = pBridge->GetSegmentStartBearingOffset(segmentKey);
    Float64 start_end_distance = pBridge->GetSegmentStartEndDistance(segmentKey);
@@ -974,7 +975,7 @@ void CTogaGirderModelElevationView::BuildStirrupDisplayObjects(CTxDOTOptionalDes
 
       if ( barSize != WBFL::Materials::Rebar::Size::bsNone && nStirrups != 0 )
       {
-         EAF_GET_IFACE2(pBroker,IGirder,pGirder);
+         GET_IFACE2(pBroker,IGirder,pGirder);
 
          ZoneIndexType nStirrupsInZone = ZoneIndexType(floor((end - start)/spacing));
          spacing = (end-start)/nStirrupsInZone;
@@ -1142,7 +1143,7 @@ std::shared_ptr<WBFL::DManip::DimensionLine> CTogaGirderModelElevationView::Buil
 
    // Format the dimension text
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    CString strDimension = FormatDimension(dimension,pDisplayUnits->GetSpanLengthUnit());
 
    textBlock->SetText(strDimension);

@@ -20,7 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// psgLib.cpp : Defines the initialization routines for the DLL.
+// PsgLib.cpp : Defines the initialization routines for the DLL.
 //
 
 #include "stdafx.h"
@@ -30,11 +30,12 @@
 
 #include "CLSID.h"
 
-#include <psgLib\psgLib.h>
-#include <psgLib\StructuredLoad.h>
-#include <psgLib\LibraryEntryDifferenceItem.h>
+#include <PsgLib\PsgLib.h>
+#include <PsgLib\StructuredLoad.h>
+#include <PsgLib\DifferenceItem.h>
 #include "LibraryEntryConflict.h"
 
+#include <WBFLCOGO_i.c>
 #include <WBFLGeometry_i.c>
 #include <WBFLTools_i.c>
 #include <Plugins\Beams.h>
@@ -179,7 +180,7 @@ bool do_deal_with_library_conflicts(ConflictList* pList, LibType* pMasterLib, co
          pproject = projectLib.LookupEntry(name.c_str());
          ATLASSERT(pproject!=0);
 
-         std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>> vDifferences;
+         std::vector<std::unique_ptr<DifferenceItem>> vDifferences;
          bool bMustRename = false;
          bool bSame = (bForceUpdate ? pmaster->IsEqual(*pproject) : pmaster->Compare(*pproject,vDifferences,bMustRename));
          if (!bSame)
@@ -189,7 +190,7 @@ bool do_deal_with_library_conflicts(ConflictList* pList, LibType* pMasterLib, co
             {
                // the library entry was lazy and didn't specify the exact nature of the conflict.
                // provide something to show in the conflict resolution dialog
-               vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Unspecified conflicts"),_T(""),_T("")));
+               vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Unspecified conflicts"),_T(""),_T("")));
             }
 
             LibConflictOutcome res;
@@ -407,7 +408,7 @@ void psglibCreateLibNameEnum( std::vector<std::_tstring>* pNames, const WBFL::Li
    prjLib.KeyList( *pNames );
 }
 
-LibConflictOutcome psglibResolveLibraryEntryConflict(const std::_tstring& strPublisher, const std::_tstring& strConfiguration, const std::_tstring& entryName, const std::_tstring& libName, const std::vector<std::_tstring>& keylists, bool isImported,const std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences,bool bMustRename,std::_tstring* pNewName)
+LibConflictOutcome psglibResolveLibraryEntryConflict(const std::_tstring& strPublisher, const std::_tstring& strConfiguration, const std::_tstring& entryName, const std::_tstring& libName, const std::vector<std::_tstring>& keylists, bool isImported,const std::vector<std::unique_ptr<DifferenceItem>>& vDifferences,bool bMustRename,std::_tstring* pNewName)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
@@ -505,7 +506,7 @@ HRESULT pgslibReadProjectDocHeader(LPCTSTR lpszRootNodeName,IStructuredLoad* pSt
    return S_OK;
 }
 
-HRESULT pgslibReadLibraryDocHeader(IStructuredLoad* pStrLoad,eafTypes::UnitMode* pUnitsMode)
+HRESULT pgslibReadLibraryDocHeader(IStructuredLoad* pStrLoad,WBFL::EAF::UnitMode* pUnitsMode)
 {
    USES_CONVERSION;
 
@@ -541,17 +542,17 @@ HRESULT pgslibReadLibraryDocHeader(IStructuredLoad* pStrLoad,eafTypes::UnitMode*
 
    if (str==_T("US"))
    {
-      *pUnitsMode = eafTypes::umUS;
+      *pUnitsMode = WBFL::EAF::UnitMode::US;
    }
    else
    {
-      *pUnitsMode = eafTypes::umSI;
+      *pUnitsMode = WBFL::EAF::UnitMode::SI;
    }
 
    return S_OK;
 }
 
-HRESULT pgslibLoadLibrary(LPCTSTR strFileName,psgLibraryManager* pLibMgr,eafTypes::UnitMode* pUnitMode, bool bIsMasterLibrary)
+HRESULT pgslibLoadLibrary(LPCTSTR strFileName,psgLibraryManager* pLibMgr,WBFL::EAF::UnitMode* pUnitMode, bool bIsMasterLibrary)
 {
    CComPtr<IStructuredLoad> pStrLoad;
    pStrLoad.CoCreateInstance(CLSID_StructuredLoad);
@@ -576,7 +577,7 @@ HRESULT pgslibLoadLibrary(LPCTSTR strFileName,psgLibraryManager* pLibMgr,eafType
    return S_OK;
 }
 
-HRESULT pgslibLoadLibrary(IStructuredLoad* pStrLoad,psgLibraryManager* pLibMgr,eafTypes::UnitMode* pUnitMode, bool bIsMasterLibrary)
+HRESULT pgslibLoadLibrary(IStructuredLoad* pStrLoad,psgLibraryManager* pLibMgr,WBFL::EAF::UnitMode* pUnitMode, bool bIsMasterLibrary)
 {
    try
    {

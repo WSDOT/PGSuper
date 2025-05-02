@@ -27,7 +27,7 @@
 
 #include <PgsExt\ReportPointOfInterest.h>
 #include <PsgLib\ShearData.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
@@ -39,6 +39,7 @@
 #include <IFace\Intervals.h>
 #include <IFace\BeamFactory.h>
 #include <IFace\ReportOptions.h>
+#include <IFace/PointOfInterest.h>
 
 #include <Reporter\ReportingUtils.h>
 
@@ -233,8 +234,8 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(const std::shared_ptr<con
       girderKey = pGdrLineRptSpec->GetGirderKey();
    }
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   EAF_GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
 
    bool bDesign = m_bDesign;
    bool bRating = m_bRating;
@@ -244,20 +245,20 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(const std::shared_ptr<con
    rptParagraph* pPara = new rptParagraph();
    *pChapter << pPara;
 
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
-   EAF_GET_IFACE2(pBroker, IMaterials, pMaterial);
+   GET_IFACE2(pBroker, IMaterials, pMaterial);
 
-   EAF_GET_IFACE2(pBroker,ISpecification, pSpec);
-   EAF_GET_IFACE2(pBroker,ILibrary, pLib);
+   GET_IFACE2(pBroker,ISpecification, pSpec);
+   GET_IFACE2(pBroker,ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount() - 1;
    std::_tstring stage_name(pIntervals->GetDescription(intervalIdx));
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(girderKey, &vGirderKeys);
    for(const auto& thisGirderKey : vGirderKeys)
@@ -271,7 +272,7 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(const std::shared_ptr<con
          *pPara << pgsGirderLabel::GetGirderLabel(thisGirderKey) << rptNewLine;
       }
 
-      EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+      GET_IFACE2(pBroker,IReportOptions,pReportOptions);
       m_IncludeSpanAndGirderForPois = pReportOptions->IncludeSpanAndGirder4Pois(thisGirderKey);
 
       bool bPermit = pLimitStateForces->IsStrengthIIApplicable(thisGirderKey);
@@ -293,7 +294,7 @@ rptChapter* CShearCapacityDetailsChapterBuilder::Build(const std::shared_ptr<con
 
       if ( bRating )
       {
-         EAF_GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+         GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
          if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) && pRatingSpec->RateForShear(pgsTypes::lrDesign_Inventory) )
          {
             vLimitStates.push_back(pgsTypes::StrengthI_Inventory);
@@ -449,7 +450,7 @@ void write_shear_dimensions_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
 
    const CSegmentKey& segmentKey = vPoi.front().get().GetSegmentKey();
 
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const CSplicedGirderData* pGirder = pGroup->GetGirder(segmentKey.girderIndex);
@@ -459,7 +460,7 @@ void write_shear_dimensions_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
 
    pgsTypes::SupportedDeckType deckType = pBridgeDesc->GetDeckDescription()->GetDeckType();
 
-   EAF_GET_IFACE2(pBroker, IMaterials, pMaterials);
+   GET_IFACE2(pBroker, IMaterials, pMaterials);
    bool bUHPC = pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC;
 
    std::_tstring strPicture = pFactory->GetShearDimensionsSchematicImage(deckType);
@@ -506,13 +507,13 @@ void write_shear_dimensions_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),   false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim,      pDisplayUnits->GetComponentDimUnit(), false );
 
-   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(segmentKey));
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   EAF_GET_IFACE2(pBroker,IShearCapacity,pShearCap);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IShearCapacity,pShearCap);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       // Don't print poi that are inside of a CSS zone
@@ -601,10 +602,10 @@ void write_shear_stress_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
 
    CGirderKey girderKey(vPoi.front().get().GetSegmentKey());
 
-   EAF_GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
    DuctIndexType nMaxSegmentDucts = pSegmentTendonGeometry->GetMaxDuctCount(girderKey);
 
-   EAF_GET_IFACE2(pBroker,IGirderTendonGeometry,pGirderTendonGeometry);
+   GET_IFACE2(pBroker,IGirderTendonGeometry,pGirderTendonGeometry);
    DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
 
    ColumnIndexType nColumns = 7;
@@ -685,8 +686,8 @@ void write_shear_stress_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
    location.IncludeSpanAndGirder(CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois);
 
    RowIndexType row = table->GetNumberOfHeaderRows();
-   EAF_GET_IFACE2(pBroker,IShearCapacity,pShearCap);
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IShearCapacity,pShearCap);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       col = 0;
@@ -735,8 +736,8 @@ void write_fpc_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
                      IntervalIndexType intervalIdx,
                      const std::_tstring& strStageName,pgsTypes::LimitState ls)
 {
-   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
-   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
    bool bAfter1999 = (WBFL::LRFD::BDSManager::Edition::SecondEditionWith2000Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false );
@@ -765,11 +766,11 @@ void write_fpc_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
 
    *pParagraph << rptNewLine;
 
-   EAF_GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
-   EAF_GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
+   GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
 
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    std::vector<CGirderKey> vGirderKeys;
    pPoi->GetGirderKeys(vPoi,&vGirderKeys);
    for (const auto& girderKey : vGirderKeys)
@@ -846,7 +847,7 @@ void write_fpc_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
 
       RowIndexType row = table->GetNumberOfHeaderRows();
 
-      EAF_GET_IFACE2(pBroker,IShearCapacity,pShearCap);
+      GET_IFACE2(pBroker,IShearCapacity,pShearCap);
 
       for (const pgsPointOfInterest& poi : vPoi)
       {
@@ -946,15 +947,15 @@ void write_fpce_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
 
    location.IncludeSpanAndGirder(CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois);
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
    std::set<CSegmentKey> segmentKeys; // keep track of the segments that we reported on
 
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   EAF_GET_IFACE2(pBroker,IShearCapacity,pShearCap);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IShearCapacity,pShearCap);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       segmentKeys.insert(poi.GetSegmentKey());
@@ -982,7 +983,7 @@ void write_fpce_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
    pParagraph = new rptParagraph(rptStyleManager::GetFootnoteStyle());
    *pChapter << pParagraph;
 
-   EAF_GET_IFACE2(pBroker,IMaterials,pMaterial);
+   GET_IFACE2(pBroker,IMaterials,pMaterial);
    bool bLambda = (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false);
 
    std::set<CSegmentKey>::iterator iter(segmentKeys.begin());
@@ -1030,8 +1031,8 @@ void write_fpo_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
                      IntervalIndexType intervalIdx,
                      const std::_tstring& strStageName,pgsTypes::LimitState ls)
 {
-   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
-   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    bool bAfter1999 = ( pSpecEntry->GetSpecificationCriteria().GetEdition() >= WBFL::LRFD::BDSManager::Edition::SecondEditionWith2000Interims ? true : false );
 
@@ -1051,9 +1052,9 @@ void write_fpo_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
    pParagraph = new rptParagraph();
    *pChapter << pParagraph;
 
-   EAF_GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
-   EAF_GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
    INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,   pDisplayUnits->GetStressUnit(),    true );
 
@@ -1064,7 +1065,7 @@ void write_fpo_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
       // See PCI BDM 8.4.1.1.4
       Float64 Kps, Kpt;
 
-      EAF_GET_IFACE2(pBroker,IMaterials,pMaterial);
+      GET_IFACE2(pBroker,IMaterials,pMaterial);
       for (const auto& girderKey : vGirderKeys)
       {
          DuctIndexType nMaxSegmentDucts = pSegmentTendonGeometry->GetMaxDuctCount(girderKey);
@@ -1227,12 +1228,12 @@ void write_fpo_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
 
          location.IncludeSpanAndGirder(CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois);
 
-         EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+         GET_IFACE2(pBroker,IBridge,pBridge);
          Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
 
          RowIndexType row = table->GetNumberOfHeaderRows();
       
-         EAF_GET_IFACE2(pBroker,IShearCapacity,pShearCap);
+         GET_IFACE2(pBroker,IShearCapacity,pShearCap);
          for (const pgsPointOfInterest& poi : vPoi)
          {
             col = 0;
@@ -1303,8 +1304,8 @@ void write_Fe_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls)
 {
-   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
-   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    if ( WBFL::LRFD::BDSManager::Edition::SecondEditionWith2000Interims <= pSpecEntry->GetSpecificationCriteria().GetEdition())
    {
@@ -1325,10 +1326,10 @@ void write_Fe_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
    *pParagraph << _T("This calculation is applicable only when ") << symbol(epsilon) << Sub(_T("x")) << _T(" is negative.") << rptNewLine;
    *pParagraph << rptNewLine;
 
-   EAF_GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
-   EAF_GET_IFACE2(pBroker,IGirderTendonGeometry,pGirderTendonGeometry);
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   GET_IFACE2(pBroker,IGirderTendonGeometry,pGirderTendonGeometry);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker, IBridge, pBridge);
 
    std::vector<CGirderKey> vGirderKeys;
    pPoi->GetGirderKeys(vPoi,&vGirderKeys);
@@ -1391,8 +1392,8 @@ void write_Fe_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
 
 
       RowIndexType row = table->GetNumberOfHeaderRows();
-      EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-      EAF_GET_IFACE2(pBroker,IShearCapacity,pShearCap);
+      GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+      GET_IFACE2(pBroker,IShearCapacity,pShearCap);
       for (const pgsPointOfInterest& poi : vPoi)
       {
          const CSegmentKey& segmentKey(poi.GetSegmentKey());
@@ -1475,8 +1476,8 @@ void write_ex_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls)
 {
-   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
-   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
 
@@ -1491,10 +1492,10 @@ void write_ex_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
 
    CGirderKey girderKey(vPoi.front().get().GetSegmentKey());
 
-   EAF_GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
    DuctIndexType nMaxSegmentDucts = pSegmentTendonGeometry->GetMaxDuctCount(girderKey);
 
-   EAF_GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
+   GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
    DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
 
    rptParagraph* pParagraph;
@@ -1729,7 +1730,7 @@ void write_ex_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
 
    location.IncludeSpanAndGirder(CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois);
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
 
    rptRcScalar scalar;
@@ -1741,8 +1742,8 @@ void write_ex_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
    bool print_footnote2 = false;
 
    RowIndexType row = table->GetNumberOfHeaderRows();
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   EAF_GET_IFACE2(pBroker,IShearCapacity,pShearCap);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IShearCapacity,pShearCap);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       // Don't print poi that are inside of a CSS zone
@@ -1959,14 +1960,14 @@ void write_es_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
 
    bool print_footnote1 = false;
 
    RowIndexType row = table->GetNumberOfHeaderRows();
-   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
-   EAF_GET_IFACE2(pBroker, IShearCapacity, pShearCap);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   GET_IFACE2(pBroker, IShearCapacity, pShearCap);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       // Don't print poi that are inside of a CSS zone
@@ -2027,8 +2028,8 @@ void write_btsummary_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
                        IntervalIndexType intervalIdx,
                        const std::_tstring& strStageName,pgsTypes::LimitState ls,bool bUHPC)
 {
-   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
-   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
 
@@ -2074,8 +2075,8 @@ void write_btsummary_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
       }
 
       INIT_UV_PROTOTYPE( rptLengthUnitValue,  xdimu,    pDisplayUnits->GetComponentDimUnit(),    true );
-      EAF_GET_IFACE2(pBroker,IMaterials,pMat);
-      EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+      GET_IFACE2(pBroker,IMaterials,pMat);
+      GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
       std::vector<CGirderKey> vGirderKeys;
       pPoi->GetGirderKeys(vPoi,&vGirderKeys);
@@ -2166,13 +2167,13 @@ void write_btsummary_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
 
    bool print_footnote=false;
    RowIndexType row = table->GetNumberOfHeaderRows();
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   EAF_GET_IFACE2(pBroker,IShearCapacity,pShearCap);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IShearCapacity,pShearCap);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       col = 0;
@@ -2337,12 +2338,12 @@ void write_theta_fv_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
 
    RowIndexType row = table->GetNumberOfHeaderRows();
-   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
-   EAF_GET_IFACE2(pBroker, IShearCapacity, pShearCap);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   GET_IFACE2(pBroker, IShearCapacity, pShearCap);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       col = 0;
@@ -2462,13 +2463,13 @@ void write_Vs_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
 
    location.IncludeSpanAndGirder(CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois);
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
 
    bool print_footnote=false;
    RowIndexType row = table->GetNumberOfHeaderRows();
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   EAF_GET_IFACE2(pBroker,IShearCapacity,pShearCap);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IShearCapacity,pShearCap);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       // Don't print poi that are inside of a CSS zone
@@ -2559,8 +2560,8 @@ void write_Vc_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
 
    bool bLambda = (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false);
 
-   EAF_GET_IFACE2(pBroker,IMaterials,pMaterial);
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IMaterials,pMaterial);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    std::vector<CGirderKey> vGirderKeys;
    pPoi->GetGirderKeys(vPoi, &vGirderKeys);
    for (const auto& girderKey : vGirderKeys)
@@ -2667,7 +2668,7 @@ void write_Vc_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
 
    bool print_footnote=false;
    RowIndexType row = table->GetNumberOfHeaderRows();
-   EAF_GET_IFACE2(pBroker,IShearCapacity,pShearCap);
+   GET_IFACE2(pBroker,IShearCapacity,pShearCap);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       colIdx = 0;
@@ -2680,7 +2681,7 @@ void write_Vc_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
 
       const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
-      EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+      GET_IFACE2(pBroker,IBridge,pBridge);
       Float64 end_size = pBridge->GetSegmentStartEndDistance(segmentKey);
 
       pgsTypes::ConcreteType concType = pMaterial->GetSegmentConcreteType(segmentKey);
@@ -2760,9 +2761,9 @@ void write_Vuhpc_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
    pParagraph = new rptParagraph;
    *pChapter << pParagraph;
 
-   EAF_GET_IFACE2(pBroker, IMaterials, pMaterials);
+   GET_IFACE2(pBroker, IMaterials, pMaterials);
 
-   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    std::vector<CGirderKey> vGirderKeys;
    pPoi->GetGirderKeys(vPoi, &vGirderKeys);
    for (const auto& girderKey : vGirderKeys)
@@ -2814,8 +2815,8 @@ void write_Vuhpc_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
 
    RowIndexType row = table->GetNumberOfHeaderRows();
 
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
-   EAF_GET_IFACE2(pBroker, IShearCapacity, pShearCap);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IShearCapacity, pShearCap);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       colIdx = 0;
@@ -2863,8 +2864,8 @@ void write_Vcf_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
 
    bool bLambda = (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false);
 
-   EAF_GET_IFACE2(pBroker, IMaterials, pMaterial);
-   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   GET_IFACE2(pBroker, IMaterials, pMaterial);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    std::vector<CGirderKey> vGirderKeys;
    pPoi->GetGirderKeys(vPoi, &vGirderKeys);
    for (const auto& girderKey : vGirderKeys)
@@ -2922,8 +2923,8 @@ void write_Vcf_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
 
    bool print_footnote = false;
    RowIndexType row = table->GetNumberOfHeaderRows();
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker, IShearCapacity, pShearCap);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker, IShearCapacity, pShearCap);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       colIdx = 0;
@@ -2972,8 +2973,8 @@ void write_Vci_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
    bool bLambda = (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false);
 
    *pParagraph << _T("Shear Resistance Provided by Concrete when inclined cracking results from combined shear and moment") << rptNewLine;
-   EAF_GET_IFACE2(pBroker,IMaterials,pMaterial);
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IMaterials,pMaterial);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    std::vector<CGirderKey> vGirderKeys;
    pPoi->GetGirderKeys(vPoi, &vGirderKeys);
    for (const auto& girderKey : vGirderKeys)
@@ -3068,11 +3069,11 @@ void write_Vci_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
    INIT_UV_PROTOTYPE( rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false );
    INIT_UV_PROTOTYPE( rptMomentUnitValue, moment, pDisplayUnits->GetMomentUnit(), false );
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
 
    RowIndexType row = table->GetNumberOfHeaderRows();
-   EAF_GET_IFACE2(pBroker,IShearCapacity,pShearCap);
+   GET_IFACE2(pBroker,IShearCapacity,pShearCap);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       // Don't print poi that are inside of a CSS zone
@@ -3116,8 +3117,8 @@ void write_Vcw_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
 
    bool bLambda = (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false);
 
-   EAF_GET_IFACE2(pBroker,IMaterials,pMaterial);
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IMaterials,pMaterial);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    std::vector<CGirderKey> vGirderKeys;
    pPoi->GetGirderKeys(vPoi, &vGirderKeys);
    for (const auto& girderKey : vGirderKeys)
@@ -3212,11 +3213,11 @@ void write_Vcw_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
 
    location.IncludeSpanAndGirder(CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois);
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
 
    RowIndexType row = table->GetNumberOfHeaderRows();
-   EAF_GET_IFACE2(pBroker,IShearCapacity,pShearCap);
+   GET_IFACE2(pBroker,IShearCapacity,pShearCap);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       // Don't print poi that are inside of a CSS zone
@@ -3257,8 +3258,8 @@ void write_theta_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
 
    bool bLambda = (WBFL::LRFD::BDSManager::Edition::SeventhEditionWith2016Interims <= WBFL::LRFD::BDSManager::GetEdition() ? true : false);
 
-   EAF_GET_IFACE2(pBroker,IMaterials,pMaterial);
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IMaterials,pMaterial);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
    std::vector<CGirderKey> vGirderKeys;
    pPoi->GetGirderKeys(vPoi, &vGirderKeys);
    for (const auto& girderKey : vGirderKeys)
@@ -3357,11 +3358,11 @@ void write_theta_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
    scalar.SetWidth(6);
    scalar.SetPrecision(3);
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
 
    RowIndexType row = table->GetNumberOfHeaderRows();
-   EAF_GET_IFACE2(pBroker,IShearCapacity,pShearCap);
+   GET_IFACE2(pBroker,IShearCapacity,pShearCap);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       // Don't print poi that are inside of a CSS zone
@@ -3391,8 +3392,8 @@ void write_Vn_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
                     IntervalIndexType intervalIdx,
                     const std::_tstring& strStageName,pgsTypes::LimitState ls,pgsTypes::ConcreteType concreteType)
 {
-   EAF_GET_IFACE2(pBroker,ISpecification, pSpec);
-   EAF_GET_IFACE2(pBroker,ILibrary, pLib);
+   GET_IFACE2(pBroker,ISpecification, pSpec);
+   GET_IFACE2(pBroker,ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
 
@@ -3471,13 +3472,13 @@ void write_Vn_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
    scalar.SetWidth(5);
    scalar.SetPrecision(2);
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
 
    bool print_footnote=false;
    RowIndexType row = table->GetNumberOfHeaderRows();
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   EAF_GET_IFACE2(pBroker,IShearCapacity,pShearCap);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IShearCapacity,pShearCap);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       col = 0;
@@ -3614,8 +3615,8 @@ void write_Avs_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
                      IntervalIndexType intervalIdx,
                      const std::_tstring& strStageName,pgsTypes::LimitState ls,pgsTypes::ConcreteType concreteType)
 {
-   EAF_GET_IFACE2(pBroker,ISpecification, pSpec);
-   EAF_GET_IFACE2(pBroker,ILibrary, pLib);
+   GET_IFACE2(pBroker,ISpecification, pSpec);
+   GET_IFACE2(pBroker,ILibrary, pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& shear_capacity_criteria = pSpecEntry->GetShearCapacityCriteria();
 
@@ -3716,12 +3717,12 @@ void write_Avs_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
 
    location.IncludeSpanAndGirder(CShearCapacityDetailsChapterBuilder::m_IncludeSpanAndGirderForPois);
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
 
    RowIndexType row = table->GetNumberOfHeaderRows();
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   EAF_GET_IFACE2(pBroker,IShearCapacity,pShearCap);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IShearCapacity,pShearCap);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       col = 0;
@@ -3825,7 +3826,7 @@ void write_bar_spacing_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
    // to determine the number of stirrup legs
    const CSegmentKey& segmentKey = vPoi.front().get().GetSegmentKey();
 
-   EAF_GET_IFACE2(pBroker,IShear,pShear);
+   GET_IFACE2(pBroker,IShear,pShear);
    const CShearData2* pShearData = pShear->GetSegmentShearData(segmentKey);
 
    if ( 0 < pShearData->ShearZones.size() )
@@ -3866,12 +3867,12 @@ void write_bar_spacing_table(std::shared_ptr<WBFL::EAF::Broker> pBroker,
    Float64 Ab4 = pRebarPool->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,WBFL::Materials::Rebar::Size::bs4)->GetNominalArea();
    Float64 Ab5 = pRebarPool->GetRebar(pShearData->ShearBarType,pShearData->ShearBarGrade,WBFL::Materials::Rebar::Size::bs5)->GetNominalArea();
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 end_size = pBridge->GetSegmentStartEndDistance(vPoi.front().get().GetSegmentKey());
 
    RowIndexType row = table->GetNumberOfHeaderRows();
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   EAF_GET_IFACE2(pBroker,IShearCapacity,pShearCap);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IShearCapacity,pShearCap);
    for (const pgsPointOfInterest& poi : vPoi)
    {
       col = 0;

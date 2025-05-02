@@ -30,11 +30,6 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CHorizontalAlignmentPage property page
@@ -74,7 +69,7 @@ void CHorizontalAlignmentPage::DoDataExchange(CDataExchange* pDX)
 		// NOTE: the ClassWizard will add DDX and DDV calls here
 	//}}AFX_DATA_MAP
 
-   EAF_GET_IFACE2(GetBroker(), IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2(GetBroker(), IEAFDisplayUnits, pDisplayUnits);
 
    CComPtr<IDirection> direction;
    direction.CoCreateInstance(CLSID_Direction);

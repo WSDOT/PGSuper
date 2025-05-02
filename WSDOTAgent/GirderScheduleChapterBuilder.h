@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <PgsExt\Keys.h>
+#include <PsgLib\Keys.h>
 
 class IEAFDisplayUnits;
 

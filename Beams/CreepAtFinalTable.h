@@ -20,16 +20,14 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// CreepAtFinalTable.h : Declaration of the CCreepAtFinalTable
+#pragma once
 
-#ifndef __CREEPATFINALTABLE_H_
-#define __CREEPATFINALTABLE_H_
-
-#include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <Reporting\CreepCoefficientChapterBuilder.h>
-#include <PgsExt\StrandData.h>
+#include <PgsExt\ReportCreepCoefficient.h>
+#include <PgsExt/ReportPointOfInterest.h>
+#include <PsgLib\StrandData.h>
+
 
 class WBFL::LRFD::Losses;
 
@@ -63,5 +61,3 @@ private:
    bool m_bIsPrismatic;
    bool m_bIsAsymmetric;
 };
-
-#endif //__CREEPATFINALTABLE_H_

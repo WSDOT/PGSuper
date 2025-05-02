@@ -38,14 +38,9 @@
 #include <IFace/Limits.h>
 #include <EAF\EAFDisplayUnits.h>
 
-#include <PgsExt\SplicedGirderData.h>
+#include <PsgLib\SplicedGirderData.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define ERROR_SUCCESS                                 0
 #define ERROR_Y_MUST_BE_POSITIVE                      1
@@ -91,11 +86,11 @@ void CSegmentTendonGrid::CustomInit(const CPrecastSegmentData* pSegment)
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // we need the segment length for validating debond lengths (can't debond more
    // length than the segment)
-   EAF_GET_IFACE2(pBroker, IBridge,pBridge);
+   GET_IFACE2(pBroker, IBridge,pBridge);
    m_SegmentLength = pBridge->GetSegmentLength(pSegment->GetSegmentKey());
 
    // Initialize the grid. For CWnd based grids this call is essential. 
@@ -292,7 +287,7 @@ void CSegmentTendonGrid::SetRowStyle(ROWCOL nRow)
       .SetValue(nRow-1)
       );
 
-   EAF_GET_IFACE2(pBroker, ILibraryNames, pLibNames);
+   GET_IFACE2(pBroker, ILibraryNames, pLibNames);
 
    std::vector<std::_tstring> vNames;
    pLibNames->EnumDuctNames(&vNames);
@@ -486,9 +481,9 @@ void CSegmentTendonGrid::AppendRow(const CSegmentDuctData& duct)
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   EAF_GET_IFACE2(pBroker, ILibraryNames, pLibNames);
+   GET_IFACE2(pBroker, ILibraryNames, pLibNames);
    std::vector<std::_tstring> vNames;
    pLibNames->EnumDuctNames(&vNames);
    std::vector<std::_tstring>::iterator iter(vNames.begin());
@@ -749,7 +744,7 @@ void CSegmentTendonGrid::UpdateMaxPjack(ROWCOL nRow)
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
    GetParam()->SetLockReadOnly(FALSE);
    SetValueRange(CGXRange(nRow, nPjackCol), FormatDimension(Pjack, pDisplayUnits->GetGeneralForceUnit(), false));
    GetParam()->SetLockReadOnly(TRUE);
@@ -821,13 +816,13 @@ CString CSegmentTendonGrid::GetDuctName(ROWCOL nRow)
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, ILibrary, pLib);
+   GET_IFACE2(pBroker, ILibrary, pLib);
    const DuctLibraryEntry* pDuctEntry = pLib->GetDuctEntry(ductName);
    if (pDuctEntry == nullptr)
    {
       // sometimes the duct name comes back as the index into the choice list
       // get the duct entry another way
-      EAF_GET_IFACE2(pBroker, ILibraryNames, pLibNames);
+      GET_IFACE2(pBroker, ILibraryNames, pLibNames);
       std::vector<std::_tstring> vNames;
       pLibNames->EnumDuctNames(&vNames);
       IndexType ductNameIdx = (IndexType)_tstol(ductName);
@@ -854,7 +849,7 @@ void CSegmentTendonGrid::GetPjack(ROWCOL nRow, CSegmentDuctData* pDuct)
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
    pDuct->bPjCalc = ComputePjackMax(nRow);
 
@@ -881,7 +876,7 @@ void CSegmentTendonGrid::GetDuctPoints(ROWCOL nRow, CSegmentDuctData* pDuct)
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
    Float64 value = _tstof(GetCellValue(nRow,nLeftEndYCol));
    pDuct->DuctPoint[CSegmentDuctData::Left].first = WBFL::Units::ConvertToSysUnits(value,pDisplayUnits->GetComponentDimUnit().UnitOfMeasure);
    pDuct->DuctPoint[CSegmentDuctData::Left].second = (pgsTypes::FaceType)(_tstoi(GetCellValue(nRow,nLeftEndDatumCol)));
@@ -902,7 +897,7 @@ void CSegmentTendonGrid::UpdateNumStrandsList(ROWCOL nRow)
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, ILibrary, pLib);
+   GET_IFACE2(pBroker, ILibrary, pLib);
    const DuctLibraryEntry* pDuctEntry = pLib->GetDuctEntry(ductName);
    ATLASSERT(pDuctEntry);
 
@@ -914,7 +909,7 @@ void CSegmentTendonGrid::UpdateNumStrandsList(ROWCOL nRow)
    Float64 aps = pStrand->GetNominalArea();
 
    // LRFD 5.4.6.2 Area of duct must be at least K times net area of prestressing steel
-   EAF_GET_IFACE2(pBroker, IDuctLimits, pDuctLimits);
+   GET_IFACE2(pBroker, IDuctLimits, pDuctLimits);
    Float64 K = pDuctLimits->GetTendonAreaLimit(pParent->GetInstallationType());
 
    StrandIndexType maxStrands = (StrandIndexType)fabs(A / (K*aps));
@@ -944,7 +939,7 @@ void CSegmentTendonGrid::RefreshRowHeading(ROWCOL rFrom, ROWCOL rTo)
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker, ILibrary, pLibrary);
+   GET_IFACE2(pBroker, ILibrary, pLibrary);
    const GirderLibraryEntry* pGirderEntry = pLibrary->GetGirderEntry(strGirderName.c_str());
    auto factory = pGirderEntry->GetBeamFactory();
 

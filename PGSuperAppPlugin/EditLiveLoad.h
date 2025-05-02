@@ -24,7 +24,7 @@
 #define INCLUDED_EDITLIVELOADTXN_H_
 
 #include <EAF\EAFTransaction.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <IFace\Project.h>
 
 struct txnEditLiveLoadData

@@ -26,7 +26,7 @@
 #include <EAF/ComponentObject.h>
 
 class CPGSpliceProjectImporter : public WBFL::EAF::ComponentObject,
-   public PGSuper::IProjectImporter
+   public PGS::IProjectImporter
 {
 public:
    CPGSpliceProjectImporter();

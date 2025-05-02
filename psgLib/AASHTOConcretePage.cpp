@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psgLib.h>
+#include "resource.h"
 #include "ConcreteEntryDlg.h"
 #include "ConcreteEntryGeneralPage.h"
 #include <MfcTools\CustomDDX.h>

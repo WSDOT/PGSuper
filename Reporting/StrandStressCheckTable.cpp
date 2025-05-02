@@ -26,7 +26,7 @@
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\StrandStressArtifact.h>
 #include <PgsExt\CapacityToDemand.h>
-#include <PgsExt\StrandData.h>
+#include <PsgLib\StrandData.h>
 
 
 #include <IFace\Project.h>
@@ -72,9 +72,9 @@ void CStrandStressCheckTable::Build(rptChapter* pChapter,std::shared_ptr<WBFL::E
 {
    const CGirderKey& girderKey = pGirderArtifact->GetGirderKey();
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,ISegmentData,pSegmentData);
-   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
 

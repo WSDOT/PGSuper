@@ -34,7 +34,7 @@
 
 #include <WBFLGenericBridgeTools.h>
 
-#include <PgsExt\TimelineEvent.h>
+#include <PsgLib\TimelineEvent.h>
 
 
 #define DELTA_P    symbol(DELTA) << _T("P")
@@ -88,7 +88,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<const WB
 
    auto pBroker = pTSDRptSpec->GetBroker();
 
-   EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       *pPara << color(Red) << _T("Time Step analysis results not available.") << color(Black) << rptNewLine;
@@ -101,7 +101,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<const WB
    PoiList vPoi;
    if ( pTSDRptSpec->ReportAtAllLocations() )
    {
-      EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+      GET_IFACE2(pBroker,IPointOfInterest,pPoi);
       pPoi->GetPointsOfInterest(CSegmentKey(ALL_GROUPS,girderKey.girderIndex,ALL_SEGMENTS), &vPoi);
       vPoi.erase(std::unique(vPoi.begin(), vPoi.end(), [](const pgsPointOfInterest& poi1, const pgsPointOfInterest& poi2) {return IsEqual(poi1.GetDistFromStart(), poi2.GetDistFromStart());}), vPoi.end());
    }
@@ -112,14 +112,14 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<const WB
 
    IntervalIndexType rptIntervalIdx = pTSDRptSpec->GetInterval();
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   EAF_GET_IFACE2(pBroker,ILosses,pLosses);
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
-   EAF_GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
-   EAF_GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
-   EAF_GET_IFACE2(pBroker, IMaterials, pMaterials);
-   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,ILosses,pLosses);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeometry);
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IMaterials, pMaterials);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
 
    bool bHasDeck = IsStructuralDeck(pBridge->GetDeckType());
 
@@ -130,7 +130,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<const WB
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    // reporting for a specific poi... list poi at top of report
@@ -505,7 +505,7 @@ rptChapter* CTimeStepDetailsChapterBuilder::Build(const std::shared_ptr<const WB
       rptRcTable* pCumulativeSummaryTable = BuildConcreteStressSummaryTable(pBroker,vPoi.front(),rtCumulative,true/*girder*/,pDisplayUnits);
       (*pPara) << pCumulativeSummaryTable << rptNewLine;
 
-      EAF_GET_IFACE2_NOCHECK(pBroker,IPrecompressedTensileZone,pPrecompressedTensileZone);
+      GET_IFACE2_NOCHECK(pBroker,IPrecompressedTensileZone,pPrecompressedTensileZone);
       if (bHasDeck && pPrecompressedTensileZone->IsDeckPrecompressed(vPoi.front().get().GetSegmentKey()) )
       {
          pPara = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -629,7 +629,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildConcreteTable(const TIME_STEP_D
 
 
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    EventIndexType castDeckEventIdx = pIBridgeDesc->GetCastDeckEventIndex();
    const auto* pEvent = pIBridgeDesc->GetEventByIndex(castDeckEventIdx);
    const auto& castDeckActivity = pEvent->GetCastDeckActivity();
@@ -1470,7 +1470,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildRestrainedComponentForceTable(c
 
 rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalForceTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<pgsTypes::ProductForceType>& vLoads, const TIME_STEP_DETAILS& tsDetails, bool bHasDeck, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+   GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
    INIT_UV_PROTOTYPE(rptForceUnitValue, force, pDisplayUnits->GetGeneralForceUnit(), false);
    INIT_UV_PROTOTYPE(rptMomentUnitValue, moment, pDisplayUnits->GetSmallMomentUnit(), false);
@@ -1808,7 +1808,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalForceTable(std::shar
 
 rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<pgsTypes::ProductForceType>& vLoads,const TIME_STEP_DETAILS& tsDetails, bool bHasDeck, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
 
    INIT_UV_PROTOTYPE(rptStressUnitValue,     stress,      pDisplayUnits->GetStressUnit(),    false);
 
@@ -2063,7 +2063,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStressTable(std::sha
 
 rptRcTable* CTimeStepDetailsChapterBuilder::BuildIncrementalStrainTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<pgsTypes::ProductForceType>& vLoads, const TIME_STEP_DETAILS& tsDetails, bool bHasDeck, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+   GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
    IndexType nLoads = vLoads.size();
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(nLoads + 3 + 3);
@@ -2318,7 +2318,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildConcreteStressSummaryTable(std:
 {
    INIT_UV_PROTOTYPE(rptStressUnitValue,     stress,      pDisplayUnits->GetStressUnit(),    false);
 
-   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    std::vector<pgsTypes::ProductForceType> vLoads = pProductLoads->GetProductForcesForGirder(poi.GetSegmentKey());
 
    IndexType nLoads = vLoads.size();
@@ -2362,9 +2362,9 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildConcreteStressSummaryTable(std:
 
    rowIdx = pTable->GetNumberOfHeaderRows();
 
-   EAF_GET_IFACE2(pBroker,ILosses,pLosses);
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
-   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   GET_IFACE2(pBroker,ILosses,pLosses);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    IndexType deckCastingRegionIdx = pPoi->GetDeckCastingRegion(poi);
    ATLASSERT(deckCastingRegionIdx != INVALID_INDEX);
    IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetCompositeDeckInterval(deckCastingRegionIdx);
@@ -2436,7 +2436,7 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,std
    (*pChapter) << pPara;
 
 
-   EAF_GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   GET_IFACE2(pBroker,ILossParameters,pLossParams);
    if ( pLossParams->IgnoreCreepEffects() )
    {
       (*pPara) << _T("Creep effects were ignored") << rptNewLine;
@@ -2449,13 +2449,13 @@ void CTimeStepDetailsChapterBuilder::ReportCreepDetails(rptChapter* pChapter,std
       return;
    }
 
-   EAF_GET_IFACE2(pBroker,ILosses,pLosses);
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   EAF_GET_IFACE2(pBroker,IMaterials,pMaterials);
-   EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProps);
-   EAF_GET_IFACE2(pBroker,IEnvironment,pEnv);
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,ILosses,pLosses);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IMaterials,pMaterials);
+   GET_IFACE2(pBroker,ISectionProperties,pSectProps);
+   GET_IFACE2(pBroker,IEnvironment,pEnv);
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
    INIT_UV_PROTOTYPE(rptLengthUnitValue, vs,     pDisplayUnits->GetComponentDimUnit(),    true);
    INIT_UV_PROTOTYPE(rptLengthUnitValue, ecc,    pDisplayUnits->GetComponentDimUnit(),    false);
@@ -3060,20 +3060,20 @@ void CTimeStepDetailsChapterBuilder::ReportShrinkageDetails(rptChapter* pChapter
    pPara = new rptParagraph;
    (*pChapter) << pPara;
 
-   EAF_GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   GET_IFACE2(pBroker,ILossParameters,pLossParams);
    if ( pLossParams->IgnoreShrinkageEffects() )
    {
       (*pPara) << _T("Shrinkage effects were ignored") << rptNewLine;
       return;
    }
 
-   EAF_GET_IFACE2_NOCHECK(pBroker,ILosses,pLosses);
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   EAF_GET_IFACE2(pBroker,IMaterials,pMaterials);
-   EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProps);
-   EAF_GET_IFACE2(pBroker,IEnvironment,pEnv);
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2_NOCHECK(pBroker,ILosses,pLosses);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IMaterials,pMaterials);
+   GET_IFACE2(pBroker,ISectionProperties,pSectProps);
+   GET_IFACE2(pBroker,IEnvironment,pEnv);
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
    INIT_UV_PROTOTYPE(rptLengthUnitValue, vs,     pDisplayUnits->GetComponentDimUnit(),    true);
    INIT_UV_PROTOTYPE(rptLengthUnitValue, ecc,    pDisplayUnits->GetComponentDimUnit(),    false);
@@ -3422,16 +3422,16 @@ void CTimeStepDetailsChapterBuilder::ReportStrandRelaxationDetails(rptChapter* p
    pPara = new rptParagraph;
    (*pChapter) << pPara;
 
-   EAF_GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   GET_IFACE2(pBroker,ILossParameters,pLossParams);
    if ( pLossParams->IgnoreRelaxationEffects() )
    {
       (*pPara) << _T("Relaxation effects were ignored") << rptNewLine;
       return;
    }
 
-   EAF_GET_IFACE2(pBroker,IMaterials,pMaterials);
-   EAF_GET_IFACE2(pBroker,ILosses,pLosses);
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IMaterials,pMaterials);
+   GET_IFACE2(pBroker,ILosses,pLosses);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
@@ -3616,11 +3616,11 @@ void CTimeStepDetailsChapterBuilder::ReportStrandRelaxationDetails(rptChapter* p
 
 void CTimeStepDetailsChapterBuilder::ReportSegmentTendonRelaxationDetails(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& poi, IntervalIndexType firstIntervalIdx, IntervalIndexType lastIntervalIdx, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
-   EAF_GET_IFACE2(pBroker, IMaterials, pMaterials);
-   EAF_GET_IFACE2(pBroker, ILosses, pLosses);
-   EAF_GET_IFACE2(pBroker, ISegmentTendonGeometry, pTendonGeom);
-   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
+   GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   GET_IFACE2(pBroker, IMaterials, pMaterials);
+   GET_IFACE2(pBroker, ILosses, pLosses);
+   GET_IFACE2(pBroker, ISegmentTendonGeometry, pTendonGeom);
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
@@ -3754,11 +3754,11 @@ void CTimeStepDetailsChapterBuilder::ReportSegmentTendonRelaxationDetails(rptCha
 
 void CTimeStepDetailsChapterBuilder::ReportGirderTendonRelaxationDetails(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,IntervalIndexType firstIntervalIdx,IntervalIndexType lastIntervalIdx,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   EAF_GET_IFACE2(pBroker,ILossParameters,pLossParams);
-   EAF_GET_IFACE2(pBroker,IMaterials,pMaterials);
-   EAF_GET_IFACE2(pBroker,ILosses,pLosses);
-   EAF_GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   GET_IFACE2(pBroker,IMaterials,pMaterials);
+   GET_IFACE2(pBroker,ILosses,pLosses);
+   GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 

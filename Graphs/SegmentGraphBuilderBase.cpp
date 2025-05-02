@@ -41,6 +41,7 @@
 #include <IFace\Project.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\EditByUI.h>
+#include <IFace/PointOfInterest.h>
 
 #include <EAF\EAFGraphView.h>
 #include <EAF\EAFGraphControlWindow.h>
@@ -112,7 +113,7 @@ bool CSegmentGraphBuilderBase::HandleDoubleClick(UINT nFlags,CPoint point)
 {
    const CSegmentKey segmentKey(m_pGraphController->GetSegmentKey());
 
-   EAF_GET_IFACE(IEditByUI,pEditByUI);
+   GET_IFACE(IEditByUI,pEditByUI);
    pEditByUI->EditSegmentDescription(segmentKey,EGS_GENERAL);
 
    return true;
@@ -157,7 +158,7 @@ void CSegmentGraphBuilderBase::UpdateXAxis()
       m_pXFormat = nullptr;
    }
 
-   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::LengthData& lengthUnit = pDisplayUnits->GetSpanLengthUnit();
    m_pXFormat = new WBFL::Units::LengthTool(lengthUnit);
    m_Graph.SetXAxisValueFormat(m_pXFormat);
@@ -174,7 +175,7 @@ void CSegmentGraphBuilderBase::UpdateYAxis()
       m_pYFormat = nullptr;
    }
 
-   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::StressData& stressUnit = pDisplayUnits->GetStressUnit();
    m_pYFormat = new WBFL::Units::StressTool(stressUnit);
    m_Graph.SetYAxisValueFormat(m_pYFormat);
@@ -214,7 +215,7 @@ Float64 CSegmentGraphBuilderBase::ComputeShift(const CSegmentKey& segmentKey)
       return 0;
    }
 
-   EAF_GET_IFACE(IPointOfInterest,pPoi);
+   GET_IFACE(IPointOfInterest,pPoi);
    pgsPointOfInterest poi(segmentKey,0.0); // start of our segment
    Float64 Xgl = pPoi->ConvertPoiToGirderlineCoordinate(poi);
 
@@ -227,7 +228,7 @@ Float64 CSegmentGraphBuilderBase::ComputeShift(const CSegmentKey& segmentKey)
 
 void CSegmentGraphBuilderBase::GetXValues(const PoiList& vPoi,std::vector<Float64>* pXVals)
 {
-   EAF_GET_IFACE(IPointOfInterest,pPoi);
+   GET_IFACE(IPointOfInterest,pPoi);
 
    pXVals->clear();
    pXVals->reserve(vPoi.size());
@@ -322,8 +323,8 @@ void CSegmentGraphBuilderBase::DrawGraphNow(CWnd* pGraphWnd,CDC* pDC)
 
       // make the minimum size of the graph include the size of the girder. this makes the girder display
       // properly when there aren't any points to graph
-      EAF_GET_IFACE(IBridge,pBridge);
-      EAF_GET_IFACE(IPointOfInterest,pPoi);
+      GET_IFACE(IBridge,pBridge);
+      GET_IFACE(IPointOfInterest,pPoi);
       pgsPointOfInterest startPoi(segmentKey, 0.0);
       Float64 Xstart = pPoi->ConvertPoiToGirderlineCoordinate(startPoi);
 

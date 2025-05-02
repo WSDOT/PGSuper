@@ -31,7 +31,7 @@
 #include <IFace\Tools.h>
 #include <IFace\Bridge.h>
 
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 #include <EAF\EAFDocument.h>
 
 
@@ -149,7 +149,7 @@ BOOL CMultiGirderReportDlg::OnInitDialog()
    CDialog::OnInitDialog();
 
    // need list of groups/girders
-   EAF_GET_IFACE( IBridge, pBridge );
+   GET_IFACE( IBridge, pBridge );
    GroupGirderOnCollection coll;
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )

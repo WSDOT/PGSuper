@@ -22,25 +22,26 @@
 
 #pragma once
 
-#include <psgLib\psgLibLib.h>
 #include <LibraryFw\Library.h>
 #include <LibraryFw\LibraryManager.h>
-#include <psgLib\ConcreteLibraryEntry.h>
-#include <psgLib\ConnectionLibraryEntry.h>
-#include <psgLib\GirderLibraryEntry.h>
-#include <psgLib\DiaphragmLayoutEntry.h>
-#include <psgLib\TrafficBarrierEntry.h>
-#include <psgLib\SpecLibraryEntry.h>
-#include <psgLib\RatingLibraryEntry.h>
-#include <psgLib\LiveLoadLibraryEntry.h>
-#include <psgLib\DuctLibraryEntry.h>
-#include <psgLib\HaulTruckLibraryEntry.h>
+#include <PsgLib\ConcreteLibraryEntry.h>
+#include <PsgLib\ConnectionLibraryEntry.h>
+#include <PsgLib\GirderLibraryEntry.h>
+#include <PsgLib\DiaphragmLayoutEntry.h>
+#include <PsgLib\TrafficBarrierEntry.h>
+#include <PsgLib\SpecLibraryEntry.h>
+#include <PsgLib\RatingLibraryEntry.h>
+#include <PsgLib\LiveLoadLibraryEntry.h>
+#include <PsgLib\DuctLibraryEntry.h>
+#include <PsgLib\HaulTruckLibraryEntry.h>
 
 
 // the available library types
 #define DECLARE_LIBRARY(name,entry_type,min_count) \
    PSGLIBTPL WBFL::Library::Library<entry_type,min_count>; \
-   using name = WBFL::Library::Library<entry_type,min_count>;
+   using Base##name = WBFL::Library::Library<entry_type,min_count>; \
+   class name : public Base##name \
+   {public: using Base##name::Base##name;};
 
 DECLARE_LIBRARY( ConcreteLibrary,        ConcreteLibraryEntry,   0 )
 DECLARE_LIBRARY( ConnectionLibrary,      ConnectionLibraryEntry, 1 )
@@ -53,11 +54,12 @@ DECLARE_LIBRARY( LiveLoadLibrary,        LiveLoadLibraryEntry,   0 )
 DECLARE_LIBRARY( DuctLibrary,            DuctLibraryEntry,       1 )
 DECLARE_LIBRARY( HaulTruckLibrary,       HaulTruckLibraryEntry,  1 )
 
+
 class GirderLibrary : public GirderLibraryBase
 {
 public:
    GirderLibrary(LPCTSTR idName, LPCTSTR displayName, bool bIsDepreciated = false);
-   virtual bool NewEntry(LPCTSTR key);
+   bool NewEntry(LPCTSTR key) override;
 };
 
 

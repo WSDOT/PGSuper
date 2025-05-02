@@ -28,7 +28,7 @@
 #include "PGSuperDocBase.h"
 
 #include <DManip/DisplayObjectEvents.h>
-interface IBroker;
+
 class CBridgeModelViewChildFrame;
 
 #define DECK_ID (INVALID_ID-2)

@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psgLib.h>
+#include <PsgLib\PsgLib.h>
 #include "GirderDebondCriteriaPage.h"
 #include "GirderMainSheet.h"
 #include <EAF\EAFDocument.h>

@@ -28,9 +28,9 @@
 // EditLoadsView.h : header file
 //
 #include "PGSuperDoc.h"
-#include <pgsExt\PointLoadData.h>
-#include <pgsExt\DistributedLoadData.h>
-#include <pgsExt\MomentLoadData.h>
+#include <PsgLib\PointLoadData.h>
+#include <PsgLib\DistributedLoadData.h>
+#include <PsgLib\MomentLoadData.h>
 #include <System\System.h>
 
 /////////////////////////////////////////////////////////////////////////////

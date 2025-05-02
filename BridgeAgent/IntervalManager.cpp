@@ -29,14 +29,16 @@
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\DocumentType.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\GirderLabel.h>
-#include <PgsExt\Helpers.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\GirderLabel.h>
+#include <PsgLib\Helpers.h>
 
-#include <PgsExt\DistributedLoadData.h>
-#include <PgsExt\MomentLoadData.h>
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\DistributedLoadData.h>
+#include <PsgLib\MomentLoadData.h>
+#include <PsgLib\ClosureJointData.h>
 #include <PgsExt\StatusItem.h>
+
+#include <psgLib/GirderLibraryEntry.h>
 
 #include <MfcTools\Exceptions.h>
 
@@ -56,7 +58,7 @@ inline CGirderKey GetSafeGirderKey(const CGirderKey& oldKey)
 {
    // called if there is an unequal number of girders per group, and this one has less. use the right-most girder
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
    GirderIndexType gdrIdx = pBridge->GetGirderCount(oldKey.groupIndex)-1;
    ATLASSERT(gdrIdx < oldKey.girderIndex); // our assumption is wrong
@@ -90,10 +92,8 @@ void CIntervalManager::Init(StatusGroupIDType statusGroupID)
    m_StatusGroupID = statusGroupID;
 
    auto broker = EAFGetBroker();
-   EAF_GET_IFACE2(broker, IEAFStatusCenter, pStatusCenter);
-#pragma Reminder("WORKING HERE - Removing COM")
-   // IEAFStatusCenter, need to refactor so that we aren't using new, but instead using shared_ptr
-   m_scidTimelineError = pStatusCenter->RegisterCallback(new pgsTimelineStatusCallback(eafTypes::statusError));
+   GET_IFACE2(broker, IEAFStatusCenter, pStatusCenter);
+   m_scidTimelineError = pStatusCenter->RegisterCallback(std::make_shared<pgsTimelineStatusCallback>(WBFL::EAF::StatusSeverityType::Error));
 }
 
 void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr)
@@ -108,16 +108,13 @@ void CIntervalManager::BuildIntervals(const CTimelineManager* pTimelineMgr)
       CString strError = pTimelineMgr->GetErrorMessage(result).c_str();
 
       strError += _T("\nUse the timeline manager to correct the error.");
-      EAF_GET_IFACE2(broker, IEAFStatusCenter, pStatusCenter);
-#pragma Reminder("WORKING HERE - Removing COM")
-      // IEAFStatusCenter, need to refactor so that we aren't using new, but instead using shared_ptr
-      pgsTimelineStatusItem* pStatusItem = new pgsTimelineStatusItem(m_StatusGroupID, m_scidTimelineError, strError);
-      pStatusCenter->Add(pStatusItem);
+      GET_IFACE2(broker, IEAFStatusCenter, pStatusCenter);
+      pStatusCenter->Add(std::make_shared<pgsTimelineStatusItem>(m_StatusGroupID, m_scidTimelineError, strError));
 
       strError += _T("\n\nSee the Status Center for details");
    }
 
-   EAF_GET_IFACE2(broker, IDocumentType,pDocType);
+   GET_IFACE2(broker, IDocumentType,pDocType);
    m_bIsPGSuper = pDocType->IsPGSuperDocument();
 
    // reset everything
@@ -2002,7 +1999,7 @@ void CIntervalManager::ProcessStep4(EventIndexType eventIdx, const CTimelineEven
       if ( bUserLoad )
       {
          auto broker = EAFGetBroker();
-         EAF_GET_IFACE2(broker,IUserDefinedLoadData,pUserDefinedLoadData);
+         GET_IFACE2(broker,IUserDefinedLoadData,pUserDefinedLoadData);
 
          IndexType nUserLoads = applyLoadActivity.GetUserLoadCount();
          for ( IndexType userLoadIdx = 0; userLoadIdx < nUserLoads; userLoadIdx++ )

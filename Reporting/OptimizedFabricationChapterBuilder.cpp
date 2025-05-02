@@ -28,7 +28,7 @@
 #include <IFace\Project.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 
-#include <PgsExt\SplicedGirderData.h>
+#include <PsgLib\SplicedGirderData.h>
 
 
 /****************************************************************************
@@ -60,7 +60,7 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(const std::shared_ptr<con
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       rptParagraph* pPara = new rptParagraph;
@@ -71,7 +71,7 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(const std::shared_ptr<con
 
 
    // don't do report if shipping or lifting are disabled
-   EAF_GET_IFACE2(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
+   GET_IFACE2(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
    if (!pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled())
    {
       rptParagraph* pPara = new rptParagraph;
@@ -80,7 +80,7 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(const std::shared_ptr<con
       return pChapter;
    }
 
-   EAF_GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+   GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
    if (!pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
    {
       rptParagraph* pPara = new rptParagraph;
@@ -97,10 +97,10 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(const std::shared_ptr<con
       return pChapter;
    }
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pBridgeDesc);
-   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker, IBridgeDescription, pBridgeDesc);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    bool bUSUnits = IS_US_UNITS(pDisplayUnits);
 
@@ -108,7 +108,7 @@ rptChapter* COptimizedFabricationChapterBuilder::Build(const std::shared_ptr<con
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetAlignmentLengthUnit() , true );
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit() , true );
 
-   EAF_GET_IFACE2_NOCHECK(pBroker,IFabricationOptimization,pFabOp);
+   GET_IFACE2_NOCHECK(pBroker,IFabricationOptimization,pFabOp);
 
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )

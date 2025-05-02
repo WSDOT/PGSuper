@@ -29,7 +29,7 @@
 // SpanDetailsDlg.h : header file
 //
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include "SpanLayoutPage.h"
 #include "GirderLayoutPage.h"
 #include "PierConnectionsPage.h"

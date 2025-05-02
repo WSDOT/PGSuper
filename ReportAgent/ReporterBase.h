@@ -28,6 +28,8 @@
 class CReporterBase : public WBFL::EAF::Agent
 {
 public:
+   std::_tstring GetName() const override { return _T("ReportingAgent"); }
+
    HRESULT InitCommonReportBuilders(std::shared_ptr<WBFL::EAF::Broker> broker);
 
    HRESULT OnSpecificationChanged(std::shared_ptr<WBFL::EAF::Broker> broker);

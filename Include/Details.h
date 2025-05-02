@@ -20,16 +20,14 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDE_DETAILS_H_
-#define INCLUDE_DETAILS_H_
+#pragma once
 
 #include <PGSuperTypes.h>
 
-#include <PgsExt\ReportPointOfInterest.h>
+#include <PsgLib\PointOfInterest.h>
+#include <psgLib/PrestressLossCriteria.h>
 #include <LRFD\Lrfd.h>
 #include <WBFLRCCapacity.h>
-
-#include <psgLib/PrestressLossCriteria.h>
 
 struct PIER_DIAPHRAGM_LOAD_DETAILS
 {
@@ -1071,7 +1069,7 @@ struct FRICTIONLOSSDETAILS
    Float64 dfpA{ 0 };  // anchor set loss at this POI
 };
 
-// This is a struct that holds the losses seperated into creep, shrinkage, and relaxation components
+// This is a struct that holds the losses separated into creep, shrinkage, and relaxation components
 // at a  POI
 struct TDCOMPONENTS
 {
@@ -1201,5 +1199,3 @@ struct TEMPORARYSUPPORTELEVATIONDETAILS
       return false;
    }
 };
-
-#endif // INCLUDE_DETAILS_H_

@@ -212,8 +212,8 @@ void CTogaGirderModelSectionView::BuildSectionDisplayObjects(CTxDOTOptionalDesig
 
    pgsPointOfInterest poi(segmentKey,m_pFrame->GetCurrentCutLocation());
 
-   EAF_GET_IFACE2(pBroker,IShapes,pShapes);
-   EAF_GET_IFACE2(pBroker,IGirder,pGirder);
+   GET_IFACE2(pBroker,IShapes,pShapes);
+   GET_IFACE2(pBroker,IGirder,pGirder);
 
    Float64 top_width = pGirder->GetTopWidth(poi);
    Float64 bottom_width = pGirder->GetBottomWidth(poi);
@@ -222,7 +222,7 @@ void CTogaGirderModelSectionView::BuildSectionDisplayObjects(CTxDOTOptionalDesig
    auto strategy = WBFL::DManip::ShapeDrawStrategy::Create();
    doPnt->SetDrawingStrategy(strategy);
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
    CComPtr<IShape> shape;
@@ -279,10 +279,10 @@ void CTogaGirderModelSectionView::BuildStrandDisplayObjects(CTxDOTOptionalDesign
 {
    pgsPointOfInterest poi(segmentKey,m_pFrame->GetCurrentCutLocation());
 
-   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
 
 
-   EAF_GET_IFACE2(pBroker,IMaterials,pMaterial);
+   GET_IFACE2(pBroker,IMaterials,pMaterial);
    const auto* pStrand = pMaterial->GetStrandMaterial(segmentKey,pgsTypes::Straight);
    Float64 diameter = pStrand->GetNominalDiameter();
 
@@ -383,7 +383,7 @@ void CTogaGirderModelSectionView::BuildLongReinfDisplayObjects(CTxDOTOptionalDes
    strategy->SetColor(REBAR_COLOR);
    strategy->SetPointType(WBFL::DManip::PointType::Circle);
 
-   EAF_GET_IFACE2(pBroker,ILongRebarGeometry,pLongRebarGeom);
+   GET_IFACE2(pBroker,ILongRebarGeometry,pLongRebarGeom);
 
    CComPtr<IRebarSection> rebar_section;
    pLongRebarGeom->GetRebars(poi,&rebar_section);
@@ -423,13 +423,13 @@ void CTogaGirderModelSectionView::BuildCGDisplayObjects(CTxDOTOptionalDesignDoc*
 
    pgsPointOfInterest poi(segmentKey,m_pFrame->GetCurrentCutLocation());
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
-   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
    Float64 ecc = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi,true).Y();
 
-   EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    Float64 Yb = pSectProp->GetY(releaseIntervalIdx,poi,pgsTypes::BottomGirder);
    Float64 Hg = pSectProp->GetHg(releaseIntervalIdx,poi);
 
@@ -533,11 +533,11 @@ void CTogaGirderModelSectionView::BuildDimensionDisplayObjects(CTxDOTOptionalDes
    // set the text labels on the dimension lines
    pgsPointOfInterest poi(segmentKey,m_pFrame->GetCurrentCutLocation());
    
-   EAF_GET_IFACE2(pBroker,IGirder,pGirder);
-   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
-   EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   GET_IFACE2(pBroker,IGirder,pGirder);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
    Float64 top_width = pGirder->GetTopWidth(poi);
@@ -548,7 +548,7 @@ void CTogaGirderModelSectionView::BuildDimensionDisplayObjects(CTxDOTOptionalDes
 
    CString strDim;
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::LengthData& length_unit = pDisplayUnits->GetComponentDimUnit();
 
    auto textBlock = WBFL::DManip::TextBlock::Create();

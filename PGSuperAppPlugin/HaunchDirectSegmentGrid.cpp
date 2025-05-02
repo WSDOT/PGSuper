@@ -32,15 +32,10 @@
 #include "PGSuperDoc.h"
 #include <Units\Measure.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <PgsExt\GirderLabel.h>
-#include <PgsExt\HaunchDepthInputConversionTool.h>
+#include <PsgLib\GirderLabel.h>
+#include <IFace/Project.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 GRID_IMPLEMENT_REGISTER(CHaunchDirectSegmentGrid, CS_DBLCLKS, 0, 0, 0);
 
@@ -247,11 +242,10 @@ void CHaunchDirectSegmentGrid::FillGrid()
    pgsTypes::HaunchInputDistributionType disttype = GetHaunchInputDistributionType();
 
    // Convert current haunch data if needed
-   HaunchDepthInputConversionTool conversionTool(pBridgeOrig, pBroker,false);
-   auto convPair = conversionTool.ConvertToDirectHaunchInput(pgsTypes::hilPerEach,pgsTypes::hltAlongSegments,disttype);
+   GET_IFACE2(pBroker, IBridgeDescription, pBridgeDesc);
+   auto bridge = pBridgeDesc->ConvertHaunchToDirectHaunchInput(*pBridgeOrig, pgsTypes::hilPerEach, pgsTypes::hltAlongSegments, disttype).second;
 
-   const CBridgeDescription2* pBridge = &convPair.second;
-   auto* pGroup = pBridge->GetGirderGroup(m_GroupIdx);
+   auto* pGroup = bridge.GetGirderGroup(m_GroupIdx);
    auto nGirders = pGroup->GetGirderCount();
 
    ROWCOL row = m_nExtraHeaderRows + 1;

@@ -39,7 +39,7 @@
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include <IFace\StatusCenter.h>
 #include <PgsExt\StatusItem.h>

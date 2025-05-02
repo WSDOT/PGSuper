@@ -65,10 +65,10 @@ void CTendonStressCheckTable::Build(rptChapter* pChapter,std::shared_ptr<WBFL::E
 {
    const CGirderKey& girderKey = pGirderArtifact->GetGirderKey();
 
-   EAF_GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
+   GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeometry);
    DuctIndexType nMaxSegmentDucts = pSegmentTendonGeometry->GetMaxDuctCount(girderKey);
 
-   EAF_GET_IFACE2(pBroker,IGirderTendonGeometry,pGirderTendonGeometry);
+   GET_IFACE2(pBroker,IGirderTendonGeometry,pGirderTendonGeometry);
    DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
    if (nMaxSegmentDucts+nGirderDucts == 0 )
    {
@@ -77,7 +77,7 @@ void CTendonStressCheckTable::Build(rptChapter* pChapter,std::shared_ptr<WBFL::E
 
    INIT_UV_PROTOTYPE( rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false );
 
-   EAF_GET_IFACE2(pBroker,ITendonStressLimit,pLimits);
+   GET_IFACE2(pBroker,ITendonStressLimit,pLimits);
    
    rptCapacityToDemand cap_demand;
 
@@ -86,7 +86,7 @@ void CTendonStressCheckTable::Build(rptChapter* pChapter,std::shared_ptr<WBFL::E
    pPara->SetName(_T("Tendon Stresses"));
    *pChapter << pPara;
 
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
    {

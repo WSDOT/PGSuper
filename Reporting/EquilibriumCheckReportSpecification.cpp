@@ -62,7 +62,7 @@ std::_tstring CEquilibriumCheckReportSpecification::GetReportContextString() con
    CGirderKey girderKey = m_Poi.GetSegmentKey();
    if ( girderKey.groupIndex != ALL_SPANS && girderKey.girderIndex != ALL_GIRDERS )
    {
-      EAF_GET_IFACE2(GetBroker(),IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(GetBroker(),IEAFDisplayUnits,pDisplayUnits);
       rptPointOfInterest rptPoi(&pDisplayUnits->GetSpanLengthUnit().UnitOfMeasure);
       rptPoi.SetValue(POI_SPAN,m_Poi);
       rptPoi.PrefixAttributes(false); // put the attributes after the location

@@ -36,7 +36,7 @@
 #include <EAF\EAFUIIntegration.h>
 #include <EAF\EAFStatusItem.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include "PGSuperApp.h"
 #include "PGSuperDoc.h"
 #include "Hints.h"
@@ -67,11 +67,6 @@
 #include <GirderModelViewController.h>
 #include <LoadsViewController.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -137,7 +132,7 @@ void CPGSuperDocProxyAgent::CreateToolBars()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   EAF_GET_IFACE(IEAFToolbars,pToolBars);
+   GET_IFACE(IEAFToolbars,pToolBars);
 
    m_StdToolBarID = pToolBars->CreateToolBar(_T("Standard"));
    auto pToolBar = pToolBars->GetToolBar(m_StdToolBarID);
@@ -166,7 +161,7 @@ void CPGSuperDocProxyAgent::CreateToolBars()
 
 void CPGSuperDocProxyAgent::RemoveToolBars()
 {
-   EAF_GET_IFACE(IEAFToolbars,pToolBars);
+   GET_IFACE(IEAFToolbars,pToolBars);
    pToolBars->DestroyToolBar(m_StdToolBarID);
    pToolBars->DestroyToolBar(m_LibToolBarID);
    pToolBars->DestroyToolBar(m_HelpToolBarID);
@@ -185,7 +180,7 @@ void CPGSuperDocProxyAgent::RegisterViews()
    // TODO: After the menu and command extensions can be made, the agents that are responsible
    // for the views below will register them. For example, the analysis results view is the
    // responsibility of the analysis results agent, so that view's implementation will move
-   EAF_GET_IFACE(IEAFViewRegistrar,pViewReg);
+   GET_IFACE(IEAFViewRegistrar,pViewReg);
    m_BridgeModelEditorViewKey = pViewReg->RegisterView(IDR_BRIDGEMODELEDITOR, nullptr, RUNTIME_CLASS(CBridgeModelViewChildFrame), RUNTIME_CLASS(CBridgePlanView),           hMenu, 1);
    m_GirderModelEditorViewKey = pViewReg->RegisterView(IDR_GIRDERMODELEDITOR, nullptr, RUNTIME_CLASS(CGirderModelChildFrame),     RUNTIME_CLASS(CGirderModelElevationView), hMenu, -1); // unlimited number of reports
    m_LibraryEditorViewKey     = pViewReg->RegisterView(IDR_LIBRARYEDITOR,     nullptr, RUNTIME_CLASS(CLibChildFrame),             RUNTIME_CLASS(CLibraryEditorView),        hMenu, 1);
@@ -196,7 +191,7 @@ void CPGSuperDocProxyAgent::RegisterViews()
 
 void CPGSuperDocProxyAgent::UnregisterViews()
 {
-   EAF_GET_IFACE(IEAFViewRegistrar,pViewReg);
+   GET_IFACE(IEAFViewRegistrar,pViewReg);
    pViewReg->RemoveView(m_BridgeModelEditorViewKey);
    pViewReg->RemoveView(m_GirderModelEditorViewKey);
    pViewReg->RemoveView(m_LibraryEditorViewKey);
@@ -235,7 +230,7 @@ void CPGSuperDocProxyAgent::UnadviseEventSinks()
 
 void CPGSuperDocProxyAgent::CreateBridgeModelView(IBridgeModelViewController** ppViewController)
 {
-   EAF_GET_IFACE(IEAFViewRegistrar,pViewReg);
+   GET_IFACE(IEAFViewRegistrar,pViewReg);
    CView* pView = pViewReg->CreateView(m_BridgeModelEditorViewKey);
 
    if (ppViewController && pView->IsKindOf(RUNTIME_CLASS(CBridgeViewPane)) )
@@ -258,7 +253,7 @@ void CPGSuperDocProxyAgent::CreateBridgeModelView(IBridgeModelViewController** p
 
 void CPGSuperDocProxyAgent::CreateGirderView(const CGirderKey& girderKey, IGirderModelViewController** ppViewController)
 {
-   EAF_GET_IFACE(IEAFViewRegistrar,pViewReg);
+   GET_IFACE(IEAFViewRegistrar,pViewReg);
    CView* pView = pViewReg->CreateView(m_GirderModelEditorViewKey,(void*)&girderKey);
 
    if (ppViewController && pView->IsKindOf(RUNTIME_CLASS(CGirderModelElevationView)))
@@ -281,7 +276,7 @@ void CPGSuperDocProxyAgent::CreateGirderView(const CGirderKey& girderKey, IGirde
 
 void CPGSuperDocProxyAgent::CreateLoadsView(ILoadsViewController** ppViewController)
 {
-   EAF_GET_IFACE(IEAFViewRegistrar, pViewReg);
+   GET_IFACE(IEAFViewRegistrar, pViewReg);
    CView* pView = pViewReg->CreateView(m_LoadsViewKey);
 
    if (ppViewController && pView->IsKindOf(RUNTIME_CLASS(CEditLoadsView)))
@@ -304,7 +299,7 @@ void CPGSuperDocProxyAgent::CreateLoadsView(ILoadsViewController** ppViewControl
 
 void CPGSuperDocProxyAgent::CreateLibraryEditorView()
 {
-   EAF_GET_IFACE(IEAFViewRegistrar,pViewReg);
+   GET_IFACE(IEAFViewRegistrar,pViewReg);
    pViewReg->CreateView(m_LibraryEditorViewKey);
 }
 
@@ -314,10 +309,10 @@ void CPGSuperDocProxyAgent::CreateReportView(IndexType rptIdx,BOOL bPromptForSpe
    data.m_RptIdx = rptIdx;
    data.m_bPromptForSpec = bPromptForSpec;
 
-   EAF_GET_IFACE(IEAFReportManager,pRptMgr);
+   GET_IFACE(IEAFReportManager,pRptMgr);
    data.m_pRptMgr = pRptMgr;
 
-   EAF_GET_IFACE(IEAFViewRegistrar,pViewReg);
+   GET_IFACE(IEAFViewRegistrar,pViewReg);
    pViewReg->CreateView(m_ReportViewKey,(LPVOID)&data);
 }
 
@@ -329,11 +324,11 @@ void CPGSuperDocProxyAgent::BuildReportMenu(std::shared_ptr<WBFL::EAF::Menu> pMe
 void CPGSuperDocProxyAgent::CreateGraphView(IndexType graphIdx, IEAFViewController** ppViewController)
 {
    CEAFGraphViewCreationData data;
-   EAF_GET_IFACE(IEAFGraphManager,pGraphMgr);
+   GET_IFACE(IEAFGraphManager,pGraphMgr);
    data.m_pIGraphMgr = pGraphMgr;
    data.m_GraphIndex = graphIdx;
 
-   EAF_GET_IFACE(IEAFViewRegistrar,pViewReg);
+   GET_IFACE(IEAFViewRegistrar,pViewReg);
    CView* pView = pViewReg->CreateView(m_GraphingViewKey,(LPVOID)&data);
 
    if (ppViewController && pView->IsKindOf(RUNTIME_CLASS(CGraphView)))
@@ -356,7 +351,7 @@ void CPGSuperDocProxyAgent::CreateGraphView(IndexType graphIdx, IEAFViewControll
 
 void CPGSuperDocProxyAgent::CreateGraphView(LPCTSTR lpszGraph, IEAFViewController** ppViewController)
 {
-   EAF_GET_IFACE(IEAFGraphManager, pGraphMgr);
+   GET_IFACE(IEAFGraphManager, pGraphMgr);
    IndexType nGraphs = pGraphMgr->GetGraphBuilderCount();
    for (IndexType graphIdx = 0; graphIdx < nGraphs; graphIdx++)
    {
@@ -412,28 +407,28 @@ void CPGSuperDocProxyAgent::OnStatusChanged()
 {
    if ( m_pBroker )
    {
-      EAF_GET_IFACE(IEAFToolbars,pToolBars);
+      GET_IFACE(IEAFToolbars,pToolBars);
       auto pToolBar = pToolBars->GetToolBar(GetStdToolBarID());
 
       if ( pToolBar == nullptr )
          return;
    
-      EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
+      GET_IFACE(IEAFStatusCenter,pStatusCenter);
       switch(pStatusCenter->GetSeverity())
       {
-      case eafTypes::statusInformation:
+      case WBFL::EAF::StatusSeverityType::Information:
          pToolBar->HideButton(EAFID_VIEW_STATUSCENTER, nullptr, FALSE);
          pToolBar->HideButton(EAFID_VIEW_STATUSCENTER2,nullptr, TRUE);
          pToolBar->HideButton(EAFID_VIEW_STATUSCENTER3,nullptr, TRUE);
          break;
 
-      case eafTypes::statusWarning:
+      case WBFL::EAF::StatusSeverityType::Warning:
          pToolBar->HideButton(EAFID_VIEW_STATUSCENTER, nullptr, TRUE);
          pToolBar->HideButton(EAFID_VIEW_STATUSCENTER2,nullptr, FALSE);
          pToolBar->HideButton(EAFID_VIEW_STATUSCENTER3,nullptr, TRUE);
          break;
 
-      case eafTypes::statusError:
+      case WBFL::EAF::StatusSeverityType::Error:
          pToolBar->HideButton(EAFID_VIEW_STATUSCENTER, nullptr, TRUE);
          pToolBar->HideButton(EAFID_VIEW_STATUSCENTER2,nullptr, TRUE);
          pToolBar->HideButton(EAFID_VIEW_STATUSCENTER3,nullptr, FALSE);
@@ -448,9 +443,11 @@ void CPGSuperDocProxyAgent::OnUIHintsReset()
 }
 
 //////////////////////////////////////////////////////////
-// IAgent
+// Agent
 bool CPGSuperDocProxyAgent::RegInterfaces()
 {
+   EAF_AGENT_REGINTERFACES;
+
    REGISTER_INTERFACE(IEditByUI);
    REGISTER_INTERFACE(IDesign);
    REGISTER_INTERFACE(IViews);
@@ -463,34 +460,31 @@ bool CPGSuperDocProxyAgent::RegInterfaces()
    REGISTER_INTERFACE(IExtendPGSpliceUI);
    REGISTER_INTERFACE(IDocumentType);
    REGISTER_INTERFACE(IDocumentUnitSystem);
+
    return true;
 }
 
 bool CPGSuperDocProxyAgent::Init()
 {
-   //EAF_AGENT_INIT;
-#pragma Reminder("WORKING HERE - Removing COM")
-   // Need to take a fresh look at EAF_AGENT_INIT and the related macros
-   // All agents need to call the base-class Agent::Init() function
-   // This is easily hidden in that macro.
-   // Will also temporarly need a bool in Agent::Init() to
-   // check if (1) it's never called and (2) if it is called more than once.
-   // Agent::Init needs to be called exactly once between Init() and Shutdown()
+   EAF_AGENT_INIT;
    AdviseEventSinks();
    return true;
 }
 
 bool CPGSuperDocProxyAgent::Reset()
 {
+   EAF_AGENT_RESET;
+
    CEAFTxnManager::GetInstance().Clear();
    return true;
 }
 
 bool CPGSuperDocProxyAgent::ShutDown()
 {
+   EAF_AGENT_SHUTDOWN;
+
    UnadviseEventSinks();
 
-   //EAF_AGENT_CLEAR_INTERFACE_CACHE;
    CLOSE_LOGFILE;
 
    return true;
@@ -504,7 +498,7 @@ CLSID CPGSuperDocProxyAgent::GetCLSID() const
 ////////////////////////////////////////////////////////////////////
 // IAgentUIIntegration
 
-STDMETHODIMP CPGSuperDocProxyAgent::IntegrateWithUI(BOOL bIntegrate)
+bool CPGSuperDocProxyAgent::IntegrateWithUI(bool bIntegrate)
 {
    if ( bIntegrate )
    {
@@ -533,7 +527,7 @@ HRESULT CPGSuperDocProxyAgent::OnBridgeChanged(CBridgeChangedHint* pHint)
    // Check to see if the bridge has changed in such a way that the
    // selected element is no longer valid
    //
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    SpanIndexType nSpans = pBridgeDesc->GetSpanCount();
@@ -604,7 +598,7 @@ HRESULT CPGSuperDocProxyAgent::OnBridgeChanged(CBridgeChangedHint* pHint)
 HRESULT CPGSuperDocProxyAgent::OnGirderFamilyChanged()
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
-   EAF_GET_IFACE(IEAFDocument,pDoc);
+   GET_IFACE(IEAFDocument,pDoc);
    pDoc->SetModified();
    FireEvent( 0, HINT_GIRDERFAMILYCHANGED, nullptr );
    return S_OK;
@@ -695,12 +689,12 @@ HRESULT CPGSuperDocProxyAgent::OnUnitsChanging()
    return S_OK;
 }
 
-HRESULT CPGSuperDocProxyAgent::OnUnitsChanged(eafTypes::UnitMode newUnitMode)
+HRESULT CPGSuperDocProxyAgent::OnUnitsChanged(WBFL::EAF::UnitMode newUnitMode)
 {
    AFX_MANAGE_STATE(AfxGetAppModuleState());
    m_pMyDocument->SetModifiedFlag();
 
-   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    CComPtr<IDocUnitSystem> pDocUnitSystem;
    m_pMyDocument->GetDocUnitSystem(&pDocUnitSystem);
@@ -1119,7 +1113,7 @@ bool CPGSuperDocProxyAgent::EditTemporarySupportDescription(PierIndexType pierId
       CPGSpliceDoc* pPGSplice = dynamic_cast<CPGSpliceDoc*>(m_pMyDocument);
       ATLASSERT(pPGSplice != nullptr);
 
-      EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+      GET_IFACE(IBridgeDescription,pIBridgeDesc);
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
       const CTemporarySupportData* pTsData = pBridgeDesc->GetTemporarySupport(pierIdx);
 
@@ -1492,7 +1486,7 @@ void CPGSuperDocProxyAgent::GetUnitServer(IUnitServer** ppUnitServer)
 
 CBridgeModelViewChildFrame* CPGSuperDocProxyAgent::GetBridgeModelViewFrame()
 {
-   EAF_GET_IFACE(IEAFViewRegistrar, pViewReg);
+   GET_IFACE(IEAFViewRegistrar, pViewReg);
    std::vector<CView*> vViews = pViewReg->GetRegisteredView(m_BridgeModelEditorViewKey);
    if (vViews.size() == 0)
    {

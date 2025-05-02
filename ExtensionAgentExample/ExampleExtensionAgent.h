@@ -24,7 +24,7 @@
 
 #pragma once
 #include <EAF\Agent.h>
-#include <EAF\EAFInterfaceCache.h>
+
 #include <EAF\EAFUIIntegration.h>
 
 #include <IFace\ExtendUI.h>
@@ -83,6 +83,7 @@ public:
 
 // IAgentEx
 public:
+   std::_tstring GetName() const override { return _T("ExampleAgent"); }
    bool RegInterfaces() override;
    bool Init() override;
    bool Reset() override;
@@ -181,6 +182,8 @@ public:
    DECLARE_MESSAGE_MAP()
 
 private:
+   EAF_DECLARE_AGENT_DATA;
+
    void RegisterUIExtensions();
    void UnregisterUIExtensions();
    IDType m_EditBridgeCallbackID;

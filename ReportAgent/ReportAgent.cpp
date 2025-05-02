@@ -32,7 +32,7 @@
 #include "resource.h"
 #include "CLSID.h"
 
-#include <WBFLCore_i.c>
+
 #include <WBFLCogo_i.c>
 
 #include <EAF/EAFReportManager.h>

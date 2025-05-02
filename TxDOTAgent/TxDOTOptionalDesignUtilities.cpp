@@ -25,12 +25,13 @@
 
 #include "TxDOTOptionalDesignUtilities.h"
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <PgsExt\DebondUtil.h>
 #include <PsgLib\GirderLibraryEntry.h>
-#include <PgsExt\BridgeDescription2.h>
+
 #include <IFace\Intervals.h>
 #include <IFace\Project.h>
+#include <IFace/PointOfInterest.h>
 
 
 
@@ -106,8 +107,8 @@ BOOL DoParseTemplateFile(const LPCTSTR lpszPathName, CString& girderEntry,
 
 OptionalDesignHarpedFillUtil::StrandRowSet OptionalDesignHarpedFillUtil::GetStrandRowSet(std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& midPoi)
 {
-   EAF_GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
-   EAF_GET_IFACE2(pBroker,IGirder,pGirder);
+   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
+   GET_IFACE2(pBroker,IGirder,pGirder);
 
    // Need girder height - strands are measured from top downward
    Float64 hg = pGirder->GetHeight(midPoi);
@@ -370,10 +371,10 @@ std::list<ColumnIndexType> ComputeTableCols(const std::vector<CGirderKey>& girde
 
 StrandIndexType GetNumRaisedStraightStrands(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CSegmentKey& segmentKey)
 {
-   EAF_GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
-	EAF_GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
-   EAF_GET_IFACE2(pBroker, ISectionProperties,pSectProp);
-   EAF_GET_IFACE2(pBroker, IIntervals,pIntervals);
+   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
+	GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
+   GET_IFACE2(pBroker, ISectionProperties,pSectProp);
+   GET_IFACE2(pBroker, IIntervals,pIntervals);
 
    PoiList vPoi;
    pPointOfInterest->GetPointsOfInterest(segmentKey, POI_5L | POI_SPAN, &vPoi);
@@ -414,7 +415,7 @@ StrandIndexType GetNumRaisedStraightStrands(std::shared_ptr<WBFL::EAF::Broker> p
 bool IsIBeam(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey & girderKey)
 {
    // IGirders are treated differently than others
-   EAF_GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    std::_tstring girderFamily = pBridgeDesc->GetGirderFamilyName();
    return girderFamily == _T("I-Beam");
@@ -423,7 +424,7 @@ bool IsIBeam(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey & gird
 bool IsTxDOTStandardStrands(txcwStrandLayoutType strandLayoutType, pgsTypes::StrandDefinitionType sdtType, const CSegmentKey& segmentKey, std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
 
-   EAF_GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
+   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
    StrandIndexType ns = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Straight);
    StrandIndexType nh = pStrandGeometry->GetStrandCount(segmentKey,pgsTypes::Harped);
    StrandIndexType nperm = ns + nh;
@@ -480,7 +481,7 @@ bool IsTxDOTStandardStrands(txcwStrandLayoutType strandLayoutType, pgsTypes::Str
       {
          // This is the hard one. We have a straight design. In order to be standard;
          // the bottom half of the girder must be filled filling each row completely from the bottom up.
-         EAF_GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest);
+         GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest);
          PoiList vPoi;
          pPointOfInterest->GetPointsOfInterest(segmentKey, POI_5L | POI_SPAN, &vPoi);
          ATLASSERT(vPoi.size() == 1);
@@ -542,7 +543,7 @@ bool IsTxDOTStandardStrands(txcwStrandLayoutType strandLayoutType, pgsTypes::Str
 
 txcwStrandLayoutType GetStrandLayoutType(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey)
 {
-   EAF_GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
+   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
 
    CSegmentKey segmentKey(girderKey, 0);
 
@@ -553,10 +554,10 @@ txcwStrandLayoutType GetStrandLayoutType(std::shared_ptr<WBFL::EAF::Broker> pBro
    if (0 < pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Harped))
    {
       // check that eccentricity is same at ends and mid-girder
-      EAF_GET_IFACE2(pBroker, IIntervals,pIntervals);
+      GET_IFACE2(pBroker, IIntervals,pIntervals);
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
-      EAF_GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
+      GET_IFACE2(pBroker, IPointOfInterest, pPointOfInterest );
       PoiList vPoi;
       pPointOfInterest->GetPointsOfInterest(segmentKey, POI_START_FACE, &vPoi);
       ATLASSERT(vPoi.size() == 1);

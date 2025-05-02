@@ -22,8 +22,8 @@
 #pragma once
 
 #include "resource.h"
-#include <PgsExt\TimelineEvent.h>
-#include <PgsExt\TimelineManager.h>
+#include <PsgLib\TimelineEvent.h>
+#include <PsgLib\TimelineManager.h>
 #include "ActivityGrid.h"
 
 class CTimelineEventDlg : public CDialog

@@ -59,18 +59,18 @@ rptChapter* CSegmentTendonGeometryChapterBuilder::Build(const std::shared_ptr<co
 
    CGirderKey girderKey(pGirderRptSpec->GetGirderKey());
 
-   EAF_GET_IFACE2(pBroker,ISegmentTendonGeometry,pTendonGeom);
+   GET_IFACE2(pBroker,ISegmentTendonGeometry,pTendonGeom);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   EAF_GET_IFACE2_NOCHECK(pBroker,ILosses,pLosses); // only used if there are segment tendons
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2_NOCHECK(pBroker,ILosses,pLosses); // only used if there are segment tendons
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
 
    INIT_UV_PROTOTYPE( rptPointOfInterest, location, pDisplayUnits->GetSpanLengthUnit(),  false);
@@ -78,7 +78,7 @@ rptChapter* CSegmentTendonGeometryChapterBuilder::Build(const std::shared_ptr<co
    INIT_UV_PROTOTYPE( rptLengthUnitValue,        ecc,      pDisplayUnits->GetComponentDimUnit(), false);
    INIT_UV_PROTOTYPE( rptStressUnitValue,        stress,   pDisplayUnits->GetStressUnit(), false);
 
-   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);

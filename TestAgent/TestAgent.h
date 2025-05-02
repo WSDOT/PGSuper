@@ -23,7 +23,7 @@
 #ifndef INCLUDED_TESTAGENT_H_
 #define INCLUDED_TESTAGENT_H_
 
-#include <WBFLCore.h>
+
 
 #include <IFace\VersionInfo.h>
 #include <IFace\Test1250.h>

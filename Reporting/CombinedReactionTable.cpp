@@ -32,8 +32,8 @@
 #include <IFace\RatingSpecification.h>
 #include <IFace\Intervals.h>
 
-#include <PgsExt\PierData2.h>
-#include <PgsExt\GirderGroupData.h>
+#include <PsgLib\PierData2.h>
+#include <PsgLib\GirderGroupData.h>
 
 
 
@@ -76,7 +76,7 @@ void CCombinedReactionTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBroker, r
 {
    BuildCombinedDeadTable(pBroker, pChapter, girderKey, pDisplayUnits, intervalIdx, analysisType, tableType, bDesign, bRating);
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    if ( liveLoadIntervalIdx <= intervalIdx && BearingReactionsTable == tableType)
@@ -112,7 +112,7 @@ void CCombinedReactionTable::BuildForBearingDesign(std::shared_ptr<WBFL::EAF::Br
 
    BuildCombinedDeadTable(pBroker, pChapter, girderKey, pDisplayUnits, intervalIdx, analysisType, tableType, true, false);
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    if (liveLoadIntervalIdx <= intervalIdx)
    {
@@ -134,16 +134,16 @@ void CCombinedReactionTable::BuildCombinedDeadTable(std::shared_ptr<WBFL::EAF::B
    // Tricky: the reaction tool below will dump out two lines per cell for bearing reactions with more than one bearing
    ReactionUnitValueTool reaction(tableType, reactu);
 
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
-   EAF_GET_IFACE2_NOCHECK(pBroker,IBearingDesign,pBearingDesign); // only used for certain reaction table types and intervals after live load is applied
-   EAF_GET_IFACE2_NOCHECK(pBroker,ILimitStateForces,pLsForces); 
+   GET_IFACE2_NOCHECK(pBroker,IBearingDesign,pBearingDesign); // only used for certain reaction table types and intervals after live load is applied
+   GET_IFACE2_NOCHECK(pBroker,ILimitStateForces,pLsForces); 
 
-   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
-   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    bool bTimeStepMethod = pSpecEntry->GetPrestressLossCriteria().LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP;
 
@@ -152,12 +152,12 @@ void CCombinedReactionTable::BuildCombinedDeadTable(std::shared_ptr<WBFL::EAF::B
    std::unique_ptr<ICmbLsReactionAdapter> pForces;
    if(  tableType==PierReactionsTable )
    {
-      EAF_GET_IFACE2(pBroker,IReactions,pReactions);
+      GET_IFACE2(pBroker,IReactions,pReactions);
       pForces = std::make_unique<CombinedLsForcesReactionAdapter>(pReactions,pLsForces,girderKey);
    }
    else
    {
-      EAF_GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
+      GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
       pForces = std::make_unique<CmbLsBearingDesignReactionAdapter>(pBearingDesign, intervalIdx, girderKey);
    }
 
@@ -179,7 +179,7 @@ void CCombinedReactionTable::BuildCombinedDeadTable(std::shared_ptr<WBFL::EAF::B
    p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_RIGHT));
    p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
 
-   EAF_GET_IFACE2(pBroker,IProductForces,pProdForces);
+   GET_IFACE2(pBroker,IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
 
@@ -314,7 +314,7 @@ void CCombinedReactionTable::BuildLiveLoad(std::shared_ptr<WBFL::EAF::Broker> pB
 {
    ATLASSERT(!(bDesign&&bRating)); // these are separate tables, can't do both
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    // Build table
    INIT_UV_PROTOTYPE( rptLengthUnitValue, location, pDisplayUnits->GetSpanLengthUnit(), false );
@@ -326,13 +326,13 @@ void CCombinedReactionTable::BuildLiveLoad(std::shared_ptr<WBFL::EAF::Broker> pB
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
 
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   EAF_GET_IFACE2(pBroker,ILimitStateForces,pLsForces);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   GET_IFACE2(pBroker,ILimitStateForces,pLsForces);
 
    // TRICKY: Use the adapter class to get the reaction response functions we need and to iterate piers
-   EAF_GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
+   GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
    IntervalIndexType intervalIdx = pIntervals->GetLiveLoadInterval();
    std::unique_ptr<ICmbLsReactionAdapter> pForces =  std::make_unique<CmbLsBearingDesignReactionAdapter>(pBearingDesign, intervalIdx, girderKey);
 
@@ -347,12 +347,12 @@ void CCombinedReactionTable::BuildLiveLoad(std::shared_ptr<WBFL::EAF::Broker> pB
    bool bPedLoading = pProductLoads->HasPedestrianLoad(girderKey);
 
    // pedestrian live load combination types, if applicable
-   EAF_GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
+   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    ILiveLoads::PedestrianLoadApplicationType DesignPedLoad = pLiveLoads->GetPedestrianLoadApplication(pgsTypes::lltDesign);
    ILiveLoads::PedestrianLoadApplicationType FatiguePedLoad = pLiveLoads->GetPedestrianLoadApplication(pgsTypes::lltFatigue);
    ILiveLoads::PedestrianLoadApplicationType PermitPedLoad = pLiveLoads->GetPedestrianLoadApplication(pgsTypes::lltPermit);
 
-   EAF_GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
    std::_tstring strLabel(_T("Girder Bearing Reactions"));
    strLabel += std::_tstring(bDesign ? _T(" - Design Vehicles") : _T(" - Rating Vehicles"));
@@ -374,7 +374,7 @@ void CCombinedReactionTable::BuildLiveLoad(std::shared_ptr<WBFL::EAF::Broker> pB
       startPedCol = 3 + (nc-3)/2; // first three rows loc, pedmn, pedmx
    }
 
-   EAF_GET_IFACE2(pBroker,IProductForces,pProdForces);
+   GET_IFACE2(pBroker,IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 
@@ -682,12 +682,12 @@ void CCombinedReactionTable::BuildBearingLimitStateTable(std::shared_ptr<WBFL::E
    // Tricky: the reaction tool below will dump out two lines per cell for bearing reactions with more than one bearing
    ReactionUnitValueTool reaction(BearingReactionsTable, reactu);
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,ILimitStateForces,pLsForces);
-   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
-   EAF_GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
-   EAF_GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,ILimitStateForces,pLsForces);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+   GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
 
    bool bPermit = pLsForces->IsStrengthIIApplicable(girderKey);
    bool bPedLoading = pProductLoads->HasPedestrianLoad(girderKey);
@@ -706,7 +706,7 @@ void CCombinedReactionTable::BuildBearingLimitStateTable(std::shared_ptr<WBFL::E
    p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_RIGHT));
    p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
 
-   EAF_GET_IFACE2(pBroker,IProductForces,pProdForces);
+   GET_IFACE2(pBroker,IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 

@@ -24,7 +24,7 @@
 #include "PGSuperApp.h"
 #include "InplaceSpanLengthEditEvents.h"
 #include "EditSpanLength.h"
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <IFace\Project.h>
 #include <EAF\EAFTxnManager.h>
 
@@ -49,7 +49,7 @@ void CInplaceSpanLengthEditEvents::Handle_OnChanged(std::shared_ptr<WBFL::DManip
       return;
    }
 
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    Float64 old_span_length = pBridgeDesc->GetSpan(m_SpanIdx)->GetSpanLength();
 

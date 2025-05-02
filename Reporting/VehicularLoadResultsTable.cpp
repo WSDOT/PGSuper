@@ -31,6 +31,7 @@
 #include <IFace\Intervals.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\ReportOptions.h>
+#include <IFace/PointOfInterest.h>
 
 
 /****************************************************************************
@@ -78,13 +79,13 @@ rptRcTable* CVehicularLoadResultsTable::Build(std::shared_ptr<WBFL::EAF::Broker>
    INIT_UV_PROTOTYPE( rptLengthUnitValue, deflection, pDisplayUnits->GetDeflectionUnit(), false );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, span_location, pDisplayUnits->GetSpanLengthUnit(), false );
 
-   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType intervalIdx = (IsRatingLiveLoad(llType) ? pIntervals->GetLoadRatingInterval() : pIntervals->GetLiveLoadInterval() );
 
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    GroupIndexType startGroupIdx = (girderKey.groupIndex == ALL_GROUPS ? 0 : girderKey.groupIndex);
    GroupIndexType endGroupIdx   = (girderKey.groupIndex == ALL_GROUPS ? nGroups-1 : startGroupIdx);
@@ -94,7 +95,7 @@ rptRcTable* CVehicularLoadResultsTable::Build(std::shared_ptr<WBFL::EAF::Broker>
 
    Float64 end_distance = pBridge->GetSegmentStartEndDistance(CSegmentKey(vGirderKeys.front(),0));
  
-   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    bool bReportAxial = pProductLoads->ReportAxialResults();
 
    ColumnIndexType nCols = 7;
@@ -190,8 +191,8 @@ rptRcTable* CVehicularLoadResultsTable::Build(std::shared_ptr<WBFL::EAF::Broker>
    }
 
    // Get the interface pointers we need
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
-   EAF_GET_IFACE2(pBroker,IProductForces2,pForces2);
+   GET_IFACE2(pBroker,IPointOfInterest,pIPoi);
+   GET_IFACE2(pBroker,IProductForces2,pForces2);
 
    RowIndexType row = p_table->GetNumberOfHeaderRows();
    for(const auto& thisGirderKey : vGirderKeys)

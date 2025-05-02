@@ -33,7 +33,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\DocumentType.h>
 
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 #include <EAF\EAFDocument.h>
 
 #include <MFCTools\AutoRegistry.h>
@@ -158,7 +158,7 @@ void CLoadRatingReportDlg::UpdateGirderLineComboBox()
    Uint16 curSel = pGdrBox->GetCurSel();
    pGdrBox->ResetContent();
 
-   EAF_GET_IFACE( IBridge, pBridge );
+   GET_IFACE( IBridge, pBridge );
    GirderIndexType cGirders = 0;
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    for ( GroupIndexType i = 0; i < nGroups; i++ )
@@ -188,7 +188,7 @@ void CLoadRatingReportDlg::UpdateSpanComboBox()
    Uint16 curSel = pBox->GetCurSel();
    pBox->ResetContent();
 
-   EAF_GET_IFACE( IBridge, pBridge );
+   GET_IFACE( IBridge, pBridge );
    GirderIndexType cGirders = 0;
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    for ( GroupIndexType i = 0; i < nGroups; i++ )
@@ -217,7 +217,7 @@ void CLoadRatingReportDlg::UpdateGirderComboBox()
       curSpanSel = 0;
    }
 
-   EAF_GET_IFACE( IBridge, pBridge );
+   GET_IFACE( IBridge, pBridge );
    GirderIndexType nGirders = pBridge->GetGirderCount( GroupIndexType(curSpanSel) );
 
    Uint16 curGdrSel = pGdrBox->GetCurSel();

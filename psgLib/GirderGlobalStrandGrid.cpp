@@ -24,14 +24,14 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psgLib.h>
+#include <PsgLib\PsgLib.h>
 #include "GirderGlobalStrandGrid.h"
 #include "StrandGridLocation.h"
 #include "GirderHarpedStrandPage.h"
 #include <system\tokenizer.h>
 
 #include <EAF\EAFApp.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 
 #include "StrandGenerationDlg.h"
 

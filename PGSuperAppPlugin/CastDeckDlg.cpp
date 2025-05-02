@@ -31,11 +31,6 @@
 #include <IFace\Bridge.h>
 
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 
@@ -220,7 +215,7 @@ BOOL CCastDeckDlg::OnInitDialog()
    // of cantilevers is not part of the basic bridge description
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    SpanIndexType nSpans = pBridge->GetSpanCount();
    if (nSpans == 1)
    {

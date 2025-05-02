@@ -35,18 +35,13 @@
 #include <PGSuperUnits.h>
 
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\BeamFactory.h>
 #include <EAF\EAFDisplayUnits.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CSpanGirderLayoutPage property page
@@ -76,7 +71,7 @@ void CSpanGirderLayoutPage::DoDataExchange(CDataExchange* pDX)
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    DDX_Control(pDX, IDC_NUMGDR_SPIN,         m_NumGdrSpinner);
    DDX_Control(pDX, IDC_GDR_SPC_TYPE_COMBO,  m_cbGirderSpacingType);
@@ -151,7 +146,7 @@ void CSpanGirderLayoutPage::DoDataExchange(CDataExchange* pDX)
             vGirderNames.push_back(pGirder->GetGirderName());
          }
 
-         EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+         GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
          if ( !pIBridgeDesc->AreGirdersCompatible(pParent->m_BridgeDesc,vGirderNames))
          {
             AfxMessageBox(_T("Girders do not have compatible dimensions."));
@@ -229,7 +224,7 @@ void CSpanGirderLayoutPage::GetPierSkewAngles(Float64& skew1,Float64& skew2)
    const CPierData2* pNextPier = pParent->m_pSpanData->GetNextPier();
 
    auto broker = EAFGetBroker();
-   EAF_GET_IFACE2(broker,IBridge,pBridge);
+   GET_IFACE2(broker,IBridge,pBridge);
 
    Float64 skew_angle_1;
    pBridge->GetSkewAngle(pPrevPier->GetStation(),pPrevPier->GetOrientation(),&skew_angle_1);
@@ -462,7 +457,7 @@ void CSpanGirderLayoutPage::FillGirderSpacingMeasurementComboBox(int nIDC, pgsTy
    item_data = HashGirderSpacing(pgsTypes::AtPierLine,pgsTypes::NormalToItem);
    pSpacingType->SetItemData(idx,item_data);
    
-   if (bearingMeasure != ConnectionLibraryEntry::AlongGirder)
+   if (bearingMeasure != ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder)
    {
       idx = pSpacingType->AddString(_T("Measured at and along the CL bearing"));
       item_data = HashGirderSpacing(pgsTypes::AtCenterlineBearing,pgsTypes::AlongItem);
@@ -609,7 +604,7 @@ void CSpanGirderLayoutPage::OnChangeSameGirderSpacing()
          // there is more than one unique girder spacing... which one do we want to use
          // for the entire bridge???
          auto broker = EAFGetBroker();
-         EAF_GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
+         GET_IFACE2(broker,IEAFDisplayUnits,pDisplayUnits);
 
          CResolveGirderSpacingDlg dlg;
          CString strItems;
@@ -643,7 +638,7 @@ void CSpanGirderLayoutPage::OnChangeSameGirderSpacing()
          ConnectionLibraryEntry::BearingOffsetMeasurementType start_measure, end_measure;
          std::tie(offset,start_measure) = pParent->m_pPrevPier->GetBearingOffset(pgsTypes::Ahead,true);
          std::tie(offset,end_measure) = pParent->m_pNextPier->GetBearingOffset(pgsTypes::Back,true);
-         dlg.m_RestrictSpacing = start_measure==ConnectionLibraryEntry::AlongGirder || end_measure==ConnectionLibraryEntry::AlongGirder;
+         dlg.m_RestrictSpacing = start_measure==ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder || end_measure==ConnectionLibraryEntry::BearingOffsetMeasurementType::AlongGirder;
 
          dlg.m_strSpacings = strItems;
          dlg.m_MeasurementDatum = 0;
@@ -711,7 +706,7 @@ void CSpanGirderLayoutPage::OnChangeSameGirderSpacing()
       {
          // there is more than one top widths... which one do we want to use for the entire bridge?
          auto broker = EAFGetBroker();
-         EAF_GET_IFACE2(broker, IEAFDisplayUnits, pDisplayUnits);
+         GET_IFACE2(broker, IEAFDisplayUnits, pDisplayUnits);
 
          auto factory = GetBeamFactory();
 

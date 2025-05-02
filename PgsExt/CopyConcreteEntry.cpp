@@ -29,13 +29,15 @@
 #include "CopyConcreteEntry.h"
 #include "..\Documentation\PGSuper.hh"
 
-#include <PsgLib\ConcreteLibraryEntry.h>
-
 
 #include <AgentTools.h>
 #include <IFace\Project.h>
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDocument.h>
+
+#pragma Reminder("WORKING HERE - Removing COM")
+// pointer to concrete library entry was removed just so we can get this DLL built
+// The concrete editing UI element is most likely going to be moved to PGSuperAppPlugin
 
 /////////////////////////////////////////////////////////////////////////////
 // CCopyConcreteEntry dialog
@@ -43,8 +45,8 @@
 
 CCopyConcreteEntry::CCopyConcreteEntry(bool isPrestressed, CWnd* pParent /*=nullptr*/)
 	: CDialog(CCopyConcreteEntry::IDD, pParent),
-   m_IsPrestressed(isPrestressed) ,
-   m_ConcreteEntry(nullptr)
+   m_IsPrestressed(isPrestressed)/* ,
+   m_ConcreteEntry(nullptr)*/
 {
 	//{{AFX_DATA_INIT(CCopyConcreteEntry)
 		// NOTE: the ClassWizard will add member initialization here
@@ -65,8 +67,8 @@ void CCopyConcreteEntry::DoDataExchange(CDataExchange* pDX)
    {
       auto pBroker = EAFGetBroker();
 
-      EAF_GET_IFACE2(pBroker,ILibrary,pLib);
-      m_ConcreteEntry = pLib->GetConcreteEntry(m_Concrete);
+      GET_IFACE2(pBroker,ILibrary,pLib);
+      //m_ConcreteEntry = pLib->GetConcreteEntry(m_Concrete);
    }
 }
 
@@ -84,7 +86,7 @@ BOOL CCopyConcreteEntry::OnInitDialog()
 {
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2( pBroker, ILibraryNames, pLibNames);
+   GET_IFACE2( pBroker, ILibraryNames, pLibNames);
    std::vector<std::_tstring> names;
    pLibNames->EnumConcreteNames(&names);
 

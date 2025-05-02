@@ -30,7 +30,7 @@
 #include "SpecMainSheet.h"
 #include <Stability/StabilityTypes.h>
 #include <EAF\EAFApp.h>
-#include <psgLib/SpecificationCriteria.h>
+#include <PsgLib/SpecificationCriteria.h>
 
 
 // CWsdotHaulingDlg dialog

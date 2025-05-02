@@ -25,9 +25,9 @@
 #include "CreepAtHaulingTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
-#include <PsgLib\SpecLibraryEntry.h>
 
-#include <PgsExt\GirderMaterial.h>
+#include <PsgLib\SpecLibraryEntry.h>
+#include <PsgLib\GirderMaterial.h>
 
 
 CCreepAtHaulingTable::CCreepAtHaulingTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) :
@@ -56,13 +56,13 @@ rptRcTable(NumColumns,0)
 
 CCreepAtHaulingTable* CCreepAtHaulingTable::PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,bool bTemporaryStrands,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
-   EAF_GET_IFACE2(pBroker,ISegmentData,pSegmentData);
+   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
-   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
    std::_tstring strSpecName = pSpec->GetSpecification();
 
-   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
 
    // Create and configure the table

@@ -28,9 +28,11 @@
 #include "stdafx.h"
 #include "SelectCrackedSectionDlg.h"
 #include <IFace\Bridge.h>
+#include <IFace/PointOfInterest.h>
 #include <EAF\EAFDisplayUnits.h>
+
 #include <MFCTools\CustomDDX.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 #include <PGSuperUnits.h>
 #include <EAF\EAFDocument.h>
 #include "..\Documentation\PGSuper.hh"
@@ -96,7 +98,7 @@ END_MESSAGE_MAP()
 
 BOOL CSelectCrackedSectionDlg::OnInitDialog()
 {
-   EAF_GET_IFACE( IBridge, pBridge );
+   GET_IFACE( IBridge, pBridge );
    m_GirderKey = m_InitialPOI.GetSegmentKey();
 
    CDialog::OnInitDialog();
@@ -155,7 +157,7 @@ void CSelectCrackedSectionDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pS
 
 void CSelectCrackedSectionDlg::UpdateGirderComboBox()
 {
-   EAF_GET_IFACE(IBridge, pBridge);
+   GET_IFACE(IBridge, pBridge);
 
    int curSel = m_cbGirder.GetCurSel();
    if (curSel == CB_ERR)
@@ -179,7 +181,7 @@ void CSelectCrackedSectionDlg::UpdateGirderComboBox()
 
 void CSelectCrackedSectionDlg::UpdateSliderLabel()
 {
-   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    CString strLabel;
    int sliderPos = m_Slider.GetPos();
@@ -223,7 +225,7 @@ void CSelectCrackedSectionDlg::OnGirderChanged()
 
 void CSelectCrackedSectionDlg::UpdatePOI()
 {
-   EAF_GET_IFACE(IPointOfInterest,pPOI);
+   GET_IFACE(IPointOfInterest,pPOI);
 
    // Get available pois from report spec so both classes are in synch
    CSegmentKey segmentKey(m_GirderKey, ALL_SEGMENTS);

@@ -37,7 +37,7 @@
 
 #include <IFace\Tools.h>
 
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 #include <PgsExt\ReportPointOfInterest.h>
 
 #include <WBFLGenericBridge.h>

@@ -20,19 +20,14 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// CreepAndShrinkageTable.h : Declaration of the CCreepAndShrinkageTable
+#pragma once
 
-#ifndef __CREEPANDSHRINKAGETABLE_H_
-#define __CREEPANDSHRINKAGETABLE_H_
-
-#include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <PgsExt/ReportPointOfInterest.h>
 
 class WBFL::LRFD::Losses;
 
-/////////////////////////////////////////////////////////////////////////////
-// CCreepAndShrinkageTable
 class CCreepAndShrinkageTable : public rptRcTable
 {
 public:
@@ -53,5 +48,3 @@ private:
    DECLARE_UV_PROTOTYPE( rptMomentUnitValue,  moment );
    DECLARE_UV_PROTOTYPE( rptStressUnitValue,  stress );
 };
-
-#endif //__CREEPANDSHRINKAGETABLE_H_

@@ -58,10 +58,9 @@ pgsGirderLiftingChecker::pgsGirderLiftingChecker(std::shared_ptr<WBFL::EAF::Brok
    m_pBroker = pBroker;
    m_StatusGroupID = statusGroupID;
 
-   EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
-#pragma Reminder("WORKING HERE - Removing COM - dont use raw pointers")
-   m_scidLiftingSupportLocationError   = pStatusCenter->RegisterCallback( new pgsLiftingSupportLocationStatusCallback(eafTypes::statusError) );
-   m_scidLiftingSupportLocationWarning = pStatusCenter->RegisterCallback( new pgsLiftingSupportLocationStatusCallback(eafTypes::statusWarning) );
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
+   m_scidLiftingSupportLocationError   = pStatusCenter->RegisterCallback( std::make_shared<pgsLiftingSupportLocationStatusCallback>(WBFL::EAF::StatusSeverityType::Error) );
+   m_scidLiftingSupportLocationWarning = pStatusCenter->RegisterCallback( std::make_shared<pgsLiftingSupportLocationStatusCallback>(WBFL::EAF::StatusSeverityType::Warning) );
 }
 
 pgsGirderLiftingChecker::~pgsGirderLiftingChecker()
@@ -70,12 +69,12 @@ pgsGirderLiftingChecker::~pgsGirderLiftingChecker()
 
 void pgsGirderLiftingChecker::CheckLifting(const CSegmentKey& segmentKey,WBFL::Stability::LiftingCheckArtifact* pArtifact)
 {
-   EAF_GET_IFACE(ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
+   GET_IFACE(ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
 
    if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled())
    {
        // Use poi's from global pool
-      EAF_GET_IFACE(ISegmentLiftingPointsOfInterest,pSegmentLiftingPointsOfInterest);
+      GET_IFACE(ISegmentLiftingPointsOfInterest,pSegmentLiftingPointsOfInterest);
       HANDLINGCONFIG dummy_config;
 
       // Compute lifting response
@@ -85,7 +84,7 @@ void pgsGirderLiftingChecker::CheckLifting(const CSegmentKey& segmentKey,WBFL::S
 
 void pgsGirderLiftingChecker::AnalyzeLifting(const CSegmentKey& segmentKey,Float64 supportLoc,WBFL::Stability::LiftingCheckArtifact* pArtifact)
 {
-   EAF_GET_IFACE(ISegmentLiftingPointsOfInterest,pSegmentLiftingPointsOfInterest);
+   GET_IFACE(ISegmentLiftingPointsOfInterest,pSegmentLiftingPointsOfInterest);
    HANDLINGCONFIG dummy_config;
    dummy_config.bIgnoreGirderConfig = true;
    dummy_config.LeftOverhang = supportLoc;
@@ -100,7 +99,7 @@ void pgsGirderLiftingChecker::AnalyzeLifting(const CSegmentKey& segmentKey,const
 
 void pgsGirderLiftingChecker::AnalyzeLifting(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& liftConfig,ISegmentLiftingDesignPointsOfInterest* pPoiD,WBFL::Stability::LiftingCheckArtifact* pArtifact,const WBFL::Stability::LiftingStabilityProblem** ppStabilityProblem)
 {
-   EAF_GET_IFACE(IGirder,pGirder);
+   GET_IFACE(IGirder,pGirder);
    const WBFL::Stability::Girder* pStabilityModel = pGirder->GetSegmentLiftingStabilityModel(segmentKey);
    const WBFL::Stability::LiftingStabilityProblem* pStabilityProblem = bUseConfig ? pGirder->GetSegmentLiftingStabilityProblem(segmentKey,liftConfig,pPoiD) : pGirder->GetSegmentLiftingStabilityProblem(segmentKey);
    if ( ppStabilityProblem )
@@ -108,7 +107,7 @@ void pgsGirderLiftingChecker::AnalyzeLifting(const CSegmentKey& segmentKey,bool 
       *ppStabilityProblem = pStabilityProblem;
    }
 
-   EAF_GET_IFACE(ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
+   GET_IFACE(ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
    WBFL::Stability::LiftingCriteria criteria = pSegmentLiftingSpecCriteria->GetLiftingStabilityCriteria(segmentKey, bUseConfig ? &liftConfig : nullptr);
 
    WBFL::Stability::StabilityEngineer engineer;
@@ -120,7 +119,7 @@ pgsDesignCodes::OutcomeType pgsGirderLiftingChecker::DesignLifting(const CSegmen
    //
    // Range of lifting loop locations and step increment
    //
-   EAF_GET_IFACE(ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
+   GET_IFACE(ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
    Float64 min_location = Max(pSegmentLiftingSpecCriteria->GetMinimumLiftingPointLocation(segmentKey,pgsTypes::metStart),pSegmentLiftingSpecCriteria->GetMinimumLiftingPointLocation(segmentKey,pgsTypes::metEnd));
    Float64 location_accuracy = pSegmentLiftingSpecCriteria->GetLiftingPointLocationAccuracy();
 
@@ -131,12 +130,12 @@ pgsDesignCodes::OutcomeType pgsGirderLiftingChecker::DesignLifting(const CSegmen
 
    // Max location may be limited by harping point (actually, just before it stopping at the last increment value)
    // But allowing more than 40% of the girder length makes no sense (think rigid-body instability for riggers)
-   EAF_GET_IFACE(IBridge, pBridge);
+   GET_IFACE(IBridge, pBridge);
    Float64 girder_length = pBridge->GetSegmentLength(segmentKey);
 
    Float64 maxLoc = 0.4*girder_length;
 
-   EAF_GET_IFACE(IStrandGeometry, pStrandGeom);
+   GET_IFACE(IStrandGeometry, pStrandGeom);
    StrandIndexType Nh = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Harped, config.bIgnoreGirderConfig ? nullptr : &config.GdrConfig);
 
    if (0 < Nh) // only look at harping point if we have harped strands

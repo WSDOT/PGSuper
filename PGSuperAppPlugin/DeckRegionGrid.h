@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <PgsExt\CastDeckActivity.h>
+#include <PsgLib\CastDeckActivity.h>
 
 class IBridge;
 class IEAFDisplayUnits;

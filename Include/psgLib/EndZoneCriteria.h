@@ -23,12 +23,12 @@
 #pragma once
 
 
-#include "psgLibLib.h"
+#include "PsgLibLib.h"
 
 class rptChapter;
 class IEAFDisplayUnits;
-class pgsLibraryEntryDifferenceItem;
 class SpecLibraryEntryImpl;
+class DifferenceItem;
 
 /// @brief Create for girder end zones at prestress release.
 /// This is the splitting and confinement criteria of LRFD 5.9.4 (pre2017: 5.10.10)
@@ -43,7 +43,7 @@ struct PSGLIBCLASS EndZoneCriteria
 
    bool operator==(const EndZoneCriteria& other) const;
    bool operator!=(const EndZoneCriteria& other) const;
-   bool Compare(const EndZoneCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const;
+   bool Compare(const EndZoneCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const;
 
    void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 

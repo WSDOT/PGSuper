@@ -25,8 +25,8 @@
 #include <Reporting\ReportingExp.h>
 #include <Reporting\BrokerReportSpecificationBuilder.h>
 #include <ReportManager\ReportManager.h>
-#include <PgsExt\Keys.h>
-#include <WBFLCore.h>
+#include <PsgLib\Keys.h>
+
 
 class REPORTINGCLASS CSpanReportSpecificationBuilder :
    public CBrokerReportSpecificationBuilder

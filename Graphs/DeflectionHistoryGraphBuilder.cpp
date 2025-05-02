@@ -196,7 +196,7 @@ void CDeflectionHistoryGraphBuilder::ShowGrid(bool bShowGrid)
 
 bool CDeflectionHistoryGraphBuilder::UpdateNow()
 {
-   EAF_GET_IFACE(IProgress,pProgress);
+   GET_IFACE(IEAFProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
 
    pProgress->UpdateMessage(_T("Building Graph"));
@@ -224,8 +224,8 @@ void CDeflectionHistoryGraphBuilder::UpdateGraphTitle(const pgsPointOfInterest& 
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
-   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-   EAF_GET_IFACE(IPointOfInterest,pPoi);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE(IPointOfInterest,pPoi);
    CSpanKey spanKey;
    Float64 Xspan;
    pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
@@ -265,10 +265,10 @@ void CDeflectionHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& p
 
    IndexType dataSeries = m_Graph.CreateDataSeries(_T(""), PS_SOLID, penWeight, color);
 
-   EAF_GET_IFACE(ILimitStateForces,pLimitStateForces);
-   EAF_GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(ILimitStateForces,pLimitStateForces);
+   GET_IFACE(IIntervals,pIntervals);
 
-   EAF_GET_IFACE(IProductForces,pProductForces);
+   GET_IFACE(IProductForces,pProductForces);
    pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
 
    bool include_unrec = ((CDeflectionHistoryGraphController*)m_pGraphController)->IncludeUnrecoverableDefl();
@@ -415,7 +415,7 @@ void CDeflectionHistoryGraphBuilder::UpdateYAxis()
       delete m_pYFormat;
    }
 
-   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::LengthData& deflectionUnit = pDisplayUnits->GetDeflectionUnit();
    m_pYFormat = new WBFL::Units::DeflectionTool(deflectionUnit);
    m_Graph.SetYAxisValueFormat(m_pYFormat);

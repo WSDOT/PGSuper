@@ -25,13 +25,8 @@
 #include "PGSpliceDoc.h"
 
 #include <IFACE\Project.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 txnEditClosureJoint::txnEditClosureJoint(const CSegmentKey& closureKey,const txnEditClosureJointData& newData)
@@ -49,13 +44,13 @@ bool txnEditClosureJoint::Execute()
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IEvents, pEvents);
+   GET_IFACE2(pBroker,IEvents, pEvents);
    // Exception-safe holder to keep from fireing events until we are done
    CIEventsHolder event_holder(pEvents);
 
    m_OldData.clear();
 
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(m_ClosureKey.groupIndex);
 
@@ -87,7 +82,7 @@ void txnEditClosureJoint::Undo()
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IEvents, pEvents);
+   GET_IFACE2(pBroker,IEvents, pEvents);
    // Exception-safe holder to keep from fireing events until we are done
    CIEventsHolder event_holder(pEvents);
 
@@ -135,11 +130,11 @@ void txnEditClosureJoint::SetClosureJointData(const CSegmentKey& closureKey,cons
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker, IEvents, pEvents);
+   GET_IFACE2(pBroker, IEvents, pEvents);
    // Exception-safe holder to keep from fireing events until we are done
    CIEventsHolder event_holder(pEvents);
 
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    pIBridgeDesc->SetClosureJointData(closureKey,data.m_ClosureJoint);
    pIBridgeDesc->SetTimelineManager(data.m_TimelineMgr);
 }

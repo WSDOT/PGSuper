@@ -129,10 +129,10 @@ void CPGSPluginAppBase::LoadDocumentationMap()
    return m_DocumentationImpl.LoadDocumentationMap();
 }
 
-eafTypes::HelpResult CPGSPluginAppBase::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID,CString& strURL)
+std::pair<WBFL::EAF::HelpResult,CString> CPGSPluginAppBase::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   return m_DocumentationImpl.GetDocumentLocation(lpszDocSetName,nID,strURL);
+   return m_DocumentationImpl.GetDocumentLocation(lpszDocSetName,nID);
 }
 
 void CPGSPluginAppBase::UpdateDocTemplates()
@@ -227,7 +227,7 @@ void CPGSPluginAppBase::Process1250Testing(const CPGSBaseCommandLineInfo& rCmdIn
 
    
    auto pBroker = pDoc->GetBroker();
-   EAF_GET_IFACE2( pBroker, ITest1250, ptst );
+   GET_IFACE2( pBroker, ITest1250, ptst );
 
    CString resultsfile, poifile, errfile;
    if (create_test_file_names(strExt,rCmdInfo.m_strFileName,&resultsfile,&poifile,&errfile))

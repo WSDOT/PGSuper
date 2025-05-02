@@ -25,9 +25,9 @@
 // DebondGrid.h : header file
 //
 
-#include <PgsExt\DebondData.h>
-#include <PgsExt\Keys.h>
-#include <PgsExt\PrecastSegmentData.h>
+#include <PsgLib\DebondData.h>
+#include <PsgLib\Keys.h>
+#include <PsgLib\PrecastSegmentData.h>
 
 
 interface IDebondGridParent

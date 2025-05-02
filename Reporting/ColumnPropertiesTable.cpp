@@ -62,7 +62,7 @@ rptRcTable* CColumnPropertiesTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBr
    rptRcTable* pLayoutTable = rptStyleManager::CreateLayoutTable(1);
 
    RowIndexType layoutTableRow = 0;
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    PierIndexType nPiers = pBridge->GetPierCount();
    for ( PierIndexType pierIdx = 1; pierIdx < nPiers-1; pierIdx++, layoutTableRow++ )
    {

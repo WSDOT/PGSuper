@@ -23,12 +23,13 @@
 #pragma once
 
 
-#include "psgLibLib.h"
+#include "PsgLibLib.h"
 
 class rptChapter;
 class IEAFDisplayUnits;
-class pgsLibraryEntryDifferenceItem;
 class SpecLibraryEntryImpl;
+class DifferenceItem;
+
 
 struct PSGLIBCLASS PrincipalTensionStressCriteria
 {
@@ -41,7 +42,7 @@ struct PSGLIBCLASS PrincipalTensionStressCriteria
 
    bool operator==(const PrincipalTensionStressCriteria& other) const;
    bool operator!=(const PrincipalTensionStressCriteria& other) const;
-   bool Compare(const PrincipalTensionStressCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const;
+   bool Compare(const PrincipalTensionStressCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const;
 
    void Report(rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
 

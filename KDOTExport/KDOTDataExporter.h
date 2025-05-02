@@ -3,7 +3,7 @@
 #pragma once
 
 #include <Plugins/PGSuperIEPlugin.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <IFace\AnalysisResults.h>
 #include "KDOTExporter.hxx"
 #include <EAF\ComponentObject.h>
@@ -14,8 +14,8 @@ class LiveLoadLibraryEntry;
 /////////////////////////////////////////////////////////////////////////////
 // CKDOTDataExporter
 class CKDOTDataExporter : public WBFL::EAF::ComponentObject,
-   public PGSuper::IDataExporter,
-   public PGSuper::IPluginDocumentation
+   public PGS::IDataExporter,
+   public PGS::IPluginDocumentation
 {
 public:
    CKDOTDataExporter();
@@ -34,7 +34,7 @@ public:
 public:
    CString GetDocumentationSetName() const override;
    STDMETHOD(LoadDocumentationMap)() override;
-   std::pair<bool,CString> GetDocumentLocation(UINT nHID) const override;
+   std::pair<WBFL::EAF::HelpResult,CString> GetDocumentLocation(UINT nHID) const override;
 
 private:
    Float64 m_BearingHeight;

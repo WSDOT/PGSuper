@@ -23,7 +23,7 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psgLib.h>
+#include <PsgLib\PsgLib.h>
 #include "ConcreteEntryDlg.h"
 #include "CEBFIPConcretePage.h"
 

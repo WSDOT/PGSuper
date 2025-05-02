@@ -50,7 +50,7 @@ BOOL CDeflectionHistoryGraphController::OnInitDialog()
 {
    CLocationGraphController::OnInitDialog();
 
-   EAF_GET_IFACE(IDocumentType, pDocType);
+   GET_IFACE(IDocumentType, pDocType);
    if (pDocType->IsPGSuperDocument())
    {
       // elevation adjustments don't apply to PGSuper

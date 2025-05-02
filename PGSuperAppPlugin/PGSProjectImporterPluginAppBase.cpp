@@ -117,7 +117,7 @@ void CPGSProjectImporterPluginAppBase::ConfigureProjectImporters()
          else
          {
             // importer was not initially enabled, but now it is
-            auto importer = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<PGSuper::IProjectImporter>(state.GetCLSID());
+            auto importer = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<PGS::IProjectImporter>(state.GetCLSID());
             if (importer)
             {
                pImporterMgr->AddImporter(state.GetCLSID(), importer);
@@ -314,9 +314,9 @@ void CPGSProjectImporterPluginAppBase::LoadDocumentationMap()
    return CPGSPluginAppBase::LoadDocumentationMap();
 }
 
-eafTypes::HelpResult CPGSProjectImporterPluginAppBase::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID,CString& strURL)
+std::pair<WBFL::EAF::HelpResult,CString> CPGSProjectImporterPluginAppBase::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID)
 {
-   return CPGSPluginAppBase::GetDocumentLocation(lpszDocSetName,nID,strURL);
+   return CPGSPluginAppBase::GetDocumentLocation(lpszDocSetName,nID);
 }
 
 //////////////////////////

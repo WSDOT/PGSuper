@@ -45,8 +45,8 @@ rptChapter* CPointOfInterestChapterBuilder::Build(const std::shared_ptr<const WB
    auto pGdrRptSpec = std::dynamic_pointer_cast<const CGirderLineReportSpecification>(pRptSpec);
    auto pBroker = pGdrRptSpec->GetBroker();
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits, pDisplayUnits );
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IEAFDisplayUnits, pDisplayUnits );
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 

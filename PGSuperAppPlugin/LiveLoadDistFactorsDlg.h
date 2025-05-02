@@ -31,7 +31,7 @@
 #include "resource.h"
 #include "LLDFGrid.h"
 #include "LLDFPierGrid.h"
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <LRFD\LRFD.h>
 
 inline GirderIndexType GetPierGirderCount(const CPierData2* pPier)

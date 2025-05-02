@@ -97,14 +97,14 @@ rptChapter* CSpecCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
    auto pBroker = pGirderRptSpec->GetBroker();
    const CGirderKey& girderKey = pGirderRptSpec->GetGirderKey();
 
-   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   EAF_GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
-   EAF_GET_IFACE2(pBroker,IArtifact,pArtifacts);
-   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
-   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IArtifact,pArtifacts);
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
    *pPara << _T("Specification: ") << pSpec->GetSpecification() << rptNewLine;
@@ -168,7 +168,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
 
    if ( pDocType->IsPGSuperDocument() )
    {
-      EAF_GET_IFACE2(pBroker,IMaterials,pMaterial);
+      GET_IFACE2(pBroker,IMaterials,pMaterial);
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(CSegmentKey(girderKey,0));
       *p << _T("Provided ") << RPT_FCI << _T(" = ") << stress_u.SetValue( pMaterial->GetSegmentFc(CSegmentKey(girderKey,0),releaseIntervalIdx) ) << rptNewLine;
    }
@@ -189,7 +189,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
 
    if ( pDocType->IsPGSuperDocument() )
    {
-      EAF_GET_IFACE2(pBroker,IMaterials,pMaterial);
+      GET_IFACE2(pBroker,IMaterials,pMaterial);
       *p << _T("Provided ") << RPT_FC << _T(" = ") << stress_u.SetValue( pMaterial->GetSegmentFc28(CSegmentKey(girderKey,0))) << rptNewLine;
    }
 
@@ -197,7 +197,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
    CContinuityCheck().Build(pChapter,pBroker,girderKey,pDisplayUnits);
 
    // report flexural stresses at various intervals
-   EAF_GET_IFACE2(pBroker, IStressCheck, pStressCheck);
+   GET_IFACE2(pBroker, IStressCheck, pStressCheck);
    std::vector<StressCheckTask> vTasks(pStressCheck->GetStressCheckTasks(girderKey));
    for (const auto& task : vTasks)
    {
@@ -395,7 +395,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
    COptionalDeflectionCheck().Build(pChapter,pBroker,pGirderArtifact,pDisplayUnits);
 
    // Lifting
-   EAF_GET_IFACE2(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
+   GET_IFACE2(pBroker,ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
    if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled() || WBFL::LRFD::BDSManager::Edition::NinthEdition2020 <= WBFL::LRFD::BDSManager::GetEdition())
    {
       // starting with 9th edition, stability checks are mandatory so always report the outcome
@@ -407,7 +407,7 @@ rptChapter* CSpecCheckChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
    }
 
    // Hauling
-   EAF_GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+   GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
    if (pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled() || WBFL::LRFD::BDSManager::Edition::NinthEdition2020 <= WBFL::LRFD::BDSManager::GetEdition())
    {
       // starting with 9th edition, stability checks are mandatory so always report the outcome
@@ -547,7 +547,7 @@ void write_splitting_zone_check(std::shared_ptr<WBFL::EAF::Broker> pBroker,
                                const pgsGirderArtifact* pGirderArtifact,
                                rptChapter* pChapter)
 {
-   EAF_GET_IFACE2(pBroker, ISplittingChecks, pSplittingChecks);
+   GET_IFACE2(pBroker, ISplittingChecks, pSplittingChecks);
    pSplittingChecks->ReportSplittingChecks(pGirderArtifact, pChapter);
 }
 
@@ -556,7 +556,7 @@ void write_confinement_check(std::shared_ptr<WBFL::EAF::Broker> pBroker,
                              const pgsGirderArtifact* pGirderArtifact,
                              rptChapter* pChapter)
 {
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
 

@@ -35,11 +35,6 @@
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /****************************************************************************
 CLASS
@@ -69,7 +64,7 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(const std::shared_ptr<const 
 
    std::vector<std::_tstring>::iterator found;
    bool bIsWSDOTRating = true;
-   EAF_GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
+   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    std::vector<std::_tstring> routine_legal_loads = pLiveLoads->GetLiveLoadNames(pgsTypes::lltLegalRating_Routine);
    if ( routine_legal_loads.size() != 2 || (routine_legal_loads[0] != _T("AASHTO Legal Loads") && routine_legal_loads[1] != _T("WA-105")))
    {
@@ -94,7 +89,7 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(const std::shared_ptr<const 
       bIsWSDOTRating = false;
    }
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    bool bNegMoments = pBridge->ProcessNegativeMoments(ALL_SPANS);
    bool bOL1 = false;
    bool bOL2 = false;
@@ -139,7 +134,7 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(const std::shared_ptr<const 
       bIsWSDOTRating = false;
    }
 
-   EAF_GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
    if ( pRatingSpec->GetRatingSpecification() != _T("WSDOT") )
    {
       bIsWSDOTRating = false;
@@ -367,11 +362,11 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(const std::shared_ptr<const 
    }
 
    // The rating settings are consistent with WSDOT policies... report the rating
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetSpanLengthUnit(),   true );
 
    WBFL::System::Date date;
-   EAF_GET_IFACE2(pBroker,IProjectProperties,pProjectProperties);
+   GET_IFACE2(pBroker,IProjectProperties,pProjectProperties);
 
    (*pPara) << _T("Bridge Name: ") << pProjectProperties->GetBridgeName() << rptNewLine;
    (*pPara) << _T("Bridge Number: ") << pProjectProperties->GetBridgeID() << rptNewLine;
@@ -403,11 +398,11 @@ rptChapter* CLoadRatingSummaryChapterBuilder::Build(const std::shared_ptr<const 
    (*pTable)(0, col++) << Sub2(symbol(gamma),_T("LL"));
    (*pTable)(0, col++)  << COLHDR(_T("Controlling Point") << rptNewLine << RPT_LFT_SUPPORT_LOCATION, rptLengthUnitTag, pDisplayUnits->GetSpanLengthUnit());
 
-   EAF_GET_IFACE2(pBroker,IArtifact,pIArtifact);
+   GET_IFACE2(pBroker,IArtifact,pIArtifact);
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
 
-   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
 
    pgsTypes::LiveLoadType llType = ::GetLiveLoadType(pgsTypes::lrLegal_Routine);
    VehicleIndexType nVehicles = pProductLoads->GetVehicleCount(llType);

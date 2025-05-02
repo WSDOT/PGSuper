@@ -23,7 +23,7 @@
 #pragma once
 
 #include "SectionCutDrawStrategy.h" 
-#include <PgsExt\PointOfInterest.h>
+#include <PsgLib\PointOfInterest.h>
 
 #include <DManip/DrawPointStrategy.h>
 #include <DManip/DisplayObjectEvents.h>

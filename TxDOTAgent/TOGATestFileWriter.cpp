@@ -42,9 +42,9 @@
 #endif
 
 #include <PgsExt\GirderArtifact.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <PgsExt\GirderArtifactTool.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 
 
 
@@ -54,8 +54,8 @@ int TxDOT_WriteTOGAReportToFile (FILE *fp, std::shared_ptr<WBFL::EAF::Broker> pB
    // Use our worker bee to write results
    CadWriterWorkerBee workerB(true);
 
-   EAF_GET_IFACE2(pBroker,IGetTogaResults,pGetTogaResults);
-   EAF_GET_IFACE2(pBroker,IGetTogaData,pGetTogaData);
+   GET_IFACE2(pBroker,IGetTogaResults,pGetTogaResults);
+   GET_IFACE2(pBroker,IGetTogaData,pGetTogaData);
    const CTxDOTOptionalDesignData* pProjectData = pGetTogaData->GetTogaData();
 
    // Compressive stress - top

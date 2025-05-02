@@ -25,8 +25,8 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include <psglib\ISupportLibraryManager.h>
-#include <psglib\LibraryEditorChildFrm.h>
+#include <PsgLib\ISupportLibraryManager.h>
+#include <PsgLib\LibraryEditorChildFrm.h>
 #include <EAF\EAFDocument.h>
 
 

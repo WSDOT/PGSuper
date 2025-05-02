@@ -6,7 +6,7 @@
 
 #include <PGSuperAll.h>
 
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 #include <AgentTools.h>
 
 #include <afxdlgs.h>

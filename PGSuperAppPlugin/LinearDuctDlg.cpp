@@ -11,11 +11,6 @@
 #include <EAF\EAFDocument.h>
 #include <EAF\EAFDisplayUnits.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 static Float64 gs_Millimeter = WBFL::Units::ConvertToSysUnits(1.0, WBFL::Units::Measure::Millimeter);
 
@@ -50,7 +45,7 @@ void DDV_DuctGeometry(CDataExchange* pDX,const CGirderKey& girderKey,CLinearDuct
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 Lg = pBridge->GetGirderLength(girderKey);
 
    CLinearDuctGeometry::MeasurementType measurementType = ductGeometry.GetMeasurementType();
@@ -110,7 +105,7 @@ void DDV_DuctGeometry(CDataExchange* pDX,const CGirderKey& girderKey,CLinearDuct
 
       if ( ::IsLT(Lg,Xg) )
       {
-         EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+         GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
          CString strMsg;
          strMsg.Format(_T("Duct point %d is beyond the end of the girder. The girder length is %s, Adjust duct geometry."), LABEL_INDEX(pntIdx), FormatDimension(Lg, pDisplayUnits->GetSpanLengthUnit()));
          AfxMessageBox(strMsg,MB_ICONEXCLAMATION | MB_OK);

@@ -24,10 +24,10 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psgLib.h>
+#include <PsgLib\PsgLib.h>
 #include "SectionViewDialog.h"
 #include <Graphing/PointMapper.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 #include "PGSuperColors.h"
 
 #include <GeomModel/Shape.h>

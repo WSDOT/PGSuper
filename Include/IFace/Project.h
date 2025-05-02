@@ -23,17 +23,21 @@
 #pragma once
 
 #include <WbflTypes.h>
-#include <psglib\librarymanager.h>
-#include <psgLib/PrestressLossCriteria.h>
 #include <LRFD\ILiveLoadDistributionFactor.h>
+#include <LRFD/BDSManager.h>
+#include <PsgLib\Keys.h>
+#include <PsgLib/HaulingCriteria.h>
 
-#include <PgsExt\Keys.h>
+// These 2 includes are only for their data types
+#include <psgLib/ConnectionLibraryEntry.h>
+#include <PsgLib/PrestressLossCriteria.h>
 
 #include <Materials/Materials.h>
 
 #include <EAF\EAFProjectLog.h> // IEAFProjectLog was moved... do the include here so other files don't have to change
 
 class CShearData;
+class CShearData2;
 class CLongitudinalRebarData;
 class CGirderData;
 class CHandlingData;
@@ -64,6 +68,34 @@ class CBearingData2;
 class CSegmentPTData;
 
 class CBridgeChangedHint;
+
+// Forward declarations for the ILibrary interface
+#include <LibraryFw/LibraryManager.h>
+class psgLibraryManager;
+class ConnectionLibraryEntry;
+class GirderLibraryEntry;
+class ConcreteLibraryEntry;
+class DiaphragmLayoutEntry;
+class TrafficBarrierEntry;
+class SpecLibraryEntry;
+class LiveLoadLibraryEntry;
+class DuctLibraryEntry;
+class HaulTruckLibraryEntry;
+class RatingLibraryEntry;
+class ConcreteLibrary;
+class ConnectionLibrary;
+class GirderLibrary;
+class DiaphragmLayoutLibrary;
+class TrafficBarrierLibrary;
+class SpecLibrary;
+class LiveLoadLibrary;
+class DuctLibrary;
+class HaulTruckLibrary;
+class RatingLibrary;
+
+class IBeamFactory;
+
+struct SlabOffsetCriteria;
 
 interface IStructuredLoad;
 interface IStation;
@@ -155,7 +187,7 @@ DESCRIPTION
 // {FD1DA96A-D57C-11d2-88F9-006097C68A9C}
 DEFINE_GUID(IID_IProjectPropertiesEventSink, 
 0xfd1da96a, 0xd57c, 0x11d2, 0x88, 0xf9, 0x0, 0x60, 0x97, 0xc6, 0x8a, 0x9c);
-class __declspec(uuid("{FD1DA96A-D57C-11d2-88F9-006097C68A9C}")) IProjectPropertiesEventSink
+class IProjectPropertiesEventSink
 {
 public:
    virtual HRESULT OnProjectPropertiesChanged() = 0;
@@ -198,7 +230,7 @@ DESCRIPTION
 // {DBA24DC0-2F4D-11d2-8D11-94FA07C10000}
 DEFINE_GUID(IID_IEnvironmentEventSink,
 0xDBA24DC0, 0x2F4D, 0x11d2, 0x8D, 0x11, 0x94, 0xFA, 0x07, 0xC1, 0x00, 0x00);
-class __declspec(uuid("{DBA24DC0-2F4D-11d2-8D11-94FA07C10000}")) IEnvironmentEventSink
+class IEnvironmentEventSink
 {
 public:
    virtual HRESULT OnExposureConditionChanged() = 0;
@@ -368,8 +400,6 @@ struct RoadwaySegmentData
 
       return true;
    }
-
-
 };
 
 struct RoadwaySectionTemplate
@@ -557,6 +587,8 @@ public:
    virtual const SlabOffsetCriteria& GetSlabOffsetCriteria() const = 0;
    virtual bool DesignSlabHaunch() const = 0;
 
+   virtual const HaulingCriteria& GetHaulingCriteria() const = 0;
+
    virtual pgsTypes::OverlayLoadDistributionType GetOverlayLoadDistributionType() const = 0;
 
    // Tolerance value is only used if HaunchLoadComputationType==hlcDetailedAnalysis && slab offset input
@@ -595,8 +627,8 @@ DESCRIPTION
 *****************************************************************************/
 // {B72842B1-5BB1-11d2-8ED7-006097DF3C68}
 DEFINE_GUID(IID_ISpecificationEventSink, 
-0xb72842b1, 0x5bb1, 0x11d2, 0x8e, 0xd7, 0x0, 0x60, 0x97, 0xdf, 0x3c, 0x68);
-class __declspec(uuid("{B72842B1-5BB1-11d2-8ED7-006097DF3C68}")) ISpecificationEventSink
+   0xb72842b1, 0x5bb1, 0x11d2, 0x8e, 0xd7, 0x0, 0x60, 0x97, 0xdf, 0x3c, 0x68);
+class ISpecificationEventSink
 {
 public:
    virtual HRESULT OnSpecificationChanged() = 0;
@@ -614,7 +646,7 @@ DESCRIPTION
 *****************************************************************************/
 // {5A3A28C0-480F-11d2-8EC7-006097DF3C68}
 DEFINE_GUID(IID_ILibraryNames,
-0x5A3A28C0, 0x480F, 0x11d2, 0x8E, 0xC7, 0x00, 0x60, 0x97, 0xDF, 0x3C, 0x68);
+   0x5A3A28C0, 0x480F, 0x11d2, 0x8E, 0xC7, 0x00, 0x60, 0x97, 0xDF, 0x3C, 0x68);
 class ILibraryNames
 {
 public:
@@ -646,7 +678,7 @@ DESCRIPTION
 *****************************************************************************/
 // {34172AE0-3781-11d2-8EC1-006097DF3C68}
 DEFINE_GUID(IID_ILibrary,
-0x34172AE0, 0x3781, 0x11d2, 0x8E, 0xC1, 0x00, 0x60, 0x97, 0xDF, 0x3C, 0x68);
+   0x34172AE0, 0x3781, 0x11d2, 0x8E, 0xC1, 0x00, 0x60, 0x97, 0xDF, 0x3C, 0x68);
 class ILibrary
 {
 public:
@@ -714,8 +746,8 @@ public:
 
 // {6132E890-719D-11d2-8EF1-006097DF3C68}
 DEFINE_GUID(IID_IBridgeDescriptionEventSink, 
-0x6132e890, 0x719d, 0x11d2, 0x8e, 0xf1, 0x0, 0x60, 0x97, 0xdf, 0x3c, 0x68);
-class __declspec(uuid("{6132E890-719D-11d2-8EF1-006097DF3C68}")) IBridgeDescriptionEventSink
+   0x6132e890, 0x719d, 0x11d2, 0x8e, 0xf1, 0x0, 0x60, 0x97, 0xdf, 0x3c, 0x68);
+class IBridgeDescriptionEventSink
 {
 public:
    virtual HRESULT OnBridgeChanged(CBridgeChangedHint* pHint) = 0;
@@ -768,7 +800,7 @@ DESCRIPTION
 // {2C1A3E71-727E-11d2-8EF2-006097DF3C68}
 DEFINE_GUID(IID_ILoadModifiersEventSink, 
 0x2c1a3e71, 0x727e, 0x11d2, 0x8e, 0xf2, 0x0, 0x60, 0x97, 0xdf, 0x3c, 0x68);
-class __declspec(uuid("{2C1A3E71-727E-11d2-8EF2-006097DF3C68}")) ILoadModifiersEventSink
+class ILoadModifiersEventSink
 {
 public:
    virtual HRESULT OnLoadModifiersChanged() = 0;
@@ -787,7 +819,7 @@ enum LibConflictResult {RenameEntry, ReplaceEntry};
 // {BCE5B018-2149-11d3-AD79-00105A9AF985}
 DEFINE_GUID(IID_ILibraryConflictEventSink, 
 0xbce5b018, 0x2149, 0x11d3, 0xad, 0x79, 0x0, 0x10, 0x5a, 0x9a, 0xf9, 0x85);
-class __declspec(uuid("{BCE5B018-2149-11d3-AD79-00105A9AF985}")) ILibraryConflictEventSink
+class ILibraryConflictEventSink
 {
 public:
    virtual HRESULT OnLibraryConflictResolved() = 0;
@@ -796,7 +828,7 @@ public:
 /*****************************************************************************
 INTERFACE IImportProjectLibrary
 
-   Interface to support importation of library entries from an exising project
+   Interface to support importation of library entries from an existing project
 
 DESCRIPTION
    Interface to support importation of library entries from an exising project
@@ -951,7 +983,7 @@ DESCRIPTION
 // {74A056FD-CCFD-496F-B312-D22E22E6B773}
 DEFINE_GUID(IID_IUIEvents, 
 0x74a056fd, 0xccfd, 0x496f, 0xb3, 0x12, 0xd2, 0x2e, 0x22, 0xe6, 0xb7, 0x73);
-class __declspec(uuid("{74A056FD-CCFD-496F-B312-D22E22E6B773}")) IUIEvents
+class IUIEvents
 {
 public:
    virtual void HoldEvents(bool bHold=true) = 0;
@@ -1181,6 +1213,10 @@ public:
    virtual std::vector<Float64> GetDirectHaunchDepthsPerSpan(SpanIndexType spanIdx,GirderIndexType gdrIdx) = 0;
    // Method valid only when HaunchLayoutType==hltAlongSegments
    virtual std::vector<Float64> GetDirectHaunchDepthsPerSegment(GroupIndexType group,GirderIndexType gdrIdx, SegmentIndexType SegmentIdx) = 0;
+
+   virtual std::pair<bool,CBridgeDescription2> ConvertHaunchToSlabOffsetInput(const CBridgeDescription2& bridgeDesc, pgsTypes::SlabOffsetType) const = 0;
+   virtual std::pair<bool,CBridgeDescription2> ConvertHaunchToDirectHaunchInput(const CBridgeDescription2& bridgeDesc,pgsTypes::HaunchInputLocationType newHaunchInputLocationType, pgsTypes::HaunchLayoutType newHaunchLayoutType, pgsTypes::HaunchInputDistributionType newHaunchInputDistributionType, bool forceInit = false) const = 0;
+   virtual std::pair<bool,CBridgeDescription2> DesignHaunches(const CBridgeDescription2& bridgeDesc,const CGirderKey& rDesignGirderKey, GirderIndexType sourceGirderIdx, pgsTypes::HaunchInputDistributionType inputDistributionType, bool bApply2AllGdrs) const = 0;
 
    // Returns a vector of valid connection types
    virtual std::vector<pgsTypes::BoundaryConditionType> GetBoundaryConditionTypes(PierIndexType pierIdx) const = 0;

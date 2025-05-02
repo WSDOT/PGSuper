@@ -30,6 +30,7 @@
 #include <IFace\DistributionFactors.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace/Limits.h>
+#include <IFace/PointOfInterest.h>
 
 class pgsLoadRater
 {

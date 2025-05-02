@@ -138,8 +138,8 @@ void CDebondSectionCalculator::GetRightSectionInfo(SectionIndexType idx, Float64
 
 StrandRowUtil::StrandRowSet StrandRowUtil::GetStrandRowSet(std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& midPoi)
 {
-   EAF_GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
-   EAF_GET_IFACE2(pBroker,IGirder,pGirder);
+   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
+   GET_IFACE2(pBroker,IGirder,pGirder);
 
    // Need girder height - strands are measured from top downward
    Float64 hg = pGirder->GetHeight(midPoi);
@@ -214,9 +214,9 @@ StrandRowUtil::StrandRowSet StrandRowUtil::GetStrandRowSet(std::shared_ptr<WBFL:
 
 StrandRowUtil::StrandRowSet StrandRowUtil::GetFullyPopulatedStrandRowSet(std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& midPoi)
 {
-   EAF_GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
-   EAF_GET_IFACE2(pBroker,IGirder,pGirder);
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
+   GET_IFACE2(pBroker,IGirder,pGirder);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    // Need girder height - strands are measured from top downward
    Float64 hg = pGirder->GetHeight(midPoi);
 

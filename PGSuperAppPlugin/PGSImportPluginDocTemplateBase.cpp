@@ -27,16 +27,11 @@
 #include <IFace\Project.h>
 #include <EAF\EAFDisplayUnits.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 class CMyTemplateItem : public CEAFTemplateItem
 {
 public:
-   CMyTemplateItem(CEAFDocTemplate* pDocTemplate,LPCTSTR name,LPCTSTR path,HICON hIcon,std::shared_ptr<PGSuper::IProjectImporter> pImporter) :
+   CMyTemplateItem(CEAFDocTemplate* pDocTemplate,LPCTSTR name,LPCTSTR path,HICON hIcon,std::shared_ptr<PGS::IProjectImporter> pImporter) :
       CEAFTemplateItem(pDocTemplate,name,path,hIcon)
       {
          m_Importer = pImporter;
@@ -48,7 +43,7 @@ public:
       return pClone;
    }
 
-   std::shared_ptr<PGSuper::IProjectImporter> m_Importer;
+   std::shared_ptr<PGS::IProjectImporter> m_Importer;
    DECLARE_DYNAMIC(CMyTemplateItem)
 };
 
@@ -113,8 +108,8 @@ BOOL CPGSImportPluginDocTemplateBase::DoOpenDocumentFile(LPCTSTR lpszPathName,BO
 
    // Hold the UI events (release in CPGSuperDoc::OnCreateFinalize)
    auto broker = EAFGetBroker();
-   EAF_GET_IFACE2(broker,IEvents,pEvents);
-   EAF_GET_IFACE2(broker,IUIEvents,pUIEvents);
+   GET_IFACE2(broker,IEvents,pEvents);
+   GET_IFACE2(broker,IUIEvents,pUIEvents);
    pEvents->HoldEvents();
    pUIEvents->HoldEvents();
 
@@ -133,7 +128,7 @@ BOOL CPGSImportPluginDocTemplateBase::DoOpenDocumentFile(LPCTSTR lpszPathName,BO
    CPGSDocBase* pDoc = (CPGSDocBase*)pDocument;
    CComPtr<IDocUnitSystem> docUnitSystem;
    pDoc->GetDocUnitSystem(&docUnitSystem);
-   EAF_GET_IFACE2(broker,IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2(broker,IEAFDisplayUnits, pDisplayUnits);
    docUnitSystem->put_UnitMode(IS_US_UNITS(pDisplayUnits) ? umUS : umSI);
 
    // it worked, now bump untitled count (for untitled documents... from MFC for multidoc applications)

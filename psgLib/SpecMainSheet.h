@@ -20,15 +20,9 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_SPECMAINSHEET_H__0186F183_31F0_11D2_9D3F_00609710E6CE__INCLUDED_)
-#define AFX_SPECMAINSHEET_H__0186F183_31F0_11D2_9D3F_00609710E6CE__INCLUDED_
-
-#if _MSC_VER >= 1000
 #pragma once
-#endif // _MSC_VER >= 1000
-// SpecMainSheet.h : header file
-//
-#include "psgLib\SpecLibraryEntry.h"
+
+#include "PsgLib\SpecLibraryEntry.h"
 #include "SpecDescrPage.h"
 #include "SpecLiftingPage.h"
 #include "SpecHaulingErectionPage.h"
@@ -139,10 +133,3 @@ private:
    void Init();
    void CheckShearCapacityMethod();
 };
-
-/////////////////////////////////////////////////////////////////////////////
-
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Developer Studio will insert additional declarations immediately before the previous line.
-
-#endif // !defined(AFX_SPECMAINSHEET_H__0186F183_31F0_11D2_9D3F_00609710E6CE__INCLUDED_)

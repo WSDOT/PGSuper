@@ -29,11 +29,6 @@
 #include <EAF\EAFDisplayUnits.h>
 #include "PGSuperUnits.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 GRID_IMPLEMENT_REGISTER(CParabolicDuctGrid, CS_DBLCLKS, 0, 0, 0);
 
@@ -77,7 +72,7 @@ void CParabolicDuctGrid::CustomInit(CParabolicDuctGridCallback* pCallback)
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // Initialize the grid. For CWnd based grids this call is // 
    // essential. For view based grids this initialization is done 
@@ -283,7 +278,7 @@ void CParabolicDuctGrid::InsertFirstPoint(SpanIndexType spanIdx,Float64 distance
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    ROWCOL row = GetRowCount()+1;
    InsertRows(row,1);
@@ -348,7 +343,7 @@ void CParabolicDuctGrid::InsertLowPoint(SpanIndexType spanIdx,Float64 distance,F
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    ROWCOL row = GetRowCount()+1;
 
@@ -415,7 +410,7 @@ void CParabolicDuctGrid::InsertInflectionPoint(SpanIndexType spanIdx,Float64 dis
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    ROWCOL row = GetRowCount()+1;
 
@@ -483,7 +478,7 @@ void CParabolicDuctGrid::InsertHighPoint(PierIndexType pierIdx,Float64 offset,CD
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    ROWCOL row = GetRowCount()+1;
 
@@ -538,7 +533,7 @@ void CParabolicDuctGrid::InsertLastPoint(SpanIndexType spanIdx,Float64 distance,
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    ROWCOL row = GetRowCount()+1;
 
@@ -623,7 +618,7 @@ void CParabolicDuctGrid::GetRowValues(ROWCOL row,Float64* pDistance,Float64* pOf
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    Float64 distance = _tstof(GetCellValue(row,2));
 

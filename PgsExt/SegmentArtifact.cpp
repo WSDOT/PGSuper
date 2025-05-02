@@ -294,7 +294,7 @@ bool pgsSegmentArtifact::WasWithRebarAllowableStressUsed(const StressCheckTask& 
    }
 
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi); // sometimes there aren't any artifacts so this doesn't get used
+   GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi); // sometimes there aren't any artifacts so this doesn't get used
 
    const auto& vArtifacts(GetFlexuralStressArtifacts(task));
    for ( const auto& artifact : vArtifacts)
@@ -325,7 +325,7 @@ bool pgsSegmentArtifact::WasSegmentWithRebarAllowableStressUsed(const StressChec
    }
 
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
    const auto& vArtifacts(GetFlexuralStressArtifacts(task));
    for ( const auto& artifact : vArtifacts)
@@ -355,7 +355,7 @@ bool pgsSegmentArtifact::WasClosureJointWithRebarAllowableStressUsed(const Stres
    }
 
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
    const auto& vArtifacts(GetFlexuralStressArtifacts(task));
    for ( const auto& artifact : vArtifacts)
@@ -411,7 +411,7 @@ bool pgsSegmentArtifact::IsWithRebarAllowableStressApplicable(const StressCheckT
 
    ATLASSERT(attribute == 0 || attribute == POI_CLOSURE);
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
 
    const auto& vArtifacts(GetFlexuralStressArtifacts(task));
    for( const auto& artifact : vArtifacts)
@@ -442,7 +442,7 @@ bool pgsSegmentArtifact::IsSegmentWithRebarAllowableStressApplicable(const Stres
    }
 
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
    const auto& vArtifacts(GetFlexuralStressArtifacts(task));
    for( const auto& artifact : vArtifacts)
@@ -472,7 +472,7 @@ bool pgsSegmentArtifact::IsClosureJointWithRebarAllowableStressApplicable(const 
    }
 
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
    const auto& vArtifacts(GetFlexuralStressArtifacts(task));
    for( const auto& artifact : vArtifacts)
@@ -669,7 +669,7 @@ bool pgsSegmentArtifact::DidPrincipalTensionStressPass() const
 Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength(const StressCheckTask& task) const
 {
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2_NOCHECK(pBroker,IPointOfInterest,pPoi);
 
    Float64 fc_reqd = 0;
 
@@ -716,7 +716,7 @@ Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength(const StressCheck
 Float64 pgsSegmentArtifact::GetRequiredClosureJointConcreteStrength(const StressCheckTask& task) const
 {
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
    Float64 fc_reqd = 0;
 
@@ -800,8 +800,8 @@ Float64 pgsSegmentArtifact::GetRequiredDeckConcreteStrength(const StressCheckTas
 Float64 pgsSegmentArtifact::GetRequiredSegmentConcreteStrength() const
 {
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    Float64 fc_reqd = 0;
 
@@ -877,8 +877,8 @@ Float64 pgsSegmentArtifact::GetRequiredClosureJointConcreteStrength() const
    Float64 fc_reqd = 0;
 
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(m_SegmentKey);
 
@@ -930,8 +930,8 @@ Float64 pgsSegmentArtifact::GetRequiredDeckConcreteStrength() const
    Float64 fc_reqd = 0;
 
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    for ( const auto& item : m_FlexuralStressArtifacts)
    {
@@ -976,7 +976,7 @@ Float64 pgsSegmentArtifact::GetRequiredReleaseStrength() const
    Float64 fc_reqd = 0;
 
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(m_SegmentKey);
 
    for ( const auto& item : m_FlexuralStressArtifacts)

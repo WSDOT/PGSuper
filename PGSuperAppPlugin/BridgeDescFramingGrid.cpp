@@ -44,15 +44,10 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <CoordGeom\Station.h>
 
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\ClosureJointData.h>
 
 #include <algorithm>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 class CRowType : public CGXAbstractUserAttribute
 {
@@ -604,7 +599,7 @@ CString CBridgeDescFramingGrid::GetCellValue(ROWCOL nRow, ROWCOL nCol)
 CPierData2* CBridgeDescFramingGrid::GetPierRowData(ROWCOL nRow)
 {
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CBridgeDescFramingPage* pParent = (CBridgeDescFramingPage*)GetParent();
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescFramingPage) ) );
@@ -643,7 +638,7 @@ CPierData2* CBridgeDescFramingGrid::GetPierRowData(ROWCOL nRow)
 CTemporarySupportData CBridgeDescFramingGrid::GetTemporarySupportRowData(ROWCOL nRow)
 {
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CBridgeDescFramingPage* pParent = (CBridgeDescFramingPage*)GetParent();
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescFramingPage) ) );
@@ -754,7 +749,7 @@ void CBridgeDescFramingGrid::FillPierRow(ROWCOL row,const CPierData2* pPierData)
    GetParam()->SetLockReadOnly(FALSE);
 
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CBridgeDescFramingPage* pParent = (CBridgeDescFramingPage*)GetParent();
 
@@ -827,7 +822,7 @@ void CBridgeDescFramingGrid::FillTemporarySupportRow(ROWCOL row,const CTemporary
 
    // station
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CString strStation = FormatStation(pDisplayUnits->GetStationFormat(),pTSData->GetStation());
    SetStyleRange(CGXRange(row,col++), CGXStyle()
@@ -903,7 +898,7 @@ void CBridgeDescFramingGrid::FillSegmentColumn()
    GetParam()->SetLockReadOnly(FALSE);
 
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CBridgeDescFramingPage* pParent = (CBridgeDescFramingPage*)GetParent();
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescFramingPage) ) );
@@ -1036,7 +1031,7 @@ void CBridgeDescFramingGrid::FillSpanColumn()
    GetParam()->SetLockReadOnly(FALSE);
 
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CBridgeDescFramingPage* pParent = (CBridgeDescFramingPage*)GetParent();
    ASSERT( pParent->IsKindOf(RUNTIME_CLASS(CBridgeDescFramingPage) ) );
@@ -1249,7 +1244,7 @@ BOOL CBridgeDescFramingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 	{
       // station
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       try
       {
@@ -1271,7 +1266,7 @@ BOOL CBridgeDescFramingGrid::OnValidateCell(ROWCOL nRow, ROWCOL nCol)
 	{
       // orientation
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker,IValidate,pValidate);
+      GET_IFACE2(pBroker,IValidate,pValidate);
       UINT result = pValidate->Orientation(s);
 
       if (result == VALIDATE_INVALID)
@@ -1332,7 +1327,7 @@ BOOL CBridgeDescFramingGrid::OnEndEditing(ROWCOL nRow,ROWCOL nCol)
             {
                // new station is not on the bridge
                auto pBroker = EAFGetBroker();
-               EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+               GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
                CString strStation = FormatStation(pDisplayUnits->GetStationFormat(), tsData.GetStation());
                m_sWarningText.Format(_T("Station %s is not on the bridge"), strStation);
                return FALSE;

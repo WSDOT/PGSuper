@@ -42,10 +42,11 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Intervals.h>
 #include <IFace\DistributionFactors.h>
+#include <IFace/PointOfInterest.h>
 
 #include <psgLib/ThermalMovementCriteria.h>
-
-#include <PgsExt\PierData2.h>
+#include <PsgLib/SpecLibraryEntry.h>
+#include <PsgLib\PierData2.h>
 #include <Reporting/BearingDesignPropertiesTable.h>
 
 
@@ -78,18 +79,18 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
     const CGirderKey& girderKey(pGirderRptSpec->GetGirderKey());
     rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec, level);
 
-    EAF_GET_IFACE2(pBroker, IUserDefinedLoads, pUDL);
-    EAF_GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
-    EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
-    EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-    EAF_GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
-    EAF_GET_IFACE2(pBroker, IBridge, pBridge);
-    EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
-    EAF_GET_IFACE2(pBroker, ILiveLoadDistributionFactors, pLLDF);
-    EAF_GET_IFACE2(pBroker, IEnvironment, pEnvironment);
-    EAF_GET_IFACE2(pBroker, ILibrary, pLib);
-    EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
-    EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
+    GET_IFACE2(pBroker, IUserDefinedLoads, pUDL);
+    GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
+    GET_IFACE2(pBroker, ISpecification, pSpec);
+    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+    GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
+    GET_IFACE2(pBroker, IBridge, pBridge);
+    GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+    GET_IFACE2(pBroker, ILiveLoadDistributionFactors, pLLDF);
+    GET_IFACE2(pBroker, IEnvironment, pEnvironment);
+    GET_IFACE2(pBroker, ILibrary, pLib);
+    GET_IFACE2(pBroker, ILossParameters, pLossParams);
+    GET_IFACE2(pBroker, IIntervals, pIntervals);
     
     
     INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), true);
@@ -325,7 +326,7 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
         if (pierIdx == startPierIdx)
         {
             PoiList vPoi;
-            EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+            GET_IFACE2(pBroker, IPointOfInterest, pPoi);
             pPoi->GetPointsOfInterest(segmentKey, POI_0L | POI_ERECTED_SEGMENT, &vPoi);
             poi = vPoi.front();
 
@@ -334,27 +335,27 @@ rptChapter* CBearingDesignDetailsChapterBuilder::Build(const std::shared_ptr<con
         else if (pierIdx == endPierIdx)
         {
             PoiList vPoi;
-            EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+            GET_IFACE2(pBroker, IPointOfInterest, pPoi);
             pPoi->GetPointsOfInterest(segmentKey, POI_10L | POI_ERECTED_SEGMENT, &vPoi);
             poi = vPoi.front();
         }
         else
         {
-            EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+            GET_IFACE2(pBroker, IPointOfInterest, pPoi);
             poi = pPoi->GetPierPointOfInterest(girderKey, pierIdx);
         }
 
-        EAF_GET_IFACE2(pBroker, ICamber, pCamber);
+        GET_IFACE2(pBroker, ICamber, pCamber);
         Float64 slope2 = pCamber->GetExcessCamberRotation(poi, pgsTypes::CreepTime::Max);
         (*pTable)(row, col++) << scalar.SetValue(slope2);
 
-        EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+        GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
         const CBearingData2* pbd = pIBridgeDesc->GetBearingData(pierIdx, pierFace, girderKey.girderIndex);
 
         Float64 slope3 = slope1 + slope2;
         (*pTable)(row, col++) << scalar.SetValue(slope3);
 
-        EAF_GET_IFACE2(pBroker, IGirder, pGirder);
+        GET_IFACE2(pBroker, IGirder, pGirder);
         Float64 transverse_slope = pGirder->GetOrientation(segmentKey);
         (*pTable)(row, col++) << scalar.SetValue(transverse_slope);
 

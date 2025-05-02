@@ -73,8 +73,8 @@ rptChapter* CTexasIBNSChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
    {
       auto pBroker = pMultiGirderRptSpec->GetBroker();
 
-      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-      EAF_GET_IFACE2(pBroker,IArtifact,pIArtifact);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IArtifact,pIArtifact);
 
       rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
       bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
@@ -84,7 +84,7 @@ rptChapter* CTexasIBNSChapterBuilder::Build(const std::shared_ptr<const WBFL::Re
       // Give progress window a progress meter if needed
       bool bMultiGirderReport = (1 < girderKeys.size() ? true : false);
 
-      EAF_GET_IFACE2(pBroker,IProgress,pProgress);
+      GET_IFACE2(pBroker,IEAFProgress,pProgress);
       DWORD mask = bMultiGirderReport ? PW_ALL|PW_NOCANCEL : PW_ALL|PW_NOGAUGE|PW_NOCANCEL;
 
       CEAFAutoProgress ap(pProgress,0,mask); 

@@ -23,7 +23,7 @@
 #pragma once
 
 #include <Details.h>
-#include <PgsExt\GirderGroupData.h>
+#include <PsgLib\GirderGroupData.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\BearingDesignParameters.h>
 #include <EngTools\Bearing.h>

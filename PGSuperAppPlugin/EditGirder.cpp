@@ -23,18 +23,13 @@
 #include "stdafx.h"
 #include "EditGirder.h"
 #include "PGSuperDoc.h"
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <IFace\GirderHandling.h>
 
 #if defined _DEBUG
 #include <IFace\DocumentType.h>
 #endif
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // NOTE: This transaction is for use with PGSuper only
 
@@ -72,7 +67,7 @@ txnEditGirder::txnEditGirder(const CGirderKey& girderKey,const txnEditGirderData
 #if defined _DEBUG
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IDocumentType, pDocType);
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
    ATLASSERT(pDocType->IsPGSuperDocument());
 #endif
 }
@@ -86,13 +81,13 @@ bool txnEditGirder::Execute()
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IEvents, pEvents);
+   GET_IFACE2(pBroker,IEvents, pEvents);
    // Exception-safe holder to keep from fireing events until we are done
    CIEventsHolder event_holder(pEvents);
 
    m_OldGirderData.clear();
 
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(m_GirderKey.groupIndex);
 
@@ -168,7 +163,7 @@ void txnEditGirder::Undo()
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IEvents, pEvents);
+   GET_IFACE2(pBroker,IEvents, pEvents);
    // Exception-safe holder to keep from fireing events until we are done
    CIEventsHolder event_holder(pEvents);
 
@@ -219,7 +214,7 @@ void txnEditGirder::SetGirderData(const CGirderKey& girderKey,const txnEditGirde
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    pIBridgeDesc->UseSameGirderForEntireBridge( gdrData.m_bUseSameGirder );
 

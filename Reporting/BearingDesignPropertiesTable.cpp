@@ -41,7 +41,7 @@ rptRcTable* CBearingDesignPropertiesTable::BuildBearingDesignPropertiesTable(std
     ColumnIndexType nCols = 3;
 
 
-    EAF_GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
+    GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
     DESIGNPROPERTIES details;
     pBearingDesignParameters->GetBearingDesignProperties(&details);
 

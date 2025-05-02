@@ -51,13 +51,13 @@
 
 #include <PGSuperAll.h>
 
-#include <WBFLCore.h>
+
 #include <WBFLTools.h>
 #include <IFace\Tools.h>
 
 #include <Reporting\PGSuperChapterBuilder.h>
 #include <ReportManager\ReportManager.h>
 
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 
 using namespace ATL;

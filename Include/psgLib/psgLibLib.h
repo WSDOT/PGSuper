@@ -20,11 +20,10 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#ifndef INCLUDED_PSGLIB_PSGLIBLIB_H_
-#define INCLUDED_PSGLIB_PSGLIBLIB_H_
+#pragma once
 
 /*****************************************************************************
-PSGLIB
+PsgLib
    Library Management
 
    Support library that provides library services.
@@ -33,9 +32,9 @@ DESCRIPTION
    Support library that provides library services.
 *****************************************************************************/
 
-// Define BUILDPSGLIBLIB when building this library
-// For static builds, define PSGLIBLIB
-// For static binding, define PSGLIBLIB
+// Define BUILDPsgLibLIB when building this library
+// For static builds, define PsgLibLIB
+// For static binding, define PsgLibLIB
 // For dynamic binding, nothing is required to be defined
 
 #if defined (BUILDPSGLIBLIB) && !defined(PSGLIBLIB)
@@ -52,11 +51,17 @@ DESCRIPTION
 #define PSGLIBTPL   extern template class PSGLIBCLASS
 #endif
 
-#if !defined INCLUDED_PSGLIB_AUTOLIB_H_
 #include <PsgLib\AutoLib.h>
-#endif
 
 
 #include <atlbase.h>
 
-#endif // INCLUDED_PSGLIB_PSGLIBLIB_H_
+#if defined PGS_ASSERT_VALID
+#undef PGS_ASSERT_VALID
+#endif
+
+#if defined _DEBUG
+#define PGS_ASSERT_VALID AssertValid()
+#else
+#define PGS_ASSERT_VALID
+#endif

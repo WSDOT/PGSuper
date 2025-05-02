@@ -26,23 +26,24 @@
 
 #include <EAF\EAFAutoProgress.h>
 #include <PgsExt\GirderModelFactory.h>
-#include <PgsExt\LoadFactors.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\LoadFactors.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\GirderLabel.h>
 
 #include <IFace\Intervals.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\GirderHandling.h>
+#include <IFace/PointOfInterest.h>
 
 #if defined _DEBUG
 #include <IFace\DocumentType.h>
 #endif
 
-#include <PgsExt\SplicedGirderData.h>
-#include <PgsExt\PrecastSegmentData.h>
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\SplicedGirderData.h>
+#include <PsgLib\PrecastSegmentData.h>
+#include <PsgLib\ClosureJointData.h>
 
 #include <iterator>
 #include <algorithm>
@@ -64,7 +65,7 @@ void CSegmentModelManager::Clear()
 
 void CSegmentModelManager::DumpAnalysisModels(GirderIndexType gdrIdx) const
 {
-   EAF_GET_IFACE(IBridge, pBridge);
+   GET_IFACE(IBridge, pBridge);
    std::vector<CGirderKey> girderKeys;
    pBridge->GetGirderline(gdrIdx, &girderKeys);
 
@@ -343,10 +344,10 @@ std::vector<Float64> CSegmentModelManager::GetDeflection(IntervalIndexType inter
       // at release, during storage, and after erection. However, the deflected shape of the girder
       // due to prestress does not change. We account for the rigid body displacement by deducting
       // the release deflection at the support locations from the deflections.
-      EAF_GET_IFACE_NOCHECK(ISectionProperties, pSectProps);
-      EAF_GET_IFACE_NOCHECK(IBridgeDescription, pIBridgeDesc);
-      EAF_GET_IFACE(IIntervals,pIntervals);
-      EAF_GET_IFACE(IPointOfInterest,pPoi);
+      GET_IFACE_NOCHECK(ISectionProperties, pSectProps);
+      GET_IFACE_NOCHECK(IBridgeDescription, pIBridgeDesc);
+      GET_IFACE(IIntervals,pIntervals);
+      GET_IFACE(IPointOfInterest,pPoi);
 
       std::list<PoiList> sPoi;
       pPoi->GroupBySegment(vPoi, &sPoi);
@@ -401,7 +402,7 @@ std::vector<Float64> CSegmentModelManager::GetDeflection(IntervalIndexType inter
                if (intervalIdx == tsRemovalIntervalIdx && resultsType == rtIncremental)
                {
                   // removal of strands causes opposite deflection and Ec changes
-                  EAF_GET_IFACE(IMaterials, pMaterials);
+                  GET_IFACE(IMaterials, pMaterials);
                   Float64 Eci = pMaterials->GetSegmentEc(segmentKey, releaseIntervalIdx);
                   Float64 Ec = pMaterials->GetSegmentEc(segmentKey, intervalIdx);
                   std::transform(vDyThisSegment.cbegin(), vDyThisSegment.cend(), vDyThisSegment.begin(), [Eci, Ec](const auto& D) {return -Eci*D / Ec; });
@@ -625,9 +626,9 @@ std::vector<Float64> CSegmentModelManager::GetPretensionXDeflection(IntervalInde
    // at release, during storage, and after erection. However, the deflected shape of the girder
    // due to prestress does not change. We account for the rigid body displacement by deducting
    // the release deflection at the support locations from the deflections.
-   EAF_GET_IFACE(ISectionProperties, pSectProps);
-   EAF_GET_IFACE(IIntervals, pIntervals);
-   EAF_GET_IFACE(IPointOfInterest, pPoi);
+   GET_IFACE(ISectionProperties, pSectProps);
+   GET_IFACE(IIntervals, pIntervals);
+   GET_IFACE(IPointOfInterest, pPoi);
    std::list<PoiList> sPoi;
    pPoi->GroupBySegment(vPoi, &sPoi);
    for (const auto& vPoiThisSegment : sPoi)
@@ -677,7 +678,7 @@ std::vector<Float64> CSegmentModelManager::GetPretensionXDeflection(IntervalInde
          if (intervalIdx == tsRemovalIntervalIdx && resultsType == rtIncremental)
          {
             // removal of strands causes opposite deflection and Ec changes
-            EAF_GET_IFACE(IMaterials, pMaterials);
+            GET_IFACE(IMaterials, pMaterials);
             Float64 Eci = pMaterials->GetSegmentEc(segmentKey, releaseIntervalIdx);
             Float64 Ec = pMaterials->GetSegmentEc(segmentKey, intervalIdx);
             std::transform(vDyThisSegment.cbegin(), vDyThisSegment.cend(), vDyThisSegment.begin(), [Eci, Ec](const auto& D) {return -Eci*D / Ec; });
@@ -787,8 +788,8 @@ std::vector<Float64> CSegmentModelManager::GetRotation(IntervalIndexType interva
 
    if ( pfType == pgsTypes::pftPretension)
    {
-      EAF_GET_IFACE(IIntervals, pIntervals);
-      EAF_GET_IFACE(IPointOfInterest, pPoi);
+      GET_IFACE(IIntervals, pIntervals);
+      GET_IFACE(IPointOfInterest, pPoi);
       std::list<PoiList> sPoi;
       pPoi->GroupBySegment(vPoi, &sPoi);
       for (const auto& vPoiThisSegment : sPoi)
@@ -811,8 +812,8 @@ std::vector<Float64> CSegmentModelManager::GetRotation(IntervalIndexType interva
    {
       LoadCaseIDType lcidPT = GetLoadCaseID(pfType);
 
-      EAF_GET_IFACE(IIntervals, pIntervals);
-      EAF_GET_IFACE(IPointOfInterest, pPoi);
+      GET_IFACE(IIntervals, pIntervals);
+      GET_IFACE(IPointOfInterest, pPoi);
       std::list<PoiList> sPoi;
       pPoi->GroupBySegment(vPoi, &sPoi);
       for (const auto& vPoiThisSegment : sPoi)
@@ -961,7 +962,7 @@ std::vector<Float64> CSegmentModelManager::GetAxial(IntervalIndexType intervalId
    std::vector<Float64> vF;
 
    // before release, there aren't any results
-   EAF_GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(vPoi.front().get().GetSegmentKey());
    if ( intervalIdx < releaseIntervalIdx )
    {
@@ -1017,7 +1018,7 @@ std::vector<WBFL::System::SectionValue> CSegmentModelManager::GetShear(IntervalI
    std::vector<WBFL::System::SectionValue> vShear;
 
    // before release, there aren't any results
-   EAF_GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(vPoi.front().get().GetSegmentKey());
    if ( intervalIdx < releaseIntervalIdx )
    {
@@ -1073,7 +1074,7 @@ std::vector<Float64> CSegmentModelManager::GetMoment(IntervalIndexType intervalI
    std::vector<Float64> vM;
 
    // before release, there aren't any results
-   EAF_GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(vPoi.front().get().GetSegmentKey());
    if ( intervalIdx < releaseIntervalIdx )
    {
@@ -1129,7 +1130,7 @@ std::vector<Float64> CSegmentModelManager::GetDeflection(IntervalIndexType inter
    std::vector<Float64> vD;
 
    // before release, there aren't any results
-   EAF_GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(vPoi.front().get().GetSegmentKey());
    if ( intervalIdx < releaseIntervalIdx )
    {
@@ -1185,7 +1186,7 @@ std::vector<Float64> CSegmentModelManager::GetRotation(IntervalIndexType interva
    std::vector<Float64> vR;
 
    // before release, there aren't any results
-   EAF_GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(vPoi.front().get().GetSegmentKey());
    if ( intervalIdx < releaseIntervalIdx )
    {
@@ -1242,7 +1243,7 @@ void CSegmentModelManager::GetStress(IntervalIndexType intervalIdx,LoadingCombin
    pfBot->resize(vPoi.size(),0.0);
 
    // before release, there aren't any results
-   EAF_GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(vPoi.front().get().GetSegmentKey());
    if ( intervalIdx < releaseIntervalIdx )
    {
@@ -1328,7 +1329,7 @@ void CSegmentModelManager::GetReaction(IntervalIndexType intervalIdx,pgsTypes::L
 {
    Float64 R = GetReaction(intervalIdx,lcDC,pierIdx,girderKey,rtCumulative);
 
-   EAF_GET_IFACE(ILoadFactors,pILoadFactors);
+   GET_IFACE(ILoadFactors,pILoadFactors);
    const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
    Float64 gDCMin, gDCMax; 
    pLoadFactors->GetDC(ls, &gDCMin, &gDCMax);
@@ -1358,7 +1359,7 @@ void CSegmentModelManager::GetAxial(IntervalIndexType intervalIdx,pgsTypes::Limi
 
    std::vector<Float64> forces = GetAxial(intervalIdx,lcDC,vPoi,rtCumulative);
 
-   EAF_GET_IFACE(ILoadFactors,pILoadFactors);
+   GET_IFACE(ILoadFactors,pILoadFactors);
    const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
    Float64 gDCMin, gDCMax;
    pLoadFactors->GetDC(ls, &gDCMin, &gDCMax);
@@ -1373,7 +1374,7 @@ void CSegmentModelManager::GetShear(IntervalIndexType intervalIdx,pgsTypes::Limi
 
    std::vector<WBFL::System::SectionValue> shears = GetShear(intervalIdx,lcDC,vPoi,rtCumulative);
 
-   EAF_GET_IFACE(ILoadFactors,pILoadFactors);
+   GET_IFACE(ILoadFactors,pILoadFactors);
    const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
    Float64 gDCMin, gDCMax;
    pLoadFactors->GetDC(ls, &gDCMin, &gDCMax);
@@ -1388,7 +1389,7 @@ void CSegmentModelManager::GetMoment(IntervalIndexType intervalIdx,pgsTypes::Lim
 
    std::vector<Float64> moments = GetMoment(intervalIdx,lcDC,vPoi,rtCumulative);
 
-   EAF_GET_IFACE(ILoadFactors,pILoadFactors);
+   GET_IFACE(ILoadFactors,pILoadFactors);
    const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
    Float64 gDCMin, gDCMax;
    pLoadFactors->GetDC(ls, &gDCMin, &gDCMax);
@@ -1403,7 +1404,7 @@ void CSegmentModelManager::GetDeflection(IntervalIndexType intervalIdx,pgsTypes:
 
    std::vector<Float64> deflection = GetDeflection(intervalIdx,lcDC,vPoi,rtCumulative);
 
-   EAF_GET_IFACE(ILoadFactors,pILoadFactors);
+   GET_IFACE(ILoadFactors,pILoadFactors);
    const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
    Float64 gDCMin, gDCMax;
    pLoadFactors->GetDC(ls, &gDCMin, &gDCMax);
@@ -1425,7 +1426,7 @@ void CSegmentModelManager::GetRotation(IntervalIndexType intervalIdx,pgsTypes::L
 
    std::vector<Float64> rotation = GetRotation(intervalIdx,lcDC,vPoi,rtCumulative);
 
-   EAF_GET_IFACE(ILoadFactors,pILoadFactors);
+   GET_IFACE(ILoadFactors,pILoadFactors);
    const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
    Float64 gDCMin, gDCMax;
    pLoadFactors->GetDC(limitState, &gDCMin, &gDCMax);
@@ -1455,7 +1456,7 @@ void CSegmentModelManager::GetStress(IntervalIndexType intervalIdx,pgsTypes::Lim
    GetStress(intervalIdx,lcDC,vPoi,rtCumulative,topLocation,botLocation,&fTop,&fBot);
 
    // apply the DC load factor and put the results in pMin and pMax
-   EAF_GET_IFACE(ILoadFactors,pILoadFactors);
+   GET_IFACE(ILoadFactors,pILoadFactors);
    const CLoadFactors* pLoadFactors = pILoadFactors->GetLoadFactors();
    Float64 gDCMin, gDCMax;
    pLoadFactors->GetDC(limitState, &gDCMin, &gDCMax);
@@ -1474,7 +1475,7 @@ void CSegmentModelManager::GetStress(IntervalIndexType intervalIdx,pgsTypes::Lim
    if ( bIncludePrestress )
    {
       // get and add the pretension stresses to pMin and pMax
-      EAF_GET_IFACE(IPretensionStresses, pPretensionStresses);
+      GET_IFACE(IPretensionStresses, pPretensionStresses);
       std::vector<Float64> fPS;
       pPretensionStresses->GetStress(intervalIdx, vPoi, stressLocation, false/*no live load*/, limitState,INVALID_INDEX,&fPS);
       std::transform(pMin->cbegin(),pMin->cend(), fPS.cbegin(),pMin->begin(),[](const auto& fLimitState, const auto& fPS) {return fLimitState + fPS;});
@@ -1486,8 +1487,8 @@ void CSegmentModelManager::GetStress(IntervalIndexType intervalIdx,pgsTypes::Lim
 // IExternalLoading
 bool CSegmentModelManager::CreateLoading(GirderIndexType girderLineIdx,LPCTSTR strLoadingName)
 {
-   EAF_GET_IFACE(IBridgeDescription, pIBridgeDesc);
-   EAF_GET_IFACE(IBridge, pBridge);
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   GET_IFACE(IBridge, pBridge);
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(girderLineIdx, &vGirderKeys);
    for(const auto& girderKey : vGirderKeys)
@@ -1540,7 +1541,7 @@ bool CSegmentModelManager::CreateLoading(GirderIndexType girderLineIdx,LPCTSTR s
 
 bool CSegmentModelManager::AddLoadingToLoadCombination(GirderIndexType girderLineIdx, LPCTSTR strLoadingName, LoadingCombinationType comboType)
 {
-   EAF_GET_IFACE(IBridge, pBridge);
+   GET_IFACE(IBridge, pBridge);
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(girderLineIdx, &vGirderKeys);
    for (const auto& girderKey : vGirderKeys)
@@ -1790,8 +1791,8 @@ std::vector<pgsPointOfInterest> CSegmentModelManager::GetDeflectionDatumLocation
 {
    ASSERT_SEGMENT_KEY(segmentKey);
 
-   EAF_GET_IFACE(IPointOfInterest, pPoi);
-   EAF_GET_IFACE(IIntervals, pIntervals);
+   GET_IFACE(IPointOfInterest, pPoi);
+   GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(segmentKey);
    if (intervalIdx < erectionIntervalIdx)
    {
@@ -1856,7 +1857,7 @@ std::vector<pgsPointOfInterest> CSegmentModelManager::GetDeflectionDatumLocation
       //5)	Additional rules for erection deflection datums :
       //    a)	Deflections at free ends of drop in segments are made to match deflection of adjacent supporting segment
       //    b)	A mismatch in end deflections can occur when segments with fully constrained ends are placed adjacently.This mismatch must be checked if post - tensioning through joint
-      EAF_GET_IFACE(IBridgeDescription, pIBridgeDesc);
+      GET_IFACE(IBridgeDescription, pIBridgeDesc);
       const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
 
       // Get POI's at outermost rigid piers
@@ -2232,7 +2233,7 @@ void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,LoadC
    ATLASSERT(VerifyPoi(vPoi));
 
 #if defined _DEBUG
-   EAF_GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(vPoi.front().get().GetSegmentKey());
    ATLASSERT(intervalIdx < erectionIntervalIdx); // should be getting results from the girder model
 #endif // _DEBUG
@@ -2277,7 +2278,7 @@ void CSegmentModelManager::GetPrestressSectionResults(IntervalIndexType interval
 
    // all requests for pretension results come to the segment model manager
    // however, the segment model manager needs the intervalIdx to be less then the erection interval
-   EAF_GET_IFACE(IIntervals, pIntervals);
+   GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(vPoi.front().get().GetSegmentKey());
    intervalIdx = Min(intervalIdx, erectionIntervalIdx - 1);
 
@@ -2350,7 +2351,7 @@ void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,LoadC
 {
    ATLASSERT(VerifyPoi(vPoi));
 
-   EAF_GET_IFACE(IIntervals, pIntervals);
+   GET_IFACE(IIntervals, pIntervals);
 
    LoadCaseIDType lcidPT = GetLoadCaseID(pgsTypes::pftPostTensioning);
 
@@ -2388,7 +2389,7 @@ void CSegmentModelManager::GetSectionResults(IntervalIndexType intervalIdx,LoadC
          }
       }
 
-      EAF_GET_IFACE_NOCHECK(IPointOfInterest,pPoi);
+      GET_IFACE_NOCHECK(IPointOfInterest,pPoi);
       if ( intervalIdx < releaseIntervalIdx || (intervalIdx < stressingIntervalIdx && lcid == lcidPT) || pPoi->IsOffSegment(poi) )
       {
          // interval is before release (so no pretension effects)
@@ -2454,12 +2455,12 @@ void CSegmentModelManager::GetSectionStresses(IntervalIndexType intervalIdx,Load
    ATLASSERT(VerifyPoi(vPoi));
 
 #if defined _DEBUG
-   EAF_GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType erectionIntervalIdx = pIntervals->GetErectSegmentInterval(vPoi.front().get().GetSegmentKey());
    ATLASSERT(intervalIdx < erectionIntervalIdx); // should be getting results from the girder model
 #endif // _DEBUG
 
-   EAF_GET_IFACE(IPointOfInterest,pPoi);
+   GET_IFACE(IPointOfInterest,pPoi);
 
    for ( const pgsPointOfInterest& poi : vPoi)
    {
@@ -2480,7 +2481,7 @@ void CSegmentModelManager::GetSectionStresses(IntervalIndexType intervalIdx,Load
          {
             // incremental results are the change in results from the end of the previous interval and
             // the end of this interval.
-            EAF_GET_IFACE(IIntervals,pIntervals);
+            GET_IFACE(IIntervals,pIntervals);
             IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
             if ( intervalIdx == releaseIntervalIdx )
             {
@@ -2552,7 +2553,7 @@ void CSegmentModelManager::GetSectionStress(IntervalIndexType intervalIdx,LoadCa
       ar = results->ComputePOIForces(lcid,pid,face,lotMember,&fx,&fy,&mz);
    }
 
-   EAF_GET_IFACE(ISectionProperties, pSectProp);
+   GET_IFACE(ISectionProperties, pSectProp);
 
    Float64 Cat, Cbtx, Cbty;
    pSectProp->GetStressCoefficients(intervalIdx, poi, topLocation, nullptr, &Cat, &Cbtx, &Cbty);
@@ -2580,7 +2581,7 @@ void CSegmentModelManager::GetReaction(const CSegmentKey& segmentKey,IntervalInd
    }
    else
    {
-      EAF_GET_IFACE(IIntervals,pIntervals);
+      GET_IFACE(IIntervals,pIntervals);
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
       if ( intervalIdx < releaseIntervalIdx )
       {
@@ -2698,10 +2699,10 @@ void CSegmentModelManager::BuildReleaseModel(const CSegmentKey& segmentKey) cons
 {
    ATLASSERT(GetModelData(m_ReleaseModels,segmentKey) == nullptr);
 
-   EAF_GET_IFACE(IProgress,pProgress);
+   GET_IFACE(IEAFProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
 
-   EAF_GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
    // Build the model
@@ -2713,12 +2714,12 @@ void CSegmentModelManager::BuildReleaseModel(const CSegmentKey& segmentKey) cons
    // for all segments in a spliced girder. Cantilever pier segments, with heavy PS in the top
    // flange and possibly a tapered profile, could be considered supported near the middle of the segment
    // The support location is an input for PGSplice to allow the engineer to control the release condition
-   EAF_GET_IFACE(IGirder,pGirder);
+   GET_IFACE(IGirder,pGirder);
    Float64 left,right;
    pGirder->GetSegmentReleaseSupportLocations(segmentKey,&left,&right);
 
 #if defined _DEBUG
-   EAF_GET_IFACE(IDocumentType,pDocType);
+   GET_IFACE(IDocumentType,pDocType);
    if ( pDocType->IsPGSuperDocument() )
    {
       // must be supported at ends for PGSuper... this should be enforced through the UI
@@ -2736,10 +2737,10 @@ void CSegmentModelManager::BuildLiftingModel(const CSegmentKey& segmentKey) cons
 {
    ATLASSERT(GetModelData(m_LiftingModels, segmentKey) == nullptr);
 
-   EAF_GET_IFACE(IProgress,pProgress);
+   GET_IFACE(IEAFProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
 
-   EAF_GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liftingIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
 
    // Build the model
@@ -2747,7 +2748,7 @@ void CSegmentModelManager::BuildLiftingModel(const CSegmentKey& segmentKey) cons
    os << "Building lifting model" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
-   EAF_GET_IFACE(ISegmentLifting, pSegmentLifting);
+   GET_IFACE(ISegmentLifting, pSegmentLifting);
    Float64 leftOverhang  = pSegmentLifting->GetLeftLiftingLoopLocation(segmentKey);
    Float64 rightOverhang = pSegmentLifting->GetRightLiftingLoopLocation(segmentKey);
 
@@ -2760,10 +2761,10 @@ void CSegmentModelManager::BuildHaulingModel(const CSegmentKey& segmentKey) cons
 {
    ATLASSERT(GetModelData(m_HaulingModels, segmentKey) == nullptr);
 
-   EAF_GET_IFACE(IProgress,pProgress);
+   GET_IFACE(IEAFProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
 
-   EAF_GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
 
    // Build the model
@@ -2771,7 +2772,7 @@ void CSegmentModelManager::BuildHaulingModel(const CSegmentKey& segmentKey) cons
    os << "Building hauling model" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
-   EAF_GET_IFACE(ISegmentHauling, pSegmentHauling);
+   GET_IFACE(ISegmentHauling, pSegmentHauling);
    Float64 leftOverhang  = pSegmentHauling->GetTrailingOverhang(segmentKey);
    Float64 rightOverhang = pSegmentHauling->GetLeadingOverhang(segmentKey);
 
@@ -2784,10 +2785,10 @@ void CSegmentModelManager::BuildStorageModel(const CSegmentKey& segmentKey) cons
 {
    ATLASSERT(GetModelData(m_StorageModels, segmentKey) == nullptr);
 
-   EAF_GET_IFACE(IProgress,pProgress);
+   GET_IFACE(IEAFProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
 
-   EAF_GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
 
    // Build the model
@@ -2795,7 +2796,7 @@ void CSegmentModelManager::BuildStorageModel(const CSegmentKey& segmentKey) cons
    os << "Building storage model" << std::ends;
    pProgress->UpdateMessage( os.str().c_str() );
 
-   EAF_GET_IFACE(IGirder,pGirder);
+   GET_IFACE(IGirder,pGirder);
    Float64 left,right;
    pGirder->GetSegmentStorageSupportLocations(segmentKey,&left,&right);
 
@@ -2806,7 +2807,7 @@ void CSegmentModelManager::BuildStorageModel(const CSegmentKey& segmentKey) cons
 
 CSegmentModelData* CSegmentModelManager::GetSegmentModel(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx) const
 {
-   EAF_GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType liftingIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
    IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
@@ -2906,10 +2907,10 @@ CSegmentModelData* CSegmentModelManager::GetModelData(SegmentModels& models,cons
 CSegmentModelData CSegmentModelManager::BuildSegmentModel(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,Float64 leftSupportDistance,Float64 rightSupportDistance,PoiAttributeType refAttribute) const
 {
    // Get the interface pointers we are going to use
-   EAF_GET_IFACE(IBridge,            pBridge );
-   EAF_GET_IFACE(IMaterials,         pMaterial );
+   GET_IFACE(IBridge,            pBridge );
+   GET_IFACE(IMaterials,         pMaterial );
 
-   EAF_GET_IFACE(IProgress,pProgress);
+   GET_IFACE(IEAFProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
 
    // For casting yard models, use the entire girder length as the
@@ -2920,7 +2921,7 @@ CSegmentModelData CSegmentModelManager::BuildSegmentModel(const CSegmentKey& seg
    Float64 Ec = pMaterial->GetSegmentEc(segmentKey,intervalIdx,pgsTypes::Start);
 
    // Get points of interest
-   EAF_GET_IFACE(IPointOfInterest,pPoi);
+   GET_IFACE(IPointOfInterest,pPoi);
    PoiList vPoi;
    pPoi->GetPointsOfInterest(segmentKey, &vPoi); // we want all POI
 
@@ -2935,7 +2936,7 @@ CSegmentModelData CSegmentModelManager::BuildSegmentModel(const CSegmentKey& seg
    LoadCaseIDType lcid = GetLoadCaseID(pgsTypes::pftGirder);
    model_data.Loads.insert(lcid);
 
-   EAF_GET_IFACE(IIntervals, pIntervals);
+   GET_IFACE(IIntervals, pIntervals);
    IntervalIndexType liftingIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
    IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
 
@@ -2982,7 +2983,7 @@ void CSegmentModelManager::ApplyPretensionLoad(CSegmentModelData* pModelData,con
    CComPtr<IFem2dLoadingCollection> loadings;
    pModelData->Model->get_Loadings(&loadings);
 
-   EAF_GET_IFACE_NOCHECK(IProductLoads,pProductLoads);
+   GET_IFACE_NOCHECK(IProductLoads,pProductLoads);
 
    for (int i = 0; i < 3; i++)
    {
@@ -3112,7 +3113,7 @@ void CSegmentModelManager::ApplyPostTensionLoad(CSegmentModelData* pModelData, c
    LoadIDType distLoadID;
    distLoads->get_Count((IndexType*)&distLoadID);
 
-   EAF_GET_IFACE_NOCHECK(IProductLoads, pProductLoads);
+   GET_IFACE_NOCHECK(IProductLoads, pProductLoads);
    std::vector<EquivPretensionLoad> vLoads = pProductLoads->GetEquivSegmentPostTensionLoads(segmentKey);
 
    std::vector<EquivPretensionLoad>::iterator iter(vLoads.begin());
@@ -3206,7 +3207,7 @@ LoadCaseIDType CSegmentModelManager::GetLoadCaseID(CSegmentModelData* pModelData
 
 void CSegmentModelManager::GetMemberLocation(const pgsPointOfInterest& poi,CSegmentModelData* pModelData,MemberIDType* pMbrID,Float64* pLocation)
 {
-   EAF_GET_IFACE(IPointOfInterest,pPoi);
+   GET_IFACE(IPointOfInterest,pPoi);
    CClosureKey closureKey;
    if ( pPoi->IsInClosureJoint(poi,&closureKey) )
    {
@@ -3256,7 +3257,7 @@ void CSegmentModelManager::GetMemberLocation(const pgsPointOfInterest& poi,CSegm
 
 CSegmentKey CSegmentModelManager::GetSegmentKey(const CGirderKey& girderKey,PierIndexType pierIdx) const
 {
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CSplicedGirderData* pGirder = pIBridgeDesc->GetGirder(girderKey);
    
@@ -3338,7 +3339,7 @@ bool CSegmentModelManager::CreateUniformLoad(IntervalIndexType intervalIdx, Load
    const CSegmentKey& segmentKey1(poi1.GetSegmentKey());
    const CSegmentKey& segmentKey2(poi2.GetSegmentKey());
 
-   EAF_GET_IFACE(IPointOfInterest,pPoi);
+   GET_IFACE(IPointOfInterest,pPoi);
    Float64 Xg1 = pPoi->ConvertPoiToGirderCoordinate(poi1);
    Float64 Xg2 = pPoi->ConvertPoiToGirderCoordinate(poi2);
 
@@ -3656,7 +3657,7 @@ bool CSegmentModelManager::CreateInitialStrainLoad(IntervalIndexType intervalIdx
 
 bool CSegmentModelManager::VerifyPoi(const PoiList& vPoi) const
 {
-   EAF_GET_IFACE(IPointOfInterest, pPoi);
+   GET_IFACE(IPointOfInterest, pPoi);
    std::vector<CSegmentKey> segmentKeys;
    pPoi->GetSegmentKeys(vPoi, &segmentKeys);
    return (segmentKeys.size() == 1) ? true : false;

@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psgLib.h>
+#include <PsgLib\PsgLib.h>
 #include "BeamDimensionGrid.h"
 #include "GirderDimensionsPage.h"
 #include "GirderMainSheet.h"

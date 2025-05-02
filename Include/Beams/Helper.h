@@ -33,9 +33,9 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <LRFD\LiveLoadDistributionFactorBase.h>
 
-#include <PgsExt\PrecastSegmentData.h>
-#include <PgsExt\SplicedGirderData.h>
-#include <PgsExt\GirderGroupData.h>
+#include <PsgLib\PrecastSegmentData.h>
+#include <PsgLib\SplicedGirderData.h>
+#include <PsgLib\GirderGroupData.h>
 #include <IFace\AgeAdjustedMaterial.h>
 
 // String for interior girder override and macro to report it

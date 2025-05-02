@@ -4,7 +4,8 @@
 #include "ClosureJointGeometryPage.h"
 #include "GirderSegmentSpacingPage.h"
 
-#include <PgsExt\TemporarySupportData.h>
+#include <PsgLib\TemporarySupportData.h>
+
 #include <IFace\ExtendUI.h>
 #include <EAF\EAFMacroTxn.h>
 

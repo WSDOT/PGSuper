@@ -26,7 +26,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <PsgLib\SpecLibraryEntry.h>
-#include <PgsExt\StrandData.h>
+#include <PsgLib\StrandData.h>
 
 
 CPostTensionTimeDependentLossesAtShippingTable::CPostTensionTimeDependentLossesAtShippingTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) :
@@ -50,7 +50,7 @@ CPostTensionTimeDependentLossesAtShippingTable* CPostTensionTimeDependentLossesA
 
    CPostTensionTimeDependentLossesAtShippingTable* table = nullptr;
 
-   EAF_GET_IFACE2(pBroker,ISegmentData,pSegmentData);
+   GET_IFACE2(pBroker,ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
    if ( pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPTBeforeLifting ||

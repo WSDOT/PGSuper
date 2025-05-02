@@ -39,6 +39,7 @@
 #include <IFace\Project.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\DocumentType.h>
+#include <IFace/PointOfInterest.h>
 
 #include <EAF\EAFGraphView.h>
 #include <EAF\EAFDocument.h>
@@ -116,7 +117,7 @@ void CEffectivePrestressGraphBuilder::UpdateYAxis()
    m_Graph.SetYAxisNumberOfMajorTics(21);
    m_Graph.PinYAxisAtZero(true);
 
-   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    if ( ((CEffectivePrestressGraphController*)m_pGraphController)->IsStressGraph() )
    {
       const WBFL::Units::StressData& stressUnit = pDisplayUnits->GetStressUnit();
@@ -141,7 +142,7 @@ CGirderGraphControllerBase* CEffectivePrestressGraphBuilder::CreateGraphControll
 
 bool CEffectivePrestressGraphBuilder::UpdateNow()
 {
-   EAF_GET_IFACE(IProgress,pProgress);
+   GET_IFACE(IEAFProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
 
    pProgress->UpdateMessage(_T("Building Graph"));
@@ -169,7 +170,7 @@ bool CEffectivePrestressGraphBuilder::UpdateNow()
 void CEffectivePrestressGraphBuilder::UpdateGraphTitle(GroupIndexType grpIdx,GirderIndexType gdrIdx, DuctType ductType, DuctIndexType ductIdx)
 {
    CString strGraphSubTitle;
-   EAF_GET_IFACE(IDocumentType,pDocType);
+   GET_IFACE(IDocumentType,pDocType);
    bool isPGSuper = pDocType->IsPGSuperDocument();
    if ( ductIdx == INVALID_INDEX )
    {
@@ -218,7 +219,7 @@ void CEffectivePrestressGraphBuilder::UpdatePosttensionGraphData(GroupIndexType 
    m_Graph.ClearData();
 
    // Get the points of interest we need.
-   EAF_GET_IFACE(IPointOfInterest,pIPoi);
+   GET_IFACE(IPointOfInterest,pIPoi);
    CSegmentKey segmentKey(grpIdx,gdrIdx,ALL_SEGMENTS);
    PoiList vPoi;
    pIPoi->GetPointsOfInterest(segmentKey, &vPoi);
@@ -234,7 +235,7 @@ void CEffectivePrestressGraphBuilder::UpdatePosttensionGraphData(GroupIndexType 
 
    std::vector<IntervalIndexType> vIntervals = ((CMultiIntervalGirderGraphControllerBase*)m_pGraphController)->GetSelectedIntervals();
 
-   EAF_GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType stressTendonIntervalIdx;
    if (ductType == CEffectivePrestressGraphBuilder::Segment)
    {
@@ -245,10 +246,10 @@ void CEffectivePrestressGraphBuilder::UpdatePosttensionGraphData(GroupIndexType 
       stressTendonIntervalIdx = pIntervals->GetStressGirderTendonInterval(CGirderKey(grpIdx, gdrIdx), ductIdx);
    }
 
-   EAF_GET_IFACE_NOCHECK(IPosttensionForce,pPTForce); // going to need this in the loop... get it once
+   GET_IFACE_NOCHECK(IPosttensionForce,pPTForce); // going to need this in the loop... get it once
 
-   EAF_GET_IFACE_NOCHECK(ISegmentTendonGeometry, pSegmentTendonGeometry);
-   EAF_GET_IFACE_NOCHECK(IGirderTendonGeometry, pGirderTendonGeometry);
+   GET_IFACE_NOCHECK(ISegmentTendonGeometry, pSegmentTendonGeometry);
+   GET_IFACE_NOCHECK(IGirderTendonGeometry, pGirderTendonGeometry);
 
    bool bStresses = ((CEffectivePrestressGraphController*)m_pGraphController)->IsStressGraph();
 
@@ -396,7 +397,7 @@ void CEffectivePrestressGraphBuilder::UpdatePretensionGraphData(GroupIndexType g
    }
 
    // Get the points of interest we need.
-   EAF_GET_IFACE(IPointOfInterest,pIPoi);
+   GET_IFACE(IPointOfInterest,pIPoi);
    CGirderKey girderKey(grpIdx, gdrIdx);
    CSegmentKey segmentKey(girderKey,ALL_SEGMENTS);
    PoiList vPoi;
@@ -406,9 +407,9 @@ void CEffectivePrestressGraphBuilder::UpdatePretensionGraphData(GroupIndexType g
    std::vector<Float64> xVals;
    GetXValues(vPoi,&xVals);
 
-   EAF_GET_IFACE_NOCHECK(IStrandGeometry, pStrandGeom);
-   EAF_GET_IFACE(IPretensionForce,pPSForce);
-   EAF_GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE_NOCHECK(IStrandGeometry, pStrandGeom);
+   GET_IFACE(IPretensionForce,pPSForce);
+   GET_IFACE(IIntervals,pIntervals);
 
    bool bStresses = ((CEffectivePrestressGraphController*)m_pGraphController)->IsStressGraph();
    bool bPermanent = ((CEffectivePrestressGraphController*)m_pGraphController)->IsPermanentStrands();
@@ -521,7 +522,7 @@ void CEffectivePrestressGraphBuilder::GetBeamDrawIntervals(IntervalIndexType* pF
    else
    {
       CGirderKey girderKey = pMyGraphController->GetGirderKey();
-      EAF_GET_IFACE(IIntervals, pIntervals);
+      GET_IFACE(IIntervals, pIntervals);
       IntervalIndexType intervalIdx = pIntervals->GetFirstPrestressReleaseInterval(girderKey);
       *pFirstIntervalIdx = intervalIdx;
       *pLastIntervalIdx = *pFirstIntervalIdx;

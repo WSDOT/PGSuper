@@ -43,9 +43,9 @@ CDebondCheckTable::~CDebondCheckTable()
 
 void CDebondCheckTable::Build(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsGirderArtifact* pGirderArtifact, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
-   EAF_GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry);
-   EAF_GET_IFACE2_NOCHECK(pBroker, IMaterials, pMaterials); // not always used, but we don't want to get it everytime we go through a loop
+   GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry);
+   GET_IFACE2_NOCHECK(pBroker, IMaterials, pMaterials); // not always used, but we don't want to get it everytime we go through a loop
 
    pgsTypes::StrandType strandType(pgsTypes::Straight); // we only debond straight strands
 
@@ -77,7 +77,7 @@ void CDebondCheckTable::Build(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::B
    *pChapter << p;
    *p <<_T("Debonded Strands [5.9.4.3.3]");
 
-   EAF_GET_IFACE2(pBroker,IDebondLimits,pDebondLimits);
+   GET_IFACE2(pBroker,IDebondLimits,pDebondLimits);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
       const pgsSegmentArtifact* pSegmentArtifact = pGirderArtifact->GetSegmentArtifact(segIdx);

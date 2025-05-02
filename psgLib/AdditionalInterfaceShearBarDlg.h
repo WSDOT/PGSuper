@@ -21,8 +21,8 @@
 ///////////////////////////////////////////////////////////////////////
 #pragma once
 
-#include <psgLib\HorizShearGrid.h>
-#include <PgsExt\ShearData.h>
+#include <PsgLib\HorizShearGrid.h>
+#include <PsgLib\ShearData.h>
 
 class CShearSteelPage;
 

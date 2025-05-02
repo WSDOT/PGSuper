@@ -23,7 +23,8 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psgLib.h>
+#include "resource.h"
+#include <PsgLib\LibraryManager.h>
 #include "ConcreteEntryDlg.h"
 #include "ACIConcretePage.h"
 

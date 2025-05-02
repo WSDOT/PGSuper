@@ -23,11 +23,6 @@
 #include "stdafx.h"
 #include "EditGirderline.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 txnEditGirderline::txnEditGirderline(const CGirderKey& girderKey,bool bApplyToAllGirderlines,const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc) :
 txnEditBridgeDescription(oldBridgeDesc,newBridgeDesc)

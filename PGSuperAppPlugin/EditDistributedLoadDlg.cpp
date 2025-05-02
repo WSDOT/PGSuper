@@ -35,17 +35,12 @@
 
 #include <System\Tokenizer.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include "TimelineEventDlg.h"
 
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDocument.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CEditDistributedLoadDlg dialog
@@ -68,7 +63,7 @@ CEditDistributedLoadDlg::CEditDistributedLoadDlg(const CDistributedLoadData& loa
 
 void CEditDistributedLoadDlg::DoDataExchange(CDataExchange* pDX)
 {
-   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
 	CDialog::DoDataExchange(pDX);
 	//{{AFX_DATA_MAP(CEditDistributedLoadDlg)
@@ -278,7 +273,7 @@ BOOL CEditDistributedLoadDlg::OnInitDialog()
    m_LoadTypeCB.SetCurSel(m_Load.m_Type);
 
    // spans, girders
-   EAF_GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    SpanIndexType nSpans = pBridgeDesc->GetSpanCount();
 
@@ -345,7 +340,7 @@ BOOL CEditDistributedLoadDlg::OnInitDialog()
    }
    else
    {
-      EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
       CString strLeftLoad;
       strLeftLoad.Format(_T("%s"),FormatDimension(m_Load.m_StartLocation,pDisplayUnits->GetSpanLengthUnit(),false));
       m_LeftLocationCtrl.SetWindowText(strLeftLoad);
@@ -377,7 +372,7 @@ void CEditDistributedLoadDlg::UpdateLocationUnit()
    }
    else
    {
-      EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnit);
+      GET_IFACE(IEAFDisplayUnits,pDisplayUnit);
       m_LocationUnitCtrl.SetWindowText(pDisplayUnit->GetSpanLengthUnit().UnitOfMeasure.UnitTag().c_str());
    }
 }
@@ -549,8 +544,8 @@ void CEditDistributedLoadDlg::UpdateSpanLength()
    }
    else
    {
-      EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-      EAF_GET_IFACE(IBridge, pBridge);
+      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE(IBridge, pBridge);
       Float64 span_length = pBridge->GetFullSpanLength(CSpanKey(spanIdx,gdrIdx));
       CString str;
       str.Format(_T("Span Length = %s"),FormatDimension(span_length,pDisplayUnits->GetSpanLengthUnit()));
@@ -565,7 +560,7 @@ void CEditDistributedLoadDlg::OnHelp()
 
 void CEditDistributedLoadDlg::UpdateGirderList()
 {
-   EAF_GET_IFACE(IBridgeDescription, pIBridgeDesc);
+   GET_IFACE(IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
    SpanIndexType spanIdx = (SpanIndexType)m_SpanCB.GetCurSel();

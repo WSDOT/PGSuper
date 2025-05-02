@@ -30,8 +30,9 @@
 #include <EAF/EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\CrackedSection.h>
+#include <IFace/PointOfInterest.h>
 
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 
 #include <PGSuperColors.h>
 
@@ -75,12 +76,12 @@ rptChapter* CCrackedSectionChapterBuilder::Build(const std::shared_ptr<const WBF
 
    auto pBroker = pSpec->GetBroker();
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    rptParagraph* pPara = new rptParagraph;
    (*pChapter) << pPara;
 
-   EAF_GET_IFACE2(pBroker,ICrackedSection,pCrackedSection);
+   GET_IFACE2(pBroker,ICrackedSection,pCrackedSection);
    const CRACKEDSECTIONDETAILS* pCSD = pCrackedSection->GetCrackedSectionDetails(poi,bPositiveMoment);
 
    /////////////////////////////////////
@@ -95,7 +96,7 @@ rptChapter* CCrackedSectionChapterBuilder::Build(const std::shared_ptr<const WBF
 
 #pragma Reminder("UPDATE: assuming precast girder bridge")
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
-   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
    CSpanKey spanKey;
    Float64 Xspan;
    pPoi->ConvertPoiToSpanPoint(poi, &spanKey, &Xspan);

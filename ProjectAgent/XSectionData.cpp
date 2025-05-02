@@ -278,7 +278,7 @@ bool CXSectionData::operator != (const CXSectionData& rOther) const
 }
 
 //======================== OPERATIONS =======================================
-HRESULT CXSectionData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress, ILibrary* pLibrary)
+HRESULT CXSectionData::Load(IStructuredLoad* pStrLoad,std::shared_ptr<IEAFProgress> pProgress, ILibrary* pLibrary)
 {
    USES_CONVERSION;
 
@@ -590,7 +590,7 @@ HRESULT CXSectionData::Load(IStructuredLoad* pStrLoad,IProgress* pProgress, ILib
    return hr;
 }
 
-HRESULT CXSectionData::Save(IStructuredSave* pStrSave,IProgress* pProgress)
+HRESULT CXSectionData::Save(IStructuredSave* pStrSave,std::shared_ptr<IEAFProgress> pProgress)
 {
    HRESULT hr = S_OK;
    ATLASSERT(false); // should never get here

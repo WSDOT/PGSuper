@@ -49,5 +49,7 @@ public:
    virtual Float64 GetAsRequired(const pgsSplittingCheckArtifact* pArtifact) const = 0;
    virtual void ReportSplittingChecks(const pgsGirderArtifact* pGirderArtifact, rptChapter* pChapter) const = 0;
    virtual void ReportSplittingCheckDetails(const pgsGirderArtifact* pGirderArtifact, rptChapter* pChapter) const = 0;
+
+   virtual std::_tstring GetSplittingCheckName() const = 0;
 };
 

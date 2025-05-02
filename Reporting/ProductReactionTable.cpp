@@ -30,7 +30,7 @@
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
 
-#include <PgsExt\PierData2.h>
+#include <PsgLib\PierData2.h>
 
 CProductReactionTable::CProductReactionTable()
 {
@@ -47,15 +47,15 @@ rptRcTable* CProductReactionTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBro
    // Tricky: the reaction tool below will dump out two lines per cell for bearing reactions with more than one bearing
    ReactionUnitValueTool reaction(tableType, reactu);
 
-   EAF_GET_IFACE2_NOCHECK(pBroker, IBridgeDescription, pIBridgeDesc);
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2_NOCHECK(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    bool bHasOverlay    = pBridge->HasOverlay();
    bool bFutureOverlay = pBridge->IsFutureOverlay();
    PierIndexType nPiers = pBridge->GetPierCount();
 
    bool bIncludeLLDF = false; // this table never distributes live load
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType diaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
    IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
    IntervalIndexType ljIntervalIdx = pIntervals->GetCastLongitudinalJointInterval();
@@ -68,7 +68,7 @@ rptRcTable* CProductReactionTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBro
    bool bContinuousBeforeDeckCasting;
    GroupIndexType startGroup, endGroup;
 
-   EAF_GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
+   GET_IFACE2(pBroker, IRatingSpecification, pRatingSpec);
 
    ColumnIndexType nCols = GetProductLoadTableColumnCount(pBroker,girderKey,analysisType,bDesign,bRating,false,&bSegments,&bConstruction,&bDeck,&bDeckPanels,&bSidewalk,&bShearKey,&bLongitudinalJoint,&bPedLoading,&bPermit,&bContinuousBeforeDeckCasting,&startGroup,&endGroup);
    
@@ -79,7 +79,7 @@ rptRcTable* CProductReactionTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBro
    p_table->SetColumnStyle(0,rptStyleManager::GetTableCellStyle(CB_NONE | CJ_RIGHT));
    p_table->SetStripeRowColumnStyle(0,rptStyleManager::GetTableStripeRowCellStyle(CB_NONE | CJ_RIGHT));
 
-   EAF_GET_IFACE2(pBroker,IProductForces,pProdForces);
+   GET_IFACE2(pBroker,IProductForces,pProdForces);
    pgsTypes::BridgeAnalysisType maxBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Maximize);
    pgsTypes::BridgeAnalysisType minBAT = pProdForces->GetBridgeAnalysisType(analysisType,pgsTypes::Minimize);
 
@@ -90,12 +90,12 @@ rptRcTable* CProductReactionTable::Build(std::shared_ptr<WBFL::EAF::Broker> pBro
    std::unique_ptr<IProductReactionAdapter> pForces;
    if( tableType == PierReactionsTable )
    {
-      EAF_GET_IFACE2(pBroker,IReactions,pReactions);
+      GET_IFACE2(pBroker,IReactions,pReactions);
       pForces =  std::make_unique<ProductForcesReactionAdapter>(pReactions,girderKey);
    }
    else
    {
-      EAF_GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
+      GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
       pForces =  std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, diaphragmIntervalIdx, girderKey);
    }
 

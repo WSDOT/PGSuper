@@ -38,11 +38,6 @@
 #include "PGSuperColors.h"
 #include "PGSuperUIUtil.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 #define BORDER 7
 
 // Utility functions
@@ -106,7 +101,7 @@ void CGirderSelectStrandsPage::DoDataExchange(CDataExchange* pDX)
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    DDX_Check(pDX, IDC_CHECK_SYMM, m_bSymmetricDebond);
    DDX_Check(pDX, IDC_SHOW_NUMBERS, m_DrawNumbers);
@@ -389,7 +384,7 @@ void CGirderSelectStrandsPage::OnPaint()
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    // Make sure we have up to date grid data
    m_Grid.UpdateData(false);
@@ -1024,7 +1019,7 @@ void CGirderSelectStrandsPage::UpdateStrandAdjustments()
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    // adjustment of harped strands at ends
    Float64 end_incr = pStrandGeometry->GetHarpedEndOffsetIncrement(m_pGdrEntry->GetName().c_str(),m_AdjustableStrandType);
@@ -1044,7 +1039,7 @@ void CGirderSelectStrandsPage::UpdateStrandAdjustments()
 
       
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
       const WBFL::Units::LengthData& measUnit = pDisplayUnits->GetComponentDimUnit();
 
       // Unit tag
@@ -1226,7 +1221,7 @@ void CGirderSelectStrandsPage::OnCbnSelchangeHarpEndCb()
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::LengthData& measUnit = pDisplayUnits->GetComponentDimUnit();
 
    CComboBox* pcb = (CComboBox*)GetDlgItem(IDC_HARP_END_CB);
@@ -1250,7 +1245,7 @@ void CGirderSelectStrandsPage::OnCbnSelchangeHarpHpCb()
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::LengthData& measUnit = pDisplayUnits->GetComponentDimUnit();
 
    CComboBox* pcb = (CComboBox*)GetDlgItem(IDC_HARP_HP_CB);
@@ -1398,7 +1393,7 @@ void CGirderSelectStrandsPage::UpdatePjackEditEx(StrandIndexType nStrands, UINT 
 
       
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       // Get the edit control value and save it as the last user input force
       CString val_as_text;
@@ -1429,7 +1424,7 @@ void CGirderSelectStrandsPage::UpdatePjackEditEx(StrandIndexType nStrands, UINT 
       // zero out pjack
       
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
       Float64 jack=0.0;
       CDataExchange dx(this,FALSE);
@@ -1441,7 +1436,7 @@ Float64 CGirderSelectStrandsPage::GetMaxPjack(StrandIndexType nStrands,pgsTypes:
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2( pBroker, IPretensionForce, pPSForce );
+   GET_IFACE2( pBroker, IPretensionForce, pPSForce );
 
 
    // TRICK CODE
@@ -1453,10 +1448,10 @@ Float64 CGirderSelectStrandsPage::GetMaxPjack(StrandIndexType nStrands,pgsTypes:
    // This exception adversely impacts the behavior of this dialog. To prevent these problems, capture the current ROA setting, change ROA to
    // "Ignore", compute PjackMax, and then restore the ROA setting.
 
-   EAF_GET_IFACE2(pBroker,IEvents,pEvents);
+   GET_IFACE2(pBroker,IEvents,pEvents);
    pEvents->HoldEvents();
 
-   EAF_GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
+   GET_IFACE2(pBroker,ILiveLoads,pLiveLoads);
    WBFL::LRFD::RangeOfApplicabilityAction action = pLiveLoads->GetRangeOfApplicabilityAction();
    pLiveLoads->SetRangeOfApplicabilityAction(WBFL::LRFD::RangeOfApplicabilityAction::Ignore);
 

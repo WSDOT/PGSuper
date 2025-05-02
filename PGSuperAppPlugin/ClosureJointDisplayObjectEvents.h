@@ -25,7 +25,7 @@
 
 #include <DManip/DisplayObjectEvents.h>
 #include "BridgeModelViewChildFrame.h"
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\ClosureJointData.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CClosureJointDisplayObjectEvents command target

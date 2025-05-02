@@ -22,7 +22,7 @@
 #pragma once
 
 #include <PGSuperTypes.h>
-#include <PgsExt\PointOfInterest.h>
+#include <PsgLib\PointOfInterest.h>
 
 #define POIFIND_AND   1  // Find POIs that have all of the specified attributes
 #define POIFIND_OR    2  // Find POIs that have at least one of the specified attributes

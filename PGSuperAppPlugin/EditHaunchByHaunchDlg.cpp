@@ -36,18 +36,13 @@
 #include "PGSuperDoc.h"
 #include "Utilities.h"
 
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\TemporarySupportData.h>
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\TemporarySupportData.h>
+#include <PsgLib\ClosureJointData.h>
 
 #include <IFace\Project.h>
 #include <IFace\DocumentType.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 inline CString GetHaunchInputLocationTypeAsString(pgsTypes::HaunchInputLocationType locType,pgsTypes::HaunchLayoutType layoutType,bool bIsPGSuper)
 {
@@ -180,11 +175,11 @@ END_MESSAGE_MAP()
 BOOL CEditHaunchByHaunchDlg::OnInitDialog()
 {
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
    bool bIsPGSuper = pDocType->IsPGSuperDocument();
 
    // initialize units
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    m_pUnit = &(pDisplayUnits->GetComponentDimUnit());
 
    CBridgeDescription2* pBridge = GetBridgeDesc();
@@ -308,7 +303,7 @@ BOOL CEditHaunchByHaunchDlg::OnInitDialog()
 void CEditHaunchByHaunchDlg::UpdateGroupBox()
 {
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    CString unitag = pDisplayUnits->GetComponentDimUnit().UnitOfMeasure.UnitTag().c_str();
 
    pgsTypes::HaunchInputDistributionType disttype = GetHaunchInputDistributionType();
@@ -526,7 +521,7 @@ void CEditHaunchByHaunchDlg::OnHaunchInputDistributionTypeChanged()
    UpdateActiveControls();
 
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
    bool bIsPGSuper = pDocType->IsPGSuperDocument();
    UpdateLocationTypeControl(bIsPGSuper);
 }
@@ -540,7 +535,7 @@ void CEditHaunchByHaunchDlg::OnHaunchLayoutTypeChanged()
    UpdateActiveControls();
 
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, IDocumentType, pDocType);
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
    bool bIsPGSuper = pDocType->IsPGSuperDocument();
    UpdateLocationTypeControl(bIsPGSuper);
 }

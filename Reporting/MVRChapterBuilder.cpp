@@ -103,26 +103,26 @@ rptChapter* CMVRChapterBuilder::Build(const std::shared_ptr<const WBFL::Reportin
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
 
    rptParagraph* p = nullptr;
 
-   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
    pgsTypes::AnalysisType analysisType = pSpec->GetAnalysisType();
 
    bool bDesign = m_bDesign;
    bool bRating = m_bRating;
 
-   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    bool bPedestrian = pProductLoads->HasPedestrianLoad();
    bool bReportAxial = pProductLoads->ReportAxialResults();
 
    bool bIndicateControllingLoad = true;
 
-   EAF_GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
+   GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
 
-   EAF_GET_IFACE2( pBroker, ILibrary, pLib );
+   GET_IFACE2( pBroker, ILibrary, pLib );
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
@@ -130,7 +130,7 @@ rptChapter* CMVRChapterBuilder::Build(const std::shared_ptr<const WBFL::Reportin
    std::vector<CGirderKey> vGirderKeys;
    if ( bDesign )
    {
-      EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+      GET_IFACE2(pBroker, IBridge, pBridge);
 
       p = new rptParagraph(rptStyleManager::GetHeadingStyle());
       *p << _T("Load Responses - Casting Yard")<<rptNewLine;
@@ -191,7 +191,7 @@ rptChapter* CMVRChapterBuilder::Build(const std::shared_ptr<const WBFL::Reportin
    IntervalIndexType lastCastDeckIntervalIdx = pIntervals->GetLastCastDeckInterval();
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
-   EAF_GET_IFACE2(pBroker, IStressCheck, pStressCheck);
+   GET_IFACE2(pBroker, IStressCheck, pStressCheck);
    std::vector<IntervalIndexType> vIntervals(pStressCheck->GetStressCheckIntervals(girderKey));
 
    p = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -277,7 +277,7 @@ rptChapter* CMVRChapterBuilder::Build(const std::shared_ptr<const WBFL::Reportin
    *p << rptNewLine;
 
    // For girder bearing reactions
-   EAF_GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
+   GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
    std::vector<PierIndexType> vPiers = pBearingDesign->GetBearingReactionPiers(lastIntervalIdx, girderKey);
    if( 0 < vPiers.size() )
    {

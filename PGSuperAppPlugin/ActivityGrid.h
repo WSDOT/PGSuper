@@ -25,7 +25,7 @@
 // ActivityGrid.h : header file
 //
 
-#include <PgsExt\TimelineEvent.h>
+#include <PsgLib\TimelineEvent.h>
 
 typedef long long ActivityKeyType;
 

@@ -67,7 +67,7 @@ rptChapter* CLoadRatingChapterBuilder::Build(const std::shared_ptr<const WBFL::R
 
    std::vector<CGirderKey> girderKeys = pLrGirderRptSpec->GetGirderKeys();
 
-   EAF_GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
+   GET_IFACE2(pBroker,IRatingSpecification,pRatingSpec);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
@@ -77,7 +77,7 @@ rptChapter* CLoadRatingChapterBuilder::Build(const std::shared_ptr<const WBFL::R
 
    (*pPara) << _T("Controlling Rating Factors for Selected Girders: ") << pGirderRptSpec->GetReportContextString() << rptNewLine;
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType loadRatingIntervalIdx = pIntervals->GetLoadRatingInterval();
    CString str;
    str.Format(_T("Load rating occurs in Interval %d: %s"),LABEL_INTERVAL(loadRatingIntervalIdx),pIntervals->GetDescription(loadRatingIntervalIdx).c_str());

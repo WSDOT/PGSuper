@@ -31,15 +31,15 @@ class pgsVSRatioStatusItem : public pgsSegmentRelatedStatusItem
 {
 public:
    pgsVSRatioStatusItem(const CSegmentKey& segmentKey,StatusGroupIDType statusGroupID,StatusCallbackIDType callbackID,LPCTSTR strDescription);
-   bool IsEqual(CEAFStatusItem* pOther);
+   bool IsEqual(std::shared_ptr<const WBFL::EAF::StatusItem> pOther) const override;
 
    CSegmentKey m_SegmentKey;
 };
 
-class pgsVSRatioStatusCallback : public iStatusCallback
+class pgsVSRatioStatusCallback : public WBFL::EAF::StatusCallback
 {
 public:
    pgsVSRatioStatusCallback();
-   virtual eafTypes::StatusSeverityType GetSeverity() const override;
-   virtual void Execute(CEAFStatusItem* pStatusItem) override;
+   WBFL::EAF::StatusSeverityType GetSeverity() const override;
+   void Execute(std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem) override;
 };

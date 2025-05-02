@@ -30,16 +30,16 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
-
+#include <IFace/PointOfInterest.h>
 
 
 rptRcTable* CTimeStepShearDeformationTable::BuildTimeStepShearDeformationTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, ReactionLocation reactionLocation, 
     const pgsPointOfInterest& poi, const pgsPointOfInterest& poi_fixity, TSSHEARDEFORMATIONDETAILS* pDetails) const
 {
-    EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-    EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
-    EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
-    EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+    GET_IFACE2(pBroker, IIntervals, pIntervals);
+    GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+    GET_IFACE2(pBroker, IPointOfInterest, pPoi);
 
 
     INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);

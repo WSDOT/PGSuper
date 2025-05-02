@@ -27,8 +27,9 @@
 #include <Units\Convert.h>
 #include <PsgLib\TrafficBarrierEntry.h>
 #include <PsgLib\SpecLibraryEntry.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\GirderLabel.h>
+#include <psgLib/GirderLibraryEntry.h>
 
 #include <PgsExt\StatusItem.h>
 #include <IFace\Bridge.h>
@@ -42,7 +43,7 @@
 void CVoidedSlabDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    // Grab the interfaces that are needed
-   EAF_GET_IFACE2(GetBroker(), IBridge,pBridge);
+   GET_IFACE2(GetBroker(), IBridge,pBridge);
 
    bool bSIUnits = IS_SI_UNITS(pDisplayUnits);
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
@@ -57,7 +58,7 @@ void CVoidedSlabDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptC
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-   EAF_GET_IFACE2(GetBroker(), IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(GetBroker(), IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
 
@@ -139,8 +140,8 @@ void CVoidedSlabDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptC
       (*pPara) << _T("Poisson Ratio: ") << symbol(mu) << _T(" = ") << span_lldf.PoissonRatio << rptNewLine;
    //   (*pPara) << _T("Skew Angle at start: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs(span_lldf.skew1)) << rptNewLine;
    //   (*pPara) << _T("Skew Angle at end: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs(span_lldf.skew2)) << rptNewLine;
-      EAF_GET_IFACE2(GetBroker(), ISpecification, pSpec);
-      EAF_GET_IFACE2(GetBroker(), ILibrary, pLibrary);
+      GET_IFACE2(GetBroker(), ISpecification, pSpec);
+      GET_IFACE2(GetBroker(), ILibrary, pLibrary);
       const auto* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
       const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
       if (live_load_distribution_criteria.bIgnoreSkewReductionForMoment)
@@ -369,10 +370,10 @@ void CVoidedSlabDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptC
 
 WBFL::LRFD::LiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,VOIDEDSLAB_LLDFDETAILS* plldf,const GDRCONFIG* pConfig)
 {
-   EAF_GET_IFACE2(GetBroker(), ISectionProperties, pSectProp);
-   EAF_GET_IFACE2(GetBroker(), IGirder,            pGirder);
-   EAF_GET_IFACE2(GetBroker(), IBridge,            pBridge);
-   EAF_GET_IFACE2(GetBroker(), IBarriers,          pBarriers);
+   GET_IFACE2(GetBroker(), ISectionProperties, pSectProp);
+   GET_IFACE2(GetBroker(), IGirder,            pGirder);
+   GET_IFACE2(GetBroker(), IBridge,            pBridge);
+   GET_IFACE2(GetBroker(), IBarriers,          pBarriers);
 
    // Determine span/pier index... This is the index of a pier and the next span.
    // If this is the last pier, span index is for the last span
@@ -384,7 +385,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLL
    PierIndexType next_pier = INVALID_INDEX;
    GetIndicies(spanOrPierIdx,dfType,span,pier,prev_span,next_span,prev_pier,next_pier);
 
-   EAF_GET_IFACE2(GetBroker(), IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(GetBroker(), IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    ATLASSERT( pBridgeDesc->GetDistributionFactorMethod() != pgsTypes::DirectlyInput );
 
@@ -414,7 +415,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLL
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
    // Throws exception if fails requirement (no need to catch it)
-   EAF_GET_IFACE2(GetBroker(), ILiveLoadDistributionFactors, pDistFactors);
+   GET_IFACE2(GetBroker(), ILiveLoadDistributionFactors, pDistFactors);
    Int32 roaVal = pDistFactors->VerifyDistributionFactorRequirements(poi);
 
    Float64 Height       = pGirderEntry->GetDimension(_T("H"));
@@ -426,7 +427,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLL
    plldf->b            = Width;
    plldf->d            = Height;
 
-   EAF_GET_IFACE2(GetBroker(), IIntervals,pIntervals);
+   GET_IFACE2(GetBroker(), IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType llIntervalIdx = pIntervals->GetLiveLoadInterval();
    plldf->I = pSectProp->GetIxx(pgsTypes::sptGross,llIntervalIdx,poi,pConfig);
@@ -554,8 +555,8 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLL
    }
    else
    {
-      EAF_GET_IFACE2(GetBroker(), ISpecification, pSpec);
-      EAF_GET_IFACE2(GetBroker(), ILibrary, pLibrary);
+      GET_IFACE2(GetBroker(), ISpecification, pSpec);
+      GET_IFACE2(GetBroker(), ILibrary, pLibrary);
       const auto* pSpecEntry = pLibrary->GetSpecEntry(pSpec->GetSpecification().c_str());
       const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
       bool bSkew = !(IsZero(plldf->skew1) && IsZero(plldf->skew2));
@@ -642,7 +643,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CVoidedSlabDistFactorEngineer::GetLL
       }
    }
 
-   EAF_GET_IFACE2(GetBroker(), ILiveLoads,pLiveLoads);
+   GET_IFACE2(GetBroker(), ILiveLoads,pLiveLoads);
    pLLDF->SetRangeOfApplicability( pLiveLoads->GetRangeOfApplicabilityAction(), roaVal );
 
    plldf->bExteriorGirder = pBridge->IsExteriorGirder(CGirderKey(0,gdrIdx));
@@ -658,8 +659,8 @@ void CVoidedSlabDistFactorEngineer::ReportMoment(rptParagraph* pPara,VOIDEDSLAB_
 
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-   EAF_GET_IFACE2(GetBroker(), ILibrary, pLib);
-   EAF_GET_IFACE2(GetBroker(), ISpecification, pSpec);
+   GET_IFACE2(GetBroker(), ILibrary, pLib);
+   GET_IFACE2(GetBroker(), ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
 
    if ( lldf.bExteriorGirder )
@@ -940,8 +941,8 @@ void CVoidedSlabDistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_L
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim,     pDisplayUnits->GetSpanLengthUnit(),      true );
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
-   EAF_GET_IFACE2(GetBroker(), ILibrary, pLib);
-   EAF_GET_IFACE2(GetBroker(), ISpecification, pSpec);
+   GET_IFACE2(GetBroker(), ILibrary, pLib);
+   GET_IFACE2(GetBroker(), ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
 
    if ( lldf.bExteriorGirder )
@@ -1178,8 +1179,8 @@ void CVoidedSlabDistFactorEngineer::ReportShear(rptParagraph* pPara,VOIDEDSLAB_L
 
 std::_tstring CVoidedSlabDistFactorEngineer::GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect)
 {
-   EAF_GET_IFACE2(GetBroker(), ILibrary, pLib);
-   EAF_GET_IFACE2(GetBroker(), ISpecification, pSpec);
+   GET_IFACE2(GetBroker(), ILibrary, pLib);
+   GET_IFACE2(GetBroker(), ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& live_load_distribution_criteria = pSpecEntry->GetLiveLoadDistributionCriteria();
 
@@ -1207,7 +1208,7 @@ std::_tstring CVoidedSlabDistFactorEngineer::GetComputationDescription(const CGi
    }
 
    // Special text if ROA is ignored
-   EAF_GET_IFACE2(GetBroker(), ILiveLoads,pLiveLoads);
+   GET_IFACE2(GetBroker(), ILiveLoads,pLiveLoads);
    std::_tstring strAction( pLiveLoads->GetLLDFSpecialActionText() );
    if ( !strAction.empty() )
    {

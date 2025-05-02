@@ -23,7 +23,7 @@
 #pragma once
 
 #include <EAF\EAFTransaction.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 class txnEditBridgeDescription : public CEAFTransaction
 {

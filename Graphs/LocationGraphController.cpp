@@ -30,7 +30,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Selection.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include "LocationGraphController.h"
 
@@ -71,7 +71,7 @@ BOOL CLocationGraphController::OnInitDialog()
    m_pBroker = EAFGetBroker();
 
    // Set initial value based on the current selection
-   EAF_GET_IFACE(ISelection,pSelection);
+   GET_IFACE(ISelection,pSelection);
    CSelection selection = pSelection->GetSelection();
 
    if ( selection.Type == CSelection::Girder || selection.Type == CSelection::Segment )
@@ -188,7 +188,7 @@ void CLocationGraphController::OnLocationChanged()
    PoiIDType poiID = (PoiIDType)(pcbLocation->GetItemData(curSel));
    if ( poiID != m_Poi.GetID() )
    {
-      EAF_GET_IFACE(IPointOfInterest,pPOI);
+      GET_IFACE(IPointOfInterest,pPOI);
       m_Poi = pPOI->GetPointOfInterest(poiID);
 
       // Update the graph
@@ -212,10 +212,10 @@ void CLocationGraphController::FillGroupCtrl(bool bInit)
       curSel = (int)m_GirderKey.groupIndex;
    }
 
-   EAF_GET_IFACE(IDocumentType,pDocType);
+   GET_IFACE(IDocumentType,pDocType);
    bool isPGSuper = pDocType->IsPGSuperDocument();
 
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
    GroupIndexType nGroups = pIBridgeDesc->GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
    {
@@ -257,7 +257,7 @@ void CLocationGraphController::FillGirderCtrl(bool bInit)
    {
       curSel = (int)m_GirderKey.girderIndex;
    }
-   EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE(IBridgeDescription,pIBridgeDesc);
    GirderIndexType nGirders = pIBridgeDesc->GetGirderGroup(m_GirderKey.groupIndex)->GetGirderCount();
    for ( GirderIndexType gdrIdx = 0; gdrIdx < nGirders; gdrIdx++ )
    {
@@ -287,12 +287,12 @@ void CLocationGraphController::FillLocationCtrl()
    int curSel = pcbLocation->GetCurSel();
    pcbLocation->ResetContent();
 
-   EAF_GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IBridge,pBridge);
    SpanIndexType startSpanIdx, endSpanIdx;
    pBridge->GetGirderGroupSpans(m_GirderKey.groupIndex,&startSpanIdx,&endSpanIdx);
 
    
-   EAF_GET_IFACE(IPointOfInterest,pPoi);
+   GET_IFACE(IPointOfInterest,pPoi);
    PoiList vPoi;
    for ( SpanIndexType spanIdx = startSpanIdx; spanIdx <= endSpanIdx; spanIdx++ )
    {
@@ -301,7 +301,7 @@ void CLocationGraphController::FillLocationCtrl()
       vPoi.insert(vPoi.end(),vSpanPoi.begin(),vSpanPoi.end());
    }
 
-   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    for (const pgsPointOfInterest& poi : vPoi)
    {

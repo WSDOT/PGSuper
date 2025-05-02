@@ -32,7 +32,7 @@
 #include <IFace\Project.h>
 
 
-#include <PgsExt\PierData2.h>
+#include <PsgLib\PierData2.h>
 
 
 CBearingReactionTable::CBearingReactionTable()
@@ -231,7 +231,7 @@ RowIndexType ConfigureBearingReactionTableHeading(std::shared_ptr<WBFL::EAF::Bro
     if (bDetail)
     {
 
-        EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
 
         p_table->SetRowSpan(0, col, 2);
@@ -245,7 +245,7 @@ RowIndexType ConfigureBearingReactionTableHeading(std::shared_ptr<WBFL::EAF::Bro
     if (pDetails->bShearKey && bDetail)
     {
 
-        EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
 
         if (analysisType == pgsTypes::Envelope && pDetails->bContinuousBeforeDeckCasting)
@@ -265,7 +265,7 @@ RowIndexType ConfigureBearingReactionTableHeading(std::shared_ptr<WBFL::EAF::Bro
     if (pDetails->bLongitudinalJoint && bDetail)
     {
 
-        EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
         if (analysisType == pgsTypes::Envelope && pDetails->bContinuousBeforeDeckCasting)
         {
@@ -284,7 +284,7 @@ RowIndexType ConfigureBearingReactionTableHeading(std::shared_ptr<WBFL::EAF::Bro
     if (pDetails->bConstruction && bDetail)
     {
 
-        EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
         if (analysisType == pgsTypes::Envelope && pDetails->bContinuousBeforeDeckCasting)
         {
@@ -303,7 +303,7 @@ RowIndexType ConfigureBearingReactionTableHeading(std::shared_ptr<WBFL::EAF::Bro
     if (pDetails->bDeck && bDetail)
     {
 
-        EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
         if (analysisType == pgsTypes::Envelope && pDetails->bContinuousBeforeDeckCasting)
         {
@@ -331,7 +331,7 @@ RowIndexType ConfigureBearingReactionTableHeading(std::shared_ptr<WBFL::EAF::Bro
     if (pDetails->bDeckPanels && bDetail)
     {
 
-        EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
         if (analysisType == pgsTypes::Envelope && pDetails->bContinuousBeforeDeckCasting)
         {
@@ -355,7 +355,7 @@ RowIndexType ConfigureBearingReactionTableHeading(std::shared_ptr<WBFL::EAF::Bro
         if (pDetails->bSidewalk && bDetail)
         {
 
-            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
 
             p_table->SetColumnSpan(0, col, 2);
@@ -367,7 +367,7 @@ RowIndexType ConfigureBearingReactionTableHeading(std::shared_ptr<WBFL::EAF::Bro
         if (bDetail)
         {
 
-            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
             p_table->SetColumnSpan(0, col, 2);
             (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftTrafficBarrier);
@@ -379,7 +379,7 @@ RowIndexType ConfigureBearingReactionTableHeading(std::shared_ptr<WBFL::EAF::Bro
         if (pDetails->bHasOverlay && bDetail)
         {
 
-            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
             p_table->SetColumnSpan(0, col, 2);
             if (pDetails->bFutureOverlay)
@@ -397,7 +397,7 @@ RowIndexType ConfigureBearingReactionTableHeading(std::shared_ptr<WBFL::EAF::Bro
 
         if (bUserLoads && bDetail)
         {
-            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
             p_table->SetColumnSpan(0, col, 2);
             (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftUserDC);
             (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
@@ -414,7 +414,7 @@ RowIndexType ConfigureBearingReactionTableHeading(std::shared_ptr<WBFL::EAF::Bro
         if (pDetails->bSidewalk && bDetail)
         {
 
-            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
             p_table->SetRowSpan(0, col, 2);
             (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftSidewalk), M, unitT);
@@ -423,7 +423,7 @@ RowIndexType ConfigureBearingReactionTableHeading(std::shared_ptr<WBFL::EAF::Bro
         if (bDetail)
         {
 
-            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
             p_table->SetRowSpan(0, col, 2);
             (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftTrafficBarrier), M, unitT);
@@ -433,7 +433,7 @@ RowIndexType ConfigureBearingReactionTableHeading(std::shared_ptr<WBFL::EAF::Bro
         if (pDetails->bHasOverlay && bDetail)
         {
 
-            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
             p_table->SetRowSpan(0, col, 2);
             if (pDetails->bFutureOverlay)
@@ -450,7 +450,7 @@ RowIndexType ConfigureBearingReactionTableHeading(std::shared_ptr<WBFL::EAF::Bro
 
         if (bUserLoads && bDetail)
         {
-            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
             p_table->SetRowSpan(0, col, 2);
             (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftUserDC), M, unitT);
             p_table->SetRowSpan(0, col, 2);
@@ -477,7 +477,7 @@ RowIndexType ConfigureBearingReactionTableHeading(std::shared_ptr<WBFL::EAF::Bro
         if (bUserLoads && analysisType == pgsTypes::Envelope && bDetail)
         {
 
-            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
             p_table->SetColumnSpan(0, col, 2);
             (*p_table)(0, col) << pProductLoads->GetProductLoadName(pgsTypes::pftUserLLIM);
             (*p_table)(1, col++) << COLHDR(_T("Max"), M, unitT);
@@ -497,7 +497,7 @@ RowIndexType ConfigureBearingReactionTableHeading(std::shared_ptr<WBFL::EAF::Bro
         {
             if (bUserLoads && bDetail)
             {
-                EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+                GET_IFACE2(pBroker, IProductLoads, pProductLoads);
                 p_table->SetRowSpan(0, col, 2);
                 (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftUserLLIM), M, unitT);
             }
@@ -536,7 +536,7 @@ RowIndexType ConfigureBearingReactionTableHeading(std::shared_ptr<WBFL::EAF::Bro
     {
         p_table->SetRowSpan(0, col, 2);
 
-        EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+        GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
 
         (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftPretension), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
@@ -551,7 +551,7 @@ RowIndexType ConfigureBearingReactionTableHeading(std::shared_ptr<WBFL::EAF::Bro
         if (0 < pDetails->nDucts)
         {
 
-            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
             (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftPostTensioning), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
         }
@@ -565,7 +565,7 @@ RowIndexType ConfigureBearingReactionTableHeading(std::shared_ptr<WBFL::EAF::Bro
         if (bDetail)
         {
 
-            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
 
             p_table->SetRowSpan(0, col, 2);
@@ -581,7 +581,7 @@ RowIndexType ConfigureBearingReactionTableHeading(std::shared_ptr<WBFL::EAF::Bro
         if (bDetail)
         {
 
-            EAF_GET_IFACE2(pBroker, IProductLoads, pProductLoads);
+            GET_IFACE2(pBroker, IProductLoads, pProductLoads);
 
 
             (*p_table)(0, col++) << COLHDR(pProductLoads->GetProductLoadName(pgsTypes::pftCreep), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
@@ -605,12 +605,12 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(std::shared_ptr<WBF
     // Tricky: the reaction tool below will dump out two lines per cell for bearing reactions with more than one bearing
     ReactionUnitValueTool Reaction(BearingReactionsTable, reactu);
 
-    EAF_GET_IFACE2_NOCHECK(pBroker, IBridgeDescription, pIBridgeDesc);
-    EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+    GET_IFACE2_NOCHECK(pBroker, IBridgeDescription, pIBridgeDesc);
+    GET_IFACE2(pBroker, IBridge, pBridge);
 
 
 
-    EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
+    GET_IFACE2(pBroker, IIntervals, pIntervals);
     IntervalIndexType diaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
     IntervalIndexType lastCastDeckIntervalIdx = pIntervals->GetLastCastDeckInterval(); // deck cast be cast in multiple stages, use interval after entire deck is cast
     IntervalIndexType railingSystemIntervalIdx = pIntervals->GetInstallRailingSystemInterval();
@@ -623,7 +623,7 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(std::shared_ptr<WBF
 
 
 
-    EAF_GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
+    GET_IFACE2(pBroker, IBearingDesignParameters, pBearingDesignParameters);
     REACTIONDETAILS details;
     pBearingDesignParameters->GetBearingParameters(girderKey, &details);
 
@@ -641,7 +641,7 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(std::shared_ptr<WBF
     // TRICKY: use adapter class to get correct reaction interfaces
     std::unique_ptr<IProductReactionAdapter> pForces;
 
-    EAF_GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
+    GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
     pForces = std::make_unique<BearingDesignProductReactionAdapter>(pBearingDesign, lastIntervalIdx, girderKey);
 
     ReactionLocationIter iter = pForces->GetReactionLocations(pBridge);
@@ -850,7 +850,7 @@ rptRcTable* CBearingReactionTable::BuildBearingReactionTable(std::shared_ptr<WBF
         }
 
         std::unique_ptr<ICmbLsReactionAdapter> pForces;
-        EAF_GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
+        GET_IFACE2(pBroker, IBearingDesign, pBearingDesign);
         pForces = std::make_unique<CmbLsBearingDesignReactionAdapter>(pBearingDesign, lastIntervalIdx, girderKey);
 
         if (!bDetail)

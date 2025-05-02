@@ -36,7 +36,7 @@
 #include <EAF/EAFDisplayUnits.h>
 #include <EAF/EAFReportManager.h>
 #include <EAF/EAFGraphManager.h>
-#include <WBFLCore_i.c>
+
 #include <IFace\ExtendUI.h>
 
 #include "ExampleExtensionAgent.h"

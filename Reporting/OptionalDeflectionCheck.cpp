@@ -81,7 +81,7 @@ void COptionalDeflectionCheck::Build(rptChapter* pChapter, std::shared_ptr<WBFL:
    rptParagraph* p = new rptParagraph;
    *pChapter<<p;
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    SpanIndexType grpStartSpanIdx, grpEndSpanIdx;
    pBridge->GetGirderGroupSpans(girderKey.groupIndex,&grpStartSpanIdx,&grpEndSpanIdx);
    for ( SpanIndexType spanIdx = grpStartSpanIdx; spanIdx <= grpEndSpanIdx; spanIdx++ )

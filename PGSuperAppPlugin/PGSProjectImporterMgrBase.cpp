@@ -25,11 +25,6 @@
 #include "PGSProjectImporterMgrBase.h"
 #include <EAF\EAFApp.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 CPGSProjectImporterMgrBase::CPGSProjectImporterMgrBase()
 {
@@ -54,7 +49,7 @@ bool CPGSProjectImporterMgrBase::LoadImporters()
 
       if (strState.CompareNoCase(_T("Enabled")) == 0)
       {
-         auto importer = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<PGSuper::IProjectImporter>(component);
+         auto importer = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<PGS::IProjectImporter>(component);
          if (importer)
          {
             Record record;
@@ -89,7 +84,7 @@ IndexType CPGSProjectImporterMgrBase::GetImporterCount() const
    return m_ImporterRecords.size();
 }
 
-std::shared_ptr<PGSuper::IProjectImporter> CPGSProjectImporterMgrBase::GetImporter(IndexType idx) const
+std::shared_ptr<PGS::IProjectImporter> CPGSProjectImporterMgrBase::GetImporter(IndexType idx) const
 {
    IndexType count = 0;
    for(const auto& record : m_ImporterRecords)
@@ -103,7 +98,7 @@ std::shared_ptr<PGSuper::IProjectImporter> CPGSProjectImporterMgrBase::GetImport
    return nullptr;
 }
 
-std::shared_ptr<PGSuper::IProjectImporter> CPGSProjectImporterMgrBase::GetImporter(const CLSID& clsid) const
+std::shared_ptr<PGS::IProjectImporter> CPGSProjectImporterMgrBase::GetImporter(const CLSID& clsid) const
 {
    Record record;
    record.clsid = clsid;
@@ -115,7 +110,7 @@ std::shared_ptr<PGSuper::IProjectImporter> CPGSProjectImporterMgrBase::GetImport
    return nullptr;
 }
 
-void CPGSProjectImporterMgrBase::AddImporter(const CLSID& clsid,std::shared_ptr<PGSuper::IProjectImporter>& pImporter)
+void CPGSProjectImporterMgrBase::AddImporter(const CLSID& clsid,std::shared_ptr<PGS::IProjectImporter>& pImporter)
 {
    Record record;
    record.clsid    = clsid;

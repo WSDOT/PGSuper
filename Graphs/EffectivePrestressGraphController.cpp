@@ -38,7 +38,7 @@
 #include <EAF\EAFGraphView.h>
 #include <EAF\EAFDocument.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 
 IMPLEMENT_DYNCREATE(CEffectivePrestressGraphController,CMultiIntervalGirderGraphControllerBase)
@@ -190,7 +190,7 @@ void CEffectivePrestressGraphController::OnDuctChanged()
 
    CGirderKey girderKey(grpIdx, gdrIdx);
 
-   EAF_GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
+   GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
    DuctIndexType nMaxSegmentDucts = pSegmentTendonGeometry->GetMaxDuctCount(girderKey);
 
    CEffectivePrestressGraphBuilder::DuctType ductType = (nMaxSegmentDucts < curSel) ? CEffectivePrestressGraphBuilder::Girder : CEffectivePrestressGraphBuilder::Segment;
@@ -212,7 +212,7 @@ void CEffectivePrestressGraphController::FillDuctCtrl()
    int idx = pcbDuct->AddString(_T("Pretensioning"));
    pcbDuct->SetItemData(idx,(DWORD_PTR)INVALID_INDEX);
 
-   EAF_GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
+   GET_IFACE(ISegmentTendonGeometry, pSegmentTendonGeometry);
    DuctIndexType nMaxSegmentDucts = pSegmentTendonGeometry->GetMaxDuctCount(girderKey);
    for (DuctIndexType ductIdx = 0; ductIdx < nMaxSegmentDucts; ductIdx++)
    {
@@ -222,7 +222,7 @@ void CEffectivePrestressGraphController::FillDuctCtrl()
       pcbDuct->SetItemData(idx, (DWORD_PTR)ductIdx);
    }
 
-   EAF_GET_IFACE(IGirderTendonGeometry,pGirderTendonGeometry);
+   GET_IFACE(IGirderTendonGeometry,pGirderTendonGeometry);
    DuctIndexType nGirderDucts = pGirderTendonGeometry->GetDuctCount(girderKey);
    for ( DuctIndexType ductIdx = 0; ductIdx < nGirderDucts; ductIdx++ )
    {
@@ -277,7 +277,7 @@ void CEffectivePrestressGraphController::OnCommandUIGraphExport(CCmdUI* pCmdUI)
 
 IntervalIndexType CEffectivePrestressGraphController::GetFirstInterval()
 {
-   EAF_GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IIntervals,pIntervals);
    CGirderKey girderKey(GetGirderKey());
    if ( m_DuctIdx == INVALID_INDEX )
    {

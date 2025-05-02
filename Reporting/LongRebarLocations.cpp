@@ -31,7 +31,7 @@
 
 #include <WBFLGenericBridgeTools.h>
 
-#include <PgsExt\LongitudinalRebarData.h>
+#include <PsgLib\LongitudinalRebarData.h>
 
 
 /****************************************************************************
@@ -72,7 +72,7 @@ void CLongRebarLocations::Build(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::
 {
    USES_CONVERSION;
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
    Float64 segment_length = pBridge->GetSegmentLength(segmentKey);
 
@@ -86,7 +86,7 @@ void CLongRebarLocations::Build(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   EAF_GET_IFACE2(pBroker,ILongitudinalRebar,pLongRebar);
+   GET_IFACE2(pBroker,ILongitudinalRebar,pLongRebar);
    const CLongitudinalRebarData* pRebarData = pLongRebar->GetSegmentLongitudinalRebarData(segmentKey);
 
    const std::vector<CLongitudinalRebarData::RebarRow>& rebar_rows = pRebarData->RebarRows;

@@ -35,17 +35,12 @@
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include "BarrierSidewalkLoadDistributionTool.h"
-#include <PgsExt\PrecastSegmentData.h>
-#include <PgsExt\PierData2.h>
-#include <PgsExt\TemporarySupportData.h>
+#include <PsgLib\PrecastSegmentData.h>
+#include <PsgLib\PierData2.h>
+#include <PsgLib\TemporarySupportData.h>
 
 #include <algorithm>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 // utility struct used to store distances between sw/b's and girders
 struct SwBDist

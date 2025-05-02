@@ -15,8 +15,10 @@
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
-#include <pgsExt\DeckDescription.h>
 
+#include <PsgLib\DeckDescription.h>
+#include <PsgLIb/TrafficBarrierEntry.h>
+#include <psgLib/GirderLibraryEntry.h>
 
 enum Type { A615  = 0x1000,  // ASTM A615
             A706  = 0x2000,  // ASTM A706
@@ -96,13 +98,13 @@ HRESULT CKDOTDataExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBroker)
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   EAF_GET_IFACE2(pBroker,ISelection,pSelection);
+   GET_IFACE2(pBroker,ISelection,pSelection);
    CSelection selection = pSelection->GetSelection();
 
    CGirderKey girderKey;
    if ( selection.Type == CSelection::Span )
    {
-      EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+      GET_IFACE2(pBroker,IBridge,pBridge);
       girderKey.groupIndex = pBridge->GetGirderGroupIndex(selection.SpanIdx);
       girderKey.girderIndex = 0;
    }
@@ -165,7 +167,7 @@ HRESULT CKDOTDataExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBroker)
 HRESULT CKDOTDataExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBroker,CString& strFileName, const std::vector<CGirderKey>& girderKeys)
 {
    { // scope the progress window
-   EAF_GET_IFACE2(pBroker,IProgress,pProgress);
+   GET_IFACE2(pBroker,IEAFProgress,pProgress);
    CEAFAutoProgress autoProgress(pProgress,0);
    pProgress->UpdateMessage(_T("Exporting PGSuper data for KDOT CAD"));
 
@@ -173,10 +175,10 @@ HRESULT CKDOTDataExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBroker,CSt
    {
       KDOT::KDOTExport kdot_export;
 
-      EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-      EAF_GET_IFACE2(pBroker,IBridgeDescription,pBridgeDescription);
-      EAF_GET_IFACE2(pBroker, IGirder,pGirder);
-      EAF_GET_IFACE2(pBroker, IRoadway,pAlignment);
+      GET_IFACE2(pBroker,IBridge,pBridge);
+      GET_IFACE2(pBroker,IBridgeDescription,pBridgeDescription);
+      GET_IFACE2(pBroker, IGirder,pGirder);
+      GET_IFACE2(pBroker, IRoadway,pAlignment);
 
       const CBridgeDescription2* pBridgeDescr2 = pBridgeDescription->GetBridgeDescription();
 
@@ -189,8 +191,8 @@ HRESULT CKDOTDataExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBroker,CSt
       type = pBridgeDescr2->GetRightRailingSystem()->GetExteriorRailing()->GetName();
       brdata.RightRailingType(type);
 
-      EAF_GET_IFACE2(pBroker,IMaterials,pMaterials);
-      EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+      GET_IFACE2(pBroker,IMaterials,pMaterials);
+      GET_IFACE2(pBroker,IIntervals,pIntervals);
       IntervalIndexType compositeDeckIntervalIdx = pIntervals->GetLastCompositeDeckInterval();
       IntervalIndexType finalIntervalIdx = pIntervals->GetLiveLoadInterval();
 
@@ -278,16 +280,16 @@ HRESULT CKDOTDataExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBroker,CSt
 
       brdata.PierData(pds);
 
-      EAF_GET_IFACE2(pBroker,ICamber,pCamber);
-      EAF_GET_IFACE2(pBroker, ISegmentLifting, pSegmentLifting);
-      EAF_GET_IFACE2(pBroker, ISegmentHauling, pSegmentHauling);
-      EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
-      EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
-      EAF_GET_IFACE2(pBroker,ILongitudinalRebar,pLongRebar);
-      EAF_GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeometry);
-      EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
-      EAF_GET_IFACE2(pBroker,IProductForces,pProduct);
-      EAF_GET_IFACE2(pBroker,IPretensionForce,pPretensionForce);
+      GET_IFACE2(pBroker,ICamber,pCamber);
+      GET_IFACE2(pBroker, ISegmentLifting, pSegmentLifting);
+      GET_IFACE2(pBroker, ISegmentHauling, pSegmentHauling);
+      GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+      GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+      GET_IFACE2(pBroker,ILongitudinalRebar,pLongRebar);
+      GET_IFACE2(pBroker,IStirrupGeometry,pStirrupGeometry);
+      GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+      GET_IFACE2(pBroker,IProductForces,pProduct);
+      GET_IFACE2(pBroker,IPretensionForce,pPretensionForce);
 
       pgsTypes::BridgeAnalysisType bat = pProduct->GetBridgeAnalysisType(pgsTypes::Minimize);
 
@@ -1059,18 +1061,18 @@ STDMETHODIMP CKDOTDataExporter::LoadDocumentationMap()
    return S_OK;
 }
 
-std::pair<bool,CString> CKDOTDataExporter::GetDocumentLocation(UINT nHID) const
+std::pair<WBFL::EAF::HelpResult,CString> CKDOTDataExporter::GetDocumentLocation(UINT nHID) const
 {
    auto found = m_HelpTopics.find(nHID);
    if ( found == m_HelpTopics.end() )
    {
       CHECK(false);
-      return { false,CString("") };
+      return { WBFL::EAF::HelpResult::TopicNotFound,CString("") };
    }
 
    CString strURL;
    strURL.Format(_T("%s%s"),GetDocumentationURL(),found->second);
-   return { true,strURL };
+   return { WBFL::EAF::HelpResult::OK,strURL };
 }
 
 CString CKDOTDataExporter::GetDocumentationURL() const

@@ -27,8 +27,8 @@
 #include "SelectGirderDlg.h"
 #include <IFace\Project.h>
 #include <IFace\DocumentType.h>
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLIb\GirderLabel.h>
 
 
 // CSelectGirderDlg dialog
@@ -66,13 +66,13 @@ BOOL CSelectGirderDlg::OnInitDialog()
 	
    auto pBroker = EAFGetBroker();
 
-	EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc ); 
+	GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc ); 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
 	CComboBox* pGroupBox   = (CComboBox*)GetDlgItem( IDC_GROUP );
    CComboBox* pGirderBox  = (CComboBox*)GetDlgItem( IDC_GIRDER );
 
-   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
    bool bPGSuper = pDocType->IsPGSuperDocument();
    GroupIndexType nGroups = pBridgeDesc->GetGirderGroupCount();
    for ( GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )
@@ -111,7 +111,7 @@ void CSelectGirderDlg::OnGroupChanged()
 {
    auto pBroker = EAFGetBroker();
 
-	EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc ); 
+	GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc ); 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
 	CComboBox* pGroupBox   = (CComboBox*)GetDlgItem( IDC_GROUP );

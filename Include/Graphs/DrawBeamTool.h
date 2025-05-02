@@ -24,7 +24,7 @@
 
 #include <Graphs/GraphsExp.h>
 #include <Graphing/PointMapper.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <Units\UnitValueNumericalFormatTools.h>
 
 class IGirder;
@@ -57,7 +57,7 @@ public:
    // girderKey is for the girder that is being drawn
    // beamShift tells how must left or right to shift the beam so that it lines up with the Y axis
    // To draw an individual span or segment, use the following code
-   // EAF_GET_IFACE(IPointOfInterest,pPoi);
+   // GET_IFACE(IPointOfInterest,pPoi);
    // Float64 beamShift = -1*pPoi->ConvertPoiToGirderlineCoordinate(pgsPointOfInterest(segmentKey,0.0));
 
    void DrawBeam(std::shared_ptr<WBFL::EAF::Broker> pBroker,CDC* pDC,const WBFL::Graphing::PointMapper& beamMapper, WBFL::Units::PhysicalConverter* pUnitConverter,IntervalIndexType firstPlottingIntervalIdx,IntervalIndexType lastPlottingIntervalIdx,const CGirderKey& girderKey,Float64 beamShift);

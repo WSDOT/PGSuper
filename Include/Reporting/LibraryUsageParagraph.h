@@ -25,7 +25,7 @@
 
 #include <Reporting\ReportingExp.h>
 #include <Reporter\Reporter.h>
-#include <WBFLCore.h>
+
 
 /*****************************************************************************
 CLASS 

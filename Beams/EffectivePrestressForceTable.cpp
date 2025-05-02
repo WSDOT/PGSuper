@@ -29,10 +29,10 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
 #include <PsgLib\SpecLibraryEntry.h>
-#include <PgsExt\GirderData.h>
-#include <PgsExt\LoadFactors.h>
-#include <PgsExt\PrecastSegmentData.h>
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderData.h>
+#include <PsgLib\LoadFactors.h>
+#include <PsgLib\PrecastSegmentData.h>
+#include <PsgLib\GirderLabel.h>
 #include <IFace\PrestressForce.h>
 
 
@@ -71,7 +71,7 @@ CEffectivePrestressForceTable* CEffectivePrestressForceTable::PrepareTable(rptCh
    *pParagraph << _T("In determining the resistance of pretensioned concrete components in their end zones, the gradual buildup of the strand force in the transfer and development lengths shall be taken into account. (5.9.4.3.1)") << rptNewLine;
    *pParagraph << Sub2(_T("P"), _T("pe")) << _T(" = ") << RPT_FPE << _T("[") << symbol(SUM) << _T("(") << symbol(zeta) << RPT_APS << _T(")]") << rptNewLine;
    *pParagraph << symbol(zeta) << _T(" = Prestress Transfer Length Reduction Factor");
-   EAF_GET_IFACE2(pBroker, IMaterials, pMaterials);
+   GET_IFACE2(pBroker, IMaterials, pMaterials);
    if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC)
    {
       // The way things are currently setup, we don't have a direct way of getting this value using code.
@@ -91,7 +91,7 @@ CEffectivePrestressForceTable* CEffectivePrestressForceTable::PrepareTable(rptCh
    (*table)(1, col++) << symbol(zeta);
    (*table)(1, col++) << COLHDR(RPT_APS, rptAreaUnitTag, pDisplayUnits->GetAreaUnit());
 
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CPrecastSegmentData* pSegment = pIBridgeDesc->GetPrecastSegmentData(segmentKey);
    pgsTypes::AdjustableStrandType adj_type = pSegment->Strands.GetAdjustableStrandType();
    std::_tstring strAdj(pgsTypes::asHarped == adj_type ? _T("Harped") : _T("Adj. Straight"));
@@ -120,7 +120,7 @@ CEffectivePrestressForceTable* CEffectivePrestressForceTable::PrepareTable(rptCh
    (*table)(1, col++) << COLHDR(RPT_FPE, rptStressUnitTag, pDisplayUnits->GetStressUnit());
    (*table)(1, col++) << COLHDR(Sub2(_T("P"), _T("pe")), rptForceUnitTag, pDisplayUnits->GetGeneralForceUnit());
 
-   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
    table->m_LiveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
    return table;
@@ -131,7 +131,7 @@ void CEffectivePrestressForceTable::AddRow(rptChapter* pChapter,std::shared_ptr<
    ColumnIndexType col = 1;
    RowIndexType rowOffset = GetNumberOfHeaderRows() - 1;
 
-   EAF_GET_IFACE2(pBroker, IPretensionForce, pPrestressForce);
+   GET_IFACE2(pBroker, IPretensionForce, pPrestressForce);
 
    Float64 fpe = pPrestressForce->GetEffectivePrestress(poi, pgsTypes::Permanent, m_LiveLoadIntervalIdx, pgsTypes::End);
 
@@ -140,7 +140,7 @@ void CEffectivePrestressForceTable::AddRow(rptChapter* pChapter,std::shared_ptr<
    std::array<Float64, 2> adj{ pPrestressForce->GetTransferLengthAdjustment(poi,pgsTypes::Straight,pgsTypes::TransferLengthType::Minimum),  
                                pPrestressForce->GetTransferLengthAdjustment(poi,pgsTypes::Harped,pgsTypes::TransferLengthType::Minimum) };
 
-   EAF_GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
+   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeom);
    std::array<Float64, 2> Aps{ pStrandGeom->GetStrandArea(poi,m_LiveLoadIntervalIdx,pgsTypes::Straight), pStrandGeom->GetStrandArea(poi,m_LiveLoadIntervalIdx,pgsTypes::Harped) };
 
    Float64 Ppe = pPrestressForce->GetPrestressForce(poi, pgsTypes::Permanent, m_LiveLoadIntervalIdx, pgsTypes::End, true/*include elastic effects*/, pgsTypes::TransferLengthType::Minimum);

@@ -38,14 +38,14 @@ public:
    void UnloadPlugins();
    IndexType GetImporterCount();
    IndexType GetExporterCount();
-   std::shared_ptr<PGSuper::IDataImporter> GetImporter(IndexType key, bool bByIndex) const;
-   std::shared_ptr<PGSuper::IDataExporter> GetExporter(IndexType key, bool bByIndex) const;
+   std::shared_ptr<PGS::IDataImporter> GetImporter(IndexType key, bool bByIndex) const;
+   std::shared_ptr<PGS::IDataExporter> GetExporter(IndexType key, bool bByIndex) const;
    UINT GetImporterCommand(IndexType idx);
    UINT GetExporterCommand(IndexType idx);
    const CBitmap* GetImporterBitmap(IndexType idx);
    const CBitmap* GetExporterBitmap(IndexType idx);
    void LoadDocumentationMaps();
-   eafTypes::HelpResult GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nHID,CString& strURL);
+   std::pair<WBFL::EAF::HelpResult,CString> GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nHID);
 
 protected:
    virtual CATID GetImporterCATID() = 0;
@@ -80,8 +80,8 @@ private:
       }
    };
 
-   typedef Record<PGSuper::IDataImporter> ImporterRecord;
-   typedef Record<PGSuper::IDataExporter> ExporterRecord;
+   typedef Record<PGS::IDataImporter> ImporterRecord;
+   typedef Record<PGS::IDataExporter> ExporterRecord;
 
    std::vector<ImporterRecord> m_ImporterPlugins;
    std::vector<ExporterRecord> m_ExporterPlugins;

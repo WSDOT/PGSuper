@@ -73,7 +73,7 @@ rptChapter* CTOGATitlePageBuilder::Build(const std::shared_ptr<const WBFL::Repor
 
    // A bit tricky here, but status center and other results won't be rebuilt until the toga model is built.
    // Let's ask for some results to get the ball rolling
-   EAF_GET_IFACE(IGetTogaResults,pGetTogaResults);
+   GET_IFACE(IGetTogaResults,pGetTogaResults);
    pGetTogaResults->GetRequiredFc();
 
    rptParagraph* pPara = new rptParagraph;
@@ -92,7 +92,7 @@ rptChapter* CTOGATitlePageBuilder::Build(const std::shared_ptr<const WBFL::Repor
    pPara = new rptParagraph;
    pPara->SetStyleName(rptStyleManager::GetReportSubtitleStyle());
    *pTitlePage << pPara;
-   EAF_GET_IFACE(IVersionInfo,pVerInfo);
+   GET_IFACE(IVersionInfo,pVerInfo);
    *pPara << pVerInfo->GetVersionString() << rptNewLine;
 
    const std::_tstring& strImage = std::_tstring(rptStyleManager::GetImagePath()) + std::_tstring(_T("TxDOT_Logo.gif"));
@@ -104,8 +104,8 @@ rptChapter* CTOGATitlePageBuilder::Build(const std::shared_ptr<const WBFL::Repor
       *pPara << rptRcImage(strImage) << rptNewLine;
    }
 
-   EAF_GET_IFACE(IProjectProperties,pProps);
-   EAF_GET_IFACE(IEAFDocument,pDocument);
+   GET_IFACE(IProjectProperties,pProps);
+   GET_IFACE(IEAFDocument,pDocument);
 
    rptParagraph* pPara3 = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pTitlePage << pPara3;
@@ -158,7 +158,7 @@ rptChapter* CTOGATitlePageBuilder::Build(const std::shared_ptr<const WBFL::Repor
    int row = 0;
 
    // Status Center Items
-   EAF_GET_IFACE(IEAFStatusCenter,pStatusCenter);
+   GET_IFACE(IEAFStatusCenter,pStatusCenter);
    IndexType nItems = pStatusCenter->Count();
 
    if ( nItems != 0 )
@@ -185,7 +185,7 @@ rptChapter* CTOGATitlePageBuilder::Build(const std::shared_ptr<const WBFL::Repor
       CString strSeverityType[] = { _T("Information"), _T("Warning"), _T("Error") };
       for ( IndexType i = 0; i < nItems; i++ )
       {
-         CEAFStatusItem* pItem = pStatusCenter->GetByIndex(i);
+         auto pItem = pStatusCenter->GetByIndex(i);
 
          // Trim span/girder information. TOGA doesn't want this
          // Blasts anything left of the first ":"
@@ -197,15 +197,15 @@ rptChapter* CTOGATitlePageBuilder::Build(const std::shared_ptr<const WBFL::Repor
          std::pair< std::set<std::_tstring>::iterator, bool > it = messages.insert(msg);
          if (it.second) // no dup's
          {
-            eafTypes::StatusSeverityType severity = pStatusCenter->GetSeverity(pItem);
+            WBFL::EAF::StatusSeverityType severity = pStatusCenter->GetSeverity(pItem);
 
             // Set text and cell background
             rptRiStyle::FontColor colors[] = {rptRiStyle::LightGreen, rptRiStyle::Yellow, rptRiStyle::Red };
-            rptRiStyle::FontColor color = colors[severity];
+            rptRiStyle::FontColor color = colors[+severity];
             (*pTable)(row, 0) << new rptRcBgColor(color);
             (*pTable)(row, 0).SetFillBackGroundColor(color);
 
-            (*pTable)(row,0) << strSeverityType[severity];
+            (*pTable)(row,0) << strSeverityType[+severity];
             (*pTable)(row++,1) << msg;
          }
       }

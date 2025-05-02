@@ -54,7 +54,7 @@ private:
    {
       
       auto pBroker = EAFGetBroker();
-      EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+      GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
 
       load.m_SpanKey = m_SpanKey;
    

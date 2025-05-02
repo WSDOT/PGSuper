@@ -24,11 +24,6 @@
 #include "EditLossParameters.h"
 #include <IFace\Project.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 txnEditLossParameters::txnEditLossParameters(const txnEditLossParametersData& oldData,const txnEditLossParametersData& newData)
@@ -79,11 +74,11 @@ void txnEditLossParameters::DoExecute(int i)
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IEvents, pEvents);
+   GET_IFACE2(pBroker,IEvents, pEvents);
    // Exception-safe holder to keep from fireing events until we are done
    CIEventsHolder event_holder(pEvents);
 
-   EAF_GET_IFACE2(pBroker,ILossParameters,pLossParameters);
+   GET_IFACE2(pBroker,ILossParameters,pLossParameters);
 
    pLossParameters->IgnoreTimeDependentEffects(m_LossParameters[i].bIgnoreCreepEffects,
                                                m_LossParameters[i].bIgnoreShrinkageEffects,

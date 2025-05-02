@@ -28,7 +28,7 @@
 
 #include <PGSuperAll.h>
 
-#include <WBFLCore.h>
+
 #include <WBFLTools.h>
 #include <IFace\Tools.h>
 

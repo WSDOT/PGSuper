@@ -30,8 +30,8 @@
 // 
 #include "SplitChildFrm.h"
 #include "SectionCutDrawStrategy.h"
-#include "pgsExt\PointLoadData.h"
-#include <PgsExt/GirderGroupData.h>
+#include <PsgLib\PointLoadData.h>
+#include <PsgLib/GirderGroupData.h>
 #include <EAF\EAFViewControllerFactory.h>
 #include <MfcTools\WideDropDownComboBox.h>
 #include <IFace/Project.h>
@@ -227,11 +227,11 @@ private:
       
       auto pBroker = EAFGetBroker();
 
-      EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+      GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
 
       if (SyncWithBridgeModelView())
       {
-         EAF_GET_IFACE2(pBroker, ISelection, pSelection);
+         GET_IFACE2(pBroker, ISelection, pSelection);
          CSelection selection = pSelection->GetSelection();
          ATLASSERT(selection.Type == CSelection::Girder);
          ATLASSERT(selection.GroupIdx != ALL_GROUPS);

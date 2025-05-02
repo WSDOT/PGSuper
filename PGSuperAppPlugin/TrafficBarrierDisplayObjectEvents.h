@@ -23,7 +23,7 @@
 #pragma once
 
 #include <DManip/DisplayObjectEvents.h>
-interface IBroker;
+
 class CBridgeModelViewChildFrame;
 
 #define LEFT_TRAFFIC_BARRIER_ID 0

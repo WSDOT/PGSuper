@@ -38,11 +38,6 @@
 #include <Reporting\SpanGirderReportSpecificationBuilder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CPGSuperReportView
@@ -88,9 +83,9 @@ void CPGSuperReportView::OnInitialUpdate()
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFStatusCenter,pStatusCenter);
+   GET_IFACE2(pBroker,IEAFStatusCenter,pStatusCenter);
 
-   if ( pStatusCenter->GetSeverity() == eafTypes::statusError )
+   if ( pStatusCenter->GetSeverity() == WBFL::EAF::StatusSeverityType::Error )
    {
       m_bUpdateError = true;
       m_ErrorMsg = _T("Errors exist that prevent analysis. Review the errors posted in the status center for more information");
@@ -175,12 +170,12 @@ HRESULT CPGSuperReportView::UpdateReportBrowser(const std::shared_ptr<const WBFL
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IProgress,pProgress);
+   GET_IFACE2(pBroker,IEAFProgress,pProgress);
    CEAFAutoProgress ap(pProgress,0);
 
    pProgress->UpdateMessage(_T("Working..."));
 
-   EAF_GET_IFACE2(pBroker,IProjectProperties,pProjectProperties);
+   GET_IFACE2(pBroker,IProjectProperties,pProjectProperties);
 
    // Set Header and footer information for printed reports
    std::_tstring  foot1(_T("Bridge: "));
@@ -199,7 +194,7 @@ void CPGSuperReportView::RefreshReport()
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IProgress,pProgress);
+   GET_IFACE2(pBroker,IEAFProgress,pProgress);
    CEAFAutoProgress progress(pProgress);
    pProgress->UpdateMessage(_T("Updating report..."));
 
@@ -257,7 +252,7 @@ bool CPGSuperReportView::CreateReport(IndexType rptIdx,BOOL bPromptForSpec)
    // Learn if this is a multi-span/girder report
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFReportManager,pRptMgr);
+   GET_IFACE2(pBroker,IEAFReportManager,pRptMgr);
    std::vector<std::_tstring> names = pRptMgr->GetReportNames();
    std::shared_ptr<WBFL::Reporting::ReportBuilder> pRptBuilder = pRptMgr->GetReportBuilder(names[rptIdx]);
    WBFL::Reporting::ReportDescription rptDesc = pRptBuilder->GetReportDescription();
@@ -284,7 +279,7 @@ bool CPGSuperReportView::CreateReport(IndexType rptIdx,BOOL bPromptForSpec)
          const std::vector<CGirderKey>& girderKeys( pSGRptSpec->GetGirderKeys() );
          ATLASSERT(!girderKeys.empty()); // UI should not allow this
 
-         EAF_GET_IFACE2(pBroker,IProgress,pProgress);
+         GET_IFACE2(pBroker,IEAFProgress,pProgress);
          DWORD dwMask(girderKeys.size() == 1 ? PW_ALL | PW_NOGAUGE | PW_NOCANCEL : PW_ALL | PW_NOGAUGE);
          CEAFAutoProgress ap(pProgress,0,dwMask); // progress window has a cancel button
 

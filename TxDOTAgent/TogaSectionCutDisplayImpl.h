@@ -25,7 +25,7 @@
 
 #include <DManip/DisplayObject.h>
 #include "TogaSectionCutDrawStrategy.h" 
-#include <PgsExt\Keys.h>
+#include <PsgLib\Keys.h>
 
 #include <DManip/DrawPointStrategy.h>
 #include <DManip/DisplayObjectEvents.h>

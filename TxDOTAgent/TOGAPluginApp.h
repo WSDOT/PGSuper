@@ -82,7 +82,7 @@ public:
    CString GetDocumentationURL() override;
    CString GetDocumentationMapFile() override;
    void LoadDocumentationMap() override;
-   eafTypes::HelpResult GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID,CString& strURL) override;
+   std::pair<WBFL::EAF::HelpResult,CString> GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nID) override;
 
 // IAppCommandLine
 public:

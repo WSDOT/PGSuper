@@ -23,8 +23,8 @@
 #ifndef INCLUDED_DECKEDGEBUILDER_H_
 #define INCLUDED_DECKEDGEBUILDER_H_
 
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\DeckPoint.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\DeckPoint.h>
 
 class CDeckEdgeBuilder
 {

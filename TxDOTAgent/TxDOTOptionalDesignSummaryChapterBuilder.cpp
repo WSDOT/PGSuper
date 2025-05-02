@@ -28,8 +28,8 @@
 
 #include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
-#include <PgsExt\PierData2.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\PierData2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <PgsExt\DebondUtil.h>
 
 #include <EAF\EAFDisplayUnits.h>
@@ -44,7 +44,8 @@
 #include "TexasIBNSParagraphBuilder.h"
 
 #include <psgLib\ConnectionLibraryEntry.h>
-
+#include <psgLib/GirderLibraryEntry.h>
+#include <psgLib/SpecLibraryEntry.h>
 #include <psgLib/PrestressedElementCriteria.h>
 
 #include <WBFLCogo.h>
@@ -87,11 +88,11 @@ rptChapter* CTxDOTOptionalDesignSummaryChapterBuilder::Build(const std::shared_p
    auto pBrokerRptSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
    auto pBroker = pBrokerRptSpec->GetBroker();
    
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   EAF_GET_IFACE2(pBroker,IGetTogaData,pGetTogaData);
+   GET_IFACE2(pBroker,IGetTogaData,pGetTogaData);
    const CTxDOTOptionalDesignData* pProjectData = pGetTogaData->GetTogaData();
 
    design_information( pChapter, pBroker, pProjectData, pDisplayUnits );
@@ -144,12 +145,12 @@ void design_information(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> 
    CSegmentKey fabrSegmentKey(TOGA_SPAN,TOGA_FABR_GDR,0);
 
    // interfaces
-   EAF_GET_IFACE2(pBroker, IMaterials,         pMaterial);
-   EAF_GET_IFACE2(pBroker, IBridge,            pBridge);
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
-   EAF_GET_IFACE2(pBroker, IEnvironment,       pEnvironment);
-   EAF_GET_IFACE2(pBroker, ILiveLoads,         pLiveLoads);
-   EAF_GET_IFACE2(pBroker, IIntervals,         pIntervals);
+   GET_IFACE2(pBroker, IMaterials,         pMaterial);
+   GET_IFACE2(pBroker, IBridge,            pBridge);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker, IEnvironment,       pEnvironment);
+   GET_IFACE2(pBroker, ILiveLoads,         pLiveLoads);
+   GET_IFACE2(pBroker, IIntervals,         pIntervals);
 
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
 
@@ -278,8 +279,8 @@ static void design_data(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> 
    (*p_table)(row,0) << _T("W")<<Sub(_T("Overlay"));
    (*p_table)(row++,1) << fpl.SetValue(pProjectData->GetWCompDw());
 
-   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
-   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
    const auto& prestressed_element_criteria = pSpecEntry->GetPrestressedElementCriteria();
    Float64 allow_stf = prestressed_element_criteria.CompressionStressCoefficient_BeforeLosses;
@@ -299,10 +300,10 @@ void girder_design(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBrok
    INIT_UV_PROTOTYPE( rptPressureUnitValue, stress,      pDisplayUnits->GetStressUnit(), true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, component, pDisplayUnits->GetComponentDimUnit(), true );
 
-   EAF_GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
-   EAF_GET_IFACE2(pBroker, IMaterials, pMaterial);
+   GET_IFACE2(pBroker, IStrandGeometry, pStrandGeometry );
+   GET_IFACE2(pBroker, IMaterials, pMaterial);
 
-   EAF_GET_IFACE2(pBroker, IIntervals, pIntervals);
+   GET_IFACE2(pBroker, IIntervals, pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
 
    rptParagraph* p = new rptParagraph;
@@ -361,7 +362,7 @@ void girder_design(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBrok
          (*p_table)(row++,1) << ndb;
       }
 
-      EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+      GET_IFACE2(pBroker, IBridge, pBridge);
       Float64 span2 = pBridge->GetSegmentSpanLength(segmentKey)/2.0;
       pgsPointOfInterest midpoi(segmentKey,span2);
 
@@ -430,7 +431,7 @@ static void original_results_summary(rptChapter* pChapter,std::shared_ptr<WBFL::
    Stress_Scalar.SetFormat(WBFL::System::NumericFormatTool::Format::Fixed);
    Stress_Scalar.SetPrecision(2);
 
-   EAF_GET_IFACE2(pBroker,IGetTogaResults,pGetTogaResults);
+   GET_IFACE2(pBroker,IGetTogaResults,pGetTogaResults);
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -497,7 +498,7 @@ static void optional_results_summary(rptChapter* pChapter,std::shared_ptr<WBFL::
    Stress_Scalar.SetFormat(WBFL::System::NumericFormatTool::Format::Fixed);
    Stress_Scalar.SetPrecision(2);
 
-   EAF_GET_IFACE2(pBroker,IGetTogaResults,pGetTogaResults);
+   GET_IFACE2(pBroker,IGetTogaResults,pGetTogaResults);
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -560,7 +561,7 @@ static void camber_summary(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broke
    // Setup up some unit value prototypes
    INIT_UV_PROTOTYPE( rptLengthUnitValue,   length, pDisplayUnits->GetSpanLengthUnit(), false );
 
-   EAF_GET_IFACE2(pBroker,IGetTogaResults,pGetTogaResults);
+   GET_IFACE2(pBroker,IGetTogaResults,pGetTogaResults);
 
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
@@ -595,7 +596,7 @@ static void camber_summary(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broke
 static void shear_summary(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
 
-   EAF_GET_IFACE2(pBroker,IGetTogaResults,pGetTogaResults);
+   GET_IFACE2(pBroker,IGetTogaResults,pGetTogaResults);
 
    rptParagraph* p = new rptParagraph(rptStyleManager::GetHeadingStyle());
    *pChapter << p;

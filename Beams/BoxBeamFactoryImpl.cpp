@@ -39,16 +39,18 @@
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
-#include <PgsExt\BridgeDescription2.h>
 #include <IFace\Intervals.h>
-
 #include <IFace\StatusCenter.h>
+
 #include <PgsExt\StatusItem.h>
+#include <PgsExt/PoiMgr.h>
 
 #include <Beams\Helper.h>
 
+#include <PsgLib\BridgeDescription2.h>
 #include <psgLib/SectionPropertiesCriteria.h>
 #include <psgLib/SpecificationCriteria.h>
+#include <psgLib/GirderLibraryEntry.h>
 
 
 
@@ -74,7 +76,7 @@ void CBoxBeamFactoryImpl::CreateSegment(std::shared_ptr<WBFL::EAF::Broker> pBrok
    HRESULT hr = segment.CoCreateInstance(CLSID_BoxBeamEndBlockSegment);
 
    // Build up the beam shape
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
@@ -97,8 +99,8 @@ void CBoxBeamFactoryImpl::CreateSegment(std::shared_ptr<WBFL::EAF::Broker> pBrok
    ConfigureGirderShape(pGirder->GetSegment(segmentKey.segmentIndex), dimensions, beam);
 
    // Beam materials
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
-   EAF_GET_IFACE2(pBroker,IMaterials,pMaterial);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IMaterials,pMaterial);
    CComPtr<IMaterial> material;
    material.CoCreateInstance(CLSID_Material);
 
@@ -137,7 +139,7 @@ void CBoxBeamFactoryImpl::CreateSegmentShape(std::shared_ptr<WBFL::EAF::Broker> 
    ConfigureGirderShape(pSegment, dimensions, beam);
 
    Float64 endBlockLength = GetDimension(dimensions, _T("EndBlockLength"));
-   EAF_GET_IFACE2(pBroker,IBridge, pBridge);
+   GET_IFACE2(pBroker,IBridge, pBridge);
    Float64 Lg = pBridge->GetSegmentLength(pSegment->GetSegmentKey());
    if (IsInEndBlock(Xs,sectionBias,endBlockLength,Lg))
    {
@@ -163,7 +165,7 @@ Float64 CBoxBeamFactoryImpl::GetSegmentHeight(std::shared_ptr<WBFL::EAF::Broker>
 void CBoxBeamFactoryImpl::LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
 {
    // This is a prismatic beam so only add section change POI at the start and end of the beam
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 gdrLength = pBridge->GetSegmentLength(segmentKey);
 
    pgsPointOfInterest poiStart(segmentKey,0.00,   POI_SECTCHANGE_RIGHTFACE);
@@ -173,7 +175,7 @@ void CBoxBeamFactoryImpl::LayoutSectionChangePointsOfInterest(std::shared_ptr<WB
    VERIFY(pPoiMgr->AddPointOfInterest(poiEnd) != INVALID_ID);
 
    // put section breaks just on either side of the end blocks/void interface
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const GirderLibraryEntry* pGirderLib = pGroup->GetGirder(segmentKey.girderIndex)->GetGirderLibraryEntry();
@@ -202,7 +204,7 @@ void CBoxBeamFactoryImpl::LayoutSectionChangePointsOfInterest(std::shared_ptr<WB
 std::shared_ptr<CDistFactorEngineerBase> CBoxBeamFactoryImpl::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,
                                                const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
 {
-   EAF_GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
 
@@ -224,7 +226,7 @@ std::shared_ptr<CDistFactorEngineerBase> CBoxBeamFactoryImpl::CreateDistFactorEn
 
 std::unique_ptr<CPsLossEngineerBase> CBoxBeamFactoryImpl::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusItemIDType statusGroupID,const CGirderKey& girderKey) const
 {
-   EAF_GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       return std::make_unique<CTimeStepLossEngineer>(pBroker,statusGroupID);
@@ -260,7 +262,7 @@ bool CBoxBeamFactoryImpl::IsPrismatic(const CSegmentKey& segmentKey) const
 {
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(segmentKey.groupIndex);
    const CSplicedGirderData*  pGirder = pGroup->GetGirder(segmentKey.girderIndex);
@@ -571,8 +573,8 @@ std::_tstring CBoxBeamFactoryImpl::GetShearDimensionsSchematicImage(pgsTypes::Su
 
 std::_tstring CBoxBeamFactoryImpl::GetInteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
 {
-   EAF_GET_IFACE2(pBroker, ILibrary,       pLib);
-   EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
+   GET_IFACE2(pBroker, ILibrary,       pLib);
+   GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
    const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();
@@ -616,8 +618,8 @@ std::_tstring CBoxBeamFactoryImpl::GetInteriorGirderEffectiveFlangeWidthImage(st
 
 std::_tstring CBoxBeamFactoryImpl::GetExteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
 {
-   EAF_GET_IFACE2(pBroker, ILibrary,       pLib);
-   EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
+   GET_IFACE2(pBroker, ILibrary,       pLib);
+   GET_IFACE2(pBroker, ISpecification, pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    const auto& specification_criteria = pSpecEntry->GetSpecificationCriteria();
    const auto& section_properties_criteria = pSpecEntry->GetSectionPropertiesCriteria();

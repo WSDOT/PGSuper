@@ -20,8 +20,8 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 #include "StdAfx.h"
-#include <psgLib\TransferLengthCriteria.h>
-#include <psgLib/LibraryEntryDifferenceItem.h>
+#include <PsgLib\TransferLengthCriteria.h>
+#include <PsgLib/DifferenceItem.h>
 //#include <EAF/EAFDisplayUnits.h>
 
 bool TransferLengthCriteria::operator==(const TransferLengthCriteria& other) const
@@ -34,13 +34,13 @@ bool TransferLengthCriteria::operator!=(const TransferLengthCriteria& other) con
    return !operator==(other);
 }
 
-bool TransferLengthCriteria::Compare(const TransferLengthCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<pgsLibraryEntryDifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
+bool TransferLengthCriteria::Compare(const TransferLengthCriteria& other, const SpecLibraryEntryImpl& impl, std::vector<std::unique_ptr<DifferenceItem>>& vDifferences, bool bReturnOnFirstDifference) const
 {
    bool bSame = true;
    if(operator!=(other))
    {
       bSame = false;
-      vDifferences.emplace_back(std::make_unique<pgsLibraryEntryDifferenceStringItem>(_T("Transfer length options are different"), _T(""), _T("")));
+      vDifferences.emplace_back(std::make_unique<DifferenceStringItem>(_T("Transfer length options are different"), _T(""), _T("")));
       if (bReturnOnFirstDifference) return false;
    }
 

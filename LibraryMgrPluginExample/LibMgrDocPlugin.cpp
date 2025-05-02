@@ -140,20 +140,20 @@ CString ExampleDocPlugin::GetDocumentationSetName()
    return GetName();
 }
 
-eafTypes::HelpResult ExampleDocPlugin::GetDocumentLocation(LPCTSTR lpszDocSetName, UINT nHID, CString& strURL)
+std::pair<WBFL::EAF::HelpResult,CString> ExampleDocPlugin::GetDocumentLocation(LPCTSTR lpszDocSetName, UINT nHID)
 {
    if (GetDocumentationSetName() != CString(lpszDocSetName))
    {
-	  return eafTypes::hrDocSetNotFound;
+	  return { WBFL::EAF::HelpResult::DocSetNotFound,CString() };
    }
 
    if (nHID == 5000)
    {
-	  strURL = _T("http://www.wsdot.wa.gov/eesc/bridge/software");
-	  return eafTypes::hrOK;
+	  CString strURL = _T("http://www.wsdot.wa.gov/eesc/bridge/software");
+	  return { WBFL::EAF::HelpResult::OK,strURL };
    }
 
-   return eafTypes::hrTopicNotFound;
+   return { WBFL::EAF::HelpResult::TopicNotFound,CString() };
 }
 
 //////////////////////////////////////////////////////////
@@ -204,31 +204,31 @@ BOOL ExampleDocPlugin::GetToolTipMessageString(UINT nID, CString& rMessage) cons
 }
 
 // IPluginPersist
-HRESULT ExampleDocPlugin::Save(IStructuredSave* pStrSave)
+bool ExampleDocPlugin::Save(IStructuredSave* pStrSave)
 {
    pStrSave->BeginUnit(_T("ExamplePlugin"), 1.0);
    pStrSave->put_Property(_T("ExampleData"), CComVariant(3.1415));
    pStrSave->EndUnit();
-   return S_OK;
+   return true;
 }
 
-HRESULT ExampleDocPlugin::Load(IStructuredLoad* pStrLoad)
+bool ExampleDocPlugin::Load(IStructuredLoad* pStrLoad)
 {
    HRESULT hr = pStrLoad->BeginUnit(_T("ExamplePlugin"));
    if (FAILED(hr))
-	  return hr;
+	  return false;
 
    CComVariant var;
    var.vt = VT_R8;
    hr = pStrLoad->get_Property(_T("ExampleData"), &var);
    if (FAILED(hr))
-	  return hr;
+	  return false;
 
    hr = pStrLoad->EndUnit();
    if (FAILED(hr))
-	  return hr;
+	  return false;
 
-   return S_OK;
+   return true;
 }
 
 void ExampleDocPlugin::OnMyCommand()

@@ -31,7 +31,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\DocumentType.h>
 
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 #include <EAF\EAFDocument.h>
 #include "..\Documentation\PGSuper.hh"
 
@@ -131,7 +131,7 @@ void CSpanGirderReportDlg::UpdateGirderComboBox()
       return;
    }
 
-   EAF_GET_IFACE( IBridge, pBridge );
+   GET_IFACE( IBridge, pBridge );
 
    CComboBox* pGdrBox = (CComboBox*)GetDlgItem(IDC_GIRDER);
    Uint16 curSel = pGdrBox->GetCurSel();
@@ -175,7 +175,7 @@ void CSpanGirderReportDlg::UpdateSegmentComboBox()
       return;
    }
 
-   EAF_GET_IFACE(IBridge, pBridge);
+   GET_IFACE(IBridge, pBridge);
 
    CComboBox* pcbGroup = (CComboBox*)GetDlgItem(IDC_SPAN);
    GroupIndexType grpIdx = (GroupIndexType)pcbGroup->GetCurSel();
@@ -234,12 +234,12 @@ BOOL CSpanGirderReportDlg::OnInitDialog()
    CWnd* pwndTitle = GetDlgItem(IDC_REPORT_TITLE);
    pwndTitle->SetWindowText(m_RptDesc.GetReportName().c_str());
 
-   EAF_GET_IFACE(IDocumentType,pDocType);
+   GET_IFACE(IDocumentType,pDocType);
    bool bIsPGSuper = pDocType->IsPGSuperDocument();
 
    // It is possible that a span was removed from the bridge, and if so, the report description for this report 
    // will have a higher group that that exists. Nip in the bud here so we don't crash
-   EAF_GET_IFACE(IBridge, pBridge);
+   GET_IFACE(IBridge, pBridge);
    GroupIndexType numGroups = pBridge->GetGirderGroupCount();
    if (m_SegmentKey.groupIndex != ALL_GROUPS && m_SegmentKey.groupIndex > numGroups - 1)
    {

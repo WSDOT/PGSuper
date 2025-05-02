@@ -40,15 +40,15 @@ void CStrandEccentricities::Build(rptChapter* pChapter,std::shared_ptr<WBFL::EAF
 
    *p << _T("Strand Eccentricity") << rptNewLine;
 
-   EAF_GET_IFACE2( pBroker, ILossParameters, pLossParams);
+   GET_IFACE2( pBroker, ILossParameters, pLossParams);
    PrestressLossCriteria::LossMethodType lossMethod = pLossParams->GetLossMethod();
 
-   EAF_GET_IFACE2(pBroker, ISectionProperties, pSectProp);
+   GET_IFACE2(pBroker, ISectionProperties, pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker, IStressCheck, pStressCheck);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker, IStressCheck, pStressCheck);
 
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(segmentKey, &vGirderKeys);

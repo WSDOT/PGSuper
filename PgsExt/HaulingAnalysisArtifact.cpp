@@ -26,8 +26,9 @@
 
 #include <PgsExt\HaulingAnalysisArtifact.h>
 #include <PgsExt\CapacityToDemand.h>
-#include <PgsExt\SplicedGirderData.h>
-#include <PgsExt\GirderLabel.h>
+
+#include <PsgLib\SplicedGirderData.h>
+#include <PsgLib\GirderLabel.h>
 
 #include "PGSuperUnits.h"
 
@@ -43,31 +44,7 @@
 
 #include <EAF/EAFApp.h>
 
-pgsWsdotHaulingAnalysisArtifact::pgsWsdotHaulingAnalysisArtifact()
-{
-}
 
-pgsWsdotHaulingAnalysisArtifact::pgsWsdotHaulingAnalysisArtifact(const pgsWsdotHaulingAnalysisArtifact& rOther)
-{
-   MakeCopy(rOther);
-}
-
-pgsWsdotHaulingAnalysisArtifact::~pgsWsdotHaulingAnalysisArtifact()
-{
-}
-
-//======================== OPERATORS  =======================================
-pgsWsdotHaulingAnalysisArtifact& pgsWsdotHaulingAnalysisArtifact::operator= (const pgsWsdotHaulingAnalysisArtifact& rOther)
-{
-   if( this != &rOther )
-   {
-      MakeAssignment(rOther);
-   }
-
-   return *this;
-}
-
-//======================== OPERATIONS =======================================
 bool pgsWsdotHaulingAnalysisArtifact::Passed(bool bIgnoreConfirationLimits) const
 {
    return m_HaulingArtifact.Passed(bIgnoreConfirationLimits);
@@ -94,7 +71,7 @@ pgsHaulingAnalysisArtifact* pgsWsdotHaulingAnalysisArtifact::Clone() const
 void pgsWsdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey& segmentKey,rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    WBFL::Stability::HaulingStabilityReporter reporter;
-   EAF_GET_IFACE2(pBroker,IGirder,pGirder);
+   GET_IFACE2(pBroker,IGirder,pGirder);
    const WBFL::Stability::IGirder* pStabilityModel = pGirder->GetSegmentHaulingStabilityModel(segmentKey);
    const WBFL::Stability::IHaulingStabilityProblem* pStabilityProblem = pGirder->GetSegmentHaulingStabilityProblem(segmentKey);
    Float64 Ll, Lr;
@@ -107,7 +84,7 @@ void pgsWsdotHaulingAnalysisArtifact::BuildHaulingCheckReport(const CSegmentKey&
 void pgsWsdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKey& segmentKey, rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    WBFL::Stability::HaulingStabilityReporter reporter;
-   EAF_GET_IFACE2(pBroker,IGirder,pGirder);
+   GET_IFACE2(pBroker,IGirder,pGirder);
    const WBFL::Stability::IGirder* pStabilityModel = pGirder->GetSegmentHaulingStabilityModel(segmentKey);
    const WBFL::Stability::IHaulingStabilityProblem* pStabilityProblem = pGirder->GetSegmentHaulingStabilityProblem(segmentKey);
    Float64 Ll, Lr;
@@ -120,7 +97,7 @@ void pgsWsdotHaulingAnalysisArtifact::BuildHaulingDetailsReport(const CSegmentKe
 void pgsWsdotHaulingAnalysisArtifact::Write1250Data(const CSegmentKey& segmentKey,std::_tofstream& resultsFile, std::_tofstream& poiFile, std::shared_ptr<WBFL::EAF::Broker> pBroker,
                                                     const std::_tstring& pid, const std::_tstring& bridgeId) const
 {
-   EAF_GET_IFACE2(pBroker,IGirder,pGirder);
+   GET_IFACE2(pBroker,IGirder,pGirder);
    const WBFL::Stability::HaulingStabilityProblem* pStabilityProblem = pGirder->GetSegmentHaulingStabilityProblem(segmentKey);
 
    GirderIndexType gdr = segmentKey.girderIndex;
@@ -166,9 +143,6 @@ void pgsWsdotHaulingAnalysisArtifact::Write1250Data(const CSegmentKey& segmentKe
    }
 }
 
-
-//======================== ACCESS     =======================================
-
 Float64 pgsWsdotHaulingAnalysisArtifact::GetMinFsForCracking(WBFL::Stability::HaulingSlope slope) const
 {
    return m_HaulingArtifact.GetHaulingResults().MinFScr[+slope];
@@ -201,38 +175,7 @@ const WBFL::Stability::HaulingCheckArtifact& pgsWsdotHaulingAnalysisArtifact::Ge
    return m_HaulingArtifact;
 }
 
-//======================== INQUIRY    =======================================
 
-////////////////////////// PROTECTED  ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-
-//======================== OPERATIONS =======================================
-void pgsWsdotHaulingAnalysisArtifact::MakeCopy(const pgsWsdotHaulingAnalysisArtifact& rOther)
-{
-   m_HaulingArtifact = rOther.m_HaulingArtifact;
-#if defined _DEBUG
-   m_pStabilityProblem = rOther.m_pStabilityProblem;
-#endif
-}
-
-void pgsWsdotHaulingAnalysisArtifact::MakeAssignment(const pgsWsdotHaulingAnalysisArtifact& rOther)
-{
-   MakeCopy( rOther );
-}
-
-//======================== ACCESS     =======================================
-//======================== INQUIRY    =======================================
-
-////////////////////////// PRIVATE    ///////////////////////////////////////
-
-//======================== LIFECYCLE  =======================================
-//======================== OPERATORS  =======================================
-//======================== OPERATIONS =======================================
-//======================== ACCESS     =======================================
-//======================== INQUERY    =======================================
-//======================== DEBUG      =======================================
 #if defined _DEBUG
 void pgsWsdotHaulingAnalysisArtifact::Dump(WBFL::Debug::LogContext& os) const
 {

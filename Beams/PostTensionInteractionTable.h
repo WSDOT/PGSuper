@@ -20,15 +20,11 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// PostTensionInteractionTable.h : Declaration of the CPostTensionInteractionTable
+#pragma once
 
-#ifndef __PTINTERACTIONTABLE_H_
-#define __PTINTERACTIONTABLE_H_
-
-#include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
-
+#include <PgsExt/ReportPointOfInterest.h>
 
 class WBFL::LRFD::Losses;
 
@@ -57,5 +53,3 @@ private:
    bool m_bIsPrismatic;
    bool m_bIsAsymmetric;
 };
-
-#endif //__PTINTERACTIONTABLE_H_

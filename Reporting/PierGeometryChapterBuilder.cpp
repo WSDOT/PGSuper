@@ -29,7 +29,7 @@
 
 #include <IFace\Project.h>
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include <WBFLCogo.h>
 
@@ -62,7 +62,7 @@ rptChapter* CPierGeometryChapterBuilder::Build(const std::shared_ptr<const WBFL:
    auto pSpec = std::dynamic_pointer_cast<const CBrokerReportSpecification>(pRptSpec);
    auto pBroker = pSpec->GetBroker();
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
    
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
    pier_geometry(pBroker,pChapter,pDisplayUnits);
@@ -98,10 +98,10 @@ void pier_geometry(std::shared_ptr<WBFL::EAF::Broker>pBroker,rptChapter* pChapte
 {
    USES_CONVERSION;
 
-   EAF_GET_IFACE2(pBroker, IBridge,      pBridge ); 
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
-   EAF_GET_IFACE2(pBroker, IRoadway, pAlignment);
-   EAF_GET_IFACE2(pBroker, IRoadwayData, pRoadwayData);
+   GET_IFACE2(pBroker, IBridge,      pBridge ); 
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker, IRoadway, pAlignment);
+   GET_IFACE2(pBroker, IRoadwayData, pRoadwayData);
 
    bool bOffsetPGL = (pRoadwayData->GetRoadwaySectionData().AlignmentPointIdx != pRoadwayData->GetRoadwaySectionData().ProfileGradePointIdx) ? true : false;
 

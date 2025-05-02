@@ -36,16 +36,12 @@
 #include <IFace\Alignment.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <IFace/PointOfInterest.h>
 
 #include <WBFLGeometry/GeomHelpers.h>
 
 #include <algorithm>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #define TITLE_DISPLAY_LIST       0
 #define PROFILE_DISPLAY_LIST     1
@@ -212,7 +208,7 @@ void CAlignmentProfileView::BuildProfileDisplayObjects()
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IRoadway,pRoadway);
+   GET_IFACE2(pBroker,IRoadway,pRoadway);
 
    Float64 n = 10;
    Float64 start_station, start_elevation, start_grade;
@@ -247,14 +243,14 @@ void CAlignmentProfileView::BuildProfileDisplayObjects()
    doProfile->SetMaxTipWidth(TOOLTIP_WIDTH);
    doProfile->SetTipDisplayTime(TOOLTIP_DURATION);
 
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 leftOffset  = pBridge->GetLeftCurbOffset((PierIndexType)0);
    Float64 rightOffset = pBridge->GetRightCurbOffset((PierIndexType)0);
 
    // model the profile as a series of individual points
 
    // get we want the stations at all roadway sections
-   EAF_GET_IFACE2(pBroker, IRoadwayData, pRoadwayData);
+   GET_IFACE2(pBroker, IRoadwayData, pRoadwayData);
    const auto roadwaySectionData = pRoadwayData->GetRoadwaySectionData();
    auto nSectionTemplates = roadwaySectionData.RoadwaySectionTemplates.size();
    
@@ -335,10 +331,10 @@ void CAlignmentProfileView::BuildBridgeDisplayObjects()
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IRoadway,pAlignment);
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,IGirder,pIGirder);
-   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi);
+   GET_IFACE2(pBroker,IRoadway,pAlignment);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IGirder,pIGirder);
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi);
 
    auto doBridge = WBFL::DManip::CompositeDisplayObject::Create();
    doBridge->SetSelectionType(WBFL::DManip::SelectionType::All);
@@ -426,7 +422,7 @@ void CAlignmentProfileView::BuildLabelDisplayObjects()
    UINT settings = pDoc->GetAlignmentEditorSettings();
    if ( (settings & IDP_AP_DRAW_BRIDGE) != 0 )
    {
-      EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+      GET_IFACE2(pBroker,IBridge,pBridge);
       Float64 start_station = pBridge->GetPierStation(0);
       Float64 end_station = pBridge->GetPierStation(pBridge->GetPierCount()-1);
       CreateStationLabel(label_display_list,start_station,_T("Start"),TA_BASELINE | TA_LEFT);
@@ -434,7 +430,7 @@ void CAlignmentProfileView::BuildLabelDisplayObjects()
    }
 
    // Start/End of station range labels
-   EAF_GET_IFACE2(pBroker,IRoadway,pRoadway);
+   GET_IFACE2(pBroker,IRoadway,pRoadway);
    Float64 n = 10;
    Float64 start_station, start_elevation, start_grade;
    Float64 end_station, end_elevation, end_grade;
@@ -564,7 +560,7 @@ void CAlignmentProfileView::CreateStationLabel(std::shared_ptr<WBFL::DManip::iDi
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IRoadway,pRoadway);
+   GET_IFACE2(pBroker,IRoadway,pRoadway);
 
    IndexType pglIdx = pRoadway->GetProfileGradeLineIndex(station);
    Float64 offset = pRoadway->GetAlignmentOffset(pglIdx, station);
@@ -578,7 +574,7 @@ void CAlignmentProfileView::CreateStationLabel(std::shared_ptr<WBFL::DManip::iDi
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    WBFL::Geometry::Point2d p(station,elevation);
 

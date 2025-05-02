@@ -317,13 +317,13 @@ void CDistributedLoadDrawStrategyImpl::OnUnselect(std::shared_ptr<WBFL::DManip::
 
 void CDistributedLoadDrawStrategyImpl::EditLoad()
 {
-   EAF_GET_IFACE(IEditByUI, pEditByUI);
+   GET_IFACE(IEditByUI, pEditByUI);
    pEditByUI->EditDistributedLoad(m_LoadIndex);
 }
 
 void CDistributedLoadDrawStrategyImpl::DeleteLoad()
 {
-   EAF_GET_IFACE(IEditByUI, pEditByUI);
+   GET_IFACE(IEditByUI, pEditByUI);
    pEditByUI->DeleteDistributedLoad(m_LoadIndex);
 }
 

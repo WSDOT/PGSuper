@@ -33,7 +33,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\DocumentType.h>
 
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 #include <EAF\EAFDocument.h>
 
 #include <MFCTools\AutoRegistry.h>
@@ -107,7 +107,7 @@ void CLoadRatingSummaryReportDlg::DoDataExchange(CDataExchange* pDX)
       {
          // make list of all girders along girder line
          auto pBroker = EAFGetBroker();
-         EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+         GET_IFACE2(pBroker, IBridge, pBridge);
          GroupIndexType ngrps = pBridge->GetGirderGroupCount();
          for (GroupIndexType igrp = 0; igrp < ngrps; igrp++)
          {
@@ -144,7 +144,7 @@ END_MESSAGE_MAP()
 void CLoadRatingSummaryReportDlg::UpdateGirderComboBox()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   EAF_GET_IFACE( IBridge, pBridge );
+   GET_IFACE( IBridge, pBridge );
 
    CComboBox* pGdrBox = (CComboBox*)GetDlgItem(IDC_GIRDER);
    Uint16 curSel = pGdrBox->GetCurSel();
@@ -234,7 +234,7 @@ BOOL CLoadRatingSummaryReportDlg::OnInitDialog()
    }
 
    // need list of groups/girders
-   EAF_GET_IFACE( IBridge, pBridge );
+   GET_IFACE( IBridge, pBridge );
    GroupGirderOnCollection coll;
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
    for (GroupIndexType grpIdx = 0; grpIdx < nGroups; grpIdx++ )

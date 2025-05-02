@@ -22,13 +22,13 @@
 
 #pragma once
 
-#include <PgsExt\ApplyLoadActivity.h>
-#include <PgsExt\TimelineManager.h>
+#include <PsgLib\ApplyLoadActivity.h>
+#include <PsgLib\TimelineManager.h>
 #include <PgsExt\TimelineItemListBox.h>
 
-#include <PgsExt\PointLoadData.h>
-#include <PgsExt\DistributedLoadData.h>
-#include <PgsExt\MomentLoadData.h>
+#include <PsgLib\PointLoadData.h>
+#include <PsgLib\DistributedLoadData.h>
+#include <PsgLib\MomentLoadData.h>
 
 // CApplyLoadsDlg dialog
 

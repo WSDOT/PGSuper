@@ -33,6 +33,7 @@
 #include <PgsExt\GirderArtifact.h>
 
 #include <psgLib/PrincipalTensionStressCriteria.h>
+#include <psgLib/SpecLibraryEntry.h>
 
 
 CPrincipalTensionStressDetailsChapterBuilder::CPrincipalTensionStressDetailsChapterBuilder(bool bSelect) :
@@ -69,7 +70,7 @@ rptChapter* CPrincipalTensionStressDetailsChapterBuilder::Build(const std::share
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
    ISpecification::PrincipalWebStressCheckType  checkType = pSpec->GetPrincipalWebStressCheckType(CSegmentKey(girderKey,0));
 
    if (ISpecification::pwcNCHRPTimeStepMethod == checkType)
@@ -78,7 +79,7 @@ rptChapter* CPrincipalTensionStressDetailsChapterBuilder::Build(const std::share
       return pChapter;
    }
 
-   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    bool bTimeStepMethod = pSpecEntry->GetPrestressLossCriteria().LossMethod == PrestressLossCriteria::LossMethodType::TIME_STEP;
 
@@ -89,10 +90,10 @@ rptChapter* CPrincipalTensionStressDetailsChapterBuilder::Build(const std::share
       return pChapter;
    }
 
-   EAF_GET_IFACE2(pBroker, IArtifact, pIArtifact);
+   GET_IFACE2(pBroker, IArtifact, pIArtifact);
    const pgsGirderArtifact* pGirderArtifact = pIArtifact->GetGirderArtifact(girderKey);
 
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
 
    // check applicability
@@ -102,9 +103,9 @@ rptChapter* CPrincipalTensionStressDetailsChapterBuilder::Build(const std::share
       return pChapter;
    }
 
-   EAF_GET_IFACE2_NOCHECK(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2_NOCHECK(pBroker, IEAFDisplayUnits, pDisplayUnits);
 
-   EAF_GET_IFACE2(pBroker, IConcreteStressLimits, pLimits);
+   GET_IFACE2(pBroker, IConcreteStressLimits, pLimits);
    Float64 threshold = pLimits->GetPrincipalTensileStressFcThreshold();
 
    bool bApplicable = false;
@@ -158,13 +159,13 @@ rptChapter* CPrincipalTensionStressDetailsChapterBuilder::Build(const std::share
    INIT_UV_PROTOTYPE(rptForceUnitValue, shear, pDisplayUnits->GetShearUnit(), false);
    INIT_UV_PROTOTYPE(rptStressUnitValue, stress, pDisplayUnits->GetStressUnit(), false);
 
-   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    location.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
    // need to know if there are any tendons. if so, we need a footnote
    // if nGirderDucts + nSegmentDucts > 0, we need the footnote... the actual sum doesn't have to be accurate
-   EAF_GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeom);
-   EAF_GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeom);
+   GET_IFACE2(pBroker, IGirderTendonGeometry, pGirderTendonGeom);
+   GET_IFACE2(pBroker, ISegmentTendonGeometry, pSegmentTendonGeom);
    DuctIndexType nGirderDucts = pGirderTendonGeom->GetDuctCount(girderKey);
    DuctIndexType nSegmentDucts = 0; // will add to this as we loop over segments
 
@@ -229,7 +230,7 @@ rptChapter* CPrincipalTensionStressDetailsChapterBuilder::Build(const std::share
    (*pTable)(0, col++) << COLHDR(RPT_STRESS(_T("max")), rptStressUnitTag, pDisplayUnits->GetStressUnit());
 
    // fill the table
-   EAF_GET_IFACE2(pBroker, IPrincipalWebStress, pPrincipalWebStress);
+   GET_IFACE2(pBroker, IPrincipalWebStress, pPrincipalWebStress);
    RowIndexType row = pTable->GetNumberOfHeaderRows();
    for (SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++)
    {

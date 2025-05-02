@@ -24,7 +24,7 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psglib.h>
+#include <PsgLib\PsgLib.h>
 #include "GirderHarpPointPage.h"
 #include "GirderMainSheet.h"
 #include <EAF\EAFDocument.h>

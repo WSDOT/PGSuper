@@ -23,8 +23,8 @@
 #pragma once
 
 
-#include "psgLibLib.h"
-#include <psgLib\OldHaulTruck.h>
+#include "PsgLibLib.h"
+#include <PsgLib\OldHaulTruck.h>
 #include <LRFD\ILiveLoadDistributionFactor.h>
 
 class SpecLibraryEntryImpl;

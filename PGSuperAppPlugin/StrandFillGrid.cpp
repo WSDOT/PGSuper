@@ -35,11 +35,6 @@
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 #define TYPE_COL         1
@@ -134,7 +129,7 @@ void CStrandFillGrid::CustomInit(CGirderSelectStrandsPage* pParent, const Girder
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    // Make string for max debond length
    m_strMaxDebondLength = FormatDimension(m_pParent->m_MaxDebondLength, pDisplayUnits->GetXSectionDimUnit(), false);
@@ -469,7 +464,7 @@ void CStrandFillGrid::FillGrid()
          {
             
             auto pBroker = EAFGetBroker();
-            EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+            GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
             // strand is debonded
             SetStyleRange(CGXRange(row,FIRST_DEBOND_COL), CGXStyle()
@@ -677,7 +672,7 @@ bool CStrandFillGrid::UpdateData(bool doCheckData)
    // However, debonding and extended strand information must be taken care of here
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits); // may or may not be used, depends on input parameters
+   GET_IFACE2_NOCHECK(pBroker,IEAFDisplayUnits,pDisplayUnits); // may or may not be used, depends on input parameters
 
    // clear out old debond data
    m_pParent->m_StraightDebond.clear();
@@ -977,7 +972,7 @@ void CStrandFillGrid::SymmetricDebond(BOOL bSymmetricDebond)
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    m_pParent->m_bSymmetricDebond = bSymmetricDebond;
 

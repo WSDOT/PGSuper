@@ -31,7 +31,7 @@
 
 #include "resource.h"
 #include <IFace\BeamFactory.h>
-#include <PgsExt\DeckDescription2.h>
+#include <PsgLib\DeckDescription2.h>
 
 /////////////////////////////////////////////////////////////////////////////
 // CBridgeDescGeneralPage dialog

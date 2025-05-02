@@ -36,11 +36,6 @@
 
 #include "PGSuperDocBase.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 #define IDC_CHECKBOX 100
@@ -285,7 +280,7 @@ ConfigStrandFillVector CGirderSegmentDlg::ComputeStrandFillVector(pgsTypes::Stra
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
+   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeometry);
 
    CPrecastSegmentData* pSegment = m_Girder.GetSegment(m_SegmentKey.segmentIndex);
    if (pSegment->Strands.GetStrandDefinitionType() == pgsTypes::sdtDirectSelection)

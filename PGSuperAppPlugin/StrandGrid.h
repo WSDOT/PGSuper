@@ -23,7 +23,7 @@
 
 #pragma once
 
-#include <PgsExt\GirderData.h>
+#include <PsgLib\GirderData.h>
 #include <PsgLib\GirderLibraryEntry.h>
 
 class CUserData;

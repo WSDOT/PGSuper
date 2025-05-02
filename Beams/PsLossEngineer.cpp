@@ -30,6 +30,7 @@
 #include <IFace\StatusCenter.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\Intervals.h>
+#include <IFace/PointOfInterest.h>
 
 #include <PGSuperException.h>
 
@@ -40,10 +41,10 @@
 
 #include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\StatusItem.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <EAF\EAFAutoProgress.h>
-#include <PgsExt\GirderLabel.h>
-#include <PgsExt\LoadFactors.h>
+#include <PsgLib\GirderLabel.h>
+#include <PsgLib\LoadFactors.h>
 
 #include <Materials/PsStrand.h>
 
@@ -124,12 +125,12 @@ CPsLossEngineer::CPsLossEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker, Statu
    m_pBroker = pBroker;
    m_StatusGroupID = statusGroupID;
 
-   EAF_GET_IFACE2(GetBroker(), IEAFStatusCenter,pStatusCenter);
-   m_scidUnknown = pStatusCenter->RegisterCallback( new pgsUnknownErrorStatusCallback() );
-   m_scidGirderDescriptionError = pStatusCenter->RegisterCallback( new pgsGirderDescriptionStatusCallback(eafTypes::statusError) );
-   m_scidGirderDescriptionWarning = pStatusCenter->RegisterCallback( new pgsGirderDescriptionStatusCallback(eafTypes::statusWarning) );
-   m_scidLRFDVersionError = pStatusCenter->RegisterCallback( new pgsInformationalStatusCallback(eafTypes::statusError) );
-   m_scidConcreteTypeError = pStatusCenter->RegisterCallback( new pgsInformationalStatusCallback(eafTypes::statusError) );
+   GET_IFACE2(GetBroker(), IEAFStatusCenter,pStatusCenter);
+   m_scidUnknown = pStatusCenter->RegisterCallback( std::make_shared<pgsUnknownErrorStatusCallback>() );
+   m_scidGirderDescriptionError = pStatusCenter->RegisterCallback( std::make_shared<pgsGirderDescriptionStatusCallback>(WBFL::EAF::StatusSeverityType::Error) );
+   m_scidGirderDescriptionWarning = pStatusCenter->RegisterCallback( std::make_shared<pgsGirderDescriptionStatusCallback>(WBFL::EAF::StatusSeverityType::Warning) );
+   m_scidLRFDVersionError = pStatusCenter->RegisterCallback( std::make_shared<pgsInformationalStatusCallback>(WBFL::EAF::StatusSeverityType::Error) );
+   m_scidConcreteTypeError = pStatusCenter->RegisterCallback( std::make_shared<pgsInformationalStatusCallback>(WBFL::EAF::StatusSeverityType::Error) );
 }
 
 LOSSDETAILS CPsLossEngineer::ComputeLosses(BeamType beamType,const pgsPointOfInterest& poi)
@@ -142,17 +143,17 @@ LOSSDETAILS CPsLossEngineer::ComputeLosses(BeamType beamType,const pgsPointOfInt
    LOSSDETAILS details;
 
 #if defined _DEBUG
-   EAF_GET_IFACE2(GetBroker(), IPointOfInterest,pPoi);
+   GET_IFACE2(GetBroker(), IPointOfInterest,pPoi);
    ATLASSERT(pPoi->IsOnSegment(poi));
 #endif
 
-   EAF_GET_IFACE2(GetBroker(), ILossParameters,pLossParameters);
+   GET_IFACE2(GetBroker(), ILossParameters,pLossParameters);
    PrestressLossCriteria::LossMethodType loss_method = pLossParameters->GetLossMethod();
 
    // if the girder is UHPC the loss method must be AASHTO_REFINED, WSDOT_REFINED, or GENERAL_LUMPSUM
    // and the base LRFD specification must beo 9th Edition 2020 or later
    // If it isn't, post to status center and throw and unwind exception
-   EAF_GET_IFACE2(GetBroker(), IMaterials, pMaterials);
+   GET_IFACE2(GetBroker(), IMaterials, pMaterials);
    auto concrete_type = pMaterials->GetSegmentConcreteType(poi.GetSegmentKey());
    if (IsUHPC(concrete_type))
    {
@@ -162,10 +163,9 @@ LOSSDETAILS CPsLossEngineer::ComputeLosses(BeamType beamType,const pgsPointOfInt
          (WBFL::LRFD::BDSManager::GetEdition() < WBFL::LRFD::BDSManager::Edition::NinthEdition2020)
          )
       {
-         EAF_GET_IFACE2(GetBroker(), IEAFStatusCenter, pStatusCenter);
+         GET_IFACE2(GetBroker(), IEAFStatusCenter, pStatusCenter);
          std::_tstring msg(_T("The project criteria must be based on AASHTO LRFD 9th Edition 2020 or later and the prestress loss method must be set to Refined Estimate per LRFD 5.9.3.4 or Refined Estimate per WSDOT Bridge Design Manual in the Project Criteria for compatibility with PCI-UHPC Structural Design Guidance"));
-         pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID, m_scidConcreteTypeError, msg.c_str());
-         pStatusCenter->Add(pStatusItem);
+         pStatusCenter->Add(std::make_shared<pgsInformationalStatusItem>(m_StatusGroupID, m_scidConcreteTypeError, msg.c_str()));
 
          msg += std::_tstring(_T("\nSee Status Center for Details"));
          THROW_UNWIND(msg.c_str(), XREASON_PRESTRESS_LOSS_METHOD);
@@ -222,7 +222,7 @@ LOSSDETAILS CPsLossEngineer::ComputeLossesForDesign(BeamType beamType,const pgsP
 
 void CPsLossEngineer::BuildReport(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
-   EAF_GET_IFACE2(GetBroker(), ILossParameters,pLossParameters);
+   GET_IFACE2(GetBroker(), ILossParameters,pLossParameters);
    PrestressLossCriteria::LossMethodType loss_method = pLossParameters->GetLossMethod();
 
    Uint16 level = 0;
@@ -263,8 +263,8 @@ void CPsLossEngineer::BuildReport(BeamType beamType,const CGirderKey& girderKey,
 
 void CPsLossEngineer::ReportRefinedMethod(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level,LossAgency lossAgency)
 {
-   EAF_GET_IFACE2(GetBroker(), ILibrary,pLib);
-   EAF_GET_IFACE2(GetBroker(), ISpecification,pSpec);
+   GET_IFACE2(GetBroker(), ILibrary,pLib);
+   GET_IFACE2(GetBroker(), ISpecification,pSpec);
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
@@ -281,8 +281,8 @@ void CPsLossEngineer::ReportRefinedMethod(BeamType beamType,const CGirderKey& gi
 
 void CPsLossEngineer::ReportApproxLumpSumMethod(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level,bool isWsdot)
 {
-   EAF_GET_IFACE2(GetBroker(), ILibrary,pLib);
-   EAF_GET_IFACE2(GetBroker(), ISpecification,pSpec);
+   GET_IFACE2(GetBroker(), ILibrary,pLib);
+   GET_IFACE2(GetBroker(), ISpecification,pSpec);
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
@@ -302,7 +302,7 @@ void CPsLossEngineer::ReportGeneralLumpSumMethod(BeamType beamType,const CGirder
 
 #if defined _DEBUG
    // this method is only applicable to PGSuper
-   EAF_GET_IFACE2(GetBroker(), IBridge, pIBridge);
+   GET_IFACE2(GetBroker(), IBridge, pIBridge);
    ATLASSERT(pIBridge->GetSegmentCount(girderKey) == 1);
 #endif
    CSegmentKey segmentKey(girderKey, 0);
@@ -326,8 +326,8 @@ void CPsLossEngineer::LossesByRefinedEstimate(BeamType beamType,const pgsPointOf
 {
    PRECONDITION(pLosses != 0 );
 
-   EAF_GET_IFACE2(GetBroker(), ILibrary,pLib);
-   EAF_GET_IFACE2(GetBroker(), ISpecification,pSpec);
+   GET_IFACE2(GetBroker(), ILibrary,pLib);
+   GET_IFACE2(GetBroker(), ISpecification,pSpec);
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
@@ -415,8 +415,8 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
 
 
    // get time to prestress transfer
-   EAF_GET_IFACE2(GetBroker(),  ISpecification,   pSpec);
-   EAF_GET_IFACE2(GetBroker(), ILibrary,pLib);
+   GET_IFACE2(GetBroker(),  ISpecification,   pSpec);
+   GET_IFACE2(GetBroker(), ILibrary,pLib);
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
    const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
@@ -493,7 +493,7 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
       Int32 reason = XREASON_AGENTVALIDATIONFAILURE;
       std::_tstring msg = std::_tstring(SEGMENT_LABEL(segmentKey)) + _T(": ");
 
-      CEAFStatusItem* pStatusItem = nullptr;
+      std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem;
 
       if ( e.GetReasonCode() == WBFL::LRFD::XPsLosses::Reason::fpjOutOfRange )
       {
@@ -506,22 +506,22 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
          {
             msg += _T("Prestress losses could not be computed because the prestress jacking stress fpj does not exceed 0.5fpu (see Article ") + std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.5.4.2c"),_T("5.9.3.4.2c"))) + _T("\nAdjust the prestress jacking forces");
          }
-         pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,1,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
+         pStatusItem = std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, 1, m_StatusGroupID, m_scidGirderDescriptionError, msg.c_str());
       }
       else if ( e.GetReasonCode() == WBFL::LRFD::XPsLosses::Reason::fcOutOfRange )
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
          msg += _T("Concrete strength is out of range per LRFD 5.4.2.1 and ") +  std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.5.1"),_T("5.9.3.1")));
-         pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,2,m_StatusGroupID,m_scidGirderDescriptionWarning,msg.c_str());
+         pStatusItem = std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, 2, m_StatusGroupID, m_scidGirderDescriptionWarning, msg.c_str());
       }
       else
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
-         msg += _T("Prestress losses could not be computed because an unspecified error occured");
-         pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID,m_scidUnknown,_T(__FILE__),__LINE__,msg.c_str());
+         msg += _T("Prestress losses could not be computed because an unspecified error occurred");
+         pStatusItem = std::make_shared<pgsUnknownErrorStatusItem>(m_StatusGroupID, m_scidUnknown, _T(__FILE__), __LINE__, msg.c_str());
       }
 
-      EAF_GET_IFACE2(GetBroker(), IEAFStatusCenter,pStatusCenter);
+      GET_IFACE2(GetBroker(), IEAFStatusCenter,pStatusCenter);
       ATLASSERT(pStatusItem != nullptr);
       pStatusCenter->Add(pStatusItem);
 
@@ -601,8 +601,8 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
 
 
    // get time to prestress transfer
-   EAF_GET_IFACE2(GetBroker(),  ISpecification,   pSpec);
-   EAF_GET_IFACE2(GetBroker(),  ILibrary,         pLib);
+   GET_IFACE2(GetBroker(),  ISpecification,   pSpec);
+   GET_IFACE2(GetBroker(),  ILibrary,         pLib);
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
    const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
@@ -619,15 +619,15 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
 
    std::shared_ptr<WBFL::LRFD::RefinedLosses2005> pLoss;
 
-   EAF_GET_IFACE2(GetBroker(), ICamber, pCamber);
+   GET_IFACE2(GetBroker(), ICamber, pCamber);
    std::shared_ptr<const WBFL::LRFD::CreepCoefficient> pGirderCreep = pCamber->GetGirderCreepModel(segmentKey, pConfig);
    std::shared_ptr<const WBFL::LRFD::CreepCoefficient2005> pDeckCreep = pCamber->GetDeckCreepModel(0);
 
-   EAF_GET_IFACE2(GetBroker(), IMaterials, pMaterials);
+   GET_IFACE2(GetBroker(), IMaterials, pMaterials);
    auto concrete_type = pMaterials->GetSegmentConcreteType(segmentKey);
    if (concrete_type == pgsTypes::PCI_UHPC)
    {
-      EAF_GET_IFACE2(GetBroker(), ISegmentData, pSegment);
+      GET_IFACE2(GetBroker(), ISegmentData, pSegment);
       bool bPCTTGirder = pSegment->GetSegmentMaterial(segmentKey)->Concrete.bPCTT;
       Float64 GdrAutogenousShrinkage = pMaterials->GetSegmentAutogenousShrinkage(segmentKey);
 
@@ -831,7 +831,7 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
       Int32 reason = XREASON_AGENTVALIDATIONFAILURE;
       std::_tstring msg = std::_tstring(SEGMENT_LABEL(segmentKey)) + _T(". ");
 
-      CEAFStatusItem* pStatusItem = nullptr;
+      std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem;
 
       if ( e.GetReasonCode() == WBFL::LRFD::XPsLosses::Reason::fpjOutOfRange )
       {
@@ -844,28 +844,28 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
          {
             msg += _T("Prestress losses could not be computed because the prestress jacking stress fpj does not exceed 0.5fpu (see Article") + std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.5.4.2c"),_T("5.9.3.4.2c"))) + _T("\nAdjust the prestress jacking forces");
          }
-         pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,1,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
+         pStatusItem = std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, 1, m_StatusGroupID, m_scidGirderDescriptionError, msg.c_str());
       }
       else if ( e.GetReasonCode() == WBFL::LRFD::XPsLosses::Reason::StrandType )
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
          msg += _T("The relaxation loss of 1.2 ksi can only be used with low relaxation strands (see Article ") + std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.5.4.2c"),_T("5.9.3.4.2c"))) +_T("\nChange the strand type or select a different method for computing losses");
-         pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,1,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
+         pStatusItem = std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, 1, m_StatusGroupID, m_scidGirderDescriptionError, msg.c_str());
       }
       else if ( e.GetReasonCode() == WBFL::LRFD::XPsLosses::Reason::fcOutOfRange )
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
          msg += _T("Concrete strength is out of range per LRFD 5.4.2.1 and ") + std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.5.1"),_T("5.9.3.1")));
-         pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,2,m_StatusGroupID,m_scidGirderDescriptionWarning,msg.c_str());
+         pStatusItem = std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, 2, m_StatusGroupID, m_scidGirderDescriptionWarning, msg.c_str());
       }
       else
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
-         msg += _T("Prestress losses could not be computed because an unspecified error occured");
-         pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID,m_scidUnknown,_T(__FILE__),__LINE__,msg.c_str());
+         msg += _T("Prestress losses could not be computed because an unspecified error occurred");
+         pStatusItem = std::make_shared<pgsUnknownErrorStatusItem>(m_StatusGroupID, m_scidUnknown, _T(__FILE__), __LINE__, msg.c_str());
       }
 
-      EAF_GET_IFACE2(GetBroker(), IEAFStatusCenter,pStatusCenter);
+      GET_IFACE2(GetBroker(), IEAFStatusCenter,pStatusCenter);
       ATLASSERT(pStatusItem != nullptr);
       pStatusCenter->Add(pStatusItem);
 
@@ -885,7 +885,7 @@ void CPsLossEngineer::LossesByRefinedEstimateTxDOT2013(BeamType beamType,const p
    if(method == WBFL::LRFD::ElasticShortening::FcgpComputationMethod::AssumedFpe)
    {
       // Elastic shortening uses the 0.7Fpu method. We only need to compute at mid-girder and then cache results for other locations
-      EAF_GET_IFACE2(GetBroker(),  IPointOfInterest, pPoi);
+      GET_IFACE2(GetBroker(),  IPointOfInterest, pPoi);
       PoiList vPoi;
       pPoi->GetPointsOfInterest(poi.GetSegmentKey(), POI_5L | POI_RELEASED_SEGMENT, &vPoi);
       ATLASSERT(vPoi.size() == 1);
@@ -966,8 +966,8 @@ WBFL::LRFD::ElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRe
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
-   EAF_GET_IFACE2(GetBroker(),  ISpecification,   pSpec);
-   EAF_GET_IFACE2(GetBroker(), ILibrary,pLib);
+   GET_IFACE2(GetBroker(),  ISpecification,   pSpec);
+   GET_IFACE2(GetBroker(), ILibrary,pLib);
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
    const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
@@ -999,8 +999,8 @@ WBFL::LRFD::ElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRe
 
          if (ApsPerm==0.0 || IsEqual(Fpu*0.75, fpjPerm, 1000.0)) // Pa's are very small
          {
-            EAF_GET_IFACE2(GetBroker(), IGirder,pGirder);
-            EAF_GET_IFACE2(GetBroker(), IIntervals,pIntervals);
+            GET_IFACE2(GetBroker(), IGirder,pGirder);
+            GET_IFACE2(GetBroker(), IIntervals,pIntervals);
             IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
             if ( pGirder->IsPrismatic(releaseIntervalIdx,segmentKey) )
             {
@@ -1013,7 +1013,7 @@ WBFL::LRFD::ElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRe
                }
                else
                {
-                  EAF_GET_IFACE2(GetBroker(), IStrandGeometry, pStrandGeom);
+                  GET_IFACE2(GetBroker(), IStrandGeometry, pStrandGeom);
                   if (!pStrandGeom->HasDebonding(segmentKey))
                   {
                      method = WBFL::LRFD::ElasticShortening::FcgpComputationMethod::AssumedFpe;
@@ -1089,11 +1089,10 @@ WBFL::LRFD::ElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRe
       {
          // Elastic shortening loss method switches to iterative solution if jacking stress is not
          // equal to 0.75Fpu. Let user know if this happened.
-         EAF_GET_IFACE2(GetBroker(), IEAFStatusCenter,pStatusCenter);
+         GET_IFACE2(GetBroker(), IEAFStatusCenter,pStatusCenter);
          std::_tstring msg = std::_tstring(SEGMENT_LABEL(segmentKey)) + _T(": ");
          msg += _T("Either the Jacking stress is not equal to 0.75Fpu, or Debonded strands are present, or Temporary strands are present, or the girder is Not Prismatic. Therefore, for the calculation of elastic shortening; an iterative solution was used to find Fcgp after release rather than assuming 0.7*Fpu per the TxDOT design manual.");
-         CEAFStatusItem* pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,1,m_StatusGroupID,m_scidGirderDescriptionWarning,msg.c_str());
-         pStatusCenter->Add(pStatusItem);
+         pStatusCenter->Add(std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, 1, m_StatusGroupID, m_scidGirderDescriptionWarning, msg.c_str()));
       }
    }
    catch( const WBFL::LRFD::XPsLosses& e )
@@ -1101,7 +1100,7 @@ WBFL::LRFD::ElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRe
       Int32 reason = XREASON_AGENTVALIDATIONFAILURE;
       std::_tstring msg = std::_tstring(SEGMENT_LABEL(segmentKey)) + _T(": ");
 
-      CEAFStatusItem* pStatusItem = nullptr;
+      std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem;
 
       if ( e.GetReasonCode() == WBFL::LRFD::XPsLosses::Reason::fpjOutOfRange )
       {
@@ -1114,22 +1113,22 @@ WBFL::LRFD::ElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRe
          {
             msg += _T("Prestress losses could not be computed because the prestress jacking stress fpj does not exceed 0.5fpu (see Article %s\nAdjust the prestress jacking forces") + std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.5.4.2c"), _T("5.9.3.4.2c")));
          }
-         pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,1,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
+         pStatusItem = std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, 1, m_StatusGroupID, m_scidGirderDescriptionError, msg.c_str());
       }
       else if ( e.GetReasonCode() == WBFL::LRFD::XPsLosses::Reason::fcOutOfRange )
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
          msg += _T("Concrete strength is out of range per LRFD 5.4.2.1 and ") + std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.5.1"), _T("5.9.3.1")));
-         pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,2,m_StatusGroupID,m_scidGirderDescriptionWarning,msg.c_str());
+         pStatusItem = std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, 2, m_StatusGroupID, m_scidGirderDescriptionWarning, msg.c_str());
       }
       else
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
-         msg += _T("Prestress losses could not be computed because an unspecified error occured");
-         pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID,m_scidUnknown,_T(__FILE__),__LINE__,msg.c_str());
+         msg += _T("Prestress losses could not be computed because an unspecified error occurred");
+         pStatusItem = std::make_shared<pgsUnknownErrorStatusItem>(m_StatusGroupID, m_scidUnknown, _T(__FILE__), __LINE__, msg.c_str());
       }
 
-      EAF_GET_IFACE2(GetBroker(), IEAFStatusCenter,pStatusCenter);
+      GET_IFACE2(GetBroker(), IEAFStatusCenter,pStatusCenter);
       ATLASSERT(pStatusItem != nullptr);
       pStatusCenter->Add(pStatusItem);
 
@@ -1197,16 +1196,15 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
 
    Float64 anchorSet,wobble,coeffFriction,angleChange;
 
-   EAF_GET_IFACE2(GetBroker(), IMaterials,pMaterial);
+   GET_IFACE2(GetBroker(), IMaterials,pMaterial);
    pgsTypes::ConcreteType girderConcreteType = pMaterial->GetSegmentConcreteType(poi.GetSegmentKey());
    pgsTypes::ConcreteType slabConcreteType   = pMaterial->GetDeckConcreteType();
 
    if ( girderConcreteType != pgsTypes::Normal || slabConcreteType != pgsTypes::Normal )
    {
-      EAF_GET_IFACE2(GetBroker(), IEAFStatusCenter,pStatusCenter);
+      GET_IFACE2(GetBroker(), IEAFStatusCenter,pStatusCenter);
       std::_tstring msg(_T("The approximate estimate of time-dependent losses given in LRFD ") +  std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.5.3"),_T("5.9.3.3"))) + _T(" is for members made from normal-weight concrete"));
-      pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidConcreteTypeError,msg.c_str());
-      pStatusCenter->Add(pStatusItem);
+      pStatusCenter->Add(std::make_shared<pgsInformationalStatusItem>(m_StatusGroupID, m_scidConcreteTypeError, msg.c_str()));
 
       msg += std::_tstring(_T("\nSee Status Center for Details"));
       THROW_UNWIND(msg.c_str(),XREASON_LRFD_VERSION);
@@ -1227,8 +1225,8 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
 
 
    // get time to prestress transfer
-   EAF_GET_IFACE2(GetBroker(),  ISpecification,   pSpec);
-   EAF_GET_IFACE2(GetBroker(),  ILibrary,         pLib);
+   GET_IFACE2(GetBroker(),  ISpecification,   pSpec);
+   GET_IFACE2(GetBroker(),  ILibrary,         pLib);
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
    const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
@@ -1245,14 +1243,14 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
          }
          else
          {
-            EAF_GET_IFACE2(GetBroker(), ILongRebarGeometry,pLongRebarGeom);
+            GET_IFACE2(GetBroker(), ILongRebarGeometry,pLongRebarGeom);
             ppr = pLongRebarGeom->GetPPRBottomHalf(poi);
             pLosses->LossMethod = PrestressLossCriteria::LossMethodType::AASHTO_LUMPSUM;
          }
 
          Float64 shipping_loss = prestress_loss_criteria.ShippingLosses;
 
-         EAF_GET_IFACE2_NOCHECK(GetBroker(), IMaterials, pMaterial);
+         GET_IFACE2_NOCHECK(GetBroker(), IMaterials, pMaterial);
          pgsTypes::ConcreteType concreteType = (pConfig ? pConfig->ConcType : pMaterial->GetSegmentConcreteType(segmentKey));
 
          std::shared_ptr<WBFL::LRFD::ApproximateLosses> pLoss(std::make_shared<WBFL::LRFD::ApproximateLosses>(
@@ -1327,13 +1325,12 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
 
          // LRFD 5th Edition, 2010, C5.9.5.3 ( or >= 2017, C5.9.3.3)
          // The approximate estimates of time-dependent prestress losses given in Eq 5.9.3.3-1 are intended for sections with composite decks only
-         EAF_GET_IFACE2_NOCHECK(GetBroker(),IBridge,pBridge);
+         GET_IFACE2_NOCHECK(GetBroker(),IBridge,pBridge);
          if ( WBFL::LRFD::BDSManager::Edition::FifthEdition2010 <= WBFL::LRFD::BDSManager::GetEdition() && !pBridge->IsCompositeDeck() )
          {
-            EAF_GET_IFACE2(GetBroker(), IEAFStatusCenter,pStatusCenter);
+            GET_IFACE2(GetBroker(), IEAFStatusCenter,pStatusCenter);
             std::_tstring msg(_T("The approximate estimates of time-dependent prestress losses given in Eq ") + std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.5.3-1"),_T("5.9.3.3-1"))) + _T(" are intended for sections with composite decks only."));
-            pgsInformationalStatusItem* pStatusItem = new pgsInformationalStatusItem(m_StatusGroupID,m_scidLRFDVersionError,msg.c_str());
-            pStatusCenter->Add(pStatusItem);
+            pStatusCenter->Add(std::make_shared<pgsInformationalStatusItem>(m_StatusGroupID, m_scidLRFDVersionError, msg.c_str()));
 
             msg += std::_tstring(_T("\nSee Status Center for Details"));
             THROW_UNWIND(msg.c_str(),XREASON_LRFD_VERSION);
@@ -1418,7 +1415,7 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
       Int32 reason = XREASON_AGENTVALIDATIONFAILURE;
       std::_tstring msg = std::_tstring(SEGMENT_LABEL(segmentKey)) + _T(": ");
 
-      CEAFStatusItem* pStatusItem = nullptr;
+      std::shared_ptr<WBFL::EAF::StatusItem> pStatusItem;
 
       if ( e.GetReasonCode() == WBFL::LRFD::XPsLosses::Reason::fpjOutOfRange )
       {
@@ -1431,22 +1428,22 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
          {
             msg += _T("Prestress losses could not be computed because the prestress jacking stress fpj does not exceed 0.5fpu (see Article ") +  std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.5.4.2c"),_T("5.9.3.4.2c"))) +_T(")\nAdjust the prestress jacking forces");
          }
-         pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,1,m_StatusGroupID,m_scidGirderDescriptionError,msg.c_str());
+         pStatusItem = std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, 1, m_StatusGroupID, m_scidGirderDescriptionError, msg.c_str());
       }
       else if ( e.GetReasonCode() == WBFL::LRFD::XPsLosses::Reason::fcOutOfRange )
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
          msg += _T("Concrete strength is out of range per LRFD 5.4.2.1 and ") + std::_tstring(WBFL::LRFD::LrfdCw8th(_T("5.9.5.1"),_T("5.9.3.1")));
-         pStatusItem = new pgsGirderDescriptionStatusItem(segmentKey,0,m_StatusGroupID,m_scidGirderDescriptionWarning,msg.c_str());
+         pStatusItem = std::make_shared<pgsGirderDescriptionStatusItem>(segmentKey, 0, m_StatusGroupID, m_scidGirderDescriptionWarning, msg.c_str());
       }
       else
       {
          reason |= XREASON_ASSUMPTIONVIOLATED;
-         msg += _T("Prestress losses could not be computed because an unspecified error occured");
-         pStatusItem = new pgsUnknownErrorStatusItem(m_StatusGroupID,m_scidUnknown,_T(__FILE__),__LINE__,msg.c_str());
+         msg += _T("Prestress losses could not be computed because an unspecified error occurred");
+         pStatusItem = std::make_shared<pgsUnknownErrorStatusItem>(m_StatusGroupID, m_scidUnknown, _T(__FILE__), __LINE__, msg.c_str());
       }
 
-      EAF_GET_IFACE2(GetBroker(), IEAFStatusCenter,pStatusCenter);
+      GET_IFACE2(GetBroker(), IEAFStatusCenter,pStatusCenter);
       ATLASSERT(pStatusItem != nullptr);
       pStatusCenter->Add(pStatusItem);
 
@@ -1528,7 +1525,7 @@ void CPsLossEngineer::LossesByGeneralLumpSum(BeamType beamType,const pgsPointOfI
 
    pLosses->LossMethod = PrestressLossCriteria::LossMethodType::GENERAL_LUMPSUM;
 
-   EAF_GET_IFACE2(GetBroker(), ILossParameters,pLossParameters);
+   GET_IFACE2(GetBroker(), ILossParameters,pLossParameters);
 
    // the lump sum loss object can deal with no area of prestress (no strand) cases.
    std::shared_ptr<const WBFL::LRFD::LumpSumLosses> pLoss(std::make_shared<WBFL::LRFD::LumpSumLosses>(ApsPerm,ApsTTS,fpjPerm,fpjTTS,usage,
@@ -1551,7 +1548,7 @@ void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLoss
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
-   EAF_GET_IFACE2(GetBroker(), IBridge,pIBridge);
+   GET_IFACE2(GetBroker(), IBridge,pIBridge);
    ATLASSERT(pIBridge->GetSegmentCount(girderKey) == 1);
 #endif
    CSegmentKey segmentKey(girderKey,0);
@@ -1560,10 +1557,10 @@ void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLoss
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   EAF_GET_IFACE2(GetBroker(), ISegmentData,pSegmentData);
+   GET_IFACE2(GetBroker(), ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
-   EAF_GET_IFACE2(GetBroker(), IStrandGeometry,pStrandGeom);
+   GET_IFACE2(GetBroker(), IStrandGeometry,pStrandGeom);
    StrandIndexType Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -1573,7 +1570,7 @@ void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLoss
    PoiList vPoi;
    GetPointsOfInterest(girderKey, &vPoi);
 
-   EAF_GET_IFACE2(GetBroker(), ILosses,pILosses);
+   GET_IFACE2(GetBroker(), ILosses,pILosses);
    const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi.front() );
 
    // Do some preliminary setup for the tables.
@@ -1606,7 +1603,7 @@ void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLoss
    CTimeDependentLossesAtShippingTable*            pPSH = nullptr;
    CPostTensionTimeDependentLossesAtShippingTable* pPTH = nullptr;
 
-   EAF_GET_IFACE2(GetBroker(), ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+   GET_IFACE2(GetBroker(), ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
    if ( pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled() )
    {
       pPSH = CTimeDependentLossesAtShippingTable::PrepareTable(pChapter,GetBroker(),segmentKey,bTemporaryStrands,pDisplayUnits,level);
@@ -1693,7 +1690,7 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
-   EAF_GET_IFACE2(GetBroker(), IBridge,pIBridge);
+   GET_IFACE2(GetBroker(), IBridge,pIBridge);
    ATLASSERT(pIBridge->GetSegmentCount(girderKey) == 1);
 #endif
    CSegmentKey segmentKey(girderKey,0);
@@ -1702,13 +1699,13 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   EAF_GET_IFACE2(GetBroker(), IBridge,pBridge);
+   GET_IFACE2(GetBroker(), IBridge,pBridge);
 
-   EAF_GET_IFACE2(GetBroker(), IStrandGeometry,pStrandGeom);
+   GET_IFACE2(GetBroker(), IStrandGeometry,pStrandGeom);
    StrandIndexType Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
 
-   EAF_GET_IFACE2(GetBroker(), ILibrary,pLib);
-   EAF_GET_IFACE2(GetBroker(), ISpecification,pSpec);
+   GET_IFACE2(GetBroker(), ILibrary,pLib);
+   GET_IFACE2(GetBroker(), ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -1718,10 +1715,10 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    PoiList vPoi;
    GetPointsOfInterest(girderKey, &vPoi);
 
-   EAF_GET_IFACE2(GetBroker(), ILosses,pILosses);
+   GET_IFACE2(GetBroker(), ILosses,pILosses);
    const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi.front() );
 
-   EAF_GET_IFACE2(GetBroker(), ISegmentData,pSegmentData);
+   GET_IFACE2(GetBroker(), ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
    bool bTemporaryStrands = ( 0 < Nt && pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPretensioned ? true : false);
@@ -1739,7 +1736,7 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    CPostTensionInteractionTable*                pPTT = nullptr;
    CEffectOfPostTensionedTemporaryStrandsTable* pPTP = nullptr;
 
-   EAF_GET_IFACE2(GetBroker(), IMaterials, pMaterials);
+   GET_IFACE2(GetBroker(), IMaterials, pMaterials);
    if (pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::PCI_UHPC)
    {
       pAS = CAutogenousShrinkageTable::PrepareTable(pChapter,GetBroker(),segmentKey,bTemporaryStrands,pDetails, pDisplayUnits,level);
@@ -1941,7 +1938,7 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
-   EAF_GET_IFACE2(GetBroker(), IBridge,pIBridge);
+   GET_IFACE2(GetBroker(), IBridge,pIBridge);
    ATLASSERT(pIBridge->GetSegmentCount(girderKey) == 1);
 #endif
    CSegmentKey segmentKey(girderKey,0);
@@ -1950,7 +1947,7 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   EAF_GET_IFACE2(GetBroker(), IStrandGeometry,pStrandGeom);
+   GET_IFACE2(GetBroker(), IStrandGeometry,pStrandGeom);
    StrandIndexType Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -1960,7 +1957,7 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
    PoiList vPoi;
    GetPointsOfInterest(girderKey, &vPoi);
 
-   EAF_GET_IFACE2(GetBroker(), ILosses,pILosses);
+   GET_IFACE2(GetBroker(), ILosses,pILosses);
    const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi.front() );
 
    // Do some preliminary setup for the tables.
@@ -1973,7 +1970,7 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
    INIT_UV_PROTOTYPE( rptStressUnitValue,  stress,      pDisplayUnits->GetStressUnit(),          false );
    INIT_UV_PROTOTYPE( rptStressUnitValue,  mod_e,       pDisplayUnits->GetModEUnit(),            false );
 
-   EAF_GET_IFACE2(GetBroker(), ISegmentData,pSegmentData);
+   GET_IFACE2(GetBroker(), ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
    bool bTemporaryStrands = ( 0 < Nt && pStrands->GetTemporaryStrandUsage() == pgsTypes::ttsPretensioned ? true : false);
 
@@ -1997,7 +1994,7 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
    CTimeDependentLossesAtShippingTable*            pPSH = nullptr;
    CPostTensionTimeDependentLossesAtShippingTable* pPTH = nullptr;
 
-   EAF_GET_IFACE2(GetBroker(), ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+   GET_IFACE2(GetBroker(), ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
    if ( pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled() )
    {
       pPSH = CTimeDependentLossesAtShippingTable::PrepareTable(pChapter,GetBroker(),segmentKey,bTemporaryStrands,pDisplayUnits,level);
@@ -2088,7 +2085,7 @@ void CPsLossEngineer::ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::B
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
-   EAF_GET_IFACE2(GetBroker(), IBridge,pIBridge);
+   GET_IFACE2(GetBroker(), IBridge,pIBridge);
    ATLASSERT(pIBridge->GetSegmentCount(girderKey) == 1);
 #endif
    CSegmentKey segmentKey(girderKey,0);
@@ -2097,16 +2094,16 @@ void CPsLossEngineer::ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::B
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   EAF_GET_IFACE2(GetBroker(), IStrandGeometry,pStrandGeom);
+   GET_IFACE2(GetBroker(), IStrandGeometry,pStrandGeom);
    StrandIndexType Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
 
-   EAF_GET_IFACE2(GetBroker(), ISegmentData,pSegmentData);
+   GET_IFACE2(GetBroker(), ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
    PoiList vPoi;
    GetPointsOfInterest(girderKey, &vPoi);
 
-   EAF_GET_IFACE2(GetBroker(), ILosses,pILosses);
+   GET_IFACE2(GetBroker(), ILosses,pILosses);
    const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi.front() );
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -2213,7 +2210,7 @@ void CPsLossEngineer::ReportApproxMethod2005(rptChapter* pChapter,CPsLossEnginee
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
-   EAF_GET_IFACE2(GetBroker(), IBridge,pIBridge);
+   GET_IFACE2(GetBroker(), IBridge,pIBridge);
    ATLASSERT(pIBridge->GetSegmentCount(girderKey) == 1);
 #endif
    CSegmentKey segmentKey(girderKey,0);
@@ -2222,16 +2219,16 @@ void CPsLossEngineer::ReportApproxMethod2005(rptChapter* pChapter,CPsLossEnginee
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   EAF_GET_IFACE2(GetBroker(), ISegmentData,pSegmentData);
+   GET_IFACE2(GetBroker(), ISegmentData,pSegmentData);
    const CStrandData* pStrands = pSegmentData->GetStrandData(segmentKey);
 
-   EAF_GET_IFACE2(GetBroker(), IStrandGeometry,pStrandGeom);
+   GET_IFACE2(GetBroker(), IStrandGeometry,pStrandGeom);
    StrandIndexType Nt = pStrandGeom->GetStrandCount(segmentKey,pgsTypes::Temporary);
 
    PoiList vPoi;
    GetPointsOfInterest(girderKey, &vPoi);
 
-   EAF_GET_IFACE2(GetBroker(), ILosses,pILosses);
+   GET_IFACE2(GetBroker(), ILosses,pILosses);
    const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi.front() );
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -2349,7 +2346,7 @@ void CPsLossEngineer::ReportLumpSumMethod(rptChapter* pChapter,CPsLossEngineer::
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
-   EAF_GET_IFACE2(GetBroker(), IBridge,pBridge);
+   GET_IFACE2(GetBroker(), IBridge,pBridge);
    ATLASSERT(pBridge->GetSegmentCount(girderKey) == 1);
 #endif
    CSegmentKey segmentKey(girderKey,0);
@@ -2358,7 +2355,7 @@ void CPsLossEngineer::ReportLumpSumMethod(rptChapter* pChapter,CPsLossEngineer::
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   EAF_GET_IFACE2(GetBroker(), IStrandGeometry,pStrandGeom);
+   GET_IFACE2(GetBroker(), IStrandGeometry,pStrandGeom);
    StrandIndexType NtMax = pStrandGeom->GetMaxStrands(segmentKey,pgsTypes::Temporary);
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -2382,7 +2379,7 @@ void CPsLossEngineer::ReportLumpSumMethod(rptChapter* pChapter,CPsLossEngineer::
    PoiList vPoi;
    GetPointsOfInterest(girderKey, &vPoi);
 
-   EAF_GET_IFACE2(GetBroker(), ILosses,pILosses);
+   GET_IFACE2(GetBroker(), ILosses,pILosses);
    const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi.front() );
 
    // Typecast to our known type (eating own doggy food)
@@ -2549,8 +2546,8 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pCh
    if ( pDetails->LossMethod == PrestressLossCriteria::LossMethodType::AASHTO_LUMPSUM || pDetails->LossMethod == PrestressLossCriteria::LossMethodType::WSDOT_LUMPSUM )
    {
       // Approximate methods before 2005
-      EAF_GET_IFACE2(GetBroker(),  ISpecification,   pSpec);
-      EAF_GET_IFACE2(GetBroker(),  ILibrary,         pLib);
+      GET_IFACE2(GetBroker(),  ISpecification,   pSpec);
+      GET_IFACE2(GetBroker(),  ILibrary,         pLib);
       std::_tstring spec_name = pSpec->GetSpecification();
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
       const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
@@ -2843,19 +2840,19 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
    Float64* pAngleChange
 )
 {
-   EAF_GET_IFACE2(GetBroker(), IBridge, pBridge);
-   EAF_GET_IFACE2(GetBroker(), IStrandGeometry, pStrandGeom);
-   EAF_GET_IFACE2(GetBroker(), ISegmentData, pSegmentData);
-   EAF_GET_IFACE2(GetBroker(), ISectionProperties, pSectProp);
-   EAF_GET_IFACE2(GetBroker(), IProductForces, pProdForces);
-   EAF_GET_IFACE2(GetBroker(), IEnvironment, pEnv);
-   EAF_GET_IFACE2(GetBroker(), IMaterials, pMaterial);
-   EAF_GET_IFACE2(GetBroker(), ISpecification, pSpec);
-   EAF_GET_IFACE2(GetBroker(), IBridgeDescription, pIBridgeDesc);
-   EAF_GET_IFACE2(GetBroker(), ILibrary, pLibrary);
-   EAF_GET_IFACE2(GetBroker(), IIntervals, pIntervals);
-   EAF_GET_IFACE2(GetBroker(), IGirder, pGirder);
-   EAF_GET_IFACE2(GetBroker(), IPointOfInterest, pPoi);
+   GET_IFACE2(GetBroker(), IBridge, pBridge);
+   GET_IFACE2(GetBroker(), IStrandGeometry, pStrandGeom);
+   GET_IFACE2(GetBroker(), ISegmentData, pSegmentData);
+   GET_IFACE2(GetBroker(), ISectionProperties, pSectProp);
+   GET_IFACE2(GetBroker(), IProductForces, pProdForces);
+   GET_IFACE2(GetBroker(), IEnvironment, pEnv);
+   GET_IFACE2(GetBroker(), IMaterials, pMaterial);
+   GET_IFACE2(GetBroker(), ISpecification, pSpec);
+   GET_IFACE2(GetBroker(), IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(GetBroker(), ILibrary, pLibrary);
+   GET_IFACE2(GetBroker(), IIntervals, pIntervals);
+   GET_IFACE2(GetBroker(), IGirder, pGirder);
+   GET_IFACE2(GetBroker(), IPointOfInterest, pPoi);
 
    const CSegmentKey& segmentKey = poi.GetSegmentKey();
 
@@ -3148,7 +3145,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
          }
       }
 
-      EAF_GET_IFACE2(GetBroker(), IPointOfInterest,pPoi);
+      GET_IFACE2(GetBroker(), IPointOfInterest,pPoi);
       CSpanKey spanKey;
       Float64 Xspan;
       pPoi->ConvertPoiToSpanPoint(poi,&spanKey,&Xspan);
@@ -3273,7 +3270,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
       break;
    }
 
-   EAF_GET_IFACE2(GetBroker(), ILossParameters,pLossParameters);
+   GET_IFACE2(GetBroker(), ILossParameters,pLossParameters);
    pLossParameters->GetTemporaryStrandPostTensionParameters(pAnchorSet,pWobble,pCoeffFriction);
 
    Float64 precamber = pGirder->GetPrecamber(segmentKey);
@@ -3283,7 +3280,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
 
 void CPsLossEngineer::ReportFinalLosses(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
-   EAF_GET_IFACE2(GetBroker(), ILossParameters,pLossParameters);
+   GET_IFACE2(GetBroker(), ILossParameters,pLossParameters);
    PrestressLossCriteria::LossMethodType loss_method = pLossParameters->GetLossMethod();
 
    Uint16 level = 0;
@@ -3316,8 +3313,8 @@ void CPsLossEngineer::ReportFinalLosses(BeamType beamType,const CGirderKey& gird
 
 void CPsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,LossAgency lossAgency)
 {
-   EAF_GET_IFACE2(GetBroker(), ILibrary,pLib);
-   EAF_GET_IFACE2(GetBroker(), ISpecification,pSpec);
+   GET_IFACE2(GetBroker(), ILibrary,pLib);
+   GET_IFACE2(GetBroker(), ISpecification,pSpec);
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
 
@@ -3336,7 +3333,7 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamTy
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
-   EAF_GET_IFACE2(GetBroker(), IBridge,pIBridge);
+   GET_IFACE2(GetBroker(), IBridge,pIBridge);
    ATLASSERT(pIBridge->GetSegmentCount(girderKey) == 1);
 #endif
    CSegmentKey segmentKey(girderKey,0);
@@ -3345,8 +3342,8 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamTy
 
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
-   EAF_GET_IFACE2(GetBroker(), ILibrary,pLib);
-   EAF_GET_IFACE2(GetBroker(), ISpecification,pSpec);
+   GET_IFACE2(GetBroker(), ILibrary,pLib);
+   GET_IFACE2(GetBroker(), ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
 
    pParagraph = new rptParagraph(rptStyleManager::GetHeadingStyle());
@@ -3356,7 +3353,7 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamTy
    PoiList vPoi;
    GetPointsOfInterest(girderKey, &vPoi);
 
-   EAF_GET_IFACE2(GetBroker(), ILosses,pILosses);
+   GET_IFACE2(GetBroker(), ILosses,pILosses);
    const LOSSDETAILS* pDetails = pILosses->GetLossDetails( vPoi.front() );
 
    CTotalPrestressLossTable* pT = CTotalPrestressLossTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDetails,pDisplayUnits,0);
@@ -3383,7 +3380,7 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethodBefore2005(rptChapter* pChap
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
-   EAF_GET_IFACE2(GetBroker(), IBridge,pIBridge);
+   GET_IFACE2(GetBroker(), IBridge,pIBridge);
    ATLASSERT(pIBridge->GetSegmentCount(girderKey) == 1);
 #endif
    CSegmentKey segmentKey(girderKey,0);
@@ -3397,7 +3394,7 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethodBefore2005(rptChapter* pChap
    PoiList vPoi;
    GetPointsOfInterest(girderKey, &vPoi);
 
-   EAF_GET_IFACE2(GetBroker(), ILosses,pILosses);
+   GET_IFACE2(GetBroker(), ILosses,pILosses);
 
    CFinalPrestressLossTable* pT = CFinalPrestressLossTable::PrepareTable(pChapter,GetBroker(),segmentKey,pDisplayUnits,0);
    CEffectivePrestressForceTable* pP = CEffectivePrestressForceTable::PrepareTable(pChapter, GetBroker(), segmentKey, pDisplayUnits, 0);
@@ -3421,12 +3418,12 @@ void CPsLossEngineer::GetPointsOfInterest(const CGirderKey& girderKey,PoiList* p
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
-   EAF_GET_IFACE2(GetBroker(), IBridge,pIBridge);
+   GET_IFACE2(GetBroker(), IBridge,pIBridge);
    ATLASSERT(pIBridge->GetSegmentCount(girderKey) == 1);
 #endif
    CSegmentKey segmentKey(girderKey,0);
 
-   EAF_GET_IFACE2(GetBroker(), IPointOfInterest,pPoi);
+   GET_IFACE2(GetBroker(), IPointOfInterest,pPoi);
    PoiList vPoi;
    pPoi->GetPointsOfInterest(segmentKey,POI_ERECTED_SEGMENT, pPoiList);
    PoiList vPoi2;

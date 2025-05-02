@@ -32,15 +32,8 @@
 #include "PGSuperDoc.h"
 #include <Units\Measure.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <PgsExt\GirderLabel.h>
-#include <PgsExt\HaunchDepthInputConversionTool.h>
+#include <PsgLib\GirderLabel.h>
 
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 GRID_IMPLEMENT_REGISTER(CHaunchDirectEntireBridgeGrid, CS_DBLCLKS, 0, 0, 0);
 
@@ -212,11 +205,10 @@ void CHaunchDirectEntireBridgeGrid::FillGrid()
    const CBridgeDescription2* pBridgeDescOrig = GetBridgeDesc();
 
    // Convert current haunch data if needed
-   HaunchDepthInputConversionTool conversionTool(pBridgeDescOrig, pBroker,false);
-   auto convPair = conversionTool.ConvertToDirectHaunchInput(pgsTypes::hilSame4Bridge,layoutType,disttype);
-   const CBridgeDescription2* pBridgeDesc = &convPair.second;
+   GET_IFACE2(pBroker, IBridgeDescription, pBridgeDesc);
+   auto bridge = pBridgeDesc->ConvertHaunchToDirectHaunchInput(*pBridgeDescOrig, pgsTypes::hilSame4Bridge, layoutType, disttype).second;
 
-   std::vector<Float64> haunchDepths = pBridgeDesc->GetDirectHaunchDepths();
+   std::vector<Float64> haunchDepths = bridge.GetDirectHaunchDepths();
 
    GetParam()->EnableUndo(FALSE);
    GetParam()->SetLockReadOnly(FALSE);

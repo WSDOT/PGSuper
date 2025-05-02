@@ -27,7 +27,7 @@
 #include <EAF\ComponentObject.h>
 
 class CPGSuperDataExporter : public WBFL::EAF::ComponentObject,
-   public PGSuper::IDataExporter
+   public PGS::IDataExporter
 {
 public:
    CPGSuperDataExporter();

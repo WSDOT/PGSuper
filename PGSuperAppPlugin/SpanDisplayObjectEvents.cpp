@@ -30,7 +30,7 @@
 #include "PGSuperDocBase.h"
 #include <IFace\EditByUI.h>
 
-#include <PgsExt\SpanData2.h>
+#include <PsgLib\SpanData2.h>
 
 #include <DManip/DisplayObject.h>
 #include <DManip/DisplayList.h>
@@ -48,7 +48,7 @@ CBridgePlanViewSpanDisplayObjectEvents::CBridgePlanViewSpanDisplayObjectEvents(S
 
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CSpanData2* pSpan = pIBridgeDesc->GetSpan(spanIdx);
    m_TempSupports         = pSpan->GetTemporarySupports();
 }

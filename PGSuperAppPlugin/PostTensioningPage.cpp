@@ -31,11 +31,6 @@
 #include <EAF\EAFDocument.h>
 #include "PGSuperDoc.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 // CPostTensioningPage dialog
@@ -56,7 +51,7 @@ void CPostTensioningPage::DoDataExchange(CDataExchange* pDX)
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
    CPropertyPage::DoDataExchange(pDX);
 
@@ -87,7 +82,7 @@ BOOL CPostTensioningPage::OnInitDialog()
    BOOL bShow;
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,ILossParameters,pLossParameters);
+   GET_IFACE2(pBroker,ILossParameters,pLossParameters);
    if ( pLossParameters->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       m_ctrlDescription.SetWindowText(_T("These parameters are used for determining initial losses in post-tensioned tendons and temporary strands"));

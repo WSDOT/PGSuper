@@ -78,22 +78,22 @@ rptChapter* CCritSectionChapterBuilder::Build(const std::shared_ptr<const WBFL::
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   EAF_GET_IFACE2_NOCHECK(pBroker,IRatingSpecification,pRatingSpec);
-   EAF_GET_IFACE2(pBroker, IDocumentType, pDocType);
+   GET_IFACE2_NOCHECK(pBroker,IRatingSpecification,pRatingSpec);
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
    bool isPGSuper = pDocType->IsPGSuperDocument();
 
    bool bDesign = m_bDesign;
    bool bRating = m_bRating;
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
-   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    bool bAfterThirdEdition = ( pSpecEntry->GetSpecificationCriteria().GetEdition() >= WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 ? true : false );
 
-   EAF_GET_IFACE2_NOCHECK(pBroker,ILimitStateForces,pLimitStateForces); // not used if bDesign = false
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2_NOCHECK(pBroker,ILimitStateForces,pLimitStateForces); // not used if bDesign = false
+   GET_IFACE2(pBroker,IBridge,pBridge);
    std::vector<CGirderKey> vGirderKeys;
    pBridge->GetGirderline(girderKey, &vGirderKeys);
    for(const auto& thisGirderKey : vGirderKeys)
@@ -185,15 +185,15 @@ void CCritSectionChapterBuilder::Build(rptChapter* pChapter,pgsTypes::LimitState
    INIT_UV_PROTOTYPE( rptLengthSectionValue,      dim,       pDisplayUnits->GetComponentDimUnit(),  false );
    INIT_UV_PROTOTYPE( rptAngleSectionValue,       ang,       pDisplayUnits->GetAngleUnit(),  false );
 
-   EAF_GET_IFACE2(pBroker,IReportOptions,pReportOptions);
+   GET_IFACE2(pBroker,IReportOptions,pReportOptions);
    locationp.IncludeSpanAndGirder(pReportOptions->IncludeSpanAndGirder4Pois(girderKey));
 
-   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
-   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    bool bAfterThirdEdition = ( WBFL::LRFD::BDSManager::Edition::ThirdEdition2004 <= pSpecEntry->GetSpecificationCriteria().GetEdition() ? true : false );
 
-   EAF_GET_IFACE2(pBroker,IShearCapacity,pShearCapacity);
+   GET_IFACE2(pBroker,IShearCapacity,pShearCapacity);
    const std::vector<CRITSECTDETAILS>& vcsDetails(pShearCapacity->GetCriticalSectionDetails(limitState,girderKey));
 
    rptParagraph* pPara = new rptParagraph;

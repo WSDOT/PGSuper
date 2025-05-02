@@ -20,7 +20,6 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// CreepAndShrinkageTable.cpp : Implementation of CCreepAndShrinkageTable
 #include "stdafx.h"
 #include "CreepAndShrinkageTable.h"
 #include <IFace\Bridge.h>
@@ -73,7 +72,7 @@ CCreepAndShrinkageTable* CCreepAndShrinkageTable::PrepareTable(rptChapter* pChap
       *pParagraph << rptRcImage(strImagePath + _T("Delta_FpSR_2004_US.png")) << rptNewLine;
    }
 
-   EAF_GET_IFACE2(pBroker,IEnvironment,pEnv);
+   GET_IFACE2(pBroker,IEnvironment,pEnv);
    *pParagraph << _T("H = ") << pEnv->GetRelHumidity() << _T("%") << rptNewLine;
 
    *pParagraph << table << rptNewLine;

@@ -33,11 +33,6 @@
 
 // CBridgeDescRatingPage dialog
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 
 BEGIN_MESSAGE_MAP(CShearSteelPage2, CShearSteelPage)
@@ -63,7 +58,7 @@ void CShearSteelPage2::DoRestoreDefaults()
    auto pBroker = EAFGetBroker();
 
    // get shear information from library
-   EAF_GET_IFACE2( pBroker, ILibrary, pLib );
+   GET_IFACE2( pBroker, ILibrary, pLib );
    const GirderLibraryEntry* pGirderEntry = pLib->GetGirderEntry( m_CurGrdName.c_str());
    ASSERT(pGirderEntry != nullptr);
 

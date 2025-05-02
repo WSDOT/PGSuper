@@ -24,7 +24,7 @@
 #include <Reporting\HaulingCheckDetailsChapterBuilder.h>
 #include <Reporting\ReportNotes.h>
 
-#include <PgsExt\PointOfInterest.h>
+#include <PsgLib\PointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\CapacityToDemand.h>
 
@@ -64,12 +64,12 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(const std::shared_ptr<cons
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
 
-   EAF_GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+   GET_IFACE2(pBroker,ISegmentHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
    if (pSegmentHaulingSpecCriteria->IsHaulingAnalysisEnabled())
    {
-      EAF_GET_IFACE2(pBroker, IArtifact, pArtifacts);
-      EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
-      EAF_GET_IFACE2_NOCHECK(pBroker, IBridge, pBridge);
+      GET_IFACE2(pBroker, IArtifact, pArtifacts);
+      GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+      GET_IFACE2_NOCHECK(pBroker, IBridge, pBridge);
 
       std::vector<CGirderKey> vGirderKeys;
 

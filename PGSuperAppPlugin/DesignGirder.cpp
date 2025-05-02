@@ -24,7 +24,7 @@
 #include "DesignGirder.h"
 #include "PGSuperDoc.h"
 #include <PgsExt\DesignConfigUtil.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 
@@ -32,11 +32,6 @@
 
 #include <algorithm>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 txnDesignGirder::txnDesignGirder( std::vector<const pgsGirderDesignArtifact*>& artifacts, SlabOffsetDesignSelectionType slabOffsetDType, SpanIndexType fromSpan, GirderIndexType fromGirder)
 {
@@ -142,7 +137,7 @@ void txnDesignGirder::Init()
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
    for (auto& rdata : m_DesignDataColl)
    {
@@ -167,7 +162,7 @@ void txnDesignGirder::Init()
             m_DesignSlabOffset[pgsTypes::metStart] = pSegmentDesignArtifact->GetSlabOffset(pgsTypes::metStart);
             m_DesignSlabOffset[pgsTypes::metEnd]   = pSegmentDesignArtifact->GetSlabOffset(pgsTypes::metEnd);
 
-            EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+            GET_IFACE2(pBroker,ISpecification,pSpec);
             if ( pSegmentDesignArtifact->GetDesignOptions().doDesignSlabOffset == sodDesignHaunch &&
                  pSpec->IsAssumedExcessCamberForLoad())
             {
@@ -182,7 +177,7 @@ void txnDesignGirder::Init()
    // Store original slab offset data. Format depends on type
    if (m_DidSlabOffsetDesign)
    {
-      EAF_GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
+      GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
 
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
       m_OldSlabOffsetType = pIBridgeDesc->GetSlabOffsetType();
@@ -232,7 +227,7 @@ void txnDesignGirder::Init()
    // Store original AssumedExcessCamber data. Format depends on type
    if (m_DidAssumedExcessCamberDesign)
    {
-      EAF_GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
+      GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
 
       m_OldAssumedExcessCamberType = pIBridgeDesc->GetAssumedExcessCamberType();
       if (m_OldAssumedExcessCamberType==pgsTypes::aecBridge)
@@ -279,9 +274,9 @@ void txnDesignGirder::DoExecute(int i)
 {
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 
-   EAF_GET_IFACE2(pBroker,IEvents, pEvents);
+   GET_IFACE2(pBroker,IEvents, pEvents);
    // don't fire any changed events until all changes are done
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);

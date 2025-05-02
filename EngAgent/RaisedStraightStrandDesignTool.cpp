@@ -24,6 +24,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
+#include <IFace/PointOfInterest.h>
 
 #include <EAF\EAFDisplayUnits.h>
 
@@ -369,16 +370,16 @@ void pgsRaisedStraightStrandDesignTool::Initialize(std::shared_ptr<WBFL::EAF::Br
    m_SegmentKey = m_pArtifact->GetSegmentKey();
 
    // Get kern elevations
-   EAF_GET_IFACE(IPointOfInterest, pPoi);
+   GET_IFACE(IPointOfInterest, pPoi);
    PoiList vPoi;
    pPoi->GetPointsOfInterest(m_SegmentKey, POI_5L | POI_RELEASED_SEGMENT, &vPoi);
    ATLASSERT(vPoi.size() == 1);
    const pgsPointOfInterest& poi = vPoi.front();
 
-   EAF_GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
 
-   EAF_GET_IFACE(ISectionProperties,pSectProp);
+   GET_IFACE(ISectionProperties,pSectProp);
    // Strands must be above NA in order to be considered for raising
    m_Yb        = pSectProp->GetY(releaseIntervalIdx, poi, pgsTypes::BottomGirder); //pSectProp->GetKt(poi) + pSectProp->GetHg();
    m_LowerKern = pSectProp->GetKb(releaseIntervalIdx,poi);

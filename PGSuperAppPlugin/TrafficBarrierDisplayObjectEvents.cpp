@@ -30,7 +30,7 @@
 #include "PGSuperDocBase.h"
 #include "BridgeSectionView.h"
 
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 
 #include <DManip/DisplayObject.h>
 
@@ -55,7 +55,7 @@ void CTrafficBarrierDisplayObjectEvents::SelectPrev()
    if (m_TrafficBarrierOrientation == pgsTypes::tboLeft)
    {
       // select last girder
-      EAF_GET_IFACE(IBridgeDescription, pIBridgeDesc);
+      GET_IFACE(IBridgeDescription, pIBridgeDesc);
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
       GroupIndexType grpIdx = m_pFrame->GetBridgeSectionView()->GetGroupIndex();
       GirderIndexType nGirders = pBridgeDesc->GetGirderGroup(grpIdx)->GetGirderCount();

@@ -223,8 +223,8 @@ public:
    afx_msg void OnViewGirderviewsettings();
    afx_msg void OnStatuscenterView();
 
-   virtual void ShowCustomReportHelp(eafTypes::CustomReportHelp helpType) override;
-   virtual void ShowCustomReportDefinitionHelp() override;
+   void ShowCustomReportHelp(WBFL::EAF::CustomReportHelp helpType) override;
+   void ShowCustomReportDefinitionHelp() override;
 
 };
 

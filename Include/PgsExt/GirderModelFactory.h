@@ -24,7 +24,6 @@
 
 #include <PgsExt\PgsExtExp.h>
 #include <WBFLFem2d.h>
-#include <WBFLCore.h>
 #include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\PoiPairMap.h>
 #include <IFace\AnalysisResults.h>

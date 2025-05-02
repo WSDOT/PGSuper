@@ -39,8 +39,9 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Intervals.h>
 #include <IFace\DistributionFactors.h>
+#include <IFace/PointOfInterest.h>
 
-#include <PgsExt\PierData2.h>
+#include <PsgLib\PierData2.h>
 
 
 /****************************************************************************
@@ -71,20 +72,20 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(const std::shared_ptr<
    const CGirderKey& girderKey( pGirderRptSpec->GetGirderKey() );
 
    // we want the final configuration... that would be in the last interval
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    IntervalIndexType intervalIdx = pIntervals->GetIntervalCount()-1;
 
    rptChapter* pChapter = CPGSuperChapterBuilder::Build(pRptSpec,level);
 
-   EAF_GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE2(pBroker,IEAFDisplayUnits,pDisplayUnits);
 
-   EAF_GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
+   GET_IFACE2(pBroker,ILimitStateForces,pLimitStateForces);
    bool bPermit = pLimitStateForces->IsStrengthIIApplicable(girderKey);
 
-   EAF_GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
+   GET_IFACE2(pBroker,IUserDefinedLoads,pUDL);
    bool are_user_loads = pUDL->DoUserLoadsExist(girderKey);
 
-   EAF_GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
+   GET_IFACE2(pBroker,IBearingDesign,pBearingDesign);
 
    bool bIncludeImpact = pBearingDesign->BearingLiveLoadReactionsIncludeImpact();
 
@@ -92,17 +93,17 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(const std::shared_ptr<
    std::vector<PierIndexType> vPiers = pBearingDesign->GetBearingReactionPiers(intervalIdx,girderKey);
    bool doFinalLoads = (0 < vPiers.size() ? true : false);
 
-   EAF_GET_IFACE2(pBroker,IProductLoads,pProductLoads);
+   GET_IFACE2(pBroker,IProductLoads,pProductLoads);
    bool bPedestrian = pProductLoads->HasPedestrianLoad();
 
-   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
 
    // Product Reactions
    rptParagraph* p = new rptParagraph;
    *pChapter << p;
    *p << CProductReactionTable().Build(pBroker,girderKey,pSpec->GetAnalysisType(),BearingReactionsTable, bIncludeImpact,true,false,true,pDisplayUnits) << rptNewLine;
 
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    if (1 < nSegments)
    {
@@ -227,8 +228,8 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(const std::shared_ptr<
 
 
 
-   EAF_GET_IFACE2(pBroker,ICamber,pCamber);
-   EAF_GET_IFACE2(pBroker,IPointOfInterest,pPoi);
+   GET_IFACE2(pBroker,ICamber,pCamber);
+   GET_IFACE2(pBroker,IPointOfInterest,pPoi);
 
 
    // TRICKY: use adapter class to get correct reaction interfaces
@@ -370,14 +371,14 @@ rptChapter* CBearingDesignParametersChapterBuilder::Build(const std::shared_ptr<
       i++;
    }
 
-   EAF_GET_IFACE2(pBroker, ILiveLoadDistributionFactors, pLLDF);
+   GET_IFACE2(pBroker, ILiveLoadDistributionFactors, pLLDF);
    pLLDF->ReportReactionDistributionFactors(girderKey, pChapter, false/*full heading style*/);
 
 
    ///////////////////////////////////////
 
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
-   EAF_GET_IFACE2(pBroker, IGirder, pGirder);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker, IGirder, pGirder);
 
    p = new rptParagraph;
    *pChapter << p;

@@ -25,10 +25,10 @@
 
 #include "stdafx.h"
 #include "SpecLimitsPage.h"
-#include "psgLib\psglib.h"
+#include "PsgLib\PsgLib.h"
 #include "SpecMainSheet.h"
 #include <EAF\EAFDocument.h>
-#include <psgLib/PrestressLossCriteria.h>
+#include <PsgLib/PrestressLossCriteria.h>
 
 
 /////////////////////////////////////////////////////////////////////////////

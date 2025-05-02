@@ -24,11 +24,6 @@
 #include "EditConstructionLoad.h"
 #include <IFace\Project.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 txnEditConstructionLoad::txnEditConstructionLoad(Float64 oldLoad,Float64 newLoad)
 {
@@ -56,8 +51,8 @@ void txnEditConstructionLoad::DoExecute(int i)
    
    auto pBroker = EAFGetBroker();
 
-   EAF_GET_IFACE2(pBroker,IUserDefinedLoadData, pLoads );
-   EAF_GET_IFACE2(pBroker,IEvents, pEvents);
+   GET_IFACE2(pBroker,IUserDefinedLoadData, pLoads );
+   GET_IFACE2(pBroker,IEvents, pEvents);
 
    // Exception-safe holder to keep from fireing events until we are done
    CIEventsHolder event_holder(pEvents);

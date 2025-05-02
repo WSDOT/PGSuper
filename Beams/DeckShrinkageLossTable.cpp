@@ -27,10 +27,10 @@
 #include <IFace\Project.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
+
 #include <PsgLib\SpecLibraryEntry.h>
 #include <psgLib/SpecificationCriteria.h>
-
-#include <PgsExt\GirderMaterial.h>
+#include <PsgLib\GirderMaterial.h>
 
 
 CElasticGainDueToDeckShrinkageTable::CElasticGainDueToDeckShrinkageTable(ColumnIndexType NumColumns, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) :
@@ -60,26 +60,26 @@ rptRcTable(NumColumns,0)
 
 CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::PrepareTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    if (IsNonstructuralDeck(pBridge->GetDeckType()))
    {
       // no deck, no deck shrinkage
       return nullptr;
    }
 
-   EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+   GET_IFACE2(pBroker,ISpecification,pSpec);
    std::_tstring strSpecName = pSpec->GetSpecification();
 
-   EAF_GET_IFACE2(pBroker,ILibrary,pLib);
+   GET_IFACE2(pBroker,ILibrary,pLib);
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( strSpecName.c_str() );
    const auto& prestress_loss_criteria = pSpecEntry->GetPrestressLossCriteria();
 
    ATLASSERT(prestress_loss_criteria.IsDeckShrinkageApplicable(WBFL::LRFD::BDSManager::GetEdition())); // Should be vetted by caller
 
-   EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+   GET_IFACE2(pBroker,ISectionProperties,pSectProp);
    pgsTypes::SectionPropertyMode spMode = pSectProp->GetSectionPropertiesMode();
 
-   EAF_GET_IFACE2(pBroker,IMaterials, pMaterials);
+   GET_IFACE2(pBroker,IMaterials, pMaterials);
    bool bIsUHPC = pMaterials->GetSegmentConcreteType(segmentKey) == pgsTypes::UHPC ? true : false;
 
    // Create and configure the table
@@ -380,7 +380,7 @@ CElasticGainDueToDeckShrinkageTable* CElasticGainDueToDeckShrinkageTable::Prepar
    table->m_bIsUHPC = bIsUHPC;
    table->m_Sign =  ( pSpecEntry->GetSpecificationCriteria().GetEdition() < WBFL::LRFD::BDSManager::Edition::FourthEdition2007 ) ? 1 : -1;
 
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    table->compositeIntervalIdx = pIntervals->GetFirstCompositeDeckInterval();
 
    return table;
@@ -395,9 +395,9 @@ void CElasticGainDueToDeckShrinkageTable::AddRow(rptChapter* pChapter,std::share
       return;
    }
 
-   EAF_GET_IFACE2(pBroker,IProductForces,pProductForces);
+   GET_IFACE2(pBroker,IProductForces,pProductForces);
 
-   EAF_GET_IFACE2(pBroker,ISectionProperties,pProps);
+   GET_IFACE2(pBroker,ISectionProperties,pProps);
    Float64 St = pProps->GetS(compositeIntervalIdx, poi, pgsTypes::TopGirder);
    Float64 Sb = pProps->GetS(compositeIntervalIdx, poi, pgsTypes::BottomGirder);
    Float64 Std = pProps->GetS(compositeIntervalIdx, poi, pgsTypes::TopDeck);

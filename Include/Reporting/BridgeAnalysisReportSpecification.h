@@ -24,7 +24,7 @@
 #include <Reporting\ReportingExp.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <ReportManager\ReportManager.h>
-#include <WBFLCore.h>
+
 
 
 class REPORTINGCLASS CBridgeAnalysisReportSpecification :

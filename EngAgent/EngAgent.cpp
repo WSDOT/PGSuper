@@ -54,7 +54,7 @@
 #include <IFace\Views.h>
 #include <IFace\SplittingChecks.h>
 
-#include <WBFLCore_i.c>
+
 #include <WBFLGeometry_i.c>
 #include <WBFLFem2d_i.c>
 #include <WBFLRCCapacity_i.c> 

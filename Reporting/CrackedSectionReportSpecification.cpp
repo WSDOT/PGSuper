@@ -58,7 +58,7 @@ bool CCrackedSectionReportSpecification::IsValid() const
    {
       // next check if POI is in a valid range 
       // Note that this range needs to match the segments listed in CSelectCrackedSectionDlg::UpdatePOI
-      EAF_GET_IFACE2(GetBroker(),IPointOfInterest, pPoi);
+      GET_IFACE2(GetBroker(),IPointOfInterest, pPoi);
       const CSegmentKey& segmentKey = m_Poi.GetSegmentKey();
 
       PoiList vPoi = GetCrackedSectionPois(pPoi, segmentKey);

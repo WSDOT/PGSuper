@@ -26,7 +26,7 @@
 #include "Reporting.h"
 #include "TimeStepDetailsDlg.h"
 
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
 #include <MFCTools\CustomDDX.h>
 
 #include <IFace\Intervals.h>
@@ -77,7 +77,7 @@ BOOL CTimeStepDetailsDlg::OnInitDialog()
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
-   EAF_GET_IFACE(IBridge,pBridge);
+   GET_IFACE(IBridge,pBridge);
    CComboBox* pcbGirders = (CComboBox*)GetDlgItem(IDC_GIRDERLINE);
    IndexType nGirderLines = pBridge->GetGirderlineCount();
    for ( IndexType gdrIdx = 0; gdrIdx < nGirderLines; gdrIdx++ )
@@ -87,7 +87,7 @@ BOOL CTimeStepDetailsDlg::OnInitDialog()
       pcbGirders->AddString(str);
    }
 
-   EAF_GET_IFACE( IIntervals, pIntervals);
+   GET_IFACE( IIntervals, pIntervals);
    CComboBox* pcbIntervals = (CComboBox*)GetDlgItem(IDC_INTERVAL);
    IntervalIndexType nIntervals = pIntervals->GetIntervalCount();
    for ( IntervalIndexType intervalIdx = 0; intervalIdx < nIntervals; intervalIdx++ )
@@ -150,7 +150,7 @@ IntervalIndexType CTimeStepDetailsDlg::GetInterval()
 
 void CTimeStepDetailsDlg::UpdatePOI()
 {
-   EAF_GET_IFACE(IPointOfInterest,pPOI);
+   GET_IFACE(IPointOfInterest,pPOI);
    m_vPOI.clear();
    pPOI->GetPointsOfInterest(CSegmentKey(ALL_GROUPS, m_GirderKey.girderIndex, ALL_SEGMENTS),&m_vPOI);
    if (m_Slider.GetSafeHwnd() != nullptr )
@@ -196,7 +196,7 @@ void CTimeStepDetailsDlg::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScroll
 
 void CTimeStepDetailsDlg::UpdateSliderLabel()
 {
-   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
    CString strLabel;
    ASSERT((int)m_SliderPos < (int)m_vPOI.size());

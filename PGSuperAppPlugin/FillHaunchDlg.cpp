@@ -36,8 +36,7 @@
 #include <EAF\EAFDocument.h>
 #include <EAF\EAFHelp.h>
 
-#include <PgsExt/BridgeDescription2.h>
-#include <PgsExt\HaunchDepthInputConversionTool.h>
+#include <PsgLib/BridgeDescription2.h>
 #include "..\Documentation\PGSuper.hh"
 
 // CFillHaunchDlg dialog
@@ -62,7 +61,7 @@ CFillHaunchDlg::~CFillHaunchDlg()
 
 BOOL CFillHaunchDlg::OnInitDialog()
 {
-	EAF_GET_IFACE(IBridgeDescription,pIBridgeDesc);
+	GET_IFACE(IBridgeDescription,pIBridgeDesc);
 	bool bBySpan = pgsTypes::hltAlongSpans == pIBridgeDesc->GetHaunchLayoutType();
 
 	CString str;
@@ -121,7 +120,7 @@ BOOL CFillHaunchDlg::OnInitDialog()
 	}
 	else
 	{
-		EAF_GET_IFACE(IBridge,pBridge);
+		GET_IFACE(IBridge,pBridge);
 
 		if (bBySpan)
 		{
@@ -147,7 +146,7 @@ BOOL CFillHaunchDlg::OnInitDialog()
 
 void CFillHaunchDlg::DoDataExchange(CDataExchange* pDX)
 {
-	EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+	GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
 
 	//{{AFX_DATA_MAP(CFillHaunchDlg)
 	//}}AFX_DATA_MAP
@@ -210,17 +209,16 @@ bool CFillHaunchDlg::ModifyBridgeDescription(CBridgeDescription2& rBridgeDescrip
 bool CFillHaunchDlg::ModifyCompute(CBridgeDescription2& rBridgeDescription2)
 {
 	// Use the haunch conversion tool to perform the design and convert data to our need
-	HaunchDepthInputConversionTool haunchTool(&rBridgeDescription2,m_pBroker,false);
-
 	// Segments to be designed
 	CSegmentKey designSegmentKey(m_GirderKey.groupIndex,m_GirderKey.girderIndex, ALL_SEGMENTS);
 
-	EAF_GET_IFACE(IProgress,pProgress);
+	GET_IFACE(IEAFProgress,pProgress);
 	CEAFAutoProgress ap(pProgress);
 	pProgress->UpdateMessage(_T("Computing Haunch Design"));
 
 	// Copy designed bridge descr
-	rBridgeDescription2 = haunchTool.DesignHaunches(designSegmentKey,m_ToBeComputedGirderIdx, (pgsTypes::HaunchInputDistributionType)m_HaunchInputDistributionType, m_ToGirderSel == 1).second;
+	GET_IFACE(IBridgeDescription, pBridgeDesc);
+	pBridgeDesc->DesignHaunches(rBridgeDescription2, designSegmentKey, m_ToBeComputedGirderIdx, (pgsTypes::HaunchInputDistributionType)m_HaunchInputDistributionType, m_ToGirderSel == 1);
 
 	return true;
 }

@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <PgsExt\Keys.h>
+#include <PsgLib\Keys.h>
 
 #define CAD_SUCCESS  0
 #define CAD_FAIL    -1

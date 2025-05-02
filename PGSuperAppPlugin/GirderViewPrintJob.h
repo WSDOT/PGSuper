@@ -32,9 +32,6 @@
 
 #include "GirderModelChildFrame.h"
 
-// Forward declarations
-struct IBroker; 
-
 class CGirderViewPrintJob : public CPrinterJob  
 {
 public:

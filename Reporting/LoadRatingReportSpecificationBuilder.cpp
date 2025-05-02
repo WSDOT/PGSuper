@@ -41,7 +41,7 @@ CLoadRatingReportSpecificationBuilder::~CLoadRatingReportSpecificationBuilder(vo
 
 std::shared_ptr<WBFL::Reporting::ReportSpecification> CLoadRatingReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
 {
-   EAF_GET_IFACE(IRatingSpecification,pRatingSpec);
+   GET_IFACE(IRatingSpecification,pRatingSpec);
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) ||
       pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) ||
       pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) ||
@@ -54,7 +54,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CLoadRatingReportSpecifica
       AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
       // Prompt for gider and chapter list
-      EAF_GET_IFACE(ISelection, pSelection);
+      GET_IFACE(ISelection, pSelection);
       CGirderKey girderKey = pSelection->GetSelectedGirder();
       girderKey.groupIndex = (girderKey.groupIndex == INVALID_INDEX ? ALL_GROUPS : girderKey.groupIndex);
       girderKey.girderIndex = (girderKey.girderIndex == INVALID_INDEX ? 0 : girderKey.girderIndex);
@@ -101,7 +101,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CLoadRatingReportSpecifica
 
 std::shared_ptr<WBFL::Reporting::ReportSpecification> CLoadRatingReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const
 {
-   EAF_GET_IFACE(IRatingSpecification,pRatingSpec);
+   GET_IFACE(IRatingSpecification,pRatingSpec);
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) ||
       pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) ||
       pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) ||
@@ -112,7 +112,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CLoadRatingReportSpecifica
       )
    {
       // Get the selected span and girder. By default we rate a entire selected girderline
-      EAF_GET_IFACE(ISelection, pSelection);
+      GET_IFACE(ISelection, pSelection);
       CGirderKey girderKey = pSelection->GetSelectedGirder();
       GirderIndexType girderIndex = (girderKey.girderIndex == INVALID_INDEX ? 0 : girderKey.girderIndex);
 
@@ -142,7 +142,7 @@ CLoadRatingSummaryReportSpecificationBuilder::~CLoadRatingSummaryReportSpecifica
 
 std::shared_ptr<WBFL::Reporting::ReportSpecification> CLoadRatingSummaryReportSpecificationBuilder::CreateReportSpec(const WBFL::Reporting::ReportDescription& rptDesc,std::shared_ptr<WBFL::Reporting::ReportSpecification> pOldRptSpec) const
 {
-   EAF_GET_IFACE(IRatingSpecification,pRatingSpec);
+   GET_IFACE(IRatingSpecification,pRatingSpec);
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) ||
       pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) ||
       pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) ||
@@ -155,7 +155,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CLoadRatingSummaryReportSp
       AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
       // Prompt for span and chapter list
-      EAF_GET_IFACE(ISelection, pSelection);
+      GET_IFACE(ISelection, pSelection);
       CGirderKey girderKey = pSelection->GetSelectedGirder();
       girderKey.groupIndex = (girderKey.groupIndex == INVALID_INDEX ? 0 : girderKey.groupIndex);
       girderKey.girderIndex = (girderKey.girderIndex == INVALID_INDEX ? 0 : girderKey.girderIndex);
@@ -198,7 +198,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CLoadRatingSummaryReportSp
 
 std::shared_ptr<WBFL::Reporting::ReportSpecification> CLoadRatingSummaryReportSpecificationBuilder::CreateDefaultReportSpec(const WBFL::Reporting::ReportDescription& rptDesc) const
 {
-   EAF_GET_IFACE(IRatingSpecification,pRatingSpec);
+   GET_IFACE(IRatingSpecification,pRatingSpec);
    if ( pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Inventory) ||
       pRatingSpec->IsRatingEnabled(pgsTypes::lrDesign_Operating) ||
       pRatingSpec->IsRatingEnabled(pgsTypes::lrLegal_Routine) ||
@@ -209,7 +209,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CLoadRatingSummaryReportSp
       )
    {
       // Get the selected span and girder. By default we rate a entire selected girderline
-      EAF_GET_IFACE(ISelection, pSelection);
+      GET_IFACE(ISelection, pSelection);
       CGirderKey girderKey = pSelection->GetSelectedGirder();
       GirderIndexType girderIndex = (girderKey.girderIndex == INVALID_INDEX ? 0 : girderKey.girderIndex);
 
@@ -304,7 +304,7 @@ bool CMultiGirderLoadRatingReportSpecification::IsValid() const
    }
    else
    {
-      EAF_GET_IFACE2(GetBroker(),IBridge,pBridge);
+      GET_IFACE2(GetBroker(),IBridge,pBridge);
       GroupIndexType nGroups = pBridge->GetGirderGroupCount();
       for (const auto& girderKey : m_GirderKeys)
       {

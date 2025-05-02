@@ -33,11 +33,14 @@
 #include <IFace\Constructability.h>
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>
+#include <IFace/PointOfInterest.h>
 
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\HoldDownForceArtifact.h>
-#include <PgsExt\BridgeDescription2.h>
 
+#include <PsgLib\BridgeDescription2.h>
+#include <psgLib/GirderLibraryEntry.h>
+#include <PsgLib/SpecLibraryEntry.h>
 #include <psgLib/BottomFlangeClearanceCriteria.h>
 #include <psgLib/SlabOffsetCriteria.h>
 #include <psgLib/CreepCriteria.h>
@@ -102,8 +105,8 @@ CConstructabilityCheckTable& CConstructabilityCheckTable::operator= (const CCons
 //======================== OPERATIONS =======================================
 void CConstructabilityCheckTable::BuildSlabOffsetTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<CGirderKey>& girderList,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   EAF_GET_IFACE2(pBroker,IArtifact,pIArtifact);
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IArtifact,pIArtifact);
+   GET_IFACE2(pBroker,IBridge,pBridge);
 
    if (pBridge->GetDeckType() == pgsTypes::sdtNone)
    {
@@ -113,7 +116,7 @@ void CConstructabilityCheckTable::BuildSlabOffsetTable(rptChapter* pChapter,std:
    // Give progress window a progress meter if needed
    bool bMultiGirderReport = (1 < girderList.size() ? true : false);
 
-   EAF_GET_IFACE2(pBroker,IProgress,pProgress);
+   GET_IFACE2(pBroker,IEAFProgress,pProgress);
    DWORD mask = bMultiGirderReport ? PW_ALL|PW_NOCANCEL : PW_ALL|PW_NOGAUGE|PW_NOCANCEL;
 
    CEAFAutoProgress ap(pProgress,0,mask); 
@@ -164,10 +167,10 @@ void CConstructabilityCheckTable::BuildSlabOffsetTable(rptChapter* pChapter,std:
 
 void CConstructabilityCheckTable::BuildMonoSlabOffsetTable(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   EAF_GET_IFACE2(pBroker, IArtifact, pIArtifact);
-   EAF_GET_IFACE2_NOCHECK(pBroker, IGirderHaunch, pGdrHaunch);
-   EAF_GET_IFACE2_NOCHECK(pBroker, IBridge, pBridge);
-   EAF_GET_IFACE2(pBroker, IDocumentType, pDocType);
+   GET_IFACE2(pBroker, IArtifact, pIArtifact);
+   GET_IFACE2_NOCHECK(pBroker, IGirderHaunch, pGdrHaunch);
+   GET_IFACE2_NOCHECK(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
 
    // if there is only one span/girder, don't need to print span info
    bool needSpanCols = true; //ConstrNeedSpanCols(girderList, pBridge);
@@ -308,7 +311,7 @@ void CConstructabilityCheckTable::BuildMonoSlabOffsetTable(rptChapter* pChapter,
          {
             didNote = true;
 
-            EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+            GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
             const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
             const CGirderGroupData* pGroup = pBridgeDesc->GetGirderGroup(girderKey.groupIndex);
             const CSplicedGirderData* pGirder = pGroup->GetGirder(girderKey.girderIndex);
@@ -345,10 +348,10 @@ void CConstructabilityCheckTable::BuildMonoSlabOffsetTable(rptChapter* pChapter,
 
 void CConstructabilityCheckTable::BuildMultiSlabOffsetTable(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<CGirderKey>& girderList,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   EAF_GET_IFACE2(pBroker,IArtifact,pIArtifact);
-   EAF_GET_IFACE2_NOCHECK(pBroker,IGirderHaunch,pGdrHaunch);
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker, IDocumentType, pDocType);
+   GET_IFACE2(pBroker,IArtifact,pIArtifact);
+   GET_IFACE2_NOCHECK(pBroker,IGirderHaunch,pGdrHaunch);
+   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
 
    // if there is only one span/girder, don't need to print span info
    bool needSpanCols = true; // ConstrNeedSpanCols(girderList, pBridge);
@@ -516,9 +519,9 @@ void CConstructabilityCheckTable::BuildMultiSlabOffsetTable(rptChapter* pChapter
 
 void CConstructabilityCheckTable::BuildMinimumHaunchCLCheck(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   EAF_GET_IFACE2(pBroker,IArtifact,pIArtifact);
-   EAF_GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
+   GET_IFACE2(pBroker,IArtifact,pIArtifact);
+   GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
    bool isPGSuper = pDocType->IsPGSuperDocument();
 
    // Create table - delete it later if we don't need it
@@ -618,12 +621,12 @@ void CConstructabilityCheckTable::BuildMinimumHaunchCLCheck(rptChapter* pChapter
 
 void CConstructabilityCheckTable::BuildMinimumFilletCheck(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   EAF_GET_IFACE2_NOCHECK(pBroker,IArtifact,pIArtifact);
-   EAF_GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
+   GET_IFACE2_NOCHECK(pBroker,IArtifact,pIArtifact);
+   GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
 
    // This table is not applicable if girders are adjacently spaced.
    // There is no need to report something that cannot happen
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    pgsTypes::SupportedBeamSpacing spacingType = pBridgeDesc->GetGirderSpacingType();
    if ( IsAdjacentSpacing(spacingType) )
@@ -631,7 +634,7 @@ void CConstructabilityCheckTable::BuildMinimumFilletCheck(rptChapter* pChapter,s
       return;
    }
 
-   EAF_GET_IFACE2(pBroker,IDocumentType, pDocType);
+   GET_IFACE2(pBroker,IDocumentType, pDocType);
    
    // if there is only one span/girder, don't need to print span info
    bool needSpanCols = true; // ConstrNeedSpanCols(girderList, pBridge);
@@ -728,8 +731,8 @@ void CConstructabilityCheckTable::BuildMinimumFilletCheck(rptChapter* pChapter,s
 
 void CConstructabilityCheckTable::BuildHaunchGeometryComplianceCheck(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   EAF_GET_IFACE2(pBroker,IArtifact,pIArtifact);
-   EAF_GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IArtifact,pIArtifact);
+   GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
 
    // if there is only one span/girder, don't need to print span info
    bool needSpanCols = true; // ConstrNeedSpanCols(girderList, pBridge);
@@ -838,7 +841,7 @@ void CConstructabilityCheckTable::BuildHaunchGeometryComplianceCheck(rptChapter*
    // Only add table if it has content
    if (0 < row)
    {
-      EAF_GET_IFACE2(pBroker,ISpecification,pSpec);
+      GET_IFACE2(pBroker,ISpecification,pSpec);
 
       rptParagraph* pTitle = new rptParagraph( rptStyleManager::GetHeadingStyle() );
       *pChapter << pTitle;
@@ -867,7 +870,7 @@ void CConstructabilityCheckTable::BuildHaunchGeometryComplianceCheck(rptChapter*
 
 void CConstructabilityCheckTable::BuildCamberCheck(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   EAF_GET_IFACE2(pBroker,ILossParameters,pLossParams);
+   GET_IFACE2(pBroker,ILossParameters,pLossParams);
    if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
       BuildTimeStepCamberCheck(pChapter,pBroker,girderKey,pDisplayUnits);
@@ -880,7 +883,7 @@ void CConstructabilityCheckTable::BuildCamberCheck(rptChapter* pChapter,std::sha
 
 void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsGirderArtifact* pGirderArtifact,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   EAF_GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IBridge,pBridge);
    bool bIsApplicable = false;
    Float64 FSmax;
    SegmentIndexType nSegments = pBridge->GetSegmentCount(pGirderArtifact->GetGirderKey());
@@ -985,8 +988,8 @@ void CConstructabilityCheckTable::BuildGlobalGirderStabilityCheck(rptChapter* pC
 
 void CConstructabilityCheckTable::BuildPrecamberCheck(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   EAF_GET_IFACE2(pBroker, IArtifact, pIArtifact);
-   EAF_GET_IFACE2_NOCHECK(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IArtifact, pIArtifact);
+   GET_IFACE2_NOCHECK(pBroker, IBridge, pBridge);
 
    // if there is only one span/girder, don't need to print span info
    bool needSpanCols = true; // ConstrNeedSpanCols(girderList, pBridge);
@@ -1081,11 +1084,11 @@ void CConstructabilityCheckTable::BuildPrecamberCheck(rptChapter* pChapter, std:
 
 void CConstructabilityCheckTable::BuildBottomFlangeClearanceCheck(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   EAF_GET_IFACE2(pBroker, ILibrary, pLib);
-   EAF_GET_IFACE2(pBroker, ISpecification, pSpec);
+   GET_IFACE2(pBroker, ILibrary, pLib);
+   GET_IFACE2(pBroker, ISpecification, pSpec);
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(spec_name.c_str());
-   EAF_GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
+   GET_IFACE2(pBroker, IBridgeDescription, pIBridgeDesc);
    pgsTypes::SupportedBeamSpacing spacingType = pIBridgeDesc->GetGirderSpacingType();
    const auto& bottom_flange_clearance_criteria = pSpecEntry->GetBottomFlangeClearanceCriteria();
    if (bottom_flange_clearance_criteria.bCheck && ::IsJointSpacing(spacingType))
@@ -1100,9 +1103,9 @@ void CConstructabilityCheckTable::BuildBottomFlangeClearanceCheck(rptChapter* pC
       return;
    }
 
-   EAF_GET_IFACE2(pBroker,IArtifact,pIArtifact);
-   EAF_GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker, IDocumentType, pDocType);
+   GET_IFACE2(pBroker,IArtifact,pIArtifact);
+   GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
 
    // if there is only one span/girder, don't need to print span info
    bool needSpanCols = true; // ConstrNeedSpanCols(girderList, pBridge);
@@ -1210,15 +1213,15 @@ void CConstructabilityCheckTable::BuildBottomFlangeClearanceCheck(rptChapter* pC
 
 void CConstructabilityCheckTable::BuildFinishedElevationCheck(rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broker> pBroker, const std::vector<CGirderKey>& girderList, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   EAF_GET_IFACE2(pBroker, IArtifact, pIArtifact);
-   EAF_GET_IFACE2_NOCHECK(pBroker, IBridge, pBridge);
-   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
+   GET_IFACE2(pBroker, IArtifact, pIArtifact);
+   GET_IFACE2_NOCHECK(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
    bool isPGSuper = pDocType->IsPGSuperDocument();
 
    ColumnIndexType nCols = 9;
 
    // Only need to present controlling interval if more than one spec check interval is defined
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    std::vector<IntervalIndexType> checkIntervals = pIntervals->GetSpecCheckGeometryControlIntervals();
    bool bPrintInterval = checkIntervals.size() > 1;
    if (bPrintInterval)
@@ -1316,8 +1319,8 @@ void CConstructabilityCheckTable::BuildFinishedElevationCheck(rptChapter* pChapt
       rptParagraph* pBody = new rptParagraph;
       *pChapter << pBody;
 
-      EAF_GET_IFACE2(pBroker,ILibrary, pLib);
-      EAF_GET_IFACE2(pBroker,ISpecification, pISpec);
+      GET_IFACE2(pBroker,ILibrary, pLib);
+      GET_IFACE2(pBroker,ISpecification, pISpec);
       const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pISpec->GetSpecification().c_str());
       const auto& slab_offset_criteria = pSpecEntry->GetSlabOffsetCriteria();
       Float64 tolerance = slab_offset_criteria.FinishedElevationTolerance;
@@ -1339,15 +1342,15 @@ void CConstructabilityCheckTable::BuildFinishedElevationCheck(rptChapter* pChapt
 
 void CConstructabilityCheckTable::BuildMinimumHaunchCheck(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<CGirderKey>& girderList,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   EAF_GET_IFACE2(pBroker,IArtifact,pIArtifact);
-   EAF_GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
-   EAF_GET_IFACE2(pBroker,IDocumentType,pDocType);
+   GET_IFACE2(pBroker,IArtifact,pIArtifact);
+   GET_IFACE2_NOCHECK(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker,IDocumentType,pDocType);
    bool isPGSuper = pDocType->IsPGSuperDocument();
 
    ColumnIndexType nCols = 6;
 
    // Only need to present controlling interval if more than one spec check interval is defined
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
    std::vector<IntervalIndexType> checkIntervals = pIntervals->GetSpecCheckGeometryControlIntervals();
    bool bPrintInterval = checkIntervals.size() > 1;
    if (bPrintInterval)
@@ -1469,10 +1472,10 @@ void CConstructabilityCheckTable::BuildMinimumHaunchCheck(rptChapter* pChapter,s
 
 void CConstructabilityCheckTable::BuildRegularCamberCheck(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   EAF_GET_IFACE2(pBroker,ICamber,pCamber);
+   GET_IFACE2(pBroker,ICamber,pCamber);
 
-   EAF_GET_IFACE2( pBroker, ILibrary, pLib );
-   EAF_GET_IFACE2( pBroker, ISpecification, pSpec );
+   GET_IFACE2( pBroker, ILibrary, pLib );
+   GET_IFACE2( pBroker, ISpecification, pSpec );
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
    const auto& creep_criteria = pSpecEntry->GetCreepCriteria();
@@ -1502,9 +1505,9 @@ void CConstructabilityCheckTable::BuildRegularCamberCheck(rptChapter* pChapter,s
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
 
-   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi );
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi );
 
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
 
    SpanIndexType startSpanIdx, endSpanIdx;
@@ -1742,11 +1745,11 @@ void CConstructabilityCheckTable::BuildRegularCamberCheck(rptChapter* pChapter,s
 
 void CConstructabilityCheckTable::BuildTimeStepCamberCheck(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGirderKey& girderKey, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
-   EAF_GET_IFACE2(pBroker,IProductForces, pProductForces);
-   EAF_GET_IFACE2(pBroker,ILimitStateForces,pLSForces);
-   EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
-   EAF_GET_IFACE2( pBroker, ILibrary, pLib );
-   EAF_GET_IFACE2( pBroker, ISpecification, pSpec );
+   GET_IFACE2(pBroker,IProductForces, pProductForces);
+   GET_IFACE2(pBroker,ILimitStateForces,pLSForces);
+   GET_IFACE2(pBroker,IIntervals,pIntervals);
+   GET_IFACE2( pBroker, ILibrary, pLib );
+   GET_IFACE2( pBroker, ISpecification, pSpec );
 
    std::_tstring spec_name = pSpec->GetSpecification();
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( spec_name.c_str() );
@@ -1777,7 +1780,7 @@ void CConstructabilityCheckTable::BuildTimeStepCamberCheck(rptChapter* pChapter,
 
    *pBody << pTable << rptNewLine;
 
-   EAF_GET_IFACE2(pBroker, IDocumentType, pDocType);
+   GET_IFACE2(pBroker, IDocumentType, pDocType);
    if (pDocType->IsPGSpliceDocument())
    {
       (*pTable)(0, 0) << _T("Segment");
@@ -1791,9 +1794,9 @@ void CConstructabilityCheckTable::BuildTimeStepCamberCheck(rptChapter* pChapter,
 
    RowIndexType row = pTable->GetNumberOfHeaderRows();
 
-   EAF_GET_IFACE2(pBroker, IPointOfInterest, pPoi );
+   GET_IFACE2(pBroker, IPointOfInterest, pPoi );
 
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    pgsTypes::SupportedDeckType deckType = pBridge->GetDeckType();
 
 
@@ -1811,7 +1814,7 @@ void CConstructabilityCheckTable::BuildTimeStepCamberCheck(rptChapter* pChapter,
          pTable->SetRowSpan(row, 0, 2);
          (*pTable)(row, 0) << LABEL_SEGMENT(segIdx);
 
-         EAF_GET_IFACE2(pBroker, ICamber, pCamber);
+         GET_IFACE2(pBroker, ICamber, pCamber);
          Float64 C = pCamber->GetScreedCamber(poiMidSpan, pgsTypes::CreepTime::Max);
          (*pTable)(row, 1) << _T("Screed Camber, C at mid-segment");
          (*pTable)(row++, 2) << dim.SetValue(C);
@@ -1866,7 +1869,7 @@ void CConstructabilityCheckTable::BuildTimeStepCamberCheck(rptChapter* pChapter,
          pTable->SetRowSpan(row, 0, 2);
          (*pTable)(row, 0) << LABEL_SPAN(spanIdx);
 
-         EAF_GET_IFACE2(pBroker, ICamber, pCamber);
+         GET_IFACE2(pBroker, ICamber, pCamber);
          Float64 C = pCamber->GetScreedCamber(poiMidSpan, pgsTypes::CreepTime::Max);
          (*pTable)(row, 1) << _T("Screed Camber, C at mid-span");
          (*pTable)(row++, 2) << dim.SetValue(C);

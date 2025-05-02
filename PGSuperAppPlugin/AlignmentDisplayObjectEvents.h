@@ -25,7 +25,6 @@
 #include <DManip/DisplayObjectEvents.h>
 #include <DManip/DropSite.h>
 
-interface IBroker;
 class CBridgeModelViewChildFrame;
 
 class CAlignmentDisplayObjectEvents : public WBFL::DManip::iDisplayObjectEvents, public WBFL::DManip::iDropSite

@@ -23,7 +23,7 @@
 #pragma once
 
 #include <EAF\Agent.h>
-#include <EAF\EAFInterfaceCache.h>
+
 
 #include <IFace\Project.h>
 #include <IFace\UpdateTemplates.h>
@@ -106,7 +106,8 @@ public:
 
 // IAgentEx
 public:
-	bool RegInterfaces() override;
+   std::_tstring GetName() const override { return _T("DocProxyAgent"); }
+   bool RegInterfaces() override;
    bool Init() override;
    bool Reset() override;
 	bool ShutDown() override;
@@ -139,7 +140,7 @@ public:
 // IEAFDisplayUnitsEventSink
 public:
    HRESULT OnUnitsChanging() override;
-   HRESULT OnUnitsChanged(eafTypes::UnitMode newUnitsMode) override;
+   HRESULT OnUnitsChanged(WBFL::EAF::UnitMode newUnitsMode) override;
 
 // ISpecificationEventSink
 public:
@@ -323,7 +324,7 @@ public:
 private:
 #pragma Reminder("WORKING HERE - Removing COM")
    // Figure out what to do about EAF_AGENT_DATA
-   //DECLARE_EAF_AGENT_DATA;
+   EAF_DECLARE_AGENT_DATA;
 
    void AdviseEventSinks();
    void UnadviseEventSinks();

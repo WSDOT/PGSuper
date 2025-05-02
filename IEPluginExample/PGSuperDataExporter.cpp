@@ -26,7 +26,9 @@
 #include "PGSuperDataExporter.h"
 
 #include "PGSuperInterfaces.h"
-#include <PgsExt\GirderLabel.h>
+#include <PsgLib\GirderLabel.h>
+
+#include <EAF/EAFProgress.h>
 
 
 CPGSuperDataExporter::CPGSuperDataExporter()
@@ -65,8 +67,8 @@ HRESULT CPGSuperDataExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBroker)
 
       std::_tofstream ofile(file_path);
 
-      EAF_GET_IFACE2(pBroker, IBridge, pBridge);
-      EAF_GET_IFACE2(pBroker, IProgress, pProgress);
+      GET_IFACE2(pBroker, IBridge, pBridge);
+      GET_IFACE2(pBroker, IEAFProgress, pProgress);
 
       ofile << _T("Pier 1: Station ") << pBridge->GetPierStation(0) << std::endl;
 

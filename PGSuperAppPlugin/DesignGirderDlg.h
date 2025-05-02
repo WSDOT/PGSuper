@@ -29,11 +29,11 @@
 // DesignGirderDlg.h : header file
 //
 
-interface IBroker;
 #include "resource.h"
 #include "MultiGirderSelectDlg.h"
 #include <PGSuperTypes.h>
 #include <IFace\Artifact.h>
+
 /////////////////////////////////////////////////////////////////////////////
 // CDesignGirderDlg dialog
 

@@ -43,7 +43,7 @@ std::shared_ptr<WBFL::Reporting::ReportSpecification> CBridgeAnalysisReportSpeci
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    // Prompt for girder and chapter list
-   EAF_GET_IFACE(ISelection,pSelection);
+   GET_IFACE(ISelection,pSelection);
    GirderIndexType girder = pSelection->GetSelectedGirder().girderIndex;
 
    CBridgeAnalysisReportDlg dlg(m_pBroker, rptDesc, pOldRptSpec); // span only mode

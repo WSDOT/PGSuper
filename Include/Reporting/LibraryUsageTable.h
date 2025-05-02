@@ -23,7 +23,7 @@
 
 #pragma once
 #include <Reporting\ReportingExp.h>
-#include <WBFLCore.h>
+
 #include <Reporter\Reporter.h>
 
 /*****************************************************************************

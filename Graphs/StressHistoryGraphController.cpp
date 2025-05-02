@@ -68,7 +68,7 @@ BOOL CStressHistoryGraphController::OnInitDialog()
 {
    CLocationGraphController::OnInitDialog();
 
-   EAF_GET_IFACE(IBridge, pBridge);
+   GET_IFACE(IBridge, pBridge);
    if (IsNonstructuralDeck(pBridge->GetDeckType()))
    {
       GetDlgItem(IDC_TOPDECK)->EnableWindow(FALSE);

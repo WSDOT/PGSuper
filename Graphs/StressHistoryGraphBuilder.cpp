@@ -34,7 +34,7 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFAutoProgress.h>
 #include <Units\UnitValueNumericalFormatTools.h>
-#include <PgsExt\LoadFactors.h>
+#include <PsgLib\LoadFactors.h>
 #include <PgsExt\IntervalTool.h>
 
 #include <IFace\Intervals.h>
@@ -190,7 +190,7 @@ int CStressHistoryGraphBuilder::InitializeGraphController(CWnd* pParent,UINT nID
    m_XAxisType = X_AXIS_TIME_LOG;
 
    // y axis
-   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::StressData& stressUnit = pDisplayUnits->GetStressUnit();
    m_pYFormat = new WBFL::Units::StressTool(stressUnit);
    m_Graph.SetYAxisValueFormat(m_pYFormat);
@@ -235,7 +235,7 @@ void CStressHistoryGraphBuilder::ShowGrid(bool bShowGrid)
 
 bool CStressHistoryGraphBuilder::UpdateNow()
 {
-   EAF_GET_IFACE(IProgress,pProgress);
+   GET_IFACE(IEAFProgress,pProgress);
    CEAFAutoProgress ap(pProgress);
 
    pProgress->UpdateMessage(_T("Building Graph"));
@@ -263,8 +263,8 @@ void CStressHistoryGraphBuilder::UpdateGraphTitle(const pgsPointOfInterest& poi)
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
 
-   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
-   EAF_GET_IFACE(IPointOfInterest,pPoi);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE(IPointOfInterest,pPoi);
 
    CSpanKey spanKey;
    Float64 Xspan;
@@ -305,18 +305,18 @@ void CStressHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& poi)
    dataSeries[pgsTypes::TopGirder]       = m_Graph.CreateDataSeries(_T("Top of Girder"),   PS_SOLID, penWeight, GREEN);
    dataSeries[pgsTypes::BottomGirder]    = m_Graph.CreateDataSeries(_T("Bottom of Girder"),PS_SOLID, penWeight, BLUE);
 
-   EAF_GET_IFACE(IIntervals,pIntervals);
-   EAF_GET_IFACE_NOCHECK(ILimitStateForces,pLimitStateForces); // only used if a stress location is checked
-   EAF_GET_IFACE_NOCHECK(ICombinedForces,pCombinedForces);
+   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE_NOCHECK(ILimitStateForces,pLimitStateForces); // only used if a stress location is checked
+   GET_IFACE_NOCHECK(ICombinedForces,pCombinedForces);
 
-   EAF_GET_IFACE(ILossParameters,pLossParams);
+   GET_IFACE(ILossParameters,pLossParams);
    bool bTimeStep = (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP ? true : false);
 
    pgsTypes::LimitState limitState = GetLimitState();
-   EAF_GET_IFACE(ILoadFactors,pLoadFactors);
+   GET_IFACE(ILoadFactors,pLoadFactors);
    Float64 gLL = pLoadFactors->GetLoadFactors()->GetLLIMMin(limitState);
 
-   EAF_GET_IFACE(IProductForces,pProductForces);
+   GET_IFACE(IProductForces,pProductForces);
    pgsTypes::BridgeAnalysisType bat = pProductForces->GetBridgeAnalysisType(pgsTypes::Minimize);
 
    const CSegmentKey& segmentKey(poi.GetSegmentKey());
@@ -484,7 +484,7 @@ void CStressHistoryGraphBuilder::UpdateYAxis()
       delete m_pYFormat;
    }
 
-   EAF_GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+   GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    const WBFL::Units::StressData& stressUnit = pDisplayUnits->GetStressUnit();
    m_pYFormat = new WBFL::Units::StressTool(stressUnit);
    m_Graph.SetYAxisValueFormat(m_pYFormat);

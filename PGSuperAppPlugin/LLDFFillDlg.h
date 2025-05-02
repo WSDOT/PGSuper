@@ -27,7 +27,7 @@
 // LiveLoadDistFactorsDlg.h : header file
 //
 #include "resource.h"
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\BridgeDescription2.h>
 #include <LRFD\LRFD.h>
 #include "afxwin.h"
 

@@ -38,16 +38,16 @@
 #include <Units\Convert.h>
 
 #include <EAF\Agent.h>
-#include <EAF\EAFInterfaceCache.h>
 
-#include <PgsExt\Keys.h>
-#include <PgsExt\LoadFactors.h>
+
+#include <PsgLib\Keys.h>
+#include <PsgLib\LoadFactors.h>
 #include <PsgLib\ShearData.h>
-#include <PgsExt\LongitudinalRebarData.h>
+#include <PsgLib\LongitudinalRebarData.h>
 
-#include <PgsExt\BridgeDescription2.h>
-#include <PgsExt\LoadManager.h>
-#include <PgsExt\ClosureJointData.h>
+#include <PsgLib\BridgeDescription2.h>
+#include <PsgLib\LoadManager.h>
+#include <PsgLib\ClosureJointData.h>
 
 #include "LibraryEntryObserver.h"
 
@@ -124,6 +124,7 @@ public:
 
 // IAgent
 public:
+   std::_tstring GetName() const override { return _T("ProjectAgent"); }
    bool RegInterfaces() override;
 	bool Init() override;
 	bool Reset() override;
@@ -270,6 +271,10 @@ public:
    void SetDirectHaunchDepthsPerSegment(GroupIndexType group,GirderIndexType gdrIdx,SegmentIndexType SegmentIdx,const std::vector<Float64>& haunchDepths) override;
    std::vector<Float64> GetDirectHaunchDepthsPerSpan(SpanIndexType spanIdx,GirderIndexType gdrIdx) override;
    std::vector<Float64> GetDirectHaunchDepthsPerSegment(GroupIndexType group,GirderIndexType gdrIdx,SegmentIndexType SegmentIdx) override;
+   std::pair<bool,CBridgeDescription2> ConvertHaunchToSlabOffsetInput(const CBridgeDescription2& bridgeDesc, pgsTypes::SlabOffsetType) const override;
+   std::pair<bool,CBridgeDescription2> ConvertHaunchToDirectHaunchInput(const CBridgeDescription2& bridgeDesc, pgsTypes::HaunchInputLocationType newHaunchInputLocationType, pgsTypes::HaunchLayoutType newHaunchLayoutType, pgsTypes::HaunchInputDistributionType newHaunchInputDistributionType, bool forceInit = false) const override;
+   std::pair<bool,CBridgeDescription2> DesignHaunches(const CBridgeDescription2& bridgeDesc, const CGirderKey& rDesignGirderKey, GirderIndexType sourceGirderIdx, pgsTypes::HaunchInputDistributionType inputDistributionType, bool bApply2AllGdrs) const override;
+
    std::vector<pgsTypes::BoundaryConditionType> GetBoundaryConditionTypes(PierIndexType pierIdx) const override;
    std::vector<pgsTypes::PierSegmentConnectionType> GetPierSegmentConnectionTypes(PierIndexType pierIdx) const override;
    const CTimelineManager* GetTimelineManager() const override;
@@ -410,6 +415,7 @@ public:
    std::vector<arDesignOptions> GetDesignOptions(const CGirderKey& girderKey) const override;
    const SlabOffsetCriteria& GetSlabOffsetCriteria() const override;
    bool DesignSlabHaunch() const override;
+   const HaulingCriteria& GetHaulingCriteria() const override;
    pgsTypes::OverlayLoadDistributionType GetOverlayLoadDistributionType() const override;
    pgsTypes::HaunchLoadComputationType GetHaunchLoadComputationType() const override;
    Float64 GetCamberTolerance() const override;
@@ -688,7 +694,7 @@ public:
 #endif//
 
 private:
-   //DECLARE_EAF_AGENT_DATA;
+   EAF_DECLARE_AGENT_DATA;
 
    // status items must be managed by span girder
    void AddSegmentStatusItem(const CSegmentKey& segmentKey, const std::_tstring& message);
@@ -885,35 +891,35 @@ private:
    std::vector<CBridgeChangedHint*> m_PendingBridgeChangedHints;
 
    // Callback methods for structured storage map
-   static HRESULT SpecificationProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
-   static HRESULT RatingSpecificationProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
-   static HRESULT UnitModeProc(IStructuredSave*,IStructuredLoad*,IProgress*,CProjectAgentImp*);
-   static HRESULT AlignmentProc(IStructuredSave*,IStructuredLoad*,IProgress*,CProjectAgentImp*);
-   static HRESULT ProfileProc(IStructuredSave*,IStructuredLoad*,IProgress*,CProjectAgentImp*);
-   static HRESULT SuperelevationProc(IStructuredSave*,IStructuredLoad*,IProgress*,CProjectAgentImp*);
-   static HRESULT PierDataProc(IStructuredSave*,IStructuredLoad*,IProgress*,CProjectAgentImp*);
-   static HRESULT EnvironmentProc(IStructuredSave*, IStructuredLoad*, IProgress*, CProjectAgentImp*);
-   static HRESULT PierDataProc2(IStructuredSave*,IStructuredLoad*,IProgress*,CProjectAgentImp*);
-   static HRESULT XSectionDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
-   static HRESULT XSectionDataProc2(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
-   static HRESULT BridgeDescriptionProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
-   static HRESULT PrestressingDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
-   static HRESULT PrestressingDataProc2(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
-   static HRESULT ShearDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
-   static HRESULT ShearDataProc2(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
-   static HRESULT LongitudinalRebarDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
-   static HRESULT LongitudinalRebarDataProc2(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
-   static HRESULT LoadFactorsProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
-   static HRESULT LiftingAndHaulingDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
-   static HRESULT LiftingAndHaulingLoadDataProc(IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
-   static HRESULT DistFactorMethodDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
-   static HRESULT DistFactorMethodDataProc2(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
-   static HRESULT UserLoadsDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
-   static HRESULT LiveLoadsDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
-   static HRESULT SaveLiveLoad(IStructuredSave* pSave,IProgress* pProgress,CProjectAgentImp* pObj,LPCTSTR lpszUnitName,pgsTypes::LiveLoadType llType);
-   static HRESULT LoadLiveLoad(IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj,LPCTSTR lpszUnitName,pgsTypes::LiveLoadType llType);
-   static HRESULT EffectiveFlangeWidthProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
-   static HRESULT LossesProc(IStructuredSave* pSave,IStructuredLoad* pLoad,IProgress* pProgress,CProjectAgentImp* pObj);
+   static HRESULT SpecificationProc(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj);
+   static HRESULT RatingSpecificationProc(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj);
+   static HRESULT UnitModeProc(IStructuredSave*,IStructuredLoad*,std::shared_ptr<IEAFProgress>,CProjectAgentImp*);
+   static HRESULT AlignmentProc(IStructuredSave*,IStructuredLoad*,std::shared_ptr<IEAFProgress>,CProjectAgentImp*);
+   static HRESULT ProfileProc(IStructuredSave*,IStructuredLoad*,std::shared_ptr<IEAFProgress>,CProjectAgentImp*);
+   static HRESULT SuperelevationProc(IStructuredSave*,IStructuredLoad*,std::shared_ptr<IEAFProgress>,CProjectAgentImp*);
+   static HRESULT PierDataProc(IStructuredSave*,IStructuredLoad*,std::shared_ptr<IEAFProgress>,CProjectAgentImp*);
+   static HRESULT EnvironmentProc(IStructuredSave*, IStructuredLoad*, std::shared_ptr<IEAFProgress>, CProjectAgentImp*);
+   static HRESULT PierDataProc2(IStructuredSave*,IStructuredLoad*,std::shared_ptr<IEAFProgress>,CProjectAgentImp*);
+   static HRESULT XSectionDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj);
+   static HRESULT XSectionDataProc2(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj);
+   static HRESULT BridgeDescriptionProc(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj);
+   static HRESULT PrestressingDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj);
+   static HRESULT PrestressingDataProc2(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj);
+   static HRESULT ShearDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj);
+   static HRESULT ShearDataProc2(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj);
+   static HRESULT LongitudinalRebarDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj);
+   static HRESULT LongitudinalRebarDataProc2(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj);
+   static HRESULT LoadFactorsProc(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj);
+   static HRESULT LiftingAndHaulingDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj);
+   static HRESULT LiftingAndHaulingLoadDataProc(IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj);
+   static HRESULT DistFactorMethodDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj);
+   static HRESULT DistFactorMethodDataProc2(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj);
+   static HRESULT UserLoadsDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj);
+   static HRESULT LiveLoadsDataProc(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj);
+   static HRESULT SaveLiveLoad(IStructuredSave* pSave,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj,LPCTSTR lpszUnitName,pgsTypes::LiveLoadType llType);
+   static HRESULT LoadLiveLoad(IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj,LPCTSTR lpszUnitName,pgsTypes::LiveLoadType llType);
+   static HRESULT EffectiveFlangeWidthProc(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj);
+   static HRESULT LossesProc(IStructuredSave* pSave,IStructuredLoad* pLoad,std::shared_ptr<IEAFProgress> pProgress,CProjectAgentImp* pObj);
 
    void ValidateStrands(const CSegmentKey& segmentKey,CPrecastSegmentData* pSegment,bool fromLibrary);
    void ConvertLegacyDebondData(CPrecastSegmentData* pSegment, const GirderLibraryEntry* pGdrEntry);

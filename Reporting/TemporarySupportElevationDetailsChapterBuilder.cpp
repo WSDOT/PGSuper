@@ -25,9 +25,9 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
-#include <PgsExt\TemporarySupportData.h>
-#include <PgsExt\GirderGroupData.h>
-#include <PgsExt\BridgeDescription2.h>
+#include <PsgLib\TemporarySupportData.h>
+#include <PsgLib\GirderGroupData.h>
+#include <PsgLib\BridgeDescription2.h>
 
 
 CTemporarySupportElevationDetailsChapterBuilder::CTemporarySupportElevationDetailsChapterBuilder(bool bSelect) :
@@ -74,7 +74,7 @@ rptChapter* CTemporarySupportElevationDetailsChapterBuilder::Build(const std::sh
    rptParagraph* pPara = new rptParagraph;
    *pChapter << pPara;
 
-   EAF_GET_IFACE2(pBroker, IBridge, pBridge);
+   GET_IFACE2(pBroker, IBridge, pBridge);
    SupportIndexType nTS = pBridge->GetTemporarySupportCount();
    if (nTS == 0)
    {
@@ -84,7 +84,7 @@ rptChapter* CTemporarySupportElevationDetailsChapterBuilder::Build(const std::sh
 
    *pPara << rptRcImage(std::_tstring(rptStyleManager::GetImagePath()) + _T("TemporarySupportElevation.png")) << rptNewLine;
 
-   EAF_GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
+   GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
    INIT_UV_PROTOTYPE(rptLengthUnitValue, dim, pDisplayUnits->GetComponentDimUnit(), false);
    INIT_UV_PROTOTYPE(rptLengthUnitValue, elev, pDisplayUnits->GetSpanLengthUnit(), false);
    std::_tstring strSlopeTag = pDisplayUnits->GetAlignmentLengthUnit().UnitOfMeasure.UnitTag();
@@ -97,11 +97,11 @@ rptChapter* CTemporarySupportElevationDetailsChapterBuilder::Build(const std::sh
 
    bool bHasElevationAdjustment = pBridge->HasTemporarySupportElevationAdjustments();
 
-   EAF_GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
    bool bIsDirectHaunchInput = pIBridgeDesc->GetHaunchInputDepthType() != pgsTypes::hidACamber;
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-   EAF_GET_IFACE2_NOCHECK(pBroker, ITempSupport, pTempSupport);
+   GET_IFACE2_NOCHECK(pBroker, ITempSupport, pTempSupport);
 
    std::array<std::_tstring, 2> strMemberEnd{ _T("Start"),_T("End") };
 

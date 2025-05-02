@@ -24,10 +24,10 @@
 //
 
 #include "stdafx.h"
-#include <psgLib\psglib.h>
+#include <PsgLib\PsgLib.h>
 #include "LongSteelPage.h"
 #include "GirderMainSheet.h"
-#include <psglib\LibraryEditorDoc.h>
+#include <PsgLib\LibraryEditorDoc.h>
 
 
 /////////////////////////////////////////////////////////////////////////////

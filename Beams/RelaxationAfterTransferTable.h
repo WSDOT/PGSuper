@@ -20,20 +20,14 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// RelaxationAfterTransferTable.h : Declaration of the CRelaxationAfterTransferTable
+#pragma once
 
-#ifndef __RELAXATIONAFTERTRANSFERTABLE_H_
-#define __RELAXATIONAFTERTRANSFERTABLE_H_
-
-#include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
-
+#include <PgsExt/ReportPointOfInterest.h>
 
 class WBFL::LRFD::Losses;
 
-/////////////////////////////////////////////////////////////////////////////
-// CRelaxationAfterTransferTable
 class CRelaxationAfterTransferTable : public rptRcTable
 {
 public:
@@ -54,5 +48,3 @@ private:
    DECLARE_UV_PROTOTYPE( rptMomentUnitValue,  moment );
    DECLARE_UV_PROTOTYPE( rptStressUnitValue,  stress );
 };
-
-#endif //__RELAXATIONAFTERTRANSFERTABLE_H_

@@ -26,7 +26,7 @@
 #include <PgsExt\PgsExtLib.h>
 #include "resource.h"
 #include <PgsExt\BoundaryConditionComboBox.h>
-#include <PgsExt\PierData2.h>
+#include <PsgLib\PierData2.h>
 
 CBoundaryConditionComboBox::CBoundaryConditionComboBox()
 {

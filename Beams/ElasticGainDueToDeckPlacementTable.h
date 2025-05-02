@@ -20,16 +20,11 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// ElasticGainDueToDeckPlacementTable.h : Declaration of the CElasticGainDueToDeckPlacementTable
+#pragma once
 
-#ifndef __ELASTICGAINDUETODECKPLACEMENTTABLE_H_
-#define __ELASTICGAINDUETODECKPLACEMENTTABLE_H_
-
-#include "resource.h"       // main symbols
 #include <Details.h>
 #include <EAF\EAFDisplayUnits.h>
-
-#include <IFace\AnalysisResults.h>
+#include <PgsExt/ReportPointOfInterest.h>
 
 class WBFL::LRFD::Losses;
 
@@ -65,5 +60,3 @@ private:
    bool m_bIsPrismatic;
    bool m_bIsAsymmetric;
 };
-
-#endif //__ELASTICGAINDUETODECKPLACEMENTTABLE_H_

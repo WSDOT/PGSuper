@@ -30,14 +30,10 @@
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
+#include <IFace/PointOfInterest.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <MFCTools\CustomDDX.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CGirderDescLongitudinalRebar property page
@@ -82,13 +78,13 @@ void CGirderDescLongitudinalRebar::DoDataExchange(CDataExchange* pDX)
 
 #pragma Reminder("UPDATE: need to validate at both ends because of tapered segments")
       // Validate geometry of the bars
-      EAF_GET_IFACE2(pBroker,IIntervals,pIntervals);
+      GET_IFACE2(pBroker,IIntervals,pIntervals);
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(pParent->m_SegmentKey);
-      EAF_GET_IFACE2(pBroker,IPointOfInterest,pPOI);
+      GET_IFACE2(pBroker,IPointOfInterest,pPOI);
       pgsPointOfInterest poi(pPOI->GetPointOfInterest(pParent->m_SegmentKey,0.0));
-      EAF_GET_IFACE2(pBroker,ISectionProperties,pSectProp);
+      GET_IFACE2(pBroker,ISectionProperties,pSectProp);
       Float64 height = pSectProp->GetHg(releaseIntervalIdx,poi);
-      EAF_GET_IFACE2(pBroker,IShapes,pShapes);
+      GET_IFACE2(pBroker,IShapes,pShapes);
       CComPtr<IShape> shape;
       pShapes->GetSegmentShape(releaseIntervalIdx,poi,false,pgsTypes::scGirder,&shape);
 
@@ -154,7 +150,7 @@ void CGirderDescLongitudinalRebar::RestoreToLibraryDefaults(CLongitudinalRebarDa
    // get shear information from library
    
    auto pBroker = EAFGetBroker();
-   EAF_GET_IFACE2(pBroker, ILibrary, pLib );
+   GET_IFACE2(pBroker, ILibrary, pLib );
    const GirderLibraryEntry* pGirderEntry = pLib->GetGirderEntry( m_CurGrdName.c_str());
    ASSERT(pGirderEntry != 0);
 

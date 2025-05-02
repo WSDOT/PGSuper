@@ -41,10 +41,10 @@
 #include <IFace\RatingSpecification.h>
 #include <IFace\CrackedSection.h>
 #include <IFace\PrincipalWebStress.h>
-#include <EAF\EAFInterfaceCache.h>
+
 
 #include <PgsExt\PoiKey.h>
-#include <PgsExt\Keys.h>
+#include <PsgLib\Keys.h>
 
 #include <map>
 
@@ -155,6 +155,7 @@ public:
 
 // IAgent
 public:
+   std::_tstring GetName() const override { return _T("EngAgent"); }
    bool RegInterfaces() override;
    bool Init() override;
    bool Reset() override;
@@ -422,7 +423,7 @@ public:
    HRESULT OnLossParametersChanged() override;
 
 private:
-   //DECLARE_EAF_AGENT_DATA;
+   EAF_DECLARE_AGENT_DATA;
 
    mutable std::map<CGirderKey,pgsGirderDesignArtifact> m_DesignArtifacts;
 
