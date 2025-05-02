@@ -25,6 +25,7 @@
 
 #include "resource.h"
 
+#include <IFace/Tools.h>
 #include <IFace\EditByUI.h>
 #include <IFace/Project.h>
 #include <EAF\EAFTransactions.h>

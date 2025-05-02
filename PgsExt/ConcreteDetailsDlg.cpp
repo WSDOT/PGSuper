@@ -40,6 +40,8 @@
 #include <System\Tokenizer.h>
 #include <LRFD\ConcreteUtil.h>
 #include <EAF\EAFDisplayUnits.h>
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
 /////////////////////////////////////////////////////////////////////////////

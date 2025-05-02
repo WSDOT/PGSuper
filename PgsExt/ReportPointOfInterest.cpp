@@ -25,6 +25,8 @@
 #include <PsgLib\GirderLabel.h>
 
 #include <EAF\EAFUtilities.h>
+
+#include <IFace/Tools.h>
 #include <IFace\PointOfInterest.h>
 #include <IFace\Bridge.h>
 #include <IFace\GirderHandling.h>

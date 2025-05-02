@@ -27,6 +27,8 @@
 #include "BoundaryConditionDlg.h"
 #include <MFCTools\CustomDDX.h>
 #include <EAF\EAFUtilities.h>
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
 #include <PsgLIb\PierData2.h>

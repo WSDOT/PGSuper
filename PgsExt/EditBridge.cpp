@@ -24,6 +24,8 @@
 #include <PgsExt\EditBridge.h>
 #include <EAF\EAFUtilities.h>
 #include <PsgLib\GirderLabel.h>
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
 txnEditBridge::txnEditBridge(const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc,

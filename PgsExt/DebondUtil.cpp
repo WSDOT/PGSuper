@@ -22,6 +22,8 @@
 
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\DebondUtil.h>
+
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 
 #pragma Reminder("WORKING HERE - Removing COM")

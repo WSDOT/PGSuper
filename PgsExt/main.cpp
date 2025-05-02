@@ -25,12 +25,7 @@
 
 #include <initguid.h>
 
-#pragma Reminder("WORKING HERE - Removing COM - hard coded IID - fix this")
-// I don't know why but IID_IEAFStatusCenter isn't working from the header file so I had to hard code it here
-//#include <EAF\EAFStatusCenter.h>
-DEFINE_GUID(IID_IEAFStatusCenter,
-   0x77977e9b, 0xb074, 0x401f, 0x89, 0x94, 0x73, 0xa4, 0x18, 0xfc, 0x4f, 0xff);
-
+#include <EAF\EAFStatusCenter.h>
 #include <EAF\EAFDisplayUnits.h>
 
 #include <IFace\Project.h>

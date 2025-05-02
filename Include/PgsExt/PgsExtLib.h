@@ -29,10 +29,8 @@
 #include <System\System.h>
 #include <LRFD\LRFD.h>
 
-//#include <IFace\Tools.h>
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFHelp.h>
-#include <AgentTools.h>
 
 #if defined _NOGRID
 #include <NoGrid.h>

@@ -27,6 +27,7 @@
 #include "resource.h"
 #include "ACIParametersDlg.h"
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <Materials/ACI209Concrete.h>
 

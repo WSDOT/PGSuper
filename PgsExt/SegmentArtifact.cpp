@@ -23,6 +23,8 @@
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\SegmentArtifact.h>
 #include <EAF\EAFUtilities.h>
+
+#include <IFace/Tools.h>
 #include <IFace\Intervals.h>
 #include <IFace\PointOfInterest.h>
 

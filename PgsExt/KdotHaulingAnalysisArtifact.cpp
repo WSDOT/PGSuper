@@ -26,6 +26,7 @@
 
 #include "PGSuperUnits.h"
 
+#include <IFace/Tools.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\Project.h>
 #include <IFace\PointOfInterest.h>

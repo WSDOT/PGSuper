@@ -22,6 +22,8 @@
 
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\GirderModelFactory.h>
+
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\PointOfInterest.h>
 #include <IFace\AnalysisResults.h>

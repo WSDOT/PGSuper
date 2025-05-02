@@ -27,7 +27,9 @@
 #include "resource.h"
 #include "CEBFIPParametersDlg.h"
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
+
 #include <Materials/CEBFIPConcrete.h>
 
 // CCEBFIPParametersDlg dialog

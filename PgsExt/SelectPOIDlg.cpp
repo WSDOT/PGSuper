@@ -26,6 +26,7 @@
 #include "resource.h"
 #include "SelectPOIDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\DocumentType.h>
 #include <IFace\Intervals.h>

@@ -23,6 +23,8 @@
 #include <PgsExt\PgsExtLib.h>
 #include <PgsExt\GirderArtifactTool.h>
 #include <PsgLib\GirderLabel.h>
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\Intervals.h>
 #include <IFace\Bridge.h>

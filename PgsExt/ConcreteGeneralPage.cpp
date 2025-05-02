@@ -29,6 +29,9 @@
 #include <PgsExt\ConcreteDetailsDlg.h>
 
 #include "CopyConcreteEntry.h"
+
+
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
 

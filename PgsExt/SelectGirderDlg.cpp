@@ -25,8 +25,11 @@
 #include <PgsExt\PgsExtLib.h>
 #include "resource.h"
 #include "SelectGirderDlg.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\DocumentType.h>
+
 #include <PsgLib\BridgeDescription2.h>
 #include <PsgLIb\GirderLabel.h>
 
