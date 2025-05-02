@@ -27,6 +27,7 @@
 #include "resource.h"
 #include "ActivityGrid.h"
 
+#include <IFace/Tools.h>
 #include <IFace\DocumentType.h>
 #include <IFace\Project.h>
 

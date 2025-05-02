@@ -29,6 +29,7 @@
 #include "BridgeDescDlg.h"
 #include "PGSuperDoc.h"
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 
 #include <PsgLib\Helpers.h>

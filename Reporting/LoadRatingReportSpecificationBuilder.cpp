@@ -25,6 +25,7 @@
 #include <Reporting\LoadRatingReportDlg.h>
 #include <Reporting\LoadRatingSummaryReportDlg.h>
 
+#include <IFace/Tools.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\Selection.h>
 #include <IFace\Bridge.h>

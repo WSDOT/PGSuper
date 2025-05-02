@@ -27,6 +27,8 @@
 #include "PGSuperPluginApp.h"
 #include "PGSuperColors.h"
 #include "DrawTendonsControl.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Alignment.h>
 #include <IFace\Bridge.h>
 #include <IFace/PointOfInterest.h>

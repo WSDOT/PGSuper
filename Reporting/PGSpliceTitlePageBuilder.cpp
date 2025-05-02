@@ -27,9 +27,10 @@
 #include <Reporting\LibraryUsageParagraph.h>
 #include <Reporting\GirderSeedDataComparisonParagraph.h>
 
+#include <IFace/Tools.h>
 #include <IFace\VersionInfo.h>
 #include <IFace\Project.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFUIIntegration.h>
 

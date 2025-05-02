@@ -22,6 +22,7 @@
 
 // ShrinkageAtFinalTable.cpp : Implementation of CShrinkageAtFinalTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "ShrinkageAtFinalTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>

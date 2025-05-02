@@ -28,6 +28,7 @@
 #include <EAF/EAFReportManager.h>
 #include <EAF\EAFDocument.h>
 #include <EAF\EAFCustSiteVars.h>
+#include <IFace/Tools.h>
 
 
 /////////////////////////////////////////////////////////////////////////////

@@ -28,6 +28,7 @@
 #include "HaunchBySegmentDlg.h"
 #include "EditHaunchDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\DocumentType.h>
 
 

@@ -30,7 +30,7 @@
 #include <Reporting\SpanGirderReportSpecificationBuilder.h>
 #include <Reporting\SpecCheckSummaryChapterBuilder.h>
 
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\DocumentType.h>
 #include <EAF/EAFReportManager.h>
 

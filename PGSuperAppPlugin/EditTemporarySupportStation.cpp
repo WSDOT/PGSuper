@@ -23,6 +23,8 @@
 #include "stdafx.h"
 #include "PGSpliceDoc.h"
 #include "EditTemporarySupportStation.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
 

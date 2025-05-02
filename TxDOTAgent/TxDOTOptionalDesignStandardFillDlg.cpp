@@ -27,7 +27,10 @@
 #include "TxDOTOptionalDesignStandardFillDlg.h"
 #include <System\Tokenizer.h>
 #include <MfcTools\CustomDDX.h>
+
+#include <IFace\Tools.h>
 #include <EAF\EAFDisplayUnits.h>
+
 #include "EccentricityDlg.h"
 
 #include <psgLib/LibraryManager.h>

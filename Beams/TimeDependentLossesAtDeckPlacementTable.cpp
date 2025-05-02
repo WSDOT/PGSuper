@@ -22,6 +22,7 @@
 
 // TimeDependentLossesAtDeckPlacementTable.cpp : Implementation of CTimeDependentLossesAtDeckPlacementTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "TimeDependentLossesAtDeckPlacementTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>

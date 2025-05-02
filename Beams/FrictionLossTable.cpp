@@ -22,6 +22,7 @@
 
 // FrictionLossTable.cpp : Implementation of CFrictionLossTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "FrictionLossTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>

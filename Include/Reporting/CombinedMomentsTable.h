@@ -24,6 +24,9 @@
 
 #include <Reporting\ReportingExp.h>
 #include <Reporting\ReportNotes.h>
+
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
 

@@ -22,6 +22,7 @@
 
 // BulbTeeDistFactorEngineer.cpp : Implementation of CBulbTeeDistFactorEngineer
 #include "stdafx.h"
+#include "Beams.h"
 #include <Beams\BulbTeeDistFactorEngineer.h>
 #include <IFace\Project.h>
 

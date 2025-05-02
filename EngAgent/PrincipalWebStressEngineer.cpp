@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
+#include "EngAgent.h"
 #include <PgsExt\PgsExt.h>
 #include "PrincipalWebStressEngineer.h"
 #include <algorithm>

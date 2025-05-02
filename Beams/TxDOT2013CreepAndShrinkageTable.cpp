@@ -22,6 +22,7 @@
 
 // TxDOT2013CreepAndShrinkageTable.cpp : Implementation of CTxDOT2013CreepAndShrinkageTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "TxDOT2013CreepAndShrinkageTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>

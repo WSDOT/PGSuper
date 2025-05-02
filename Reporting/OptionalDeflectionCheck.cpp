@@ -24,6 +24,8 @@
 #include <Reporting\OptionalDeflectionCheck.h>
 #include <Reporting\StirrupDetailingCheckTable.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Artifact.h>
 #include <IFace\Bridge.h>
 

@@ -22,6 +22,7 @@
 
 // DeckShrinkageLossTable.cpp : Implementation of CDeckShrinkageLossTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "DeckShrinkageLossTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>

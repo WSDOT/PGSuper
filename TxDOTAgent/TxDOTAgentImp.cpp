@@ -25,7 +25,7 @@
 #include "stdafx.h"
 #include "TxDOTAgentImp.h"
 
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <EAF/EAFReportManager.h>
 #include <IFace\Project.h>
 #include <IFace\Artifact.h>

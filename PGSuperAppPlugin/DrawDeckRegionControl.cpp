@@ -28,6 +28,8 @@
 #include "PGSuperColors.h"
 #include "DrawDeckRegionControl.h"
 #include "CastDeckDlg.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 
 #include <PsgLib\BridgeDescription2.h>

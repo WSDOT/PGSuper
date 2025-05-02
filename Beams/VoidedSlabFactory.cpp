@@ -22,6 +22,7 @@
 
 // VoidedSlabFactory.cpp : Implementation of CVoidedSlabFactory
 #include "stdafx.h"
+#include "Beams.h"
 #include <Plugins\Beams.h>
 #include <Plugins\BeamFamilyCLSID.h>
 #include "VoidedSlabFactory.h"
@@ -39,7 +40,7 @@
 
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\Intervals.h>
 #include <IFace\AgeAdjustedMaterial.h>
 

@@ -22,6 +22,7 @@
 
 // SplicedIBeamFactory.cpp : Implementation of CSplicedIBeamFactory
 #include "stdafx.h"
+#include "Beams.h"
 #include <Plugins\Beams.h>
 #include <Plugins\BeamFamilyCLSID.h>
 #include <Beams/SplicedIBeamFactoryImpl.h>

@@ -22,6 +22,7 @@
 
 // EngAgentImp.cpp : Implementation of CEngAgentImp
 #include "stdafx.h"
+#include "AnalysisAgent.h"
 #include "PGSuperLoadCombinationResponse.h"
 
 #include "GirderModelManager.h"

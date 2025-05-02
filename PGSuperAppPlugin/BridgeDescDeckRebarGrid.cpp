@@ -30,6 +30,7 @@
 #include "BridgeDescDeckReinforcementPage.h"
 #include <Units\Measure.h>
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 
 #include <algorithm>

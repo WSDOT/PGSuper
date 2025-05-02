@@ -23,6 +23,7 @@
 #include "stdafx.h"
 #include <Reporting\GirderSeedDataComparisonParagraph.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
 #include <psglib/GirderLibraryEntry.h>

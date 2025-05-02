@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <IFace/Tools.h>
 #include <IFace\Artifact.h>
 #include <PgsExt\PoiMgr.h>
 

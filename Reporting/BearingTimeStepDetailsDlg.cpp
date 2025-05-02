@@ -23,12 +23,12 @@
 //
 
 #include "stdafx.h"
-#include "Reporting.h"
 #include "BearingTimeStepDetailsDlg.h"
 
 #include <PsgLib\GirderLabel.h>
 #include <MFCTools\CustomDDX.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Intervals.h>
 #include <IFace\PointOfInterest.h>
 #include <IFace\Bridge.h>

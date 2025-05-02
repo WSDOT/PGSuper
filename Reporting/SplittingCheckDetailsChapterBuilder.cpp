@@ -27,6 +27,7 @@
 
 #include <PgsExt\GirderArtifact.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\Artifact.h>
 #include <IFace\SplittingChecks.h>

@@ -25,9 +25,12 @@
 #include "stdafx.h"
 #include "PGSuperApp.h"
 #include "EditPointLoadDlg.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <EAF\EAFDisplayUnits.h>
+
 #include <EAF\EAFDocument.h>
 #include "PGSuperDoc.h"
 #include "PGSpliceDoc.h"

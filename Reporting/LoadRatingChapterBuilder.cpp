@@ -25,9 +25,10 @@
 #include <Reporting\LoadRatingReportSpecificationBuilder.h>
 #include <Reporting\RatingSummaryTable.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Artifact.h>
 #include <IFace\Intervals.h>
-
 #include <IFace\RatingSpecification.h>
 #include <IFace\Bridge.h>
 

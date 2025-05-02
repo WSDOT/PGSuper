@@ -25,6 +25,7 @@
 #include <Reporting\InitialStrainAnalysisReportSpecification.h>
 #include "InitialStrainAnalysisDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Selection.h>
 #include <IFace\PointOfInterest.h>
 

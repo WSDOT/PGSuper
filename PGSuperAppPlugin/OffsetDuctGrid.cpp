@@ -26,6 +26,8 @@
 #include "stdafx.h"
 #include "OffsetDuctGrid.h"
 #include "OffsetDuctDlg.h"
+
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include "PGSuperUnits.h"
 

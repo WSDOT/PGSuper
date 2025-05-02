@@ -30,6 +30,7 @@
 
 #include <MFCTools\VersionInfo.h>
 
+#include <IFace\Tools.h>
 #include <IFace\Artifact.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace/Limits.h>

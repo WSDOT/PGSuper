@@ -23,9 +23,12 @@
 #include "stdafx.h"
 #include "PGSuperApp.h"
 #include "InplacePierStationEditEvents.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
+
 #include <EAF\EAFTxnManager.h>
 #include <PsgLib\BridgeDescription2.h>
 #include "MovePierDlg.h"

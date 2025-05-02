@@ -22,6 +22,7 @@
 
 // DoubleTeeFactory.cpp : Implementation of CDoubleTeeFactory
 #include "stdafx.h"
+#include "Beams.h"
 #include <Plugins\Beams.h>
 #include <Plugins\BeamFamilyCLSID.h>
 #include "DoubleTeeFactory.h"
@@ -37,7 +38,7 @@
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\AgeAdjustedMaterial.h>
 
 #include <Beams\Helper.h>

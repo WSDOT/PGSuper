@@ -24,6 +24,7 @@
 #include "InsertDeleteSpan.h"
 #include "PGSuperDocBase.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\Views.h>
 #include <BridgeModelViewController.h>

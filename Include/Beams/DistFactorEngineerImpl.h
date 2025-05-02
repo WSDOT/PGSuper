@@ -23,10 +23,12 @@
 #pragma once
 
 #include <Beams/BeamsExp.h>
+
+#include <IFace/Tools.h>
 #include <IFace\DistFactorEngineer.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\DistributionFactors.h>
 #include <IFace/PointOfInterest.h>
 

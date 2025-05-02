@@ -27,6 +27,7 @@
 #include "resource.h"
 #include "ApplyLoadsDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>

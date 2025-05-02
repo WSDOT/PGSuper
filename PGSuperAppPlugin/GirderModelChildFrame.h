@@ -34,8 +34,11 @@
 #include <PsgLib/GirderGroupData.h>
 #include <EAF\EAFViewControllerFactory.h>
 #include <MfcTools\WideDropDownComboBox.h>
+
+#include <IFace/Tools.h>
 #include <IFace/Project.h>
 #include <IFace/Selection.h>
+
 #include <DManip/ToolPalette.h>
 
 class CGirderModelElevationView;

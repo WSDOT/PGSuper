@@ -22,6 +22,7 @@
 
 // TemporaryStrandRemovalTable.cpp : Implementation of CTemporaryStrandRemovalTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "TemporaryStrandRemovalTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>

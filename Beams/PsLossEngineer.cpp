@@ -22,12 +22,13 @@
 
 // IPsLossEngineer.cpp : Implementation of CPsLossEngineer
 #include "stdafx.h"
+#include "Beams.h"
 #include <Beams/PsLossEngineer.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\AnalysisResults.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\Intervals.h>
 #include <IFace/PointOfInterest.h>

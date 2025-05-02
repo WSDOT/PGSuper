@@ -24,6 +24,7 @@
 #include <Reporting\HaulingCheck.h>
 #include <Reporting\ReportNotes.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Artifact.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\GirderHandlingSpecCriteria.h>

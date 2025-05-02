@@ -23,6 +23,9 @@
 #include "StdAfx.h"
 #include <Reporting\InitialStrainAnalysisChapterBuilder.h>
 #include <Reporting\InitialStrainAnalysisReportSpecification.h>
+
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\PointOfInterest.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>

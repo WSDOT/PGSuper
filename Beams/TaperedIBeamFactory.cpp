@@ -22,6 +22,7 @@
 
 // TaperedIBeamFactory.cpp : Implementation of CTaperedIBeamFactory
 #include "stdafx.h"
+#include "Beams.h"
 #include <Plugins\Beams.h>
 #include <Plugins\BeamFamilyCLSID.h>
 #include "TaperedIBeamFactory.h"

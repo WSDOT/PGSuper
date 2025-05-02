@@ -85,7 +85,6 @@
 #include <Reporting\HaulingCheckChapterBuilder.h>
 #include <Reporting\BridgeAnalysisChapterBuilder.h>
 
-#include <Reporting\IntervalChapterBuilder.h>
 #include <Reporting\GirderTendonGeometryChapterBuilder.h>
 #include <Reporting\SegmentTendonGeometryChapterBuilder.h>
 #include <Reporting\TimeStepParametersChapterBuilder.h>
@@ -122,6 +121,7 @@
 #include <Reporting\CrackedSectionReportSpecificationBuilder.h>
 #include <Reporting\CrackedSectionChapterBuilder.h>
 
+#include <IFace\Tools.h>
 #include <IFace\Project.h>
 
 

@@ -31,7 +31,7 @@
 #include "resource.h"
 
 #include <IFace\Project.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFUIIntegration.h>
 #include <EAF\EAFStatusItem.h>

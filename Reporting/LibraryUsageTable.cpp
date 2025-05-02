@@ -24,7 +24,9 @@
 #include <Reporting\LibraryUsageTable.h>
 #include <Reporting\ReportNotes.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
+
 #include <psgLib/SpecificationCriteria.h>
 
 #include <Lrfd/BDSManager.h>

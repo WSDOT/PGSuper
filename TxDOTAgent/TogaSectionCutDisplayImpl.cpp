@@ -25,6 +25,8 @@
 #include <MathEx.h>
 #include <MfcTools\MfcTools.h> 
 #include <PGSuperColors.h>
+
+#include <IFace\Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace/PointOfInterest.h>
 

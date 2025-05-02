@@ -31,6 +31,8 @@
 
 #include <PsgLib\BridgeDescription2.h>
 #include <PsgLib\Helpers.h>
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\BeamFactory.h>
 

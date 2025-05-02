@@ -34,6 +34,7 @@
 
 #include <GenericBridge\Helpers.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace/Limits.h>
 #include <EAF\EAFDisplayUnits.h>

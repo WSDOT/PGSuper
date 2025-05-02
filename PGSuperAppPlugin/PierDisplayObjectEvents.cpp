@@ -28,8 +28,11 @@
 #include "PGSuperApp.h"
 #include "PierDisplayObjectEvents.h"
 #include "pgsuperdoc.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\EditByUI.h>
+
 #include <PsgLib\BridgeDescription2.h>
 
 #include <DManip/DisplayObject.h>

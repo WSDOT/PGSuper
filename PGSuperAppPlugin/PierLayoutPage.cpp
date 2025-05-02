@@ -29,6 +29,7 @@
 #include "PierDetailsDlg.h"
 #include <PgsExt\ConcreteDetailsDlg.h>
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <MFCTools\CustomDDX.h>
 

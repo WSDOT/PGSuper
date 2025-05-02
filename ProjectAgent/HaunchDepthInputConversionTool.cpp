@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "ProjectAgent.h"
 #include "HaunchDepthInputConversionTool.h"
 
 #include <MathEx.h>

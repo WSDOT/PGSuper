@@ -23,6 +23,7 @@
 #include "stdafx.h"
 #include "EditLLDF.h"
 #include "PGSuperDoc.h"
+#include <IFace/Tools.h>
 
 
 txnEditLLDF::txnEditLLDF(const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc,

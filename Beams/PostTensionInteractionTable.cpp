@@ -22,6 +22,7 @@
 
 // PostTensionInteractionTable.cpp : Implementation of CPostTensionInteractionTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "PostTensionInteractionTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>

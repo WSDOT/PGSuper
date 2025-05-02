@@ -24,6 +24,8 @@
 #include "resource.h"
 #include "PGSuperColors.h"
 #include "MultiGirderSelectDlg.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 
 // CMultiGirderSelectDlg dialog

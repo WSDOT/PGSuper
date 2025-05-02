@@ -26,7 +26,10 @@
 #include "stdafx.h"
 #include "PGSuperPluginApp.h"
 #include "PostTensioningPage.h"
+
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
+
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDocument.h>
 #include "PGSuperDoc.h"

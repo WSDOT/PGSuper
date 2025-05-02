@@ -30,6 +30,7 @@
 
 #include <EAF\EAFUIIntegration.h>
 
+#include <IFace\Tools.h>
 #include <IFace\TestFileExport.h>
 
 #include <PgsExt\GirderDesignArtifact.h>

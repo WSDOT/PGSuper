@@ -22,6 +22,7 @@
 
 // CreepAtFinalTable.cpp : Implementation of CCreepAtFinalTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "CreepAtFinalTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>

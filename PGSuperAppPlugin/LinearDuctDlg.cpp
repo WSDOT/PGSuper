@@ -6,6 +6,7 @@
 #include "LinearDuctDlg.h"
 #include "SplicedGirderDescDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 
 #include <EAF\EAFDocument.h>

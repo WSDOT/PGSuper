@@ -225,6 +225,7 @@
     <ClCompile Include="DesignConfigUtil.cpp" />
     <ClCompile Include="DuctSizeArtifact.cpp" />
     <ClCompile Include="EditBridge.cpp" />
+    <ClCompile Include="ReportCreepCoefficient.cpp" />
     <ClCompile Include="UHPCConcretePage.cpp" />
     <ClCompile Include="FlexuralCapacityArtifact.cpp" />
     <ClCompile Include="FlexuralStressArtifact.cpp" />

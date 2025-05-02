@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "AnalysisAgent.h"
 #include "SegmentModelManager.h"
 #include <pgsExt\AnalysisResult.h>
 

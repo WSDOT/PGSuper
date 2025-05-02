@@ -25,6 +25,8 @@
 #include "PGSuperDoc.h"
 #include <PgsExt\DesignConfigUtil.h>
 #include <PsgLib\BridgeDescription2.h>
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 

@@ -27,9 +27,10 @@
 #include "DesignRatingPage.h"
 #include "RatingOptionsDlg.h"
 
-#include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
 
+#include <IFace/Tools.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
 

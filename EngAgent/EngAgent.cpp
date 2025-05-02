@@ -29,7 +29,7 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "initguid.h"
+#include <initguid.h>
 #include "EngAgent.h"
 
 #include "CLSID.h"
@@ -42,7 +42,7 @@
 
 #include <IFace\PrecastIGirderDetailsSpec.h>
 #include <IFace\Project.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\EditByUI.h>
 #include <IFace\RatingSpecification.h>

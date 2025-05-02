@@ -22,6 +22,7 @@
 
 // BulbTeeFactory.cpp : Implementation of CBulbTeeFactory
 #include "stdafx.h"
+#include "Beams.h"
 #include <Plugins\Beams.h>
 #include <Plugins\BeamFamilyCLSID.h>
 #include "BulbTeeFactory.h"
@@ -39,7 +40,7 @@
 #include <IFace\Intervals.h>
 #include <IFace\Alignment.h>
 #include <IFace\AgeAdjustedMaterial.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 
 #include <Beams\Helper.h>
 #include <PsgLib\BridgeDescription2.h>

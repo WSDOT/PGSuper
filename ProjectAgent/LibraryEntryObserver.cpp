@@ -22,7 +22,7 @@
 
 #include "StdAfx.h"
 #include "LibraryEntryObserver.h"
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include "ProjectAgent.h"
 #include "CLSID.h"
 #include "ProjectAgentImp.h"

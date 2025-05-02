@@ -31,6 +31,7 @@
 #include "CopyPierDlg.h"
 #include "CopyPierPropertiesCallbacks.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\Selection.h>

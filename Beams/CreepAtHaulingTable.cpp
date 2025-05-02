@@ -22,6 +22,7 @@
 
 // CreepAtHaulingTable.cpp : Implementation of CCreepAtHaulingTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "CreepAtHaulingTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>

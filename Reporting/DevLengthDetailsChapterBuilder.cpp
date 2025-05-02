@@ -23,6 +23,7 @@
 #include "StdAfx.h"
 #include <Reporting\DevLengthDetailsChapterBuilder.h>
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\Project.h>

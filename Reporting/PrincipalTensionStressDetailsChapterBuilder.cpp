@@ -23,6 +23,8 @@
 #include "StdAfx.h"
 #include <Reporting\PrincipalTensionStressDetailsChapterBuilder.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Artifact.h>
 #include <IFace\PrincipalWebStress.h>
 #include <IFace\Bridge.h>

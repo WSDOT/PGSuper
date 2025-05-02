@@ -35,7 +35,7 @@
 #include <LRFD\PsStrand.h>
 #include <LRFD\Rebar.h>
 
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\Intervals.h>

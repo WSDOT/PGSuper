@@ -55,6 +55,7 @@
 
 #include <EAF/EAFReportManager.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <EAF/EAFProgress.h>
 #include <IFace\Selection.h>
 #include <IFace\TestFileExport.h>
 #include <IFace\Project.h>

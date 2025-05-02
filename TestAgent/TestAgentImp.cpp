@@ -25,6 +25,7 @@
 #include "TestAgent.h"
 #include "TestAgentImp.h"
 
+
 #include <IFace\Alignment.h>
 #include <IFace\VersionInfo.h>
 #include <IFace\AnalysisResults.h>
@@ -37,7 +38,7 @@
 #include <IFace\Constructability.h>
 #include <IFace\PointOfInterest.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\RatingSpecification.h>
 #include <EAF\EAFUIIntegration.h>
 #include <IFace\Intervals.h>

@@ -23,6 +23,8 @@
 #include "stdafx.h"
 #include "EditProjectProperties.h"
 #include "PGSuperDoc.h"
+#include <IFace/Tools.h>
+
 
 
 txnEditProjectProperties::txnEditProjectProperties(

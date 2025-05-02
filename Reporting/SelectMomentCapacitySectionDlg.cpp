@@ -27,11 +27,13 @@
 
 #include "stdafx.h"
 #include "SelectMomentCapacitySectionDlg.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\DocumentType.h>
 #include <IFace/PointOfInterest.h>
-
 #include <EAF\EAFDisplayUnits.h>
+
 #include <MFCTools\CustomDDX.h>
 #include <PsgLib\GirderLabel.h>
 #include <PGSuperUnits.h>

@@ -29,6 +29,7 @@
 #include "PGSuperDoc.h"
 #include "PGSpliceDoc.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <EAF\EAFDisplayUnits.h>

@@ -27,6 +27,7 @@
 #include "HorizontalAlignmentGrid.h"
 #include "HorizontalAlignmentPage.h"
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <CoordGeom/Station.h>
 #include <CoordGeom/Angle.h>

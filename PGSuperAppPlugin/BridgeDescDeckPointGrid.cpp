@@ -32,6 +32,7 @@
 #include <Units\Measure.h>
 #include <CoordGeom/Station.h>
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 
 #include <algorithm>

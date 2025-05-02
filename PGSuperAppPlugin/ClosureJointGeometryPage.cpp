@@ -32,6 +32,7 @@
 #include "PierDetailsDlg.h"
 #include "TimelineEventDlg.h"
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
 #include <IFace\Project.h>

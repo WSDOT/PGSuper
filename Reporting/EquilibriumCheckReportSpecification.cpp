@@ -23,6 +23,9 @@
 #include "StdAfx.h"
 #include <Reporting\EquilibriumCheckReportSpecification.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
+
 
 CEquilibriumCheckReportSpecification::CEquilibriumCheckReportSpecification(const std::_tstring& strReportName,std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) :
 CBrokerReportSpecification(strReportName,pBroker)

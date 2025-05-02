@@ -30,6 +30,7 @@ interface IGeneralSection;
 interface IPoint2d;
 interface ISize2d;
 interface IStressStrain;
+namespace WBFL { namespace EAF { class Broker; }; };
 
 /*****************************************************************************
 CLASS 

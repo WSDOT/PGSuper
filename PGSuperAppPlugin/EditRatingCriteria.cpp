@@ -22,6 +22,8 @@
 
 #include "stdafx.h"
 #include "EditRatingCriteria.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h> // for IEvents
 #include <IFace\RatingSpecification.h>
 #include "PGSuperDoc.h" // for EAFGetBroker

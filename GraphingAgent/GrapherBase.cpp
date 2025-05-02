@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include <IFace\Tools.h>
 #include "GrapherBase.h"
 
 // Interfaces

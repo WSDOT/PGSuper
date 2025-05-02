@@ -24,6 +24,8 @@
 #include "PGSuperApp.h"
 #include "PGSImportPluginDocTemplateBase.h"
 #include "SelectItemDlg.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <EAF\EAFDisplayUnits.h>
 

@@ -27,6 +27,7 @@
 #include "PGSuperPluginApp.h"
 #include "GirderSegmentDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\Bridge.h>

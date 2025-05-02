@@ -22,6 +22,8 @@
 
 #include "StdAfx.h"
 #include <Reporting\ShrinkageStrainChapterBuilder.h>
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
 

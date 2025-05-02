@@ -23,9 +23,10 @@
 #include "StdAfx.h"
 #include <Reporting\DistributionFactorDetailsChapterBuilder.h>
 #include <Reporting\LiveLoadDistributionFactorTable.h>
-
-#include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFUtilities.h>
+
+#include <IFace/Tools.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\DistributionFactors.h>
 #include <IFace\Bridge.h>
 #include <IFace\DocumentType.h>

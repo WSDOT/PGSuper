@@ -24,6 +24,7 @@
 #include <Reporting\LiveLoadDetailsChapterBuilder.h>
 #include <Reporting\ReportNotes.h>
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Bridge.h>

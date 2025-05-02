@@ -29,9 +29,10 @@
 
 #include <PgsExt\SegmentRelatedStatusItem.h>
 
+#include <IFace/Tools.h>
 #include <IFace\VersionInfo.h>
 #include <IFace\Project.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <EAF\EAFUIIntegration.h>
 #include <IFace\Bridge.h>
 

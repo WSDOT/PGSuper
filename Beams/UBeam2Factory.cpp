@@ -22,6 +22,7 @@
 
 // UBeam2Factory.cpp : Implementation of CUBeam2Factory
 #include "stdafx.h"
+#include "Beams.h"
 #include <Plugins\Beams.h>
 #include <Plugins\BeamFamilyCLSID.h>
 #include "UBeam2Factory.h"

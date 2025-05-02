@@ -30,9 +30,11 @@
 #include "TxDOTOptionalDesignData.h"
 #include "TxDOTOptionalDesignUtilities.h"
 
+#include <IFace\Tools.h>
 #include <IFace\VersionInfo.h>
 #include <IFace\Project.h>
-#include <IFace\StatusCenter.h>
+
+#include <EAF/EAFStatusCenter.h>
 #include <EAF\EAFUIIntegration.h>
 
 #pragma Reminder("WORKING HERE - Removing COM - storing a pointer to the broker can cause circular references")

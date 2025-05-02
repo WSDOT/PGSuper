@@ -23,6 +23,8 @@
 #include "StdAfx.h"
 #include <Reporting\FinalLossesChapterBuilder.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\Bridge.h>
 

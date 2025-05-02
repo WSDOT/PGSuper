@@ -24,6 +24,8 @@
 #include <Reporting\LiveLoadDistributionFactorTable.h>
 #include <Reporting\ReportNotes.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\DocumentType.h>
 #include <IFace\DistributionFactors.h>
 #include <IFace\Project.h>

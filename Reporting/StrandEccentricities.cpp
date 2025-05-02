@@ -24,6 +24,8 @@
 #include <Reporting\StrandEccentricities.h>
 #include <Reporting\StrandEccTable.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>

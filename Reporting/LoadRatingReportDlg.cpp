@@ -28,7 +28,6 @@
 #include <Reporting\LoadRatingReportSpecificationBuilder.h>
 #include "..\Documentation\PGSuper.hh"
 
-#include <initguid.h>
 #include <IFace\Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\DocumentType.h>

@@ -27,7 +27,7 @@
 #include "resource.h"
 #include "PGSuperStatusBar.h"
 #include "PGSuperColors.h"
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 
 
 

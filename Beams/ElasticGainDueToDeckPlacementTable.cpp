@@ -22,6 +22,7 @@
 
 // ElasticGainDueToDeckPlacementTable.cpp : Implementation of CElasticGainDueToDeckPlacementTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "ElasticGainDueToDeckPlacementTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>

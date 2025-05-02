@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "Beams.h"
 #include "CreepAndShrinkageTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>

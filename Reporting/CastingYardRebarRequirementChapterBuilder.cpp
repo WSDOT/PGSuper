@@ -28,6 +28,7 @@
 #include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\GirderArtifact.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Artifact.h>
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>

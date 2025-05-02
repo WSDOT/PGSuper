@@ -24,6 +24,8 @@
 #include <Reporting\PrincipalTensionStressCheckTable.h>
 #include <PgsExt\PgsExt.h>
 
+#include <IFace/Tools.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
 #include <IFace/Limits.h>

@@ -29,11 +29,11 @@
 #include <PsgLib\ShearData.h>
 #include <PsgLib\BridgeDescription2.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\ShearCapacity.h>
 #include <IFace\Project.h>
-#include <IFace\Bridge.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>

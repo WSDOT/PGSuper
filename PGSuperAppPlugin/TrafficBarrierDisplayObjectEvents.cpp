@@ -30,6 +30,8 @@
 #include "PGSuperDocBase.h"
 #include "BridgeSectionView.h"
 
+#include <IFace/Tools.h>
+
 #include <PsgLib\BridgeDescription2.h>
 
 #include <DManip/DisplayObject.h>

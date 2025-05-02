@@ -27,6 +27,8 @@
 #include "resource.h"
 #include "PGSuperApp.h"
 #include "BridgeViewPane.h"
+
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 
 

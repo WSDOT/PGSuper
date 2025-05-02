@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
+#include "EngAgent.h"
 #include "PsForceEng.h"
 #include <IFace\Bridge.h>
 #include <IFace\PrestressForce.h>

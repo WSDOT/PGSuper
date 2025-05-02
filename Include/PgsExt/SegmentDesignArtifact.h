@@ -31,6 +31,8 @@
 #include <Materials/SimpleConcrete.h>
 #include <PGSuperTypes.h>
 
+namespace WBFL { namespace EAF { class Broker; }; };
+
 /*****************************************************************************
 CLASS 
    pgsSegmentDesignArtifact

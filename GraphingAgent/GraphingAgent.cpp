@@ -28,7 +28,7 @@
 //		run nmake -f GraphingAgentps.mk in the project directory.
 
 #include "stdafx.h"
-#include "initguid.h"
+#include <initguid.h>
 #include "resource.h"
 #include "CLSID.h"
 
@@ -36,7 +36,7 @@
 #include <WBFLCogo_i.c>
 
 #include <EAF/EAFGraphManager.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 
 #include "PGSuperGrapherImp.h"
 #include "PGSpliceGrapherImp.h"

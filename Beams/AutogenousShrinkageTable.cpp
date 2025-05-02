@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "Beams.h"
 #include "AutogenousShrinkageTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>

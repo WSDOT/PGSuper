@@ -22,6 +22,7 @@
 
 // PostTensionTimeDependentLossesAtShippingTable.cpp : Implementation of CPostTensionTimeDependentLossesAtShippingTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "PostTensionTimeDependentLossesAtShippingTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>

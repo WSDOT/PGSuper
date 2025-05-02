@@ -29,6 +29,7 @@
 #include "PierDetailsDlg.h"
 #include "PGSuperColors.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <EAF\EAFDisplayUnits.h>

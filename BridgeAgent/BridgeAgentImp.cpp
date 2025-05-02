@@ -73,7 +73,7 @@
 #include <IFace\ShearCapacity.h>
 #include <IFace\GirderHandling.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\BeamFactory.h>
 #include <IFace\EditByUI.h>
 #include <IFace\MomentCapacity.h>

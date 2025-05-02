@@ -22,6 +22,9 @@
 
 #include "stdafx.h"
 #include <Reporting\SpanGirderReportSpecification.h>
+
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\DocumentType.h>
 

@@ -22,7 +22,10 @@
 
 #include "stdafx.h"
 #include "EditProjectCriteria.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h> // for IEvents and ISpecification
+
 #include "PGSuperDoc.h" // for EAFGetBroker
 
 

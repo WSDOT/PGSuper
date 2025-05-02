@@ -26,6 +26,8 @@
 
 #include <WBFLTools.h> // not sure why, but this is needed to compile
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>

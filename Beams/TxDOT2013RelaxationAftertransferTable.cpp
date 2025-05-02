@@ -22,6 +22,7 @@
 
 // TxDOT2013RelaxationAfterTransferTable.cpp : Implementation of CTxDOT2013RelaxationAfterTransferTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "TxDOT2013RelaxationAfterTransferTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>

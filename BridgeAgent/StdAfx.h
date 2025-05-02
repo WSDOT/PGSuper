@@ -33,7 +33,7 @@
 
 #include <PGSuperAll.h>
 
-#include <IFace\Tools.h>
+
 #include <System\System.h>
 
 #include <WBFLTools.h>

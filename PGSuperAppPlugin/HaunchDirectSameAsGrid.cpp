@@ -33,6 +33,8 @@
 #include <Units\Measure.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <PsgLib\GirderLabel.h>
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
 

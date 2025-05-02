@@ -29,6 +29,7 @@
 #include "SectionCutDlgEx.h"
 #include <ostream>
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
 

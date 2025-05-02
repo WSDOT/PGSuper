@@ -9,6 +9,7 @@
 #include <IFace\DocumentType.h>
 #include <PsgLib\BridgeDescription2.h>
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
 

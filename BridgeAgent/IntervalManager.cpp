@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "BridgeAgent.h"
 #include "IntervalManager.h"
 #include <algorithm>
 

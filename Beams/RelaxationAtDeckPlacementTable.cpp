@@ -22,6 +22,7 @@
 
 // RelaxationAtDeckPlacementTable.cpp : Implementation of CRelaxationAtDeckPlacementTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "RelaxationAtDeckPlacementTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>

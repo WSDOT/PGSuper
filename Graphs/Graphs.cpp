@@ -32,7 +32,7 @@
 #include <initguid.h>
 
 // Put an include statement here for every interface used in this agent.
-// The #include "initguid.h" statement above will cause the IID's to be
+// The #include <initguid.h> statement above will cause the IID's to be
 // resolved in this DLL
 
 //

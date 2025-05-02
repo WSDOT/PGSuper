@@ -117,6 +117,7 @@
       <OptimizeReferences>false</OptimizeReferences>
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <LinkTimeCodeGeneration>Default</LinkTimeCodeGeneration>
+      <ForceFileOutput>MultiplyDefinedSymbolOnly</ForceFileOutput>
     </Link>
     <Bscmake>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -208,6 +209,7 @@
     <ClInclude Include="AgeAdjustedMaterial.h" />
     <ClInclude Include="AutogenousShrinkageTable.h" />
     <ClInclude Include="BeamFamilyImpl.h" />
+    <ClInclude Include="Beams.h" />
     <ClInclude Include="BoxBeamDistFactorEngineer.h" />
     <ClInclude Include="BoxBeamFactory.h" />
     <ClInclude Include="BoxBeamFactory2.h" />
@@ -437,7 +439,6 @@
   <ItemGroup>
     <ProjectReference Include="..\PgsExt\PgsExt.vcxproj">
       <Project>{716009be-959b-4338-80f5-69abb0b12a91}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

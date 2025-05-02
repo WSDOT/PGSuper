@@ -25,6 +25,8 @@
 #include <Reporting\ReportingExp.h>
 #include <ReportManager\ReportManager.h>
 
+namespace WBFL { namespace EAF { class Broker; }; };
+
 
 class REPORTINGCLASS CBrokerReportSpecificationBuilder :
    public WBFL::Reporting::ReportSpecificationBuilder

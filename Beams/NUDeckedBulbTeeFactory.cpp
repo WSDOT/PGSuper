@@ -22,6 +22,7 @@
 
 // NUDeckedBulbTeeFactory.cpp : Implementation of CNUDeckedBulbTeeFactory
 #include "stdafx.h"
+#include "Beams.h"
 #include <Plugins\Beams.h>
 #include <Plugins\BeamFamilyCLSID.h>
 #include "NUDeckedBulbTeeFactory.h"
@@ -38,7 +39,7 @@
 #include <IFace\Intervals.h>
 #include <IFace\Alignment.h>
 #include <IFace\AgeAdjustedMaterial.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <Beams\Interfaces.h>
 
 #include <Beams\Helper.h>

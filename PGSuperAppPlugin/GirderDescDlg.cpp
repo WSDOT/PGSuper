@@ -27,10 +27,13 @@
 #include "resource.h"
 #include "PGSuperDocBase.h"
 #include "GirderDescDlg.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\GirderHandling.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
+
 #include <PsgLib\BridgeDescription2.h>
 #include <PsgLib\Helpers.h>
 

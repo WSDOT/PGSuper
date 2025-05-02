@@ -24,6 +24,8 @@
 #include "EditEnvironment.h"
 #include "PGSuperDoc.h"
 
+#include <IFace/Tools.h>
+
 
 txnEditEnvironment::txnEditEnvironment(pgsTypes::ExposureCondition oldExposureCondition, 
                                        pgsTypes::ExposureCondition newExposureCondition,

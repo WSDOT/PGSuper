@@ -27,6 +27,8 @@
 #include "PGSuperApp.h"
 #include "resource.h"
 #include "RatingOptionsDlg.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
 

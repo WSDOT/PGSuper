@@ -29,7 +29,7 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "initguid.h"
+#include <initguid.h>
 #include "ProjectAgent.h"
 
 #include "CLSID.h"
@@ -45,8 +45,10 @@
 #include "PGSpliceCatCom.h"
 #include <System\ComCatMgr.h>
 
+#include <IFace/PointOfInterest.h>
+#include <IFace/Alignment.h>
 #include <IFace\PrestressForce.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\UpdateTemplates.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
@@ -55,6 +57,7 @@
 #include <IFace\DocumentType.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFUIIntegration.h>
+#include <EAF/EAFProgress.h>
 #include <EAF\EAFStatusCenter.h>
 
 #include <EAF\ComponentModule.h>

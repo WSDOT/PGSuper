@@ -29,6 +29,8 @@
 #include "BridgeSectionCutDisplayImpl.h"
 #include "BridgeModelViewChildFrame.h"
 #include "PGSuperDocBase.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\EditByUI.h>
 

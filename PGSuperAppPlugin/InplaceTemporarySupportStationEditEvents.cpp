@@ -25,6 +25,7 @@
 #include "InplaceTemporarySupportStationEditEvents.h"
 #include "EditTemporarySupportStation.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFTxnManager.h>

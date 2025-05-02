@@ -22,6 +22,7 @@
 
 // ChangeOfConcreteStressTable.cpp : Implementation of CChangeOfConcreteStressTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "ChangeOfConcreteStressTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>

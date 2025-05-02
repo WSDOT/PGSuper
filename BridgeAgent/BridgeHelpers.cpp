@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "BridgeAgent.h"
 #include "BridgeHelpers.h"
 
 #include <EAF\EAFUtilities.h>

@@ -22,6 +22,7 @@
 
 // RelaxationAtFinalTable.cpp : Implementation of CRelaxationAtFinalTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "RelaxationAtFinalTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>

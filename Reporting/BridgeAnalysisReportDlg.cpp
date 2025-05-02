@@ -29,6 +29,7 @@
 #include <MFCTools\CustomDDX.h>
 #include "..\Documentation\PGSuper.hh"
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
 #include <EAF\EAFUtilities.h>

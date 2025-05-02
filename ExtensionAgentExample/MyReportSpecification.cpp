@@ -21,6 +21,8 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
+#include "ExtensionAgent.h"
+
 #include "MyReportSpecification.h"
 
 

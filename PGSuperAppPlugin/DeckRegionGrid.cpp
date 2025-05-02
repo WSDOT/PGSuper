@@ -26,6 +26,8 @@
 #include "stdafx.h"
 #include "DeckRegionGrid.h"
 #include "CastDeckDlg.h"
+
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 

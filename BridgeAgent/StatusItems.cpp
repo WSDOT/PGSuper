@@ -21,14 +21,14 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-
+#include "BridgeAgent.h"
 #include "StatusItems.h"
 #include <PgsExt\InsertDeleteLoad.h>
 #include "DealWithLoadDlg.h"
 
 #include <IFace\EditByUI.h>
 #include <IFace\Project.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 
 #include <EAF\EAFTransactions.h>
 #include <EAF\EAFUtilities.h>

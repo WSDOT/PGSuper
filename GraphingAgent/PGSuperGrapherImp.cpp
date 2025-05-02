@@ -22,6 +22,7 @@
 
 // PGSuperGrapherImp.cpp : Implementation of CPGSuperGrapherImp
 #include "stdafx.h"
+#include <IFace\Tools.h>
 #include "PGSuperGrapherImp.h"
 
 

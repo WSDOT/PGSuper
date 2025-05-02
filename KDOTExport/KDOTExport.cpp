@@ -14,6 +14,7 @@
 #include <BridgeLinkCATID.h>
 #include <WBFLCogo.h>
 #include <WBFLCogo_i.c>
+#include <EAF/EAFProgress.h>
 
 #include "KDOTDataExporter.h"
 #include "KDOTComponentInfo.h"

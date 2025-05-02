@@ -40,6 +40,7 @@
 #include <PsgLib\TemporarySupportData.h>
 #include <PsgLib\ClosureJointData.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
 

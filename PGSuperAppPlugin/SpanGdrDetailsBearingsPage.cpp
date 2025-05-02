@@ -27,8 +27,10 @@
 #include "EditBearingDlg.h"
 #include "SpanDetailsDlg.h"
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
+
 #include "PGSuperUnits.h"
 
 // SpanGdrDetailsBearingsPage.cpp : implementation file

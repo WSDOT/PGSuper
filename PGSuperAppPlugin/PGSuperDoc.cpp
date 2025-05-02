@@ -41,12 +41,13 @@
 #include "FillHaunchDlg.h"
 
 // Interfaces
+#include <IFace/Tools.h>
 #include <IFace\EditByUI.h> // for EDG_GENERAL
 #include <IFace\Bridge.h>
 #include <IFace\GirderHandling.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\Transactions.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 
 // Transactions
 #include "EditGirder.h"

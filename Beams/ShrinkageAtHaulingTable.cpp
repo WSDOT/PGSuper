@@ -22,6 +22,7 @@
 
 // ShrinkageAtHaulingTable.cpp : Implementation of CShrinkageAtHaulingTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "ShrinkageAtHaulingTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>

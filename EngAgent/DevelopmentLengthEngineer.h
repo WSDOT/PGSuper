@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #pragma once
+#include "EngAgent.h"
 #include <PgsExt\DevelopmentLength.h>
 #include <PsgLib\PointOfInterest.h>
 #include <PgsExt\TransferLength.h>

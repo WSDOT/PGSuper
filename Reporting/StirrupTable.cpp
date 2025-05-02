@@ -23,8 +23,9 @@
 #include "StdAfx.h"
 #include <Reporting\StirrupTable.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
-
 #include <IFace\Project.h>
 
 #include <LRFD\RebarPool.h>

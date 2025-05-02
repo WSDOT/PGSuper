@@ -28,7 +28,7 @@
 #include "EditHaunchDlg.h"
 
 #include <EAF\EAFMainFrame.h>
-#include <EAF\EAFDisplayUnits.h>
+
 #include <EAF\EAFDocument.h>
 
 #include "PGSuperUnits.h"
@@ -39,8 +39,9 @@
 #include <PsgLib\TemporarySupportData.h>
 #include <PsgLib\ClosureJointData.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
-
+#include <EAF\EAFDisplayUnits.h>
 
 
 IMPLEMENT_DYNAMIC(CEditHaunchDlg, CDialog)

@@ -29,14 +29,15 @@
 #include "AlignmentPlanView.h"
 #include "AlignmentProfileView.h"
 #include "PGSuperDocBase.h"
-#include <IFace\DrawBridgeSettings.h>
 #include "PGSuperColors.h"
 #include "AlignmentDisplayObjectEvents.h"
 #include "BridgeDisplayObjectEvents.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Alignment.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <IFace\DrawBridgeSettings.h>
 
 #include <DManip/PolyLineDisplayObjectImpl.h>
 #include <WBFLGeometry/GeomHelpers.h>

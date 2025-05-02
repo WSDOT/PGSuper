@@ -32,6 +32,7 @@
 #include <EAF\EAFAutoProgress.h>
 #include <EAF\EAFDocument.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\DistributionFactors.h>
 #include <IFace\Bridge.h>

@@ -27,6 +27,8 @@
 #include "PGSuperApp.h"
 #include "InsertSpanDlg.h"
 #include "TimelineEventDlg.h"
+
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 
 #include <PsgLib\BridgeDescription2.h>

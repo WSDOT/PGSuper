@@ -25,6 +25,7 @@
 #include <Reporting\BridgeAnalysisReportSpecification.h>
 #include <Reporting\BridgeAnalysisReportDlg.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Selection.h>
 
 

@@ -22,6 +22,7 @@
 
 // FinalPrestressLossTable.cpp : Implementation of CFinalPrestressLossTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "FinalPrestressLossTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>

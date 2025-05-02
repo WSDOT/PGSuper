@@ -25,6 +25,7 @@
 
 #include <EAF\EAFUtilities.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\EditByUI.h>
@@ -1976,7 +1977,7 @@ void debonding(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker,s
    }
 }
 
-void GirderGroupPostensioningComparison(rptParagraph * pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, IEAFDisplayUnits * pDisplayUnits, const CGirderKey & fromGirderKey)
+void GirderGroupPostensioningComparison(rptParagraph * pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey & fromGirderKey)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IGirder,pGirder);
@@ -2088,7 +2089,7 @@ void GirderGroupPostensioningComparison(rptParagraph * pPara, std::shared_ptr<WB
    }
 }
 
-void GirderSegmentPostensioningComparison(rptParagraph * pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, IEAFDisplayUnits * pDisplayUnits, const CGirderKey & fromGirderKey)
+void GirderSegmentPostensioningComparison(rptParagraph* pPara, std::shared_ptr<WBFL::EAF::Broker> pBroker, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey & fromGirderKey)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);

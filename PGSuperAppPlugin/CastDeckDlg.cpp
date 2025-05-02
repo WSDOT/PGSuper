@@ -26,6 +26,7 @@
 #include "PGSuperPluginApp.h"
 #include "CastDeckDlg.h"
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
 #include <IFace\Bridge.h>

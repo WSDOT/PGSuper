@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "AnalysisAgent.h"
 #include "GirderModelManager.h"
 
 #include <PsgLib\LoadFactors.h>

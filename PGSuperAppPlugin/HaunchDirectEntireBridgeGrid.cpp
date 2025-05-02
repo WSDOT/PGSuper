@@ -31,7 +31,10 @@
 #include "PGSuperUnits.h"
 #include "PGSuperDoc.h"
 #include <Units\Measure.h>
+
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
+
 #include <PsgLib\GirderLabel.h>
 
 

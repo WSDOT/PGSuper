@@ -41,7 +41,10 @@
 #include "TemporarySupportDlg.h"
 
 #include <Units\Measure.h>
+
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
+
 #include <CoordGeom\Station.h>
 
 #include <PsgLib\ClosureJointData.h>

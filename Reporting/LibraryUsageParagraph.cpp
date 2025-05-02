@@ -24,6 +24,7 @@
 #include <Reporting\LibraryUsageParagraph.h>
 #include <Reporting\LibraryUsageTable.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
 

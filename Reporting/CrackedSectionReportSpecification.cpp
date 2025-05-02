@@ -24,6 +24,8 @@
 
 #include "StdAfx.h"
 #include <Reporting\CrackedSectionReportSpecification.h>
+
+#include <IFace/Tools.h>
 #include <IFace\PointOfInterest.h>
 
 CCrackedSectionReportSpecification::CCrackedSectionReportSpecification(const std::_tstring& strReportName, std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsPointOfInterest& poi, bool bPositiveMoment) :

@@ -31,7 +31,7 @@
 #include "SummaryRatingArtifactImpl.h"
 
 #include <IFace\BeamFactory.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>

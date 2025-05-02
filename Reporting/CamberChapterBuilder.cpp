@@ -25,6 +25,7 @@
 #include <Reporting\BasicCamberChapterBuilder.h>
 #include <Reporting\TimeStepCamberChapterBuilder.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
 

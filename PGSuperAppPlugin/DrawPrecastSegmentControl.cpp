@@ -6,6 +6,7 @@
 #include "PGSuperColors.h"
 #include "DrawPrecastSegmentControl.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <PsgLib\SplicedGirderData.h>
 

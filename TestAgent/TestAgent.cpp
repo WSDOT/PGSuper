@@ -42,7 +42,7 @@
 #include <System\ComCatMgr.h>
 
 #include <IFace\Alignment.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\RatingSpecification.h>
 #include <EAF\EAFUIIntegration.h>
 #include <IFace\Intervals.h>

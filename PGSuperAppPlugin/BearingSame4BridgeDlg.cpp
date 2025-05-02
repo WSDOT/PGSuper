@@ -26,7 +26,9 @@
 #include "resource.h"
 #include "BearingSame4BridgeDlg.h"
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
+
 #include "PGSuperUnits.h"
 
 

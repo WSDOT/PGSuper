@@ -25,6 +25,8 @@
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <Reporting\PrestressLossTable.h>
 #include "TexasPrestressSummaryChapterBuilder.h"
+
+#include <IFace\Tools.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 

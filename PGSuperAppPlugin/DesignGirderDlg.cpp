@@ -27,6 +27,7 @@
 #include "PGSuperApp.h"
 #include "DesignGirderDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\GirderHandlingSpecCriteria.h>

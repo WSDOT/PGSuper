@@ -21,10 +21,10 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-
+#include "EngAgent.h"
 #include <IFace\PointOfInterest.h>
 #include <IFace\Bridge.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\GirderHandling.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\PrestressForce.h>

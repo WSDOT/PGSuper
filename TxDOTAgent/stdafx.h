@@ -56,7 +56,6 @@
 
 
 #include <WBFLTools.h>
-#include <IFace\Tools.h>
 
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFHelp.h>

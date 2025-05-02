@@ -28,12 +28,6 @@
 class PGSEXTCLASS rptCreepCoefficient : public rptRcScalar
 {
 public:
-   rptCreepCoefficient()
-   {
-      SetFormat(WBFL::System::NumericFormatTool::Format::Fixed);
-      //SetWidth(6);
-      SetPrecision(4);
-   };
-
+   rptCreepCoefficient();
    ~rptCreepCoefficient() = default;
 };

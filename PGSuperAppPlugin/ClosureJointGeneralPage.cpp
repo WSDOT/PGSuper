@@ -7,6 +7,7 @@
 #include "ClosureJointDlg.h"
 #include "TimelineEventDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 

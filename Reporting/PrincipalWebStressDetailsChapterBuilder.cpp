@@ -24,6 +24,8 @@
 #include <Reporting\PrincipalWebStressDetailsChapterBuilder.h>
 #include <Reporting\PrincipalWebStressDetailsReportSpecification.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\PointOfInterest.h>

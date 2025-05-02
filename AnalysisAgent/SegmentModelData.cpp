@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "AnalysisAgent.h"
 #include "SegmentModelData.h"
 
 

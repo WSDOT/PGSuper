@@ -28,6 +28,8 @@
 #include "PGSuperApp.h"
 #include "SpanDisplayObjectEvents.h"
 #include "PGSuperDocBase.h"
+
+#include <IFace/Tools.h>
 #include <IFace\EditByUI.h>
 
 #include <PsgLib\SpanData2.h>

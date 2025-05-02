@@ -30,6 +30,7 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
 

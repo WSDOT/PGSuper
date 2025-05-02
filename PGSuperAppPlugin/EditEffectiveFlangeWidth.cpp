@@ -22,6 +22,8 @@
 
 #include "stdafx.h"
 #include "EditEffectiveFlangeWidth.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
 

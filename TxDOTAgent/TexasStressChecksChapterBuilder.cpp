@@ -41,6 +41,7 @@
 #include <Reporting\OptionalDeflectionCheck.h>
 #include <Reporting\DebondCheckTable.h>
 
+#include <IFace\Tools.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>

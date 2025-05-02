@@ -33,11 +33,11 @@
 #include "EditHaunchDlg.h"
 #include "Utilities.h"
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
+#include <IFace\Project.h>
 
 #include <PsgLib\BridgeDescription2.h>
-
-#include <IFace\Project.h>
 
 #include <EAF\EAFDocument.h>
 

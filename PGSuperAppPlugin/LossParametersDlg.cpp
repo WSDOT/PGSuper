@@ -29,6 +29,7 @@
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDocument.h>
 #include "PGSuperDoc.h"
+#include <IFace/Tools.h>
 
 
 

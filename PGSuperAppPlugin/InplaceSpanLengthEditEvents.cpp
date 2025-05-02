@@ -30,6 +30,7 @@
 
 #include <DManip/DisplayObject.h>
 #include <DManip/EditableUnitValueTextBlock.h>
+#include <IFace/Tools.h>
 
 CInplaceSpanLengthEditEvents::CInplaceSpanLengthEditEvents(std::shared_ptr<WBFL::EAF::Broker> pBroker,SpanIndexType spanIdx) :
 CInplaceEditDisplayObjectEvents(pBroker), m_SpanIdx(spanIdx)

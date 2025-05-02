@@ -29,15 +29,13 @@
 #include "TexasGirderSummaryChapterBuilder.h"
 #include "TexasIBNSParagraphBuilder.h"
 
-#include <ReportManager\ReportManager.h>
-#include <Reporting\PGSuperChapterBuilder.h>
-
 #include <PgsExt\ReportPointOfInterest.h>
 #include <PsgLib\StrandData.h>
 #include <PgsExt\GirderArtifact.h>
 #include <PsgLib\PierData2.h>
 #include <PsgLib\BridgeDescription2.h>
 
+#include <IFace\Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Bridge.h>

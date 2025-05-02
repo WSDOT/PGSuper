@@ -21,6 +21,8 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
+#include "ExtensionAgent.h"
+
 #include "MyReportSpecificationBuilder.h"
 #include "MyReportSpecification.h"
 #include <MFCTools\Prompts.h>

@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "Beams.h"
 #include <Beams\Helper.h>
 #include <IFace\Bridge.h>
 

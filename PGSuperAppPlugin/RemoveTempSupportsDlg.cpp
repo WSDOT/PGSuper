@@ -5,6 +5,7 @@
 #include "resource.h"
 #include "RemoveTempSupportsDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <PsgLib\BridgeDescription2.h>
 

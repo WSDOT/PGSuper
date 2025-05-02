@@ -25,6 +25,7 @@
 #include <Reporting\PrincipalWebStressDetailsReportSpecification.h>
 #include "PrincipalWebStressDetailsDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Selection.h>
 #include <IFace\PointOfInterest.h>
 

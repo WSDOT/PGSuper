@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "EngAgent.h"
 #include "StatusItems.h"
 #include <IFace\EditByUI.h>
 #include <IFace\Views.h>

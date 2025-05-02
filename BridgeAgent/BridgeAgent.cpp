@@ -29,7 +29,7 @@
 
 #include "stdafx.h"
 #include "resource.h"
-#include "initguid.h"
+#include <initguid.h>
 #include "BridgeAgent.h"
 #include "CLSID.h"
 
@@ -46,7 +46,7 @@
 #include <EAF\EAFTransactions.h>
 #include <IFace\ShearCapacity.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\EditByUI.h>
 #include <IFace\DocumentType.h>
 #include <IFace\MomentCapacity.h>

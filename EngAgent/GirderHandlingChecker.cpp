@@ -21,9 +21,9 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-
+#include "EngAgent.h"
 #include <IFace\PointOfInterest.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\GirderHandling.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\AnalysisResults.h>

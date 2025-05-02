@@ -31,6 +31,7 @@
 #include "ReportView.h"
 #include "Hints.h"
 
+#include <IFace/Tools.h>
 #include <IFace\DocumentType.h>
 #include <EAF\EAFAutoProgress.h>
 #include <EAF\EAFStatusCenter.h>

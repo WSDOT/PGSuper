@@ -22,6 +22,7 @@
 
 // StrandMoverImpl.cpp : Implementation of CStrandMoverImpl
 #include "stdafx.h"
+#include "Beams.h"
 #include <Plugins\Beams.h>
 #include "StrandMoverImpl.h"
 

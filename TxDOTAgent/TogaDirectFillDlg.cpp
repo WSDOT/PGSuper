@@ -28,6 +28,7 @@
 #include "TxDOTOptionalDesignUtilities.h"
 #include "TOGAGirderSelectStrandsDlg.h"
 
+#include <IFace\Tools.h>
 #include <IFace\EditByUI.h>
 
 #include <PsgLib\BridgeDescription2.h>

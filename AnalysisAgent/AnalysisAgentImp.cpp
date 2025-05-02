@@ -22,6 +22,7 @@
 
 // AnalysisAgentImp.cpp : Implementation of CAnalysisAgent
 #include "stdafx.h"
+#include "AnalysisAgent.h"
 #include "AnalysisAgentImp.h"
 #include "CLSID.h"
 #include "StatusItems.h"

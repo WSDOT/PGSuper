@@ -24,6 +24,8 @@
 #include "SectionCutDisplayImpl.h"
 #include <MathEx.h>
 #include <PGSuperColors.h>
+
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
 #include <IFace\AnalysisResults.h>

@@ -22,6 +22,7 @@
 
 // MultiWebFactory.cpp : Implementation of CMultiWebFactory
 #include "stdafx.h"
+#include "Beams.h"
 #include <Plugins\Beams.h>
 #include <Plugins\BeamFamilyCLSID.h>
 #include "MultiWebFactory.h"
@@ -43,7 +44,7 @@
 
 #include <PsgLib\BridgeDescription2.h>
 
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <PgsExt\StatusItem.h>
 #include <PgsExt/PoiMgr.h>
 

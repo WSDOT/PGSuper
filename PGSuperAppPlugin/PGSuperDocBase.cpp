@@ -52,6 +52,7 @@
 #include <PsgLib\PsgLib.h>
 #include <PsgLib\BeamFamilyManager.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Test1250.h>
 #include <IFace\DrawBridgeSettings.h>
 #include <IFace\Artifact.h>
@@ -67,7 +68,7 @@
 #include <IFace\ShearCapacity.h>
 #include <IFace\PointOfInterest.h>
 #include <IFace/Limits.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\DistributionFactors.h>
 #include <IFace\Intervals.h>

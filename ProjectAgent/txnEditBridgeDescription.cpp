@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "ProjectAgent.h"
 #include "txnEditBridgeDescription.h"
 
 #include <IFace\Project.h>

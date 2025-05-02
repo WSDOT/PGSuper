@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "EngAgent.h"
 #include "LoadRater.h"
 #include "Designer2.h"
 

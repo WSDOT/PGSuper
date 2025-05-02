@@ -34,6 +34,7 @@
 #include <psgLib\SpecLibraryEntry.h>
 #include <psgLib\GirderLibraryEntry.h>
 
+#include <IFace\Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\MomentCapacity.h>
 #include <IFace\AnalysisResults.h>

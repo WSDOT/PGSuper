@@ -49,6 +49,8 @@
 
 #include <MathEx.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>

@@ -22,6 +22,7 @@
 
 // ShrinkageAtDeckPlacementTable.cpp : Implementation of CShrinkageAtDeckPlacementTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "ShrinkageAtDeckPlacementTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>

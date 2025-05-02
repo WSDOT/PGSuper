@@ -25,6 +25,7 @@
 #include "resource.h"
 #include "BearingGdrByGdrDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 
 

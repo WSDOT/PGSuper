@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
+#include "EngAgent.h"
 #include "ShearCapacityEngineer.h"
 #include <Units\Convert.h>
 #include <PGSuperException.h>
@@ -30,7 +31,7 @@
 #include <IFace\ShearCapacity.h>
 #include <IFace\PrestressForce.h> 
 #include <IFace\MomentCapacity.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\ResistanceFactors.h>
 #include <IFace\EditByUI.h>
 #include <IFace\Intervals.h>

@@ -30,7 +30,9 @@
 #include "exportCADData.h"
 #include "Documentation\TxCADExport\TxCADExport.hh"
 
+#include <IFace\Tools.h>
 #include <IFace\Bridge.h>
+
 #include <MfcTools\CustomDDX.h>
 
 

@@ -22,6 +22,7 @@
 
 // PsBeamLossEngineer.cpp : Implementation of CPsBeamLossEngineer
 #include "stdafx.h"
+#include "Beams.h"
 #include <Beams/PsBeamLossEngineer.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>

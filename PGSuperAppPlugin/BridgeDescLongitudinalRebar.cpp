@@ -27,11 +27,14 @@
 #include "PGSuperDoc.h"
 #include "BridgeDescLongitudinalRebar.h"
 #include "GirderDescDlg.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
 #include <IFace/PointOfInterest.h>
 #include <EAF\EAFDisplayUnits.h>
+
 #include <MFCTools\CustomDDX.h>
 
 

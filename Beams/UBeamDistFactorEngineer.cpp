@@ -22,6 +22,7 @@
 
 // UBeamDistFactorEngineer.cpp : Implementation of CUBeamDistFactorEngineer
 #include "stdafx.h"
+#include "Beams.h"
 #include <Beams/UBeamDistFactorEngineer.h>
 #include <PGSuperException.h>
 #include <Units\Convert.h>
@@ -35,7 +36,7 @@
 #include <IFace\Project.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\DistributionFactors.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <Beams\Helper.h>
 
 

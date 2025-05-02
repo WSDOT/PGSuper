@@ -1,5 +1,7 @@
 #include "StdAfx.h"
 #include "PoiReportSpecification.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 
 

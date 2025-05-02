@@ -22,6 +22,7 @@
 
 // TotalPrestressLossTable.cpp : Implementation of CTotalPrestressLossTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "TotalPrestressLossTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>

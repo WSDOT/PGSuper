@@ -26,6 +26,7 @@
 #include "TxDOTOptionalDesignData.h"
 #include "TxDataExporter.h"
 
+#include <IFace\Tools.h>
 #include <IFace\Project.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Artifact.h>

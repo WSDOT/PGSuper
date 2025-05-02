@@ -31,8 +31,11 @@
 #include "GirderSegmentDlg.h"
 #include "GirderSegmentStrandsPage.h"
 #include <Units\Measure.h>
+
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
+
 #include <PgsExt\DesignConfigUtil.h>
 #include "PGSuperUnits.h"
 

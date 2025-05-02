@@ -22,6 +22,7 @@
 
 // TimeDependentLossesAtShippingTable.cpp : Implementation of CTimeDependentLossesAtShippingTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "TimeDependentLossesAtShippingTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>

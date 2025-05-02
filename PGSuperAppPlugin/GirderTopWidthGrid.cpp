@@ -28,6 +28,7 @@
 #include "GirderTopWidthGrid.h"
 #include "GirderLayoutPage.h"
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\BeamFactory.h>
 //

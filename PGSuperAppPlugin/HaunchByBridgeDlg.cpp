@@ -27,6 +27,7 @@
 #include "HaunchByBridgeDlg.h"
 #include "EditHaunchACamberDlg.h"
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include "PGSuperUnits.h"
 #include <IFace\Project.h>

@@ -29,6 +29,8 @@
 #include "PGSuperUnits.h"
 #include "PGSuperDoc.h"
 
+#include <IFace/Tools.h>
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <CoordGeom/Station.h>
 #include <algorithm>

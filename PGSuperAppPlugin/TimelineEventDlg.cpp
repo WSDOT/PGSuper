@@ -37,6 +37,8 @@
 #include "GeometryControlDlg.h"
 
 #include <EAF\EAFDocument.h>
+
+#include <IFace/Tools.h>
 #include <IFace\DocumentType.h>
 #include <IFace\Project.h>
 

@@ -22,7 +22,7 @@
 
 // EffectiveFlangeWidthTool.cpp : Implementation of CEffectiveFlangeWidthTool
 #include "stdafx.h"
-
+#include "BridgeAgent.h"
 #include "EffectiveFlangeWidthTool.h"
 #include "BridgeHelpers.h"
 #include <MathEx.h>
@@ -32,7 +32,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\BeamFactory.h>
 #include <IFace\Project.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\Intervals.h>
 #include <IFace/PointOfInterest.h>
 

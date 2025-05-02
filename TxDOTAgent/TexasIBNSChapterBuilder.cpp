@@ -27,9 +27,9 @@
 #include "TexasIBNSChapterBuilder.h"
 #include "TexasIBNSParagraphBuilder.h"
 
+#include <IFace\Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFAutoProgress.h>
-
 #include <IFace\MomentCapacity.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Bridge.h>

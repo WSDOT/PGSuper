@@ -22,6 +22,7 @@
 
 // BoxBeamFactory2.cpp : Implementation of CBoxBeamFactory2
 #include "stdafx.h"
+#include "Beams.h"
 #include <Plugins\Beams.h>
 
 #include <Plugins\BeamFamilyCLSID.h>
@@ -39,7 +40,7 @@
 #include <IFace\Bridge.h>
 #include <PsgLib\BridgeDescription2.h>
 
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <PgsExt\StatusItem.h>
 
 

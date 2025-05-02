@@ -22,6 +22,7 @@
 
 // PCIDeckedBulbTeeFactory.cpp : Implementation of CPCIDeckedBulbTeeFactory
 #include "stdafx.h"
+#include "Beams.h"
 #include <Plugins\Beams.h>
 #include <Plugins\BeamFamilyCLSID.h>
 #include "PCIDeckedBulbTeeFactory.h"
@@ -43,7 +44,7 @@
 #include <PsgLib\BridgeDescription2.h>
 #include <PsgLib\GirderLabel.h>
 
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <PgsExt\StatusItem.h>
 #include <PgsExt/PoiMgr.h>
 

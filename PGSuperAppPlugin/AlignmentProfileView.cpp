@@ -33,6 +33,7 @@
 #include "PGSuperColors.h"
 #include "BridgeDisplayObjectEvents.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Alignment.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>

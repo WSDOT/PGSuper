@@ -23,6 +23,7 @@
 
 // BeamFamilyImpl.cpp : Implementation of IBeamFamilyImpl
 #include "stdafx.h"
+#include "Beams.h"
 #include <Beams\Helper.h>
 #include <IFace\BeamFactory.h>
 #include <EAF/ComponentCategoryManager.h>

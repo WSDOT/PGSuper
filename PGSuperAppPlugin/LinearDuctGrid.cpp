@@ -26,6 +26,8 @@
 #include "stdafx.h"
 #include "LinearDuctGrid.h"
 #include "LinearDuctDlg.h"
+
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include "PGSuperUnits.h"

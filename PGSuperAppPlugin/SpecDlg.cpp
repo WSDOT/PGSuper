@@ -27,6 +27,7 @@
 #include "PGSuperApp.h"
 #include "SpecDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\DocumentType.h>
 #include <IFace\Project.h>
 #include <EAF\EAFDocument.h>

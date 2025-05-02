@@ -31,6 +31,7 @@
 #include "GirderDescDlg.h"
 #include "GirderSegmentDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\GirderHandlingSpecCriteria.h>

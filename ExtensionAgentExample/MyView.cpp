@@ -24,6 +24,8 @@
 //
 
 #include "stdafx.h"
+#include "ExtensionAgent.h"
+
 #include "MyView.h"
 #include "ExampleExtensionAgent.h"
 

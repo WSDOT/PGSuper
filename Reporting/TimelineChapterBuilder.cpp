@@ -25,6 +25,8 @@
 #include <Reporting\BrokerReportSpecification.h>
 #include <Reporting\TimelineManagerReportSpecification.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Project.h>
 #include <IFace\DocumentType.h>
 

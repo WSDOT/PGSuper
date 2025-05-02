@@ -21,11 +21,11 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-
+#include "SpecAgent.h"
 #include "StatusItems.h"
 
 #include <IFace\EditByUI.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\DocumentType.h>
 
 #include <EAF\EAFUtilities.h>

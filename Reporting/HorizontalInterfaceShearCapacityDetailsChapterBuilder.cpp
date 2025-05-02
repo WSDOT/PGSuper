@@ -29,6 +29,7 @@
 #include <PsgLib\ShearData.h>
 #include <PsgLib\BridgeDescription2.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\ShearCapacity.h>

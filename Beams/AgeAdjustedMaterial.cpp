@@ -22,6 +22,7 @@
 
 // AgeAdjustedMaterial.cpp : Implementation of CAgeAdjustedMaterial
 #include "stdafx.h"
+#include "Beams.h"
 #include "AgeAdjustedMaterial.h"
 
 #include <IFace\Project.h>

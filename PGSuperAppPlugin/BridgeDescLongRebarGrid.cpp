@@ -25,14 +25,15 @@
 
 #include "stdafx.h"
 #include "PGSuperDoc.h"
-#include <EAF\EAFDisplayUnits.h>
 #include "BridgeDescLongRebarGrid.h"
 #include "BridgeDescLongitudinalRebar.h"
 #include <system\tokenizer.h>
 
 #include <LRFD\RebarPool.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
+#include <EAF\EAFDisplayUnits.h>
 
 
 GRID_IMPLEMENT_REGISTER(CGirderDescLongRebarGrid, CS_DBLCLKS, 0, 0, 0);

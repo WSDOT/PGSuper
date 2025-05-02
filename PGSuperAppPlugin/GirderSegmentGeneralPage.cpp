@@ -28,6 +28,7 @@
 #include "GirderSegmentGeneralPage.h"
 #include "GirderSegmentDlg.h"
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>

@@ -29,6 +29,7 @@
 #include "SpanLengthDlg.h"
 #include "BridgeDescDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\DocumentType.h>
 #include <EAF\EAFDisplayUnits.h>

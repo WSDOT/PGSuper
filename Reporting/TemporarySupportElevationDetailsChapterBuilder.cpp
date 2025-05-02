@@ -22,9 +22,11 @@
 #include "StdAfx.h"
 #include "Reporting\TemporarySupportElevationDetailsChapterBuilder.h"
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
+
 #include <PsgLib\TemporarySupportData.h>
 #include <PsgLib\GirderGroupData.h>
 #include <PsgLib\BridgeDescription2.h>

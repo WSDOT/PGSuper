@@ -22,6 +22,7 @@
 
 // TxDOT2013TimeDependentLossesTable.cpp : Implementation of CTxDOT2013TimeDependentLossesTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "TxDOT2013TimeDependentLossesTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>

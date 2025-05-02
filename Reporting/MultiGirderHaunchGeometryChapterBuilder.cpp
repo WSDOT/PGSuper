@@ -25,6 +25,8 @@
 #include <Reporting\SpanGirderReportSpecification.h>
 #include <Reporting\ConstructabilityCheckTable.h>
 #include <Reporting\MultiGirderHaunchGeometryChapterBuilder.h>
+
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 
 

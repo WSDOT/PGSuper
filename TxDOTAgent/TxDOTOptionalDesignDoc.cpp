@@ -49,6 +49,7 @@
 
 #include <System\StructuredLoadXml.h>
 
+#include <IFace\Tools.h>
 #include <IFace\Project.h>
 #include <IFace\PrestressForce.h>
 #include <EAF/EAFReportManager.h>

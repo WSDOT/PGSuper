@@ -29,7 +29,10 @@
 #include "TogaSectionCutDlgEx.h"
 #include <ostream>
 #include <MfcTools\CustomDDx.h>
+
+#include <IFace\Tools.h>
 #include <EAF\EAFDisplayUnits.h>
+
 #include <EAF\EAFDocument.h>
 
 

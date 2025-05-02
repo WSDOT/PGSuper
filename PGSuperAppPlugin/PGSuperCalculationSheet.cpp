@@ -27,6 +27,8 @@ CLASS
 
 #include "stdafx.h"
 #include "PGSuperCalculationSheet.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\VersionInfo.h>
 #include <IFace\DocumentType.h>

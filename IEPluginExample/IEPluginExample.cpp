@@ -31,6 +31,7 @@
 #include "resource.h"
 #include <initguid.h>
 #include <Plugins\PGSuperIEPlugin.h>
+#include <EAF/EAFProgress.h>
 #include "IEPluginExample.h"
 #include "PGSuperCatCom.h"
 

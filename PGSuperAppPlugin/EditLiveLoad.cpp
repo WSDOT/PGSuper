@@ -24,6 +24,7 @@
 #include "EditLiveLoad.h"
 #include "PGSuperDoc.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
 

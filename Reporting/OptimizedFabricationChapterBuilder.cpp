@@ -23,6 +23,8 @@
 #include "StdAfx.h"
 #include <Reporting\OptimizedFabricationChapterBuilder.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Constructability.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>

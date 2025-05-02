@@ -22,6 +22,7 @@
 
 // NUBeamFactory.cpp : Implementation of CNUBeamFactory
 #include "stdafx.h"
+#include "Beams.h"
 #include <Plugins\Beams.h>
 #include <Plugins\BeamFamilyCLSID.h>
 #include "NUBeamFactory.h"

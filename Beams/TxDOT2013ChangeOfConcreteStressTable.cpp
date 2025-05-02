@@ -22,6 +22,7 @@
 
 // TxDOT2013ChangeOfConcreteStressTable.cpp : Implementation of CTxDOT2013ChangeOfConcreteStressTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "TxDOT2013ChangeOfConcreteStressTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>

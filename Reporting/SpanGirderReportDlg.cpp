@@ -26,7 +26,6 @@
 #include "stdafx.h"
 #include <Reporting\SpanGirderReportDlg.h>
 
-#include <initguid.h>
 #include <IFace\Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\DocumentType.h>

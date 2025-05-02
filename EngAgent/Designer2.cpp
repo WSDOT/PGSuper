@@ -21,12 +21,13 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
+#include "EngAgent.h"
 #include <PgsExt\PgsExt.h>
 #include <IFace\Bridge.h>
 #include <IFace\Alignment.h>
 #include <IFace\DistributionFactors.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\Project.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace/Limits.h>

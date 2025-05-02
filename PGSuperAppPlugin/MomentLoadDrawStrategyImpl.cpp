@@ -23,7 +23,10 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "MomentLoadDrawStrategyImpl.h"
+
+#include <IFace/Tools.h>
 #include <IFace\EditByUI.h> 
+
 #include <MathEx.h>
 
 #include <DManip/PointDisplayObject.h>

@@ -22,7 +22,11 @@
 
 #include "stdafx.h"
 #include "ColumnLayoutGrid.h"
+
+#include <IFace/Tools.h>
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
+
 #include <PGSuperUIUtil.h>
 
 

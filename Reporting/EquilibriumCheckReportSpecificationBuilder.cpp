@@ -25,6 +25,7 @@
 #include <Reporting\EquilibriumCheckReportSpecification.h>
 #include "EquilibriumCheckDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Selection.h>
 #include <IFace\PointOfInterest.h>
 

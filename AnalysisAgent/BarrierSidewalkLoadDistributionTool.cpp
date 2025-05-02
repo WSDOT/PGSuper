@@ -32,6 +32,7 @@
 // the angle point and will violate the original layout rules (N nearest)
 
 #include "StdAfx.h"
+#include "AnalysisAgent.h"
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include "BarrierSidewalkLoadDistributionTool.h"

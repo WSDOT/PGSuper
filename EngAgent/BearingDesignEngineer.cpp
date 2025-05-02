@@ -20,8 +20,9 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-#include <algorithm>
 #include "StdAfx.h"
+#include "EngAgent.h"
+#include <algorithm>
 #include "BearingDesignEngineer.h"
 #include <Units\Convert.h>
 #include <PGSuperException.h>
@@ -31,7 +32,7 @@
 #include <IFace\ShearCapacity.h>
 #include <IFace\PrestressForce.h> 
 #include <IFace\MomentCapacity.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\ResistanceFactors.h>
 #include <IFace\DistributionFactors.h>
 #include <IFace\RatingSpecification.h>

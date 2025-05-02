@@ -24,6 +24,7 @@
 #include <Reporting\CreepCoefficientChapterBuilder.h>
 #include <Reporting\LRFDCreepCoefficientChapterBuilder.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
 

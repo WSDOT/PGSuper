@@ -43,13 +43,13 @@
 #include <LRFD\StrandPool.h>
 
 #include <IFace\PrestressForce.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\UpdateTemplates.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
 #include <IFace\Bridge.h>
 #include <IFace\Transactions.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\DocumentType.h>
 #include <IFace\BeamFactory.h>

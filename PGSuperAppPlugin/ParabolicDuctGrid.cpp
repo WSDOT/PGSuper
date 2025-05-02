@@ -26,6 +26,8 @@
 #include "stdafx.h"
 #include "ParabolicDuctGrid.h"
 #include "ParabolicDuctDlg.h"
+
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include "PGSuperUnits.h"
 

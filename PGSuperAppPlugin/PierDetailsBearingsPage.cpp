@@ -27,6 +27,7 @@
 #include "EditBearingDlg.h"
 #include "PierDetailsDlg.h"
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
 #include "PGSuperUnits.h"

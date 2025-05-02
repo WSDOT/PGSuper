@@ -35,6 +35,7 @@
 
 #include <PgsExt\ReportPointOfInterest.h>
 
+#include <IFace\Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Artifact.h>

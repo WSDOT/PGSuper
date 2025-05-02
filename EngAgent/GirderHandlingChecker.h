@@ -23,6 +23,7 @@
 #pragma once
 
 #include <PgsExt\PgsExtExp.h>
+#include "EngAgent.h"
 #include <PgsExt\HaulingAnalysisArtifact.h>
 #include <PgsExt\PoiMap.h>
 #include <PgsExt\GirderModelFactory.h>

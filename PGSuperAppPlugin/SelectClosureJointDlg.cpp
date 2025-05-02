@@ -27,6 +27,7 @@
 #include "PGSuperPluginApp.h"
 #include "SelectClosureJointDlg.h"
 
+#include <IFace/Tools.h>
 
 
 #include <PsgLib\GirderGroupData.h>

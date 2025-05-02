@@ -22,6 +22,7 @@
 
 // ElasticGainDueToLiveLoadTable.cpp : Implementation of CElasticGainDueToLiveLoadTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "ElasticGainDueToLiveLoadTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>

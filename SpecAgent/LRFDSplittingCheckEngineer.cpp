@@ -21,6 +21,8 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
+#include "SpecAgent.h"
+
 #include "LRFDSplittingCheckEngineer.h"
 #include <PsgLib\StrandData.h>
 #include <PgsExt\DesignConfigUtil.h>

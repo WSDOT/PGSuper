@@ -22,6 +22,7 @@
 
 // EffectivePrestressTable.cpp : Implementation of CEffectivePrestressTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "EffectivePrestressTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>

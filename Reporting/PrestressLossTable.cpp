@@ -27,6 +27,8 @@
 #include <PgsExt\ReportPointOfInterest.h>
 #include <PsgLib\StrandData.h>
 
+#include <IFace/Tools.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\Project.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\Bridge.h>

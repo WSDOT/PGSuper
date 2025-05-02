@@ -23,6 +23,7 @@
 // ExampleExtensionAgent.cpp : Implementation of CExampleExtensionAgent
 
 #include "stdafx.h"
+#include "ExtensionAgent.h"
 #include "ExampleExtensionAgent.h"
 #include "resource.h"
 #include <EAF\EAFOutputChildFrame.h>

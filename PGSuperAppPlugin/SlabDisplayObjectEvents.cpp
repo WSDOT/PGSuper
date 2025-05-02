@@ -31,6 +31,8 @@
 #include "BridgeModelViewChildFrame.h"
 #include "mfcdual.h"
 #include "PGSuperDoc.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\EditByUI.h>
 

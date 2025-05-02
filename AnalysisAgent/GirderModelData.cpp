@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "AnalysisAgent.h"
 #include "GirderModelData.h"
 #include "PGSuperLoadCombinationResponse.h"
 

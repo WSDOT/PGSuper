@@ -31,6 +31,8 @@
 #include <GenericBridge\Helpers.h>
 
 #include <PsgLib\SplicedGirderData.h>
+
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\BeamFactory.h>

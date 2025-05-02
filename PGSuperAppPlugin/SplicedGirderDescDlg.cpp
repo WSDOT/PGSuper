@@ -27,6 +27,7 @@
 #include "resource.h"
 #include "PGSuperDocBase.h"
 #include "SplicedGirderDescDlg.h"
+#include <IFace/Tools.h>
 
 
 #define IDC_CHECKBOX 100

@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "AnalysisAgent.h"
 #include "ProductLoadMap.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>

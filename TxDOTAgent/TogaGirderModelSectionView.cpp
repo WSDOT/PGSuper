@@ -32,6 +32,7 @@
 #include "TogaGMDisplayMgrEventsImpl.h"
 #include "TogaDisplayObjectFactory.h"
 
+#include <IFace\Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\DrawBridgeSettings.h>
 #include <EAF\EAFDisplayUnits.h>

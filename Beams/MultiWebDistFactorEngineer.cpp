@@ -22,6 +22,7 @@
 
 // MultiWebDistFactorEngineer.cpp : Implementation of CMultiWebDistFactorEngineer
 #include "stdafx.h"
+#include "Beams.h"
 #include "MultiWebDistFactorEngineer.h"
 #include <PGSuperException.h>
 #include <Units\Convert.h>
@@ -35,7 +36,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\DistributionFactors.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\Intervals.h>
 #include <Beams\Helper.h>
 

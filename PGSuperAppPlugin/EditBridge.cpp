@@ -23,6 +23,7 @@
 #include "stdafx.h"
 #include "EditBridge.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
 

@@ -37,6 +37,7 @@ CLASS
 #include <psgLib/LimitsCriteria.h>
 #include <psgLib/SpecLibraryEntry.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Artifact.h>

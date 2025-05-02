@@ -24,6 +24,8 @@
 #include "EditGirder.h"
 #include "PGSuperDoc.h"
 #include <PsgLib\BridgeDescription2.h>
+
+#include <IFace/Tools.h>
 #include <IFace\GirderHandling.h>
 
 #if defined _DEBUG

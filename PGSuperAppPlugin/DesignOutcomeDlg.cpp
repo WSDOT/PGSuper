@@ -27,6 +27,7 @@
 #include "PGSuperApp.h"
 #include "DesignOutcomeDlg.h"
 
+#include <IFace/Tools.h>
 #include <EAF\EAFAutoProgress.h>
 
 #include <IFace\Artifact.h>

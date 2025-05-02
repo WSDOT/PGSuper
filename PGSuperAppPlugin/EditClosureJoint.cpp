@@ -24,6 +24,7 @@
 #include "EditClosureJoint.h"
 #include "PGSpliceDoc.h"
 
+#include <IFace/Tools.h>
 #include <IFACE\Project.h>
 #include <PsgLib\BridgeDescription2.h>
 

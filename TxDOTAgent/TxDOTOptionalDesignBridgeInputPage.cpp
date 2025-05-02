@@ -30,7 +30,10 @@
 #include "ProjectCriteriaNotFoundDlg.h"
 
 #include <MfcTools\CustomDDX.h>
+
+#include <IFace\Tools.h>
 #include <EAF\EAFDisplayUnits.h>
+
 #include <EAF\EAFDocument.h>
 
 #include <psgLib/PrestressedElementCriteria.h>

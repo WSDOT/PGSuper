@@ -23,11 +23,14 @@
 #include "StdAfx.h"
 #include <Reporting\LoadRatingReactionsChapterBuilder.h>
 #include <Reporting\LoadRatingReportSpecificationBuilder.h>
+#include <Reporting\VehicularLoadReactionTable.h>
+
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
-#include <Reporting\VehicularLoadReactionTable.h>
+
 
 
 /****************************************************************************

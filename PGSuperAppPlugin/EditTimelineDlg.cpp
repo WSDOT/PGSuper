@@ -28,6 +28,8 @@
 #include "TimelineEventDlg.h"
 #include "TimelineReportDlg.h"
 #include <EAF\EAFDocument.h>
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
 #include <EAF/EAFReportManager.h>

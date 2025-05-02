@@ -28,7 +28,7 @@
 //		run nmake -f AnalysisAgentps.mk in the project directory.
 
 #include "stdafx.h"
-#include "initguid.h"
+#include <initguid.h>
 #include "AnalysisAgent.h"
 #include "CLSID.h"
 
@@ -53,13 +53,16 @@
 #include "PGSpliceCatCom.h"
 #include <System\ComCatMgr.h>
 
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\PointOfInterest.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>
 #include <IFace\GirderHandling.h>
 #include <IFace\Constructability.h>
+
+#include <EAF/EAFProgress.h>
+#include <EAF/EAFStatusCenter.h>
 
 #include <EAF\ComponentModule.h>
 WBFL::EAF::ComponentModule _Module;

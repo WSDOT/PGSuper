@@ -28,6 +28,8 @@
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\RatingArtifact.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\DocumentType.h>
 #include <IFace\Bridge.h>
 #include <IFace\Artifact.h>

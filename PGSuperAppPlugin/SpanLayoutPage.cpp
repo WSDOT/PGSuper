@@ -32,9 +32,10 @@
 #include "EditHaunchDlg.h"
 #include "Utilities.h"
 
+#include <IFace/Tools.h>
 #include <IFace\DocumentType.h>
-
 #include <EAF\EAFDisplayUnits.h>
+
 #include <MFCTools\CustomDDX.h>
 
 

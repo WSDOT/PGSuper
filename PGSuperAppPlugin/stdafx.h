@@ -32,8 +32,6 @@
 
 #include <PGSuperAll.h>
 
-#include <IFace\Tools.h>
-
 #if defined _NOGRID
 #include <NoGrid.h>
 #else

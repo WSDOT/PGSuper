@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include "EngAgent.h"
 #include <PgsExt\TransferLength.h>
 
 class pgsPointOfInterest;

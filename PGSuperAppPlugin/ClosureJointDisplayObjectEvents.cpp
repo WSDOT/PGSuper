@@ -28,6 +28,8 @@
 #include "PGSuperApp.h"
 #include "ClosureJointDisplayObjectEvents.h"
 #include "PGSpliceDoc.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <PsgLib\BridgeDescription2.h>
 

@@ -36,12 +36,15 @@
 #include "StationCutDlg.h"
 #include "SelectItemDlg.h"
 #include "MainFrm.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\EditByUI.h>
 #include <IFace\DrawBridgeSettings.h>
 #include <IFace\DocumentType.h>
 #include <EAF\EAFDisplayUnits.h>
+
 #include <PsgLib\BridgeDescription2.h>
 #include <PsgLib\ClosureJointData.h>
 #include "EditBoundaryConditions.h"

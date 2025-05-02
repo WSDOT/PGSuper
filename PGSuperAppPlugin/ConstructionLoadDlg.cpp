@@ -26,7 +26,10 @@
 #include "stdafx.h"
 #include "PGSuperApp.h"
 #include "ConstructionLoadDlg.h"
+
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
+
 #include <EAF\EAFDocument.h>
 
 

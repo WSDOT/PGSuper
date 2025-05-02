@@ -23,6 +23,8 @@
 #include "StdAfx.h"
 #include <Reporting\DeckElevationChapterBuilder.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\Alignment.h>
 #include <IFace\AnalysisResults.h>

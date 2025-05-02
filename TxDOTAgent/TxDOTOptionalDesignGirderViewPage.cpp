@@ -27,6 +27,7 @@
 #include "TxDOTOptionalDesignGirderViewPage.h"
 #include "TxDOTOptionalDesignUtilities.h"
 
+#include <IFace\Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace/PointOfInterest.h>
 

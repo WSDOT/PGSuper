@@ -41,20 +41,21 @@
 #include <WBFLTools_i.c>
 #include <WBFLUnitServer_i.c>
 #include <EAF/EAFReportManager.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <IFace\AnalysisResults.h>
-#include <IFace\Bridge.h>
-#include <IFace\Artifact.h>
-#include <IFace\Project.h>
-#include <IFace\PrestressForce.h>
-#include <IFace\GirderHandling.h>
-#include <IFace\GirderHandlingSpecCriteria.h>
-#include <IFace\RatingSpecification.h>
-#include <IFace\Intervals.h>
-#include <IFace\DocumentType.h>
-#include <IFace\Selection.h>
+#include <IFace/AnalysisResults.h>
+#include <IFace/Bridge.h>
+#include <IFace/Artifact.h>
+#include <IFace/Project.h>
+#include <IFace/PrestressForce.h>
+#include <IFace/GirderHandling.h>
+#include <IFace/GirderHandlingSpecCriteria.h>
+#include <IFace/RatingSpecification.h>
+#include <IFace/Intervals.h>
+#include <IFace/DocumentType.h>
+#include <IFace/Selection.h>
 #include <IFace/Limits.h>
+#include <IFace/PointOfInterest.h>
 
 #include <Plugins\BeamFamilyCLSID.h>
 

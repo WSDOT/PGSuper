@@ -23,6 +23,7 @@
 #include "stdafx.h"
 #include "EditTimeline.h"
 #include "PGSuperDoc.h"
+#include <IFace/Tools.h>
 
 
 txnEditTimeline::txnEditTimeline(const CTimelineManager& oldTimelineManager,const CTimelineManager& newTimelineManager)

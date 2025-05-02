@@ -29,6 +29,7 @@
 #include "SelectGirderSegmentDlg.h"
 
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <PsgLib\BridgeDescription2.h>
 

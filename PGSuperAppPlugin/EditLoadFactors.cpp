@@ -22,6 +22,8 @@
 
 #include "stdafx.h"
 #include "EditLoadFactors.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
 txnEditLoadFactors::txnEditLoadFactors(const CLoadFactors& oldLoadFactors,const CLoadFactors& newLoadFactors)

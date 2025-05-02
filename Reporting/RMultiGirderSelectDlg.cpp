@@ -25,6 +25,7 @@
 #include "resource.h"
 #include "RMultiGirderSelectDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFUtilities.h>
 

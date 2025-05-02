@@ -22,6 +22,7 @@
 
 // CreepAtDeckPlacementTable.cpp : Implementation of CCreepAtDeckPlacementTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "CreepAtDeckPlacementTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>

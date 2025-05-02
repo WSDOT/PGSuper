@@ -22,9 +22,11 @@
 
 #include "StdAfx.h"
 #include <Reporting\PointOfInterestChapterBuilder.h>
-#include <IFace\PointOfInterest.h>
 #include <PgsExt\ReportPointOfInterest.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
+#include <IFace\PointOfInterest.h>
 #include <IFace\Bridge.h>
 
 

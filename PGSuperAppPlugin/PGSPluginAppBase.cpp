@@ -28,6 +28,7 @@
 #include <EAF\EAFDocManager.h>
 #include <EAF\EAFBrokerDocument.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Test1250.h>
 
 #include <MFCTools\AutoRegistry.h>

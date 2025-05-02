@@ -26,6 +26,7 @@
 #include "resource.h"
 #include "FillHaunchDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\DocumentType.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>

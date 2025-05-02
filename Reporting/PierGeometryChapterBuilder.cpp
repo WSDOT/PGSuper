@@ -24,9 +24,10 @@
 #include <Reporting\PierGeometryChapterBuilder.h>
 #include <Reporting\BridgeDescChapterBuilder.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\Alignment.h>
-
 #include <IFace\Project.h>
 
 #include <PsgLib\BridgeDescription2.h>

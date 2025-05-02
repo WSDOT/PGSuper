@@ -31,6 +31,7 @@
 #include <PgsExt\DesignConfigUtil.h>
 #include <PsgLib\Helpers.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\Intervals.h>
 #include <IFace\BeamFactory.h>

@@ -22,6 +22,7 @@
 
 // TimeDependentLossFinalTable.cpp : Implementation of CTimeDependentLossFinalTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "TimeDependentLossFinalTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>

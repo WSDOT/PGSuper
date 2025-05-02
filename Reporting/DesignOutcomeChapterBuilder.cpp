@@ -24,6 +24,7 @@
 
 #include <Reporting\DesignOutcomeChapterBuilder.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Artifact.h>

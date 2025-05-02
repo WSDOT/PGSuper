@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
+#include "EngAgent.h"
 #include "AlternativeTensileStressCalculator.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>

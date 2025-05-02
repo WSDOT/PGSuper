@@ -38,10 +38,11 @@
 
 
 // Interfaces
+#include <IFace\Tools.h>
 #include <IFace\Project.h>
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 
 #include <EAF/EAFReportManager.h>
 

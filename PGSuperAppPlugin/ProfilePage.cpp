@@ -28,7 +28,9 @@
 #include "ProfilePage.h"
 #include "AlignmentDescriptionDlg.h"
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
+
 #include <EAF\EAFDocument.h>
 
 

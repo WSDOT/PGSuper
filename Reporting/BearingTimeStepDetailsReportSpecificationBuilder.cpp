@@ -25,6 +25,7 @@
 #include <Reporting\BearingTimeStepDetailsReportSpecification.h>
 #include "BearingTimeStepDetailsDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Selection.h>
 #include <IFace\PointOfInterest.h>
 #include <IFace\Bridge.h>

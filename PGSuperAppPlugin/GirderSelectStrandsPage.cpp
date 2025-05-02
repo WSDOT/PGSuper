@@ -28,9 +28,10 @@
 #include "GirderSelectStrandsPage.h"
 #include <WBFLGenericBridgeTools.h>
 
-#include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
 
+#include <IFace/Tools.h>
+#include <EAF\EAFDisplayUnits.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\Project.h>
 

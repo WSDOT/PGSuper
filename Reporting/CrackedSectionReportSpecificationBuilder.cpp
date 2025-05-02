@@ -28,6 +28,7 @@
 #include <Reporting\CrackedSectionReportSpecification.h>
 #include "SelectCrackedSectionDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Selection.h>
 #include <IFace\Bridge.h>
 #include <IFace/PointOfInterest.h>

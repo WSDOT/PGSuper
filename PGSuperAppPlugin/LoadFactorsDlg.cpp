@@ -28,6 +28,7 @@
 #include "LoadFactorsDlg.h"
 #include <Lrfd/BDSManager.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <EAF\EAFDocument.h>
 

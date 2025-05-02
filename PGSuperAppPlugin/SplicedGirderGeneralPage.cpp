@@ -28,6 +28,9 @@
 #include "SplicedGirderGeneralPage.h"
 #include "SplicedGirderDescDlg.h"
 #include <LRFD\StrandPool.h>
+
+
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <EAF\EAFDocument.h>
 

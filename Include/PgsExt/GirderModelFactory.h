@@ -28,6 +28,8 @@
 #include <PgsExt\PoiPairMap.h>
 #include <IFace\AnalysisResults.h>
 
+namespace WBFL { namespace EAF { class Broker; }; };
+
 // This utility class provides methods for creating a simple span FEM2d model for a precast segment, finding members in the segment
 // and mapping POI's between PGSuper and the Fem2d model
 class PGSEXTCLASS pgsGirderModelFactory

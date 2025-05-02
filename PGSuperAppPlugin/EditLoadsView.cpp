@@ -37,6 +37,7 @@
 #include <PgsExt\InsertDeleteLoad.h>
 #include <PgsExt\MacroTxn.h>
 
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace\EditByUI.h>
 

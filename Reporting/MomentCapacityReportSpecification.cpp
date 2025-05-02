@@ -24,6 +24,8 @@
 
 #include "StdAfx.h"
 #include <Reporting\MomentCapacityReportSpecification.h>
+
+#include <IFace/Tools.h>
 #include <IFace\PointOfInterest.h>
 
 

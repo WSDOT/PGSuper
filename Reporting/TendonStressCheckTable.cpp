@@ -27,6 +27,8 @@
 #include <PgsExt\TendonStressArtifact.h>
 #include <PgsExt\CapacityToDemand.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace/Limits.h>
 

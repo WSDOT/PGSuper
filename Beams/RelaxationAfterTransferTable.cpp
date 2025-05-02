@@ -22,6 +22,7 @@
 
 // RelaxationAfterTransferTable.cpp : Implementation of CRelaxationAfterTransferTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "RelaxationAfterTransferTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>

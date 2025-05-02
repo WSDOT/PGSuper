@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "Beams.h"
 #include "resource.h"
 #include <Beams/TimeStepLossEngineer.h>
 #include <EAF\EAFDisplayUnits.h>

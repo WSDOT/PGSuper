@@ -48,6 +48,7 @@
 #include <PgsExt\MacroTxn.h>
 
 // Interfaces
+#include <IFace/Tools.h>
 #include <EAF\EAFTransactions.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\EditByUI.h> // for EDG_GENERAL

@@ -21,7 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
-
+#include "TestAgent.h"
 #include "TestFileWriter.h"
 
 #include <IFace\Project.h>

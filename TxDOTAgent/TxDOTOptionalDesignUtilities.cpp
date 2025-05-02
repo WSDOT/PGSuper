@@ -29,6 +29,7 @@
 #include <PgsExt\DebondUtil.h>
 #include <PsgLib\GirderLibraryEntry.h>
 
+#include <IFace\Tools.h>
 #include <IFace\Intervals.h>
 #include <IFace\Project.h>
 #include <IFace/PointOfInterest.h>

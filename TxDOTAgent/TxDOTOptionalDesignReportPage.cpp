@@ -28,11 +28,12 @@
 #include "TxDOTOptionalDesignUtilities.h"
 
 #include <EAF/EAFReportManager.h>
-#include <EAF\EAFAutoProgress.h>
+
 #include <EAF\EAFCustSiteVars.h>
 #include <EAF\EAFDocument.h>
 
-
+#include <IFace\Tools.h>
+#include <EAF\EAFAutoProgress.h>
 
 
 // CTxDOTOptionalDesignReportPage dialog

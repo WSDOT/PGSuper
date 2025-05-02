@@ -5,6 +5,7 @@
 #include "resource.h"
 #include "ErectPiersDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
 #include <EAF\EAFDocument.h>

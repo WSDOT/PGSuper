@@ -50,15 +50,8 @@
 #include "BoxBeamFactory2.h"
 #include "TxDotDoubleTFactory.h"
 #include "DeckedSlabBeamFactory.h"
-#include "MultiWebDistFactorEngineer.h"
-#include "BoxBeamDistFactorEngineer.h"
 
 #include <Beams/IBeamFactoryImp.h>
-#include <Beams/IBeamDistFactorEngineer.h>
-#include <Beams/BulbTeeDistFactorEngineer.h>
-#include <Beams/UBeamDistFactorEngineer.h>
-#include <Beams/VoidedSlabDistFactorEngineer.h>
-#include <Beams/VoidedSlab2DistFactorEngineer.h>
 
 #include <Beams/PsBeamLossEngineer.h>
 #include <Beams/TimeStepLossEngineer.h>
@@ -72,7 +65,6 @@
 #include "NUDeckedBulbTeeFactory.h"
 #include "PCIDeckedBulbTeeFactory.h"
 
-#include <Plugins\Beams.h>
 #include <Beams\Interfaces.h>
 
 #include "PGSuperCatCom.h"
@@ -86,12 +78,13 @@
 #include <IFace\PrestressForce.h>
 #include <IFace\DistributionFactors.h>
 #include <IFace\DistFactorEngineer.h>
-#include <IFace\StatusCenter.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
-#include <EAF\EAFDisplayUnits.h>
 #include <IFace\EditByUI.h>
 #include <IFace\Intervals.h>
 #include <IFace\Alignment.h>
+#include <EAF\EAFDisplayUnits.h>
+#include <EAF/EAFProgress.h>
+#include <EAF\EAFStatusCenter.h>
 
 #include "StrandMoverImpl.h"
 

@@ -22,6 +22,7 @@
 
 // BoxBeamDistFactorEngineer.cpp : Implementation of CBoxBeamDistFactorEngineer
 #include "stdafx.h"
+#include "Beams.h"
 #include "BoxBeamDistFactorEngineer.h"
 #include <Units\Convert.h>
 #include <PsgLib\TrafficBarrierEntry.h>
@@ -32,7 +33,7 @@
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace\DistributionFactors.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <IFace\Intervals.h>
 #include <WBFLCogo.h>
 #include <LRFD\LldfTypeG.h>

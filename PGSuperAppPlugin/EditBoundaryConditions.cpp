@@ -23,6 +23,8 @@
 #include "stdafx.h"
 #include "EditBoundaryConditions.h"
 #include "PGSuperApp.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
 

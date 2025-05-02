@@ -23,7 +23,10 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "PointLoadDrawStrategyImpl.h"
+
+#include <IFace/Tools.h>
 #include <IFace\EditByUI.h> 
+
 #include "PGSuperColors.h"
 
 #include <MathEx.h>

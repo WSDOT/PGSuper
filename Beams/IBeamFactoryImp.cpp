@@ -22,6 +22,7 @@
 
 // IBeamFactory.cpp : Implementation of CIBeamFactory
 #include "stdafx.h"
+#include "Beams.h"
 #include <Plugins\Beams.h>
 #include <Plugins\BeamFamilyCLSID.h>
 #include <Beams/IBeamFactoryImp.h>

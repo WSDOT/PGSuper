@@ -28,8 +28,6 @@
 
 #include <PGSuperAll.h>
 
-#include <IFace\Tools.h>
-
 #include <WBFLTools.h>
 #include <WBFLGeometry.h>
 #include <WBFLCogo.h>

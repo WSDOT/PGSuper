@@ -21,6 +21,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
+#include "BridgeAgent.h"
 #include "ConcreteManager.h"
 #include <EAF\EAFStatusCenter.h>
 #include <EAF\EAFDisplayUnits.h>

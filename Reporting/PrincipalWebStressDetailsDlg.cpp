@@ -29,6 +29,8 @@
 #include <PsgLib\GirderLabel.h>
 #include <MFCTools\CustomDDX.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Intervals.h>
 #include <IFace\PrincipalWebStress.h>
 #include <IFace\Bridge.h>

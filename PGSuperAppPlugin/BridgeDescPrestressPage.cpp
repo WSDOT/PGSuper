@@ -43,6 +43,8 @@
 #include <LRFD\StrandPool.h>
 
 #include <MfcTools\CustomDDX.h>
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\Bridge.h>

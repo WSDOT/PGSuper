@@ -33,6 +33,7 @@
 #include <EAF\EAFAutoProgress.h>
 #include <EAF\EAFDocument.h>
 
+#include <IFace\Tools.h>
 #include <IFace\Selection.h>
 #include <IFace\TestFileExport.h>
 #include <IFace\Intervals.h>

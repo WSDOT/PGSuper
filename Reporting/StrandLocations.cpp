@@ -23,6 +23,8 @@
 #include "StdAfx.h"
 #include <Reporting\StrandLocations.h>
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
 #include <IFace/PointOfInterest.h>

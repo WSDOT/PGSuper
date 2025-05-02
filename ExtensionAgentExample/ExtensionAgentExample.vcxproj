@@ -194,6 +194,7 @@
     <ClInclude Include="dllmain.h" />
     <ClInclude Include="EditPierPage.h" />
     <ClInclude Include="ExampleExtensionAgent.h" />
+    <ClInclude Include="ExtensionAgent.h" />
     <ClInclude Include="MyChapterBuilder.h" />
     <ClInclude Include="MyReportSpecification.h" />
     <ClInclude Include="MyReportSpecificationBuilder.h" />

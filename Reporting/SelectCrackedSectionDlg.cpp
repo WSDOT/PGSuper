@@ -27,6 +27,8 @@
 
 #include "stdafx.h"
 #include "SelectCrackedSectionDlg.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Bridge.h>
 #include <IFace/PointOfInterest.h>
 #include <EAF\EAFDisplayUnits.h>

@@ -42,13 +42,15 @@
 #include "PGSpliceCatCom.h"
 #include <System\ComCatMgr.h>
 
-#include <IFace\StatusCenter.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\RatingSpecification.h>
 #include <IFace\ResistanceFactors.h>
 #include <IFace\Intervals.h>
 #include <IFace\DocumentType.h>
 #include <IFace\EditByUI.h>
+#include <IFace/PointOfInterest.h>
+#include <EAF/EAFDisplayUnits.h>
+#include <EAF/EAFStatusCenter.h>
 
 #include <EAF\ComponentModule.h>
 

@@ -28,6 +28,7 @@
 #include <Reporting\MomentCapacityParagraphBuilder.h>
 #include "TexasMomentCapacityChapterBuilder.h"
 
+#include <IFace\Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Bridge.h>
 #include <IFace\Artifact.h>

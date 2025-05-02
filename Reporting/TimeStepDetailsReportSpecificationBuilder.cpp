@@ -25,6 +25,8 @@
 #include <Reporting\TimeStepDetailsReportSpecification.h>
 #include "TimeStepDetailsDlg.h"
 
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Selection.h>
 #include <IFace\PointOfInterest.h>
 

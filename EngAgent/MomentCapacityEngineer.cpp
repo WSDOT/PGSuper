@@ -22,6 +22,7 @@
 ///////////////////////////////////////////////////////////////////////
 
 #include "StdAfx.h"
+#include "EngAgent.h"
 #include "MomentCapacityEngineer.h"
 #include <PGSuperException.h>
 
@@ -32,7 +33,7 @@
 #include <IFace\MomentCapacity.h>
 #include <IFace\PrestressForce.h>
 #include <IFace\Project.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\ResistanceFactors.h>
 #include <IFace\Intervals.h>

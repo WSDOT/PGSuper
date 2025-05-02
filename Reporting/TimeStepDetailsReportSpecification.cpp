@@ -22,7 +22,11 @@
 
 #include "StdAfx.h"
 #include <Reporting\TimeStepDetailsReportSpecification.h>
+
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\PointOfInterest.h>
+
 #include <PsgLib\GirderLabel.h>
 
 

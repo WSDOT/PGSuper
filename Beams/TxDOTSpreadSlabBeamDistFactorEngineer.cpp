@@ -22,6 +22,7 @@
 
 // TxDOTSpreadSlabBeamDistFactorEngineer.cpp : Implementation of CTxDOTSpreadSlabBeamDistFactorEngineer
 #include "stdafx.h"
+#include "Beams.h"
 #include "TxDOTSpreadSlabBeamDistFactorEngineer.h"
 #include <PGSuperException.h>
 #include <Units\Convert.h>
@@ -35,7 +36,7 @@
 #include <IFace\Project.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\DistributionFactors.h>
-#include <IFace\StatusCenter.h>
+#include <EAF/EAFStatusCenter.h>
 #include <Beams\Helper.h>
 
 

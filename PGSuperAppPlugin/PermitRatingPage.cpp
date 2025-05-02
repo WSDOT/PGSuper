@@ -28,6 +28,7 @@
 #include "PermitRatingPage.h"
 #include "RatingOptionsDlg.h"
 
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 #include <IFace\RatingSpecification.h>
 #include <EAF\EAFDisplayUnits.h>

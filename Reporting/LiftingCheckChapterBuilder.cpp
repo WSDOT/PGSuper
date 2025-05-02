@@ -23,6 +23,9 @@
 #include "StdAfx.h"
 #include <Reporting\LiftingCheckChapterBuilder.h>
 #include <Reporting\LiftingCheck.h>
+
+#include <IFace/Tools.h>
+#include <EAF/EAFDisplayUnits.h>
 #include <IFace\Artifact.h>
 
 

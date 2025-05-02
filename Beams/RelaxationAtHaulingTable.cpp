@@ -22,6 +22,7 @@
 
 // RelaxationAtHaulingTable.cpp : Implementation of CRelaxationAtHaulingTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "RelaxationAtHaulingTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>

@@ -23,6 +23,8 @@
 #include "stdafx.h"
 #include "PGSuperDoc.h"
 #include "EditPierStation.h"
+
+#include <IFace/Tools.h>
 #include <IFace\Project.h>
 
 

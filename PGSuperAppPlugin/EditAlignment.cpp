@@ -23,6 +23,7 @@
 #include "stdafx.h"
 #include "EditAlignment.h"
 #include "PGSuperDoc.h"
+#include <IFace/Tools.h>
 
 
 txnEditAlignment::txnEditAlignment(const AlignmentData2& oldAlignmentData,   const AlignmentData2& newAlignmentData,

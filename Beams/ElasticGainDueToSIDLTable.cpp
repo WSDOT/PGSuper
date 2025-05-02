@@ -22,6 +22,7 @@
 
 // ElasticGainDueToSIDLTable.cpp : Implementation of CElasticGainDueToSIDLTable
 #include "stdafx.h"
+#include "Beams.h"
 #include "ElasticGainDueToSIDLTable.h"
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>
