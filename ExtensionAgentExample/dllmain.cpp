@@ -27,6 +27,7 @@
 #include "dllmain.h"
 
 #include <initguid.h>
+#include "CLSID.h"
 #include "PGSuperCatCom.h"
 #include "PGSpliceCatCom.h"
 #include <IFace\Tools.h>

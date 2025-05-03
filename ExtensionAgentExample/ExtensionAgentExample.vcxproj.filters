@@ -72,6 +72,9 @@
     <ClInclude Include="ExtensionAgent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CLSID.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="logo.bmp">

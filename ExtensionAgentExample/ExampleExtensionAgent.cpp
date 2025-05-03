@@ -26,8 +26,8 @@
 #include "ExtensionAgent.h"
 #include "ExampleExtensionAgent.h"
 #include "resource.h"
-#include <EAF\EAFOutputChildFrame.h>
 #include "MyView.h"
+#include "CLSID.h"
 
 #include <IFace\Tools.h>
 #include <IFace\EditByUI.h>
@@ -47,6 +47,7 @@
 #include <EAF/EAFGraphManager.h>
 #include "TestGraphBuilder.h"
 
+#include <EAF\EAFOutputChildFrame.h>
 #include <MFCTools\Prompts.h>
 
 BEGIN_MESSAGE_MAP(CExampleExtensionAgent,CCmdTarget)

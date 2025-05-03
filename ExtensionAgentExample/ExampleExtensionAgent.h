@@ -30,9 +30,6 @@
 #include <IFace\ExtendUI.h>
 #include "EditPierPage.h"
 
-// {C75182FE-7DAC-47A1-B87C-8BFA0F3C5D35}
-DEFINE_GUID(CLSID_ExampleExtensionAgent,
-   0xC75182FE, 0x7DAC, 0x47A1, 0xB8, 0x7C, 0x8B, 0xFA, 0x0F, 0x3C, 0x5D, 0x35);
 
 class CExampleExtensionAgent : public WBFL::EAF::Agent,
    public WBFL::EAF::IAgentPersist,
