@@ -67,26 +67,42 @@ EAF_BEGIN_OBJECT_MAP(ObjectMap)
 	EAF_OBJECT_ENTRY(CLSID_EngAgent, CEngAgentImp)
 EAF_END_OBJECT_MAP()
 
-class CEngAgentApp : public CWinApp
-{
-public:
-	virtual BOOL InitInstance() override;
-	virtual int ExitInstance() override;
-};
+#pragma Reminder("WORKING HERE - Removing COM - move this into a DllMain.cpp file - at least be consistent will all agents")
+/////////////////////////////////////////////////////////////////////////////
+// DLL Entry Point
 
-CEngAgentApp theApp;
-
-BOOL CEngAgentApp::InitInstance()
+extern "C"
+BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
 {
-	_Module.Init(ObjectMap);
-	return CWinApp::InitInstance();
+   if (dwReason == DLL_PROCESS_ATTACH)
+   {
+      _Module.Init(ObjectMap);
+   }
+   else if (dwReason == DLL_PROCESS_DETACH)
+      _Module.Term();
+   return TRUE;    // ok
 }
 
-int CEngAgentApp::ExitInstance()
-{
-	_Module.Term();
-	return CWinApp::ExitInstance();
-}
+//class CEngAgentApp : public CWinApp
+//{
+//public:
+//	virtual BOOL InitInstance() override;
+//	virtual int ExitInstance() override;
+//};
+//
+//CEngAgentApp theApp;
+//
+//BOOL CEngAgentApp::InitInstance()
+//{
+//	_Module.Init(ObjectMap);
+//	return CWinApp::InitInstance();
+//}
+//
+//int CEngAgentApp::ExitInstance()
+//{
+//	_Module.Term();
+//	return CWinApp::ExitInstance();
+//}
 
 #pragma Reminder("WORKING HERE - Removing COM - register EngAgent with agent component categories")
 //HRESULT RegisterAgent(bool bRegister)

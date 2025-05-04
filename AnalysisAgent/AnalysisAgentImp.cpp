@@ -1215,7 +1215,7 @@ bool CAnalysisAgentImp::RegInterfaces()
    REGISTER_INTERFACE(IReactions);
    REGISTER_INTERFACE(IDeformedGirderGeometry);
 
-   return S_OK;
+   return true;
 };
 
 bool CAnalysisAgentImp::Init()
