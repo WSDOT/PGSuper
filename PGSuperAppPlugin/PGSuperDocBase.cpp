@@ -146,7 +146,7 @@
 #include <Reporting\SpanGirderReportSpecificationBuilder.h>
 #include <Reporting\SpanGirderReportSpecification.h>
 
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 #include <PgsExt\GirderArtifact.h>
 #include <PgsExt\GirderDesignArtifact.h>
 #include <PsgLib\BridgeDescription2.h>
@@ -1535,7 +1535,7 @@ BOOL CPGSDocBase::UpdateTemplates()
    }
 
    GET_IFACE(IEAFProgress,pProgress);
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
 
    // we want the template files to be "clean" with only PGSuper data in them
    // Tell the broker to not save data from any missing extension agents
@@ -2002,7 +2002,7 @@ void CPGSDocBase::OnCloseDocument()
 {
    CEAFBrokerDocument::OnCloseDocument();
 
-   CBeamFamilyManager::Reset();
+   PGS::Beams::BeamFamilyManager::Reset();
 }
 
 BOOL CPGSDocBase::DoSave(LPCTSTR lpszPathName, BOOL bReplace)
@@ -2512,7 +2512,7 @@ BOOL CPGSDocBase::Init()
    // is executed in its own thread... Need to add some
    // code that indicates if the call fails.. then throw
    // a shut down exception
-   if ( FAILED(CBeamFamilyManager::Init(GetBeamFamilyCategoryID())) )
+   if ( FAILED(PGS::Beams::BeamFamilyManager::Init(GetBeamFamilyCategoryID())) )
    {
       return FALSE;
    }

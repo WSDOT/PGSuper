@@ -60,7 +60,7 @@ public:
 
 // IAgent
 public:
-   bool RegInterfaces() override;
+   bool RegisterInterfaces() override;
    bool Init() override;
    bool Reset() override;
    bool ShutDown() override;

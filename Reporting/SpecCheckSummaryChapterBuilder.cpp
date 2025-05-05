@@ -43,7 +43,7 @@ CLASS
 #include <IFace\Artifact.h>
 #include <IFace\AnalysisResults.h>
 #include <IFace\Project.h>
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 #include <IFace\DocumentType.h>
 #include <IFace/PointOfInterest.h>
 
@@ -99,7 +99,7 @@ rptChapter* CSpecCheckSummaryChapterBuilder::Build(const std::shared_ptr<const W
       GET_IFACE2(pBroker,IEAFProgress,pProgress);
       DWORD mask = bMultiGirderReport ? PW_ALL|PW_NOCANCEL : PW_ALL|PW_NOGAUGE|PW_NOCANCEL;
 
-      CEAFAutoProgress ap(pProgress,0,mask); 
+      WBFL::EAF::AutoProgress ap(pProgress,0,mask); 
 
       if (bMultiGirderReport)
       {

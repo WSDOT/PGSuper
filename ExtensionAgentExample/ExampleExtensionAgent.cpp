@@ -272,7 +272,7 @@ void CExampleExtensionAgent::SimulateUserInput()
 /////////////////////////////////////////////////////////////////////////
 // IAgentEx
 
-bool CExampleExtensionAgent::RegInterfaces()
+bool CExampleExtensionAgent::RegisterInterfaces()
 {
    return true;
 }
@@ -288,7 +288,7 @@ bool CExampleExtensionAgent::Init()
    //
    // Attach to connection points
    //
-   m_dwExtendUICookie = REGISTER_CALLBACK(IExtendUIEventSink);
+   m_dwExtendUICookie = REGISTER_EVENT_SINK(IExtendUIEventSink);
 
    return true;
 }
@@ -304,7 +304,7 @@ bool CExampleExtensionAgent::ShutDown()
    //
    // Detach to connection points
    //
-   UNREGISTER_CALLBACK(IExtendUIEventSink, m_dwExtendUICookie);
+   UNREGISTER_EVENT_SINK(IExtendUIEventSink, m_dwExtendUICookie);
 
    return true;
 }

@@ -32,7 +32,7 @@
 
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 #include <Units\UnitValueNumericalFormatTools.h>
 #include <PsgLib\LoadFactors.h>
 #include <PgsExt\IntervalTool.h>
@@ -236,7 +236,7 @@ void CStressHistoryGraphBuilder::ShowGrid(bool bShowGrid)
 bool CStressHistoryGraphBuilder::UpdateNow()
 {
    GET_IFACE(IEAFProgress,pProgress);
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
 
    pProgress->UpdateMessage(_T("Building Graph"));
 

@@ -25,7 +25,7 @@
 #include "resource.h"
 #include <Beams/TimeStepLossEngineer.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 
 #include <PsgLib\BridgeDescription2.h>
 #include <PsgLib\ClosureJointData.h>
@@ -568,7 +568,7 @@ void CTimeStepLossEngineer::ComputeLosses(GirderIndexType girderLineIdx,Interval
    {
       // scope the use of all the interface pointers accessed above and released below
 
-      CEAFAutoProgress ap(m_pProgress);
+      WBFL::EAF::AutoProgress ap(m_pProgress);
       m_pProgress->UpdateMessage(_T("Computing prestress losses"));
 
       // Store principal web stress parameters

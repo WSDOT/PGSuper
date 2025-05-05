@@ -51,7 +51,11 @@
 #include <psgLib/SpecificationCriteria.h>
 #include <psgLib/GirderLibraryEntry.h>
 
-CMultiWeb2Factory::CMultiWeb2Factory() : IBeamFactory()
+using namespace PGS::Beams;
+
+std::shared_ptr<CMultiWeb2Factory> BeamFactorySingleton<CMultiWeb2Factory>::instance = nullptr;
+
+CMultiWeb2Factory::CMultiWeb2Factory() : BeamFactory()
 {
    // Initialize with default values... This are not necessarily valid dimensions
    m_DimNames.emplace_back(_T("C1"));
@@ -110,7 +114,7 @@ CMultiWeb2Factory::CMultiWeb2Factory() : IBeamFactory()
    m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Feet); // Wmax
 }
 
-void CMultiWeb2Factory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
+void CMultiWeb2Factory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const BeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
 {
    CComPtr<IMultiWebSection2> gdrSection;
    gdrSection.CoCreateInstance(CLSID_MultiWebSection2);
@@ -235,9 +239,9 @@ std::unique_ptr<CPsLossEngineerBase> CMultiWeb2Factory::CreatePsLossEngineer(std
    }
 }
 
-void CMultiWeb2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
-                                  IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
-                                  IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
+void CMultiWeb2Factory::CreateStrandMover(const BeamFactory::Dimensions& dimensions,  Float64 Hg,
+                                  BeamFactory::BeamFace endTopFace, Float64 endTopLimit, BeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
+                                  BeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, BeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
                                   Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover) const
 {
    Float64 h1,h2,h3;
@@ -291,10 +295,10 @@ void CMultiWeb2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dimens
    ATLASSERT (SUCCEEDED(hr));
 
    // set vertical offset bounds and increments
-   Float64 hptb  = hpTopFace     == IBeamFactory::BeamFace::Bottom ? hpTopLimit     - depth : -hpTopLimit;
-   Float64 hpbb  = hpBottomFace  == IBeamFactory::BeamFace::Bottom ? hpBottomLimit  - depth : -hpBottomLimit;
-   Float64 endtb = endTopFace    == IBeamFactory::BeamFace::Bottom ? endTopLimit    - depth : -endTopLimit;
-   Float64 endbb = endBottomFace == IBeamFactory::BeamFace::Bottom ? endBottomLimit - depth : -endBottomLimit;
+   Float64 hptb  = hpTopFace     == BeamFactory::BeamFace::Bottom ? hpTopLimit     - depth : -hpTopLimit;
+   Float64 hpbb  = hpBottomFace  == BeamFactory::BeamFace::Bottom ? hpBottomLimit  - depth : -hpBottomLimit;
+   Float64 endtb = endTopFace    == BeamFactory::BeamFace::Bottom ? endTopLimit    - depth : -endTopLimit;
+   Float64 endbb = endBottomFace == BeamFactory::BeamFace::Bottom ? endBottomLimit - depth : -endBottomLimit;
 
    hr = configurer->SetHarpedStrandOffsetBounds(0, depth, endtb, endbb, hptb, hpbb, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
@@ -318,7 +322,7 @@ const std::vector<const WBFL::Units::Length*>& CMultiWeb2Factory::GetDimensionUn
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
 
-bool CMultiWeb2Factory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg) const
+bool CMultiWeb2Factory::ValidateDimensions(const BeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg) const
 {
    Float64 h1,h2,h3;
    Float64 c1,c2;
@@ -474,7 +478,7 @@ bool CMultiWeb2Factory::ValidateDimensions(const IBeamFactory::Dimensions& dimen
    return true;
 }
 
-void CMultiWeb2Factory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
+void CMultiWeb2Factory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const BeamFactory::Dimensions& dimensions) const
 {
    pSave->BeginUnit(_T("MultiWeb2Dimensions"),1.0);
    for(const auto& name : m_DimNames)
@@ -485,7 +489,7 @@ void CMultiWeb2Factory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSa
    pSave->EndUnit();
 }
 
-IBeamFactory::Dimensions CMultiWeb2Factory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
+BeamFactory::Dimensions CMultiWeb2Factory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
 {
    Float64 parent_version;
    if (pLoad->GetParentUnit() == _T("GirderLibraryEntry"))
@@ -498,7 +502,7 @@ IBeamFactory::Dimensions CMultiWeb2Factory::LoadSectionDimensions(WBFL::System::
    }
 
 
-   IBeamFactory::Dimensions dimensions;
+   BeamFactory::Dimensions dimensions;
 
    Float64 dimVersion = 1.0;
    if ( 14 <= parent_version )
@@ -540,7 +544,7 @@ IBeamFactory::Dimensions CMultiWeb2Factory::LoadSectionDimensions(WBFL::System::
    return dimensions;
 }
 
-bool CMultiWeb2Factory::IsPrismatic(const IBeamFactory::Dimensions& dimensions) const
+bool CMultiWeb2Factory::IsPrismatic(const BeamFactory::Dimensions& dimensions) const
 {
    return true;
 }
@@ -737,7 +741,7 @@ HICON  CMultiWeb2Factory::GetIcon()  const
    return ::LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_MULTIWEB2) );
 }
 
-void CMultiWeb2Factory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
+void CMultiWeb2Factory::GetDimensions(const BeamFactory::Dimensions& dimensions,
                                       Float64& h1,Float64& h2,Float64& h3,
                                       Float64& t1,Float64& t2,Float64& t3,
                                       Float64& f1,
@@ -758,7 +762,7 @@ void CMultiWeb2Factory::GetDimensions(const IBeamFactory::Dimensions& dimensions
    wmax = GetDimension(dimensions,_T("Wmax"));
 }
 
-Float64 CMultiWeb2Factory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name) const
+Float64 CMultiWeb2Factory::GetDimension(const BeamFactory::Dimensions& dimensions,const std::_tstring& name) const
 {
    for (const auto& dim : dimensions)
    {
@@ -802,7 +806,7 @@ bool CMultiWeb2Factory::IsSupportedBeamSpacing(pgsTypes::SupportedBeamSpacing sp
    return found == sbs.end() ? false : true;
 }
 
-bool CMultiWeb2Factory::ConvertBeamSpacing(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const
+bool CMultiWeb2Factory::ConvertBeamSpacing(const BeamFactory::Dimensions& dimensions,pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const
 {
    if (spacingType == pgsTypes::sbsUniform || spacingType == pgsTypes::sbsUniformAdjacent)
    {
@@ -874,7 +878,7 @@ pgsTypes::SupportedDiaphragmLocationTypes CMultiWeb2Factory::GetSupportedDiaphra
    return locations;
 }
 
-void CMultiWeb2Factory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const
+void CMultiWeb2Factory::GetAllowableSpacingRange(const BeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const
 {
    *minSpacing = 0.0;
    *maxSpacing = 0.0;
@@ -909,12 +913,12 @@ void CMultiWeb2Factory::GetAllowableSpacingRange(const IBeamFactory::Dimensions&
    }
 }
 
-WebIndexType CMultiWeb2Factory::GetWebCount(const IBeamFactory::Dimensions& dimensions) const
+WebIndexType CMultiWeb2Factory::GetWebCount(const BeamFactory::Dimensions& dimensions) const
 {
    return 2;
 }
 
-Float64 CMultiWeb2Factory::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
+Float64 CMultiWeb2Factory::GetBeamHeight(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    Float64 H1 = GetDimension(dimensions,_T("H1"));
    Float64 H2 = GetDimension(dimensions,_T("H2"));
@@ -923,7 +927,7 @@ Float64 CMultiWeb2Factory::GetBeamHeight(const IBeamFactory::Dimensions& dimensi
    return H1 + H2 + H3;
 }
 
-Float64 CMultiWeb2Factory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
+Float64 CMultiWeb2Factory::GetBeamWidth(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    Float64 T1 = GetDimension(dimensions,_T("T1"));
    Float64 T2 = GetDimension(dimensions,_T("T2"));
@@ -935,7 +939,7 @@ Float64 CMultiWeb2Factory::GetBeamWidth(const IBeamFactory::Dimensions& dimensio
    return 2*(T1+T2+T3+Wmax) + W2;
 }
 
-void CMultiWeb2Factory::GetBeamTopWidth(const IBeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
+void CMultiWeb2Factory::GetBeamTopWidth(const BeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
 {
    Float64 T1 = GetDimension(dimensions,_T("T1"));
    Float64 T2 = GetDimension(dimensions,_T("T2"));
@@ -952,12 +956,12 @@ void CMultiWeb2Factory::GetBeamTopWidth(const IBeamFactory::Dimensions& dimensio
    *pRightWidth = top;
 }
 
-bool CMultiWeb2Factory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
+bool CMultiWeb2Factory::IsShearKey(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
 {
    return false;
 }
 
-void CMultiWeb2Factory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const
+void CMultiWeb2Factory::GetShearKeyAreas(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const
 {
    *uniformArea = 0.0;
    *areaPerJoint = 0.0;
@@ -988,7 +992,7 @@ GirderIndexType CMultiWeb2Factory::GetMinimumBeamCount() const
    return 1;
 }
 
-void CMultiWeb2Factory::DimensionAndPositionBeam(std::shared_ptr<WBFL::EAF::Broker> pBroker,const IBeamFactory::Dimensions& dimensions, IMultiWeb2* pBeam) const
+void CMultiWeb2Factory::DimensionAndPositionBeam(std::shared_ptr<WBFL::EAF::Broker> pBroker,const BeamFactory::Dimensions& dimensions, IMultiWeb2* pBeam) const
 {
    Float64 c1, c2;
    Float64 h1, h2, h3;

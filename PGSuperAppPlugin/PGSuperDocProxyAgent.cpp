@@ -202,30 +202,30 @@ void CPGSuperDocProxyAgent::UnregisterViews()
 
 void CPGSuperDocProxyAgent::AdviseEventSinks()
 {
-   m_BridgeDescCookie = m_pBroker->RegisterCallback<IBridgeDescriptionEventSink>(std::dynamic_pointer_cast<IBridgeDescriptionEventSink>(shared_from_this()));
-   m_EnvironmentCookie = m_pBroker->RegisterCallback<IEnvironmentEventSink>(std::dynamic_pointer_cast<IEnvironmentEventSink>(shared_from_this()));
-   m_ProjectPropertiesCookie = m_pBroker->RegisterCallback<IProjectPropertiesEventSink>(std::dynamic_pointer_cast<IProjectPropertiesEventSink>(shared_from_this()));
-   m_DisplayUnitsCookie = m_pBroker->RegisterCallback<IEAFDisplayUnitsEventSink>(std::dynamic_pointer_cast<IEAFDisplayUnitsEventSink>(shared_from_this()));
-   m_SpecificationCookie = m_pBroker->RegisterCallback<ISpecificationEventSink>(std::dynamic_pointer_cast<ISpecificationEventSink>(shared_from_this()));
-   m_RatingSpecificationCookie = m_pBroker->RegisterCallback<IRatingSpecificationEventSink>(std::dynamic_pointer_cast<IRatingSpecificationEventSink>(shared_from_this()));
-   m_LibraryConflictGuiCookie = m_pBroker->RegisterCallback<ILibraryConflictEventSink>(std::dynamic_pointer_cast<ILibraryConflictEventSink>(shared_from_this()));
-   m_LoadModiferCookie = m_pBroker->RegisterCallback<ILoadModifiersEventSink>(std::dynamic_pointer_cast<ILoadModifiersEventSink>(shared_from_this()));
-   m_LossParametersCookie = m_pBroker->RegisterCallback<ILossParametersEventSink>(std::dynamic_pointer_cast<ILossParametersEventSink>(shared_from_this()));
-   m_ReportCookie = m_pBroker->RegisterCallback<IReporterEventSink>(std::dynamic_pointer_cast<IReporterEventSink>(shared_from_this()));
+   m_BridgeDescCookie = REGISTER_EVENT_SINK(IBridgeDescriptionEventSink);
+   m_EnvironmentCookie = REGISTER_EVENT_SINK(IEnvironmentEventSink);
+   m_ProjectPropertiesCookie = REGISTER_EVENT_SINK(IProjectPropertiesEventSink);
+   m_DisplayUnitsCookie = REGISTER_EVENT_SINK(IEAFDisplayUnitsEventSink);
+   m_SpecificationCookie = REGISTER_EVENT_SINK(ISpecificationEventSink);
+   m_RatingSpecificationCookie = REGISTER_EVENT_SINK(IRatingSpecificationEventSink);
+   m_LibraryConflictGuiCookie = REGISTER_EVENT_SINK(ILibraryConflictEventSink);
+   m_LoadModiferCookie = REGISTER_EVENT_SINK(ILoadModifiersEventSink);
+   m_LossParametersCookie = REGISTER_EVENT_SINK(ILossParametersEventSink);
+   m_ReportCookie = REGISTER_EVENT_SINK(IReporterEventSink);
 }
 
 void CPGSuperDocProxyAgent::UnadviseEventSinks()
 {
-    m_pBroker->UnregisterCallback<IBridgeDescriptionEventSink>(std::dynamic_pointer_cast<IBridgeDescriptionEventSink>(shared_from_this()), m_BridgeDescCookie);
-    m_pBroker->UnregisterCallback<IEnvironmentEventSink>(std::dynamic_pointer_cast<IEnvironmentEventSink>(shared_from_this()), m_EnvironmentCookie);
-    m_pBroker->UnregisterCallback<IProjectPropertiesEventSink>(std::dynamic_pointer_cast<IProjectPropertiesEventSink>(shared_from_this()), m_ProjectPropertiesCookie);
-    m_pBroker->UnregisterCallback<IEAFDisplayUnitsEventSink>(std::dynamic_pointer_cast<IEAFDisplayUnitsEventSink>(shared_from_this()), m_DisplayUnitsCookie);
-    m_pBroker->UnregisterCallback<ISpecificationEventSink>(std::dynamic_pointer_cast<ISpecificationEventSink>(shared_from_this()), m_SpecificationCookie);
-    m_pBroker->UnregisterCallback<IRatingSpecificationEventSink>(std::dynamic_pointer_cast<IRatingSpecificationEventSink>(shared_from_this()), m_RatingSpecificationCookie);
-    m_pBroker->UnregisterCallback<ILibraryConflictEventSink>(std::dynamic_pointer_cast<ILibraryConflictEventSink>(shared_from_this()), m_LibraryConflictGuiCookie);
-    m_pBroker->UnregisterCallback<ILoadModifiersEventSink>(std::dynamic_pointer_cast<ILoadModifiersEventSink>(shared_from_this()), m_LoadModiferCookie);
-    m_pBroker->UnregisterCallback<ILossParametersEventSink>(std::dynamic_pointer_cast<ILossParametersEventSink>(shared_from_this()), m_LossParametersCookie);
-    m_pBroker->UnregisterCallback<IReporterEventSink>(std::dynamic_pointer_cast<IReporterEventSink>(shared_from_this()), m_ReportCookie);
+    UNREGISTER_EVENT_SINK(IBridgeDescriptionEventSink, m_BridgeDescCookie);
+    UNREGISTER_EVENT_SINK(IEnvironmentEventSink, m_EnvironmentCookie);
+    UNREGISTER_EVENT_SINK(IProjectPropertiesEventSink, m_ProjectPropertiesCookie);
+    UNREGISTER_EVENT_SINK(IEAFDisplayUnitsEventSink, m_DisplayUnitsCookie);
+    UNREGISTER_EVENT_SINK(ISpecificationEventSink, m_SpecificationCookie);
+    UNREGISTER_EVENT_SINK(IRatingSpecificationEventSink, m_RatingSpecificationCookie);
+    UNREGISTER_EVENT_SINK(ILibraryConflictEventSink, m_LibraryConflictGuiCookie);
+    UNREGISTER_EVENT_SINK(ILoadModifiersEventSink, m_LoadModiferCookie);
+    UNREGISTER_EVENT_SINK(ILossParametersEventSink, m_LossParametersCookie);
+    UNREGISTER_EVENT_SINK(IReporterEventSink, m_ReportCookie);
 }
 
 void CPGSuperDocProxyAgent::CreateBridgeModelView(IBridgeModelViewController** ppViewController)
@@ -444,9 +444,9 @@ void CPGSuperDocProxyAgent::OnUIHintsReset()
 
 //////////////////////////////////////////////////////////
 // Agent
-bool CPGSuperDocProxyAgent::RegInterfaces()
+bool CPGSuperDocProxyAgent::RegisterInterfaces()
 {
-   EAF_AGENT_REGINTERFACES;
+   EAF_AGENT_REGISTER_INTERFACES;
 
    REGISTER_INTERFACE(IEditByUI);
    REGISTER_INTERFACE(IDesign);

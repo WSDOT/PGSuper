@@ -80,7 +80,10 @@ void CConcreteManager::Reset()
    m_bIsRailingSystemValidated = false;
    m_bIsDeckValidated          = false;
    m_bIsLongitudinalJointValidated = false;
+}
 
+void CConcreteManager::ShutDown()
+{
    m_pBroker = nullptr; // must release broker to break circular reference with the agent
 }
 

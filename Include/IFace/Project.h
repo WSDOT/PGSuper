@@ -93,7 +93,13 @@ class DuctLibrary;
 class HaulTruckLibrary;
 class RatingLibrary;
 
-class IBeamFactory;
+namespace PGS
+{
+   namespace Beams
+   {
+      class BeamFactory;
+   };
+};
 
 struct SlabOffsetCriteria;
 
@@ -662,7 +668,7 @@ public:
    virtual void EnumHaulTruckNames( std::vector<std::_tstring>* pNames) const = 0;
 
    virtual void EnumGirderFamilyNames( std::vector<std::_tstring>* pNames ) const = 0;
-   virtual std::shared_ptr<IBeamFactory> GetBeamFactory(const std::_tstring& strBeamFamily,const std::_tstring& strBeamName) = 0;
+   virtual std::shared_ptr<PGS::Beams::BeamFactory> GetBeamFactory(const std::_tstring& strBeamFamily,const std::_tstring& strBeamName) = 0;
 
    virtual void EnumRatingCriteriaNames( std::vector<std::_tstring>* pNames) const = 0;
 };

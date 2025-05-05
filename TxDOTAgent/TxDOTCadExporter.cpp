@@ -30,7 +30,7 @@
 #include "TxExcelDataExporter.h"
 #include "TxCSVDataExporter.h"
 
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 #include <EAF\EAFDocument.h>
 
 #include <IFace\Tools.h>
@@ -366,7 +366,7 @@ HRESULT CTxDOTCadExporter::ExportGirderDesignData(std::shared_ptr<WBFL::EAF::Bro
 
             bool multi = girderKeys.size() > 1;
             DWORD mask = multi ? PW_ALL : PW_ALL | PW_NOGAUGE; // Progress window has a cancel button,
-            CEAFAutoProgress ap(pProgress, 0, mask);
+            WBFL::EAF::AutoProgress ap(pProgress, 0, mask);
 
             if (multi)
                pProgress->Init(0, (short)girderKeys.size(), 1);  // and for multi-girders, a gauge.
@@ -522,7 +522,7 @@ HRESULT CTxDOTCadExporter::ExportHaunchDeflectionData(std::shared_ptr<WBFL::EAF:
 
       bool multi = girderKeys.size() > 1;
       DWORD mask = multi ? PW_ALL : PW_ALL | PW_NOGAUGE; // Progress window has a cancel button,
-      CEAFAutoProgress ap(pProgress, 0, mask);
+      WBFL::EAF::AutoProgress ap(pProgress, 0, mask);
 
       if (multi)
          pProgress->Init(0, (short)girderKeys.size(), 1);  // and for multi-girders, a gauge.

@@ -46,7 +46,11 @@
 #include <psgLib/SpecificationCriteria.h>
 #include <psgLib/GirderLibraryEntry.h>
 
-CUBeam2Factory::CUBeam2Factory() : IBeamFactory()
+using namespace PGS::Beams;
+
+std::shared_ptr<CUBeam2Factory> BeamFactorySingleton<CUBeam2Factory>::instance = nullptr;
+
+CUBeam2Factory::CUBeam2Factory() : BeamFactory()
 {
    // Initialize with default values... This are not necessarily valid dimensions
    m_DimNames.emplace_back(_T("C1"));
@@ -117,7 +121,7 @@ CUBeam2Factory::CUBeam2Factory() : IBeamFactory()
    m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W7
 }
 
-void CUBeam2Factory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
+void CUBeam2Factory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const BeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
 {
    CComPtr<IUGirderSection2> gdrSection;
    gdrSection.CoCreateInstance(CLSID_UGirderSection2);
@@ -277,9 +281,9 @@ std::unique_ptr<CPsLossEngineerBase> CUBeam2Factory::CreatePsLossEngineer(std::s
    }
 }
 
-void CUBeam2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
-                                  IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
-                                  IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
+void CUBeam2Factory::CreateStrandMover(const BeamFactory::Dimensions& dimensions,  Float64 Hg,
+                                  BeamFactory::BeamFace endTopFace, Float64 endTopLimit, BeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
+                                  BeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, BeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
                                   Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover) const
 {
    // build our shape so we can get higher-level info
@@ -350,10 +354,10 @@ void CUBeam2Factory::CreateStrandMover(const IBeamFactory::Dimensions& dimension
    ATLASSERT (SUCCEEDED(hr));
 
    // set vertical offset bounds and increments
-   Float64 hptb  = hpTopFace     == IBeamFactory::BeamFace::Bottom ? hpTopLimit     - depth : -hpTopLimit;
-   Float64 hpbb  = hpBottomFace  == IBeamFactory::BeamFace::Bottom ? hpBottomLimit  - depth : -hpBottomLimit;
-   Float64 endtb = endTopFace    == IBeamFactory::BeamFace::Bottom ? endTopLimit    - depth : -endTopLimit;
-   Float64 endbb = endBottomFace == IBeamFactory::BeamFace::Bottom ? endBottomLimit - depth : -endBottomLimit;
+   Float64 hptb  = hpTopFace     == BeamFactory::BeamFace::Bottom ? hpTopLimit     - depth : -hpTopLimit;
+   Float64 hpbb  = hpBottomFace  == BeamFactory::BeamFace::Bottom ? hpBottomLimit  - depth : -hpBottomLimit;
+   Float64 endtb = endTopFace    == BeamFactory::BeamFace::Bottom ? endTopLimit    - depth : -endTopLimit;
+   Float64 endbb = endBottomFace == BeamFactory::BeamFace::Bottom ? endBottomLimit - depth : -endBottomLimit;
 
    hr = configurer->SetHarpedStrandOffsetBounds(0, depth, endtb, endbb, hptb, hpbb, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
@@ -515,7 +519,7 @@ bool CUBeam2Factory::ValidateDimensions(const Dimensions& dimensions,bool bSIUni
    return true;
 }
 
-void CUBeam2Factory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
+void CUBeam2Factory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const BeamFactory::Dimensions& dimensions) const
 {
    // Version 2.0 - Added EndBlockLength
    pSave->BeginUnit(_T("UBeam2Dimensions"),2.0);
@@ -527,7 +531,7 @@ void CUBeam2Factory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,
    pSave->EndUnit();
 }
 
-IBeamFactory::Dimensions CUBeam2Factory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
+BeamFactory::Dimensions CUBeam2Factory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
 {
    Float64 parent_version;
    if (pLoad->GetParentUnit() == _T("GirderLibraryEntry"))
@@ -539,7 +543,7 @@ IBeamFactory::Dimensions CUBeam2Factory::LoadSectionDimensions(WBFL::System::ISt
       parent_version = pLoad->GetVersion();
    }
 
-   IBeamFactory::Dimensions dimensions;
+   BeamFactory::Dimensions dimensions;
 
    Float64 dimVersion = 1.0;
    if ( 14 <= parent_version )
@@ -592,7 +596,7 @@ IBeamFactory::Dimensions CUBeam2Factory::LoadSectionDimensions(WBFL::System::ISt
    return dimensions;
 }
 
-bool CUBeam2Factory::IsPrismatic(const IBeamFactory::Dimensions& dimensions) const
+bool CUBeam2Factory::IsPrismatic(const BeamFactory::Dimensions& dimensions) const
 {
    Float64 endBlockLength = GetDimension(dimensions,_T("EndBlockLength"));
    return IsZero(endBlockLength) ? true : false;
@@ -789,7 +793,7 @@ HICON  CUBeam2Factory::GetIcon() const
    return ::LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_TEXASU) );
 }
 
-void CUBeam2Factory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
+void CUBeam2Factory::GetDimensions(const BeamFactory::Dimensions& dimensions,
                                   Float64& d1,Float64& d2,Float64& d3,Float64& d4,Float64& d5,Float64& d6,
                                   Float64& w1,Float64& w2,Float64& w3,Float64& w4,Float64& w5,Float64& w6,Float64& w7,
                                   Float64& c1,Float64& EndBlockLength) const
@@ -811,7 +815,7 @@ void CUBeam2Factory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
    EndBlockLength = GetDimension(dimensions,_T("EndBlockLength"));
 }
 
-Float64 CUBeam2Factory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name) const
+Float64 CUBeam2Factory::GetDimension(const BeamFactory::Dimensions& dimensions,const std::_tstring& name) const
 {
    for (auto const& dim : dimensions)
    {
@@ -858,7 +862,7 @@ bool CUBeam2Factory::IsSupportedBeamSpacing(pgsTypes::SupportedBeamSpacing spaci
    return found == sbs.end() ? false : true;
 }
 
-bool CUBeam2Factory::ConvertBeamSpacing(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const
+bool CUBeam2Factory::ConvertBeamSpacing(const BeamFactory::Dimensions& dimensions,pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const
 {
    return false;
 }
@@ -925,7 +929,7 @@ pgsTypes::SupportedDiaphragmLocationTypes CUBeam2Factory::GetSupportedDiaphragmL
    return locations;
 }
 
-void CUBeam2Factory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const
+void CUBeam2Factory::GetAllowableSpacingRange(const BeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const
 {
    *minSpacing = 0.0;
    *maxSpacing = 0.0;
@@ -954,22 +958,22 @@ void CUBeam2Factory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& di
    }
 }
 
-WebIndexType CUBeam2Factory::GetWebCount(const IBeamFactory::Dimensions& dimensions) const
+WebIndexType CUBeam2Factory::GetWebCount(const BeamFactory::Dimensions& dimensions) const
 {
    return 2;
 }
 
-Float64 CUBeam2Factory::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
+Float64 CUBeam2Factory::GetBeamHeight(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    return GetDimension(dimensions,_T("D1"));
 }
 
-Float64 CUBeam2Factory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
+Float64 CUBeam2Factory::GetBeamWidth(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    return GetDimension(dimensions,_T("W2"));
 }
 
-void CUBeam2Factory::GetBeamTopWidth(const IBeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
+void CUBeam2Factory::GetBeamTopWidth(const BeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
 {
    Float64 W2 = GetDimension(dimensions,_T("W2"));
 
@@ -980,12 +984,12 @@ void CUBeam2Factory::GetBeamTopWidth(const IBeamFactory::Dimensions& dimensions,
    *pRightWidth = top;
 }
 
-bool CUBeam2Factory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
+bool CUBeam2Factory::IsShearKey(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
 {
    return false;
 }
 
-void CUBeam2Factory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const
+void CUBeam2Factory::GetShearKeyAreas(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const
 {
    *uniformArea = 0.0;
    *areaPerJoint = 0.0;
@@ -1016,7 +1020,7 @@ GirderIndexType CUBeam2Factory::GetMinimumBeamCount() const
    return 1;
 }
 
-void CUBeam2Factory::DimensionAndPositionBeam(const IBeamFactory::Dimensions& dimensions, IUBeam2* pBeam) const
+void CUBeam2Factory::DimensionAndPositionBeam(const BeamFactory::Dimensions& dimensions, IUBeam2* pBeam) const
 {
    Float64 w1, w2, w3, w4, w5, w6, w7;
    Float64 d1, d2, d3, d4, d5, d6;

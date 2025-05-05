@@ -466,8 +466,8 @@ void CGirderSelectStrandsPage::OnPaint()
 
    CComPtr<IStrandMover> strand_mover;
    factory->CreateStrandMover(dimensions, -1,
-                              IBeamFactory::BeamFace::Top, 0.0, IBeamFactory::BeamFace::Bottom, 0.0,
-                              IBeamFactory::BeamFace::Top, 0.0, IBeamFactory::BeamFace::Bottom, 0.0, 
+                              PGS::Beams::BeamFactory::BeamFace::Top, 0.0, PGS::Beams::BeamFactory::BeamFace::Bottom, 0.0,
+                              PGS::Beams::BeamFactory::BeamFace::Top, 0.0, PGS::Beams::BeamFactory::BeamFace::Bottom, 0.0, 
                               end_incr, hp_incr, &strand_mover);
 
    auto strand_bounds = ComputeStrandBounds(strand_mover, absol_end_offset, absol_hp_offset);

@@ -503,7 +503,7 @@ void CBridgeDescGeneralPage::UpdateBridgeDescription()
 
    if (!m_Factory->IsSupportedBeamSpacing(m_GirderSpacingType))
    {
-      const IBeamFactory::Dimensions& dimensions = pParent->m_BridgeDesc.GetGirderLibraryEntry()->GetDimensions();
+      const auto& dimensions = pParent->m_BridgeDesc.GetGirderLibraryEntry()->GetDimensions();
       pgsTypes::SupportedBeamSpacing newSpacingType;
       Float64 newSpacing, topWidth;
       VERIFY(m_Factory->ConvertBeamSpacing(dimensions, m_GirderSpacingType, m_GirderSpacing, &newSpacingType, &newSpacing, &topWidth));
@@ -1794,7 +1794,7 @@ void CBridgeDescGeneralPage::UpdateGirderTopWidthSpacingLimits()
          pGroup->GetGirderTypeGroup(gdrTypeGrpIdx, &firstGdrIdx, &lastGdrIdx, &strGdrName);
 
          const GirderLibraryEntry* pGdrEntry = pGroup->GetGirderLibraryEntry(firstGdrIdx);
-         const IBeamFactory::Dimensions& dimensions = pGdrEntry->GetDimensions();
+         const auto& dimensions = pGdrEntry->GetDimensions();
 
          // don't use m_Factory because if we have a cross section with mixed beam types
          // (i.e., I-beams and NU beams) the dimensions list and the factory wont match up
@@ -1906,7 +1906,7 @@ BOOL CBridgeDescGeneralPage::UpdateGirderSpacingLimits()
          pGroup->GetGirderTypeGroup(gdrTypeGrpIdx,&firstGdrIdx,&lastGdrIdx,&strGdrName);
 
          const GirderLibraryEntry* pGdrEntry = pGroup->GetGirderLibraryEntry(firstGdrIdx);
-         const IBeamFactory::Dimensions& dimensions = pGdrEntry->GetDimensions();
+         const auto& dimensions = pGdrEntry->GetDimensions();
 
          // don't use m_Factory because if we have a cross section with mixed beam types
          // (i.e. , I-beams and NU beams) the dimensions list and the factory wont match up

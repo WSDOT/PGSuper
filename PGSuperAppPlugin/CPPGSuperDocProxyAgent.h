@@ -24,7 +24,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // CProxyIProjectPropertiesEventSink
 template <class T>
-class CProxyIExtendUIEventSink : public WBFL::EAF::EventCallbackManager<T>
+class CProxyIExtendUIEventSink : public WBFL::EAF::EventSinkManager<T>
 {
 public:
 
@@ -35,7 +35,7 @@ public:
 		//T* pT = (T*)this;
 		//pT->Lock();
 		HRESULT ret = S_OK;
-		for(auto& [id,callback] : this->m_Callbacks)
+		for(auto& [id,callback] : this->m_EventSinks)
 		{
 			if (callback != nullptr)
 			{

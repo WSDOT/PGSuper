@@ -39,6 +39,7 @@
 #include <IFace\Intervals.h>
 #include <Beams\Helper.h>
 
+using namespace PGS::Beams;
 
 CIBeamDistFactorEngineer::CIBeamDistFactorEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID) :
    CDistFactorEngineerImpl<IBEAM_LLDFDETAILS>(pBroker,statusGroupID)

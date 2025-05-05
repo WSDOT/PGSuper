@@ -35,7 +35,7 @@
 #include <PsgLib\BridgeDescription2.h>
 #include <PgsExt\DesignConfigUtil.h>
 
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 #include <EAF\EAFApp.h>
 #include <EAF\EAFUtilities.h>
 
@@ -92,9 +92,9 @@ static bool CreateTxDOTFileNames(const CString& output, CString* pErrFileName)
 
 
 
-bool CTxDOTAgentImp::RegInterfaces()
+bool CTxDOTAgentImp::RegisterInterfaces()
 {
-   EAF_AGENT_REGINTERFACES;
+   EAF_AGENT_REGISTER_INTERFACES;
    return true;
 }
 
@@ -337,7 +337,7 @@ bool CTxDOTAgentImp::DoTOGAReport(const CString& outputFileName, const CTxDOTCom
    }
 
    GET_IFACE(IEAFProgress,pProgress);
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
 
    // Write data to file
    if (CAD_SUCCESS != TxDOT_WriteTOGAReportToFile(fp, this->m_pBroker))

@@ -33,7 +33,7 @@
 #include <EAF\EAFDocument.h>
 
 #include <IFace\Tools.h>
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 
 
 // CTxDOTOptionalDesignReportPage dialog
@@ -112,7 +112,7 @@ BOOL CTxDOTOptionalDesignReportPage::OnSetActive()
          auto pBroker = m_pBrokerRetriever->GetUpdatedBroker();
 
          GET_IFACE2(pBroker,IEAFProgress,pProgress);
-         CEAFAutoProgress ap(pProgress);
+         WBFL::EAF::AutoProgress ap(pProgress);
          pProgress->UpdateMessage(_T("Building Report"));
 
          if (m_pBrowser==nullptr)
@@ -190,7 +190,7 @@ void CTxDOTOptionalDesignReportPage::CreateNewBrowser(std::shared_ptr<WBFL::EAF:
    m_BrowserPlaceholder.GetClientRect(&rect);
 
    GET_IFACE2(pBroker,IEAFProgress,pProgress);
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
 
    m_pBrowser = pReportMgr->CreateReportBrowser(m_BrowserPlaceholder.GetSafeHwnd(),0,m_pRptSpec,std::shared_ptr<WBFL::Reporting::ReportSpecificationBuilder>());
    m_pBrowser->Size(rect.Size());

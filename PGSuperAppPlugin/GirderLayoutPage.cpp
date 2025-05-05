@@ -1106,7 +1106,7 @@ void CSpanGirderLayoutPage::OnCbnSelchangeNgdrsCombo()
    UpdateChildWindowState();
 }
 
-std::shared_ptr<IBeamFactory> CSpanGirderLayoutPage::GetBeamFactory()
+std::shared_ptr<PGS::Beams::BeamFactory> CSpanGirderLayoutPage::GetBeamFactory()
 {
    CSpanDetailsDlg* pParent = (CSpanDetailsDlg*)GetParent();
    const CGirderGroupData* pGroup = pParent->m_pGirderGroup;

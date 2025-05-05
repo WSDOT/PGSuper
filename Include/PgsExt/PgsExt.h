@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 #include <PgsExt\ConstructabilityArtifact.h>
 #include <PgsExt\GirderDesignArtifact.h>
 #include <PgsExt\SegmentDesignArtifact.h>

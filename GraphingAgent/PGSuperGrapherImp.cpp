@@ -37,10 +37,9 @@
 //Returns S_OK if successful; otherwise appropriate HRESULT value
 //is returned.
 
-HRESULT CPGSuperGrapherImp::InitGraphBuilders()
+bool CPGSuperGrapherImp::InitGraphBuilders()
 {
-   InitCommonGraphBuilders(m_pBroker);
-   return S_OK;
+   return InitCommonGraphBuilders(m_pBroker);
 }
 
 bool CPGSuperGrapherImp::Init()

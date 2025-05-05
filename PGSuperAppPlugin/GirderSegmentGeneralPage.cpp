@@ -1481,8 +1481,8 @@ void CGirderSegmentGeneralPage::InitBottomFlangeDepthControls()
    CGirderSegmentDlg* pParent = (CGirderSegmentDlg*)GetParent();
    const GirderLibraryEntry* pLibEntry = pParent->m_Girder.GetGirderLibraryEntry();
    auto factory = pLibEntry->GetBeamFactory();
-   auto splicedBeamFactory = std::dynamic_pointer_cast<ISplicedBeamFactory>(factory);
-   ATLASSERT(splicedBeamFactory != nullptr); // spliced girders must support the ISplicedBeamFactory interface
+   auto splicedBeamFactory = std::dynamic_pointer_cast<PGS::Beams::SplicedBeamFactory>(factory);
+   ATLASSERT(splicedBeamFactory != nullptr); // spliced girders must support the PGS::Beams::SplicedBeamFactory interface
    if ( !splicedBeamFactory || !splicedBeamFactory->CanBottomFlangeDepthVary() )
    {
       // bottom flange depth is not variable... hide the controls
@@ -1505,7 +1505,7 @@ void CGirderSegmentGeneralPage::InitEndBlockControls()
 
    const GirderLibraryEntry* pLibEntry = pParent->m_Girder.GetGirderLibraryEntry();
    auto factory = pLibEntry->GetBeamFactory();
-   auto splicedBeamFactory = std::dynamic_pointer_cast<ISplicedBeamFactory>(factory);
+   auto splicedBeamFactory = std::dynamic_pointer_cast<PGS::Beams::SplicedBeamFactory>(factory);
 
    bool bSupportsEndBlocks = splicedBeamFactory->SupportsEndBlocks();
 

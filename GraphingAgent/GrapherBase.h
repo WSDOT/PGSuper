@@ -27,5 +27,5 @@ class CGrapherBase : public WBFL::EAF::Agent
 {
 public:
    std::_tstring GetName() const override { return _T("GraphingAgent"); }
-   void InitCommonGraphBuilders(std::shared_ptr<WBFL::EAF::Broker> broker);
+   bool InitCommonGraphBuilders(std::shared_ptr<WBFL::EAF::Broker> broker);
 };

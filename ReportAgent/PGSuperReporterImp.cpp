@@ -112,9 +112,9 @@ HRESULT CPGSuperReporterImp::InitReportBuilders()
    return S_OK;
 }
 
-bool CPGSuperReporterImp::RegInterfaces()
+bool CPGSuperReporterImp::RegisterInterfaces()
 {
-   EAF_AGENT_REGINTERFACES;
+   EAF_AGENT_REGISTER_INTERFACES;
    REGISTER_INTERFACE(IReportOptions);
 
    return true;
@@ -134,7 +134,7 @@ bool CPGSuperReporterImp::Init()
    //
    // Attach to connection points
    //
-   m_dwSpecCookie = REGISTER_CALLBACK(ISpecificationEventSink);
+   m_dwSpecCookie = REGISTER_EVENT_SINK(ISpecificationEventSink);
 
    return true;
 }
@@ -156,7 +156,7 @@ bool CPGSuperReporterImp::ShutDown()
    //
    // Detach to connection points
    //
-   UNREGISTER_CALLBACK(ISpecificationEventSink, m_dwSpecCookie);
+   UNREGISTER_EVENT_SINK(ISpecificationEventSink, m_dwSpecCookie);
 
    return true;
 }

@@ -52,8 +52,12 @@
 #include <psgLib/SpecificationCriteria.h>
 #include <psgLib/GirderLibraryEntry.h>
 
+using namespace PGS::Beams;
+
+std::shared_ptr<CDeckedSlabBeamFactory> BeamFactorySingleton<CDeckedSlabBeamFactory>::instance = nullptr;
+
 CDeckedSlabBeamFactory::CDeckedSlabBeamFactory() :
-   IBeamFactory()
+   BeamFactory()
 {
    // Initialize with default values... This are not necessarily valid dimensions
    m_DimNames.emplace_back(_T("A"));
@@ -99,7 +103,7 @@ CDeckedSlabBeamFactory::CDeckedSlabBeamFactory() :
    m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // End Block Length
 }
 
-void CDeckedSlabBeamFactory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
+void CDeckedSlabBeamFactory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const BeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
 {
    CComPtr<IDeckedSlabBeamSection> gdrSection;
    gdrSection.CoCreateInstance(CLSID_DeckedSlabBeamSection);
@@ -308,9 +312,9 @@ std::unique_ptr<CPsLossEngineerBase> CDeckedSlabBeamFactory::CreatePsLossEnginee
    }
 }
 
-void CDeckedSlabBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
-                                  IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
-                                  IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
+void CDeckedSlabBeamFactory::CreateStrandMover(const BeamFactory::Dimensions& dimensions,  Float64 Hg,
+                                  BeamFactory::BeamFace endTopFace, Float64 endTopLimit, BeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
+                                  BeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, BeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
                                   Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover) const
 {
    HRESULT hr = S_OK;
@@ -362,10 +366,10 @@ void CDeckedSlabBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& d
    ATLASSERT (SUCCEEDED(hr));
 
    // set vertical offset bounds and increments
-   Float64 hptb  = hpTopFace     == IBeamFactory::BeamFace::Bottom ? hpTopLimit     - depth : -hpTopLimit;
-   Float64 hpbb  = hpBottomFace  == IBeamFactory::BeamFace::Bottom ? hpBottomLimit  - depth : -hpBottomLimit;
-   Float64 endtb = endTopFace    == IBeamFactory::BeamFace::Bottom ? endTopLimit    - depth : -endTopLimit;
-   Float64 endbb = endBottomFace == IBeamFactory::BeamFace::Bottom ? endBottomLimit - depth : -endBottomLimit;
+   Float64 hptb  = hpTopFace     == BeamFactory::BeamFace::Bottom ? hpTopLimit     - depth : -hpTopLimit;
+   Float64 hpbb  = hpBottomFace  == BeamFactory::BeamFace::Bottom ? hpBottomLimit  - depth : -hpBottomLimit;
+   Float64 endtb = endTopFace    == BeamFactory::BeamFace::Bottom ? endTopLimit    - depth : -endTopLimit;
+   Float64 endbb = endBottomFace == BeamFactory::BeamFace::Bottom ? endBottomLimit - depth : -endBottomLimit;
 
    hr = configurer->SetHarpedStrandOffsetBounds(0, depth, endtb, endbb, hptb, hpbb, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
@@ -388,7 +392,7 @@ const std::vector<const WBFL::Units::Length*>& CDeckedSlabBeamFactory::GetDimens
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
 
-bool CDeckedSlabBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSI,std::_tstring* strErrMsg) const
+bool CDeckedSlabBeamFactory::ValidateDimensions(const BeamFactory::Dimensions& dimensions,bool bSI,std::_tstring* strErrMsg) const
 {
    Float64 A,B,C,F,W,Tt,Tb,J,EndBlockLength;
    GetDimensions(dimensions,A,B,C,F,W,Tt,Tb,J,EndBlockLength);
@@ -460,7 +464,7 @@ bool CDeckedSlabBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& 
    return true;
 }
 
-void CDeckedSlabBeamFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
+void CDeckedSlabBeamFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const BeamFactory::Dimensions& dimensions) const
 {
    pSave->BeginUnit(_T("DeckedSlabBeamDimensions"),2.0);
    for(const auto& name : m_DimNames)
@@ -471,7 +475,7 @@ void CDeckedSlabBeamFactory::SaveSectionDimensions(WBFL::System::IStructuredSave
    pSave->EndUnit();
 }
 
-IBeamFactory::Dimensions CDeckedSlabBeamFactory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
+BeamFactory::Dimensions CDeckedSlabBeamFactory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
 {
    Float64 parent_version;
    if (pLoad->GetParentUnit() == _T("GirderLibraryEntry"))
@@ -484,7 +488,7 @@ IBeamFactory::Dimensions CDeckedSlabBeamFactory::LoadSectionDimensions(WBFL::Sys
    }
 
 
-   IBeamFactory::Dimensions dimensions;
+   BeamFactory::Dimensions dimensions;
 
    Float64 dimVersion = 1.0;
    if ( 14 <= parent_version )
@@ -518,7 +522,7 @@ IBeamFactory::Dimensions CDeckedSlabBeamFactory::LoadSectionDimensions(WBFL::Sys
    return dimensions;
 }
 
-bool CDeckedSlabBeamFactory::IsPrismatic(const IBeamFactory::Dimensions& dimensions) const
+bool CDeckedSlabBeamFactory::IsPrismatic(const BeamFactory::Dimensions& dimensions) const
 {
    Float64 endBlockLength = GetDimension(dimensions,_T("EndBlockLength"));
    return IsZero(endBlockLength) ? true : false;
@@ -727,7 +731,7 @@ HICON  CDeckedSlabBeamFactory::GetIcon()  const
    return ::LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_DECKEDSLAB) );
 }
 
-void CDeckedSlabBeamFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
+void CDeckedSlabBeamFactory::GetDimensions(const BeamFactory::Dimensions& dimensions,
                       Float64& A,Float64& B,Float64& C,Float64& F,Float64& W,Float64& Tt,Float64& Tb,Float64& Jmax,Float64& EndBlockLength) const
 {
    A = GetDimension(dimensions,_T("A"));
@@ -741,7 +745,7 @@ void CDeckedSlabBeamFactory::GetDimensions(const IBeamFactory::Dimensions& dimen
    EndBlockLength = GetDimension(dimensions,_T("EndBlockLength"));
 }
 
-Float64 CDeckedSlabBeamFactory::GetDimension(const IBeamFactory::Dimensions& dimensions, const std::_tstring& name) const
+Float64 CDeckedSlabBeamFactory::GetDimension(const BeamFactory::Dimensions& dimensions, const std::_tstring& name) const
 {
    for (const auto& dim : dimensions)
    {
@@ -789,7 +793,7 @@ bool CDeckedSlabBeamFactory::IsSupportedBeamSpacing(pgsTypes::SupportedBeamSpaci
    return found == sbs.end() ? false : true;
 }
 
-bool CDeckedSlabBeamFactory::ConvertBeamSpacing(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const
+bool CDeckedSlabBeamFactory::ConvertBeamSpacing(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const
 {
    return false;
 }
@@ -854,7 +858,7 @@ pgsTypes::SupportedDiaphragmLocationTypes CDeckedSlabBeamFactory::GetSupportedDi
    return locations;
 }
 
-void CDeckedSlabBeamFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const
+void CDeckedSlabBeamFactory::GetAllowableSpacingRange(const BeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const
 {
    // we only allow adjacent spacing for this girder type so allowable spacing range is the joint spacing
    *minSpacing = 0.0;
@@ -880,22 +884,22 @@ void CDeckedSlabBeamFactory::GetAllowableSpacingRange(const IBeamFactory::Dimens
    }
 }
 
-WebIndexType CDeckedSlabBeamFactory::GetWebCount(const IBeamFactory::Dimensions& dimensions) const
+WebIndexType CDeckedSlabBeamFactory::GetWebCount(const BeamFactory::Dimensions& dimensions) const
 {
    return 2;
 }
 
-Float64 CDeckedSlabBeamFactory::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
+Float64 CDeckedSlabBeamFactory::GetBeamHeight(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    return GetDimension(dimensions,_T("C")) + GetDimension(dimensions,_T("Tt"));
 }
 
-Float64 CDeckedSlabBeamFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
+Float64 CDeckedSlabBeamFactory::GetBeamWidth(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    return GetDimension(dimensions,_T("A"));
 }
 
-void CDeckedSlabBeamFactory::GetBeamTopWidth(const IBeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
+void CDeckedSlabBeamFactory::GetBeamTopWidth(const BeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
 {
    Float64 A = GetDimension(dimensions, _T("A"));
    Float64 F = GetDimension(dimensions, _T("F"));
@@ -907,12 +911,12 @@ void CDeckedSlabBeamFactory::GetBeamTopWidth(const IBeamFactory::Dimensions& dim
    *pRightWidth = top;
 }
 
-bool CDeckedSlabBeamFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
+bool CDeckedSlabBeamFactory::IsShearKey(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
 {
    return false;
 }
 
-void CDeckedSlabBeamFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const
+void CDeckedSlabBeamFactory::GetShearKeyAreas(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const
 {
    *uniformArea = 0.0;
    *areaPerJoint = 0.0;

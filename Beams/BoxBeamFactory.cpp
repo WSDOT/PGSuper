@@ -45,10 +45,10 @@
 #include <EAF/EAFStatusCenter.h>
 #include <PgsExt\StatusItem.h>
 
+using namespace PGS::Beams;
 
+std::shared_ptr<CBoxBeamFactory> BeamFactorySingleton<CBoxBeamFactory>::instance = nullptr;
 
-/////////////////////////////////////////////////////////////////////////////
-// CBoxBeamFactory
 CBoxBeamFactory::CBoxBeamFactory() : CBoxBeamFactoryImpl()
 {
    // Initialize with default values... This are not necessarily valid dimensions
@@ -131,7 +131,7 @@ CBoxBeamFactory::CBoxBeamFactory() : CBoxBeamFactoryImpl()
    m_DimUnits[1].emplace_back((const WBFL::Units::Length*)BFDIMUNITBOOLEAN); // FlushExteriorFace
 }
 
-bool CBoxBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSI,std::_tstring* strErrMsg) const
+bool CBoxBeamFactory::ValidateDimensions(const BeamFactory::Dimensions& dimensions,bool bSI,std::_tstring* strErrMsg) const
 {
    Float64 H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength;
    bool bFlushExteriorFace;
@@ -340,7 +340,7 @@ bool CBoxBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensi
    return true;
 }
 
-void CBoxBeamFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
+void CBoxBeamFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const BeamFactory::Dimensions& dimensions) const
 {
    pSave->BeginUnit(_T("BoxBeamDimensions"),5.0);
    for( const auto& name : m_DimNames)
@@ -351,7 +351,7 @@ void CBoxBeamFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave
    pSave->EndUnit();
 }
 
-IBeamFactory::Dimensions CBoxBeamFactory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
+BeamFactory::Dimensions CBoxBeamFactory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
 {
    Float64 parent_version;
    if (pLoad->GetParentUnit() == _T("GirderLibraryEntry"))
@@ -364,7 +364,7 @@ IBeamFactory::Dimensions CBoxBeamFactory::LoadSectionDimensions(WBFL::System::IS
    }
 
 
-   IBeamFactory::Dimensions dimensions;
+   BeamFactory::Dimensions dimensions;
 
    // In Feb,2008 we created version 10.0 which updated the flawed dimensioning for box beams. This update completely
    // rearranged all box dimensions. 
@@ -567,9 +567,9 @@ IBeamFactory::Dimensions CBoxBeamFactory::LoadSectionDimensions(WBFL::System::IS
    return dimensions;
 }
 
-void CBoxBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
-                                  IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
-                                  IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
+void CBoxBeamFactory::CreateStrandMover(const BeamFactory::Dimensions& dimensions,  Float64 Hg,
+                                  BeamFactory::BeamFace endTopFace, Float64 endTopLimit, BeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
+                                  BeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, BeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
                                   Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover) const
 {
    HRESULT hr = S_OK;
@@ -623,10 +623,10 @@ void CBoxBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensio
    ATLASSERT (SUCCEEDED(hr));
 
    // set vertical offset bounds and increments
-   Float64 hptb  = hpTopFace     == IBeamFactory::BeamFace::Bottom ? hpTopLimit     - depth : -hpTopLimit;
-   Float64 hpbb  = hpBottomFace  == IBeamFactory::BeamFace::Bottom ? hpBottomLimit  - depth : -hpBottomLimit;
-   Float64 endtb = endTopFace    == IBeamFactory::BeamFace::Bottom ? endTopLimit    - depth : -endTopLimit;
-   Float64 endbb = endBottomFace == IBeamFactory::BeamFace::Bottom ? endBottomLimit - depth : -endBottomLimit;
+   Float64 hptb  = hpTopFace     == BeamFactory::BeamFace::Bottom ? hpTopLimit     - depth : -hpTopLimit;
+   Float64 hpbb  = hpBottomFace  == BeamFactory::BeamFace::Bottom ? hpBottomLimit  - depth : -hpBottomLimit;
+   Float64 endtb = endTopFace    == BeamFactory::BeamFace::Bottom ? endTopLimit    - depth : -endTopLimit;
+   Float64 endbb = endBottomFace == BeamFactory::BeamFace::Bottom ? endBottomLimit - depth : -endBottomLimit;
 
    hr = configurer->SetHarpedStrandOffsetBounds(0, depth, endtb, endbb, hptb, hpbb, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
@@ -658,7 +658,7 @@ HICON  CBoxBeamFactory::GetIcon()  const
    return ::LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_BOXBEAM) );
 }
 
-void CBoxBeamFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
+void CBoxBeamFactory::GetDimensions(const BeamFactory::Dimensions& dimensions,
                                     Float64& H1, 
                                     Float64& H2, 
                                     Float64& H3, 
@@ -700,7 +700,7 @@ void CBoxBeamFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
    bFlushExteriorFace = tmp != 0;
 }
 
-void CBoxBeamFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt,  pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const
+void CBoxBeamFactory::GetAllowableSpacingRange(const BeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt,  pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const
 {
    *minSpacing = 0.0;
    *maxSpacing = 0.0;
@@ -744,7 +744,7 @@ void CBoxBeamFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& d
    }
 }
 
-bool CBoxBeamFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
+bool CBoxBeamFactory::IsShearKey(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
 {
    bool is_key;
 
@@ -789,7 +789,7 @@ Float64 AreaChoppedTriangle(Float64 W, Float64 H, Float64 h)
    return w*h + (W-w)*h/2.0;
 }
 
-void CBoxBeamFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const
+void CBoxBeamFactory::GetShearKeyAreas(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const
 {
    *uniformArea = 0.0;
    *areaPerJoint = 0.0;
@@ -945,7 +945,7 @@ bool CBoxBeamFactory::IsLongitudinalJointStructural(pgsTypes::SupportedDeckType 
    return false;
 }
 
-Float64 CBoxBeamFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
+Float64 CBoxBeamFactory::GetBeamWidth(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    Float64 W1 = GetDimension(dimensions,_T("W1"));
    Float64 W2 = GetDimension(dimensions,_T("W2"));
@@ -959,7 +959,7 @@ Float64 CBoxBeamFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions
    return Max(top,bot);
 }
 
-void CBoxBeamFactory::GetBeamTopWidth(const IBeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
+void CBoxBeamFactory::GetBeamTopWidth(const BeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
 {
    Float64 W1 = GetDimension(dimensions, _T("W1"));
    Float64 W2 = GetDimension(dimensions, _T("W2"));
@@ -972,7 +972,7 @@ void CBoxBeamFactory::GetBeamTopWidth(const IBeamFactory::Dimensions& dimensions
    *pRightWidth = top;
 }
 
-void CBoxBeamFactory::DimensionBeam(const IBeamFactory::Dimensions& dimensions, IBoxBeam* pBeam) const
+void CBoxBeamFactory::DimensionBeam(const BeamFactory::Dimensions& dimensions, IBoxBeam* pBeam) const
 {
    Float64 H1, H2, H3, H4, H5, H6, H7, W1, W2, W3, W4, F1, F2, C1, J, shearKeyDepth, endBlockLength;
    bool bFlushExteriorFace;
@@ -996,7 +996,7 @@ void CBoxBeamFactory::DimensionBeam(const IBeamFactory::Dimensions& dimensions, 
    __super::DimensionBeam(dimensions, pBeam);
 }
 
-bool CBoxBeamFactory::ExcludeExteriorBeamShearKeys(const IBeamFactory::Dimensions& dimensions) const
+bool CBoxBeamFactory::ExcludeExteriorBeamShearKeys(const BeamFactory::Dimensions& dimensions) const
 {
    Float64 tmp = GetDimension(dimensions,_T("FlushExteriorFace"));
    return tmp != 0;

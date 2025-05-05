@@ -39,6 +39,7 @@
 #include <LRFD\LldfTypeG.h>
 #include <Beams\Helper.h>
 
+using namespace PGS::Beams;
 
 void CBoxBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {

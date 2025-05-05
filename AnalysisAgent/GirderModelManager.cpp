@@ -43,7 +43,7 @@
 #include <IFace/PointOfInterest.h>
 
 #include <EAF\EAFStatusCenter.h>
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 
 #include <PsgLib\BridgeDescription2.h>
 #include <PsgLib\ClosureJointData.h>
@@ -7021,7 +7021,7 @@ void CGirderModelManager::BuildModel(GirderIndexType gdrLineIdx,pgsTypes::Bridge
    CGirderModelData* pModelData = &(found->second);
 
    GET_IFACE(IEAFProgress,pProgress);
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
 
    // if the models are already build, leave now
    if ( bat == pgsTypes::SimpleSpan && pModelData->m_Model != nullptr )

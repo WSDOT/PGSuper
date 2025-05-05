@@ -40,6 +40,7 @@
 #include <IFace\Intervals.h>
 #include <Beams\Helper.h>
 
+using namespace PGS::Beams;
 
 CMultiWebDistFactorEngineer::CMultiWebDistFactorEngineer(CMultiWebDistFactorEngineer::BeamType beamType, std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID) :
    CDistFactorEngineerImpl<MULTIWEB_LLDFDETAILS>(pBroker, statusGroupID), m_BeamType(beamType)

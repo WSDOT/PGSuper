@@ -40,6 +40,7 @@
 #include <IFace\Intervals.h>
 #include <Beams\Helper.h>
 
+using namespace PGS::Beams;
 
 void CVoidedSlab2DistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {

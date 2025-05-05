@@ -39,7 +39,7 @@
 
 // CWSDOTAgentImp
 
-bool CWSDOTAgentImp::RegInterfaces()
+bool CWSDOTAgentImp::RegisterInterfaces()
 {
    return true;
 }

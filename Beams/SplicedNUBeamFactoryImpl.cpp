@@ -49,7 +49,11 @@
 #include <psgLib/SpecificationCriteria.h>
 #include <psglib/GirderLibraryEntry.h>
 
-CSplicedNUBeamFactory::CSplicedNUBeamFactory() : ISplicedBeamFactory()
+using namespace PGS::Beams;
+
+std::shared_ptr<CSplicedNUBeamFactory> BeamFactorySingleton<CSplicedNUBeamFactory>::instance = nullptr;
+
+CSplicedNUBeamFactory::CSplicedNUBeamFactory() : SplicedBeamFactory()
 {
    // Initialize with default values... This are not necessarily valid dimensions
    m_DimNames.emplace_back(_T("D1"));
@@ -112,7 +116,7 @@ CSplicedNUBeamFactory::CSplicedNUBeamFactory() : ISplicedBeamFactory()
    m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // C1
 }
 
-void CSplicedNUBeamFactory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
+void CSplicedNUBeamFactory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const BeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
 {
    CComPtr<INUGirderSection> gdrSection;
    gdrSection.CoCreateInstance(CLSID_NUGirderSection);
@@ -364,9 +368,9 @@ std::unique_ptr<CPsLossEngineerBase> CSplicedNUBeamFactory::CreatePsLossEngineer
    return std::make_unique<CTimeStepLossEngineer>(pBroker,statusGroupID);
 }
 
-void CSplicedNUBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
-                                  IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
-                                  IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
+void CSplicedNUBeamFactory::CreateStrandMover(const BeamFactory::Dimensions& dimensions,  Float64 Hg,
+                                  BeamFactory::BeamFace endTopFace, Float64 endTopLimit, BeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
+                                  BeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, BeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
                                   Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover) const
 {
    HRESULT hr = S_OK;
@@ -408,10 +412,10 @@ void CSplicedNUBeamFactory::CreateStrandMover(const IBeamFactory::Dimensions& di
    ATLASSERT (SUCCEEDED(hr));
 
    // set vertical offset bounds and increments
-   Float64 hptb  = hpTopFace     == IBeamFactory::BeamFace::Bottom ? hpTopLimit     - depth : -hpTopLimit;
-   Float64 hpbb  = hpBottomFace  == IBeamFactory::BeamFace::Bottom ? hpBottomLimit  - depth : -hpBottomLimit;
-   Float64 endtb = endTopFace    == IBeamFactory::BeamFace::Bottom ? endTopLimit    - depth : -endTopLimit;
-   Float64 endbb = endBottomFace == IBeamFactory::BeamFace::Bottom ? endBottomLimit - depth : -endBottomLimit;
+   Float64 hptb  = hpTopFace     == BeamFactory::BeamFace::Bottom ? hpTopLimit     - depth : -hpTopLimit;
+   Float64 hpbb  = hpBottomFace  == BeamFactory::BeamFace::Bottom ? hpBottomLimit  - depth : -hpBottomLimit;
+   Float64 endtb = endTopFace    == BeamFactory::BeamFace::Bottom ? endTopLimit    - depth : -endTopLimit;
+   Float64 endbb = endBottomFace == BeamFactory::BeamFace::Bottom ? endBottomLimit - depth : -endBottomLimit;
 
    hr = configurer->SetHarpedStrandOffsetBounds(0, depth, endtb, endbb, hptb, hpbb, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
@@ -435,7 +439,7 @@ const std::vector<const WBFL::Units::Length*>& CSplicedNUBeamFactory::GetDimensi
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
 
-bool CSplicedNUBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg) const
+bool CSplicedNUBeamFactory::ValidateDimensions(const BeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg) const
 {
    Float64 d1,d2,d3,d4,d5;
    Float64 r1,r2,r3,r4;
@@ -579,7 +583,7 @@ bool CSplicedNUBeamFactory::ValidateDimensions(const IBeamFactory::Dimensions& d
    return true;
 }
 
-void CSplicedNUBeamFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
+void CSplicedNUBeamFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const BeamFactory::Dimensions& dimensions) const
 {
    pSave->BeginUnit(_T("NUBeamDimensions"),2.0);
    for(const auto& name : m_DimNames)
@@ -590,7 +594,7 @@ void CSplicedNUBeamFactory::SaveSectionDimensions(WBFL::System::IStructuredSave*
    pSave->EndUnit();
 }
 
-IBeamFactory::Dimensions CSplicedNUBeamFactory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
+BeamFactory::Dimensions CSplicedNUBeamFactory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
 {
    Float64 parent_version;
    if ( pLoad->GetParentUnit() == _T("GirderLibraryEntry") )
@@ -602,7 +606,7 @@ IBeamFactory::Dimensions CSplicedNUBeamFactory::LoadSectionDimensions(WBFL::Syst
       parent_version = pLoad->GetVersion();
    }
 
-   IBeamFactory::Dimensions dimensions;
+   BeamFactory::Dimensions dimensions;
 
    Float64 dimVersion = 1.0;
    if ( 14 <= parent_version )
@@ -644,7 +648,7 @@ IBeamFactory::Dimensions CSplicedNUBeamFactory::LoadSectionDimensions(WBFL::Syst
    return dimensions;
 }
 
-bool CSplicedNUBeamFactory::IsPrismatic(const IBeamFactory::Dimensions& dimensions) const
+bool CSplicedNUBeamFactory::IsPrismatic(const BeamFactory::Dimensions& dimensions) const
 {
    return false;
 }
@@ -832,7 +836,7 @@ HICON  CSplicedNUBeamFactory::GetIcon()  const
    return ::LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_SPLICED_NUBEAM) );
 }
 
-void CSplicedNUBeamFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
+void CSplicedNUBeamFactory::GetDimensions(const BeamFactory::Dimensions& dimensions,
                                    Float64& d1,Float64& d2,Float64& d3,Float64& d4,Float64& d5,
                                    Float64& r1,Float64& r2,Float64& r3,Float64& r4,
                                    Float64& t,
@@ -854,7 +858,7 @@ void CSplicedNUBeamFactory::GetDimensions(const IBeamFactory::Dimensions& dimens
    c1 = GetDimension(dimensions,_T("C1"));
 }
 
-Float64 CSplicedNUBeamFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name) const
+Float64 CSplicedNUBeamFactory::GetDimension(const BeamFactory::Dimensions& dimensions,const std::_tstring& name) const
 {
    for (const auto& dim : dimensions)
    {
@@ -901,7 +905,7 @@ bool CSplicedNUBeamFactory::IsSupportedBeamSpacing(pgsTypes::SupportedBeamSpacin
    return found == sbs.end() ? false : true;
 }
 
-bool CSplicedNUBeamFactory::ConvertBeamSpacing(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const
+bool CSplicedNUBeamFactory::ConvertBeamSpacing(const BeamFactory::Dimensions& dimensions,pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const
 {
    return false;
 }
@@ -962,7 +966,7 @@ pgsTypes::SupportedDiaphragmLocationTypes CSplicedNUBeamFactory::GetSupportedDia
    return locations;
 }
 
-void CSplicedNUBeamFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const
+void CSplicedNUBeamFactory::GetAllowableSpacingRange(const BeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const
 {
    *minSpacing = 0.0;
    *maxSpacing = 0.0;
@@ -991,12 +995,12 @@ void CSplicedNUBeamFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensi
    }
 }
 
-WebIndexType CSplicedNUBeamFactory::GetWebCount(const IBeamFactory::Dimensions& dimensions) const
+WebIndexType CSplicedNUBeamFactory::GetWebCount(const BeamFactory::Dimensions& dimensions) const
 {
    return 1;
 }
 
-Float64 CSplicedNUBeamFactory::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
+Float64 CSplicedNUBeamFactory::GetBeamHeight(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    Float64 D1 = GetDimension(dimensions,_T("D1"));
    Float64 D2 = GetDimension(dimensions,_T("D2"));
@@ -1007,12 +1011,12 @@ Float64 CSplicedNUBeamFactory::GetBeamHeight(const IBeamFactory::Dimensions& dim
    return D1 + D2 + D3 + D4 + D5;
 }
 
-Float64 CSplicedNUBeamFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
+Float64 CSplicedNUBeamFactory::GetBeamWidth(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    return Max(GetDimension(dimensions,_T("W1")),GetDimension(dimensions,_T("W2")));
 }
 
-void CSplicedNUBeamFactory::GetBeamTopWidth(const IBeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
+void CSplicedNUBeamFactory::GetBeamTopWidth(const BeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
 {
    Float64 W1 = GetDimension(dimensions,_T("W1"));
 
@@ -1023,12 +1027,12 @@ void CSplicedNUBeamFactory::GetBeamTopWidth(const IBeamFactory::Dimensions& dime
    *pRightWidth = top;
 }
 
-bool CSplicedNUBeamFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
+bool CSplicedNUBeamFactory::IsShearKey(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
 {
    return false;
 }
 
-void CSplicedNUBeamFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const
+void CSplicedNUBeamFactory::GetShearKeyAreas(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const
 {
    *uniformArea = 0.0;
    *areaPerJoint = 0.0;
@@ -1059,7 +1063,7 @@ GirderIndexType CSplicedNUBeamFactory::GetMinimumBeamCount() const
    return 2;
 }
 
-// ISplicedBeamFactory
+// PGS::Beams::SplicedBeamFactory
 bool CSplicedNUBeamFactory::SupportsVariableDepthSection() const
 {
    return true; // IBeams can be fixed depth or variable depth
@@ -1102,7 +1106,7 @@ bool CSplicedNUBeamFactory::SupportsEndBlocks() const
    return true;
 }
 
-void CSplicedNUBeamFactory::DimensionAndPositionBeam(const IBeamFactory::Dimensions& dimensions, Float64 Hg, Float64 Hbf, INUBeam* pBeam) const
+void CSplicedNUBeamFactory::DimensionAndPositionBeam(const BeamFactory::Dimensions& dimensions, Float64 Hg, Float64 Hbf, INUBeam* pBeam) const
 {
    Float64 d1, d2, d3, d4, d5;
    Float64 r1, r2, r3, r4;

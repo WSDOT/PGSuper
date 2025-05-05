@@ -33,7 +33,7 @@
 
 #include <IFace/Tools.h>
 #include <IFace\DocumentType.h>
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 #include <EAF\EAFStatusCenter.h>
 
 #include <Reporting\SpanGirderReportSpecificationBuilder.h>
@@ -168,11 +168,10 @@ BOOL CPGSuperReportView::PreTranslateMessage(MSG* pMsg)
 
 HRESULT CPGSuperReportView::UpdateReportBrowser(const std::shared_ptr<const WBFL::Reporting::ReportHint>& pHint)
 {
-   
    auto pBroker = EAFGetBroker();
 
    GET_IFACE2(pBroker,IEAFProgress,pProgress);
-   CEAFAutoProgress ap(pProgress,0);
+   WBFL::EAF::AutoProgress ap(pProgress,0);
 
    pProgress->UpdateMessage(_T("Working..."));
 
@@ -196,7 +195,7 @@ void CPGSuperReportView::RefreshReport()
    
    auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IEAFProgress,pProgress);
-   CEAFAutoProgress progress(pProgress);
+   WBFL::EAF::AutoProgress progress(pProgress);
    pProgress->UpdateMessage(_T("Updating report..."));
 
    CEAFAutoCalcReportView::RefreshReport();
@@ -282,7 +281,7 @@ bool CPGSuperReportView::CreateReport(IndexType rptIdx,BOOL bPromptForSpec)
 
          GET_IFACE2(pBroker,IEAFProgress,pProgress);
          DWORD dwMask(girderKeys.size() == 1 ? PW_ALL | PW_NOGAUGE | PW_NOCANCEL : PW_ALL | PW_NOGAUGE);
-         CEAFAutoProgress ap(pProgress,0,dwMask); // progress window has a cancel button
+         WBFL::EAF::AutoProgress ap(pProgress,0,dwMask); // progress window has a cancel button
 
          std::_tstring reportName = pSGRptSpec->GetReportName();
 

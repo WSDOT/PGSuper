@@ -34,7 +34,7 @@
 
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 #include <Units\UnitValueNumericalFormatTools.h>
 #include <PgsExt\SegmentArtifact.h>
 #include <PgsExt\RatingArtifact.h>
@@ -254,7 +254,7 @@ void CAnalysisResultsGraphBuilder::CreateViewController(IEAFViewController** ppC
 void CAnalysisResultsGraphBuilder::DumpLBAM()
 {
    GET_IFACE(IEAFProgress,pProgress);
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
    pProgress->UpdateMessage(_T("Dumping Analysis Models"));
 
    GET_IFACE(IProductForces,pProductForces);
@@ -1092,7 +1092,7 @@ CGirderGraphControllerBase* CAnalysisResultsGraphBuilder::CreateGraphController(
 bool CAnalysisResultsGraphBuilder::UpdateNow()
 {
    GET_IFACE(IEAFProgress,pProgress);
-   CEAFAutoProgress ap(pProgress,0);
+   WBFL::EAF::AutoProgress ap(pProgress,0);
 
    pProgress->UpdateMessage(_T("Building Graph"));
 

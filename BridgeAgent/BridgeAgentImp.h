@@ -20,19 +20,11 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// BridgeAgentImp.h : Declaration of the CBridgeAgentImp
+#pragma once
 
-#ifndef __BRIDGEAGENT_H_
-#define __BRIDGEAGENT_H_
-
-#include "CLSID.h"
-
-#include "resource.h"       // main symbols
 #include <IFace\Project.h> // For EventSink
 #include <IFace\Alignment.h>
 #include <IFace\Intervals.h>
-
-
 
 #include <PgsExt\PoiMgr.h>
 #include <PgsExt\PoiKey.h>
@@ -98,7 +90,7 @@ class CBridgeAgentImp : public WBFL::EAF::Agent,
 {
    friend class CStrandMoverSwapper;
 public:
-   CBridgeAgentImp() :
+   CBridgeAgentImp() : WBFL::EAF::Agent(),
       m_LOTFSectionPropertiesKey(CSegmentKey(INVALID_INDEX,INVALID_INDEX,INVALID_INDEX),0.0,INVALID_INDEX)
 	{
       m_Level        = 0;
@@ -133,7 +125,7 @@ public:
 // IAgent
 public:
    std::_tstring GetName() const override { return _T("BridgeAgent"); }
-   bool RegInterfaces() override;
+   bool RegisterInterfaces() override;
 	bool Init() override;
 	bool Reset() override;
 	bool ShutDown() override;
@@ -1715,5 +1707,3 @@ private:
 
    std::tuple<Float64, Float64, Float64> GetTransverseRebarProperties(const WBFL::Materials::Rebar* pRebar) const;
 };
-
-#endif //__BRIDGEAGENT_H_

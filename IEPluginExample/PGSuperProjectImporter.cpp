@@ -27,7 +27,7 @@
 
 #include "PGSuperInterfaces.h"
 
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 
 #include <psgLib/GirderLibraryEntry.h>
 #include <psgLib/SpecLibraryEntry.h>
@@ -64,7 +64,7 @@ HRESULT CPGSuperProjectImporter::Import(std::shared_ptr<WBFL::EAF::Broker> pBrok
    AfxMessageBox(_T("This project importer simulates importing data from an external source by creating a default bridge. A real project importer would connect to an external data source and programmatically create a PGSuper model."), MB_OK);
 
    GET_IFACE2(pBroker, IEAFProgress, pProgress);
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
 
    GET_IFACE2(pBroker, IEAFDisplayUnits, pDisplayUnits);
    pDisplayUnits->SetUnitMode(WBFL::EAF::UnitMode::US);

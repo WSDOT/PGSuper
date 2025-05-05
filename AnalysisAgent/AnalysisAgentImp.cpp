@@ -202,11 +202,6 @@ UINT CAnalysisAgentImp::DeleteGirderModelManager(LPVOID pParam)
    return 0; // success... returning terminates the thread
 }
 
-HRESULT CAnalysisAgentImp::FinalConstruct()
-{
-   return S_OK;
-}
-
 /////////////////////////////////////////////////////////////////////////////
 // CAnalysisAgent
 void CAnalysisAgentImp::Invalidate(bool clearStatus)
@@ -1194,9 +1189,9 @@ void CAnalysisAgentImp::BuildSlabOffsetDesignModel(const CSegmentKey& segmentKey
 /////////////////////////////////////////////////////////////////////////////
 // IAgent
 //
-bool CAnalysisAgentImp::RegInterfaces()
+bool CAnalysisAgentImp::RegisterInterfaces()
 {
-   EAF_AGENT_REGINTERFACES;
+   EAF_AGENT_REGISTER_INTERFACES;
 
    REGISTER_INTERFACE(IProductLoads);
    REGISTER_INTERFACE(IProductForces);
@@ -1234,11 +1229,11 @@ bool CAnalysisAgentImp::Init()
    //
    // Attach to connection points
    //
-   m_BridgeDescCookie = REGISTER_CALLBACK(IBridgeDescriptionEventSink);
-   m_SpecCookie = REGISTER_CALLBACK(ISpecificationEventSink);
-   m_RatingSpecCookie = REGISTER_CALLBACK(IRatingSpecificationEventSink);
-   m_LoadModifierCookie = REGISTER_CALLBACK(ILoadModifiersEventSink);
-   m_LossParametersCookie = REGISTER_CALLBACK(ILossParametersEventSink);
+   m_BridgeDescCookie = REGISTER_EVENT_SINK(IBridgeDescriptionEventSink);
+   m_SpecCookie = REGISTER_EVENT_SINK(ISpecificationEventSink);
+   m_RatingSpecCookie = REGISTER_EVENT_SINK(IRatingSpecificationEventSink);
+   m_LoadModifierCookie = REGISTER_EVENT_SINK(ILoadModifiersEventSink);
+   m_LossParametersCookie = REGISTER_EVENT_SINK(ILossParametersEventSink);
 
    return true;
 }
@@ -1265,11 +1260,11 @@ bool CAnalysisAgentImp::ShutDown()
    //
    // Detach to connection points
    //
-   UNREGISTER_CALLBACK(IBridgeDescriptionEventSink, m_BridgeDescCookie);
-   UNREGISTER_CALLBACK(ISpecificationEventSink, m_SpecCookie);
-   UNREGISTER_CALLBACK(IRatingSpecificationEventSink, m_RatingSpecCookie);
-   UNREGISTER_CALLBACK(ILoadModifiersEventSink, m_LoadModifierCookie);
-   UNREGISTER_CALLBACK(ILossParametersEventSink, m_LossParametersCookie);
+   UNREGISTER_EVENT_SINK(IBridgeDescriptionEventSink, m_BridgeDescCookie);
+   UNREGISTER_EVENT_SINK(ISpecificationEventSink, m_SpecCookie);
+   UNREGISTER_EVENT_SINK(IRatingSpecificationEventSink, m_RatingSpecCookie);
+   UNREGISTER_EVENT_SINK(ILoadModifiersEventSink, m_LoadModifierCookie);
+   UNREGISTER_EVENT_SINK(ILossParametersEventSink, m_LossParametersCookie);
 
    CLOSE_LOGFILE;
 

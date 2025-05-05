@@ -10,7 +10,7 @@
 #include "PGSuperInterfaces.h"
 
 #include <EAF\EAFUtilities.h>
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 #include <EAF\EAFDocument.h>
 
 #include <IFace\Project.h>
@@ -168,7 +168,7 @@ HRESULT CKDOTDataExporter::Export(std::shared_ptr<WBFL::EAF::Broker> pBroker,CSt
 {
    { // scope the progress window
    GET_IFACE2(pBroker,IEAFProgress,pProgress);
-   CEAFAutoProgress autoProgress(pProgress,0);
+   WBFL::EAF::AutoProgress autoProgress(pProgress,0);
    pProgress->UpdateMessage(_T("Exporting PGSuper data for KDOT CAD"));
 
    try

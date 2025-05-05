@@ -144,7 +144,7 @@ void pgsLoadRater::FlexureRating(const CGirderKey& girderKey, const PoiList& vPo
 {
    GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
    GET_IFACE(IEAFProgress, pProgress);
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
    pProgress->UpdateMessage(_T("Load rating for moment"));
 
    GET_IFACE(IRatingSpecification, pRatingSpec);
@@ -615,7 +615,7 @@ void pgsLoadRater::ShearRating(const CGirderKey& girderKey,const PoiList& vPoi,p
 {
    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
    GET_IFACE(IEAFProgress, pProgress);
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
    pProgress->UpdateMessage(_T("Load rating for shear"));
 
    pgsTypes::LimitState limitState = ::GetStrengthLimitStateType(ratingType);
@@ -910,7 +910,7 @@ void pgsLoadRater::LongitudinalReinforcementForShearRating(const CGirderKey& gir
 {
    GET_IFACE_NOCHECK(IEAFDisplayUnits, pDisplayUnits);
    GET_IFACE(IEAFProgress, pProgress);
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
    pProgress->UpdateMessage(_T("Load rating for longitudinal reinforcement for shear"));
 
    pgsTypes::LimitState limitState = ::GetStrengthLimitStateType(ratingType);

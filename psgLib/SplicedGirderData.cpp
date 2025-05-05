@@ -810,7 +810,7 @@ std::vector<pgsTypes::SegmentVariationType> CSplicedGirderData::GetSupportedSegm
 {
    std::vector<pgsTypes::SegmentVariationType> variations;
    auto factory = pGirderLibEntry->GetBeamFactory();
-   auto splicedFactory = std::dynamic_pointer_cast<ISplicedBeamFactory>(factory);
+   auto splicedFactory = std::dynamic_pointer_cast<PGS::Beams::SplicedBeamFactory>(factory);
    if ( splicedFactory )
    {
       variations = splicedFactory->GetSupportedSegmentVariations(pGirderLibEntry->IsVariableDepthSectionEnabled());
@@ -896,7 +896,7 @@ void CSplicedGirderData::SetGirderLibraryEntry(const GirderLibraryEntry* pEntry)
       {
          auto beamFactory = m_pGirderLibraryEntry->GetBeamFactory();
 
-         auto splicedBeamFactory = std::dynamic_pointer_cast<ISplicedBeamFactory>(beamFactory);
+         auto splicedBeamFactory = std::dynamic_pointer_cast<PGS::Beams::SplicedBeamFactory>(beamFactory);
          if ( splicedBeamFactory )
          {
             std::vector<pgsTypes::SegmentVariationType> variations = splicedBeamFactory->GetSupportedSegmentVariations(m_pGirderLibraryEntry->IsVariableDepthSectionEnabled());

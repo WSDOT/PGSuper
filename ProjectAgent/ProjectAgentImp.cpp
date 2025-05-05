@@ -59,7 +59,7 @@
 // transactions executed by this agent
 #include "txnEditBridgeDescription.h"
 
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 #include <PgsExt\StatusItem.h>
 #include <PsgLib\GirderLabel.h>
 #include <PsgLib\Helpers.h>
@@ -5078,9 +5078,9 @@ BEGIN_STRSTORAGEMAP(CProjectAgentImp,_T("ProjectData"),8.0)
 
 END_STRSTORAGEMAP
 
-bool CProjectAgentImp::RegInterfaces()
+bool CProjectAgentImp::RegisterInterfaces()
 {
-   EAF_AGENT_REGINTERFACES;
+   EAF_AGENT_REGISTER_INTERFACES;
 
    REGISTER_INTERFACE(IProjectProperties);
    REGISTER_INTERFACE(IEnvironment);
@@ -5949,7 +5949,7 @@ bool CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
    m_bUpdateUserDefinedLoads = false; // assume we are loading a newer file and user defined loads don't need tweaking
 
 //   GET_IFACE( IEAFProgress, pProgress );
-//   CEAFAutoProgress ap(pProgress);
+//   WBFL::EAF::AutoProgress ap(pProgress);
    std::shared_ptr<IEAFProgress> pProgress = 0; // progress window causes big trouble running in windowless mode
 
    // Load the library data first into a temporary library. Then deal with entry
@@ -6404,7 +6404,7 @@ bool CProjectAgentImp::Load(IStructuredLoad* pStrLoad)
          // this girder type is in use
          auto beamFactory = pGirderEntry->GetBeamFactory();
 
-         auto compatibility = std::dynamic_pointer_cast<IBeamFactoryCompatibility>(beamFactory);
+         auto compatibility = std::dynamic_pointer_cast<PGS::Beams::BeamFactoryCompatibility>(beamFactory);
          if (compatibility)
          {
             // the beam factory wants to do compatibility updates
@@ -6584,7 +6584,7 @@ bool CProjectAgentImp::Save(IStructuredSave* pStrSave)
    HRESULT hr = S_OK;
 
    GET_IFACE( IEAFProgress, pProgress );
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
 
    //
    // Save the library data first
@@ -10271,7 +10271,7 @@ void CProjectAgentImp::EnumGirderFamilyNames( std::vector<std::_tstring>* pNames
    USES_CONVERSION;
    if ( m_GirderFamilyNames.size() == 0 )
    {
-      std::vector<CString> names = CBeamFamilyManager::GetBeamFamilyNames();
+      std::vector<CString> names = PGS::Beams::BeamFamilyManager::GetBeamFamilyNames();
       std::vector<CString>::iterator iter(names.begin());
       std::vector<CString>::iterator iterEnd(names.end());
       for ( ; iter != iterEnd; iter++ )
@@ -10284,7 +10284,7 @@ void CProjectAgentImp::EnumGirderFamilyNames( std::vector<std::_tstring>* pNames
    pNames->insert(pNames->begin(),m_GirderFamilyNames.begin(),m_GirderFamilyNames.end());
 }
 
-std::shared_ptr<IBeamFactory> CProjectAgentImp::GetBeamFactory(const std::_tstring& strBeamFamily,const std::_tstring& strBeamName)
+std::shared_ptr<PGS::Beams::BeamFactory> CProjectAgentImp::GetBeamFactory(const std::_tstring& strBeamFamily,const std::_tstring& strBeamName)
 {
    std::vector<std::_tstring> strBeamNames;
    EnumGirderNames(strBeamFamily.c_str(),&strBeamNames);
@@ -12094,7 +12094,7 @@ void CProjectAgentImp::DealWithGirderLibraryChanges(bool fromLibrary)
          const GirderLibraryEntry* pGdrEntry = pGirder->GetGirderLibraryEntry();
 
          auto beamFactory = pGdrEntry->GetBeamFactory();
-         auto splicedBeamFactory = std::dynamic_pointer_cast<ISplicedBeamFactory>(beamFactory);
+         auto splicedBeamFactory = std::dynamic_pointer_cast<PGS::Beams::SplicedBeamFactory>(beamFactory);
 
          std::vector<pgsTypes::SegmentVariationType> variations;
          if (splicedBeamFactory)

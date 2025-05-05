@@ -61,7 +61,7 @@ public:
 // IAgent
 public:
    std::_tstring GetName() const override { return _T("SpecAgent"); }
-   bool RegInterfaces() override;
+   bool RegisterInterfaces() override;
    bool Init() override;
    bool Reset() override;
    bool ShutDown() override;

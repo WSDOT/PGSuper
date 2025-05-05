@@ -26,7 +26,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // CProxyIReporterEventSink
 template <class T>
-class CProxyIReporterEventSink : public WBFL::EAF::EventCallbackManager<IReporterEventSink>
+class CProxyIReporterEventSink : public WBFL::EAF::EventSinkManager<IReporterEventSink>
 {
 //IReporterEventSink : IUnknown
 public:
@@ -36,7 +36,7 @@ public:
 
 		//pT->Lock();
 		HRESULT ret = S_OK;
-		for(auto& [id,callback] : this->m_Callbacks)
+		for(auto& [id,callback] : this->m_EventSinks)
 		{
 			callback->OnReportsChanged();
 		}

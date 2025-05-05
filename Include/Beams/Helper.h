@@ -46,47 +46,53 @@
 class rptParagraph;
 class pgsPoiMgr;
 
-void BEAMSFUNC ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, WBFL::LRFD::ILiveLoadDistributionFactor::LeverRuleMethod& lrd,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
-void BEAMSFUNC ReportRigidMethod(rptParagraph* pPara,WBFL::LRFD::ILiveLoadDistributionFactor::RigidMethod& rd,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
-void BEAMSFUNC ReportLanesBeamsMethod(rptParagraph* pPara,WBFL::LRFD::ILiveLoadDistributionFactor::LanesBeamsMethod& rd,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
-
-IndexType BEAMSFUNC GetBeamTypeCount();
-CLSID BEAMSFUNC GetBeamCLSID(IndexType idx);
-CATID BEAMSFUNC GetBeamCATID(IndexType idx);
-
-void BEAMSFUNC BuildAgeAdjustedGirderMaterialModel(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CPrecastSegmentData* pSegment,ISuperstructureMemberSegment* segment,IAgeAdjustedMaterial** ppMaterial);
-void BEAMSFUNC BuildAgeAdjustedJointMaterialModel(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, ISuperstructureMemberSegment* segment, IAgeAdjustedMaterial** ppMaterial);
-
-void BEAMSFUNC MakeRectangle(Float64 width, Float64 depth, Float64 xOffset, Float64 yOffset,IShape** ppShape);
-
-bool BEAMSFUNC IsInEndBlock(Float64 Xs, pgsTypes::SectionBias sectionBias, Float64 leftEndBlockLength, Float64 rightEndBlockLength, Float64 Lg);
-bool BEAMSFUNC IsInEndBlock(Float64 Xs, pgsTypes::SectionBias sectionBias, Float64 endBlockLength, Float64 Lg);
-
-bool BEAMSFUNC IsSupportedDeckType(pgsTypes::SupportedDeckType deckType, const IBeamFactory* pFactory, pgsTypes::SupportedBeamSpacing spacingType);
-
-void BEAMSFUNC LayoutIBeamEndBlockPointsOfInterest(const CSegmentKey& segmentKey, const CPrecastSegmentData* pSegment, Float64 segmentLength, pgsPoiMgr* pPoiMgr);
-
-
-/////////////////////////////////////////////////////////////////////////////
-// IBeamFamilyImpl
-class BEAMSCLASS IBeamFamilyImpl :
-   public IBeamFamily
+namespace PGS
 {
-public:
-   // IBeamFamily
-   CString GetName() const override;
-   void RefreshFactoryList() override;
-   const std::vector<CString>& GetFactoryNames() const override;
-   CLSID GetFactoryCLSID(LPCTSTR strName) const override;
-   std::shared_ptr<IBeamFactory> CreateFactory(LPCTSTR strName) const override;
+   namespace Beams
+   {
+      void BEAMSFUNC ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, WBFL::LRFD::ILiveLoadDistributionFactor::LeverRuleMethod& lrd,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+      void BEAMSFUNC ReportRigidMethod(rptParagraph* pPara,WBFL::LRFD::ILiveLoadDistributionFactor::RigidMethod& rd,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+      void BEAMSFUNC ReportLanesBeamsMethod(rptParagraph* pPara,WBFL::LRFD::ILiveLoadDistributionFactor::LanesBeamsMethod& rd,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
-protected:
-   void Init();
+      IndexType BEAMSFUNC GetBeamTypeCount();
+      CLSID BEAMSFUNC GetBeamCLSID(IndexType idx);
+      CATID BEAMSFUNC GetBeamCATID(IndexType idx);
 
-   virtual const CLSID& GetCLSID() const = 0;
-   virtual const CATID& GetCATID() const = 0;
+      void BEAMSFUNC BuildAgeAdjustedGirderMaterialModel(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CPrecastSegmentData* pSegment,ISuperstructureMemberSegment* segment,IAgeAdjustedMaterial** ppMaterial);
+      void BEAMSFUNC BuildAgeAdjustedJointMaterialModel(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, ISuperstructureMemberSegment* segment, IAgeAdjustedMaterial** ppMaterial);
 
-   typedef std::map<CString, CLSID> FactoryContainer;
-   FactoryContainer m_Factories;
-   std::vector<CString> m_Names;
+      void BEAMSFUNC MakeRectangle(Float64 width, Float64 depth, Float64 xOffset, Float64 yOffset,IShape** ppShape);
+
+      bool BEAMSFUNC IsInEndBlock(Float64 Xs, pgsTypes::SectionBias sectionBias, Float64 leftEndBlockLength, Float64 rightEndBlockLength, Float64 Lg);
+      bool BEAMSFUNC IsInEndBlock(Float64 Xs, pgsTypes::SectionBias sectionBias, Float64 endBlockLength, Float64 Lg);
+
+      bool BEAMSFUNC IsSupportedDeckType(pgsTypes::SupportedDeckType deckType, const BeamFactory* pFactory, pgsTypes::SupportedBeamSpacing spacingType);
+
+      void BEAMSFUNC LayoutIBeamEndBlockPointsOfInterest(const CSegmentKey& segmentKey, const CPrecastSegmentData* pSegment, Float64 segmentLength, pgsPoiMgr* pPoiMgr);
+
+
+      /////////////////////////////////////////////////////////////////////////////
+      // BeamFamilyImpl
+      class BEAMSCLASS BeamFamilyImpl :
+         public BeamFamily
+      {
+      public:
+         // IBeamFamily
+         CString GetName() const override;
+         void RefreshFactoryList() override;
+         const std::vector<CString>& GetFactoryNames() const override;
+         CLSID GetFactoryCLSID(LPCTSTR strName) const override;
+         std::shared_ptr<BeamFactory> CreateFactory(LPCTSTR strName) const override;
+
+      protected:
+         void Init();
+
+         virtual const CLSID& GetCLSID() const = 0;
+         virtual const CATID& GetCATID() const = 0;
+
+         typedef std::map<CString, CLSID> FactoryContainer;
+         FactoryContainer m_Factories;
+         std::vector<CString> m_Names;
+      };
+   };
 };

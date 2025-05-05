@@ -28,7 +28,7 @@
 #include "DesignOutcomeDlg.h"
 
 #include <IFace/Tools.h>
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 
 #include <IFace\Artifact.h>
 #include <EAF/EAFReportManager.h>

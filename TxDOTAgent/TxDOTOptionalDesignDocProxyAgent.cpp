@@ -56,9 +56,9 @@ void CTxDOTOptionalDesignDocProxyAgent::SetDocument(CTxDOTOptionalDesignDoc* pDo
 }
 
 
-bool CTxDOTOptionalDesignDocProxyAgent::RegInterfaces()
+bool CTxDOTOptionalDesignDocProxyAgent::RegisterInterfaces()
 {
-   EAF_AGENT_REGINTERFACES;
+   EAF_AGENT_REGISTER_INTERFACES;
 
    REGISTER_INTERFACE(IUpdateTemplates);
    REGISTER_INTERFACE(ISelection);

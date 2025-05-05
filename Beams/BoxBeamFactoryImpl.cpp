@@ -54,12 +54,10 @@
 #include <psgLib/GirderLibraryEntry.h>
 
 
+using namespace PGS::Beams;
 
 
-/////////////////////////////////////////////////////////////////////////////
-// CBoxBeamFactoryImpl
-
-void CBoxBeamFactoryImpl::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const IBeamFactory::Dimensions& dimensions, Float64 overallHeight, Float64 bottomFlangeHeight, IGirderSection** ppSection) const
+void CBoxBeamFactoryImpl::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const BeamFactory::Dimensions& dimensions, Float64 overallHeight, Float64 bottomFlangeHeight, IGirderSection** ppSection) const
 {
    CComPtr<IBoxBeamSection> gdrSection;
    gdrSection.CoCreateInstance(CLSID_BoxBeamSection);
@@ -253,7 +251,7 @@ const std::vector<const WBFL::Units::Length*>& CBoxBeamFactoryImpl::GetDimension
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
 
-bool CBoxBeamFactoryImpl::IsPrismatic(const IBeamFactory::Dimensions& dimensions) const
+bool CBoxBeamFactoryImpl::IsPrismatic(const BeamFactory::Dimensions& dimensions) const
 {
    Float64 endBlockLength = GetDimension(dimensions,_T("EndBlockLength"));
    return IsZero(endBlockLength) ? true : false;
@@ -313,7 +311,7 @@ HINSTANCE CBoxBeamFactoryImpl::GetResourceInstance() const
    return _Module.GetResourceInstance();
 }
 
-Float64 CBoxBeamFactoryImpl::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name) const
+Float64 CBoxBeamFactoryImpl::GetDimension(const BeamFactory::Dimensions& dimensions,const std::_tstring& name) const
 {
    for ( const auto& dim : dimensions)
    {
@@ -369,7 +367,7 @@ bool CBoxBeamFactoryImpl::IsSupportedBeamSpacing(pgsTypes::SupportedBeamSpacing 
    return found == sbs.end() ? false : true;
 }
 
-bool CBoxBeamFactoryImpl::ConvertBeamSpacing(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const
+bool CBoxBeamFactoryImpl::ConvertBeamSpacing(const BeamFactory::Dimensions& dimensions,pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const
 {
    if (spacingType == pgsTypes::sbsUniform)
    {
@@ -450,13 +448,13 @@ pgsTypes::SupportedDiaphragmLocationTypes CBoxBeamFactoryImpl::GetSupportedDiaph
    return locations;
 }
 
-WebIndexType CBoxBeamFactoryImpl::GetWebCount(const IBeamFactory::Dimensions& dimensions) const
+WebIndexType CBoxBeamFactoryImpl::GetWebCount(const BeamFactory::Dimensions& dimensions) const
 {
    return 2;
 }
 
 
-Float64 CBoxBeamFactoryImpl::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
+Float64 CBoxBeamFactoryImpl::GetBeamHeight(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    Float64 H1 = GetDimension(dimensions,_T("H1"));
    Float64 H2 = GetDimension(dimensions,_T("H2"));
@@ -677,7 +675,7 @@ GirderIndexType CBoxBeamFactoryImpl::GetMinimumBeamCount() const
    return 1;
 }
 
-void CBoxBeamFactoryImpl::DimensionBeam(const IBeamFactory::Dimensions& dimensions, IBoxBeam* pBeam) const
+void CBoxBeamFactoryImpl::DimensionBeam(const BeamFactory::Dimensions& dimensions, IBoxBeam* pBeam) const
 {
    // Hook point is at bottom center of bounding box.
    // Adjust hook point so top center of bounding box is at (0,0)
@@ -689,7 +687,7 @@ void CBoxBeamFactoryImpl::DimensionBeam(const IBeamFactory::Dimensions& dimensio
    hookPt->Offset(0, -Hg);
 }
 
-void CBoxBeamFactoryImpl::ConfigureGirderShape(const CPrecastSegmentData* pSegment,const IBeamFactory::Dimensions& dimensions, IBoxBeam* pBeam) const
+void CBoxBeamFactoryImpl::ConfigureGirderShape(const CPrecastSegmentData* pSegment,const BeamFactory::Dimensions& dimensions, IBoxBeam* pBeam) const
 {
    DimensionBeam(dimensions, pBeam);
 

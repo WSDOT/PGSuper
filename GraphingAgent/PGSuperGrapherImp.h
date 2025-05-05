@@ -55,5 +55,5 @@ public:
 private:
    EAF_DECLARE_AGENT_DATA;
 
-   HRESULT InitGraphBuilders();
+   bool InitGraphBuilders();
 };

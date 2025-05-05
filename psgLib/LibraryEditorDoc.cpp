@@ -141,12 +141,12 @@ BOOL CLibraryEditorDoc::Init()
       return FALSE;
    }
 
-   if ( FAILED(CBeamFamilyManager::Init(CATID_PGSuperBeamFamily)) )
+   if ( FAILED(PGS::Beams::BeamFamilyManager::Init(CATID_PGSuperBeamFamily)) )
    {
       return FALSE;
    }
 
-   if ( FAILED(CBeamFamilyManager::Init(CATID_PGSpliceBeamFamily)) )
+   if ( FAILED(PGS::Beams::BeamFamilyManager::Init(CATID_PGSpliceBeamFamily)) )
    {
       return FALSE;
    }

@@ -127,7 +127,7 @@
 
 HRESULT CReporterBase::InitCommonReportBuilders(std::shared_ptr<WBFL::EAF::Broker> broker)
 {
-   GET_IFACE2(broker, IEAFReportManager, pRptMgr);
+   GET_IFACE2_NOCHECK(broker, IEAFReportManager, pRptMgr);
 
    CreateBridgeGeometryReport(pRptMgr);
    CreateDetailsReport(pRptMgr);

@@ -152,7 +152,7 @@ BOOL CGirderDimensionsPage::OnInitDialog()
    CGirderMainSheet* pDad = (CGirderMainSheet*)GetParent();
    auto pFactory = pDad->m_Entry.GetBeamFactory();
 
-   auto splicedBeamFactory = std::dynamic_pointer_cast<ISplicedBeamFactory>(pFactory);
+   auto splicedBeamFactory = std::dynamic_pointer_cast<PGS::Beams::SplicedBeamFactory>(pFactory);
    if ( !splicedBeamFactory || !splicedBeamFactory->SupportsVariableDepthSection() )
    {
       GetDlgItem(IDC_VARIABLE_DEPTH_GROUP)->ShowWindow(SW_HIDE);
@@ -164,11 +164,11 @@ BOOL CGirderDimensionsPage::OnInitDialog()
    std::vector<CString> familyNames;
    if ( splicedBeamFactory )
    {
-      familyNames = CBeamFamilyManager::GetBeamFamilyNames(CATID_PGSpliceBeamFamily);
+      familyNames = PGS::Beams::BeamFamilyManager::GetBeamFamilyNames(CATID_PGSpliceBeamFamily);
    }
    else
    {
-      familyNames = CBeamFamilyManager::GetBeamFamilyNames(CATID_PGSuperBeamFamily);
+      familyNames = PGS::Beams::BeamFamilyManager::GetBeamFamilyNames(CATID_PGSuperBeamFamily);
    }
 
    std::vector<CString>::iterator familyIter(familyNames.begin());
@@ -176,7 +176,7 @@ BOOL CGirderDimensionsPage::OnInitDialog()
    for ( ; familyIter != familyIterEnd; familyIter++ )
    {
       CString familyName = *familyIter;
-      auto beamFamily = CBeamFamilyManager::GetBeamFamily(familyName);
+      auto beamFamily = PGS::Beams::BeamFamilyManager::GetBeamFamily(familyName);
       ATLASSERT(beamFamily);
       if ( beamFamily == nullptr )
          continue;
@@ -191,7 +191,7 @@ BOOL CGirderDimensionsPage::OnInitDialog()
          CLSID* pCLSID = new CLSID;
          *pCLSID = beamFamily->GetFactoryCLSID(factoryName);
 
-         auto pFactory = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<IBeamFactory>(*pCLSID);
+         auto pFactory = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<PGS::Beams::BeamFactory>(*pCLSID);
          if ( pFactory )
          {
             int idx = pComboBox->AddString(factoryName);
@@ -250,7 +250,7 @@ void CGirderDimensionsPage::OnBeamTypeChanged()
    CComboBox* pComboBox = (CComboBox*)GetDlgItem(IDC_BEAMTYPES);
    int selIdx = pComboBox->GetCurSel();
    CLSID* pCLSID = (CLSID*)pComboBox->GetItemDataPtr(selIdx);
-   auto pFactory = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<IBeamFactory>(*pCLSID);
+   auto pFactory = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<PGS::Beams::BeamFactory>(*pCLSID);
    if ( pFactory == nullptr )
    {
       CString strGirderName;
@@ -273,7 +273,7 @@ void CGirderDimensionsPage::OnBeamTypeChanged()
    UpdateData(FALSE);
 	m_Grid.ResizeRowHeightsToFit(CGXRange(0,0,0,m_Grid.GetColCount()));
 
-    auto splicedBeamFactory = std::dynamic_pointer_cast<ISplicedBeamFactory>(pFactory);
+    auto splicedBeamFactory = std::dynamic_pointer_cast<PGS::Beams::SplicedBeamFactory>(pFactory);
    if ( !splicedBeamFactory || !splicedBeamFactory->SupportsVariableDepthSection() )
    {
       GetDlgItem(IDC_VARIABLE_DEPTH_GROUP)->ShowWindow(SW_HIDE);
@@ -329,7 +329,7 @@ void CGirderDimensionsPage::OnDestroy()
 
 void CGirderDimensionsPage::UpdateGirderImage(const CLSID& factoryCLSID)
 {
-   auto pFactory = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<IBeamFactory>(factoryCLSID);
+   auto pFactory = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<PGS::Beams::BeamFactory>(factoryCLSID);
    if ( pFactory == nullptr )
    {
       return;

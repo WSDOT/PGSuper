@@ -33,7 +33,7 @@
 #include <EAF\EAFDisplayUnits.h>
 
 #include <MFCTools\CustomDDX.h>
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 #include <EAF\EAFDocument.h>
 #include <EAF\EAFHelp.h>
 
@@ -214,7 +214,7 @@ bool CFillHaunchDlg::ModifyCompute(CBridgeDescription2& rBridgeDescription2)
 	CSegmentKey designSegmentKey(m_GirderKey.groupIndex,m_GirderKey.girderIndex, ALL_SEGMENTS);
 
 	GET_IFACE(IEAFProgress,pProgress);
-	CEAFAutoProgress ap(pProgress);
+	WBFL::EAF::AutoProgress ap(pProgress);
 	pProgress->UpdateMessage(_T("Computing Haunch Design"));
 
 	// Copy designed bridge descr

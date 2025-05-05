@@ -65,9 +65,9 @@
 #include <psgLib/DuctSizeCriteria.h>
 
 
-bool CSpecAgentImp::RegInterfaces()
+bool CSpecAgentImp::RegisterInterfaces()
 {
-   EAF_AGENT_REGINTERFACES;
+   EAF_AGENT_REGISTER_INTERFACES;
 
    REGISTER_INTERFACE(IStressCheck);
    REGISTER_INTERFACE(IStrandStressLimit);
@@ -96,7 +96,7 @@ bool CSpecAgentImp::Init()
    m_scidHaulTruckError = pStatusCenter->RegisterCallback(std::make_shared<pgsHaulTruckStatusCallback>(WBFL::EAF::StatusSeverityType::Error));
 
    // Attach to connection points
-   m_dwBridgeDescCookie = REGISTER_CALLBACK(IBridgeDescriptionEventSink);
+   m_dwBridgeDescCookie = REGISTER_EVENT_SINK(IBridgeDescriptionEventSink);
 
    return true;
 }
@@ -119,7 +119,7 @@ bool CSpecAgentImp::ShutDown()
    //
    // Detach to connection points
    //
-   UNREGISTER_CALLBACK(IBridgeDescriptionEventSink, m_dwBridgeDescCookie);
+   UNREGISTER_EVENT_SINK(IBridgeDescriptionEventSink, m_dwBridgeDescCookie);
 
    CLOSE_LOGFILE;
    return S_OK;

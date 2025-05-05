@@ -1720,7 +1720,7 @@ void CEffectiveFlangeWidthTool::ReportEffectiveFlangeWidth_ExteriorGirder_MultiT
    }
 }
 
-std::shared_ptr<IBeamFactory> CEffectiveFlangeWidthTool::GetBeamFactory(const CSegmentKey& segmentKey)
+std::shared_ptr<PGS::Beams::BeamFactory> CEffectiveFlangeWidthTool::GetBeamFactory(const CSegmentKey& segmentKey)
 {
    auto broker = EAFGetBroker();
    GET_IFACE2(broker,IBridgeDescription,pIBridgeDesc);

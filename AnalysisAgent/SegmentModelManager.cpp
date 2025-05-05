@@ -25,7 +25,7 @@
 #include "SegmentModelManager.h"
 #include <pgsExt\AnalysisResult.h>
 
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 #include <PgsExt\GirderModelFactory.h>
 #include <PsgLib\LoadFactors.h>
 #include <PsgLib\BridgeDescription2.h>
@@ -2701,7 +2701,7 @@ void CSegmentModelManager::BuildReleaseModel(const CSegmentKey& segmentKey) cons
    ATLASSERT(GetModelData(m_ReleaseModels,segmentKey) == nullptr);
 
    GET_IFACE(IEAFProgress,pProgress);
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(segmentKey);
@@ -2739,7 +2739,7 @@ void CSegmentModelManager::BuildLiftingModel(const CSegmentKey& segmentKey) cons
    ATLASSERT(GetModelData(m_LiftingModels, segmentKey) == nullptr);
 
    GET_IFACE(IEAFProgress,pProgress);
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType liftingIntervalIdx = pIntervals->GetLiftSegmentInterval(segmentKey);
@@ -2763,7 +2763,7 @@ void CSegmentModelManager::BuildHaulingModel(const CSegmentKey& segmentKey) cons
    ATLASSERT(GetModelData(m_HaulingModels, segmentKey) == nullptr);
 
    GET_IFACE(IEAFProgress,pProgress);
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType haulingIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
@@ -2787,7 +2787,7 @@ void CSegmentModelManager::BuildStorageModel(const CSegmentKey& segmentKey) cons
    ATLASSERT(GetModelData(m_StorageModels, segmentKey) == nullptr);
 
    GET_IFACE(IEAFProgress,pProgress);
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
 
    GET_IFACE(IIntervals,pIntervals);
    IntervalIndexType storageIntervalIdx = pIntervals->GetStorageInterval(segmentKey);
@@ -2912,7 +2912,7 @@ CSegmentModelData CSegmentModelManager::BuildSegmentModel(const CSegmentKey& seg
    GET_IFACE(IMaterials,         pMaterial );
 
    GET_IFACE(IEAFProgress,pProgress);
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
 
    // For casting yard models, use the entire girder length as the
    // span length.

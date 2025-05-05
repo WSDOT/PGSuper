@@ -35,7 +35,7 @@
 
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFGraphView.h>
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 #include <EAF\EAFDocument.h>
 
 #include <IFace\Artifact.h>
@@ -202,7 +202,7 @@ void CStabilityGraphBuilder::ShowGrid(bool bShowGrid)
 bool CStabilityGraphBuilder::UpdateNow()
 {
    GET_IFACE(IEAFProgress,pProgress);
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
 
    pProgress->UpdateMessage(_T("Building Graph"));
 

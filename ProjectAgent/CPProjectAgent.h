@@ -45,7 +45,7 @@
 //////////////////////////////////////////////////////////////////////////////
 // CProxyIProjectPropertiesEventSink
 template <class T>
-class CProxyIProjectPropertiesEventSink : public WBFL::EAF::EventCallbackManager<IProjectPropertiesEventSink>
+class CProxyIProjectPropertiesEventSink : public WBFL::EAF::EventSinkManager<IProjectPropertiesEventSink>
 {
 public:
 
@@ -63,7 +63,7 @@ public:
 
 		//pT->Lock();
 		HRESULT ret = S_OK;
-		for (auto& [id, callback] : this->m_Callbacks)
+		for (auto& [id, callback] : this->m_EventSinks)
 		{
 			callback->OnProjectPropertiesChanged();
 		}
@@ -75,7 +75,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 // CProxyIEnvironmentEventSink
 template <class T>
-class CProxyIEnvironmentEventSink : public WBFL::EAF::EventCallbackManager<IEnvironmentEventSink>
+class CProxyIEnvironmentEventSink : public WBFL::EAF::EventSinkManager<IEnvironmentEventSink>
 {
 public:
 
@@ -93,7 +93,7 @@ public:
 
       //pT->Lock();
 		HRESULT ret = S_OK;
-		for(auto& [id,callback] : this->m_Callbacks)
+		for(auto& [id,callback] : this->m_EventSinks)
 		{
 			ret = callback->OnExposureConditionChanged();
       }
@@ -113,7 +113,7 @@ public:
 
 		//pT->Lock();
 		HRESULT ret = S_OK;
-		for(auto& [id,callback] : this->m_Callbacks)
+		for(auto& [id,callback] : this->m_EventSinks)
 		{
 		   callback->OnClimateConditionChanged();
 		}
@@ -133,7 +133,7 @@ public:
 
       //pT->Lock();
 		HRESULT ret = S_OK;
-		for(auto& [id,callback] : this->m_Callbacks)
+		for(auto& [id,callback] : this->m_EventSinks)
 		{
 			callback->OnRelHumidityChanged();
 		}
@@ -146,7 +146,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 // CProxyIBridgeDescriptionEventSink
 template <class T>
-class CProxyIBridgeDescriptionEventSink : public WBFL::EAF::EventCallbackManager<IBridgeDescriptionEventSink>
+class CProxyIBridgeDescriptionEventSink : public WBFL::EAF::EventSinkManager<IBridgeDescriptionEventSink>
 {
 public:
 
@@ -171,7 +171,7 @@ public:
 
       //pT->Lock();
 		HRESULT ret = S_OK;
-		for(auto& [id,callback] : this->m_Callbacks)
+		for(auto& [id,callback] : this->m_EventSinks)
 		{
 			callback->OnBridgeChanged(pHint);
 		}
@@ -197,7 +197,7 @@ public:
 
       //pT->Lock();
 		HRESULT ret = S_OK;
-		for (auto& [id, callback] : this->m_Callbacks)
+		for (auto& [id, callback] : this->m_EventSinks)
 		{
 			callback->OnGirderFamilyChanged();
 		}
@@ -229,7 +229,7 @@ public:
 
       //pT->Lock();
 		HRESULT ret = S_OK;
-		for (auto& [id, callback] : this->m_Callbacks)
+		for (auto& [id, callback] : this->m_EventSinks)
 		{
 			callback->OnGirderChanged(girderKey,lHint);
 		}
@@ -249,7 +249,7 @@ public:
 
       //pT->Lock();
 		HRESULT ret = S_OK;
-		for (auto& [id, callback] : this->m_Callbacks)
+		for (auto& [id, callback] : this->m_EventSinks)
 		{
 			callback->OnConstructionLoadChanged();
 		}
@@ -269,7 +269,7 @@ public:
 
       //pT->Lock();
 		HRESULT ret = S_OK;
-		for (auto& [id, callback] : this->m_Callbacks)
+		for (auto& [id, callback] : this->m_EventSinks)
 		{
 			callback->OnLiveLoadChanged();
 		}
@@ -290,7 +290,7 @@ public:
 
       //pT->Lock();
 		HRESULT ret = S_OK;
-		for (auto& [id, callback] : this->m_Callbacks)
+		for (auto& [id, callback] : this->m_EventSinks)
 		{
 			callback->OnLiveLoadNameChanged(strOldName,strNewName);
 		}
@@ -303,7 +303,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 // CProxyISpecificationEventSink
 template <class T>
-class CProxyISpecificationEventSink : public WBFL::EAF::EventCallbackManager<ISpecificationEventSink>
+class CProxyISpecificationEventSink : public WBFL::EAF::EventSinkManager<ISpecificationEventSink>
 {
 public:
 
@@ -321,7 +321,7 @@ public:
 
 		//pT->Lock();
 		HRESULT ret = S_OK;
-		for (auto& [id, callback] : this->m_Callbacks)
+		for (auto& [id, callback] : this->m_EventSinks)
 		{
 			callback->OnSpecificationChanged();
 		}
@@ -341,7 +341,7 @@ public:
 
       //pT->Lock();
 		HRESULT ret = S_OK;
-		for (auto& [id, callback] : this->m_Callbacks)
+		for (auto& [id, callback] : this->m_EventSinks)
 		{
 			callback->OnAnalysisTypeChanged();
 		}
@@ -354,7 +354,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 // CProxyIRatingSpecificationEventSink
 template <class T>
-class CProxyIRatingSpecificationEventSink : public WBFL::EAF::EventCallbackManager<IRatingSpecificationEventSink>
+class CProxyIRatingSpecificationEventSink : public WBFL::EAF::EventSinkManager<IRatingSpecificationEventSink>
 {
 public:
 
@@ -373,7 +373,7 @@ public:
 
 		//pT->Lock();
 		HRESULT ret = S_OK;
-		for (auto& [id, callback] : this->m_Callbacks)
+		for (auto& [id, callback] : this->m_EventSinks)
 		{
 			callback->OnRatingSpecificationChanged();
 		}
@@ -385,7 +385,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 // CProxyILibraryConflictEventSink
 template <class T>
-class CProxyILibraryConflictEventSink : public WBFL::EAF::EventCallbackManager<ILibraryConflictEventSink>
+class CProxyILibraryConflictEventSink : public WBFL::EAF::EventSinkManager<ILibraryConflictEventSink>
 {
 public:
 
@@ -403,7 +403,7 @@ public:
 
       //pT->Lock();
 		HRESULT ret = S_OK;
-		for (auto& [id, callback] : this->m_Callbacks)
+		for (auto& [id, callback] : this->m_EventSinks)
 		{
 			callback->OnLibraryConflictResolved();
 		}
@@ -415,7 +415,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 // CProxyILoadModifiersEventSink
 template <class T>
-class CProxyILoadModifiersEventSink : public WBFL::EAF::EventCallbackManager<ILoadModifiersEventSink>
+class CProxyILoadModifiersEventSink : public WBFL::EAF::EventSinkManager<ILoadModifiersEventSink>
 {
 public:
 
@@ -433,7 +433,7 @@ public:
 
       //pT->Lock();
 		HRESULT ret = S_OK;
-		for (auto& [id, callback] : this->m_Callbacks)
+		for (auto& [id, callback] : this->m_EventSinks)
 		{
 			callback->OnLoadModifiersChanged();
 		}
@@ -445,7 +445,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 // CProxyIEventsEventSink
 template <class T>
-class CProxyIEventsEventSink : public WBFL::EAF::EventCallbackManager<IEventsSink>
+class CProxyIEventsEventSink : public WBFL::EAF::EventSinkManager<IEventsSink>
 {
 public:
 
@@ -457,7 +457,7 @@ public:
 
       //pT->Lock();
 		HRESULT ret = S_OK;
-		for (auto& [id, callback] : this->m_Callbacks)
+		for (auto& [id, callback] : this->m_EventSinks)
 		{
 			callback->OnHoldEvents();
 		}
@@ -471,7 +471,7 @@ public:
 
       //pT->Lock();
 		HRESULT ret = S_OK;
-		for (auto& [id, callback] : this->m_Callbacks)
+		for (auto& [id, callback] : this->m_EventSinks)
 		{
 			callback->OnFirePendingEvents();
 		}
@@ -485,7 +485,7 @@ public:
 
       //pT->Lock();
 		HRESULT ret = S_OK;
-		for (auto& [id, callback] : this->m_Callbacks)
+		for (auto& [id, callback] : this->m_EventSinks)
 		{
 			callback->OnCancelPendingEvents();
 		}
@@ -498,7 +498,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////
 // CProxyILossParametersEventSink
 template <class T>
-class CProxyILossParametersEventSink : public WBFL::EAF::EventCallbackManager<ILossParametersEventSink>
+class CProxyILossParametersEventSink : public WBFL::EAF::EventSinkManager<ILossParametersEventSink>
 {
 public:
 
@@ -516,7 +516,7 @@ public:
 
       //pT->Lock();
 		HRESULT ret = S_OK;
-		for (auto& [id, callback] : this->m_Callbacks)
+		for (auto& [id, callback] : this->m_EventSinks)
 		{
 			callback->OnLossParametersChanged();
 		}

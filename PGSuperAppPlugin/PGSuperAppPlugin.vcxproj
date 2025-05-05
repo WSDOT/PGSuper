@@ -992,6 +992,9 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
       <Project>{30dd6886-34ba-48bd-9bb6-08e8cd79cad7}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
+    <ProjectReference Include="..\Graphs\Graphs.vcxproj">
+      <Project>{a29f3c02-af58-4e29-a791-caa5a1ce28b6}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\KDOTExport\KDOTExport.vcxproj">
       <Project>{c6f6e6a6-916e-491d-a1df-dc1e8814c3fb}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
@@ -1002,7 +1005,6 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     </ProjectReference>
     <ProjectReference Include="..\PgsExt\PgsExt.vcxproj">
       <Project>{716009be-959b-4338-80f5-69abb0b12a91}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
     <ProjectReference Include="..\ProjectAgent\ProjectAgent.vcxproj">
       <Project>{a69bd69e-07d6-4326-b25a-938bec2bb378}</Project>
@@ -1010,7 +1012,6 @@ xcopy /y/d/s $(ARPDIR)\PGSuper\Configurations $(ARPDIR)\BridgeLink\Configuration
     </ProjectReference>
     <ProjectReference Include="..\psgLib\psgLib.vcxproj">
       <Project>{3d4395a4-6da8-40b5-bd41-c21104290b15}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
     <ProjectReference Include="..\ReportAgent\ReportAgent.vcxproj">
       <Project>{57419822-088f-4e75-9542-1eaae2df49ce}</Project>

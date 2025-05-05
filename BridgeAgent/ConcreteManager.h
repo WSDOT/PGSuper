@@ -44,6 +44,7 @@ public:
 
    void Init(std::shared_ptr<WBFL::EAF::Broker>,StatusGroupIDType statusGroupID);
    void Reset();
+   void ShutDown();
 
    pgsTypes::ConcreteType GetSegmentConcreteType(const CSegmentKey& segmentKey) const;
    bool DoesSegmentConcreteHaveAggSplittingStrength(const CSegmentKey& segmentKey) const;

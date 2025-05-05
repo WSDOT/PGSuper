@@ -34,7 +34,7 @@
 
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 #include <Units\UnitValueNumericalFormatTools.h>
 #include <PgsExt\SegmentArtifact.h>
 #include <PgsExt\RatingArtifact.h>
@@ -374,7 +374,7 @@ CSegmentGraphControllerBase* CSegmentAnalysisResultsGraphBuilder::CreateGraphCon
 bool CSegmentAnalysisResultsGraphBuilder::UpdateNow()
 {
    GET_IFACE(IEAFProgress,pProgress);
-   CEAFAutoProgress ap(pProgress,0);
+   WBFL::EAF::AutoProgress ap(pProgress,0);
 
    pProgress->UpdateMessage(_T("Building Graph"));
 

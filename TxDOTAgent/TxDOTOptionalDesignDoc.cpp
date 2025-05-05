@@ -44,7 +44,7 @@
 #include "TogaCatCom.h"
 
 #include <EAF\EAFMainFrame.h>
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 #include <EAF\EAFProjectLog.h>
 
 #include <System\StructuredLoadXml.h>
@@ -341,7 +341,7 @@ BOOL CTxDOTOptionalDesignDoc::Init()
    if ( !CEAFBrokerDocument::Init() )
       return FALSE;
 
-   if ( FAILED(CBeamFamilyManager::Init(CATID_PGSuperBeamFamily)) )
+   if ( FAILED(PGS::Beams::BeamFamilyManager::Init(CATID_PGSuperBeamFamily)) )
       return FALSE;
 
    m_ProjectData.ResetData();

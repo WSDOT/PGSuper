@@ -57,10 +57,16 @@
 #include "PGSpliceCatCom.h"
 #include <System\ComCatMgr.h>
 
-#include <EAF\ComponentModule.h>
-WBFL::EAF::ComponentModule _Module;
+// This is needed as long as WBFLGeometricBridge is a COM object
+// This DLL implements custom versions of EffectiveFlangeWidthTool
+CComModule _Module;
+BEGIN_OBJECT_MAP(ObjectMap)
+END_OBJECT_MAP()
 
-EAF_BEGIN_OBJECT_MAP(ObjectMap)
+#include <EAF\ComponentModule.h>
+WBFL::EAF::ComponentModule Module_;
+
+EAF_BEGIN_OBJECT_MAP(ObjectMap2)
 	EAF_OBJECT_ENTRY(CLSID_BridgeAgent, CBridgeAgentImp)
 EAF_END_OBJECT_MAP()
 
@@ -75,13 +81,14 @@ CBridgeAgentApp theApp;
 
 BOOL CBridgeAgentApp::InitInstance()
 {
-	_Module.Init(ObjectMap);
+	_Module.Init(ObjectMap,m_hInstance);
+	Module_.Init(ObjectMap2);
 	return CWinApp::InitInstance();
 }
 
 int CBridgeAgentApp::ExitInstance()
 {
-	_Module.Term();
+	Module_.Term();
 	return CWinApp::ExitInstance();
 }
 

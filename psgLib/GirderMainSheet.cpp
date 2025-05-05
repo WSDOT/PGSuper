@@ -61,14 +61,14 @@ CGirderMainSheet::~CGirderMainSheet()
 {
 }
 
-void CGirderMainSheet::SetBeamFactory(std::shared_ptr<IBeamFactory> pFactory)
+void CGirderMainSheet::SetBeamFactory(std::shared_ptr<PGS::Beams::BeamFactory> pFactory)
 {
    m_Entry.SetBeamFactory(pFactory);
 }
 
 bool CGirderMainSheet::IsSplicedGirder()
 {
-   auto splicedBeamFactory = std::dynamic_pointer_cast<ISplicedBeamFactory>(m_Entry.GetBeamFactory());
+   auto splicedBeamFactory = std::dynamic_pointer_cast<PGS::Beams::SplicedBeamFactory>(m_Entry.GetBeamFactory());
    return (splicedBeamFactory == nullptr ? false : true);
 }
 
@@ -181,7 +181,7 @@ void CGirderMainSheet::ExchangeDimensionData(CDataExchange* pDX)
 
    bool bUnitsSI = (pApp->GetUnitsMode() == WBFL::EAF::UnitMode::SI);
 
-   auto splicedBeamFactory = std::dynamic_pointer_cast<ISplicedBeamFactory>(m_Entry.GetBeamFactory());
+   auto splicedBeamFactory = std::dynamic_pointer_cast<PGS::Beams::SplicedBeamFactory>(m_Entry.GetBeamFactory());
 
    DDX_Check_Bool(pDX,IDC_VARIABLE_DEPTH_CHECK,m_Entry.m_bIsVariableDepthSectionEnabled);
    DDX_Check_Bool(pDX,IDC_BEARING_ELEVS,m_Entry.m_DoReportBearingElevationsAtGirderEdges);

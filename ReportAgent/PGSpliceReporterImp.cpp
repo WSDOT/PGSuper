@@ -121,9 +121,9 @@ HRESULT CPGSpliceReporterImp::InitReportBuilders()
    return S_OK;
 }
 
-bool CPGSpliceReporterImp::RegInterfaces()
+bool CPGSpliceReporterImp::RegisterInterfaces()
 {
-   EAF_AGENT_REGINTERFACES;
+   EAF_AGENT_REGISTER_INTERFACES;
    REGISTER_INTERFACE(IReportOptions);
    return true;
 }
@@ -164,7 +164,7 @@ bool CPGSpliceReporterImp::ShutDown()
    //
    // Detach to connection points
    //
-   UNREGISTER_CALLBACK(ISpecificationEventSink,m_dwSpecCookie);
+   UNREGISTER_EVENT_SINK(ISpecificationEventSink,m_dwSpecCookie);
 
    return true;
 }

@@ -26,7 +26,7 @@
 #include "MomentCapacityEngineer.h"
 #include <PGSuperException.h>
 
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 
 #include <IFace\Bridge.h>
 #include <IFace\AnalysisResults.h>
@@ -3446,7 +3446,7 @@ const CRACKEDSECTIONDETAILS* pgsMomentCapacityEngineer::ValidateCrackedSectionDe
    }
 
    GET_IFACE(IEAFProgress, pProgress);
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
 
    GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
    std::_tostringstream os;

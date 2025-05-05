@@ -43,7 +43,7 @@
 #include <PgsExt\ReportPointOfInterest.h>
 #include <PgsExt\StatusItem.h>
 #include <PsgLib\BridgeDescription2.h>
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 #include <PsgLib\GirderLabel.h>
 #include <PsgLib\LoadFactors.h>
 

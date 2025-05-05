@@ -50,7 +50,7 @@ public:
 // Agent
 public:
    std::_tstring GetName() const override { return _T("TxDOTAgent"); }
-   bool RegInterfaces() override;
+   bool RegisterInterfaces() override;
    bool Init() override;
    bool Reset() override;
    bool ShutDown() override;

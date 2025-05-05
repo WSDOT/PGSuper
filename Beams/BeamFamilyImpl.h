@@ -28,157 +28,162 @@
 #include <Plugins\BeamFactoryCATID.h>
 #include "resource.h"
 
-// forward declaration
-class IBeamFactory;
-
-/////////////////////////////////////////////////////////////////////////////
-// CIBeamFamily - beam family for I-beams
-class CIBeamFamily : public IBeamFamilyImpl
+namespace PGS
 {
-public:
-	CIBeamFamily()
-	{
-	   Init();
-	}
+   namespace Beams
+   {
+	  class BeamFactory;
 
-protected:
-   const CLSID& GetCLSID() const override { return CLSID_WFBeamFamily; }
-   const CATID& GetCATID() const override { return CATID_WFBeamFactory; }
-};
+	  /////////////////////////////////////////////////////////////////////////////
+	  // CIBeamFamily - beam family for I-beams
+	  class CIBeamFamily : public BeamFamilyImpl
+	  {
+	  public:
+		  CIBeamFamily()
+		  {
+			 Init();
+		  }
 
-/////////////////////////////////////////////////////////////////////////////
-// CUBeamFamily - beam family for U-beams
-class CUBeamFamily : public IBeamFamilyImpl
-{
-public:
-	CUBeamFamily()
-	{
-	   Init();
-	}
+	  protected:
+		 const CLSID& GetCLSID() const override { return CLSID_WFBeamFamily; }
+		 const CATID& GetCATID() const override { return CATID_WFBeamFactory; }
+	  };
 
-protected:
-   const CLSID& GetCLSID() const override { return CLSID_UBeamFamily; }
-   const CATID& GetCATID() const override { return CATID_UBeamFactory; }
-};
+	  /////////////////////////////////////////////////////////////////////////////
+	  // CUBeamFamily - beam family for U-beams
+	  class CUBeamFamily : public BeamFamilyImpl
+	  {
+	  public:
+		  CUBeamFamily()
+		  {
+			 Init();
+		  }
 
-/////////////////////////////////////////////////////////////////////////////
-// CBoxBeamFamily - beam family for Box beams
-class CBoxBeamFamily : public IBeamFamilyImpl
-{
-public:
-	CBoxBeamFamily()
-	{
-	   Init();
-	}
+	  protected:
+		 const CLSID& GetCLSID() const override { return CLSID_UBeamFamily; }
+		 const CATID& GetCATID() const override { return CATID_UBeamFactory; }
+	  };
 
-protected:
-   const CLSID& GetCLSID() const override { return CLSID_BoxBeamFamily; }
-   const CATID& GetCATID() const override { return CATID_BoxBeamFactory; }
-};
+	  /////////////////////////////////////////////////////////////////////////////
+	  // CBoxBeamFamily - beam family for Box beams
+	  class CBoxBeamFamily : public BeamFamilyImpl
+	  {
+	  public:
+		  CBoxBeamFamily()
+		  {
+			 Init();
+		  }
 
-/////////////////////////////////////////////////////////////////////////////
-// CDeckBulbTeeBeamFamily - beam family for deck bulb tee beams
-class ATL_NO_VTABLE CDeckBulbTeeBeamFamily : public IBeamFamilyImpl
-{
-public:
-	CDeckBulbTeeBeamFamily()
-	{
-	   Init();
-	}
+	  protected:
+		 const CLSID& GetCLSID() const override { return CLSID_BoxBeamFamily; }
+		 const CATID& GetCATID() const override { return CATID_BoxBeamFactory; }
+	  };
 
-protected:
-   const CLSID& GetCLSID() const override { return CLSID_DeckBulbTeeBeamFamily; }
-   const CATID& GetCATID() const override { return CATID_DeckBulbTeeBeamFactory; }
-};
+	  /////////////////////////////////////////////////////////////////////////////
+	  // CDeckBulbTeeBeamFamily - beam family for deck bulb tee beams
+	  class CDeckBulbTeeBeamFamily : public BeamFamilyImpl
+	  {
+	  public:
+		  CDeckBulbTeeBeamFamily()
+		  {
+			 Init();
+		  }
 
-/////////////////////////////////////////////////////////////////////////////
-// CDoubleTeeBeamFamily - beam family for Float64 tee beams
-class CDoubleTeeBeamFamily : public IBeamFamilyImpl
-{
-public:
-	CDoubleTeeBeamFamily()
-	{
-	   Init();
-	}
+	  protected:
+		 const CLSID& GetCLSID() const override { return CLSID_DeckBulbTeeBeamFamily; }
+		 const CATID& GetCATID() const override { return CATID_DeckBulbTeeBeamFactory; }
+	  };
 
-protected:
-   const CLSID& GetCLSID() const override { return CLSID_DoubleTeeBeamFamily; }
-   const CATID& GetCATID() const override { return CATID_DoubleTeeBeamFactory; }
-};
+	  /////////////////////////////////////////////////////////////////////////////
+	  // CDoubleTeeBeamFamily - beam family for Float64 tee beams
+	  class CDoubleTeeBeamFamily : public BeamFamilyImpl
+	  {
+	  public:
+		  CDoubleTeeBeamFamily()
+		  {
+			 Init();
+		  }
 
-/////////////////////////////////////////////////////////////////////////////
-// CRibbedBeamFamily - beam family for ribbed beams
-class CRibbedBeamFamily : public IBeamFamilyImpl
-{
-public:
-	CRibbedBeamFamily()
-	{
-	   Init();
-	}
+	  protected:
+		 const CLSID& GetCLSID() const override { return CLSID_DoubleTeeBeamFamily; }
+		 const CATID& GetCATID() const override { return CATID_DoubleTeeBeamFactory; }
+	  };
 
-protected:
-   const CLSID& GetCLSID() const override { return CLSID_RibbedBeamFamily; }
-   const CATID& GetCATID() const override { return CATID_RibbedBeamFactory; }
-};
+	  /////////////////////////////////////////////////////////////////////////////
+	  // CRibbedBeamFamily - beam family for ribbed beams
+	  class CRibbedBeamFamily : public BeamFamilyImpl
+	  {
+	  public:
+		  CRibbedBeamFamily()
+		  {
+			 Init();
+		  }
 
-/////////////////////////////////////////////////////////////////////////////
-// CSlabBeamFamily - beam family for slab beams
-class CSlabBeamFamily : public IBeamFamilyImpl
-{
-public:
-	CSlabBeamFamily()
-	{
-	   Init();
-	}
+	  protected:
+		 const CLSID& GetCLSID() const override { return CLSID_RibbedBeamFamily; }
+		 const CATID& GetCATID() const override { return CATID_RibbedBeamFactory; }
+	  };
 
-protected:
-   const CLSID& GetCLSID() const override { return CLSID_SlabBeamFamily; }
-   const CATID& GetCATID() const override { return CATID_SlabBeamFactory; }
-};
+	  /////////////////////////////////////////////////////////////////////////////
+	  // CSlabBeamFamily - beam family for slab beams
+	  class CSlabBeamFamily : public BeamFamilyImpl
+	  {
+	  public:
+		  CSlabBeamFamily()
+		  {
+			 Init();
+		  }
 
-
-/////////////////////////////////////////////////////////////////////////////
-// CDeckedSlabBeamFamily - beam family for slab beams
-class ATL_NO_VTABLE CDeckedSlabBeamFamily : public IBeamFamilyImpl
-{
-public:
-	CDeckedSlabBeamFamily()
-	{
-	   Init();
-	}
-
-protected:
-   const CLSID& GetCLSID() const override { return CLSID_DeckedSlabBeamFamily; }
-   const CATID& GetCATID() const override { return CATID_DeckedSlabBeamFactory; }
-};
+	  protected:
+		 const CLSID& GetCLSID() const override { return CLSID_SlabBeamFamily; }
+		 const CATID& GetCATID() const override { return CATID_SlabBeamFactory; }
+	  };
 
 
-/////////////////////////////////////////////////////////////////////////////
-// CSplicedIBeamFamily - beam family for Spliced I-beams
-class CSplicedIBeamFamily : public IBeamFamilyImpl
-{
-public:
-	CSplicedIBeamFamily()
-	{
-	   Init();
-	}
+	  /////////////////////////////////////////////////////////////////////////////
+	  // CDeckedSlabBeamFamily - beam family for slab beams
+	  class CDeckedSlabBeamFamily : public BeamFamilyImpl
+	  {
+	  public:
+		  CDeckedSlabBeamFamily()
+		  {
+			 Init();
+		  }
 
-protected:
-   const CLSID& GetCLSID() const override { return CLSID_SplicedIBeamFamily; }
-   const CATID& GetCATID() const override { return CATID_SplicedIBeamFactory; }
-};
+	  protected:
+		 const CLSID& GetCLSID() const override { return CLSID_DeckedSlabBeamFamily; }
+		 const CATID& GetCATID() const override { return CATID_DeckedSlabBeamFactory; }
+	  };
 
-/////////////////////////////////////////////////////////////////////////////
-// CSplicedUBeamFamily - beam family for Spliced U-beams
-class CSplicedUBeamFamily : public IBeamFamilyImpl
-{
-public:
-	CSplicedUBeamFamily()
-	{
-	   Init();
-	}
 
-protected:
-   const CLSID& GetCLSID() const override { return CLSID_SplicedUBeamFamily; }
-   const CATID& GetCATID() const override { return CATID_SplicedUBeamFactory; }
+	  /////////////////////////////////////////////////////////////////////////////
+	  // CSplicedIBeamFamily - beam family for Spliced I-beams
+	  class CSplicedIBeamFamily : public BeamFamilyImpl
+	  {
+	  public:
+		  CSplicedIBeamFamily()
+		  {
+			 Init();
+		  }
+
+	  protected:
+		 const CLSID& GetCLSID() const override { return CLSID_SplicedIBeamFamily; }
+		 const CATID& GetCATID() const override { return CATID_SplicedIBeamFactory; }
+	  };
+
+	  /////////////////////////////////////////////////////////////////////////////
+	  // CSplicedUBeamFamily - beam family for Spliced U-beams
+	  class CSplicedUBeamFamily : public BeamFamilyImpl
+	  {
+	  public:
+		  CSplicedUBeamFamily()
+		  {
+			 Init();
+		  }
+
+	  protected:
+		 const CLSID& GetCLSID() const override { return CLSID_SplicedUBeamFamily; }
+		 const CATID& GetCATID() const override { return CATID_SplicedUBeamFactory; }
+	  };
+   };
 };

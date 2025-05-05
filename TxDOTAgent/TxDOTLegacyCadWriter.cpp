@@ -50,7 +50,7 @@
 #include <PsgLib\BridgeDescription2.h>
 #include <PgsExt\GirderArtifactTool.h>
 #include <PsgLib\GirderLabel.h>
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 
 
 // Workhorse for writing debond information
@@ -151,7 +151,7 @@ int TxDOT_WriteLegacyCADDataToFile(CString& filePath, std::shared_ptr<WBFL::EAF:
 
       bool multi = girderKeys.size()>1;
       DWORD mask = multi ? PW_ALL : PW_ALL|PW_NOGAUGE; // Progress window has a cancel button,
-      CEAFAutoProgress ap(pProgress,0,mask); 
+      WBFL::EAF::AutoProgress ap(pProgress,0,mask); 
 
       if (multi)
          pProgress->Init(0,(short)girderKeys.size(),1);  // and for multi-girders, a gauge.

@@ -56,7 +56,7 @@ class DifferenceItem;
 PSGLIBTPL WBFL::System::SubjectT<GirderLibraryEntryObserver, GirderLibraryEntry>;
 
 interface IStrandGrid;
-class IBeamFactory;
+
 
 
 /*****************************************************************************
@@ -83,7 +83,7 @@ class PSGLIBCLASS GirderLibraryEntry : public WBFL::Library::LibraryEntry, publi
        public WBFL::System::SubjectT<GirderLibraryEntryObserver, GirderLibraryEntry>
 {
 public:
-   static std::vector<std::shared_ptr<IBeamFactoryCLSIDTranslator>> ms_ExternalCLSIDTranslators; // maps PGSuper v2.x CLSIDs to PGSuper v3.x CLSIDs for external beam publishers
+   static std::vector<std::shared_ptr<PGS::Beams::BeamFactoryCLSIDTranslator>> ms_ExternalCLSIDTranslators; // maps PGSuper v2.x CLSIDs to PGSuper v3.x CLSIDs for external beam publishers
 
    static CString GetAdjustableStrandType(pgsTypes::AdjustableStrandType strandType);
 
@@ -313,8 +313,8 @@ public:
 
     // GROUP: ACCESS
    //------------------------------------------------------------------------
-   void SetBeamFactory(std::shared_ptr<IBeamFactory> pFactory);
-   std::shared_ptr<IBeamFactory> GetBeamFactory() const;
+   void SetBeamFactory(std::shared_ptr<PGS::Beams::BeamFactory> pFactory);
+   std::shared_ptr<PGS::Beams::BeamFactory> GetBeamFactory() const;
 
    std::_tstring GetGirderName() const;
    std::_tstring GetGirderFamilyName() const;
@@ -674,15 +674,15 @@ public:
    bool GetDoReportBearingElevationsAtGirderEdges() const;
 
 
-   std::shared_ptr<pgsCompatibilityData> GetCompatibilityData() const;
+   std::shared_ptr<PGS::Beams::CompatibilityData> GetCompatibilityData() const;
 
 protected:
    void CopyValuesAndAttributes(const GirderLibraryEntry& rOther);
 
 private:
    // GROUP: DATA MEMBERS
-   std::shared_ptr<pgsCompatibilityData> m_pCompatibilityData;
-   std::shared_ptr<IBeamFactory> m_pBeamFactory;
+   std::shared_ptr<PGS::Beams::CompatibilityData> m_pCompatibilityData;
+   std::shared_ptr<PGS::Beams::BeamFactory> m_pBeamFactory;
    Dimensions m_Dimensions;
    bool m_bSupportsVariableDepthSection;
    bool m_bIsVariableDepthSectionEnabled;
@@ -993,9 +993,6 @@ private:
 
    bool m_DoReportBearingElevationsAtGirderEdges;
 
-   // GROUP: LIFECYCLE
-   // GROUP: OPERATORS
-   // GROUP: OPERATIONS
    bool IsEqual(IPoint2d* p1,IPoint2d* p2) const;
    bool IsEqual(IPoint2dCollection* points1,IPoint2dCollection* points2) const;
 
@@ -1003,9 +1000,6 @@ private:
 
    bool CreateBeamFactory(const std::_tstring& strCLSID);
    void LoadIBeamDimensions(WBFL::System::IStructuredLoad* pLoad);
-
-   // GROUP: ACCESS
-   // GROUP: INQUIRY
 
    static std::map<std::_tstring,std::_tstring> m_CLSIDMap; // maps PGSuper v2.x CLSIDs to PGSuper v3.x CLSIDs
    static void InitCLSIDMap();

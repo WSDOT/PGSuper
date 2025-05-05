@@ -29,7 +29,7 @@
 
 #include "LLDFFillDlg.h"
 
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 #include <EAF\EAFDocument.h>
 
 #include <IFace/Tools.h>
@@ -335,7 +335,7 @@ void CLiveLoadDistFactorsDlg::OnBnClickedLldfFillButton()
          pEvents->HoldEvents(); // don't fire any changed events until all changes are done
 
          // This can take some time.
-         CEAFAutoProgress ap(pProgress,0);
+         WBFL::EAF::AutoProgress ap(pProgress,0);
          pProgress->UpdateMessage(_T("Computing Distribution Factors..."));
 
          // save old method

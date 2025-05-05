@@ -27,7 +27,7 @@
 
 #include "PGSuperInterfaces.h"
 
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 
 
 STDMETHODIMP CPGSuperDataImporter::Init(UINT nCmdID)

@@ -39,6 +39,7 @@
 #include <EAF/EAFStatusCenter.h>
 #include <Beams\Helper.h>
 
+using namespace PGS::Beams;
 
 // pre-convert constant values for performance
 static const Float64 D_18 = WBFL::Units::ConvertToSysUnits(18., WBFL::Units::Measure::Inch);

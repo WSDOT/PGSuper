@@ -43,7 +43,7 @@ CDiaphragmDefinitionDlg::CDiaphragmDefinitionDlg(const GirderLibraryEntry& entry
 	//}}AFX_DATA_INIT
 
    m_pBeamFactory = m_Entry.GetBeamFactory();
-   auto splicedBeamFactory = std::dynamic_pointer_cast<ISplicedBeamFactory>(m_pBeamFactory);
+   auto splicedBeamFactory = std::dynamic_pointer_cast<PGS::Beams::SplicedBeamFactory>(m_pBeamFactory);
    m_bSplicedGirder = (splicedBeamFactory == nullptr ? false : true);
 }
 

@@ -28,9 +28,9 @@
 #include <IFace\BeamFactory.h>
 #include <EAF/ComponentCategoryManager.h>
 
-/////////////////////////////////////////////////////////////////////////////
-// IBeamFamilyImpl
-void IBeamFamilyImpl::Init()
+using namespace PGS::Beams;
+
+void BeamFamilyImpl::Init()
 {
    m_Names.clear();
    auto components = WBFL::EAF::ComponentCategoryManager::GetInstance().GetComponents(GetCATID());
@@ -41,25 +41,25 @@ void IBeamFamilyImpl::Init()
    }
 }
 
-CString IBeamFamilyImpl::GetName() const
+CString BeamFamilyImpl::GetName() const
 {
    const CLSID& clsid = GetCLSID();
    auto component = WBFL::EAF::ComponentCategoryManager::GetInstance().GetComponent(clsid);
    return CString(component.name.c_str());
 }
 
-void IBeamFamilyImpl::RefreshFactoryList()
+void BeamFamilyImpl::RefreshFactoryList()
 {
    m_Factories.clear();
    Init();
 }
 
-const std::vector<CString>& IBeamFamilyImpl::GetFactoryNames() const
+const std::vector<CString>& BeamFamilyImpl::GetFactoryNames() const
 {
    return m_Names;
 }
 
-CLSID IBeamFamilyImpl::GetFactoryCLSID(LPCTSTR strName) const
+CLSID BeamFamilyImpl::GetFactoryCLSID(LPCTSTR strName) const
 {
    auto found = m_Factories.find(CString(strName));
    if ( found == m_Factories.end() )
@@ -68,13 +68,13 @@ CLSID IBeamFamilyImpl::GetFactoryCLSID(LPCTSTR strName) const
    return found->second;
 }
 
-std::shared_ptr<IBeamFactory> IBeamFamilyImpl::CreateFactory(LPCTSTR strName) const
+std::shared_ptr<BeamFactory> BeamFamilyImpl::CreateFactory(LPCTSTR strName) const
 {
    auto found = m_Factories.find(CString(strName));
    if ( found == m_Factories.end() )
       return nullptr;
 
    CLSID clsid = found->second;
-   auto factory = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<IBeamFactory>(clsid);
+   auto factory = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<BeamFactory>(clsid);
    return factory;
 }

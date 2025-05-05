@@ -58,7 +58,7 @@
 #include <PgsExt\GirderDesignArtifact.h>
 #include <PgsExt\HaulingAnalysisArtifact.h>
 #include <PgsExt\RatingArtifact.h>
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 #include <EAF\EAFApp.h>
 #include <PsgLib\GirderLabel.h>
 #include <PsgLib\Helpers.h>
@@ -105,9 +105,9 @@ int GetBarSize(WBFL::Materials::Rebar::Size size)
    return -1;
 }
 
-bool CTestAgentImp::RegInterfaces()
+bool CTestAgentImp::RegisterInterfaces()
 {
-   EAF_AGENT_REGINTERFACES;
+   EAF_AGENT_REGISTER_INTERFACES;
 
    REGISTER_INTERFACE(ITest1250);
    REGISTER_INTERFACE(ITestFileExport);
@@ -165,7 +165,7 @@ bool CTestAgentImp::RunTest(long type,
 
    // create progress window
    GET_IFACE(IEAFProgress,pProgress);
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
 
    if (type == RUN_REGRESSION)
    {
@@ -394,7 +394,7 @@ bool CTestAgentImp::RunTestEx(long type, const std::vector<SpanGirderHashType>& 
 
    // create progress window
    GET_IFACE(IEAFProgress,pProgress);
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
 
    if (type == RUN_REGRESSION || type == RUN_CADTEST)
    {
@@ -3265,7 +3265,7 @@ bool CTestAgentImp::DoTestReport(const CString& outputFileName, const CString& e
    }
 
    GET_IFACE(IEAFProgress,pProgress);
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
 
    if (txInfo.m_TxRunType == CTestCommandLineInfo::txrGeometry)
    {

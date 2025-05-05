@@ -27,6 +27,7 @@
 #include "BridgeHelpers.h"
 #include <PGSuperException.h>
 #include "DeckEdgeBuilder.h"
+#include "CLSID.h"
 
 #include <PsgLib\LibraryManager.h>
 #include <PsgLib\GirderLibraryEntry.h>
@@ -6498,9 +6499,9 @@ void CBridgeAgentImp::LayoutHandlingPoi(const CSegmentKey& segmentKey,
 /////////////////////////////////////////////////////////////////////////
 // IAgent
 //
-bool CBridgeAgentImp::RegInterfaces()
+bool CBridgeAgentImp::RegisterInterfaces()
 {
-   EAF_AGENT_REGINTERFACES;
+   EAF_AGENT_REGISTER_INTERFACES;
 
    REGISTER_INTERFACE(IRoadway);
    REGISTER_INTERFACE(IGeometry);
@@ -6554,9 +6555,9 @@ bool CBridgeAgentImp::Init()
    m_IntervalManager.Init(m_StatusGroupID);
 
    // Attach to connection points
-   m_dwBridgeDescCookie = REGISTER_CALLBACK(IBridgeDescriptionEventSink);
-   m_dwSpecificationCookie = REGISTER_CALLBACK(ISpecificationEventSink);
-   m_dwLossParametersCookie = REGISTER_CALLBACK(ILossParametersEventSink);
+   m_dwBridgeDescCookie = REGISTER_EVENT_SINK(IBridgeDescriptionEventSink);
+   m_dwSpecificationCookie = REGISTER_EVENT_SINK(ISpecificationEventSink);
+   m_dwLossParametersCookie = REGISTER_EVENT_SINK(ILossParametersEventSink);
 
    HRESULT hr = m_SectCutTool.CoCreateInstance(CLSID_SectionCutTool);
    if ( FAILED(hr) || m_SectCutTool == nullptr )
@@ -6614,9 +6615,11 @@ bool CBridgeAgentImp::ShutDown()
 {
    EAF_AGENT_SHUTDOWN;
 
-   UNREGISTER_CALLBACK(IBridgeDescriptionEventSink, m_dwBridgeDescCookie);
-   UNREGISTER_CALLBACK(ISpecificationEventSink, m_dwSpecificationCookie);
-   UNREGISTER_CALLBACK(ILossParametersEventSink, m_dwLossParametersCookie);
+   UNREGISTER_EVENT_SINK(IBridgeDescriptionEventSink, m_dwBridgeDescCookie);
+   UNREGISTER_EVENT_SINK(ISpecificationEventSink, m_dwSpecificationCookie);
+   UNREGISTER_EVENT_SINK(ILossParametersEventSink, m_dwLossParametersCookie);
+
+   m_ConcreteManager.ShutDown();
 
    CLOSE_LOGFILE;
 
@@ -35744,8 +35747,8 @@ void CBridgeAgentImp::CreateStrandMover(LPCTSTR strGirderName,Float64 Hg,pgsType
    // get adjustable strand adjustment limits
    pgsTypes::FaceType endTopFace, endBottomFace;
    Float64 endTopLimit, endBottomLimit;
-   IBeamFactory::BeamFace etf, ebf;
-   IBeamFactory::BeamFace htf, hbf;
+   PGS::Beams::BeamFactory::BeamFace etf, ebf;
+   PGS::Beams::BeamFactory::BeamFace htf, hbf;
    pgsTypes::FaceType hpTopFace, hpBottomFace;
    Float64 hpTopLimit, hpBottomLimit;
    Float64 end_increment, hp_increment;
@@ -35754,13 +35757,13 @@ void CBridgeAgentImp::CreateStrandMover(LPCTSTR strGirderName,Float64 Hg,pgsType
    {
       pGirderEntry->GetEndAdjustmentLimits(&endTopFace, &endTopLimit, &endBottomFace, &endBottomLimit);
 
-      etf = endTopFace    == pgsTypes::BottomFace ? IBeamFactory::BeamFace::Bottom : IBeamFactory::BeamFace::Top;
-      ebf = endBottomFace == pgsTypes::BottomFace ? IBeamFactory::BeamFace::Bottom : IBeamFactory::BeamFace::Top;
+      etf = endTopFace    == pgsTypes::BottomFace ? PGS::Beams::BeamFactory::BeamFace::Bottom : PGS::Beams::BeamFactory::BeamFace::Top;
+      ebf = endBottomFace == pgsTypes::BottomFace ? PGS::Beams::BeamFactory::BeamFace::Bottom : PGS::Beams::BeamFactory::BeamFace::Top;
 
       pGirderEntry->GetHPAdjustmentLimits(&hpTopFace, &hpTopLimit, &hpBottomFace, &hpBottomLimit);
 
-      htf = hpTopFace    == pgsTypes::BottomFace ? IBeamFactory::BeamFace::Bottom : IBeamFactory::BeamFace::Top;
-      hbf = hpBottomFace == pgsTypes::BottomFace ? IBeamFactory::BeamFace::Bottom : IBeamFactory::BeamFace::Top;
+      htf = hpTopFace    == pgsTypes::BottomFace ? PGS::Beams::BeamFactory::BeamFace::Bottom : PGS::Beams::BeamFactory::BeamFace::Top;
+      hbf = hpBottomFace == pgsTypes::BottomFace ? PGS::Beams::BeamFactory::BeamFace::Bottom : PGS::Beams::BeamFactory::BeamFace::Top;
 
       // only allow end adjustents if increment is non-negative
       end_increment = pGirderEntry->IsVerticalAdjustmentAllowedEnd() ?  pGirderEntry->GetEndStrandIncrement() : -1.0;
@@ -35776,8 +35779,8 @@ void CBridgeAgentImp::CreateStrandMover(LPCTSTR strGirderName,Float64 Hg,pgsType
       hpTopLimit = endTopLimit;
       hpBottomLimit = endBottomLimit;
 
-      etf = endTopFace    == pgsTypes::BottomFace ? IBeamFactory::BeamFace::Bottom : IBeamFactory::BeamFace::Top;
-      ebf = endBottomFace == pgsTypes::BottomFace ? IBeamFactory::BeamFace::Bottom : IBeamFactory::BeamFace::Top;
+      etf = endTopFace    == pgsTypes::BottomFace ? PGS::Beams::BeamFactory::BeamFace::Bottom : PGS::Beams::BeamFactory::BeamFace::Top;
+      ebf = endBottomFace == pgsTypes::BottomFace ? PGS::Beams::BeamFactory::BeamFace::Bottom : PGS::Beams::BeamFactory::BeamFace::Top;
 
       htf = etf;
       hbf = ebf;

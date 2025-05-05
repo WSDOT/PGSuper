@@ -103,6 +103,8 @@
 
 WBFL::EAF::ComponentModule Module_;
 
+using namespace PGS::Beams;
+
 CComModule _Module;
 
 #define BEGIN_BEAM_FACTORY_LIST static const std::pair<CLSID,CATID> gs_Beams[] = {
@@ -144,102 +146,50 @@ BEGIN_BEAM_FACTORY_LIST
    BEAM_FACTORY(CLSID_DeckedSlabBeamFactory,      CATID_DeckedSlabBeamFactory)
 END_BEAM_FACTORY_LIST
 
-IndexType GetBeamTypeCount()
+IndexType PGS::Beams::GetBeamTypeCount()
 {
    return sizeof(gs_Beams)/sizeof(gs_Beams[0]);
 }
 
-CLSID GetBeamCLSID(IndexType index)
+CLSID PGS::Beams::GetBeamCLSID(IndexType index)
 {
    return gs_Beams[index].first;
 }
 
-CATID GetBeamCATID(IndexType index)
+CATID PGS::Beams::GetBeamCATID(IndexType index)
 {
    return gs_Beams[index].second;
 }
 
-#pragma Reminder("WORKING HERE - Removing COM - clean out dead code")
 BEGIN_OBJECT_MAP(ObjectMap)
-   // No longer COM objects
-   //OBJECT_ENTRY(CLSID_WFBeamFactory, CIBeamFactory)
-   //OBJECT_ENTRY(CLSID_UBeamFactory, CUBeamFactory)
-   //OBJECT_ENTRY(CLSID_UBeam2Factory, CUBeam2Factory)
-   //OBJECT_ENTRY(CLSID_NUBeamFactory, CNUBeamFactory)
-   //OBJECT_ENTRY(CLSID_BulbTeeFactory, CBulbTeeFactory)
-   //OBJECT_ENTRY(CLSID_MultiWebFactory, CMultiWebFactory)
-   //OBJECT_ENTRY(CLSID_MultiWeb2Factory, CMultiWeb2Factory)
-   //OBJECT_ENTRY(CLSID_DoubleTeeFactory, CDoubleTeeFactory)
-   //OBJECT_ENTRY(CLSID_VoidedSlabFactory, CVoidedSlabFactory)
-   //OBJECT_ENTRY(CLSID_VoidedSlab2Factory, CVoidedSlab2Factory)
-   //OBJECT_ENTRY(CLSID_BoxBeamFactory, CBoxBeamFactory)
-   //OBJECT_ENTRY(CLSID_BoxBeam2Factory, CBoxBeamFactory2)
-   //OBJECT_ENTRY(CLSID_TxDotDoubleTFactory, CTxDotDoubleTFactory)
-   //OBJECT_ENTRY(CLSID_TaperedIBeamFactory, CTaperedIBeamFactory)
-   //OBJECT_ENTRY(CLSID_DeckedSlabBeamFactory, CDeckedSlabBeamFactory)
-
-   //OBJECT_ENTRY(CLSID_SplicedIBeamFactory, CSplicedIBeamFactory)
-   //OBJECT_ENTRY(CLSID_SplicedNUBeamFactory, CSplicedNUBeamFactory)
-   //OBJECT_ENTRY(CLSID_SplicedUBeamFactory, CSplicedUBeamFactory)
-
-   //OBJECT_ENTRY(CLSID_WFBeamFamily, CIBeamFamily)
-   //OBJECT_ENTRY(CLSID_UBeamFamily, CUBeamFamily)
-   //OBJECT_ENTRY(CLSID_BoxBeamFamily, CBoxBeamFamily)
-   //OBJECT_ENTRY(CLSID_DeckBulbTeeBeamFamily, CDeckBulbTeeBeamFamily)
-   //OBJECT_ENTRY(CLSID_DoubleTeeBeamFamily, CDoubleTeeBeamFamily)
-   //OBJECT_ENTRY(CLSID_RibbedBeamFamily, CRibbedBeamFamily)
-   //OBJECT_ENTRY(CLSID_SlabBeamFamily, CSlabBeamFamily)
-   //OBJECT_ENTRY(CLSID_DeckedSlabBeamFamily, CDeckedSlabBeamFamily)
-
-   //OBJECT_ENTRY(CLSID_SplicedIBeamFamily, CSplicedIBeamFamily)
-   //OBJECT_ENTRY(CLSID_SplicedUBeamFamily, CSplicedUBeamFamily)
-
    OBJECT_ENTRY(CLSID_StrandMoverImpl, CStrandMoverImpl)
-
-   // no longer COM objects
-   //OBJECT_ENTRY(CLSID_BoxBeamDistFactorEngineer, CBoxBeamDistFactorEngineer)
-   //OBJECT_ENTRY(CLSID_BulbTeeDistFactorEngineer, CBulbTeeDistFactorEngineer)
-   //OBJECT_ENTRY(CLSID_MultiWebDistFactorEngineer, CMultiWebDistFactorEngineer)
-   //OBJECT_ENTRY(CLSID_IBeamDistFactorEngineer, CIBeamDistFactorEngineer)
-   //OBJECT_ENTRY(CLSID_UBeamDistFactorEngineer, CUBeamDistFactorEngineer)
-   //OBJECT_ENTRY(CLSID_VoidedSlabDistFactorEngineer, CVoidedSlabDistFactorEngineer)
-   //OBJECT_ENTRY(CLSID_VoidedSlab2DistFactorEngineer, CVoidedSlab2DistFactorEngineer)
-
-   // no longer COM objects
-   //OBJECT_ENTRY(CLSID_PsBeamLossEngineer, CPsBeamLossEngineer)
-   //OBJECT_ENTRY(CLSID_TimeStepLossEngineer, CTimeStepLossEngineer)
-
    OBJECT_ENTRY(CLSID_AgeAdjustedMaterial, CAgeAdjustedMaterial)
-
-   // no longer COM objects
-   //OBJECT_ENTRY(CLSID_NUDeckedBulbTeeFactory, CNUDeckedBulbTeeFactory)
-   //OBJECT_ENTRY(CLSID_PCIDeckedBulbTeeFactory, CPCIDeckedBulbTeeFactory)
 END_OBJECT_MAP()
 
 
 EAF_BEGIN_OBJECT_MAP(ObjectMap2)
-   EAF_OBJECT_ENTRY(CLSID_WFBeamFactory, CIBeamFactory)
-   EAF_OBJECT_ENTRY(CLSID_UBeamFactory, CUBeamFactory)
-   EAF_OBJECT_ENTRY(CLSID_UBeam2Factory, CUBeam2Factory)
-   EAF_OBJECT_ENTRY(CLSID_NUBeamFactory, CNUBeamFactory)
-   EAF_OBJECT_ENTRY(CLSID_BulbTeeFactory, CBulbTeeFactory)
-   EAF_OBJECT_ENTRY(CLSID_MultiWebFactory, CMultiWebFactory)
-   EAF_OBJECT_ENTRY(CLSID_MultiWeb2Factory, CMultiWeb2Factory)
-   EAF_OBJECT_ENTRY(CLSID_DoubleTeeFactory, CDoubleTeeFactory)
-   EAF_OBJECT_ENTRY(CLSID_VoidedSlabFactory, CVoidedSlabFactory)
-   EAF_OBJECT_ENTRY(CLSID_VoidedSlab2Factory, CVoidedSlab2Factory)
-   EAF_OBJECT_ENTRY(CLSID_BoxBeamFactory, CBoxBeamFactory)
-   EAF_OBJECT_ENTRY(CLSID_BoxBeam2Factory, CBoxBeamFactory2)
-   EAF_OBJECT_ENTRY(CLSID_TxDotDoubleTFactory, CTxDotDoubleTFactory)
-   EAF_OBJECT_ENTRY(CLSID_TaperedIBeamFactory, CTaperedIBeamFactory)
-   EAF_OBJECT_ENTRY(CLSID_DeckedSlabBeamFactory, CDeckedSlabBeamFactory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_WFBeamFactory, CIBeamFactory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_UBeamFactory, CUBeamFactory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_UBeam2Factory, CUBeam2Factory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_NUBeamFactory, CNUBeamFactory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_BulbTeeFactory, CBulbTeeFactory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_MultiWebFactory, CMultiWebFactory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_MultiWeb2Factory, CMultiWeb2Factory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_DoubleTeeFactory, CDoubleTeeFactory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_VoidedSlabFactory, CVoidedSlabFactory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_VoidedSlab2Factory, CVoidedSlab2Factory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_BoxBeamFactory, CBoxBeamFactory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_BoxBeam2Factory, CBoxBeamFactory2)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_TxDotDoubleTFactory, CTxDotDoubleTFactory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_TaperedIBeamFactory, CTaperedIBeamFactory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_DeckedSlabBeamFactory, CDeckedSlabBeamFactory)
 
-   EAF_OBJECT_ENTRY(CLSID_NUDeckedBulbTeeFactory, CNUDeckedBulbTeeFactory)
-   EAF_OBJECT_ENTRY(CLSID_PCIDeckedBulbTeeFactory, CPCIDeckedBulbTeeFactory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_NUDeckedBulbTeeFactory, CNUDeckedBulbTeeFactory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_PCIDeckedBulbTeeFactory, CPCIDeckedBulbTeeFactory)
 
-   EAF_OBJECT_ENTRY(CLSID_SplicedIBeamFactory, CSplicedIBeamFactory)
-   EAF_OBJECT_ENTRY(CLSID_SplicedNUBeamFactory, CSplicedNUBeamFactory)
-   EAF_OBJECT_ENTRY(CLSID_SplicedUBeamFactory, CSplicedUBeamFactory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_SplicedIBeamFactory, CSplicedIBeamFactory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_SplicedNUBeamFactory, CSplicedNUBeamFactory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_SplicedUBeamFactory, CSplicedUBeamFactory)
 
    EAF_OBJECT_ENTRY(CLSID_WFBeamFamily, CIBeamFamily)
    EAF_OBJECT_ENTRY(CLSID_UBeamFamily, CUBeamFamily)

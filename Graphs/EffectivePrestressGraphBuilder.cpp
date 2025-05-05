@@ -31,7 +31,7 @@
 
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDisplayUnits.h>
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 #include <Units\UnitValueNumericalFormatTools.h>
 
 #include <IFace\Intervals.h>
@@ -143,7 +143,7 @@ CGirderGraphControllerBase* CEffectivePrestressGraphBuilder::CreateGraphControll
 bool CEffectivePrestressGraphBuilder::UpdateNow()
 {
    GET_IFACE(IEAFProgress,pProgress);
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
 
    pProgress->UpdateMessage(_T("Building Graph"));
 

@@ -55,7 +55,11 @@
 #include <psgLib/SpecLibraryEntry.h>
 #include <psgLib/GirderLibraryEntry.h>
 
-CVoidedSlabFactory::CVoidedSlabFactory() : IBeamFactory()
+using namespace PGS::Beams;
+
+std::shared_ptr<CVoidedSlabFactory> BeamFactorySingleton<CVoidedSlabFactory>::instance = nullptr;
+
+CVoidedSlabFactory::CVoidedSlabFactory() : BeamFactory()
 {
    // Initialize with default values... This are not necessarily valid dimensions
    m_DimNames.emplace_back(_T("H"));
@@ -89,7 +93,7 @@ CVoidedSlabFactory::CVoidedSlabFactory() : IBeamFactory()
    m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // Max joint size
 }
 
-void CVoidedSlabFactory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
+void CVoidedSlabFactory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const BeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
 {
    CComPtr<IVoidedSlabSection> gdrSection;
    gdrSection.CoCreateInstance(CLSID_VoidedSlabSection);
@@ -254,9 +258,9 @@ std::unique_ptr<CPsLossEngineerBase> CVoidedSlabFactory::CreatePsLossEngineer(st
    }
 }
 
-void CVoidedSlabFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
-                                  IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
-                                  IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
+void CVoidedSlabFactory::CreateStrandMover(const BeamFactory::Dimensions& dimensions,  Float64 Hg,
+                                  BeamFactory::BeamFace endTopFace, Float64 endTopLimit, BeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
+                                  BeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, BeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
                                   Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover) const
 {
    HRESULT hr = S_OK;
@@ -322,10 +326,10 @@ void CVoidedSlabFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimen
    }
 
    // set vertical offset bounds and increments
-   Float64 hptb  = hpTopFace     == IBeamFactory::BeamFace::Bottom ? hpTopLimit     - depth : -hpTopLimit;
-   Float64 hpbb  = hpBottomFace  == IBeamFactory::BeamFace::Bottom ? hpBottomLimit  - depth : -hpBottomLimit;
-   Float64 endtb = endTopFace    == IBeamFactory::BeamFace::Bottom ? endTopLimit    - depth : -endTopLimit;
-   Float64 endbb = endBottomFace == IBeamFactory::BeamFace::Bottom ? endBottomLimit - depth : -endBottomLimit;
+   Float64 hptb  = hpTopFace     == BeamFactory::BeamFace::Bottom ? hpTopLimit     - depth : -hpTopLimit;
+   Float64 hpbb  = hpBottomFace  == BeamFactory::BeamFace::Bottom ? hpBottomLimit  - depth : -hpBottomLimit;
+   Float64 endtb = endTopFace    == BeamFactory::BeamFace::Bottom ? endTopLimit    - depth : -endTopLimit;
+   Float64 endbb = endBottomFace == BeamFactory::BeamFace::Bottom ? endBottomLimit - depth : -endBottomLimit;
 
    hr = configurer->SetHarpedStrandOffsetBounds(0, depth, endtb, endbb, hptb, hpbb, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
@@ -349,7 +353,7 @@ const std::vector<const WBFL::Units::Length*>& CVoidedSlabFactory::GetDimensionU
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
 
-bool CVoidedSlabFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSI,std::_tstring* strErrMsg) const
+bool CVoidedSlabFactory::ValidateDimensions(const BeamFactory::Dimensions& dimensions,bool bSI,std::_tstring* strErrMsg) const
 {
    Float64 H,W,D,S,J;
    WebIndexType N;
@@ -464,7 +468,7 @@ bool CVoidedSlabFactory::ValidateDimensions(const IBeamFactory::Dimensions& dime
    return true;
 }
 
-void CVoidedSlabFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
+void CVoidedSlabFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const BeamFactory::Dimensions& dimensions) const
 {
    pSave->BeginUnit(_T("VoidedSlabDimensions"),2.0);
    for(const auto& name : m_DimNames)
@@ -475,7 +479,7 @@ void CVoidedSlabFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pS
    pSave->EndUnit();
 }
 
-IBeamFactory::Dimensions CVoidedSlabFactory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
+BeamFactory::Dimensions CVoidedSlabFactory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
 {
    Float64 parent_version;
    if (pLoad->GetParentUnit() == _T("GirderLibraryEntry"))
@@ -487,7 +491,7 @@ IBeamFactory::Dimensions CVoidedSlabFactory::LoadSectionDimensions(WBFL::System:
       parent_version = pLoad->GetVersion();
    }
 
-   IBeamFactory::Dimensions dimensions;
+   BeamFactory::Dimensions dimensions;
 
    Float64 dimVersion = 1.0;
    if ( 14 <= parent_version )
@@ -531,7 +535,7 @@ IBeamFactory::Dimensions CVoidedSlabFactory::LoadSectionDimensions(WBFL::System:
    return dimensions;
 }
 
-bool CVoidedSlabFactory::IsPrismatic(const IBeamFactory::Dimensions& dimensions) const
+bool CVoidedSlabFactory::IsPrismatic(const BeamFactory::Dimensions& dimensions) const
 {
    return true;
 }
@@ -801,7 +805,7 @@ HICON  CVoidedSlabFactory::GetIcon()  const
    return ::LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_VOIDEDSLAB) );
 }
 
-void CVoidedSlabFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions,
+void CVoidedSlabFactory::GetDimensions(const BeamFactory::Dimensions& dimensions,
                                        Float64& H,
                                        Float64& W,
                                        Float64& D,
@@ -817,7 +821,7 @@ void CVoidedSlabFactory::GetDimensions(const IBeamFactory::Dimensions& dimension
    J = GetDimension(dimensions,_T("Jmax"));
 }
 
-Float64 CVoidedSlabFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,
+Float64 CVoidedSlabFactory::GetDimension(const BeamFactory::Dimensions& dimensions,
                                         const std::_tstring& name) const
 {
    for ( const auto& dim : dimensions)
@@ -875,7 +879,7 @@ bool CVoidedSlabFactory::IsSupportedBeamSpacing(pgsTypes::SupportedBeamSpacing s
    return found == sbs.end() ? false : true;
 }
 
-bool CVoidedSlabFactory::ConvertBeamSpacing(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const
+bool CVoidedSlabFactory::ConvertBeamSpacing(const BeamFactory::Dimensions& dimensions,pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const
 {
    if (spacingType == pgsTypes::sbsUniform)
    {
@@ -951,7 +955,7 @@ pgsTypes::SupportedDiaphragmLocationTypes CVoidedSlabFactory::GetSupportedDiaphr
    return locations;
 }
 
-void CVoidedSlabFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const
+void CVoidedSlabFactory::GetAllowableSpacingRange(const BeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const
 {
    *minSpacing = 0.0;
    *maxSpacing = 0.0;
@@ -976,23 +980,23 @@ void CVoidedSlabFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions
    }
 }
 
-WebIndexType CVoidedSlabFactory::GetWebCount(const IBeamFactory::Dimensions& dimensions) const
+WebIndexType CVoidedSlabFactory::GetWebCount(const BeamFactory::Dimensions& dimensions) const
 {
    long nv = (long)GetDimension(dimensions,_T("Number_of_Voids"));
    return nv+1;
 }
 
-Float64 CVoidedSlabFactory::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
+Float64 CVoidedSlabFactory::GetBeamHeight(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    return GetDimension(dimensions,_T("H"));
 }
 
-Float64 CVoidedSlabFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
+Float64 CVoidedSlabFactory::GetBeamWidth(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    return GetDimension(dimensions,_T("W"));
 }
 
-void CVoidedSlabFactory::GetBeamTopWidth(const IBeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
+void CVoidedSlabFactory::GetBeamTopWidth(const BeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
 {
    Float64 W = GetDimension(dimensions,_T("W"));
 
@@ -1003,12 +1007,12 @@ void CVoidedSlabFactory::GetBeamTopWidth(const IBeamFactory::Dimensions& dimensi
    *pRightWidth = top;
 }
 
-bool CVoidedSlabFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
+bool CVoidedSlabFactory::IsShearKey(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
 {
    return false;
 }
 
-void CVoidedSlabFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const
+void CVoidedSlabFactory::GetShearKeyAreas(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const
 {
    *uniformArea = 0.0;
    *areaPerJoint = 0.0;
@@ -1039,7 +1043,7 @@ GirderIndexType CVoidedSlabFactory::GetMinimumBeamCount() const
    return 1;
 }
 
-void CVoidedSlabFactory::DimensionAndPositionBeam(const IBeamFactory::Dimensions& dimensions, IVoidedSlab* pBeam) const
+void CVoidedSlabFactory::DimensionAndPositionBeam(const BeamFactory::Dimensions& dimensions, IVoidedSlab* pBeam) const
 {
    Float64 H, W, D, S, J;
    WebIndexType N;

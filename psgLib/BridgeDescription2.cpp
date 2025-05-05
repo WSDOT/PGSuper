@@ -3209,7 +3209,7 @@ void CBridgeDescription2::SetGirderLibraryEntry(const GirderLibraryEntry* pEntry
       if ( m_pGirderLibraryEntry != nullptr )
       {
          auto beamFactory = m_pGirderLibraryEntry->GetBeamFactory();
-         auto splicedBeamFactory = std::dynamic_pointer_cast<ISplicedBeamFactory>(beamFactory);
+         auto splicedBeamFactory = std::dynamic_pointer_cast<PGS::Beams::SplicedBeamFactory>(beamFactory);
          if ( splicedBeamFactory )
          {
             std::vector<pgsTypes::SegmentVariationType> variations = splicedBeamFactory->GetSupportedSegmentVariations(m_pGirderLibraryEntry->IsVariableDepthSectionEnabled());

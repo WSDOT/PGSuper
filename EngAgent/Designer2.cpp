@@ -728,7 +728,7 @@ const pgsGirderArtifact* pgsDesigner2::Check(const CGirderKey& girderKey) const
    ASSERT_GIRDER_KEY(girderKey);
 
    GET_IFACE(IEAFProgress, pProgress);
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
 
    GET_IFACE(ILiveLoads,         pLiveLoads);
    GET_IFACE(IBridge,            pBridge);
@@ -1125,7 +1125,7 @@ void pgsDesigner2::DoDesign(const CGirderKey& girderKey,const arDesignOptions& o
    bool bPermit = pLiveLoads->IsLiveLoadDefined(pgsTypes::lltPermit);
 
    GET_IFACE(IEAFProgress,pProgress);
-   CEAFAutoProgress ap(pProgress,0,PW_ALL | PW_NOGAUGE); // progress window has a cancel button
+   WBFL::EAF::AutoProgress ap(pProgress,0,PW_ALL | PW_NOGAUGE); // progress window has a cancel button
 
    GET_IFACE_NOCHECK(IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -1824,7 +1824,7 @@ void pgsDesigner2::CheckTendonStresses(const CGirderKey& girderKey,pgsGirderArti
    }
 
    GET_IFACE(IEAFProgress, pProgress);
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
 
    GET_IFACE_NOCHECK(IPointOfInterest, pPoi);
    GET_IFACE(IPosttensionForce,pPTForce);
@@ -1980,7 +1980,7 @@ void pgsDesigner2::CheckStrandStresses(const CSegmentKey& segmentKey,pgsStrandSt
    GET_IFACE(IPointOfInterest,pPoi);
 
    GET_IFACE(IEAFProgress, pProgress);
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
 
    std::_tostringstream os;
    os << _T("Checking strand stresses for Group ") << LABEL_GROUP(segmentKey.groupIndex) 
@@ -2050,7 +2050,7 @@ void pgsDesigner2::CheckSegmentStresses(const CSegmentKey& segmentKey,const PoiL
    USES_CONVERSION;
 
    GET_IFACE(IEAFProgress, pProgress);
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
    pProgress->UpdateMessage(_T("Checking Girder Stresses"));
 
    GET_IFACE(IIntervals, pIntervals);
@@ -4942,7 +4942,7 @@ void pgsDesigner2::CheckShear(bool bDesign,const CSegmentKey& segmentKey,Interva
 std::shared_ptr<pgsSplittingCheckArtifact> pgsDesigner2::CheckSplittingZone(const CSegmentKey& segmentKey,const GDRCONFIG* pConfig) const
 {
    GET_IFACE(IEAFProgress, pProgress);
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
    pProgress->UpdateMessage(_T("Checking splitting requirements"));
 
    GET_IFACE(ISplittingChecks,pSplittingChecks);
@@ -4953,7 +4953,7 @@ void pgsDesigner2::CheckSegmentDetailing(const CSegmentKey& segmentKey,pgsSegmen
 {
    // 5.12.3.2.2 (pre2017: 5.14.1.2.2)
    GET_IFACE(IEAFProgress,pProgress);
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
    pProgress->UpdateMessage( _T("Checking segment detailing") );
 
    pgsPrecastIGirderDetailingArtifact* pArtifact = pGdrArtifact->GetPrecastIGirderDetailingArtifact();
@@ -5035,7 +5035,7 @@ void pgsDesigner2::CheckStrandSlope(const CSegmentKey& segmentKey,pgsStrandSlope
    GET_IFACE(IMaterials,pMaterial);
 
    GET_IFACE(IEAFProgress,pProgress);
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
    pProgress->UpdateMessage( _T("Checking strand slope requirements") );
 
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
@@ -5060,7 +5060,7 @@ void pgsDesigner2::CheckHoldDownForce(const CSegmentKey& segmentKey,pgsHoldDownF
    GET_IFACE(IPretensionForce,pPrestressForce);
 
    GET_IFACE(IEAFProgress,pProgress);
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
    pProgress->UpdateMessage(_T("Checking hold down force requirements"));
 
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
@@ -5080,7 +5080,7 @@ void pgsDesigner2::CheckPlantHandlingWeightLimit(const CSegmentKey& segmentKey, 
    GET_IFACE(ILibrary, pLib);
 
    GET_IFACE(IEAFProgress, pProgress);
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
    pProgress->UpdateMessage(_T("Checking plant handling weight requirements"));
 
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry(pSpec->GetSpecification().c_str());
@@ -5131,7 +5131,7 @@ void pgsDesigner2::CheckLiveLoadDeflection(const CGirderKey& girderKey,pgsGirder
       if (live_load_deflection_criteria.bCheck)
       {
          GET_IFACE(IEAFProgress,pProgress);
-         CEAFAutoProgress ap(pProgress);
+         WBFL::EAF::AutoProgress ap(pProgress);
          pProgress->UpdateMessage( _T("Checking live load deflection requirements") );
 
          artifact.IsApplicable(true);
@@ -5339,7 +5339,7 @@ void pgsDesigner2::CheckConstructability(const CGirderKey& girderKey,pgsConstruc
    //
    ///////////////////////////////////////////////////////////////
    GET_IFACE(IEAFProgress,pProgress);
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
    pProgress->UpdateMessage(_T("Checking constructability requirements"));
 
    bool isHaunchCheck = pSpecEntry->GetSlabOffsetCriteria().bCheck;
@@ -5773,7 +5773,7 @@ void pgsDesigner2::CheckDebonding(const CSegmentKey& segmentKey, pgsDebondArtifa
    GET_IFACE(IPointOfInterest, pPoi);
    GET_IFACE(IGirder, pGirder);
 
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
    pProgress->UpdateMessage(_T("Checking debonding requirements"));
 
    PoiList vPoi;

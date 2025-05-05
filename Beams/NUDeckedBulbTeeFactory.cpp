@@ -57,9 +57,11 @@
 #include <Plugins\ConfigureStrandMover.h>
 #include <WBFLGenericBridgeTools.h>
 
+using namespace PGS::Beams;
 
+std::shared_ptr<CNUDeckedBulbTeeFactory> BeamFactorySingleton<CNUDeckedBulbTeeFactory>::instance = nullptr;
 
-CNUDeckedBulbTeeFactory::CNUDeckedBulbTeeFactory() : IBeamFactory()
+CNUDeckedBulbTeeFactory::CNUDeckedBulbTeeFactory() : BeamFactory()
 {
    StatusGroupIDType m_StatusGroupID = INVALID_ID;
 
@@ -149,7 +151,7 @@ CNUDeckedBulbTeeFactory::CNUDeckedBulbTeeFactory() : IBeamFactory()
    m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Feet); // Wmin
 }
 
-void CNUDeckedBulbTeeFactory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusItemIDType statusID,const IBeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
+void CNUDeckedBulbTeeFactory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusItemIDType statusID,const BeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
 {
    m_StatusGroupID = statusID; // catch status group id here so we can use it later
 
@@ -423,9 +425,9 @@ std::unique_ptr<CPsLossEngineerBase> CNUDeckedBulbTeeFactory::CreatePsLossEngine
    }
 }
 
-void CNUDeckedBulbTeeFactory::CreateStrandMover(const IBeamFactory::Dimensions& dimensions,  Float64 Hg,
-                                  IBeamFactory::BeamFace endTopFace, Float64 endTopLimit, IBeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
-                                  IBeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, IBeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
+void CNUDeckedBulbTeeFactory::CreateStrandMover(const BeamFactory::Dimensions& dimensions,  Float64 Hg,
+                                  BeamFactory::BeamFace endTopFace, Float64 endTopLimit, BeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
+                                  BeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, BeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
                                   Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover) const
 {
    HRESULT hr = S_OK;
@@ -462,10 +464,10 @@ void CNUDeckedBulbTeeFactory::CreateStrandMover(const IBeamFactory::Dimensions& 
    ATLASSERT (SUCCEEDED(hr));
 
    // set vertical offset bounds and increments
-   Float64 hptb  = hpTopFace     == IBeamFactory::BeamFace::Bottom ? hpTopLimit     - h : -hpTopLimit;
-   Float64 hpbb  = hpBottomFace  == IBeamFactory::BeamFace::Bottom ? hpBottomLimit  - h : -hpBottomLimit;
-   Float64 endtb = endTopFace    == IBeamFactory::BeamFace::Bottom ? endTopLimit    - h : -endTopLimit;
-   Float64 endbb = endBottomFace == IBeamFactory::BeamFace::Bottom ? endBottomLimit - h : -endBottomLimit;
+   Float64 hptb  = hpTopFace     == BeamFactory::BeamFace::Bottom ? hpTopLimit     - h : -hpTopLimit;
+   Float64 hpbb  = hpBottomFace  == BeamFactory::BeamFace::Bottom ? hpBottomLimit  - h : -hpBottomLimit;
+   Float64 endtb = endTopFace    == BeamFactory::BeamFace::Bottom ? endTopLimit    - h : -endTopLimit;
+   Float64 endbb = endBottomFace == BeamFactory::BeamFace::Bottom ? endBottomLimit - h : -endBottomLimit;
 
    hr = configurer->SetHarpedStrandOffsetBounds(0, h, endtb, endbb, hptb, hpbb, hptb, hpbb, endtb, endbb, endIncrement, hpIncrement);
    ATLASSERT (SUCCEEDED(hr));
@@ -489,7 +491,7 @@ const std::vector<const WBFL::Units::Length*>& CNUDeckedBulbTeeFactory::GetDimen
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
 
-bool CNUDeckedBulbTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg) const
+bool CNUDeckedBulbTeeFactory::ValidateDimensions(const BeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg) const
 {
     Float64 c1;
     Float64 d1, d2, d3, d4, d5, d6;
@@ -681,7 +683,7 @@ bool CNUDeckedBulbTeeFactory::ValidateDimensions(const IBeamFactory::Dimensions&
    return true;
 }
 
-void CNUDeckedBulbTeeFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const IBeamFactory::Dimensions& dimensions) const
+void CNUDeckedBulbTeeFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const BeamFactory::Dimensions& dimensions) const
 {
    pSave->BeginUnit(_T("NUDeckedBulbTeeDimensions"),1.0);
    for( const auto& name : m_DimNames)
@@ -692,7 +694,7 @@ void CNUDeckedBulbTeeFactory::SaveSectionDimensions(WBFL::System::IStructuredSav
    pSave->EndUnit();
 }
 
-IBeamFactory::Dimensions CNUDeckedBulbTeeFactory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
+BeamFactory::Dimensions CNUDeckedBulbTeeFactory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
 {
    Float64 parent_version;
    if (pLoad->GetParentUnit() == _T("GirderLibraryEntry"))
@@ -704,7 +706,7 @@ IBeamFactory::Dimensions CNUDeckedBulbTeeFactory::LoadSectionDimensions(WBFL::Sy
       parent_version = pLoad->GetVersion();
    }
    
-   IBeamFactory::Dimensions dimensions;
+   BeamFactory::Dimensions dimensions;
 
    if (14 <= parent_version && !pLoad->BeginUnit(_T("NUDeckedBulbTeeDimensions")))
    {
@@ -731,7 +733,7 @@ IBeamFactory::Dimensions CNUDeckedBulbTeeFactory::LoadSectionDimensions(WBFL::Sy
    return dimensions;
 }
 
-bool CNUDeckedBulbTeeFactory::IsPrismatic(const IBeamFactory::Dimensions& dimensions) const
+bool CNUDeckedBulbTeeFactory::IsPrismatic(const BeamFactory::Dimensions& dimensions) const
 {
    return true;
 }
@@ -926,7 +928,7 @@ HICON  CNUDeckedBulbTeeFactory::GetIcon()  const
    return ::LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_BULBTEE) );
 }
 
-void CNUDeckedBulbTeeFactory::GetDimensions(const IBeamFactory::Dimensions& dimensions, Float64& w1,
+void CNUDeckedBulbTeeFactory::GetDimensions(const BeamFactory::Dimensions& dimensions, Float64& w1,
                                   Float64& w2,Float64& w3,Float64& d1,Float64& d2,Float64& d3,Float64& d4,Float64& d5,Float64& d6,
                                   Float64& h,Float64& t,Float64& r1,Float64& r2,Float64& c1,Float64& wmin,Float64& wmax) const
 {
@@ -948,7 +950,7 @@ void CNUDeckedBulbTeeFactory::GetDimensions(const IBeamFactory::Dimensions& dime
     wmax = GetDimension(dimensions, _T("Wmax"));
 }
 
-Float64 CNUDeckedBulbTeeFactory::GetDimension(const IBeamFactory::Dimensions& dimensions,const std::_tstring& name) const
+Float64 CNUDeckedBulbTeeFactory::GetDimension(const BeamFactory::Dimensions& dimensions,const std::_tstring& name) const
 {
    for ( const auto& dim : dimensions)
    {
@@ -977,7 +979,7 @@ bool CNUDeckedBulbTeeFactory::IsSupportedBeamSpacing(pgsTypes::SupportedBeamSpac
    return found == sbs.end() ? false : true;
 }
 
-bool CNUDeckedBulbTeeFactory::ConvertBeamSpacing(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const
+bool CNUDeckedBulbTeeFactory::ConvertBeamSpacing(const BeamFactory::Dimensions& dimensions,pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const
 {
    ATLASSERT(!IsSupportedBeamSpacing(spacingType));
    if (spacingType == pgsTypes::sbsUniform || spacingType == pgsTypes::sbsUniformAdjacent || spacingType == pgsTypes::sbsConstantAdjacent)
@@ -1080,7 +1082,7 @@ pgsTypes::SupportedDiaphragmLocationTypes CNUDeckedBulbTeeFactory::GetSupportedD
    return locations;
 }
 
-void CNUDeckedBulbTeeFactory::GetAllowableSpacingRange(const IBeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const
+void CNUDeckedBulbTeeFactory::GetAllowableSpacingRange(const BeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const
 {
    // this is for joint spacing... effective want unrestrained joint spacing
    // need 0 for welded shear tab and grout key connection and a specific value for UHPC-type connections
@@ -1095,7 +1097,7 @@ std::vector<pgsTypes::TopWidthType> CNUDeckedBulbTeeFactory::GetSupportedTopWidt
    return types;
 }
 
-void CNUDeckedBulbTeeFactory::GetAllowableTopWidthRange(pgsTypes::TopWidthType topWidthType, const IBeamFactory::Dimensions& dimensions, Float64* pWleftMin, Float64* pWleftMax, Float64* pWrightMin, Float64* pWrightMax) const
+void CNUDeckedBulbTeeFactory::GetAllowableTopWidthRange(pgsTypes::TopWidthType topWidthType, const BeamFactory::Dimensions& dimensions, Float64* pWleftMin, Float64* pWleftMax, Float64* pWrightMin, Float64* pWrightMax) const
 {
    Float64 Wmin = GetDimension(dimensions, _T("Wmin"));
    Float64 Wmax = GetDimension(dimensions, _T("Wmax"));
@@ -1116,22 +1118,22 @@ void CNUDeckedBulbTeeFactory::GetAllowableTopWidthRange(pgsTypes::TopWidthType t
    }
 }
 
-WebIndexType CNUDeckedBulbTeeFactory::GetWebCount(const IBeamFactory::Dimensions& dimensions) const
+WebIndexType CNUDeckedBulbTeeFactory::GetWebCount(const BeamFactory::Dimensions& dimensions) const
 {
    return 1;
 }
 
-Float64 CNUDeckedBulbTeeFactory::GetBeamHeight(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
+Float64 CNUDeckedBulbTeeFactory::GetBeamHeight(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    return GetDimension(dimensions,_T("H"));
 }
 
-Float64 CNUDeckedBulbTeeFactory::GetBeamWidth(const IBeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
+Float64 CNUDeckedBulbTeeFactory::GetBeamWidth(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    return GetDimension(dimensions,_T("Wmax"));
 }
 
-void CNUDeckedBulbTeeFactory::GetBeamTopWidth(const IBeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
+void CNUDeckedBulbTeeFactory::GetBeamTopWidth(const BeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
 {
    Float64 Wmin = GetDimension(dimensions, _T("Wmin"));
 
@@ -1142,12 +1144,12 @@ void CNUDeckedBulbTeeFactory::GetBeamTopWidth(const IBeamFactory::Dimensions& di
    *pRightWidth = top;
 }
 
-bool CNUDeckedBulbTeeFactory::IsShearKey(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
+bool CNUDeckedBulbTeeFactory::IsShearKey(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
 {
    return false;
 }
 
-void CNUDeckedBulbTeeFactory::GetShearKeyAreas(const IBeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const
+void CNUDeckedBulbTeeFactory::GetShearKeyAreas(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const
 {
    *uniformArea = 0.0;
    *areaPerJoint = 0.0;

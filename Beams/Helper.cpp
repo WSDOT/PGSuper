@@ -30,9 +30,9 @@
 
 #include "AgeAdjustedMaterial.h"
 
+using namespace PGS::Beams;
 
-
-void ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, WBFL::LRFD::ILiveLoadDistributionFactor::LeverRuleMethod& lrd,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
+void PGS::Beams::ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, WBFL::LRFD::ILiveLoadDistributionFactor::LeverRuleMethod& lrd,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    if (lrd.Nb>1)
    {
@@ -160,11 +160,11 @@ void ReportLeverRule(rptParagraph* pPara,bool isMoment, Float64 specialFactor, W
       lbm.Nb = 1;
       lbm.m  = lrd.m;
 
-      ReportLanesBeamsMethod(pPara,lbm,pBroker,pDisplayUnits);
+      PGS::Beams::ReportLanesBeamsMethod(pPara,lbm,pBroker,pDisplayUnits);
    }
 }
 
-void ReportRigidMethod(rptParagraph* pPara,WBFL::LRFD::ILiveLoadDistributionFactor::RigidMethod& rd,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
+void PGS::Beams::ReportRigidMethod(rptParagraph* pPara,WBFL::LRFD::ILiveLoadDistributionFactor::RigidMethod& rd,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue,    xdim,    pDisplayUnits->GetSpanLengthUnit(),    true );
 
@@ -196,7 +196,7 @@ void ReportRigidMethod(rptParagraph* pPara,WBFL::LRFD::ILiveLoadDistributionFact
    (*pPara) << _T("mg") << Super(_T("ME")) << Sub((rd.e.size() > 1 ? _T("2+") : _T("1"))) << _T(" = ") << scalar.SetValue(rd.mg) << rptNewLine;
 }
 
-void ReportLanesBeamsMethod(rptParagraph* pPara,WBFL::LRFD::ILiveLoadDistributionFactor::LanesBeamsMethod& rd,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
+void PGS::Beams::ReportLanesBeamsMethod(rptParagraph* pPara,WBFL::LRFD::ILiveLoadDistributionFactor::LanesBeamsMethod& rd,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    INIT_SCALAR_PROTOTYPE(rptRcScalar, scalar, pDisplayUnits->GetScalarFormat());
 
@@ -205,7 +205,7 @@ void ReportLanesBeamsMethod(rptParagraph* pPara,WBFL::LRFD::ILiveLoadDistributio
 }
 
 
-void BuildAgeAdjustedGirderMaterialModel(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CPrecastSegmentData* pSegment,ISuperstructureMemberSegment* segment,IAgeAdjustedMaterial** ppMaterial)
+void PGS::Beams::BuildAgeAdjustedGirderMaterialModel(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CPrecastSegmentData* pSegment,ISuperstructureMemberSegment* segment,IAgeAdjustedMaterial** ppMaterial)
 {
    const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
    const CSplicedGirderData* pGirder = pSegment->GetGirder();
@@ -321,7 +321,7 @@ void BuildAgeAdjustedGirderMaterialModel(std::shared_ptr<WBFL::EAF::Broker> pBro
    }
 }
 
-void BuildAgeAdjustedJointMaterialModel(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, ISuperstructureMemberSegment* segment, IAgeAdjustedMaterial** ppMaterial)
+void PGS::Beams::BuildAgeAdjustedJointMaterialModel(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, ISuperstructureMemberSegment* segment, IAgeAdjustedMaterial** ppMaterial)
 {
    const CSegmentKey& segmentKey(pSegment->GetSegmentKey());
    const CSplicedGirderData* pGirder = pSegment->GetGirder();
@@ -345,7 +345,7 @@ void BuildAgeAdjustedJointMaterialModel(std::shared_ptr<WBFL::EAF::Broker> pBrok
    jointMaterial.CopyTo(ppMaterial);
 }
 
-void MakeRectangle(Float64 width, Float64 depth, Float64 xOffset, Float64 yOffset,IShape** ppShape)
+void PGS::Beams::MakeRectangle(Float64 width, Float64 depth, Float64 xOffset, Float64 yOffset,IShape** ppShape)
 {
    CComPtr<IRectangle> harp_rect;
    HRESULT hr = harp_rect.CoCreateInstance(CLSID_Rect);
@@ -365,7 +365,7 @@ void MakeRectangle(Float64 width, Float64 depth, Float64 xOffset, Float64 yOffse
    harp_rect->get_Shape(ppShape);
 }
 
-bool IsInEndBlock(Float64 Xs, pgsTypes::SectionBias sectionBias, Float64 leftEndBlockLength, Float64 rightEndBlockLength, Float64 Lg)
+bool PGS::Beams::IsInEndBlock(Float64 Xs, pgsTypes::SectionBias sectionBias, Float64 leftEndBlockLength, Float64 rightEndBlockLength, Float64 Lg)
 {
    if (
       (0.0 < leftEndBlockLength && (sectionBias == sbLeft ? IsLE(Xs, leftEndBlockLength) : IsLT(Xs, leftEndBlockLength))) ||
@@ -380,19 +380,19 @@ bool IsInEndBlock(Float64 Xs, pgsTypes::SectionBias sectionBias, Float64 leftEnd
    }
 }
 
-bool IsInEndBlock(Float64 Xs, pgsTypes::SectionBias sectionBias, Float64 endBlockLength, Float64 Lg)
+bool PGS::Beams::IsInEndBlock(Float64 Xs, pgsTypes::SectionBias sectionBias, Float64 endBlockLength, Float64 Lg)
 {
-   return IsInEndBlock(Xs, sectionBias, endBlockLength, endBlockLength, Lg);
+   return PGS::Beams::IsInEndBlock(Xs, sectionBias, endBlockLength, endBlockLength, Lg);
 }
 
-bool IsSupportedDeckType(pgsTypes::SupportedDeckType deckType, const IBeamFactory* pFactory, pgsTypes::SupportedBeamSpacing spacingType)
+bool PGS::Beams::IsSupportedDeckType(pgsTypes::SupportedDeckType deckType, const BeamFactory* pFactory, pgsTypes::SupportedBeamSpacing spacingType)
 {
    pgsTypes::SupportedDeckTypes deckTypes = pFactory->GetSupportedDeckTypes(spacingType);
    auto found = std::find(deckTypes.cbegin(), deckTypes.cend(), deckType);
    return found == deckTypes.end() ? false : true;
 }
 
-void LayoutIBeamEndBlockPointsOfInterest(const CSegmentKey& segmentKey,const CPrecastSegmentData* pSegment, Float64 segmentLength,pgsPoiMgr* pPoiMgr)
+void PGS::Beams::LayoutIBeamEndBlockPointsOfInterest(const CSegmentKey& segmentKey,const CPrecastSegmentData* pSegment, Float64 segmentLength,pgsPoiMgr* pPoiMgr)
 {
    if (0 < (pSegment->EndBlockLength[pgsTypes::metStart] + pSegment->EndBlockTransitionLength[pgsTypes::metStart]))
    {

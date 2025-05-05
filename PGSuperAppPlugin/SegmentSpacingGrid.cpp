@@ -248,7 +248,7 @@ void CSegmentSpacingGrid::UpdateGrid()
       for ( GirderIndexType gdrIdx = firstGdrIdx; gdrIdx <= lastGdrIdx; gdrIdx++ )
       {
          const GirderLibraryEntry* pGdrEntry = pBridgeDesc->GetGirderGroup(grpIdx)->GetGirder(gdrIdx)->GetGirderLibraryEntry();
-         const IBeamFactory::Dimensions& dimensions = pGdrEntry->GetDimensions();
+         const auto& dimensions = pGdrEntry->GetDimensions();
          auto factory = pGdrEntry->GetBeamFactory();
 
 

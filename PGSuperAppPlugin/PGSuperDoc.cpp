@@ -28,7 +28,7 @@
 #include "PGSPluginAppBase.h"
 
 #include <PsgLib\BridgeDescription2.h>
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 
 #include <MFCTools\AutoRegistry.h>
 
@@ -465,7 +465,7 @@ void CPGSuperDoc::DoDesignGirder(const std::vector<CGirderKey>& girderKeys, bool
 
       GET_IFACE(IEAFProgress,pProgress);
       DWORD mask = bMultiGirderDesign ? PW_ALL : PW_ALL|PW_NOGAUGE; // Progress window has a cancel button,
-      CEAFAutoProgress ap(pProgress,0,mask); 
+      WBFL::EAF::AutoProgress ap(pProgress,0,mask); 
 
       if (bMultiGirderDesign)
       {

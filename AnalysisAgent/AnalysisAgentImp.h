@@ -69,8 +69,6 @@ class CAnalysisAgentImp : public WBFL::EAF::Agent,
 public:
    CAnalysisAgentImp();
 
-   HRESULT FinalConstruct();
-
    // callback IDs for the status callbacks we register
    StatusCallbackIDType m_scidVSRatio;
 
@@ -81,7 +79,7 @@ public:
 // Agent
 public:
    std::_tstring GetName() const override { return _T("AnalysisAgent"); }
-   bool RegInterfaces() override;
+   bool RegisterInterfaces() override;
    bool Init() override;
    bool Reset() override;
    bool ShutDown() override;

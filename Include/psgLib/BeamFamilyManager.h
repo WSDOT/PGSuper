@@ -25,26 +25,27 @@
 
 #include <IFace\BeamFamily.h>
 
-/////////////////////////////////////////////////////////////////////////
-// CBeamFamilyManager
-//
-// This class encapsulates the discovery and creation of Beam Family objects
-//
-
-class PSGLIBCLASS CBeamFamilyManager
+namespace PGS
 {
-public:
-   static HRESULT Init(CATID catid);
+   namespace Beams
+   {
+      // This class encapsulates the discovery and creation of Beam Family objects
+      class PSGLIBCLASS BeamFamilyManager
+      {
+      public:
+         static HRESULT Init(CATID catid);
 
-   static std::vector<CString> GetBeamFamilyNames();
-   static std::vector<CString> GetBeamFamilyNames(CATID catid);
-   static std::shared_ptr<IBeamFamily> GetBeamFamily(LPCTSTR strName);
-   static CLSID GetBeamFamilyCLSID(LPCTSTR strName);
-   static void Reset();
-   static void UpdateFactories();
+         static std::vector<CString> GetBeamFamilyNames();
+         static std::vector<CString> GetBeamFamilyNames(CATID catid);
+         static std::shared_ptr<BeamFamily> GetBeamFamily(LPCTSTR strName);
+         static CLSID GetBeamFamilyCLSID(LPCTSTR strName);
+         static void Reset();
+         static void UpdateFactories();
 
-private:
-   typedef std::map<CString,CLSID> BeamContainer;
-   typedef std::map<CATID,BeamContainer> FamilyContainer;
-   static FamilyContainer m_Families;
+      private:
+         typedef std::map<CString,CLSID> BeamContainer;
+         typedef std::map<CATID,BeamContainer> FamilyContainer;
+         static FamilyContainer m_Families;
+      };
+   };
 };

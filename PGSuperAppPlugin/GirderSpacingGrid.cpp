@@ -262,7 +262,7 @@ void CGirderSpacingGrid::UpdateGrid()
          for (int i = 0; i < 2; i++)
          {
             const GirderLibraryEntry* pGdrEntry = m_pGirderGroup->GetGirderLibraryEntry(gdrIdx+i);
-            const IBeamFactory::Dimensions& dimensions = pGdrEntry->GetDimensions();
+            const auto& dimensions = pGdrEntry->GetDimensions();
             auto factory = pGdrEntry->GetBeamFactory();
 
             factory->GetAllowableSpacingRange(dimensions, m_DeckType, spacingType, &minSpacing[i], &maxSpacing[i]);

@@ -383,7 +383,7 @@ void CEngAgentImp::InvalidateRatingArtifacts()
 void CEngAgentImp::ValidateArtifacts(const CGirderKey& girderKey) const
 {
    GET_IFACE(IEAFProgress, pProgress);
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
 
    std::_tostringstream os;
    os << _T("Analyzing ") << GIRDER_LABEL(girderKey) << std::ends;
@@ -409,7 +409,7 @@ void CEngAgentImp::ValidateRatingArtifacts(const CGirderKey& girderKey,pgsTypes:
    }
 
    GET_IFACE(IEAFProgress, pProgress);
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
 
    std::_tostringstream os;
    os << "Load Rating Girder Line " << LABEL_GIRDER(girderKey.girderIndex) << std::ends;
@@ -542,7 +542,7 @@ const std::vector<CRITSECTDETAILS>& CEngAgentImp::ValidateShearCritSection(pgsTy
    }
 
    GET_IFACE(IEAFProgress, pProgress);
-   CEAFAutoProgress ap(pProgress);
+   WBFL::EAF::AutoProgress ap(pProgress);
 
    std::_tostringstream os;
 
@@ -951,9 +951,9 @@ std::vector<CRITSECTDETAILS> CEngAgentImp::CalculateShearCritSection(pgsTypes::L
 /////////////////////////////////////////////////////////////////////////////
 // IAgent
 
-bool CEngAgentImp::RegInterfaces()
+bool CEngAgentImp::RegisterInterfaces()
 {
-   EAF_AGENT_REGINTERFACES;
+   EAF_AGENT_REGISTER_INTERFACES;
 
    REGISTER_INTERFACE(ILosses);
    REGISTER_INTERFACE(IPretensionForce);
@@ -1005,12 +1005,12 @@ bool CEngAgentImp::Init()
    //
    // Attach to connection points for interfaces this agent depends on
    //
-   m_BridgeDescCookie = REGISTER_CALLBACK(IBridgeDescriptionEventSink);
-   m_SpecificationCookie = REGISTER_CALLBACK(ISpecificationEventSink);
-   m_RatingSpecificationCookie = REGISTER_CALLBACK(IRatingSpecificationEventSink);
-   m_LoadModifiersCookie = REGISTER_CALLBACK(ILoadModifiersEventSink);
-   m_EnvironmentCookie = REGISTER_CALLBACK(IEnvironmentEventSink);
-   m_LossParametersCookie = REGISTER_CALLBACK(ILossParametersEventSink);
+   m_BridgeDescCookie = REGISTER_EVENT_SINK(IBridgeDescriptionEventSink);
+   m_SpecificationCookie = REGISTER_EVENT_SINK(ISpecificationEventSink);
+   m_RatingSpecificationCookie = REGISTER_EVENT_SINK(IRatingSpecificationEventSink);
+   m_LoadModifiersCookie = REGISTER_EVENT_SINK(ILoadModifiersEventSink);
+   m_EnvironmentCookie = REGISTER_EVENT_SINK(IEnvironmentEventSink);
+   m_LossParametersCookie = REGISTER_EVENT_SINK(ILossParametersEventSink);
 
    return true;
 }
@@ -1032,12 +1032,12 @@ bool CEngAgentImp::ShutDown()
 {
    EAF_AGENT_SHUTDOWN;
 
-   UNREGISTER_CALLBACK(IBridgeDescriptionEventSink, m_BridgeDescCookie);
-   UNREGISTER_CALLBACK(ISpecificationEventSink, m_SpecificationCookie);
-   UNREGISTER_CALLBACK(IRatingSpecificationEventSink, m_RatingSpecificationCookie);
-   UNREGISTER_CALLBACK(ILoadModifiersEventSink, m_LoadModifiersCookie);
-   UNREGISTER_CALLBACK(IEnvironmentEventSink, m_EnvironmentCookie);
-   UNREGISTER_CALLBACK(ILossParametersEventSink, m_LossParametersCookie);
+   UNREGISTER_EVENT_SINK(IBridgeDescriptionEventSink, m_BridgeDescCookie);
+   UNREGISTER_EVENT_SINK(ISpecificationEventSink, m_SpecificationCookie);
+   UNREGISTER_EVENT_SINK(IRatingSpecificationEventSink, m_RatingSpecificationCookie);
+   UNREGISTER_EVENT_SINK(ILoadModifiersEventSink, m_LoadModifiersCookie);
+   UNREGISTER_EVENT_SINK(IEnvironmentEventSink, m_EnvironmentCookie);
+   UNREGISTER_EVENT_SINK(ILossParametersEventSink, m_LossParametersCookie);
 
    CLOSE_LOGFILE;
 

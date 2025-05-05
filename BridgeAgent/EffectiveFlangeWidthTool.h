@@ -29,8 +29,15 @@
 #include <EAF\EAFDisplayUnits.h>
 #include <map>
 
-class IBeamFactory;
 class CBridgeDescription2;
+
+namespace PGS
+{
+   namespace Beams
+   {
+	  class BeamFactory;
+   };
+};
 
 // {5D8E135F-F568-4287-87E4-E92538AC2C7F}
 DEFINE_GUID(IID_IReportEffectiveFlangeWidth, 
@@ -136,7 +143,7 @@ private:
    void ReportEffectiveFlangeWidth_ExteriorGirder_MultiTopFlange_Prismatic(IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType gdrID,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
    void ReportEffectiveFlangeWidth_ExteriorGirder_MultiTopFlange_Nonprismatic(IGenericBridge* bridge,const CSegmentKey& segmentKey,GirderIDType gdrID,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
 
-   std::shared_ptr<IBeamFactory> GetBeamFactory(const CSegmentKey& segmentKey);
+   std::shared_ptr<PGS::Beams::BeamFactory> GetBeamFactory(const CSegmentKey& segmentKey);
    bool DoUseTributaryWidth(const CBridgeDescription2* pBridgeDesc);
 
 // ISupportsErrorInfo

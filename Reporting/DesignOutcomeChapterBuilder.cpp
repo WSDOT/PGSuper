@@ -33,7 +33,7 @@
 #include <IFace\AnalysisResults.h>
 #include <IFace\Intervals.h>
 #include <IFace\GirderHandlingSpecCriteria.h>
-#include <EAF\EAFAutoProgress.h>
+#include <EAF/AutoProgress.h>
 #include <IFace/PointOfInterest.h>
 
 #include <LRFD\RebarPool.h>
@@ -838,7 +838,7 @@ void write_artifact_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* 
 
          // Create progress window hear to avoid flashing screen at design conclusion (Mantis 1516) 
          GET_IFACE2(pBroker, IEAFProgress, pProgress);
-         CEAFAutoProgress ap(pProgress);
+         WBFL::EAF::AutoProgress ap(pProgress);
          pProgress->UpdateMessage(_T("Excess Camber"));
 
          GET_IFACE2(pBroker,ICamber,pCamber);

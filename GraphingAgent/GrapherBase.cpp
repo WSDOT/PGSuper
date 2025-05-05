@@ -40,7 +40,7 @@
 #include <Graphs\DeflectionHistoryGraphBuilder.h>
 
 
-void CGrapherBase::InitCommonGraphBuilders(std::shared_ptr<WBFL::EAF::Broker> broker)
+bool CGrapherBase::InitCommonGraphBuilders(std::shared_ptr<WBFL::EAF::Broker> broker)
 {
    GET_IFACE2(broker,IEAFGraphManager,pGraphMgr);
 
@@ -56,4 +56,6 @@ void CGrapherBase::InitCommonGraphBuilders(std::shared_ptr<WBFL::EAF::Broker> br
    pGraphMgr->AddGraphBuilder(std::move(std::make_unique<CGirderPropertiesGraphBuilder>()));
    pGraphMgr->AddGraphBuilder(std::move(std::make_unique<CStabilityGraphBuilder>()));
    pGraphMgr->AddGraphBuilder(std::move(std::make_unique<CStressHistoryGraphBuilder>()));
+
+   return true;
 }
