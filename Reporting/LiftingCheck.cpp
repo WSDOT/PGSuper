@@ -128,14 +128,14 @@ void CLiftingCheck::Build(rptChapter* pChapter,
          rptParagraph* p = new rptParagraph;
          *pChapter << p;
       }
-      const WBFL::Stability::LiftingCheckArtifact* pArtifact = pArtifacts->GetLiftingCheckArtifact(segmentKey);
+      auto pArtifact = pArtifacts->GetLiftingCheckArtifact(segmentKey);
       const WBFL::Stability::IGirder* pStabilityModel = pGirder->GetSegmentLiftingStabilityModel(segmentKey);
       const WBFL::Stability::ILiftingStabilityProblem* pStabilityProblem = pGirder->GetSegmentLiftingStabilityProblem(segmentKey);
       Float64 Ll, Lr;
       pStabilityProblem->GetSupportLocations(&Ll, &Lr);
       WBFL::Stability::LiftingStabilityReporter reporter;
       auto* pApp = EAFGetApp();
-      reporter.BuildSpecCheckChapter(pStabilityModel, pStabilityProblem, pArtifact, pChapter, pApp->GetDisplayUnits(), _T("Location from<BR/>Left Pick Point"), Ll);
+      reporter.BuildSpecCheckChapter(pStabilityModel, pStabilityProblem, pArtifact.get(), pChapter, pApp->GetDisplayUnits(), _T("Location from<BR/>Left Pick Point"), Ll);
    }
    else
    {

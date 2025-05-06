@@ -38,7 +38,7 @@
 #include <PGSuperUnits.h>
 
 
-inline void GetStartEndGirderIndex(GirderIndexType girderIdx,IBridge* pBridge,GroupIndexType groupIdx,GirderIndexType* pStartIndex,GirderIndexType* pEndIndex)
+inline void GetStartEndGirderIndex(GirderIndexType girderIdx,std::shared_ptr<IBridge> pBridge,GroupIndexType groupIdx,GirderIndexType* pStartIndex,GirderIndexType* pEndIndex)
 {
    // Encapsulate loop logic that is used many times here
    if (girderIdx != ALL_GIRDERS)

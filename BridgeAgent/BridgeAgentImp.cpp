@@ -567,7 +567,7 @@ class CStrandMoverSwapper
 {
 public:
    CStrandMoverSwapper(const CSegmentKey& segmentKey, Float64 Hg, const PRESTRESSCONFIG& rconfig,
-      const CBridgeAgentImp* pBridgeAgent, IStrandGridModel* strandGridModel, IBridgeDescription* pIBridgeDesc):
+      const CBridgeAgentImp* pBridgeAgent, IStrandGridModel* strandGridModel, std::shared_ptr<IBridgeDescription> pIBridgeDesc):
    m_StrandModel(strandGridModel)
    {
    // Save in constructor and restore in destructor - stand mover and adjustment shift values
@@ -15553,7 +15553,7 @@ void CBridgeAgentImp::GetEndConfinementBarInfo( const CSegmentKey& segmentKey, F
                          pSize, pProvidedZoneLength, pSpacing);
 }
 
-bool CBridgeAgentImp::AreStirrupZoneLengthsCombatible(const CGirderKey& girderKey) const
+bool CBridgeAgentImp::AreStirrupZoneLengthsCompatible(const CGirderKey& girderKey) const
 {
    SegmentIndexType nSegments = GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
@@ -27377,7 +27377,7 @@ void CBridgeAgentImp::ConfigureSegmentStabilityModel(const CSegmentKey& segmentK
    pGirder->SetDragCoefficient(pGirderEntry->GetDragCoefficient());
 }
 
-const WBFL::Stability::LiftingStabilityProblem* CBridgeAgentImp::GetSegmentLiftingStabilityProblem(const CSegmentKey& segmentKey,const HANDLINGCONFIG& handlingConfig,ISegmentLiftingDesignPointsOfInterest* pPoiD) const
+const WBFL::Stability::LiftingStabilityProblem* CBridgeAgentImp::GetSegmentLiftingStabilityProblem(const CSegmentKey& segmentKey,const HANDLINGCONFIG& handlingConfig,std::shared_ptr<ISegmentLiftingDesignPointsOfInterest> pPoiD) const
 {
    ConfigureSegmentLiftingStabilityProblem(segmentKey,true, handlingConfig,pPoiD,&m_LiftingDesignStabilityProblem);
    return &m_LiftingDesignStabilityProblem;
@@ -27442,7 +27442,7 @@ std::pair<Float64, Float64> CBridgeAgentImp::GetSegmentBunkPointLocations(const 
 }
 
 
-void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& handlingConfig,ISegmentLiftingDesignPointsOfInterest* pPoiD,WBFL::Stability::LiftingStabilityProblem* pProblem) const
+void CBridgeAgentImp::ConfigureSegmentLiftingStabilityProblem(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& handlingConfig,std::shared_ptr<ISegmentLiftingDesignPointsOfInterest> pPoiD,WBFL::Stability::LiftingStabilityProblem* pProblem) const
 {
    IntervalIndexType intervalIdx = m_IntervalManager.GetLiftingInterval(segmentKey);
    IntervalIndexType releaseIntervalIdx = m_IntervalManager.GetPrestressReleaseInterval(segmentKey);
@@ -27729,13 +27729,13 @@ const WBFL::Stability::HaulingStabilityProblem* CBridgeAgentImp::GetSegmentHauli
    return &(found->second);
 }
 
-const WBFL::Stability::HaulingStabilityProblem* CBridgeAgentImp::GetSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey,const HANDLINGCONFIG& handlingConfig,ISegmentHaulingDesignPointsOfInterest* pPOId) const
+const WBFL::Stability::HaulingStabilityProblem* CBridgeAgentImp::GetSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey,const HANDLINGCONFIG& handlingConfig,std::shared_ptr<ISegmentHaulingDesignPointsOfInterest> pPOId) const
 {
    ConfigureSegmentHaulingStabilityProblem(segmentKey,true, handlingConfig,pPOId,&m_HaulingDesignStabilityProblem);
    return &m_HaulingDesignStabilityProblem;
 }
 
-void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& handlingConfig,ISegmentHaulingDesignPointsOfInterest* pPoiD,WBFL::Stability::HaulingStabilityProblem* pProblem) const
+void CBridgeAgentImp::ConfigureSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& handlingConfig,std::shared_ptr<ISegmentHaulingDesignPointsOfInterest> pPoiD,WBFL::Stability::HaulingStabilityProblem* pProblem) const
 {
    IntervalIndexType intervalIdx = m_IntervalManager.GetHaulingInterval(segmentKey);
    IntervalIndexType releaseIntervalIdx = m_IntervalManager.GetPrestressReleaseInterval(segmentKey);

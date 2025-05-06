@@ -344,7 +344,7 @@ void CmbLsBearingDesignReactionAdapter::GetCombinedLiveLoadReaction(IntervalInde
 /////////////////////////////////////////////
 // class ReactionDecider
 /////////////////////////////////////////////
-ReactionDecider::ReactionDecider(ReactionTableType tableType, const ReactionLocation& location,const CGirderKey& girderKey,IBridge* pBridge,IIntervals* pIntervals)
+ReactionDecider::ReactionDecider(ReactionTableType tableType, const ReactionLocation& location,const CGirderKey& girderKey,std::shared_ptr<IBridge> pBridge,std::shared_ptr<IIntervals> pIntervals)
 {
    // full pier reactions are always reported
    if (tableType == PierReactionsTable)

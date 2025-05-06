@@ -843,7 +843,7 @@ void CGirderDescPrestressPage::InitHarpStrandOffsetMeasureComboBox(CComboBox* pC
    pCB->SetItemData(idx,hsoECCENTRICITY);
 }
 
-StrandIndexType CGirderDescPrestressPage::PermStrandSpinnerInc(IStrandGeometry* pStrands, StrandIndexType currNum, bool bAdd )
+StrandIndexType CGirderDescPrestressPage::PermStrandSpinnerInc(std::shared_ptr<IStrandGeometry> pStrands, StrandIndexType currNum, bool bAdd)
 {
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 
@@ -872,7 +872,7 @@ StrandIndexType CGirderDescPrestressPage::PermStrandSpinnerInc(IStrandGeometry* 
    return increment;
 }
 
-StrandIndexType CGirderDescPrestressPage::StrandSpinnerInc(IStrandGeometry* pStrands, pgsTypes::StrandType type,StrandIndexType currNum, bool bAdd )
+StrandIndexType CGirderDescPrestressPage::StrandSpinnerInc(std::shared_ptr<IStrandGeometry> pStrands, pgsTypes::StrandType type,StrandIndexType currNum, bool bAdd )
 {
    CGirderDescDlg* pParent = (CGirderDescDlg*)GetParent();
 

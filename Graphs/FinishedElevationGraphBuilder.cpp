@@ -226,13 +226,13 @@ void CFinishedElevationGraphBuilder::UpdateGraphTitle(GroupIndexType grpIdx,Gird
 class MatchPoiOffSegment
 {
 public:
-   MatchPoiOffSegment(IPointOfInterest* pIPointOfInterest) : m_pIPointOfInterest(pIPointOfInterest) {}
+   MatchPoiOffSegment(std::shared_ptr<IPointOfInterest> pIPointOfInterest) : m_pIPointOfInterest(pIPointOfInterest) {}
    bool operator()(const pgsPointOfInterest& poi) const
    {
       return m_pIPointOfInterest->IsOffSegment(poi);
    }
 
-   IPointOfInterest* m_pIPointOfInterest;
+   std::shared_ptr<IPointOfInterest> m_pIPointOfInterest;
 };
 
 void CFinishedElevationGraphBuilder::UpdateGraphData(GroupIndexType grpIdx,GirderIndexType gdrIdx)

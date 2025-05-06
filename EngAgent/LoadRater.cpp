@@ -43,7 +43,7 @@
 // that hold pointers to agent interfaces. This is a huge source of circular references. Use weak_ptr or
 // don't hold the interfaces in the first place.
 
-void special_transform(IBridge* pBridge,IPointOfInterest* pPoi,IIntervals* pIntervals,
+void special_transform(std::shared_ptr<IBridge> pBridge,std::shared_ptr<IPointOfInterest> pPoi,std::shared_ptr<IIntervals> pIntervals,
                        PoiList::const_iterator poiBeginIter,
                        PoiList::const_iterator poiEndIter,
                        std::vector<Float64>::const_iterator forceBeginIter,
@@ -1796,7 +1796,7 @@ void pgsLoadRater::GetMoments(const CGirderKey& girderKey, pgsTypes::LoadRatingT
 #endif
 }
 
-void special_transform(IBridge* pBridge,IPointOfInterest* pPoi,IIntervals* pIntervals,
+void special_transform(std::shared_ptr<IBridge> pBridge,std::shared_ptr<IPointOfInterest> pPoi,std::shared_ptr<IIntervals> pIntervals,
                        PoiList::const_iterator poiBeginIter,
                        PoiList::const_iterator poiEndIter,
                        std::vector<Float64>::const_iterator forceBeginIter,

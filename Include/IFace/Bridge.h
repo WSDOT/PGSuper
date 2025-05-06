@@ -1100,7 +1100,7 @@ public:
    virtual void GetEndConfinementBarInfo(const CSegmentKey& segmentKey, Float64 requiredZoneLength, WBFL::Materials::Rebar::Size* pSize, Float64* pProvidedZoneLength, Float64* pSpacing) const = 0;
 
    // Returns true if the stirrup layout geometry is ok
-   virtual bool AreStirrupZoneLengthsCombatible(const CGirderKey& girderKey) const = 0;
+   virtual bool AreStirrupZoneLengthsCompatible(const CGirderKey& girderKey) const = 0;
 };
 
 /*****************************************************************************
@@ -1870,11 +1870,11 @@ public:
 
    virtual const WBFL::Stability::Girder* GetSegmentLiftingStabilityModel(const CSegmentKey& segmentKey) const = 0;
    virtual const WBFL::Stability::LiftingStabilityProblem* GetSegmentLiftingStabilityProblem(const CSegmentKey& segmentKey) const = 0;
-   virtual const WBFL::Stability::LiftingStabilityProblem* GetSegmentLiftingStabilityProblem(const CSegmentKey& segmentKey,const HANDLINGCONFIG& handlingConfig,ISegmentLiftingDesignPointsOfInterest* pPoiD) const = 0;
+   virtual const WBFL::Stability::LiftingStabilityProblem* GetSegmentLiftingStabilityProblem(const CSegmentKey& segmentKey,const HANDLINGCONFIG& handlingConfig,std::shared_ptr<ISegmentLiftingDesignPointsOfInterest> pPoiD) const = 0;
 
    virtual const WBFL::Stability::Girder* GetSegmentHaulingStabilityModel(const CSegmentKey& segmentKey) const = 0;
    virtual const WBFL::Stability::HaulingStabilityProblem* GetSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey) const = 0;
-   virtual const WBFL::Stability::HaulingStabilityProblem* GetSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey,const HANDLINGCONFIG& handlingConfig,ISegmentHaulingDesignPointsOfInterest* pPOId) const = 0;
+   virtual const WBFL::Stability::HaulingStabilityProblem* GetSegmentHaulingStabilityProblem(const CSegmentKey& segmentKey,const HANDLINGCONFIG& handlingConfig,std::shared_ptr<ISegmentHaulingDesignPointsOfInterest> pPOId) const = 0;
 
    // Returns the elevation of web-flange intersections that are included in principal web shear checks
    // The key is the elevation in girder section coordinates and the value is descriptive text

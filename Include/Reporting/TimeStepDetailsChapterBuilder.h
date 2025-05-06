@@ -58,8 +58,8 @@ public:
    virtual std::unique_ptr<WBFL::Reporting::ChapterBuilder> Clone() const override;
 
 protected:
-   rptRcTable* BuildIntervalTable(const TIME_STEP_DETAILS& tsDetails,IIntervals* pIntervals,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
-   rptRcTable* BuildConcreteTable(const TIME_STEP_DETAILS& tsDetails, const CSegmentKey& segmentKey, IMaterials* pMaterials, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   rptRcTable* BuildIntervalTable(const TIME_STEP_DETAILS& tsDetails,std::shared_ptr<IIntervals> pIntervals,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
+   rptRcTable* BuildConcreteTable(const TIME_STEP_DETAILS& tsDetails, const CSegmentKey& segmentKey, std::shared_ptr<IMaterials> pMaterials, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
    rptRcTable* BuildComponentPropertiesTable(const TIME_STEP_DETAILS& tsDetails, bool bHasDeck, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
    rptRcTable* BuildSectionPropertiesTable(const TIME_STEP_DETAILS& tsDetails, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;
    rptRcTable* BuildFreeCreepDeformationTable(const TIME_STEP_DETAILS& tsDetails, bool bHasDeck, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const;

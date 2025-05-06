@@ -57,9 +57,9 @@
 
 using namespace PGS::Beams;
 
-std::shared_ptr<CVoidedSlabFactory> BeamFactorySingleton<CVoidedSlabFactory>::instance = nullptr;
+std::shared_ptr<VoidedSlabFactory> BeamFactorySingleton<VoidedSlabFactory>::instance = nullptr;
 
-CVoidedSlabFactory::CVoidedSlabFactory() : BeamFactory()
+VoidedSlabFactory::VoidedSlabFactory() : BeamFactory()
 {
    // Initialize with default values... This are not necessarily valid dimensions
    m_DimNames.emplace_back(_T("H"));
@@ -93,7 +93,7 @@ CVoidedSlabFactory::CVoidedSlabFactory() : BeamFactory()
    m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // Max joint size
 }
 
-void CVoidedSlabFactory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const BeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
+void VoidedSlabFactory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const BeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
 {
    CComPtr<IVoidedSlabSection> gdrSection;
    gdrSection.CoCreateInstance(CLSID_VoidedSlabSection);
@@ -105,7 +105,7 @@ void CVoidedSlabFactory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> 
    gdrSection.QueryInterface(ppSection);
 }
 
-void CVoidedSlabFactory::CreateSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
+void VoidedSlabFactory::CreateSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
 {
    CComPtr<IPrismaticSuperstructureMemberSegment> segment;
    segment.CoCreateInstance(CLSID_PrismaticSuperstructureMemberSegment);
@@ -157,7 +157,7 @@ void CVoidedSlabFactory::CreateSegment(std::shared_ptr<WBFL::EAF::Broker> pBroke
    ssmbrSegment.CopyTo(ppSegment);
 }
 
-void CVoidedSlabFactory::CreateSegmentShape(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
+void VoidedSlabFactory::CreateSegmentShape(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
 {
    CComPtr<IVoidedSlab> beam;
    beam.CoCreateInstance(CLSID_VoidedSlab);
@@ -171,7 +171,7 @@ void CVoidedSlabFactory::CreateSegmentShape(std::shared_ptr<WBFL::EAF::Broker> p
    beam.QueryInterface(ppShape);
 }
 
-Float64 CVoidedSlabFactory::GetSegmentHeight(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
+Float64 VoidedSlabFactory::GetSegmentHeight(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
 {
    const CSplicedGirderData* pGirder = pSegment->GetGirder();
    const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
@@ -180,12 +180,12 @@ Float64 CVoidedSlabFactory::GetSegmentHeight(std::shared_ptr<WBFL::EAF::Broker> 
    return H;
 }
 
-void CVoidedSlabFactory::ConfigureSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
+void VoidedSlabFactory::ConfigureSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
 {
    // do nothing... all the configuration was done in CreateSegment
 }
 
-void CVoidedSlabFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
+void VoidedSlabFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
 {
    // This is a prismatic beam so only add section change POI at the start and end of the beam
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -198,7 +198,7 @@ void CVoidedSlabFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WBF
    VERIFY(pPoiMgr->AddPointOfInterest(poiEnd) != INVALID_ID);
 }
 
-std::shared_ptr<CDistFactorEngineerBase> CVoidedSlabFactory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
+std::shared_ptr<DistFactorEngineerBase> VoidedSlabFactory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
 {
    GET_IFACE2(pBroker, IBridgeDescription,pIBridgeDesc);
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
@@ -210,7 +210,7 @@ std::shared_ptr<CDistFactorEngineerBase> CVoidedSlabFactory::CreateDistFactorEng
 
    if (spacingType==pgsTypes::sbsUniformAdjacent || spacingType==pgsTypes::sbsGeneralAdjacent || spacingType==pgsTypes::sbsConstantAdjacent)
    {
-      return std::make_shared<CVoidedSlabDistFactorEngineer>(pBroker,statusGroupID);
+      return std::make_shared<VoidedSlabDistFactorEngineer>(pBroker,statusGroupID);
    }
    else
    {
@@ -222,14 +222,14 @@ std::shared_ptr<CDistFactorEngineerBase> CVoidedSlabFactory::CreateDistFactorEng
       auto lldf_method = live_load_distribution_criteria.LldfMethod;
       if (lldf_method == pgsTypes::LiveLoadDistributionFactorMethod::TxDOT)
       {
-         return std::make_shared<CTxDOTSpreadSlabBeamDistFactorEngineer>(pBroker, statusGroupID);
+         return std::make_shared<TxDOTSpreadSlabBeamDistFactorEngineer>(pBroker, statusGroupID);
       }
       else
       {
          // this is a type b section... type b's are the same as type c's which are U-beams
          ATLASSERT(deckType == pgsTypes::sdtCompositeCIP || deckType == pgsTypes::sdtCompositeSIP);
 
-         return std::make_shared<CUBeamDistFactorEngineer>(pBroker, statusGroupID, true, true);
+         return std::make_shared<UBeamDistFactorEngineer>(pBroker, statusGroupID, true, true);
       }
    }
 
@@ -237,12 +237,12 @@ std::shared_ptr<CDistFactorEngineerBase> CVoidedSlabFactory::CreateDistFactorEng
    return nullptr;
 }
 
-std::unique_ptr<CPsLossEngineerBase> CVoidedSlabFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey) const
+std::unique_ptr<PsLossEngineerBase> VoidedSlabFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey) const
 {
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
-      return std::make_unique<CTimeStepLossEngineer>(pBroker,statusGroupID);
+      return std::make_unique<TimeStepLossEngineer>(pBroker,statusGroupID);
    }
    else
    {
@@ -254,11 +254,11 @@ std::unique_ptr<CPsLossEngineerBase> CVoidedSlabFactory::CreatePsLossEngineer(st
 
       Float64 nVoids = pGdrEntry->GetDimension(_T("Number_of_Voids"));
 
-      return std::make_unique<CPsBeamLossEngineer>(nVoids == 0 ? CPsBeamLossEngineer::BeamType::SolidSlab : CPsBeamLossEngineer::BeamType::SingleT, pBroker, statusGroupID);
+      return std::make_unique<PsBeamLossEngineer>(nVoids == 0 ? PsBeamLossEngineer::BeamType::SolidSlab : PsBeamLossEngineer::BeamType::SingleT, pBroker, statusGroupID);
    }
 }
 
-void CVoidedSlabFactory::CreateStrandMover(const BeamFactory::Dimensions& dimensions,  Float64 Hg,
+void VoidedSlabFactory::CreateStrandMover(const BeamFactory::Dimensions& dimensions,  Float64 Hg,
                                   BeamFactory::BeamFace endTopFace, Float64 endTopLimit, BeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                                   BeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, BeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
                                   Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover) const
@@ -338,22 +338,22 @@ void CVoidedSlabFactory::CreateStrandMover(const BeamFactory::Dimensions& dimens
    ATLASSERT (SUCCEEDED(hr));
 }
 
-const std::vector<std::_tstring>& CVoidedSlabFactory::GetDimensionNames() const
+const std::vector<std::_tstring>& VoidedSlabFactory::GetDimensionNames() const
 {
    return m_DimNames;
 }
 
-const std::vector<Float64>& CVoidedSlabFactory::GetDefaultDimensions() const
+const std::vector<Float64>& VoidedSlabFactory::GetDefaultDimensions() const
 {
    return m_DefaultDims;
 }
 
-const std::vector<const WBFL::Units::Length*>& CVoidedSlabFactory::GetDimensionUnits(bool bSIUnits) const
+const std::vector<const WBFL::Units::Length*>& VoidedSlabFactory::GetDimensionUnits(bool bSIUnits) const
 {
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
 
-bool CVoidedSlabFactory::ValidateDimensions(const BeamFactory::Dimensions& dimensions,bool bSI,std::_tstring* strErrMsg) const
+bool VoidedSlabFactory::ValidateDimensions(const BeamFactory::Dimensions& dimensions,bool bSI,std::_tstring* strErrMsg) const
 {
    Float64 H,W,D,S,J;
    WebIndexType N;
@@ -468,7 +468,7 @@ bool CVoidedSlabFactory::ValidateDimensions(const BeamFactory::Dimensions& dimen
    return true;
 }
 
-void CVoidedSlabFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const BeamFactory::Dimensions& dimensions) const
+void VoidedSlabFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const BeamFactory::Dimensions& dimensions) const
 {
    pSave->BeginUnit(_T("VoidedSlabDimensions"),2.0);
    for(const auto& name : m_DimNames)
@@ -479,7 +479,7 @@ void CVoidedSlabFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pS
    pSave->EndUnit();
 }
 
-BeamFactory::Dimensions CVoidedSlabFactory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
+BeamFactory::Dimensions VoidedSlabFactory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
 {
    Float64 parent_version;
    if (pLoad->GetParentUnit() == _T("GirderLibraryEntry"))
@@ -535,27 +535,27 @@ BeamFactory::Dimensions CVoidedSlabFactory::LoadSectionDimensions(WBFL::System::
    return dimensions;
 }
 
-bool CVoidedSlabFactory::IsPrismatic(const BeamFactory::Dimensions& dimensions) const
+bool VoidedSlabFactory::IsPrismatic(const BeamFactory::Dimensions& dimensions) const
 {
    return true;
 }
 
-bool CVoidedSlabFactory::IsPrismatic(const CSegmentKey& segmentKey) const
+bool VoidedSlabFactory::IsPrismatic(const CSegmentKey& segmentKey) const
 {
    return true;
 }
 
-bool CVoidedSlabFactory::IsSymmetric(const CSegmentKey& segmentKey) const
+bool VoidedSlabFactory::IsSymmetric(const CSegmentKey& segmentKey) const
 {
    return true;
 }
 
-std::_tstring CVoidedSlabFactory::GetImage() const
+std::_tstring VoidedSlabFactory::GetImage() const
 {
    return std::_tstring(_T("VoidedSlab.jpg"));
 }
 
-std::_tstring CVoidedSlabFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType) const
+std::_tstring VoidedSlabFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
    switch(deckType)
@@ -584,7 +584,7 @@ std::_tstring CVoidedSlabFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeck
    return strImage;
 }
 
-std::_tstring CVoidedSlabFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
+std::_tstring VoidedSlabFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
    switch(deckType)
@@ -610,7 +610,7 @@ std::_tstring CVoidedSlabFactory::GetPositiveMomentCapacitySchematicImage(pgsTyp
    return strImage;
 }
 
-std::_tstring CVoidedSlabFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
+std::_tstring VoidedSlabFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
    switch(deckType)
@@ -636,7 +636,7 @@ std::_tstring CVoidedSlabFactory::GetNegativeMomentCapacitySchematicImage(pgsTyp
    return strImage;
 }
 
-std::_tstring CVoidedSlabFactory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType) const
+std::_tstring VoidedSlabFactory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
    switch(deckType)
@@ -662,7 +662,7 @@ std::_tstring CVoidedSlabFactory::GetShearDimensionsSchematicImage(pgsTypes::Sup
    return strImage;
 }
 
-std::_tstring CVoidedSlabFactory::GetInteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
+std::_tstring VoidedSlabFactory::GetInteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
@@ -707,7 +707,7 @@ std::_tstring CVoidedSlabFactory::GetInteriorGirderEffectiveFlangeWidthImage(std
    return strImage;
 }
 
-std::_tstring CVoidedSlabFactory::GetExteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
+std::_tstring VoidedSlabFactory::GetExteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
@@ -752,12 +752,12 @@ std::_tstring CVoidedSlabFactory::GetExteriorGirderEffectiveFlangeWidthImage(std
    return strImage;
 }
 
-CLSID CVoidedSlabFactory::GetCLSID() const
+CLSID VoidedSlabFactory::GetCLSID() const
 {
    return CLSID_VoidedSlabFactory;
 }
 
-std::_tstring CVoidedSlabFactory::GetName() const
+std::_tstring VoidedSlabFactory::GetName() const
 {
    USES_CONVERSION;
    LPOLESTR pszUserType;
@@ -765,12 +765,12 @@ std::_tstring CVoidedSlabFactory::GetName() const
    return std::_tstring( OLE2T(pszUserType) );
 }
 
-CLSID CVoidedSlabFactory::GetFamilyCLSID() const
+CLSID VoidedSlabFactory::GetFamilyCLSID() const
 {
    return CLSID_SlabBeamFamily;
 }
 
-std::_tstring CVoidedSlabFactory::GetGirderFamilyName() const
+std::_tstring VoidedSlabFactory::GetGirderFamilyName() const
 {
    USES_CONVERSION;
    LPOLESTR pszUserType;
@@ -778,34 +778,34 @@ std::_tstring CVoidedSlabFactory::GetGirderFamilyName() const
    return std::_tstring( OLE2T(pszUserType) );
 }
 
-std::_tstring CVoidedSlabFactory::GetPublisher() const
+std::_tstring VoidedSlabFactory::GetPublisher() const
 {
    return std::_tstring(_T("WSDOT"));
 }
 
-std::_tstring CVoidedSlabFactory::GetPublisherContactInformation() const
+std::_tstring VoidedSlabFactory::GetPublisherContactInformation() const
 {
    return std::_tstring(_T("http://www.wsdot.wa.gov/eesc/bridge"));
 }
 
-HINSTANCE CVoidedSlabFactory::GetResourceInstance() const
+HINSTANCE VoidedSlabFactory::GetResourceInstance() const
 {
    return _Module.GetResourceInstance();
 }
 
-LPCTSTR CVoidedSlabFactory::GetImageResourceName() const
+LPCTSTR VoidedSlabFactory::GetImageResourceName() const
 {
    return _T("VOIDEDSLAB");
 }
 
-HICON  CVoidedSlabFactory::GetIcon()  const
+HICON  VoidedSlabFactory::GetIcon()  const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    return ::LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_VOIDEDSLAB) );
 }
 
-void CVoidedSlabFactory::GetDimensions(const BeamFactory::Dimensions& dimensions,
+void VoidedSlabFactory::GetDimensions(const BeamFactory::Dimensions& dimensions,
                                        Float64& H,
                                        Float64& W,
                                        Float64& D,
@@ -821,7 +821,7 @@ void CVoidedSlabFactory::GetDimensions(const BeamFactory::Dimensions& dimensions
    J = GetDimension(dimensions,_T("Jmax"));
 }
 
-Float64 CVoidedSlabFactory::GetDimension(const BeamFactory::Dimensions& dimensions,
+Float64 VoidedSlabFactory::GetDimension(const BeamFactory::Dimensions& dimensions,
                                         const std::_tstring& name) const
 {
    for ( const auto& dim : dimensions)
@@ -836,7 +836,7 @@ Float64 CVoidedSlabFactory::GetDimension(const BeamFactory::Dimensions& dimensio
    return -99999;
 }
 
-pgsTypes::SupportedDeckTypes CVoidedSlabFactory::GetSupportedDeckTypes(pgsTypes::SupportedBeamSpacing sbs) const
+pgsTypes::SupportedDeckTypes VoidedSlabFactory::GetSupportedDeckTypes(pgsTypes::SupportedBeamSpacing sbs) const
 {
    pgsTypes::SupportedDeckTypes sdt;
    switch(sbs)
@@ -861,7 +861,7 @@ pgsTypes::SupportedDeckTypes CVoidedSlabFactory::GetSupportedDeckTypes(pgsTypes:
    return sdt;
 }
 
-pgsTypes::SupportedBeamSpacings CVoidedSlabFactory::GetSupportedBeamSpacings() const
+pgsTypes::SupportedBeamSpacings VoidedSlabFactory::GetSupportedBeamSpacings() const
 {
    pgsTypes::SupportedBeamSpacings sbs;
    sbs.push_back(pgsTypes::sbsUniformAdjacent);
@@ -872,14 +872,14 @@ pgsTypes::SupportedBeamSpacings CVoidedSlabFactory::GetSupportedBeamSpacings() c
    return sbs;
 }
 
-bool CVoidedSlabFactory::IsSupportedBeamSpacing(pgsTypes::SupportedBeamSpacing spacingType) const
+bool VoidedSlabFactory::IsSupportedBeamSpacing(pgsTypes::SupportedBeamSpacing spacingType) const
 {
    pgsTypes::SupportedBeamSpacings sbs = GetSupportedBeamSpacings();
    auto found = std::find(sbs.cbegin(), sbs.cend(), spacingType);
    return found == sbs.end() ? false : true;
 }
 
-bool CVoidedSlabFactory::ConvertBeamSpacing(const BeamFactory::Dimensions& dimensions,pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const
+bool VoidedSlabFactory::ConvertBeamSpacing(const BeamFactory::Dimensions& dimensions,pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const
 {
    if (spacingType == pgsTypes::sbsUniform)
    {
@@ -900,7 +900,7 @@ bool CVoidedSlabFactory::ConvertBeamSpacing(const BeamFactory::Dimensions& dimen
    return false;
 }
 
-pgsTypes::WorkPointLocations CVoidedSlabFactory::GetSupportedWorkPointLocations(pgsTypes::SupportedBeamSpacing spacingType) const
+pgsTypes::WorkPointLocations VoidedSlabFactory::GetSupportedWorkPointLocations(pgsTypes::SupportedBeamSpacing spacingType) const
 {
    pgsTypes::WorkPointLocations wpls;
    wpls.push_back(pgsTypes::wplTopGirder);
@@ -909,37 +909,37 @@ pgsTypes::WorkPointLocations CVoidedSlabFactory::GetSupportedWorkPointLocations(
    return wpls;
 }
 
-bool CVoidedSlabFactory::IsSupportedWorkPointLocation(pgsTypes::SupportedBeamSpacing spacingType, pgsTypes::WorkPointLocation wpType) const
+bool VoidedSlabFactory::IsSupportedWorkPointLocation(pgsTypes::SupportedBeamSpacing spacingType, pgsTypes::WorkPointLocation wpType) const
 {
    pgsTypes::WorkPointLocations sbs = GetSupportedWorkPointLocations(spacingType);
    auto found = std::find(sbs.cbegin(), sbs.cend(), wpType);
    return found == sbs.end() ? false : true;
 }
 
-std::vector<pgsTypes::GirderOrientationType> CVoidedSlabFactory::GetSupportedGirderOrientation() const
+std::vector<pgsTypes::GirderOrientationType> VoidedSlabFactory::GetSupportedGirderOrientation() const
 {
    std::vector<pgsTypes::GirderOrientationType> types{ pgsTypes::Plumb, pgsTypes::StartNormal,pgsTypes::MidspanNormal,pgsTypes::EndNormal,pgsTypes::Balanced };
    return types;
 }
 
-bool CVoidedSlabFactory::IsSupportedGirderOrientation(pgsTypes::GirderOrientationType orientation) const
+bool VoidedSlabFactory::IsSupportedGirderOrientation(pgsTypes::GirderOrientationType orientation) const
 {
    return true;
 }
 
-pgsTypes::GirderOrientationType CVoidedSlabFactory::ConvertGirderOrientation(pgsTypes::GirderOrientationType orientation) const
+pgsTypes::GirderOrientationType VoidedSlabFactory::ConvertGirderOrientation(pgsTypes::GirderOrientationType orientation) const
 {
    return orientation;
 }
 
-pgsTypes::SupportedDiaphragmTypes CVoidedSlabFactory::GetSupportedDiaphragms() const
+pgsTypes::SupportedDiaphragmTypes VoidedSlabFactory::GetSupportedDiaphragms() const
 {
    pgsTypes::SupportedDiaphragmTypes diaphragmTypes;
    diaphragmTypes.push_back(pgsTypes::dtCastInPlace);
    return diaphragmTypes;
 }
 
-pgsTypes::SupportedDiaphragmLocationTypes CVoidedSlabFactory::GetSupportedDiaphragmLocations(pgsTypes::DiaphragmType type) const
+pgsTypes::SupportedDiaphragmLocationTypes VoidedSlabFactory::GetSupportedDiaphragmLocations(pgsTypes::DiaphragmType type) const
 {
    pgsTypes::SupportedDiaphragmLocationTypes locations;
    switch(type)
@@ -955,7 +955,7 @@ pgsTypes::SupportedDiaphragmLocationTypes CVoidedSlabFactory::GetSupportedDiaphr
    return locations;
 }
 
-void CVoidedSlabFactory::GetAllowableSpacingRange(const BeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const
+void VoidedSlabFactory::GetAllowableSpacingRange(const BeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const
 {
    *minSpacing = 0.0;
    *maxSpacing = 0.0;
@@ -980,23 +980,23 @@ void CVoidedSlabFactory::GetAllowableSpacingRange(const BeamFactory::Dimensions&
    }
 }
 
-WebIndexType CVoidedSlabFactory::GetWebCount(const BeamFactory::Dimensions& dimensions) const
+WebIndexType VoidedSlabFactory::GetWebCount(const BeamFactory::Dimensions& dimensions) const
 {
    long nv = (long)GetDimension(dimensions,_T("Number_of_Voids"));
    return nv+1;
 }
 
-Float64 CVoidedSlabFactory::GetBeamHeight(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
+Float64 VoidedSlabFactory::GetBeamHeight(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    return GetDimension(dimensions,_T("H"));
 }
 
-Float64 CVoidedSlabFactory::GetBeamWidth(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
+Float64 VoidedSlabFactory::GetBeamWidth(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    return GetDimension(dimensions,_T("W"));
 }
 
-void CVoidedSlabFactory::GetBeamTopWidth(const BeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
+void VoidedSlabFactory::GetBeamTopWidth(const BeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
 {
    Float64 W = GetDimension(dimensions,_T("W"));
 
@@ -1007,43 +1007,43 @@ void CVoidedSlabFactory::GetBeamTopWidth(const BeamFactory::Dimensions& dimensio
    *pRightWidth = top;
 }
 
-bool CVoidedSlabFactory::IsShearKey(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
+bool VoidedSlabFactory::IsShearKey(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
 {
    return false;
 }
 
-void CVoidedSlabFactory::GetShearKeyAreas(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const
+void VoidedSlabFactory::GetShearKeyAreas(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const
 {
    *uniformArea = 0.0;
    *areaPerJoint = 0.0;
 }
 
-bool CVoidedSlabFactory::HasLongitudinalJoints() const
+bool VoidedSlabFactory::HasLongitudinalJoints() const
 {
    return false;
 }
 
-bool CVoidedSlabFactory::IsLongitudinalJointStructural(pgsTypes::SupportedDeckType deckType,pgsTypes::AdjacentTransverseConnectivity connectivity) const
+bool VoidedSlabFactory::IsLongitudinalJointStructural(pgsTypes::SupportedDeckType deckType,pgsTypes::AdjacentTransverseConnectivity connectivity) const
 {
    return false;
 }
 
-bool CVoidedSlabFactory::HasTopFlangeThickening() const
+bool VoidedSlabFactory::HasTopFlangeThickening() const
 {
    return false;
 }
 
-bool CVoidedSlabFactory::CanPrecamber() const
+bool VoidedSlabFactory::CanPrecamber() const
 {
    return false;
 }
 
-GirderIndexType CVoidedSlabFactory::GetMinimumBeamCount() const
+GirderIndexType VoidedSlabFactory::GetMinimumBeamCount() const
 {
    return 1;
 }
 
-void CVoidedSlabFactory::DimensionAndPositionBeam(const BeamFactory::Dimensions& dimensions, IVoidedSlab* pBeam) const
+void VoidedSlabFactory::DimensionAndPositionBeam(const BeamFactory::Dimensions& dimensions, IVoidedSlab* pBeam) const
 {
    Float64 H, W, D, S, J;
    WebIndexType N;

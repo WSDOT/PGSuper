@@ -22,21 +22,20 @@
 
 #pragma once
 
-#include "IFace\BeamFactory.h"
-#include "IBeamFactory.h" // CLSID
+#include <IFace/BeamFactory.h>
 #include "BoxBeamFactoryImpl.h"
 
 namespace PGS
 {
    namespace Beams
    {
-      class CBoxBeamFactory : public CBoxBeamFactoryImpl, public BeamFactorySingleton<CBoxBeamFactory>
+      class BoxBeamFactory : public BoxBeamFactoryImpl, public BeamFactorySingleton<BoxBeamFactory>
       {
       public:
-         static std::shared_ptr<CBoxBeamFactory> CreateInstance() { return std::shared_ptr<CBoxBeamFactory>(new CBoxBeamFactory()); }
+         static std::shared_ptr<BoxBeamFactory> CreateInstance() { return std::shared_ptr<BoxBeamFactory>(new BoxBeamFactory()); }
 
       protected:
-         CBoxBeamFactory();
+         BoxBeamFactory();
 
       public:
          // IBeamFactory

@@ -218,7 +218,7 @@ rptChapter* CBearingSeatElevationsChapterBuilderBase::Build(const std::shared_pt
 
 
 rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildTable(const CString& strLabel,PierIndexType pierIdx,  pgsTypes::PierFaceType face, 
-                                                                 std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, IBridge* pBridge, IBridgeDescription* pIBridgeDesc,GirderIndexType girderIndex) const
+                                                                 std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, std::shared_ptr<IBridge> pBridge, std::shared_ptr<IBridgeDescription> pIBridgeDesc,GirderIndexType girderIndex) const
 {
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
@@ -301,7 +301,7 @@ rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildTable(const CString& 
 }
 
 rptRcTable* CBearingSeatElevationsChapterBuilderBase::BuildGirderEdgeTable(const CString& strLabel,PierIndexType pierIdx,  pgsTypes::PierFaceType face, 
-                                                                 std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, IBridge* pBridge, IBridgeDescription* pIBridgeDesc,GirderIndexType girderIndex) const
+                                                                 std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, std::shared_ptr<IBridge> pBridge, std::shared_ptr<IBridgeDescription> pIBridgeDesc,GirderIndexType girderIndex) const
 {
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();

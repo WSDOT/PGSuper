@@ -276,7 +276,7 @@ private:
 
    // Points of interest to be used for design
    // Note that the following block of vectors are the same size, and in the same order as, 
-   // m_DesignPois. This allows quick storage and retreival in poi order
+   // m_DesignPois. This allows quick storage and retrieval in poi order
    // -------------------------------------------
    mutable PoiList m_DesignPois; // sorted along girder
 

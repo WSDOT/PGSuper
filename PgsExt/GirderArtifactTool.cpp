@@ -423,7 +423,6 @@ void ListDebondingFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,FailureLis
 void ListSplittingZoneFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,FailureList& rFailures,const pgsGirderArtifact* pGirderArtifact)
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker, ISplittingChecks, pSplittingChecks);
 
    const CGirderKey& girderKey(pGirderArtifact->GetGirderKey());
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
@@ -434,6 +433,7 @@ void ListSplittingZoneFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,Failur
       const std::shared_ptr<pgsSplittingCheckArtifact> pSplittingCheckArtifact = pArtifact->GetStirrupCheckArtifact()->GetSplittingCheckArtifact();
       if (pSplittingCheckArtifact && !pSplittingCheckArtifact->Passed() )
       {
+         GET_IFACE2(pBroker, ISplittingChecks, pSplittingChecks);
          std::_tstring strZone(pSplittingChecks->GetSplittingCheckName());
          std::_tostringstream os;
          if ( 1 < nSegments )
@@ -520,7 +520,7 @@ void ListVariousFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,FailureList&
       }
 
       // Lifting
-      const WBFL::Stability::LiftingCheckArtifact* pLifting = pArtifact->GetLiftingCheckArtifact();
+      auto pLifting = pArtifact->GetLiftingCheckArtifact();
       if (pLifting!=nullptr && !pLifting->Passed() )
       {
          std::_tostringstream os;
@@ -539,7 +539,7 @@ void ListVariousFailures(std::shared_ptr<WBFL::EAF::Broker> pBroker,FailureList&
       // not doing a full check... see pgsSegmentArtifact::Passed()
       // don't want to hard ding users for not passing overhangs or haul weight
       // fails will show up in the details.
-      const pgsHaulingAnalysisArtifact* pHauling = pArtifact->GetHaulingAnalysisArtifact();
+      auto pHauling = pArtifact->GetHaulingAnalysisArtifact();
       if (pHauling != nullptr)
       {
          if (!pHauling->Passed(WBFL::Stability::HaulingSlope::CrownSlope) || !pHauling->Passed(WBFL::Stability::HaulingSlope::Superelevation))

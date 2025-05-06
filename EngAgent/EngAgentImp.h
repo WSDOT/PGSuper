@@ -51,7 +51,6 @@
 #if defined _USE_MULTITHREADING
 #include <PgsExt\ThreadManager.h>
 #endif
-#include <Reporting/ReactionInterfaceAdapters.h>
 
 class PrestressWithLiveLoadSubKey
 {
@@ -375,12 +374,12 @@ public:
 public:
    const pgsGirderArtifact* GetGirderArtifact(const CGirderKey& girderKey) const override;
    const pgsSegmentArtifact* GetSegmentArtifact(const CSegmentKey& segmentKey) const override;
-   const WBFL::Stability::LiftingCheckArtifact* GetLiftingCheckArtifact(const CSegmentKey& segmentKey) const override;
-   const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact(const CSegmentKey& segmentKey) const override;
+   std::shared_ptr<const WBFL::Stability::LiftingCheckArtifact> GetLiftingCheckArtifact(const CSegmentKey& segmentKey) const override;
+   std::shared_ptr<const pgsHaulingAnalysisArtifact> GetHaulingAnalysisArtifact(const CSegmentKey& segmentKey) const override;
    const pgsGirderDesignArtifact* CreateDesignArtifact(const CGirderKey& girderKey, bool bDesignFlexure, arSlabOffsetDesignType haunchDesignType, arConcreteDesignType concreteDesignType, arShearDesignType shearDesignType) const override;
    const pgsGirderDesignArtifact* GetDesignArtifact(const CGirderKey& girderKey) const override;
-   void CreateLiftingCheckArtifact(const CSegmentKey& segmentKey,Float64 supportLoc,WBFL::Stability::LiftingCheckArtifact* pArtifact) const override;
-   const pgsHaulingAnalysisArtifact* CreateHaulingAnalysisArtifact(const CSegmentKey& segmentKey,Float64 leftSupportLoc,Float64 rightSupportLoc) const override;
+   std::shared_ptr<WBFL::Stability::LiftingCheckArtifact> CreateLiftingCheckArtifact(const CSegmentKey& segmentKey,Float64 supportLoc) const override;
+   std::shared_ptr<pgsHaulingAnalysisArtifact> CreateHaulingAnalysisArtifact(const CSegmentKey& segmentKey,Float64 leftSupportLoc,Float64 rightSupportLoc) const override;
    const pgsRatingArtifact* GetRatingArtifact(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx) const override;
    std::shared_ptr<const pgsISummaryRatingArtifact> GetSummaryRatingArtifact(const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx) const override;
 
@@ -466,7 +465,7 @@ private:
    
    mutable bool m_bAreDistFactorEngineersValidated;
 #pragma Reminder("WORKING HERE - Removing COM - should this be a unique_ptr?")
-   mutable std::shared_ptr<CDistFactorEngineerBase> m_pDistFactorEngineer; // assigned a polymorphic object during validation (must be mutable for delayed assignment)
+   mutable std::shared_ptr<PGS::Beams::DistFactorEngineerBase> m_pDistFactorEngineer; // assigned a polymorphic object during validation (must be mutable for delayed assignment)
 
    static UINT DeleteMomentCapacityEngineer(LPVOID pParam);
    std::unique_ptr<pgsMomentCapacityEngineer> m_pMomentCapacityEngineer;
@@ -499,7 +498,7 @@ private:
    //ROTATIONDETAILS m_staticRotationDetails;
 
    // Lifting and hauling analysis artifact cache for ad-hoc analysis (typically during design)
-   mutable std::map<CSegmentKey, std::map<Float64,WBFL::Stability::LiftingCheckArtifact,Float64_less> > m_LiftingArtifacts;
+   mutable std::map<CSegmentKey, std::map<Float64,std::shared_ptr<WBFL::Stability::LiftingCheckArtifact>,Float64_less> > m_LiftingArtifacts;
    mutable std::map<CSegmentKey, std::map<Float64,std::shared_ptr<pgsHaulingAnalysisArtifact>,Float64_less> > m_HaulingArtifacts;
 
    // Event Sink Cookies

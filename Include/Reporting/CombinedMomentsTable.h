@@ -87,7 +87,7 @@ void GetCombinedResultsPoi(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CGir
 
 
 template <class M,class T>
-RowIndexType CreateLimitStateTableHeading(rptRcTable** ppTable,LPCTSTR strLabel,bool bPierTable,bool bDesign,bool bPermit,bool bRating,bool bMoment,pgsTypes::AnalysisType analysisType,IRatingSpecification* pRatingSpec,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const T& unitT)
+RowIndexType CreateLimitStateTableHeading(rptRcTable** ppTable,LPCTSTR strLabel,bool bPierTable,bool bDesign,bool bPermit,bool bRating,bool bMoment,pgsTypes::AnalysisType analysisType,std::shared_ptr<IRatingSpecification> pRatingSpec,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const T& unitT)
 {
    // number of columns
    ColumnIndexType nDesignCols = 0;
@@ -767,7 +767,7 @@ RowIndexType CreateCombinedDeadLoadingTableHeading(rptRcTable** ppTable,std::sha
 template <class M,class T>
 RowIndexType CreateCombinedLiveLoadingTableHeading(rptRcTable** ppTable,LPCTSTR strLabel,bool bPierTable,bool bDesign,bool bPermit,
                                                    bool bPedLoading,bool bRating,bool is4Stress, bool includeImpact,
-                                                   pgsTypes::AnalysisType analysisType,IRatingSpecification* pRatingSpec,
+                                                   pgsTypes::AnalysisType analysisType,std::shared_ptr<IRatingSpecification> pRatingSpec,
                                                    std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const T& unitT)
 {
    ATLASSERT( !(bDesign && bRating) ); // These are different tables - must create separately

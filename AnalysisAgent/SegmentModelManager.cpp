@@ -1773,7 +1773,7 @@ bool RemoveTowerSupports(const CTemporarySupportData* pTS)
 class RemoveTSNotInstalled
 {
 public:
-   RemoveTSNotInstalled(IIntervals* pIntervals, IntervalIndexType interval) { m_IntervalIndex = interval; m_pIntervals = pIntervals; }
+   RemoveTSNotInstalled(std::shared_ptr<IIntervals> pIntervals, IntervalIndexType interval) { m_IntervalIndex = interval; m_pIntervals = pIntervals; }
    bool operator()(const CTemporarySupportData* tsData)
    {
       // make sure support exists in current interval
@@ -1783,7 +1783,7 @@ public:
       return m_IntervalIndex < iadd || m_IntervalIndex > iremove;
    }
 private:
-   IIntervals* m_pIntervals;
+   std::shared_ptr<IIntervals> m_pIntervals;
    IntervalIndexType m_IntervalIndex;
 };
 

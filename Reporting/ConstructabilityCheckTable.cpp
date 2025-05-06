@@ -50,7 +50,7 @@
 
 
 // return true if more than a single span report so we can add columns for span/girder
-bool ConstrNeedSpanCols(const std::vector<CGirderKey>& girderList, IBridge* pBridge)
+bool ConstrNeedSpanCols(const std::vector<CGirderKey>& girderList, std::shared_ptr<IBridge> pBridge)
 {
    bool doNeed = 1 < girderList.size();
    if (!doNeed)

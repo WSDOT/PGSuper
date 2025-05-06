@@ -54,9 +54,9 @@
 
 using namespace PGS::Beams;
 
-std::shared_ptr<CDeckedSlabBeamFactory> BeamFactorySingleton<CDeckedSlabBeamFactory>::instance = nullptr;
+std::shared_ptr<DeckedSlabBeamFactory> BeamFactorySingleton<DeckedSlabBeamFactory>::instance = nullptr;
 
-CDeckedSlabBeamFactory::CDeckedSlabBeamFactory() :
+DeckedSlabBeamFactory::DeckedSlabBeamFactory() :
    BeamFactory()
 {
    // Initialize with default values... This are not necessarily valid dimensions
@@ -103,7 +103,7 @@ CDeckedSlabBeamFactory::CDeckedSlabBeamFactory() :
    m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // End Block Length
 }
 
-void CDeckedSlabBeamFactory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const BeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
+void DeckedSlabBeamFactory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const BeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
 {
    CComPtr<IDeckedSlabBeamSection> gdrSection;
    gdrSection.CoCreateInstance(CLSID_DeckedSlabBeamSection);
@@ -126,7 +126,7 @@ void CDeckedSlabBeamFactory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Brok
    gdrSection.QueryInterface(ppSection);
 }
 
-void CDeckedSlabBeamFactory::CreateSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
+void DeckedSlabBeamFactory::CreateSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
 {
    CComPtr<IDeckedSlabBeamEndBlockSegment> segment;
    segment.CoCreateInstance(CLSID_DeckedSlabBeamEndBlockSegment);
@@ -195,7 +195,7 @@ void CDeckedSlabBeamFactory::CreateSegment(std::shared_ptr<WBFL::EAF::Broker> pB
    ssmbrSegment.CopyTo(ppSegment);
 }
 
-void CDeckedSlabBeamFactory::CreateSegmentShape(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
+void DeckedSlabBeamFactory::CreateSegmentShape(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
 {
    CComPtr<IDeckedSlabBeam> beam;
    beam.CoCreateInstance(CLSID_DeckedSlabBeam);
@@ -241,7 +241,7 @@ void CDeckedSlabBeamFactory::CreateSegmentShape(std::shared_ptr<WBFL::EAF::Broke
    beam.QueryInterface(ppShape);
 }
 
-Float64 CDeckedSlabBeamFactory::GetSegmentHeight(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
+Float64 DeckedSlabBeamFactory::GetSegmentHeight(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
 {
    const CSplicedGirderData* pGirder = pSegment->GetGirder();
    const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
@@ -251,12 +251,12 @@ Float64 CDeckedSlabBeamFactory::GetSegmentHeight(std::shared_ptr<WBFL::EAF::Brok
    return C + Tt;
 }
 
-void CDeckedSlabBeamFactory::ConfigureSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
+void DeckedSlabBeamFactory::ConfigureSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
 {
    // do nothing... all the configuration was done in CreateSegment
 }
 
-void CDeckedSlabBeamFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
+void DeckedSlabBeamFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
 {
    GET_IFACE2(pBroker,IBridge,pBridge);
    Float64 gdrLength = pBridge->GetSegmentLength(segmentKey);
@@ -294,25 +294,25 @@ void CDeckedSlabBeamFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr
    }
 }
 
-std::shared_ptr<CDistFactorEngineerBase> CDeckedSlabBeamFactory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
+std::shared_ptr<DistFactorEngineerBase> DeckedSlabBeamFactory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
 {
-   return std::make_shared<CMultiWebDistFactorEngineer>(CMultiWebDistFactorEngineer::BeamType::DeckedSlabBeam, pBroker, statusGroupID);
+   return std::make_shared<MultiWebDistFactorEngineer>(MultiWebDistFactorEngineer::BeamType::DeckedSlabBeam, pBroker, statusGroupID);
 }
 
-std::unique_ptr<CPsLossEngineerBase> CDeckedSlabBeamFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey) const
+std::unique_ptr<PsLossEngineerBase> DeckedSlabBeamFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey) const
 {
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
-      return std::make_unique<CTimeStepLossEngineer>(pBroker,statusGroupID);
+      return std::make_unique<TimeStepLossEngineer>(pBroker,statusGroupID);
    }
    else
    {
-      return std::make_unique<CPsBeamLossEngineer>(CPsBeamLossEngineer::BeamType::SingleT,pBroker,statusGroupID);
+      return std::make_unique<PsBeamLossEngineer>(PsBeamLossEngineer::BeamType::SingleT,pBroker,statusGroupID);
    }
 }
 
-void CDeckedSlabBeamFactory::CreateStrandMover(const BeamFactory::Dimensions& dimensions,  Float64 Hg,
+void DeckedSlabBeamFactory::CreateStrandMover(const BeamFactory::Dimensions& dimensions,  Float64 Hg,
                                   BeamFactory::BeamFace endTopFace, Float64 endTopLimit, BeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                                   BeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, BeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
                                   Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover) const
@@ -377,22 +377,22 @@ void CDeckedSlabBeamFactory::CreateStrandMover(const BeamFactory::Dimensions& di
    hr = sm.CopyTo(strandMover);
    ATLASSERT (SUCCEEDED(hr));}
 
-const std::vector<std::_tstring>& CDeckedSlabBeamFactory::GetDimensionNames() const
+const std::vector<std::_tstring>& DeckedSlabBeamFactory::GetDimensionNames() const
 {
    return m_DimNames;
 }
 
-const std::vector<Float64>& CDeckedSlabBeamFactory::GetDefaultDimensions() const
+const std::vector<Float64>& DeckedSlabBeamFactory::GetDefaultDimensions() const
 {
    return m_DefaultDims;
 }
 
-const std::vector<const WBFL::Units::Length*>& CDeckedSlabBeamFactory::GetDimensionUnits(bool bSIUnits) const
+const std::vector<const WBFL::Units::Length*>& DeckedSlabBeamFactory::GetDimensionUnits(bool bSIUnits) const
 {
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
 
-bool CDeckedSlabBeamFactory::ValidateDimensions(const BeamFactory::Dimensions& dimensions,bool bSI,std::_tstring* strErrMsg) const
+bool DeckedSlabBeamFactory::ValidateDimensions(const BeamFactory::Dimensions& dimensions,bool bSI,std::_tstring* strErrMsg) const
 {
    Float64 A,B,C,F,W,Tt,Tb,J,EndBlockLength;
    GetDimensions(dimensions,A,B,C,F,W,Tt,Tb,J,EndBlockLength);
@@ -464,7 +464,7 @@ bool CDeckedSlabBeamFactory::ValidateDimensions(const BeamFactory::Dimensions& d
    return true;
 }
 
-void CDeckedSlabBeamFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const BeamFactory::Dimensions& dimensions) const
+void DeckedSlabBeamFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const BeamFactory::Dimensions& dimensions) const
 {
    pSave->BeginUnit(_T("DeckedSlabBeamDimensions"),2.0);
    for(const auto& name : m_DimNames)
@@ -475,7 +475,7 @@ void CDeckedSlabBeamFactory::SaveSectionDimensions(WBFL::System::IStructuredSave
    pSave->EndUnit();
 }
 
-BeamFactory::Dimensions CDeckedSlabBeamFactory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
+BeamFactory::Dimensions DeckedSlabBeamFactory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
 {
    Float64 parent_version;
    if (pLoad->GetParentUnit() == _T("GirderLibraryEntry"))
@@ -522,13 +522,13 @@ BeamFactory::Dimensions CDeckedSlabBeamFactory::LoadSectionDimensions(WBFL::Syst
    return dimensions;
 }
 
-bool CDeckedSlabBeamFactory::IsPrismatic(const BeamFactory::Dimensions& dimensions) const
+bool DeckedSlabBeamFactory::IsPrismatic(const BeamFactory::Dimensions& dimensions) const
 {
    Float64 endBlockLength = GetDimension(dimensions,_T("EndBlockLength"));
    return IsZero(endBlockLength) ? true : false;
 }
 
-bool CDeckedSlabBeamFactory::IsPrismatic(const CSegmentKey& segmentKey) const
+bool DeckedSlabBeamFactory::IsPrismatic(const CSegmentKey& segmentKey) const
 {
    auto pBroker = EAFGetBroker();
 
@@ -541,17 +541,17 @@ bool CDeckedSlabBeamFactory::IsPrismatic(const CSegmentKey& segmentKey) const
    return IsPrismatic(dimensions);
 }
 
-bool CDeckedSlabBeamFactory::IsSymmetric(const CSegmentKey& segmentKey) const
+bool DeckedSlabBeamFactory::IsSymmetric(const CSegmentKey& segmentKey) const
 {
    return true;
 }
 
-std::_tstring CDeckedSlabBeamFactory::GetImage() const
+std::_tstring DeckedSlabBeamFactory::GetImage() const
 {
    return std::_tstring(_T("DeckedSlabBeam.gif"));
 }
 
-std::_tstring CDeckedSlabBeamFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType) const
+std::_tstring DeckedSlabBeamFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
    switch(deckType)
@@ -576,7 +576,7 @@ std::_tstring CDeckedSlabBeamFactory::GetSlabDimensionsImage(pgsTypes::Supported
    return strImage;
 }
 
-std::_tstring CDeckedSlabBeamFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
+std::_tstring DeckedSlabBeamFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
    switch(deckType)
@@ -598,7 +598,7 @@ std::_tstring CDeckedSlabBeamFactory::GetPositiveMomentCapacitySchematicImage(pg
    return strImage;
 }
 
-std::_tstring CDeckedSlabBeamFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
+std::_tstring DeckedSlabBeamFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
    switch(deckType)
@@ -620,7 +620,7 @@ std::_tstring CDeckedSlabBeamFactory::GetNegativeMomentCapacitySchematicImage(pg
    return strImage;
 }
 
-std::_tstring CDeckedSlabBeamFactory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType) const
+std::_tstring DeckedSlabBeamFactory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
    switch(deckType)
@@ -642,7 +642,7 @@ std::_tstring CDeckedSlabBeamFactory::GetShearDimensionsSchematicImage(pgsTypes:
    return strImage;
 }
 
-std::_tstring CDeckedSlabBeamFactory::GetInteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
+std::_tstring DeckedSlabBeamFactory::GetInteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
@@ -660,7 +660,7 @@ std::_tstring CDeckedSlabBeamFactory::GetInteriorGirderEffectiveFlangeWidthImage
    }
 }
 
-std::_tstring CDeckedSlabBeamFactory::GetExteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
+std::_tstring DeckedSlabBeamFactory::GetExteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
@@ -678,12 +678,12 @@ std::_tstring CDeckedSlabBeamFactory::GetExteriorGirderEffectiveFlangeWidthImage
    }
 }
 
-CLSID CDeckedSlabBeamFactory::GetCLSID() const
+CLSID DeckedSlabBeamFactory::GetCLSID() const
 {
    return CLSID_DeckedSlabBeamFactory;
 }
 
-std::_tstring CDeckedSlabBeamFactory::GetName() const
+std::_tstring DeckedSlabBeamFactory::GetName() const
 {
    USES_CONVERSION;
    LPOLESTR pszUserType;
@@ -691,12 +691,12 @@ std::_tstring CDeckedSlabBeamFactory::GetName() const
    return std::_tstring( OLE2T(pszUserType) );
 }
 
-CLSID CDeckedSlabBeamFactory::GetFamilyCLSID() const
+CLSID DeckedSlabBeamFactory::GetFamilyCLSID() const
 {
    return CLSID_DeckedSlabBeamFamily;
 }
 
-std::_tstring CDeckedSlabBeamFactory::GetGirderFamilyName() const
+std::_tstring DeckedSlabBeamFactory::GetGirderFamilyName() const
 {
    USES_CONVERSION;
    LPOLESTR pszUserType;
@@ -704,34 +704,34 @@ std::_tstring CDeckedSlabBeamFactory::GetGirderFamilyName() const
    return std::_tstring( OLE2T(pszUserType) );
 }
 
-std::_tstring CDeckedSlabBeamFactory::GetPublisher() const
+std::_tstring DeckedSlabBeamFactory::GetPublisher() const
 {
    return std::_tstring(_T("WSDOT"));
 }
 
-std::_tstring CDeckedSlabBeamFactory::GetPublisherContactInformation() const
+std::_tstring DeckedSlabBeamFactory::GetPublisherContactInformation() const
 {
    return std::_tstring(_T("http://www.wsdot.wa.gov/eesc/bridge"));
 }
 
-HINSTANCE CDeckedSlabBeamFactory::GetResourceInstance() const
+HINSTANCE DeckedSlabBeamFactory::GetResourceInstance() const
 {
    return _Module.GetResourceInstance();
 }
 
-LPCTSTR CDeckedSlabBeamFactory::GetImageResourceName() const
+LPCTSTR DeckedSlabBeamFactory::GetImageResourceName() const
 {
    return _T("DECKEDSLABBEAM");
 }
 
-HICON  CDeckedSlabBeamFactory::GetIcon()  const
+HICON  DeckedSlabBeamFactory::GetIcon()  const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    return ::LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_DECKEDSLAB) );
 }
 
-void CDeckedSlabBeamFactory::GetDimensions(const BeamFactory::Dimensions& dimensions,
+void DeckedSlabBeamFactory::GetDimensions(const BeamFactory::Dimensions& dimensions,
                       Float64& A,Float64& B,Float64& C,Float64& F,Float64& W,Float64& Tt,Float64& Tb,Float64& Jmax,Float64& EndBlockLength) const
 {
    A = GetDimension(dimensions,_T("A"));
@@ -745,7 +745,7 @@ void CDeckedSlabBeamFactory::GetDimensions(const BeamFactory::Dimensions& dimens
    EndBlockLength = GetDimension(dimensions,_T("EndBlockLength"));
 }
 
-Float64 CDeckedSlabBeamFactory::GetDimension(const BeamFactory::Dimensions& dimensions, const std::_tstring& name) const
+Float64 DeckedSlabBeamFactory::GetDimension(const BeamFactory::Dimensions& dimensions, const std::_tstring& name) const
 {
    for (const auto& dim : dimensions)
    {
@@ -759,7 +759,7 @@ Float64 CDeckedSlabBeamFactory::GetDimension(const BeamFactory::Dimensions& dime
    return -99999;
 }
 
-pgsTypes::SupportedDeckTypes CDeckedSlabBeamFactory::GetSupportedDeckTypes(pgsTypes::SupportedBeamSpacing sbs) const
+pgsTypes::SupportedDeckTypes DeckedSlabBeamFactory::GetSupportedDeckTypes(pgsTypes::SupportedBeamSpacing sbs) const
 {
    pgsTypes::SupportedDeckTypes sdt;
    switch(sbs)
@@ -777,7 +777,7 @@ pgsTypes::SupportedDeckTypes CDeckedSlabBeamFactory::GetSupportedDeckTypes(pgsTy
    return sdt;
 }
 
-pgsTypes::SupportedBeamSpacings CDeckedSlabBeamFactory::GetSupportedBeamSpacings() const
+pgsTypes::SupportedBeamSpacings DeckedSlabBeamFactory::GetSupportedBeamSpacings() const
 {
    pgsTypes::SupportedBeamSpacings sbs;
    sbs.push_back(pgsTypes::sbsUniformAdjacent);
@@ -786,19 +786,19 @@ pgsTypes::SupportedBeamSpacings CDeckedSlabBeamFactory::GetSupportedBeamSpacings
    return sbs;
 }
 
-bool CDeckedSlabBeamFactory::IsSupportedBeamSpacing(pgsTypes::SupportedBeamSpacing spacingType) const
+bool DeckedSlabBeamFactory::IsSupportedBeamSpacing(pgsTypes::SupportedBeamSpacing spacingType) const
 {
    pgsTypes::SupportedBeamSpacings sbs = GetSupportedBeamSpacings();
    auto found = std::find(sbs.cbegin(), sbs.cend(), spacingType);
    return found == sbs.end() ? false : true;
 }
 
-bool CDeckedSlabBeamFactory::ConvertBeamSpacing(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const
+bool DeckedSlabBeamFactory::ConvertBeamSpacing(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const
 {
    return false;
 }
 
-pgsTypes::WorkPointLocations CDeckedSlabBeamFactory::GetSupportedWorkPointLocations(pgsTypes::SupportedBeamSpacing spacingType) const
+pgsTypes::WorkPointLocations DeckedSlabBeamFactory::GetSupportedWorkPointLocations(pgsTypes::SupportedBeamSpacing spacingType) const
 {
    pgsTypes::WorkPointLocations wpls;
    wpls.push_back(pgsTypes::wplTopGirder);
@@ -807,30 +807,30 @@ pgsTypes::WorkPointLocations CDeckedSlabBeamFactory::GetSupportedWorkPointLocati
    return wpls;
 }
 
-bool CDeckedSlabBeamFactory::IsSupportedWorkPointLocation(pgsTypes::SupportedBeamSpacing spacingType, pgsTypes::WorkPointLocation wpType) const
+bool DeckedSlabBeamFactory::IsSupportedWorkPointLocation(pgsTypes::SupportedBeamSpacing spacingType, pgsTypes::WorkPointLocation wpType) const
 {
    pgsTypes::WorkPointLocations sbs = GetSupportedWorkPointLocations(spacingType);
    auto found = std::find(sbs.cbegin(), sbs.cend(),wpType);
    return found == sbs.end() ? false : true;
 }
 
-std::vector<pgsTypes::GirderOrientationType> CDeckedSlabBeamFactory::GetSupportedGirderOrientation() const
+std::vector<pgsTypes::GirderOrientationType> DeckedSlabBeamFactory::GetSupportedGirderOrientation() const
 {
    std::vector<pgsTypes::GirderOrientationType> types{ pgsTypes::Plumb,pgsTypes::StartNormal,pgsTypes::MidspanNormal,pgsTypes::EndNormal,pgsTypes::Balanced };
    return types;
 }
 
-bool CDeckedSlabBeamFactory::IsSupportedGirderOrientation(pgsTypes::GirderOrientationType orientation) const
+bool DeckedSlabBeamFactory::IsSupportedGirderOrientation(pgsTypes::GirderOrientationType orientation) const
 {
    return true;
 }
 
-pgsTypes::GirderOrientationType CDeckedSlabBeamFactory::ConvertGirderOrientation(pgsTypes::GirderOrientationType orientation) const
+pgsTypes::GirderOrientationType DeckedSlabBeamFactory::ConvertGirderOrientation(pgsTypes::GirderOrientationType orientation) const
 {
    return orientation;
 }
 
-pgsTypes::SupportedDiaphragmTypes CDeckedSlabBeamFactory::GetSupportedDiaphragms() const
+pgsTypes::SupportedDiaphragmTypes DeckedSlabBeamFactory::GetSupportedDiaphragms() const
 {
    // only supports adjacent spacing so there can only be precast diaphragms
    pgsTypes::SupportedDiaphragmTypes diaphragmTypes;
@@ -838,7 +838,7 @@ pgsTypes::SupportedDiaphragmTypes CDeckedSlabBeamFactory::GetSupportedDiaphragms
    return diaphragmTypes;
 }
 
-pgsTypes::SupportedDiaphragmLocationTypes CDeckedSlabBeamFactory::GetSupportedDiaphragmLocations(pgsTypes::DiaphragmType type) const
+pgsTypes::SupportedDiaphragmLocationTypes DeckedSlabBeamFactory::GetSupportedDiaphragmLocations(pgsTypes::DiaphragmType type) const
 {
    pgsTypes::SupportedDiaphragmLocationTypes locations;
    switch(type)
@@ -858,7 +858,7 @@ pgsTypes::SupportedDiaphragmLocationTypes CDeckedSlabBeamFactory::GetSupportedDi
    return locations;
 }
 
-void CDeckedSlabBeamFactory::GetAllowableSpacingRange(const BeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const
+void DeckedSlabBeamFactory::GetAllowableSpacingRange(const BeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const
 {
    // we only allow adjacent spacing for this girder type so allowable spacing range is the joint spacing
    *minSpacing = 0.0;
@@ -884,22 +884,22 @@ void CDeckedSlabBeamFactory::GetAllowableSpacingRange(const BeamFactory::Dimensi
    }
 }
 
-WebIndexType CDeckedSlabBeamFactory::GetWebCount(const BeamFactory::Dimensions& dimensions) const
+WebIndexType DeckedSlabBeamFactory::GetWebCount(const BeamFactory::Dimensions& dimensions) const
 {
    return 2;
 }
 
-Float64 CDeckedSlabBeamFactory::GetBeamHeight(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
+Float64 DeckedSlabBeamFactory::GetBeamHeight(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    return GetDimension(dimensions,_T("C")) + GetDimension(dimensions,_T("Tt"));
 }
 
-Float64 CDeckedSlabBeamFactory::GetBeamWidth(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
+Float64 DeckedSlabBeamFactory::GetBeamWidth(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    return GetDimension(dimensions,_T("A"));
 }
 
-void CDeckedSlabBeamFactory::GetBeamTopWidth(const BeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
+void DeckedSlabBeamFactory::GetBeamTopWidth(const BeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
 {
    Float64 A = GetDimension(dimensions, _T("A"));
    Float64 F = GetDimension(dimensions, _T("F"));
@@ -911,43 +911,43 @@ void CDeckedSlabBeamFactory::GetBeamTopWidth(const BeamFactory::Dimensions& dime
    *pRightWidth = top;
 }
 
-bool CDeckedSlabBeamFactory::IsShearKey(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
+bool DeckedSlabBeamFactory::IsShearKey(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
 {
    return false;
 }
 
-void CDeckedSlabBeamFactory::GetShearKeyAreas(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const
+void DeckedSlabBeamFactory::GetShearKeyAreas(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const
 {
    *uniformArea = 0.0;
    *areaPerJoint = 0.0;
 }
 
-bool CDeckedSlabBeamFactory::HasLongitudinalJoints() const
+bool DeckedSlabBeamFactory::HasLongitudinalJoints() const
 {
    return false;
 }
 
-bool CDeckedSlabBeamFactory::IsLongitudinalJointStructural(pgsTypes::SupportedDeckType deckType,pgsTypes::AdjacentTransverseConnectivity connectivity) const
+bool DeckedSlabBeamFactory::IsLongitudinalJointStructural(pgsTypes::SupportedDeckType deckType,pgsTypes::AdjacentTransverseConnectivity connectivity) const
 {
    return false;
 }
 
-bool CDeckedSlabBeamFactory::HasTopFlangeThickening() const
+bool DeckedSlabBeamFactory::HasTopFlangeThickening() const
 {
    return false;
 }
 
-bool CDeckedSlabBeamFactory::CanPrecamber() const
+bool DeckedSlabBeamFactory::CanPrecamber() const
 {
    return false;
 }
 
-GirderIndexType CDeckedSlabBeamFactory::GetMinimumBeamCount() const
+GirderIndexType DeckedSlabBeamFactory::GetMinimumBeamCount() const
 {
    return 1;
 }
 
-void CDeckedSlabBeamFactory::PositionBeam(IDeckedSlabBeam* pBeam) const
+void DeckedSlabBeamFactory::PositionBeam(IDeckedSlabBeam* pBeam) const
 {
    // Hook point is at bottom center of bounding box.
    // Adjust hook point so top center of bounding box is at (0,0)

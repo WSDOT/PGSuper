@@ -53,6 +53,6 @@ private:
    CPointOfInterestChapterBuilder& operator=(const CPointOfInterestChapterBuilder&) = delete;
 
 
-   void ReportPoi(LPCTSTR strName,PoiAttributeType attribute,rptChapter* pChapter,const CGirderKey& girderKey,std::shared_ptr<WBFL::EAF::Broker> pBroker,IPointOfInterest* pPoi,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level) const;
+   void ReportPoi(LPCTSTR strName,PoiAttributeType attribute,rptChapter* pChapter,const CGirderKey& girderKey,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IPointOfInterest> pPoi,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level) const;
 };
 

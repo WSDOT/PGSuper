@@ -935,10 +935,11 @@ public:
 //////////////////////////////////////////////////////////////
 // Simple exception-safe class for holding and releasing I events
 //
-template<class T> class CIEventsHolderT
+template<typename T> 
+class CIEventsHolderT
 {
 public:
-   CIEventsHolderT(T* pIEvents):
+   CIEventsHolderT(std::shared_ptr<T> pIEvents):
    m_pIEvents(pIEvents)
    {
       m_pIEvents->HoldEvents();

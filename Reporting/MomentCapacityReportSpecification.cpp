@@ -77,7 +77,7 @@ bool CMomentCapacityReportSpecification::IsValid() const
    }
 }
 
-PoiList CMomentCapacityReportSpecification::GetMomentCapacityDetailsPois(IPointOfInterest* pPois, const CSegmentKey& segmentKey)
+PoiList CMomentCapacityReportSpecification::GetMomentCapacityDetailsPois(std::shared_ptr<IPointOfInterest> pPois, const CSegmentKey& segmentKey)
 {
    PoiList vPoi;
    CSegmentKey segAsDialog(segmentKey.groupIndex, segmentKey.girderIndex, ALL_SEGMENTS);

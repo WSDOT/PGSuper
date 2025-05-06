@@ -274,6 +274,7 @@ void CExampleExtensionAgent::SimulateUserInput()
 
 bool CExampleExtensionAgent::RegisterInterfaces()
 {
+   EAF_AGENT_REGISTER_INTERFACES;
    return true;
 }
 
@@ -295,12 +296,15 @@ bool CExampleExtensionAgent::Init()
 
 bool CExampleExtensionAgent::Reset()
 {
+   EAF_AGENT_RESET;
    m_bmpMenu.DeleteObject();
    return true;
 }
 
 bool CExampleExtensionAgent::ShutDown()
 {
+   EAF_AGENT_SHUTDOWN;
+
    //
    // Detach to connection points
    //

@@ -129,7 +129,7 @@ void CHaulingCheck::Build(rptChapter* pChapter,
          *pChapter << p;
       }
 
-      const pgsHaulingAnalysisArtifact* pHaulArtifact = pArtifacts->GetHaulingAnalysisArtifact(segmentKey);
+      auto pHaulArtifact = pArtifacts->GetHaulingAnalysisArtifact(segmentKey);
       pHaulArtifact->BuildHaulingCheckReport(segmentKey, pChapter, pBroker, pDisplayUnits);
    }
    else

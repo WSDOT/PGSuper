@@ -49,10 +49,10 @@ public:
    pgsGirderLiftingChecker& operator=(const pgsGirderLiftingChecker&) = delete;
    virtual ~pgsGirderLiftingChecker();
 
-   void CheckLifting(const CSegmentKey& segmentKey,WBFL::Stability::LiftingCheckArtifact* pArtifact);
-   void AnalyzeLifting(const CSegmentKey& segmentKey,Float64 supportLoc,WBFL::Stability::LiftingCheckArtifact* pArtifact);
-   void AnalyzeLifting(const CSegmentKey& segmentKey,const HANDLINGCONFIG& config,ISegmentLiftingDesignPointsOfInterest* pPOId, WBFL::Stability::LiftingCheckArtifact* pArtifact, const WBFL::Stability::LiftingStabilityProblem** ppStabilityProblem = nullptr);
-   pgsDesignCodes::OutcomeType DesignLifting(const CSegmentKey& segmentKey,HANDLINGCONFIG& config,ISegmentLiftingDesignPointsOfInterest* pPOId,WBFL::Stability::LiftingCheckArtifact* pArtifact,const WBFL::Stability::LiftingStabilityProblem** ppStabilityProblem,SHARED_LOGFILE LOGFILE);
+   std::shared_ptr<WBFL::Stability::LiftingCheckArtifact> CheckLifting(const CSegmentKey& segmentKey);
+   std::shared_ptr<WBFL::Stability::LiftingCheckArtifact> AnalyzeLifting(const CSegmentKey& segmentKey,Float64 supportLoc);
+   std::shared_ptr<WBFL::Stability::LiftingCheckArtifact> AnalyzeLifting(const CSegmentKey& segmentKey,const HANDLINGCONFIG& config,std::shared_ptr<ISegmentLiftingDesignPointsOfInterest> pPOId, const WBFL::Stability::LiftingStabilityProblem** ppStabilityProblem = nullptr);
+   std::pair<pgsDesignCodes::OutcomeType, std::shared_ptr<WBFL::Stability::LiftingCheckArtifact>> DesignLifting(const CSegmentKey& segmentKey,HANDLINGCONFIG& config,std::shared_ptr<ISegmentLiftingDesignPointsOfInterest> pPOId,const WBFL::Stability::LiftingStabilityProblem** ppStabilityProblem,SHARED_LOGFILE LOGFILE);
 
 private:
    std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
@@ -60,5 +60,5 @@ private:
    StatusCallbackIDType m_scidLiftingSupportLocationError;
    StatusCallbackIDType m_scidLiftingSupportLocationWarning;
 
-   void AnalyzeLifting(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& liftConfig,ISegmentLiftingDesignPointsOfInterest* pPoiD,WBFL::Stability::LiftingCheckArtifact* pArtifact,const WBFL::Stability::LiftingStabilityProblem** ppStabilityProblem = nullptr);
+   std::shared_ptr<WBFL::Stability::LiftingCheckArtifact> AnalyzeLifting(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& liftConfig,std::shared_ptr<ISegmentLiftingDesignPointsOfInterest> pPoiD,const WBFL::Stability::LiftingStabilityProblem** ppStabilityProblem = nullptr);
 };

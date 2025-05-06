@@ -122,7 +122,7 @@ public:
 private:
    std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    StatusGroupIDType m_StatusGroupID;
-   mutable std::unique_ptr<CPsLossEngineerBase> m_LossEngineer;
+   mutable std::unique_ptr<PGS::Beams::PsLossEngineerBase> m_LossEngineer;
 
    void CreateLossEngineer(const CGirderKey& girderKey) const;
 

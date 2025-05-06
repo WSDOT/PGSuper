@@ -301,7 +301,7 @@ void CDeflectionHistoryGraphBuilder::UpdateGraphData(const pgsPointOfInterest& p
    }
 }
 
-Float64 CDeflectionHistoryGraphBuilder::GetX(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType,IIntervals* pIntervals)
+Float64 CDeflectionHistoryGraphBuilder::GetX(const CSegmentKey& segmentKey,IntervalIndexType intervalIdx,pgsTypes::IntervalTimeType timeType,std::shared_ptr<IIntervals> pIntervals)
 {
    Float64 x;
    if ( m_XAxisType == X_AXIS_TIME_LINEAR || m_XAxisType == X_AXIS_TIME_LOG )
@@ -330,7 +330,7 @@ Float64 CDeflectionHistoryGraphBuilder::GetX(const CSegmentKey& segmentKey,Inter
    return x;
 }
 
-void CDeflectionHistoryGraphBuilder::PlotDeflection(Float64 x,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,IndexType dataSeries,pgsTypes::BridgeAnalysisType bat,ILimitStateForces* pLimitStateForces)
+void CDeflectionHistoryGraphBuilder::PlotDeflection(Float64 x,const pgsPointOfInterest& poi,IntervalIndexType intervalIdx,IndexType dataSeries,pgsTypes::BridgeAnalysisType bat,std::shared_ptr<ILimitStateForces> pLimitStateForces)
 {
    bool bIncludePrestress = true;
    bool bIncludeLiveLoad  = false;

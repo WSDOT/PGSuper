@@ -36,9 +36,9 @@ CLASS
 ////////////////////////// PUBLIC     ///////////////////////////////////////
 
 pgsAlternativeTensileStressCalculator::pgsAlternativeTensileStressCalculator(const CSegmentKey& segmentKey, IntervalIndexType intervalIdx,
-                                                                             IBridge* pBridge,IGirder* pGirder,
-                                         IShapes* pShapes,ISectionProperties* pSectProps, ILongRebarGeometry* pRebarGeom,
-                                         IMaterials* pMaterials,IPointOfInterest* pPoi,bool bLimitBarStress,Float64 fsMax,
+                                                                             std::shared_ptr<IBridge> pBridge,std::shared_ptr<IGirder> pGirder,
+                                         std::shared_ptr<IShapes> pShapes,std::shared_ptr<ISectionProperties> pSectProps, std::shared_ptr<ILongRebarGeometry> pRebarGeom,
+                                         std::shared_ptr<IMaterials> pMaterials,std::shared_ptr<IPointOfInterest> pPoi,bool bLimitBarStress,Float64 fsMax,
                                          bool bGirderStresses) :
 m_pBridge(pBridge),
 m_pGirder(pGirder),

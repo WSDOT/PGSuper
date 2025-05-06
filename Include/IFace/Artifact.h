@@ -63,10 +63,10 @@ public:
    virtual const pgsSegmentArtifact* GetSegmentArtifact(const CSegmentKey& segmentKey) const = 0;
 
    // Returns a LiftingAnalysisArtifact which captures the specification checks related to lifting for an individual segment.
-   virtual const WBFL::Stability::LiftingCheckArtifact* GetLiftingCheckArtifact(const CSegmentKey& segmentKey) const = 0;
+   virtual std::shared_ptr<const WBFL::Stability::LiftingCheckArtifact> GetLiftingCheckArtifact(const CSegmentKey& segmentKey) const = 0;
 
    // Returns a HaulingAnalysisArtifact which captures the specification checks related to hauling for an individual segment.
-   virtual const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact(const CSegmentKey& segmentKey) const = 0;
+   virtual std::shared_ptr<const pgsHaulingAnalysisArtifact> GetHaulingAnalysisArtifact(const CSegmentKey& segmentKey) const = 0;
 
    // Creates a DesignArtifact for the specified girder
    // bool bOverrideHaunchDesignOption is true, the haunch design option is set to haunchDesignType, otherwise the setting from the specifications is used
@@ -76,10 +76,10 @@ public:
    virtual const pgsGirderDesignArtifact* GetDesignArtifact(const CGirderKey& girderKey) const = 0;
 
    // Creates a LiftingAnalysisArtifact for the specified segment based on the specified lifting configuration
-   virtual void CreateLiftingCheckArtifact(const CSegmentKey& segmentKey,Float64 supportLoc,WBFL::Stability::LiftingCheckArtifact* pArtifact) const = 0;
+   virtual std::shared_ptr<WBFL::Stability::LiftingCheckArtifact> CreateLiftingCheckArtifact(const CSegmentKey& segmentKey,Float64 supportLoc) const = 0;
 
    // Creates a HaulingAnalysisArtifact for the specified segment based on the specified hauling configuration
-   virtual const pgsHaulingAnalysisArtifact* CreateHaulingAnalysisArtifact(const CSegmentKey& segmentKey,Float64 leftSupportLoc,Float64 rightSupportLoc) const = 0;
+   virtual std::shared_ptr<pgsHaulingAnalysisArtifact> CreateHaulingAnalysisArtifact(const CSegmentKey& segmentKey,Float64 leftSupportLoc,Float64 rightSupportLoc) const = 0;
 
    // Returns the RatingArtifact for the specified girder
    virtual const pgsRatingArtifact* GetRatingArtifact(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx) const = 0;

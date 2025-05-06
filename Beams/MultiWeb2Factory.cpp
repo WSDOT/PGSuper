@@ -53,9 +53,9 @@
 
 using namespace PGS::Beams;
 
-std::shared_ptr<CMultiWeb2Factory> BeamFactorySingleton<CMultiWeb2Factory>::instance = nullptr;
+std::shared_ptr<MultiWeb2Factory> BeamFactorySingleton<MultiWeb2Factory>::instance = nullptr;
 
-CMultiWeb2Factory::CMultiWeb2Factory() : BeamFactory()
+MultiWeb2Factory::MultiWeb2Factory() : BeamFactory()
 {
    // Initialize with default values... This are not necessarily valid dimensions
    m_DimNames.emplace_back(_T("C1"));
@@ -114,7 +114,7 @@ CMultiWeb2Factory::CMultiWeb2Factory() : BeamFactory()
    m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Feet); // Wmax
 }
 
-void CMultiWeb2Factory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const BeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
+void MultiWeb2Factory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const BeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
 {
    CComPtr<IMultiWebSection2> gdrSection;
    gdrSection.CoCreateInstance(CLSID_MultiWebSection2);
@@ -126,7 +126,7 @@ void CMultiWeb2Factory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> p
    gdrSection.QueryInterface(ppSection);
 }
 
-void CMultiWeb2Factory::CreateSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
+void MultiWeb2Factory::CreateSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
 {
    CComPtr<IPrismaticSuperstructureMemberSegment> segment;
    segment.CoCreateInstance(CLSID_PrismaticSuperstructureMemberSegment);
@@ -178,7 +178,7 @@ void CMultiWeb2Factory::CreateSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker
    ssmbrSegment.CopyTo(ppSegment);
 }
 
-void CMultiWeb2Factory::CreateSegmentShape(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
+void MultiWeb2Factory::CreateSegmentShape(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
 {
    const CSplicedGirderData* pGirder = pSegment->GetGirder();
    const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
@@ -192,7 +192,7 @@ void CMultiWeb2Factory::CreateSegmentShape(std::shared_ptr<WBFL::EAF::Broker> pB
    beam.QueryInterface(ppShape);
 }
 
-Float64 CMultiWeb2Factory::GetSegmentHeight(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
+Float64 MultiWeb2Factory::GetSegmentHeight(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
 {
    const CSplicedGirderData* pGirder = pSegment->GetGirder();
    const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
@@ -203,12 +203,12 @@ Float64 CMultiWeb2Factory::GetSegmentHeight(std::shared_ptr<WBFL::EAF::Broker> p
    return H1 + H2 + H3;
 }
 
-void CMultiWeb2Factory::ConfigureSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
+void MultiWeb2Factory::ConfigureSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
 {
    // do nothing... all the configuration was done in CreateSegment
 }
 
-void CMultiWeb2Factory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
+void MultiWeb2Factory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
 {
    // This is a prismatic beam so only add section change POI at the start and end of the beam
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -221,25 +221,25 @@ void CMultiWeb2Factory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL
    VERIFY(pPoiMgr->AddPointOfInterest(poiEnd) != INVALID_ID);
 }
 
-std::shared_ptr<CDistFactorEngineerBase> CMultiWeb2Factory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
+std::shared_ptr<DistFactorEngineerBase> MultiWeb2Factory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
 {
-   return std::make_shared<CMultiWebDistFactorEngineer>(CMultiWebDistFactorEngineer::BeamType::MultiWebTee, pBroker, statusGroupID);
+   return std::make_shared<MultiWebDistFactorEngineer>(MultiWebDistFactorEngineer::BeamType::MultiWebTee, pBroker, statusGroupID);
 }
 
-std::unique_ptr<CPsLossEngineerBase> CMultiWeb2Factory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey) const
+std::unique_ptr<PsLossEngineerBase> MultiWeb2Factory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey) const
 {
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if ( pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
    {
-      return std::make_unique<CTimeStepLossEngineer>(pBroker,statusGroupID);
+      return std::make_unique<TimeStepLossEngineer>(pBroker,statusGroupID);
    }
    else
    {
-      return std::make_unique<CPsBeamLossEngineer>(CPsBeamLossEngineer::BeamType::IBeam,pBroker,statusGroupID);
+      return std::make_unique<PsBeamLossEngineer>(PsBeamLossEngineer::BeamType::IBeam,pBroker,statusGroupID);
    }
 }
 
-void CMultiWeb2Factory::CreateStrandMover(const BeamFactory::Dimensions& dimensions,  Float64 Hg,
+void MultiWeb2Factory::CreateStrandMover(const BeamFactory::Dimensions& dimensions,  Float64 Hg,
                                   BeamFactory::BeamFace endTopFace, Float64 endTopLimit, BeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                                   BeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, BeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
                                   Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover) const
@@ -307,22 +307,22 @@ void CMultiWeb2Factory::CreateStrandMover(const BeamFactory::Dimensions& dimensi
    ATLASSERT (SUCCEEDED(hr));
 }
 
-const std::vector<std::_tstring>& CMultiWeb2Factory::GetDimensionNames() const
+const std::vector<std::_tstring>& MultiWeb2Factory::GetDimensionNames() const
 {
    return m_DimNames;
 }
 
-const std::vector<Float64>& CMultiWeb2Factory::GetDefaultDimensions() const
+const std::vector<Float64>& MultiWeb2Factory::GetDefaultDimensions() const
 {
    return m_DefaultDims;
 }
 
-const std::vector<const WBFL::Units::Length*>& CMultiWeb2Factory::GetDimensionUnits(bool bSIUnits) const
+const std::vector<const WBFL::Units::Length*>& MultiWeb2Factory::GetDimensionUnits(bool bSIUnits) const
 {
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
 
-bool CMultiWeb2Factory::ValidateDimensions(const BeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg) const
+bool MultiWeb2Factory::ValidateDimensions(const BeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg) const
 {
    Float64 h1,h2,h3;
    Float64 c1,c2;
@@ -478,7 +478,7 @@ bool CMultiWeb2Factory::ValidateDimensions(const BeamFactory::Dimensions& dimens
    return true;
 }
 
-void CMultiWeb2Factory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const BeamFactory::Dimensions& dimensions) const
+void MultiWeb2Factory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const BeamFactory::Dimensions& dimensions) const
 {
    pSave->BeginUnit(_T("MultiWeb2Dimensions"),1.0);
    for(const auto& name : m_DimNames)
@@ -489,7 +489,7 @@ void CMultiWeb2Factory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSa
    pSave->EndUnit();
 }
 
-BeamFactory::Dimensions CMultiWeb2Factory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
+BeamFactory::Dimensions MultiWeb2Factory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
 {
    Float64 parent_version;
    if (pLoad->GetParentUnit() == _T("GirderLibraryEntry"))
@@ -544,27 +544,27 @@ BeamFactory::Dimensions CMultiWeb2Factory::LoadSectionDimensions(WBFL::System::I
    return dimensions;
 }
 
-bool CMultiWeb2Factory::IsPrismatic(const BeamFactory::Dimensions& dimensions) const
+bool MultiWeb2Factory::IsPrismatic(const BeamFactory::Dimensions& dimensions) const
 {
    return true;
 }
 
-bool CMultiWeb2Factory::IsPrismatic(const CSegmentKey& segmentKey) const
+bool MultiWeb2Factory::IsPrismatic(const CSegmentKey& segmentKey) const
 {
    return true;
 }
 
-bool CMultiWeb2Factory::IsSymmetric(const CSegmentKey& segmentKey) const
+bool MultiWeb2Factory::IsSymmetric(const CSegmentKey& segmentKey) const
 {
    return true;
 }
 
-std::_tstring CMultiWeb2Factory::GetImage() const
+std::_tstring MultiWeb2Factory::GetImage() const
 {
    return std::_tstring(_T("MultiWeb2.gif"));
 }
 
-std::_tstring CMultiWeb2Factory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType) const
+std::_tstring MultiWeb2Factory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
 
@@ -586,7 +586,7 @@ std::_tstring CMultiWeb2Factory::GetSlabDimensionsImage(pgsTypes::SupportedDeckT
    return strImage;
 }
 
-std::_tstring CMultiWeb2Factory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
+std::_tstring MultiWeb2Factory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
 
@@ -608,7 +608,7 @@ std::_tstring CMultiWeb2Factory::GetPositiveMomentCapacitySchematicImage(pgsType
    return strImage;
 }
 
-std::_tstring CMultiWeb2Factory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
+std::_tstring MultiWeb2Factory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
 
@@ -630,7 +630,7 @@ std::_tstring CMultiWeb2Factory::GetNegativeMomentCapacitySchematicImage(pgsType
    return strImage;
 }
 
-std::_tstring CMultiWeb2Factory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType) const
+std::_tstring MultiWeb2Factory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
 
@@ -652,7 +652,7 @@ std::_tstring CMultiWeb2Factory::GetShearDimensionsSchematicImage(pgsTypes::Supp
    return strImage;
 }
 
-std::_tstring CMultiWeb2Factory::GetInteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
+std::_tstring MultiWeb2Factory::GetInteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
@@ -670,7 +670,7 @@ std::_tstring CMultiWeb2Factory::GetInteriorGirderEffectiveFlangeWidthImage(std:
    }
 }
 
-std::_tstring CMultiWeb2Factory::GetExteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
+std::_tstring MultiWeb2Factory::GetExteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
@@ -688,12 +688,12 @@ std::_tstring CMultiWeb2Factory::GetExteriorGirderEffectiveFlangeWidthImage(std:
    }
 }
 
-CLSID CMultiWeb2Factory::GetCLSID() const
+CLSID MultiWeb2Factory::GetCLSID() const
 {
    return CLSID_MultiWeb2Factory;
 }
 
-std::_tstring CMultiWeb2Factory::GetName() const
+std::_tstring MultiWeb2Factory::GetName() const
 {
    USES_CONVERSION;
    LPOLESTR pszUserType;
@@ -701,12 +701,12 @@ std::_tstring CMultiWeb2Factory::GetName() const
    return std::_tstring( OLE2T(pszUserType) );
 }
 
-CLSID CMultiWeb2Factory::GetFamilyCLSID() const
+CLSID MultiWeb2Factory::GetFamilyCLSID() const
 {
    return CLSID_RibbedBeamFamily;
 }
 
-std::_tstring CMultiWeb2Factory::GetGirderFamilyName() const
+std::_tstring MultiWeb2Factory::GetGirderFamilyName() const
 {
    USES_CONVERSION;
    LPOLESTR pszUserType;
@@ -714,34 +714,34 @@ std::_tstring CMultiWeb2Factory::GetGirderFamilyName() const
    return std::_tstring( OLE2T(pszUserType) );
 }
 
-std::_tstring CMultiWeb2Factory::GetPublisher() const
+std::_tstring MultiWeb2Factory::GetPublisher() const
 {
    return std::_tstring(_T("WSDOT"));
 }
 
-std::_tstring CMultiWeb2Factory::GetPublisherContactInformation() const
+std::_tstring MultiWeb2Factory::GetPublisherContactInformation() const
 {
    return std::_tstring(_T("http://www.wsdot.wa.gov/eesc/bridge"));
 }
 
-HINSTANCE CMultiWeb2Factory::GetResourceInstance() const
+HINSTANCE MultiWeb2Factory::GetResourceInstance() const
 {
    return _Module.GetResourceInstance();
 }
 
-LPCTSTR CMultiWeb2Factory::GetImageResourceName() const
+LPCTSTR MultiWeb2Factory::GetImageResourceName() const
 {
    return _T("MultiWeb2");
 }
 
-HICON  CMultiWeb2Factory::GetIcon()  const
+HICON  MultiWeb2Factory::GetIcon()  const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    return ::LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_MULTIWEB2) );
 }
 
-void CMultiWeb2Factory::GetDimensions(const BeamFactory::Dimensions& dimensions,
+void MultiWeb2Factory::GetDimensions(const BeamFactory::Dimensions& dimensions,
                                       Float64& h1,Float64& h2,Float64& h3,
                                       Float64& t1,Float64& t2,Float64& t3,
                                       Float64& f1,
@@ -762,7 +762,7 @@ void CMultiWeb2Factory::GetDimensions(const BeamFactory::Dimensions& dimensions,
    wmax = GetDimension(dimensions,_T("Wmax"));
 }
 
-Float64 CMultiWeb2Factory::GetDimension(const BeamFactory::Dimensions& dimensions,const std::_tstring& name) const
+Float64 MultiWeb2Factory::GetDimension(const BeamFactory::Dimensions& dimensions,const std::_tstring& name) const
 {
    for (const auto& dim : dimensions)
    {
@@ -776,7 +776,7 @@ Float64 CMultiWeb2Factory::GetDimension(const BeamFactory::Dimensions& dimension
    return -99999;
 }
 
-pgsTypes::SupportedDeckTypes CMultiWeb2Factory::GetSupportedDeckTypes(pgsTypes::SupportedBeamSpacing sbs) const
+pgsTypes::SupportedDeckTypes MultiWeb2Factory::GetSupportedDeckTypes(pgsTypes::SupportedBeamSpacing sbs) const
 {
    pgsTypes::SupportedDeckTypes sdt;
    switch(sbs)
@@ -792,21 +792,21 @@ pgsTypes::SupportedDeckTypes CMultiWeb2Factory::GetSupportedDeckTypes(pgsTypes::
    return sdt;
 }
 
-pgsTypes::SupportedBeamSpacings CMultiWeb2Factory::GetSupportedBeamSpacings() const
+pgsTypes::SupportedBeamSpacings MultiWeb2Factory::GetSupportedBeamSpacings() const
 {
    pgsTypes::SupportedBeamSpacings sbs;
    sbs.push_back(pgsTypes::sbsConstantAdjacent);
    return sbs;
 }
 
-bool CMultiWeb2Factory::IsSupportedBeamSpacing(pgsTypes::SupportedBeamSpacing spacingType) const
+bool MultiWeb2Factory::IsSupportedBeamSpacing(pgsTypes::SupportedBeamSpacing spacingType) const
 {
    pgsTypes::SupportedBeamSpacings sbs = GetSupportedBeamSpacings();
    auto found = std::find(sbs.cbegin(), sbs.cend(), spacingType);
    return found == sbs.end() ? false : true;
 }
 
-bool CMultiWeb2Factory::ConvertBeamSpacing(const BeamFactory::Dimensions& dimensions,pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const
+bool MultiWeb2Factory::ConvertBeamSpacing(const BeamFactory::Dimensions& dimensions,pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const
 {
    if (spacingType == pgsTypes::sbsUniform || spacingType == pgsTypes::sbsUniformAdjacent)
    {
@@ -818,7 +818,7 @@ bool CMultiWeb2Factory::ConvertBeamSpacing(const BeamFactory::Dimensions& dimens
    return false;
 }
 
-pgsTypes::WorkPointLocations CMultiWeb2Factory::GetSupportedWorkPointLocations(pgsTypes::SupportedBeamSpacing spacingType) const
+pgsTypes::WorkPointLocations MultiWeb2Factory::GetSupportedWorkPointLocations(pgsTypes::SupportedBeamSpacing spacingType) const
 {
    pgsTypes::WorkPointLocations wpls;
    wpls.push_back(pgsTypes::wplTopGirder);
@@ -827,30 +827,30 @@ pgsTypes::WorkPointLocations CMultiWeb2Factory::GetSupportedWorkPointLocations(p
    return wpls;
 }
 
-bool CMultiWeb2Factory::IsSupportedWorkPointLocation(pgsTypes::SupportedBeamSpacing spacingType, pgsTypes::WorkPointLocation wpType) const
+bool MultiWeb2Factory::IsSupportedWorkPointLocation(pgsTypes::SupportedBeamSpacing spacingType, pgsTypes::WorkPointLocation wpType) const
 {
    pgsTypes::WorkPointLocations sbs = GetSupportedWorkPointLocations(spacingType);
    auto found = std::find(sbs.cbegin(), sbs.cend(),wpType);
    return found == sbs.end() ? false : true;
 }
 
-std::vector<pgsTypes::GirderOrientationType> CMultiWeb2Factory::GetSupportedGirderOrientation() const
+std::vector<pgsTypes::GirderOrientationType> MultiWeb2Factory::GetSupportedGirderOrientation() const
 {
    std::vector<pgsTypes::GirderOrientationType> types{ pgsTypes::Plumb, pgsTypes::StartNormal,pgsTypes::MidspanNormal,pgsTypes::EndNormal,pgsTypes::Balanced };
    return types;
 }
 
-bool CMultiWeb2Factory::IsSupportedGirderOrientation(pgsTypes::GirderOrientationType orientation) const
+bool MultiWeb2Factory::IsSupportedGirderOrientation(pgsTypes::GirderOrientationType orientation) const
 {
    return true;
 }
 
-pgsTypes::GirderOrientationType CMultiWeb2Factory::ConvertGirderOrientation(pgsTypes::GirderOrientationType orientation) const
+pgsTypes::GirderOrientationType MultiWeb2Factory::ConvertGirderOrientation(pgsTypes::GirderOrientationType orientation) const
 {
    return orientation;
 }
 
-pgsTypes::SupportedDiaphragmTypes CMultiWeb2Factory::GetSupportedDiaphragms() const
+pgsTypes::SupportedDiaphragmTypes MultiWeb2Factory::GetSupportedDiaphragms() const
 {
    pgsTypes::SupportedDiaphragmTypes diaphragmTypes;
    diaphragmTypes.push_back(pgsTypes::dtPrecast);
@@ -858,7 +858,7 @@ pgsTypes::SupportedDiaphragmTypes CMultiWeb2Factory::GetSupportedDiaphragms() co
    return diaphragmTypes;
 }
 
-pgsTypes::SupportedDiaphragmLocationTypes CMultiWeb2Factory::GetSupportedDiaphragmLocations(pgsTypes::DiaphragmType type) const
+pgsTypes::SupportedDiaphragmLocationTypes MultiWeb2Factory::GetSupportedDiaphragmLocations(pgsTypes::DiaphragmType type) const
 {
    pgsTypes::SupportedDiaphragmLocationTypes locations;
    switch(type)
@@ -878,7 +878,7 @@ pgsTypes::SupportedDiaphragmLocationTypes CMultiWeb2Factory::GetSupportedDiaphra
    return locations;
 }
 
-void CMultiWeb2Factory::GetAllowableSpacingRange(const BeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const
+void MultiWeb2Factory::GetAllowableSpacingRange(const BeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const
 {
    *minSpacing = 0.0;
    *maxSpacing = 0.0;
@@ -913,12 +913,12 @@ void CMultiWeb2Factory::GetAllowableSpacingRange(const BeamFactory::Dimensions& 
    }
 }
 
-WebIndexType CMultiWeb2Factory::GetWebCount(const BeamFactory::Dimensions& dimensions) const
+WebIndexType MultiWeb2Factory::GetWebCount(const BeamFactory::Dimensions& dimensions) const
 {
    return 2;
 }
 
-Float64 CMultiWeb2Factory::GetBeamHeight(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
+Float64 MultiWeb2Factory::GetBeamHeight(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    Float64 H1 = GetDimension(dimensions,_T("H1"));
    Float64 H2 = GetDimension(dimensions,_T("H2"));
@@ -927,7 +927,7 @@ Float64 CMultiWeb2Factory::GetBeamHeight(const BeamFactory::Dimensions& dimensio
    return H1 + H2 + H3;
 }
 
-Float64 CMultiWeb2Factory::GetBeamWidth(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
+Float64 MultiWeb2Factory::GetBeamWidth(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    Float64 T1 = GetDimension(dimensions,_T("T1"));
    Float64 T2 = GetDimension(dimensions,_T("T2"));
@@ -939,7 +939,7 @@ Float64 CMultiWeb2Factory::GetBeamWidth(const BeamFactory::Dimensions& dimension
    return 2*(T1+T2+T3+Wmax) + W2;
 }
 
-void CMultiWeb2Factory::GetBeamTopWidth(const BeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
+void MultiWeb2Factory::GetBeamTopWidth(const BeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
 {
    Float64 T1 = GetDimension(dimensions,_T("T1"));
    Float64 T2 = GetDimension(dimensions,_T("T2"));
@@ -956,43 +956,43 @@ void CMultiWeb2Factory::GetBeamTopWidth(const BeamFactory::Dimensions& dimension
    *pRightWidth = top;
 }
 
-bool CMultiWeb2Factory::IsShearKey(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
+bool MultiWeb2Factory::IsShearKey(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
 {
    return false;
 }
 
-void CMultiWeb2Factory::GetShearKeyAreas(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const
+void MultiWeb2Factory::GetShearKeyAreas(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const
 {
    *uniformArea = 0.0;
    *areaPerJoint = 0.0;
 }
 
-bool CMultiWeb2Factory::HasLongitudinalJoints() const
+bool MultiWeb2Factory::HasLongitudinalJoints() const
 {
    return false;
 }
 
-bool CMultiWeb2Factory::IsLongitudinalJointStructural(pgsTypes::SupportedDeckType deckType,pgsTypes::AdjacentTransverseConnectivity connectivity) const
+bool MultiWeb2Factory::IsLongitudinalJointStructural(pgsTypes::SupportedDeckType deckType,pgsTypes::AdjacentTransverseConnectivity connectivity) const
 {
    return false;
 }
 
-bool CMultiWeb2Factory::HasTopFlangeThickening() const
+bool MultiWeb2Factory::HasTopFlangeThickening() const
 {
    return false;
 }
 
-bool CMultiWeb2Factory::CanPrecamber() const
+bool MultiWeb2Factory::CanPrecamber() const
 {
    return false;
 }
 
-GirderIndexType CMultiWeb2Factory::GetMinimumBeamCount() const
+GirderIndexType MultiWeb2Factory::GetMinimumBeamCount() const
 {
    return 1;
 }
 
-void CMultiWeb2Factory::DimensionAndPositionBeam(std::shared_ptr<WBFL::EAF::Broker> pBroker,const BeamFactory::Dimensions& dimensions, IMultiWeb2* pBeam) const
+void MultiWeb2Factory::DimensionAndPositionBeam(std::shared_ptr<WBFL::EAF::Broker> pBroker,const BeamFactory::Dimensions& dimensions, IMultiWeb2* pBeam) const
 {
    Float64 c1, c2;
    Float64 h1, h2, h3;

@@ -72,7 +72,7 @@ CLASS	TxDOTIBNSDebondWriter
 class TxDOTIBNSDebondWriter : public TxDOTDebondTool
 {
 public:
-   TxDOTIBNSDebondWriter(const CSegmentKey& segmentKey, Float64 girderLength, IStrandGeometry* pStrandGeometry):
+   TxDOTIBNSDebondWriter(const CSegmentKey& segmentKey, Float64 girderLength, std::shared_ptr<IStrandGeometry> pStrandGeometry):
    TxDOTDebondTool(segmentKey, girderLength, pStrandGeometry)
    {;}
 

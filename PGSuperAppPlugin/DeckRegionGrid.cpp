@@ -250,7 +250,7 @@ void CDeckRegionGrid::CustomInit()
 	GetParam( )->EnableUndo(TRUE);
 }
 
-void CDeckRegionGrid::GetPierUsage(PierIndexType pierIdx, IBridge* pBridge, BOOL* pbUseBack, BOOL* pbUseAhead)
+void CDeckRegionGrid::GetPierUsage(PierIndexType pierIdx, std::shared_ptr<IBridge> pBridge, BOOL* pbUseBack, BOOL* pbUseAhead)
 {
    // determies if a pier can be used as a reference point for deck casting region boundary
    PierIndexType nPiers = pBridge->GetPierCount();
@@ -384,7 +384,7 @@ void CDeckRegionGrid::SetData(const CCastDeckActivity& activity)
    }
 }
 
-void CDeckRegionGrid::SetRegionData(const CCastingRegion& region, IBridge* pBridge, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
+void CDeckRegionGrid::SetRegionData(const CCastingRegion& region, std::shared_ptr<IBridge> pBridge, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    if (region.m_Type == CCastingRegion::Pier)
    {
@@ -396,7 +396,7 @@ void CDeckRegionGrid::SetRegionData(const CCastingRegion& region, IBridge* pBrid
    }
 }
 
-void CDeckRegionGrid::SetPierData(const CCastingRegion& region, IBridge* pBridge, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
+void CDeckRegionGrid::SetPierData(const CCastingRegion& region, std::shared_ptr<IBridge> pBridge, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    BOOL bUseBack, bUseAhead;
    GetPierUsage(region.m_Index, pBridge, &bUseBack, &bUseAhead);
@@ -500,7 +500,7 @@ void CDeckRegionGrid::SetPierData(PierIndexType pierIdx, BOOL bUseBack, Float64 
    }
 }
 
-void CDeckRegionGrid::SetSpanData(const CCastingRegion& region, IBridge* pBridge,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
+void CDeckRegionGrid::SetSpanData(const CCastingRegion& region, std::shared_ptr<IBridge> pBridge,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    Float64 L = pBridge->GetSpanLength(region.m_Index);
    SetSpanData(region.m_Index, L, region.m_SequenceIndex, pDisplayUnits);

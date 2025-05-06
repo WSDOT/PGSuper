@@ -31,7 +31,9 @@
 // The header file also has several static methods (which should be exported methods) and multiple classes.
 // The classes should be broken out into multiple header/source files
 
-TxDOTDebondTool::TxDOTDebondTool(const CSegmentKey& segmentKey, Float64 girderLength, IStrandGeometry* pStrandGeometry) :
+#pragma Reminder("WORKING HERE - Removing COM")
+// Holding a reference to an interface pointer can be the source of circular references.
+TxDOTDebondTool::TxDOTDebondTool(const CSegmentKey& segmentKey, Float64 girderLength, std::shared_ptr<IStrandGeometry> pStrandGeometry) :
 m_SegmentKey(segmentKey), 
 m_pStrandGeometry(pStrandGeometry ), 
 m_GirderLength(girderLength),

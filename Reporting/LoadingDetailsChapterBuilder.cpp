@@ -333,7 +333,7 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CLoadingDetailsChapterBuilder::
 }
 
 
-void CLoadingDetailsChapterBuilder::ReportPedestrianLoad(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,IBridge* pBridge,IProductLoads* pProdLoads,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const CSegmentKey& thisSegmentKey) const
+void CLoadingDetailsChapterBuilder::ReportPedestrianLoad(rptChapter* pChapter,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IBridge> pBridge,std::shared_ptr<IProductLoads> pProdLoads,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const CSegmentKey& thisSegmentKey) const
 {
    GET_IFACE2(pBroker,IBarriers,pBarriers);
    rptParagraph* pPara = nullptr;
@@ -445,7 +445,7 @@ void CLoadingDetailsChapterBuilder::ReportPedestrianLoad(rptChapter* pChapter,st
    }
 }
 
-void CLoadingDetailsChapterBuilder::ReportSlabLoad(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,IBridge* pBridge,IProductLoads* pProdLoads,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const CSegmentKey& thisSegmentKey) const
+void CLoadingDetailsChapterBuilder::ReportSlabLoad(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter,std::shared_ptr<IBridge> pBridge,std::shared_ptr<IProductLoads> pProdLoads,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const CSegmentKey& thisSegmentKey) const
 {
    // slab loads between supports
    rptParagraph* pPara = nullptr;
@@ -780,7 +780,7 @@ void CLoadingDetailsChapterBuilder::ReportSlabLoad(std::shared_ptr<WBFL::EAF::Br
    } // end if ( pBridge->GetDeckType() != pgsTypes::sdtNone )
 }
 
-void CLoadingDetailsChapterBuilder::ReportOverlayLoad(rptChapter* pChapter,IBridge* pBridge,IProductLoads* pProdLoads,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,bool bRating,const CSegmentKey& thisSegmentKey) const
+void CLoadingDetailsChapterBuilder::ReportOverlayLoad(rptChapter* pChapter,std::shared_ptr<IBridge> pBridge,std::shared_ptr<IProductLoads> pProdLoads,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,bool bRating,const CSegmentKey& thisSegmentKey) const
 {
    // slab loads between supports
    rptParagraph* pPara = nullptr;
@@ -900,7 +900,7 @@ void CLoadingDetailsChapterBuilder::ReportOverlayLoad(rptChapter* pChapter,IBrid
    } // end if overlay
 }
 
-void CLoadingDetailsChapterBuilder::ReportConstructionLoad(rptChapter* pChapter,IBridge* pBridge,IProductLoads* pProdLoads,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const CSegmentKey& thisSegmentKey) const
+void CLoadingDetailsChapterBuilder::ReportConstructionLoad(rptChapter* pChapter,std::shared_ptr<IBridge> pBridge,std::shared_ptr<IProductLoads> pProdLoads,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const CSegmentKey& thisSegmentKey) const
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue,         loc,    pDisplayUnits->GetSpanLengthUnit(),     false );
    INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, fpl,    pDisplayUnits->GetForcePerLengthUnit(), false );
@@ -982,7 +982,7 @@ void CLoadingDetailsChapterBuilder::ReportConstructionLoad(rptChapter* pChapter,
    }
 }
 
-void CLoadingDetailsChapterBuilder::ReportLongitudinalJointLoad(rptChapter* pChapter, IBridge* pBridge, IProductLoads* pProdLoads, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CSegmentKey& thisSegmentKey) const
+void CLoadingDetailsChapterBuilder::ReportLongitudinalJointLoad(rptChapter* pChapter, std::shared_ptr<IBridge> pBridge, std::shared_ptr<IProductLoads> pProdLoads, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CSegmentKey& thisSegmentKey) const
 {
    INIT_UV_PROTOTYPE(rptLengthUnitValue, loc, pDisplayUnits->GetSpanLengthUnit(), false);
    INIT_UV_PROTOTYPE(rptForcePerLengthUnitValue, fpl, pDisplayUnits->GetForcePerLengthUnit(), false);
@@ -1055,7 +1055,7 @@ void CLoadingDetailsChapterBuilder::ReportLongitudinalJointLoad(rptChapter* pCha
    }
 }
 
-void CLoadingDetailsChapterBuilder::ReportShearKeyLoad(rptChapter* pChapter,IBridge* pBridge,IProductLoads* pProdLoads,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const CSegmentKey& thisSegmentKey,bool& one_girder_has_shear_key) const
+void CLoadingDetailsChapterBuilder::ReportShearKeyLoad(rptChapter* pChapter,std::shared_ptr<IBridge> pBridge,std::shared_ptr<IProductLoads> pProdLoads,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const CSegmentKey& thisSegmentKey,bool& one_girder_has_shear_key) const
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue,         loc,    pDisplayUnits->GetSpanLengthUnit(),     false );
    INIT_UV_PROTOTYPE( rptForcePerLengthUnitValue, fpl,    pDisplayUnits->GetForcePerLengthUnit(), false );
@@ -1156,7 +1156,7 @@ void CLoadingDetailsChapterBuilder::ReportShearKeyLoad(rptChapter* pChapter,IBri
    }
 }
 
-void CLoadingDetailsChapterBuilder::ReportPrecastDiaphragmLoad(rptChapter* pChapter,IBridge* pBridge,IProductLoads* pProdLoads,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const CSegmentKey& thisSegmentKey) const
+void CLoadingDetailsChapterBuilder::ReportPrecastDiaphragmLoad(rptChapter* pChapter,std::shared_ptr<IBridge> pBridge,std::shared_ptr<IProductLoads> pProdLoads,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const CSegmentKey& thisSegmentKey) const
 {
    if ( m_bSimplifiedVersion )
    {
@@ -1223,7 +1223,7 @@ void CLoadingDetailsChapterBuilder::ReportPrecastDiaphragmLoad(rptChapter* pChap
    }
 }
 
-void CLoadingDetailsChapterBuilder::ReportCastInPlaceDiaphragmLoad(rptChapter* pChapter,IBridge* pBridge,IProductLoads* pProdLoads,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const CSpanKey& spanKey) const
+void CLoadingDetailsChapterBuilder::ReportCastInPlaceDiaphragmLoad(rptChapter* pChapter,std::shared_ptr<IBridge> pBridge,std::shared_ptr<IProductLoads> pProdLoads,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const CSpanKey& spanKey) const
 {
    INIT_UV_PROTOTYPE( rptLengthUnitValue, loc,    pDisplayUnits->GetSpanLengthUnit(),   false);
    INIT_UV_PROTOTYPE( rptForceUnitValue,  force,  pDisplayUnits->GetGeneralForceUnit(), false);
@@ -1370,7 +1370,7 @@ void CLoadingDetailsChapterBuilder::ReportCastInPlaceDiaphragmLoad(rptChapter* p
    }
 }
 
-void CLoadingDetailsChapterBuilder::ReportLiveLoad(rptChapter* pChapter,bool bDesign,bool bRating,IRatingSpecification* pRatingSpec,bool& bPermit) const
+void CLoadingDetailsChapterBuilder::ReportLiveLoad(rptChapter* pChapter,bool bDesign,bool bRating,std::shared_ptr<IRatingSpecification> pRatingSpec,bool& bPermit) const
 {
    if ( m_bSimplifiedVersion )
    {
@@ -1585,7 +1585,7 @@ void CLoadingDetailsChapterBuilder::ReportLiveLoad(rptChapter* pChapter,bool bDe
    }
 }
 
-void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool bDesign,bool bRating,bool bPermit,bool one_girder_has_shear_key,IRatingSpecification* pRatingSpec) const
+void CLoadingDetailsChapterBuilder::ReportLimitStates(rptChapter* pChapter,bool bDesign,bool bRating,bool bPermit,bool one_girder_has_shear_key,std::shared_ptr<IRatingSpecification> pRatingSpec) const
 {
    if ( m_bSimplifiedVersion)
    {
@@ -2157,7 +2157,7 @@ std::_tstring GetImageName(LPCTSTR lpszBase, bool bAsymmetric, bool bPrecamber, 
    return strName;
 }
 
-void CLoadingDetailsChapterBuilder::ReportEquivPretensionLoads(rptChapter* pChapter,bool bRating,IBridge* pBridge,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const CGirderKey& girderKey) const
+void CLoadingDetailsChapterBuilder::ReportEquivPretensionLoads(rptChapter* pChapter,bool bRating,std::shared_ptr<IBridge> pBridge,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const CGirderKey& girderKey) const
 {
    if ( m_bSimplifiedVersion || bRating )
    {
@@ -2393,7 +2393,7 @@ void CLoadingDetailsChapterBuilder::ReportEquivPretensionLoads(rptChapter* pChap
    } // groupIdx
 }
 
-void CLoadingDetailsChapterBuilder::ReportEquivSegmentPostTensioningLoads(rptChapter* pChapter, bool bRating, IBridge* pBridge, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& girderKey) const
+void CLoadingDetailsChapterBuilder::ReportEquivSegmentPostTensioningLoads(rptChapter* pChapter, bool bRating, std::shared_ptr<IBridge> pBridge, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& girderKey) const
 {
    if (m_bSimplifiedVersion || bRating)
    {

@@ -414,9 +414,6 @@
     <ClInclude Include="..\Include\IFace\DistFactorEngineer.h">
       <Filter>Resource Files</Filter>
     </ClInclude>
-    <ClInclude Include="IBeamFactory.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\Include\Beams\Interfaces.h">
       <Filter>IFace</Filter>
     </ClInclude>

@@ -91,6 +91,6 @@ private:
    rptRcTable* CreateVniTable(std::shared_ptr<WBFL::EAF::Broker> pBroker, rptChapter* pChapter, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, const CGirderKey& girderKey,bool bIsUHPC, const std::vector<std::pair<SegmentIndexType, const pgsHorizontalShearArtifact*>>& vSegmentArtifacts, std::vector<std::pair<SegmentIndexType, const pgsHorizontalShearArtifact*>>& vClosureArtifacts);
    void FillVniTable(rptRcTable* pTable, RowIndexType row, const pgsPointOfInterest& poi, bool bIsUHPC, const pgsHorizontalShearArtifact* pArtifact);
    
-   rptRcTable* CreateMinAvfTable(rptChapter* pChapter, IBridge* pBridge, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, bool bIsRoughened, bool doAllStirrupsEngageDeck,bool bIsUHPC);
+   rptRcTable* CreateMinAvfTable(rptChapter* pChapter, std::shared_ptr<IBridge> pBridge, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, bool bIsRoughened, bool doAllStirrupsEngageDeck,bool bIsUHPC);
    void FillMinAvfTable(rptRcTable* pTable, RowIndexType row, const pgsPointOfInterest& poi, const pgsHorizontalShearArtifact* pArtifact, Float64 llss, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, bool bIsUHPC);
 };

@@ -68,7 +68,7 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CPointOfInterestChapterBuilder:
    return std::make_unique<CPointOfInterestChapterBuilder>();
 }
 
-void CPointOfInterestChapterBuilder::ReportPoi(LPCTSTR strName,PoiAttributeType attribute,rptChapter* pChapter,const CGirderKey& girderKey,std::shared_ptr<WBFL::EAF::Broker> pBroker,IPointOfInterest* pPoi,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level) const
+void CPointOfInterestChapterBuilder::ReportPoi(LPCTSTR strName,PoiAttributeType attribute,rptChapter* pChapter,const CGirderKey& girderKey,std::shared_ptr<WBFL::EAF::Broker> pBroker,std::shared_ptr<IPointOfInterest> pPoi,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level) const
 {
    GirderIndexType gdrIdx = girderKey.girderIndex;
 

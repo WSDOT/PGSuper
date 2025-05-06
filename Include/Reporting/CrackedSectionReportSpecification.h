@@ -40,7 +40,7 @@ public:
    // override to better check if poi is out of bounds
    virtual bool IsValid() const override;
 
-   static PoiList GetCrackedSectionPois(IPointOfInterest* pPois, const CSegmentKey& segmentKey);
+   static PoiList GetCrackedSectionPois(std::shared_ptr<IPointOfInterest> pPois, const CSegmentKey& segmentKey);
 
 protected:
    bool m_bPositiveMoment;

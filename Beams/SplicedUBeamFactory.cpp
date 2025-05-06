@@ -49,9 +49,9 @@
 
 using namespace PGS::Beams;
 
-std::shared_ptr<CSplicedUBeamFactory> BeamFactorySingleton<CSplicedUBeamFactory>::instance = nullptr;
+std::shared_ptr<SplicedUBeamFactory> BeamFactorySingleton<SplicedUBeamFactory>::instance = nullptr;
 
-CSplicedUBeamFactory::CSplicedUBeamFactory() : SplicedBeamFactory()
+SplicedUBeamFactory::SplicedUBeamFactory() : SplicedBeamFactory()
 {
    // Initialize with default values... This are not necessarily valid dimensions
    m_DimNames.emplace_back(_T("D1"));
@@ -114,7 +114,7 @@ CSplicedUBeamFactory::CSplicedUBeamFactory() : SplicedBeamFactory()
    m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Inch); // W5
 }
 
-void CSplicedUBeamFactory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const BeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
+void SplicedUBeamFactory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const BeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
 {
    CComPtr<IUGirderSection> gdrSection;
    gdrSection.CoCreateInstance(CLSID_UGirderSection);
@@ -126,7 +126,7 @@ void CSplicedUBeamFactory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker
    gdrSection.QueryInterface(ppSection);
 }
 
-void CSplicedUBeamFactory::CreateSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
+void SplicedUBeamFactory::CreateSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
 {
    CComPtr<ISplicedGirderSegment> segment;
    segment.CoCreateInstance(CLSID_USplicedGirderSegment);
@@ -180,7 +180,7 @@ void CSplicedUBeamFactory::CreateSegment(std::shared_ptr<WBFL::EAF::Broker> pBro
    ssmbrSegment.CopyTo(ppSegment);
 }
 
-void CSplicedUBeamFactory::CreateSegmentShape(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
+void SplicedUBeamFactory::CreateSegmentShape(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
 {
    const CSplicedGirderData* pGirder = pSegment->GetGirder();
 
@@ -198,7 +198,7 @@ void CSplicedUBeamFactory::CreateSegmentShape(std::shared_ptr<WBFL::EAF::Broker>
    beam.QueryInterface(ppShape);
 }
 
-Float64 CSplicedUBeamFactory::GetSegmentHeight(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
+Float64 SplicedUBeamFactory::GetSegmentHeight(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
 {
    const CSplicedGirderData* pGirder = pSegment->GetGirder();
    const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
@@ -207,12 +207,12 @@ Float64 CSplicedUBeamFactory::GetSegmentHeight(std::shared_ptr<WBFL::EAF::Broker
    return D1;
 }
 
-void CSplicedUBeamFactory::ConfigureSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
+void SplicedUBeamFactory::ConfigureSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
 {
    // do nothing... all the configuration was done in CreateSegment
 }
 
-void CSplicedUBeamFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
+void SplicedUBeamFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
 {
    // This is a prismatic beam so only add section change POI at the start and end of the beam
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -225,17 +225,17 @@ void CSplicedUBeamFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr<W
    VERIFY(pPoiMgr->AddPointOfInterest(poiEnd) != INVALID_ID);
 }
 
-std::shared_ptr<CDistFactorEngineerBase> CSplicedUBeamFactory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
+std::shared_ptr<DistFactorEngineerBase> SplicedUBeamFactory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
 {
-   return std::make_shared<CUBeamDistFactorEngineer>(pBroker, statusGroupID);
+   return std::make_shared<UBeamDistFactorEngineer>(pBroker, statusGroupID);
 }
 
-std::unique_ptr<CPsLossEngineerBase> CSplicedUBeamFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey) const
+std::unique_ptr<PsLossEngineerBase> SplicedUBeamFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey) const
 {
-   return std::make_unique<CTimeStepLossEngineer>(pBroker,statusGroupID);
+   return std::make_unique<TimeStepLossEngineer>(pBroker,statusGroupID);
 }
 
-void CSplicedUBeamFactory::CreateStrandMover(const BeamFactory::Dimensions& dimensions,  Float64 Hg,
+void SplicedUBeamFactory::CreateStrandMover(const BeamFactory::Dimensions& dimensions,  Float64 Hg,
                                   BeamFactory::BeamFace endTopFace, Float64 endTopLimit, BeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                                   BeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, BeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
                                   Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover) const
@@ -330,22 +330,22 @@ void CSplicedUBeamFactory::CreateStrandMover(const BeamFactory::Dimensions& dime
    ATLASSERT (SUCCEEDED(hr));
 }
 
-const std::vector<std::_tstring>& CSplicedUBeamFactory::GetDimensionNames() const
+const std::vector<std::_tstring>& SplicedUBeamFactory::GetDimensionNames() const
 {
    return m_DimNames;
 }
 
-const std::vector<Float64>& CSplicedUBeamFactory::GetDefaultDimensions() const
+const std::vector<Float64>& SplicedUBeamFactory::GetDefaultDimensions() const
 {
    return m_DefaultDims;
 }
 
-const std::vector<const WBFL::Units::Length*>& CSplicedUBeamFactory::GetDimensionUnits(bool bSIUnits) const
+const std::vector<const WBFL::Units::Length*>& SplicedUBeamFactory::GetDimensionUnits(bool bSIUnits) const
 {
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
 
-bool CSplicedUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg) const
+bool SplicedUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg) const
 {
    Float64 w1, w2, w3, w4, w5;
    Float64 d1, d2, d3, d4, d5, d6, d7;
@@ -475,7 +475,7 @@ bool CSplicedUBeamFactory::ValidateDimensions(const Dimensions& dimensions,bool 
    return true;
 }
 
-void CSplicedUBeamFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const BeamFactory::Dimensions& dimensions) const
+void SplicedUBeamFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const BeamFactory::Dimensions& dimensions) const
 {
    pSave->BeginUnit(_T("UBeamDimensions"),1.0);
    for(const auto& name : m_DimNames)
@@ -486,7 +486,7 @@ void CSplicedUBeamFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* 
    pSave->EndUnit();
 }
 
-BeamFactory::Dimensions CSplicedUBeamFactory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
+BeamFactory::Dimensions SplicedUBeamFactory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
 {
    Float64 parent_version;
    if (pLoad->GetParentUnit() == _T("GirderLibraryEntry"))
@@ -578,27 +578,27 @@ BeamFactory::Dimensions CSplicedUBeamFactory::LoadSectionDimensions(WBFL::System
    return dimensions;
 }
 
-bool CSplicedUBeamFactory::IsPrismatic(const BeamFactory::Dimensions& dimensions) const
+bool SplicedUBeamFactory::IsPrismatic(const BeamFactory::Dimensions& dimensions) const
 {
    return false;
 }
 
-bool CSplicedUBeamFactory::IsPrismatic(const CSegmentKey& segmentKey) const
+bool SplicedUBeamFactory::IsPrismatic(const CSegmentKey& segmentKey) const
 {
    return false;
 }
 
-bool CSplicedUBeamFactory::IsSymmetric(const CSegmentKey& segmentKey) const
+bool SplicedUBeamFactory::IsSymmetric(const CSegmentKey& segmentKey) const
 {
    return false;
 }
 
-std::_tstring CSplicedUBeamFactory::GetImage() const
+std::_tstring SplicedUBeamFactory::GetImage() const
 {
    return std::_tstring(_T("UBeam.jpg"));
 }
 
-std::_tstring CSplicedUBeamFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType) const
+std::_tstring SplicedUBeamFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
 
@@ -620,7 +620,7 @@ std::_tstring CSplicedUBeamFactory::GetSlabDimensionsImage(pgsTypes::SupportedDe
    return strImage;
 }
 
-std::_tstring CSplicedUBeamFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
+std::_tstring SplicedUBeamFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
 
@@ -639,7 +639,7 @@ std::_tstring CSplicedUBeamFactory::GetPositiveMomentCapacitySchematicImage(pgsT
    return strImage;
 }
 
-std::_tstring CSplicedUBeamFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
+std::_tstring SplicedUBeamFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
 
@@ -658,7 +658,7 @@ std::_tstring CSplicedUBeamFactory::GetNegativeMomentCapacitySchematicImage(pgsT
    return strImage;
 }
 
-std::_tstring CSplicedUBeamFactory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType) const
+std::_tstring SplicedUBeamFactory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
 
@@ -677,7 +677,7 @@ std::_tstring CSplicedUBeamFactory::GetShearDimensionsSchematicImage(pgsTypes::S
    return strImage;
 }
 
-std::_tstring CSplicedUBeamFactory::GetInteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
+std::_tstring SplicedUBeamFactory::GetInteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
@@ -695,7 +695,7 @@ std::_tstring CSplicedUBeamFactory::GetInteriorGirderEffectiveFlangeWidthImage(s
    }
 }
 
-std::_tstring CSplicedUBeamFactory::GetExteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
+std::_tstring SplicedUBeamFactory::GetExteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
@@ -713,12 +713,12 @@ std::_tstring CSplicedUBeamFactory::GetExteriorGirderEffectiveFlangeWidthImage(s
    }
 }
 
-CLSID CSplicedUBeamFactory::GetCLSID() const
+CLSID SplicedUBeamFactory::GetCLSID() const
 {
    return CLSID_SplicedUBeamFactory;
 }
 
-std::_tstring CSplicedUBeamFactory::GetName() const
+std::_tstring SplicedUBeamFactory::GetName() const
 {
    USES_CONVERSION;
    LPOLESTR pszUserType;
@@ -726,12 +726,12 @@ std::_tstring CSplicedUBeamFactory::GetName() const
    return std::_tstring( OLE2T(pszUserType) );
 }
 
-CLSID CSplicedUBeamFactory::GetFamilyCLSID() const
+CLSID SplicedUBeamFactory::GetFamilyCLSID() const
 {
    return CLSID_SplicedUBeamFamily;
 }
 
-std::_tstring CSplicedUBeamFactory::GetGirderFamilyName() const
+std::_tstring SplicedUBeamFactory::GetGirderFamilyName() const
 {
    USES_CONVERSION;
    LPOLESTR pszUserType;
@@ -739,34 +739,34 @@ std::_tstring CSplicedUBeamFactory::GetGirderFamilyName() const
    return std::_tstring( OLE2T(pszUserType) );
 }
 
-std::_tstring CSplicedUBeamFactory::GetPublisher() const
+std::_tstring SplicedUBeamFactory::GetPublisher() const
 {
    return std::_tstring(_T("WSDOT"));
 }
 
-std::_tstring CSplicedUBeamFactory::GetPublisherContactInformation() const
+std::_tstring SplicedUBeamFactory::GetPublisherContactInformation() const
 {
    return std::_tstring(_T("http://www.wsdot.wa.gov/eesc/bridge"));
 }
 
-HINSTANCE CSplicedUBeamFactory::GetResourceInstance() const
+HINSTANCE SplicedUBeamFactory::GetResourceInstance() const
 {
    return _Module.GetResourceInstance();
 }
 
-LPCTSTR CSplicedUBeamFactory::GetImageResourceName() const
+LPCTSTR SplicedUBeamFactory::GetImageResourceName() const
 {
    return _T("UBEAM");
 }
 
-HICON  CSplicedUBeamFactory::GetIcon()  const
+HICON  SplicedUBeamFactory::GetIcon()  const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    return ::LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_SPLICED_UBEAM) );
 }
 
-void CSplicedUBeamFactory::GetDimensions(const BeamFactory::Dimensions& dimensions,
+void SplicedUBeamFactory::GetDimensions(const BeamFactory::Dimensions& dimensions,
                                   Float64& d1,Float64& d2,Float64& d3,Float64& d4,Float64& d5,Float64& d6,Float64& d7,
                                   Float64& w1,Float64& w2,Float64& w3,Float64& w4,Float64& w5,
                                   Float64& t) const
@@ -786,7 +786,7 @@ void CSplicedUBeamFactory::GetDimensions(const BeamFactory::Dimensions& dimensio
    t  = GetDimension(dimensions,_T("T"));
 }
 
-Float64 CSplicedUBeamFactory::GetDimension(const BeamFactory::Dimensions& dimensions,const std::_tstring& name) const
+Float64 SplicedUBeamFactory::GetDimension(const BeamFactory::Dimensions& dimensions,const std::_tstring& name) const
 {
    for (const auto& dim : dimensions)
    {
@@ -800,7 +800,7 @@ Float64 CSplicedUBeamFactory::GetDimension(const BeamFactory::Dimensions& dimens
    return -99999;
 }
 
-pgsTypes::SupportedDeckTypes CSplicedUBeamFactory::GetSupportedDeckTypes(pgsTypes::SupportedBeamSpacing sbs) const
+pgsTypes::SupportedDeckTypes SplicedUBeamFactory::GetSupportedDeckTypes(pgsTypes::SupportedBeamSpacing sbs) const
 {
    pgsTypes::SupportedDeckTypes sdt;
    switch(sbs)
@@ -817,7 +817,7 @@ pgsTypes::SupportedDeckTypes CSplicedUBeamFactory::GetSupportedDeckTypes(pgsType
    return sdt;
 }
 
-pgsTypes::SupportedBeamSpacings CSplicedUBeamFactory::GetSupportedBeamSpacings() const
+pgsTypes::SupportedBeamSpacings SplicedUBeamFactory::GetSupportedBeamSpacings() const
 {
    pgsTypes::SupportedBeamSpacings sbs;
    sbs.push_back(pgsTypes::sbsUniform);
@@ -826,20 +826,20 @@ pgsTypes::SupportedBeamSpacings CSplicedUBeamFactory::GetSupportedBeamSpacings()
    return sbs;
 }
 
-bool CSplicedUBeamFactory::IsSupportedBeamSpacing(pgsTypes::SupportedBeamSpacing spacingType) const
+bool SplicedUBeamFactory::IsSupportedBeamSpacing(pgsTypes::SupportedBeamSpacing spacingType) const
 {
    pgsTypes::SupportedBeamSpacings sbs = GetSupportedBeamSpacings();
    auto found = std::find(sbs.cbegin(), sbs.cend(), spacingType);
    return found == sbs.end() ? false : true;
 }
 
-bool CSplicedUBeamFactory::ConvertBeamSpacing(const BeamFactory::Dimensions& dimensions,pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const
+bool SplicedUBeamFactory::ConvertBeamSpacing(const BeamFactory::Dimensions& dimensions,pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const
 {
    return false;
 }
 
 
-pgsTypes::WorkPointLocations CSplicedUBeamFactory::GetSupportedWorkPointLocations(pgsTypes::SupportedBeamSpacing spacingType) const
+pgsTypes::WorkPointLocations SplicedUBeamFactory::GetSupportedWorkPointLocations(pgsTypes::SupportedBeamSpacing spacingType) const
 {
    pgsTypes::WorkPointLocations wpls;
    wpls.push_back(pgsTypes::wplTopGirder);
@@ -848,30 +848,30 @@ pgsTypes::WorkPointLocations CSplicedUBeamFactory::GetSupportedWorkPointLocation
    return wpls;
 }
 
-bool CSplicedUBeamFactory::IsSupportedWorkPointLocation(pgsTypes::SupportedBeamSpacing spacingType, pgsTypes::WorkPointLocation wpType) const
+bool SplicedUBeamFactory::IsSupportedWorkPointLocation(pgsTypes::SupportedBeamSpacing spacingType, pgsTypes::WorkPointLocation wpType) const
 {
    pgsTypes::WorkPointLocations sbs = GetSupportedWorkPointLocations(spacingType);
    auto found = std::find(sbs.cbegin(), sbs.cend(), wpType);
    return found == sbs.end() ? false : true;
 }
 
-std::vector<pgsTypes::GirderOrientationType> CSplicedUBeamFactory::GetSupportedGirderOrientation() const
+std::vector<pgsTypes::GirderOrientationType> SplicedUBeamFactory::GetSupportedGirderOrientation() const
 {
    std::vector<pgsTypes::GirderOrientationType> types{ pgsTypes::Plumb, pgsTypes::StartNormal,pgsTypes::MidspanNormal,pgsTypes::EndNormal,pgsTypes::Balanced};
    return types;
 }
 
-bool CSplicedUBeamFactory::IsSupportedGirderOrientation(pgsTypes::GirderOrientationType orientation) const
+bool SplicedUBeamFactory::IsSupportedGirderOrientation(pgsTypes::GirderOrientationType orientation) const
 {
    return true;
 }
 
-pgsTypes::GirderOrientationType CSplicedUBeamFactory::ConvertGirderOrientation(pgsTypes::GirderOrientationType orientation) const
+pgsTypes::GirderOrientationType SplicedUBeamFactory::ConvertGirderOrientation(pgsTypes::GirderOrientationType orientation) const
 {
    return orientation;
 }
 
-pgsTypes::SupportedDiaphragmTypes CSplicedUBeamFactory::GetSupportedDiaphragms() const
+pgsTypes::SupportedDiaphragmTypes SplicedUBeamFactory::GetSupportedDiaphragms() const
 {
    pgsTypes::SupportedDiaphragmTypes diaphragmTypes;
    diaphragmTypes.push_back(pgsTypes::dtPrecast);
@@ -879,7 +879,7 @@ pgsTypes::SupportedDiaphragmTypes CSplicedUBeamFactory::GetSupportedDiaphragms()
    return diaphragmTypes;
 }
 
-pgsTypes::SupportedDiaphragmLocationTypes CSplicedUBeamFactory::GetSupportedDiaphragmLocations(pgsTypes::DiaphragmType type) const
+pgsTypes::SupportedDiaphragmLocationTypes SplicedUBeamFactory::GetSupportedDiaphragmLocations(pgsTypes::DiaphragmType type) const
 {
    pgsTypes::SupportedDiaphragmLocationTypes locations;
    switch(type)
@@ -900,7 +900,7 @@ pgsTypes::SupportedDiaphragmLocationTypes CSplicedUBeamFactory::GetSupportedDiap
    return locations;
 }
 
-void CSplicedUBeamFactory::GetAllowableSpacingRange(const BeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const
+void SplicedUBeamFactory::GetAllowableSpacingRange(const BeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const
 {
    *minSpacing = 0.0;
    *maxSpacing = 0.0;
@@ -929,7 +929,7 @@ void CSplicedUBeamFactory::GetAllowableSpacingRange(const BeamFactory::Dimension
    }
 }
 
-void CSplicedUBeamFactory::ConfigureShape(const BeamFactory::Dimensions& dimensions, IUBeam* beam) const
+void SplicedUBeamFactory::ConfigureShape(const BeamFactory::Dimensions& dimensions, IUBeam* beam) const
 {
    Float64 w1, w2, w3, w4, w5;
    Float64 d1, d2, d3, d4, d5, d6, d7;
@@ -958,22 +958,22 @@ void CSplicedUBeamFactory::ConfigureShape(const BeamFactory::Dimensions& dimensi
    hookPt->Move(0,-overallHeight);
 }
 
-WebIndexType CSplicedUBeamFactory::GetWebCount(const BeamFactory::Dimensions& dimensions) const
+WebIndexType SplicedUBeamFactory::GetWebCount(const BeamFactory::Dimensions& dimensions) const
 {
    return 2;
 }
 
-Float64 CSplicedUBeamFactory::GetBeamHeight(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
+Float64 SplicedUBeamFactory::GetBeamHeight(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    return GetDimension(dimensions,_T("D1"));
 }
 
-Float64 CSplicedUBeamFactory::GetBeamWidth(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
+Float64 SplicedUBeamFactory::GetBeamWidth(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    return GetDimension(dimensions,_T("W2"));
 }
 
-void CSplicedUBeamFactory::GetBeamTopWidth(const BeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
+void SplicedUBeamFactory::GetBeamTopWidth(const BeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
 {
    Float64 W2 = GetDimension(dimensions,_T("W2"));
 
@@ -984,55 +984,55 @@ void CSplicedUBeamFactory::GetBeamTopWidth(const BeamFactory::Dimensions& dimens
    *pRightWidth = top;
 }
 
-bool CSplicedUBeamFactory::IsShearKey(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
+bool SplicedUBeamFactory::IsShearKey(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
 {
    return false;
 }
 
-void CSplicedUBeamFactory::GetShearKeyAreas(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const
+void SplicedUBeamFactory::GetShearKeyAreas(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const
 {
    *uniformArea = 0.0;
    *areaPerJoint = 0.0;
 }
 
-bool CSplicedUBeamFactory::HasLongitudinalJoints() const
+bool SplicedUBeamFactory::HasLongitudinalJoints() const
 {
    return false;
 }
 
-bool CSplicedUBeamFactory::IsLongitudinalJointStructural(pgsTypes::SupportedDeckType deckType,pgsTypes::AdjacentTransverseConnectivity connectivity) const
+bool SplicedUBeamFactory::IsLongitudinalJointStructural(pgsTypes::SupportedDeckType deckType,pgsTypes::AdjacentTransverseConnectivity connectivity) const
 {
    return false;
 }
 
-bool CSplicedUBeamFactory::HasTopFlangeThickening() const
+bool SplicedUBeamFactory::HasTopFlangeThickening() const
 {
    return false;
 }
 
-bool CSplicedUBeamFactory::CanPrecamber() const
+bool SplicedUBeamFactory::CanPrecamber() const
 {
    return false;
 }
 
-GirderIndexType CSplicedUBeamFactory::GetMinimumBeamCount() const
+GirderIndexType SplicedUBeamFactory::GetMinimumBeamCount() const
 {
    return 1;
 }
 
 // PGS::Beams::SplicedBeamFactory
-bool CSplicedUBeamFactory::SupportsVariableDepthSection() const
+bool SplicedUBeamFactory::SupportsVariableDepthSection() const
 {
    return false; // section cannot be varied
 }
 
-LPCTSTR CSplicedUBeamFactory::GetVariableDepthDimension() const
+LPCTSTR SplicedUBeamFactory::GetVariableDepthDimension() const
 {
    ATLASSERT(false); // should never get here because U-beams don't support variable depth
    return _T("???");
 }
 
-std::vector<pgsTypes::SegmentVariationType> CSplicedUBeamFactory::GetSupportedSegmentVariations(bool bIsVariableDepthSection) const
+std::vector<pgsTypes::SegmentVariationType> SplicedUBeamFactory::GetSupportedSegmentVariations(bool bIsVariableDepthSection) const
 {
    ATLASSERT(bIsVariableDepthSection == false);
    std::vector<pgsTypes::SegmentVariationType> variations;
@@ -1040,22 +1040,22 @@ std::vector<pgsTypes::SegmentVariationType> CSplicedUBeamFactory::GetSupportedSe
    return variations;
 }
 
-bool CSplicedUBeamFactory::CanBottomFlangeDepthVary() const
+bool SplicedUBeamFactory::CanBottomFlangeDepthVary() const
 {
    return false; // the bottom flange depth cannot vary
 }
 
-LPCTSTR CSplicedUBeamFactory::GetBottomFlangeDepthDimension() const
+LPCTSTR SplicedUBeamFactory::GetBottomFlangeDepthDimension() const
 {
    return _T("D2");
 }
 
-bool CSplicedUBeamFactory::SupportsEndBlocks() const
+bool SplicedUBeamFactory::SupportsEndBlocks() const
 {
    return false;
 }
 
-Float64 CSplicedUBeamFactory::GetBottomFlangeDepth(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
+Float64 SplicedUBeamFactory::GetBottomFlangeDepth(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
 {
    const CSplicedGirderData* pGirder = pSegment->GetGirder();
    const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();

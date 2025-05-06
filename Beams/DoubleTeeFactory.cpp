@@ -53,9 +53,9 @@
 
 using namespace PGS::Beams;
 
-std::shared_ptr<CDoubleTeeFactory> BeamFactorySingleton<CDoubleTeeFactory>::instance = nullptr;
+std::shared_ptr<DoubleTeeFactory> BeamFactorySingleton<DoubleTeeFactory>::instance = nullptr;
 
-CDoubleTeeFactory::CDoubleTeeFactory() : BeamFactory()
+DoubleTeeFactory::DoubleTeeFactory() : BeamFactory()
 {
    // Initialize with default values... This are not necessarily valid dimensions
    m_DimNames.emplace_back(_T("D1"));
@@ -96,7 +96,7 @@ CDoubleTeeFactory::CDoubleTeeFactory() : BeamFactory()
    m_DimUnits[1].emplace_back(&WBFL::Units::Measure::Feet); // Wmin
 }
 
-void CDoubleTeeFactory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const BeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
+void DoubleTeeFactory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const BeamFactory::Dimensions& dimensions,Float64 overallHeight,Float64 bottomFlangeHeight,IGirderSection** ppSection) const
 {
    CComPtr<IMultiWebSection> gdrSection;
    gdrSection.CoCreateInstance(CLSID_MultiWebSection);
@@ -147,7 +147,7 @@ void CDoubleTeeFactory::CreateGirderSection(std::shared_ptr<WBFL::EAF::Broker> p
    gdrSection.QueryInterface(ppSection);
 }
 
-void CDoubleTeeFactory::CreateSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
+void DoubleTeeFactory::CreateSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CSegmentKey& segmentKey,ISuperstructureMemberSegment** ppSegment) const
 {
    CComPtr<IPrismaticSuperstructureMemberSegment> segment;
    segment.CoCreateInstance(CLSID_PrismaticSuperstructureMemberSegment);
@@ -199,7 +199,7 @@ void CDoubleTeeFactory::CreateSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker
    ssmbrSegment.CopyTo(ppSegment);
 }
 
-void CDoubleTeeFactory::CreateSegmentShape(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
+void DoubleTeeFactory::CreateSegmentShape(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs, pgsTypes::SectionBias sectionBias, IShape** ppShape) const
 {
    const CSplicedGirderData* pGirder = pSegment->GetGirder();
    const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
@@ -244,7 +244,7 @@ void CDoubleTeeFactory::CreateSegmentShape(std::shared_ptr<WBFL::EAF::Broker> pB
    beam.QueryInterface(ppShape);
 }
 
-Float64 CDoubleTeeFactory::GetSegmentHeight(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
+Float64 DoubleTeeFactory::GetSegmentHeight(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const
 {
    const CSplicedGirderData* pGirder = pSegment->GetGirder();
    const GirderLibraryEntry* pGirderEntry = pGirder->GetGirderLibraryEntry();
@@ -254,12 +254,12 @@ Float64 CDoubleTeeFactory::GetSegmentHeight(std::shared_ptr<WBFL::EAF::Broker> p
    return D1 + D2;
 }
 
-void CDoubleTeeFactory::ConfigureSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
+void DoubleTeeFactory::ConfigureSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const
 {
    // do nothing... all the configuration was done in CreateSegment
 }
 
-void CDoubleTeeFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
+void DoubleTeeFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const
 {
    // This is a prismatic beam so only add section change POI at the start and end of the beam
    GET_IFACE2(pBroker,IBridge,pBridge);
@@ -272,25 +272,25 @@ void CDoubleTeeFactory::LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL
    VERIFY(pPoiMgr->AddPointOfInterest(poiEnd) != INVALID_ID);
 }
 
-std::shared_ptr<CDistFactorEngineerBase> CDoubleTeeFactory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
+std::shared_ptr<DistFactorEngineerBase> DoubleTeeFactory::CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType,const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const
 {
-   return std::make_shared<CMultiWebDistFactorEngineer>(CMultiWebDistFactorEngineer::BeamType::MultiWebTee,pBroker,statusGroupID);
+   return std::make_shared<MultiWebDistFactorEngineer>(MultiWebDistFactorEngineer::BeamType::MultiWebTee,pBroker,statusGroupID);
 }
 
-std::unique_ptr<CPsLossEngineerBase> CDoubleTeeFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey) const
+std::unique_ptr<PsLossEngineerBase> DoubleTeeFactory::CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey) const
 {
    GET_IFACE2(pBroker, ILossParameters, pLossParams);
    if (pLossParams->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP)
    {
-      return std::make_unique<CTimeStepLossEngineer>(pBroker, statusGroupID);
+      return std::make_unique<TimeStepLossEngineer>(pBroker, statusGroupID);
    }
    else
    {
-      return std::make_unique<CPsBeamLossEngineer>(CPsBeamLossEngineer::BeamType::IBeam, pBroker, statusGroupID);
+      return std::make_unique<PsBeamLossEngineer>(PsBeamLossEngineer::BeamType::IBeam, pBroker, statusGroupID);
    }
 }
 
-void CDoubleTeeFactory::CreateStrandMover(const BeamFactory::Dimensions& dimensions,  Float64 Hg,
+void DoubleTeeFactory::CreateStrandMover(const BeamFactory::Dimensions& dimensions,  Float64 Hg,
                                   BeamFactory::BeamFace endTopFace, Float64 endTopLimit, BeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                                   BeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, BeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
                                   Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover) const
@@ -358,22 +358,22 @@ void CDoubleTeeFactory::CreateStrandMover(const BeamFactory::Dimensions& dimensi
    ATLASSERT (SUCCEEDED(hr));
 }
 
-const std::vector<std::_tstring>& CDoubleTeeFactory::GetDimensionNames() const
+const std::vector<std::_tstring>& DoubleTeeFactory::GetDimensionNames() const
 {
    return m_DimNames;
 }
 
-const std::vector<Float64>& CDoubleTeeFactory::GetDefaultDimensions() const
+const std::vector<Float64>& DoubleTeeFactory::GetDefaultDimensions() const
 {
    return m_DefaultDims;
 }
 
-const std::vector<const WBFL::Units::Length*>& CDoubleTeeFactory::GetDimensionUnits(bool bSIUnits) const
+const std::vector<const WBFL::Units::Length*>& DoubleTeeFactory::GetDimensionUnits(bool bSIUnits) const
 {
    return m_DimUnits[ bSIUnits ? 0 : 1 ];
 }
 
-bool CDoubleTeeFactory::ValidateDimensions(const BeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg) const
+bool DoubleTeeFactory::ValidateDimensions(const BeamFactory::Dimensions& dimensions,bool bSIUnits,std::_tstring* strErrMsg) const
 {
    Float64 d1,d2;
    Float64 w,wmin,wmax;
@@ -431,7 +431,7 @@ bool CDoubleTeeFactory::ValidateDimensions(const BeamFactory::Dimensions& dimens
    return true;
 }
 
-void CDoubleTeeFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const BeamFactory::Dimensions& dimensions) const
+void DoubleTeeFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSave,const BeamFactory::Dimensions& dimensions) const
 {
    pSave->BeginUnit(_T("DoubleTeeDimensions"),1.0);
    for ( const auto& name : m_DimNames)
@@ -442,7 +442,7 @@ void CDoubleTeeFactory::SaveSectionDimensions(WBFL::System::IStructuredSave* pSa
    pSave->EndUnit();
 }
 
-BeamFactory::Dimensions CDoubleTeeFactory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
+BeamFactory::Dimensions DoubleTeeFactory::LoadSectionDimensions(WBFL::System::IStructuredLoad* pLoad) const
 {
    BeamFactory::Dimensions dimensions;
 
@@ -476,27 +476,27 @@ BeamFactory::Dimensions CDoubleTeeFactory::LoadSectionDimensions(WBFL::System::I
    return dimensions;
 }
 
-bool CDoubleTeeFactory::IsPrismatic(const BeamFactory::Dimensions& dimensions) const
+bool DoubleTeeFactory::IsPrismatic(const BeamFactory::Dimensions& dimensions) const
 {
    return true;
 }
 
-bool CDoubleTeeFactory::IsPrismatic(const CSegmentKey& segmentKey) const
+bool DoubleTeeFactory::IsPrismatic(const CSegmentKey& segmentKey) const
 {
    return true;
 }
 
-bool CDoubleTeeFactory::IsSymmetric(const CSegmentKey& segmentKey) const
+bool DoubleTeeFactory::IsSymmetric(const CSegmentKey& segmentKey) const
 {
    return true;
 }
 
-std::_tstring CDoubleTeeFactory::GetImage() const
+std::_tstring DoubleTeeFactory::GetImage() const
 {
    return std::_tstring(_T("DoubleTee.jpg"));
 }
 
-std::_tstring CDoubleTeeFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType) const
+std::_tstring DoubleTeeFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
 
@@ -518,7 +518,7 @@ std::_tstring CDoubleTeeFactory::GetSlabDimensionsImage(pgsTypes::SupportedDeckT
    return strImage;
 }
 
-std::_tstring CDoubleTeeFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
+std::_tstring DoubleTeeFactory::GetPositiveMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
 
@@ -540,7 +540,7 @@ std::_tstring CDoubleTeeFactory::GetPositiveMomentCapacitySchematicImage(pgsType
    return strImage;
 }
 
-std::_tstring CDoubleTeeFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
+std::_tstring DoubleTeeFactory::GetNegativeMomentCapacitySchematicImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
 
@@ -562,7 +562,7 @@ std::_tstring CDoubleTeeFactory::GetNegativeMomentCapacitySchematicImage(pgsType
    return strImage;
 }
 
-std::_tstring CDoubleTeeFactory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType) const
+std::_tstring DoubleTeeFactory::GetShearDimensionsSchematicImage(pgsTypes::SupportedDeckType deckType) const
 {
    std::_tstring strImage;
 
@@ -584,7 +584,7 @@ std::_tstring CDoubleTeeFactory::GetShearDimensionsSchematicImage(pgsTypes::Supp
    return strImage;
 }
 
-std::_tstring CDoubleTeeFactory::GetInteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
+std::_tstring DoubleTeeFactory::GetInteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
@@ -602,7 +602,7 @@ std::_tstring CDoubleTeeFactory::GetInteriorGirderEffectiveFlangeWidthImage(std:
    }
 }
 
-std::_tstring CDoubleTeeFactory::GetExteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
+std::_tstring DoubleTeeFactory::GetExteriorGirderEffectiveFlangeWidthImage(std::shared_ptr<WBFL::EAF::Broker> pBroker,pgsTypes::SupportedDeckType deckType) const
 {
    GET_IFACE2(pBroker, ILibrary,       pLib);
    GET_IFACE2(pBroker, ISpecification, pSpec);
@@ -620,12 +620,12 @@ std::_tstring CDoubleTeeFactory::GetExteriorGirderEffectiveFlangeWidthImage(std:
    }
 }
 
-CLSID CDoubleTeeFactory::GetCLSID() const
+CLSID DoubleTeeFactory::GetCLSID() const
 {
    return CLSID_DoubleTeeFactory;
 }
 
-std::_tstring CDoubleTeeFactory::GetName() const
+std::_tstring DoubleTeeFactory::GetName() const
 {
    USES_CONVERSION;
    LPOLESTR pszUserType;
@@ -633,12 +633,12 @@ std::_tstring CDoubleTeeFactory::GetName() const
    return std::_tstring( OLE2T(pszUserType) );
 }
 
-CLSID CDoubleTeeFactory::GetFamilyCLSID() const
+CLSID DoubleTeeFactory::GetFamilyCLSID() const
 {
    return CLSID_DoubleTeeBeamFamily;
 }
 
-std::_tstring CDoubleTeeFactory::GetGirderFamilyName() const
+std::_tstring DoubleTeeFactory::GetGirderFamilyName() const
 {
    USES_CONVERSION;
    LPOLESTR pszUserType;
@@ -646,34 +646,34 @@ std::_tstring CDoubleTeeFactory::GetGirderFamilyName() const
    return std::_tstring( OLE2T(pszUserType) );
 }
 
-std::_tstring CDoubleTeeFactory::GetPublisher() const
+std::_tstring DoubleTeeFactory::GetPublisher() const
 {
    return std::_tstring(_T("WSDOT"));
 }
 
-std::_tstring CDoubleTeeFactory::GetPublisherContactInformation() const
+std::_tstring DoubleTeeFactory::GetPublisherContactInformation() const
 {
    return std::_tstring(_T("http://www.wsdot.wa.gov/eesc/bridge"));
 }
 
-HINSTANCE CDoubleTeeFactory::GetResourceInstance() const
+HINSTANCE DoubleTeeFactory::GetResourceInstance() const
 {
    return _Module.GetResourceInstance();
 }
 
-LPCTSTR CDoubleTeeFactory::GetImageResourceName() const
+LPCTSTR DoubleTeeFactory::GetImageResourceName() const
 {
    return _T("DoubleTee");
 }
 
-HICON  CDoubleTeeFactory::GetIcon()  const
+HICON  DoubleTeeFactory::GetIcon()  const
 {
    AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
    return ::LoadIcon(AfxGetInstanceHandle(), MAKEINTRESOURCE(IDI_DOUBLETEE) );
 }
 
-void CDoubleTeeFactory::GetDimensions(const BeamFactory::Dimensions& dimensions,
+void DoubleTeeFactory::GetDimensions(const BeamFactory::Dimensions& dimensions,
                                   Float64& d1,Float64& d2,
                                   Float64& w,Float64& wmin,Float64& wmax,
                                   Float64& t1,Float64& t2,
@@ -689,7 +689,7 @@ void CDoubleTeeFactory::GetDimensions(const BeamFactory::Dimensions& dimensions,
    nWebs = 2;
 }
 
-Float64 CDoubleTeeFactory::GetDimension(const BeamFactory::Dimensions& dimensions,const std::_tstring& name) const
+Float64 DoubleTeeFactory::GetDimension(const BeamFactory::Dimensions& dimensions,const std::_tstring& name) const
 {
    for (const auto& dim : dimensions)
    {
@@ -703,7 +703,7 @@ Float64 CDoubleTeeFactory::GetDimension(const BeamFactory::Dimensions& dimension
    return -99999;
 }
 
-pgsTypes::SupportedDeckTypes CDoubleTeeFactory::GetSupportedDeckTypes(pgsTypes::SupportedBeamSpacing sbs) const
+pgsTypes::SupportedDeckTypes DoubleTeeFactory::GetSupportedDeckTypes(pgsTypes::SupportedBeamSpacing sbs) const
 {
    pgsTypes::SupportedDeckTypes sdt;
    switch( sbs )
@@ -720,21 +720,21 @@ pgsTypes::SupportedDeckTypes CDoubleTeeFactory::GetSupportedDeckTypes(pgsTypes::
    return sdt;
 }
 
-pgsTypes::SupportedBeamSpacings CDoubleTeeFactory::GetSupportedBeamSpacings() const
+pgsTypes::SupportedBeamSpacings DoubleTeeFactory::GetSupportedBeamSpacings() const
 {
    pgsTypes::SupportedBeamSpacings sbs;
    sbs.push_back(pgsTypes::sbsConstantAdjacent);
    return sbs;
 }
 
-bool CDoubleTeeFactory::IsSupportedBeamSpacing(pgsTypes::SupportedBeamSpacing spacingType) const
+bool DoubleTeeFactory::IsSupportedBeamSpacing(pgsTypes::SupportedBeamSpacing spacingType) const
 {
    pgsTypes::SupportedBeamSpacings sbs = GetSupportedBeamSpacings();
    auto found = std::find(sbs.cbegin(), sbs.cend(),spacingType);
    return found == sbs.end() ? false : true;
 }
 
-bool CDoubleTeeFactory::ConvertBeamSpacing(const BeamFactory::Dimensions& dimensions,pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const
+bool DoubleTeeFactory::ConvertBeamSpacing(const BeamFactory::Dimensions& dimensions,pgsTypes::SupportedBeamSpacing spacingType, Float64 spacing, pgsTypes::SupportedBeamSpacing* pNewSpacingType, Float64* pNewSpacing, Float64* pNewTopWidth) const
 {
    if (spacingType == pgsTypes::sbsUniform)
    {
@@ -746,7 +746,7 @@ bool CDoubleTeeFactory::ConvertBeamSpacing(const BeamFactory::Dimensions& dimens
    return false;
 }
 
-pgsTypes::WorkPointLocations CDoubleTeeFactory::GetSupportedWorkPointLocations(pgsTypes::SupportedBeamSpacing spacingType) const
+pgsTypes::WorkPointLocations DoubleTeeFactory::GetSupportedWorkPointLocations(pgsTypes::SupportedBeamSpacing spacingType) const
 {
    pgsTypes::WorkPointLocations wpls;
    wpls.push_back(pgsTypes::wplTopGirder);
@@ -755,29 +755,29 @@ pgsTypes::WorkPointLocations CDoubleTeeFactory::GetSupportedWorkPointLocations(p
    return wpls;
 }
 
-bool CDoubleTeeFactory::IsSupportedWorkPointLocation(pgsTypes::SupportedBeamSpacing spacingType, pgsTypes::WorkPointLocation wpType) const
+bool DoubleTeeFactory::IsSupportedWorkPointLocation(pgsTypes::SupportedBeamSpacing spacingType, pgsTypes::WorkPointLocation wpType) const
 {
    pgsTypes::WorkPointLocations sbs = GetSupportedWorkPointLocations(spacingType);
    auto found = std::find(sbs.cbegin(), sbs.cend(),wpType);
    return found == sbs.end() ? false : true;
 }
-std::vector<pgsTypes::GirderOrientationType> CDoubleTeeFactory::GetSupportedGirderOrientation() const
+std::vector<pgsTypes::GirderOrientationType> DoubleTeeFactory::GetSupportedGirderOrientation() const
 {
    std::vector<pgsTypes::GirderOrientationType> types{ /*pgsTypes::Plumb,*/pgsTypes::StartNormal,pgsTypes::MidspanNormal,pgsTypes::EndNormal,pgsTypes::Balanced };
    return types;
 }
 
-bool CDoubleTeeFactory::IsSupportedGirderOrientation(pgsTypes::GirderOrientationType orientation) const
+bool DoubleTeeFactory::IsSupportedGirderOrientation(pgsTypes::GirderOrientationType orientation) const
 {
    return orientation != pgsTypes::Plumb ? true : false;
 }
 
-pgsTypes::GirderOrientationType CDoubleTeeFactory::ConvertGirderOrientation(pgsTypes::GirderOrientationType orientation) const
+pgsTypes::GirderOrientationType DoubleTeeFactory::ConvertGirderOrientation(pgsTypes::GirderOrientationType orientation) const
 {
    return orientation == pgsTypes::Plumb ? pgsTypes::StartNormal : orientation;
 }
 
-pgsTypes::SupportedDiaphragmTypes CDoubleTeeFactory::GetSupportedDiaphragms() const
+pgsTypes::SupportedDiaphragmTypes DoubleTeeFactory::GetSupportedDiaphragms() const
 {
    pgsTypes::SupportedDiaphragmTypes diaphragmTypes;
    diaphragmTypes.push_back(pgsTypes::dtPrecast);
@@ -785,7 +785,7 @@ pgsTypes::SupportedDiaphragmTypes CDoubleTeeFactory::GetSupportedDiaphragms() co
    return diaphragmTypes;
 }
 
-pgsTypes::SupportedDiaphragmLocationTypes CDoubleTeeFactory::GetSupportedDiaphragmLocations(pgsTypes::DiaphragmType type) const
+pgsTypes::SupportedDiaphragmLocationTypes DoubleTeeFactory::GetSupportedDiaphragmLocations(pgsTypes::DiaphragmType type) const
 {
    pgsTypes::SupportedDiaphragmLocationTypes locations;
    switch(type)
@@ -805,7 +805,7 @@ pgsTypes::SupportedDiaphragmLocationTypes CDoubleTeeFactory::GetSupportedDiaphra
    return locations;
 }
 
-void CDoubleTeeFactory::GetAllowableSpacingRange(const BeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const
+void DoubleTeeFactory::GetAllowableSpacingRange(const BeamFactory::Dimensions& dimensions,pgsTypes::SupportedDeckType sdt, pgsTypes::SupportedBeamSpacing sbs, Float64* minSpacing, Float64* maxSpacing) const
 {
    *minSpacing = 0.0;
    *maxSpacing = 0.0;
@@ -831,12 +831,12 @@ void CDoubleTeeFactory::GetAllowableSpacingRange(const BeamFactory::Dimensions& 
    }
 }
 
-WebIndexType CDoubleTeeFactory::GetWebCount(const BeamFactory::Dimensions& dimensions) const
+WebIndexType DoubleTeeFactory::GetWebCount(const BeamFactory::Dimensions& dimensions) const
 {
    return 1;
 }
 
-Float64 CDoubleTeeFactory::GetBeamHeight(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
+Float64 DoubleTeeFactory::GetBeamHeight(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    Float64 D1 = GetDimension(dimensions,_T("D1"));
    Float64 D2 = GetDimension(dimensions,_T("D2"));
@@ -844,12 +844,12 @@ Float64 CDoubleTeeFactory::GetBeamHeight(const BeamFactory::Dimensions& dimensio
    return D1 + D2;
 }
 
-Float64 CDoubleTeeFactory::GetBeamWidth(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
+Float64 DoubleTeeFactory::GetBeamWidth(const BeamFactory::Dimensions& dimensions,pgsTypes::MemberEndType endType) const
 {
    return GetDimension(dimensions,_T("Wmax"));
 }
 
-void CDoubleTeeFactory::GetBeamTopWidth(const BeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
+void DoubleTeeFactory::GetBeamTopWidth(const BeamFactory::Dimensions& dimensions, pgsTypes::MemberEndType endType, Float64* pLeftWidth, Float64* pRightWidth) const
 {
    Float64 Wmin = GetDimension(dimensions, _T("Wmin"));
 
@@ -860,38 +860,38 @@ void CDoubleTeeFactory::GetBeamTopWidth(const BeamFactory::Dimensions& dimension
    *pRightWidth = top;
 }
 
-bool CDoubleTeeFactory::IsShearKey(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
+bool DoubleTeeFactory::IsShearKey(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType) const
 {
    return false;
 }
 
-void CDoubleTeeFactory::GetShearKeyAreas(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const
+void DoubleTeeFactory::GetShearKeyAreas(const BeamFactory::Dimensions& dimensions, pgsTypes::SupportedBeamSpacing spacingType,Float64* uniformArea, Float64* areaPerJoint) const
 {
    *uniformArea = 0.0;
    *areaPerJoint = 0.0;
 }
 
-bool CDoubleTeeFactory::HasLongitudinalJoints() const
+bool DoubleTeeFactory::HasLongitudinalJoints() const
 {
    return false;
 }
 
-bool CDoubleTeeFactory::IsLongitudinalJointStructural(pgsTypes::SupportedDeckType deckType,pgsTypes::AdjacentTransverseConnectivity connectivity) const
+bool DoubleTeeFactory::IsLongitudinalJointStructural(pgsTypes::SupportedDeckType deckType,pgsTypes::AdjacentTransverseConnectivity connectivity) const
 {
    return false;
 }
 
-bool CDoubleTeeFactory::HasTopFlangeThickening() const
+bool DoubleTeeFactory::HasTopFlangeThickening() const
 {
    return false;
 }
 
-bool CDoubleTeeFactory::CanPrecamber() const
+bool DoubleTeeFactory::CanPrecamber() const
 {
    return true;
 }
 
-GirderIndexType CDoubleTeeFactory::GetMinimumBeamCount() const
+GirderIndexType DoubleTeeFactory::GetMinimumBeamCount() const
 {
    return 1;
 }

@@ -3568,16 +3568,15 @@ bool CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       HANDLINGCONFIG lift_config;
       lift_config.bIgnoreGirderConfig = false;
       lift_config.GdrConfig = config;
-      WBFL::Stability::LiftingCheckArtifact artifact1;
       const WBFL::Stability::LiftingStabilityProblem* pStabilityProblem;
-      lifting_checker.DesignLifting(segmentKey,lift_config,pSegmentLiftingPointsOfInterest,&artifact1,&pStabilityProblem,LOGGER);
+      auto [result,artifact1] = lifting_checker.DesignLifting(segmentKey,lift_config,pSegmentLiftingPointsOfInterest,&pStabilityProblem,LOGGER);
       pDetails->L[PS_TTS] = lift_config.LeftOverhang;
    
       Float64 fci;
 
-      Float64 fci_comp = artifact1.RequiredFcCompression();
-      Float64 fci_tens = artifact1.RequiredFcTensionWithoutRebar();
-      Float64 fci_tens_wrebar = artifact1.RequiredFcTensionWithRebar();
+      Float64 fci_comp = artifact1->RequiredFcCompression();
+      Float64 fci_tens = artifact1->RequiredFcTensionWithoutRebar();
+      Float64 fci_tens_wrebar = artifact1->RequiredFcTensionWithRebar();
 
       bool minRebarRequired = fci_tens<0;
       fci = Max(fci_tens, fci_comp, fci_tens_wrebar);
@@ -3592,13 +3591,12 @@ bool CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       config.PrestressConfig.Pjack[pgsTypes::Temporary] = 0;
 
       lift_config.GdrConfig = config;
-      WBFL::Stability::LiftingCheckArtifact artifact2;
-      lifting_checker.DesignLifting(segmentKey,lift_config,pSegmentLiftingPointsOfInterest,&artifact2,&pStabilityProblem,LOGGER);
+      auto [result2,artifact2] = lifting_checker.DesignLifting(segmentKey,lift_config,pSegmentLiftingPointsOfInterest,&pStabilityProblem,LOGGER);
       pDetails->L[NO_TTS] = lift_config.LeftOverhang;
    
-      fci_comp = artifact2.RequiredFcCompression();
-      fci_tens = artifact2.RequiredFcTensionWithoutRebar();
-      fci_tens_wrebar = artifact2.RequiredFcTensionWithRebar();
+      fci_comp = artifact2->RequiredFcCompression();
+      fci_tens = artifact2->RequiredFcTensionWithoutRebar();
+      fci_tens_wrebar = artifact2->RequiredFcTensionWithRebar();
 
       minRebarRequired = fci_tens<0;
       fci = Max(fci_tens, fci_comp, fci_tens_wrebar);
@@ -3617,13 +3615,12 @@ bool CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       lift_config.LeftOverhang = pDetails->L[NO_TTS];
       lift_config.RightOverhang = pDetails->L[NO_TTS];
 
-      WBFL::Stability::LiftingCheckArtifact artifact3;
-      lifting_checker.AnalyzeLifting(segmentKey,lift_config,pSegmentLiftingPointsOfInterest,&artifact3);
+      auto artifact3 = lifting_checker.AnalyzeLifting(segmentKey,lift_config,pSegmentLiftingPointsOfInterest);
       pDetails->L[PT_TTS_OPTIONAL] = lift_config.LeftOverhang;
 
-      fci_comp = artifact3.RequiredFcCompression();
-      fci_tens = artifact3.RequiredFcTensionWithoutRebar();
-      fci_tens_wrebar = artifact3.RequiredFcTensionWithRebar();
+      fci_comp = artifact3->RequiredFcCompression();
+      fci_tens = artifact3->RequiredFcTensionWithoutRebar();
+      fci_tens_wrebar = artifact3->RequiredFcTensionWithRebar();
 
       minRebarRequired = fci_tens < 0 ? true : false;
       fci = Max(fci_tens, fci_comp, fci_tens_wrebar);
@@ -3638,13 +3635,12 @@ bool CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       lift_config.LeftOverhang = pDetails->L[PS_TTS];
       lift_config.RightOverhang = pDetails->L[PS_TTS];
 
-      WBFL::Stability::LiftingCheckArtifact artifact4;
-      lifting_checker.AnalyzeLifting(segmentKey,lift_config,pSegmentLiftingPointsOfInterest,&artifact4);
+      auto artifact4 = lifting_checker.AnalyzeLifting(segmentKey,lift_config,pSegmentLiftingPointsOfInterest);
       pDetails->L[PT_TTS_REQUIRED] = lift_config.LeftOverhang;
    
-      fci_comp = artifact4.RequiredFcCompression();
-      fci_tens = artifact4.RequiredFcTensionWithoutRebar();
-      fci_tens_wrebar = artifact4.RequiredFcTensionWithRebar();
+      fci_comp = artifact4->RequiredFcCompression();
+      fci_tens = artifact4->RequiredFcTensionWithoutRebar();
+      fci_tens_wrebar = artifact4->RequiredFcTensionWithRebar();
 
       minRebarRequired = fci_tens < 0 ? true : false;
       fci = Max(fci_tens, fci_comp, fci_tens_wrebar);
@@ -3745,7 +3741,7 @@ bool CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
    haulConfig.bIgnoreGirderConfig = false;
    haulConfig.GdrConfig = config;
    bool bResult;
-   std::unique_ptr<pgsHaulingAnalysisArtifact> hauling_artifact_base ( hauling_checker->DesignHauling(segmentKey,haulConfig,true,pSegmentHaulingPointsOfInterest,&bResult,LOGGER));
+   auto hauling_artifact_base ( hauling_checker->DesignHauling(segmentKey,haulConfig,true,pSegmentHaulingPointsOfInterest,&bResult,LOGGER));
 
    // Constructibility is wsdot-based. Cast artifact
    pgsWsdotHaulingAnalysisArtifact* hauling_artifact = dynamic_cast<pgsWsdotHaulingAnalysisArtifact*>(hauling_artifact_base.get());
@@ -3790,7 +3786,7 @@ bool CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       hauling_config.LeftOverhang = L;
       hauling_config.RightOverhang = L;
 
-      std::unique_ptr<pgsHaulingAnalysisArtifact> hauling_artifact2( hauling_checker->AnalyzeHauling(segmentKey,hauling_config,pSegmentHaulingPointsOfInterest) );
+      auto hauling_artifact2( hauling_checker->AnalyzeHauling(segmentKey,hauling_config,pSegmentHaulingPointsOfInterest) );
    
       Float64 fc;
       Float64 fc_tens1, fc_comp1, fc_tens_wrebar1;
@@ -3851,7 +3847,7 @@ bool CEngAgentImp::GetFabricationOptimizationDetails(const CSegmentKey& segmentK
       hauling_config.LeftOverhang = trailing_overhang;
       hauling_config.RightOverhang = leading_overhang;
 
-      std::unique_ptr<pgsHaulingAnalysisArtifact> hauling_artifact2_base( hauling_checker->AnalyzeHauling(segmentKey,hauling_config,pSegmentHaulingPointsOfInterest) );
+      auto hauling_artifact2_base( hauling_checker->AnalyzeHauling(segmentKey,hauling_config,pSegmentHaulingPointsOfInterest) );
 
       pgsWsdotHaulingAnalysisArtifact* hauling_artifact2 = dynamic_cast<pgsWsdotHaulingAnalysisArtifact*>(hauling_artifact2_base.get());
       if (hauling_artifact2==nullptr)
@@ -3942,12 +3938,12 @@ const pgsSegmentArtifact* CEngAgentImp::GetSegmentArtifact(const CSegmentKey& se
    return pArtifact->GetSegmentArtifact(segmentKey.segmentIndex);
 }
 
-const WBFL::Stability::LiftingCheckArtifact* CEngAgentImp::GetLiftingCheckArtifact(const CSegmentKey& segmentKey) const
+std::shared_ptr<const WBFL::Stability::LiftingCheckArtifact> CEngAgentImp::GetLiftingCheckArtifact(const CSegmentKey& segmentKey) const
 {
    return m_Designer.CheckLifting(segmentKey);
 }
 
-const pgsHaulingAnalysisArtifact* CEngAgentImp::GetHaulingAnalysisArtifact(const CSegmentKey& segmentKey) const
+std::shared_ptr<const pgsHaulingAnalysisArtifact> CEngAgentImp::GetHaulingAnalysisArtifact(const CSegmentKey& segmentKey) const
 {
    return m_Designer.CheckHauling(segmentKey);
 }
@@ -4056,20 +4052,19 @@ const pgsGirderDesignArtifact* CEngAgentImp::GetDesignArtifact(const CGirderKey&
    return &((*found).second);
 }
 
-void CEngAgentImp::CreateLiftingCheckArtifact(const CSegmentKey& segmentKey,Float64 supportLoc,WBFL::Stability::LiftingCheckArtifact* pArtifact) const
+std::shared_ptr<WBFL::Stability::LiftingCheckArtifact> CEngAgentImp::CreateLiftingCheckArtifact(const CSegmentKey& segmentKey,Float64 supportLoc) const
 {
    bool bCreate = false;
 
-   typedef std::map<CSegmentKey, std::map<Float64,WBFL::Stability::LiftingCheckArtifact,Float64_less> >::iterator iter_type;
-   iter_type found_gdr;
-   found_gdr = m_LiftingArtifacts.find(segmentKey);
+   std::shared_ptr<WBFL::Stability::LiftingCheckArtifact> pArtifact;
+
+   auto found_gdr = m_LiftingArtifacts.find(segmentKey);
    if ( found_gdr != m_LiftingArtifacts.end() )
    {
-      std::map<Float64,WBFL::Stability::LiftingCheckArtifact,Float64_less>::iterator found;
-      found = (*found_gdr).second.find(supportLoc);
+      auto found = (*found_gdr).second.find(supportLoc);
       if ( found != (*found_gdr).second.end() )
       {
-         *pArtifact = (*found).second;
+         pArtifact = (*found).second;
       }
       else
       {
@@ -4078,8 +4073,8 @@ void CEngAgentImp::CreateLiftingCheckArtifact(const CSegmentKey& segmentKey,Floa
    }
    else
    {
-      std::map<Float64,WBFL::Stability::LiftingCheckArtifact,Float64_less> artifacts;
-      std::pair<iter_type,bool> iter = m_LiftingArtifacts.insert( std::make_pair(segmentKey, artifacts) );
+      std::map<Float64,std::shared_ptr<WBFL::Stability::LiftingCheckArtifact>,Float64_less> artifacts;
+      auto iter = m_LiftingArtifacts.insert( std::make_pair(segmentKey, artifacts) );
       found_gdr = iter.first;
       bCreate = true;
    }
@@ -4095,28 +4090,27 @@ void CEngAgentImp::CreateLiftingCheckArtifact(const CSegmentKey& segmentKey,Floa
 
       pgsGirderLiftingChecker checker(m_pBroker,m_StatusGroupID);
       GET_IFACE(ISegmentLiftingPointsOfInterest,pSegmentLiftingPointsOfInterest);
-      checker.AnalyzeLifting(segmentKey,config,pSegmentLiftingPointsOfInterest,pArtifact);
+      pArtifact = checker.AnalyzeLifting(segmentKey,config,pSegmentLiftingPointsOfInterest);
 
-      (*found_gdr).second.insert( std::make_pair(supportLoc,*pArtifact) );
+      (*found_gdr).second.insert( std::make_pair(supportLoc,pArtifact) );
    }
+
+   return pArtifact;
 }
 
-const pgsHaulingAnalysisArtifact* CEngAgentImp::CreateHaulingAnalysisArtifact(const CSegmentKey& segmentKey,Float64 leftSupportLoc,Float64 rightSupportLoc) const
+std::shared_ptr<pgsHaulingAnalysisArtifact> CEngAgentImp::CreateHaulingAnalysisArtifact(const CSegmentKey& segmentKey,Float64 leftSupportLoc,Float64 rightSupportLoc) const
 {
-   const pgsHaulingAnalysisArtifact* pArtifact(nullptr);
-
    bool bCreate = false;
 
-   typedef std::map<CSegmentKey, std::map<Float64,std::shared_ptr<pgsHaulingAnalysisArtifact>,Float64_less> >::iterator iter_type;
-   iter_type found_gdr;
-   found_gdr = m_HaulingArtifacts.find(segmentKey);
+   std::shared_ptr<pgsHaulingAnalysisArtifact> pArtifact;
+
+   auto found_gdr = m_HaulingArtifacts.find(segmentKey);
    if ( found_gdr != m_HaulingArtifacts.end() )
    {
-      std::map<Float64,std::shared_ptr<pgsHaulingAnalysisArtifact>,Float64_less>::iterator found;
-      found = (*found_gdr).second.find(leftSupportLoc);
+      auto found = (*found_gdr).second.find(leftSupportLoc);
       if ( found != (*found_gdr).second.end() )
       {
-         pArtifact = (*found).second.get();
+         pArtifact = (*found).second;
       }
       else
       {
@@ -4126,7 +4120,7 @@ const pgsHaulingAnalysisArtifact* CEngAgentImp::CreateHaulingAnalysisArtifact(co
    else
    {
       std::map<Float64,std::shared_ptr<pgsHaulingAnalysisArtifact>,Float64_less> artifacts;
-      std::pair<iter_type,bool> iter = m_HaulingArtifacts.insert( std::make_pair(segmentKey, artifacts) );
+      auto iter = m_HaulingArtifacts.insert( std::make_pair(segmentKey, artifacts) );
       found_gdr = iter.first;
       bCreate = true;
    }
@@ -4142,12 +4136,12 @@ const pgsHaulingAnalysisArtifact* CEngAgentImp::CreateHaulingAnalysisArtifact(co
 
       // Use factory to create appropriate hauling checker
       pgsGirderHandlingChecker checker_factory(m_pBroker,m_StatusGroupID);
-      std::unique_ptr<pgsGirderHaulingChecker> hauling_checker( checker_factory.CreateGirderHaulingChecker() );
+      auto hauling_checker( checker_factory.CreateGirderHaulingChecker() );
 
       std::shared_ptr<pgsHaulingAnalysisArtifact> my_art (hauling_checker->AnalyzeHauling(segmentKey,config,pSegmentHaulingPointsOfInterest));
 
       // Get const, uncounted pointer
-      pArtifact = my_art.get();
+      pArtifact = my_art;
 
       (*found_gdr).second.insert( std::make_pair(leftSupportLoc,my_art) );
    }

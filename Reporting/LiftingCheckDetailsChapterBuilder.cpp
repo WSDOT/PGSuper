@@ -125,10 +125,10 @@ rptChapter* CLiftingCheckDetailsChapterBuilder::Build(const std::shared_ptr<cons
                *pChapter << p;
             }
 
-            const WBFL::Stability::LiftingCheckArtifact* pArtifact = pArtifacts->GetLiftingCheckArtifact(segmentKey);
-            const WBFL::Stability::IGirder* pStabilityModel = pGirder->GetSegmentLiftingStabilityModel(segmentKey);
-            const WBFL::Stability::ILiftingStabilityProblem* pStabilityProblem = pGirder->GetSegmentLiftingStabilityProblem(segmentKey);
-            const WBFL::Stability::LiftingResults& results = pArtifact->GetLiftingResults();
+            auto pArtifact = pArtifacts->GetLiftingCheckArtifact(segmentKey);
+            auto pStabilityModel = pGirder->GetSegmentLiftingStabilityModel(segmentKey);
+            auto pStabilityProblem = pGirder->GetSegmentLiftingStabilityProblem(segmentKey);
+            auto results = pArtifact->GetLiftingResults();
 
             Float64 Ll, Lr;
             pStabilityProblem->GetSupportLocations(&Ll, &Lr);

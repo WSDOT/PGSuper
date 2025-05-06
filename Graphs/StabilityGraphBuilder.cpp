@@ -271,10 +271,9 @@ bool CStabilityGraphBuilder::UpdateNow()
          {
             pProgress->UpdateMessage(_T("Working..."));
 
-            WBFL::Stability::LiftingCheckArtifact artifact;
-            pArtifact->CreateLiftingCheckArtifact(segmentKey,loc,&artifact);
+            auto artifact = pArtifact->CreateLiftingCheckArtifact(segmentKey,loc);
 
-            const auto& results = artifact.GetLiftingResults();
+            const auto& results = artifact->GetLiftingResults();
             AddGraphPoint(seriesFS1,loc,results.FScrMin);
             AddGraphPoint(seriesFS2,loc,results.MinAdjFsFailure);
 
@@ -308,9 +307,9 @@ bool CStabilityGraphBuilder::UpdateNow()
             // NOTE: assuming equal overhangs is probably the best thing to do with this view... 
             // but... give it some thought. could do the interaction surface that Dave Chapman showed me
 
-            const pgsHaulingAnalysisArtifact* artifact_base = pArtifact->CreateHaulingAnalysisArtifact(segmentKey,loc,loc);
+            auto artifact_base = pArtifact->CreateHaulingAnalysisArtifact(segmentKey,loc,loc);
             // Only works for wsdot analysis
-            const pgsWsdotHaulingAnalysisArtifact* pArtifact = dynamic_cast<const pgsWsdotHaulingAnalysisArtifact*>(artifact_base);
+            auto pArtifact = std::dynamic_pointer_cast<pgsWsdotHaulingAnalysisArtifact>(artifact_base);
             if ( pArtifact )
             {
                Float64 FScr = Min(pArtifact->GetMinFsForCracking(WBFL::Stability::HaulingSlope::CrownSlope),pArtifact->GetMinFsForCracking(WBFL::Stability::HaulingSlope::Superelevation));

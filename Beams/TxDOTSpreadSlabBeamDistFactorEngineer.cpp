@@ -20,7 +20,6 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// TxDOTSpreadSlabBeamDistFactorEngineer.cpp : Implementation of CTxDOTSpreadSlabBeamDistFactorEngineer
 #include "stdafx.h"
 #include "Beams.h"
 #include "TxDOTSpreadSlabBeamDistFactorEngineer.h"
@@ -45,7 +44,7 @@ using namespace PGS::Beams;
 static const Float64 D_18 = WBFL::Units::ConvertToSysUnits(18., WBFL::Units::Measure::Inch);
 
 
-void CTxDOTSpreadSlabBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
+void TxDOTSpreadSlabBeamDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    // Grab the interfaces that are needed
    GET_IFACE2(GetBroker(), IBridge,pBridge);
@@ -323,7 +322,7 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::BuildReport(const CGirderKey& girde
 }
 
 
-WBFL::LRFD::LiveLoadDistributionFactorBase* CTxDOTSpreadSlabBeamDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,TXSPREADSLABBEAM_LLDFDETAILS* plldf,const GDRCONFIG* pConfig)
+WBFL::LRFD::LiveLoadDistributionFactorBase* TxDOTSpreadSlabBeamDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,TXSPREADSLABBEAM_LLDFDETAILS* plldf,const GDRCONFIG* pConfig)
 {
    GET_IFACE2(GetBroker(), IGirder, pGdr);
    GET_IFACE2(GetBroker(), IBridgeDescription,pIBridgeDesc);
@@ -387,7 +386,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CTxDOTSpreadSlabBeamDistFactorEngine
    return pLLDF;
 }
 
-void CTxDOTSpreadSlabBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierIdx, rptParagraph* pPara,TXSPREADSLABBEAM_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM2,Float64 gM,bool bSIUnits,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
+void TxDOTSpreadSlabBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierIdx, rptParagraph* pPara,TXSPREADSLABBEAM_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM2,Float64 gM,bool bSIUnits,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
@@ -565,7 +564,7 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::ReportMoment(IndexType spanOrPierId
    }
 }
 
-void CTxDOTSpreadSlabBeamDistFactorEngineer::ReportShear(IndexType spanOrPierIdx,rptParagraph* pPara,TXSPREADSLABBEAM_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV2,Float64 gV,bool bSIUnits,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
+void TxDOTSpreadSlabBeamDistFactorEngineer::ReportShear(IndexType spanOrPierIdx,rptParagraph* pPara,TXSPREADSLABBEAM_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV2,Float64 gV,bool bSIUnits,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
@@ -742,7 +741,7 @@ void CTxDOTSpreadSlabBeamDistFactorEngineer::ReportShear(IndexType spanOrPierIdx
    }
 }
 
-std::_tstring CTxDOTSpreadSlabBeamDistFactorEngineer::GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect)
+std::_tstring TxDOTSpreadSlabBeamDistFactorEngineer::GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect)
 {
    std::_tstring descr(_T("TxDOT Spread Slab Beam cross section. LLDF's are computed per the TxDOT Bridge Design Manual - LRFD"));
    return descr;

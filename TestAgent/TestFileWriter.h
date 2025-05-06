@@ -99,7 +99,7 @@ class TestFileWriter : public TxDOTDebondTool
 {
 public:
 
-   TestFileWriter(const CSegmentKey& segmentKey, Float64 girderLength, bool isUBeam, IStrandGeometry* pStrandGeometry):
+   TestFileWriter(const CSegmentKey& segmentKey, Float64 girderLength, bool isUBeam, std::shared_ptr<IStrandGeometry> pStrandGeometry):
    TxDOTDebondTool(segmentKey, girderLength, pStrandGeometry), 
    m_isUBeam(isUBeam)
    {;}

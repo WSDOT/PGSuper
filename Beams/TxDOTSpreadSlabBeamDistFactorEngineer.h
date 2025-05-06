@@ -26,31 +26,36 @@
 #include <Beams/DistFactorEngineerImpl.h>
 #include <Plugins\Beams.h>
 
-struct TXSPREADSLABBEAM_LLDFDETAILS : public BASE_LLDFDETAILS
+namespace PGS
 {
-   Float64 L;
-   Float64 d;
-   Float64 ts;
-};
-
-/////////////////////////////////////////////////////////////////////////////
-// CTxDOTSpreadSlabBeamDistFactorEngineer
-class BEAMSCLASS CTxDOTSpreadSlabBeamDistFactorEngineer : public CDistFactorEngineerImpl<TXSPREADSLABBEAM_LLDFDETAILS>
-{
-public:
-   CTxDOTSpreadSlabBeamDistFactorEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID) :
-      CDistFactorEngineerImpl<TXSPREADSLABBEAM_LLDFDETAILS>(pBroker, statusGroupID)
+   namespace Beams
    {
-   }
+      struct TXSPREADSLABBEAM_LLDFDETAILS : public BASE_LLDFDETAILS
+      {
+         Float64 L;
+         Float64 d;
+         Float64 ts;
+      };
 
-public:
-   // CDistFactorEngineerBase
-   void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) override;
-   std::_tstring GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect) override;
 
-private:
-   WBFL::LRFD::LiveLoadDistributionFactorBase* GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,TXSPREADSLABBEAM_LLDFDETAILS* plldf,const GDRCONFIG* pConfig = nullptr);
+      class BEAMSCLASS TxDOTSpreadSlabBeamDistFactorEngineer : public DistFactorEngineerImpl<TXSPREADSLABBEAM_LLDFDETAILS>
+      {
+      public:
+         TxDOTSpreadSlabBeamDistFactorEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID) :
+            DistFactorEngineerImpl<TXSPREADSLABBEAM_LLDFDETAILS>(pBroker, statusGroupID)
+         {
+         }
 
-   void ReportMoment(IndexType spanOrPierIdx,rptParagraph* pPara,TXSPREADSLABBEAM_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM2,Float64 gM,bool bSIUnits,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
-   void ReportShear(IndexType spanOrPierIdx,rptParagraph* pPara,TXSPREADSLABBEAM_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV2,Float64 gV,bool bSIUnits,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+      public:
+         // DistFactorEngineerBase
+         void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) override;
+         std::_tstring GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect) override;
+
+      private:
+         WBFL::LRFD::LiveLoadDistributionFactorBase* GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,TXSPREADSLABBEAM_LLDFDETAILS* plldf,const GDRCONFIG* pConfig = nullptr);
+
+         void ReportMoment(IndexType spanOrPierIdx,rptParagraph* pPara,TXSPREADSLABBEAM_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM2,Float64 gM,bool bSIUnits,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+         void ReportShear(IndexType spanOrPierIdx,rptParagraph* pPara,TXSPREADSLABBEAM_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV2,Float64 gV,bool bSIUnits,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+      };
+   };
 };

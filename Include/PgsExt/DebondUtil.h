@@ -50,12 +50,12 @@ static bool IsDivisible(FloatSetIterator start, FloatSetIterator end, Float64 di
 class PGSEXTCLASS TxDOTDebondTool
 {
 public:
-   TxDOTDebondTool(const CSegmentKey& segmentKey, Float64 girderLength, IStrandGeometry* pStrandGeometry);
+   TxDOTDebondTool(const CSegmentKey& segmentKey, Float64 girderLength, std::shared_ptr<IStrandGeometry> pStrandGeometry);
 
 protected:
    CSegmentKey m_SegmentKey;
    Float64 m_GirderLength;
-   IStrandGeometry* m_pStrandGeometry;
+   std::shared_ptr<IStrandGeometry> m_pStrandGeometry;
 
    enum OutComeType {AllStandard, NonStandardSection, SectionMismatch, SectionsNotSymmetrical, TooManySections};
    OutComeType m_OutCome;

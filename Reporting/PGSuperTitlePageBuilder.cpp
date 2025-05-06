@@ -64,7 +64,7 @@ bool DoPrintStatusItem(std::shared_ptr<WBFL::EAF::StatusItem> pItem, const CGird
    return false;
 }
 
-bool DoPrintStatusCenter(IEAFStatusCenter* pStatusCenter, IndexType nItems, const CGirderKey& girderKey,SegmentIndexType nSegments)
+bool DoPrintStatusCenter(std::shared_ptr<IEAFStatusCenter> pStatusCenter, IndexType nItems, const CGirderKey& girderKey,SegmentIndexType nSegments)
 {
    for ( IndexType i = 0; i < nItems; i++ )
    {

@@ -22,34 +22,40 @@
 
 #pragma once
 
-struct VOIDEDSLAB_J_SOLID
+namespace PGS
 {
-   Float64 A;
-   Float64 Ip;
-};
+   namespace Beams
+   {
+      struct VOIDEDSLAB_J_SOLID
+      {
+         Float64 A;
+         Float64 Ip;
+      };
 
-struct VOIDEDSLAB_J_VOID
-{
-   Float64 Ao;
-   typedef std::pair<Float64,Float64> Element; // first = s, second = t
-   std::vector<Element> Elements;
-   Float64 S_over_T; // Sum of s/t for all the elements
-};
+      struct VOIDEDSLAB_J_VOID
+      {
+         Float64 Ao;
+         typedef std::pair<Float64,Float64> Element; // first = s, second = t
+         std::vector<Element> Elements;
+         Float64 S_over_T; // Sum of s/t for all the elements
+      };
 
-struct VOIDEDSLAB_LLDFDETAILS : public BASE_LLDFDETAILS
-{
-   Float64 L;
-   Float64 I;
-   Float64 b;
-   Float64 d;
-   Float64 leftDe;
-   Float64 rightDe;
-   Float64 J;
-   Float64 PoissonRatio;
-   pgsTypes::AdjacentTransverseConnectivity TransverseConnectivity;
+      struct VOIDEDSLAB_LLDFDETAILS : public BASE_LLDFDETAILS
+      {
+         Float64 L;
+         Float64 I;
+         Float64 b;
+         Float64 d;
+         Float64 leftDe;
+         Float64 rightDe;
+         Float64 J;
+         Float64 PoissonRatio;
+         pgsTypes::AdjacentTransverseConnectivity TransverseConnectivity;
 
-   Int16 nVoids;
+         Int16 nVoids;
 
-   VOIDEDSLAB_J_SOLID Jsolid;
-   VOIDEDSLAB_J_VOID  Jvoid;
+         VOIDEDSLAB_J_SOLID Jsolid;
+         VOIDEDSLAB_J_VOID  Jvoid;
+      };
+   };
 };

@@ -1749,7 +1749,7 @@ public:
    // status of debonding
    enum DebondStatus {IsDebonding, NonSymmetricDebonding, NoDebonding};
 
-   DebondStatus Init(IBridge* pBridge, IStrandGeometry* pStrandGeometry);
+   DebondStatus Init(std::shared_ptr<IBridge> pBridge, std::shared_ptr<IStrandGeometry> pStrandGeometry);
 
    // get debond row data for a given index. order is assumed as same order in Init function loop
    std::pair<CSegmentKey, DebondRowDataSet>* GetDebondRowDataSet(IndexType idx)
@@ -1764,7 +1764,7 @@ private:
    std::vector<std::pair<CSegmentKey,DebondRowDataSet>> m_DebondRowData;
 };
 
-DebondComparison::DebondStatus DebondComparison::Init(IBridge* pBridge, IStrandGeometry* pStrandGeometry)
+DebondComparison::DebondStatus DebondComparison::Init(std::shared_ptr<IBridge> pBridge, std::shared_ptr<IStrandGeometry> pStrandGeometry)
 {
    assert(m_DebondRowData.empty());
 
@@ -1783,7 +1783,7 @@ DebondComparison::DebondStatus DebondComparison::Init(IBridge* pBridge, IStrandG
 
             if (!pStrandGeometry->IsDebondingSymmetric(segmentKey))
             {
-               // can't do for non-symetrical strands
+               // can't do for non-symmetrical strands
                return NonSymmetricDebonding;
             }
 

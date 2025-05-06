@@ -119,7 +119,7 @@ rptChapter* CHaulingCheckDetailsChapterBuilder::Build(const std::shared_ptr<cons
             }
 
             // Artifact does heavy lifting
-            const pgsHaulingAnalysisArtifact* pHaulArtifact = pArtifacts->GetHaulingAnalysisArtifact(segmentKey);
+            auto pHaulArtifact = pArtifacts->GetHaulingAnalysisArtifact(segmentKey);
             pHaulArtifact->BuildHaulingDetailsReport(segmentKey, pChapter, pBroker, pDisplayUnits);
          } // next segment
       } // next group

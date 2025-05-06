@@ -29,59 +29,63 @@
 
 #include <PgsExt\PoiKey.h>
 
-// Class for storing Design Losses
-// Design losses are losses computed during design iterations and need not
-// be recomputed if the design is accepted
-class CDesignLosses
+namespace PGS
 {
-   struct Losses
+   namespace Beams
    {
-      GDRCONFIG m_Config;
-      LOSSDETAILS m_Details;
-   };
+      // Class for storing Design Losses
+      // Design losses are losses computed during design iterations and need not
+      // be recomputed if the design is accepted
+      class DesignLosses
+      {
+         struct Losses
+         {
+            GDRCONFIG m_Config;
+            LOSSDETAILS m_Details;
+         };
 
-   std::map<pgsPointOfInterest,Losses> m_Losses;
+         std::map<pgsPointOfInterest,Losses> m_Losses;
    
-public:
-   CDesignLosses();
-   void Invalidate();
-   const LOSSDETAILS* GetFromCache(const pgsPointOfInterest& poi, const GDRCONFIG& config);
-   void SaveToCache(const pgsPointOfInterest& poi, const GDRCONFIG& config, const LOSSDETAILS& losses);
-};
+      public:
+         DesignLosses();
+         void Invalidate();
+         const LOSSDETAILS* GetFromCache(const pgsPointOfInterest& poi, const GDRCONFIG& config);
+         void SaveToCache(const pgsPointOfInterest& poi, const GDRCONFIG& config, const LOSSDETAILS& losses);
+      };
 
-/////////////////////////////////////////////////////////////////////////////
-// CPsBeamLossEngineer
-class BEAMSCLASS CPsBeamLossEngineer : public CPsLossEngineerBase
-{
-public:
-   enum class BeamType { IBeam, UBeam, SolidSlab, BoxBeam, SingleT };
+      class BEAMSCLASS PsBeamLossEngineer : public PsLossEngineerBase
+      {
+      public:
+         enum class BeamType { IBeam, UBeam, SolidSlab, BoxBeam, SingleT };
 
-   CPsBeamLossEngineer(CPsBeamLossEngineer::BeamType beamType, std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID);
+         PsBeamLossEngineer(BeamType beamType, std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID);
 
-// IPsLossEngineer
-public:
-   const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) override;
-   const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config,IntervalIndexType intervalIdx) override;
-   void ClearDesignLosses() override;
-   void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) override;
-   void ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) override;
-   const ANCHORSETDETAILS* GetGirderTendonAnchorSetDetails(const CGirderKey& girderKey,DuctIndexType ductIdx) override;
-   Float64 GetGirderTendonElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) override;
-   void GetGirderTendonAverageFrictionAndAnchorSetLoss(const CGirderKey& girderKey,DuctIndexType ductIdx,Float64* pfpF,Float64* pfpA) override;
-   const ANCHORSETDETAILS* GetSegmentTendonAnchorSetDetails(const CSegmentKey& segmentKey, DuctIndexType ductIdx) override;
-   Float64 GetSegmentTendonElongation(const CSegmentKey& segmentKey, DuctIndexType ductIdx, pgsTypes::MemberEndType endType) override;
-   void GetSegmentTendonAverageFrictionAndAnchorSetLoss(const CSegmentKey& segmentKey, DuctIndexType ductIdx, Float64* pfpF, Float64* pfpA) override;
+      // IPsLossEngineer
+      public:
+         const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx) override;
+         const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config,IntervalIndexType intervalIdx) override;
+         void ClearDesignLosses() override;
+         void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) override;
+         void ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) override;
+         const ANCHORSETDETAILS* GetGirderTendonAnchorSetDetails(const CGirderKey& girderKey,DuctIndexType ductIdx) override;
+         Float64 GetGirderTendonElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType) override;
+         void GetGirderTendonAverageFrictionAndAnchorSetLoss(const CGirderKey& girderKey,DuctIndexType ductIdx,Float64* pfpF,Float64* pfpA) override;
+         const ANCHORSETDETAILS* GetSegmentTendonAnchorSetDetails(const CSegmentKey& segmentKey, DuctIndexType ductIdx) override;
+         Float64 GetSegmentTendonElongation(const CSegmentKey& segmentKey, DuctIndexType ductIdx, pgsTypes::MemberEndType endType) override;
+         void GetSegmentTendonAverageFrictionAndAnchorSetLoss(const CSegmentKey& segmentKey, DuctIndexType ductIdx, Float64* pfpF, Float64* pfpA) override;
 
-private:
-   BeamType m_BeamType;
-   CPsLossEngineer m_Engineer;
+      private:
+         BeamType m_BeamType;
+         PsLossEngineer m_Engineer;
 
 
-   // Losses are cached for two different cases:
-   // 1) This data structure caches losses for the current project data
-   std::map<PoiIDType,LOSSDETAILS> m_PsLosses;
+         // Losses are cached for two different cases:
+         // 1) This data structure caches losses for the current project data
+         std::map<PoiIDType,LOSSDETAILS> m_PsLosses;
 
-   // 2) This data structure is for design cases. It caches the most recently
-   //    computed losses
-   CDesignLosses m_DesignLosses;
+         // 2) This data structure is for design cases. It caches the most recently
+         //    computed losses
+         DesignLosses m_DesignLosses;
+      };
+   };
 };

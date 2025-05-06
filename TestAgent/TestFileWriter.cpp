@@ -110,7 +110,7 @@ Float64		value 			   /*  => Value to convert                   */
 }
 
 // Function to return number of raised straight strands as defined by top kern point
-inline StrandIndexType GetNumRaisedStraightStrands(IStrandGeometry * pStrandGeometry, const CSegmentKey& segmentKey,  const pgsPointOfInterest& pois, Float64 kt )
+inline StrandIndexType GetNumRaisedStraightStrands(std::shared_ptr<IStrandGeometry> pStrandGeometry, const CSegmentKey& segmentKey,  const pgsPointOfInterest& pois, Float64 kt )
 {
    StrandIndexType numRaisedStraightStrands = 0;
    if (pStrandGeometry->GetAreHarpedStrandsForcedStraight(segmentKey) && 0 < pStrandGeometry->GetStrandCount(segmentKey, pgsTypes::Harped))

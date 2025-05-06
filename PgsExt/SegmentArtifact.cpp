@@ -211,22 +211,22 @@ pgsSegmentStabilityArtifact* pgsSegmentArtifact::GetSegmentStabilityArtifact()
    return &m_StabilityArtifact;
 }
 
-void pgsSegmentArtifact::SetLiftingCheckArtifact(const WBFL::Stability::LiftingCheckArtifact* artifact)
+void pgsSegmentArtifact::SetLiftingCheckArtifact(std::shared_ptr<const WBFL::Stability::LiftingCheckArtifact> artifact)
 {
    m_pLiftingCheckArtifact = artifact;
 }
 
-const WBFL::Stability::LiftingCheckArtifact* pgsSegmentArtifact::GetLiftingCheckArtifact() const
+std::shared_ptr<const WBFL::Stability::LiftingCheckArtifact> pgsSegmentArtifact::GetLiftingCheckArtifact() const
 {
    return m_pLiftingCheckArtifact;
 }
 
-void pgsSegmentArtifact::SetHaulingAnalysisArtifact(const pgsHaulingAnalysisArtifact* artifact)
+void pgsSegmentArtifact::SetHaulingAnalysisArtifact(std::shared_ptr<const pgsHaulingAnalysisArtifact> artifact)
 {
    m_pHaulingAnalysisArtifact = artifact;
 }
 
-const pgsHaulingAnalysisArtifact* pgsSegmentArtifact::GetHaulingAnalysisArtifact() const
+std::shared_ptr<const pgsHaulingAnalysisArtifact> pgsSegmentArtifact::GetHaulingAnalysisArtifact() const
 {
    return m_pHaulingAnalysisArtifact;
 }

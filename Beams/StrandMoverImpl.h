@@ -27,7 +27,6 @@
 
 #include <Plugins\ConfigureStrandMover.h>
 #include "resource.h"       // main symbols
-#include "IBeamFactory.h" // CLSID
 
 #include <WBFLGenericBridgeTools.h>
 

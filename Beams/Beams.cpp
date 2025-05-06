@@ -35,7 +35,6 @@
 
 #include "BeamFamilyImpl.h"
 
-#include "IBeamFactory.h"
 #include "UBeamFactory.h"
 #include "UBeam2Factory.h"
 #include "NUBeamFactory.h"
@@ -168,28 +167,28 @@ END_OBJECT_MAP()
 
 
 EAF_BEGIN_OBJECT_MAP(ObjectMap2)
-   EAF_OBJECT_ENTRY_SINGLETON(CLSID_WFBeamFactory, CIBeamFactory)
-   EAF_OBJECT_ENTRY_SINGLETON(CLSID_UBeamFactory, CUBeamFactory)
-   EAF_OBJECT_ENTRY_SINGLETON(CLSID_UBeam2Factory, CUBeam2Factory)
-   EAF_OBJECT_ENTRY_SINGLETON(CLSID_NUBeamFactory, CNUBeamFactory)
-   EAF_OBJECT_ENTRY_SINGLETON(CLSID_BulbTeeFactory, CBulbTeeFactory)
-   EAF_OBJECT_ENTRY_SINGLETON(CLSID_MultiWebFactory, CMultiWebFactory)
-   EAF_OBJECT_ENTRY_SINGLETON(CLSID_MultiWeb2Factory, CMultiWeb2Factory)
-   EAF_OBJECT_ENTRY_SINGLETON(CLSID_DoubleTeeFactory, CDoubleTeeFactory)
-   EAF_OBJECT_ENTRY_SINGLETON(CLSID_VoidedSlabFactory, CVoidedSlabFactory)
-   EAF_OBJECT_ENTRY_SINGLETON(CLSID_VoidedSlab2Factory, CVoidedSlab2Factory)
-   EAF_OBJECT_ENTRY_SINGLETON(CLSID_BoxBeamFactory, CBoxBeamFactory)
-   EAF_OBJECT_ENTRY_SINGLETON(CLSID_BoxBeam2Factory, CBoxBeamFactory2)
-   EAF_OBJECT_ENTRY_SINGLETON(CLSID_TxDotDoubleTFactory, CTxDotDoubleTFactory)
-   EAF_OBJECT_ENTRY_SINGLETON(CLSID_TaperedIBeamFactory, CTaperedIBeamFactory)
-   EAF_OBJECT_ENTRY_SINGLETON(CLSID_DeckedSlabBeamFactory, CDeckedSlabBeamFactory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_WFBeamFactory, IBeamFactory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_UBeamFactory, UBeamFactory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_UBeam2Factory, UBeam2Factory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_NUBeamFactory, NUBeamFactory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_BulbTeeFactory, BulbTeeFactory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_MultiWebFactory, MultiWebFactory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_MultiWeb2Factory, MultiWeb2Factory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_DoubleTeeFactory, DoubleTeeFactory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_VoidedSlabFactory, VoidedSlabFactory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_VoidedSlab2Factory, VoidedSlab2Factory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_BoxBeamFactory, BoxBeamFactory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_BoxBeam2Factory, BoxBeamFactory2)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_TxDotDoubleTFactory, TxDotDoubleTFactory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_TaperedIBeamFactory, TaperedIBeamFactory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_DeckedSlabBeamFactory, DeckedSlabBeamFactory)
 
-   EAF_OBJECT_ENTRY_SINGLETON(CLSID_NUDeckedBulbTeeFactory, CNUDeckedBulbTeeFactory)
-   EAF_OBJECT_ENTRY_SINGLETON(CLSID_PCIDeckedBulbTeeFactory, CPCIDeckedBulbTeeFactory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_NUDeckedBulbTeeFactory, NUDeckedBulbTeeFactory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_PCIDeckedBulbTeeFactory, PCIDeckedBulbTeeFactory)
 
-   EAF_OBJECT_ENTRY_SINGLETON(CLSID_SplicedIBeamFactory, CSplicedIBeamFactory)
-   EAF_OBJECT_ENTRY_SINGLETON(CLSID_SplicedNUBeamFactory, CSplicedNUBeamFactory)
-   EAF_OBJECT_ENTRY_SINGLETON(CLSID_SplicedUBeamFactory, CSplicedUBeamFactory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_SplicedIBeamFactory, SplicedIBeamFactory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_SplicedNUBeamFactory, SplicedNUBeamFactory)
+   EAF_OBJECT_ENTRY_SINGLETON(CLSID_SplicedUBeamFactory, SplicedUBeamFactory)
 
    EAF_OBJECT_ENTRY(CLSID_WFBeamFamily, CIBeamFamily)
    EAF_OBJECT_ENTRY(CLSID_UBeamFamily, CUBeamFamily)

@@ -56,7 +56,7 @@ pgsGirderHandlingChecker::~pgsGirderHandlingChecker()
 {
 }
 
-pgsGirderHaulingChecker* pgsGirderHandlingChecker::CreateGirderHaulingChecker()
+std::unique_ptr<pgsGirderHaulingChecker> pgsGirderHandlingChecker::CreateGirderHaulingChecker()
 {
    GET_IFACE(ISegmentHaulingSpecCriteria,pSpec);
 
@@ -64,11 +64,11 @@ pgsGirderHaulingChecker* pgsGirderHandlingChecker::CreateGirderHaulingChecker()
 
    if (method==pgsTypes::HaulingAnalysisMethod::WSDOT)
    {
-      return new pgsWsdotGirderHaulingChecker(m_pBroker, m_StatusGroupID);
+      return std::make_unique<pgsWsdotGirderHaulingChecker>(m_pBroker, m_StatusGroupID);
    }
    else
    {
-      return new pgsKdotGirderHaulingChecker(m_pBroker, m_StatusGroupID);
+      return std::make_unique<pgsKdotGirderHaulingChecker>(m_pBroker, m_StatusGroupID);
    }
 }
 

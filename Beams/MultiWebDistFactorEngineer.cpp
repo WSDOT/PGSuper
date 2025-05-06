@@ -20,7 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// MultiWebDistFactorEngineer.cpp : Implementation of CMultiWebDistFactorEngineer
+// MultiWebDistFactorEngineer.cpp : Implementation of MultiWebDistFactorEngineer
 #include "stdafx.h"
 #include "Beams.h"
 #include "MultiWebDistFactorEngineer.h"
@@ -42,12 +42,12 @@
 
 using namespace PGS::Beams;
 
-CMultiWebDistFactorEngineer::CMultiWebDistFactorEngineer(CMultiWebDistFactorEngineer::BeamType beamType, std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID) :
-   CDistFactorEngineerImpl<MULTIWEB_LLDFDETAILS>(pBroker, statusGroupID), m_BeamType(beamType)
+MultiWebDistFactorEngineer::MultiWebDistFactorEngineer(MultiWebDistFactorEngineer::BeamType beamType, std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID) :
+   DistFactorEngineerImpl<MULTIWEB_LLDFDETAILS>(pBroker, statusGroupID), m_BeamType(beamType)
 {
 }
 
-void CMultiWebDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
+void MultiWebDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    // Grab the interfaces that are needed
    GET_IFACE2(GetBroker(),IBridge,pBridge);
@@ -147,9 +147,9 @@ void CMultiWebDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptCha
       (*pPara) << _T("Girder Spacing: ") << Sub2(_T("S"),_T("avg")) << _T(" = ") << xdim.SetValue(span_lldf.Savg) << rptNewLine;
       (*pPara) << _T("Girder Width: b = ") << xdim.SetValue(span_lldf.b) << rptNewLine;
       (*pPara) << _T("Curb Offset = ") << xdim.SetValue(span_lldf.CurbOffset) << rptNewLine;
-      Float64 de = span_lldf.Side==dfLeft ? span_lldf.leftDe : span_lldf.rightDe;
+      Float64 de = span_lldf.Side==DfSide::Left ? span_lldf.leftDe : span_lldf.rightDe;
       (*pPara) << Sub2(_T("d"),_T("e")) << _T(" = ") << xdim.SetValue(de) << rptNewLine;
-      Float64 ro = span_lldf.Side==dfLeft ? span_lldf.leftCurbOverhang : span_lldf.rightCurbOverhang;
+      Float64 ro = span_lldf.Side==DfSide::Left ? span_lldf.leftCurbOverhang : span_lldf.rightCurbOverhang;
       (*pPara) << _T("Roadway overhang = ") << xdim.SetValue(ro) << rptNewLine;
       (*pPara) << _T("Skew Angle at start: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs(span_lldf.skew1)) << rptNewLine;
       (*pPara) << _T("Skew Angle at end: ") << symbol(theta) << _T(" = ") << angle.SetValue(fabs(span_lldf.skew2)) << rptNewLine;
@@ -402,7 +402,7 @@ void CMultiWebDistFactorEngineer::BuildReport(const CGirderKey& girderKey,rptCha
    } // next span
 }
 
-WBFL::LRFD::LiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,MULTIWEB_LLDFDETAILS* plldf,const GDRCONFIG* pConfig)
+WBFL::LRFD::LiveLoadDistributionFactorBase* MultiWebDistFactorEngineer::GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,MULTIWEB_LLDFDETAILS* plldf,const GDRCONFIG* pConfig)
 {
    GET_IFACE2(GetBroker(), ISectionProperties, pSectProp);
    GET_IFACE2(GetBroker(), IGirder,            pGirder);
@@ -664,7 +664,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDF
          // the obtuse corner to mid-span of exterior and first interior girders.
          // Use the IsObtuseCorner method to determine if there is an obtuse corner for
          // this girder. If so, apply the skew correction
-         if ( dfType == dfReaction )
+         if ( dfType == DFParam::Reaction )
          {
             bool bObtuseLeft = false;
             if ( prev_span != INVALID_INDEX )
@@ -747,7 +747,7 @@ WBFL::LRFD::LiveLoadDistributionFactorBase* CMultiWebDistFactorEngineer::GetLLDF
    return pLLDF;
 }
 
-void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM2,Float64 gM,bool bSIUnits,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
+void MultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM2,Float64 gM,bool bSIUnits,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
@@ -1068,7 +1068,7 @@ void CMultiWebDistFactorEngineer::ReportMoment(rptParagraph* pPara,MULTIWEB_LLDF
    }
 }
 
-void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV2,Float64 gV,bool bSIUnits,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
+void MultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV2,Float64 gV,bool bSIUnits,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
@@ -1307,7 +1307,7 @@ void CMultiWebDistFactorEngineer::ReportShear(rptParagraph* pPara,MULTIWEB_LLDFD
    }
 }
 
-std::_tstring CMultiWebDistFactorEngineer::GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect)
+std::_tstring MultiWebDistFactorEngineer::GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect)
 {
    GET_IFACE2(GetBroker(), ILibrary, pLib);
    GET_IFACE2(GetBroker(), ISpecification, pSpec);

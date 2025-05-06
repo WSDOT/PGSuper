@@ -713,7 +713,7 @@ void CInterfaceShearDetails::FillVniTable(rptRcTable* pTable,RowIndexType row,co
 
 }
 
-rptRcTable* CInterfaceShearDetails::CreateMinAvfTable(rptChapter* pChapter,IBridge* pBridge,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,bool bIsRoughened,bool doAllStirrupsEngageDeck,bool bIsUHPC)
+rptRcTable* CInterfaceShearDetails::CreateMinAvfTable(rptChapter* pChapter,std::shared_ptr<IBridge> pBridge,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,bool bIsRoughened,bool doAllStirrupsEngageDeck,bool bIsUHPC)
 {
    // Next, fill table for min Avf
 

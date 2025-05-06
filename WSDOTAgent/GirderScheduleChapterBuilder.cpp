@@ -623,7 +623,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(
       }
    }
 
-   const pgsHaulingAnalysisArtifact* pHaulingArtifact = pSegmentArtifact->GetHaulingAnalysisArtifact();
+   auto pHaulingArtifact = pSegmentArtifact->GetHaulingAnalysisArtifact();
    if ( pHaulingArtifact != nullptr )
    {
       const WBFL::Stability::HaulingStabilityProblem* pHaulProblem = pIGirder->GetSegmentHaulingStabilityProblem(segmentKey);
@@ -637,7 +637,7 @@ rptChapter* CGirderScheduleChapterBuilder::Build(
       (*pTable)(row,  1) << gdim.SetValue(camber + precamber);
    }
 
-   const WBFL::Stability::LiftingCheckArtifact* pLiftArtifact = pSegmentArtifact->GetLiftingCheckArtifact();
+   auto pLiftArtifact = pSegmentArtifact->GetLiftingCheckArtifact();
    if (pLiftArtifact!=nullptr)
    {
       GET_IFACE2(pBroker,ISegmentLifting,pSegmentLifting);

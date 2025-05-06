@@ -89,7 +89,8 @@ CLASS
    pgsBarrierSidewalkLoadDistributionTool
 ****************************************************************************/
 //////////////////////
-pgsBarrierSidewalkLoadDistributionTool::pgsBarrierSidewalkLoadDistributionTool(SHARED_LOGFILE lf, IBridgeDescription* pIBridgeDesc, IBridge* pBridge, IGirder* pGirder, IBarriers* pBarriers):
+#pragma Reminder("WORKING HERE - Removing COM - holding interface pointers cause circular references")
+pgsBarrierSidewalkLoadDistributionTool::pgsBarrierSidewalkLoadDistributionTool(SHARED_LOGFILE lf, std::shared_ptr<IBridgeDescription> pIBridgeDesc, std::shared_ptr<IBridge> pBridge, std::shared_ptr<IGirder> pGirder, std::shared_ptr<IBarriers> pBarriers):
 LOGFILE(lf),
 m_pIBridgeDesc(pIBridgeDesc),
 m_pIBridge(pBridge),

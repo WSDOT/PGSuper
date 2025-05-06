@@ -64,10 +64,16 @@
 #include <EAF/EAFProgress.h>
 #include <EAF/EAFStatusCenter.h>
 
-#include <EAF\ComponentModule.h>
-WBFL::EAF::ComponentModule _Module;
+#pragma Reminder("Analysis Agent needs to be an ATL module because of PGSuperLoadCombinationResponse and WBFL::LBAM")
+// If LBAM ever gets converted to a regular C++ DLL, then the CComModule and ATL can be removed
+CComModule _Module;
+BEGIN_OBJECT_MAP(ObjectMap)
+END_OBJECT_MAP()
 
-EAF_BEGIN_OBJECT_MAP(ObjectMap)
+#include <EAF\ComponentModule.h>
+WBFL::EAF::ComponentModule Module_;
+
+EAF_BEGIN_OBJECT_MAP(ObjectMap2)
 	EAF_OBJECT_ENTRY(CLSID_AnalysisAgent, CAnalysisAgentImp)
 EAF_END_OBJECT_MAP()
 
@@ -83,7 +89,8 @@ CAnalysisAgentApp theApp;
 
 BOOL CAnalysisAgentApp::InitInstance()
 {
-	_Module.Init(ObjectMap);
+	_Module.Init(ObjectMap,m_hInstance);
+	Module_.Init(ObjectMap2);
 	return CWinApp::InitInstance();
 }
 

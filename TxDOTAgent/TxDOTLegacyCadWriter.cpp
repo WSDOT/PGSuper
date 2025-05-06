@@ -59,7 +59,7 @@ class TxDOTCadWriter : public TxDOTDebondTool
 {
 public:
 
-   TxDOTCadWriter(const CSegmentKey& segmentKey, Float64 girderLength, bool isUBeam, IStrandGeometry* pStrandGeometry):
+   TxDOTCadWriter(const CSegmentKey& segmentKey, Float64 girderLength, bool isUBeam, std::shared_ptr<IStrandGeometry> pStrandGeometry):
    TxDOTDebondTool(segmentKey, girderLength, pStrandGeometry), 
    m_isUBeam(isUBeam)
    {;}

@@ -53,7 +53,7 @@ class StrandDesignController
 {
    static const Int16 MaxDCRS = 3; // Only allow this many decreases from from/to the same state
 public:
-   StrandDesignController(pgsStrandDesignTool& designTool):
+   StrandDesignController(std::shared_ptr<pgsStrandDesignTool> designTool):
       m_StrandDesignTool(designTool)
    {
       Init(0);
@@ -141,7 +141,7 @@ public:
             {
                // We are bifurcating. Let's try to resolve.
                // First see if there is room between current and previous to set a new strand
-               StrandIndexType nxtn = m_StrandDesignTool.GetNextNumPermanentStrands(nsCurrent);
+               StrandIndexType nxtn = m_StrandDesignTool->GetNextNumPermanentStrands(nsCurrent);
                if (nxtn < m_CurrentState.m_NsCurrent)
                {
                   // We still have decrease, just not as much as before - call ourself
@@ -239,7 +239,7 @@ private:
    typedef DContainer::iterator DIterator;
 
    DContainer m_Decreases;
-   pgsStrandDesignTool& m_StrandDesignTool;
+   std::shared_ptr<pgsStrandDesignTool> m_StrandDesignTool;
 };
 
 
@@ -332,10 +332,10 @@ public:
    const pgsGirderArtifact* Check(const CGirderKey& girderKey) const;
 
    // Creates a lifting analysis artifact
-   const WBFL::Stability::LiftingCheckArtifact* CheckLifting(const CSegmentKey& segmentKey) const;
+   std::shared_ptr<const WBFL::Stability::LiftingCheckArtifact> CheckLifting(const CSegmentKey& segmentKey) const;
 
    // Creates a hauling analysis artifact
-   const pgsHaulingAnalysisArtifact* CheckHauling(const CSegmentKey& segmentKey) const;
+   std::shared_ptr<const pgsHaulingAnalysisArtifact> CheckHauling(const CSegmentKey& segmentKey) const;
 
    pgsGirderDesignArtifact Design(const CGirderKey& girderKey,const std::vector<arDesignOptions>& DesOptionsColl) const;
 
@@ -348,10 +348,10 @@ public:
    const pgsGirderArtifact* GetGirderArtifact(const CGirderKey& girderKey) const;
 
    // Returns a lifting analysis artifact if the segment was already checked, otherwise returns nullptr
-   const WBFL::Stability::LiftingCheckArtifact* GetLiftingCheckArtifact(const CSegmentKey& segmentKey) const;
+   std::shared_ptr<const WBFL::Stability::LiftingCheckArtifact> GetLiftingCheckArtifact(const CSegmentKey& segmentKey) const;
 
-   // Returns a nauling analysis artifact if the segment was already checked, otherwise returns nullptr
-   const pgsHaulingAnalysisArtifact* GetHaulingAnalysisArtifact(const CSegmentKey& segmentKey) const;
+   // Returns a hauling analysis artifact if the segment was already checked, otherwise returns nullptr
+   std::shared_ptr<const pgsHaulingAnalysisArtifact> GetHaulingAnalysisArtifact(const CSegmentKey& segmentKey) const;
 
    void GetPrincipalWebStressPointsOfInterest(const CSegmentKey& segmentKey, IntervalIndexType interval, PoiList* pPoiList) const;
 
@@ -365,10 +365,10 @@ protected:
 
 private:
    mutable std::map<CGirderKey,std::shared_ptr<pgsGirderArtifact>> m_CheckArtifacts;
-   mutable std::map<CSegmentKey,WBFL::Stability::LiftingCheckArtifact> m_LiftingCheckArtifacts;
-   mutable std::map<CSegmentKey,const pgsHaulingAnalysisArtifact*> m_HaulingAnalysisArtifacts;
+   mutable std::map<CSegmentKey,std::shared_ptr<WBFL::Stability::LiftingCheckArtifact>> m_LiftingCheckArtifacts;
+   mutable std::map<CSegmentKey,std::shared_ptr<const pgsHaulingAnalysisArtifact>> m_HaulingAnalysisArtifacts;
 
-   const pgsHaulingAnalysisArtifact* CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE) const;
+   std::shared_ptr<const pgsHaulingAnalysisArtifact> CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE) const;
 
    mutable std::vector<StressCheckTask> m_StressCheckTasks;
    void ConfigureStressCheckTasks(const CSegmentKey& segmentKey) const;
@@ -380,7 +380,7 @@ private:
    StatusCallbackIDType m_scidLiveLoad;
    StatusCallbackIDType m_scidBridgeDescriptionError;
 
-   mutable pgsStrandDesignTool m_StrandDesignTool;
+   mutable std::shared_ptr<pgsStrandDesignTool> m_StrandDesignTool;
    mutable pgsShearDesignTool  m_ShearDesignTool;
    mutable pgsDesignCodes      m_DesignerOutcome;
 
@@ -517,5 +517,5 @@ private:
 
    friend pgsLoadRater;
 
-   void DumpLiftingArtifact(const WBFL::Stability::LiftingStabilityProblem* pStabilityProblem,const WBFL::Stability::LiftingCheckArtifact& artifact,WBFL::Debug::LogContext& os) const;
+   void DumpLiftingArtifact(const WBFL::Stability::LiftingStabilityProblem* pStabilityProblem,std::shared_ptr<const WBFL::Stability::LiftingCheckArtifact> artifact,WBFL::Debug::LogContext& os) const;
 };

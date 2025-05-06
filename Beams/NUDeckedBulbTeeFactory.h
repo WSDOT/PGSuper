@@ -32,13 +32,13 @@ namespace PGS
 {
    namespace Beams
    {
-      class CNUDeckedBulbTeeFactory : public BeamFactory, public BeamFactorySingleton<CNUDeckedBulbTeeFactory>
+      class NUDeckedBulbTeeFactory : public BeamFactory, public BeamFactorySingleton<NUDeckedBulbTeeFactory>
       {
       public:
-         static std::shared_ptr<CNUDeckedBulbTeeFactory> CreateInstance() { return std::shared_ptr<CNUDeckedBulbTeeFactory>(new CNUDeckedBulbTeeFactory()); }
+         static std::shared_ptr<NUDeckedBulbTeeFactory> CreateInstance() { return std::shared_ptr<NUDeckedBulbTeeFactory>(new NUDeckedBulbTeeFactory()); }
 
       protected:
-         CNUDeckedBulbTeeFactory();
+         NUDeckedBulbTeeFactory();
 
       public:
          // BeamFactory
@@ -48,8 +48,8 @@ namespace PGS
          Float64 GetSegmentHeight(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const override;
          void ConfigureSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const override;
          void LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const override;
-         std::shared_ptr<CDistFactorEngineerBase> CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const pgsTypes::SupportedBeamSpacing* pSpacingType, const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const override;
-         std::unique_ptr<CPsLossEngineerBase> CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, const CGirderKey& girderKey) const override;
+         std::shared_ptr<DistFactorEngineerBase> CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const pgsTypes::SupportedBeamSpacing* pSpacingType, const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const override;
+         std::unique_ptr<PsLossEngineerBase> CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, const CGirderKey& girderKey) const override;
          void CreateStrandMover(const BeamFactory::Dimensions& dimensions,  Float64 Hg,
                                 BeamFactory::BeamFace endTopFace, Float64 endTopLimit, BeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                                 BeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, BeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 

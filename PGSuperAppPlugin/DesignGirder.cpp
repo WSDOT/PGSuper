@@ -274,7 +274,6 @@ void txnDesignGirder::Init()
 
 void txnDesignGirder::DoExecute(int i)
 {
-   
    auto pBroker = EAFGetBroker();
    GET_IFACE2(pBroker,IBridgeDescription,pIBridgeDesc);
 

@@ -9781,7 +9781,7 @@ void CGirderModelManager::ComputeSidewalksBarriersLoadFractions() const
    GET_IFACE_NOCHECK( IBridgeDescription, pIBridgeDesc);
    GET_IFACE_NOCHECK( IGirder,      pGdr);
 #pragma Reminder("WORKING HERE - Removing COM - don't use raw pointers")
-   pgsBarrierSidewalkLoadDistributionTool BSwTool(LOGGER, pIBridgeDesc.get(), pBridge.get(), pGdr.get(), pBarriers.get());
+   pgsBarrierSidewalkLoadDistributionTool BSwTool(LOGGER, pIBridgeDesc, pBridge, pGdr, pBarriers);
 
    // Loop over all segments in bridge and compute load fractions
    GroupIndexType nGroups = pBridge->GetGirderGroupCount();
@@ -9936,7 +9936,7 @@ void CGirderModelManager::ApplyLiveLoadModel(ILBAMModel* pModel,GirderIndexType 
 }
 
 void CGirderModelManager::AddUserLiveLoads(ILBAMModel* pModel,GirderIndexType gdrIdx,pgsTypes::LiveLoadType llType,std::vector<std::_tstring>& strLLNames,
-                                         ILibrary* pLibrary, ILiveLoads* pLiveLoads, IVehicularLoads* pVehicles) const
+                                         std::shared_ptr<ILibrary> pLibrary, std::shared_ptr<ILiveLoads> pLiveLoads, IVehicularLoads* pVehicles) const
 {
    HRESULT hr = S_OK;
 
@@ -9989,7 +9989,7 @@ void CGirderModelManager::AddUserLiveLoads(ILBAMModel* pModel,GirderIndexType gd
    }
 }
 
-void CGirderModelManager::AddHL93LiveLoad(ILBAMModel* pModel,ILibrary* pLibrary,pgsTypes::LiveLoadType llType,Float64 IMtruck,Float64 IMlane) const
+void CGirderModelManager::AddHL93LiveLoad(ILBAMModel* pModel,std::shared_ptr<ILibrary> pLibrary,pgsTypes::LiveLoadType llType,Float64 IMtruck,Float64 IMlane) const
 {
    GET_IFACE(ISpecification,pSpec);
 
@@ -10008,7 +10008,7 @@ void CGirderModelManager::AddHL93LiveLoad(ILBAMModel* pModel,ILibrary* pLibrary,
    m_LBAMUtility->ConfigureDesignLiveLoad(pModel,llmt,IMtruck,IMlane,bUseDualTruckTrains, bIncludeDualTandem,units,m_UnitServer);
 }
 
-void CGirderModelManager::AddFatigueLiveLoad(ILBAMModel* pModel,ILibrary* pLibrary,pgsTypes::LiveLoadType llType,Float64 IMtruck,Float64 IMlane) const
+void CGirderModelManager::AddFatigueLiveLoad(ILBAMModel* pModel,std::shared_ptr<ILibrary> pLibrary,pgsTypes::LiveLoadType llType,Float64 IMtruck,Float64 IMlane) const
 {
    GET_IFACE(ISpecification,pSpec);
 
@@ -10020,7 +10020,7 @@ void CGirderModelManager::AddFatigueLiveLoad(ILBAMModel* pModel,ILibrary* pLibra
    m_LBAMUtility->ConfigureFatigueLiveLoad(pModel,llmt,IMtruck,IMlane,units,m_UnitServer);
 }
 
-void CGirderModelManager::AddDeflectionLiveLoad(ILBAMModel* pModel,ILibrary* pLibrary,Float64 IMtruck,Float64 IMlane) const
+void CGirderModelManager::AddDeflectionLiveLoad(ILBAMModel* pModel,std::shared_ptr<ILibrary> pLibrary,Float64 IMtruck,Float64 IMlane) const
 {
    GET_IFACE(ISpecification,pSpec);
 
@@ -10030,7 +10030,7 @@ void CGirderModelManager::AddDeflectionLiveLoad(ILBAMModel* pModel,ILibrary* pLi
    m_LBAMUtility->ConfigureDeflectionLiveLoad(pModel,lltDeflection,IMtruck,IMlane,units,m_UnitServer);
 }
 
-void CGirderModelManager::AddLegalLiveLoad(ILBAMModel* pModel,ILibrary* pLibrary,pgsTypes::LiveLoadType llType,Float64 IMtruck,Float64 IMlane) const
+void CGirderModelManager::AddLegalLiveLoad(ILBAMModel* pModel,std::shared_ptr<ILibrary> pLibrary,pgsTypes::LiveLoadType llType,Float64 IMtruck,Float64 IMlane) const
 {
    // this is an AASHTO Legal Load for rating, use the LBAM configuration utility
    LiveLoadModelType llmt = g_LiveLoadModelType[llType];
@@ -10070,14 +10070,14 @@ void CGirderModelManager::AddLegalLiveLoad(ILBAMModel* pModel,ILibrary* pLibrary
    m_LBAMUtility->ConfigureLegalLiveLoad(pModel,llmt,IMtruck,IMlane,bIncludeType33,bIncludeDualType33,bRemoveLaneLoad,m_UnitServer);
 }
 
-void CGirderModelManager::AddNotionalRatingLoad(ILBAMModel* pModel,ILibrary* pLibrary,pgsTypes::LiveLoadType llType,Float64 IMtruck,Float64 IMlane) const
+void CGirderModelManager::AddNotionalRatingLoad(ILBAMModel* pModel,std::shared_ptr<ILibrary> pLibrary,pgsTypes::LiveLoadType llType,Float64 IMtruck,Float64 IMlane) const
 {
    // this is an AASHTO Legal Load for rating, use the LBAM configuration utility
    LiveLoadModelType llmt = g_LiveLoadModelType[llType];
    m_LBAMUtility->ConfigureNotionalRatingLoad(pModel,llmt,IMtruck,IMlane,m_UnitServer);
 }
 
-void CGirderModelManager::AddEmergencyLiveLoad(ILBAMModel* pModel, ILibrary* pLibrary, pgsTypes::LiveLoadType llType, Float64 IMtruck, Float64 IMlane) const
+void CGirderModelManager::AddEmergencyLiveLoad(ILBAMModel* pModel, std::shared_ptr<ILibrary> pLibrary, pgsTypes::LiveLoadType llType, Float64 IMtruck, Float64 IMlane) const
 {
    // this is an AASHTO Legal Load for emergency vehicle rating, use the LBAM configuration utility
 
@@ -10100,14 +10100,14 @@ void CGirderModelManager::AddEmergencyLiveLoad(ILBAMModel* pModel, ILibrary* pLi
    m_LBAMUtility->ConfigureEmergencyRatingLoad(pModel, llmt, IMtruck, IMlane, bIncludeLaneLoad, m_UnitServer);
 }
 
-void CGirderModelManager::AddSHVLoad(ILBAMModel* pModel,ILibrary* pLibrary,pgsTypes::LiveLoadType llType,Float64 IMtruck,Float64 IMlane) const
+void CGirderModelManager::AddSHVLoad(ILBAMModel* pModel,std::shared_ptr<ILibrary> pLibrary,pgsTypes::LiveLoadType llType,Float64 IMtruck,Float64 IMlane) const
 {
    // this is an AASHTO Legal Load for rating, use the LBAM configuration utility
    LiveLoadModelType llmt = g_LiveLoadModelType[llType];
    m_LBAMUtility->ConfigureSpecializedHaulingUnits(pModel,llmt,IMtruck,IMlane,m_UnitServer);
 }
 
-void CGirderModelManager::AddUserTruck(const std::_tstring& strLLName,ILibrary* pLibrary,Float64 IMtruck,Float64 IMlane,IVehicularLoads* pVehicles) const
+void CGirderModelManager::AddUserTruck(const std::_tstring& strLLName,std::shared_ptr<ILibrary> pLibrary,Float64 IMtruck,Float64 IMlane,IVehicularLoads* pVehicles) const
 {
    // this is a user defined vehicular live load defined in the library
    const LiveLoadLibraryEntry* ll_entry = pLibrary->GetLiveLoadEntry( strLLName.c_str());
@@ -14495,7 +14495,7 @@ void CGirderModelManager::GetEngine(CGirderModelData* pModelData,bool bContinuou
    (*pEngine)->AddRef();
 }
 
-void CGirderModelManager::CheckGirderEndGeometry(IBridge* pBridge,const CGirderKey& girderKey) const
+void CGirderModelManager::CheckGirderEndGeometry(std::shared_ptr<IBridge> pBridge,const CGirderKey& girderKey) const
 {
    CSegmentKey segmentKey(girderKey,0);
    Float64 s_end_size = pBridge->GetSegmentStartEndDistance(segmentKey);

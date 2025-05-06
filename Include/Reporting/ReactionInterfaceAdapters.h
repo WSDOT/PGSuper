@@ -202,7 +202,7 @@ private:
 class ReactionDecider
 {
 public:
-   ReactionDecider(ReactionTableType tableType, const ReactionLocation& location, const CGirderKey& girderKey,IBridge* pBridge,IIntervals* pIntervals);
+   ReactionDecider(ReactionTableType tableType, const ReactionLocation& location, const CGirderKey& girderKey,std::shared_ptr<IBridge> pBridge,std::shared_ptr<IIntervals> pIntervals);
 
    // If true, report results
    bool DoReport(IntervalIndexType intervalIdx);
@@ -217,7 +217,7 @@ CLASS
    ReactionUnitValueTool
 
    Utility adapter class for outputting individual bearing reactions. This class
-   reports the total reaction on the first line, and the total/numbearings on the second line.
+   reports the total reaction on the first line, and the total/numberings on the second line.
    If the table is a pier reaction table it only reports the total reaction.
 
 DESCRIPTION

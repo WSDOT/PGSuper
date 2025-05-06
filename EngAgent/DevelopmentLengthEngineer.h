@@ -79,7 +79,7 @@ public:
 
    Float64 GetDevelopmentLengthFactor() const;
 
-   virtual Float64 GetDevelopmentLength() const override;
+   Float64 GetDevelopmentLength() const override;
 
 protected:
    Float64 m_MbrDepth{0.0};
@@ -93,7 +93,7 @@ public:
    pgsPCIUHPCDevelopmentLength() = default;
    pgsPCIUHPCDevelopmentLength(Float64 db, Float64 fpe, Float64 fps);
 
-   virtual Float64 GetDevelopmentLength() const override;
+   Float64 GetDevelopmentLength() const override;
 };
 
 /// This class implements development length calculation based on the UHPC Draft Guide Specifications
@@ -103,7 +103,7 @@ public:
    pgsUHPCDevelopmentLength() = default;
    pgsUHPCDevelopmentLength(Float64 lt,Float64 db, Float64 fpe, Float64 fps);
 
-   virtual Float64 GetDevelopmentLength() const override;
+   Float64 GetDevelopmentLength() const override;
 
 private:
    Float64 m_lt{ 0.0 };
@@ -115,7 +115,7 @@ class pgsDevelopmentLengthReporterBase : public pgsDevelopmentLengthReporter
 public:
    pgsDevelopmentLengthReporterBase() = delete;
    pgsDevelopmentLengthReporterBase(std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsDevelopmentLengthEngineer* pEngineer);
-   virtual void ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const override;
+   void ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const override;
 
 protected:
    const pgsDevelopmentLengthEngineer* m_pEngineer;
@@ -137,7 +137,7 @@ class pgsLRFDDevelopmentLengthReporter : public pgsDevelopmentLengthReporterBase
 public:
    pgsLRFDDevelopmentLengthReporter() = delete;
    pgsLRFDDevelopmentLengthReporter(std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsDevelopmentLengthEngineer* pEngineer);
-   virtual void ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const override;
+   void ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const override;
 };
 
 /// This class reports the details of development length calculations based on the PCI UHPC Structural Design Guidance
@@ -146,7 +146,7 @@ class pgsPCIUHPCDevelopmentLengthReporter : public pgsDevelopmentLengthReporterB
 public:
    pgsPCIUHPCDevelopmentLengthReporter() = delete;
    pgsPCIUHPCDevelopmentLengthReporter(std::shared_ptr<WBFL::EAF::Broker> pBroker,const pgsDevelopmentLengthEngineer* pEngineer);
-   virtual void ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const override;
+   void ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const override;
 };
 
 /// This class reports the details of development length calculations based on the UHPC Draft Guide Specifications
@@ -155,5 +155,5 @@ class pgsUHPCDevelopmentLengthReporter : public pgsDevelopmentLengthReporterBase
 public:
    pgsUHPCDevelopmentLengthReporter() = delete;
    pgsUHPCDevelopmentLengthReporter(std::shared_ptr<WBFL::EAF::Broker> pBroker, const pgsDevelopmentLengthEngineer* pEngineer);
-   virtual void ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const override;
+   void ReportDevelopmentLengthDetails(const CSegmentKey& segmentKey, rptChapter* pChapter) const override;
 };

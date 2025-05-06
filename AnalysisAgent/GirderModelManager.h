@@ -320,7 +320,7 @@ private:
    void ValidateGirderModels(const CGirderKey& girderKey) const;
    GirderIndexType GetGirderLineIndex(const CGirderKey& girderKey) const;
 
-   void CheckGirderEndGeometry(IBridge* pBridge,const CGirderKey& girderKey) const;
+   void CheckGirderEndGeometry(std::shared_ptr<IBridge> pBridge,const CGirderKey& girderKey) const;
    void BuildModel(GirderIndexType gdrLineIdx) const;
    void BuildModel(GirderIndexType gdrLineIdx,pgsTypes::BridgeAnalysisType bat) const;
    void BuildLBAM(GirderIndexType gdr,bool bContinuousModel,IContraflexureResponse* pContraflexureResponse,IContraflexureResponse* pDeflContraflexureResponse,ILBAMModel* pModel) const;
@@ -342,7 +342,7 @@ private:
    void ApplyTrafficBarrierAndSidewalkLoad(ILBAMModel* pModel, pgsTypes::AnalysisType analysisType,GirderIndexType gdr,bool bContinuousModel) const;
    void ComputeSidewalksBarriersLoadFractions() const;
    void ApplyLiveLoadModel(ILBAMModel* pModel,GirderIndexType gdrLineIdx) const;
-   void AddUserLiveLoads(ILBAMModel* pModel,GirderIndexType gdrLineIdx,pgsTypes::LiveLoadType llType,std::vector<std::_tstring>& libraryLoads,ILibrary* pLibrary, ILiveLoads* pLiveLoads,IVehicularLoads* pVehicles) const;
+   void AddUserLiveLoads(ILBAMModel* pModel,GirderIndexType gdrLineIdx,pgsTypes::LiveLoadType llType,std::vector<std::_tstring>& libraryLoads,std::shared_ptr<ILibrary> pLibrary, std::shared_ptr<ILiveLoads> pLiveLoads,IVehicularLoads* pVehicles) const;
    void ApplyUserDefinedLoads(ILBAMModel* pModel,GirderIndexType gdrLineIdx) const;
    void ApplyPostTensionDeformation(ILBAMModel* pModel,GirderIndexType gdrLineIdx) const;
    void ApplyLiveLoadDistributionFactors(GirderIndexType gdrLineIdx,bool bContinuous,IContraflexureResponse* pContraflexureResponse,ILBAMModel* pModel) const;
@@ -369,15 +369,15 @@ private:
 
    Float64 GetPedestrianLiveLoad(const CSpanKey& spanKey) const;
    Float64 GetPedestrianLiveLoad(const CSegmentKey& segmentKey) const;
-   void AddHL93LiveLoad(ILBAMModel* pModel,ILibrary* pLibrary,pgsTypes::LiveLoadType llType,Float64 IMtruck,Float64 IMlane) const;
-   void AddFatigueLiveLoad(ILBAMModel* pModel,ILibrary* pLibrary,pgsTypes::LiveLoadType llType,Float64 IMtruck,Float64 IMlane) const;
-   void AddDeflectionLiveLoad(ILBAMModel* pModel,ILibrary* pLibrary,Float64 IMtruck,Float64 IMlane) const;
-   void AddLegalLiveLoad(ILBAMModel* pModel,ILibrary* pLibrary,pgsTypes::LiveLoadType llType,Float64 IMtruck,Float64 IMlane) const;
-   void AddNotionalRatingLoad(ILBAMModel* pModel,ILibrary* pLibrary,pgsTypes::LiveLoadType llType,Float64 IMtruck,Float64 IMlane) const;
-   void AddEmergencyLiveLoad(ILBAMModel* pModel, ILibrary* pLibrary, pgsTypes::LiveLoadType llType, Float64 IMtruck, Float64 IMlane) const;
-   void AddSHVLoad(ILBAMModel* pModel, ILibrary* pLibrary, pgsTypes::LiveLoadType llType, Float64 IMtruck, Float64 IMlane) const;
+   void AddHL93LiveLoad(ILBAMModel* pModel,std::shared_ptr<ILibrary> pLibrary,pgsTypes::LiveLoadType llType,Float64 IMtruck,Float64 IMlane) const;
+   void AddFatigueLiveLoad(ILBAMModel* pModel,std::shared_ptr<ILibrary> pLibrary,pgsTypes::LiveLoadType llType,Float64 IMtruck,Float64 IMlane) const;
+   void AddDeflectionLiveLoad(ILBAMModel* pModel,std::shared_ptr<ILibrary> pLibrary,Float64 IMtruck,Float64 IMlane) const;
+   void AddLegalLiveLoad(ILBAMModel* pModel,std::shared_ptr<ILibrary> pLibrary,pgsTypes::LiveLoadType llType,Float64 IMtruck,Float64 IMlane) const;
+   void AddNotionalRatingLoad(ILBAMModel* pModel,std::shared_ptr<ILibrary> pLibrary,pgsTypes::LiveLoadType llType,Float64 IMtruck,Float64 IMlane) const;
+   void AddEmergencyLiveLoad(ILBAMModel* pModel, std::shared_ptr<ILibrary> pLibrary, pgsTypes::LiveLoadType llType, Float64 IMtruck, Float64 IMlane) const;
+   void AddSHVLoad(ILBAMModel* pModel, std::shared_ptr<ILibrary> pLibrary, pgsTypes::LiveLoadType llType, Float64 IMtruck, Float64 IMlane) const;
    void AddPedestrianLoad(const std::_tstring& strLLName,Float64 wPedLL,IVehicularLoads* pVehicles) const;
-   void AddUserTruck(const std::_tstring& strLLName,ILibrary* pLibrary,Float64 IMtruck,Float64 IMlane,IVehicularLoads* pVehicles) const;
+   void AddUserTruck(const std::_tstring& strLLName,std::shared_ptr<ILibrary> pLibrary,Float64 IMtruck,Float64 IMlane,IVehicularLoads* pVehicles) const;
    void AddDummyLiveLoad(IVehicularLoads* pVehicles) const;
 
    void GetLiveLoadModel(pgsTypes::LiveLoadType llType,const CGirderKey& girderKey,ILiveLoadModel** ppLiveLoadModel) const;

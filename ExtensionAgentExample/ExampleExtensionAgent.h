@@ -31,7 +31,8 @@
 #include "EditPierPage.h"
 
 
-class CExampleExtensionAgent : public WBFL::EAF::Agent,
+class CExampleExtensionAgent : public CCmdTarget, // it's very important CCmdTarget is the first parent for inheritance, see Warning C4407
+   public WBFL::EAF::Agent,
    public WBFL::EAF::IAgentPersist,
    public WBFL::EAF::IAgentUIIntegration,
    public WBFL::EAF::IAgentReportingIntegration,
@@ -45,7 +46,6 @@ class CExampleExtensionAgent : public WBFL::EAF::Agent,
    public IEditSplicedGirderCallback,
    public IEditGirderCallback,
    public IExtendUIEventSink,
-   public CCmdTarget,
    public WBFL::EAF::ICommandCallback
 {
 public:

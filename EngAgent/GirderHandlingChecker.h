@@ -34,11 +34,11 @@
 class pgsGirderHaulingChecker
 {
 public:
-   virtual pgsHaulingAnalysisArtifact* CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE) = 0;
-   virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey) = 0;
-   virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang) = 0;
-   virtual pgsHaulingAnalysisArtifact* AnalyzeHauling(const CSegmentKey& segmentKey,const HANDLINGCONFIG& config,ISegmentHaulingDesignPointsOfInterest* pPOId) = 0;
-   virtual pgsHaulingAnalysisArtifact* DesignHauling(const CSegmentKey& segmentKey,HANDLINGCONFIG& config,bool bIgnoreConfigurationLimits,ISegmentHaulingDesignPointsOfInterest* pPOId, bool* bSuccess, SHARED_LOGFILE LOGFILE) = 0;
+   virtual std::shared_ptr<pgsHaulingAnalysisArtifact> CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE) = 0;
+   virtual std::shared_ptr<pgsHaulingAnalysisArtifact> AnalyzeHauling(const CSegmentKey& segmentKey) = 0;
+   virtual std::shared_ptr<pgsHaulingAnalysisArtifact> AnalyzeHauling(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang) = 0;
+   virtual std::shared_ptr<pgsHaulingAnalysisArtifact> AnalyzeHauling(const CSegmentKey& segmentKey,const HANDLINGCONFIG& config,std::shared_ptr<ISegmentHaulingDesignPointsOfInterest> pPOId) = 0;
+   virtual std::shared_ptr<pgsHaulingAnalysisArtifact> DesignHauling(const CSegmentKey& segmentKey,HANDLINGCONFIG& config,bool bIgnoreConfigurationLimits,std::shared_ptr<ISegmentHaulingDesignPointsOfInterest> pPOId, bool* bSuccess, SHARED_LOGFILE LOGFILE) = 0;
 };
 
 /*****************************************************************************
@@ -65,7 +65,7 @@ public:
    virtual ~pgsGirderHandlingChecker();
 
    // Factory Method to create the appropriate hauling checker
-   pgsGirderHaulingChecker* CreateGirderHaulingChecker();
+   std::unique_ptr<pgsGirderHaulingChecker> CreateGirderHaulingChecker();
 
    // Utility functions for the checking classes
    static void ComputeMoments(std::shared_ptr<WBFL::EAF::Broker> pBroker, pgsGirderModelFactory* pGirderModelFactory, const CSegmentKey& segmentKey,

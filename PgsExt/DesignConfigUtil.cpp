@@ -52,7 +52,7 @@ CDirectStrandFillCollection ConvertConfigToDirectStrandFill(const ConfigStrandFi
    return coll;
 }
 
-ConfigStrandFillVector ConvertDirectToConfigFill(IStrandGeometry* pStrandGeometry, pgsTypes::StrandType type, 
+ConfigStrandFillVector ConvertDirectToConfigFill(std::shared_ptr<IStrandGeometry> pStrandGeometry, pgsTypes::StrandType type, 
                                                         LPCTSTR strGirderName, const CDirectStrandFillCollection& coll)
 {
    // start with unfilled grid (0 strands)
@@ -79,7 +79,7 @@ ConfigStrandFillVector ConvertDirectToConfigFill(IStrandGeometry* pStrandGeometr
    return vec;
 }
 
-ConfigStrandFillVector ConvertDirectToConfigFill(IStrandGeometry* pStrandGeometry, pgsTypes::StrandType type, 
+ConfigStrandFillVector ConvertDirectToConfigFill(std::shared_ptr<IStrandGeometry> pStrandGeometry, pgsTypes::StrandType type, 
                                                         const CSegmentKey& segmentKey, 
                                                         const CDirectStrandFillCollection& coll)
 {

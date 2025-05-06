@@ -76,7 +76,7 @@ bool CCrackedSectionReportSpecification::IsValid() const
    }
 }
 
-PoiList CCrackedSectionReportSpecification::GetCrackedSectionPois(IPointOfInterest* pPois, const CSegmentKey& segmentKey)
+PoiList CCrackedSectionReportSpecification::GetCrackedSectionPois(std::shared_ptr<IPointOfInterest> pPois, const CSegmentKey& segmentKey)
 {
    PoiList vPoi;
    CSegmentKey segAsDialog(segmentKey.groupIndex, segmentKey.girderIndex, ALL_SEGMENTS);

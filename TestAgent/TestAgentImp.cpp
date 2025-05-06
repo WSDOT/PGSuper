@@ -2318,7 +2318,7 @@ bool CTestAgentImp::RunHandlingTest(std::_tofstream& resultsFile, std::_tofstrea
    const pgsSegmentArtifact* pArtifact = pArtifacts->GetSegmentArtifact(segmentKey);
 
    // lifting
-   const WBFL::Stability::LiftingCheckArtifact* pLiftArtifact = pArtifact->GetLiftingCheckArtifact();
+   auto pLiftArtifact = pArtifact->GetLiftingCheckArtifact();
    if ( pLiftArtifact != nullptr )
    {
       const WBFL::Stability::LiftingResults& liftingResults = pLiftArtifact->GetLiftingResults();
@@ -2362,7 +2362,7 @@ bool CTestAgentImp::RunHandlingTest(std::_tofstream& resultsFile, std::_tofstrea
    }
 
    // hauling
-   const pgsHaulingAnalysisArtifact* pHaulArtifact = pArtifact->GetHaulingAnalysisArtifact();
+   auto pHaulArtifact = pArtifact->GetHaulingAnalysisArtifact();
    if (pHaulArtifact != nullptr)
    {
       // Artifact writes its own data

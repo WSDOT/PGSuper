@@ -232,7 +232,6 @@
     <ClInclude Include="ElasticShorteningTable.h" />
     <ClInclude Include="FinalPrestressLossTable.h" />
     <ClInclude Include="FrictionLossTable.h" />
-    <ClInclude Include="IBeamFactory.h" />
     <ClInclude Include="MultiWeb2Factory.h" />
     <ClInclude Include="MultiWebDistFactorEngineer.h" />
     <ClInclude Include="MultiWebFactory.h" />

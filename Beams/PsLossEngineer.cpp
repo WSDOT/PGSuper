@@ -20,7 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// IPsLossEngineer.cpp : Implementation of CPsLossEngineer
+// IPsLossEngineer.cpp : Implementation of PsLossEngineer
 #include "stdafx.h"
 #include "Beams.h"
 #include <Beams/PsLossEngineer.h>
@@ -93,6 +93,7 @@
 
 #include <psgLib/SpecificationCriteria.h>
 
+using namespace PGS::Beams;
 
 // utility function so we can use the WBFL::LRFD::ApproximateLosses::BeanType enum as an array index
 inline constexpr auto operator+(WBFL::LRFD::ApproximateLosses::BeamType t) noexcept { return std::underlying_type<WBFL::LRFD::ApproximateLosses::BeamType>::type(t); }
@@ -120,8 +121,8 @@ void ReportRow(T* pTable, rptChapter* pChapter, std::shared_ptr<WBFL::EAF::Broke
 }
 
 /////////////////////////////////////////////////////////////////////////////
-// CPsLossEngineer
-CPsLossEngineer::CPsLossEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID)
+// PsLossEngineer
+PsLossEngineer::PsLossEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID)
 {
    m_pBroker = pBroker;
    m_StatusGroupID = statusGroupID;
@@ -134,12 +135,12 @@ CPsLossEngineer::CPsLossEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker, Statu
    m_scidConcreteTypeError = pStatusCenter->RegisterCallback( std::make_shared<pgsInformationalStatusCallback>(WBFL::EAF::StatusSeverityType::Error) );
 }
 
-LOSSDETAILS CPsLossEngineer::ComputeLosses(BeamType beamType,const pgsPointOfInterest& poi)
+LOSSDETAILS PsLossEngineer::ComputeLosses(BeamType beamType,const pgsPointOfInterest& poi)
 {
    return ComputeLosses(beamType,poi,nullptr);
 }
 
-LOSSDETAILS CPsLossEngineer::ComputeLosses(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig)
+LOSSDETAILS PsLossEngineer::ComputeLosses(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig)
 {
    LOSSDETAILS details;
 
@@ -210,7 +211,7 @@ LOSSDETAILS CPsLossEngineer::ComputeLosses(BeamType beamType,const pgsPointOfInt
    return details;
 }
 
-LOSSDETAILS CPsLossEngineer::ComputeLossesForDesign(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config)
+LOSSDETAILS PsLossEngineer::ComputeLossesForDesign(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG& config)
 {
    LOSSDETAILS details;
 
@@ -221,7 +222,7 @@ LOSSDETAILS CPsLossEngineer::ComputeLossesForDesign(BeamType beamType,const pgsP
    return details;
 }
 
-void CPsLossEngineer::BuildReport(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
+void PsLossEngineer::BuildReport(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    GET_IFACE2(GetBroker(), ILossParameters,pLossParameters);
    PrestressLossCriteria::LossMethodType loss_method = pLossParameters->GetLossMethod();
@@ -262,7 +263,7 @@ void CPsLossEngineer::BuildReport(BeamType beamType,const CGirderKey& girderKey,
    }
 }
 
-void CPsLossEngineer::ReportRefinedMethod(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level,LossAgency lossAgency)
+void PsLossEngineer::ReportRefinedMethod(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level,LossAgency lossAgency)
 {
    GET_IFACE2(GetBroker(), ILibrary,pLib);
    GET_IFACE2(GetBroker(), ISpecification,pSpec);
@@ -280,7 +281,7 @@ void CPsLossEngineer::ReportRefinedMethod(BeamType beamType,const CGirderKey& gi
    }
 }
 
-void CPsLossEngineer::ReportApproxLumpSumMethod(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level,bool isWsdot)
+void PsLossEngineer::ReportApproxLumpSumMethod(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level,bool isWsdot)
 {
    GET_IFACE2(GetBroker(), ILibrary,pLib);
    GET_IFACE2(GetBroker(), ISpecification,pSpec);
@@ -297,7 +298,7 @@ void CPsLossEngineer::ReportApproxLumpSumMethod(BeamType beamType,const CGirderK
    }
 }
 
-void CPsLossEngineer::ReportGeneralLumpSumMethod(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,bool bDesign,Uint16 level)
+void PsLossEngineer::ReportGeneralLumpSumMethod(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,bool bDesign,Uint16 level)
 {
    ReportLumpSumMethod(pChapter,beamType,girderKey,pDisplayUnits,bDesign,level);
 
@@ -323,7 +324,7 @@ void CPsLossEngineer::ReportGeneralLumpSumMethod(BeamType beamType,const CGirder
    }
 }
 
-void CPsLossEngineer::LossesByRefinedEstimate(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG*pConfig,LOSSDETAILS* pLosses,LossAgency lossAgency)
+void PsLossEngineer::LossesByRefinedEstimate(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG*pConfig,LOSSDETAILS* pLosses,LossAgency lossAgency)
 {
    PRECONDITION(pLosses != 0 );
 
@@ -343,7 +344,7 @@ void CPsLossEngineer::LossesByRefinedEstimate(BeamType beamType,const pgsPointOf
    }
 }
 
-void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,LOSSDETAILS* pLosses)
+void PsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,LOSSDETAILS* pLosses)
 {
    pLosses->LossMethod = PrestressLossCriteria::LossMethodType::AASHTO_REFINED;
 
@@ -531,7 +532,7 @@ void CPsLossEngineer::LossesByRefinedEstimateBefore2005(BeamType beamType,const 
    }
 }
 
-void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,LOSSDETAILS* pLosses,LossAgency lossAgency)
+void PsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,LOSSDETAILS* pLosses,LossAgency lossAgency)
 {
    assert(lossAgency!=laTxDOT); // Did TxDOT change their mind about using the 05 revisions?
 
@@ -875,7 +876,7 @@ void CPsLossEngineer::LossesByRefinedEstimate2005(BeamType beamType,const pgsPoi
    }
 }
 
-void CPsLossEngineer::LossesByRefinedEstimateTxDOT2013(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,LOSSDETAILS* pLosses)
+void PsLossEngineer::LossesByRefinedEstimateTxDOT2013(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,LOSSDETAILS* pLosses)
 {
    // Compute details - This is a bit tricky: We practically need to compute losses in order to determine which method to use
    //                   for elastic shortening. So might as well save on code and compute them - then figure out if we can cache
@@ -897,7 +898,7 @@ void CPsLossEngineer::LossesByRefinedEstimateTxDOT2013(BeamType beamType,const p
    }
 }
 
-WBFL::LRFD::ElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRefinedEstimateTxDOT2013_Compute(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,LOSSDETAILS* pLosses)
+WBFL::LRFD::ElasticShortening::FcgpComputationMethod PsLossEngineer::LossesByRefinedEstimateTxDOT2013_Compute(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,LOSSDETAILS* pLosses)
 {
    pLosses->LossMethod = PrestressLossCriteria::LossMethodType::TXDOT_REFINED_2013;
 
@@ -1140,7 +1141,7 @@ WBFL::LRFD::ElasticShortening::FcgpComputationMethod CPsLossEngineer::LossesByRe
    return method;
 }
 
-void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,LOSSDETAILS* pLosses,bool isWsdot)
+void PsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,LOSSDETAILS* pLosses,bool isWsdot)
 {
    PRECONDITION(pLosses != 0 );
 
@@ -1453,7 +1454,7 @@ void CPsLossEngineer::LossesByApproxLumpSum(BeamType beamType,const pgsPointOfIn
    }
 }
 
-void CPsLossEngineer::LossesByGeneralLumpSum(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,LOSSDETAILS* pLosses)
+void PsLossEngineer::LossesByGeneralLumpSum(BeamType beamType,const pgsPointOfInterest& poi,const GDRCONFIG* pConfig,LOSSDETAILS* pLosses)
 {
    // Need the following parameters for the lump sum loss object: ApsPerm,ApsTTS,fpjPerm,fpjTTS,usage
    // It is easier to call the general GetLossParameters method and get everything this
@@ -1545,7 +1546,7 @@ void CPsLossEngineer::LossesByGeneralLumpSum(BeamType beamType,const pgsPointOfI
 }
 
 
-void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
+void PsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,PsLossEngineer::BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
@@ -1687,7 +1688,7 @@ void CPsLossEngineer::ReportRefinedMethodBefore2005(rptChapter* pChapter,CPsLoss
    }
 }
 
-void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
+void PsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
@@ -1935,7 +1936,7 @@ void CPsLossEngineer::ReportRefinedMethod2005(rptChapter* pChapter,BeamType beam
    }
 }
 
-void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
+void PsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,PsLossEngineer::BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
@@ -2082,7 +2083,7 @@ void CPsLossEngineer::ReportRefinedMethodTxDOT2013(rptChapter* pChapter,CPsLossE
    }
 }
 
-void CPsLossEngineer::ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level,bool isWsdot)
+void PsLossEngineer::ReportApproxMethod(rptChapter* pChapter,PsLossEngineer::BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level,bool isWsdot)
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
@@ -2207,7 +2208,7 @@ void CPsLossEngineer::ReportApproxMethod(rptChapter* pChapter,CPsLossEngineer::B
    }
 }
 
-void CPsLossEngineer::ReportApproxMethod2005(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
+void PsLossEngineer::ReportApproxMethod2005(rptChapter* pChapter,PsLossEngineer::BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
@@ -2343,7 +2344,7 @@ void CPsLossEngineer::ReportApproxMethod2005(rptChapter* pChapter,CPsLossEnginee
 }
 
 
-void CPsLossEngineer::ReportLumpSumMethod(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,bool bDesign,Uint16 level)
+void PsLossEngineer::ReportLumpSumMethod(rptChapter* pChapter,PsLossEngineer::BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,bool bDesign,Uint16 level)
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
@@ -2416,7 +2417,7 @@ void CPsLossEngineer::ReportLumpSumMethod(rptChapter* pChapter,CPsLossEngineer::
 
 //////////////////////////////////////////////////
 // Utility functions for reporting
-void CPsLossEngineer::ReportInitialRelaxation(rptChapter* pChapter,bool bTemporaryStrands,const WBFL::LRFD::Losses* pLosses,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
+void PsLossEngineer::ReportInitialRelaxation(rptChapter* pChapter,bool bTemporaryStrands,const WBFL::LRFD::Losses* pLosses,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    if ( pLosses->IgnoreInitialRelaxation() )
    {
@@ -2505,7 +2506,7 @@ void CPsLossEngineer::ReportInitialRelaxation(rptChapter* pChapter,bool bTempora
    }
 }
 
-void CPsLossEngineer::ReportLocation2(rptRcTable* pTable,RowIndexType row,const pgsPointOfInterest& poi,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
+void PsLossEngineer::ReportLocation2(rptRcTable* pTable,RowIndexType row,const pgsPointOfInterest& poi,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    if ( pTable == nullptr )
    {
@@ -2521,7 +2522,7 @@ void CPsLossEngineer::ReportLocation2(rptRcTable* pTable,RowIndexType row,const 
    (*pTable)(row+rowOffset,1) << spanloc.SetValue( POI_ERECTED_SEGMENT, poi );
 }
 
-void CPsLossEngineer::ReportLocation(rptRcTable* pTable,RowIndexType row,const pgsPointOfInterest& poi,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
+void PsLossEngineer::ReportLocation(rptRcTable* pTable,RowIndexType row,const pgsPointOfInterest& poi,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    if ( pTable == nullptr )
    {
@@ -2534,7 +2535,7 @@ void CPsLossEngineer::ReportLocation(rptRcTable* pTable,RowIndexType row,const p
    (*pTable)(row+rowOffset,0) << spanloc.SetValue( POI_ERECTED_SEGMENT, poi );
 }
 
-void CPsLossEngineer::ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pChapter,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
+void PsLossEngineer::ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pChapter,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
@@ -2626,7 +2627,7 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLossesAtShipping(rptChapter* pCh
    }
 }
 
-void CPsLossEngineer::ReportLumpSumTimeDependentLosses(rptChapter* pChapter,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
+void PsLossEngineer::ReportLumpSumTimeDependentLosses(rptChapter* pChapter,const LOSSDETAILS* pDetails,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Uint16 level)
 {
    std::_tstring strImagePath(rptStyleManager::GetImagePath());
 
@@ -2771,7 +2772,7 @@ void CPsLossEngineer::ReportLumpSumTimeDependentLosses(rptChapter* pChapter,cons
    }
 }
 
-void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig,
+void PsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDRCONFIG* pConfig,
    WBFL::LRFD::Losses::SectionPropertiesType* pSectionProperties,
    WBFL::Materials::PsStrand::Grade* pGradePerm,
    WBFL::Materials::PsStrand::Type* pTypePerm,
@@ -3279,7 +3280,7 @@ void CPsLossEngineer::GetLossParameters(const pgsPointOfInterest& poi, const GDR
    *pAngleChange = fabs(8*precamber/L);
 }
 
-void CPsLossEngineer::ReportFinalLosses(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
+void PsLossEngineer::ReportFinalLosses(BeamType beamType,const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
    GET_IFACE2(GetBroker(), ILossParameters,pLossParameters);
    PrestressLossCriteria::LossMethodType loss_method = pLossParameters->GetLossMethod();
@@ -3312,7 +3313,7 @@ void CPsLossEngineer::ReportFinalLosses(BeamType beamType,const CGirderKey& gird
 }
 
 
-void CPsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,LossAgency lossAgency)
+void PsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,LossAgency lossAgency)
 {
    GET_IFACE2(GetBroker(), ILibrary,pLib);
    GET_IFACE2(GetBroker(), ISpecification,pSpec);
@@ -3330,7 +3331,7 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamTy
    }
 }
 
-void CPsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
+void PsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
@@ -3377,7 +3378,7 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethod(rptChapter* pChapter,BeamTy
    }
 }
 
-void CPsLossEngineer::ReportFinalLossesRefinedMethodBefore2005(rptChapter* pChapter,CPsLossEngineer::BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
+void PsLossEngineer::ReportFinalLossesRefinedMethodBefore2005(rptChapter* pChapter,PsLossEngineer::BeamType beamType,const CGirderKey& girderKey,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper
@@ -3415,7 +3416,7 @@ void CPsLossEngineer::ReportFinalLossesRefinedMethodBefore2005(rptChapter* pChap
    }
 }
 
-void CPsLossEngineer::GetPointsOfInterest(const CGirderKey& girderKey,PoiList* pPoiList)
+void PsLossEngineer::GetPointsOfInterest(const CGirderKey& girderKey,PoiList* pPoiList)
 {
 #if defined _DEBUG
    // this method is only applicable to PGSuper

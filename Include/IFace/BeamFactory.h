@@ -39,9 +39,8 @@
 #include <Units\Units.h>
 #include <PGSuperTypes.h>
 
-class CDistFactorEngineerBase;
+
 class IEffFlangeEngineer;
-class CPsLossEngineerBase;
 class pgsPoiMgr;
 
 interface IShape;
@@ -59,6 +58,9 @@ namespace PGS
 {
    namespace Beams
    {
+      class DistFactorEngineerBase;
+      class PsLossEngineerBase;
+
       // In order for PGSuper 2.x to work on the same computer as PGSuper 3.x we
       // had to change all the Class IDs of the beam factories. Files saved with
       // version 2.x have the old CLSIDs and we need the new CLSID to create
@@ -128,15 +130,15 @@ namespace PGS
          // before or after the girder bearings
          virtual void LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const = 0;
 
-         // Creates an object that implements the CDistFactorEngineerBase interface.
-         virtual std::shared_ptr<CDistFactorEngineerBase> CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType, const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const = 0;
+         // Creates an object that implements the DistFactorEngineerBase interface.
+         virtual std::shared_ptr<DistFactorEngineerBase> CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const pgsTypes::SupportedBeamSpacing* pSpacingType, const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const = 0;
 
          // Creates an object that implements the IPsLossEngineer interface. The returned
          // object is a COM object an must be managed through its reference count.
          //
          // Implementation Note: You must call SetBroker on the newly create object and supply
          // it with the pointer to the broker object provided by the caller.
-         virtual std::unique_ptr<CPsLossEngineerBase> CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey) const = 0;
+         virtual std::unique_ptr<PsLossEngineerBase> CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID,const CGirderKey& girderKey) const = 0;
 
          // The StrandMover object knows how to move harped strands within the section when
          // the group elevation is changed.

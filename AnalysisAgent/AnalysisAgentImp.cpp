@@ -101,7 +101,7 @@ void GetPrestressLoadCaseIDs(pgsTypes::StrandType strandType, LoadCaseIDType* pl
 }
 
 // Common function for creep parameter data
-static std::vector<ICamber::CreepPeriod> GetCreepPeriods(IntervalIndexType intervalIdx,const CSegmentKey& segmentKey, pgsTypes::SupportedDeckType deckType, IIntervals* pIntervals,pgsTypes::PrestressDeflectionDatum* pSupportDatum)
+static std::vector<ICamber::CreepPeriod> GetCreepPeriods(IntervalIndexType intervalIdx,const CSegmentKey& segmentKey, pgsTypes::SupportedDeckType deckType, std::shared_ptr<IIntervals> pIntervals,pgsTypes::PrestressDeflectionDatum* pSupportDatum)
 {
    std::vector<ICamber::CreepPeriod> vCreepPeriods;
 

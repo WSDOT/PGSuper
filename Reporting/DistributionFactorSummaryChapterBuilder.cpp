@@ -35,7 +35,7 @@ CLASS
 ****************************************************************************/
 
 // free functions
-GirderIndexType GetPierGirderCount(PierIndexType pierIdx, IBridge* pBridge)
+GirderIndexType GetPierGirderCount(PierIndexType pierIdx, std::shared_ptr<IBridge> pBridge)
 {
    PierIndexType nPiers = pBridge->GetPierCount();
 

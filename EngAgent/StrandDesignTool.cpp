@@ -1162,7 +1162,7 @@ bool pgsStrandDesignTool::ResetHarpedStrandConfiguration()
       ConfigStrandFillVector fillvec = pStrandGeom->ComputeStrandFill(m_SegmentKey, pgsTypes::Harped, nh);
 
       // if allowed, put end strands at top and harp point strands at lowest input position
-      Float64 end_offset_inc = this->GetHarpedEndOffsetIncrement(pStrandGeom);
+      Float64 end_offset_inc = GetHarpedEndOffsetIncrement();
 
       Float64 end_lower_bound, end_upper_bound;
       // cant adjust if we're not allowed.
@@ -1177,7 +1177,7 @@ bool pgsStrandDesignTool::ResetHarpedStrandConfiguration()
          m_bConfigDirty = true; // cache is dirty
       }
 
-      Float64 hp_offset_inc = this->GetHarpedHpOffsetIncrement(pStrandGeom);
+      Float64 hp_offset_inc = GetHarpedHpOffsetIncrement();
 
       // cant adjust if we're not allowed.
       Float64 hp_lower_bound, hp_upper_bound;
@@ -1381,7 +1381,7 @@ bool pgsStrandDesignTool::AdjustForStrandSlope()
          LOG(_T("Current HP2  offset = ")<< WBFL::Units::ConvertFromSysUnits(config.PrestressConfig.HpOffset[pgsTypes::metEnd],WBFL::Units::Measure::Inch) << _T(" in"));
          LOG(_T("Current End  offset = ")<< WBFL::Units::ConvertFromSysUnits(config.PrestressConfig.EndOffset[pgsTypes::metEnd],WBFL::Units::Measure::Inch) << _T(" in"));
 
-         if ( !AdjustStrandsForSlope(m_StrandSlopeLimit, slope, endType, config.PrestressConfig.GetStrandCount(pgsTypes::Harped), pStrandGeom))
+         if ( !AdjustStrandsForSlope(m_StrandSlopeLimit, slope, endType, config.PrestressConfig.GetStrandCount(pgsTypes::Harped)))
          {
             LOG(_T("** DESIGN FAILED ** We cannot adjust Strands to design for allowable strand slope"));
             m_pArtifact->SetOutcome(pgsSegmentDesignArtifact::StrandSlopeOutOfRange);
@@ -1479,7 +1479,7 @@ bool pgsStrandDesignTool::AdjustForHoldDownForce()
       LOG(_T("Current End offset = ")<< WBFL::Units::ConvertFromSysUnits(config.PrestressConfig.EndOffset[pgsTypes::metEnd],WBFL::Units::Measure::Inch) << _T(" in"));
 
       GET_IFACE(IStrandGeometry, pStrandGeom);
-      if ( !AdjustStrandsForSlope(sl_reqd, slope, endType, Nh, pStrandGeom) )
+      if ( !AdjustStrandsForSlope(sl_reqd, slope, endType, Nh) )
       {
          LOG(_T("** DESIGN FAILED ** We cannot adjust Strands to design for allowable hold down"));
          m_pArtifact->SetOutcome(pgsSegmentDesignArtifact::ExceededMaxHoldDownForce);
@@ -1503,8 +1503,10 @@ bool pgsStrandDesignTool::AdjustForHoldDownForce()
    return true;
 }
 
-bool pgsStrandDesignTool::AdjustStrandsForSlope(Float64 sl_reqd, Float64 slope, pgsTypes::MemberEndType endType,StrandIndexType nh, IStrandGeometry* pStrandGeom)
+bool pgsStrandDesignTool::AdjustStrandsForSlope(Float64 sl_reqd, Float64 slope, pgsTypes::MemberEndType endType,StrandIndexType nh)
 {
+   GET_IFACE(IStrandGeometry, pStrandGeom);
+
    // compute adjustment distance
    Float64 X1, X2, X3, X4;
    pStrandGeom->GetHarpingPointLocations(m_SegmentKey, &X1, &X2, &X3, &X4);
@@ -1515,7 +1517,7 @@ bool pgsStrandDesignTool::AdjustStrandsForSlope(Float64 sl_reqd, Float64 slope, 
    LOG(_T("Vertical adjustment required to achieve slope = ")<< WBFL::Units::ConvertFromSysUnits(adj,WBFL::Units::Measure::Inch) << _T(" in"));
 
    // try to adjust end first
-   Float64 end_offset_inc = this->GetHarpedEndOffsetIncrement(pStrandGeom);
+   Float64 end_offset_inc = GetHarpedEndOffsetIncrement();
    if (0.0 < end_offset_inc && !m_DesignOptions.doForceHarpedStrandsStraight)
    {
       LOG(_T("Attempt to adjust hold down by lowering at ") << (endType == pgsTypes::metStart ? _T("start") : _T("end")) << _T(" ends"));
@@ -1556,7 +1558,7 @@ bool pgsStrandDesignTool::AdjustStrandsForSlope(Float64 sl_reqd, Float64 slope, 
    }
 
    // we've done what we can at the end. see if we need to adjust at hp
-   Float64 hp_offset_inc = this->GetHarpedHpOffsetIncrement(pStrandGeom);
+   Float64 hp_offset_inc = GetHarpedHpOffsetIncrement();
    if (0.0 < adj && 0.0 < hp_offset_inc)
    {
       LOG(_T("Attempt to adjust Strand slope by raising at ") << (endType == pgsTypes::metStart ? _T("left") : _T("right")) << _T(" HP"));
@@ -2344,7 +2346,7 @@ bool pgsStrandDesignTool::KeepHarpedStrandsInBounds()
    {
       GET_IFACE(IStrandGeometry,pStrandGeom);
 
-      Float64 end_offset_inc = this->GetHarpedEndOffsetIncrement(pStrandGeom);
+      Float64 end_offset_inc = GetHarpedEndOffsetIncrement();
 
       ConfigStrandFillVector fillvec = pStrandGeom->ComputeStrandFill(m_SegmentKey, pgsTypes::Harped, nh);
 
@@ -2371,7 +2373,7 @@ bool pgsStrandDesignTool::KeepHarpedStrandsInBounds()
          }
       }
 
-      Float64 hp_offset_inc = this->GetHarpedHpOffsetIncrement(pStrandGeom);
+      Float64 hp_offset_inc = GetHarpedHpOffsetIncrement();
 
       // cant adjust if we're not allowed.
       Float64 hp_lower_bound, hp_upper_bound;
@@ -2480,14 +2482,16 @@ bool pgsStrandDesignTool::KeepHarpedStrandsInBounds()
 //   }
 //}
 
-Float64 pgsStrandDesignTool::GetHarpedHpOffsetIncrement(IStrandGeometry* pStrandGeom) const
+Float64 pgsStrandDesignTool::GetHarpedHpOffsetIncrement() const
 {
+   GET_IFACE(IStrandGeometry, pStrandGeom);
    Float64 offset_inc = pStrandGeom->GetHarpedHpOffsetIncrement(m_GirderEntryName.c_str(), pgsTypes::asHarped);
    return offset_inc;
 }
 
-Float64 pgsStrandDesignTool::GetHarpedEndOffsetIncrement(IStrandGeometry* pStrandGeom) const
+Float64 pgsStrandDesignTool::GetHarpedEndOffsetIncrement() const
 {
+   GET_IFACE(IStrandGeometry, pStrandGeom);
    Float64 offset_inc = pStrandGeom->GetHarpedEndOffsetIncrement(m_GirderEntryName.c_str(), pgsTypes::asHarped);
    return offset_inc;
 }
@@ -3828,7 +3832,7 @@ void pgsStrandDesignTool::InitDebondData()
    m_MaxDebondSection = 0;
 }
 
-void pgsStrandDesignTool::ComputeDebondLevels(IPretensionForce* pPrestressForce)
+void pgsStrandDesignTool::ComputeDebondLevels(std::shared_ptr<IPretensionForce> pPrestressForce)
 {
    LOG(_T(""));
    LOG(_T("Enter ComputeDebondLevels"));
@@ -4683,7 +4687,7 @@ bool pgsStrandDesignTool::LayoutDebonding(const std::vector<DebondLevelType>& rD
 static Float64 TensDebondFudge  = 1.0;
 static Float64 ComprDebondFudge = 1.0; // fudge compression more because it's easier to get more compression strength
 
-Float64 pgsStrandDesignTool::ComputePrestressForcePerStrand(const GDRCONFIG& fullyBondedConfig, const StressDemand& demand, const DebondLevel& lvl, IntervalIndexType interval, IPretensionForce* pPrestressForce) const
+Float64 pgsStrandDesignTool::ComputePrestressForcePerStrand(const GDRCONFIG& fullyBondedConfig, const StressDemand& demand, const DebondLevel& lvl, IntervalIndexType interval, std::shared_ptr<IPretensionForce> pPrestressForce) const
 {
    // Create a config so we can get prestress force at debonded section
    GDRCONFIG config = fullyBondedConfig;

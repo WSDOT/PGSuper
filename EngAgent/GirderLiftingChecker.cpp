@@ -67,7 +67,7 @@ pgsGirderLiftingChecker::~pgsGirderLiftingChecker()
 {
 }
 
-void pgsGirderLiftingChecker::CheckLifting(const CSegmentKey& segmentKey,WBFL::Stability::LiftingCheckArtifact* pArtifact)
+std::shared_ptr<WBFL::Stability::LiftingCheckArtifact> pgsGirderLiftingChecker::CheckLifting(const CSegmentKey& segmentKey)
 {
    GET_IFACE(ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
 
@@ -78,26 +78,27 @@ void pgsGirderLiftingChecker::CheckLifting(const CSegmentKey& segmentKey,WBFL::S
       HANDLINGCONFIG dummy_config;
 
       // Compute lifting response
-      AnalyzeLifting(segmentKey,false,dummy_config,pSegmentLiftingPointsOfInterest,pArtifact);
+      return AnalyzeLifting(segmentKey,false,dummy_config,pSegmentLiftingPointsOfInterest);
    }
+   return nullptr;
 }
 
-void pgsGirderLiftingChecker::AnalyzeLifting(const CSegmentKey& segmentKey,Float64 supportLoc,WBFL::Stability::LiftingCheckArtifact* pArtifact)
+std::shared_ptr<WBFL::Stability::LiftingCheckArtifact> pgsGirderLiftingChecker::AnalyzeLifting(const CSegmentKey& segmentKey,Float64 supportLoc)
 {
    GET_IFACE(ISegmentLiftingPointsOfInterest,pSegmentLiftingPointsOfInterest);
    HANDLINGCONFIG dummy_config;
    dummy_config.bIgnoreGirderConfig = true;
    dummy_config.LeftOverhang = supportLoc;
    dummy_config.RightOverhang = supportLoc;
-   AnalyzeLifting(segmentKey,true,dummy_config,pSegmentLiftingPointsOfInterest,pArtifact);
+   return AnalyzeLifting(segmentKey,true,dummy_config,pSegmentLiftingPointsOfInterest);
 }
 
-void pgsGirderLiftingChecker::AnalyzeLifting(const CSegmentKey& segmentKey,const HANDLINGCONFIG& liftConfig,ISegmentLiftingDesignPointsOfInterest* pPoiD, WBFL::Stability::LiftingCheckArtifact* pArtifact, const WBFL::Stability::LiftingStabilityProblem** ppStabilityProblem)
+std::shared_ptr<WBFL::Stability::LiftingCheckArtifact> pgsGirderLiftingChecker::AnalyzeLifting(const CSegmentKey& segmentKey,const HANDLINGCONFIG& liftConfig,std::shared_ptr<ISegmentLiftingDesignPointsOfInterest> pPoiD, const WBFL::Stability::LiftingStabilityProblem** ppStabilityProblem)
 {
-   AnalyzeLifting(segmentKey,true,liftConfig,pPoiD,pArtifact,ppStabilityProblem);
+   return AnalyzeLifting(segmentKey,true,liftConfig,pPoiD,ppStabilityProblem);
 }
 
-void pgsGirderLiftingChecker::AnalyzeLifting(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& liftConfig,ISegmentLiftingDesignPointsOfInterest* pPoiD,WBFL::Stability::LiftingCheckArtifact* pArtifact,const WBFL::Stability::LiftingStabilityProblem** ppStabilityProblem)
+std::shared_ptr<WBFL::Stability::LiftingCheckArtifact> pgsGirderLiftingChecker::AnalyzeLifting(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& liftConfig,std::shared_ptr<ISegmentLiftingDesignPointsOfInterest> pPoiD,const WBFL::Stability::LiftingStabilityProblem** ppStabilityProblem)
 {
    GET_IFACE(IGirder,pGirder);
    const WBFL::Stability::Girder* pStabilityModel = pGirder->GetSegmentLiftingStabilityModel(segmentKey);
@@ -111,10 +112,10 @@ void pgsGirderLiftingChecker::AnalyzeLifting(const CSegmentKey& segmentKey,bool 
    WBFL::Stability::LiftingCriteria criteria = pSegmentLiftingSpecCriteria->GetLiftingStabilityCriteria(segmentKey, bUseConfig ? &liftConfig : nullptr);
 
    WBFL::Stability::StabilityEngineer engineer;
-   *pArtifact = engineer.CheckLifting(pStabilityModel,pStabilityProblem,criteria);
+   return std::make_shared<WBFL::Stability::LiftingCheckArtifact>(engineer.CheckLifting(pStabilityModel,pStabilityProblem,criteria));
 }
 
-pgsDesignCodes::OutcomeType pgsGirderLiftingChecker::DesignLifting(const CSegmentKey& segmentKey,HANDLINGCONFIG& config,ISegmentLiftingDesignPointsOfInterest* pPoiD,WBFL::Stability::LiftingCheckArtifact* pArtifact,const WBFL::Stability::LiftingStabilityProblem** ppStabilityProblem,SHARED_LOGFILE LOGFILE)
+std::pair<pgsDesignCodes::OutcomeType, std::shared_ptr<WBFL::Stability::LiftingCheckArtifact>> pgsGirderLiftingChecker::DesignLifting(const CSegmentKey& segmentKey,HANDLINGCONFIG& config,std::shared_ptr<ISegmentLiftingDesignPointsOfInterest> pPoiD,const WBFL::Stability::LiftingStabilityProblem** ppStabilityProblem,SHARED_LOGFILE LOGFILE)
 {
    //
    // Range of lifting loop locations and step increment
@@ -155,18 +156,17 @@ pgsDesignCodes::OutcomeType pgsGirderLiftingChecker::DesignLifting(const CSegmen
    //lift_config.bIgnoreGirderConfig = false;
    //lift_config.GdrConfig = config;
 
-   WBFL::Stability::LiftingCheckArtifact artifact;
+   std::shared_ptr<WBFL::Stability::LiftingCheckArtifact> artifact;
    while ( loc <= maxLoc )
    {
       LOG(_T(""));
       LOG(_T("Trying location ") << WBFL::Units::ConvertFromSysUnits(loc,WBFL::Units::Measure::Feet) << _T(" ft"));
 
-      WBFL::Stability::LiftingCheckArtifact curr_artifact;
       config.LeftOverhang = loc;
       config.RightOverhang = loc;
 
-      AnalyzeLifting(segmentKey,config,pPoiD,&curr_artifact,ppStabilityProblem);
-      FSf = curr_artifact.GetLiftingResults().MinAdjFsFailure;
+      auto curr_artifact = AnalyzeLifting(segmentKey,config,pPoiD,ppStabilityProblem);
+      FSf = curr_artifact->GetLiftingResults().MinAdjFsFailure;
 
       LOG(_T("FSf = ") << FSf);
 
@@ -204,10 +204,8 @@ pgsDesignCodes::OutcomeType pgsGirderLiftingChecker::DesignLifting(const CSegmen
       LOG(_T("Cannot find a pick point to satisfy FSf"));
       LOG(_T("Temporary strands required"));
       LOG(_T("Move on to Shipping Design"));
-      return pgsDesignCodes::LiftingRedesignAfterShipping;
+      return { pgsDesignCodes::LiftingRedesignAfterShipping,artifact };
    }
 
-   *pArtifact = artifact;
-
-   return pgsDesignCodes::LiftingConfigChanged;
+   return { pgsDesignCodes::LiftingConfigChanged,artifact };
 }

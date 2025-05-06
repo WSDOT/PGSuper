@@ -52,8 +52,8 @@ CLASS
 void write_artifact_data(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact);
 void failed_design(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact);
 void successful_design(std::shared_ptr<WBFL::EAF::Broker> pBroker,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,const pgsSegmentDesignArtifact* pArtifact);
-void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<CGirderKey>& girderKeys,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,IArtifact* pIArtifact);
-void process_artifacts(std::shared_ptr<WBFL::EAF::Broker> pBroker,ColumnIndexType startIdx, ColumnIndexType endIdx, const std::vector<CGirderKey>& girderKeys, IArtifact* pIArtifact,
+void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<CGirderKey>& girderKeys,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,std::shared_ptr<IArtifact> pIArtifact);
+void process_artifacts(std::shared_ptr<WBFL::EAF::Broker> pBroker,ColumnIndexType startIdx, ColumnIndexType endIdx, const std::vector<CGirderKey>& girderKeys, std::shared_ptr<IArtifact> pIArtifact,
                        const pgsGirderDesignArtifact** pArtifacts, bool& didFlexure, bool& didShear, bool& didLifting, bool& didHauling, bool& didSlabOffset, bool& didAssumedExcessCamber, bool& isHarped, bool& isTemporary);
 void write_primary_shear_data(rptParagraph* pParagraph, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,Float64 girderLength, ZoneIndexType nz,const CShearData2* pShearData);
 void write_horiz_shear_data(rptParagraph* pParagraph, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits, Float64 girderLength, const CShearData2* pShearData);
@@ -65,7 +65,7 @@ void write_design_failures(rptParagraph* pParagraph, const pgsSegmentDesignArtif
 static const int MIN_TBL_COLS=3; // Minimum columns in multi-girder table
 static const int MAX_TBL_COLS=8; // Maximum columns in multi-girder table
 
-// Some fails can be successses (with caveats)
+// Some fails can be successes (with caveats)
 bool WasDesignSuccessful( pgsSegmentDesignArtifact::Outcome outcome)
 {
       return outcome == pgsSegmentDesignArtifact::Success ||
@@ -1154,7 +1154,7 @@ void write_design_failures(rptParagraph* pParagraph, const pgsSegmentDesignArtif
 
 void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
                      std::shared_ptr<WBFL::EAF::Broker> pBroker,const std::vector<CGirderKey>& girderKeys,rptChapter* pChapter,
-                     std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,IArtifact* pIArtifact)
+                     std::shared_ptr<IEAFDisplayUnits> pDisplayUnits,std::shared_ptr<IArtifact> pIArtifact)
 {
    INIT_UV_PROTOTYPE( rptForceUnitValue,  force,  pDisplayUnits->GetGeneralForceUnit(), true );
    INIT_UV_PROTOTYPE( rptLengthUnitValue, length, pDisplayUnits->GetComponentDimUnit(), true );
@@ -1403,7 +1403,7 @@ void multiple_girder_table(ColumnIndexType startIdx, ColumnIndexType endIdx,
    }
 }
 
-void process_artifacts(std::shared_ptr<WBFL::EAF::Broker> pBroker,ColumnIndexType startIdx, ColumnIndexType endIdx, const std::vector<CGirderKey>& girderKeys, IArtifact* pIArtifact,
+void process_artifacts(std::shared_ptr<WBFL::EAF::Broker> pBroker,ColumnIndexType startIdx, ColumnIndexType endIdx, const std::vector<CGirderKey>& girderKeys, std::shared_ptr<IArtifact> pIArtifact,
                        const pgsGirderDesignArtifact** pArtifacts, bool& didFlexure, bool& didShear, bool& didLifting, bool& didHauling, 
                        bool& didSlabOffset, bool& didAssumedExcessCamber, bool& isHarped, bool& isTemporary)
 {

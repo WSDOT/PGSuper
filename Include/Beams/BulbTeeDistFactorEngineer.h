@@ -23,33 +23,36 @@
 #pragma once
 
 #include <Beams/BeamsExp.h>
-#include "resource.h"       // main symbols
 #include <IFace\DistFactorEngineer.h>
 #include <Plugins\Beams.h>
 
-/////////////////////////////////////////////////////////////////////////////
-// CBulbTeeDistFactorEngineer
-class BEAMSCLASS CBulbTeeDistFactorEngineer : public CDistFactorEngineerBase
+namespace PGS
 {
-public:
-   CBulbTeeDistFactorEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID);
+   namespace Beams
+   {
+      class BEAMSCLASS BulbTeeDistFactorEngineer : public DistFactorEngineerBase
+      {
+      public:
+         BulbTeeDistFactorEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID);
 
-public:
-   // CDistFactorEngineerBase
-   Float64 GetMomentDF(const CSpanKey& spanKey,pgsTypes::LimitState ls, const GDRCONFIG* pConfig = nullptr) override;
-   Float64 GetNegMomentDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace, const GDRCONFIG* pConfig = nullptr) override;
-   Float64 GetShearDF(const CSpanKey& spanKey,pgsTypes::LimitState ls, const GDRCONFIG* pConfig = nullptr) override;
-   void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) override;
-   std::_tstring GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect) override;
-   bool Run1250Tests(const CSpanKey& spanKey,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile) override;
-   bool GetDFResultsEx(const CSpanKey& spanKey,pgsTypes::LimitState ls,
-                       Float64* gpM, Float64* gpM1, Float64* gpM2,  // pos moment
-                       Float64* gnM, Float64* gnM1, Float64* gnM2,  // neg moment, ahead face
-                       Float64* gV,  Float64* gV1,  Float64* gV2 ) override;   // shear
-   Float64 GetSkewCorrectionFactorForMoment(const CSpanKey& spanKey,pgsTypes::LimitState ls) override;
-   Float64 GetSkewCorrectionFactorForShear(const CSpanKey& spanKey,pgsTypes::LimitState ls) override;
+      public:
+         // DistFactorEngineerBase
+         Float64 GetMomentDF(const CSpanKey& spanKey,pgsTypes::LimitState ls, const GDRCONFIG* pConfig = nullptr) override;
+         Float64 GetNegMomentDF(PierIndexType pierIdx,GirderIndexType gdrIdx,pgsTypes::LimitState ls,pgsTypes::PierFaceType pierFace, const GDRCONFIG* pConfig = nullptr) override;
+         Float64 GetShearDF(const CSpanKey& spanKey,pgsTypes::LimitState ls, const GDRCONFIG* pConfig = nullptr) override;
+         void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) override;
+         std::_tstring GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect) override;
+         bool Run1250Tests(const CSpanKey& spanKey,pgsTypes::LimitState ls,LPCTSTR pid,LPCTSTR bridgeId,std::_tofstream& resultsFile, std::_tofstream& poiFile) override;
+         bool GetDFResultsEx(const CSpanKey& spanKey,pgsTypes::LimitState ls,
+                             Float64* gpM, Float64* gpM1, Float64* gpM2,  // pos moment
+                             Float64* gnM, Float64* gnM1, Float64* gnM2,  // neg moment, ahead face
+                             Float64* gV,  Float64* gV1,  Float64* gV2 ) override;   // shear
+         Float64 GetSkewCorrectionFactorForMoment(const CSpanKey& spanKey,pgsTypes::LimitState ls) override;
+         Float64 GetSkewCorrectionFactorForShear(const CSpanKey& spanKey,pgsTypes::LimitState ls) override;
 
-private:
-   // Farm most of the hard work out to other classes
-   std::unique_ptr<CDistFactorEngineerBase> m_pImpl;
+      private:
+         // Farm most of the hard work out to other classes
+         std::unique_ptr<DistFactorEngineerBase> m_pImpl;
+      };
+   };
 };

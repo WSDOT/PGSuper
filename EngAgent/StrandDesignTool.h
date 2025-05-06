@@ -189,8 +189,8 @@ public:
    void SetHarpStrandOffsetEnd(pgsTypes::MemberEndType endType,Float64 off);
    void SetHarpStrandOffsetHp(pgsTypes::MemberEndType endType,Float64 off);
 
-   Float64 GetHarpedHpOffsetIncrement(IStrandGeometry* pStrandGeom) const;
-   Float64 GetHarpedEndOffsetIncrement(IStrandGeometry* pStrandGeom) const;
+   Float64 GetHarpedHpOffsetIncrement() const;
+   Float64 GetHarpedEndOffsetIncrement() const;
 
    Float64 ComputeEndOffsetForEccentricity(const pgsPointOfInterest& poi, Float64 ecc) const;
    bool ComputeMinHarpedForEndZoneEccentricity(const pgsPointOfInterest& poi, Float64 ecc, IntervalIndexType intervalIdx, StrandIndexType* pNs, StrandIndexType* pNh) const;
@@ -650,7 +650,7 @@ private:
 
    StrandIndexType ComputeNextNumProportionalStrands(StrandIndexType prevNum, StrandIndexType* ns, StrandIndexType* nh) const;
 
-   bool AdjustStrandsForSlope(Float64 targetSlope, Float64 currentSlope, pgsTypes::MemberEndType endType,StrandIndexType nh, IStrandGeometry* pStrandGeom);
+   bool AdjustStrandsForSlope(Float64 targetSlope, Float64 currentSlope, pgsTypes::MemberEndType endType,StrandIndexType nh);
 
    // Private functions called from Initialize
    ///////////////////////////////////////////
@@ -670,7 +670,7 @@ private:
 
    // compute possible debond levels for the current span/girder
    void InitDebondData();
-   void ComputeDebondLevels(IPretensionForce* pPrestressForce);
+   void ComputeDebondLevels(std::shared_ptr<IPretensionForce> pPrestressForce);
    void DumpDebondLevels(Float64 Hg);
    bool SmoothDebondLevelsAtSections(std::vector<DebondLevelType>& rDebondLevelsAtSections) const;
    DebondLevelType GetMinAdjacentDebondLevel(DebondLevelType currLevel, StrandIndexType maxDbsTermAtSection) const;
@@ -714,7 +714,7 @@ private:
    std::vector<DebondLevelType> m_MaxPhysicalDebondLevels;
 
 
-   Float64 ComputePrestressForcePerStrand(const GDRCONFIG& fullyBondedConfig, const StressDemand& demand, const DebondLevel& lvl, IntervalIndexType interval, IPretensionForce* pPrestressForce) const;
+   Float64 ComputePrestressForcePerStrand(const GDRCONFIG& fullyBondedConfig, const StressDemand& demand, const DebondLevel& lvl, IntervalIndexType interval, std::shared_ptr<IPretensionForce> pPrestressForce) const;
    void GetHandlingDesignPointsOfInterest(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang,PoiAttributeType poiReference,PoiAttributeType supportAttribute, std::vector<pgsPointOfInterest>* pvPoi, Uint32 mode) const;
 
 

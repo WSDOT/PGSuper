@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include "IFace\BeamFactory.h"
+#include <IFace/BeamFactory.h>
 #include <Beams\Helper.h>
 
 #include <vector>
@@ -31,13 +31,13 @@ namespace PGS
 {
    namespace Beams
    {
-      class CNUBeamFactory : public BeamFactory, public BeamFactorySingleton<CNUBeamFactory>
+      class NUBeamFactory : public BeamFactory, public BeamFactorySingleton<NUBeamFactory>
       {
       public:
-         static std::shared_ptr<CNUBeamFactory> CreateInstance() { return std::shared_ptr<CNUBeamFactory>(new CNUBeamFactory()); }
+         static std::shared_ptr<NUBeamFactory> CreateInstance() { return std::shared_ptr<NUBeamFactory>(new NUBeamFactory()); }
 
       protected:
-         CNUBeamFactory();
+         NUBeamFactory();
 
       public:
          // NUBeamFactory
@@ -47,12 +47,12 @@ namespace PGS
          Float64 GetSegmentHeight(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CPrecastSegmentData* pSegment, Float64 Xs) const override;
          void ConfigureSegment(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const CSegmentKey& segmentKey, ISuperstructureMemberSegment* pSSMbrSegment) const override;
          void LayoutSectionChangePointsOfInterest(std::shared_ptr<WBFL::EAF::Broker> pBroker,const CSegmentKey& segmentKey,pgsPoiMgr* pPoiMgr) const override;
-         std::shared_ptr<CDistFactorEngineerBase> CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const pgsTypes::SupportedBeamSpacing* pSpacingType, const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const override;
+         std::shared_ptr<DistFactorEngineerBase> CreateDistFactorEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusItemIDType statusID, const pgsTypes::SupportedBeamSpacing* pSpacingType, const pgsTypes::SupportedDeckType* pDeckType, const pgsTypes::AdjacentTransverseConnectivity* pConnect) const override;
          void CreateStrandMover(const BeamFactory::Dimensions& dimensions,  Float64 Hg,
                                 BeamFactory::BeamFace endTopFace, Float64 endTopLimit, BeamFactory::BeamFace endBottomFace, Float64 endBottomLimit, 
                                 BeamFactory::BeamFace hpTopFace, Float64 hpTopLimit, BeamFactory::BeamFace hpBottomFace, Float64 hpBottomLimit, 
                                 Float64 endIncrement, Float64 hpIncrement, IStrandMover** strandMover) const override;
-         std::unique_ptr<CPsLossEngineerBase> CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, const CGirderKey& girderKey) const override;
+         std::unique_ptr<PsLossEngineerBase> CreatePsLossEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, const CGirderKey& girderKey) const override;
          const std::vector<std::_tstring>& GetDimensionNames() const override;
          const std::vector<const WBFL::Units::Length*>& GetDimensionUnits(bool bSIUnits) const override;
          const std::vector<Float64>& GetDefaultDimensions() const override;

@@ -946,7 +946,7 @@ void CBridgeModelViewChildFrame::OnInsertPier()
    }
 }
 
-EventIndexType GetDefaultCastClosureJointEvent(IBridgeDescription* pIBridgeDesc,const CGirderGroupData* pGroup)
+EventIndexType GetDefaultCastClosureJointEvent(std::shared_ptr<IBridgeDescription> pIBridgeDesc,const CGirderGroupData* pGroup)
 {
    // A new closure joint is being created. We need to supply the bridge model with the event index
    // for when the closure joint is cast. Since the user wasn't prompted (this is a response

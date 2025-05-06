@@ -541,7 +541,7 @@ std::unique_ptr<WBFL::Reporting::ChapterBuilder> CTimeStepDetailsChapterBuilder:
    return std::make_unique<CTimeStepDetailsChapterBuilder>();
 }
 
-rptRcTable* CTimeStepDetailsChapterBuilder::BuildIntervalTable(const TIME_STEP_DETAILS& tsDetails,IIntervals* pIntervals,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
+rptRcTable* CTimeStepDetailsChapterBuilder::BuildIntervalTable(const TIME_STEP_DETAILS& tsDetails,std::shared_ptr<IIntervals> pIntervals,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(4);
    (*pTable)(0,0) << _T("Start") << rptNewLine << _T("(day)");
@@ -562,7 +562,7 @@ rptRcTable* CTimeStepDetailsChapterBuilder::BuildIntervalTable(const TIME_STEP_D
    return pTable;
 }
 
-rptRcTable* CTimeStepDetailsChapterBuilder::BuildConcreteTable(const TIME_STEP_DETAILS& tsDetails, const CSegmentKey& segmentKey,IMaterials* pMaterials, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
+rptRcTable* CTimeStepDetailsChapterBuilder::BuildConcreteTable(const TIME_STEP_DETAILS& tsDetails, const CSegmentKey& segmentKey,std::shared_ptr<IMaterials> pMaterials, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) const
 {
    rptRcTable* pTable = rptStyleManager::CreateDefaultTable(13);
    pTable->SetColumnStyle(0, rptStyleManager::GetTableCellStyle(CJ_LEFT));

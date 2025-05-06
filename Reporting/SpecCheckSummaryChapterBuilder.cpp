@@ -232,7 +232,7 @@ void CSpecCheckSummaryChapterBuilder::CreateContent(rptChapter* pChapter, std::s
    const auto& limits_criteria = pSpecEntry->GetLimitsCriteria();
 
    GET_IFACE2_NOCHECK(pBroker,IStirrupGeometry,pStirrupGeom);
-   if ( limits_criteria.bCheckStirrupSpacingCompatibility && !pStirrupGeom->AreStirrupZoneLengthsCombatible(girderKey) )
+   if ( limits_criteria.bCheckStirrupSpacingCompatibility && !pStirrupGeom->AreStirrupZoneLengthsCompatible(girderKey) )
    {
       rptParagraph* pPara = new rptParagraph;
       *pChapter << pPara;

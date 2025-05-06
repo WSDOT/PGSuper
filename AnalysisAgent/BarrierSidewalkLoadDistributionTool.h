@@ -63,7 +63,7 @@ public:
    // GROUP: LIFECYCLE
    //------------------------------------------------------------------------
    // Default constructor
-   pgsBarrierSidewalkLoadDistributionTool(SHARED_LOGFILE lf,IBridgeDescription* pBridgeDesc, IBridge* pBridge, IGirder* pGirder, IBarriers* pBarriers);
+   pgsBarrierSidewalkLoadDistributionTool(SHARED_LOGFILE lf,std::shared_ptr<IBridgeDescription> pBridgeDesc, std::shared_ptr<IBridge> pBridge, std::shared_ptr<IGirder> pGirder, std::shared_ptr<IBarriers> pBarriers);
 
    void Initialize(GroupIndexType grpIdx, SegmentIndexType segIdx, pgsTypes::TrafficBarrierDistribution distType, GirderIndexType nMaxDistributed);
 
@@ -119,10 +119,10 @@ private:
    bool m_DidCompute;
 
    // Weak reference to interface pointers
-   IBridgeDescription* m_pIBridgeDesc;
-   IBridge* m_pIBridge;
-   IGirder* m_pIGirder;
-   IBarriers* m_pIBarriers;
+   std::shared_ptr<IBridgeDescription> m_pIBridgeDesc;
+   std::shared_ptr<IBridge> m_pIBridge;
+   std::shared_ptr<IGirder> m_pIGirder;
+   std::shared_ptr<IBarriers> m_pIBarriers;
 
    /////////////////////////////////////////////////////////////////////////////////////////////
    // The data structures below store the number of load fractions that go to each girder in a 

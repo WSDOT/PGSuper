@@ -25,67 +25,73 @@
 #include <Beams/DistFactorEngineerImpl.h>
 #include <Plugins\Beams.h>
 
-struct BEAMSCLASS MULTIWEB_LLDFDETAILS : public BASE_LLDFDETAILS
+namespace PGS
 {
-   bool    connectedAsUnit;
-   Float64 b;
-   Float64 L;
-   Float64 I;
-   Float64 A;
-   Float64 Ip;
-   Float64 J;
-   Float64 Ag;
-   Float64 Ig;
-   Float64 Kg;
-   Float64 Yt;
-   Float64 ts;
-   Float64 eg;
-   Float64 n;
-   Float64 PossionRatio;
-
-   Float64 CurbOffset;
-   Float64 leftDe;
-   Float64 rightDe;
-};
-
-/////////////////////////////////////////////////////////////////////////////
-// CMultiWebDistFactorEngineer
-class BEAMSCLASS  CMultiWebDistFactorEngineer : public CDistFactorEngineerImpl<MULTIWEB_LLDFDETAILS>
-{
-public:
-   enum class BeamType { MultiWebTee, DeckBulbTee, DeckedSlabBeam };
-   
-   CMultiWebDistFactorEngineer(BeamType beamType, std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID);
-
-public: 
-   Float64 GetTxDOTKfactor() const
+   namespace Beams
    {
-      // Refer to txdot manual
-      if (m_BeamType==BeamType::DeckBulbTee || m_BeamType==BeamType::DeckedSlabBeam)
+
+      struct BEAMSCLASS MULTIWEB_LLDFDETAILS : public BASE_LLDFDETAILS
       {
-         return 2.0;
-      }
-      else if (m_BeamType==BeamType::MultiWebTee)
+         bool    connectedAsUnit;
+         Float64 b;
+         Float64 L;
+         Float64 I;
+         Float64 A;
+         Float64 Ip;
+         Float64 J;
+         Float64 Ag;
+         Float64 Ig;
+         Float64 Kg;
+         Float64 Yt;
+         Float64 ts;
+         Float64 eg;
+         Float64 n;
+         Float64 PossionRatio;
+
+         Float64 CurbOffset;
+         Float64 leftDe;
+         Float64 rightDe;
+      };
+
+
+      class BEAMSCLASS MultiWebDistFactorEngineer : public DistFactorEngineerImpl<MULTIWEB_LLDFDETAILS>
       {
-         return 2.2;
-      }
-      else
-      {
-         ATLASSERT(false); // forgot to set factor?
-         return 2.0;
-      }
-   }
+      public:
+         enum class BeamType { MultiWebTee, DeckBulbTee, DeckedSlabBeam };
+   
+         MultiWebDistFactorEngineer(BeamType beamType, std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID);
 
-// CDistFactorEngineerBase
-public:
-   void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) override;
-   std::_tstring GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect) override;
+      public: 
+         Float64 GetTxDOTKfactor() const
+         {
+            // Refer to txdot manual
+            if (m_BeamType==BeamType::DeckBulbTee || m_BeamType==BeamType::DeckedSlabBeam)
+            {
+               return 2.0;
+            }
+            else if (m_BeamType==BeamType::MultiWebTee)
+            {
+               return 2.2;
+            }
+            else
+            {
+               ATLASSERT(false); // forgot to set factor?
+               return 2.0;
+            }
+         }
 
-private:
-   WBFL::LRFD::LiveLoadDistributionFactorBase* GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,MULTIWEB_LLDFDETAILS* plldf,const GDRCONFIG* pConfig = nullptr);
+      // DistFactorEngineerBase
+      public:
+         void BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits) override;
+         std::_tstring GetComputationDescription(const CGirderKey& girderKey,const std::_tstring& libraryEntryName,pgsTypes::SupportedDeckType decktype, pgsTypes::AdjacentTransverseConnectivity connect) override;
 
-   void ReportMoment(rptParagraph* pPara,MULTIWEB_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM2,Float64 gM,bool bSIUnits,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
-   void ReportShear(rptParagraph* pPara,MULTIWEB_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV2,Float64 gV,bool bSIUnits,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+      private:
+         WBFL::LRFD::LiveLoadDistributionFactorBase* GetLLDFParameters(IndexType spanOrPierIdx,GirderIndexType gdrIdx,DFParam dfType,MULTIWEB_LLDFDETAILS* plldf,const GDRCONFIG* pConfig = nullptr);
 
-   BeamType m_BeamType;
+         void ReportMoment(rptParagraph* pPara,MULTIWEB_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gM2,Float64 gM,bool bSIUnits,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+         void ReportShear(rptParagraph* pPara,MULTIWEB_LLDFDETAILS& lldf,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV1,WBFL::LRFD::ILiveLoadDistributionFactor::DFResult& gV2,Float64 gV,bool bSIUnits,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+
+         BeamType m_BeamType;
+      };
+   };
 };

@@ -42,7 +42,7 @@ public:
    // override to better check if poi is out of bounds
    virtual bool IsValid() const override;
 
-   static PoiList GetMomentCapacityDetailsPois(IPointOfInterest* pPois, const CSegmentKey& segmentKey);
+   static PoiList GetMomentCapacityDetailsPois(std::shared_ptr<IPointOfInterest> pPois, const CSegmentKey& segmentKey);
 
 
 protected:

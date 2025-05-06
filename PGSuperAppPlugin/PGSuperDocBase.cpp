@@ -205,7 +205,7 @@ static bool DoesFileExist(const CString& filname);
 // Function to update prestress force after editing strands
 static void UpdatePrestressForce(const CSegmentKey& segmentKey,pgsTypes::StrandType strandType, 
                                  CPrecastSegmentData& newSegmentData,const CPrecastSegmentData& oldSegmentData, 
-                                 IPretensionForce* pPrestress)
+                                 std::shared_ptr<IPretensionForce> pPrestress)
 {
 
       // If going from no strands - always compute pjack automatically

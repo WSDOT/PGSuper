@@ -81,9 +81,9 @@ protected:
 
    Float64 m_YScaleFac; // Scale Y values so we fit within the given min aspect ratio
 
-   void DrawSegment(Float64 beamShift, IntervalIndexType intervalIdx, bool bIsHaulingInterval,const CSegmentKey& segmentKey, IIntervals* pIntervals, IGirder* pIGirder, IPointOfInterest* pPoi, const WBFL::Graphing::PointMapper& mapper, CDC* pDC);
-   void DrawClosureJoint(Float64 beamShift, IntervalIndexType intervalIdx, const CClosureKey& closureKey, IIntervals* pIntervals, IGirder* pIGirder, IPointOfInterest* pPoi, const WBFL::Graphing::PointMapper& mapper, CDC* pDC);
-   void DrawSegmentEndSupport(Float64 beamShift,IntervalIndexType intervalIdx, bool bIsHaulingInterval, const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType, IIntervals* pIntervals, IPointOfInterest* pPoi,const WBFL::Graphing::PointMapper& mapper,CDC* pDC);
+   void DrawSegment(Float64 beamShift, IntervalIndexType intervalIdx, bool bIsHaulingInterval,const CSegmentKey& segmentKey, std::shared_ptr<IIntervals> pIntervals, std::shared_ptr<IGirder> pIGirder, std::shared_ptr<IPointOfInterest> pPoi, const WBFL::Graphing::PointMapper& mapper, CDC* pDC);
+   void DrawClosureJoint(Float64 beamShift, IntervalIndexType intervalIdx, const CClosureKey& closureKey, std::shared_ptr<IIntervals> pIntervals, std::shared_ptr<IGirder> pIGirder, std::shared_ptr<IPointOfInterest> pPoi, const WBFL::Graphing::PointMapper& mapper, CDC* pDC);
+   void DrawSegmentEndSupport(Float64 beamShift,IntervalIndexType intervalIdx, bool bIsHaulingInterval, const CSegmentKey& segmentKey,pgsTypes::MemberEndType endType, std::shared_ptr<IIntervals> pIntervals, std::shared_ptr<IPointOfInterest> pPoi,const WBFL::Graphing::PointMapper& mapper,CDC* pDC);
 
    void DrawPier(Float64 beamShift, IntervalIndexType intervalIdx, const CGirderKey& girderKey, PierIndexType pierIdx, const WBFL::Graphing::PointMapper& mapper, CDC* pDC);
    CPoint GetPierPoint(Float64 beamShift, IntervalIndexType intervalIdx, const CGirderKey& girderKey, PierIndexType pierIdx, const WBFL::Graphing::PointMapper& mapper);

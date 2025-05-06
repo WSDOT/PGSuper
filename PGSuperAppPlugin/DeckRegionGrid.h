@@ -49,7 +49,7 @@ public:
    void GetData(CCastDeckActivity& activity);
    void SetData(const CCastDeckActivity& activity);
 
-   void GetPierUsage(PierIndexType pierIdx, IBridge* pBridge, BOOL* pbUseBack, BOOL* pbUseAhead);
+   void GetPierUsage(PierIndexType pierIdx, std::shared_ptr<IBridge> pBridge, BOOL* pbUseBack, BOOL* pbUseAhead);
    
    // Overrides
 	// ClassWizard generated virtual function overrides
@@ -78,10 +78,10 @@ protected:
    ROWCOL GetPierRow(PierIndexType pierIdx);
    ROWCOL GetSpanRow(SpanIndexType spanIdx);
 
-   void SetRegionData(const CCastingRegion& region, IBridge* pBridge, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
-   void SetPierData(const CCastingRegion& region, IBridge* pBridge, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+   void SetRegionData(const CCastingRegion& region, std::shared_ptr<IBridge> pBridge, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+   void SetPierData(const CCastingRegion& region, std::shared_ptr<IBridge> pBridge, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
    void SetPierData(PierIndexType pierIdx, BOOL bUseBack, Float64 Xback, BOOL bUseAhead, Float64 Xahead, IndexType sequenceIdx, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
-   void SetSpanData(const CCastingRegion& region, IBridge* pBridge, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
+   void SetSpanData(const CCastingRegion& region, std::shared_ptr<IBridge> pBridge, std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
    void SetSpanData(SpanIndexType spanIdx,Float64 L,IndexType sequenceIdx,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits);
    CString GetCellValue(ROWCOL nRow, ROWCOL nCol);
 };

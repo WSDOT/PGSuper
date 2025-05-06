@@ -129,8 +129,8 @@ protected:
    void UpdateAdjustableStrandControls();
    void ShowOffsetControlGroup(BOOL show);
 
-   StrandIndexType StrandSpinnerInc(IStrandGeometry* pStrands, pgsTypes::StrandType type,StrandIndexType currNum, bool bAdd );
-   StrandIndexType PermStrandSpinnerInc(IStrandGeometry* pStrands, StrandIndexType currNum, bool bAdd );
+   StrandIndexType StrandSpinnerInc(std::shared_ptr<IStrandGeometry> pStrands, pgsTypes::StrandType type,StrandIndexType currNum, bool bAdd );
+   StrandIndexType PermStrandSpinnerInc(std::shared_ptr<IStrandGeometry> pStrands, StrandIndexType currNum, bool bAdd );
 
    void GetStrandCount(StrandIndexType* pNs, StrandIndexType* pNh, StrandIndexType* pNt, StrandIndexType* pNp);
 

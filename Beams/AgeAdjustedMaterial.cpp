@@ -59,7 +59,7 @@ HRESULT CAgeAdjustedMaterial::FinalConstruct()
 }
 
 // IAgeAdjustedMaterial
-STDMETHODIMP CAgeAdjustedMaterial::InitSegment(const CSegmentKey& segmentKey,IMaterials* pMaterials)
+STDMETHODIMP CAgeAdjustedMaterial::InitSegment(const CSegmentKey& segmentKey,std::shared_ptr<IMaterials> pMaterials)
 {
    m_bIsSegment = true;
    m_SegmentKey = segmentKey;
@@ -67,7 +67,7 @@ STDMETHODIMP CAgeAdjustedMaterial::InitSegment(const CSegmentKey& segmentKey,IMa
    return S_OK;
 }
 
-STDMETHODIMP CAgeAdjustedMaterial::InitClosureJoint(const CClosureKey& closureKey,IMaterials* pMaterials)
+STDMETHODIMP CAgeAdjustedMaterial::InitClosureJoint(const CClosureKey& closureKey,std::shared_ptr<IMaterials> pMaterials)
 {
    m_bIsClosure = true;
    m_ClosureKey = closureKey;
@@ -75,7 +75,7 @@ STDMETHODIMP CAgeAdjustedMaterial::InitClosureJoint(const CClosureKey& closureKe
    return S_OK;
 }
 
-STDMETHODIMP CAgeAdjustedMaterial::InitDeck(IndexType deckCastingRegionIdx,IMaterials* pMaterials)
+STDMETHODIMP CAgeAdjustedMaterial::InitDeck(IndexType deckCastingRegionIdx,std::shared_ptr<IMaterials> pMaterials)
 {
    m_bIsDeck = true;
    m_DeckCastingRegionIdx = deckCastingRegionIdx;
@@ -84,7 +84,7 @@ STDMETHODIMP CAgeAdjustedMaterial::InitDeck(IndexType deckCastingRegionIdx,IMate
    return S_OK;
 }
 
-STDMETHODIMP CAgeAdjustedMaterial::InitLongitudinalJoint(const CSegmentKey& segmentKey, IMaterials* pMaterials)
+STDMETHODIMP CAgeAdjustedMaterial::InitLongitudinalJoint(const CSegmentKey& segmentKey, std::shared_ptr<IMaterials> pMaterials)
 {
    m_bIsLongitudinalJoint = true;
    m_SegmentKey = segmentKey;

@@ -20,7 +20,7 @@
 // Bridge_Support@wsdot.wa.gov
 ///////////////////////////////////////////////////////////////////////
 
-// PsBeamLossEngineer.cpp : Implementation of CPsBeamLossEngineer
+// PsBeamLossEngineer.cpp : Implementation of PsBeamLossEngineer
 #include "stdafx.h"
 #include "Beams.h"
 #include <Beams/PsBeamLossEngineer.h>
@@ -31,21 +31,25 @@
 #include <IFace\Project.h>
 #endif
 
-#pragma Reminder("WORKING HERE - Removing COM - move CDesignLosses declaration inside the CPP file")
-// The header file is now global, and CDesignLosses is an implementation detail. It sould be forward declared
+#pragma Reminder("WORKING HERE - Removing COM - Put prestress loss engineers in the PGS::Beam namespace")
+
+#pragma Reminder("WORKING HERE - Removing COM - move DesignLosses declaration inside the CPP file")
+// The header file is now global, and DesignLosses is an implementation detail. It should be forward declared
 // in the header and completely defined within the C++ file so external users don't see it and can't use it
 
-CDesignLosses::CDesignLosses()
+using namespace PGS::Beams;
+
+DesignLosses::DesignLosses()
 {
    Invalidate();
 }
 
-void CDesignLosses::Invalidate()
+void DesignLosses::Invalidate()
 {
    m_Losses.clear();
 }
 
-const LOSSDETAILS* CDesignLosses::GetFromCache(const pgsPointOfInterest& poi, const GDRCONFIG& config)
+const LOSSDETAILS* DesignLosses::GetFromCache(const pgsPointOfInterest& poi, const GDRCONFIG& config)
 {
    Losses* pLosses = nullptr;
 
@@ -77,7 +81,7 @@ const LOSSDETAILS* CDesignLosses::GetFromCache(const pgsPointOfInterest& poi, co
    ATLASSERT(false); // should never get here
 }
 
-void CDesignLosses::SaveToCache(const pgsPointOfInterest& poi, const GDRCONFIG& config, const LOSSDETAILS& losses)
+void DesignLosses::SaveToCache(const pgsPointOfInterest& poi, const GDRCONFIG& config, const LOSSDETAILS& losses)
 {
    Losses l;
    l.m_Config = config;
@@ -87,14 +91,12 @@ void CDesignLosses::SaveToCache(const pgsPointOfInterest& poi, const GDRCONFIG& 
    ATLASSERT( result.second == true );
 }
 
-/////////////////////////////////////////////////////////////////////////////
-// CUBeamPsLossEngineer
-CPsBeamLossEngineer::CPsBeamLossEngineer(CPsBeamLossEngineer::BeamType beamType, std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID) :
-   CPsLossEngineerBase(pBroker, statusGroupID), m_BeamType(beamType), m_Engineer(pBroker, statusGroupID)
+PsBeamLossEngineer::PsBeamLossEngineer(BeamType beamType, std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID) :
+   PsLossEngineerBase(pBroker, statusGroupID), m_BeamType(beamType), m_Engineer(pBroker, statusGroupID)
 {
 }
 
-const LOSSDETAILS* CPsBeamLossEngineer::GetLosses(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx)
+const LOSSDETAILS* PsBeamLossEngineer::GetLosses(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx)
 {
    ATLASSERT(poi.GetID() != INVALID_ID);
    std::map<PoiIDType,LOSSDETAILS>::const_iterator found;
@@ -103,7 +105,7 @@ const LOSSDETAILS* CPsBeamLossEngineer::GetLosses(const pgsPointOfInterest& poi,
    if ( found == m_PsLosses.end() )
    {
       // losses not found... compute them
-      LOSSDETAILS details = m_Engineer.ComputeLosses((CPsLossEngineer::BeamType)m_BeamType,poi);
+      LOSSDETAILS details = m_Engineer.ComputeLosses((PsLossEngineer::BeamType)m_BeamType,poi);
       auto itf = m_PsLosses.insert(std::make_pair(key,details));
       ATLASSERT(itf.second);
       return &(itf.first->second);
@@ -114,21 +116,21 @@ const LOSSDETAILS* CPsBeamLossEngineer::GetLosses(const pgsPointOfInterest& poi,
    }
 }
 
-const LOSSDETAILS* CPsBeamLossEngineer::GetLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config,IntervalIndexType intervalIdx)
+const LOSSDETAILS* PsBeamLossEngineer::GetLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config,IntervalIndexType intervalIdx)
 {
    ATLASSERT(intervalIdx == INVALID_INDEX); // this kind of loss calculation is for all intervals... always
 
 #if defined _DEBUG
    GET_IFACE2(GetBroker(), ILossParameters,pLossParameters);
    ATLASSERT( pLossParameters->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP );
-   // this shouldn't ever happen because the beam factory should create the appropreate loss engineer
+   // this shouldn't ever happen because the beam factory should create the appropriate loss engineer
    // but just in case we create a new beam type and forget to do this in the factor, assert here
 #endif
 
    const LOSSDETAILS* pLossDetails = m_DesignLosses.GetFromCache(poi,config);
    if ( pLossDetails == nullptr )
    {
-      LOSSDETAILS details = m_Engineer.ComputeLossesForDesign((CPsLossEngineer::BeamType)m_BeamType,poi,config);
+      LOSSDETAILS details = m_Engineer.ComputeLossesForDesign((PsLossEngineer::BeamType)m_BeamType,poi,config);
       m_DesignLosses.SaveToCache(poi,config,details);
       pLossDetails = m_DesignLosses.GetFromCache(poi,config);
       ATLASSERT(pLossDetails != nullptr);
@@ -137,30 +139,22 @@ const LOSSDETAILS* CPsBeamLossEngineer::GetLosses(const pgsPointOfInterest& poi,
    return pLossDetails;
 }
 
-void CPsBeamLossEngineer::ClearDesignLosses()
+void PsBeamLossEngineer::ClearDesignLosses()
 {
    m_DesignLosses.Invalidate();
 }
 
-void CPsBeamLossEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
+void PsBeamLossEngineer::BuildReport(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
-   m_Engineer.BuildReport((CPsLossEngineer::BeamType)m_BeamType,girderKey,pChapter,pDisplayUnits);
+   m_Engineer.BuildReport((PsLossEngineer::BeamType)m_BeamType,girderKey,pChapter,pDisplayUnits);
 }
 
-void CPsBeamLossEngineer::ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
+void PsBeamLossEngineer::ReportFinalLosses(const CGirderKey& girderKey,rptChapter* pChapter,std::shared_ptr<IEAFDisplayUnits> pDisplayUnits)
 {
-   m_Engineer.ReportFinalLosses((CPsLossEngineer::BeamType)m_BeamType,girderKey,pChapter,pDisplayUnits);
+   m_Engineer.ReportFinalLosses((PsLossEngineer::BeamType)m_BeamType,girderKey,pChapter,pDisplayUnits);
 }
 
-const ANCHORSETDETAILS* CPsBeamLossEngineer::GetGirderTendonAnchorSetDetails(const CGirderKey& girderKey, DuctIndexType ductIdx)
-{
-   // This returns basically a dummy object... non-spliced girders don't have PT so
-   // there is no anchor set... this implementation keeps the compiler happy
-   ATLASSERT(false); // why did this method get called? it shouldn't happen
-   return nullptr;
-}
-
-const ANCHORSETDETAILS* CPsBeamLossEngineer::GetSegmentTendonAnchorSetDetails(const CSegmentKey& segmentKey, DuctIndexType ductIdx)
+const ANCHORSETDETAILS* PsBeamLossEngineer::GetGirderTendonAnchorSetDetails(const CGirderKey& girderKey, DuctIndexType ductIdx)
 {
    // This returns basically a dummy object... non-spliced girders don't have PT so
    // there is no anchor set... this implementation keeps the compiler happy
@@ -168,7 +162,15 @@ const ANCHORSETDETAILS* CPsBeamLossEngineer::GetSegmentTendonAnchorSetDetails(co
    return nullptr;
 }
 
-Float64 CPsBeamLossEngineer::GetGirderTendonElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType)
+const ANCHORSETDETAILS* PsBeamLossEngineer::GetSegmentTendonAnchorSetDetails(const CSegmentKey& segmentKey, DuctIndexType ductIdx)
+{
+   // This returns basically a dummy object... non-spliced girders don't have PT so
+   // there is no anchor set... this implementation keeps the compiler happy
+   ATLASSERT(false); // why did this method get called? it shouldn't happen
+   return nullptr;
+}
+
+Float64 PsBeamLossEngineer::GetGirderTendonElongation(const CGirderKey& girderKey,DuctIndexType ductIdx,pgsTypes::MemberEndType endType)
 {
    // This returns basically a dummy object... non-spliced girders don't have PT so
    // there is no anchor set... this implementation keeps the compiler happy
@@ -176,7 +178,7 @@ Float64 CPsBeamLossEngineer::GetGirderTendonElongation(const CGirderKey& girderK
    return 0;
 }
 
-Float64 CPsBeamLossEngineer::GetSegmentTendonElongation(const CSegmentKey& segmentKey, DuctIndexType ductIdx, pgsTypes::MemberEndType endType)
+Float64 PsBeamLossEngineer::GetSegmentTendonElongation(const CSegmentKey& segmentKey, DuctIndexType ductIdx, pgsTypes::MemberEndType endType)
 {
    // This returns basically a dummy object... non-spliced girders don't have PT so
    // there is no anchor set... this implementation keeps the compiler happy
@@ -184,7 +186,7 @@ Float64 CPsBeamLossEngineer::GetSegmentTendonElongation(const CSegmentKey& segme
    return 0;
 }
 
-void CPsBeamLossEngineer::GetGirderTendonAverageFrictionAndAnchorSetLoss(const CGirderKey& girderKey, DuctIndexType ductIdx, Float64* pfpF, Float64* pfpA)
+void PsBeamLossEngineer::GetGirderTendonAverageFrictionAndAnchorSetLoss(const CGirderKey& girderKey, DuctIndexType ductIdx, Float64* pfpF, Float64* pfpA)
 {
    // This returns basically a dummy object... non-spliced girders don't have PT so
    // there is no anchor set... this implementation keeps the compiler happy
@@ -193,7 +195,7 @@ void CPsBeamLossEngineer::GetGirderTendonAverageFrictionAndAnchorSetLoss(const C
    *pfpA = 0;
 }
 
-void CPsBeamLossEngineer::GetSegmentTendonAverageFrictionAndAnchorSetLoss(const CSegmentKey& segmentKey, DuctIndexType ductIdx, Float64* pfpF, Float64* pfpA)
+void PsBeamLossEngineer::GetSegmentTendonAverageFrictionAndAnchorSetLoss(const CSegmentKey& segmentKey, DuctIndexType ductIdx, Float64* pfpF, Float64* pfpA)
 {
    // This returns basically a dummy object... non-spliced girders don't have PT so
    // there is no anchor set... this implementation keeps the compiler happy
