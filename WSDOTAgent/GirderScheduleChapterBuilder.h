@@ -25,6 +25,7 @@
 #include <PsgLib\Keys.h>
 
 class IEAFDisplayUnits;
+namespace WBFL { namespace EAF { class Broker; }; };
 
 class CGirderScheduleChapterBuilder : public CPGSuperChapterBuilder
 {

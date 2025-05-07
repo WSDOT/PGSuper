@@ -25,6 +25,7 @@
 #include <PgsExt\RatingArtifact.h>
 
 class IEAFDisplayUnits;
+namespace WBFL { namespace EAF { class Broker; }; };
 
 class CLoadRatingSummaryChapterBuilder : public CPGSuperChapterBuilder
 {

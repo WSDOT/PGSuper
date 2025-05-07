@@ -24,6 +24,7 @@
 
 #include "stdafx.h"
 #include "WSDOTAgentImp.h"
+#include "CLSID.h"
 #include <EAF\Broker.h>
 
 #include <Reporting\PGSuperTitlePageBuilder.h>
@@ -39,13 +40,9 @@
 
 // CWSDOTAgentImp
 
-bool CWSDOTAgentImp::RegisterInterfaces()
-{
-   return true;
-}
-
 bool CWSDOTAgentImp::Init()
 {
+   EAF_AGENT_INIT;
    CREATE_LOGFILE("WSDOTAgent");
 
    // Maps old agent CLSID to new CLSID since version 3.0
@@ -96,6 +93,7 @@ CLSID CWSDOTAgentImp::GetCLSID() const
 
 bool CWSDOTAgentImp::ShutDown()
 {
+   EAF_AGENT_SHUTDOWN;
    CLOSE_LOGFILE;
    return true;
 }

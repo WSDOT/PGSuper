@@ -28,6 +28,7 @@
 
 #include <PgsExt\CapacityToDemand.h>
 
+#include <IFace/Tools.h>
 #include <EAF\EAFDisplayUnits.h>
 #include <IFace\Artifact.h>
 #include <IFace\RatingSpecification.h>

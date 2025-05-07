@@ -24,31 +24,23 @@
 
 #pragma once
 
-#include "CLSID.h"
 #include <EAF\Agent.h>
+#include <IFace/Tools.h>
 
 class CWSDOTAgentImp : public WBFL::EAF::Agent
 {
 public:
-	CWSDOTAgentImp()
-	{
-	}
+   CWSDOTAgentImp() = default;
 
 // Agent
 public:
    std::_tstring GetName() const override { return _T("WSDOTAgent"); }
-   bool RegisterInterfaces() override;
 	bool Init() override;
 	bool ShutDown() override;
    CLSID GetCLSID() const override;
 
 private:
-#pragma Reminder("WORKING HERE - Removing COM")
-	// Consider using something like this interface cache
-	// Must be careful that the broker is a weak pointer
-	// so there isnt circular references between broker and agent
-	// This could probably be implemented on the Agent class an then
-	// inhertied by all sub-classes
-	//DECLARE_EAF_INTERFACE_CACHE;
+   EAF_DECLARE_AGENT_DATA;
+
    DECLARE_LOGFILE;
 };

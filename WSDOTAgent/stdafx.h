@@ -53,7 +53,6 @@
 
 
 #include <WBFLTools.h>
-#include <IFace\Tools.h>
 
 #include <Reporting\PGSuperChapterBuilder.h>
 #include <ReportManager\ReportManager.h>
