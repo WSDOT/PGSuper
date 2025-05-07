@@ -761,7 +761,7 @@ void txnEditRatingCriteria::Execute(int i)
    pRatingSpec->SetSpecialPermitType(m_Data[i].m_Permit.SpecialPermitType);
 }
 
-std::unique_ptr<CEAFTransaction> txnEditRatingCriteria::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditRatingCriteria::CreateClone() const
 {
    return std::make_unique<txnEditRatingCriteria>(m_Data[0],m_Data[1]);
 }

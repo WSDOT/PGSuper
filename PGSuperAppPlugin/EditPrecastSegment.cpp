@@ -98,7 +98,7 @@ void txnEditPrecastSegment::Undo()
    }
 }
 
-std::unique_ptr<CEAFTransaction> txnEditPrecastSegment::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditPrecastSegment::CreateClone() const
 {
    return std::make_unique<txnEditPrecastSegment>(m_SegmentKey,m_NewSegmentData);
 }

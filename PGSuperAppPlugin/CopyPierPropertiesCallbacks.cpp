@@ -295,7 +295,7 @@ txnCopyPierAllProperties::~txnCopyPierAllProperties()
 {
 }
 
-std::unique_ptr<CEAFTransaction> txnCopyPierAllProperties::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnCopyPierAllProperties::CreateClone() const
 {
    return std::make_unique<txnCopyPierAllProperties>(m_FromPierIdx,m_ToPiers);
 }
@@ -419,7 +419,7 @@ void txnCopyPierConnectionProperties::Undo()
    }
 }
 
-std::unique_ptr<CEAFTransaction> txnCopyPierConnectionProperties::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnCopyPierConnectionProperties::CreateClone() const
 {
    return std::make_unique<txnCopyPierConnectionProperties>(m_FromPierIdx,m_ToPiers);
 }
@@ -522,7 +522,7 @@ void txnCopyPierDiaphragmProperties::Undo()
    }
 }
 
-std::unique_ptr<CEAFTransaction> txnCopyPierDiaphragmProperties::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnCopyPierDiaphragmProperties::CreateClone() const
 {
    return std::make_unique<txnCopyPierDiaphragmProperties>(m_FromPierIdx,m_ToPiers);
 }
@@ -627,7 +627,7 @@ void txnCopyPierModelProperties::Undo()
    }
 }
 
-std::unique_ptr<CEAFTransaction> txnCopyPierModelProperties::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnCopyPierModelProperties::CreateClone() const
 {
    return std::make_unique<txnCopyPierModelProperties>(m_FromPierIdx,m_ToPiers);
 }
@@ -656,7 +656,7 @@ BOOL CCopyPierAllProperties::CanCopy(PierIndexType fromPierIdx,const std::vector
    return CanCopyConnectionData(fromPierIdx, toPiers);
 }
 
-std::unique_ptr<CEAFTransaction> CCopyPierAllProperties::CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
+std::unique_ptr<WBFL::EAF::Transaction> CCopyPierAllProperties::CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
 {
    return std::make_unique<txnCopyPierAllProperties>(fromPierIdx, toPiers);
 }
@@ -692,7 +692,7 @@ BOOL CCopyPierConnectionProperties::CanCopy(PierIndexType fromPierIdx,const std:
    return CanCopyConnectionData(fromPierIdx, toPiers);
 }
 
-std::unique_ptr<CEAFTransaction> CCopyPierConnectionProperties::CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
+std::unique_ptr<WBFL::EAF::Transaction> CCopyPierConnectionProperties::CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
 {
    return std::make_unique<txnCopyPierConnectionProperties>(fromPierIdx, toPiers);
 }
@@ -728,7 +728,7 @@ BOOL CCopyPierDiaphragmProperties::CanCopy(PierIndexType fromPierIdx,const std::
    return TRUE;
 }
 
-std::unique_ptr<CEAFTransaction> CCopyPierDiaphragmProperties::CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
+std::unique_ptr<WBFL::EAF::Transaction> CCopyPierDiaphragmProperties::CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
 {
    return std::make_unique<txnCopyPierDiaphragmProperties>(fromPierIdx, toPiers);
 }
@@ -765,7 +765,7 @@ BOOL CCopyPierModelProperties::CanCopy(PierIndexType fromPierIdx,const std::vect
    return TRUE;
 }
 
-std::unique_ptr<CEAFTransaction> CCopyPierModelProperties::CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
+std::unique_ptr<WBFL::EAF::Transaction> CCopyPierModelProperties::CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers)
 {
    return std::make_unique<txnCopyPierModelProperties>(fromPierIdx, toPiers);
 }

@@ -73,7 +73,7 @@ void txnEditProjectCriteria::Execute(int i)
    pBridgeDesc->SetWearingSurfaceType(m_WearingSurfaceType[i]);
 }
 
-std::unique_ptr<CEAFTransaction> txnEditProjectCriteria::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditProjectCriteria::CreateClone() const
 {
    return std::make_unique<txnEditProjectCriteria>(m_strProjectCriteria[0].c_str(),m_strProjectCriteria[1].c_str(),m_AnalysisType[0],m_AnalysisType[1],m_WearingSurfaceType[0],m_WearingSurfaceType[1]);
 }

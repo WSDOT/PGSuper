@@ -59,7 +59,7 @@ void txnEditBridgeDescription::Execute(int i)
    pBridgeDesc->SetBridgeDescription( m_BridgeDesc[i] );
 }
 
-std::unique_ptr<CEAFTransaction> txnEditBridgeDescription::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditBridgeDescription::CreateClone() const
 {
    return std::make_unique<txnEditBridgeDescription>(m_BridgeDesc[0],m_BridgeDesc[1]);
 }

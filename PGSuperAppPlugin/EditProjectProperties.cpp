@@ -87,7 +87,7 @@ void txnEditProjectProperties::Execute(int i)
    pProjProp->SetComments(   m_Comment[i].c_str()    );
 }
 
-std::unique_ptr<CEAFTransaction> txnEditProjectProperties::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditProjectProperties::CreateClone() const
 {
    return std::make_unique<txnEditProjectProperties>(m_BridgeName[0],
                                        m_BridgeName[1],

@@ -44,7 +44,7 @@ std::_tstring txnInsertSpan::Name() const
    return _T("Insert Span");
 }
 
-std::unique_ptr<CEAFTransaction> txnInsertSpan::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnInsertSpan::CreateClone() const
 {
    return std::make_unique<txnInsertSpan>(m_RefPierIdx, m_PierFace,m_SpanLength,m_bCreateNewGroup,m_PierErectionEventIndex);
 }
@@ -156,7 +156,7 @@ std::_tstring txnDeleteSpan::Name() const
    return _T("Delete Span");
 }
 
-std::unique_ptr<CEAFTransaction> txnDeleteSpan::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnDeleteSpan::CreateClone() const
 {
    return std::make_unique<txnDeleteSpan>(*this);
 }

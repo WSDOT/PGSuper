@@ -73,7 +73,7 @@ void txnEditEnvironment::Execute(int i)
    pEnvironment->SetRelHumidity( m_RelHumidity[i] );
 }
 
-std::unique_ptr<CEAFTransaction> txnEditEnvironment::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditEnvironment::CreateClone() const
 {
    return std::make_unique<txnEditEnvironment>(m_ExposureCondition[0], m_ExposureCondition[1],
                                  m_ClimateCondition[0],  m_ClimateCondition[1],

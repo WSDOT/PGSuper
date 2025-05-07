@@ -183,7 +183,7 @@ void CRatingOptionsDlg::DestroyExtensionPages()
    m_ExtensionPages.clear();
 }
 
-std::unique_ptr<CEAFTransaction> CRatingOptionsDlg::GetExtensionPageTransaction()
+std::unique_ptr<WBFL::EAF::Transaction> CRatingOptionsDlg::GetExtensionPageTransaction()
 {
    if ( 0 < m_Macro.GetTxnCount() )
    {

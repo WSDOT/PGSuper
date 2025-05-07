@@ -200,7 +200,7 @@ void txnCopyTempSupportConnectionProperties::Undo()
    }
 }
 
-std::unique_ptr<CEAFTransaction> txnCopyTempSupportConnectionProperties::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnCopyTempSupportConnectionProperties::CreateClone() const
 {
    return std::make_unique<txnCopyTempSupportConnectionProperties>(m_FromTempSupportIdx,m_ToTempSupports);
 }
@@ -230,7 +230,7 @@ BOOL CCopyTempSupportConnectionProperties::CanCopy(PierIndexType fromTempSupport
    return CanCopyConnectionData(fromTempSupportIdx, toTempSupports);
 }
 
-std::unique_ptr<CEAFTransaction> CCopyTempSupportConnectionProperties::CreateCopyTransaction(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports)
+std::unique_ptr<WBFL::EAF::Transaction> CCopyTempSupportConnectionProperties::CreateCopyTransaction(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports)
 {
    return std::make_unique<txnCopyTempSupportConnectionProperties>(fromTempSupportIdx, toTempSupports);
 }

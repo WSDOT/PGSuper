@@ -63,7 +63,7 @@ void txnEditAnalysisType::Execute(int i)
    pSpec->SetAnalysisType(m_AnalysisType[i]);
 }
 
-std::unique_ptr<CEAFTransaction> txnEditAnalysisType::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditAnalysisType::CreateClone() const
 {
    return std::make_unique<txnEditAnalysisType>(m_AnalysisType[0],m_AnalysisType[1]);
 }

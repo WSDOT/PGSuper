@@ -29,7 +29,7 @@
 #include <IFace\Bridge.h>
 #include <EAF\EAFDisplayUnits.h>
 
-#include <EAF\EAFTxnManager.h>
+#include <EAF\TxnManager.h>
 #include <PsgLib\BridgeDescription2.h>
 #include "MovePierDlg.h"
 #include "EditPierStation.h"
@@ -83,7 +83,7 @@ void CInplacePierStationEditEvents::Handle_OnChanged(std::shared_ptr<WBFL::DMani
       if ( !IsEqual(old_station,new_station) )
       {
          std::unique_ptr<txnEditPierStation> pTxn(std::make_unique<txnEditPierStation>(m_PierIdx,old_station,new_station,dlg.m_Option));
-         CEAFTxnManager::GetInstance().Execute(std::move(pTxn));
+         WBFL::EAF::TxnManager::GetInstance().Execute(std::move(pTxn));
       }
    }
 }

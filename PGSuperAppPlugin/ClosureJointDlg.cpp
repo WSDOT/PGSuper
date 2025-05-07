@@ -200,7 +200,7 @@ void CClosureJointDlg::DestroyExtensionPages()
    m_ExtensionPages.clear();
 }
 
-std::unique_ptr<CEAFTransaction> CClosureJointDlg::GetExtensionPageTransaction()
+std::unique_ptr<WBFL::EAF::Transaction> CClosureJointDlg::GetExtensionPageTransaction()
 {
    if ( 0 < m_Macro.GetTxnCount() )
    {

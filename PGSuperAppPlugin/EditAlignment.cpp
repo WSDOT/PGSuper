@@ -72,7 +72,7 @@ void txnEditAlignment::Execute(int i)
    pAlignment->SetRoadwaySectionData(m_SectionData[i]);
 }
 
-std::unique_ptr<CEAFTransaction> txnEditAlignment::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditAlignment::CreateClone() const
 {
    return std::make_unique<txnEditAlignment>(m_AlignmentData[0], m_AlignmentData[1],
                                m_ProfileData[0],   m_ProfileData[1],

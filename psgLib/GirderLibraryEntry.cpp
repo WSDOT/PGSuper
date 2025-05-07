@@ -2911,8 +2911,6 @@ bool GirderLibraryEntry::CreateBeamFactory(const std::_tstring& strCLSID)
    CLSID clsid;
    ::CLSIDFromString(CT2OLE(strCLSID.c_str()), &clsid);
 
-#pragma Reminder("WORKING HERE - Removing COM - need to make Beam Factory objects be singletons")
-   // This probably needs to happen on IBeamFactory and CreateComponent
    m_pBeamFactory = WBFL::EAF::ComponentCategoryManager::GetInstance().CreateComponent<PGS::Beams::BeamFactory>(clsid);
 
    return m_pBeamFactory != nullptr;

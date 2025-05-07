@@ -192,7 +192,7 @@ void CTemporarySupportDlg::DestroyExtensionPages()
    m_ExtensionPages.clear();
 }
 
-std::unique_ptr<CEAFTransaction> CTemporarySupportDlg::GetExtensionPageTransaction()
+std::unique_ptr<WBFL::EAF::Transaction> CTemporarySupportDlg::GetExtensionPageTransaction()
 {
    if ( 0 < m_Macro.GetTxnCount() )
       return m_Macro.CreateClone();

@@ -22,11 +22,11 @@
 
 #pragma once
 #include <PgsExt\PgsExtExp.h>
-#include <EAF\EAFTransaction.h>
+#include <EAF\Transaction.h>
 #include <PsgLib\BridgeDescription2.h>
 #include <array>
 
-class PGSEXTCLASS txnEditBridge : public CEAFTransaction
+class PGSEXTCLASS txnEditBridge : public WBFL::EAF::Transaction
 {
 public:
    txnEditBridge(const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc,
@@ -41,7 +41,7 @@ public:
 
    virtual bool Execute() override;
    virtual void Undo() override;
-   virtual std::unique_ptr<CEAFTransaction> CreateClone() const override;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateClone() const override;
    virtual std::_tstring Name() const override;
    virtual bool IsUndoable() const override;
    virtual bool IsRepeatable() const override;

@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include <EAF\EAFTransaction.h>
+#include <EAF\Transaction.h>
 #include <PsgLib\PrecastSegmentData.h>
 #include <PsgLib\TimelineManager.h>
 #include <IFace\Project.h>
@@ -35,7 +35,7 @@ struct txnEditPrecastSegmentData
    CTimelineManager m_TimelineMgr;
 };
 
-class txnEditPrecastSegment : public CEAFTransaction
+class txnEditPrecastSegment : public WBFL::EAF::Transaction
 {
 public:
    txnEditPrecastSegment(const CSegmentKey& segmentKey,const txnEditPrecastSegmentData& newData);
@@ -44,7 +44,7 @@ public:
 
    virtual bool Execute();
    virtual void Undo();
-   virtual std::unique_ptr<CEAFTransaction>CreateClone() const;
+   virtual std::unique_ptr<WBFL::EAF::Transaction>CreateClone() const;
    virtual std::_tstring Name() const;
    virtual bool IsUndoable() const;
    virtual bool IsRepeatable() const;

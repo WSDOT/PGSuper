@@ -482,12 +482,12 @@ void CPGSpliceDoc::OnInsertTemporarySupport()
    CTemporarySupportDlg dlg(pBridgeDesc,INVALID_INDEX,EAFGetMainFrame());
    if ( dlg.DoModal() == IDOK )
    {
-      std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnInsertTemporarySupport>(dlg.GetTemporarySupport(),*pBridgeDesc,*dlg.GetBridgeDescription()));
+      std::unique_ptr<WBFL::EAF::Transaction> pTxn(std::make_unique<txnInsertTemporarySupport>(dlg.GetTemporarySupport(),*pBridgeDesc,*dlg.GetBridgeDescription()));
 
       auto pExtensionTxn = dlg.GetExtensionPageTransaction();
       if ( pExtensionTxn )
       {
-         std::unique_ptr<CEAFMacroTxn> pMacro(std::make_unique<CEAFMacroTxn>());
+         std::unique_ptr<WBFL::EAF::MacroTxn> pMacro(std::make_unique<WBFL::EAF::MacroTxn>());
          pMacro->Name(pTxn->Name());
          pMacro->AddTransaction(std::move(pTxn));
          pMacro->AddTransaction(std::move(pExtensionTxn));
@@ -638,11 +638,11 @@ bool CPGSpliceDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,in
          thisSegmentKey.girderIndex = ALL_GIRDERS;
       }
 
-      std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditPrecastSegment>(thisSegmentKey,newData));
+      std::unique_ptr<WBFL::EAF::Transaction> pTxn(std::make_unique<txnEditPrecastSegment>(thisSegmentKey,newData));
       auto pExtensionTxn = dlg.GetExtensionPageTransaction();
       if ( pExtensionTxn )
       {
-         std::unique_ptr<CEAFMacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
+         std::unique_ptr<WBFL::EAF::MacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
          pMacro->Name(pTxn->Name());
          pMacro->AddTransaction(std::move(pTxn));
          pMacro->AddTransaction(std::move(pExtensionTxn));
@@ -679,11 +679,11 @@ bool CPGSpliceDoc::EditClosureJointDescription(const CClosureKey& closureKey,int
          thisClosureKey.girderIndex = ALL_GIRDERS;
       }
 
-      std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditClosureJoint>(thisClosureKey,newData));
+      std::unique_ptr<WBFL::EAF::Transaction> pTxn(std::make_unique<txnEditClosureJoint>(thisClosureKey,newData));
       auto pExtensionTxn = dlg.GetExtensionPageTransaction();
       if ( pExtensionTxn )
       {
-         std::unique_ptr<CEAFMacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
+         std::unique_ptr<WBFL::EAF::MacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
          pMacro->Name(pTxn->Name());
          pMacro->AddTransaction(std::move(pTxn));
          pMacro->AddTransaction(std::move(pExtensionTxn));
@@ -710,12 +710,12 @@ bool CPGSpliceDoc::EditGirderDescription(const CGirderKey& girderKey,int nPage)
       GET_IFACE(IBridgeDescription,pIBridgeDesc);
       const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
 
-      std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditGirderline>(girderKey,dlg.m_bApplyToAll,*pBridgeDesc,dlg.m_BridgeDescription));
+      std::unique_ptr<WBFL::EAF::Transaction> pTxn(std::make_unique<txnEditGirderline>(girderKey,dlg.m_bApplyToAll,*pBridgeDesc,dlg.m_BridgeDescription));
 
       auto pExtensionTxn = dlg.GetExtensionPageTransaction();
       if ( pExtensionTxn )
       {
-         std::unique_ptr<CEAFMacroTxn> pMacro(std::make_unique<CEAFMacroTxn>());
+         std::unique_ptr<WBFL::EAF::MacroTxn> pMacro(std::make_unique<WBFL::EAF::MacroTxn>());
          pMacro->Name(pTxn->Name());
          pMacro->AddTransaction(std::move(pTxn));
          pMacro->AddTransaction(std::move(pExtensionTxn));
@@ -765,12 +765,12 @@ bool CPGSpliceDoc::EditTemporarySupportDescription(SupportIDType tsID,int nPage)
    dlg.SetActivePage(nPage);
    if ( dlg.DoModal() == IDOK )
    {
-      std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditTemporarySupport>(tsIdx,*pBridgeDesc,*dlg.GetBridgeDescription()));
+      std::unique_ptr<WBFL::EAF::Transaction> pTxn(std::make_unique<txnEditTemporarySupport>(tsIdx,*pBridgeDesc,*dlg.GetBridgeDescription()));
 
       auto pExtensionTxn = dlg.GetExtensionPageTransaction();
       if ( pExtensionTxn )
       {
-         std::unique_ptr<CEAFMacroTxn> pMacro(std::make_unique<CEAFMacroTxn>());
+         std::unique_ptr<WBFL::EAF::MacroTxn> pMacro(std::make_unique<WBFL::EAF::MacroTxn>());
          pMacro->Name(pTxn->Name());
          pMacro->AddTransaction(std::move(pTxn));
          pMacro->AddTransaction(std::move(pExtensionTxn));

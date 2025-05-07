@@ -47,7 +47,7 @@ void txnEditTimeline::Undo()
    DoExecute(0);
 }
 
-std::unique_ptr<CEAFTransaction> txnEditTimeline::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditTimeline::CreateClone() const
 {
    return std::make_unique<txnEditTimeline>(m_TimelineManager[0],m_TimelineManager[1]);
 }

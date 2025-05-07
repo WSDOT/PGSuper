@@ -75,7 +75,7 @@ std::_tstring txnEditBoundaryConditions::Name() const
    return _T("Change Boundary Conditions");
 }
 
-std::unique_ptr<CEAFTransaction> txnEditBoundaryConditions::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditBoundaryConditions::CreateClone() const
 {
    if (m_bIsPier)
    {

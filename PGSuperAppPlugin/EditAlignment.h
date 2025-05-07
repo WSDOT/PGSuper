@@ -23,10 +23,10 @@
 #ifndef INCLUDED_EDITALIGNMENTTXN_H_
 #define INCLUDED_EDITALIGNMENTTXN_H_
 
-#include <EAF\EAFTransaction.h>
+#include <EAF\Transaction.h>
 #include <IFace\Project.h>
 
-class txnEditAlignment : public CEAFTransaction
+class txnEditAlignment : public WBFL::EAF::Transaction
 {
 public:
    txnEditAlignment(const AlignmentData2& oldAlignmentData,const AlignmentData2& newAlignmentData,
@@ -37,7 +37,7 @@ public:
 
    virtual bool Execute();
    virtual void Undo();
-   virtual std::unique_ptr<CEAFTransaction> CreateClone() const;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateClone() const;
    virtual std::_tstring Name() const;
    virtual bool IsUndoable() const;
    virtual bool IsRepeatable() const;

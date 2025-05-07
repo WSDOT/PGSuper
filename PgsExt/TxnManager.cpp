@@ -25,21 +25,21 @@
 #include <EAF\EAFUtilities.h>
 
 
-std::unique_ptr<CEAFTxnManager> pgsTxnManagerFactory::CreateTransactionManager()
+std::unique_ptr<WBFL::EAF::TxnManager> pgsTxnManagerFactory::CreateTransactionManager()
 {
    return std::make_unique<pgsTxnManager>();
 }
 
-void pgsTxnManager::Execute(std::unique_ptr<CEAFTransaction>&& pTxn)
+void pgsTxnManager::Execute(std::unique_ptr<WBFL::EAF::Transaction>&& pTxn)
 {
    try
    {
-      CEAFTxnManager::Execute(std::move(pTxn));
+      WBFL::EAF::TxnManager::Execute(std::move(pTxn));
    }
    catch (...)
    {
       m_TxnHistory.emplace_back(std::move(pTxn));
-      m_Mode = CEAFTxnManager::Mode::Repeat;
+      m_Mode = WBFL::EAF::TxnManager::Mode::Repeat;
       throw;
    }
 }

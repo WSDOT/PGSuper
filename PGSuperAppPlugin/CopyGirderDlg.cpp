@@ -593,7 +593,7 @@ void CCopyGirderDlg::OnOK()
    std::vector<ICopyGirderPropertiesCallback*> callbacks = GetSelectedCopyGirderPropertiesCallbacks();
    for (auto callback : callbacks)
    {
-      std::unique_ptr<CEAFTransaction> txn = callback->CreateCopyTransaction(m_FromGirderKey, m_ToGirderKeys);
+      std::unique_ptr<WBFL::EAF::Transaction> txn = callback->CreateCopyTransaction(m_FromGirderKey, m_ToGirderKeys);
       pMacro->AddTransaction(std::move(txn));
    }
 

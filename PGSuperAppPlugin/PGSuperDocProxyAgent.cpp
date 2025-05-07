@@ -41,7 +41,7 @@
 #include "PGSuperDoc.h"
 #include "Hints.h"
 
-#include <EAF\EAFTxnManager.h>
+#include <EAF\TxnManager.h>
 
 #include <psgLib\psgLib.h>
 
@@ -475,7 +475,7 @@ bool CPGSuperDocProxyAgent::Reset()
 {
    EAF_AGENT_RESET;
 
-   CEAFTxnManager::GetInstance().Clear();
+   WBFL::EAF::TxnManager::GetInstance().Clear();
    return true;
 }
 

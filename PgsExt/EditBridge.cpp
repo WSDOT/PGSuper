@@ -94,7 +94,7 @@ void txnEditBridge::Execute(int i)
    pEvents->FirePendingEvents();
 }
 
-std::unique_ptr<CEAFTransaction> txnEditBridge::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditBridge::CreateClone() const
 {
    if ( m_bBridgeDescOnly )
    {

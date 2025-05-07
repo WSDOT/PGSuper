@@ -56,7 +56,7 @@ std::_tstring txnInsertPointLoad::Name() const
    return _T("Insert Point Load");
 }
 
-std::unique_ptr<CEAFTransaction> txnInsertPointLoad::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnInsertPointLoad::CreateClone() const
 {
    return std::make_unique<txnInsertPointLoad>(m_LoadData,m_LoadingEventID,m_pTimelineMgr);
 }
@@ -130,7 +130,7 @@ std::_tstring txnDeletePointLoad::Name() const
    return _T("Delete Point Load");
 }
 
-std::unique_ptr<CEAFTransaction> txnDeletePointLoad::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnDeletePointLoad::CreateClone() const
 {
    return std::make_unique<txnDeletePointLoad>(m_LoadID);
 }
@@ -211,7 +211,7 @@ std::_tstring txnEditPointLoad::Name() const
    return _T("Edit Point Load");
 }
 
-std::unique_ptr<CEAFTransaction> txnEditPointLoad::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditPointLoad::CreateClone() const
 {
    return std::make_unique<txnEditPointLoad>(m_LoadID,m_LoadData[0],m_LoadingEventID[0],m_LoadData[1],m_LoadingEventID[1],m_pTimelineMgr);
 }
@@ -296,7 +296,7 @@ std::_tstring txnInsertDistributedLoad::Name() const
    return _T("Insert Distributed Load");
 }
 
-std::unique_ptr<CEAFTransaction> txnInsertDistributedLoad::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnInsertDistributedLoad::CreateClone() const
 {
    return std::make_unique<txnInsertDistributedLoad>(m_LoadData,m_LoadingEventID,m_pTimelineMgr);
 }
@@ -370,7 +370,7 @@ std::_tstring txnDeleteDistributedLoad::Name() const
    return _T("Delete Distributed Load");
 }
 
-std::unique_ptr<CEAFTransaction> txnDeleteDistributedLoad::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnDeleteDistributedLoad::CreateClone() const
 {
    return std::make_unique<txnDeleteDistributedLoad>(m_LoadID);
 }
@@ -450,7 +450,7 @@ std::_tstring txnEditDistributedLoad::Name() const
    return _T("Edit Distributed Load");
 }
 
-std::unique_ptr<CEAFTransaction> txnEditDistributedLoad::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditDistributedLoad::CreateClone() const
 {
    return std::make_unique<txnEditDistributedLoad>(m_LoadID,m_LoadData[0],m_LoadingEventID[0],m_LoadData[1],m_LoadingEventID[1],m_pTimelineMgr);
 }
@@ -534,7 +534,7 @@ std::_tstring txnInsertMomentLoad::Name() const
    return _T("Insert Moment Load");
 }
 
-std::unique_ptr<CEAFTransaction> txnInsertMomentLoad::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnInsertMomentLoad::CreateClone() const
 {
    return std::make_unique<txnInsertMomentLoad>(m_LoadData,m_LoadingEventID,m_pTimelineMgr);
 }
@@ -608,7 +608,7 @@ std::_tstring txnDeleteMomentLoad::Name() const
    return _T("Delete Moment Load");
 }
 
-std::unique_ptr<CEAFTransaction> txnDeleteMomentLoad::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnDeleteMomentLoad::CreateClone() const
 {
    return std::make_unique<txnDeleteMomentLoad>(m_LoadID);
 }
@@ -688,7 +688,7 @@ std::_tstring txnEditMomentLoad::Name() const
    return _T("Edit Moment Load");
 }
 
-std::unique_ptr<CEAFTransaction> txnEditMomentLoad::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditMomentLoad::CreateClone() const
 {
    return std::make_unique<txnEditMomentLoad>(m_LoadID,m_LoadData[0],m_LoadingEventID[0],m_LoadData[1],m_LoadingEventID[1],m_pTimelineMgr);
 }

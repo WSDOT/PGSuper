@@ -122,7 +122,7 @@ void CSplicedGirderDescDlg::DestroyExtensionPages()
    m_ExtensionPages.clear();
 }
 
-std::unique_ptr<CEAFTransaction> CSplicedGirderDescDlg::GetExtensionPageTransaction()
+std::unique_ptr<WBFL::EAF::Transaction> CSplicedGirderDescDlg::GetExtensionPageTransaction()
 {
    if (0 < m_Macro.GetTxnCount())
    {

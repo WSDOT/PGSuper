@@ -32,7 +32,9 @@
 // are likely to break.
 /////////////////////////////////////////////////////////////////////////////////////////
 
-class CEAFTransaction;
+namespace WBFL {
+   namespace EAF { class Transaction; };
+};
 
 class IEditBridgeCallback;
 class IEditSplicedGirderCallback;
@@ -103,7 +105,7 @@ public:
    /// @return Return a transaction object if you
    /// want the editing the occurred on this extension page to be in the transaction queue for undo/redo,
    /// otherwise return nullptr
-   virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPropertyPage,IEditPierData* pEditPierData) = 0;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> OnOK(CPropertyPage* pPropertyPage,IEditPierData* pEditPierData) = 0;
 
    /// @brief Return the ID of EditBridgeCallback or INVALID_ID if extensions to the Bridge dialog are not related to the Pier dialog
    virtual IDType GetEditBridgeCallbackID() = 0;
@@ -125,7 +127,7 @@ public:
    virtual BOOL CanCopy(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) = 0;
 
    /// @brief Called by the framework when you need to create a transaction object that will cause your Pier data to be copied.
-   virtual std::unique_ptr<CEAFTransaction> CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) = 0;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateCopyTransaction(PierIndexType fromPierIdx,const std::vector<PierIndexType>& toPiers) = 0;
 
    /// @brief UI has an edit button for this callback. 
    /// @return Returns the tab index that will be opened
@@ -151,7 +153,7 @@ public:
    virtual BOOL CanCopy(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports) = 0;
 
    /// @brief Called by the framework when you need to create a transaction object that will cause your TempSupport data to be copied.
-   virtual std::unique_ptr<CEAFTransaction> CreateCopyTransaction(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports) = 0;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateCopyTransaction(PierIndexType fromTempSupportIdx,const std::vector<PierIndexType>& toTempSupports) = 0;
 
    /// @brief UI has an edit button for this callback. 
    /// @return Returns the tab index that will be opened
@@ -183,7 +185,7 @@ public:
    /// @brief Called by the framework when stand alone editing is complete. 
    /// @return Return a transaction object if you want the editing the occurred on this extension page to be in the transaction queue for undo/redo,
    /// otherwise return nullptr
-   virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPropertyPage,IEditTemporarySupportData* pEditTemporarySupportData) = 0;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> OnOK(CPropertyPage* pPropertyPage,IEditTemporarySupportData* pEditTemporarySupportData) = 0;
 
    //@ brief Returns the ID of EditBridgeCallback or INVALID_ID if extensions to the Bridge dialog are not related to the Temporary Support dialog
    virtual IDType GetEditBridgeCallbackID() = 0;
@@ -219,7 +221,7 @@ public:
    /// @brief Called by the framework when stand alone editing is complete. 
    /// @return Return a transaction object if you want the editing the occurred on this extension page to be in the transaction queue for undo/redo,
    /// otherwise return nullptr
-   virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPage,IEditSpanData* pSpanData) = 0;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> OnOK(CPropertyPage* pPage,IEditSpanData* pSpanData) = 0;
 
    /// @brief Returns the ID of EditBridgeCallback or INVALID_ID if extensions to the Bridge dialog are not related to the Span dialog
    virtual IDType GetEditBridgeCallbackID() = 0;
@@ -246,7 +248,7 @@ public:
    /// @brief Called by the framework when stand alone editing is complete. 
    /// @return Return a transaction object if you want the editing the occurred on this extension page to be in the transaction queue for undo/redo,
    /// otherwise return nullptr
-   virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPage,IEditSegmentData* pSegmentData) = 0;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> OnOK(CPropertyPage* pPage,IEditSegmentData* pSegmentData) = 0;
 
    /// @brief Returns the ID of EditSplicedGirderCallback or INVALID_ID if extensions to the Spliced Girder dialog are not related to the Segment dialog
    virtual IDType GetEditSplicedGirderCallbackID() = 0;
@@ -273,7 +275,7 @@ public:
    /// @brief Called by the framework when stand alone editing is complete. 
    /// @return Return a transaction object if you want the editing the occurred on this extension page to be in the transaction queue for undo/redo,
    /// otherwise return nullptr
-   virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPage,IEditClosureJointData* pClosureJointData) = 0;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> OnOK(CPropertyPage* pPage,IEditClosureJointData* pClosureJointData) = 0;
 
    /// @brief Returns the ID of EditSplicedGirderCallback or INVALID_ID if extensions to the Spliced Girder dialog are not related to the Closure Joint dialog
    virtual IDType GetEditSplicedGirderCallbackID() = 0;
@@ -297,7 +299,7 @@ public:
    /// @brief Called by the framework when stand alone editing is complete. 
    /// @return Return a transaction object if you want the editing the occurred on this extension page to be in the transaction queue for undo/redo,
    /// otherwise return nullptr
-   virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPage,IEditSplicedGirderData* pGirderData) = 0;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> OnOK(CPropertyPage* pPage,IEditSplicedGirderData* pGirderData) = 0;
 
    /// @brief Called by the framework after editing segment data from the Spliced Girder general page completes successfully
    /// so that data from the Segment and Spliced Girder editing dialogs can be made consistent with each other
@@ -327,7 +329,7 @@ public:
    /// @brief Called by the framework when stand alone editing is complete. 
    /// @return Return a transaction object if you want the editing the occurred on this extension page to be in the transaction queue for undo/redo,
    /// otherwise return nullptr
-   virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPage,IEditGirderData* pGirderData) = 0;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> OnOK(CPropertyPage* pPage,IEditGirderData* pGirderData) = 0;
 };
 
 /// @brief Interface that provides information to the IEditBridgeCallback::CreatePropertyPage method
@@ -349,7 +351,7 @@ public:
    /// @brief Called by the framework when stand alone editing is complete. 
    /// @return Return a transaction object if you want the editing the occurred on this extension page to be in the transaction queue for undo/redo,
    /// otherwise return nullptr
-   virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPage,IEditBridgeData* pBridgeData) = 0;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> OnOK(CPropertyPage* pPage,IEditBridgeData* pBridgeData) = 0;
 
    /// @brief Called by the framework after editing pier data from the Framing page completes successfully
    /// so that data from the Pier and Bridge editing dialogs can be made consistent with each other
@@ -383,7 +385,7 @@ public:
 
    /// @brief Called by the framework when you need to create a transaction object that
    /// will cause your girder data to be copied.
-   virtual std::unique_ptr<CEAFTransaction> CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) = 0;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys) = 0;
 
    /// @brief UI has an edit button for this callback. 
    /// @return Returns the tab index that will be opened
@@ -412,7 +414,7 @@ public:
    /// @brief Called by the framework when stand alone editing is complete. 
    /// @return Return a transaction object if you want the editing the occurred on this extension page to be in the transaction queue for undo/redo,
    /// otherwise return nullptr
-   virtual std::unique_ptr<CEAFTransaction> OnOK(CPropertyPage* pPage,IEditLoadRatingOptions* pLoadRatingOptions) = 0;
+   virtual std::unique_ptr<WBFL::EAF::Transaction> OnOK(CPropertyPage* pPage,IEditLoadRatingOptions* pLoadRatingOptions) = 0;
 };
 
 // {F477FBFC-2C57-42bf-8FB5-A32296087B64}

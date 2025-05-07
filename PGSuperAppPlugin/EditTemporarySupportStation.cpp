@@ -50,7 +50,7 @@ void txnEditTemporarySupportStation::Undo()
    DoExecute(0);
 }
 
-std::unique_ptr<CEAFTransaction> txnEditTemporarySupportStation::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditTemporarySupportStation::CreateClone() const
 {
    return std::make_unique<txnEditTemporarySupportStation>(m_TsIdx,m_Station[0],m_Station[1]);
 }

@@ -49,7 +49,7 @@ void txnEditLossParameters::Undo()
    DoExecute(0);
 }
 
-std::unique_ptr<CEAFTransaction> txnEditLossParameters::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditLossParameters::CreateClone() const
 {
    return std::make_unique<txnEditLossParameters>(m_LossParameters[0],m_LossParameters[1]);
 }

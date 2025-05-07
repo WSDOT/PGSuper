@@ -261,12 +261,12 @@ bool CPGSuperDoc::EditGirderSegmentDescription(const CSegmentKey& segmentKey,int
          newGirderData.m_BearingData[pgsTypes::metEnd] = dlg.m_SpanGdrDetailsBearingsPage.m_Bearings[pgsTypes::metEnd];
       }
 
-      std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditGirder>(girderKey,newGirderData));
+      std::unique_ptr<WBFL::EAF::Transaction> pTxn(std::make_unique<txnEditGirder>(girderKey,newGirderData));
 
       auto pExtensionTxn = dlg.GetExtensionPageTransaction();
       if ( pExtensionTxn )
       {
-         std::unique_ptr<CEAFMacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
+         std::unique_ptr<WBFL::EAF::MacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
          pMacro->Name(pTxn->Name());
          pMacro->AddTransaction(std::move(pTxn));
          pMacro->AddTransaction(std::move(pExtensionTxn));

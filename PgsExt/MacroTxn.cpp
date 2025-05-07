@@ -37,7 +37,7 @@ bool pgsMacroTxn::Execute()
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);
 
-   bool bResult = CEAFMacroTxn::Execute();
+   bool bResult = WBFL::EAF::MacroTxn::Execute();
 
    return bResult;
 }
@@ -51,10 +51,10 @@ void pgsMacroTxn::Undo()
    // Exception-safe holder for events
    CIEventsHolder event_holder(pEvents);
 
-   CEAFMacroTxn::Undo();
+   WBFL::EAF::MacroTxn::Undo();
 }
 
-std::unique_ptr<CEAFTransaction> pgsMacroTxn::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> pgsMacroTxn::CreateClone() const
 {
    std::unique_ptr<pgsMacroTxn> clone(std::make_unique<pgsMacroTxn>());
    clone->Name(m_Name);

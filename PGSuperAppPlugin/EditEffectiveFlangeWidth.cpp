@@ -62,7 +62,7 @@ void txnEditEffectiveFlangeWidth::Execute(int i)
    pEFW->IgnoreEffectiveFlangeWidthLimits(m_bIgnore[i]);
 }
 
-std::unique_ptr<CEAFTransaction> txnEditEffectiveFlangeWidth::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditEffectiveFlangeWidth::CreateClone() const
 {
    return std::make_unique<txnEditEffectiveFlangeWidth>(m_bIgnore[0],m_bIgnore[1]);
 }

@@ -47,7 +47,7 @@ void txnEditLoadFactors::Undo()
    DoExecute(0);
 }
 
-std::unique_ptr<CEAFTransaction> txnEditLoadFactors::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditLoadFactors::CreateClone() const
 {
    return std::make_unique<txnEditLoadFactors>(m_LoadFactors[0],m_LoadFactors[1]);
 }

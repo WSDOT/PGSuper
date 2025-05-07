@@ -216,57 +216,59 @@ CBeamsApp theApp;
 BOOL CBeamsApp::InitInstance()
 {
 	_Module.Init(ObjectMap, m_hInstance);
+   Module_.Init(ObjectMap2);
 	return CWinApp::InitInstance();
 }
 
 int CBeamsApp::ExitInstance()
 {
 	_Module.Term();
+   Module_.Term();
 	return CWinApp::ExitInstance();
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // DLL Entry Point
 
-extern "C"
-BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
-{
-    if (dwReason == DLL_PROCESS_ATTACH)
-    {
-        _Module.Init(ObjectMap, hInstance);
-        DisableThreadLibraryCalls(hInstance);
-        Module_.Init(ObjectMap2);
-    }
-    else if (dwReason == DLL_PROCESS_DETACH)
-    {
-       _Module.Term();
-       Module_.Term();
-    }
-    return TRUE;    // ok
-}
-
-/////////////////////////////////////////////////////////////////////////////
-// Used to determine whether the DLL can be unloaded by OLE
-
-STDAPI DllCanUnloadNow(void)
-{
-	AFX_MANAGE_STATE(AfxGetStaticModuleState());
-	return (AfxDllCanUnloadNow()==S_OK && _Module.GetLockCount()==0) ? S_OK : S_FALSE;
-}
+//extern "C"
+//BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
+//{
+//    if (dwReason == DLL_PROCESS_ATTACH)
+//    {
+//        _Module.Init(ObjectMap, hInstance);
+//        DisableThreadLibraryCalls(hInstance);
+//        Module_.Init(ObjectMap2);
+//    }
+//    else if (dwReason == DLL_PROCESS_DETACH)
+//    {
+//       _Module.Term();
+//       Module_.Term();
+//    }
+//    return TRUE;    // ok
+//}
+//
+///////////////////////////////////////////////////////////////////////////////
+//// Used to determine whether the DLL can be unloaded by OLE
+//
+//STDAPI DllCanUnloadNow(void)
+//{
+//	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+//	return (AfxDllCanUnloadNow()==S_OK && _Module.GetLockCount()==0) ? S_OK : S_FALSE;
+//}
 
 /////////////////////////////////////////////////////////////////////////////
 // Returns a class factory to create an object of the requested type
 
-STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
-{
-    return _Module.GetClassObject(rclsid, riid, ppv);
-}
+//STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv)
+//{
+//    return _Module.GetClassObject(rclsid, riid, ppv);
+//}
 
 /////////////////////////////////////////////////////////////////////////////
 // DllRegisterServer - Adds entries to the system registry
 
-void Register(bool bRegister)
-{
+//void Register(bool bRegister)
+//{
    //////////////////////////////////////////////////////////////
    // Component categories for beam factories
    //////////////////////////////////////////////////////////////
@@ -344,30 +346,30 @@ void Register(bool bRegister)
 
    //// U-beam factories
    //WBFL::System::ComCatMgr::RegWithCategory(CLSID_SplicedUBeamFactory, CATID_SplicedUBeamFactory, bRegister);
-}
+//}
 
-STDAPI DllRegisterServer(void)
-{
-	// registers object, typelib and all interfaces in typelib
-	HRESULT hr = _Module.RegisterServer(FALSE);
-   if ( FAILED(hr) )
-      return hr;
-
-
-   Register(true);
-
-   return S_OK;
-}
+//STDAPI DllRegisterServer(void)
+//{
+//	// registers object, typelib and all interfaces in typelib
+//	HRESULT hr = _Module.RegisterServer(FALSE);
+//   if ( FAILED(hr) )
+//      return hr;
+//
+//
+//   Register(true);
+//
+//   return S_OK;
+//}
 
 /////////////////////////////////////////////////////////////////////////////
 // DllUnregisterServer - Removes entries from the system registry
 
-STDAPI DllUnregisterServer(void)
-{
-   Register(false);
-
-   _Module.UnregisterServer();
-	return S_OK;
-}
+//STDAPI DllUnregisterServer(void)
+//{
+//   Register(false);
+//
+//   _Module.UnregisterServer();
+//	return S_OK;
+//}
 
 

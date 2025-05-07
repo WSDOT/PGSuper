@@ -96,7 +96,7 @@ void txnEditClosureJoint::Undo()
    }
 }
 
-std::unique_ptr<CEAFTransaction>txnEditClosureJoint::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction>txnEditClosureJoint::CreateClone() const
 {
    return std::make_unique<txnEditClosureJoint>(m_ClosureKey,m_NewData);
 }

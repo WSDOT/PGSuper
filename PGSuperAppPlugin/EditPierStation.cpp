@@ -51,7 +51,7 @@ void txnEditPierStation::Undo()
    DoExecute(0);
 }
 
-std::unique_ptr<CEAFTransaction> txnEditPierStation::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditPierStation::CreateClone() const
 {
    return std::make_unique<txnEditPierStation>(m_PierIdx,m_Station[0],m_Station[1],m_MoveOption);
 }

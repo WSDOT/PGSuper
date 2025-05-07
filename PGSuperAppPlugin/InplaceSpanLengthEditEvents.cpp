@@ -26,7 +26,7 @@
 #include "EditSpanLength.h"
 #include <PsgLib\BridgeDescription2.h>
 #include <IFace\Project.h>
-#include <EAF\EAFTxnManager.h>
+#include <EAF\TxnManager.h>
 
 #include <DManip/DisplayObject.h>
 #include <DManip/EditableUnitValueTextBlock.h>
@@ -57,6 +57,6 @@ void CInplaceSpanLengthEditEvents::Handle_OnChanged(std::shared_ptr<WBFL::DManip
    if ( !IsEqual(old_span_length,new_span_length) )
    {
       std::unique_ptr<txnEditSpanLength> pTxn(std::make_unique<txnEditSpanLength>(m_SpanIdx,old_span_length,new_span_length));
-      CEAFTxnManager::GetInstance().Execute(std::move(pTxn));
+      WBFL::EAF::TxnManager::GetInstance().Execute(std::move(pTxn));
    }
 }

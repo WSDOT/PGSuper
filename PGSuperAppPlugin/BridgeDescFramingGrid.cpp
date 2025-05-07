@@ -449,7 +449,7 @@ bool CBridgeDescFramingGrid::EnableRemoveTemporarySupportBtn()
    return true;
 }
 
-void CBridgeDescFramingGrid::GetTransactions(CEAFMacroTxn& macro)
+void CBridgeDescFramingGrid::GetTransactions(WBFL::EAF::MacroTxn& macro)
 {
    std::for_each(std::begin(m_PierTransactions), std::end(m_PierTransactions),
       [&macro](auto& txns)
@@ -1593,7 +1593,7 @@ SupportIndexType CBridgeDescFramingGrid::GetTemporarySupportIndex(ROWCOL nRow)
    return INVALID_INDEX;
 }
 
-void CBridgeDescFramingGrid::SavePierTransaction(PierIndexType pierIdx,std::unique_ptr<CEAFTransaction>&& pTxn)
+void CBridgeDescFramingGrid::SavePierTransaction(PierIndexType pierIdx,std::unique_ptr<WBFL::EAF::Transaction>&& pTxn)
 {
    if ( pTxn == nullptr )
    {
@@ -1603,13 +1603,13 @@ void CBridgeDescFramingGrid::SavePierTransaction(PierIndexType pierIdx,std::uniq
    auto found(m_PierTransactions.find(pierIdx));
    if ( found == m_PierTransactions.end())
    {
-      m_PierTransactions.insert(std::make_pair(pierIdx,std::vector<std::unique_ptr<CEAFTransaction>>()));
+      m_PierTransactions.insert(std::make_pair(pierIdx,std::vector<std::unique_ptr<WBFL::EAF::Transaction>>()));
       found = m_PierTransactions.find(pierIdx);
    }
    found->second.emplace_back(std::move(pTxn));
 }
 
-void CBridgeDescFramingGrid::SaveSpanTransaction(SpanIndexType spanIdx, std::unique_ptr<CEAFTransaction>&& pTxn)
+void CBridgeDescFramingGrid::SaveSpanTransaction(SpanIndexType spanIdx, std::unique_ptr<WBFL::EAF::Transaction>&& pTxn)
 {
    if ( pTxn == nullptr )
    {
@@ -1619,13 +1619,13 @@ void CBridgeDescFramingGrid::SaveSpanTransaction(SpanIndexType spanIdx, std::uni
    auto found(m_SpanTransactions.find(spanIdx));
    if ( found == m_SpanTransactions.end())
    {
-      m_SpanTransactions.insert(std::make_pair(spanIdx, std::vector<std::unique_ptr<CEAFTransaction>>()));
+      m_SpanTransactions.insert(std::make_pair(spanIdx, std::vector<std::unique_ptr<WBFL::EAF::Transaction>>()));
       found = m_SpanTransactions.find(spanIdx);
    }
    found->second.emplace_back(std::move(pTxn));
 }
 
-void CBridgeDescFramingGrid::SaveTemporarySupportTransaction(SupportIndexType tsIdx, std::unique_ptr<CEAFTransaction>&& pTxn)
+void CBridgeDescFramingGrid::SaveTemporarySupportTransaction(SupportIndexType tsIdx, std::unique_ptr<WBFL::EAF::Transaction>&& pTxn)
 {
    if ( pTxn == nullptr )
    {
@@ -1635,7 +1635,7 @@ void CBridgeDescFramingGrid::SaveTemporarySupportTransaction(SupportIndexType ts
    auto found(m_TempSupportTransactions.find(tsIdx));
    if ( found == m_TempSupportTransactions.end())
    {
-      m_TempSupportTransactions.insert(std::make_pair(tsIdx,std::vector<std::unique_ptr<CEAFTransaction>>()));
+      m_TempSupportTransactions.insert(std::make_pair(tsIdx,std::vector<std::unique_ptr<WBFL::EAF::Transaction>>()));
       found = m_TempSupportTransactions.find(tsIdx);
    }
    found->second.emplace_back(std::move(pTxn));

@@ -89,7 +89,7 @@ void txnDesignGirder::Undo()
    DoExecute(0);
 }
 
-std::unique_ptr<CEAFTransaction> txnDesignGirder::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnDesignGirder::CreateClone() const
 {
    std::vector<const pgsGirderDesignArtifact*> artifacts;
    for (DesignDataConstIter iter = m_DesignDataColl.begin(); iter!=m_DesignDataColl.end(); iter++)

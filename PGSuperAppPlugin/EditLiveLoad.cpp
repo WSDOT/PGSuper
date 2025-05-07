@@ -58,7 +58,7 @@ void txnEditLiveLoad::Undo()
    DoExecute(0);
 }
 
-std::unique_ptr<CEAFTransaction> txnEditLiveLoad::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditLiveLoad::CreateClone() const
 {
    return std::make_unique<txnEditLiveLoad>(m_Design[0],m_Design[1],m_Fatigue[0],m_Fatigue[1],m_Permit[0],m_Permit[1],m_EventIndex[0],m_EventIndex[1]);
 }

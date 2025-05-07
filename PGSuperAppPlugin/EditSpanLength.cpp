@@ -50,7 +50,7 @@ void txnEditSpanLength::Undo()
    DoExecute(0);
 }
 
-std::unique_ptr<CEAFTransaction> txnEditSpanLength::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditSpanLength::CreateClone() const
 {
    return std::make_unique<txnEditSpanLength>(m_SpanIdx,m_SpanLength[0],m_SpanLength[1]);
 }

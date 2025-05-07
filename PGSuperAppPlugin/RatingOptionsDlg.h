@@ -28,7 +28,7 @@
 #include "PermitRatingPage.h"
 
 #include <IFace\ExtendUI.h>
-#include <EAF\EAFMacroTxn.h>
+#include <EAF\MacroTxn.h>
 
 // CRatingOptionsDlg
 
@@ -61,7 +61,7 @@ public:
 
    // Returns a macro transaction object that contains editing transactions
    // for all the extension pages. The caller is responsble for deleting this object
-   std::unique_ptr<CEAFTransaction> GetExtensionPageTransaction();
+   std::unique_ptr<WBFL::EAF::Transaction> GetExtensionPageTransaction();
 
 protected:
 	DECLARE_MESSAGE_MAP()
@@ -72,7 +72,7 @@ protected:
    void CreateExtensionPages();
    void DestroyExtensionPages();
 
-   CEAFMacroTxn m_Macro;
+   WBFL::EAF::MacroTxn m_Macro;
    std::set<EditLoadRatingOptionsExtension> m_ExtensionPages;
    void NotifyExtensionPages();
 };

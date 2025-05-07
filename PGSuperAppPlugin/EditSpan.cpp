@@ -34,7 +34,7 @@ txnEditSpan::~txnEditSpan()
 {
 }
 
-std::unique_ptr<CEAFTransaction> txnEditSpan::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditSpan::CreateClone() const
 {
    return std::make_unique<txnEditSpan>(m_SpanIdx,m_BridgeDescription[0],m_BridgeDescription[1]);
 }

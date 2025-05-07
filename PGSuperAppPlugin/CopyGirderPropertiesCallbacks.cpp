@@ -270,7 +270,7 @@ void txnCopyGirderAllProperties::Undo()
    }
 }
 
-std::unique_ptr<CEAFTransaction> txnCopyGirderAllProperties::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnCopyGirderAllProperties::CreateClone() const
 {
    return std::make_unique<txnCopyGirderAllProperties>(m_FromGirderKey,m_ToGirderKeys);
 }
@@ -350,7 +350,7 @@ void txnCopyGirderStirrups::Undo()
    }
 }
 
-std::unique_ptr<CEAFTransaction> txnCopyGirderStirrups::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnCopyGirderStirrups::CreateClone() const
 {
    return std::make_unique<txnCopyGirderStirrups>(m_FromGirderKey,m_ToGirderKeys);
 }
@@ -462,7 +462,7 @@ void txnCopyGirderPrestressing::Undo()
    }
 }
 
-std::unique_ptr<CEAFTransaction> txnCopyGirderPrestressing::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnCopyGirderPrestressing::CreateClone() const
 {
    return std::make_unique<txnCopyGirderPrestressing>(m_FromGirderKey,m_ToGirderKeys);
 }
@@ -542,7 +542,7 @@ void txnCopyGirderHandling::Undo()
    }
 }
 
-std::unique_ptr<CEAFTransaction> txnCopyGirderHandling::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnCopyGirderHandling::CreateClone() const
 {
    return std::make_unique<txnCopyGirderHandling>(m_FromGirderKey,m_ToGirderKeys);
 }
@@ -622,7 +622,7 @@ void txnCopyGirderMaterial::Undo()
    }
 }
 
-std::unique_ptr<CEAFTransaction> txnCopyGirderMaterial::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnCopyGirderMaterial::CreateClone() const
 {
    return std::make_unique<txnCopyGirderMaterial>(m_FromGirderKey,m_ToGirderKeys);
 }
@@ -702,7 +702,7 @@ void txnCopyGirderRebar::Undo()
    }
 }
 
-std::unique_ptr<CEAFTransaction> txnCopyGirderRebar::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnCopyGirderRebar::CreateClone() const
 {
    return std::make_unique<txnCopyGirderRebar>(m_FromGirderKey,m_ToGirderKeys);
 }
@@ -730,7 +730,7 @@ BOOL CCopyGirderAllProperties::CanCopy(const CGirderKey& fromGirderKey,const std
    return TRUE;
 }
 
-std::unique_ptr<CEAFTransaction> CCopyGirderAllProperties::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
+std::unique_ptr<WBFL::EAF::Transaction> CCopyGirderAllProperties::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
 {
    return std::make_unique<txnCopyGirderAllProperties>(fromGirderKey,toGirderKeys);
 }
@@ -766,7 +766,7 @@ BOOL CCopyGirderMaterial::CanCopy(const CGirderKey& fromGirderKey,const std::vec
    return TRUE;
 }
 
-std::unique_ptr<CEAFTransaction> CCopyGirderMaterial::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
+std::unique_ptr<WBFL::EAF::Transaction> CCopyGirderMaterial::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
 {
    return std::make_unique<txnCopyGirderMaterial>(fromGirderKey,toGirderKeys);
 }
@@ -827,7 +827,7 @@ BOOL CCopyGirderRebar::CanCopy(const CGirderKey& fromGirderKey,const std::vector
    return TRUE;
 }
 
-std::unique_ptr<CEAFTransaction> CCopyGirderRebar::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
+std::unique_ptr<WBFL::EAF::Transaction> CCopyGirderRebar::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
 {
    return std::make_unique<txnCopyGirderRebar>(fromGirderKey,toGirderKeys);
 }
@@ -866,7 +866,7 @@ BOOL CCopyGirderStirrups::CanCopy(const CGirderKey& fromGirderKey,const std::vec
    return TRUE;
 }
 
-std::unique_ptr<CEAFTransaction> CCopyGirderStirrups::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
+std::unique_ptr<WBFL::EAF::Transaction> CCopyGirderStirrups::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
 {
    return std::make_unique<txnCopyGirderStirrups>(fromGirderKey,toGirderKeys);
 }
@@ -931,7 +931,7 @@ BOOL CCopyGirderPrestressing::CanCopy(const CGirderKey& fromGirderKey,const std:
    return TRUE;
 }
 
-std::unique_ptr<CEAFTransaction> CCopyGirderPrestressing::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
+std::unique_ptr<WBFL::EAF::Transaction> CCopyGirderPrestressing::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
 {
    return std::make_unique<txnCopyGirderPrestressing>(fromGirderKey,toGirderKeys);
 }
@@ -983,7 +983,7 @@ BOOL CCopyGirderHandling::CanCopy(const CGirderKey& fromGirderKey,const std::vec
    return TRUE;
 }
 
-std::unique_ptr<CEAFTransaction> CCopyGirderHandling::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
+std::unique_ptr<WBFL::EAF::Transaction> CCopyGirderHandling::CreateCopyTransaction(const CGirderKey& fromGirderKey,const std::vector<CGirderKey>& toGirderKeys)
 {
    return std::make_unique<txnCopyGirderHandling>(fromGirderKey, toGirderKeys);
 }

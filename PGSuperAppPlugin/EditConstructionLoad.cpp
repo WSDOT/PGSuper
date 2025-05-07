@@ -62,7 +62,7 @@ void txnEditConstructionLoad::DoExecute(int i)
    pLoads->SetConstructionLoad(m_Load[i]);
 }
 
-std::unique_ptr<CEAFTransaction> txnEditConstructionLoad::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditConstructionLoad::CreateClone() const
 {
    return std::make_unique<txnEditConstructionLoad>(m_Load[0],m_Load[1]);
 }

@@ -299,7 +299,7 @@ void CEditLoadsView::OnDeleteLoad()
       }
    }
 
-   CEAFTxnManager::GetInstance().Execute(std::move(macro));
+   WBFL::EAF::TxnManager::GetInstance().Execute(std::move(macro));
 }
 
 void CEditLoadsView::OnEditLoad() 

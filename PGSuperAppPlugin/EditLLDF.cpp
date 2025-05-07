@@ -53,7 +53,7 @@ void txnEditLLDF::Undo()
    DoExecute(0);
 }
 
-std::unique_ptr<CEAFTransaction> txnEditLLDF::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditLLDF::CreateClone() const
 {
    return std::make_unique<txnEditLLDF>(*m_pBridgeDesc[0], *m_pBridgeDesc[1],m_ROA[0],m_ROA[1]);
 }

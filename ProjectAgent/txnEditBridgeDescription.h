@@ -21,10 +21,10 @@
 ///////////////////////////////////////////////////////////////////////
 #pragma once
 #include <PsgLib\BridgeDescription2.h>
-#include <EAF\EAFTransaction.h>
+#include <EAF\Transaction.h>
 
 class txnEditBridgeDescription :
-   public CEAFTransaction
+   public WBFL::EAF::Transaction
 {
 public:
    txnEditBridgeDescription(const CBridgeDescription2& oldBridgeDesc,const CBridgeDescription2& newBridgeDesc);
@@ -32,7 +32,7 @@ public:
 
    virtual bool Execute() override;
    virtual void Undo() override;
-   virtual std::unique_ptr<CEAFTransaction>CreateClone() const override;
+   virtual std::unique_ptr<WBFL::EAF::Transaction>CreateClone() const override;
    virtual std::_tstring Name() const override;
    virtual bool IsUndoable() const override;
    virtual bool IsRepeatable() const override;

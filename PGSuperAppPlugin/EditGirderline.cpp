@@ -36,7 +36,7 @@ txnEditGirderline::~txnEditGirderline()
 {
 }
 
-std::unique_ptr<CEAFTransaction> txnEditGirderline::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditGirderline::CreateClone() const
 {
    return std::make_unique<txnEditGirderline>(m_GirderKey,m_bApplyToAllGirderlines,m_BridgeDescription[0],m_BridgeDescription[1]);
 }

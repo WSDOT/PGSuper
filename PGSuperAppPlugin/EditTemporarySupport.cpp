@@ -37,7 +37,7 @@ txnEditTemporarySupport::~txnEditTemporarySupport()
 {
 }
 
-std::unique_ptr<CEAFTransaction> txnEditTemporarySupport::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction> txnEditTemporarySupport::CreateClone() const
 {
    return std::make_unique<txnEditTemporarySupport>(m_tsIndex,m_BridgeDescription[0],m_BridgeDescription[1]);
 }

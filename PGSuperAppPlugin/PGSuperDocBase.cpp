@@ -344,7 +344,7 @@ m_bAutoCalcEnabled(true)
    m_bClearingSelection = false;
 
    std::unique_ptr<pgsTxnManagerFactory> txnMgrFactory(std::make_unique<pgsTxnManagerFactory>());
-   CEAFTxnManager::SetTransactionManagerFactory(std::move(txnMgrFactory));
+   WBFL::EAF::TxnManager::SetTransactionManagerFactory(std::move(txnMgrFactory));
 }
 
 CPGSDocBase::~CPGSDocBase()
@@ -478,7 +478,7 @@ bool CPGSDocBase::EditBridgeDescription(int nPage)
    if ( dlg.DoModal() == IDOK )
    {
 
-      std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditBridge>(*pOldBridgeDesc,      dlg.GetBridgeDescription(),
+      std::unique_ptr<WBFL::EAF::Transaction> pTxn(std::make_unique<txnEditBridge>(*pOldBridgeDesc,      dlg.GetBridgeDescription(),
                                               oldExposureCondition, dlg.m_EnvironmentalPage.m_Exposure == 0 ? pgsTypes::ExposureCondition::Normal : pgsTypes::ExposureCondition::Severe,
                                               oldClimateCondition, dlg.m_EnvironmentalPage.m_Climate == 0 ? pgsTypes::ClimateCondition::Cold : pgsTypes::ClimateCondition::Moderate,
                                               oldRelHumidity,       dlg.m_EnvironmentalPage.m_RelHumidity));
@@ -487,7 +487,7 @@ bool CPGSDocBase::EditBridgeDescription(int nPage)
       auto pExtensionTxn = dlg.GetExtensionPageTransaction();
       if ( pExtensionTxn )
       {
-         std::unique_ptr<CEAFMacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
+         std::unique_ptr<WBFL::EAF::MacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
          pMacro->Name(pTxn->Name());
          pMacro->AddTransaction(std::move(pTxn));
          pMacro->AddTransaction(std::move(pExtensionTxn));
@@ -520,11 +520,11 @@ bool CPGSDocBase::EditPierDescription(PierIndexType pierIdx, int nPage)
 
    if ( dlg.DoModal() == IDOK )
    {
-      std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditPier>(pierIdx,*pBridgeDesc,*dlg.GetBridgeDescription()));
+      std::unique_ptr<WBFL::EAF::Transaction> pTxn(std::make_unique<txnEditPier>(pierIdx,*pBridgeDesc,*dlg.GetBridgeDescription()));
       auto pExtensionTxn = dlg.GetExtensionPageTransaction();
       if ( pExtensionTxn )
       {
-         std::unique_ptr<CEAFMacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
+         std::unique_ptr<WBFL::EAF::MacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
          pMacro->Name(pTxn->Name());
          pMacro->AddTransaction(std::move(pTxn));
          pMacro->AddTransaction(std::move(pExtensionTxn));
@@ -558,12 +558,12 @@ bool CPGSDocBase::EditSpanDescription(SpanIndexType spanIdx, int nPage)
 
    if ( dlg.DoModal() == IDOK )
    {
-      std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditSpan>(spanIdx,*pBridgeDesc,*dlg.GetBridgeDescription()));
+      std::unique_ptr<WBFL::EAF::Transaction> pTxn(std::make_unique<txnEditSpan>(spanIdx,*pBridgeDesc,*dlg.GetBridgeDescription()));
 
       auto pExtensionTxn = dlg.GetExtensionPageTransaction();
       if ( pExtensionTxn )
       {
-         std::unique_ptr<CEAFMacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
+         std::unique_ptr<WBFL::EAF::MacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
          pMacro->Name(pTxn->Name());
          pMacro->AddTransaction(std::move(pTxn));
          pMacro->AddTransaction(std::move(pExtensionTxn));
@@ -612,7 +612,7 @@ bool CPGSDocBase::DoEditBearing()
       // dialog modifies descr
       dlg.ModifyBridgeDescr(&newBridgeDesc);
 
-      std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditBridge>(*pOldBridgeDesc,     newBridgeDesc,
+      std::unique_ptr<WBFL::EAF::Transaction> pTxn(std::make_unique<txnEditBridge>(*pOldBridgeDesc,     newBridgeDesc,
                                               oldExposureCondition, oldExposureCondition,
                                               oldClimateCondition, oldClimateCondition,
                                               oldRelHumidity,       oldRelHumidity));
@@ -651,7 +651,7 @@ bool CPGSDocBase::DoEditHaunch()
          auto oldClimateCondition = pEnvironment->GetClimateCondition();
          Float64 oldRelHumidity = pEnvironment->GetRelHumidity();
 
-         std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditBridge>(*pOldBridgeDesc,dlg.m_BridgeDesc,
+         std::unique_ptr<WBFL::EAF::Transaction> pTxn(std::make_unique<txnEditBridge>(*pOldBridgeDesc,dlg.m_BridgeDesc,
             oldExposureCondition,oldExposureCondition,
             oldClimateCondition, oldClimateCondition,
             oldRelHumidity,oldRelHumidity));
@@ -2984,10 +2984,10 @@ void CPGSDocBase::OnRatingSpec()
 
       if ( oldData != newData || pExtensionTxn )
       {
-         std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditRatingCriteria>(oldData,newData));
+         std::unique_ptr<WBFL::EAF::Transaction> pTxn(std::make_unique<txnEditRatingCriteria>(oldData,newData));
          if ( pExtensionTxn )
          {
-            std::unique_ptr<CEAFMacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
+            std::unique_ptr<WBFL::EAF::MacroTxn> pMacro(std::make_unique<pgsMacroTxn>());
             pMacro->Name(pTxn->Name());
             pMacro->AddTransaction(std::move(pTxn));
             pMacro->AddTransaction(std::move(pExtensionTxn));
@@ -5313,7 +5313,7 @@ bool CPGSDocBase::DoDesignHaunch(const CGirderKey& girderKey)
          auto oldClimateCondition = pEnvironment->GetClimateCondition();
          Float64 oldRelHumidity = pEnvironment->GetRelHumidity();
 
-         std::unique_ptr<CEAFTransaction> pTxn(std::make_unique<txnEditBridge>(*pOldBridgeDesc, newBridgeDescr,
+         std::unique_ptr<WBFL::EAF::Transaction> pTxn(std::make_unique<txnEditBridge>(*pOldBridgeDesc, newBridgeDescr,
             oldExposureCondition, oldExposureCondition, oldClimateCondition, oldClimateCondition, oldRelHumidity, oldRelHumidity));
 
          GET_IFACE(IEAFTransactions, pTransactions);

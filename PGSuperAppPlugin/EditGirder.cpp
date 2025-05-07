@@ -178,7 +178,7 @@ void txnEditGirder::Undo()
    }
 }
 
-std::unique_ptr<CEAFTransaction>txnEditGirder::CreateClone() const
+std::unique_ptr<WBFL::EAF::Transaction>txnEditGirder::CreateClone() const
 {
    return std::make_unique<txnEditGirder>(m_GirderKey,m_NewGirderData);
 }
