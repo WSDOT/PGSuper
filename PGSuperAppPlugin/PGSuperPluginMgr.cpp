@@ -226,9 +226,6 @@ void CPGSuperPluginMgrBase::LoadDocumentationMaps()
 
 std::pair<WBFL::EAF::HelpResult,CString> CPGSuperPluginMgrBase::GetDocumentLocation(LPCTSTR lpszDocSetName,UINT nHID)
 {
-#pragma Reminder("WORKING HERE - Removing COM")
-   // Once all plug-ins are converted, m_ImporterPlugins and m_ExporterPlugins go away and the "2" versions are renamed
-   USES_CONVERSION;
    CString strTargetDocSetName(lpszDocSetName);
 
    for (const auto& record : m_ImporterPlugins)

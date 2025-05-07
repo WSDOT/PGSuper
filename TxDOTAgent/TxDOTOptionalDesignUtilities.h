@@ -71,10 +71,8 @@ LOG
 inline CString GetTOGAFolder()
 {
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)EAFGetDocument()->GetDocTemplate();
-#pragma Reminder("WORKING HERE - Removing COM")
-   // This pointer cast looks weird - see if there is a better way to do this
    auto pluginApp = pTemplate->GetPluginApp();
-   auto* pAppP = dynamic_cast<CTOGAPluginApp*>(pluginApp.get());
+   auto pAppP = std::dynamic_pointer_cast<CTOGAPluginApp>(pluginApp);
 
    CString tfolder;
    pAppP->GetTemplateFolders(tfolder);

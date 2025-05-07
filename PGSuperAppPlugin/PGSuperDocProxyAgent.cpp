@@ -934,15 +934,11 @@ bool CPGSuperDocProxyAgent::UpdatingTemplates()
 {
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)(m_pMyDocument->GetDocTemplate());
    auto pluginApp = pTemplate->GetPluginApp();
-
-#pragma Reminder("WORKING HERE - Removing COM")
-   // This pointer casting seems problematic - review to see if there is a better way
-
-   CPGSuperPluginApp* pPGSuperPlugin = dynamic_cast<CPGSuperPluginApp*>(pluginApp.get());
+   auto pPGSuperPlugin = std::dynamic_pointer_cast<CPGSuperPluginApp>(pluginApp);
    if ( pPGSuperPlugin )
       return pPGSuperPlugin->UpdatingTemplates();
 
-   CPGSplicePluginApp* pPGSplicePlugin = dynamic_cast<CPGSplicePluginApp*>(pluginApp.get());
+   auto pPGSplicePlugin = std::dynamic_pointer_cast<CPGSplicePluginApp>(pluginApp);
    if ( pPGSplicePlugin )
       return pPGSplicePlugin->UpdatingTemplates();
 
@@ -1472,10 +1468,8 @@ bool CPGSuperDocProxyAgent::IsPGSpliceDocument() const
 void CPGSuperDocProxyAgent::GetUnitServer(IUnitServer** ppUnitServer)
 {
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)(m_pMyDocument->GetDocTemplate());
-#pragma Reminder("WORKING HERE - Removing COM")
-   // This pointer casting seems problematic - review to see if there is a better way
    auto pluginApp = pTemplate->GetPluginApp();
-   CPGSPluginAppBase* pPGSuper = dynamic_cast<CPGSPluginAppBase*>(pluginApp.get());
+   auto pPGSuper = std::dynamic_pointer_cast<CPGSPluginAppBase>(pluginApp);
 
    CComPtr<IAppUnitSystem> appUnitSystem;
    pPGSuper->GetAppUnitSystem(&appUnitSystem);

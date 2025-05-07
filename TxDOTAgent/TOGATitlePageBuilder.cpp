@@ -37,8 +37,7 @@
 #include <EAF/EAFStatusCenter.h>
 #include <EAF\EAFUIIntegration.h>
 
-#pragma Reminder("WORKING HERE - Removing COM - storing a pointer to the broker can cause circular references")
-CTOGATitlePageBuilder::CTOGATitlePageBuilder(std::shared_ptr<WBFL::EAF::Broker> pBroker,LPCTSTR strTitle,bool bFullVersion) :
+CTOGATitlePageBuilder::CTOGATitlePageBuilder(std::weak_ptr<WBFL::EAF::Broker> pBroker,LPCTSTR strTitle,bool bFullVersion) :
 WBFL::Reporting::TitlePageBuilder(strTitle),
 m_pBroker(pBroker),
 m_bFullVersion(bFullVersion)
@@ -75,7 +74,7 @@ rptChapter* CTOGATitlePageBuilder::Build(const std::shared_ptr<const WBFL::Repor
 
    // A bit tricky here, but status center and other results won't be rebuilt until the toga model is built.
    // Let's ask for some results to get the ball rolling
-   GET_IFACE(IGetTogaResults,pGetTogaResults);
+   GET_IFACE2(GetBroker(),IGetTogaResults,pGetTogaResults);
    pGetTogaResults->GetRequiredFc();
 
    rptParagraph* pPara = new rptParagraph;
@@ -94,7 +93,7 @@ rptChapter* CTOGATitlePageBuilder::Build(const std::shared_ptr<const WBFL::Repor
    pPara = new rptParagraph;
    pPara->SetStyleName(rptStyleManager::GetReportSubtitleStyle());
    *pTitlePage << pPara;
-   GET_IFACE(IVersionInfo,pVerInfo);
+   GET_IFACE2(GetBroker(),IVersionInfo,pVerInfo);
    *pPara << pVerInfo->GetVersionString() << rptNewLine;
 
    const std::_tstring& strImage = std::_tstring(rptStyleManager::GetImagePath()) + std::_tstring(_T("TxDOT_Logo.gif"));
@@ -106,8 +105,8 @@ rptChapter* CTOGATitlePageBuilder::Build(const std::shared_ptr<const WBFL::Repor
       *pPara << rptRcImage(strImage) << rptNewLine;
    }
 
-   GET_IFACE(IProjectProperties,pProps);
-   GET_IFACE(IEAFDocument,pDocument);
+   GET_IFACE2(GetBroker(),IProjectProperties,pProps);
+   GET_IFACE2(GetBroker(),IEAFDocument,pDocument);
 
    rptParagraph* pPara3 = new rptParagraph( rptStyleManager::GetHeadingStyle() );
    *pTitlePage << pPara3;
@@ -143,13 +142,13 @@ rptChapter* CTOGATitlePageBuilder::Build(const std::shared_ptr<const WBFL::Repor
    *pTitlePage << p;
 
    *p << _T("Configuration") << rptNewLine;
-   p = CLibraryUsageParagraph().Build(m_pBroker, false);
+   p = CLibraryUsageParagraph().Build(GetBroker(), false);
    *pTitlePage << p;
 
 
    // girder seed data comparison
    CSegmentKey fabrSegmentKey(TOGA_SPAN,TOGA_FABR_GDR,0);
-   p = CGirderSeedDataComparisonParagraph().Build(m_pBroker, fabrSegmentKey);
+   p = CGirderSeedDataComparisonParagraph().Build(GetBroker(), fabrSegmentKey);
    if (p != nullptr)
    {
       // only report if we have data
@@ -160,7 +159,7 @@ rptChapter* CTOGATitlePageBuilder::Build(const std::shared_ptr<const WBFL::Repor
    int row = 0;
 
    // Status Center Items
-   GET_IFACE(IEAFStatusCenter,pStatusCenter);
+   GET_IFACE2(GetBroker(),IEAFStatusCenter,pStatusCenter);
    IndexType nItems = pStatusCenter->Count();
 
    if ( nItems != 0 )

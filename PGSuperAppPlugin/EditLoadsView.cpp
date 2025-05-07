@@ -755,7 +755,7 @@ void CEditLoadsView::OnDestroy()
 class SortObject
 {
 public:
-   static std::shared_ptr<IUserDefinedLoadData> m_pUdl;
+   static std::weak_ptr<IUserDefinedLoadData> m_pUdl; // stored agent interfaces must be weak pointers
    static bool m_bSortAscending;
    static const CTimelineManager* m_pTimelineMgr;
    static int CALLBACK SortFunc(LPARAM lParam1,LPARAM lParam2,LPARAM lParamSort);
@@ -768,7 +768,7 @@ public:
    static CString GetDescription(LPARAM lParam);
 };
 
-std::shared_ptr<IUserDefinedLoadData> SortObject::m_pUdl;
+std::weak_ptr<IUserDefinedLoadData> SortObject::m_pUdl;
 const CTimelineManager* SortObject::m_pTimelineMgr = nullptr;
 bool SortObject::m_bSortAscending = true;
 
@@ -789,17 +789,17 @@ UserLoads::LoadCase SortObject::GetLoadCase(LPARAM lParam)
 
    if ( load_type == W_POINT_LOAD )
    {
-      const CPointLoadData* pLoadData = m_pUdl->FindPointLoad(load_id);
+      const CPointLoadData* pLoadData = m_pUdl.lock()->FindPointLoad(load_id);
       return pLoadData->m_LoadCase;
    }
    else if ( load_type == W_DISTRIBUTED_LOAD )
    {
-      const CDistributedLoadData* pLoadData = m_pUdl->FindDistributedLoad(load_id);
+      const CDistributedLoadData* pLoadData = m_pUdl.lock()->FindDistributedLoad(load_id);
       return pLoadData->m_LoadCase;
    }
    else
    {
-      const CMomentLoadData* pLoadData = m_pUdl->FindMomentLoad(load_id);
+      const CMomentLoadData* pLoadData = m_pUdl.lock()->FindMomentLoad(load_id);
       return pLoadData->m_LoadCase;
    }
 }
@@ -811,17 +811,17 @@ SpanIndexType SortObject::GetSpan(LPARAM lParam)
 
    if ( load_type == W_POINT_LOAD )
    {
-      const CPointLoadData* pLoadData = m_pUdl->FindPointLoad(load_id);
+      const CPointLoadData* pLoadData = m_pUdl.lock()->FindPointLoad(load_id);
       return pLoadData->m_SpanKey.spanIndex;
    }
    else if ( load_type == W_DISTRIBUTED_LOAD )
    {
-      const CDistributedLoadData* pLoadData = m_pUdl->FindDistributedLoad(load_id);
+      const CDistributedLoadData* pLoadData = m_pUdl.lock()->FindDistributedLoad(load_id);
       return pLoadData->m_SpanKey.spanIndex;
    }
    else
    {
-      const CMomentLoadData* pLoadData = m_pUdl->FindMomentLoad(load_id);
+      const CMomentLoadData* pLoadData = m_pUdl.lock()->FindMomentLoad(load_id);
       return pLoadData->m_SpanKey.spanIndex;
    }
 }
@@ -833,17 +833,17 @@ GirderIndexType SortObject::GetGirder(LPARAM lParam)
 
    if ( load_type == W_POINT_LOAD )
    {
-      const CPointLoadData* pLoadData = m_pUdl->FindPointLoad(load_id);
+      const CPointLoadData* pLoadData = m_pUdl.lock()->FindPointLoad(load_id);
       return pLoadData->m_SpanKey.girderIndex;
    }
    else if ( load_type == W_DISTRIBUTED_LOAD )
    {
-      const CDistributedLoadData* pLoadData = m_pUdl->FindDistributedLoad(load_id);
+      const CDistributedLoadData* pLoadData = m_pUdl.lock()->FindDistributedLoad(load_id);
       return pLoadData->m_SpanKey.girderIndex;
    }
    else
    {
-      const CMomentLoadData* pLoadData = m_pUdl->FindMomentLoad(load_id);
+      const CMomentLoadData* pLoadData = m_pUdl.lock()->FindMomentLoad(load_id);
       return pLoadData->m_SpanKey.girderIndex;
    }
 }
@@ -855,12 +855,12 @@ Float64 SortObject::GetLocation(LPARAM lParam)
 
    if ( load_type == W_POINT_LOAD )
    {
-      const CPointLoadData* pLoadData = m_pUdl->FindPointLoad(load_id);
+      const CPointLoadData* pLoadData = m_pUdl.lock()->FindPointLoad(load_id);
       return (pLoadData->m_Fractional ? -1 : 1)*pLoadData->m_Location;
    }
    else if ( load_type == W_DISTRIBUTED_LOAD )
    {
-      const CDistributedLoadData* pLoadData = m_pUdl->FindDistributedLoad(load_id);
+      const CDistributedLoadData* pLoadData = m_pUdl.lock()->FindDistributedLoad(load_id);
       if ( pLoadData->m_Type == UserLoads::Uniform )
       {
          return 0;
@@ -872,7 +872,7 @@ Float64 SortObject::GetLocation(LPARAM lParam)
    }
    else
    {
-      const CMomentLoadData* pLoadData = m_pUdl->FindMomentLoad(load_id);
+      const CMomentLoadData* pLoadData = m_pUdl.lock()->FindMomentLoad(load_id);
       return (pLoadData->m_Fractional ? -1 : 1)*pLoadData->m_Location;
    }
 }
@@ -884,17 +884,17 @@ Float64 SortObject::GetMagnitude(LPARAM lParam)
 
    if ( load_type == W_POINT_LOAD )
    {
-      const CPointLoadData* pLoadData = m_pUdl->FindPointLoad(load_id);
+      const CPointLoadData* pLoadData = m_pUdl.lock()->FindPointLoad(load_id);
       return pLoadData->m_Magnitude;
    }
    else if ( load_type == W_DISTRIBUTED_LOAD )
    {
-      const CDistributedLoadData* pLoadData = m_pUdl->FindDistributedLoad(load_id);
+      const CDistributedLoadData* pLoadData = m_pUdl.lock()->FindDistributedLoad(load_id);
       return pLoadData->m_WStart;
    }
    else
    {
-      const CMomentLoadData* pLoadData = m_pUdl->FindMomentLoad(load_id);
+      const CMomentLoadData* pLoadData = m_pUdl.lock()->FindMomentLoad(load_id);
       return pLoadData->m_Magnitude;
    }
 }
@@ -906,17 +906,17 @@ CString SortObject::GetDescription(LPARAM lParam)
 
    if ( load_type == W_POINT_LOAD )
    {
-      const CPointLoadData* pLoadData = m_pUdl->FindPointLoad(load_id);
+      const CPointLoadData* pLoadData = m_pUdl.lock()->FindPointLoad(load_id);
       return pLoadData->m_Description.c_str();
    }
    else if ( load_type == W_DISTRIBUTED_LOAD )
    {
-      const CDistributedLoadData* pLoadData = m_pUdl->FindDistributedLoad(load_id);
+      const CDistributedLoadData* pLoadData = m_pUdl.lock()->FindDistributedLoad(load_id);
       return pLoadData->m_Description.c_str();
    }
    else
    {
-      const CMomentLoadData* pLoadData = m_pUdl->FindMomentLoad(load_id);
+      const CMomentLoadData* pLoadData = m_pUdl.lock()->FindMomentLoad(load_id);
       return pLoadData->m_Description.c_str();
    }
 }
@@ -1001,10 +1001,6 @@ void CEditLoadsView::Sort(int columnIdx,bool bReverse)
    }
 
    GET_IFACE_NOCHECK(IUserDefinedLoadData, pUdl);
-#pragma Reminder("WORKING HERE - Removing COM - possible circular reference issue")
-   // SortObject::m_pUdl is a static member, it is not going to release the pointer
-   // Maybe it needs to be a weak pointer.
-   // See call below for shared_ptr.reset() to manually release the pointer
    SortObject::m_pUdl = pUdl;
 
    GET_IFACE(IBridgeDescription,pIBridgeDesc);
@@ -1025,9 +1021,6 @@ void CEditLoadsView::Sort(int columnIdx,bool bReverse)
    m_LoadsListCtrl.GetHeaderCtrl()->GetItem(columnIdx,&new_item);
    new_item.fmt  |= (SortObject::m_bSortAscending ? HDF_SORTUP : HDF_SORTDOWN); 
    m_LoadsListCtrl.GetHeaderCtrl()->SetItem(columnIdx,&new_item);
-
-
-   SortObject::m_pUdl.reset();
 
    m_bSortAscending = SortObject::m_bSortAscending;
 

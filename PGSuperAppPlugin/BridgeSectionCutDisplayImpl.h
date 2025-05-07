@@ -34,7 +34,7 @@ public:
    virtual ~CBridgeSectionCutDisplayImpl() = default;
 
    void SetColor(COLORREF color) override;
-   void Init(CBridgeModelViewChildFrame* pFrame, std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, std::shared_ptr<IRoadway> pRoadway, std::shared_ptr<IBridge> pBridge, iCutLocation* pCutLoc) override;
+   void Init(CBridgeModelViewChildFrame* pFrame, std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, std::weak_ptr<IRoadway> pRoadway, std::weak_ptr<IBridge> pBridge, iCutLocation* pCutLoc) override;
 
    void Draw(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC) const override;
    void DrawDragImage(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, CDC* pDC, std::shared_ptr<const WBFL::DManip::iCoordinateMap> map, const POINT& dragStart, const POINT& dragPoint) const override;
@@ -78,8 +78,8 @@ private:
    void GetBoundingBox(std::shared_ptr<const WBFL::DManip::iPointDisplayObject> pDO, Float64 position, Float64* top, Float64* left, Float64* right, Float64* bottom) const;
 
    COLORREF           m_Color = RGB(0, 0, 220);
-   std::shared_ptr<IBridge>           m_pBridge = nullptr;
-   std::shared_ptr<IRoadway>          m_pRoadway = nullptr;
+   std::weak_ptr<IBridge>           m_pBridge; // stored interface pointers must be weak to avoid circular references
+   std::weak_ptr<IRoadway>          m_pRoadway;
    iCutLocation*      m_pCutLocation = nullptr;
    CBridgeModelViewChildFrame* m_pFrame = nullptr;
    

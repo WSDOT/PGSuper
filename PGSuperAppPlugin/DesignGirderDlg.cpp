@@ -192,10 +192,8 @@ void CDesignGirderDlg::LoadSettings(arSlabOffsetDesignType haunchDesignRequest, 
    // loads last settings from the registry
    CEAFDocument* pDoc = EAFGetDocument();
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)(pDoc->GetDocTemplate());
-#pragma Reminder("WORKING HERE - Removing COM")
-   // This pointer casting seems problematic - review to see if there is a better way
    auto pluginApp = pTemplate->GetPluginApp();
-   CPGSPluginAppBase* pPGSBase = dynamic_cast<CPGSPluginAppBase*>(pluginApp.get());
+   auto pPGSBase = std::dynamic_pointer_cast<CPGSPluginAppBase>(pluginApp);
 
    CEAFApp* pApp = EAFGetApp();
    CAutoRegistry autoReg(pPGSBase->GetAppName(), pApp);
@@ -251,10 +249,8 @@ void CDesignGirderDlg::SaveSettings()
    // saves current settings to the registry
    CEAFDocument* pDoc = EAFGetDocument();
    CEAFDocTemplate* pTemplate = (CEAFDocTemplate*)(pDoc->GetDocTemplate());
-#pragma Reminder("WORKING HERE - Removing COM")
-   // This pointer casting seems problematic - review to see if there is a better way
    auto pluginApp = pTemplate->GetPluginApp();
-   CPGSPluginAppBase* pPGSBase = dynamic_cast<CPGSPluginAppBase*>(pluginApp.get());
+   auto pPGSBase = std::dynamic_pointer_cast<CPGSPluginAppBase>(pluginApp);
 
    CEAFApp* pApp = EAFGetApp();
    CAutoRegistry autoReg(pPGSBase->GetAppName(), pApp);

@@ -63,9 +63,8 @@ void CPGSuperDocTemplateBase::LoadTemplateInformation()
    CWinApp* pApp = AfxGetApp();
    HICON defaultIcon = pApp->LoadIcon(GetTemplateIconResourceID());
 
-#pragma Reminder("WORKING HERE - Removing COM")
-   // This pointer casting seems problematic - review to see if there is a better way
-   CPGSPluginAppBase* pAppPlugin = dynamic_cast<CPGSPluginAppBase*>(m_pPlugin.lock().get());
+   auto pAppPlugin = std::dynamic_pointer_cast<CPGSPluginAppBase>(m_pPlugin.lock());
+
    CString strWorkgroupFolderName;
    pAppPlugin->GetTemplateFolders(strWorkgroupFolderName);
 

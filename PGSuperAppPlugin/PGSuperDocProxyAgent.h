@@ -322,8 +322,6 @@ public:
    void GetUnitServer(IUnitServer** ppUnitServer) override;
 
 private:
-#pragma Reminder("WORKING HERE - Removing COM")
-   // Figure out what to do about EAF_AGENT_DATA
    EAF_DECLARE_AGENT_DATA;
 
    void AdviseEventSinks();

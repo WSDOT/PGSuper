@@ -26,9 +26,6 @@
 #include "resource.h"
 #include "dllmain.h"
 
-CWSDOTAgentModule _AtlModule;
-#pragma Reminder("WORKING HERE - Removing COM - is ATL,still needed?")
-
 #include "CLSID.h"
 #include "PGSuperComponentInfo.h"
 #include "PGSpliceComponentInfo.h"
