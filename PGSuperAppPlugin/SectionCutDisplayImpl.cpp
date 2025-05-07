@@ -57,6 +57,7 @@ CSectionCutDisplayImpl::~CSectionCutDisplayImpl()
 {
 }
 
+#pragma Reminder("WORKING HERE - Removing COM - should be weak reference to broker to avoid circular references")
 void CSectionCutDisplayImpl::Init(std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey& girderKey, iCutLocation* pCutLoc)
 {
    m_pBroker = pBroker;

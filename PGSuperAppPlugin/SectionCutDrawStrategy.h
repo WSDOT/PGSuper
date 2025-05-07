@@ -64,5 +64,5 @@ class iBridgeSectionCutDrawStrategy
 {
 public:
    virtual void SetColor(COLORREF color) = 0;
-	virtual void Init(CBridgeModelViewChildFrame* pFrame,std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, std::shared_ptr<IRoadway> pRoadway, std::shared_ptr<IBridge> pBridge, iCutLocation* pCutLoc) = 0;
+	virtual void Init(CBridgeModelViewChildFrame* pFrame,std::shared_ptr<WBFL::DManip::iPointDisplayObject> pDO, std::weak_ptr<IRoadway> pRoadway, std::weak_ptr<IBridge> pBridge, iCutLocation* pCutLoc) = 0;
 };
