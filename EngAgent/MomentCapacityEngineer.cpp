@@ -3696,7 +3696,7 @@ Float64 pgsMomentCapacityEngineer::pgsBondTool::GetDevelopmentLengthFactor(Stran
       bool bDebonded = IsDebonded(strandIdx,strandType);
 
       GET_IFACE(IPretensionForce, pPrestressForce);
-      const std::shared_ptr<pgsDevelopmentLength> pDevLength = pPrestressForce->GetDevelopmentLengthDetails(m_PoiMidSpan,strandType,bDebonded, m_pConfig);
+      auto pDevLength = pPrestressForce->GetDevelopmentLengthDetails(m_PoiMidSpan,strandType,bDebonded, m_pConfig);
 
       Float64 fps = pDevLength->GetFps();
       Float64 fpe = pDevLength->GetFpe();

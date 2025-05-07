@@ -42,7 +42,7 @@ LOG
 class pgsSummaryRatingArtifactImpl: public pgsISummaryRatingArtifact
 {
 public:
-   pgsSummaryRatingArtifactImpl(const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CEngAgentImp* pEngAgentImp);
+   pgsSummaryRatingArtifactImpl(const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx, const CEngAgentImp* pEngAgentImp);
 
    ~pgsSummaryRatingArtifactImpl() = default;
 
@@ -70,7 +70,6 @@ public:
 private:
    pgsSummaryRatingArtifactImpl();
 
-   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
    const CEngAgentImp* m_pEngAgentImp;
    std::vector<CGirderKey> m_GirderKeys;
    pgsTypes::LoadRatingType m_RatingType;

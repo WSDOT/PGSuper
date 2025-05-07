@@ -51,7 +51,6 @@
 
 #include "PGSuperCatCom.h"
 #include "PGSpliceCatCom.h"
-#include <System\ComCatMgr.h>
 
 #include <EAF/EAFStatusCenter.h>
 #include <IFace\PointOfInterest.h>
@@ -99,24 +98,3 @@ int CAnalysisAgentApp::ExitInstance()
 	_Module.Term();
 	return CWinApp::ExitInstance();
 }
-
-/////////////////////////////////////////////////////////////////////////////
-// DllRegisterServer - Adds entries to the system registry
-#pragma Reminder("WORKING HERE - Removing COM - Register Analysis Agent with agent component categories")
-//HRESULT RegisterAgent(bool bRegister)
-//{
-//   HRESULT hr = S_OK;
-//   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_AnalysisAgent,CATID_PGSuperAgent,bRegister);
-//   if ( FAILED(hr) )
-//   {
-//      return hr;
-//   }
-//
-//   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_AnalysisAgent,CATID_PGSpliceAgent,bRegister);
-//   if ( FAILED(hr) )
-//   {
-//      return hr;
-//   }
-//
-//   return S_OK;
-//}

@@ -68,7 +68,6 @@
 
 #include "PGSuperCatCom.h"
 #include "PGSpliceCatCom.h"
-#include <System\ComCatMgr.h>
 
 #include <IFace\Bridge.h>
 #include <IFace\Project.h>

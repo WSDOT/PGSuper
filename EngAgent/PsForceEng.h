@@ -46,11 +46,8 @@ DESCRIPTION
 class pgsPsForceEng
 {
 public:
-   pgsPsForceEng();
-   ~pgsPsForceEng();
-
-   void SetBroker(std::shared_ptr<WBFL::EAF::Broker> pBroker);
-   void SetStatusGroupID(StatusGroupIDType statusGroupID);
+   pgsPsForceEng(std::weak_ptr<WBFL::EAF::Broker> broker,StatusGroupIDType statusGroupID);
+   ~pgsPsForceEng() = default;
 
    const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,IntervalIndexType intervalIdx=INVALID_INDEX) const;
    const LOSSDETAILS* GetLosses(const pgsPointOfInterest& poi,const GDRCONFIG& config,IntervalIndexType intervalIdx=INVALID_INDEX) const;
@@ -120,7 +117,9 @@ public:
    Float64 GetEffectivePrestressWithLiveLoad(const pgsPointOfInterest& poi,pgsTypes::StrandType strandType,pgsTypes::LimitState limitState, VehicleIndexType vehicleIndex, bool bIncludeElasticEffects, bool bApplyElasticGainReduction, const GDRCONFIG* pConfig) const;
 
 private:
-   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
+   std::weak_ptr<WBFL::EAF::Broker> m_pBroker;
+   inline std::shared_ptr<WBFL::EAF::Broker> GetBroker() const { return m_pBroker.lock(); }
+
    StatusGroupIDType m_StatusGroupID;
    mutable std::unique_ptr<PGS::Beams::PsLossEngineerBase> m_LossEngineer;
 

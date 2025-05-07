@@ -332,7 +332,7 @@ ConfigStrandFillVector pgsStrandResequencer::CreateStrandFill(GirderLibraryEntry
 
 StrandIndexType pgsStrandResequencer::GetPermanentStrandCountFromPermGridIndex(GridIndexType gridIndex) const
 {
-   if (gridIndex >= m_FillItemList.size())
+   if (m_FillItemList.size() <= gridIndex)
    {
       ATLASSERT(0);
       return INVALID_INDEX;
@@ -350,19 +350,15 @@ StrandIndexType pgsStrandResequencer::GetPermanentStrandCountFromPermGridIndex(G
 
 pgsRaisedStraightStrandDesignTool::pgsRaisedStraightStrandDesignTool(SHARED_LOGFILE lf, const GirderLibraryEntry* pGdrEntry):
 LOGFILE(lf),
-m_pBroker(nullptr),
 m_StatusGroupID(INVALID_ID),
 m_pGdrEntry(pGdrEntry),
 m_StrandResequencer(pGdrEntry)
 {
 }
 
-void pgsRaisedStraightStrandDesignTool::Initialize(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, pgsSegmentDesignArtifact* pArtif)
+void pgsRaisedStraightStrandDesignTool::Initialize(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, pgsSegmentDesignArtifact* pArtif)
 {
-   ATLASSERT(pBroker);
-
    // cache some needed data
-#pragma Reminder("WORKING HERE - Removing COM - caching the broker could lead to circular references")
    m_pBroker = pBroker;
    m_StatusGroupID = statusGroupID;
 
@@ -370,16 +366,16 @@ void pgsRaisedStraightStrandDesignTool::Initialize(std::shared_ptr<WBFL::EAF::Br
    m_SegmentKey = m_pArtifact->GetSegmentKey();
 
    // Get kern elevations
-   GET_IFACE(IPointOfInterest, pPoi);
+   GET_IFACE2(GetBroker(),IPointOfInterest, pPoi);
    PoiList vPoi;
    pPoi->GetPointsOfInterest(m_SegmentKey, POI_5L | POI_RELEASED_SEGMENT, &vPoi);
    ATLASSERT(vPoi.size() == 1);
    const pgsPointOfInterest& poi = vPoi.front();
 
-   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE2(GetBroker(),IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
 
-   GET_IFACE(ISectionProperties,pSectProp);
+   GET_IFACE2(GetBroker(),ISectionProperties,pSectProp);
    // Strands must be above NA in order to be considered for raising
    m_Yb        = pSectProp->GetY(releaseIntervalIdx, poi, pgsTypes::BottomGirder); //pSectProp->GetKt(poi) + pSectProp->GetHg();
    m_LowerKern = pSectProp->GetKb(releaseIntervalIdx,poi);

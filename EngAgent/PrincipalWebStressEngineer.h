@@ -29,10 +29,10 @@ class pgsPrincipalWebStressEngineer
 {
 public:
    pgsPrincipalWebStressEngineer();
-   pgsPrincipalWebStressEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID);
+   pgsPrincipalWebStressEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID);
    pgsPrincipalWebStressEngineer(const pgsPrincipalWebStressEngineer& other) = default;
 
-   void SetBroker(std::shared_ptr<WBFL::EAF::Broker> pBroker);
+   void SetBroker(std::weak_ptr<WBFL::EAF::Broker> pBroker);
    void SetStatusGroupID(StatusGroupIDType statusGroupID);
 
    const PRINCIPALSTRESSINWEBDETAILS* GetPrincipalStressInWeb(const pgsPointOfInterest& poi) const;
@@ -42,7 +42,9 @@ public:
    void Check(const PoiList& vPois, pgsPrincipalTensionStressArtifact* pArtifact) const;
 
 private:
-   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
+   std::weak_ptr<WBFL::EAF::Broker> m_pBroker;
+   inline std::shared_ptr<WBFL::EAF::Broker> GetBroker() const { return m_pBroker.lock(); }
+
    StatusGroupIDType m_StatusGroupID;
 
    void CheckTimeStep(const PoiList& vPois, pgsPrincipalTensionStressArtifact* pArtifact) const;

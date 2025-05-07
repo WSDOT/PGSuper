@@ -61,9 +61,8 @@ namespace PGS
       class DistFactorEngineerBase;
       class PsLossEngineerBase;
 
-      // In order for PGSuper 2.x to work on the same computer as PGSuper 3.x we
-      // had to change all the Class IDs of the beam factories. Files saved with
-      // version 2.x have the old CLSIDs and we need the new CLSID to create
+      // Between PGSuper version 2.x and 3.x, all Class IDs of the beam factories where changed.
+      // Files saved with version 2.x have the old CLSIDs and we need the new CLSID to create
       // the beam factory. This is easy to implement for our own beam factories,
       // however, we need a way to translate CLSIDs for extension beams. That is
       // what objects of this type do. External publishers of beam factors
@@ -80,6 +79,9 @@ namespace PGS
       #define BFDIMUNITSCALAR 0  // The dimension is a scalar.
       #define BFDIMUNITBOOLEAN 1 // The dimension is a boolean.
 
+      /// @brief Beam factory objects must be singletons. Beam factory objects must inherit from
+      /// this class as well as from BeamFactory
+      /// @tparam T The class name of the beam factory.
       template <typename T>
       class BeamFactorySingleton
       {
@@ -92,7 +94,12 @@ namespace PGS
       };
       
       /// @brief Factory object that creates beam instances and related entities.
-      // BeamFactory objects are singletons and access through the GetInstance method
+      /// BeamFactory objects are singletons and access through the GetInstance method.
+      ///
+      /// The methods on the BeamFactory interface receive shared_ptr<Broker>. This is
+      /// for use with the scope of the called function. Do not store the Broker pointer.
+      /// If the Broker pointer must be stored, store it as a weak_ptr so circular references
+      /// are not created.
       class BeamFactory : public WBFL::EAF::ComponentObject
       {
       public:

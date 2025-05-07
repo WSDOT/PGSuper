@@ -537,10 +537,9 @@ void TimeStepLossEngineer::ComputeLosses(GirderIndexType girderLineIdx,IntervalI
 
    // Get frequently used interfaces
    // NOTE: We can't get these interfaces and hold them for the lifetime of this object
-   // because it creates circular references. As a result there are massive memory leaks
-   // Get them here, do the full timestep analysis, then release them.
-#pragma Reminder("WORKING HERE - Removing COM - it's bad to store interface pointers, causes circular references")
-   // look at this carefully, make sure this isn't causing a problem. if it is, fix it (see below... this might not be a problem)
+   // because it creates circular references.
+   // Get them here, do the full timestep analysis, then release them (see the end of this functino).
+
    m_pProgress = GetBroker()->GetInterface<IEAFProgress>(IID_IEAFProgress);
    m_pBridgeDesc = GetBroker()->GetInterface<IBridgeDescription>(IID_IBridgeDescription);
    m_pBridge = GetBroker()->GetInterface<IBridge>(IID_IBridge);

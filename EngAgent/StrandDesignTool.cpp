@@ -37,7 +37,7 @@
 #include "PsForceEng.h"
 #include "StrandDesignTool.h"
 
-#pragma Reminder("WORKING HERE - Removing COM")
+#pragma Reminder("WORKING HERE - Removing COM - move some implementation out of the header file into the CPP file")
 // There is too much implementation in the header file.
 // Move into this CPP file and/or breaking up into other files
 
@@ -88,7 +88,6 @@ static const Float64 DefaultHarpedRatio = 1.0/3.0;
 pgsStrandDesignTool::pgsStrandDesignTool(SHARED_LOGFILE lf) :
 LOGFILE(lf),
 m_pArtifact(nullptr),
-m_pBroker(nullptr),
 m_StatusGroupID(INVALID_ID),
 m_MinimumFinalMzEccentricity(Float64_Max),
 m_HarpedRatio(DefaultHarpedRatio),
@@ -103,11 +102,8 @@ m_MaxFc(0)
 {
 }
 
-void pgsStrandDesignTool::Initialize(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, pgsSegmentDesignArtifact* pArtif)
+void pgsStrandDesignTool::Initialize(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, pgsSegmentDesignArtifact* pArtif)
 {
-#pragma Reminder("WORKING HERE - Removing COM - caching broker causes circular reference")
-   ATLASSERT(pBroker);
-
    // Cache a whole bunch of stuff that does not change during design
    m_pBroker = pBroker;
    m_StatusGroupID = statusGroupID;
@@ -126,10 +122,10 @@ void pgsStrandDesignTool::Initialize(std::shared_ptr<WBFL::EAF::Broker> pBroker,
 
    // Every design starts from the same point regardless of the current state of bridge
    // description input
-   GET_IFACE(IBridge,pBridge);
-   GET_IFACE(ISegmentData,pSegmentData);
-   GET_IFACE(IPretensionForce,pPrestressForce);
-   GET_IFACE(IBridgeDescription,pIBridgeDesc);
+   GET_IFACE2(GetBroker(),IBridge,pBridge);
+   GET_IFACE2(GetBroker(),ISegmentData,pSegmentData);
+   GET_IFACE2(GetBroker(),IPretensionForce,pPrestressForce);
+   GET_IFACE2(GetBroker(),IBridgeDescription,pIBridgeDesc);
 
    const CBridgeDescription2* pBridgeDesc = pIBridgeDesc->GetBridgeDescription();
    const CDeckDescription2* pDeck = pBridgeDesc->GetDeckDescription();
@@ -168,7 +164,7 @@ void pgsStrandDesignTool::Initialize(std::shared_ptr<WBFL::EAF::Broker> pBroker,
       if (pSegmentMaterial->Concrete.Type == pgsTypes::PCI_UHPC)
       {
          LOG(_T("PCI-UHPC Concrete"));
-         GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
+         GET_IFACE2(GetBroker(),IEAFDisplayUnits, pDisplayUnits);
          m_MinFci = IS_SI_UNITS(pDisplayUnits) ? WBFL::Units::ConvertToSysUnits(28.0, WBFL::Units::Measure::MPa) : WBFL::Units::ConvertToSysUnits(4.0, WBFL::Units::Measure::KSI); // minimum per LRFD 5.4.2.1
          m_MaxFci = m_DesignOptions.maxFci; // this is from the design strategy defined in the girder
          m_MinFc = WBFL::Units::ConvertToSysUnits(17.4, WBFL::Units::Measure::KSI);
@@ -183,7 +179,7 @@ void pgsStrandDesignTool::Initialize(std::shared_ptr<WBFL::EAF::Broker> pBroker,
          // need to look at concrete strength range requirements for UHPC - there is a min f'ci hard limit that PCI UHPC does not have
          // this is just cobbled together - still needs to be reviewed for accuracy
          LOG(_T("UHPC Concrete"));
-         GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
+         GET_IFACE2(GetBroker(),IEAFDisplayUnits, pDisplayUnits);
          m_MinFci = WBFL::Units::ConvertToSysUnits(14.0, WBFL::Units::Measure::KSI); // minimum per GS 1.9.1.2 (but could be override by owner - override not implemented yet)
          m_MaxFci = m_DesignOptions.maxFci; // this is from the design strategy defined in the girder
          m_MinFc = WBFL::Units::ConvertToSysUnits(17.5, WBFL::Units::Measure::KSI); // GS 1.1.1
@@ -195,7 +191,7 @@ void pgsStrandDesignTool::Initialize(std::shared_ptr<WBFL::EAF::Broker> pBroker,
       else
       {
          LOG(_T("Conventional Concrete"));
-         GET_IFACE(IEAFDisplayUnits, pDisplayUnits);
+         GET_IFACE2(GetBroker(),IEAFDisplayUnits, pDisplayUnits);
          m_MinFci = IS_SI_UNITS(pDisplayUnits) ? WBFL::Units::ConvertToSysUnits(28.0, WBFL::Units::Measure::MPa) : WBFL::Units::ConvertToSysUnits(4.0, WBFL::Units::Measure::KSI); // minimum per LRFD 5.4.2.1
          m_MaxFci = m_DesignOptions.maxFci; // this is from the design strategy defined in the girder
          m_MinFc = IS_SI_UNITS(pDisplayUnits) ? WBFL::Units::ConvertToSysUnits(34.5, WBFL::Units::Measure::MPa) : WBFL::Units::ConvertToSysUnits(5.0, WBFL::Units::Measure::KSI); // agreed by wsdot and txdot
@@ -238,7 +234,7 @@ void pgsStrandDesignTool::Initialize(std::shared_ptr<WBFL::EAF::Broker> pBroker,
    }
 
 
-   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE2(GetBroker(),IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
    IntervalIndexType lastIntervalIdx = pIntervals->GetIntervalCount() - 1;
 
@@ -284,7 +280,7 @@ void pgsStrandDesignTool::Initialize(std::shared_ptr<WBFL::EAF::Broker> pBroker,
       }
 
       // Set initial design for AssumedExcessCamber here. Design is only for haunch load determination
-      GET_IFACE_NOCHECK(ISpecification,pSpec);
+      GET_IFACE2_NOCHECK(GetBroker(),ISpecification,pSpec);
       m_bIsDesignExcessCamber = ((m_DesignOptions.doDesignSlabOffset == sodDesignHaunch) && pSpec->IsAssumedExcessCamberForLoad()) ? true : false;
 
       // don't let tolerance be impossible
@@ -349,7 +345,7 @@ void pgsStrandDesignTool::Initialize(std::shared_ptr<WBFL::EAF::Broker> pBroker,
    // Compute minimum number of strands to start design from
    ComputeMinStrands();
 
-   GET_IFACE(IStrandGeometry,pStrandGeom);
+   GET_IFACE2(GetBroker(),IStrandGeometry,pStrandGeom);
    pStrandGeom->GetHarpedStrandControlHeights(m_SegmentKey,&m_HgStart,&m_HgHp1,&m_HgHp2,&m_HgEnd);
 }
 
@@ -501,7 +497,7 @@ bool pgsStrandDesignTool::SetNumPermanentStrands(StrandIndexType numPerm)
 
       if (m_StrandFillType == ftGridOrder)
       {
-         GET_IFACE(IStrandGeometry,pStrandGeom);
+         GET_IFACE2(GetBroker(),IStrandGeometry,pStrandGeom);
          StrandIndexType uns, unh;
          if (!pStrandGeom->ComputeNumPermanentStrands(numPerm,m_SegmentKey, &uns, &unh))
          {
@@ -565,7 +561,7 @@ bool pgsStrandDesignTool::SetNumStraightHarped(StrandIndexType ns, StrandIndexTy
    ATLASSERT(m_MinPermanentStrands <= ns+nh);
 
    // If this is being called, we are probably changing our strand fill. adjust likewise
-   GET_IFACE(IStrandGeometry,pStrandGeom);
+   GET_IFACE2(GetBroker(),IStrandGeometry,pStrandGeom);
 
    // make sure numbers of strands are valid
    if (0 < ns && ns != pStrandGeom->GetNextNumStrands(m_SegmentKey,pgsTypes::Straight, ns-1))
@@ -644,7 +640,7 @@ StrandIndexType pgsStrandDesignTool::GetMaxPermanentStrands() const
    }
    else
    {
-      GET_IFACE(IStrandGeometry,pStrandGeom);
+      GET_IFACE2(GetBroker(),IStrandGeometry,pStrandGeom);
       return pStrandGeom->GetMaxNumPermanentStrands(m_SegmentKey);
    }
 }
@@ -702,7 +698,7 @@ StrandIndexType pgsStrandDesignTool::GetNextNumPermanentStrands(StrandIndexType 
    }
    else if (m_StrandFillType==ftGridOrder)
    {
-      GET_IFACE(IStrandGeometry,pStrandGeom);
+      GET_IFACE2(GetBroker(),IStrandGeometry,pStrandGeom);
 
       return pStrandGeom->GetNextNumPermanentStrands(m_SegmentKey, prevNum);
    }
@@ -738,7 +734,7 @@ StrandIndexType pgsStrandDesignTool::GetPreviousNumPermanentStrands(StrandIndexT
    }
    else if (m_StrandFillType==ftGridOrder)
    {
-      GET_IFACE(IStrandGeometry,pStrandGeom);
+      GET_IFACE2(GetBroker(),IStrandGeometry,pStrandGeom);
 
       return pStrandGeom->GetPreviousNumPermanentStrands(m_SegmentKey, nextNum);
    }
@@ -775,7 +771,7 @@ StrandIndexType pgsStrandDesignTool::ComputeNextNumProportionalStrands(StrandInd
       return INVALID_INDEX;
    }
 
-   GET_IFACE(IStrandGeometry,pStrandGeom);
+   GET_IFACE2(GetBroker(),IStrandGeometry,pStrandGeom);
 
    // try to use current strand ratio, and if not possible; use whatever fits
    StrandIndexType nh_max = pStrandGeom->GetMaxStrands(m_SegmentKey,pgsTypes::Harped);
@@ -922,7 +918,7 @@ Float64 pgsStrandDesignTool::ComputeEccentricity(const pgsPointOfInterest& poi,I
 {
    ATLASSERT(poi.GetSegmentKey() == m_SegmentKey);
 
-   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE2(GetBroker(),IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
    IntervalIndexType castDiaphragmIntervalIdx = pIntervals->GetCastIntermediateDiaphragmsInterval();
    ATLASSERT(castDiaphragmIntervalIdx != INVALID_INDEX);
@@ -942,7 +938,7 @@ Float64 pgsStrandDesignTool::ComputeEccentricity(const pgsPointOfInterest& poi,I
 
    const GDRCONFIG& config = GetSegmentConfiguration();
 
-   GET_IFACE(IStrandGeometry,pStrandGeom);
+   GET_IFACE2(GetBroker(),IStrandGeometry,pStrandGeom);
    return pStrandGeom->GetEccentricity(eccIntervalIdx, poi, bIncTempStrands, &config).Y();
 }
 
@@ -982,7 +978,7 @@ void pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestressForce(const
    }
    else
    {
-      GET_IFACE(IPretensionForce,pPrestressForce);
+      GET_IFACE2(GetBroker(),IPretensionForce,pPrestressForce);
 
       guess.PrestressConfig.Pjack[pgsTypes::Straight]  = pPrestressForce->GetPjackMax(m_SegmentKey,pgsTypes::Straight,ns);
       guess.PrestressConfig.Pjack[pgsTypes::Harped]    = pPrestressForce->GetPjackMax(m_SegmentKey,pgsTypes::Harped,nh);
@@ -998,10 +994,9 @@ void pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestressForce(const
    LOG(_T("Maximum jacking stress for this strand configuration = ") << WBFL::Units::ConvertFromSysUnits(fpjMax,WBFL::Units::Measure::KSI) << _T(" KSI"));
 
    // Estimate prestress loss
-   pgsPsForceEng psfeng;
-   psfeng.SetStatusGroupID(m_StatusGroupID);
-   psfeng.SetBroker(m_pBroker);
-   GET_IFACE(IIntervals,pIntervals);
+   pgsPsForceEng psfeng(m_pBroker,m_StatusGroupID);
+
+   GET_IFACE2(GetBroker(),IIntervals,pIntervals);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
    Float64 loss;
    if ( pDesignParams->task.intervalIdx < liveLoadIntervalIdx )
@@ -1014,7 +1009,7 @@ void pgsStrandDesignTool::ComputePermanentStrandsRequiredForPrestressForce(const
    }
 
 #if defined _DEBUG
-   GET_IFACE(ILosses,pILosses);
+   GET_IFACE2(GetBroker(),ILosses,pILosses);
    if ( pDesignParams->task.intervalIdx < liveLoadIntervalIdx )
    {
       Float64 check_loss = pILosses->GetEffectivePrestressLoss(poi,pgsTypes::Permanent,pDesignParams->task.intervalIdx,pgsTypes::End,&guess);
@@ -1098,7 +1093,7 @@ StrandIndexType pgsStrandDesignTool::GuessInitialStrands()
 void pgsStrandDesignTool::UpdateJackingForces() const
 {
    // Compute Jacking Force
-   GET_IFACE(IPretensionForce,pPrestressForce);
+   GET_IFACE2(GetBroker(),IPretensionForce,pPrestressForce);
 
    Float64 PjS, PjH, PjT;
    PjS  = pPrestressForce->GetPjackMax(m_SegmentKey,pgsTypes::Straight, GetNs());
@@ -1158,7 +1153,7 @@ bool pgsStrandDesignTool::ResetHarpedStrandConfiguration()
    }
    else
    {
-      GET_IFACE(IStrandGeometry,pStrandGeom);
+      GET_IFACE2(GetBroker(),IStrandGeometry,pStrandGeom);
       ConfigStrandFillVector fillvec = pStrandGeom->ComputeStrandFill(m_SegmentKey, pgsTypes::Harped, nh);
 
       // if allowed, put end strands at top and harp point strands at lowest input position
@@ -1226,7 +1221,7 @@ void pgsStrandDesignTool::ComputeMinStrands()
       return;
    }
 
-   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE2(GetBroker(),IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
 
    PoiList mid_pois;
@@ -1237,7 +1232,7 @@ void pgsStrandDesignTool::ComputeMinStrands()
    }
    else
    {
-      GET_IFACE(IStrandGeometry,pStrandGeom);
+      GET_IFACE2(GetBroker(),IStrandGeometry,pStrandGeom);
 
       GDRCONFIG config = m_pArtifact->GetSegmentConfiguration();
 
@@ -1341,7 +1336,7 @@ bool pgsStrandDesignTool::AdjustForStrandSlope()
    ATLASSERT(m_StrandSlopeCriteria.bDesign); // should not be calling this
 
 
-   GET_IFACE(IStrandGeometry,pStrandGeom);
+   GET_IFACE2(GetBroker(),IStrandGeometry,pStrandGeom);
    const GDRCONFIG& config = GetSegmentConfiguration();
    for ( int i = 0; i < 2; i++ )
    {
@@ -1412,18 +1407,18 @@ bool pgsStrandDesignTool::AdjustForHoldDownForce()
       return true;
    }
 
-   GET_IFACE(IBridge, pBridge);
+   GET_IFACE2(GetBroker(),IBridge, pBridge);
    Float64 Ls = pBridge->GetSegmentLength(m_SegmentKey);
 
    // could use interface to get hdf directly, but need raw values to adjust
    const GDRCONFIG& config = GetSegmentConfiguration();
 
-   GET_IFACE(IPretensionForce,pPrestressForce);
+   GET_IFACE2(GetBroker(),IPretensionForce,pPrestressForce);
    pgsPointOfInterest poi; // poi where max hold down force occurs
    Float64 slope; // slope associated with max hold down force
    Float64 maxHFT = pPrestressForce->GetHoldDownForce(m_SegmentKey, m_HoldDownCriteria.type, &slope, &poi, &config);
 
-   GET_IFACE(IIntervals, pIntervals);
+   GET_IFACE2(GetBroker(),IIntervals, pIntervals);
    IntervalIndexType strandStressingIntervalIdx = pIntervals->GetStressStrandInterval(m_SegmentKey);
    Float64 Ph = pPrestressForce->GetPrestressForce(poi, pgsTypes::Harped, strandStressingIntervalIdx, pgsTypes::Start, pgsTypes::TransferLengthType::Minimum, &config);
    Float64 strand_force = Ph * (1 + m_HoldDownCriteria.friction);
@@ -1435,7 +1430,7 @@ bool pgsStrandDesignTool::AdjustForHoldDownForce()
 #if defined _DEBUG
    // verify total harped strand force, slope, and vertical (hold down) harped strand force
    // are all consistent
-   GET_IFACE(IStrandGeometry, pStrandGeometry);
+   GET_IFACE2(GetBroker(),IStrandGeometry, pStrandGeometry);
    Float64 _slope;
    if (m_HoldDownCriteria.type == HoldDownCriteria::Type::Total)
    {
@@ -1478,7 +1473,7 @@ bool pgsStrandDesignTool::AdjustForHoldDownForce()
       LOG(_T("Current HP2 offset = ")<< WBFL::Units::ConvertFromSysUnits(config.PrestressConfig.HpOffset[pgsTypes::metEnd],WBFL::Units::Measure::Inch) << _T(" in"));
       LOG(_T("Current End offset = ")<< WBFL::Units::ConvertFromSysUnits(config.PrestressConfig.EndOffset[pgsTypes::metEnd],WBFL::Units::Measure::Inch) << _T(" in"));
 
-      GET_IFACE(IStrandGeometry, pStrandGeom);
+      GET_IFACE2(GetBroker(),IStrandGeometry, pStrandGeom);
       if ( !AdjustStrandsForSlope(sl_reqd, slope, endType, Nh) )
       {
          LOG(_T("** DESIGN FAILED ** We cannot adjust Strands to design for allowable hold down"));
@@ -1505,7 +1500,7 @@ bool pgsStrandDesignTool::AdjustForHoldDownForce()
 
 bool pgsStrandDesignTool::AdjustStrandsForSlope(Float64 sl_reqd, Float64 slope, pgsTypes::MemberEndType endType,StrandIndexType nh)
 {
-   GET_IFACE(IStrandGeometry, pStrandGeom);
+   GET_IFACE2(GetBroker(),IStrandGeometry, pStrandGeom);
 
    // compute adjustment distance
    Float64 X1, X2, X3, X4;
@@ -1642,7 +1637,7 @@ bool pgsStrandDesignTool::AddTempStrands()
 {
    LOG(_T("Attempting to add temporary strands"));
 
-   GET_IFACE(IStrandGeometry,pStrandGeom);
+   GET_IFACE2(GetBroker(),IStrandGeometry,pStrandGeom);
 
    StrandIndexType Nt = m_pArtifact->GetNumTempStrands();
 
@@ -1655,7 +1650,7 @@ bool pgsStrandDesignTool::AddTempStrands()
    }
    else
    {
-      GET_IFACE(IPretensionForce,pPrestressForce);
+      GET_IFACE2(GetBroker(),IPretensionForce,pPrestressForce);
 
       LOG(_T("Adding ") << (nextNt - Nt) << _T(" temporary strands"));
       LOG(_T("** Successfully added strands -> Nt = ") << nextNt);
@@ -1735,7 +1730,7 @@ void pgsStrandDesignTool::DumpDesignParameters() const
 {
 #if defined ENABLE_LOGGING
 
-   GET_IFACE(IStrandGeometry,pStrandGeom);
+   GET_IFACE2(GetBroker(),IStrandGeometry,pStrandGeom);
 
    const GDRCONFIG& config = GetSegmentConfiguration();
    const ConfigStrandFillVector& fillvec = config.PrestressConfig.GetStrandFill(pgsTypes::Harped);
@@ -1815,10 +1810,10 @@ void pgsStrandDesignTool::DumpDesignParameters() const
 
 void pgsStrandDesignTool::FillArtifactWithFlexureValues()
 {
-   GET_IFACE(IBridge,pBridge);
-   GET_IFACE(IStrandGeometry,pStrandGeom);
-   GET_IFACE(IMaterials,pMaterial);
-   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE2(GetBroker(),IBridge,pBridge);
+   GET_IFACE2(GetBroker(),IStrandGeometry,pStrandGeom);
+   GET_IFACE2(GetBroker(),IMaterials,pMaterial);
+   GET_IFACE2(GetBroker(),IIntervals,pIntervals);
 
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
@@ -2021,12 +2016,12 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
    LOG(_T("Entering ComputeRequiredConcreteStrength"));
    Float64 fc_reqd;
 
-   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE2(GetBroker(),IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(GetSegmentKey());
 
    ConcStrengthResultType result = ConcSuccess;
 
-   GET_IFACE_NOCHECK(IConcreteStressLimits,pAllowStress);
+   GET_IFACE2_NOCHECK(GetBroker(),IConcreteStressLimits,pAllowStress);
    pgsPointOfInterest dummyPOI(m_SegmentKey,0.0);
    if ( task.stressType == pgsTypes::Compression )
    {
@@ -2099,7 +2094,7 @@ ConcStrengthResultType pgsStrandDesignTool::ComputeRequiredConcreteStrength(Floa
 
 bool pgsStrandDesignTool::Bump500(const StressCheckTask& task,pgsTypes::StressLocation stressLocation)
 {
-   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE2(GetBroker(),IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
    IntervalIndexType liftSegmentIntervalIdx = pIntervals->GetLiftSegmentInterval(m_SegmentKey);
 
@@ -2344,7 +2339,7 @@ bool pgsStrandDesignTool::KeepHarpedStrandsInBounds()
    StrandIndexType nh = m_pArtifact->GetNumHarpedStrands();
    if (0 < nh)
    {
-      GET_IFACE(IStrandGeometry,pStrandGeom);
+      GET_IFACE2(GetBroker(),IStrandGeometry,pStrandGeom);
 
       Float64 end_offset_inc = GetHarpedEndOffsetIncrement();
 
@@ -2424,7 +2419,7 @@ bool pgsStrandDesignTool::KeepHarpedStrandsInBounds()
 
 //void pgsStrandDesignTool::GetEndOffsetBounds(Float64* pLower, Float64* pUpper) const
 //{
-//   GET_IFACE(IStrandGeometry,pStrandGeom);
+//   GET_IFACE2(GetBroker(),IStrandGeometry,pStrandGeom);
 //   StrandIndexType nh = m_pArtifact->GetNumHarpedStrands();
 //   if (0 < nh)
 //   {
@@ -2454,7 +2449,7 @@ bool pgsStrandDesignTool::KeepHarpedStrandsInBounds()
 //
 //void pgsStrandDesignTool::GetHpOffsetBounds(Float64* pLower, Float64* pUpper) const
 //{
-//   GET_IFACE(IStrandGeometry,pStrandGeom);
+//   GET_IFACE2(GetBroker(),IStrandGeometry,pStrandGeom);
 //   StrandIndexType nh = m_pArtifact->GetNumHarpedStrands();
 //   if (0 < nh)
 //   {
@@ -2484,14 +2479,14 @@ bool pgsStrandDesignTool::KeepHarpedStrandsInBounds()
 
 Float64 pgsStrandDesignTool::GetHarpedHpOffsetIncrement() const
 {
-   GET_IFACE(IStrandGeometry, pStrandGeom);
+   GET_IFACE2(GetBroker(),IStrandGeometry, pStrandGeom);
    Float64 offset_inc = pStrandGeom->GetHarpedHpOffsetIncrement(m_GirderEntryName.c_str(), pgsTypes::asHarped);
    return offset_inc;
 }
 
 Float64 pgsStrandDesignTool::GetHarpedEndOffsetIncrement() const
 {
-   GET_IFACE(IStrandGeometry, pStrandGeom);
+   GET_IFACE2(GetBroker(),IStrandGeometry, pStrandGeom);
    Float64 offset_inc = pStrandGeom->GetHarpedEndOffsetIncrement(m_GirderEntryName.c_str(), pgsTypes::asHarped);
    return offset_inc;
 }
@@ -2541,11 +2536,10 @@ Float64 pgsStrandDesignTool::GetPrestressForceAtLifting(const GDRCONFIG &guess,c
    LOG(_T("Average jacking stress for this strand configuration = ") << WBFL::Units::ConvertFromSysUnits(fpj,WBFL::Units::Measure::KSI) << _T(" KSI"));
 
    // Estimate prestress loss
-   pgsPsForceEng psfeng;
-   psfeng.SetStatusGroupID(m_StatusGroupID);
-   psfeng.SetBroker(m_pBroker);
+   pgsPsForceEng psfeng(m_pBroker,m_StatusGroupID);
+
    ATLASSERT(poi.GetSegmentKey() == m_SegmentKey);
-   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE2(GetBroker(),IIntervals,pIntervals);
    IntervalIndexType liftingIntervalIdx = pIntervals->GetLiftSegmentInterval(m_SegmentKey);
    Float64 loss = psfeng.GetEffectivePrestressLoss(poi,pgsTypes::Permanent,liftingIntervalIdx,pgsTypes::End, true/*apply elastic gain reduction*/, &guess);
 
@@ -2572,7 +2566,7 @@ Float64 pgsStrandDesignTool::GetPrestressForceMidZone(IntervalIndexType interval
 
    ATLASSERT(poi.GetSegmentKey() == m_SegmentKey);
 
-   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE2(GetBroker(),IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
    IntervalIndexType castDeckIntervalIdx = pIntervals->GetFirstCastDeckInterval();
    IntervalIndexType liveLoadIntervalIdx = pIntervals->GetLiveLoadInterval();
@@ -2607,9 +2601,8 @@ Float64 pgsStrandDesignTool::GetPrestressForceMidZone(IntervalIndexType interval
    LOG(_T("Average jacking stress for this strand configuration = ") << WBFL::Units::ConvertFromSysUnits(fpj,WBFL::Units::Measure::KSI) << _T(" KSI"));
 
    // Estimate prestress loss
-   pgsPsForceEng psfeng;
-   psfeng.SetStatusGroupID(m_StatusGroupID);
-   psfeng.SetBroker(m_pBroker);
+   pgsPsForceEng psfeng(m_pBroker,m_StatusGroupID);
+
    Float64 loss;
    if ( intervalIdx < liveLoadIntervalIdx )
    {
@@ -2654,9 +2647,9 @@ Float64 pgsStrandDesignTool::ComputeEndOffsetForEccentricity(const pgsPointOfInt
 
    GDRCONFIG guess = GetSegmentConfiguration();
 
-   GET_IFACE(IStrandGeometry,pStrandGeom);
+   GET_IFACE2(GetBroker(),IStrandGeometry,pStrandGeom);
 
-   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE2(GetBroker(),IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
 
    Float64 ecc_ss = pStrandGeom->GetEccentricity(releaseIntervalIdx, poi, pgsTypes::Straight, &guess).Y();
@@ -2707,7 +2700,7 @@ Float64 pgsStrandDesignTool::ComputeHpOffsetForEccentricity(const pgsPointOfInte
    }
    else
    {
-      GET_IFACE(IIntervals,pIntervals);
+      GET_IFACE2(GetBroker(),IIntervals,pIntervals);
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
       IntervalIndexType castDeckIntervalIdx = pIntervals->GetFirstCastDeckInterval();
       ATLASSERT(castDeckIntervalIdx != INVALID_INDEX);
@@ -2726,7 +2719,7 @@ Float64 pgsStrandDesignTool::ComputeHpOffsetForEccentricity(const pgsPointOfInte
 
       GDRCONFIG guess = GetSegmentConfiguration();
 
-      GET_IFACE(IStrandGeometry,pStrandGeom);
+      GET_IFACE2(GetBroker(),IStrandGeometry,pStrandGeom);
 
       Float64 ecc_ss = pStrandGeom->GetEccentricity(eccIntervalIdx, poi, pgsTypes::Straight, &guess).Y();
       Float64 ecc_ts = bIncTempStrands ? pStrandGeom->GetEccentricity(eccIntervalIdx, poi, pgsTypes::Temporary, &guess).Y() : 0.0;
@@ -2775,7 +2768,7 @@ bool pgsStrandDesignTool::ComputeMinHarpedForEndZoneEccentricity(const pgsPointO
    LOG(_T("Attempting to swap harped for straight to achieve an ecc = ")<< WBFL::Units::ConvertFromSysUnits(eccTarget, WBFL::Units::Measure::Inch) << _T(" in"));
    LOG(_T("at ")<< WBFL::Units::ConvertFromSysUnits(poi.GetDistFromStart(), WBFL::Units::Measure::Feet) << _T(" feet from left end of girder"));
 
-   GET_IFACE(IStrandGeometry,pStrandGeom);
+   GET_IFACE2(GetBroker(),IStrandGeometry,pStrandGeom);
 
    // get the current eccentricity and make sure our target is lower (bigger)
    Float64 curr_ecc = ComputeEccentricity(poi,intervalIdx);
@@ -2788,7 +2781,7 @@ bool pgsStrandDesignTool::ComputeMinHarpedForEndZoneEccentricity(const pgsPointO
       return false;
    }
 
-   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE2(GetBroker(),IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
    IntervalIndexType nonCompoisteIntervalIdx = pIntervals->GetLastNoncompositeInterval();
    ATLASSERT(nonCompoisteIntervalIdx != INVALID_INDEX);
@@ -2969,11 +2962,11 @@ bool pgsStrandDesignTool::ComputeAddHarpedForMidZoneReleaseEccentricity(const pg
    }
    else
    {
-      GET_IFACE(IStrandGeometry,pStrandGeom);
+      GET_IFACE2(GetBroker(),IStrandGeometry,pStrandGeom);
 
       GDRCONFIG guess = GetSegmentConfiguration();
 
-      GET_IFACE(IIntervals,pIntervals);
+      GET_IFACE2(GetBroker(),IIntervals,pIntervals);
       IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
 
       // get the current eccentricity and make sure our target is higher (smaller)
@@ -3448,7 +3441,7 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
    // add our own POI's at all possible debond locations
 
    // start by putting pois into a temporary vector
-   GET_IFACE(IPointOfInterest,pPoi);
+   GET_IFACE2(GetBroker(),IPointOfInterest,pPoi);
 
    // Get all points of interest, regardless of stage and attributes
    PoiList vPoi;
@@ -3476,8 +3469,8 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
       // It is possible that the psxfer location is outside of the girder span.
       // This can cause oddball end conditions to control, so add an 
       // artificial xfer poi at the support locations if this is the case
-      GET_IFACE(IPretensionForce,pPrestress);
-      GET_IFACE(IBridge,pBridge);
+      GET_IFACE2(GetBroker(),IPretensionForce,pPrestress);
+      GET_IFACE2(GetBroker(),IBridge,pBridge);
 
       const PoiAttributeType attrib_xfer = POI_PSXFER;
 
@@ -3528,8 +3521,8 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
       PoiAttributeType attrib_debond = POI_DEBOND;
       PoiAttributeType attrib_xfer   = POI_PSXFER;
 
-      GET_IFACE(IBridge,pBridge);
-      GET_IFACE(IPretensionForce,pPrestress);
+      GET_IFACE2(GetBroker(),IBridge,pBridge);
+      GET_IFACE2(GetBroker(),IPretensionForce,pPrestress);
 
       Float64 start_supp = pBridge->GetSegmentStartEndDistance(m_SegmentKey);
       Float64 end_supp   = m_SegmentLength - pBridge->GetSegmentEndEndDistance(m_SegmentKey);
@@ -3554,7 +3547,7 @@ void pgsStrandDesignTool::ValidatePointsOfInterest()
          Float64 leftEnd, rightEnd;
          GetMidZoneBoundaries(&leftEnd, &rightEnd);
 
-         GET_IFACE(IDebondLimits,pDebondLimits);
+         GET_IFACE2(GetBroker(),IDebondLimits,pDebondLimits);
          Float64 db_incr = pDebondLimits->GetMinDistanceBetweenDebondSections(m_SegmentKey);
       
          Int16 nincs = (Int16)floor((leftEnd + 1.0e-05)/db_incr); // we know both locs are equidistant from ends
@@ -3606,7 +3599,7 @@ void pgsStrandDesignTool::ComputeMidZoneBoundaries()
    // Harped designs use harping points. User debond rules for all others
    if (m_DesignOptions.doDesignForFlexure == dtDesignForHarping)
    {
-      GET_IFACE(IStrandGeometry,pStrandGeom);
+      GET_IFACE2(GetBroker(),IStrandGeometry,pStrandGeom);
       Float64 lhp, rhp;
       pStrandGeom->GetHarpingPointLocations(m_SegmentKey,&lhp,&rhp);
 
@@ -3625,8 +3618,8 @@ void pgsStrandDesignTool::ComputeMidZoneBoundaries()
    else
    {
       // Mid zone for debonding is envelope of girderLength/2 - dev length, and user-input limits
-      GET_IFACE(ISegmentData,pSegmentData);
-      GET_IFACE(IBridgeDescription,pIBridgeDesc);
+      GET_IFACE2(GetBroker(),ISegmentData,pSegmentData);
+      GET_IFACE2(GetBroker(),IBridgeDescription,pIBridgeDesc);
 
       const CBridgeDescription2* pBridgeDesc  = pIBridgeDesc->GetBridgeDescription();
 
@@ -3682,7 +3675,7 @@ void pgsStrandDesignTool::ComputeMidZoneBoundaries()
       LOG(_T("Raw MZ end length = ")<< WBFL::Units::ConvertFromSysUnits(mz_end_len,WBFL::Units::Measure::Inch)<<_T(" in"));
       LOG(_T("Girder length = ")<< WBFL::Units::ConvertFromSysUnits(m_SegmentLength,WBFL::Units::Measure::Inch)<<_T(" in"));
  
-      GET_IFACE(IDebondLimits, pDebondLimits);
+      GET_IFACE2(GetBroker(),IDebondLimits, pDebondLimits);
       Float64 db_incr = pDebondLimits->GetMinDistanceBetweenDebondSections(m_SegmentKey);
       LOG(_T("Debond spacing increment = ")<< WBFL::Units::ConvertFromSysUnits(db_incr,WBFL::Units::Measure::Inch)<<_T(" in"));
    
@@ -3734,12 +3727,12 @@ void pgsStrandDesignTool::InitHarpedPhysicalBounds(const WBFL::Materials::PsStra
    m_pArtifact->SetHarpStrandOffsetEnd(pgsTypes::metEnd,0.00);
 
    // initialize data for strand slope and hold down checks
-   GET_IFACE(IStrandGeometry,pStrandGeom);
+   GET_IFACE2(GetBroker(),IStrandGeometry,pStrandGeom);
    // no use if there are no harped strands
    StrandIndexType nh_max = pStrandGeom->GetMaxStrands(m_SegmentKey,pgsTypes::Harped);
 
-   GET_IFACE(ILibrary,pLib);
-   GET_IFACE(ISpecification,pSpec);
+   GET_IFACE2(GetBroker(),ILibrary,pLib);
+   GET_IFACE2(GetBroker(),ISpecification,pSpec);
 
    const SpecLibraryEntry* pSpecEntry = pLib->GetSpecEntry( pSpec->GetSpecification().c_str() );
    m_StrandSlopeCriteria = pSpecEntry->GetStrandSlopeCriteria();
@@ -3853,7 +3846,7 @@ void pgsStrandDesignTool::ComputeDebondLevels(std::shared_ptr<IPretensionForce> 
       return;
    }
 
-   GET_IFACE(IDebondLimits,pDebondLimits);
+   GET_IFACE2(GetBroker(),IDebondLimits,pDebondLimits);
    // Debond levels represent all of the possible debonding schemes for the current section
    // Debonding is added in the same sequence as strand fill order. However, we must abide by the
    // debonding limit rules from the specification
@@ -3877,7 +3870,7 @@ void pgsStrandDesignTool::ComputeDebondLevels(std::shared_ptr<IPretensionForce> 
       LOG(_T("m_MaxPercentDebondSection = ") << m_MaxPercentDebondSection);
    }
 
-   GET_IFACE(IStrandGeometry,pStrandGeom);
+   GET_IFACE2(GetBroker(),IStrandGeometry,pStrandGeom);
 
    // coordinates of all straight strands
    StrandIndexType max_ss = pStrandGeom->GetMaxStrands(m_SegmentKey,pgsTypes::Straight);
@@ -3987,9 +3980,9 @@ void pgsStrandDesignTool::ComputeDebondLevels(std::shared_ptr<IPretensionForce> 
    // strands are located from the top down, in girder section coordinates.
    // in 2.9 they were located bottom up... need to add Hg to the strand location
    // to match the 2.9 log files
-   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE2(GetBroker(),IIntervals,pIntervals);
    IntervalIndexType releaseIntervalIdx = pIntervals->GetPrestressReleaseInterval(m_SegmentKey);
-   GET_IFACE(ISectionProperties,pSectProp);
+   GET_IFACE2(GetBroker(),ISectionProperties,pSectProp);
    Float64 Hg = pSectProp->GetHg(releaseIntervalIdx,pgsPointOfInterest(m_SegmentKey,0.0));
 
    if (debondable_list.empty())
@@ -4715,7 +4708,7 @@ void pgsStrandDesignTool::GetDebondLevelForTopTension(const StressDemand& demand
 
    if ( 0 < tensDemand )
    {
-      GET_IFACE(IPretensionForce,pPrestressForce);
+      GET_IFACE2(GetBroker(),IPretensionForce,pPrestressForce);
 
       StrandIndexType nperm = fullyBondedConfig.PrestressConfig.GetStrandCount(pgsTypes::Permanent);
       StrandIndexType ntemp = fullyBondedConfig.PrestressConfig.GetStrandCount(pgsTypes::Temporary);
@@ -4821,7 +4814,7 @@ void pgsStrandDesignTool::GetDebondLevelForBottomCompression(const StressDemand&
 
    if ( compDemand < 0 )
    {
-      GET_IFACE(IPretensionForce,pPrestressForce);
+      GET_IFACE2(GetBroker(),IPretensionForce,pPrestressForce);
 
       StrandIndexType nperm = fullyBondedConfig.PrestressConfig.GetStrandCount(pgsTypes::Permanent);
       StrandIndexType ntemp = fullyBondedConfig.PrestressConfig.GetStrandCount(pgsTypes::Temporary);
@@ -4923,8 +4916,8 @@ void pgsStrandDesignTool::GetDebondLevelForBottomCompression(const StressDemand&
 std::vector<DebondLevelType> pgsStrandDesignTool::ComputeDebondsForDemand(const std::vector<StressDemand>& demands, const GDRCONFIG& fullyBondedConfig, Float64 cgFullyBonded,
                                                                           IntervalIndexType interval, Float64 allowTens, Float64 allowComp) const
 {
-   GET_IFACE(ISectionProperties,pSectProp);
-   GET_IFACE(IStrandGeometry,pStrandGeom);
+   GET_IFACE2(GetBroker(),ISectionProperties,pSectProp);
+   GET_IFACE2(GetBroker(),IStrandGeometry,pStrandGeom);
 
    std::vector<DebondLevelType> debond_levels;
    SectionIndexType max_db_sections = GetMaxNumberOfDebondSections();

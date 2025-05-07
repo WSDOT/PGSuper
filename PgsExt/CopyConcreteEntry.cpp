@@ -35,18 +35,14 @@
 #include <EAF\EAFUtilities.h>
 #include <EAF\EAFDocument.h>
 
-#pragma Reminder("WORKING HERE - Removing COM")
-// pointer to concrete library entry was removed just so we can get this DLL built
-// The concrete editing UI element is most likely going to be moved to PGSuperAppPlugin
-
 /////////////////////////////////////////////////////////////////////////////
 // CCopyConcreteEntry dialog
 
 
 CCopyConcreteEntry::CCopyConcreteEntry(bool isPrestressed, CWnd* pParent /*=nullptr*/)
 	: CDialog(CCopyConcreteEntry::IDD, pParent),
-   m_IsPrestressed(isPrestressed)/* ,
-   m_ConcreteEntry(nullptr)*/
+   m_IsPrestressed(isPrestressed),
+   m_ConcreteEntry(nullptr)
 {
 	//{{AFX_DATA_INIT(CCopyConcreteEntry)
 		// NOTE: the ClassWizard will add member initialization here

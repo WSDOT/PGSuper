@@ -27,14 +27,12 @@
 
 
 
-pgsSummaryRatingArtifactImpl::pgsSummaryRatingArtifactImpl(const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx, std::shared_ptr<WBFL::EAF::Broker> pBroker, const CEngAgentImp* pEngAgentImp):
-   m_pBroker(pBroker),
+pgsSummaryRatingArtifactImpl::pgsSummaryRatingArtifactImpl(const std::vector<CGirderKey>& girderKeys,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx, const CEngAgentImp* pEngAgentImp):
    m_pEngAgentImp(pEngAgentImp),
    m_GirderKeys(girderKeys),
    m_RatingType(ratingType),
    m_VehicleIdx(vehicleIdx)
 {
-#pragma Reminder("WORKING HERE - Removing COM - caching the broker leads to circular reference")
 }
    
 Float64 pgsSummaryRatingArtifactImpl::GetMomentRatingFactor(bool bPositiveMoment) const

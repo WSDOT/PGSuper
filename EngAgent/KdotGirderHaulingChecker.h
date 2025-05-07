@@ -43,11 +43,11 @@ LOG
 class pgsKdotGirderHaulingChecker: public pgsGirderHaulingChecker
 {
 public:
-   pgsKdotGirderHaulingChecker(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID);
+   pgsKdotGirderHaulingChecker(std::weak_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID);
    pgsKdotGirderHaulingChecker() = delete;
    pgsKdotGirderHaulingChecker(const pgsKdotGirderHaulingChecker&) = delete;
    pgsKdotGirderHaulingChecker& operator=(const pgsKdotGirderHaulingChecker&) = delete;
-   virtual ~pgsKdotGirderHaulingChecker();
+   virtual ~pgsKdotGirderHaulingChecker() = default;
 
    std::shared_ptr<pgsHaulingAnalysisArtifact> CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE) override;
    std::shared_ptr<pgsHaulingAnalysisArtifact> AnalyzeHauling(const CSegmentKey& segmentKey) override;
@@ -56,7 +56,9 @@ public:
    std::shared_ptr<pgsHaulingAnalysisArtifact> DesignHauling(const CSegmentKey& segmentKey,HANDLINGCONFIG& config,bool bIgnoreConfigurationLimits,std::shared_ptr<ISegmentHaulingDesignPointsOfInterest> pPOId,bool* bSuccess, SHARED_LOGFILE LOGFILE) override;
 
 private:
-   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
+   std::weak_ptr<WBFL::EAF::Broker> m_pBroker;
+   inline std::shared_ptr<WBFL::EAF::Broker> GetBroker() const { return m_pBroker.lock(); }
+
    StatusGroupIDType m_StatusGroupID;
    StatusCallbackIDType m_scidBunkPointLocation;
 

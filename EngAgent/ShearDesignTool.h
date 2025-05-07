@@ -116,7 +116,7 @@ public:
 
    pgsShearDesignTool(SHARED_LOGFILE lf);
    
-   void Initialize(std::shared_ptr<WBFL::EAF::Broker> pBroker, const LongReinfShearChecker* pLongShearChecker,
+   void Initialize(std::weak_ptr<WBFL::EAF::Broker> pBroker, const LongReinfShearChecker* pLongShearChecker,
                    StatusGroupIDType statusGroupID, pgsSegmentDesignArtifact* pArtifact, 
                    Float64 startConfinementZl, Float64 endConfinementZl,
                    bool bPermit, bool bDesignFromScratch);
@@ -196,7 +196,9 @@ private:
    void DumpDesignParameters();
 
 private:
-   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
+   std::weak_ptr<WBFL::EAF::Broker> m_pBroker;
+   inline std::shared_ptr<WBFL::EAF::Broker> GetBroker() const { return m_pBroker.lock(); }
+
    StatusGroupIDType m_StatusGroupID;
 
    pgsSegmentDesignArtifact* m_pArtifact;

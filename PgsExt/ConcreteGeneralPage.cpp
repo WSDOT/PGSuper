@@ -29,6 +29,7 @@
 #include <PgsExt\ConcreteDetailsDlg.h>
 
 #include "CopyConcreteEntry.h"
+#include <psgLib/ConcreteLibraryEntry.h>
 
 
 #include <IFace/Tools.h>
@@ -297,83 +298,78 @@ void CConcreteGeneralPage::UpdateEc()
    }
 }
 
-#pragma Reminder("WORKING HERE - Removing COM - CConcreteGeneralPage::OnCopyMaterial disabled")
-// Need to fix this. the problem is CCopConcreteEntry and this object both use the ConcreteEntry library
-// entry which creates a circular reference with PGSuperLibrary.
-// Commented out for now, but this will need to be fixed. Need to move these dialog up to PGSuperAppPlugin
-// because that is the only location it is used - but that creates a problem, this dialog is no longer reusable for 3rd parties
 void CConcreteGeneralPage::OnCopyMaterial() 
 {
-   //INT_PTR result;
-   //std::unique_ptr<CCopyConcreteEntry> pDlg;
+   INT_PTR result;
+   std::unique_ptr<CCopyConcreteEntry> pDlg;
 
-   //{
-   //   AFX_MANAGE_STATE(AfxGetStaticModuleState());
-   //   pDlg = std::make_unique<CCopyConcreteEntry>(false, this);
-   //   result = pDlg->DoModal();
-   //}
+   {
+      AFX_MANAGE_STATE(AfxGetStaticModuleState());
+      pDlg = std::make_unique<CCopyConcreteEntry>(false, this);
+      result = pDlg->DoModal();
+   }
 
-   //if ( result < 0 )
-   //{
-   //   ::AfxMessageBox(_T("The Concrete library is empty"),MB_OK);
-   //}
-   //else if ( result == IDOK )
-   //{
-   //   const ConcreteLibraryEntry* entry = pDlg->m_ConcreteEntry;
+   if ( result < 0 )
+   {
+      ::AfxMessageBox(_T("The Concrete library is empty"),MB_OK);
+   }
+   else if ( result == IDOK )
+   {
+      const ConcreteLibraryEntry* entry = pDlg->m_ConcreteEntry;
 
-   //   if (entry != nullptr)
-   //   {
-   //      CConcreteDetailsDlg* pParent = (CConcreteDetailsDlg*)GetParent();
+      if (entry != nullptr)
+      {
+         CConcreteDetailsDlg* pParent = (CConcreteDetailsDlg*)GetParent();
 
-   //      if (!pParent->m_bIncludeUHPC && IsUHPC(entry->GetType()))
-   //      {
-   //         AfxMessageBox(_T("Concrete cannot be UHPC for this application. Please select a different concrete from the library."), MB_OK);
-   //         return;
-   //      }
+         if (!pParent->m_bIncludeUHPC && IsUHPC(entry->GetType()))
+         {
+            AfxMessageBox(_T("Concrete cannot be UHPC for this application. Please select a different concrete from the library."), MB_OK);
+            return;
+         }
 
-   //      if ( pParent->m_bFinalProperties )
-   //      {
-   //         pParent->m_fc28 = entry->GetFc();
-   //         pParent->m_Ec28 = entry->GetEc();
-   //         pParent->m_bUserEc28 = entry->UserEc();
-   //      }
-   //      else
-   //      {
-   //         pParent->m_fci = entry->GetFc();
-   //         pParent->m_Eci = entry->GetEc();
-   //      }
+         if ( pParent->m_bFinalProperties )
+         {
+            pParent->m_fc28 = entry->GetFc();
+            pParent->m_Ec28 = entry->GetEc();
+            pParent->m_bUserEc28 = entry->UserEc();
+         }
+         else
+         {
+            pParent->m_fci = entry->GetFc();
+            pParent->m_Eci = entry->GetEc();
+         }
 
-   //      m_Dw      = entry->GetWeightDensity();
-   //      m_Ds      = entry->GetStrengthDensity();
-   //      m_AggSize = entry->GetAggregateSize();
-   //      m_Type    = entry->GetType();
+         m_Dw      = entry->GetWeightDensity();
+         m_Ds      = entry->GetStrengthDensity();
+         m_AggSize = entry->GetAggregateSize();
+         m_Type    = entry->GetType();
 
-   //      pParent->m_AASHTO.m_EccK1       = entry->GetModEK1();
-   //      pParent->m_AASHTO.m_EccK2       = entry->GetModEK2();
-   //      pParent->m_AASHTO.m_CreepK1     = entry->GetCreepK1();
-   //      pParent->m_AASHTO.m_CreepK2     = entry->GetCreepK2();
-   //      pParent->m_AASHTO.m_ShrinkageK1 = entry->GetShrinkageK1();
-   //      pParent->m_AASHTO.m_ShrinkageK2 = entry->GetShrinkageK2();
-   //      pParent->m_AASHTO.m_Fct         = entry->GetAggSplittingStrength();
-   //      pParent->m_AASHTO.m_bHasFct     = entry->HasAggSplittingStrength();
+         pParent->m_AASHTO.m_EccK1       = entry->GetModEK1();
+         pParent->m_AASHTO.m_EccK2       = entry->GetModEK2();
+         pParent->m_AASHTO.m_CreepK1     = entry->GetCreepK1();
+         pParent->m_AASHTO.m_CreepK2     = entry->GetCreepK2();
+         pParent->m_AASHTO.m_ShrinkageK1 = entry->GetShrinkageK1();
+         pParent->m_AASHTO.m_ShrinkageK2 = entry->GetShrinkageK2();
+         pParent->m_AASHTO.m_Fct         = entry->GetAggSplittingStrength();
+         pParent->m_AASHTO.m_bHasFct     = entry->HasAggSplittingStrength();
 
-   //      entry->GetPCIUHPC(&(pParent->m_PCIUHPC.m_ffc), &(pParent->m_PCIUHPC.m_frr), &(pParent->m_PCIUHPC.m_FiberLength), &(pParent->m_PCIUHPC.m_AutogenousShrinkage), &(pParent->m_PCIUHPC.m_bPCTT));
-   //      entry->GetUHPC(&(pParent->m_UHPC.m_ftcri), &(pParent->m_UHPC.m_ftcr), &(pParent->m_UHPC.m_ftloc), &(pParent->m_UHPC.m_etloc), &(pParent->m_UHPC.m_alpha_u), &(pParent->m_UHPC.m_ecu), &(pParent->m_UHPC.m_bExperimental_ecu),&(pParent->m_UHPC.m_gamma_u), &(pParent->m_UHPC.m_FiberLength));
+         entry->GetPCIUHPC(&(pParent->m_PCIUHPC.m_ffc), &(pParent->m_PCIUHPC.m_frr), &(pParent->m_PCIUHPC.m_FiberLength), &(pParent->m_PCIUHPC.m_AutogenousShrinkage), &(pParent->m_PCIUHPC.m_bPCTT));
+         entry->GetUHPC(&(pParent->m_UHPC.m_ftcri), &(pParent->m_UHPC.m_ftcr), &(pParent->m_UHPC.m_ftloc), &(pParent->m_UHPC.m_etloc), &(pParent->m_UHPC.m_alpha_u), &(pParent->m_UHPC.m_ecu), &(pParent->m_UHPC.m_bExperimental_ecu),&(pParent->m_UHPC.m_gamma_u), &(pParent->m_UHPC.m_FiberLength));
 
-   //      pParent->m_ACI.m_bUserParameters = entry->UserACIParameters();
-   //      pParent->m_ACI.m_A               = entry->GetAlpha();
-   //      pParent->m_ACI.m_B               = entry->GetBeta();
-   //      pParent->m_ACI.m_CureMethod      = entry->GetCureMethod();
-   //      pParent->m_ACI.m_CementType      = entry->GetACI209CementType();
+         pParent->m_ACI.m_bUserParameters = entry->UserACIParameters();
+         pParent->m_ACI.m_A               = entry->GetAlpha();
+         pParent->m_ACI.m_B               = entry->GetBeta();
+         pParent->m_ACI.m_CureMethod      = entry->GetCureMethod();
+         pParent->m_ACI.m_CementType      = entry->GetACI209CementType();
 
-   //      pParent->m_CEBFIP.m_CementType = entry->GetCEBFIPCementType();
+         pParent->m_CEBFIP.m_CementType = entry->GetCEBFIPCementType();
 
-   //      CDataExchange dx(this,FALSE);
-   //      DoDataExchange(&dx);
-   //      OnConcreteType();
-   //      OnUserEc();
-   //   }
-   //}
+         CDataExchange dx(this,FALSE);
+         DoDataExchange(&dx);
+         OnConcreteType();
+         OnUserEc();
+      }
+   }
 }
 
 pgsTypes::ConcreteType CConcreteGeneralPage::GetConcreteType()

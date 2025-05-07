@@ -43,11 +43,11 @@ LOG
 class pgsGirderLiftingChecker
 {
 public:
-   pgsGirderLiftingChecker(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID);
+   pgsGirderLiftingChecker(std::weak_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID);
    pgsGirderLiftingChecker() = delete;
    pgsGirderLiftingChecker(const pgsGirderLiftingChecker&) = delete;
    pgsGirderLiftingChecker& operator=(const pgsGirderLiftingChecker&) = delete;
-   virtual ~pgsGirderLiftingChecker();
+   ~pgsGirderLiftingChecker() = default;
 
    std::shared_ptr<WBFL::Stability::LiftingCheckArtifact> CheckLifting(const CSegmentKey& segmentKey);
    std::shared_ptr<WBFL::Stability::LiftingCheckArtifact> AnalyzeLifting(const CSegmentKey& segmentKey,Float64 supportLoc);
@@ -55,7 +55,8 @@ public:
    std::pair<pgsDesignCodes::OutcomeType, std::shared_ptr<WBFL::Stability::LiftingCheckArtifact>> DesignLifting(const CSegmentKey& segmentKey,HANDLINGCONFIG& config,std::shared_ptr<ISegmentLiftingDesignPointsOfInterest> pPOId,const WBFL::Stability::LiftingStabilityProblem** ppStabilityProblem,SHARED_LOGFILE LOGFILE);
 
 private:
-   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
+   std::weak_ptr<WBFL::EAF::Broker> m_pBroker;
+   inline std::shared_ptr<WBFL::EAF::Broker> GetBroker() const { return m_pBroker.lock(); }
    StatusGroupIDType m_StatusGroupID;
    StatusCallbackIDType m_scidLiftingSupportLocationError;
    StatusCallbackIDType m_scidLiftingSupportLocationWarning;

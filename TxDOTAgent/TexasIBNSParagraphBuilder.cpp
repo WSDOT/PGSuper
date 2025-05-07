@@ -68,7 +68,7 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,std::shared_ptr<
 {
    *pPara<<rptNewLine; // make some space
 
-   StrandIndexType nss = m_pStrandGeometry->GetStrandCount(m_SegmentKey,pgsTypes::Straight);
+   StrandIndexType nss = m_pStrandGeometry.lock()->GetStrandCount(m_SegmentKey,pgsTypes::Straight);
    bool is_optional = optionalName.size() > 0;
 
    // see if we have an error condition - don't build table if so
@@ -156,12 +156,12 @@ void TxDOTIBNSDebondWriter::WriteDebondData(rptParagraph* pPara,std::shared_ptr<
 
          pgsPointOfInterest poi(m_SegmentKey, m_GirderLength/2.0);
 
-         std::vector<StrandIndexType> vss  = m_pStrandGeometry->GetStrandsInRow(poi,0,pgsTypes::Straight);
+         std::vector<StrandIndexType> vss  = m_pStrandGeometry.lock()->GetStrandsInRow(poi,0,pgsTypes::Straight);
          ATLASSERT(vss.size()>0);
 
          // get y of any strand in row
          CComPtr<IPoint2dCollection> coords;
-         m_pStrandGeometry->GetStrandPositions(poi, pgsTypes::Straight, &coords);
+         m_pStrandGeometry.lock()->GetStrandPositions(poi, pgsTypes::Straight, &coords);
 
          GET_IFACE2(pBroker,ISectionProperties,pSectProp);
          GET_IFACE2(pBroker,IIntervals,pIntervals);

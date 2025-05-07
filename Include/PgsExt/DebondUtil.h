@@ -50,12 +50,12 @@ static bool IsDivisible(FloatSetIterator start, FloatSetIterator end, Float64 di
 class PGSEXTCLASS TxDOTDebondTool
 {
 public:
-   TxDOTDebondTool(const CSegmentKey& segmentKey, Float64 girderLength, std::shared_ptr<IStrandGeometry> pStrandGeometry);
+   TxDOTDebondTool(const CSegmentKey& segmentKey, Float64 girderLength, std::weak_ptr<IStrandGeometry> pStrandGeometry);
 
 protected:
    CSegmentKey m_SegmentKey;
    Float64 m_GirderLength;
-   std::shared_ptr<IStrandGeometry> m_pStrandGeometry;
+   std::weak_ptr<IStrandGeometry> m_pStrandGeometry;
 
    enum OutComeType {AllStandard, NonStandardSection, SectionMismatch, SectionsNotSymmetrical, TooManySections};
    OutComeType m_OutCome;
@@ -121,16 +121,16 @@ private:
 
 inline void TxDOTDebondTool::Compute()
 {
-   m_NumDebonded = m_pStrandGeometry->GetNumDebondedStrands(m_SegmentKey,pgsTypes::Straight,pgsTypes::dbetEither);
+   m_NumDebonded = m_pStrandGeometry.lock()->GetNumDebondedStrands(m_SegmentKey, pgsTypes::Straight, pgsTypes::dbetEither);
 
    // standard debond increment
    Float64 three_feet = WBFL::Units::ConvertToSysUnits( 3.0,WBFL::Units::Measure::Feet);
 
-   StrandIndexType nss = m_pStrandGeometry->GetStrandCount(m_SegmentKey,pgsTypes::Straight);
+   StrandIndexType nss = m_pStrandGeometry.lock()->GetStrandCount(m_SegmentKey, pgsTypes::Straight);
 
    pgsPointOfInterest poi(m_SegmentKey, m_GirderLength/2.0);
    CComPtr<IPoint2dCollection> coords;
-   m_pStrandGeometry->GetStrandPositions(poi, pgsTypes::Straight, &coords);
+   m_pStrandGeometry.lock()->GetStrandPositions(poi, pgsTypes::Straight, &coords);
 
    // We also want to see if there is a common debond increment, and if by chance, it is 3 feet
    FloatSet section_spacings;
@@ -167,7 +167,7 @@ inline void TxDOTDebondTool::Compute()
       rowData.m_NumTotalStrands++; // add our strand to row
 
       Float64 startLoc, endLoc;
-      if( m_pStrandGeometry->IsStrandDebonded(m_SegmentKey,idx, pgsTypes::Straight, nullptr, &startLoc, &endLoc) )
+      if( m_pStrandGeometry.lock()->IsStrandDebonded(m_SegmentKey, idx, pgsTypes::Straight, nullptr, &startLoc, &endLoc))
       {
          if (!IsEqual(startLoc,m_GirderLength-endLoc))
          {
@@ -204,7 +204,7 @@ inline void TxDOTDebondTool::Compute()
 
    // Next add any adjustable strands at same row elevations to running total
    CComPtr<IPoint2dCollection> hcoords;
-   m_pStrandGeometry->GetStrandPositions(poi, pgsTypes::Harped, &hcoords);
+   m_pStrandGeometry.lock()->GetStrandPositions(poi, pgsTypes::Harped, &hcoords);
    hcoords->get_Count(&size);
    for (IndexType idx = 0; idx < size; idx++)
    {

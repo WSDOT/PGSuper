@@ -73,7 +73,11 @@ namespace PGS
          StatusCallbackIDType m_scidProjectCriteria;
 
          // This are interfaces that are used over and over and over
-         // Get them once so we don't have to call GET_IFACE so many times
+         // Get them once so we don't have to call GET_IFACE so many times.
+         // Generally, it is bad to hold onto shared_ptr for Agent/Broker,
+         // however, in this case, the scope of these pointers is controled in the
+         // ComputeLosses function. That is, the are held as shared_ptr for
+         // only for the duration of the function call.
          std::shared_ptr<IEAFProgress>          m_pProgress;
          std::shared_ptr<IBridgeDescription> m_pBridgeDesc;
          std::shared_ptr<IBridge>            m_pBridge;

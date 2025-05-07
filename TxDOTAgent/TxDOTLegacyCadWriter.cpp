@@ -770,7 +770,7 @@ void TxDOTCadWriter::WriteInitialData(CadWriterWorkerBee& workerB)
       {
          // A little checking
          pgsPointOfInterest poi(m_SegmentKey, m_GirderLength/2.0);
-         RowIndexType nrs = m_pStrandGeometry->GetNumRowsWithStrand(poi,pgsTypes::Straight);
+         RowIndexType nrs = m_pStrandGeometry.lock()->GetNumRowsWithStrand(poi,pgsTypes::Straight);
          ATLASSERT((RowIndexType)m_Rows.size() == nrs); // could have more rows than rows with debonded strands
 
          auto pBroker = EAFGetBroker();

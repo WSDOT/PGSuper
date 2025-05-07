@@ -80,7 +80,7 @@ namespace PGS
 
       protected:
          StatusGroupIDType m_StatusGroupID;
-         std::shared_ptr<WBFL::EAF::Broker> GetBroker() { return m_pBroker.lock(); }
+         inline std::shared_ptr<WBFL::EAF::Broker> GetBroker() { return m_pBroker.lock(); }
 
       private:
          std::weak_ptr<WBFL::EAF::Broker> m_pBroker;

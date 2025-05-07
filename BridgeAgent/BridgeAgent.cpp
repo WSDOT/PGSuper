@@ -55,7 +55,6 @@
 
 #include "PGSuperCatCom.h"
 #include "PGSpliceCatCom.h"
-#include <System\ComCatMgr.h>
 
 // This is needed as long as WBFLGeometricBridge is a COM object
 // This DLL implements custom versions of EffectiveFlangeWidthTool
@@ -91,23 +90,3 @@ int CBridgeAgentApp::ExitInstance()
 	Module_.Term();
 	return CWinApp::ExitInstance();
 }
-
-
-#pragma Reminder("WORKING HERE - Removing COM - register Bridge Agent with agent component categories")
-//HRESULT RegisterAgent(bool bRegister)
-//{
-//   HRESULT hr = S_OK;
-//   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_BridgeAgent,CATID_PGSuperAgent,bRegister);
-//   if ( FAILED(hr) )
-//   {
-//      return hr;
-//   }
-//
-//   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_BridgeAgent,CATID_PGSpliceAgent,bRegister);
-//   if ( FAILED(hr) )
-//   {
-//      return hr;
-//   }
-//
-//   return S_OK;
-//}

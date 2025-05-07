@@ -41,13 +41,10 @@ LOG
 class pgsShearCapacityEngineer
 {
 public:
-   pgsShearCapacityEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID);
+   pgsShearCapacityEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID);
    pgsShearCapacityEngineer(const pgsShearCapacityEngineer& rOther) = default;
    ~pgsShearCapacityEngineer() = default;
    pgsShearCapacityEngineer& operator=(const pgsShearCapacityEngineer& rOther) = default;
-
-   void SetBroker(std::shared_ptr<WBFL::EAF::Broker> pBroker);
-   void SetStatusGroupID(StatusGroupIDType statusGroupID);
 
    void ComputeShearCapacity(IntervalIndexType intervalIdx, pgsTypes::LimitState limitState, const pgsPointOfInterest& poi,const GDRCONFIG* pConfig, SHEARCAPACITYDETAILS* pmcd) const;
 
@@ -63,7 +60,9 @@ public:
    void TweakShearCapacityOutboardOfCriticalSection(const pgsPointOfInterest& poiCS,SHEARCAPACITYDETAILS* pscd,const SHEARCAPACITYDETAILS* pscd_at_cs) const;
 
 private:
-   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
+   std::weak_ptr<WBFL::EAF::Broker> m_pBroker;
+   inline std::shared_ptr<WBFL::EAF::Broker> GetBroker() const { return m_pBroker.lock(); }
+
    StatusGroupIDType m_StatusGroupID;
    StatusCallbackIDType m_scidGirderDescriptionError;
 

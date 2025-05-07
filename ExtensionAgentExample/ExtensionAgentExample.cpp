@@ -24,18 +24,3 @@
 
 
 #include "stdafx.h"
-#include "ExtensionAgent.h"
-
-#include "resource.h"
-#include "dllmain.h"
-
-#include "PGSuperCatCom.h"
-#include "PGSpliceCatCom.h"
-#include <System\ComCatMgr.h>
-
-#pragma Reminder("WORKING HERE - Removing COM - register agent with component categories")
-//void RegsiterAsExtensionAgent(bool bRegister)
-//{
-//   WBFL::System::ComCatMgr::RegWithCategory(CLSID_ExampleExtensionAgent, CATID_PGSuperExtensionAgent, bRegister);
-//   WBFL::System::ComCatMgr::RegWithCategory(CLSID_ExampleExtensionAgent, CATID_PGSpliceExtensionAgent, bRegister);
-//}

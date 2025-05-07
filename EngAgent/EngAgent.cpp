@@ -28,7 +28,6 @@
 //		run nmake -f EngAgentps.mk in the project directory.
 
 #include "stdafx.h"
-#include "resource.h"
 #include <initguid.h>
 #include "EngAgent.h"
 
@@ -38,7 +37,6 @@
 
 #include "PGSuperCatCom.h"
 #include "PGSpliceCatCom.h"
-#include <System\ComCatMgr.h>
 
 #include <IFace\PrecastIGirderDetailsSpec.h>
 #include <IFace\Project.h>
@@ -82,43 +80,3 @@ BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
       _Module.Term();
    return TRUE;    // ok
 }
-
-//class CEngAgentApp : public CWinApp
-//{
-//public:
-//	virtual BOOL InitInstance() override;
-//	virtual int ExitInstance() override;
-//};
-//
-//CEngAgentApp theApp;
-//
-//BOOL CEngAgentApp::InitInstance()
-//{
-//	_Module.Init(ObjectMap);
-//	return CWinApp::InitInstance();
-//}
-//
-//int CEngAgentApp::ExitInstance()
-//{
-//	_Module.Term();
-//	return CWinApp::ExitInstance();
-//}
-
-#pragma Reminder("WORKING HERE - Removing COM - register EngAgent with agent component categories")
-//HRESULT RegisterAgent(bool bRegister)
-//{
-//   HRESULT hr = S_OK;
-//   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_EngAgent,CATID_PGSuperAgent,bRegister);
-//   if ( FAILED(hr) )
-//   {
-//      return hr;
-//   }
-//
-//   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_EngAgent,CATID_PGSpliceAgent,bRegister);
-//   if ( FAILED(hr) )
-//   {
-//      return hr;
-//   }
-//
-//   return S_OK;
-//}

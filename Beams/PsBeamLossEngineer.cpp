@@ -31,8 +31,6 @@
 #include <IFace\Project.h>
 #endif
 
-#pragma Reminder("WORKING HERE - Removing COM - Put prestress loss engineers in the PGS::Beam namespace")
-
 #pragma Reminder("WORKING HERE - Removing COM - move DesignLosses declaration inside the CPP file")
 // The header file is now global, and DesignLosses is an implementation detail. It should be forward declared
 // in the header and completely defined within the C++ file so external users don't see it and can't use it

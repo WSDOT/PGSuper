@@ -316,17 +316,13 @@ LOG
 class pgsDesigner2 : LongReinfShearChecker
 {
 public:
-   pgsDesigner2();
+   pgsDesigner2(std::weak_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID);
 
    pgsDesigner2(const pgsDesigner2& rOther);
 
    virtual ~pgsDesigner2();
 
    pgsDesigner2& operator = (const pgsDesigner2& rOther);
-
-
-   void SetBroker(std::shared_ptr<WBFL::EAF::Broker> pBroker);
-   void SetStatusGroupID(StatusGroupIDType statusGroupID);
 
    // Creates a girder check artifact.
    const pgsGirderArtifact* Check(const CGirderKey& girderKey) const;
@@ -373,7 +369,9 @@ private:
    mutable std::vector<StressCheckTask> m_StressCheckTasks;
    void ConfigureStressCheckTasks(const CSegmentKey& segmentKey) const;
 
-   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
+   std::weak_ptr<WBFL::EAF::Broker> m_pBroker;
+   inline std::shared_ptr<WBFL::EAF::Broker> GetBroker() const { return m_pBroker.lock(); }
+
    StatusGroupIDType m_StatusGroupID;
 
    // ID of the status callbacks we have registered

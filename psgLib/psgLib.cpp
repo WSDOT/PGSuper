@@ -129,8 +129,6 @@ BOOL CPsgLibApp::InitInstance()
    // This call will initialize the grid library
 	GXInit();
 
-   WBFL::System::ComCatMgr::CreateCategory(CComBSTR("PGSLibrary Editor Components"),CATID_PGSuperLibraryManagerPlugin);
-
    return CWinApp::InitInstance();
 }
 

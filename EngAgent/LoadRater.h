@@ -35,14 +35,16 @@
 class pgsLoadRater
 {
 public:
-   pgsLoadRater(void);
-   virtual ~pgsLoadRater(void);
+   pgsLoadRater(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID);
+   ~pgsLoadRater();
 
-   void SetBroker(std::shared_ptr<WBFL::EAF::Broker> pBroker);
    pgsRatingArtifact Rate(const CGirderKey& girderKey,pgsTypes::LoadRatingType ratingType,VehicleIndexType vehicleIdx) const;
 
 protected:
-   std::shared_ptr<WBFL::EAF::Broker> m_pBroker; // weak reference
+   std::weak_ptr<WBFL::EAF::Broker> m_pBroker; // weak reference
+   inline std::shared_ptr<WBFL::EAF::Broker> GetBroker() const { return m_pBroker.lock(); }
+
+   StatusGroupIDType m_StatusGroupID;
 
    struct Moments
    {
@@ -90,16 +92,19 @@ protected:
 
       pgsTypes::SupportedDeckType deckType;
 
-      // interfaces used at each POI
-      std::shared_ptr<IRatingSpecification> pRatingSpec;
-      std::shared_ptr<IProductForces> pProductForces;
+      // interfaces used at each POI.
+      // NOTE: Storing agent interface pointers is generally a bad idea as it causes circular references.
+      // For this reason we store weak_ptrs. However, this leads to an ugly implementation because you
+      // must call the lock() method on the weak_ptr to use the pointer. Bad ideas lead to ugly implementation.
+      std::weak_ptr<IRatingSpecification> pRatingSpec;
+      std::weak_ptr<IProductForces> pProductForces;
    };
 
    // parameters for reinforcement yielding check
    struct YieldingRatingParams : public RatingParams
    {
-      const CRACKINGMOMENTDETAILS* pMcrDetails;
-      const CRACKEDSECTIONDETAILS* pCrackedSectionDetails;
+      const CRACKINGMOMENTDETAILS* pMcrDetails = nullptr;
+      const CRACKEDSECTIONDETAILS* pCrackedSectionDetails = nullptr;
 
       Float64 YieldStressLimitCoefficient;
 
@@ -108,16 +113,16 @@ protected:
       pgsTypes::AnalysisType analysisType;
 
       // interfaces used at each POI
-      std::shared_ptr<ISectionProperties> pSectProp;
-      std::shared_ptr<IPointOfInterest> pPoi;
-      std::shared_ptr<IBridge> pBridge;
-      std::shared_ptr<IIntervals> pIntervals;
-      std::shared_ptr<ILongRebarGeometry> pRebarGeom;
-      std::shared_ptr<IMaterials> pMaterials;
-      std::shared_ptr<ILiveLoadDistributionFactors> pLLDF;
-      std::shared_ptr<IStrandGeometry> pStrandGeometry;
-      std::shared_ptr<ISegmentTendonGeometry> pSegmentTendonGeometry;
-      std::shared_ptr<IGirderTendonGeometry> pGirderTendonGeometry;
+      std::weak_ptr<ISectionProperties> pSectProp;
+      std::weak_ptr<IPointOfInterest> pPoi;
+      std::weak_ptr<IBridge> pBridge;
+      std::weak_ptr<IIntervals> pIntervals;
+      std::weak_ptr<ILongRebarGeometry> pRebarGeom;
+      std::weak_ptr<IMaterials> pMaterials;
+      std::weak_ptr<ILiveLoadDistributionFactors> pLLDF;
+      std::weak_ptr<IStrandGeometry> pStrandGeometry;
+      std::weak_ptr<ISegmentTendonGeometry> pSegmentTendonGeometry;
+      std::weak_ptr<IGirderTendonGeometry> pGirderTendonGeometry;
    };
 
    // parameters for flexural stress ratings
@@ -138,13 +143,13 @@ protected:
       std::vector<std::_tstring> strLLNames;
 
       // interfaces used at each POI
-      std::shared_ptr<IPrecompressedTensileZone> pPTZ;
-      std::shared_ptr<ICombinedForces> pCombinedForces;
-      std::shared_ptr<IPretensionStresses> pPrestress;
-      std::shared_ptr<IRatingSpecification> pRatingSpec;
-      std::shared_ptr<IConcreteStressLimits> pLimits;
-      std::shared_ptr<IProductForces> pProductForces;
-      std::shared_ptr<IProductLoads> pProductLoads;
+      std::weak_ptr<IPrecompressedTensileZone> pPTZ;
+      std::weak_ptr<ICombinedForces> pCombinedForces;
+      std::weak_ptr<IPretensionStresses> pPrestress;
+      std::weak_ptr<IRatingSpecification> pRatingSpec;
+      std::weak_ptr<IConcreteStressLimits> pLimits;
+      std::weak_ptr<IProductForces> pProductForces;
+      std::weak_ptr<IProductLoads> pProductLoads;
    };
 
    void FlexureRating(const CGirderKey& girderKey, const PoiList& vPoi, pgsTypes::LoadRatingType ratingType, VehicleIndexType vehicleIdx, IntervalIndexType loadRatingIntervalIdx, bool bTimeStep,const Moments* pMaxMoments, const Moments* pMinMoments, pgsRatingArtifact& ratingArtifact) const;

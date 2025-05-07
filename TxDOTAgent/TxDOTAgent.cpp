@@ -45,7 +45,6 @@
 #include "BridgeLinkCATID.h"
 #include "PGSuperCatCom.h"
 #include "TogaCatCom.h"
-#include <System\ComCatMgr.h>
 
 #include <EAF\EAFUIIntegration.h>
 
@@ -79,7 +78,8 @@
 #include "TogaSupportDrawStrategy.h"
 #include "TogaSectionCutDrawStrategy.h"
 
-
+#pragma Reminder("WORKING HERE - Removing COM - does this need to be an MFC DLL?")
+// Could this be a regular DLL with DllMain?
 
 // Used to determine whether the DLL can be unloaded by OLE
 STDAPI DllCanUnloadNow(void)
@@ -111,20 +111,20 @@ HRESULT Register(bool bRegister)
 
    // The TxDOT Agent extends the functionality of PGSuper by adding custom reporting and
    // other features
-   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_TxDOTAgent,CATID_PGSuperExtensionAgent,bRegister);
-   if ( FAILED(hr) )
-      return hr;
+   //hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_TxDOTAgent,CATID_PGSuperExtensionAgent,bRegister);
+   //if ( FAILED(hr) )
+   //   return hr;
 
    // The TxDOT Agent extends the functionality of Toga by adding custom reporting and
    // other features
-   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_TxDOTAgent,CATID_TogaExtensionAgent,bRegister);
-   if ( FAILED(hr) )
-      return hr;
+   //hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_TxDOTAgent,CATID_TogaExtensionAgent,bRegister);
+   //if ( FAILED(hr) )
+   //   return hr;
 
-   // The TxDOT Cad Exporter provides custom export functionality
-   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_TxDOTCadExporter,CATID_PGSuperDataExporter,bRegister);
-   if ( FAILED(hr) )
-      return hr;
+   //// The TxDOT Cad Exporter provides custom export functionality
+   //hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_TxDOTCadExporter,CATID_PGSuperDataExporter,bRegister);
+   //if ( FAILED(hr) )
+   //   return hr;
 
    //// The TxDOT component info objects provides information about this entire plug-in component
    //// This information is used in the "About" dialog

@@ -110,11 +110,11 @@ void CProductLoadMap::AddLoadItem(pgsTypes::ProductForceType pfType,CComBSTR bst
    m_ProductForceTypeToLoadCaseID.insert(std::make_pair(pfType,lcid));
 }
 
-std::vector<pgsTypes::ProductForceType> CProductLoadMap::GetProductForces(std::shared_ptr<WBFL::EAF::Broker> pBroker,LoadingCombinationType combo)
+std::vector<pgsTypes::ProductForceType> CProductLoadMap::GetProductForces(std::weak_ptr<WBFL::EAF::Broker> pBroker,LoadingCombinationType combo)
 {
    // This method defines in one location the individual product loads that make up
    // each load combination.
-   GET_IFACE2(pBroker,IBridge,pBridge);
+   GET_IFACE2(pBroker.lock(), IBridge, pBridge);
    bool bFutureOverlay = pBridge->IsFutureOverlay();
 
    std::vector<pgsTypes::ProductForceType> pfTypes;
@@ -143,7 +143,7 @@ std::vector<pgsTypes::ProductForceType> CProductLoadMap::GetProductForces(std::s
 
    case lcDWRating:
       {
-      GET_IFACE2(pBroker,ILossParameters,pLossParameters);
+      GET_IFACE2(pBroker.lock(), ILossParameters, pLossParameters);
       pfTypes.push_back(pgsTypes::pftUserDW);
       if ( pLossParameters->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
       {
@@ -161,7 +161,7 @@ std::vector<pgsTypes::ProductForceType> CProductLoadMap::GetProductForces(std::s
 
    case lcDWp:
       {
-      GET_IFACE2(pBroker,ILossParameters,pLossParameters);
+      GET_IFACE2(pBroker.lock(), ILossParameters, pLossParameters);
       pfTypes.push_back(pgsTypes::pftUserDW);
       if ( pLossParameters->GetLossMethod() == PrestressLossCriteria::LossMethodType::TIME_STEP )
       {
@@ -179,7 +179,7 @@ std::vector<pgsTypes::ProductForceType> CProductLoadMap::GetProductForces(std::s
 
    case lcDWf:
       {
-      GET_IFACE2(pBroker,ILossParameters,pLossParameters);
+      GET_IFACE2(pBroker.lock(), ILossParameters, pLossParameters);
       if ( pLossParameters->GetLossMethod() != PrestressLossCriteria::LossMethodType::TIME_STEP && bFutureOverlay)
       {
          pfTypes.push_back(pgsTypes::pftOverlay);
@@ -210,13 +210,14 @@ std::vector<pgsTypes::ProductForceType> CProductLoadMap::GetProductForces(std::s
    return pfTypes;
 }
 
-std::vector<pgsTypes::ProductForceType> CProductLoadMap::GetProductForces(std::shared_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey & girderKey)
+std::vector<pgsTypes::ProductForceType> CProductLoadMap::GetProductForces(std::weak_ptr<WBFL::EAF::Broker> pBroker, const CGirderKey & girderKey)
 {
    std::vector<pgsTypes::ProductForceType> vProductForces;
 
-   GET_IFACE2(pBroker,IProductLoads,pLoads);
-   GET_IFACE2(pBroker,IBridge,pBridge);
-   GET_IFACE2(pBroker,IUserDefinedLoadData,pUserLoads);
+   auto broker = pBroker.lock();
+   GET_IFACE2(broker,IProductLoads,pLoads);
+   GET_IFACE2(broker,IBridge,pBridge);
+   GET_IFACE2(broker,IUserDefinedLoadData,pUserLoads);
 
    vProductForces.push_back(pgsTypes::pftGirder);
 
@@ -270,7 +271,7 @@ std::vector<pgsTypes::ProductForceType> CProductLoadMap::GetProductForces(std::s
       vProductForces.push_back(pgsTypes::pftUserDW);
    }
 
-   GET_IFACE2(pBroker,IStrandGeometry,pStrandGeom);
+   GET_IFACE2(broker,IStrandGeometry,pStrandGeom);
    SegmentIndexType nSegments = pBridge->GetSegmentCount(girderKey);
    for ( SegmentIndexType segIdx = 0; segIdx < nSegments; segIdx++ )
    {
@@ -284,7 +285,7 @@ std::vector<pgsTypes::ProductForceType> CProductLoadMap::GetProductForces(std::s
       }
    }
 
-   GET_IFACE2(pBroker,IGirderTendonGeometry,pTendonGeom);
+   GET_IFACE2(broker,IGirderTendonGeometry,pTendonGeom);
    DuctIndexType nDucts = pTendonGeom->GetDuctCount(girderKey);
    if ( 0 < nDucts )
    {
@@ -293,7 +294,7 @@ std::vector<pgsTypes::ProductForceType> CProductLoadMap::GetProductForces(std::s
    }
 
    // time-depending effects
-   GET_IFACE2(pBroker, ILossParameters, pLossParams);
+   GET_IFACE2(broker, ILossParameters, pLossParams);
    if ( !pLossParams->IgnoreCreepEffects() )
    {
       vProductForces.push_back(pgsTypes::pftCreep);

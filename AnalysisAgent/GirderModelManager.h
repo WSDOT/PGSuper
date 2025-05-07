@@ -62,7 +62,7 @@ public:
 class CGirderModelManager
 {
 public:
-   CGirderModelManager(SHARED_LOGFILE lf,std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID);
+   CGirderModelManager(SHARED_LOGFILE lf,std::weak_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID);
 
    void Clear();
    void DumpAnalysisModels(GirderIndexType gdrLineIdx) const;
@@ -289,7 +289,8 @@ public:
 
 private:
 	DECLARE_SHARED_LOGFILE;
-   std::shared_ptr<WBFL::EAF::Broker> m_pBroker; // must be a weak reference (this is the agent's pointer and it is a weak refernece)
+   std::weak_ptr<WBFL::EAF::Broker> m_pBroker; // must be a weak reference to break circular reference with agent
+   inline std::shared_ptr<WBFL::EAF::Broker> GetBroker() const { return m_pBroker.lock(); } // for use within function scope
    StatusGroupIDType m_StatusGroupID;
    mutable CComPtr<IIDArray> m_LBAMPoi;   // array for LBAM poi (this will be a problem for concurrency)
    CComPtr<ILBAMLRFDFactory3> m_LBAMUtility;
@@ -486,7 +487,7 @@ private:
 
 
    typedef std::set<COverhangLoadData> OverhangLoadSet;
-   mutable OverhangLoadSet m_OverhangLoadSet[2]; // index is pgsTypes::AnalysisType (only Simple or Continuous)
+   mutable std::array<OverhangLoadSet,2> m_OverhangLoadSet; // index is pgsTypes::AnalysisType (only Simple or Continuous)
 
 
    void RenameLiveLoad(ILBAMModel* pModel,pgsTypes::LiveLoadType llType,LPCTSTR strOldName,LPCTSTR strNewName);

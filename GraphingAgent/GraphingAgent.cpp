@@ -43,7 +43,6 @@
 
 #include "PGSuperCatCom.h"
 #include "PGSpliceCatCom.h"
-#include <System\ComCatMgr.h>
 
 #include <EAF/ComponentModule.h>
 WBFL::EAF::ComponentModule _Module;
@@ -60,6 +59,8 @@ EAF_BEGIN_OBJECT_MAP(ObjectMap)
 	EAF_OBJECT_ENTRY(CLSID_PGSpliceGraphingAgent, CPGSpliceGrapherImp)
 EAF_END_OBJECT_MAP()
 
+#pragma Reminder("WORKING HERE - Removing COM - does this need to be an MFC DLL?")
+// Could this be a regular DLL with DllMain?
 class CGraphingAgentApp : public CWinApp
 {
 public:
@@ -80,23 +81,3 @@ int CGraphingAgentApp::ExitInstance()
 	_Module.Term();
 	return CWinApp::ExitInstance();
 }
-
-
-#pragma Reminder("WORKIGN HERE - Removing COM - register GraphAgents with agent component category")
-//HRESULT RegisterAgent(bool bRegister)
-//{
-//   // This DLL implements two agents (PGSuperGraphingAgent and PGSpliceGraphingAgent)
-//
-//   // Register the PGSuper Graphing Agent with the PGSuper Agent category
-//   HRESULT hr = S_OK;
-//   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_PGSuperGraphingAgent,CATID_PGSuperAgent,bRegister);
-//   if ( FAILED(hr) )
-//      return hr;
-//
-//   // Register the PGSplice Graphing Agent with the PGSplice Agent category
-//   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_PGSpliceGraphingAgent,CATID_PGSpliceAgent,bRegister);
-//   if ( FAILED(hr) )
-//      return hr;
-//
-//   return S_OK;
-//}

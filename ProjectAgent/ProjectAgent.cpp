@@ -43,7 +43,6 @@
 
 #include "PGSuperCatCom.h"
 #include "PGSpliceCatCom.h"
-#include <System\ComCatMgr.h>
 
 #include <IFace/PointOfInterest.h>
 #include <IFace/Alignment.h>
@@ -81,18 +80,3 @@ BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD dwReason, LPVOID /*lpReserved*/)
 		Module_.Term();
 	return TRUE;    // ok
 }
-
-#pragma Reminder("WORKING HERE - Removing COM - Register ProjectAgent with PGSuper and PGSplice Agent categories")
-//HRESULT RegisterAgent(bool bRegister)
-//{
-//   HRESULT hr = S_OK;
-//   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_ProjectAgent,CATID_PGSuperAgent,bRegister);
-//   if ( FAILED(hr) )
-//      return hr;
-//
-//   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_ProjectAgent,CATID_PGSpliceAgent,bRegister);
-//   if ( FAILED(hr) )
-//      return hr;
-//
-//   return S_OK;
-//}

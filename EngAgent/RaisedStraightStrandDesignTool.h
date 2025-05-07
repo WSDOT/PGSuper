@@ -127,7 +127,7 @@ public:
 
    ~pgsRaisedStraightStrandDesignTool() = default;
    
-   void Initialize(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, pgsSegmentDesignArtifact* pArtif);
+   void Initialize(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, pgsSegmentDesignArtifact* pArtif);
 
    // Add raised straight strands at the top of the adjustable group. This changes the 
    // minimum required number of strands as well
@@ -152,11 +152,13 @@ public:
    ConfigStrandFillVector CreateStrandFill(GirderLibraryEntry::psStrandType type, StrandIndexType numStrands) const; 
 
 private:
-   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
-   StatusGroupIDType m_StatusGroupID;
-   const GirderLibraryEntry* m_pGdrEntry;
+   std::weak_ptr<WBFL::EAF::Broker> m_pBroker;
+   inline std::shared_ptr<WBFL::EAF::Broker> GetBroker() const { return m_pBroker.lock(); }
 
-   pgsSegmentDesignArtifact* m_pArtifact;
+   StatusGroupIDType m_StatusGroupID;
+   const GirderLibraryEntry* m_pGdrEntry = nullptr;
+
+   pgsSegmentDesignArtifact* m_pArtifact = nullptr;
    CSegmentKey m_SegmentKey;
 
    Float64 m_Yb;

@@ -4385,7 +4385,7 @@ Float64 CBridgeDescription2::GetBridgeWidth() const
                   auto factory = m_pGirderLibraryEntry->GetBeamFactory();
                   
                   CComPtr<IGirderSection> gdrSection;
-                  factory->CreateGirderSection(nullptr,INVALID_ID,m_pGirderLibraryEntry->GetDimensions(),-1,-1,&gdrSection);
+                  factory->CreateGirderSection(nullptr, INVALID_ID, m_pGirderLibraryEntry->GetDimensions(), -1, -1, &gdrSection);
 
                   // Width is max of top and bottom.
                   Float64 Width, wleft, wrght;

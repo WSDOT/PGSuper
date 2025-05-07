@@ -46,19 +46,15 @@
 
 
 
-pgsGirderHandlingChecker::pgsGirderHandlingChecker(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID)
+pgsGirderHandlingChecker::pgsGirderHandlingChecker(std::weak_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID)
 {
    m_pBroker = pBroker;
    m_StatusGroupID = statusGroupID;
 }
 
-pgsGirderHandlingChecker::~pgsGirderHandlingChecker()
-{
-}
-
 std::unique_ptr<pgsGirderHaulingChecker> pgsGirderHandlingChecker::CreateGirderHaulingChecker()
 {
-   GET_IFACE(ISegmentHaulingSpecCriteria,pSpec);
+   GET_IFACE2(GetBroker(),ISegmentHaulingSpecCriteria,pSpec);
 
    pgsTypes::HaulingAnalysisMethod method = pSpec->GetHaulingAnalysisMethod();
 
@@ -72,7 +68,7 @@ std::unique_ptr<pgsGirderHaulingChecker> pgsGirderHandlingChecker::CreateGirderH
    }
 }
 
-void pgsGirderHandlingChecker::ComputeMoments(std::shared_ptr<WBFL::EAF::Broker> pBroker, pgsGirderModelFactory* pGirderModelFactory,
+void pgsGirderHandlingChecker::ComputeMoments(std::weak_ptr<WBFL::EAF::Broker> pBroker, pgsGirderModelFactory* pGirderModelFactory,
                                               const CSegmentKey& segmentKey,
                                               IntervalIndexType intervalIdx,
                                               Float64 leftOH,Float64 glen,Float64 rightOH,
@@ -132,11 +128,11 @@ void pgsGirderHandlingChecker::ComputeMoments(std::shared_ptr<WBFL::EAF::Broker>
 /*
 void pgsGirderHandlingChecker::GetRequirementsForAlternativeTensileStress(const pgsPointOfInterest& poi,Float64 ftu,Float64 ftd,Float64 fbu,Float64 fbd,Float64* pY,Float64* pA,Float64* pT,Float64* pAs)
 {
-    GET_IFACE(IGirder,pGirder);
-    GET_IFACE(ISectProp2,pSectProps);
-    GET_IFACE(IBridgeMaterial,pMaterial);
+    GET_IFACE2(GetBroker(),IGirder,pGirder);
+    GET_IFACE2(GetBroker(),ISectProp2,pSectProps);
+    GET_IFACE2(GetBroker(),IBridgeMaterial,pMaterial);
 
-    GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+    GET_IFACE2(GetBroker(),IEAFDisplayUnits,pDisplayUnits);
     bool bUnitsSI = IS_SI_UNITS(pDisplayUnits);
 
    SpanIndexType span  = poi.GetSpan();

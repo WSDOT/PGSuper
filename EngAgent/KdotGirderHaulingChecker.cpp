@@ -54,22 +54,18 @@
 #include "PGSuperUnits.h"
 
 
-pgsKdotGirderHaulingChecker::pgsKdotGirderHaulingChecker(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID)
+pgsKdotGirderHaulingChecker::pgsKdotGirderHaulingChecker(std::weak_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID)
 {
    m_pBroker = pBroker;
    m_StatusGroupID = statusGroupID;
 
-   GET_IFACE(IEAFStatusCenter,pStatusCenter);
+   GET_IFACE2(GetBroker(),IEAFStatusCenter,pStatusCenter);
    m_scidBunkPointLocation  = pStatusCenter->RegisterCallback( std::make_shared<pgsBunkPointLocationStatusCallback>() );
-}
-
-pgsKdotGirderHaulingChecker::~pgsKdotGirderHaulingChecker()
-{
 }
 
 std::shared_ptr<pgsHaulingAnalysisArtifact> pgsKdotGirderHaulingChecker::CheckHauling(const CSegmentKey& segmentKey, SHARED_LOGFILE LOGFILE)
 {
-   GET_IFACE(ISegmentHaulingSpecCriteria,pHaulingSpecCriteria);
+   GET_IFACE2(GetBroker(),ISegmentHaulingSpecCriteria,pHaulingSpecCriteria);
 
    if (pHaulingSpecCriteria->IsHaulingAnalysisEnabled())
    {
@@ -83,8 +79,8 @@ std::shared_ptr<pgsHaulingAnalysisArtifact> pgsKdotGirderHaulingChecker::CheckHa
       bool didpass = kart->Passed(WBFL::Stability::HaulingSlope::CrownSlope);
 
       // Next run design to get overhang limits
-      GET_IFACE(IBridge,pBridge);
-      GET_IFACE(ISegmentHaulingPointsOfInterest, pPOId);
+      GET_IFACE2(GetBroker(),IBridge,pBridge);
+      GET_IFACE2(GetBroker(),ISegmentHaulingPointsOfInterest, pPOId);
 
       HANDLINGCONFIG config;
       config.bIgnoreGirderConfig = false;
@@ -113,7 +109,7 @@ std::shared_ptr<pgsHaulingAnalysisArtifact> pgsKdotGirderHaulingChecker::CheckHa
 
 std::shared_ptr<pgsHaulingAnalysisArtifact>  pgsKdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey)
 {
-   GET_IFACE(ISegmentHaulingPointsOfInterest,pSegmentHaulingPointsOfInterest); // poi's from global pool
+   GET_IFACE2(GetBroker(),ISegmentHaulingPointsOfInterest,pSegmentHaulingPointsOfInterest); // poi's from global pool
 
    auto pArtifact(std::make_shared<pgsKdotHaulingAnalysisArtifact>());
 
@@ -126,7 +122,7 @@ std::shared_ptr<pgsHaulingAnalysisArtifact>  pgsKdotGirderHaulingChecker::Analyz
 std::shared_ptr<pgsHaulingAnalysisArtifact> pgsKdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,Float64 leftOverhang,Float64 rightOverhang)
 {
    auto pArtifact(std::make_shared<pgsKdotHaulingAnalysisArtifact>());
-   GET_IFACE(ISegmentHaulingPointsOfInterest,pSegmentHaulingPointsOfInterest); // poi's from global pool
+   GET_IFACE2(GetBroker(),ISegmentHaulingPointsOfInterest,pSegmentHaulingPointsOfInterest); // poi's from global pool
    HANDLINGCONFIG dummy_config;
    dummy_config.bIgnoreGirderConfig = true;
    dummy_config.LeftOverhang = leftOverhang;
@@ -147,10 +143,10 @@ void pgsKdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,b
                                                  std::shared_ptr<ISegmentHaulingDesignPointsOfInterest> pPOId,pgsKdotHaulingAnalysisArtifact& pArtifact)
 {
    // calc some initial information
-   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE2(GetBroker(),IIntervals,pIntervals);
    IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
 
-   GET_IFACE(IMaterials,pMaterial);
+   GET_IFACE2(GetBroker(),IMaterials,pMaterial);
 
    Float64 Loh, Roh, Ec, Fc;
    pgsTypes::ConcreteType concType;
@@ -167,11 +163,11 @@ void pgsKdotGirderHaulingChecker::AnalyzeHauling(const CSegmentKey& segmentKey,b
    }
    else
    {
-      GET_IFACE(ISegmentHauling,pSegmentHauling);
+      GET_IFACE2(GetBroker(),ISegmentHauling,pSegmentHauling);
       Loh = pSegmentHauling->GetTrailingOverhang(segmentKey);
       Roh = pSegmentHauling->GetLeadingOverhang(segmentKey);
 
-      GET_IFACE(ISegmentHaulingPointsOfInterest,pSegmentHaulingPointsOfInterest);
+      GET_IFACE2(GetBroker(),ISegmentHaulingPointsOfInterest,pSegmentHaulingPointsOfInterest);
       pSegmentHaulingPointsOfInterest->GetHaulingPointsOfInterest(segmentKey,0,&vPoi);
    }
 
@@ -223,10 +219,10 @@ std::shared_ptr<pgsHaulingAnalysisArtifact> pgsKdotGirderHaulingChecker::DesignH
    auto pArtifact(std::make_shared<pgsKdotHaulingAnalysisArtifact>());
 
    // Get range of values for truck support locations
-   GET_IFACE(IBridge,pBridge);
+   GET_IFACE2(GetBroker(),IBridge,pBridge);
    Float64 Ls = pBridge->GetSegmentLength(segmentKey);
 
-   GET_IFACE(IKdotGirderHaulingSpecCriteria,pCriteria);
+   GET_IFACE2(GetBroker(),IKdotGirderHaulingSpecCriteria,pCriteria);
    Float64 hardMinHaulingDistance, haulingDistanceFactor;
    bool bUseHaulingDistanceFactor;
    pCriteria->GetMinimumHaulingSupportLocation(&hardMinHaulingDistance,&bUseHaulingDistanceFactor,&haulingDistanceFactor);
@@ -337,18 +333,18 @@ std::shared_ptr<pgsHaulingAnalysisArtifact> pgsKdotGirderHaulingChecker::DesignH
 
 void pgsKdotGirderHaulingChecker::PrepareHaulingAnalysisArtifact(const CSegmentKey& segmentKey,Float64 Loh,Float64 Roh,Float64 Fc,Float64 Ec,pgsTypes::ConcreteType concType,pgsKdotHaulingAnalysisArtifact& pArtifact)
 {
-   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE2(GetBroker(),IIntervals,pIntervals);
    IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
 
-   GET_IFACE(IBridge, pBridge);
+   GET_IFACE2(GetBroker(),IBridge, pBridge);
    Float64 girder_length = pBridge->GetSegmentLength(segmentKey);
    pArtifact.SetGirderLength(girder_length);
 
-   GET_IFACE(ISectionProperties,pSectProp);
+   GET_IFACE2(GetBroker(),ISectionProperties,pSectProp);
    Float64 volume, surface_area;
    pSectProp->GetSegmentVolumeAndSurfaceArea(segmentKey, &volume, &surface_area);
 
-   GET_IFACE(IMaterials,pMaterial);
+   GET_IFACE2(GetBroker(),IMaterials,pMaterial);
    Float64 density = pMaterial->GetSegmentWeightDensity(segmentKey,haulSegmentIntervalIdx);
    Float64 total_weight = volume * density * WBFL::Units::System::GetGravitationalAcceleration();
    pArtifact.SetGirderWeight(total_weight);
@@ -357,7 +353,7 @@ void pgsKdotGirderHaulingChecker::PrepareHaulingAnalysisArtifact(const CSegmentK
 
    if (span_len <= 0.0)
    {
-      GET_IFACE(IEAFStatusCenter,pStatusCenter);
+      GET_IFACE2(GetBroker(),IEAFStatusCenter,pStatusCenter);
 
       LPCTSTR msg = _T("Hauling support overhang cannot exceed one-half of the span length");
       pStatusCenter->Add(std::make_shared<pgsBunkPointLocationStatusItem>(segmentKey, pgsTypes::metStart, m_StatusGroupID, m_scidBunkPointLocation, msg));
@@ -367,7 +363,7 @@ void pgsKdotGirderHaulingChecker::PrepareHaulingAnalysisArtifact(const CSegmentK
       THROW_UNWIND(str.c_str(),-1);
    }
 
-   GET_IFACE(IKdotGirderHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
+   GET_IFACE2(GetBroker(),IKdotGirderHaulingSpecCriteria,pSegmentHaulingSpecCriteria);
 
    Float64 gOverhang, gInterior;
    pSegmentHaulingSpecCriteria->GetHaulingGFactors(&gOverhang, &gInterior);
@@ -396,8 +392,8 @@ void pgsKdotGirderHaulingChecker::PrepareHaulingAnalysisArtifact(const CSegmentK
 
    if ( Loh < min_bunk_point_loc )
    {
-      GET_IFACE(IEAFStatusCenter,pStatusCenter);
-      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(GetBroker(),IEAFStatusCenter,pStatusCenter);
+      GET_IFACE2(GetBroker(),IEAFDisplayUnits,pDisplayUnits);
 
       CString strMsg;
       strMsg.Format(_T("%s: Left bunk point is less than the absolute minimum value of %s"),SEGMENT_LABEL(segmentKey),::FormatDimension(min_bunk_point_loc,pDisplayUnits->GetSpanLengthUnit()));
@@ -406,8 +402,8 @@ void pgsKdotGirderHaulingChecker::PrepareHaulingAnalysisArtifact(const CSegmentK
 
    if ( Roh < min_bunk_point_loc )
    {
-      GET_IFACE(IEAFStatusCenter,pStatusCenter);
-      GET_IFACE(IEAFDisplayUnits,pDisplayUnits);
+      GET_IFACE2(GetBroker(),IEAFStatusCenter,pStatusCenter);
+      GET_IFACE2(GetBroker(),IEAFDisplayUnits,pDisplayUnits);
 
       CString strMsg;
       strMsg.Format(_T("%s: Right bunk point is less than the absolute minimum value of %s"),SEGMENT_LABEL(segmentKey),::FormatDimension(min_bunk_point_loc,pDisplayUnits->GetSpanLengthUnit()));
@@ -423,17 +419,17 @@ void pgsKdotGirderHaulingChecker::ComputeHaulingStresses(const CSegmentKey& segm
                                                       const std::vector<Float64>& vMoment,
                                                       pgsKdotHaulingAnalysisArtifact& pArtifact)
 {
-   GET_IFACE(IBridge,                        pBridge);
-   GET_IFACE(IPretensionForce,               pPrestressForce);
-   GET_IFACE(IMaterials,                     pMaterials);
-   GET_IFACE(IStrandGeometry,                pStrandGeometry);
-   GET_IFACE(ISectionProperties,             pSectProps);
-   GET_IFACE(IShapes,                        pShapes);
-   GET_IFACE(IGirder,                        pGdr);
-   GET_IFACE(IKdotGirderHaulingSpecCriteria, pHaulingSpecCriteria);
-   GET_IFACE(ILongRebarGeometry,             pRebarGeom);
-   GET_IFACE(IPointOfInterest,               pPoi);
-   GET_IFACE(IIntervals,                     pIntervals);
+   GET_IFACE2(GetBroker(),IBridge,                        pBridge);
+   GET_IFACE2(GetBroker(),IPretensionForce,               pPrestressForce);
+   GET_IFACE2(GetBroker(),IMaterials,                     pMaterials);
+   GET_IFACE2(GetBroker(),IStrandGeometry,                pStrandGeometry);
+   GET_IFACE2(GetBroker(),ISectionProperties,             pSectProps);
+   GET_IFACE2(GetBroker(),IShapes,                        pShapes);
+   GET_IFACE2(GetBroker(),IGirder,                        pGdr);
+   GET_IFACE2(GetBroker(),IKdotGirderHaulingSpecCriteria, pHaulingSpecCriteria);
+   GET_IFACE2(GetBroker(),ILongRebarGeometry,             pRebarGeom);
+   GET_IFACE2(GetBroker(),IPointOfInterest,               pPoi);
+   GET_IFACE2(GetBroker(),IIntervals,                     pIntervals);
 
    IntervalIndexType releaseIntervalIdx     = pIntervals->GetPrestressReleaseInterval(segmentKey);
    IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
@@ -588,7 +584,7 @@ void pgsKdotGirderHaulingChecker::ComputeHaulingMoments(const CSegmentKey& segme
 
    pgsKdotHaulingGirderModelFactory girderModelFactory(gOverhang, gInterior);
 
-   GET_IFACE(IIntervals,pIntervals);
+   GET_IFACE2(GetBroker(),IIntervals,pIntervals);
    IntervalIndexType haulSegmentIntervalIdx = pIntervals->GetHaulSegmentInterval(segmentKey);
 
    pgsGirderHandlingChecker::ComputeMoments(m_pBroker, &girderModelFactory, segmentKey,

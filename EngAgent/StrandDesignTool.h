@@ -110,7 +110,7 @@ public:
 
    pgsStrandDesignTool(SHARED_LOGFILE lf);
    
-   void Initialize(std::shared_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, pgsSegmentDesignArtifact* pArtifact);
+   void Initialize(std::weak_ptr<WBFL::EAF::Broker> pBroker, StatusGroupIDType statusGroupID, pgsSegmentDesignArtifact* pArtifact);
 
    void InitReleaseStrength(Float64 fci,IntervalIndexType intervalIdx);
    void InitFinalStrength(Float64 fc,IntervalIndexType intervalIdx);
@@ -350,7 +350,9 @@ private:
    void ComputeMinStrands();
 
 
-   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
+   std::weak_ptr<WBFL::EAF::Broker> m_pBroker;
+   inline std::shared_ptr<WBFL::EAF::Broker> GetBroker() const { return m_pBroker.lock(); }
+
    StatusGroupIDType m_StatusGroupID;
 
    Float64 m_ConcreteAccuracy; // 100 PSI

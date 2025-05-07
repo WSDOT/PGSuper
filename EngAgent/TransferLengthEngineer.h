@@ -32,10 +32,8 @@ class IEAFDisplayUnits;
 class pgsTransferLengthEngineer
 {
 public:
-   pgsTransferLengthEngineer();
-   ~pgsTransferLengthEngineer();
-
-   void SetBroker(std::shared_ptr<WBFL::EAF::Broker> pBroker);
+   pgsTransferLengthEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker);
+   ~pgsTransferLengthEngineer() = default;
 
    void Invalidate();
 
@@ -55,7 +53,8 @@ public:
 private:
    mutable std::array<std::map<const CSegmentKey, std::shared_ptr<pgsTransferLength>>, 3> m_MinCache;
    mutable std::array<std::map<const CSegmentKey, std::shared_ptr<pgsTransferLength>>, 3> m_MaxCache;
-   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
+   std::weak_ptr<WBFL::EAF::Broker> m_pBroker;
+   inline std::shared_ptr<WBFL::EAF::Broker> GetBroker() const { return m_pBroker.lock(); }
 };
 
 class pgsTransferLengthBase : public pgsTransferLength

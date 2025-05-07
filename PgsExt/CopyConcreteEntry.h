@@ -42,7 +42,7 @@ public:
 	//}}AFX_DATA
 	CString	m_Concrete;
    bool m_IsPrestressed;
-   //const ConcreteLibraryEntry* m_ConcreteEntry;
+   const ConcreteLibraryEntry* m_ConcreteEntry = nullptr;
 
 // Overrides
 	// ClassWizard generated virtual function overrides

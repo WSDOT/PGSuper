@@ -58,17 +58,17 @@ LOG
 class pgsGirderHandlingChecker
 {
 public:
-   pgsGirderHandlingChecker(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID);
+   pgsGirderHandlingChecker(std::weak_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID);
    pgsGirderHandlingChecker() = delete;
    pgsGirderHandlingChecker(const pgsGirderHandlingChecker&) = delete;
    pgsGirderHandlingChecker& operator=(const pgsGirderHandlingChecker&) = delete;
-   virtual ~pgsGirderHandlingChecker();
+   ~pgsGirderHandlingChecker() = default;
 
    // Factory Method to create the appropriate hauling checker
    std::unique_ptr<pgsGirderHaulingChecker> CreateGirderHaulingChecker();
 
    // Utility functions for the checking classes
-   static void ComputeMoments(std::shared_ptr<WBFL::EAF::Broker> pBroker, pgsGirderModelFactory* pGirderModelFactory, const CSegmentKey& segmentKey,
+   static void ComputeMoments(std::weak_ptr<WBFL::EAF::Broker> pBroker, pgsGirderModelFactory* pGirderModelFactory, const CSegmentKey& segmentKey,
                        IntervalIndexType intervalIdx,
                        Float64 leftOH,Float64 glen,Float64 rightOH,
                        Float64 E, 
@@ -77,6 +77,7 @@ public:
                        std::vector<Float64>* pmomVec, Float64* pMidSpanDeflection);
 
 private:
-   std::shared_ptr<WBFL::EAF::Broker> m_pBroker;
+   std::weak_ptr<WBFL::EAF::Broker> m_pBroker;
+   inline std::shared_ptr<WBFL::EAF::Broker> GetBroker() const { return m_pBroker.lock(); }
    StatusGroupIDType m_StatusGroupID;
 };

@@ -53,28 +53,24 @@
 
 #include <Stability\Stability.h>
 
-pgsGirderLiftingChecker::pgsGirderLiftingChecker(std::shared_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID)
+pgsGirderLiftingChecker::pgsGirderLiftingChecker(std::weak_ptr<WBFL::EAF::Broker> pBroker,StatusGroupIDType statusGroupID)
 {
    m_pBroker = pBroker;
    m_StatusGroupID = statusGroupID;
 
-   GET_IFACE(IEAFStatusCenter,pStatusCenter);
+   GET_IFACE2(GetBroker(),IEAFStatusCenter,pStatusCenter);
    m_scidLiftingSupportLocationError   = pStatusCenter->RegisterCallback( std::make_shared<pgsLiftingSupportLocationStatusCallback>(WBFL::EAF::StatusSeverityType::Error) );
    m_scidLiftingSupportLocationWarning = pStatusCenter->RegisterCallback( std::make_shared<pgsLiftingSupportLocationStatusCallback>(WBFL::EAF::StatusSeverityType::Warning) );
 }
 
-pgsGirderLiftingChecker::~pgsGirderLiftingChecker()
-{
-}
-
 std::shared_ptr<WBFL::Stability::LiftingCheckArtifact> pgsGirderLiftingChecker::CheckLifting(const CSegmentKey& segmentKey)
 {
-   GET_IFACE(ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
+   GET_IFACE2(GetBroker(),ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
 
    if (pSegmentLiftingSpecCriteria->IsLiftingAnalysisEnabled())
    {
        // Use poi's from global pool
-      GET_IFACE(ISegmentLiftingPointsOfInterest,pSegmentLiftingPointsOfInterest);
+      GET_IFACE2(GetBroker(),ISegmentLiftingPointsOfInterest,pSegmentLiftingPointsOfInterest);
       HANDLINGCONFIG dummy_config;
 
       // Compute lifting response
@@ -85,7 +81,7 @@ std::shared_ptr<WBFL::Stability::LiftingCheckArtifact> pgsGirderLiftingChecker::
 
 std::shared_ptr<WBFL::Stability::LiftingCheckArtifact> pgsGirderLiftingChecker::AnalyzeLifting(const CSegmentKey& segmentKey,Float64 supportLoc)
 {
-   GET_IFACE(ISegmentLiftingPointsOfInterest,pSegmentLiftingPointsOfInterest);
+   GET_IFACE2(GetBroker(),ISegmentLiftingPointsOfInterest,pSegmentLiftingPointsOfInterest);
    HANDLINGCONFIG dummy_config;
    dummy_config.bIgnoreGirderConfig = true;
    dummy_config.LeftOverhang = supportLoc;
@@ -100,7 +96,7 @@ std::shared_ptr<WBFL::Stability::LiftingCheckArtifact> pgsGirderLiftingChecker::
 
 std::shared_ptr<WBFL::Stability::LiftingCheckArtifact> pgsGirderLiftingChecker::AnalyzeLifting(const CSegmentKey& segmentKey,bool bUseConfig,const HANDLINGCONFIG& liftConfig,std::shared_ptr<ISegmentLiftingDesignPointsOfInterest> pPoiD,const WBFL::Stability::LiftingStabilityProblem** ppStabilityProblem)
 {
-   GET_IFACE(IGirder,pGirder);
+   GET_IFACE2(GetBroker(),IGirder,pGirder);
    const WBFL::Stability::Girder* pStabilityModel = pGirder->GetSegmentLiftingStabilityModel(segmentKey);
    const WBFL::Stability::LiftingStabilityProblem* pStabilityProblem = bUseConfig ? pGirder->GetSegmentLiftingStabilityProblem(segmentKey,liftConfig,pPoiD) : pGirder->GetSegmentLiftingStabilityProblem(segmentKey);
    if ( ppStabilityProblem )
@@ -108,7 +104,7 @@ std::shared_ptr<WBFL::Stability::LiftingCheckArtifact> pgsGirderLiftingChecker::
       *ppStabilityProblem = pStabilityProblem;
    }
 
-   GET_IFACE(ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
+   GET_IFACE2(GetBroker(),ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
    WBFL::Stability::LiftingCriteria criteria = pSegmentLiftingSpecCriteria->GetLiftingStabilityCriteria(segmentKey, bUseConfig ? &liftConfig : nullptr);
 
    WBFL::Stability::StabilityEngineer engineer;
@@ -120,7 +116,7 @@ std::pair<pgsDesignCodes::OutcomeType, std::shared_ptr<WBFL::Stability::LiftingC
    //
    // Range of lifting loop locations and step increment
    //
-   GET_IFACE(ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
+   GET_IFACE2(GetBroker(),ISegmentLiftingSpecCriteria,pSegmentLiftingSpecCriteria);
    Float64 min_location = Max(pSegmentLiftingSpecCriteria->GetMinimumLiftingPointLocation(segmentKey,pgsTypes::metStart),pSegmentLiftingSpecCriteria->GetMinimumLiftingPointLocation(segmentKey,pgsTypes::metEnd));
    Float64 location_accuracy = pSegmentLiftingSpecCriteria->GetLiftingPointLocationAccuracy();
 
@@ -131,12 +127,12 @@ std::pair<pgsDesignCodes::OutcomeType, std::shared_ptr<WBFL::Stability::LiftingC
 
    // Max location may be limited by harping point (actually, just before it stopping at the last increment value)
    // But allowing more than 40% of the girder length makes no sense (think rigid-body instability for riggers)
-   GET_IFACE(IBridge, pBridge);
+   GET_IFACE2(GetBroker(),IBridge, pBridge);
    Float64 girder_length = pBridge->GetSegmentLength(segmentKey);
 
    Float64 maxLoc = 0.4*girder_length;
 
-   GET_IFACE(IStrandGeometry, pStrandGeom);
+   GET_IFACE2(GetBroker(),IStrandGeometry, pStrandGeom);
    StrandIndexType Nh = pStrandGeom->GetStrandCount(segmentKey, pgsTypes::Harped, config.bIgnoreGirderConfig ? nullptr : &config.GdrConfig);
 
    if (0 < Nh) // only look at harping point if we have harped strands

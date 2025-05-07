@@ -39,7 +39,6 @@
 
 #include "PGSuperCatCom.h"
 #include "PGSpliceCatCom.h"
-#include <System\ComCatMgr.h>
 
 #include <IFace\Alignment.h>
 #include <EAF/EAFStatusCenter.h>
@@ -62,6 +61,8 @@ EAF_BEGIN_OBJECT_MAP(ObjectMap)
    EAF_OBJECT_ENTRY(CLSID_TestAgent, CTestAgentImp)
 EAF_END_OBJECT_MAP()
 
+#pragma Reminder("WORKING HERE - Removing COM - does this need to be an MFC DLL?")
+// Could this be a regular DLL with DllMain?
 class CTestAgentApp : public CWinApp
 {
 public:
@@ -101,23 +102,3 @@ int CTestAgentApp::ExitInstance()
     _Module.Term();
     return CWinApp::ExitInstance();
 }
-
-
-#pragma Reminder("WORKING HERE - Removing COM - register TestAgent with agent component categories")
-//HRESULT RegisterAgent(bool bRegister)
-//{
-//   HRESULT hr = S_OK;
-//   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_TestAgent,CATID_PGSuperAgent,bRegister);
-//   if ( FAILED(hr) )
-//   {
-//      return hr;
-//   }
-//
-//   hr = WBFL::System::ComCatMgr::RegWithCategory(CLSID_TestAgent,CATID_PGSpliceAgent,bRegister);
-//   if ( FAILED(hr) )
-//   {
-//      return hr;
-//   }
-//
-//   return S_OK;
-//}

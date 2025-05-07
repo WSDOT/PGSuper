@@ -34,11 +34,8 @@
 class pgsBearingDesignEngineer
 {
 public:
-   pgsBearingDesignEngineer() = default;
-   pgsBearingDesignEngineer(std::shared_ptr<WBFL::EAF::Broker> pBroker);
+   pgsBearingDesignEngineer(std::weak_ptr<WBFL::EAF::Broker> pBroker);
    pgsBearingDesignEngineer(const pgsBearingDesignEngineer& other) = default;
-
-   void SetBroker(std::shared_ptr<WBFL::EAF::Broker> pBroker);
 
    Float64 BearingSkewFactor(const ReactionLocation& reactionLocation, bool isFlexural) const;
 
@@ -68,5 +65,6 @@ public:
    void CheckBearing(WBFL::EngTools::Bearing* brg, WBFL::EngTools::BearingLoads* brg_loads, WBFL::EngTools::BearingCalculator* brg_calc) const;
 
 private:
-   std::shared_ptr<WBFL::EAF::Broker>m_pBroker;
+   std::weak_ptr<WBFL::EAF::Broker> m_pBroker;
+   inline std::shared_ptr<WBFL::EAF::Broker> GetBroker() const { return m_pBroker.lock(); }
 };

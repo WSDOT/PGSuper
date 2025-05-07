@@ -33827,7 +33827,7 @@ Float64 CBridgeAgentImp::GetApsInHalfDepth(const pgsPointOfInterest& poi,Develop
                ATLASSERT(mid_span_poi.IsMidSpan(POI_ERECTED_SEGMENT));
 
                GET_IFACE(IPretensionForce, pPSForce);
-               const std::shared_ptr<pgsDevelopmentLength> pDevLength = pPSForce->GetDevelopmentLengthDetails(mid_span_poi, pgsTypes::Straight, false, pConfig);
+               auto pDevLength = pPSForce->GetDevelopmentLengthDetails(mid_span_poi, pgsTypes::Straight, false, pConfig);
                Float64 fps = pDevLength->GetFps();
                Float64 fpe = pDevLength->GetFpe();
 
